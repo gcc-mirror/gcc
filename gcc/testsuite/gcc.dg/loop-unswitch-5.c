@@ -1,6 +1,6 @@
 /* PR middle-end/71691 */
 /* { dg-do run } */
-/* { dg-options "-fno-tree-vrp -O2 -funswitch-loops -fdump-tree-unswitch-details" } */
+/* { dg-options "-fno-tree-vrp -O2 -funswitch-loops" } */
 
 /* Note: The -fno-tree-vrp above is only there to avoid VRP papering
    over the problem.  */

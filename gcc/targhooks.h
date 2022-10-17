@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -88,6 +88,7 @@ extern bool default_fixed_point_supported_p (void);
 extern bool default_has_ifunc_p (void);
 
 extern bool default_predict_doloop_p (class loop *);
+extern machine_mode default_preferred_doloop_mode (machine_mode);
 extern const char * default_invalid_within_doloop (const rtx_insn *);
 
 extern tree default_builtin_vectorized_function (unsigned int, tree, tree);
@@ -117,13 +118,7 @@ extern opt_machine_mode default_vectorize_related_mode (machine_mode,
 							poly_uint64);
 extern opt_machine_mode default_get_mask_mode (machine_mode);
 extern bool default_empty_mask_is_expensive (unsigned);
-extern void *default_init_cost (class loop *, bool);
-extern unsigned default_add_stmt_cost (class vec_info *, void *, int,
-				       enum vect_cost_for_stmt,
-				       class _stmt_vec_info *, tree, int,
-				       enum vect_cost_model_location);
-extern void default_finish_cost (void *, unsigned *, unsigned *, unsigned *);
-extern void default_destroy_cost_data (void *);
+extern vector_costs *default_vectorize_create_costs (vec_info *, bool);
 
 /* OpenACC hooks.  */
 extern bool default_goacc_validate_dims (tree, int [], int, unsigned);
@@ -193,6 +188,8 @@ extern bool default_new_address_profitable_p (rtx, rtx_insn *, rtx);
 extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);
 extern bool default_target_option_pragma_parse (tree, tree);
 extern bool default_target_can_inline_p (tree, tree);
+extern bool default_update_ipa_fn_target_info (unsigned int &, const gimple *);
+extern bool default_need_ipa_fn_target_info (const_tree, unsigned int &);
 extern bool default_valid_pointer_mode (scalar_int_mode);
 extern bool default_ref_may_alias_errno (class ao_ref *);
 extern scalar_int_mode default_addr_space_pointer_mode (addr_space_t);
@@ -215,6 +212,7 @@ extern bool default_libc_has_function (enum function_class, tree);
 extern bool default_libc_has_fast_function (int fcode);
 extern bool no_c99_libc_has_function (enum function_class, tree);
 extern bool gnu_libc_has_function (enum function_class, tree);
+extern bool bsd_libc_has_function (enum function_class, tree);
 
 extern tree default_builtin_tm_load_store (tree);
 
@@ -271,10 +269,6 @@ extern bool can_use_doloop_if_innermost (const widest_int &,
 					 const widest_int &,
 					 unsigned int, bool);
 
-extern rtx default_load_bounds_for_arg (rtx, rtx, rtx);
-extern void default_store_bounds_for_arg (rtx, rtx, rtx, rtx);
-extern rtx default_load_returned_bounds (rtx);
-extern void default_store_returned_bounds (rtx,rtx);
 extern bool default_optab_supported_p (int, machine_mode, machine_mode,
 				       optimization_type);
 extern unsigned int default_max_noce_ifcvt_seq_cost (edge);
@@ -300,5 +294,7 @@ extern rtx default_memtag_add_tag (rtx, poly_int64, uint8_t);
 extern rtx default_memtag_set_tag (rtx, rtx, rtx);
 extern rtx default_memtag_extract_tag (rtx, rtx);
 extern rtx default_memtag_untagged_pointer (rtx, rtx);
+
+extern HOST_WIDE_INT default_gcov_type_size (void);
 
 #endif /* GCC_TARGHOOKS_H */

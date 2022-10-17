@@ -153,7 +153,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 	  /* FALLTHRU */
 
 	default:
-	  z = ALIGN(z, 4);
+	  z = FFI_ALIGN(z, 4);
 	}
       bytes += z;
     }
@@ -167,7 +167,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
   bytes += 4;
 
   /* The stack must be 2 word aligned, so round bytes up appropriately. */
-  bytes = ALIGN(bytes, 2 * 4);
+  bytes = FFI_ALIGN(bytes, 2 * 4);
 
   /* Include the call frame to prep_args.  */
   bytes += 4*16 + 4*8;
@@ -293,7 +293,7 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
      got to pass the return value to the callee.  Otherwise ignore it.  */
   if (rvalue == NULL
       && (cif->flags & SPARC_FLAG_RET_MASK) == SPARC_RET_STRUCT)
-    bytes += ALIGN (cif->rtype->size, 8);
+    bytes += FFI_ALIGN (cif->rtype->size, 8);
 
   ffi_call_v8(cif, fn, rvalue, avalue, -bytes, closure);
 }

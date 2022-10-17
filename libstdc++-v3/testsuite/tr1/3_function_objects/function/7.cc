@@ -1,6 +1,6 @@
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +44,7 @@ void test07()
   // Invocation
   VERIFY( f1(3.1f) == 3 );
 
+#if __cpp_rtti
   // target_type and target() functions
   const function<int(float)>& f1c = f1;
   VERIFY( typeid(int(*)(float)) == f1.target_type() );
@@ -51,6 +52,7 @@ void test07()
   VERIFY( f1.target<int(*)(float)>() == &fptr );
   VERIFY( f1c.target<int(*)(float)>() != 0 );
   VERIFY( f1c.target<int(*)(float)>() == &fptr );
+#endif
 
   function<int(float)> f2(cref(fptr));
   VERIFY( f2 );
@@ -63,6 +65,7 @@ void test07()
   // Invocation
   VERIFY( f2(3.1f) == 3 );
 
+#if __cpp_rtti
   // target_type and target() functions
   const function<int(float)>& f2c = f2;
   VERIFY( typeid(int(*)(float)) == f2.target_type() );
@@ -70,6 +73,7 @@ void test07()
   VERIFY( f2.target<int(* const)(float)>() == &fptr );
   VERIFY( f2c.target<int(*)(float)>() != 0 );
   VERIFY( f2c.target<int(*)(float)>() == &fptr );
+#endif
 }
 
 int main()

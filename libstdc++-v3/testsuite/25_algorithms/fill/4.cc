@@ -1,6 +1,6 @@
 // 2007-01-19  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,7 @@ test01()
 
   const int A1[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
   const int N1 = sizeof(A1) / sizeof(int);
-  
+
   int i1[N1];
   fill(i1, i1 + N1, 3);
   VERIFY( equal(i1, i1 + N1, A1) );
@@ -51,7 +51,6 @@ test01()
   fill(v2.begin(), v2.end(), '\3');
   VERIFY( equal(v2.begin(), v2.end(), A2) );
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   const wchar_t A3[] = {L'\3', L'\3', L'\3', L'\3', L'\3',
 			L'\3', L'\3', L'\3', L'\3', L'\3'};
   const int N3 = sizeof(A3) / sizeof(wchar_t);
@@ -63,7 +62,6 @@ test01()
   vector<wchar_t> v3(N3);
   fill(v3.begin(), v3.end(), L'\3');
   VERIFY( equal(v3.begin(), v3.end(), A3) );
-#endif
 }
 
 int

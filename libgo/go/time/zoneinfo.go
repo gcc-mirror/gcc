@@ -121,7 +121,7 @@ func FixedZone(name string, offset int) *Location {
 // the start and end times bracketing sec when that zone is in effect,
 // the offset in seconds east of UTC (such as -5*60*60), and whether
 // the daylight savings is being observed at that time.
-func (l *Location) lookup(sec int64) (name string, offset int, start, end int64) {
+func (l *Location) lookup(sec int64) (name string, offset int, start, end int64, isDST bool) {
 	l = l.get()
 
 	if len(l.zone) == 0 {
@@ -129,6 +129,7 @@ func (l *Location) lookup(sec int64) (name string, offset int, start, end int64)
 		offset = 0
 		start = alpha
 		end = omega
+		isDST = false
 		return
 	}
 
@@ -137,6 +138,7 @@ func (l *Location) lookup(sec int64) (name string, offset int, start, end int64)
 		offset = zone.offset
 		start = l.cacheStart
 		end = l.cacheEnd
+		isDST = zone.isDST
 		return
 	}
 
@@ -150,6 +152,7 @@ func (l *Location) lookup(sec int64) (name string, offset int, start, end int64)
 		} else {
 			end = omega
 		}
+		isDST = zone.isDST
 		return
 	}
 
@@ -174,12 +177,13 @@ func (l *Location) lookup(sec int64) (name string, offset int, start, end int64)
 	offset = zone.offset
 	start = tx[lo].when
 	// end = maintained during the search
+	isDST = zone.isDST
 
 	// If we're at the end of the known zone transitions,
 	// try the extend string.
 	if lo == len(tx)-1 && l.extend != "" {
-		if ename, eoffset, estart, eend, _, ok := tzset(l.extend, end, sec); ok {
-			return ename, eoffset, estart, eend
+		if ename, eoffset, estart, eend, eisDST, ok := tzset(l.extend, end, sec); ok {
+			return ename, eoffset, estart, eend, eisDST
 		}
 	}
 
@@ -592,7 +596,7 @@ func (l *Location) lookupName(name string, unix int64) (offset int, ok bool) {
 	for i := range l.zone {
 		zone := &l.zone[i]
 		if zone.name == name {
-			nam, offset, _, _ := l.lookup(unix - int64(zone.offset))
+			nam, offset, _, _, _ := l.lookup(unix - int64(zone.offset))
 			if nam == zone.name {
 				return offset, true
 			}
@@ -627,12 +631,13 @@ var zoneinfoOnce sync.Once
 // Otherwise, the name is taken to be a location name corresponding to a file
 // in the IANA Time Zone database, such as "America/New_York".
 //
-// The time zone database needed by LoadLocation may not be
-// present on all systems, especially non-Unix systems.
-// LoadLocation looks in the directory or uncompressed zip file
-// named by the ZONEINFO environment variable, if any, then looks in
-// known installation locations on Unix systems,
-// and finally looks in $GOROOT/lib/time/zoneinfo.zip.
+// LoadLocation looks for the IANA Time Zone database in the following
+// locations in order:
+//
+// - the directory or uncompressed zip file named by the ZONEINFO environment variable
+// - on a Unix system, the system standard installation location
+// - $GOROOT/lib/time/zoneinfo.zip
+// - the time/tzdata package, if it was imported
 func LoadLocation(name string) (*Location, error) {
 	if name == "" || name == "UTC" {
 		return UTC, nil

@@ -1,6 +1,6 @@
 // Random number extensions -*- C++ -*-
 
-// Copyright (C) 2012-2021 Free Software Foundation, Inc.
+// Copyright (C) 2012-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,8 @@
 #define _EXT_RANDOM 1
 
 #pragma GCC system_header
+
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
@@ -87,9 +89,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Sseq>
 	using _If_seed_seq
-	  = typename std::enable_if<std::__detail::__is_seed_seq<
-	    _Sseq, simd_fast_mersenne_twister_engine, result_type>::value
-	    >::type;
+	  = std::__detail::_If_seed_seq_for<_Sseq,
+					    simd_fast_mersenne_twister_engine,
+					    result_type>;
 
     public:
       static constexpr size_t state_size = _M_nstate * (16
@@ -346,6 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    0xa3ac4000U, 0xecc1327aU>
     sfmt44497_64;
 
+#if __SIZE_WIDTH__ >= 32
 
   typedef simd_fast_mersenne_twister_engine<uint32_t, 86243, 366,
 					    6, 7, 19, 1,
@@ -396,6 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    0xf8000001U, 0x89e80709U,
 					    0x3bd2b64bU, 0x0c64b1e4U>
     sfmt216091_64;
+#endif // __SIZE_WIDTH__ >= 32
 
 #endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 

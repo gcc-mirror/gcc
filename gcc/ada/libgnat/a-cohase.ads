@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -68,6 +68,15 @@ is
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
+
+   function "=" (Left, Right : Cursor) return Boolean;
+   --  The representation of cursors includes a component used to optimize
+   --  iteration over sets. This component may become unreliable after
+   --  multiple set insertions, and must be excluded from cursor equality,
+   --  so we need to provide an explicit definition for it, instead of
+   --  using predefined equality (as implied by a questionable comment
+   --  in the RM). This is also the case for hashed maps, and affects the
+   --  use of Insert primitives in hashed structures.
 
    Empty_Set : constant Set;
    --  Set objects declared without an initialization expression are
@@ -358,6 +367,25 @@ is
    function Iterate
      (Container : Set) return Set_Iterator_Interfaces.Forward_Iterator'Class;
 
+   --  Ada 2022 features:
+
+   function Has_Element (Container : Set; Position : Cursor) return Boolean;
+
+   function Tampering_With_Cursors_Prohibited (Container : Set) return Boolean;
+
+   function Element (Container : Set; Position : Cursor) return Element_Type;
+
+   procedure Query_Element
+     (Container : Set;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : Element_Type));
+
+   function Next (Container : Set; Position : Cursor) return Cursor;
+
+   procedure Next (Container : Set; Position : in out Cursor);
+
+   ----------------
+
    generic
       type Key_Type (<>) is private;
 
@@ -372,6 +400,9 @@ is
       function Key (Position : Cursor) return Key_Type;
       --  Applies generic formal operation Key to the element of the node
       --  designated by Position.
+
+      function Key (Container : Set; Position : Cursor) return Key_Type is
+        (Key (Element (Container, Position)));
 
       function Element (Container : Set; Key : Key_Type) return Element_Type;
       --  Searches (as per the key-based Find) for the node containing Key, and
@@ -592,10 +623,9 @@ private
 
    for Constant_Reference_Type'Write use Write;
 
-   --  Three operations are used to optimize in the expansion of "for ... of"
-   --  loops: the Next(Cursor) procedure in the visible part, and the following
-   --  Pseudo_Reference and Get_Element_Access functions. See Sem_Ch5 for
-   --  details.
+   --  See Ada.Containers.Vectors for documentation on the following
+
+   procedure _Next (Position : in out Cursor) renames Next;
 
    function Pseudo_Reference
      (Container : aliased Set'Class) return Reference_Control_Type;

@@ -1,16 +1,15 @@
 // REQUIRED_ARGS: -o-
-// PERMUTE_ARGS:
 
 bool cond;
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12809.d(19): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail12809.d(16): Error: nothrow function `fail12809.test_finally1` may throw
-fail_compilation/fail12809.d(35): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail12809.d(39): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail12809.d(32): Error: nothrow function `fail12809.test_finally3` may throw
+fail_compilation/fail12809.d(18): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail12809.d(15): Error: function `fail12809.test_finally1` may throw but is marked as `nothrow`
+fail_compilation/fail12809.d(34): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail12809.d(38): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail12809.d(31): Error: function `fail12809.test_finally3` may throw but is marked as `nothrow`
 ---
 */
 void test_finally1() nothrow
@@ -44,11 +43,11 @@ void test_finally3() nothrow
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12809.d(59): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail12809.d(54): Error: nothrow function `fail12809.test_finally4` may throw
-fail_compilation/fail12809.d(75): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail12809.d(79): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail12809.d(70): Error: nothrow function `fail12809.test_finally6` may throw
+fail_compilation/fail12809.d(58): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail12809.d(53): Error: function `fail12809.test_finally4` may throw but is marked as `nothrow`
+fail_compilation/fail12809.d(74): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail12809.d(78): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail12809.d(69): Error: function `fail12809.test_finally6` may throw but is marked as `nothrow`
 ---
 */
 void test_finally4() nothrow

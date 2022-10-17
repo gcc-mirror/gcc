@@ -3,6 +3,6 @@
 
 template <int... E>
 void f() {
-  [] { enum e { e = E }; };	// { dg-error "not expanded" }
+  [] { enum e { e = E }; };	// { dg-message "" }
 }
 template void f<>();

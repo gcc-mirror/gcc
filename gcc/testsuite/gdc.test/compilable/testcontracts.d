@@ -1,4 +1,4 @@
-// EXTRA_SOURCES: imports/testcontracts.d
+// COMPILED_IMPORTS: imports/testcontracts.d
 
 import imports.testcontracts;
 
@@ -13,7 +13,7 @@ class Derived3602 : Base3602
        assert(x > 0);
        assert(y > 0);
    }
-   body
+   do
    {
    }
 }
@@ -35,31 +35,31 @@ class Foo17502
 {
     auto foo()
     out {}
-    body {}
+    do {}
 
     auto bar()
     out { assert (__result > 5); }
-    body { return 6; }
+    do { return 6; }
 
     auto bar_2()
     out (res) { assert (res > 5); }
-    body { return 6; }
+    do { return 6; }
 
     int concrete()
     out { assert(__result > 5); }
-    body { return 6; }
+    do { return 6; }
 
     int concrete_2()
     out(res) { assert (res > 5); }
-    body { return 6; }
+    do { return 6; }
 
     void void_foo()
     out {}
-    body {}
+    do {}
 
     auto void_auto()
     out {}
-    body {}
+    do {}
 }
 
 /***************************************************/
@@ -76,7 +76,7 @@ class A17502
     {
         assert(res > 5);
     }
-    body
+    do
     {
         return p;
     }
@@ -89,7 +89,7 @@ class C17502 : B17502
     {
         assert(p > 3);
     }
-    body
+    do
     {
         return p * 2;
     }
@@ -102,7 +102,7 @@ class B17502 : A17502
     {
         assert(p > 2);
     }
-    body
+    do
     {
         return p * 3;
     }
@@ -118,7 +118,7 @@ class X17502 : Y17502
     {
         assert(p > 3);
     }
-    body
+    do
     {
         return p * 2;
     }
@@ -131,7 +131,7 @@ class Y17502 : Z17502
     {
         assert(p > 2);
     }
-    body
+    do
     {
         return p * 3;
     }
@@ -148,7 +148,7 @@ class Z17502
     {
         assert(res > 5);
     }
-    body
+    do
     {
         return p;
     }
@@ -166,9 +166,21 @@ final class Foo17893(T)
     {
         maythrow();
     }
-    body
+    do
     {
     }
 }
 
 Foo17893!int foo17893;
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=15984
+
+alias Bar15984 = extern (C) void function(void*);
+
+final class C15984
+{
+    void foo(Bar15984 bar)
+    in { assert(bar); }
+    do {}
+}

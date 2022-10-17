@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -386,8 +386,6 @@ DEFTREECODE (NONTYPE_ARGUMENT_PACK, "nontype_argument_pack", tcc_expression, 1)
    the type or expression that we will substitute into with each
    argument in an argument pack.
 
-   SET_PACK_EXPANSION_PATTERN sets the expansion pattern.
-
    PACK_EXPANSION_PARAMETER_PACKS contains a TREE_LIST of the parameter
    packs that are used in this pack expansion.
 
@@ -446,8 +444,11 @@ DEFTREECODE (BIT_CAST_EXPR, "bit_cast_expr", tcc_expression, 1)
 
 /** C++ extensions. */
 
-/* Represents a trait expression during template expansion.  */
+/* Represents a templated trait that yields an expression.  */
 DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
+
+/* Represents a templated trait that yields a type.  */
+DEFTREECODE (TRAIT_TYPE, "trait_type", tcc_type, 0)
 
 /* A lambda expression.  This is a C++0x extension.
    LAMBDA_EXPR_DEFAULT_CAPTURE_MODE is an enum for the default, which may be
@@ -468,13 +469,14 @@ DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
    DECLTYPE_FOR_LAMBDA_RETURN is set if we want lambda return deduction.  */
 DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
 
-/* A type designated by `__underlying_type (type)'.
-   UNDERLYING_TYPE_TYPE is the type in question.  */
-DEFTREECODE (UNDERLYING_TYPE, "underlying_type", tcc_type, 0)
-
 /* A type designated by one of the bases type traits.
    BASES_TYPE is the type in question.  */
 DEFTREECODE (BASES, "bases", tcc_type, 0)
+
+/* Dependent operator expressions are given this type rather than a NULL_TREE
+   type so that we have somewhere to stash the result of phase 1 name lookup
+   (namely into DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS).  */
+DEFTREECODE (DEPENDENT_OPERATOR_TYPE, "dependent_operator_type", tcc_type, 0)
 
 /* Used to represent the template information stored by template
    specializations.

@@ -327,13 +327,13 @@ BINOP_TEST (vminnm)
 
 BINOP_TEST (vmul)
 /* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+} 3 } }
-   { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } }  */
+   { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } }  */
 BINOP_LANE_TEST (vmul, 2)
 /* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+\[2\]} 1 } }
    { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[2\]} 1 } }  */
 BINOP_N_TEST (vmul)
-/* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+\[0\]} 1 } }
-   { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[0\]} 1 } }*/
+/* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+} 3 } }
+   { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } }*/
 
 float16x4_t
 test_vpadd_16x4 (float16x4_t a, float16x4_t b)
@@ -387,7 +387,7 @@ test_vdup_n_f16 (float16_t a)
 {
   return vdup_n_f16 (a);
 }
-/* { dg-final { scan-assembler-times {vdup\.16\td[0-9]+, r[0-9]+} 2 } }  */
+/* { dg-final { scan-assembler-times {vdup\.16\td[0-9]+, r[0-9]+} 3 } }  */
 
 float16x8_t
 test_vmovq_n_f16 (float16_t a)
@@ -400,7 +400,7 @@ test_vdupq_n_f16 (float16_t a)
 {
   return vdupq_n_f16 (a);
 }
-/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, r[0-9]+} 2 } }  */
+/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, r[0-9]+} 3 } }  */
 
 float16x4_t
 test_vdup_lane_f16 (float16x4_t a)

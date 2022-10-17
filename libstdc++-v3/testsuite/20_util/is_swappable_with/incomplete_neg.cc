@@ -1,6 +1,6 @@
 // { dg-do compile { target c++17 } }
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-error "must be a complete class" "" { target *-*-* } 0 }
+// { dg-prune-output "invalid use of incomplete type" }
 
 #include <type_traits>
 

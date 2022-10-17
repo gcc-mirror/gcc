@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,19 +17,11 @@
 
 // 22.1.1 class locale [lib.locale]
 
+// { dg-do compile }
+
 #include <locale>
-#include <typeinfo>
-#include <testsuite_hooks.h>
 
-void test01()
-{
-  using namespace std;
+template<typename, typename> struct SameType;
+template<typename T> struct SameType<T, T> { };
 
-  VERIFY( typeid(locale::category) == typeid(int) );
-}
-
-int main()
-{
-  test01();
-  return 0;
-}
+SameType<std::locale::category, int> check;

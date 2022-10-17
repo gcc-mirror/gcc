@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,15 +36,7 @@
 #define _X86INTRIN_H_INCLUDED
 
 #ifdef __ALTIVEC__
-#include <mmintrin.h>
-
-#include <xmmintrin.h>
-
-#include <emmintrin.h>
+#include <immintrin.h>
 #endif /* __ALTIVEC__ */
-
-#include <bmiintrin.h>
-
-#include <bmi2intrin.h>
 
 #endif /* _X86INTRIN_H_INCLUDED */

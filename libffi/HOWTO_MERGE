@@ -1,0 +1,13 @@
+In general, merging process should not be very difficult, but we need to
+track GCC-specific patches carefully.  Here is a general list of actions
+required to perform the merge:
+
+* Checkout recent GCC tree.
+* Run merge.sh script from the libffi directory.
+* Add new files and remove old files if needed.
+* Apply all needed GCC-specific patches to libffi (note that some of
+  them might be already included to upstream).  The list of these patches
+  is stored into LOCAL_PATCHES file.  May need to re-run autogen.sh to
+  regenerate configure and Makefile.in files.
+* Send your patches for review to GCC Patches Mailing List (gcc-patches@gcc.gnu.org).
+* Update LOCAL_PATCHES file when you've committed the whole patch set with new revisions numbers.

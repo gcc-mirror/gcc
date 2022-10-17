@@ -22,7 +22,7 @@ package Discr5 is
    subtype Rt is R(True);
    subtype Rf is R(False);
 
-   type R1 (D1 : Boolean) is new R (X) with record
+   type R1 (D1 : Boolean) is new R (X) with record -- { dg-warning "\"X\" may be referenced before it has a value" }
       FF : Float;
       case D1 is
          when True =>
@@ -38,7 +38,7 @@ package Discr5 is
    subtype R1t is R1 (True);
    subtype R1f is R1 (False);
 
-   type R2 (D2 : Boolean) is new R1 (Y) with record
+   type R2 (D2 : Boolean) is new R1 (Y) with record -- { dg-warning "\"Y\" may be referenced before it has a value" }
       FFF: System.Address;
       case D2 is
          when True =>
@@ -55,3 +55,4 @@ package Discr5 is
    subtype R2f is R2 (False);
 
 end Discr5;
+

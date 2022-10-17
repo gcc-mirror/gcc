@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IPA_UNDESCRIBED_USE -1
 
-/* ipa-prop.c stuff (ipa-cp, indirect inlining):  */
+/* ipa-prop.cc stuff (ipa-cp, indirect inlining):  */
 
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite.  They were originally proposed in a paper called
@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
    parameter or can apply one simple binary operation to it (such jump
    functions are called polynomial).
 
-   Jump functions are computed in ipa-prop.c by function
+   Jump functions are computed in ipa-prop.cc by function
    update_call_notes_after_inlining.  Some information can be lost and jump
    functions degraded accordingly when inlining, see
    update_call_notes_after_inlining in the same file.  */
@@ -78,7 +78,7 @@ struct ipa_cst_ref_desc;
 /* Structure holding data required to describe a constant jump function.  */
 struct GTY(()) ipa_constant_data
 {
-  /* THe value of the constant.  */
+  /* The value of the constant.  */
   tree value;
   /* Pointer to the structure that describes the reference.  */
   struct ipa_cst_ref_desc GTY((skip)) *rdesc;
@@ -143,6 +143,8 @@ struct GTY(()) ipa_ancestor_jf_data
   int formal_id;
   /* Flag with the same meaning like agg_preserve in ipa_pass_through_data.  */
   unsigned agg_preserved : 1;
+  /* When set, the operation should not have any effect on NULL pointers.  */
+  unsigned keep_null : 1;
 };
 
 /* A jump function for an aggregate part at a given offset, which describes how
@@ -438,6 +440,17 @@ ipa_get_jf_ancestor_type_preserved (struct ipa_jump_func *jfunc)
   return jfunc->value.ancestor.agg_preserved;
 }
 
+/* Return if jfunc represents an operation whether we first check the formal
+   parameter for non-NULLness unless it does not matter because the offset is
+   zero anyway.  */
+
+static inline bool
+ipa_get_jf_ancestor_keep_null (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_ANCESTOR);
+  return jfunc->value.ancestor.keep_null;
+}
+
 /* Class for allocating a bundle of various potentially known properties about
    actual arguments of a particular call on stack for the usual case and on
    heap only if there are unusually many arguments.  The data is deallocated
@@ -499,10 +512,10 @@ public:
      get reallocated, the member vectors and the underlying auto_vecs would get
      out of sync.  */
   ipa_call_arg_values (ipa_auto_call_arg_values *aavals)
-    : m_known_vals (aavals->m_known_vals),
-      m_known_contexts (aavals->m_known_contexts),
-      m_known_aggs (aavals->m_known_aggs),
-      m_known_value_ranges (aavals->m_known_value_ranges)
+    : m_known_vals (aavals->m_known_vals.to_vec_legacy ()),
+      m_known_contexts (aavals->m_known_contexts.to_vec_legacy ()),
+      m_known_aggs (aavals->m_known_aggs.to_vec_legacy ()),
+      m_known_value_ranges (aavals->m_known_value_ranges.to_vec_legacy ())
   {}
 
   /* If m_known_vals (vector of known "scalar" values) is sufficiantly long,
@@ -550,14 +563,21 @@ struct GTY(()) ipa_param_descriptor
   tree decl_or_type;
   /* If all uses of the parameter are described by ipa-prop structures, this
      says how many there are.  If any use could not be described by means of
-     ipa-prop structures, this is IPA_UNDESCRIBED_USE.  */
+     ipa-prop structures (which include flag dereferenced below), this is
+     IPA_UNDESCRIBED_USE.  */
   int controlled_uses;
-  unsigned int move_cost : 28;
+  unsigned int move_cost : 27;
   /* The parameter is used.  */
   unsigned used : 1;
   unsigned used_by_ipa_predicates : 1;
   unsigned used_by_indirect_call : 1;
   unsigned used_by_polymorphic_call : 1;
+  /* Set to true when in addition to being used in call statements, the
+     parameter has also been used for loads (but not for writes, does not
+     escape, etc.).  This allows us to identify parameters p which are only
+     used as *p, and so when we propagate a constant to them, we can generate a
+     LOAD and not ADDR reference to them.  */
+  unsigned load_dereferenced : 1;
 };
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -616,8 +636,8 @@ ipa_node_params::ipa_node_params ()
 : descriptors (NULL), lattices (NULL), ipcp_orig_node (NULL),
   known_csts (vNULL), known_contexts (vNULL), analysis_done (0),
   node_enqueued (0), do_clone_for_all_contexts (0), is_all_contexts_clone (0),
-  node_dead (0), node_within_scc (0), node_calling_single_call (0),
-  versionable (0)
+  node_dead (0), node_within_scc (0), node_is_self_scc (0),
+  node_calling_single_call (0), versionable (0)
 {
 }
 
@@ -693,6 +713,17 @@ ipa_get_param_count (class ipa_node_params *info)
   return vec_safe_length (info->descriptors);
 }
 
+/* Return the parameter declaration in DESCRIPTORS at index I and assert it is
+   indeed a PARM_DECL.  */
+
+static inline tree
+ipa_get_param (const vec<ipa_param_descriptor, va_gc> &descriptors, int i)
+{
+  tree t = descriptors[i].decl_or_type;
+  gcc_checking_assert (TREE_CODE (t) == PARM_DECL);
+  return t;
+}
+
 /* Return the declaration of Ith formal parameter of the function corresponding
    to INFO.  Note there is no setter function as this array is built just once
    using ipa_initialize_node_params.  This function should not be called in
@@ -702,9 +733,7 @@ static inline tree
 ipa_get_param (class ipa_node_params *info, int i)
 {
   gcc_checking_assert (info->descriptors);
-  tree t = (*info->descriptors)[i].decl_or_type;
-  gcc_checking_assert (TREE_CODE (t) == PARM_DECL);
-  return t;
+  return ipa_get_param (*info->descriptors, i);
 }
 
 /* Return the type of Ith formal parameter of the function corresponding
@@ -793,6 +822,24 @@ ipa_set_controlled_uses (class ipa_node_params *info, int i, int val)
 {
   gcc_checking_assert (info->descriptors);
   (*info->descriptors)[i].controlled_uses = val;
+}
+
+/* Assuming a parameter does not have IPA_UNDESCRIBED_USE controlled uses,
+   return flag which indicates it has been dereferenced but only in a load.  */
+static inline int
+ipa_get_param_load_dereferenced (class ipa_node_params *info, int i)
+{
+  gcc_assert (ipa_get_controlled_uses (info, i) != IPA_UNDESCRIBED_USE);
+  return (*info->descriptors)[i].load_dereferenced;
+}
+
+/* Set the load_dereferenced flag of a given parameter.  */
+
+static inline void
+ipa_set_param_load_dereferenced (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].load_dereferenced = val;
 }
 
 /* Return the used flag corresponding to the Ith formal parameter of the
@@ -957,10 +1004,10 @@ public:
   }
 
   /* Hook that is called by summary when a node is duplicated.  */
-  virtual void duplicate (cgraph_node *node,
-			  cgraph_node *node2,
-			  ipa_node_params *data,
-			  ipa_node_params *data2);
+  void duplicate (cgraph_node *node,
+		  cgraph_node *node2,
+		  ipa_node_params *data,
+		  ipa_node_params *data2) final override;
 };
 
 /* Summary to manange ipa_edge_args structures.  */
@@ -977,12 +1024,12 @@ class GTY((user)) ipa_edge_args_sum_t : public call_summary <ipa_edge_args *>
   }
 
   /* Hook that is called by summary when an edge is removed.  */
-  virtual void remove (cgraph_edge *cs, ipa_edge_args *args);
+  void remove (cgraph_edge *cs, ipa_edge_args *args) final override;
   /* Hook that is called by summary when an edge is duplicated.  */
-  virtual void duplicate (cgraph_edge *src,
-			  cgraph_edge *dst,
-			  ipa_edge_args *old_args,
-			  ipa_edge_args *new_args);
+  void duplicate (cgraph_edge *src,
+		  cgraph_edge *dst,
+		  ipa_edge_args *old_args,
+		  ipa_edge_args *new_args) final override;
 };
 
 /* Function summary where the parameter infos are actually stored. */
@@ -1008,10 +1055,10 @@ public:
     return summary;
   }
   /* Hook that is called by summary when a node is duplicated.  */
-  virtual void duplicate (cgraph_node *node,
-			  cgraph_node *node2,
-			  ipcp_transformation *data,
-			  ipcp_transformation *data2);
+  void duplicate (cgraph_node *node,
+		  cgraph_node *node2,
+		  ipcp_transformation *data,
+		  ipcp_transformation *data2) final override;
 };
 
 /* Function summary where the IPA CP transformations are actually stored.  */
@@ -1092,7 +1139,7 @@ ipa_bits *ipa_get_ipa_bits_for_value (const widest_int &value,
 void ipa_analyze_node (struct cgraph_node *);
 
 /* Aggregate jump function related functions.  */
-tree ipa_find_agg_cst_for_param (struct ipa_agg_value_set *agg, tree scalar,
+tree ipa_find_agg_cst_for_param (const ipa_agg_value_set *agg, tree scalar,
 				 HOST_WIDE_INT offset, bool by_ref,
 				 bool *from_global_constant = NULL);
 bool ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
@@ -1150,11 +1197,11 @@ bool ipcp_get_parm_bits (tree, tree *, widest_int *);
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
 
-/* From tree-sra.c:  */
+/* From tree-sra.cc:  */
 tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 			   gimple_stmt_iterator *, bool);
 
-/* In ipa-cp.c  */
-void ipa_cp_c_finalize (void);
+/* In ipa-cp.cc  */
+void ipa_cp_cc_finalize (void);
 
 #endif /* IPA_PROP_H */

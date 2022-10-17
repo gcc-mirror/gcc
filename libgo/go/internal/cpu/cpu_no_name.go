@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !386
-// +build !amd64
-// +build !amd64p32
+//go:build !386 && !amd64 && !amd64p32
 
 package cpu
 

@@ -1,22 +1,22 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail10534.d(28): Error: 'a' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(28): Error: 'b' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(29): Error: 'a' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(29): Error: 'b' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(30): Error: 'a' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(30): Error: 'b' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(31): Error: 'a' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(31): Error: 'b' is not of arithmetic type, it is a int delegate()
-fail_compilation/fail10534.d(36): Error: 'a' is not of arithmetic type, it is a int function()
-fail_compilation/fail10534.d(36): Error: 'b' is not of arithmetic type, it is a int function()
-fail_compilation/fail10534.d(37): Error: 'a' is not of arithmetic type, it is a int function()
-fail_compilation/fail10534.d(37): Error: 'b' is not of arithmetic type, it is a int function()
-fail_compilation/fail10534.d(38): Error: 'a' is not of arithmetic type, it is a int function()
-fail_compilation/fail10534.d(38): Error: 'b' is not of arithmetic type, it is a int function()
-fail_compilation/fail10534.d(39): Error: 'a' is not of arithmetic type, it is a int function()
-fail_compilation/fail10534.d(39): Error: 'b' is not of arithmetic type, it is a int function()
+fail_compilation/fail10534.d(28): Error: `a` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(28): Error: `b` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(29): Error: `a` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(29): Error: `b` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(30): Error: `a` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(30): Error: `b` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(31): Error: `a` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(31): Error: `b` is not of arithmetic type, it is a `int delegate()`
+fail_compilation/fail10534.d(36): Error: `a` is not of arithmetic type, it is a `int function()`
+fail_compilation/fail10534.d(36): Error: `b` is not of arithmetic type, it is a `int function()`
+fail_compilation/fail10534.d(37): Error: `a` is not of arithmetic type, it is a `int function()`
+fail_compilation/fail10534.d(37): Error: `b` is not of arithmetic type, it is a `int function()`
+fail_compilation/fail10534.d(38): Error: `a` is not of arithmetic type, it is a `int function()`
+fail_compilation/fail10534.d(38): Error: `b` is not of arithmetic type, it is a `int function()`
+fail_compilation/fail10534.d(39): Error: `a` is not of arithmetic type, it is a `int function()`
+fail_compilation/fail10534.d(39): Error: `b` is not of arithmetic type, it is a `int function()`
 ---
 */
 

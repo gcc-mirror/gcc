@@ -1,4 +1,4 @@
-// 1537
+// https://issues.dlang.org/show_bug.cgi?id=1537
 
 void foo(char[] s)
 {
@@ -56,10 +56,10 @@ int bug5245d(U)()
 }
 
 
-static assert(!is(typeof(Compileable!(bug5245a!(int)()).OK)));
-static assert(!is(typeof(Compileable!(bug5245b!(int)()).OK)));
-static assert(!is(typeof(Compileable!(bug5245c!(int)()).OK)));
-static assert(!is(typeof(Compileable!(bug5245d!(int)()).OK)));
+static assert(is(typeof(Compileable!(bug5245a!(int)()).OK)));
+static assert(is(typeof(Compileable!(bug5245b!(int)()).OK)));
+static assert(is(typeof(Compileable!(bug5245c!(int)()).OK)));
+static assert(is(typeof(Compileable!(bug5245d!(int)()).OK)));
 
 /**************************************/
 

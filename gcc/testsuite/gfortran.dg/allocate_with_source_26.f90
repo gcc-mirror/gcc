@@ -34,23 +34,23 @@ program p
  if (lbound(p1, 1) /= 3 .or. ubound(p1, 1) /= 4 &
      .or. lbound(p2, 1) /= 3 .or. ubound(p2, 1) /= 4 &
      .or. lbound(p3, 1) /= 1 .or. ubound(p3, 1) /= 2 &
-     .or. lbound(p4, 1) /= 7 .or. ubound(p4, 1) /= 8 &
+     .or. lbound(p4, 1) /= 1 .or. ubound(p4, 1) /= 2 &
      .or. p1(3)%i /= 43 .or. p1(4)%i /= 56 &
      .or. p2(3)%i /= 43 .or. p2(4)%i /= 56 &
      .or. p3(1)%i /= 43 .or. p3(2)%i /= 56 &
-     .or. p4(7)%i /= 11 .or. p4(8)%i /= 12) then
+     .or. p4(1)%i /= 11 .or. p4(2)%i /= 12) then
    call abort()
  endif
 
  !write(*,*) lbound(a,1), ubound(a,1) ! prints 1 3
  !write(*,*) lbound(b,1), ubound(b,1) ! prints 1 3
- !write(*,*) lbound(c,1), ubound(c,1) ! prints 3 5
+ !write(*,*) lbound(c,1), ubound(c,1) ! prints 1 3
  !write(*,*) lbound(d,1), ubound(d,1) ! prints 1 5
  !write(*,*) lbound(e,1), ubound(e,1) ! prints 1 6
 
  if (lbound(a,1) /= 1 .or. ubound(a,1) /= 3 &
      .or. lbound(b,1) /= 1 .or. ubound(b,1) /= 3 &
-     .or. lbound(c,1) /= 3 .or. ubound(c,1) /= 5 &
+     .or. lbound(c,1) /= 1 .or. ubound(c,1) /= 3 & 
      .or. lbound(d,1) /= 1 .or. ubound(d,1) /= 5 &
      .or. lbound(e,1) /= 1 .or. ubound(e,1) /= 6) then
    call abort()

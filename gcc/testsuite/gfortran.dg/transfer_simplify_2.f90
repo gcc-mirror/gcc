@@ -145,7 +145,7 @@ contains
       real(4) :: x(2)
     end type mytype
 
-    type (mytype), parameter :: dt1(2) = transfer (c1, mytype ((/1.0,2.0,3.0,4.0/)), 2)
+    type (mytype), parameter :: dt1(2) = transfer (c1, mytype ((/1.0,2.0/)), 2)
     type (mytype)            :: dt2(2)
 
     dt2 = transfer (c2, dt2);

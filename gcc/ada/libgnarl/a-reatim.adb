@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---                     Copyright (C) 1995-2021, AdaCore                     --
+--                     Copyright (C) 1995-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
 with System.Tasking;
-with Unchecked_Conversion;
 
 package body Ada.Real_Time with
   SPARK_Mode => Off
@@ -128,7 +128,7 @@ is
       type Duration_Rep is range -(2 ** 63) .. +((2 ** 63 - 1));
 
       function To_Integer is
-        new Unchecked_Conversion (Duration, Duration_Rep);
+        new Ada.Unchecked_Conversion (Duration, Duration_Rep);
    begin
       return Integer
                (To_Integer (Duration (Left)) / To_Integer (Duration (Right)));

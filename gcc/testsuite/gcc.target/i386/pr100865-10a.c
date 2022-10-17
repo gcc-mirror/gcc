@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O3 -march=skylake" } */
+/* { dg-options "-O3 -march=skylake -mtune-ctrl=avx256_store_by_pieces" } */
 
 extern __int128 array[16];
 
@@ -29,5 +29,5 @@ foo (void)
     array[i] = MK_CONST128_BROADCAST (0x1f);
 }
 
-/* { dg-final { scan-assembler-times "vpbroadcastb\[\\t \]+\[^\n\]*, %xmm\[0-9\]+" 1 } } */
-/* { dg-final { scan-assembler-times "vmovdqa\[\\t \]%xmm\[0-9\]+, " 16 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastb\[\\t \]+\[^\n\]*, %ymm\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%ymm\[0-9\]+, " 8 } } */

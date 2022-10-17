@@ -1,5 +1,5 @@
 ;; Machine description for the PCREL_OPT optimization.
-;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2022 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner (meissner@linux.ibm.com)
 
 ;; This file is part of GCC.
@@ -60,7 +60,7 @@
 ;; that both registers may be set in the first insn, and will be used in the
 ;; second insn.
 ;;
-;; Since we use UNSPEC's and link both the the register holding the external
+;; Since we use UNSPEC's and link both the register holding the external
 ;; address and the value being loaded, it should prevent other passes from
 ;; modifying it.
 ;;

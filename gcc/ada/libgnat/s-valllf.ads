@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,10 @@ package System.Val_LLF is
    package Impl is new Val_Real
      (Long_Long_Float,
       System.Powten_LLF.Maxpow,
-      System.Powten_LLF.Powten'Address,
+      System.Powten_LLF.Powfive'Address,
+      System.Powten_LLF.Powfive_100'Address,
+      System.Powten_LLF.Powfive_200'Address,
+      System.Powten_LLF.Powfive_300'Address,
       System.Unsigned_Types.Long_Long_Unsigned);
 
    function Scan_Long_Long_Float

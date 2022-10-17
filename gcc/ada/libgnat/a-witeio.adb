@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ package body Ada.Wide_Text_IO is
 
    use type System.CRTL.size_t;
 
-   WC_Encoding : Character;
+   WC_Encoding : constant Character;
    pragma Import (C, WC_Encoding, "__gl_wc_encoding");
    --  Default wide character encoding
 
@@ -136,15 +136,15 @@ package body Ada.Wide_Text_IO is
       --  is required (RM A.10.3(23)) but it seems reasonable, and besides
       --  ACVC test CE3208A expects this behavior.
 
-      if File_Type (File) = Current_In then
+      if File = Current_In then
          Current_In := null;
-      elsif File_Type (File) = Current_Out then
+      elsif File = Current_Out then
          Current_Out := null;
-      elsif File_Type (File) = Current_Err then
+      elsif File = Current_Err then
          Current_Err := null;
       end if;
 
-      Terminate_Line (File_Type (File));
+      Terminate_Line (File.all'Access);
    end AFCB_Close;
 
    ---------------
@@ -152,11 +152,10 @@ package body Ada.Wide_Text_IO is
    ---------------
 
    procedure AFCB_Free (File : not null access Wide_Text_AFCB) is
-      type FCB_Ptr is access all Wide_Text_AFCB;
-      FT : FCB_Ptr := FCB_Ptr (File);
+      FT : File_Type := File.all'Access;
 
       procedure Free is
-        new Ada.Unchecked_Deallocation (Wide_Text_AFCB, FCB_Ptr);
+        new Ada.Unchecked_Deallocation (Wide_Text_AFCB, File_Type);
 
    begin
       Free (FT);
@@ -275,7 +274,7 @@ package body Ada.Wide_Text_IO is
    -----------------
 
    function End_Of_File (File : File_Type) return Boolean is
-      ch  : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));
@@ -369,7 +368,7 @@ package body Ada.Wide_Text_IO is
    -----------------
 
    function End_Of_Page (File : File_Type) return Boolean is
-      ch  : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));
@@ -445,7 +444,7 @@ package body Ada.Wide_Text_IO is
      (File : File_Type;
       Item : out Wide_Character)
    is
-      C  : Character;
+      C : Character;
 
    begin
       FIO.Check_Read_Status (AP (File));

@@ -1,5 +1,5 @@
 /* Polynomial integer classes.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -324,10 +324,10 @@ struct poly_result<T1, T2, 2>
    routine can take the address of RES rather than the address of
    a temporary.
 
-   The dummy comparison against a null C * is just a way of checking
+   The dummy self-comparison against C * is just a way of checking
    that C gives the right type.  */
 #define POLY_SET_COEFF(C, RES, I, VALUE) \
-  ((void) (&(RES).coeffs[0] == (C *) 0), \
+  ((void) (&(RES).coeffs[0] == (C *) (void *) &(RES).coeffs[0]), \
    wi::int_traits<C>::precision_type == wi::FLEXIBLE_PRECISION \
    ? (void) ((RES).coeffs[I] = VALUE) \
    : (void) ((RES).coeffs[I].~C (), new (&(RES).coeffs[I]) C (VALUE)))
@@ -1177,6 +1177,19 @@ lshift (const poly_int_pod<N, Ca> &a, const Cb &b)
   return r;
 }
 }
+
+/* Poly version of sext_hwi, with the same interface.  */
+
+template<unsigned int N, typename C>
+inline poly_int<N, HOST_WIDE_INT>
+sext_hwi (const poly_int<N, C> &a, unsigned int precision)
+{
+  poly_int_pod<N, HOST_WIDE_INT> r;
+  for (unsigned int i = 0; i < N; i++)
+    r.coeffs[i] = sext_hwi (a.coeffs[i], precision);
+  return r;
+}
+
 
 /* Return true if a0 + a1 * x might equal b0 + b1 * x for some nonnegative
    integer x.  */
@@ -2717,7 +2730,7 @@ gt_pch_nx (poly_int_pod<N, C> *)
 
 template<unsigned int N, typename C>
 void
-gt_pch_nx (poly_int_pod<N, C> *, void (*) (void *, void *), void *)
+gt_pch_nx (poly_int_pod<N, C> *, gt_pointer_operator, void *)
 {
 }
 

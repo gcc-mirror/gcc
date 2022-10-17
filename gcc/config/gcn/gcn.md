@@ -1,4 +1,4 @@
-;; Copyright (C) 2016-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2022 Free Software Foundation, Inc.
 
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free
@@ -82,7 +82,9 @@
   UNSPEC_GATHER
   UNSPEC_SCATTER
   UNSPEC_RCP
-  UNSPEC_FLBIT_INT])
+  UNSPEC_FLBIT_INT
+  UNSPEC_FLOOR UNSPEC_CEIL UNSPEC_SIN UNSPEC_COS UNSPEC_EXP2 UNSPEC_LOG2
+  UNSPEC_LDEXP UNSPEC_FREXP_EXP UNSPEC_FREXP_MANT])
 
 ;; }}}
 ;; {{{ Attributes
@@ -481,14 +483,7 @@
        we emit bytes directly as a workaround.  */
     switch (which_alternative) {
     case 0:
-      if (REG_P (operands[1]) && REGNO (operands[1]) == SCC_REG)
-	return "; s_mov_b32\t%0,%1 is not supported by the assembler.\;"
-	       ".byte\t0xfd\;"
-	       ".byte\t0x0\;"
-	       ".byte\t0x80|%R0\;"
-	       ".byte\t0xbe";
-      else
-	return "s_mov_b32\t%0, %1";
+      return "s_mov_b32\t%0, %1";
     case 1:
       if (REG_P (operands[1]) && REGNO (operands[1]) == SCC_REG)
 	return "; v_mov_b32\t%0, %1\;"
@@ -505,16 +500,8 @@
     case 4:
       return "v_cmp_ne_u32\tvcc, 0, %1";
     case 5:
-      if (REGNO (operands[1]) == SCC_REG)
-	return "; s_mov_b32\t%0, %1 is not supported by the assembler.\;"
-	       ".byte\t0xfd\;"
-	       ".byte\t0x0\;"
-	       ".byte\t0xea\;"
-	       ".byte\t0xbe\;"
-	       "s_mov_b32\tvcc_hi, 0";
-      else
-	return "s_mov_b32\tvcc_lo, %1\;"
-	       "s_mov_b32\tvcc_hi, 0";
+      return "s_mov_b32\tvcc_lo, %1\;"
+	     "s_mov_b32\tvcc_hi, 0";
     case 6:
       return "s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)";
     case 7:
@@ -569,6 +556,7 @@
    (set_attr "length" "4,4,8,12,12,12,12,4,8,8,12,12,8,12,12,8,12,12")])
 
 ; 8/16bit move pattern
+; TODO: implement combined load and zero_extend, but *only* for -msram-ecc=on
 
 (define_insn "*mov<mode>_insn"
   [(set (match_operand:QIHI 0 "nonimmediate_operand"
@@ -738,8 +726,7 @@
       return "s_branch\t%0";
     else
       /* !!! This sequence clobbers EXEC_SAVE_REG and CC_SAVE_REG.  */
-      return "; s_mov_b32\ts22, scc is not supported by the assembler.\;"
-	     ".long\t0xbe9600fd\;"
+      return "s_mov_b32\ts22, scc\;"
 	     "s_getpc_b64\ts[20:21]\;"
 	     "s_add_u32\ts20, s20, %0@rel32@lo+4\;"
 	     "s_addc_u32\ts21, s21, %0@rel32@hi+4\;"
@@ -800,11 +787,7 @@
 	  }
 	else
 	  return "s_cbranch%c1\t.Lskip%=\;"
-		 "; s_mov_b32\ts22, scc is not supported by the assembler.\;"
-		 ".byte\t0xfd\;"
-		 ".byte\t0x0\;"
-		 ".byte\t0x80|22\;"
-		 ".byte\t0xbe\;"
+		 "s_mov_b32\ts22, scc\;"
 		 "s_getpc_b64\ts[20:21]\;"
 		 "s_add_u32\ts20, s20, %0@rel32@lo+4\;"
 		 "s_addc_u32\ts21, s21, %0@rel32@hi+4\;"
@@ -889,8 +872,7 @@
 
     if (SYMBOL_REF_P (operands[1])
 	&& SYMBOL_REF_WEAK (operands[1]))
-	return "; s_mov_b32\ts22, scc is not supported by the assembler.\;"
-	       ".long\t0xbe9600fd\;"
+	return "s_mov_b32\ts22, scc\;"
 	       "s_getpc_b64\t%0\;"
 	       "s_add_u32\t%L0, %L0, %1@gotpcrel32@lo+4\;"
 	       "s_addc_u32\t%H0, %H0, %1@gotpcrel32@hi+4\;"
@@ -898,8 +880,7 @@
 	       "s_cmpk_lg_u32\ts22, 0\;"
 	       "s_waitcnt\tlgkmcnt(0)";
 
-    return "; s_mov_b32\ts22, scc is not supported by the assembler.\;"
-	   ".long\t0xbe9600fd\;"
+    return "s_mov_b32\ts22, scc\;"
 	   "s_getpc_b64\t%0\;"
 	   "s_add_u32\t%L0, %L0, %1@rel32@lo+4\;"
 	   "s_addc_u32\t%H0, %H0, %1@rel32@hi+4\;"
@@ -929,11 +910,11 @@
   {})
 
 (define_insn "gcn_call_value"
-  [(set (match_operand 0 "register_operand" "=Sg,Sg")
-	(call (mem (match_operand 1 "immediate_operand" "Y,B"))
+  [(set (match_operand 0 "register_operand"		"=Sgv,Sgv")
+	(call (mem (match_operand 1 "immediate_operand" "   Y,  B"))
 	      (match_operand 2 "const_int_operand")))
    (clobber (reg:DI LR_REGNUM))
-   (clobber (match_scratch:DI 3 "=&Sg,X"))]
+   (clobber (match_scratch:DI 3				"=&Sg,  X"))]
   ""
   "@
   s_getpc_b64\t%3\;s_add_u32\t%L3, %L3, %1@rel32@lo+4\;s_addc_u32\t%H3, %H3, %1@rel32@hi+4\;s_swappc_b64\ts[18:19], %3
@@ -942,11 +923,11 @@
    (set_attr "length" "24")])
 
 (define_insn "gcn_call_value_indirect"
-  [(set (match_operand 0 "register_operand" "=Sg")
-	(call (mem (match_operand:DI 1 "register_operand" "Sg"))
+  [(set (match_operand 0 "register_operand"		  "=Sgv")
+	(call (mem (match_operand:DI 1 "register_operand" "  Sg"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI LR_REGNUM))
-   (clobber (match_scratch:DI 3 "=X"))]
+   (clobber (match_scratch:DI 3				  "=  X"))]
   ""
   "s_swappc_b64\ts[18:19], %1"
   [(set_attr "type" "sop1")
@@ -1409,7 +1390,7 @@
   ""
 {
   if (can_create_pseudo_p ()
-      && !TARGET_GCN5
+      && !TARGET_GCN5_PLUS
       && !gcn_inline_immediate_operand (operands[2], SImode))
     operands[2] = force_reg (SImode, operands[2]);
 
@@ -1450,7 +1431,7 @@
 		(match_operand:SI 1 "register_operand"         "Sg,Sg,v"))
 	      (match_operand:DI 2 "gcn_32bit_immediate_operand" "A, B,A"))
 	    (const_int 32))))]
-  "TARGET_GCN5 || gcn_inline_immediate_operand (operands[2], SImode)"
+  "TARGET_GCN5_PLUS || gcn_inline_immediate_operand (operands[2], SImode)"
   "@
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
@@ -1468,7 +1449,7 @@
   ""
 {
   if (can_create_pseudo_p ()
-      && !TARGET_GCN5
+      && !TARGET_GCN5_PLUS
       && !gcn_inline_immediate_operand (operands[2], SImode))
     operands[2] = force_reg (SImode, operands[2]);
 
@@ -1505,7 +1486,7 @@
 		   (match_operand:SI 1 "register_operand"       "Sg, Sg, v"))
 		 (match_operand:DI 2 "gcn_32bit_immediate_operand"
 								 "A,  B, A")))]
-  "TARGET_GCN5 || gcn_inline_immediate_operand (operands[2], SImode)"
+  "TARGET_GCN5_PLUS || gcn_inline_immediate_operand (operands[2], SImode)"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -1696,6 +1677,26 @@
 
 ;; }}}
 ;; {{{ ALU: generic 64-bit
+
+(define_insn_and_split "one_cmpldi2"
+  [(set (match_operand:DI 0 "register_operand"        "=Sg,    v")
+	(not:DI (match_operand:DI 1 "gcn_alu_operand" "SgA,vSvDB")))
+   (clobber (match_scratch:BI 2			      "=cs,    X"))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 3) (not:SI (match_dup 4)))
+	      (clobber (match_dup 2))])
+   (parallel [(set (match_dup 5) (not:SI (match_dup 6)))
+	      (clobber (match_dup 2))])]
+  {
+    operands[3] = gcn_operand_part (DImode, operands[0], 0);
+    operands[4] = gcn_operand_part (DImode, operands[1], 0);
+    operands[5] = gcn_operand_part (DImode, operands[0], 1);
+    operands[6] = gcn_operand_part (DImode, operands[1], 1);
+  }
+  [(set_attr "type" "mult")]
+)
 
 (define_code_iterator vec_and_scalar64_com [and ior xor])
 

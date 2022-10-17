@@ -2,8 +2,9 @@
  * Implementation of associative arrays.
  *
  * Copyright: Copyright Digital Mars 2000 - 2015.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Martin Nowak
+ * Source: $(DRUNTIMESRC rt/_aaA.d)
  */
 module rt.aaA;
 
@@ -11,6 +12,7 @@ module rt.aaA;
 extern (C) immutable int _aaVersion = 1;
 
 import core.memory : GC;
+import core.internal.util.math : min, max;
 
 // grow threshold
 private enum GROW_NUM = 4;
@@ -48,13 +50,12 @@ struct AA
 private struct Impl
 {
 private:
-    this(in TypeInfo_AssociativeArray ti, size_t sz = INIT_NUM_BUCKETS)
+    this(scope const TypeInfo_AssociativeArray ti, size_t sz = INIT_NUM_BUCKETS) nothrow
     {
         keysz = cast(uint) ti.key.tsize;
         valsz = cast(uint) ti.value.tsize;
         buckets = allocBuckets(sz);
         firstUsed = cast(uint) buckets.length;
-        entryTI = fakeEntryTI(ti.key, ti.value);
         valoff = cast(uint) talign(keysz, ti.value.talign);
 
         import rt.lifetime : hasPostblit, unqualify;
@@ -63,6 +64,8 @@ private:
             flags |= Flags.keyHasPostblit;
         if ((ti.key.flags | ti.value.flags) & 1)
             flags |= Flags.hasPointers;
+
+        entryTI = fakeEntryTI(this, ti.key, ti.value);
     }
 
     Bucket[] buckets;
@@ -110,7 +113,7 @@ private:
     }
 
     // lookup a key
-    inout(Bucket)* findSlotLookup(size_t hash, in void* pkey, in TypeInfo keyti) inout
+    inout(Bucket)* findSlotLookup(size_t hash, scope const void* pkey, scope const TypeInfo keyti) inout
     {
         for (size_t i = hash & mask, j = 1;; ++j)
         {
@@ -122,7 +125,7 @@ private:
         }
     }
 
-    void grow(in TypeInfo keyti)
+    void grow(scope const TypeInfo keyti) pure nothrow
     {
         // If there are so many deleted entries, that growing would push us
         // below the shrink threshold, we just purge deleted entries instead.
@@ -132,7 +135,7 @@ private:
             resize(GROW_FAC * dim);
     }
 
-    void shrink(in TypeInfo keyti)
+    void shrink(scope const TypeInfo keyti) pure nothrow
     {
         if (dim > INIT_NUM_BUCKETS)
             resize(dim / GROW_FAC);
@@ -200,7 +203,7 @@ Bucket[] allocBuckets(size_t dim) @trusted pure nothrow
 // Entry
 //------------------------------------------------------------------------------
 
-private void* allocEntry(in Impl* aa, in void* pkey)
+private void* allocEntry(scope const Impl* aa, scope const void* pkey)
 {
     import rt.lifetime : _d_newitemU;
     import core.stdc.string : memcpy, memset;
@@ -230,7 +233,7 @@ package void entryDtor(void* p, const TypeInfo_Struct sti)
     extra[1].destroy(p + talign(extra[0].tsize, extra[1].talign));
 }
 
-private bool hasDtor(const TypeInfo ti)
+private bool hasDtor(const TypeInfo ti) pure nothrow
 {
     import rt.lifetime : unqualify;
 
@@ -243,46 +246,193 @@ private bool hasDtor(const TypeInfo ti)
     return false;
 }
 
+private immutable(void)* getRTInfo(const TypeInfo ti) pure nothrow
+{
+    // classes are references
+    const isNoClass = ti && typeid(ti) !is typeid(TypeInfo_Class);
+    return isNoClass ? ti.rtInfo() : rtinfoHasPointers;
+}
+
 // build type info for Entry with additional key and value fields
-TypeInfo_Struct fakeEntryTI(const TypeInfo keyti, const TypeInfo valti)
+TypeInfo_Struct fakeEntryTI(ref Impl aa, const TypeInfo keyti, const TypeInfo valti) nothrow
 {
     import rt.lifetime : unqualify;
 
     auto kti = unqualify(keyti);
     auto vti = unqualify(valti);
-    if (!hasDtor(kti) && !hasDtor(vti))
+
+    // figure out whether RTInfo has to be generated (indicated by rtisize > 0)
+    enum pointersPerWord = 8 * (void*).sizeof * (void*).sizeof;
+    auto rtinfo = rtinfoNoPointers;
+    size_t rtisize = 0;
+    immutable(size_t)* keyinfo = void;
+    immutable(size_t)* valinfo = void;
+    if (aa.flags & Impl.Flags.hasPointers)
+    {
+        // classes are references
+        keyinfo = cast(immutable(size_t)*) getRTInfo(keyti);
+        valinfo = cast(immutable(size_t)*) getRTInfo(valti);
+
+        if (keyinfo is rtinfoHasPointers && valinfo is rtinfoHasPointers)
+            rtinfo = rtinfoHasPointers;
+        else
+            rtisize = 1 + (aa.valoff + aa.valsz + pointersPerWord - 1) / pointersPerWord;
+    }
+    bool entryHasDtor = hasDtor(kti) || hasDtor(vti);
+    if (rtisize == 0 && !entryHasDtor)
         return null;
 
     // save kti and vti after type info for struct
     enum sizeti = __traits(classInstanceSize, TypeInfo_Struct);
-    void* p = GC.malloc(sizeti + 2 * (void*).sizeof);
+    void* p = GC.malloc(sizeti + (2 + rtisize) * (void*).sizeof);
     import core.stdc.string : memcpy;
 
-    memcpy(p, typeid(TypeInfo_Struct).initializer().ptr, sizeti);
+    memcpy(p, __traits(initSymbol, TypeInfo_Struct).ptr, sizeti);
 
     auto ti = cast(TypeInfo_Struct) p;
     auto extra = cast(TypeInfo*)(p + sizeti);
     extra[0] = cast() kti;
     extra[1] = cast() vti;
 
-    static immutable tiName = __MODULE__ ~ ".Entry!(...)";
-    ti.name = tiName;
+    static immutable tiMangledName = "S2rt3aaA__T5EntryZ";
+    ti.mangledName = tiMangledName;
+
+    ti.m_RTInfo = rtisize > 0 ? rtinfoEntry(aa, keyinfo, valinfo, cast(size_t*)(extra + 2), rtisize) : rtinfo;
+    ti.m_flags = ti.m_RTInfo is rtinfoNoPointers ? cast(TypeInfo_Struct.StructFlags)0 : TypeInfo_Struct.StructFlags.hasPointers;
 
     // we don't expect the Entry objects to be used outside of this module, so we have control
     // over the non-usage of the callback methods and other entries and can keep these null
     // xtoHash, xopEquals, xopCmp, xtoString and xpostblit
-    ti.m_RTInfo = rtinfoNoPointers;
-    immutable entrySize = talign(kti.tsize, vti.talign) + vti.tsize;
+    immutable entrySize = aa.valoff + aa.valsz;
     ti.m_init = (cast(ubyte*) null)[0 .. entrySize]; // init length, but not ptr
 
-    // xdtor needs to be built from the dtors of key and value for the GC
-    ti.xdtorti = &entryDtor;
+    if (entryHasDtor)
+    {
+        // xdtor needs to be built from the dtors of key and value for the GC
+        ti.xdtorti = &entryDtor;
+        ti.m_flags |= TypeInfo_Struct.StructFlags.isDynamicType;
+    }
 
-    ti.m_flags = TypeInfo_Struct.StructFlags.isDynamicType;
-    ti.m_flags |= (keyti.flags | valti.flags) & TypeInfo_Struct.StructFlags.hasPointers;
     ti.m_align = cast(uint) max(kti.talign, vti.talign);
 
     return ti;
+}
+
+// build appropriate RTInfo at runtime
+immutable(void)* rtinfoEntry(ref Impl aa, immutable(size_t)* keyinfo,
+    immutable(size_t)* valinfo, size_t* rtinfoData, size_t rtinfoSize) pure nothrow
+{
+    enum bitsPerWord = 8 * size_t.sizeof;
+
+    rtinfoData[0] = aa.valoff + aa.valsz;
+    rtinfoData[1..rtinfoSize] = 0;
+
+    void copyKeyInfo(string src)()
+    {
+        size_t pos = 1;
+        size_t keybits = aa.keysz / (void*).sizeof;
+        while (keybits >= bitsPerWord)
+        {
+            rtinfoData[pos] = mixin(src);
+            keybits -= bitsPerWord;
+            pos++;
+        }
+        if (keybits > 0)
+            rtinfoData[pos] = mixin(src) & ((cast(size_t) 1 << keybits) - 1);
+    }
+
+    if (keyinfo is rtinfoHasPointers)
+        copyKeyInfo!"~cast(size_t) 0"();
+    else if (keyinfo !is rtinfoNoPointers)
+        copyKeyInfo!"keyinfo[pos]"();
+
+    void copyValInfo(string src)()
+    {
+        size_t bitpos = aa.valoff / (void*).sizeof;
+        size_t pos = 1;
+        size_t dstpos = 1 + bitpos / bitsPerWord;
+        size_t begoff = bitpos % bitsPerWord;
+        size_t valbits = aa.valsz / (void*).sizeof;
+        size_t endoff = (bitpos + valbits) % bitsPerWord;
+        for (;;)
+        {
+            const bits = bitsPerWord - begoff;
+            size_t s = mixin(src);
+            rtinfoData[dstpos] |= s << begoff;
+            if (begoff > 0 && valbits > bits)
+                rtinfoData[dstpos+1] |= s >> bits;
+            if (valbits < bitsPerWord)
+                break;
+            valbits -= bitsPerWord;
+            dstpos++;
+            pos++;
+        }
+        if (endoff > 0)
+            rtinfoData[dstpos] &= ((cast(size_t) 1 << endoff) - 1);
+    }
+
+    if (valinfo is rtinfoHasPointers)
+        copyValInfo!"~cast(size_t) 0"();
+    else if (valinfo !is rtinfoNoPointers)
+        copyValInfo!"valinfo[pos]"();
+
+    return cast(immutable(void)*) rtinfoData;
+}
+
+unittest
+{
+    void test(K, V)()
+    {
+        static struct Entry
+        {
+            K key;
+            V val;
+        }
+        auto keyti = typeid(K);
+        auto valti = typeid(V);
+        auto valrti = getRTInfo(valti);
+        auto keyrti = getRTInfo(keyti);
+
+        auto impl = new Impl(typeid(V[K]));
+        if (valrti is rtinfoNoPointers && keyrti is rtinfoNoPointers)
+        {
+            assert(!(impl.flags & Impl.Flags.hasPointers));
+            assert(impl.entryTI is null);
+        }
+        else if (valrti is rtinfoHasPointers && keyrti is rtinfoHasPointers)
+        {
+            assert(impl.flags & Impl.Flags.hasPointers);
+            assert(impl.entryTI is null);
+        }
+        else
+        {
+            auto rtInfo  = cast(size_t*) impl.entryTI.rtInfo();
+            auto refInfo = cast(size_t*) typeid(Entry).rtInfo();
+            assert(rtInfo[0] == refInfo[0]); // size
+            enum bytesPerWord = 8 * size_t.sizeof * (void*).sizeof;
+            size_t words = (rtInfo[0] + bytesPerWord - 1) / bytesPerWord;
+            foreach (i; 0 .. words)
+                assert(rtInfo[1 + i] == refInfo[i + 1]);
+        }
+    }
+    test!(long, int)();
+    test!(string, string);
+    test!(ubyte[16], Object);
+
+    static struct Small
+    {
+        ubyte[16] guid;
+        string name;
+    }
+    test!(string, Small);
+
+    static struct Large
+    {
+        ubyte[1024] data;
+        string[412] names;
+        ubyte[1024] moredata;
+    }
+    test!(Large, Large);
 }
 
 //==============================================================================
@@ -307,14 +457,14 @@ private size_t mix(size_t h) @safe pure nothrow @nogc
     return h;
 }
 
-private size_t calcHash(in void* pkey, in TypeInfo keyti)
+private size_t calcHash(scope const void* pkey, scope const TypeInfo keyti) nothrow
 {
     immutable hash = keyti.getHash(pkey);
     // highest bit is set to distinguish empty/deleted from filled buckets
     return mix(hash) | HASH_FILLED_MARK;
 }
 
-private size_t nextpow2(in size_t n) pure nothrow @nogc
+private size_t nextpow2(const size_t n) pure nothrow @nogc
 {
     import core.bitop : bsr;
 
@@ -332,22 +482,24 @@ pure nothrow @nogc unittest
         assert(nextpow2(n) == pow2);
 }
 
-private T min(T)(T a, T b) pure nothrow @nogc
-{
-    return a < b ? a : b;
-}
-
-private T max(T)(T a, T b) pure nothrow @nogc
-{
-    return b < a ? a : b;
-}
-
 //==============================================================================
 // API Implementation
 //------------------------------------------------------------------------------
 
+/** Allocate associative array data.
+ * Called for `new SomeAA` expression.
+ * Params:
+ *      ti = TypeInfo for the associative array
+ * Returns:
+ *      A new associative array.
+ */
+extern (C) Impl* _aaNew(const TypeInfo_AssociativeArray ti)
+{
+    return new Impl(ti);
+}
+
 /// Determine number of entries in associative array.
-extern (C) size_t _aaLen(in AA aa) pure nothrow @nogc
+extern (C) size_t _aaLen(scope const AA aa) pure nothrow @nogc
 {
     return aa ? aa.length : 0;
 }
@@ -356,7 +508,7 @@ extern (C) size_t _aaLen(in AA aa) pure nothrow @nogc
  * Lookup *pkey in aa.
  * Called only from implementation of (aa[key]) expressions when value is mutable.
  * Params:
- *      aa = associative array opaque pointer
+ *      paa = associative array opaque pointer
  *      ti = TypeInfo for the associative array
  *      valsz = ignored
  *      pkey = pointer to the key value
@@ -365,18 +517,18 @@ extern (C) size_t _aaLen(in AA aa) pure nothrow @nogc
  *      If key was not in the aa, a mutable pointer to newly inserted value which
  *      is set to all zeros
  */
-extern (C) void* _aaGetY(AA* aa, const TypeInfo_AssociativeArray ti,
-    in size_t valsz, in void* pkey)
+extern (C) void* _aaGetY(scope AA* paa, const TypeInfo_AssociativeArray ti,
+    const size_t valsz, scope const void* pkey)
 {
     bool found;
-    return _aaGetX(aa, ti, valsz, pkey, found);
+    return _aaGetX(paa, ti, valsz, pkey, found);
 }
 
 /******************************
  * Lookup *pkey in aa.
  * Called only from implementation of require
  * Params:
- *      aa = associative array opaque pointer
+ *      paa = associative array opaque pointer
  *      ti = TypeInfo for the associative array
  *      valsz = ignored
  *      pkey = pointer to the key value
@@ -386,12 +538,16 @@ extern (C) void* _aaGetY(AA* aa, const TypeInfo_AssociativeArray ti,
  *      If key was not in the aa, a mutable pointer to newly inserted value which
  *      is set to all zeros
  */
-extern (C) void* _aaGetX(AA* aa, const TypeInfo_AssociativeArray ti,
-    in size_t valsz, in void* pkey, out bool found)
+extern (C) void* _aaGetX(scope AA* paa, const TypeInfo_AssociativeArray ti,
+    const size_t valsz, scope const void* pkey, out bool found)
 {
     // lazily alloc implementation
-    if (aa.impl is null)
-        aa.impl = new Impl(ti);
+    AA aa = *paa;
+    if (aa is null)
+    {
+        aa = new Impl(ti);
+        *paa = aa;
+    }
 
     // get hash and bucket for key
     immutable hash = calcHash(pkey, ti.key);
@@ -417,7 +573,7 @@ extern (C) void* _aaGetX(AA* aa, const TypeInfo_AssociativeArray ti,
     // update search cache and allocate entry
     aa.firstUsed = min(aa.firstUsed, cast(uint)(p - aa.buckets.ptr));
     p.hash = hash;
-    p.entry = allocEntry(aa.impl, pkey);
+    p.entry = allocEntry(aa, pkey);
     // postblit for key
     if (aa.flags & Impl.Flags.keyHasPostblit)
     {
@@ -440,8 +596,8 @@ extern (C) void* _aaGetX(AA* aa, const TypeInfo_AssociativeArray ti,
  * Returns:
  *      pointer to value if present, null otherwise
  */
-extern (C) inout(void)* _aaGetRvalueX(inout AA aa, in TypeInfo keyti, in size_t valsz,
-    in void* pkey)
+extern (C) inout(void)* _aaGetRvalueX(inout AA aa, scope const TypeInfo keyti, const size_t valsz,
+    scope const void* pkey)
 {
     return _aaInX(aa, keyti, pkey);
 }
@@ -456,7 +612,7 @@ extern (C) inout(void)* _aaGetRvalueX(inout AA aa, in TypeInfo keyti, in size_t 
  * Returns:
  *      pointer to value if present, null otherwise
  */
-extern (C) inout(void)* _aaInX(inout AA aa, in TypeInfo keyti, in void* pkey)
+extern (C) inout(void)* _aaInX(inout AA aa, scope const TypeInfo keyti, scope const void* pkey)
 {
     if (aa.empty)
         return null;
@@ -467,8 +623,8 @@ extern (C) inout(void)* _aaInX(inout AA aa, in TypeInfo keyti, in void* pkey)
     return null;
 }
 
-/// Delete entry in AA, return true if it was present
-extern (C) bool _aaDelX(AA aa, in TypeInfo keyti, in void* pkey)
+/// Delete entry scope const AA, return true if it was present
+extern (C) bool _aaDelX(AA aa, scope const TypeInfo keyti, scope const void* pkey)
 {
     if (aa.empty)
         return false;
@@ -481,7 +637,9 @@ extern (C) bool _aaDelX(AA aa, in TypeInfo keyti, in void* pkey)
         p.entry = null;
 
         ++aa.deleted;
-        if (aa.length * SHRINK_DEN < aa.dim * SHRINK_NUM)
+        // `shrink` reallocates, and allocating from a finalizer leads to
+        // InvalidMemoryError: https://issues.dlang.org/show_bug.cgi?id=21442
+        if (aa.length * SHRINK_DEN < aa.dim * SHRINK_NUM && !GC.inFinalizer())
             aa.shrink(keyti);
 
         return true;
@@ -494,20 +652,21 @@ extern (C) void _aaClear(AA aa) pure nothrow
 {
     if (!aa.empty)
     {
-        aa.impl.clear();
+        aa.clear();
     }
 }
 
 /// Rehash AA
-extern (C) void* _aaRehash(AA* paa, in TypeInfo keyti) pure nothrow
+extern (C) void* _aaRehash(AA* paa, scope const TypeInfo keyti) pure nothrow
 {
-    if (!paa.empty)
-        paa.resize(nextpow2(INIT_DEN * paa.length / INIT_NUM));
-    return *paa;
+    AA aa = *paa;
+    if (!aa.empty)
+        aa.resize(nextpow2(INIT_DEN * aa.length / INIT_NUM));
+    return aa;
 }
 
 /// Return a GC allocated array of all values
-extern (C) inout(void[]) _aaValues(inout AA aa, in size_t keysz, in size_t valsz,
+extern (C) inout(void[]) _aaValues(inout AA aa, const size_t keysz, const size_t valsz,
     const TypeInfo tiValueArray) pure nothrow
 {
     if (aa.empty)
@@ -531,7 +690,7 @@ extern (C) inout(void[]) _aaValues(inout AA aa, in size_t keysz, in size_t valsz
 }
 
 /// Return a GC allocated array of all keys
-extern (C) inout(void[]) _aaKeys(inout AA aa, in size_t keysz, const TypeInfo tiKeyArray) pure nothrow
+extern (C) inout(void[]) _aaKeys(inout AA aa, const size_t keysz, const TypeInfo tiKeyArray) pure nothrow
 {
     if (aa.empty)
         return null;
@@ -557,7 +716,7 @@ extern (D) alias dg_t = int delegate(void*);
 extern (D) alias dg2_t = int delegate(void*, void*);
 
 /// foreach opApply over all values
-extern (C) int _aaApply(AA aa, in size_t keysz, dg_t dg)
+extern (C) int _aaApply(AA aa, const size_t keysz, dg_t dg)
 {
     if (aa.empty)
         return 0;
@@ -574,7 +733,7 @@ extern (C) int _aaApply(AA aa, in size_t keysz, dg_t dg)
 }
 
 /// foreach opApply over all key/value pairs
-extern (C) int _aaApply2(AA aa, in size_t keysz, dg2_t dg)
+extern (C) int _aaApply2(AA aa, const size_t keysz, dg2_t dg)
 {
     if (aa.empty)
         return 0;
@@ -590,7 +749,15 @@ extern (C) int _aaApply2(AA aa, in size_t keysz, dg2_t dg)
     return 0;
 }
 
-/// Construct an associative array of type ti from keys and value
+/** Construct an associative array of type ti from corresponding keys and values.
+ * Called for an AA literal `[k1:v1, k2:v2]`.
+ * Params:
+ *      ti = TypeInfo for the associative array
+ *      keys = array of keys
+ *      vals = array of values
+ * Returns:
+ *      A new associative array opaque pointer, or null if `keys` is empty.
+ */
 extern (C) Impl* _d_assocarrayliteralTX(const TypeInfo_AssociativeArray ti, void[] keys,
     void[] vals)
 {
@@ -639,9 +806,9 @@ extern (C) Impl* _d_assocarrayliteralTX(const TypeInfo_AssociativeArray ti, void
 }
 
 /// compares 2 AAs for equality
-extern (C) int _aaEqual(in TypeInfo tiRaw, in AA aa1, in AA aa2)
+extern (C) int _aaEqual(scope const TypeInfo tiRaw, scope const AA aa1, scope const AA aa2)
 {
-    if (aa1.impl is aa2.impl)
+    if (aa1 is aa2)
         return true;
 
     immutable len = _aaLen(aa1);
@@ -669,8 +836,10 @@ extern (C) int _aaEqual(in TypeInfo tiRaw, in AA aa1, in AA aa2)
 }
 
 /// compute a hash
-extern (C) hash_t _aaGetHash(in AA* aa, in TypeInfo tiRaw) nothrow
+extern (C) hash_t _aaGetHash(scope const AA* paa, scope const TypeInfo tiRaw) nothrow
 {
+    const AA aa = *paa;
+
     if (aa.empty)
         return 0;
 
@@ -685,11 +854,9 @@ extern (C) hash_t _aaGetHash(in AA* aa, in TypeInfo tiRaw) nothrow
     size_t h;
     foreach (b; aa.buckets)
     {
-        if (!b.filled)
-            continue;
-        size_t[2] h2 = [keyHash(b.entry), valHash(b.entry + off)];
         // use addition here, so that hash is independent of element order
-        h += hashOf(h2);
+        if (b.filled)
+            h += hashOf(valHash(b.entry + off), keyHash(b.entry));
     }
 
     return h;
@@ -707,7 +874,7 @@ struct Range
 
 extern (C) pure nothrow @nogc @safe
 {
-    Range _aaRange(AA aa)
+    Range _aaRange(return scope AA aa)
     {
         if (!aa)
             return Range();
@@ -715,7 +882,7 @@ extern (C) pure nothrow @nogc @safe
         foreach (i; aa.firstUsed .. aa.dim)
         {
             if (aa.buckets[i].filled)
-                return Range(aa.impl, i);
+                return Range(aa, i);
         }
         return Range(aa, aa.dim);
     }
@@ -756,7 +923,7 @@ extern (C) pure nothrow @nogc @safe
     }
 }
 
-// Most tests are now in in test_aa.d
+// Most tests are now in test_aa.d
 
 // test postblit for AA literals
 unittest

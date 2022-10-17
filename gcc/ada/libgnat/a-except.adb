@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -629,6 +629,96 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_CE_Invalid_Data_Ext);
    pragma No_Return (Rcheck_CE_Range_Check_Ext);
 
+   --  Make all of these procedures callable from strub contexts.
+   --  These attributes are not visible to callers; they are made
+   --  visible in trans.c:build_raise_check.
+
+   pragma Machine_Attribute (Rcheck_CE_Access_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Null_Access_Parameter,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Discriminant_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Divide_By_Zero,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Explicit_Raise,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Index_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Invalid_Data,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Length_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Null_Exception_Id,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Null_Not_Allowed,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Overflow_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Partition_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Range_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Tag_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Access_Before_Elaboration,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Accessibility_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Address_Of_Intrinsic,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Aliased_Parameters,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_All_Guards_Closed,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Bad_Predicated_Generic_Type,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Build_In_Place_Mismatch,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Current_Task_In_Entry_Body,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Duplicated_Entry_Address,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Explicit_Raise,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Implicit_Return,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Misaligned_Address_Value,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Missing_Return,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Non_Transportable_Actual,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Overlaid_Controlled_Object,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Potentially_Blocking_Operation,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Stream_Operation_Not_Allowed,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Stubbed_Subprogram_Called,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Unchecked_Union_Restriction,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Finalize_Raised_Exception,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_SE_Empty_Storage_Pool,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_SE_Explicit_Raise,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_SE_Infinite_Recursion,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_SE_Object_Too_Large,
+                             "strub", "callable");
+
+   pragma Machine_Attribute (Rcheck_CE_Access_Check_Ext,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Index_Check_Ext,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Invalid_Data_Ext,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_CE_Range_Check_Ext,
+                             "strub", "callable");
+
    ---------------------------------------------
    -- Reason Strings for Run-Time Check Calls --
    ---------------------------------------------
@@ -1020,7 +1110,7 @@ package body Ada.Exceptions is
 
       else
          declare
-            New_Msg  : constant String := Prefix & Exception_Name (X);
+            New_Msg : constant String := Prefix & Exception_Name (X);
 
          begin
             --  No message present, just provide our own
@@ -1670,7 +1760,7 @@ package body Ada.Exceptions is
    -- Wide_Exception_Name --
    -------------------------
 
-   WC_Encoding : Character;
+   WC_Encoding : constant Character;
    pragma Import (C, WC_Encoding, "__gl_wc_encoding");
    --  Encoding method for source, as exported by binder
 

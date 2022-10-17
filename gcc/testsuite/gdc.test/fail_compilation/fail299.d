@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail299.d(14): Error: more initializers than fields (0) of Foo
+fail_compilation/fail299.d(14): Error: more initializers than fields (0) of `Foo`
 ---
 */
 

@@ -38,6 +38,7 @@ import (
 //go:linkname goPanicSlice3BU
 //go:linkname goPanicSlice3C
 //go:linkname goPanicSlice3CU
+//go:linkname goPanicSliceConvert
 //go:linkname panicshift
 //go:linkname panicdivide
 //go:linkname panicmem
@@ -175,6 +176,12 @@ func goPanicSlice3CU(x uint, y int) {
 	panic(boundsError{x: int64(x), signed: false, y: y, code: boundsSlice3C})
 }
 
+// failures in the conversion (*[x]T)s, 0 <= x <= y, x == cap(s)
+func goPanicSliceConvert(x int, y int) {
+	panicCheck1(getcallerpc(), "slice length too short to convert to pointer to array")
+	panic(boundsError{x: int64(x), signed: true, y: y, code: boundsConvert})
+}
+
 var shiftError = error(errorString("negative shift amount"))
 
 func panicshift() {
@@ -274,29 +281,29 @@ func deferprocStack(d *_defer, frame *bool, pfn uintptr, arg unsafe.Pointer) {
 // Each defer must be released with freedefer.
 func newdefer() *_defer {
 	var d *_defer
-	gp := getg()
-	pp := gp.m.p.ptr()
+	mp := acquirem()
+	pp := mp.p.ptr()
 	if len(pp.deferpool) == 0 && sched.deferpool != nil {
-		systemstack(func() {
-			lock(&sched.deferlock)
-			for len(pp.deferpool) < cap(pp.deferpool)/2 && sched.deferpool != nil {
-				d := sched.deferpool
-				sched.deferpool = d.link
-				d.link = nil
-				pp.deferpool = append(pp.deferpool, d)
-			}
-			unlock(&sched.deferlock)
-		})
+		lock(&sched.deferlock)
+		for len(pp.deferpool) < cap(pp.deferpool)/2 && sched.deferpool != nil {
+			d := sched.deferpool
+			sched.deferpool = d.link
+			d.link = nil
+			pp.deferpool = append(pp.deferpool, d)
+		}
+		unlock(&sched.deferlock)
 	}
 	if n := len(pp.deferpool); n > 0 {
 		d = pp.deferpool[n-1]
 		pp.deferpool[n-1] = nil
 		pp.deferpool = pp.deferpool[:n-1]
 	}
+	releasem(mp)
+	mp, pp = nil, nil
+
 	if d == nil {
-		systemstack(func() {
-			d = new(_defer)
-		})
+		// Allocate new defer.
+		d = new(_defer)
 	}
 	d.heap = true
 	return d
@@ -305,11 +312,16 @@ func newdefer() *_defer {
 // Free the given defer.
 // The defer cannot be used after this call.
 //
-// This must not grow the stack because there may be a frame without a
-// stack map when this is called.
+// This is nosplit because the incoming defer is in a perilous state.
+// It's not on any defer list, so stack copying won't adjust stack
+// pointers in it (namely, d.link). Hence, if we were to copy the
+// stack, d could then contain a stale pointer.
 //
 //go:nosplit
 func freedefer(d *_defer) {
+	d.link = nil
+	// After this point we can copy the stack.
+
 	if d._panic != nil {
 		freedeferpanic()
 	}
@@ -319,7 +331,8 @@ func freedefer(d *_defer) {
 	if !d.heap {
 		return
 	}
-	pp := getg().m.p.ptr()
+	mp := acquirem()
+	pp := mp.p.ptr()
 	if len(pp.deferpool) == cap(pp.deferpool) {
 		// Transfer half of local cache to the central cache.
 		//
@@ -346,19 +359,12 @@ func freedefer(d *_defer) {
 		})
 	}
 
-	// These lines used to be simply `*d = _defer{}` but that
-	// started causing a nosplit stack overflow via typedmemmove.
-	d.link = nil
-	d.frame = nil
-	d.panicStack = nil
-	d.arg = nil
-	d.retaddr = 0
-	d.makefunccanrecover = false
-	// d._panic and d.pfn must be nil already.
-	// If not, we would have called freedeferpanic or freedeferfn above,
-	// both of which throw.
+	*d = _defer{}
 
 	pp.deferpool = append(pp.deferpool, d)
+
+	releasem(mp)
+	mp, pp = nil, nil
 }
 
 // Separate function so that it can split stack.
@@ -629,7 +635,7 @@ func printpanics(p *_panic) {
 }
 
 // The implementation of the predeclared function panic.
-func gopanic(e interface{}) {
+func gopanic(e any) {
 	gp := getg()
 	if gp.m.curg != gp {
 		print("panic: ")
@@ -1230,15 +1236,15 @@ func canpanic(gp *g) bool {
 	// Note also that g->m can change at preemption, so m can go stale
 	// if this function ever makes a function call.
 	_g_ := getg()
-	_m_ := _g_.m
+	mp := _g_.m
 
 	// Is it okay for gp to panic instead of crashing the program?
 	// Yes, as long as it is running Go code, not runtime code,
 	// and not stuck in a system call.
-	if gp == nil || gp != _m_.curg {
+	if gp == nil || gp != mp.curg {
 		return false
 	}
-	if _m_.locks != 0 || _m_.mallocing != 0 || _m_.throwing != 0 || _m_.preemptoff != "" || _m_.dying != 0 {
+	if mp.locks != 0 || mp.mallocing != 0 || mp.throwing != 0 || mp.preemptoff != "" || mp.dying != 0 {
 		return false
 	}
 	status := readgstatus(gp)

@@ -1,6 +1,6 @@
 // PERMUTE_ARGS: -w
 // REQUIRED_ARGS: -o- -D -Dd${RESULTS_DIR}/compilable
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 13270
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 module ddoc13270;
 

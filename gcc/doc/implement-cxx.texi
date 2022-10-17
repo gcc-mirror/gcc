@@ -1,4 +1,4 @@
-@c Copyright (C) 2009-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2009-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -16,7 +16,7 @@ one version of the standard.
 Some choices depend on the externally determined ABI for the platform
 (including standard character encodings) which GCC follows; these are
 listed as ``determined by ABI'' below.  @xref{Compatibility, , Binary
-Compatibility}, and @uref{http://gcc.gnu.org/readings.html}.  Some
+Compatibility}, and @uref{https://gcc.gnu.org/readings.html}.  Some
 choices are documented in the preprocessor manual.
 @xref{Implementation-defined behavior, , Implementation-defined
 behavior, cpp, The C Preprocessor}.  Some choices are documented in

@@ -26,8 +26,8 @@ void test_strnlen_array_cst (void)
   T (strnlen (ns3, 1));
   T (strnlen (ns3, 2));
   T (strnlen (ns3, 3));
-  T (strnlen (ns3, 4));             /* { dg-warning "specified bound 4 exceeds source size 3" } */
-  T (strnlen (ns3, DIFF_MAX));      /* { dg-warning "specified bound \[0-9\]+ exceeds source size" } */
+  T (strnlen (ns3, 4));             /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound 4|specified bound 4 exceeds source size 3" } */
+  T (strnlen (ns3, DIFF_MAX));      /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound|specified bound \[0-9\]+ exceeds source size" } */
   T (strnlen (ns3, SIZE_MAX));      /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 
   NONSTRING char ns5[5];
@@ -37,8 +37,8 @@ void test_strnlen_array_cst (void)
   T (strnlen (ns5, 1));
   T (strnlen (ns5, 2));
   T (strnlen (ns5, 3));
-  T (strnlen (ns5, 6));             /* { dg-warning "specified bound 6 exceeds source size 5" } */
-  T (strnlen (ns5, DIFF_MAX));      /* { dg-warning "specified bound \[0-9\]+ exceeds source size 5" } */
+  T (strnlen (ns5, 6));             /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound 6|specified bound 6 exceeds source size 5" } */
+  T (strnlen (ns5, DIFF_MAX));      /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound|specified bound \[0-9\]+ exceeds source size 5" } */
   T (strnlen (ns5, SIZE_MAX));      /* { dg-warning "specified bound \[0-9\]+ exceeds maximum object size \[0-9\]+" } */
 }
 
@@ -52,8 +52,8 @@ void test_strnlen_array_range (void)
   T (strnlen (ns3, UR (0, 9)));
   T (strnlen (ns3, UR (3, 4)));
   T (strnlen (ns3, UR (3, DIFF_MAX)));
-  T (strnlen (ns3, UR (4, 5)));     /* { dg-warning "specified bound \\\[4, 5] exceeds source size 3" } */
-  T (strnlen (ns3, UR (DIFF_MAX, SIZE_MAX)));  /* { dg-warning "specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds source size 3 " } */
+  T (strnlen (ns3, UR (4, 5)));     /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound \\\[4, 5]|specified bound \\\[4, 5] exceeds source size 3" } */
+  T (strnlen (ns3, UR (DIFF_MAX, SIZE_MAX)));  /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound \\\[\[0-9\]+, \[0-9\]+] |specified bound \\\[\[0-9\]+, \[0-9\]+] exceeds source size 3 " } */
 }
 
 
@@ -73,8 +73,8 @@ void test_strnlen_string_cst (void)
   T (3, "12",  3, 1);
   T (3, "12",  3, 9);
   T (3, "123", 3, 1);
-  T (3, "123", 3, 4);               /* { dg-warning "specified bound 4 exceeds source size 3" } */
-  T (3, "123", 3, 9);               /* { dg-warning "specified bound 9 exceeds source size 3" } */
+  T (3, "123", 3, 4);               /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound 4|specified bound 4 exceeds source size 3" } */
+  T (3, "123", 3, 9);               /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound 9|specified bound 9 exceeds source size 3" } */
 
   T (5, "1",   2, 1);
   T (5, "1",   2, 2);
@@ -84,7 +84,7 @@ void test_strnlen_string_cst (void)
   T (5, "12",  3, 9);
   T (5, "123", 3, 1);
   T (5, "123", 3, 5);
-  T (5, "123", 3, 6);               /* { dg-warning "specified bound 6 exceeds source size 5" } */
+  T (5, "123", 3, 6);               /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound 6|specified bound 6 exceeds source size 5" } */
 
   /* Strnlen shouldn't trigger a warning for arrays of unknown size
      (except for accesses to uninitialized elements when those are
@@ -110,6 +110,6 @@ void test_strnlen_string_range (void)
 {
   T (3, "1",   2, UR (0, 1));
   T (3, "1",   2, UR (3, 9));
-  T (3, "123", 3, UR (4, 5));       /* { dg-warning "specified bound \\\[4, 5] exceeds source size 3" } */
-  T (3, "123", 3, UR (5, 9));       /* { dg-warning "specified bound \\\[5, 9] exceeds source size 3" } */
+  T (3, "123", 3, UR (4, 5));       /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound \\\[4, 5]|specified bound \\\[4, 5] exceeds source size 3" } */
+  T (3, "123", 3, UR (5, 9));       /* { dg-warning "argument 1 declared attribute 'nonstring' is smaller than the specified bound \\\[5, 9]|specified bound \\\[5, 9] exceeds source size 3" } */
 }

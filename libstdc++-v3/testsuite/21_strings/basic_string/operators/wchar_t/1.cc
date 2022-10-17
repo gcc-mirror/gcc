@@ -1,6 +1,6 @@
 // 1999-05-07 bkoz
 
-// Copyright (C) 1999-2021 Free Software Foundation, Inc.
+// Copyright (C) 1999-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,11 +32,11 @@ int test01(void)
   // 1:8-chars_8-chars_
   // 2:8-chars_8-chars_
   str1 = std::wstring(L"8-chars_") + L"8-chars_";
-  str1.c_str();
+  (void) str1.c_str();
   // wprintf("1:%s\n", str1.c_str());
   str2 = str1 + L"7-chars";
   // wprintf("2:%s\n", str1.c_str()); //str1 is gone
-  str1.c_str();
+  (void) str1.c_str();
   return 0;
 }
 

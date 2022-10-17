@@ -1,6 +1,6 @@
 /* elfos.h  --  operating system specific defines to be used when
    targeting GCC for some generic ELF system
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
    Based on svr4.h contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GCC.
@@ -67,6 +67,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* All ELF targets can support DWARF-2.  */
 
 #define DWARF2_DEBUGGING_INFO 1
+
+/* All ELF targets can support CTF.  */
+
+#define CTF_DEBUGGING_INFO 1
+
+/* All ELF targets can support BTF.  */
+
+#define BTF_DEBUGGING_INFO 1
 
 /* The GNU tools operate better with dwarf2, and it is required by some
    psABI's.  Since we don't have any native tools to be compatible with,
@@ -458,7 +466,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   default_elf_asm_output_ascii ((FILE), (STR), (LENGTH))
 
 /* Allow the use of the -frecord-gcc-switches switch via the
-   elf_record_gcc_switches function defined in varasm.c.  */
+   elf_record_gcc_switches function defined in varasm.cc.  */
 #undef  TARGET_ASM_RECORD_GCC_SWITCHES
 #define TARGET_ASM_RECORD_GCC_SWITCHES elf_record_gcc_switches
 

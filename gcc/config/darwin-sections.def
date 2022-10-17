@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Since Darwin's ld will not allow zero-sized objects, and gcc wants them,
-   we emit one byte (in darwin.c) when such an object is encountered.
+   we emit one byte (in darwin.cc) when such an object is encountered.
 
    This messes up section anchoring because the emitted byte is not counted
    outside the port.  To cope with this, we set aside sections for zero-sized
@@ -25,9 +25,9 @@ along with GCC; see the file COPYING3.  If not see
    ("zobj_" sections, below).
    
    Items that might be coalesced by the linker are prevented from participating,
-   (and those in mergeable sections are disallowed in varasm.c).  */
+   (and those in mergeable sections are disallowed in varasm.cc).  */
 
-/* The .text section is generated in varasm.c  */
+/* The .text section is generated in varasm.cc  */
 DEF_SECTION (text_coal_section, SECTION_CODE|SECTION_NO_ANCHOR,
 	     ".section __TEXT,__textcoal_nt,coalesced,pure_instructions", 0)
 
@@ -62,7 +62,7 @@ DEF_SECTION (const_coal_section, SECTION_NO_ANCHOR,
 DEF_SECTION (zobj_const_section, SECTION_NO_ANCHOR, 
 	     ".section\t__DATA,__zobj_const", 0)
 
-/* Write-able data.  '.data'  handled in varasm.c  */
+/* Write-able data.  '.data'  handled in varasm.cc  */
 DEF_SECTION (static_data_section, SECTION_WRITE, ".static_data", 0)
 DEF_SECTION (data_coal_section, SECTION_WRITE|SECTION_NO_ANCHOR,
 	     ".section __DATA,__datacoal_nt,coalesced", 0)

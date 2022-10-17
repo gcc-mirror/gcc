@@ -1,5 +1,5 @@
 /* Declarations for -*- C++ -*- name lookup routines.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -59,7 +59,7 @@ struct GTY(()) cxx_binding {
 };
 
 /* Datatype used to temporarily save C++ bindings (for implicit
-   instantiations purposes and like).  Implemented in decl.c.  */
+   instantiations purposes and like).  Implemented in decl.cc.  */
 struct GTY(()) cxx_saved_binding {
   /* The name of the current binding.  */
   tree identifier;
@@ -200,6 +200,7 @@ enum scope_kind {
 			init-statement.  */
   sk_cond,	     /* The scope of the variable declared in the condition
 			of an if or switch statement.  */
+  sk_stmt_expr,	     /* GNU statement expression block.  */
   sk_function_parms, /* The scope containing function parameters.  */
   sk_class,	     /* The scope containing the members of a class.  */
   sk_scoped_enum,    /* The scope containing the enumerators of a C++11
@@ -306,8 +307,8 @@ struct GTY(()) cp_binding_level {
      'this_entity'.  */
   unsigned defining_class_p : 1;
 
-  /* true for SK_FUNCTION_PARMS of immediate functions.  */
-  unsigned immediate_fn_ctx_p : 1;
+  /* True for SK_FUNCTION_PARMS of a requires-expression.  */
+  unsigned requires_expression: 1;
 
   /* 22 bits left to fill a 32-bit word.  */
 };
@@ -465,13 +466,10 @@ extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
-extern void maybe_save_operator_binding (tree);
-extern void push_operator_bindings (void);
 extern void push_using_decl_bindings (tree, tree);
-extern void discard_operator_bindings (tree);
 
 /* Lower level interface for modules. */
-extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
+extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_attached,
 					tree *mvec);
 extern void add_mergeable_namespace_entity (tree *slot, tree decl);
 extern tree lookup_class_binding (tree ctx, tree name);

@@ -56,7 +56,7 @@ void test_memset_array_cst_range_off (void)
   T (2, SR ( 1, 2), 4);
   T (2, SR ( 1, 2), 5);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
 
-  T (2, SR ( 0, 1), 6);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-* } } */
+  T (2, SR ( 0, 1), 6);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (2, UR ( 1, 2), 7);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
   T (7, UR (-7, 0), 7);
   T (7, UR (-7, 0), 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
@@ -134,7 +134,7 @@ void test_memcpy_array_cst_range_off (const void *s)
   T (2, SR ( 1, 2), 4);
   T (2, SR ( 1, 2), 5);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
 
-  T (2, SR ( 0, 1), 6);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-* } } */
+  T (2, SR ( 0, 1), 6);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (2, UR ( 1, 2), 7);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
   T (7, UR (-7, 0), 7);
   T (7, UR (-7, 0), 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
@@ -211,7 +211,7 @@ void test_strcpy_array_cst_range_off (void)
   T (2, SR ( 1, 2), 3);
   T (2, SR ( 1, 2), 4);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
 
-  T (2, SR ( 0, 1), 5);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-* } } */
+  T (2, SR ( 0, 1), 5);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (2, UR ( 1, 2), 6);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
   T (7, UR (-7, 0), 6);
   T (7, UR (-7, 0), 8);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
@@ -277,7 +277,7 @@ void test_strncpy_array_cst_range_off (const char *s)
   T (2, SR ( 1, 2), 4);
   T (2, SR ( 1, 2), 5);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
 
-  T (2, SR ( 0, 1), 6);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-* } } */
+  T (2, SR ( 0, 1), 6);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (2, UR ( 1, 2), 7);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
   T (7, UR (-7, 0), 7);
   T (7, UR (-7, 0), 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */

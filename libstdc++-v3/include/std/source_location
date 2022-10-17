@@ -1,6 +1,6 @@
 // <source_location> -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,12 +43,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   private:
     using uint_least32_t = __UINT_LEAST32_TYPE__;
+    struct __impl
+    {
+      const char* _M_file_name;
+      const char* _M_function_name;
+      unsigned _M_line;
+      unsigned _M_column;
+    };
+    using __builtin_ret_type = decltype(__builtin_source_location());
 
   public:
 
     // [support.srcloc.cons], creation
     static consteval source_location
-    current(const void* __p = __builtin_source_location()) noexcept
+    current(__builtin_ret_type __p = __builtin_source_location()) noexcept
     {
       source_location __ret;
       __ret._M_impl = static_cast <const __impl*>(__p);
@@ -75,14 +83,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _M_impl ? _M_impl->_M_function_name : ""; }
 
   private:
-    struct __impl
-    {
-      const char* _M_file_name;
-      const char* _M_function_name;
-      unsigned _M_line;
-      unsigned _M_column;
-    };
-
     const __impl* _M_impl = nullptr;
   };
 

@@ -48,17 +48,17 @@ void test1()
 
 void test2()
 {
-    byte foo1[5];
-    ubyte foo2[6];
-    short foo3[7];
-    ushort foo4[8];
-    int foo5[9];
-    uint foo6[10];
-    long foo7[11];
-    ulong foo8[12];
-    float foo9[13];
-    double foo10[14];
-    real foo11[15];
+    byte[5] foo1;
+    ubyte[6] foo2;
+    short[7] foo3;
+    ushort[8] foo4;
+    int[9] foo5;
+    uint[10] foo6;
+    long[11] foo7;
+    ulong[12] foo8;
+    float[13] foo9;
+    double[14] foo10;
+    real[15] foo11;
 
     int i;
 
@@ -96,17 +96,17 @@ void test2()
 
 void test3()
 {
-    byte foo1[5] = 20;
-    ubyte foo2[6] = 21;
-    short foo3[7] = 22;
-    ushort foo4[8] = 23;
-    int foo5[9] = 24;
-    uint foo6[10] = 25;
-    long foo7[11] = 26;
-    ulong foo8[12] = 27;
-    float foo9[13] = 28;
-    double foo10[14] = 29;
-    real foo11[15] = 30;
+    byte[5] foo1 = 20;
+    ubyte[6] foo2 = 21;
+    short[7] foo3 = 22;
+    ushort[8] foo4 = 23;
+    int[9] foo5 = 24;
+    uint[10] foo6 = 25;
+    long[11] foo7 = 26;
+    ulong[12] foo8 = 27;
+    float[13] foo9 = 28;
+    double[14] foo10 = 29;
+    real[15] foo11 = 30;
 
     int i;
 
@@ -257,13 +257,13 @@ struct TestVectors
     string replace;
 };
 
-TestVectors tva[] =
+TestVectors[] tva =
 [
   {  pattern:"(a)\\1",  input:"abaab",  result:"y",     format:"&",     replace:"aa" },
   {  pattern:"abc",     input:"abc",    result:"y",     format:"&",     replace:"abc" },
 ];
 
-TestVectors tvs[2] =
+TestVectors[2] tvs =
 [
   {  pattern:"(a)\\1",  input:"abaab",  result:"y",     format:"&",     replace:"aa" },
   {  pattern:"abc",     input:"abc",    result:"y",     format:"&",     replace:"abc" },
@@ -360,8 +360,8 @@ const uint MAX_PATH1 = 260;
 enum { MAX_PATH2 = 261 }
 
 struct WIN32_FIND_DATA {
-    char   cFileName1[MAX_PATH1];
-    char   cFileName2[MAX_PATH2];
+    char[MAX_PATH1]   cFileName1;
+    char[MAX_PATH2]   cFileName2;
 }
 
 void test11()
@@ -502,10 +502,10 @@ void test15()
 
 struct GUID {          // size is 16
     align(1):
-        uint    Data1;
-        ushort  Data2;
-        ushort  Data3;
-        ubyte   Data4[8];
+        uint     Data1;
+        ushort   Data2;
+        ushort   Data3;
+        ubyte[8] Data4;
 }
 
 
@@ -543,26 +543,7 @@ void test16()
 
 /* ================================ */
 
-void test17()
-{
-    creal z = 1. + 2.0i;
-
-    real r = z.re;
-    assert(r == 1.0);
-
-    real i = z.im;
-    assert(i == 2.0);
-
-    assert(r.im == 0.0);
-    assert(r.re == 1.0);
-
-    assert(i.re == 2.0);
-    assert(i.im == 0.0i);
-}
-
-/* ================================ */
-
-private const uint crc_table[256] = [
+private const uint[256] crc_table = [
     0x00000000u, 0x77073096u, 0xee0e612cu, 0x990951bau, 0x076dc419u,
     0x2d02ef8du
   ];
@@ -635,24 +616,6 @@ void test20()
 //printf("test d\n");
     i = (*fpd)(7, 8);
     assert(i == 78);
-}
-
-
-/* ================================ */
-
-void test21()
-{
-    ireal imag = 2.5i;
-    printf ("test of imag*imag = %Lf\n",imag*imag);
-    assert(imag * imag == -6.25);
-}
-
-/* ================================ */
-
-void test22()
-{
-    creal z1 = 1. - 2.0i;
-    ireal imag_part = z1.im/1i;
 }
 
 
@@ -745,7 +708,7 @@ void test29()
 
     Foo29 f = new Foo29();
 
-    delete f;
+    destroy(f);
     assert(x29 == 3);
 }
 
@@ -978,11 +941,11 @@ void test43()
 {
     string s;
 
-    s = __FILE__; printf("file = '%.*s'\n", s.length, s.ptr);
+    s = __FILE__; printf("file = '%.*s'\n", cast(int)s.length, s.ptr);
     printf("line = %d\n", __LINE__);
-    s = __DATE__; printf("date = '%.*s'\n", s.length, s.ptr);
-    s = __TIME__; printf("time = '%.*s'\n", s.length, s.ptr);
-    s = __TIMESTAMP__; printf("timestamp = '%.*s'\n", s.length, s.ptr);
+    s = __DATE__; printf("date = '%.*s'\n", cast(int)s.length, s.ptr);
+    s = __TIME__; printf("time = '%.*s'\n", cast(int)s.length, s.ptr);
+    s = __TIMESTAMP__; printf("timestamp = '%.*s'\n", cast(int)s.length, s.ptr);
 }
 
 /* ================================ */
@@ -1143,7 +1106,10 @@ class Cout{
         Cout set(int x){
                 return this;
         }
-        alias set opShl;
+        Cout opBinary(string op)(int x) if (op == "<<")
+        {
+            return set(x);
+        }
 }
 
 void test49()
@@ -1250,7 +1216,7 @@ void test54()
         }
         catch(Exception e)
         {
-                printf("catch %.*s\n", e.msg.length, e.msg.ptr);
+                printf("catch %.*s\n", cast(int)e.msg.length, e.msg.ptr);
                 assert(e.msg == "first");
                 assert(e.next.msg == "second");
         }
@@ -1270,7 +1236,7 @@ void foo55()
     catch (Exception e)
     {
         printf("inner catch %p\n", e);
-        printf("e.msg == %.*s\n", e.msg.length, e.msg.ptr);
+        printf("e.msg == %.*s\n", cast(int)e.msg.length, e.msg.ptr);
         assert(e.msg == "second");
         //assert(e.msg == "first");
         //assert(e.next.msg == "second");
@@ -1404,6 +1370,46 @@ void test59()
 
 
 /* ================================ */
+// https://issues.dlang.org/show_bug.cgi?id=10664
+
+Exception collectExceptionE(int delegate () expression, ref int result)
+{
+    try
+    {
+        result = expression();
+    }
+    catch (Exception e)
+    {
+        return e;
+    }
+    return null;
+}
+
+RangeError collectExceptionR(int delegate () expression, ref int result)
+{
+    try
+    {
+        result = expression();
+    }
+    catch (RangeError e)
+    {
+        return e;
+    }
+    return null;
+}
+
+void test10664()
+{
+    int b;
+    int foo() { throw new Exception("blah"); }
+    assert(collectExceptionE(&foo, b));
+
+    int[] a = new int[3];
+    int goo() { return a[4]; }
+    collectExceptionR(&goo, b);
+}
+
+/* ================================ */
 
 
 int main()
@@ -1424,12 +1430,9 @@ int main()
     test14();
     //test15();
     test16();
-    test17();
     test18();
     test19();
     test20();
-    test21();
-    test22();
     test23();
     test24();
 //    test26();
@@ -1465,6 +1468,7 @@ int main()
     test57();
     test58();
     test59();
+    test10664();
 
     printf("Success\n");
     return 0;

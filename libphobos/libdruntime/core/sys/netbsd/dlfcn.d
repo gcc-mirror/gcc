@@ -19,17 +19,6 @@ nothrow:
 enum __BSD_VISIBLE = true;
 
 /*
- * Modes and flags for dlopen().
- */
-static assert(RTLD_LAZY   == 1);
-static assert(RTLD_NOW    == 2);
-static assert(RTLD_GLOBAL == 0x100);
-static assert(RTLD_LOCAL  == 0x200);
-//enum RTLD_TRACE           =  0x200;
-enum RTLD_NODELETE        =  0x01000;
-enum RTLD_NOLOAD          =  0x02000;
-
-/*
  * Request arguments for dlinfo().
  */
 enum RTLD_DI_LINKMAP     = 3;    /* Obtain link map. */
@@ -47,16 +36,6 @@ enum RTLD_SELF    = cast(void *)-3;    /* Search the caller itself. */
 
 static if (__BSD_VISIBLE)
 {
-    /*
-     * Structure filled in by dladdr().
-     */
-    struct Dl_info {
-        const(char)     *dli_fname;     /* Pathname of shared object. */
-        void            *dli_fbase;     /* Base address of shared object. */
-        const(char)     *dli_sname;     /* Name of nearest symbol. */
-        void            *dli_saddr;     /* Address of nearest symbol. */
-    }
-
     /*-
      * The actual type declared by this typedef is immaterial, provided that
      * it is a function pointer.  Its purpose is to provide a return type for
@@ -97,16 +76,6 @@ extern(C) {
 
 static if (__BSD_VISIBLE)
 {
-    //void*    fdlopen(int, int);
-    int      dladdr(const(void)*, Dl_info*);
-    //dlfunc_t dlfunc(void*, const(char)*);
     int      dlinfo(void*, int, void*);
-    /+void     dllockinit(void* _context,
-        void* function(void* _context) _lock_create,
-        void  function(void* _lock)    _rlock_acquire,
-        void  function(void* _lock)    _wlock_acquire,
-        void  function(void* _lock)    _lock_release,
-        void  function(void* _lock)    _lock_destroy,
-        void  function(void* _context) _context_destroy);+/
     void*    dlvsym(void*, const(char)*, const(char)*);
 }

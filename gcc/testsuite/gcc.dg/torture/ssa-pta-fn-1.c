@@ -6,13 +6,13 @@ extern void abort (void);
 int *g;
 int dummy;
 
-int * __attribute__((noinline,const))
+int * __attribute__((noinline,const,noipa))
 foo_const(int *p) { return p; }
 
-int * __attribute__((noinline,pure))
+int * __attribute__((noinline,pure,noipa))
 foo_pure(int *p) { return p + dummy; }
 
-int * __attribute__((noinline))
+int * __attribute__((noinline,noipa))
 foo_normal(int *p) { g = p; return p; }
 
 void test_const(void)
@@ -58,4 +58,4 @@ int main()
 
 /* { dg-final { scan-tree-dump "q_const_. = { NONLOCAL i }" "alias" } } */
 /* { dg-final { scan-tree-dump "q_pure_. = { ESCAPED NONLOCAL i }" "alias" } } */
-/* { dg-final { scan-tree-dump "q_normal_. = { ESCAPED NONLOCAL }" "alias" } } */
+/* { dg-final { scan-tree-dump "q_normal_. = { ESCAPED NONLOCAL i }" "alias" } } */

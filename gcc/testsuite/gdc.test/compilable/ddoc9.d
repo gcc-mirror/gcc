@@ -1,8 +1,8 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 9
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
-// 273
+// https://issues.dlang.org/show_bug.cgi?id=273
 
 /// Template Documentation (OK)
 template Template(T) { }

@@ -1,4 +1,10 @@
-// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 import core.stdc.stdio;
 import core.stdc.math : isnan;
@@ -37,8 +43,8 @@ int main()
     {
         assert(isnan(v));
     }
-    delete a;
-    delete b;
+    destroy(a);
+    destroy(b);
 
     a = null;
     for (int i = 0; i < 100000; i++)
@@ -59,8 +65,8 @@ int main()
     {
         assert(v == k);
     }
-    delete a;
-    delete b;
+    destroy(a);
+    destroy(b);
 
     test12826();
     printf("Success\n");

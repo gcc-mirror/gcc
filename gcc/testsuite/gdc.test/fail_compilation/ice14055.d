@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice14055.d(16): Error: uninitialized variable 'foo' cannot be returned from CTFE
+fail_compilation/ice14055.d(16): Error: uninitialized variable `foo` cannot be returned from CTFE
 ---
 */
 

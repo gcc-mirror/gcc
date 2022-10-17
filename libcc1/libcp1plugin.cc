@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -32,6 +32,7 @@
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
 
+#define INCLUDE_MEMORY
 #include "gcc-plugin.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2669,7 +2670,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
       break;
 
     default:
-      result = build_x_unary_op (/*loc=*/0, opcode, op0, tf_error);
+      result = build_x_unary_op (/*loc=*/0, opcode, op0, NULL_TREE, tf_error);
       break;
     }
 
@@ -2794,7 +2795,7 @@ plugin_build_binary_expr (cc1_plugin::connection *self,
 
     default:
       result = build_x_binary_op (/*loc=*/0, opcode, op0, ERROR_MARK,
-				  op1, ERROR_MARK, NULL, tf_error);
+				  op1, ERROR_MARK, NULL_TREE, NULL, tf_error);
       break;
     }
 

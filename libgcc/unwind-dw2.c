@@ -1,5 +1,5 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,6 +36,7 @@
 #include "unwind-dw2-fde.h"
 #include "gthr.h"
 #include "unwind-dw2.h"
+#include <stddef.h>
 
 #ifdef HAVE_SYS_SDT_H
 #include <sys/sdt.h>
@@ -983,7 +984,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.how[reg] = REG_SAVED_OFFSET;
 	      fs->regs.reg[reg].loc.offset = offset;
 	    }
 	}
@@ -992,7 +993,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = insn & 0x3f;
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
-	    fs->regs.reg[reg].how = REG_UNSAVED;
+	    fs->regs.how[reg] = REG_UNSAVED;
 	}
       else switch (insn)
 	{
@@ -1026,7 +1027,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.how[reg] = REG_SAVED_OFFSET;
 	      fs->regs.reg[reg].loc.offset = offset;
 	    }
 	  break;
@@ -1037,21 +1038,21 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	     register was saved somewhere.  */
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
-	    fs->regs.reg[reg].how = REG_UNSAVED;
+	    fs->regs.how[reg] = REG_UNSAVED;
 	  break;
 
 	case DW_CFA_same_value:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
-	    fs->regs.reg[reg].how = REG_UNSAVED;
+	    fs->regs.how[reg] = REG_UNSAVED;
 	  break;
 
 	case DW_CFA_undefined:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
-	    fs->regs.reg[reg].how = REG_UNDEFINED;
+	    fs->regs.how[reg] = REG_UNDEFINED;
 	  break;
 
 	case DW_CFA_nop:
@@ -1065,7 +1066,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	    reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	    if (UNWIND_COLUMN_IN_RANGE (reg))
 	      {
-	        fs->regs.reg[reg].how = REG_SAVED_REG;
+		fs->regs.how[reg] = REG_SAVED_REG;
 	        fs->regs.reg[reg].loc.reg = (_Unwind_Word)reg2;
 	      }
 	  }
@@ -1128,7 +1129,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_EXP;
+	      fs->regs.how[reg] = REG_SAVED_EXP;
 	      fs->regs.reg[reg].loc.exp = insn_ptr;
 	    }
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
@@ -1143,7 +1144,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.how[reg] = REG_SAVED_OFFSET;
 	      fs->regs.reg[reg].loc.offset = offset;
 	    }
 	  break;
@@ -1171,7 +1172,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_VAL_OFFSET;
+	      fs->regs.how[reg] = REG_SAVED_VAL_OFFSET;
 	      fs->regs.reg[reg].loc.offset = offset;
 	    }
 	  break;
@@ -1183,7 +1184,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_VAL_OFFSET;
+	      fs->regs.how[reg] = REG_SAVED_VAL_OFFSET;
 	      fs->regs.reg[reg].loc.offset = offset;
 	    }
 	  break;
@@ -1193,7 +1194,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_VAL_EXP;
+	      fs->regs.how[reg] = REG_SAVED_VAL_EXP;
 	      fs->regs.reg[reg].loc.exp = insn_ptr;
 	    }
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
@@ -1204,13 +1205,15 @@ execute_cfa_program (const unsigned char *insn_ptr,
 #if defined (__aarch64__) && !defined (__ILP32__)
 	  /* This CFA is multiplexed with Sparc.  On AArch64 it's used to toggle
 	     return address signing status.  */
-	  fs->regs.reg[DWARF_REGNUM_AARCH64_RA_STATE].loc.offset ^= 1;
+	  reg = DWARF_REGNUM_AARCH64_RA_STATE;
+	  gcc_assert (fs->regs.how[reg] == REG_UNSAVED);
+	  fs->regs.reg[reg].loc.offset ^= 1;
 #else
 	  /* ??? Hardcoded for SPARC register window configuration.  */
 	  if (__LIBGCC_DWARF_FRAME_REGISTERS__ >= 32)
 	    for (reg = 16; reg < 32; ++reg)
 	      {
-		fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+		fs->regs.how[reg] = REG_SAVED_OFFSET;
 		fs->regs.reg[reg].loc.offset = (reg - 16) * sizeof (void *);
 	      }
 #endif
@@ -1230,7 +1233,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
 	  if (UNWIND_COLUMN_IN_RANGE (reg))
 	    {
-	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.how[reg] = REG_SAVED_OFFSET;
 	      fs->regs.reg[reg].loc.offset = -offset;
 	    }
 	  break;
@@ -1253,7 +1256,8 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   const struct dwarf_cie *cie;
   const unsigned char *aug, *insn, *end;
 
-  memset (fs, 0, sizeof (*fs));
+  memset (&fs->regs.how[0], 0,
+	  sizeof (*fs) - offsetof (_Unwind_FrameState, regs.how[0]));
   context->args_size = 0;
   context->lsda = 0;
 
@@ -1353,7 +1357,7 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
 
   for (reg = 0; reg < PRE_GCC3_DWARF_FRAME_REGISTERS + 1; reg++)
     {
-      state_in->saved[reg] = fs.regs.reg[reg].how;
+      state_in->saved[reg] = fs.regs.how[reg];
       switch (state_in->saved[reg])
 	{
 	case REG_SAVED_REG:
@@ -1451,7 +1455,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 
   /* Compute the addresses of all registers saved in this frame.  */
   for (i = 0; i < __LIBGCC_DWARF_FRAME_REGISTERS__ + 1; ++i)
-    switch (fs->regs.reg[i].how)
+    switch (fs->regs.how[i])
       {
       case REG_UNSAVED:
       case REG_UNDEFINED:
@@ -1529,7 +1533,7 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
      rule is handled like same_value.  The only exception is
      DW_CFA_undefined on retaddr_column which is supposed to
      mark outermost frame in DWARF 3.  */
-  if (fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (fs->retaddr_column)].how
+  if (fs->regs.how[DWARF_REG_TO_UNWIND_COLUMN (fs->retaddr_column)]
       == REG_UNDEFINED)
     /* uw_frame_state_for uses context->ra == 0 check to find outermost
        stack frame.  */

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fno-omit-frame-pointer -fno-shrink-wrap" } */
+/* { dg-options "-fno-omit-frame-pointer -fno-shrink-wrap -fno-ipa-modref" } */
 /* { dg-additional-options "-mno-omit-leaf-frame-pointer" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-shouldfail "asan" } */
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2007-2021, AdaCore                      --
+--                    Copyright (C) 2007-2022, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -192,7 +192,7 @@ private
    end record;
 
    Data_Rate_Value : constant array (Data_Rate) of Interfaces.C.unsigned :=
-                       (B75      =>        75,
+                       [B75      =>        75,
                         B110     =>       110,
                         B150     =>       150,
                         B300     =>       300,
@@ -217,7 +217,7 @@ private
                         B2500000 => 2_500_000,
                         B3000000 => 3_000_000,
                         B3500000 => 3_500_000,
-                        B4000000 => 4_000_000);
+                        B4000000 => 4_000_000];
 
    function To_C (Port : Serial_Port) return Serial_Port_Descriptor is
       (Port.H);

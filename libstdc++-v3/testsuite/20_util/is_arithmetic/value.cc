@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,9 +30,7 @@ void test01()
   static_assert(test_category<is_arithmetic, char>(true), "");
   static_assert(test_category<is_arithmetic, signed char>(true), "");
   static_assert(test_category<is_arithmetic, unsigned char>(true), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_arithmetic, wchar_t>(true), "");
-#endif
   static_assert(test_category<is_arithmetic, short>(true), "");
   static_assert(test_category<is_arithmetic, unsigned short>(true), "");
   static_assert(test_category<is_arithmetic, int>(true), "");

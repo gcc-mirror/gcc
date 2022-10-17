@@ -689,7 +689,7 @@ void test22()
 }
 
 /************************************/
-// 1759
+// https://issues.dlang.org/show_bug.cgi?id=1759
 
 void test1759()
 {
@@ -724,7 +724,7 @@ void test1759()
 }
 
 /************************************/
-// 1841
+// https://issues.dlang.org/show_bug.cgi?id=1841
 
 int delegate() foo1841()
 {
@@ -768,7 +768,7 @@ void test1841()
 }
 
 /************************************/
-// 5911
+// https://issues.dlang.org/show_bug.cgi?id=5911
 
 void writeln5911(const(char)[] str) {}
 
@@ -791,7 +791,7 @@ void test5911()
 }
 
 /************************************/
-// 9685
+// https://issues.dlang.org/show_bug.cgi?id=9685
 
 auto get9685a(alias fun)()
 {
@@ -844,7 +844,7 @@ void test9685b()
 }
 
 /************************************/
-// 12406
+// https://issues.dlang.org/show_bug.cgi?id=12406
 
 auto createDg12406()
 {
@@ -898,7 +898,7 @@ void test12406()
 }
 
 /************************************/
-// 14730
+// https://issues.dlang.org/show_bug.cgi?id=14730
 
 void test14730()
 {
@@ -922,7 +922,10 @@ void test14730()
 
 // This is questionable case. Currently it works without any errors,
 // but not sure it's really intentional
-
+// It showed up again in https://issues.dlang.org/show_bug.cgi?id=23112
+// where it's an @safe issue so it's a bug.
+static if (0)
+{
 struct S14730x(alias f)
 {
     auto foo()() { return f(0); }
@@ -946,6 +949,7 @@ void test14730x()
     // instantiationg foo outside of makeS will place the variable x in closure
     // *after* the semantic3 completion of makeS() function.
     assert(s.foo() == 10);
+}
 }
 
 /************************************/
@@ -981,7 +985,7 @@ int main()
     test9685b();
     test12406();
     test14730();
-    test14730x();
+    //test14730x();
 
     printf("Success\n");
     return 0;

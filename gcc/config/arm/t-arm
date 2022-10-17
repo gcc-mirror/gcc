@@ -1,6 +1,6 @@
 # Rules common to all arm targets
 #
-# Copyright (C) 2004-2021 Free Software Foundation, Inc.
+# Copyright (C) 2004-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -121,12 +121,12 @@ s-arm-native: $(srcdir)/config/arm/parsecpu.awk \
 	$(SHELL) $(srcdir)/../move-if-change tmp-arm-native.h arm-native.h
 	$(STAMP) s-arm-native
 
-aarch-common.o: $(srcdir)/config/arm/aarch-common.c $(CONFIG_H) $(SYSTEM_H) \
+aarch-common.o: $(srcdir)/config/arm/aarch-common.cc $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TM_P_H) $(RTL_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/arm/aarch-common.c
+		$(srcdir)/config/arm/aarch-common.cc
 
-arm.o: $(srcdir)/config/arm/arm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+arm.o: $(srcdir)/config/arm/arm.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
   $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
@@ -140,7 +140,7 @@ arm.o: $(srcdir)/config/arm/arm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(srcdir)/config/arm/arm_vfp_builtins.def \
   $(srcdir)/config/arm/arm_mve_builtins.def
 
-arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
+arm-builtins.o: $(srcdir)/config/arm/arm-builtins.cc $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) expr.h $(TM_P_H) $(RECOG_H) langhooks.h \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
@@ -151,14 +151,24 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
   $(srcdir)/config/arm/arm_mve_builtins.def \
   $(srcdir)/config/arm/arm-simd-builtin-types.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/arm/arm-builtins.c
+		$(srcdir)/config/arm/arm-builtins.cc
 
-arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
+arm-mve-builtins.o: $(srcdir)/config/arm/arm-mve-builtins.cc $(CONFIG_H) \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+  fold-const.h langhooks.h stringpool.h attribs.h diagnostic.h \
+  $(srcdir)/config/arm/arm-protos.h \
+  $(srcdir)/config/arm/arm-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins.def
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/arm/arm-mve-builtins.cc
+
+arm-c.o: $(srcdir)/config/arm/arm-c.cc $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/arm/arm-c.c
+		$(srcdir)/config/arm/arm-c.cc
 
-arm-d.o: $(srcdir)/config/arm/arm-d.c
+arm-d.o: $(srcdir)/config/arm/arm-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

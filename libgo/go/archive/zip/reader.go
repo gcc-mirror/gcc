@@ -52,12 +52,9 @@ type File struct {
 	FileHeader
 	zip          *Reader
 	zipr         io.ReaderAt
-	zipsize      int64
 	headerOffset int64
-}
-
-func (f *File) hasDataDescriptor() bool {
-	return f.Flags&0x8 != 0
+	zip64        bool  // zip64 extended information extra field presence
+	descErr      error // error reading the data descriptor during init
 }
 
 // OpenReader will open the Zip file specified by name and return a ReadCloser.
@@ -105,7 +102,7 @@ func (z *Reader) init(r io.ReaderAt, size int64) error {
 	// indicate it contains up to 1 << 128 - 1 files. Since each file has a
 	// header which will be _at least_ 30 bytes we can safely preallocate
 	// if (data size / 30) >= end.directoryRecords.
-	if (uint64(size)-end.directorySize)/30 >= end.directoryRecords {
+	if end.directorySize < uint64(size) && (uint64(size)-end.directorySize)/30 >= end.directoryRecords {
 		z.File = make([]*File, 0, end.directoryRecords)
 	}
 	z.Comment = end.comment
@@ -120,7 +117,7 @@ func (z *Reader) init(r io.ReaderAt, size int64) error {
 	// a bad one, and then only report an ErrFormat or UnexpectedEOF if
 	// the file count modulo 65536 is incorrect.
 	for {
-		f := &File{zip: z, zipr: r, zipsize: size}
+		f := &File{zip: z, zipr: r}
 		err = readDirectoryHeader(f, buf)
 		if err == ErrFormat || err == io.ErrUnexpectedEOF {
 			break
@@ -199,6 +196,17 @@ func (f *File) Open() (io.ReadCloser, error) {
 		desr: desr,
 	}
 	return rc, nil
+}
+
+// OpenRaw returns a Reader that provides access to the File's contents without
+// decompression.
+func (f *File) OpenRaw() (io.Reader, error) {
+	bodyOffset, err := f.findBodyOffset()
+	if err != nil {
+		return nil, err
+	}
+	r := io.NewSectionReader(f.zipr, f.headerOffset+bodyOffset, int64(f.CompressedSize64))
+	return r, nil
 }
 
 type checksumReader struct {
@@ -344,6 +352,8 @@ parseExtras:
 
 		switch fieldTag {
 		case zip64ExtraID:
+			f.zip64 = true
+
 			// update directory values from the zip64 extra block.
 			// They should only be consulted if the sizes read earlier
 			// are maxed out.
@@ -445,7 +455,6 @@ parseExtras:
 
 func readDataDescriptor(r io.Reader, f *File) error {
 	var buf [dataDescriptorLen]byte
-
 	// The spec says: "Although not originally assigned a
 	// signature, the value 0x08074b50 has commonly been adopted
 	// as a signature value for the data descriptor record.
@@ -661,7 +670,7 @@ func (f *fileListEntry) Size() int64       { return 0 }
 func (f *fileListEntry) Mode() fs.FileMode { return fs.ModeDir | 0555 }
 func (f *fileListEntry) Type() fs.FileMode { return fs.ModeDir }
 func (f *fileListEntry) IsDir() bool       { return true }
-func (f *fileListEntry) Sys() interface{}  { return nil }
+func (f *fileListEntry) Sys() any          { return nil }
 
 func (f *fileListEntry) ModTime() time.Time {
 	if f.file == nil {
@@ -692,6 +701,9 @@ func (r *Reader) initFileList() {
 		for _, file := range r.File {
 			isDir := len(file.Name) > 0 && file.Name[len(file.Name)-1] == '/'
 			name := toValidName(file.Name)
+			if name == "" {
+				continue
+			}
 			for dir := path.Dir(name); dir != "."; dir = path.Dir(dir) {
 				dirs[dir] = true
 			}
@@ -733,8 +745,11 @@ func fileEntryLess(x, y string) bool {
 func (r *Reader) Open(name string) (fs.File, error) {
 	r.initFileList()
 
+	if !fs.ValidPath(name) {
+		return nil, &fs.PathError{Op: "open", Path: name, Err: fs.ErrInvalid}
+	}
 	e := r.openLookup(name)
-	if e == nil || !fs.ValidPath(name) {
+	if e == nil {
 		return nil, &fs.PathError{Op: "open", Path: name, Err: fs.ErrNotExist}
 	}
 	if e.isDir {
@@ -748,7 +763,7 @@ func (r *Reader) Open(name string) (fs.File, error) {
 }
 
 func split(name string) (dir, elem string, isDir bool) {
-	if name[len(name)-1] == '/' {
+	if len(name) > 0 && name[len(name)-1] == '/' {
 		isDir = true
 		name = name[:len(name)-1]
 	}

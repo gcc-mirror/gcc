@@ -1,6 +1,6 @@
 // <unordered_map> -*- C++ -*-
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,19 +31,13 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // container
+
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
-#include <type_traits>
 #include <initializer_list>
-#include <bits/allocator.h>
-#include <ext/alloc_traits.h>
-#include <ext/aligned_buffer.h>
-#include <bits/stl_pair.h>
-#include <bits/stl_function.h> // equal_to, _Identity, _Select1st
-#include <bits/functional_hash.h>
-#include <bits/hashtable.h>
 #include <bits/unordered_map.h>
 #include <bits/range_access.h>
 #include <bits/erase_if.h>
@@ -53,12 +47,12 @@
 #endif
 
 #if __cplusplus >= 201703L
+#include <bits/memory_resource.h>
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace pmr
   {
-    template<typename _Tp> class polymorphic_allocator;
     template<typename _Key, typename _Tp, typename _Hash = std::hash<_Key>,
 	     typename _Pred = std::equal_to<_Key>>
       using unordered_map
@@ -83,7 +77,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>::size_type
     erase_if(unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
-    { return __detail::__erase_nodes_if(__cont, __pred); }
+    {
+      const _GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>&
+	__ucont = __cont;
+      return __detail::__erase_nodes_if(__cont, __ucont, __pred);
+    }
 
   template<typename _Key, typename _Tp, typename _Hash, typename _CPred,
 	   typename _Alloc, typename _Predicate>
@@ -91,7 +89,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    size_type
     erase_if(unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
-    { return __detail::__erase_nodes_if(__cont, __pred); }
+    {
+      const _GLIBCXX_STD_C::unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>&
+	__ucont = __cont;
+      return __detail::__erase_nodes_if(__cont, __ucont, __pred);
+    }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++20

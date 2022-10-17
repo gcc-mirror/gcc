@@ -1,6 +1,6 @@
 /* PR target/95798 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -masm=att -fomit-frame-pointer" } */
+/* { dg-options "-O2 -fno-tree-vectorize -masm=att -fomit-frame-pointer" } */
 /* { dg-final { scan-assembler "1, 8\\\(%rsp,%r\[a-z0-9]*,8\\\)" { target lp64 } } } */
 /* { dg-final { scan-assembler "2, 16\\\(%rsp,%r\[a-z0-9]*,8\\\)" { target lp64 } } } */
 /* { dg-final { scan-assembler "3, 24\\\(%rsp,%r\[a-z0-9]*,8\\\)" { target lp64 } } } */

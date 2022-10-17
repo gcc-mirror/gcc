@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"go/format"
+	"internal/godebug"
 	"internal/race"
 	"internal/testenv"
 	"io"
@@ -31,7 +32,6 @@ import (
 	"cmd/go/internal/cache"
 	"cmd/go/internal/cfg"
 	"cmd/go/internal/robustio"
-	"cmd/go/internal/work"
 	"cmd/internal/sys"
 )
 
@@ -44,9 +44,12 @@ func init() {
 }
 
 var (
-	canRace = false // whether we can run the race detector
-	canCgo  = false // whether we can use cgo
-	canMSan = false // whether we can run the memory sanitizer
+	canRace          = false // whether we can run the race detector
+	canCgo           = false // whether we can use cgo
+	canMSan          = false // whether we can run the memory sanitizer
+	canASan          = false // whether we can run the address sanitizer
+	canFuzz          = false // whether we can search for new fuzz failures
+	fuzzInstrumented = false // whether fuzzing uses instrumentation
 )
 
 var exeSuffix string = func() string {
@@ -72,7 +75,6 @@ func tooSlow(t *testing.T) {
 // (temp) directory.
 var testGOROOT string
 
-var testCC string
 var testGOCACHE string
 
 var testGo string
@@ -131,7 +133,7 @@ func TestMain(m *testing.M) {
 		}
 		gotool, err := testenv.GoTool()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, "locating go tool: ", err)
 			os.Exit(2)
 		}
 
@@ -179,13 +181,6 @@ func TestMain(m *testing.M) {
 			os.Exit(2)
 		}
 
-		out, err = exec.Command(gotool, "env", "CC").CombinedOutput()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "could not find testing CC: %v\n%s", err, out)
-			os.Exit(2)
-		}
-		testCC = strings.TrimSpace(string(out))
-
 		cmd := exec.Command(testGo, "env", "CGO_ENABLED")
 		cmd.Stderr = new(strings.Builder)
 		if out, err := cmd.Output(); err != nil {
@@ -206,6 +201,7 @@ func TestMain(m *testing.M) {
 		testGOCACHE = strings.TrimSpace(string(out))
 
 		canMSan = canCgo && sys.MSanSupported(runtime.GOOS, runtime.GOARCH)
+		canASan = canCgo && sys.ASanSupported(runtime.GOOS, runtime.GOARCH)
 		canRace = canCgo && sys.RaceDetectorSupported(runtime.GOOS, runtime.GOARCH)
 		// The race detector doesn't work on Alpine Linux:
 		// golang.org/issue/14481
@@ -213,6 +209,8 @@ func TestMain(m *testing.M) {
 		if isAlpineLinux() || runtime.Compiler == "gccgo" {
 			canRace = false
 		}
+		canFuzz = sys.FuzzSupported(runtime.GOOS, runtime.GOARCH)
+		fuzzInstrumented = sys.FuzzInstrumented(runtime.GOOS, runtime.GOARCH)
 	}
 	// Don't let these environment variables confuse the test.
 	os.Setenv("GOENV", "off")
@@ -811,8 +809,12 @@ func TestNewReleaseRebuildsStalePackagesInGOPATH(t *testing.T) {
 	// so that we can change files.
 	for _, copydir := range []string{
 		"src/runtime",
+		"src/internal/abi",
 		"src/internal/bytealg",
 		"src/internal/cpu",
+		"src/internal/goarch",
+		"src/internal/goexperiment",
+		"src/internal/goos",
 		"src/math/bits",
 		"src/unsafe",
 		filepath.Join("pkg", runtime.GOOS+"_"+runtime.GOARCH),
@@ -1126,11 +1128,11 @@ func TestGoListTest(t *testing.T) {
 	tg.grepStdoutNot(`^testing \[sort.test\]$`, "unexpected test copy of testing")
 	tg.grepStdoutNot(`^testing$`, "unexpected real copy of testing")
 
-	tg.run("list", "-test", "cmd/dist", "cmd/doc")
-	tg.grepStdout(`^cmd/dist$`, "missing cmd/dist")
+	tg.run("list", "-test", "cmd/buildid", "cmd/doc")
+	tg.grepStdout(`^cmd/buildid$`, "missing cmd/buildid")
 	tg.grepStdout(`^cmd/doc$`, "missing cmd/doc")
 	tg.grepStdout(`^cmd/doc\.test$`, "missing cmd/doc test")
-	tg.grepStdoutNot(`^cmd/dist\.test$`, "unexpected cmd/dist test")
+	tg.grepStdoutNot(`^cmd/buildid\.test$`, "unexpected cmd/buildid test")
 	tg.grepStdoutNot(`^testing`, "unexpected testing")
 
 	tg.run("list", "-test", "runtime/cgo")
@@ -1382,7 +1384,7 @@ func TestLdFlagsLongArgumentsIssue42295(t *testing.T) {
 		}`)
 	testStr := "test test test test test \n\\ "
 	var buf bytes.Buffer
-	for buf.Len() < work.ArgLengthForResponseFile+1 {
+	for buf.Len() < sys.ExecArgLengthLimit+1 {
 		buf.WriteString(testStr)
 	}
 	tg.run("run", "-ldflags", fmt.Sprintf(`-X "main.extern=%s"`, buf.String()), tg.path("main.go"))
@@ -2183,7 +2185,7 @@ func testBuildmodePIE(t *testing.T, useCgo, setBuildmodeToPIE bool) {
 			// See https://sourceware.org/bugzilla/show_bug.cgi?id=19011
 			section := f.Section(".edata")
 			if section == nil {
-				t.Fatalf(".edata section is not present")
+				t.Skip(".edata section is not present")
 			}
 			// TODO: deduplicate this struct from cmd/link/internal/ld/pe.go
 			type IMAGE_EXPORT_DIRECTORY struct {
@@ -2280,7 +2282,7 @@ func TestUpxCompression(t *testing.T) {
 
 func TestCacheListStale(t *testing.T) {
 	tooSlow(t)
-	if strings.Contains(os.Getenv("GODEBUG"), "gocacheverify") {
+	if godebug.Get("gocacheverify") == "1" {
 		t.Skip("GODEBUG gocacheverify")
 	}
 	tg := testgo(t)
@@ -2303,7 +2305,7 @@ func TestCacheListStale(t *testing.T) {
 func TestCacheCoverage(t *testing.T) {
 	tooSlow(t)
 
-	if strings.Contains(os.Getenv("GODEBUG"), "gocacheverify") {
+	if godebug.Get("gocacheverify") == "1" {
 		t.Skip("GODEBUG gocacheverify")
 	}
 
@@ -2335,7 +2337,7 @@ func TestIssue22588(t *testing.T) {
 
 func TestIssue22531(t *testing.T) {
 	tooSlow(t)
-	if strings.Contains(os.Getenv("GODEBUG"), "gocacheverify") {
+	if godebug.Get("gocacheverify") == "1" {
 		t.Skip("GODEBUG gocacheverify")
 	}
 	tg := testgo(t)
@@ -2364,7 +2366,7 @@ func TestIssue22531(t *testing.T) {
 
 func TestIssue22596(t *testing.T) {
 	tooSlow(t)
-	if strings.Contains(os.Getenv("GODEBUG"), "gocacheverify") {
+	if godebug.Get("gocacheverify") == "1" {
 		t.Skip("GODEBUG gocacheverify")
 	}
 	tg := testgo(t)
@@ -2394,7 +2396,7 @@ func TestIssue22596(t *testing.T) {
 func TestTestCache(t *testing.T) {
 	tooSlow(t)
 
-	if strings.Contains(os.Getenv("GODEBUG"), "gocacheverify") {
+	if godebug.Get("gocacheverify") == "1" {
 		t.Skip("GODEBUG gocacheverify")
 	}
 	tg := testgo(t)
@@ -2829,4 +2831,60 @@ func TestCoverpkgTestOnly(t *testing.T) {
 	tg.run("test", "-coverpkg=a", "atest")
 	tg.grepStderrNot("no packages being tested depend on matches", "bad match message")
 	tg.grepStdout("coverage: 100", "no coverage")
+}
+
+// Regression test for golang.org/issue/34499: version command should not crash
+// when executed in a deleted directory on Linux.
+func TestExecInDeletedDir(t *testing.T) {
+	switch runtime.GOOS {
+	case "windows", "plan9",
+		"aix",                // Fails with "device busy".
+		"solaris", "illumos": // Fails with "invalid argument".
+		t.Skipf("%v does not support removing the current working directory", runtime.GOOS)
+	}
+	tg := testgo(t)
+	defer tg.cleanup()
+
+	wd, err := os.Getwd()
+	tg.check(err)
+	tg.makeTempdir()
+	tg.check(os.Chdir(tg.tempdir))
+	defer func() { tg.check(os.Chdir(wd)) }()
+
+	tg.check(os.Remove(tg.tempdir))
+
+	// `go version` should not fail
+	tg.run("version")
+}
+
+// A missing C compiler should not force the net package to be stale.
+// Issue 47215.
+func TestMissingCC(t *testing.T) {
+	if !canCgo {
+		t.Skip("test is only meaningful on systems with cgo")
+	}
+	cc := os.Getenv("CC")
+	if cc == "" {
+		cc = "gcc"
+	}
+	if filepath.IsAbs(cc) {
+		t.Skipf(`"CC" (%s) is an absolute path`, cc)
+	}
+	_, err := exec.LookPath(cc)
+	if err != nil {
+		t.Skipf(`"CC" (%s) not on PATH`, cc)
+	}
+
+	tg := testgo(t)
+	defer tg.cleanup()
+	netStale, _ := tg.isStale("net")
+	if netStale {
+		t.Skip(`skipping test because "net" package is currently stale`)
+	}
+
+	tg.setenv("PATH", "") // No C compiler on PATH.
+	netStale, _ = tg.isStale("net")
+	if netStale {
+		t.Error(`clearing "PATH" causes "net" to be stale`)
+	}
 }

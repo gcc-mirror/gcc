@@ -2,7 +2,7 @@
 // { dg-do link { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,11 +42,11 @@ main()
   bool b [[maybe_unused]];
   std::uintmax_t size;
 
-  std::filesystem::absolute(p);
-  std::filesystem::absolute(p, ec);
+  p2 = std::filesystem::absolute(p);
+  p2 = std::filesystem::absolute(p, ec);
 
-  std::filesystem::canonical(p);
-  std::filesystem::canonical(p, ec);
+  p2 = std::filesystem::canonical(p);
+  p2 = std::filesystem::canonical(p, ec);
 
   std::filesystem::copy(p, p);
   std::filesystem::copy(p, p, ec);

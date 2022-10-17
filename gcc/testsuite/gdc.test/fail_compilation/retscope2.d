@@ -1,6 +1,5 @@
 /*
-REQUIRED_ARGS: -dip1000
-PERMUTE_ARGS:
+REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
 fail_compilation/retscope2.d(102): Error: scope variable `s` assigned to `p` with longer lifetime
@@ -87,9 +86,9 @@ fail_compilation/retscope2.d(504): Error: scope variable `c` may not be returned
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope2.d(604): Error: scope variable `_param_0` assigned to non-scope parameter `unnamed` calling retscope2.foo600
-fail_compilation/retscope2.d(604): Error: scope variable `_param_1` assigned to non-scope parameter `unnamed` calling retscope2.foo600
-fail_compilation/retscope2.d(614): Error: template instance retscope2.test600!(int*, int*) error instantiating
+fail_compilation/retscope2.d(604): Error: scope variable `_param_0` assigned to non-scope parameter `__anonymous_param` calling `foo600`
+fail_compilation/retscope2.d(604): Error: scope variable `_param_1` assigned to non-scope parameter `__anonymous_param` calling `foo600`
+fail_compilation/retscope2.d(614): Error: template instance `retscope2.test600!(int*, int*)` error instantiating
 ---
 */
 
@@ -124,14 +123,14 @@ fail_compilation/retscope2.d(721): Error: returning `s.get1()` escapes a referen
 #line 700
 // https://issues.dlang.org/show_bug.cgi?id=17049
 
-@safe S700* get2(return ref scope S700 _this)
+@safe S700* get2(return ref S700 _this)
 {
     return &_this;
 }
 
 struct S700
 {
-    @safe S700* get1() return scope
+    @safe S700* get1() scope return
     {
         return &this;
     }
@@ -157,19 +156,19 @@ fail_compilation/retscope2.d(804): Error: scope variable `e` may not be thrown
 
 #line 800
 
-void foo800()
+void foo800() @safe
 {
     scope Exception e;
     throw e;
 }
 
 /*************************************************/
-/+
+
 /*
-XEST_OUTPUT:
-
+TEST_OUTPUT:
+---
 fail_compilation/retscope2.d(907): Error: address of variable `this` assigned to `p17568` with longer lifetime
-
+---
 */
 
 #line 900
@@ -183,14 +182,15 @@ struct T17568
         p17568 = &a;
     }
 }
-+/
+
 /*************************************************/
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope2.d(1005): Error: scope variable `p` assigned to `this` with longer lifetime
-fail_compilation/retscope2.d(1024): Error: scope variable `p` assigned to `d` with longer lifetime
+fail_compilation/retscope2.d(1005): Error: scope variable `p` assigned to non-scope `this._p`
+fail_compilation/retscope2.d(1021): Error: scope variable `p` assigned to non-scope `c._p`
+fail_compilation/retscope2.d(1024): Error: scope variable `p` assigned to non-scope `d._p`
 ---
 */
 
@@ -216,7 +216,7 @@ void test17428() @safe
         int x;
         int* p = &x;
         scope C17428b c;
-        c._p = p;   // ok
+        c._p = p;   // bad
 
         C17428b d;
         d._p = p;   // bad
@@ -291,5 +291,27 @@ struct T17388
     return t.foo();
 }
 
+/****************************************************/
 
+/*
+TEST_OUTPUT:
+---
+fail_compilation/retscope2.d(1306): Error: copying `& i` into allocated memory escapes a reference to local variable `i`
+---
+*/
 
+#line 1300
+
+// https://issues.dlang.org/show_bug.cgi?id=17370
+
+void test1300() @safe
+{
+    int i;
+    auto p = new S1300(&i).oops;
+}
+
+struct S1300
+{
+    int* oops;
+//    this(int* p) @safe { oops = p; }
+}

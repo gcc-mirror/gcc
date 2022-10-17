@@ -9,19 +9,24 @@ struct S {
 void
 fn (int *a, int b, int c)
 {
-  a[b,c]; // { dg-warning "top-level comma expression in array subscript is deprecated" }
+  a[b,c]; // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_down } }
+	  // { dg-warning "top-level comma expression in array subscript changed meaning in" "" { target c++23 } .-1 }
   a[(b,c)];
 
-  a[(void) b, c]; // { dg-warning "top-level comma expression in array subscript is deprecated" }
+  a[(void) b, c]; // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_down } }
+		  // { dg-warning "top-level comma expression in array subscript changed meaning in" "" { target c++23 } .-1 }
   a[((void) b, c)];
 
-  a[(void) b, (void) c, (void) b, b]; // { dg-warning "top-level comma expression in array subscript is deprecated" }
+  a[(void) b, (void) c, (void) b, b]; // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_down } }
+				      // { dg-warning "top-level comma expression in array subscript changed meaning in" "" { target c++23 } .-1 }
   a[((void) b, (void) c, (void) b, b)];
 
-  a[S(), 10]; // { dg-warning "top-level comma expression in array subscript is deprecated" }
+  a[S(), 10]; // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_down } }
+	      // { dg-warning "top-level comma expression in array subscript changed meaning in" "" { target c++23 } .-1 }
   a[(S(), 10)];
 
   a[int{(1,2)}];
-  a[int{(1,2)}, int{}]; // { dg-warning "top-level comma expression in array subscript is deprecated" }
+  a[int{(1,2)}, int{}]; // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_down } }
+			// { dg-warning "top-level comma expression in array subscript changed meaning in" "" { target c++23 } .-1 }
   a[(int{(1,2)}, int{})];
 }

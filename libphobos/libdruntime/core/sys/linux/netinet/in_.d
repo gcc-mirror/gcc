@@ -115,7 +115,7 @@ version (linux_libc)
     enum IN6ADDR_ANY_INIT      = in6_addr.init;
     enum IN6ADDR_LOOPBACK_INIT = in6_addr([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
 
-    version (gnu_libc) static if (__USE_MISC)
+    version (gnu_libc) static if (_DEFAULT_SOURCE)
     {
         struct ip_mreq
         {
@@ -174,13 +174,13 @@ version (linux_libc)
 
     extern(D) bool IN6_ARE_ADDR_EQUAL(in6_addr* a, in6_addr* b) pure @safe { return *a == *b; }
 
-    version (gnu_libc) static if (__USE_MISC)
+    version (gnu_libc) static if (_DEFAULT_SOURCE)
     {
         int bindresvport(int __sockfd, sockaddr_in* __sock_in);
         int bindresvport6(int __sockfd, sockaddr_in6* _);
     }
 
-    version (gnu_libc) static if (__USE_GNU)
+    version (gnu_libc) static if (_GNU_SOURCE)
     {
         struct in6_pktinfo
         {
@@ -254,7 +254,7 @@ version (linux_libc)
     enum IP_DROP_SOURCE_MEMBERSHIP = 40;
     enum IP_MSFILTER               = 41;
 
-    version (gnu_libc) static if (__USE_MISC)
+    version (gnu_libc) static if (_DEFAULT_SOURCE)
     {
         enum MCAST_JOIN_GROUP         = 42;
         enum MCAST_BLOCK_SOURCE       = 43;
@@ -307,7 +307,7 @@ version (linux_libc)
     enum IP_DEFAULT_MULTICAST_LOOP = 1;
     enum IP_MAX_MEMBERSHIPS        = 20;
 
-    version (gnu_libc) static if (__USE_MISC)
+    version (gnu_libc) static if (_DEFAULT_SOURCE)
     {
         struct ip_opts
         {

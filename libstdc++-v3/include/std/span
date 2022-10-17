@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of objects -*- C++ -*-
 
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,16 +58,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
     template<typename _Tp>
-      struct __is_std_span : false_type { };
+      inline constexpr bool __is_span = false;
 
     template<typename _Tp, size_t _Num>
-      struct __is_std_span<span<_Tp, _Num>> : true_type { };
+      inline constexpr bool __is_span<span<_Tp, _Num>> = true;
 
     template<typename _Tp>
-      struct __is_std_array : false_type { };
+      inline constexpr bool __is_std_array = false;
 
     template<typename _Tp, size_t _Num>
-      struct __is_std_array<std::array<_Tp, _Num>> : true_type { };
+      inline constexpr bool __is_std_array<std::array<_Tp, _Num>> = true;
 
     template<size_t _Extent>
       class __extent_storage
@@ -160,6 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      __glibcxx_assert(__count == _Extent);
 	    }
+	  __glibcxx_requires_valid_range(__first, __first + __count);
 	}
 
       template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
@@ -175,6 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      __glibcxx_assert((__last - __first) == _Extent);
 	    }
+	  __glibcxx_requires_valid_range(__first, __last);
 	}
 
       template<size_t _ArrayExtent>
@@ -199,11 +201,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Range>
-	requires ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
-	  && (ranges::borrowed_range<_Range> || is_const_v<element_type>)
-	  && (!__detail::__is_std_span<remove_cvref_t<_Range>>::value)
-	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>::value)
+	requires (!__detail::__is_span<remove_cvref_t<_Range>>)
+	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>)
 	  && (!is_array_v<remove_cvref_t<_Range>>)
+	  && ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
+	  && (ranges::borrowed_range<_Range> || is_const_v<element_type>)
 	  && __is_compatible_ref<ranges::range_reference_t<_Range>>::value
 	constexpr explicit(extent != dynamic_extent)
 	span(_Range&& __range)
@@ -407,7 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     span(_Iter, _End)
       -> span<remove_reference_t<iter_reference_t<_Iter>>>;
 
-  template<typename _Range>
+  template<ranges::contiguous_range _Range>
     span(_Range &&)
       -> span<remove_reference_t<ranges::range_reference_t<_Range&>>>;
 
@@ -425,6 +427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Type, size_t _Extent>
+    requires (!is_const_v<_Type>)
     inline
     span<byte, _Extent == dynamic_extent
        ? dynamic_extent : _Extent * sizeof(_Type)>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -194,7 +194,6 @@ package body System.Fat_Gen is
    function Compose (Fraction : T; Exponent : UI) return T is
       Arg_Frac : T;
       Arg_Exp  : UI;
-      pragma Unreferenced (Arg_Exp);
    begin
       Decompose (Fraction, Arg_Frac, Arg_Exp);
       return Scaling (Arg_Frac, Exponent);
@@ -285,7 +284,6 @@ package body System.Fat_Gen is
    function Exponent (X : T) return UI is
       X_Frac : T;
       X_Exp  : UI;
-      pragma Unreferenced (X_Frac);
    begin
       Decompose (X, X_Frac, X_Exp);
       return X_Exp;
@@ -487,7 +485,6 @@ package body System.Fat_Gen is
    function Fraction (X : T) return T is
       X_Frac : T;
       X_Exp  : UI;
-      pragma Unreferenced (X_Exp);
    begin
       Decompose (X, X_Frac, X_Exp);
       return X_Frac;
@@ -624,7 +621,6 @@ package body System.Fat_Gen is
       P_Even   : Boolean;
 
       Arg_Frac : T;
-      pragma Unreferenced (Arg_Frac);
 
    begin
       if Y = 0.0 then

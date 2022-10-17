@@ -20,7 +20,7 @@ do_vec_gnb (vector unsigned __int128 source, int stride)
     case 5:
       return vec_gnb (source, 1);	/* { dg-error "between 2 and 7" } */
     case 6:
-      return vec_gnb (source, stride);	/* { dg-error "unsigned literal" } */
+      return vec_gnb (source, stride);	/* { dg-error "literal" } */
     case 7:
       return vec_gnb (source, 7);
 

@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 5
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 /**
 
@@ -15,10 +15,10 @@ class TestMembers(TemplateArg)
   public:
     /**
 
-       a static method 
+       a static method
 
        Params: idx = index
-   
+
     */
     static void PublicStaticMethod(int  idx)
     {
@@ -28,4 +28,3 @@ class TestMembers(TemplateArg)
 void main()
 {
 }
-

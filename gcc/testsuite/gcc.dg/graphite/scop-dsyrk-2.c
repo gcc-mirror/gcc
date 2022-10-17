@@ -1,4 +1,5 @@
 /* { dg-require-effective-target size32plus } */
+/* { dg-additional-options "-fno-thread-jumps" } */
 #define NMAX 3000
 #define MEASURE_TIME 1
 

@@ -78,4 +78,4 @@ avx2_test (void)
       abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Move stmt to created bb" 6 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Move stmt to created bb" 10 "vect" } } */

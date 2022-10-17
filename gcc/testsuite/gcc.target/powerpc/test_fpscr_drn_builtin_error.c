@@ -9,8 +9,8 @@ int main ()
      __builtin_set_fpscr_drn() also support a variable as an argument but
      can't test variable value at compile time.  */
 
-  __builtin_set_fpscr_drn(-1);  /* { dg-error "Argument must be a value between 0 and 7" } */ 
-  __builtin_set_fpscr_drn(8);   /* { dg-error "Argument must be a value between 0 and 7" } */ 
+  __builtin_set_fpscr_drn(-1);  /* { dg-error "argument 1 must be a variable or a literal between 0 and 7, inclusive" } */ 
+  __builtin_set_fpscr_drn(8);   /* { dg-error "argument 1 must be a variable or a literal between 0 and 7, inclusive" } */ 
 
 }
 

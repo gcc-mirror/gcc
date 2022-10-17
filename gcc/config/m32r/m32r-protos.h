@@ -1,5 +1,5 @@
-/* Prototypes for m32r.c functions used in the md file & elsewhere.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+/* Prototypes for m32r.cc functions used in the md file & elsewhere.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

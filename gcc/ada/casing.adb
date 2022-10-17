@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,15 +104,6 @@ package body Casing is
          return Unknown;
       end if;
    end Determine_Casing;
-
-   ------------------------
-   -- Set_All_Upper_Case --
-   ------------------------
-
-   procedure Set_All_Upper_Case is
-   begin
-      Set_Casing (All_Upper_Case);
-   end Set_All_Upper_Case;
 
    ----------------
    -- Set_Casing --

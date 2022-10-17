@@ -1,5 +1,5 @@
 /* Machine description patterns for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -121,21 +121,32 @@ You should have received a copy of the GNU General Public License
    stw %0,lo16(%2)(%1)"
   [(set_attr "type" "store")])
 
-;; 64-bit MachO load/store support
-
 ;; Mach-O PIC.
 
 (define_insn "@macho_high_<mode>"
   [(set (match_operand:P 0 "gpc_reg_operand" "=b*r")
 	(high:P (match_operand 1 "" "")))]
-  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN)"
+  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && !flag_pic"
   "lis %0,ha16(%1)")
 
 (define_insn "@macho_low_<mode>"
   [(set (match_operand:P 0 "gpc_reg_operand" "=r")
 	(lo_sum:P (match_operand:P 1 "gpc_reg_operand" "b")
 		   (match_operand 2 "" "")))]
-   "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN)"
+   "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && !flag_pic"
+   "la %0,lo16(%2)(%1)")
+
+(define_insn "@machopic_high_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=b*r")
+	(high:P (match_operand 1 "macho_pic_address" "")))]
+  "TARGET_MACHO && flag_pic"
+  "lis %0,ha16(%1)")
+
+(define_insn "@machopic_low_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=r")
+	(lo_sum:P (match_operand:P 1 "gpc_reg_operand" "b")
+		   (match_operand 2 "macho_pic_address" "")))]
+   "TARGET_MACHO && flag_pic"
    "la %0,lo16(%2)(%1)")
 
 (define_split

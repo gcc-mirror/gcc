@@ -72,7 +72,7 @@ struct A4
 
 void test4()
 {
-    printf("A4.sizeof = %d\n", A4.sizeof);
+    printf("A4.sizeof = %zd\n", A4.sizeof);
     assert(A4.sizeof == 1 * int.sizeof);
 
     A4 q;
@@ -213,7 +213,7 @@ void test10()
 
 /*****************************************/
 
-scope class T11
+class T11
 {
     this(){}
     ~this(){}
@@ -270,7 +270,7 @@ void test13()
 
 void write14(bool[] c)
 {
-    printf("[%2d]: ", c.length);
+    printf("[%2zd]: ", c.length);
     foreach (bool x; c)
         printf("%d,", x);
     printf("\n");
@@ -334,12 +334,6 @@ int y16;
 
 class C16
 {
-        new(size_t size, byte blah){
-                void* v = (new byte[C16.classinfo.initializer.length]).ptr;
-                y16 = 1;
-                assert(blah == 3);
-                return v;
-        }
         int x;
         this()
         {
@@ -349,8 +343,7 @@ class C16
 
 void test16()
 {
-    C16 c = new(3) C16;
-    assert(y16 == 1);
+    C16 c = new C16();
     assert(c.x == 4);
 }
 
@@ -446,7 +439,7 @@ class Buffer
 void test20()
 {
     Buffer b = new Buffer();
-    delete b;
+    destroy(b);
 }
 
 /*****************************************/
@@ -488,34 +481,6 @@ void test22()
     }
 }
 
-
-/*****************************************/
-
-void test23()
-{
-    float f;
-    double d;
-    real r;
-
-    if (f > ifloat.max)
-        goto Loverflow;
-    if (d > ifloat.max)
-        goto Loverflow;
-    if (r > ifloat.max)
-        goto Loverflow;
-
-    if (ifloat.max < f)
-        goto Loverflow;
-    if (ifloat.max < d)
-        goto Loverflow;
-    if (ifloat.max < r)
-        goto Loverflow;
-
-    return;
-
-  Loverflow:
-    return;
-}
 
 /*****************************************/
 
@@ -579,15 +544,6 @@ void Lookup( int which )
 
 void test29()
 {
-}
-
-/*****************************************/
-
-void test30()
-{
-  double d = 1;
-  cdouble cd = 1+0i;
-  assert(cd == 1.0 + 0i);
 }
 
 /*****************************************/
@@ -743,7 +699,7 @@ void test42()
         string string1 =  "ワロスｗ";
         string string2 = r"ワロスｗ";
         string string3 =  `ワロスｗ`;
-        string string4 = x"E3 83 AF E3 83 AD E3 82 B9 EF BD 97";
+        string string4 = "\xE3\x83\xAF\xE3\x83\xAD\xE3\x82\xB9\xEF\xBD\x97";
 
         assert(string1.length==master.length);
 
@@ -806,7 +762,7 @@ struct S45
 {
     double x = 0, y = 0;
     static S45 opCall(int i) { S45 r; r.x = i; return r; }
-    S45 opMul(S45 s)
+    S45 opBinary(string op)(S45 s) if (op == "*")
     {
         S45 r;
         r.x = x * s.x;
@@ -842,11 +798,11 @@ void test45()
 {
     S45 s = S45(10);
     S45 val = pow!(S45)(s,2);
-    printf("x = %2.2lf, y = %2.2lf\n", val.x, val.y);
+    printf("x = %2.2f, y = %2.2f\n", val.x, val.y);
     assert(val.x == 100);
     assert(val.y == 0);
     double d = pow!(double)(10,3);
-    printf("%2.2lf\n", d);
+    printf("%2.2f\n", d);
     assert(d == 1000);
 }
 
@@ -869,19 +825,6 @@ void test46()
   assert( x.color is 5 );
   assert( x.key is null );
   assert( x.value is null );
-}
-
-/*****************************************/
-
-void test47()
-{
-   cdouble[] a;
-   cdouble[] b;
-   foreach(ref cdouble d; b)
-     {
-       d = -a[0];
-       for(;;){}
-     }
 }
 
 /*****************************************/
@@ -915,7 +858,7 @@ void test49()
 {
     int i = void;
     //printf("i = %d\n", i);
-    int[10] a = void;
+    int[10] a;
     foreach (int x; a)
     {
         printf("\tx = %d\n", x);
@@ -938,7 +881,7 @@ void test51()
 {
     bool[9][3] qwert;
 
-    printf("qwert.sizeof = %d\n", qwert.sizeof);
+    printf("qwert.sizeof = %zd\n", qwert.sizeof);
 
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 9; j++)
@@ -987,13 +930,13 @@ const char[3][13] month = [
 
 void test53()
 {
-    printf("%.*s\n", month[1].length, month[1].ptr);
-    printf("%.*s\n", month[2].length, month[2].ptr);
-    printf("%.*s\n", month[3].length, month[3].ptr);
-    printf("%.*s\n", month[4].length, month[4].ptr);
-    printf("%.*s\n", month[5].length, month[5].ptr);
-    printf("%.*s\n", month[6].length, month[6].ptr);
-    printf("%.*s\n", month[8].length, month[8].ptr);
+    printf("%.*s\n", cast(int)month[1].length, month[1].ptr);
+    printf("%.*s\n", cast(int)month[2].length, month[2].ptr);
+    printf("%.*s\n", cast(int)month[3].length, month[3].ptr);
+    printf("%.*s\n", cast(int)month[4].length, month[4].ptr);
+    printf("%.*s\n", cast(int)month[5].length, month[5].ptr);
+    printf("%.*s\n", cast(int)month[6].length, month[6].ptr);
+    printf("%.*s\n", cast(int)month[8].length, month[8].ptr);
 
     assert(month[1] == "Jan");
     assert(month[2] == "Feb");
@@ -1032,7 +975,7 @@ struct S54
         return S54.foo() * S54.foo();
     }
 
-    S54 opMul(S54 s)
+    S54 opBinary(string op)(S54 s) if (op == "*")
     {
         return s;
     }
@@ -1052,12 +995,12 @@ void test55()
   str = str ~ c;
   uvw = c ~ uvw;
 
-  printf("%.*s\n", str.length, str.ptr);
+  printf("%.*s\n", cast(int)str.length, str.ptr);
   assert(str == "a");
   assert(uvw == "a");
 
   c = 'b';
-  printf("%.*s\n", str.length, str.ptr);
+  printf("%.*s\n", cast(int)str.length, str.ptr);
   assert(str == "a");
   assert(uvw == "a");
 }
@@ -1199,7 +1142,7 @@ void foo61(real[] arr)
     for (size_t j = i; j >= i; j -= i)
     {
         // interesting results follow from this:
-        printf("%d ", i);
+        printf("%zd ", i);
         // it prints a _lot_ of ones
 
         arr[j] = arr[j - i];
@@ -1253,14 +1196,12 @@ int main()
     test20();
     test21();
     test22();
-    test23();
     test24();
     test25();
     test26();
     test27();
     test28();
     test29();
-    test30();
     test31();
     test33();
     test34();
@@ -1274,7 +1215,6 @@ int main()
     test44();
     test45();
     test46();
-    test47();
     test48();
     test49();
     test50();
@@ -1294,4 +1234,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-

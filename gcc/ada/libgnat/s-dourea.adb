@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2021, Free Software Foundation, Inc.            --
+--            Copyright (C) 2021-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,6 +178,12 @@ package body System.Double_Real is
       P, R   : Double_T;
 
    begin
+      if Is_Infinity (B) or else Is_Zero (B) then
+         return (A.Hi / B, 0.0);
+      end if;
+      pragma Annotate (CodePeer, Intentional, "test always false",
+                       "code deals with infinity");
+
       Q1 := A.Hi / B;
 
       --  Compute R = A - B * Q1
@@ -196,6 +202,12 @@ package body System.Double_Real is
       R, S       : Double_T;
 
    begin
+      if Is_Infinity (B.Hi) or else Is_Zero (B.Hi) then
+         return (A.Hi / B.Hi, 0.0);
+      end if;
+      pragma Annotate (CodePeer, Intentional, "test always false",
+                       "code deals with infinity");
+
       Q1 := A.Hi / B.Hi;
       R := A - B * Q1;
 

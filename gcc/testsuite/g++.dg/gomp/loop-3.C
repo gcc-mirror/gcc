@@ -116,7 +116,7 @@ f1 (I<int> &x, I<int> &y, I<int> &u, I<int> &v)
     for (j = x; j < y; j++)
       ;
   #pragma omp for collapse(2)
-  for (i = x; i < y; i = i + 2) /* { dg-error "initializer expression refers to iteration variable" } */
+  for (i = x; i < y; i = i + 2)
     for (j = i; j < v; j += 2)
       ;
   #pragma omp for collapse(2)
@@ -128,11 +128,11 @@ f1 (I<int> &x, I<int> &y, I<int> &u, I<int> &v)
     for (j = baz (&i); j < v; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
       ;
   #pragma omp for collapse(2)
-  for (i = x; i < y; i++) /* { dg-error "condition expression refers to iteration variable" } */
+  for (i = x; i < y; i++)
     for (j = v; j > i; j--)
       ;
   #pragma omp for collapse(2)
-  for (i = x; i < y; i++) /* { dg-error "condition expression refers to iteration variable" } */
+  for (i = x; i < y; i++)
     for (j = x; j < i; j++)
       ;
   #pragma omp for collapse(2)
@@ -234,7 +234,7 @@ f2 (I<int> &x, I<int> &y, I<int> &u, I<int> &v)
     for (I<int> j = u; j < y; j += 2)
       ;
   #pragma omp for collapse(2)
-  for (I<int> i = x; i < y; i = i + 2) /* { dg-error "initializer expression refers to iteration variable" } */
+  for (I<int> i = x; i < y; i = i + 2)
     for (I<int> j = i; j < v; j += 2)
       ;
   #pragma omp for collapse(2)
@@ -246,11 +246,11 @@ f2 (I<int> &x, I<int> &y, I<int> &u, I<int> &v)
     for (I<int> j = baz (&i); j < v; j += 2) /* { dg-error "initializer expression refers to iteration variable" } */
       ;
   #pragma omp for collapse(2)
-  for (I<int> i = x; i < y; i++) /* { dg-error "condition expression refers to iteration variable" } */
+  for (I<int> i = x; i < y; i++)
     for (I<int> j = v; j > i; j--)
       ;
   #pragma omp for collapse(2)
-  for (I<int> i = x; i < y; i++) /* { dg-error "condition expression refers to iteration variable" } */
+  for (I<int> i = x; i < y; i++)
     for (I<int> j = x; j < i; j++)
       ;
   #pragma omp for collapse(2)

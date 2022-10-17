@@ -1,6 +1,6 @@
 ; Options for the VAX port of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -41,6 +41,10 @@ Generate code for GNU assembler (gas).
 munix
 Target RejectNegative Mask(UNIX_ASM)
 Generate code for UNIX assembler.
+
+mlra
+Target Mask(LRA)
+Enable Local Register Allocation.
 
 mvaxc-alignment
 Target RejectNegative Mask(VAXC_ALIGNMENT)

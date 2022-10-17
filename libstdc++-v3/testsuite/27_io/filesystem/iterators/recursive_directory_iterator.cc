@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,54 +59,55 @@ test01()
   ++iter;
   VERIFY( iter == end(iter) );
 
-#if ! (defined (__MINGW32__) || defined(__MINGW64__))
-  // Test inaccessible directory.
-  ec = bad_ec;
-  permissions(p, fs::perms::none, ec);
-  VERIFY( !ec );
-  iter = fs::recursive_directory_iterator(p, ec);
-  VERIFY( ec );
-  VERIFY( iter == end(iter) );
+  if (__gnu_test::permissions_are_testable())
+  {
+    // Test inaccessible directory.
+    ec = bad_ec;
+    permissions(p, fs::perms::none, ec);
+    VERIFY( !ec );
+    iter = fs::recursive_directory_iterator(p, ec);
+    VERIFY( ec );
+    VERIFY( iter == end(iter) );
 
-  // Test inaccessible directory, skipping permission denied.
-  const auto opts = fs::directory_options::skip_permission_denied;
-  iter = fs::recursive_directory_iterator(p, opts, ec);
-  VERIFY( !ec );
-  VERIFY( iter == end(iter) );
+    // Test inaccessible directory, skipping permission denied.
+    const auto opts = fs::directory_options::skip_permission_denied;
+    iter = fs::recursive_directory_iterator(p, opts, ec);
+    VERIFY( !ec );
+    VERIFY( iter == end(iter) );
 
-  // Test inaccessible sub-directory.
-  ec = bad_ec;
-  permissions(p, fs::perms::owner_all, ec);
-  VERIFY( !ec );
-  ec = bad_ec;
-  permissions(p/"d1/d2", fs::perms::none, ec);
-  VERIFY( !ec );
-  ec = bad_ec;
-  iter = fs::recursive_directory_iterator(p, ec);
-  VERIFY( !ec );
-  VERIFY( iter != end(iter) );
-  VERIFY( iter->path() == p/"d1" );
-  ++iter;              // should recurse into d1
-  VERIFY( iter != end(iter) );
-  VERIFY( iter->path() == p/"d1/d2" );
-  iter.increment(ec);  // should fail to recurse into p/d1/d2
-  VERIFY( ec );
-  VERIFY( iter == end(iter) );
+    // Test inaccessible sub-directory.
+    ec = bad_ec;
+    permissions(p, fs::perms::owner_all, ec);
+    VERIFY( !ec );
+    ec = bad_ec;
+    permissions(p/"d1/d2", fs::perms::none, ec);
+    VERIFY( !ec );
+    ec = bad_ec;
+    iter = fs::recursive_directory_iterator(p, ec);
+    VERIFY( !ec );
+    VERIFY( iter != end(iter) );
+    VERIFY( iter->path() == p/"d1" );
+    ++iter;              // should recurse into d1
+    VERIFY( iter != end(iter) );
+    VERIFY( iter->path() == p/"d1/d2" );
+    iter.increment(ec);  // should fail to recurse into p/d1/d2
+    VERIFY( ec );
+    VERIFY( iter == end(iter) );
 
-  // Test inaccessible sub-directory, skipping permission denied.
-  ec = bad_ec;
-  iter = fs::recursive_directory_iterator(p, opts, ec);
-  VERIFY( !ec );
-  VERIFY( iter != end(iter) );
-  VERIFY( iter->path() == p/"d1" );
-  ++iter;              // should recurse into d1
-  VERIFY( iter != end(iter) );
-  VERIFY( iter->path() == p/"d1/d2" );
-  ec = bad_ec;
-  iter.increment(ec);  // should fail to recurse into p/d1/d2, so skip it
-  VERIFY( !ec );
-  VERIFY( iter == end(iter) );
-#endif
+    // Test inaccessible sub-directory, skipping permission denied.
+    ec = bad_ec;
+    iter = fs::recursive_directory_iterator(p, opts, ec);
+    VERIFY( !ec );
+    VERIFY( iter != end(iter) );
+    VERIFY( iter->path() == p/"d1" );
+    ++iter;              // should recurse into d1
+    VERIFY( iter != end(iter) );
+    VERIFY( iter->path() == p/"d1/d2" );
+    ec = bad_ec;
+    iter.increment(ec);  // should fail to recurse into p/d1/d2, so skip it
+    VERIFY( !ec );
+    VERIFY( iter == end(iter) );
+  }
 
   permissions(p/"d1/d2", fs::perms::owner_all, ec);
   remove_all(p, ec);
@@ -183,6 +184,24 @@ test05()
   remove_all(p, ec);
 }
 
+void
+test06()
+{
+#ifndef NO_SYMLINKS
+  auto p = __gnu_test::nonexistent_path();
+  create_directories(p/"d1/d2");
+  create_directory_symlink("d1", p/"link");
+  fs::recursive_directory_iterator it(p), endit;
+  VERIFY( std::distance(it, endit) == 3 ); // d1 and d2 and link
+
+  it = fs::recursive_directory_iterator(p, fs::directory_options::follow_directory_symlink);
+  VERIFY( std::distance(it, endit) == 4 ); // d1 and d1/d2 and link and link/d2
+
+  std::error_code ec;
+  remove_all(p, ec);
+#endif
+}
+
 int
 main()
 {
@@ -191,4 +210,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

@@ -1,6 +1,7 @@
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target rtti }
 
-// Copyright (C) 2012-2021 Free Software Foundation, Inc.
+// Copyright (C) 2012-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +17,8 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
+// PR libstdc++/53248
 
 #include <array>
 #include <typeindex>

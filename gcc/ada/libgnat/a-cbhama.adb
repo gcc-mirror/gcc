@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ is
    procedure Set_Next (Node : in out Node_Type; Next : Count_Type);
    pragma Inline (Set_Next);
 
-   function Vet (Position : Cursor) return Boolean;
+   function Vet (Position : Cursor) return Boolean with Inline;
 
    --------------------------
    -- Local Instantiations --
@@ -213,7 +213,7 @@ is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Constant_Reference_Type :=
-           (Element => N.Element'Access,
+           (Element => N.Element'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -239,7 +239,7 @@ is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Constant_Reference_Type :=
-           (Element => N.Element'Access,
+           (Element => N.Element'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -697,8 +697,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin
@@ -1028,7 +1026,7 @@ is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Reference_Type :=
-           (Element => N.Element'Access,
+           (Element => N.Element'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -1053,7 +1051,7 @@ is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Reference_Type :=
-           (Element => N.Element'Access,
+           (Element => N.Element'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -1177,6 +1175,10 @@ is
 
    function Vet (Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = 0 then
          return Position.Container = null;
       end if;

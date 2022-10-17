@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux  -*- C++ -*-
 
-// Copyright (C) 2000-2021 Free Software Foundation, Inc.
+// Copyright (C) 2000-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,6 +59,12 @@
 // Otherwise use (__gthread_t)1 as the ID of the main (and only) thread.
 # define _GLIBCXX_NATIVE_THREAD_ID \
   (__gthread_active_p() ? __gthread_self() : (__gthread_t)1)
+#endif
+
+#if __GLIBC_PREREQ(2, 34)
+// Since glibc 2.34 all pthreads functions are usable without linking to
+// libpthread.
+# define _GLIBCXX_GTHREAD_USE_WEAK 0
 #endif
 
 #endif

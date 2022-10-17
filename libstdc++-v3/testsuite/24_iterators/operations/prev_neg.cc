@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,6 @@ void
 test02()
 {
   const Y array[1] = { };
-  std::prev(array + 1);
-  // { dg-error "forward_iterator" "" { target *-*-* } 223 }
+  (void) std::prev(array + 1);
+  // { dg-error "forward_iterator" "" { target *-*-* } 239 }
 }

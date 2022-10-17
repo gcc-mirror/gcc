@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,16 +44,16 @@ with Uname;          use Uname;
 
 package body Restrict is
 
-   Global_Restriction_No_Tasking : Boolean := False;
-   --  Set to True when No_Tasking is set in the run-time package System
-   --  or in a configuration pragmas file (for example, gnat.adc).
-
    --------------------------------
    -- Package Local Declarations --
    --------------------------------
 
    Config_Cunit_Boolean_Restrictions : Save_Cunit_Boolean_Restrictions;
    --  Save compilation unit restrictions set by config pragma files
+
+   Global_Restriction_No_Tasking : Boolean := False;
+   --  Set to True when No_Tasking is set in the run-time package System
+   --  or in a configuration pragmas file (for example, gnat.adc).
 
    Restricted_Profile_Result : Boolean := False;
    --  This switch memoizes the result of Restricted_Profile function calls for
@@ -71,12 +71,12 @@ package body Restrict is
 
    No_Specification_Of_Aspect_Warning : array (Aspect_Id) of Boolean :=
                                           (others => True);
-   --  An entry in this array is set False in reponse to a previous call to
-   --  Set_No_Speficiation_Of_Aspect for pragmas in the main unit that
+   --  An entry in this array is set False in response to a previous call to
+   --  Set_No_Specification_Of_Aspect for pragmas in the main unit that
    --  specify Warning as False. Once set False, an entry is never reset.
 
    No_Specification_Of_Aspect_Set : Boolean := False;
-   --  Set True if any entry of No_Specifcation_Of_Aspects has been set True.
+   --  Set True if any entry of No_Specification_Of_Aspects has been set True.
    --  Once set True, this is never turned off again.
 
    No_Use_Of_Attribute : array (Attribute_Id) of Source_Ptr :=
@@ -122,6 +122,11 @@ package body Restrict is
    --  message is to be suppressed if this is an internal file and this file is
    --  not the main unit. Returns True if message is to be suppressed.
 
+   procedure Violation_Of_No_Dependence (Unit : Int; N : Node_Id);
+   --  Called if a violation of restriction No_Dependence for Unit at node N
+   --  is found. This routine outputs the appropriate message, taking care of
+   --  warning vs real violation.
+
    -------------------
    -- Abort_Allowed --
    -------------------
@@ -148,24 +153,6 @@ package body Restrict is
    end Add_To_Config_Boolean_Restrictions;
    --  Add specified restriction to stored configuration boolean restrictions.
    --  This is used for handling the special case of No_Elaboration_Code.
-
-   -------------------------
-   -- Check_Compiler_Unit --
-   -------------------------
-
-   procedure Check_Compiler_Unit (Feature : String; N : Node_Id) is
-   begin
-      if Compiler_Unit then
-         Error_Msg_N (Feature & " not allowed in compiler unit!!??", N);
-      end if;
-   end Check_Compiler_Unit;
-
-   procedure Check_Compiler_Unit (Feature : String; Loc : Source_Ptr) is
-   begin
-      if Compiler_Unit then
-         Error_Msg (Feature & " not allowed in compiler unit!!??", Loc);
-      end if;
-   end Check_Compiler_Unit;
 
    ------------------------------------
    -- Check_Elaboration_Code_Allowed --
@@ -396,10 +383,9 @@ package body Restrict is
       N : Node_Id;
       V : Uint := Uint_Minus_1)
    is
-      Msg_Issued : Boolean;
-      pragma Unreferenced (Msg_Issued);
+      Ignore_Msg_Issued : Boolean;
    begin
-      Check_Restriction (Msg_Issued, R, N, V);
+      Check_Restriction (Ignore_Msg_Issued, R, N, V);
    end Check_Restriction;
 
    procedure Check_Restriction
@@ -569,8 +555,6 @@ package body Restrict is
    -------------------------------------
 
    procedure Check_Restriction_No_Dependence (U : Node_Id; Err : Node_Id) is
-      DU : Node_Id;
-
    begin
       --  Ignore call if node U is not in the main source unit. This avoids
       --  cascaded errors, e.g. when Ada.Containers units with other units.
@@ -586,26 +570,33 @@ package body Restrict is
       --  Loop through entries in No_Dependence table to check each one in turn
 
       for J in No_Dependences.First .. No_Dependences.Last loop
-         DU := No_Dependences.Table (J).Unit;
-
-         if Same_Unit (U, DU) then
-            Error_Msg_Sloc := Sloc (DU);
-            Error_Msg_Node_1 := DU;
-
-            if No_Dependences.Table (J).Warn then
-               Error_Msg
-                 ("?*?violation of restriction `No_Dependence '='> &`#",
-                  Sloc (Err));
-            else
-               Error_Msg
-                 ("|violation of restriction `No_Dependence '='> &`#",
-                  Sloc (Err));
-            end if;
-
+         if Same_Unit (No_Dependences.Table (J).Unit, U) then
+            Violation_Of_No_Dependence (J, Err);
             return;
          end if;
       end loop;
    end Check_Restriction_No_Dependence;
+
+   -----------------------------------------------
+   -- Check_Restriction_No_Dependence_On_System --
+   -----------------------------------------------
+
+   procedure Check_Restriction_No_Dependence_On_System
+     (U   : Name_Id;
+      Err : Node_Id)
+   is
+      pragma Assert (U /= No_Name);
+
+   begin
+      --  Loop through entries in No_Dependence table to check each one in turn
+
+      for J in No_Dependences.First .. No_Dependences.Last loop
+         if No_Dependences.Table (J).System_Child = U then
+            Violation_Of_No_Dependence (J, Err);
+            return;
+         end if;
+      end loop;
+   end Check_Restriction_No_Dependence_On_System;
 
    --------------------------------------------------
    -- Check_Restriction_No_Specification_Of_Aspect --
@@ -1493,6 +1484,8 @@ package body Restrict is
       Warn    : Boolean;
       Profile : Profile_Name := No_Profile)
    is
+      ND : ND_Entry;
+
    begin
       --  Loop to check for duplicate entry
 
@@ -1514,7 +1507,26 @@ package body Restrict is
 
       --  Entry is not currently in table
 
-      No_Dependences.Append ((Unit, Warn, Profile));
+      ND := (Unit, No_Name, Warn, Profile);
+
+      --  Check whether this is a child unit of System
+
+      if Nkind (Unit) = N_Selected_Component then
+         declare
+            Root : Node_Id := Unit;
+
+         begin
+            while Nkind (Prefix (Root)) = N_Selected_Component loop
+               Root := Prefix (Root);
+            end loop;
+
+            if Chars (Prefix (Root)) = Name_System then
+               ND.System_Child := Chars (Selector_Name (Root));
+            end if;
+         end;
+      end if;
+
+      No_Dependences.Append (ND);
    end Set_Restriction_No_Dependence;
 
    --------------------------------------
@@ -1665,6 +1677,24 @@ package body Restrict is
          return In_Internal_Unit (N);
       end if;
    end Suppress_Restriction_Message;
+
+   --------------------------------
+   -- Violation_Of_No_Dependence --
+   --------------------------------
+
+   procedure Violation_Of_No_Dependence (Unit : Int; N : Node_Id) is
+   begin
+      Error_Msg_Node_1 := No_Dependences.Table (Unit).Unit;
+      Error_Msg_Sloc   := Sloc (Error_Msg_Node_1);
+
+      if No_Dependences.Table (Unit).Warn then
+         Error_Msg
+           ("?*?violation of restriction `No_Dependence '='> &`#", Sloc (N));
+      else
+         Error_Msg
+           ("|violation of restriction `No_Dependence '='> &`#", Sloc (N));
+      end if;
+   end Violation_Of_No_Dependence;
 
    ---------------------
    -- Tasking_Allowed --

@@ -1,9 +1,15 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 extern(C) int printf(const char*, ...);
 
 template Seq(T...) { alias T Seq; }
 
 /***************************************************/
-// 3133
+// https://issues.dlang.org/show_bug.cgi?id=3133
 
 void test3133()
 {
@@ -12,7 +18,7 @@ void test3133()
 }
 
 /***************************************************/
-// 7504
+// https://issues.dlang.org/show_bug.cgi?id=7504
 
 void test7504() pure nothrow @safe
 {
@@ -56,7 +62,7 @@ C7504 create7504(T...)(T input)
 }
 
 /***************************************************/
-// 8119
+// https://issues.dlang.org/show_bug.cgi?id=8119
 
 struct S8119;
 
@@ -73,7 +79,7 @@ void test8119()
 }
 
 /***************************************************/
-// 8645
+// https://issues.dlang.org/show_bug.cgi?id=8645
 
 template TypeTuple8645(TL...)
 {
@@ -88,7 +94,7 @@ void test8645()
 }
 
 /***************************************************/
-// 10497
+// https://issues.dlang.org/show_bug.cgi?id=10497
 
 struct S10497;
 
@@ -99,7 +105,7 @@ void test10497(S10497** s)
 }
 
 /***************************************************/
-// 10793
+// https://issues.dlang.org/show_bug.cgi?id=10793
 
 struct RealFoo10793
 {
@@ -116,7 +122,7 @@ void test10793()
 }
 
 /***************************************************/
-// 10834
+// https://issues.dlang.org/show_bug.cgi?id=10834
 
 void test10834()
 {
@@ -137,7 +143,7 @@ void test10834()
 }
 
 /***************************************************/
-// 10842
+// https://issues.dlang.org/show_bug.cgi?id=10842
 
 template Test10842(F, T)
 {
@@ -162,30 +168,12 @@ template Test10842(F, T)
 
 void test10842()
 {
-    foreach (From; Seq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, real))
-    {
-        foreach (To; Seq!(ifloat, idouble, ireal))
-        {
-            if (!Test10842!(From, To).test())
-                assert(0);
-        }
-    }
-
-    foreach (From; Seq!(ifloat, idouble, ireal))
-    {
-        foreach (To; Seq!(/*bool*, */byte, ubyte, short, ushort, int, uint, long, ulong, float, double, real))
-        {
-            if (!Test10842!(From, To).test())
-                assert(0);
-        }
-    }
-
     if (!Test10842!(typeof(null), string).test())   // 10842
         assert(0);
 }
 
 /***************************************************/
-// 11722
+// https://issues.dlang.org/show_bug.cgi?id=11722
 
 class C11722
 {
@@ -199,7 +187,7 @@ void test11722()
 }
 
 /***************************************************/
-// 14218
+// https://issues.dlang.org/show_bug.cgi?id=14218
 
 void test14218()
 {
@@ -214,18 +202,11 @@ void test14218()
     version (DigitalMars)
     {
         // Questionable but currently accepted by DMD (but not GDC).
-        foreach (To; Seq!( float,  double,  real,
-                           ifloat, idouble, ireal))
+        foreach (To; Seq!( float,  double,  real))
         {
             auto x = cast(To)null;
             assert(x == 0);     // 0i
         }
-
-        // Internal error: backend/el.c in el_long()
-        //foreach (To; Seq!(cfloat, cdouble, creal))
-        //{
-        //    static assert(!__traits(compiles, { auto x = cast(To)null; }));
-        //}
     }
 }
 

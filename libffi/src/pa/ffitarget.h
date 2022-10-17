@@ -1,6 +1,5 @@
 /* -----------------------------------------------------------------*-C-*-
-   ffitarget.h - Copyright (c) 2016  John David Anglin
-		 Copyright (c) 2012  Anthony Green
+   ffitarget.h - Copyright (c) 2012  Anthony Green
                  Copyright (c) 1996-2003  Red Hat, Inc.
    Target configuration macros for hppa.
 
@@ -68,14 +67,8 @@ typedef enum ffi_abi {
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
-#define FFI_GO_CLOSURES 1
 #define FFI_NATIVE_RAW_API 0
-
-#ifdef PA_LINUX
-#define FFI_TRAMPOLINE_SIZE 32
-#else
-#define FFI_TRAMPOLINE_SIZE 40
-#endif
+#define FFI_TRAMPOLINE_SIZE 12
 
 #define FFI_TYPE_SMALL_STRUCT2 -1
 #define FFI_TYPE_SMALL_STRUCT3 -2

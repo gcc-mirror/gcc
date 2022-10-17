@@ -7,7 +7,9 @@
 #define mode_sf float
 #define mode_df double
 typedef float __attribute__((mode(IF))) mode_if;
+#ifdef __FLOAT128_TYPE__
 typedef float __attribute__((mode(KF))) mode_kf;
+#endif
 #define mode_sd _Decimal32
 #define mode_dd _Decimal64
 #define mode_td _Decimal128

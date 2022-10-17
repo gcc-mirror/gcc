@@ -1,6 +1,6 @@
 // PERMUTE_ARGS: -unittest
-// REQUIRED_ARGS: -D -w -o- -c -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh unittest
+// REQUIRED_ARGS: -D -w -o- -Dd${RESULTS_DIR}/compilable -o-
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 module ddocunittest;
 
@@ -189,12 +189,6 @@ static import core.stdc.stdlib;
 unittest { fooStaticImport(); }
 
 ///
-void fooPublicImport() {}
-public import core.stdc.string;
-/// test
-unittest { fooPublicImport(); }
-
-///
 void fooSelectiveImport() {}
 import core.stdc.ctype : isalpha;
 /// test
@@ -205,6 +199,32 @@ void fooRenamedImport() {}
 import io = core.stdc.stdio;
 /// test
 unittest { fooRenamedImport(); }
+
+/// This is a public import
+public import core.stdc.string;
+
+/// This is a mutiple public import
+public import core.stdc.stdarg, core.stdc.stdlib;
+
+/// This is a public selective import
+public import core.stdc.string : memcpy;
+
+/// This is a public selective renamed import
+public import core.stdc.string : copy = memcpy;
+
+/// This is a public multiple selective import
+public import core.stdc.string : memcpy, memcmp;
+
+/// This is a public multiple selective renamed import
+public import core.stdc.string : copy = memcpy, compare = memcmp;
+
+/// This is a public renamed import
+public import str = core.stdc.string;
+
+// This is a public import without a DDoc comment.
+// It should not be emitted to the documentation file.
+public import core.stdc.stdlib;
+
 
 // ------------------------------------
 // documented unittest after conditional declarations
@@ -276,7 +296,7 @@ else
 unittest { int x6b; }
 
 // ------------------------------------
-// 9474
+// https://issues.dlang.org/show_bug.cgi?id=9474
 
 ///
 void foo9474() { }
@@ -323,7 +343,7 @@ template Template9474()
 unittest { alias Template9474!() T; }
 
 // ------------------------------------
-// 9713
+// https://issues.dlang.org/show_bug.cgi?id=9713
 
 ///
 void fooNoDescription() {}
@@ -334,7 +354,7 @@ unittest { if (true) {fooNoDescription(); } /* comment */ }
 
 // ------------------------------------
 
-/// test for bugzilla 9757
+/// test for https://issues.dlang.org/show_bug.cgi?id=9757
 void foo9757() {}
 /// ditto
 void bar9757() {}
@@ -371,7 +391,7 @@ unittest
 }
 
 // ------------------------------------
-// Issue 9758
+// https://issues.dlang.org/show_bug.cgi?id=9758
 
 /// test
 void foo(){}
@@ -380,7 +400,7 @@ void foo(){}
 unittest {  }
 
 // ------------------------------------
-// Issue 10519
+// https://issues.dlang.org/show_bug.cgi?id=10519
 
 ///
 bool balancedParens10519(string, char, char) { return true; }
@@ -392,7 +412,7 @@ unittest
 }
 
 // ------------------------------------
-// Issue 12097
+// https://issues.dlang.org/show_bug.cgi?id=12097
 
 /// declaration
 struct S12097
@@ -420,7 +440,7 @@ unittest
 }
 
 // ------------------------------------
-// 14594
+// https://issues.dlang.org/show_bug.cgi?id=14594
 
 /*******************
  * testA

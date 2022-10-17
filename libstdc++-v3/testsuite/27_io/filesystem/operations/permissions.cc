@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -76,6 +76,7 @@ test02()
 void
 test03()
 {
+#ifndef NO_SYMLINKS
   using std::filesystem::perms;
   using std::filesystem::perm_options;
 
@@ -111,11 +112,13 @@ test03()
     VERIFY( !caught );
 
   remove(p);
+#endif
 }
 
 void
 test04()
 {
+#ifndef NO_SYMLINKS
   using perms = std::filesystem::perms;
 
   auto p = __gnu_test::nonexistent_path();
@@ -137,6 +140,7 @@ test04()
   VERIFY( ec == ec2 );
 
   remove(p);
+#endif
 }
 
 void

@@ -217,7 +217,10 @@ this in a library package body in your application:
        (if geteuid = 0 then True else raise Program_Error with "must be root");
 
 It gets the effective user id, and if it's not 0 (i.e. root), it raises
-Program_Error.
+Program_Error. Note that if you re running the code in a container, this may
+not be sufficient, as you may have sufficient priviledge on the container,
+but not on the host machine running the container, so check that you also
+have sufficient priviledge for running the container image.
 
 .. index:: Linux
 .. index:: GNU/Linux
@@ -244,10 +247,30 @@ If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
 you'll need the 32-bit version of the following packages:
 
 * RedHat, SUSE: ``glibc.i686``, ``glibc-devel.i686``, ``ncurses-libs.i686``
+* SUSE: ``glibc-locale-base-32bit``
 * Debian, Ubuntu: ``libc6:i386``, ``libc6-dev:i386``, ``lib32ncursesw5``
 
 Other GNU/Linux distributions might be choosing a different name
 for those packages.
+
+
+.. _A_GNU_Linux_debug_quirk:
+
+A GNU/Linux Debug Quirk
+-----------------------
+
+On SuSE 15, some kernels have a defect causing issues when debugging
+programs using threads or Ada tasks. Due to the lack of documentation
+found regarding this kernel issue, we can only provide limited
+information about which kernels are impacted: kernel version 5.3.18 is
+known to be impacted, and kernels in the 5.14 range or newer are
+believed to fix this problem.
+
+The bug affects the debugging of 32-bit processes on a 64-bit system.
+Symptoms can vary: Unexpected ``SIGABRT`` signals being received by
+the program, "The futex facility returned an unexpected error code"
+error message, and inferior programs hanging indefinitely range among
+the symptoms most commonly observed.
 
 .. index:: Windows
 
@@ -1696,7 +1719,7 @@ is
 :switch:`-k`
   Kill :samp:`@{nn}` from exported names
   (:ref:`Windows_Calling_Conventions`
-  for a discussion about ``Stdcall``-style symbols.
+  for a discussion about ``Stdcall``-style symbols).
 
 
 .. index:: --help (dlltool)

@@ -10,7 +10,7 @@
    over time we'll have to revisit the combine and/or postreload
    dumps.  Note we have disabled delay slot filling to improve
    test stability.  */
-/* { dg-final { scan-assembler-times "sh.add" 4 } }  */
+/* { dg-final { scan-assembler-times "sh.add" 3 } }  */
 
 extern void oof (void);
 typedef struct simple_bitmap_def *sbitmap;

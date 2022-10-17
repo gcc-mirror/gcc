@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,9 +48,11 @@ test02()
   VERIFY( str == "abc" );
   VERIFY( str == p.string() );
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   auto strw = p.string<wchar_t>();
   VERIFY( strw == L"abc" );
   VERIFY( strw == p.wstring() );
+#endif
 
   auto str16 = p.string<char16_t>();
   VERIFY( str16 == u"abc" );

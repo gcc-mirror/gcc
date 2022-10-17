@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,10 +37,8 @@ test01()
   static_assert(std::is_same<decltype(u8"Hello"sv), u8string_view>::value,
 		"u8\"Hello\"s is std::string_view");
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(std::is_same<decltype(L"Hello"sv), std::experimental::wstring_view>::value,
 		"L\"Hello\"s is std::wstring_view");
-#endif
 
   static_assert(std::is_same<decltype(u"Hello"sv), std::experimental::u16string_view>::value,
 		"u\"Hello\"s is std::u16string_view");

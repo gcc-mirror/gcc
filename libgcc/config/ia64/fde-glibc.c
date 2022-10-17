@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@cygnus.com>.
 
    This file is part of GCC.
@@ -29,6 +29,7 @@
 #define _GNU_SOURCE 1
 #endif
 #include "config.h"
+#ifndef inhibit_libc
 #include <stddef.h>
 #include <stdlib.h>
 #include <link.h>
@@ -159,3 +160,4 @@ _Unwind_FindTableEntry (void *pc, unw_word *segment_base, unw_word *gp,
 
   return data.ret;
 }
+#endif

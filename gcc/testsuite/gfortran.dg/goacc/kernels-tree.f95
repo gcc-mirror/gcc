@@ -3,9 +3,12 @@
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
 ! { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" }
 
+! { dg-additional-options -Wuninitialized }
+
 program test
   implicit none
   integer :: q, i, j, k, m, n, o, p, r, s, t, u, v, w
+  ! { dg-note {'i' was declared here} {} { target *-*-* } .-1 }
   logical :: l = .true.
 
   !$acc kernels if(l) async num_gangs(i) num_workers(i) vector_length(i) &
@@ -13,6 +16,7 @@ program test
   !$acc no_create(n) &
   !$acc present(o), pcopy(p), pcopyin(r), pcopyout(s), pcreate(t) &
   !$acc deviceptr(u)
+  ! { dg-warning {'i' is used uninitialized} {} { target *-*-* } .-1 }
   !$acc end kernels
 
 end program test
@@ -37,5 +41,5 @@ end program test
 
 ! { dg-final { scan-tree-dump-times "map\\(force_deviceptr:u\\)" 1 "original" } } 
 
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_data_kernels if\(D\.[0-9]+\)$} 1 "omp_oacc_kernels_decompose" } }
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_gang_single num_gangs\(1\) if\(D\.[0-9]+\) async\(-1\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_data_kernels if\((?:D\.|_)[0-9]+\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_gang_single num_gangs\(1\) if\((?:D\.|_)[0-9]+\) async\(-1\)$} 1 "omp_oacc_kernels_decompose" } }

@@ -1,5 +1,5 @@
 /* Allocate memory region filled with spaces.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -40,8 +40,8 @@ valid until at least the next call.
 #include <unixlib.h>
 #else
 /* For systems with larger pointers than ints, these must be declared.  */
-extern PTR malloc (size_t);
-extern void free (PTR);
+extern void *malloc (size_t);
+extern void free (void *);
 #endif
 
 const char *

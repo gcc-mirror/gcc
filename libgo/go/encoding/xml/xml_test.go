@@ -802,11 +802,11 @@ var directivesWithCommentsInput = `
 
 var directivesWithCommentsTokens = []Token{
 	CharData("\n"),
-	Directive(`DOCTYPE [<!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#">]`),
+	Directive(`DOCTYPE [ <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#">]`),
 	CharData("\n"),
-	Directive(`DOCTYPE [<!ENTITY go "Golang">]`),
+	Directive(`DOCTYPE [<!ENTITY go "Golang"> ]`),
 	CharData("\n"),
-	Directive(`DOCTYPE <!-> <!>    [<!ENTITY go "Golang">]`),
+	Directive(`DOCTYPE <!-> <!>       [<!ENTITY go "Golang"> ]`),
 	CharData("\n"),
 }
 
@@ -940,7 +940,7 @@ func (m mapper) Token() (Token, error) {
 }
 
 func TestNewTokenDecoderIdempotent(t *testing.T) {
-	d := NewDecoder(strings.NewReader(`<br/>`))
+	d := NewDecoder(strings.NewReader(`<br>`))
 	d2 := NewTokenDecoder(d)
 	if d != d2 {
 		t.Error("NewTokenDecoder did not detect underlying Decoder")
@@ -1002,4 +1002,61 @@ func TestTokenUnmarshaler(t *testing.T) {
 
 	d := NewTokenDecoder(tokReader{})
 	d.Decode(&Failure{})
+}
+
+func testRoundTrip(t *testing.T, input string) {
+	d := NewDecoder(strings.NewReader(input))
+	var tokens []Token
+	var buf bytes.Buffer
+	e := NewEncoder(&buf)
+	for {
+		tok, err := d.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("invalid input: %v", err)
+		}
+		if err := e.EncodeToken(tok); err != nil {
+			t.Fatalf("failed to re-encode input: %v", err)
+		}
+		tokens = append(tokens, CopyToken(tok))
+	}
+	if err := e.Flush(); err != nil {
+		t.Fatal(err)
+	}
+
+	d = NewDecoder(&buf)
+	for {
+		tok, err := d.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("failed to decode output: %v", err)
+		}
+		if len(tokens) == 0 {
+			t.Fatalf("unexpected token: %#v", tok)
+		}
+		a, b := tokens[0], tok
+		if !reflect.DeepEqual(a, b) {
+			t.Fatalf("token mismatch: %#v vs %#v", a, b)
+		}
+		tokens = tokens[1:]
+	}
+	if len(tokens) > 0 {
+		t.Fatalf("lost tokens: %#v", tokens)
+	}
+}
+
+func TestRoundTrip(t *testing.T) {
+	tests := map[string]string{
+		"leading colon":          `<::Test ::foo="bar"><:::Hello></:::Hello><Hello></Hello></::Test>`,
+		"trailing colon":         `<foo abc:="x"></foo>`,
+		"double colon":           `<x:y:foo></x:y:foo>`,
+		"comments in directives": `<!ENTITY x<!<!-- c1 [ " -->--x --> > <e></e> <!DOCTYPE xxx [ x<!-- c2 " -->--x ]>`,
+	}
+	for name, input := range tests {
+		t.Run(name, func(t *testing.T) { testRoundTrip(t, input) })
+	}
 }

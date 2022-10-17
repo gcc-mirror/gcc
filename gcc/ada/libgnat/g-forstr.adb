@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,7 +58,7 @@ package body GNAT.Formatted_String is
 
    type Sign_Kind is (Neg, Zero, Pos);
 
-   subtype Is_Number is F_Kind range Decimal_Int .. Decimal_Float;
+   subtype Is_Number is F_Kind range Decimal_Int .. Shortest_Decimal_Float_Up;
 
    type F_Sign is (If_Neg, Forced, Space) with Default_Value => If_Neg;
 
@@ -131,7 +131,7 @@ package body GNAT.Formatted_String is
       return Formatted_String'
         (Finalization.Controlled with
            D => new Data'(Format'Length, 1, 1,
-             Null_Unbounded_String, 0, 0, (0, 0), Format));
+             Null_Unbounded_String, 0, 0, [0, 0], Format));
    end "+";
 
    ---------
@@ -420,11 +420,11 @@ package body GNAT.Formatted_String is
 
       --  Zero padding if required and possible
 
-      if F_Spec.Left_Justify = False
+      if not F_Spec.Left_Justify
         and then F_Spec.Zero_Pad
         and then F_Spec.Width > Len + Value'First - S
       then
-         Append (Res, String'((F_Spec.Width - Len + Value'First - S) * '0'));
+         Append (Res, String'((F_Spec.Width - (Len + Value'First - S)) * '0'));
       end if;
 
       --  Add the value now
@@ -433,7 +433,7 @@ package body GNAT.Formatted_String is
 
       declare
          R : String (1 .. Natural'Max (Natural'Max (F_Spec.Width, Len),
-                                       Length (Res))) := (others => ' ');
+                                       Length (Res))) := [others => ' '];
       begin
          if F_Spec.Left_Justify then
             R (1 .. Length (Res)) := To_String (Res);
@@ -519,7 +519,7 @@ package body GNAT.Formatted_String is
          J := J + 1;
       end loop;
 
-      if F (J) /= '%' or else J = F'Last then
+      if J >= F'Last or else F (J) /= '%'  then
          raise Format_Error with "no format specifier found for parameter"
            & Positive'Image (Format.D.Current);
       end if;
@@ -785,7 +785,7 @@ package body GNAT.Formatted_String is
 
          elsif F.Precision > E - S + 1 then
             Len := F.Precision - (E - S + 1);
-            Buffer (S - Len .. S - 1) := (others => '0');
+            Buffer (S - Len .. S - 1) := [others => '0'];
             S := S - Len;
          end if;
 

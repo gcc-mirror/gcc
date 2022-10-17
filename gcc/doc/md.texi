@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -784,7 +784,7 @@ diagnosis when special predicates are used.
 @cindex generic predicates
 
 These are the generic predicates available to all back ends.  They are
-defined in @file{recog.c}.  The first category of predicates allow
+defined in @file{recog.cc}.  The first category of predicates allow
 only constant, or @dfn{immediate}, operands.
 
 @defun immediate_operand
@@ -2198,40 +2198,6 @@ An integer constant with all bits set except exactly one.
 Any SYMBOL_REF.
 @end table
 
-@item CR16 Architecture---@file{config/cr16/cr16.h}
-@table @code
-
-@item b
-Registers from r0 to r14 (registers without stack pointer)
-
-@item t
-Register from r0 to r11 (all 16-bit registers)
-
-@item p
-Register from r12 to r15 (all 32-bit registers)
-
-@item I
-Signed constant that fits in 4 bits
-
-@item J
-Signed constant that fits in 5 bits
-
-@item K
-Signed constant that fits in 6 bits
-
-@item L
-Unsigned constant that fits in 4 bits
-
-@item M
-Signed constant that fits in 32 bits
-
-@item N
-Check for 64 bits wide constants for add/sub instructions
-
-@item G
-Floating point constant that is legal for store immediate
-@end table
-
 @item C-SKY---@file{config/csky/constraints.md}
 @table @code
 
@@ -2316,7 +2282,7 @@ This constraint won't match unless @option{-mprefer-short-insn-regs} is
 in effect.
 
 @item Rsc
-The the register class of registers that can be used to hold a
+The register class of registers that can be used to hold a
 sibcall call address.  I.e., a caller-saved register.
 
 @item Rct
@@ -2618,7 +2584,7 @@ now roughly the same as @samp{m} when not used together with @samp{<}
 or @samp{>}.
 @end table
 
-@item M32C---@file{config/m32c/m32c.c}
+@item M32C---@file{config/m32c/m32c.cc}
 @table @code
 @item Rsp
 @itemx Rfb
@@ -2745,6 +2711,32 @@ Memory addressed using the small base register ($sb).
 
 @item S1
 $r1h
+@end table
+
+@item LoongArch---@file{config/loongarch/constraints.md}
+@table @code
+@item f
+A floating-point register (if available).
+@item k
+A memory operand whose address is formed by a base register and
+(optionally scaled) index register.
+@item l
+A signed 16-bit constant.
+@item m
+A memory operand whose address is formed by a base register and offset
+that is suitable for use in instructions with the same addressing mode
+as @code{st.w} and @code{ld.w}.
+@item I
+A signed 12-bit constant (for arithmetic instructions).
+@item K
+An unsigned 12-bit constant (for logic instructions).
+@item ZB
+An address that is held in a general-purpose register.
+The offset is zero.
+@item ZC
+A memory operand whose address is formed by a base register and offset
+that is suitable for use in instructions with the same addressing mode
+as @code{ll.w} and @code{sc.w}.
 @end table
 
 @item MicroBlaze---@file{config/microblaze/constraints.md}
@@ -3275,9 +3267,6 @@ Like @code{b}, if @option{-mpowerpc64} is used; otherwise, @code{NO_REGS}.
 @item wB
 Signed 5-bit constant integer that can be loaded into an Altivec register.
 
-@item wD
-Int constant that is the element number of the 64-bit scalar in a vector.
-
 @item wE
 Vector constant that can be loaded with the XXSPLTIB instruction.
 
@@ -3335,6 +3324,14 @@ A constant whose negation is a signed 16-bit constant.
 
 @item eI
 A signed 34-bit integer constant if prefixed instructions are supported.
+
+@item eP
+A scalar floating point constant or a vector constant that can be
+loaded to a VSX register with one prefixed instruction.
+
+@item eQ
+An IEEE 128-bit constant that can be loaded into a VSX register with
+the @code{lxvkq} instruction.
 
 @ifset INTERNALS
 @item G
@@ -3535,6 +3532,9 @@ A 5-bit unsigned immediate for CSR access instructions.
 
 @item A
 An address that is held in a general-purpose register.
+
+@item S
+A constraint that matches an absolute symbolic address.
 
 @end table
 
@@ -3819,154 +3819,6 @@ A memory operand with an address that cannot be used in an unaligned access.
 @end ifset
 @item Z
 Register B14 (aka DP).
-
-@end table
-
-@item TILE-Gx---@file{config/tilegx/constraints.md}
-@table @code
-@item R00
-@itemx R01
-@itemx R02
-@itemx R03
-@itemx R04
-@itemx R05
-@itemx R06
-@itemx R07
-@itemx R08
-@itemx R09
-@itemx R10
-Each of these represents a register constraint for an individual
-register, from r0 to r10.
-
-@item I
-Signed 8-bit integer constant.
-
-@item J
-Signed 16-bit integer constant.
-
-@item K
-Unsigned 16-bit integer constant.
-
-@item L
-Integer constant that fits in one signed byte when incremented by one
-(@minus{}129 @dots{} 126).
-
-@item m
-Memory operand.  If used together with @samp{<} or @samp{>}, the
-operand can have postincrement which requires printing with @samp{%In}
-and @samp{%in} on TILE-Gx.  For example:
-
-@smallexample
-asm ("st_add %I0,%1,%i0" : "=m<>" (*mem) : "r" (val));
-@end smallexample
-
-@item M
-A bit mask suitable for the BFINS instruction.
-
-@item N
-Integer constant that is a byte tiled out eight times.
-
-@item O
-The integer zero constant.
-
-@item P
-Integer constant that is a sign-extended byte tiled out as four shorts.
-
-@item Q
-Integer constant that fits in one signed byte when incremented
-(@minus{}129 @dots{} 126), but excluding -1.
-
-@item S
-Integer constant that has all 1 bits consecutive and starting at bit 0.
-
-@item T
-A 16-bit fragment of a got, tls, or pc-relative reference.
-
-@item U
-Memory operand except postincrement.  This is roughly the same as
-@samp{m} when not used together with @samp{<} or @samp{>}.
-
-@item W
-An 8-element vector constant with identical elements.
-
-@item Y
-A 4-element vector constant with identical elements.
-
-@item Z0
-The integer constant 0xffffffff.
-
-@item Z1
-The integer constant 0xffffffff00000000.
-
-@end table
-
-@item TILEPro---@file{config/tilepro/constraints.md}
-@table @code
-@item R00
-@itemx R01
-@itemx R02
-@itemx R03
-@itemx R04
-@itemx R05
-@itemx R06
-@itemx R07
-@itemx R08
-@itemx R09
-@itemx R10
-Each of these represents a register constraint for an individual
-register, from r0 to r10.
-
-@item I
-Signed 8-bit integer constant.
-
-@item J
-Signed 16-bit integer constant.
-
-@item K
-Nonzero integer constant with low 16 bits zero.
-
-@item L
-Integer constant that fits in one signed byte when incremented by one
-(@minus{}129 @dots{} 126).
-
-@item m
-Memory operand.  If used together with @samp{<} or @samp{>}, the
-operand can have postincrement which requires printing with @samp{%In}
-and @samp{%in} on TILEPro.  For example:
-
-@smallexample
-asm ("swadd %I0,%1,%i0" : "=m<>" (mem) : "r" (val));
-@end smallexample
-
-@item M
-A bit mask suitable for the MM instruction.
-
-@item N
-Integer constant that is a byte tiled out four times.
-
-@item O
-The integer zero constant.
-
-@item P
-Integer constant that is a sign-extended byte tiled out as two shorts.
-
-@item Q
-Integer constant that fits in one signed byte when incremented
-(@minus{}129 @dots{} 126), but excluding -1.
-
-@item T
-A symbolic operand, or a 16-bit fragment of a got, tls, or pc-relative
-reference.
-
-@item U
-Memory operand except postincrement.  This is roughly the same as
-@samp{m} when not used together with @samp{<} or @samp{>}.
-
-@item W
-A 4-element vector constant with identical elements.
-
-@item Y
-A 2-element vector constant with identical elements.
 
 @end table
 
@@ -5095,13 +4947,22 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{while_ult@var{m}@var{n}} instruction pattern
 @item @code{while_ult@var{m}@var{n}}
 Set operand 0 to a mask that is true while incrementing operand 1
-gives a value that is less than operand 2.  Operand 0 has mode @var{n}
-and operands 1 and 2 are scalar integers of mode @var{m}.
-The operation is equivalent to:
+gives a value that is less than operand 2, for a vector length up to operand 3.
+Operand 0 has mode @var{n} and operands 1 and 2 are scalar integers of mode
+@var{m}.  Operand 3 should be omitted when @var{n} is a vector mode, and
+a @code{CONST_INT} otherwise.  The operation for vector modes is equivalent to:
 
 @smallexample
 operand0[0] = operand1 < operand2;
 for (i = 1; i < GET_MODE_NUNITS (@var{n}); i++)
+  operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
+@end smallexample
+
+And for non-vector modes the operation is equivalent to:
+
+@smallexample
+operand0[0] = operand1 < operand2;
+for (i = 1; i < operand3; i++)
   operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
 @end smallexample
 
@@ -5203,25 +5064,43 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_load_@var{m}} instruction pattern
 @item @samp{len_load_@var{m}}
-Load the number of vector elements specified by operand 2 from memory
-operand 1 into vector register operand 0, setting the other elements of
+Load (operand 2 - operand 3) elements from vector memory operand 1
+into vector register operand 0, setting the other elements of
 operand 0 to undefined values.  Operands 0 and 1 have mode @var{m},
 which must be a vector mode.  Operand 2 has whichever integer mode the
-target prefers.  If operand 2 exceeds the number of elements in mode
-@var{m}, the behavior is undefined.  If the target prefers the length
-to be measured in bytes rather than elements, it should only implement
-this pattern for vectors of @code{QI} elements.
+target prefers.  Operand 3 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 3 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 - operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes rather than
+elements, it should only implement this pattern for vectors of @code{QI}
+elements.
 
 This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_store_@var{m}} instruction pattern
 @item @samp{len_store_@var{m}}
-Store the number of vector elements specified by operand 2 from vector
-register operand 1 into memory operand 0, leaving the other elements of
+Store (operand 2 - operand 3) vector elements from vector register operand 1
+into memory operand 0, leaving the other elements of
 operand 0 unchanged.  Operands 0 and 1 have mode @var{m}, which must be
 a vector mode.  Operand 2 has whichever integer mode the target prefers.
-If operand 2 exceeds the number of elements in mode @var{m}, the behavior
-is undefined.  If the target prefers the length to be measured in bytes
+Operand 3 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 3 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 - operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
 rather than elements, it should only implement this pattern for vectors
 of @code{QI} elements.
 
@@ -5397,6 +5276,14 @@ Find the unsigned minimum/maximum of the elements of a vector. The vector is
 operand 1, and operand 0 is the scalar result, with mode equal to the mode of
 the elements of the input vector.
 
+@cindex @code{reduc_fmin_scal_@var{m}} instruction pattern
+@cindex @code{reduc_fmax_scal_@var{m}} instruction pattern
+@item @samp{reduc_fmin_scal_@var{m}}, @samp{reduc_fmax_scal_@var{m}}
+Find the floating-point minimum/maximum of the elements of a vector,
+using the same rules as @code{fmin@var{m}3} and @code{fmax@var{m}3}.
+Operand 1 is a vector of mode @var{m} and operand 0 is the scalar
+result, which has mode @code{GET_MODE_INNER (@var{m})}.
+
 @cindex @code{reduc_plus_scal_@var{m}} instruction pattern
 @item @samp{reduc_plus_scal_@var{m}}
 Compute the sum of the elements of a vector. The vector is operand 1, and
@@ -5446,13 +5333,53 @@ Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
 
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
+
+Compute the sum of the products of two signed elements.
+Operand 1 and operand 2 are of the same mode. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+sdot<signed op0, signed op1, signed op2, signed op3> ==
+   op0 = sign-ext (op1) * sign-ext (op2) + op3
+@dots{}
+@end smallexample
+
 @cindex @code{udot_prod@var{m}} instruction pattern
-@itemx @samp{udot_prod@var{m}}
-Compute the sum of the products of two signed/unsigned elements.
-Operand 1 and operand 2 are of the same mode. Their product, which is of a
-wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or
-wider than the mode of the product. The result is placed in operand 0, which
-is of the same mode as operand 3.
+@item @samp{udot_prod@var{m}}
+
+Compute the sum of the products of two unsigned elements.
+Operand 1 and operand 2 are of the same mode. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+udot<unsigned op0, unsigned op1, unsigned op2, unsigned op3> ==
+   op0 = zero-ext (op1) * zero-ext (op2) + op3
+@dots{}
+@end smallexample
+
+@cindex @code{usdot_prod@var{m}} instruction pattern
+@item @samp{usdot_prod@var{m}}
+Compute the sum of the products of elements of different signs.
+Operand 1 must be unsigned and operand 2 signed. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+usdot<signed op0, unsigned op1, signed op2, signed op3> ==
+   op0 = ((signed-conv) zero-ext (op1)) * sign-ext (op2) + op3
+@dots{}
+@end smallexample
 
 @cindex @code{ssad@var{m}} instruction pattern
 @item @samp{ssad@var{m}}
@@ -5688,6 +5615,20 @@ Alternating subtract, add with even lanes doing subtract and odd
 lanes doing addition.  Operands 1 and 2 and the outout operand are vectors
 with mode @var{m}.
 
+@cindex @code{vec_fmaddsub@var{m}4} instruction pattern
+@item @samp{vec_fmaddsub@var{m}4}
+Alternating multiply subtract, add with even lanes doing subtract and odd
+lanes doing addition of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
+@cindex @code{vec_fmsubadd@var{m}4} instruction pattern
+@item @samp{vec_fmsubadd@var{m}4}
+Alternating multiply add, subtract with even lanes doing addition and odd
+lanes doing subtraction of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
 These instructions are not allowed to @code{FAIL}.
 
 @cindex @code{mulhisi3} instruction pattern
@@ -5719,11 +5660,13 @@ multiplication.
 @item @samp{smul@var{m}3_highpart}
 Perform a signed multiplication of operands 1 and 2, which have mode
 @var{m}, and store the most significant half of the product in operand 0.
-The least significant half of the product is discarded.
+The least significant half of the product is discarded.  This may be
+represented in RTL using a @code{smul_highpart} RTX expression.
 
 @cindex @code{umul@var{m}3_highpart} instruction pattern
 @item @samp{umul@var{m}3_highpart}
-Similar, but the multiplication is unsigned.
+Similar, but the multiplication is unsigned.  This may be represented
+in RTL using an @code{umul_highpart} RTX expression.
 
 @cindex @code{madd@var{m}@var{n}4} instruction pattern
 @item @samp{madd@var{m}@var{n}4}
@@ -5994,6 +5937,23 @@ mode @var{m}, which is a scalar or vector floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{fegetround@var{m}} instruction pattern
+@item @samp{fegetround@var{m}}
+Store the current machine floating-point rounding mode into operand 0.
+Operand 0 has mode @var{m}, which is scalar.  This pattern is used to
+implement the @code{fegetround} function from the ISO C99 standard.
+
+@cindex @code{feclearexcept@var{m}} instruction pattern
+@cindex @code{feraiseexcept@var{m}} instruction pattern
+@item @samp{feclearexcept@var{m}}
+@item @samp{feraiseexcept@var{m}}
+Clears or raises the supported machine floating-point exceptions
+represented by the bits in operand 1.  Error status is stored as
+nonzero value in operand 0.  Both operands have mode @var{m}, which is
+a scalar.  These patterns are used to implement the
+@code{feclearexcept} and @code{feraiseexcept} functions from the ISO
+C99 standard.
+
 @cindex @code{exp@var{m}2} instruction pattern
 @item @samp{exp@var{m}2}
 Raise e (the base of natural logarithms) to the power of operand 1
@@ -6196,6 +6156,10 @@ floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{issignaling@var{m}2} instruction pattern
+@item @samp{issignaling@var{m}2}
+Set operand 0 to 1 if operand 1 is a signaling NaN and to 0 otherwise.
+
 @cindex @code{cadd90@var{m}3} instruction pattern
 @item @samp{cadd90@var{m}3}
 Perform vector add and subtract on even/odd number pairs.  The operation being
@@ -6250,12 +6214,13 @@ Perform a vector multiply and accumulate that is semantically the same as
 a multiply and accumulate of complex numbers.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] += a[i] * b[i];
+      op0[i] = op1[i] * op2[i] + op3[i];
     @}
 @end smallexample
 
@@ -6273,12 +6238,13 @@ the same as a multiply and accumulate of complex numbers where the second
 multiply arguments is conjugated.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] += a[i] * conj (b[i]);
+      op0[i] = op1[i] * conj (op2[i]) + op3[i];
     @}
 @end smallexample
 
@@ -6295,12 +6261,13 @@ Perform a vector multiply and subtract that is semantically the same as
 a multiply and subtract of complex numbers.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] -= a[i] * b[i];
+      op0[i] = op1[i] * op2[i] - op3[i];
     @}
 @end smallexample
 
@@ -6318,12 +6285,13 @@ the same as a multiply and subtract of complex numbers where the second
 multiply arguments is conjugated.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] -= a[i] * conj (b[i]);
+      op0[i] = op1[i] * conj (op2[i]) - op3[i];
     @}
 @end smallexample
 
@@ -6340,12 +6308,12 @@ Perform a vector multiply that is semantically the same as multiply of
 complex numbers.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] = a[i] * b[i];
+      op0[i] = op1[i] * op2[i];
     @}
 @end smallexample
 
@@ -6362,12 +6330,12 @@ Perform a vector multiply by conjugate that is semantically the same as a
 multiply of complex numbers where the second multiply arguments is conjugated.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] = a[i] * conj (b[i]);
+      op0[i] = op1[i] * conj (op2[i]);
     @}
 @end smallexample
 
@@ -6638,6 +6606,13 @@ operand 2 is the character to search for (normally zero),
 and operand 3 is a constant describing the known alignment
 of the beginning of the string.
 
+@cindex @code{rawmemchr@var{m}} instruction pattern
+@item @samp{rawmemchr@var{m}}
+Scan memory referred to by operand 1 for the first occurrence of operand 2.
+Operand 1 is a @code{mem} and operand 2 a @code{const_int} of mode @var{m}.
+Operand 0 is the result, i.e., a pointer to the first occurrence of operand 2
+in the memory block given by operand 1.
+
 @cindex @code{float@var{m}@var{n}2} instruction pattern
 @item @samp{float@var{m}@var{n}2}
 Convert signed integer operand 1 (valid for fixed point mode @var{m}) to
@@ -6864,6 +6839,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @cindex @code{cond_smax@var{mode}} instruction pattern
 @cindex @code{cond_umin@var{mode}} instruction pattern
 @cindex @code{cond_umax@var{mode}} instruction pattern
+@cindex @code{cond_fmin@var{mode}} instruction pattern
+@cindex @code{cond_fmax@var{mode}} instruction pattern
+@cindex @code{cond_ashl@var{mode}} instruction pattern
+@cindex @code{cond_ashr@var{mode}} instruction pattern
+@cindex @code{cond_lshr@var{mode}} instruction pattern
 @item @samp{cond_add@var{mode}}
 @itemx @samp{cond_sub@var{mode}}
 @itemx @samp{cond_mul@var{mode}}
@@ -6878,6 +6858,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @itemx @samp{cond_smax@var{mode}}
 @itemx @samp{cond_umin@var{mode}}
 @itemx @samp{cond_umax@var{mode}}
+@itemx @samp{cond_fmin@var{mode}}
+@itemx @samp{cond_fmax@var{mode}}
+@itemx @samp{cond_ashl@var{mode}}
+@itemx @samp{cond_ashr@var{mode}}
+@itemx @samp{cond_lshr@var{mode}}
 When operand 1 is true, perform an operation on operands 2 and 3 and
 store the result in operand 0, otherwise store operand 4 in operand 0.
 The operation works elementwise if the operands are vectors.
@@ -6904,6 +6889,11 @@ be in a normal C @samp{?:} condition.
 Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
 integer if @var{m} is scalar, otherwise it has the mode returned by
 @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
+of shifts correspond to patterns like @code{vashl@var{mode}3} rather
+than patterns like @code{ashl@var{mode}3}.
 
 @cindex @code{cond_fma@var{mode}} instruction pattern
 @cindex @code{cond_fms@var{mode}} instruction pattern
@@ -6991,8 +6981,12 @@ machines.
 @item @samp{call}
 Subroutine call instruction returning no value.  Operand 0 is the
 function to call; operand 1 is the number of bytes of arguments pushed
-as a @code{const_int}; operand 2 is the number of registers used as
-operands.
+as a @code{const_int}.  Operand 2 is the result of calling the target
+hook @code{TARGET_FUNCTION_ARG} with the second argument @code{arg}
+yielding true for @code{arg.end_marker_p ()}, in a call after all
+parameters have been passed to that hook.  By default this is the first
+register beyond those used for arguments in the call, or @code{NULL} if
+all the argument-registers are used in the call.
 
 On most machines, operand 2 is not actually stored into the RTL
 pattern.  It is supplied for the sake of some RISC machines which need
@@ -7817,6 +7811,30 @@ If these patterns are not defined, attempts will be made to use
 counterparts.  If none of these are available a compare-and-swap
 loop will be used.
 
+@cindex @code{atomic_add_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_sub_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_and_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_or_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_xor_fetch_cmp_0@var{mode}} instruction pattern
+@item @samp{atomic_add_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_sub_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_and_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_or_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_xor_fetch_cmp_0@var{mode}}
+These patterns emit code for an atomic operation on memory with memory
+model semantics if the fetch result is used only in a comparison against
+zero.
+Operand 0 is an output operand which contains a boolean result of comparison
+of the value after the operation against zero.  Operand 1 is the memory on
+which the atomic operation is performed.  Operand 2 is the second operand
+to the binary operator.  Operand 3 is the memory model to be used by the
+operation.  Operand 4 is an integer holding the comparison code, one of
+@code{EQ}, @code{NE}, @code{LT}, @code{GT}, @code{LE} or @code{GE}.
+
+If these patterns are not defined, attempts will be made to use separate
+atomic operation and fetch pattern followed by comparison of the result
+against zero.
+
 @cindex @code{mem_thread_fence} instruction pattern
 @item @samp{mem_thread_fence}
 This pattern emits code required to implement a thread fence with
@@ -7911,6 +7929,15 @@ inclusive and operand 1 exclusive.
 
 If this pattern is not defined, a call to the library function
 @code{__clear_cache} is used.
+
+@cindex @code{spaceship@var{m}3} instruction pattern
+@item @samp{spaceship@var{m}3}
+Initialize output operand 0 with mode of integer type to -1, 0, 1 or 2
+if operand 1 with mode @var{m} compares less than operand 2, equal to
+operand 2, greater than operand 2 or is unordered with operand 2.
+@var{m} should be a scalar floating point mode.
+
+This pattern is not allowed to @code{FAIL}.
 
 @end table
 
@@ -8316,7 +8343,7 @@ original operation had sufficient precision to prevent overflow.
 @end itemize
 
 Further canonicalization rules are defined in the function
-@code{commutative_operand_precedence} in @file{gcc/rtlanal.c}.
+@code{commutative_operand_precedence} in @file{gcc/rtlanal.cc}.
 
 @end ifset
 @ifset INTERNALS
@@ -8441,8 +8468,6 @@ list of operands, such as this example:
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:SI 1 "register_operand" "")
    (match_operand:SI 2 "register_operand" "")]
-@end group
-@group
   ""
   "
 @{
@@ -8459,17 +8484,10 @@ Here is an example, the definition of left-shift for the SPUR chip:
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
         (ashift:SI
-@end group
-@group
           (match_operand:SI 1 "register_operand" "")
           (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
   "
-@end group
-@end smallexample
-
-@smallexample
-@group
 @{
   if (GET_CODE (operands[2]) != CONST_INT
       || (unsigned) INTVAL (operands[2]) > 3)
@@ -9923,7 +9941,7 @@ Lengths are measured in addressable storage units (bytes).
 Note that it is possible to call functions via the @code{symbol_ref}
 mechanism to compute the length of an insn.  However, if you use this
 mechanism you must provide dummy clauses to express the maximum length
-without using the function call.  You can an example of this in the
+without using the function call.  You can see an example of this in the
 @code{pa} machine description for the @code{call_symref} pattern.
 
 The following macros can be used to refine the length computation:
@@ -11011,6 +11029,8 @@ The syntax is as follows:
 (define_c_enum "@var{name}" [
   @var{value0}
   @var{value1}
+  (@var{value32} 32)
+  @var{value33}
   @dots{}
   @var{valuen}
 ])
@@ -11023,6 +11043,8 @@ in @file{insn-constants.h}:
 enum @var{name} @{
   @var{value0} = 0,
   @var{value1} = 1,
+  @var{value32} = 32,
+  @var{value33} = 33,
   @dots{}
   @var{valuen} = @var{n}
 @};
@@ -11316,7 +11338,7 @@ This is exactly equivalent to:
   [(set (match_operand:DI 0 "register_operand" "=d")
         (minus:DI (match_operand:DI 1 "register_operand" "d")
                   (match_operand:DI 2 "register_operand" "d")))]
-  ""
+  "TARGET_64BIT"
   "dsubu\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])

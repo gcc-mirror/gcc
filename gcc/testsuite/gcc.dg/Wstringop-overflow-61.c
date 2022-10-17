@@ -65,7 +65,7 @@ void nowarn_cond_escape (int c, int *x)
 void warn_cond_escape (int c, int *x)
 {
   extern char a3_2[3];
-  extern char a5_2[5];        // { dg-message "at offset 5 into destination object 'a5_2'" }
+  extern char a5_2[5];        // { dg-message "at offset 5 into object 'a5_2'" }
 
   char *p;
   if (c)
@@ -84,5 +84,5 @@ void warn_cond_escape (int c, int *x)
   if (*x == 2)
     p[2] = 0;
   else if (*x == 5)
-    p[5] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+    p[5] = 0;                 // { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" }
 }

@@ -1,7 +1,8 @@
 /* PR middle-end/92333 - missing variable name referencing VLA in warnings
    PR middle-end/82608 - missing -Warray-bounds on an out-of-bounds VLA index
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-additional-options "-mtune=generic" { target { i?86-*-* x86_64-*-* } } } */
 
 void sink (void*);
 
@@ -38,7 +39,7 @@ void test_struct_char_vla_location (void)
   } s;
 
   s.cvla[0] = __LINE__;
-  s.cvla[nelts - 1] = 0;
+  s.cvla[nelts - 1] = 0; // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2qi_store_align } } }
   s.cvla[nelts] = 0;  // { dg-warning "\\\[-Warray-bounds" }
 
   sink (&s);

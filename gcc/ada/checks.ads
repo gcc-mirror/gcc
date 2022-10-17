@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,14 @@ with Uintp;  use Uintp;
 with Urealp; use Urealp;
 
 package Checks is
+
+   type Bit_Vector is array (Pos range <>) of Boolean;
+   type Dimension_Set (Dimensions : Nat) is
+      record
+         Elements : Bit_Vector (1 .. Dimensions);
+      end record;
+   Empty_Dimension_Set : constant Dimension_Set
+     := (Dimensions => 0, Elements => (others => <>));
 
    procedure Initialize;
    --  Called for each new main source program, to initialize internal
@@ -357,7 +365,7 @@ package Checks is
    --  if so inserts the appropriate run-time check.
 
    procedure Install_Primitive_Elaboration_Check (Subp_Body : Node_Id);
-   --  Insert a check which ensures that subprogram body Subp_Body has been
+   --  Insert a check to ensure that subprogram body Subp_Body has been
    --  properly elaborated. The check is installed only when Subp_Body is the
    --  body of a nonabstract library-level primitive of a tagged type. Further
    --  restrictions may apply, see the body for details.
@@ -721,11 +729,16 @@ package Checks is
    --  Do_Range_Check flag, and if it is set, this routine is called, which
    --  turns the flag off in code-generation mode.
 
-   procedure Generate_Index_Checks (N : Node_Id);
+   procedure Generate_Index_Checks
+     (N                : Node_Id;
+      Checks_Generated : out Dimension_Set);
    --  This procedure is called to generate index checks on the subscripts for
    --  the indexed component node N. Each subscript expression is examined, and
    --  if the Do_Range_Check flag is set, an appropriate index check is
    --  generated and the flag is reset.
+   --  The out-mode parameter Checks_Generated indicates the dimensions for
+   --  which checks were generated. Checks_Generated.Dimensions must match
+   --  the number of dimensions of the array type.
 
    --  Similarly, we set the flag Do_Discriminant_Check in the semantic
    --  analysis to indicate that a discriminant check is required for selected
@@ -851,17 +864,21 @@ package Checks is
    --    are not following the flow graph (more properly the flow of actual
    --    processing only corresponds to the flow graph for local assignments).
    --    For non-local variables, we preserve the current setting, i.e. a
-   --    validity check is performed when assigning to a knonwn valid global.
+   --    validity check is performed when assigning to a known valid global.
 
    --  Note: no validity checking is required if range checks are suppressed
    --  regardless of the setting of the validity checking mode.
 
    --  The following procedures are used in handling validity checking
 
-   procedure Apply_Subscript_Validity_Checks (Expr : Node_Id);
+   procedure Apply_Subscript_Validity_Checks
+     (Expr            : Node_Id;
+      No_Check_Needed : Dimension_Set := Empty_Dimension_Set);
    --  Expr is the node for an indexed component. If validity checking and
-   --  range checking are enabled, all subscripts for this indexed component
-   --  are checked for validity.
+   --  range checking are enabled, each subscript for this indexed component
+   --  whose dimension does not belong to the No_Check_Needed set is checked
+   --  for validity. No_Check_Needed.Dimensions must match the number of
+   --  dimensions of the array type or be zero.
 
    procedure Check_Valid_Lvalue_Subscripts (Expr : Node_Id);
    --  Expr is a lvalue, i.e. an expression representing the target of an

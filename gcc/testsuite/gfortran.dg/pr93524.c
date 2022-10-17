@@ -2,7 +2,7 @@
    sm incorrectly for dimensions > 2.  */
 
 #include <stdlib.h>  // For size_t
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 
 void my_fortran_sub_1 (CFI_cdesc_t *dv); 
 void my_fortran_sub_2 (CFI_cdesc_t *dv); 

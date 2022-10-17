@@ -1,5 +1,5 @@
 /* Definitions for the shared dumpfile.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* An attribute for annotating formatting printing functions that use
    the dumpfile/optinfo formatting codes.  These are the pretty_printer
-   format codes (see pretty-print.c), with additional codes for middle-end
-   specific entities (see dumpfile.c).  */
+   format codes (see pretty-print.cc), with additional codes for middle-end
+   specific entities (see dumpfile.cc).  */
 
 #if GCC_VERSION >= 9000
 #define ATTRIBUTE_GCC_DUMP_PRINTF(m, n) \
@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Different tree dump places.  When you add new tree dump places,
-   extend the DUMP_FILES array in dumpfile.c.  */
+   extend the DUMP_FILES array in dumpfile.cc.  */
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
@@ -71,10 +71,10 @@ enum dump_kind
 
 /* Bit masks to control dumping. Not all values are applicable to all
    dumps. Add new ones at the end. When you define new values, extend
-   the DUMP_OPTIONS array in dumpfile.c. The TDF_* flags coexist with
+   the DUMP_OPTIONS array in dumpfile.cc. The TDF_* flags coexist with
    MSG_* flags (for -fopt-info) and the bit values must be chosen to
    allow that.  */
-enum dump_flag
+enum dump_flag : uint32_t
 {
   /* Value of TDF_NONE is used just for bits filtered by TDF_KIND_MASK.  */
   TDF_NONE  = 0,
@@ -140,7 +140,7 @@ enum dump_flag
   /* Dump SCEV details.  */
   TDF_SCEV = (1 << 19),
 
-  /* Dump in GIMPLE FE syntax  */
+  /* Dump in GIMPLE FE syntax.  */
   TDF_GIMPLE = (1 << 20),
 
   /* Dump folding details.  */
@@ -191,14 +191,17 @@ enum dump_flag
 			| MSG_PRIORITY_INTERNALS
 			| MSG_PRIORITY_REEMITTED),
 
+  /* All -fdump- flags.  */
+  TDF_ALL_VALUES = (1 << 28) - 1,
+
   /* Dumping for -fcompare-debug.  */
   TDF_COMPARE_DEBUG = (1 << 28),
 
-  /* For error.  */
-  TDF_ERROR = (1 << 26),
+  /* Dump a GIMPLE value which means wrapping certain things with _Literal.  */
+  TDF_GIMPLE_VAL = (1 << 29),
 
-  /* All values.  */
-  TDF_ALL_VALUES = (1 << 29) - 1
+  /* For error.  */
+  TDF_ERROR = ((uint32_t)1 << 30),
 };
 
 /* Dump flags type.  */
@@ -208,32 +211,36 @@ typedef enum dump_flag dump_flags_t;
 static inline dump_flags_t
 operator| (dump_flags_t lhs, dump_flags_t rhs)
 {
-  return (dump_flags_t)((int)lhs | (int)rhs);
+  return (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			| (std::underlying_type<dump_flags_t>::type)rhs);
 }
 
 static inline dump_flags_t
 operator& (dump_flags_t lhs, dump_flags_t rhs)
 {
-  return (dump_flags_t)((int)lhs & (int)rhs);
+  return (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			& (std::underlying_type<dump_flags_t>::type)rhs);
 }
 
 static inline dump_flags_t
 operator~ (dump_flags_t flags)
 {
-  return (dump_flags_t)~((int)flags);
+  return (dump_flags_t)~((std::underlying_type<dump_flags_t>::type)flags);
 }
 
 static inline dump_flags_t &
 operator|= (dump_flags_t &lhs, dump_flags_t rhs)
 {
-  lhs = (dump_flags_t)((int)lhs | (int)rhs);
+  lhs = (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+		       | (std::underlying_type<dump_flags_t>::type)rhs);
   return lhs;
 }
 
 static inline dump_flags_t &
 operator&= (dump_flags_t &lhs, dump_flags_t rhs)
 {
-  lhs = (dump_flags_t)((int)lhs & (int)rhs);
+  lhs = (dump_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+		       & (std::underlying_type<dump_flags_t>::type)rhs);
   return lhs;
 }
 
@@ -272,13 +279,15 @@ typedef enum optgroup_flag optgroup_flags_t;
 static inline optgroup_flags_t
 operator| (optgroup_flags_t lhs, optgroup_flags_t rhs)
 {
-  return (optgroup_flags_t)((int)lhs | (int)rhs);
+  return (optgroup_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			    | (std::underlying_type<dump_flags_t>::type)rhs);
 }
 
 static inline optgroup_flags_t &
 operator|= (optgroup_flags_t &lhs, optgroup_flags_t rhs)
 {
-  lhs = (optgroup_flags_t)((int)lhs | (int)rhs);
+  lhs = (optgroup_flags_t)((std::underlying_type<dump_flags_t>::type)lhs
+			   | (std::underlying_type<dump_flags_t>::type)rhs);
   return lhs;
 }
 
@@ -500,7 +509,7 @@ class dump_location_t
   dump_impl_location_t m_impl_location;
 };
 
-/* In dumpfile.c */
+/* In dumpfile.cc */
 extern FILE *dump_begin (int, dump_flags_t *, int part=-1);
 extern void dump_end (int, FILE *);
 extern int opt_info_switch_p (const char *);
@@ -541,7 +550,7 @@ dump_enabled_p (void)
    (b) the "optinfo" destinations, if any:
        (b.1) as optimization records
 
-   dump_* (MSG_*) --> dumpfile.c --> items --> (a.1) dump_file
+   dump_* (MSG_*) --> dumpfile.cc --> items --> (a.1) dump_file
                                        |   `-> (a.2) alt_dump_file
                                        |
                                        `--> (b) optinfo
@@ -565,7 +574,7 @@ extern void dump_printf (const dump_metadata_t &, const char *, ...)
 
 extern void dump_printf_loc (const dump_metadata_t &, const dump_user_location_t &,
 			     const char *, ...)
-  ATTRIBUTE_GCC_DUMP_PRINTF (3, 0);
+  ATTRIBUTE_GCC_DUMP_PRINTF (3, 4);
 extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (dump_flags_t, basic_block, int);
 extern void dump_generic_expr_loc (const dump_metadata_t &,
@@ -641,12 +650,12 @@ extern void dump_function (int phase, tree fn);
 extern void print_combine_total_stats (void);
 extern bool enable_rtl_dump_file (void);
 
-/* In tree-dump.c  */
+/* In tree-dump.cc  */
 extern void dump_node (const_tree, dump_flags_t, FILE *);
 
-/* In combine.c  */
+/* In combine.cc  */
 extern void dump_combine_total_stats (FILE *);
-/* In cfghooks.c  */
+/* In cfghooks.cc  */
 extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 
 class opt_pass;

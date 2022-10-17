@@ -1,5 +1,5 @@
 /* Selftest support for the analyzer.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "stringpool.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-selftests.h"
 

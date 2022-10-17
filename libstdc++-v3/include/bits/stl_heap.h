@@ -1,6 +1,6 @@
 // Heap implementation -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,7 @@
 #include <debug/debug.h>
 #include <bits/move.h>
 #include <bits/predefined_ops.h>
+#include <bits/stl_iterator_base_funcs.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

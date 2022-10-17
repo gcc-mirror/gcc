@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,7 +99,7 @@ is
    procedure Set_Next (Node : Node_Access; Next : Node_Access);
    pragma Inline (Set_Next);
 
-   function Vet (Position : Cursor) return Boolean;
+   function Vet (Position : Cursor) return Boolean with Inline;
 
    procedure Write_Node
      (Stream : not null access Root_Stream_Type'Class;
@@ -854,8 +854,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin
@@ -1728,7 +1726,6 @@ is
       HT       : Hash_Table_Type;
       Node     : Node_Access;
       Inserted : Boolean;
-      pragma Unreferenced (Node, Inserted);
    begin
       Insert (HT, New_Item, Node, Inserted);
       return Set'(Controlled with HT);
@@ -1776,7 +1773,6 @@ is
 
          Tgt_Node : Node_Access;
          Success  : Boolean;
-         pragma Unreferenced (Tgt_Node, Success);
 
       --  Start of processing for Process
 
@@ -1936,6 +1932,10 @@ is
 
    function Vet (Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = null then
          return Position.Container = null;
       end if;
@@ -2031,6 +2031,64 @@ is
       Element_Type'Output (Stream, Node.Element.all);
    end Write_Node;
 
+   --  Ada 2022 features:
+
+   function Has_Element (Container : Set; Position : Cursor) return Boolean is
+   begin
+      pragma Assert (Vet (Position), "bad cursor in Has_Element");
+      pragma Assert ((Position.Container = null) = (Position.Node = null),
+                     "bad nullity in Has_Element");
+      return Position.Container = Container'Unrestricted_Access;
+   end Has_Element;
+
+   function Tampering_With_Cursors_Prohibited
+     (Container : Set) return Boolean
+   is
+   begin
+      return Is_Busy (Container.HT.TC);
+   end Tampering_With_Cursors_Prohibited;
+
+   function Element (Container : Set; Position : Cursor) return Element_Type is
+   begin
+      if Checks and then not Has_Element (Container, Position) then
+         raise Program_Error with "Position for wrong Container";
+      end if;
+
+      return Element (Position);
+   end Element;
+
+   procedure Query_Element
+     (Container : Set;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : Element_Type)) is
+   begin
+      if Checks and then not Has_Element (Container, Position) then
+         raise Program_Error with "Position for wrong Container";
+      end if;
+
+      Query_Element (Position, Process);
+   end Query_Element;
+
+   function Next (Container : Set; Position : Cursor) return Cursor is
+   begin
+      if Checks and then
+        not (Position = No_Element or else Has_Element (Container, Position))
+      then
+         raise Program_Error with "Position for wrong Container";
+      end if;
+
+      return Next (Position);
+   end Next;
+
+   procedure Next (Container : Set; Position : in out Cursor) is
+   begin
+      Position := Next (Container, Position);
+   end Next;
+
+   ------------------
+   -- Generic_Keys --
+   ------------------
+
    package body Generic_Keys is
 
       -----------------------
@@ -2063,29 +2121,14 @@ is
         (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type
       is
-         HT   : Hash_Table_Type renames Container'Unrestricted_Access.HT;
-         Node : constant Node_Access := Key_Keys.Find (HT, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         if Checks and then Node.Element = null then
-            raise Program_Error with "Node has no element";
-         end if;
-
-         declare
-            TC : constant Tamper_Counts_Access :=
-              HT.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => Node.Element.all'Access,
-               Control => (Controlled with TC))
-            do
-               Busy (TC.all);
-            end return;
-         end;
+         return Constant_Reference (Container, Position);
       end Constant_Reference;
 
       --------------
@@ -2280,34 +2323,14 @@ is
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Node_Access := Key_Keys.Find (Container.HT, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         if Checks and then Node.Element = null then
-            raise Program_Error with "Node has no element";
-         end if;
-
-         declare
-            HT : Hash_Table_Type renames Container.HT;
-            P  : constant Cursor := Find (Container, Key);
-         begin
-            return R : constant Reference_Type :=
-                         (Element => Node.Element.all'Access,
-                          Control =>
-                            (Controlled with
-                              HT.TC'Unrestricted_Access,
-                              Container => Container'Unchecked_Access,
-                              Index     => HT_Ops.Index (HT, P.Node),
-                              Old_Pos   => P,
-                              Old_Hash  => Hash (Key)))
-            do
-               Busy (HT.TC);
-            end return;
-         end;
+         return Reference_Preserving_Key (Container, Position);
       end Reference_Preserving_Key;
 
       -------------

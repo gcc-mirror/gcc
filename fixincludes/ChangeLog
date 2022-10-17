@@ -1,3 +1,123 @@
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* inclhack.def (glibc_cxx_floatn_5): New.
+	* fixincl.x: Regenerated.
+	* tests/base/bits/floatn.h: Regenerated.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* inclhack.def (glibc_cxx_floatn_2): Handle #elif the same as #if.
+	(glibc_cxx_floatn_4): New.
+	* fixincl.x: Regenerated.
+	* tests/base/bits/floatn.h: Regenerated.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* inclhack.def (glibc_cxx_floatn_1, glibc_cxx_floatn_2,
+	glibc_cxx_floatn_3): Add to files also "*/bits/floatn.h"
+	and "*/bits/floatn-common.h".
+	* fixincl.x: Regenerated.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* inclhack.def (glibc_cxx_floatn_1, glibc_cxx_floatn_2,
+	glibc_cxx_floatn_3): New fixes.
+	* tests/base/bits/floatn.h: New file.
+	* fixincl.x: Regenerated.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2022-02-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_math_constexpr): New hack.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Update.
+
+2022-02-04  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use cd OLDDIR instead of cd .. .
+
+2022-02-03  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use mkdir -p rather that a loop.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_posix_open): New hack.
+	* tests/base/fcntl.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_time_h_syslib): New hack.
+	* tests/base/time.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_math_h_fp_c99): New hack.
+	* tests/base/math.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-06  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_next_yvals): New hack.
+	* tests/base/yvals.h: New expected test result.
+	* fixincl.x: Regenerate.
+
+2022-01-04  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_posix_mkdir): Refine to expose a
+	varargs interface.
+	* tests/base/sys/stat.h: Update expected results.
+	* fixincl.x: Regenerate.
+
+2022-01-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* inclhack.def: Add new fix on darwin.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Regenerate.
+
+2021-11-23  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR bootstrap/103306
+	* fixincl.c (process): Don't call abort().
+
+2021-11-13  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR other/21823
+	PR bootstrap/80047
+	* fixincl.c (process): Simplify the handling for highly
+	  unlikely access() failure, to avoid using non-standard
+	  extensions.
+
+2021-08-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* inclhack.def (hpux_c99_inttypes5): New hack to define PRIdPTR, etc.
+	* fixincl.x: Regenerate.
+	* tests/base/inttypes.h: Update.
+
+2021-07-06  Clément Chigot  <clement.chigot@atos.net>
+
+	* inclhack.def (aix_externcpp1): Improve select regexp.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/socket.h: Update.
+
 2021-06-30  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	PR other/91085

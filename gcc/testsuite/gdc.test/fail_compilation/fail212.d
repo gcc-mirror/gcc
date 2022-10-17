@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail212.d(14): Error: function fail212.S.bar without 'this' cannot be const
+fail_compilation/fail212.d(14): Error: function `fail212.S.bar` without `this` cannot be `const`
 ---
 */
 

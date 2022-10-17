@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 1992-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,22 +35,50 @@
 --  Note that 1 is a binary modulus (2**0), so the compiler should not (and
 --  will not) call this function with Modulus equal to 1.
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
+
+with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
+
 with System.Unsigned_Types;
 
-package System.Exp_Mod is
-   pragma Pure;
+package System.Exp_Mod
+  with Pure, SPARK_Mode
+is
    use type System.Unsigned_Types.Unsigned;
+   subtype Unsigned is System.Unsigned_Types.Unsigned;
 
-   subtype Power_Of_2 is System.Unsigned_Types.Unsigned with
+   use type Ada.Numerics.Big_Numbers.Big_Integers_Ghost.Big_Integer;
+   subtype Big_Integer is
+     Ada.Numerics.Big_Numbers.Big_Integers_Ghost.Big_Integer
+   with Ghost;
+
+   package Unsigned_Conversion is
+     new Ada.Numerics.Big_Numbers.Big_Integers_Ghost.Unsigned_Conversions
+       (Int => Unsigned);
+
+   function Big (Arg : Unsigned) return Big_Integer is
+     (Unsigned_Conversion.To_Big_Integer (Arg))
+   with Ghost;
+
+   subtype Power_Of_2 is Unsigned with
      Dynamic_Predicate =>
         Power_Of_2 /= 0 and then (Power_Of_2 and (Power_Of_2 - 1)) = 0;
 
    function Exp_Modular
-     (Left    : System.Unsigned_Types.Unsigned;
-      Modulus : System.Unsigned_Types.Unsigned;
-      Right   : Natural) return System.Unsigned_Types.Unsigned
+     (Left    : Unsigned;
+      Modulus : Unsigned;
+      Right   : Natural) return Unsigned
    with
-       Pre  => Modulus /= 0 and then Modulus not in Power_Of_2,
-       Post => Exp_Modular'Result = Left ** Right mod Modulus;
+     Pre  => Modulus /= 0 and then Modulus not in Power_Of_2,
+     Post => Big (Exp_Modular'Result) = Big (Left) ** Right mod Big (Modulus);
 
 end System.Exp_Mod;

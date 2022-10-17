@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 /* We don't want to use gcc_assert for everything, as that can be
    compiled out.  */
 #define CRIS_ASSERT(x) \
- do { if (!(x)) internal_error ("CRIS-port assertion failed: " #x); } while (0)
+ do { if (!(x)) internal_error ("CRIS-port assertion failed: %s", #x); } while (0)
 
 /* Replacement for REG_P since it does not match SUBREGs.  Happens for
    testcase Axis-20000320 with gcc-2.9x.  */
@@ -153,7 +153,9 @@ extern int cris_cpu_version;
 
 #ifdef HAVE_AS_NO_MUL_BUG_ABORT_OPTION
 #define MAYBE_AS_NO_MUL_BUG_ABORT \
- "%{mno-mul-bug-workaround:-no-mul-bug-abort} "
+ "%{mno-mul-bug-workaround:-no-mul-bug-abort} " \
+ "%{mmul-bug-workaround:-mul-bug-abort} " \
+ "%{!mmul-bug-workaround:%{!mno-mul-bug-workaround:" MUL_BUG_ASM_DEFAULT "}} "
 #else
 #define MAYBE_AS_NO_MUL_BUG_ABORT
 #endif
@@ -255,13 +257,24 @@ extern int cris_cpu_version;
  (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
   + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
   + MASK_ALIGN_BY_32 \
-  + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
+  + MASK_PROLOGUE_EPILOGUE)
 # else  /* 0 */
 #  define TARGET_DEFAULT \
  (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
   + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
-  + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
+  + MASK_PROLOGUE_EPILOGUE)
 # endif
+#endif
+
+/* Don't depend on the assembler default setting for the errata machinery;
+   always pass the option to turn it on or off explicitly.  But, we have to
+   decide on which is the *GCC* default, and for that we should only need to
+   consider what's in TARGET_DEFAULT; no other changes should be necessary.  */
+
+#if (TARGET_DEFAULT & MASK_MUL_BUG)
+#define MUL_BUG_ASM_DEFAULT "-mul-bug-abort"
+#else
+#define MUL_BUG_ASM_DEFAULT "-no-mul-bug-abort"
 #endif
 
 /* Local, providing a default for cris_cpu_version.  */
@@ -317,7 +330,7 @@ extern int cris_cpu_version;
     Note that to make this macro affect the alignment of stack
    locals, a fix was required, and special precautions when handling
    the stack pointer in various other macros (TARGET_ASM_FUNCTION_PROLOGUE
-   et al) were required.  See file "function.c".  If you would just define
+   et al) were required.  See file "function.cc".  If you would just define
    this macro, it would only affect the builtin alloca and variable
    local data (non-ANSI, non-K&R, Gnu C extension).  */
 #define STACK_BOUNDARY \
@@ -423,19 +436,15 @@ extern int cris_cpu_version;
 
 /* Node: Register Classes */
 
-/* We need a separate register class to handle register allocation for
-   ACR, since it can't be used for post-increment.
-
-   It's not obvious, but having subunions of all movable-between
+/* It's not obvious, but having subunions of all movable-between
    register classes does really help register allocation (pre-IRA
    comment).  */
 enum reg_class
   {
     NO_REGS,
-    ACR_REGS, MOF_REGS, SRP_REGS, CC0_REGS,
+    MOF_REGS, SRP_REGS, CC0_REGS,
     MOF_SRP_REGS, SPECIAL_REGS,
-    SPEC_ACR_REGS, GENNONACR_REGS,
-    SPEC_GENNONACR_REGS, GENERAL_REGS,
+    GENERAL_REGS,
     ALL_REGS,
     LIM_REG_CLASSES
   };
@@ -444,9 +453,8 @@ enum reg_class
 
 #define REG_CLASS_NAMES						\
   {"NO_REGS",							\
-   "ACR_REGS", "MOF_REGS", "SRP_REGS", "CC0_REGS",		\
+   "MOF_REGS", "SRP_REGS", "CC0_REGS",				\
    "MOF_SRP_REGS", "SPECIAL_REGS",				\
-   "SPEC_ACR_REGS", "GENNONACR_REGS", "SPEC_GENNONACR_REGS",	\
    "GENERAL_REGS", "ALL_REGS"}
 
 #define CRIS_SPECIAL_REGS_CONTENTS					\
@@ -459,41 +467,29 @@ enum reg_class
 #define REG_CLASS_CONTENTS			\
   {						\
    {0},						\
-   {1 << CRIS_ACR_REGNUM},			\
    {1 << CRIS_MOF_REGNUM},			\
    {1 << CRIS_SRP_REGNUM},			\
    {1 << CRIS_CC0_REGNUM},			\
    {(1 << CRIS_MOF_REGNUM)			\
     | (1 << CRIS_SRP_REGNUM)},			\
    {CRIS_SPECIAL_REGS_CONTENTS},		\
-   {CRIS_SPECIAL_REGS_CONTENTS			\
-    | (1 << CRIS_ACR_REGNUM)},			\
-   {(0xffff | CRIS_FAKED_REGS_CONTENTS)		\
-    & ~(1 << CRIS_ACR_REGNUM)},			\
-   {(0xffff | CRIS_FAKED_REGS_CONTENTS		\
-    | CRIS_SPECIAL_REGS_CONTENTS)		\
-    & ~(1 << CRIS_ACR_REGNUM)},			\
    {0xffff | CRIS_FAKED_REGS_CONTENTS},		\
    {0xffff | CRIS_FAKED_REGS_CONTENTS		\
     | CRIS_SPECIAL_REGS_CONTENTS}		\
   }
 
 #define REGNO_REG_CLASS(REGNO)			\
-  ((REGNO) == CRIS_ACR_REGNUM ? ACR_REGS :	\
-   (REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
+  ((REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
    (REGNO) == CRIS_SRP_REGNUM ? SRP_REGS :	\
    (REGNO) == CRIS_CC0_REGNUM ? CC0_REGS :	\
    GENERAL_REGS)
 
 #define BASE_REG_CLASS GENERAL_REGS
 
-#define MODE_CODE_BASE_REG_CLASS(MODE, AS, OCODE, ICODE)	\
-  ((OCODE) != POST_INC ? BASE_REG_CLASS : GENNONACR_REGS)
-
 #define INDEX_REG_CLASS GENERAL_REGS
 
 /* Since it uses reg_renumber, it is safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 #define REGNO_OK_FOR_BASE_P(REGNO)					\
  ((REGNO) <= CRIS_LAST_GENERAL_REGISTER					\
@@ -572,9 +568,9 @@ enum reg_class
    number and dwarf frame register, we would either need to include all
    registers in the gcc description (with some marked fixed of course), or
    an inverse mapping from dwarf register to gcc register.  There is one
-   need in dwarf2out.c:expand_builtin_init_dwarf_reg_sizes.  Right now, I
+   need in dwarf2out.cc:expand_builtin_init_dwarf_reg_sizes.  Right now, I
    don't see that we need exact correspondence between DWARF *frame*
-   registers and DBX_REGISTER_NUMBER, so map them onto GCC registers.  */
+   registers and DEBUGGER_REGNO, so map them onto GCC registers.  */
 #define DWARF_FRAME_REGNUM(REG) (REG)
 
 /* Node: Stack Checking */
@@ -657,13 +653,13 @@ struct cum_args {int regs;};
 
 /* Node: Function entry */
 
-/* See cris.c for TARGET_ASM_FUNCTION_PROLOGUE and
+/* See cris.cc for TARGET_ASM_FUNCTION_PROLOGUE and
    TARGET_ASM_FUNCTION_EPILOGUE.  */
 
 /* Node: Profiling */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
- error ("no FUNCTION_PROFILER for CRIS")
+ error ("no %<FUNCTION_PROFILER%> for CRIS")
 
 /* FIXME: Some of the undefined macros might be mandatory.  If so, fix
    documentation.  */
@@ -892,31 +888,13 @@ struct cum_args {int regs;};
 
 /* Node: All Debuggers */
 
-#define DBX_REGISTER_NUMBER(REGNO)				\
+#define DEBUGGER_REGNO(REGNO)				\
  ((REGNO) == CRIS_SRP_REGNUM ? CRIS_CANONICAL_SRP_REGNUM :	\
   (REGNO) == CRIS_MOF_REGNUM ? CRIS_CANONICAL_MOF_REGNUM :	\
   (REGNO) == CRIS_CC0_REGNUM ? CRIS_CANONICAL_CC0_REGNUM :	\
  (REGNO))
 
 /* FIXME: Investigate DEBUGGER_AUTO_OFFSET, DEBUGGER_ARG_OFFSET.  */
-
-
-/* Node: DBX Options */
-
-/* Is this correct? Check later.  */
-#define DBX_NO_XREFS
-
-#define DBX_CONTIN_LENGTH 0
-
-/* FIXME: Is this needed when we have 0 DBX_CONTIN_LENGTH?  */
-#define DBX_CONTIN_CHAR '?'
-
-
-/* Node: DBX Hooks */
-/* (no definitions) */
-
-/* Node: File names and DBX */
-/* (no definitions) */
 
 
 /* Node: DWARF */

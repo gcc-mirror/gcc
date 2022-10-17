@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -107,12 +107,22 @@ __rdpmc (int __S)
 #endif /* __iamcu__ */
 
 /* rdtsc */
-#define __rdtsc()		__builtin_ia32_rdtsc ()
+extern __inline unsigned long long
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+__rdtsc (void)
+{
+  return __builtin_ia32_rdtsc ();
+}
 
 #ifndef __iamcu__
 
 /* rdtscp */
-#define __rdtscp(a)		__builtin_ia32_rdtscp (a)
+extern __inline unsigned long long
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+__rdtscp (unsigned int *__A)
+{
+  return __builtin_ia32_rdtscp (__A);
+}
 
 #endif /* __iamcu__ */
 

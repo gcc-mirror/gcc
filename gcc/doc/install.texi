@@ -40,7 +40,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -64,7 +64,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2022 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -137,7 +137,7 @@ Free Documentation License}''.
 @end ifnothtml
 
 The latest version of this document is always available at
-@uref{http://gcc.gnu.org/install/,,http://gcc.gnu.org/install/}.
+@uref{https://gcc.gnu.org/install/,,https://gcc.gnu.org/install/}.
 It refers to the current development sources, instructions for
 specific released versions are included with the sources.
 
@@ -159,7 +159,7 @@ We recommend you browse the entire generic installation instructions before
 you proceed.
 
 Lists of successful builds for released versions of GCC are
-available at @uref{http://gcc.gnu.org/buildstat.html}.
+available at @uref{https://gcc.gnu.org/buildstat.html}.
 These lists are updated as new information becomes available.
 
 The installation procedure itself is broken into five steps.
@@ -197,12 +197,6 @@ we suggest that you install GCC into a directory of its own and simply
 remove that directory when you do not need that specific version of GCC
 any longer, and, if shared libraries are installed there as well, no
 more binaries exist that use them.
-
-@ifhtml
-There are also some @uref{old.html,,old installation instructions},
-which are mostly obsolete but still contain some information which has
-not yet been merged into the main part of this manual.
-@end ifhtml
 
 @html
 <hr />
@@ -245,11 +239,6 @@ To build all languages in a cross-compiler or other configuration where
 GCC binary (version 4.8 or later) because source code for language
 frontends other than C might use GCC extensions.
 
-Note that to bootstrap GCC with versions of GCC earlier than 4.8, you
-may need to use @option{--disable-stage1-checking}, though
-bootstrapping the compiler with such earlier compilers is strongly
-discouraged.
-
 @item C standard library and headers
 
 In order to build GCC, the C standard library and headers must be present
@@ -269,7 +258,7 @@ name of the package depends on your distro) or you must build GCC as a
 @item @anchor{GNAT-prerequisite}GNAT
 
 In order to build GNAT, the Ada compiler, you need a working GNAT
-compiler (GCC version 4.7 or later).
+compiler (GCC version 5.1 or later).
 
 This includes GNAT tools such as @command{gnatmake} and
 @command{gnatlink}, since the Ada front end is written in Ada and
@@ -294,6 +283,30 @@ must not be set when building the Ada compiler, the Ada tools, or the
 Ada runtime libraries. You can check that your build environment is clean
 by verifying that @samp{gnatls -v} lists only one explicit path in each
 section.
+
+@item @anchor{GDC-prerequisite}GDC
+
+In order to build GDC, the D compiler, you need a working GDC
+compiler (GCC version 9.1 or later) and D runtime library,
+@samp{libphobos}, as the D front end is written in D.
+
+Versions of GDC prior to 12 can be built with an ISO C++11 compiler, which can
+then be installed and used to bootstrap newer versions of the D front end.
+
+It is strongly recommended to use an older version of GDC to build GDC. More
+recent versions of GDC than the version built are not guaranteed to work and
+will often fail during the build with compilation errors relating to
+deprecations or removed features.
+
+Note that @command{configure} does not test whether the GDC installation works
+and has a sufficiently recent version.  Though the implementation of the D
+front end does not make use of any GDC-specific extensions, or novel features
+of the D language, if too old a GDC version is installed and
+@option{--enable-languages=d} is used, the build will fail.
+
+On some targets, @samp{libphobos} isn't enabled by default, but compiles
+and works if @option{--enable-libphobos} is used.  Specifics are
+documented for affected targets.
 
 @item A ``working'' POSIX compatible shell, or GNU bash
 
@@ -324,6 +337,9 @@ are broken.  GNU awk version 3.1.5 is known to work.
 Necessary in some circumstances, optional in others.  See the
 host/target specific instructions for your platform for the exact
 requirements.
+
+Note binutils 2.35 or newer is required for LTO to work correctly
+with GNU libtool that includes doing a bootstrap with LTO enabled.
 
 @item gzip version 1.2.4 (or later) or
 @itemx bzip2 version 1.0.2 (or later)
@@ -395,7 +411,7 @@ download_prerequisites installs.
 @item MPC Library version 1.0.1 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
-@uref{http://www.multiprecision.org/mpc/}.  If an MPC source distribution
+@uref{https://www.multiprecision.org/mpc/}.  If an MPC source distribution
 is found in a subdirectory of your GCC sources named @file{mpc}, it
 will be built together with GCC.  Alternatively, if MPC is already
 installed but it is not in your default library search path, the
@@ -455,7 +471,7 @@ Necessary when modifying @command{gperf} input files, e.g.@:
 @file{gcc/cp/cfns.gperf} to regenerate its associated header file, e.g.@:
 @file{gcc/cp/cfns.h}.
 
-@item DejaGnu 1.4.4
+@item DejaGnu version 1.5.3 (or later)
 @itemx Expect
 @itemx Tcl
 @c Once Tcl 8.5 or higher is required, remove any obsolete
@@ -546,10 +562,10 @@ own sources.
 @cindex Downloading GCC
 @cindex Downloading the Source
 
-GCC is distributed via @uref{http://gcc.gnu.org/git.html,,git} and via
+GCC is distributed via @uref{https://gcc.gnu.org/git.html,,git} and via
 HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 
-Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
+Please refer to the @uref{https://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
 The source distribution includes the C, C++, Objective-C, Fortran,
@@ -735,14 +751,14 @@ Here are the possible CPU types:
 
 @quotation
 aarch64, aarch64_be, alpha, alpha64, amdgcn, arc, arceb, arm, armeb, avr, bfin,
-bpf, cr16, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
-hppa64, i486, i686, ia64, iq2000, lm32, m32c, m32r, m32rle, m68k, mcore,
-microblaze, microblazeel, mips, mips64, mips64el, mips64octeon, mips64orion,
-mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
+bpf, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
+hppa64, i486, i686, ia64, iq2000, lm32, loongarch64, m32c, m32r, m32rle, m68k,
+mcore, microblaze, microblazeel, mips, mips64, mips64el, mips64octeon,
+mips64orion, mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
 mipsisa64r2el, mipsisa64sb1, mipsisa64sr71k, mipstx39, mmix, mn10300, moxie,
 msp430, nds32be, nds32le, nios2, nvptx, or1k, pdp11, powerpc, powerpc64,
 powerpc64le, powerpcle, pru, riscv32, riscv32be, riscv64, riscv64be, rl78, rx,
-s390, s390x, sh, shle, sparc, sparc64, tic6x, tilegx, tilegxbe, tilepro, v850,
+s390, s390x, sh, shle, sparc, sparc64, tic6x, v850,
 v850e, v850e1, vax, visium, x86_64, xstormy16, xtensa
 @end quotation
 
@@ -1088,11 +1104,6 @@ but for the linker.
 Same as @uref{#with-as,,@option{--with-as}}
 but for the debug linker (only used on Darwin platforms so far).
 
-@item --with-stabs
-Specify that stabs debugging
-information should be used instead of whatever format the host normally
-uses.  Normally GCC uses the same debug format as the host system.
-
 @item --with-tls=@var{dialect}
 Specify the default TLS dialect, for systems were there is a choice.
 For ARM targets, possible values for @var{dialect} are @code{gnu} or
@@ -1160,8 +1171,9 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for aarch64*-*-*, arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The
-accepted values and meaning for each target is given below.
+for aarch64*-*-*, arm*-*-*, loongarch64-*-*, riscv*-*-*, sh*-*-* and
+x86-64-*-linux*.  The accepted values and meaning for each target is given
+below.
 
 @table @code
 @item aarch64*-*-*
@@ -1248,6 +1260,14 @@ profile.  The union of these options is considered when specifying both
 @code{-mfloat-abi=hard}
 @end multitable
 
+@item loongarch*-*-*
+@var{list} is a comma-separated list of the following ABI identifiers:
+@code{lp64d[/base]} @code{lp64f[/base]} @code{lp64d[/base]}, where the
+@code{/base} suffix may be omitted, to enable their respective run-time
+libraries.  If @var{list} is empty or @code{default},
+or if @option{--with-multilib-list} is not specified, then the default ABI
+as specified by @option{--with-abi} or implied by @option{--target} is selected.
+
 @item riscv*-*-*
 @var{list} is a single ABI name.  The target architecture must be either
 @code{rv32gc} or @code{rv64gc}.  This will build a single multilib for the
@@ -1326,6 +1346,23 @@ Example 4: Add multi-lib suppport for rv64ima with lp64; rv64imaf with lp64,
 rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
 @smallexample
 rv64ima-lp64--f,c,fc
+@end smallexample
+
+@option{--with-multilib-generator} have an optional configuration argument
+@option{--cmodel=val} for code model, this option will expand with other
+config options, @var{val} is a comma separated list of possible code model,
+currently we support medlow and medany.
+
+Example 5: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+medlow code model
+@smallexample
+rv64ima-lp64--;--cmodel=medlow
+@end smallexample
+
+Example 6: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+medlow code model; rv64ima with lp64 and medany code model
+@smallexample
+rv64ima-lp64--;--cmodel=medlow,medany
 @end smallexample
 
 @item --with-endian=@var{endians}
@@ -1570,6 +1607,20 @@ and the runtime C library.
 On certain targets this option sets the default stack clash protection guard
 size as a power of two in bytes.  On AArch64 @var{size} is required to be either
 12 (4KB) or 16 (64KB).
+
+@item --with-isa-spec=@var{ISA-spec-string}
+On RISC-V targets specify the default version of the RISC-V Unprivileged
+(formerly User-Level) ISA specification to produce code conforming to.
+The possibilities for @var{ISA-spec-string} are:
+@table @code
+@item 2.2
+Produce code conforming to version 2.2.
+@item 20190608
+Produce code conforming to version 20190608.
+@item 20191213
+Produce code conforming to version 20191213.
+@end table
+In the absence of this configuration option the default version is 20191213.
 
 @item --enable-__cxa_atexit
 Define if you want to use __cxa_atexit, rather than atexit, to
@@ -2088,17 +2139,6 @@ Until all of the libraries are converted to use IEEE 128-bit floating
 point, it is not recommended to use
 @option{--with-long-double-format=ieee}.
 
-On little endian PowerPC Linux systems, if you explicitly set the
-@code{long double} type, it will build multilibs to allow you to
-select either @code{long double} format, unless you disable multilibs
-with the @code{--disable-multilib} option.  At present,
-@code{long double} multilibs are not built on big endian PowerPC Linux
-systems.  If you are building multilibs, you will need to configure
-the compiler using the @option{--with-system-zlib} option.
-
-If you do not set the @code{long double} type explicitly, no multilibs
-will be generated.
-
 @item --enable-fdpic
 On SH Linux systems, generate ELF FDPIC code.
 
@@ -2289,18 +2329,6 @@ those are in separate optional packages and where the presence or absence
 of those optional packages should determine the actual supported offloading
 target set rather than the GCC configure-time selection.
 
-@item --with-hsa-runtime=@var{pathname}
-@itemx --with-hsa-runtime-include=@var{pathname}
-@itemx --with-hsa-runtime-lib=@var{pathname}
-
-If you configure GCC with offloading which uses an HSA run-time such as
-AMDGCN but do not have the HSA run-time library installed in a standard
-location then you can explicitly specify the directory where they are
-installed.  The @option{--with-hsa-runtime=@/@var{hsainstalldir}} option
-is a shorthand for
-@option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
-@option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
-
 @item --enable-cet
 @itemx --disable-cet
 Enable building target run-time libraries with control-flow
@@ -2331,6 +2359,21 @@ For a native build and cross compiles that have target headers, the option's
 default is derived from glibc's behavior. When glibc clamps float_t to double,
 GCC follows and enables the option. For other cross compiles, the default is
 disabled.
+
+@item --with-zstd=@var{pathname}
+@itemx --with-zstd-include=@var{pathname}
+@itemx --with-zstd-lib=@var{pathname}
+If you do not have the @code{zstd} library installed in a standard
+location and you want to build GCC, you can explicitly specify the
+directory where it is installed (@samp{--with-zstd=@/@var{zstdinstalldir}}).
+The @option{--with-zstd=@/@var{zstdinstalldir}} option is shorthand for
+@option{--with-zstd-lib=@/@var{zstdinstalldir}/lib} and
+@option{--with-zstd-include=@/@var{zstdinstalldir}/include}. If this
+shorthand assumption is not correct, you can use the explicit
+include and lib options directly.
+
+These flags are applicable to the host platform only.  When building
+a cross compiler, they will not be used to configure target libraries.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2422,7 +2465,7 @@ Only supported for the AVR target. Specifies that @samp{AVR-Libc} is
 being used as the target C@tie{} library.  This causes float support
 functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
 the assumption that it will be provided by @file{libm.a}.  For more
-technical details, cf. @uref{http://gcc.gnu.org/PR54461,,PR54461}.
+technical details, cf. @uref{https://gcc.gnu.org/PR54461,,PR54461}.
 It is not supported for
 RTEMS configurations, which currently use newlib.  The option is
 supported since version 4.7.2 and is the default in 4.8.0 and newer.
@@ -2968,6 +3011,15 @@ and network filesystems.
 @uref{prerequisites.html#GNAT-prerequisite,,GNAT prerequisites}.
 @end ifhtml
 
+@section Building the D compiler
+
+@ifnothtml
+@ref{GDC-prerequisite}.
+@end ifnothtml
+@ifhtml
+@uref{prerequisites.html#GDC-prerequisite,,GDC prerequisites}.
+@end ifhtml
+
 @section Building with profile feedback
 
 It is possible to use profile feedback to optimize the compiler itself.  This
@@ -3022,9 +3074,9 @@ the code quality may be much worse.
 Before you install GCC, we encourage you to run the testsuites and to
 compare your results with results from a similar configuration that have
 been submitted to the
-@uref{http://gcc.gnu.org/ml/gcc-testresults/,,gcc-testresults mailing list}.
+@uref{https://gcc.gnu.org/ml/gcc-testresults/,,gcc-testresults mailing list}.
 Some of these archived results are linked from the build status lists
-at @uref{http://gcc.gnu.org/buildstat.html}, although not everyone who
+at @uref{https://gcc.gnu.org/buildstat.html}, although not everyone who
 reports a successful build runs the testsuites and submits the results.
 This step is optional and may require you to download additional software,
 but it can give you confidence in your new GCC installation or point out
@@ -3036,7 +3088,7 @@ These are part of the full distribution, but if you downloaded the
 separately.
 
 Second, you must have the testing tools installed.  This includes
-@uref{http://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
+@uref{https://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
 the DejaGnu site has links to these.
 Some optional tests also require Python3 and pytest module.
 
@@ -3067,7 +3119,7 @@ might emit some harmless messages resembling
 @samp{WARNING: Couldn't find tool init file} that can be ignored.
 
 If you are testing a cross-compiler, you may want to run the testsuite
-on a simulator as described at @uref{http://gcc.gnu.org/simtest-howto.html}.
+on a simulator as described at @uref{https://gcc.gnu.org/simtest-howto.html}.
 
 @section How can you run the testsuite on selected tests?
 
@@ -3309,7 +3361,7 @@ make install-strip
 
 If you are bootstrapping a released version of GCC then please
 quickly review the build status page for your release, available from
-@uref{http://gcc.gnu.org/buildstat.html}.
+@uref{https://gcc.gnu.org/buildstat.html}.
 If your system is not listed for the version of GCC that you built,
 send a note to
 @email{gcc@@gcc.gnu.org} indicating
@@ -3423,10 +3475,6 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
-for AIX 6 and AIX 7};
-
-@item
 @uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
 AIX 7.1)}.
 @end itemize
@@ -3463,8 +3511,8 @@ Microsoft Windows:
 @item
 The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
 @item
-The @uref{http://www.mingw.org/,,MinGW} and
-@uref{http://mingw-w64.org/doku.php,,mingw-w64} projects.
+The @uref{https://osdn.net/projects/mingw/,,MinGW} and
+@uref{https://www.mingw-w64.org/,,mingw-w64} projects.
 @end itemize
 
 @item
@@ -3472,7 +3520,7 @@ The @uref{http://www.mingw.org/,,MinGW} and
 number of platforms.
 
 @item
-The @uref{http://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
+The @uref{https://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
 links to GNU Fortran binaries for several platforms.
 @end itemize
 
@@ -3515,7 +3563,13 @@ information have to.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
+@uref{#amdgcn-x-amdhsa,,amdgcn-*-amdhsa}
+@item
 @uref{#amd64-x-solaris2,,amd64-*-solaris2*}
+@item
+@uref{#arc-x-elf32,,arc-*-elf32}
+@item
+@uref{#arc-linux-uclibc,,arc-linux-uclibc}
 @item
 @uref{#arm-x-eabi,,arm-*-eabi}
 @item
@@ -3523,7 +3577,13 @@ information have to.
 @item
 @uref{#bfin,,Blackfin}
 @item
+@uref{#cris,,cris}
+@item
 @uref{#dos,,DOS}
+@item
+@uref{#epiphany-x-elf,,epiphany-*-elf}
+@item
+@uref{#ft32-x-elf,,ft32-*-elf}
 @item
 @uref{#x-x-freebsd,,*-*-freebsd*}
 @item
@@ -3549,6 +3609,8 @@ information have to.
 @item
 @uref{#iq2000-x-elf,,iq2000-*-elf}
 @item
+@uref{#loongarch,,loongarch}
+@item
 @uref{#lm32-x-elf,,lm32-*-elf}
 @item
 @uref{#lm32-x-uclinux,,lm32-*-uclinux}
@@ -3559,11 +3621,15 @@ information have to.
 @item
 @uref{#m68k-x-x,,m68k-*-*}
 @item
-@uref{#m68k-uclinux,,m68k-uclinux}
+@uref{#m68k-x-uclinux,,m68k-*-uclinux}
 @item
 @uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
+@item
+@uref{#moxie-x-elf,,moxie-*-elf}
+@item
+@uref{#msp430-x-elf,,msp430-*-elf}
 @item
 @uref{#nds32le-x-elf,,nds32le-*-elf}
 @item
@@ -3603,6 +3669,10 @@ information have to.
 @item
 @uref{#riscv64-x-linux,,riscv64-*-linux}
 @item
+@uref{#rl78-x-elf,,rl78-*-elf}
+@item
+@uref{#rx-x-elf,,rx-*-elf}
+@item
 @uref{#s390-x-linux,,s390-*-linux*}
 @item
 @uref{#s390x-x-linux,,s390x-*-linux*}
@@ -3622,12 +3692,6 @@ information have to.
 @uref{#sparcv9-x-solaris2,,sparcv9-*-solaris2*}
 @item
 @uref{#c6x-x-x,,c6x-*-*}
-@item
-@uref{#tilegx-x-linux,,tilegx-*-linux*}
-@item
-@uref{#tilegxbe-x-linux,,tilegxbe-*-linux*}
-@item
-@uref{#tilepro-x-linux,,tilepro-*-linux*}
 @item
 @uref{#visium-x-elf, visium-*-elf}
 @item
@@ -3723,14 +3787,14 @@ This is a synonym for @samp{x86_64-*-solaris2*}.
 @heading amdgcn-*-amdhsa
 AMD GCN GPU target.
 
-Instead of GNU Binutils, you will need to install LLVM 6, or later, and copy
+Instead of GNU Binutils, you will need to install LLVM 13.0.1, or later, and copy
 @file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
 @file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
 @file{bin/amdgcn-amdhsa-ranlib}.
 
-Use Newlib (2019-01-16, or newer).
+Use Newlib (3.2.0, or newer).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.github.io,,ROCm Platform}, and use
@@ -3821,33 +3885,10 @@ are available at @uref{https://sourceforge.net/projects/adi-toolchain/}.
 @html
 <hr />
 @end html
-@anchor{cr16}
-@heading CR16
-The CR16 CompactRISC architecture is a 16-bit architecture. This
-architecture is used in embedded applications.
-
-@ifnothtml
-@xref{CR16 Options,, CR16 Options, gcc, Using and Porting the GNU Compiler
-Collection (GCC)},
-@end ifnothtml
-
-@ifhtml
-See ``CR16 Options'' in the main manual for a list of CR16-specific options.
-@end ifhtml
-
-Use @samp{configure --target=cr16-elf --enable-languages=c,c++} to configure
-GCC@ for building a CR16 elf cross-compiler.
-
-Use @samp{configure --target=cr16-uclinux --enable-languages=c,c++} to
-configure GCC@ for building a CR16 uclinux cross-compiler.
-
-@html
-<hr />
-@end html
 @anchor{cris}
 @heading CRIS
-CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip
-series.  These are used in embedded applications.
+CRIS is a CPU architecture in Axis Communications systems-on-a-chip, for
+example the ETRAX series.  These are used in embedded applications.
 
 @ifnothtml
 @xref{CRIS Options,, CRIS Options, gcc, Using the GNU Compiler
@@ -3858,21 +3899,8 @@ See ``CRIS Options'' in the main manual
 @end ifhtml
 for a list of CRIS-specific options.
 
-There are a few different CRIS targets:
-@table @code
-@item cris-axis-elf
-Mainly for monolithic embedded systems.  Includes a multilib for the
-@samp{v10} core used in @samp{ETRAX 100 LX}.
-@item cris-axis-linux-gnu
-A GNU/Linux port for the CRIS architecture, currently targeting
-@samp{ETRAX 100 LX} by default.
-@end table
-
-Pre-packaged tools can be obtained from
-@uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
-information about this platform is available at
-@uref{http://developer.axis.com/}.
-
+Use @samp{configure --target=cris-elf} to configure GCC@ for building
+a cross-compiler for CRIS.
 @html
 <hr />
 @end html
@@ -3898,10 +3926,6 @@ This configuration is intended for embedded systems.
 @end html
 @anchor{x-x-freebsd}
 @heading *-*-freebsd*
-Support for FreeBSD 1 was discontinued in GCC 3.2.  Support for
-FreeBSD 2 (and any mutant a.out variants of FreeBSD 3) was
-discontinued in GCC 4.0.
-
 In order to better utilize FreeBSD base system functionality and match
 the configuration of the system compiler, GCC 4.5 and above as well as
 GCC 4.4 past 2010-06-20 leverage SSP support in libc (which is present
@@ -3911,8 +3935,7 @@ on FreeBSD 7 or later) and the use of @code{__cxa_atexit} by default
 by GCC 4.5 and above.
 
 We support FreeBSD using the ELF file format with DWARF 2 debugging
-for all CPU architectures.  You may use @option{-gstabs} instead of
-@option{-g}, if you really want the old debugging format.  There are
+for all CPU architectures.  There are
 no known issues with mixing object files and libraries with different
 debugging formats.  Otherwise, this release of GCC should now match
 more of the configuration used in the stock FreeBSD configuration of
@@ -4143,11 +4166,11 @@ libstdc++-v3 documentation.
 @anchor{ix86-x-linux}
 @heading i?86-*-linux*
 As of GCC 3.3, binutils 2.13.1 or later is required for this platform.
-See @uref{http://gcc.gnu.org/PR10877,,bug 10877} for more information.
+See @uref{https://gcc.gnu.org/PR10877,,bug 10877} for more information.
 
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
-found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
+found on @uref{https://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 
 @html
 <hr />
@@ -4188,15 +4211,6 @@ running GNU/Linux.
 If you are using the installed system libunwind library with
 @option{--with-system-libunwind}, then you must use libunwind 0.98 or
 later.
-
-None of the following versions of GCC has an ABI that is compatible
-with any of the other versions in this list, with the exception that
-Red Hat 2.96 and Trillian 000171 are compatible with each other:
-3.1, 3.0.2, 3.0.1, 3.0, Red Hat 2.96, and Trillian 000717.
-This primarily affects C++ programs and programs that create shared libraries.
-GCC 3.1 or later is recommended for compiling linux, the kernel.
-As of version 3.1 GCC is believed to be fully ABI compliant, and hence no
-more major ABI changes are expected.
 
 @html
 <hr />
@@ -4356,19 +4370,19 @@ overflow severe error when the @option{-bbigtoc} option is used to link
 GCC-produced object files into an executable that overflows the TOC@.  A fix
 for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
 available from IBM Customer Support and from its
-@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
+@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U455193.
 
 The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
 with a segmentation fault when invoked by any version of GCC@.  A fix for
 APAR IX87327 is available from IBM Customer Support and from its
-@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
+@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U461879.  This fix is incorporated in AIX 4.3.3 and above.
 
 The initial assembler shipped with AIX 4.3.0 generates incorrect object
 files.  A fix for APAR IX74254 (64BIT DISASSEMBLED OUTPUT FROM COMPILER FAILS
 TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
-@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
+@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
 
 AIX provides National Language Support (NLS)@.  Compilers and assemblers
@@ -4405,6 +4419,34 @@ This configuration is intended for embedded systems.
 @heading lm32-*-uclinux
 Lattice Mico32 processor.
 This configuration is intended for embedded systems running uClinux.
+
+@html
+<hr />
+@end html
+@anchor{loongarch}
+@heading LoongArch
+LoongArch processor.
+The following LoongArch targets are available:
+@table @code
+@item loongarch64-linux-gnu*
+LoongArch processor running GNU/Linux.  This target triplet may be coupled
+with a small set of possible suffixes to identify their default ABI type:
+@table @code
+@item f64
+Uses @code{lp64d/base} ABI by default.
+@item f32
+Uses @code{lp64f/base} ABI by default.
+@item sf
+Uses @code{lp64s/base} ABI by default.
+@end table
+
+@item loongarch64-linux-gnu
+Same as @code{loongarch64-linux-gnuf64}, but may be used with
+@option{--with-abi=*} to configure the default ABI type.
+@end table
+
+More information about LoongArch can be found at
+@uref{https://github.com/loongson/LoongArch-Documentation}.
 
 @html
 <hr />
@@ -4569,14 +4611,22 @@ Instead of GNU binutils, you will need to install
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 
-You will need newlib 3.0 git revision
-cd31fbb2aea25f94d7ecedc9db16dfc87ab0c316 or later.  It can be
+You will need newlib 3.1.0 or later.  It can be
 automatically built together with GCC@.  For this, add a symbolic link
 to nvptx-newlib's @file{newlib} directory to the directory containing
 the GCC sources.
 
 Use the @option{--disable-sjlj-exceptions} and
 @option{--enable-newlib-io-long-long} options when configuring.
+
+The @option{--with-arch} option may be specified to override the
+default value for the @option{-march} option, and to also build
+corresponding target libraries.
+The default is @option{--with-arch=sm_30}.
+
+For example, if @option{--with-arch=sm_70} is specified,
+@option{-march=sm_30} and @option{-march=sm_70} target libraries are
+built, and code generation defaults to @option{-march=sm_70}.
 
 @html
 <hr />
@@ -4617,7 +4667,7 @@ binaries are available at
 
 This version of GCC requires at least cctools-590.36.  The
 cctools-590.36 package referenced from
-@uref{http://gcc.gnu.org/ml/gcc/2006-03/msg00507.html} will not work
+@uref{https://gcc.gnu.org/ml/gcc/2006-03/msg00507.html} will not work
 on systems older than 10.3.9 (aka darwin7.9.0).
 
 @html
@@ -4818,6 +4868,12 @@ GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
 
+In order to build the GNU D compiler, GDC, a working @samp{libphobos} is
+needed.  That library wasn't built by default in GCC 9--11 on SPARC, or
+on x86 when the Solaris assembler is used, but can be enabled by
+configuring with @option{--enable-libphobos}.  Also, GDC 9.4.0 is
+required on x86, while GDC 9.3.0 is known to work on SPARC.
+
 The versions of the GNU Multiple Precision Library (GMP), the MPFR
 library and the MPC library bundled with Solaris 11.3 and later are
 usually recent enough to match GCC's requirements.  There are two
@@ -4831,6 +4887,7 @@ need to configure with @option{--with-gmp-include=/usr/include/gmp}.
 @item
 The version of the MPFR libary included in Solaris 11.3 is too old; you
 need to provide a more recent one.
+
 @end itemize
 
 @html
@@ -4916,30 +4973,6 @@ This is a synonym for @samp{sparc64-*-solaris2*}.
 @anchor{c6x-x-x}
 @heading c6x-*-*
 The C6X family of processors. This port requires binutils-2.22 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilegx-*-linux}
-@heading tilegx-*-linux*
-The TILE-Gx processor in little endian mode, running GNU/Linux.  This
-port requires binutils-2.22 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilegxbe-*-linux}
-@heading tilegxbe-*-linux*
-The TILE-Gx processor in big endian mode, running GNU/Linux.  This
-port requires binutils-2.23 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilepro-*-linux}
-@heading tilepro-*-linux*
-The TILEPro processor running GNU/Linux.  This port requires
-binutils-2.22 or newer.
 
 @html
 <hr />
@@ -5071,10 +5104,8 @@ the Win32 subsystem that provides a subset of POSIX.
 
 @subheading Intel 64-bit versions
 GCC contains support for x86-64 using the mingw-w64
-runtime library, available from @uref{http://mingw-w64.org/doku.php}.
+runtime library, available from @uref{https://www.mingw-w64.org/downloads/}.
 This library should be used with the target triple x86_64-pc-mingw32.
-
-Presently Windows for Itanium is not supported.
 
 @subheading Windows CE
 Windows CE is supported as a target only on Hitachi
@@ -5118,6 +5149,10 @@ or version 2.20 or above if building your own.
 GCC will build with and support only MinGW runtime 3.12 and later.
 Earlier versions of headers are incompatible with the new default semantics
 of @code{extern inline} in @code{-std=c99} and @code{-std=gnu99} modes.
+
+To support emitting DWARF debugging info you need to use GNU binutils
+version 2.16 or above containing support for the @code{.secrel32}
+assembler pseudo-op.
 
 @html
 <hr />

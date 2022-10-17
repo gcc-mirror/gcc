@@ -1,10 +1,10 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2006-2021 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2006-2022 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
- * http://www.digitalmars.com
+ * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
- * http://www.boost.org/LICENSE_1_0.txt
+ * https://www.boost.org/LICENSE_1_0.txt
  * https://github.com/dlang/dmd/blob/master/src/dmd/arraytypes.h
  */
 
@@ -27,6 +27,8 @@ typedef Array<class Dsymbol *> Dsymbols;
 
 typedef Array<class RootObject *> Objects;
 
+typedef Array<class DtorDeclaration *> DtorDeclarations;
+
 typedef Array<class FuncDeclaration *> FuncDeclarations;
 
 typedef Array<class Parameter *> Parameters;
@@ -48,8 +50,6 @@ typedef Array<class AliasDeclaration *> AliasDeclarations;
 
 typedef Array<class Module *> Modules;
 
-typedef Array<struct File *> Files;
-
 typedef Array<class CaseStatement *> CaseStatements;
 
 typedef Array<class ScopeStatement *> ScopeStatements;
@@ -63,3 +63,7 @@ typedef Array<class GotoStatement *> GotoStatements;
 typedef Array<class TemplateInstance *> TemplateInstances;
 
 typedef Array<struct Ensure> Ensures;
+
+typedef Array<struct Designator> Designators;
+
+typedef Array<struct DesigInit> DesigInits;

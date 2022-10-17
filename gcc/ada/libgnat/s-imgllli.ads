@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,12 +33,35 @@
 --  signed integer types larger than Long_Long_Integer, and also for conversion
 --  operations required in Text_IO.Integer_IO for such types.
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre                => Ignore,
+                         Post               => Ignore,
+                         Contract_Cases     => Ignore,
+                         Ghost              => Ignore,
+                         Subprogram_Variant => Ignore);
+
 with System.Image_I;
+with System.Unsigned_Types;
+with System.Val_LLLI;
+with System.Wid_LLLU;
 
-package System.Img_LLLI is
-   pragma Pure;
+package System.Img_LLLI
+  with SPARK_Mode
+is
+   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
-   package Impl is new Image_I (Long_Long_Long_Integer);
+   package Impl is new Image_I
+     (Int                  => Long_Long_Long_Integer,
+      Uns                  => Long_Long_Long_Unsigned,
+      Unsigned_Width_Ghost =>
+         Wid_LLLU.Width_Long_Long_Long_Unsigned
+           (0, Long_Long_Long_Unsigned'Last),
+      Int_Params           => System.Val_LLLI.Impl.Spec.Int_Params);
 
    procedure Image_Long_Long_Long_Integer
      (V : Long_Long_Long_Integer;

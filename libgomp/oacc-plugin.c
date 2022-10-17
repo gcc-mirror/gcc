@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -62,7 +62,6 @@ GOMP_PLUGIN_acc_default_dim (unsigned int i)
   if (i >= GOMP_DIM_MAX)
     {
       gomp_fatal ("invalid dimension argument: %d", i);
-      return -1;
     }
   return goacc_default_dims[i];
 }

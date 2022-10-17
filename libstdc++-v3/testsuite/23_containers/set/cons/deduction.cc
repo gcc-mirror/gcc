@@ -131,3 +131,38 @@ void g()
 		std::set<int, std::less<int>,
 			 SimpleAllocator<value_type>>>);
 }
+
+template<typename T, typename U> struct require_same;
+template<typename T> struct require_same<T, T> { using type = void; };
+
+template<typename T, typename U>
+  typename require_same<T, U>::type
+  check_type(U&) { }
+
+struct Pool;
+
+template<typename T>
+struct Alloc : __gnu_test::SimpleAllocator<T>
+{
+  Alloc(Pool*) { }
+
+  template<typename U>
+    Alloc(const Alloc<U>&) { }
+};
+
+void
+test_p1518r2()
+{
+  // P1518R2 - Stop overconstraining allocators in container deduction guides.
+  // This is a C++23 feature but we support it for C++17 too.
+
+  using Set = std::set<unsigned, std::greater<>, Alloc<unsigned>>;
+  Pool* p = nullptr;
+  Set s(p);
+
+  std::set s1(s, p);
+  check_type<Set>(s1);
+
+  std::set s2(std::move(s), p);
+  check_type<Set>(s2);
+}

@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    builtins used in the GNU compiler.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -114,9 +114,8 @@ along with GCC; see the file COPYING3.  If not see
    with an argument such as FLOAT32 to produce the enum value for the type.  If
    we are compiling for the C language with GNU extensions, we enable the name
    without the __builtin_ prefix as well as the name with the __builtin_
-   prefix.  C++ does not enable these names by default because they don't have
-   the _Float<N> and _Float<N>X keywords, and a class based library should use
-   the __builtin_ names.  */
+   prefix.  C++ does not enable these names by default because a class based
+   library should use the __builtin_ names.  */
 #undef DEF_FLOATN_BUILTIN
 #define DEF_FLOATN_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
@@ -205,14 +204,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Builtin used by the implementation of OpenACC and OpenMP.  Few of these are
    actually implemented in the compiler; most are in libgomp.  */
-/* These builtins also need to be enabled in offloading compilers invoked from
-   mkoffload; for that purpose, we're checking the -foffload-abi flag here.  */
 #undef DEF_GOACC_BUILTIN
 #define DEF_GOACC_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
 	       false, true, true, ATTRS, false, \
-	       (flag_openacc \
-		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
+	       flag_openacc)
 #undef DEF_GOACC_BUILTIN_COMPILER
 #define DEF_GOACC_BUILTIN_COMPILER(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
@@ -227,8 +223,7 @@ along with GCC; see the file COPYING3.  If not see
                false, true, true, ATTRS, false, \
 	       (flag_openacc \
 		|| flag_openmp \
-		|| flag_tree_parallelize_loops > 1 \
-		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
+		|| flag_tree_parallelize_loops > 1))
 
 /* Builtin used by the implementation of GNU TM.  These
    functions are mapped to the actual implementation of the STM library. */
@@ -912,6 +907,7 @@ DEF_GCC_BUILTIN        (BUILT_IN_ISLESS, "isless", BT_FN_INT_VAR, ATTR_CONST_NOT
 DEF_GCC_BUILTIN        (BUILT_IN_ISLESSEQUAL, "islessequal", BT_FN_INT_VAR, ATTR_CONST_NOTHROW_TYPEGENERIC_LEAF)
 DEF_GCC_BUILTIN        (BUILT_IN_ISLESSGREATER, "islessgreater", BT_FN_INT_VAR, ATTR_CONST_NOTHROW_TYPEGENERIC_LEAF)
 DEF_GCC_BUILTIN        (BUILT_IN_ISUNORDERED, "isunordered", BT_FN_INT_VAR, ATTR_CONST_NOTHROW_TYPEGENERIC_LEAF)
+DEF_GCC_BUILTIN        (BUILT_IN_ISSIGNALING, "issignaling", BT_FN_INT_VAR, ATTR_CONST_NOTHROW_TYPEGENERIC_LEAF)
 DEF_LIB_BUILTIN        (BUILT_IN_LABS, "labs", BT_FN_LONG_LONG, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_C99_BUILTIN        (BUILT_IN_LLABS, "llabs", BT_FN_LONGLONG_LONGLONG, ATTR_CONST_NOTHROW_LEAF_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_LONGJMP, "longjmp", BT_FN_VOID_PTR_INT, ATTR_NORETURN_NOTHROW_LIST)
@@ -976,6 +972,7 @@ DEF_BUILTIN_STUB (BUILT_IN_STRNCMP_EQ, "__builtin_strncmp_eq")
 
 /* Object size checking builtins.  */
 DEF_GCC_BUILTIN	       (BUILT_IN_OBJECT_SIZE, "object_size", BT_FN_SIZE_CONST_PTR_INT, ATTR_CONST_NOTHROW_LEAF_LIST)
+DEF_GCC_BUILTIN	       (BUILT_IN_DYNAMIC_OBJECT_SIZE, "dynamic_object_size", BT_FN_SIZE_CONST_PTR_INT, ATTR_PURE_NOTHROW_LEAF_LIST)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_MEMCPY_CHK, "__memcpy_chk", BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, ATTR_NOTHROW_NONNULL_LEAF)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_MEMMOVE_CHK, "__memmove_chk", BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, ATTR_NOTHROW_NONNULL_LEAF)
 DEF_EXT_LIB_BUILTIN    (BUILT_IN_MEMPCPY_CHK, "__mempcpy_chk", BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, ATTR_RETNONNULL_NOTHROW_LEAF)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,7 +113,7 @@ package Sem_Eval is
    --  The expression 'C' is not static in the technical RM sense, but for many
    --  simple record types, the size is in fact known at compile time. When we
    --  are trying to perform compile time constant folding (for instance for
-   --  expressions like C + 1, Is_Static_Expression or Is_OK_Static_Expression
+   --  expressions like C + 1), Is_Static_Expression or Is_OK_Static_Expression
    --  are not the right functions to test if folding is possible. Instead, we
    --  use Compile_Time_Known_Value. All static expressions that do not raise
    --  constraint error (i.e. those for which Is_OK_Static_Expression is true)
@@ -149,10 +149,9 @@ package Sem_Eval is
    --
    --  Note: most cases of non-static context checks are handled within
    --  Sem_Eval itself, including all cases of expressions at the outer level
-   --  (i.e. those that are not a subexpression). Currently the only outside
-   --  customer for this procedure is Sem_Attr (because Eval_Attribute is
-   --  there). There is also one special case arising from ranges (see body of
-   --  Resolve_Range).
+   --  (i.e. those that are not a subexpression). The outside customers for
+   --  this procedure are Sem_Aggr, Sem_Attr (because Eval_Attribute is there)
+   --  and Sem_Res (for a special case arising from ranges, see Resolve_Range).
    --
    --  Note: this procedure is also called by GNATprove on real literals
    --  that are not sub-expressions of static expressions, to convert them to
@@ -236,15 +235,6 @@ package Sem_Eval is
    --  purpose of removing checks is more effective if we know precise bounds.
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
-
-   function Compile_Time_Known_Value_Or_Aggr (Op : Node_Id) return Boolean;
-   --  Similar to Compile_Time_Known_Value, but also returns True if the value
-   --  is a compile-time-known aggregate, i.e. an aggregate all of whose
-   --  constituent expressions are either compile-time-known values (based on
-   --  calling Compile_Time_Known_Value) or compile-time-known aggregates.
-   --  Note that the aggregate could still involve run-time checks that might
-   --  fail (such as for subtype checks in component associations), but the
-   --  evaluation of the expressions themselves will not raise an exception.
 
    function CRT_Safe_Compile_Time_Known_Value (Op : Node_Id) return Boolean;
    --  In the case of configurable run-times, there may be an issue calling
@@ -487,6 +477,13 @@ package Sem_Eval is
    --  it cannot be determined at compile time. Flag Fixed_Int is used as in
    --  routine Is_In_Range above.
 
+   function Machine_Number
+     (Typ : Entity_Id;
+      Val : Ureal;
+      N   : Node_Id) return Ureal;
+   --  Return the machine number of Typ corresponding to the specified Val as
+   --  per RM 4.9(38/2). N is a node only used to post warnings.
+
    function Not_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean;
    --  Returns True if it can guarantee that Lo .. Hi is not a null range. If
    --  it cannot (because the value of Lo or Hi is not known at compile time)
@@ -575,5 +572,6 @@ private
    pragma Inline (Eval_Unchecked_Conversion);
 
    pragma Inline (Is_OK_Static_Expression);
+   pragma Inline (Machine_Number);
 
 end Sem_Eval;

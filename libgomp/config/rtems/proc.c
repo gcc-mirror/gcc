@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2022 Free Software Foundation, Inc.
    Contributed by Sebastian Huber <sebastian.huber@embedded-brains.de>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -78,22 +78,25 @@ parse_thread_pools (char *env, unsigned long *count, unsigned long *priority,
 {
   size_t len;
   int i;
+  char *end;
 
   if (*env == ':')
     ++env;
 
   errno = 0;
-  *count = strtoul (env, &env, 10);
-  if (errno != 0)
+  *count = strtoul (env, &end, 10);
+  if (errno != 0 || end == env)
     gomp_fatal ("Invalid thread pool count");
+  env = end;
 
   if (*env == '$')
     {
       ++env;
       errno = 0;
-      *priority = strtoul (env, &env, 10);
-      if (errno != 0)
+      *priority = strtoul (env, &end, 10);
+      if (errno != 0 || end == env)
 	gomp_fatal ("Invalid thread pool priority");
+      env = end;
     }
   else
     *priority = -1;

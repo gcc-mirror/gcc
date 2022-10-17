@@ -1,6 +1,6 @@
 // { dg-do compile { target c++17 } }
 
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,6 +40,6 @@ int main()
     x.replace(0, 3, "foo", 0, 3);
     x.replace(0, 3, cs, 0, 3);
     x = "bar";
-    x.compare(0, 3, "foo", 0, 3);
-    x.compare(0, 3, cs, 0, 3);
+    (void) x.compare(0, 3, "foo", 0, 3);
+    (void) x.compare(0, 3, cs, 0, 3);
 }

@@ -1,6 +1,6 @@
 module imports.test40a;
 
-import std.stdio;
+import core.stdc.stdio;
 
 template Mix()
 {
@@ -8,7 +8,7 @@ template Mix()
     {
 	auto context = new Context;
         auto ts = context.toString;
-	printf("context: %.*s %p\n", ts.length, ts.ptr, context);
+	printf("context: %.*s %p\n", cast(int)ts.length, ts.ptr, context);
 	context.func!(typeof(this))();
 	printf("returning from opCall\n");
     }
@@ -23,8 +23,8 @@ class Bar
 
 void someFunc(string z)
 {
-    printf("str length: %d\n", z.length);
-    printf("str: '%.*s'\n", z.length, z.ptr);
+    printf("str length: %zd\n", z.length);
+    printf("str: '%.*s'\n", cast(int)z.length, z.ptr);
 }
 
 
@@ -38,4 +38,3 @@ class Context
 	printf("context.func>\n");
     }
 }
-

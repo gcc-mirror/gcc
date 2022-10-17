@@ -5,7 +5,8 @@
    such a store.
    { dg-do compile { target { { aarch64*-*-* i?86-*-* x86_64-*-* } || { { powerpc*-*-* } && lp64 } } } }
 
-   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
+   { dg-options "-O2 -Wall -fdump-tree-optimized" }
+   { dg-additional-options "-msse" { target i?86-*-* x86_64-*-* } } */
 
 #define CHAR_BIT      __CHAR_BIT__
 #define SIZE_MAX      __SIZE_MAX__

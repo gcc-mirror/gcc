@@ -6,7 +6,7 @@ in
         void in_nested() pure
         in { assert(i); }   // OK <- NG
         out { assert(i); }  // OK <- NG
-        body {}
+        do {}
     }
 }
 out
@@ -16,9 +16,9 @@ out
         void out_nested() pure
         in { assert(i); }   // OK <- NG
         out { assert(i); }  // OK <- NG
-        body {}
+        do {}
     }
 }
-body
+do
 {
 }

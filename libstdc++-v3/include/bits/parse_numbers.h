@@ -1,6 +1,6 @@
 // Components for compile-time parsing of numbers -*- C++ -*-
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -266,9 +266,9 @@ namespace __select_int
 
   template<unsigned long long _Val, typename _IntType, typename... _Ints>
     struct _Select_int_base<_Val, _IntType, _Ints...>
-    : conditional_t<(_Val <= __gnu_cxx::__int_traits<_IntType>::__max),
-		    integral_constant<_IntType, (_IntType)_Val>,
-		    _Select_int_base<_Val, _Ints...>>
+    : __conditional_t<(_Val <= __gnu_cxx::__int_traits<_IntType>::__max),
+		      integral_constant<_IntType, (_IntType)_Val>,
+		      _Select_int_base<_Val, _Ints...>>
     { };
 
   template<unsigned long long _Val>

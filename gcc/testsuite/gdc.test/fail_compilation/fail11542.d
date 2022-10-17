@@ -1,13 +1,12 @@
 // REQUIRED_ARGS: -o-
-// PERMUTE_ARGS:
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11542.d(16): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail11542.d(13): Error: nothrow function `fail11542.test_success1` may throw
-fail_compilation/fail11542.d(26): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail11542.d(23): Error: nothrow function `fail11542.test_success3` may throw
+fail_compilation/fail11542.d(15): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail11542.d(12): Error: function `fail11542.test_success1` may throw but is marked as `nothrow`
+fail_compilation/fail11542.d(25): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail11542.d(22): Error: function `fail11542.test_success3` may throw but is marked as `nothrow`
 ---
 */
 void test_success1() nothrow
@@ -29,8 +28,8 @@ void test_success3() nothrow
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11542.d(39): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail11542.d(36): Error: nothrow function `fail11542.test_failure1` may throw
+fail_compilation/fail11542.d(38): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail11542.d(35): Error: function `fail11542.test_failure1` may throw but is marked as `nothrow`
 ---
 */
 void test_failure1() nothrow
@@ -52,8 +51,8 @@ void est_failure3() nothrow
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11542.d(62): Error: `object.Exception` is thrown but not caught
-fail_compilation/fail11542.d(59): Error: nothrow function `fail11542.test_exit1` may throw
+fail_compilation/fail11542.d(61): Error: `object.Exception` is thrown but not caught
+fail_compilation/fail11542.d(58): Error: function `fail11542.test_exit1` may throw but is marked as `nothrow`
 ---
 */
 void test_exit1() nothrow

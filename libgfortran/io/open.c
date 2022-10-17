@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -153,6 +153,28 @@ static const st_option convert_opt[] =
   { "swap", GFC_CONVERT_SWAP},
   { "big_endian", GFC_CONVERT_BIG},
   { "little_endian", GFC_CONVERT_LITTLE},
+#ifdef HAVE_GFC_REAL_17
+  /* Rather than write a special parsing routine, enumerate all the
+     possibilities here.  */
+  { "r16_ieee", GFC_CONVERT_R16_IEEE},
+  { "r16_ibm", GFC_CONVERT_R16_IBM},
+  { "native,r16_ieee", GFC_CONVERT_R16_IEEE},
+  { "native,r16_ibm", GFC_CONVERT_R16_IBM},
+  { "r16_ieee,native", GFC_CONVERT_R16_IEEE},
+  { "r16_ibm,native", GFC_CONVERT_R16_IBM},
+  { "swap,r16_ieee", GFC_CONVERT_R16_IEEE_SWAP},
+  { "swap,r16_ibm", GFC_CONVERT_R16_IBM_SWAP},
+  { "r16_ieee,swap", GFC_CONVERT_R16_IEEE_SWAP},
+  { "r16_ibm,swap", GFC_CONVERT_R16_IBM_SWAP},
+  { "big_endian,r16_ieee", GFC_CONVERT_R16_IEEE_BIG},
+  { "big_endian,r16_ibm", GFC_CONVERT_R16_IBM_BIG},
+  { "r16_ieee,big_endian", GFC_CONVERT_R16_IEEE_BIG},
+  { "r16_ibm,big_endian", GFC_CONVERT_R16_IBM_BIG},
+  { "little_endian,r16_ieee", GFC_CONVERT_R16_IEEE_LITTLE},
+  { "little_endian,r16_ibm", GFC_CONVERT_R16_IBM_LITTLE},
+  { "r16_ieee,little_endian", GFC_CONVERT_R16_IEEE_LITTLE},
+  { "r16_ibm,little_endian",  GFC_CONVERT_R16_IBM_LITTLE},
+#endif
   { NULL, 0}
 };
 
@@ -820,7 +842,14 @@ st_open (st_parameter_open *opp)
       else
 	conv = compile_options.convert;
     }
-  
+
+  flags.convert = 0;
+
+#ifdef HAVE_GFC_REAL_17
+  flags.convert = conv & (GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+  conv &= ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+#endif
+
   switch (conv)
     {
     case GFC_CONVERT_NATIVE:
@@ -840,7 +869,7 @@ st_open (st_parameter_open *opp)
       break;
     }
 
-  flags.convert = conv;
+  flags.convert |= conv;
 
   if (flags.position != POSITION_UNSPECIFIED
       && flags.access == ACCESS_DIRECT)

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -128,6 +128,14 @@ MULTILIB_MATCHES	+= march?armv8-a=march?armv8.6-a
 # Map all v8.6-a SIMD variants to v8-a+simd
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_6_a_simd_variants), \
 			     march?armv8-a+simd=march?armv8.6-a$(ARCH))
+
+# Armv9 without SIMD: map down to base architecture
+MULTILIB_MATCHES    += march?armv8-a=march?armv9-a
+# No variants without SIMD.
+
+# Armv9 with SIMD: map down to base arch + simd
+MULTILIB_MATCHES    += $(foreach ARCH, $(v9_a_simd_variants), \
+			     march?armv8-a+simd=march?armv9-a$(ARCH))
 
 # Use Thumb libraries for everything.
 

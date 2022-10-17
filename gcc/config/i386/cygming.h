@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,17 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define DBX_DEBUGGING_INFO 1
-#if TARGET_64BIT_DEFAULT || defined (HAVE_GAS_PE_SECREL32_RELOC)
 #define DWARF2_DEBUGGING_INFO 1
-#endif
 
 #undef PREFERRED_DEBUGGING_TYPE
-#if (DWARF2_DEBUGGING_INFO)
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#else
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
 
 #undef TARGET_SEH
 #define TARGET_SEH  (TARGET_64BIT_MS_ABI && flag_unwind_tables)
@@ -79,25 +72,24 @@ along with GCC; see the file COPYING3.  If not see
 
 #endif
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)				\
-  (TARGET_64BIT ? dbx64_register_map[n]			\
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n)				\
+  (TARGET_64BIT ? debugger64_register_map[n]			\
    : (dwarf_debuginfo_p ()				\
-      ? svr4_dbx_register_map[n] : dbx_register_map[n]))
+      ? svr4_debugger_register_map[n] : debugger_register_map[n]))
 
 /* Map gcc register number to DWARF 2 CFA column number. For 32 bit
-   target, always use the svr4_dbx_register_map for DWARF .eh_frame
+   target, always use the svr4_debugger_register_map for DWARF .eh_frame
    even if we don't use DWARF .debug_frame. */
 #undef DWARF_FRAME_REGNUM
 #define DWARF_FRAME_REGNUM(n)				\
-  (TARGET_64BIT ? dbx64_register_map[(n)]		\
-		: svr4_dbx_register_map[(n)])
+  (TARGET_64BIT ? debugger64_register_map[(n)]		\
+		: svr4_debugger_register_map[(n)])
 
 /* The 64-bit MS_ABI changes the set of call-used registers.  */
 #undef DWARF_FRAME_REGISTERS
 #define DWARF_FRAME_REGISTERS (TARGET_64BIT ? 33 : 17)
 
-#ifdef HAVE_GAS_PE_SECREL32_RELOC
 /* Use section relative relocations for debugging offsets.  Unlike
    other targets that fake this by putting the section VMA at 0, PE
    won't allow it.  */
@@ -129,7 +121,6 @@ along with GCC; see the file COPYING3.  If not see
 	gcc_unreachable ();					\
       }								\
   } while (0)
-#endif
 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
@@ -160,7 +151,7 @@ along with GCC; see the file COPYING3.  If not see
   }									\
   while (0)
 
-/* Get tree.c to declare a target-specific specialization of
+/* Get tree.cc to declare a target-specific specialization of
    merge_decl_attributes.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
 
@@ -390,7 +381,7 @@ do {						\
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* MSVC returns aggregate types of up to 8 bytes via registers.
-   See i386.c:ix86_return_in_memory.  */
+   See i386.cc:ix86_return_in_memory.  */
 #undef MS_AGGREGATE_RETURN
 #define MS_AGGREGATE_RETURN 1
 

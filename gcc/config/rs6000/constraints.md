@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -17,7 +17,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Available constraint letters: e k q t u A B C D S T
+;; Available constraint letters: k q t u A B C D S T
 
 ;; Register constraints
 
@@ -29,7 +29,7 @@
   "A base register.  Like @code{r}, but @code{r0} is not allowed, so
    @code{r1}@dots{}@code{r31}.")
 
-(define_register_constraint "f" "rs6000_constraints[RS6000_CONSTRAINT_f]"
+(define_register_constraint "f" "rs6000_constraints[RS6000_CONSTRAINT_d]"
   "A floating point register (FPR), @code{f0}@dots{}@code{f31}.")
 
 (define_register_constraint "d" "rs6000_constraints[RS6000_CONSTRAINT_d]"
@@ -37,7 +37,7 @@
    historically @code{f} was for single-precision and @code{d} was for
    double-precision floating point.")
 
-(define_register_constraint "v" "ALTIVEC_REGS"
+(define_register_constraint "v" "rs6000_constraints[RS6000_CONSTRAINT_v]"
   "An Altivec vector register (VR), @code{v0}@dots{}@code{v31}.")
 
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
@@ -106,12 +106,6 @@
   (and (match_code "const_int")
        (match_test "TARGET_P8_VECTOR")
        (match_operand 0 "s5bit_cint_operand")))
-
-(define_constraint "wD"
-  "@internal Int constant that is the element number of the 64-bit scalar
-   in a vector."
-  (and (match_code "const_int")
-       (match_test "TARGET_VSX && (ival == VECTOR_ELEMENT_SCALAR_64BIT)")))
 
 (define_constraint "wE"
   "@internal Vector constant that can be loaded with the XXSPLTIB instruction."
@@ -213,6 +207,18 @@
   "A signed 34-bit integer constant if prefixed instructions are supported."
   (match_operand 0 "cint34_operand"))
 
+;; A SF/DF scalar constant or a vector constant that can be loaded into vector
+;; registers with one prefixed instruction such as XXSPLTIDP or XXSPLTIW.
+(define_constraint "eP"
+  "A constant that can be loaded into a VSX register with one prefixed insn."
+  (match_operand 0 "vsx_prefixed_constant"))
+
+;; A TF/KF scalar constant or a vector constant that can load certain IEEE
+;; 128-bit constants into vector registers using LXVKQ.
+(define_constraint "eQ"
+  "An IEEE 128-bit constant that can be loaded into VSX registers."
+  (match_operand 0 "easy_vector_constant_ieee128"))
+
 ;; Floating-point constraints.  These two are defined so that insn
 ;; length attributes can be calculated exactly.
 
@@ -251,7 +257,7 @@
        (match_test "REG_P (XEXP (op, 0))")))
 
 (define_memory_constraint "Y"
-  "@internal A memory operand for a DQ-form instruction."
+  "@internal A memory operand for a DS-form instruction."
   (and (match_code "mem")
        (match_test "mem_operand_gpr (op, mode)")))
 

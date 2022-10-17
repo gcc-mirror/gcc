@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -235,6 +235,7 @@ package body Output is
 
    procedure Pop_Output is
    begin
+      Flush_Buffer;
       pragma Assert (FD_Stack_Idx >= FD_Array'First);
       Current_FD := FD_Stack (FD_Stack_Idx);
       FD_Stack_Idx := FD_Stack_Idx - 1;
@@ -292,10 +293,7 @@ package body Output is
 
    procedure Set_Output (FD : File_Descriptor) is
    begin
-      if Special_Output_Proc = null then
-         Flush_Buffer;
-      end if;
-
+      Flush_Buffer;
       Current_FD := FD;
    end Set_Output;
 
@@ -323,59 +321,99 @@ package body Output is
 
    procedure w (C : Character) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Char (''');
       Write_Char (C);
       Write_Char (''');
       Write_Eol;
+
+      Pop_Output;
    end w;
 
    procedure w (S : String) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (S);
       Write_Eol;
+
+      Pop_Output;
    end w;
 
    procedure w (V : Int) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Int (V);
       Write_Eol;
+
+      Pop_Output;
    end w;
 
    procedure w (B : Boolean) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       if B then
          w ("True");
       else
          w ("False");
       end if;
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; C : Character) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (C);
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; S : String) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (S);
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; V : Int) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (V);
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; B : Boolean) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (B);
+
+      Pop_Output;
    end w;
 
    ----------------
@@ -466,6 +504,32 @@ package body Output is
          Write_Abs (-Val);
       end if;
    end Write_Int;
+
+   ------------------
+   -- Write_Int_64 --
+   ------------------
+
+   procedure Write_Int_64 (Val : Int_64) is
+      subtype Nonpositive is Int_64 range Int_64'First .. 0;
+      procedure Write_Abs (Val : Nonpositive);
+
+      procedure Write_Abs (Val : Nonpositive) is
+      begin
+         if Val < -9 then
+            Write_Abs (Val / 10);
+         end if;
+
+         Write_Char (Character'Val (-(Val rem 10) + Character'Pos ('0')));
+      end Write_Abs;
+
+   begin
+      if Val < 0 then
+         Write_Char ('-');
+         Write_Abs (Val);
+      else
+         Write_Abs (-Val);
+      end if;
+   end Write_Int_64;
 
    ----------------
    -- Write_Line --

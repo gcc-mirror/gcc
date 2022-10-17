@@ -1,5 +1,5 @@
 !    Implementation of the IEEE_ARITHMETIC standard intrinsic module
-!    Copyright (C) 2013-2021 Free Software Foundation, Inc.
+!    Copyright (C) 2013-2022 Free Software Foundation, Inc.
 !    Contributed by Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 ! 
 ! This file is part of the GNU Fortran runtime library (libgfortran).
@@ -39,7 +39,8 @@ module IEEE_ARITHMETIC
     IEEE_DIVIDE_BY_ZERO, IEEE_UNDERFLOW, IEEE_INEXACT, IEEE_USUAL, &
     IEEE_ALL, IEEE_STATUS_TYPE, IEEE_GET_FLAG, IEEE_GET_HALTING_MODE, &
     IEEE_GET_STATUS, IEEE_SET_FLAG, IEEE_SET_HALTING_MODE, &
-    IEEE_SET_STATUS, IEEE_SUPPORT_FLAG, IEEE_SUPPORT_HALTING
+    IEEE_SET_STATUS, IEEE_SUPPORT_FLAG, IEEE_SUPPORT_HALTING, &
+    IEEE_MODES_TYPE, IEEE_GET_MODES, IEEE_SET_MODES
 
   ! Derived types and named constants
 
@@ -73,6 +74,7 @@ module IEEE_ARITHMETIC
     IEEE_TO_ZERO           = IEEE_ROUND_TYPE(GFC_FPE_TOWARDZERO), &
     IEEE_UP                = IEEE_ROUND_TYPE(GFC_FPE_UPWARD), &
     IEEE_DOWN              = IEEE_ROUND_TYPE(GFC_FPE_DOWNWARD), &
+    IEEE_AWAY              = IEEE_ROUND_TYPE(GFC_FPE_AWAY), &
     IEEE_OTHER             = IEEE_ROUND_TYPE(0)
 
 
@@ -342,6 +344,39 @@ UNORDERED_MACRO(4,4)
               _gfortran_ieee_unordered_4_4
   end interface
   public :: IEEE_UNORDERED
+
+  ! IEEE_FMA
+
+  interface
+    elemental real(kind=4) function _gfortran_ieee_fma_4 (A, B, C)
+      real(kind=4), intent(in) :: A, B, C
+    end function
+    elemental real(kind=8) function _gfortran_ieee_fma_8 (A, B, C)
+      real(kind=8), intent(in) :: A, B, C
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental real(kind=10) function _gfortran_ieee_fma_10 (A, B, C)
+      real(kind=10), intent(in) :: A, B, C
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental real(kind=16) function _gfortran_ieee_fma_16 (A, B, C)
+      real(kind=16), intent(in) :: A, B, C
+    end function
+#endif
+  end interface
+
+  interface IEEE_FMA
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_fma_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_fma_10, &
+#endif
+      _gfortran_ieee_fma_8, _gfortran_ieee_fma_4
+  end interface
+  public :: IEEE_FMA
 
   ! IEEE_LOGB
 
@@ -702,6 +737,39 @@ REM_MACRO(4,4,4)
   end interface
   public :: IEEE_SCALB
 
+  ! IEEE_SIGNBIT
+
+  interface
+    elemental logical function _gfortran_ieee_signbit_4 (X)
+      real(kind=4), intent(in) :: X
+    end function
+    elemental logical function _gfortran_ieee_signbit_8 (X)
+      real(kind=8), intent(in) :: X
+    end function
+#ifdef HAVE_GFC_REAL_10
+    elemental logical function _gfortran_ieee_signbit_10 (X)
+      real(kind=10), intent(in) :: X
+    end function
+#endif
+#ifdef HAVE_GFC_REAL_16
+    elemental logical function _gfortran_ieee_signbit_16 (X)
+      real(kind=16), intent(in) :: X
+    end function
+#endif
+  end interface
+
+  interface IEEE_SIGNBIT
+    procedure &
+#ifdef HAVE_GFC_REAL_16
+      _gfortran_ieee_signbit_16, &
+#endif
+#ifdef HAVE_GFC_REAL_10
+      _gfortran_ieee_signbit_10, &
+#endif
+      _gfortran_ieee_signbit_8, _gfortran_ieee_signbit_4
+  end interface
+  public :: IEEE_SIGNBIT
+
   ! IEEE_VALUE
 
   interface IEEE_VALUE
@@ -748,7 +816,7 @@ REM_MACRO(4,4,4)
                      IEEE_SUPPORT_ROUNDING_NOARG
   end interface
   public :: IEEE_SUPPORT_ROUNDING
-  
+
   ! Interface to the FPU-specific function
   interface
     pure integer function support_rounding_helper(flag) &
@@ -771,7 +839,7 @@ REM_MACRO(4,4,4)
                      IEEE_SUPPORT_UNDERFLOW_CONTROL_NOARG
   end interface
   public :: IEEE_SUPPORT_UNDERFLOW_CONTROL
-  
+
   ! Interface to the FPU-specific function
   interface
     pure integer function support_underflow_control_helper(kind) &
@@ -915,284 +983,73 @@ contains
   ! IEEE_VALUE
 
   elemental real(kind=4) function IEEE_VALUE_4(X, CLASS) result(res)
-
     real(kind=4), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
-    logical flag
 
-    select case (CLASS%hidden)
-      case (1)     ! IEEE_SIGNALING_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-      case (2)     ! IEEE_QUIET_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-      case (3)     ! IEEE_NEGATIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = (-res) * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case (4)     ! IEEE_NEGATIVE_NORMAL
-        res = -42
-      case (5)     ! IEEE_NEGATIVE_DENORMAL
-        res = -tiny(res)
-        res = res / 2
-      case (6)     ! IEEE_NEGATIVE_ZERO
-        res = 0
-        res = -res
-      case (7)     ! IEEE_POSITIVE_ZERO
-        res = 0
-      case (8)     ! IEEE_POSITIVE_DENORMAL
-        res = tiny(res)
-        res = res / 2
-      case (9)     ! IEEE_POSITIVE_NORMAL
-        res = 42
-      case (10)    ! IEEE_POSITIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = res * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case default ! IEEE_OTHER_VALUE, should not happen
-        res = 0
-     end select
+    interface
+      pure real(kind=4) function _gfortrani_ieee_value_helper_4(x)
+        use ISO_C_BINDING, only: C_INT
+        integer(kind=C_INT), value :: x
+      end function
+    end interface
+
+    res = _gfortrani_ieee_value_helper_4(CLASS%hidden)
   end function
 
   elemental real(kind=8) function IEEE_VALUE_8(X, CLASS) result(res)
-
     real(kind=8), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
-    logical flag
 
-    select case (CLASS%hidden)
-      case (1)     ! IEEE_SIGNALING_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-      case (2)     ! IEEE_QUIET_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-      case (3)     ! IEEE_NEGATIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = (-res) * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case (4)     ! IEEE_NEGATIVE_NORMAL
-        res = -42
-      case (5)     ! IEEE_NEGATIVE_DENORMAL
-        res = -tiny(res)
-        res = res / 2
-      case (6)     ! IEEE_NEGATIVE_ZERO
-        res = 0
-        res = -res
-      case (7)     ! IEEE_POSITIVE_ZERO
-        res = 0
-      case (8)     ! IEEE_POSITIVE_DENORMAL
-        res = tiny(res)
-        res = res / 2
-      case (9)     ! IEEE_POSITIVE_NORMAL
-        res = 42
-      case (10)    ! IEEE_POSITIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = res * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case default ! IEEE_OTHER_VALUE, should not happen
-        res = 0
-     end select
+    interface
+      pure real(kind=8) function _gfortrani_ieee_value_helper_8(x)
+        use ISO_C_BINDING, only: C_INT
+        integer(kind=C_INT), value :: x
+      end function
+    end interface
+
+    res = _gfortrani_ieee_value_helper_8(CLASS%hidden)
   end function
 
 #ifdef HAVE_GFC_REAL_10
   elemental real(kind=10) function IEEE_VALUE_10(X, CLASS) result(res)
-
     real(kind=10), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
-    logical flag
 
-    select case (CLASS%hidden)
-      case (1)     ! IEEE_SIGNALING_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-      case (2)     ! IEEE_QUIET_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-     case (3)     ! IEEE_NEGATIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = (-res) * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case (4)     ! IEEE_NEGATIVE_NORMAL
-        res = -42
-      case (5)     ! IEEE_NEGATIVE_DENORMAL
-        res = -tiny(res)
-        res = res / 2
-      case (6)     ! IEEE_NEGATIVE_ZERO
-        res = 0
-        res = -res
-      case (7)     ! IEEE_POSITIVE_ZERO
-        res = 0
-      case (8)     ! IEEE_POSITIVE_DENORMAL
-        res = tiny(res)
-        res = res / 2
-      case (9)     ! IEEE_POSITIVE_NORMAL
-        res = 42
-      case (10)    ! IEEE_POSITIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = res * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case default ! IEEE_OTHER_VALUE, should not happen
-        res = 0
-     end select
+    interface
+      pure real(kind=10) function _gfortrani_ieee_value_helper_10(x)
+        use ISO_C_BINDING, only: C_INT
+        integer(kind=C_INT), value :: x
+      end function
+    end interface
+
+    res = _gfortrani_ieee_value_helper_10(CLASS%hidden)
   end function
 
 #endif
 
 #ifdef HAVE_GFC_REAL_16
   elemental real(kind=16) function IEEE_VALUE_16(X, CLASS) result(res)
-
     real(kind=16), intent(in) :: X
     type(IEEE_CLASS_TYPE), intent(in) :: CLASS
-    logical flag
 
-    select case (CLASS%hidden)
-      case (1)     ! IEEE_SIGNALING_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-      case (2)     ! IEEE_QUIET_NAN
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_get_halting_mode(ieee_invalid, flag)
-           call ieee_set_halting_mode(ieee_invalid, .false.)
-        end if
-        res = -1
-        res = sqrt(res)
-        if (ieee_support_halting(ieee_invalid)) then
-           call ieee_set_halting_mode(ieee_invalid, flag)
-        end if
-      case (3)     ! IEEE_NEGATIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = (-res) * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case (4)     ! IEEE_NEGATIVE_NORMAL
-        res = -42
-      case (5)     ! IEEE_NEGATIVE_DENORMAL
-        res = -tiny(res)
-        res = res / 2
-      case (6)     ! IEEE_NEGATIVE_ZERO
-        res = 0
-        res = -res
-      case (7)     ! IEEE_POSITIVE_ZERO
-        res = 0
-      case (8)     ! IEEE_POSITIVE_DENORMAL
-        res = tiny(res)
-        res = res / 2
-      case (9)     ! IEEE_POSITIVE_NORMAL
-        res = 42
-      case (10)    ! IEEE_POSITIVE_INF
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_get_halting_mode(ieee_overflow, flag)
-           call ieee_set_halting_mode(ieee_overflow, .false.)
-        end if
-        res = huge(res)
-        res = res * res
-        if (ieee_support_halting(ieee_overflow)) then
-           call ieee_set_halting_mode(ieee_overflow, flag)
-        end if
-      case default ! IEEE_OTHER_VALUE, should not happen
-        res = 0
-     end select
+    interface
+      pure real(kind=16) function _gfortrani_ieee_value_helper_16(x)
+        use ISO_C_BINDING, only: C_INT
+        integer(kind=C_INT), value :: x
+      end function
+    end interface
+
+    res = _gfortrani_ieee_value_helper_16(CLASS%hidden)
   end function
 #endif
 
 
   ! IEEE_GET_ROUNDING_MODE
 
-  subroutine IEEE_GET_ROUNDING_MODE (ROUND_VALUE)
+  subroutine IEEE_GET_ROUNDING_MODE (ROUND_VALUE, RADIX)
     implicit none
     type(IEEE_ROUND_TYPE), intent(out) :: ROUND_VALUE
+    integer, intent(in), optional :: RADIX
 
     interface
       integer function helper() &
@@ -1206,9 +1063,10 @@ contains
 
   ! IEEE_SET_ROUNDING_MODE
 
-  subroutine IEEE_SET_ROUNDING_MODE (ROUND_VALUE)
+  subroutine IEEE_SET_ROUNDING_MODE (ROUND_VALUE, RADIX)
     implicit none
     type(IEEE_ROUND_TYPE), intent(in) :: ROUND_VALUE
+    integer, intent(in), optional :: RADIX
 
     interface
       subroutine helper(val) &
@@ -1216,7 +1074,13 @@ contains
         integer, value :: val
       end subroutine
     end interface
-    
+
+    ! We do not support RADIX = 10, and such calls should not
+    ! modify the binary rounding mode.
+    if (present(RADIX)) then
+      if (RADIX == 10) return
+    end if
+
     call helper(ROUND_VALUE%hidden)
   end subroutine
 

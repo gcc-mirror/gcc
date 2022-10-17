@@ -4,10 +4,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <unistd.h>
+#ifdef __linux__
+#include <sys/syscall.h>
+#endif
 #ifdef DEBUG
 #include <stdio.h>
 #endif
 #include "cpuid.h"
+
+#define XFEATURE_XTILECFG	17
+#define XFEATURE_XTILEDATA	18
+#define XFEATURE_MASK_XTILECFG	(1 << XFEATURE_XTILECFG)
+#define XFEATURE_MASK_XTILEDATA	(1 << XFEATURE_XTILEDATA)
+#define XFEATURE_MASK_XTILE	(XFEATURE_MASK_XTILECFG | XFEATURE_MASK_XTILEDATA)
+
+#define ARCH_GET_XCOMP_PERM	0x1022
+#define ARCH_REQ_XCOMP_PERM	0x1023
 
 /* TODO: The tmm emulation is temporary for current
    AMX implementation with no tmm regclass, should
@@ -43,6 +56,20 @@ typedef struct __tile
 
 /* Stride (colum width in byte) used for tileload/store */
 #define _STRIDE 64
+
+#ifdef __linux__
+/* We need syscall to use amx functions */
+int request_perm_xtile_data()
+{
+  unsigned long bitmask;
+
+  if (syscall (SYS_arch_prctl, ARCH_REQ_XCOMP_PERM, XFEATURE_XTILEDATA) ||
+      syscall (SYS_arch_prctl, ARCH_GET_XCOMP_PERM, &bitmask))
+    return 0;
+
+  return (bitmask & XFEATURE_MASK_XTILE) != 0;
+}
+#endif
 
 /* Initialize tile config by setting all tmm size to 16x64 */
 void init_tile_config (__tilecfg_u *dst)
@@ -139,8 +166,27 @@ int check_tile_register (__tile* ref, __tile* target)
 
   for (i = 0; i < rows; i++)
     for (j = 0; j < colsb; j++)
-	if (ref->buf[i * colsb + j] != target->buf[i * colsb + j])
-	    return 0;
+      if (ref->buf[i * colsb + j] != target->buf[i * colsb + j])
+	return 0;
+
+  return 1;
+}
+
+/* Compare float tile register value with __tile variable */
+int check_float_tile_register (__tile* ref, __tile* target)
+{
+  /* Tile register should be stored from tmm to
+     memory and compare with emulation results. */
+  int rows = target->rows;
+  int colsb = target->colsb / 4;
+  int i, j;
+  uint32_t *ref_buf = (uint32_t *) ref->buf;
+  uint32_t *target_buf = (uint32_t *) target->buf;
+
+  for (i = 0; i < rows; i++)
+    for (j = 0; j < colsb; j++)
+      if (abs(ref_buf[i * colsb + j] - target_buf[i * colsb + j]) > 1)
+	return 0;
 
   return 1;
 }
@@ -166,6 +212,9 @@ main ()
 #endif
 #ifdef AMX_BF16
       && __builtin_cpu_supports ("amx-bf16")
+#endif
+#ifdef __linux__
+      && request_perm_xtile_data ()
 #endif
       )
     {

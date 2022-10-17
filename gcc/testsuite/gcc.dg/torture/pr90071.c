@@ -21,6 +21,6 @@ h: ++e;
 	 goto i;
      }
 f:
-   goto *({ d || e < 0 || e >= 2; });
+   goto *(void*)(__INTPTR_TYPE__)({ d || e < 0 || e >= 2; });
    &e;
 }

@@ -64,8 +64,8 @@ f6 (double x)
 }
 
 /* { dg-final { scan-assembler "vpandd\[^\n\r\]*xmm16" } } */
-/* { dg-final { scan-assembler "vpord\[^\n\r\]*xmm16" } } */
+/* { dg-final { scan-assembler "vpternlogd\[^\n\r\]*xmm16" } } */
 /* { dg-final { scan-assembler "vpxord\[^\n\r\]*xmm16" } } */
 /* { dg-final { scan-assembler "vpandq\[^\n\r\]*xmm18" } } */
-/* { dg-final { scan-assembler "vporq\[^\n\r\]*xmm18" } } */
+/* { dg-final { scan-assembler "vpternlogq\[^\n\r\]*xmm18" } } */
 /* { dg-final { scan-assembler "vpxorq\[^\n\r\]*xmm18" } } */

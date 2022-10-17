@@ -8,7 +8,7 @@
 #define MAX 1000
 #define EPS 0.00001
 
-__attribute__ ((noinline, optimize (1)))
+__attribute__ ((noinline, optimize (1, "-fno-fast-math")))
 void static
 compute_rsqrt_ref (float *a, float *r)
 {

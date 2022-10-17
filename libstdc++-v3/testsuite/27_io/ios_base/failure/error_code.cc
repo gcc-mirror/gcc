@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,8 +41,21 @@ test01()
   VERIFY( e4.code() == ec );
 }
 
+[[gnu::noinline,gnu::noipa]]
+const std::error_category&
+get_iostream_category()
+{ return std::iostream_category(); }
+
+void
+test02()
+{
+  auto ec = std::make_error_code(std::io_errc::stream);
+  VERIFY( ec.category() == get_iostream_category() );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

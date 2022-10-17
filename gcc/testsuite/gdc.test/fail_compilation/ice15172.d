@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice15172.d(14): Error: constructor ice15172.ThreadError.this no match for implicit super() call in constructor
+fail_compilation/ice15172.d(14): Error: constructor `ice15172.ThreadError.this` no match for implicit `super()` call in constructor
 ---
 */
 

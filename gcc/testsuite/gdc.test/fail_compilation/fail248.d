@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail248.d(9): Error: type int is not an expression
+fail_compilation/fail248.d(9): Error: type `int` is not an expression
 ---
 */
 

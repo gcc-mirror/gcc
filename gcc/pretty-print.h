@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -338,6 +338,13 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
     {								\
       print_dec (W, pp_buffer (PP)->digit_buffer, SGN);		\
       pp_string (PP, pp_buffer (PP)->digit_buffer);		\
+    }								\
+  while (0)
+#define pp_vrange(PP, R)					\
+  do								\
+    {								\
+      vrange_printer vrange_pp (PP);				\
+      (R)->accept (vrange_pp);					\
     }								\
   while (0)
 #define pp_double(PP, F)       pp_scalar (PP, "%f", F)

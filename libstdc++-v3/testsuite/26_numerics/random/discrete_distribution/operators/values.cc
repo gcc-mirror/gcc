@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,14 @@
 #include <random>
 #include <functional>
 #include <testsuite_random.h>
+
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
 
 void test01()
 {

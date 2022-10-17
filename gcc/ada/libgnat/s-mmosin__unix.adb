@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2021, AdaCore                     --
+--                     Copyright (C) 2007-2022, AdaCore                     --
 --                                                                          --
 -- This library is free software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.IO_Exceptions;
-with System; use System;
 
 with System.OS_Lib; use System.OS_Lib;
 with System.Mmap.Unix; use System.Mmap.Unix;

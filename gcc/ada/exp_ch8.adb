@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,11 +295,11 @@ package body Exp_Ch8 is
          Set_Alias (Id, Empty);
          Set_Has_Completion (Id, False);
          Rewrite (N,
-           Make_Subprogram_Declaration (Sloc (N),
+           Make_Subprogram_Declaration (Loc,
              Specification => Specification (N)));
          Set_Has_Delayed_Freeze (Id);
 
-         Body_Id := Make_Defining_Identifier (Sloc (N), Chars (Id));
+         Body_Id := Make_Defining_Identifier (Loc, Chars (Id));
          Set_Debug_Info_Needed (Body_Id);
 
          if Has_Variant_Part (Typ) then
@@ -326,19 +326,16 @@ package body Exp_Ch8 is
                     Result_Definition        =>
                       New_Occurrence_Of (Standard_Boolean, Loc)),
                 Declarations               => Empty_List,
-                Handled_Statement_Sequence => Empty);
-
-            Set_Handled_Statement_Sequence (Decl,
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (
-                  Make_Simple_Return_Statement (Loc,
-                    Expression =>
-                      Expand_Record_Equality
-                        (Id,
-                         Typ    => Typ,
-                         Lhs    => Make_Identifier (Loc, Chars (Left)),
-                         Rhs    => Make_Identifier (Loc, Chars (Right)),
-                         Bodies => Declarations (Decl))))));
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Simple_Return_Statement (Loc,
+                        Expression =>
+                          Expand_Record_Equality
+                            (Id,
+                             Typ => Typ,
+                             Lhs => Make_Identifier (Loc, Chars (Left)),
+                             Rhs => Make_Identifier (Loc, Chars (Right)))))));
          end if;
 
          return Decl;
@@ -375,7 +372,7 @@ package body Exp_Ch8 is
         and then Scope (Entity (Nam)) = Standard_Standard
       then
          declare
-            Typ  : constant Entity_Id := Etype (First_Formal (Id));
+            Typ : constant Entity_Id := Etype (First_Formal (Id));
 
          begin
             --  Check whether this is a renaming of a predefined equality on an

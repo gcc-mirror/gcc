@@ -1,6 +1,6 @@
 /* Definitions of types that are used to store ARC architecture and
    device information.
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Contributed by Claudiu Zissulescu (claziss@synopsys.com)
 
 This file is part of GCC.
@@ -77,7 +77,8 @@ enum arc_tune_attr
     ARC_TUNE_CORE_3,
     ARC_TUNE_ARCHS4X,
     ARC_TUNE_ARCHS4XD,
-    ARC_TUNE_ARCHS4XD_SLOW
+    ARC_TUNE_ARCHS4XD_SLOW,
+    ARC_TUNE_ARCHS4X_REL31A
   };
 
 /* Extra options for a processor template to hold any CPU specific

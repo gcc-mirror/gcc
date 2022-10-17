@@ -627,6 +627,9 @@ BISON3_NO
 BISON3_YES
 INCINTL
 LIBINTL_DEP
+MKID
+ETAGS
+CTAGS
 MAINT
 AUTOHEADER
 AUTOCONF
@@ -6796,6 +6799,19 @@ if test "x$enable_maintainer_mode" = xno; then
   MAINT='#'
 else
   MAINT=
+fi
+
+
+if test -z "$CTAGS"; then
+  CTAGS=ctags
+fi
+
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+
+if test -z "$MKID"; then
+  MKID=mkid
 fi
 
 

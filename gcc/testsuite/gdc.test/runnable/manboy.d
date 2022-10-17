@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 
-import std.stdio;
+import core.stdc.stdio;
 
 int a(int k, lazy int x1, lazy int x2, lazy int x3, lazy int x4, lazy int x5)
 {
@@ -17,4 +17,3 @@ int main()
     assert(a(10, 1, -1, -1, 1, 0) == -67);
     return 0;
 }
-

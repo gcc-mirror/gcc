@@ -56,10 +56,7 @@ FUNC_IMM(u, uint, 8, 16, <<, vshlimm)
 /* MVE has only 128-bit vectors, so we can vectorize only half of the
    functions above.  */
 /* We only emit vshl.u, which is equivalent to vshl.s anyway.  */
-/* 16 and 8-bit versions still use 32-bit intermediate temporaries, so for
-   instance instead of using vshl.u8, we need 4 vshl.i32, leading to a total of
-   14 vshl.i32 expected in this testcase.  */
-/* { dg-final { scan-assembler-times {vshl.u[0-9]+\tq[0-9]+, q[0-9]+} 14 } } */
+/* { dg-final { scan-assembler-times {vshl.u[0-9]+\tq[0-9]+, q[0-9]+} 2 } } */
 
 /* We emit vshl.i when the shift amount is an immediate.  */
 /* { dg-final { scan-assembler-times {vshl.i[0-9]+\tq[0-9]+, q[0-9]+} 6 } } */

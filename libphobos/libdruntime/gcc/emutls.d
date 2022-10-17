@@ -1,5 +1,5 @@
 // GNU D Compiler emulated TLS routines.
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -25,7 +25,8 @@
 module gcc.emutls;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string, core.sync.mutex;
-import rt.util.container.array, rt.util.container.hashtab;
+import core.internal.container.array;
+import core.internal.container.hashtab;
 import core.internal.traits : classInstanceAlignment;
 import gcc.builtins, gcc.gthread;
 
@@ -222,16 +223,13 @@ void** emutlsAlloc(shared __emutls_object* obj) nothrow @nogc
 }
 
 /*
- * When a thread has finished, remove the TLS array from the GC
- * scan list emutlsArrays, free all allocated TLS variables and
- * finally free the array.
+ * When a thread has finished, free all allocated TLS variables and empty the
+ * array.  The pointer is not free'd as it is stil referenced by the GC scan
+ * list emutlsArrays, which gets destroyed when druntime is unloaded.
  */
 extern (C) void emutlsDestroyThread(void* ptr) nothrow @nogc
 {
     auto arr = cast(TlsArray*) ptr;
-    emutlsMutex.lock_nothrow();
-    emutlsArrays.remove(arr);
-    emutlsMutex.unlock_nothrow();
 
     foreach (entry; *arr)
     {
@@ -239,7 +237,7 @@ extern (C) void emutlsDestroyThread(void* ptr) nothrow @nogc
             free(entry[-1]);
     }
 
-    free(arr);
+    arr.length = 0;
 }
 
 /*
@@ -308,9 +306,6 @@ void _d_emutls_scan(scope void delegate(void* pbeg, void* pend) nothrow cb) noth
 // Call this after druntime has been unloaded
 void _d_emutls_destroy() nothrow @nogc
 {
-    if (__gthread_key_delete(emutlsKey) != 0)
-        abort();
-
     (cast(Mutex) _emutlsMutex.ptr).__dtor();
     destroy(emutlsArrays);
 }

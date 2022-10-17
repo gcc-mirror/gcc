@@ -1,6 +1,6 @@
 // std::list utilities implementation -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -94,6 +94,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_transfer(_List_node_base * const __first,
 		_List_node_base * const __last) _GLIBCXX_USE_NOEXCEPT
     {
+      __glibcxx_assert(__first != __last);
+
       if (this != __last)
 	{
 	  // Remove [first, last) from its old position.

@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,9 +32,6 @@
 #pragma GCC system_header
 
 # include <bits/alloc_traits.h>
-#if __cplusplus < 201103L
-# include <bits/allocator.h>  // for __alloc_swap
-#endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {

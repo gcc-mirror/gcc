@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -166,14 +166,19 @@ struct data_reference
      and runs to completion.  */
   bool is_conditional_in_stmt;
 
+  /* Alias information for the data reference.  */
+  struct dr_alias alias;
+
   /* Behavior of the memory reference in the innermost loop.  */
   struct innermost_loop_behavior innermost;
 
   /* Subscripts of this data reference.  */
   struct indices indices;
 
-  /* Alias information for the data reference.  */
-  struct dr_alias alias;
+  /* Alternate subscripts initialized lazily and used by data-dependence
+     analysis only when the main indices of two DRs are not comparable.
+     Keep last to keep vec_info_shared::check_datarefs happy.  */
+  struct indices alt_indices;
 };
 
 #define DR_STMT(DR)                (DR)->stmt
@@ -528,15 +533,15 @@ extern void debug_data_reference (struct data_reference *);
 extern void debug_data_references (vec<data_reference_p> );
 extern void debug (vec<data_reference_p> &ref);
 extern void debug (vec<data_reference_p> *ptr);
-extern void debug_data_dependence_relation (struct data_dependence_relation *);
-extern void dump_data_dependence_relations (FILE *, vec<ddr_p> );
+extern void debug_data_dependence_relation (const data_dependence_relation *);
+extern void dump_data_dependence_relations (FILE *, const vec<ddr_p> &);
 extern void debug (vec<ddr_p> &ref);
 extern void debug (vec<ddr_p> *ptr);
 extern void debug_data_dependence_relations (vec<ddr_p> );
 extern void free_dependence_relation (struct data_dependence_relation *);
-extern void free_dependence_relations (vec<ddr_p> );
+extern void free_dependence_relations (vec<ddr_p>& );
 extern void free_data_ref (data_reference_p);
-extern void free_data_refs (vec<data_reference_p> );
+extern void free_data_refs (vec<data_reference_p>& );
 extern opt_result find_data_references_in_stmt (class loop *, gimple *,
 						vec<data_reference_p> *);
 extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
@@ -551,9 +556,9 @@ extern struct data_dependence_relation *initialize_data_dependence_relation
 extern void compute_affine_dependence (struct data_dependence_relation *,
 				       loop_p);
 extern void compute_self_dependence (struct data_dependence_relation *);
-extern bool compute_all_dependences (vec<data_reference_p> ,
+extern bool compute_all_dependences (const vec<data_reference_p> &,
 				     vec<ddr_p> *,
-				     vec<loop_p>, bool);
+				     const vec<loop_p> &, bool);
 extern tree find_data_references_in_bb (class loop *, basic_block,
                                         vec<data_reference_p> *);
 extern unsigned int dr_alignment (innermost_loop_behavior *);
@@ -578,7 +583,8 @@ extern int data_ref_compare_tree (tree, tree);
 extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
 					   poly_uint64);
 extern void create_runtime_alias_checks (class loop *,
-					 vec<dr_with_seg_len_pair_t> *, tree*);
+					 const vec<dr_with_seg_len_pair_t> *,
+					 tree*);
 extern tree dr_direction_indicator (struct data_reference *);
 extern tree dr_zero_step_indicator (struct data_reference *);
 extern bool dr_known_forward_stride_p (struct data_reference *);
@@ -594,10 +600,11 @@ same_data_refs_base_objects (data_reference_p a, data_reference_p b)
 }
 
 /* Return true when the data references A and B are accessing the same
-   memory object with the same access functions.  */
+   memory object with the same access functions.  Optionally skip the
+   last OFFSET dimensions in the data reference.  */
 
 static inline bool
-same_data_refs (data_reference_p a, data_reference_p b)
+same_data_refs (data_reference_p a, data_reference_p b, int offset = 0)
 {
   unsigned int i;
 
@@ -608,7 +615,7 @@ same_data_refs (data_reference_p a, data_reference_p b)
   if (!same_data_refs_base_objects (a, b))
     return false;
 
-  for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
+  for (i = offset; i < DR_NUM_DIMENSIONS (a); i++)
     if (!eq_evolutions_p (DR_ACCESS_FN (a, i), DR_ACCESS_FN (b, i)))
       return false;
 
@@ -666,7 +673,7 @@ ddr_dependence_level (ddr_p ddr)
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
 
 static inline int
-index_in_loop_nest (int var, vec<loop_p> loop_nest)
+index_in_loop_nest (int var, const vec<loop_p> &loop_nest)
 {
   class loop *loopi;
   int var_index;

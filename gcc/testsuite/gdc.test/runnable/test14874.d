@@ -1,4 +1,4 @@
-// REQUIRED_ARGS: -dip25
+// REQUIRED_ARGS:
 
 template indexOfReturn(T...)
 {

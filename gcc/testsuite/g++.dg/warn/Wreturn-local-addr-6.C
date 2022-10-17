@@ -9,7 +9,7 @@ const intptr_t&
 return_addr_label_as_intref (void)
 {
  label:
-  if ((const intptr_t*)&&label == 0)
+  if ((const intptr_t)&&label == 0)
     __builtin_exit (1);
 
   return *(const intptr_t*)&&label;   // { dg-warning "\\\[-Wreturn-local-addr]" } */
@@ -19,7 +19,7 @@ const intptr_t&
 return_addr_local_as_intref (void)
 {
   int a[1];
-  if ((const intptr_t*)a == 0)
+  if ((const intptr_t)a == 0)
     __builtin_exit (1);
 
   return (const intptr_t&)a;   // { dg-warning "\\\[-Wreturn-local-addr]" } */

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -83,6 +83,38 @@ test04()
   static_assert(!std::forward_iterator<It>);
 }
 
+void
+test05()
+{
+  // PR libstdc++/101231
+  auto words = std::istringstream{"42"};
+  auto is = ranges::istream_view<int>(words);
+  auto r = is | views::filter([](auto) { return true; });
+  for (auto x : r)
+    ;
+}
+
+void
+test06()
+{
+  // Default template argument
+  using V = std::ranges::basic_istream_view<int, char>;
+  using W = std::ranges::basic_istream_view<int, char, std::char_traits<char>>;
+  static_assert( std::is_same_v<V, W> );
+}
+
+void
+test07()
+{
+  // P2432R1, views::istream
+  auto nums = std::istringstream("0 1 2 3 4");
+  ranges::istream_view<int> v(nums);
+  int sum = 0;
+  for (int val : views::istream<int>(nums))
+    sum += val;
+  VERIFY( sum == 10 );
+}
+
 int
 main()
 {
@@ -90,4 +122,7 @@ main()
   test02();
   test03();
   test04();
+  test05();
+  test06();
+  test07();
 }

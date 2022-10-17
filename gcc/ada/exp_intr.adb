@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -325,7 +325,7 @@ package body Exp_Intr is
       Result_Typ := Class_Wide_Type (Etype (Act_Constr));
 
       --  Check that the accessibility level of the tag is no deeper than that
-      --  of the constructor function (unless CodePeer_Mode)
+      --  of the constructor function (unless CodePeer_Mode).
 
       if not CodePeer_Mode then
          Insert_Action (N,
@@ -335,7 +335,8 @@ package body Exp_Intr is
                  Left_Opnd  =>
                    Build_Get_Access_Level (Loc, New_Copy_Tree (Tag_Arg)),
                  Right_Opnd =>
-                   Make_Integer_Literal (Loc, Scope_Depth (Act_Constr))),
+                   Make_Integer_Literal
+                     (Loc, Scope_Depth_Default_0 (Act_Constr))),
 
              Then_Statements => New_List (
                Make_Raise_Statement (Loc,
@@ -1151,7 +1152,7 @@ package body Exp_Intr is
 
          else
             Set_Procedure_To_Call
-              (Free_Nod, Find_Prim_Op (Etype (Pool), Name_Deallocate));
+              (Free_Nod, Find_Storage_Op (Etype (Pool), Name_Deallocate));
          end if;
       end if;
 

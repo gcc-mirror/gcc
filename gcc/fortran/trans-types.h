@@ -1,5 +1,5 @@
 /* Header for Fortran 95 types backend support.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -55,8 +55,12 @@ extern GTY(()) tree gfc_charlen_type_node;
 
 /* The following flags give us information on the correspondence of
    real (and complex) kinds with C floating-point types long double
-   and __float128.  */
+   and _Float128.  */
 extern bool gfc_real16_is_float128;
+
+/* True if IEC 60559 *f128 APIs should be used for _Float128 rather than
+   libquadmath *q APIs.  */
+extern bool gfc_real16_use_iec_60559;
 
 enum gfc_packed {
   PACKED_NO = 0,
@@ -65,10 +69,7 @@ enum gfc_packed {
   PACKED_STATIC
 };
 
-/* be-function.c */
-void gfc_convert_function_code (gfc_namespace *);
-
-/* trans-types.c */
+/* trans-types.cc */
 void gfc_init_kinds (void);
 void gfc_init_types (void);
 void gfc_init_c_interop_kinds (void);
@@ -84,7 +85,8 @@ tree gfc_get_character_type (int, gfc_charlen *);
 tree gfc_get_character_type_len (int, tree);
 tree gfc_get_character_type_len_for_eltype (tree, tree);
 
-tree gfc_sym_type (gfc_symbol *);
+tree gfc_sym_type (gfc_symbol *, bool is_bind_c_arg = false);
+tree gfc_get_cfi_type (int dimen, bool restricted);
 tree gfc_typenode_for_spec (gfc_typespec *, int c = 0);
 int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
@@ -116,7 +118,6 @@ int gfc_is_nodesc_array (gfc_symbol *);
 tree gfc_get_dtype_rank_type (int, tree);
 tree gfc_get_dtype (tree, int *rank = NULL);
 
-tree gfc_get_ppc_type (gfc_component *);
 tree gfc_get_caf_vector_type (int dim);
 tree gfc_get_caf_reference_type ();
 

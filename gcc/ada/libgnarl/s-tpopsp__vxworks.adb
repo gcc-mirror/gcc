@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,8 @@
 
 separate (System.Task_Primitives.Operations)
 package body Specific is
+
+   ERROR  : constant STATUS := System.VxWorks.Ext.ERROR;
 
    ATCB_Key : aliased System.Address := System.Null_Address;
    --  Key used to find the Ada Task_Id associated with a thread
@@ -70,8 +72,9 @@ package body Specific is
    -------------------
 
    function Is_Valid_Task return Boolean is
+      IERR : constant := -1;
    begin
-      return taskVarGet (taskIdSelf, ATCB_Key'Access) /= ERROR;
+      return taskVarGet (taskIdSelf, ATCB_Key'Access) /= IERR;
    end Is_Valid_Task;
 
    ---------

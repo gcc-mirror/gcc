@@ -1,9 +1,8 @@
 /*
 REQUIRED_ARGS: -m64
-PERMUTE_ARGS:
 TEST_OUTPUT:
 ---
-fail_compilation/test16116.d(15): Error: incompatible types for ((v) * (i)): '__vector(short[8])' and 'int'
+fail_compilation/test16116.d(14): Error: incompatible types for `(v) * (i)`: `__vector(short[8])` and `int`
 ---
 */
 

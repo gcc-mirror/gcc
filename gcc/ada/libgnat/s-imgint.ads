@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,12 +33,34 @@
 --  signed integer types up to Integer, and also for conversion operations
 --  required in Text_IO.Integer_IO for such types.
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre                => Ignore,
+                         Post               => Ignore,
+                         Contract_Cases     => Ignore,
+                         Ghost              => Ignore,
+                         Subprogram_Variant => Ignore);
+
 with System.Image_I;
+with System.Unsigned_Types;
+with System.Val_Int;
+with System.Wid_Uns;
 
-package System.Img_Int is
-   pragma Pure;
+package System.Img_Int
+  with SPARK_Mode
+is
+   subtype Unsigned is Unsigned_Types.Unsigned;
 
-   package Impl is new Image_I (Integer);
+   package Impl is new Image_I
+     (Int                  => Integer,
+      Uns                  => Unsigned,
+      Unsigned_Width_Ghost =>
+         Wid_Uns.Width_Unsigned (0, Unsigned'Last),
+      Int_Params           => System.Val_Int.Impl.Spec.Int_Params);
 
    procedure Image_Integer
      (V : Integer;

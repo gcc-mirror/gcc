@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -266,8 +266,8 @@ typedef struct gfc_ss_info
     struct
     {
       /* If the scalar is passed as actual argument to an (elemental) procedure,
-	 this is the symbol of the corresponding dummy argument.  */
-      gfc_symbol *dummy_arg;
+	 this is the corresponding dummy argument.  */
+      gfc_dummy_arg *dummy_arg;
       tree value;
       /* Tells that the scalar is a reference to a variable that might
 	 be present on the lhs, so that we should evaluate the value
@@ -425,7 +425,6 @@ tree gfc_class_set_static_fields (tree, tree, tree);
 tree gfc_class_data_get (tree);
 tree gfc_class_vptr_get (tree);
 tree gfc_class_len_get (tree);
-tree gfc_class_len_or_zero_get (tree);
 tree gfc_resize_class_size_with_len (stmtblock_t *, tree, tree);
 gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false,
 					       gfc_typespec **ts = NULL);
@@ -433,14 +432,12 @@ gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false,
    available.  */
 tree gfc_class_vtab_hash_get (tree);
 tree gfc_class_vtab_size_get (tree);
-tree gfc_class_vtab_extends_get (tree);
 tree gfc_class_vtab_def_init_get (tree);
 tree gfc_class_vtab_copy_get (tree);
 tree gfc_class_vtab_final_get (tree);
 /* Get an accessor to the vtab's * field, when a vptr handle is present.  */
-tree gfc_vtpr_hash_get (tree);
+tree gfc_vptr_hash_get (tree);
 tree gfc_vptr_size_get (tree);
-tree gfc_vptr_extends_get (tree);
 tree gfc_vptr_def_init_get (tree);
 tree gfc_vptr_copy_get (tree);
 tree gfc_vptr_final_get (tree);
@@ -450,7 +447,6 @@ void gfc_reset_len (stmtblock_t *, gfc_expr *);
 tree gfc_get_class_from_gfc_expr (gfc_expr *);
 tree gfc_get_class_from_expr (tree);
 tree gfc_get_vptr_from_expr (tree);
-tree gfc_get_class_array_ref (tree, tree, tree, bool);
 tree gfc_copy_class_to_class (tree, tree, tree, bool);
 bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
@@ -497,27 +493,26 @@ tree gfc_build_compare_string (tree, tree, tree, tree, int, enum tree_code);
    when a POST chain may be created, and what the returned expression may be
    used for.  Note that character strings have special handling.  This
    should not be a problem as most statements/operations only deal with
-   numeric/logical types.  See the implementations in trans-expr.c
+   numeric/logical types.  See the implementations in trans-expr.cc
    for details of the individual functions.  */
 
 void gfc_conv_expr (gfc_se * se, gfc_expr * expr);
 void gfc_conv_expr_val (gfc_se * se, gfc_expr * expr);
 void gfc_conv_expr_lhs (gfc_se * se, gfc_expr * expr);
-void gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr,
-			      bool add_clobber = false);
+void gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr);
 void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
 
-/* trans-expr.c */
-tree gfc_get_character_len (tree);
+/* trans-expr.cc */
 tree gfc_get_character_len_in_bytes (tree);
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
 tree gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *, gfc_expr *);
-void gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr);
 tree gfc_string_to_single_character (tree len, tree str, int kind);
 tree gfc_get_tree_for_caf_expr (gfc_expr *);
 void gfc_get_caf_token_offset (gfc_se*, tree *, tree *, tree, tree, gfc_expr *);
 tree gfc_caf_get_image_index (stmtblock_t *, gfc_expr *, tree);
+void gfc_simple_for_loop (stmtblock_t *, tree, tree, tree, enum tree_code, tree,
+			  tree);
 
 /* Find the decl containing the auxiliary variables for assigned variables.  */
 void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
@@ -619,14 +614,13 @@ tree gfc_get_extern_function_decl (gfc_symbol *,
 				   gfc_actual_arglist *args = NULL,
 				   const char *fnspec = NULL);
 
-/* Return the decl for a function.  */
-tree gfc_get_function_decl (gfc_symbol *);
-
 /* Build an ADDR_EXPR.  */
 tree gfc_build_addr_expr (tree, tree);
 
 /* Build an ARRAY_REF.  */
-tree gfc_build_array_ref (tree, tree, tree, tree vptr = NULL_TREE);
+tree gfc_build_array_ref (tree, tree, tree,
+			  bool non_negative_offset = false,
+			  tree vptr = NULL_TREE);
 
 /* Build an array ref using pointer arithmetic.  */
 tree gfc_build_spanned_array_ref (tree base, tree offset, tree span);
@@ -798,21 +792,22 @@ void gfc_process_block_locals (gfc_namespace*);
 /* Output initialization/clean-up code that was deferred.  */
 void gfc_trans_deferred_vars (gfc_symbol*, gfc_wrapped_block *);
 
-/* In f95-lang.c.  */
+/* In f95-lang.cc.  */
 tree pushdecl (tree);
 tree pushdecl_top_level (tree);
 void pushlevel (void);
 tree poplevel (int, int);
 tree getdecls (void);
 
-/* In trans-types.c.  */
+/* In trans-types.cc.  */
 struct array_descr_info;
 bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 
-/* In trans-openmp.c */
+/* In trans-openmp.cc */
 bool gfc_omp_is_allocatable_or_ptr (const_tree);
 tree gfc_omp_check_optional_argument (tree, bool);
 tree gfc_omp_array_data (tree, bool);
+tree gfc_omp_array_size (tree, gimple_seq *);
 bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
 enum omp_clause_defaultmap_kind gfc_omp_predetermined_mapping (tree);
@@ -832,7 +827,7 @@ bool gfc_omp_private_outer_ref (tree);
 struct gimplify_omp_ctx;
 void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
 
-/* In trans-intrinsic.c.  */
+/* In trans-intrinsic.cc.  */
 void gfc_conv_intrinsic_mvbits (gfc_se *, gfc_actual_arglist *,
 				gfc_loopinfo *);
 
@@ -855,8 +850,6 @@ extern GTY(()) tree gfor_fndecl_ctime;
 extern GTY(()) tree gfor_fndecl_fdate;
 extern GTY(()) tree gfor_fndecl_in_pack;
 extern GTY(()) tree gfor_fndecl_in_unpack;
-extern GTY(()) tree gfor_fndecl_cfi_to_gfc;
-extern GTY(()) tree gfor_fndecl_gfc_to_cfi;
 extern GTY(()) tree gfor_fndecl_associated;
 extern GTY(()) tree gfor_fndecl_system_clock4;
 extern GTY(()) tree gfor_fndecl_system_clock8;
@@ -909,7 +902,7 @@ extern GTY(()) tree gfor_fndecl_co_sum;
 extern GTY(()) tree gfor_fndecl_caf_is_present;
 
 /* Math functions.  Many other math functions are handled in
-   trans-intrinsic.c.  */
+   trans-intrinsic.cc.  */
 
 typedef struct GTY(()) gfc_powdecl_list {
   tree integer;
@@ -958,8 +951,6 @@ extern GTY(()) tree gfor_fndecl_convert_char1_to_char4;
 extern GTY(()) tree gfor_fndecl_convert_char4_to_char1;
 
 /* Other misc. runtime library functions.  */
-extern GTY(()) tree gfor_fndecl_size0;
-extern GTY(()) tree gfor_fndecl_size1;
 extern GTY(()) tree gfor_fndecl_iargc;
 extern GTY(()) tree gfor_fndecl_kill;
 extern GTY(()) tree gfor_fndecl_kill_sub;
@@ -1173,15 +1164,12 @@ void gfc_init_interface_mapping (gfc_interface_mapping *);
 void gfc_free_interface_mapping (gfc_interface_mapping *);
 void gfc_add_interface_mapping (gfc_interface_mapping *,
 				gfc_symbol *, gfc_se *, gfc_expr *);
-void gfc_finish_interface_mapping (gfc_interface_mapping *,
-				   stmtblock_t *, stmtblock_t *);
 void gfc_apply_interface_mapping (gfc_interface_mapping *,
 				  gfc_se *, gfc_expr *);
 
 
 /* Standard error messages used in all the trans-*.c files.  */
 extern const char gfc_msg_fault[];
-extern const char gfc_msg_wrong_return[];
 
 #define OMPWS_WORKSHARE_FLAG	1	/* Set if in a workshare construct.  */
 #define OMPWS_CURR_SINGLEUNIT	2	/* Set if current gfc_code in workshare

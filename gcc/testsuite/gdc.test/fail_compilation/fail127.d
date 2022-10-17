@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail127.d(9): Error: a struct is not a valid initializer for a char[][]
-fail_compilation/fail127.d(10): Error: a struct is not a valid initializer for a string[]
+fail_compilation/fail127.d(9): Error: a struct is not a valid initializer for a `char[][]`
+fail_compilation/fail127.d(10): Error: a struct is not a valid initializer for a `string[]`
 ---
 */
 

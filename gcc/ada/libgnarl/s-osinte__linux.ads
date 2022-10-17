@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,8 @@ package System.OS_Interface is
    --  Needed for clock_getres with glibc versions prior to 2.17
 
    pragma Linker_Options ("-lpthread");
+
+   use type System.Linux.time_t;
 
    subtype int            is Interfaces.C.int;
    subtype char           is Interfaces.C.char;
@@ -130,7 +132,7 @@ package System.OS_Interface is
 
    type Signal_Set is array (Natural range <>) of Signal;
 
-   Unmasked : constant Signal_Set := (
+   Unmasked : constant Signal_Set := [
       SIGTRAP,
       --  To enable debugging on multithreaded applications, mark SIGTRAP to
       --  be kept unmasked.
@@ -146,9 +148,9 @@ package System.OS_Interface is
 
       SIGKILL, SIGSTOP
       --  These two signals actually can't be masked (POSIX won't allow it)
-      );
+      ];
 
-   Reserved : constant Signal_Set := (
+   Reserved : constant Signal_Set := [
       SIG32, SIG33, SIG34
       --  glibc POSIX threads implementation uses two (NPTL) or three
       --  (LinuxThreads) real-time signals for its own use (see SIGNAL(7)).
@@ -156,7 +158,7 @@ package System.OS_Interface is
       --  not permit these signals to be used by the public signal.h API.
       --  While LinuxThreads is mostly likely unused now, SIG34 is still
       --  reserved as this behavior is consistent with past GNAT releases.
-      );
+      ];
 
    type sigset_t is private;
 

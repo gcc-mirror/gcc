@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,17 @@ package Sem_Ch10 is
    procedure Analyze_Protected_Body_Stub                (N : Node_Id);
    procedure Analyze_Subunit                            (N : Node_Id);
 
+   procedure Decorate_Type
+     (Ent         : Entity_Id;
+      Scop        : Entity_Id;
+      Is_Tagged   : Boolean := False;
+      Materialize : Boolean := False);
+   --  Perform minimal decoration of a type or its corresponding shadow
+   --  entity denoted by Ent. Scop is the proper scope. Flag Is_Tagged
+   --  should be set when Ent is a tagged type. Flag Materialize should be
+   --  set when Ent is a tagged type and its class-wide type needs to appear
+   --  in the tree.
+
    procedure Install_Context (N : Node_Id; Chain : Boolean := True);
    --  Installs the entities from the context clause of the given compilation
    --  unit into the visibility chains. This is done before analyzing a unit.
@@ -59,16 +70,13 @@ package Sem_Ch10 is
    --  reported on Error_Node (if present); otherwise no error is reported.
 
    procedure Load_Needed_Body
-     (N          : Node_Id;
-      OK         : out Boolean;
-      Do_Analyze : Boolean := True);
+     (N  : Node_Id;
+      OK : out Boolean);
    --  Load and analyze the body of a context unit that is generic, or that
    --  contains generic units or inlined units. The body becomes part of the
    --  semantic dependency set of the unit that needs it. The returned result
    --  in OK is True if the load is successful, and False if the requested file
-   --  cannot be found. If the flag Do_Analyze is false, the unit is loaded and
-   --  parsed only. This allows a selective analysis in some inlining cases
-   --  where a full analysis would lead so circularities in the back-end.
+   --  cannot be found.
 
    procedure Remove_Context (N : Node_Id);
    --  Removes the entities from the context clause of the given compilation

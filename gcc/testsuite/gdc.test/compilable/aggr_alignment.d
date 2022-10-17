@@ -24,8 +24,8 @@ class C2 // overall alignment: max(vtbl.alignof, monitor.alignof, 1, 2)
 
 enum payloadOffset = C2.bytes.offsetof;
 static assert(C2.int1.offsetof == payloadOffset + 8);
-static assert(C2.alignof == size_t.sizeof);
-static assert(__traits(classInstanceSize, C2) == payloadOffset + 12);
+static assert(__traits(classInstanceAlignment, C2) == size_t.sizeof);
+static assert(__traits(classInstanceSize, C2) == payloadOffset + 12); // no tail padding
 
 align(8) struct PaddedStruct
 {
@@ -36,6 +36,15 @@ align(8) struct PaddedStruct
 static assert(PaddedStruct.s1.offsetof == 2);
 static assert(PaddedStruct.alignof == 8);
 static assert(PaddedStruct.sizeof == 16);
+
+class AlignedPayloadClass
+{
+    align(64) int field;
+}
+
+static assert(AlignedPayloadClass.field.offsetof == 64); // vtbl, monitor, alignment padding
+static assert(__traits(classInstanceAlignment, AlignedPayloadClass) == 64);
+static assert(__traits(classInstanceSize, AlignedPayloadClass) == 68);
 
 align(1) struct UglyStruct
 {

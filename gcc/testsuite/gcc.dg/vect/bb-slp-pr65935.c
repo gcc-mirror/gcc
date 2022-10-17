@@ -1,5 +1,6 @@
 /* { dg-additional-options "-O3" } */
 /* { dg-require-effective-target vect_double } */
+/* { dg-additional-options "-mprefer-vector-width=128" { target x86_64-*-* i?86-*-* } } */
 
 #include "tree-vect.h"
 

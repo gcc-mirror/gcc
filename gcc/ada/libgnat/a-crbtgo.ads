@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,7 +61,8 @@ package Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    --  procedure Check_Invariant (Tree : Tree_Type);
 
-   function Vet (Tree : Tree_Type; Node : Node_Access) return Boolean;
+   function Vet (Tree : Tree_Type; Node : Node_Access) return Boolean
+     with Inline;
    --  Inspects Node to determine (to the extent possible) whether
    --  the node is valid; used to detect if the node is dangling.
 

@@ -6,7 +6,7 @@ deprecated immutable int depVar = 10;
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag14875.d(16): Deprecation: class diag14875.Dep is deprecated
+fail_compilation/diag14875.d(16): Deprecation: class `diag14875.Dep` is deprecated
 1: Dep
 2: Dep
 3: Dep
@@ -36,11 +36,16 @@ template Baz(T)
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag14875.d(47): Deprecation: class diag14875.Dep is deprecated
-fail_compilation/diag14875.d(51): Deprecation: variable diag14875.depVar is deprecated
+fail_compilation/diag14875.d(52): Deprecation: class `diag14875.Dep` is deprecated
+fail_compilation/diag14875.d(56): Deprecation: variable `diag14875.depVar` is deprecated
+fail_compilation/diag14875.d(52):        instantiated from here: `Voo!(Dep)`
 4: Dep
-fail_compilation/diag14875.d(58): Deprecation: variable diag14875.depVar is deprecated
-fail_compilation/diag14875.d(59): Deprecation: variable diag14875.Vaz!(Dep).Vaz is deprecated
+fail_compilation/diag14875.d(63): Deprecation: variable `diag14875.depVar` is deprecated
+fail_compilation/diag14875.d(59):        instantiated from here: `Var!(Dep)`
+fail_compilation/diag14875.d(52):        instantiated from here: `Voo!(Dep)`
+fail_compilation/diag14875.d(64): Deprecation: template `diag14875.Vaz(T)` is deprecated
+fail_compilation/diag14875.d(59):        instantiated from here: `Var!(Dep)`
+fail_compilation/diag14875.d(52):        instantiated from here: `Voo!(Dep)`
 ---
 */
 
@@ -67,7 +72,7 @@ deprecated template Vaz(T)
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag14875.d(75): Error: static assert  `0` is false
+fail_compilation/diag14875.d(80): Error: static assert:  `0` is false
 ---
 */
 void main()

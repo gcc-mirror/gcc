@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,10 +25,10 @@ MULTILIB_DIRNAMES +=  v850e3v5
 
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
 
-v850-c.o: $(srcdir)/config/v850/v850-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+v850-c.o: $(srcdir)/config/v850/v850-c.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(CPPLIB_H) $(TREE_H) $(C_PRAGMA_H) $(GGC_H) $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/v850/v850-c.c 
+		$(srcdir)/config/v850/v850-c.cc 
 
 # Local Variables:
 # mode: Makefile

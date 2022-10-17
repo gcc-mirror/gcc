@@ -1,6 +1,6 @@
 /* Windows support code to wrap differences between different
    versions of the Microsoft C libaries.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -50,7 +50,7 @@ init_msvc (void)
   core_stdc_stderr = stderr;
 
 #if __MSVCRT_VERSION__ >= 0xE00
-  msvcUsedUCRT = 1;
+  msvcUsesUCRT = 1;
 #endif
 }
 

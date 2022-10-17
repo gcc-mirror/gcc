@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2018-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -34,7 +34,12 @@
 #define __DISABLE_SERIALIZE__
 #endif /* __SERIALIZE__ */
 
-#define _serialize()	__builtin_ia32_serialize ()
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_serialize (void)
+{
+  __builtin_ia32_serialize ();
+}
 
 #ifdef __DISABLE_SERIALIZE__
 #undef __DISABLE_SERIALIZE__

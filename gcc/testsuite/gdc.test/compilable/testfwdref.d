@@ -1,7 +1,8 @@
 // PERMUTE_ARGS:
+// EXTRA_FILES: imports/fwdref9514.d imports/fwdref12201a.d
 
 /***************************************************/
-// 6766
+// https://issues.dlang.org/show_bug.cgi?id=6766
 
 class Foo6766
 {
@@ -16,7 +17,7 @@ struct Bar6766
 }
 
 /***************************************************/
-// 8609
+// https://issues.dlang.org/show_bug.cgi?id=8609
 
 struct Tuple8609(T)
 {
@@ -48,7 +49,7 @@ struct Bar8609b
 }
 
 /***************************************************/
-// 8698
+// https://issues.dlang.org/show_bug.cgi?id=8698
 
 interface IRoot8698a {}
 interface IClass8698a : IRoot8698a { }
@@ -67,7 +68,7 @@ void test8698b(Class8698b.Value) { }
 interface IRoot8698b {}
 
 /***************************************************/
-// 9514
+// https://issues.dlang.org/show_bug.cgi?id=9514
 
 template TStructHelpers9514a()
 {
@@ -112,7 +113,7 @@ template FieldNames9514b()
 }
 
 /***************************************************/
-// 10015
+// https://issues.dlang.org/show_bug.cgi?id=10015
 
 struct S10015(T) { alias X = int; }
 
@@ -120,7 +121,7 @@ alias Y10015 = s10015.X;
 S10015!int s10015;
 
 /***************************************************/
-// 10101
+// https://issues.dlang.org/show_bug.cgi?id=10101
 
 int front10101(int);
 
@@ -147,7 +148,7 @@ void test10101()
 }
 
 /***************************************************/
-// 11019
+// https://issues.dlang.org/show_bug.cgi?id=11019
 
 class A11019
 {
@@ -162,7 +163,7 @@ class B11019 : A11019
 class D11019 : B11019 {}
 
 /***************************************************/
-// 11166
+// https://issues.dlang.org/show_bug.cgi?id=11166
 
 template Tup11166(T...) { alias Tup11166 = T; }
 
@@ -193,7 +194,7 @@ struct S11166b
 }
 
 /***************************************************/
-// 12152
+// https://issues.dlang.org/show_bug.cgi?id=12152
 
 class A12152
 {
@@ -208,7 +209,7 @@ class B12152 : A12152
 static assert(is(A12152.Y == int));
 
 /***************************************************/
-// 12201
+// https://issues.dlang.org/show_bug.cgi?id=12201
 
 template T12201()
 {
@@ -258,7 +259,7 @@ struct S12201b
 }
 
 /***************************************************/
-// 12531
+// https://issues.dlang.org/show_bug.cgi?id=12531
 
 struct Node12531(T)
 {
@@ -274,7 +275,7 @@ void test12531()
 }
 
 /***************************************************/
-// 12543
+// https://issues.dlang.org/show_bug.cgi?id=12543
 
 class C12543;
 static assert(C12543.sizeof == (void*).sizeof);
@@ -282,7 +283,7 @@ static assert(C12543.alignof == (void*).sizeof);
 static assert(C12543.mangleof == "C10testfwdref6C12543");
 
 /***************************************************/
-// 14010
+// https://issues.dlang.org/show_bug.cgi?id=14010
 
 enum E14010;
 static assert(E14010.mangleof == "E10testfwdref6E14010");
@@ -291,7 +292,7 @@ struct S14010;
 static assert(S14010.mangleof == "S10testfwdref6S14010");
 
 /***************************************************/
-// 12983
+// https://issues.dlang.org/show_bug.cgi?id=12983
 
 alias I12983 = int;
 class B12983(T) { alias MyC = C12983!string; }
@@ -307,7 +308,7 @@ void f12983();
 void f12983(I12983);
 
 /***************************************************/
-// 12984
+// https://issues.dlang.org/show_bug.cgi?id=12984
 
 class B12984a { alias MyD = D12984a!int; }
 class C12984a : B12984a { }
@@ -343,7 +344,7 @@ static assert(__traits(classInstanceSize, B12984b) == (void*).sizeof * 2 + int.s
 static assert(__traits(classInstanceSize, C12984b) == (void*).sizeof * 2 + int.sizeof * 2);
 
 /***************************************************/
-// 14390
+// https://issues.dlang.org/show_bug.cgi?id=14390
 
 class B14390a { alias MyD = D14390a!int; }
 class C14390a : B14390a { void f(int) {} }
@@ -356,7 +357,7 @@ class D14390b(T) { alias MyE = E14390b!float; }
 class E14390b(T) : D14390b!int { void m() { auto c = new C14390b(); } }
 
 /***************************************************/
-// 13860
+// https://issues.dlang.org/show_bug.cgi?id=13860
 
 /*
 TEST_OUTPUT:
@@ -386,7 +387,7 @@ void test13860()
 }
 
 /***************************************************/
-// 14083
+// https://issues.dlang.org/show_bug.cgi?id=14083
 
 class NBase14083
 {
@@ -436,7 +437,7 @@ static assert(
 }());
 
 /***************************************************/
-// 14549
+// https://issues.dlang.org/show_bug.cgi?id=14549
 
 string foo14549(T)()
 {
@@ -480,7 +481,8 @@ class Bar14549
 }
 
 // ----
-// 14609 - regression case
+// https://issues.dlang.org/show_bug.cgi?id=14609
+// regression case
 
 interface Foo14609(T)
 {
@@ -651,7 +653,7 @@ void test15726y()
 }
 
 /***************************************************/
-// 15726
+// https://issues.dlang.org/show_bug.cgi?id=15726
 
 struct RC15726(T)
 {

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -std=gnu++11 -fopt-info-loop-missed" } */
+/* { dg-options "-O2 -std=gnu++11 -fopt-info-loop-missed -fno-tree-vectorize" } */
 struct p
 {
   char *ay;

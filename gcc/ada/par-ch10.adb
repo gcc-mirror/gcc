@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -279,10 +279,7 @@ package body Ch10 is
                Set_Private_Present (Comp_Unit_Node, True);
             end if;
 
-         elsif Token = Tok_Procedure
-           or else Token = Tok_Function
-           or else Token = Tok_Generic
-         then
+         elsif Token in Tok_Procedure | Tok_Function | Tok_Generic then
             Set_Private_Present (Comp_Unit_Node, True);
          end if;
       end if;
@@ -300,8 +297,7 @@ package body Ch10 is
 
          --  Allow task and protected for nice error recovery purposes
 
-         exit when Token = Tok_Task
-           or else Token = Tok_Protected;
+         exit when Token in Tok_Task | Tok_Protected;
 
          if Token = Tok_With then
             Error_Msg_SC ("misplaced WITH");
@@ -376,10 +372,7 @@ package body Ch10 is
       elsif Token = Tok_Separate then
          Set_Unit (Comp_Unit_Node, P_Subunit);
 
-      elsif Token = Tok_Function
-        or else Token = Tok_Not
-        or else Token = Tok_Overriding
-        or else Token = Tok_Procedure
+      elsif Token in Tok_Function | Tok_Not | Tok_Overriding | Tok_Procedure
       then
          Set_Unit (Comp_Unit_Node, P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Pexp));
 
@@ -392,10 +385,7 @@ package body Ch10 is
 
          if SIS_Entry_Active then
 
-            if Token = Tok_Begin
-               or else Token = Tok_Identifier
-               or else Token in Token_Class_Deckn
-            then
+            if Token in Tok_Begin | Tok_Identifier | Token_Class_Deckn then
                Push_Scope_Stack;
                Scopes (Scope.Last).Etyp := E_Name;
                Scopes (Scope.Last).Sloc := SIS_Sloc;
@@ -532,13 +522,14 @@ package body Ch10 is
                                | N_Subprogram_Body
                                | N_Subprogram_Renaming_Declaration
          then
-            Unit_Node := Specification (Unit_Node);
-
-         elsif Nkind (Unit_Node) = N_Subprogram_Renaming_Declaration then
-            if Ada_Version = Ada_83 then
+            if Nkind (Unit_Node) = N_Subprogram_Renaming_Declaration
+              and then Ada_Version = Ada_83
+            then
                Error_Msg_N
                  ("(Ada 83) library unit renaming not allowed", Unit_Node);
             end if;
+
+            Unit_Node := Specification (Unit_Node);
          end if;
 
          if Nkind (Unit_Node) in N_Task_Body
@@ -555,7 +546,7 @@ package body Ch10 is
                                   | N_Generic_Function_Renaming_Declaration
                                   | N_Generic_Package_Renaming_Declaration
                                   | N_Generic_Procedure_Renaming_Declaration
-          or else Nkind (Unit_Node) in N_Package_Body
+                                  | N_Package_Body
                                   | N_Package_Instantiation
                                   | N_Package_Renaming_Declaration
                                   | N_Package_Specification
@@ -946,10 +937,7 @@ package body Ch10 is
                   Save_Scan_State (Scan_State);
                   Scan; -- past comma
 
-                  if Token in Token_Class_Cunit
-                    or else Token = Tok_Use
-                    or else Token = Tok_Pragma
-                  then
+                  if Token in Token_Class_Cunit | Tok_Use | Tok_Pragma then
                      Restore_Scan_State (Scan_State);
                      exit;
                   end if;
@@ -1046,11 +1034,7 @@ package body Ch10 is
 
       Ignore (Tok_Semicolon);
 
-      if Token = Tok_Function
-        or else Token = Tok_Not
-        or else Token = Tok_Overriding
-        or else Token = Tok_Procedure
-      then
+      if Token in Tok_Function | Tok_Not | Tok_Overriding | Tok_Procedure then
          Body_Node := P_Subprogram (Pf_Pbod_Pexp);
 
       elsif Token = Tok_Package then
@@ -1162,24 +1146,22 @@ package body Ch10 is
       Loc        : Source_Ptr;
       SR_Present : Boolean)
    is
-      Unum : constant Unit_Number_Type    := Get_Cunit_Unit_Number (Cunit);
-      Sind : constant Source_File_Index   := Source_Index (Unum);
-      Unam : constant Unit_Name_Type      := Unit_Name (Unum);
+      Unum : constant Unit_Number_Type  := Get_Cunit_Unit_Number (Cunit);
+      Sind : constant Source_File_Index := Source_Index (Unum);
+      Unam : constant Unit_Name_Type    := Unit_Name (Unum);
 
    begin
-      if List_Units then
-         Write_Str ("Unit ");
-         Write_Unit_Name (Unit_Name (Unum));
-         Unit_Location (Sind, Loc);
+      Write_Str ("Unit ");
+      Write_Unit_Name (Unit_Name (Unum));
+      Unit_Location (Sind, Loc);
 
-         if SR_Present then
-            Write_Str (", SR");
-         end if;
-
-         Write_Str (", file name ");
-         Write_Name (Get_File_Name (Unam, Nkind (Unit (Cunit)) = N_Subunit));
-         Write_Eol;
+      if SR_Present then
+         Write_Str (", SR");
       end if;
+
+      Write_Str (", file name ");
+      Write_Name (Get_File_Name (Unam, Nkind (Unit (Cunit)) = N_Subunit));
+      Write_Eol;
    end Unit_Display;
 
    -------------------
@@ -1195,7 +1177,7 @@ package body Ch10 is
       Write_Int (Int (Line));
 
       Write_Str (", file offset ");
-      Write_Int (Int (Loc) - Int (Source_First (Sind)));
+      Write_Int (Int (Loc - Source_First (Sind)));
    end Unit_Location;
 
 end Ch10;

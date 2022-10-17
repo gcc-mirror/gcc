@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2021, Free Software Foundation, Inc.            --
+--            Copyright (C) 2021-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ with System.Powten_LLF;
 with System.Unsigned_Types;
 
 package System.Img_LLF is
-   pragma Pure;
 
    --  Note that the following instantiation is really for a 32-bit target,
    --  where 128-bit integer types are not available. For a 64-bit targaet,

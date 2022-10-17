@@ -1,5 +1,5 @@
 /* FPU-related code for systems with GNU libc.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -342,6 +342,11 @@ get_fpu_rounding_mode (void)
 	return GFC_FPE_TOWARDZERO;
 #endif
 
+#ifdef FE_TONEARESTFROMZERO
+      case FE_TONEARESTFROMZERO:
+	return GFC_FPE_AWAY;
+#endif
+
       default:
 	return 0; /* Should be unreachable.  */
     }
@@ -376,6 +381,12 @@ set_fpu_rounding_mode (int mode)
 #ifdef FE_TOWARDZERO
       case GFC_FPE_TOWARDZERO:
 	rnd_mode = FE_TOWARDZERO;
+	break;
+#endif
+
+#ifdef FE_TONEARESTFROMZERO
+      case GFC_FPE_AWAY:
+	rnd_mode = FE_TONEARESTFROMZERO;
 	break;
 #endif
 
@@ -415,6 +426,13 @@ support_fpu_rounding_mode (int mode)
 
       case GFC_FPE_TOWARDZERO:
 #ifdef FE_TOWARDZERO
+	return 1;
+#else
+	return 0;
+#endif
+
+      case GFC_FPE_AWAY:
+#ifdef FE_TONEARESTFROMZERO
 	return 1;
 #else
 	return 0;

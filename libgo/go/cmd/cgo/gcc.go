@@ -23,10 +23,13 @@ import (
 	"internal/xcoff"
 	"math"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"cmd/internal/quoted"
 )
 
 var debugDefine = flag.Bool("debug-define", false, "print relevant #defines")
@@ -129,12 +132,11 @@ func (p *Package) addToFlag(flag string, args []string) {
 //
 // For example, the following string:
 //
-//     `a b:"c d" 'e''f'  "g\""`
+//	`a b:"c d" 'e''f'  "g\""`
 //
 // Would be parsed as:
 //
-//     []string{"a", "b:c d", "ef", `g"`}
-//
+//	[]string{"a", "b:c d", "ef", `g"`}
 func splitQuoted(s string) (r []string, err error) {
 	var args []string
 	arg := make([]rune, len(s))
@@ -400,7 +402,7 @@ func (p *Package) guessKinds(f *File) []*Name {
 		stderr = p.gccErrors(b.Bytes())
 	}
 	if stderr == "" {
-		fatalf("%s produced no output\non input:\n%s", p.gccBaseCmd()[0], b.Bytes())
+		fatalf("%s produced no output\non input:\n%s", gccBaseCmd[0], b.Bytes())
 	}
 
 	completed := false
@@ -475,7 +477,7 @@ func (p *Package) guessKinds(f *File) []*Name {
 	}
 
 	if !completed {
-		fatalf("%s did not produce error at completed:1\non input:\n%s\nfull error output:\n%s", p.gccBaseCmd()[0], b.Bytes(), stderr)
+		fatalf("%s did not produce error at completed:1\non input:\n%s\nfull error output:\n%s", gccBaseCmd[0], b.Bytes(), stderr)
 	}
 
 	for i, n := range names {
@@ -506,7 +508,7 @@ func (p *Package) guessKinds(f *File) []*Name {
 		// to users debugging preamble mistakes. See issue 8442.
 		preambleErrors := p.gccErrors([]byte(f.Preamble))
 		if len(preambleErrors) > 0 {
-			error_(token.NoPos, "\n%s errors for preamble:\n%s", p.gccBaseCmd()[0], preambleErrors)
+			error_(token.NoPos, "\n%s errors for preamble:\n%s", gccBaseCmd[0], preambleErrors)
 		}
 
 		fatalf("unresolved names")
@@ -927,7 +929,7 @@ func (p *Package) rewriteCall(f *File, call *Call) (string, bool) {
 	var sbCheck bytes.Buffer
 	for i, param := range params {
 		origArg := args[i]
-		arg, nu := p.mangle(f, &args[i])
+		arg, nu := p.mangle(f, &args[i], true)
 		if nu {
 			needsUnsafe = true
 		}
@@ -970,7 +972,7 @@ func (p *Package) rewriteCall(f *File, call *Call) (string, bool) {
 		sb.WriteString("return ")
 	}
 
-	m, nu := p.mangle(f, &call.Call.Fun)
+	m, nu := p.mangle(f, &call.Call.Fun, false)
 	if nu {
 		needsUnsafe = true
 	}
@@ -1104,7 +1106,8 @@ func (p *Package) hasPointer(f *File, t ast.Expr, top bool) bool {
 // rewriting calls when it finds them.
 // It removes the corresponding references in f.Ref and f.Calls, so that we
 // don't try to do the replacement again in rewriteRef or rewriteCall.
-func (p *Package) mangle(f *File, arg *ast.Expr) (ast.Expr, bool) {
+// If addPosition is true, add position info to the idents of C names in arg.
+func (p *Package) mangle(f *File, arg *ast.Expr, addPosition bool) (ast.Expr, bool) {
 	needsUnsafe := false
 	f.walk(arg, ctxExpr, func(f *File, arg interface{}, context astContext) {
 		px, ok := arg.(*ast.Expr)
@@ -1119,7 +1122,7 @@ func (p *Package) mangle(f *File, arg *ast.Expr) (ast.Expr, bool) {
 
 			for _, r := range f.Ref {
 				if r.Expr == px {
-					*px = p.rewriteName(f, r)
+					*px = p.rewriteName(f, r, addPosition)
 					r.Done = true
 					break
 				}
@@ -1152,13 +1155,19 @@ func (p *Package) mangle(f *File, arg *ast.Expr) (ast.Expr, bool) {
 
 // checkIndex checks whether arg has the form &a[i], possibly inside
 // type conversions. If so, then in the general case it writes
-//    _cgoIndexNN := a
-//    _cgoNN := &cgoIndexNN[i] // with type conversions, if any
+//
+//	_cgoIndexNN := a
+//	_cgoNN := &cgoIndexNN[i] // with type conversions, if any
+//
 // to sb, and writes
-//    _cgoCheckPointer(_cgoNN, _cgoIndexNN)
+//
+//	_cgoCheckPointer(_cgoNN, _cgoIndexNN)
+//
 // to sbCheck, and returns true. If a is a simple variable or field reference,
 // it writes
-//    _cgoIndexNN := &a
+//
+//	_cgoIndexNN := &a
+//
 // and dereferences the uses of _cgoIndexNN. Taking the address avoids
 // making a copy of an array.
 //
@@ -1206,10 +1215,14 @@ func (p *Package) checkIndex(sb, sbCheck *bytes.Buffer, arg ast.Expr, i int) boo
 
 // checkAddr checks whether arg has the form &x, possibly inside type
 // conversions. If so, it writes
-//    _cgoBaseNN := &x
-//    _cgoNN := _cgoBaseNN // with type conversions, if any
+//
+//	_cgoBaseNN := &x
+//	_cgoNN := _cgoBaseNN // with type conversions, if any
+//
 // to sb, and writes
-//    _cgoCheckPointer(_cgoBaseNN, true)
+//
+//	_cgoCheckPointer(_cgoBaseNN, true)
+//
 // to sbCheck, and returns true. This tells _cgoCheckPointer to check
 // just the contents of the pointer being passed, not any other part
 // of the memory allocation. This is run after checkIndex, which looks
@@ -1379,7 +1392,7 @@ func (p *Package) rewriteRef(f *File) {
 			}
 		}
 
-		expr := p.rewriteName(f, r)
+		expr := p.rewriteName(f, r, false)
 
 		if *godefs {
 			// Substitute definition for mangled type name.
@@ -1442,8 +1455,23 @@ func (p *Package) rewriteRef(f *File) {
 }
 
 // rewriteName returns the expression used to rewrite a reference.
-func (p *Package) rewriteName(f *File, r *Ref) ast.Expr {
-	var expr ast.Expr = ast.NewIdent(r.Name.Mangle) // default
+// If addPosition is true, add position info in the ident name.
+func (p *Package) rewriteName(f *File, r *Ref, addPosition bool) ast.Expr {
+	getNewIdent := ast.NewIdent
+	if addPosition {
+		getNewIdent = func(newName string) *ast.Ident {
+			mangledIdent := ast.NewIdent(newName)
+			if len(newName) == len(r.Name.Go) {
+				return mangledIdent
+			}
+			p := fset.Position((*r.Expr).End())
+			if p.Column == 0 {
+				return mangledIdent
+			}
+			return ast.NewIdent(fmt.Sprintf("%s /*line :%d:%d*/", newName, p.Line, p.Column))
+		}
+	}
+	var expr ast.Expr = getNewIdent(r.Name.Mangle) // default
 	switch r.Context {
 	case ctxCall, ctxCall2:
 		if r.Name.Kind != "func" {
@@ -1471,7 +1499,7 @@ func (p *Package) rewriteName(f *File, r *Ref) ast.Expr {
 				n.Mangle = "_C2func_" + n.Go
 				f.Name["2"+r.Name.Go] = n
 			}
-			expr = ast.NewIdent(n.Mangle)
+			expr = getNewIdent(n.Mangle)
 			r.Name = n
 			break
 		}
@@ -1502,10 +1530,10 @@ func (p *Package) rewriteName(f *File, r *Ref) ast.Expr {
 			// issue 7757.
 			expr = &ast.CallExpr{
 				Fun:  &ast.Ident{NamePos: (*r.Expr).Pos(), Name: "_Cgo_ptr"},
-				Args: []ast.Expr{ast.NewIdent(name.Mangle)},
+				Args: []ast.Expr{getNewIdent(name.Mangle)},
 			}
 		case "type":
-			// Okay - might be new(T)
+			// Okay - might be new(T), T(x), Generic[T], etc.
 			if r.Name.Type == nil {
 				error_(r.Pos(), "expression C.%s: undefined C type '%s'", fixGo(r.Name.Go), r.Name.C)
 			}
@@ -1547,20 +1575,37 @@ func gofmtPos(n ast.Expr, pos token.Pos) string {
 	return fmt.Sprintf("/*line :%d:%d*/%s", p.Line, p.Column, s)
 }
 
-// gccBaseCmd returns the start of the compiler command line.
+// checkGCCBaseCmd returns the start of the compiler command line.
 // It uses $CC if set, or else $GCC, or else the compiler recorded
 // during the initial build as defaultCC.
 // defaultCC is defined in zdefaultcc.go, written by cmd/dist.
-func (p *Package) gccBaseCmd() []string {
+//
+// The compiler command line is split into arguments on whitespace. Quotes
+// are understood, so arguments may contain whitespace.
+//
+// checkGCCBaseCmd confirms that the compiler exists in PATH, returning
+// an error if it does not.
+func checkGCCBaseCmd() ([]string, error) {
 	// Use $CC if set, since that's what the build uses.
-	if ret := strings.Fields(os.Getenv("CC")); len(ret) > 0 {
-		return ret
+	value := os.Getenv("CC")
+	if value == "" {
+		// Try $GCC if set, since that's what we used to use.
+		value = os.Getenv("GCC")
 	}
-	// Try $GCC if set, since that's what we used to use.
-	if ret := strings.Fields(os.Getenv("GCC")); len(ret) > 0 {
-		return ret
+	if value == "" {
+		value = defaultCC(goos, goarch)
 	}
-	return strings.Fields(defaultCC(goos, goarch))
+	args, err := quoted.Split(value)
+	if err != nil {
+		return nil, err
+	}
+	if len(args) == 0 {
+		return nil, errors.New("CC not set and no default found")
+	}
+	if _, err := exec.LookPath(args[0]); err != nil {
+		return nil, fmt.Errorf("C compiler %q not found: %v", args[0], err)
+	}
+	return args[:len(args):len(args)], nil
 }
 
 // gccMachine returns the gcc -m flag to use, either "-m32", "-m64" or "-marm".
@@ -1584,9 +1629,17 @@ func (p *Package) gccMachine() []string {
 	case "s390x":
 		return []string{"-m64"}
 	case "mips64", "mips64le":
-		return []string{"-mabi=64"}
+		if gomips64 == "hardfloat" {
+			return []string{"-mabi=64", "-mhard-float"}
+		} else if gomips64 == "softfloat" {
+			return []string{"-mabi=64", "-msoft-float"}
+		}
 	case "mips", "mipsle":
-		return []string{"-mabi=32"}
+		if gomips == "hardfloat" {
+			return []string{"-mabi=32", "-mfp32", "-mhard-float", "-mno-odd-spreg"}
+		} else if gomips == "softfloat" {
+			return []string{"-mabi=32", "-msoft-float"}
+		}
 	case "ppc64":
 		if goos == "aix" {
 			return []string{"-maix64"}
@@ -1606,7 +1659,7 @@ func gccTmp() string {
 // gccCmd returns the gcc command line to use for compiling
 // the input.
 func (p *Package) gccCmd() []string {
-	c := append(p.gccBaseCmd(),
+	c := append(gccBaseCmd,
 		"-w",          // no warnings
 		"-Wno-error",  // warnings are not errors
 		"-o"+gccTmp(), // write object to tmp
@@ -1639,6 +1692,8 @@ func (p *Package) gccCmd() []string {
 	if goos == "aix" {
 		c = append(c, "-mcmodel=large")
 	}
+	// disable LTO so we get an object whose symbols we can read
+	c = append(c, "-fno-lto")
 	c = append(c, "-") //read input from standard input
 	return c
 }
@@ -2004,7 +2059,7 @@ func (p *Package) gccDebug(stdin []byte, nnames int) (d *dwarf.Data, ints []int6
 // #defines that gcc encountered while processing the input
 // and its included files.
 func (p *Package) gccDefines(stdin []byte) string {
-	base := append(p.gccBaseCmd(), "-E", "-dM", "-xc")
+	base := append(gccBaseCmd, "-E", "-dM", "-xc")
 	base = append(base, p.gccMachine()...)
 	stdout, _ := runGcc(stdin, append(append(base, p.GccOptions...), "-"))
 	return stdout
@@ -2085,6 +2140,9 @@ type typeConv struct {
 	// Type names X for which there exists an XGetTypeID function with type func() CFTypeID.
 	getTypeIDs map[string]bool
 
+	// incompleteStructs contains C structs that should be marked Incomplete.
+	incompleteStructs map[string]bool
+
 	// Predeclared types.
 	bool                                   ast.Expr
 	byte                                   ast.Expr // denotes padding
@@ -2119,6 +2177,7 @@ func (c *typeConv) Init(ptrSize, intSize int64) {
 	c.m = make(map[string]*Type)
 	c.ptrs = make(map[string][]*Type)
 	c.getTypeIDs = make(map[string]bool)
+	c.incompleteStructs = make(map[string]bool)
 	c.bool = c.Ident("bool")
 	c.byte = c.Ident("byte")
 	c.int8 = c.Ident("int8")
@@ -2479,19 +2538,13 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 			// other than try to determine a Go representation.
 			tt := *t
 			tt.C = &TypeRepr{"%s %s", []interface{}{dt.Kind, tag}}
-			tt.Go = c.Ident("struct{}")
-			if dt.Kind == "struct" {
-				// We don't know what the representation of this struct is, so don't let
-				// anyone allocate one on the Go side. As a side effect of this annotation,
-				// pointers to this type will not be considered pointers in Go. They won't
-				// get writebarrier-ed or adjusted during a stack copy. This should handle
-				// all the cases badPointerTypedef used to handle, but hopefully will
-				// continue to work going forward without any more need for cgo changes.
-				tt.NotInHeap = true
-				// TODO: we should probably do the same for unions. Unions can't live
-				// on the Go heap, right? It currently doesn't work for unions because
-				// they are defined as a type alias for struct{}, not a defined type.
-			}
+			// We don't know what the representation of this struct is, so don't let
+			// anyone allocate one on the Go side. As a side effect of this annotation,
+			// pointers to this type will not be considered pointers in Go. They won't
+			// get writebarrier-ed or adjusted during a stack copy. This should handle
+			// all the cases badPointerTypedef used to handle, but hopefully will
+			// continue to work going forward without any more need for cgo changes.
+			tt.Go = c.Ident("_cgopackage.Incomplete")
 			typedef[name.Name] = &tt
 			break
 		}
@@ -2517,6 +2570,9 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 				tt.C = &TypeRepr{"struct %s", []interface{}{tag}}
 			}
 			tt.Go = g
+			if c.incompleteStructs[tag] {
+				tt.Go = c.Ident("_cgopackage.Incomplete")
+			}
 			typedef[name.Name] = &tt
 		}
 
@@ -2560,9 +2616,32 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 				oldType.BadPointer = true
 			}
 		}
+		if c.badVoidPointerTypedef(dt) {
+			// Treat this typedef as a pointer to a _cgopackage.Incomplete.
+			s := *sub
+			s.Go = c.Ident("*_cgopackage.Incomplete")
+			sub = &s
+			// Make sure we update any previously computed type.
+			if oldType := typedef[name.Name]; oldType != nil {
+				oldType.Go = sub.Go
+			}
+		}
+		// Check for non-pointer "struct <tag>{...}; typedef struct <tag> *<name>"
+		// typedefs that should be marked Incomplete.
+		if ptr, ok := dt.Type.(*dwarf.PtrType); ok {
+			if strct, ok := ptr.Type.(*dwarf.StructType); ok {
+				if c.badStructPointerTypedef(dt.Name, strct) {
+					c.incompleteStructs[strct.StructName] = true
+					// Make sure we update any previously computed type.
+					name := "_Ctype_struct_" + strct.StructName
+					if oldType := typedef[name]; oldType != nil {
+						oldType.Go = c.Ident("_cgopackage.Incomplete")
+					}
+				}
+			}
+		}
 		t.Go = name
 		t.BadPointer = sub.BadPointer
-		t.NotInHeap = sub.NotInHeap
 		if unionWithPointer[sub.Go] {
 			unionWithPointer[t.Go] = true
 		}
@@ -2573,7 +2652,6 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 			tt := *t
 			tt.Go = sub.Go
 			tt.BadPointer = sub.BadPointer
-			tt.NotInHeap = sub.NotInHeap
 			typedef[name.Name] = &tt
 		}
 
@@ -3009,6 +3087,31 @@ func upper(s string) string {
 // so that all fields are exported.
 func godefsFields(fld []*ast.Field) {
 	prefix := fieldPrefix(fld)
+
+	// Issue 48396: check for duplicate field names.
+	if prefix != "" {
+		names := make(map[string]bool)
+	fldLoop:
+		for _, f := range fld {
+			for _, n := range f.Names {
+				name := n.Name
+				if name == "_" {
+					continue
+				}
+				if name != prefix {
+					name = strings.TrimPrefix(n.Name, prefix)
+				}
+				name = upper(name)
+				if names[name] {
+					// Field name conflict: don't remove prefix.
+					prefix = ""
+					break fldLoop
+				}
+				names[name] = true
+			}
+		}
+	}
+
 	npad := 0
 	for _, f := range fld {
 		for _, n := range f.Names {
@@ -3072,7 +3175,7 @@ func (c *typeConv) anonymousStructTypedef(dt *dwarf.TypedefType) bool {
 // non-pointers in this type.
 // TODO: Currently our best solution is to find these manually and list them as
 // they come up. A better solution is desired.
-// Note: DEPRECATED. There is now a better solution. Search for NotInHeap in this file.
+// Note: DEPRECATED. There is now a better solution. Search for _cgopackage.Incomplete in this file.
 func (c *typeConv) badPointerTypedef(dt *dwarf.TypedefType) bool {
 	if c.badCFType(dt) {
 		return true
@@ -3084,6 +3187,48 @@ func (c *typeConv) badPointerTypedef(dt *dwarf.TypedefType) bool {
 		return true
 	}
 	return false
+}
+
+// badVoidPointerTypedef is like badPointerTypeDef, but for "void *" typedefs that should be _cgopackage.Incomplete.
+func (c *typeConv) badVoidPointerTypedef(dt *dwarf.TypedefType) bool {
+	// Match the Windows HANDLE type (#42018).
+	if goos != "windows" || dt.Name != "HANDLE" {
+		return false
+	}
+	// Check that the typedef is "typedef void *<name>".
+	if ptr, ok := dt.Type.(*dwarf.PtrType); ok {
+		if _, ok := ptr.Type.(*dwarf.VoidType); ok {
+			return true
+		}
+	}
+	return false
+}
+
+// badStructPointerTypedef is like badVoidPointerTypedefs but for structs.
+func (c *typeConv) badStructPointerTypedef(name string, dt *dwarf.StructType) bool {
+	// Windows handle types can all potentially contain non-pointers.
+	// badVoidPointerTypedef handles the "void *" HANDLE type, but other
+	// handles are defined as
+	//
+	// struct <name>__{int unused;}; typedef struct <name>__ *name;
+	//
+	// by the DECLARE_HANDLE macro in STRICT mode. The macro is declared in
+	// the Windows ntdef.h header,
+	//
+	// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.16299.0/shared/ntdef.h#L779
+	if goos != "windows" {
+		return false
+	}
+	if len(dt.Field) != 1 {
+		return false
+	}
+	if dt.StructName != name+"__" {
+		return false
+	}
+	if f := dt.Field[0]; f.Name != "unused" || f.Type.Common().Name != "int" {
+		return false
+	}
+	return true
 }
 
 // baseBadPointerTypedef reports whether the base of a chain of typedefs is a bad typedef

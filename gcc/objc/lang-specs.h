@@ -1,5 +1,5 @@
 /* Definitions for specs for Objective-C.
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-/* This is the contribution to the `default_compilers' array in gcc.c
+/* This is the contribution to the `default_compilers' array in gcc.cc
    for objc.  */
 
   {".m", "@objective-c", 0, 0, 0},
@@ -41,12 +41,12 @@ along with GCC; see the file COPYING3.  If not see
 %eGNU Objective C no longer supports traditional compilation}\
 	%{save-temps*|no-integrated-cpp:cc1obj -E %(cpp_options) -o %{save-temps*:%b.mi} %{!save-temps*:%g.mi} \n\
 	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{print-objc-runtime-info} %{gen-decls}\
-                        -o %g.s %{!o*:--output-pch=%i.gch}\
-                        %W{o*:--output-pch=%*}%V}\
+                        -o %g.s %{!o*:--output-pch %i.gch}\
+                        %W{o*:--output-pch %*}%V}\
 	%{!save-temps*:%{!no-integrated-cpp:\
 	    cc1obj %(cpp_unique_options) %(cc1_options) %{print-objc-runtime-info} %{gen-decls}\
-                        -o %g.s %{!o*:--output-pch=%i.gch}\
-                        %W{o*:--output-pch=%*}%V}}}}}", 0, 0, 0},
+                        -o %g.s %{!o*:--output-pch %i.gch}\
+                        %W{o*:--output-pch %*}%V}}}}}", 0, 0, 0},
   {".mi", "@objective-c-cpp-output", 0, 0, 0},
   {"@objective-c-cpp-output",
      "%{!M:%{!MM:%{!E:cc1obj -fpreprocessed %i %(cc1_options) %{print-objc-runtime-info} %{gen-decls}\

@@ -24,6 +24,7 @@
  */
 module std.internal.math.errorfunction;
 import std.math;
+import core.math : fabs, sqrt;
 
 pure:
 nothrow:
@@ -50,16 +51,16 @@ private {
 /* erfc(x) = exp(-x^2) P(1/x)/Q(1/x)
    1/8 <= 1/x <= 1
    Peak relative error 5.8e-21  */
-immutable real[10] P = [ -0x1.30dfa809b3cc6676p-17, 0x1.38637cd0913c0288p+18,
-   0x1.2f015e047b4476bp+22, 0x1.24726f46aa9ab08p+25, 0x1.64b13c6395dc9c26p+27,
-   0x1.294c93046ad55b5p+29, 0x1.5962a82f92576dap+30, 0x1.11a709299faba04ap+31,
-   0x1.11028065b087be46p+31, 0x1.0d8ef40735b097ep+30
+immutable real[10] P = [ -0x1.30dfa809b3cc6676p-17L, 0x1.38637cd0913c0288p+18L,
+   0x1.2f015e047b4476bp+22L, 0x1.24726f46aa9ab08p+25L, 0x1.64b13c6395dc9c26p+27L,
+   0x1.294c93046ad55b5p+29L, 0x1.5962a82f92576dap+30L, 0x1.11a709299faba04ap+31L,
+   0x1.11028065b087be46p+31L, 0x1.0d8ef40735b097ep+30L
 ];
 
-immutable real[11] Q = [ 0x1.14d8e2a72dec49f4p+19, 0x1.0c880ff467626e1p+23,
-   0x1.04417ef060b58996p+26, 0x1.404e61ba86df4ebap+28, 0x1.0f81887bc82b873ap+30,
-   0x1.4552a5e39fb49322p+31, 0x1.11779a0ceb2a01cep+32, 0x1.3544dd691b5b1d5cp+32,
-   0x1.a91781f12251f02ep+31, 0x1.0d8ef3da605a1c86p+30, 1.0
+immutable real[11] Q = [ 0x1.14d8e2a72dec49f4p+19L, 0x1.0c880ff467626e1p+23L,
+   0x1.04417ef060b58996p+26L, 0x1.404e61ba86df4ebap+28L, 0x1.0f81887bc82b873ap+30L,
+   0x1.4552a5e39fb49322p+31L, 0x1.11779a0ceb2a01cep+32L, 0x1.3544dd691b5b1d5cp+32L,
+   0x1.a91781f12251f02ep+31L, 0x1.0d8ef3da605a1c86p+30L, 1.0L
 ];
 
 // For 128 bit quadruple-precision floats, we use a higher-precision implementation
@@ -120,7 +121,7 @@ static if (isIEEEQuadruple)
         1.367697521219069280358984081407807931847E1L,
         2.276988395995528495055594829206582732682E1L,
         7.647745753648996559837591812375456641163E-1L,
-        1.0
+        1.0L
     ];
 
     // erfc(0.375) = C14a + C14b to extra precision.
@@ -150,7 +151,7 @@ static if (isIEEEQuadruple)
         2.628752920321455606558942309396855629459E1L,
         2.455649035885114308978333741080991380610E1L,
         1.378826653595128464383127836412100939126E0L,
-        1.0
+        1.0L
     ];
     // erfc(0.5) = C15a + C15b to extra precision.
     immutable real C15a = 0.4794921875L;
@@ -179,7 +180,7 @@ static if (isIEEEQuadruple)
         4.465334221323222943418085830026979293091E1L,
         2.612723259683205928103787842214809134746E1L,
         2.341526751185244109722204018543276124997E0L,
-        1.0
+        1.0L
     ];
     // erfc(0.625) = C16a + C16b to extra precision.
     immutable real C16a = 0.3767547607421875L;
@@ -208,7 +209,7 @@ static if (isIEEEQuadruple)
         5.555800830216764702779238020065345401144E1L,
         2.646215470959050279430447295801291168941E1L,
         2.984905282103517497081766758550112011265E0L,
-        1.0
+        1.0L
     ];
     // erfc(0.75) = C17a + C17b to extra precision.
     immutable real C17a = 0.2888336181640625L;
@@ -238,7 +239,7 @@ static if (isIEEEQuadruple)
         5.998153487868943708236273854747564557632E1L,
         2.657695108438628847733050476209037025318E1L,
         3.252140524394421868923289114410336976512E0L,
-        1.0
+        1.0L
     ];
 
     // erfc(0.875) = C18a + C18b to extra precision.
@@ -268,7 +269,7 @@ static if (isIEEEQuadruple)
         6.868976819510254139741559102693828237440E1L,
         2.801505816247677193480190483913753613630E1L,
         3.604439909194350263552750347742663954481E0L,
-        1.0
+        1.0L
     ];
 
     // erfc(1.0) = C19a + C19b to extra precision.
@@ -298,7 +299,7 @@ static if (isIEEEQuadruple)
         8.848641738570783406484348434387611713070E1L,
         3.132269062552392974833215844236160958502E1L,
         4.430131663290563523933419966185230513168E0L,
-        1.0
+        1.0L
     ];
 
     // erfc(1.125) = C20a + C20b to extra precision.
@@ -604,26 +605,26 @@ else
     /* erfc(x) = exp(-x^2) 1/x R(1/x^2) / S(1/x^2)
        1/128 <= 1/x < 1/8
        Peak relative error 1.9e-21  */
-    immutable real[5] R = [ 0x1.b9f6d8b78e22459ep-6, 0x1.1b84686b0a4ea43ap-1,
-       0x1.b8f6aebe96000c2ap+1, 0x1.cb1dbedac27c8ec2p+2, 0x1.cf885f8f572a4c14p+1
+    immutable real[5] R = [ 0x1.b9f6d8b78e22459ep-6L, 0x1.1b84686b0a4ea43ap-1L,
+       0x1.b8f6aebe96000c2ap+1L, 0x1.cb1dbedac27c8ec2p+2L, 0x1.cf885f8f572a4c14p+1L
     ];
 
     immutable real[6] S = [
-       0x1.87ae3cae5f65eb5ep-5, 0x1.01616f266f306d08p+0, 0x1.a4abe0411eed6c22p+2,
-       0x1.eac9ce3da600abaap+3, 0x1.5752a9ac2faebbccp+3, 1.0
+       0x1.87ae3cae5f65eb5ep-5L, 0x1.01616f266f306d08p+0L, 0x1.a4abe0411eed6c22p+2L,
+       0x1.eac9ce3da600abaap+3L, 0x1.5752a9ac2faebbccp+3L, 1.0L
     ];
 
     /* erf(x)  = x P(x^2)/Q(x^2)
        0 <= x <= 1
        Peak relative error 7.6e-23  */
-    immutable real[7] T = [ 0x1.0da01654d757888cp+20, 0x1.2eb7497bc8b4f4acp+17,
-       0x1.79078c19530f72a8p+15, 0x1.4eaf2126c0b2c23p+11, 0x1.1f2ea81c9d272a2ep+8,
-       0x1.59ca6e2d866e625p+2, 0x1.c188e0b67435faf4p-4
+    immutable real[7] T = [ 0x1.0da01654d757888cp+20L, 0x1.2eb7497bc8b4f4acp+17L,
+       0x1.79078c19530f72a8p+15L, 0x1.4eaf2126c0b2c23p+11L, 0x1.1f2ea81c9d272a2ep+8L,
+       0x1.59ca6e2d866e625p+2L, 0x1.c188e0b67435faf4p-4L
     ];
 
-    immutable real[7] U = [ 0x1.dde6025c395ae34ep+19, 0x1.c4bc8b6235df35aap+18,
-       0x1.8465900e88b6903ap+16, 0x1.855877093959ffdp+13, 0x1.e5c44395625ee358p+9,
-       0x1.6a0fed103f1c68a6p+5, 1.0
+    immutable real[7] U = [ 0x1.dde6025c395ae34ep+19L, 0x1.c4bc8b6235df35aap+18L,
+       0x1.8465900e88b6903ap+16L, 0x1.855877093959ffdp+13L, 0x1.e5c44395625ee358p+9L,
+       0x1.6a0fed103f1c68a6p+5L, 1.0L
     ];
 }
 }
@@ -835,7 +836,7 @@ real erf(real x)
         return -1.0;
     if (x == real.infinity)
         return 1.0;
-    immutable ax = abs(x);
+    immutable ax = fabs(x);
     if (ax > 1.0L)
         return 1.0L - erfc(x);
 
@@ -867,16 +868,16 @@ real erf(real x)
 @safe unittest
 {
     // High resolution test points.
-    enum real erfc0_250 = 0.723663330078125 + 1.0279753638067014931732235184287934646022E-5;
-    enum real erfc0_375 = 0.5958709716796875 + 1.2118885490201676174914080878232469565953E-5;
-    enum real erfc0_500 = 0.4794921875 + 7.9346869534623172533461080354712635484242E-6;
-    enum real erfc0_625 = 0.3767547607421875 + 4.3570693945275513594941232097252997287766E-6;
-    enum real erfc0_750 = 0.2888336181640625 + 1.0748182422368401062165408589222625794046E-5;
-    enum real erfc0_875 = 0.215911865234375 + 1.3073705765341685464282101150637224028267E-5;
-    enum real erfc1_000 = 0.15728759765625 + 1.1609394035130658779364917390740703933002E-5;
-    enum real erfc1_125 = 0.111602783203125 + 8.9850951672359304215530728365232161564636E-6;
+    enum real erfc0_250 = 0.723663330078125L + 1.0279753638067014931732235184287934646022E-5L;
+    enum real erfc0_375 = 0.5958709716796875L + 1.2118885490201676174914080878232469565953E-5L;
+    enum real erfc0_500 = 0.4794921875L + 7.9346869534623172533461080354712635484242E-6L;
+    enum real erfc0_625 = 0.3767547607421875L + 4.3570693945275513594941232097252997287766E-6L;
+    enum real erfc0_750 = 0.2888336181640625L + 1.0748182422368401062165408589222625794046E-5L;
+    enum real erfc0_875 = 0.215911865234375L + 1.3073705765341685464282101150637224028267E-5L;
+    enum real erfc1_000 = 0.15728759765625L + 1.1609394035130658779364917390740703933002E-5L;
+    enum real erfc1_125 = 0.111602783203125L + 8.9850951672359304215530728365232161564636E-6L;
 
-    enum real erf0_875  = (1-0.215911865234375) - 1.3073705765341685464282101150637224028267E-5;
+    enum real erf0_875  = (1-0.215911865234375L) - 1.3073705765341685464282101150637224028267E-5L;
 
     static bool isNaNWithPayload(real x, ulong payload) @safe pure nothrow @nogc
     {
@@ -931,7 +932,7 @@ real expx2(real x, int sign)
     const real M = 32_768.0;
     const real MINV = 3.0517578125e-5L;
 
-    x = abs(x);
+    x = fabs(x);
     if (sign < 0)
         x = -x;
 
@@ -984,7 +985,7 @@ Journal of Statistical Software <b>11</b>, (July 2004).
 real normalDistributionImpl(real a)
 {
     real x = a * SQRT1_2;
-    real z = abs(x);
+    real z = fabs(x);
 
     if ( z < 1.0 )
         return 0.5L + 0.5L * erf(x);
@@ -1002,7 +1003,7 @@ real normalDistributionImpl(real a)
 
 @safe unittest
 {
-assert(fabs(normalDistributionImpl(1L) - (0.841344746068543))< 0.0000000000000005);
+assert(fabs(normalDistributionImpl(1L) - (0.841344746068543L)) < 0.0000000000000005L);
 assert(isIdentical(normalDistributionImpl(NaN(0x325)), NaN(0x325)));
 }
 
@@ -1024,56 +1025,56 @@ real normalDistributionInvImpl(real p)
 in {
   assert(p >= 0.0L && p <= 1.0L, "Domain error");
 }
-body
+do
 {
 static immutable real[8] P0 =
-[ -0x1.758f4d969484bfdcp-7, 0x1.53cee17a59259dd2p-3,
-   -0x1.ea01e4400a9427a2p-1,  0x1.61f7504a0105341ap+1, -0x1.09475a594d0399f6p+2,
-    0x1.7c59e7a0df99e3e2p+1, -0x1.87a81da52edcdf14p-1,  0x1.1fb149fd3f83600cp-7
+[ -0x1.758f4d969484bfdcp-7L, 0x1.53cee17a59259dd2p-3L,
+   -0x1.ea01e4400a9427a2p-1L,  0x1.61f7504a0105341ap+1L, -0x1.09475a594d0399f6p+2L,
+    0x1.7c59e7a0df99e3e2p+1L, -0x1.87a81da52edcdf14p-1L,  0x1.1fb149fd3f83600cp-7L
 ];
 
 static immutable real[8] Q0 =
-[ -0x1.64b92ae791e64bb2p-7, 0x1.7585c7d597298286p-3,
-   -0x1.40011be4f7591ce6p+0, 0x1.1fc067d8430a425ep+2, -0x1.21008ffb1e7ccdf2p+3,
-   0x1.3d1581cf9bc12fccp+3, -0x1.53723a89fd8f083cp+2, 1.0
+[ -0x1.64b92ae791e64bb2p-7L, 0x1.7585c7d597298286p-3L,
+   -0x1.40011be4f7591ce6p+0L, 0x1.1fc067d8430a425ep+2L, -0x1.21008ffb1e7ccdf2p+3L,
+   0x1.3d1581cf9bc12fccp+3L, -0x1.53723a89fd8f083cp+2L, 1.0L
 ];
 
 static immutable real[10] P1 =
-[ 0x1.20ceea49ea142f12p-13, 0x1.cbe8a7267aea80bp-7,
-   0x1.79fea765aa787c48p-2, 0x1.d1f59faa1f4c4864p+1, 0x1.1c22e426a013bb96p+4,
-   0x1.a8675a0c51ef3202p+5, 0x1.75782c4f83614164p+6, 0x1.7a2f3d90948f1666p+6,
-   0x1.5cd116ee4c088c3ap+5, 0x1.1361e3eb6e3cc20ap+2
+[ 0x1.20ceea49ea142f12p-13L, 0x1.cbe8a7267aea80bp-7L,
+   0x1.79fea765aa787c48p-2L, 0x1.d1f59faa1f4c4864p+1L, 0x1.1c22e426a013bb96p+4L,
+   0x1.a8675a0c51ef3202p+5L, 0x1.75782c4f83614164p+6L, 0x1.7a2f3d90948f1666p+6L,
+   0x1.5cd116ee4c088c3ap+5L, 0x1.1361e3eb6e3cc20ap+2L
 ];
 
 static immutable real[10] Q1 =
-[ 0x1.3a4ce1406cea98fap-13, 0x1.f45332623335cda2p-7,
-   0x1.98f28bbd4b98db1p-2, 0x1.ec3b24f9c698091cp+1, 0x1.1cc56ecda7cf58e4p+4,
-   0x1.92c6f7376bf8c058p+5, 0x1.4154c25aa47519b4p+6, 0x1.1b321d3b927849eap+6,
-   0x1.403a5f5a4ce7b202p+4, 1.0
+[ 0x1.3a4ce1406cea98fap-13L, 0x1.f45332623335cda2p-7L,
+   0x1.98f28bbd4b98db1p-2L, 0x1.ec3b24f9c698091cp+1L, 0x1.1cc56ecda7cf58e4p+4L,
+   0x1.92c6f7376bf8c058p+5L, 0x1.4154c25aa47519b4p+6L, 0x1.1b321d3b927849eap+6L,
+   0x1.403a5f5a4ce7b202p+4L, 1.0L
 ];
 
 static immutable real[8] P2 =
-[ 0x1.8c124a850116a6d8p-21, 0x1.534abda3c2fb90bap-13,
-   0x1.29a055ec93a4718cp-7, 0x1.6468e98aad6dd474p-3, 0x1.3dab2ef4c67a601cp+0,
-   0x1.e1fb3a1e70c67464p+1, 0x1.b6cce8035ff57b02p+2, 0x1.9f4c9e749ff35f62p+1
+[ 0x1.8c124a850116a6d8p-21L, 0x1.534abda3c2fb90bap-13L,
+   0x1.29a055ec93a4718cp-7L, 0x1.6468e98aad6dd474p-3L, 0x1.3dab2ef4c67a601cp+0L,
+   0x1.e1fb3a1e70c67464p+1L, 0x1.b6cce8035ff57b02p+2L, 0x1.9f4c9e749ff35f62p+1L
 ];
 
 static immutable real[8] Q2 =
-[ 0x1.af03f4fc0655e006p-21, 0x1.713192048d11fb2p-13,
-   0x1.4357e5bbf5fef536p-7, 0x1.7fdac8749985d43cp-3, 0x1.4a080c813a2d8e84p+0,
-   0x1.c3a4b423cdb41bdap+1, 0x1.8160694e24b5557ap+2, 1.0
+[ 0x1.af03f4fc0655e006p-21L, 0x1.713192048d11fb2p-13L,
+   0x1.4357e5bbf5fef536p-7L, 0x1.7fdac8749985d43cp-3L, 0x1.4a080c813a2d8e84p+0L,
+   0x1.c3a4b423cdb41bdap+1L, 0x1.8160694e24b5557ap+2L, 1.0L
 ];
 
 static immutable real[8] P3 =
-[ -0x1.55da447ae3806168p-34, -0x1.145635641f8778a6p-24,
- -0x1.abf46d6b48040128p-17, -0x1.7da550945da790fcp-11, -0x1.aa0b2a31157775fap-8,
-   0x1.b11d97522eed26bcp-3, 0x1.1106d22f9ae89238p+1, 0x1.029a358e1e630f64p+1
+[ -0x1.55da447ae3806168p-34L, -0x1.145635641f8778a6p-24L,
+ -0x1.abf46d6b48040128p-17L, -0x1.7da550945da790fcp-11L, -0x1.aa0b2a31157775fap-8L,
+   0x1.b11d97522eed26bcp-3L, 0x1.1106d22f9ae89238p+1L, 0x1.029a358e1e630f64p+1L
 ];
 
 static immutable real[8] Q3 =
-[ -0x1.74022dd5523e6f84p-34, -0x1.2cb60d61e29ee836p-24,
-   -0x1.d19e6ec03a85e556p-17, -0x1.9ea2a7b4422f6502p-11, -0x1.c54b1e852f107162p-8,
-   0x1.e05268dd3c07989ep-3, 0x1.239c6aff14afbf82p+1, 1.0
+[ -0x1.74022dd5523e6f84p-34L, -0x1.2cb60d61e29ee836p-24L,
+   -0x1.d19e6ec03a85e556p-17L, -0x1.9ea2a7b4422f6502p-11L, -0x1.c54b1e852f107162p-8L,
+   0x1.e05268dd3c07989ep-3L, 0x1.239c6aff14afbf82p+1L, 1.0L
 ];
 
     if (p <= 0.0L || p >= 1.0L)
@@ -1130,9 +1131,9 @@ static immutable real[8] Q3 =
 {
     // TODO: Use verified test points.
     // The values below are from Excel 2003.
-    assert(fabs(normalDistributionInvImpl(0.001) - (-3.09023230616779))< 0.00000000000005);
-    assert(fabs(normalDistributionInvImpl(1e-50) - (-14.9333375347885))< 0.00000000000005);
-    assert(feqrel(normalDistributionInvImpl(0.999), -normalDistributionInvImpl(0.001)) > real.mant_dig-6);
+    assert(fabs(normalDistributionInvImpl(0.001) - (-3.09023230616779L)) < 0.00000000000005L);
+    assert(fabs(normalDistributionInvImpl(1e-50) - (-14.9333375347885L)) < 0.00000000000005L);
+    assert(feqrel(normalDistributionInvImpl(0.999L), -normalDistributionInvImpl(0.001L)) > real.mant_dig-6);
 
     // Excel 2003 gets all the following values wrong!
     assert(normalDistributionInvImpl(0.0) == -real.infinity);
@@ -1141,5 +1142,5 @@ static immutable real[8] Q3 =
     // (Excel 2003 returns norminv(p) = -30 for all p < 1e-200).
     // The value tested here is the one the function returned in Jan 2006.
     real unknown1 = normalDistributionInvImpl(1e-250L);
-    assert( fabs(unknown1 -(-33.79958617269L) ) < 0.00000005);
+    assert( fabs(unknown1 -(-33.79958617269L) ) < 0.00000005L);
 }

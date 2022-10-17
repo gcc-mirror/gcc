@@ -1,5 +1,5 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -25,33 +25,36 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Structure to gather statistic about profile consistency, per pass.
    An array of this structure, indexed by pass static number, is allocated
-   in passes.c.  The structure is defined here so that different CFG modes
+   in passes.cc.  The structure is defined here so that different CFG modes
    can do their book-keeping via CFG hooks.
 
    For every field[2], field[0] is the count before the pass runs, and
    field[1] is the post-pass count.  This allows us to monitor the effect
    of each individual pass on the profile consistency.
    
-   This structure is not supposed to be used by anything other than passes.c
+   This structure is not supposed to be used by anything other than passes.cc
    and one CFG hook per CFG mode.  */
 struct profile_record
 {
-  /* The number of basic blocks where sum(freq) of the block's predecessors
-     doesn't match reasonably well with the incoming frequency.  */
-  int num_mismatched_freq_in;
-  /* Likewise for a basic block's successors.  */
-  int num_mismatched_freq_out;
+  /* A weighted cost of the run-time of the function body.  */
+  double time;
+  /* Frequency of execution of basic blocks where sum(prob) of the block's
+     predecessors doesn't match reasonably probability 1.  */
+  double dyn_mismatched_prob_out;
+  /* Frequency of execution basic blocks where sum(count) of the block's
+     predecessors doesn't match reasonably well with the incoming frequency.  */
+  double dyn_mismatched_count_in;
+  /* The number of basic blocks where sum(prob) of the block's predecessors
+     doesn't match reasonably probability 1.  */
+  int num_mismatched_prob_out;
   /* The number of basic blocks where sum(count) of the block's predecessors
      doesn't match reasonably well with the incoming frequency.  */
   int num_mismatched_count_in;
-  /* Likewise for a basic block's successors.  */
-  int num_mismatched_count_out;
-  /* A weighted cost of the run-time of the function body.  */
-  gcov_type_unsigned time;
   /* A weighted cost of the size of the function body.  */
   int size;
   /* True iff this pass actually was run.  */
   bool run;
+  bool fdo;
 };
 
 typedef int_hash <unsigned short, 0> dependence_hash;
@@ -166,10 +169,9 @@ struct cfg_hooks
 
   /* A hook for duplicating loop in CFG, currently this is used
      in loop versioning.  */
-  bool (*cfg_hook_duplicate_loop_to_header_edge) (class loop *, edge,
-						  unsigned, sbitmap,
-						  edge, vec<edge> *,
-						  int);
+  bool (*cfg_hook_duplicate_loop_body_to_header_edge) (class loop *, edge,
+						       unsigned, sbitmap, edge,
+						       vec<edge> *, int);
 
   /* Add condition to new basic block and update CFG used in loop
      versioning.  */
@@ -250,12 +252,11 @@ extern bool block_ends_with_condjump_p (const_basic_block bb);
 extern int flow_call_edges_add (sbitmap);
 extern void execute_on_growing_pred (edge);
 extern void execute_on_shrinking_pred (edge);
-extern bool cfg_hook_duplicate_loop_to_header_edge (class loop *loop, edge,
-						    unsigned int ndupl,
-						    sbitmap wont_exit,
-						    edge orig,
-						    vec<edge> *to_remove,
-						    int flags);
+extern bool
+cfg_hook_duplicate_loop_body_to_header_edge (class loop *loop, edge,
+					     unsigned int ndupl,
+					     sbitmap wont_exit, edge orig,
+					     vec<edge> *to_remove, int flags);
 
 extern void lv_flush_pending_stmts (edge);
 extern void extract_cond_bb_edges (basic_block, edge *, edge*);

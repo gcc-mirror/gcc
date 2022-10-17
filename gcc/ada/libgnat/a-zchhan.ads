@@ -15,10 +15,12 @@
 
 package Ada.Wide_Wide_Characters.Handling is
    pragma Pure;
-   --  This package is clearly intended to be Pure, by analogy with the
-   --  base Ada.Characters.Handling package. The version in the RM does
-   --  not yet have this pragma, but that is a clear omission. This will
-   --  be fixed in a future version of AI05-0266-1.
+
+   function Character_Set_Version return String;
+   pragma Inline (Character_Set_Version);
+   --  Returns an implementation-defined identifier that identifies the version
+   --  of the character set standard that is used for categorizing characters
+   --  by the implementation. For GNAT this is "Unicode v.v".
 
    function Is_Control (Item : Wide_Wide_Character) return Boolean;
    pragma Inline (Is_Control);
@@ -41,6 +43,12 @@ package Ada.Wide_Wide_Characters.Handling is
    pragma Inline (Is_Upper);
    --  Returns True if the Wide_Wide_Character designated by Item is
    --  categorized as letter_uppercase, otherwise returns false.
+
+   function Is_Basic (Item : Wide_Wide_Character) return Boolean;
+   pragma Inline (Is_Basic);
+   --  Returns True if the Wide_Wide_Character designated by Item has no
+   --  Decomposition Mapping in the code charts of ISO/IEC 10646:2017,
+   --  otherwise returns False.
 
    function Is_Digit (Item : Wide_Wide_Character) return Boolean;
    pragma Inline (Is_Digit);
@@ -134,5 +142,18 @@ package Ada.Wide_Wide_Characters.Handling is
    --  Wide_Wide_Character conversion to each element of the Wide_Wide_String
    --  designated by Item. The result is the null Wide_Wide_String if the value
    --  of the formal parameter is the null Wide_Wide_String.
+
+   function To_Basic (Item : Wide_Wide_Character) return Wide_Wide_Character;
+   pragma Inline (To_Basic);
+   --  Returns the Wide_Wide_Character whose code point is given
+   --  by the first value of its Decomposition Mapping in the code charts
+   --  of ISO/IEC 10646:2017 if any, returns Item otherwise.
+
+   function To_Basic (Item : Wide_Wide_String) return Wide_Wide_String;
+   --  Returns the result of applying the To_Basic conversion to each
+   --  Wide_Wide_Character element of the Wide_Wide_String designated by Item.
+   --  The result is the null Wide_Wide_String if the value of the formal
+   --  parameter is the null Wide_Wide_String. The lower bound of the result
+   --  Wide_Wide_String is 1.
 
 end Ada.Wide_Wide_Characters.Handling;

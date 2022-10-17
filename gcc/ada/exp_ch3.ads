@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,20 +56,26 @@ package Exp_Ch3 is
    --  checks on the relevant aspects. The wrapper body could be simplified to
    --  a null body when expansion is disabled ???
 
-   procedure Build_Discr_Checking_Funcs (N : Node_Id);
-   --  Builds function which checks whether the component name is consistent
-   --  with the current discriminants. N is the full type declaration node,
-   --  and the discriminant checking functions are inserted after this node.
+   procedure Build_Or_Copy_Discr_Checking_Funcs (N : Node_Id);
+   --  For each variant component, builds a function that checks whether
+   --  the component name is consistent with the current discriminants
+   --  and sets the component's Dcheck_Function attribute to refer to it.
+   --  N is the full type declaration node; the discriminant checking
+   --  functions are inserted after this node.
+   --  In the case of a derived untagged type, copy the attributes that were
+   --  set for the components of the parent type onto the components of the
+   --  derived type; no new subprograms are constructed in this case.
 
    function Build_Initialization_Call
-     (Loc               : Source_Ptr;
-      Id_Ref            : Node_Id;
-      Typ               : Entity_Id;
-      In_Init_Proc      : Boolean := False;
-      Enclos_Type       : Entity_Id := Empty;
-      Discr_Map         : Elist_Id := New_Elmt_List;
-      With_Default_Init : Boolean := False;
-      Constructor_Ref   : Node_Id := Empty) return List_Id;
+     (Loc                 : Source_Ptr;
+      Id_Ref              : Node_Id;
+      Typ                 : Entity_Id;
+      In_Init_Proc        : Boolean := False;
+      Enclos_Type         : Entity_Id := Empty;
+      Discr_Map           : Elist_Id := New_Elmt_List;
+      With_Default_Init   : Boolean := False;
+      Constructor_Ref     : Node_Id := Empty;
+      Init_Control_Actual : Entity_Id := Empty) return List_Id;
    --  Builds a call to the initialization procedure for the base type of Typ,
    --  passing it the object denoted by Id_Ref, plus additional parameters as
    --  appropriate for the type (the _Master, for task types, for example).
@@ -93,6 +99,12 @@ package Exp_Ch3 is
    --
    --  Constructor_Ref is a call to a constructor subprogram. It is currently
    --  used only to support C++ constructors.
+   --
+   --  Init_Control_Actual is Empty except in the case where the init proc
+   --  for a tagged type calls the init proc for its parent type in order
+   --  to initialize its _Parent component. In that case, it is the
+   --  actual parameter value corresponding to the Init_Control formal
+   --  parameter to be used in the call of the parent type's init proc.
 
    function Build_Variant_Record_Equality
      (Typ         : Entity_Id;
@@ -101,19 +113,15 @@ package Exp_Ch3 is
    --  Build the body of the equality function Body_Id for the untagged variant
    --  record Typ with the given parameters specification list.
 
-   procedure Ensure_Activation_Chain_And_Master (Obj_Decl : Node_Id);
-   --  If tasks are being declared (or might be declared) by the given object
-   --  declaration then ensure to have an activation chain defined for the
-   --  tasks (has no effect if we already have one), and also that a Master
-   --  variable is established (and that the appropriate enclosing construct
-   --  is established as a task master).
-
    function Freeze_Type (N : Node_Id) return Boolean;
    --  This function executes the freezing actions associated with the given
    --  freeze type node N and returns True if the node is to be deleted. We
    --  delete the node if it is present just for front end purpose and we don't
    --  want Gigi to see the node. This function can't delete the node itself
    --  since it would confuse any remaining processing of the freeze node.
+   --
+   --  Note: for GNATprove we have a minimal variant of this routine in
+   --  Exp_SPARK.SPARK_Freeze_Type. They need to be kept in sync.
 
    function Get_Simple_Init_Val
      (Typ  : Entity_Id;
@@ -155,6 +163,31 @@ package Exp_Ch3 is
    --  initialized; if Variable_Comps is True then tags components located at
    --  variable positions of Target are initialized.
 
+   procedure Make_Controlling_Function_Wrappers
+     (Tag_Typ   : Entity_Id;
+      Decl_List : out List_Id;
+      Body_List : out List_Id);
+   --  Ada 2005 (AI-391): Makes specs and bodies for the wrapper functions
+   --  associated with inherited functions with controlling results which
+   --  are not overridden. The body of each wrapper function consists solely
+   --  of a return statement whose expression is an extension aggregate
+   --  invoking the inherited subprogram's parent subprogram and extended
+   --  with a null association list.
+
+   procedure Make_Predefined_Primitive_Eq_Spec
+     (Tag_Typ     : Entity_Id;
+      Predef_List : List_Id;
+      Renamed_Eq  : out Entity_Id);
+   --  Creates spec for the predefined equality on a tagged type Tag_Typ, if
+   --  required. If created, it will be appended to Predef_List.
+   --
+   --  The Parameter Renamed_Eq either returns the value Empty, or else
+   --  the defining unit name for the predefined equality function in the
+   --  case where the type has a primitive operation that is a renaming
+   --  of predefined equality (but only if there is also an overriding
+   --  user-defined equality function). The returned Renamed_Eq will be
+   --  passed to the corresponding parameter of Predefined_Primitive_Bodies.
+
    function Make_Tag_Assignment (N : Node_Id) return Node_Id;
    --  An object declaration that has an initialization for a tagged object
    --  requires a separate reassignment of the tag of the given type, because
@@ -162,5 +195,16 @@ package Exp_Ch3 is
    --  is inserted after the declaration, but if the object has an address
    --  clause the assignment is handled as part of the freezing of the object,
    --  see Check_Address_Clause.
+
+   procedure Predefined_Primitive_Eq_Body
+     (Tag_Typ     : Entity_Id;
+      Predef_List : List_Id;
+      Renamed_Eq  : Entity_Id);
+   --  Creates body for the predefined equality (and ineqality, if required) on
+   --  a tagged type Tag_Typ. If created they will be appended to Predef_List.
+   --
+   --  The spec for the equality function has been created by
+   --  Make_Predefined_Primitive_Eq_Spec; see there for description of
+   --  the Renamed_Eq parameter.
 
 end Exp_Ch3;

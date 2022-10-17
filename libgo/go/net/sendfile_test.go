@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !js
+//go:build !js
 
 package net
 
@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"sync"
@@ -28,10 +27,7 @@ const (
 )
 
 func TestSendfile(t *testing.T) {
-	ln, err := newLocalListener("tcp")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ln := newLocalListener(t, "tcp")
 	defer ln.Close()
 
 	errc := make(chan error, 1)
@@ -98,10 +94,7 @@ func TestSendfile(t *testing.T) {
 }
 
 func TestSendfileParts(t *testing.T) {
-	ln, err := newLocalListener("tcp")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ln := newLocalListener(t, "tcp")
 	defer ln.Close()
 
 	errc := make(chan error, 1)
@@ -156,10 +149,7 @@ func TestSendfileParts(t *testing.T) {
 }
 
 func TestSendfileSeeked(t *testing.T) {
-	ln, err := newLocalListener("tcp")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ln := newLocalListener(t, "tcp")
 	defer ln.Close()
 
 	const seekTo = 65 << 10
@@ -226,10 +216,7 @@ func TestSendfilePipe(t *testing.T) {
 
 	t.Parallel()
 
-	ln, err := newLocalListener("tcp")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ln := newLocalListener(t, "tcp")
 	defer ln.Close()
 
 	r, w, err := os.Pipe()
@@ -318,10 +305,7 @@ func TestSendfilePipe(t *testing.T) {
 
 // Issue 43822: tests that returns EOF when conn write timeout.
 func TestSendfileOnWriteTimeoutExceeded(t *testing.T) {
-	ln, err := newLocalListener("tcp")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ln := newLocalListener(t, "tcp")
 	defer ln.Close()
 
 	errc := make(chan error, 1)
@@ -366,7 +350,7 @@ func TestSendfileOnWriteTimeoutExceeded(t *testing.T) {
 	}
 	defer conn.Close()
 
-	n, err := io.Copy(ioutil.Discard, conn)
+	n, err := io.Copy(io.Discard, conn)
 	if err != nil {
 		t.Fatalf("expected nil error, but got %v", err)
 	}

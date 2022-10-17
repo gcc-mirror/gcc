@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,12 +186,9 @@ package Opt is
    Assume_No_Invalid_Values : Boolean := False;
    --  GNAT Normally, in accordance with (RM 13.9.1 (9-11)) the front end
    --  assumes that values could have invalid representations, unless it can
-   --  clearly prove that the values are valid. If this switch is set (by
+   --  prove that the values are valid. If this switch is set (by -gnatB or
    --  pragma Assume_No_Invalid_Values (On)), then the compiler assumes values
-   --  are valid and in range of their representations. This feature is now
-   --  fully enabled in the compiler.
-
-   --  WARNING: There is a matching C declaration of this variable in fe.h
+   --  are valid and in range of their representations.
 
    Back_Annotate_Rep_Info : Boolean := False;
    --  GNAT
@@ -202,7 +199,7 @@ package Opt is
    --  values.
 
    Back_End_Handles_Limited_Types : Boolean;
-   --  This flag is set true if the back end can properly handle limited or
+   --  This flag is set True if the back end can properly handle limited or
    --  other by reference types, and avoid copies. If this flag is False, then
    --  the front end does special expansion for if/case expressions to make
    --  sure that no copy occurs. If the flag is True, then the expansion for
@@ -214,11 +211,19 @@ package Opt is
    Back_End_Inlining : Boolean := False;
    --  GNAT
    --  Set True to activate inlining by back-end expansion. This is the normal
-   --  default mode for gcc targets, so it is True on such targets unless the
+   --  default mode for GCC targets, so it is True on such targets unless the
    --  switches -gnatN or -gnatd.z are used. See circuitry in gnat1drv for the
    --  exact conditions for setting this switch.
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
+
+   Back_End_Return_Slot : Boolean := True;
+   --  GNAT
+   --  This flag is set True if the return slot of the back end for functions
+   --  returning a by-reference type can be accessed by means of an intrinsic
+   --  function callable in the body of these functions. This is the normal
+   --  default mode for GCC targets, so it is True on such targets unless the
+   --  switch -gnatd_r is used.
 
    Bind_Alternate_Main_Name : Boolean := False;
    --  GNATBIND
@@ -254,10 +259,17 @@ package Opt is
    --  Set to True to build, bind and link all the sources of a project file
    --  (switch -B)
 
+   CCG_Mode : Boolean := False;
+   --  Set to True when running as CCG (either via -gnatceg or via -emit-c)
+
    Check_Aliasing_Of_Parameters : Boolean := False;
    --  GNAT
    --  Set to True to detect whether subprogram parameters and function results
    --  alias the same object(s).
+
+   Check_Elaboration_Flags : Boolean := True;
+   --  GNATBIND
+   --  Set to False if switch -k is set.
 
    Check_Float_Overflow : Boolean := False;
    --  GNAT
@@ -351,15 +363,6 @@ package Opt is
    --  GNATCLEAN, GPRCLEAN:
    --    set True to delete only the files produced by the compiler but not the
    --    library files or the executable files.
-
-   Compiler_Unit : Boolean := False;
-   --  GNAT1
-   --  Set True by an occurrence of pragma Compiler_Unit_Warning (or of the
-   --  obsolete pragma Compiler_Unit) in the main unit. Once set True, stays
-   --  True, since any units that are with'ed directly or indirectly by
-   --  a Compiler_Unit_Warning main unit are subject to the same restrictions.
-   --  Such units really should have their own pragmas, but we do not bother to
-   --  check for that, so this transitivity provides extra checking.
 
    Config_File : Boolean := True;
    --  GNAT
@@ -536,6 +539,19 @@ package Opt is
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
 
+   Enable_CUDA_Expansion : Boolean := False;
+   --  GNAT, GNATBIND
+   --  Set to True to enable CUDA host expansion:
+   --    - Removal of CUDA_Global and CUDA_Device symbols
+   --    - Generation of kernel registration code in packages
+   --    - Binder invokes device elaboration/finalization code
+
+   Enable_CUDA_Device_Expansion : Boolean := False;
+   --  GNATBIND
+   --  Set to True to enable CUDA device (as opposed to host) expansion:
+   --    - Binder generates elaboration/finalization code that can be
+   --      invoked from corresponding binder-generated host-side code.
+
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
    --  Records the error message line length limit. If this is set to zero,
@@ -576,13 +592,7 @@ package Opt is
    type Exception_Mechanism_Type is
    --  Determines the kind of mechanism used to handle exceptions
    --
-     (Front_End_SJLJ,
-      --  Exceptions use setjmp/longjmp generated explicitly by the front end
-      --  (this includes gigi or other equivalent parts of the code generator).
-      --  AT END handlers are converted into exception handlers by the front
-      --  end in this mode.
-
-      Back_End_ZCX,
+     (Back_End_ZCX,
       --  Exceptions are handled by the back end. The front end simply
       --  generates the handlers as they appear in the source, and AT END
       --  handlers are left untouched (they are not converted into exception
@@ -594,20 +604,12 @@ package Opt is
       --  Similar to Back_End_ZCX with respect to the front-end processing
       --  of regular and AT-END handlers. A setjmp/longjmp scheme is used to
       --  propagate and setup handler contexts on regular execution paths.
-   pragma Convention (C, Exception_Mechanism_Type);
 
-   --  WARNING: There is a matching C declaration of this type in fe.h
-
-   Exception_Mechanism : Exception_Mechanism_Type := Front_End_SJLJ;
+   Exception_Mechanism : Exception_Mechanism_Type := Back_End_SJLJ;
    --  GNAT
    --  Set to the appropriate value depending on the flags in system.ads
-   --  (Frontend_Exceptions + ZCX_By_Default). The C convention is there to
-   --  allow access by gigi.
+   --  (ZCX_By_Default).
 
-   --  WARNING: There is a matching C declaration of this variable in fe.h
-
-   function Back_End_Exceptions return Boolean;
-   function Front_End_Exceptions return Boolean;
    function ZCX_Exceptions return Boolean;
    function SJLJ_Exceptions return Boolean;
    --  GNAT
@@ -1030,22 +1032,6 @@ package Opt is
    XDR_Stream : Boolean := False;
    --  GNATBIND
    --  Set to True to enable XDR in s-stratt.adb. Set by -xdr.
-
-   type Create_Repinfo_File_Proc is access procedure (Src  : String);
-   type Write_Repinfo_Line_Proc  is access procedure (Info : String);
-   type Close_Repinfo_File_Proc  is access procedure;
-   --  Types used for procedure addresses below
-
-   Create_Repinfo_File_Access : Create_Repinfo_File_Proc := null;
-   Write_Repinfo_Line_Access  : Write_Repinfo_Line_Proc  := null;
-   Close_Repinfo_File_Access  : Close_Repinfo_File_Proc  := null;
-   --  GNAT
-   --  These three locations are left null when operating in non-compiler (e.g.
-   --  ASIS mode), but when operating in compiler mode, they are set to point
-   --  to the three corresponding procedures in Osint-C. The reason for this
-   --  slightly strange interface is to stop Repinfo from dragging in Osint in
-   --  ASIS mode, which would include lots of unwanted units in the ASIS build.
-   --  ??? Revisit this now that ASIS mode is gone.
 
    type Create_List_File_Proc is access procedure (S : String);
    type Write_List_Info_Proc  is access procedure (S : String);

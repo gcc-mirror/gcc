@@ -39,17 +39,29 @@ if test "x${have_feenableexcept}" = "xyes"; then
   ieee_support='yes'
 fi
 
-# x86 asm should be used instead of glibc, since glibc doesn't support
-# the x86 denormal exception.
 case "${host_cpu}" in
+
+  # x86 asm should be used instead of glibc, since glibc doesn't support
+  # the x86 denormal exception.
   i?86 | x86_64)
     if test "x${have_soft_float}" = "xyes"; then
       fpu_host='fpu-generic'
+      ieee_support='no'
     else
       fpu_host='fpu-387'
+      ieee_support='yes'
     fi
-    ieee_support='yes'
     ;;
+
+  # use asm on aarch64-darwin
+  aarch64)
+    case "${host_os}" in
+      darwin*)
+        fpu_host='fpu-aarch64'
+        ieee_support='yes'
+        ;;
+    esac
+
 esac
 
 # Some targets require additional compiler options for NaN/Inf.

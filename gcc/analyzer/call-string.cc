@@ -1,5 +1,5 @@
 /* Call stacks at program points.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "tree.h"
 #include "options.h"
-#include "json.h"
-#include "analyzer/call-string.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
@@ -35,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "digraph.h"
+#include "analyzer/analyzer.h"
+#include "analyzer/analyzer-logging.h"
+#include "analyzer/call-string.h"
 #include "analyzer/supergraph.h"
 
 #if ENABLE_ANALYZER
@@ -45,43 +46,33 @@ along with GCC; see the file COPYING3.  If not see
 
 /* class call_string.  */
 
-/* call_string's copy ctor.  */
+/* struct call_string::element_t.  */
 
-call_string::call_string (const call_string &other)
-: m_return_edges (other.m_return_edges.length ())
-{
-  for (const return_superedge *e : other.m_return_edges)
-    m_return_edges.quick_push (e);
-}
-
-/* call_string's assignment operator.  */
-
-call_string&
-call_string::operator= (const call_string &other)
-{
-  // would be much simpler if we could rely on vec<> assignment op
-  m_return_edges.truncate (0);
-  m_return_edges.reserve (other.m_return_edges.length (), true);
-  const return_superedge *e;
-  int i;
-  FOR_EACH_VEC_ELT (other.m_return_edges, i, e)
-    m_return_edges.quick_push (e);
-  return *this;
-}
-
-/* call_string's equality operator.  */
+/* call_string::element_t's equality operator.  */
 
 bool
-call_string::operator== (const call_string &other) const
+call_string::element_t::operator== (const call_string::element_t &other) const
 {
-  if (m_return_edges.length () != other.m_return_edges.length ())
-    return false;
-  const return_superedge *e;
-  int i;
-  FOR_EACH_VEC_ELT (m_return_edges, i, e)
-    if (e != other.m_return_edges[i])
-      return false;
-  return true;
+  return (m_caller == other.m_caller && m_callee == other.m_callee);
+}
+
+/* call_string::element_t's inequality operator.  */
+bool
+call_string::element_t::operator!= (const call_string::element_t &other) const
+{
+  return !(*this == other);
+}
+
+function *
+call_string::element_t::get_caller_function () const
+{
+  return m_caller->get_function ();
+}
+
+function *
+call_string::element_t::get_callee_function () const
+{
+  return m_callee->get_function ();
 }
 
 /* Print this to PP.  */
@@ -91,15 +82,15 @@ call_string::print (pretty_printer *pp) const
 {
   pp_string (pp, "[");
 
-  const return_superedge *e;
+  call_string::element_t *e;
   int i;
-  FOR_EACH_VEC_ELT (m_return_edges, i, e)
+  FOR_EACH_VEC_ELT (m_elements, i, e)
     {
       if (i > 0)
 	pp_string (pp, ", ");
       pp_printf (pp, "(SN: %i -> SN: %i in %s)",
-		 e->m_src->m_index, e->m_dest->m_index,
-		 function_name (e->m_dest->m_fun));
+		 e->m_callee->m_index, e->m_caller->m_index,
+		 function_name (e->m_caller->m_fun));
     }
 
   pp_string (pp, "]");
@@ -109,65 +100,70 @@ call_string::print (pretty_printer *pp) const
    [{"src_snode_idx" : int,
      "dst_snode_idx" : int,
      "funcname" : str},
-     ...for each return_superedge in the callstring].  */
+     ...for each element in the callstring].  */
 
 json::value *
 call_string::to_json () const
 {
   json::array *arr = new json::array ();
 
-  for (const return_superedge *e : m_return_edges)
+  for (const call_string::element_t &e : m_elements)
     {
       json::object *e_obj = new json::object ();
       e_obj->set ("src_snode_idx",
-		  new json::integer_number (e->m_src->m_index));
+		  new json::integer_number (e.m_callee->m_index));
       e_obj->set ("dst_snode_idx",
-		  new json::integer_number (e->m_dest->m_index));
+		  new json::integer_number (e.m_caller->m_index));
       e_obj->set ("funcname",
-		  new json::string (function_name (e->m_dest->m_fun)));
+		  new json::string (function_name (e.m_caller->m_fun)));
       arr->append (e_obj);
     }
 
   return arr;
 }
 
-/* Generate a hash value for this call_string.  */
+/* Get or create the call_string resulting from pushing the return
+   superedge for CALL_SEDGE onto the end of this call_string.  */
 
-hashval_t
-call_string::hash () const
-{
-  inchash::hash hstate;
-  for (const return_superedge *e : m_return_edges)
-    hstate.add_ptr (e);
-  return hstate.end ();
-}
-
-/* Push the return superedge for CALL_SEDGE onto the end of this
-   call_string.  */
-
-void
+const call_string *
 call_string::push_call (const supergraph &sg,
-			const call_superedge *call_sedge)
+			const call_superedge *call_sedge) const
 {
   gcc_assert (call_sedge);
   const return_superedge *return_sedge = call_sedge->get_edge_for_return (sg);
   gcc_assert (return_sedge);
-  m_return_edges.safe_push (return_sedge);
+  return push_call (return_sedge->m_dest, return_sedge->m_src);
+}
+
+/* Get or create the call_string resulting from pushing the call
+   (caller, callee) onto the end of this call_string.  */
+
+const call_string *
+call_string::push_call (const supernode *caller,
+			const supernode *callee) const
+{
+  call_string::element_t e (caller, callee);
+
+  if (const call_string **slot = m_children.get (e))
+    return *slot;
+
+  call_string *result = new call_string (*this, e);
+  m_children.put (e, result);
+  return result;
 }
 
 /* Count the number of times the top-most call site appears in the
    stack.  */
-
 int
 call_string::calc_recursion_depth () const
 {
-  if (m_return_edges.is_empty ())
+  if (m_elements.is_empty ())
     return 0;
-  const return_superedge *top_return_sedge
-    = m_return_edges[m_return_edges.length () - 1];
+  const call_string::element_t top_return_sedge
+    = m_elements[m_elements.length () - 1];
 
   int result = 0;
-  for (const return_superedge *e : m_return_edges)
+  for (const call_string::element_t &e : m_elements)
     if (e == top_return_sedge)
       ++result;
   return result;
@@ -201,18 +197,50 @@ call_string::cmp (const call_string &a,
       if (i >= len_b)
 	return -1;
 
-      /* Otherwise, compare the edges.  */
-      const return_superedge *edge_a = a[i];
-      const return_superedge *edge_b = b[i];
-      int src_cmp = edge_a->m_src->m_index - edge_b->m_src->m_index;
+      /* Otherwise, compare the node pairs.  */
+      const call_string::element_t a_node_pair = a[i];
+      const call_string::element_t b_node_pair = b[i];
+      int src_cmp
+	= a_node_pair.m_callee->m_index - b_node_pair.m_callee->m_index;
       if (src_cmp)
 	return src_cmp;
-      int dest_cmp = edge_a->m_dest->m_index - edge_b->m_dest->m_index;
+      int dest_cmp
+	= a_node_pair.m_caller->m_index - b_node_pair.m_caller->m_index;
       if (dest_cmp)
 	return dest_cmp;
       i++;
       // TODO: test coverage for this
     }
+}
+
+/* Comparator for use by vec<const call_string *>::qsort.  */
+
+int
+call_string::cmp_ptr_ptr (const void *pa, const void *pb)
+{
+  const call_string *cs_a = *static_cast <const call_string * const *> (pa);
+  const call_string *cs_b = *static_cast <const call_string * const *> (pb);
+  return cmp (*cs_a, *cs_b);
+}
+
+/* Return the pointer to callee of the topmost call in the stack,
+   or NULL if stack is empty.  */
+const supernode *
+call_string::get_callee_node () const
+{
+  if(m_elements.is_empty ())
+    return NULL;
+  return m_elements[m_elements.length () - 1].m_callee;
+}
+
+/* Return the pointer to caller of the topmost call in the stack,
+   or NULL if stack is empty.  */
+const supernode *
+call_string::get_caller_node () const
+{
+  if(m_elements.is_empty ())
+    return NULL;
+  return m_elements[m_elements.length () - 1].m_caller;
 }
 
 /* Assert that this object is sane.  */
@@ -225,13 +253,79 @@ call_string::validate () const
   return;
 #endif
 
+  gcc_assert (m_parent || m_elements.length () == 0);
+
   /* Each entry's "caller" should be the "callee" of the previous entry.  */
-  const return_superedge *e;
+  call_string::element_t *e;
   int i;
-  FOR_EACH_VEC_ELT (m_return_edges, i, e)
+  FOR_EACH_VEC_ELT (m_elements, i, e)
     if (i > 0)
-      gcc_assert (e->get_caller_function ()
-		  == m_return_edges[i - 1]->get_callee_function ());
+      gcc_assert (e->get_caller_function () ==
+		  m_elements[i - 1].get_callee_function ());
+}
+
+/* ctor for the root/empty call_string.  */
+
+call_string::call_string ()
+: m_parent (NULL), m_elements ()
+{
+}
+
+/* ctor for a child call_string.  */
+
+call_string::call_string (const call_string &parent, const element_t &to_push)
+: m_parent (&parent),
+  m_elements (parent.m_elements.length () + 1)
+{
+  m_elements.splice (parent.m_elements);
+  m_elements.quick_push (to_push);
+}
+
+/* dtor for call_string: recursively delete children.  */
+
+call_string::~call_string ()
+{
+  for (auto child_iter : m_children)
+    delete child_iter.second;
+}
+
+/* Log this call_string and all its descendents recursively to LOGGER,
+   using indentation and elision to highlight the hierarchy.  */
+
+void
+call_string::recursive_log (logger *logger) const
+{
+  logger->start_log_line ();
+  pretty_printer *pp = logger->get_printer ();
+  for (unsigned i = 0; i < length (); i++)
+    pp_string (pp, "  ");
+  if (length () > 0)
+    {
+      pp_string (pp, "[");
+      /* Elide all but the final element, since they are shared with
+	 the parent call_string.  */
+      for (unsigned i = 0; i < length (); i++)
+	pp_string (pp, "..., ");
+      /* Log the final element in detail.  */
+      const element_t *e = &m_elements[m_elements.length () - 1];
+      pp_printf (pp, "(SN: %i -> SN: %i in %s)]",
+		 e->m_callee->m_index, e->m_caller->m_index,
+		 function_name (e->m_caller->m_fun));
+    }
+  else
+    pp_string (pp, "[]");
+  logger->end_log_line ();
+
+  /* Recurse into children.  */
+  {
+    auto_vec<const call_string *> children (m_children.elements ());
+    for (auto iter : m_children)
+      children.safe_push (iter.second);
+    children.qsort (call_string::cmp_ptr_ptr);
+
+    for (auto iter : children)
+      iter->recursive_log (logger);
+  }
 }
 
 #endif /* #if ENABLE_ANALYZER */

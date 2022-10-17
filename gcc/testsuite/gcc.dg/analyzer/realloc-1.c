@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-free-nonheap-object" } */
+
 typedef __SIZE_TYPE__ size_t;
 
 #define NULL ((void *)0)
@@ -20,11 +22,10 @@ void *test_1 (void *ptr)
 
 void *test_2 (void *ptr)
 {
-  void *p = malloc (1024);
-  p = realloc (p, 4096);
-  /* TODO: should warn about the leak when the above call fails (PR analyzer/99260).  */
+  void *p = malloc (1024); /* { dg-message "allocated here" } */
+  p = realloc (p, 4096); /* { dg-message "when 'realloc' fails" } */
   free (p);
-}
+} /* { dg-warning "leak of 'p'" } */ // ideally this would be on the realloc stmt
 
 void *test_3 (void *ptr)
 {
@@ -44,8 +45,8 @@ void *test_4 (void)
 int *test_5 (int *p)
 {
   *p = 42;
-  int *q = realloc (p, sizeof(int) * 4);
-  *q = 43; /* { dg-warning "possibly-NULL 'q'" "PR analyzer/99260" { xfail *-*-* } } */
+  int *q = realloc (p, sizeof(int) * 4); /* { dg-message "when 'realloc' fails" } */
+  *q = 43; /* { dg-warning "dereference of NULL 'q'" } */
   return q;
 }
 
@@ -53,3 +54,42 @@ void test_6 (size_t sz)
 {
   void *p = realloc (NULL, sz);
 } /* { dg-warning "leak of 'p'" } */
+
+/* The analyzer should complain about realloc of non-heap.  */
+
+void *test_7 (size_t sz)
+{
+  char buf[100]; /* { dg-message "region created on stack here" } */
+  void *p = realloc (&buf, sz); /* { dg-warning "'realloc' of '&buf' which points to memory on the stack" } */
+  return p;  
+}
+
+/* Mismatched allocator.  */
+
+struct foo
+{
+  int m_int;
+};
+
+extern void foo_release (struct foo *);
+extern struct foo *foo_acquire (void)
+  __attribute__ ((malloc (foo_release)));
+
+void test_8 (void)
+{
+  struct foo *p = foo_acquire ();
+  void *q = realloc (p, 1024); /* { dg-warning "'p' should have been deallocated with 'foo_release' but was deallocated with 'realloc'" } */
+}
+
+/* We should complain about realloc on a freed pointer.  */
+
+void test_9 (void *p)
+{
+  free (p);
+  void *q = realloc (p, 1024); /* { dg-warning "double-'free' of 'p'" } */
+}
+
+void test_10 (char *s, int n)
+{
+  __builtin_realloc(s, n); /* { dg-warning "ignoring return value of '__builtin_realloc' declared with attribute 'warn_unused_result'" } */
+} /* { dg-warning "leak" } */

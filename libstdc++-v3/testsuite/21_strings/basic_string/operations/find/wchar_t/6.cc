@@ -1,6 +1,6 @@
 // 2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
-// Copyright (C) 2017-2021 Free Software Foundation, Inc.
+// Copyright (C) 2017-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,13 +19,13 @@
 
 // C++11 21.4.7.2 [string::find] basic_string find
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 // https://gcc.gnu.org/ml/libstdc++/2017-01/msg00021.html
 void test01()
 {
-  typedef std::wstring string_type;
+  typedef __gnu_test::wstring string_type;
   string_type::size_type npos = string_type::npos;
 
   string_type use = L"aaa";

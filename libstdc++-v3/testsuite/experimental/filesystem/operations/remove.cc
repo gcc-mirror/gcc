@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,10 +42,7 @@ test01()
   VERIFY( !ec );
   VERIFY( !n );
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-  return;
-#else
+#ifndef NO_SYMLINKS
   auto link = __gnu_test::nonexistent_path();
   create_symlink(p, link);  // dangling symlink
   ec = bad_ec;
@@ -78,19 +75,18 @@ test01()
   VERIFY( !n );
   VERIFY( exists(dir/"a/b") );
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No permissions support
-#else
-  permissions(dir, fs::perms::none, ec);
-  if (!ec)
+  if (__gnu_test::permissions_are_testable())
   {
-    ec.clear();
-    n = remove(dir/"a/b", ec);
-    VERIFY( ec );
-    VERIFY( !n );
-    permissions(dir, fs::perms::owner_all, ec);
+    permissions(dir, fs::perms::none, ec);
+    if (!ec)
+    {
+      ec.clear();
+      n = remove(dir/"a/b", ec);
+      VERIFY( ec );
+      VERIFY( !n );
+      permissions(dir, fs::perms::owner_all, ec);
+    }
   }
-#endif
 
   ec = bad_ec;
   n = remove(dir/"a/b", ec);

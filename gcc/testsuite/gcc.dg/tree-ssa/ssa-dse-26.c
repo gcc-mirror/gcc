@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dse1-details -fno-short-enums -fno-tree-fre" } */
 /* { dg-skip-if "we want a BIT_FIELD_REF from fold_truth_andor" { ! lp64 } } */
+/* { dg-skip-if "temporary variable names are not x and y" { mmix-knuth-mmixware } } */
 
 enum constraint_expr_type
 {

@@ -1,5 +1,5 @@
 /* Rich optional information on why an optimization wasn't possible.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -324,7 +324,7 @@ test_opt_result_failure_at (const line_table_case &case_)
 /* Run all of the selftests within this file.  */
 
 void
-opt_problem_cc_tests ()
+c_opt_problem_cc_tests ()
 {
   test_opt_result_success ();
   for_each_line_table_case (test_opt_result_failure_at);

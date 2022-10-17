@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,9 +32,11 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Exp_Disp;       use Exp_Disp;
 with Exp_Util;       use Exp_Util;
+with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Tss;        use Exp_Tss;
 with Errout;         use Errout;
+with Freeze;         use Freeze;
 with Lib.Xref;       use Lib.Xref;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -197,6 +199,91 @@ package body Sem_Disp is
       return Empty;
    end Covered_Interface_Op;
 
+   ----------------------------------
+   -- Covered_Interface_Primitives --
+   ----------------------------------
+
+   function Covered_Interface_Primitives (Prim : Entity_Id) return Elist_Id is
+      Tagged_Type : constant Entity_Id := Find_Dispatching_Type (Prim);
+      Elmt        : Elmt_Id;
+      E           : Entity_Id;
+      Result      : Elist_Id := No_Elist;
+
+   begin
+      pragma Assert (Is_Dispatching_Operation (Prim));
+
+      --  Although this is a dispatching primitive we must check if its
+      --  dispatching type is available because it may be the primitive
+      --  of a private type not defined as tagged in its partial view.
+
+      if Present (Tagged_Type) and then Has_Interfaces (Tagged_Type) then
+
+         --  If the tagged type is frozen then the internal entities associated
+         --  with interfaces are available in the list of primitives of the
+         --  tagged type and can be used to speed up this search.
+
+         if Is_Frozen (Tagged_Type) then
+            Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
+            while Present (Elmt) loop
+               E := Node (Elmt);
+
+               if Present (Interface_Alias (E))
+                 and then Alias (E) = Prim
+               then
+                  if No (Result) then
+                     Result := New_Elmt_List;
+                  end if;
+
+                  Append_Elmt (Interface_Alias (E), Result);
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+
+         --  Otherwise we must collect all the interface primitives and check
+         --  whether the Prim overrides (implements) some interface primitive.
+
+         else
+            declare
+               Ifaces_List : Elist_Id;
+               Iface_Elmt  : Elmt_Id;
+               Iface       : Entity_Id;
+               Iface_Prim  : Entity_Id;
+
+            begin
+               Collect_Interfaces (Tagged_Type, Ifaces_List);
+
+               Iface_Elmt := First_Elmt (Ifaces_List);
+               while Present (Iface_Elmt) loop
+                  Iface := Node (Iface_Elmt);
+
+                  Elmt := First_Elmt (Primitive_Operations (Iface));
+                  while Present (Elmt) loop
+                     Iface_Prim := Node (Elmt);
+
+                     if Chars (Iface_Prim) = Chars (Prim)
+                       and then Is_Interface_Conformant
+                                  (Tagged_Type, Iface_Prim, Prim)
+                     then
+                        if No (Result) then
+                           Result := New_Elmt_List;
+                        end if;
+
+                        Append_Elmt (Iface_Prim, Result);
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+
+                  Next_Elmt (Iface_Elmt);
+               end loop;
+            end;
+         end if;
+      end if;
+
+      return Result;
+   end Covered_Interface_Primitives;
+
    -------------------------------
    -- Check_Controlling_Formals --
    -------------------------------
@@ -209,6 +296,12 @@ package body Sem_Disp is
       Ctrl_Type : Entity_Id;
 
    begin
+      --  We skip the check for thunks
+
+      if Is_Thunk (Subp) then
+         return;
+      end if;
+
       Formal := First_Formal (Subp);
       while Present (Formal) loop
          Ctrl_Type := Check_Controlling_Type (Etype (Formal), Subp);
@@ -391,13 +484,35 @@ package body Sem_Disp is
       if No (Tagged_Type) or else Is_Class_Wide_Type (Tagged_Type) then
          return Empty;
 
-      --  The dispatching type and the primitive operation must be defined in
-      --  the same scope, except in the case of internal operations and formal
-      --  abstract subprograms.
+      --  In the special case of a protected subprogram of a tagged protected
+      --  type that has a formal of a tagged type (or access formal whose type
+      --  designates a tagged type), such a formal is not controlling unless
+      --  it's of the protected type's corresponding record type. The latter
+      --  can occur for the special wrapper subprograms created for protected
+      --  subprograms. Such subprograms may occur in the same scope where some
+      --  formal's tagged type is declared, and we don't want formals of that
+      --  tagged type being marked as controlling, for one thing because they
+      --  aren't controlling from the language point of view, but also because
+      --  this can cause errors for access formals when conformance is checked
+      --  between the spec and body of the protected subprogram (null-exclusion
+      --  status of the formals may be set differently, which is the case that
+      --  led to adding this check).
 
-      elsif ((Scope (Subp) = Scope (Tagged_Type) or else Is_Internal (Subp))
-               and then (not Is_Generic_Type (Tagged_Type)
-                          or else not Comes_From_Source (Subp)))
+      elsif Is_Subprogram (Subp)
+        and then Present (Protected_Subprogram (Subp))
+        and then Ekind (Scope (Protected_Subprogram (Subp))) = E_Protected_Type
+        and then
+          Base_Type (Tagged_Type)
+            /= Corresponding_Record_Type (Scope (Protected_Subprogram (Subp)))
+      then
+         return Empty;
+
+      --  The dispatching type and the primitive operation must be defined in
+      --  the same scope, except in the case of abstract formal subprograms.
+
+      elsif (Scope (Subp) = Scope (Tagged_Type)
+              and then (not Is_Generic_Type (Tagged_Type)
+                         or else not Comes_From_Source (Subp)))
         or else
           (Is_Formal_Subprogram (Subp) and then Is_Abstract_Subprogram (Subp))
         or else
@@ -425,8 +540,10 @@ package body Sem_Disp is
       Control                : Node_Id := Empty;
       Func                   : Entity_Id;
       Subp_Entity            : Entity_Id;
-      Indeterm_Ancestor_Call : Boolean := False;
-      Indeterm_Ctrl_Type     : Entity_Id := Empty; -- init to avoid warning
+
+      Indeterm_Ctrl_Type : Entity_Id := Empty;
+      --  Type of a controlling formal whose actual is a tag-indeterminate call
+      --  whose result type is different from, but is an ancestor of, the type.
 
       Static_Tag : Node_Id := Empty;
       --  If a controlling formal has a statically tagged actual, the tag of
@@ -456,7 +573,10 @@ package body Sem_Disp is
          --  when it is user-defined.
 
          if Is_Predefined_Dispatching_Operation (Subp_Entity)
-           and then not Is_User_Defined_Equality (Subp_Entity)
+           and then not (Is_User_Defined_Equality (Subp_Entity)
+                          and then Comes_From_Source (Subp_Entity)
+                          and then Nkind (Parent (Subp_Entity)) =
+                                                      N_Function_Specification)
          then
             return;
          end if;
@@ -592,6 +712,14 @@ package body Sem_Disp is
       --  Start of processing for Check_Dispatching_Context
 
       begin
+         --  Skip checking context of dispatching calls during preanalysis of
+         --  class-wide conditions since at that stage the expression is not
+         --  installed yet on its definite context.
+
+         if Inside_Class_Condition_Preanalysis then
+            return;
+         end if;
+
          --  If the called subprogram is a private overriding, replace it
          --  with its alias, which has the correct body. Verify that the
          --  two subprograms have the same controlling type (this is not the
@@ -612,29 +740,40 @@ package body Sem_Disp is
                Set_Entity (Name (N), Alias (Subp));
                return;
 
-            --  An obscure special case: a null procedure may have a class-
-            --  wide pre/postcondition that includes a call to an abstract
-            --  subp. Calls within the expression may not have been rewritten
-            --  as dispatching calls yet, because the null body appears in
-            --  the current declarative part. The expression will be properly
-            --  rewritten/reanalyzed when the postcondition procedure is built.
+            --  If this is a pre/postcondition for an abstract subprogram,
+            --  it may call another abstract function that is a primitive
+            --  of an abstract type. The call is nondispatching but will be
+            --  legal in overridings of the operation. However, if the call
+            --  is tag-indeterminate we want to continue with with the error
+            --  checking below, as this case is illegal even for abstract
+            --  subprograms (see AI12-0170).
 
-            --  Similarly, if this is a pre/postcondition for an abstract
-            --  subprogram, it may call another abstract function which is
-            --  a primitive of an abstract type. The call is non-dispatching
-            --  but will be legal in overridings of the operation. However,
-            --  if the call is tag-indeterminate we want to continue with
-            --  with the error checking below, as this case is illegal even
-            --  for abstract subprograms (see AI12-0170).
+            --  Similarly, as per AI12-0412, a nonabstract subprogram may
+            --  have a class-wide pre/postcondition that includes a call to
+            --  an abstract primitive of the subprogram's controlling type.
+            --  Certain operations (nondispatching calls, 'Access, use as
+            --  a generic actual) applied to such a nonabstract subprogram
+            --  are illegal in the case where the type is abstract (see
+            --  RM 6.1.1(18.2/5)).
 
-            elsif (Is_Subprogram (Scop)
-                    or else Chars (Scop) = Name_Postcondition)
+            elsif Is_Subprogram (Scop)
+              and then not Is_Tag_Indeterminate (N)
               and then
-                ((Is_Abstract_Subprogram (Scop)
-                   and then not Is_Tag_Indeterminate (N))
-                  or else
-                    (Nkind (Parent (Scop)) = N_Procedure_Specification
-                      and then Null_Present (Parent (Scop))))
+               --  The context is an internally built helper or an indirect
+               --  call wrapper that handles class-wide preconditions
+                 (Present (Class_Preconditions_Subprogram (Scop))
+
+               --  ... or the context is a class-wide pre/postcondition.
+                   or else
+                     (In_Pre_Post_Condition (Call, Class_Wide_Only => True)
+
+                       --  The tagged type associated with the called
+                       --  subprogram must be the same as that of the
+                       --  subprogram with a class-wide aspect.
+
+                       and then Is_Dispatching_Operation (Scop)
+                       and then Find_Dispatching_Type (Subp)
+                                  = Find_Dispatching_Type (Scop)))
             then
                null;
 
@@ -663,7 +802,7 @@ package body Sem_Disp is
                --  provides a tag to make the call dispatching. This requires
                --  the call to be the actual in an enclosing call, and that
                --  actual must be controlling. If the call is an operand of
-               --  equality, the other operand must not ve abstract.
+               --  equality, the other operand must not be abstract.
 
                if not Is_Tagged_Type (Typ)
                  and then not
@@ -798,8 +937,7 @@ package body Sem_Disp is
               and then Base_Type (Etype (Actual)) /= Base_Type (Etype (Formal))
               and then Is_Ancestor (Etype (Actual), Etype (Formal))
             then
-               Indeterm_Ancestor_Call := True;
-               Indeterm_Ctrl_Type     := Etype (Formal);
+               Indeterm_Ctrl_Type := Etype (Formal);
 
             --  If the formal is controlling but the actual is not, the type
             --  of the actual is statically known, and may be used as the
@@ -809,38 +947,12 @@ package body Sem_Disp is
               and then Is_Entity_Name (Actual)
               and then Is_Tagged_Type (Etype (Actual))
             then
-               Static_Tag := Actual;
+               Static_Tag := Etype (Actual);
             end if;
 
             Next_Actual (Actual);
             Next_Formal (Formal);
          end loop;
-
-         --  If the call doesn't have a controlling actual but does have an
-         --  indeterminate actual that requires dispatching treatment, then an
-         --  object is needed that will serve as the controlling argument for
-         --  a dispatching call on the indeterminate actual. This can occur
-         --  in the unusual situation of a default actual given by a tag-
-         --  indeterminate call and where the type of the call is an ancestor
-         --  of the type associated with a containing call to an inherited
-         --  operation (see AI-239).
-
-         --  Rather than create an object of the tagged type, which would
-         --  be problematic for various reasons (default initialization,
-         --  discriminants), the tag of the containing call's associated
-         --  tagged type is directly used to control the dispatching.
-
-         if No (Control)
-           and then Indeterm_Ancestor_Call
-           and then No (Static_Tag)
-         then
-            Control :=
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Indeterm_Ctrl_Type, Loc),
-                Attribute_Name => Name_Tag);
-
-            Analyze (Control);
-         end if;
 
          if Present (Control) then
 
@@ -893,17 +1005,35 @@ package body Sem_Disp is
 
             Check_Direct_Call;
 
-         --  If there is a statically tagged actual and a tag-indeterminate
-         --  call to a function of the ancestor (such as that provided by a
-         --  default), then treat this as a dispatching call and propagate
-         --  the tag to the tag-indeterminate call(s).
+         --  If the call doesn't have a controlling actual but does have an
+         --  indeterminate actual that requires dispatching treatment, then an
+         --  object is needed that will serve as the controlling argument for
+         --  a dispatching call on the indeterminate actual. This can occur
+         --  in the unusual situation of a default actual given by a tag-
+         --  indeterminate call and where the type of the call is an ancestor
+         --  of the type associated with a containing call to an inherited
+         --  operation (see AI-239).
 
-         elsif Present (Static_Tag) and then Indeterm_Ancestor_Call then
-            Control :=
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  New_Occurrence_Of (Etype (Static_Tag), Loc),
-                Attribute_Name => Name_Tag);
+         --  Rather than create an object of the tagged type, which would
+         --  be problematic for various reasons (default initialization,
+         --  discriminants), the tag of the containing call's associated
+         --  tagged type is directly used to control the dispatching.
+
+         elsif Present (Indeterm_Ctrl_Type) then
+            if Present (Static_Tag) then
+               Control :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     New_Occurrence_Of (Static_Tag, Loc),
+                   Attribute_Name => Name_Tag);
+
+            else
+               Control :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                      New_Occurrence_Of (Indeterm_Ctrl_Type, Loc),
+                   Attribute_Name => Name_Tag);
+            end if;
 
             Analyze (Control);
 
@@ -970,7 +1100,6 @@ package body Sem_Disp is
             end loop;
 
             Check_Dispatching_Context (N);
-            return;
 
          elsif Nkind (Parent (N)) in N_Subexpr then
             Check_Dispatching_Context (N);
@@ -983,6 +1112,30 @@ package body Sem_Disp is
          elsif Is_Abstract_Subprogram (Subp_Entity) then
             Check_Dispatching_Context (N);
             return;
+         end if;
+
+         --  If this is a nondispatching call to a nonabstract subprogram
+         --  and the subprogram has any Pre'Class or Post'Class aspects with
+         --  nonstatic values, then report an error. This is specified by
+         --  RM 6.1.1(18.2/5) (by AI12-0412).
+
+         --  Skip reporting this error on helpers and indirect-call wrappers
+         --  built to support class-wide preconditions.
+
+         if No (Control)
+           and then not Is_Abstract_Subprogram (Subp_Entity)
+           and then
+             Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post (Subp_Entity)
+           and then not
+             (Is_Subprogram (Current_Scope)
+                and then
+              Present (Class_Preconditions_Subprogram (Current_Scope)))
+         then
+            Error_Msg_N
+              ("nondispatching call to nonabstract subprogram of "
+                & "abstract type with nonstatic class-wide "
+                & "pre/postconditions",
+               N);
          end if;
 
       else
@@ -999,12 +1152,31 @@ package body Sem_Disp is
    ---------------------------------
 
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id) is
+      function Is_Access_To_Subprogram_Wrapper (E : Entity_Id) return Boolean;
+      --  Return True if E is an access to subprogram wrapper
+
       procedure Warn_On_Late_Primitive_After_Private_Extension
         (Typ  : Entity_Id;
          Prim : Entity_Id);
       --  Prim is a dispatching primitive of the tagged type Typ. Warn on Prim
       --  if it is a public primitive defined after some private extension of
       --  the tagged type.
+
+      -------------------------------------
+      -- Is_Access_To_Subprogram_Wrapper --
+      -------------------------------------
+
+      function Is_Access_To_Subprogram_Wrapper (E : Entity_Id) return Boolean
+      is
+         Decl_N : constant Node_Id := Unit_Declaration_Node (E);
+         Par_N  : constant Node_Id := Parent (List_Containing (Decl_N));
+
+      begin
+         --  Access to subprogram wrappers are declared in the freezing actions
+
+         return Nkind (Par_N) = N_Freeze_Entity
+           and then Ekind (Entity (Par_N)) = E_Access_Subprogram_Type;
+      end Is_Access_To_Subprogram_Wrapper;
 
       ----------------------------------------------------
       -- Warn_On_Late_Primitive_After_Private_Extension --
@@ -1033,7 +1205,7 @@ package body Sem_Disp is
                   Error_Msg_Name_2 := Chars (E);
                   Error_Msg_Sloc := Sloc (E);
                   Error_Msg_N
-                    ("?j?primitive of type % defined after private extension "
+                    ("?.j?primitive of type % defined after private extension "
                      & "% #?", Prim);
                   Error_Msg_Name_1 := Chars (Prim);
                   Error_Msg_Name_2 := Chars (E);
@@ -1074,6 +1246,13 @@ package body Sem_Disp is
 
       elsif Is_Invariant_Procedure (Subp)
         or else Is_Partial_Invariant_Procedure (Subp)
+      then
+         return;
+
+      --  Wrappers of access to subprograms are not primitive subprograms.
+
+      elsif Is_Wrapper (Subp)
+        and then Is_Access_To_Subprogram_Wrapper (Subp)
       then
          return;
       end if;
@@ -1335,11 +1514,10 @@ package body Sem_Disp is
                        ("\spec should appear immediately after the type!",
                         Subp);
 
-                  elsif Is_Frozen (Subp) then
+                  else
 
                      --  The subprogram body declares a primitive operation.
-                     --  If the subprogram is already frozen, we must update
-                     --  its dispatching information explicitly here. The
+                     --  We must update its dispatching information here. The
                      --  information is taken from the overridden subprogram.
                      --  We must also generate a cross-reference entry because
                      --  references to other primitives were already created
@@ -1388,7 +1566,39 @@ package body Sem_Disp is
                            Generate_Reference (Tagged_Type, Subp, 'P', False);
                            Override_Dispatching_Operation
                              (Tagged_Type, Old_Subp, Subp);
+                           Set_Is_Dispatching_Operation (Subp);
+
+                           --  Inherit decoration of controlling formals and
+                           --  controlling result.
+
+                           if Ekind (Old_Subp) = E_Function
+                             and then Has_Controlling_Result (Old_Subp)
+                           then
+                              Set_Has_Controlling_Result (Subp);
+                           end if;
+
+                           if Present (First_Formal (Old_Subp)) then
+                              declare
+                                 Old_Formal : Entity_Id;
+                                 Formal     : Entity_Id;
+
+                              begin
+                                 Formal     := First_Formal (Subp);
+                                 Old_Formal := First_Formal (Old_Subp);
+
+                                 while Present (Old_Formal) loop
+                                    Set_Is_Controlling_Formal (Formal,
+                                      Is_Controlling_Formal (Old_Formal));
+
+                                    Next_Formal (Formal);
+                                    Next_Formal (Old_Formal);
+                                 end loop;
+                              end;
+                           end if;
                         end if;
+
+                        Check_Inherited_Conditions (Tagged_Type,
+                          Late_Overriding => True);
                      end if;
                   end if;
                end;
@@ -1515,7 +1725,11 @@ package body Sem_Disp is
             --  emitted after those tables are built, to prevent access before
             --  elaboration in gigi.
 
-            if Body_Is_Last_Primitive and then Expander_Active then
+            if Body_Is_Last_Primitive
+              and then not Building_Static_DT (Tagged_Type)
+              and then Expander_Active
+              and then Tagged_Type_Expansion
+            then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
                   Elmt      : Elmt_Id;
@@ -1526,13 +1740,9 @@ package body Sem_Disp is
                   while Present (Elmt) loop
                      Prim := Node (Elmt);
 
-                     --  No code required to register primitives in VM targets
-
                      if Present (Alias (Prim))
                        and then Present (Interface_Alias (Prim))
                        and then Alias (Prim) = Subp
-                       and then not Building_Static_DT (Tagged_Type)
-                       and then Tagged_Type_Expansion
                      then
                         Insert_Actions_After (Subp_Body,
                           Register_Primitive (Sloc (Subp_Body), Prim => Prim));
@@ -2401,10 +2611,25 @@ package body Sem_Disp is
 
                   if No (Tag_Typ) then
                      return Result (1 .. 0);
+
+                  --  Prevent cascaded errors
+
+                  elsif Is_Concurrent_Type (Tag_Typ)
+                     and then No (Corresponding_Record_Type (Tag_Typ))
+                     and then Serious_Errors_Detected > 0
+                  then
+                     return Result (1 .. 0);
                   end if;
 
                   if Is_Concurrent_Type (Tag_Typ) then
                      Tag_Typ := Corresponding_Record_Type (Tag_Typ);
+                  end if;
+
+                  if Present (Tag_Typ)
+                    and then Is_Private_Type (Tag_Typ)
+                    and then Present (Full_View (Tag_Typ))
+                  then
+                     Tag_Typ := Full_View (Tag_Typ);
                   end if;
 
                   --  Search primitive operations of dispatching type
@@ -2835,6 +3060,11 @@ package body Sem_Disp is
 
          Next_Actual (Arg);
       end loop;
+
+      --  Add class-wide precondition check if the target of this dispatching
+      --  call has or inherits class-wide preconditions.
+
+      Install_Class_Preconditions_Check (Call_Node);
 
       --  Expansion of dispatching calls is suppressed on VM targets, because
       --  the VM back-ends directly handle the generation of dispatching calls

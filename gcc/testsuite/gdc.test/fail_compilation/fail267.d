@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail267.d(15): Error: template Bar() does not have property 'foo'
+fail_compilation/fail267.d(15): Error: template `Bar()` does not have property `foo`
 ---
 */
 

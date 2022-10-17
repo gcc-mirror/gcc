@@ -1,3 +1,5 @@
+/* { dg-require-effective-target non_strict_prototype } */
+
 void
 pc (void);
 

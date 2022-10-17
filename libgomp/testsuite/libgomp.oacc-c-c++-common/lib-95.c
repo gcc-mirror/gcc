@@ -23,9 +23,10 @@ main (int argc, char **argv)
   acc_create_async (h, N, q);
 
   acc_memcpy_to_device_async (acc_deviceptr (h), g, N, q);
-  memset (&h[0], 0, N);
 
   acc_wait (q);
+
+  memset (h, 0, N);
 
   acc_update_self_async (h, N, q + 1);
   acc_delete_async (h, N, q + 1);

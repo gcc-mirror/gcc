@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized -fdump-ipa-afdo" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized -fdump-ipa-afdo-optimized" } */
 
 struct A {
   A () {}
@@ -26,7 +26,7 @@ main (void)
 
   int i;
 
-  for (i = 0; i < 1000000; i++)
+  for (i = 0; i < 10000000; i++)
     {
       p = (A *)wrap ((void *)&a);
       p->AA ();

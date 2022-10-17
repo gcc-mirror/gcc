@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,7 @@ with Snames;
 with Stringt;
 with Switch;      use Switch;
 with Types;       use Types;
+with Uintp;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Command_Line;         use GNAT.Command_Line;
@@ -188,7 +189,6 @@ procedure Gnatls is
    --  Print usage message
 
    procedure Output_License_Information;
-   pragma No_Return (Output_License_Information);
    --  Output license statement, and if not found, output reference to COPYING
 
    function Image (Restriction : Restriction_Id) return String;
@@ -234,9 +234,8 @@ procedure Gnatls is
       --  already been initialized.
 
       procedure Add_Directories
-        (Self    : in out String_Access;
-         Path    : String;
-         Prepend : Boolean := False);
+        (Self : in out String_Access;
+         Path : String);
       --  Add one or more directories to the path. Directories added with this
       --  procedure are added in order after the current directory and before
       --  the path given by the environment variable GPR_PROJECT_PATH. A value
@@ -319,7 +318,6 @@ procedure Gnatls is
       Write_Eol;
       Error_Msg ("wrong ALI format, can't find dependency line for $ in {");
       Exit_Program (E_Fatal);
-      return No_Sdep_Id;
    end Corresponding_Sdep_Entry;
 
    -------------------------
@@ -895,8 +893,6 @@ procedure Gnatls is
                      & " for license terms.");
             Write_Eol;
       end case;
-
-      Exit_Program (E_Success);
    end Output_License_Information;
 
    -------------------
@@ -1239,9 +1235,8 @@ procedure Gnatls is
       ---------------------
 
       procedure Add_Directories
-        (Self    : in out String_Access;
-         Path    : String;
-         Prepend : Boolean := False)
+        (Self : in out String_Access;
+         Path : String)
       is
          Tmp : String_Access;
 
@@ -1250,11 +1245,7 @@ procedure Gnatls is
             Self := new String'(Uninitialized_Prefix & Path);
          else
             Tmp := Self;
-            if Prepend then
-               Self := new String'(Path & Path_Separator & Tmp.all);
-            else
-               Self := new String'(Tmp.all & Path_Separator & Path);
-            end if;
+            Self := new String'(Tmp.all & Path_Separator & Path);
             Free (Tmp);
          end if;
       end Add_Directories;
@@ -1345,61 +1336,57 @@ procedure Gnatls is
          if Gpr_Prj_Path_File.all /= "" then
             FD := Open_Read (Gpr_Prj_Path_File.all, GNAT.OS_Lib.Text);
 
-            if FD = Invalid_FD then
-               Osint.Fail
-                 ("warning: could not read project path file """
-                  & Gpr_Prj_Path_File.all & """");
+            if FD /= Invalid_FD then
+               Len := Integer (File_Length (FD));
+
+               declare
+                  Buffer : String (1 .. Len);
+                  Index  : Positive := 1;
+                  Last   : Positive;
+                  Tmp    : String_Access;
+
+               begin
+                  --  Read the file
+
+                  Len := Read (FD, Buffer (1)'Address, Len);
+                  Close (FD);
+
+                  --  Scan the file line by line
+
+                  while Index < Buffer'Last loop
+
+                     --  Find the end of line
+
+                     Last := Index;
+                     while Last <= Buffer'Last
+                       and then Buffer (Last) /= ASCII.LF
+                       and then Buffer (Last) /= ASCII.CR
+                     loop
+                        Last := Last + 1;
+                     end loop;
+
+                     --  Ignore empty lines
+
+                     if Last > Index then
+                        Tmp := Self;
+                        Self :=
+                          new String'
+                            (Tmp.all & Path_Separator &
+                             Buffer (Index .. Last - 1));
+                        Free (Tmp);
+                     end if;
+
+                     --  Find the beginning of the next line
+
+                     Index := Last;
+                     while Buffer (Index) = ASCII.CR or else
+                           Buffer (Index) = ASCII.LF
+                     loop
+                        Index := Index + 1;
+                     end loop;
+                  end loop;
+               end;
             end if;
-
-            Len := Integer (File_Length (FD));
-
-            declare
-               Buffer : String (1 .. Len);
-               Index  : Positive := 1;
-               Last   : Positive;
-               Tmp    : String_Access;
-
-            begin
-               --  Read the file
-
-               Len := Read (FD, Buffer (1)'Address, Len);
-               Close (FD);
-
-               --  Scan the file line by line
-
-               while Index < Buffer'Last loop
-
-                  --  Find the end of line
-
-                  Last := Index;
-                  while Last <= Buffer'Last
-                    and then Buffer (Last) /= ASCII.LF
-                    and then Buffer (Last) /= ASCII.CR
-                  loop
-                     Last := Last + 1;
-                  end loop;
-
-                  --  Ignore empty lines
-
-                  if Last > Index then
-                     Tmp := Self;
-                     Self :=
-                       new String'
-                         (Tmp.all & Path_Separator &
-                          Buffer (Index .. Last - 1));
-                     Free (Tmp);
-                  end if;
-
-                  --  Find the beginning of the next line
-
-                  Index := Last;
-                  while Buffer (Index) = ASCII.CR or else
-                        Buffer (Index) = ASCII.LF
-                  loop
-                     Index := Index + 1;
-                  end loop;
-               end loop;
-            end;
 
          end if;
 
@@ -2033,6 +2020,7 @@ begin
    --  Initialize standard packages
 
    Csets.Initialize;
+   Uintp.Initialize;
    Snames.Initialize;
    Stringt.Initialize;
 
@@ -2059,7 +2047,6 @@ begin
    if License then
       if Arg_Count = 2 then
          Output_License_Information;
-         Exit_Program (E_Success);
 
       else
          Set_Standard_Error;
@@ -2102,10 +2089,7 @@ begin
          Hi   : Source_Ptr;
 
       begin
-         Name_Buffer (1 .. 10) := "system.ads";
-         Name_Len := 10;
-
-         Read_Source_File (Name_Find, 0, Hi, Text, FD);
+         Read_Source_File (Name_Find ("system.ads"), 0, Hi, Text, FD);
 
          if Null_Source_Buffer_Ptr (Text) then
             No_Runtime := True;
@@ -2278,7 +2262,6 @@ begin
                  Scan_ALI
                    (Ali_File,
                     Text,
-                    Ignore_ED     => False,
                     Err           => False,
                     Ignore_Errors => True);
             end;

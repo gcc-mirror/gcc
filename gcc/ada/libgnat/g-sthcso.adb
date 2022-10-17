@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2021, AdaCore                     --
+--                     Copyright (C) 2001-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,12 @@ function C_Socketpair
    Protocol : C.int;
    Fds      : not null access Fd_Pair) return C.int
 is
+   --  This use type clause is not required on all platforms
+   --  using this implementation. So we suppress the warning
+   --  for the platforms that already use this type.
+   pragma Warnings (Off, "use clause for type *");
    use type C.char_array;
+   pragma Warnings (On, "use clause for type *");
 
    L_Sock, C_Sock, P_Sock : C.int := Failure;
    --  Listening socket, client socket and peer socket

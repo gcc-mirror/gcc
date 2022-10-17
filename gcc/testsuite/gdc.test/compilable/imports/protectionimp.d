@@ -22,7 +22,7 @@ private alias privC privA;
 public mixin template publMT() {}
 
 /***************************************************/
-// 14169
+// https://issues.dlang.org/show_bug.cgi?id=14169
 
 template GetName14169(TemplateParam)
 {

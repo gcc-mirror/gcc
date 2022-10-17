@@ -1,5 +1,5 @@
 /* d-port.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,11 +31,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Compare the first N bytes of S1 and S2 without regard to the case.  */
 
 int
-Port::memicmp (const char *s1, const char *s2, size_t n)
+Port::memicmp (const char *s1, const char *s2, d_size_t n)
 {
   int result = 0;
 
-  for (size_t i = 0; i < n; i++)
+  for (d_size_t i = 0; i < n; i++)
     {
       char c1 = s1[i];
       char c2 = s2[i];
@@ -143,8 +143,10 @@ Port::readlongBE (const void *buffer)
 /* Write an SZ-byte sized VALUE to BUFFER, ignoring endian-ness.  */
 
 void
-Port::valcpy (void *buffer, uint64_t value, size_t sz)
+Port::valcpy (void *buffer, uint64_t value, d_size_t sz)
 {
+  gcc_assert (((d_size_t) buffer) % sz == 0);
+
   switch (sz)
     {
     case 1:

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 #include <stack>
 #include <deque>
 #include <list>
+#include <testsuite_allocator.h>
 
 template<typename T, typename U> struct require_same;
 template<typename T> struct require_same<T, T> { using type = void; };
@@ -58,7 +59,7 @@ test01()
 
 void
 test02()
-  {
+{
   std::deque<unsigned> d;
   std::list<long> l;
 
@@ -86,3 +87,17 @@ test02()
   std::stack s8(std::move(l), l.get_allocator());
   check_type<std::stack<long, std::list<long>>>(s8);
 }
+
+#if __cpp_lib_adaptor_iterator_pair_constructor
+void
+test03()
+{
+  std::list<long> l;
+
+  std::stack s1(l.begin(), l.end());
+  check_type<std::stack<long>>(s1);
+
+  std::stack s2(l.begin(), l.end(), std::allocator<long>());
+  check_type<std::stack<long>>(s2);
+}
+#endif

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2021, AdaCore                     --
+--                     Copyright (C) 2000-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1211,7 +1211,6 @@ package body GNAT.AWK is
       Exceptions.Raise_Exception
         (E,
          '[' & Filename & ':' & Line & "] " & Message);
-      raise Constraint_Error; -- to please GNAT as this is a No_Return proc
    end Raise_With_Info;
 
    ---------------

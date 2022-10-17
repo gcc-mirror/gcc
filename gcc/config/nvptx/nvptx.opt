@@ -1,5 +1,5 @@
 ; Options for the NVPTX port
-; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -25,7 +25,8 @@
 
 m64
 Target RejectNegative Mask(ABI64)
-Generate code for a 64-bit ABI.
+Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
+supported.
 
 mmainkernel
 Target RejectNegative
@@ -51,31 +52,97 @@ mgomp
 Target Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
 
-Enum
-Name(ptx_isa) Type(int)
-Known PTX ISA versions (for use with the -misa= option):
-
-EnumValue
-Enum(ptx_isa) String(sm_30) Value(PTX_ISA_SM30)
-
-EnumValue
-Enum(ptx_isa) String(sm_35) Value(PTX_ISA_SM35)
-
-; Default needs to be in sync with default in ASM_SPEC in nvptx.h.
 misa=
-Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM35)
-Specify the version of the ptx ISA to use.
+Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option)
+Specify the PTX ISA target architecture to use.
+
+march=
+Target RejectNegative Joined Alias(misa=)
+Alias:
+
+march-map=sm_30
+Target RejectNegative Alias(misa=,sm_30)
+
+march-map=sm_32
+Target RejectNegative Alias(misa=,sm_30)
+
+march-map=sm_35
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_37
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_50
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_52
+Target RejectNegative Alias(misa=,sm_35)
+
+march-map=sm_53
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_60
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_61
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_62
+Target RejectNegative Alias(misa=,sm_53)
+
+march-map=sm_70
+Target RejectNegative Alias(misa=,sm_70)
+
+march-map=sm_72
+Target RejectNegative Alias(misa=,sm_70)
+
+march-map=sm_75
+Target RejectNegative Alias(misa=,sm_75)
+
+march-map=sm_80
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_86
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_87
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_90
+Target RejectNegative Alias(misa=,sm_80)
 
 Enum
 Name(ptx_version) Type(int)
-Known PTX versions (for use with the -mptx= option):
+Known PTX ISA versions (for use with the -mptx= option):
 
 EnumValue
 Enum(ptx_version) String(3.1) Value(PTX_VERSION_3_1)
 
 EnumValue
+Enum(ptx_version) String(6.0) Value(PTX_VERSION_6_0)
+
+EnumValue
 Enum(ptx_version) String(6.3) Value(PTX_VERSION_6_3)
 
+EnumValue
+Enum(ptx_version) String(7.0) Value(PTX_VERSION_7_0)
+
+EnumValue
+Enum(ptx_version) String(_) Value(PTX_VERSION_default)
+
 mptx=
-Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_3_1)
-Specify the version of the ptx version to use.
+Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option)
+Specify the PTX ISA version to use.
+
+minit-regs=
+Target Var(nvptx_init_regs) IntegerRange(0, 3) Joined UInteger Init(3)
+Initialize ptx registers.
+
+mptx-comment
+Target Var(nvptx_comment) Init(1) Undocumented
+
+malias
+Target Var(nvptx_alias) Init(0) Undocumented
+
+mexperimental
+Target Var(nvptx_experimental) Init(0) Undocumented

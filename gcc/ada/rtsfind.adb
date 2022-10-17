@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -564,8 +564,12 @@ package body Rtsfind is
      Ada_Interrupts_Names .. Ada_Interrupts_Names;
 
    subtype Ada_Numerics_Descendant is Ada_Descendant
-     range Ada_Numerics_Generic_Elementary_Functions ..
-           Ada_Numerics_Generic_Elementary_Functions;
+     range Ada_Numerics_Big_Numbers ..
+           Ada_Numerics_Big_Numbers_Big_Integers_Ghost;
+
+   subtype Ada_Numerics_Big_Numbers_Descendant is Ada_Descendant
+     range Ada_Numerics_Big_Numbers_Big_Integers ..
+           Ada_Numerics_Big_Numbers_Big_Integers_Ghost;
 
    subtype Ada_Real_Time_Descendant is Ada_Descendant
      range Ada_Real_Time_Delays .. Ada_Real_Time_Timing_Events;
@@ -601,6 +605,10 @@ package body Rtsfind is
 
    subtype System_Descendant is RTU_Id
      range System_Address_Image .. System_Tasking_Stages;
+
+   subtype System_Atomic_Operations_Descendant is System_Descendant
+     range System_Atomic_Operations_Test_And_Set ..
+           System_Atomic_Operations_Test_And_Set;
 
    subtype System_Dim_Descendant is System_Descendant
      range System_Dim_Float_IO .. System_Dim_Integer_IO;
@@ -653,6 +661,10 @@ package body Rtsfind is
          elsif U_Id in Ada_Numerics_Descendant then
             Name_Buffer (13) := '.';
 
+            if U_Id in Ada_Numerics_Big_Numbers_Descendant then
+               Name_Buffer (25) := '.';
+            end if;
+
          elsif U_Id in Ada_Real_Time_Descendant then
             Name_Buffer (14) := '.';
 
@@ -688,6 +700,10 @@ package body Rtsfind is
 
       elsif U_Id in System_Descendant then
          Name_Buffer (7) := '.';
+
+         if U_Id in System_Atomic_Operations_Descendant then
+            Name_Buffer (25) := '.';
+         end if;
 
          if U_Id in System_Dim_Descendant then
             Name_Buffer (11) := '.';
@@ -1240,9 +1256,10 @@ package body Rtsfind is
       --  for this unit to the current compilation unit.
 
       declare
-         LibUnit : constant Node_Id := Unit (Cunit (U.Unum));
-         Clause  : Node_Id;
-         Withn   : Node_Id;
+         LibUnit  : constant Node_Id         := Unit (Cunit (U.Unum));
+         Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+         Clause   : Node_Id;
+         Withn    : Node_Id;
 
       begin
          Clause := U.First_Implicit_With;
@@ -1254,11 +1271,18 @@ package body Rtsfind is
             Clause := Next_Implicit_With (Clause);
          end loop;
 
+         --  We want to make sure that the "with" we create below isn't
+         --  marked as ignored ghost code because this list may be walked
+         --  later, after ignored ghost code is converted to a null
+         --  statement.
+
+         Ghost_Mode := None;
          Withn :=
            Make_With_Clause (Standard_Location,
              Name =>
                Make_Unit_Name
                  (U, Defining_Unit_Name (Specification (LibUnit))));
+         Ghost_Mode := Saved_GM;
 
          Set_Corresponding_Spec  (Withn, U.Entity);
          Set_First_Name          (Withn);

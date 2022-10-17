@@ -415,6 +415,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_multiline_bad_parentheses(self):
         email = self.from_patch_glob('0002-Wrong-macro-changelog.patch')
         assert email.errors[0].message == 'bad parentheses wrapping'
+        assert email.errors[0].line == '	* config/i386/i386.md (*fix_trunc<mode>_i387_1,'
 
     def test_changelog_removal(self):
         email = self.from_patch_glob('0001-ChangeLog-removal.patch')
@@ -440,3 +441,13 @@ class TestGccChangelog(unittest.TestCase):
     def test_copyright_years(self):
         email = self.from_patch_glob('copyright-years.patch')
         assert not email.errors
+
+    def test_non_ascii_email(self):
+        email = self.from_patch_glob('non-ascii-email.patch')
+        assert (email.errors[0].message ==
+                'non-ASCII characters in git commit email address (jbglaw@ług-owl.de)')
+
+    def test_new_file_in_root_folder(self):
+        email = self.from_patch_glob('toplev-new-file.patch')
+        assert (email.errors[0].message ==
+                'new file in the top-level folder not mentioned in a ChangeLog')

@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,12 +28,12 @@ struct test_type
    int cmember2(char)const;
 };
 
-struct functor1 : public std::unary_function<int, double>
+struct functor1 : public std::unary_function<int, double> // { dg-warning "is deprecated" }
 {
   double operator()(int) const;
 };
 
-struct functor2 : public std::binary_function<int, char, double>
+struct functor2 : public std::binary_function<int, char, double> // { dg-warning "is deprecated" }
 {
    double operator()(int, char) const;
 };

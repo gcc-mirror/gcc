@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -257,7 +257,7 @@ package SCOs is
    --      I       decision in IF statement or if expression
    --      P       decision in pragma Assert / Check / Pre/Post_Condition
    --      A[name] decision in aspect Pre/Post (aspect name optional)
-   --      W       decision in WHILE iteration scheme
+   --      W       decision in WHILE iteration scheme or quantified expression
    --      X       decision in some other expression context
 
    --    For E, G, I, P, W, sloc is the source location of the EXIT, ENTRY, IF,

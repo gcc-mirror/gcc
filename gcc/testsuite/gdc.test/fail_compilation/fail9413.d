@@ -1,24 +1,24 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail9413.d(45): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(32): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(33): Error: variable fail9413.foo.bar.y cannot modify parameter 'y' in contract
-fail_compilation/fail9413.d(38): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(39): Error: variable fail9413.foo.bar.y cannot modify parameter 'y' in contract
-fail_compilation/fail9413.d(40): Error: variable fail9413.foo.bar.s cannot modify result 's' in contract
-fail_compilation/fail9413.d(50): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(73): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(74): Error: variable fail9413.foo.r cannot modify result 'r' in contract
-fail_compilation/fail9413.d(58): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(59): Error: variable fail9413.foo.r cannot modify result 'r' in contract
-fail_compilation/fail9413.d(60): Error: variable fail9413.foo.baz.y cannot modify parameter 'y' in contract
-fail_compilation/fail9413.d(65): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(66): Error: variable fail9413.foo.r cannot modify result 'r' in contract
-fail_compilation/fail9413.d(67): Error: variable fail9413.foo.baz.y cannot modify parameter 'y' in contract
-fail_compilation/fail9413.d(68): Error: variable fail9413.foo.baz.s cannot modify result 's' in contract
-fail_compilation/fail9413.d(79): Error: variable fail9413.foo.x cannot modify parameter 'x' in contract
-fail_compilation/fail9413.d(80): Error: variable fail9413.foo.r cannot modify result 'r' in contract
+fail_compilation/fail9413.d(45): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(32): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(33): Error: variable `fail9413.foo.bar.y` cannot modify parameter `y` in contract
+fail_compilation/fail9413.d(38): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(39): Error: variable `fail9413.foo.bar.y` cannot modify parameter `y` in contract
+fail_compilation/fail9413.d(40): Error: variable `fail9413.foo.bar.s` cannot modify result `s` in contract
+fail_compilation/fail9413.d(50): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(73): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(74): Error: variable `fail9413.foo.r` cannot modify result `r` in contract
+fail_compilation/fail9413.d(58): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(59): Error: variable `fail9413.foo.r` cannot modify result `r` in contract
+fail_compilation/fail9413.d(60): Error: variable `fail9413.foo.baz.y` cannot modify parameter `y` in contract
+fail_compilation/fail9413.d(65): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(66): Error: variable `fail9413.foo.r` cannot modify result `r` in contract
+fail_compilation/fail9413.d(67): Error: variable `fail9413.foo.baz.y` cannot modify parameter `y` in contract
+fail_compilation/fail9413.d(68): Error: variable `fail9413.foo.baz.s` cannot modify result `s` in contract
+fail_compilation/fail9413.d(79): Error: variable `fail9413.foo.x` cannot modify parameter `x` in contract
+fail_compilation/fail9413.d(80): Error: variable `fail9413.foo.r` cannot modify result `r` in contract
 ---
 */
 
@@ -40,7 +40,7 @@ in
         s = 10; // err
         a = 1;  // OK
     }
-    body
+    do
     {
         x = 10; // err
         y = 1;  // OK
@@ -68,7 +68,7 @@ out(r)
         s = 10; // err
         a = 1;  // OK
     }
-    body
+    do
     {
         x = 10; // err
         r = 10; // err
@@ -79,7 +79,7 @@ out(r)
     x = 10; // err
     r = 10; // err
 }
-body
+do
 {
     return 1;
 }

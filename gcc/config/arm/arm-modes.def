@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -83,6 +83,14 @@ ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
 VECTOR_MODE (FLOAT, BF, 2);   /*                 V2BF.  */
 VECTOR_MODE (FLOAT, BF, 4);   /*		 V4BF.  */
 VECTOR_MODE (FLOAT, BF, 8);   /*		 V8BF.  */
+
+/* Predicates for MVE.  */
+BOOL_MODE (B2I, 2, 1);
+BOOL_MODE (B4I, 4, 1);
+
+VECTOR_BOOL_MODE (V16BI, 16, BI, 2);
+VECTOR_BOOL_MODE (V8BI, 8, B2I, 2);
+VECTOR_BOOL_MODE (V4BI, 4, B4I, 2);
 
 /* Fraction and accumulator vector modes.  */
 VECTOR_MODES (FRACT, 4);      /* V4QQ  V2HQ */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,15 +29,22 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Exp_Attr;
+with Exp_Ch3;
 with Exp_Ch4;
 with Exp_Ch5;        use Exp_Ch5;
 with Exp_Dbug;       use Exp_Dbug;
 with Exp_Util;       use Exp_Util;
+with Ghost;          use Ghost;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
 with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch7;        use Sem_Ch7;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Prag;       use Sem_Prag;
 with Sem_Res;        use Sem_Res;
@@ -62,8 +69,10 @@ package body Exp_SPARK is
    procedure Expand_SPARK_N_Delta_Aggregate (N : Node_Id);
    --  Perform delta-aggregate-specific expansion
 
-   procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id);
-   --  Build the DIC procedure of a type when needed, if not already done
+   procedure Expand_SPARK_N_Freeze_Entity (N : Node_Id);
+   --  Do a minimal expansion of freeze entities required by GNATprove. It is
+   --  a subset of what is done for GNAT in Exp_Ch13.Expand_N_Freeze_Entity.
+   --  Those two routines should be kept in sync.
 
    procedure Expand_SPARK_N_Loop_Statement (N : Node_Id);
    --  Perform loop-statement-specific expansion
@@ -79,6 +88,20 @@ package body Exp_SPARK is
 
    procedure Expand_SPARK_Delta_Or_Update (Typ : Entity_Id; Aggr : Node_Id);
    --  Common expansion for attribute Update and delta aggregates
+
+   procedure SPARK_Freeze_Type (N : Node_Id);
+   --  Do a minimal type freezing required by GNATprove. It is a subset of what
+   --  is done for GNAT in Exp_Ch3.Freeze_Type. Those two routines should be
+   --  kept in sync.
+   --
+   --  Currently in freezing we build the spec of dispatching equality. This
+   --  spec is needed to properly resolve references to the equality operator.
+   --  The body is not needed, because proof knows how to directly synthesize a
+   --  logical meaning for it. Also, for tagged types with extension the
+   --  expanded body would compare the _parent component, which is
+   --  intentionally not generated in the GNATprove mode.
+   --
+   --  We build the DIC procedure body here as well.
 
    ------------------
    -- Expand_SPARK --
@@ -140,8 +163,12 @@ package body Exp_SPARK is
             Expand_SPARK_N_Op_Ne (N);
 
          when N_Freeze_Entity =>
+            --  Currently we only expand type freeze entities, so ignore other
+            --  freeze entites, because it is expensive to create a suitable
+            --  freezing environment.
+
             if Is_Type (Entity (N)) then
-               Expand_SPARK_N_Freeze_Type (Entity (N));
+               Expand_SPARK_N_Freeze_Entity (N);
             end if;
 
          --  In SPARK mode, no other constructs require expansion
@@ -350,23 +377,176 @@ package body Exp_SPARK is
       end if;
    end Expand_SPARK_Delta_Or_Update;
 
-   --------------------------------
-   -- Expand_SPARK_N_Freeze_Type --
-   --------------------------------
+   ----------------------------------
+   -- Expand_SPARK_N_Freeze_Entity --
+   ----------------------------------
 
-   procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id) is
+   procedure Expand_SPARK_N_Freeze_Entity (N : Entity_Id) is
+      E : constant Entity_Id := Entity (N);
+
+      Action         : Node_Id;
+      E_Scope        : Entity_Id;
+      In_Other_Scope : Boolean;
+      In_Outer_Scope : Boolean;
+
    begin
-      --  When a DIC is inherited by a tagged type, it may need to be
-      --  specialized to the descendant type, hence build a separate DIC
-      --  procedure for it as done during regular expansion for compilation.
+      --  Here E is a type or a subprogram
 
-      if Has_DIC (E) and then Is_Tagged_Type (E) then
-         --  Why is this needed for DIC, but not for other aspects (such as
-         --  Type_Invariant)???
+      E_Scope := Scope (E);
 
-         Build_DIC_Procedure_Body (E);
+      --  This is an error protection against previous errors
+
+      if No (E_Scope) then
+         Check_Error_Detected;
+         return;
       end if;
-   end Expand_SPARK_N_Freeze_Type;
+
+      --  The entity may be a subtype declared for a constrained record
+      --  component, in which case the relevant scope is the scope of
+      --  the record. This happens for class-wide subtypes created for
+      --  a constrained type extension with inherited discriminants.
+
+      if Is_Type (E_Scope)
+        and then not Is_Concurrent_Type (E_Scope)
+      then
+         E_Scope := Scope (E_Scope);
+
+      --  The entity may be a subtype declared for an iterator
+
+      elsif Ekind (E_Scope) = E_Loop then
+         E_Scope := Scope (E_Scope);
+      end if;
+
+      --  If we are freezing entities defined in protected types, they belong
+      --  in the enclosing scope, given that the original type has been
+      --  expanded away. The same is true for entities in task types, in
+      --  particular the parameter records of entries (Entities in bodies are
+      --  all frozen within the body). If we are in the task body, this is a
+      --  proper scope. If we are within a subprogram body, the proper scope
+      --  is the corresponding spec. This may happen for itypes generated in
+      --  the bodies of protected operations.
+
+      if Ekind (E_Scope) = E_Protected_Type
+        or else (Ekind (E_Scope) = E_Task_Type
+                  and then not Has_Completion (E_Scope))
+      then
+         E_Scope := Scope (E_Scope);
+
+      elsif Ekind (E_Scope) = E_Subprogram_Body then
+         E_Scope := Corresponding_Spec (Unit_Declaration_Node (E_Scope));
+      end if;
+
+      --  If the scope of the entity is in open scopes, it is the current one
+      --  or an enclosing one, including a loop, a block, or a subprogram.
+
+      if In_Open_Scopes (E_Scope) then
+         In_Other_Scope := False;
+         In_Outer_Scope := E_Scope /= Current_Scope;
+
+      --  Otherwise it is a local package or a different compilation unit
+
+      else
+         In_Other_Scope := True;
+         In_Outer_Scope := False;
+      end if;
+
+      --  If the entity being frozen is defined in a scope that is not
+      --  currently on the scope stack, we must establish the proper
+      --  visibility before freezing the entity and related subprograms.
+
+      if In_Other_Scope then
+         Push_Scope (E_Scope);
+
+         --  Finalizers are little odd in terms of freezing. The spec of the
+         --  procedure appears in the declarations while the body appears in
+         --  the statement part of a single construct. Since the finalizer must
+         --  be called by the At_End handler of the construct, the spec is
+         --  manually frozen right after its declaration. The only side effect
+         --  of this action appears in contexts where the construct is not in
+         --  its final resting place. These contexts are:
+
+         --    * Entry bodies - The declarations and statements are moved to
+         --      the procedure equivalen of the entry.
+         --    * Protected subprograms - The declarations and statements are
+         --      moved to the non-protected version of the subprogram.
+         --    * Task bodies - The declarations and statements are moved to the
+         --      task body procedure.
+         --    * Blocks that will be rewritten as subprograms when unnesting
+         --      is in effect.
+
+         --  Visible declarations do not need to be installed in these three
+         --  cases since it does not make semantic sense to do so. All entities
+         --  referenced by a finalizer are visible and already resolved, plus
+         --  the enclosing scope may not have visible declarations at all.
+
+         if Ekind (E) = E_Procedure
+           and then Is_Finalizer (E)
+           and then
+             (Is_Entry (E_Scope)
+                or else (Is_Subprogram (E_Scope)
+                          and then Is_Protected_Type (Scope (E_Scope)))
+                or else Is_Task_Type (E_Scope)
+                or else Ekind (E_Scope) = E_Block)
+         then
+            null;
+         else
+            Install_Visible_Declarations (E_Scope);
+         end if;
+
+         if Is_Concurrent_Type (E_Scope)
+           or else Is_Package_Or_Generic_Package (E_Scope)
+         then
+            Install_Private_Declarations (E_Scope);
+         end if;
+
+      --  If the entity is in an outer scope, then that scope needs to
+      --  temporarily become the current scope so that operations created
+      --  during type freezing will be declared in the right scope and
+      --  can properly override any corresponding inherited operations.
+
+      elsif In_Outer_Scope then
+         Push_Scope (E_Scope);
+      end if;
+
+      --  Remember that we are processing a freezing entity and its freezing
+      --  nodes. This flag (non-zero = set) is used to avoid the need of
+      --  climbing through the tree while processing the freezing actions (ie.
+      --  to avoid generating spurious warnings or to avoid killing constant
+      --  indications while processing the code associated with freezing
+      --  actions). We use a counter to deal with nesting.
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions + 1;
+
+      --  Currently only types require freezing in SPARK
+
+      SPARK_Freeze_Type (N);
+
+      --  Analyze actions in freeze node, if any
+
+      Action := First (Actions (N));
+      while Present (Action) loop
+         Analyze (Action);
+         Next (Action);
+      end loop;
+
+      --  Pop scope if we installed one for the analysis
+
+      if In_Other_Scope then
+         if Ekind (Current_Scope) = E_Package then
+            End_Package_Scope (E_Scope);
+         else
+            End_Scope;
+         end if;
+
+      elsif In_Outer_Scope then
+         Pop_Scope;
+      end if;
+
+      --  Restore previous value of the nesting-level counter that records
+      --  whether we are inside a (possibly nested) call to this procedure.
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
+   end Expand_SPARK_N_Freeze_Entity;
 
    ----------------------------------------
    -- Expand_SPARK_N_Attribute_Reference --
@@ -451,6 +631,7 @@ package body Exp_SPARK is
                Apply_Universal_Integer_Attribute_Checks (N);
 
                if Present (Typ)
+                 and then Known_RM_Size (Typ)
                  and then RM_Size (Typ) = RM_Size (Standard_Long_Long_Integer)
                then
                   --  ??? This should rather be a range check, but this would
@@ -669,9 +850,12 @@ package body Exp_SPARK is
    --  Start of processing for Expand_SPARK_Potential_Renaming
 
    begin
-      --  Replace a reference to a renaming with the actual renamed object
+      --  Replace a reference to a renaming with the actual renamed object.
+      --  Protect against previous errors leaving no entity in N.
 
-      if Is_Object (Obj_Id) then
+      if Present (Obj_Id)
+        and then Is_Object (Obj_Id)
+      then
          Ren := Renamed_Object (Obj_Id);
 
          if Present (Ren) then
@@ -703,5 +887,116 @@ package body Exp_SPARK is
          end if;
       end if;
    end Expand_SPARK_Potential_Renaming;
+
+   -----------------------
+   -- SPARK_Freeze_Type --
+   -----------------------
+
+   procedure SPARK_Freeze_Type (N : Entity_Id) is
+      Typ : constant Entity_Id := Entity (N);
+
+      Renamed_Eq : Node_Id;
+      --  Defining unit name for the predefined equality function in the case
+      --  where the type has a primitive operation that is a renaming of
+      --  predefined equality (but only if there is also an overriding
+      --  user-defined equality function). Used to pass this entity from
+      --  Make_Predefined_Primitive_Specs to Predefined_Primitive_Bodies.
+
+      Decl        : Node_Id;
+      Eq_Spec     : Node_Id := Empty;
+      Predef_List : List_Id;
+
+      Wrapper_Decl_List : List_Id;
+      Wrapper_Body_List : List_Id := No_List;
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
+   begin
+      --  The type being frozen may be subject to pragma Ghost. Set the mode
+      --  now to ensure that any nodes generated during freezing are properly
+      --  marked as Ghost.
+
+      Set_Ghost_Mode (Typ);
+
+      --  When a DIC is inherited by a tagged type, it may need to be
+      --  specialized to the descendant type, hence build a separate DIC
+      --  procedure for it as done during regular expansion for compilation.
+
+      if Has_DIC (Typ) and then Is_Tagged_Type (Typ) then
+         --  Why is this needed for DIC, but not for other aspects (such as
+         --  Type_Invariant)???
+
+         Build_DIC_Procedure_Body (Typ);
+      end if;
+
+      if Ekind (Typ) = E_Record_Type
+        and then Is_Tagged_Type (Typ)
+        and then not Is_Interface (Typ)
+        and then not Is_Limited_Type (Typ)
+      then
+         if Is_CPP_Class (Root_Type (Typ))
+           and then Convention (Typ) = Convention_CPP
+         then
+            null;
+
+         --  Do not add the spec of the predefined primitives if we are
+         --  compiling under restriction No_Dispatching_Calls.
+
+         elsif not Restriction_Active (No_Dispatching_Calls) then
+            Set_Is_Frozen (Typ, False);
+
+            Predef_List := New_List;
+            Exp_Ch3.Make_Predefined_Primitive_Eq_Spec
+              (Typ, Predef_List, Renamed_Eq);
+            Eq_Spec := First (Predef_List);
+            Insert_List_Before_And_Analyze (N, Predef_List);
+
+            Set_Is_Frozen (Typ);
+
+            --  Remove link from the parent list to the spec and body of
+            --  the dispatching equality, but keep the link in the opposite
+            --  direction, to allow up-traversal of the AST.
+
+            if Present (Eq_Spec) then
+               Decl := Parent (Eq_Spec);
+               Remove (Eq_Spec);
+               Set_Parent (Eq_Spec, Decl);
+            end if;
+         end if;
+      end if;
+
+      if Ekind (Typ) = E_Record_Type
+        and then Is_Tagged_Type (Typ)
+        and then not Is_CPP_Class (Typ)
+      then
+         --  Ada 2005 (AI-391): For a nonabstract null extension, create
+         --  wrapper functions for each nonoverridden inherited function
+         --  with a controlling result of the type. The wrapper for such
+         --  a function returns an extension aggregate that invokes the
+         --  parent function.
+
+         if Ada_Version >= Ada_2005
+           and then not Is_Abstract_Type (Typ)
+           and then Is_Null_Extension (Typ)
+         then
+            Exp_Ch3.Make_Controlling_Function_Wrappers
+              (Typ, Wrapper_Decl_List, Wrapper_Body_List);
+            Insert_List_Before_And_Analyze (N, Wrapper_Decl_List);
+         end if;
+
+         --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
+         --  inherited functions, then add their bodies to the AST, so they
+         --  will be processed like ordinary subprogram bodies (even though the
+         --  compiler adds them into the freezing action).
+
+         if not Is_Interface (Typ) then
+            Insert_List_Before_And_Analyze (N, Wrapper_Body_List);
+         end if;
+      end if;
+
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+   end SPARK_Freeze_Type;
 
 end Exp_SPARK;

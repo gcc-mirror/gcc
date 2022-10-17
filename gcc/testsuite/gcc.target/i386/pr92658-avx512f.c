@@ -48,13 +48,17 @@ truncqb (v8qi * dst, v8di * __restrict src)
   tem[1] = (*src)[1];
   tem[2] = (*src)[2];
   tem[3] = (*src)[3];
+  tem[4] = (*src)[4];
+  tem[5] = (*src)[5];
+  tem[6] = (*src)[6];
+  tem[7] = (*src)[7];
   dst[0] = *(v8qi *) tem;
 }
 
 void
 truncdw (v16hi * dst, v16si * __restrict src)
 {
-  unsigned short tem[8];
+  unsigned short tem[16];
   tem[0] = (*src)[0];
   tem[1] = (*src)[1];
   tem[2] = (*src)[2];
@@ -78,7 +82,7 @@ truncdw (v16hi * dst, v16si * __restrict src)
 void
 truncdb (v16qi * dst, v16si * __restrict src)
 {
-  unsigned char tem[8];
+  unsigned char tem[16];
   tem[0] = (*src)[0];
   tem[1] = (*src)[1];
   tem[2] = (*src)[2];
@@ -100,7 +104,7 @@ truncdb (v16qi * dst, v16si * __restrict src)
 
 /* { dg-final { scan-assembler-times "vpmovqd" 1 } } */
 /* { dg-final { scan-assembler-times "vpmovqw" 1 } } */
-/* { dg-final { scan-assembler-times "vpmovqb" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vpmovqb" 1 } } */
 /* { dg-final { scan-assembler-times "vpmovdw" 1 } } */
 /* { dg-final { scan-assembler-times "vpmovdb" 1 } } */
 

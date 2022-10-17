@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -56,6 +56,8 @@ struct gomp_thread_start_data
   struct gomp_task *task;
   struct gomp_thread_pool *thread_pool;
   unsigned int place;
+  unsigned int num_teams;
+  unsigned int team_num;
   bool nested;
   pthread_t handle;
 };
@@ -88,6 +90,8 @@ gomp_thread_start (void *xdata)
   thr->ts = data->ts;
   thr->task = data->task;
   thr->place = data->place;
+  thr->num_teams = data->num_teams;
+  thr->team_num = data->team_num;
 #ifdef GOMP_NEEDS_THREAD_HANDLE
   thr->handle = data->handle;
 #endif
@@ -173,7 +177,12 @@ gomp_new_team (unsigned nthreads)
     {
       size_t extra = sizeof (team->ordered_release[0])
 		     + sizeof (team->implicit_task[0]);
+#ifdef GOMP_USE_ALIGNED_WORK_SHARES
+      team = gomp_aligned_alloc (__alignof (struct gomp_team),
+				 sizeof (*team) + nthreads * extra);
+#else
       team = team_malloc (sizeof (*team) + nthreads * extra);
+#endif
 
 #ifndef HAVE_SYNC_BUILTINS
       gomp_mutex_init (&team->work_share_list_free_lock);
@@ -312,7 +321,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 		 unsigned flags, struct gomp_team *team,
 		 struct gomp_taskgroup *taskgroup)
 {
-  struct gomp_thread_start_data *start_data;
+  struct gomp_thread_start_data *start_data = NULL;
   struct gomp_thread *thr, *nthr;
   struct gomp_task *task;
   struct gomp_task_icv *icv;
@@ -645,6 +654,8 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	  nthr->ts.single_count = 0;
 #endif
 	  nthr->ts.static_trip = 0;
+	  nthr->num_teams = thr->num_teams;
+	  nthr->team_num = thr->team_num;
 	  nthr->task = &team->implicit_task[i];
 	  nthr->place = place;
 	  gomp_init_task (nthr->task, task, icv);
@@ -833,6 +844,8 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       start_data->ts.single_count = 0;
 #endif
       start_data->ts.static_trip = 0;
+      start_data->num_teams = thr->num_teams;
+      start_data->team_num = thr->team_num;
       start_data->task = &team->implicit_task[i];
       gomp_init_task (start_data->task, task, icv);
       team->implicit_task[i].icv.nthreads_var = nthreads_var;

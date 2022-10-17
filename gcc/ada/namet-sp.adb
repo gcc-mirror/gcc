@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2008-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;
+with Snames;
 with System.WCh_Cnv; use System.WCh_Cnv;
 
 with GNAT.UTF_32_Spelling_Checker;
@@ -43,6 +45,44 @@ package body Namet.Sp is
    --  single value in the output. This call does not affect the contents of
    --  either Name_Buffer or Name_Len. The result is in Result (1 .. Length).
    --  The caller must ensure that the result buffer is long enough.
+
+   ------------------------
+   -- Aspect_Spell_Check --
+   ------------------------
+
+   function Aspect_Spell_Check (Name : Name_Id) return Boolean is
+     (Aspect_Spell_Check (Name) /= No_Name);
+
+   function Aspect_Spell_Check (Name : Name_Id) return Name_Id is
+      use Aspects;
+   begin
+      for J in Aspect_Id_Exclude_No_Aspect loop
+         if Is_Bad_Spelling_Of (Name, Aspect_Names (J)) then
+            return Aspect_Names (J);
+         end if;
+      end loop;
+
+      return No_Name;
+   end Aspect_Spell_Check;
+
+   ---------------------------
+   -- Attribute_Spell_Check --
+   ---------------------------
+
+   function Attribute_Spell_Check (N : Name_Id) return Boolean is
+     (Attribute_Spell_Check (N) /= No_Name);
+
+   function Attribute_Spell_Check (N : Name_Id) return Name_Id is
+      use Snames;
+   begin
+      for J in First_Attribute_Name .. Last_Attribute_Name loop
+         if Is_Bad_Spelling_Of (N, J) then
+            return J;
+         end if;
+      end loop;
+
+      return No_Name;
+   end Attribute_Spell_Check;
 
    ----------------------------
    -- Get_Name_String_UTF_32 --

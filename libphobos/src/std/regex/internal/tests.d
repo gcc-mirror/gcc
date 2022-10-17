@@ -8,9 +8,9 @@ package(std.regex):
 import std.conv, std.exception, std.meta, std.range,
     std.typecons, std.regex;
 
-import std.regex.internal.ir : Escapables; // characters that need escaping
+import std.uni : Escapables; // characters that need escaping
 
-alias Sequence(int B, int E) = staticIota!(B, E);
+debug(std_regex_test) import std.stdio;
 
 @safe unittest
 {//sanity checks
@@ -353,8 +353,8 @@ alias Sequence(int B, int E) = staticIota!(B, E);
     void run_tests(alias matchFn)()
     {
         int i;
-        foreach (Char; AliasSeq!( char, wchar, dchar))
-        (){ // avoid slow optimizations for large functions @@@BUG@@@ 2396
+        static foreach (Char; AliasSeq!( char, wchar, dchar))
+        {{
             alias String = immutable(Char)[];
             String produceExpected(M,Range)(auto ref M m, Range fmt)
             {
@@ -397,7 +397,7 @@ alias Sequence(int B, int E) = staticIota!(B, E);
                     }
                 }
             }
-        }();
+        }}
         debug(std_regex_test) writeln("!!! FReD bulk test done "~matchFn.stringof~" !!!");
     }
 
@@ -408,28 +408,28 @@ alias Sequence(int B, int E) = staticIota!(B, E);
         version (std_regex_ct1)
         {
             pragma(msg, "Testing 1st part of ctRegex");
-            alias Tests = Sequence!(0, 155);
+            enum Tests = iota(0, 155);
         }
         else version (std_regex_ct2)
         {
             pragma(msg, "Testing 2nd part of ctRegex");
-            alias Tests = Sequence!(155, 174);
+            enum Tests = iota(155, 174);
         }
         //FIXME: #174-178 contains CTFE parser bug
         else version (std_regex_ct3)
         {
             pragma(msg, "Testing 3rd part of ctRegex");
-            alias Tests = Sequence!(178, 220);
+            enum Tests = iota(178, 220);
         }
         else version (std_regex_ct4)
         {
             pragma(msg, "Testing 4th part of ctRegex");
-            alias Tests = Sequence!(220, tv.length);
+            enum Tests = iota(220, tv.length);
         }
         else
-            alias Tests = AliasSeq!(Sequence!(0, 30), Sequence!(235, tv.length-5));
-        foreach (a, v; Tests)
-        (){ // avoid slow optimizations for large functions @@@BUG@@@ 2396
+            enum Tests = chain(iota(0, 30), iota(235, tv.length-5));
+        static foreach (v; Tests)
+        {{
             enum tvd = tv[v];
             static if (tvd.result == "c")
             {
@@ -443,22 +443,20 @@ alias Sequence(int B, int E) = staticIota!(B, E);
                 auto r = ctRegex!(tv[v].pattern, tv[v].flags);
                 auto nr = regex(tvd.pattern, tvd.flags);
                 assert(equal(r.ir, nr.ir),
-                    text("!C-T regex! failed to compile pattern #", a ,": ", tvd.pattern));
+                    text("!C-T regex! failed to compile pattern #", v ,": ", tvd.pattern));
                 auto m = match(tvd.input, r);
                 auto c = tvd.result[0];
                 bool ok = (c == 'y') ^ m.empty;
                 assert(ok, text("ctRegex: failed to match pattern #",
-                    a ,": ", tvd.pattern));
+                    v ,": ", tvd.pattern));
                 if (c == 'y')
                 {
-                    import std.stdio;
                     auto result = produceExpected(m, tvd.format);
-                    if (result != tvd.replace)
-                        writeln("ctRegex mismatch pattern #", a, ": ", tvd.pattern," expected: ",
-                                tvd.replace, " vs ", result);
+                    assert(result == tvd.replace, text("ctRegex mismatch pattern #", v,
+                        ": ", tvd.pattern," expected: ", tvd.replace, " vs ", result));
                 }
             }
-        }();
+        }}
         debug(std_regex_test) writeln("!!! FReD C-T test done !!!");
     }
 

@@ -173,15 +173,6 @@ case "${host}" in
     AC_DEFINE(HAVE_STRTOLD)
 
     GCC_CHECK_TLS
-    case "$target" in
-      *-hpux10*)
-	AC_DEFINE(HAVE_ISINF)
-	AC_DEFINE(HAVE_ISINFF)
-	AC_DEFINE(HAVE_ISNANF)
-	AC_DEFINE(HAVE_FINITE)
-	AC_DEFINE(HAVE_FINITEF)
-	;;
-    esac
     ;;
   *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
     GLIBCXX_CHECK_COMPILER_FEATURES
@@ -196,6 +187,7 @@ case "${host}" in
     AC_CHECK_FUNCS(timespec_get)
     AC_CHECK_FUNCS(sockatmark)
     AC_CHECK_FUNCS(uselocale)
+    AC_CHECK_FUNCS(secure_getenv)
     AM_ICONV
     ;;
   *-mingw32*)
@@ -204,6 +196,7 @@ case "${host}" in
     GLIBCXX_CHECK_STDLIB_SUPPORT
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AC_CHECK_FUNCS(_wfopen)
+    GCC_CHECK_TLS
     ;;
   *-netbsd* | *-openbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -242,12 +235,6 @@ case "${host}" in
     AC_DEFINE(HAVE_SINL)
     AC_DEFINE(HAVE_SINHF)
     AC_DEFINE(HAVE_SINHL)
-    ;;
-  *-rtems*)
-    GLIBCXX_CHECK_COMPILER_FEATURES
-    GLIBCXX_CHECK_LINKER_FEATURES
-    GLIBCXX_CHECK_MATH_SUPPORT
-    GLIBCXX_CHECK_STDLIB_SUPPORT
     ;;
   *-tpf)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'

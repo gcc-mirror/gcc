@@ -1,4 +1,4 @@
-host-hpux.o : $(srcdir)/config/host-hpux.c $(CONFIG_H) $(SYSTEM_H) \
+host-hpux.o : $(srcdir)/config/host-hpux.cc $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h hosthooks.h hosthooks-def.h $(HOOKS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/host-hpux.c
+		$(srcdir)/config/host-hpux.cc

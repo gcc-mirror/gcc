@@ -1,6 +1,6 @@
 // 2003-05-03  Loren J. Rittle <rittle@labs.mot.com> <ljrittle@acm.org>
 //
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 // { dg-do run }
 // { dg-options "-pthread"  }
 // { dg-require-effective-target pthread }
+// { dg-timeout-factor 2 }
 
 #include <ext/rope>
 #include <cstring>
@@ -33,7 +34,7 @@ typedef __gnu_cxx::rope<char, std::allocator<char> > rope_type;
 rope_type foo2;
 rope_type foo4;
 
-void* thread_main(void *) 
+void* thread_main(void *)
 {
   // To see a problem with gcc 3.3 and before, set a break point here.
   // Single step through c_str implementation, call sched_yield after

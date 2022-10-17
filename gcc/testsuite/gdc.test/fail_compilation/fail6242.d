@@ -6,4 +6,4 @@ fail_compilation/fail6242.d(9): Error: cannot implicitly override base class met
 */
 class A { void fun(int) {} }
 
-class B : A { void fun(int x) in { assert(x > 0); } body {} }
+class B : A { void fun(int x) in { assert(x > 0); } do {} }

@@ -1,16 +1,22 @@
-// RUNNABLE_PHOBOS_TEST
 // REQUIRED_ARGS: -g
-
-import std.string;
 
 string getEnum(size_t count)
 {
     string en;
     en ~= "enum KeyCode\n {    \n";
 
-    foreach (i; 0 .. count)
+    foreach (i; 1 .. count + 1)
     {
-        en ~= format("    memb_%s = %s,\n", i+1, i+1);
+        char[4] buffer;
+        int start = buffer.length;
+
+        while (i > 0)
+        {
+            buffer[--start] = cast(char) ('0' + (i % 10));
+            i /= 10;
+        }
+        char[] id = buffer[start .. $];
+        en ~= "memb_" ~ id ~ " = " ~ id ~ ",\n";
     }
 
     en ~= "} ";
@@ -24,4 +30,3 @@ string getEnum(size_t count)
 mixin(getEnum(1087));
 
 void main() { }
-

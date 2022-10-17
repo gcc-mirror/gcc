@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS atomic memory sequences.
-;; Copyright (C) 2012-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -185,7 +185,7 @@
 
 ;; This pattern is more-or-less assumed to always exist if any of the
 ;; other atomic patterns exist (see e.g.  comment at the
-;; can_compare_and_swap_p call in omp-low.c, 4.8 era).  We'd slightly
+;; can_compare_and_swap_p call in omp-low.cc, 4.8 era).  We'd slightly
 ;; prefer atomic_exchange<mode> over this, but having both would be
 ;; redundant.
 ;; FIXME: handle memory without side-effects for operand[3].

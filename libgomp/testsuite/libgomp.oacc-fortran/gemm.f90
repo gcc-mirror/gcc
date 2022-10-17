@@ -2,6 +2,8 @@
 
 ! { dg-do run }
 
+! { dg-additional-options -Wuninitialized }
+
 ! Explicitly set vector_length to 128 using a vector_length clause.
 subroutine openacc_sgemm_128 (m, n, k, alpha, a, b, beta, c)
   integer :: m, n, k
@@ -10,8 +12,10 @@ subroutine openacc_sgemm_128 (m, n, k, alpha, a, b, beta, c)
 
   integer :: i, j, l
   real :: temp
+  ! { dg-note {'temp' was declared here} {} { target *-*-* } .-1 }
 
   !$acc parallel loop copy(c(1:m,1:n)) copyin(a(1:k,1:m),b(1:k,1:n)) vector_length (128) firstprivate (temp)
+  ! { dg-warning {'temp' is used uninitialized} {} { target *-*-* } .-1 }
   do j = 1, n
      !$acc loop
      do i = 1, m

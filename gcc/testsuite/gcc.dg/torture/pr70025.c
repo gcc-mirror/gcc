@@ -80,3 +80,8 @@ main ()
     __builtin_abort ();
   return 0;
 }
+
+/* At -O3 the loop in bar() is vectorized and results in a (possibly
+   unreachable) out-of-bounds store to p.d7[8]:
+     _22(D)->d7[8] = _122;
+  { dg-prune-output "-Wstringop-overflow" } */

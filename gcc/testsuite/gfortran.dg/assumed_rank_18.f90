@@ -7,7 +7,10 @@ program p
 contains
    subroutine g(x)
       real :: x(..)
-      call h(x)
+      select rank (x)
+        rank (1)
+          call h(x)
+      end select
    end
    subroutine h(x)
       real :: x(*)

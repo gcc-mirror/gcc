@@ -1,5 +1,5 @@
 /* ctfc.h - Declarations and definitions related to the CTF container.
-   Copyright (C) 2019,2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    representations and closely reflect the CTF format requirements in <ctf.h>.
 
    The contents of the CTF container are used eventually for emission of both
-   CTF (ctfout.c) and BTF debug info (btfout.c), as the two type debug formats
+   CTF (ctfout.cc) and BTF debug info (btfout.cc), as the two type debug formats
    are close cousins.  */
 
 #ifndef GCC_CTFC_H
@@ -144,7 +144,7 @@ typedef struct GTY ((chain_next ("%h.dmd_next"))) ctf_dmdef
 typedef struct GTY (()) ctf_func_arg
 {
   ctf_id_t farg_type;		  /* Type identifier of the argument.  */
-  const char * farg_name;	  /* Name of the the argument.  */
+  const char * farg_name;	  /* Name of the argument.  */
   uint32_t farg_name_offset;	  /* Offset of the name in str table.  */
   struct ctf_func_arg * farg_next;/* A list node.  */
 } ctf_func_arg_t;
@@ -161,6 +161,7 @@ struct GTY ((for_user)) ctf_dtdef
   ctf_itype_t dtd_data;	      /* Type node.  */
   bool from_global_func; /* Whether this type was added from a global
 			    function.  */
+  uint32_t linkage;           /* Used in function types.  0=local, 1=global.  */
   union GTY ((desc ("ctf_dtu_d_union_selector (&%1)")))
   {
     /* struct, union, or enum.  */
@@ -212,7 +213,7 @@ enum ctf_dtu_d_union_enum {
   CTF_DTU_D_ARRAY,
   CTF_DTU_D_ENCODING,
   CTF_DTU_D_ARGUMENTS,
-  CTF_DTU_D_SLICE,
+  CTF_DTU_D_SLICE
 };
 
 enum ctf_dtu_d_union_enum
@@ -274,6 +275,8 @@ typedef struct GTY (()) ctf_container
   hash_table <ctfc_dtd_hasher> * GTY (()) ctfc_types;
   /* CTF variables.  */
   hash_table <ctfc_dvd_hasher> * GTY (()) ctfc_vars;
+  /* CTF variables to be ignored.  */
+  hash_table <ctfc_dvd_hasher> * GTY (()) ctfc_ignore_vars;
 
   /* CTF string table.  */
   ctf_strtable_t ctfc_strtable;
@@ -301,6 +304,8 @@ typedef struct GTY (()) ctf_container
   /* List of pre-processed CTF Variables.  CTF requires that the variables
      appear in the sorted order of their names.  */
   ctf_dvdef_t ** GTY ((length ("0"))) ctfc_vars_list;
+  /* Count of pre-processed CTF Variables in the list.  */
+  uint64_t ctfc_vars_list_count;
   /* List of pre-processed CTF types.  CTF requires that a shared type must
      appear before the type that uses it.  For the compiler, this means types
      are emitted in sorted order of their type IDs.  */
@@ -372,7 +377,7 @@ extern size_t ctfc_get_num_vlen_bytes (ctf_container_ref);
 
 /* These APIs allow to initialize and finalize the CTF machinery and
    to add types to the CTF container associated to the current
-   translation unit.  Used in dwarf2ctf.c.  */
+   translation unit.  Used in dwarf2ctf.cc.  */
 
 extern void ctf_init (void);
 extern void ctf_output (const char * filename);
@@ -388,7 +393,12 @@ extern bool ctf_type_exists (ctf_container_ref, dw_die_ref, ctf_id_t *);
 
 extern void ctf_add_cuname (ctf_container_ref, const char *);
 
-extern ctf_dvdef_ref ctf_dvd_lookup (const ctf_container_ref, dw_die_ref);
+extern ctf_dtdef_ref ctf_dtd_lookup (const ctf_container_ref ctfc,
+				     dw_die_ref die);
+extern ctf_dvdef_ref ctf_dvd_lookup (const ctf_container_ref ctfc,
+				     dw_die_ref die);
+extern bool ctf_dvd_ignore_lookup (const ctf_container_ref ctfc,
+				   dw_die_ref die);
 
 extern const char * ctf_add_string (ctf_container_ref, const char *,
 				    uint32_t *, int);
@@ -414,7 +424,7 @@ extern ctf_id_t ctf_add_forward (ctf_container_ref, uint32_t, const char *,
 extern ctf_id_t ctf_add_typedef (ctf_container_ref, uint32_t, const char *,
 				 ctf_id_t, dw_die_ref);
 extern ctf_id_t ctf_add_function (ctf_container_ref, uint32_t, const char *,
-				  const ctf_funcinfo_t *, dw_die_ref, bool);
+				  const ctf_funcinfo_t *, dw_die_ref, bool, int);
 extern ctf_id_t ctf_add_sou (ctf_container_ref, uint32_t, const char *,
 			     uint32_t, size_t, dw_die_ref);
 
@@ -425,7 +435,10 @@ extern int ctf_add_member_offset (ctf_container_ref, dw_die_ref, const char *,
 extern int ctf_add_function_arg (ctf_container_ref, dw_die_ref,
 				 const char *, ctf_id_t);
 extern int ctf_add_variable (ctf_container_ref, const char *, ctf_id_t,
-			     dw_die_ref, unsigned int);
+			     dw_die_ref, unsigned int, dw_die_ref);
+
+extern ctf_id_t ctf_lookup_tree_type (ctf_container_ref, const tree);
+extern ctf_id_t get_btf_id (ctf_id_t);
 
 /* CTF section does not emit location information; at this time, location
    information is needed for BTF CO-RE use-cases.  */

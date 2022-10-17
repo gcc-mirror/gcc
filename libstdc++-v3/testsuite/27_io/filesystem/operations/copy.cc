@@ -1,7 +1,7 @@
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,14 +66,9 @@ test01()
 void
 test02()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-  return;
-#endif
-
+#ifndef NO_SYMLINKS
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   auto from = __gnu_test::nonexistent_path();
-  auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
 
   ec = bad_ec;
@@ -81,6 +76,7 @@ test02()
   VERIFY( !ec );
   VERIFY( fs::exists(from) );
 
+  auto to = __gnu_test::nonexistent_path();
   ec = bad_ec;
   fs::copy(from, to, fs::copy_options::skip_symlinks, ec);
   VERIFY( !ec );
@@ -110,6 +106,7 @@ test02()
 
   remove(from, ec);
   remove(to, ec);
+#endif
 }
 
 // Test is_regular_file(f) case.
@@ -117,12 +114,13 @@ void
 test03()
 {
   auto from = __gnu_test::nonexistent_path();
-  auto to = __gnu_test::nonexistent_path();
 
   // test empty file
   std::ofstream{from};
   VERIFY( fs::exists(from) );
   VERIFY( fs::file_size(from) == 0 );
+
+  auto to = __gnu_test::nonexistent_path();
   fs::copy(from, to);
   VERIFY( fs::exists(to) );
   VERIFY( fs::file_size(to) == 0 );
@@ -145,11 +143,11 @@ test04()
 {
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   auto from = __gnu_test::nonexistent_path();
-  auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
 
   create_directories(from/"a/b/c");
 
+  auto to = __gnu_test::nonexistent_path();
   {
     __gnu_test::scoped_file f(to);
     copy(from, to, ec);
@@ -193,6 +191,34 @@ test05()
   VERIFY( !ec );  // Previous value should be cleared (LWG 2683)
 }
 
+void
+test_pr99290()
+{
+  auto dir = __gnu_test::nonexistent_path();
+  auto source = dir/"source";
+  auto dest = dir/"dest";
+  create_directories(source/"emptydir");
+  create_directories(dest/"emptydir");
+  std::ofstream{source/"file"} << 'a';
+  std::ofstream{dest/"file"} << 'b';
+  // PR libstdc++/99290
+  // std::filesystem::copy does not always report errors for recursion
+  std::error_code ec;
+  copy(source, dest, ec);
+  VERIFY( ec == std::errc::file_exists );
+
+#if __cpp_exceptions
+  try {
+    copy(source, dest);
+    VERIFY( false );
+  } catch (const fs::filesystem_error& e) {
+    VERIFY( e.code() == std::errc::file_exists );
+  }
+#endif
+
+  remove_all(dir);
+}
+
 int
 main()
 {
@@ -201,4 +227,5 @@ main()
   test03();
   test04();
   test05();
+  test_pr99290();
 }

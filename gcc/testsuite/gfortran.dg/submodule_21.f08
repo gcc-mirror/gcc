@@ -16,4 +16,5 @@ PROGRAM MyProg
   USE MainModule
   WRITE(*,*) a
 END PROGRAM MyProg
-! { dg-excess-errors "does not contain a MODULE PROCEDURE" }
+! { dg-error "does not contain a MODULE PROCEDURE" "" { target "*-*-*" } 0 }
+! { dg-prune-output "compilation terminated" }

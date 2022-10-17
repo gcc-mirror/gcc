@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail160.d(22): Error: typeid(fail160.Foo).vtbl is not yet implemented at compile time
+fail_compilation/fail160.d(22): Error: `typeid(fail160.Foo).vtbl` is not yet implemented at compile time
 ---
 */
 
@@ -14,7 +14,7 @@ template Wrapper(B, alias Func, int func)
     alias typeof(&Func) FuncPtr;
 
     private static FuncPtr get_funcptr() { return func; }
-} 
+}
 
 
 int main(char[][] args)
@@ -23,4 +23,3 @@ int main(char[][] args)
 
     return 0;
 }
-

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,6 +124,9 @@ package Sem_Res is
    --  Find name of entry being called, and resolve prefix of name with its
    --  own type. For now we assume that the prefix cannot be overloaded and
    --  the name of the entry plays no role in the resolution.
+
+   procedure Resolve_Membership_Equality (N : Node_Id; Typ : Entity_Id);
+   --  Resolve the equality operator in an individual membership test
 
    function Valid_Conversion
      (N           : Node_Id;

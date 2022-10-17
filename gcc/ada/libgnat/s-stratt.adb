@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,13 +36,13 @@ with System.Stream_Attributes.XDR;
 
 package body System.Stream_Attributes is
 
-   XDR_Flag : Integer;
-   pragma Import (C, XDR_Flag, "__gl_xdr_stream");
+   XDR_Stream : constant Integer;
+   pragma Import (C, XDR_Stream, "__gl_xdr_stream");
    --  This imported value is used to determine whether the build had the
    --  binder switch "-xdr" present which enables XDR streaming and sets this
    --  flag to 1.
 
-   function XDR_Support return Boolean;
+   function XDR_Support return Boolean is (XDR_Stream = 1);
    pragma Inline (XDR_Support);
    --  Return True if XDR streaming should be used. Note that 128-bit integers
    --  are not supported by the XDR protocol and will raise Device_Error.
@@ -140,15 +140,6 @@ package body System.Stream_Attributes is
    function To_U24  is new UC (S_U24,  Unsigned_24);
    function To_WC   is new UC (S_WC,   Wide_Character);
    function To_WWC  is new UC (S_WWC,  Wide_Wide_Character);
-
-   -----------------
-   -- XDR_Support --
-   -----------------
-
-   function XDR_Support return Boolean is
-   begin
-      return XDR_Flag = 1;
-   end XDR_Support;
 
    -----------------
    -- Block_IO_OK --

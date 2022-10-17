@@ -1,5 +1,5 @@
 /* Control flow graph analysis header file.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,11 +44,14 @@ private:
   void set_control_dependence_map_bit (basic_block, int);
   void clear_control_dependence_bitmap (basic_block);
   void find_control_dependence (int);
-  vec<bitmap> control_dependence_map;
+  vec<bitmap_head> control_dependence_map;
   vec<std::pair<int, int> > m_el;
+  bitmap_obstack m_bitmaps;
 };
 
+extern bool mark_dfs_back_edges (struct function *);
 extern bool mark_dfs_back_edges (void);
+extern void verify_marked_backedges (struct function *);
 extern void find_unreachable_blocks (void);
 extern void verify_no_unreachable_blocks (void);
 struct edge_list * create_edge_list (void);

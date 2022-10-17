@@ -45,7 +45,7 @@ int pamark(void) {
     if (curbp->b_amark == (AMARK *)NULL)
       curbp->b_amark = p;
     else
-      last->m_next = p;
+      last->m_next = p; /* { dg-warning "dereference of NULL 'last'" "deref" } */
   }
 
   p->m_name = (char)c; /* { dg-bogus "leak of 'p'" "bogus leak" } */

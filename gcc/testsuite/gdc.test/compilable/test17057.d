@@ -2,11 +2,10 @@
 // PERMUTE_ARGS:
 
 class LeClass {
-    import std.stdio;
+    import core.stdc.stdio;
 }
 
 void main()
 {
     static assert([__traits(allMembers, LeClass)] == ["toString", "toHash", "opCmp", "opEquals", "Monitor", "factory"]);
 }
-

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,12 +56,13 @@ package body Ch11 is
    --  Error_Recovery : Cannot raise Error_Resync
 
    function P_Handled_Sequence_Of_Statements return Node_Id is
-      Handled_Stmt_Seq_Node  : Node_Id;
+      Handled_Stmt_Seq_Node : Node_Id;
    begin
       Handled_Stmt_Seq_Node :=
         New_Node (N_Handled_Sequence_Of_Statements, Token_Ptr);
       Set_Statements
-        (Handled_Stmt_Seq_Node, P_Sequence_Of_Statements (SS_Extm_Sreq));
+        (Handled_Stmt_Seq_Node,
+         P_Sequence_Of_Statements (SS_Extm_Sreq, Handled => True));
 
       if Token = Tok_Exception then
          Scan; -- past EXCEPTION
@@ -234,7 +235,7 @@ package body Ch11 is
       end if;
 
       if Token = Tok_When then
-         Error_Msg_GNAT_Extension ("raise when statement");
+         Error_Msg_GNAT_Extension ("raise when statement", Token_Ptr);
 
          Mutate_Nkind (Raise_Node, N_Raise_When_Statement);
 

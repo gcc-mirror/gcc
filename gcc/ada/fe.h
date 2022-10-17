@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -61,13 +61,24 @@ extern void Compiler_Abort (String_Pointer, String_Pointer, Boolean) ATTRIBUTE_N
 
 #define Debug_Flag_Dot_KK	debug__debug_flag_dot_kk
 #define Debug_Flag_Dot_R	debug__debug_flag_dot_r
+#define Debug_Flag_Dot_8	debug__debug_flag_dot_8
 #define Debug_Flag_NN		debug__debug_flag_nn
 
 extern Boolean Debug_Flag_Dot_KK;
 extern Boolean Debug_Flag_Dot_R;
+extern Boolean Debug_Flag_Dot_8;
 extern Boolean Debug_Flag_NN;
 
 /* einfo: */
+
+/* Valid_Uint is used to preserve the old behavior of Esize and
+   friends, where Uint_0 was the default. All calls to this
+   are questionable. */
+INLINE Valid_Uint
+No_Uint_To_0 (Uint X)
+{
+  return X == No_Uint ? Uint_0 : X;
+}
 
 #define Set_Alignment			einfo__entities__set_alignment
 #define Set_Component_Bit_Offset	einfo__entities__set_component_bit_offset
@@ -171,11 +182,17 @@ extern Boolean Is_Init_Proc		(Entity_Id);
 
 /* exp_util: */
 
-#define Is_Fully_Repped_Tagged_Type	exp_util__is_fully_repped_tagged_type
 #define Find_Interface_Tag		exp_util__find_interface_tag
+#define Is_Fully_Repped_Tagged_Type	exp_util__is_fully_repped_tagged_type
+#define Is_Related_To_Func_Return	exp_util__is_related_to_func_return
+#define Is_Secondary_Stack_Thunk	exp_util__is_secondary_stack_thunk
+#define Thunk_Target			exp_util__thunk_target
 
-extern Boolean Is_Fully_Repped_Tagged_Type      (Entity_Id);
 extern Entity_Id Find_Interface_Tag		(Entity_Id, Entity_Id);
+extern Boolean Is_Fully_Repped_Tagged_Type	(Entity_Id);
+extern Boolean Is_Related_To_Func_Return	(Entity_Id);
+extern Boolean Is_Secondary_Stack_Thunk		(Entity_Id);
+extern Entity_Id Thunk_Target 			(Entity_Id);
 
 /* lib: */
 
@@ -190,50 +207,40 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 /* opt: */
 
 #define Ada_Version			opt__ada_version
-#define Assume_No_Invalid_Values	opt__assume_no_invalid_values
 #define Back_End_Inlining		opt__back_end_inlining
 #define Debug_Generated_Code		opt__debug_generated_code
 #define Enable_128bit_Types		opt__enable_128bit_types
 #define Exception_Extra_Info		opt__exception_extra_info
 #define Exception_Locations_Suppressed	opt__exception_locations_suppressed
-#define Exception_Mechanism		opt__exception_mechanism
 #define Generate_SCO_Instance_Table	opt__generate_sco_instance_table
 #define GNAT_Mode			opt__gnat_mode
 #define List_Representation_Info	opt__list_representation_info
 #define No_Strict_Aliasing_CP		opt__no_strict_aliasing
 #define Suppress_Checks			opt__suppress_checks
+#define Unnest_Subprogram_Mode		opt__unnest_subprogram_mode
 
 typedef enum {
   Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions
 } Ada_Version_Type;
 
-typedef enum {
-  Front_End_SJLJ, Back_End_ZCX, Back_End_SJLJ
-} Exception_Mechanism_Type;
-
 extern Ada_Version_Type Ada_Version;
-extern Boolean Assume_No_Invalid_Values;
 extern Boolean Back_End_Inlining;
 extern Boolean Debug_Generated_Code;
 extern Boolean Enable_128bit_Types;
 extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
-extern Exception_Mechanism_Type Exception_Mechanism;
 extern Boolean Generate_SCO_Instance_Table;
 extern Boolean GNAT_Mode;
 extern Int List_Representation_Info;
 extern Boolean No_Strict_Aliasing_CP;
 extern Boolean Suppress_Checks;
+extern Boolean Unnest_Subprogram_Mode;
 
 #define ZCX_Exceptions		opt__zcx_exceptions
 #define SJLJ_Exceptions		opt__sjlj_exceptions
-#define Front_End_Exceptions	opt__front_end_exceptions
-#define Back_End_Exceptions	opt__back_end_exceptions
 
 extern Boolean ZCX_Exceptions		(void);
 extern Boolean SJLJ_Exceptions		(void);
-extern Boolean Front_End_Exceptions	(void);
-extern Boolean Back_End_Exceptions	(void);
 
 /* restrict: */
 
@@ -247,15 +254,21 @@ extern Boolean Back_End_Exceptions	(void);
   restrict__check_no_implicit_protected_alloc
 #define Check_No_Implicit_Task_Alloc	\
   restrict__check_no_implicit_task_alloc
+#define Check_Restriction_No_Dependence_On_System \
+  restrict__check_restriction_no_dependence_on_system
 #define No_Exception_Handlers_Set	\
   restrict__no_exception_handlers_set
+#define No_Exception_Propagation_Active	\
+  restrict__no_exception_propagation_active
 
 extern void Check_Elaboration_Code_Allowed	(Node_Id);
 extern void Check_Implicit_Dynamic_Code_Allowed	(Node_Id);
 extern void Check_No_Implicit_Heap_Alloc	(Node_Id);
 extern void Check_No_Implicit_Protected_Alloc	(Node_Id);
 extern void Check_No_Implicit_Task_Alloc	(Node_Id);
+extern void Check_Restriction_No_Dependence_On_System (Name_Id, Node_Id);
 extern Boolean No_Exception_Handlers_Set	(void);
+extern Boolean No_Exception_Propagation_Active	(void);
 
 /* sem_aggr:  */
 
@@ -291,15 +304,27 @@ extern Boolean Compile_Time_Known_Value	(Node_Id);
 
 #define Defining_Entity			sem_util__defining_entity
 #define First_Actual			sem_util__first_actual
+#define Has_Storage_Model_Type_Aspect	sem_util__storage_model_support__has_storage_model_type_aspect
+#define Has_Designated_Storage_Model_Aspect sem_util__storage_model_support__has_designated_storage_model_aspect
+#define Is_Expression_Function		sem_util__is_expression_function
 #define Is_Variable_Size_Record 	sem_util__is_variable_size_record
+#define Needs_Secondary_Stack		sem_util__needs_secondary_stack
 #define Next_Actual			sem_util__next_actual
-#define Requires_Transient_Scope	sem_util__requires_transient_scope
+#define Storage_Model_Object 		sem_util__storage_model_support__storage_model_object
+#define Storage_Model_Copy_From 	sem_util__storage_model_support__storage_model_copy_from
+#define Storage_Model_Copy_To 		sem_util__storage_model_support__storage_model_copy_to
 
-extern Entity_Id Defining_Entity	(Node_Id);
-extern Node_Id First_Actual		(Node_Id);
-extern Boolean Is_Variable_Size_Record 	(Entity_Id Id);
-extern Node_Id Next_Actual		(Node_Id);
-extern Boolean Requires_Transient_Scope	(Entity_Id);
+extern Entity_Id Defining_Entity		(Node_Id);
+extern Node_Id First_Actual			(Node_Id);
+extern Boolean Has_Storage_Model_Type_Aspect	(Entity_Id);
+extern Boolean Has_Designated_Storage_Model_Aspect (Entity_Id);
+extern Boolean Is_Expression_Function		(Entity_Id);
+extern Boolean Is_Variable_Size_Record 		(Entity_Id);
+extern Boolean Needs_Secondary_Stack		(Entity_Id);
+extern Node_Id Next_Actual			(Node_Id);
+extern Entity_Id Storage_Model_Object		(Entity_Id);
+extern Entity_Id Storage_Model_Copy_From	(Entity_Id);
+extern Entity_Id Storage_Model_Copy_To 		(Entity_Id);
 
 /* sinfo: */
 
@@ -615,50 +640,14 @@ B Known_Normalized_Position_Max         (Entity_Id E);
 #define Known_RM_Size einfo__utils__known_rm_size
 B Known_RM_Size                         (Entity_Id E);
 
-#define Known_Static_Component_Bit_Offset einfo__utils__known_static_component_bit_offset
-B Known_Static_Component_Bit_Offset     (Entity_Id E);
+#define Copy_Alignment einfo__utils__copy_alignment
+B Copy_Alignment(Entity_Id To, Entity_Id From);
 
-#define Known_Static_Component_Size einfo__utils__known_static_component_size
-B Known_Static_Component_Size           (Entity_Id E);
+#define Copy_Esize einfo__utils__copy_esize
+B Copy_Esize(Entity_Id To, Entity_Id From);
 
-#define Known_Static_Esize einfo__utils__known_static_esize
-B Known_Static_Esize                    (Entity_Id E);
-
-#define Known_Static_Normalized_First_Bit einfo__utils__known_static_normalized_first_bit
-B Known_Static_Normalized_First_Bit     (Entity_Id E);
-
-#define Known_Static_Normalized_Position einfo__utils__known_static_normalized_position
-B Known_Static_Normalized_Position      (Entity_Id E);
-
-#define Known_Static_Normalized_Position_Max einfo__utils__known_static_normalized_position_max
-B Known_Static_Normalized_Position_Max  (Entity_Id E);
-
-#define Known_Static_RM_Size einfo__utils__known_static_rm_size
-B Known_Static_RM_Size                  (Entity_Id E);
-
-#define Unknown_Alignment einfo__utils__unknown_alignment
-B Unknown_Alignment                     (Entity_Id E);
-
-#define Unknown_Component_Bit_Offset einfo__utils__unknown_component_bit_offset
-B Unknown_Component_Bit_Offset          (Entity_Id E);
-
-#define Unknown_Component_Size einfo__utils__unknown_component_size
-B Unknown_Component_Size                (Entity_Id E);
-
-#define Unknown_Esize einfo__utils__unknown_esize
-B Unknown_Esize                         (Entity_Id E);
-
-#define Unknown_Normalized_First_Bit einfo__utils__unknown_normalized_first_bit
-B Unknown_Normalized_First_Bit          (Entity_Id E);
-
-#define Unknown_Normalized_Position einfo__utils__unknown_normalized_position
-B Unknown_Normalized_Position           (Entity_Id E);
-
-#define Unknown_Normalized_Position_Max einfo__utils__unknown_normalized_position_max
-B Unknown_Normalized_Position_Max       (Entity_Id E);
-
-#define Unknown_RM_Size einfo__utils__unknown_rm_size
-B Unknown_RM_Size                       (Entity_Id E);
+#define Copy_RM_Size einfo__utils__copy_rm_size
+B Copy_RM_Size(Entity_Id To, Entity_Id From);
 
 #define Is_Discrete_Or_Fixed_Point_Type einfo__utils__is_discrete_or_fixed_point_type
 B Is_Discrete_Or_Fixed_Point_Type     (E Id);
@@ -668,12 +657,6 @@ B Is_Floating_Point_Type                      (E Id);
 
 #define Is_Record_Type einfo__utils__is_record_type
 B Is_Record_Type                      (E Id);
-
-#define Has_DIC einfo__utils__has_dic
-B Has_DIC (E Id);
-
-#define Has_Invariants einfo__utils__has_invariants
-B Has_Invariants (E Id);
 
 #define Is_Full_Access einfo__utils__is_full_access
 B Is_Full_Access (E Id);
@@ -691,12 +674,6 @@ E Next_Stored_Discriminant (E Id);
 // Parameter_Mode really returns Formal_Kind, but that is not visible, because
 // fe.h is included before einfo.h.
 Entity_Kind Parameter_Mode (E Id);
-
-#define Is_List_Member einfo__utils__is_list_member
-B Is_List_Member (N Node);
-
-#define List_Containing einfo__utils__list_containing
-S List_Containing (N Node);
 
 // The following is needed because Convention in Sem_Util is a renaming
 // of Basic_Convention.

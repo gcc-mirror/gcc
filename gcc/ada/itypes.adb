@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Stand;          use Stand;
 with Targparm;       use Targparm;
-with Uintp;          use Uintp;
 
 package body Itypes is
 
@@ -62,9 +61,9 @@ package body Itypes is
       end if;
 
       --  Make sure Esize (Typ) was properly initialized, it should be since
-      --  New_Internal_Entity/New_External_Entity call Init_Size_Align.
+      --  New_Internal_Entity/New_External_Entity call Reinit_Size_Align.
 
-      pragma Assert (Esize (Typ) = Uint_0);
+      pragma Assert (not Known_Esize (Typ));
 
       Set_Etype (Typ, Any_Type);
       Set_Is_Itype (Typ);
@@ -90,7 +89,7 @@ package body Itypes is
        Related_Nod : Node_Id;
        Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
    is
-      I_Typ        : Entity_Id;
+      I_Typ : Entity_Id;
 
    begin
       pragma Assert (Is_Access_Type (T));

@@ -29,6 +29,9 @@ f2 (int *a)
   #pragma omp teams distribute parallel for simd order(concurrent)
   for (i = 0; i < 128; i++)
     a[i]++;
+  #pragma omp teams distribute order(concurrent)
+  for (i = 0; i < 128; i++)
+    a[i]++;
   #pragma omp teams
   {
     #pragma omp distribute parallel for order(concurrent)
@@ -37,17 +40,11 @@ f2 (int *a)
     #pragma omp distribute parallel for simd order(concurrent)
     for (i = 0; i < 128; i++)
       a[i]++;
+    #pragma omp distribute order(concurrent)
+    for (i = 0; i < 128; i++)
+      a[i]++;
   }
   #pragma omp taskloop simd order (concurrent)
-  for (i = 0; i < 128; i++)
-    a[i]++;
-}
-
-void
-f3 (int *a)
-{
-  int i;
-  #pragma omp for order(concurrent) order(concurrent) order(concurrent)
   for (i = 0; i < 128; i++)
     a[i]++;
 }

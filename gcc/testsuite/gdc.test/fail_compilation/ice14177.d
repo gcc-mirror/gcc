@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ----
-fail_compilation/ice14177.d(8): Error: alias ice14177.Primitive recursive alias declaration
+fail_compilation/ice14177.d(8): Error: alias `ice14177.Primitive` recursive alias declaration
 ----
 */
 

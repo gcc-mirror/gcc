@@ -1,5 +1,5 @@
 /* Declarations for varasm.h.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,7 +38,7 @@ extern void mark_decl_referenced (tree);
 extern void notice_global_symbol (tree);
 extern void set_user_assembler_name (tree, const char *);
 extern void process_pending_assemble_externals (void);
-extern bool decl_replaceable_p (tree);
+extern bool decl_replaceable_p (tree, bool);
 extern bool decl_binds_to_current_def_p (const_tree);
 extern enum tls_model decl_default_tls_model (const_tree);
 
@@ -65,7 +65,7 @@ extern tree initializer_constant_valid_p (tree, tree, bool = false);
 /* Return true if VALUE is a valid constant-valued expression
    for use in initializing a static bit-field; one that can be
    an element of a "constant" initializer.  */
-extern bool initializer_constant_valid_for_bitfield_p (tree);
+extern bool initializer_constant_valid_for_bitfield_p (const_tree);
 
 /* Whether a constructor CTOR is a valid static constant initializer if all
    its elements are.  This used to be internal to initializer_constant_valid_p
@@ -78,5 +78,7 @@ extern void init_varasm_status (void);
 extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
 
 extern rtx assemble_trampoline_template (void);
+
+extern void switch_to_comdat_section (section *, tree);
 
 #endif  // GCC_VARASM_H

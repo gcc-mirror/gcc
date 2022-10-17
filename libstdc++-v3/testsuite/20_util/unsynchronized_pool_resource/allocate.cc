@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -281,10 +281,13 @@ test07()
   std::pmr::unsynchronized_pool_resource upr(&cr);
   try
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Walloc-size-larger-than="
     // Try to allocate a ridiculous size (and use a large extended alignment
     // so that careful_resource::do_allocate can distinguish this allocation
     // from any required for the pool resource's internal data structures):
     void* p = upr.allocate(std::size_t(-2), 1024);
+#pragma GCC diagnostic pop
     // Should not reach here!
     VERIFY( !"attempt to allocate SIZE_MAX-1 should not have succeeded" );
     throw p;

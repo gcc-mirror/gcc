@@ -17,6 +17,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define _FP_KEEPNANFRACP	1
 #define _FP_QNANNEGATEDP 0
 
+#define _FP_NANSIGN_H		1
 #define _FP_NANSIGN_S		1
 #define _FP_NANSIGN_D		1
 #define _FP_NANSIGN_E		1
@@ -73,11 +74,25 @@ void __sfp_handle_exceptions (int);
 #define __BYTE_ORDER __LITTLE_ENDIAN
 
 /* Define ALIASNAME as a strong alias for NAME.  */
-#if defined __MACH__
-/* Mach-O doesn't support aliasing.  If these functions ever return
-   anything but CMPtype we need to revisit this... */
+#if defined __APPLE__
+/* Mach-O doesn't support aliasing, so we build a secondary function for
+   the alias - we need to do a bit of a dance to find out what the type of
+   the arguments is and then apply that to the secondary function.
+   If these functions ever return anything but CMPtype we need to revisit
+   this... */
+typedef float alias_HFtype __attribute__ ((mode (HF)));
+typedef float alias_SFtype __attribute__ ((mode (SF)));
+typedef float alias_DFtype __attribute__ ((mode (DF)));
+typedef float alias_TFtype __attribute__ ((mode (TF)));
+#define ALIAS_SELECTOR \
+  CMPtype (*) (alias_HFtype, alias_HFtype): (alias_HFtype) 0, \
+  CMPtype (*) (alias_SFtype, alias_SFtype): (alias_SFtype) 0, \
+  CMPtype (*) (alias_DFtype, alias_DFtype): (alias_DFtype) 0, \
+  CMPtype (*) (alias_TFtype, alias_TFtype): (alias_TFtype) 0
 #define strong_alias(name, aliasname) \
-  CMPtype aliasname (TFtype a, TFtype b) { return name(a, b); }
+  CMPtype aliasname (__typeof (_Generic (name, ALIAS_SELECTOR)) a, \
+		     __typeof (_Generic (name, ALIAS_SELECTOR)) b) \
+		    { return name (a, b); }
 #else
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)
 # define _strong_alias(name, aliasname) \

@@ -1,5 +1,5 @@
 ;; Machine Description for TI PRU.
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;; Based on the NIOS2 GCC port.
 ;;
@@ -36,6 +36,8 @@
    (MULSRC0_REGNUM		112) ; Multiply source register.
    (MULSRC1_REGNUM		116) ; Multiply source register.
    (LAST_NONIO_GP_REGNUM	119) ; Last non-I/O general purpose register.
+   (R30_REGNUM			120) ; R30 I/O register.
+   (R31_REGNUM			124) ; R31 I/O register.
    (LOOPCNTR_REGNUM		128) ; internal LOOP counter register
    (LAST_GP_REGNUM		132) ; Last general purpose register.
 
@@ -46,6 +48,13 @@
    (FRAME_POINTER_REGNUM	136)
    (ARG_POINTER_REGNUM		140)
    (FIRST_PSEUDO_REGISTER	144)
+  ]
+)
+
+;; Enumerate address spaces.
+(define_constants
+  [
+   (ADDR_SPACE_REGIO		1) ; Access to R30 and R31 I/O registers.
   ]
 )
 
@@ -68,6 +77,9 @@
   UNSPECV_HALT
 
   UNSPECV_BLOCKAGE
+
+  UNSPECV_REGIO_READ
+  UNSPECV_REGIO_WRITE
 ])
 
 ; Length of an instruction (in bytes).
@@ -100,12 +112,14 @@
 (define_mode_iterator MOV64 [DI DF DD DQ UDQ])
 (define_mode_iterator QISI [QI HI SI])
 (define_mode_iterator HISI [HI SI])
+(define_mode_iterator HIDI [HI SI DI])
 (define_mode_iterator SFDF [SF DF])
 
 ;; EQS0/1 for extension source 0/1 and EQD for extension destination patterns.
 (define_mode_iterator EQS0 [QI HI SI])
 (define_mode_iterator EQS1 [QI HI SI])
 (define_mode_iterator EQD [QI HI SI])
+(define_mode_iterator EQDHIDI [HI SI DI])
 
 ;; GCC sign-extends its integer constants.  Hence 0x80 will be represented
 ;; as -128 for QI mode and 128 for HI and SI modes.  To cope with this,
@@ -129,11 +143,62 @@
 	(match_operand:MOV8_16_32 1 "general_operand"))]
   ""
 {
-  /* It helps to split constant loading and memory access
-     early, so that the LDI/LDI32 instructions can be hoisted
-     outside a loop body.  */
-  if (MEM_P (operands[0]))
-    operands[1] = force_reg (<MODE>mode, operands[1]);
+  if (MEM_P (operands[0])
+      && MEM_ADDR_SPACE (operands[0]) == ADDR_SPACE_REGIO)
+
+    {
+      /* Intercept writes to the SImode register I/O "address space".  */
+      gcc_assert (<MODE>mode == SImode);
+
+      if (!SYMBOL_REF_P (XEXP (operands[0], 0)))
+	{
+	  error ("invalid access to %<__regio_symbol%> address space");
+	  FAIL;
+	}
+
+      if (!REG_P (operands[1]))
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+
+      int regiono = pru_symref2ioregno (XEXP (operands[0], 0));
+      gcc_assert (regiono >= 0);
+      rtx regio = gen_rtx_REG (<MODE>mode, regiono);
+      rtx unspecv = gen_rtx_UNSPEC_VOLATILE (<MODE>mode,
+					     gen_rtvec (1, operands[1]),
+					     UNSPECV_REGIO_WRITE);
+      emit_insn (gen_rtx_SET (regio, unspecv));
+      DONE;
+    }
+  else if (MEM_P (operands[1])
+	   && MEM_ADDR_SPACE (operands[1]) == ADDR_SPACE_REGIO)
+    {
+      /* Intercept reads from the SImode register I/O "address space".  */
+      gcc_assert (<MODE>mode == SImode);
+
+      if (!SYMBOL_REF_P (XEXP (operands[1], 0)))
+	{
+	  error ("invalid access to %<__regio_symbol%> address space");
+	  FAIL;
+	}
+
+      if (MEM_P (operands[0]))
+	operands[0] = force_reg (<MODE>mode, operands[0]);
+
+      int regiono = pru_symref2ioregno (XEXP (operands[1], 0));
+      gcc_assert (regiono >= 0);
+      rtx regio = gen_rtx_REG (<MODE>mode, regiono);
+      rtx unspecv = gen_rtx_UNSPEC_VOLATILE (<MODE>mode,
+					     gen_rtvec (1, regio),
+					     UNSPECV_REGIO_READ);
+      emit_insn (gen_rtx_SET (operands[0], unspecv));
+      DONE;
+    }
+  else if (MEM_P (operands[0]))
+    {
+    /* It helps to split constant loading and memory access
+       early, so that the LDI/LDI32 instructions can be hoisted
+       outside a loop body.  */
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+    }
 })
 
 ;; Keep a single pattern for 32 bit MOV operations.  LRA requires that the
@@ -141,8 +206,8 @@
 ;;
 ;; Note: Assume that Program Mem (T constraint) can fit in 16 bits!
 (define_insn "prumov<mode>"
-  [(set (match_operand:MOV32 0 "nonimmediate_operand" "=m,r,r,r,r,r")
-	(match_operand:MOV32 1 "general_operand"      "r,m,r,T,J,iF"))]
+  [(set (match_operand:MOV32 0 "nonimmediate_operand" "=m,r,r,r,r,r,r")
+	(match_operand:MOV32 1 "general_operand"      "r,m,r,T,J,Um,iF"))]
   ""
   "@
     sb%B0o\\t%b1, %0, %S0
@@ -150,9 +215,10 @@
     mov\\t%0, %1
     ldi\\t%0, %%pmem(%1)
     ldi\\t%0, %1
+    fill\\t%0, 4
     ldi32\\t%0, %1"
-  [(set_attr "type" "st,ld,alu,alu,alu,alu")
-   (set_attr "length" "4,4,4,4,4,8")])
+  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
+   (set_attr "length" "4,4,4,4,4,4,8")])
 
 
 ;; Separate pattern for 8 and 16 bit moves, since LDI32 pseudo instruction
@@ -182,8 +248,8 @@
 ; Forcing DI reg alignment (akin to microblaze's HARD_REGNO_MODE_OK)
 ; does not seem efficient, and will violate TI ABI.
 (define_insn "mov<mode>"
-  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r")
-	(match_operand:MOV64 1 "general_operand"      "r,m,r,T,J,nF"))]
+  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r,r")
+	(match_operand:MOV64 1 "general_operand"      "r,m,Um,r,T,J,nF"))]
   ""
 {
   switch (which_alternative)
@@ -193,6 +259,8 @@
     case 1:
       return "lb%B1o\\t%b0, %1, %S1";
     case 2:
+      return "fill\\t%F0, 8";
+    case 3:
       /* careful with overlapping source and destination regs.  */
       gcc_assert (GP_REG_P (REGNO (operands[0])));
       gcc_assert (GP_REG_P (REGNO (operands[1])));
@@ -200,18 +268,18 @@
 	return "mov\\t%N0, %N1\;mov\\t%F0, %F1";
       else
 	return "mov\\t%F0, %F1\;mov\\t%N0, %N1";
-    case 3:
-      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 4:
-      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 5:
+      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+    case 6:
       return "ldi32\\t%F0, %w1\;ldi32\\t%N0, %W1";
     default:
       gcc_unreachable ();
   }
 }
-  [(set_attr "type" "st,ld,alu,alu,alu,alu")
-   (set_attr "length" "4,4,8,8,8,16")])
+  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
+   (set_attr "length" "4,4,4,8,8,8,16")])
 
 ;
 ; load_multiple pattern(s).
@@ -352,24 +420,74 @@
   "mov\\t%0, %1"
   [(set_attr "type"     "alu")])
 
-;; Sign extension patterns.  We have to emulate them due to lack of
+(define_insn "zero_extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:QI 1 "register_operand" "0,r")))]
+  ""
+  "@
+    zero\\t%F0.b1, 7
+    mov\\t%F0.b0, %1\;zero\\t%F0.b1, 7"
+  [(set_attr "type" "alu,alu")
+   (set_attr "length" "4,8")])
+
+(define_insn "zero_extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:HI 1 "register_operand" "0,r")))]
+  ""
+  "@
+    zero\\t%F0.b2, 6
+    mov\\t%F0.w0, %1\;zero\\t%F0.b2, 6"
+  [(set_attr "type" "alu,alu")
+   (set_attr "length" "4,8")])
+
+(define_insn "zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:SI 1 "register_operand" "0,r")))]
+  ""
+  "@
+    zero\\t%N0, 4
+    mov\\t%F0, %1\;zero\\t%N0, 4"
+  [(set_attr "type" "alu,alu")
+   (set_attr "length" "4,8")])
+
+;; Sign extension pattern.  We have to emulate it due to lack of
 ;; signed operations in PRU's ALU.
 
-(define_insn "extend<EQS0:mode><EQD:mode>2"
-  [(set (match_operand:EQD 0 "register_operand"			  "=r")
-	(sign_extend:EQD (match_operand:EQS0 1 "register_operand"  "r")))]
+(define_expand "extend<EQS0:mode><EQDHIDI:mode>2"
+  [(set (match_operand:EQDHIDI 0 "register_operand" "=r")
+	(sign_extend:EQDHIDI (match_operand:EQS0 1 "register_operand" "r")))]
   ""
 {
-  return pru_output_sign_extend (operands);
-}
-  [(set_attr "type" "complex")
-   (set_attr "length" "12")])
+  rtx_code_label *skip_hiset_label;
+
+  /* Clear the higher bits to temporarily make the value positive.  */
+  emit_insn (gen_rtx_SET (operands[0],
+			  gen_rtx_ZERO_EXTEND (<EQDHIDI:MODE>mode,
+					       operands[1])));
+
+  /* Now check if the result must be made negative.  */
+  skip_hiset_label = gen_label_rtx ();
+  const int op1_size = GET_MODE_SIZE (<EQS0:MODE>mode);
+  const int op1_sign_bit = op1_size * BITS_PER_UNIT - 1;
+  emit_jump_insn (gen_cbranch_qbbx_const (EQ,
+					  <EQDHIDI:MODE>mode,
+					  operands[0],
+					  GEN_INT (op1_sign_bit),
+					  skip_hiset_label));
+  emit_insn (gen_ior<EQDHIDI:mode>3 (
+			 operands[0],
+			 operands[0],
+			 GEN_INT (~GET_MODE_MASK (<EQS0:MODE>mode))));
+  emit_label (skip_hiset_label);
+
+  DONE;
+})
 
 ;; Bit extraction
 ;; We define it solely to allow combine to choose SImode
 ;; for word mode when trying to match our cbranch_qbbx_* insn.
 ;;
-;; Check how combine.c:make_extraction() uses
+;; Check how combine.cc:make_extraction() uses
 ;; get_best_reg_extraction_insn() to select the op size.
 (define_insn "extzv<mode>"
   [(set (match_operand:QISI 0 "register_operand"	"=r")
@@ -455,6 +573,51 @@
   ""
   "")
 
+;; Specialised IOR pattern, which can emit an efficient FILL instruction.
+(define_insn "@pru_ior_fillbytes<mode>"
+  [(set (match_operand:HIDI 0 "register_operand" "=r")
+	(ior:HIDI
+	   (match_operand:HIDI 1 "register_operand" "0")
+	   (match_operand:HIDI 2 "const_fillbytes_operand" "Uf")))]
+  ""
+{
+  static char line[64];
+  pru_byterange r;
+
+  r = pru_calc_byterange (INTVAL (operands[2]), <MODE>mode);
+  gcc_assert (r.start >=0 && r.nbytes > 0);
+  gcc_assert ((r.start + r.nbytes) <= GET_MODE_SIZE (<MODE>mode));
+
+  const int regno = REGNO (operands[0]) + r.start;
+
+  sprintf (line, "fill\\tr%d.b%d, %d", regno / 4, regno % 4, r.nbytes);
+  return line;
+}
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
+
+;; Specialised AND pattern, which can emit an efficient ZERO instruction.
+(define_insn "@pru_and_zerobytes<mode>"
+  [(set (match_operand:HIDI 0 "register_operand" "=r")
+	(and:HIDI
+	   (match_operand:HIDI 1 "register_operand" "0")
+	   (match_operand:HIDI 2 "const_zerobytes_operand" "Uz")))]
+  ""
+{
+  static char line[64];
+  pru_byterange r;
+
+  r = pru_calc_byterange (~INTVAL (operands[2]), <MODE>mode);
+  gcc_assert (r.start >=0 && r.nbytes > 0);
+  gcc_assert ((r.start + r.nbytes) <= GET_MODE_SIZE (<MODE>mode));
+
+  const int regno = REGNO (operands[0]) + r.start;
+
+  sprintf (line, "zero\\tr%d.b%d, %d", regno / 4, regno % 4, r.nbytes);
+  return line;
+}
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
 
 ;;  Shift instructions
 
@@ -540,27 +703,323 @@
   [(set_attr "type" "alu")
    (set_attr "length" "12")])
 
+
+; 64-bit LSHIFTRT with a constant shift count can be expanded into
+; more efficient code sequence than a variable register shift.
+;
+; 1. For shift >= 32:
+;    dst_lo = (src_hi >> (shift - 32))
+;    dst_hi = 0
+;
+; 2. For shift==1 there is no need for a temporary:
+;    dst_lo = (src_lo >> 1)
+;    if (src_hi & 1)
+;       dst_lo |= (1 << 31)
+;    dst_hi = (src_hi >> 1)
+;
+; 3. For shift < 32:
+;    dst_lo = (src_lo >> shift)
+;    tmp = (src_hi << (32 - shift)
+;    dst_lo |= tmp
+;    dst_hi = (src_hi >> shift)
+;
+; 4. For shift in a register:
+;    Fall back to calling libgcc.
+(define_expand "lshrdi3"
+  [(set (match_operand:DI 0 "register_operand")
+	  (lshiftrt:DI
+	    (match_operand:DI 1 "register_operand")
+	    (match_operand:QI 2 "const_int_operand")))]
+  ""
+{
+  gcc_assert (CONST_INT_P (operands[2]));
+
+  const int nshifts = INTVAL (operands[2]);
+  rtx dst_lo = simplify_gen_subreg (SImode, operands[0], DImode, 0);
+  rtx dst_hi = simplify_gen_subreg (SImode, operands[0], DImode, 4);
+  rtx src_lo = simplify_gen_subreg (SImode, operands[1], DImode, 0);
+  rtx src_hi = simplify_gen_subreg (SImode, operands[1], DImode, 4);
+
+  if (nshifts >= 32)
+    {
+      emit_insn (gen_rtx_SET (dst_lo,
+			      gen_rtx_LSHIFTRT (SImode,
+						src_hi,
+						GEN_INT (nshifts - 32))));
+      emit_insn (gen_rtx_SET (dst_hi, const0_rtx));
+      DONE;
+    }
+
+  gcc_assert (can_create_pseudo_p ());
+
+  /* The expansions which follow are safe only if DST_LO and SRC_HI
+     do not overlap.  If they do, then fix by using a temporary register.
+     Overlapping of DST_HI and SRC_LO is safe because by the time DST_HI
+     is set, SRC_LO is no longer live.  */
+  if (reg_overlap_mentioned_p (dst_lo, src_hi))
+    {
+      rtx new_src_hi = gen_reg_rtx (SImode);
+
+      emit_move_insn (new_src_hi, src_hi);
+      src_hi = new_src_hi;
+    }
+
+  if (nshifts == 1)
+    {
+      rtx_code_label *skip_hiset_label;
+      rtx j;
+
+      emit_insn (gen_rtx_SET (dst_lo,
+			      gen_rtx_LSHIFTRT (SImode, src_lo, const1_rtx)));
+
+      /* The code generated by `genemit' would create a LABEL_REF.  */
+      skip_hiset_label = gen_label_rtx ();
+      j = emit_jump_insn (gen_cbranch_qbbx_const (EQ,
+						  SImode,
+						  src_hi,
+						  GEN_INT (0),
+						  skip_hiset_label));
+      JUMP_LABEL (j) = skip_hiset_label;
+      LABEL_NUSES (skip_hiset_label)++;
+
+      emit_insn (gen_iorsi3 (dst_lo, dst_lo, GEN_INT (1 << 31)));
+      emit_label (skip_hiset_label);
+      emit_insn (gen_rtx_SET (dst_hi,
+			      gen_rtx_LSHIFTRT (SImode, src_hi, const1_rtx)));
+      DONE;
+    }
+
+  if (nshifts < 32)
+    {
+      rtx tmpval = gen_reg_rtx (SImode);
+
+      emit_insn (gen_rtx_SET (dst_lo,
+			      gen_rtx_LSHIFTRT (SImode,
+						src_lo,
+						GEN_INT (nshifts))));
+      emit_insn (gen_rtx_SET (tmpval,
+			      gen_rtx_ASHIFT (SImode,
+					      src_hi,
+					      GEN_INT (32 - nshifts))));
+      emit_insn (gen_iorsi3 (dst_lo, dst_lo, tmpval));
+      emit_insn (gen_rtx_SET (dst_hi,
+			      gen_rtx_LSHIFTRT (SImode,
+						src_hi,
+						GEN_INT (nshifts))));
+      DONE;
+    }
+  gcc_unreachable ();
+})
+
+; 64-bit ASHIFT with a constant shift count can be expanded into
+; more efficient code sequence than the libgcc call required by
+; a variable shift in a register.
+
+(define_expand "ashldi3"
+  [(set (match_operand:DI 0 "register_operand")
+	  (ashift:DI
+	    (match_operand:DI 1 "register_operand")
+	    (match_operand:QI 2 "const_int_operand")))]
+  ""
+{
+  gcc_assert (CONST_INT_P (operands[2]));
+
+  const int nshifts = INTVAL (operands[2]);
+  rtx dst_lo = simplify_gen_subreg (SImode, operands[0], DImode, 0);
+  rtx dst_hi = simplify_gen_subreg (SImode, operands[0], DImode, 4);
+  rtx src_lo = simplify_gen_subreg (SImode, operands[1], DImode, 0);
+  rtx src_hi = simplify_gen_subreg (SImode, operands[1], DImode, 4);
+
+  if (nshifts >= 32)
+    {
+      emit_insn (gen_rtx_SET (dst_hi,
+			      gen_rtx_ASHIFT (SImode,
+					      src_lo,
+					      GEN_INT (nshifts - 32))));
+      emit_insn (gen_rtx_SET (dst_lo, const0_rtx));
+      DONE;
+    }
+
+  gcc_assert (can_create_pseudo_p ());
+
+  /* The expansions which follow are safe only if DST_HI and SRC_LO
+     do not overlap.  If they do, then fix by using a temporary register.
+     Overlapping of DST_LO and SRC_HI is safe because by the time DST_LO
+     is set, SRC_HI is no longer live.  */
+  if (reg_overlap_mentioned_p (dst_hi, src_lo))
+    {
+      rtx new_src_lo = gen_reg_rtx (SImode);
+
+      emit_move_insn (new_src_lo, src_lo);
+      src_lo = new_src_lo;
+    }
+
+  if (nshifts == 1)
+    {
+      rtx_code_label *skip_hiset_label;
+      rtx j;
+
+      emit_insn (gen_rtx_SET (dst_hi,
+			      gen_rtx_ASHIFT (SImode, src_hi, const1_rtx)));
+
+      skip_hiset_label = gen_label_rtx ();
+      j = emit_jump_insn (gen_cbranch_qbbx_const (EQ,
+						  SImode,
+						  src_lo,
+						  GEN_INT (31),
+						  skip_hiset_label));
+      JUMP_LABEL (j) = skip_hiset_label;
+      LABEL_NUSES (skip_hiset_label)++;
+
+      emit_insn (gen_iorsi3 (dst_hi, dst_hi, GEN_INT (1 << 0)));
+      emit_label (skip_hiset_label);
+      emit_insn (gen_rtx_SET (dst_lo,
+			      gen_rtx_ASHIFT (SImode, src_lo, const1_rtx)));
+      DONE;
+    }
+
+  if (nshifts < 32)
+    {
+      rtx tmpval = gen_reg_rtx (SImode);
+
+      emit_insn (gen_rtx_SET (dst_hi,
+			      gen_rtx_ASHIFT (SImode,
+					      src_hi,
+					      GEN_INT (nshifts))));
+      emit_insn (gen_rtx_SET (tmpval,
+			      gen_rtx_LSHIFTRT (SImode,
+						src_lo,
+						GEN_INT (32 - nshifts))));
+      emit_insn (gen_iorsi3 (dst_hi, dst_hi, tmpval));
+      emit_insn (gen_rtx_SET (dst_lo,
+			      gen_rtx_ASHIFT (SImode,
+					      src_lo,
+					      GEN_INT (nshifts))));
+      DONE;
+    }
+  gcc_unreachable ();
+})
 
 ;; Include ALU patterns with zero-extension of operands.  That's where
 ;; the real insns are defined.
 
 (include "alu-zext.md")
 
+;; Patterns for accessing the R30/R31 I/O registers.
+
+(define_insn "*regio_readsi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (unspec_volatile:SI
+      [(match_operand:SI 1 "regio_operand" "Rrio")]
+      UNSPECV_REGIO_READ))]
+  ""
+  "mov\\t%0, %1"
+  [(set_attr "type"     "alu")])
+
+(define_insn "*regio_nozext_writesi"
+  [(set (match_operand:SI 0 "regio_operand" "=Rrio")
+    (unspec_volatile:SI
+      [(match_operand:SI 1 "register_operand" "r")]
+      UNSPECV_REGIO_WRITE))]
+  ""
+  "mov\\t%0, %1"
+  [(set_attr "type"     "alu")])
+
+(define_insn "*regio_zext_write_r30<EQS0:mode>"
+  [(set (match_operand:SI 0 "regio_operand" "=Rrio")
+    (unspec_volatile:SI
+      [(zero_extend:SI (match_operand:EQS0 1 "register_operand" "r"))]
+      UNSPECV_REGIO_WRITE))]
+  ""
+  "mov\\t%0, %1"
+  [(set_attr "type"     "alu")])
+
 ;; DI logical ops could be automatically split into WORD-mode ops in
 ;; expand_binop().  But then we'll miss an opportunity to use SI mode
 ;; operations, since WORD mode for PRU is QI.
-(define_insn "<code>di3"
-  [(set (match_operand:DI 0 "register_operand"		"=&r,&r")
+(define_expand "<code>di3"
+  [(set (match_operand:DI 0 "register_operand")
 	  (LOGICAL_BITOP:DI
-	    (match_operand:DI 1 "register_operand"	"%r,r")
-	    (match_operand:DI 2 "reg_or_ubyte_operand"	"r,I")))]
+	    (match_operand:DI 1 "register_operand")
+	    (match_operand:DI 2 "reg_or_const_int_operand")))]
   ""
-  "@
-   <logical_bitop_asm>\\t%F0, %F1, %F2\;<logical_bitop_asm>\\t%N0, %N1, %N2
-   <logical_bitop_asm>\\t%F0, %F1, %2\;<logical_bitop_asm>\\t%N0, %N1, 0"
+{
+  /* Try with the more efficient zero/fill patterns first.  */
+  if (<LOGICAL_BITOP:CODE> == IOR
+      && CONST_INT_P (operands[2])
+      && const_fillbytes_operand (operands[2], DImode))
+    {
+      rtx insn = maybe_gen_pru_ior_fillbytes (DImode,
+					      operands[0],
+					      operands[0],
+					      operands[2]);
+      if (insn != nullptr)
+	{
+	  if (REGNO (operands[0]) != REGNO (operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  emit_insn (insn);
+	  DONE;
+	}
+    }
+  if (<LOGICAL_BITOP:CODE> == AND
+      && CONST_INT_P (operands[2])
+      && const_zerobytes_operand (operands[2], DImode))
+    {
+      rtx insn = maybe_gen_pru_and_zerobytes (DImode,
+					      operands[0],
+					      operands[0],
+					      operands[2]);
+      if (insn != nullptr)
+	{
+	  if (REGNO (operands[0]) != REGNO (operands[1]))
+	    emit_move_insn (operands[0], operands[1]);
+	  emit_insn (insn);
+	  DONE;
+	}
+    }
+  /* No optimized case found.  Rely on the two-instruction pattern below.  */
+  if (!reg_or_ubyte_operand (operands[2], DImode))
+    operands[2] = force_reg (DImode, operands[2]);
+})
+
+;; 64-bit pattern for logical operations.
+(define_insn "pru_<code>di3"
+  [(set (match_operand:DI 0 "register_operand"		"=r,&r,r")
+	  (LOGICAL_BITOP:DI
+	    (match_operand:DI 1 "register_operand"	"%0,r,r")
+	    (match_operand:DI 2 "reg_or_ubyte_operand"	"r,r,I")))]
+  ""
+{
+  switch (which_alternative)
+    {
+    case 0:
+      if (REGNO (operands[0]) == (REGNO (operands[2]) + 4))
+	return "<logical_bitop_asm>\\t%N0, %N0, %N2\;"
+	       "<logical_bitop_asm>\\t%F0, %F0, %F2";
+      else
+	return "<logical_bitop_asm>\\t%F0, %F0, %F2\;"
+	       "<logical_bitop_asm>\\t%N0, %N0, %N2";
+    case 1:
+      /* With the three-register variant there is no way to handle the case
+	 when OP0 overlaps both OP1 and OP2.  Example:
+	     OP0_lo == OP1_hi
+	     OP0_hi == OP2_lo
+	 Hence this variant's OP0 must be marked as an earlyclobber.  */
+      return "<logical_bitop_asm>\\t%F0, %F1, %F2\;"
+	     "<logical_bitop_asm>\\t%N0, %N1, %N2";
+    case 2:
+      if (REGNO (operands[0]) == (REGNO (operands[1]) + 4))
+	return "<logical_bitop_asm>\\t%N0, %N1, 0\;"
+	       "<logical_bitop_asm>\\t%F0, %F1, %2";
+      else
+	return "<logical_bitop_asm>\\t%F0, %F1, %2\;"
+	       "<logical_bitop_asm>\\t%N0, %N1, 0";
+    default:
+      gcc_unreachable ();
+  }
+}
   [(set_attr "type" "alu")
    (set_attr "length" "8")])
-
 
 (define_insn "one_cmpldi2"
   [(set (match_operand:DI 0 "register_operand"		"=r")
@@ -850,6 +1309,186 @@
   operands[2] = XEXP (t, 1);
 })
 
+;; Expand the cbranchdi pattern in order to avoid the default
+;; expansion into word_mode operations, which is not efficient for PRU.
+;; In pseudocode this expansion outputs:
+;;
+;; /* EQ */
+;; if (OP1_hi {reverse_condition (cmp)} OP2_hi)
+;;     goto fallthrough
+;; if (OP1_lo {cmp} OP2_lo)
+;;     goto label3
+;; fallthrough:
+;;
+;; /* NE */
+;; if (OP1_hi {cmp} OP2_hi)
+;;     goto label3
+;; if (OP1_lo {cmp} OP2_lo)
+;;     goto label3
+;;
+;; The LT comparisons with zero take one machine instruction to simply
+;; check the sign bit.  The GT comparisons with zero take two - one
+;; to check the sign bit, and one to check for zero.  Hence arrange
+;; the expand such that only LT comparison is used for OP1_HI, because
+;; OP2_HI is const0_rtx.
+;;
+;; The LTU comparisons with zero will be removed by subsequent passes.
+;;
+;;  /* LT/LTU/LE/LEU */
+;;  if (OP1_hi {noteq_condition (cmp)} OP2_hi)
+;;     goto label3		/* DI comparison obviously true.  */
+;;  if (OP1_hi != OP2_hi)
+;;     goto fallthrough		/* DI comparison obviously not true.  */
+;;  if (OP1_lo {unsigned_condition (cmp)} OP2_lo)
+;;     goto label3		/* Comparison was deferred to lo parts.  */
+;;  fallthrough:
+
+;;  /* GT/GTU/GE/GEU */
+;;  if (OP1_hi {reverse_condition (noteq_condition (cmp))} OP2_hi)
+;;     goto fallthrough 	/* DI comparison obviously not true.  */
+;;  if (OP1_hi != OP2_hi)
+;;     goto label3		/* DI comparison obviously true.  */
+;;  if (OP1_lo {unsigned_condition (cmp)} OP2_lo)
+;;     goto label3		/* Comparison was deferred to lo parts.  */
+;;  fallthrough:
+
+(define_expand "cbranchdi4"
+  [(set (pc)
+     (if_then_else
+       (match_operator 0 "ordered_comparison_operator"
+	 [(match_operand:DI 1 "register_operand")
+	  (match_operand:DI 2 "reg_or_ubyte_operand")])
+       (label_ref (match_operand 3 ""))
+       (pc)))]
+  ""
+{
+  const enum rtx_code code = GET_CODE (operands[0]);
+  rtx label3 = operands[3];
+  rtx op1_lo = simplify_gen_subreg (SImode, operands[1], DImode, 0);
+  rtx op1_hi = simplify_gen_subreg (SImode, operands[1], DImode, 4);
+  rtx op2_lo = simplify_gen_subreg (SImode, operands[2], DImode, 0);
+  rtx op2_hi = simplify_gen_subreg (SImode, operands[2], DImode, 4);
+  rtx j;
+
+  if (code == EQ)
+    {
+      rtx label_fallthrough = gen_label_rtx ();
+      rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
+
+      rtx cond_hi = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label_fallthrough_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label_fallthrough;
+      LABEL_NUSES (label_fallthrough)++;
+
+      rtx label3_ref = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (EQ, VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      emit_label (label_fallthrough);
+      DONE;
+    }
+  if (code == NE)
+    {
+      rtx label3_ref1 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_hi = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label3_ref1, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      rtx label3_ref2 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (NE, VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref2, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      DONE;
+    }
+
+  if (code == LT || code == LTU || code == LE || code == LEU)
+    {
+      /* Check for "DI comparison obviously true".  */
+      rtx label3_ref1 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_hi = gen_rtx_fmt_ee (pru_noteq_condition (code),
+				    VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label3_ref1, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      /* Check for "DI comparison obviously not true".  */
+      rtx label_fallthrough = gen_label_rtx ();
+      rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
+      rtx cond_hine = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hine = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hine,
+					     label_fallthrough_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hine));
+      JUMP_LABEL (j) = label_fallthrough;
+      LABEL_NUSES (label_fallthrough)++;
+
+      /* Comparison deferred to the lo parts.  */
+      rtx label3_ref2 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (unsigned_condition (code),
+				    VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref2, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      emit_label (label_fallthrough);
+      DONE;
+    }
+
+  if (code == GT || code == GTU || code == GE || code == GEU)
+    {
+      /* Check for "DI comparison obviously not true".  */
+      const enum rtx_code reversed_code = reverse_condition (code);
+      rtx label_fallthrough = gen_label_rtx ();
+      rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
+      rtx cond_hi = gen_rtx_fmt_ee (pru_noteq_condition (reversed_code),
+				    VOIDmode, op1_hi, op2_hi);
+      rtx check_hi = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hi,
+					   label_fallthrough_ref, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hi));
+      JUMP_LABEL (j) = label_fallthrough;
+      LABEL_NUSES (label_fallthrough)++;
+
+      /* Check for "DI comparison obviously true".  */
+      rtx label3_ref1 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_hine = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
+      rtx check_hine = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hine,
+					     label3_ref1, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_hine));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      /* Comparison deferred to the lo parts.  */
+      rtx label3_ref2 = gen_rtx_LABEL_REF (Pmode, label3);
+      rtx cond_lo = gen_rtx_fmt_ee (unsigned_condition (code),
+				    VOIDmode, op1_lo, op2_lo);
+      rtx check_lo = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_lo,
+					   label3_ref2, pc_rtx);
+      j = emit_jump_insn (gen_rtx_SET (pc_rtx, check_lo));
+      JUMP_LABEL (j) = label3;
+      LABEL_NUSES (label3)++;
+
+      emit_label (label_fallthrough);
+      DONE;
+    }
+    gcc_unreachable ();
+})
+
 ;
 ; Bit test branch
 
@@ -875,6 +1514,55 @@
     return "<BIT_TEST:qbbx_op>\\t%l2, %0, %u1";
   else
     return "<BIT_TEST:qbbx_negop>\\t.+8, %0, %u1\;jmp\\t%%label(%l2)";
+}
+  [(set_attr "type" "control")
+   (set (attr "length")
+      (if_then_else
+	  (and (ge (minus (match_dup 2) (pc)) (const_int -2048))
+	       (le (minus (match_dup 2) (pc)) (const_int 2044)))
+	  (const_int 4)
+	  (const_int 8)))])
+
+;; Bit test conditional branch, but only for constant bit positions.
+;; This restriction allows an efficient code for DImode operands.
+;;
+;; QImode is already handled by the pattern variant above.
+(define_insn "@cbranch_qbbx_const_<BIT_TEST:code><HIDI:mode>"
+ [(set (pc)
+   (if_then_else
+    (BIT_TEST (zero_extract:HIDI
+	 (match_operand:HIDI 0 "register_operand" "r")
+	 (const_int 1)
+	 (match_operand:VOID 1 "const_int_operand" "i"))
+     (const_int 0))
+    (label_ref (match_operand 2))
+    (pc)))]
+  ""
+{
+  const int length = (get_attr_length (insn));
+  const bool is_near = (length == 4);
+
+  if (<HIDI:MODE>mode == DImode && INTVAL (operands[1]) <= 31)
+    {
+      if (is_near)
+	return "<BIT_TEST:qbbx_op>\\t%l2, %F0, %1";
+      else
+	return "<BIT_TEST:qbbx_negop>\\t.+8, %F0, %1\;jmp\\t%%label(%l2)";
+    }
+  else if (<HIDI:MODE>mode == DImode)
+    {
+      if (is_near)
+	return "<BIT_TEST:qbbx_op>\\t%l2, %N0, %1 - 32";
+      else
+	return "<BIT_TEST:qbbx_negop>\\t.+8, %N0, %1 - 32\;jmp\\t%%label(%l2)";
+    }
+  else
+    {
+      if (is_near)
+	return "<BIT_TEST:qbbx_op>\\t%l2, %0, %1";
+      else
+	return "<BIT_TEST:qbbx_negop>\\t.+8, %0, %1\;jmp\\t%%label(%l2)";
+    }
 }
   [(set_attr "type" "control")
    (set (attr "length")

@@ -1,5 +1,5 @@
 /* elf.c -- Get debug data from a Mach-O file for backtraces.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -1268,7 +1268,7 @@ backtrace_initialize (struct backtrace_state *state, const char *filename,
       mff = macho_nodebug;
       if (!macho_add (state, name, d, 0, NULL, base_address, 0,
 		      error_callback, data, &mff, &mfs))
-	return 0;
+	continue;
 
       if (mff != macho_nodebug)
 	macho_fileline_fn = mff;

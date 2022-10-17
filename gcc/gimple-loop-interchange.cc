@@ -1,5 +1,5 @@
 /* Loop interchange.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
 This file is part of GCC.
@@ -897,7 +897,9 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
       /* Init new_var to MEM_REF or CONST depending on if it is the first
 	 iteration.  */
       induction_p iv = m_inductions[0];
-      cond = fold_build2 (NE_EXPR, boolean_type_node, iv->var, iv->init_val);
+      cond = make_ssa_name (boolean_type_node);
+      stmt = gimple_build_assign (cond, NE_EXPR, iv->var, iv->init_val);
+      gimple_seq_add_stmt_without_update (&stmts, stmt);
       new_var = copy_ssa_name (re->var);
       stmt = gimple_build_assign (new_var, COND_EXPR, cond, tmp, re->init);
       gimple_seq_add_stmt_without_update (&stmts, stmt);
@@ -1703,9 +1705,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_linterchange (m_ctxt); }
-  virtual bool gate (function *) { return flag_loop_interchange; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_linterchange (m_ctxt); }
+  bool gate (function *) final override { return flag_loop_interchange; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_linterchange
 
@@ -2089,8 +2091,7 @@ pass_linterchange::execute (function *fun)
     return 0;
 
   bool changed_p = false;
-  class loop *loop;
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       vec<loop_p> loop_nest = vNULL;
       vec<data_reference_p> datarefs = vNULL;

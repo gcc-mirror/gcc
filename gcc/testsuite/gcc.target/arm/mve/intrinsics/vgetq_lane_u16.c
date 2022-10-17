@@ -8,7 +8,7 @@
 uint16_t
 foo (uint16x8_t a)
 {
-  return vgetq_lane_u16 (a, 0);
+  return vgetq_lane_u16 (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.u16"  }  } */
@@ -16,7 +16,7 @@ foo (uint16x8_t a)
 uint16_t
 foo1 (uint16x8_t a)
 {
-  return vgetq_lane (a, 0);
+  return vgetq_lane (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.u16"  }  } */

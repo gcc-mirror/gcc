@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ia32 && { ! *-*-vxworks* } } } } */
-/* { dg-options "-mmmx -mvect8-ret-in-mem" } */
+/* { dg-options "-mmmx -mno-sse -mvect8-ret-in-mem" } */
 
 #include <mmintrin.h>
 

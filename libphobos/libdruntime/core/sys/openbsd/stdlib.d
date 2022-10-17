@@ -13,5 +13,11 @@ extern (C):
 nothrow:
 @nogc:
 
+void freezero(void*, size_t);
+void* calloc_conceal(size_t, size_t);
+void* malloc_conceal(size_t);
+void* reallocarray(void*, size_t, size_t);
+void* recallocarray(void*, size_t, size_t, size_t);
+
 const(char)* getprogname();
-void setprogname(scope const char* name);
+void setprogname(scope const char*);

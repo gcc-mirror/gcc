@@ -12,7 +12,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-d 2006-2021
+@set copyrights-d 2006-2022
 
 @copying
 @c man begin COPYRIGHT
@@ -66,7 +66,7 @@ This manual describes how to use @command{gdc}, the GNU compiler for
 the D programming language.  This manual is specifically about
 @command{gdc}.  For more information about the D programming
 language in general, including language specifications and standard
-package documentation, see @uref{http://dlang.org/}.
+package documentation, see @uref{https://dlang.org/}.
 
 @menu
 * Copying::                     The GNU General Public License.
@@ -216,6 +216,20 @@ Don't recognize built-in functions unless they begin with the prefix
 @samp{__builtin_}.  By default, the compiler will recognize when a
 function in the @code{core.stdc} package is a built-in function.
 
+@item -fcheckaction=@var{value}
+@cindex @option{-fcheckaction}
+This option controls what code is generated on an assertion, bounds check, or
+final switch failure.  The following values are supported:
+
+@table @samp
+@item context
+Throw an @code{AssertError} with extra context information.
+@item halt
+Halt the program execution.
+@item throw
+Throw an @code{AssertError} (the default).
+@end table
+
 @item -fdebug
 @item -fdebug=@var{value}
 @cindex @option{-fdebug}
@@ -245,10 +259,37 @@ This is equivalent to compiling with the following options:
 gdc -nophoboslib -fno-exceptions -fno-moduleinfo -fno-rtti
 @end example
 
+@item -fextern-std=@var{standard}
+@cindex @option{-fextern-std}
+Sets the C++ name mangling compatibility to the version identified by
+@var{standard}.  The following values are supported:
+
+@table @samp
+@item c++98
+@item c++03
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{199711}.
+@item c++11
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{201103}.
+@item c++14
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{201402}.
+@item c++17
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{201703}.
+This is the default.
+@item c++20
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{202002}.
+@end table
+
 @item -fno-invariants
 @cindex @option{-finvariants}
 @cindex @option{-fno-invariants}
 Turns off code generation for class @code{invariant} contracts.
+
+@item -fmain
+@cindex @option{-fmain}
+Generates a default @code{main()} function when compiling.  This is useful when
+unittesting a library, as it enables running the unittests in a library without
+having to manually define an entry-point function.  This option does nothing
+when @code{main} is already defined in user code.
 
 @item -fno-moduleinfo
 @cindex @option{-fmoduleinfo}
@@ -276,6 +317,51 @@ Turns off code generation for postcondition @code{out} contracts.
 @cindex @option{-fno-preconditions}
 Turns off code generation for precondition @code{in} contracts.
 
+@item -fpreview=@var{id}
+@cindex @option{-fpreview}
+Turns on an upcoming D language change identified by @var{id}.  The following
+values are supported:
+
+@table @samp
+@item all
+Turns on all upcoming D language features.
+@item dip1000
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1000.md}
+(Scoped pointers).
+@item dip1008
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1008.md}
+(Allow exceptions in @code{@@nogc} code).
+@item dip1021
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md}
+(Mutable function arguments).
+@item dip25
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/archive/DIP25.md}
+(Sealed references).
+@item dtorfields
+Turns on generation for destructing fields of partially constructed objects.
+@item fieldwise
+Turns on generation of struct equality to use field-wise comparisons.
+@item fixaliasthis
+Implements new lookup rules that check the current scope for @code{alias this}
+before searching in upper scopes.
+@item in
+Implements @code{in} parameters to mean @code{scope const [ref]} and accepts
+rvalues.
+@item inclusiveincontracts
+Implements @code{in} contracts of overridden methods to be a superset of parent
+contract.
+@item intpromote
+Implements C-style integral promotion for unary @code{+}, @code{-} and @code{~}
+expressions.
+@item nosharedaccess
+Turns off and disallows all access to shared memory objects.
+@item rvaluerefparam
+Implements rvalue arguments to @code{ref} parameters.
+@item shortenedmethods
+Implements use of @code{=>} for methods and top-level functions in addition to
+lambdas.
+@end table
+
 @item -frelease
 @cindex @option{-frelease}
 @cindex @option{-fno-release}
@@ -290,6 +376,23 @@ This is equivalent to compiling with the following options:
 gdc -fno-assert -fbounds-check=safe -fno-invariants \
     -fno-postconditions -fno-preconditions -fno-switch-errors
 @end example
+
+@item -frevert=
+@cindex @option{-frevert}
+Turns off a D language feature identified by @var{id}.  The following values
+are supported:
+
+@table @samp
+@item all
+Turns off all revertable D language features.
+@item dip25
+Reverts @uref{https://github.com/dlang/DIPs/blob/master/DIPs/archive/DIP25.md}
+(Sealed references).
+@item dtorfields
+Turns off generation for destructing fields of partially constructed objects.
+@item markdown
+Turns off Markdown replacements in Ddoc comments.
+@end table
 
 @item -fno-rtti
 @cindex @option{-frtti}
@@ -524,6 +627,19 @@ Specify @var{file} as a @var{Ddoc} macro file to be read.  Multiple
 @option{-fdoc-inc} options can be used, and files are read and processed
 in the same order.
 
+@item -fdump-c++-spec=@var{file}
+For D source files, generate corresponding C++ declarations in @var{file}.
+
+@item -fdump-c++-spec-verbose
+In conjunction with @option{-fdump-c++-spec=} above, add comments for ignored
+declarations in the generated C++ header.
+
+@item -fsave-mixins=@var{file}
+@cindex @option{-fsave-mixins}
+Generates code expanded from D @code{mixin} statements and writes the
+processed sources to @var{file}.  This is useful to debug errors in compilation
+and provides source for debuggers to show when requested.
+
 @end table
 
 @node Warnings
@@ -633,19 +749,21 @@ Report additional information about D language changes identified by
 
 @table @samp
 @item all
-List information on all language changes.
+List information on all D language transitions.
 @item complex
 List all usages of complex or imaginary types.
-@item dip1000
-Implements @uref{http://wiki.dlang.org/DIP1000} (experimental).
-@item dip25
-Implements @uref{http://wiki.dlang.org/DIP25} (experimental).
 @item field
 List all non-mutable fields which occupy an object instance.
+@item in
+List all usages of @code{in} on parameter.
 @item nogc
 List all hidden GC allocations.
+@item templates
+List statistics on template instantiations.
 @item tls
 List all variables going into thread local storage.
+@item vmarkdown
+List instances of Markdown replacements in Ddoc.
 @end table
 
 @end table

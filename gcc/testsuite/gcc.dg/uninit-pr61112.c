@@ -29,7 +29,7 @@ void foo_c5_1_1 (int x, int y, int z, int a)
     w = __LINE__;
 
   if (x || y || a)
-    p = w;          // { dg-bogus "-Wmaybe-uninitialized" "pr61112" { xfail *-*-* } }
+    p = w;
 }
 
 void foo_c5_1_2 (int x, int y, int z, int a)
@@ -43,7 +43,7 @@ void foo_c5_1_2 (int x, int y, int z, int a)
     w = __LINE__;
 
   if (x || a || y)
-    p = w;          // { dg-bogus "-Wmaybe-uninitialized" "pr61112" { xfail *-*-* } }
+    p = w;
 }
 
 void foo_c5_1_3 (int x, int y, int z, int a)
@@ -57,7 +57,7 @@ void foo_c5_1_3 (int x, int y, int z, int a)
     w = __LINE__;
 
   if (a || x || y)
-    p = w;          // { dg-bogus "-Wmaybe-uninitialized" "pr61112" { xfail *-*-* } }
+    p = w;
 }
 
 void foo_c5_2 (int x, int y, int z, int a)

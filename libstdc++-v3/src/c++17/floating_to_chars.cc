@@ -1,6 +1,6 @@
 // std::to_chars implementation for floating-point types -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +21,6 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
-
-// Activate __glibcxx_assert within this file to shake out any bugs.
-#define _GLIBCXX_ASSERTIONS 1
 
 #include <charconv>
 
@@ -76,14 +73,10 @@ extern "C" int __sprintfieee128(char*, const char*, ...);
 # define LONG_DOUBLE_KIND LDK_UNSUPPORTED
 #endif
 
-#if defined _GLIBCXX_USE_FLOAT128 && __FLT128_MANT_DIG__ == 113
+// For now we only support __float128 when it's the powerpc64 __ieee128 type.
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __FLT128_MANT_DIG__ == 113
 // Define overloads of std::to_chars for __float128.
 # define FLOAT128_TO_CHARS 1
-#endif
-
-// For now we only support __float128 when it's the powerpc64 __ieee128 type.
-#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-# undef FLOAT128_TO_CHARS
 #endif
 
 #ifdef FLOAT128_TO_CHARS
@@ -91,6 +84,8 @@ using F128_type = __float128;
 #else
 using F128_type = void;
 #endif
+
+#include <stdint.h>
 
 namespace
 {
@@ -747,7 +742,8 @@ template<typename T>
     __glibcxx_assert(shortest_full_precision >= 0);
 
     int written_exponent = unbiased_exponent;
-    const int effective_precision = precision.value_or(shortest_full_precision);
+    int effective_precision = precision.value_or(shortest_full_precision);
+    int excess_precision = 0;
     if (effective_precision < shortest_full_precision)
       {
 	// When limiting the precision, we need to determine how to round the
@@ -794,19 +790,24 @@ template<typename T>
 	      }
 	  }
       }
+    else
+      {
+	excess_precision = effective_precision - shortest_full_precision;
+	effective_precision = shortest_full_precision;
+      }
 
     // Compute the leading hexit and mask it out from the mantissa.
     char leading_hexit;
     if constexpr (has_implicit_leading_bit)
       {
-	const unsigned nibble = effective_mantissa >> rounded_mantissa_bits;
+	const auto nibble = unsigned(effective_mantissa >> rounded_mantissa_bits);
 	__glibcxx_assert(nibble <= 2);
 	leading_hexit = '0' + nibble;
 	effective_mantissa &= ~(mantissa_t{0b11} << rounded_mantissa_bits);
       }
     else
       {
-	const unsigned nibble = effective_mantissa >> (rounded_mantissa_bits-4);
+	const auto nibble = unsigned(effective_mantissa >> (rounded_mantissa_bits-4));
 	__glibcxx_assert(nibble < 16);
 	leading_hexit = "0123456789abcdef"[nibble];
 	effective_mantissa &= ~(mantissa_t{0b1111} << (rounded_mantissa_bits-4));
@@ -816,26 +817,30 @@ template<typename T>
     // Now before we start writing the string, determine the total length of
     // the output string and perform a single bounds check.
     int expected_output_length = sign + 1;
-    if (effective_precision != 0)
-      expected_output_length += strlen(".") + effective_precision;
+    if (effective_precision + excess_precision > 0)
+      expected_output_length += strlen(".");
+    expected_output_length += effective_precision;
     const int abs_written_exponent = abs(written_exponent);
     expected_output_length += (abs_written_exponent >= 10000 ? strlen("p+ddddd")
 			       : abs_written_exponent >= 1000 ? strlen("p+dddd")
 			       : abs_written_exponent >= 100 ? strlen("p+ddd")
 			       : abs_written_exponent >= 10 ? strlen("p+dd")
 			       : strlen("p+d"));
-    if (last - first < expected_output_length)
+    if (last - first < expected_output_length
+	|| last - first - expected_output_length < excess_precision)
       return {last, errc::value_too_large};
+    char* const expected_output_end = first + expected_output_length + excess_precision;
 
-    const auto saved_first = first;
     // Write the negative sign and the leading hexit.
     if (sign)
       *first++ = '-';
     *first++ = leading_hexit;
 
+    if (effective_precision + excess_precision > 0)
+      *first++ = '.';
+
     if (effective_precision > 0)
       {
-	*first++ = '.';
 	int written_hexits = 0;
 	// Extract and mask out the leading nibble after the decimal point,
 	// write its corresponding hexit, and repeat until the mantissa is
@@ -847,7 +852,7 @@ template<typename T>
 	while (effective_mantissa != 0)
 	  {
 	    nibble_offset -= 4;
-	    const unsigned nibble = effective_mantissa >> nibble_offset;
+	    const auto nibble = unsigned(effective_mantissa >> nibble_offset);
 	    __glibcxx_assert(nibble < 16);
 	    *first++ = "0123456789abcdef"[nibble];
 	    ++written_hexits;
@@ -863,13 +868,18 @@ template<typename T>
 	  }
       }
 
+    if (excess_precision > 0)
+      {
+	memset(first, '0', excess_precision);
+	first += excess_precision;
+      }
+
     // Finally, write the exponent.
     *first++ = 'p';
     if (written_exponent >= 0)
       *first++ = '+';
     const to_chars_result result = to_chars(first, last, written_exponent);
-    __glibcxx_assert(result.ec == errc{}
-		     && result.ptr == saved_first + expected_output_length);
+    __glibcxx_assert(result.ec == errc{} && result.ptr == expected_output_end);
     return result;
   }
 
@@ -1103,6 +1113,7 @@ template<typename T>
       }
 
     __glibcxx_assert(false);
+    __builtin_unreachable();
   }
 
 template<typename T>
@@ -1191,6 +1202,8 @@ template<typename T>
 	    effective_precision = min(precision, max_eff_scientific_precision);
 	    output_specifier = "%.*Lg";
 	  }
+	else
+	  __builtin_unreachable();
 	const int excess_precision = (fmt != chars_format::general
 				      ? precision - effective_precision : 0);
 
@@ -1223,6 +1236,8 @@ template<typename T>
 	      output_length_upper_bound = sign + strlen("0");
 	    output_length_upper_bound += sizeof(radix) + effective_precision;
 	  }
+	else
+	  __builtin_unreachable();
 
 	// Do the sprintf into the local buffer.
 	char buffer[output_length_upper_bound+1];
@@ -1250,7 +1265,8 @@ template<typename T>
 	    }
 
 	// Copy the string from the buffer over to the output range.
-	if (last - first < output_length + excess_precision)
+	if (last - first < output_length
+	    || last - first - output_length < excess_precision)
 	  return {last, errc::value_too_large};
 	memcpy(first, buffer, output_length);
 	first += output_length;
@@ -1304,7 +1320,8 @@ template<typename T>
 	  output_length_upper_bound += strlen("e+dd");
 
 	int output_length;
-	if (last - first >= output_length_upper_bound + excess_precision)
+	if (last - first >= output_length_upper_bound
+	    && last - first - output_length_upper_bound >= excess_precision)
 	  {
 	    // The result will definitely fit into the output range, so we can
 	    // write directly into it.
@@ -1325,7 +1342,8 @@ template<typename T>
 						  buffer, nullptr);
 	    __glibcxx_assert(output_length == output_length_upper_bound - 1
 			     || output_length == output_length_upper_bound);
-	    if (last - first < output_length + excess_precision)
+	    if (last - first < output_length
+		|| last - first - output_length < excess_precision)
 	      return {last, errc::value_too_large};
 	    memcpy(first, buffer, output_length);
 	  }
@@ -1365,7 +1383,8 @@ template<typename T>
 	  output_length_upper_bound += strlen(".") + effective_precision;
 
 	int output_length;
-	if (last - first >= output_length_upper_bound + excess_precision)
+	if (last - first >= output_length_upper_bound
+	    && last - first - output_length_upper_bound >= excess_precision)
 	  {
 	    // The result will definitely fit into the output range, so we can
 	    // write directly into it.
@@ -1382,7 +1401,8 @@ template<typename T>
 	    output_length = ryu::d2fixed_buffered_n(value, effective_precision,
 						    buffer);
 	    __glibcxx_assert(output_length <= output_length_upper_bound);
-	    if (last - first < output_length + excess_precision)
+	    if (last - first < output_length
+		|| last - first - output_length < excess_precision)
 	      return {last, errc::value_too_large};
 	    memcpy(first, buffer, output_length);
 	  }
@@ -1554,6 +1574,7 @@ template<typename T>
       }
 
     __glibcxx_assert(false);
+    __builtin_unreachable();
   }
 
 // Define the overloads for float.

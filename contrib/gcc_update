@@ -86,14 +86,15 @@ gcc/config/arm/arm-tables.opt: gcc/config/arm/arm-cpus.in gcc/config/arm/parsecp
 gcc/config/c6x/c6x-tables.opt: gcc/config/c6x/c6x-isas.def gcc/config/c6x/genopt.sh
 gcc/config/c6x/c6x-sched.md: gcc/config/c6x/c6x-sched.md.in gcc/config/c6x/gensched.sh
 gcc/config/c6x/c6x-mult.md: gcc/config/c6x/c6x-mult.md.in gcc/config/c6x/genmult.sh
+gcc/config/loongarch/loongarch-str.h: gcc/config/loongarch/genopts/genstr.sh gcc/config/loongarch/genopts/loongarch-strings
+gcc/config/loongarch/loongarch.opt: gcc/config/loongarch/genopts/genstr.sh gcc/config/loongarch/genopts/loongarch.opt.in
 gcc/config/m68k/m68k-tables.opt: gcc/config/m68k/m68k-devices.def gcc/config/m68k/m68k-isas.def gcc/config/m68k/m68k-microarchs.def gcc/config/m68k/genopt.sh
 gcc/config/mips/mips-tables.opt: gcc/config/mips/mips-cpus.def gcc/config/mips/genopt.sh
 gcc/config/rs6000/rs6000-tables.opt: gcc/config/rs6000/rs6000-cpus.def gcc/config/rs6000/genopt.sh
 gcc/config/rs6000/fusion.md: gcc/config/rs6000/genfusion.pl
-gcc/config/tilegx/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
-gcc/config/tilepro/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
 # And then, language-specific files
 gcc/cp/cfns.h: gcc/cp/cfns.gperf
+gcc/cp/std-name-hint.h: gcc/cp/std-name-hint.gperf
 # testsuite
 # Without this, _Pragma3.c can have a false negative.
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
@@ -239,7 +240,7 @@ apply_patch () {
 }
 
 # Check whether this indeed looks like a local tree.
-if [ ! -f gcc/reload.c ]; then
+if [ ! -f gcc/reload.cc ]; then
     echo "This does not seem to be a GCC tree!"
     exit
 fi
@@ -332,7 +333,22 @@ case $vcs_type in
             exit 1
 	fi
 
-	revision=`$GCC_GIT log -n1 --pretty=tformat:%p:%t:%H`
+	# Open-coded version of "git gcc-descr" from contrib/gcc-git-customization.sh
+	revision=`$GCC_GIT log -n1 --pretty=tformat:%h`
+	r=`$GCC_GIT describe --all --match 'basepoints/gcc-[0-9]*' HEAD \
+	   | sed -n 's,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)-\([0-9]\+\)-g[0-9a-f]*$,r\2-\3,p;s,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)$,r\2-0,p'`;
+	if test -n $r; then
+		o=`$GCC_GIT config --get gcc-config.upstream`;
+		rr=`echo $r | sed -n 's,^r\([0-9]\+\)-[0-9]\+\(-g[0-9a-f]\+\)\?$,\1,p'`;
+		if $GCC_GIT rev-parse --verify --quiet ${o:-origin}/releases/gcc-$rr >/dev/null; then
+			m=releases/gcc-$rr;
+		else
+			m=master;
+		fi;
+		if $GCC_GIT merge-base --is-ancestor HEAD ${o:-origin}/$m; then
+			revision=${r}-g${revision};
+		fi
+	fi
 	branch=`$GCC_GIT name-rev --name-only HEAD || :`
 	;;    
 
@@ -414,6 +430,6 @@ rm -f LAST_UPDATED gcc/REVISION
     date
     echo "`TZ=UTC date` (revision $revision)"
 } > LAST_UPDATED
-echo "[$branch revision $revision]" > gcc/REVISION
+echo "[$branch $revision]" > gcc/REVISION
 
 touch_files_reexec

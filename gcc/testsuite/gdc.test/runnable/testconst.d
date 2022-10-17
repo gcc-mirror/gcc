@@ -53,7 +53,7 @@ template TypeTuple(T...) { alias T TypeTuple; }
 
 void showf(string f)
 {
-    printf("%.*s\n", f.length, f.ptr);
+    printf("%.*s\n", cast(int)f.length, f.ptr);
 }
 
 /************************************/
@@ -626,7 +626,7 @@ class C42
 
 void test42()
 {
-    printf("%d\n", C42.classinfo.initializer.length);
+    printf("%zd\n", C42.classinfo.initializer.length);
     assert(C42.classinfo.initializer.length == 12 + (void*).sizeof +
         (void*).sizeof);
     C42 c = new C42;
@@ -963,7 +963,7 @@ void test56()
 {
     S56 s;
     S56 t;
-    printf("S56.sizeof = %d\n", S56.sizeof);
+    printf("S56.sizeof = %zd\n", S56.sizeof);
     //t = s;
 }
 
@@ -1574,7 +1574,7 @@ void test87()
 }
 
 /************************************/
-// 2751
+// https://issues.dlang.org/show_bug.cgi?id=2751
 
 
 void test88(immutable(int[3]) a)
@@ -1603,7 +1603,7 @@ void test88(immutable(int[3]) a)
 }
 
 /************************************/
-// 3748
+// https://issues.dlang.org/show_bug.cgi?id=3748
 
 // version = error8;
 // version = error11;
@@ -1623,7 +1623,7 @@ struct S3748
     const int z = 6;
     C3748 c;
 
-    inout(int)* getX() inout
+    inout(int)* getX() inout return
     {
         static assert(!__traits(compiles, {
             x = 4;
@@ -1878,7 +1878,7 @@ void test3748c(inout int = 1)
 }
 
 /************************************/
-// 4968
+// https://issues.dlang.org/show_bug.cgi?id=4968
 
 void test4968()
 {
@@ -1924,7 +1924,7 @@ void test4968()
 }
 
 /************************************/
-// 1961
+// https://issues.dlang.org/show_bug.cgi?id=1961
 
 inout(char)[] strstr(inout(char)[] source, const(char)[] pattern)
 {
@@ -2042,7 +2042,7 @@ void test88()
 }
 
 /************************************/
-// 4251
+// https://issues.dlang.org/show_bug.cgi?id=4251
 
 void test4251a()
 {
@@ -2185,7 +2185,7 @@ void test4251b()
 }
 
 /************************************/
-// 5473
+// https://issues.dlang.org/show_bug.cgi?id=5473
 
 void test5473()
 {
@@ -2227,7 +2227,7 @@ void test5473()
 }
 
 /************************************/
-// 5493
+// https://issues.dlang.org/show_bug.cgi?id=5493
 
 void test5493()
 {
@@ -2282,7 +2282,7 @@ void test5493()
 }
 
 /************************************/
-// 5493 + inout
+// https://issues.dlang.org/show_bug.cgi?id=5493 + inout
 
 void test5493inout()
 {
@@ -2330,7 +2330,7 @@ void test5493inout()
 }
 
 /************************************/
-// 6782
+// https://issues.dlang.org/show_bug.cgi?id=6782
 
 struct Tuple6782(T...)
 {
@@ -2368,7 +2368,7 @@ void test6782()
 }
 
 /************************************/
-// 6864
+// https://issues.dlang.org/show_bug.cgi?id=6864
 
 int fn6864( const int n) { return 1; }
 int fn6864(shared int n) { return 2; }
@@ -2387,7 +2387,7 @@ void test6864()
 }
 
 /************************************/
-// 6865
+// https://issues.dlang.org/show_bug.cgi?id=6865
 
 shared(inout(int)) foo6865(shared(inout(int)) n){ return n; }
 void test6865()
@@ -2397,7 +2397,7 @@ void test6865()
 }
 
 /************************************/
-// 6866
+// https://issues.dlang.org/show_bug.cgi?id=6866
 
 struct S6866
 {
@@ -2414,7 +2414,7 @@ void test6866()
 }
 
 /************************************/
-// 6867
+// https://issues.dlang.org/show_bug.cgi?id=6867
 
 inout(char)[] test6867(inout(char)[] a)
 {
@@ -2428,7 +2428,7 @@ inout(char)[] test6867(inout(char)[] a)
 }
 
 /************************************/
-// 6870
+// https://issues.dlang.org/show_bug.cgi?id=6870
 
 void test6870()
 {
@@ -2440,7 +2440,8 @@ void test6870()
 }
 
 /************************************/
-// 6338, 6922
+// https://issues.dlang.org/show_bug.cgi?id=6338
+// https://issues.dlang.org/show_bug.cgi?id=6922
 
 alias int T;
 
@@ -2468,7 +2469,7 @@ static assert(is( inout(shared(immutable(T))) == immutable(T) ));
 static assert(is( inout(immutable(shared(T))) == immutable(T) ));
 
 /************************************/
-// 6912
+// https://issues.dlang.org/show_bug.cgi?id=6912
 
 void test6912()
 {
@@ -2585,7 +2586,7 @@ void test6912()
 }
 
 /************************************/
-// 6930
+// https://issues.dlang.org/show_bug.cgi?id=6930
 
 void test6930a()
 {
@@ -2657,7 +2658,7 @@ void test6930b(inout int = 0)
 }
 
 /************************************/
-// 11868
+// https://issues.dlang.org/show_bug.cgi?id=11868
 
 void f11868(A...)(A) { }
 
@@ -2673,7 +2674,7 @@ void test11868()
 }
 
 /************************************/
-// 11924
+// https://issues.dlang.org/show_bug.cgi?id=11924
 
 inout(StringType) localize11924(StringType)(inout StringType str, string locale)
 {
@@ -2695,7 +2696,7 @@ struct S11924
 }
 
 /************************************/
-// 11966
+// https://issues.dlang.org/show_bug.cgi?id=11966
 
 inout(char)[] stripped11966 (inout(char)[] path)
 {
@@ -2721,7 +2722,7 @@ void test11966()
 }
 
 /************************************/
-// 14788
+// https://issues.dlang.org/show_bug.cgi?id=14788
 
 auto make14788(K, V)(inout V[K] aa)
 {
@@ -2740,7 +2741,7 @@ void test14788()
 }
 
 /************************************/
-// 12089
+// https://issues.dlang.org/show_bug.cgi?id=12089
 
 void foo12089(inout(char[]) a)
 {
@@ -2754,7 +2755,7 @@ void decodeImpl12089(S)(auto ref S str)
 {}
 
 /************************************/
-// 12524
+// https://issues.dlang.org/show_bug.cgi?id=12524
 
 inout(int) dup12524(inout(const(int)) val)
 {
@@ -2771,7 +2772,7 @@ void test12524(inout(int))
 }
 
 /************************************/
-// 6941
+// https://issues.dlang.org/show_bug.cgi?id=6941
 
 static assert((const(shared(int[])[])).stringof == "const(shared(int[])[])");   // fail
 static assert((const(shared(int[])[])).stringof != "const(shared(const(int[]))[])"); // fail
@@ -2780,7 +2781,7 @@ static assert((inout(shared(int[])[])).stringof == "inout(shared(int[])[])");   
 static assert((inout(shared(int[])[])).stringof != "inout(shared(inout(int[]))[])");    // fail
 
 /************************************/
-// 6872
+// https://issues.dlang.org/show_bug.cgi?id=6872
 
 static assert((shared(inout(int)[])).stringof == "shared(inout(int)[])");
 static assert((shared(inout(const(int)[]))).stringof == "shared(inout(const(int)[]))");
@@ -2788,7 +2789,7 @@ static assert((shared(inout(const(int)[])[])).stringof == "shared(inout(const(in
 static assert((shared(inout(const(immutable(int)[])[])[])).stringof == "shared(inout(const(immutable(int)[])[])[])");
 
 /************************************/
-// 6939
+// https://issues.dlang.org/show_bug.cgi?id=6939
 
 void test6939()
 {
@@ -2808,7 +2809,7 @@ void test6939()
 }
 
 /************************************/
-// 6940
+// https://issues.dlang.org/show_bug.cgi?id=6940
 
 void test6940()
 {
@@ -2830,7 +2831,7 @@ void test6940()
 }
 
 /************************************/
-// 6982
+// https://issues.dlang.org/show_bug.cgi?id=6982
 
 void test6982()
 {
@@ -2847,7 +2848,7 @@ void test6982()
 }
 
 /************************************/
-// 7038
+// https://issues.dlang.org/show_bug.cgi?id=7038
 
 static assert(is(S7038 == const));
 const struct S7038{ int x; }
@@ -2859,9 +2860,11 @@ static assert(is(S7038b == shared));
 immutable struct S7038c{ int x; }
 static assert(is(S7038c == immutable));
 
-static assert(!is(C7038 == const));
+// https://issues.dlang.org/show_bug.cgi?id=22515
+// Classes fixed for consistency with structs
+static assert(is(C7038 == const));
 const class C7038{ int x; }
-static assert(!is(C7038 == const));
+static assert(is(C7038 == const));
 
 void test7038()
 {
@@ -2870,12 +2873,12 @@ void test7038()
     static assert(is(typeof(s.x) == const int));
 
     C7038 c;
-    static assert(!is(typeof(c) == const));
+    static assert(is(typeof(c) == const));
     static assert(is(typeof(c.x) == const int));
 }
 
 /************************************/
-// 7105
+// https://issues.dlang.org/show_bug.cgi?id=7105
 
 void copy(inout(int)** tgt, inout(int)* src){ *tgt = src; }
 
@@ -2909,11 +2912,11 @@ void test7105()
 }
 
 /************************************/
-// 7202
+// https://issues.dlang.org/show_bug.cgi?id=7202
 
 void test7202()
 {
-    void writeln(string s) @system { printf("%.*s\n", s.length, s.ptr); }
+    void writeln(string s) @system { printf("%.*s\n", cast(int)s.length, s.ptr); }
     void delegate() @system x = { writeln("I am @system"); };
     void delegate() @safe y = {  };
     auto px = &x;
@@ -2924,7 +2927,7 @@ void test7202()
 }
 
 /************************************/
-// 7554
+// https://issues.dlang.org/show_bug.cgi?id=7554
 
 T outer7554(T)(immutable T function(T) pure foo) pure {
     pure int inner() {
@@ -2957,7 +2960,7 @@ void test7518() {
 }
 
 /************************************/
-// 7669
+// https://issues.dlang.org/show_bug.cgi?id=7669
 
 shared(inout U)[n] id7669(U, size_t n)( shared(inout U)[n] );
 void test7669()
@@ -2966,7 +2969,7 @@ void test7669()
 }
 
 /************************************/
-// 7757
+// https://issues.dlang.org/show_bug.cgi?id=7757
 
 inout(int)      foo7757a(int x, lazy inout(int)      def) { return def; }
 inout(int)[]    foo7757b(int x, lazy inout(int)[]    def) { return def; }
@@ -2999,7 +3002,7 @@ void test7757()
 }
 
 /************************************/
-// 8098
+// https://issues.dlang.org/show_bug.cgi?id=8098
 
 class Outer8098
 {
@@ -3033,7 +3036,7 @@ void test8098()
 }
 
 /************************************/
-// 8099
+// https://issues.dlang.org/show_bug.cgi?id=8099
 
 void test8099()
 {
@@ -3068,7 +3071,7 @@ void test8099()
 }
 
 /************************************/
-// 8201
+// https://issues.dlang.org/show_bug.cgi?id=8201
 
 void test8201()
 {
@@ -3080,7 +3083,7 @@ void test8201()
 }
 
 /************************************/
-// 8212
+// https://issues.dlang.org/show_bug.cgi?id=8212
 
 struct S8212 { int x; }
 
@@ -3095,7 +3098,7 @@ void test8212()
 }
 
 /************************************/
-// 8366
+// https://issues.dlang.org/show_bug.cgi?id=8366
 
 class B8366
 {
@@ -3115,7 +3118,7 @@ class C8366a : B8366
 class C8366b : B8366
 {
     bool foo(in Object o)              { return false; }
-    alias super.foo foo;
+    alias typeof(super).foo foo;
     bool foo(in Object o) immutable    { return false; }
     bool foo(in Object o) shared       { return false; }
     bool foo(in Object o) shared const { return false; }
@@ -3146,7 +3149,7 @@ void test8366()
 }
 
 /************************************/
-// 8408
+// https://issues.dlang.org/show_bug.cgi?id=8408
 
 template hasMutableIndirection8408(T)
 {
@@ -3211,18 +3214,20 @@ void test8408()
     struct T2 { S2 s; }
     struct T3 { S1 s1;  S2 s2; }
 
-    test!(int   , true )();
-    test!(int[3], true )();
+/*
+    test!(int   , false)();
+    test!(int[3], false)();
     test!(C     , false)();
-    test!(S1    , true )();
+    test!(S1    , false)();
     test!(S2    , false)();
-    test!(T1    , true )();
+    test!(T1    , false)();
     test!(T2    , false)();
     test!(T3    , false)();
+*/
 }
 
 /************************************/
-// 8688
+// https://issues.dlang.org/show_bug.cgi?id=8688
 
 void test8688()
 {
@@ -3236,7 +3241,7 @@ void test8688()
 }
 
 /************************************/
-// 10946 (regression by fixing bug 8688, from 2.061)
+// https://issues.dlang.org/show_bug.cgi?id=10946 (regression by fixing bug 8688, from 2.061)
 
 enum xlen10946 = 4;
 alias immutable(char)[xlen10946] e3;
@@ -3246,12 +3251,12 @@ alias immutable(char)[vlen10946] i3;
 alias immutable(char[vlen10946]) i4; // NG -> OK
 
 /************************************/
-// 9046
+// https://issues.dlang.org/show_bug.cgi?id=9046
 
 void test9046()
 {
     foreach (T; TypeTuple!(byte, ubyte, short, ushort, int, uint, long, ulong, char, wchar, dchar,
-                           float, double, real, ifloat, idouble, ireal, cfloat, cdouble, creal))
+                           float, double, real))
     foreach (U; TypeTuple!(T, const T, immutable T, shared T, shared const T, inout T, shared inout T))
     {
         static assert(is(typeof(U.init) == U));
@@ -3285,7 +3290,7 @@ void test9046()
 }
 
 /************************************/
-// 9090
+// https://issues.dlang.org/show_bug.cgi?id=9090
 
 void test9090()
 {
@@ -3296,7 +3301,7 @@ void test9090()
 }
 
 /************************************/
-// 9461
+// https://issues.dlang.org/show_bug.cgi?id=9461
 
 void test9461()
 {
@@ -3328,24 +3333,24 @@ void test9209() {
 }
 
 /************************************/
-// 10758
+// https://issues.dlang.org/show_bug.cgi?id=10758
 
 struct X10758
 {
 static:
         inout(int)   screwUpVal(ref inout(int) wx) { return wx; }
-    ref inout(int)   screwUpRef(ref inout(int) wx) { return wx; }
-        inout(int)*  screwUpPtr(ref inout(int) wx) { return &wx; }
-        inout(int)[] screwUpArr(ref inout(int) wx) { return (&wx)[0 .. 1]; }
+    ref inout(int)   screwUpRef(return ref inout(int) wx) { return wx; }
+        inout(int)*  screwUpPtr(return ref inout(int) wx) { return &wx; }
+        inout(int)[] screwUpArr(return ref inout(int) wx) { return (&wx)[0 .. 1]; }
 }
 
 struct S10758
 {
     int x;
         inout(int)   screwUpVal(ref inout(int) _) inout { return x; }
-    ref inout(int)   screwUpRef(ref inout(int) _) inout { return x; }
-        inout(int)*  screwUpPtr(ref inout(int) _) inout { return &x; }
-        inout(int)[] screwUpArr(ref inout(int) _) inout { return (&x)[0 .. 1]; }
+    ref inout(int)   screwUpRef(ref inout(int) _) inout return { return x; }
+        inout(int)*  screwUpPtr(ref inout(int) _) inout return { return &x; }
+        inout(int)[] screwUpArr(ref inout(int) _) inout return { return (&x)[0 .. 1]; }
 }
 
 void test10758(ref inout(int) wx, inout(int)* wp, inout(int)[] wa, inout(S10758) ws)
@@ -3471,7 +3476,7 @@ void test10758(ref inout(int) wx, inout(int)* wp, inout(int)[] wa, inout(S10758)
 }
 
 /************************************/
-// 10761
+// https://issues.dlang.org/show_bug.cgi?id=10761
 
 inout(int)* function(inout(int)*) fptr10761(inout(int)*)
 {
@@ -3492,14 +3497,14 @@ inout(int)* delegate(inout(int)*) nest10761(inout(int)* x)
 struct S10761
 {
     int x;
-    inout(int)* screwUp() inout { return &x; }
+    inout(int)* screwUp() inout return { return &x; }
 }
 
-inout(int)* delegate() inout memfn10761(inout(int)* x)
+inout(int)* delegate() inout return memfn10761(inout(int)* x)
 {
     auto s = new inout S10761(1);
     auto dg = &s.screwUp;
-    static assert(is(typeof(dg) == inout(int)* delegate() inout));
+    static assert(is(typeof(dg) == inout(int)* delegate() inout return));
     return dg;
 }
 
@@ -3537,7 +3542,7 @@ void test10761()
         auto dg_m = memfn10761(&mx);
         auto dg_c = memfn10761(&cx);
         auto dg_i = memfn10761(&ix);
-        alias DG = const(int)* delegate() const;
+        alias DG = const(int)* delegate() return const;
         static assert(is(typeof(dg_m) == DG));
         static assert(is(typeof(dg_c) == DG));
         static assert(is(typeof(dg_i) == DG));
@@ -3545,7 +3550,7 @@ void test10761()
 }
 
 /************************************/
-// 11226
+// https://issues.dlang.org/show_bug.cgi?id=11226
 
 void test11226()
 {
@@ -3573,7 +3578,7 @@ void test11226()
 }
 
 /************************************/
-// 11257
+// https://issues.dlang.org/show_bug.cgi?id=11257
 
 struct R11257
 {
@@ -3590,7 +3595,7 @@ void test11257()
 }
 
 /************************************/
-// 11215
+// https://issues.dlang.org/show_bug.cgi?id=11215
 
 shared(inout(void)**) f11215(inout int);
 
@@ -3598,7 +3603,7 @@ static assert(is(typeof(f11215(0)) == shared(void**)));
 static assert(is(typeof(f11215((const int).init)) == shared(const(void)**)));
 
 /************************************/
-// 11489
+// https://issues.dlang.org/show_bug.cgi?id=11489
 
 void test11489(inout int = 0)
 {
@@ -3671,7 +3676,7 @@ void test11489(inout int = 0)
 }
 
 /************************************/
-// 11768
+// https://issues.dlang.org/show_bug.cgi?id=11768
 
 void test11768(inout int = 0)
 {
@@ -3683,7 +3688,7 @@ void test11768(inout int = 0)
 }
 
 /************************************/
-// 12403
+// https://issues.dlang.org/show_bug.cgi?id=12403
 
 void test12403()
 {
@@ -3698,7 +3703,7 @@ void test12403()
 }
 
 /************************************/
-// 13011
+// https://issues.dlang.org/show_bug.cgi?id=13011
 
 void test13011()
 {
@@ -3712,7 +3717,7 @@ void test13011()
 }
 
 /************************************/
-// 13030
+// https://issues.dlang.org/show_bug.cgi?id=13030
 
 void va13030(Args...)(const Args args) {}
 
@@ -3722,7 +3727,8 @@ void func13030(int delegate(int n) a)
 }
 
 /************************************/
-// 13802 & 13803
+// https://issues.dlang.org/show_bug.cgi?id=13802
+// https://issues.dlang.org/show_bug.cgi?id=13803
 
 static assert((              string     ).stringof ==               "string"       );
 static assert((              string[]   ).stringof ==               "string[]"     );

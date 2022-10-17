@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2021, AdaCore                      --
+--                    Copyright (C) 2007-2022, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,6 +70,7 @@ package body GNAT.Serial_Communications is
    begin
       if Port.H /= -1 then
          Success := CloseHandle (HANDLE (Port.H));
+         Port.H := -1;
 
          if Success = Win32.FALSE then
             Raise_Error ("error closing the port");

@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-additional-options "-fdump-tree-original" }
-// { dg-final { scan-tree-dump-times "omp atomic release" 5 "original" } }
+// { dg-final { scan-tree-dump-times "omp atomic release" 4 "original" } }
+// { dg-final { scan-tree-dump-times "omp atomic acq_rel" 1 "original" } }
 // { dg-final { scan-tree-dump-times "omp atomic seq_cst" 1 "original" } }
 // { dg-final { scan-tree-dump-times "omp atomic relaxed" 2 "original" } }
 // { dg-final { scan-tree-dump-times "omp atomic capture acq_rel" 3 "original" } }

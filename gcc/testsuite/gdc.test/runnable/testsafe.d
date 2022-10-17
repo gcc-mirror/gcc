@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 
-//http://d.puremagic.com/issues/show_bug.cgi?id=5415
+//https://issues.dlang.org/show_bug.cgi?id=5415
 
 @safe
 void pointercast()
@@ -31,7 +31,7 @@ void pointercast2()
 
 @safe
 void pointerarithmetic()
-{//http://d.puremagic.com/issues/show_bug.cgi?id=4132
+{//https://issues.dlang.org/show_bug.cgi?id=4132
     void* a;
     int b;
 
@@ -137,7 +137,7 @@ struct uD
 }
 
 @safe
-void safeunions()   // improved for issue 11510
+void safeunions()   // improved for https://issues.dlang.org/show_bug.cgi?id=11510
 {
     SafeUnion1 su1;
     SafeUnion2 su2;
@@ -196,11 +196,6 @@ void safeexception()
     static assert(!__traits(compiles, () @safe {
         try {}
         catch(Throwable e) {}
-    }));
-
-    static assert(!__traits(compiles, () @safe {
-        try {}
-        catch {}
     }));
 }
 
@@ -278,7 +273,7 @@ void use__gshared()
 
 @safe
 void voidinitializers()
-{//http://d.puremagic.com/issues/show_bug.cgi?id=4885
+{//https://issues.dlang.org/show_bug.cgi?id=4885
     static assert(!__traits(compiles, () @safe { uint* ptr = void; } ));
     static assert( __traits(compiles, () @safe { uint i = void; } ));
     static assert( __traits(compiles, () @safe { uint[2] a = void; } ));
@@ -295,14 +290,14 @@ void voidinitializers()
 
 @safe
 void pointerindex()
-{//http://d.puremagic.com/issues/show_bug.cgi?id=9195
+{//https://issues.dlang.org/show_bug.cgi?id=9195
     static assert(!__traits(compiles, () @safe { int* p; auto a = p[30]; }));
     static assert( __traits(compiles, () @safe{ int* p; auto a = p[0]; }));
 }
 
 @safe
 void basiccast()
-{//http://d.puremagic.com/issues/show_bug.cgi?id=5088
+{//https://issues.dlang.org/show_bug.cgi?id=5088
     auto a = cast(int)cast(const int)1;
     auto b = cast(real)cast(const int)1;
     auto c = cast(real)cast(const real)2.0;
@@ -415,7 +410,7 @@ void classcast()
 }
 
 /***************************************************/
-// 6278
+// https://issues.dlang.org/show_bug.cgi?id=6278
 
 @safe
 {
@@ -423,18 +418,18 @@ void classcast()
 class A6278 {
     int test()
     in { assert(0); }
-    body { return 1; }
+    do { return 1; }
 }
 class B6278 : A6278 {
     override int test()
     in { assert(0); }
-    body { return 1; }
+    do { return 1; }
 }
 
 }
 
 /***************************************************/
-// 7803
+// https://issues.dlang.org/show_bug.cgi?id=7803
 
 @safe int f7803() {
     scope(success) {/* ... */}
@@ -447,13 +442,13 @@ nothrow int g7803() {
 }
 
 /***************************************************/
-// 6405
+// https://issues.dlang.org/show_bug.cgi?id=6405
 
 void foo6405(int[][] args...) @trusted { }
 void test6405() @safe { foo6405([1,2,3], [1,2,3]); }
 
 /***************************************************/
-// 12502
+// https://issues.dlang.org/show_bug.cgi?id=12502
 
 void test12502() @safe
 {
@@ -495,4 +490,3 @@ void main()
 {
     test14162();
 }
-

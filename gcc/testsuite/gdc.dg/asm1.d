@@ -24,9 +24,9 @@ void parse3()
 {
     asm { "" [; }
     // { dg-error "expression expected, not ';'" "" { target *-*-* } .-1 }
-    // { dg-error "found 'EOF' when expecting ','" "" { target *-*-* } .-2 }
-    // { dg-error "found 'EOF' when expecting ']'" "" { target *-*-* } .-3 }
-    // { dg-error "found 'EOF' when expecting ';'" "" { target *-*-* } .-4 }
+    // { dg-error "found 'End of File' when expecting ','" "" { target *-*-* } .-2 }
+    // { dg-error "found 'End of File' when expecting ']'" "" { target *-*-* } .-3 }
+    // { dg-error "found 'End of File' when expecting ';'" "" { target *-*-* } .-4 }
 }
 
 void parse4()
@@ -46,8 +46,8 @@ void semantic1()
         ;
     }
     asm { "" : : : : L1, L2; }
-    // { dg-error "goto skips declaration of variable asm1.semantic1.one" "" { target *-*-* } .-1 }
-    // { dg-error "goto skips declaration of variable asm1.semantic1.two" "" { target *-*-* } .-2 }
+    // { dg-error "'goto' skips declaration of variable 'asm1.semantic1.one'" "" { target *-*-* } .-1 }
+    // { dg-error "'goto' skips declaration of variable 'asm1.semantic1.two'" "" { target *-*-* } .-2 }
     {
         int two;
     L2:
@@ -58,19 +58,19 @@ void semantic1()
 void semantic2a(X...)(X expr)
 {
     alias X[0] var1;
-    asm { "%0" : "=m" (var1); } // { dg-error "double 'double' is a type, not an lvalue" }
+    asm { "%0" : "=m" (var1); } // { dg-error "double' is a 'double' definition and cannot be modified" }
 }
 
 void semantic2()
 {
-   semantic2a(3.6);     // { dg-error "template instance asm1.semantic2a!double error instantiating" }
+   semantic2a(3.6);     // { dg-error "template instance 'asm1.semantic2a!double' error instantiating" }
 }
 
 void semantic3()
 {
     asm 
     {
-        unknown;        // { dg-error "undefined identifier" }
+        unknown;        // { dg-error "undefined identifier 'unknown'" }
     }
 }
 
@@ -86,6 +86,6 @@ void semantic4()
 {
     asm
     {
-        "%0" : : "m" (S4.foo);  // { dg-error "template instance opDispatch!\"foo\" has no value" }
+        "%0" : : "m" (S4.foo);  // { dg-error "template instance 'opDispatch!\"foo\"' has no value" }
     }
 }

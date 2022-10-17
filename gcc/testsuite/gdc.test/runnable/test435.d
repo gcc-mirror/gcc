@@ -1,3 +1,9 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 import core.stdc.stdio;
 
 class A
@@ -65,7 +71,7 @@ void test1()
 
 //------------------------------------------------------------------------------
 
-// bug 435.
+// https://issues.dlang.org/show_bug.cgi?id=435.
 class B
 {
     int i;
@@ -90,7 +96,7 @@ void test2()
 
 //------------------------------------------------------------------------------
 
-// bug 4905
+// https://issues.dlang.org/show_bug.cgi?id=4905
 class C2
 {
     string x;
@@ -114,7 +120,7 @@ void test3()
 
 //------------------------------------------------------------------------------
 
-// bug 4531 test case 2
+// https://issues.dlang.org/show_bug.cgi?id=4531 test case 2
 class MyError : Exception
 {
     this(T...)(T msg)
@@ -139,5 +145,3 @@ void main()
     test4();
     printf("Success\n");
 }
-
-

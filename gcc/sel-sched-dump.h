@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Log dumping infrastructure.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -193,7 +193,7 @@ extern void debug_insn (insn_t);
 extern bool sched_dump_to_dot_p;
 
 
-/* Functions from sel-sched-dump.c.  */
+/* Functions from sel-sched-dump.cc.  */
 extern void sel_print (const char *fmt, ...) ATTRIBUTE_PRINTF_1;
 extern const char * sel_print_insn (const rtx_insn *, int);
 extern void free_sel_dump_data (void);

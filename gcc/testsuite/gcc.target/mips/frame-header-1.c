@@ -8,7 +8,7 @@
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\taddiu\t\\\$sp,\\\$sp,-24" } } */
 
-NOMIPS16 void __attribute__((noinline))
+NOMIPS16 void __attribute__((noinline)) __attribute__((noipa))
 bar (int* a)
 {
   *a = 1;

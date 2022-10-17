@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3672.d(28): Deprecation: read-modify-write operations are not allowed for shared variables. Use core.atomic.atomicOp!"+="(*p, 1) instead.
-fail_compilation/fail3672.d(32): Deprecation: read-modify-write operations are not allowed for shared variables. Use core.atomic.atomicOp!"+="(*sfp, 1) instead.
-fail_compilation/fail3672.d(32): Error: '*sfp += 1' is not a scalar, it is a shared(SF)
+fail_compilation/fail3672.d(28): Error: read-modify-write operations are not allowed for `shared` variables
+fail_compilation/fail3672.d(28):        Use `core.atomic.atomicOp!"+="(*p, 1)` instead
+fail_compilation/fail3672.d(32): Error: none of the `opOpAssign` overloads of `SF` are callable for `*sfp` of type `shared(SF)`
 ---
 */
 

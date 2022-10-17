@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,11 +29,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Loop invariants in this unit are meant for analysis only, not for run-time
+--  checking, as it would be too costly otherwise. This is enforced by setting
+--  the assertion policy to Ignore.
+
+pragma Assertion_Policy (Loop_Invariant => Ignore);
+
 with Ada.Characters.Latin_1;     use Ada.Characters.Latin_1;
 with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
 
-package body Ada.Characters.Handling is
+package body Ada.Characters.Handling
+  with SPARK_Mode
+is
 
    ------------------------------------
    -- Character Classification Table --
@@ -56,7 +64,7 @@ package body Ada.Characters.Handling is
    Graphic    : constant Character_Flags := Alphanum or Special;
 
    Char_Map : constant array (Character) of Character_Flags :=
-   (
+   [
      NUL                         => Control,
      SOH                         => Control,
      STX                         => Control,
@@ -274,7 +282,7 @@ package body Ada.Characters.Handling is
      LC_Y_Acute                  => Lower,
      LC_Icelandic_Thorn          => Lower + Basic,
      LC_Y_Diaeresis              => Lower
-   );
+   ];
 
    ---------------------
    -- Is_Alphanumeric --
@@ -299,9 +307,7 @@ package body Ada.Characters.Handling is
    ------------------
 
    function Is_Character (Item : Wide_Character) return Boolean is
-   begin
-      return Wide_Character'Pos (Item) < 256;
-   end Is_Character;
+     (Wide_Character'Pos (Item) < 256);
 
    ----------------
    -- Is_Control --
@@ -344,9 +350,7 @@ package body Ada.Characters.Handling is
    ----------------
 
    function Is_ISO_646 (Item : Character) return Boolean is
-   begin
-      return Item in ISO_646;
-   end Is_ISO_646;
+     (Item in ISO_646);
 
    --  Note: much more efficient coding of the following function is possible
    --  by testing several 16#80# bits in a complete word in a single operation
@@ -357,6 +361,8 @@ package body Ada.Characters.Handling is
          if Item (J) not in ISO_646 then
             return False;
          end if;
+         pragma Loop_Invariant
+           (for all K in Item'First .. J => Is_ISO_646 (Item (K)));
       end loop;
 
       return True;
@@ -456,6 +462,8 @@ package body Ada.Characters.Handling is
          if Wide_Character'Pos (Item (J)) >= 256 then
             return False;
          end if;
+         pragma Loop_Invariant
+           (for all K in Item'First .. J => Is_Character (Item (K)));
       end loop;
 
       return True;
@@ -475,15 +483,18 @@ package body Ada.Characters.Handling is
    --------------
 
    function To_Basic (Item : Character) return Character is
-   begin
-      return Value (Basic_Map, Item);
-   end To_Basic;
+      (Value (Basic_Map, Item));
 
    function To_Basic (Item : String) return String is
    begin
-      return Result : String (1 .. Item'Length) do
+      return Result : String (1 .. Item'Length) with Relaxed_Initialization do
          for J in Item'Range loop
             Result (J - (Item'First - 1)) := Value (Basic_Map, Item (J));
+            pragma Loop_Invariant
+              (Result (1 .. J - Item'First + 1)'Initialized);
+            pragma Loop_Invariant
+              (for all K in Item'First .. J =>
+                 Result (K - (Item'First - 1)) = To_Basic (Item (K)));
          end loop;
       end return;
    end To_Basic;
@@ -511,24 +522,25 @@ package body Ada.Characters.Handling is
    function To_ISO_646
      (Item       : Character;
       Substitute : ISO_646 := ' ') return ISO_646
-   is
-   begin
-      return (if Item in ISO_646 then Item else Substitute);
-   end To_ISO_646;
+   is (if Item in ISO_646 then Item else Substitute);
 
    function To_ISO_646
      (Item       : String;
       Substitute : ISO_646 := ' ') return String
    is
-      Result : String (1 .. Item'Length);
-
    begin
-      for J in Item'Range loop
-         Result (J - (Item'First - 1)) :=
-           (if Item (J) in ISO_646 then Item (J) else Substitute);
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Item'Length) with Relaxed_Initialization do
+         for J in Item'Range loop
+            Result (J - (Item'First - 1)) :=
+              (if Item (J) in ISO_646 then Item (J) else Substitute);
+            pragma Loop_Invariant
+              (Result (1 .. J - Item'First + 1)'Initialized);
+            pragma Loop_Invariant
+              (for all K in Item'First .. J =>
+                 Result (K - (Item'First - 1)) =
+                   To_ISO_646 (Item (K), Substitute));
+         end loop;
+      end return;
    end To_ISO_646;
 
    --------------
@@ -536,15 +548,18 @@ package body Ada.Characters.Handling is
    --------------
 
    function To_Lower (Item : Character) return Character is
-   begin
-      return Value (Lower_Case_Map, Item);
-   end To_Lower;
+     (Value (Lower_Case_Map, Item));
 
    function To_Lower (Item : String) return String is
    begin
-      return Result : String (1 .. Item'Length) do
+      return Result : String (1 .. Item'Length) with Relaxed_Initialization do
          for J in Item'Range loop
             Result (J - (Item'First - 1)) := Value (Lower_Case_Map, Item (J));
+            pragma Loop_Invariant
+              (Result (1 .. J - Item'First + 1)'Initialized);
+            pragma Loop_Invariant
+              (for all K in Item'First .. J =>
+                 Result (K - (Item'First - 1)) = To_Lower (Item (K)));
          end loop;
       end return;
    end To_Lower;
@@ -557,34 +572,40 @@ package body Ada.Characters.Handling is
      (Item       : Wide_String;
       Substitute : Character := ' ') return String
    is
-      Result : String (1 .. Item'Length);
-
    begin
-      for J in Item'Range loop
-         Result (J - (Item'First - 1)) := To_Character (Item (J), Substitute);
-      end loop;
-
-      return Result;
+      return Result : String (1 .. Item'Length) with Relaxed_Initialization do
+         for J in Item'Range loop
+            Result (J - (Item'First - 1)) :=
+              To_Character (Item (J), Substitute);
+            pragma Loop_Invariant
+              (Result (1 .. J - (Item'First - 1))'Initialized);
+            pragma Loop_Invariant
+              (for all K in Item'First .. J =>
+                 Result (K - (Item'First - 1)) =
+                   To_Character (Item (K), Substitute));
+         end loop;
+      end return;
    end To_String;
 
    --------------
    -- To_Upper --
    --------------
 
-   function To_Upper
-     (Item : Character) return Character
-   is
-   begin
-      return Value (Upper_Case_Map, Item);
-   end To_Upper;
+   function To_Upper (Item : Character) return Character is
+     (Value (Upper_Case_Map, Item));
 
    function To_Upper
      (Item : String) return String
    is
    begin
-      return Result : String (1 .. Item'Length) do
+      return Result : String (1 .. Item'Length) with Relaxed_Initialization do
          for J in Item'Range loop
             Result (J - (Item'First - 1)) := Value (Upper_Case_Map, Item (J));
+            pragma Loop_Invariant
+              (Result (1 .. J - Item'First + 1)'Initialized);
+            pragma Loop_Invariant
+              (for all K in Item'First .. J =>
+                 Result (K - (Item'First - 1)) = To_Upper (Item (K)));
          end loop;
       end return;
    end To_Upper;
@@ -607,14 +628,19 @@ package body Ada.Characters.Handling is
    function To_Wide_String
      (Item : String) return Wide_String
    is
-      Result : Wide_String (1 .. Item'Length);
-
    begin
-      for J in Item'Range loop
-         Result (J - (Item'First - 1)) := To_Wide_Character (Item (J));
-      end loop;
-
-      return Result;
+      return Result : Wide_String (1 .. Item'Length)
+        with Relaxed_Initialization
+      do
+         for J in Item'Range loop
+            Result (J - (Item'First - 1)) := To_Wide_Character (Item (J));
+            pragma Loop_Invariant
+              (Result (1 .. J - (Item'First - 1))'Initialized);
+            pragma Loop_Invariant
+              (for all K in Item'First .. J =>
+                 Result (K - (Item'First - 1)) = To_Wide_Character (Item (K)));
+         end loop;
+      end return;
    end To_Wide_String;
 
 end Ada.Characters.Handling;

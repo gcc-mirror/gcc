@@ -1,6 +1,6 @@
 
 /******************************************/
-// 3449
+// https://issues.dlang.org/show_bug.cgi?id=3449
 
 template TypeTuple(T...) { alias TypeTuple = T; }
 
@@ -13,6 +13,10 @@ static this()
 {
     mg1 = 10;
     cg1 = 10;
+}
+
+shared static this()
+{
     ig1 = 10;
 }
 static assert(!__traits(compiles, { static assert(mg1 == 0); }));
@@ -89,7 +93,7 @@ void test3449()
 }
 
 /******************************************/
-// 10643
+// https://issues.dlang.org/show_bug.cgi?id=10643
 
 struct S10643
 {

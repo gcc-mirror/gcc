@@ -1,6 +1,6 @@
 /* Gimple simplify definitions.
 
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -22,23 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_MATCH_H
 #define GCC_GIMPLE_MATCH_H
 
-
-/* Helper to transparently allow tree codes and builtin function codes
-   exist in one storage entity.  */
-class code_helper
-{
-public:
-  code_helper () {}
-  code_helper (tree_code code) : rep ((int) code) {}
-  code_helper (combined_fn fn) : rep (-(int) fn) {}
-  operator tree_code () const { return (tree_code) rep; }
-  operator combined_fn () const { return (combined_fn) -rep; }
-  bool is_tree_code () const { return rep > 0; }
-  bool is_fn_code () const { return rep < 0; }
-  int get_rep () const { return rep; }
-private:
-  int rep;
-};
 
 /* Represents the condition under which an operation should happen,
    and the value to use otherwise.  The condition applies elementwise
@@ -333,11 +316,23 @@ gimple_simplified_result_is_gimple_val (const gimple_match_op *op)
 
 extern tree (*mprts_hook) (gimple_match_op *);
 
+bool gimple_extract_op (gimple *, gimple_match_op *);
 bool gimple_simplify (gimple *, gimple_match_op *, gimple_seq *,
 		      tree (*)(tree), tree (*)(tree));
 tree maybe_push_res_to_seq (gimple_match_op *, gimple_seq *,
 			    tree res = NULL_TREE);
 void maybe_build_generic_op (gimple_match_op *);
 
+bool commutative_binary_op_p (code_helper, tree);
+bool commutative_ternary_op_p (code_helper, tree);
+int first_commutative_argument (code_helper, tree);
+bool associative_binary_op_p (code_helper, tree);
+code_helper canonicalize_code (code_helper, tree);
+
+#ifdef GCC_OPTABS_TREE_H
+bool directly_supported_p (code_helper, tree, optab_subtype = optab_default);
+#endif
+
+internal_fn get_conditional_internal_fn (code_helper, tree);
 
 #endif  /* GCC_GIMPLE_MATCH_H */

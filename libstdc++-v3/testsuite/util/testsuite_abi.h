@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,7 +24,11 @@
 #include <locale>
 #if __cplusplus >= 201103L
 # include <unordered_map>
+# ifdef _GLIBCXX_DEBUG
+namespace unord = std::_GLIBCXX_STD_C;
+# else
 namespace unord = std;
+# endif
 #else
 # include <tr1/unordered_map>
 namespace unord = std::tr1;

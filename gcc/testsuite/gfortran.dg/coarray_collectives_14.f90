@@ -63,10 +63,10 @@ program test
   call co_reduce(caf, dt%arg3) ! { dg-error "shall have two arguments" }
   call co_reduce(caf, elem) ! { dg-error "ELEMENTAL non-INTRINSIC procedure 'elem' is not allowed as an actual argument" }
   call co_reduce(caf, dt%elem) ! { dg-error "ELEMENTAL procedure pointer component 'elem' is not allowed as an actual argument" }
-  call co_reduce(caf, realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns REAL.4." }
-  call co_reduce(caf, dt%realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns REAL.4." }
-  call co_reduce(caf, int8) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns INTEGER.8." }
-  call co_reduce(caf, dt%int8) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATOR at .2. returns INTEGER.8." }
+  call co_reduce(caf, realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATION at .2. returns REAL.4." }
+  call co_reduce(caf, dt%realo) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATION at .2. returns REAL.4." }
+  call co_reduce(caf, int8) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATION at .2. returns INTEGER.8." }
+  call co_reduce(caf, dt%int8) ! { dg-error "A argument at .1. has type INTEGER.4. but the function passed as OPERATION at .2. returns INTEGER.8." }
   call co_reduce(caf, arr) ! { dg-error "scalar nonallocatable nonpointer arguments and return a nonallocatable nonpointer scalar" }
   call co_reduce(caf, dt%arr) ! { dg-error "scalar nonallocatable nonpointer arguments and return a nonallocatable nonpointer scalar" }
   call co_reduce(caf, ptr) ! { dg-error "scalar nonallocatable nonpointer arguments and return a nonallocatable nonpointer scalar" }
@@ -83,10 +83,10 @@ program test
   call co_reduce(caf, dt%tgt) ! { dg-error "shall have the TARGET attribute either for none or both arguments" }
   call co_reduce(c4, char44) ! OK
   call co_reduce(c4, dt%char44) ! OK
-  call co_reduce(c3, char34) ! { dg-error "character length of the A argument at .1. and of the arguments of the OPERATOR at .2. shall be the same" }
-  call co_reduce(c3, dt%char34) ! { dg-error "character length of the A argument at .1. and of the arguments of the OPERATOR at .2. shall be the same" }
-  call co_reduce(c4, char34) ! { dg-error "The character length of the A argument at .1. and of the function result of the OPERATOR at .2. shall be the same" }
-  call co_reduce(c4, dt%char34) ! { dg-error "The character length of the A argument at .1. and of the function result of the OPERATOR at .2. shall be the same" }
+  call co_reduce(c3, char34) ! { dg-error "character length of the A argument at .1. and of the arguments of the OPERATION at .2. shall be the same" }
+  call co_reduce(c3, dt%char34) ! { dg-error "character length of the A argument at .1. and of the arguments of the OPERATION at .2. shall be the same" }
+  call co_reduce(c4, char34) ! { dg-error "The character length of the A argument at .1. and of the function result of the OPERATION at .2. shall be the same" }
+  call co_reduce(c4, dt%char34) ! { dg-error "The character length of the A argument at .1. and of the function result of the OPERATION at .2. shall be the same" }
 
 contains
   pure integer function valid(x,y)

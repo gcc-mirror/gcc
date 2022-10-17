@@ -1,5 +1,5 @@
 /* The lang_hooks data structure.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,7 +36,7 @@ enum classify_record
 
 class substring_loc;
 
-/* The following hooks are documented in langhooks.c.  Must not be
+/* The following hooks are documented in langhooks.cc.  Must not be
    NULL.  */
 
 struct lang_hooks_for_tree_inlining
@@ -44,7 +44,7 @@ struct lang_hooks_for_tree_inlining
   bool (*var_mod_type_p) (tree, tree);
 };
 
-/* The following hooks are used by tree-dump.c.  */
+/* The following hooks are used by tree-dump.cc.  */
 
 struct lang_hooks_for_tree_dump
 {
@@ -66,7 +66,17 @@ struct lang_hooks_for_types
 
   /* Make an enum type with the given name and values, associating
      them all with the given source location.  */
-  tree (*simulate_enum_decl) (location_t, const char *, vec<string_int_pair>);
+  tree (*simulate_enum_decl) (location_t, const char *, vec<string_int_pair> *);
+
+  /* Do the equivalent of:
+
+       typedef struct NAME { FIELDS; } NAME;
+
+     associating it with location LOC.  Return the associated RECORD_TYPE.
+
+     FIELDS is a list of FIELD_DECLs, in layout order.  */
+  tree (*simulate_record_decl) (location_t loc, const char *name,
+				array_slice<const tree> fields);
 
   /* Return what kind of RECORD_TYPE this is, mainly for purposes of
      debug information.  If not defined, record types are assumed to
@@ -103,7 +113,7 @@ struct lang_hooks_for_types
      in C.  The default hook ignores the declaration.  */
   void (*register_builtin_type) (tree, const char *);
 
-  /* This routine is called in tree.c to print an error message for
+  /* This routine is called in tree.cc to print an error message for
      invalid use of an incomplete type.  VALUE is the expression that
      was used (or 0 if that isn't known) and TYPE is the type that was
      invalid.  LOC is the location of the use.  */
@@ -117,9 +127,6 @@ struct lang_hooks_for_types
   /* Register language specific type size variables as potentially OpenMP
      firstprivate variables.  */
   void (*omp_firstprivatize_type_sizes) (struct gimplify_omp_ctx *, tree);
-
-  /* Return true if TYPE is a mappable type.  */
-  bool (*omp_mappable_type) (tree type);
 
   /* Return TRUE if TYPE1 and TYPE2 are identical for type hashing purposes.
      Called only after doing all language independent checks.
@@ -156,7 +163,7 @@ struct lang_hooks_for_types
 
   /* Returns the tree that represents the underlying data type used to
      implement the enumeration.  The default implementation will just use
-     type_for_size.  Used in dwarf2out.c to add a DW_AT_type base type
+     type_for_size.  Used in dwarf2out.cc to add a DW_AT_type base type
      reference to a DW_TAG_enumeration.  */
   tree (*enum_underlying_base_type) (const_tree);
 
@@ -178,6 +185,11 @@ struct lang_hooks_for_types
   /* Returns a tree for the unit size of T excluding tail padding that
      might be used by objects inheriting from T.  */
   tree (*unit_size_without_reusable_padding) (tree);
+
+  /* Returns type corresponding to FIELD's type when FIELD is a C++ base class
+     i.e., type without virtual base classes or tail padding.  Returns
+     NULL_TREE otherwise.  */
+  tree (*classtype_as_base) (const_tree);
 };
 
 /* Language hooks related to decls and the symbol table.  */
@@ -230,6 +242,11 @@ struct lang_hooks_for_decls
      if original tree is not an array descriptor.  If the second argument
      is true, only the TREE_TYPE is returned without generating a new tree.  */
   tree (*omp_array_data) (tree, bool);
+
+  /* Return a tree for the actual data of an array descriptor - or NULL_TREE
+     if original tree is not an array descriptor.  If the second argument
+     is true, only the TREE_TYPE is returned without generating a new tree.  */
+  tree (*omp_array_size) (tree, gimple_seq *pre_p);
 
   /* True if OpenMP should regard this DECL as being a scalar which has Fortran's
      allocatable or pointer attribute.  */
@@ -467,7 +484,7 @@ struct lang_hooks
   void (*print_statistics) (void);
 
   /* Called by print_tree when there is a tree of class tcc_exceptional
-     that it doesn't know how to display.  */
+     or tcc_constant that it doesn't know how to display.  */
   lang_print_tree_hook print_xnode;
 
   /* Called to print language-dependent parts of tcc_decl, tcc_type,
@@ -511,7 +528,7 @@ struct lang_hooks
   HOST_WIDE_INT (*to_target_charset) (HOST_WIDE_INT);
 
   /* Pointers to machine-independent attribute tables, for front ends
-     using attribs.c.  If one is NULL, it is ignored.  Respectively, a
+     using attribs.cc.  If one is NULL, it is ignored.  Respectively, a
      table of attributes specific to the language, a table of
      attributes common to two or more languages (to allow easy
      sharing), and a table of attributes for checking formats.  */
@@ -620,8 +637,14 @@ struct lang_hooks
   /* Invoked before the early_finish debug hook is invoked.  */
   void (*finalize_early_debug) (void);
 
+  /* Get a value for the SARIF v2.1.0 "artifact.sourceLanguage" property
+     for FILENAME, or return NULL.
+     See SARIF v2.1.0 Appendix J for suggested values for common programming
+     languages.  */
+  const char *(*get_sarif_source_language) (const char *filename);
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
-     and langhooks.c accordingly.  */
+     and langhooks.cc accordingly.  */
 };
 
 /* Each front end provides its own.  */

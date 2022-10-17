@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
-// { dg-xfail-if "symlinks not supported" { *-*-mingw* } }
+// { dg-require-target-fs-symlinks "" }
 
 #include <filesystem>
 #include <testsuite_hooks.h>
@@ -31,7 +31,7 @@ test01()
   auto p = __gnu_test::nonexistent_path();
   std::error_code ec;
 
-  read_symlink(p, ec);
+  (void) read_symlink(p, ec);
   VERIFY( ec );
 
   fs::path tgt = ".";

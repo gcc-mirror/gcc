@@ -1,5 +1,5 @@
-// PERMUTE_ARGS: -inline -O -property
-// REQUIRED_ARGS: -dip25
+// PERMUTE_ARGS: -inline -O
+// REQUIRED_ARGS: -preview=fieldwise
 
 // Test operator overloading
 
@@ -21,7 +21,7 @@ class A
 {
     string opUnary(string s)()
     {
-        printf("A.opUnary!(%.*s)\n", s.length, s.ptr);
+        printf("A.opUnary!(%.*s)\n", cast(int)s.length, s.ptr);
         return s;
     }
 }
@@ -50,7 +50,7 @@ class A2
     T opCast(T)()
     {
         auto s = T.stringof;
-        printf("A.opCast!(%.*s)\n", s.length, s.ptr);
+        printf("A.opCast!(%.*s)\n", cast(int)s.length, s.ptr);
         return T.init;
     }
 }
@@ -73,20 +73,20 @@ struct A3
 {
     int opBinary(string s)(int i)
     {
-        printf("A.opBinary!(%.*s)\n", s.length, s.ptr);
+        printf("A.opBinary!(%.*s)\n", cast(int)s.length, s.ptr);
         return 0;
     }
 
     int opBinaryRight(string s)(int i) if (s == "/" || s == "*")
     {
-        printf("A.opBinaryRight!(%.*s)\n", s.length, s.ptr);
+        printf("A.opBinaryRight!(%.*s)\n", cast(int)s.length, s.ptr);
         return 0;
     }
 
     T opCast(T)()
     {
         auto s = T.stringof;
-        printf("A.opCast!(%.*s)\n", s.length, s.ptr);
+        printf("A.opCast!(%.*s)\n", cast(int)s.length, s.ptr);
         return T.init;
     }
 }
@@ -108,14 +108,14 @@ struct A4
 {
     int opUnary(string s)()
     {
-        printf("A.opUnary!(%.*s)\n", s.length, s.ptr);
+        printf("A.opUnary!(%.*s)\n", cast(int)s.length, s.ptr);
         return 0;
     }
 
     T opCast(T)()
     {
         auto s = T.stringof;
-        printf("A.opCast!(%.*s)\n", s.length, s.ptr);
+        printf("A.opCast!(%.*s)\n", cast(int)s.length, s.ptr);
         return T.init;
     }
 }
@@ -145,14 +145,14 @@ class A5
 
     int opUnary(string s)()
     {
-        printf("A.opUnary!(%.*s)\n", s.length, s.ptr);
+        printf("A.opUnary!(%.*s)\n", cast(int)s.length, s.ptr);
         return 0;
     }
 
     T opCast(T)()
     {
         auto s = T.stringof;
-        printf("A.opCast!(%.*s)\n", s.length, s.ptr);
+        printf("A.opCast!(%.*s)\n", cast(int)s.length, s.ptr);
         return T.init;
     }
 }
@@ -296,31 +296,31 @@ struct A8
 {
     int opUnary(string s)()
     {
-        printf("A.opUnary!(%.*s)\n", s.length, s.ptr);
+        printf("A.opUnary!(%.*s)\n", cast(int)s.length, s.ptr);
         return 0;
     }
 
     int opIndexUnary(string s, T)(T i)
     {
-        printf("A.opIndexUnary!(%.*s)(%d)\n", s.length, s.ptr, i);
+        printf("A.opIndexUnary!(%.*s)(%d)\n", cast(int)s.length, s.ptr, i);
         return 0;
     }
 
     int opIndexUnary(string s, T)(T i, T j)
     {
-        printf("A.opIndexUnary!(%.*s)(%d, %d)\n", s.length, s.ptr, i, j);
+        printf("A.opIndexUnary!(%.*s)(%d, %d)\n", cast(int)s.length, s.ptr, i, j);
         return 0;
     }
 
     int opSliceUnary(string s)()
     {
-        printf("A.opSliceUnary!(%.*s)()\n", s.length, s.ptr);
+        printf("A.opSliceUnary!(%.*s)()\n", cast(int)s.length, s.ptr);
         return 0;
     }
 
     int opSliceUnary(string s, T)(T i, T j)
     {
-        printf("A.opSliceUnary!(%.*s)(%d, %d)\n", s.length, s.ptr, i, j);
+        printf("A.opSliceUnary!(%.*s)(%d, %d)\n", cast(int)s.length, s.ptr, i, j);
         return 0;
     }
 }
@@ -344,31 +344,31 @@ struct A9
 {
     int opOpAssign(string s)(int i)
     {
-        printf("A.opOpAssign!(%.*s)\n", s.length, s.ptr);
+        printf("A.opOpAssign!(%.*s)\n", cast(int)s.length, s.ptr);
         return 0;
     }
 
     int opIndexOpAssign(string s, T)(int v, T i)
     {
-        printf("A.opIndexOpAssign!(%.*s)(%d, %d)\n", s.length, s.ptr, v, i);
+        printf("A.opIndexOpAssign!(%.*s)(%d, %d)\n", cast(int)s.length, s.ptr, v, i);
         return 0;
     }
 
     int opIndexOpAssign(string s, T)(int v, T i, T j)
     {
-        printf("A.opIndexOpAssign!(%.*s)(%d, %d, %d)\n", s.length, s.ptr, v, i, j);
+        printf("A.opIndexOpAssign!(%.*s)(%d, %d, %d)\n", cast(int)s.length, s.ptr, v, i, j);
         return 0;
     }
 
     int opSliceOpAssign(string s)(int v)
     {
-        printf("A.opSliceOpAssign!(%.*s)(%d)\n", s.length, s.ptr, v);
+        printf("A.opSliceOpAssign!(%.*s)(%d)\n", cast(int)s.length, s.ptr, v);
         return 0;
     }
 
     int opSliceOpAssign(string s, T)(int v, T i, T j)
     {
-        printf("A.opSliceOpAssign!(%.*s)(%d, %d, %d)\n", s.length, s.ptr, v, i, j);
+        printf("A.opSliceOpAssign!(%.*s)(%d, %d, %d)\n", cast(int)s.length, s.ptr, v, i, j);
         return 0;
     }
 }
@@ -468,7 +468,7 @@ int bug4913()
 static assert(bug4913() == 83);
 
 /**************************************/
-// 5551
+// https://issues.dlang.org/show_bug.cgi?id=5551
 
 struct Foo11 {
     Foo11 opUnary(string op:"++")() {
@@ -486,7 +486,7 @@ void test11()
 }
 
 /**************************************/
-// 4099
+// https://issues.dlang.org/show_bug.cgi?id=4099
 
 struct X4099
 {
@@ -672,7 +672,7 @@ void test17()
 }
 
 /**************************************/
-// 3789
+// https://issues.dlang.org/show_bug.cgi?id=3789
 
 bool test3789()
 {
@@ -728,7 +728,7 @@ bool test3789()
         auto ua2 = UnionA([1,2,3]);
         assert(ua1.u.x is ua2.u.x);
         assert(ua1.u.x != ua2.u.x);
-        assert(ua1 == ua2);
+        assert(ua1 != ua2);
         ua1.u.x = 1.0;
         ua2.u.x = 1.0;
         assert(ua1.u.x is ua2.u.x);
@@ -755,7 +755,7 @@ bool test3789()
         ub2.u.a = [1,2,3].dup;
         assert(ub1.u.a !is ub2.u.a);
         assert(ub1.u.a  == ub2.u.a);
-        assert(ub1 != ub2);
+        assert(ub1 == ub2);
         ub2.u.a = ub1.u.a;
         assert(ub1.u.a is ub2.u.a);
         assert(ub1.u.a == ub2.u.a);
@@ -789,44 +789,27 @@ bool test3789()
 }
 static assert(test3789());
 
-/**************************************/
-// 10037
-
-struct S10037
+struct S
 {
-    bool opEquals(ref const S10037) { assert(0); }
+    bool opEquals(ref const S) { return false; }
 }
 
-struct T10037
+struct T
 {
-    S10037 s;
-    // Compiler should not generate 'opEquals' here implicitly:
-}
-
-struct Sub10037(TL...)
-{
-    TL data;
+    S s;
     int value;
     alias value this;
 }
 
-void test10037()
+void test11161()
 {
-    S10037 s;
-    T10037 t;
-    static assert( __traits(hasMember, S10037, "opEquals"));
-    static assert(!__traits(hasMember, T10037, "opEquals"));
-    assert(thrown!Error(s == s));
-    assert(thrown!Error(t == t));
-
-    Sub10037!(S10037) lhs;
-    Sub10037!(S10037) rhs;
-    static assert(!__traits(hasMember, Sub10037!(S10037), "opEquals"));
-    assert(lhs == rhs);     // lowered to: lhs.value == rhs.value
+    T t1, t2;
+    assert(t1.tupleof != t2.tupleof);
+    assert(t1 != t2); // fails
 }
 
 /**************************************/
-// 5810
+// https://issues.dlang.org/show_bug.cgi?id=5810
 
 struct Bug5810
 {
@@ -840,7 +823,7 @@ struct Foo5810
 }
 
 /**************************************/
-// 6798
+// https://issues.dlang.org/show_bug.cgi?id=6798
 
 struct Tuple6798(T...)
 {
@@ -1013,7 +996,7 @@ void test6798()
 }
 
 /**************************************/
-// 12382
+// https://issues.dlang.org/show_bug.cgi?id=12382
 
 struct S12382
 {
@@ -1041,7 +1024,7 @@ void test12382()
 }
 
 /**************************************/
-// 12904
+// https://issues.dlang.org/show_bug.cgi?id=12904
 
 struct S12904
 {
@@ -1080,7 +1063,7 @@ void test12904()
 }
 
 /**************************************/
-// 7641
+// https://issues.dlang.org/show_bug.cgi?id=7641
 
 mixin template Proxy7641(alias a)
 {
@@ -1110,7 +1093,7 @@ void test7641()
 }
 
 /**************************************/
-// 8434
+// https://issues.dlang.org/show_bug.cgi?id=8434
 
 void test8434()
 {
@@ -1338,7 +1321,7 @@ void test19()
 }
 
 /**************************************/
-// 9453
+// https://issues.dlang.org/show_bug.cgi?id=9453
 
 struct Foo9453
 {
@@ -1360,7 +1343,7 @@ void test9453()
 }
 
 /**************************************/
-// 9496
+// https://issues.dlang.org/show_bug.cgi?id=9496
 
 struct S9496
 {
@@ -1392,7 +1375,7 @@ void test9496()
 }
 
 /**************************************/
-// 9689
+// https://issues.dlang.org/show_bug.cgi?id=9689
 
 struct B9689(T)
 {
@@ -1418,7 +1401,7 @@ void test9689()
 }
 
 /**************************************/
-// 9694
+// https://issues.dlang.org/show_bug.cgi?id=9694
 
 struct S9694
 {
@@ -1438,7 +1421,7 @@ void test9694()
 }
 
 /**************************************/
-// 10064
+// https://issues.dlang.org/show_bug.cgi?id=10064
 
 void test10064()
 {
@@ -1465,7 +1448,7 @@ void test10064()
 }
 
 /**************************************/
-// 12585
+// https://issues.dlang.org/show_bug.cgi?id=12585
 
 void test12585()
 {
@@ -1504,7 +1487,7 @@ void test12585()
 }
 
 /**************************************/
-// 10394
+// https://issues.dlang.org/show_bug.cgi?id=10394
 
 void test10394()
 {
@@ -1533,7 +1516,7 @@ void test10394()
 }
 
 /**************************************/
-// 10597
+// https://issues.dlang.org/show_bug.cgi?id=10597
 
 struct R10597
 {
@@ -1577,7 +1560,7 @@ void test10597()
 }
 
 /**************************************/
-// 10567
+// https://issues.dlang.org/show_bug.cgi?id=10567
 
 // doesn't require thunk
 struct S10567x1n { int value; int opCmp(ref const S10567x1n rhs) const { return 0; } }
@@ -1662,13 +1645,6 @@ void test10567()
         S sy = S(2);
         assert(!(sx < sy) && !(sx > sy));
         assert(sx.opCmp(sy) == 0);
-
-        try
-        {
-            auto x = typeid(S).compare(&sx, &sy);
-            assert(0);
-        }
-        catch (Error e) { assert(e.msg[$-15 .. $] == "not implemented"); }
     }
 /+
     foreach (S; Seq!(S10567d1, S10567d2))
@@ -1690,7 +1666,7 @@ void test10567()
 }
 
 /**************************************/
-// 11062
+// https://issues.dlang.org/show_bug.cgi?id=11062
 
 struct S11062ia
 {
@@ -1734,7 +1710,7 @@ void test11062()
 }
 
 /**************************************/
-// 11311
+// https://issues.dlang.org/show_bug.cgi?id=11311
 
 void test11311()
 {
@@ -1791,7 +1767,7 @@ void test11311()
 }
 
 /**************************************/
-// 12193
+// https://issues.dlang.org/show_bug.cgi?id=12193
 
 void test12193()
 {
@@ -1810,7 +1786,7 @@ void test12193()
 }
 
 /**************************************/
-// 14057
+// https://issues.dlang.org/show_bug.cgi?id=14057
 
 struct W14057
 {
@@ -1936,7 +1912,7 @@ void test20d()
 }
 
 /**************************************/
-// 14624
+// https://issues.dlang.org/show_bug.cgi?id=14624
 
 void test14624()
 {
@@ -1981,7 +1957,7 @@ void test14624()
 }
 
 /**************************************/
-// 14625
+// https://issues.dlang.org/show_bug.cgi?id=14625
 
 void test14625()
 {
@@ -2033,7 +2009,7 @@ int main()
     test16();
     test17();
     test3789();
-    test10037();
+    test11161();
     test6798();
     test12904();
     test7641();
@@ -2061,4 +2037,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-

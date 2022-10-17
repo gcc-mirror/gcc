@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -454,6 +454,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		 __cur_node < this->_M_impl._M_finish._M_node;
 		 ++__cur_node)
 	      {
+		if (__n < _S_buffer_size())
+		  __builtin_unreachable(); // See PR 100516
+
 		_ForwardIterator __mid = __first;
 		std::advance(__mid, _S_buffer_size());
 		std::__uninitialized_copy_a(__first, __mid, *__cur_node,

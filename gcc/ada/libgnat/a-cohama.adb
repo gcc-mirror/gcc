@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,7 +80,7 @@ is
    procedure Set_Next (Node : Node_Access; Next : Node_Access);
    pragma Inline (Set_Next);
 
-   function Vet (Position : Cursor) return Boolean;
+   function Vet (Position : Cursor) return Boolean with Inline;
 
    procedure Write_Node
      (Stream : not null access Root_Stream_Type'Class;
@@ -115,6 +115,13 @@ is
    ---------
    -- "=" --
    ---------
+
+   function "=" (Left, Right : Cursor) return Boolean is
+   begin
+      return
+       Left.Container = Right.Container
+         and then Left.Node = Right.Node;
+   end "=";
 
    function "=" (Left, Right : Map) return Boolean is
    begin
@@ -636,7 +643,11 @@ is
       end if;
 
       Position.Container := Container'Unrestricted_Access;
-      Position.Position := HT_Ops.Index (HT, Position.Node);
+
+      --  Note that we do not set the Position component of the cursor,
+      --  because it may become incorrect on subsequent insertions/deletions
+      --  from the container. This will lose some optimizations but prevents
+      --  anomalies when the underlying hash-table is expanded or shrunk.
    end Insert;
 
    procedure Insert
@@ -679,7 +690,6 @@ is
       end if;
 
       Position.Container := Container'Unrestricted_Access;
-      Position.Position := HT_Ops.Index (HT, Position.Node);
    end Insert;
 
    procedure Insert
@@ -688,8 +698,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin
@@ -1148,6 +1156,10 @@ is
 
    function Vet (Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = null then
          return Position.Container = null;
       end if;

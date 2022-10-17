@@ -12,5 +12,5 @@ struct D
 };
 
 constexpr D d{A()};
-static_assert (d == d);		// { dg-error "non-constant|constexpr" }
-static_assert (!(d != d));	// { dg-error "non-constant|constexpr" }
+static_assert (d == d);		// { dg-error "constant|constexpr" }
+static_assert (!(d != d));	// { dg-error "constant|constexpr" }

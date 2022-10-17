@@ -1,3 +1,26 @@
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Set XCFLAGS to -mno-gnu-attribute on
+	powerpc64le*-linux*.
+	* configure: Regenerated.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
 2021-06-08  Martin Liska  <mliska@suse.cz>
 
 	* libquadmath.texi: Fix typo.

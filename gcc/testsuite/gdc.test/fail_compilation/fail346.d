@@ -21,4 +21,3 @@ template V(R,int val){
 }
 
 const S x = V!(S,0);
-

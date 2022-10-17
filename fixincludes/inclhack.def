@@ -554,13 +554,16 @@ fix = {
   mach      = "*-*-aix*";
   files     = "sys/socket.h";
   select    = "#ifndef _KERNEL\n"
-	      "#ifdef __cplusplus";
+	      "#ifdef __cplusplus\n"
+	      "extern \"C\" int naccept\\(int, struct sockaddr \\*, socklen_t \\*\\);";
   c_fix     = format;
   c_fix_arg = "#ifndef _KERNEL\n"
 	      "#ifdef __cplusplus\n"
-              "extern \"C++\" {";
+	      "extern \"C++\" {\n"
+	      "extern \"C\" int naccept(int, struct sockaddr *, socklen_t *);";
   test_text = "#ifndef _KERNEL\n"
-	      "#ifdef __cplusplus";
+	      "#ifdef __cplusplus\n"
+	      "extern \"C\" int naccept(int, struct sockaddr *, socklen_t *);";
 };
 
 fix = {
@@ -1764,6 +1767,17 @@ fix = {
     test_text = ""; /* Don't provide this for wrap fixes.  */
 };
 
+/*  The darwin headers don't accept __FLT_EVAL_METHOD__ == 16.  */
+fix = {
+    hackname  = darwin_flt_eval_method;
+    mach      = "*-*-darwin*";
+    files     = math.h;
+    select    = "^#if __FLT_EVAL_METHOD__ == 0$";
+    c_fix     = format;
+    c_fix_arg = "#if __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 16";
+    test_text = "#if __FLT_EVAL_METHOD__ == 0";
+};
+
 /*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,
@@ -1998,6 +2012,139 @@ fix = {
     test_text = <<-EOT
 	__extension__ extern __inline unsigned int
 	extern __inline unsigned int
+	EOT;
+};
+
+/*  glibc-2.27 to 2.36 assume GCC 7 or later supports some or all
+ *  of _Float{16,32,64,128} and _Float{32,64,128}x keywords for C,
+ *  but doesn't for C++.
+ */
+fix = {
+    hackname  = glibc_cxx_floatn_1;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\\*/\n)?"
+		"([ \t]*#[ \t]*if[^\n]*\n)?"
+		"[ \t]*#[ \t]*define __f(16|32|64|128)x?\\()";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	/* The literal suffix f128 exists only since GCC 7.0.  */
+	#   define __f128(x) x##l
+	#  else
+	#   define __f128(x) x##f128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	/* The literal suffix (f128) exist for powerpc only since GCC 7.0.  */
+	#   if __LDBL_MANT_DIG__ == 113
+	#    define __f128(x) x##l
+	#   else
+	#    define __f128(x) x##q
+	#   endif
+	#  else
+	#   define __f128(x) x##f128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   ifdef __NO_LONG_DOUBLE_MATH
+	#    define __f64(x) x##l
+	#   else
+	#    define __f64(x) x
+	#   endif
+	#  else
+	#   define __f64(x) x##f64
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_2;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
+    select    = "^([ \t]*#[ \t]*(el)?if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\\*/\n)?"
+		"[ \t]*typedef[ \t]+[^\n]*[ \t]+_Float(16|32|64|128)x?([ \t]+__attribute__ \\(\\(__mode__ \\(__HF__\\)\\)\\))?;)";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%3";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	typedef float _Float16 __attribute__ ((__mode__ (__HF__)));
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	typedef __float128 _Float128;
+	#  endif
+	#  if 0
+	#  elif !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	typedef __float128 _Float128;
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_3;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\n?[^\n]*\\*/\n)?"
+		"([ \t]*#[ \t]*if[^\n]*\n)?"
+		"([ \t]*typedef[ \t]+[^\n]*;\n)?"
+		"[ \t]*#[ \t]*define __CFLOAT(16|32|64|128)X?[ \t]+)";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   define __CFLOAT128 _Complex long double
+	#  else
+	#   define __CFLOAT128 _Complex _Float128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	/* Add a typedef for older GCC compilers which don't natively support
+	   _Complex _Float128.  */
+	typedef _Complex float __cfloat128 __attribute__ ((__mode__ (__TC__)));
+	#   define __CFLOAT128 __cfloat128
+	#  else
+	#   define __CFLOAT128 _Complex _Float128
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   ifdef __NO_LONG_DOUBLE_MATH
+	#    define __CFLOAT64 _Complex long double
+	#   else
+	#    define __CFLOAT64 _Complex double
+	#   endif
+	#  else
+	#   define __CFLOAT64 _Complex _Float64
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_4;
+    files     = bits/floatn.h, "*/bits/floatn.h";
+    select    = "^([ \t]*#[ \t]*if __LDBL_MANT_DIG__ == 113 && )defined __cplusplus\n"
+		"(([ \t]*/\\*[^\n]*\\*/\n)?"
+		"[ \t]*typedef[ \t]+[^\n]*[ \t]+_Float128;)";
+    c_fix     = format;
+    c_fix_arg = "%1defined __cplusplus && !__GNUC_PREREQ (13, 0)\n%2";
+    test_text = <<-EOT
+	#  if __LDBL_MANT_DIG__ == 113 && defined __cplusplus
+	typedef long double _Float128;
+	#   define __CFLOAT128 _Complex long double
+	#  endif
+	EOT;
+};
+
+fix = {
+    hackname  = glibc_cxx_floatn_5;
+    files     = bits/floatn.h, bits/floatn-common.h, "*/bits/floatn.h", "*/bits/floatn-common.h";
+    select    = "^([ \t]*#[ \t]*if !__GNUC_PREREQ \\(7, 0\\) \\|\\| )defined __cplusplus\n"
+		"([ \t]*#[ \t]+error \"_Float128[xX] supported but no )";
+    c_fix     = format;
+    c_fix_arg = "%1(defined __cplusplus && !__GNUC_PREREQ (13, 0))\n%2";
+    test_text = <<-EOT
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   error "_Float128X supported but no constant suffix"
+	#  endif
+	#  if !__GNUC_PREREQ (7, 0) || defined __cplusplus
+	#   error "_Float128x supported but no type"
+	#  endif
 	EOT;
 };
 
@@ -2266,6 +2413,24 @@ fix = {
             "   inline double pow(double d,int expon) {\n"
             "     return pow(d, (double)expon);\n"
             "   }\n";
+};
+
+/*
+ * This hack fixes the declarations of _DINFINITY, _SINFINITY and _SQNAN.
+ */
+fix = {
+    hackname  = hpux_math_constexpr;
+    mach      = "*-hp-hpux11*";
+    files     = math.h;
+    sed       = "s@^[ \t]*extern[ \t]*const[ \t]*double[ \t]*_DINFINITY;"
+	"[ \t]*$@#  define _DINFINITY (__builtin_inf ())@";
+    sed       = "s@^[ \t]*extern[ \t]*const[ \t]*float[ \t]*_SINFINITY;"
+	"[ \t]*$@#    define _SINFINITY (__builtin_inff ())@";
+    sed       = "s@^[ \t]*extern[ \t]*const[ \t]*float[ \t]*_SQNAN;"
+	"[ \t]*$@#    define _SQNAN (__builtin_nanf (\\\"\\\"))@";
+    test_text = "  extern const double _DINFINITY;\n"
+		"  extern const float _SINFINITY;\n"
+		"  extern const float _SQNAN;";
 };
 
 /*
@@ -2663,6 +2828,34 @@ fix = {
 		"#define SCNuMAX \t SCNu32\n";
     test_text = "#define SCNxMAX SCNx64\n"
 		"#define SCNxMAX SCNx32\n";
+};
+
+/*
+ * Fix missing PRIdPTR defines in inttypes.h
+ */
+fix = {
+    hackname  = hpux_c99_inttypes5;
+    mach      = "hppa*-hp-hpux11.[01]*";
+    files     = inttypes.h;
+    select    = "#ifndef[ \t]_KERNEL[ \t]*\n";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __LP64__\n"
+		"#define PRIdPTR\t\tPRId32\n"
+		"#define PRIiPTR\t\tPRIi32\n"
+		"#define PRIoPTR\t\tPRIo32\n"
+		"#define PRIuPTR\t\tPRIu32\n"
+		"#define PRIxPTR\t\tPRIx32\n"
+		"#define PRIXPTR\t\tPRIX32\n"
+		"#else\n"
+		"#define PRIdPTR\t\tPRId64\n"
+		"#define PRIiPTR\t\tPRIi64\n"
+		"#define PRIoPTR\t\tPRIo64\n"
+		"#define PRIuPTR\t\tPRIu64\n"
+		"#define PRIxPTR\t\tPRIx64\n"
+		"#define PRIXPTR\t\tPRIX64\n"
+		"#endif\n\n"
+		"#ifndef _KERNEL\n";
+    test_text = "#ifndef _KERNEL\n";
 };
 
 /*
@@ -5115,23 +5308,75 @@ fix = {
         
     test_text   = "extern int ioctl ( int asdf1234, int jkl , int qwerty ) ;";
 };
-
+ 
 /*
- *  Wrap VxWorks mkdir to be posix compliant
+ * Provide C99 FP classification support in VxWorks math.h if
+ * not already there. Note the strict expectation on #define without
+ * whitespaces in the bypass expression, which "works" for
+ * the system headers we have met and doesn't match test texts for
+ * other hacks, found in the test baseline.
  */
 fix = {
-    hackname    = vxworks_mkdir_macro;
+    hackname  = vxworks_math_h_fp_c99;
+    mach      = "*-*-vxworks*";
+    files     = math.h;
+    bypass    = "#define[ \t]+FP_INFINITE";
+    select    = "#define HUGE_VAL[ \t]*_ARCH.*";
+    c_fix     = format;
+    c_fix_arg = << _EOArg_
+
+%0
+
+#if _C99
+
+#define FP_INFINITE  1
+#define FP_NAN       2
+#define FP_NORMAL    (-1)
+#define FP_SUBNORMAL (-2)
+#define FP_ZERO      0
+
+#define fpclassify(x) \
+  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, \
+		       FP_SUBNORMAL, FP_ZERO, (x))
+
+#define signbit(x) __builtin_signbit(x)
+#define isfinite(x) __builtin_isfinite(x)
+#define isnormal(x) __builtin_isnormal(x)
+#define isnan(x) __builtin_isnan(x)
+#define isinf(x) __builtin_isinf(x)
+
+#define isgreater(x, y) __builtin_isgreater((x),(y))
+#define isgreaterequal(x, y) __builtin_isgreaterequal((x),(y))
+#define isless(x, y) __builtin_isless((x),(y))
+#define islessequal(x, y) __builtin_islessequal((x),(y))
+#define islessgreater(x, y) __builtin_islessgreater((x),(y))
+#define isunordered(x, y) __builtin_isunordered((x),(y))
+
+#endif /* _C99 */
+
+_EOArg_;
+
+    test_text  = "#define HUGE_VAL _ARCH_HUGH_VAL";
+};
+
+/*
+ *  mkdir's posix interface expects two arguments.  While the RTP VxWorks
+ *  API is fine, the kernel version handles only one.  We used to expose
+ *  a macro and this didn't play nice with uses such as posix:mkdir(x, y)
+ *  in libstdc++, so we expose a vararg prototype instead.
+ */
+fix = {
+    hackname    = vxworks_posix_mkdir;
     files       = sys/stat.h;
     mach        = "*-*-vxworks*";
 
     c_fix       = format;
-    c_fix_arg   = "%0\n"
-                "#define mkdir(dir, ...) ((void)0, ##__VA_ARGS__, (mkdir)(dir))\n";
+    c_fix_arg   = "extern STATUS mkdir(const char *dir, ...);";
     c_fix_arg   = "extern[\t ]+STATUS[\t ]+mkdir[\t ]*"
                 "\\([\t ]*const[\t ]+char[\t ]*\\*[\t ]*" /* arg type */
                 "(|[_[:alpha:]][_[:alnum:]]*)" /* arg name (optional) */
                 "\\)[\t ]*;";
-        
+
     test_text   = "extern STATUS mkdir (const char * _qwerty) ;";
 };
 
@@ -5167,6 +5412,28 @@ fix = {
 };
 
 /*
+ * yvals.h on VxWorks-6 expects the toolchain to provide its own
+ * version of the header, which we don't do.  Arrange to fallback
+ * on the system definition.
+ */
+fix = {
+    hackname  = vxworks_next_yvals;
+    mach      = "*-*-vxworks*";
+    files     = yvals.h;
+    select    = "#include_next <yvals.h>";
+    c_fix     = format;
+    c_fix_arg = "#if 0 /* GCC does not provide yvals.h.  */\n%1";
+    c_fix_arg = "#if .*\n"
+                "/\\* .*\n"
+                "(#include_next <yvals.h>\n)";
+
+    test_text = "#if (defined(__cplusplus) && defined(__GNUC__))\n"
+                "/* GCC C++ has it's own yvals.h */\n"
+                "#include_next <yvals.h>\n"
+                "#else\n";
+};
+
+/*
  *  Make it so VxWorks does not include gcc/regs.h accidentally
  */
 fix = {
@@ -5178,6 +5445,47 @@ fix = {
     c_fix_arg   = "#include <arch/../regs.h>";
         
     test_text   = "#include <regs.h>\n";
+};
+
+/*
+ * Likewise, open's posix interface allows two or three arguments and
+ * some VxWorks headers expose only a strict 3 arguments version.  Merely
+ * changing the prototype into a varargs one is risky as the implementation
+ * would receive garbage in the third arg for calls providing only two,
+ * which libstdc++ does.  We simply provide an always inline overload for C++
+ * instead.
+ *
+ * Both fcntl.h and ioLib.h might "feature" such a prototype for _WRS_KERNEL.
+ * The latter #includes the former though (since 1992 according to the embedded
+ * log), so just leave ioLib.h alone.
+ */
+fix = {
+    hackname    = vxworks_posix_open;
+    mach        = "*-*-vxworks*";
+    files       = fcntl.h;
+
+    select      = "extern int.*open \\(const char \\*[ a-z]*, int[ a-z]*, int[ a-z]*\\);";
+    c_fix       = format;
+    c_fix_arg = << _EOArg_
+%0
+
+#if defined(__cplusplus)
+extern "C++" {
+  inline int open (const char *, int) __attribute__((__always_inline__));
+
+  inline int
+  open (const char *name, int flags)
+  {
+    return open (name, flags, 0);
+  }
+}
+#endif
+
+_EOArg_;
+
+    test_text   =
+      "extern int open (const char *, int, int);\n"
+      "extern int open (const char *name, int flags, int mode );\n";
 };
 
 /*
@@ -5238,6 +5546,38 @@ fix = {
     c_fix_arg   = "#include <unistd.h>";
 
     test_text       = "#include \"unistd.h\"";
+};
+
+/*
+ *  Make sure there is a visible prototype of sysClkRateGet() when
+ *  CLOCKS_PER_SEC is #defined to that in time.h for VxWorks.  This would
+ *  typically be provided by sysLib.h.
+ *
+ *  The new #include has to come after the one for vxWorks.h in kernel headers
+ *  and vxWorks.h is typically not #included in RTP headers. yvals.h is
+ *  conditionally included in the latter, instead, and new #include are better
+ *  inserted after that.
+ */
+fix = {
+    hackname    = vxworks_time_h_syslib;
+    files       = time.h;
+    mach        = "*-*-vxworks*";
+    select      = "[ \t]*#define[ \t]+CLOCKS_PER_SEC[ \t]+sysClkRateGet.*";
+
+    c_fix       = format;
+    c_fix_arg   = "%0\n#include <sysLib.h>";
+    c_fix_arg   = "#include <vxWorks.h>|#endif.* _YVALS.*";
+
+    test_text   =
+    "/* kernel header pattern:  */\n"
+    "#include <vxWorks.h>\n"
+    "\n"
+    "/* rtp header pattern:  */\n"
+    "#ifndef _YVALS\n"
+    "#include <yvals.h>\n"
+    "#endif /* _YVALS */\n"
+    "\n"
+    "#define CLOCKS_PER_SEC  sysClkRateGet()";
 };
 
 /*

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,6 @@
 --  The package simply contains an instantiation of System.Rident, but
 --  with names discarded, so that we do not have image tables for the
 --  large restriction enumeration types at run time.
-
-pragma Compiler_Unit_Warning;
 
 with System.Rident;
 

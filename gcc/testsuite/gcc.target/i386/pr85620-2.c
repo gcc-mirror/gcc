@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcf-protection" } */
-/* { dg-final { scan-assembler-times {\mendbr} 1 } } */
+/* { dg-final { scan-assembler-times {\mendbr} 2 } } */
+/* { dg-final { scan-assembler-not "jmp" } } */
 
 struct ucontext;
 

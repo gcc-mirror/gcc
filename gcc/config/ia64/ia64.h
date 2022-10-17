@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -1335,7 +1335,7 @@ do {									\
 }
 
 /* If defined, C string expressions to be used for the `%R', `%L', `%U', and
-   `%I' options of `asm_fprintf' (see `final.c').  */
+   `%I' options of `asm_fprintf' (see `final.cc').  */
 
 #define REGISTER_PREFIX ""
 #define LOCAL_LABEL_PREFIX "."
@@ -1422,22 +1422,6 @@ do {									\
 /* Macros Affecting all Debug Formats.  */
 
 /* This is handled in sysv4.h.  */
-
-
-/* Specific Options for DBX Output.  */
-
-/* This is handled by dbxelf.h.  */
-
-
-/* Open ended Hooks for DBX Output.  */
-
-/* Likewise.  */
-
-
-/* File names in DBX format.  */
-
-/* Likewise.  */
-
 
 /* Macros for Dwarf Output.  */
 

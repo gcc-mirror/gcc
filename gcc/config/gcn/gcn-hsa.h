@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2022 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -71,13 +71,23 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #define ASM_APP_ON  ""
 #define ASM_APP_OFF ""
 
-/* Avoid the default in ../../gcc.c, which adds "-pthread", which is not
+/* Avoid the default in ../../gcc.cc, which adds "-pthread", which is not
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
+
+#define NO_XNACK "!march=*:;march=fiji:;"
+#define NO_SRAM_ECC "!march=*:;march=fiji:;march=gfx900:;march=gfx906:;"
+
+/* In HSACOv4 no attribute setting means the binary supports "any" hardware
+   configuration.  The name of the attribute also changed.  */
+#define SRAMOPT "msram-ecc=on:-mattr=+sramecc;msram-ecc=off:-mattr=-sramecc"
 
 /* Use LLVM assembler and linker options.  */
 #define ASM_SPEC  "-triple=amdgcn--amdhsa "  \
 		  "%:last_arg(%{march=*:-mcpu=%*}) " \
+		  "%{!march=*|march=fiji:--amdhsa-code-object-version=3} " \
+		  "%{" NO_XNACK "mxnack:-mattr=+xnack;:-mattr=-xnack} " \
+		  "%{" NO_SRAM_ECC SRAMOPT "} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"
@@ -103,4 +113,4 @@ extern const char *last_arg_spec_function (int argc, const char **argv);
 #define DWARF2_DEBUGGING_INFO      1
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 #define EH_FRAME_THROUGH_COLLECT2  1
-#define DBX_REGISTER_NUMBER(REGNO) gcn_dwarf_register_number (REGNO)
+#define DEBUGGER_REGNO(REGNO) gcn_dwarf_register_number (REGNO)

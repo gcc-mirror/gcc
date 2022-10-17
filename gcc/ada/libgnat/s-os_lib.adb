@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2021, AdaCore                     --
+--                     Copyright (C) 1995-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,11 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System; use System;
 with System.Case_Util;
 with System.CRTL;
 with System.Soft_Links;
@@ -1214,7 +1211,6 @@ package body System.OS_Lib is
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, Mo, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1233,7 +1229,6 @@ package body System.OS_Lib is
       D  : Day_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, Mo, D, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1252,7 +1247,6 @@ package body System.OS_Lib is
       D  : Day_Type;
       H  : Hour_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, Mo, D, H, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1271,7 +1265,6 @@ package body System.OS_Lib is
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, D, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1290,7 +1283,6 @@ package body System.OS_Lib is
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
-      pragma Unreferenced (Y, Mo, D, H, Mn);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1428,7 +1420,6 @@ package body System.OS_Lib is
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Mo, D, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1611,15 +1602,15 @@ package body System.OS_Lib is
       SIGKILL : constant := 9;
       SIGINT  : constant := 2;
 
-      procedure C_Kill (Pid : Process_Id; Sig_Num : Integer; Close : Integer);
+      procedure C_Kill (Pid : Process_Id; Sig_Num : Integer);
       pragma Import (C, C_Kill, "__gnat_kill");
 
    begin
       if Pid /= Invalid_Pid then
          if Hard_Kill then
-            C_Kill (Pid, SIGKILL, 1);
+            C_Kill (Pid, SIGKILL);
          else
-            C_Kill (Pid, SIGINT, 1);
+            C_Kill (Pid, SIGINT);
          end if;
       end if;
    end Kill;
@@ -1949,7 +1940,7 @@ package body System.OS_Lib is
       procedure Quote_Argument (Arg : in out String_Access) is
          J            : Positive := 1;
          Quote_Needed : Boolean  := False;
-         Res          : String (1 .. Arg'Length * 2);
+         Res          : String (1 .. Arg'Length * 2 + 2);
 
       begin
          if Arg (Arg'First) /= '"' or else Arg (Arg'Last) /= '"' then

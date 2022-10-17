@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 --  This package provides some common utilities used by the s-imgxxx files
 
 package System.Img_Util is
-   pragma Pure;
 
    Max_Real_Image_Length : constant := 5200;
    --  If Exp is set to zero and Aft is set to Text_IO.Field'Last (i.e., 255)

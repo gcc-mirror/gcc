@@ -1,5 +1,5 @@
-/* Exported functions from emit-rtl.c
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+/* Exported functions from emit-rtl.cc
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,7 +76,7 @@ struct GTY(()) rtl_data {
 
   rtl_ssa::function_info *GTY((skip)) ssa;
 
-  /* For function.c  */
+  /* For function.cc  */
 
   /* # of bytes of outgoing arguments.  If ACCUMULATE_OUTGOING_ARGS is
      defined, the needed space is pushed by the prologue.  */
@@ -232,7 +232,7 @@ struct GTY(()) rtl_data {
   bool arg_pointer_save_area_init;
 
   /* Nonzero if current function must be given a frame pointer.
-     Set in reload1.c or lra-eliminations.c if anything is allocated
+     Set in reload1.cc or lra-eliminations.cc if anything is allocated
      on the stack there.  */
   bool frame_pointer_needed;
 

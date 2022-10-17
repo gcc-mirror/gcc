@@ -1,5 +1,5 @@
 /* Subroutine declarations for TI PRU target support.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.
@@ -40,11 +40,19 @@ void pru_register_pragmas (void);
 extern rtx pru_get_return_address (int);
 extern int pru_hard_regno_rename_ok (unsigned int, unsigned int);
 
-extern const char *pru_output_sign_extend (rtx *);
+struct pru_byterange {
+    int start;		/* Starting byte number.  */
+    int nbytes;		/* Number of consecutive bytes.  */
+};
+
+extern pru_byterange pru_calc_byterange (HOST_WIDE_INT cval,
+					      machine_mode mode);
+
 extern const char *pru_output_signed_cbranch (rtx *, bool);
 extern const char *pru_output_signed_cbranch_ubyteop2 (rtx *, bool);
 extern const char *pru_output_signed_cbranch_zeroop2 (rtx *, bool);
 
+extern enum rtx_code pru_noteq_condition (enum rtx_code code);
 extern rtx pru_expand_fp_compare (rtx comparison, machine_mode mode);
 
 extern void pru_emit_doloop (rtx *, int);
@@ -62,7 +70,10 @@ extern int pru_get_ctable_exact_base_index (unsigned HOST_WIDE_INT caddr);
 extern int pru_get_ctable_base_index (unsigned HOST_WIDE_INT caddr);
 extern int pru_get_ctable_base_offset (unsigned HOST_WIDE_INT caddr);
 
+extern int pru_symref2ioregno (rtx op);
+
 extern void pru_register_abicheck_pass (void);
+
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

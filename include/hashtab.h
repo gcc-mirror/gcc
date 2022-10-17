@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -79,12 +79,12 @@ typedef void (*htab_free_with_arg) (void *, void *);
 
 /* This macro defines reserved value for empty table entry.  */
 
-#define HTAB_EMPTY_ENTRY    ((PTR) 0)
+#define HTAB_EMPTY_ENTRY    ((void *) 0)
 
 /* This macro defines reserved value for table entry which contained
    a deleted element. */
 
-#define HTAB_DELETED_ENTRY  ((PTR) 1)
+#define HTAB_DELETED_ENTRY  ((void *) 1)
 
 /* Hash tables are of the following type.  The structure
    (implementation) of this type is not needed for using the hash

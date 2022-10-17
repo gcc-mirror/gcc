@@ -15,6 +15,6 @@ systems.
 
 For more information, see:
 @smallexample
-@uref{http://www.gnu.org/}
-@uref{http://www.gnu.org/gnu/linux-and-gnu.html}
+@uref{https://www.gnu.org/}
+@uref{https://www.gnu.org/gnu/linux-and-gnu.html}
 @end smallexample

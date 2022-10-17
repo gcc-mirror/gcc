@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -121,6 +121,16 @@ test06()
   struct R { constexpr int size() & { return 42; } };
   static_assert( std::ranges::size(R{}) == 42 );
 }
+
+template<typename T>
+  concept has_size = requires (T& t) { std::ranges::size(t); };
+
+// If T is an array of unknown bound, ranges::size(E) is ill-formed.
+static_assert( ! has_size<int[]> );
+static_assert( ! has_size<int(&)[]> );
+static_assert( ! has_size<int[][2]> );
+struct Incomplete;
+static_assert( ! has_size<Incomplete[]> );
 
 int
 main()

@@ -7,17 +7,17 @@ union cdouble_t { _Complex double z; struct { double re; double im; }; };
 union creal_t { _Complex long double z; struct { long double re; long double im; }; };
 
 // extern(C) tests
-extern "C" _Complex float ccomplexf() { return 2.0f+I; }
-extern "C" _Complex double ccomplex() { return 2.0+I; }
-extern "C" _Complex long double ccomplexl() { return 2.0L+I; }
+extern "C" _Complex float ccomplexf() { return {2.0f, 1.0f}; }
+extern "C" _Complex double ccomplex() { return {2.0, 1.0}; }
+extern "C" _Complex long double ccomplexl() { return {2.0L, 1.0L}; }
 extern "C" void ccomplexf2(_Complex float c) { cfloat_t z = {c}; assert(z.re == 2 && z.im == 1); }
 extern "C" void ccomplex2(_Complex double c) { cdouble_t z = {c}; assert(z.re == 2 && z.im == 1); }
 extern "C" void ccomplexl2(_Complex long double c) { creal_t z = {c}; assert(z.re == 2 && z.im == 1); }
 
 // extern(C++) tests
-_Complex float cpcomplexf() { return 2.0f+I; }
-_Complex double cpcomplex() { return 2.0+I; }
-_Complex long double cpcomplexl() { return 2.0L+I; }
+_Complex float cpcomplexf() { return {2.0f, 1.0f}; }
+_Complex double cpcomplex() { return {2.0, 1.0}; }
+_Complex long double cpcomplexl() { return {2.0L, 1.0L}; }
 void cpcomplexf(_Complex float c) { cfloat_t z = {c}; assert(z.re == 2 && z.im == 1); }
 void cpcomplex(_Complex double c) { cdouble_t z = {c}; assert(z.re == 2 && z.im == 1); }
 void cpcomplexl(_Complex long double c) { creal_t z = {c}; assert(z.re == 2 && z.im == 1); }
@@ -30,21 +30,21 @@ struct wrap_complexl { _Complex long double c; };
 wrap_complexf wcomplexf()
 {
     wrap_complexf s;
-    s.c = 2.0f+I;
+    s.c = {2.0f, 1.0f};
     return s;
 }
 
 wrap_complex wcomplex()
 {
     wrap_complex s;
-    s.c = 2.0+I;
+    s.c = {2.0, 1.0};
     return s;
 }
 
 wrap_complexl wcomplexl()
 {
     wrap_complexl s;
-    s.c = 2.0L+I;
+    s.c = {2.0L, 1.0L};
     return s;
 }
 

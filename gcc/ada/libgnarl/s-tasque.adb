@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package body System.Tasking.Queuing is
 
    --  Entry Queues implemented as doubly linked list
 
-   Queuing_Policy : Character;
+   Queuing_Policy : constant Character;
    pragma Import (C, Queuing_Policy, "__gl_queuing_policy");
 
    Priority_Queuing : constant Boolean := Queuing_Policy = 'P';

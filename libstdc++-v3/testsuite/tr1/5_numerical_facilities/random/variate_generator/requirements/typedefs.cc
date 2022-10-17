@@ -2,7 +2,7 @@
 //
 // 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2006-2021 Free Software Foundation, Inc.
+// Copyright (C) 2006-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,19 +23,56 @@
 
 #include <tr1/random>
 
+template<typename T, typename U> struct require_same; // not defined
+template<typename T> struct require_same<T, T> { };
+
+typedef std::tr1::linear_congruential<unsigned long, 16807, 0, 2147483647> E;
+typedef std::tr1::uniform_int<int> D;
+
 void
 test01()
 {
-  using namespace std::tr1;
-
-  typedef variate_generator
-    <
-    linear_congruential<unsigned long, 16807 , 0 , 2147483647>,
-    uniform_int<int>
-    > test_type;
+  typedef std::tr1::variate_generator<E, D> test_type;
 
   typedef test_type::engine_type       engine_type;
   typedef test_type::engine_value_type engine_value_type;
   typedef test_type::distribution_type distribution_type;
   typedef test_type::result_type       result_type;
+
+  require_same<engine_type, E> check_e;
+  require_same<engine_value_type, E> check_ev;
+  require_same<distribution_type, D> check_d;
+  require_same<result_type, typename D::result_type> check_r;
+}
+
+void
+test02()
+{
+  typedef std::tr1::variate_generator<E&, D> test_type;
+
+  typedef test_type::engine_type       engine_type;
+  typedef test_type::engine_value_type engine_value_type;
+  typedef test_type::distribution_type distribution_type;
+  typedef test_type::result_type       result_type;
+
+  require_same<engine_type, E&> check_e;
+  require_same<engine_value_type, E> check_ev;
+  require_same<distribution_type, D> check_d;
+  require_same<result_type, typename D::result_type> check_r;
+}
+
+void
+test03()
+{
+  typedef std::tr1::variate_generator<E*, D> test_type;
+
+  typedef test_type::engine_type       engine_type;
+  typedef test_type::engine_value_type engine_value_type;
+  typedef test_type::distribution_type distribution_type;
+  typedef test_type::result_type       result_type;
+
+  require_same<engine_type, E*> check_e;
+  require_same<engine_value_type, E> check_ev;
+  require_same<distribution_type, D> check_d;
+  require_same<result_type, typename D::result_type> check_r;
 }

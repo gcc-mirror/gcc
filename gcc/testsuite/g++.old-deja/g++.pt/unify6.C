@@ -23,8 +23,8 @@ template<class T> void foo(T const *){} // { dg-error "pointer to reference" }
 
 void f()
 {
-  foo<int &>(); // { dg-error "" } attempt to build int & const *
-  foo<void ()>(); // { dg-error "" } attempt to build void (const *)()
+  foo<int &>(0); // { dg-error "" } attempt to build int & const *
+  foo<void ()>(0); // OK by [dcl.fct]/7, the const is silently dropped
 }
 
 typedef void (*Fptr)();

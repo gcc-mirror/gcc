@@ -1,6 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - (c) 2016 John David Anglin
-	   (c) 2011 Anthony Green
+   ffi.c - (c) 2011 Anthony Green
            (c) 2008 Red Hat, Inc.
 	   (c) 2006 Free Software Foundation, Inc.
            (c) 2003-2004 Randolph Chung <tausq@debian.org>
@@ -52,8 +51,7 @@
 
 #define debug(lvl, x...) do { if (lvl <= DEBUG_LEVEL) { printf(x); } } while (0)
 
-static inline int
-ffi_struct_type (ffi_type *t)
+static inline int ffi_struct_type(ffi_type *t)
 {
   size_t sz = t->size;
 
@@ -141,8 +139,7 @@ ffi_struct_type (ffi_type *t)
    NOTE: We load floating point args in this function... that means we
    assume gcc will not mess with fp regs in here.  */
 
-void
-ffi_prep_args_pa32 (UINT32 *stack, extended_cif *ecif, unsigned bytes)
+void ffi_prep_args_pa32(UINT32 *stack, extended_cif *ecif, unsigned bytes)
 {
   register unsigned int i;
   register ffi_type **p_arg;
@@ -278,8 +275,7 @@ ffi_prep_args_pa32 (UINT32 *stack, extended_cif *ecif, unsigned bytes)
   return;
 }
 
-static void
-ffi_size_stack_pa32 (ffi_cif *cif)
+static void ffi_size_stack_pa32(ffi_cif *cif)
 {
   ffi_type **ptr;
   int i;
@@ -320,8 +316,7 @@ ffi_size_stack_pa32 (ffi_cif *cif)
 }
 
 /* Perform machine dependent cif processing.  */
-ffi_status
-ffi_prep_cif_machdep (ffi_cif *cif)
+ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 {
   /* Set the return type flag */
   switch (cif->rtype->type)
@@ -374,13 +369,11 @@ ffi_prep_cif_machdep (ffi_cif *cif)
   return FFI_OK;
 }
 
-extern void ffi_call_pa32 (void (*)(UINT32 *, extended_cif *, unsigned),
-			   extended_cif *, unsigned, unsigned, unsigned *,
-			   void (*fn)(void), void *closure);
+extern void ffi_call_pa32(void (*)(UINT32 *, extended_cif *, unsigned),
+			  extended_cif *, unsigned, unsigned, unsigned *,
+			  void (*fn)(void));
 
-static void
-ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue,
-	      void *closure)
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
@@ -408,8 +401,8 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue,
     {
     case FFI_PA32:
       debug(3, "Calling ffi_call_pa32: ecif=%p, bytes=%u, flags=%u, rvalue=%p, fn=%p\n", &ecif, cif->bytes, cif->flags, ecif.rvalue, (void *)fn);
-      ffi_call_pa32 (ffi_prep_args_pa32, &ecif, cif->bytes,
-		     cif->flags, ecif.rvalue, fn, closure);
+      ffi_call_pa32(ffi_prep_args_pa32, &ecif, cif->bytes,
+		     cif->flags, ecif.rvalue, fn);
       break;
 
     default:
@@ -418,60 +411,35 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue,
     }
 }
 
-void
-ffi_call (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
-{
-  ffi_call_int (cif, fn, rvalue, avalue, NULL);
-}
-
-void
-ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue,
-	     void *closure)
-{
-  ffi_call_int (cif, fn, rvalue, avalue, closure);
-}
-
 #if FFI_CLOSURES
 /* This is more-or-less an inverse of ffi_call -- we have arguments on
    the stack, and we need to fill them into a cif structure and invoke
    the user function. This really ought to be in asm to make sure
    the compiler doesn't do things we don't expect.  */
-ffi_status
-ffi_closure_inner_pa32 (void *closure, UINT32 *stack, int closure_type)
+ffi_status ffi_closure_inner_pa32(ffi_closure *closure, UINT32 *stack)
 {
   ffi_cif *cif;
-  void (*fun)(ffi_cif *,void *,void **,void *); 
-  void *user_data;
   void **avalue;
   void *rvalue;
-  UINT32 ret[2]; /* function can return up to 64-bits in registers */
+  /* Functions can return up to 64-bits in registers.  Return address
+     must be double word aligned.  */
+  union { double rd; UINT32 ret[2]; } u;
   ffi_type **p_arg;
   char *tmp;
   int i, avn;
   unsigned int slot = FIRST_ARG_SLOT;
   register UINT32 r28 asm("r28");
+  ffi_closure *c = (ffi_closure *)FFI_RESTORE_PTR (closure);
 
-  /* A non-zero closure type indicates a go closure.  */
-  if (closure_type)
-    {
-      cif = ((ffi_go_closure *)closure)->cif;
-      fun = ((ffi_go_closure *)closure)->fun;
-      user_data = closure;
-    }
-  else
-    {
-      cif = ((ffi_closure *)closure)->cif;
-      fun = ((ffi_closure *)closure)->fun;
-      user_data = ((ffi_closure *)closure)->user_data;
-    }
+  cif = closure->cif;
 
   /* If returning via structure, callee will write to our pointer.  */
   if (cif->flags == FFI_TYPE_STRUCT)
     rvalue = (void *)r28;
   else
-    rvalue = &ret[0];
+    rvalue = &u;
 
-  avalue = (void **) alloca (cif->nargs * FFI_SIZEOF_ARG);
+  avalue = (void **)alloca(cif->nargs * FFI_SIZEOF_ARG);
   avn = cif->nargs;
   p_arg = cif->arg_types;
 
@@ -564,35 +532,35 @@ ffi_closure_inner_pa32 (void *closure, UINT32 *stack, int closure_type)
     }
 
   /* Invoke the closure.  */
-  fun (cif, rvalue, avalue, user_data);
+  (c->fun) (cif, rvalue, avalue, c->user_data);
 
-  debug(3, "after calling function, ret[0] = %08x, ret[1] = %08x\n", ret[0],
-	ret[1]);
+  debug(3, "after calling function, ret[0] = %08x, ret[1] = %08x\n", u.ret[0],
+	u.ret[1]);
 
   /* Store the result using the lower 2 bytes of the flags.  */
   switch (cif->flags)
     {
     case FFI_TYPE_UINT8:
-      *(stack - FIRST_ARG_SLOT) = (UINT8)(ret[0] >> 24);
+      *(stack - FIRST_ARG_SLOT) = (UINT8)(u.ret[0] >> 24);
       break;
     case FFI_TYPE_SINT8:
-      *(stack - FIRST_ARG_SLOT) = (SINT8)(ret[0] >> 24);
+      *(stack - FIRST_ARG_SLOT) = (SINT8)(u.ret[0] >> 24);
       break;
     case FFI_TYPE_UINT16:
-      *(stack - FIRST_ARG_SLOT) = (UINT16)(ret[0] >> 16);
+      *(stack - FIRST_ARG_SLOT) = (UINT16)(u.ret[0] >> 16);
       break;
     case FFI_TYPE_SINT16:
-      *(stack - FIRST_ARG_SLOT) = (SINT16)(ret[0] >> 16);
+      *(stack - FIRST_ARG_SLOT) = (SINT16)(u.ret[0] >> 16);
       break;
     case FFI_TYPE_INT:
     case FFI_TYPE_SINT32:
     case FFI_TYPE_UINT32:
-      *(stack - FIRST_ARG_SLOT) = ret[0];
+      *(stack - FIRST_ARG_SLOT) = u.ret[0];
       break;
     case FFI_TYPE_SINT64:
     case FFI_TYPE_UINT64:
-      *(stack - FIRST_ARG_SLOT) = ret[0];
-      *(stack - FIRST_ARG_SLOT - 1) = ret[1];
+      *(stack - FIRST_ARG_SLOT) = u.ret[0];
+      *(stack - FIRST_ARG_SLOT - 1) = u.ret[1];
       break;
 
     case FFI_TYPE_DOUBLE:
@@ -612,7 +580,7 @@ ffi_closure_inner_pa32 (void *closure, UINT32 *stack, int closure_type)
     case FFI_TYPE_SMALL_STRUCT4:
       tmp = (void*)(stack -  FIRST_ARG_SLOT);
       tmp += 4 - cif->rtype->size;
-      memcpy((void*)tmp, &ret[0], cif->rtype->size);
+      memcpy((void*)tmp, &u, cif->rtype->size);
       break;
 
     case FFI_TYPE_SMALL_STRUCT5:
@@ -633,7 +601,7 @@ ffi_closure_inner_pa32 (void *closure, UINT32 *stack, int closure_type)
 	  }
 
 	memset (ret2, 0, sizeof (ret2));
-	memcpy ((char *)ret2 + off, ret, 8 - off);
+	memcpy ((char *)ret2 + off, &u, 8 - off);
 
 	*(stack - FIRST_ARG_SLOT) = ret2[0];
 	*(stack - FIRST_ARG_SLOT - 1) = ret2[1];
@@ -656,7 +624,6 @@ ffi_closure_inner_pa32 (void *closure, UINT32 *stack, int closure_type)
    cif specifies the argument and result types for fun.
    The cif must already be prep'ed.  */
 
-extern void ffi_go_closure_pa32(void);
 extern void ffi_closure_pa32(void);
 
 ffi_status
@@ -666,107 +633,42 @@ ffi_prep_closure_loc (ffi_closure* closure,
 		      void *user_data,
 		      void *codeloc)
 {
-  UINT32 *tramp = (UINT32 *)(closure->tramp);
-#ifdef PA_HPUX
-  UINT32 *tmp;
-#endif
+  ffi_closure *c = (ffi_closure *)FFI_RESTORE_PTR (closure);
+
+  /* The layout of a function descriptor.  A function pointer with the PLABEL
+     bit set points to a function descriptor.  */
+  struct pa32_fd
+  {
+    UINT32 code_pointer;
+    UINT32 gp;
+  };
+
+  struct ffi_pa32_trampoline_struct
+  {
+     UINT32 code_pointer;        /* Pointer to ffi_closure_unix.  */
+     UINT32 fake_gp;             /* Pointer to closure, installed as gp.  */
+     UINT32 real_gp;             /* Real gp value.  */
+  };
+
+  struct ffi_pa32_trampoline_struct *tramp;
+  struct pa32_fd *fd;
 
   if (cif->abi != FFI_PA32)
     return FFI_BAD_ABI;
 
-  /* Make a small trampoline that will branch to our
-     handler function. Use PC-relative addressing.  */
+  /* Get function descriptor address for ffi_closure_pa32.  */
+  fd = (struct pa32_fd *)((UINT32)ffi_closure_pa32 & ~3);
 
-#ifdef PA_LINUX
-  tramp[0] = 0xeaa00000; /* b,l .+8,%r21        ; %r21 <- pc+8 */
-  tramp[1] = 0xd6a01c1e; /* depi 0,31,2,%r21    ; mask priv bits */
-  tramp[2] = 0x4aa10028; /* ldw 20(%r21),%r1    ; load plabel */
-  tramp[3] = 0x36b53ff1; /* ldo -8(%r21),%r21   ; get closure addr */
-  tramp[4] = 0x0c201096; /* ldw 0(%r1),%r22     ; address of handler */
-  tramp[5] = 0xeac0c000; /* bv%r0(%r22)         ; branch to handler */
-  tramp[6] = 0x0c281093; /* ldw 4(%r1),%r19     ; GP of handler */
-  tramp[7] = ((UINT32)(ffi_closure_pa32) & ~2);
+  /* Setup trampoline.  */
+  tramp = (struct ffi_pa32_trampoline_struct *)c->tramp;
+  tramp->code_pointer = fd->code_pointer;
+  tramp->fake_gp = (UINT32)codeloc & ~3;
+  tramp->real_gp = fd->gp;
 
-  /* Flush d/icache -- have to flush up 2 two lines because of
-     alignment.  */
-  __asm__ volatile(
-		   "fdc 0(%0)\n\t"
-		   "fdc %1(%0)\n\t"
-		   "fic 0(%%sr4, %0)\n\t"
-		   "fic %1(%%sr4, %0)\n\t"
-		   "sync\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n"
-		   :
-		   : "r"((unsigned long)tramp & ~31),
-		     "r"(32 /* stride */)
-		   : "memory");
-#endif
-
-#ifdef PA_HPUX
-  tramp[0] = 0xeaa00000; /* b,l .+8,%r21        ; %r21 <- pc+8  */
-  tramp[1] = 0xd6a01c1e; /* depi 0,31,2,%r21    ; mask priv bits  */
-  tramp[2] = 0x4aa10038; /* ldw 28(%r21),%r1    ; load plabel  */
-  tramp[3] = 0x36b53ff1; /* ldo -8(%r21),%r21   ; get closure addr  */
-  tramp[4] = 0x0c201096; /* ldw 0(%r1),%r22     ; address of handler  */
-  tramp[5] = 0x02c010b4; /* ldsid (%r22),%r20   ; load space id  */
-  tramp[6] = 0x00141820; /* mtsp %r20,%sr0      ; into %sr0  */
-  tramp[7] = 0xe2c00000; /* be 0(%sr0,%r22)     ; branch to handler  */
-  tramp[8] = 0x0c281093; /* ldw 4(%r1),%r19     ; GP of handler  */
-  tramp[9] = ((UINT32)(ffi_closure_pa32) & ~2);
-
-  /* Flush d/icache -- have to flush three lines because of alignment.  */
-  __asm__ volatile(
-		   "copy %1,%0\n\t"
-		   "fdc,m %2(%0)\n\t"
-		   "fdc,m %2(%0)\n\t"
-		   "fdc,m %2(%0)\n\t"
-		   "ldsid (%1),%0\n\t"
-		   "mtsp %0,%%sr0\n\t"
-		   "copy %1,%0\n\t"
-		   "fic,m %2(%%sr0,%0)\n\t"
-		   "fic,m %2(%%sr0,%0)\n\t"
-		   "fic,m %2(%%sr0,%0)\n\t"
-		   "sync\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n\t"
-		   "nop\n"
-		   : "=&r" ((unsigned long)tmp)
-		   : "r" ((unsigned long)tramp & ~31),
-		     "r" (32/* stride */)
-		   : "memory");
-#endif
-
-  closure->cif  = cif;
-  closure->user_data = user_data;
-  closure->fun  = fun;
+  c->cif  = cif;
+  c->user_data = user_data;
+  c->fun  = fun;
 
   return FFI_OK;
 }
-
-#ifdef FFI_GO_CLOSURES
-ffi_status
-ffi_prep_go_closure (ffi_go_closure *closure,
-		     ffi_cif *cif,
-		     void (*fun)(ffi_cif *, void *, void **, void *))
-{
-  if (cif->abi != FFI_PA32)
-    return FFI_BAD_ABI;
-
-  closure->tramp = &ffi_go_closure_pa32;
-  closure->cif = cif;
-  closure->fun = fun;
-
-  return FFI_OK;
-}
-#endif /* FFI_GO_CLOSURES */
 #endif

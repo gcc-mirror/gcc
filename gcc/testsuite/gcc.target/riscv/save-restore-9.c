@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -msave-restore" } */
+/* { dg-options "-msave-restore" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 int
 __attribute__((noinline,noclone))

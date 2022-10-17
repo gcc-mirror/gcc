@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,9 +25,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bid_functions.h"
 #include "bid_gcc_intrinsics.h"
 
+#ifdef __LIBGCC_HAS_XF_MODE__
 _Decimal32
 __bid_truncxfsd (XFtype x) {
   union decimal32 res;
   res.i = __binary80_to_bid32 (x);
   return (res.d);
 }
+#endif

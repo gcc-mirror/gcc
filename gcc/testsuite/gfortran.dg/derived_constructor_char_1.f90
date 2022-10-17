@@ -5,7 +5,7 @@
 !
 !
   Type :: t5
-    character (len=5) :: txt(4)
+    character (len=5) :: txt(2)
   End Type t5
 
   character (len=3), parameter :: str3(2) = [ "ABC", "ZYX" ]

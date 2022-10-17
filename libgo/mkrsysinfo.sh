@@ -98,7 +98,7 @@ if grep '^const _epoll_data_offset ' ${OUT} >/dev/null 2>&1; then
       echo 'type epollevent struct { events uint32; data [8]byte }' >> ${OUT}
   elif test "$val" = "8"; then
       if test "$GOARCH" = "sparc64" -a "$GOOS" = "linux"; then
-          echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte; _align [0]int64 }' >> ${OUT}
+          echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte; _ [0]int64 }' >> ${OUT}
       else
           echo 'type epollevent struct { events uint32; pad [4]byte; data [8]byte }' >> ${OUT}
       fi

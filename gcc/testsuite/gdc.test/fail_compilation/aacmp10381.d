@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/aacmp10381.d(12): Error: > is not defined for associative arrays
+fail_compilation/aacmp10381.d(12): Error: `>` is not defined for associative arrays
 ---
 */
 

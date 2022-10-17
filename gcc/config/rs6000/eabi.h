@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for IBM RS/6000 PowerPC targeted to embedded ELF systems.
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -21,7 +21,7 @@
 
 /* Add -meabi to target flags.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_EABI
+#define TARGET_DEFAULT OPTION_MASK_EABI
 
 /* Invoke an initializer function to set up the GOT.  */
 #define NAME__MAIN "__eabi"

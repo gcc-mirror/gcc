@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fno-devirtualize --param=profile-func-internal-id=0 -fdump-ipa-profile-optimized -fdump-ipa-afdo -Wno-coverage-mismatch -Wno-attributes" } */
+/* { dg-options "-O2 -fno-devirtualize --param=profile-func-internal-id=0 -fdump-ipa-profile-optimized -fdump-ipa-afdo-optimized -Wno-coverage-mismatch -Wno-attributes" } */
 
 #ifdef _PROFILE_USE
 #include "reorder_class1.h"
@@ -13,7 +13,7 @@ static __attribute__((always_inline))
 void test1 (A *tc)
 {
   int i;
-  for (i = 0; i < 1000000; i++)
+  for (i = 0; i < 10000000; i++)
      g += tc->foo(); 
    if (g<100) g++;
 }
@@ -22,7 +22,7 @@ static __attribute__((always_inline))
 void test2 (B *tc)
 {
   int i;
-  for (i = 0; i < 1000000; i++)
+  for (i = 0; i < 10000000; i++)
      g += tc->foo();
 }
 

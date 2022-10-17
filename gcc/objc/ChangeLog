@@ -1,3 +1,169 @@
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* objc-gnu-runtime-abi-01.cc (generate_static_references):
+	Remove unused variable.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* objc-act.h (objc_get_sarif_source_language): New decl.
+	* objc-lang.cc (LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+	(objc_get_sarif_source_language): New.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (objc.tags): Look at *.cc.
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91134
+	* objc-act.cc (objc_build_component_ref): Adjust build_component_ref
+	caller.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/105355
+	* lang-specs.h: Use Separate syntax.
+
+2022-05-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc (next_runtime_abi_02_protocol_decl): Do
+	not dead-strip the runtime meta-data symbols.
+	(build_v2_classrefs_table): Likewise.
+	(build_v2_protocol_list_address_table): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Rename .c names to .cc.
+	* config-lang.in: Likewise.
+	* lang-specs.h: Likewise.
+	* objc-act.cc (objc_build_component_ref): Likewise.
+	(objc_copy_binfo): Likewise.
+	(lookup_method_in_hash_lists): Likewise.
+	(objc_finish_foreach_loop): Likewise.
+	* objc-act.h (objc_common_init_ts): Likewise.
+	* objc-gnu-runtime-abi-01.cc: Likewise.
+	* objc-lang.cc (struct lang_hooks): Likewise.
+	* objc-map.cc: Likewise.
+	* objc-next-runtime-abi-01.cc (generate_objc_symtab_decl): Likewise.
+	* objc-runtime-shared-support.cc: Likewise.
+	* objc-runtime-shared-support.h (build_protocol_initializer): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* objc-act.c: Moved to...
+	* objc-act.cc: ...here.
+	* objc-encoding.c: Moved to...
+	* objc-encoding.cc: ...here.
+	* objc-gnu-runtime-abi-01.c: Moved to...
+	* objc-gnu-runtime-abi-01.cc: ...here.
+	* objc-lang.c: Moved to...
+	* objc-lang.cc: ...here.
+	* objc-map.c: Moved to...
+	* objc-map.cc: ...here.
+	* objc-next-runtime-abi-01.c: Moved to...
+	* objc-next-runtime-abi-01.cc: ...here.
+	* objc-next-runtime-abi-02.c: Moved to...
+	* objc-next-runtime-abi-02.cc: ...here.
+	* objc-runtime-shared-support.c: Moved to...
+	* objc-runtime-shared-support.cc: ...here.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101597
+	* objc-act.c (objc_rewrite_function_call): Build OBJ_TYPE_REF
+	with INTEGER_CST OBJ_TYPE_REF_TOKEN with type equal to
+	OBJ_TYPE_REF_OBJECT type.
+	* objc-next-runtime-abi-01.c (build_objc_method_call): Likewise.
+	* objc-gnu-runtime-abi-01.c (build_objc_method_call): Likewise.
+	* objc-next-runtime-abi-02.c (build_v2_objc_method_fixup_call,
+	build_v2_build_objc_method_call): Likewise.
+
+2021-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-metadata-tags.h (objc_rt_trees): Declare here.
+	* objc-next-runtime-abi-01.c: Remove from here.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Reorder headers, provide
+	a GTY declaration the definition of objc_rt_trees.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* objc-act.c (objc_build_setter_call): Remove unreachable
+	return.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Add dummy objc.install-dvi target.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* objc-next-runtime-abi-01.c: Add missing include.
+	* objc-next-runtime-abi-02.c: Likewise.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* objc-next-runtime-abi-01.c: Use new macro
+	OPTION_SET_P.
+	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init): Likewise.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/101718
+	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call):
+	Revise for cases where scalar objects use an sret parameter.
+	(next_runtime_abi_02_build_objc_method_call): Likwise.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_add_property_declaration): Register unavailable
+	attribute.
+	(maybe_make_artificial_property_decl): Set available.
+	(objc_maybe_build_component_ref): Generalise to the method prototype
+	to count availability.
+	(objc_build_class_component_ref): Likewise.
+	(build_private_template): Likewise.
+	(objc_decl_method_attributes): Handle unavailable attribute.
+	(lookup_method_in_hash_lists): Amend comments.
+	(objc_finish_message_expr): Handle unavailability in addition to
+	deprecation.
+	(start_class): Likewise.
+	(finish_class): Likewise.
+	(lookup_protocol): Likewise.
+	(objc_declare_protocol): Likewise.
+	(start_protocol): Register unavailable attribute.
+	(really_start_method): Likewise.
+	(objc_gimplify_property_ref): Emit error on encountering an
+	unavailable entity (and a warning for a deprecated one).
+
+2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init):
+	Default receiver nilchecks on.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+	    Matt Jacobson   <mhjacobson@me.com>
+
+	PR objc/101666
+	* objc-act.c (objc_build_constructor): Handle empty constructor
+	lists.
+	* objc-next-runtime-abi-02.c (build_v2_objc_method_fixup_call):
+	Handle nil receivers.
+	(build_v2_build_objc_method_call): Likewise.
+
+2021-08-17  Matt Jacobson  <mhjacobson@me.com>
+
+	* objc-next-runtime-abi-02.c
+	(objc_next_runtime_abi_02_init): Warn about and reset
+	flag_objc_sjlj_exceptions regardless of flag_objc_exceptions.
+	(next_runtime_02_initialize): Use a checking assert that
+	flag_objc_sjlj_exceptions is off.
+
 2021-06-28  Martin Sebor  <msebor@redhat.com>
 
 	* objc-act.c (objc_maybe_build_modify_expr): Replace direct uses
@@ -4085,7 +4251,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread3-details-blocks -fno-early-inlining -fno-tree-vrp -fno-tree-dominator-opts" } */
+/* { dg-options "-O2 -fno-early-inlining -fno-tree-vrp -fno-tree-dominator-opts -fdump-tree-thread2-details-blocks" } */
 
 static int a;
 static int b;
@@ -25,5 +25,5 @@ main (int argc)
   if (b)
     test2 ();
 }
-/* { dg-final { scan-tree-dump-times "Registering FSM jump thread" 2 "thread3" } } */
-/* { dg-final { scan-tree-dump-not "Invalid sum" "thread3" } } */
+/* { dg-final { scan-tree-dump-times "Registering jump thread" 2 "thread2" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "thread2" } } */

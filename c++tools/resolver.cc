@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!	-*- c++ -*-
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "resolver.h"
 // C++
 #include <algorithm>
+#include <memory>
 // C
 #include <cstring>
 // OS
@@ -114,10 +115,17 @@ module_resolver::read_tuple_file (int fd, char const *prefix, bool force)
   buffer = mmap (nullptr, stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   if (buffer == MAP_FAILED)
     return -errno;
+  struct Deleter {
+    void operator()(void* p) const { munmap(p, size); }
+    size_t size;
+  };
+  std::unique_ptr<void, Deleter> guard(buffer, Deleter{(size_t)stat.st_size});
 #else
   buffer = xmalloc (stat.st_size);
   if (!buffer)
     return -errno;
+  struct Deleter { void operator()(void* p) const { free(p); } };
+  std::unique_ptr<void, Deleter> guard(buffer);
   if (read (fd, buffer, stat.st_size) != stat.st_size)
     return -errno;
 #endif
@@ -178,12 +186,6 @@ module_resolver::read_tuple_file (int fd, char const *prefix, bool force)
 	  add_mapping (std::move (module), std::move (file), force);
 	}
     }
-
-#if MAPPED_READING
-  munmap (buffer, stat.st_size);
-#else
-  free (buffer);
-#endif
 
   return 0;
 }
@@ -307,3 +309,14 @@ module_resolver::IncludeTranslateRequest (Cody::Server *s, Cody::Flags,
   return 0;
 }
 
+/* This handles a client notification to the server that a CMI has been
+   produced for a module.  For this simplified server, we just accept
+   the transaction and respond with "OK".  */
+
+int
+module_resolver::ModuleCompiledRequest (Cody::Server *s, Cody::Flags,
+				      std::string &)
+{
+  s->OKResponse();
+  return 0;
+}

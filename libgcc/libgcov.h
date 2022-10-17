@@ -1,5 +1,5 @@
 /* Header file for libgcov-*.c.
-   Copyright (C) 1996-2021 Free Software Foundation, Inc.
+   Copyright (C) 1996-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -52,7 +52,7 @@
 #if __CHAR_BIT__ == 8
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (SI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (DI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (DI)));
 #else
@@ -63,7 +63,7 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #if __CHAR_BIT__ == 16
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (HI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (HI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (SI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #else
@@ -73,7 +73,7 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #else
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (QI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (QI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (HI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #else
@@ -114,14 +114,11 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define gcov_var __gcov_var
 #define gcov_open __gcov_open
 #define gcov_close __gcov_close
-#define gcov_write_tag_length __gcov_write_tag_length
 #define gcov_position __gcov_position
-#define gcov_seek __gcov_seek
 #define gcov_rewrite __gcov_rewrite
 #define gcov_is_error __gcov_is_error
 #define gcov_write_unsigned __gcov_write_unsigned
-#define gcov_write_counter __gcov_write_counter
-#define gcov_write_summary __gcov_write_summary
+#define gcov_write_object_summary __gcov_write_object_summary
 #define gcov_read_unsigned __gcov_read_unsigned
 #define gcov_read_counter __gcov_read_counter
 #define gcov_read_summary __gcov_read_summary
@@ -232,12 +229,13 @@ struct gcov_info
   struct gcov_info *next;	/* link to next, used by libgcov */
 
   gcov_unsigned_t stamp;	/* uniquifying time stamp */
+  gcov_unsigned_t checksum;	/* unique object checksum */
   const char *filename;		/* output file name */
 
   gcov_merge_fn merge[GCOV_COUNTERS];  /* merge functions (null for
 					  unused) */
   
-  unsigned n_functions;		/* number of functions */
+  gcov_unsigned_t n_functions;		/* number of functions */
 
 #ifndef IN_GCOV_TOOL
   const struct gcov_fn_info *const *functions; /* pointer to pointers
@@ -344,14 +342,8 @@ extern int __gcov_execve (const char *, char  *const [], char *const [])
   ATTRIBUTE_HIDDEN;
 
 /* Functions that only available in libgcov.  */
-GCOV_LINKAGE int gcov_open (const char */*name*/) ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_write_counter (gcov_type) ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_write_tag_length (gcov_unsigned_t, gcov_unsigned_t)
+GCOV_LINKAGE void gcov_write_object_summary (const struct gcov_summary *)
     ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
-                                      const struct gcov_summary *)
-    ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_rewrite (void) ATTRIBUTE_HIDDEN;
 
 /* "Counts" stored in gcda files can be a real counter value, or

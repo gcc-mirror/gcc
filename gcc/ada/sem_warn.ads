@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,15 +86,15 @@ package Sem_Warn is
    --  N is the node for an expression which occurs in a reference position,
    --  e.g. as the right side of an assignment. This procedure checks to see
    --  if the node is a reference to a variable entity where the entity has
-   --  Not_Assigned set. If so, the Unset_Reference field is set if it is not
-   --  the first occurrence. No warning is posted, instead warnings will be
-   --  posted later by Check_References. The reason we do things that
-   --  way is that if there are no assignments anywhere, we prefer to flag
-   --  the entity, rather than a reference to it. Note that for the purposes
-   --  of this routine, a type conversion or qualified expression whose
-   --  expression is an entity is also processed. The reason that we do not
-   --  process these at the point of occurrence is that both these constructs
-   --  can occur in non-reference positions (e.g. as out parameters).
+   --  Never_Set_In_Source set. If so, the Unset_Reference field is set if it
+   --  is not the first occurrence. No warning is posted, instead warnings will
+   --  be posted later by Check_References. The reason we do things that way is
+   --  that if there are no assignments anywhere, we prefer to flag the entity,
+   --  rather than a reference to it. Note that for the purposes of this
+   --  routine, a type conversion or qualified expression whose expression is
+   --  an entity is also processed. The reason that we do not process these
+   --  at the point of occurrence is that both these constructs can occur in
+   --  non-reference positions (e.g. as out parameters).
 
    procedure Check_Unused_Withs (Spec_Unit : Unit_Number_Type := No_Unit);
    --  This routine performs two kinds of checks. It checks that all with'ed
@@ -257,12 +257,9 @@ package Sem_Warn is
    ----------------------
 
    function Has_Junk_Name (E : Entity_Id) return Boolean;
-   --  Return True if the entity name contains any of the following substrings:
-   --    discard
-   --    dummy
-   --    ignore
-   --    junk
-   --    unused
+   --  Return True if the entity name contains substrings like "junk" or
+   --  "dummy" (see the body for the complete list).
+   --
    --  Used to suppress warnings on names matching these patterns. The contents
    --  of Name_Buffer and Name_Len are destroyed by this call.
 

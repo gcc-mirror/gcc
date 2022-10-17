@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -407,7 +407,7 @@ procedure Gnatlink is
 
       procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
-      --  Start of processing for Process_Args
+   --  Start of processing for Process_Args
 
    begin
       --  First, check for --version and --help
@@ -1531,7 +1531,6 @@ begin
          A := Scan_ALI
                (F,
                 T,
-                Ignore_ED     => False,
                 Err           => False,
                 Ignore_Errors => True);
 

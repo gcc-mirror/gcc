@@ -1,6 +1,6 @@
 /* Basic test on number of inserted callbacks.  */
 /* { dg-do compile } */
-/* { dg-options "-fsanitize-coverage=trace-cmp -fdump-tree-optimized" } */
+/* { dg-options "-fsanitize-coverage=trace-cmp -fdump-tree-optimized -fno-thread-jumps" } */
 /* { dg-skip-if "different type layout" { avr-*-* } } */
 
 #if __SIZEOF_INT__ < 4

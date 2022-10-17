@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2021 Free Software Foundation, Inc.
+// Copyright (C) 2017-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
 
 #include <memory>
 #include <testsuite_hooks.h>
@@ -32,7 +33,9 @@ test01()
   std::shared_ptr<int> p;
   VERIFY( std::get_deleter<Del>(p) == nullptr );
   p = std::shared_ptr<int>(new int, Del());
+#if __cpp_rtti
   VERIFY( std::get_deleter<Del>(p) != nullptr );
+#endif
   p = std::shared_ptr<int>(new int);
   VERIFY( std::get_deleter<Del>(p) == nullptr );
 }

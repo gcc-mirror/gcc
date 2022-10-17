@@ -1,6 +1,6 @@
 ## Makefile for the C++03 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2021 Free Software Foundation, Inc.
+## Copyright (C) 1997-2022 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -181,11 +181,11 @@ endif
 locale_init.lo: locale_init.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 locale_init.o: locale_init.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 localename.lo: localename.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 localename.o: localename.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.

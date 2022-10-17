@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2021, Free Software Foundation, Inc.            --
+--            Copyright (C) 2021-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ with System.Powten_Flt;
 with System.Unsigned_Types;
 
 package System.Img_Flt is
-   pragma Pure;
 
    package Impl is new Image_R
      (Float,

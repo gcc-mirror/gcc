@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2021, AdaCore                     --
+--                     Copyright (C) 2008-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@
 
 with Ada.Unchecked_Conversion;
 with Interfaces.C.Strings;
+with System.Parameters;
 
 package GNAT.Sockets.Thin_Common is
 
@@ -44,9 +45,9 @@ package GNAT.Sockets.Thin_Common is
    Failure : constant C.int := -1;
 
    type time_t is
-     range -2 ** (8 * SOSC.SIZEOF_tv_sec - 1)
-         .. 2 ** (8 * SOSC.SIZEOF_tv_sec - 1) - 1;
-   for time_t'Size use 8 * SOSC.SIZEOF_tv_sec;
+     range -2 ** (System.Parameters.time_t_bits - 1)
+        .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
+   for time_t'Size use System.Parameters.time_t_bits;
    pragma Convention (C, time_t);
 
    type suseconds_t is
@@ -74,16 +75,16 @@ package GNAT.Sockets.Thin_Common is
    -------------------------------------------
 
    Families : constant array (Family_Type) of C.int :=
-                (Family_Unspec => SOSC.AF_UNSPEC,
+                [Family_Unspec => SOSC.AF_UNSPEC,
                  Family_Unix   => SOSC.AF_UNIX,
                  Family_Inet   => SOSC.AF_INET,
-                 Family_Inet6  => SOSC.AF_INET6);
+                 Family_Inet6  => SOSC.AF_INET6];
 
    Lengths  : constant array (Family_Type) of C.unsigned_char :=
-                (Family_Unspec => 0,
+                [Family_Unspec => 0,
                  Family_Unix   => SOSC.SIZEOF_sockaddr_un,
                  Family_Inet   => SOSC.SIZEOF_sockaddr_in,
-                 Family_Inet6  => SOSC.SIZEOF_sockaddr_in6);
+                 Family_Inet6  => SOSC.SIZEOF_sockaddr_in6];
 
    ----------------------------
    -- Generic socket address --
@@ -159,7 +160,7 @@ package GNAT.Sockets.Thin_Common is
          Sin_Addr : In_Addr := (others => 0);
          --  IPv4 address
 
-         Sin_Zero : C.char_array (1 .. 8) := (others => C.nul);
+         Sin_Zero : C.char_array (1 .. 8) := [others => C.nul];
          --  Padding
          --
          --  Note that some platforms require that all unused (reserved) bytes
@@ -173,7 +174,7 @@ package GNAT.Sockets.Thin_Common is
          --  Port in network byte order
 
          Sin6_FlowInfo : Interfaces.Unsigned_32 := 0;
-         Sin6_Addr     : In6_Addr := (others => 0);
+         Sin6_Addr     : In6_Addr := [others => 0];
          Sin6_Scope_Id : Interfaces.Unsigned_32 := 0;
 
       when Family_Unix =>

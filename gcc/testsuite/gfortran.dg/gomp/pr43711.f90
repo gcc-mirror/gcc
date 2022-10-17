@@ -11,8 +11,8 @@ program NF03_2_5_2_1a
          print *, 'FAIL'
       !$omp section
          print *, 'FAIL'
-      !$omp end sections nowait nowait     ! { dg-error "Unexpected junk" }
-   !$omp end parallel
-end program NF03_2_5_2_1a
+      !$omp end sections nowait nowait     ! { dg-error "Unexpected junk after NOWAIT clause" }
+   !$omp end parallel  ! { dg-error "Unexpected !.OMP END PARALLEL statement" }
+end program NF03_2_5_2_1a  ! { dg-error "Unexpected END statement" }
 
-! { dg-excess-errors "Unexpected" }
+! { dg-prune-output "Unexpected end of file" }

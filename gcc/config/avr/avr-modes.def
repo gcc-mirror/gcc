@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,7 +20,7 @@ FRACTIONAL_INT_MODE (PSI, 24, 3);
 
 /* Make TA and UTA 64 bits wide.
    128 bit wide modes would be insane on a 8-bit machine.
-   This needs special treatment in avr.c and avr-lib.h.  */
+   This needs special treatment in avr.cc and avr-lib.h.  */
 
 ADJUST_BYTESIZE  (TA, 8);
 ADJUST_ALIGNMENT (TA, 1);

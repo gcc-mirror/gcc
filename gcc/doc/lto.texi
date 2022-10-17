@@ -1,4 +1,4 @@
-@c Copyright (C) 2010-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2010-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by Jan Hubicka <jh@suse.cz> and
@@ -69,23 +69,23 @@ Currently, this phase is composed of two IPA passes:
 @itemize @bullet
 @item @code{pass_ipa_lto_gimple_out}
 This pass executes the function @code{lto_output} in
-@file{lto-streamer-out.c}, which traverses the call graph encoding
+@file{lto-streamer-out.cc}, which traverses the call graph encoding
 every reachable declaration, type and function.  This generates a
 memory representation of all the file sections described below.
 
 @item @code{pass_ipa_lto_finish_out}
 This pass executes the function @code{produce_asm_for_decls} in
-@file{lto-streamer-out.c}, which takes the memory image built in the
+@file{lto-streamer-out.cc}, which takes the memory image built in the
 previous pass and encodes it in the corresponding ELF file sections.
 @end itemize
 
 The second half of LTO support is the ``reader''.  This is implemented
-as the GCC front end @file{lto1} in @file{lto/lto.c}.  When
+as the GCC front end @file{lto1} in @file{lto/lto.cc}.  When
 @file{collect2} detects a link set of @code{.o}/@code{.a} files with
 LTO information and the @option{-flto} is enabled, it invokes
 @file{lto1} which reads the set of files and aggregates them into a
 single translation unit for optimization.  The main entry point for
-the reader is @file{lto/lto.c}:@code{lto_main}.
+the reader is @file{lto/lto.cc}:@code{lto_main}.
 
 @subsection LTO modes of operation
 
@@ -157,8 +157,8 @@ LTO information is stored in several ELF sections inside object files.
 Data structures and enum codes for sections are defined in
 @file{lto-streamer.h}.
 
-These sections are emitted from @file{lto-streamer-out.c} and mapped
-in all at once from @file{lto/lto.c}:@code{lto_file_read}.  The
+These sections are emitted from @file{lto-streamer-out.cc} and mapped
+in all at once from @file{lto/lto.cc}:@code{lto_file_read}.  The
 individual functions dealing with the reading/writing of each section
 are described below.
 
@@ -176,7 +176,7 @@ At link time, the options given on the command line and the options
 saved on all the files in a link-time set are applied globally.  No
 attempt is made at validating the combination of flags (other than the
 usual validation done by option processing).  This is implemented in
-@file{lto/lto.c}:@code{lto_read_all_file_options}.
+@file{lto/lto.cc}:@code{lto_read_all_file_options}.
 
 
 @item Symbol table (@code{.gnu.lto_.symtab})
@@ -196,7 +196,7 @@ optimization.  This would lead to an undefined symbol if only one
 symbol table was used.
 
 The symbol table is emitted in
-@file{lto-streamer-out.c}:@code{produce_symtab}.
+@file{lto-streamer-out.cc}:@code{produce_symtab}.
 
 
 @item Global declarations and types (@code{.gnu.lto_.decls})
@@ -206,10 +206,10 @@ declarations and types required to represent the callgraph, static
 variables and top-level debug info.
 
 The contents of this section are emitted in
-@file{lto-streamer-out.c}:@code{produce_asm_for_decls}.  Types and
+@file{lto-streamer-out.cc}:@code{produce_asm_for_decls}.  Types and
 symbols are emitted in a topological order that preserves the sharing
 of pointers when the file is read back in
-(@file{lto.c}:@code{read_cgraph_and_symbols}).
+(@file{lto.cc}:@code{read_cgraph_and_symbols}).
 
 
 @item The callgraph (@code{.gnu.lto_.cgraph})
@@ -220,15 +220,15 @@ annotated multi-graph which represents the functions and call sites as
 well as the variables, aliases and top-level @code{asm} statements.
 
 This section is emitted in
-@file{lto-streamer-out.c}:@code{output_cgraph} and read in
-@file{lto-cgraph.c}:@code{input_cgraph}.
+@file{lto-streamer-out.cc}:@code{output_cgraph} and read in
+@file{lto-cgraph.cc}:@code{input_cgraph}.
 
 
 @item IPA references (@code{.gnu.lto_.refs})
 
 This section contains references between function and static
-variables.  It is emitted by @file{lto-cgraph.c}:@code{output_refs}
-and read by @file{lto-cgraph.c}:@code{input_refs}.
+variables.  It is emitted by @file{lto-cgraph.cc}:@code{output_refs}
+and read by @file{lto-cgraph.cc}:@code{input_refs}.
 
 
 @item Function bodies (@code{.gnu.lto_.function_body.<name>})
@@ -239,15 +239,15 @@ copying of the section independently to different object files or
 reading the function on demand.
 
 Functions are emitted in
-@file{lto-streamer-out.c}:@code{output_function} and read in
-@file{lto-streamer-in.c}:@code{input_function}.
+@file{lto-streamer-out.cc}:@code{output_function} and read in
+@file{lto-streamer-in.cc}:@code{input_function}.
 
 
 @item Static variable initializers (@code{.gnu.lto_.vars})
 
 This section contains all the symbols in the global variable pool.  It
-is emitted by @file{lto-cgraph.c}:@code{output_varpool} and read in
-@file{lto-cgraph.c}:@code{input_cgraph}.
+is emitted by @file{lto-cgraph.cc}:@code{output_varpool} and read in
+@file{lto-cgraph.cc}:@code{input_cgraph}.
 
 @item Summaries and optimization summaries used by IPA passes
 (@code{.gnu.lto_.<xxx>}, where @code{<xxx>} is one of @code{jmpfuncs},
@@ -451,9 +451,9 @@ locations where the address of @code{A} is taken and, when
 @code{A} is a variable, a list of all direct stores and reads
 to/from @code{A}.  References represent an oriented multi-graph on
 the union of nodes of the callgraph and the varpool.  See
-@file{ipa-reference.c}:@code{ipa_reference_write_optimization_summary}
+@file{ipa-reference.cc}:@code{ipa_reference_write_optimization_summary}
 and
-@file{ipa-reference.c}:@code{ipa_reference_read_optimization_summary}
+@file{ipa-reference.cc}:@code{ipa_reference_read_optimization_summary}
 for details.
 
 @subsection Jump functions

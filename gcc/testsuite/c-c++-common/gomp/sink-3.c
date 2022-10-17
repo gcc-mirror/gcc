@@ -14,7 +14,7 @@ foo ()
   for (i=0; i < 100; ++i)
     {
 #pragma omp ordered depend(sink:poo-1,paa+1) /* { dg-error "poo.*declared.*paa.*declared" } */
-    bar(&i);				     /* { dg-error "may not be closely nested" "" { target *-*-* } .-1 } */
+    bar(&i);
 #pragma omp ordered depend(source)
     }
 }

@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.8.3.4 reference_wrapper invocation [refwrap.invoke]
+// C++11 20.8.3.4 reference_wrapper invocation [refwrap.invoke]
 #include <functional>
 
 struct ABC
@@ -33,4 +33,5 @@ struct Concrete : ABC
 Concrete c;
 ABC& abc = c;
 
+// PR libstdc++/57336 Cannot INVOKE a reference_wrapper around an abstract type
 auto b = std::cref(abc)();

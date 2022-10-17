@@ -1,5 +1,5 @@
 /* Definitions for branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,7 +48,7 @@ enum prediction
    TAKEN
 };
 
-/* In emit-rtl.c.  */
+/* In emit-rtl.cc.  */
 extern profile_probability split_branch_probability;
 
 extern gcov_type get_hot_bb_threshold (void);
@@ -68,6 +68,7 @@ extern enum optimize_size_level optimize_edge_for_size_p (edge);
 extern bool optimize_edge_for_speed_p (edge);
 extern enum optimize_size_level optimize_insn_for_size_p (void);
 extern bool optimize_insn_for_speed_p (void);
+extern optimization_type insn_optimization_type ();
 extern enum optimize_size_level optimize_loop_for_size_p (class loop *);
 extern bool optimize_loop_for_speed_p (class loop *);
 extern bool optimize_loop_nest_for_speed_p (class loop *);
@@ -100,10 +101,11 @@ extern void rebuild_frequencies (void);
 extern void report_predictor_hitrates (void);
 extern void force_edge_cold (edge, bool);
 extern void propagate_unlikely_bbs_forward (void);
+extern void change_edge_frequency (edge, profile_probability);
 
 extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
 
-/* In ipa-pure-const.c   */
+/* In ipa-pure-const.cc   */
 extern void warn_function_cold (tree);
 
 #endif  /* GCC_PREDICT_H */

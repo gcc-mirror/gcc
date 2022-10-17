@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -206,7 +206,10 @@ direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
 					 opt_type);
 }
 
+extern bool commutative_binary_fn_p (internal_fn);
+extern bool commutative_ternary_fn_p (internal_fn);
 extern int first_commutative_argument (internal_fn);
+extern bool associative_binary_fn_p (internal_fn);
 
 extern bool set_edom_supported_p (void);
 
@@ -227,6 +230,10 @@ extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
 						    tree, tree, int);
 extern bool internal_check_ptrs_fn_supported_p (internal_fn, tree,
 						poly_uint64, unsigned int);
+#define VECT_PARTIAL_BIAS_UNSUPPORTED 127
+
+extern signed char internal_len_load_store_bias (internal_fn ifn,
+						 machine_mode);
 
 extern void expand_addsub_overflow (location_t, tree_code, tree, tree, tree,
 				    bool, bool, bool, bool, tree *);
@@ -234,7 +241,19 @@ extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);
 extern void expand_SHUFFLEVECTOR (internal_fn, gcall *);
+extern void expand_SPACESHIP (internal_fn, gcall *);
+extern void expand_TRAP (internal_fn, gcall *);
+extern void expand_ASSUME (internal_fn, gcall *);
 
 extern bool vectorized_internal_fn_supported_p (internal_fn, tree);
+
+enum {
+  ATOMIC_OP_FETCH_CMP_0_EQ = 0,
+  ATOMIC_OP_FETCH_CMP_0_NE = 1,
+  ATOMIC_OP_FETCH_CMP_0_LT = 2,
+  ATOMIC_OP_FETCH_CMP_0_LE = 3,
+  ATOMIC_OP_FETCH_CMP_0_GT = 4,
+  ATOMIC_OP_FETCH_CMP_0_GE = 5
+};
 
 #endif

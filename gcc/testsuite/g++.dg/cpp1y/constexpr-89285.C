@@ -17,4 +17,4 @@ struct C : A {
   B bar {this};
 };
 
-constexpr C foo {};	// { dg-message "expansion of" }
+constexpr C foo {};		// { dg-message "" }

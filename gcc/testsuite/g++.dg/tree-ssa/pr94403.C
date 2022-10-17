@@ -3,7 +3,7 @@
 // are either big or little endian (not pdp endian).
 // { dg-do compile { target { lp64 && { i?86-*-* x86_64-*-* powerpc*-*-* aarch64*-*-* } } } }
 // { dg-require-effective-target store_merge }
-// { dg-options "-O2 -fdump-tree-store-merging -std=c++17" }
+// { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging -std=c++17" }
 
 namespace std {
   template <typename T>

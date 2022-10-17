@@ -1,6 +1,5 @@
 // REQUIRED_ARGS: -o-
-// PERMUTE_ARGS:
-
+// EXTRA_FILES: imports/diag9210b.d imports/diag9210c.d imports/diag9210stdcomplex.d imports/diag9210stdtraits.d
 /*
 TEST_OUTPUT:
 ---

@@ -27,7 +27,7 @@ AU_DEFUN([AC_LANG_D], [AC_LANG(D)])
 # AC_LANG_PROGRAM(D)([PROLOGUE], [BODY])
 # ---------------------------------------
 m4_define([AC_LANG_PROGRAM(D)],
-[module mod;
+[module object;
 $1
 
 extern(C) int main() {

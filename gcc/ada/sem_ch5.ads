@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,13 +44,6 @@ package Sem_Ch5 is
    procedure Analyze_Null_Statement               (N : Node_Id);
    procedure Analyze_Statements                   (L : List_Id);
    procedure Analyze_Target_Name                  (N : Node_Id);
-
-   procedure Analyze_Label_Entity (E : Entity_Id);
-   --  This procedure performs direct analysis of the label entity E. It
-   --  is used when a label is created by the expander without bothering
-   --  to insert an N_Implicit_Label_Declaration in the tree. It also takes
-   --  care of setting Reachable, since labels defined by the expander can
-   --  be assumed to be reachable.
 
    procedure Check_Unreachable_Code (N : Node_Id);
    --  This procedure is called with N being the node for a statement that is

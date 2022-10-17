@@ -1,6 +1,6 @@
 // <mutex> -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,15 +31,17 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // concurrency
+
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
 #include <tuple>
-#include <chrono>
 #include <exception>
 #include <type_traits>
 #include <system_error>
+#include <bits/chrono.h>
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #if ! _GTHREAD_USE_MUTEX_TIMEDLOCK
@@ -62,6 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #ifdef _GLIBCXX_HAS_GTHREADS
+  /// @cond undocumented
 
   // Common base class for std::recursive_mutex and std::recursive_timed_mutex
   class __recursive_mutex_base
@@ -89,8 +92,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __gthread_recursive_mutex_destroy(&_M_mutex); }
 #endif
   };
+  /// @endcond
 
-  /// The standard recursive mutex type.
+  /** The standard recursive mutex type.
+   *
+   * A recursive mutex can be locked more than once by the same thread.
+   * Other threads cannot lock the mutex until the owning thread unlocks it
+   * as many times as it was locked.
+   *
+   * @headerfile mutex
+   * @since C++11
+   */
   class recursive_mutex : private __recursive_mutex_base
   {
   public:
@@ -132,6 +144,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
 #if _GTHREAD_USE_MUTEX_TIMEDLOCK
+  /// @cond undocumented
+
   template<typename _Derived>
     class __timed_mutex_impl
     {
@@ -207,8 +221,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
 	}
     };
+  /// @endcond
 
-  /// The standard timed mutex type.
+  /** The standard timed mutex type.
+   *
+   * A non-recursive mutex that supports a timeout when trying to acquire the
+   * lock.
+   *
+   * @headerfile mutex
+   * @since C++11
+   */
   class timed_mutex
   : private __mutex_base, public __timed_mutex_impl<timed_mutex>
   {
@@ -273,7 +295,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   };
 
-  /// recursive_timed_mutex
+  /** The standard recursive timed mutex type.
+   *
+   * A recursive mutex that supports a timeout when trying to acquire the
+   * lock. A recursive mutex can be locked more than once by the same thread.
+   * Other threads cannot lock the mutex until the owning thread unlocks it
+   * as many times as it was locked.
+   *
+   * @headerfile mutex
+   * @since C++11
+   */
   class recursive_timed_mutex
   : private __recursive_mutex_base,
     public __timed_mutex_impl<recursive_timed_mutex>
@@ -618,7 +649,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      return;
 		    }
 		}
-#ifdef _GLIBCXX_USE_SCHED_YIELD
+#if defined _GLIBCXX_HAS_GTHREADS && defined _GLIBCXX_USE_SCHED_YIELD
 		__gthread_yield();
 #endif
 		constexpr auto __n = 1 + sizeof...(_L1);
@@ -682,11 +713,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if __cplusplus >= 201703L
-#define __cpp_lib_scoped_lock 201703
+#define __cpp_lib_scoped_lock 201703L
   /** @brief A scoped lock type for multiple lockable objects.
    *
    * A scoped_lock controls mutex ownership within a scope, releasing
    * ownership in the destructor.
+   *
+   * @headerfile mutex
+   * @since C++17
    */
   template<typename... _MutexTypes>
     class scoped_lock

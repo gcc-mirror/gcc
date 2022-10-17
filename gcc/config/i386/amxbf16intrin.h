@@ -1,4 +1,4 @@
-/* Copyright (C) 2020-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -34,7 +34,7 @@
 #define __DISABLE_AMX_BF16__
 #endif /* __AMX_BF16__ */
 
-#if defined(__x86_64__) && defined(__AMX_BF16__)
+#if defined(__x86_64__)
 #define _tile_dpbf16ps_internal(dst,src1,src2)					\
   __asm__ volatile\
   ("{tdpbf16ps\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|tdpbf16ps\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)

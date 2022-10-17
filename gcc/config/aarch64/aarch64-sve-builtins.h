@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -263,7 +263,7 @@ struct function_group_info
 
   /* The architecture extensions that the functions require, as a set of
      AARCH64_FL_* flags.  */
-  uint64_t required_extensions;
+  aarch64_feature_flags required_extensions;
 };
 
 /* Describes a single fully-resolved function (i.e. one that has a
@@ -321,8 +321,9 @@ public:
   ~function_builder ();
 
   void add_unique_function (const function_instance &, tree,
-			    vec<tree> &, uint64_t, bool);
-  void add_overloaded_function (const function_instance &, uint64_t);
+			    vec<tree> &, aarch64_feature_flags, bool);
+  void add_overloaded_function (const function_instance &,
+				aarch64_feature_flags);
   void add_overloaded_functions (const function_group_info &,
 				 mode_suffix_index);
 
@@ -338,7 +339,7 @@ private:
 
   registered_function &add_function (const function_instance &,
 				     const char *, tree, tree,
-				     uint64_t, bool, bool);
+				     aarch64_feature_flags, bool, bool);
 
   /* The function type to use for functions that are resolved by
      function_resolver.  */
@@ -651,16 +652,14 @@ public:
 
 /* RAII class for enabling enough SVE features to define the built-in
    types and implement the arm_sve.h pragma.  */
-class sve_switcher
+class sve_switcher : public aarch64_simd_switcher
 {
 public:
   sve_switcher ();
   ~sve_switcher ();
 
 private:
-  unsigned long m_old_isa_flags;
   unsigned int m_old_maximum_field_alignment;
-  bool m_old_general_regs_only;
   bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
 };
 

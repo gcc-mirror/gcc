@@ -143,14 +143,18 @@ T (v0 ? b[1] : "", bsz);
 T (v0 ? b[2] : "", bsz);
 T (v0 ? b[3] : "", bsz);
 
-T (v0 ? "" : b[0], bsz + 1);      /* { dg-warning "bound 6 may exceed source size 5" } */
+/* Warning for the calls below would be strictly correct even though
+   the strnlen calls are safe because the reads are bounded by
+   the length of the constant arguments.  Most of the calls are
+   not diagnosed anymore as a result of the fix for PR 103215.  */
+T (v0 ? "" : b[0], bsz + 1);      /* { dg-warning "bound 6 exceeds source size 5" } */
 T (v0 ? "" : b[1], bsz + 1);
 T (v0 ? "" : b[2], bsz + 1);
-T (v0 ? "" : b[3], bsz + 1);      /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
-T (v0 ? b[0] : "", bsz + 1);      /* { dg-warning "bound 6 may exceed source size 5" } */
+T (v0 ? "" : b[3], bsz + 1);
+T (v0 ? b[0] : "", bsz + 1);      /* { dg-warning "bound 6 exceeds source size 5" } */
 T (v0 ? b[1] : "", bsz + 1);
 T (v0 ? b[2] : "", bsz + 1);
-T (v0 ? b[3] : "", bsz + 1);      /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
+T (v0 ? b[3] : "", bsz + 1);
 
 T (v0 ? "" : b[i0], bsz);
 T (v0 ? "" : b[i1], bsz);
@@ -164,11 +168,11 @@ T (v0 ? b[i3] : "", bsz);
 T (v0 ? "" : b[i0], bsz + 1);
 T (v0 ? "" : b[i1], bsz + 1);
 T (v0 ? "" : b[i2], bsz + 1);
-T (v0 ? "" : b[i3], bsz + 1);     /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
+T (v0 ? "" : b[i3], bsz + 1);
 T (v0 ? b[i0] : "", bsz + 1);
 T (v0 ? b[i1] : "", bsz + 1);
 T (v0 ? b[i2] : "", bsz + 1);
-T (v0 ? b[i3] : "", bsz + 1);     /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
+T (v0 ? b[i3] : "", bsz + 1);
 
 T (v0 ? "1234" : b[3], bsz);
 T (v0 ? "1234" : b[i3], bsz);
@@ -180,15 +184,17 @@ T (v0 ? b[0] : b[2], bsz);
 T (v0 ? b[2] : b[3], bsz);
 T (v0 ? b[3] : b[2], bsz);
 
-T (v0 ? "1234" : b[3], bsz + 1);  /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
-T (v0 ? "1234" : b[i3], bsz + 1); /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
-T (v0 ? b[3] : "1234", bsz + 1);  /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
-T (v0 ? b[i3] : "1234", bsz + 1); /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
+T (v0 ? "1234" : b[3], bsz + 1);
+T (v0 ? "1234" : b[i3], bsz + 1);
+T (v0 ? b[3] : "1234", bsz + 1);
+T (v0 ? b[i3] : "1234", bsz + 1);
 
-T (v0 ? a : b[3], bsz + 1);       /* { dg-warning "bound 6 may exceed source size 5" "pr86937" { xfail *-*-*} } */
-T (v0 ? b[0] : b[2], bsz + 1);    /* { dg-warning "bound 6 may exceed source size 5" "pr86937" } */
-T (v0 ? b[2] : b[3], bsz + 1);    /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
-T (v0 ? b[3] : b[2], bsz + 1);    /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
+/* That the following are not diagnosed is a bug/limitation resulting from
+   the fix for PR 103215.  */
+T (v0 ? a : b[3], bsz + 1);       /* { dg-warning "bound 6 exceeds source size 5" "pr103215" { xfail *-*-* } } */
+T (v0 ? b[0] : b[2], bsz + 1);    /* { dg-warning "bound 6 exceeds source size 5" "pr103215" { xfail *-*-* } } */
+T (v0 ? b[2] : b[3], bsz + 1);    /* { dg-warning "bound 6 exceeds source size 5" "pr103215" { xfail *-*-* } } */
+T (v0 ? b[3] : b[2], bsz + 1);    /* { dg-warning "bound 6 exceeds source size 5" "pr103215" { xfail *-*-* } } */
 
 struct A { char a[5], b[5]; };
 

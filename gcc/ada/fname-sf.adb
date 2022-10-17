@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,14 +24,11 @@
 ------------------------------------------------------------------------------
 
 with Casing;        use Casing;
-with Fname;         use Fname;
 with Fname.UF;      use Fname.UF;
 with SFN_Scan;      use SFN_Scan;
 with Osint;         use Osint;
 with Types;         use Types;
 with System.OS_Lib; use System.OS_Lib;
-
-with Unchecked_Conversion;
 
 package body Fname.SF is
 

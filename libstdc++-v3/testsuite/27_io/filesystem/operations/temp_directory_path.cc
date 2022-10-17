@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 
 #include <filesystem>
 #include <stdlib.h>
+#include <stdio.h>
 #include <testsuite_hooks.h>
 #include <testsuite_fs.h>
 
@@ -58,7 +59,10 @@ test01()
   clean_env();
 
   if (!fs::exists("/tmp"))
+  {
+    puts("/tmp doesn't exist, not testing it for temp_directory_path");
     return; // just give up
+  }
 
   std::error_code ec = make_error_code(std::errc::invalid_argument);
   fs::path p1 = fs::temp_directory_path(ec);
@@ -75,7 +79,10 @@ test02()
   clean_env();
 
   if (!set_env("TMP", __gnu_test::nonexistent_path().string()))
+  {
+    puts("Cannot set environment variables, not testing temp_directory_path");
     return; // just give up
+  }
 
   std::error_code ec;
   fs::path p = fs::temp_directory_path(ec);
@@ -94,10 +101,8 @@ test02()
 void
 test03()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No permissions support
-  return;
-#endif
+  if (!__gnu_test::permissions_are_testable())
+    return;
 
   clean_env();
 
@@ -112,7 +117,7 @@ test03()
 
   std::error_code ec2;
   try {
-    fs::temp_directory_path();
+    (void) fs::temp_directory_path();
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
   }
@@ -135,12 +140,17 @@ test04()
   VERIFY( r == fs::path() );
 
   std::error_code ec2;
+  std::string failed_path;
   try {
-    fs::temp_directory_path();
+    (void) fs::temp_directory_path();
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
+    // On Windows the returned path will be in preferred form, i.e. using L'\\'
+    // and will have a trailing slash, so compare generic forms.
+    failed_path = e.path1().generic_string();
   }
   VERIFY( ec2 == ec );
+  VERIFY( failed_path.find(f.path.generic_string()) != std::string::npos );
 }
 
 int

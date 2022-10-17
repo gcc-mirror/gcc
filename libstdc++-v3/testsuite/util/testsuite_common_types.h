@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // typelist for the C++ library testsuite.
 //
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,13 +40,17 @@
 
 #include <map>
 #include <set>
-#include <tr1/functional>
-#include <tr1/unordered_map>
-#include <tr1/unordered_set>
 
 #if __cplusplus >= 201103L
 #include <atomic>
 #include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+namespace unord = std;
+#else
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
+namespace unord = std::tr1;
 #endif
 
 namespace __gnu_test
@@ -185,14 +189,14 @@ namespace __gnu_test
       typedef Tp			    		value_type;
       typedef Tp 					key_type;
       typedef std::pair<const key_type, value_type> 	pair_type;
-      typedef std::tr1::hash<key_type>      		hash_function;
+      typedef unord::hash<key_type>      		hash_function;
       typedef std::equal_to<key_type>      		equality_function;
 
       template<typename Tl>
         struct container
 	{
 	  typedef Tl 					allocator_type;
-	  typedef std::tr1::unordered_map<key_type, value_type, hash_function, equality_function, allocator_type>	type;
+	  typedef unord::unordered_map<key_type, value_type, hash_function, equality_function, allocator_type>	type;
 	};
 
       typedef allocator_policies<pair_type, Thread>	allocator_types;
@@ -224,14 +228,14 @@ namespace __gnu_test
     {
       typedef Tp			    		value_type;
       typedef Tp 					key_type;
-      typedef std::tr1::hash<key_type>      		hash_function;
+      typedef unord::hash<key_type>      		hash_function;
       typedef std::equal_to<key_type>      		equality_function;
 
       template<typename Tl>
         struct container
 	{
 	  typedef Tl 					allocator_type;
-	  typedef std::tr1::unordered_set<key_type, hash_function, equality_function, allocator_type>	type;
+	  typedef unord::unordered_set<key_type, hash_function, equality_function, allocator_type>	type;
 	};
 
       typedef allocator_policies<key_type, Thread>	allocator_types;
@@ -323,7 +327,7 @@ namespace __gnu_test
 #else
     typedef node<null_type> char8_typelist;
 #endif
-# if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+# if !defined(__STRICT_ANSI__) && defined(__SIZEOF_INT128__)
     __extension__ typedef __int128            a17;
     __extension__ typedef unsigned __int128   a18;
     typedef node<_GLIBCXX_TYPELIST_CHAIN2(a17, a18)> int128_typelist;

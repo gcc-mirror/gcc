@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!	-*- c++ -*-
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -95,6 +95,10 @@ public:
   virtual int IncludeTranslateRequest (Cody::Server *s, Cody::Flags,
 				       std::string &include)
     override;
+
+  using parent::ModuleCompiledRequest;
+  virtual int ModuleCompiledRequest (Cody::Server *s, Cody::Flags Flags,
+				     std::string &Module) override;
 
 private:
   using parent::GetCMISuffix;

@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/udamodule2.d imports/udamodule2a.d
 import imports.udamodule2;
 import imports.udamodule2a;
 

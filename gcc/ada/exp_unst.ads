@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -636,7 +636,7 @@ package Exp_Unst is
       --  the subprogram is declared but not actually referenced. We remove
       --  such subprograms from the tree, which simplifies our task, because
       --  we don't have to worry about e.g. uplevel references from such an
-      --  unreferenced subpogram, which might require (useless) activation
+      --  unreferenced subprogram, which might require (useless) activation
       --  records to be created. This is computed by setting the outer level
       --  subprogram (Subp itself) as reachable, and then doing a transitive
       --  closure following all calls.
@@ -669,7 +669,7 @@ package Exp_Unst is
       --  uplevel referenced. It contains both objects (which will be put in
       --  the corresponding AREC activation record), and types. The types are
       --  not put in the AREC activation record, but referenced bounds (i.e.
-      --  generated _FIRST and _LAST entites, and formal parameters) will be
+      --  generated _FIRST and _LAST entities, and formal parameters) will be
       --  in the list in their own right.
 
       Last : SI_Type;

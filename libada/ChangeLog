@@ -1,3 +1,12 @@
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Makefile.in: Add dummy install-dvi target.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* Makefile.in (configure_deps): Add `toolexeclibdir.m4'.
@@ -449,7 +458,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright (C) 2003-2021 Free Software Foundation, Inc.
+Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

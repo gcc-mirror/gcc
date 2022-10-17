@@ -1,3 +1,432 @@
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-09-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d579c467c1.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Remove
+	rt/arrayassign.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 88aa69b14.
+	* src/Makefile.am (PHOBOS_DSOURCES): Remove std/digest/digest.d,
+	std/xml.d.
+	* src/Makefile.in: Regenerate.
+
+2022-08-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 817610b16d.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/internal/array/arrayassign.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos b578dfad9.
+	* src/Makefile.am (PHOBOS_DSOURCES): Remove
+	std/experimental/typecons.d. Add std/logger package.
+	* src/Makefile.in: Regenerate.
+
+2022-08-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 4:0:0.
+	* libdruntime/MERGE: Merge upstream druntime d7772a2369.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/internal/array/duplication.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 5748ca43f.
+	* testsuite/libphobos.gc/nocollect.d:
+
+2022-07-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 651389b5.
+	* src/MERGE: Merge upstream phobos 1516ecad9.
+
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add gcc/simd.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/simd.d: New file.
+
+2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (simd): Define.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105413
+	* libdruntime/gcc/attributes.d (register): Define.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 148608b7.
+
+2022-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e150cca1.
+	* src/MERGE: Merge upstream phobos a4a18d21c.
+	* testsuite/libphobos.cycles/cycles.exp (cycle_test_list): Update
+	expected result of deprecate test.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (no_sanitize): Define.
+	(noSanitize): Define.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (visibility): Define.
+	(hidden): Define.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 454471d8.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/sync/package.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 1206fc94f.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libphobos-dg.exp: Add load_gcc_lib of scansarif.exp.
+
+2022-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime f89da313.
+	* src/MERGE: Merge upstream phobos d46814c86.
+
+2022-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 94bd5bcb.
+	* libdruntime/Makefile.am (ALL_DRUNTIME_INSTALL_DSOURCES): Add
+	$(DRUNTIME_DSOURCES_ELF).
+	(ALL_DRUNTIME_SOURCES): Likewise.
+	(DRUNTIME_DSOURCES_ELF): New variable.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 3a1cd9a01.
+	* testsuite/libphobos.init_fini/custom_gc.d: Update test.
+
+2022-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e361d200.
+
+2022-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Clear the per-thread
+	TLS array, don't call free().
+
+2022-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 27834edb.
+	* src/MERGE: Merge upstream phobos ac296f80c.
+	* src/Makefile.am (PHOBOS_DSOURCES): Add std/int128.d.
+	* src/Makefile.in: Regenerate.
+
+2022-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 9ba9a6ae.
+	* src/MERGE: Merge upstream phobos c0cc5e917.
+
+2022-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime c52e28b7.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_OPENBSD): Add
+	core/sys/openbsd/pwd.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 99e9c1b77.
+	* testsuite/libphobos.exceptions/message_with_null.d: New test.
+
+2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104911
+	* src/MERGE: Merge upstream phobos a74fa63e6.
+
+2022-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 26b58167.
+	* src/MERGE: Merge upstream phobos 16cb085b5.
+
+2022-03-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/103528
+	* configure.ac <x86_64-*-solaris2.* | i?86-*-solaris2.*>: Remove
+	gas requirement.
+	* configure: Regenerate.
+	* configure.tgt (sparc*-*-solaris2.11*): Mark supported.
+
+2022-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 100a608c.
+	* src/MERGE: Merge upstream phobos a1f8c4c07.
+
+2022-03-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104659
+	* libdruntime/config/mingw/msvc.c (init_msvc): Fix misspelling of
+	msvcUsesUCRT.
+
+2022-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime caf14b0f.
+	* src/MERGE: Merge upstream phobos 41aaf8c26.
+
+2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 55528bd1.
+	* src/MERGE: Merge upstream phobos 1a3e80ec2.
+	* testsuite/libphobos.hash/test_hash.d: Update.
+	* testsuite/libphobos.betterc/test19933.d: New test.
+
+2022-02-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* libdruntime/MERGE: Merge upstream druntime dbd0c874.
+	* libdruntime/Makefile.am (DRUNTIME_CSOURCES): Add core/int128.d.
+	(DRUNTIME_DISOURCES): Add __builtins.di.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 896b1d0e1.
+	* src/Makefile.am (PHOBOS_DSOURCES): Add std/checkedint.d.
+	* src/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add -fall-instantiations to
+	--gdcflags.
+
+2022-01-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 759e6023.
+	* src/MERGE: Merge upstream phobos 468788323.
+
+2021-12-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.tgt: Add power*-*-freebsd* as a supported target.
+
+2021-12-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime fd9a4544.
+	* src/MERGE: Merge upstream phobos 495e835c2.
+
+2021-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103604
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 3:0:0.
+	* libdruntime/MERGE: Merge upstream druntime 6364e010.
+	* src/MERGE: Merge upstream phobos 575b67a9b.
+	* testsuite/libphobos.traits/all_satisfy.d: New test.
+	* testsuite/libphobos.traits/traits.exp: New test.
+
+2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103528
+	* libdruntime/MERGE: Merge upstream druntime bc58b1e9.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_LINUX): Remove
+	core/sys/linux/syscalls.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 12329adb6.
+	* testsuite/libphobos.config/config.exp: Add test22523.
+	* libdruntime/core/sys/linux/syscalls.d: Removed.
+	* testsuite/libphobos.config/test22523.d: New test.
+
+2021-12-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103558
+	* libdruntime/MERGE: Merge upstream druntime 178c44ff.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_LINUX): Add
+	core/sys/linux/syscalls.d.
+	(DRUNTIME_DSOURCES_OPENBSD): Add core/sys/openbsd/pthread_np.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 574bf883b.
+	* src/Makefile.am (D_EXTRA_DFLAGS): Add -fpreview=fieldwise.
+	* src/Makefile.in: Regenerate.
+	* testsuite/libphobos.exceptions/assert_fail.d: Update test.
+	* testsuite/libphobos.betterc/test22336.d: New test.
+
+2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/thread/osthread.d (callWithStackShell): Push all
+	callee-save registers on the stack for AArch64 and ARM.
+
+2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/std/math/hardware.d (FloatingPointControl.getControlState): Add
+	missing ControlState variable for AArch64.
+
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/testsuite_flags.in: Add libphobos library directory as
+	search path to --gdcldflags.
+
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e6caaab9.
+	* libdruntime/Makefile.am (D_EXTRA_FLAGS): Build libdruntime with
+	-fpreview=dip1000, -fpreview=fieldwise, and -fpreview=dtorfields.
+	(ALL_DRUNTIME_SOURCES): Add DRUNTIME_DSOURCES_STDCXX.
+	(DRUNTIME_DSOURCES): Update list of C binding modules.
+	(DRUNTIME_DSOURCES_STDCXX): Likewise.
+	(DRUNTIME_DSOURCES_LINUX): Likewise.
+	(DRUNTIME_DSOURCES_OPENBSD): Likewise.
+	(DRUNTIME_DISOURCES): Remove __entrypoint.di.
+	* libdruntime/Makefile.in: Regenerated.
+	* libdruntime/__entrypoint.di: Removed.
+	* libdruntime/gcc/deh.d (_d_isbaseof): Update signature.
+	(_d_createTrace): Likewise.
+	(__gdc_begin_catch): Remove reference to the exception.
+	(_d_throw): Increment reference count of thrown object before unwind.
+	(__gdc_personality): Chain exceptions with  Throwable.chainTogether.
+	* libdruntime/gcc/emutls.d: Update imports.
+	* libdruntime/gcc/sections/elf.d: Update imports.
+	(DSO.moduleGroup): Update signature.
+	* libdruntime/gcc/sections/macho.d: Update imports.
+	(DSO.moduleGroup): Update signature.
+	* libdruntime/gcc/sections/pecoff.d: Update imports.
+	(DSO.moduleGroup): Update signature.
+	* src/MERGE: Merge upstream phobos 5ab9ad256.
+	* src/Makefile.am (D_EXTRA_DFLAGS): Add -fpreview=dip1000 and
+	-fpreview=dtorfields flags.
+	(PHOBOS_DSOURCES): Update list of std modules.
+	* src/Makefile.in: Regenerate.
+	* testsuite/lib/libphobos.exp (libphobos-dg-test): Handle assembly
+	compile types.
+	(dg-test): Override.
+	(additional_prunes): Define.
+	(libphobos-dg-prune): Filter any additional_prunes set by tests.
+	* testsuite/libphobos.aa/test_aa.d: Update test.
+	* testsuite/libphobos.druntime/druntime.exp (version_flags): Add
+	-fversion=CoreUnittest.
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp
+	(version_flags): Add -fversion=CoreUnittest -fversion=Shared.
+	* testsuite/libphobos.exceptions/unknown_gc.d: Update test.
+	* testsuite/libphobos.hash/test_hash.d: Update test.
+	* testsuite/libphobos.phobos/phobos.exp (version_flags): Add
+	-fversion=StdUnittest
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp (version_flags):
+	Likewise.
+	* testsuite/libphobos.shared/host.c: Update test.
+	* testsuite/libphobos.shared/load.d: Update test.
+	* testsuite/libphobos.shared/load_13414.d: Update test.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Update test.
+	* testsuite/libphobos.thread/tlsgc_sections.d: Update test.
+	* testsuite/testsuite_flags.in: Add -fpreview=dip1000 to --gdcflags.
+	* testsuite/libphobos.shared/link_mod_collision.d: Removed.
+	* testsuite/libphobos.shared/load_mod_collision.d: Removed.
+	* testsuite/libphobos.betterc/betterc.exp: New test.
+	* testsuite/libphobos.config/config.exp: New test.
+	* testsuite/libphobos.gc/gc.exp: New test.
+	* testsuite/libphobos.imports/imports.exp: New test.
+	* testsuite/libphobos.lifetime/lifetime.exp: New test.
+	* testsuite/libphobos.unittest/unittest.exp: New test.
+	* testsuite/libphobos.allocations/alloc_from_assert.d: New file.
+	* testsuite/libphobos.betterc/test18828.d: New file.
+	* testsuite/libphobos.betterc/test19416.d: New file.
+	* testsuite/libphobos.betterc/test19421.d: New file.
+	* testsuite/libphobos.betterc/test19561.d: New file.
+	* testsuite/libphobos.betterc/test19924.d: New file.
+	* testsuite/libphobos.betterc/test20088.d: New file.
+	* testsuite/libphobos.betterc/test20613.d: New file.
+	* testsuite/libphobos.config/test19433.d: New file.
+	* testsuite/libphobos.config/test20459.d: New file.
+	* testsuite/libphobos.exceptions/assert_fail.d: New file.
+	* testsuite/libphobos.exceptions/catch_in_finally.d: New file.
+	* testsuite/libphobos.exceptions/future_message.d: New file.
+	* testsuite/libphobos.exceptions/long_backtrace_trunc.d: New file.
+	* testsuite/libphobos.exceptions/refcounted.d: New file.
+	* testsuite/libphobos.exceptions/rt_trap_exceptions.d: New file.
+	* testsuite/libphobos.exceptions/rt_trap_exceptions_drt.d: New file.
+	* testsuite/libphobos.gc/attributes.d: New file.
+	* testsuite/libphobos.gc/forkgc.d: New file.
+	* testsuite/libphobos.gc/forkgc2.d: New file.
+	* testsuite/libphobos.gc/nocollect.d: New file.
+	* testsuite/libphobos.gc/precisegc.d: New file.
+	* testsuite/libphobos.gc/recoverfree.d: New file.
+	* testsuite/libphobos.gc/sigmaskgc.d: New file.
+	* testsuite/libphobos.gc/startbackgc.d: New file.
+	* testsuite/libphobos.imports/bug18193.d: New file.
+	* testsuite/libphobos.init_fini/custom_gc.d: New file.
+	* testsuite/libphobos.init_fini/test18996.d: New file.
+	* testsuite/libphobos.lifetime/large_aggregate_destroy_21097.d: New file.
+	* testsuite/libphobos.thread/external_threads.d: New file.
+	* testsuite/libphobos.thread/join_detach.d: New file.
+	* testsuite/libphobos.thread/test_import.d: New file.
+	* testsuite/libphobos.thread/tlsstack.d: New file.
+	* testsuite/libphobos.typeinfo/enum_.d: New file.
+	* testsuite/libphobos.typeinfo/isbaseof.d: New file.
+	* testsuite/libphobos.unittest/customhandler.d: New file.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libphobos.exp: Prune warnings from external
+	tool bugs.
+
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/thread/fiber.d (defaultStackPages): Increase size
+	on OSX X86_64 targets.
+
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Don't remove entry
+	from global array.
+	(_d_emutls_destroy): Don't call __gthread_key_delete.
+
+2021-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102837
+	* libdruntime/gcc/deh.d (ExceptionHeader.free): Use memset to reset
+	contents of internal EH storage.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/deh.d (ExceptionHeader.getClassInfo): Move to...
+	(getClassInfo): ...here as free function.  Add lsda parameter.
+	(scanLSDA): Pass lsda to actionTableLookup.
+	(actionTableLookup): Add lsda parameter, pass to getClassInfo.
+	(__gdc_personality): Remove currentCfa variable.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/deh.d (_d_print_throwable): Declare.
+	(_d_throw): Print stacktrace before terminating program due to
+	uncaught exception.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/runtime.d (runModuleUnitTests): Use scope to new
+	LibBacktrace on the stack.
+	* libdruntime/gcc/backtrace.d (FIRSTFRAME): Remove.
+	(LibBacktrace.MaxAlignment): Remove.
+	(LibBacktrace.this): Remove default initialization of firstFrame.
+	(UnwindBacktrace.this): Likewise.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/unwind/generic.d (__aligned__): Define.
+	(_Unwind_Exception): Align struct to __aligned__.
+
+2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102476
+	* libdruntime/__main.di: Define main function as extern(C) when
+	compiling without D runtime.
+
+2021-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* m4/druntime/os.m4: Update comment for DRUNTIME_OS_SOURCES.
+
+2021-09-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/Makefile.am: Don't add zlib when ENABLE_LIBDRUNTIME_ONLY.
+	* src/Makefile.in: Regenerate.
+
+2021-08-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* m4/autoconf.m4 (AC_LANG_PROGRAM): Declare module name 'object'.
+	* m4/gcc_support.m4 (WITH_LOCAL_DRUNTIME): Compile tests with
+	-fno-druntime.
+
 2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/100999
@@ -1184,7 +1613,7 @@
 	* testsuite/testsuite_flags.in: New file.
 
 
-Copyright (C) 2018-2021 Free Software Foundation, Inc.
+Copyright (C) 2018-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,4 +1,5 @@
 // https://bugzilla.gdcproject.org/show_bug.cgi?id=309
+// { dg-additional-options "-Wno-deprecated" }
 // { dg-do run }
 // { dg-skip-if "needs gcc/config.d" { ! d_runtime } }
 

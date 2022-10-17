@@ -1,0 +1,3 @@
+host-aarch64-darwin.o : $(srcdir)/config/aarch64/host-aarch64-darwin.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)

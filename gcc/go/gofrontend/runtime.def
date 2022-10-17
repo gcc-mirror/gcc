@@ -204,12 +204,8 @@ DEF_GO_RUNTIME(SELECTNBSEND, "runtime.selectnbsend", P2(CHAN, POINTER), R1(BOOL)
 
 // Non-blocking receive a value from a channel, used for two-case select
 // statement with a default case.
-DEF_GO_RUNTIME(SELECTNBRECV, "runtime.selectnbrecv", P2(POINTER, CHAN), R1(BOOL))
-
-// Non-blocking tuple receive from a channel, used for two-case select
-// statement with a default case.
-DEF_GO_RUNTIME(SELECTNBRECV2, "runtime.selectnbrecv2", P3(POINTER, POINTER, CHAN),
-               R1(BOOL))
+DEF_GO_RUNTIME(SELECTNBRECV, "runtime.selectnbrecv", P2(POINTER, CHAN),
+	       R2(BOOL, BOOL))
 
 // Block execution.  Used for zero-case select.
 DEF_GO_RUNTIME(BLOCK, "runtime.block", P0(), R0())
@@ -482,12 +478,22 @@ DEF_GO_RUNTIME(ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4",
 DEF_GO_RUNTIME(ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8",
                P3(POINTER, UINT64, INT32),
                R1(UINT64))
+DEF_GO_RUNTIME(ATOMIC_LOAD_1, "__atomic_load_1", P2(POINTER, INT32),
+	       R1(UINT8))
+DEF_GO_RUNTIME(ATOMIC_STORE_1, "__atomic_store_1", P3(POINTER, UINT8, INT32),
+	       R0())
 DEF_GO_RUNTIME(ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1",
                P3(POINTER, UINT8, INT32),
                R1(UINT8))
 DEF_GO_RUNTIME(ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1",
                P3(POINTER, UINT8, INT32),
                R1(UINT8))
+
+// Check the length of an unsafe slice.
+DEF_GO_RUNTIME(UNSAFESLICE, "runtime.unsafeslice",
+	       P3(TYPE, POINTER, INT), R0())
+DEF_GO_RUNTIME(UNSAFESLICE64, "runtime.unsafeslice64",
+	       P3(TYPE, POINTER, INT64), R0())
 
 // Panic reporting a division by zero.
 DEF_GO_RUNTIME(PANIC_DIVIDE, "runtime.panicdivide", P0(), R0())
@@ -575,6 +581,11 @@ DEF_GO_RUNTIME(PANIC_EXTEND_SLICE3_C, "runtime.goPanicExtendSlice3C",
 	       P2(INT64, INT), R0())
 DEF_GO_RUNTIME(PANIC_EXTEND_SLICE3_C_U, "runtime.goPanicExtendSlice3CU",
 	       P2(UINT64, INT), R0())
+
+// Panic for conversion of slice to pointer-to-array if the slice is
+// too short.
+DEF_GO_RUNTIME(PANIC_SLICE_CONVERT, "runtime.goPanicSliceConvert",
+	       P2(INT, INT), R0())
 
 // Remove helper macros.
 #undef ABFT6

@@ -1,5 +1,5 @@
 /* Shrink-wrapping related functions.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "function.h"
 
-/* In shrink-wrap.c.  */
+/* In shrink-wrap.cc.  */
 extern bool requires_stack_frame_p (rtx_insn *, HARD_REG_SET, HARD_REG_SET);
 extern void try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq);
 extern void try_shrink_wrapping_separate (basic_block first_bb);

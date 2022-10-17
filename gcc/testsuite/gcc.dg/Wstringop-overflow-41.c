@@ -29,7 +29,8 @@ void char_array_cst_off_cst_size (void)
   sink (p);
 
   ++idx;
-  memset (p + idx, 0, 3);               // { dg-warning "writing 3 bytes into a region of size 1" "pr?????" { xfail ilp32 } }
+  memset (p + idx, 0, 3);               // { dg-warning "writing 3 bytes into a region of size 1" }
+  sink (p);
 
   ++idx;
   memset (p + idx, 0, 3);               // { dg-warning "writing 3 bytes into a region of size 0" }

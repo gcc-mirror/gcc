@@ -1,4 +1,4 @@
-.. Copyright (C) 2015-2021 Free Software Foundation, Inc.
+.. Copyright (C) 2015-2022 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
-   <http://www.gnu.org/licenses/>.
+   <https://www.gnu.org/licenses/>.
 
 .. default-domain:: c
 
@@ -230,7 +230,7 @@ entrypoints:
 .. _LIBGCCJIT_ABI_15:
 
 ``LIBGCCJIT_ABI_15``
------------------------
+--------------------
 ``LIBGCCJIT_ABI_15`` covers the addition of API entrypoints for directly
 embedding assembler instructions:
 
@@ -243,3 +243,131 @@ embedding assembler instructions:
   * :func:`gcc_jit_extended_asm_add_input_operand`
   * :func:`gcc_jit_extended_asm_add_clobber`
   * :func:`gcc_jit_context_add_top_level_asm`
+
+.. _LIBGCCJIT_ABI_16:
+
+``LIBGCCJIT_ABI_16``
+--------------------
+``LIBGCCJIT_ABI_16`` covers the addition of reflection functions via API
+entrypoints:
+
+  * :func:`gcc_jit_function_get_return_type`
+
+  * :func:`gcc_jit_function_get_param_count`
+
+  * :func:`gcc_jit_type_dyncast_array`
+
+  * :func:`gcc_jit_type_is_bool`
+
+  * :func:`gcc_jit_type_is_integral`
+
+  * :func:`gcc_jit_type_is_pointer`
+
+  * :func:`gcc_jit_type_is_struct`
+
+  * :func:`gcc_jit_type_dyncast_vector`
+
+  * :func:`gcc_jit_type_unqualified`
+
+  * :func:`gcc_jit_type_dyncast_function_ptr_type`
+
+  * :func:`gcc_jit_function_type_get_return_type`
+
+  * :func:`gcc_jit_function_type_get_param_count`
+
+  * :func:`gcc_jit_function_type_get_param_type`
+
+  * :func:`gcc_jit_vector_type_get_num_units`
+
+  * :func:`gcc_jit_vector_type_get_element_type`
+
+  * :func:`gcc_jit_struct_get_field`
+
+  * :func:`gcc_jit_struct_get_field_count`
+
+.. _LIBGCCJIT_ABI_17:
+
+``LIBGCCJIT_ABI_17``
+-----------------------
+``LIBGCCJIT_ABI_17`` covers the addition of an API entrypoint to set the
+thread-local storage model of a variable:
+
+  * :func:`gcc_jit_lvalue_set_tls_model`
+
+.. _LIBGCCJIT_ABI_18:
+
+``LIBGCCJIT_ABI_18``
+-----------------------
+``LIBGCCJIT_ABI_18`` covers the addition of an API entrypoint to set the link
+section of a variable:
+
+  * :func:`gcc_jit_lvalue_set_link_section`
+
+.. _LIBGCCJIT_ABI_19:
+
+``LIBGCCJIT_ABI_19``
+-----------------------
+``LIBGCCJIT_ABI_19`` covers the addition of API entrypoints to set the initial value
+of a global with an rvalue and to use constructors:
+
+  * :func:`gcc_jit_context_new_array_constructor`
+  * :func:`gcc_jit_context_new_struct_constructor`
+  * :func:`gcc_jit_context_new_union_constructor`
+  * :func:`gcc_jit_global_set_initializer_rvalue`
+
+.. _LIBGCCJIT_ABI_20:
+
+``LIBGCCJIT_ABI_20``
+-----------------------
+``LIBGCCJIT_ABI_20`` covers the addition of sized integer types, including
+128-bit integers and helper functions for types:
+
+  * :func:`gcc_jit_compatible_types`
+  * :func:`gcc_jit_type_get_size`
+  * :c:macro:`GCC_JIT_TYPE_UINT8_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT16_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT32_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT64_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT128_T`
+  * :c:macro:`GCC_JIT_TYPE_INT8_T`
+  * :c:macro:`GCC_JIT_TYPE_INT16_T`
+  * :c:macro:`GCC_JIT_TYPE_INT32_T`
+  * :c:macro:`GCC_JIT_TYPE_INT64_T`
+  * :c:macro:`GCC_JIT_TYPE_INT128_T`
+
+.. _LIBGCCJIT_ABI_21:
+
+``LIBGCCJIT_ABI_21``
+--------------------
+``LIBGCCJIT_ABI_21`` covers the addition of an API entrypoint to bitcast a
+value from one type to another:
+
+  * :func:`gcc_jit_context_new_bitcast`
+
+.. _LIBGCCJIT_ABI_22:
+
+``LIBGCCJIT_ABI_22``
+--------------------
+``LIBGCCJIT_ABI_22`` covers the addition of an API entrypoint to set the
+register name of a variable:
+
+  * :func:`gcc_jit_lvalue_set_register_name`
+
+.. _LIBGCCJIT_ABI_23:
+
+``LIBGCCJIT_ABI_23``
+--------------------
+``LIBGCCJIT_ABI_23`` covers the addition of an API entrypoint to hide stderr
+logs:
+
+  * :func:`gcc_jit_context_set_bool_print_errors_to_stderr`
+
+.. _LIBGCCJIT_ABI_24:
+
+``LIBGCCJIT_ABI_24``
+--------------------
+``LIBGCCJIT_ABI_24`` covers the addition of functions to get and set the
+alignment of a variable:
+
+  * :func:`gcc_jit_lvalue_set_alignment`
+  * :func:`gcc_jit_lvalue_get_alignment`

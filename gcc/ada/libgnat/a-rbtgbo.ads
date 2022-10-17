@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,7 +70,8 @@ package Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
    function Max (Tree : Tree_Type'Class; Node : Count_Type) return Count_Type;
    --  Returns the largest-valued node of the subtree rooted at Node
 
-   function Vet (Tree : Tree_Type'Class; Index : Count_Type) return Boolean;
+   function Vet (Tree : Tree_Type'Class; Index : Count_Type) return Boolean
+     with Inline;
    --  Inspects Node to determine (to the extent possible) whether
    --  the node is valid; used to detect if the node is dangling.
 

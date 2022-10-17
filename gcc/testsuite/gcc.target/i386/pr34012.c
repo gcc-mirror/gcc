@@ -1,7 +1,7 @@
 /* PR rtl-optimization/34012 */
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O2 -fno-store-merging" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fno-store-merging" } */
 
 void bar (long int *);
 void

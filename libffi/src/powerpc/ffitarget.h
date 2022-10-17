@@ -91,15 +91,19 @@ typedef enum ffi_abi {
   /* This and following bits can reuse FFI_COMPAT values.  */
   FFI_LINUX_STRUCT_ALIGN = 1,
   FFI_LINUX_LONG_DOUBLE_128 = 2,
+  FFI_LINUX_LONG_DOUBLE_IEEE128 = 4,
   FFI_DEFAULT_ABI = (FFI_LINUX
 #  ifdef __STRUCT_PARM_ALIGN__
 		     | FFI_LINUX_STRUCT_ALIGN
 #  endif
 #  ifdef __LONG_DOUBLE_128__
 		     | FFI_LINUX_LONG_DOUBLE_128
+#   ifdef __LONG_DOUBLE_IEEE128__
+		     | FFI_LINUX_LONG_DOUBLE_IEEE128
+#   endif
 #  endif
 		     ),
-  FFI_LAST_ABI = 12
+  FFI_LAST_ABI = 16
 
 # else
   /* This bit, always set in new code, must not be set in any of the
@@ -167,9 +171,11 @@ typedef enum ffi_abi {
 #define FFI_SYSV_TYPE_SMALL_STRUCT (FFI_PPC_TYPE_LAST + 2)
 
 /* Used by ELFv2 for homogenous structure returns.  */
-#define FFI_V2_TYPE_FLOAT_HOMOG		(FFI_PPC_TYPE_LAST + 1)
-#define FFI_V2_TYPE_DOUBLE_HOMOG	(FFI_PPC_TYPE_LAST + 2)
-#define FFI_V2_TYPE_SMALL_STRUCT	(FFI_PPC_TYPE_LAST + 3)
+#define FFI_V2_TYPE_VECTOR		(FFI_PPC_TYPE_LAST + 1)
+#define FFI_V2_TYPE_VECTOR_HOMOG	(FFI_PPC_TYPE_LAST + 2)
+#define FFI_V2_TYPE_FLOAT_HOMOG		(FFI_PPC_TYPE_LAST + 3)
+#define FFI_V2_TYPE_DOUBLE_HOMOG	(FFI_PPC_TYPE_LAST + 4)
+#define FFI_V2_TYPE_SMALL_STRUCT	(FFI_PPC_TYPE_LAST + 5)
 
 #if _CALL_ELF == 2
 # define FFI_TRAMPOLINE_SIZE 32

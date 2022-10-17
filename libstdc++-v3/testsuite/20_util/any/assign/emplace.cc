@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,7 @@ int main()
   combined& c2 = std::any_cast<combined&>(o5);
   VERIFY(c2.v[0] == 1 && c2.v[1] == 2
 	 && std::get<0>(c2.t) == 3 && std::get<1>(c2.t) == 4 );
+#if __cpp_rtti
   std::any o6;
   o6.emplace<const int&>(i);
   VERIFY(o6.type() == o.type());
@@ -71,6 +72,7 @@ int main()
   std::any o10;
   o10.emplace<char*>(nullptr);
   VERIFY(o9.type() == o10.type());
+#endif
   std::any o11;
   VERIFY(&o11.emplace<int>(42) == &std::any_cast<int&>(o11));
   VERIFY(&o11.emplace<std::vector<int>>({1,2,3}) ==

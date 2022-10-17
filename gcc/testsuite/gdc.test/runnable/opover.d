@@ -1,5 +1,29 @@
+/*
+RUN_OUTPUT:
+---
+i = 1
+Writer.opShl(char[])
+BinaryWriter.opShl(int)
+a + 1 = 2
+1 + a = 2
+a + b = 3
+b + a = 3
+i = 64
+12
+534
+A::opShl(int 4)
+4A::opShl(char[])
+ A::opShl(int 12)
+12A::opShl(char[])
+
+B::opShl_r(A)
+Success
+---
+*/
 
 // Test operator overloading
+// Ignore deprecation warnings for D1 style operator overloading
+// TRANSFORM_OUTPUT: remove_lines("Deprecation: `op")
 
 import core.stdc.stdio;
 
@@ -7,7 +31,8 @@ import core.stdc.stdio;
 
 class A1
 {
-    int opAdd(int i) { return 7 + i; }
+    int opBinary(string op)(int i) if (op == "+") { return 7 + i; }
+    alias opBinaryRight = opBinary;
 }
 
 void test1()
@@ -26,8 +51,8 @@ void test1()
 
 class A2
 {
-    int opDiv(int i)   { return 9 + i; }
-    int opDiv_r(int i) { return 17 + i; }
+    int opBinary(string op)(int i)      if (op == "/") { return 9 + i; }
+    int opBinaryRight(string op)(int i) if (op == "/") { return 17 + i; }
 }
 
 void test2()
@@ -50,31 +75,31 @@ class C1
 
 class C2
 {
-    int opAdd(D1 d)   { return 1; }
-    int opAdd(D2 d)   { return 2; }
-    int opAdd(D3 d)   { return 3; }
-    int opAdd(D4 d)   { return 4; }
+    int opBinary(string op)(D1 d) if (op == "+") { return 1; }
+    int opBinary(string op)(D2 d) if (op == "+") { return 2; }
+    int opBinary(string op)(D3 d) if (op == "+") { return 3; }
+    int opBinary(string op)(D4 d) if (op == "+") { return 4; }
 }
 
 class C3
 {
-    int opAdd_r(D1 d) { return 5; }
-    int opAdd_r(D2 d) { return 6; }
-    int opAdd_r(D3 d) { return 7; }
-    int opAdd_r(D4 d) { return 8; }
+    int opBinaryRight(string op)(D1 d) if (op == "+") { return 5; }
+    int opBinaryRight(string op)(D2 d) if (op == "+") { return 6; }
+    int opBinaryRight(string op)(D3 d) if (op == "+") { return 7; }
+    int opBinaryRight(string op)(D4 d) if (op == "+") { return 8; }
 }
 
 class C4
 {
-    int opAdd(D1 d)   { return 9; }
-    int opAdd(D2 d)   { return 10; }
-    int opAdd(D3 d)   { return 11; }
-    int opAdd(D4 d)   { return 12; }
+    int opBinary(string op)(D1 d) if (op == "+") { return 9; }
+    int opBinary(string op)(D2 d) if (op == "+") { return 10; }
+    int opBinary(string op)(D3 d) if (op == "+") { return 11; }
+    int opBinary(string op)(D4 d) if (op == "+") { return 12; }
 
-    int opAdd_r(D1 d) { return 13; }
-    int opAdd_r(D2 d) { return 14; }
-    int opAdd_r(D3 d) { return 15; }
-    int opAdd_r(D4 d) { return 16; }
+    int opBinaryRight(string op)(D1 d) if (op == "+") { return 13; }
+    int opBinaryRight(string op)(D2 d) if (op == "+") { return 14; }
+    int opBinaryRight(string op)(D3 d) if (op == "+") { return 15; }
+    int opBinaryRight(string op)(D4 d) if (op == "+") { return 16; }
 }
 
 class D1
@@ -83,31 +108,31 @@ class D1
 
 class D2
 {
-    int opAdd(C1 c)   { return 17; }
-    int opAdd(C2 d)   { return 18; }
-    int opAdd(C3 d)   { return 19; }
-    int opAdd(C4 d)   { return 20; }
+    int opBinary(string op)(C1 d) if (op == "+") { return 17; }
+    int opBinary(string op)(C2 d) if (op == "+") { return 18; }
+    int opBinary(string op)(C3 d) if (op == "+") { return 19; }
+    int opBinary(string op)(C4 d) if (op == "+") { return 20; }
 }
 
 class D3
 {
-    int opAdd_r(C1 d) { return 21; }
-    int opAdd_r(C2 d) { return 22; }
-    int opAdd_r(C3 d) { return 23; }
-    int opAdd_r(C4 d) { return 24; }
+    int opBinaryRight(string op)(C1 d) if (op == "+") { return 21; }
+    int opBinaryRight(string op)(C2 d) if (op == "+") { return 22; }
+    int opBinaryRight(string op)(C3 d) if (op == "+") { return 23; }
+    int opBinaryRight(string op)(C4 d) if (op == "+") { return 24; }
 }
 
 class D4
 {
-    int opAdd(C1 d)   { return 25; }
-    int opAdd(C2 d)   { return 26; }
-    int opAdd(C3 d)   { return 27; }
-    int opAdd(C4 d)   { return 28; }
+    int opBinary(string op)(C1 d) if (op == "+") { return 25; }
+    int opBinary(string op)(C2 d) if (op == "+") { return 26; }
+    int opBinary(string op)(C3 d) if (op == "+") { return 27; }
+    int opBinary(string op)(C4 d) if (op == "+") { return 28; }
 
-    int opAdd_r(C1 d) { return 29; }
-    int opAdd_r(C2 d) { return 30; }
-    int opAdd_r(C3 d) { return 31; }
-    int opAdd_r(C4 d) { return 32; }
+    int opBinaryRight(string op)(C1 d) if (op == "+") { return 29; }
+    int opBinaryRight(string op)(C2 d) if (op == "+") { return 30; }
+    int opBinaryRight(string op)(C3 d) if (op == "+") { return 31; }
+    int opBinaryRight(string op)(C4 d) if (op == "+") { return 32; }
 }
 
 
@@ -125,90 +150,45 @@ void test3()
 
     int i;
 
-  version (ADD_R)
-  {
     //i = c1 + d1;    assert(i == );
-    i = c1 + d2;    assert(i == 17);
+    //i = c1 + d2;    assert(i == );
     i = c1 + d3;    assert(i == 21);
     i = c1 + d4;    assert(i == 29);
 
     i = c2 + d1;    assert(i == 1);
     i = c2 + d2;    assert(i == 2);
-    i = c2 + d3;    assert(i == 3);
-    i = c2 + d4;    assert(i == 4);
+    i = c2 + d3;    assert(i == 22);
+    i = c2 + d4;    assert(i == 30);
 
     //i = c3 + d1;    assert(i == );
-    i = c3 + d2;    assert(i == 19);
+    //i = c3 + d2;    assert(i == );
     i = c3 + d3;    assert(i == 23);
     i = c3 + d4;    assert(i == 31);
 
     i = c4 + d1;    assert(i == 9);
     i = c4 + d2;    assert(i == 10);
-    i = c4 + d3;    assert(i == 11);
-    i = c4 + d4;    assert(i == 12);
+    i = c4 + d3;    assert(i == 24);
+    i = c4 + d4;    assert(i == 32);
 
     //i = d1 + c1;    assert(i == );
-    i = d1 + c2;    assert(i == 1);
+    //i = d1 + c2;    assert(i == );
     i = d1 + c3;    assert(i == 5);
     i = d1 + c4;    assert(i == 13);
 
     i = d2 + c1;    assert(i == 17);
     i = d2 + c2;    assert(i == 18);
-    i = d2 + c3;    assert(i == 19);
-    i = d2 + c4;    assert(i == 20);
+    i = d2 + c3;    assert(i == 6);
+    i = d2 + c4;    assert(i == 14);
 
     //i = d3 + c1;    assert(i == );
-    i = d3 + c2;    assert(i == 3);
+    //i = d3 + c2;    assert(i == );
     i = d3 + c3;    assert(i == 7);
     i = d3 + c4;    assert(i == 15);
 
     i = d4 + c1;    assert(i == 25);
     i = d4 + c2;    assert(i == 26);
-    i = d4 + c3;    assert(i == 27);
-    i = d4 + c4;    assert(i == 28);
-  }
-  else
-  {
-    //i = c1 + d1;    assert(i == );
-    i = c1 + d2;    assert(i == 17);
-//    i = c1 + d3;    assert(i == 21);
-    i = c1 + d4;    assert(i == 29);
-
-    i = c2 + d1;    assert(i == 1);
-    i = c2 + d2;    assert(i == 2);
-//    i = c2 + d3;    assert(i == 3);
-//    i = c2 + d4;    assert(i == 4);
-
-    //i = c3 + d1;    assert(i == );
-//    i = c3 + d2;    printf("i = %d\n", i); assert(i == 19);
-//    i = c3 + d3;    assert(i == 23);
-    i = c3 + d4;    assert(i == 31);
-
-    i = c4 + d1;    assert(i == 9);
-    i = c4 + d2;    assert(i == 10);
-//    i = c4 + d3;    assert(i == 11);
-//    i = c4 + d4;    assert(i == 12);
-
-    //i = d1 + c1;    assert(i == );
-    i = d1 + c2;    assert(i == 1);
-//    i = d1 + c3;    assert(i == 5);
-    i = d1 + c4;    assert(i == 13);
-
-    i = d2 + c1;    assert(i == 17);
-    i = d2 + c2;    assert(i == 18);
-//    i = d2 + c3;    assert(i == 19);
-//    i = d2 + c4;    assert(i == 20);
-
-    //i = d3 + c1;    assert(i == );
-//    i = d3 + c2;    assert(i == 3);
-//    i = d3 + c3;    assert(i == 7);
-    i = d3 + c4;    assert(i == 15);
-
-    i = d4 + c1;    assert(i == 25);
-    i = d4 + c2;    assert(i == 26);
-//    i = d4 + c3;    assert(i == 27);
-//    i = d4 + c4;    assert(i == 28);
-  }
+    i = d4 + c3;    assert(i == 8);
+    i = d4 + c4;    assert(i == 16);
 }
 
 /**************************************/
@@ -234,44 +214,45 @@ void test4()
 
 class A5
 {
-    int opNeg()     { return 10; }
-    int opCom()     { return 11; }
-    int opPostInc() { return 12; }
-    int opPostDec() { return 13; }
+    int opUnary(string op)() if (op == "-")  { return 10; }
+    int opUnary(string op)() if (op == "~")  { return 11; }
+    int opUnary(string op)() if (op == "++") { return 12; }
+    int opUnary(string op)() if (op == "--") { return 13; }
 
-    int opAdd(int j)     { return 14; }
-    int opSub(int j)     { return 15; }
-    int opSub_r(int j)   { return 16; }
-    int opMul(int j)     { return 17; }
-    int opDiv(int j)     { return 18; }
-    int opDiv_r(int j)   { return 19; }
-    int opMod(int j)     { return 20; }
-    int opMod_r(int j)   { return 21; }
-    int opAnd(int j)     { return 22; }
-    int opOr(int j)      { return 23; }
-    int opXor(int j)     { return 24; }
-    int opShl(int j)     { return 25; }
-    int opShl_r(int j)   { return 26; }
-    int opShr(int j)     { return 27; }
-    int opShr_r(int j)   { return 28; }
-    int opUShr(int j)    { return 29; }
-    int opUShr_r(int j)  { return 30; }
-    int opCat(int j)     { return 31; }
-    int opCat_r(int j)   { return 32; }
+
+    int opBinary(string op)(int j)      if (op == "+")   { return 14; }
+    int opBinary(string op)(int j)      if (op == "-")   { return 15; }
+    int opBinaryRight(string op)(int j) if (op == "-")   { return 16; }
+    int opBinary(string op)(int j)      if (op == "*")   { return 17; }
+    int opBinary(string op)(int j)      if (op == "/")   { return 18; }
+    int opBinaryRight(string op)(int j) if (op == "/")   { return 19; }
+    int opBinary(string op)(int j)      if (op == "%")   { return 20; }
+    int opBinaryRight(string op)(int j) if (op == "%")   { return 21; }
+    int opBinary(string op)(int j)      if (op == "&")   { return 22; }
+    int opBinary(string op)(int j)      if (op == "|")   { return 23; }
+    int opBinary(string op)(int j)      if (op == "^")   { return 24; }
+    int opBinary(string op)(int j)      if (op == "<<")  { return 25; }
+    int opBinaryRight(string op)(int j) if (op == "<<")  { return 26; }
+    int opBinary(string op)(int j)      if (op == ">>")  { return 27; }
+    int opBinaryRight(string op)(int j) if (op == ">>")  { return 28; }
+    int opBinary(string op)(int j)      if (op == ">>>") { return 29; }
+    int opBinaryRight(string op)(int j) if (op == ">>>") { return 30; }
+    int opBinary(string op)(int j)      if (op == "~")   { return 31; }
+    int opBinaryRight(string op)(int j) if (op == "~")   { return 32; }
     int opEquals(int j)  { return 33; }
     int opCmp(int j)     { return 34; }
-    int opAddAssign(int j)  { return 35; }
-    int opSubAssign(int j)  { return 36; }
-    int opMulAssign(int j)  { return 37; }
-    int opDivAssign(int j)  { return 38; }
-    int opModAssign(int j)  { return 39; }
-    int opAndAssign(int j)  { return 40; }
-    int opOrAssign(int j)   { return 41; }
-    int opXorAssign(int j)  { return 42; }
-    int opShlAssign(int j)  { return 43; }
-    int opShrAssign(int j)  { return 44; }
-    int opUShrAssign(int j) { return 45; }
-    int opCatAssign(int j)  { return 46; }
+    int opOpAssign(string op)(int j) if (op == "+")   { return 35; }
+    int opOpAssign(string op)(int j) if (op == "-")   { return 36; }
+    int opOpAssign(string op)(int j) if (op == "*")   { return 37; }
+    int opOpAssign(string op)(int j) if (op == "/")   { return 38; }
+    int opOpAssign(string op)(int j) if (op == "%")   { return 39; }
+    int opOpAssign(string op)(int j) if (op == "&")   { return 40; }
+    int opOpAssign(string op)(int j) if (op == "|")   { return 41; }
+    int opOpAssign(string op)(int j) if (op == "^")   { return 42; }
+    int opOpAssign(string op)(int j) if (op == "<<")  { return 43; }
+    int opOpAssign(string op)(int j) if (op == ">>")  { return 44; }
+    int opOpAssign(string op)(int j) if (op == ">>>") { return 45; }
+    int opOpAssign(string op)(int j) if (op == "~")   { return 46; }
 }
 
 void test5()
@@ -285,10 +266,10 @@ void test5()
     i = ~a;
     assert(i == 11);
 
-    i = a++;
+    i = ++a;
     assert(i == 12);
 
-    i = a--;
+    i = --a;
     assert(i == 13);
 
     i = a + 1;
@@ -378,12 +359,8 @@ printf("i = %d\n", i);
 
     i = (a += 1);
     assert(i == 35);
-    i = ++a;
-    assert(i == 35);
 
     i = (a -= 1);
-    assert(i == 36);
-    i = --a;
     assert(i == 36);
 
     i = (a *= 1);
@@ -421,45 +398,45 @@ printf("i = %d\n", i);
 
 struct A6
 {
-    int opNeg()     { return 10; }
-    int opCom()     { return 11; }
-    int opPostInc() { return 12; }
-    int opPostDec() { return 13; }
+    int opUnary(string op)() if (op == "-")  { return 10; }
+    int opUnary(string op)() if (op == "~")  { return 11; }
+    int opUnary(string op)() if (op == "++") { return 12; }
+    int opUnary(string op)() if (op == "--") { return 13; }
 
-    int opAdd(int j)     { return 14; }
-    int opSub(int j)     { return 15; }
-    int opSub_r(int j)   { return 16; }
-    int opMul(int j)     { return 17; }
-    int opDiv(int j)     { return 18; }
-    int opDiv_r(int j)   { return 19; }
-    int opMod(int j)     { return 20; }
-    int opMod_r(int j)   { return 21; }
-    int opAnd(int j)     { return 22; }
-    int opOr(int j)      { return 23; }
-    int opXor(int j)     { return 24; }
-    int opShl(int j)     { return 25; }
-    int opShl_r(int j)   { return 26; }
-    int opShr(int j)     { return 27; }
-    int opShr_r(int j)   { return 28; }
-    int opUShr(int j)    { return 29; }
-    int opUShr_r(int j)  { return 30; }
-    int opCat(int j)     { return 31; }
-    int opCat_r(int j)   { return 32; }
-    int opEquals(int j)      { return 33; }
+    int opBinary(string op)(int j)      if (op == "+")   { return 14; }
+    int opBinary(string op)(int j)      if (op == "-")   { return 15; }
+    int opBinaryRight(string op)(int j) if (op == "-")   { return 16; }
+    int opBinary(string op)(int j)      if (op == "*")   { return 17; }
+    int opBinary(string op)(int j)      if (op == "/")   { return 18; }
+    int opBinaryRight(string op)(int j) if (op == "/")   { return 19; }
+    int opBinary(string op)(int j)      if (op == "%")   { return 20; }
+    int opBinaryRight(string op)(int j) if (op == "%")   { return 21; }
+    int opBinary(string op)(int j)      if (op == "&")   { return 22; }
+    int opBinary(string op)(int j)      if (op == "|")   { return 23; }
+    int opBinary(string op)(int j)      if (op == "^")   { return 24; }
+    int opBinary(string op)(int j)      if (op == "<<")  { return 25; }
+    int opBinaryRight(string op)(int j) if (op == "<<")  { return 26; }
+    int opBinary(string op)(int j)      if (op == ">>")  { return 27; }
+    int opBinaryRight(string op)(int j) if (op == ">>")  { return 28; }
+    int opBinary(string op)(int j)      if (op == ">>>") { return 29; }
+    int opBinaryRight(string op)(int j) if (op == ">>>") { return 30; }
+    int opBinary(string op)(int j)      if (op == "~")   { return 31; }
+    int opBinaryRight(string op)(int j) if (op == "~")   { return 32; }
+    int opEquals(int j)  { return 33; }
     const bool opEquals(const ref A6)      { return false; }
     int opCmp(int j)     { return 34; }
-    int opAddAssign(int j)  { return 35; }
-    int opSubAssign(int j)  { return 36; }
-    int opMulAssign(int j)  { return 37; }
-    int opDivAssign(int j)  { return 38; }
-    int opModAssign(int j)  { return 39; }
-    int opAndAssign(int j)  { return 40; }
-    int opOrAssign(int j)   { return 41; }
-    int opXorAssign(int j)  { return 42; }
-    int opShlAssign(int j)  { return 43; }
-    int opShrAssign(int j)  { return 44; }
-    int opUShrAssign(int j) { return 45; }
-    int opCatAssign(int j)  { return 46; }
+    int opOpAssign(string op)(int j) if (op == "+")   { return 35; }
+    int opOpAssign(string op)(int j) if (op == "-")   { return 36; }
+    int opOpAssign(string op)(int j) if (op == "*")   { return 37; }
+    int opOpAssign(string op)(int j) if (op == "/")   { return 38; }
+    int opOpAssign(string op)(int j) if (op == "%")   { return 39; }
+    int opOpAssign(string op)(int j) if (op == "&")   { return 40; }
+    int opOpAssign(string op)(int j) if (op == "|")   { return 41; }
+    int opOpAssign(string op)(int j) if (op == "^")   { return 42; }
+    int opOpAssign(string op)(int j) if (op == "<<")  { return 43; }
+    int opOpAssign(string op)(int j) if (op == ">>")  { return 44; }
+    int opOpAssign(string op)(int j) if (op == ">>>") { return 45; }
+    int opOpAssign(string op)(int j) if (op == "~")   { return 46; }
 }
 
 void test6()
@@ -473,10 +450,10 @@ void test6()
     i = ~a;
     assert(i == 11);
 
-    i = a++;
+    i = ++a;
     assert(i == 12);
 
-    i = a--;
+    i = --a;
     assert(i == 13);
 
     i = a + 1;
@@ -565,12 +542,8 @@ void test6()
 
     i = (a += 1);
     assert(i == 35);
-    i = ++a;
-    assert(i == 35);
 
     i = (a -= 1);
-    assert(i == 36);
-    i = --a;
     assert(i == 36);
 
     i = (a *= 1);
@@ -628,19 +601,19 @@ void test7()
 
 interface IWriter
 {
-        int opShl (string i);
-        int opShl (int i);
+        int opBinary(string op)(string i) if (op == "<<");
+        int opBinary(string op)(int i) if (op == "<<");
 }
 
 class Writer : IWriter
 {
-    int opShl (string i)
+    int opBinary(string op)(string i) if (op == "<<")
     {
         printf("Writer.opShl(char[])\n");
         return 1;
     }
 
-    int opShl (int i)
+    int opBinary(string op)(int i) if (op == "<<")
     {
         printf("Writer.opShl(int)\n");
         return 2;
@@ -649,9 +622,13 @@ class Writer : IWriter
 
 class BinaryWriter : Writer
 {
-    alias Writer.opShl opShl;
+    int opBinary(string op)(string i) if (op == "<<")
+    {
+        printf("Writer.opShl(char[])\n");
+        return 1;
+    }
 
-    override int opShl (int i)
+    int opBinary(string op)(int i) if (op == "<<")
     {
         printf("BinaryWriter.opShl(int)\n");
         return 3;
@@ -688,12 +665,14 @@ void test9()
 
 class A10
 {
-    int opAdd(int i) { return i + 1; }
+    int opBinary(string op)(int i) if (op == "+") { return i + 1; }
+    alias opBinaryRight = opBinary;
 }
 
 class B10
 {
-    int opAdd_r(A10 a) { return 3; }
+    int opBinaryRight(string op)(A10 a) if (op == "+") { return 3; }
+    alias opBinary = opBinaryRight;
 }
 
 void test10()
@@ -767,23 +746,23 @@ void test12()
 
 class A13
 {
- A13 opShl(int x)
+ A13 opBinary(string op)(int x) if (op == "<<")
  {
     printf("A::opShl(int %d)\n", x);
     printf("%d",x);
     return this;
  }
- A13 opShl(string x)
+ A13 opBinary(string op)(string x) if (op == "<<")
  {
     printf("A::opShl(char[])\n");
-    printf("%.*s", x.length, x.ptr);
+    printf("%.*s", cast(int)x.length, x.ptr);
     return this;
  }
 }
 
 class B13
 {
- A13 opShl_r(A13 a)
+ A13 opBinaryRight(string op)(A13 a) if (op == "<<")
  {
     printf("B::opShl_r(A)\n");
     return a;
@@ -805,7 +784,7 @@ void test13()
 class Foo14
 {   int a;
 
-    int opIn(int x)
+    int opBinary(string op)(int x) if (op == "in")
     {
         return a + x;
     }
@@ -821,7 +800,7 @@ void test14()
 
 /**************************************/
 
-// 3983
+// https://issues.dlang.org/show_bug.cgi?id=3983
 
 struct Fug
 {
@@ -849,7 +828,7 @@ void test15()
 }
 
 /**************************************/
-// 4953
+// https://issues.dlang.org/show_bug.cgi?id=4953
 
 struct S4953a
 {
@@ -907,7 +886,7 @@ void test4953d()
 }
 
 /**************************************/
-// 4993
+// https://issues.dlang.org/show_bug.cgi?id=4993
 
 // reduced from the bug report
 struct Bar4993
@@ -924,7 +903,7 @@ void test4993()
 }
 
 /**************************************/
-// 8133
+// https://issues.dlang.org/show_bug.cgi?id=8133
 
 void test8133()
 {
@@ -942,7 +921,7 @@ void test8133()
 }
 
 /**************************************/
-// 8522
+// https://issues.dlang.org/show_bug.cgi?id=8522
 
 struct Point8522
 {
@@ -961,7 +940,7 @@ void test8522()
 }
 
 /**************************************/
-// 12778
+// https://issues.dlang.org/show_bug.cgi?id=12778
 
 struct Vec12778X
 {
@@ -975,18 +954,6 @@ struct Vec12778X
     float x = 0, y = 0;
 }
 
-struct Vec12778Y
-{
-    Vec12778Y opAdd()(Vec12778Y b) const
-    {
-        enum op = "+";
-        mixin("return Vec12778Y(this.x " ~ op ~ " b.x, this.y " ~ op ~ " b.y);");
-    }
-    alias opAdd_r = opAdd;
-
-    float x = 0, y = 0;
-}
-
 void test12778()
 {
     struct S
@@ -994,22 +961,19 @@ void test12778()
         void test1()
         {
             Vec12778X vx = vx1 + vx2;   // ok
-            Vec12778Y vy = vy1 + vy2;   // ok
         }
 
         void test2() const
         {
             Vec12778X vx = vx1 + vx2;   // ok <- error
-            Vec12778Y vy = vy1 + vy2;   // ok <- error
         }
 
         Vec12778X vx1, vx2;
-        Vec12778Y vy1, vy2;
     }
 }
 
 /**************************************/
-// 14343
+// https://issues.dlang.org/show_bug.cgi?id=14343
 
 struct S14343a
 {
@@ -1025,8 +989,8 @@ struct S14343b
     int i;
     immutable(Object) o;
 
-    void opAddAssign(int j) { i += j; }
-    S14343b opPostInc() { ++i; return this; }
+    void opOpAssign(string op)(int j) if (op == "+") { i += j; }
+    S14343b opUnary(string op)() if (op == "++") { ++i; return this; }
     void opAssign(S14343b other) {}
 }
 
@@ -1049,7 +1013,7 @@ void test14343()
 }
 
 /**************************************/
-// 14344
+// https://issues.dlang.org/show_bug.cgi?id=14344
 
 struct S14344
 {
@@ -1080,7 +1044,41 @@ class C14344
 }
 
 /**************************************/
+// https://issues.dlang.org/show_bug.cgi?id=1547
+struct A
+{
+    int b;
+    static A opCall(int k)
+    {
+        assert(0);
+    }
+    this(int) {}
+}
 
+void fun(A k = 2) {}
+
+void test1547()
+{
+    fun();
+}
+
+/**************************************/
+// https://issues.dlang.org/show_bug.cgi?id=20475
+struct S20475
+{
+    string[2] x;
+}
+
+void test20475()
+{
+    auto s = S20475(["abc", "bcd"]);
+    auto t = S20475(["abc", ""]);
+    string u = "abcd";
+    t.x[1] = u[1..$];
+    assert(s == t);
+}
+
+/**************************************/
 int main()
 {
     test1();
@@ -1098,6 +1096,7 @@ int main()
     test13();
     test14();
     test15();
+    test1547();
     test4953a();
     test4953b();
     test4953c();
@@ -1105,6 +1104,7 @@ int main()
     test4993();
     test8133();
     test8522();
+    test20475();
 
     printf("Success\n");
     return 0;

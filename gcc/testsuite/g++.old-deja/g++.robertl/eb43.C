@@ -5,6 +5,7 @@
 // to pointer_to_binary_function, which has an `explicit' constructor.
 
 // { dg-prune-output "note" }
+// { dg-options "-Wno-deprecated" }
 
 #include <vector>
 #include <algorithm>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,8 @@
 separate (System.Task_Primitives.Operations)
 package body Specific is
 
+   ERROR : constant STATUS := System.VxWorks.Ext.ERROR;
+
    ATCB_Key : int := 0;
    --  Key used to find the Ada Task_Id associated with a thread
 
@@ -43,9 +45,10 @@ package body Specific is
    ----------------
 
    procedure Initialize is
+      IERR : constant := -1;
    begin
       ATCB_Key := tlsKeyCreate;
-      pragma Assert (ATCB_Key /= ERROR);
+      pragma Assert (ATCB_Key /= IERR);
    end Initialize;
 
    -------------------

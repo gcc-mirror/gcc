@@ -1,5 +1,5 @@
 /* Prototypes for exported functions of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -65,7 +65,7 @@ extern void nds32_emit_v3pop_fpr_callee_saved (int);
 
 /* Controlling Debugging Information Format.  */
 
-extern unsigned int nds32_dbx_register_number (unsigned int);
+extern unsigned int nds32_debugger_regno (unsigned int);
 
 /* ------------------------------------------------------------------------ */
 

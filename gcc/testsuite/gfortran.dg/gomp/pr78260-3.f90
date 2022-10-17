@@ -70,5 +70,5 @@ end subroutine sub
 
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(inout:__result_f1\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(inout:\\*__result.0\\)" 4 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(inout:\\*\\(c_char \\*\\) __result->data\\)" 2 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(inout:\\*\\(c_char \\*\\) arr.data\\)" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(inout:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) __result->data\\)" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(inout:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) arr.data\\)" 2 "original" } }

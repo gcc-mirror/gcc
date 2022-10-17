@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Vitesse IQ2000 processors
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -525,7 +525,7 @@ while (0)
 
 #define FUNCTION_MODE SImode
 
-/* IQ2000 external variables defined in iq2000.c.  */
+/* IQ2000 external variables defined in iq2000.cc.  */
 
 /* Comparison type.  */
 enum cmp_type

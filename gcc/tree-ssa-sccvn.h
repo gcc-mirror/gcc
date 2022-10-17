@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -21,8 +21,8 @@
 #ifndef TREE_SSA_SCCVN_H
 #define TREE_SSA_SCCVN_H
 
-/* In tree-ssa-sccvn.c  */
-bool expressions_equal_p (tree, tree);
+/* In tree-ssa-sccvn.cc  */
+bool expressions_equal_p (tree, tree, bool = true);
 
 
 /* TOP of the VN lattice.  */
@@ -106,7 +106,8 @@ typedef const struct vn_phi_s *const_vn_phi_t;
 typedef struct vn_reference_op_struct
 {
   ENUM_BITFIELD(tree_code) opcode : 16;
-  /* Dependence info, used for [TARGET_]MEM_REF only.  */
+  /* Dependence info, used for [TARGET_]MEM_REF only.  For internal
+     function calls clique is also used for the internal function code.  */
   unsigned short clique;
   unsigned short base;
   unsigned reverse : 1;
@@ -248,19 +249,23 @@ bool has_VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO (tree);
 tree vn_get_expr_for (tree);
 void scc_vn_restore_ssa_info (void);
+vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, struct obstack *);
+unsigned int vn_nary_length_from_stmt (gimple *);
+void init_vn_nary_op_from_stmt (vn_nary_op_t, gassign *);
+hashval_t vn_nary_op_compute_hash (const vn_nary_op_t);
 tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree *, vn_nary_op_t *);
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree *, tree, unsigned int);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, alias_set_type,
-				    tree, vec<vn_reference_op_s> );
+				    tree, const vec<vn_reference_op_s> &);
 vec<vn_reference_op_s> vn_reference_operands_for_lookup (tree);
 tree vn_reference_lookup_pieces (tree, alias_set_type, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
 				 vn_reference_t *, vn_lookup_kind);
 tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *, bool,
-			  tree * = NULL, tree = NULL_TREE);
+			  tree * = NULL, tree = NULL_TREE, bool = false);
 void vn_reference_lookup_call (gcall *, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, alias_set_type,
 					   tree, vec<vn_reference_op_s>,
@@ -290,7 +295,12 @@ value_id_constant_p (unsigned int v)
 tree fully_constant_vn_reference_p (vn_reference_t);
 tree vn_nary_simplify (vn_nary_op_t);
 
-unsigned do_rpo_vn (function *, edge, bitmap);
+unsigned do_rpo_vn (function *, edge, bitmap,
+		    /* iterate */ bool = false,
+		    /* eliminate */ bool = true,
+		    vn_lookup_kind = VN_WALKREWRITE);
+
+/* Private interface for PRE.  */
 void run_rpo_vn (vn_lookup_kind);
 unsigned eliminate_with_rpo_vn (bitmap);
 void free_rpo_vn (void);

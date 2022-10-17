@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 9155
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 module ddoc9155;
 
@@ -12,12 +12,12 @@ module ddoc9155;
  +  ---
  +  import std.stdio;   //&
  +  writeln("Hello world!");
- +  if (test) {  
+ +  if (test) {
  +    writefln("D programming language");
  +  }
  +
  +      algorithm;
- +  
+ +
  +  xxx;    //comment
  +      yyy;
  +  /* test
@@ -28,7 +28,7 @@ module ddoc9155;
  +File f = File("./text.txt", "r");
  +uint line = 0;
  + // The ElementType of data is not aggregation type
- +foreach (encoded; Base64.encoder(data)) 
+ +foreach (encoded; Base64.encoder(data))
  +  ---
  +/
 
@@ -45,12 +45,12 @@ module ddoc9155;
  *  ---
  *  import std.stdio;   //&
  *  writeln("Hello world!");
- *  if (test) {  
+ *  if (test) {
  *    writefln("D programming language");
  *  }
  *
  *      algorithm;
- *  
+ *
  *  xxx;    //comment
  *      yyy;
  *  /+ test

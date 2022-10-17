@@ -36,22 +36,6 @@
 
         type (omp_alloctrait), allocatable :: traits(:), traits5(:)
 
-        interface
-          ! omp_alloc + omp_free part of OpenMP for C/C++
-          ! but not (yet) in the OpenMP spec for Fortran
-          type(c_ptr) function omp_alloc (size, handle) bind(C)
-            import
-            integer (c_size_t), value :: size
-            integer (omp_allocator_handle_kind), value :: handle
-          end function
-
-          subroutine omp_free (ptr, handle) bind(C)
-            import
-            type (c_ptr), value :: ptr
-            integer (omp_allocator_handle_kind), value :: handle
-          end subroutine
-        end interface
-
         type(c_ptr), volatile :: cp, cq, cr
         integer :: i
         integer(c_intptr_t) :: intptr
@@ -133,7 +117,7 @@
         q(1) = 7
         q(768 / c_sizeof (i)) = 8
         cr = omp_alloc (512_c_size_t, a2)
-        if (mod (transfer (cr, intptr), 16_c_intptr_t) /= 0) stop 13
+        if (mod (transfer (cr, intptr), 4_c_intptr_t) /= 0) stop 13
         call c_f_pointer (cr, r, [512 / c_sizeof (i)])
         r(1) = 9
         r(512 / c_sizeof (i)) = 10

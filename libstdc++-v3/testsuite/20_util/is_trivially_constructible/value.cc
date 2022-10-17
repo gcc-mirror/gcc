@@ -2,7 +2,7 @@
 //
 // 2014-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 //
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -105,7 +105,7 @@ void test01()
   static_assert(test_property<is_trivially_constructible,
 		PODType, const PODType&>(true), "");
   static_assert(test_property<is_trivially_constructible,
-		PODType, int, int>(false), "");
+		PODType, int, int>(__cplusplus >= 202002L), "");
   static_assert(test_property<is_trivially_constructible,
 		NType>(false), "");
   static_assert(test_property<is_trivially_constructible,

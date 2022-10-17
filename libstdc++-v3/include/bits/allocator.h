@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,7 @@
 #include <type_traits>
 #endif
 
-#define __cpp_lib_incomplete_container_elements 201505
+#define __cpp_lib_incomplete_container_elements 201505L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -61,13 +61,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   // Since C++20 the primary template should be used for allocator<void>,
-  // but then it would have a non-trivial default ctor and dtor, which
-  // would be an ABI change. So C++20 still uses the allocator<void> explicit
-  // specialization, with the historical ABI properties, but with the same
-  // members that are present in the primary template.
+  // but then it would have a non-trivial default ctor and dtor for C++20,
+  // but trivial for C++98-17, which would be an ABI incompatibiliy between
+  // different standard dialects. So C++20 still uses the allocator<void>
+  // explicit specialization, with the historical ABI properties, but with
+  // the same members that are present in the primary template.
 
-#if ! _GLIBCXX_INLINE_VERSION
-  /// allocator<void> specialization.
+  /** std::allocator<void> specialization.
+   *
+   * @headerfile memory
+   */
   template<>
     class allocator<void>
     {
@@ -77,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef ptrdiff_t   difference_type;
 
 #if __cplusplus <= 201703L
-      // These were removed for C++20.
+      // These were removed for C++20, allocator_traits does the right thing.
       typedef void*       pointer;
       typedef const void* const_pointer;
 
@@ -92,11 +95,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using propagate_on_container_move_assignment = true_type;
 
       using is_always_equal
-	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::is_always_equal")
+	_GLIBCXX20_DEPRECATED_SUGGEST("std::allocator_traits::is_always_equal")
 	= true_type;
 
 #if __cplusplus >= 202002L
+      // As noted above, these members are present for C++20 to provide the
+      // same API as the primary template, but still trivial as in pre-C++20.
       allocator() = default;
+      ~allocator() = default;
 
       template<typename _Up>
 	constexpr
@@ -105,28 +111,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // No allocate member because it's ill-formed by LWG 3307.
       // No deallocate member because it would be undefined to call it
       // with any pointer which wasn't obtained from allocate.
-
-#else // ! C++20
-    private:
-      // This uses construct and destroy in C++11/14/17 modes.
-      friend allocator_traits<allocator<void>>;
-
-      template<typename _Up, typename... _Args>
-	void
-	construct(_Up* __p, _Args&&... __args)
-	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
-	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
-
-      template<typename _Up>
-	void
-	destroy(_Up* __p)
-	noexcept(std::is_nothrow_destructible<_Up>::value)
-	{ __p->~_Up(); }
-#endif // C++17
+#endif // C++20
 #endif // C++11
-
     };
-#endif // ! _GLIBCXX_INLINE_VERSION
 
   /**
    * @brief  The @a standard allocator, as per C++03 [20.4.1].
@@ -135,6 +122,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  for further details.
    *
    *  @tparam  _Tp  Type of allocated object.
+   *
+   *  @headerfile memory
    */
   template<typename _Tp>
     class allocator : public __allocator_base<_Tp>
@@ -162,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using propagate_on_container_move_assignment = true_type;
 
       using is_always_equal
-	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::is_always_equal")
+	_GLIBCXX20_DEPRECATED_SUGGEST("std::allocator_traits::is_always_equal")
 	= true_type;
 #endif
 
@@ -194,10 +183,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tp*
       allocate(size_t __n)
       {
-#ifdef __cpp_lib_is_constant_evaluated
-	if (std::is_constant_evaluated())
-	  return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
-#endif
+	if (std::__is_constant_evaluated())
+	  {
+	    if (__builtin_mul_overflow(__n, sizeof(_Tp), &__n))
+	      std::__throw_bad_array_new_length();
+	    return static_cast<_Tp*>(::operator new(__n));
+	  }
+
 	return __allocator_base<_Tp>::allocate(__n, 0);
       }
 
@@ -205,14 +197,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr void
       deallocate(_Tp* __p, size_t __n)
       {
-#ifdef __cpp_lib_is_constant_evaluated
-	if (std::is_constant_evaluated())
+	if (std::__is_constant_evaluated())
 	  {
 	    ::operator delete(__p);
 	    return;
 	  }
-#endif
-	  __allocator_base<_Tp>::deallocate(__p, __n);
+	__allocator_base<_Tp>::deallocate(__p, __n);
       }
 #endif // C++20
 
@@ -229,6 +219,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Inherit everything else.
     };
 
+  /** Equality comparison for std::allocator objects
+   *
+   * @return true, for all std::allocator objects.
+   * @relates std::allocator
+   */
   template<typename _T1, typename _T2>
     inline _GLIBCXX20_CONSTEXPR bool
     operator==(const allocator<_T1>&, const allocator<_T2>&)
@@ -242,6 +237,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOTHROW
     { return false; }
 #endif
+
+  /// @cond undocumented
 
   // Invalid allocator<cv T> partial specializations.
   // allocator_traits::rebind_alloc can be used to form a valid allocator type.
@@ -268,6 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp value_type;
       template<typename _Up> allocator(const allocator<_Up>&) { }
     };
+  /// @endcond
 
   /// @} group allocator
 
@@ -280,70 +278,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Undefine.
 #undef __allocator_base
-
-  // To implement Option 3 of DR 431.
-  template<typename _Alloc, bool = __is_empty(_Alloc)>
-    struct __alloc_swap
-    { static void _S_do_it(_Alloc&, _Alloc&) _GLIBCXX_NOEXCEPT { } };
-
-  template<typename _Alloc>
-    struct __alloc_swap<_Alloc, false>
-    {
-      static void
-      _S_do_it(_Alloc& __one, _Alloc& __two) _GLIBCXX_NOEXCEPT
-      {
-	// Precondition: swappable allocators.
-	if (__one != __two)
-	  swap(__one, __two);
-      }
-    };
-
-  // Optimize for stateless allocators.
-  template<typename _Alloc, bool = __is_empty(_Alloc)>
-    struct __alloc_neq
-    {
-      static bool
-      _S_do_it(const _Alloc&, const _Alloc&)
-      { return false; }
-    };
-
-  template<typename _Alloc>
-    struct __alloc_neq<_Alloc, false>
-    {
-      static bool
-      _S_do_it(const _Alloc& __one, const _Alloc& __two)
-      { return __one != __two; }
-    };
-
-#if __cplusplus >= 201103L
-  template<typename _Tp, bool
-    = __or_<is_copy_constructible<typename _Tp::value_type>,
-            is_nothrow_move_constructible<typename _Tp::value_type>>::value>
-    struct __shrink_to_fit_aux
-    { static bool _S_do_it(_Tp&) noexcept { return false; } };
-
-  template<typename _Tp>
-    struct __shrink_to_fit_aux<_Tp, true>
-    {
-      static bool
-      _S_do_it(_Tp& __c) noexcept
-      {
-#if __cpp_exceptions
-	try
-	  {
-	    _Tp(__make_move_if_noexcept_iterator(__c.begin()),
-		__make_move_if_noexcept_iterator(__c.end()),
-		__c.get_allocator()).swap(__c);
-	    return true;
-	  }
-	catch(...)
-	  { return false; }
-#else
-	return false;
-#endif
-      }
-    };
-#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

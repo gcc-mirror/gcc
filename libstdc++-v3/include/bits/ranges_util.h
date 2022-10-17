@@ -1,6 +1,6 @@
 // Utilities for representing and manipulating ranges -*- C++ -*-
 
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,7 @@
 
 #if __cplusplus > 201703L
 # include <bits/ranges_base.h>
+# include <bits/utility.h>
 
 #ifdef __cpp_lib_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -53,14 +54,14 @@ namespace ranges
 	&& (is_pointer_v<_It> || requires(_It __it) { __it.operator->(); });
 
     template<typename _Tp, typename _Up>
-      concept __not_same_as
+      concept __different_from
 	= !same_as<remove_cvref_t<_Tp>, remove_cvref_t<_Up>>;
   } // namespace __detail
 
   /// The ranges::view_interface class template
   template<typename _Derived>
     requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class view_interface : public view_base
+    class view_interface
     {
     private:
       constexpr _Derived& _M_derived() noexcept
@@ -183,11 +184,16 @@ namespace ranges
 
   namespace __detail
   {
-    template<class _From, class _To>
+    template<typename _From, typename _To>
+      concept __uses_nonqualification_pointer_conversion
+	= is_pointer_v<_From> && is_pointer_v<_To>
+	  && !convertible_to<remove_pointer_t<_From>(*)[],
+			     remove_pointer_t<_To>(*)[]>;
+
+    template<typename _From, typename _To>
       concept __convertible_to_non_slicing = convertible_to<_From, _To>
-	&& !(is_pointer_v<decay_t<_From>> && is_pointer_v<decay_t<_To>>
-	    && __not_same_as<remove_pointer_t<decay_t<_From>>,
-			     remove_pointer_t<decay_t<_To>>>);
+	&& !__uses_nonqualification_pointer_conversion<decay_t<_From>,
+						       decay_t<_To>>;
 
     template<typename _Tp>
       concept __pair_like
@@ -210,6 +216,8 @@ namespace ranges
 
   } // namespace __detail
 
+  namespace views { struct _Drop; } // defined in <ranges>
+
   enum class subrange_kind : bool { unsized, sized };
 
   /// The ranges::subrange class template
@@ -220,9 +228,10 @@ namespace ranges
     class subrange : public view_interface<subrange<_It, _Sent, _Kind>>
     {
     private:
-      // XXX: gcc complains when using constexpr here
-      static const bool _S_store_size
+      static constexpr bool _S_store_size
 	= _Kind == subrange_kind::sized && !sized_sentinel_for<_Sent, _It>;
+
+      friend struct views::_Drop; // Needs to inspect _S_store_size.
 
       _It _M_begin = _It();
       [[no_unique_address]] _Sent _M_end = _Sent();
@@ -263,7 +272,7 @@ namespace ranges
 	  _M_size._M_size = __n;
       }
 
-      template<__detail::__not_same_as<subrange> _Rng>
+      template<__detail::__different_from<subrange> _Rng>
 	requires borrowed_range<_Rng>
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
@@ -274,7 +283,7 @@ namespace ranges
 	: subrange(__r, ranges::size(__r))
 	{ }
 
-      template<__detail::__not_same_as<subrange> _Rng>
+      template<__detail::__different_from<subrange> _Rng>
 	requires borrowed_range<_Rng>
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
@@ -295,7 +304,7 @@ namespace ranges
 	: subrange{ranges::begin(__r), ranges::end(__r), __n}
 	{ }
 
-      template<__detail::__not_same_as<subrange> _PairLike>
+      template<__detail::__different_from<subrange> _PairLike>
 	requires __detail::__pair_like_convertible_from<_PairLike, const _It&,
 							const _Sent&>
 	constexpr
@@ -417,9 +426,9 @@ namespace ranges
       enable_borrowed_range<subrange<_It, _Sent, _Kind>> = true;
 
   template<range _Range>
-    using borrowed_subrange_t = conditional_t<borrowed_range<_Range>,
-					      subrange<iterator_t<_Range>>,
-					      dangling>;
+    using borrowed_subrange_t = __conditional_t<borrowed_range<_Range>,
+						subrange<iterator_t<_Range>>,
+						dangling>;
 } // namespace ranges
 
 // The following ranges algorithms are used by <ranges>, and are defined here
@@ -640,6 +649,99 @@ namespace ranges
   };
 
   inline constexpr __search_fn search{};
+
+  struct __min_fn
+  {
+    template<typename _Tp, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
+	       _Comp = ranges::less>
+      constexpr const _Tp&
+      operator()(const _Tp& __a, const _Tp& __b,
+		 _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	if (std::__invoke(__comp,
+			  std::__invoke(__proj, __b),
+			  std::__invoke(__proj, __a)))
+	  return __b;
+	else
+	  return __a;
+      }
+
+    template<input_range _Range, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
+	       _Comp = ranges::less>
+      requires indirectly_copyable_storable<iterator_t<_Range>,
+					    range_value_t<_Range>*>
+      constexpr range_value_t<_Range>
+      operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	auto __first = ranges::begin(__r);
+	auto __last = ranges::end(__r);
+	__glibcxx_assert(__first != __last);
+	auto __result = *__first;
+	while (++__first != __last)
+	  {
+	    auto __tmp = *__first;
+	    if (std::__invoke(__comp,
+			      std::__invoke(__proj, __tmp),
+			      std::__invoke(__proj, __result)))
+	      __result = std::move(__tmp);
+	  }
+	return __result;
+      }
+
+    template<copyable _Tp, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
+	       _Comp = ranges::less>
+      constexpr _Tp
+      operator()(initializer_list<_Tp> __r,
+		 _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	return (*this)(ranges::subrange(__r),
+		       std::move(__comp), std::move(__proj));
+      }
+  };
+
+  inline constexpr __min_fn min{};
+
+  struct __adjacent_find_fn
+  {
+    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     typename _Proj = identity,
+	     indirect_binary_predicate<projected<_Iter, _Proj>,
+				       projected<_Iter, _Proj>> _Pred
+	       = ranges::equal_to>
+      constexpr _Iter
+      operator()(_Iter __first, _Sent __last,
+		 _Pred __pred = {}, _Proj __proj = {}) const
+      {
+	if (__first == __last)
+	  return __first;
+	auto __next = __first;
+	for (; ++__next != __last; __first = __next)
+	  {
+	    if (std::__invoke(__pred,
+			      std::__invoke(__proj, *__first),
+			      std::__invoke(__proj, *__next)))
+	      return __first;
+	  }
+	return __next;
+      }
+
+    template<forward_range _Range, typename _Proj = identity,
+	     indirect_binary_predicate<
+	       projected<iterator_t<_Range>, _Proj>,
+	       projected<iterator_t<_Range>, _Proj>> _Pred = ranges::equal_to>
+      constexpr borrowed_iterator_t<_Range>
+      operator()(_Range&& __r, _Pred __pred = {}, _Proj __proj = {}) const
+      {
+	return (*this)(ranges::begin(__r), ranges::end(__r),
+		       std::move(__pred), std::move(__proj));
+      }
+  };
+
+  inline constexpr __adjacent_find_fn adjacent_find{};
+
 } // namespace ranges
 
   using ranges::get;

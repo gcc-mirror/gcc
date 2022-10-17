@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,11 +73,26 @@ struct stringop_algs
 {
   const enum stringop_alg unknown_size;
   const struct stringop_strategy {
+    /* Several older compilers delete the default constructor because of the
+       const entries (see PR100246).  Manually specifying a CTOR works around
+       this issue.  Since this header is used by code compiled with the C
+       compiler we must guard the addition.  */
+#ifdef __cplusplus
+    constexpr
+    stringop_strategy (int _max = -1, enum stringop_alg _alg = libcall,
+		       int _noalign = false)
+      : max (_max), alg (_alg), noalign (_noalign) {}
+#endif
     const int max;
     const enum stringop_alg alg;
     int noalign;
   } size [MAX_STRINGOP_ALGS];
 };
+
+/* Analog of COSTS_N_INSNS when optimizing for size.  */
+#ifndef COSTS_N_BYTES
+#define COSTS_N_BYTES(N) ((N) * 2)
+#endif
 
 /* Define the specific costs for a given cpu.  NB: hard_register is used
    by TARGET_REGISTER_MOVE_COST and TARGET_MEMORY_MOVE_COST to compute
@@ -320,6 +335,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_PARTIAL_REG_DEPENDENCY]
 #define TARGET_SSE_PARTIAL_REG_DEPENDENCY \
 	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY]
+#define TARGET_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY \
+	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY]
+#define TARGET_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY \
+	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY]
 #define TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
 	ix86_tune_features[X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL]
 #define TARGET_SSE_UNALIGNED_STORE_OPTIMAL \
@@ -371,6 +390,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_SLOW_PSHUFB]
 #define TARGET_AVOID_4BYTE_PREFIXES \
 	ix86_tune_features[X86_TUNE_AVOID_4BYTE_PREFIXES]
+#define TARGET_USE_GATHER_2PARTS \
+	ix86_tune_features[X86_TUNE_USE_GATHER_2PARTS]
+#define TARGET_USE_GATHER_4PARTS \
+	ix86_tune_features[X86_TUNE_USE_GATHER_4PARTS]
 #define TARGET_USE_GATHER \
 	ix86_tune_features[X86_TUNE_USE_GATHER]
 #define TARGET_FUSE_CMP_AND_BRANCH_32 \
@@ -408,6 +431,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 #define TARGET_EXPAND_ABS \
 	ix86_tune_features[X86_TUNE_EXPAND_ABS]
+#define TARGET_V2DF_REDUCTION_PREFER_HADDPD \
+	ix86_tune_features[X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD]
+#define TARGET_DEST_FALSE_DEP_FOR_GLC \
+	ix86_tune_features[X86_TUNE_DEST_FALSE_DEP_FOR_GLC]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -465,7 +492,7 @@ extern unsigned char ix86_prefetch_sse;
 
 /* Fence to use after loop using storent.  */
 
-extern tree x86_mfence;
+extern GTY(()) tree x86_mfence;
 #define FENCE_FOLLOWING_MOVNT x86_mfence
 
 /* Once GDB has been enhanced to deal with functions without frame
@@ -528,9 +555,9 @@ extern tree x86_mfence;
 
 /* -march=native handling only makes sense with compiler running on
    an x86 or x86_64 chip.  If changing this condition, also change
-   the condition in driver-i386.c.  */
+   the condition in driver-i386.cc.  */
 #if defined(__i386__) || defined(__x86_64__)
-/* In driver-i386.c.  */
+/* In driver-i386.cc.  */
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define EXTRA_SPEC_FUNCTIONS \
   { "local_cpu_detect", host_detect_local_cpu },
@@ -567,10 +594,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
 #else
+#define ARCH_ARG "%{" OPT_ARCH64 ":64;:32}"
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1 \
-"%{march=native:%>march=native %:local_cpu_detect(arch) \
-  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune)}} \
-%{mtune=native:%>mtune=native %:local_cpu_detect(tune)}"
+"%{march=native:%>march=native %:local_cpu_detect(arch " ARCH_ARG ") \
+  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}} \
+%{mtune=native:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}"
 #endif
 #endif
 
@@ -579,11 +607,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Target Pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() ix86_register_pragmas ()
-
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS ix86_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO ix86_d_register_target_info
-#define TARGET_D_HAS_STDCALL_CONVENTION ix86_d_has_stdcall_convention
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
@@ -849,7 +872,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Standard register usage.  */
 
-/* This processor has special stack-like registers.  See reg-stack.c
+/* This processor has special stack-like registers.  See reg-stack.cc
    for details.  */
 
 #define STACK_REGS
@@ -983,7 +1006,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX256_REG_MODE(MODE)					\
   ((MODE) == V32QImode || (MODE) == V16HImode || (MODE) == V8SImode	\
    || (MODE) == V4DImode || (MODE) == V2TImode || (MODE) == V8SFmode	\
-   || (MODE) == V4DFmode)
+   || (MODE) == V4DFmode || (MODE) == V16HFmode || (MODE) == V16BFmode)
 
 #define VALID_AVX256_REG_OR_OI_MODE(MODE)		\
   (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode)
@@ -992,10 +1015,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE) == DImode || (MODE) == DFmode || (MODE) == SImode		\
    || (MODE) == SFmode)
 
+#define VALID_AVX512FP16_SCALAR_MODE(MODE)	\
+  ((MODE) == HImode || (MODE) == HFmode)
+
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
-   || (MODE) == V4TImode)
+   || (MODE) == V4TImode || (MODE) == V32HFmode || (MODE) == V32BFmode)
 
 #define VALID_AVX512F_REG_OR_XI_MODE(MODE)				\
   (VALID_AVX512F_REG_MODE (MODE) || (MODE) == XImode)
@@ -1003,48 +1029,58 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX512VL_128_REG_MODE(MODE)				\
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
    || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode	\
-   || (MODE) == TFmode || (MODE) == V1TImode)
+   || (MODE) == TFmode || (MODE) == V1TImode || (MODE) == V8HFmode	\
+   || (MODE) == V8BFmode || (MODE) == TImode)
+
+#define VALID_AVX512FP16_REG_MODE(MODE)					\
+  ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode	\
+   || (MODE) == V2HFmode)
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
-   || (MODE) == V4QImode || (MODE) == V2HImode				\
-   || (MODE) == V2DImode || (MODE) == DFmode)
+   || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
+   || (MODE) == V8BFmode \
+   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
+   || (MODE) == V2DImode || (MODE) == V2QImode || (MODE) == DFmode	\
+   || (MODE) == HFmode || (MODE) == BFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
    || (MODE) == V4SFmode || (MODE) == V4SImode				\
-   || (MODE) == SFmode || (MODE) == TFmode)
+   || (MODE) == SFmode || (MODE) == TFmode || (MODE) == TDmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
   ((MODE) == V2SFmode || (MODE) == SFmode)
 
+/* To match ia32 psABI, V4HFmode should be added here.  */
 #define VALID_MMX_REG_MODE(MODE)					\
   ((MODE) == V1DImode || (MODE) == DImode				\
    || (MODE) == V2SImode || (MODE) == SImode				\
-   || (MODE) == V4HImode || (MODE) == V8QImode)
+   || (MODE) == V4HImode || (MODE) == V8QImode				\
+   || (MODE) == V4HFmode)
 
 #define VALID_MASK_REG_MODE(MODE) ((MODE) == HImode || (MODE) == QImode)
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
-#define VALID_DFP_MODE_P(MODE) \
-  ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
-
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
-   || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)		\
+   || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)
 
 #define VALID_INT_MODE_P(MODE)						\
   ((MODE) == QImode || (MODE) == HImode					\
    || (MODE) == SImode || (MODE) == DImode				\
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
-   || (MODE) == V4QImode || (MODE) == V2HImode				\
+   || (MODE) == SDmode || (MODE) == DDmode				\
+   || (MODE) == HFmode || (MODE) == HCmode || (MODE) == BFmode		\
+   || (MODE) == V2HImode || (MODE) == V2HFmode				\
+   || (MODE) == V1SImode || (MODE) == V4QImode || (MODE) == V2QImode	\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
 	   || (MODE) == TFmode || (MODE) == TCmode			\
 	   || (MODE) == V8QImode || (MODE) == V4HImode			\
-	   || (MODE) == V2SImode)))
+	   || (MODE) == V2SImode || (MODE) == TDmode)))
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE)						\
@@ -1055,7 +1091,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V4DImode || (MODE) == V8SFmode || (MODE) == V4DFmode	\
    || (MODE) == V2TImode || (MODE) == V8DImode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V32HImode || (MODE) == V8DFmode	\
-   || (MODE) == V16SFmode)
+   || (MODE) == V16SFmode \
+   || (MODE) == V32HFmode || (MODE) == V16HFmode || (MODE) == V8HFmode  \
+   || (MODE) == V32BFmode || (MODE) == V16BFmode || (MODE) == V8BFmode)
 
 #define X87_FLOAT_MODE_P(MODE)	\
   (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
@@ -1063,13 +1101,18 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define SSE_FLOAT_MODE_P(MODE) \
   ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
 
+#define SSE_FLOAT_MODE_SSEMATH_OR_HF_P(MODE)				\
+  ((SSE_FLOAT_MODE_P (MODE) && TARGET_SSE_MATH)				\
+   || (TARGET_AVX512FP16 && (MODE) == HFmode))
+
 #define FMA4_VEC_FLOAT_MODE_P(MODE) \
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
 #define VALID_BCST_MODE_P(MODE)			\
   ((MODE) == SFmode || (MODE) == DFmode		\
-   || (MODE) == SImode || (MODE) == DImode)
+   || (MODE) == SImode || (MODE) == DImode	\
+   || (MODE) == HFmode)
 
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
@@ -1240,6 +1283,8 @@ enum reg_class
   reg_class_subset_p ((CLASS), FLOAT_REGS)
 #define SSE_CLASS_P(CLASS) \
   reg_class_subset_p ((CLASS), ALL_SSE_REGS)
+#define INT_SSE_CLASS_P(CLASS) \
+  reg_class_subset_p ((CLASS), INT_SSE_REGS)
 #define MMX_CLASS_P(CLASS) \
   ((CLASS) == MMX_REGS)
 #define MASK_CLASS_P(CLASS) \
@@ -1366,9 +1411,12 @@ enum reg_class
 
 #define SSE_REG_P(X) (REG_P (X) && SSE_REGNO_P (REGNO (X)))
 #define SSE_REGNO_P(N)						\
-  (IN_RANGE ((N), FIRST_SSE_REG, LAST_SSE_REG)			\
+  (LEGACY_SSE_REGNO_P (N)					\
    || REX_SSE_REGNO_P (N)					\
    || EXT_REX_SSE_REGNO_P (N))
+
+#define LEGACY_SSE_REGNO_P(N) \
+  IN_RANGE ((N), FIRST_SSE_REG, LAST_SSE_REG)
 
 #define REX_SSE_REGNO_P(N) \
   IN_RANGE ((N), FIRST_REX_SSE_REG, LAST_REX_SSE_REG)
@@ -1615,7 +1663,7 @@ typedef struct ix86_args {
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 					\
@@ -1677,7 +1725,7 @@ typedef struct ix86_args {
    The other macros defined here are used only in TARGET_LEGITIMATE_ADDRESS_P,
    except for CONSTANT_ADDRESS_P which is usually machine-independent.
 
-   See legitimize_pic_address in i386.c for details as to what
+   See legitimize_pic_address in i386.cc for details as to what
    constitutes a legitimate address when -fpic is used.  */
 
 #define MAX_REGS_PER_ADDRESS 2
@@ -1685,7 +1733,7 @@ typedef struct ix86_args {
 #define CONSTANT_ADDRESS_P(X)  constant_address_p (X)
 
 /* If defined, a C expression to determine the base term of address X.
-   This macro is used in only one place: `find_base_term' in alias.c.
+   This macro is used in only one place: `find_base_term' in alias.cc.
 
    It is always safe for this macro to not be defined.  It exists so
    that alias analysis can understand machine-dependent addresses.
@@ -1700,6 +1748,8 @@ typedef struct ix86_args {
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 #define LEGITIMATE_PIC_OPERAND_P(X) legitimate_pic_operand_p (X)
+
+#define STRIP_UNARY(X) (UNARY_P (X) ? XEXP (X, 0) : X)
 
 #define SYMBOLIC_CONST(X)	\
   (GET_CODE (X) == SYMBOL_REF						\
@@ -1748,24 +1798,45 @@ typedef struct ix86_args {
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.  */
-#define MOVE_MAX 16
+/* The constant maximum number of bytes that a single instruction can
+   move quickly between memory and registers or between two memory
+   locations.  */
+#define MAX_MOVE_MAX 64
 
-/* MOVE_MAX_PIECES is the number of bytes at a time which we can
-   move efficiently, as opposed to  MOVE_MAX which is the maximum
-   number of bytes we can move with a single instruction.
+/* Max number of bytes we can move from memory to memory in one
+   reasonably fast instruction, as opposed to MOVE_MAX_PIECES which
+   is the number of bytes at a time which we can move efficiently.
+   MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
-   ??? We should use TImode in 32-bit mode and use OImode or XImode
-   if they are available.  But since by_pieces_ninsns determines the
-   widest mode with MAX_FIXED_MODE_SIZE, we can only use TImode in
-   64-bit mode.  */
-#define MOVE_MAX_PIECES \
-  ((TARGET_64BIT \
-    && TARGET_SSE2 \
-    && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
-    && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
-   ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
+#define MOVE_MAX \
+  ((TARGET_AVX512F \
+    && (ix86_move_max == PVW_AVX512 \
+	|| ix86_store_max == PVW_AVX512)) \
+   ? 64 \
+   : ((TARGET_AVX \
+       && (ix86_move_max >= PVW_AVX256 \
+	   || ix86_store_max >= PVW_AVX256)) \
+      ? 32 \
+      : ((TARGET_SSE2 \
+	  && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
+	  && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	 ? 16 : UNITS_PER_WORD)))
+
+/* STORE_MAX_PIECES is the number of bytes at a time that we can store
+   efficiently.  Allow 16/32/64 bytes only if inter-unit move is enabled
+   since vec_duplicate enabled by inter-unit move is used to implement
+   store_by_pieces of 16/32/64 bytes.  */
+#define STORE_MAX_PIECES \
+  (TARGET_INTER_UNIT_MOVES_TO_VEC \
+   ? ((TARGET_AVX512F && ix86_store_max == PVW_AVX512) \
+      ? 64 \
+      : ((TARGET_AVX \
+	  && ix86_store_max >= PVW_AVX256) \
+	  ? 32 \
+	  : ((TARGET_SSE2 \
+	      && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	      ? 16 : UNITS_PER_WORD))) \
+   : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a cpymem or libcall instead.
@@ -1959,14 +2030,14 @@ do {							\
   { "zmm28", XMM28_REG }, { "zmm29", XMM29_REG }, { "zmm30", XMM30_REG }, { "zmm31", XMM31_REG }  \
 }
 
-/* How to renumber registers for dbx and gdb.  */
+/* How to renumber registers for gdb.  */
 
-#define DBX_REGISTER_NUMBER(N) \
-  (TARGET_64BIT ? dbx64_register_map[(N)] : dbx_register_map[(N)])
+#define DEBUGGER_REGNO(N) \
+  (TARGET_64BIT ? debugger64_register_map[(N)] : debugger_register_map[(N)])
 
-extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
-extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
-extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern int const debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
+extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
@@ -2134,7 +2205,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
 
 /* Which processor to tune code generation for.  These must be in sync
-   with processor_target_table in i386.c.  */ 
+   with processor_target_table in i386.cc.  */ 
 
 enum processor_type
 {
@@ -2169,6 +2240,7 @@ enum processor_type
   PROCESSOR_ALDERLAKE,
   PROCESSOR_ROCKETLAKE,
   PROCESSOR_INTEL,
+  PROCESSOR_LUJIAZUI,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
   PROCESSOR_ATHLON,
@@ -2253,10 +2325,10 @@ constexpr wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT
   | PTA_PCONFIG | PTA_WBNOINVD | PTA_CLWB;
 constexpr wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_CLWB | PTA_AVX512VP2INTERSECT | PTA_KL | PTA_WIDEKL;
-constexpr wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
-  | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
-  | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE
-  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI;
+constexpr wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_ICELAKE_SERVER | PTA_MOVDIRI
+  | PTA_MOVDIR64B | PTA_ENQCMD | PTA_CLDEMOTE | PTA_PTWRITE | PTA_WAITPKG
+  | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE | PTA_AMX_INT8 | PTA_AMX_BF16
+  | PTA_UINTR | PTA_AVXVNNI | PTA_AVX512FP16 | PTA_AVX512BF16;
 constexpr wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF
   | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD | PTA_PREFETCHWT1;
 constexpr wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
@@ -2344,6 +2416,7 @@ enum ix86_stack_slot
   SLOT_CW_FLOOR,
   SLOT_CW_CEIL,
   SLOT_STV_TEMP,
+  SLOT_FLOATxFDI_387,
   MAX_386_STACK_LOCALS
 };
 
@@ -2532,7 +2605,7 @@ struct GTY(()) machine_frame_state
   HOST_WIDE_INT sp_realigned_offset;
 };
 
-/* Private to winnt.c.  */
+/* Private to winnt.cc.  */
 struct seh_frame_state;
 
 enum function_type
@@ -2775,6 +2848,12 @@ extern void debug_dispatch_window (int);
 extern enum attr_cpu ix86_schedule;
 
 #define NUM_X86_64_MS_CLOBBERED_REGS 12
+#endif
+
+/* __builtin_eh_return can't handle stack realignment, so disable MMX/SSE
+   in 32-bit libgcc functions that call it.  */
+#ifndef __x86_64__
+#define LIBGCC2_UNWIND_ATTRIBUTE __attribute__((target ("no-mmx,no-sse")))
 #endif
 
 /*

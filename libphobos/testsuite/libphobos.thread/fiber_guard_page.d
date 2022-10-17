@@ -4,6 +4,9 @@ import core.thread;
 import core.sys.posix.signal;
 import core.sys.posix.sys.mman;
 
+version (LDC) import ldc.attributes;
+else struct optStrategy { string a; }
+
 // this should be true for most architectures
 // (taken from core.thread)
 version (GNU_StackGrowsDown)
@@ -12,6 +15,7 @@ version (GNU_StackGrowsDown)
 enum stackSize = MINSIGSTKSZ;
 
 // Simple method that causes a stack overflow
+@optStrategy("none")
 void stackMethod()
 {
     // Over the stack size, so it overflows the stack

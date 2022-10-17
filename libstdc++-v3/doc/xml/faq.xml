@@ -580,7 +580,7 @@
          <varname>CPLUSPLUS_CPP_SPEC</varname> in
          the gcc config headers for your target (and try changing them to
          see what happens when building complicated code).  You can also run
-         <command>g++ -E -dM - &lt; /dev/null"</command> to display
+         <command>g++ -E -dM -x c++ /dev/null</command> to display
          a list of predefined macros for any particular installation.
       </para>
       <para>This has been discussed on the mailing lists

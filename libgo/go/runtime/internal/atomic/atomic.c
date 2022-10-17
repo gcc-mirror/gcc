@@ -104,6 +104,16 @@ Loaduint (uintgo *ptr)
   return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
 }
 
+int32_t Loadint32 (int32_t *ptr)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Loadint32")
+  __attribute__ ((no_split_stack));
+
+int32_t
+Loadint32 (int32_t *ptr)
+{
+  return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
+}
+
 int64_t Loadint64 (int64_t *ptr)
   __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Loadint64")
   __attribute__ ((no_split_stack));
@@ -124,6 +134,16 @@ uint32_t
 Xadd (uint32_t *ptr, int32_t delta)
 {
   return __atomic_add_fetch (ptr, (uint32_t) delta, __ATOMIC_SEQ_CST);
+}
+
+int32_t Xaddint32 (int32_t *ptr, int32_t delta)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Xaddint32")
+  __attribute__ ((no_split_stack));
+
+int32_t
+Xaddint32 (int32_t *ptr, int32_t delta)
+{
+  return __atomic_add_fetch (ptr, delta, __ATOMIC_SEQ_CST);
 }
 
 uint64_t Xadd64 (uint64_t *ptr, int64_t delta)
@@ -170,6 +190,16 @@ Xchg (uint32_t *ptr, uint32_t new)
   return __atomic_exchange_n (ptr, new, __ATOMIC_SEQ_CST);
 }
 
+int32_t Xchgint32 (int32_t *ptr, int32_t new)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Xchgint32")
+  __attribute__ ((no_split_stack));
+
+int32_t
+Xchgint32 (int32_t *ptr, int32_t new)
+{
+  return __atomic_exchange_n (ptr, new, __ATOMIC_SEQ_CST);
+}
+
 uint64_t Xchg64 (uint64_t *ptr, uint64_t new)
   __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Xchg64")
   __attribute__ ((no_split_stack));
@@ -179,6 +209,16 @@ Xchg64 (uint64_t *ptr, uint64_t new)
 {
   if (((uintptr_t) ptr & 7) != 0)
     panicUnaligned ();
+  return __atomic_exchange_n (ptr, new, __ATOMIC_SEQ_CST);
+}
+
+int64_t Xchgint64 (int64_t *ptr, int64_t new)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Xchgint64")
+  __attribute__ ((no_split_stack));
+
+int64_t
+Xchgint64 (int64_t *ptr, int64_t new)
+{
   return __atomic_exchange_n (ptr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -264,6 +304,26 @@ CasRel (uint32_t *ptr, uint32_t old, uint32_t new)
   return __atomic_compare_exchange_n (ptr, &old, new, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
 }
 
+_Bool Casint32 (int32_t *ptr, int32_t old, int32_t new)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Casint32")
+  __attribute__ ((no_split_stack));
+
+_Bool
+Casint32 (int32_t *ptr, int32_t old, int32_t new)
+{
+  return __atomic_compare_exchange_n (ptr, &old, new, false, __ATOMIC_SEQ_CST, __ATOMIC_RELAXED);
+}
+
+_Bool Casint64 (int64_t *ptr, int64_t old, int64_t new)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Casint64")
+  __attribute__ ((no_split_stack));
+
+_Bool
+Casint64 (int64_t *ptr, int64_t old, int64_t new)
+{
+  return __atomic_compare_exchange_n (ptr, &old, new, false, __ATOMIC_SEQ_CST, __ATOMIC_RELAXED);
+}
+
 _Bool Casp1 (void **ptr, void *old, void *new)
   __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Casp1")
   __attribute__ ((no_split_stack));
@@ -304,6 +364,16 @@ Store8 (uint8_t *ptr, uint8_t val)
   __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
 }
 
+void Storeint32 (int32_t *ptr, int32_t val)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Storeint32")
+  __attribute__ ((no_split_stack));
+
+void
+Storeint32 (int32_t *ptr, int32_t val)
+{
+  __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
+}
+
 void Store64 (uint64_t *ptr, uint64_t val)
   __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Store64")
   __attribute__ ((no_split_stack));
@@ -336,6 +406,16 @@ StoreRel64 (uint64_t *ptr, uint64_t val)
   if (((uintptr_t) ptr & 7) != 0)
     panicUnaligned ();
   __atomic_store_n (ptr, val, __ATOMIC_RELEASE);
+}
+
+void Storeint64 (int64_t *ptr, int64_t val)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Storeint64")
+  __attribute__ ((no_split_stack));
+
+void
+Storeint64 (int64_t *ptr, int64_t val)
+{
+  __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
 }
 
 void StoreReluintptr (uintptr_t *ptr, uintptr_t val)

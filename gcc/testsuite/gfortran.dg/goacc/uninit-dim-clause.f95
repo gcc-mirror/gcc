@@ -6,6 +6,9 @@
 subroutine acc_parallel
   implicit none
   integer :: i, j, k
+  ! { dg-note {'i' was declared here} {} { target *-*-* } .-1 }
+  ! { dg-note {'j' was declared here} {} { target *-*-* } .-2 }
+  ! { dg-note {'k' was declared here} {} { target *-*-* } .-3 }
 
   !$acc parallel num_gangs(i) ! { dg-warning "is used uninitialized" }
   ! { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-1 }
@@ -23,6 +26,9 @@ end subroutine acc_parallel
 subroutine acc_kernels
   implicit none
   integer :: i, j, k
+  ! { dg-note {'i' was declared here} {} { target *-*-* } .-1 }
+  ! { dg-note {'j' was declared here} {} { target *-*-* } .-2 }
+  ! { dg-note {'k' was declared here} {} { target *-*-* } .-3 }
 
   !$acc kernels num_gangs(i) ! { dg-warning "is used uninitialized" }
   !$acc end kernels

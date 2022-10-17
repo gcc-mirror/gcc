@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,10 +54,18 @@ void test02()
   std::visit<const void>(Visitor(), v);
 }
 
+void test03()
+{
+  // PR libstdc++/106589 - visit<void> rejects lambdas that do not return void
+  auto visitor = []{ return 0; };
+  std::visit<void>(visitor);
+  std::visit<void>(static_cast<int(*)()>(visitor));
+}
 
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

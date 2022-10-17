@@ -1260,6 +1260,16 @@ Assignment_operation_statement::do_lower(Gogo*, Named_object*,
   Move_ordered_evals moe(b);
   this->lhs_->traverse_subexpressions(&moe);
 
+  // We can still be left with subexpressions that have to be loaded
+  // even if they don't have side effects themselves, in case the RHS
+  // changes variables named on the LHS.
+  int i;
+  if (this->lhs_->must_eval_subexpressions_in_order(&i))
+    {
+      Move_subexpressions ms(i, b);
+      this->lhs_->traverse_subexpressions(&ms);
+    }
+
   Expression* lval = this->lhs_->copy();
 
   Operator op;
@@ -1584,9 +1594,9 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
 
   // var present_temp bool
   Temporary_statement* present_temp =
-    Statement::make_temporary((this->present_->type()->is_sink_type())
-			      ? Type::make_boolean_type()
-			      : this->present_->type(),
+    Statement::make_temporary((this->present_->type()->is_boolean_type()
+			       ? this->present_->type()
+			       : Type::lookup_bool_type()),
 			      NULL, loc);
   b->add_statement(present_temp);
 
@@ -1779,9 +1789,9 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 
   // var closed_temp bool
   Temporary_statement* closed_temp =
-    Statement::make_temporary((this->closed_->type()->is_sink_type())
-			      ? Type::make_boolean_type()
-			      : this->closed_->type(),
+    Statement::make_temporary((this->closed_->type()->is_boolean_type()
+			       ? this->closed_->type()
+			       : Type::lookup_bool_type()),
 			      NULL, loc);
   b->add_statement(closed_temp);
 
@@ -1955,6 +1965,8 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
       b->add_statement(s);
 
       res = Expression::make_call_result(call, 1);
+      if (!this->ok_->type()->is_boolean_type())
+	res = Expression::make_cast(Type::lookup_bool_type(), res, loc);
       s = Statement::make_assignment(this->ok_, res, loc);
       b->add_statement(s);
     }
@@ -1991,7 +2003,9 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
   Temporary_statement* ok_temp = NULL;
   if (!this->ok_->is_sink_expression())
     {
-      ok_temp = Statement::make_temporary(this->ok_->type(),
+      ok_temp = Statement::make_temporary((this->ok_->type()->is_boolean_type()
+					   ? this->ok_->type()
+					   : Type::lookup_bool_type()),
 					  NULL, loc);
       b->add_statement(ok_temp);
     }
@@ -2335,7 +2349,7 @@ Thunk_statement::Thunk_statement(Statement_classification classification,
 				 Call_expression* call,
 				 Location location)
     : Statement(classification, location),
-      call_(call), struct_type_(NULL)
+      call_(call)
 {
 }
 
@@ -2416,15 +2430,6 @@ void
 Thunk_statement::do_determine_types()
 {
   this->call_->determine_type_no_context();
-
-  // Now that we know the types of the call, build the struct used to
-  // pass parameters.
-  Call_expression* ce = this->call_->call_expression();
-  if (ce == NULL)
-    return;
-  Function_type* fntype = ce->get_function_type();
-  if (fntype != NULL && !this->is_simple(fntype))
-    this->struct_type_ = this->build_struct(fntype);
 }
 
 // Check types in a thunk statement.
@@ -2567,6 +2572,8 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   if (this->is_simple(fntype))
     return false;
 
+  Struct_type* struct_type = this->build_struct(fntype);
+
   Expression* fn = ce->fn();
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
@@ -2586,7 +2593,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   std::string thunk_name = gogo->thunk_name();
 
   // Build the thunk.
-  this->build_thunk(gogo, thunk_name);
+  this->build_thunk(gogo, thunk_name, struct_type);
 
   // Generate code to call the thunk.
 
@@ -2616,8 +2623,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   // Build the struct.
   Expression* constructor =
-    Expression::make_struct_composite_literal(this->struct_type_, vals,
-					      location);
+    Expression::make_struct_composite_literal(struct_type, vals, location);
 
   // Allocate the initialized struct on the heap.
   constructor = Expression::make_heap_expression(constructor, location);
@@ -2731,15 +2737,6 @@ Thunk_statement::build_struct(Function_type* fntype)
       fields->push_back(Struct_field(tid));
     }
 
-  // The predeclared recover function has no argument.  However, we
-  // add an argument when building recover thunks.  Handle that here.
-  if (ce->is_recover_call())
-    {
-      fields->push_back(Struct_field(Typed_identifier("can_recover",
-						      Type::lookup_bool_type(),
-						      location)));
-    }
-
   const Expression_list* args = ce->args();
   if (args != NULL)
     {
@@ -2767,7 +2764,8 @@ Thunk_statement::build_struct(Function_type* fntype)
 // artificial, function.
 
 void
-Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
+Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
+			     Struct_type* struct_type)
 {
   Location location = this->location();
 
@@ -2793,7 +2791,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   // which is a pointer to the special structure we build.
   const char* const parameter_name = "__go_thunk_parameter";
   Typed_identifier_list* thunk_parameters = new Typed_identifier_list();
-  Type* pointer_to_struct_type = Type::make_pointer_type(this->struct_type_);
+  Type* pointer_to_struct_type = Type::make_pointer_type(struct_type);
   thunk_parameters->push_back(Typed_identifier(parameter_name,
 					       pointer_to_struct_type,
 					       location));
@@ -2900,7 +2898,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
     }
 
   Expression_list* call_params = new Expression_list();
-  const Struct_field_list* fields = this->struct_type_->fields();
+  const Struct_field_list* fields = struct_type->fields();
   Struct_field_list::const_iterator p = fields->begin();
   for (unsigned int i = 0; i < next_index; ++i)
     ++p;
@@ -6051,7 +6049,7 @@ Select_statement::lower_two_case(Block* b)
   Expression* chanref = Expression::make_temporary_reference(chantmp, loc);
 
   Block* bchan;
-  Expression* call;
+  Expression* cond;
   if (chancase.is_send())
     {
       // if selectnbsend(chan, &val) { body } else { default body }
@@ -6065,7 +6063,7 @@ Select_statement::lower_two_case(Block* b)
 
       Expression* ref = Expression::make_temporary_reference(ts, loc);
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
-      call = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
+      cond = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
       bchan = chancase.statements();
     }
   else
@@ -6075,34 +6073,31 @@ Select_statement::lower_two_case(Block* b)
 
       Expression* ref = Expression::make_temporary_reference(ts, loc);
       Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
-      Expression* okref = NULL;
-      if (chancase.closed() == NULL && chancase.closedvar() == NULL)
-        {
-          // Simple receive.
-          // if selectnbrecv(&lhs, chan) { body } else { default body }
-          call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2, addr, chanref);
-        }
-      else
-        {
-          // Tuple receive.
-          // if selectnbrecv2(&lhs, &ok, chan) { body } else { default body }
 
-          Type* booltype = Type::make_boolean_type();
-          Temporary_statement* okts = Statement::make_temporary(booltype, NULL,
-                                                                loc);
-          b->add_statement(okts);
+      // selected, ok = selectnbrecv(&lhs, chan)
+      Call_expression* call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2,
+						 addr, chanref);
 
-          okref = Expression::make_temporary_reference(okts, loc);
-          Expression* okaddr = Expression::make_unary(OPERATOR_AND, okref, loc);
-          call = Runtime::make_call(Runtime::SELECTNBRECV2, loc, 3, addr, okaddr,
-                                    chanref);
-        }
+      Temporary_statement* selected_temp =
+	Statement::make_temporary(Type::make_boolean_type(),
+				  Expression::make_call_result(call, 0),
+				  loc);
+      b->add_statement(selected_temp);
+
+      Temporary_statement* ok_temp =
+	Statement::make_temporary(Type::make_boolean_type(),
+				  Expression::make_call_result(call, 1),
+				  loc);
+      b->add_statement(ok_temp);
+
+      cond = Expression::make_temporary_reference(selected_temp, loc);
 
       Location cloc = chancase.location();
       bchan = new Block(b, loc);
       if (chancase.val() != NULL && !chancase.val()->is_sink_expression())
         {
-          Statement* as = Statement::make_assignment(chancase.val(), ref->copy(),
+          Statement* as = Statement::make_assignment(chancase.val(),
+						     ref->copy(),
                                                      cloc);
           bchan->add_statement(as);
         }
@@ -6114,12 +6109,18 @@ Select_statement::lower_two_case(Block* b)
 
       if (chancase.closed() != NULL && !chancase.closed()->is_sink_expression())
         {
+	  Expression* okref = Expression::make_temporary_reference(ok_temp,
+								   cloc);
           Statement* as = Statement::make_assignment(chancase.closed(),
-                                                     okref->copy(), cloc);
+                                                     okref, cloc);
           bchan->add_statement(as);
         }
       else if (chancase.closedvar() != NULL)
-        chancase.closedvar()->var_value()->set_init(okref->copy());
+	{
+	  Expression* okref = Expression::make_temporary_reference(ok_temp,
+								   cloc);
+	  chancase.closedvar()->var_value()->set_init(okref);
+	}
 
       Statement* bs = Statement::make_block_statement(chancase.statements(),
                                                       cloc);
@@ -6127,7 +6128,7 @@ Select_statement::lower_two_case(Block* b)
     }
 
   Statement* ifs =
-    Statement::make_if_statement(call, bchan, defcase.statements(), loc);
+    Statement::make_if_statement(cond, bchan, defcase.statements(), loc);
   b->add_statement(ifs);
 
   Statement* label =

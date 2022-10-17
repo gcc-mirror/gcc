@@ -2,7 +2,7 @@
 
 /**
  * Implements functionality to read Comma Separated Values and its variants
- * from an input range of $(D dchar).
+ * from an $(REF_ALTTEXT input range, isInputRange, std,range,primitives) of `dchar`.
  *
  * Comma Separated Values provide a simple means to transfer and store
  * tabular data. It has been common for programs to use their own
@@ -53,15 +53,27 @@
  * }
  * -------
  *
- * When an input contains a header the $(D Contents) can be specified as an
+ * When an input contains a header the `Contents` can be specified as an
  * associative array. Passing null to signify that a header is present.
  *
  * -------
- * auto text = "Name,Occupation,Salary\r"
+ * auto text = "Name,Occupation,Salary\r" ~
  *     "Joe,Carpenter,300000\nFred,Blacksmith,400000\r\n";
  *
  * foreach (record; csvReader!(string[string])
  *         (text, null))
+ * {
+ *     writefln("%s works as a %s and earns $%s per year.",
+ *              record["Name"], record["Occupation"],
+ *              record["Salary"]);
+ * }
+ *
+ * // To read the same string from the file "filename.csv":
+ *
+ * auto file = File("filename.csv", "r");
+ *
+ * foreach (record; csvReader!(string[string])
+ *         (file.byLine.joiner("\n"), null))
  * {
  *     writefln("%s works as a %s and earns $%s per year.",
  *              record["Name"], record["Occupation"],
@@ -87,12 +99,12 @@
  *   Copyright: Copyright 2011
  *   License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  *   Authors:   Jesse Phillips
- *   Source:    $(PHOBOSSRC std/_csv.d)
+ *   Source:    $(PHOBOSSRC std/csv.d)
  */
 module std.csv;
 
 import std.conv;
-import std.exception;  // basicExceptionCtors
+import std.exception : basicExceptionCtors;
 import std.range.primitives;
 import std.traits;
 
@@ -105,14 +117,15 @@ import std.traits;
  * HeaderMismatchException) for details.
  *
  * When performing type conversions, $(REF ConvException, std,conv) is stored in
- * the $(D next) field.
+ * the `next` field.
  */
 class CSVException : Exception
 {
     ///
     size_t row, col;
 
-    // FIXME: Use std.exception.basicExceptionCtors here once bug #11500 is fixed
+    // FIXME: Use std.exception.basicExceptionCtors here once
+    // https://issues.dlang.org/show_bug.cgi?id=11500 is fixed
 
     this(string msg, string file = __FILE__, size_t line = __LINE__,
          Throwable next = null) @nogc @safe pure nothrow
@@ -139,6 +152,27 @@ class CSVException : Exception
         return "(Row: " ~ to!string(row) ~
               ", Col: " ~ to!string(col) ~ ") " ~ msg;
     }
+}
+
+///
+@safe unittest
+{
+    import std.exception : collectException;
+    import std.algorithm.searching : count;
+    string text = "a,b,c\nHello,65";
+    auto ex = collectException!CSVException(csvReader(text).count);
+    assert(ex.toString == "(Row: 0, Col: 0) Row 2's length 2 does not match previous length of 3.");
+}
+
+///
+@safe unittest
+{
+    import std.exception : collectException;
+    import std.algorithm.searching : count;
+    import std.typecons : Tuple;
+    string text = "a,b\nHello,65";
+    auto ex = collectException!CSVException(csvReader!(Tuple!(string,int))(text).count);
+    assert(ex.toString == "(Row: 1, Col: 2) Unexpected 'b' when converting from type string to type int");
 }
 
 @safe pure unittest
@@ -179,6 +213,14 @@ class IncompleteCellException : CSVException
     mixin basicExceptionCtors;
 }
 
+///
+@safe unittest
+{
+    import std.exception : assertThrown;
+    string text = "a,\"b,c\nHello,65,2.5";
+    assertThrown!IncompleteCellException(text.csvReader(["a","b","c"]));
+}
+
 @safe pure unittest
 {
     auto e1 = new Exception("Foobar");
@@ -211,6 +253,14 @@ class HeaderMismatchException : CSVException
     mixin basicExceptionCtors;
 }
 
+///
+@safe unittest
+{
+    import std.exception : assertThrown;
+    string text = "a,b,c\nHello,65,2.5";
+    assertThrown!HeaderMismatchException(text.csvReader(["b","c","invalid"]));
+}
+
 @safe pure unittest
 {
     auto e1 = new Exception("Foobar");
@@ -240,188 +290,252 @@ enum Malformed
     throwException    /// Use exceptions when input has incorrect CSV.
 }
 
+///
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.algorithm.searching : count;
+    import std.exception : assertThrown;
+
+    string text = "a,b,c\nHello,65,\"2.5";
+    assertThrown!IncompleteCellException(text.csvReader.count);
+
+    // ignore the exceptions and try to handle invalid CSV
+    auto firstLine = text.csvReader!(string, Malformed.ignore)(null).front;
+    assert(firstLine.equal(["Hello", "65", "2.5"]));
+}
+
 /**
- * Returns an input range for iterating over records found in $(D
- * input).
- *
- * The $(D Contents) of the input can be provided if all the records are the
- * same type such as all integer data:
- *
- * -------
- * string str = `76,26,22`;
- * int[] ans = [76,26,22];
- * auto records = csvReader!int(str);
- *
- * foreach (record; records)
- * {
- *     assert(equal(record, ans));
- * }
- * -------
- *
- * Example using a struct with modified delimiter:
- *
- * -------
- * string str = "Hello;65;63.63\nWorld;123;3673.562";
- * struct Layout
- * {
- *     string name;
- *     int value;
- *     double other;
- * }
- *
- * auto records = csvReader!Layout(str,';');
- *
- * foreach (record; records)
- * {
- *     writeln(record.name);
- *     writeln(record.value);
- *     writeln(record.other);
- * }
- * -------
- *
- * Specifying $(D ErrorLevel) as Malformed.ignore will lift restrictions
- * on the format. This example shows that an exception is not thrown when
- * finding a quote in a field not quoted.
- *
- * -------
- * string str = "A \" is now part of the data";
- * auto records = csvReader!(string,Malformed.ignore)(str);
- * auto record = records.front;
- *
- * assert(record.front == str);
- * -------
- *
- * Returns:
- *        An input range R as defined by
- *        $(REF isInputRange, std,range,primitives). When $(D Contents) is a
- *        struct, class, or an associative array, the element type of R is
- *        $(D Contents), otherwise the element type of R is itself a range with
- *        element type $(D Contents).
- *
- * Throws:
- *       $(LREF CSVException) When a quote is found in an unquoted field,
- *       data continues after a closing quote, the quoted field was not
- *       closed before data was empty, a conversion failed, or when the row's
- *       length does not match the previous length.
- *
- *       $(LREF HeaderMismatchException)  when a header is provided but a
- *       matching column is not found or the order did not match that found in
- *       the input. Read the exception documentation for specific details of
- *       when the exception is thrown for different types of $(D Contents).
- */
+Returns an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+for iterating over records found in `input`.
+
+An optional `header` can be provided. The first record will be read in
+as the header. If `Contents` is a struct then the header provided is
+expected to correspond to the fields in the struct. When `Contents` is
+not a type which can contain the entire record, the `header` must be
+provided in the same order as the input or an exception is thrown.
+
+Returns:
+       An input range R as defined by
+       $(REF isInputRange, std,range,primitives). When `Contents` is a
+       struct, class, or an associative array, the element type of R is
+       `Contents`, otherwise the element type of R is itself a range with
+       element type `Contents`.
+
+       If a `header` argument is provided,
+       the returned range provides a `header` field for accessing the header
+       from the input in array form.
+
+Throws:
+      $(LREF CSVException) When a quote is found in an unquoted field,
+      data continues after a closing quote, the quoted field was not
+      closed before data was empty, a conversion failed, or when the row's
+      length does not match the previous length.
+
+      $(LREF HeaderMismatchException)  when a header is provided but a
+      matching column is not found or the order did not match that found in
+      the input. Read the exception documentation for specific details of
+      when the exception is thrown for different types of `Contents`.
+*/
 auto csvReader(Contents = string,Malformed ErrorLevel = Malformed.throwException, Range, Separator = char)(Range input,
-                 Separator delimiter = ',', Separator quote = '"')
-if (isInputRange!Range && is(Unqual!(ElementType!Range) == dchar)
+                 Separator delimiter = ',', Separator quote = '"',
+                 bool allowInconsistentDelimiterCount = false)
+if (isInputRange!Range && is(immutable ElementType!Range == immutable dchar)
     && isSomeChar!(Separator)
     && !is(Contents T : T[U], U : string))
 {
     return CsvReader!(Contents,ErrorLevel,Range,
                     Unqual!(ElementType!Range),string[])
-        (input, delimiter, quote);
+        (input, delimiter, quote, allowInconsistentDelimiterCount);
 }
 
-/**
- * An optional $(D header) can be provided. The first record will be read in
- * as the header. If $(D Contents) is a struct then the header provided is
- * expected to correspond to the fields in the struct. When $(D Contents) is
- * not a type which can contain the entire record, the $(D header) must be
- * provided in the same order as the input or an exception is thrown.
- *
- * Read only column "b":
- *
- * -------
- * string str = "a,b,c\nHello,65,63.63\nWorld,123,3673.562";
- * auto records = csvReader!int(str, ["b"]);
- *
- * auto ans = [[65],[123]];
- * foreach (record; records)
- * {
- *     assert(equal(record, ans.front));
- *     ans.popFront();
- * }
- * -------
- *
- * Read from header of different order:
- *
- * -------
- * string str = "a,b,c\nHello,65,63.63\nWorld,123,3673.562";
- * struct Layout
- * {
- *     int value;
- *     double other;
- *     string name;
- * }
- *
- * auto records = csvReader!Layout(str, ["b","c","a"]);
- * -------
- *
- * The header can also be left empty if the input contains a header but
- * all columns should be iterated. The header from the input can always
- * be accessed from the header field.
- *
- * -------
- * string str = "a,b,c\nHello,65,63.63\nWorld,123,3673.562";
- * auto records = csvReader(str, null);
- *
- * assert(records.header == ["a","b","c"]);
- * -------
- *
- * Returns:
- *        An input range R as defined by
- *        $(REF isInputRange, std,range,primitives). When $(D Contents) is a
- *        struct, class, or an associative array, the element type of R is
- *        $(D Contents), otherwise the element type of R is itself a range with
- *        element type $(D Contents).
- *
- *        The returned range provides a header field for accessing the header
- *        from the input in array form.
- *
- * -------
- * string str = "a,b,c\nHello,65,63.63";
- * auto records = csvReader(str, ["a"]);
- *
- * assert(records.header == ["a","b","c"]);
- * -------
- *
- * Throws:
- *       $(LREF CSVException) When a quote is found in an unquoted field,
- *       data continues after a closing quote, the quoted field was not
- *       closed before data was empty, a conversion failed, or when the row's
- *       length does not match the previous length.
- *
- *       $(LREF HeaderMismatchException)  when a header is provided but a
- *       matching column is not found or the order did not match that found in
- *       the input. Read the exception documentation for specific details of
- *       when the exception is thrown for different types of $(D Contents).
- */
+/// ditto
 auto csvReader(Contents = string,
                Malformed ErrorLevel = Malformed.throwException,
                Range, Header, Separator = char)
                 (Range input, Header header,
-                 Separator delimiter = ',', Separator quote = '"')
-if (isInputRange!Range && is(Unqual!(ElementType!Range) == dchar)
+                 Separator delimiter = ',', Separator quote = '"',
+                 bool allowInconsistentDelimiterCount = false)
+if (isInputRange!Range && is(immutable ElementType!Range == immutable dchar)
     && isSomeChar!(Separator)
     && isForwardRange!Header
     && isSomeString!(ElementType!Header))
 {
     return CsvReader!(Contents,ErrorLevel,Range,
                     Unqual!(ElementType!Range),Header)
-        (input, header, delimiter, quote);
+        (input, header, delimiter, quote, allowInconsistentDelimiterCount);
 }
 
-///
+/// ditto
 auto csvReader(Contents = string,
                Malformed ErrorLevel = Malformed.throwException,
                Range, Header, Separator = char)
                 (Range input, Header header,
-                 Separator delimiter = ',', Separator quote = '"')
-if (isInputRange!Range && is(Unqual!(ElementType!Range) == dchar)
+                 Separator delimiter = ',', Separator quote = '"',
+                 bool allowInconsistentDelimiterCount = false)
+if (isInputRange!Range && is(immutable ElementType!Range == immutable dchar)
     && isSomeChar!(Separator)
     && is(Header : typeof(null)))
 {
     return CsvReader!(Contents,ErrorLevel,Range,
                     Unqual!(ElementType!Range),string[])
-        (input, cast(string[]) null, delimiter, quote);
+        (input, cast(string[]) null, delimiter, quote,
+         allowInconsistentDelimiterCount);
+}
+
+
+/**
+The `Contents` of the input can be provided if all the records are the
+same type such as all integer data:
+*/
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    string text = "76,26,22";
+    auto records = text.csvReader!int;
+    assert(records.equal!equal([
+        [76, 26, 22],
+    ]));
+}
+
+/**
+Using a struct with modified delimiter:
+*/
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    string text = "Hello;65;2.5\nWorld;123;7.5";
+    struct Layout
+    {
+        string name;
+        int value;
+        double other;
+    }
+
+    auto records = text.csvReader!Layout(';');
+    assert(records.equal([
+        Layout("Hello", 65, 2.5),
+        Layout("World", 123, 7.5),
+    ]));
+}
+
+/**
+Specifying `ErrorLevel` as $(LREF Malformed.ignore) will lift restrictions
+on the format. This example shows that an exception is not thrown when
+finding a quote in a field not quoted.
+*/
+@safe unittest
+{
+    string text = "A \" is now part of the data";
+    auto records = text.csvReader!(string, Malformed.ignore);
+    auto record = records.front;
+
+    assert(record.front == text);
+}
+
+/// Read only column "b"
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    string text = "a,b,c\nHello,65,63.63\nWorld,123,3673.562";
+    auto records = text.csvReader!int(["b"]);
+
+    assert(records.equal!equal([
+        [65],
+        [123],
+    ]));
+}
+
+/// Read while rearranging the columns by specifying a header with a different order"
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    string text = "a,b,c\nHello,65,2.5\nWorld,123,7.5";
+    struct Layout
+    {
+        int value;
+        double other;
+        string name;
+    }
+
+    auto records = text.csvReader!Layout(["b","c","a"]);
+    assert(records.equal([
+        Layout(65, 2.5, "Hello"),
+        Layout(123, 7.5, "World")
+    ]));
+}
+
+/**
+The header can also be left empty if the input contains a header row
+and all columns should be iterated.
+The header from the input can always be accessed from the `header` field.
+*/
+@safe unittest
+{
+    string text = "a,b,c\nHello,65,63.63";
+    auto records = text.csvReader(null);
+
+    assert(records.header == ["a","b","c"]);
+}
+
+/**
+Handcrafted csv files tend to have an variable amount of columns.
+
+By default `std.csv` will throw if the number of columns on a line
+is unequal to the number of columns of the first line.
+To allow, or disallow, a variable amount of columns a `bool` can be passed to
+all overloads of the `csvReader` function as shown below.
+*/
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+
+    string text = "76,26,22\n1,2\n3,4,5,6";
+    auto records = text.csvReader!int(',', '"', true);
+
+    assert(records.equal!equal([
+        [76, 26, 22],
+        [1, 2],
+        [3, 4, 5, 6]
+    ]));
+}
+
+/// ditto
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+
+    static struct Three
+    {
+        int a;
+        int b;
+        int c;
+    }
+
+    string text = "76,26,22\n1,2\n3,4,5,6";
+    auto records = text.csvReader!Three(',', '"', true);
+
+    assert(records.equal([
+        Three(76, 26, 22),
+        Three(1, 2, 0),
+        Three(3, 4, 5)
+    ]));
+}
+
+/// ditto
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+
+    auto text = "Name,Occupation,Salary\r" ~
+        "Joe,Carpenter,300000\nFred,Blacksmith\r\n";
+
+    auto r = csvReader!(string[string])(text, null, ',', '"', true);
+
+    assert(r.equal([
+        [ "Name" : "Joe", "Occupation" : "Carpenter", "Salary" : "300000" ],
+        [ "Name" : "Fred", "Occupation" : "Blacksmith" ]
+    ]));
 }
 
 // Test standard iteration over input.
@@ -506,7 +620,7 @@ if (isInputRange!Range && is(Unqual!(ElementType!Range) == dchar)
 // Test structure conversion interface with unicode.
 @safe pure unittest
 {
-    import std.math : abs;
+    import std.math.algebraic : abs;
 
     wstring str = "\U00010143Hello,65,63.63\nWorld,123,3673.562"w;
     struct Layout
@@ -554,7 +668,7 @@ if (isInputRange!Range && is(Unqual!(ElementType!Range) == dchar)
 // Test struct & header interface and same unicode
 @safe unittest
 {
-    import std.math : abs;
+    import std.math.algebraic : abs;
 
     string str = "a,b,c\nHello,65,63.63\n➊➋➂❹,123,3673.562";
     struct Layout
@@ -779,12 +893,12 @@ private pure struct Input(Range, Malformed ErrorLevel)
  * Range for iterating CSV records.
  *
  * This range is returned by the $(LREF csvReader) functions. It can be
- * created in a similar manner to allow $(D ErrorLevel) be set to $(LREF
+ * created in a similar manner to allow `ErrorLevel` be set to $(LREF
  * Malformed).ignore if best guess processing should take place.
  */
 private struct CsvReader(Contents, Malformed ErrorLevel, Range, Separator, Header)
 if (isSomeChar!Separator && isInputRange!Range
-    && is(Unqual!(ElementType!Range) == dchar)
+    && is(immutable ElementType!Range == immutable dchar)
     && isForwardRange!Header && isSomeString!(ElementType!Header))
 {
 private:
@@ -793,6 +907,7 @@ private:
     Separator _quote;
     size_t[] indices;
     bool _empty;
+    bool _allowInconsistentDelimiterCount;
     static if (is(Contents == struct) || is(Contents == class))
     {
         Contents recordContent;
@@ -834,11 +949,19 @@ public:
      * }
      * -------
      */
-    this(Range input, Separator delimiter, Separator quote)
+    this(Range input, Separator delimiter, Separator quote,
+            bool allowInconsistentDelimiterCount)
     {
         _input = new Input!(Range, ErrorLevel)(input);
         _separator = delimiter;
         _quote = quote;
+        _allowInconsistentDelimiterCount = allowInconsistentDelimiterCount;
+
+        if (_input.range.empty)
+        {
+            _empty = true;
+            return;
+        }
 
         prime();
     }
@@ -864,11 +987,19 @@ public:
      *       matching column is not found or the order did not match that found
      *       in the input (non-struct).
      */
-    this(Range input, Header colHeaders, Separator delimiter, Separator quote)
+    this(Range input, Header colHeaders, Separator delimiter, Separator quote,
+            bool allowInconsistentDelimiterCount)
     {
         _input = new Input!(Range, ErrorLevel)(input);
         _separator = delimiter;
         _quote = quote;
+        _allowInconsistentDelimiterCount = allowInconsistentDelimiterCount;
+
+        if (_input.range.empty)
+        {
+            _empty = true;
+            return;
+        }
 
         size_t[string] colToIndex;
         foreach (h; colHeaders)
@@ -877,7 +1008,8 @@ public:
         }
 
         auto r = CsvRecord!(string, ErrorLevel, Range, Separator)
-            (_input, _separator, _quote, indices);
+            (_input, _separator, _quote, indices,
+             _allowInconsistentDelimiterCount);
 
         size_t colIndex;
         foreach (col; r)
@@ -890,6 +1022,8 @@ public:
         }
         // The above loop empties the header row.
         recordRange._empty = true;
+        recordRange._allowInconsistentDelimiterCount =
+            allowInconsistentDelimiterCount;
 
         indices.length = colToIndex.length;
         int i;
@@ -940,19 +1074,19 @@ public:
      * $(REF isInputRange, std,range,primitives).
      *
      * Returns:
-     *      If $(D Contents) is a struct, will be filled with record data.
+     *      If `Contents` is a struct, will be filled with record data.
      *
-     *      If $(D Contents) is a class, will be filled with record data.
+     *      If `Contents` is a class, will be filled with record data.
      *
-     *      If $(D Contents) is a associative array, will be filled
+     *      If `Contents` is a associative array, will be filled
      *      with record data.
      *
-     *      If $(D Contents) is non-struct, a $(LREF CsvRecord) will be
+     *      If `Contents` is non-struct, a $(LREF CsvRecord) will be
      *      returned.
      */
     @property auto front()
     {
-        assert(!empty);
+        assert(!empty, "Attempting to fetch the front of an empty CsvReader");
         static if (is(Contents == struct) || is(Contents == class))
         {
             return recordContent;
@@ -1028,12 +1162,14 @@ public:
         static if (is(Contents == struct) || is(Contents == class))
         {
             recordRange = typeof(recordRange)
-                                 (_input, _separator, _quote, null);
+                                 (_input, _separator, _quote, null,
+                                  _allowInconsistentDelimiterCount);
         }
         else
         {
             recordRange = typeof(recordRange)
-                                 (_input, _separator, _quote, indices);
+                                 (_input, _separator, _quote, indices,
+                                  _allowInconsistentDelimiterCount);
         }
 
         static if (is(Contents T : T[U], U : string))
@@ -1106,7 +1242,7 @@ public:
     string str = `76;^26^;22`;
     int[] ans = [76,26,22];
     auto records = CsvReader!(int,Malformed.ignore,string,char,string[])
-          (str, ';', '^');
+          (str, ';', '^', false);
 
     foreach (record; records)
     {
@@ -1114,7 +1250,7 @@ public:
     }
 }
 
-// Bugzilla 15545
+// https://issues.dlang.org/show_bug.cgi?id=15545
 // @system due to the catch for Throwable
 @system pure unittest
 {
@@ -1128,7 +1264,7 @@ public:
 
 /*
  * This input range is accessible through $(LREF CsvReader) when the
- * requested $(D Contents) type is neither a structure or an associative array.
+ * requested `Contents` type is neither a structure or an associative array.
  */
 private struct CsvRecord(Contents, Malformed ErrorLevel, Range, Separator)
 if (!is(Contents == class) && !is(Contents == struct))
@@ -1141,24 +1277,28 @@ private:
     Contents curContentsoken;
     typeof(appender!(dchar[])()) _front;
     bool _empty;
+    bool _allowInconsistentDelimiterCount;
     size_t[] _popCount;
 public:
     /*
      * Params:
-     *      input = Pointer to a character input range
+     *      input = Pointer to a character $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
      *      delimiter = Separator for each column
      *      quote = Character used for quotation
      *      indices = An array containing which columns will be returned.
      *             If empty, all columns are returned. List must be in order.
      */
     this(Input!(Range, ErrorLevel)* input, Separator delimiter,
-         Separator quote, size_t[] indices)
+         Separator quote, size_t[] indices,
+         bool allowInconsistentDelimiterCount)
     {
         _input = input;
         _separator = delimiter;
         _quote = quote;
+
         _front = appender!(dchar[])();
         _popCount = indices.dup;
+        _allowInconsistentDelimiterCount = allowInconsistentDelimiterCount;
 
         // If a header was given, each call to popFront will need
         // to eliminate so many tokens. This calculates
@@ -1187,7 +1327,7 @@ public:
      */
     @property Contents front() @safe pure
     {
-        assert(!empty);
+        assert(!empty, "Attempting to fetch the front of an empty CsvRecord");
         return curContentsoken;
     }
 
@@ -1241,23 +1381,38 @@ public:
         {
             _empty = true;
             static if (ErrorLevel == Malformed.throwException)
-                if (_input.rowLength != 0)
-                    if (_input.col != _input.rowLength)
-                        throw new CSVException(
-                           format("Row %s's length %s does not match "~
-                                  "previous length of %s.", _input.row,
-                                  _input.col, _input.rowLength));
+            {
+                if (_input.rowLength != 0 && _input.col != _input.rowLength
+                        && !_allowInconsistentDelimiterCount)
+                {
+                    throw new CSVException(
+                       format("Row %s's length %s does not match "~
+                              "previous length of %s.", _input.row,
+                              _input.col, _input.rowLength));
+                }
+            }
             return;
         }
         else
         {
             static if (ErrorLevel == Malformed.throwException)
-                if (_input.rowLength != 0)
-                    if (_input.col > _input.rowLength)
+            {
+                if (_input.rowLength != 0 && _input.col > _input.rowLength)
+                {
+                    if (!_allowInconsistentDelimiterCount)
+                    {
                         throw new CSVException(
                            format("Row %s's length %s does not match "~
                                   "previous length of %s.", _input.row,
                                   _input.col, _input.rowLength));
+                    }
+                    else
+                    {
+                        _empty = true;
+                        return;
+                    }
+                }
+            }
         }
 
         // Separator is left on the end of input from the last call.
@@ -1367,7 +1522,7 @@ void csvNextToken(Range, Malformed ErrorLevel = Malformed.throwException,
                            Separator sep, Separator quote,
                            bool startQuoted = false)
 if (isSomeChar!Separator && isInputRange!Range
-    && is(Unqual!(ElementType!Range) == dchar)
+    && is(immutable ElementType!Range == immutable dchar)
     && isOutputRange!(Output, dchar))
 {
     bool quoted = startQuoted;
@@ -1388,7 +1543,8 @@ if (isSomeChar!Separator && isInputRange!Range
 
     while (!input.empty)
     {
-        assert(!(quoted && escQuote));
+        assert(!(quoted && escQuote),
+            "Invalid quotation state in csvNextToken");
         if (!quoted)
         {
             // When not quoted the token ends at sep
@@ -1667,7 +1823,7 @@ if (isSomeChar!Separator && isInputRange!Range
     assert(a.data == ""d);
 }
 
-// Bugzilla 8908
+// https://issues.dlang.org/show_bug.cgi?id=8908
 @safe pure unittest
 {
     string csv = `  1.0, 2.0, 3.0
@@ -1698,4 +1854,24 @@ if (isSomeChar!Separator && isInputRange!Range
             assert(row == [4, 5, 6]);
         ++i;
     }
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21629
+@safe pure unittest
+{
+    import std.typecons : Tuple;
+    struct Reccord
+    {
+        string a;
+        string b;
+    }
+
+    auto header = ["a" ,"b"];
+    string input = "";
+    assert(csvReader!Reccord(input).empty, "This should be empty");
+    assert(csvReader!Reccord(input, header).empty, "This should be empty");
+    assert(csvReader!(Tuple!(string,string))(input).empty, "This should be empty");
+    assert(csvReader!(string[string])(input, header).empty, "This should be empty");
+    assert(csvReader!(string[string])(input, null).empty, "This should be empty");
+    assert(csvReader!(int)(input, null).empty, "This should be empty");
 }

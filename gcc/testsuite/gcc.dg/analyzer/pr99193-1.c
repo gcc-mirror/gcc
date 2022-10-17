@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+
 /* Verify absence of false positive from -Wanalyzer-mismatching-deallocation
    on realloc(3).
    Based on https://github.com/libguestfs/libguestfs/blob/f19fd566f6387ce7e4d82409528c9dde374d25e0/daemon/command.c#L115

@@ -1,6 +1,6 @@
 ; Parameter options of the compiler.
 
-; Copyright (C) 2019-2021 Free Software Foundation, Inc.
+; Copyright (C) 2019-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -130,45 +130,9 @@ Maximal estimated growth of function body caused by early inlining of single cal
 Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization Param
 Maximum number of basic blocks before EVRP uses a sparse cache.
 
--param=evrp-mode=
-Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_EVRP_FIRST) Param Optimization
---param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
-
-Enum
-Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
-
-EnumValue
-Enum(evrp_mode) String(legacy) Value(EVRP_MODE_EVRP_ONLY)
-
-EnumValue
-Enum(evrp_mode) String(ranger) Value(EVRP_MODE_RVRP_ONLY)
-
-EnumValue
-Enum(evrp_mode) String(legacy-first) Value(EVRP_MODE_EVRP_FIRST)
-
-EnumValue
-Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
-
-EnumValue
-Enum(evrp_mode) String(ranger-trace) Value(EVRP_MODE_RVRP_TRACE)
-
-EnumValue
-Enum(evrp_mode) String(ranger-debug) Value(EVRP_MODE_RVRP_DEBUG)
-
-EnumValue
-Enum(evrp_mode) String(trace) Value(EVRP_MODE_TRACE)
-
-EnumValue
-Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
-
--param=ranger-logical-depth=
-Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
-Maximum depth of logical expression evaluation ranger will look through when
-evaluating outgoing edge ranges.
-
--param=fsm-maximum-phi-arguments=
-Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization
-Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block.
+-param=evrp-switch-limit=
+Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
+Maximum number of outgoing edges in a switch before EVRP will not process it.
 
 -param=fsm-scale-path-blocks=
 Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
@@ -266,6 +230,10 @@ Maximum depth of recursive cloning for self-recursive function.
 Common Joined UInteger Var(param_ipa_cp_min_recursive_probability) Init(2) Param Optimization
 Recursive cloning only when the probability of call being executed exceeds the parameter.
 
+-param=ipa-cp-recursive-freq-factor=
+Common Joined UInteger Var(param_ipa_cp_recursive_freq_factor) Init(6) Param Optimization
+When propagating IPA-CP effect estimates, multiply frequencies of recursive edges that bring back an unchanged value by this factor.
+
 -param=ipa-cp-recursion-penalty=
 Common Joined UInteger Var(param_ipa_cp_recursion_penalty) Init(40) IntegerRange(0, 100) Param Optimization
 Percentage penalty the recursive functions will receive when they are evaluated for cloning.
@@ -285,6 +253,10 @@ The size of translation unit that IPA-CP pass considers large.
 -param=ipa-cp-value-list-size=
 Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
+
+-param=ipa-cp-profile-count-base=
+Common Joined UInteger Var(param_ipa_cp_profile_count_base) Init(10) IntegerRange(0, 100) Param Optimization
+When using profile feedback, use the edge at this percentage position in frequncy histogram as the bases for IPA-CP heuristics.
 
 -param=ipa-jump-function-lookups=
 Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
@@ -358,6 +330,22 @@ The maximum code size growth ratio when expanding into a jump table (in percent)
 Common Joined UInteger Var(param_l1_cache_line_size) Init(32) Param Optimization
 The size of L1 cache line.
 
+-param=destructive-interference-size=
+Common Joined UInteger Var(param_destruct_interfere_size) Init(0) Param Optimization
+The minimum recommended offset between two concurrently-accessed objects to
+avoid additional performance degradation due to contention introduced by the
+implementation.  Typically the L1 cache line size, but can be larger to
+accommodate a variety of target processors with different cache line sizes.
+C++17 code might use this value in structure layout, but is strongly
+discouraged from doing so in public ABIs.
+
+-param=constructive-interference-size=
+Common Joined UInteger Var(param_construct_interfere_size) Init(0) Param Optimization
+The maximum recommended size of contiguous memory occupied by two objects
+accessed with temporal locality by concurrent threads.  Typically the L1 cache
+line size, but can be smaller to accommodate a variety of target processors with
+different cache line sizes.
+
 -param=l1-cache-size=
 Common Joined UInteger Var(param_l1_cache_size) Init(64) Param Optimization
 The size of L1 cache.
@@ -395,7 +383,7 @@ Common Joined UInteger Var(param_lim_expensive) Init(20) Param Optimization
 The minimum cost of an expensive expression in the loop invariant motion.
 
 -param=logical-op-non-short-circuit=
-Common Joined UInteger Var(param_logical_op_non_short_circuit) Init(-1) IntegerRange(-1, 1) Param
+Common Joined UInteger Var(param_logical_op_non_short_circuit) Init(-1) IntegerRange(0, 1) Param
 True if a non-short-circuit operation is optimal.
 
 -param=loop-block-tile-size=
@@ -510,17 +498,9 @@ The maximum number of nested indirect inlining performed by early inliner.
 Common Joined UInteger Var(param_max_fields_for_field_sensitive) Param
 Maximum number of fields in a structure before pointer analysis treats the structure as a single variable.
 
--param=max-fsm-thread-length=
-Common Joined UInteger Var(param_max_fsm_thread_length) Init(10) IntegerRange(1, 999999) Param Optimization
-Maximum number of basic blocks on a finite state automaton jump thread path.
-
 -param=max-fsm-thread-path-insns=
 Common Joined UInteger Var(param_max_fsm_thread_path_insns) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path.
-
--param=max-fsm-thread-paths=
-Common Joined UInteger Var(param_max_fsm_thread_paths) Init(50) IntegerRange(1, 999999) Param Optimization
-Maximum number of new jump thread paths to create for a finite state automaton.
 
 -param=max-gcse-insertion-ratio=
 Common Joined UInteger Var(param_max_gcse_insertion_ratio) Init(20) Param Optimization
@@ -541,6 +521,14 @@ The maximum expansion factor when copying basic blocks.
 -param=max-hoist-depth=
 Common Joined UInteger Var(param_max_hoist_depth) Init(30) Param Optimization
 Maximum depth of search in the dominator tree for expressions to hoist.
+
+-param=max-inline-functions-called-once-loop-depth=
+Common Joined UInteger Var(param_inline_functions_called_once_loop_depth) Init(6) Optimization Param
+Maximum loop depth of a call which is considered for inlining functions called once.
+
+-param=max-inline-functions-called-once-insns=
+Common Joined UInteger Var(param_inline_functions_called_once_insns) Init(4000) Optimization Param
+Maximum combined size of caller and callee which is inlined if callee is called once.
 
 -param=max-inline-insns-auto=
 Common Joined UInteger Var(param_max_inline_insns_auto) Init(15) Optimization Param
@@ -590,6 +578,10 @@ Bound on the number of iterations the brute force # of iterations analysis algor
 Common Joined UInteger Var(param_max_jump_thread_duplication_stmts) Init(15) Param Optimization
 Maximum number of statements allowed in a block that needs to be duplicated when threading jumps.
 
+-param=max-jump-thread-paths=
+Common Joined UInteger Var(param_max_jump_thread_paths) Init(64) IntegerRange(1, 65536) Param Optimization
+Search space limit for the backwards jump threader.
+
 -param=max-last-value-rtl=
 Common Joined UInteger Var(param_max_last_value_rtl) Init(10000) Param Optimization
 The maximum number of RTL nodes that can be recorded as combiner's last value.
@@ -601,6 +593,10 @@ The maximum number of insns in loop header duplicated by the copy loop headers p
 -param=max-modulo-backtrack-attempts=
 Common Joined UInteger Var(param_max_modulo_backtrack_attempts) Init(40) Param Optimization
 The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop.
+
+-param=min-pagesize=
+Common Joined UInteger Var(param_min_pagesize) Init(4096) Param Optimization
+Minimum page size for warning purposes.
 
 -param=max-partial-antic-length=
 Common Joined UInteger Var(param_max_partial_antic_length) Init(100) Param Optimization
@@ -729,10 +725,6 @@ The maximum number of instructions to consider to unroll in a loop.
 -param=max-unswitch-insns=
 Common Joined UInteger Var(param_max_unswitch_insns) Init(50) Param Optimization
 The maximum number of insns of an unswitched loop.
-
--param=max-unswitch-level=
-Common Joined UInteger Var(param_max_unswitch_level) Init(3) Param Optimization
-The maximum number of unswitchings in a single loop.
 
 -param=max-variable-expansions-in-unroller=
 Common Joined UInteger Var(param_max_variable_expansions) Init(1) Param Optimization
@@ -874,6 +866,40 @@ The minimum constant stride beyond which we should use prefetch hints for.
 Common Joined UInteger Var(param_profile_func_internal_id) IntegerRange(0, 1) Param
 Use internal function id in profile lookup.
 
+-param=ranger-debug=
+Common Joined Var(param_ranger_debug) Enum(ranger_debug) Init(RANGER_DEBUG_NONE) Param Optimization
+--param=ranger-debug=[none|trace|gori|cache|tracegori|all] Specifies the output mode for debugging ranger.
+
+Enum
+Name(ranger_debug) Type(enum ranger_debug) UnknownError(unknown ranger debug mode %qs)
+
+EnumValue
+Enum(ranger_debug) String(none) Value(RANGER_DEBUG_NONE)
+
+EnumValue
+Enum(ranger_debug) String(trace) Value(RANGER_DEBUG_TRACE)
+
+EnumValue
+Enum(ranger_debug) String(cache) Value(RANGER_DEBUG_TRACE_CACHE)
+
+EnumValue
+Enum(ranger_debug) String(gori) Value(RANGER_DEBUG_GORI)
+
+EnumValue
+Enum(ranger_debug) String(tracegori) Value(RANGER_DEBUG_TRACE_GORI)
+
+EnumValue
+Enum(ranger_debug) String(all) Value(RANGER_DEBUG_ALL)
+
+-param=ranger-logical-depth=
+Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
+Maximum depth of logical expression evaluation ranger will look through when
+evaluating outgoing edge ranges.
+
+-param=relation-block-limit=
+Common Joined UInteger Var(param_relation_block_limit) Init(200) IntegerRange(0, 9999) Param Optimization
+Maximum number of relations the oracle will register in a basic block.
+
 -param=rpo-vn-max-loop-depth=
 Common Joined UInteger Var(param_rpo_vn_max_loop_depth) Init(7) IntegerRange(2, 65536) Param Optimization
 Maximum depth of a loop nest to fully value-number optimistically.
@@ -1003,12 +1029,29 @@ Common Joined UInteger Var(param_modref_max_tests) Init(64) Param Optimization
 Maximum number of tests performed by modref query.
 
 -param=modref-max-depth=
-Common Joined UInteger Var(param_modref_max_depth) Init(256) Param Optimization
+Common Joined UInteger Var(param_modref_max_depth) Init(256) IntegerRange(1, 65536) Param Optimization
 Maximum depth of DFS walk used by modref escape analysis.
 
 -param=modref-max-escape-points=
 Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optimization
 Maximum number of escape points tracked by modref per SSA-name.
+
+-param=modref-max-adjustments=
+Common Joined UInteger Var(param_modref_max_adjustments) Init(8) IntegerRange(0, 254) Param Optimization
+Maximum number of times a given range is adjusted during the dataflow.
+
+-param=threader-debug=
+Common Joined Var(param_threader_debug) Enum(threader_debug) Init(THREADER_DEBUG_NONE) Param Optimization
+--param=threader-debug=[none|all] Enables verbose dumping of the threader solver.
+
+Enum
+Name(threader_debug) Type(enum threader_debug) UnknownError(unknown threader debug mode %qs)
+
+EnumValue
+Enum(threader_debug) String(none) Value(THREADER_DEBUG_NONE)
+
+EnumValue
+Enum(threader_debug) String(all) Value(THREADER_DEBUG_ALL)
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
@@ -1094,8 +1137,12 @@ Whether to use canonical types.
 Common Joined UInteger Var(param_vect_epilogues_nomask) Init(1) IntegerRange(0, 1) Param Optimization
 Enable loop epilogue vectorization using smaller vector size.
 
+-param=vect-max-layout-candidates=
+Common Joined UInteger Var(param_vect_max_layout_candidates) Init(32) Param Optimization
+Maximum number of possible vector layouts (such as permutations) to consider when optimizing to-be-vectorized code.
+
 -param=vect-max-peeling-for-alignment=
-Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) IntegerRange(-1, 64) Param Optimization
+Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) IntegerRange(0, 64) Param Optimization
 Maximum number of loop peels to enhance alignment of data references in a loop.
 
 -param=vect-max-version-for-alias-checks=
@@ -1111,7 +1158,28 @@ Common Joined UInteger Var(param_vect_partial_vector_usage) Init(2) IntegerRange
 Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2.
 
 -param=vect-inner-loop-cost-factor=
-Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 999999) Param Optimization
-The factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
+Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 10000) Param Optimization
+The maximum factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
+
+-param=vect-induction-float=
+Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRage(0, 1) Param Optimization
+Enable loop vectorization of floating point inductions.
+
+-param=vrp1-mode=
+Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optimization
+--param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in.
+
+-param=vrp2-mode=
+Common Joined Var(param_vrp2_mode) Enum(vrp_mode) Init(VRP_MODE_RANGER) Param Optimization
+--param=vrp2-mode=[vrp|ranger] Specifies the mode VRP2 should operate in.
+
+Enum
+Name(vrp_mode) Type(enum vrp_mode) UnknownError(unknown vrp mode %qs)
+
+EnumValue
+Enum(vrp_mode) String(vrp) Value(VRP_MODE_VRP)
+
+EnumValue
+Enum(vrp_mode) String(ranger) Value(VRP_MODE_RANGER)
 
 ; This comment is to ensure we retain the blank line above.

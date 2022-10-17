@@ -1,5 +1,5 @@
 /* Find near-matches for strings and identifiers.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef unsigned int edit_distance_t;
 const edit_distance_t MAX_EDIT_DISTANCE = UINT_MAX;
 
-/* spellcheck.c  */
+/* spellcheck.cc  */
 extern edit_distance_t
 get_edit_distance (const char *s, int len_s,
 		   const char *t, int len_t);
@@ -95,7 +95,8 @@ class best_match
   : m_goal (goal_traits::get_string (goal)),
     m_goal_len (goal_traits::get_length (goal)),
     m_best_candidate (NULL),
-    m_best_distance (best_distance_so_far)
+    m_best_distance (best_distance_so_far),
+    m_best_candidate_len (0)
   {}
 
   /* Compare the edit distance between CANDIDATE and m_goal,
@@ -128,11 +129,29 @@ class best_match
 
     /* Otherwise, compute the distance and see if the candidate
        has beaten the previous best value.  */
+    const char *candidate_str = candidate_traits::get_string (candidate);
     edit_distance_t dist
-      = get_edit_distance (m_goal, m_goal_len,
-			   candidate_traits::get_string (candidate),
-			   candidate_len);
+      = get_edit_distance (m_goal, m_goal_len, candidate_str, candidate_len);
+
+    bool is_better = false;
     if (dist < m_best_distance)
+      is_better = true;
+    else if (dist == m_best_distance)
+      {
+	/* Prefer a candidate that inserts a trailing '=',
+	   so that for
+	   "-ftrivial-auto-var-init"
+	   we suggest
+	   "-ftrivial-auto-var-init="
+	   rather than
+	   "-Wtrivial-auto-var-init".  */
+	/* Prefer a candidate has a difference in trailing sign character.  */
+	if (candidate_str[candidate_len - 1] == '='
+	    && m_goal[m_goal_len - 1] != '=')
+	  is_better = true;
+      }
+
+    if (is_better)
       {
 	m_best_distance = dist;
 	m_best_candidate = candidate;

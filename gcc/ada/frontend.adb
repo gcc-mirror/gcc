@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ with Ghost;          use Ghost;
 with Inline;         use Inline;
 with Lib;            use Lib;
 with Lib.Load;       use Lib.Load;
-with Lib.Xref;
 with Live;           use Live;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -473,12 +472,6 @@ begin
                Check_Elaboration_Scenarios;
             end if;
 
-            --  At this stage we can unnest subprogram bodies if required
-
-            if Total_Errors_Detected = 0 then
-               Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
-            end if;
-
             --  List library units if requested
 
             if List_Units then
@@ -487,19 +480,25 @@ begin
 
             --  Output waiting warning messages
 
-            Lib.Xref.Process_Deferred_References;
             Sem_Warn.Output_Non_Modified_In_Out_Warnings;
             Sem_Warn.Output_Unreferenced_Messages;
             Sem_Warn.Check_Unused_Withs;
             Sem_Warn.Output_Unused_Warnings_Off_Warnings;
 
             --  Remove any ignored Ghost code as it must not appear in the
-            --  executable. This action must be performed last because it
+            --  executable. This action must be performed very late because it
             --  heavily alters the tree.
 
             if Operating_Mode = Generate_Code or else GNATprove_Mode then
                Remove_Ignored_Ghost_Code;
             end if;
+
+            --  At this stage we can unnest subprogram bodies if required
+
+            if Total_Errors_Detected = 0 then
+               Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
+            end if;
+
          end if;
       end if;
    end;
@@ -538,7 +537,7 @@ begin
    --  Initialize_Scalars, but others should be checked: as well???
 
    declare
-      Item  : Node_Id;
+      Item : Node_Id;
 
    begin
       Item := First (Context_Items (Cunit (Main_Unit)));

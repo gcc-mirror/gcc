@@ -2,7 +2,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-cmath "" }
 //
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;
@@ -33,9 +41,9 @@ void test01()
 
   std::binomial_distribution<> bd1(5, 0.3);
   auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
+  testDiscreteDist<ARGS>(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
 
-  // These tests take a relatively long time on soft-float simulated
+  // These tests take a relatively long time on soft-float simulated targets.
   // targets, so please don't add new tests here, instead add a new file.
 }
 

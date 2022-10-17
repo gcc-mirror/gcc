@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package body System.Parameters is
    ------------------------
 
    function Default_Stack_Size return Size_Type is
-      Default_Stack_Size : Integer;
+      Default_Stack_Size : constant Integer;
       pragma Import (C, Default_Stack_Size, "__gl_default_stack_size");
    begin
       if Default_Stack_Size = -1 then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019-2021, Free Software Foundation, Inc.      --
+--             Copyright (C) 2019-2022, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4903,11 +4903,10 @@ package body Bindo.Graphs is
 
       procedure Set_Is_Existing_Source_Target_Relation
         (G   : Invocation_Graph;
-         Rel : Source_Target_Relation;
-         Val : Boolean := True);
+         Rel : Source_Target_Relation);
       pragma Inline (Set_Is_Existing_Source_Target_Relation);
       --  Mark a source vertex and a target vertex described by relation Rel as
-      --  already related in invocation graph G depending on value Val.
+      --  already related in invocation graph G.
 
       procedure Set_IGE_Attributes
         (G    : Invocation_Graph;
@@ -5636,19 +5635,14 @@ package body Bindo.Graphs is
 
       procedure Set_Is_Existing_Source_Target_Relation
         (G   : Invocation_Graph;
-         Rel : Source_Target_Relation;
-         Val : Boolean := True)
+         Rel : Source_Target_Relation)
       is
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (Rel.Source));
          pragma Assert (Present (Rel.Target));
 
-         if Val then
-            Relation_Sets.Insert (G.Relations, Rel);
-         else
-            Relation_Sets.Delete (G.Relations, Rel);
-         end if;
+         Relation_Sets.Insert (G.Relations, Rel);
       end Set_Is_Existing_Source_Target_Relation;
 
       ------------------------

@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-# Copyright (C) 2018-2021 Free Software Foundation, Inc.
+# Copyright (C) 2018-2022 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +39,9 @@ case "${target}" in
   mips*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  power*-*-freebsd*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   power*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	LIBDRUNTIME_ONLY=yes
@@ -47,6 +50,9 @@ case "${target}" in
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   s390*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  sparc*-*-solaris2.11*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   x86_64-*-freebsd* | i?86-*-freebsd*)

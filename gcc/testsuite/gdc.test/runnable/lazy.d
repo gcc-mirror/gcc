@@ -1,6 +1,5 @@
-// RUNNABLE_PHOBOS_TEST
 import core.vararg;
-import std.stdio;
+import core.stdc.stdio;
 
 /*********************************************************/
 
@@ -105,9 +104,14 @@ void bar3(...)
     assert(va_arg!int(_argptr) == 14);
 }
 
+void arr3(...)
+{
+    assert(_arguments.length == 1);
+    assert(va_arg!(int[])(_argptr) == [1,0,0,0,0,0,0,0,0,9]);
+}
+
 void abc3(int* p)
 {
-    writeln(*p);
     assert(*p == 3);
 }
 
@@ -115,15 +119,13 @@ void test3()
 {
     int x = 3;
     dotimes3(10, abc3(&x));
-    dotimes3(10, write(++x));
-    writeln();
+    dotimes3(10, ++x);
     dotimes3(1, bar3(++x));
 
     int[10] a = new int[10];
     a[0] = 1;
     a[$ - 1] = 9;
-    dotimes3(3, write(a[0..$]));
-    writeln();
+    dotimes3(3, arr3(a[0..$]));
 }
 
 /*********************************************************/
@@ -133,7 +135,6 @@ int p4;
 void foo4(void* delegate()[] dgs...)
 {
     assert(dgs.length == 4);
-    writefln("%s %s", dgs[0](), cast(void*)&p4);
     assert(dgs[0]() == cast(void*)&p4);
     assert(dgs[1]() == cast(void*)&p4);
     assert(dgs[2]() == null);
@@ -144,7 +145,6 @@ void test4()
 {
     void *abc()
     {
-        writeln(cast(void*)&p4);
         return cast(void*)&p4;
     }
 
@@ -254,7 +254,7 @@ void test6682()
 }
 
 /*********************************************************/
-// 9109
+// https://issues.dlang.org/show_bug.cgi?id=9109
 
 void test9109()
 {
@@ -269,7 +269,7 @@ void test9109()
 }
 
 /*********************************************************/
-// 15835
+// https://issues.dlang.org/show_bug.cgi?id=15835
 
 class C15835 {}
 

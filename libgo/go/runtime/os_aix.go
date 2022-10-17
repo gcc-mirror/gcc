@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix
+//go:build aix
 
 package runtime
 
@@ -64,7 +64,7 @@ func semacreate(mp *m) {
 
 //go:nosplit
 func semasleep(ns int64) int32 {
-	_m_ := getg().m
+	mp := getg().m
 	if ns >= 0 {
 		var ts timespec
 
@@ -85,18 +85,18 @@ func semasleep(ns int64) int32 {
 		ts.tv_sec = timespec_sec_t(sec)
 		ts.tv_nsec = timespec_nsec_t(nsec)
 
-		if sem_timedwait((*semt)(unsafe.Pointer(_m_.waitsema)), &ts) != 0 {
+		if sem_timedwait((*semt)(unsafe.Pointer(mp.waitsema)), &ts) != 0 {
 			err := errno()
 			if err == _ETIMEDOUT || err == _EAGAIN || err == _EINTR {
 				return -1
 			}
-			println("sem_timedwait err ", err, " ts.tv_sec ", ts.tv_sec, " ts.tv_nsec ", ts.tv_nsec, " ns ", ns, " id ", _m_.id)
+			println("sem_timedwait err ", err, " ts.tv_sec ", ts.tv_sec, " ts.tv_nsec ", ts.tv_nsec, " ns ", ns, " id ", mp.id)
 			throw("sem_timedwait")
 		}
 		return 0
 	}
 	for {
-		r1 := sem_wait((*semt)(unsafe.Pointer(_m_.waitsema)))
+		r1 := sem_wait((*semt)(unsafe.Pointer(mp.waitsema)))
 		if r1 == 0 {
 			break
 		}
@@ -118,6 +118,19 @@ func semawakeup(mp *m) {
 func osinit() {
 	ncpu = int32(sysconf(__SC_NPROCESSORS_ONLN))
 	physPageSize = uintptr(sysconf(__SC_PAGE_SIZE))
+}
+
+func setProcessCPUProfiler(hz int32) {
+	setProcessCPUProfilerTimer(hz)
+}
+
+func setThreadCPUProfiler(hz int32) {
+	setThreadCPUProfilerHz(hz)
+}
+
+//go:nosplit
+func validSIGPROF(mp *m, c *sigctxt) bool {
+	return true
 }
 
 const (

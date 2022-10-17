@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -225,7 +225,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       elsif abs Re (X) > 1.0 / Epsilon or else
             abs Im (X) > 1.0 / Epsilon
       then
-         Xt := Complex_One  /  X;
+         Xt := Complex_One / X;
 
          if Re (X) < 0.0 then
             Set_Re (Xt, PI - Re (Xt));
@@ -442,7 +442,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       if abs Re (X) < Square_Root_Epsilon and then
          abs Im (X) < Square_Root_Epsilon
       then
-         return Complex_One  /  X;
+         return Complex_One / X;
 
       elsif Im (X) > Log_Inverse_Epsilon_2 then
          return -Complex_I;
@@ -463,7 +463,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       if abs Re (X) < Square_Root_Epsilon and then
          abs Im (X) < Square_Root_Epsilon
       then
-         return Complex_One  /  X;
+         return Complex_One / X;
 
       elsif Re (X) > Log_Inverse_Epsilon_2 then
          return Complex_One;

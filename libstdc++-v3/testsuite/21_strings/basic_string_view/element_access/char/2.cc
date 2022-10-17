@@ -3,7 +3,7 @@
 // { dg-require-debug-mode "" }
 // { dg-xfail-run-if "expect debug mode assertion to fail" { *-*-* } }
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,5 +27,5 @@ main()
 {
   typedef std::string_view string_view_type;
   string_view_type s;
-  s[0]; // abort
+  (void) s[0]; // abort
 }

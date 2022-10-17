@@ -1,6 +1,6 @@
 ; Options for the CRIS port of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -151,7 +151,7 @@ Use the most feature-enabling options allowed by other options.
 ; FIXME: The following comment relates to gcc before cris.opt.
 ; Check if it's still valid:
 ; We must call it "override-" since calling it "no-" will cause
-; gcc.c to forget it, if there's a "later" -mbest-lib-options.
+; gcc.cc to forget it, if there's a "later" -mbest-lib-options.
 ; Kludgy, but needed for some multilibbed files.
 moverride-best-lib-options
 Target RejectNegative

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -63,12 +63,11 @@ package Ada.Containers.Bounded_Vectors is
       Aggregate         => (Empty          => Empty,
                             Add_Unnamed    => Append,
                             New_Indexed    => New_Vector,
-                            Assign_Indexed => Replace_Element);
+                            Assign_Indexed => Replace_Element),
+      Preelaborable_Initialization
+                        => Element_Type'Preelaborable_Initialization;
 
-   pragma Preelaborable_Initialization (Vector);
-
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private with Preelaborable_Initialization;
 
    Empty_Vector : constant Vector;
 
@@ -512,10 +511,10 @@ private
 
    for Reference_Type'Write use Write;
 
-   --  Three operations are used to optimize in the expansion of "for ... of"
-   --  loops: the Next(Cursor) procedure in the visible part, and the following
-   --  Pseudo_Reference and Get_Element_Access functions. See Exp_Ch5 for
-   --  details.
+   --  See Ada.Containers.Vectors for documentation on the following
+
+   procedure _Next (Position : in out Cursor) renames Next;
+   procedure _Previous (Position : in out Cursor) renames Previous;
 
    function Pseudo_Reference
      (Container : aliased Vector'Class) return Reference_Control_Type;

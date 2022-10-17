@@ -1,4 +1,4 @@
-#   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+#   Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,15 @@
 
 # Load support procs.
 load_lib gdc-dg.exp
+
+# Helper function allows adding tests that use imports/*, but don't compile
+# the sources in with dg-additional-sources.
+global testdir
+set testdir $srcdir/$subdir
+proc srcdir {} {
+    global testdir
+    return $testdir
+}
 
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"

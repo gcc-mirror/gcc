@@ -14,22 +14,16 @@ package template algoFormat()
 }
 
 // Internal random array generators
-version (unittest)
+version (StdUnittest)
 {
     package enum size_t maxArraySize = 50;
     package enum size_t minArraySize = maxArraySize - 1;
 
     package string[] rndstuff(T : string)()
     {
-        import std.random : Random, unpredictableSeed, uniform;
+        import std.random : Xorshift, uniform;
 
-        static Random rnd;
-        static bool first = true;
-        if (first)
-        {
-            rnd = Random(unpredictableSeed);
-            first = false;
-        }
+        static rnd = Xorshift(234_567_891);
         string[] result =
             new string[uniform(minArraySize, maxArraySize, rnd)];
         string alpha = "abcdefghijABCDEFGHIJ";
@@ -46,15 +40,9 @@ version (unittest)
 
     package int[] rndstuff(T : int)()
     {
-        import std.random : Random, unpredictableSeed, uniform;
+        import std.random : Xorshift, uniform;
 
-        static Random rnd;
-        static bool first = true;
-        if (first)
-        {
-            rnd = Random(unpredictableSeed);
-            first = false;
-        }
+        static rnd = Xorshift(345_678_912);
         int[] result = new int[uniform(minArraySize, maxArraySize, rnd)];
         foreach (ref i; result)
         {
@@ -74,4 +62,6 @@ version (unittest)
     }
 }
 
+// Used instead of `&object.member` when `member` may be
+// either a field or a @property function.
 package(std) T* addressOf(T)(ref T val) { return &val; }

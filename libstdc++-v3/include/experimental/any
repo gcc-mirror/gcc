@@ -1,6 +1,6 @@
 // <experimental/any> -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,12 +32,14 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201402L
 
 #include <typeinfo>
 #include <new>
-#include <utility>
 #include <type_traits>
+#include <bits/move.h>
 #include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -115,9 +117,9 @@ inline namespace fundamentals_v1
       struct _Manager_external; // creates contained object on the heap
 
     template<typename _Tp>
-      using _Manager = conditional_t<_Internal<_Tp>::value,
-				     _Manager_internal<_Tp>,
-				     _Manager_external<_Tp>>;
+      using _Manager = __conditional_t<_Internal<_Tp>::value,
+				       _Manager_internal<_Tp>,
+				       _Manager_external<_Tp>>;
 
     template<typename _Tp, typename _Decayed = decay_t<_Tp>>
       using _Decay = enable_if_t<!is_same<_Decayed, any>::value, _Decayed>;
@@ -430,8 +432,8 @@ inline namespace fundamentals_v1
       // If the type _Tp could never be stored in an any we don't want to
       // instantiate _Manager<_Tp>, so use _Manager<any::_Op> instead, which
       // is explicitly specialized and has a no-op _S_manage function.
-      using _Vp = conditional_t<__and_<__does_not_decay, __is_copyable>::value,
-				_Up, any::_Op>;
+      using _Vp = __conditional_t<__and_<__does_not_decay, __is_copyable>{},
+				  _Up, any::_Op>;
       // First try comparing function addresses, which works without RTTI
       if (__any->_M_manager == &any::_Manager<_Vp>::_S_manage
 #if __cpp_rtti

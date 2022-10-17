@@ -1,5 +1,5 @@
 ;; Matrix-Multiply Assist (MMA) patterns.
-;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2022 Free Software Foundation, Inc.
 ;; Contributed by Peter Bergner <bergner@linux.ibm.com> and
 ;;		  Michael Meissner <meissner@linux.ibm.com>
 ;;
@@ -29,7 +29,7 @@
 ;; Constants for creating unspecs
 
 (define_c_enum "unspec"
-  [UNSPEC_MMA_ASSEMBLE
+  [UNSPEC_VSX_ASSEMBLE
    UNSPEC_MMA_EXTRACT
    UNSPEC_MMA_PMXVBF16GER2
    UNSPEC_MMA_PMXVBF16GER2NN
@@ -91,7 +91,11 @@
    UNSPEC_MMA_XVI8GER4SPP
    UNSPEC_MMA_XXMFACC
    UNSPEC_MMA_XXMTACC
-   UNSPEC_MMA_XXSETACCZ
+  ])
+
+(define_c_enum "unspecv"
+  [UNSPECV_MMA_ASSEMBLE
+   UNSPECV_MMA_XXSETACCZ
   ])
 
 ;; MMA instructions with 1 accumulator argument
@@ -264,10 +268,25 @@
 (define_expand "movoo"
   [(set (match_operand:OO 0 "nonimmediate_operand")
 	(match_operand:OO 1 "input_operand"))]
-  "TARGET_MMA"
+  ""
 {
-  rs6000_emit_move (operands[0], operands[1], OOmode);
-  DONE;
+  if (TARGET_MMA)
+    {
+      rs6000_emit_move (operands[0], operands[1], OOmode);
+      DONE;
+    }
+  else if (currently_expanding_to_rtl && seen_error ())
+    {
+      /* PR103353 shows we may want to continue to expand the __builtin_vsx_lxvp
+	 built-in function, even if we have already emitted error messages about
+	 some missing required conditions.  As shown in that PR, without one
+	 explicit mov optab on OOmode provided, it would call emit_move_insn
+	 recursively.  So we allow this pattern to be generated when we are
+	 expanding to RTL and have seen errors.  It would not cause further ICEs
+	 as the compilation would stop soon after expanding.  */
+    }
+  else
+    gcc_unreachable ();
 })
 
 (define_insn_and_split "*movoo"
@@ -296,10 +315,22 @@
 (define_expand "movxo"
   [(set (match_operand:XO 0 "nonimmediate_operand")
 	(match_operand:XO 1 "input_operand"))]
-  "TARGET_MMA"
+  ""
 {
-  rs6000_emit_move (operands[0], operands[1], XOmode);
-  DONE;
+  if (TARGET_MMA)
+    {
+      rs6000_emit_move (operands[0], operands[1], XOmode);
+      DONE;
+    }
+  else if (currently_expanding_to_rtl && seen_error ())
+    {
+      /* PR103353 shows we may want to continue to expand the __builtin_vsx_lxvp
+	 built-in function, even if we have already emitted error messages about
+	 some missing required conditions.  So do the same handlings for XOmode
+	 as OOmode here.  */
+    }
+  else
+    gcc_unreachable ();
 })
 
 (define_insn_and_split "*movxo"
@@ -330,16 +361,19 @@
 {
   rtx src = gen_rtx_UNSPEC (OOmode,
 			    gen_rtvec (2, operands[1], operands[2]),
-			    UNSPEC_MMA_ASSEMBLE);
+			    UNSPEC_VSX_ASSEMBLE);
   emit_move_insn (operands[0], src);
   DONE;
 })
 
+;; We cannot update the two output registers atomically, so mark the output
+;; as an early clobber so we don't accidentally clobber the input operands.  */
+
 (define_insn_and_split "*vsx_assemble_pair"
-  [(set (match_operand:OO 0 "vsx_register_operand" "=wa")
+  [(set (match_operand:OO 0 "vsx_register_operand" "=&wa")
 	(unspec:OO [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
 		    (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")]
-		    UNSPEC_MMA_ASSEMBLE))]
+		   UNSPEC_VSX_ASSEMBLE))]
   "TARGET_MMA"
   "#"
   "&& reload_completed"
@@ -347,7 +381,7 @@
 {
   rtx src = gen_rtx_UNSPEC (OOmode,
 			    gen_rtvec (2, operands[1], operands[2]),
-			    UNSPEC_MMA_ASSEMBLE);
+			    UNSPEC_VSX_ASSEMBLE);
   rs6000_split_multireg_move (operands[0], src);
   DONE;
 })
@@ -393,31 +427,35 @@
    (match_operand:V16QI 4 "mma_assemble_input_operand")]
   "TARGET_MMA"
 {
-  rtx src = gen_rtx_UNSPEC (XOmode,
-			    gen_rtvec (4, operands[1], operands[2],
-				       operands[3], operands[4]),
-			    UNSPEC_MMA_ASSEMBLE);
+  rtx src = gen_rtx_UNSPEC_VOLATILE (XOmode,
+			    	     gen_rtvec (4, operands[1], operands[2],
+				       		operands[3], operands[4]),
+			    	     UNSPECV_MMA_ASSEMBLE);
   emit_move_insn (operands[0], src);
   DONE;
 })
 
+;; We cannot update the four output registers atomically, so mark the output
+;; as an early clobber so we don't accidentally clobber the input operands.  */
+
 (define_insn_and_split "*mma_assemble_acc"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=d")
-	(unspec:XO [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
-		    (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")
-		    (match_operand:V16QI 3 "mma_assemble_input_operand" "mwa")
-		    (match_operand:V16QI 4 "mma_assemble_input_operand" "mwa")]
-		    UNSPEC_MMA_ASSEMBLE))]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
+	(unspec_volatile:XO
+	  [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
+	   (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")
+	   (match_operand:V16QI 3 "mma_assemble_input_operand" "mwa")
+	   (match_operand:V16QI 4 "mma_assemble_input_operand" "mwa")]
+	  UNSPECV_MMA_ASSEMBLE))]
   "TARGET_MMA
    && fpr_reg_operand (operands[0], XOmode)"
   "#"
   "&& reload_completed"
   [(const_int 0)]
 {
-  rtx src = gen_rtx_UNSPEC (XOmode,
-			    gen_rtvec (4, operands[1], operands[2],
-				       operands[3], operands[4]),
-			    UNSPEC_MMA_ASSEMBLE);
+  rtx src = gen_rtx_UNSPEC_VOLATILE (XOmode,
+			    	     gen_rtvec (4, operands[1], operands[2],
+				       		operands[3], operands[4]),
+			    	     UNSPECV_MMA_ASSEMBLE);
   rs6000_split_multireg_move (operands[0], src);
   DONE;
 })
@@ -467,76 +505,62 @@
   "<acc> %A0"
   [(set_attr "type" "mma")])
 
-;; We can't have integer constants in XOmode so we wrap this in an UNSPEC.
+;; We can't have integer constants in XOmode so we wrap this in an
+;; UNSPEC_VOLATILE.
 
-(define_expand "mma_xxsetaccz"
-  [(set (match_operand:XO 0 "fpr_reg_operand")
-	(const_int 0))]
-  "TARGET_MMA"
-{
-  rtx xo0 = gen_rtx_UNSPEC (XOmode, gen_rtvec (1, const0_rtx),
-			    UNSPEC_MMA_XXSETACCZ);
-  emit_insn (gen_rtx_SET (operands[0], xo0));
-  DONE;
-})
-
-(define_insn_and_split "*mma_xxsetaccz"
+(define_insn "mma_xxsetaccz"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=d")
-	(unspec:XO [(match_operand 1 "const_0_to_1_operand" "O")]
-	 UNSPEC_MMA_XXSETACCZ))]
+	(unspec_volatile:XO [(const_int 0)]
+			    UNSPECV_MMA_XXSETACCZ))]
   "TARGET_MMA"
   "xxsetaccz %A0"
-  "&& reload_completed"
-  [(set (match_dup 0) (unspec:XO [(match_dup 1)] UNSPEC_MMA_XXSETACCZ))]
-  ""
-  [(set_attr "type" "mma")
-   (set_attr "length" "4")])
+  [(set_attr "type" "mma")])
 
 (define_insn "mma_<vv>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")]
 		    MMA_VV))]
   "TARGET_MMA"
   "<vv> %A0,%x1,%x2"
   [(set_attr "type" "mma")])
 
 (define_insn "mma_<avv>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 3 "vsx_register_operand" "wa")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0,0")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 3 "vsx_register_operand" "v,?wa")]
 		    MMA_AVV))]
   "TARGET_MMA"
   "<avv> %A0,%x2,%x3"
   [(set_attr "type" "mma")])
 
 (define_insn "mma_<pv>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:OO 1 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:OO 1 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")]
 		    MMA_PV))]
   "TARGET_MMA"
   "<pv> %A0,%x1,%x2"
   [(set_attr "type" "mma")])
 
 (define_insn "mma_<apv>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")
-		    (match_operand:OO 2 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 3 "vsx_register_operand" "wa")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0,0")
+		    (match_operand:OO 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 3 "vsx_register_operand" "v,?wa")]
 		    MMA_APV))]
   "TARGET_MMA"
   "<apv> %A0,%x2,%x3"
   [(set_attr "type" "mma")])
 
 (define_insn "mma_<vvi4i4i8>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:SI 3 "const_0_to_15_operand" "n")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "u8bit_cint_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 3 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "u8bit_cint_operand" "n,n")]
 		    MMA_VVI4I4I8))]
   "TARGET_MMA"
   "<vvi4i4i8> %A0,%x1,%x2,%3,%4,%5"
@@ -544,13 +568,13 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i8>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 3 "vsx_register_operand" "wa")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "const_0_to_15_operand" "n")
-		    (match_operand:SI 6 "u8bit_cint_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0,0")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 3 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 6 "u8bit_cint_operand" "n,n")]
 		    MMA_AVVI4I4I8))]
   "TARGET_MMA"
   "<avvi4i4i8> %A0,%x2,%x3,%4,%5,%6"
@@ -558,12 +582,12 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4i2>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:SI 3 "const_0_to_15_operand" "n")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "const_0_to_3_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 3 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "const_0_to_3_operand" "n,n")]
 		    MMA_VVI4I4I2))]
   "TARGET_MMA"
   "<vvi4i4i2> %A0,%x1,%x2,%3,%4,%5"
@@ -571,13 +595,13 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i2>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 3 "vsx_register_operand" "wa")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "const_0_to_15_operand" "n")
-		    (match_operand:SI 6 "const_0_to_3_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0,0")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 3 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 6 "const_0_to_3_operand" "n,n")]
 		    MMA_AVVI4I4I2))]
   "TARGET_MMA"
   "<avvi4i4i2> %A0,%x2,%x3,%4,%5,%6"
@@ -585,11 +609,11 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:SI 3 "const_0_to_15_operand" "n")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 3 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")]
 		    MMA_VVI4I4))]
   "TARGET_MMA"
   "<vvi4i4> %A0,%x1,%x2,%3,%4"
@@ -597,12 +621,12 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 3 "vsx_register_operand" "wa")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "const_0_to_15_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0,0")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 3 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "const_0_to_15_operand" "n,n")]
 		    MMA_AVVI4I4))]
   "TARGET_MMA"
   "<avvi4i4> %A0,%x2,%x3,%4,%5"
@@ -610,11 +634,11 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<pvi4i2>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:OO 1 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:SI 3 "const_0_to_15_operand" "n")
-		    (match_operand:SI 4 "const_0_to_3_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:OO 1 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 3 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 4 "const_0_to_3_operand" "n,n")]
 		    MMA_PVI4I2))]
   "TARGET_MMA"
   "<pvi4i2> %A0,%x1,%x2,%3,%4"
@@ -622,12 +646,12 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<apvi4i2>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")
-		    (match_operand:OO 2 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 3 "vsx_register_operand" "wa")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "const_0_to_3_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0,0")
+		    (match_operand:OO 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 3 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "const_0_to_3_operand" "n,n")]
 		    MMA_APVI4I2))]
   "TARGET_MMA"
   "<apvi4i2> %A0,%x2,%x3,%4,%5"
@@ -635,12 +659,12 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<vvi4i4i4>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:SI 3 "const_0_to_15_operand" "n")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "const_0_to_15_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:V16QI 1 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 3 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "const_0_to_15_operand" "n,n")]
 		    MMA_VVI4I4I4))]
   "TARGET_MMA"
   "<vvi4i4i4> %A0,%x1,%x2,%3,%4,%5"
@@ -648,13 +672,13 @@
    (set_attr "prefixed" "yes")])
 
 (define_insn "mma_<avvi4i4i4>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")
-		    (match_operand:V16QI 2 "vsx_register_operand" "wa")
-		    (match_operand:V16QI 3 "vsx_register_operand" "wa")
-		    (match_operand:SI 4 "const_0_to_15_operand" "n")
-		    (match_operand:SI 5 "const_0_to_15_operand" "n")
-		    (match_operand:SI 6 "const_0_to_15_operand" "n")]
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
+	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0,0")
+		    (match_operand:V16QI 2 "vsx_register_operand" "v,?wa")
+		    (match_operand:V16QI 3 "vsx_register_operand" "v,?wa")
+		    (match_operand:SI 4 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 5 "const_0_to_15_operand" "n,n")
+		    (match_operand:SI 6 "const_0_to_15_operand" "n,n")]
 		    MMA_AVVI4I4I4))]
   "TARGET_MMA"
   "<avvi4i4i4> %A0,%x2,%x3,%4,%5,%6"

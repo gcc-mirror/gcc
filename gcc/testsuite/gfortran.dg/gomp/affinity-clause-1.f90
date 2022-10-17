@@ -22,12 +22,12 @@ end
 
 ! { dg-final { scan-tree-dump-times "D\\.\[0-9\]+ = .integer.kind=4.. __builtin_cosf ..real.kind=4.. a \\+ 1.0e\\+0\\);" 2 "original" } }
 
-! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) jj=2:5:2, integer\\(kind=4\\) i=D\\.\[0-9\]+:5:1\\):\\*\\(c_char \\*\\) &b\\\[.* <?i>? \\+ -1\\\]\\) affinity\\(iterator\\(integer\\(kind=4\\) jj=2:5:2, integer\\(kind=4\\) i=D\\.\[0-9\]+:5:1\\):\\*\\(c_char \\*\\) &d\\\[\\(.*jj \\* 5 \\+ .* <?i>?\\) \\+ -6\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) jj=2:5:2, integer\\(kind=4\\) i=D\\.\[0-9\]+:5:1\\):b\\\[.* <?i>? \\+ -1\\\]\\) affinity\\(iterator\\(integer\\(kind=4\\) jj=2:5:2, integer\\(kind=4\\) i=D\\.\[0-9\]+:5:1\\):d\\\[\\(.*jj \\* 5 \\+ .* <?i>?\\) \\+ -6\\\]\\)" 1 "original" } }
 
-! { dg final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) i=D.3938:5:1\\):\\*\\(c_char \\*\\) &b\\\[\\(.* <?i>? \\+ -1\\\]\\) affinity\\(iterator\\(integer\\(kind=4\\) i=D\\.\[0-9\]+:5:1\\):\\*\\(c_char \\*\\) &d\\\[\\(\\(integer\\(kind=8\\)\\) i \\+ -1\\) \\* 6\\\]\\)"  1 "original" } }
+! { dg final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) i=D\\.\[0-9\]+:5:1\\):b\\\[\\(.* <?i>? \\+ -1\\\]\\) affinity\\(iterator\\(integer\\(kind=4\\) i=D\\.\[0-9\]+:5:1\\):d\\\[\\(\\(integer\\(kind=8\\)\\) i \\+ -1\\) \\* 6\\\]\\)"  1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) i=1:5:1\\):a\\)\[^ \]" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) i=1:5:1\\):a\\) affinity\\(iterator\\(integer\\(kind=4\\) i=1:5:1\\):\\*x\\)"  1 "original" } }
 
-! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) k=7:4:-1, integer\\(kind=8\\) j=1:5:1\\):\\*\\(c_char \\*\\) &b\\\[\\(?\\(integer\\(kind=.\\).* \[jk\] \\+ .*\[kj\]\\) \\+ -1\\\]\\) affinity\\(iterator\\(integer\\(kind=4\\) k=7:4:-1, integer\\(kind=8\\) j=1:5:1\\):a\\) affinity\\(cc\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) k=7:4:-1, integer\\(kind=8\\) j=1:5:1\\):b\\\[\\(?\\(integer\\(kind=.\\).* \[jk\] \\+ .*\[kj\]\\) \\+ -1\\\]\\) affinity\\(iterator\\(integer\\(kind=4\\) k=7:4:-1, integer\\(kind=8\\) j=1:5:1\\):a\\) affinity\\(cc\\)" 1 "original" } }

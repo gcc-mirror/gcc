@@ -1,6 +1,6 @@
 /* Generic streaming support for various data types.
 
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -43,13 +43,13 @@ struct bitpack_d
   void *stream;
 };
 
-/* In data-streamer.c  */
+/* In data-streamer.cc  */
 void bp_pack_var_len_unsigned (struct bitpack_d *, unsigned HOST_WIDE_INT);
 void bp_pack_var_len_int (struct bitpack_d *, HOST_WIDE_INT);
 unsigned HOST_WIDE_INT bp_unpack_var_len_unsigned (struct bitpack_d *);
 HOST_WIDE_INT bp_unpack_var_len_int (struct bitpack_d *);
 
-/* In data-streamer-out.c  */
+/* In data-streamer-out.cc  */
 void streamer_write_zero (struct output_block *);
 void streamer_write_uhwi (struct output_block *, unsigned HOST_WIDE_INT);
 void streamer_write_hwi (struct output_block *, HOST_WIDE_INT);
@@ -74,7 +74,7 @@ void streamer_write_data_stream (struct lto_output_stream *, const void *,
 void streamer_write_wide_int (struct output_block *, const wide_int &);
 void streamer_write_widest_int (struct output_block *, const widest_int &);
 
-/* In data-streamer-in.c  */
+/* In data-streamer-in.cc  */
 const char *streamer_read_string (class data_in *, class lto_input_block *);
 const char *streamer_read_indexed_string (class data_in *,
 					  class lto_input_block *,

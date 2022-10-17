@@ -1,5 +1,5 @@
 /* Assembly proxy functions for ms_abi tests.
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Contributed by Daniel Santos <daniel.santos@pobox.com>
 
 This file is part of GCC.
@@ -30,6 +30,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __ELF__
 # define FN_TYPE(fn) .type fn,@function
 # define FN_SIZE(fn) .size fn,.-fn
+# ifdef __linux__
+	.section	.note.GNU-stack,"",@progbits
+# endif
 #else
 # define FN_TYPE(fn)
 # define FN_SIZE(fn)

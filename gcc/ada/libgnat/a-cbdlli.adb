@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,8 @@
 --                                                                          --
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
+
+with Ada.Containers.Stable_Sorting; use Ada.Containers.Stable_Sorting;
 
 with System; use type System.Address;
 with System.Put_Images;
@@ -73,7 +75,7 @@ is
       Src_Pos : Count_Type;
       Tgt_Pos : out Count_Type);
 
-   function Vet (Position : Cursor) return Boolean;
+   function Vet (Position : Cursor) return Boolean with Inline;
    --  Checks invariants of the cursor and its designated container, as a
    --  simple way of detecting dangling references (see operation Free for a
    --  description of the detection mechanism), returning True if all checks
@@ -312,7 +314,7 @@ is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Constant_Reference_Type :=
-           (Element => N.Element'Access,
+           (Element => N.Element'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -858,74 +860,6 @@ is
 
       procedure Sort (Container : in out List) is
          N : Node_Array renames Container.Nodes;
-
-         procedure Partition (Pivot, Back : Count_Type);
-         --  What does this do ???
-
-         procedure Sort (Front, Back : Count_Type);
-         --  Internal procedure, what does it do??? rename it???
-
-         ---------------
-         -- Partition --
-         ---------------
-
-         procedure Partition (Pivot, Back : Count_Type) is
-            Node : Count_Type;
-
-         begin
-            Node := N (Pivot).Next;
-            while Node /= Back loop
-               if N (Node).Element < N (Pivot).Element then
-                  declare
-                     Prev : constant Count_Type := N (Node).Prev;
-                     Next : constant Count_Type := N (Node).Next;
-
-                  begin
-                     N (Prev).Next := Next;
-
-                     if Next = 0 then
-                        Container.Last := Prev;
-                     else
-                        N (Next).Prev := Prev;
-                     end if;
-
-                     N (Node).Next := Pivot;
-                     N (Node).Prev := N (Pivot).Prev;
-
-                     N (Pivot).Prev := Node;
-
-                     if N (Node).Prev = 0 then
-                        Container.First := Node;
-                     else
-                        N (N (Node).Prev).Next := Node;
-                     end if;
-
-                     Node := Next;
-                  end;
-
-               else
-                  Node := N (Node).Next;
-               end if;
-            end loop;
-         end Partition;
-
-         ----------
-         -- Sort --
-         ----------
-
-         procedure Sort (Front, Back : Count_Type) is
-            Pivot : constant Count_Type :=
-              (if Front = 0 then Container.First else N (Front).Next);
-         begin
-            if Pivot /= Back then
-               Partition (Pivot, Back);
-               Sort (Front, Pivot);
-               Sort (Pivot, Back);
-            end if;
-         end Sort;
-
-      --  Start of processing for Sort
-
       begin
          if Container.Length <= 1 then
             return;
@@ -941,8 +875,43 @@ is
 
          declare
             Lock : With_Lock (Container.TC'Unchecked_Access);
+
+            package Descriptors is new List_Descriptors
+              (Node_Ref => Count_Type, Nil => 0);
+            use Descriptors;
+
+            function Next (Idx : Count_Type) return Count_Type is
+              (N (Idx).Next);
+            procedure Set_Next (Idx : Count_Type; Next : Count_Type)
+              with Inline;
+            procedure Set_Prev (Idx : Count_Type; Prev : Count_Type)
+              with Inline;
+            function "<" (L, R : Count_Type) return Boolean is
+              (N (L).Element < N (R).Element);
+            procedure Update_Container (List : List_Descriptor) with Inline;
+
+            procedure Set_Next (Idx : Count_Type; Next : Count_Type) is
+            begin
+               N (Idx).Next := Next;
+            end Set_Next;
+
+            procedure Set_Prev (Idx : Count_Type; Prev : Count_Type) is
+            begin
+               N (Idx).Prev := Prev;
+            end Set_Prev;
+
+            procedure Update_Container (List : List_Descriptor) is
+            begin
+               Container.First  := List.First;
+               Container.Last   := List.Last;
+               Container.Length := List.Length;
+            end Update_Container;
+
+            procedure Sort_List is new Doubly_Linked_List_Sort;
          begin
-            Sort (Front => 0, Back => 0);
+            Sort_List (List_Descriptor'(First  => Container.First,
+                                        Last   => Container.Last,
+                                        Length => Container.Length));
          end;
 
          pragma Assert (N (Container.First).Prev = 0);
@@ -1026,7 +995,6 @@ is
       Count     : Count_Type := 1)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
    begin
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;
@@ -1608,7 +1576,7 @@ is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Reference_Type :=
-           (Element => N.Element'Access,
+           (Element => N.Element'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -2242,6 +2210,10 @@ is
 
    function Vet (Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = 0 then
          return Position.Container = null;
       end if;

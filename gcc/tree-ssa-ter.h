@@ -1,5 +1,5 @@
-/* Header file for tree-ssa-ter.c exports.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+/* Header file for tree-ssa-ter.cc exports.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,4 +1,6 @@
 /* { dg-require-effective-target vect_int } */
+/* The SLP vectorization happens as part of the if-converted loop body.  */
+/* { dg-additional-options "-fdump-tree-vect-details" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -65,5 +67,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" } } */
-  
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "vect" } } */

@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail301.d(11): Error: need 'this' for 'guard' of type 'int'
-fail_compilation/fail301.d(22): Error: template instance fail301.bug3305!0 error instantiating
+fail_compilation/fail301.d(11): Error: need `this` for `guard` of type `int`
+fail_compilation/fail301.d(22): Error: template instance `fail301.bug3305!0` error instantiating
 ---
 */
 

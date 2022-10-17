@@ -21,6 +21,8 @@ private with System;
 package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
 is
+   pragma Annotate (GNATprove, Always_Return, Big_Integers);
+
    type Big_Integer is private
      with Integer_Literal => From_Universal_Image,
           Put_Image       => Put_Image;

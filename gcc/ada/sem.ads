@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 
 --    Analysis     implements the bulk of semantic analysis such as
 --                 name analysis and type resolution for declarations,
---                 instructions and expressions. The main routine
+--                 statements, and expressions. The main routine
 --                 driving this process is procedure Analyze given below.
 --                 This analysis phase is really a bottom up pass that is
 --                 achieved during the recursive traversal performed by the
@@ -46,26 +46,25 @@
 --                 completed during analysis (because of overloading
 --                 ambiguities). Specifically, after completing the bottom
 --                 up pass carried out during analysis for expressions, the
---                 Resolve routine (see the spec of sem_res for more info)
+--                 Resolve routine (see the spec of Sem_Res for more info)
 --                 is called to perform a top down resolution with
 --                 recursive calls to itself to resolve operands.
 
---    Expansion    if we are not generating code this phase is a no-op.
+--    Expansion    If we are not generating code this phase is a no-op.
 --                 Otherwise this phase expands, i.e. transforms, original
---                 declaration, expressions or instructions into simpler
---                 structures that can be handled by the back-end. This
---                 phase is also in charge of generating code which is
---                 implicit in the original source (for instance for
---                 default initializations, controlled types, etc.)
---                 There are two separate instances where expansion is
+--                 source constructs into simpler constructs that can be
+--                 handled by the back-end. This phase is also in charge of
+--                 generating code which is implicit in the original source
+--                 (for instance for default initializations, controlled types,
+--                 etc.)  There are two separate instances where expansion is
 --                 invoked. For declarations and instructions, expansion is
---                 invoked just after analysis since no resolution needs
---                 to be performed. For expressions, expansion is done just
---                 after resolution. In both cases expansion is done from the
---                 bottom up just before the end of Analyze for instructions
---                 and declarations or the call to Resolve for expressions.
---                 The main routine driving expansion is Expand.
---                 See the spec of Expander for more details.
+--                 invoked just after analysis since no resolution needs to be
+--                 performed. For expressions, expansion is done just after
+--                 resolution. In both cases expansion is done from the bottom
+--                 up just before the end of Analyze for instructions and
+--                 declarations or the call to Resolve for expressions.  The
+--                 main routine driving expansion is Expand.  See the spec of
+--                 Expander for more details.
 
 --  To summarize, in normal code generation mode we recursively traverse the
 --  abstract syntax tree top-down performing semantic analysis bottom
@@ -110,7 +109,7 @@
 --  pragmas that appear with subprogram specifications rather than in the body.
 
 --  Collectively we call these Spec_Expressions. The routine that performs the
---  special analysis is called Analyze_Spec_Expression.
+--  special analysis is called Preanalyze_Spec_Expression.
 
 --  Expansion has to be deferred since you can't generate code for expressions
 --  that reference types that have not been frozen yet. As an example, consider
@@ -134,7 +133,7 @@
 --  of the expression cannot be obtained at the point of declaration, only at
 --  the point of use.
 
---  Generally our model is to combine analysis resolution and expansion, but
+--  Generally our model is to combine analysis, resolution, and expansion, but
 --  this is the one case where this model falls down. Here is how we patch
 --  it up without causing too much distortion to our basic model.
 
@@ -175,7 +174,7 @@
 --  children is performed before expansion of the parent does not work if the
 --  code generated for the children by the expander needs to be evaluated
 --  repeatedly (for instance in the above aggregate "new Thing (Function_Call)"
---  needs to be called 100 times.)
+--  needs to be called 100 times).
 
 --  The reason this mechanism does not work is that the expanded code for the
 --  children is typically inserted above the parent and thus when the parent
@@ -291,6 +290,10 @@ package Sem is
    --  freezing nodes can modify the status of this flag, any other client
    --  should regard it as read-only.
 
+   Inside_Class_Condition_Preanalysis : Boolean := False;
+   --  Flag indicating whether we are preanalyzing a class-wide precondition
+   --  or postcondition.
+
    Inside_Preanalysis_Without_Freezing : Nat := 0;
    --  Flag indicating whether we are preanalyzing an expression performing no
    --  freezing. Non-zero means we are inside (it is actually a level counter
@@ -323,8 +326,8 @@ package Sem is
    --  using pragma Check_Name), are handled as follows. If a suppress or
    --  unsuppress pragma is encountered for a given entity, then the flag
    --  Checks_May_Be_Suppressed is set in the entity and an entry is made in
-   --  either the Local_Entity_Suppress stack (case of pragma that appears in
-   --  other than a package spec), or in the Global_Entity_Suppress stack (case
+   --  either the local suppress stack (case of pragma that appears in
+   --  other than a package spec), or in the global suppress stack (case
    --  of pragma that appears in a package spec, which is by the rule of RM
    --  11.5(7) applicable throughout the life of the entity). Similarly, a
    --  Suppress/Unsuppress pragma for a non-predefined check which does not
@@ -336,7 +339,7 @@ package Sem is
    --  other point is that we have to make sure that we have proper nested
    --  interaction between such specific pragmas and locally applied general
    --  pragmas applying to all entities. This is achieved by including in the
-   --  Local_Entity_Suppress table dummy entries with an empty Entity field
+   --  local suppress stack dummy entries with an empty Entity field
    --  that are applicable to all entities. A similar search is needed for any
    --  non-predefined check even if no specific entity is involved.
 
@@ -355,18 +358,18 @@ package Sem is
    --  applies, and gives the right result when such pragmas are used even
    --  in complex cases of nested Suppress and Unsuppress pragmas.
 
-   --  The Local_Entity_Suppress and Global_Entity_Suppress stacks are handled
-   --  using dynamic allocation and linked lists. We do not often use this
-   --  approach in the compiler (preferring to use extensible tables instead).
-   --  The reason we do it here is that scope stack entries save a pointer to
-   --  the current local stack top, which is also saved and restored on scope
-   --  exit. Furthermore for processing of generics we save pointers to the
-   --  top of the stack, so that the local stack is actually a tree of stacks
-   --  rather than a single stack, a structure that is easy to represent using
-   --  linked lists, but impossible to represent using a single table. Note
-   --  that because of the generic issue, we never release entries in these
-   --  stacks, but that's no big deal, since we are unlikely to have a huge
-   --  number of Suppress/Unsuppress entries in a single compilation.
+   --  The local and global suppress stacks are handled using dynamic
+   --  allocation and linked lists. We do not often use this approach in the
+   --  compiler (preferring to use extensible tables instead). The reason we do
+   --  it here is that scope stack entries save a pointer to the current local
+   --  stack top, which is also saved and restored on scope exit. Furthermore
+   --  for processing of generics we save pointers to the top of the stack, so
+   --  that the local stack is actually a tree of stacks rather than a single
+   --  stack, a structure that is easy to represent using linked lists, but
+   --  impossible to represent using a single table. Note that because of the
+   --  generic issue, we never release entries in these stacks, but that's no
+   --  big deal, since we are unlikely to have a huge number of
+   --  Suppress/Unsuppress entries in a single compilation.
 
    type Suppress_Stack_Entry;
    type Suppress_Stack_Entry_Ptr is access all Suppress_Stack_Entry;
@@ -499,7 +502,7 @@ package Sem is
       --  Save contents of Check_Policy_List on entry to restore on exit. The
       --  Check_Policy pragmas are chained with Check_Policy_List pointing to
       --  the most recent entry. This list is searched starting here, so that
-      --  the search finds the most recent appicable entry. When we restore
+      --  the search finds the most recent applicable entry. When we restore
       --  Check_Policy_List on exit from the scope, the effect is to remove
       --  all entries set in the scope being exited.
 
@@ -533,7 +536,7 @@ package Sem is
       --  See Sem_Ch10 (Install_Parents, Remove_Parents).
 
       Node_To_Be_Wrapped : Node_Id;
-      --  Only used in transient scopes. Records the node which will be wrapped
+      --  Only used in transient scopes. Records the node that will be wrapped
       --  by the transient block.
 
       Actions_To_Be_Wrapped : Scope_Actions;

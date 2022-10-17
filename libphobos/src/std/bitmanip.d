@@ -4,6 +4,7 @@
 Bit-level manipulation facilities.
 
 $(SCRIPT inhibitQuickIndex = 1;)
+$(DIVC quickindex,
 $(BOOKTABLE,
 $(TR $(TH Category) $(TH Functions))
 $(TR $(TD Bit constructs) $(TD
@@ -32,45 +33,46 @@ $(TR $(TD Tagging) $(TD
     $(LREF taggedClassRef)
     $(LREF taggedPointer)
 ))
-)
+))
 
-Copyright: Copyright Digital Mars 2007 - 2011.
+Copyright: Copyright The D Language Foundation 2007 - 2011.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   $(HTTP digitalmars.com, Walter Bright),
            $(HTTP erdani.org, Andrei Alexandrescu),
-           Jonathan M Davis,
+           $(HTTP jmdavisprog.com, Jonathan M Davis),
            Alex Rønne Petersen,
            Damian Ziemba,
            Amaury SECHET
-Source: $(PHOBOSSRC std/_bitmanip.d)
+Source: $(PHOBOSSRC std/bitmanip.d)
 */
 /*
-         Copyright Digital Mars 2007 - 2012.
+         Copyright The D Language Foundation 2007 - 2012.
 Distributed under the Boost Software License, Version 1.0.
    (See accompanying file LICENSE_1_0.txt or copy at
          http://www.boost.org/LICENSE_1_0.txt)
 */
 module std.bitmanip;
 
-//debug = bitarray;                // uncomment to turn on debugging printf's
-
 import std.range.primitives;
 public import std.system : Endian;
 import std.traits;
 
-version (unittest)
-{
-    import std.stdio;
-}
-
-
-private string myToString(ulong n)
+private string myToString(ulong n) pure @safe
 {
     import core.internal.string : UnsignedStringBuf, unsignedToTempString;
     UnsignedStringBuf buf;
     auto s = unsignedToTempString(n, buf);
-    return cast(string) s ~ (n > uint.max ? "UL" : "U");
+    // pure allows implicit cast to string
+    return s ~ (n > uint.max ? "UL" : "U");
 }
+
+@safe pure unittest
+{
+    assert(myToString(5) == "5U");
+    assert(myToString(uint.max) == "4294967295U");
+    assert(myToString(uint.max + 1UL) == "4294967296UL");
+}
+
 
 private template createAccessors(
     string store, T, string name, size_t len, size_t offset)
@@ -78,12 +80,12 @@ private template createAccessors(
     static if (!name.length)
     {
         // No need to create any accessor
-        enum result = "";
+        enum createAccessors = "";
     }
     else static if (len == 0)
     {
         // Fields of length 0 are always zero
-        enum result = "enum "~T.stringof~" "~name~" = 0;\n";
+        enum createAccessors = "enum "~T.stringof~" "~name~" = 0;\n";
     }
     else
     {
@@ -107,8 +109,7 @@ private template createAccessors(
 
         static if (is(T == bool))
         {
-            static assert(len == 1);
-            enum result =
+            enum createAccessors =
             // getter
                 "@property bool " ~ name ~ "() @safe pure nothrow @nogc const { return "
                 ~"("~store~" & "~myToString(maskAllElse)~") != 0;}\n"
@@ -120,7 +121,7 @@ private template createAccessors(
         else
         {
             // getter
-            enum result = "@property "~T.stringof~" "~name~"() @safe pure nothrow @nogc const { auto result = "
+            enum createAccessors = "@property "~T.stringof~" "~name~"() @safe pure nothrow @nogc const { auto result = "
                 ~"("~store~" & "
                 ~ myToString(maskAllElse) ~ ") >>"
                 ~ myToString(offset) ~ ";"
@@ -149,7 +150,7 @@ private template createAccessors(
 private template createStoreName(Ts...)
 {
     static if (Ts.length < 2)
-        enum createStoreName = "";
+        enum createStoreName = "_bf";
     else
         enum createStoreName = "_" ~ Ts[1] ~ createStoreName!(Ts[3 .. $]);
 }
@@ -168,22 +169,24 @@ private template createStorageAndFields(Ts...)
         alias StoreType = ulong;
     else
     {
-        static assert(false, "Field widths must sum to 8, 16, 32, or 64");
+        import std.conv : to;
+        static assert(false, "Field widths must sum to 8, 16, 32, or 64, not " ~ to!string(Size));
         alias StoreType = ulong; // just to avoid another error msg
     }
-    enum result
+
+    enum createStorageAndFields
         = "private " ~ StoreType.stringof ~ " " ~ Name ~ ";"
-        ~ createFields!(Name, 0, Ts).result;
+        ~ createFields!(Name, 0, Ts);
 }
 
 private template createFields(string store, size_t offset, Ts...)
 {
     static if (Ts.length > 0)
-        enum result
-            = createAccessors!(store, Ts[0], Ts[1], Ts[2], offset).result
-            ~ createFields!(store, offset + Ts[2], Ts[3 .. $]).result;
+        enum createFields
+            = createAccessors!(store, Ts[0], Ts[1], Ts[2], offset)
+            ~ createFields!(store, offset + Ts[2], Ts[3 .. $]);
     else
-        enum result = "";
+        enum createFields = "";
 }
 
 private ulong getBitsForAlign(ulong a)
@@ -220,7 +223,7 @@ private template createReferenceAccessor(string store, T, ulong bits, string nam
         ~" (("~store~" & (cast(typeof("~store~")) "~myToString(mask)~"))"
         ~" | ((cast(typeof("~store~")) cast(void*) v) & (cast(typeof("~store~")) "~myToString(~mask)~")));}\n";
 
-    enum result = storage ~ storage_accessor ~ ref_accessor;
+    enum createReferenceAccessor = storage ~ storage_accessor ~ ref_accessor;
 }
 
 private template sizeOfBitField(T...)
@@ -238,135 +241,154 @@ private template createTaggedReference(T, ulong a, string name, Ts...)
         "Fields must fit in the bits know to be zero because of alignment."
     );
     enum StoreName = createStoreName!(T, name, 0, Ts);
-    enum result
-        = createReferenceAccessor!(StoreName, T, sizeOfBitField!Ts, name).result
-        ~ createFields!(StoreName, 0, Ts, size_t, "", T.sizeof * 8 - sizeOfBitField!Ts).result;
+    enum createTaggedReference
+        = createReferenceAccessor!(StoreName, T, sizeOfBitField!Ts, name)
+        ~ createFields!(StoreName, 0, Ts, size_t, "", T.sizeof * 8 - sizeOfBitField!Ts);
 }
 
 /**
-Allows creating bit fields inside $(D_PARAM struct)s and $(D_PARAM
-class)es.
+Allows creating `bitfields` inside `structs`, `classes` and `unions`.
 
-Example:
+A `bitfield` consists of one or more entries with a fixed number of
+bits reserved for each of the entries. The types of the entries can
+be `bool`s, integral types or enumerated types, arbitrarily mixed.
+The most efficient type to store in `bitfields` is `bool`, followed
+by unsigned types, followed by signed types.
 
-----
-struct A
+Each non-`bool` entry of the `bitfield` will be represented by the
+number of bits specified by the user. The minimum and the maximum
+numbers that represent this domain can be queried by using the name
+of the variable followed by `_min` or `_max`.
+
+Limitation: The number of bits in a `bitfield` is limited to 8, 16,
+32 or 64. If padding is needed, an entry should be explicitly
+allocated with an empty name.
+
+Implementation_details: `Bitfields` are internally stored in an
+`ubyte`, `ushort`, `uint` or `ulong` depending on the number of bits
+used. The bits are filled in the order given by the parameters,
+starting with the lowest significant bit. The name of the (private)
+variable used for saving the `bitfield` is created by a prefix `_bf`
+and concatenating all of the variable names, each preceded by an
+underscore.
+
+Params: T = A list of template parameters divided into chunks of 3
+            items. Each chunk consists (in this order) of a type, a
+            name and a number. Together they define an entry
+            of the `bitfield`: a variable of the given type and name,
+            which can hold as many bits as the number denotes.
+
+Returns: A string that can be used in a `mixin` to add the `bitfield`.
+
+See_Also: $(REF BitFlags, std,typecons)
+*/
+string bitfields(T...)()
 {
-    int a;
-    mixin(bitfields!(
-        uint, "x",    2,
-        int,  "y",    3,
-        uint, "z",    2,
-        bool, "flag", 1));
+    import std.conv : to;
+
+    static assert(T.length % 3 == 0,
+                  "Wrong number of arguments (" ~ to!string(T.length) ~ "): Must be a multiple of 3");
+
+    static foreach (i, ARG; T)
+    {
+        static if (i % 3 == 0)
+            static assert(is (typeof({ARG tmp = cast (ARG)0; if (ARG.min < 0) {} }())),
+                          "Integral type or `bool` expected, found " ~ ARG.stringof);
+
+        // would be nice to check for valid variable names too
+        static if (i % 3 == 1)
+            static assert(is (typeof(ARG) : string),
+                          "Variable name expected, found " ~ ARG.stringof);
+
+        static if (i % 3 == 2)
+        {
+            static assert(is (typeof({ulong tmp = ARG;}())),
+                          "Integral value expected, found " ~ ARG.stringof);
+
+            static if (T[i-1] != "")
+            {
+                static assert(!is (T[i-2] : bool) || ARG <= 1,
+                              "Type `bool` is only allowed for single-bit fields");
+
+                static assert(ARG >= 0 && ARG <= T[i-2].sizeof * 8,
+                              "Wrong size of bitfield: " ~ ARG.stringof);
+            }
+        }
+    }
+
+    return createStorageAndFields!T;
 }
-A obj;
-obj.x = 2;
-obj.z = obj.x;
-----
 
-The example above creates a bitfield pack of eight bits, which fit in
-one $(D_PARAM ubyte). The bitfields are allocated starting from the
-least significant bit, i.e. x occupies the two least significant bits
-of the bitfields storage.
+/**
+Create a `bitfield` pack of eight bits, which fit in
+one `ubyte`. The `bitfields` are allocated starting from the
+least significant bit, i.e. `x` occupies the two least significant bits
+of the `bitfields` storage.
+*/
+@safe unittest
+{
+    struct A
+    {
+        int a;
+        mixin(bitfields!(
+            uint, "x",    2,
+            int,  "y",    3,
+            uint, "z",    2,
+            bool, "flag", 1));
+    }
 
-The sum of all bit lengths in one $(D_PARAM bitfield) instantiation
+    A obj;
+    obj.x = 2;
+    obj.z = obj.x;
+
+    assert(obj.x == 2);
+    assert(obj.y == 0);
+    assert(obj.z == 2);
+    assert(obj.flag == false);
+}
+
+/**
+The sum of all bit lengths in one `bitfield` instantiation
 must be exactly 8, 16, 32, or 64. If padding is needed, just allocate
 one bitfield with an empty name.
-
-Example:
-
-----
-struct A
-{
-    mixin(bitfields!(
-        bool, "flag1",    1,
-        bool, "flag2",    1,
-        uint, "",         6));
-}
-----
-
-The type of a bit field can be any integral type or enumerated
-type. The most efficient type to store in bitfields is $(D_PARAM
-bool), followed by unsigned types, followed by signed types.
 */
-
-template bitfields(T...)
-{
-    enum { bitfields = createStorageAndFields!T.result }
-}
-
-/**
-This string mixin generator allows one to create tagged pointers inside $(D_PARAM struct)s and $(D_PARAM class)es.
-
-A tagged pointer uses the bits known to be zero in a normal pointer or class reference to store extra information.
-For example, a pointer to an integer must be 4-byte aligned, so there are 2 bits that are always known to be zero.
-One can store a 2-bit integer there.
-
-The example above creates a tagged pointer in the struct A. The pointer is of type
-$(D uint*) as specified by the first argument, and is named x, as specified by the second
-argument.
-
-Following arguments works the same way as $(D bitfield)'s. The bitfield must fit into the
-bits known to be zero because of the pointer alignment.
-*/
-
-template taggedPointer(T : T*, string name, Ts...) {
-    enum taggedPointer = createTaggedReference!(T*, T.alignof, name, Ts).result;
-}
-
-///
 @safe unittest
 {
     struct A
     {
-        int a;
-        mixin(taggedPointer!(
-            uint*, "x",
-            bool, "b1", 1,
-            bool, "b2", 1));
+        mixin(bitfields!(
+            bool, "flag1",    1,
+            bool, "flag2",    1,
+            uint, "",         6));
     }
-    A obj;
-    obj.x = new uint;
-    obj.b1 = true;
-    obj.b2 = false;
+
+    A a;
+    assert(a.flag1 == 0);
+    a.flag1 = 1;
+    assert(a.flag1 == 1);
+    a.flag1 = 0;
+    assert(a.flag1 == 0);
 }
 
-/**
-This string mixin generator allows one to create tagged class reference inside $(D_PARAM struct)s and $(D_PARAM class)es.
-
-A tagged class reference uses the bits known to be zero in a normal class reference to store extra information.
-For example, a pointer to an integer must be 4-byte aligned, so there are 2 bits that are always known to be zero.
-One can store a 2-bit integer there.
-
-The example above creates a tagged reference to an Object in the struct A. This expects the same parameters
-as $(D taggedPointer), except the first argument which must be a class type instead of a pointer type.
-*/
-
-template taggedClassRef(T, string name, Ts...)
-if (is(T == class))
-{
-    enum taggedClassRef = createTaggedReference!(T, 8, name, Ts).result;
-}
-
-///
+/// enums can be used too
 @safe unittest
 {
-    struct A
+    enum ABC { A, B, C }
+    struct EnumTest
     {
-        int a;
-        mixin(taggedClassRef!(
-            Object, "o",
-            uint, "i", 2));
+        mixin(bitfields!(
+                  ABC, "x", 2,
+                  bool, "y", 1,
+                  ubyte, "z", 5));
     }
-    A obj;
-    obj.o = new Object();
-    obj.i = 3;
 }
 
 @safe pure nothrow @nogc
 unittest
 {
-    // Degenerate bitfields (#8474 / #11160) tests mixed with range tests
+    // Degenerate bitfields tests mixed with range tests
+    // https://issues.dlang.org/show_bug.cgi?id=8474
+    // https://issues.dlang.org/show_bug.cgi?id=11160
     struct Test1
     {
         mixin(bitfields!(uint, "a", 32,
@@ -430,73 +452,9 @@ unittest
     t4b.a = -5; assert(t4b.a == -5L);
 }
 
-@system unittest
-{
-    struct Test5
-    {
-        mixin(taggedPointer!(
-            int*, "a",
-            uint, "b", 2));
-    }
-
-    Test5 t5;
-    t5.a = null;
-    t5.b = 3;
-    assert(t5.a is null);
-    assert(t5.b == 3);
-
-    int myint = 42;
-    t5.a = &myint;
-    assert(t5.a is &myint);
-    assert(t5.b == 3);
-
-    struct Test6
-    {
-        mixin(taggedClassRef!(
-            Object, "o",
-            bool, "b", 1));
-    }
-
-    Test6 t6;
-    t6.o = null;
-    t6.b = false;
-    assert(t6.o is null);
-    assert(t6.b == false);
-
-    auto o = new Object();
-    t6.o = o;
-    t6.b = true;
-    assert(t6.o is o);
-    assert(t6.b == true);
-}
-
+// https://issues.dlang.org/show_bug.cgi?id=6686
 @safe unittest
 {
-    static assert(!__traits(compiles,
-        taggedPointer!(
-            int*, "a",
-            uint, "b", 3)));
-
-    static assert(!__traits(compiles,
-        taggedClassRef!(
-            Object, "a",
-            uint, "b", 4)));
-
-    struct S {
-        mixin(taggedClassRef!(
-            Object, "a",
-            bool, "b", 1));
-    }
-
-    const S s;
-    void bar(S s) {}
-
-    static assert(!__traits(compiles, bar(s)));
-}
-
-@safe unittest
-{
-    // Bug #6686
     union  S {
         ulong bits = ulong.max;
         mixin (bitfields!(
@@ -511,9 +469,9 @@ unittest
     assert(num.bits == 0xFFFF_FFFF_8000_0001uL);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=5942
 @safe unittest
 {
-    // Bug #5942
     struct S
     {
         mixin(bitfields!(
@@ -576,7 +534,7 @@ unittest
         assert(i.checkExpectations(true, 7, 7));
     }
 
-    //Bug# 8876
+    //https://issues.dlang.org/show_bug.cgi?id=8876
     {
         struct MoreIntegrals {
             bool checkExpectations(uint eu, ushort es, uint ei) { return u == eu && s == es && i == ei; }
@@ -629,12 +587,11 @@ unittest
     assert(f.checkExpectations(true));
 }
 
-// Issue 12477
+// https://issues.dlang.org/show_bug.cgi?id=12477
 @system unittest
 {
     import core.exception : AssertError;
     import std.algorithm.searching : canFind;
-    import std.bitmanip : bitfields;
 
     static struct S
     {
@@ -654,9 +611,182 @@ unittest
     { assert(ae.msg.canFind("Value is smaller than the minimum value of bitfield 'b'"), ae.msg); }
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=15305
+@safe unittest
+{
+    struct S {
+            mixin(bitfields!(
+                    bool, "alice", 1,
+                    ulong, "bob", 63,
+            ));
+    }
+
+    S s;
+    s.bob = long.max - 1;
+    s.alice = false;
+    assert(s.bob == long.max - 1);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21634
+@safe unittest
+{
+    struct A
+    {
+        mixin(bitfields!(int, "", 1,
+                         int, "gshared", 7));
+    }
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21725
+@safe unittest
+{
+    struct S
+    {
+        mixin(bitfields!(
+            uint, q{foo}, 4,
+            uint, null, 4,
+        ));
+    }
+}
+
+/**
+This string mixin generator allows one to create tagged pointers inside $(D_PARAM struct)s and $(D_PARAM class)es.
+
+A tagged pointer uses the bits known to be zero in a normal pointer or class reference to store extra information.
+For example, a pointer to an integer must be 4-byte aligned, so there are 2 bits that are always known to be zero.
+One can store a 2-bit integer there.
+
+The example above creates a tagged pointer in the struct A. The pointer is of type
+`uint*` as specified by the first argument, and is named x, as specified by the second
+argument.
+
+Following arguments works the same way as `bitfield`'s. The bitfield must fit into the
+bits known to be zero because of the pointer alignment.
+*/
+
+template taggedPointer(T : T*, string name, Ts...) {
+    enum taggedPointer = createTaggedReference!(T*, T.alignof, name, Ts);
+}
+
+///
+@safe unittest
+{
+    struct A
+    {
+        int a;
+        mixin(taggedPointer!(
+            uint*, "x",
+            bool, "b1", 1,
+            bool, "b2", 1));
+    }
+    A obj;
+    obj.x = new uint;
+    obj.b1 = true;
+    obj.b2 = false;
+}
+
+@system unittest
+{
+    struct Test5
+    {
+        mixin(taggedPointer!(
+            int*, "a",
+            uint, "b", 2));
+    }
+
+    Test5 t5;
+    t5.a = null;
+    t5.b = 3;
+    assert(t5.a is null);
+    assert(t5.b == 3);
+
+    int myint = 42;
+    t5.a = &myint;
+    assert(t5.a is &myint);
+    assert(t5.b == 3);
+}
+
+/**
+This string mixin generator allows one to create tagged class reference inside $(D_PARAM struct)s and $(D_PARAM class)es.
+
+A tagged class reference uses the bits known to be zero in a normal class reference to store extra information.
+For example, a pointer to an integer must be 4-byte aligned, so there are 2 bits that are always known to be zero.
+One can store a 2-bit integer there.
+
+The example above creates a tagged reference to an Object in the struct A. This expects the same parameters
+as `taggedPointer`, except the first argument which must be a class type instead of a pointer type.
+*/
+
+template taggedClassRef(T, string name, Ts...)
+if (is(T == class))
+{
+    enum taggedClassRef = createTaggedReference!(T, 8, name, Ts);
+}
+
+///
+@safe unittest
+{
+    struct A
+    {
+        int a;
+        mixin(taggedClassRef!(
+            Object, "o",
+            uint, "i", 2));
+    }
+    A obj;
+    obj.o = new Object();
+    obj.i = 3;
+}
+
+@system unittest
+{
+    struct Test6
+    {
+        mixin(taggedClassRef!(
+            Object, "o",
+            bool, "b", 1));
+    }
+
+    Test6 t6;
+    t6.o = null;
+    t6.b = false;
+    assert(t6.o is null);
+    assert(t6.b == false);
+
+    auto o = new Object();
+    t6.o = o;
+    t6.b = true;
+    assert(t6.o is o);
+    assert(t6.b == true);
+}
+
+@safe unittest
+{
+    static assert(!__traits(compiles,
+        taggedPointer!(
+            int*, "a",
+            uint, "b", 3)));
+
+    static assert(!__traits(compiles,
+        taggedClassRef!(
+            Object, "a",
+            uint, "b", 4)));
+
+    struct S {
+        mixin(taggedClassRef!(
+            Object, "a",
+            bool, "b", 1));
+    }
+
+    const S s;
+    void bar(S s) {}
+
+    static assert(!__traits(compiles, bar(s)));
+}
+
 /**
    Allows manipulating the fraction, exponent, and sign parts of a
-   $(D_PARAM float) separately. The definition is:
+   `float` separately. The definition is:
 
 ----
 struct FloatRep
@@ -673,23 +803,11 @@ struct FloatRep
 }
 ----
 */
-
-struct FloatRep
-{
-    union
-    {
-        float value;
-        mixin(bitfields!(
-                  uint,  "fraction", 23,
-                  ubyte, "exponent",  8,
-                  bool,  "sign",      1));
-    }
-    enum uint bias = 127, fractionBits = 23, exponentBits = 8, signBits = 1;
-}
+alias FloatRep = FloatingPointRepresentation!float;
 
 /**
    Allows manipulating the fraction, exponent, and sign parts of a
-   $(D_PARAM double) separately. The definition is:
+   `double` separately. The definition is:
 
 ----
 struct DoubleRep
@@ -706,23 +824,132 @@ struct DoubleRep
 }
 ----
 */
+alias DoubleRep = FloatingPointRepresentation!double;
 
-struct DoubleRep
+private struct FloatingPointRepresentation(T)
 {
+    static if (is(T == float))
+    {
+        enum uint bias = 127, fractionBits = 23, exponentBits = 8, signBits = 1;
+        alias FractionType = uint;
+        alias ExponentType = ubyte;
+    }
+    else
+    {
+        enum uint bias = 1023, fractionBits = 52, exponentBits = 11, signBits = 1;
+        alias FractionType = ulong;
+        alias ExponentType = ushort;
+    }
+
     union
     {
-        double value;
+        T value;
         mixin(bitfields!(
-                  ulong,  "fraction", 52,
-                  ushort, "exponent", 11,
-                  bool,   "sign",      1));
+                  FractionType, "fraction", fractionBits,
+                  ExponentType, "exponent", exponentBits,
+                  bool,  "sign",     signBits));
     }
-    enum uint bias = 1023, signBits = 1, fractionBits = 52, exponentBits = 11;
 }
 
+///
 @safe unittest
 {
-    // test reading
+    FloatRep rep = {value: 0};
+    assert(rep.fraction == 0);
+    assert(rep.exponent == 0);
+    assert(!rep.sign);
+
+    rep.value = 42;
+    assert(rep.fraction == 2621440);
+    assert(rep.exponent == 132);
+    assert(!rep.sign);
+
+    rep.value = 10;
+    assert(rep.fraction == 2097152);
+    assert(rep.exponent == 130);
+}
+
+///
+@safe unittest
+{
+    FloatRep rep = {value: 1};
+    assert(rep.fraction == 0);
+    assert(rep.exponent == 127);
+    assert(!rep.sign);
+
+    rep.exponent = 126;
+    assert(rep.value == 0.5);
+
+    rep.exponent = 130;
+    assert(rep.value == 8);
+}
+
+///
+@safe unittest
+{
+    FloatRep rep = {value: 1};
+    rep.value = -0.5;
+    assert(rep.fraction == 0);
+    assert(rep.exponent == 126);
+    assert(rep.sign);
+
+    rep.value = -1. / 3;
+    assert(rep.fraction == 2796203);
+    assert(rep.exponent == 125);
+    assert(rep.sign);
+}
+
+///
+@safe unittest
+{
+    DoubleRep rep = {value: 0};
+    assert(rep.fraction == 0);
+    assert(rep.exponent == 0);
+    assert(!rep.sign);
+
+    rep.value = 42;
+    assert(rep.fraction == 1407374883553280);
+    assert(rep.exponent == 1028);
+    assert(!rep.sign);
+
+    rep.value = 10;
+    assert(rep.fraction == 1125899906842624);
+    assert(rep.exponent == 1026);
+}
+
+///
+@safe unittest
+{
+    DoubleRep rep = {value: 1};
+    assert(rep.fraction == 0);
+    assert(rep.exponent == 1023);
+    assert(!rep.sign);
+
+    rep.exponent = 1022;
+    assert(rep.value == 0.5);
+
+    rep.exponent = 1026;
+    assert(rep.value == 8);
+}
+
+///
+@safe unittest
+{
+    DoubleRep rep = {value: 1};
+    rep.value = -0.5;
+    assert(rep.fraction == 0);
+    assert(rep.exponent == 1022);
+    assert(rep.sign);
+
+    rep.value = -1. / 3;
+    assert(rep.fraction == 1501199875790165);
+    assert(rep.exponent == 1021);
+    assert(rep.sign);
+}
+
+/// Reading
+@safe unittest
+{
     DoubleRep x;
     x.value = 1.0;
     assert(x.fraction == 0 && x.exponent == 1023 && !x.sign);
@@ -730,50 +957,30 @@ struct DoubleRep
     assert(x.fraction == 0 && x.exponent == 1022 && x.sign);
     x.value = 0.5;
     assert(x.fraction == 0 && x.exponent == 1022 && !x.sign);
+}
 
-    // test writing
+/// Writing
+@safe unittest
+{
+    DoubleRep x;
     x.fraction = 1125899906842624;
     x.exponent = 1025;
     x.sign = true;
     assert(x.value == -5.0);
-
-    // test enums
-    enum ABC { A, B, C }
-    struct EnumTest
-    {
-        mixin(bitfields!(
-                  ABC, "x", 2,
-                  bool, "y", 1,
-                  ubyte, "z", 5));
-    }
-}
-
-@safe unittest
-{
-    // Issue #15305
-    struct S {
-            mixin(bitfields!(
-                    bool, "alice", 1,
-                    ulong, "bob", 63,
-            ));
-    }
-
-    S s;
-    s.bob = long.max - 1;
-    s.alice = false;
-    assert(s.bob == long.max - 1);
 }
 
 /**
- * An array of bits.
- */
-
+A dynamic array of bits. Each bit in a `BitArray` can be manipulated individually
+or by the standard bitwise operators `&`, `|`, `^`, `~`, `>>`, `<<` and also by
+other effective member functions; most of them work relative to the `BitArray`'s
+dimension (see $(LREF dim)), instead of its $(LREF length).
+*/
 struct BitArray
 {
 private:
 
-    import core.bitop : bts, btr, bsf, bt;
-    import std.format : FormatSpec;
+    import core.bitop : btc, bts, btr, bsf, bt;
+    import std.format.spec : FormatSpec;
 
     size_t _len;
     size_t* _ptr;
@@ -799,27 +1006,182 @@ private:
     }
 
 public:
-    /**********************************************
-     * Gets the amount of native words backing this $(D BitArray).
-     */
-    @property size_t dim() const @nogc pure nothrow @safe
+    /**
+    Creates a `BitArray` from a `bool` array, such that `bool` values read
+    from left to right correspond to subsequent bits in the `BitArray`.
+
+    Params: ba = Source array of `bool` values.
+    */
+    this(in bool[] ba) nothrow pure
+    {
+        length = ba.length;
+        foreach (i, b; ba)
+        {
+            this[i] = b;
+        }
+    }
+
+    ///
+    @system unittest
+    {
+        import std.algorithm.comparison : equal;
+
+        bool[] input = [true, false, false, true, true];
+        auto a = BitArray(input);
+        assert(a.length == 5);
+        assert(a.bitsSet.equal([0, 3, 4]));
+
+        // This also works because an implicit cast to bool[] occurs for this array.
+        auto b = BitArray([0, 0, 1]);
+        assert(b.length == 3);
+        assert(b.bitsSet.equal([2]));
+    }
+
+    ///
+    @system unittest
+    {
+        import std.algorithm.comparison : equal;
+        import std.array : array;
+        import std.range : iota, repeat;
+
+        BitArray a = true.repeat(70).array;
+        assert(a.length == 70);
+        assert(a.bitsSet.equal(iota(0, 70)));
+    }
+
+    /**
+    Creates a `BitArray` from the raw contents of the source array. The
+    source array is not copied but simply acts as the underlying array
+    of bits, which stores data as `size_t` units.
+
+    That means a particular care should be taken when passing an array
+    of a type different than `size_t`, firstly because its length should
+    be a multiple of `size_t.sizeof`, and secondly because how the bits
+    are mapped:
+    ---
+    size_t[] source = [1, 2, 3, 3424234, 724398, 230947, 389492];
+    enum sbits = size_t.sizeof * 8;
+    auto ba = BitArray(source, source.length * sbits);
+    foreach (n; 0 .. source.length * sbits)
+    {
+        auto nth_bit = cast(bool) (source[n / sbits] & (1L << (n % sbits)));
+        assert(ba[n] == nth_bit);
+    }
+    ---
+    The least significant bit in any `size_t` unit is the starting bit of this
+    unit, and the most significant bit is the last bit of this unit. Therefore,
+    passing e.g. an array of `int`s may result in a different `BitArray`
+    depending on the processor's endianness.
+
+    This constructor is the inverse of $(LREF opCast).
+
+    Params:
+        v = Source array. `v.length` must be a multple of `size_t.sizeof`.
+        numbits = Number of bits to be mapped from the source array, i.e.
+                  length of the created `BitArray`.
+    */
+    this(void[] v, size_t numbits) @nogc nothrow pure
+    in
+    {
+        assert(numbits <= v.length * 8,
+                "numbits must be less than or equal to v.length * 8");
+        assert(v.length % size_t.sizeof == 0,
+                "v.length must be a multiple of the size of size_t");
+    }
+    do
+    {
+        _ptr = cast(size_t*) v.ptr;
+        _len = numbits;
+    }
+
+    ///
+    @system unittest
+    {
+        import std.algorithm.comparison : equal;
+
+        auto a = BitArray([1, 0, 0, 1, 1]);
+
+        // Inverse of the cast.
+        auto v = cast(void[]) a;
+        auto b = BitArray(v, a.length);
+
+        assert(b.length == 5);
+        assert(b.bitsSet.equal([0, 3, 4]));
+
+        // a and b share the underlying data.
+        a[0] = 0;
+        assert(b[0] == 0);
+        assert(a == b);
+    }
+
+    ///
+    @system unittest
+    {
+        import std.algorithm.comparison : equal;
+
+        size_t[] source = [0b1100, 0b0011];
+        enum sbits = size_t.sizeof * 8;
+        auto ba = BitArray(source, source.length * sbits);
+        // The least significant bit in each unit is this unit's starting bit.
+        assert(ba.bitsSet.equal([2, 3, sbits, sbits + 1]));
+    }
+
+    ///
+    @system unittest
+    {
+        // Example from the doc for this constructor.
+        static immutable size_t[] sourceData = [1, 0b101, 3, 3424234, 724398, 230947, 389492];
+        size_t[] source = sourceData.dup;
+        enum sbits = size_t.sizeof * 8;
+        auto ba = BitArray(source, source.length * sbits);
+        foreach (n; 0 .. source.length * sbits)
+        {
+            auto nth_bit = cast(bool) (source[n / sbits] & (1L << (n % sbits)));
+            assert(ba[n] == nth_bit);
+        }
+
+        // Example of mapping only part of the array.
+        import std.algorithm.comparison : equal;
+
+        auto bc = BitArray(source, sbits + 1);
+        assert(bc.bitsSet.equal([0, sbits]));
+        // Source array has not been modified.
+        assert(source == sourceData);
+    }
+
+    // Deliberately undocumented: raw initialization of bit array.
+    this(size_t len, size_t* ptr) @nogc nothrow pure
+    {
+        _len = len;
+        _ptr = ptr;
+    }
+
+    /**
+    Returns: Dimension i.e. the number of native words backing this `BitArray`.
+
+    Technically, this is the length of the underlying array storing bits, which
+    is equal to `ceil(length / (size_t.sizeof * 8))`, as bits are packed into
+    `size_t` units.
+    */
+    @property size_t dim() const @nogc nothrow pure @safe
     {
         return lenToDim(_len);
     }
 
-    /**********************************************
-     * Gets the amount of bits in the $(D BitArray).
-     */
-    @property size_t length() const @nogc pure nothrow @safe
+    /**
+    Returns: Number of bits in the `BitArray`.
+    */
+    @property size_t length() const @nogc nothrow pure @safe
     {
         return _len;
     }
 
     /**********************************************
-     * Sets the amount of bits in the $(D BitArray).
+     * Sets the amount of bits in the `BitArray`.
      * $(RED Warning: increasing length may overwrite bits in
-     * final word up to the next word boundary. i.e. D dynamic
-     * array extension semantics are not followed.)
+     * the final word of the current underlying data regardless
+     * of whether it is shared between BitArray objects. i.e. D
+     * dynamic array extension semantics are not followed.)
      */
     @property size_t length(size_t newlen) pure nothrow @system
     {
@@ -836,29 +1198,54 @@ public:
                 _ptr = b.ptr;
             }
 
+            auto oldlen = _len;
             _len = newlen;
+            if (oldlen < newlen)
+            {
+                auto end = ((oldlen / bitsPerSizeT) + 1) * bitsPerSizeT;
+                if (end > newlen)
+                    end = newlen;
+                this[oldlen .. end] = 0;
+            }
         }
         return _len;
     }
 
+    // https://issues.dlang.org/show_bug.cgi?id=20240
+    @system unittest
+    {
+        BitArray ba;
+
+        ba.length = 1;
+        ba[0] = 1;
+        ba.length = 0;
+        ba.length = 1;
+        assert(ba[0] == 0); // OK
+
+        ba.length = 2;
+        ba[1] = 1;
+        ba.length = 1;
+        ba.length = 2;
+        assert(ba[1] == 0); // Fail
+    }
+
     /**********************************************
-     * Gets the $(D i)'th bit in the $(D BitArray).
+     * Gets the `i`'th bit in the `BitArray`.
      */
     bool opIndex(size_t i) const @nogc pure nothrow
     in
     {
-        assert(i < _len);
+        assert(i < _len, "i must be less than the length");
     }
-    body
+    do
     {
         return cast(bool) bt(_ptr, i);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opIndex.unittest\n");
-
-        void Fun(const BitArray arr)
+        static void fun(const BitArray arr)
         {
             auto x = arr[0];
             assert(x == 1);
@@ -866,18 +1253,18 @@ public:
         BitArray a;
         a.length = 3;
         a[0] = 1;
-        Fun(a);
+        fun(a);
     }
 
     /**********************************************
-     * Sets the $(D i)'th bit in the $(D BitArray).
+     * Sets the `i`'th bit in the `BitArray`.
      */
     bool opIndexAssign(bool b, size_t i) @nogc pure nothrow
     in
     {
-        assert(i < _len);
+        assert(i < _len, "i must be less than the length");
     }
-    body
+    do
     {
         if (b)
             bts(_ptr, i);
@@ -886,8 +1273,207 @@ public:
         return b;
     }
 
+    /**
+      Sets all the values in the `BitArray` to the
+      value specified by `val`.
+     */
+    void opSliceAssign(bool val) @nogc pure nothrow
+    {
+        _ptr[0 .. fullWords] = val ? ~size_t(0) : 0;
+        if (endBits)
+        {
+            if (val)
+                _ptr[fullWords] |= endMask;
+            else
+                _ptr[fullWords] &= ~endMask;
+        }
+    }
+
+    ///
+    @system pure nothrow unittest
+    {
+        import std.algorithm.comparison : equal;
+
+        auto b = BitArray([1, 0, 1, 0, 1, 1]);
+
+        b[] = true;
+        // all bits are set
+        assert(b.bitsSet.equal([0, 1, 2, 3, 4, 5]));
+
+        b[] = false;
+        // none of the bits are set
+        assert(b.bitsSet.empty);
+    }
+
+    /**
+      Sets the bits of a slice of `BitArray` starting
+      at index `start` and ends at index ($D end - 1)
+      with the values specified by `val`.
+     */
+    void opSliceAssign(bool val, size_t start, size_t end) @nogc pure nothrow
+    in
+    {
+        assert(start <= end, "start must be less or equal to end");
+        assert(end <= length, "end must be less or equal to the length");
+    }
+    do
+    {
+        size_t startBlock = start / bitsPerSizeT;
+        size_t endBlock = end / bitsPerSizeT;
+        size_t startOffset = start % bitsPerSizeT;
+        size_t endOffset = end % bitsPerSizeT;
+
+        if (startBlock == endBlock)
+        {
+            size_t startBlockMask = ~((size_t(1) << startOffset) - 1);
+            size_t endBlockMask = (size_t(1) << endOffset) - 1;
+            size_t joinMask = startBlockMask & endBlockMask;
+            if (val)
+                _ptr[startBlock] |= joinMask;
+            else
+                _ptr[startBlock] &= ~joinMask;
+            return;
+        }
+
+        if (startOffset != 0)
+        {
+            size_t startBlockMask = ~((size_t(1) << startOffset) - 1);
+            if (val)
+                _ptr[startBlock] |= startBlockMask;
+            else
+                _ptr[startBlock] &= ~startBlockMask;
+            ++startBlock;
+        }
+        if (endOffset != 0)
+        {
+            size_t endBlockMask = (size_t(1) << endOffset) - 1;
+            if (val)
+                _ptr[endBlock] |= endBlockMask;
+            else
+                _ptr[endBlock] &= ~endBlockMask;
+        }
+        _ptr[startBlock .. endBlock] = size_t(0) - size_t(val);
+    }
+
+    ///
+    @system pure nothrow unittest
+    {
+        import std.algorithm.comparison : equal;
+        import std.range : iota;
+        import std.stdio;
+
+        auto b = BitArray([1, 0, 0, 0, 1, 1, 0]);
+        b[1 .. 3] = true;
+        assert(b.bitsSet.equal([0, 1, 2, 4, 5]));
+
+        bool[72] bitArray;
+        auto b1 = BitArray(bitArray);
+        b1[63 .. 67] = true;
+        assert(b1.bitsSet.equal([63, 64, 65, 66]));
+        b1[63 .. 67] = false;
+        assert(b1.bitsSet.empty);
+        b1[0 .. 64] = true;
+        assert(b1.bitsSet.equal(iota(0, 64)));
+        b1[0 .. 64] = false;
+        assert(b1.bitsSet.empty);
+
+        bool[256] bitArray2;
+        auto b2 = BitArray(bitArray2);
+        b2[3 .. 245] = true;
+        assert(b2.bitsSet.equal(iota(3, 245)));
+        b2[3 .. 245] = false;
+        assert(b2.bitsSet.empty);
+    }
+
+    /**
+      Flips all the bits in the `BitArray`
+     */
+    void flip() @nogc pure nothrow
+    {
+        foreach (i; 0 .. fullWords)
+            _ptr[i] = ~_ptr[i];
+
+        if (endBits)
+            _ptr[fullWords] = (~_ptr[fullWords]) & endMask;
+    }
+
+    ///
+    @system pure nothrow unittest
+    {
+        import std.algorithm.comparison : equal;
+        import std.range : iota;
+
+        // positions 0, 2, 4 are set
+        auto b = BitArray([1, 0, 1, 0, 1, 0]);
+        b.flip();
+        // after flipping, positions 1, 3, 5 are set
+        assert(b.bitsSet.equal([1, 3, 5]));
+
+        bool[270] bits;
+        auto b1 = BitArray(bits);
+        b1.flip();
+        assert(b1.bitsSet.equal(iota(0, 270)));
+    }
+
+    /**
+      Flips a single bit, specified by `pos`
+     */
+    void flip(size_t i) @nogc pure nothrow
+    {
+        bt(_ptr, i) ? btr(_ptr, i) : bts(_ptr, i);
+    }
+
+    ///
+    @system pure nothrow unittest
+    {
+        auto ax = BitArray([1, 0, 0, 1]);
+        ax.flip(0);
+        assert(ax[0] == 0);
+
+        bool[200] y;
+        y[90 .. 130] = true;
+        auto ay = BitArray(y);
+        ay.flip(100);
+        assert(ay[100] == 0);
+    }
+
     /**********************************************
-     * Duplicates the $(D BitArray) and its contents.
+     * Counts all the set bits in the `BitArray`
+     */
+    size_t count() const @nogc pure nothrow
+    {
+        if (_ptr)
+        {
+            size_t bitCount;
+            foreach (i; 0 .. fullWords)
+                bitCount += countBitsSet(_ptr[i]);
+            if (endBits)
+                bitCount += countBitsSet(_ptr[fullWords] & endMask);
+            return bitCount;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    ///
+    @system pure nothrow unittest
+    {
+        auto a = BitArray([0, 1, 1, 0, 0, 1, 1]);
+        assert(a.count == 4);
+
+        BitArray b;
+        assert(b.count == 0);
+
+        bool[200] boolArray;
+        boolArray[45 .. 130] = true;
+        auto c = BitArray(boolArray);
+        assert(c.count == 85);
+    }
+
+    /**********************************************
+     * Duplicates the `BitArray` and its contents.
      */
     @property BitArray dup() const pure nothrow
     {
@@ -899,26 +1485,22 @@ public:
         return ba;
     }
 
+    ///
     @system unittest
     {
         BitArray a;
         BitArray b;
-        int i;
-
-        debug(bitarray) printf("BitArray.dup.unittest\n");
 
         a.length = 3;
         a[0] = 1; a[1] = 0; a[2] = 1;
         b = a.dup;
         assert(b.length == 3);
-        for (i = 0; i < 3; i++)
-        {   debug(bitarray) printf("b[%d] = %d\n", i, b[i]);
+        foreach (i; 0 .. 3)
             assert(b[i] == (((i ^ 1) & 1) ? true : false));
-        }
     }
 
     /**********************************************
-     * Support for $(D foreach) loops for $(D BitArray).
+     * Support for `foreach` loops for `BitArray`.
      */
     int opApply(scope int delegate(ref bool) dg)
     {
@@ -981,11 +1563,10 @@ public:
         return result;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opApply unittest\n");
-
-        static bool[] ba = [1,0,1];
+        bool[] ba = [1,0,1];
 
         auto a = BitArray(ba);
 
@@ -1016,14 +1597,14 @@ public:
 
 
     /**********************************************
-     * Reverses the bits of the $(D BitArray).
+     * Reverses the bits of the `BitArray`.
      */
-    @property BitArray reverse() @nogc pure nothrow
+    @property BitArray reverse() @nogc pure nothrow return
     out (result)
     {
-        assert(result == this);
+        assert(result == this, "the result must be equal to this");
     }
-    body
+    do
     {
         if (_len >= 2)
         {
@@ -1042,32 +1623,28 @@ public:
         return this;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.reverse.unittest\n");
-
         BitArray b;
-        static bool[5] data = [1,0,1,1,0];
-        int i;
+        bool[5] data = [1,0,1,1,0];
 
         b = BitArray(data);
         b.reverse;
-        for (i = 0; i < data.length; i++)
-        {
+        foreach (i; 0 .. data.length)
             assert(b[i] == data[4 - i]);
-        }
     }
 
 
     /**********************************************
-     * Sorts the $(D BitArray)'s elements.
+     * Sorts the `BitArray`'s elements.
      */
-    @property BitArray sort() @nogc pure nothrow
+    @property BitArray sort() @nogc pure nothrow return
     out (result)
     {
-        assert(result == this);
+        assert(result == this, "the result must be equal to this");
     }
-    body
+    do
     {
         if (_len >= 2)
         {
@@ -1106,22 +1683,21 @@ public:
         return this;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.sort.unittest\n");
-
-        __gshared size_t x = 0b1100011000;
-        __gshared ba = BitArray(10, &x);
+        size_t x = 0b1100011000;
+        auto ba = BitArray(10, &x);
         ba.sort;
-        for (size_t i = 0; i < 6; i++)
+        foreach (i; 0 .. 6)
             assert(ba[i] == false);
-        for (size_t i = 6; i < 10; i++)
+        foreach (i; 6 .. 10)
             assert(ba[i] == true);
     }
 
 
     /***************************************
-     * Support for operators == and != for $(D BitArray).
+     * Support for operators == and != for `BitArray`.
      */
     bool opEquals(const ref BitArray a2) const @nogc pure nothrow
     {
@@ -1140,17 +1716,16 @@ public:
         return (p1[i] & endMask) == (p2[i] & endMask);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opEquals unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1];
-        static bool[] bc = [1,0,1,0,1,0,1];
-        static bool[] bd = [1,0,1,1,1];
-        static bool[] be = [1,0,1,0,1];
-        static bool[] bf = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-        static bool[] bg = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1];
+        bool[] bc = [1,0,1,0,1,0,1];
+        bool[] bd = [1,0,1,1,1];
+        bool[] be = [1,0,1,0,1];
+        bool[] bf = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        bool[] bg = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1168,7 +1743,7 @@ public:
     }
 
     /***************************************
-     * Supports comparison operators for $(D BitArray).
+     * Supports comparison operators for `BitArray`.
      */
     int opCmp(BitArray a2) const @nogc pure nothrow
     {
@@ -1206,17 +1781,16 @@ public:
         return (this.length > a2.length) - (this.length < a2.length);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opCmp unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1];
-        static bool[] bc = [1,0,1,0,1,0,1];
-        static bool[] bd = [1,0,1,1,1];
-        static bool[] be = [1,0,1,0,1];
-        static bool[] bf = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];
-        static bool[] bg = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1];
+        bool[] bc = [1,0,1,0,1,0,1];
+        bool[] bd = [1,0,1,1,1];
+        bool[] be = [1,0,1,0,1];
+        bool[] bf = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];
+        bool[] bg = [1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1237,7 +1811,10 @@ public:
         assert(a >= e);
         assert(f <  g);
         assert(g <= g);
+    }
 
+    @system unittest
+    {
         bool[] v;
         foreach  (i; 1 .. 256)
         {
@@ -1269,7 +1846,7 @@ public:
     }
 
     /***************************************
-     * Support for hashing for $(D BitArray).
+     * Support for hashing for `BitArray`.
      */
     size_t toHash() const @nogc pure nothrow
     {
@@ -1289,105 +1866,67 @@ public:
     }
 
     /***************************************
-     * Set this $(D BitArray) to the contents of $(D ba).
+     * Convert to `void[]`.
      */
-    this(bool[] ba) pure nothrow @system
+    inout(void)[] opCast(T : const void[])() inout @nogc pure nothrow
     {
-        length = ba.length;
-        foreach (i, b; ba)
-        {
-            this[i] = b;
-        }
-    }
-
-    // Deliberately undocumented: raw initialization of bit array.
-    this(size_t len, size_t* ptr)
-    {
-        _len = len;
-        _ptr = ptr;
+        return cast(inout void[]) _ptr[0 .. dim];
     }
 
     /***************************************
-     * Map the $(D BitArray) onto $(D v), with $(D numbits) being the number of bits
-     * in the array. Does not copy the data. $(D v.length) must be a multiple of
-     * $(D size_t.sizeof). If there are unmapped bits in the final mapped word then
-     * these will be set to 0.
-     *
-     * This is the inverse of $(D opCast).
+     * Convert to `size_t[]`.
      */
-    this(void[] v, size_t numbits) pure nothrow
-    in
-    {
-        assert(numbits <= v.length * 8);
-        assert(v.length % size_t.sizeof == 0);
-    }
-    body
-    {
-        _ptr = cast(size_t*) v.ptr;
-        _len = numbits;
-        if (endBits)
-        {
-            // Need to mask away extraneous bits from v.
-            _ptr[dim - 1] &= endMask;
-        }
-    }
-
-    @system unittest
-    {
-        debug(bitarray) printf("BitArray.init unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-
-        auto a = BitArray(ba);
-        void[] v;
-
-        v = cast(void[]) a;
-        auto b = BitArray(v, a.length);
-
-        assert(b[0] == 1);
-        assert(b[1] == 0);
-        assert(b[2] == 1);
-        assert(b[3] == 0);
-        assert(b[4] == 1);
-
-        a[0] = 0;
-        assert(b[0] == 0);
-
-        assert(a == b);
-    }
-
-    /***************************************
-     * Convert to $(D void[]).
-     */
-    void[] opCast(T : void[])() @nogc pure nothrow
-    {
-        return cast(void[])_ptr[0 .. dim];
-    }
-
-    /***************************************
-     * Convert to $(D size_t[]).
-     */
-    size_t[] opCast(T : size_t[])() @nogc pure nothrow
+    inout(size_t)[] opCast(T : const size_t[])() inout @nogc pure nothrow
     {
         return _ptr[0 .. dim];
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opCast unittest\n");
+        import std.array : array;
+        import std.range : repeat, take;
 
-        static bool[] ba = [1,0,1,0,1];
+        // bit array with 300 elements
+        auto a = BitArray(true.repeat.take(300).array);
+        size_t[] v = cast(size_t[]) a;
+        const blockSize = size_t.sizeof * 8;
+        assert(v.length == (a.length + blockSize - 1) / blockSize);
+    }
 
-        auto a = BitArray(ba);
-        void[] v = cast(void[]) a;
+    // https://issues.dlang.org/show_bug.cgi?id=20606
+    @system unittest
+    {
+        import std.meta : AliasSeq;
 
-        assert(v.length == a.dim * size_t.sizeof);
+        static foreach (alias T; AliasSeq!(void, size_t))
+        {{
+            BitArray m;
+            T[] ma = cast(T[]) m;
+
+            const BitArray c;
+            const(T)[] ca = cast(const T[]) c;
+
+            immutable BitArray i;
+            immutable(T)[] ia = cast(immutable T[]) i;
+
+            // Cross-mutability
+            ca = cast(const T[]) m;
+            ca = cast(const T[]) i;
+
+            // Invalid cast don't compile
+            static assert(!is(typeof(cast(T[]) c)));
+            static assert(!is(typeof(cast(T[]) i)));
+            static assert(!is(typeof(cast(immutable T[]) m)));
+            static assert(!is(typeof(cast(immutable T[]) c)));
+        }}
     }
 
     /***************************************
-     * Support for unary operator ~ for $(D BitArray).
+     * Support for unary operator ~ for `BitArray`.
      */
-    BitArray opCom() const pure nothrow
+    BitArray opUnary(string op)() const pure nothrow
+        if (op == "~")
     {
         auto dim = this.dim;
 
@@ -1404,11 +1943,10 @@ public:
         return result;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opCom unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
+        bool[] ba = [1,0,1,0,1];
 
         auto a = BitArray(ba);
         BitArray b = ~a;
@@ -1422,15 +1960,15 @@ public:
 
 
     /***************************************
-     * Support for binary bitwise operators for $(D BitArray).
+     * Support for binary bitwise operators for `BitArray`.
      */
     BitArray opBinary(string op)(const BitArray e2) const pure nothrow
         if (op == "-" || op == "&" || op == "|" || op == "^")
     in
     {
-        assert(_len == e2.length);
+        assert(e2.length == _len, "e2 must have the same length as this");
     }
-    body
+    do
     {
         auto dim = this.dim;
 
@@ -1450,10 +1988,9 @@ public:
         return result;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opAnd unittest\n");
-
         static bool[] ba = [1,0,1,0,1];
         static bool[] bb = [1,0,1,1,0];
 
@@ -1469,12 +2006,11 @@ public:
         assert(c[4] == 0);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opOr unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1488,12 +2024,11 @@ public:
         assert(c[4] == 1);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opXor unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1507,12 +2042,11 @@ public:
         assert(c[4] == 1);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opSub unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1528,15 +2062,15 @@ public:
 
 
     /***************************************
-     * Support for operator op= for $(D BitArray).
+     * Support for operator op= for `BitArray`.
      */
-    BitArray opOpAssign(string op)(const BitArray e2) @nogc pure nothrow
+    BitArray opOpAssign(string op)(const BitArray e2) @nogc pure nothrow return scope
         if (op == "-" || op == "&" || op == "|" || op == "^")
     in
     {
-        assert(_len == e2.length);
+        assert(e2.length == _len, "e2 must have the same length as this");
     }
-    body
+    do
     {
         foreach (i; 0 .. fullWords)
         {
@@ -1559,10 +2093,11 @@ public:
         return this;
     }
 
+    ///
     @system unittest
     {
-        static bool[] ba = [1,0,1,0,1,1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1,1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
         auto a = BitArray(ba);
         auto b = BitArray(bb);
         BitArray c = a;
@@ -1575,12 +2110,11 @@ public:
         assert(a[9] == 1);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opAndAssign unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1593,12 +2127,11 @@ public:
         assert(a[4] == 0);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opOrAssign unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1611,12 +2144,11 @@ public:
         assert(a[4] == 1);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opXorAssign unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1629,12 +2161,11 @@ public:
         assert(a[4] == 1);
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opSubAssign unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
-        static bool[] bb = [1,0,1,1,0];
+        bool[] ba = [1,0,1,0,1];
+        bool[] bb = [1,0,1,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1648,25 +2179,24 @@ public:
     }
 
     /***************************************
-     * Support for operator ~= for $(D BitArray).
+     * Support for operator ~= for `BitArray`.
      * $(RED Warning: This will overwrite a bit in the final word
      * of the current underlying data regardless of whether it is
      * shared between BitArray objects. i.e. D dynamic array
      * concatenation semantics are not followed)
      */
-
-    BitArray opCatAssign(bool b) pure nothrow
+    BitArray opOpAssign(string op)(bool b) pure nothrow return scope
+        if (op == "~")
     {
         length = _len + 1;
         this[_len - 1] = b;
         return this;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opCatAssign unittest\n");
-
-        static bool[] ba = [1,0,1,0,1];
+        bool[] ba = [1,0,1,0,1];
 
         auto a = BitArray(ba);
         BitArray b;
@@ -1685,8 +2215,8 @@ public:
     /***************************************
      * ditto
      */
-
-    BitArray opCatAssign(BitArray b) pure nothrow
+    BitArray opOpAssign(string op)(BitArray b) pure nothrow return scope
+        if (op == "~")
     {
         auto istart = _len;
         length = _len + b.length;
@@ -1695,12 +2225,11 @@ public:
         return this;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opCatAssign unittest\n");
-
-        static bool[] ba = [1,0];
-        static bool[] bb = [0,1,0];
+        bool[] ba = [1,0];
+        bool[] bb = [0,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1718,9 +2247,10 @@ public:
     }
 
     /***************************************
-     * Support for binary operator ~ for $(D BitArray).
+     * Support for binary operator ~ for `BitArray`.
      */
-    BitArray opCat(bool b) const pure nothrow
+    BitArray opBinary(string op)(bool b) const pure nothrow
+        if (op == "~")
     {
         BitArray r;
 
@@ -1731,7 +2261,8 @@ public:
     }
 
     /** ditto */
-    BitArray opCat_r(bool b) const pure nothrow
+    BitArray opBinaryRight(string op)(bool b) const pure nothrow
+        if (op == "~")
     {
         BitArray r;
 
@@ -1743,7 +2274,8 @@ public:
     }
 
     /** ditto */
-    BitArray opCat(BitArray b) const pure nothrow
+    BitArray opBinary(string op)(BitArray b) const pure nothrow
+        if (op == "~")
     {
         BitArray r;
 
@@ -1752,12 +2284,11 @@ public:
         return r;
     }
 
+    ///
     @system unittest
     {
-        debug(bitarray) printf("BitArray.opCat unittest\n");
-
-        static bool[] ba = [1,0];
-        static bool[] bb = [0,1,0];
+        bool[] ba = [1,0];
+        bool[] bb = [0,1,0];
 
         auto a = BitArray(ba);
         auto b = BitArray(bb);
@@ -1790,10 +2321,12 @@ public:
         pure @safe nothrow @nogc
     in
     {
-        assert(nbits < bitsPerSizeT);
+        assert(nbits < bitsPerSizeT, "nbits must be less than bitsPerSizeT");
     }
-    body
+    do
     {
+        if (nbits == 0)
+            return lower;
         return (upper << (bitsPerSizeT - nbits)) | (lower >> nbits);
     }
 
@@ -1825,10 +2358,12 @@ public:
         pure @safe nothrow @nogc
     in
     {
-        assert(nbits < bitsPerSizeT);
+        assert(nbits < bitsPerSizeT, "nbits must be less than bitsPerSizeT");
     }
-    body
+    do
     {
+        if (nbits == 0)
+            return upper;
         return (upper << nbits) | (lower >> (bitsPerSizeT - nbits));
     }
 
@@ -1853,7 +2388,7 @@ public:
     }
 
     /**
-     * Operator $(D <<=) support.
+     * Operator `<<=` support.
      *
      * Shifts all the bits in the array to the left by the given number of
      * bits.  The leftmost bits are dropped, and 0's are appended to the end
@@ -1887,7 +2422,7 @@ public:
     }
 
     /**
-     * Operator $(D >>=) support.
+     * Operator `>>=` support.
      *
      * Shifts all the bits in the array to the right by the given number of
      * bits.  The rightmost bits are dropped, and 0's are inserted at the back
@@ -1916,8 +2451,14 @@ public:
         // end of the array.
         if (wordsToShift < dim)
         {
-            _ptr[dim - wordsToShift - 1] = rollRight(0, _ptr[dim - 1] & endMask,
-                                                    bitsToShift);
+            if (bitsToShift == 0)
+                _ptr[dim - wordsToShift - 1] = _ptr[dim - 1];
+            else
+            {
+                // Special case: if endBits == 0, then also endMask == 0.
+                size_t lastWord = (endBits ? (_ptr[fullWords] & endMask) : _ptr[fullWords - 1]);
+                _ptr[dim - wordsToShift - 1] = rollRight(0, lastWord, bitsToShift);
+            }
         }
 
         import std.algorithm.comparison : min;
@@ -1927,6 +2468,57 @@ public:
         }
     }
 
+    // https://issues.dlang.org/show_bug.cgi?id=17467
+    @system unittest
+    {
+        import std.algorithm.comparison : equal;
+        import std.range : iota;
+
+        bool[] buf = new bool[64*3];
+        buf[0 .. 64] = true;
+        BitArray b = BitArray(buf);
+        assert(equal(b.bitsSet, iota(0, 64)));
+        b <<= 64;
+        assert(equal(b.bitsSet, iota(64, 128)));
+
+        buf = new bool[64*3];
+        buf[64*2 .. 64*3] = true;
+        b = BitArray(buf);
+        assert(equal(b.bitsSet, iota(64*2, 64*3)));
+        b >>= 64;
+        assert(equal(b.bitsSet, iota(64, 128)));
+    }
+
+    // https://issues.dlang.org/show_bug.cgi?id=18134
+    // shifting right when length is a multiple of 8 * size_t.sizeof.
+    @system unittest
+    {
+        import std.algorithm.comparison : equal;
+        import std.array : array;
+        import std.range : repeat, iota;
+
+        immutable r = size_t.sizeof * 8;
+
+        BitArray a = true.repeat(r / 2).array;
+        a >>= 0;
+        assert(a.bitsSet.equal(iota(0, r / 2)));
+        a >>= 1;
+        assert(a.bitsSet.equal(iota(0, r / 2 - 1)));
+
+        BitArray b = true.repeat(r).array;
+        b >>= 0;
+        assert(b.bitsSet.equal(iota(0, r)));
+        b >>= 1;
+        assert(b.bitsSet.equal(iota(0, r - 1)));
+
+        BitArray c = true.repeat(2 * r).array;
+        c >>= 0;
+        assert(c.bitsSet.equal(iota(0, 2 * r)));
+        c >>= 10;
+        assert(c.bitsSet.equal(iota(0, 2 * r - 10)));
+    }
+
+    ///
     @system unittest
     {
         import std.format : format;
@@ -2017,27 +2609,33 @@ public:
      * $(LI $(B %s) which prints the bits as an array, and)
      * $(LI $(B %b) which prints the bits as 8-bit byte packets)
      * separated with an underscore.
+     *
+     * Params:
+     *     sink = A `char` accepting
+     *     $(REF_ALTTEXT output range, isOutputRange, std, range, primitives).
+     *     fmt = A $(REF FormatSpec, std,format) which controls how the data
+     *     is displayed.
      */
-    void toString(scope void delegate(const(char)[]) sink,
-                  FormatSpec!char fmt) const
+    void toString(W)(ref W sink, scope const ref FormatSpec!char fmt) const
+    if (isOutputRange!(W, char))
     {
-        switch (fmt.spec)
+        const spec = fmt.spec;
+        switch (spec)
         {
             case 'b':
                 return formatBitString(sink);
             case 's':
                 return formatBitArray(sink);
             default:
-                throw new Exception("Unknown format specifier: %" ~ fmt.spec);
+                throw new Exception("Unknown format specifier: %" ~ spec);
         }
     }
 
     ///
-    @system unittest
+    @system pure unittest
     {
         import std.format : format;
 
-        debug(bitarray) printf("BitArray.toString unittest\n");
         auto b = BitArray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1]);
 
         auto s1 = format("%s", b);
@@ -2053,12 +2651,16 @@ public:
     @property auto bitsSet() const nothrow
     {
         import std.algorithm.iteration : filter, map, joiner;
-        import std.range : iota;
+        import std.range : iota, chain;
 
-        return iota(dim).
-               filter!(i => _ptr[i])().
-               map!(i => BitsSet!size_t(_ptr[i], i * bitsPerSizeT))().
-               joiner();
+        return chain(
+            iota(fullWords)
+                .filter!(i => _ptr[i])()
+                .map!(i => BitsSet!size_t(_ptr[i], i * bitsPerSizeT))()
+                .joiner(),
+            iota(fullWords * bitsPerSizeT, _len)
+                .filter!(i => this[i])()
+        );
     }
 
     ///
@@ -2082,7 +2684,6 @@ public:
         import std.algorithm.comparison : equal;
         import std.range : iota;
 
-        debug(bitarray) printf("BitArray.bitsSet unittest\n");
         BitArray b;
         enum wordBits = size_t.sizeof * 8;
         b = BitArray([size_t.max], 0);
@@ -2099,7 +2700,17 @@ public:
         assert(b.bitsSet.equal(iota(wordBits * 2)));
     }
 
-    private void formatBitString(scope void delegate(const(char)[]) sink) const
+    // https://issues.dlang.org/show_bug.cgi?id=20241
+    @system unittest
+    {
+        BitArray ba;
+        ba.length = 2;
+        ba[1] = 1;
+        ba.length = 1;
+        assert(ba.bitsSet.empty);
+    }
+
+    private void formatBitString(Writer)(auto ref Writer sink) const
     {
         if (!length)
             return;
@@ -2107,40 +2718,101 @@ public:
         auto leftover = _len % 8;
         foreach (idx; 0 .. leftover)
         {
-            char[1] res = cast(char)(this[idx] + '0');
-            sink.put(res[]);
+            put(sink, cast(char)(this[idx] + '0'));
         }
 
         if (leftover && _len > 8)
-            sink.put("_");
+            put(sink, "_");
 
         size_t count;
         foreach (idx; leftover .. _len)
         {
-            char[1] res = cast(char)(this[idx] + '0');
-            sink.put(res[]);
+            put(sink, cast(char)(this[idx] + '0'));
             if (++count == 8 && idx != _len - 1)
             {
-                sink.put("_");
+                put(sink, "_");
                 count = 0;
             }
         }
     }
 
-    private void formatBitArray(scope void delegate(const(char)[]) sink) const
+    private void formatBitArray(Writer)(auto ref Writer sink) const
     {
-        sink("[");
+        put(sink, "[");
         foreach (idx; 0 .. _len)
         {
-            char[1] res = cast(char)(this[idx] + '0');
-            sink(res[]);
-            if (idx+1 < _len)
-                sink(", ");
+            put(sink, cast(char)(this[idx] + '0'));
+            if (idx + 1 < _len)
+                put(sink, ", ");
         }
-        sink("]");
+        put(sink, "]");
+    }
+
+    // https://issues.dlang.org/show_bug.cgi?id=20639
+    // Separate @nogc test because public tests use array literals
+    // (and workarounds needlessly uglify those examples)
+    @system @nogc unittest
+    {
+        size_t[2] buffer;
+        BitArray b = BitArray(buffer[], buffer.sizeof * 8);
+
+        b[] = true;
+        b[0 .. 1] = true;
+        b.flip();
+        b.flip(1);
+        cast(void) b.count();
     }
 }
 
+/// Slicing & bitsSet
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range : iota;
+
+    bool[] buf = new bool[64 * 3];
+    buf[0 .. 64] = true;
+    BitArray b = BitArray(buf);
+    assert(b.bitsSet.equal(iota(0, 64)));
+    b <<= 64;
+    assert(b.bitsSet.equal(iota(64, 128)));
+}
+
+/// Concatenation and appending
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+
+    auto b = BitArray([1, 0]);
+    b ~= true;
+    assert(b[2] == 1);
+    b ~= BitArray([0, 1]);
+    auto c = BitArray([1, 0, 1, 0, 1]);
+    assert(b == c);
+    assert(b.bitsSet.equal([0, 2, 4]));
+}
+
+/// Bit flipping
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+
+    auto b = BitArray([1, 1, 0, 1]);
+    b &= BitArray([0, 1, 1, 0]);
+    assert(b.bitsSet.equal([1]));
+    b.flip;
+    assert(b.bitsSet.equal([0, 2, 3]));
+}
+
+/// String format of bitarrays
+@system unittest
+{
+    import std.format : format;
+    auto b = BitArray([1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1]);
+    assert(format("%b", b) == "1_00001111_00001111");
+}
+
+///
 @system unittest
 {
     import std.format : format;
@@ -2173,51 +2845,61 @@ public:
     assert(format("%b", b) == "1_00001111_00001111");
 }
 
+@system unittest
+{
+    BitArray a;
+    a.length = 5;
+    foreach (ref bool b; a)
+    {
+        assert(b == 0);
+        b = 1;
+    }
+    foreach (bool b; a)
+        assert(b == 1);
+}
+
 /++
     Swaps the endianness of the given integral value or character.
   +/
-T swapEndian(T)(T val) @safe pure nothrow @nogc
+T swapEndian(T)(const T val) @safe pure nothrow @nogc
 if (isIntegral!T || isSomeChar!T || isBoolean!T)
 {
+    import core.bitop : bswap, byteswap;
     static if (val.sizeof == 1)
         return val;
-    else static if (isUnsigned!T)
-        return swapEndianImpl(val);
-    else static if (isIntegral!T)
-        return cast(T) swapEndianImpl(cast(Unsigned!T) val);
-    else static if (is(Unqual!T == wchar))
-        return cast(T) swapEndian(cast(ushort) val);
-    else static if (is(Unqual!T == dchar))
-        return cast(T) swapEndian(cast(uint) val);
+    else static if (T.sizeof == 2)
+        return cast(T) byteswap(cast(ushort) val);
+    else static if (T.sizeof == 4)
+        return cast(T) bswap(cast(uint) val);
+    else static if (T.sizeof == 8)
+        return cast(T) bswap(cast(ulong) val);
     else
         static assert(0, T.stringof ~ " unsupported by swapEndian.");
 }
 
-private ushort swapEndianImpl(ushort val) @safe pure nothrow @nogc
+///
+@safe unittest
 {
-    return ((val & 0xff00U) >> 8) |
-           ((val & 0x00ffU) << 8);
-}
+    assert(42.swapEndian == 704643072);
+    assert(42.swapEndian.swapEndian == 42); // reflexive
+    assert(1.swapEndian == 16777216);
 
-private uint swapEndianImpl(uint val) @trusted pure nothrow @nogc
-{
-    import core.bitop : bswap;
-    return bswap(val);
-}
+    assert(true.swapEndian == true);
+    assert(byte(10).swapEndian == 10);
+    assert(char(10).swapEndian == 10);
 
-private ulong swapEndianImpl(ulong val) @trusted pure nothrow @nogc
-{
-    import core.bitop : bswap;
-    immutable ulong res = bswap(cast(uint) val);
-    return res << 32 | bswap(cast(uint)(val >> 32));
+    assert(ushort(10).swapEndian == 2560);
+    assert(long(10).swapEndian == 720575940379279360);
+    assert(ulong(10).swapEndian == 720575940379279360);
 }
 
 @safe unittest
 {
     import std.meta;
-    foreach (T; AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, char, wchar, dchar))
-    {
-        scope(failure) writefln("Failed type: %s", T.stringof);
+    import std.stdio;
+    static foreach (T; AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong, char, wchar, dchar))
+    {{
+        scope(failure) writeln("Failed type: ", T.stringof);
         T val;
         const T cval;
         immutable T ival;
@@ -2227,6 +2909,9 @@ private ulong swapEndianImpl(ulong val) @trusted pure nothrow @nogc
         assert(swapEndian(swapEndian(ival)) == ival);
         assert(swapEndian(swapEndian(T.min)) == T.min);
         assert(swapEndian(swapEndian(T.max)) == T.max);
+
+        // Check CTFE compiles.
+        static assert(swapEndian(swapEndian(T(1))) is T(1));
 
         foreach (i; 2 .. 10)
         {
@@ -2242,7 +2927,7 @@ private ulong swapEndianImpl(ulong val) @trusted pure nothrow @nogc
         static if (isSigned!T)
             assert(swapEndian(swapEndian(cast(T) 0)) == 0);
 
-        // used to trigger BUG6354
+        // used to trigger https://issues.dlang.org/show_bug.cgi?id=6354
         static if (T.sizeof > 1 && isUnsigned!T)
         {
             T left = 0xffU;
@@ -2257,41 +2942,82 @@ private ulong swapEndianImpl(ulong val) @trusted pure nothrow @nogc
                 right <<= 8;
             }
         }
-    }
+    }}
 }
 
 
 private union EndianSwapper(T)
 if (canSwapEndianness!T)
 {
-    Unqual!T value;
+    T value;
     ubyte[T.sizeof] array;
 
-    static if (is(FloatingPointTypeOf!T == float))
+    static if (is(immutable FloatingPointTypeOf!(T) == immutable float))
         uint  intValue;
-    else static if (is(FloatingPointTypeOf!T == double))
+    else static if (is(immutable FloatingPointTypeOf!(T) == immutable double))
         ulong intValue;
 
 }
 
+// Can't use EndianSwapper union during CTFE.
+private auto ctfeRead(T)(const ubyte[T.sizeof] array)
+if (__traits(isIntegral, T))
+{
+    Unqual!T result;
+    version (LittleEndian)
+        foreach_reverse (b; array)
+            result = cast(Unqual!T) ((result << 8) | b);
+    else
+        foreach (b; array)
+            result = cast(Unqual!T) ((result << 8) | b);
+    return cast(T) result;
+}
+
+// Can't use EndianSwapper union during CTFE.
+private auto ctfeBytes(T)(const T value)
+if (__traits(isIntegral, T))
+{
+    ubyte[T.sizeof] result;
+    Unqual!T tmp = value;
+    version (LittleEndian)
+    {
+        foreach (i; 0 .. T.sizeof)
+        {
+            result[i] = cast(ubyte) tmp;
+            tmp = cast(Unqual!T) (tmp >>> 8);
+        }
+    }
+    else
+    {
+        foreach_reverse (i; 0 .. T.sizeof)
+        {
+            result[i] = cast(ubyte) tmp;
+            tmp = cast(Unqual!T) (tmp >>> 8);
+        }
+    }
+    return result;
+}
 
 /++
     Converts the given value from the native endianness to big endian and
-    returns it as a $(D ubyte[n]) where $(D n) is the size of the given type.
+    returns it as a `ubyte[n]` where `n` is the size of the given type.
 
-    Returning a $(D ubyte[n]) helps prevent accidentally using a swapped value
+    Returning a `ubyte[n]` helps prevent accidentally using a swapped value
     as a regular one (and in the case of floating point values, it's necessary,
     because the FPU will mess up any swapped floating point values. So, you
     can't actually have swapped floating point values as floating point values).
 
-    $(D real) is not supported, because its size is implementation-dependent
+    `real` is not supported, because its size is implementation-dependent
     and therefore could vary from machine to machine (which could make it
     unusable if you tried to transfer it to another machine).
   +/
-auto nativeToBigEndian(T)(T val) @safe pure nothrow @nogc
+auto nativeToBigEndian(T)(const T val) @safe pure nothrow @nogc
 if (canSwapEndianness!T)
 {
-    return nativeToBigEndianImpl(val);
+    version (LittleEndian)
+        return nativeToEndianImpl!true(val);
+    else
+        return nativeToEndianImpl!false(val);
 }
 
 ///
@@ -2301,37 +3027,48 @@ if (canSwapEndianness!T)
     ubyte[4] swappedI = nativeToBigEndian(i);
     assert(i == bigEndianToNative!int(swappedI));
 
+    float f = 123.45f;
+    ubyte[4] swappedF = nativeToBigEndian(f);
+    assert(f == bigEndianToNative!float(swappedF));
+
+    const float cf = 123.45f;
+    ubyte[4] swappedCF = nativeToBigEndian(cf);
+    assert(cf == bigEndianToNative!float(swappedCF));
+
     double d = 123.45;
     ubyte[8] swappedD = nativeToBigEndian(d);
     assert(d == bigEndianToNative!double(swappedD));
+
+    const double cd = 123.45;
+    ubyte[8] swappedCD = nativeToBigEndian(cd);
+    assert(cd == bigEndianToNative!double(swappedCD));
 }
 
-private auto nativeToBigEndianImpl(T)(T val) @safe pure nothrow @nogc
-if (isIntegral!T || isSomeChar!T || isBoolean!T)
+private auto nativeToEndianImpl(bool swap, T)(const T val) @safe pure nothrow @nogc
+if (__traits(isIntegral, T))
 {
-    EndianSwapper!T es = void;
-
-    version (LittleEndian)
-        es.value = swapEndian(val);
+    if (!__ctfe)
+    {
+        static if (swap)
+            return EndianSwapper!T(swapEndian(val)).array;
+        else
+            return EndianSwapper!T(val).array;
+    }
     else
-        es.value = val;
-
-    return es.array;
-}
-
-private auto nativeToBigEndianImpl(T)(T val) @safe pure nothrow @nogc
-if (isFloatOrDouble!T)
-{
-    version (LittleEndian)
-        return floatEndianImpl!(T, true)(val);
-    else
-        return floatEndianImpl!(T, false)(val);
+    {
+        // Can't use EndianSwapper in CTFE.
+        static if (swap)
+            return ctfeBytes(swapEndian(val));
+        else
+            return ctfeBytes(val);
+    }
 }
 
 @safe unittest
 {
     import std.meta;
-    foreach (T; AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong,
+    import std.stdio;
+    static foreach (T; AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong,
                          char, wchar, dchar
         /* The trouble here is with floats and doubles being compared against nan
          * using a bit compare. There are two kinds of nans, quiet and signaling.
@@ -2343,8 +3080,8 @@ if (isFloatOrDouble!T)
          * I cannot think of a fix for this that makes consistent sense.
          */
                           /*,float, double*/))
-    {
-        scope(failure) writefln("Failed type: %s", T.stringof);
+    {{
+        scope(failure) writeln("Failed type: ", T.stringof);
         T val;
         const T cval;
         immutable T ival;
@@ -2355,6 +3092,9 @@ if (isFloatOrDouble!T)
         assert(bigEndianToNative!T(nativeToBigEndian(ival)) is ival);
         assert(bigEndianToNative!T(nativeToBigEndian(T.min)) == T.min);
         assert(bigEndianToNative!T(nativeToBigEndian(T.max)) == T.max);
+
+        //Check CTFE compiles.
+        static assert(bigEndianToNative!T(nativeToBigEndian(T(1))) is T(1));
 
         static if (isSigned!T)
             assert(bigEndianToNative!T(nativeToBigEndian(cast(T) 0)) == 0);
@@ -2394,18 +3134,18 @@ if (isFloatOrDouble!T)
             assert(nativeToBigEndian(T.min) == nativeToLittleEndian(T.min));
         else
             assert(nativeToBigEndian(T.min) != nativeToLittleEndian(T.min));
-    }
+    }}
 }
 
 
 /++
     Converts the given value from big endian to the native endianness and
-    returns it. The value is given as a $(D ubyte[n]) where $(D n) is the size
+    returns it. The value is given as a `ubyte[n]` where `n` is the size
     of the target type. You must give the target type as a template argument,
     because there are multiple types with the same size and so the type of the
     argument is not enough to determine the return type.
 
-    Taking a $(D ubyte[n]) helps prevent accidentally using a swapped value
+    Taking a `ubyte[n]` helps prevent accidentally using a swapped value
     as a regular one (and in the case of floating point values, it's necessary,
     because the FPU will mess up any swapped floating point values. So, you
     can't actually have swapped floating point values as floating point values).
@@ -2413,7 +3153,10 @@ if (isFloatOrDouble!T)
 T bigEndianToNative(T, size_t n)(ubyte[n] val) @safe pure nothrow @nogc
 if (canSwapEndianness!T && n == T.sizeof)
 {
-    return bigEndianToNativeImpl!(T, n)(val);
+    version (LittleEndian)
+        return endianToNativeImpl!(true, T, n)(val);
+    else
+        return endianToNativeImpl!(false, T, n)(val);
 }
 
 ///
@@ -2428,44 +3171,22 @@ if (canSwapEndianness!T && n == T.sizeof)
     assert(c == bigEndianToNative!dchar(swappedC));
 }
 
-private T bigEndianToNativeImpl(T, size_t n)(ubyte[n] val) @safe pure nothrow @nogc
-if ((isIntegral!T || isSomeChar!T || isBoolean!T) &&
-    n == T.sizeof)
-{
-    EndianSwapper!T es = void;
-    es.array = val;
-
-    version (LittleEndian)
-        immutable retval = swapEndian(es.value);
-    else
-        immutable retval = es.value;
-
-    return retval;
-}
-
-private T bigEndianToNativeImpl(T, size_t n)(ubyte[n] val) @safe pure nothrow @nogc
-if (isFloatOrDouble!T && n == T.sizeof)
-{
-    version (LittleEndian)
-        return cast(T) floatEndianImpl!(n, true)(val);
-    else
-        return cast(T) floatEndianImpl!(n, false)(val);
-}
-
-
 /++
     Converts the given value from the native endianness to little endian and
-    returns it as a $(D ubyte[n]) where $(D n) is the size of the given type.
+    returns it as a `ubyte[n]` where `n` is the size of the given type.
 
-    Returning a $(D ubyte[n]) helps prevent accidentally using a swapped value
+    Returning a `ubyte[n]` helps prevent accidentally using a swapped value
     as a regular one (and in the case of floating point values, it's necessary,
     because the FPU will mess up any swapped floating point values. So, you
     can't actually have swapped floating point values as floating point values).
   +/
-auto nativeToLittleEndian(T)(T val) @safe pure nothrow @nogc
+auto nativeToLittleEndian(T)(const T val) @safe pure nothrow @nogc
 if (canSwapEndianness!T)
 {
-    return nativeToLittleEndianImpl(val);
+    version (BigEndian)
+        return nativeToEndianImpl!true(val);
+    else
+        return nativeToEndianImpl!false(val);
 }
 
 ///
@@ -2480,36 +3201,15 @@ if (canSwapEndianness!T)
     assert(d == littleEndianToNative!double(swappedD));
 }
 
-private auto nativeToLittleEndianImpl(T)(T val) @safe pure nothrow @nogc
-if (isIntegral!T || isSomeChar!T || isBoolean!T)
-{
-    EndianSwapper!T es = void;
-
-    version (BigEndian)
-        es.value = swapEndian(val);
-    else
-        es.value = val;
-
-    return es.array;
-}
-
-private auto nativeToLittleEndianImpl(T)(T val) @safe pure nothrow @nogc
-if (isFloatOrDouble!T)
-{
-    version (BigEndian)
-        return floatEndianImpl!(T, true)(val);
-    else
-        return floatEndianImpl!(T, false)(val);
-}
-
 @safe unittest
 {
     import std.meta;
-    foreach (T; AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong,
+    import std.stdio;
+    static foreach (T; AliasSeq!(bool, byte, ubyte, short, ushort, int, uint, long, ulong,
                          char, wchar, dchar/*,
                          float, double*/))
-    {
-        scope(failure) writefln("Failed type: %s", T.stringof);
+    {{
+        scope(failure) writeln("Failed type: ", T.stringof);
         T val;
         const T cval;
         immutable T ival;
@@ -2520,6 +3220,9 @@ if (isFloatOrDouble!T)
         assert(littleEndianToNative!T(nativeToLittleEndian(ival)) is ival);
         assert(littleEndianToNative!T(nativeToLittleEndian(T.min)) == T.min);
         assert(littleEndianToNative!T(nativeToLittleEndian(T.max)) == T.max);
+
+        //Check CTFE compiles.
+        static assert(littleEndianToNative!T(nativeToLittleEndian(T(1))) is T(1));
 
         static if (isSigned!T)
             assert(littleEndianToNative!T(nativeToLittleEndian(cast(T) 0)) == 0);
@@ -2537,30 +3240,33 @@ if (isFloatOrDouble!T)
                     assert(littleEndianToNative!T(nativeToLittleEndian(minI)) == minI);
             }
         }
-    }
+    }}
 }
 
 
 /++
     Converts the given value from little endian to the native endianness and
-    returns it. The value is given as a $(D ubyte[n]) where $(D n) is the size
+    returns it. The value is given as a `ubyte[n]` where `n` is the size
     of the target type. You must give the target type as a template argument,
     because there are multiple types with the same size and so the type of the
     argument is not enough to determine the return type.
 
-    Taking a $(D ubyte[n]) helps prevent accidentally using a swapped value
+    Taking a `ubyte[n]` helps prevent accidentally using a swapped value
     as a regular one (and in the case of floating point values, it's necessary,
     because the FPU will mess up any swapped floating point values. So, you
     can't actually have swapped floating point values as floating point values).
 
-    $(D real) is not supported, because its size is implementation-dependent
+    `real` is not supported, because its size is implementation-dependent
     and therefore could vary from machine to machine (which could make it
     unusable if you tried to transfer it to another machine).
   +/
 T littleEndianToNative(T, size_t n)(ubyte[n] val) @safe pure nothrow @nogc
 if (canSwapEndianness!T && n == T.sizeof)
 {
-    return littleEndianToNativeImpl!T(val);
+    version (BigEndian)
+        return endianToNativeImpl!(true, T, n)(val);
+    else
+        return endianToNativeImpl!(false, T, n)(val);
 }
 
 ///
@@ -2575,67 +3281,80 @@ if (canSwapEndianness!T && n == T.sizeof)
     assert(c == littleEndianToNative!dchar(swappedC));
 }
 
-private T littleEndianToNativeImpl(T, size_t n)(ubyte[n] val) @safe pure nothrow @nogc
-if ((isIntegral!T || isSomeChar!T || isBoolean!T) &&
-    n == T.sizeof)
+private T endianToNativeImpl(bool swap, T, size_t n)(ubyte[n] val) @nogc nothrow pure @safe
+if (__traits(isIntegral, T) && n == T.sizeof)
 {
-    EndianSwapper!T es = void;
-    es.array = val;
-
-    version (BigEndian)
-        immutable retval = swapEndian(es.value);
+    if (!__ctfe)
+    {
+        EndianSwapper!T es = { array: val };
+        static if (swap)
+            return swapEndian(es.value);
+        else
+            return es.value;
+    }
     else
-        immutable retval = es.value;
-
-    return retval;
+    {
+        static if (swap)
+            return swapEndian(ctfeRead!T(val));
+        else
+            return ctfeRead!T(val);
+    }
 }
 
-private T littleEndianToNativeImpl(T, size_t n)(ubyte[n] val) @safe pure nothrow @nogc
-if (((isFloatOrDouble!T) &&
-    n == T.sizeof))
-{
-    version (BigEndian)
-        return floatEndianImpl!(n, true)(val);
-    else
-        return floatEndianImpl!(n, false)(val);
-}
-
-private auto floatEndianImpl(T, bool swap)(T val) @safe pure nothrow @nogc
+private auto nativeToEndianImpl(bool swap, T)(const T val) @trusted pure nothrow @nogc
 if (isFloatOrDouble!T)
 {
-    EndianSwapper!T es = void;
-    es.value = val;
-
-    static if (swap)
-        es.intValue = swapEndian(es.intValue);
-
-    return es.array;
+    if (!__ctfe)
+    {
+        EndianSwapper!T es = EndianSwapper!T(val);
+        static if (swap)
+            es.intValue = swapEndian(es.intValue);
+        return es.array;
+    }
+    else
+    {
+        static if (T.sizeof == 4)
+            uint intValue = *cast(const uint*) &val;
+        else static if (T.sizeof == 8)
+            ulong intValue = *cast(const ulong*) & val;
+        static if (swap)
+            intValue = swapEndian(intValue);
+        return ctfeBytes(intValue);
+    }
 }
 
-private auto floatEndianImpl(size_t n, bool swap)(ubyte[n] val) @safe pure nothrow @nogc
-if (n == 4 || n == 8)
+private auto endianToNativeImpl(bool swap, T, size_t n)(ubyte[n] val) @trusted pure nothrow @nogc
+if (isFloatOrDouble!T && n == T.sizeof)
 {
-    static if (n == 4)       EndianSwapper!float es = void;
-    else static if (n == 8)  EndianSwapper!double es = void;
-
-    es.array = val;
-
-    static if (swap)
-        es.intValue = swapEndian(es.intValue);
-
-    return es.value;
+    if (!__ctfe)
+    {
+        EndianSwapper!T es = { array: val };
+        static if (swap)
+            es.intValue = swapEndian(es.intValue);
+        return es.value;
+    }
+    else
+    {
+        static if (n == 4)
+            uint x = ctfeRead!uint(val);
+        else static if (n == 8)
+            ulong x = ctfeRead!ulong(val);
+        static if (swap)
+            x = swapEndian(x);
+        return *cast(T*) &x;
+    }
 }
 
 private template isFloatOrDouble(T)
 {
     enum isFloatOrDouble = isFloatingPoint!T &&
-                           !is(Unqual!(FloatingPointTypeOf!T) == real);
+                           !is(immutable FloatingPointTypeOf!T == immutable real);
 }
 
 @safe unittest
 {
     import std.meta;
-    foreach (T; AliasSeq!(float, double))
+    static foreach (T; AliasSeq!(float, double))
     {
         static assert(isFloatOrDouble!(T));
         static assert(isFloatOrDouble!(const T));
@@ -2664,7 +3383,7 @@ private template canSwapEndianness(T)
 @safe unittest
 {
     import std.meta;
-    foreach (T; AliasSeq!(bool, ubyte, byte, ushort, short, uint, int, ulong,
+    static foreach (T; AliasSeq!(bool, ubyte, byte, ushort, short, uint, int, ulong,
                          long, char, wchar, dchar, float, double))
     {
         static assert(canSwapEndianness!(T));
@@ -2676,7 +3395,7 @@ private template canSwapEndianness(T)
     }
 
     //!
-    foreach (T; AliasSeq!(real, string, wstring, dstring))
+    static foreach (T; AliasSeq!(real, string, wstring, dstring))
     {
         static assert(!canSwapEndianness!(T));
         static assert(!canSwapEndianness!(const T));
@@ -2688,18 +3407,18 @@ private template canSwapEndianness(T)
 }
 
 /++
-    Takes a range of $(D ubyte)s and converts the first $(D T.sizeof) bytes to
-    $(D T). The value returned is converted from the given endianness to the
+    Takes a range of `ubyte`s and converts the first `T.sizeof` bytes to
+    `T`. The value returned is converted from the given endianness to the
     native endianness. The range is not consumed.
 
     Params:
-        T     = The integral type to convert the first $(D T.sizeof) bytes to.
+        T     = The integral type to convert the first `T.sizeof` bytes to.
         endianness = The endianness that the bytes are assumed to be in.
         range = The range to read from.
         index = The index to start reading from (instead of starting at the
                 front). If index is a pointer, then it is updated to the index
                 after the bytes read. The overloads with index are only
-                available if $(D hasSlicing!R) is $(D true).
+                available if `hasSlicing!R` is `true`.
   +/
 
 T peek(T, Endian endianness = Endian.bigEndian, R)(R range)
@@ -2745,7 +3464,7 @@ if (canSwapEndianness!T &&
     hasSlicing!R &&
     is(ElementType!R : const ubyte))
 {
-    assert(index);
+    assert(index, "index must not point to null");
 
     immutable begin = *index;
     immutable end = begin + T.sizeof;
@@ -2779,6 +3498,17 @@ if (canSwapEndianness!T &&
 
     assert(buffer.peek!ubyte(&index) == 8);
     assert(index == 7);
+}
+
+///
+@safe unittest
+{
+    import std.algorithm.iteration : filter;
+    ubyte[] buffer = [1, 5, 22, 9, 44, 255, 7];
+    auto range = filter!"true"(buffer);
+    assert(range.peek!uint() == 17110537);
+    assert(range.peek!ushort() == 261);
+    assert(range.peek!ubyte() == 1);
 }
 
 @system unittest
@@ -2982,25 +3712,14 @@ if (canSwapEndianness!T &&
     }
 }
 
-@safe unittest
-{
-    import std.algorithm.iteration : filter;
-    ubyte[] buffer = [1, 5, 22, 9, 44, 255, 7];
-    auto range = filter!"true"(buffer);
-    assert(range.peek!uint() == 17110537);
-    assert(range.peek!ushort() == 261);
-    assert(range.peek!ubyte() == 1);
-}
-
-
 /++
-    Takes a range of $(D ubyte)s and converts the first $(D T.sizeof) bytes to
-    $(D T). The value returned is converted from the given endianness to the
-    native endianness. The $(D T.sizeof) bytes which are read are consumed from
+    Takes a range of `ubyte`s and converts the first `T.sizeof` bytes to
+    `T`. The value returned is converted from the given endianness to the
+    native endianness. The `T.sizeof` bytes which are read are consumed from
     the range.
 
     Params:
-        T     = The integral type to convert the first $(D T.sizeof) bytes to.
+        T     = The integral type to convert the first `T.sizeof` bytes to.
         endianness = The endianness that the bytes are assumed to be in.
         range = The range to read from.
   +/
@@ -3219,24 +3938,7 @@ if (canSwapEndianness!T && isInputRange!R && is(ElementType!R : const ubyte))
     }
 }
 
-@safe unittest
-{
-    import std.algorithm.iteration : filter;
-    ubyte[] buffer = [1, 5, 22, 9, 44, 255, 8];
-    auto range = filter!"true"(buffer);
-    assert(walkLength(range) == 7);
-
-    assert(range.read!ushort() == 261);
-    assert(walkLength(range) == 5);
-
-    assert(range.read!uint() == 369700095);
-    assert(walkLength(range) == 1);
-
-    assert(range.read!ubyte() == 8);
-    assert(range.empty);
-}
-
-// issue 17247
+// https://issues.dlang.org/show_bug.cgi?id=17247
 @safe unittest
 {
     struct UbyteRange
@@ -3253,7 +3955,7 @@ if (canSwapEndianness!T && isInputRange!R && is(ElementType!R : const ubyte))
             return UbyteRange(impl[start .. end]);
         }
         @property size_t length() { return impl.length; }
-        size_t opDollar() { return impl.length; }
+        alias opDollar = length;
     }
     static assert(hasSlicing!UbyteRange);
 
@@ -3265,18 +3967,18 @@ if (canSwapEndianness!T && isInputRange!R && is(ElementType!R : const ubyte))
 
 /++
     Takes an integral value, converts it to the given endianness, and writes it
-    to the given range of $(D ubyte)s as a sequence of $(D T.sizeof) $(D ubyte)s
-    starting at index. $(D hasSlicing!R) must be $(D true).
+    to the given range of `ubyte`s as a sequence of `T.sizeof` `ubyte`s
+    starting at index. `hasSlicing!R` must be `true`.
 
     Params:
-        T     = The integral type to convert the first $(D T.sizeof) bytes to.
+        T     = The integral type to convert the first `T.sizeof` bytes to.
         endianness = The endianness to _write the bytes in.
         range = The range to _write to.
         value = The value to _write.
         index = The index to start writing to. If index is a pointer, then it
                 is updated to the index after the bytes read.
   +/
-void write(T, Endian endianness = Endian.bigEndian, R)(R range, T value, size_t index)
+void write(T, Endian endianness = Endian.bigEndian, R)(R range, const T value, size_t index)
 if (canSwapEndianness!T &&
     isForwardRange!R &&
     hasSlicing!R &&
@@ -3286,13 +3988,13 @@ if (canSwapEndianness!T &&
 }
 
 /++ Ditto +/
-void write(T, Endian endianness = Endian.bigEndian, R)(R range, T value, size_t* index)
+void write(T, Endian endianness = Endian.bigEndian, R)(R range, const T value, size_t* index)
 if (canSwapEndianness!T &&
     isForwardRange!R &&
     hasSlicing!R &&
     is(ElementType!R : ubyte))
 {
-    assert(index);
+    assert(index, "index must not point to null");
 
     static if (endianness == Endian.bigEndian)
         immutable bytes = nativeToBigEndian!T(value);
@@ -3308,319 +4010,328 @@ if (canSwapEndianness!T &&
 ///
 @system unittest
 {
-    {
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
-        buffer.write!uint(29110231u, 0);
-        assert(buffer == [1, 188, 47, 215, 0, 0, 0, 0]);
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
+    buffer.write!uint(29110231u, 0);
+    assert(buffer == [1, 188, 47, 215, 0, 0, 0, 0]);
 
-        buffer.write!ushort(927, 0);
-        assert(buffer == [3, 159, 47, 215, 0, 0, 0, 0]);
+    buffer.write!ushort(927, 0);
+    assert(buffer == [3, 159, 47, 215, 0, 0, 0, 0]);
 
-        buffer.write!ubyte(42, 0);
-        assert(buffer == [42, 159, 47, 215, 0, 0, 0, 0]);
-    }
-
-    {
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-        buffer.write!uint(142700095u, 2);
-        assert(buffer == [0, 0, 8, 129, 110, 63, 0, 0, 0]);
-
-        buffer.write!ushort(19839, 2);
-        assert(buffer == [0, 0, 77, 127, 110, 63, 0, 0, 0]);
-
-        buffer.write!ubyte(132, 2);
-        assert(buffer == [0, 0, 132, 127, 110, 63, 0, 0, 0]);
-    }
-
-    {
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
-        size_t index = 0;
-        buffer.write!ushort(261, &index);
-        assert(buffer == [1, 5, 0, 0, 0, 0, 0, 0]);
-        assert(index == 2);
-
-        buffer.write!uint(369700095u, &index);
-        assert(buffer == [1, 5, 22, 9, 44, 255, 0, 0]);
-        assert(index == 6);
-
-        buffer.write!ubyte(8, &index);
-        assert(buffer == [1, 5, 22, 9, 44, 255, 8, 0]);
-        assert(index == 7);
-    }
+    buffer.write!ubyte(42, 0);
+    assert(buffer == [42, 159, 47, 215, 0, 0, 0, 0]);
 }
 
+///
 @system unittest
 {
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    buffer.write!uint(142700095u, 2);
+    assert(buffer == [0, 0, 8, 129, 110, 63, 0, 0, 0]);
+
+    buffer.write!ushort(19839, 2);
+    assert(buffer == [0, 0, 77, 127, 110, 63, 0, 0, 0]);
+
+    buffer.write!ubyte(132, 2);
+    assert(buffer == [0, 0, 132, 127, 110, 63, 0, 0, 0]);
+}
+
+///
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
+    size_t index = 0;
+    buffer.write!ushort(261, &index);
+    assert(buffer == [1, 5, 0, 0, 0, 0, 0, 0]);
+    assert(index == 2);
+
+    buffer.write!uint(369700095u, &index);
+    assert(buffer == [1, 5, 22, 9, 44, 255, 0, 0]);
+    assert(index == 6);
+
+    buffer.write!ubyte(8, &index);
+    assert(buffer == [1, 5, 22, 9, 44, 255, 8, 0]);
+    assert(index == 7);
+}
+
+/// bool
+@system unittest
+{
+    ubyte[] buffer = [0, 0];
+    buffer.write!bool(false, 0);
+    assert(buffer == [0, 0]);
+
+    buffer.write!bool(true, 0);
+    assert(buffer == [1, 0]);
+
+    buffer.write!bool(true, 1);
+    assert(buffer == [1, 1]);
+
+    buffer.write!bool(false, 1);
+    assert(buffer == [1, 0]);
+
+    size_t index = 0;
+    buffer.write!bool(false, &index);
+    assert(buffer == [0, 0]);
+    assert(index == 1);
+
+    buffer.write!bool(true, &index);
+    assert(buffer == [0, 1]);
+    assert(index == 2);
+}
+
+/// char(8-bit)
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0];
+
+    buffer.write!char('a', 0);
+    assert(buffer == [97, 0, 0]);
+
+    buffer.write!char('b', 1);
+    assert(buffer == [97, 98, 0]);
+
+    size_t index = 0;
+    buffer.write!char('a', &index);
+    assert(buffer == [97, 98, 0]);
+    assert(index == 1);
+
+    buffer.write!char('b', &index);
+    assert(buffer == [97, 98, 0]);
+    assert(index == 2);
+
+    buffer.write!char('c', &index);
+    assert(buffer == [97, 98, 99]);
+    assert(index == 3);
+}
+
+/// wchar (16bit - 2x ubyte)
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0];
+
+    buffer.write!wchar('ą', 0);
+    assert(buffer == [1, 5, 0, 0]);
+
+    buffer.write!wchar('”', 2);
+    assert(buffer == [1, 5, 32, 29]);
+
+    size_t index = 0;
+    buffer.write!wchar('ć', &index);
+    assert(buffer == [1, 7, 32, 29]);
+    assert(index == 2);
+
+    buffer.write!wchar('ą', &index);
+    assert(buffer == [1, 7, 1, 5]);
+    assert(index == 4);
+}
+
+/// dchar (32bit - 4x ubyte)
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
+
+    buffer.write!dchar('ą', 0);
+    assert(buffer == [0, 0, 1, 5, 0, 0, 0, 0]);
+
+    buffer.write!dchar('”', 4);
+    assert(buffer == [0, 0, 1, 5, 0, 0, 32, 29]);
+
+    size_t index = 0;
+    buffer.write!dchar('ć', &index);
+    assert(buffer == [0, 0, 1, 7, 0, 0, 32, 29]);
+    assert(index == 4);
+
+    buffer.write!dchar('ą', &index);
+    assert(buffer == [0, 0, 1, 7, 0, 0, 1, 5]);
+    assert(index == 8);
+}
+
+/// float (32bit - 4x ubyte)
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
+
+    buffer.write!float(32.0f, 0);
+    assert(buffer == [66, 0, 0, 0, 0, 0, 0, 0]);
+
+    buffer.write!float(25.0f, 4);
+    assert(buffer == [66, 0, 0, 0, 65, 200, 0, 0]);
+
+    size_t index = 0;
+    buffer.write!float(25.0f, &index);
+    assert(buffer == [65, 200, 0, 0, 65, 200, 0, 0]);
+    assert(index == 4);
+
+    buffer.write!float(32.0f, &index);
+    assert(buffer == [65, 200, 0, 0, 66, 0, 0, 0]);
+    assert(index == 8);
+}
+
+/// double (64bit - 8x ubyte)
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    buffer.write!double(32.0, 0);
+    assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+    buffer.write!double(25.0, 8);
+    assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
+
+    size_t index = 0;
+    buffer.write!double(25.0, &index);
+    assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
+    assert(index == 8);
+
+    buffer.write!double(32.0, &index);
+    assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0]);
+    assert(index == 16);
+}
+
+/// enum
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    enum Foo
     {
-        //bool
-        ubyte[] buffer = [0, 0];
-
-        buffer.write!bool(false, 0);
-        assert(buffer == [0, 0]);
-
-        buffer.write!bool(true, 0);
-        assert(buffer == [1, 0]);
-
-        buffer.write!bool(true, 1);
-        assert(buffer == [1, 1]);
-
-        buffer.write!bool(false, 1);
-        assert(buffer == [1, 0]);
-
-        size_t index = 0;
-        buffer.write!bool(false, &index);
-        assert(buffer == [0, 0]);
-        assert(index == 1);
-
-        buffer.write!bool(true, &index);
-        assert(buffer == [0, 1]);
-        assert(index == 2);
+        one = 10,
+        two = 20,
+        three = 30
     }
 
+    buffer.write!Foo(Foo.one, 0);
+    assert(buffer == [0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+    buffer.write!Foo(Foo.two, 4);
+    assert(buffer == [0, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 0]);
+
+    buffer.write!Foo(Foo.three, 8);
+    assert(buffer == [0, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 30]);
+
+    size_t index = 0;
+    buffer.write!Foo(Foo.three, &index);
+    assert(buffer == [0, 0, 0, 30, 0, 0, 0, 20, 0, 0, 0, 30]);
+    assert(index == 4);
+
+    buffer.write!Foo(Foo.one, &index);
+    assert(buffer == [0, 0, 0, 30, 0, 0, 0, 10, 0, 0, 0, 30]);
+    assert(index == 8);
+
+    buffer.write!Foo(Foo.two, &index);
+    assert(buffer == [0, 0, 0, 30, 0, 0, 0, 10, 0, 0, 0, 20]);
+    assert(index == 12);
+}
+
+// enum - bool
+@system unittest
+{
+    ubyte[] buffer = [0, 0];
+
+    enum Bool: bool
     {
-        //char (8bit)
-        ubyte[] buffer = [0, 0, 0];
-
-        buffer.write!char('a', 0);
-        assert(buffer == [97, 0, 0]);
-
-        buffer.write!char('b', 1);
-        assert(buffer == [97, 98, 0]);
-
-        size_t index = 0;
-        buffer.write!char('a', &index);
-        assert(buffer == [97, 98, 0]);
-        assert(index == 1);
-
-        buffer.write!char('b', &index);
-        assert(buffer == [97, 98, 0]);
-        assert(index == 2);
-
-        buffer.write!char('c', &index);
-        assert(buffer == [97, 98, 99]);
-        assert(index == 3);
+        bfalse = false,
+        btrue = true,
     }
 
+    buffer.write!Bool(Bool.btrue, 0);
+    assert(buffer == [1, 0]);
+
+    buffer.write!Bool(Bool.btrue, 1);
+    assert(buffer == [1, 1]);
+
+    size_t index = 0;
+    buffer.write!Bool(Bool.bfalse, &index);
+    assert(buffer == [0, 1]);
+    assert(index == 1);
+
+    buffer.write!Bool(Bool.bfalse, &index);
+    assert(buffer == [0, 0]);
+    assert(index == 2);
+}
+
+/// enum - float
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
+
+    enum Float: float
     {
-        //wchar (16bit - 2x ubyte)
-        ubyte[] buffer = [0, 0, 0, 0];
-
-        buffer.write!wchar('ą', 0);
-        assert(buffer == [1, 5, 0, 0]);
-
-        buffer.write!wchar('”', 2);
-        assert(buffer == [1, 5, 32, 29]);
-
-        size_t index = 0;
-        buffer.write!wchar('ć', &index);
-        assert(buffer == [1, 7, 32, 29]);
-        assert(index == 2);
-
-        buffer.write!wchar('ą', &index);
-        assert(buffer == [1, 7, 1, 5]);
-        assert(index == 4);
+        one = 32.0f,
+        two = 25.0f
     }
 
+    buffer.write!Float(Float.one, 0);
+    assert(buffer == [66, 0, 0, 0, 0, 0, 0, 0]);
+
+    buffer.write!Float(Float.two, 4);
+    assert(buffer == [66, 0, 0, 0, 65, 200, 0, 0]);
+
+    size_t index = 0;
+    buffer.write!Float(Float.two, &index);
+    assert(buffer == [65, 200, 0, 0, 65, 200, 0, 0]);
+    assert(index == 4);
+
+    buffer.write!Float(Float.one, &index);
+    assert(buffer == [65, 200, 0, 0, 66, 0, 0, 0]);
+    assert(index == 8);
+}
+
+/// enum - double
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    enum Double: double
     {
-        //dchar (32bit - 4x ubyte)
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
-
-        buffer.write!dchar('ą', 0);
-        assert(buffer == [0, 0, 1, 5, 0, 0, 0, 0]);
-
-        buffer.write!dchar('”', 4);
-        assert(buffer == [0, 0, 1, 5, 0, 0, 32, 29]);
-
-        size_t index = 0;
-        buffer.write!dchar('ć', &index);
-        assert(buffer == [0, 0, 1, 7, 0, 0, 32, 29]);
-        assert(index == 4);
-
-        buffer.write!dchar('ą', &index);
-        assert(buffer == [0, 0, 1, 7, 0, 0, 1, 5]);
-        assert(index == 8);
+        one = 32.0,
+        two = 25.0
     }
 
+    buffer.write!Double(Double.one, 0);
+    assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+    buffer.write!Double(Double.two, 8);
+    assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
+
+    size_t index = 0;
+    buffer.write!Double(Double.two, &index);
+    assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
+    assert(index == 8);
+
+    buffer.write!Double(Double.one, &index);
+    assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0]);
+    assert(index == 16);
+}
+
+/// enum - real
+@system unittest
+{
+    ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    enum Real: real
     {
-        //float (32bit - 4x ubyte)
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
-
-        buffer.write!float(32.0f, 0);
-        assert(buffer == [66, 0, 0, 0, 0, 0, 0, 0]);
-
-        buffer.write!float(25.0f, 4);
-        assert(buffer == [66, 0, 0, 0, 65, 200, 0, 0]);
-
-        size_t index = 0;
-        buffer.write!float(25.0f, &index);
-        assert(buffer == [65, 200, 0, 0, 65, 200, 0, 0]);
-        assert(index == 4);
-
-        buffer.write!float(32.0f, &index);
-        assert(buffer == [65, 200, 0, 0, 66, 0, 0, 0]);
-        assert(index == 8);
+        one = 32.0,
+        two = 25.0
     }
 
-    {
-        //double (64bit - 8x ubyte)
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-        buffer.write!double(32.0, 0);
-        assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-        buffer.write!double(25.0, 8);
-        assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
-
-        size_t index = 0;
-        buffer.write!double(25.0, &index);
-        assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
-        assert(index == 8);
-
-        buffer.write!double(32.0, &index);
-        assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0]);
-        assert(index == 16);
-    }
-
-    {
-        //enum
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-        enum Foo
-        {
-            one = 10,
-            two = 20,
-            three = 30
-        }
-
-        buffer.write!Foo(Foo.one, 0);
-        assert(buffer == [0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-        buffer.write!Foo(Foo.two, 4);
-        assert(buffer == [0, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 0]);
-
-        buffer.write!Foo(Foo.three, 8);
-        assert(buffer == [0, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 30]);
-
-        size_t index = 0;
-        buffer.write!Foo(Foo.three, &index);
-        assert(buffer == [0, 0, 0, 30, 0, 0, 0, 20, 0, 0, 0, 30]);
-        assert(index == 4);
-
-        buffer.write!Foo(Foo.one, &index);
-        assert(buffer == [0, 0, 0, 30, 0, 0, 0, 10, 0, 0, 0, 30]);
-        assert(index == 8);
-
-        buffer.write!Foo(Foo.two, &index);
-        assert(buffer == [0, 0, 0, 30, 0, 0, 0, 10, 0, 0, 0, 20]);
-        assert(index == 12);
-    }
-
-    {
-        //enum - bool
-        ubyte[] buffer = [0, 0];
-
-        enum Bool: bool
-        {
-            bfalse = false,
-            btrue = true,
-        }
-
-        buffer.write!Bool(Bool.btrue, 0);
-        assert(buffer == [1, 0]);
-
-        buffer.write!Bool(Bool.btrue, 1);
-        assert(buffer == [1, 1]);
-
-        size_t index = 0;
-        buffer.write!Bool(Bool.bfalse, &index);
-        assert(buffer == [0, 1]);
-        assert(index == 1);
-
-        buffer.write!Bool(Bool.bfalse, &index);
-        assert(buffer == [0, 0]);
-        assert(index == 2);
-    }
-
-    {
-        //enum - float
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0];
-
-        enum Float: float
-        {
-            one = 32.0f,
-            two = 25.0f
-        }
-
-        buffer.write!Float(Float.one, 0);
-        assert(buffer == [66, 0, 0, 0, 0, 0, 0, 0]);
-
-        buffer.write!Float(Float.two, 4);
-        assert(buffer == [66, 0, 0, 0, 65, 200, 0, 0]);
-
-        size_t index = 0;
-        buffer.write!Float(Float.two, &index);
-        assert(buffer == [65, 200, 0, 0, 65, 200, 0, 0]);
-        assert(index == 4);
-
-        buffer.write!Float(Float.one, &index);
-        assert(buffer == [65, 200, 0, 0, 66, 0, 0, 0]);
-        assert(index == 8);
-    }
-
-    {
-        //enum - double
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-        enum Double: double
-        {
-            one = 32.0,
-            two = 25.0
-        }
-
-        buffer.write!Double(Double.one, 0);
-        assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-
-        buffer.write!Double(Double.two, 8);
-        assert(buffer == [64, 64, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
-
-        size_t index = 0;
-        buffer.write!Double(Double.two, &index);
-        assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
-        assert(index == 8);
-
-        buffer.write!Double(Double.one, &index);
-        assert(buffer == [64, 57, 0, 0, 0, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0]);
-        assert(index == 16);
-    }
-
-    {
-        //enum - real
-        ubyte[] buffer = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-        enum Real: real
-        {
-            one = 32.0,
-            two = 25.0
-        }
-
-        static assert(!__traits(compiles, buffer.write!Real(Real.one)));
-    }
+    static assert(!__traits(compiles, buffer.write!Real(Real.one)));
 }
 
 
 /++
     Takes an integral value, converts it to the given endianness, and appends
-    it to the given range of $(D ubyte)s (using $(D put)) as a sequence of
-    $(D T.sizeof) $(D ubyte)s starting at index. $(D hasSlicing!R) must be
-    $(D true).
+    it to the given range of `ubyte`s (using `put`) as a sequence of
+    `T.sizeof` `ubyte`s starting at index. `hasSlicing!R` must be
+    `true`.
 
     Params:
-        T     = The integral type to convert the first $(D T.sizeof) bytes to.
+        T     = The integral type to convert the first `T.sizeof` bytes to.
         endianness = The endianness to write the bytes in.
         range = The range to _append to.
         value = The value to _append.
   +/
-void append(T, Endian endianness = Endian.bigEndian, R)(R range, T value)
+void append(T, Endian endianness = Endian.bigEndian, R)(R range, const T value)
 if (canSwapEndianness!T && isOutputRange!(R, ubyte))
 {
     static if (endianness == Endian.bigEndian)
@@ -3646,144 +4357,156 @@ if (canSwapEndianness!T && isOutputRange!(R, ubyte))
     assert(buffer.data == [1, 5, 22, 9, 44, 255, 8]);
 }
 
+/// bool
 @safe unittest
 {
-    import std.array;
-    {
-        //bool
-        auto buffer = appender!(const ubyte[])();
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
 
-        buffer.append!bool(true);
-        assert(buffer.data == [1]);
+    buffer.append!bool(true);
+    assert(buffer.data == [1]);
 
-        buffer.append!bool(false);
-        assert(buffer.data == [1, 0]);
-    }
+    buffer.append!bool(false);
+    assert(buffer.data == [1, 0]);
+}
 
-    {
-        //char wchar dchar
-        auto buffer = appender!(const ubyte[])();
+/// char wchar dchar
+@safe unittest
+{
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
 
-        buffer.append!char('a');
-        assert(buffer.data == [97]);
+    buffer.append!char('a');
+    assert(buffer.data == [97]);
 
-        buffer.append!char('b');
-        assert(buffer.data == [97, 98]);
+    buffer.append!char('b');
+    assert(buffer.data == [97, 98]);
 
-        buffer.append!wchar('ą');
-        assert(buffer.data == [97, 98, 1, 5]);
+    buffer.append!wchar('ą');
+    assert(buffer.data == [97, 98, 1, 5]);
 
-        buffer.append!dchar('ą');
+    buffer.append!dchar('ą');
         assert(buffer.data == [97, 98, 1, 5, 0, 0, 1, 5]);
-    }
+}
 
+/// float double
+@safe unittest
+{
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
+
+    buffer.append!float(32.0f);
+    assert(buffer.data == [66, 0, 0, 0]);
+
+    buffer.append!double(32.0);
+    assert(buffer.data == [66, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0]);
+}
+
+/// enum
+@safe unittest
+{
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
+
+    enum Foo
     {
-        //float double
-        auto buffer = appender!(const ubyte[])();
-
-        buffer.append!float(32.0f);
-        assert(buffer.data == [66, 0, 0, 0]);
-
-        buffer.append!double(32.0);
-        assert(buffer.data == [66, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0]);
+        one = 10,
+        two = 20,
+        three = 30
     }
 
+    buffer.append!Foo(Foo.one);
+    assert(buffer.data == [0, 0, 0, 10]);
+
+    buffer.append!Foo(Foo.two);
+    assert(buffer.data == [0, 0, 0, 10, 0, 0, 0, 20]);
+
+    buffer.append!Foo(Foo.three);
+    assert(buffer.data == [0, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 30]);
+}
+
+/// enum - bool
+@safe unittest
+{
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
+
+    enum Bool: bool
     {
-        //enum
-        auto buffer = appender!(const ubyte[])();
-
-        enum Foo
-        {
-            one = 10,
-            two = 20,
-            three = 30
-        }
-
-        buffer.append!Foo(Foo.one);
-        assert(buffer.data == [0, 0, 0, 10]);
-
-        buffer.append!Foo(Foo.two);
-        assert(buffer.data == [0, 0, 0, 10, 0, 0, 0, 20]);
-
-        buffer.append!Foo(Foo.three);
-        assert(buffer.data == [0, 0, 0, 10, 0, 0, 0, 20, 0, 0, 0, 30]);
+        bfalse = false,
+        btrue = true,
     }
 
+    buffer.append!Bool(Bool.btrue);
+    assert(buffer.data == [1]);
+
+    buffer.append!Bool(Bool.bfalse);
+    assert(buffer.data == [1, 0]);
+
+    buffer.append!Bool(Bool.btrue);
+    assert(buffer.data == [1, 0, 1]);
+}
+
+/// enum - float
+@safe unittest
+{
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
+
+    enum Float: float
     {
-        //enum - bool
-        auto buffer = appender!(const ubyte[])();
-
-        enum Bool: bool
-        {
-            bfalse = false,
-            btrue = true,
-        }
-
-        buffer.append!Bool(Bool.btrue);
-        assert(buffer.data == [1]);
-
-        buffer.append!Bool(Bool.bfalse);
-        assert(buffer.data == [1, 0]);
-
-        buffer.append!Bool(Bool.btrue);
-        assert(buffer.data == [1, 0, 1]);
+        one = 32.0f,
+        two = 25.0f
     }
 
+    buffer.append!Float(Float.one);
+    assert(buffer.data == [66, 0, 0, 0]);
+
+    buffer.append!Float(Float.two);
+    assert(buffer.data == [66, 0, 0, 0, 65, 200, 0, 0]);
+}
+
+/// enum - double
+@safe unittest
+{
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
+
+    enum Double: double
     {
-        //enum - float
-        auto buffer = appender!(const ubyte[])();
-
-        enum Float: float
-        {
-            one = 32.0f,
-            two = 25.0f
-        }
-
-        buffer.append!Float(Float.one);
-        assert(buffer.data == [66, 0, 0, 0]);
-
-        buffer.append!Float(Float.two);
-        assert(buffer.data == [66, 0, 0, 0, 65, 200, 0, 0]);
+        one = 32.0,
+        two = 25.0
     }
 
+    buffer.append!Double(Double.one);
+    assert(buffer.data == [64, 64, 0, 0, 0, 0, 0, 0]);
+
+    buffer.append!Double(Double.two);
+    assert(buffer.data == [64, 64, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
+}
+
+/// enum - real
+@safe unittest
+{
+    import std.array : appender;
+    auto buffer = appender!(const ubyte[])();
+
+    enum Real: real
     {
-        //enum - double
-        auto buffer = appender!(const ubyte[])();
-
-        enum Double: double
-        {
-            one = 32.0,
-            two = 25.0
-        }
-
-        buffer.append!Double(Double.one);
-        assert(buffer.data == [64, 64, 0, 0, 0, 0, 0, 0]);
-
-        buffer.append!Double(Double.two);
-        assert(buffer.data == [64, 64, 0, 0, 0, 0, 0, 0, 64, 57, 0, 0, 0, 0, 0, 0]);
+        one = 32.0,
+        two = 25.0
     }
 
-    {
-        //enum - real
-        auto buffer = appender!(const ubyte[])();
-
-        enum Real: real
-        {
-            one = 32.0,
-            two = 25.0
-        }
-
-        static assert(!__traits(compiles, buffer.append!Real(Real.one)));
-    }
+    static assert(!__traits(compiles, buffer.append!Real(Real.one)));
 }
 
 @system unittest
 {
     import std.array;
     import std.format : format;
-    import std.meta;
-    foreach (endianness; AliasSeq!(Endian.bigEndian, Endian.littleEndian))
-    {
+    import std.meta : AliasSeq;
+    static foreach (endianness; [Endian.bigEndian, Endian.littleEndian])
+    {{
         auto toWrite = appender!(ubyte[])();
         alias Types = AliasSeq!(uint, int, long, ulong, short, ubyte, ushort, byte, uint);
         ulong[] values = [42, -11, long.max, 1098911981329L, 16, 255, 19012, 2, 17];
@@ -3791,7 +4514,7 @@ if (canSwapEndianness!T && isOutputRange!(R, ubyte))
 
         size_t index = 0;
         size_t length = 0;
-        foreach (T; Types)
+        static foreach (T; Types)
         {
             toWrite.append!(T, endianness)(cast(T) values[index++]);
             length += T.sizeof;
@@ -3801,7 +4524,7 @@ if (canSwapEndianness!T && isOutputRange!(R, ubyte))
         assert(toRead.length == length);
 
         index = 0;
-        foreach (T; Types)
+        static foreach (T; Types)
         {
             assert(toRead.peek!(T, endianness)() == values[index], format("Failed Index: %s", index));
             assert(toRead.peek!(T, endianness)(0) == values[index], format("Failed Index: %s", index));
@@ -3814,34 +4537,27 @@ if (canSwapEndianness!T && isOutputRange!(R, ubyte))
             ++index;
         }
         assert(toRead.empty);
-    }
+    }}
 }
 
 /**
-Counts the number of set bits in the binary representation of $(D value).
+Counts the number of set bits in the binary representation of `value`.
 For signed integers, the sign bit is included in the count.
 */
-private uint countBitsSet(T)(T value) @nogc pure nothrow
+private uint countBitsSet(T)(const T value) @nogc pure nothrow
 if (isIntegral!T)
 {
-    // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     static if (T.sizeof == 8)
     {
-        T c = value - ((value >> 1) & 0x55555555_55555555);
-        c = ((c >> 2) & 0x33333333_33333333) + (c & 0x33333333_33333333);
-        c = ((c >> 4) + c) & 0x0F0F0F0F_0F0F0F0F;
-        c = ((c >> 8) + c) & 0x00FF00FF_00FF00FF;
-        c = ((c >> 16) + c) & 0x0000FFFF_0000FFFF;
-        c = ((c >> 32) + c) & 0x00000000_FFFFFFFF;
+        import core.bitop : popcnt;
+        const c = popcnt(cast(ulong) value);
     }
     else static if (T.sizeof == 4)
     {
-        T c = value - ((value >> 1) & 0x55555555);
-        c = ((c >> 2) & 0x33333333) + (c & 0x33333333);
-        c = ((c >> 4) + c) & 0x0F0F0F0F;
-        c = ((c >> 8) + c) & 0x00FF00FF;
-        c = ((c >> 16) + c) & 0x0000FFFF;
+        import core.bitop : popcnt;
+        const c = popcnt(cast(uint) value);
     }
+    // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     else static if (T.sizeof == 2)
     {
         uint c = value - ((value >> 1) & 0x5555);
@@ -3873,7 +4589,7 @@ if (isIntegral!T)
 @safe unittest
 {
     import std.meta;
-    foreach (T; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong))
+    static foreach (T; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong))
     {
         assert(countBitsSet(cast(T) 0) == 0);
         assert(countBitsSet(cast(T) 1) == 1);
@@ -3891,6 +4607,8 @@ if (isIntegral!T)
         {
             assert(countBitsSet(T.max) == 8 * T.sizeof);
         }
+        // Check CTFE compiles.
+        static assert(countBitsSet(cast(T) 1) == 1);
     }
     assert(countBitsSet(1_000_000) == 7);
     foreach (i; 0 .. 63)
@@ -3916,7 +4634,7 @@ private struct BitsSet(T)
         _index = startIndex + trailingZerosCount;
     }
 
-    @property size_t front()
+    @property size_t front() const
     {
         return _index;
     }
@@ -3941,12 +4659,12 @@ private struct BitsSet(T)
         _index += trailingZerosCount + 1;
     }
 
-    @property auto save()
+    @property BitsSet save() const
     {
         return this;
     }
 
-    @property size_t length()
+    @property size_t length() const
     {
         return countBitsSet(_value);
     }
@@ -3956,11 +4674,11 @@ private struct BitsSet(T)
 }
 
 /**
-Range that iterates the indices of the set bits in $(D value).
+Range that iterates the indices of the set bits in `value`.
 Index 0 corresponds to the least significant bit.
 For signed integers, the highest index corresponds to the sign bit.
 */
-auto bitsSet(T)(T value) @nogc pure nothrow
+auto bitsSet(T)(const T value) @nogc pure nothrow
 if (isIntegral!T)
 {
     return BitsSet!T(value);
@@ -3984,7 +4702,7 @@ if (isIntegral!T)
     import std.range : iota;
 
     import std.meta;
-    foreach (T; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong))
+    static foreach (T; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong))
     {
         assert(bitsSet(cast(T) 0).empty);
         assert(bitsSet(cast(T) 1).equal([0]));

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag11727.d(10): Error: type n is not an expression
+fail_compilation/diag11727.d(10): Error: type `n` is not an expression
 ---
 */
 auto returnEnum()
@@ -17,7 +17,7 @@ void main()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag11727.d(26): Error: type void is not an expression
+fail_compilation/diag11727.d(26): Error: type `void` is not an expression
 ---
 */
 auto returnVoid()
@@ -29,7 +29,7 @@ auto returnVoid()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag11727.d(38): Error: template t() has no type
+fail_compilation/diag11727.d(38): Error: template `t()` has no type
 ---
 */
 auto returnTemplate()

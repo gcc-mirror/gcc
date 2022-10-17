@@ -15,5 +15,3 @@ class Derived : Base
         return null;
     }
 }
-
-

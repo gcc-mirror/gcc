@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !js
+//go:build !js
 
 package pprof
 
@@ -17,7 +17,7 @@ import (
 	"unsafe"
 )
 
-var memSink interface{}
+var memSink any
 
 func allocateTransient1M() {
 	for i := 0; i < 1024; i++ {

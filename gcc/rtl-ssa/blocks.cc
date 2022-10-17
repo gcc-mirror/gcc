@@ -1,5 +1,5 @@
 // Implementation of basic-block-related functions for RTL SSA      -*- C++ -*-
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -85,8 +85,8 @@ class function_info::bb_walker : public dom_walker
 {
 public:
   bb_walker (function_info *, build_info &);
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
 private:
   // Information about the function we're building.

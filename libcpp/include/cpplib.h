@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -46,7 +46,7 @@ struct _cpp_file;
    '='.  The lexer needs operators ending in '=', like ">>=", to be in
    the same order as their counterparts without the '=', like ">>".
 
-   See the cpp_operator table optab in expr.c if you change the order or
+   See the cpp_operator table optab in expr.cc if you change the order or
    add or remove anything in the first group.  */
 
 #define TTYPE_TABLE							\
@@ -190,14 +190,16 @@ struct GTY(()) cpp_string {
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define PREV_FALLTHROUGH (1 << 5) /* On a token preceeded by FALLTHROUGH
 				     comment.  */
-#define BOL		(1 << 6) /* Token at beginning of line.  */
+#define DECIMAL_INT     (1 << 6) /* Decimal integer, set in c-lex.cc.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
-				    set in c-lex.c.  */
+				    set in c-lex.cc.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
 #define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
 				    operator, or before this token
 				    after a # operator.  */
 #define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
+#define PRAGMA_OP	(1 << 11) /* _Pragma token.  */
+#define BOL		(1 << 12) /* Token at beginning of line.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 
@@ -316,6 +318,18 @@ enum cpp_main_search
 		  header-unit).  */
   CMS_user,    /* Search the user INCLUDE path.  */
   CMS_system,  /* Search the system INCLUDE path.  */
+};
+
+/* The possible bidirectional control characters checking levels.  */
+enum cpp_bidirectional_level {
+  /* No checking.  */
+  bidirectional_none = 0,
+  /* Only detect unpaired uses of bidirectional control characters.  */
+  bidirectional_unpaired = 1,
+  /* Detect any use of bidirectional control characters.  */
+  bidirectional_any = 2,
+  /* Also warn about UCNs.  */
+  bidirectional_ucn = 4
 };
 
 /* This structure is nested inside struct cpp_reader, and
@@ -479,7 +493,7 @@ struct cpp_options
   unsigned char ext_numeric_literals;
 
   /* Nonzero means extended identifiers allow the characters specified
-     in C11 and C++11.  */
+     in C11.  */
   unsigned char c11_identifiers;
 
   /* Nonzero for C++ 2014 Standard binary constants.  */
@@ -500,11 +514,20 @@ struct cpp_options
   /* Nonzero for the '#elifdef' and '#elifndef' directives.  */
   unsigned char elifdef;
 
+  /* Nonzero for the '#warning' directive.  */
+  unsigned char warning_directive;
+
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
 
   /* Nonzero for C++23 size_t literals.  */
   unsigned char size_t_literals;
+
+  /* Nonzero for C++23 delimited escape sequences.  */
+  unsigned char delimited_escape_seqs;
+
+  /* Nonzero for 'true' and 'false' in #if expressions.  */
+  unsigned char true_false;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
@@ -533,6 +556,24 @@ struct cpp_options
 
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
+
+  /* True if warn about differences between C++17 and C++20.  */
+  bool cpp_warn_cxx20_compat;
+
+  /* Nonzero if bidirectional control characters checking is on.  See enum
+     cpp_bidirectional_level.  */
+  unsigned char cpp_warn_bidirectional;
+
+  /* True if libcpp should warn about invalid UTF-8 characters in comments.
+     2 if it should be a pedwarn.  */
+  unsigned char cpp_warn_invalid_utf8;
+
+  /* True if libcpp should warn about invalid forms of delimited or named
+     escape sequences.  */
+  bool cpp_warn_unicode;
+
+  /* True if -finput-charset= option has been used explicitly.  */
+  bool cpp_input_charset_explicit;
 
   /* Dependency generation.  */
   struct
@@ -564,8 +605,8 @@ struct cpp_options
      ints and target wide characters, respectively.  */
   size_t precision, char_precision, int_precision, wchar_precision;
 
-  /* True means chars (wide chars) are unsigned.  */
-  bool unsigned_char, unsigned_wchar;
+  /* True means chars (wide chars, UTF-8 chars) are unsigned.  */
+  bool unsigned_char, unsigned_wchar, unsigned_utf8char;
 
   /* True if the most significant byte in a word has the lowest
      address in memory.  */
@@ -638,7 +679,11 @@ enum cpp_warning_reason {
   CPP_W_C90_C99_COMPAT,
   CPP_W_C11_C2X_COMPAT,
   CPP_W_CXX11_COMPAT,
-  CPP_W_EXPANSION_TO_DEFINED
+  CPP_W_CXX20_COMPAT,
+  CPP_W_EXPANSION_TO_DEFINED,
+  CPP_W_BIDIRECTIONAL,
+  CPP_W_INVALID_UTF8,
+  CPP_W_UNICODE
 };
 
 /* Callback for header lookup for HEADER, which is the name of a
@@ -735,8 +780,16 @@ struct cpp_callbacks
 
 #ifdef VMS
 #define INO_T_CPP ino_t ino[3]
+#elif defined (_AIX) && SIZEOF_INO_T == 4
+#define INO_T_CPP ino64_t ino
 #else
 #define INO_T_CPP ino_t ino
+#endif
+
+#if defined (_AIX) && SIZEOF_DEV_T == 4
+#define DEV_T_CPP dev64_t dev
+#else
+#define DEV_T_CPP dev_t dev
 #endif
 
 /* Chain of directories to look for include files in.  */
@@ -773,7 +826,7 @@ struct cpp_dir
   /* The C front end uses these to recognize duplicated
      directories in the search path.  */
   INO_T_CPP;
-  dev_t dev;
+  DEV_T_CPP;
 };
 
 /* The kind of the cpp_macro.  */
@@ -1170,7 +1223,7 @@ extern int cpp_defined (cpp_reader *, const unsigned char *, int);
    the double integer are set to zero.  */
 
 /* This type has to be equal to unsigned HOST_WIDE_INT, see
-   gcc/c-family/c-lex.c.  */
+   gcc/c-family/c-lex.cc.  */
 typedef uint64_t cpp_num_part;
 typedef struct cpp_num cpp_num;
 struct cpp_num
@@ -1263,6 +1316,14 @@ extern bool cpp_warning_syshdr (cpp_reader *, enum cpp_warning_reason reason,
 				const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
 
+/* As their counterparts above, but use RICHLOC.  */
+extern bool cpp_warning_at (cpp_reader *, enum cpp_warning_reason,
+			    rich_location *richloc, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_4;
+extern bool cpp_pedwarning_at (cpp_reader *, enum cpp_warning_reason,
+			       rich_location *richloc, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_4;
+
 /* Output a diagnostic with "MSGID: " preceding the
    error string of errno.  No location is printed.  */
 extern bool cpp_errno (cpp_reader *, enum cpp_diagnostic_level,
@@ -1300,7 +1361,7 @@ extern bool cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level,
 			  rich_location *richloc, const char *msgid, ...)
   ATTRIBUTE_PRINTF_4;
 
-/* In lex.c */
+/* In lex.cc */
 extern int cpp_ideq (const cpp_token *, const char *);
 extern void cpp_output_line (cpp_reader *, FILE *);
 extern unsigned char *cpp_output_line_to_string (cpp_reader *,
@@ -1357,7 +1418,7 @@ extern cpp_hashnode *cpp_lookup (cpp_reader *, const unsigned char *,
 typedef int (*cpp_cb) (cpp_reader *, cpp_hashnode *, void *);
 extern void cpp_forall_identifiers (cpp_reader *, cpp_cb, void *);
 
-/* In macro.c */
+/* In macro.cc */
 extern void cpp_scan_nooutput (cpp_reader *);
 extern int  cpp_sys_macro_p (cpp_reader *);
 extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
@@ -1365,7 +1426,7 @@ extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 extern bool cpp_compare_macros (const cpp_macro *macro1,
 				const cpp_macro *macro2);
 
-/* In files.c */
+/* In files.cc */
 extern bool cpp_included (cpp_reader *, const char *);
 extern bool cpp_included_before (cpp_reader *, const char *, location_t);
 extern void cpp_make_system_header (cpp_reader *, int, int);
@@ -1379,7 +1440,21 @@ extern struct _cpp_file *cpp_get_file (cpp_buffer *);
 extern cpp_buffer *cpp_get_prev (cpp_buffer *);
 extern void cpp_clear_file_cache (cpp_reader *);
 
-/* In pch.c */
+/* cpp_get_converted_source returns the contents of the given file, as it exists
+   after cpplib has read it and converted it from the input charset to the
+   source charset.  Return struct will be zero-filled if the data could not be
+   read for any reason.  The data starts at the DATA pointer, but the TO_FREE
+   pointer is what should be passed to free(), as there may be an offset.  */
+struct cpp_converted_source
+{
+  char *to_free;
+  char *data;
+  size_t len;
+};
+cpp_converted_source cpp_get_converted_source (const char *fname,
+					       const char *input_charset);
+
+/* In pch.cc */
 struct save_macro_data;
 extern int cpp_save_state (cpp_reader *, FILE *);
 extern int cpp_write_pch_deps (cpp_reader *, FILE *);
@@ -1389,7 +1464,7 @@ extern void cpp_prepare_state (cpp_reader *, struct save_macro_data **);
 extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 			   struct save_macro_data *);
 
-/* In lex.c */
+/* In lex.cc */
 extern void cpp_force_token_locations (cpp_reader *, location_t);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
 enum CPP_DO_task
@@ -1405,7 +1480,7 @@ extern void cpp_directive_only_process (cpp_reader *pfile,
 						    CPP_DO_task,
 						    void *data, ...));
 
-/* In expr.c */
+/* In expr.cc */
 extern enum cpp_ttype cpp_userdef_string_remove_type
   (enum cpp_ttype type);
 extern enum cpp_ttype cpp_userdef_string_add_type
@@ -1421,44 +1496,100 @@ extern bool cpp_userdef_char_p
 extern const char * cpp_get_userdef_suffix
   (const cpp_token *);
 
-/* In charset.c */
+/* In charset.cc */
+
+/* The result of attempting to decode a run of UTF-8 bytes.  */
+
+struct cpp_decoded_char
+{
+  const char *m_start_byte;
+  const char *m_next_byte;
+
+  bool m_valid_ch;
+  cppchar_t m_ch;
+};
+
+/* Information for mapping between code points and display columns.
+
+   This is a tabstop value, along with a callback for getting the
+   widths of characters.  Normally this callback is cpp_wcwidth, but we
+   support other schemes for escaping non-ASCII unicode as a series of
+   ASCII chars when printing the user's source code in diagnostic-show-locus.cc
+
+   For example, consider:
+   - the Unicode character U+03C0 "GREEK SMALL LETTER PI" (UTF-8: 0xCF 0x80)
+   - the Unicode character U+1F642 "SLIGHTLY SMILING FACE"
+     (UTF-8: 0xF0 0x9F 0x99 0x82)
+   - the byte 0xBF (a stray trailing byte of a UTF-8 character)
+   Normally U+03C0 would occupy one display column, U+1F642
+   would occupy two display columns, and the stray byte would be
+   printed verbatim as one display column.
+
+   However when escaping them as unicode code points as "<U+03C0>"
+   and "<U+1F642>" they occupy 8 and 9 display columns respectively,
+   and when escaping them as bytes as "<CF><80>" and "<F0><9F><99><82>"
+   they occupy 8 and 16 display columns respectively.  In both cases
+   the stray byte is escaped to <BF> as 4 display columns.  */
+
+struct cpp_char_column_policy
+{
+  cpp_char_column_policy (int tabstop,
+			  int (*width_cb) (cppchar_t c))
+  : m_tabstop (tabstop),
+    m_undecoded_byte_width (1),
+    m_width_cb (width_cb)
+  {}
+
+  int m_tabstop;
+  /* Width in display columns of a stray byte that isn't decodable
+     as UTF-8.  */
+  int m_undecoded_byte_width;
+  int (*m_width_cb) (cppchar_t c);
+};
 
 /* A class to manage the state while converting a UTF-8 sequence to cppchar_t
    and computing the display width one character at a time.  */
 class cpp_display_width_computation {
  public:
   cpp_display_width_computation (const char *data, int data_length,
-				 int tabstop);
+				 const cpp_char_column_policy &policy);
   const char *next_byte () const { return m_next; }
   int bytes_processed () const { return m_next - m_begin; }
   int bytes_left () const { return m_bytes_left; }
   bool done () const { return !bytes_left (); }
   int display_cols_processed () const { return m_display_cols; }
 
-  int process_next_codepoint ();
+  int process_next_codepoint (cpp_decoded_char *out);
   int advance_display_cols (int n);
 
  private:
   const char *const m_begin;
   const char *m_next;
   size_t m_bytes_left;
-  const int m_tabstop;
+  const cpp_char_column_policy &m_policy;
   int m_display_cols;
 };
 
 /* Convenience functions that are simple use cases for class
    cpp_display_width_computation.  Tab characters will be expanded to spaces
-   as determined by TABSTOP.  */
+   as determined by POLICY.m_tabstop, and non-printable-ASCII characters
+   will be escaped as per POLICY.  */
+
 int cpp_byte_column_to_display_column (const char *data, int data_length,
-				       int column, int tabstop);
+				       int column,
+				       const cpp_char_column_policy &policy);
 inline int cpp_display_width (const char *data, int data_length,
-			      int tabstop)
+			      const cpp_char_column_policy &policy)
 {
   return cpp_byte_column_to_display_column (data, data_length, data_length,
-					    tabstop);
+					    policy);
 }
 int cpp_display_column_to_byte_column (const char *data, int data_length,
-				       int display_col, int tabstop);
+				       int display_col,
+				       const cpp_char_column_policy &policy);
 int cpp_wcwidth (cppchar_t c);
+
+bool cpp_input_conversion_is_trivial (const char *input_charset);
+int cpp_check_utf8_bom (const char *data, size_t data_length);
 
 #endif /* ! LIBCPP_CPPLIB_H */

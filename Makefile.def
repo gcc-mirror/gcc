@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002-2019 Free Software Foundation
+//   Copyright 2002-2022 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ host_modules= { module= dejagnu; };
 host_modules= { module= etc; };
 host_modules= { module= fastjar; no_check_cross= true; };
 host_modules= { module= fixincludes; bootstrap=true;
-		missing= TAGS; };
+		missing= TAGS;
+		missing= install-dvi; };
 host_modules= { module= flex; no_check_cross= true; };
 host_modules= { module= gas; bootstrap=true; };
 host_modules= { module= gcc; bootstrap=true; 
@@ -69,9 +70,6 @@ host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@';
 		extra_make_flags='V=1';
 		no_install= true; };
-host_modules= { module= libelf; lib_path=.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared';
-		no_install= true; };
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
 host_modules= { module= intl; bootstrap=true; };
@@ -87,10 +85,14 @@ host_modules= { module= libcody; bootstrap=true;
 		missing= pdf;
 		missing= html;
 		missing= info;
+		missing= dvi;
 		missing= install-pdf;
 		missing= install-html;
-		missing= install-info; };
-host_modules= { module= libdecnumber; bootstrap=true; };
+		missing= install-info;
+		missing= install-dvi;
+		missing=TAGS; };
+host_modules= { module= libdecnumber; bootstrap=true;
+		missing=TAGS; };
 host_modules= { module= libgui; };
 host_modules= { module= libiberty; bootstrap=true;
 	        extra_configure_flags='@extra_host_libiberty_configure_flags@';};
@@ -134,7 +136,8 @@ host_modules= { module= libtermcap; no_check=true;
                 missing=distclean;
                 missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
-host_modules= { module= c++tools; };
+host_modules= { module= c++tools;
+                missing=TAGS; };
 host_modules= { module= gnattools; };
 host_modules= { module= lto-plugin; bootstrap=true;
 		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
@@ -160,13 +163,17 @@ target_modules = { module= liboffloadmic;
 		   extra_configure_flags='@extra_liboffloadmic_configure_flags@'; };
 target_modules = { module= libssp; lib_path=.libs; };
 target_modules = { module= newlib; };
-target_modules = { module= libgcc; bootstrap=true; no_check=true; };
-target_modules = { module= libbacktrace; };
+target_modules = { module= libgcc; bootstrap=true; no_check=true;
+		  missing=TAGS;
+		  missing=install-dvi; };
+target_modules = { module= libbacktrace; bootstrap=true; };
 target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
-target_modules = { module= libobjc; };
+target_modules = { module= libobjc;
+		  missing=TAGS;
+		  missing=install-dvi; };
 target_modules = { module= libgo; };
-target_modules = { module= libphobos;
+target_modules = { module= libphobos; bootstrap=true;
 		   lib_path=src/.libs; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
@@ -176,12 +183,12 @@ target_modules = { module= libtermcap; no_check=true;
 target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
 target_modules = { module= libffi; no_install=true; };
-target_modules = { module= zlib; };
+target_modules = { module= zlib; bootstrap=true; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
-target_modules = { module= libatomic; lib_path=.libs; };
+target_modules = { module= libatomic; bootstrap=true; lib_path=.libs; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.
@@ -200,6 +207,9 @@ recursive_targets = { make_target= TAGS;
 recursive_targets = { make_target= install-info; 
                       depend=configure;
                       depend=info; };
+recursive_targets = { make_target= install-dvi;
+                      depend=configure;
+                      depend=dvi; };
 recursive_targets = { make_target= install-pdf; 
                       depend=configure;
                       depend=pdf; };
@@ -340,7 +350,6 @@ dependencies = { module=configure-gcc; on=all-binutils; };
 dependencies = { module=configure-gcc; on=all-gas; };
 dependencies = { module=configure-gcc; on=all-ld; };
 dependencies = { module=configure-gcc; on=all-gold; };
-dependencies = { module=configure-gcc; on=all-libelf; };
 dependencies = { module=configure-gcc; on=all-libiconv; };
 dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
 dependencies = { module=all-gcc; on=all-intl; };
@@ -423,6 +432,7 @@ dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=all-gdb; on=all-libdecnumber; };
 dependencies = { module=all-gdb; on=all-libtermcap; };
 dependencies = { module=all-gdb; on=all-libctf; };
+dependencies = { module=all-gdb; on=all-libbacktrace; };
 
 // Host modules specific to gdbserver.
 dependencies = { module=configure-gdbserver; on=all-gnulib; };
@@ -470,7 +480,16 @@ dependencies = { module=all-ld; on=all-libctf; };
 dependencies = { module=install-binutils; on=install-opcodes; };
 dependencies = { module=install-strip-binutils; on=install-strip-opcodes; };
 
+// Likewise for ld, libctf, and bfd.
+dependencies = { module=install-libctf; on=install-bfd; };
+dependencies = { module=install-ld; on=install-bfd; };
+dependencies = { module=install-ld; on=install-libctf; };
+dependencies = { module=install-strip-libctf; on=install-strip-bfd; };
+dependencies = { module=install-strip-ld; on=install-strip-bfd; };
+dependencies = { module=install-strip-ld; on=install-strip-libctf; };
+
 // libopcodes depends on libbfd
+dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };
 dependencies = { module=install-opcodes; on=install-bfd; };
 dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
 
@@ -547,7 +566,7 @@ dependencies = { module=all-sim; on=all-intl; };
 dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };
-dependencies = { module=all-sim; on=all-readline; };
+dependencies = { module=configure-sim; on=all-readline; };
 
 // Other host modules.
 dependencies = { module=all-fastjar; on=all-zlib; };
@@ -562,6 +581,12 @@ dependencies = { module=configure-libctf; on=all-intl; };
 dependencies = { module=configure-libctf; on=all-zlib; };
 dependencies = { module=configure-libctf; on=all-libiconv; };
 dependencies = { module=check-libctf; on=all-ld; };
+
+// The Makefiles in gdb and gdbserver pull in a file that configure
+// generates in the gnulib directory, so distclean gnulib only after
+// gdb and gdbserver.
+dependencies = { module=distclean-gnulib; on=distclean-gdb; };
+dependencies = { module=distclean-gnulib; on=distclean-gdbserver; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };
@@ -634,6 +659,7 @@ dependencies = { module=configure-target-newlib; on=all-binutils; };
 dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
+dependencies = { module=configure-target-libgo; on=all-target-libbacktrace; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;
@@ -654,6 +680,7 @@ languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-gotools; };
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
+languages = { language=jit;	gcc-check-target=check-jit; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,10 @@ package System.Val_Flt is
    package Impl is new Val_Real
      (Float,
       System.Powten_Flt.Maxpow,
-      System.Powten_Flt.Powten'Address,
+      System.Powten_Flt.Powfive'Address,
+      System.Null_Address,
+      System.Null_Address,
+      System.Null_Address,
       Unsigned_Types.Unsigned);
 
    function Scan_Float

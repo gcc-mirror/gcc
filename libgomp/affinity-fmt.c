@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -36,6 +36,9 @@
 #ifdef HAVE_UNAME
 #include <sys/utsname.h>
 #endif
+
+ialias_redirect (omp_get_team_num)
+ialias_redirect (omp_get_num_teams)
 
 bool
 gomp_print_string (const char *str, size_t len)

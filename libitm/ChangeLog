@@ -1,3 +1,53 @@
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-09-28  Lulu Cheng  <chenglulu@loongson.cn>
+	    Yang Yujie  <yangyujie@loongson.cn>
+
+	* configure.tgt: Add loongarch support.
+	* config/loongarch/asm.h: New file.
+	* config/loongarch/sjlj.S: New file.
+	* config/loongarch/target.h: New file.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libitm.exp: Add load_gcc_lib of scansarif.exp.
+
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* configure: Regenerate.
+
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Detect *_ld_is_mold and use it.
+	* configure: Regenerate.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2021-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* eh_cpp.cc (GTM::gtm_thread::init_cpp_exceptions): If the
+	target does not support HAVE_ELF_STYLE_WEAKREF then do not
+	try to test the __cxa_get_globals against NULL.
+
 2021-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91488
@@ -2298,7 +2348,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

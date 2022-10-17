@@ -1,0 +1,8 @@
+
+TM_H += $(srcdir)/config/bpf/coreout.h
+
+coreout.o: $(srcdir)/config/bpf/coreout.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+PASSES_EXTRA += $(srcdir)/config/bpf/bpf-passes.def

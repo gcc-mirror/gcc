@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -c
+// EXTRA_FILES: imports/foo10727a.d imports/stdtraits10727.d
 /*
 TEST_OUTPUT:
 ---

@@ -9,4 +9,3 @@ fail_compilation/fail17419.d(11): Error: expected 1 arguments for `getLinkage` b
 
 enum s = __traits(getLinkage, 8 * 8);
 enum t = __traits(getLinkage, 8, 8);
-

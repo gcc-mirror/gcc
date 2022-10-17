@@ -18,6 +18,39 @@ extern "C" {
 #if defined( AAB_AIX_FCNTL_CHECK )
 
 #endif  /* AAB_AIX_FCNTL_CHECK */
+
+
+#if defined( VXWORKS_POSIX_OPEN_CHECK )
+extern int open (const char *, int, int);
+
+#if defined(__cplusplus)
+extern "C++" {
+  inline int open (const char *, int) __attribute__((__always_inline__));
+
+  inline int
+  open (const char *name, int flags)
+  {
+    return open (name, flags, 0);
+  }
+}
+#endif
+
+extern int open (const char *name, int flags, int mode );
+
+#if defined(__cplusplus)
+extern "C++" {
+  inline int open (const char *, int) __attribute__((__always_inline__));
+
+  inline int
+  open (const char *name, int flags)
+  {
+    return open (name, flags, 0);
+  }
+}
+#endif
+
+
+#endif  /* VXWORKS_POSIX_OPEN_CHECK */
 #ifdef __cplusplus
 }
 #endif

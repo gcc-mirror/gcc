@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for HPs using the
    64bit runtime model.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,10 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #define DOUBLE_TYPE_SIZE 64
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 128
-
-/* Temporary until we figure out what to do with those *(&@$ 32bit
-   relocs which appear in stabs.  */
-#undef DBX_DEBUGGING_INFO
 
 /* ?!? This needs to be made compile-time selectable.
 

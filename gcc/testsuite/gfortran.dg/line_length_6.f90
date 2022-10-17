@@ -5,4 +5,4 @@
 !
       print *, 1                                                                                                                                          + 2 ! { dg-error "Line truncated at .1." }
       end
-! { dg-excess-errors "some warnings being treated as errors" }
+! { dg-prune-output "some warnings being treated as errors" }

@@ -1,6 +1,6 @@
 // PR c++/53756
 // { dg-do compile { target c++14 } }
-// { dg-options "-gdwarf-2 -dA -fno-debug-types-section" }
+// { dg-options "-gdwarf-2 -dA -fno-debug-types-section -fno-inline" }
 // We're looking for something like
 
 // .uleb128 0x3    # (DIE (0x33) DW_TAG_subprogram)

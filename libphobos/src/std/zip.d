@@ -1,114 +1,169 @@
 // Written in the D programming language.
 
 /**
- * Read/write data in the $(LINK2 http://www.info-zip.org, _zip archive) format.
- * Makes use of the etc.c.zlib compression library.
- *
- * Bugs:
- *      $(UL
- *      $(LI Multi-disk zips not supported.)
- *      $(LI Only Zip version 20 formats are supported.)
- *      $(LI Only supports compression modes 0 (no compression) and 8 (deflate).)
- *      $(LI Does not support encryption.)
- *      $(LI $(BUGZILLA 592))
- *      $(LI $(BUGZILLA 2137))
- *      )
- *
- * Example:
- * ---
-// Read existing zip file.
-import std.digest.crc, std.file, std.stdio, std.zip;
+Read and write data in the
+$(LINK2 https://en.wikipedia.org/wiki/Zip_%28file_format%29, zip archive)
+format.
+
+Standards:
+
+The current implementation mostly conforms to
+$(LINK2 https://www.iso.org/standard/60101.html, ISO/IEC 21320-1:2015),
+which means,
+$(UL
+$(LI that files can only be stored uncompressed or using the deflate mechanism,)
+$(LI that encryption features are not used,)
+$(LI that digital signature features are not used,)
+$(LI that patched data features are not used, and)
+$(LI that archives may not span multiple volumes.)
+)
+
+Additionally, archives are checked for malware attacks and rejected if detected.
+This includes
+$(UL
+$(LI $(LINK2 https://news.ycombinator.com/item?id=20352439, zip bombs) which
+     generate gigantic amounts of unpacked data)
+$(LI zip archives that contain overlapping records)
+$(LI chameleon zip archives which generate different unpacked data, depending
+     on the implementation of the unpack algorithm)
+)
+
+The current implementation makes use of the zlib compression library.
+
+Usage:
+
+There are two main ways of usage: Extracting files from a zip archive
+and storing files into a zip archive. These can be mixed though (e.g.
+read an archive, remove some files, add others and write the new
+archive).
+
+Examples:
+
+Example for reading an existing zip archive:
+---
+import std.stdio : writeln, writefln;
+import std.file : read;
+import std.zip;
 
 void main(string[] args)
 {
     // read a zip file into memory
     auto zip = new ZipArchive(read(args[1]));
-    writeln("Archive: ", args[1]);
-    writefln("%-10s  %-8s  Name", "Length", "CRC-32");
+
     // iterate over all zip members
+    writefln("%-10s  %-8s  Name", "Length", "CRC-32");
     foreach (name, am; zip.directory)
     {
         // print some data about each member
         writefln("%10s  %08x  %s", am.expandedSize, am.crc32, name);
         assert(am.expandedData.length == 0);
+
         // decompress the archive member
         zip.expand(am);
         assert(am.expandedData.length == am.expandedSize);
     }
 }
+---
 
-// Create and write new zip file.
+Example for writing files into a zip archive:
+---
 import std.file : write;
 import std.string : representation;
+import std.zip;
 
 void main()
 {
-    char[] data = "Test data.\n".dup;
-    // Create an ArchiveMember for the test file.
-    ArchiveMember am = new ArchiveMember();
-    am.name = "test.txt";
-    am.expandedData(data.representation);
+    // Create an ArchiveMembers for each file.
+    ArchiveMember file1 = new ArchiveMember();
+    file1.name = "test1.txt";
+    file1.expandedData("Test data.\n".dup.representation);
+    file1.compressionMethod = CompressionMethod.none; // don't compress
+
+    ArchiveMember file2 = new ArchiveMember();
+    file2.name = "test2.txt";
+    file2.expandedData("More test data.\n".dup.representation);
+    file2.compressionMethod = CompressionMethod.deflate; // compress
+
     // Create an archive and add the member.
     ZipArchive zip = new ZipArchive();
-    zip.addMember(am);
+
+    // add ArchiveMembers
+    zip.addMember(file1);
+    zip.addMember(file2);
+
     // Build the archive
     void[] compressed_data = zip.build();
+
     // Write to a file
     write("test.zip", compressed_data);
 }
- * ---
- *
- * Copyright: Copyright Digital Mars 2000 - 2009.
+---
+
+ * Copyright: Copyright The D Language Foundation 2000 - 2009.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
- * Source:    $(PHOBOSSRC std/_zip.d)
+ * Source:    $(PHOBOSSRC std/zip.d)
  */
 
-/*          Copyright Digital Mars 2000 - 2009.
+/*          Copyright The D Language Foundation 2000 - 2009.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
  */
 module std.zip;
 
+import std.exception : enforce;
+
+// Non-Android/Apple ARM POSIX-only, because we can't rely on the unzip
+// command being available on Android, Apple ARM or Windows
+version (Android) {}
+else version (iOS) {}
+else version (TVOS) {}
+else version (WatchOS) {}
+else version (Posix)
+    version = HasUnzip;
+
 //debug=print;
 
-/** Thrown on error.
- */
+/// Thrown on error.
 class ZipException : Exception
 {
-    this(string msg) @safe
-    {
-        super("ZipException: " ~ msg);
-    }
+    import std.exception : basicExceptionCtors;
+    ///
+    mixin basicExceptionCtors;
 }
 
-/**
- * Compression method used by ArchiveMember
- */
+/// Compression method used by `ArchiveMember`.
 enum CompressionMethod : ushort
 {
-    none = 0,   /// No compression, just archiving
-    deflate = 8 /// Deflate algorithm. Use zlib library to compress
+    none = 0,   /// No compression, just archiving.
+    deflate = 8 /// Deflate algorithm. Use zlib library to compress.
 }
 
-/**
- * A member of the ZipArchive.
- */
+/// A single file or directory inside the archive.
 final class ArchiveMember
 {
     import std.conv : to, octal;
     import std.datetime.systime : DosFileTime, SysTime, SysTimeToDosFileTime;
 
     /**
-     * Read/Write: Usually the file name of the archive member; it is used to
-     * index the archive directory for the member. Each member must have a unique
-     * name[]. Do not change without removing member from the directory first.
+     * The name of the archive member; it is used to index the
+     * archive directory for the member. Each member must have a
+     * unique name. Do not change without removing member from the
+     * directory first.
      */
     string name;
 
-    ubyte[] extra;              /// Read/Write: extra data for this member.
-    string comment;             /// Read/Write: comment associated with this member.
+    /**
+     * The content of the extra data field for this member. See
+     * $(LINK2 https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT,
+     *         original documentation)
+     * for a description of the general format of this data. May contain
+     * undocumented 3rd-party data.
+     */
+    ubyte[] extra;
+
+    string comment; /// Comment associated with this member.
 
     private ubyte[] _compressedData;
     private ubyte[] _expandedData;
@@ -119,32 +174,72 @@ final class ArchiveMember
     private CompressionMethod _compressionMethod;
     private ushort _madeVersion = 20;
     private ushort _extractVersion = 20;
-    private ushort _diskNumber;
     private uint _externalAttributes;
     private DosFileTime _time;
     // by default, no explicit order goes after explicit order
     private uint _index = uint.max;
 
-    ushort flags;                  /// Read/Write: normally set to 0
-    ushort internalAttributes;     /// Read/Write
+    /**
+     * Contains some information on how to extract this archive. See
+     * $(LINK2 https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT,
+     *         original documentation)
+     * for details.
+     */
+    ushort flags;
 
-    @property ushort extractVersion()     { return _extractVersion; }    /// Read Only
-    @property uint crc32()         { return _crc32; }    /// Read Only: cyclic redundancy check (CRC) value
+    /**
+     * Internal attributes. Bit 1 is set, if the member is apparently in binary format
+     * and bit 2 is set, if each record is preceded by the length of the record.
+     */
+    ushort internalAttributes;
 
-    /// Read Only: size of data of member in compressed form.
-    @property uint compressedSize()     { return _compressedSize; }
+    /**
+     * The zip file format version needed to extract this member.
+     *
+     * Returns: Format version needed to extract this member.
+     */
+    @property @safe pure nothrow @nogc ushort extractVersion() const { return _extractVersion; }
 
-    /// Read Only: size of data of member in expanded form.
-    @property uint expandedSize()     { return _expandedSize; }
-    @property ushort diskNumber()     { return _diskNumber; }        /// Read Only: should be 0.
+    /**
+     * Cyclic redundancy check (CRC) value.
+     *
+     * Returns: CRC32 value.
+     */
+    @property @safe pure nothrow @nogc uint crc32() const { return _crc32; }
 
-    /// Read Only: data of member in compressed form.
-    @property ubyte[] compressedData()     { return _compressedData; }
+    /**
+     * Size of data of member in compressed form.
+     *
+     * Returns: Size of the compressed archive.
+     */
+    @property @safe pure nothrow @nogc uint compressedSize() const { return _compressedSize; }
 
-    /// Read data of member in uncompressed form.
-    @property ubyte[] expandedData()     { return _expandedData; }
+    /**
+     * Size of data of member in uncompressed form.
+     *
+     * Returns: Size of uncompressed archive.
+     */
+    @property @safe pure nothrow @nogc uint expandedSize() const { return _expandedSize; }
 
-    /// Write data of member in uncompressed form.
+    /**
+     * Data of member in compressed form.
+     *
+     * Returns: The file data in compressed form.
+     */
+    @property @safe pure nothrow @nogc ubyte[] compressedData() { return _compressedData; }
+
+    /**
+     * Get or set data of member in uncompressed form. When an existing archive is
+     * read `ZipArchive.expand` needs to be called before this can be accessed.
+     *
+     * Params:
+     *     ed = Expanded Data.
+     *
+     * Returns: The file data.
+     */
+    @property @safe pure nothrow @nogc ubyte[] expandedData() { return _expandedData; }
+
+    /// ditto
     @property @safe void expandedData(ubyte[] ed)
     {
         _expandedData = ed;
@@ -156,8 +251,14 @@ final class ArchiveMember
     }
 
     /**
-     * Set the OS specific file attributes, as obtained by
-     * $(REF getAttributes, std,file) or $(REF DirEntry.attributes, std,file), for this archive member.
+     * Get or set the OS specific file attributes for this archive member.
+     *
+     * Params:
+     *     attr = Attributes as obtained by $(REF getAttributes, std,file) or
+     *            $(REF DirEntry.attributes, std,file).
+     *
+     * Returns: The file attributes or 0 if the file attributes were
+     * encoded for an incompatible OS (Windows vs. POSIX).
      */
     @property @safe void fileAttributes(uint attr)
     {
@@ -186,14 +287,8 @@ final class ArchiveMember
         assert((am._madeVersion & 0xFF00) == 0x0300);
     }
 
-    /**
-     * Get the OS specific file attributes for the archive member.
-     *
-     * Returns: The file attributes or 0 if the file attributes were
-     * encoded for an incompatible OS (Windows vs. Posix).
-     *
-     */
-    @property uint fileAttributes() const
+    /// ditto
+    @property @nogc nothrow uint fileAttributes() const
     {
         version (Posix)
         {
@@ -213,51 +308,66 @@ final class ArchiveMember
         }
     }
 
-    /// Set the last modification time for this member.
+    /**
+     * Get or set the last modification time for this member.
+     *
+     * Params:
+     *     time = Time to set (will be saved as DosFileTime, which is less accurate).
+     *
+     * Returns:
+     *     The last modification time in DosFileFormat.
+     */
+    @property DosFileTime time() const @safe pure nothrow @nogc
+    {
+        return _time;
+    }
+
+    /// ditto
     @property void time(SysTime time)
     {
         _time = SysTimeToDosFileTime(time);
     }
 
     /// ditto
-    @property void time(DosFileTime time)
+    @property void time(DosFileTime time) @safe pure nothrow @nogc
     {
         _time = time;
     }
 
-    /// Get the last modification time for this member.
-    @property DosFileTime time() const
-    {
-        return _time;
-    }
-
     /**
-     * Read compression method used for this member
+     * Get or set compression method used for this member.
+     *
+     * Params:
+     *     cm = Compression method.
+     *
+     * Returns: Compression method.
+     *
      * See_Also:
-     *     CompressionMethod
+     *     $(LREF CompressionMethod)
      **/
-    @property @safe CompressionMethod compressionMethod() { return _compressionMethod; }
+    @property @safe @nogc pure nothrow CompressionMethod compressionMethod() const { return _compressionMethod; }
 
-    /**
-     * Write compression method used for this member
-     * See_Also:
-     *     CompressionMethod
-     **/
-    @property void compressionMethod(CompressionMethod cm)
+    /// ditto
+    @property @safe pure void compressionMethod(CompressionMethod cm)
     {
         if (cm == _compressionMethod) return;
 
-        if (_compressedSize > 0)
-            throw new ZipException("Can't change compression method for a compressed element");
+        enforce!ZipException(_compressedSize == 0, "Can't change compression method for a compressed element");
 
         _compressionMethod = cm;
     }
 
     /**
-      * The index of this archive member within the archive.
-      */
-    @property uint index() const pure nothrow @nogc { return _index; }
-    @property uint index(uint value) pure nothrow @nogc { return _index = value; }
+     * The index of this archive member within the archive. Set this to a
+     * different value for reordering the members of an archive.
+     *
+     * Params:
+     *     value = Index value to set.
+     *
+     * Returns: The index.
+     */
+    @property uint index(uint value) @safe pure nothrow @nogc { return _index = value; }
+    @property uint index() const @safe pure nothrow @nogc { return _index; } /// ditto
 
     debug(print)
     {
@@ -280,6 +390,21 @@ final class ArchiveMember
     }
 }
 
+@safe pure unittest
+{
+    import std.exception : assertThrown, assertNotThrown;
+
+    auto am = new ArchiveMember();
+
+    assertNotThrown(am.compressionMethod(CompressionMethod.deflate));
+    assertNotThrown(am.compressionMethod(CompressionMethod.none));
+
+    am._compressedData = [0x65]; // not strictly necessary, but for consistency
+    am._compressedSize = 1;
+
+    assertThrown!ZipException(am.compressionMethod(CompressionMethod.deflate));
+}
+
 /**
  * Object representing the entire archive.
  * ZipArchives are collections of ArchiveMembers.
@@ -291,42 +416,68 @@ final class ZipArchive
     import std.conv : to;
     import std.datetime.systime : DosFileTime;
 
-    string comment;     /// Read/Write: the archive comment. Must be less than 65536 bytes in length.
+private:
+    // names are taken directly from the specification
+    // https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+    static immutable ubyte[] centralFileHeaderSignature = [ 0x50, 0x4b, 0x01, 0x02 ];
+    static immutable ubyte[] localFileHeaderSignature = [ 0x50, 0x4b, 0x03, 0x04 ];
+    static immutable ubyte[] endOfCentralDirSignature = [ 0x50, 0x4b, 0x05, 0x06 ];
+    static immutable ubyte[] archiveExtraDataSignature = [ 0x50, 0x4b, 0x06, 0x08 ];
+    static immutable ubyte[] digitalSignatureSignature = [ 0x50, 0x4b, 0x05, 0x05 ];
+    static immutable ubyte[] zip64EndOfCentralDirSignature = [ 0x50, 0x4b, 0x06, 0x06 ];
+    static immutable ubyte[] zip64EndOfCentralDirLocatorSignature = [ 0x50, 0x4b, 0x06, 0x07 ];
+
+    enum centralFileHeaderLength = 46;
+    enum localFileHeaderLength = 30;
+    enum endOfCentralDirLength = 22;
+    enum archiveExtraDataLength = 8;
+    enum digitalSignatureLength = 6;
+    enum zip64EndOfCentralDirLength = 56;
+    enum zip64EndOfCentralDirLocatorLength = 20;
+    enum dataDescriptorLength = 12;
+
+public:
+    string comment; /// The archive comment. Must be less than 65536 bytes in length.
 
     private ubyte[] _data;
-    private uint endrecOffset;
 
-    private uint _diskNumber;
-    private uint _diskStartDir;
-    private uint _numEntries;
-    private uint _totalEntries;
     private bool _isZip64;
     static const ushort zip64ExtractVersion = 45;
-    static const int digiSignLength = 6;
-    static const int eocd64LocLength = 20;
-    static const int eocd64Length = 56;
 
-    /// Read Only: array representing the entire contents of the archive.
-    @property @safe ubyte[] data() { return _data; }
+    private Segment[] _segs;
 
-    /// Read Only: 0 since multi-disk zip archives are not supported.
-    @property @safe uint diskNumber()    { return _diskNumber; }
-
-    /// Read Only: 0 since multi-disk zip archives are not supported
-    @property @safe uint diskStartDir()  { return _diskStartDir; }
-
-    /// Read Only: number of ArchiveMembers in the directory.
-    @property @safe uint numEntries()    { return _numEntries; }
-    @property @safe uint totalEntries()  { return _totalEntries; }    /// ditto
-
-    /// True when the archive is in Zip64 format.
-    @property @safe bool isZip64()  { return _isZip64; }
-
-    /// Set this to true to force building a Zip64 archive.
-    @property @safe void isZip64(bool value) { _isZip64 = value; }
     /**
-     * Read Only: array indexed by the name of each member of the archive.
-     *  All the members of the archive can be accessed with a foreach loop:
+     * Array representing the entire contents of the archive.
+     *
+     * Returns: Data of the entire contents of the archive.
+     */
+    @property @safe @nogc pure nothrow ubyte[] data() { return _data; }
+
+    /**
+     * Number of ArchiveMembers in the directory.
+     *
+     * Returns: The number of files in this archive.
+     */
+    @property @safe @nogc pure nothrow uint totalEntries() const { return cast(uint) _directory.length; }
+
+    /**
+     * True when the archive is in Zip64 format. Set this to true to force building a Zip64 archive.
+     *
+     * Params:
+     *     value = True, when the archive is forced to be build in Zip64 format.
+     *
+     * Returns: True, when the archive is in Zip64 format.
+     */
+    @property @safe @nogc pure nothrow bool isZip64() const { return _isZip64; }
+
+    /// ditto
+    @property @safe @nogc pure nothrow void isZip64(bool value) { _isZip64 = value; }
+
+    /**
+     * Associative array indexed by the name of each member of the archive.
+     *
+     * All the members of the archive can be accessed with a foreach loop:
+     *
      * Example:
      * --------------------
      * ZipArchive archive = new ZipArchive(data);
@@ -335,8 +486,10 @@ final class ZipArchive
      *     writefln("member name is '%s'", am.name);
      * }
      * --------------------
+     *
+     * Returns: Associative array with all archive members.
      */
-    @property @safe ArchiveMember[string] directory() { return _directory; }
+    @property @safe @nogc pure nothrow ArchiveMember[string] directory() { return _directory; }
 
     private ArchiveMember[string] _directory;
 
@@ -354,13 +507,21 @@ final class ZipArchive
 
     /* ============ Creating a new archive =================== */
 
-    /** Constructor to use when creating a new archive.
+    /**
+     * Constructor to use when creating a new archive.
      */
-    this() @safe
+    this() @safe @nogc pure nothrow
     {
     }
 
-    /** Add de to the archive. The file is compressed on the fly.
+    /**
+     * Add a member to the archive. The file is compressed on the fly.
+     *
+     * Params:
+     *     de = Member to be added.
+     *
+     * Throws: ZipException when an unsupported compression method is used or when
+     *         compression failed.
      */
     @safe void addMember(ArchiveMember de)
     {
@@ -390,61 +551,101 @@ final class ZipArchive
             import std.zlib : crc32;
             () @trusted { de._crc32 = crc32(0, cast(void[]) de._expandedData); }();
         }
-        assert(de._compressedData.length == de._compressedSize);
+        assert(de._compressedData.length == de._compressedSize, "Archive member compressed failed.");
     }
 
-    /** Delete de from the archive.
+    @safe unittest
+    {
+        import std.exception : assertThrown;
+
+        ArchiveMember am = new ArchiveMember();
+        am.compressionMethod = cast(CompressionMethod) 3;
+
+        ZipArchive zip = new ZipArchive();
+
+        assertThrown!ZipException(zip.addMember(am));
+    }
+
+    /**
+     * Delete member `de` from the archive. Uses the name of the member
+     * to detect which element to delete.
+     *
+     * Params:
+     *     de = Member to be deleted.
      */
     @safe void deleteMember(ArchiveMember de)
     {
         _directory.remove(de.name);
     }
 
+    // https://issues.dlang.org/show_bug.cgi?id=20398
+    @safe unittest
+    {
+        import std.string : representation;
+
+        ArchiveMember file1 = new ArchiveMember();
+        file1.name = "test1.txt";
+        file1.expandedData("Test data.\n".dup.representation);
+
+        ZipArchive zip = new ZipArchive();
+
+        zip.addMember(file1);
+        assert(zip.totalEntries == 1);
+
+        zip.deleteMember(file1);
+        assert(zip.totalEntries == 0);
+    }
+
     /**
-     * Construct an archive out of the current members of the archive.
+     * Construct the entire contents of the current members of the archive.
      *
-     * Fills in the properties data[], diskNumber, diskStartDir, numEntries,
-     * totalEntries, and directory[].
+     * Fills in the properties data[], totalEntries, and directory[].
      * For each ArchiveMember, fills in properties crc32, compressedSize,
      * compressedData[].
      *
-     * Returns: array representing the entire archive.
+     * Returns: Array representing the entire archive.
+     *
+     * Throws: ZipException when the archive could not be build.
      */
-    void[] build()
+    void[] build() @safe pure
     {
+        import std.array : array, uninitializedArray;
         import std.algorithm.sorting : sort;
+        import std.string : representation;
+
         uint i;
         uint directoryOffset;
 
-        if (comment.length > 0xFFFF)
-            throw new ZipException("archive comment longer than 65535");
+        enforce!ZipException(comment.length <= 0xFFFF, "archive comment longer than 65535");
 
         // Compress each member; compute size
         uint archiveSize = 0;
         uint directorySize = 0;
-        auto directory = _directory.values().sort!((x, y) => x.index < y.index).release;
+        auto directory = _directory.byValue.array.sort!((x, y) => x.index < y.index).release;
         foreach (ArchiveMember de; directory)
         {
-            if (to!ulong(archiveSize) + 30 + de.name.length + de.extra.length + de.compressedSize
-                    + directorySize + 46 + de.name.length + de.extra.length + de.comment.length
-                    + 22 + comment.length + eocd64LocLength + eocd64Length > uint.max)
-                throw new ZipException("zip files bigger than 4 GB are unsupported");
+            enforce!ZipException(to!ulong(archiveSize) + localFileHeaderLength + de.name.length
+                                 + de.extra.length + de.compressedSize + directorySize
+                                 + centralFileHeaderLength + de.name.length + de.extra.length
+                                 + de.comment.length + endOfCentralDirLength + comment.length
+                                 + zip64EndOfCentralDirLocatorLength + zip64EndOfCentralDirLength <= uint.max,
+                                 "zip files bigger than 4 GB are unsupported");
 
-            archiveSize += 30 + de.name.length +
+            archiveSize += localFileHeaderLength + de.name.length +
                                 de.extra.length +
                                 de.compressedSize;
-            directorySize += 46 + de.name.length +
+            directorySize += centralFileHeaderLength + de.name.length +
                                 de.extra.length +
                                 de.comment.length;
         }
 
         if (!isZip64 && _directory.length > ushort.max)
             _isZip64 = true;
-        uint dataSize = archiveSize + directorySize + 22 + cast(uint) comment.length;
+        uint dataSize = archiveSize + directorySize + endOfCentralDirLength + cast(uint) comment.length;
         if (isZip64)
-            dataSize += eocd64LocLength + eocd64Length;
+            dataSize += zip64EndOfCentralDirLocatorLength + zip64EndOfCentralDirLength;
 
-        _data = new ubyte[dataSize];
+        _data = uninitializedArray!(ubyte[])(dataSize);
 
         // Populate the data[]
 
@@ -453,7 +654,7 @@ final class ZipArchive
         foreach (ArchiveMember de; directory)
         {
             de.offset = i;
-            _data[i .. i + 4] = cast(ubyte[])"PK\x03\x04";
+            _data[i .. i + 4] = localFileHeaderSignature;
             putUshort(i + 4,  de.extractVersion);
             putUshort(i + 6,  de.flags);
             putUshort(i + 8,  de._compressionMethod);
@@ -463,9 +664,9 @@ final class ZipArchive
             putUint  (i + 22, to!uint(de.expandedSize));
             putUshort(i + 26, cast(ushort) de.name.length);
             putUshort(i + 28, cast(ushort) de.extra.length);
-            i += 30;
+            i += localFileHeaderLength;
 
-            _data[i .. i + de.name.length] = (cast(ubyte[]) de.name)[];
+            _data[i .. i + de.name.length] = (de.name.representation)[];
             i += de.name.length;
             _data[i .. i + de.extra.length] = (cast(ubyte[]) de.extra)[];
             i += de.extra.length;
@@ -475,10 +676,9 @@ final class ZipArchive
 
         // Write directory
         directoryOffset = i;
-        _numEntries = 0;
         foreach (ArchiveMember de; directory)
         {
-            _data[i .. i + 4] = cast(ubyte[])"PK\x01\x02";
+            _data[i .. i + 4] = centralFileHeaderSignature;
             putUshort(i + 4,  de._madeVersion);
             putUshort(i + 6,  de.extractVersion);
             putUshort(i + 8,  de.flags);
@@ -490,63 +690,79 @@ final class ZipArchive
             putUshort(i + 28, cast(ushort) de.name.length);
             putUshort(i + 30, cast(ushort) de.extra.length);
             putUshort(i + 32, cast(ushort) de.comment.length);
-            putUshort(i + 34, de.diskNumber);
+            putUshort(i + 34, cast(ushort) 0);
             putUshort(i + 36, de.internalAttributes);
             putUint  (i + 38, de._externalAttributes);
             putUint  (i + 42, de.offset);
-            i += 46;
+            i += centralFileHeaderLength;
 
-            _data[i .. i + de.name.length] = (cast(ubyte[]) de.name)[];
+            _data[i .. i + de.name.length] = (de.name.representation)[];
             i += de.name.length;
             _data[i .. i + de.extra.length] = (cast(ubyte[]) de.extra)[];
             i += de.extra.length;
-            _data[i .. i + de.comment.length] = (cast(ubyte[]) de.comment)[];
+            _data[i .. i + de.comment.length] = (de.comment.representation)[];
             i += de.comment.length;
-            _numEntries++;
         }
-        _totalEntries = numEntries;
 
         if (isZip64)
         {
             // Write zip64 end of central directory record
             uint eocd64Offset = i;
-            _data[i .. i + 4] = cast(ubyte[])"PK\x06\x06";
-            putUlong (i + 4,  eocd64Length - 12);
+            _data[i .. i + 4] = zip64EndOfCentralDirSignature;
+            putUlong (i + 4,  zip64EndOfCentralDirLength - 12);
             putUshort(i + 12, zip64ExtractVersion);
             putUshort(i + 14, zip64ExtractVersion);
-            putUint  (i + 16, diskNumber);
-            putUint  (i + 20, diskStartDir);
-            putUlong (i + 24, numEntries);
-            putUlong (i + 32, totalEntries);
+            putUint  (i + 16, cast(ushort) 0);
+            putUint  (i + 20, cast(ushort) 0);
+            putUlong (i + 24, directory.length);
+            putUlong (i + 32, directory.length);
             putUlong (i + 40, directorySize);
             putUlong (i + 48, directoryOffset);
-            i += eocd64Length;
+            i += zip64EndOfCentralDirLength;
 
             // Write zip64 end of central directory record locator
-            _data[i .. i + 4] = cast(ubyte[])"PK\x06\x07";
-            putUint  (i + 4,  diskNumber);
+            _data[i .. i + 4] = zip64EndOfCentralDirLocatorSignature;
+            putUint  (i + 4,  cast(ushort) 0);
             putUlong (i + 8,  eocd64Offset);
             putUint  (i + 16, 1);
-            i += eocd64LocLength;
+            i += zip64EndOfCentralDirLocatorLength;
         }
 
         // Write end record
-        endrecOffset = i;
-        _data[i .. i + 4] = cast(ubyte[])"PK\x05\x06";
-        putUshort(i + 4,  cast(ushort) diskNumber);
-        putUshort(i + 6,  cast(ushort) diskStartDir);
-        putUshort(i + 8,  (numEntries > ushort.max ? ushort.max : cast(ushort) numEntries));
+        _data[i .. i + 4] = endOfCentralDirSignature;
+        putUshort(i + 4,  cast(ushort) 0);
+        putUshort(i + 6,  cast(ushort) 0);
+        putUshort(i + 8,  (totalEntries > ushort.max ? ushort.max : cast(ushort) totalEntries));
         putUshort(i + 10, (totalEntries > ushort.max ? ushort.max : cast(ushort) totalEntries));
         putUint  (i + 12, directorySize);
         putUint  (i + 16, directoryOffset);
         putUshort(i + 20, cast(ushort) comment.length);
-        i += 22;
+        i += endOfCentralDirLength;
 
         // Write archive comment
-        assert(i + comment.length == data.length);
-        _data[i .. data.length] = (cast(ubyte[]) comment)[];
+        assert(i + comment.length == data.length, "Writing the archive comment failed.");
+        _data[i .. data.length] = (comment.representation)[];
 
         return cast(void[]) data;
+    }
+
+    @safe pure unittest
+    {
+        import std.exception : assertNotThrown;
+
+        ZipArchive zip = new ZipArchive();
+        zip.comment = "A";
+        assertNotThrown(zip.build());
+    }
+
+    @safe pure unittest
+    {
+        import std.range : repeat, array;
+        import std.exception : assertThrown;
+
+        ZipArchive zip = new ZipArchive();
+        zip.comment = 'A'.repeat(70_000).array;
+        assertThrown!ZipException(zip.build());
     }
 
     /* ============ Reading an existing archive =================== */
@@ -554,116 +770,95 @@ final class ZipArchive
     /**
      * Constructor to use when reading an existing archive.
      *
-     * Fills in the properties data[], diskNumber, diskStartDir, numEntries,
-     * totalEntries, comment[], and directory[].
+     * Fills in the properties data[], totalEntries, comment[], and directory[].
      * For each ArchiveMember, fills in
      * properties madeVersion, extractVersion, flags, compressionMethod, time,
-     * crc32, compressedSize, expandedSize, compressedData[], diskNumber,
+     * crc32, compressedSize, expandedSize, compressedData[],
      * internalAttributes, externalAttributes, name[], extra[], comment[].
      * Use expand() to get the expanded data for each ArchiveMember.
      *
      * Params:
-     *  buffer = the entire contents of the archive.
+     *     buffer = The entire contents of the archive.
+     *
+     * Throws: ZipException when the archive was invalid or when malware was detected.
      */
-
     this(void[] buffer)
-    {   uint iend;
-        uint i;
-        int endcommentlength;
-        uint directorySize;
-        uint directoryOffset;
-
+    {
         this._data = cast(ubyte[]) buffer;
 
-        if (data.length > uint.max - 2)
-            throw new ZipException("zip files bigger than 4 GB are unsupported");
+        enforce!ZipException(data.length <= uint.max - 2, "zip files bigger than 4 GB are unsupported");
 
-        // Find 'end record index' by searching backwards for signature
-        iend = (data.length > 66_000 ? to!uint(data.length - 66_000) : 0);
-        for (i = to!uint(data.length) - 22; 1; i--)
+        _segs = [Segment(0, cast(uint) data.length)];
+
+        uint i = findEndOfCentralDirRecord();
+
+        int endCommentLength = getUshort(i + 20);
+        comment = cast(string)(_data[i + endOfCentralDirLength .. i + endOfCentralDirLength + endCommentLength]);
+
+        // end of central dir record
+        removeSegment(i, i + endOfCentralDirLength + endCommentLength);
+
+        uint k = i - zip64EndOfCentralDirLocatorLength;
+        if (k < i && _data[k .. k + 4] == zip64EndOfCentralDirLocatorSignature)
         {
-            if (i < iend || i >= data.length)
-                throw new ZipException("no end record");
+            _isZip64 = true;
+            i = k;
 
-            if (_data[i .. i + 4] == cast(ubyte[])"PK\x05\x06")
-            {
-                endcommentlength = getUshort(i + 20);
-                if (i + 22 + endcommentlength > data.length
-                        || i + 22 + endcommentlength < i)
-                    continue;
-                comment = cast(string)(_data[i + 22 .. i + 22 + endcommentlength]);
-                endrecOffset = i;
-
-                uint k = i - eocd64LocLength;
-                if (k < i && _data[k .. k + 4] == cast(ubyte[])"PK\x06\x07")
-                {
-                    _isZip64 = true;
-                    i = k;
-                }
-
-                break;
-            }
+            // zip64 end of central dir record locator
+            removeSegment(k, k + zip64EndOfCentralDirLocatorLength);
         }
+
+        uint directorySize;
+        uint directoryOffset;
+        uint directoryCount;
 
         if (isZip64)
         {
             // Read Zip64 record data
             ulong eocdOffset = getUlong(i + 8);
-            if (eocdOffset + eocd64Length > _data.length)
-                throw new ZipException("corrupted directory");
+            enforce!ZipException(eocdOffset + zip64EndOfCentralDirLength <= _data.length,
+                                 "corrupted directory");
 
             i = to!uint(eocdOffset);
-            if (_data[i .. i + 4] != cast(ubyte[])"PK\x06\x06")
-                throw new ZipException("invalid Zip EOCD64 signature");
+            enforce!ZipException(_data[i .. i + 4] == zip64EndOfCentralDirSignature,
+                                 "invalid Zip EOCD64 signature");
 
             ulong eocd64Size = getUlong(i + 4);
-            if (eocd64Size + i - 12 > data.length)
-                throw new ZipException("invalid Zip EOCD64 size");
+            enforce!ZipException(eocd64Size + i - 12 <= data.length,
+                                 "invalid Zip EOCD64 size");
 
-            _diskNumber = getUint(i + 16);
-            _diskStartDir = getUint(i + 20);
+            // zip64 end of central dir record
+            removeSegment(i, cast(uint) (i + 12 + eocd64Size));
 
             ulong numEntriesUlong = getUlong(i + 24);
             ulong totalEntriesUlong = getUlong(i + 32);
             ulong directorySizeUlong = getUlong(i + 40);
             ulong directoryOffsetUlong = getUlong(i + 48);
 
-            if (numEntriesUlong > uint.max)
-                throw new ZipException("supposedly more than 4294967296 files in archive");
+            enforce!ZipException(numEntriesUlong <= uint.max,
+                                 "supposedly more than 4294967296 files in archive");
 
-            if (numEntriesUlong != totalEntriesUlong)
-                throw new ZipException("multiple disk zips not supported");
+            enforce!ZipException(numEntriesUlong == totalEntriesUlong,
+                                 "multiple disk zips not supported");
 
-            if (directorySizeUlong > i || directoryOffsetUlong > i
-                    || directorySizeUlong + directoryOffsetUlong > i)
-                throw new ZipException("corrupted directory");
+            enforce!ZipException(directorySizeUlong <= i && directoryOffsetUlong <= i
+                                 && directorySizeUlong + directoryOffsetUlong <= i,
+                                 "corrupted directory");
 
-            _numEntries = to!uint(numEntriesUlong);
-            _totalEntries = to!uint(totalEntriesUlong);
+            directoryCount = to!uint(totalEntriesUlong);
             directorySize = to!uint(directorySizeUlong);
             directoryOffset = to!uint(directoryOffsetUlong);
         }
         else
         {
-        // Read end record data
-        _diskNumber = getUshort(i + 4);
-        _diskStartDir = getUshort(i + 6);
-
-        _numEntries = getUshort(i + 8);
-        _totalEntries = getUshort(i + 10);
-
-        if (numEntries != totalEntries)
-            throw new ZipException("multiple disk zips not supported");
-
-        directorySize = getUint(i + 12);
-        directoryOffset = getUint(i + 16);
-
-        if (directoryOffset + directorySize > i)
-            throw new ZipException("corrupted directory");
+            // Read end record data
+            directoryCount = getUshort(i + 10);
+            directorySize = getUint(i + 12);
+            directoryOffset = getUint(i + 16);
         }
 
         i = directoryOffset;
-        for (int n = 0; n < numEntries; n++)
+        for (int n = 0; n < directoryCount; n++)
         {
             /* The format of an entry is:
              *  'PK' 1, 2
@@ -677,8 +872,8 @@ final class ZipArchive
             uint extralen;
             uint commentlen;
 
-            if (_data[i .. i + 4] != cast(ubyte[])"PK\x01\x02")
-                throw new ZipException("invalid directory entry 1");
+            enforce!ZipException(_data[i .. i + 4] == centralFileHeaderSignature,
+                                 "wrong central file header signature found");
             ArchiveMember de = new ArchiveMember();
             de._index = n;
             de._madeVersion = getUshort(i + 4);
@@ -692,14 +887,17 @@ final class ZipArchive
             namelen = getUshort(i + 28);
             extralen = getUshort(i + 30);
             commentlen = getUshort(i + 32);
-            de._diskNumber = getUshort(i + 34);
             de.internalAttributes = getUshort(i + 36);
             de._externalAttributes = getUint(i + 38);
             de.offset = getUint(i + 42);
-            i += 46;
 
-            if (i + namelen + extralen + commentlen > directoryOffset + directorySize)
-                throw new ZipException("invalid directory entry 2");
+            // central file header
+            removeSegment(i, i + centralFileHeaderLength + namelen + extralen + commentlen);
+
+            i += centralFileHeaderLength;
+
+            enforce!ZipException(i + namelen + extralen + commentlen <= directoryOffset + directorySize,
+                                 "invalid field lengths in file header found");
 
             de.name = cast(string)(_data[i .. i + namelen]);
             i += namelen;
@@ -708,31 +906,288 @@ final class ZipArchive
             de.comment = cast(string)(_data[i .. i + commentlen]);
             i += commentlen;
 
-            immutable uint dataOffset = de.offset + 30 + namelen + extralen;
-            if (dataOffset + de.compressedSize > endrecOffset)
-                throw new ZipException("Invalid directory entry offset or size.");
+            auto localFileHeaderNamelen = getUshort(de.offset + 26);
+            auto localFileHeaderExtralen = getUshort(de.offset + 28);
+
+            // file data
+            removeSegment(de.offset, de.offset + localFileHeaderLength + localFileHeaderNamelen
+                                     + localFileHeaderExtralen + de._compressedSize);
+
+            immutable uint dataOffset = de.offset + localFileHeaderLength
+                                        + localFileHeaderNamelen + localFileHeaderExtralen;
             de._compressedData = _data[dataOffset .. dataOffset + de.compressedSize];
 
             _directory[de.name] = de;
-
         }
-        if (i != directoryOffset + directorySize)
-            throw new ZipException("invalid directory entry 3");
+
+        enforce!ZipException(i == directoryOffset + directorySize, "invalid directory entry 3");
     }
 
-    /*****
-     * Decompress the contents of archive member de and return the expanded
-     * data.
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // contains wrong directorySize (extra byte 0xff)
+        auto file =
+            "\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+            "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+            "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+            "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+            "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+            "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+            "\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+            "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+            "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\xff\x50\x4b\x05"~
+            "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4b\x00\x00\x00\x43\x00\x00"~
+            "\x00\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // wrong eocdOffset
+        auto file =
+            "\x50\x4b\x06\x06\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // wrong signature of zip64 end of central directory
+        auto file =
+            "\x50\x4b\x06\x07\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // wrong size of zip64 end of central directory
+        auto file =
+            "\x50\x4b\x06\x06\xff\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // too many entries in zip64 end of central directory
+        auto file =
+            "\x50\x4b\x06\x06\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // zip64: numEntries and totalEntries differ
+        auto file =
+            "\x50\x4b\x06\x06\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // zip64: directorySize too large
+        auto file =
+            "\x50\x4b\x06\x06\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+
+        // zip64: directoryOffset too large
+        file =
+            "\x50\x4b\x06\x06\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\xff\xff\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+
+        // zip64: directorySize + directoryOffset too large
+        // we need to add a useless byte at the beginning to avoid that one of the other two checks allready fires
+        file =
+            "\x00\x50\x4b\x06\x06\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+            "\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"~
+            "\x01\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+            "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+            "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+            "\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // wrong central file header signature
+        auto file =
+            "\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+            "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+            "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+            "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+            "\x6c\x6c\x6f\x50\x4b\x01\x03\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+            "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+            "\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+            "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+            "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x50\x4b\x05"~
+            "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+            "\x00\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // invalid field lengths in file header
+        auto file =
+            "\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+            "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+            "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+            "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+            "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+            "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+            "\x00\x18\x00\x01\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+            "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+            "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\xff\x50\x4b\x05"~
+            "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+            "\x00\x00\x00";
+
+        assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+    }
+
+    private uint findEndOfCentralDirRecord()
+    {
+        // end of central dir record can be followed by a comment of up to 2^^16-1 bytes
+        // therefore we have to scan 2^^16 positions
+
+        uint endrecOffset = to!uint(data.length);
+        foreach (i; 0 .. 2 ^^ 16)
+        {
+            if (endOfCentralDirLength + i > data.length) break;
+            uint start = to!uint(data.length) - endOfCentralDirLength - i;
+
+            if (data[start .. start + 4] != endOfCentralDirSignature) continue;
+
+            auto numberOfThisDisc = getUshort(start + 4);
+            if (numberOfThisDisc != 0) continue; // no support for multiple volumes yet
+
+            auto numberOfStartOfCentralDirectory = getUshort(start + 6);
+            if (numberOfStartOfCentralDirectory != 0) continue; // dito
+
+            if (numberOfThisDisc < numberOfStartOfCentralDirectory) continue;
+
+            uint k = start - zip64EndOfCentralDirLocatorLength;
+            auto maybeZip64 = k < start && _data[k .. k + 4] == zip64EndOfCentralDirLocatorSignature;
+
+            auto totalNumberOfEntriesOnThisDisk = getUshort(start + 8);
+            auto totalNumberOfEntriesInCentralDir = getUshort(start + 10);
+
+            if (totalNumberOfEntriesOnThisDisk > totalNumberOfEntriesInCentralDir &&
+               (!maybeZip64 || totalNumberOfEntriesOnThisDisk < 0xffff)) continue;
+
+            auto sizeOfCentralDirectory = getUint(start + 12);
+            if (sizeOfCentralDirectory > start &&
+               (!maybeZip64 || sizeOfCentralDirectory < 0xffff)) continue;
+
+            auto offsetOfCentralDirectory = getUint(start + 16);
+            if (offsetOfCentralDirectory > start - sizeOfCentralDirectory &&
+               (!maybeZip64 || offsetOfCentralDirectory < 0xffff)) continue;
+
+            auto zipfileCommentLength = getUshort(start + 20);
+            if (start + zipfileCommentLength + endOfCentralDirLength != data.length) continue;
+
+            enforce!ZipException(endrecOffset == to!uint(data.length),
+                                 "found more than one valid 'end of central dir record'");
+
+            endrecOffset = start;
+        }
+
+        enforce!ZipException(endrecOffset != to!uint(data.length),
+                             "found no valid 'end of central dir record'");
+
+        return endrecOffset;
+    }
+
+    /**
+     * Decompress the contents of a member.
      *
      * Fills in properties extractVersion, flags, compressionMethod, time,
      * crc32, compressedSize, expandedSize, expandedData[], name[], extra[].
+     *
+     * Params:
+     *     de = Member to be decompressed.
+     *
+     * Returns: The expanded data.
+     *
+     * Throws: ZipException when the entry is invalid or the compression method is not supported.
      */
     ubyte[] expand(ArchiveMember de)
-    {   uint namelen;
+    {
+        import std.string : representation;
+
+        uint namelen;
         uint extralen;
 
-        if (_data[de.offset .. de.offset + 4] != cast(ubyte[])"PK\x03\x04")
-            throw new ZipException("invalid directory entry 4");
+        enforce!ZipException(_data[de.offset .. de.offset + 4] == localFileHeaderSignature,
+                             "wrong local file header signature found");
 
         // These values should match what is in the main zip archive directory
         de._extractVersion = getUshort(de.offset + 4);
@@ -753,16 +1208,7 @@ final class ZipArchive
             printf("\t\textralen = %d\n", extralen);
         }
 
-        if (de.flags & 1)
-            throw new ZipException("encryption not supported");
-
-        int i;
-        i = de.offset + 30 + namelen + extralen;
-        if (i + de.compressedSize > endrecOffset)
-            throw new ZipException("invalid directory entry 5");
-
-        de._compressedData = _data[i .. i + de.compressedSize];
-        debug(print) arrayPrint(de.compressedData);
+        enforce!ZipException((de.flags & 1) == 0, "encryption not supported");
 
         switch (de.compressionMethod)
         {
@@ -783,39 +1229,182 @@ final class ZipArchive
         }
     }
 
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // check for correct local file header signature
+        auto file =
+            "\x50\x4b\x04\x04\x0a\x00\x00\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+            "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+            "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+            "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+            "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+            "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+            "\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+            "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+            "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x50\x4b\x05"~
+            "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+            "\x00\x00\x00";
+
+        auto za = new ZipArchive(cast(void[]) file);
+
+        assertThrown!ZipException(za.expand(za._directory["file"]));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // check for encryption flag
+        auto file =
+            "\x50\x4b\x03\x04\x0a\x00\x01\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+            "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+            "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+            "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+            "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+            "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+            "\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+            "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+            "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x50\x4b\x05"~
+            "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+            "\x00\x00\x00";
+
+        auto za = new ZipArchive(cast(void[]) file);
+
+        assertThrown!ZipException(za.expand(za._directory["file"]));
+    }
+
+    @system unittest
+    {
+        import std.exception : assertThrown;
+
+        // check for invalid compression method
+        auto file =
+            "\x50\x4b\x03\x04\x0a\x00\x00\x00\x03\x00\x8f\x72\x4a\x4f\x86\xa6"~
+            "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+            "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+            "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+            "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+            "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+            "\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+            "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+            "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x50\x4b\x05"~
+            "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+            "\x00\x00\x00";
+
+        auto za = new ZipArchive(cast(void[]) file);
+
+        assertThrown!ZipException(za.expand(za._directory["file"]));
+    }
+
     /* ============ Utility =================== */
 
-    @safe ushort getUshort(int i)
+    @safe @nogc pure nothrow ushort getUshort(uint i)
     {
         ubyte[2] result = data[i .. i + 2];
         return littleEndianToNative!ushort(result);
     }
 
-    @safe uint getUint(int i)
+    @safe @nogc pure nothrow uint getUint(uint i)
     {
         ubyte[4] result = data[i .. i + 4];
         return littleEndianToNative!uint(result);
     }
 
-    @safe ulong getUlong(int i)
+    @safe @nogc pure nothrow ulong getUlong(uint i)
     {
         ubyte[8] result = data[i .. i + 8];
         return littleEndianToNative!ulong(result);
     }
 
-    @safe void putUshort(int i, ushort us)
+    @safe @nogc pure nothrow void putUshort(uint i, ushort us)
     {
         data[i .. i + 2] = nativeToLittleEndian(us);
     }
 
-    @safe void putUint(int i, uint ui)
+    @safe @nogc pure nothrow void putUint(uint i, uint ui)
     {
         data[i .. i + 4] = nativeToLittleEndian(ui);
     }
 
-    @safe void putUlong(int i, ulong ul)
+    @safe @nogc pure nothrow void putUlong(uint i, ulong ul)
     {
         data[i .. i + 8] = nativeToLittleEndian(ul);
+    }
+
+    /* ============== for detecting overlaps =============== */
+
+private:
+
+    // defines a segment of the zip file, including start, excluding end
+    struct Segment
+    {
+        uint start;
+        uint end;
+    }
+
+    // removes Segment start .. end from _segs
+    // throws zipException if start .. end is not completely available in _segs;
+    void removeSegment(uint start, uint end) pure @safe
+    in (start < end, "segment invalid")
+    {
+        auto found = false;
+        size_t pos;
+        foreach (i,seg;_segs)
+            if (seg.start <= start && seg.end >= end
+                && (!found || seg.start > _segs[pos].start))
+            {
+                found = true;
+                pos = i;
+            }
+
+        enforce!ZipException(found, "overlapping data detected");
+
+        if (start>_segs[pos].start)
+            _segs ~= Segment(_segs[pos].start, start);
+        if (end<_segs[pos].end)
+            _segs ~= Segment(end, _segs[pos].end);
+        _segs = _segs[0 .. pos] ~ _segs[pos + 1 .. $];
+    }
+
+    pure @safe unittest
+    {
+        with (new ZipArchive())
+        {
+            _segs = [Segment(0,100)];
+            removeSegment(10,20);
+            assert(_segs == [Segment(0,10),Segment(20,100)]);
+
+            _segs = [Segment(0,100)];
+            removeSegment(0,20);
+            assert(_segs == [Segment(20,100)]);
+
+            _segs = [Segment(0,100)];
+            removeSegment(10,100);
+            assert(_segs == [Segment(0,10)]);
+
+            _segs = [Segment(0,100), Segment(200,300), Segment(400,500)];
+            removeSegment(220,230);
+            assert(_segs == [Segment(0,100),Segment(400,500),Segment(200,220),Segment(230,300)]);
+
+            _segs = [Segment(200,300), Segment(0,100), Segment(400,500)];
+            removeSegment(20,30);
+            assert(_segs == [Segment(200,300),Segment(400,500),Segment(0,20),Segment(30,100)]);
+
+            import std.exception : assertThrown;
+
+            _segs = [Segment(0,100), Segment(200,300), Segment(400,500)];
+            assertThrown(removeSegment(120,230));
+
+            _segs = [Segment(0,100), Segment(200,300), Segment(400,500)];
+            removeSegment(0,100);
+            assertThrown(removeSegment(0,100));
+
+            _segs = [Segment(0,100)];
+            removeSegment(0,100);
+            assertThrown(removeSegment(0,100));
+        }
     }
 }
 
@@ -963,10 +1552,135 @@ the quick brown fox jumps over the lazy dog\r
     assert(amAfter.time == am.time);
 }
 
-// Non-Android Posix-only, because we can't rely on the unzip command being
-// available on Android or Windows
-version (Android) {} else
-version (Posix) @system unittest
+@system unittest
+{
+    // invalid format of end of central directory entry
+    import std.exception : assertThrown;
+    assertThrown!ZipException(new ZipArchive(cast(void[]) "\x50\x4B\x05\x06aaaaaaaaaaaaaaaaaaaa"));
+}
+
+@system unittest
+{
+    // minimum (empty) archive should pass
+    auto za = new ZipArchive(cast(void[]) "\x50\x4B\x05\x06\x00\x00\x00\x00\x00\x00\x00"~
+                                          "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
+    assert(za.directory.length == 0);
+
+    // one byte too short or too long should not pass
+    import std.exception : assertThrown;
+    assertThrown!ZipException(new ZipArchive(cast(void[]) "\x50\x4B\x05\x06\x00\x00\x00\x00\x00\x00\x00"~
+                                                          "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"));
+    assertThrown!ZipException(new ZipArchive(cast(void[]) "\x50\x4B\x05\x06\x00\x00\x00\x00\x00\x00\x00"~
+                                                          "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"));
+}
+
+@system unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=20239
+    // chameleon file, containing two valid end of central directory entries
+    auto file =
+        "\x50\x4B\x03\x04\x0A\x00\x00\x00\x00\x00\x89\x36\x39\x4F\x04\x6A\xB3\xA3\x01\x00"~
+        "\x00\x00\x01\x00\x00\x00\x0D\x00\x1C\x00\x62\x65\x73\x74\x5F\x6C\x61\x6E\x67\x75"~
+        "\x61\x67\x65\x55\x54\x09\x00\x03\x82\xF2\x8A\x5D\x82\xF2\x8A\x5D\x75\x78\x0B\x00"~
+        "\x01\x04\xEB\x03\x00\x00\x04\xEB\x03\x00\x00\x44\x50\x4B\x01\x02\x1E\x03\x0A\x00"~
+        "\x00\x00\x00\x00\x89\x36\x39\x4F\x04\x6A\xB3\xA3\x01\x00\x00\x00\x01\x00\x00\x00"~
+        "\x0D\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xB0\x81\x00\x00\x00\x00\x62\x65"~
+        "\x73\x74\x5F\x6C\x61\x6E\x67\x75\x61\x67\x65\x55\x54\x05\x00\x03\x82\xF2\x8A\x5D"~
+        "\x75\x78\x0B\x00\x01\x04\xEB\x03\x00\x00\x04\xEB\x03\x00\x00\x50\x4B\x05\x06\x00"~
+        "\x00\x00\x00\x01\x00\x01\x00\x53\x00\x00\x00\x48\x00\x00\x00\xB7\x00\x50\x4B\x03"~
+        "\x04\x0A\x00\x00\x00\x00\x00\x94\x36\x39\x4F\xD7\xCB\x3B\x55\x07\x00\x00\x00\x07"~
+        "\x00\x00\x00\x0D\x00\x1C\x00\x62\x65\x73\x74\x5F\x6C\x61\x6E\x67\x75\x61\x67\x65"~
+        "\x55\x54\x09\x00\x03\x97\xF2\x8A\x5D\x8C\xF2\x8A\x5D\x75\x78\x0B\x00\x01\x04\xEB"~
+        "\x03\x00\x00\x04\xEB\x03\x00\x00\x46\x4F\x52\x54\x52\x41\x4E\x50\x4B\x01\x02\x1E"~
+        "\x03\x0A\x00\x00\x00\x00\x00\x94\x36\x39\x4F\xD7\xCB\x3B\x55\x07\x00\x00\x00\x07"~
+        "\x00\x00\x00\x0D\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xB0\x81\xB1\x00\x00"~
+        "\x00\x62\x65\x73\x74\x5F\x6C\x61\x6E\x67\x75\x61\x67\x65\x55\x54\x05\x00\x03\x97"~
+        "\xF2\x8A\x5D\x75\x78\x0B\x00\x01\x04\xEB\x03\x00\x00\x04\xEB\x03\x00\x00\x50\x4B"~
+        "\x05\x06\x00\x00\x00\x00\x01\x00\x01\x00\x53\x00\x00\x00\xFF\x00\x00\x00\x00\x00";
+
+    import std.exception : assertThrown;
+    assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+}
+
+@system unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=20287
+    // check for correct compressed data
+    auto file =
+        "\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+        "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+        "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+        "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+        "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+        "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+        "\x00\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+        "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+        "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x50\x4b\x05"~
+        "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+        "\x00\x00\x00";
+
+    auto za = new ZipArchive(cast(void[]) file);
+    assert(za.directory["file"].compressedData == [104, 101, 108, 108, 111]);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=20027
+@system unittest
+{
+    // central file header overlaps end of central directory
+    auto file =
+        // lfh
+        "\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+        "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1c\x00\x66\x69"~
+        "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+        "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+        "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+        "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+        "\x00\x18\x00\x04\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+        "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+        "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x50\x4b\x05"~
+        "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+        "\x00\x00\x00";
+
+    import std.exception : assertThrown;
+    assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+
+    // local file header and file data overlap second local file header and file data
+    file =
+        "\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00\x8f\x72\x4a\x4f\x86\xa6"~
+        "\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04\x00\x1e\x00\x66\x69"~
+        "\x6c\x65\x55\x54\x09\x00\x03\x0d\x22\x9f\x5d\x12\x22\x9f\x5d\x75"~
+        "\x78\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x68\x65"~
+        "\x6c\x6c\x6f\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\x8f"~
+        "\x72\x4a\x4f\x86\xa6\x10\x36\x05\x00\x00\x00\x05\x00\x00\x00\x04"~
+        "\x00\x18\x00\x04\x00\x00\x00\x01\x00\x00\x00\xb0\x81\x00\x00\x00"~
+        "\x00\x66\x69\x6c\x65\x55\x54\x05\x00\x03\x0d\x22\x9f\x5d\x75\x78"~
+        "\x0b\x00\x01\x04\xf0\x03\x00\x00\x04\xf0\x03\x00\x00\x50\x4b\x05"~
+        "\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4a\x00\x00\x00\x43\x00\x00"~
+        "\x00\x00\x00";
+
+    assertThrown!ZipException(new ZipArchive(cast(void[]) file));
+}
+
+@system unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=20295
+    // zip64 with 0xff bytes in end of central dir record do not work
+    // minimum (empty zip64) archive should pass
+    auto file =
+        "\x50\x4b\x06\x06\x2c\x00\x00\x00\x00\x00\x00\x00\x1e\x03\x2d\x00"~
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"~
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4b\x06\x07\x00\x00\x00\x00"~
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x50\x4B\x05\x06"~
+        "\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"~
+        "\x00\x00";
+
+    auto za = new ZipArchive(cast(void[]) file);
+    assert(za.directory.length == 0);
+}
+
+version (HasUnzip)
+@system unittest
 {
     import std.datetime, std.file, std.format, std.path, std.process, std.stdio;
 

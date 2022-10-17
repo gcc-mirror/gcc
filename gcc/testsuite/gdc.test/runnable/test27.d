@@ -1,5 +1,4 @@
-// RUNNABLE_PHOBOS_TEST
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/test27a.d
 // PERMUTE_ARGS:
 
@@ -11,4 +10,3 @@ int main()
     v.func(5);
     return 0;
 }
-

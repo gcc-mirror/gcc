@@ -1,3 +1,4 @@
+// COMPILABLE_MATH_TEST
 // https://issues.dlang.org/show_bug.cgi?id=15019
 // dmd -m32 -c all.d
 
@@ -24,7 +25,7 @@ struct Matrix(T, int R, int C)
         {
             try
                 return format("%s", v);
-            catch
+            catch (Throwable)
                 assert(false); // should not happen since format is right
         }
 }
@@ -67,8 +68,7 @@ struct Vector(T, int N)
     {
         try
             return format("%s", v);
-        catch
+        catch (Throwable)
             assert(false);
     }
 }
-

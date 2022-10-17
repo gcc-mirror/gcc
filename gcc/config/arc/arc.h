@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2021 Free Software Foundation, Inc.
+   Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1330,12 +1330,7 @@ do { \
 
 /* Debugging information.  */
 
-/* Generate DBX and DWARF debugging information.  */
-#ifdef DBX_DEBUGGING_INFO
-#undef DBX_DEBUGGING_INFO
-#endif
-#define DBX_DEBUGGING_INFO
-
+/* Generate DWARF debugging information.  */
 #ifdef DWARF2_DEBUGGING_INFO
 #undef DWARF2_DEBUGGING_INFO
 #endif
@@ -1345,8 +1340,8 @@ do { \
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO)				\
+/* How to renumber registers for gdb.  */
+#define DEBUGGER_REGNO(REGNO)				\
   ((TARGET_MULMAC_32BY16_SET && (REGNO) >= 56 && (REGNO) <= 57) \
    ? ((REGNO) ^ !TARGET_BIG_ENDIAN)				\
    : (TARGET_MUL64_SET && (REGNO) >= 57 && (REGNO) <= 58)	\
@@ -1356,7 +1351,7 @@ do { \
    : (REGNO))
 
 /* Use gcc hard register numbering for eh_frame.  */
-#define DWARF_FRAME_REGNUM(REG) (REG)
+#define DWARF_FRAME_REGNUM(REG) ((REG) < 144 ? REG : INVALID_REGNUM)
 
 /* Map register numbers held in the call frame info that gcc has
    collected using DWARF_FRAME_REGNUM to those that should be output
@@ -1370,18 +1365,20 @@ do { \
       : 57 + !!TARGET_MULMAC_32BY16_SET) /* MLO */		\
    : (REGNO))
 
-#define DWARF_FRAME_RETURN_COLUMN 	DWARF_FRAME_REGNUM (31)
+/* The DWARF 2 CFA column which tracks the return address.  */
+#define DWARF_FRAME_RETURN_COLUMN RETURN_ADDR_REGNUM
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)
 
-#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 31)
+/* The DWARF 2 CFA column which tracks the return address from a signal handler
+   context.  This value must not correspond to a hard register and must be out
+   of the range of DWARF_FRAME_REGNUM().  */
+#define DWARF_ALT_FRAME_RETURN_COLUMN 144
 
 /* Frame info.  */
 
 #define EH_RETURN_DATA_REGNO(N)  ((N) < 2 ? (N) : INVALID_REGNUM)
 
 #define EH_RETURN_STACKADJ_RTX   gen_rtx_REG (Pmode, 2)
-
-/* Turn off splitting of long stabs.  */
-#define DBX_CONTIN_LENGTH 0
 
 /* Miscellaneous.  */
 

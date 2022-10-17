@@ -1,4 +1,4 @@
-// 6395
+// https://issues.dlang.org/show_bug.cgi?id=6395
 
 template map(alias fun) {
   auto map(Range)(Range r) {

@@ -1,5 +1,5 @@
 /* Implement the strndup function.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.
@@ -34,8 +34,8 @@ memory was available.  The result is always NUL terminated.
 #include <stddef.h>
 
 extern size_t	strnlen (const char *s, size_t maxlen);
-extern PTR	malloc (size_t);
-extern PTR	memcpy (PTR, const PTR, size_t);
+extern void *malloc (size_t);
+extern void *memcpy (void *, const void *, size_t);
 
 char *
 strndup (const char *s, size_t n)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@ with Binderr;  use Binderr;
 with Butil;    use Butil;
 with Casing;   use Casing;
 with Fname;    use Fname;
+with Gnatvsn;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;
@@ -93,9 +94,7 @@ package body Bcheck is
          Check_Consistent_SSO_Default;
       end if;
 
-      if Zero_Cost_Exceptions_Specified
-        or else Frontend_Exceptions_Specified
-      then
+      if Zero_Cost_Exceptions_Specified then
          Check_Consistent_Exception_Handling;
       end if;
 
@@ -1244,11 +1243,8 @@ package body Bcheck is
    procedure Check_Consistent_Exception_Handling is
    begin
       Check_Mechanism : for A1 in ALIs.First + 1 .. ALIs.Last loop
-         if (ALIs.Table (A1).Zero_Cost_Exceptions /=
-              ALIs.Table (ALIs.First).Zero_Cost_Exceptions)
-           or else
-            (ALIs.Table (A1).Frontend_Exceptions /=
-              ALIs.Table (ALIs.First).Frontend_Exceptions)
+         if ALIs.Table (A1).Zero_Cost_Exceptions /=
+             ALIs.Table (ALIs.First).Zero_Cost_Exceptions
          then
             Error_Msg_File_1 := ALIs.Table (A1).Sfile;
             Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;
@@ -1324,11 +1320,136 @@ package body Bcheck is
            or else ALIs.Table (A).Ver          (1 .. VL) /=
                    ALIs.Table (ALIs.First).Ver (1 .. VL)
          then
-            Error_Msg_File_1 := ALIs.Table (A).Sfile;
-            Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;
+            --  Version mismatch found; generate error message.
 
-            Consistency_Error_Msg
-               ("{ and { compiled with different GNAT versions");
+            declare
+               use Gnatvsn;
+
+               Prefix : constant String :=
+                 Verbose_Library_Version
+                   (1 .. Verbose_Library_Version'Length
+                           - Library_Version'Length);
+
+               type ALI_Version is record
+                  Primary, Secondary : Int range -1 .. Int'Last;
+               end record;
+
+               No_Version : constant ALI_Version := (-1, -1);
+
+               function Remove_Prefix (S : String) return String is
+                 (S (S'First + Prefix'Length .. S'Last));
+
+               function Extract_Version (S : String) return ALI_Version;
+               --  Attempts to extract and return a pair of nonnegative library
+               --  version numbers from the given string; if unsuccessful,
+               --  then returns No_Version.
+
+               ---------------------
+               -- Extract_Version --
+               ---------------------
+
+               function Extract_Version (S : String) return ALI_Version is
+                  pragma Assert (S'First = 1);
+
+                  function Int_Value (Img : String) return Int;
+                  --  Using Int'Value leads to complications in
+                  --  building the binder, so DIY.
+
+                  ---------------
+                  -- Int_Value --
+                  ---------------
+
+                  function Int_Value (Img : String) return Int is
+                     Result : Nat := 0;
+                  begin
+                     if Img'Length in 1 .. 9
+                       and then (for all C of Img => C in '0' .. '9')
+                     then
+                        for C of Img loop
+                           Result := (10 * Result) +
+                             (Character'Pos (C) - Character'Pos ('0'));
+                        end loop;
+                        return Result;
+                     else
+                        return -1;
+                     end if;
+                  end Int_Value;
+
+               begin
+                  if S'Length > Prefix'Length
+                    and then S (1 .. Prefix'Length) = Prefix
+                  then
+                     declare
+                        Suffix    : constant String := Remove_Prefix (S);
+                        Dot_Found : Boolean := False;
+                        Primary, Secondary : Int;
+                     begin
+                        for Dot_Index in Suffix'Range loop
+                           if Suffix (Dot_Index) = '.' then
+                              Dot_Found := True;
+                              Primary :=
+                                Int_Value (Suffix (Suffix'First
+                                                   .. Dot_Index - 1));
+                              Secondary :=
+                                Int_Value (Suffix (Dot_Index + 1
+                                                   .. Suffix'Last));
+                              exit;
+                           end if;
+                        end loop;
+
+                        if not Dot_Found then
+                           Primary   := Int_Value (Suffix);
+                           Secondary := 0;
+                        end if;
+
+                        if (Primary /= -1) and (Secondary /= -1) then
+                           return (Primary   => Primary,
+                                   Secondary => Secondary);
+                        end if;
+                     end;
+                  end if;
+                  return No_Version;
+               end Extract_Version;
+
+               --  Local constants
+
+               V1_Text : constant String :=
+                 ALIs.Table (A).Ver (1 .. ALIs.Table (A).Ver_Len);
+               V2_Text : constant String :=
+                 ALIs.Table (ALIs.First).Ver (1 .. VL);
+               V1      : constant ALI_Version := Extract_Version (V1_Text);
+               V2      : constant ALI_Version := Extract_Version (V2_Text);
+
+               Include_Version_Numbers_In_Message : constant Boolean :=
+                 (V1 /= V2) and (V1 /= No_Version) and (V2 /= No_Version);
+            begin
+               Error_Msg_File_1 := ALIs.Table (A).Sfile;
+               Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;
+
+               if Include_Version_Numbers_In_Message then
+                  if V1.Secondary = V2.Secondary then
+                     --  Excluding equal secondary values from error
+                     --  message text matters for generating reproducible
+                     --  regression test outputs.
+
+                     Error_Msg_Nat_1 := V1.Primary;
+                     Error_Msg_Nat_2 := V2.Primary;
+                     Consistency_Error_Msg
+                       ("{ and { compiled with different GNAT versions"
+                        & ", v# and v#");
+                  else
+                     Consistency_Error_Msg
+                       ("{ and { compiled with different GNAT versions"
+                        & ", v"
+                        & Remove_Prefix (V1_Text)
+                        & " and v"
+                        & Remove_Prefix (V2_Text));
+                  end if;
+               else
+                  Consistency_Error_Msg
+                    ("{ and { compiled with different GNAT versions");
+               end if;
+            end;
          end if;
       end loop;
    end Check_Versions;

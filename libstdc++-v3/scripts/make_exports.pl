@@ -52,11 +52,13 @@ while (<F>) {
 	next;
     }
     # Catch globs.  Note that '{}' is not allowed in globs by this script,
-    # so only '*' and '[]' are available.
+    # so only '*' and '?' and '[]' are available.
     if (/^[ \t]*([^ \t;{}#]+);?[ \t]*$/) {
 	my $ptn = $1;
 	# Turn the glob into a regex by replacing '*' with '.*'.
-	$ptn =~ s/\*/\.\*/g;
+	$ptn =~ s/\*/.*/g;
+	# And replacing '?' with '.'.
+	$ptn =~ s/\?/./g;
 	push @$glob,$ptn;
 	next;
     }

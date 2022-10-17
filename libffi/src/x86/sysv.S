@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 2013  The Written Word, Inc.
-	  - Copyright (c) 1996,1998,2001-2003,2005,2008,2010  Red Hat, Inc.
+   sysv.S - Copyright (c) 2017  Anthony Green
+          - Copyright (c) 2013  The Written Word, Inc.
+          - Copyright (c) 1996,1998,2001-2003,2005,2008,2010  Red Hat, Inc.
    
    X86 Foreign Function Interface 
 
@@ -25,7 +26,8 @@
    DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
-#ifndef __x86_64__
+#ifdef __i386__
+#ifndef _MSC_VER
 
 #define LIBFFI_ASM	
 #include <fficonfig.h>
@@ -54,8 +56,8 @@
 
 /* Handle win32 fastcall name mangling.  */
 #ifdef X86_WIN32
-# define ffi_call_i386		@ffi_call_i386@8
-# define ffi_closure_inner	@ffi_closure_inner@8
+# define ffi_call_i386		"@ffi_call_i386@8"
+# define ffi_closure_inner	"@ffi_closure_inner@8"
 #else
 # define ffi_call_i386		C(ffi_call_i386)
 # define ffi_closure_inner	C(ffi_closure_inner)
@@ -90,6 +92,7 @@
 ffi_call_i386:
 L(UW0):
 	# cfi_startproc
+	_CET_ENDBR
 #if !HAVE_FASTCALL
 	movl	4(%esp), %ecx
 	movl	8(%esp), %edx
@@ -131,7 +134,7 @@ L(pc1):
 	leal	L(store_table)(,%ecx, 8), %ebx
 #endif
 	movl	16(%ebp), %ecx		/* load result address */
-	jmp	*%ebx
+	_CET_NOTRACK jmp *%ebx
 
 	.balign	8
 L(store_table):
@@ -254,7 +257,7 @@ ENDF(ffi_call_i386)
 	andl	$X86_RET_TYPE_MASK, %eax;				\
 	leal	L(C1(load_table,N))(, %eax, 8), %edx;			\
 	movl	closure_CF(%esp), %eax;		/* optimiztic load */	\
-	jmp	*%edx
+	_CET_NOTRACK jmp *%edx
 
 #ifdef __PIC__
 # if defined X86_DARWIN || defined HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
@@ -265,14 +268,14 @@ ENDF(ffi_call_i386)
 L(C1(pc,N)):								\
 	leal	L(C1(load_table,N))-L(C1(pc,N))(%edx, %eax, 8), %edx;	\
 	movl	closure_CF(%esp), %eax;		/* optimiztic load */	\
-	jmp	*%edx
+	_CET_NOTRACK jmp *%edx
 # else
 #  define FFI_CLOSURE_CALL_INNER_SAVE_EBX
 #  undef FFI_CLOSURE_CALL_INNER
 #  define FFI_CLOSURE_CALL_INNER(UWN)					\
 	movl	%ebx, 40(%esp);			/* save ebx */		\
 L(C1(UW,UWN)):								\
-	# cfi_rel_offset(%ebx, 40);					\
+	/* cfi_rel_offset(%ebx, 40); */					\
 	call	C(__x86.get_pc_thunk.bx);	/* load got register */	\
 	addl	$C(_GLOBAL_OFFSET_TABLE_), %ebx;			\
 	call	ffi_closure_inner@PLT
@@ -282,9 +285,9 @@ L(C1(UW,UWN)):								\
 	leal	L(C1(load_table,N))@GOTOFF(%ebx, %eax, 8), %edx;	\
 	movl	40(%esp), %ebx;			/* restore ebx */	\
 L(C1(UW,UWN)):								\
-	# cfi_restore(%ebx);						\
+	/* cfi_restore(%ebx); */					\
 	movl	closure_CF(%esp), %eax;		/* optimiztic load */	\
-	jmp	*%edx
+	_CET_NOTRACK jmp *%edx
 # endif /* DARWIN || HIDDEN */
 #endif /* __PIC__ */
 
@@ -294,6 +297,7 @@ L(C1(UW,UWN)):								\
 C(ffi_go_closure_EAX):
 L(UW6):
 	# cfi_startproc
+	_CET_ENDBR
 	subl	$closure_FS, %esp
 L(UW7):
 	# cfi_def_cfa_offset(closure_FS + 4)
@@ -314,6 +318,7 @@ ENDF(C(ffi_go_closure_EAX))
 C(ffi_go_closure_ECX):
 L(UW9):
 	# cfi_startproc
+	_CET_ENDBR
 	subl	$closure_FS, %esp
 L(UW10):
 	# cfi_def_cfa_offset(closure_FS + 4)
@@ -338,6 +343,7 @@ ENDF(C(ffi_go_closure_ECX))
 C(ffi_closure_i386):
 L(UW12):
 	# cfi_startproc
+	_CET_ENDBR
 	subl	$closure_FS, %esp
 L(UW13):
 	# cfi_def_cfa_offset(closure_FS + 4)
@@ -421,6 +427,7 @@ ENDF(C(ffi_closure_i386))
 C(ffi_go_closure_STDCALL):
 L(UW21):
 	# cfi_startproc
+	_CET_ENDBR
 	subl	$closure_FS, %esp
 L(UW22):
 	# cfi_def_cfa_offset(closure_FS + 4)
@@ -446,6 +453,7 @@ L(UW24):
 	# cfi_startproc
 	# cfi_def_cfa(%esp, 8)
 	# cfi_offset(%eip, -8)
+	_CET_ENDBR
 	subl	$closure_FS-4, %esp
 L(UW25):
 	# cfi_def_cfa_offset(closure_FS + 4)
@@ -468,6 +476,7 @@ ENDF(C(ffi_closure_REGISTER))
 C(ffi_closure_STDCALL):
 L(UW27):
 	# cfi_startproc
+	_CET_ENDBR
 	subl	$closure_FS, %esp
 L(UW28):
 	# cfi_def_cfa_offset(closure_FS + 4)
@@ -564,6 +573,94 @@ L(UW31):
 	# cfi_endproc
 ENDF(C(ffi_closure_STDCALL))
 
+#if defined(FFI_EXEC_STATIC_TRAMP)
+	.balign	16
+	.globl	C(ffi_closure_i386_alt)
+	FFI_HIDDEN(C(ffi_closure_i386_alt))
+C(ffi_closure_i386_alt):
+	/* See the comments above trampoline_code_table. */
+	_CET_ENDBR
+	movl	4(%esp), %eax			/* Load closure in eax */
+	add	$8, %esp			/* Restore the stack */
+	jmp	C(ffi_closure_i386)
+ENDF(C(ffi_closure_i386_alt))
+
+	.balign	16
+	.globl	C(ffi_closure_REGISTER_alt)
+	FFI_HIDDEN(C(ffi_closure_REGISTER_alt))
+C(ffi_closure_REGISTER_alt):
+	/* See the comments above trampoline_code_table. */
+	_CET_ENDBR
+	movl	(%esp), %eax			/* Restore eax */
+	add	$4, %esp			/* Leave closure on stack */
+	jmp	C(ffi_closure_REGISTER)
+ENDF(C(ffi_closure_REGISTER_alt))
+
+	.balign	16
+	.globl	C(ffi_closure_STDCALL_alt)
+	FFI_HIDDEN(C(ffi_closure_STDCALL_alt))
+C(ffi_closure_STDCALL_alt):
+	/* See the comments above trampoline_code_table. */
+	_CET_ENDBR
+	movl	4(%esp), %eax			/* Load closure in eax */
+	add	$8, %esp			/* Restore the stack */
+	jmp	C(ffi_closure_STDCALL)
+ENDF(C(ffi_closure_STDCALL_alt))
+
+/*
+ * Below is the definition of the trampoline code table. Each element in
+ * the code table is a trampoline.
+ *
+ * Because we jump to the trampoline, we place a _CET_ENDBR at the
+ * beginning of the trampoline to mark it as a valid branch target. This is
+ * part of the the Intel CET (Control Flow Enforcement Technology).
+ */
+/*
+ * The trampoline uses register eax.  It saves the original value of eax on
+ * the stack.
+ *
+ * The trampoline has two parameters - target code to jump to and data for
+ * the target code. The trampoline extracts the parameters from its parameter
+ * block (see tramp_table_map()). The trampoline saves the data address on
+ * the stack. Finally, it jumps to the target code.
+ *
+ * The target code can choose to:
+ *
+ * - restore the value of eax
+ * - load the data address in a register
+ * - restore the stack pointer to what it was when the trampoline was invoked.
+ */
+#ifdef ENDBR_PRESENT
+#define X86_DATA_OFFSET		4081
+#define X86_CODE_OFFSET		4070
+#else
+#define X86_DATA_OFFSET		4085
+#define X86_CODE_OFFSET		4074
+#endif
+
+	.align	X86_TRAMP_MAP_SIZE
+	.globl	C(trampoline_code_table)
+	FFI_HIDDEN(C(trampoline_code_table))
+C(trampoline_code_table):
+	.rept	X86_TRAMP_MAP_SIZE / X86_TRAMP_SIZE
+	_CET_ENDBR
+	sub	$8, %esp
+	movl	%eax, (%esp)			/* Save %eax on stack */
+	call	1f				/* Get next PC into %eax */
+	movl	X86_DATA_OFFSET(%eax), %eax	/* Copy data into %eax */
+	movl	%eax, 4(%esp)			/* Save data on stack */
+	call	1f				/* Get next PC into %eax */
+	movl	X86_CODE_OFFSET(%eax), %eax	/* Copy code into %eax */
+	jmp	*%eax				/* Jump to code */
+1:
+	mov	(%esp), %eax
+	ret
+	.align	4
+	.endr
+ENDF(C(trampoline_code_table))
+	.align	X86_TRAMP_MAP_SIZE
+#endif /* FFI_EXEC_STATIC_TRAMP */
+
 #if !FFI_NO_RAW_API
 
 #define raw_closure_S_FS	(16+16+12)
@@ -574,6 +671,7 @@ ENDF(C(ffi_closure_STDCALL))
 C(ffi_closure_raw_SYSV):
 L(UW32):
 	# cfi_startproc
+	_CET_ENDBR
 	subl	$raw_closure_S_FS, %esp
 L(UW33):
 	# cfi_def_cfa_offset(raw_closure_S_FS + 4)
@@ -677,6 +775,7 @@ ENDF(C(ffi_closure_raw_SYSV))
 C(ffi_closure_raw_THISCALL):
 L(UW41):
 	# cfi_startproc
+	_CET_ENDBR
 	/* Rearrange the stack such that %ecx is the first argument.
 	   This means moving the return address.  */
 	popl	%edx
@@ -790,9 +889,9 @@ ENDF(C(ffi_closure_raw_THISCALL))
 
 #ifdef X86_DARWIN
 # define COMDAT(X)							\
-        .section __TEXT,__textcoal_nt,coalesced,pure_instructions;	\
+        .section __TEXT,__text,coalesced,pure_instructions;		\
         .weak_definition X;						\
-        .private_extern X
+        FFI_HIDDEN(X)
 #elif defined __ELF__ && !(defined(__sun__) && defined(__svr4__))
 # define COMDAT(X)							\
 	.section .text.X,"axG",@progbits,X,comdat;			\
@@ -1033,7 +1132,95 @@ L(SFDE9):
 L(EFDE9):
 #endif /* !FFI_NO_RAW_API */
 
-#endif /* ifndef __x86_64__ */
+#ifdef _WIN32
+	.def	 @feat.00;
+	.scl	3;
+	.type	0;
+	.endef
+	.globl	@feat.00
+@feat.00 = 1
+#endif
+
+#ifdef __APPLE__
+    .subsections_via_symbols
+    .section __LD,__compact_unwind,regular,debug
+
+    /* compact unwind for ffi_call_i386 */
+    .long    C(ffi_call_i386)
+    .set     L1,L(UW5)-L(UW0)
+    .long    L1
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_go_closure_EAX */
+    .long    C(ffi_go_closure_EAX)
+    .set     L2,L(UW8)-L(UW6)
+    .long    L2
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_go_closure_ECX */
+    .long    C(ffi_go_closure_ECX)
+    .set     L3,L(UW11)-L(UW9)
+    .long    L3
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_closure_i386 */
+    .long    C(ffi_closure_i386)
+    .set     L4,L(UW20)-L(UW12)
+    .long    L4
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_go_closure_STDCALL */
+    .long    C(ffi_go_closure_STDCALL)
+    .set     L5,L(UW23)-L(UW21)
+    .long    L5
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_closure_REGISTER */
+    .long    C(ffi_closure_REGISTER)
+    .set     L6,L(UW26)-L(UW24)
+    .long    L6
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_closure_STDCALL */
+    .long    C(ffi_closure_STDCALL)
+    .set     L7,L(UW31)-L(UW27)
+    .long    L7
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_closure_raw_SYSV */
+    .long    C(ffi_closure_raw_SYSV)
+    .set     L8,L(UW40)-L(UW32)
+    .long    L8
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+
+    /* compact unwind for ffi_closure_raw_THISCALL */
+    .long    C(ffi_closure_raw_THISCALL)
+    .set     L9,L(UW52)-L(UW41)
+    .long    L9
+    .long    0x04000000 /* use dwarf unwind info */
+    .long    0
+    .long    0
+#endif /* __APPLE__ */
+
+#endif /* ifndef _MSC_VER */
+
+#endif /* ifdef __i386__ */
 
 #if defined __ELF__ && defined __linux__
 	.section	.note.GNU-stack,"",@progbits

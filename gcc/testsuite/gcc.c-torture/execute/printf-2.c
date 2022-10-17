@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "gcc_tmpnam.h"
 
 __attribute__ ((noipa)) void
 write_file (void)
@@ -26,7 +27,7 @@ write_file (void)
 
 int main (void)
 {
-  char *tmpfname = tmpnam (0);
+  char *tmpfname = gcc_tmpnam (0);
   FILE *f = freopen (tmpfname, "w", stdout);
   if (!f)
     {

@@ -1,6 +1,6 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/b15875.d(9): Error: circular reference to variable `a`
+fail_compilation/b15875.d(9): Error: undefined identifier `a`
 fail_compilation/b15875.d(10): Error: circular reference to `b15875.f`
 ---
 */

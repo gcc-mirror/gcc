@@ -1,6 +1,6 @@
 // Helpers for ostream inserters -*- C++ -*-
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,8 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /// @cond undocumented
 
   template<typename _CharT, typename _Traits>
     inline void
@@ -123,6 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					     streamsize);
 #endif
 #endif
+
+  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

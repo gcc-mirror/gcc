@@ -1,6 +1,6 @@
 // Test that checking of a nothrow specification uses the one on the
 // definition.
-// { dg-do run { target c++11 } }
+// { dg-do run { target { c++11 && { ! c++23 } } } }
 // { dg-options "-Wno-terminate" }
 
 #include <exception>
@@ -23,7 +23,7 @@ void f() noexcept
 
 int main()
 {
-  std::set_unexpected (my_unexpected);
+  std::set_unexpected (my_unexpected); // { dg-warning "deprecated" }
   std::set_terminate (my_terminate);
   f();
   return 1;

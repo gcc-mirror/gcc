@@ -50,7 +50,7 @@
  *            Copyright (C) 1994 Stephen L. Moshier (moshier@world.std.com).
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Stephen L. Moshier (original C code). Conversion to D by Don Clugston
- * Source:    $(PHOBOSSRC std/_mathspecial.d)
+ * Source:    $(PHOBOSSRC std/mathspecial.d)
  */
 module std.mathspecial;
 import std.internal.math.errorfunction;
@@ -119,6 +119,7 @@ real logGamma(real x)
  */
 real sgnGamma(real x)
 {
+    import core.math : rndtol;
     /* Author: Don Clugston. */
     if (isNaN(x)) return x;
     if (x > 0) return 1.0;
@@ -202,13 +203,14 @@ real logmdigammaInverse(real x)
 
 /** Incomplete beta integral
  *
- * Returns incomplete beta integral of the arguments, evaluated
+ * Returns regularized incomplete beta integral of the arguments, evaluated
  * from zero to x. The regularized incomplete beta function is defined as
  *
  * betaIncomplete(a, b, x) = $(GAMMA)(a + b) / ( $(GAMMA)(a) $(GAMMA)(b) ) *
  * $(INTEGRATE 0, x) $(POWER t, a-1)$(POWER (1-t), b-1) dt
  *
- * and is the same as the the cumulative distribution function.
+ * and is the same as the cumulative distribution function of the Beta
+ * distribution.
  *
  * The domain of definition is 0 <= x <= 1.  In this
  * implementation a and b are restricted to positive values.
@@ -253,21 +255,25 @@ real betaIncompleteInverse(real a, real b, real y )
  * values of a and x.
  */
 real gammaIncomplete(real a, real x )
-in {
+in
+{
    assert(x >= 0);
    assert(a > 0);
 }
-body {
+do
+{
     return std.internal.math.gammafunction.gammaIncomplete(a, x);
 }
 
 /** ditto */
 real gammaIncompleteCompl(real a, real x )
-in {
+in
+{
    assert(x >= 0);
    assert(a > 0);
 }
-body {
+do
+{
     return std.internal.math.gammafunction.gammaIncompleteCompl(a, x);
 }
 
@@ -278,11 +284,13 @@ body {
  *  gammaIncompleteCompl( a, x ) = p.
  */
 real gammaIncompleteComplInverse(real a, real p)
-in {
+in
+{
   assert(p >= 0 && p <= 1);
   assert(a > 0);
 }
-body {
+do
+{
     return std.internal.math.gammafunction.gammaIncompleteComplInv(a, p);
 }
 
@@ -321,7 +329,7 @@ real erfc(real x)
 }
 
 
-/** Normal distribution function.
+/** Standard normal distribution function.
  *
  * The normal (or Gaussian, or bell-shaped) distribution is
  * defined as:
@@ -343,7 +351,7 @@ real normalDistribution(real x)
     return std.internal.math.errorfunction.normalDistributionImpl(x);
 }
 
-/** Inverse of Normal distribution function
+/** Inverse of Standard normal distribution function
  *
  * Returns the argument, x, for which the area under the
  * Normal probability density function (integrated from
@@ -352,10 +360,11 @@ real normalDistribution(real x)
  * Note: This function is only implemented to 80 bit precision.
  */
 real normalDistributionInverse(real p)
-in {
+in
+{
   assert(p >= 0.0L && p <= 1.0L, "Domain error");
 }
-body
+do
 {
     return std.internal.math.errorfunction.normalDistributionInvImpl(p);
 }

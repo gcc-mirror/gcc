@@ -1,5 +1,5 @@
 ;; Constraint definitions for TI PRU.
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;;
 ;; This file is part of GCC.
@@ -34,10 +34,16 @@
 ;; The following constraints are intended for internal use only:
 ;;  Rmd0, Rms0, Rms1: Registers for MUL instruction operands.
 ;;  Rsib: Jump address register suitable for sibling calls.
+;;  Rrio: The R30 and R31 I/O registers.
 ;;  M: -255 to 0 (for converting ADD to SUB with suitable UBYTE OP2).
 ;;  N: -32768 to 32767 (16-bit signed integer).
 ;;  O: -128 to 127 (8-bit signed integer).
 ;;  P: 1
+;;  Um: -1 constant.
+;;  Uf: A constant with a single consecutive range of 0xff bytes.  Rest
+;;      of bytes are zeros.
+;;  Uz: A constant with a single consecutive range of 0x00 bytes.  Rest
+;;      of bytes are 0xff.
 
 ;; Register constraints.
 
@@ -56,6 +62,10 @@
 (define_register_constraint "Rms1" "MULSRC1_REGS"
   "@internal
   The multiply source 1 register.")
+
+(define_register_constraint "Rrio" "REGIO_REGS"
+  "@internal
+  The R30 and R31 I/O registers.")
 
 ;; Integer constraints.
 
@@ -106,3 +116,21 @@
   "An integer constant zero."
   (and (match_code "const_int")
        (match_test "ival == 0")))
+
+(define_constraint "Um"
+  "@internal
+  A constant -1."
+  (and (match_code "const_int")
+       (match_test "ival == -1")))
+
+(define_constraint "Uf"
+  "@internal
+  An integer constant with a consecutive range of 0xff bytes."
+  (and (match_code "const_int")
+       (match_test "const_fillbytes_operand (op, DImode)")))
+
+(define_constraint "Uz"
+  "@internal
+  An integer constant with a consecutive range of 0x00 bytes."
+  (and (match_code "const_int")
+       (match_test "const_zerobytes_operand (op, DImode)")))

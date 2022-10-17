@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2004-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 2004-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,10 +127,10 @@ package body System.Stack_Usage is
 
       Result_Array := new Result_Array_Type (1 .. Buffer_Size);
       Result_Array.all :=
-        (others =>
-           (Task_Name   => (others => ASCII.NUL),
+        [others =>
+           (Task_Name   => [others => ASCII.NUL],
             Value       => 0,
-            Stack_Size  => 0));
+            Stack_Size  => 0)];
 
       --  Set the Is_Enabled flag to true, so that the task wrapper knows that
       --  it has to handle dynamic stack analysis
@@ -282,7 +282,7 @@ package body System.Stack_Usage is
       Analyzer.Pattern_Size  := Pattern_Size;
       Analyzer.Pattern       := Pattern;
       Analyzer.Result_Id     := Next_Id;
-      Analyzer.Task_Name     := (others => ' ');
+      Analyzer.Task_Name     := [others => ' '];
 
       --  Compute the task name, and truncate if bigger than Task_Name_Length
 
@@ -455,12 +455,12 @@ package body System.Stack_Usage is
             Stack_Size_Blanks  : constant
                                    String (1 .. Max_Stack_Size_Len -
                                                   Stack_Size_Str'Length) :=
-                                      (others => ' ');
+                                      [others => ' '];
 
             Stack_Usage_Blanks : constant
                                    String (1 .. Max_Actual_Use_Len -
                                                   Actual_Size_Str'Length) :=
-                                      (others => ' ');
+                                      [others => ' '];
 
          begin
             if Stack_Size_Str'Length > Max_Stack_Size_Len then

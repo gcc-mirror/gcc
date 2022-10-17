@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -263,9 +263,6 @@ package Targparm is
    ZCX_By_Default_On_Target : Boolean := False;
    --  Indicates if zero cost scheme for exceptions
 
-   Frontend_Exceptions_On_Target : Boolean := True;
-   --  Indicates if we're using a front-end scheme for exceptions
-
    ------------------------------------
    -- Run-Time Library Configuration --
    ------------------------------------
@@ -365,12 +362,12 @@ package Targparm is
    --  this flag is False, and the use of aggregates is not permitted.
 
    Support_Atomic_Primitives_On_Target : Boolean := False;
-   --  If this flag is True, then the back-end support GCC built-in atomic
-   --  operations for memory model such as atomic load or atomic compare
+   --  If this flag is True, then the back end supports GCC built-in atomic
+   --  operations for memory model, such as atomic load or atomic compare
    --  exchange (see the GCC manual for more information). If the flag is
-   --  False, then the back-end doesn't provide this support. Note this flag is
-   --  set to True only if the target supports all atomic primitives up to 64
-   --  bits. ??? To be modified.
+   --  False, then the back end doesn't provide this support. Note that this
+   --  flag is set to True only if the target supports all atomic primitives
+   --  up to 64 bits.
 
    Support_Composite_Assign_On_Target : Boolean := True;
    --  The assignment of composite objects other than small records and

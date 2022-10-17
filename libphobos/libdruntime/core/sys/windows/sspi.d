@@ -5,7 +5,7 @@
  *
  * Authors: Ellery Newcomer
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_sspi.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_sspi.d)
  */
 module core.sys.windows.sspi;
 version (Windows):
@@ -380,4 +380,3 @@ version (Unicode) {
     alias QUERY_SECURITY_PACKAGE_INFO_FN_A QUERY_SECURITY_PACKAGE_INFO_FN;
     alias INIT_SECURITY_INTERFACE_A INIT_SECURITY_INTERFACE;
 }
-

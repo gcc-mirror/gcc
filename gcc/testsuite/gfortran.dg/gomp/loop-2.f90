@@ -37,7 +37,7 @@ end do
 do i = 1, 64
 end do
 
-!$omp loop bind(teams) bind(teams)  ! { dg-error "24: Failed to match clause" }
+!$omp loop bind(teams) bind(teams)  ! { dg-error "Duplicated 'bind' clause" }
 do i = 1, 64
 end do
 

@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag13942.d(18): Error: template instance isRawStaticArray!() does not match template declaration isRawStaticArray(T, A...)
-fail_compilation/diag13942.d(26): Error: template diag13942.to!double.to cannot deduce function from argument types !()(), candidates are:
-fail_compilation/diag13942.d(17):        diag13942.to!double.to(A...)(A args) if (!isRawStaticArray!A)
+fail_compilation/diag13942.d(18): Error: template instance `isRawStaticArray!()` does not match template declaration `isRawStaticArray(T, A...)`
+fail_compilation/diag13942.d(26): Error: none of the overloads of template `diag13942.to!double.to` are callable using argument types `!()()`
+fail_compilation/diag13942.d(17):        Candidate is: `to(A...)(A args)`
 ---
 */
 

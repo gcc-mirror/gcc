@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,15 +210,11 @@ package Scans is
 
       Tok_End_Of_Line,
       --  Represents an end of line. Not used during normal compilation scans
-      --  where end of line is ignored. Active for preprocessor scanning and
-      --  also when scanning project files (where it is needed because of ???)
+      --  where end of line is ignored. Active for preprocessor scanning.
 
       Tok_Special,
-      --  AI12-0125-03 : target name as abbreviation for LHS
-
-      --  Otherwise used only in preprocessor scanning (to represent one of
-      --  the characters '#', '$', '?', '@', '`', '\', '^', '~', or '_'. The
-      --  character value itself is stored in Scans.Special_Character.
+      --  Special character used by the preprocessor. The character itself is
+      --  stored in Special_Character below.
 
       No_Token);
       --  No_Token is used for initializing Token values to indicate that
@@ -441,12 +437,12 @@ package Scans is
    --  scanned literal.
 
    Real_Literal_Value : Ureal;
-   --  Valid only when Token is Tok_Real_Literal, contains the value of the
+   --  Valid only when Token is Tok_Real_Literal. Contains the value of the
    --  scanned literal.
 
    Int_Literal_Value : Uint;
-   --  Valid only when Token = Tok_Integer_Literal, contains the value of the
-   --  scanned literal.
+   --  Valid only when Token = Tok_Integer_Literal, and we are not in
+   --  syntax-only mode. Contains the value of the scanned literal.
 
    Based_Literal_Uses_Colon : Boolean;
    --  Valid only when Token = Tok_Integer_Literal or Tok_Real_Literal. Set
@@ -466,12 +462,9 @@ package Scans is
    --  character found (i.e. a character that does not fit in Character or
    --  Wide_Character).
 
-   Special_Character : Character;
-   --  AI12-0125-03 : '@' as target name is handled elsewhere.
-   --  Valid only when Token = Tok_Special. Returns one of the characters
-   --  '#', '$', '?', '`', '\', '^', '~', or '_'.
-   --
-   --  Why only this set? What about wide characters???
+   subtype Special_Preprocessor_Character is Character with
+     Predicate => Special_Preprocessor_Character in '#' | '$';
+   Special_Character : Special_Preprocessor_Character;
 
    Comment_Id : Name_Id := No_Name;
    --  Valid only when Token = Tok_Comment. Store the string that follows

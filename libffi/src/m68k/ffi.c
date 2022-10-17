@@ -105,7 +105,7 @@ ffi_prep_args (void *stack, extended_cif *ecif)
 
 	  /* Align if necessary.  */
 	  if ((sizeof(int) - 1) & z)
-	    z = ALIGN(z, sizeof(int));
+	    z = FFI_ALIGN(z, sizeof(int));
 	}
 
       p_argv++;
@@ -297,7 +297,7 @@ ffi_prep_incoming_args_SYSV (char *stack, void **avalue, ffi_cif *cif)
 
 	  /* Align if necessary */
 	  if ((sizeof(int) - 1) & z)
-	    z = ALIGN(z, sizeof(int));
+	    z = FFI_ALIGN(z, sizeof(int));
 	}
 
       p_argv++;

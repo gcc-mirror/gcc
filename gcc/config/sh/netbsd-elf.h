@@ -1,5 +1,5 @@
 /* Definitions for SH running NetBSD using ELF
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
 This file is part of GCC.
@@ -85,7 +85,7 @@ while (0)
   do									\
     {									\
       /* Set -musermode if it hasn't been specified.  */		\
-      if (global_options_set.x_TARGET_USERMODE == 0)			\
+      if (OPTION_SET_P (TARGET_USERMODE) == 0)			\
 	TARGET_USERMODE = true;						\
     }									\
   while (0)

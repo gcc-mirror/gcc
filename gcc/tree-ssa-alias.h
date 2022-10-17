@@ -1,5 +1,5 @@
 /* Tree based alias analysis and alias oracle.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
    Contributed by Richard Guenther  <rguenther@suse.de>
 
    This file is part of GCC.
@@ -108,26 +108,31 @@ ao_ref::max_size_known_p () const
   return known_size_p (max_size);
 }
 
-/* In tree-ssa-alias.c  */
+/* In tree-ssa-alias.cc  */
 extern void ao_ref_init (ao_ref *, tree);
 extern void ao_ref_init_from_ptr_and_size (ao_ref *, tree, tree);
+extern void ao_ref_init_from_ptr_and_range (ao_ref *, tree, bool,
+					    poly_int64, poly_int64,
+					    poly_int64);
 extern tree ao_ref_base (ao_ref *);
 extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern alias_set_type ao_ref_base_alias_set (ao_ref *);
 extern tree ao_ref_alias_ptr_type (ao_ref *);
 extern tree ao_ref_base_alias_ptr_type (ao_ref *);
-extern bool ptr_deref_may_alias_global_p (tree);
+extern bool ao_ref_alignment (ao_ref *, unsigned int *,
+			      unsigned HOST_WIDE_INT *);
+extern bool ptr_deref_may_alias_global_p (tree, bool);
 extern bool ptr_derefs_may_alias_p (tree, tree);
 extern bool ptrs_compare_unequal (tree, tree);
-extern bool ref_may_alias_global_p (tree);
-extern bool ref_may_alias_global_p (ao_ref *);
+extern bool ref_may_alias_global_p (tree, bool);
+extern bool ref_may_alias_global_p (ao_ref *, bool);
 extern bool refs_may_alias_p (tree, tree, bool = true);
 extern bool refs_may_alias_p_1 (ao_ref *, ao_ref *, bool);
 extern bool refs_anti_dependent_p (tree, tree);
 extern bool refs_output_dependent_p (tree, tree);
 extern bool ref_maybe_used_by_stmt_p (gimple *, tree, bool = true);
 extern bool ref_maybe_used_by_stmt_p (gimple *, ao_ref *, bool = true);
-extern bool stmt_may_clobber_global_p (gimple *);
+extern bool stmt_may_clobber_global_p (gimple *, bool);
 extern bool stmt_may_clobber_ref_p (gimple *, tree, bool = true);
 extern bool stmt_may_clobber_ref_p_1 (gimple *, ao_ref *, bool = true);
 extern bool call_may_clobber_ref_p (gcall *, tree, bool = true);
@@ -162,11 +167,11 @@ extern void debug_points_to_info_for (tree);
 extern void dump_alias_stats (FILE *);
 
 
-/* In tree-ssa-structalias.c  */
+/* In tree-ssa-structalias.cc  */
 extern unsigned int compute_may_aliases (void);
 extern bool pt_solution_empty_p (const pt_solution *);
 extern bool pt_solution_singleton_or_null_p (struct pt_solution *, unsigned *);
-extern bool pt_solution_includes_global (struct pt_solution *);
+extern bool pt_solution_includes_global (struct pt_solution *, bool);
 extern bool pt_solution_includes (struct pt_solution *, const_tree);
 extern bool pt_solutions_intersect (struct pt_solution *, struct pt_solution *);
 extern void pt_solution_reset (struct pt_solution *);

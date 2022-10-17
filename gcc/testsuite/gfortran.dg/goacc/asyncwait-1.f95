@@ -53,7 +53,7 @@ program asyncwait
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (*) ! { dg-error "Invalid character in name at" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (*) ! { dg-error "Invalid character in name" }
   do i = 1, N
      b(i) = a(i)
   end do

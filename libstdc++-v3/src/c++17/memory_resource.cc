@@ -1,6 +1,6 @@
 // <memory_resource> implementation -*- C++ -*-
 
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,11 @@
 #include <new>
 #if ATOMIC_POINTER_LOCK_FREE != 2
 # include <bits/std_mutex.h>	// std::mutex, std::lock_guard
-# include <bits/move.h>		// std::exchange
+# include <bits/move.h>		// std::__exchange
+#endif
+
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#  define __constinit [[clang::require_constant_initialization]]
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -108,16 +112,16 @@ namespace pmr
       mutex mx;
       memory_resource* val;
 
-      memory_resource* load()
+      memory_resource* load(std::memory_order)
       {
 	lock_guard<mutex> lock(mx);
 	return val;
       }
 
-      memory_resource* exchange(memory_resource* r)
+      memory_resource* exchange(memory_resource* r, std::memory_order)
       {
 	lock_guard<mutex> lock(mx);
-	return std::exchange(val, r);
+	return std::__exchange(val, r);
       }
     };
 #else
@@ -130,14 +134,14 @@ namespace pmr
 
       memory_resource* val;
 
-      memory_resource* load() const
+      memory_resource* load(std::memory_order) const
       {
 	return val;
       }
 
-      memory_resource* exchange(memory_resource* r)
+      memory_resource* exchange(memory_resource* r, std::memory_order)
       {
-	return std::exchange(val, r);
+	return std::__exchange(val, r);
       }
     };
 #endif // ATOMIC_POINTER_LOCK_FREE == 2
@@ -162,12 +166,12 @@ namespace pmr
   {
     if (r == nullptr)
       r = new_delete_resource();
-    return default_res.obj.exchange(r);
+    return default_res.obj.exchange(r, std::memory_order_acq_rel);
   }
 
   memory_resource*
   get_default_resource() noexcept
-  { return default_res.obj.load(); }
+  { return default_res.obj.load(std::memory_order_acquire); }
 
   // Member functions for std::pmr::monotonic_buffer_resource
 
@@ -603,7 +607,7 @@ namespace pmr
     void* pointer = nullptr;
     aligned_size<min> _M_size;
 
-    size_t size() const noexcept
+    constexpr size_t size() const noexcept
     {
       if (_M_size.value == size_t(-1)) [[unlikely]]
 	return size_t(-1);

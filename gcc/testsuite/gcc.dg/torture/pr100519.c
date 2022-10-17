@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 /* { dg-additional-options "--param tree-reassoc-width=2" } */
 
 unsigned int foo_a1, foo_a2;

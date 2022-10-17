@@ -5,7 +5,7 @@
  *
  * Authors: Stewart Gordon
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_dlgs.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_dlgs.d)
  */
 module core.sys.windows.dlgs;
 version (Windows):

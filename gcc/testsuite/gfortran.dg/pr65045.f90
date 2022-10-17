@@ -12,4 +12,4 @@ i:block
 end block i      ! { dg-error "Expecting END PROGRAM statement" }
 print*,i         ! { dg-error "not appropriate for an expression" }
 end
-! { dg-excess-errors "Unexpected end of file" }
+! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }

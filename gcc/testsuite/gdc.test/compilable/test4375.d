@@ -1,5 +1,6 @@
 // REQUIRED_ARGS: -unittest
-// 4375: disallow dangling else
+// https://issues.dlang.org/show_bug.cgi?id=4375
+// disallow dangling else
 
 void main() {
 
@@ -255,7 +256,7 @@ label1:
                         else
                             assert(89);
     else
-        assert(12); 
+        assert(12);
 
 
     with (x)
@@ -298,7 +299,7 @@ label1:
             if (true)
                 assert(110);
             else
-                assert(112);                
+                assert(112);
         finally
             assert(111);
 
@@ -315,7 +316,7 @@ label1:
             int w;
 
         static if (true)
-            int t; 
+            int t;
         else static if (false)
             int u;
         else
@@ -368,7 +369,7 @@ class C {
         else
             assert(63);
     }
-    body {
+    do {
         if (true)
             assert(64);
         else
@@ -470,4 +471,3 @@ void f() {
     else
         x = null;
 }
-

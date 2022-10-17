@@ -26,23 +26,21 @@ void seq (void)
   extern_vector ();  /* { dg-error "routine call uses" } */
   extern_seq ();
 
-  int red;
-
-#pragma acc loop reduction (+:red) // { dg-warning "insufficient partitioning" }
+#pragma acc loop // { dg-warning "insufficient partitioning" }
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop gang reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop gang // { dg-error "disallowed by containing routine" }
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop worker reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop worker // { dg-error "disallowed by containing routine" }
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop vector reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop vector // { dg-error "disallowed by containing routine" }
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 }
 
 void vector (void)
@@ -52,23 +50,21 @@ void vector (void)
   extern_vector ();
   extern_seq ();
 
-  int red;
-
-#pragma acc loop reduction (+:red)
+#pragma acc loop
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop gang reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop gang // { dg-error "disallowed by containing routine" }
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop worker reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop worker // { dg-error "disallowed by containing routine" }
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop vector reduction (+:red)
+#pragma acc loop vector
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 }
 
 void worker (void)
@@ -78,23 +74,21 @@ void worker (void)
   extern_vector ();
   extern_seq ();
 
-  int red;
-
-#pragma acc loop reduction (+:red)
+#pragma acc loop
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop gang reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop gang // { dg-error "disallowed by containing routine" }
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop worker reduction (+:red)
+#pragma acc loop worker
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop vector reduction (+:red)
+#pragma acc loop vector
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 }
 
 void gang (void)
@@ -104,21 +98,19 @@ void gang (void)
   extern_vector ();
   extern_seq ();
 
-  int red;
-
-#pragma acc loop reduction (+:red)
+#pragma acc loop
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop gang reduction (+:red)
+#pragma acc loop gang
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop worker reduction (+:red)
+#pragma acc loop worker
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 
-#pragma acc loop vector reduction (+:red)
+#pragma acc loop vector
   for (int i = 0; i < 10; i++)
-    red ++;
+    ;
 }

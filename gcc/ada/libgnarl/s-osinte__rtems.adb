@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --            Copyright (C) 1991-2017, Florida State University             --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,54 @@
 with Interfaces.C; use Interfaces.C;
 
 package body System.OS_Interface is
+
+   ---------------
+   -- RTEMS API --
+   ---------------
+
+   type RTEMS_Attributes is new unsigned;
+
+   RTEMS_SIMPLE_BINARY_SEMAPHORE : constant := 16#00000020#;
+   RTEMS_FIFO                    : constant := 16#00000000#;
+
+   type RTEMS_Interval is new unsigned;
+
+   RTEMS_NO_TIMEOUT : constant := 0;
+
+   type RTEMS_Options is new unsigned;
+
+   RTEMS_WAIT             : constant := 16#00000000#;
+   RTEMS_INTERRUPT_UNIQUE : constant := 16#00000001#;
+
+   type RTEMS_Name is new unsigned;
+
+   function RTEMS_Build_Name (C1, C2, C3, C4 : Character) return RTEMS_Name
+     with Import, External_Name => "rtems_build_name", Convention => C;
+
+   function RTEMS_Semaphore_Create
+     (Name             : RTEMS_Name;
+      Count            : unsigned;
+      Attributes       : RTEMS_Attributes;
+      Priority_Ceiling : unsigned;
+      Semaphore        : out Binary_Semaphore_Id) return int
+     with Import, External_Name => "rtems_semaphore_create", Convention => C;
+
+   function RTEMS_Semaphore_Delete (Semaphore : Binary_Semaphore_Id) return int
+     with Import, External_Name => "rtems_semaphore_delete", Convention => C;
+
+   function RTEMS_Semaphore_Flush (Semaphore : Binary_Semaphore_Id)
+     return int
+     with Import, External_Name => "rtems_semaphore_flush", Convention => C;
+
+   function RTEMS_Semaphore_Obtain
+     (Semaphore : Binary_Semaphore_Id;
+      Options   : RTEMS_Options;
+      Timeout   : RTEMS_Interval) return int
+     with Import, External_Name => "rtems_semaphore_obtain", Convention => C;
+
+   function RTEMS_Semaphore_Release (Semaphore : Binary_Semaphore_Id)
+     return int
+     with Import, External_Name => "rtems_semaphore_release", Convention => C;
 
    -----------------
    -- To_Duration --
@@ -84,6 +132,108 @@ package body System.OS_Interface is
       return timespec'(tv_sec => S,
                        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
+
+   -----------------------------
+   -- Binary_Semaphore_Create --
+   -----------------------------
+
+   function Binary_Semaphore_Create return Binary_Semaphore_Id is
+      Semaphore : Binary_Semaphore_Id;
+      Status    : int;
+   begin
+      Status :=
+        RTEMS_Semaphore_Create
+          (Name             => RTEMS_Build_Name ('G', 'N', 'A', 'T'),
+           Count            => 0,
+           Attributes       => RTEMS_SIMPLE_BINARY_SEMAPHORE or RTEMS_FIFO,
+           Priority_Ceiling => 0,
+           Semaphore        => Semaphore);
+
+      pragma Assert (Status = 0);
+
+      return Semaphore;
+   end Binary_Semaphore_Create;
+
+   -----------------------------
+   -- Binary_Semaphore_Delete --
+   -----------------------------
+
+   function Binary_Semaphore_Delete (ID : Binary_Semaphore_Id)
+     return int is
+   begin
+      return RTEMS_Semaphore_Delete (ID);
+   end Binary_Semaphore_Delete;
+
+   -----------------------------
+   -- Binary_Semaphore_Obtain --
+   -----------------------------
+
+   function Binary_Semaphore_Obtain (ID : Binary_Semaphore_Id)
+     return int is
+   begin
+      return RTEMS_Semaphore_Obtain (ID, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   end Binary_Semaphore_Obtain;
+
+   ------------------------------
+   -- Binary_Semaphore_Release --
+   ------------------------------
+
+   function Binary_Semaphore_Release (ID : Binary_Semaphore_Id)
+     return int is
+   begin
+      return RTEMS_Semaphore_Release (ID);
+   end Binary_Semaphore_Release;
+
+   ----------------------------
+   -- Binary_Semaphore_Flush --
+   ----------------------------
+
+   function Binary_Semaphore_Flush (ID : Binary_Semaphore_Id) return int is
+   begin
+      return RTEMS_Semaphore_Flush (ID);
+   end Binary_Semaphore_Flush;
+
+   -----------------------
+   -- Interrupt_Connect --
+   -----------------------
+
+   function Interrupt_Connect
+     (Vector    : Interrupt_Vector;
+      Handler   : Interrupt_Handler;
+      Parameter : System.Address := System.Null_Address) return int
+   is
+      function RTEMS_Interrupt_Handler_Install
+         (Vector    : Interrupt_Vector;
+          Info      : char_array;
+          Options   : RTEMS_Options;
+          Handler   : Interrupt_Handler;
+          Parameter : System.Address) return int
+        with Import,
+             External_Name => "rtems_interrupt_handler_install",
+             Convention => C;
+
+      Info_String : constant char_array := To_C ("GNAT Interrupt Handler");
+      --  Handler name that is registered with RTEMS
+   begin
+      return
+        RTEMS_Interrupt_Handler_Install
+          (Vector    => Vector,
+           Info      => Info_String,
+           Options   => RTEMS_INTERRUPT_UNIQUE,
+           Handler   => Handler,
+           Parameter => Parameter);
+   end Interrupt_Connect;
+
+   --------------------------------
+   -- Interrupt_Number_To_Vector --
+   --------------------------------
+
+   function Interrupt_Number_To_Vector (intNum : int)
+     return Interrupt_Vector
+   is
+   begin
+      return Interrupt_Vector (intNum);
+   end Interrupt_Number_To_Vector;
 
    ------------------
    -- pthread_init --

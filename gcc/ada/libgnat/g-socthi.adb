@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2021, AdaCore                     --
+--                     Copyright (C) 2001-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,7 +187,9 @@ package body GNAT.Sockets.Thin is
          return Res;
       end if;
 
-      declare
+      pragma Warnings (Off, "unreachable code");
+      declare -- unreachable if Thread_Blocking_IO is statically True
+         pragma Warnings (On, "unreachable code");
          WSet : aliased Fd_Set;
          Now  : aliased Timeval;
 

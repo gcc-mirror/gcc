@@ -1,5 +1,7 @@
 ! { dg-do run }
-!
+
+! { dg-additional-options -Wuninitialized }
+
 module m
   implicit none
 contains
@@ -26,6 +28,13 @@ contains
 
     call add_ps_routine(a, b, c)
   end function add_ef
+  ! This '-Wmaybe-uninitialized' diagnostic appears for '-O2' only; PR102192.
+  ! { dg-xfail-if PR102192 { *-*-* } { -O2 } }
+  ! There's another instance (again '-O2' only) further down, but as any number
+  ! of 'dg-xfail-if' only apply to the first 'dg-bogus' etc., we have no way to
+  ! XFAIL that other one, so we instead match all of them here (via line '0'):
+  ! { dg-bogus {'c' may be used uninitialized} {} { target *-*-* } 0 }
+  ! { TODO_dg-bogus {'c' may be used uninitialized} {} { target *-*-* } .-7 }
 end module m
 
 program main
@@ -44,6 +53,9 @@ program main
   do i = 1, n
      if (i .eq. 4) then
         c_a = add_ef(a_a, b_a)
+        ! See above.
+        ! { TODO_dg-xfail-if PR102192 { *-*-* } { -O2 } }
+        ! { TODO_dg-bogus {'c' may be used uninitialized} {} { target *-*-* } .-3 }
      end if
   end do
   !$acc end parallel

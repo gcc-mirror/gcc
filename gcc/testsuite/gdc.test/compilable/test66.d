@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-
+// EXTRA_FILES: imports/test66a.d
 import imports.test66a;
 
 alias int TOK;
@@ -11,11 +11,10 @@ enum
 
 struct Token
 {
-    static char[] tochars[TOKmax];
+    static char[][TOKmax] tochars;
 }
 
 class Lexer
 {
     Token token;
 }
-

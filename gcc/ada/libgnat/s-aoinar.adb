@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                 Copyright (C) 2019-2021, Free Software Foundation, Inc.  --
+--                 Copyright (C) 2019-2022, Free Software Foundation, Inc.  --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,22 +72,10 @@ package body System.Atomic_Operations.Integer_Arithmetic is
       Value : Atomic_Type) return Atomic_Type
    is
       pragma Warnings (Off);
-      function Atomic_Fetch_Add_1
+      function Atomic_Fetch_Add
         (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
         return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Add_1, "__atomic_fetch_add_1");
-      function Atomic_Fetch_Add_2
-        (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
-        return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Add_2, "__atomic_fetch_add_2");
-      function Atomic_Fetch_Add_4
-        (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
-        return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Add_4, "__atomic_fetch_add_4");
-      function Atomic_Fetch_Add_8
-        (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
-        return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Add_8, "__atomic_fetch_add_8");
+      pragma Import (Intrinsic, Atomic_Fetch_Add, "__atomic_fetch_add");
       pragma Warnings (On);
 
    begin
@@ -96,21 +84,14 @@ package body System.Atomic_Operations.Integer_Arithmetic is
 
       if Atomic_Type'Base'Last = Atomic_Type'Last
         and then Atomic_Type'Base'First = Atomic_Type'First
-        and then Atomic_Type'Last
-                  in 2 ** 7 - 1 | 2 ** 15 - 1 | 2 ** 31 - 1 | 2 ** 63 - 1
+        and then Atomic_Type'Last = 2**(Atomic_Type'Object_Size - 1) - 1
       then
-         case Long_Long_Integer (Atomic_Type'Last) is
-            when 2 ** 7 - 1  =>
-               return Atomic_Fetch_Add_1 (Item'Address, Value);
-            when 2 ** 15 - 1 =>
-               return Atomic_Fetch_Add_2 (Item'Address, Value);
-            when 2 ** 31 - 1 =>
-               return Atomic_Fetch_Add_4 (Item'Address, Value);
-            when 2 ** 63 - 1 =>
-               return Atomic_Fetch_Add_8 (Item'Address, Value);
-            when others      =>
-               raise Program_Error;
-         end case;
+         if Atomic_Type'Object_Size in 8 | 16 | 32 | 64 then
+            return Atomic_Fetch_Add (Item'Address, Value);
+         else
+            raise Program_Error;
+         end if;
+
       else
          declare
             Old_Value : aliased Atomic_Type := Item;
@@ -138,22 +119,10 @@ package body System.Atomic_Operations.Integer_Arithmetic is
       Value : Atomic_Type) return Atomic_Type
    is
       pragma Warnings (Off);
-      function Atomic_Fetch_Sub_1
+      function Atomic_Fetch_Sub
         (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
         return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Sub_1, "__atomic_fetch_sub_1");
-      function Atomic_Fetch_Sub_2
-        (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
-        return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Sub_2, "__atomic_fetch_sub_2");
-      function Atomic_Fetch_Sub_4
-        (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
-        return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Sub_4, "__atomic_fetch_sub_4");
-      function Atomic_Fetch_Sub_8
-        (Ptr : System.Address; Val : Atomic_Type; Model : Mem_Model := Seq_Cst)
-        return Atomic_Type;
-      pragma Import (Intrinsic, Atomic_Fetch_Sub_8, "__atomic_fetch_sub_8");
+      pragma Import (Intrinsic, Atomic_Fetch_Sub, "__atomic_fetch_sub");
       pragma Warnings (On);
 
    begin
@@ -162,21 +131,14 @@ package body System.Atomic_Operations.Integer_Arithmetic is
 
       if Atomic_Type'Base'Last = Atomic_Type'Last
         and then Atomic_Type'Base'First = Atomic_Type'First
-        and then Atomic_Type'Last
-                  in 2 ** 7 - 1 | 2 ** 15 - 1 | 2 ** 31 - 1 | 2 ** 63 - 1
+        and then Atomic_Type'Last = 2**(Atomic_Type'Object_Size - 1) - 1
       then
-         case Long_Long_Integer (Atomic_Type'Last) is
-            when 2 ** 7 - 1  =>
-               return Atomic_Fetch_Sub_1 (Item'Address, Value);
-            when 2 ** 15 - 1 =>
-               return Atomic_Fetch_Sub_2 (Item'Address, Value);
-            when 2 ** 31 - 1 =>
-               return Atomic_Fetch_Sub_4 (Item'Address, Value);
-            when 2 ** 63 - 1 =>
-               return Atomic_Fetch_Sub_8 (Item'Address, Value);
-            when others      =>
-               raise Program_Error;
-         end case;
+         if Atomic_Type'Object_Size in 8 | 16 | 32 | 64 then
+            return Atomic_Fetch_Sub (Item'Address, Value);
+         else
+            raise Program_Error;
+         end if;
+
       else
          declare
             Old_Value : aliased Atomic_Type := Item;
@@ -203,7 +165,7 @@ package body System.Atomic_Operations.Integer_Arithmetic is
       pragma Unreferenced (Item);
       use type Interfaces.C.size_t;
    begin
-      return Boolean (Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8));
+      return Atomic_Always_Lock_Free (Atomic_Type'Object_Size / 8);
    end Is_Lock_Free;
 
 end System.Atomic_Operations.Integer_Arithmetic;

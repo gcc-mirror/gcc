@@ -1,6 +1,6 @@
 // Filesystem declarations -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@
 
 #include <system_error>
 #include <cstdint>
-#include <chrono>
+#include <bits/chrono.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -160,7 +160,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   };
 
   /// @{
-  /// @relates perm_options
+  /// @relates perms
   constexpr perms
   operator&(perms __x, perms __y) noexcept
   {
@@ -353,6 +353,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
+
+  bool remove(const path&, error_code&) noexcept;
+  uintmax_t remove_all(const path&);
+  uintmax_t remove_all(const path&, error_code&);
 
 /// @}
 } // namespace filesystem

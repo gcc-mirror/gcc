@@ -1,7 +1,6 @@
-// EXTRA_SOURCES: imports/test63a.d
+// COMPILED_IMPORTS: imports/test63a.d
 // PERMUTE_ARGS:
 
 private import imports.test63a;
 
 const int SIZE = 7;
-

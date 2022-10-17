@@ -13,4 +13,3 @@ void foo()
 {
     Contract* r; if (r.empty) {}
 }
-

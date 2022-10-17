@@ -25,9 +25,7 @@ void test_memcpy_array_cst_range_off (const void *s)
   T (d + UR (1, 2), 5);
 
   T (d + UR (0, 1), 6);
-  /* The warning below should be "writing" but the [0, 1] range
-     is somehow lost and get_range_info() returns VR_VARYING.  */
-  T (d + UR (0, 1), 7);       /* { dg-warning ".memcpy. writing 7 bytes into a region of size 6 overflows the destination" "pr89428" { xfail *-*-* } } */
+  T (d + UR (0, 1), 7);       /* { dg-warning ".memcpy. writing 7 bytes into a region of size 6 overflows the destination" "pr89428" } */
   T (d + UR (1, 2), 6);       /* { dg-warning ".memcpy. writing 6 bytes into a region of size 5 overflows the destination" } */
   T (d + UR (1, 2), 7);       /* { dg-warning "writing 7 bytes into a region of size 5 " } */
 
@@ -66,7 +64,7 @@ void test_memset_array_unsigned_off (void)
   T (d + UR (1, 2), 5);
 
   T (d + UR (0, 1), 6);
-  T (d + UR (0, 1), 7);       /* { dg-warning ".memset. writing 6 bytes into a region of size 5 overflows the destination" "pr89428" { xfail *-*-* } } */
+  T (d + UR (0, 1), 7);       /* { dg-warning ".memset. writing 7 bytes into a region of size 6 overflows the destination" "pr89428" } */
   T (d + UR (1, 2), 6);       /* { dg-warning ".memset. writing 6 bytes into a region of size 5 overflows the destination" } */
   T (d + UR (1, 2), 7);       /* { dg-warning "writing 7 bytes into a region of size 5 " } */
 

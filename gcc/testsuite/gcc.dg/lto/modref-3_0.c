@@ -14,4 +14,4 @@ main()
     __builtin_abort ();
   return 0;
 }
-/* { dg-final { scan-wpa-ipa-dump "parm 1 flags: nodirectescape"  "modref"  } } */
+/* { dg-final { scan-wpa-ipa-dump "parm 1 flags: no_direct_clobber no_direct_escape"  "modref"  } } */

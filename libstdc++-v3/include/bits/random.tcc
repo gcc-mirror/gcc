@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2009-2021 Free Software Foundation, Inc.
+// Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -91,6 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace __detail
   /// @endcond
 
+#if ! __cpp_inline_variables
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
     linear_congruential_engine<_UIntType, __a, __c, __m>::multiplier;
@@ -106,6 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
     linear_congruential_engine<_UIntType, __a, __c, __m>::default_seed;
+#endif
 
   /**
    * Seeds the LCR with integral value @p __s, adjusted so that the
@@ -1905,15 +1907,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__d1._M_param == __d2._M_param
 	  && __d1._M_saved_available == __d2._M_saved_available)
-	{
-	  if (__d1._M_saved_available
-	      && __d1._M_saved == __d2._M_saved)
-	    return true;
-	  else if(!__d1._M_saved_available)
-	    return true;
-	  else
-	    return false;
-	}
+	return __d1._M_saved_available ? __d1._M_saved == __d2._M_saved : true;
       else
 	return false;
     }
@@ -1959,7 +1953,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool __saved_avail;
       if (__is >> __mean >> __stddev >> __saved_avail)
 	{
-	  if (__saved_avail && (__is >> __x._M_saved))
+	  if (!__saved_avail || (__is >> __x._M_saved))
 	    {
 	      __x._M_saved_available = __saved_avail;
 	      __x.param(param_type(__mean, __stddev));
@@ -3238,6 +3232,7 @@ namespace __detail
   template<typename _IntType, typename>
     seed_seq::seed_seq(std::initializer_list<_IntType> __il)
     {
+      _M_v.reserve(__il.size());
       for (auto __iter = __il.begin(); __iter != __il.end(); ++__iter)
 	_M_v.push_back(__detail::__mod<result_type,
 		       __detail::_Shift<result_type, 32>::__value>(*__iter));
@@ -3246,6 +3241,9 @@ namespace __detail
   template<typename _InputIterator>
     seed_seq::seed_seq(_InputIterator __begin, _InputIterator __end)
     {
+      if _GLIBCXX17_CONSTEXPR (__is_random_access_iter<_InputIterator>::value)
+	_M_v.reserve(std::distance(__begin, __end));
+
       for (_InputIterator __iter = __begin; __iter != __end; ++__iter)
 	_M_v.push_back(__detail::__mod<result_type,
 		       __detail::_Shift<result_type, 32>::__value>(*__iter));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,9 +126,14 @@ package body Style is
       elsif Error_Posted (Ref) or else Error_Posted (Def) then
          return;
 
-      --  Case of definition comes from source
+      --  Case of definition comes from source, or a record component whose
+      --  Original_Record_Component comes from source.
 
-      elsif Comes_From_Source (Def) then
+      elsif Comes_From_Source (Def) or else
+        (Ekind (Def) in Record_Field_Kind
+           and then Present (Original_Record_Component (Def))
+           and then Comes_From_Source (Original_Record_Component (Def)))
+      then
 
          --  Check same casing if we are checking references
 
@@ -265,11 +270,15 @@ package body Style is
       --  indicators were introduced in Ada 2005. We apply Comes_From_Source
       --  to Original_Node to catch the case of a procedure body declared with
       --  "is null" that has been rewritten as a normal empty body.
+      --  We do not emit a warning on an inherited operation that comes from
+      --  a type derivation.
 
       if Style_Check_Missing_Overriding
         and then (Comes_From_Source (Original_Node (N))
                    or else Is_Generic_Instance (E))
         and then Ada_Version_Explicit >= Ada_2005
+        and then Present (Parent (E))
+        and then Nkind (Parent (E)) /= N_Full_Type_Declaration
       then
          --  If the subprogram is an instantiation,  its declaration appears
          --  within a wrapper package that precedes the instance node. Place

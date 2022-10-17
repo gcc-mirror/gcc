@@ -1,5 +1,5 @@
 /* obstack.h - object stack macros
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -137,9 +137,9 @@
    relative to B.  Otherwise, use the faster strategy of computing the
    alignment relative to 0.  */
 
-#define __PTR_ALIGN(B, P, A)						      \
-  __BPTR_ALIGN (sizeof (ptrdiff_t) < sizeof (void *) ? (B) : (char *) 0,      \
-                P, A)
+#define __PTR_ALIGN(B, P, A)						\
+  (sizeof (ptrdiff_t) < sizeof (void *) ? __BPTR_ALIGN (B, P, A)	\
+   : (char *) (((ptrdiff_t) (P) + (A)) & ~(A)))
 
 #ifndef __attribute_pure__
 # if defined __GNUC_MINOR__ && __GNUC__ * 1000 + __GNUC_MINOR__ >= 2096

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -32,8 +32,10 @@ void
 omp_set_default_device (int device_num)
 {
   struct gomp_task_icv *icv = gomp_icv (true);
-  icv->default_device_var = device_num >= 0 ? device_num : 0;
+  icv->default_device_var = device_num;
 }
+
+ialias (omp_set_default_device)
 
 int
 omp_get_default_device (void)
@@ -42,17 +44,23 @@ omp_get_default_device (void)
   return icv->default_device_var;
 }
 
+ialias (omp_get_default_device)
+
 int
 omp_get_initial_device (void)
 {
   return gomp_get_num_devices ();
 }
 
+ialias (omp_get_initial_device)
+
 int
 omp_get_num_devices (void)
 {
   return gomp_get_num_devices ();
 }
+
+ialias (omp_get_num_devices)
 
 int
 omp_is_initial_device (void)
@@ -61,8 +69,31 @@ omp_is_initial_device (void)
   return 1;
 }
 
-ialias (omp_set_default_device)
-ialias (omp_get_default_device)
-ialias (omp_get_initial_device)
-ialias (omp_get_num_devices)
 ialias (omp_is_initial_device)
+
+int
+omp_get_device_num (void)
+{
+  /* By specification, this is equivalent to omp_get_initial_device
+     on the host.  */
+  return ialias_call (omp_get_initial_device) ();
+}
+
+ialias (omp_get_device_num)
+
+int
+omp_get_max_teams (void)
+{
+  return gomp_nteams_var;
+}
+
+ialias (omp_get_max_teams)
+
+void
+omp_set_num_teams (int num_teams)
+{
+  if (num_teams >= 0)
+    gomp_nteams_var = num_teams;
+}
+
+ialias (omp_set_num_teams)

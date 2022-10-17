@@ -1,5 +1,5 @@
 /* Definitions for the Blackfin port.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -1094,8 +1094,8 @@ extern rtx bfin_cc_rtx, bfin_rets_rtx;
 /* This works for GAS and some other assemblers.  */
 #define SET_ASM_OP              ".set "
 
-/* DBX register number for a given compiler register number */
-#define DBX_REGISTER_NUMBER(REGNO)  (REGNO) 
+/* Debugger register number for a given compiler register number */
+#define DEBUGGER_REGNO(REGNO)  (REGNO) 
 
 #define SIZE_ASM_OP     "\t.size\t"
 

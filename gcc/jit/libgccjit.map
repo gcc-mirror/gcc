@@ -1,5 +1,5 @@
 # Linker script for libgccjit.so
-#   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 #   Contributed by David Malcolm <dmalcolm@redhat.com>.
 #
 # This file is part of GCC.
@@ -205,3 +205,69 @@ LIBGCCJIT_ABI_15 {
     gcc_jit_extended_asm_add_clobber;
     gcc_jit_context_add_top_level_asm;
 } LIBGCCJIT_ABI_14;
+
+LIBGCCJIT_ABI_16 {
+  global:
+    gcc_jit_function_get_return_type;
+    gcc_jit_function_get_param_count;
+    gcc_jit_function_type_get_return_type;
+    gcc_jit_function_type_get_param_count;
+    gcc_jit_function_type_get_param_type;
+    gcc_jit_type_unqualified;
+    gcc_jit_type_dyncast_array;
+    gcc_jit_type_is_bool;
+    gcc_jit_type_dyncast_function_ptr_type;
+    gcc_jit_type_is_integral;
+    gcc_jit_type_is_pointer;
+    gcc_jit_type_dyncast_vector;
+    gcc_jit_vector_type_get_element_type;
+    gcc_jit_vector_type_get_num_units;
+    gcc_jit_struct_get_field;
+    gcc_jit_type_is_struct;
+    gcc_jit_struct_get_field_count;
+} LIBGCCJIT_ABI_15;
+
+LIBGCCJIT_ABI_17 {
+  global:
+    gcc_jit_lvalue_set_tls_model;
+} LIBGCCJIT_ABI_16;
+
+LIBGCCJIT_ABI_18 {
+  global:
+    gcc_jit_lvalue_set_link_section;
+} LIBGCCJIT_ABI_17;
+
+LIBGCCJIT_ABI_19 {
+  global:
+    gcc_jit_context_new_array_constructor;
+    gcc_jit_context_new_struct_constructor;
+    gcc_jit_context_new_union_constructor;
+    gcc_jit_global_set_initializer_rvalue;
+} LIBGCCJIT_ABI_18;
+
+LIBGCCJIT_ABI_20 {
+  global:
+    gcc_jit_compatible_types;
+    gcc_jit_type_get_size;
+} LIBGCCJIT_ABI_19;
+
+LIBGCCJIT_ABI_21 {
+  global:
+    gcc_jit_context_new_bitcast;
+} LIBGCCJIT_ABI_20;
+
+LIBGCCJIT_ABI_22 {
+  global:
+    gcc_jit_lvalue_set_register_name;
+} LIBGCCJIT_ABI_21;
+
+LIBGCCJIT_ABI_23 {
+  global:
+    gcc_jit_context_set_bool_print_errors_to_stderr;
+} LIBGCCJIT_ABI_22;
+
+LIBGCCJIT_ABI_24 {
+  global:
+    gcc_jit_lvalue_set_alignment;
+    gcc_jit_lvalue_get_alignment;
+} LIBGCCJIT_ABI_23;

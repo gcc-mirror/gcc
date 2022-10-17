@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,10 +109,10 @@ package body System.Task_Primitives.Operations is
    --  a time; it is used to execute in mutual exclusion from all other tasks.
    --  Used to protect All_Tasks_List
 
-   Time_Slice_Val : Integer;
+   Time_Slice_Val : constant Integer;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
 
-   Dispatching_Policy : Character;
+   Dispatching_Policy : constant Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
    function Get_Policy (Prio : System.Any_Priority) return Character;
@@ -559,7 +559,6 @@ package body System.Task_Primitives.Operations is
       Abs_Time   : Duration;
 
       Result : Integer;
-      pragma Unreferenced (Result);
 
       Local_Timedout : Boolean;
 
@@ -615,7 +614,6 @@ package body System.Task_Primitives.Operations is
 
       Timedout : Boolean;
       Result   : Integer;
-      pragma Unreferenced (Timedout, Result);
 
    begin
       Write_Lock (Self_ID);

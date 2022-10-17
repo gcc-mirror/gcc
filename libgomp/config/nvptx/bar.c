@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2022 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -30,183 +30,137 @@
 #include <limits.h>
 #include "libgomp.h"
 
+/* For cpu_relax.  */
+#include "doacross.h"
 
-void
-gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+/* Assuming ADDR is &bar->generation, return bar.  Copied from
+   rtems/bar.c.  */
+
+static gomp_barrier_t *
+generation_to_barrier (int *addr)
 {
-  if (__builtin_expect (state & BAR_WAS_LAST, 0))
+  char *bar
+    = (char *) addr - __builtin_offsetof (gomp_barrier_t, generation);
+  return (gomp_barrier_t *)bar;
+}
+
+/* Implement futex_wait-like behaviour to plug into the linux/bar.c
+   implementation.  Assumes ADDR is &bar->generation.   */
+
+static inline void
+futex_wait (int *addr, int val)
+{
+  gomp_barrier_t *bar = generation_to_barrier (addr);
+
+  if (bar->total < 2)
+    /* A barrier with less than two threads, nop.  */
+    return;
+
+  gomp_mutex_lock (&bar->lock);
+
+  /* Futex semantics: only go to sleep if *addr == val.  */
+  if (__builtin_expect (__atomic_load_n (addr, MEMMODEL_ACQUIRE) != val, 0))
     {
-      /* Next time we'll be awaiting TOTAL threads again.  */
-      bar->awaited = bar->total;
-      __atomic_store_n (&bar->generation, bar->generation + BAR_INCR,
-			MEMMODEL_RELEASE);
-    }
-  if (bar->total > 1)
-    asm ("bar.sync 1, %0;" : : "r" (32 * bar->total));
-}
-
-void
-gomp_barrier_wait (gomp_barrier_t *bar)
-{
-  gomp_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
-}
-
-/* Like gomp_barrier_wait, except that if the encountering thread
-   is not the last one to hit the barrier, it returns immediately.
-   The intended usage is that a thread which intends to gomp_barrier_destroy
-   this barrier calls gomp_barrier_wait, while all other threads
-   call gomp_barrier_wait_last.  When gomp_barrier_wait returns,
-   the barrier can be safely destroyed.  */
-
-void
-gomp_barrier_wait_last (gomp_barrier_t *bar)
-{
-  /* Deferring to gomp_barrier_wait does not use the optimization opportunity
-     allowed by the interface contract for all-but-last participants.  The
-     original implementation in config/linux/bar.c handles this better.  */
-  gomp_barrier_wait (bar);
-}
-
-void
-gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
-{
-  if (bar->total > 1)
-    asm ("bar.sync 1, %0;" : : "r" (32 * bar->total));
-}
-
-void
-gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
-{
-  unsigned int generation, gen;
-
-  if (__builtin_expect (state & BAR_WAS_LAST, 0))
-    {
-      /* Next time we'll be awaiting TOTAL threads again.  */
-      struct gomp_thread *thr = gomp_thread ();
-      struct gomp_team *team = thr->ts.team;
-
-      bar->awaited = bar->total;
-      team->work_share_cancelled = 0;
-      if (__builtin_expect (team->task_count, 0))
-	{
-	  gomp_barrier_handle_tasks (state);
-	  state &= ~BAR_WAS_LAST;
-	}
-      else
-	{
-	  state &= ~BAR_CANCELLED;
-	  state += BAR_INCR - BAR_WAS_LAST;
-	  __atomic_store_n (&bar->generation, state, MEMMODEL_RELEASE);
-	  if (bar->total > 1)
-	    asm ("bar.sync 1, %0;" : : "r" (32 * bar->total));
-	  return;
-	}
-    }
-
-  generation = state;
-  state &= ~BAR_CANCELLED;
-  do
-    {
-      if (bar->total > 1)
-	asm ("bar.sync 1, %0;" : : "r" (32 * bar->total));
-      gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
-      if (__builtin_expect (gen & BAR_TASK_PENDING, 0))
-	{
-	  gomp_barrier_handle_tasks (state);
-	  gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
-	}
-      generation |= gen & BAR_WAITING_FOR_TASK;
-    }
-  while (gen != state + BAR_INCR);
-}
-
-void
-gomp_team_barrier_wait (gomp_barrier_t *bar)
-{
-  gomp_team_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
-}
-
-void
-gomp_team_barrier_wait_final (gomp_barrier_t *bar)
-{
-  gomp_barrier_state_t state = gomp_barrier_wait_final_start (bar);
-  if (__builtin_expect (state & BAR_WAS_LAST, 0))
-    bar->awaited_final = bar->total;
-  gomp_team_barrier_wait_end (bar, state);
-}
-
-bool
-gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
-				   gomp_barrier_state_t state)
-{
-  unsigned int generation, gen;
-
-  if (__builtin_expect (state & BAR_WAS_LAST, 0))
-    {
-      /* Next time we'll be awaiting TOTAL threads again.  */
-      /* BAR_CANCELLED should never be set in state here, because
-	 cancellation means that at least one of the threads has been
-	 cancelled, thus on a cancellable barrier we should never see
-	 all threads to arrive.  */
-      struct gomp_thread *thr = gomp_thread ();
-      struct gomp_team *team = thr->ts.team;
-
-      bar->awaited = bar->total;
-      team->work_share_cancelled = 0;
-      if (__builtin_expect (team->task_count, 0))
-	{
-	  gomp_barrier_handle_tasks (state);
-	  state &= ~BAR_WAS_LAST;
-	}
-      else
-	{
-	  state += BAR_INCR - BAR_WAS_LAST;
-	  __atomic_store_n (&bar->generation, state, MEMMODEL_RELEASE);
-	  if (bar->total > 1)
-	    asm ("bar.sync 1, %0;" : : "r" (32 * bar->total));
-	  return false;
-	}
-    }
-
-  if (__builtin_expect (state & BAR_CANCELLED, 0))
-    return true;
-
-  generation = state;
-  do
-    {
-      if (bar->total > 1)
-	asm ("bar.sync 1, %0;" : : "r" (32 * bar->total));
-      gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
-      if (__builtin_expect (gen & BAR_CANCELLED, 0))
-	return true;
-      if (__builtin_expect (gen & BAR_TASK_PENDING, 0))
-	{
-	  gomp_barrier_handle_tasks (state);
-	  gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
-	}
-      generation |= gen & BAR_WAITING_FOR_TASK;
-    }
-  while (gen != state + BAR_INCR);
-
-  return false;
-}
-
-bool
-gomp_team_barrier_wait_cancel (gomp_barrier_t *bar)
-{
-  return gomp_team_barrier_wait_cancel_end (bar, gomp_barrier_wait_start (bar));
-}
-
-void
-gomp_team_barrier_cancel (struct gomp_team *team)
-{
-  gomp_mutex_lock (&team->task_lock);
-  if (team->barrier.generation & BAR_CANCELLED)
-    {
-      gomp_mutex_unlock (&team->task_lock);
+      gomp_mutex_unlock (&bar->lock);
       return;
     }
-  team->barrier.generation |= BAR_CANCELLED;
-  gomp_mutex_unlock (&team->task_lock);
-  gomp_team_barrier_wake (&team->barrier, INT_MAX);
+
+  /* Register as waiter.  */
+  unsigned int waiters
+    = __atomic_add_fetch (&bar->waiters, 1, MEMMODEL_ACQ_REL);
+  if (waiters == 0)
+    __builtin_abort ();
+  unsigned int waiter_id = waiters;
+
+  if (waiters > 1)
+    {
+      /* Wake other threads in bar.sync.  */
+      asm volatile ("bar.sync 1, %0;" : : "r" (32 * waiters));
+
+      /* Ensure that they have updated waiters.  */
+      asm volatile ("bar.sync 1, %0;" : : "r" (32 * waiters));
+    }
+
+  gomp_mutex_unlock (&bar->lock);
+
+  while (1)
+    {
+      /* Wait for next thread in barrier.  */
+      asm volatile ("bar.sync 1, %0;" : : "r" (32 * (waiters + 1)));
+
+      /* Get updated waiters.  */
+      unsigned int updated_waiters
+	= __atomic_load_n (&bar->waiters, MEMMODEL_ACQUIRE);
+
+      /* Notify that we have updated waiters.  */
+      asm volatile ("bar.sync 1, %0;" : : "r" (32 * (waiters + 1)));
+
+      waiters = updated_waiters;
+
+      if (waiter_id > waiters)
+	/* A wake happened, and we're in the group of woken threads.  */
+	break;
+
+      /* Continue waiting.  */
+    }
 }
+
+/* Implement futex_wake-like behaviour to plug into the linux/bar.c
+   implementation.  Assumes ADDR is &bar->generation.  */
+
+static inline void
+futex_wake (int *addr, int count)
+{
+  gomp_barrier_t *bar = generation_to_barrier (addr);
+
+  if (bar->total < 2)
+    /* A barrier with less than two threads, nop.  */
+    return;
+
+  gomp_mutex_lock (&bar->lock);
+  unsigned int waiters = __atomic_load_n (&bar->waiters, MEMMODEL_ACQUIRE);
+  if (waiters == 0)
+    {
+      /* No threads to wake.  */
+      gomp_mutex_unlock (&bar->lock);
+      return;
+    }
+
+  if (count == INT_MAX)
+    /* Release all threads.  */
+    __atomic_store_n (&bar->waiters, 0, MEMMODEL_RELEASE);
+  else if (count < bar->total)
+    /* Release count threads.  */
+    __atomic_add_fetch (&bar->waiters, -count, MEMMODEL_ACQ_REL);
+  else
+    /* Count has an illegal value.  */
+    __builtin_abort ();
+
+  /* Wake other threads in bar.sync.  */
+  asm volatile ("bar.sync 1, %0;" : : "r" (32 * (waiters + 1)));
+
+  /* Let them get the updated waiters.  */
+  asm volatile ("bar.sync 1, %0;" : : "r" (32 * (waiters + 1)));
+
+  gomp_mutex_unlock (&bar->lock);
+}
+
+/* Copied from linux/wait.h.  */
+
+static inline int do_spin (int *addr, int val)
+{
+  /* The current implementation doesn't spin.  */
+  return 1;
+}
+
+/* Copied from linux/wait.h.  */
+
+static inline void do_wait (int *addr, int val)
+{
+  if (do_spin (addr, val))
+    futex_wait (addr, val);
+}
+
+/* Reuse the linux implementation.  */
+#define GOMP_WAIT_H 1
+#include "../linux/bar.c"

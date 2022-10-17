@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2022 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -38,6 +38,8 @@ typedef struct
   unsigned generation;
   unsigned awaited;
   unsigned awaited_final;
+  unsigned waiters;
+  gomp_mutex_t lock;
 } gomp_barrier_t;
 
 typedef unsigned int gomp_barrier_state_t;
@@ -57,6 +59,8 @@ static inline void gomp_barrier_init (gomp_barrier_t *bar, unsigned count)
   bar->awaited = count;
   bar->awaited_final = count;
   bar->generation = 0;
+  bar->waiters = 0;
+  gomp_mutex_init (&bar->lock);
 }
 
 static inline void gomp_barrier_reinit (gomp_barrier_t *bar, unsigned count)

@@ -1,5 +1,5 @@
 ;; Code and mode itertator and attribute definitions for the ARM backend
-;; Copyright (C) 2010-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2022 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -272,6 +272,8 @@
 (define_mode_iterator MVE_2 [V16QI V8HI V4SI])
 (define_mode_iterator MVE_5 [V8HI V4SI])
 (define_mode_iterator MVE_6 [V8HI V4SI])
+(define_mode_iterator MVE_7 [V16BI V8BI V4BI])
+(define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI])
 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
@@ -946,6 +948,10 @@
 			       (V8HF "u16") (V4SF "32")])
 (define_mode_attr earlyclobber_32 [(V16QI "=w") (V8HI "=w") (V4SI "=&w")
 						(V8HF "=w") (V4SF "=&w")])
+(define_mode_attr MVE_VPRED [(V16QI "V16BI") (V8HI "V8BI") (V4SI "V4BI")
+                             (V2DI "HI") (V8HF "V8BI")   (V4SF "V4BI")])
+(define_mode_attr MVE_vpred [(V16QI "v16bi") (V8HI "v8bi") (V4SI "v4bi")
+                             (V2DI "hi") (V8HF "v8bi")   (V4SF "v4bi")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes
@@ -1143,6 +1149,13 @@
 (define_int_attr vrint_conds [(UNSPEC_VRINTZ "nocond") (UNSPEC_VRINTP "unconditional")
                               (UNSPEC_VRINTA "unconditional") (UNSPEC_VRINTM "unconditional")
                               (UNSPEC_VRINTR "nocond") (UNSPEC_VRINTX "nocond")])
+
+(define_int_attr nvrint_pattern [(UNSPEC_NVRINTZ "btrunc")
+				 (UNSPEC_NVRINTP "ceil")
+				 (UNSPEC_NVRINTA "round")
+				 (UNSPEC_NVRINTM "floor")
+				 (UNSPEC_NVRINTX "rint")
+				 (UNSPEC_NVRINTN "roundeven")])
 
 (define_int_attr nvrint_variant [(UNSPEC_NVRINTZ "z") (UNSPEC_NVRINTP "p")
                                 (UNSPEC_NVRINTA "a") (UNSPEC_NVRINTM "m")

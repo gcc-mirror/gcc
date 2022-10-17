@@ -1,10 +1,10 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
- * http://www.digitalmars.com
+ * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
- * http://www.boost.org/LICENSE_1_0.txt
+ * https://www.boost.org/LICENSE_1_0.txt
  * https://github.com/dlang/dmd/blob/master/src/dmd/nspace.h
  */
 
@@ -16,21 +16,17 @@
  * Implies extern(C++).
  */
 
-class Nspace : public ScopeDsymbol
+class Nspace final : public ScopeDsymbol
 {
   public:
-    bool mangleOnly;
-    Nspace(Loc loc, Identifier *ident, Dsymbols *members, bool mangleOnly);
-
-    Dsymbol *syntaxCopy(Dsymbol *s);
-    void addMember(Scope *sc, ScopeDsymbol *sds);
-    void setScope(Scope *sc);
-    bool oneMember(Dsymbol **ps, Identifier *ident);
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    int apply(Dsymbol_apply_ft_t fp, void *param);
-    bool hasPointers();
-    void setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool isunion);
-    const char *kind() const;
-    Nspace *isNspace() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    Expression *identExp;
+    Nspace *syntaxCopy(Dsymbol *s) override;
+    void addMember(Scope *sc, ScopeDsymbol *sds) override;
+    void setScope(Scope *sc) override;
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    bool hasPointers() override;
+    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override;
+    const char *kind() const override;
+    Nspace *isNspace() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };

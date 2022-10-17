@@ -1,5 +1,5 @@
 /* Finding reachable regions and values.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -36,23 +36,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "fold-const.h"
 #include "tree-pretty-print.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
-#include "cfg.h"
-#include "digraph.h"
-#include "json.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/region-model-reachability.h"
+#include "diagnostic.h"
+#include "tree-diagnostic.h"
 
 #if ENABLE_ANALYZER
 
@@ -154,7 +149,7 @@ reachable_regions::add (const region *reg, bool is_mutable)
   if (binding_cluster *bind_cluster = m_store->get_cluster (base_reg))
     bind_cluster->for_each_value (handle_sval_cb, this);
   else
-    handle_sval (m_model->get_store_value (reg));
+    handle_sval (m_model->get_store_value (reg, NULL));
 }
 
 void
@@ -252,12 +247,21 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
     m_mutable_svals.add (sval);
   else
     m_reachable_svals.add (sval);
-  if (const region_svalue *parm_ptr
-      = sval->dyn_cast_region_svalue ())
+  if (const region *base_reg = sval->maybe_get_deref_base_region ())
+    add (base_reg, is_mutable);
+  /* Treat all svalues within a compound_svalue as reachable.  */
+  if (const compound_svalue *compound_sval
+      = sval->dyn_cast_compound_svalue ())
     {
-      const region *pointee_reg = parm_ptr->get_pointee ();
-      add (pointee_reg, is_mutable);
+      for (compound_svalue::iterator_t iter = compound_sval->begin ();
+	   iter != compound_sval->end (); ++iter)
+	{
+	  const svalue *iter_sval = (*iter).second;
+	  handle_sval (iter_sval);
+	}
     }
+  if (const svalue *cast = sval->maybe_undo_cast ())
+    handle_sval (cast);
 }
 
 /* Update the store to mark the clusters that were found to be mutable
@@ -267,7 +271,6 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
 void
 reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
 {
-  gcc_assert (ctxt);
   auto_vec<const function_region *> escaped_fn_regs
     (m_mutable_base_regs.elements ());
   for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
@@ -281,12 +284,15 @@ reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
       if (const function_region *fn_reg = base_reg->dyn_cast_function_region ())
 	escaped_fn_regs.quick_push (fn_reg);
     }
-  /* Sort to ensure deterministic results.  */
-  escaped_fn_regs.qsort (region::cmp_ptr_ptr);
-  unsigned i;
-  const function_region *fn_reg;
-  FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
-    ctxt->on_escaped_function (fn_reg->get_fndecl ());
+  if (ctxt)
+    {
+      /* Sort to ensure deterministic results.  */
+      escaped_fn_regs.qsort (region::cmp_ptr_ptr);
+      unsigned i;
+      const function_region *fn_reg;
+      FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
+	ctxt->on_escaped_function (fn_reg->get_fndecl ());
+    }
 }
 
 /* Dump SET to PP, sorting it to avoid churn when comparing dumps.  */

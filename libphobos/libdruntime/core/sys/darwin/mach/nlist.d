@@ -222,7 +222,7 @@ enum
  */
 ubyte GET_LIBRARY_ORDINAL(uint n_desc) @safe { return ((n_desc) >> 8) & 0xff; }
 /// Ditto
-ref ushort SET_LIBRARY_ORDINAL(return scope ref ushort n_desc, uint ordinal) @safe
+ref ushort SET_LIBRARY_ORDINAL(return ref ushort n_desc, uint ordinal) @safe
 {
     return n_desc = (((n_desc) & 0x00ff) | (((ordinal) & 0xff) << 8));
 }

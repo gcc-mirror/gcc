@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,15 +42,12 @@ package body ALI.Util is
    --  empty, because we don't want to report any errors when computing
    --  a source checksum.
 
-   procedure Post_Scan;
+   procedure Post_Scan is null;
 
-   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
-
-   procedure Error_Msg_S (Msg : String);
-
-   procedure Error_Msg_SC (Msg : String);
-
-   procedure Error_Msg_SP (Msg : String);
+   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is null;
+   procedure Error_Msg_S (Msg : String) is null;
+   procedure Error_Msg_SC (Msg : String) is null;
+   procedure Error_Msg_SP (Msg : String) is null;
 
    --  Instantiation of Styleg, needed to instantiate Scng
 
@@ -84,47 +81,6 @@ package body ALI.Util is
    begin
       return Checksum1 = Checksum2 and then Checksum1 /= Checksum_Error;
    end Checksums_Match;
-
-   ---------------
-   -- Error_Msg --
-   ---------------
-
-   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
-      pragma Warnings (Off, Msg);
-      pragma Warnings (Off, Flag_Location);
-   begin
-      null;
-   end Error_Msg;
-
-   -----------------
-   -- Error_Msg_S --
-   -----------------
-
-   procedure Error_Msg_S (Msg : String) is
-      pragma Warnings (Off, Msg);
-   begin
-      null;
-   end Error_Msg_S;
-
-   ------------------
-   -- Error_Msg_SC --
-   ------------------
-
-   procedure Error_Msg_SC (Msg : String) is
-      pragma Warnings (Off, Msg);
-   begin
-      null;
-   end Error_Msg_SC;
-
-   ------------------
-   -- Error_Msg_SP --
-   ------------------
-
-   procedure Error_Msg_SP (Msg : String) is
-      pragma Warnings (Off, Msg);
-   begin
-      null;
-   end Error_Msg_SP;
 
    -----------------------
    -- Get_File_Checksum --
@@ -192,15 +148,6 @@ package body ALI.Util is
       Interfaces.Reset;
    end Initialize_ALI_Source;
 
-   ---------------
-   -- Post_Scan --
-   ---------------
-
-   procedure Post_Scan is
-   begin
-      null;
-   end Post_Scan;
-
    ----------------------
    -- Read_Withed_ALIs --
    ----------------------
@@ -249,7 +196,6 @@ package body ALI.Util is
                     Scan_ALI
                       (F         => Afile,
                        T         => Text,
-                       Ignore_ED => False,
                        Err       => False);
 
                   Free (Text);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -362,7 +362,7 @@ package body GNAT.Debug_Pools is
    --  These procedures are used as markers when computing the stacktraces,
    --  so that addresses in the debug pool itself are not reported to the user.
 
-   Code_Address_For_Allocate_End    : System.Address;
+   Code_Address_For_Allocate_End    : System.Address := System.Null_Address;
    Code_Address_For_Deallocate_End  : System.Address;
    Code_Address_For_Dereference_End : System.Address;
    --  Taking the address of the above procedures will not work on some
@@ -777,7 +777,7 @@ package body GNAT.Debug_Pools is
       function Is_Valid_Or_Handled
         (Storage : System.Address;
          Valid   : Boolean) return Boolean is
-         Int_Storage  : constant Integer_Address := To_Integer (Storage);
+         Int_Storage : constant Integer_Address := To_Integer (Storage);
 
       begin
          --  The pool only returns addresses aligned on Storage_Alignment so
@@ -791,7 +791,7 @@ package body GNAT.Debug_Pools is
 
          declare
             Block_Number : constant Integer_Address :=
-                             Int_Storage /  Memory_Chunk_Size;
+                             Int_Storage / Memory_Chunk_Size;
             Ptr          : constant Validity_Bits_Ref :=
                              Validy_Htable.Get (Block_Number);
             Offset       : constant Integer_Address :=
@@ -844,7 +844,7 @@ package body GNAT.Debug_Pools is
       procedure Set_Valid (Storage : System.Address; Value : Boolean) is
          Int_Storage  : constant Integer_Address := To_Integer (Storage);
          Block_Number : constant Integer_Address :=
-                          Int_Storage /  Memory_Chunk_Size;
+                          Int_Storage / Memory_Chunk_Size;
          Ptr          : Validity_Bits_Ref := Validy_Htable.Get (Block_Number);
          Offset       : constant Integer_Address :=
                           (Int_Storage - (Block_Number * Memory_Chunk_Size)) /
@@ -1148,7 +1148,7 @@ package body GNAT.Debug_Pools is
       Modulo : constant Storage_Count :=
                  Size_In_Storage_Elements mod Dead_Bytes;
    begin
-      M.all := (others => Dead);
+      M.all := [others => Dead];
 
       --  Any bytes left (up to three of them)
 
@@ -1942,7 +1942,7 @@ package body GNAT.Debug_Pools is
          Grand_Total : Float;
 
          Max  : array (1 .. Size) of Traceback_Htable_Elem_Ptr :=
-           (others => null);
+           [others => null];
          --  Sorted array for the biggest memory users
 
          Allocated_In_Pool : Byte_Count;

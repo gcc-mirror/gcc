@@ -1,6 +1,14 @@
+/*
+REQUIRED_ARGS: -vcg-ast -o-
+PERMUTE_ARGS:
+OUTPUT_FILES: compilable/vcg-ast.d.cg
+TEST_OUTPUT_FILE: extra-files/vcg-ast.d.cg
+*/
+
 module vcg;
-// REQUIRED_ARGS: -vcg-ast -o-
-// PERMUTE_ARGS:
+
+alias xyz = __traits(parent, {});
+alias named = vcg;
 
 template Seq(A...)
 {
@@ -40,4 +48,18 @@ class C
     {
         return 2;
     }
+}
+
+enum __c_wchar_t : dchar;
+alias wchar_t = __c_wchar_t;
+
+T[] values(T)()
+{
+    T[] values = [T()];
+    return values;
+}
+
+void main()
+{
+    values!wchar_t;
 }

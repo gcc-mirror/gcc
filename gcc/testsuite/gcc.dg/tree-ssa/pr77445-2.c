@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-thread-details-blocks-stats" } */
+/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-thread-details-blocks-stats -fdump-tree-threadfull1-blocks-stats -fdump-tree-threadfull2-blocks-stats" } */
 typedef enum STATES {
 	START=0,
 	INVALID,
@@ -123,9 +123,8 @@ enum STATES FMS( u8 **in , u32 *transitions) {
    aarch64 has the highest CASE_VALUES_THRESHOLD in GCC.  It's high enough
    to change decisions in switch expansion which in turn can expose new
    jump threading opportunities.  Skip the later tests on aarch64.  */
-/* { dg-final { scan-tree-dump "Jumps threaded: 1\[1-9\]" "thread1" } } */
-/* { dg-final { scan-tree-dump-times "Invalid sum" 3 "thread1" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: \[7-9\]" "thread1" } } */
 /* { dg-final { scan-tree-dump-not "optimizing for size" "thread1" } } */
-/* { dg-final { scan-tree-dump-not "optimizing for size" "thread2" } } */
-/* { dg-final { scan-tree-dump-not "optimizing for size" "thread3" { target { ! aarch64*-*-* } } } } */
-/* { dg-final { scan-tree-dump-not "optimizing for size" "thread4" { target { ! aarch64*-*-* } } } } */ 
+/* { dg-final { scan-tree-dump-not "optimizing for size" "threadfull1" } } */
+/* { dg-final { scan-tree-dump-not "optimizing for size" "thread2" { target { ! aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump-not "optimizing for size" "threadfull2" { target { ! aarch64*-*-* } } } } */ 

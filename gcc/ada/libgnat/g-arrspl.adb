@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -181,20 +181,20 @@ package body GNAT.Array_Split is
       then
          --  Whole string, or no separator used
 
-         return (Before => Array_End,
-                 After  => Array_End);
+         return [Before => Array_End,
+                 After  => Array_End];
 
       elsif Index = 1 then
-         return (Before => Array_End,
-                 After  => S.D.Source (S.D.Slices (Index).Stop + 1));
+         return [Before => Array_End,
+                 After  => S.D.Source (S.D.Slices (Index).Stop + 1)];
 
       elsif Index = S.D.N_Slice then
-         return (Before => S.D.Source (S.D.Slices (Index).Start - 1),
-                 After  => Array_End);
+         return [Before => S.D.Source (S.D.Slices (Index).Start - 1),
+                 After  => Array_End];
 
       else
-         return (Before => S.D.Source (S.D.Slices (Index).Start - 1),
-                 After  => S.D.Source (S.D.Slices (Index).Stop + 1));
+         return [Before => S.D.Source (S.D.Slices (Index).Start - 1),
+                 After  => S.D.Source (S.D.Slices (Index).Stop + 1)];
       end if;
    end Separators;
 

@@ -14,7 +14,9 @@ g ([[maybe_unused]] int x, int y)
   [[maybe_unused]] int a;
   int b [[__maybe_unused__]];
   int c [[maybe_unused]];
+ [[__maybe_unused__]] label1:
   c = y;
+ [[maybe_unused]] label2:
   return y;
 }
 
@@ -29,3 +31,14 @@ union [[maybe_unused]] u { int x; };
 enum [[maybe_unused]] eu { E2 };
 
 union u2 { [[maybe_unused]] int a; int b [[maybe_unused]]; } y;
+
+void
+g2 (int x)
+{
+  switch (x)
+    {
+      [[maybe_unused]] case 1: ;
+      [[__maybe_unused__]] case 2: ;
+      [[maybe_unused]] default: ;
+    }
+}

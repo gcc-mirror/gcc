@@ -70,5 +70,5 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
   /* ...and that the message was captured by the API.  */
   CHECK_STRING_VALUE (gcc_jit_context_get_first_error (ctxt),
 		      "array subscript 10 is above array bounds of"
-		      " 'unsigned char[10]' [-Warray-bounds]");
+		      " 'char[10]' [-Warray-bounds]");
 }

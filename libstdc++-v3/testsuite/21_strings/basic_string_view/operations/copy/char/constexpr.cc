@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 
 #ifndef __cpp_lib_constexpr_string_view
 # error "Feature test macro for constexpr copy is missing in <string_view>"
-#elif __cpp_lib_constexpr_iterator < 201811L
+#elif __cpp_lib_constexpr_string_view < 201811L
 # error "Feature test macro for constexpr copy has wrong value in <string_view>"
 #endif
 

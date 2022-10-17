@@ -69,9 +69,9 @@ static assert(U9766.var4.offsetof == 40);
 
 struct TestMaxAlign
 {
-align(1u << 31):
+align(1u << 15):
     ubyte a;
     ubyte b;
 }
 
-static assert(TestMaxAlign.b.offsetof == 2147483648u);
+static assert(TestMaxAlign.b.offsetof == (1 << 15));

@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -ffast-math -fdump-tree-pre" }
+! { dg-options "-O2 -fno-tree-vectorize -ffast-math -fdump-tree-pre" }
 
       subroutine foo(U,V,R,N,A)
       integer N

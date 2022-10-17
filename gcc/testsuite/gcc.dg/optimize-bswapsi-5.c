@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target bswap } */
-/* { dg-options "-O2 -fdump-tree-bswap -fno-inline-functions" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-optimized -fno-inline-functions" } */
 /* { dg-additional-options "-march=z900" { target s390-*-* } } */
 
 struct L { unsigned int l[2]; };
@@ -28,4 +28,4 @@ bar (double a, struct L *p)
   foo (a, p);
 }
 
-/* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 2 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "= __builtin_bswap32 \\\(" 2 "optimized" } } */

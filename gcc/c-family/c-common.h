@@ -1,5 +1,5 @@
-/* Definitions for c-common.c.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+/* Definitions for c-common.cc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -104,11 +104,12 @@ enum rid
   RID_SIZEOF,
 
   /* C extensions */
-  RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
+  RID_ASM,       RID_TYPEOF,   RID_TYPEOF_UNQUAL, RID_ALIGNOF,  RID_ATTRIBUTE,
+  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
   RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
-  RID_BUILTIN_HAS_ATTRIBUTE,
+  RID_BUILTIN_HAS_ATTRIBUTE,   RID_BUILTIN_ASSOC_BARRIER,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -163,25 +164,14 @@ enum rid
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
 
   /* C++ extensions */
-  RID_ADDRESSOF,               RID_BASES,
-  RID_BUILTIN_LAUNDER,         RID_DIRECT_BASES,
-  RID_HAS_NOTHROW_ASSIGN,      RID_HAS_NOTHROW_CONSTRUCTOR,
-  RID_HAS_NOTHROW_COPY,        RID_HAS_TRIVIAL_ASSIGN,
-  RID_HAS_TRIVIAL_CONSTRUCTOR, RID_HAS_TRIVIAL_COPY,
-  RID_HAS_TRIVIAL_DESTRUCTOR,  RID_HAS_UNIQUE_OBJ_REPRESENTATIONS,
-  RID_HAS_VIRTUAL_DESTRUCTOR,  RID_BUILTIN_BIT_CAST,
-  RID_IS_ABSTRACT,             RID_IS_AGGREGATE,
-  RID_IS_BASE_OF,              RID_IS_CLASS,
-  RID_IS_EMPTY,                RID_IS_ENUM,
-  RID_IS_FINAL,                RID_IS_LITERAL_TYPE,
-  RID_IS_POD,                  RID_IS_POLYMORPHIC,
-  RID_IS_SAME_AS,
-  RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
-  RID_IS_TRIVIALLY_ASSIGNABLE, RID_IS_TRIVIALLY_CONSTRUCTIBLE,
-  RID_IS_TRIVIALLY_COPYABLE,
-  RID_IS_UNION,                RID_UNDERLYING_TYPE,
-  RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
-  RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
+  RID_ADDRESSOF,
+  RID_BUILTIN_LAUNDER,
+  RID_BUILTIN_BIT_CAST,
+
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+  RID_##CODE,
+#include "cp/cp-trait.def"
+#undef DEFTRAIT
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -217,6 +207,9 @@ enum rid
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
 
+  /* OpenMP */
+  RID_OMP_ALL_MEMORY,
+
   /* Named address support, mapping the keyword to a particular named address
      number.  Named address space 0 is reserved for the generic address.  If
      there are more than 254 named addresses, the addr_space_t type will need
@@ -247,7 +240,7 @@ enum rid
      is for __int13.  */
 
   /* Note that the range to use is RID_FIRST_INT_N through
-     RID_FIRST_INT_N + NUM_INT_N_ENTS - 1 and c-parser.c has a list of
+     RID_FIRST_INT_N + NUM_INT_N_ENTS - 1 and c-parser.cc has a list of
      all RID_INT_N_* in a case statement.  */
 
   RID_INT_N_0,
@@ -266,7 +259,7 @@ enum rid
   RID_FIRST_CXX11 = RID_CONSTEXPR,
   RID_LAST_CXX11 = RID_STATIC_ASSERT,
   RID_FIRST_CXX20 = RID_CONSTINIT,
-  RID_LAST_CXX20 = RID_CONSTINIT,
+  RID_LAST_CXX20 = RID_CO_RETURN,
   RID_FIRST_AT = RID_AT_ENCODE,
   RID_LAST_AT = RID_AT_IMPLEMENTATION,
   RID_FIRST_PQ = RID_IN,
@@ -368,6 +361,8 @@ enum c_tree_index
     CTI_DEFAULT_FUNCTION_TYPE,
 
     CTI_NULL,
+    CTI_NULLPTR,
+    CTI_NULLPTR_TYPE,
 
     /* These are not types, but we have to look them up all the time.  */
     CTI_FUNCTION_NAME_DECL,
@@ -402,7 +397,7 @@ struct c_common_resword
 {
   const char *const word;
   ENUM_BITFIELD(rid) const rid : 16;
-  const unsigned int disable   : 16;
+  const unsigned int disable   : 32;
 };
 
 /* Mode used to build pointers (VOIDmode means ptr_mode).  */
@@ -440,19 +435,21 @@ extern machine_mode c_default_pointer_mode;
 #define D_CONLY		0x0001	/* C only (not in C++).  */
 #define D_CXXONLY	0x0002	/* C++ only (not in C).  */
 #define D_C99		0x0004	/* In C, C99 only.  */
-#define D_CXX11         0x0008	/* In C++, C++11 only.  */
-#define D_EXT		0x0010	/* GCC extension.  */
-#define D_EXT89		0x0020	/* GCC extension incorporated in C99.  */
-#define D_ASM		0x0040	/* Disabled by -fno-asm.  */
-#define D_OBJC		0x0080	/* In Objective C and neither C nor C++.  */
-#define D_CXX_OBJC	0x0100	/* In Objective C, and C++, but not C.  */
-#define D_CXXWARN	0x0200	/* In C warn with -Wcxx-compat.  */
-#define D_CXX_CONCEPTS  0x0400	/* In C++, only with concepts.  */
-#define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
-#define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
-#define D_CXX20		0x2000  /* In C++, C++20 only.  */
-#define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines.  */
-#define D_CXX_MODULES	0x8000  /* In C++, only with modules.  */
+#define D_C2X		0x0008	/* In C, C2X only.  */
+#define D_CXX11         0x0010	/* In C++, C++11 only.  */
+#define D_EXT		0x0020	/* GCC extension.  */
+#define D_EXT89		0x0040	/* GCC extension incorporated in C99.  */
+#define D_EXT11		0x0080	/* GCC extension incorporated in C2X.  */
+#define D_ASM		0x0100	/* Disabled by -fno-asm.  */
+#define D_OBJC		0x0200	/* In Objective C and neither C nor C++.  */
+#define D_CXX_OBJC	0x0400	/* In Objective C, and C++, but not C.  */
+#define D_CXXWARN	0x0800	/* In C warn with -Wcxx-compat.  */
+#define D_CXX_CONCEPTS  0x1000	/* In C++, only with concepts.  */
+#define D_TRANSMEM	0x2000	/* C++ transactional memory TS.  */
+#define D_CXX_CHAR8_T	0x4000	/* In C++, only with -fchar8_t.  */
+#define D_CXX20		0x8000  /* In C++, C++20 only.  */
+#define D_CXX_COROUTINES 0x10000  /* In C++, only with coroutines.  */
+#define D_CXX_MODULES	0x20000  /* In C++, only with modules.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
@@ -527,6 +524,9 @@ extern const unsigned int num_c_common_reswords;
 
 /* The node for C++ `__null'.  */
 #define null_node                       c_global_trees[CTI_NULL]
+/* The nodes for `nullptr'.  */
+#define nullptr_node                    c_global_trees[CTI_NULLPTR]
+#define nullptr_type_node               c_global_trees[CTI_NULLPTR_TYPE]
 
 extern GTY(()) tree c_global_trees[CTI_MAX];
 
@@ -760,10 +760,12 @@ extern int max_tinst_depth;
 
 extern int c_inhibit_evaluation_warnings;
 
-/* Whether lexing has been completed, so subsequent preprocessor
-   errors should use the compiler's input_location.  */
+/* Depending on which phase of processing we are in, we may need
+   to prefer input_location to libcpp's locations.  (Specifically,
+   after the C++ lexer is done lexing tokens, but prior to calling
+   cpp_finish (), we need to do so.  */
 
-extern bool done_lexing;
+extern bool override_libcpp_locations;
 
 /* C types are partitioned into three subsets: object, function, and
    incomplete types.  */
@@ -827,10 +829,10 @@ extern const struct attribute_spec c_common_format_attribute_table[];
 
 extern tree (*make_fname_decl) (location_t, tree, int);
 
-/* In c-decl.c and cp/tree.c.  FIXME.  */
+/* In c-decl.cc and cp/tree.cc.  FIXME.  */
 extern void c_register_addr_space (const char *str, addr_space_t as);
 
-/* In c-common.c.  */
+/* In c-common.cc.  */
 extern bool in_late_binary_op;
 extern const char *c_addr_space_name (addr_space_t as);
 extern tree identifier_global_value (tree);
@@ -838,7 +840,6 @@ extern tree identifier_global_tag (tree);
 extern bool names_builtin_p (const char *);
 extern tree c_linkage_bindings (tree);
 extern void record_builtin_type (enum rid, const char *, tree);
-extern tree build_void_list_node (void);
 extern void start_fname_decls (void);
 extern void finish_fname_decls (void);
 extern const char *fname_as_string (int);
@@ -851,7 +852,8 @@ extern void check_function_arguments_recurse (void (*)
 					      (void *, tree,
 					       unsigned HOST_WIDE_INT),
 					      void *, tree,
-					      unsigned HOST_WIDE_INT);
+					      unsigned HOST_WIDE_INT,
+					      opt_code);
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, tree, int, tree *);
 extern void check_function_format (const_tree, tree, int, tree *,
@@ -884,7 +886,7 @@ extern tree c_alignof_expr (location_t, tree);
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (rich_location *, enum tree_code, tree, tree);
 extern tree fix_string_type (tree);
-extern tree convert_and_check (location_t, tree, tree);
+extern tree convert_and_check (location_t, tree, tree, bool = false);
 extern bool c_determine_visibility (tree);
 extern bool vector_types_compatible_elements_p (tree, tree);
 extern void mark_valid_location_for_stdc_pragma (bool);
@@ -905,7 +907,10 @@ extern tree fold_for_warn (tree);
 extern tree c_common_get_narrower (tree, int *);
 extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
+extern bool c_option_is_from_cpp_diagnostics (int);
 
+/* Used by convert_and_check; in front ends.  */
+extern tree convert_init (tree, tree);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)
@@ -945,7 +950,6 @@ extern bool c_common_post_options (const char **);
 extern bool c_common_init (void);
 extern void c_common_finish (void);
 extern void c_common_parse_file (void);
-extern FILE *get_dump_info (int, dump_flags_t *);
 extern alias_set_type c_common_get_alias_set (tree);
 extern void c_register_builtin_type (tree, const char*);
 extern bool c_promoting_integer_type_p (const_tree);
@@ -997,12 +1001,15 @@ extern void c_parse_final_cleanups (void);
 #define DECL_UNNAMED_BIT_FIELD(NODE) \
   (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
 
-extern tree do_case (location_t, tree, tree);
+/* True iff TYPE is cv decltype(nullptr).  */
+#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
+
+extern tree do_case (location_t, tree, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
 
 /* These functions must be defined by each front-end which implements
-   a variant of the C language.  They are used in c-common.c.  */
+   a variant of the C language.  They are used in c-common.cc.  */
 
 extern tree build_unary_op (location_t, enum tree_code, tree, bool);
 extern tree build_binary_op (location_t, enum tree_code, tree, tree, bool);
@@ -1025,7 +1032,8 @@ extern tree boolean_increment (enum tree_code, tree);
 
 extern int case_compare (splay_tree_key, splay_tree_key);
 
-extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree);
+extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree,
+			      tree = NULL_TREE);
 extern bool c_switch_covers_all_cases_p (splay_tree, tree);
 extern bool c_block_may_fallthru (const_tree);
 
@@ -1040,16 +1048,17 @@ extern tree resolve_overloaded_builtin (location_t, tree, vec<tree, va_gc> *);
 extern tree finish_label_address_expr (tree, location_t);
 
 /* Same function prototype, but the C and C++ front ends have
-   different implementations.  Used in c-common.c.  */
+   different implementations.  Used in c-common.cc.  */
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
+extern int maybe_adjust_arg_pos_for_attribute (const_tree);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);
 extern tree c_build_shufflevector (location_t, tree, tree,
-				   vec<tree>, bool = true);
+				   const vec<tree> &, bool = true);
 extern tree c_build_vec_convert (location_t, tree, location_t, tree, bool = true);
 
 extern void init_c_lex (void);
@@ -1137,7 +1146,7 @@ class substring_loc;
 extern const char *c_get_substring_location (const substring_loc &substr_loc,
 					     location_t *out_loc);
 
-/* In c-gimplify.c.  */
+/* In c-gimplify.cc.  */
 typedef struct bc_state
 {
   tree bc_label[2];
@@ -1150,11 +1159,11 @@ extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern tree c_build_bind_expr (location_t, tree, tree);
 
-/* In c-lex.c.  */
+/* In c-lex.cc.  */
 extern enum cpp_ttype
 conflict_marker_get_final_tok_kind (enum cpp_ttype tok1_kind);
 
-/* In c-pch.c  */
+/* In c-pch.cc  */
 extern void pch_init (void);
 extern void pch_cpp_save_state (void);
 extern int c_common_valid_pch (cpp_reader *pfile, const char *name, int fd);
@@ -1167,7 +1176,7 @@ extern void c_common_pch_pragma (cpp_reader *pfile, const char *);
 /* In *-checksum.c */
 extern const unsigned char executable_checksum[16];
 
-/* In c-cppbuiltin.c  */
+/* In c-cppbuiltin.cc  */
 extern void builtin_define_std (const char *macro);
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
@@ -1177,14 +1186,15 @@ extern void fe_file_change (const line_map_ordinary *);
 extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char,
 			   rich_location *richloc);
 
-/* In c-ppoutput.c  */
+/* In c-ppoutput.cc  */
 extern void init_pp_output (FILE *);
 extern void preprocess_file (cpp_reader *);
 extern void pp_file_change (const line_map_ordinary *);
 extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
+extern void c_pp_stream_token (cpp_reader *, const cpp_token *, location_t loc);
 
-/* In c-omp.c  */
+/* In c-omp.cc  */
 typedef wide_int_bitmask omp_clause_mask;
 
 #define OMP_CLAUSE_MASK_1 omp_clause_mask (1)
@@ -1200,7 +1210,8 @@ enum c_omp_clause_split
   C_OMP_CLAUSE_SPLIT_COUNT,
   C_OMP_CLAUSE_SPLIT_SECTIONS = C_OMP_CLAUSE_SPLIT_FOR,
   C_OMP_CLAUSE_SPLIT_TASKLOOP = C_OMP_CLAUSE_SPLIT_FOR,
-  C_OMP_CLAUSE_SPLIT_LOOP = C_OMP_CLAUSE_SPLIT_FOR
+  C_OMP_CLAUSE_SPLIT_LOOP = C_OMP_CLAUSE_SPLIT_FOR,
+  C_OMP_CLAUSE_SPLIT_MASKED = C_OMP_CLAUSE_SPLIT_DISTRIBUTE
 };
 
 enum c_omp_region_type
@@ -1214,13 +1225,14 @@ enum c_omp_region_type
 };
 
 extern tree c_finish_omp_master (location_t, tree);
+extern tree c_finish_omp_masked (location_t, tree, tree);
 extern tree c_finish_omp_taskgroup (location_t, tree, tree);
 extern tree c_finish_omp_critical (location_t, tree, tree, tree);
 extern tree c_finish_omp_ordered (location_t, tree, tree);
 extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
-				 tree, tree, tree, tree, tree, bool,
-				 enum omp_memory_order, bool = false);
+				 tree, tree, tree, tree, tree, tree, bool,
+				 enum omp_memory_order, bool, bool = false);
 extern bool c_omp_depend_t_p (tree);
 extern void c_finish_omp_depobj (location_t, tree, enum omp_clause_depend_kind,
 				 tree);
@@ -1230,8 +1242,8 @@ extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
 			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
-extern bool c_omp_check_loop_iv_exprs (location_t, tree, int, tree, tree, tree,
-				       walk_tree_lh);
+extern bool c_omp_check_loop_iv_exprs (location_t, enum tree_code, tree, int,
+				       tree, tree, tree, walk_tree_lh);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
 extern tree c_oacc_split_loop_clauses (tree, tree *, bool);
 extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,
@@ -1243,7 +1255,6 @@ extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
-extern const char *c_omp_map_clause_name (tree, bool);
 extern void c_omp_adjust_map_clauses (tree, bool);
 
 enum c_omp_directive_kind {
@@ -1261,6 +1272,7 @@ struct c_omp_directive {
   bool simd;
 };
 
+extern const struct c_omp_directive c_omp_directives[];
 extern const struct c_omp_directive *c_omp_categorize_directive (const char *,
 								 const char *,
 								 const char *);
@@ -1394,7 +1406,7 @@ extern bool valid_array_size_p (location_t, const_tree, tree, bool = true);
 extern void invalid_array_size_error (location_t, cst_size_error,
 				      const_tree, const_tree);
 
-/* In c-warn.c.  */
+/* In c-warn.cc.  */
 extern void constant_expression_warning (tree);
 extern void constant_expression_error (tree);
 extern void overflow_warning (location_t, tree, tree = NULL_TREE);
@@ -1417,6 +1429,7 @@ extern bool warn_for_restrict (unsigned, tree *, unsigned);
 extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
 extern void warn_parm_array_mismatch (location_t, tree, tree);
 extern void maybe_warn_sizeof_array_div (location_t, tree, tree, tree, tree);
+extern void do_warn_array_compare (location_t, tree_code, tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and
@@ -1459,7 +1472,11 @@ extern tree do_warn_duplicated_branches_r (tree *, int *, void *);
 extern void warn_for_multistatement_macros (location_t, location_t,
 					    location_t, enum rid);
 
-/* In c-attribs.c.  */
+extern void check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
+				       location_t operator_loc,
+				       tree rhs_val);
+
+/* In c-attribs.cc.  */
 extern bool attribute_takes_identifier_p (const_tree);
 extern tree handle_deprecated_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
@@ -1474,7 +1491,7 @@ extern tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
 extern tree build_attr_access_from_parms (tree, bool);
 
-/* In c-format.c.  */
+/* In c-format.cc.  */
 extern bool valid_format_string_type_p (tree);
 
 /* A bitmap of flags to positional_argument.  */
@@ -1486,7 +1503,7 @@ enum posargflags {
   POSARG_ELLIPSIS = 2
 };
 
-extern tree positional_argument (const_tree, const_tree, tree, tree_code,
+extern tree positional_argument (const_tree, const_tree, tree &, tree_code,
 				 int = 0, int = posargflags ());
 
 extern enum flt_eval_method
@@ -1505,9 +1522,11 @@ extern tree braced_lists_to_strings (tree, tree);
 namespace selftest {
   /* Declarations for specific families of tests within c-family,
      by source file, in alphabetical order.  */
-  extern void c_format_c_tests (void);
-  extern void c_indentation_c_tests (void);
-  extern void c_pretty_print_c_tests (void);
+  extern void c_diagnostic_cc_tests (void);
+  extern void c_format_cc_tests (void);
+  extern void c_indentation_cc_tests (void);
+  extern void c_opt_problem_cc_tests (void);
+  extern void c_pretty_print_cc_tests (void);
   extern void c_spellcheck_cc_tests (void);
 
   /* The entrypoint for running all of the above tests.  */

@@ -1,15 +1,16 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
- * http://www.digitalmars.com
+ * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
- * http://www.boost.org/LICENSE_1_0.txt
+ * https://www.boost.org/LICENSE_1_0.txt
  * https://github.com/dlang/dmd/blob/master/src/dmd/tokens.h
  */
 
 #pragma once
 
+#include "root/dcompat.h"
 #include "root/port.h"
 #include "globals.h"
 
@@ -31,157 +32,412 @@ class Identifier;
         ?       &&      ||
  */
 
-enum TOK
+enum class TOK : unsigned char
 {
-        TOKreserved,
+    reserved,
 
-        // Other
-        TOKlparen,      TOKrparen,
-        TOKlbracket,    TOKrbracket,
-        TOKlcurly,      TOKrcurly,
-        TOKcolon,       TOKneg,
-        TOKsemicolon,   TOKdotdotdot,
-        TOKeof,         TOKcast,
-        TOKnull,        TOKassert,
-        TOKtrue,        TOKfalse,
-        TOKarray,       TOKcall,
-        TOKaddress,
-        TOKtype,        TOKthrow,
-        TOKnew,         TOKdelete,
-        TOKstar,        TOKsymoff,
-        TOKvar,         TOKdotvar,
-        TOKdotid,       TOKdotti,
-        TOKdottype,     TOKslice,
-        TOKarraylength, TOKversion,
-        TOKmodule,      TOKdollar,
-        TOKtemplate,    TOKdottd,
-        TOKdeclaration, TOKtypeof,
-        TOKpragma,      TOKdsymbol,
-        TOKtypeid,      TOKuadd,
-        TOKremove,
-        TOKnewanonclass, TOKcomment,
-        TOKarrayliteral, TOKassocarrayliteral,
-        TOKstructliteral,
-        TOKclassreference,
-        TOKthrownexception,
-        TOKdelegateptr,
-        TOKdelegatefuncptr,
+    // Other
+    leftParenthesis,
+    rightParenthesis,
+    leftBracket,
+    rightBracket,
+    leftCurly,
+    rightCurly,
+    colon,
+    semicolon,
+    dotDotDot,
+    endOfFile,
+    cast_,
+    null_,
+    assert_,
+    true_,
+    false_,
+    throw_,
+    new_,
+    delete_,
+    variable,
+    slice,
+    version_,
+    module_,
+    dollar,
+    template_,
+    typeof_,
+    pragma_,
+    typeid_,
+    comment,
 
-// 54
-        // Operators
-        TOKlt,          TOKgt,
-        TOKle,          TOKge,
-        TOKequal,       TOKnotequal,
-        TOKidentity,    TOKnotidentity,
-        TOKindex,       TOKis,
+    // Operators
+    lessThan,
+    greaterThan,
+    lessOrEqual,
+    greaterOrEqual,
+    equal,
+    notEqual,
+    identity,
+    notIdentity,
+    is_,
 
-// 64
-        // NCEG floating point compares
-        // !<>=     <>    <>=    !>     !>=   !<     !<=   !<>
-        TOKunord,TOKlg,TOKleg,TOKule,TOKul,TOKuge,TOKug,TOKue,
+    leftShift,
+    rightShift,
+    leftShiftAssign,
+    rightShiftAssign,
+    unsignedRightShift,
+    unsignedRightShiftAssign,
+    concatenateAssign, // ~=
+    add,
+    min,
+    addAssign,
+    minAssign,
+    mul,
+    div,
+    mod,
+    mulAssign,
+    divAssign,
+    modAssign,
+    and_,
+    or_,
+    xor_,
+    andAssign,
+    orAssign,
+    xorAssign,
+    assign,
+    not_,
+    tilde,
+    plusPlus,
+    minusMinus,
+    dot,
+    comma,
+    question,
+    andAnd,
+    orOr,
 
-// 72
-        TOKshl,         TOKshr,
-        TOKshlass,      TOKshrass,
-        TOKushr,        TOKushrass,
-        TOKcat,         TOKcatass,      // ~ ~=
-        TOKadd,         TOKmin,         TOKaddass,      TOKminass,
-        TOKmul,         TOKdiv,         TOKmod,
-        TOKmulass,      TOKdivass,      TOKmodass,
-        TOKand,         TOKor,          TOKxor,
-        TOKandass,      TOKorass,       TOKxorass,
-        TOKassign,      TOKnot,         TOKtilde,
-        TOKplusplus,    TOKminusminus,  TOKconstruct,   TOKblit,
-        TOKdot,         TOKarrow,       TOKcomma,
-        TOKquestion,    TOKandand,      TOKoror,
-        TOKpreplusplus, TOKpreminusminus,
+    // Numeric literals
+    int32Literal,
+    uns32Literal,
+    int64Literal,
+    uns64Literal,
+    int128Literal,
+    uns128Literal,
+    float32Literal,
+    float64Literal,
+    float80Literal,
+    imaginary32Literal,
+    imaginary64Literal,
+    imaginary80Literal,
 
-// 111
-        // Numeric literals
-        TOKint32v, TOKuns32v,
-        TOKint64v, TOKuns64v,
-        TOKint128v, TOKuns128v,
-        TOKfloat32v, TOKfloat64v, TOKfloat80v,
-        TOKimaginary32v, TOKimaginary64v, TOKimaginary80v,
+    // Char constants
+    charLiteral,
+    wcharLiteral,
+    dcharLiteral,
 
-        // Char constants
-        TOKcharv, TOKwcharv, TOKdcharv,
+    // Leaf operators
+    identifier,
+    string_,
+    this_,
+    super_,
+    error,
 
-        // Leaf operators
-        TOKidentifier,  TOKstring, TOKxstring,
-        TOKthis,        TOKsuper,
-        TOKhalt,        TOKtuple,
-        TOKerror,
+    // Basic types
+    void_,
+    int8,
+    uns8,
+    int16,
+    uns16,
+    int32,
+    uns32,
+    int64,
+    uns64,
+    int128,
+    uns128,
+    float32,
+    float64,
+    float80,
+    imaginary32,
+    imaginary64,
+    imaginary80,
+    complex32,
+    complex64,
+    complex80,
+    char_,
+    wchar_,
+    dchar_,
+    bool_,
 
-        // Basic types
-        TOKvoid,
-        TOKint8, TOKuns8,
-        TOKint16, TOKuns16,
-        TOKint32, TOKuns32,
-        TOKint64, TOKuns64,
-        TOKint128, TOKuns128,
-        TOKfloat32, TOKfloat64, TOKfloat80,
-        TOKimaginary32, TOKimaginary64, TOKimaginary80,
-        TOKcomplex32, TOKcomplex64, TOKcomplex80,
-        TOKchar, TOKwchar, TOKdchar, TOKbool,
+    // Aggregates
+    struct_,
+    class_,
+    interface_,
+    union_,
+    enum_,
+    import_,
+    alias_,
+    override_,
+    delegate_,
+    function_,
+    mixin_,
+    align_,
+    extern_,
+    private_,
+    protected_,
+    public_,
+    export_,
+    static_,
+    final_,
+    const_,
+    abstract_,
+    debug_,
+    deprecated_,
+    in_,
+    out_,
+    inout_,
+    lazy_,
+    auto_,
+    package_,
+    immutable_,
 
-// 158
-        // Aggregates
-        TOKstruct, TOKclass, TOKinterface, TOKunion, TOKenum, TOKimport,
-        TOKalias, TOKoverride, TOKdelegate, TOKfunction,
-        TOKmixin,
+    // Statements
+    if_,
+    else_,
+    while_,
+    for_,
+    do_,
+    switch_,
+    case_,
+    default_,
+    break_,
+    continue_,
+    with_,
+    synchronized_,
+    return_,
+    goto_,
+    try_,
+    catch_,
+    finally_,
+    asm_,
+    foreach_,
+    foreach_reverse_,
+    scope_,
+    onScopeExit,
+    onScopeFailure,
+    onScopeSuccess,
 
-        TOKalign, TOKextern, TOKprivate, TOKprotected, TOKpublic, TOKexport,
-        TOKstatic, TOKfinal, TOKconst, TOKabstract,
-        TOKdebug, TOKdeprecated, TOKin, TOKout, TOKinout, TOKlazy,
-        TOKauto, TOKpackage, TOKmanifest, TOKimmutable,
+    // Contracts
+    invariant_,
 
-        // Statements
-        TOKif, TOKelse, TOKwhile, TOKfor, TOKdo, TOKswitch,
-        TOKcase, TOKdefault, TOKbreak, TOKcontinue, TOKwith,
-        TOKsynchronized, TOKreturn, TOKgoto, TOKtry, TOKcatch, TOKfinally,
-        TOKasm, TOKforeach, TOKforeach_reverse,
-        TOKscope,
-        TOKon_scope_exit, TOKon_scope_failure, TOKon_scope_success,
+    // Testing
+    unittest_,
 
-        // Contracts
-        TOKinvariant,
+    // Added after 1.0
+    argumentTypes,
+    ref_,
+    macro_,
 
-        // Testing
-        TOKunittest,
+    parameters,
+    traits,
+    pure_,
+    nothrow_,
+    gshared,
+    line,
+    file,
+    fileFullPath,
+    moduleString,   // __MODULE__
+    functionString, // __FUNCTION__
+    prettyFunction, // __PRETTY_FUNCTION__
+    shared_,
+    at,
+    pow,
+    powAssign,
+    goesTo,
+    vector,
+    pound,
 
-        // Added after 1.0
-        TOKargTypes,
-        TOKref,
-        TOKmacro,
+    arrow,      // ->
+    colonColon, // ::
+    wchar_tLiteral,
+    endOfLine,  // \n, \r, \u2028, \u2029
+    whitespace,
 
-        TOKparameters,
-        TOKtraits,
-        TOKoverloadset,
-        TOKpure,
-        TOKnothrow,
-        TOKgshared,
-        TOKline,
-        TOKfile,
-        TOKfilefullpath,
-        TOKmodulestring,
-        TOKfuncstring,
-        TOKprettyfunc,
-        TOKshared,
-        TOKat,
-        TOKpow,
-        TOKpowass,
-        TOKgoesto,
-        TOKvector,
-        TOKpound,
+    // C only keywords
+    inline_,
+    register_,
+    restrict_,
+    signed_,
+    sizeof_,
+    typedef_,
+    unsigned_,
+    volatile_,
+    _Alignas_,
+    _Alignof_,
+    _Atomic_,
+    _Bool_,
+    _Complex_,
+    _Generic_,
+    _Imaginary_,
+    _Noreturn_,
+    _Static_assert_,
+    _Thread_local_,
 
-        TOKinterval,
-        TOKvoidexp,
-        TOKcantexp,
+    // C only extended keywords
+    _import,
+    cdecl_,
+    declspec,
+    stdcall,
+    pragma,
+    attribute__,
 
-        TOKvectorarray,
+    MAX,
+};
 
-        TOKMAX
+enum class EXP : unsigned char
+{
+    reserved,
+
+    // Other
+    negate,
+    cast_,
+    null_,
+    assert_,
+    true_,
+    false_,
+    array,
+    call,
+    address,
+    type,
+    throw_,
+    new_,
+    delete_,
+    star,
+    symbolOffset,
+    variable,
+    dotVariable,
+    dotIdentifier,
+    dotTemplateInstance,
+    dotType,
+    slice,
+    arrayLength,
+    version_,
+    dollar,
+    template_,
+    dotTemplateDeclaration,
+    declaration,
+    typeof_,
+    pragma_,
+    dSymbol,
+    typeid_,
+    uadd,
+    remove,
+    newAnonymousClass,
+    arrayLiteral,
+    assocArrayLiteral,
+    structLiteral,
+    classReference,
+    thrownException,
+    delegatePointer,
+    delegateFunctionPointer,
+
+    // Operators
+    lessThan,
+    greaterThan,
+    lessOrEqual,
+    greaterOrEqual,
+    equal,
+    notEqual,
+    identity,
+    notIdentity,
+    index,
+    is_,
+
+    leftShift,
+    rightShift,
+    leftShiftAssign,
+    rightShiftAssign,
+    unsignedRightShift,
+    unsignedRightShiftAssign,
+    concatenate,
+    concatenateAssign, // ~=
+    concatenateElemAssign,
+    concatenateDcharAssign,
+    add,
+    min,
+    addAssign,
+    minAssign,
+    mul,
+    div,
+    mod,
+    mulAssign,
+    divAssign,
+    modAssign,
+    and_,
+    or_,
+    xor_,
+    andAssign,
+    orAssign,
+    xorAssign,
+    assign,
+    not_,
+    tilde,
+    plusPlus,
+    minusMinus,
+    construct,
+    blit,
+    dot,
+    comma,
+    question,
+    andAnd,
+    orOr,
+    prePlusPlus,
+    preMinusMinus,
+
+    // Leaf operators
+    identifier,
+    string_,
+    this_,
+    super_,
+    halt,
+    tuple,
+    error,
+
+    // Basic types
+    void_,
+    int64,
+    float64,
+    complex80,
+    char_,
+    import_,
+    delegate_,
+    function_,
+    mixin_,
+    in_,
+    default_,
+    break_,
+    continue_,
+    goto_,
+    scope_,
+
+    traits,
+    overloadSet,
+    line,
+    file,
+    fileFullPath,
+    moduleString,   // __MODULE__
+    functionString, // __FUNCTION__
+    prettyFunction, // __PRETTY_FUNCTION__
+    shared_,
+    pow,
+    powAssign,
+    vector,
+
+    voidExpression,
+    cantExpression,
+    showCtfeContext,
+    objcClassReference,
+    vectorArray,
+    arrow,      // ->
+    compoundLiteral, // ( type-name ) { initializer-list }
+    _Generic_,
+    interval,
+
+    MAX
 };
 
 #define TOKwild TOKinout
@@ -196,15 +452,15 @@ struct Token
 {
     Token *next;
     Loc loc;
-    const utf8_t *ptr;         // pointer to first character of this token within buffer
+    const utf8_t *ptr;    // pointer to first character of this token within buffer
     TOK value;
-    const utf8_t *blockComment; // doc comment string prior to this token
-    const utf8_t *lineComment;  // doc comment for previous token
+    DString blockComment; // doc comment string prior to this token
+    DString lineComment;  // doc comment for previous token
     union
     {
         // Integers
-        d_int64 int64value;
-        d_uns64 uns64value;
+        sinteger_t intvalue;
+        uinteger_t unsvalue;
 
         // Floats
         real_t floatvalue;
@@ -218,16 +474,13 @@ struct Token
         Identifier *ident;
     };
 
-    static const char *tochars[TOKMAX];
-
-    static Token *freelist;
-    static Token *alloc();
     void free();
 
     Token() : next(NULL) {}
     int isKeyword();
     const char *toChars() const;
-    static const char *toChars(TOK);
+
+    static const char *toChars(TOK value);
 };
 
 #if defined(__GNUC__)

@@ -1,5 +1,5 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for the D frontend.
-# Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,30 +46,64 @@ gdc-cross$(exeext): gdc$(exeext)
 	-rm -f gdc-cross$(exeext)
 	cp gdc$(exeext) gdc-cross$(exeext)
 
-# Filter out pedantic and virtual overload warnings.
-d-warn = $(filter-out -pedantic -Woverloaded-virtual, $(STRICT_WARN))
+# Use strict warnings.
+d-warn = $(STRICT_WARN)
 
-# Also filter out warnings for missing format attributes in the D Frontend.
-DMD_WARN_CXXFLAGS = $(filter-out -Wmissing-format-attribute, $(WARN_CXXFLAGS))
-DMD_COMPILE = $(subst $(WARN_CXXFLAGS), $(DMD_WARN_CXXFLAGS), $(COMPILE))
+# D compiler and flags for building the front-end.
+ifeq ($(TREECHECKING),)
+CHECKING_DFLAGS = -frelease
+else
+CHECKING_DFLAGS =
+endif
+WARN_DFLAGS = -Wall -Wdeprecated $(NOCOMMON_FLAG)
+
+# D front-end doesn't use exceptions, but it does require RTTI.
+NOEXCEPTION_DFLAGS = $(filter-out -fno-rtti, $(NOEXCEPTION_FLAGS))
+
+ALL_DFLAGS = $(DFLAGS-$@) $(GDCFLAGS) -fversion=IN_GCC $(CHECKING_DFLAGS) \
+	$(PICFLAG) $(ALIASING_FLAGS) $(NOEXCEPTION_DFLAGS) $(COVERAGE_FLAGS) \
+	$(WARN_DFLAGS)
+
+DCOMPILE.base = $(GDC) $(NO_PIE_CFLAGS) -c $(ALL_DFLAGS) -o $@
+DCOMPILE = $(DCOMPILE.base) -MT $@ -MMD -MP -MF $(@D)/$(DEPDIR)/$(*F).TPo
+DPOSTCOMPILE = @mv $(@D)/$(DEPDIR)/$(*F).TPo $(@D)/$(DEPDIR)/$(*F).Po
+DLINKER = $(GDC) $(NO_PIE_FLAG) -lstdc++
+
+# Like LINKER, but use a mutex for serializing front end links.
+ifeq (@DO_LINK_MUTEX@,true)
+DLLINKER = $(SHELL) $(srcdir)/lock-and-run.sh linkfe.lck $(DLINKER)
+else
+DLLINKER = $(DLINKER)
+endif
 
 # D Frontend object files.
 D_FRONTEND_OBJS = \
-	d/aav.o \
 	d/access.o \
+	d/aggregate.o \
 	d/aliasthis.o \
 	d/apply.o \
 	d/arrayop.o \
+	d/arraytypes.o \
 	d/attrib.o \
+	d/ast_node.o \
+	d/astcodegen.o \
+	d/astenums.o \
 	d/blockexit.o \
+	d/builtin.o \
 	d/canthrow.o \
-	d/checkedint.o \
 	d/chkformat.o \
 	d/clone.o \
+	d/common-bitfields.o \
+	d/common-file.o \
+	d/common-outbuffer.o \
+	d/common-string.o \
+	d/compiler.o \
 	d/cond.o \
 	d/constfold.o \
+	d/cparse.o \
 	d/cppmangle.o \
 	d/ctfeexpr.o \
+	d/ctorflow.o \
 	d/dcast.o \
 	d/dclass.o \
 	d/declaration.o \
@@ -86,55 +120,83 @@ D_FRONTEND_OBJS = \
 	d/dsymbol.o \
 	d/dsymbolsem.o \
 	d/dtemplate.o \
+	d/dtoh.o \
 	d/dversion.o \
 	d/entity.o \
+	d/errors.o \
 	d/escape.o \
 	d/expression.o \
 	d/expressionsem.o \
-	d/file.o \
-	d/filename.o \
+	d/file_manager.o \
+	d/foreachvar.o \
 	d/func.o \
+	d/globals.o \
+	d/gluelayer.o \
 	d/hdrgen.o \
 	d/iasm.o \
 	d/iasmgcc.o \
+	d/id.o \
 	d/identifier.o \
+	d/impcnvtab.o \
 	d/imphint.o \
+	d/importc.o \
 	d/init.o \
 	d/initsem.o \
+	d/inline.o \
 	d/intrange.o \
 	d/json.o \
+	d/lambdacomp.o \
 	d/lexer.o \
 	d/mtype.o \
+	d/mustuse.o \
 	d/nogc.o \
 	d/nspace.o \
+	d/ob.o \
 	d/objc.o \
 	d/opover.o \
 	d/optimize.o \
-	d/outbuffer.o \
 	d/parse.o \
-	d/rmem.o \
-	d/rootobject.o \
+	d/parsetimevisitor.o \
+	d/permissivevisitor.o \
+	d/printast.o \
+	d/root-aav.o \
+	d/root-array.o \
+	d/root-bitarray.o \
+	d/root-complex.o \
+	d/root-ctfloat.o \
+	d/root-file.o \
+	d/root-filename.o \
+	d/root-hash.o \
+	d/root-longdouble.o \
+	d/root-optional.o \
+	d/root-port.o \
+	d/root-region.o \
+	d/root-rmem.o \
+	d/root-rootobject.o \
+	d/root-speller.o \
+	d/root-string.o \
+	d/root-stringtable.o \
+	d/root-utf.o \
 	d/safe.o \
 	d/sapply.o \
 	d/semantic2.o \
 	d/semantic3.o \
 	d/sideeffect.o \
-	d/speller.o \
 	d/statement.o \
+	d/statement_rewrite_walker.o \
 	d/statementsem.o \
 	d/staticassert.o \
 	d/staticcond.o \
-	d/stringtable.o \
+	d/stmtstate.o \
+	d/target.o \
 	d/templateparamsem.o \
 	d/tokens.o \
 	d/traits.o \
+	d/transitivevisitor.o \
 	d/typesem.o \
-	d/utf.o \
-	d/utils.o
-
-# D Frontend generated files.
-D_GENERATED_SRCS = d/id.c d/id.h d/impcnvtab.c
-D_GENERATED_OBJS = d/id.o d/impcnvtab.o
+	d/typinf.o \
+	d/utils.o \
+	d/visitor.o
 
 # Language-specific object files for D.
 D_OBJS = \
@@ -163,13 +225,13 @@ D_OBJS = \
 	d/types.o
 
 # All language-specific object files for D.
-D_ALL_OBJS = $(D_FRONTEND_OBJS) $(D_GENERATED_OBJS) $(D_OBJS) $(D_TARGET_OBJS)
+D_ALL_OBJS = $(D_FRONTEND_OBJS) $(D_OBJS) $(D_TARGET_OBJS)
 
 d_OBJS = $(D_ALL_OBJS) d/d-spec.o
 
 d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(d.prev)
 	@$(call LINK_PROGRESS,$(INDEX.d),start)
-	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(DLLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -static-libphobos -o $@ \
 		$(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.d),end)
 
@@ -221,8 +283,8 @@ d.srcextra:
 
 d.tags: force
 	cd $(srcdir)/d; \
-	etags -o TAGS.sub *.c *.cc *.h dmd/*.c dmd/*.h dmd/root/*.h dmd/root/*.c; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	$(ETAGS) -o TAGS.sub *.cc *.h dmd/*.h dmd/root/*.h; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 d.man: doc/gdc.1
 d.srcman: doc/gdc.1
@@ -268,6 +330,16 @@ d.install-pdf: doc/gdc.pdf
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
+d.install-dvi: doc/gdc.dvi
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@for p in doc/gdc.dvi; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
+
 d.install-html: $(build_htmldir)/d
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
@@ -303,8 +375,6 @@ d.uninstall:
 d.mostlyclean:
 	-rm -f d/*$(objext)
 	-rm -f d/*$(coverageexts)
-	-rm -f $(D_GENERATED_SRCS)
-	-rm -f d/idgen$(build_exeext) d/impcnvgen$(build_exeext)
 	-rm -f gdc$(exeext) gdc-cross$(exeext) d21$(exeext)
 d.clean:
 d.distclean:
@@ -327,48 +397,17 @@ d.stagefeedback: stagefeedback-start
 	-mv d/*$(objext) stagefeedback/d
 
 # Include the dfrontend and build directories for headers.
-D_INCLUDES = -I$(srcdir)/d -I$(srcdir)/d/dmd -Id
-
-CFLAGS-d/id.o += $(D_INCLUDES)
-CFLAGS-d/impcnvtab.o += $(D_INCLUDES)
+D_INCLUDES = -I$(srcdir)/d -J$(srcdir)/d/dmd -J$(srcdir)/d/dmd/res
 
 # Override build rules for D frontend.
-d/%.o: d/dmd/%.c $(D_GENERATED_SRCS)
-	$(DMD_COMPILE) $(D_INCLUDES) $<
-	$(POSTCOMPILE)
+d/%.o: d/dmd/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)
 
-d/%.o: d/dmd/root/%.c $(D_GENERATED_SRCS)
-	$(DMD_COMPILE) $(D_INCLUDES) $<
-	$(POSTCOMPILE)
+d/common-%.o: d/dmd/common/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)
 
-# Generated programs.
-d/idgen$(build_exeext): d/idgen.dmdgen.o $(BUILD_LIBDEPS)
-	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
-
-d/impcnvgen$(build_exeext): d/impcnvgen.dmdgen.o $(BUILD_LIBDEPS)
-	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
-
-# Generated sources.
-d/id.c: d/idgen$(build_exeext)
-	cd d && ./idgen$(build_exeext)
-
-# idgen also generates id.h; just verify it exists.
-d/id.h: d/id.c
-
-d/impcnvtab.c: d/impcnvgen$(build_exeext)
-	cd d && ./impcnvgen$(build_exeext)
-
-# Compile the generator programs.
-d/%.dmdgen.o: $(srcdir)/d/dmd/%.c
-	$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(D_INCLUDES) \
-		$(BUILD_CPPFLAGS) -o $@ $<
-
-# Header dependencies for the generator programs.
-D_SYSTEM_H = d/dmd/root/dsystem.h d/d-system.h
-
-d/idgen.dmdgen.o: d/dmd/idgen.c $(D_SYSTEM_H) $(BCONFIG_H) $(SYSTEM_H)
-
-d/impcnvgen.dmdgen.o: d/dmd/impcnvgen.c d/dmd/mtype.h $(D_SYSTEM_H) \
-	$(BCONFIG_H) $(SYSTEM_H)
+d/root-%.o: d/dmd/root/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)

@@ -1,5 +1,5 @@
 /* Definitions of target machine for gcc for Renesas / SuperH SH using ELF.
-   Copyright (C) 1996-2021 Free Software Foundation, Inc.
+   Copyright (C) 1996-2022 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <ian@cygnus.com>.
 
 This file is part of GCC.
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Let sh.c know this is ELF.  */
+/* Let sh.cc know this is ELF.  */
 #undef TARGET_ELF
 #define TARGET_ELF 1
 
@@ -61,14 +61,11 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_EMUL_PREFIX "sh%{ml:l}elf"
 #endif
 
-#define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)
+#define DEBUGGER_REGNO(REGNO) SH_DEBUGGER_REGNO (REGNO)
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
   sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
-
-#define DBX_LINES_FUNCTION_RELATIVE 1
-#define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,7 @@ with SFN_Scan;
 with Sinput;
 with Snames;
 with Stringt;
+with Uintp;
 
 pragma Warnings (Off);
 with System.HTable;
@@ -1168,7 +1169,7 @@ package body Make is
          end if;
 
       else
-         ALI := Scan_ALI (Lib_File, Text, Ignore_ED => False, Err => True);
+         ALI := Scan_ALI (Lib_File, Text, Err => True);
          Free (Text);
 
          if ALI = No_ALI_Id then
@@ -2364,7 +2365,7 @@ package body Make is
             Osint.Full_Source_Name
               (Source.File,
                Full_File => Full_Source_File,
-               Attr      => Source_File_Attr'Access);
+               Attr      => Source_File_Attr'Unchecked_Access);
 
             Lib_File := Osint.Lib_File_Name (Source.File, Source.Index);
 
@@ -2392,7 +2393,7 @@ package body Make is
                   Get_Name_String (Full_Lib_File);
                   Name_Buffer (Name_Len + 1) := ASCII.NUL;
                   Read_Only := not Is_Writable_File
-                    (Name_Buffer'Address, Lib_File_Attr'Access);
+                    (Name_Buffer'Address, Lib_File_Attr'Unchecked_Access);
                else
                   Read_Only := False;
                end if;
@@ -2460,7 +2461,7 @@ package body Make is
                          The_Args       => Args,
                          Lib_File       => Lib_File,
                          Full_Lib_File  => Full_Lib_File,
-                         Lib_File_Attr  => Lib_File_Attr'Access,
+                         Lib_File_Attr  => Lib_File_Attr'Unchecked_Access,
                          Read_Only      => Read_Only,
                          ALI            => ALI,
                          O_File         => Obj_File,
@@ -2630,7 +2631,8 @@ package body Make is
 
                   Text :=
                     Read_Library_Info_From_Full
-                      (Data.Full_Lib_File, Data.Lib_File_Attr'Access);
+                      (Data.Full_Lib_File,
+                       Data.Lib_File_Attr'Unchecked_Access);
 
                   --  Restore Check_Object_Consistency to its initial value
 
@@ -2646,7 +2648,7 @@ package body Make is
                if Text /= null then
                   ALI :=
                     Scan_ALI
-                      (Data.Lib_File, Text, Ignore_ED => False, Err => True);
+                      (Data.Lib_File, Text, Err => True);
 
                   if ALI = No_ALI_Id then
 
@@ -3675,6 +3677,7 @@ package body Make is
       Linker_Switches.Init;
 
       Csets.Initialize;
+      Uintp.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
 
@@ -3764,7 +3767,7 @@ package body Make is
                declare
                   Arg : constant String := Argument (J);
                begin
-                  if Arg = "-cargs" or Arg = "-bargs" or Arg = "-largs" then
+                  if Arg in "-cargs" | "-bargs" | "-largs" then
                      In_Gnatmake_Switches := False;
 
                   elsif Arg = "-margs" then

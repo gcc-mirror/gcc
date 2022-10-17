@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -95,6 +95,9 @@ foreach flags $VECT_ADDITIONAL_FLAGS {
 	[glob -nocomplain $srcdir/$subdir/vect-*.\[cS\]]] \
 	$flags $DEFAULT_VECTCFLAGS
     et-dg-runtest dg-runtest [lsort \
+	[glob -nocomplain $srcdir/$subdir/tsvc/*.\[cS\]]] \
+	$flags $DEFAULT_VECTCFLAGS
+    et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/slp-*.\[cS\]]] \
 	$flags $DEFAULT_VECTCFLAGS
     et-dg-runtest dg-runtest [lsort \
@@ -118,7 +121,7 @@ et-dg-runtest dg-runtest [lsort \
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-ffast-math"
 et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/fast-math-\[ipsv\]*.\[cS\]]] \
+	[glob -nocomplain $srcdir/$subdir/fast-math-\[ipsvc\]*.\[cS\]]] \
 	"" $DEFAULT_VECTCFLAGS
 
 # -ffast-math SLP tests

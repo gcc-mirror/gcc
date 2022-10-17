@@ -15,12 +15,12 @@ sqxbr (long double x)
   return inout;
 }
 
-/* Ideally there should be just one `vpdi %v6,%v4,%v6,5`, but the compiler
+/* Ideally there should be just one `vmrlg %v6,%v4,%v6`, but the compiler
  * can't optimize it away, because the UNSPEC pattern operates on the whole
  * register.  Using the SUBREG pattern solves this problem, but it's fragile.
  */
-/* { dg-final { scan-assembler-times {\n\tvpdi\t%v6,%v4,%v6,5\n} 2 } } */
-/* { dg-final { scan-assembler-times {\n\tvpdi\t%v4,%v4,%v6,0\n} 2 } } */
+/* { dg-final { scan-assembler-times {\n\tvmrlg\t%v6,%v4,%v6\n} 2 } } */
+/* { dg-final { scan-assembler-times {\n\tvmrhg\t%v4,%v4,%v6\n} 2 } } */
 
 int
 main (void)

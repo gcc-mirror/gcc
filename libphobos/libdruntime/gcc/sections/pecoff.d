@@ -1,5 +1,5 @@
 // PE/COFF-specific support for sections.
-// Copyright (C) 2021 Free Software Foundation, Inc.
+// Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -30,8 +30,8 @@ import core.sys.windows.winbase;
 import core.sys.windows.windef;
 import core.sys.windows.winnt;
 import rt.minfo;
-import rt.util.container.array;
-import rt.util.container.hashtab;
+import core.internal.container.array;
+import core.internal.container.hashtab;
 import gcc.sections.common;
 
 version (GNU_EMUTLS)
@@ -65,7 +65,7 @@ struct DSO
         return _moduleGroup.modules;
     }
 
-    @property ref inout(ModuleGroup) moduleGroup() inout nothrow @nogc
+    @property ref inout(ModuleGroup) moduleGroup() inout return nothrow @nogc
     {
         return _moduleGroup;
     }

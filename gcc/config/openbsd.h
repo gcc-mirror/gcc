@@ -1,5 +1,5 @@
 /* Base configuration file for all OpenBSD targets.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -149,17 +149,6 @@ while (0)
    so the version from elfos.h header won't be used.  */
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION default_libc_has_function
-
-
-/* Runtime target specification.  */
-
-/* Miscellaneous parameters.  */
-
-/* Controlling debugging info: dbx options.  */
-
-/* Don't use the `xsTAG;' construct in DBX output; OpenBSD systems that
-   use DBX don't support it.  */
-#define DBX_NO_XREFS
 
 
 /* - we use . - _func instead of a local label,

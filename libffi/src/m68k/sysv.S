@@ -3,7 +3,7 @@
    sysv.S - Copyright (c) 2012 Alan Hourihane
 	    Copyright (c) 1998, 2012 Andreas Schwab
 	    Copyright (c) 2008 Red Hat, Inc.
-	    Copyright (c) 2012 Thorsten Glaser
+	    Copyright (c) 2012, 2016 Thorsten Glaser
 
    m68k Foreign Function Interface
 
@@ -72,6 +72,15 @@ CALLFUNC(ffi_call_SYSV):
 	pea	4(%sp)
 #if !defined __PIC__
 	jsr	CALLFUNC(ffi_prep_args)
+#elif defined(__uClinux__) && defined(__ID_SHARED_LIBRARY__)
+	move.l  _current_shared_library_a5_offset_(%a5),%a0
+	move.l  CALLFUNC(ffi_prep_args@GOT)(%a0),%a0
+	jsr     (%a0)
+#elif defined(__mcoldfire__) && !defined(__mcfisab__) && !defined(__mcfisac__)
+	move.l  #_GLOBAL_OFFSET_TABLE_@GOTPC,%a0
+	lea     (-6,%pc,%a0),%a0
+	move.l  CALLFUNC(ffi_prep_args@GOT)(%a0),%a0
+	jsr     (%a0)
 #else
 	bsr.l	CALLFUNC(ffi_prep_args@PLTPC)
 #endif
@@ -215,6 +224,15 @@ CALLFUNC(ffi_closure_SYSV):
 	move.l	%a0,-(%sp)
 #if !defined __PIC__
 	jsr	CALLFUNC(ffi_closure_SYSV_inner)
+#elif defined(__uClinux__) && defined(__ID_SHARED_LIBRARY__)
+	move.l  _current_shared_library_a5_offset_(%a5),%a0
+	move.l  CALLFUNC(ffi_closure_SYSV_inner@GOT)(%a0),%a0
+	jsr     (%a0)
+#elif defined(__mcoldfire__) && !defined(__mcfisab__) && !defined(__mcfisac__)
+	move.l  #_GLOBAL_OFFSET_TABLE_@GOTPC,%a0
+	lea     (-6,%pc,%a0),%a0
+	move.l  CALLFUNC(ffi_closure_SYSV_inner@GOT)(%a0),%a0
+	jsr     (%a0)
 #else
 	bsr.l	CALLFUNC(ffi_closure_SYSV_inner@PLTPC)
 #endif
@@ -317,6 +335,15 @@ CALLFUNC(ffi_closure_struct_SYSV):
 	move.l	%a0,-(%sp)
 #if !defined __PIC__
 	jsr	CALLFUNC(ffi_closure_SYSV_inner)
+#elif defined(__uClinux__) && defined(__ID_SHARED_LIBRARY__)
+	move.l  _current_shared_library_a5_offset_(%a5),%a0
+	move.l  CALLFUNC(ffi_closure_SYSV_inner@GOT)(%a0),%a0
+	jsr     (%a0)
+#elif defined(__mcoldfire__) && !defined(__mcfisab__) && !defined(__mcfisac__)
+	move.l  #_GLOBAL_OFFSET_TABLE_@GOTPC,%a0
+	lea     (-6,%pc,%a0),%a0
+	move.l  CALLFUNC(ffi_closure_SYSV_inner@GOT)(%a0),%a0
+	jsr     (%a0)
 #else
 	bsr.l	CALLFUNC(ffi_closure_SYSV_inner@PLTPC)
 #endif

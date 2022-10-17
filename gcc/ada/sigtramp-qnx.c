@@ -6,7 +6,7 @@
  *                                                                          *
  *                         Asm Implementation File                          *
  *                                                                          *
- *           Copyright (C) 2017-2021, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2017-2022, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -49,7 +49,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 void __gnat_sigtramp (int signo, void *si, void *ucontext,
                       __sigtramphandler_t * handler)
 {
-  struct sigcontext *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
 
   __gnat_sigtramp_common (signo, si, mcontext, handler);
 }

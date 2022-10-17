@@ -1,3 +1,376 @@
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Remove extra fetch.
+
+2022-10-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Use logging module
+	and provide robust debugging output.
+
+2022-10-05  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Do fetch before a push.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Skip egrep: warning: egrep is
+	  obsolescent; using grep -E.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove deprecated ports.
+
+2022-08-30  Ulrich Drepper  <drepper@gmail.com>
+
+	* gcc_update (files_and_dependencies): Add rule for
+	gcc/cp/std-name-hint.h.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove the port.
+
+2022-08-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* gen_autofdo_event.py: Port to Python 3, and use grep -E
+	instead of egrep.
+
+2022-08-26  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove cr16.
+
+2022-08-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* clang-format: Add further FOR_EACH_ macros.
+
+2022-08-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* git-fetch-vendor.sh : Fix typo.
+
+2022-08-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Do not deduce changelog for root ChangeLog.
+
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	* git-commit-mklog.py: Do not parse -b argument.
+	Pass mklog_args as json environment variable.
+	* mklog.py: Parse GCC_MKLOG_ARGS and append it to sys.argv.
+	* prepare-commit-msg: Do not append GCC_MKLOG_ARGS to args.
+
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Use component: [PR xyz] only when one PR is used.
+
+2022-07-04  Martin Liska  <mliska@suse.cz>
+
+	* git-descr.sh: By default print revision for HEAD.
+
+2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/README: Added instructions for updating ucnid.h.
+	* unicode/DerivedCoreProperties.txt: New file added to source
+	control from Unicode 14.0 release.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+
+2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/EastAsianWidth.txt: Update to Unicode 14.0.0.
+	* unicode/PropList.txt: Likewise.
+	* unicode/README: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config-list.mk: Remove tilegx and tilepro entries.
+	* gcc_update: Remove tilegx and tilepro entries.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py (active_refs): Remove
+	releases/gcc-9.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 12.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-12.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wc++20-attribute-extensions in lex.cc.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wbitwise-instead-of-logical.
+
+2022-04-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Ignore the revision.
+
+2022-03-31  Jakub Jelinek  <jakub@redhat.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/105114
+	* gcc_update: Fix up spelling of
+	gcc/config/loongarch/genopts/loongarch-strings dependency.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config-list.mk: Add LoongArch triplet.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc_update (files_and_dependencies): Add
+	  config/loongarch/loongarch.opt and config/loongarch/loongarch-str.h.
+
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Match trailing dot literally.
+
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Make the parsing stricter.
+
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	3ab5c8cd03d92bf4ec41e351820349d92fbc40c4 to ignored commits.
+
+2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* gcc-git-customization.sh: Fix non-portable commands.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Replace all [1-9] occurrences with [0-9].
+	* git-undescr.sh: Likewise.
+
+2022-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Use portable sed commands.
+	* git-undescr.sh: Likewise.
+
+2022-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Use portable form of expr match.
+
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Support more formatted predict.def file.
+	* analyze_brprob_spec.py: Improve output and documentation.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	* git-undescr.sh: Support full output of git-descr.sh.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* git-descr.sh: New file.
+	* git-undescr.sh: New file.
+	Support optional arguments --long, --short and default
+	to 14 characters of git hash.
+	* gcc-git-customization.sh: Use the created files.
+
+2022-01-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: New files in toplev must
+	be explicitly marked as "New file".
+	* gcc-changelog/test_email.py: Test.
+	* gcc-changelog/test_patches.txt: Add test.
+
+2022-01-23  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out one another warning
+	for sse.md.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style_lib.py: Skip Python files.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Use it.
+	* git-fix-changelog.py: New file.
+	* gcc-git-customization.sh: Add new alias git gcc-fix-changelog.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Support renaming of .cc files.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Rename .c names to .cc.
+	* gcc_update: Likewise.
+	* paranoia.cc: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* maintainers-verify.sh: Removed.
+
+2022-01-13  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Simplify the script as pre-auto-ChangeLog era
+	is 14 months old.
+
+2022-01-11  Martin Liska  <mliska@suse.cz>
+
+	* check-MAINTAINERS.py: Use sys.argv[1] as path to MAINTAINERS.
+
+2022-01-11  Martin Liska  <mliska@suse.cz>
+
+	* check-MAINTAINERS.py: New file.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add University of Illinois as external author.
+
+2021-12-16  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* analyze_brprob_spec.py: Add verbose argument.
+
+2021-12-06  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out one warning.
+
+2021-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* download_prerequisites: Update to gmp-6.2.1, mpfr-4.1.0,
+	mpc-1.2.1 and isl-0.24.
+	* prerequisites.md5: Update hash.
+	* prerequisites.sha512: Likewise.
+
+2021-11-23  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter -Wc++20-extensions as it does
+	not respect proper attribute detection.
+
+2021-11-23  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: Support @itemx in param documentation
+	and support multi-line documentation for parameters.
+
+2021-11-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* update-copyright.py (class BadYear): Derive from 'Exception'.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite-management/validate_failures.py: 2to3
+
+2021-11-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Add -v option.
+	* gcc-changelog/git_commit.py: Print verbose diff for wrong
+	filename.
+
+2021-11-02  Martin Liska  <mliska@suse.cz>
+
+	* check-internal-format-escaping.py: Fix flake8 errors.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* unicode/utf8-dump.py: New file.
+
+2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc-changelog/git_commit.py (ignored_prefixes): Add libffi/.
+
+2021-10-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Update location of
+	'bad parentheses wrapping'.
+	* gcc-changelog/test_email.py: Test it.
+
+2021-10-02  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out -Wtautological-compare
+	for the file.
+
+2021-09-20  Richard Biener  <rguenther@suse.de>
+
+	* config-list.mk: --enable-obsolete for hppa2.0-hpux10.1 and
+	hppa2.0-hpux11.9.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add FIXME note.
+
+2021-09-15  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Check commit email.
+	* gcc-changelog/test_email.py: Add new test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config-list.mk: Remove vax-openbsd.
+
+2021-09-15  Richard Biener  <rguenther@suse.de>
+
+	* config-list.mk: Remove m68k-openbsd.
+
+2021-09-13  Andrew Pinski  <apinski@marvell.com>
+
+	* config-list.mk: Remove m32r-linux and m32rle-linux
+	from the list.
+
+2021-09-13  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config-list.mk (LIST): --enable-obsolete for cr16-elf.
+
+2021-09-06  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* gcc_update: Derive human readable name for HEAD using git describe
+	like "git gcc-descr" with short commit hash.  Drop "revision" from
+	gcc/REVISION.
+
+2021-08-30  Andrew Pinski  <apinski@marvell.com>
+
+	* download_prerequisites (md5_check): Replace == inside
+	test with = to be more portable.
+
+2021-08-26  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Use file.{source,target}_file for proper rename
+	handling.
+
+2021-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR other/82704
+	* download_prerequisites: Fix issues with --md5 and
+	--sha512 options.
+
+2021-08-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Wrap $@ in quotes.
+	* git-commit-mklog.py: Add new argument --co.
+	* mklog.py: Skip the Co-Authored-By lines.
+
+2021-08-10  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Support additional PRs without PR prefix.
+
+2021-08-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Ignore problematic
+	  commit.
+
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* vimrc (textwidth): Change non-gitcommit length to 79.
+
 2021-07-02  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* gen_autofdo_event.py: handle stepping, non-working PEBS

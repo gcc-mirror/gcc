@@ -1,6 +1,6 @@
 # General rules that all rs6000/ targets must have.
 #
-# Copyright (C) 1995-2021 Free Software Foundation, Inc.
+# Copyright (C) 1995-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -18,36 +18,73 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += $(srcdir)/config/rs6000/rs6000-builtin.def
 TM_H += $(srcdir)/config/rs6000/rs6000-cpus.def
 TM_H += $(srcdir)/config/rs6000/rs6000-modes.h
 PASSES_EXTRA += $(srcdir)/config/rs6000/rs6000-passes.def
+EXTRA_GTYPE_DEPS += rs6000-builtins.h
 
-rs6000-pcrel-opt.o: $(srcdir)/config/rs6000/rs6000-pcrel-opt.c
+rs6000-pcrel-opt.o: $(srcdir)/config/rs6000/rs6000-pcrel-opt.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c
+rs6000-string.o: $(srcdir)/config/rs6000/rs6000-string.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-string.o: $(srcdir)/config/rs6000/rs6000-string.c
+rs6000-p8swap.o: $(srcdir)/config/rs6000/rs6000-p8swap.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-p8swap.o: $(srcdir)/config/rs6000/rs6000-p8swap.c
+rs6000-d.o: $(srcdir)/config/rs6000/rs6000-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-d.o: $(srcdir)/config/rs6000/rs6000-d.c
+rs6000-logue.o: $(srcdir)/config/rs6000/rs6000-logue.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-logue.o: $(srcdir)/config/rs6000/rs6000-logue.c
+rs6000-builtin.o: $(srcdir)/config/rs6000/rs6000-builtin.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-call.o: $(srcdir)/config/rs6000/rs6000-call.c
+build/rs6000-gen-builtins.o: $(srcdir)/config/rs6000/rs6000-gen-builtins.cc
+build/rbtree.o: $(srcdir)/config/rs6000/rbtree.cc
+
+build/rs6000-gen-builtins$(build_exeext): build/rs6000-gen-builtins.o \
+					  build/rbtree.o $(BUILD_LIBDEPS)
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
+
+# TODO: Whenever GNU make 4.3 is the minimum required, we should use
+# grouped targets on this:
+#    rs6000-builtins.cc rs6000-builtins.h rs6000-vecdefines.h &: <deps>
+#       <recipe>
+# For now, the header files depend on rs6000-builtins.cc, which avoids
+# races because the .c file is closed last in rs6000-gen-builtins.cc.
+rs6000-builtins.cc: build/rs6000-gen-builtins$(build_exeext) \
+		   $(srcdir)/config/rs6000/rs6000-builtins.def \
+		   $(srcdir)/config/rs6000/rs6000-overload.def
+	$(RUN_GEN) ./build/rs6000-gen-builtins$(build_exeext) \
+		$(srcdir)/config/rs6000/rs6000-builtins.def \
+		$(srcdir)/config/rs6000/rs6000-overload.def rs6000-builtins.h \
+		rs6000-builtins.cc rs6000-vecdefines.h
+
+rs6000-builtins.h: rs6000-builtins.cc
+
+rs6000.o: rs6000-builtins.h
+
+EXTRA_HEADERS += rs6000-vecdefines.h
+rs6000-vecdefines.h: rs6000-builtins.cc
+
+rs6000-builtins.o: rs6000-builtins.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+rs6000-call.o: $(srcdir)/config/rs6000/rs6000-call.cc rs6000-builtins.h
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.cc rs6000-builtins.h
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

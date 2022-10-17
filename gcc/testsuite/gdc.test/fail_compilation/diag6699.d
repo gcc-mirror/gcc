@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag6699.d(8): Error: no property 'x' for type 'int'
+fail_compilation/diag6699.d(8): Error: no property `x` for type `int`
 ---
 */
 alias int b6699;

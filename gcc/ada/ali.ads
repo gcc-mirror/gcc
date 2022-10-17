@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,9 @@ package ALI is
 
    type ALI_Id is range 0 .. 99_999_999;
    --  Id values used for ALIs table entries
+
+   type CUDA_Kernel_Id is range 0 .. 99_999_999;
+   --  Id values used for CUDA_Kernel table entries
 
    type Unit_Id is range 0 .. 99_999_999;
    --  Id values used for Unit table entries
@@ -247,16 +250,18 @@ package ALI is
       --  Set to True if unit exception table pointer generated. Not set if 'P'
       --  appears in Ignore_Lines.
 
-      Frontend_Exceptions : Boolean;
-      --  Set to True if file was compiled with front-end exceptions. Not set
-      --  if 'P' appears in Ignore_Lines.
-
       Zero_Cost_Exceptions : Boolean;
       --  Set to True if file was compiled with zero cost exceptions. Not set
       --  if 'P' appears in Ignore_Lines.
 
       Restrictions : Restrictions_Info;
       --  Restrictions information reconstructed from R lines
+
+      First_CUDA_Kernel : CUDA_Kernel_Id;
+      Last_CUDA_Kernel  : CUDA_Kernel_Id'Base;
+      --  These point to the first and last entries in the CUDA_Kernels table
+      --  for this unit. If there are no entries, First_CUDA_Kernel =
+      --  Last_CUDA_Kernel + 1.
 
       First_Interrupt_State : Interrupt_State_Id;
       Last_Interrupt_State  : Interrupt_State_Id'Base;
@@ -293,6 +298,27 @@ package ALI is
      Table_Initial        => 500,
      Table_Increment      => 200,
      Table_Name           => "ALIs");
+
+   ---------------------------
+   -- CUDA Kernels Table --
+   ---------------------------
+
+   --  An entry is made in this table for each K (CUDA Kernel) line
+   --  encountered in the input ALI file. The First/Last_CUDA_Kernel_Id
+   --  fields of the ALI file entry show the range of entries defined
+   --  within a particular ALI file.
+
+   type CUDA_Kernel_Record is record
+      Kernel_Name : Name_Id;
+   end record;
+
+   package CUDA_Kernels is new Table.Table (
+     Table_Component_Type => CUDA_Kernel_Record,
+     Table_Index_Type     => CUDA_Kernel_Id'Base,
+     Table_Low_Bound      => CUDA_Kernel_Id'First,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "Cuda_Kernels");
 
    ----------------
    -- Unit Table --
@@ -558,10 +584,6 @@ package ALI is
    Dynamic_Elaboration_Checks_Specified : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if Scan_ALI reads
    --  a unit for which dynamic elaboration checking is enabled.
-
-   Frontend_Exceptions_Specified : Boolean := False;
-   --  Set to False by Initialize_ALI. Set to True if an ali file is read that
-   --  has a P line specifying the generation of front-end exceptions.
 
    GNATprove_Mode_Specified : Boolean := False;
    --  Set to True if an ali file was produced in GNATprove mode.
@@ -1389,7 +1411,6 @@ package ALI is
    function Scan_ALI
      (F                : File_Name_Type;
       T                : Text_Buffer_Ptr;
-      Ignore_ED        : Boolean;
       Err              : Boolean;
       Ignore_Lines     : String  := "X";
       Ignore_Errors    : Boolean := False;
@@ -1398,11 +1419,6 @@ package ALI is
    --  from the file, and return the Id of the resulting entry in the ALI
    --  table. Switch settings may be modified as described above in the
    --  switch description settings.
-   --
-   --    Ignore_ED is normally False. If set to True, it indicates that
-   --    all AD/ED (elaboration desirable) indications in the ALI file are
-   --    to be ignored. This parameter is obsolete now that the -f switch
-   --    is removed from gnatbind, and should be removed ???
    --
    --    Err determines the action taken on an incorrectly formatted file.
    --    If Err is False, then an error message is output, and the program

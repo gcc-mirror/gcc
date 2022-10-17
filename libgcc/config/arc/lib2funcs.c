@@ -1,5 +1,5 @@
 /* libgcc routines for ARC
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -59,7 +59,7 @@ udivmodsi4 (nint32_t num, nint32_t den, word_t modwanted)
   nint32_t bit = 1;
   nint32_t res = 0;
 
-  while (den < num && bit && !(den & (1LL << 63)))
+  while (den < num && bit && !(den & (1L << 31)))
     {
       den <<= 1;
       bit <<= 1;

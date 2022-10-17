@@ -1,4 +1,4 @@
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef struct _IO_FILE FILE;
 extern size_t fread(void *__restrict __ptr, size_t __size, size_t __n,
                     FILE *__restrict __stream);

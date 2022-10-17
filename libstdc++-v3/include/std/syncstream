@@ -1,6 +1,6 @@
 // <syncstream> -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // iostreams
+
 #include <sstream>
 
 #include <bits/alloc_traits.h>
@@ -50,8 +52,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template<typename _CharT, typename _Traits = char_traits<_CharT>,
-	    typename _Alloc = allocator<_CharT>>
+  template<typename _CharT, typename _Traits, typename _Alloc>
     class basic_syncbuf : public __syncbuf_base<_CharT, _Traits>
     {
     public:
@@ -241,8 +242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __mutex _M_mtx;
     };
 
-  template <typename _CharT, typename _Traits = char_traits<_CharT>,
-	    typename _Alloc = allocator<_CharT>>
+  template <typename _CharT, typename _Traits, typename _Alloc>
     class basic_osyncstream : public basic_ostream<_CharT, _Traits>
     {
       using __ostream_type = basic_ostream<_CharT, _Traits>;

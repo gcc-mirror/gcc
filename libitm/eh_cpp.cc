@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -178,7 +178,11 @@ GTM::gtm_thread::init_cpp_exceptions ()
 {
   // Only save and restore the number of uncaught exceptions if this is
   // actually used in the program.
-  if (__cxa_get_globals != NULL && __cxa_get_globals () != 0)
+  if (
+#if HAVE_ELF_STYLE_WEAKREF
+      __cxa_get_globals != NULL &&
+#endif
+      __cxa_get_globals () != 0)
     cxa_uncaught_count_ptr = &__cxa_get_globals ()->uncaughtExceptions;
   else
     cxa_uncaught_count_ptr = 0;

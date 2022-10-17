@@ -2,4 +2,4 @@
 // { dg-do compile }
 
 template<int> union A;  // { dg-message "previous" }
-struct A;               // { dg-error "non-template" }
+struct A;               // { dg-error "redeclared as non-template" }

@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,12 +25,10 @@ void
 test01()
 {
   __gnu_cxx::__vstring s("Hello, World!");
-  std::begin(s);
-  std::end(s);
+  (void) std::begin(s);
+  (void) std::end(s);
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   __gnu_cxx::__wvstring ws(L"Hello, World!");
-  std::begin(ws);
-  std::end(ws);
-#endif
+  (void) std::begin(ws);
+  (void) std::end(ws);
 }

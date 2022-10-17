@@ -1,3 +1,138 @@
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit a91f844ef44.
+
+2021-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/102874
+	* src/x86/win64.S (epilogue): Use #define instead of .macro.
+
+2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.am (AM_CFLAGS): Add $(CET_FLAGS).
+	(AM_CCASFLAGS): Likewise.
+	* configure.ac (CET_FLAGS): Add GCC_CET_FLAGS and AC_SUBST.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* include/Makefile.in: Likewise.
+	* man/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2021-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit 90454a90082.
+
+2021-10-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* src/powerpc/linux64.S: Enable AltiVec insns.
+	* src/powerpc/linux64_closure.S: Ditto.
+
+2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: New file.
+
+2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* testsuite/lib/libffi.exp (load_gcc_lib): Load library from GCC
+	testsuite.
+	Load target-supports.exp and target-supports-dg.exp.
+	(libffi-init): Use libraries in GCC build tree.
+	(libffi_target_compile): Link with -shared-libgcc -lstdc++ for
+	C++ sources.
+
+2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Add info-in-builddir.
+	(ACLOCAL_AMFLAGS): Set to -I .. -I ../config.
+	(SUBDIRS): Don't add doc.
+	(TEXINFO_TEX): New.
+	(MAKEINFOFLAGS): Likewise.
+	(info_TEXINFOS): Likewise.
+	(STAMP_GENINSRC): Likewise.
+	(STAMP_BUILD_INFO): Likewise.
+	(all-local): Likewise.
+	(stamp-geninsrc): Likewise.
+	(doc/libffi.info): Likewise.
+	(stamp-build-info:): Likewise.
+	(CLEANFILES): Likewise.
+	(MAINTAINERCLEANFILES): Likewise.
+	(AM_MAKEFLAGS): Likewise.
+	(all-recursive): Likewise.
+	(install-recursive): Likewise.
+	(mostlyclean-recursive): Likewise.
+	(clean-recursive): Likewise.
+	(distclean-recursive): Likewise.
+	(maintainer-clean-recursive): Likewise.
+	(LTLDFLAGS): Replace libtool-ldflags with ../libtool-ldflags.
+	(AM_CFLAGS): Add -g -fexceptions.
+	(libffi.map-sun): Replace make_sunver.pl with
+	../contrib/make_sunver.pl.
+	(dist-hook): Removed.
+	Include $(top_srcdir)/../multilib.am.
+	* configure.ac: Add AM_ENABLE_MULTILIB.
+	Remove the frv*-elf check.
+	(AX_ENABLE_BUILDDIR): Removed.
+	(AM_INIT_AUTOMAKE): Add [no-dist].
+	Add --enable-generated-files-in-srcdir.
+	(C_CONFIG_MACRO_DIR): Removed.
+	(AX_COMPILER_VENDOR): Likewise.
+	(AX_CC_MAXOPT): Likewise.
+	(AX_CFLAGS_WARN_ALL): Likewise.
+	Remove the GCC check.
+	(SYMBOL_UNDERSCORE): Removed.
+	(AX_CHECK_COMPILE_FLAG): Likewise.
+	Remove --disable-docs.
+	(ACX_CHECK_PROG_VER): Check makeinfo.
+	(BUILD_DOCS): Updated.
+	(exec-static-tramp): Don't enable use of static exec trampolines
+	by default.
+	Remove --disable-multi-os-directory.
+	(GCC_WITH_TOOLEXECLIBDIR): New.
+	Support cross host.
+	Support --enable-multilib.
+	* include/Makefile.am (nodist_include_HEADERS): Removed.
+	(gcc_version): New.
+	(toollibffidir): Likewise.
+	(toollibffi_HEADERS): Likewise.
+	* Makefile.in: Regenerate.
+	(GCC_BASE_VER): New.
+	(AC_CONFIG_FILES): Remove doc/Makefile.
+	(AC_CONFIG_LINKS): New.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* fficonfig.h.in: Likewise.
+	* mdate-sh: Likewise.
+	* include/Makefile.in: Likewise.
+	* man/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* HOWTO_MERGE: New file.
+	* autogen.sh: Likewise.
+	* merge.sh: Likewise.
+
+2021-08-30  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	PR libffi/83636
+	* src/mips/n32.S: disable .set mips4
+	* src/mips/ffi.c: use different JR encoding for r6.
+
+2021-07-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR libffi/101336
+	* configure.host: Always check __x86_64__ for x86 hosts.
+
 2021-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/x86/ffi64.c (classify_argument): For FFI_TYPE_STRUCT set words

@@ -5,8 +5,8 @@ fail_compilation/fail262.d(23): Error: function `const void fail262.B.f()` does 
 ---
 */
 
-// Issue 1645 - can override base class' const method with non-const method
-
+// https://issues.dlang.org/show_bug.cgi?id=1645
+// can override base class' const method with non-const method
 import core.stdc.stdio;
 
 class A

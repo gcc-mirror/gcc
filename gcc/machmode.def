@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -142,16 +142,18 @@ along with GCC; see the file COPYING3.  If not see
 	than two bytes (if CLASS is FLOAT).  CLASS must be INT or
 	FLOAT.  The names follow the same rule as VECTOR_MODE uses.
 
-     VECTOR_MODES_WITH_PREFIX (PREFIX, CLASS, WIDTH);
+     VECTOR_MODES_WITH_PREFIX (PREFIX, CLASS, WIDTH, ORDER);
 	Like VECTOR_MODES, but start the mode names with PREFIX instead
-	of the usual "V".
+	of the usual "V".  ORDER is the top-level sorting order of the
+	mode, with smaller numbers indicating a higher priority.
 
-     VECTOR_BOOL_MODE (NAME, COUNT, BYTESIZE)
+     VECTOR_BOOL_MODE (NAME, COUNT, COMPONENT, BYTESIZE)
         Create a vector mode called NAME that contains COUNT boolean
         elements and occupies BYTESIZE bytes in total.  Each boolean
-        element occupies (COUNT * BITS_PER_UNIT) / BYTESIZE bits, with
-        the element at index 0 occupying the lsb of the first byte in
-        memory.  Only the lowest bit of each element is significant.
+        element is of COMPONENT type and occupies (COUNT * BITS_PER_UNIT) /
+        BYTESIZE bits, with the element at index 0 occupying the lsb of the
+        first byte in memory.  Only the lowest bit of each element is
+        significant.
 
      OPAQUE_MODE (NAME, BYTESIZE)
         Create an opaque mode called NAME that is BYTESIZE bytes wide.
@@ -184,7 +186,7 @@ along with GCC; see the file COPYING3.  If not see
 	the number of units doubles the size and precision as well.
 
    Note: If a mode is ever made which is more than 255 bytes wide,
-   machmode.h and genmodes.c will have to be changed to allocate
+   machmode.h and genmodes.cc will have to be changed to allocate
    more space for the mode_size and mode_alignment arrays.  */
 
 /* VOIDmode is used when no mode needs to be specified,
@@ -196,7 +198,7 @@ RANDOM_MODE (VOID);
 RANDOM_MODE (BLK);
 
 /* Single bit mode used for booleans.  */
-FRACTIONAL_INT_MODE (BI, 1, 1);
+BOOL_MODE (BI, 1, 1);
 
 /* Basic integer modes.  We go up to TI in generic code (128 bits).
    TImode is needed here because the some front ends now genericly

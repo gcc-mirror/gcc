@@ -1,5 +1,5 @@
 ;; Cavium ThunderX 3 CN11xx pipeline description
-;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2022 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Marvell
 
@@ -138,7 +138,7 @@
 			logic_shift_imm,logics_shift_imm"))
   "thunderx3t110_i01")
 
-; we are going for the the optimistic answer (13)
+; we are going for the optimistic answer (13)
 ; for now, the worst case is 23
 (define_insn_reservation "thunderx3t110_div" 13
   (and (eq_attr "tune" "thunderx3t110")

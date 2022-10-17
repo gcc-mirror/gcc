@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,10 +90,10 @@ package body Ada.Strings.Text_Buffers.Bounded is
             --  If this aggregate becomes illegal due to new field, don't
             --  forget to add corresponding assignment statement below.
             Dummy : array (1 .. 0) of Buffer_Type (0) :=
-              (others =>
+              [others =>
                  (Max_Characters => 0, Chars => <>, Indentation => <>,
                   Indent_Pending => <>, UTF_8_Length => <>, UTF_8_Column => <>,
-                  All_7_Bits     => <>, All_8_Bits => <>, Truncated => <>));
+                  All_7_Bits     => <>, All_8_Bits => <>, Truncated => <>)];
          begin
             Buffer.Indentation    := Defaulted.Indentation;
             Buffer.Indent_Pending := Defaulted.Indent_Pending;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fstack-usage" } */
+/* { dg-options "-fstack-usage -fno-stack-protector" } */
 /* nvptx doesn't have a reg allocator, and hence no stack usage data.  */
 /* { dg-skip-if "" { nvptx-*-* } } */
 
@@ -105,6 +105,8 @@
 #  define SIZE 252
 #elif defined (__CRIS__)
 #  define SIZE 252
+#elif defined (__loongarch_lp64)
+#  define SIZE 240   /* 256 - 8 bytes for $fp, and 8 bytes for a temp value */
 #else
 #  define SIZE 256
 #endif

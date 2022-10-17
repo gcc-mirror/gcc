@@ -1,7 +1,7 @@
 // { dg-do compile }
 // 2001-06-18  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,7 @@ void test01()
   using namespace std;
 
   // Check for required typedefs
-  typedef raw_storage_iterator<long*, long> test_iterator;
+  typedef raw_storage_iterator<long*, long> test_iterator; // { dg-warning "is deprecated" "" { target c++17 } }
   typedef test_iterator::value_type value_type;
   typedef test_iterator::difference_type difference_type;
   typedef test_iterator::pointer pointer;

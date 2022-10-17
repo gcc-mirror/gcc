@@ -28,6 +28,9 @@ SUBDIRS += hwasan
 endif
 endif
 
+## Force DIST_SUBDIRS so that make distclean works
+DIST_SUBDIRS = $(SUBDIRS)
+
 ## May be used by toolexeclibdir.
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 

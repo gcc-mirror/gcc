@@ -59,7 +59,8 @@ is
      (Buffer : in out Root_Buffer_Type;
       Amount :        Text_Buffer_Count := Standard_Indent) with
       Pre'Class => Current_Indent (Buffer) >= Amount
-      or else raise Constraint_Error,
+      --  or else raise Constraint_Error,
+      or else Boolean'Val (Current_Indent (Buffer) - Amount),
       Post'Class => Current_Indent (Buffer) =
       Current_Indent (Buffer)'Old - Amount;
 

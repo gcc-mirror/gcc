@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for PowerPC and PowerPC64 Linux.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -94,6 +94,15 @@ struct gcc_ucontext
 
 enum { SIGNAL_FRAMESIZE = 128 };
 
+struct rt_sigframe {
+  char gap[SIGNAL_FRAMESIZE];
+  struct gcc_ucontext uc;
+  unsigned long pad[2];
+  int tramp[6];
+  void *pinfo;
+  struct gcc_ucontext *puc;
+};
+
 /* If PC is at a sigreturn trampoline, return a pointer to the
    regs.  Otherwise return NULL.  */
 
@@ -136,14 +145,7 @@ get_regs (struct _Unwind_Context *context)
 #endif
 	{
 	  /* This works for 2.4.21 and later kernels.  */
-	  struct rt_sigframe {
-	    char gap[SIGNAL_FRAMESIZE];
-	    struct gcc_ucontext uc;
-	    unsigned long pad[2];
-	    int tramp[6];
-	    void *pinfo;
-	    struct gcc_ucontext *puc;
-	  } *frame = (struct rt_sigframe *) context->cfa;
+	  struct rt_sigframe *frame = (struct rt_sigframe *) context->cfa;
 	  return frame->uc.regs;
 	}
     }
@@ -153,6 +155,12 @@ get_regs (struct _Unwind_Context *context)
 #else  /* !__powerpc64__ */
 
 enum { SIGNAL_FRAMESIZE = 64 };
+
+struct rt_sigframe {
+  char gap[SIGNAL_FRAMESIZE + 16];
+  char siginfo[128];
+  struct gcc_ucontext uc;
+};
 
 static struct gcc_regs *
 get_regs (struct _Unwind_Context *context)
@@ -176,11 +184,7 @@ get_regs (struct _Unwind_Context *context)
     }
   else if (pc[0] == 0x38006666 || pc[0] == 0x380000AC)
     {
-      struct rt_sigframe {
-	char gap[SIGNAL_FRAMESIZE + 16];
-	char siginfo[128];
-	struct gcc_ucontext uc;
-      } *frame = (struct rt_sigframe *) context->cfa;
+      struct rt_sigframe *frame = (struct rt_sigframe *) context->cfa;
       return frame->uc.regs;
     }
   return NULL;
@@ -203,7 +207,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   int i;
 
   if (regs == NULL)
-    return _URC_END_OF_STACK;
+    return _URC_NORMAL_STOP;
 
   new_cfa = regs->gpr[__LIBGCC_STACK_POINTER_REGNUM__];
   fs->regs.cfa_how = CFA_REG_OFFSET;
@@ -211,12 +215,12 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
 #ifdef __powerpc64__
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
+  fs->regs.how[2] = REG_SAVED_OFFSET;
   fs->regs.reg[2].loc.offset = (long) &regs->gpr[2] - new_cfa;
 #endif
   for (i = 14; i < 32; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (long) &regs->gpr[i] - new_cfa;
     }
 
@@ -226,20 +230,20 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   cr_offset += sizeof (long) - 4;
 #endif
   /* In the ELFv1 ABI, CR2 stands in for the whole CR.  */
-  fs->regs.reg[R_CR2].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_CR2] = REG_SAVED_OFFSET;
   fs->regs.reg[R_CR2].loc.offset = cr_offset;
 #if _CALL_ELF == 2
   /* In the ELFv2 ABI, every CR field has a separate CFI entry.  */
-  fs->regs.reg[R_CR3].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_CR3] = REG_SAVED_OFFSET;
   fs->regs.reg[R_CR3].loc.offset = cr_offset;
-  fs->regs.reg[R_CR4].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_CR4] = REG_SAVED_OFFSET;
   fs->regs.reg[R_CR4].loc.offset = cr_offset;
 #endif
 
-  fs->regs.reg[R_LR].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_LR] = REG_SAVED_OFFSET;
   fs->regs.reg[R_LR].loc.offset = (long) &regs->link - new_cfa;
 
-  fs->regs.reg[ARG_POINTER_REGNUM].how = REG_SAVED_OFFSET;
+  fs->regs.how[ARG_POINTER_REGNUM] = REG_SAVED_OFFSET;
   fs->regs.reg[ARG_POINTER_REGNUM].loc.offset = (long) &regs->nip - new_cfa;
   fs->retaddr_column = ARG_POINTER_REGNUM;
   fs->signal_frame = 1;
@@ -247,7 +251,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   /* If we have a FPU...  */
   for (i = 14; i < 32; i++)
     {
-      fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
+      fs->regs.how[i + 32] = REG_SAVED_OFFSET;
       fs->regs.reg[i + 32].loc.offset = (long) &regs->fpr[i] - new_cfa;
     }
 
@@ -261,12 +265,12 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
     {
       for (i = 20; i < 32; i++)
 	{
-	  fs->regs.reg[i + R_VR0].how = REG_SAVED_OFFSET;
+	  fs->regs.how[i + R_VR0] = REG_SAVED_OFFSET;
 	  fs->regs.reg[i + R_VR0].loc.offset = (long) &vregs->vr[i] - new_cfa;
 	}
     }
 
-  fs->regs.reg[R_VRSAVE].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_VRSAVE] = REG_SAVED_OFFSET;
   fs->regs.reg[R_VRSAVE].loc.offset = (long) &vregs->vsave - new_cfa;
 
   /* If we have SPE register high-parts... we check at compile-time to
@@ -274,7 +278,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
 #ifdef __SPE__
   for (i = 14; i < 32; i++)
     {
-      fs->regs.reg[i + FIRST_SPE_HIGH_REGNO - 4].how = REG_SAVED_OFFSET;
+      fs->regs.how[i + FIRST_SPE_HIGH_REGNO - 4] = REG_SAVED_OFFSET;
       fs->regs.reg[i + FIRST_SPE_HIGH_REGNO - 4].loc.offset
 	= (long) &regs->vregs - new_cfa + 4 * i;
     }
@@ -311,7 +315,7 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
 #endif
 
 #ifdef __powerpc64__
-  if (fs->regs.reg[2].how == REG_UNSAVED)
+  if (fs->regs.how[2] == REG_UNSAVED)
     {
       /* If the current unwind info (FS) does not contain explicit info
 	 saving R2, then we have to do a minor amount of code reading to
@@ -351,4 +355,81 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
 	}
     }
 #endif
+}
+
+#define MD_BACKCHAIN_FALLBACK ppc_backchain_fallback
+
+struct trace_arg
+{
+  /* Stores the list of addresses.  */
+  void **array;
+  struct unwind_link *unwind_link;
+  _Unwind_Word cfa;
+  /* Number of addresses currently stored.  */
+  int count;
+  /* Maximum number of addresses.  */
+  int size;
+};
+
+/* This is the stack layout we see with every stack frame.
+   Note that every routine is required by the ABI to lay out the stack
+   like this.
+
+	    +----------------+        +-----------------+
+    %r1  -> | previous frame--------> | previous frame--->...  --> NULL
+	    |                |        |                 |
+	    | cr save        |        | cr save	        |
+	    |                |        |                 |
+	    | (unused)       |        | lr save         |
+	    +----------------+        +-----------------+
+
+  The CR save is only present on 64-bit ABIs.
+*/
+struct frame_layout
+{
+  struct frame_layout *backchain;
+#ifdef __powerpc64__
+  long int cr_save;
+#endif
+  void *lr_save;
+};
+
+
+static void
+ppc_backchain_fallback (struct _Unwind_Context *context, void *a)
+{
+  struct frame_layout *current;
+  struct trace_arg *arg = a;
+  int count;
+
+  /* Get the last address computed.  */
+  current = context->cfa;
+
+  /* If the trace CFA is not the context CFA the backtrace is done.  */
+  if (arg == NULL || arg->cfa != current)
+	return;
+
+  /* Start with next address.  */
+  current = current->backchain;
+
+  for (count = arg->count; current != NULL; current = current->backchain)
+    {
+      arg->array[count] = current->lr_save;
+
+      /* Check if the symbol is the signal trampoline and get the interrupted
+	 symbol address from the trampoline saved area.  */
+      context->ra = current->lr_save;
+      if (current->lr_save && get_regs (context))
+	{
+	  struct rt_sigframe *sigframe = (struct rt_sigframe *) current;
+	  if (count + 1 == arg->size)
+	    break;
+	  arg->array[++count] = (void *) sigframe->uc.rsave.nip;
+	  current = (void *) sigframe->uc.rsave.gpr[1];
+	}
+      if (count++ >= arg->size)
+	break;
+    }
+
+  arg->count = count-1;
 }

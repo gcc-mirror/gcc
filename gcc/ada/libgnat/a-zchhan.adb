@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,15 @@ with Ada.Wide_Wide_Characters.Unicode; use Ada.Wide_Wide_Characters.Unicode;
 
 package body Ada.Wide_Wide_Characters.Handling is
 
+   ---------------------------
+   -- Character_Set_Version --
+   ---------------------------
+
+   function Character_Set_Version return String is
+   begin
+      return "Unicode 4.0";
+   end Character_Set_Version;
+
    ---------------------
    -- Is_Alphanumeric --
    ---------------------
@@ -41,6 +50,13 @@ package body Ada.Wide_Wide_Characters.Handling is
    begin
       return Is_Letter (Item) or else Is_Digit (Item);
    end Is_Alphanumeric;
+
+   --------------
+   -- Is_Basic --
+   --------------
+
+   function Is_Basic (Item : Wide_Wide_Character) return Boolean
+     renames Ada.Wide_Wide_Characters.Unicode.Is_Basic;
 
    ----------------
    -- Is_Control --
@@ -190,5 +206,23 @@ package body Ada.Wide_Wide_Characters.Handling is
 
       return Result;
    end To_Upper;
+
+   --------------
+   -- To_Basic --
+   --------------
+
+   function To_Basic (Item : Wide_Wide_Character) return Wide_Wide_Character
+     renames Ada.Wide_Wide_Characters.Unicode.To_Basic;
+
+   function To_Basic (Item : Wide_Wide_String) return Wide_Wide_String is
+      Result : Wide_Wide_String (Item'Range);
+
+   begin
+      for J in Result'Range loop
+         Result (J) := To_Basic (Item (J));
+      end loop;
+
+      return Result;
+   end To_Basic;
 
 end Ada.Wide_Wide_Characters.Handling;

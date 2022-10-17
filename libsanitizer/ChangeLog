@@ -1,3 +1,180 @@
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/105531
+	* sanitizer_common/sanitizer_procmaps_solaris.cpp: Cherry-pick
+	llvm-project revision 1cd4d63fb9ab0f04c7151911dde0d58b673823de.
+
+2022-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* LOCAL_PATCHES: Update.
+
+2022-08-31  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.tgt: Allow loongarch64-*-linux*.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* sanitizer_common/Makefile.am: Remove sanitizer_openbsd.
+	* sanitizer_common/Makefile.in: Regenerate.
+
+2022-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/105531
+	* sanitizer_common/sanitizer_linux_libcdep.cpp,
+	sanitizer_common/sanitizer_solaris.h:: Cherry-pick
+	llvm-project revision 3776db9a4fd2080d23d6a5f52e405eea44558761.
+
+2022-05-05  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update.
+
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* tsan/Makefile.am: Update Makefile.am files.
+	* hwasan/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* Makefile.in: Re-generate.
+	* asan/Makefile.in: Likewise.
+	* hwasan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
+2022-03-14  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* configure.tgt: Enable build on mips*64*-*-linux*.
+
+2022-03-14  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* sanitizer_common/sanitizer_atomic_clang.h: Ensures to only
+	include sanitizer_atomic_clang_mips.h for O32.
+
+2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_linux_libcdep.cpp: Cherry-pick
+	llvm-project revision ef14b78d9a144ba81ba02083fe21eb286a88732b.
+
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* aclocal.m4: Include also ../config/warnings.m4.
+	* libbacktrace/Makefile.am (WARN_FLAGS): Remove.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* hwasan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
+2021-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit 70b043845d7.
+
+2021-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR sanitizer/103466
+	* tsan/tsan_rtl_amd64.S (__tsan_trace_switch_thunk): Replace
+	vmovdqu with movdqu.
+	(__tsan_report_race_thunk): Likewise.
+
+2021-11-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR sanitizer/62157
+	* Makefile.am: Force DIST_SUBDIRS to be SUBDIRS.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Likewise.
+	* hwasan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/102675
+	* sanitizer_common/Makefile.am: Use -DUSE_SYSTEM_MD5 in AM_CXXFLAGS
+	of sanitizer_platform_limits_freebsd.cpp.
+	* sanitizer_common/Makefile.in: Regenerated.
+
+2021-11-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
+2021-11-04  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update git revision.
+
+2021-10-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR sanitizer/102632
+	* asan/Makefile.am (AM_CCASFLAGS): New.  Set to $(EXTRA_ASFLAGS).
+	* hwasan/Makefile.am (AM_CCASFLAGS): Likewise.
+	* interception/Makefile.am (AM_CCASFLAGS): Likewise.
+	* lsan/Makefile.am (AM_CCASFLAGS): Likewise.
+	* tsan/Makefile.am (AM_CCASFLAGS): Likewise.
+	* ubsan/Makefile.am (AM_CCASFLAGS): Likewise.
+	* asan/Makefile.in: Regenerate.
+	* hwasan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
+2021-10-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
+2021-10-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
+2021-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_common_interceptors.inc: Cherry-pick
+	llvm-project revision faef0d042f523357fe5590e7cb6a8391cf0351a8.
+
+2021-08-03  Mosè Giordano  <mose@gnu.org>
+
+	PR sanitizer/101111
+	* configure.tgt: Fix bashism in setting of `EXTRA_CXXFLAGS'.
+
+2021-07-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* configure.tgt (s390*-*-linux*): Enable LSan and TSan for
+	s390x.
+
+2021-07-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* asan/libtool-version: Bump version.
+	* tsan/libtool-version: Likewise.
+
+2021-07-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
 2021-05-21  Tamar Christina  <tamar.christina@arm.com>
 
 	PR sanitizer/100379

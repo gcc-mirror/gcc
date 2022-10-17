@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice10922.d(10): Error: function `ice10922.__lambda4(const(uint) n)` is not callable using argument types `()`
-fail_compilation/ice10922.d(10):        missing argument for parameter #1: `const(uint) n`
+fail_compilation/ice10922.d(10): Error: function `ice10922.__lambda4(in uint n)` is not callable using argument types `()`
+fail_compilation/ice10922.d(10):        too few arguments, expected `1`, got `0`
 ---
 */
 

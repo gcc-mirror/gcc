@@ -1,3 +1,988 @@
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (flexible_array_member_type_p): New function.
+	(one_element_array_type_p): Likewise.
+	(zero_length_array_type_p): Likewise.
+	(add_flexible_array_elts_to_size): Call new utility
+	routine flexible_array_member_type_p.
+	(is_flexible_array_member_p): New function.
+	(finish_struct): Set the new DECL_NOT_FLEXARRAY flag.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parse_init): Add D_EXT11 to mask if flag_no_asm
+	and not C2x.
+	(c_keyword_starts_typename, c_token_starts_declspecs)
+	(c_parser_declspecs, c_parser_objc_selector): Handle
+	RID_TYPEOF_UNQUAL.
+	(c_parser_typeof_specifier): Handle RID_TYPEOF_UNQUAL.
+	Distinguish typeof for C2x from __typeof__ for all standard
+	versions and typeof before C2x.
+	* c-typeck.cc (build_function_call_vec): Use unqualified version
+	of non-void return type.
+	(build_unary_op): Use unqualified type for increment and
+	decrement.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_assumption_clauses): Emit IFN_ASSUME
+	call for holds clause on assume construct.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* c-parser.cc (handle_assume_attribute): New function.
+	(c_parser_declaration_or_fndef): Handle assume attribute.
+	(c_parser_attribute_arguments): Add assume_attr argument,
+	if true, parse first argument as conditional expression.
+	(c_parser_gnu_attribute, c_parser_std_attribute): Adjust
+	c_parser_attribute_arguments callers.
+	(c_parser_statement_after_labels) <case RID_ATTRIBUTE>: Handle
+	assume attribute.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (struct c_omp_declare_target_attr): New type.
+	(current_omp_declare_target_attribute): Change type from
+	int to vec<c_omp_declare_target_attr, va_gc> *.
+	* c-parser.cc (c_parser_translation_unit): Adjust for that change.
+	If last pushed directive was begin declare target, use different
+	wording and simplify format strings for easier translations.
+	(c_parser_omp_clause_device_type): Uncomment
+	check_no_duplicate_clause call.
+	(c_parser_omp_declare_target): Adjust for the
+	current_omp_declare_target_attribute type change, push { -1 }.
+	Use error_at rather than warning_at for declare target with
+	only device_type clauses.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(c_parser_omp_begin): Add begin declare target support.
+	(c_parser_omp_end): Adjust for the
+	current_omp_declare_target_attribute type change, adjust
+	diagnostics wording and simplify format strings for easier
+	translations.
+	* c-decl.cc (current_omp_declare_target_attribute): Change type from
+	int to vec<c_omp_declare_target_attr, va_gc> *.
+	(c_decl_attributes): Adjust for the
+	current_omp_declare_target_attribute type change.  If device_type
+	was present on begin declare target, add "omp declare target host"
+	and/or "omp declare target nohost" attributes.
+
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (handle_std_noreturn_attribute): New function.
+	(std_attribute_table): Add _Noreturn and noreturn.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (current_omp_begin_assumes): Declare.
+	* c-parser.cc: Include bitmap.h.
+	(c_parser_omp_end_declare_target): Rename to ...
+	(c_parser_omp_end): ... this.  Handle also end assumes.
+	(c_parser_omp_begin, c_parser_omp_assumption_clauses,
+	c_parser_omp_assumes, c_parser_omp_assume): New functions.
+	(c_parser_translation_unit): Also diagnose #pragma omp begin assumes
+	without corresponding #pragma omp end assumes.
+	(c_parser_pragma): Use %s in may only be used at file scope
+	diagnostics to decrease number of translatable messages.  Handle
+	PRAGMA_OMP_BEGIN and PRAGMA_OMP_ASSUMES.  Handle PRAGMA_OMP_END
+	rather than PRAGMA_OMP_END_DECLARE_TARGET and call c_parser_omp_end
+	for it rather than c_parser_omp_end_declare_target.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_ASSUME.
+	* c-decl.cc (current_omp_begin_assumes): Define.
+
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* c-typeck.cc (c_tree_equal): Only strip NON_LVALUE_EXPRs at the
+	start.  For CONSTANT_CLASS_P or CASE_CONVERT: return false if t1 and
+	t2 have different types.
+
+2022-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/106830
+	* c-parser.cc (c_parser_initelt): Initialize m_decimal.
+	(c_parser_cast_expression): Likewise.
+	(c_parser_alignof_expression): Likewise.
+	(c_parser_postfix_expression_after_paren_type): Likewise.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_expression): Likewise.
+	(c_parser_omp_variable_list): Likewise.
+	(c_parser_transaction_expression): Likewise.
+	* c-tree.h (c_expr::set_error): Likewise.
+	* c-typeck.cc (c_expr_sizeof_expr): Likewise.
+	(parser_build_unary_op): Likewise.
+	(parser_build_binary_op): Likewise.
+	(digest_init): Likewise.
+	(pop_init_level): Likewise.
+	* gimple-parser.cc (c_parser_gimple_call_internal): Likewise.
+
+2022-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/106947
+	* c-typeck.cc (maybe_warn_for_null_address): Don't emit stray
+	notes.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.cc (build_void_list_node): Remove.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* c-typeck.cc (c_finish_omp_clauses): Remove whole mapping node group
+	on error.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_static_assert_declaration_no_semi)
+	(c_parser_alignas_specifier, c_parser_alignof_expression): Allow
+	for C2x spellings of keywords.
+	(c_parser_postfix_expression): Handle RID_TRUE and RID_FALSE.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_doacross_sink): Don't verify val
+	in omp_cur_iteration - 1 has integer_type_node type.
+
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Handle doacross.
+	(c_parser_omp_clause_depend_sink): Renamed to ...
+	(c_parser_omp_clause_doacross_sink): ... this.  Add depend_p argument.
+	Handle parsing of doacross(sink:omp_cur_iteration-1).  Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS instead
+	of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND flag on it.
+	(c_parser_omp_clause_depend): Use OMP_CLAUSE_DOACROSS_SINK and
+	OMP_CLAUSE_DOACROSS_SOURCE instead of OMP_CLAUSE_DEPEND_SINK and
+	OMP_CLAUSE_DEPEND_SOURCE, build OMP_CLAUSE_DOACROSS for depend(source)
+	and set OMP_CLAUSE_DOACROSS_DEPEND on it.
+	(c_parser_omp_clause_doacross): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_depobj): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	(c_parser_omp_for_loop): Don't diagnose here linear clause together
+	with ordered with argument.
+	(c_parser_omp_simd): Don't diagnose ordered clause with argument on
+	for simd.
+	(OMP_ORDERED_DEPEND_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_ordered): Handle also doacross and adjust for it
+	diagnostic wording.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	Don't handle OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-parser.cc (c_parser_string_literal): Clear ret.m_decimal.
+	(c_parser_expr_no_commas): Likewise.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_binary_expression): Clear m_decimal when popping the
+	stack.
+	(c_parser_unary_expression): Clear ret.m_decimal.
+	(c_parser_has_attribute_expression): Likewise for result.
+	(c_parser_predefined_identifier): Likewise for expr.
+	(c_parser_postfix_expression): Likewise for expr.
+	Set expr.m_decimal when handling a CPP_NUMBER that was a decimal
+	token.
+	* c-tree.h (c_expr::m_decimal): New bitfield.
+	* c-typeck.cc (parser_build_binary_op): Clear result.m_decimal.
+	(parser_build_binary_op): Call check_for_xor_used_as_pow.
+
+2022-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (grokparms): Handle () in a function declaration the
+	same as (void) for C2X.
+
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_label): Pass attributes to do_case.
+	* c-typeck.cc (do_case): Add argument ATTRS.  Pass it to
+	c_add_case_label.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc (convert_arguments): Handle BUILT_IN_ISSIGNALING.
+
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.cc (c_convert) <case POINTER_TYPE>: Handle NULLPTR_TYPE.
+	Give a better diagnostic when converting to nullptr_t.
+	* c-decl.cc (c_init_decl_processing): Perform C-specific nullptr
+	initialization.
+	* c-parser.cc (c_parse_init): Maybe OR D_C2X into mask.
+	(c_parser_postfix_expression): Handle RID_NULLPTR.
+	* c-typeck.cc (null_pointer_constant_p): Return true when expr is
+	nullptr_node.
+	(build_unary_op) <case TRUTH_NOT_EXPR>: Handle NULLPTR_TYPE.
+	(build_conditional_expr): Handle the case when the second/third operand
+	is NULLPTR_TYPE and third/second operand is POINTER_TYPE.
+	(convert_for_assignment): Handle converting an expression of type
+	nullptr_t to pointer/bool.
+	(build_binary_op) <case TRUTH_XOR_EXPR>: Handle NULLPTR_TYPE.
+	<case EQ_EXPR>: Handle comparing operands of type nullptr_t.
+
+2022-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (start_decl): Do not diagnose initialization of
+	variable-sized objects here.
+	* c-parser.cc (c_parser_braced_init): Add argument DECL.  All
+	callers changed.
+	(c_parser_initializer): Diagnose initialization of variable-sized
+	objects other than with braced initializer.
+	(c_parser_braced_init): Use pedwarn_c11 for empty initializer
+	braces and update diagnostic text.  Diagnose initialization of
+	variable-sized objects with nonempty braces.
+	* c-typeck.cc (digest_init): Update diagnostic for initialization
+	of variable-sized objects.
+	(really_start_incremental_init, set_designator)
+	(process_init_element): Update comments.
+	(pop_init_level): Allow scalar empty initializers.
+
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/104493
+	* c-decl.cc (c_decl_attributes, finish_decl): Call omp_mappable_type
+	instead of removed langhook.
+	* c-typeck.cc (c_finish_omp_clauses): Likewise.
+
+2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* c-parser.cc (c_parser_initializer): Add new tree parameter.  Use it.
+	Call suppress_warning.
+	(c_parser_declaration_or_fndef): Pass d down to c_parser_initializer.
+	(c_parser_omp_declare_reduction): Pass omp_priv down to
+	c_parser_initializer.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* c-parser.cc (c_parser_string_literal): Use char8_t as the type
+	of CPP_UTF8STRING when char8_t support is enabled.
+	* c-typeck.cc (digest_init): Allow initialization of an array
+	of character type by a string literal with type array of
+	char8_t.
+
+2022-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.cc (build_c_cast): Quote names of address spaces in
+	diagnostics.
+	(convert_for_assignment): Add a note to address space mismatch
+	diagnostics, specifying the expected and actual types.
+
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* c-parser.cc (c_parser_pragma): Set input_location to the
+	location of the pragma, rather than the start of the line.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_target_data, c_parser_omp_target_update,
+	c_parser_omp_target_enter_data, c_parser_omp_target_exit_data): Set
+	OMP_REQUIRES_TARGET_USED.
+	(c_parser_omp_requires): Remove sorry.
+
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_target_enter_data,
+	c_parser_omp_target_exit_data): Accept tofrom
+	map-type modifier but use 'to' / 'from' internally.
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc (implicitly_declare): Add auto_diagnostic_group to
+	group the warning with any note.
+	(warn_about_goto): Likewise to group error or warning with note.
+	Bail out if the warning wasn't emitted, to avoid emitting orphan
+	notes.
+	(lookup_label_for_goto): Add auto_diagnostic_group to
+	group the error with the note.
+	(check_earlier_gotos): Likewise.
+	(c_check_switch_jump_warnings): Likewise for any error/warning.
+	Conditionalize emission of the notes.
+	(diagnose_uninitialized_cst_member): Likewise for warning,
+	conditionalizing emission of the note.
+	(grokdeclarator): Add auto_diagnostic_group to group the "array
+	type has incomplete element type" error with any note.
+	(parser_xref_tag): Add auto_diagnostic_group to group warnings
+	with their notes.  Conditionalize emission of notes.
+	(start_struct): Add auto_diagnostic_group to group the
+	"redefinition of" errors with any note.
+	(start_enum): Likewise for "redeclaration of %<enum %E%>" error.
+	(check_for_loop_decls): Likewise for pre-C99 error.
+
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_linear): Parse OpenMP 5.2
+	style linear clause modifiers.  Set
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER flag on the clauses when
+	old style modifiers are used.
+	* c-typeck.cc (c_finish_omp_clauses): Only reject linear clause
+	with val modifier on simd or for if the old style modifiers are
+	used.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lang.cc (LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+	(c_get_sarif_source_language): New.
+	* c-tree.h (c_get_sarif_source_language): New decl.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (c.tags): Look at *.cc.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (OMP_SCOPE_CLAUSE_MASK): Add firstprivate and allocate
+	clauses.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_declare_target): If OMP_CLAUSE_LINK was
+	seen first, use "%<to%>" or "%<enter%>" depending on
+	OMP_CLAUSE_ENTER_TO of the current clause, otherwise use
+	"%<to%> or %<enter%>" wording.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Parse enter clause.
+	(c_parser_omp_all_clauses): For to clause on declare target, use
+	OMP_CLAUSE_ENTER clause with OMP_CLAUSE_ENTER_TO instead of
+	OMP_CLAUSE_TO_DECLARE clause.  Handle PRAGMA_OMP_CLAUSE_ENTER.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add enter clause.
+	(c_parser_omp_declare_target): Use OMP_CLAUSE_ENTER instead of
+	OMP_CLAUSE_TO_DECLARE.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_ENTER instead
+	of OMP_CLAUSE_TO_DECLARE, to OMP_CLAUSE_ENTER_TO use "to" as clause
+	name in diagnostics instead of
+	omp_clause_code_name[OMP_CLAUSE_CODE (c)].
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91134
+	* c-tree.h (build_component_ref): Add ARROW_LOC location_t argument.
+	* c-typeck.cc (build_component_ref): Likewise.  If DATUM is
+	INDIRECT_REF and ARROW_LOC isn't UNKNOWN_LOCATION, print a different
+	diagnostic and fixit hint if DATUM has pointer type.
+	* c-parser.cc (c_parser_postfix_expression,
+	c_parser_omp_variable_list): Adjust build_component_ref callers.
+	* gimple-parser.cc (c_parser_gimple_postfix_expression_after_primary):
+	Likewise.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* c-parser.cc (OMP_TASKWAIT_CLAUSE_MASK): Add nowait clause.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* c-decl.cc (diagnose_mismatched_decls): Warn about enum/integer type
+	mismatches.
+	* c-tree.h (comptypes_check_enum_int): Declare.
+	* c-typeck.cc (comptypes): No longer static.
+
+2022-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.cc (finish_enum): Store the CONST_DECL into TREE_VALUE, not
+	its value.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_depend): Parse
+	inoutset depend-kind.
+	(c_parser_omp_depobj): Likewise.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.cc (match_builtin_function_types): Use ARRAY_SIZE.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parse_init): Register omp_all_memory as keyword
+	if flag_openmp.
+	(c_parser_postfix_expression): Diagnose uses of omp_all_memory
+	in postfix expressions.
+	(c_parser_omp_variable_list): Handle omp_all_memory in depend
+	clause.
+	* c-typeck.cc (c_finish_omp_clauses): Handle omp_all_memory
+	keyword in depend clause as null_pointer_node, diagnose invalid
+	uses.
+
+2022-05-09  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.cc (c_parser_conditional_expression): Use {,UN}LIKELY
+	macros.
+	(c_parser_binary_expression): Likewise.
+
+2022-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101833
+	PR c++/47634
+	* c-objc-common.cc (maybe_adjust_arg_pos_for_attribute): New.
+
+2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105149
+	* c-typeck.cc (c_build_va_arg): Reject function types.
+
+2022-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82283
+	PR c/84685
+	* c-typeck.cc (struct initializer_stack): Add 'designated' member.
+	(start_init): Set it.
+	(finish_init): Restore constructor_designated.
+	(push_init_level): Set constructor_designated to the value of
+	constructor_designated in the upper constructor_stack.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* c-typeck.cc (handle_omp_array_sections_1)
+	(c_oacc_check_attachments): Call 'user_omp_clause_code_name'
+	instead of 'c_omp_map_clause_name'.
+
+2022-03-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.cc (function_types_compatible_p): Do not handle C2X
+	differently from earlier standards for unprototyped function type
+	compatibility.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-fold.cc (c_fully_fold_internal): Don't emit
+	-Wshift-negative-value warning if TYPE_OVERFLOW_WRAPS.
+	* c-typeck.cc (build_binary_op): Likewise.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_map): Add missing space in string
+	literal.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_parse_gimple_body): Diagnose
+	SSA names without definition.
+	(c_parser_gimple_declaration): Handle pointer typed SSA names.
+
+2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104532
+	* c-parser.cc (c_parser_omp_variable_list): For CPP_DEREF, use
+	convert_lvalue_to_rvalue and build_indirect_ref instead of
+	build_simple_mem_ref.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_gimple_statement): Properly parse
+	VEC_COND_EXPRs.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Parse 'has_device_addr'
+	clause.
+	(c_parser_omp_variable_list): Handle array sections.
+	(c_parser_omp_clause_has_device_addr): Added.
+	(c_parser_omp_all_clauses): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR
+	case.
+	(c_parser_omp_target_exit_data): Added HAS_DEVICE_ADDR to
+	OMP_CLAUSE_MASK.
+	* c-typeck.cc (handle_omp_array_sections): Handle clause restrictions.
+	(c_finish_omp_clauses): Handle array sections.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104427
+	* c-parser.cc (c_parser_postfix_expression)
+	<case RID_BUILTIN_ASSOC_BARRIER>: Use parser_build_unary_op
+	instead of build1_loc to build PAREN_EXPR.
+	* c-typeck.cc (build_unary_op): Handle PAREN_EXPR.
+	* c-fold.cc (c_fully_fold_internal): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Rename .c names to .cc.
+	* c-convert.cc: Likewise.
+	* c-decl.cc (struct lang_identifier): Likewise.
+	(pop_scope): Likewise.
+	(finish_decl): Likewise.
+	* c-objc-common.h (GCC_C_OBJC_COMMON): Likewise.
+	* c-parser.cc (c_parser_skip_to_end_of_block_or_statement): Likewise.
+	* c-parser.h (GCC_C_PARSER_H): Likewise.
+	* c-tree.h (c_keyword_starts_typename): Likewise.
+	(finish_declspecs): Likewise.
+	(c_get_alias_set): Likewise.
+	(enum c_oracle_request): Likewise.
+	(tag_exists_p): Likewise.
+	(set_c_expr_source_range): Likewise.
+	* c-typeck.cc (c_common_type): Likewise.
+	(c_finish_omp_clauses): Likewise.
+	* config-lang.in: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* c-aux-info.c: Moved to...
+	* c-aux-info.cc: ...here.
+	* c-convert.c: Moved to...
+	* c-convert.cc: ...here.
+	* c-decl.c: Moved to...
+	* c-decl.cc: ...here.
+	* c-errors.c: Moved to...
+	* c-errors.cc: ...here.
+	* c-fold.c: Moved to...
+	* c-fold.cc: ...here.
+	* c-lang.c: Moved to...
+	* c-lang.cc: ...here.
+	* c-objc-common.c: Moved to...
+	* c-objc-common.cc: ...here.
+	* c-parser.c: Moved to...
+	* c-parser.cc: ...here.
+	* c-typeck.c: Moved to...
+	* c-typeck.cc: ...here.
+	* gccspec.c: Moved to...
+	* gccspec.cc: ...here.
+	* gimple-parser.c: Moved to...
+	* gimple-parser.cc: ...here.
+
+2022-01-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_requires): Don't "sorry" dynamic_allocators.
+
+2022-01-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/103705
+	* c-typeck.c (c_finish_omp_clauses): Also continue peeling off of
+	outer node for ARRAY_REFs.
+
+2022-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/103639
+	* c-typeck.c (c_finish_bc_stmt): For break inside of switch inside of
+	ObjC foreach, emit normal BREAK_STMT rather than goto to label.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/103649
+	* c-decl.c (c_warn_unused_attributes): Don't warn for
+	attribute_ignored_p.
+	* c-parser.c (c_parser_std_attribute): Skip parsing of the attribute
+	arguments when the attribute is ignored.
+
+2021-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/103587
+	* c-parser.c (c_parser_balanced_token_sequence): For CPP_PRAGMA,
+	consume the pragma and silently skip to the pragma eol.
+
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-decl.c: Define INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR.
+	* c-parser.c: Likewise.
+
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* c-decl.c (resort_field_decl_cmp): Pass the same pointer twice
+	to resort_data.new_value.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (struct omp_dim): New struct type for use inside
+	c_parser_omp_variable_list.
+	(c_parser_omp_variable_list): Allow multiple levels of array and
+	component accesses in array section base-pointer expression.
+	(c_parser_omp_clause_to): Set 'allow_deref' to true in call to
+	c_parser_omp_var_list_parens.
+	(c_parser_omp_clause_from): Likewise.
+	* c-typeck.c (handle_omp_array_sections_1): Extend allowed range
+	of base-pointer expressions involving INDIRECT/MEM/ARRAY_REF and
+	POINTER_PLUS_EXPR.
+	(c_finish_omp_clauses): Extend allowed ranged of expressions
+	involving INDIRECT/MEM/ARRAY_REF and POINTER_PLUS_EXPR.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* c-parser.c (c_parser_omp_clause_map): Set 'allow_deref' argument in
+	call to c_parser_omp_variable_list to 'true'.
+	* c-typeck.c (handle_omp_array_sections_1): Add strip of MEM_REF in
+	array base handling.
+	(c_finish_omp_clauses): Handle 'A->member' case in map clauses.
+
+2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Remove "gang reduction on an
+	orphan loop" checking.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Emit an error on orphan
+	OpenACC gang reductions.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression):
+	avoid unreachable code after break.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* c-typeck.c (c_tree_equal): Remove unreachable return.
+	* c-parser.c (get_matching_symbol): Likewise.
+
+2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_clone_omp_udr): Don't initialize
+	id.transform_lang_insert_block.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* c-typeck.c (maybe_warn_for_null_address): Suppress warnings for
+	code resulting from macro expansion.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-decl.c (names_builtin_p): Handle RID_BUILTIN_ASSOC_BARRIER.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101702
+	* c-decl.c (get_parm_array_spec): Strip casts earlier and fold array
+	bounds before deciding if they're constant.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (OMP_TARGET_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_num_teams): Parse optional
+	lower-bound and store it into OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR.
+	Use OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR instead of
+	OMP_CLAUSE_NUM_TEAMS_EXPR.
+	(c_parser_omp_target): For OMP_CLAUSE_NUM_TEAMS evaluate before
+	combined target teams even lower-bound expression.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c: Shuffle bitmap.h include.
+
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* c-convert.c (c_convert): New function, based on convert.
+	(convert): Make into wrapper of c_convert.
+	(convert_init): New function.
+	* c-typeck.c (enum impl_conv): Add ic_init_const.
+	(convert_for_assignment): Handle ic_init_const like ic_init.  Add
+	new argument to convert_and_check call.
+	(digest_init): Pass ic_init_const to convert_for_assignment for
+	initializers required to be constant.
+
+2021-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_record_decl): Declare.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_RECORD_DECL): Override.
+	* c-decl.c (c_simulate_record_decl): New function.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Add dummy c.install-dvi target.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/102763
+	* gimple-parser.c
+	(c_parser_gimple_postfix_expression_after_primary): Check
+	for a pointer do be dereferenced by ->.
+
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-parser.c (c_finish_omp_declare_variant): Change call from
+	c_omp_check_context_selector to omp_check_context_selector. Change
+	call from c_omp_mark_declare_variant to omp_mark_declare_variant.
+
+2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_structured_block_sequence): New function.
+	(c_parser_omp_scan_loop_body): Use it.
+	(c_parser_omp_sections_scope): Likewise.
+
+2021-10-07  Richard Biener  <rguenther@suse.de>
+
+	* c-typeck.c (lvalue_p): Also allow MEM_REF and TARGET_MEM_REF.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR c/102605
+	* gimple-parser.c (c_parser_gimple_postfix_expression):
+	Accept more address _Literals.
+
+2021-10-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* c-typeck.c (parser_build_binary_op): Call do_warn_array_compare.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* c-typeck.c (maybe_warn_for_null_address): New function.
+	(build_binary_op): Call it.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* c-typeck.c (build_binary_op): Call ubsan_instrument_division
+	for division even for SANITIZE_SI_OVERFLOW.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_order): Set
+	OMP_CLAUSE_ORDER_REPRODUCIBLE for explicit reproducible: modifier.
+
+2021-09-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/32122
+	* c-parser.c (c_parser_statement_after_labels): Pass
+	the c_expr instead of the tree to c_finish_goto_ptr.
+	* c-typeck.c (c_finish_goto_ptr): Change the second
+	argument type to c_expr.
+	* c-tree.h (c_finish_goto_ptr): Likewise.
+	Error out if the expression was not of a pointer type.
+
+2021-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_allocate): Parse allocate clause
+	modifiers.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_order): Parse unconstrained
+	and reproducible modifiers.
+	(OMP_DISTRIBUTE_CLAUSE_MASK): Add order clause.
+
+2021-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_default): Handle private and
+	firstprivate arguments, adjust diagnostics on unknown argument.
+
+2021-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_atomic): Reject atomic swap if capture
+	is true.
+
+2021-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_conditional_expression): If omp_atomic_lhs and
+	cond.value is >, < or == with omp_atomic_lhs as one of the operands,
+	don't call build_conditional_expr, instead build a COND_EXPR directly.
+	(c_parser_binary_expression): Avoid calling parser_build_binary_op
+	if omp_atomic_lhs even in more cases for >, < or ==.
+	(c_parser_omp_atomic): Update function comment for OpenMP 5.1 atomics,
+	parse OpenMP 5.1 atomics and fail, compare and weak clauses, allow
+	acq_rel on atomic read/write and acq_rel/acquire clauses on update.
+	* c-typeck.c (build_binary_op): For flag_openmp only handle
+	MIN_EXPR/MAX_EXPR.
+
+2021-09-07  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_flush): Parse 'seq_cst' clause on 'flush'
+	directive.
+
+2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-decl.c (enum deprecated_states): Add unavailable state.
+	(merge_decls): Copy unavailability.
+	(quals_from_declspecs): Handle unavailable case.
+	(start_decl): Amend the logic handling suppression of nested
+	deprecation states to include unavailability.
+	(smallest_type_quals_location): Amend comment.
+	(grokdeclarator): Handle the unavailable deprecation state.
+	(declspecs_add_type): Set TREE_UNAVAILABLE from the decl specs.
+	* c-tree.h (struct c_declspecs): Add unavailable_p.
+	* c-typeck.c (build_component_ref): Handle unavailability.
+	(build_external_ref): Likewise.
+
+2021-09-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/79412
+	* c-decl.c (duplicate_decls): On significant mismatches, mark the
+	types of both (non-function) decls as error_mark_node, so that the
+	middle-end can see the code is malformed.
+	(free_attr_access_data): Don't process if the type has been set to
+	error_mark_node.
+
+2021-08-31  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_device): Parse device-modifiers 'device_num'
+	and 'ancestor' in 'target device' clauses.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_num_tasks,
+	c_parser_omp_clause_grainsize): Parse the optional strict: modifier.
+
+2021-08-22  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98397
+	* c-typeck.c (comp_target_types): Change pedwarn to pedwarn_c11
+	for pointers to arrays with qualifiers.
+	(build_conditional_expr): For C23 don't lose qualifiers for pointers
+	to arrays when the other pointer is a void pointer. Update warnings.
+	(convert_for_assignment): Update warnings for C2X when converting from
+	void* with qualifiers to a pointer to array with the same qualifiers.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_error): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_ERROR.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_depend_sink): Reject spurious
+	comma at the end of list.
+	(c_parser_omp_requires): Likewise.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_requires): Don't call
+	c_parser_peek_2nd_token and optionally consume token if current
+	token is CPP_EOF, CPP_PRAGMA_EOL or CPP_CLOSE_PAREN.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_nothing): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_NOTHING.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_statement_after_labels): Add restart label
+	near the start of the function.  If c_parser_pragma returns false,
+	goto restart.
+	(c_parser_pragma): For PRAGMA_OMP_CANCELLATION_POINT return what
+	c_parser_omp_cancellation_point returned.  For PRAGMA_OMP_DECLARE
+	return what c_parser_omp_declare returned.  Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(c_parser_omp_ordered): Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(c_parser_omp_target_update): Likewise.
+	(c_parser_omp_target_enter_data, c_parser_omp_target_exit_data):
+	Change return type from tree to bool, return false if the
+	directive should be ignored in pragma_stmt contexts.
+	(c_parser_omp_target): Adjust callers of c_parser_omp_target_*_data,
+	return their result directly.
+	(c_parser_omp_cancellation_point): Change return type from void to
+	bool, return false if the directive should be ignored in pragma_stmt
+	contexts.
+	(c_parser_omp_declare): Likewise.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (OMP_SCOPE_CLAUSE_MASK): Define.
+	(c_parser_omp_scope): New function.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_SCOPE.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Parse filter clause name.
+	(c_parser_omp_clause_filter): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_FILTER.
+	(OMP_MASKED_CLAUSE_MASK): Define.
+	(c_parser_omp_masked): New function.
+	(c_parser_omp_parallel): Handle parallel masked.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_MASKED.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_FILTER.
+
+2021-08-12  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/101838
+	PR c/29970
+	* c-typeck.c (c_expr_sizeof_type): Evaluate
+	size expressions for structs of variable size.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_proc_bind): Accept
+	'primary' as alias for 'master'.
+
+2021-08-10  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/29970
+	* c-typeck.c (c_expr_sizeof_expr): Evaluate
+	size expressions for structs of variable size.
+
+2021-08-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* c-decl.c (c_simulate_enum_decl): Pass vec<> by pointer.
+	* c-tree.h (c_simulate_enum_decl): Likewise.
+
+2021-08-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Adjust by-value function
+	vec arguments to by-reference.
+	(c_finish_omp_declare_simd): Same.
+	(c_parser_compound_statement_nostart): Same.
+	(c_parser_for_statement): Same.
+	(c_parser_objc_methodprotolist): Same.
+	(c_parser_oacc_routine): Same.
+	(c_parser_omp_for_loop): Same.
+	(c_parser_omp_declare_simd): Same.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle 'nohost'.
+	(c_parser_oacc_all_clauses): Handle 'PRAGMA_OACC_CLAUSE_NOHOST'.
+	(OACC_ROUTINE_CLAUSE_MASK): Add 'PRAGMA_OACC_CLAUSE_NOHOST'.
+	* c-typeck.c (c_finish_omp_clauses): Handle 'OMP_CLAUSE_NOHOST'.
+
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-tree.h (c_build_function_call_vec): Adjust by-value argument to
+	by-const-reference.
+	* c-typeck.c (c_build_function_call_vec): Same.
+
+2021-07-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101289
+	PR c/97548
+	* c-decl.c (get_parm_array_spec): Strip nops.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-objc-common.c (c_tree_printer): Remove support for %G and %K.
+
 2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/101297
@@ -7734,7 +8719,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2021 Free Software Foundation, Inc.
+Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

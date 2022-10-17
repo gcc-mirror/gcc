@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp-details" } */
+/* { dg-options "-O2 -fdump-tree-evrp-details -fdisable-tree-ethread" } */
 
 extern void g (void);
 extern void bar (int);
@@ -16,4 +16,4 @@ foo (int a)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Predicate evaluates to: 1" 1 "evrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate.* to 1" 1 "evrp" } } */

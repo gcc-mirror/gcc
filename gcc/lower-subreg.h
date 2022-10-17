@@ -1,5 +1,5 @@
-/* Target-dependent costs for lower-subreg.c.
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+/* Target-dependent costs for lower-subreg.cc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

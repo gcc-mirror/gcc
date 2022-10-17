@@ -29,6 +29,13 @@ void main()
     static assert(is(Y4 == void delegate() const));
     static assert(is(Y5.Type == int));
 
+    // https://issues.dlang.org/show_bug.cgi?id=18429
+    struct S
+    {
+        alias a this;
+        enum a = 1;
+    }
+
  /+ struct S
     {
         int value;

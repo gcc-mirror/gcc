@@ -1,10 +1,10 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
- * http://www.digitalmars.com
+ * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
- * http://www.boost.org/LICENSE_1_0.txt
+ * https://www.boost.org/LICENSE_1_0.txt
  * https://github.com/dlang/dmd/blob/master/src/dmd/import.h
  */
 
@@ -16,19 +16,18 @@ class Identifier;
 struct Scope;
 class Module;
 class Package;
-class AliasDeclaration;
 
-class Import : public Dsymbol
+class Import final : public Dsymbol
 {
 public:
     /* static import aliasId = pkg1.pkg2.id : alias1 = name1, alias2 = name2;
      */
 
-    Identifiers *packages;      // array of Identifier's representing packages
+    DArray<Identifier*> packages;      // array of Identifier's representing packages
     Identifier *id;             // module Identifier
     Identifier *aliasId;
     int isstatic;               // !=0 if static import
-    Prot protection;
+    Visibility visibility;
 
     // Pairs of alias=name to bind into current namespace
     Identifiers names;
@@ -39,21 +38,17 @@ public:
 
     AliasDeclarations aliasdecls; // corresponding AliasDeclarations for alias=name pairs
 
-    Import(Loc loc, Identifiers *packages, Identifier *id, Identifier *aliasId,
-        int isstatic);
-    void addAlias(Identifier *name, Identifier *alias);
-    const char *kind() const;
-    Prot prot();
-    Dsymbol *syntaxCopy(Dsymbol *s);    // copy only syntax trees
+    const char *kind() const override;
+    Visibility visible() override;
+    Import *syntaxCopy(Dsymbol *s) override; // copy only syntax trees
     void load(Scope *sc);
-    void importAll(Scope *sc);
-    void addPackageAccess(ScopeDsymbol *scopesym);
-    Dsymbol *toAlias();
-    void addMember(Scope *sc, ScopeDsymbol *sds);
-    void setScope(Scope* sc);
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    bool overloadInsert(Dsymbol *s);
+    void importAll(Scope *sc) override;
+    Dsymbol *toAlias() override;
+    void addMember(Scope *sc, ScopeDsymbol *sds) override;
+    void setScope(Scope* sc) override;
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    bool overloadInsert(Dsymbol *s) override;
 
-    Import *isImport() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    Import *isImport() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };

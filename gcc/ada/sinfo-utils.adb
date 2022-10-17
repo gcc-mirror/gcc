@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;
+with Atree;  use Atree;
 with Debug;  use Debug;
 with Output; use Output;
 with Seinfo;
@@ -55,7 +55,7 @@ package body Sinfo.Utils is
    --  The second method is much faster if the amount of Ada code being
    --  compiled is large.
 
-   ww : Node_Id'Base := Node_Id'First - 1;
+   ww : Node_Id'Base := Node_Low_Bound - 1;
    pragma Export (Ada, ww);
    Watch_Node : Node_Id'Base renames ww;
    --  Node to "watch"; that is, whenever a node is created, we check if it
@@ -72,8 +72,8 @@ package body Sinfo.Utils is
 
    procedure nnd (N : Node_Id);
    pragma Export (Ada, nnd);
-   --  For debugging. If debugging is turned on, New_Node and New_Entity call
-   --  this. If debug flag N is turned on, this prints out the new node.
+   --  For debugging. If debugging is turned on, New_Node and New_Entity (etc.)
+   --  call this. If debug flag N is turned on, this prints out the new node.
    --
    --  If Node = Watch_Node, this prints out the new node and calls
    --  New_Node_Breakpoint. Otherwise, does nothing.
@@ -189,13 +189,9 @@ package body Sinfo.Utils is
    ------------------
 
    function End_Location (N : Node_Id) return Source_Ptr is
-      L : constant Uint := End_Span (N);
+      L : constant Valid_Uint := End_Span (N);
    begin
-      if L = No_Uint then
-         return No_Location;
-      else
-         return Source_Ptr (Int (Sloc (N)) + UI_To_Int (L));
-      end if;
+      return Sloc (N) + Source_Ptr (UI_To_Int (L));
    end End_Location;
 
    --------------------
@@ -218,7 +214,7 @@ package body Sinfo.Utils is
    procedure Set_End_Location (N : Node_Id; S : Source_Ptr) is
    begin
       Set_End_Span (N,
-        UI_From_Int (Int (S) - Int (Sloc (N))));
+        UI_From_Int (Int (S - Sloc (N))));
    end Set_End_Location;
 
    --------------------------
@@ -242,15 +238,28 @@ package body Sinfo.Utils is
    use Seinfo;
 
    function Is_In_Union_Id (F_Kind : Field_Kind) return Boolean is
-     (F_Kind in Node_Id_Field
-              | List_Id_Field
-              | Elist_Id_Field
-              | Name_Id_Field
-              | String_Id_Field
-              | Uint_Field
-              | Ureal_Field
-              | Union_Id_Field);
    --  True if the field type is one that can be converted to Types.Union_Id
+     (case F_Kind is
+       when Node_Id_Field
+          | List_Id_Field
+          | Elist_Id_Field
+          | Name_Id_Field
+          | String_Id_Field
+          | Valid_Uint_Field
+          | Unat_Field
+          | Upos_Field
+          | Nonzero_Uint_Field
+          | Uint_Field
+          | Ureal_Field
+          | Union_Id_Field => True,
+       when Flag_Field
+          | Node_Kind_Type_Field
+          | Entity_Kind_Type_Field
+          | Source_Ptr_Field
+          | Small_Paren_Count_Type_Field
+          | Convention_Id_Field
+          | Component_Alignment_Kind_Field
+          | Mechanism_Type_Field => False);
 
    -----------------------
    -- Walk_Sinfo_Fields --
@@ -265,7 +274,9 @@ package body Sinfo.Utils is
          if Fields (J) /= F_Link then -- Don't walk Parent!
             declare
                Desc : Field_Descriptor renames
-                 Node_Field_Descriptors (Fields (J));
+                 Field_Descriptors (Fields (J));
+               pragma Assert (Desc.Type_Only = No_Type_Only);
+               --  Type_Only is for entities
             begin
                if Is_In_Union_Id (Desc.Kind) then
                   Action (Get_Node_Field_Union (N, Desc.Offset));
@@ -290,7 +301,9 @@ package body Sinfo.Utils is
          if Fields (J) /= F_Link then -- Don't walk Parent!
             declare
                Desc : Field_Descriptor renames
-                 Node_Field_Descriptors (Fields (J));
+                 Field_Descriptors (Fields (J));
+               pragma Assert (Desc.Type_Only = No_Type_Only);
+               --  Type_Only is for entities
             begin
                if Is_In_Union_Id (Desc.Kind) then
                   Set_Node_Field_Union

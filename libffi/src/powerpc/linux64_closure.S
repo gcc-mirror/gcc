@@ -30,6 +30,8 @@
 
 	.file	"linux64_closure.S"
 
+	.machine altivec
+
 #ifdef POWERPC64
 	FFI_HIDDEN (ffi_closure_LINUX64)
 	.globl  ffi_closure_LINUX64
@@ -63,9 +65,15 @@ ffi_closure_LINUX64:
 # endif
 
 # if _CALL_ELF == 2
-#  32 byte special reg save area + 64 byte parm save area
-#  + 64 byte retval area + 13*8 fpr save area + round to 16
-#  define STACKFRAME 272
+#  ifdef __VEC__
+#   32 byte special reg save area + 64 byte parm save area
+#   + 128 byte retval area + 13*8 fpr save area + 12*16 vec save area + round to 16
+#   define STACKFRAME 528
+#  else
+#   32 byte special reg save area + 64 byte parm save area
+#   + 64 byte retval area + 13*8 fpr save area + round to 16
+#   define STACKFRAME 272
+#  endif
 #  define PARMSAVE 32
 #  define RETVAL PARMSAVE+64
 # else
@@ -147,6 +155,35 @@ ffi_closure_LINUX64:
 
 	# load up the pointer to the saved fpr registers
 	addi	%r8, %r1, -104
+
+# ifdef __VEC__
+	# load up the pointer to the saved vector registers
+	# 8 bytes padding for 16-byte alignment at -112(%r1)
+	addi	%r9, %r8, -24
+	stvx	%v13, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v12, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v11, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v10, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v9, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v8, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v7, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v6, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v5, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v4, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v3, 0, %r9
+	addi	%r9, %r9, -16
+	stvx	%v2, 0, %r9
+# endif
 
 	# load up the pointer to the result storage
 	addi	%r6, %r1, -STACKFRAME+RETVAL
@@ -323,6 +360,16 @@ ffi_closure_LINUX64:
 	.cfi_def_cfa_offset 0
 	blr
 	.cfi_def_cfa_offset STACKFRAME
+# case FFI_V2_TYPE_VECTOR
+	addi %r3, %r1, RETVAL
+	lvx %v2, 0, %r3
+	mtlr %r0
+	b .Lfinish
+# case FFI_V2_TYPE_VECTOR_HOMOG
+	addi %r3, %r1, RETVAL
+	lvx %v2, 0, %r3
+	addi %r3, %r3, 16
+	b .Lmorevector
 # case FFI_V2_TYPE_FLOAT_HOMOG
 	lfs %f1, RETVAL+0(%r1)
 	lfs %f2, RETVAL+4(%r1)
@@ -338,6 +385,25 @@ ffi_closure_LINUX64:
 	lfd %f6, RETVAL+40(%r1)
 	lfd %f7, RETVAL+48(%r1)
 	lfd %f8, RETVAL+56(%r1)
+	addi %r1, %r1, STACKFRAME
+	.cfi_def_cfa_offset 0
+	blr
+	.cfi_def_cfa_offset STACKFRAME
+.Lmorevector:
+	lvx %v3, 0, %r3
+	addi %r3, %r3, 16
+	lvx %v4, 0, %r3
+	addi %r3, %r3, 16
+	lvx %v5, 0, %r3
+	mtlr %r0
+	addi %r3, %r3, 16
+	lvx %v6, 0, %r3
+	addi %r3, %r3, 16
+	lvx %v7, 0, %r3
+	addi %r3, %r3, 16
+	lvx %v8, 0, %r3
+	addi %r3, %r3, 16
+	lvx %v9, 0, %r3
 	addi %r1, %r1, STACKFRAME
 	.cfi_def_cfa_offset 0
 	blr

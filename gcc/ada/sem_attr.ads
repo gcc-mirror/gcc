@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -406,13 +406,6 @@ package Sem_Attr is
       --  index subtype of a one dimensional array always gives the same result
       --  as Range applied to the array itself. The result is of type universal
       --  integer.
-
-      ------------
-      -- Reduce --
-      ------------
-
-      Attribute_Reduce => True,
-      --  See AI12-0262-1
 
       ---------
       -- Ref --

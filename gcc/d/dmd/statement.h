@@ -1,16 +1,14 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
- * http://www.digitalmars.com
+ * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
- * http://www.boost.org/LICENSE_1_0.txt
+ * https://www.boost.org/LICENSE_1_0.txt
  * https://github.com/dlang/dmd/blob/master/src/dmd/statement.h
  */
 
 #pragma once
-
-#include "root/root.h"
 
 #include "arraytypes.h"
 #include "ast_node.h"
@@ -18,19 +16,15 @@
 #include "visitor.h"
 #include "tokens.h"
 
-struct OutBuffer;
 struct Scope;
 class Expression;
 class LabelDsymbol;
 class Identifier;
-class Statement;
 class IfStatement;
 class ExpStatement;
 class DefaultStatement;
 class VarDeclaration;
 class Condition;
-class Module;
-struct Token;
 class ErrorStatement;
 class ReturnStatement;
 class CompoundStatement;
@@ -39,7 +33,6 @@ class StaticAssert;
 class AsmStatement;
 class GotoStatement;
 class ScopeStatement;
-class Catch;
 class TryCatchStatement;
 class TryFinallyStatement;
 class CaseStatement;
@@ -50,17 +43,9 @@ class StaticForeach;
 // Back end
 struct code;
 
-Statement *statementSemantic(Statement *s, Scope *sc);
-Statement *semanticNoScope(Statement *s, Scope *sc);
-Statement *semanticScope(Statement *s, Scope *sc, Statement *sbreak, Statement *scontinue);
-void catchSemantic(Catch *c, Scope *sc);
-
-bool inferAggregate(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply);
-bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply);
-
 /* How a statement exits; this is returned by blockExit()
  */
-enum BE
+enum BE : int32_t
 {
     BEnone =     0,
     BEfallthru = 1,
@@ -74,69 +59,128 @@ enum BE
     BEany = (BEfallthru | BEthrow | BEreturn | BEgoto | BEhalt)
 };
 
+typedef unsigned char STMT;
+enum
+{
+    STMTerror,
+    STMTpeel,
+    STMTexp, STMTdtorExp,
+    STMTcompile,
+    STMTcompound, STMTcompoundDeclaration, STMTcompoundAsm,
+    STMTunrolledLoop,
+    STMTscope,
+    STMTforwarding,
+    STMTwhile,
+    STMTdo,
+    STMTfor,
+    STMTforeach,
+    STMTforeachRange,
+    STMTif,
+    STMTconditional,
+    STMTstaticForeach,
+    STMTpragma,
+    STMTstaticAssert,
+    STMTswitch,
+    STMTcase,
+    STMTcaseRange,
+    STMTdefault,
+    STMTgotoDefault,
+    STMTgotoCase,
+    STMTswitchError,
+    STMTreturn,
+    STMTbreak,
+    STMTcontinue,
+    STMTsynchronized,
+    STMTwith,
+    STMTtryCatch,
+    STMTtryFinally,
+    STMTscopeGuard,
+    STMTthrow,
+    STMTdebug,
+    STMTgoto,
+    STMTlabel,
+    STMTasm, STMTinlineAsm, STMTgccAsm,
+    STMTimport
+};
+
 class Statement : public ASTNode
 {
 public:
     Loc loc;
+    STMT stmt;
 
-    Statement(Loc loc);
+    DYNCAST dyncast() const override final { return DYNCAST_STATEMENT; }
+
     virtual Statement *syntaxCopy();
-    static Statements *arraySyntaxCopy(Statements *a);
 
-    void print();
-    const char *toChars();
+    const char *toChars() const override final;
 
     void error(const char *format, ...);
     void warning(const char *format, ...);
     void deprecation(const char *format, ...);
     virtual Statement *getRelatedLabeled() { return this; }
-    virtual bool hasBreak();
-    virtual bool hasContinue();
+    virtual bool hasBreak() const;
+    virtual bool hasContinue() const;
     bool usesEH();
     bool comeFrom();
     bool hasCode();
-    virtual Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexit, Statement **sfinally);
-    virtual Statements *flatten(Scope *sc);
     virtual Statement *last();
 
-    // Avoid dynamic_cast
-    virtual ErrorStatement *isErrorStatement() { return NULL; }
-    virtual ScopeStatement *isScopeStatement() { return NULL; }
-    virtual ExpStatement *isExpStatement() { return NULL; }
-    virtual CompoundStatement *isCompoundStatement() { return NULL; }
-    virtual ReturnStatement *isReturnStatement() { return NULL; }
-    virtual IfStatement *isIfStatement() { return NULL; }
-    virtual CaseStatement *isCaseStatement() { return NULL; }
-    virtual DefaultStatement *isDefaultStatement() { return NULL; }
-    virtual LabelStatement *isLabelStatement() { return NULL; }
-    virtual GotoDefaultStatement *isGotoDefaultStatement() { return NULL; }
-    virtual GotoCaseStatement *isGotoCaseStatement() { return NULL; }
-    virtual BreakStatement *isBreakStatement() { return NULL; }
-    virtual DtorExpStatement *isDtorExpStatement() { return NULL; }
-    virtual ForwardingStatement *isForwardingStatement() { return NULL; }
-    void accept(Visitor *v) { v->visit(this); }
+    virtual ReturnStatement *endsWithReturnStatement() { return NULL; }
+
+    ErrorStatement       *isErrorStatement()       { return stmt == STMTerror       ? (ErrorStatement*)this       : NULL; }
+    ScopeStatement       *isScopeStatement()       { return stmt == STMTscope       ? (ScopeStatement*)this       : NULL; }
+    ExpStatement         *isExpStatement()         { return stmt == STMTexp         ? (ExpStatement*)this         : NULL; }
+    CompoundStatement    *isCompoundStatement()    { return stmt == STMTcompound    ? (CompoundStatement*)this    : NULL; }
+    ReturnStatement      *isReturnStatement()      { return stmt == STMTreturn      ? (ReturnStatement*)this      : NULL; }
+    IfStatement          *isIfStatement()          { return stmt == STMTif          ? (IfStatement*)this          : NULL; }
+    ConditionalStatement *isConditionalStatement() { return stmt == STMTconditional ? (ConditionalStatement*)this : NULL; }
+    StaticForeachStatement *isStaticForeachStatement() { return stmt == STMTstaticForeach ? (StaticForeachStatement*)this : NULL; }
+    CaseStatement        *isCaseStatement()        { return stmt == STMTcase        ? (CaseStatement*)this        : NULL; }
+    DefaultStatement     *isDefaultStatement()     { return stmt == STMTdefault     ? (DefaultStatement*)this     : NULL; }
+    LabelStatement       *isLabelStatement()       { return stmt == STMTlabel       ? (LabelStatement*)this       : NULL; }
+    GotoDefaultStatement *isGotoDefaultStatement() { return stmt == STMTgotoDefault ? (GotoDefaultStatement*)this : NULL; }
+    GotoCaseStatement    *isGotoCaseStatement()    { return stmt == STMTgotoCase    ? (GotoCaseStatement*)this    : NULL; }
+    BreakStatement       *isBreakStatement()       { return stmt == STMTbreak       ? (BreakStatement*)this       : NULL; }
+    DtorExpStatement     *isDtorExpStatement()     { return stmt == STMTdtorExp     ? (DtorExpStatement*)this     : NULL; }
+    CompileStatement     *isCompileStatement()     { return stmt == STMTcompile     ? (CompileStatement*)this     : NULL; }
+    ForwardingStatement  *isForwardingStatement()  { return stmt == STMTforwarding  ? (ForwardingStatement*)this  : NULL; }
+    DoStatement          *isDoStatement()          { return stmt == STMTdo          ? (DoStatement*)this          : NULL; }
+    ForStatement         *isForStatement()         { return stmt == STMTfor         ? (ForStatement*)this         : NULL; }
+    ForeachStatement     *isForeachStatement()     { return stmt == STMTforeach     ? (ForeachStatement*)this     : NULL; }
+    SwitchStatement      *isSwitchStatement()      { return stmt == STMTswitch      ? (SwitchStatement*)this      : NULL; }
+    ContinueStatement    *isContinueStatement()    { return stmt == STMTcontinue    ? (ContinueStatement*)this    : NULL; }
+    WithStatement        *isWithStatement()        { return stmt == STMTwith        ? (WithStatement*)this        : NULL; }
+    TryCatchStatement    *isTryCatchStatement()    { return stmt == STMTtryCatch    ? (TryCatchStatement*)this    : NULL; }
+    ThrowStatement       *isThrowStatement()       { return stmt == STMTthrow       ? (ThrowStatement*)this       : NULL; }
+    DebugStatement       *isDebugStatement()       { return stmt == STMTdebug       ? (DebugStatement*)this       : NULL; }
+    TryFinallyStatement  *isTryFinallyStatement()  { return stmt == STMTtryFinally  ? (TryFinallyStatement*)this  : NULL; }
+    ScopeGuardStatement  *isScopeGuardStatement()  { return stmt == STMTscopeGuard  ? (ScopeGuardStatement*)this  : NULL; }
+    SwitchErrorStatement  *isSwitchErrorStatement()  { return stmt == STMTswitchError  ? (SwitchErrorStatement*)this  : NULL; }
+    UnrolledLoopStatement *isUnrolledLoopStatement() { return stmt == STMTunrolledLoop ? (UnrolledLoopStatement*)this : NULL; }
+    ForeachRangeStatement *isForeachRangeStatement() { return stmt == STMTforeachRange ? (ForeachRangeStatement*)this : NULL; }
+    CompoundDeclarationStatement *isCompoundDeclarationStatement() { return stmt == STMTcompoundDeclaration ? (CompoundDeclarationStatement*)this : NULL; }
+
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 /** Any Statement that fails semantic() or has a component that is an ErrorExp or
  * a TypeError should return an ErrorStatement from semantic().
  */
-class ErrorStatement : public Statement
+class ErrorStatement final : public Statement
 {
 public:
-    ErrorStatement();
-    Statement *syntaxCopy();
+    ErrorStatement *syntaxCopy() override;
 
-    ErrorStatement *isErrorStatement() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class PeelStatement : public Statement
+class PeelStatement final : public Statement
 {
 public:
     Statement *s;
 
-    PeelStatement(Statement *s);
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 class ExpStatement : public Statement
@@ -144,18 +188,13 @@ class ExpStatement : public Statement
 public:
     Expression *exp;
 
-    ExpStatement(Loc loc, Expression *exp);
-    ExpStatement(Loc loc, Dsymbol *s);
-    static ExpStatement *create(Loc loc, Expression *exp);
-    Statement *syntaxCopy();
-    Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexit, Statement **sfinally);
-    Statements *flatten(Scope *sc);
+    static ExpStatement *create(const Loc &loc, Expression *exp);
+    ExpStatement *syntaxCopy() override;
 
-    ExpStatement *isExpStatement() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class DtorExpStatement : public ExpStatement
+class DtorExpStatement final : public ExpStatement
 {
 public:
     /* Wraps an expression that is the destruction of 'var'
@@ -163,23 +202,17 @@ public:
 
     VarDeclaration *var;
 
-    DtorExpStatement(Loc loc, Expression *exp, VarDeclaration *v);
-    Statement *syntaxCopy();
-    void accept(Visitor *v) { v->visit(this); }
-
-    DtorExpStatement *isDtorExpStatement() { return this; }
+    DtorExpStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class CompileStatement : public Statement
+class CompileStatement final : public Statement
 {
 public:
     Expressions *exps;
 
-    CompileStatement(Loc loc, Expression *exp);
-    CompileStatement(Loc loc, Expressions *exps);
-    Statement *syntaxCopy();
-    Statements *flatten(Scope *sc);
-    void accept(Visitor *v) { v->visit(this); }
+    CompileStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 class CompoundStatement : public Statement
@@ -187,104 +220,90 @@ class CompoundStatement : public Statement
 public:
     Statements *statements;
 
-    CompoundStatement(Loc loc, Statements *s);
-    CompoundStatement(Loc loc, Statement *s1);
-    CompoundStatement(Loc loc, Statement *s1, Statement *s2);
-    static CompoundStatement *create(Loc loc, Statement *s1, Statement *s2);
-    Statement *syntaxCopy();
-    Statements *flatten(Scope *sc);
-    ReturnStatement *isReturnStatement();
-    Statement *last();
+    static CompoundStatement *create(const Loc &loc, Statement *s1, Statement *s2);
+    CompoundStatement *syntaxCopy() override;
+    ReturnStatement *endsWithReturnStatement() override final;
+    Statement *last() override final;
 
-    CompoundStatement *isCompoundStatement() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class CompoundDeclarationStatement : public CompoundStatement
+class CompoundDeclarationStatement final : public CompoundStatement
 {
 public:
-    CompoundDeclarationStatement(Loc loc, Statements *s);
-    Statement *syntaxCopy();
-    void accept(Visitor *v) { v->visit(this); }
+    CompoundDeclarationStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 /* The purpose of this is so that continue will go to the next
  * of the statements, and break will go to the end of the statements.
  */
-class UnrolledLoopStatement : public Statement
+class UnrolledLoopStatement final : public Statement
 {
 public:
     Statements *statements;
 
-    UnrolledLoopStatement(Loc loc, Statements *statements);
-    Statement *syntaxCopy();
-    bool hasBreak();
-    bool hasContinue();
+    UnrolledLoopStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ScopeStatement : public Statement
+class ScopeStatement final : public Statement
 {
 public:
     Statement *statement;
     Loc endloc;                 // location of closing curly bracket
 
-    ScopeStatement(Loc loc, Statement *s, Loc endloc);
-    Statement *syntaxCopy();
-    ScopeStatement *isScopeStatement() { return this; }
-    ReturnStatement *isReturnStatement();
-    bool hasBreak();
-    bool hasContinue();
+    ScopeStatement *syntaxCopy() override;
+    ReturnStatement *endsWithReturnStatement() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ForwardingStatement : public Statement
+class ForwardingStatement final : public Statement
 {
 public:
     ForwardingScopeDsymbol *sym;
     Statement *statement;
 
-    ForwardingStatement(Loc loc, ForwardingScopeDsymbol *sym, Statement *s);
-    ForwardingStatement(Loc loc, Statement *s);
-    Statement *syntaxCopy();
-    Statements *flatten(Scope *sc);
-    ForwardingStatement *isForwardingStatement() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    ForwardingStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class WhileStatement : public Statement
+class WhileStatement final : public Statement
 {
 public:
+    Parameter *param;
     Expression *condition;
     Statement *_body;
     Loc endloc;                 // location of closing curly bracket
 
-    WhileStatement(Loc loc, Expression *c, Statement *b, Loc endloc);
-    Statement *syntaxCopy();
-    bool hasBreak();
-    bool hasContinue();
+    WhileStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class DoStatement : public Statement
+class DoStatement final : public Statement
 {
 public:
     Statement *_body;
     Expression *condition;
     Loc endloc;                 // location of ';' after while
 
-    DoStatement(Loc loc, Statement *b, Expression *c, Loc endloc);
-    Statement *syntaxCopy();
-    bool hasBreak();
-    bool hasContinue();
+    DoStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ForStatement : public Statement
+class ForStatement final : public Statement
 {
 public:
     Statement *_init;
@@ -298,17 +317,15 @@ public:
     // treat that label as referring to this loop.
     Statement *relatedLabeled;
 
-    ForStatement(Loc loc, Statement *init, Expression *condition, Expression *increment, Statement *body, Loc endloc);
-    Statement *syntaxCopy();
-    Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexit, Statement **sfinally);
-    Statement *getRelatedLabeled() { return relatedLabeled ? relatedLabeled : this; }
-    bool hasBreak();
-    bool hasContinue();
+    ForStatement *syntaxCopy() override;
+    Statement *getRelatedLabeled() override { return relatedLabeled ? relatedLabeled : this; }
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ForeachStatement : public Statement
+class ForeachStatement final : public Statement
 {
 public:
     TOK op;                     // TOKforeach or TOKforeach_reverse
@@ -325,16 +342,14 @@ public:
     Statements *cases;          // put breaks, continues, gotos and returns here
     ScopeStatements *gotos;     // forward referenced goto's go here
 
-    ForeachStatement(Loc loc, TOK op, Parameters *parameters, Expression *aggr, Statement *body, Loc endloc);
-    Statement *syntaxCopy();
-    bool checkForArgTypes();
-    bool hasBreak();
-    bool hasContinue();
+    ForeachStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ForeachRangeStatement : public Statement
+class ForeachRangeStatement final : public Statement
 {
 public:
     TOK op;                     // TOKforeach or TOKforeach_reverse
@@ -346,84 +361,73 @@ public:
 
     VarDeclaration *key;
 
-    ForeachRangeStatement(Loc loc, TOK op, Parameter *prm,
-        Expression *lwr, Expression *upr, Statement *body, Loc endloc);
-    Statement *syntaxCopy();
-    bool hasBreak();
-    bool hasContinue();
+    ForeachRangeStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class IfStatement : public Statement
+class IfStatement final : public Statement
 {
 public:
     Parameter *prm;
     Expression *condition;
     Statement *ifbody;
     Statement *elsebody;
+    VarDeclaration *match;      // for MatchExpression results
     Loc endloc;                 // location of closing curly bracket
 
-    VarDeclaration *match;      // for MatchExpression results
+    IfStatement *syntaxCopy() override;
 
-    IfStatement(Loc loc, Parameter *prm, Expression *condition, Statement *ifbody, Statement *elsebody, Loc endloc);
-    Statement *syntaxCopy();
-    IfStatement *isIfStatement() { return this; }
-
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ConditionalStatement : public Statement
+class ConditionalStatement final : public Statement
 {
 public:
     Condition *condition;
     Statement *ifbody;
     Statement *elsebody;
 
-    ConditionalStatement(Loc loc, Condition *condition, Statement *ifbody, Statement *elsebody);
-    Statement *syntaxCopy();
-    Statements *flatten(Scope *sc);
+    ConditionalStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class StaticForeachStatement : public Statement
+class StaticForeachStatement final : public Statement
 {
 public:
     StaticForeach *sfe;
 
-    StaticForeachStatement(Loc loc, StaticForeach *sfe);
-    Statement *syntaxCopy();
-    Statements *flatten(Scope *sc);
+    StaticForeachStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class PragmaStatement : public Statement
+class PragmaStatement final : public Statement
 {
 public:
     Identifier *ident;
     Expressions *args;          // array of Expression's
     Statement *_body;
 
-    PragmaStatement(Loc loc, Identifier *ident, Expressions *args, Statement *body);
-    Statement *syntaxCopy();
+    PragmaStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class StaticAssertStatement : public Statement
+class StaticAssertStatement final : public Statement
 {
 public:
     StaticAssert *sa;
 
-    StaticAssertStatement(StaticAssert *sa);
-    Statement *syntaxCopy();
+    StaticAssertStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class SwitchStatement : public Statement
+class SwitchStatement final : public Statement
 {
 public:
     Expression *condition;
@@ -431,6 +435,7 @@ public:
     bool isFinal;
 
     DefaultStatement *sdefault;
+    Statement *tryBody;            // set to TryCatchStatement or TryFinallyStatement if in _body portion
     TryFinallyStatement *tf;
     GotoCaseStatements gotoCases;  // array of unresolved GotoCaseStatement's
     CaseStatements *cases;         // array of CaseStatement's
@@ -438,15 +443,13 @@ public:
     int hasVars;                // !=0 if has variable case values
     VarDeclaration *lastVar;
 
-    SwitchStatement(Loc loc, Expression *c, Statement *b, bool isFinal);
-    Statement *syntaxCopy();
-    bool hasBreak();
-    bool checkLabel();
+    SwitchStatement *syntaxCopy() override;
+    bool hasBreak() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class CaseStatement : public Statement
+class CaseStatement final : public Statement
 {
 public:
     Expression *exp;
@@ -454,126 +457,112 @@ public:
 
     int index;          // which case it is (since we sort this)
     VarDeclaration *lastVar;
+    void* extra;            // for use by Statement_toIR()
 
-    CaseStatement(Loc loc, Expression *exp, Statement *s);
-    Statement *syntaxCopy();
-    int compare(RootObject *obj);
-    CaseStatement *isCaseStatement() { return this; }
+    CaseStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 
-class CaseRangeStatement : public Statement
+class CaseRangeStatement final : public Statement
 {
 public:
     Expression *first;
     Expression *last;
     Statement *statement;
 
-    CaseRangeStatement(Loc loc, Expression *first, Expression *last, Statement *s);
-    Statement *syntaxCopy();
-    void accept(Visitor *v) { v->visit(this); }
+    CaseRangeStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 
-class DefaultStatement : public Statement
+class DefaultStatement final : public Statement
 {
 public:
     Statement *statement;
     VarDeclaration *lastVar;
 
-    DefaultStatement(Loc loc, Statement *s);
-    Statement *syntaxCopy();
-    DefaultStatement *isDefaultStatement() { return this; }
+    DefaultStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class GotoDefaultStatement : public Statement
+class GotoDefaultStatement final : public Statement
 {
 public:
     SwitchStatement *sw;
 
-    GotoDefaultStatement(Loc loc);
-    Statement *syntaxCopy();
-    GotoDefaultStatement *isGotoDefaultStatement() { return this; }
+    GotoDefaultStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class GotoCaseStatement : public Statement
+class GotoCaseStatement final : public Statement
 {
 public:
     Expression *exp;            // NULL, or which case to goto
     CaseStatement *cs;          // case statement it resolves to
 
-    GotoCaseStatement(Loc loc, Expression *exp);
-    Statement *syntaxCopy();
-    GotoCaseStatement *isGotoCaseStatement() { return this; }
+    GotoCaseStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class SwitchErrorStatement : public Statement
+class SwitchErrorStatement final : public Statement
 {
 public:
-    SwitchErrorStatement(Loc loc);
+    Expression *exp;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ReturnStatement : public Statement
+class ReturnStatement final : public Statement
 {
 public:
     Expression *exp;
     size_t caseDim;
 
-    ReturnStatement(Loc loc, Expression *exp);
-    Statement *syntaxCopy();
+    ReturnStatement *syntaxCopy() override;
 
-    ReturnStatement *isReturnStatement() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    ReturnStatement *endsWithReturnStatement() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class BreakStatement : public Statement
+class BreakStatement final : public Statement
 {
 public:
     Identifier *ident;
 
-    BreakStatement(Loc loc, Identifier *ident);
-    Statement *syntaxCopy();
+    BreakStatement *syntaxCopy() override;
 
-    BreakStatement *isBreakStatement() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ContinueStatement : public Statement
+class ContinueStatement final : public Statement
 {
 public:
     Identifier *ident;
 
-    ContinueStatement(Loc loc, Identifier *ident);
-    Statement *syntaxCopy();
+    ContinueStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class SynchronizedStatement : public Statement
+class SynchronizedStatement final : public Statement
 {
 public:
     Expression *exp;
     Statement *_body;
 
-    SynchronizedStatement(Loc loc, Expression *exp, Statement *body);
-    Statement *syntaxCopy();
-    bool hasBreak();
-    bool hasContinue();
+    SynchronizedStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class WithStatement : public Statement
+class WithStatement final : public Statement
 {
 public:
     Expression *exp;
@@ -581,34 +570,34 @@ public:
     VarDeclaration *wthis;
     Loc endloc;
 
-    WithStatement(Loc loc, Expression *exp, Statement *body, Loc endloc);
-    Statement *syntaxCopy();
+    WithStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class TryCatchStatement : public Statement
+class TryCatchStatement final : public Statement
 {
 public:
     Statement *_body;
     Catches *catches;
 
-    TryCatchStatement(Loc loc, Statement *body, Catches *catches);
-    Statement *syntaxCopy();
-    bool hasBreak();
+    Statement *tryBody;   /// set to enclosing TryCatchStatement or TryFinallyStatement if in _body portion
 
-    void accept(Visitor *v) { v->visit(this); }
+    TryCatchStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class Catch : public RootObject
+class Catch final : public RootObject
 {
 public:
     Loc loc;
     Type *type;
     Identifier *ident;
-    VarDeclaration *var;
     Statement *handler;
 
+    VarDeclaration *var;
     // set if semantic processing errors
     bool errors;
 
@@ -616,39 +605,38 @@ public:
     // wasn't present in source code
     bool internalCatch;
 
-    Catch(Loc loc, Type *t, Identifier *id, Statement *handler);
     Catch *syntaxCopy();
 };
 
-class TryFinallyStatement : public Statement
+class TryFinallyStatement final : public Statement
 {
 public:
     Statement *_body;
     Statement *finalbody;
 
-    TryFinallyStatement(Loc loc, Statement *body, Statement *finalbody);
-    static TryFinallyStatement *create(Loc loc, Statement *body, Statement *finalbody);
-    Statement *syntaxCopy();
-    bool hasBreak();
-    bool hasContinue();
+    Statement *tryBody;   // set to enclosing TryCatchStatement or TryFinallyStatement if in _body portion
+    bool bodyFallsThru;   // true if _body falls through to finally
 
-    void accept(Visitor *v) { v->visit(this); }
+    static TryFinallyStatement *create(const Loc &loc, Statement *body, Statement *finalbody);
+    TryFinallyStatement *syntaxCopy() override;
+    bool hasBreak() const override;
+    bool hasContinue() const override;
+
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ScopeGuardStatement : public Statement
+class ScopeGuardStatement final : public Statement
 {
 public:
     TOK tok;
     Statement *statement;
 
-    ScopeGuardStatement(Loc loc, TOK tok, Statement *statement);
-    Statement *syntaxCopy();
-    Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexit, Statement **sfinally);
+    ScopeGuardStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ThrowStatement : public Statement
+class ThrowStatement final : public Statement
 {
 public:
     Expression *exp;
@@ -656,70 +644,64 @@ public:
     // wasn't present in source code
     bool internalThrow;
 
-    ThrowStatement(Loc loc, Expression *exp);
-    Statement *syntaxCopy();
+    ThrowStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class DebugStatement : public Statement
+class DebugStatement final : public Statement
 {
 public:
     Statement *statement;
 
-    DebugStatement(Loc loc, Statement *statement);
-    Statement *syntaxCopy();
-    Statements *flatten(Scope *sc);
-    void accept(Visitor *v) { v->visit(this); }
+    DebugStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class GotoStatement : public Statement
+class GotoStatement final : public Statement
 {
 public:
     Identifier *ident;
     LabelDsymbol *label;
+    Statement *tryBody;   /// set to enclosing TryCatchStatement or TryFinallyStatement if in _body portion
     TryFinallyStatement *tf;
     ScopeGuardStatement *os;
     VarDeclaration *lastVar;
 
-    GotoStatement(Loc loc, Identifier *ident);
-    Statement *syntaxCopy();
-    bool checkLabel();
+    GotoStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class LabelStatement : public Statement
+class LabelStatement final : public Statement
 {
 public:
     Identifier *ident;
     Statement *statement;
+    Statement *tryBody;   /// set to enclosing TryCatchStatement or TryFinallyStatement if in _body portion
     TryFinallyStatement *tf;
     ScopeGuardStatement *os;
     VarDeclaration *lastVar;
     Statement *gotoTarget;      // interpret
-
+    void* extra;                // used by Statement_toIR()
     bool breaks;                // someone did a 'break ident'
 
-    LabelStatement(Loc loc, Identifier *ident, Statement *statement);
-    Statement *syntaxCopy();
-    Statements *flatten(Scope *sc);
-    Statement *scopeCode(Scope *sc, Statement **sentry, Statement **sexit, Statement **sfinally);
+    LabelStatement *syntaxCopy() override;
 
-    LabelStatement *isLabelStatement() { return this; }
-
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class LabelDsymbol : public Dsymbol
+class LabelDsymbol final : public Dsymbol
 {
 public:
     LabelStatement *statement;
 
-    LabelDsymbol(Identifier *ident);
+    bool deleted;           // set if rewritten to return in foreach delegate
+    bool iasm;              // set if used by inline assembler
+
     static LabelDsymbol *create(Identifier *ident);
-    LabelDsymbol *isLabel();
-    void accept(Visitor *v) { v->visit(this); }
+    LabelDsymbol *isLabel() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 Statement* asmSemantic(AsmStatement *s, Scope *sc);
@@ -729,12 +711,11 @@ class AsmStatement : public Statement
 public:
     Token *tokens;
 
-    AsmStatement(Loc loc, Token *tokens);
-    Statement *syntaxCopy();
-    void accept(Visitor *v) { v->visit(this); }
+    AsmStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class InlineAsmStatement : public AsmStatement
+class InlineAsmStatement final : public AsmStatement
 {
 public:
     code *asmcode;
@@ -743,13 +724,12 @@ public:
     bool refparam;              // true if function parameter is referenced
     bool naked;                 // true if function is to be naked
 
-    InlineAsmStatement(Loc loc, Token *tokens);
-    Statement *syntaxCopy();
-    void accept(Visitor *v) { v->visit(this); }
+    InlineAsmStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 // A GCC asm statement - assembler instructions with D expression operands
-class GccAsmStatement : public AsmStatement
+class GccAsmStatement final : public AsmStatement
 {
 public:
     StorageClass stc;           // attributes of the asm {} block
@@ -762,31 +742,27 @@ public:
     Identifiers *labels;        // list of goto labels
     GotoStatements *gotos;      // of the goto labels, the equivalent statements they represent
 
-    GccAsmStatement(Loc loc, Token *tokens);
-    Statement *syntaxCopy();
-    void accept(Visitor *v) { v->visit(this); }
+    GccAsmStatement *syntaxCopy() override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 // a complete asm {} block
-class CompoundAsmStatement : public CompoundStatement
+class CompoundAsmStatement final : public CompoundStatement
 {
 public:
     StorageClass stc; // postfix attributes like nothrow/pure/@trusted
 
-    CompoundAsmStatement(Loc loc, Statements *s, StorageClass stc);
-    CompoundAsmStatement *syntaxCopy();
-    Statements *flatten(Scope *sc);
+    CompoundAsmStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
-class ImportStatement : public Statement
+class ImportStatement final : public Statement
 {
 public:
     Dsymbols *imports;          // Array of Import's
 
-    ImportStatement(Loc loc, Dsymbols *imports);
-    Statement *syntaxCopy();
+    ImportStatement *syntaxCopy() override;
 
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };

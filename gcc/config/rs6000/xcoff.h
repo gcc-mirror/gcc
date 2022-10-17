@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -30,7 +30,7 @@
 /* Define the magic numbers that we recognize as COFF.
  
     AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit objects and AIX V5 adds
-    U64_TOCMAGIC (0767), but collect2.c does not include files in the
+    U64_TOCMAGIC (0767), but collect2.cc does not include files in the
     correct order to conditionally define the symbolic name in this macro.
  
     The AIX linker accepts import/export files as object files,
@@ -184,7 +184,7 @@
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
   asm_fprintf ((FILE), "%U%s", rs6000_xcoff_strip_dollar (NAME))
 
-/* This is how to output an internal label prefix.  rs6000.c uses this
+/* This is how to output an internal label prefix.  rs6000.cc uses this
    when generating traceback tables.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)   \

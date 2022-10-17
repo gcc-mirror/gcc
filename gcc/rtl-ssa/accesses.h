@@ -1,5 +1,5 @@
 // Access-related classes for RTL SSA                               -*- C++ -*-
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -909,6 +909,12 @@ public:
   clobber_info *first_clobber () const;
   clobber_info *last_clobber () const { return m_last_clobber; }
 
+  // Return the last clobber before INSN in the group, or null if none.
+  clobber_info *prev_clobber (insn_info *insn) const;
+
+  // Return the next clobber after INSN in the group, or null if none.
+  clobber_info *next_clobber (insn_info *insn) const;
+
   // Return true if this group has been replaced by new clobber_groups.
   bool has_been_superceded () const { return !m_last_clobber; }
 
@@ -993,25 +999,33 @@ public:
   //
   // Otherwise, return the last definition that occurs before P,
   // or null if none.
-  def_info *prev_def () const;
+  def_info *last_def_of_prev_group () const;
 
   // If we found a clobber_group that spans P, return the definition
   // that follows the end of the group, or null if none.
   //
   // Otherwise, return the first definition that occurs after P,
   // or null if none.
-  def_info *next_def () const;
+  def_info *first_def_of_next_group () const;
 
   // If we found a set_info at P, return that set_info, otherwise return null.
   set_info *matching_set () const;
 
   // If we found a set_info at P, return that set_info, otherwise return
   // prev_def ().
-  def_info *matching_or_prev_def () const;
+  def_info *matching_set_or_last_def_of_prev_group () const;
 
   // If we found a set_info at P, return that set_info, otherwise return
   // next_def ().
-  def_info *matching_or_next_def () const;
+  def_info *matching_set_or_first_def_of_next_group () const;
+
+  // P is the location of INSN.  Return the last definition (of any kind)
+  // that occurs before INSN, or null if none.
+  def_info *prev_def (insn_info *insn) const;
+
+  // P is the location of INSN.  Return the next definition (of any kind)
+  // that occurs after INSN, or null if none.
+  def_info *next_def (insn_info *insn) const;
 
   def_mux mux;
   int comparison;

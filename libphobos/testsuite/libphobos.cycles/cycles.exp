@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021 Free Software Foundation, Inc.
+# Copyright (C) 2017-2022 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ set cycle_test_list [list \
     { ignore ""	 0 } \
     { abort "object.Error@.*: Cyclic dependency between module mod. and mod." 1 } \
     { print "Cyclic dependency between module mod. and mod." 0 } \
-    { deprecate "Deprecation 16211 warning:" 0 } \
+    { deprecate "deprecate is no longer supported, using abort instead" 1 } \
 ]
 
 # Initialize dg.

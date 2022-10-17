@@ -1,5 +1,5 @@
 /* Definitions for SH running Linux-based GNU systems using ELF
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
 This file is part of GCC.
@@ -111,11 +111,11 @@ along with GCC; see the file COPYING3.  If not see
    in MD_FALLBACK_FRAME_STATE_FOR and its content will be read with
    _Unwind_GetGR which uses dwarf_reg_size_table to get the size of
    the register.  So the entry of dwarf_reg_size_table corresponding to
-   this slot must be set.  To do this, we redefine DBX_REGISTER_NUMBER
+   this slot must be set.  To do this, we redefine DEBUGGER_REGNO
    so as to return itself for 16.  */
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(REGNO) \
-  (((REGNO) == 16) ? 16 : SH_DBX_REGISTER_NUMBER (REGNO))
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(REGNO) \
+  (((REGNO) == 16) ? 16 : SH_DEBUGGER_REGNO (REGNO))
 
 /* Install the __sync libcalls.  */
 #undef TARGET_INIT_LIBFUNCS
@@ -126,7 +126,7 @@ along with GCC; see the file COPYING3.  If not see
   do									\
     {									\
       /* Set default atomic model if it hasn't been specified.  */	\
-      if (global_options_set.x_sh_atomic_model_str == 0)		\
+      if (OPTION_SET_P (sh_atomic_model_str) == 0)		\
 	{								\
 	  if (TARGET_SH3)						\
 	    sh_atomic_model_str = "soft-gusa";				\
@@ -134,7 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 	    sh_atomic_model_str = "soft-imask";				\
 	}								\
       /* Set -musermode if it hasn't been specified.  */		\
-      if (global_options_set.x_TARGET_USERMODE == 0)			\
+      if (OPTION_SET_P (TARGET_USERMODE) == 0)			\
 	TARGET_USERMODE = true;						\
     }									\
   while (0)

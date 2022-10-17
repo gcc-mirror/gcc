@@ -4,7 +4,7 @@
    immediate successors of the basic block.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdisable-tree-evrp -fdump-tree-vrp1-details -fdelete-null-pointer-checks" } */
+/* { dg-options "-O2 -fno-thread-jumps -fdisable-tree-evrp -fdump-tree-vrp1-details -fdelete-null-pointer-checks" } */
 
 extern void bar (int);
 

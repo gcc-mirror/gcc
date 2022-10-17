@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -718,14 +718,13 @@ _mm_loadu_si64 (void const *__P)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadu_si32 (void const *__P)
 {
-  return _mm_set_epi32 (*(int *)__P, (int)0, (int)0, (int)0);
+  return _mm_set_epi32 (0, 0, 0, (*(__m32_u *)__P)[0]);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadu_si16 (void const *__P)
 {
-  return _mm_set_epi16 (*(short *)__P, (short)0, (short)0, (short)0,
-			(short)0, (short)0, (short)0, (short)0);
+  return _mm_set_epi16 (0, 0, 0, 0, 0, 0, 0, (*(__m16_u *)__P)[0]);
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))

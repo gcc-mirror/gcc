@@ -1,7 +1,7 @@
 ;; Constraints definitions belonging to the gcc backend for IBM S/390.
-;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
 ;; Written by Wolfgang Gellerich, using code and information found in
-;; files s390.md, s390.h, and s390.c.
+;; files s390.md, s390.h, and s390.cc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -595,11 +595,11 @@
 
 ;; This constraint must behave like "i", in particular, the matching values
 ;; must never be placed into registers or memory by
-;; cfgexpand.c:expand_asm_stmt.  It could be straightforward to start its name
-;; with a letter from genpreds.c:const_int_constraints, however it would
+;; cfgexpand.cc:expand_asm_stmt.  It could be straightforward to start its name
+;; with a letter from genpreds.cc:const_int_constraints, however it would
 ;; require using (match_code "const_int"), which is infeasible.  To achieve the
 ;; same effect, that is, setting maybe_allows_reg and maybe_allows_mem to false
-;; in genpreds.c:add_constraint, we explicitly exclude reg, subreg and mem
+;; in genpreds.cc:add_constraint, we explicitly exclude reg, subreg and mem
 ;; codes.
 (define_constraint "jdd"
   "A constant operand that fits into the data section.

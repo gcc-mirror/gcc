@@ -5,5 +5,5 @@
 !
 program foo
    integer, parameter :: a(2) = [2, -2]
-   integer, parameter :: b(2,2) = reshape([1, 2, 3, 4], a) ! { dg-error "cannot be negative" }
+   integer, parameter :: b(2,2) = reshape([1, 2, 3, 4], a) ! { dg-error "negative" }
 end program foo

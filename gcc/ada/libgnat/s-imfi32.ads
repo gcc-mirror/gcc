@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,11 @@ with System.Arith_32;
 with System.Image_F;
 
 package System.Img_Fixed_32 is
-   pragma Pure;
 
    subtype Int32 is Interfaces.Integer_32;
+   subtype Uns32 is Interfaces.Unsigned_32;
 
-   package Impl is new Image_F (Int32, Arith_32.Scaled_Divide32);
+   package Impl is new Image_F (Int32, Uns32, Arith_32.Scaled_Divide32);
 
    procedure Image_Fixed32
      (V    : Int32;

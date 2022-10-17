@@ -1,5 +1,5 @@
 /* Definition for processor table alias flags.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -108,3 +108,4 @@ DEF_PTA(HRESET)
 DEF_PTA(KL)
 DEF_PTA(WIDEKL)
 DEF_PTA(AVXVNNI)
+DEF_PTA(AVX512FP16)

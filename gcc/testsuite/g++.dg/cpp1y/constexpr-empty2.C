@@ -1,4 +1,5 @@
 // { dg-do compile { target c++14 } }
+// { dg-additional-options -fno-elide-constructors }
 
 struct A
 {

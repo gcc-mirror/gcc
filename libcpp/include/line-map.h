@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -21,6 +21,8 @@ along with this program; see the file COPYING3.  If not see
 
 #ifndef LIBCPP_LINE_MAP_H
 #define LIBCPP_LINE_MAP_H
+
+#include <utility>
 
 #ifndef GTY
 #define GTY(x) /* nothing */
@@ -83,7 +85,7 @@ enum lc_reason
 
    This key only has meaning in relation to a line_maps instance.  Within
    gcc there is a single line_maps instance: "line_table", declared in
-   gcc/input.h and defined in gcc/input.c.
+   gcc/input.h and defined in gcc/input.cc.
 
    The values of the keys are intended to be internal to libcpp,
    but for ease-of-understanding the implementation, they are currently
@@ -755,6 +757,7 @@ struct GTY(()) location_adhoc_data {
   location_t locus;
   source_range src_range;
   void * GTY((skip)) data;
+  unsigned discriminator;
 };
 
 struct htab;
@@ -792,6 +795,9 @@ public:
   /* If true, prints an include trace a la -H.  */
   bool trace_includes;
 
+  /* True if we've seen a #line or # 44 "file" directive.  */
+  bool seen_line_directive;
+
   /* Highest location_t "given out".  */
   location_t highest_location;
 
@@ -803,20 +809,17 @@ public:
   unsigned int max_column_hint;
 
   /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
-  line_map_realloc reallocator;
+  line_map_realloc GTY((callback)) reallocator;
 
   /* The allocators' function used to know the actual size it
      allocated, for a certain allocation size requested.  */
-  line_map_round_alloc_size_func round_alloc_size;
+  line_map_round_alloc_size_func GTY((callback)) round_alloc_size;
 
   struct location_adhoc_data_map location_adhoc_data_map;
 
   /* The special location value that is used as spelling location for
      built-in tokens.  */
   location_t builtin_location;
-
-  /* True if we've seen a #line or # 44 "file" directive.  */
-  bool seen_line_directive;
 
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
@@ -1032,12 +1035,14 @@ LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
 }
 
 extern location_t get_combined_adhoc_loc (line_maps *, location_t,
-					  source_range, void *);
+					  source_range, void *, unsigned);
 extern void *get_data_from_adhoc_loc (const line_maps *, location_t);
+extern unsigned get_discriminator_from_adhoc_loc (const line_maps *, location_t);
 extern location_t get_location_from_adhoc_loc (const line_maps *,
 					       location_t);
 
 extern source_range get_range_from_loc (line_maps *set, location_t loc);
+extern unsigned get_discriminator_from_loc (line_maps *set, location_t loc);
 
 /* Get whether location LOC is a "pure" location, or
    whether it is an ad-hoc location, or embeds range information.  */
@@ -1056,9 +1061,10 @@ inline location_t
 COMBINE_LOCATION_DATA (class line_maps *set,
 		       location_t loc,
 		       source_range src_range,
-		       void *block)
+		       void *block,
+		       unsigned discriminator)
 {
-  return get_combined_adhoc_loc (set, loc, src_range, block);
+  return get_combined_adhoc_loc (set, loc, src_range, block, discriminator);
 }
 
 extern void rebuild_location_adhoc_htab (class line_maps *);
@@ -1670,6 +1676,12 @@ class rich_location
   /* Destructor.  */
   ~rich_location ();
 
+  /* The class manages the memory pointed to by the elements of
+     the M_FIXIT_HINTS vector and is not meant to be copied or
+     assigned.  */
+  rich_location (const rich_location &) = delete;
+  void operator= (const rich_location &) = delete;
+
   /* Accessors.  */
   location_t get_loc () const { return get_loc (0); }
   location_t get_loc (unsigned int idx) const;
@@ -1781,6 +1793,18 @@ class rich_location
   const diagnostic_path *get_path () const { return m_path; }
   void set_path (const diagnostic_path *path) { m_path = path; }
 
+  /* A flag for hinting that the diagnostic involves character encoding
+     issues, and thus that it will be helpful to the user if we show some
+     representation of how the characters in the pertinent source lines
+     are encoded.
+     The default is false (i.e. do not escape).
+     When set to true, non-ASCII bytes in the pertinent source lines will
+     be escaped in a manner controlled by the user-supplied option
+     -fdiagnostics-escape-format=, so that the user can better understand
+     what's going on with the encoding in their source file.  */
+  bool escape_on_output_p () const { return m_escape_on_output; }
+  void set_escape_on_output (bool flag) { m_escape_on_output = flag; }
+
 private:
   bool reject_impossible_fixit (location_t where);
   void stop_supporting_fixits ();
@@ -1798,13 +1822,14 @@ protected:
   int m_column_override;
 
   bool m_have_expanded_location;
+  bool m_seen_impossible_fixit;
+  bool m_fixits_cannot_be_auto_applied;
+  bool m_escape_on_output;
+
   expanded_location m_expanded_location;
 
   static const int MAX_STATIC_FIXIT_HINTS = 2;
   semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
-
-  bool m_seen_impossible_fixit;
-  bool m_fixits_cannot_be_auto_applied;
 
   const diagnostic_path *m_path;
 };
@@ -1817,14 +1842,36 @@ class label_text
 {
 public:
   label_text ()
-  : m_buffer (NULL), m_caller_owned (false)
+  : m_buffer (NULL), m_owned (false)
   {}
 
-  void maybe_free ()
+  ~label_text ()
   {
-    if (m_caller_owned)
+    if (m_owned)
       free (m_buffer);
   }
+
+  /* Move ctor.  */
+  label_text (label_text &&other)
+  : m_buffer (other.m_buffer), m_owned (other.m_owned)
+  {
+    other.release ();
+  }
+
+  /* Move assignment.  */
+  label_text & operator= (label_text &&other)
+  {
+    if (m_owned)
+      free (m_buffer);
+    m_buffer = other.m_buffer;
+    m_owned = other.m_owned;
+    other.release ();
+    return *this;
+  }
+
+  /* Delete the copy ctor and copy-assignment operator.  */
+  label_text (const label_text &) = delete;
+  label_text & operator= (const label_text &) = delete;
 
   /* Create a label_text instance that borrows BUFFER from a
      longer-lived owner.  */
@@ -1839,21 +1886,28 @@ public:
     return label_text (buffer, true);
   }
 
-  /* Take ownership of the buffer, copying if necessary.  */
-  char *take_or_copy ()
+  void release ()
   {
-    if (m_caller_owned)
-      return m_buffer;
-    else
-      return xstrdup (m_buffer);
+    m_buffer = NULL;
+    m_owned = false;
   }
 
-  char *m_buffer;
-  bool m_caller_owned;
+  const char *get () const
+  {
+    return m_buffer;
+  }
+
+  bool is_owner () const
+  {
+    return m_owned;
+  }
 
 private:
+  char *m_buffer;
+  bool m_owned;
+
   label_text (char *buffer, bool owned)
-  : m_buffer (buffer), m_caller_owned (owned)
+  : m_buffer (buffer), m_owned (owned)
   {}
 };
 
@@ -2087,8 +2141,8 @@ enum location_aspect
 
 /* The rich_location class requires a way to expand location_t instances.
    We would directly use expand_location_to_spelling_point, which is
-   implemented in gcc/input.c, but we also need to use it for rich_location
-   within genmatch.c.
+   implemented in gcc/input.cc, but we also need to use it for rich_location
+   within genmatch.cc.
    Hence we require client code of libcpp to implement the following
    symbol.  */
 extern expanded_location

@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -65,5 +65,6 @@ extern tree ubsan_build_overflow_builtin (tree_code, location_t, tree, tree,
 					  tree, tree *);
 extern tree ubsan_instrument_float_cast (location_t, tree, tree);
 extern tree ubsan_get_source_location_type (void);
+extern tree sanitize_unreachable_fn (tree *data, location_t loc);
 
 #endif  /* GCC_UBSAN_H  */

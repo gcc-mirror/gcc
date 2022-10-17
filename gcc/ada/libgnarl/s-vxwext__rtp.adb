@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---            Copyright (C) 2008-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 package body System.VxWorks.Ext is
 
-   ERROR : constant := -1;
+   IERR : constant := -1;
 
    --------------
    -- Int_Lock --
@@ -41,17 +41,17 @@ package body System.VxWorks.Ext is
 
    function Int_Lock return int is
    begin
-      return ERROR;
+      return IERR;
    end Int_Lock;
 
    ----------------
    -- Int_Unlock --
    ----------------
 
-   function Int_Unlock (Old : int) return int is
+   procedure Int_Unlock (Old : int) is
       pragma Unreferenced (Old);
    begin
-      return ERROR;
+      null;
    end Int_Unlock;
 
    -----------------------
@@ -61,7 +61,7 @@ package body System.VxWorks.Ext is
    function Interrupt_Connect
      (Vector    : Interrupt_Vector;
       Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int
+      Parameter : System.Address := System.Null_Address) return STATUS
    is
       pragma Unreferenced (Vector, Handler, Parameter);
    begin
@@ -72,7 +72,7 @@ package body System.VxWorks.Ext is
    -- Interrupt_Context --
    -----------------------
 
-   function Interrupt_Context return int is
+   function Interrupt_Context return BOOL is
    begin
       --  For RTPs, never in an interrupt context
 
@@ -95,8 +95,8 @@ package body System.VxWorks.Ext is
    -- semDelete --
    ---------------
 
-   function semDelete (Sem : SEM_ID) return int is
-      function OS_semDelete (Sem : SEM_ID) return int;
+   function semDelete (Sem : SEM_ID) return STATUS is
+      function OS_semDelete (Sem : SEM_ID) return STATUS;
       pragma Import (C, OS_semDelete, "semDelete");
    begin
       return OS_semDelete (Sem);
@@ -106,7 +106,7 @@ package body System.VxWorks.Ext is
    -- Set_Time_Slice --
    --------------------
 
-   function Set_Time_Slice (ticks : int) return int is
+   function Set_Time_Slice (ticks : int) return STATUS is
       pragma Unreferenced (ticks);
    begin
       return ERROR;
@@ -119,7 +119,7 @@ package body System.VxWorks.Ext is
    function taskCpuAffinitySet (tid : t_id; CPU : int) return int is
       pragma Unreferenced (tid, CPU);
    begin
-      return ERROR;
+      return IERR;
    end taskCpuAffinitySet;
 
    -------------------------
@@ -129,7 +129,7 @@ package body System.VxWorks.Ext is
    function taskMaskAffinitySet (tid : t_id; CPU_Set : unsigned) return int is
       pragma Unreferenced (tid, CPU_Set);
    begin
-      return ERROR;
+      return IERR;
    end taskMaskAffinitySet;
 
 end System.VxWorks.Ext;

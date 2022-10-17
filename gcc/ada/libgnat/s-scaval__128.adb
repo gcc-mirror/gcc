@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,7 +180,7 @@ package body System.Scalar_Values is
          IV_Ilf := To_ByteLF (IS_Iu8);
 
          if EFloat then
-            IV_Ill := (0, 0, 0, 0, 0, 0, 0, 16#C0#, 16#FF#, 16#FF#, 0, 0);
+            IV_Ill := [0, 0, 0, 0, 0, 0, 0, 16#C0#, 16#FF#, 16#FF#, 0, 0];
          end if;
 
       --  LO (Low values)
@@ -209,7 +209,7 @@ package body System.Scalar_Values is
          IV_Ilf := To_ByteLF (16#FFF0_0000_0000_0000#);
 
          if EFloat then
-            IV_Ill := (0, 0, 0, 0, 0, 0, 0, 16#80#, 16#FF#, 16#FF#, 0, 0);
+            IV_Ill := [0, 0, 0, 0, 0, 0, 0, 16#80#, 16#FF#, 16#FF#, 0, 0];
          end if;
 
       --  HI (High values)
@@ -238,7 +238,7 @@ package body System.Scalar_Values is
          IV_Ilf := To_ByteLF (16#7FF0_0000_0000_0000#);
 
          if EFloat then
-            IV_Ill := (0, 0, 0, 0, 0, 0, 0, 16#80#, 16#FF#, 16#7F#, 0, 0);
+            IV_Ill := [0, 0, 0, 0, 0, 0, 0, 16#80#, 16#FF#, 16#7F#, 0, 0];
          end if;
 
       --  -Shh (hex byte)
@@ -281,7 +281,7 @@ package body System.Scalar_Values is
          IV_Ilf := To_ByteLF (IS_Is8);
 
          if EFloat then
-            IV_Ill := (B, B, B, B, B, B, B, B, B, B, B, B);
+            IV_Ill := [B, B, B, B, B, B, B, B, B, B, B, B];
          end if;
       end if;
 

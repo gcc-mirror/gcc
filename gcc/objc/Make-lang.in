@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Objective-C
-#   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -60,7 +60,7 @@ objc_OBJS = $(OBJC_OBJS) cc1obj-checksum.o
 # compute checksum over all object files and the options
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
-cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+cc1obj-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
         $(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
 	if [ -f ../stage_final ] \
 	   && cmp -s ../stage_current ../stage_final \
@@ -91,6 +91,7 @@ objc.rest.encap:
 objc.info:
 objc.install-info:
 objc.dvi:
+objc.install-dvi:
 objc.pdf:
 objc.install-pdf:
 objc.html:
@@ -101,8 +102,8 @@ objc.srcman:
 objc.install-plugin:
 
 objc.tags: force
-	cd $(srcdir)/objc; etags -o TAGS.sub *.c *.h; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	cd $(srcdir)/objc; $(ETAGS) -o TAGS.sub *.cc *.h; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 lang_checks += check-objc
 

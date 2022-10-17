@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +45,11 @@ struct checker<wchar_t, L'\\'>
 {
   static void check()
   {
+#ifdef _GLIBCXX_USE_WCHAR_T
     VERIFY( path("foo/bar").make_preferred() == L"foo\\bar" );
+#else
+    VERIFY( ! "filesystem::path needs --enable-wchar_t on this target" );
+#endif
   }
 };
 

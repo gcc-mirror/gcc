@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -334,9 +334,6 @@ package Sem_Aux is
    --  these types). This older routine overlaps with the previous one, this
    --  should be cleaned up???
 
-   function Is_Record_Or_Limited_Type (Typ : Entity_Id) return Boolean;
-   --  Return True if Typ requires is a record or limited type.
-
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from
    --  which constraints and predicates are inherited. There is no simple link
@@ -376,6 +373,10 @@ package Sem_Aux is
    --  of the object is a descendant of an untagged generic formal private or
    --  derived type, and the subtype is not an unconstrained array subtype
    --  (RM 3.3(23.10/3)).
+
+   function Package_Body (E : Entity_Id) return Node_Id;
+   --  Given an entity for a package, return the corresponding package body, if
+   --  any, or else Empty.
 
    function Package_Spec (E : Entity_Id) return Node_Id;
    --  Given an entity for a package spec, return the corresponding package

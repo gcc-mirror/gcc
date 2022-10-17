@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2003-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2003-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -314,6 +314,7 @@ __gnat_gethostbyaddr (const char *addr, int len, int type,
   ret->h_addrtype  = AF_INET;
   ret->h_length    = 4;
   ret->h_addr_list = &vxw_h_addr_list;
+  return 0;
 }
 
 int
@@ -587,6 +588,9 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
     *(in_addr_t *)dst = addr;
   }
   return rc;
+
+#else
+  return -1;
 #endif
 }
 #endif

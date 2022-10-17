@@ -1,6 +1,6 @@
 ﻿// PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 12
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 int ruhred; /// This documents correctly.
 int rühred; /// This should too

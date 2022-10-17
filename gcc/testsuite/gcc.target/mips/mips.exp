@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -264,6 +264,7 @@ set mips_option_groups {
     frame-header "-mframe-header-opt|-mno-frame-header-opt"
     stack-protector "-fstack-protector"
     stdlib "REQUIRES_STDLIB"
+    unaligned-access "-m(no-|)unaligned-access"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
@@ -325,6 +326,7 @@ foreach option {
     finite-math-only
     fixed-hi
     fixed-lo
+    inline
     lax-vector-conversions
     omit-frame-pointer
     optimize-sibling-calls
@@ -332,6 +334,8 @@ foreach option {
     schedule-insns2
     split-wide-types
     tree-vectorize
+    tree-vrp
+    tree-dominator-opts
     unroll-all-loops
     unroll-loops
     ipa-ra

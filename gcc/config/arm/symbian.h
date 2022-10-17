@@ -1,5 +1,5 @@
 /* Configuration file for Symbian OS on ARM processors.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
    This file is part of GCC.
@@ -22,7 +22,7 @@
    "__builtin").  Symbian OS code relies on properties of the standard
    library that go beyond those guaranteed by the ANSI/ISO standard.
    For example, "memcpy" works even with overlapping memory, like
-   "memmove".  We cannot simply set flag_no_builtin in arm.c because
+   "memmove".  We cannot simply set flag_no_builtin in arm.cc because
    (a) flag_no_builtin is not declared in language-independent code,
    and (b) that would prevent users from explicitly overriding the
    default with -fbuiltin, which may sometimes be useful.

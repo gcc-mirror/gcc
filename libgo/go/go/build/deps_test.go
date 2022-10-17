@@ -70,17 +70,25 @@ import (
 var depsRules = `
 	# No dependencies allowed for any of these packages.
 	NONE
-	< container/list, container/ring,
-	  internal/cfg, internal/cpu,
+	< constraints, container/list, container/ring,
+	  internal/cfg, internal/cpu, internal/goarch,
+	  internal/goexperiment, internal/goos,
 	  internal/goversion, internal/nettrace,
 	  unicode/utf8, unicode/utf16, unicode,
 	  unsafe;
 
+	# These packages depend only on internal/goarch and unsafe.
+	internal/goarch, unsafe
+	< internal/abi;
+
 	# RUNTIME is the core runtime group of packages, all of them very light-weight.
-	internal/cpu, unsafe
+	internal/abi, internal/cpu, internal/goarch,
+	internal/goexperiment, internal/goos, unsafe
 	< internal/bytealg
+	< internal/itoa
 	< internal/unsafeheader
 	< runtime/internal/sys
+	< runtime/internal/syscall
 	< runtime/internal/atomic
 	< runtime/internal/math
 	< runtime
@@ -166,7 +174,7 @@ var depsRules = `
 	io/fs
 	< embed;
 
-	unicode, fmt !< os, os/signal;
+	unicode, fmt !< net, os, os/signal;
 
 	os/signal, STR
 	< path/filepath
@@ -179,6 +187,8 @@ var depsRules = `
 
 	OS
 	< golang.org/x/sys/cpu;
+
+	os < internal/godebug;
 
 	# FMT is OS (which includes string routines) plus reflect and fmt.
 	# It does not include package log, which should be avoided in core packages.
@@ -207,7 +217,6 @@ var depsRules = `
 	  mime/quotedprintable,
 	  net/internal/socktest,
 	  net/url,
-	  runtime/debug,
 	  runtime/trace,
 	  text/scanner,
 	  text/tabwriter;
@@ -264,8 +273,10 @@ var depsRules = `
 
 	# executable parsing
 	FMT, encoding/binary, compress/zlib
+	< runtime/debug
 	< debug/dwarf
 	< debug/elf, debug/gosym, debug/macho, debug/pe, debug/plan9obj, internal/xcoff
+	< debug/buildinfo
 	< DEBUG;
 
 	# go parser and friends.
@@ -273,9 +284,13 @@ var depsRules = `
 	< go/token
 	< go/scanner
 	< go/ast
+	< go/internal/typeparams
 	< go/parser;
 
-	go/parser, text/tabwriter
+	FMT
+	< go/build/constraint;
+
+	go/build/constraint, go/parser, text/tabwriter
 	< go/printer
 	< go/format;
 
@@ -285,13 +300,13 @@ var depsRules = `
 	math/big, go/token
 	< go/constant;
 
-	container/heap, go/constant, go/parser
+	container/heap, go/constant, go/parser, regexp
 	< go/types;
 
-	FMT
-	< go/build/constraint;
+	FMT, internal/goexperiment
+	< internal/buildcfg;
 
-	go/doc, go/parser, internal/goroot, internal/goversion
+	go/build/constraint, go/doc, go/parser, internal/buildcfg, internal/goroot, internal/goversion
 	< go/build;
 
 	DEBUG, go/build, go/types, text/scanner
@@ -319,7 +334,7 @@ var depsRules = `
 	< C
 	< runtime/cgo
 	< CGO
-	< runtime/race, runtime/msan;
+	< runtime/race, runtime/msan, runtime/asan;
 
 	# Bulk of the standard library must not use cgo.
 	# The prohibition stops at net and os/user.
@@ -340,6 +355,13 @@ var depsRules = `
 	  golang.org/x/net/lif,
 	  golang.org/x/net/route;
 
+	os, runtime, strconv, sync, unsafe,
+	internal/godebug
+	< internal/intern;
+
+	internal/bytealg, internal/intern, internal/itoa, math/bits, sort, strconv
+	< net/netip;
+
 	# net is unavoidable when doing any networking,
 	# so large dependencies must be kept out.
 	# This is a long-looking list but most of these
@@ -348,10 +370,12 @@ var depsRules = `
 	golang.org/x/net/dns/dnsmessage,
 	golang.org/x/net/lif,
 	golang.org/x/net/route,
+	internal/godebug,
 	internal/nettrace,
 	internal/poll,
 	internal/singleflight,
 	internal/race,
+	net/netip,
 	os
 	< net;
 
@@ -383,6 +407,10 @@ var depsRules = `
 	< crypto
 	< crypto/subtle
 	< crypto/internal/subtle
+	< crypto/elliptic/internal/fiat
+	< crypto/elliptic/internal/nistec
+	< crypto/ed25519/internal/edwards25519/field, golang.org/x/crypto/curve25519/internal/field
+	< crypto/ed25519/internal/edwards25519
 	< crypto/cipher
 	< crypto/aes, crypto/des, crypto/hmac, crypto/md5, crypto/rc4,
 	  crypto/sha1, crypto/sha256, crypto/sha512
@@ -391,10 +419,9 @@ var depsRules = `
 	CGO, fmt, net !< CRYPTO;
 
 	# CRYPTO-MATH is core bignum-based crypto - no cgo, net; fmt now ok.
-	CRYPTO, FMT, math/big
+	CRYPTO, FMT, math/big, embed
 	< crypto/rand
 	< crypto/internal/randutil
-	< crypto/ed25519/internal/edwards25519
 	< crypto/ed25519
 	< encoding/asn1
 	< golang.org/x/crypto/cryptobyte/asn1
@@ -410,7 +437,7 @@ var depsRules = `
 	CRYPTO-MATH, NET, container/list, encoding/hex, encoding/pem
 	< golang.org/x/crypto/internal/subtle
 	< golang.org/x/crypto/chacha20
-	< golang.org/x/crypto/poly1305
+	< golang.org/x/crypto/internal/poly1305
 	< golang.org/x/crypto/chacha20poly1305
 	< golang.org/x/crypto/hkdf
 	< crypto/x509/internal/macos
@@ -429,7 +456,8 @@ var depsRules = `
 	# HTTP, King of Dependencies.
 
 	FMT
-	< golang.org/x/net/http2/hpack, net/http/internal;
+	< golang.org/x/net/http2/hpack
+	< net/http/internal, net/http/internal/ascii, net/http/internal/testcert;
 
 	FMT, NET, container/list, encoding/binary, log
 	< golang.org/x/text/transform
@@ -447,6 +475,8 @@ var depsRules = `
 	golang.org/x/net/http/httpproxy,
 	golang.org/x/net/http2/hpack,
 	net/http/internal,
+	net/http/internal/ascii,
+	net/http/internal/testcert,
 	net/http/httptrace,
 	mime/multipart,
 	log
@@ -457,7 +487,7 @@ var depsRules = `
 	encoding/json, net/http
 	< expvar;
 
-	net/http
+	net/http, net/http/internal/ascii
 	< net/http/cookiejar, net/http/httputil;
 
 	net/http, flag
@@ -494,10 +524,14 @@ var depsRules = `
 	FMT, flag, math/rand
 	< testing/quick;
 
-	FMT, flag, runtime/debug, runtime/trace, internal/sysinfo
+	FMT, DEBUG, flag, runtime/trace, internal/sysinfo, math/rand
 	< testing;
 
-	internal/testlog, runtime/pprof, regexp
+	FMT, crypto/sha256, encoding/json, go/ast, go/parser, go/token,
+	internal/godebug, math/rand, encoding/hex, crypto/sha256
+	< internal/fuzz;
+
+	internal/fuzz, internal/testlog, runtime/pprof, regexp
 	< testing/internal/testdeps;
 
 	OS, flag, testing, internal/cfg
@@ -511,6 +545,9 @@ var depsRules = `
 
 	NET, testing, math/rand
 	< golang.org/x/net/nettest;
+
+	syscall
+	< os/exec/internal/fdtest;
 
 	FMT, container/heap, math/rand
 	< internal/trace;
@@ -601,7 +638,7 @@ func TestDependencies(t *testing.T) {
 	}
 }
 
-var buildIgnore = []byte("\n// +build ignore")
+var buildIgnore = []byte("\n//go:build ignore")
 
 func findImports(pkg string) ([]string, error) {
 	vpkg := pkg
@@ -637,6 +674,9 @@ func findImports(pkg string) ([]string, error) {
 		f.Close()
 		if err != nil {
 			return nil, fmt.Errorf("reading %v: %v", name, err)
+		}
+		if info.parsed.Name.Name == "main" {
+			continue
 		}
 		if bytes.Contains(info.header, buildIgnore) {
 			continue

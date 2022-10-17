@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -45,6 +45,8 @@ pragma Assertion_Policy (Pre => Ignore);
 
 --  This version is supported on:
 --    - all Alpha platforms
+--    - all AARCH64 platforms
+--    - all ARM platforms
 --    - all ia64 platforms
 --    - all PowerPC platforms
 --    - all SPARC V9 platforms
@@ -84,8 +86,10 @@ package Ada.Strings.Unbounded with
   Initial_Condition => Length (Null_Unbounded_String) = 0
 is
    pragma Preelaborate;
+   pragma Annotate (GNATprove, Always_Return, Unbounded);
 
-   type Unbounded_String is private;
+   type Unbounded_String is private with
+     Default_Initial_Condition => Length (Unbounded_String) = 0;
    pragma Preelaborable_Initialization (Unbounded_String);
 
    Null_Unbounded_String : constant Unbounded_String;
@@ -363,9 +367,8 @@ is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    with
-     Pre    => (if Length (Source) /= 0
-                then From <= Length (Source))
-                       and then Pattern'Length /= 0,
+     Pre    => (if Length (Source) /= 0 then From <= Length (Source))
+               and then Pattern'Length /= 0,
      Global => null;
    pragma Ada_05 (Index);
 
@@ -376,11 +379,9 @@ is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping_Function) return Natural
    with
-     Pre    => (if Length (Source) /= 0
-                then From <= Length (Source))
-                       and then Pattern'Length /= 0,
+     Pre    => (if Length (Source) /= 0 then From <= Length (Source))
+               and then Pattern'Length /= 0,
      Global => null;
-
    pragma Ada_05 (Index);
 
    function Index

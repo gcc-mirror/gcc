@@ -1,5 +1,5 @@
 # Target Makefile Fragment for R8C/M16C/M32C
-# Copyright (C) 2005-2021 Free Software Foundation, Inc.
+# Copyright (C) 2005-2022 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -31,7 +31,7 @@ md : $(MD_FILES:%=$(srcdir)/config/m32c/%.md) $(srcdir)/config/m32c/t-m32c
 	  echo "(include \"$(srcdir)/config/m32c/$$md.md\")"; \
 	done > md
 
-m32c-pragma.o: $(srcdir)/config/m32c/m32c-pragma.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
+m32c-pragma.o: $(srcdir)/config/m32c/m32c-pragma.cc $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 # We support four CPU series, but R8C and M16C share one multilib, and

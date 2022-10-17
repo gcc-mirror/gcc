@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -239,6 +239,7 @@ extern int errno;
 # include <functional>
 #endif
 # include <cstring>
+# include <initializer_list>
 # include <new>
 # include <utility>
 # include <type_traits>
@@ -735,20 +736,25 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
+#define LIKELY(x) (__builtin_expect ((x), 1))
+#define UNLIKELY(x) (__builtin_expect ((x), 0))
+
 /* Some of the headers included by <memory> can use "abort" within a
    namespace, e.g. "_VSTD::abort();", which fails after we use the
-   preprocessor to redefine "abort" as "fancy_abort" below.
-   Given that unique-ptr.h can use "free", we need to do this after "free"
-   is declared but before "abort" is overridden.  */
+   preprocessor to redefine "abort" as "fancy_abort" below.  */
 
-#ifdef INCLUDE_UNIQUE_PTR
-# include "unique-ptr.h"
+#ifdef INCLUDE_MEMORY
+# include <memory>
 #endif
 
 #ifdef INCLUDE_MALLOC_H
 #if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
 #include <malloc.h>
 #endif
+#endif
+
+#ifdef INCLUDE_PTHREAD_H
+#include <pthread.h>
 #endif
 
 #ifdef INCLUDE_ISL
@@ -772,8 +778,10 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 #endif
 
-/* Redefine abort to report an internal error w/o coredump, and
-   reporting the location of the error in the source file.  */
+/* Redefine 'abort' to report an internal error w/o coredump, and
+   reporting the location of the error in the source file.
+   Instead of directly calling 'abort' or 'fancy_abort', GCC code
+   should normally call 'internal_error' with a specific message.  */
 extern void fancy_abort (const char *, int, const char *)
 					 ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
@@ -784,7 +792,7 @@ extern void fancy_abort (const char *, int, const char *)
    ((void)(!(EXPR) ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
 #elif (GCC_VERSION >= 4005)
 #define gcc_assert(EXPR) 						\
-  ((void)(__builtin_expect (!(EXPR), 0) ? __builtin_unreachable (), 0 : 0))
+  ((void)(UNLIKELY (!(EXPR)) ? __builtin_unreachable (), 0 : 0))
 #else
 /* Include EXPR, so that unused variable warnings do not occur.  */
 #define gcc_assert(EXPR) ((void)(0 && (EXPR)))
@@ -833,8 +841,7 @@ extern void fancy_abort (const char *, int, const char *)
 #define STATIC_CONSTANT_P(X) (false && (X))
 #endif
 
-/* static_assert (COND, MESSAGE) is available in C++11 onwards.  */
-#if __cplusplus >= 201103L
+#ifdef __cplusplus
 #define STATIC_ASSERT(X) \
   static_assert ((X), #X)
 #else
@@ -1002,8 +1009,7 @@ extern void fancy_abort (const char *, int, const char *)
 	ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL HOST_WORDS_BIG_ENDIAN	   \
 	OBJC_PROLOGUE ALLOCATE_TRAMPOLINE HANDLE_PRAGMA ROUND_TYPE_SIZE	   \
 	ROUND_TYPE_SIZE_UNIT CONST_SECTION_ASM_OP CRT_GET_RFIB_TEXT	   \
-	DBX_LBRAC_FIRST DBX_OUTPUT_ENUM DBX_OUTPUT_SOURCE_FILENAME	   \
-	DBX_WORKING_DIRECTORY INSN_CACHE_DEPTH INSN_CACHE_SIZE		   \
+	INSN_CACHE_DEPTH INSN_CACHE_SIZE				   \
 	INSN_CACHE_LINE_WIDTH INIT_SECTION_PREAMBLE NEED_ATEXIT ON_EXIT	   \
 	EXIT_BODY OBJECT_FORMAT_ROSE MULTIBYTE_CHARS MAP_CHARACTER	   \
 	LIBGCC_NEEDS_DOUBLE FINAL_PRESCAN_LABEL DEFAULT_CALLER_SAVES	   \
@@ -1016,15 +1022,14 @@ extern void fancy_abort (const char *, int, const char *)
 	MAX_WCHAR_TYPE_SIZE SHARED_SECTION_ASM_OP INTEGRATE_THRESHOLD      \
 	FINAL_REG_PARM_STACK_SPACE MAYBE_REG_PARM_STACK_SPACE		   \
 	TRADITIONAL_PIPELINE_INTERFACE DFA_PIPELINE_INTERFACE		   \
-	DBX_OUTPUT_STANDARD_TYPES BUILTIN_SETJMP_FRAME_VALUE		   \
+	BUILTIN_SETJMP_FRAME_VALUE					   \
 	SUNOS4_SHARED_LIBRARIES PROMOTE_FOR_CALL_ONLY			   \
 	SPACE_AFTER_L_OPTION NO_RECURSIVE_FUNCTION_CSE			   \
 	DEFAULT_MAIN_RETURN TARGET_MEM_FUNCTIONS EXPAND_BUILTIN_VA_ARG	   \
 	COLLECT_PARSE_FLAG DWARF2_GENERATE_TEXT_SECTION_LABEL WINNING_GDB  \
 	ASM_OUTPUT_FILENAME ASM_OUTPUT_SOURCE_LINE FILE_NAME_JOINER	   \
-	GDB_INV_REF_REGPARM_STABS_LETTER DBX_MEMPARM_STABS_LETTER	   \
-	PUT_SDB_SRC_FILE STABS_GCC_MARKER DBX_OUTPUT_FUNCTION_END	   \
-	DBX_OUTPUT_GCC_MARKER DBX_FINISH_SYMBOL SDB_GENERATE_FAKE	   \
+	GDB_INV_REF_REGPARM_STABS_LETTER				   \
+	PUT_SDB_SRC_FILE STABS_GCC_MARKER SDB_GENERATE_FAKE		   \
 	NON_SAVING_SETJMP TARGET_LATE_RTL_PROLOGUE_EPILOGUE		   \
 	CASE_DROPS_THROUGH TARGET_BELL TARGET_BS TARGET_CR TARGET_DIGIT0   \
         TARGET_ESC TARGET_FF TARGET_NEWLINE TARGET_TAB TARGET_VT	   \
@@ -1049,8 +1054,8 @@ extern void fancy_abort (const char *, int, const char *)
 	PREFERRED_OUTPUT_RELOAD_CLASS SYSTEM_INCLUDE_DIR		   \
 	STANDARD_INCLUDE_DIR STANDARD_INCLUDE_COMPONENT			   \
 	LINK_ELIMINATE_DUPLICATE_LDIRECTORIES MIPS_DEBUGGING_INFO	   \
-	IDENT_ASM_OP ALL_COP_ADDITIONAL_REGISTER_NAMES DBX_OUTPUT_LBRAC	   \
-	DBX_OUTPUT_NFUN DBX_OUTPUT_RBRAC RANGE_TEST_NON_SHORT_CIRCUIT	   \
+	IDENT_ASM_OP ALL_COP_ADDITIONAL_REGISTER_NAMES			   \
+	RANGE_TEST_NON_SHORT_CIRCUIT					   \
 	REAL_VALUE_TRUNCATE REVERSE_CONDEXEC_PREDICATES_P		   \
 	TARGET_ALIGN_ANON_BITFIELDS TARGET_NARROW_VOLATILE_BITFIELDS	   \
 	IDENT_ASM_OP UNALIGNED_SHORT_ASM_OP UNALIGNED_INT_ASM_OP	   \
@@ -1303,6 +1308,19 @@ static inline bool
 startswith (const char *str, const char *prefix)
 {
   return strncmp (str, prefix, strlen (prefix)) == 0;
+}
+
+/* Return true if STR string ends with SUFFIX.  */
+
+static inline bool
+endswith (const char *str, const char *suffix)
+{
+  size_t str_len = strlen (str);
+  size_t suffix_len = strlen (suffix);
+  if (str_len < suffix_len)
+    return false;
+
+  return memcmp (str + str_len - suffix_len, suffix, suffix_len) == 0;
 }
 
 #endif /* ! GCC_SYSTEM_H */

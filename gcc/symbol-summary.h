@@ -1,5 +1,5 @@
 /* Callgraph summary data structure.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Martin Liska
 
 This file is part of GCC.
@@ -191,7 +191,7 @@ public:
   template<typename Arg, bool (*f)(const T &, Arg)>
   void traverse (Arg a) const
   {
-    m_map.traverse <f> (a);
+    m_map.template traverse <f> (a);
   }
 
   /* Getter for summary callgraph node pointer.  If a summary for a node
@@ -248,7 +248,7 @@ protected:
 
 private:
   /* Indication if we use ggc summary.  */
-  virtual bool is_ggc ()
+  bool is_ggc () final override
   {
     return m_ggc;
   }
@@ -439,7 +439,7 @@ public:
 				  void *data);
 
 private:
-  virtual bool is_ggc ();
+  bool is_ggc () final override;
 
   /* Summary is stored in the vector.  */
   vec <T *, V> *m_vector;
@@ -690,7 +690,7 @@ public:
   template<typename Arg, bool (*f)(const T &, Arg)>
   void traverse (Arg a) const
   {
-    m_map.traverse <f> (a);
+    m_map.template traverse <f> (a);
   }
 
   /* Getter for summary callgraph edge pointer.
@@ -744,7 +744,7 @@ protected:
 
 private:
   /* Indication if we use ggc summary.  */
-  virtual bool is_ggc ()
+  bool is_ggc () final override
   {
     return m_ggc;
   }
@@ -910,7 +910,7 @@ public:
 				  void *data);
 
 private:
-  virtual bool is_ggc ();
+  bool is_ggc () final override;
 
   /* Summary is stored in the vector.  */
   vec <T *, V> *m_vector;

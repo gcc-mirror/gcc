@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv32if -mabi=ilp32f -mno-fdiv -mcmodel=medany" } */
+/* { dg-options "-march=rv32if -mabi=ilp32f -mno-fdiv -mcmodel=medany" } */
 
 int main () {
 #if !defined(__riscv)
@@ -56,9 +56,6 @@ int main () {
 #error "__riscv_cmodel_medlow"
 #endif
 #if !defined(__riscv_cmodel_medany)
-#error "__riscv_cmodel_medlow"
-#endif
-#if defined(__riscv_cmodel_pic)
 #error "__riscv_cmodel_medlow"
 #endif
 

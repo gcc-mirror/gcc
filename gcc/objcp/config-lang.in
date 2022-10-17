@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU Objective-C++.
-#   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+#   Copyright (C) 2005-2022 Free Software Foundation, Inc.
 #   Contributed by Ziemowit Laski <zlaski@apple.com>
 
 #This file is part of GCC.
@@ -39,23 +39,23 @@ subdir_requires="objc cp"
 
 # When you add to this gtfiles list a header which comes from a
 # directory belonging to another language (ie, C++ or ObjC), you need
-# to also edit gengtype.c adding a special rule for the header to
+# to also edit gengtype.cc adding a special rule for the header to
 # avoid having the GC stuff from that header being added to gtype-cp.h
 # or gtype-objc.h.
 
 # Get the C++ FE's gtfiles list.  Do this in a subshell, so we can
-# extract exactly the gtfiles var, but munge cp-lang.c into objcp-lang.c.
+# extract exactly the gtfiles var, but munge cp-lang.cc into objcp-lang.cc.
 gtfiles="$(. $srcdir/cp/config-lang.in ; \
-  echo $gtfiles | sed 's+/cp/cp-lang.c +/objcp/objcp-lang.c +')"
+  echo $gtfiles | sed 's+/cp/cp-lang.cc +/objcp/objcp-lang.cc +')"
 
 # Now add our special bits to it.  Please keep this list sorted.
 gtfiles="$gtfiles \
 \$(srcdir)/objc/objc-act.h \
 \$(srcdir)/objc/objc-map.h \
-\$(srcdir)/objc/objc-act.c \
-\$(srcdir)/objc/objc-gnu-runtime-abi-01.c \
-\$(srcdir)/objc/objc-next-runtime-abi-01.c \
-\$(srcdir)/objc/objc-next-runtime-abi-02.c \
-\$(srcdir)/objc/objc-runtime-shared-support.c \
+\$(srcdir)/objc/objc-act.cc \
+\$(srcdir)/objc/objc-gnu-runtime-abi-01.cc \
+\$(srcdir)/objc/objc-next-runtime-abi-01.cc \
+\$(srcdir)/objc/objc-next-runtime-abi-02.cc \
+\$(srcdir)/objc/objc-runtime-shared-support.cc \
 "
 

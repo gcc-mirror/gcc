@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2021 Free Software Foundation, Inc.
+# Copyright (C) 2011-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -67,6 +67,16 @@ BEGIN {
 
     dir_long_double = "long-double"   (96 - with_long_double)
     opt_long_double = "mlong-double=" (96 - with_long_double)
+
+    if (with_multilib_list != "")
+    {
+	split(with_multilib_list, multilib_list, ",")
+
+	for (i in multilib_list)
+	{
+	    multilibs[multilib_list[i]] = 1
+	}
+    }
 }
 
 ##################################################################
@@ -137,6 +147,9 @@ BEGIN {
 	if (core == "avr1")
 	    next
 
+	if (with_multilib_list != "" && !(core in multilibs))
+	    next
+
 	option[core] = "mmcu=" core
 
 	m_options  = m_options m_sep option[core]
@@ -148,6 +161,9 @@ BEGIN {
 
     # avr1 is supported for Assembler only:  Its Devices are ignored
     if (core == "avr1")
+	next
+
+    if (with_multilib_list != "" && !(core in multilibs))
 	next
 
     opts = option[core]

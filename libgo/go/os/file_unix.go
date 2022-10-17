@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd hurd js,wasm linux netbsd openbsd solaris
+//go:build aix || darwin || dragonfly || freebsd || hurd || (js && wasm) || linux || netbsd || openbsd || solaris
 
 package os
 
@@ -173,7 +173,7 @@ func newFile(fd uintptr, name string, kind newFileKind) *File {
 		// with the netpoll system. That can happen for
 		// a file descriptor that is not supported by
 		// epoll/kqueue; for example, disk files on
-		// GNU/Linux systems. We assume that any real error
+		// Linux systems. We assume that any real error
 		// will show up in later I/O.
 	} else if pollable {
 		// We successfully registered with netpoll, so put
@@ -261,6 +261,7 @@ func (file *file) close() error {
 	var err error
 	if file.dirinfo != nil {
 		file.dirinfo.close()
+		file.dirinfo = nil
 	}
 	if e := file.pfd.Close(); e != nil {
 		if e == poll.ErrFileClosing {
@@ -363,6 +364,8 @@ func Link(oldname, newname string) error {
 }
 
 // Symlink creates newname as a symbolic link to oldname.
+// On Windows, a symlink to a non-existent oldname creates a file symlink;
+// if oldname is later created as a directory the symlink will not work.
 // If there is an error, it will be of type *LinkError.
 func Symlink(oldname, newname string) error {
 	e := ignoringEINTR(func() error {

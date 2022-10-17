@@ -1,5 +1,5 @@
 ;; Predicate definitions for POWER and PowerPC.
-;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -496,7 +496,7 @@
 })
 
 ;; Return 1 if op is a constant integer valid for D field
-;; or non-special register register.
+;; or non-special register.
 (define_predicate "reg_or_short_operand"
   (if_then_else (match_code "const_int")
     (match_operand 0 "short_cint_operand")
@@ -601,12 +601,82 @@
   if (TARGET_VSX && op == CONST0_RTX (mode))
     return 1;
 
+  /* Constants that can be generated with ISA 3.1 instructions are easy.  */
+  vec_const_128bit_type vsx_const;
+  if (TARGET_POWER10 && vec_const_128bit_to_bytes (op, mode, &vsx_const))
+    {
+      if (constant_generates_lxvkq (&vsx_const))
+	return true;
+
+      if (constant_generates_xxspltiw (&vsx_const))
+	return true;
+
+      if (constant_generates_xxspltidp (&vsx_const))
+	return true;
+    }
+
   /* Otherwise consider floating point constants hard, so that the
      constant gets pushed to memory during the early RTL phases.  This
      has the advantage that double precision constants that can be
      represented in single precision without a loss of precision will
      use single precision loads.  */
    return 0;
+})
+
+;; Return 1 if the operand is a 64-bit floating point scalar constant or a
+;; vector constant that can be loaded to a VSX register with one prefixed
+;; instruction, such as XXSPLTIDP or XXSPLTIW.
+;;
+;; In addition regular constants, we also recognize constants formed with the
+;; VEC_DUPLICATE insn from scalar constants.
+;;
+;; We don't handle scalar integer constants here because the assumption is the
+;; normal integer constants will be loaded into GPR registers.  For the
+;; constants that need to be loaded into vector registers, the instructions
+;; don't work well with TImode variables assigned a constant.  This is because
+;; the 64-bit scalar constants are splatted into both halves of the register.
+
+(define_predicate "vsx_prefixed_constant"
+  (match_code "const_double,const_vector,vec_duplicate")
+{
+  /* If we can generate the constant with a few Altivec instructions, don't
+      generate a prefixed instruction.  */
+  if (CONST_VECTOR_P (op) && easy_altivec_constant (op, mode))
+    return false;
+
+  /* Do we have prefixed instructions and are VSX registers available?  Is the
+     constant recognized?  */
+  if (!TARGET_PREFIXED || !TARGET_VSX)
+    return false;
+
+  vec_const_128bit_type vsx_const;
+  if (!vec_const_128bit_to_bytes (op, mode, &vsx_const))
+    return false;
+
+  if (constant_generates_xxspltiw (&vsx_const))
+    return true;
+
+  if (constant_generates_xxspltidp (&vsx_const))
+    return true;
+
+  return false;
+})
+
+;; Return 1 if the operand is a special IEEE 128-bit value that can be loaded
+;; via the LXVKQ instruction.
+
+(define_predicate "easy_vector_constant_ieee128"
+  (match_code "const_vector,const_double")
+{
+  vec_const_128bit_type vsx_const;
+
+  /* Can we generate the LXVKQ instruction?  */
+  if (!TARGET_IEEE128_CONSTANT || !TARGET_FLOAT128_HW || !TARGET_POWER10
+      || !TARGET_VSX)
+    return false;
+
+  return (vec_const_128bit_to_bytes (op, mode, &vsx_const)
+	  && constant_generates_lxvkq (&vsx_const) != 0);
 })
 
 ;; Return 1 if the operand is a constant that can loaded with a XXSPLTIB
@@ -653,6 +723,21 @@
       if (zero_constant (op, mode) || all_ones_constant (op, mode))
 	return true;
 
+      /* Constants that can be generated with ISA 3.1 instructions are
+         easy.  */
+      vec_const_128bit_type vsx_const;
+      if (TARGET_POWER10 && vec_const_128bit_to_bytes (op, mode, &vsx_const))
+	{
+	  if (constant_generates_lxvkq (&vsx_const))
+	    return true;
+
+	  if (constant_generates_xxspltiw (&vsx_const))
+	    return true;
+
+	  if (constant_generates_xxspltidp (&vsx_const))
+	    return true;
+	}
+
       if (TARGET_P9_VECTOR
           && xxspltib_constant_p (op, mode, &num_insns, &value))
 	return true;
@@ -683,15 +768,26 @@
 (define_predicate "easy_vector_constant_msb"
   (and (match_code "const_vector")
        (and (match_test "TARGET_ALTIVEC")
-	    (match_test "easy_altivec_constant (op, mode)")))
+	    (match_test "easy_altivec_constant (op, mode)")
+	    (match_test "vspltis_shifted (op) == 0")))
 {
   HOST_WIDE_INT val;
-  int elt;
+  int elt, sz = easy_altivec_constant (op, mode);
+  machine_mode inner = GET_MODE_INNER (mode);
+  int isz = GET_MODE_SIZE (inner);
   if (mode == V2DImode || mode == V2DFmode)
     return 0;
   elt = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 : 0;
+  if (isz < sz)
+    {
+      if (const_vector_elt_as_int (op, elt) != 0)
+	return 0;
+      elt += (BYTES_BIG_ENDIAN ? -1 : 1) * (sz - isz) / isz;
+    }
+  else if (isz > sz)
+    inner = smallest_int_mode_for_size (sz * BITS_PER_UNIT);
   val = const_vector_elt_as_int (op, elt);
-  return EASY_VECTOR_MSB (val, GET_MODE_INNER (mode));
+  return EASY_VECTOR_MSB (val, inner);
 })
 
 ;; Return true if this is an easy altivec constant that we form
@@ -1013,7 +1109,7 @@
 		    && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op))")))
 
 ;; Return 1 if op is an operand that can be loaded via the GOT.
-;; or non-special register register field no cr0
+;; or non-special register field no cr0
 (define_predicate "got_operand"
   (match_code "symbol_ref,const,label_ref"))
 
@@ -1075,7 +1171,9 @@
        (match_test "(DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op))
 		    && (SYMBOL_REF_LOCAL_P (op)
 			|| (op == XEXP (DECL_RTL (current_function_decl), 0)
-			    && !decl_replaceable_p (current_function_decl)))
+			    && !decl_replaceable_p (current_function_decl,
+						    opt_for_fn (current_function_decl,
+								flag_semantic_interposition))))
 		    && !((DEFAULT_ABI == ABI_AIX
 			  || DEFAULT_ABI == ABI_ELFv2)
 			 && (SYMBOL_REF_EXTERNAL_P (op)
@@ -1179,10 +1277,15 @@
 (define_predicate "mma_disassemble_output_operand"
   (match_code "reg,subreg,mem")
 {
+  if (MEM_P (op))
+    {
+      rtx  addr = XEXP (op, 0);
+      return indexed_or_indirect_address (addr, mode)
+	     || quad_address_p (addr, mode, false);
+    }
+
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
-  if (!REG_P (op))
-    return true;
 
   return vsx_register_operand (op, mode);
 })
@@ -1947,3 +2050,17 @@
  (if_then_else (match_test "TARGET_VSX")
   (match_operand 0 "reg_or_cint_operand")
   (match_operand 0 "const_int_operand")))
+
+;; Return true if the operand is a valid Mach-O pic address.
+;;
+(define_predicate "macho_pic_address"
+  (match_code "const,unspec")
+{
+  if (GET_CODE (op) == CONST)
+    op = XEXP (op, 0);
+
+  if (GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_MACHOPIC_OFFSET)
+    return CONSTANT_P (XVECEXP (op, 0, 0));
+  else
+    return false;
+})

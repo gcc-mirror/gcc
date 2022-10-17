@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +51,10 @@ package Osint is
    Ada_Objects_Path          : constant String := "ADA_OBJECTS_PATH";
    Project_Include_Path_File : constant String := "ADA_PRJ_INCLUDE_FILE";
    Project_Objects_Path_File : constant String := "ADA_PRJ_OBJECTS_FILE";
+
+   Null_FD : constant File_Descriptor := -2;
+   --  Uninitialized file descriptor. Copied from System.OS_Lib for bootstrap
+   --  reasons.
 
    Output_FD : File_Descriptor;
    --  File descriptor for current library info, list, tree, C, H, or binder
@@ -233,8 +237,11 @@ package Osint is
    --  replace the Prefix substring with the root installation directory.
    --  By default, try to compute the root installation directory by looking
    --  at the executable name as it was typed on the command line and, if
-   --  needed, use the PATH environment variable. If the above computation
-   --  fails, return Path. This function assumes Prefix'First = Path'First.
+   --  needed, use the PATH environment variable. If the GNSA_ROOT environment
+   --  variable is set, then the content of this variable is used as the root
+   --  installation directory.
+   --  If the above computation fails, return Path. This function assumes
+   --  Prefix'First = Path'First.
 
    function Shared_Lib (Name : String) return String;
    --  Returns the runtime shared library in the form -l<name>-<version> where

@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
 
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,9 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <future>
+#include <initializer_list>
+#include <atomic>
 #include "../util/testsuite_allocator.h" // NullablePointer
 
 typedef std::tuple<int, int> ExTuple;
@@ -151,10 +154,59 @@ main()
   std::unique_ptr<int, Deleter>& rempty_ptr = empty_ptr;
 // { dg-final { note-test rempty_ptr {std::unique_ptr<int> = {get() = {<No data fields>}}} } }
 
+  struct Deleter_pr103086
+  {
+    int deleter_member = -1;
+    void operator()(int*) const noexcept { }
+  };
+
+  std::unique_ptr<int, Deleter_pr103086> uniq_ptr;
+// { dg-final { note-test uniq_ptr {std::unique_ptr<int> = {get() = 0x0}} } }
+  std::unique_ptr<int, Deleter_pr103086>& runiq_ptr = uniq_ptr;
+// { dg-final { note-test runiq_ptr {std::unique_ptr<int> = {get() = 0x0}} } }
+
   ExTuple tpl(6,7);
-// { dg-final { note-test tpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
+// { dg-final { note-test tpl {std::tuple containing = {[0] = 6, [1] = 7}} } }
   ExTuple &rtpl = tpl;
-// { dg-final { note-test rtpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
+// { dg-final { note-test rtpl {std::tuple containing = {[0] = 6, [1] = 7}} } }
+
+  std::error_code e0;
+  // { dg-final { note-test e0 {std::error_code = { }} } }
+  std::error_condition ec0;
+  // { dg-final { note-test ec0 {std::error_condition = { }} } }
+  std::error_code einval = std::make_error_code(std::errc::invalid_argument);
+  // { dg-final { note-test einval {std::error_code = {"generic": EINVAL}} } }
+  std::error_condition ecinval = std::make_error_condition(std::errc::invalid_argument);
+  // { dg-final { note-test ecinval {std::error_condition = {"generic": EINVAL}} } }
+
+  struct custom_cat : std::error_category {
+    const char* name() const noexcept { return "miaow"; }
+    std::string message(int) const { return ""; }
+  } cat;
+  std::error_code emiaow(42, cat);
+  // { dg-final { note-test emiaow {std::error_code = {custom_cat: 42}} } }
+  std::error_condition ecmiaow(42, cat);
+  // { dg-final { note-test ecmiaow {std::error_condition = {custom_cat: 42}} } }
+
+  std::error_code ecio = std::make_error_code(std::io_errc::stream);
+  // { dg-final { note-test ecio {std::error_code = {"io": stream}} } }
+  std::error_code ecfut0 = std::make_error_code(std::future_errc{});
+  // { dg-final { note-test ecfut0 {std::error_code = {"future": 0}} } }
+
+  std::initializer_list<int> emptyIl = {};
+  // { dg-final { note-test emptyIl {std::initializer_list of length 0} } }
+  std::initializer_list<int> il = {3, 4};
+  // { dg-final { note-test il {std::initializer_list of length 2 = {3, 4}} } }
+
+  std::atomic<int> ai{100};
+  // { dg-final { note-test ai {std::atomic<int> = { 100 }} } }
+  long l{};
+  std::atomic<long*> ap{&l};
+  // { dg-final { regexp-test ap {std::atomic.long \*. = { 0x.* }} } }
+  struct Value { int i, j; };
+  std::atomic<Value> av{{8, 9}};
+  // { dg-final { note-test av {std::atomic<Value> = { {i = 8, j = 9} }} } }
+
   placeholder(""); // Mark SPOT
   use(efl);
   use(fl);

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -26,10 +26,6 @@ along with GCC; see the file COPYING3.  If not see
    whatever definitions are necessary.  */
 
 #define TARGET_CPU_CPP_BUILTINS() sparc_target_macros ()
-
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS sparc_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO sparc_d_register_target_info
 
 /* Specify this in a cover file to provide bi-architecture (32/64) support.  */
 /* #define SPARC_BI_ARCH */
@@ -120,21 +116,22 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_CPU_leon		4
 #define TARGET_CPU_leon3	5
 #define TARGET_CPU_leon3v7	6
-#define TARGET_CPU_sparclite	7
-#define TARGET_CPU_f930		7       /* alias */
-#define TARGET_CPU_f934		7       /* alias */
-#define TARGET_CPU_sparclite86x	8
-#define TARGET_CPU_sparclet	9
-#define TARGET_CPU_tsc701	9       /* alias */
-#define TARGET_CPU_v9		10	/* generic v9 implementation */
-#define TARGET_CPU_sparcv9	10	/* alias */
-#define TARGET_CPU_sparc64	10	/* alias */
-#define TARGET_CPU_ultrasparc	11
-#define TARGET_CPU_ultrasparc3	12
-#define TARGET_CPU_niagara	13
-#define TARGET_CPU_niagara2	14
-#define TARGET_CPU_niagara3	15
-#define TARGET_CPU_niagara4	16
+#define TARGET_CPU_leon5	7
+#define TARGET_CPU_sparclite	8
+#define TARGET_CPU_f930		8       /* alias */
+#define TARGET_CPU_f934		8       /* alias */
+#define TARGET_CPU_sparclite86x	9
+#define TARGET_CPU_sparclet	10
+#define TARGET_CPU_tsc701	10       /* alias */
+#define TARGET_CPU_v9		11	/* generic v9 implementation */
+#define TARGET_CPU_sparcv9	11	/* alias */
+#define TARGET_CPU_sparc64	11	/* alias */
+#define TARGET_CPU_ultrasparc	12
+#define TARGET_CPU_ultrasparc3	13
+#define TARGET_CPU_niagara	14
+#define TARGET_CPU_niagara2	15
+#define TARGET_CPU_niagara3	16
+#define TARGET_CPU_niagara4	17
 #define TARGET_CPU_niagara7	19
 #define TARGET_CPU_m8		20
 
@@ -229,7 +226,8 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_leon \
- || TARGET_CPU_DEFAULT == TARGET_CPU_leon3
+ || TARGET_CPU_DEFAULT == TARGET_CPU_leon3 \
+ || TARGET_CPU_DEFAULT == TARGET_CPU_leon5
 #define CPP_CPU32_DEFAULT_SPEC "-D__leon__ -D__sparc_v8__"
 #define ASM_CPU32_DEFAULT_SPEC AS_LEON_FLAG
 #endif
@@ -285,6 +283,7 @@ along with GCC; see the file COPYING3.  If not see
 %{mcpu=hypersparc:-D__hypersparc__ -D__sparc_v8__} \
 %{mcpu=leon:-D__leon__ -D__sparc_v8__} \
 %{mcpu=leon3:-D__leon__ -D__sparc_v8__} \
+%{mcpu=leon5:-D__leon__ -D__sparc_v8__} \
 %{mcpu=leon3v7:-D__leon__} \
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
@@ -337,6 +336,7 @@ along with GCC; see the file COPYING3.  If not see
 %{mcpu=hypersparc:-Av8} \
 %{mcpu=leon:" AS_LEON_FLAG "} \
 %{mcpu=leon3:" AS_LEON_FLAG "} \
+%{mcpu=leon5:" AS_LEON_FLAG "} \
 %{mcpu=leon3v7:" AS_LEONV7_FLAG "} \
 %{mv8plus:-Av8plus} \
 %{mcpu=v9:-Av9} \
@@ -1318,7 +1318,7 @@ do {									\
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
@@ -1362,7 +1362,7 @@ do {									\
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.  */
+   macro is used in only one place: `find_reloads_address' in reload.cc.  */
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	   \
 do {									   \
   int win;								   \
@@ -1505,14 +1505,6 @@ do {									   \
 
 #define ADDITIONAL_REGISTER_NAMES \
 {{"ccr", SPARC_ICC_REG}, {"cc", SPARC_ICC_REG}}
-
-/* On Sun 4, this limit is 2048.  We use 1000 to be safe, since the length
-   can run past this up to a continuation point.  Once we used 1500, but
-   a single entry in C++ can run more than 500 bytes, due to the length of
-   mangled symbol names.  dbxout.c should really be fixed to do
-   continuations when they are actually needed instead of trying to
-   guess...  */
-#define DBX_CONTIN_LENGTH 1000
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */

@@ -1,5 +1,5 @@
 // RTL SSA utilities relating to instruction movement               -*- C++ -*-
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -103,7 +103,7 @@ restrict_movement_for_dead_range (insn_range_info &move_range,
   resource_info resource = full_register (regno);
   def_lookup dl = crtl->ssa->find_def (resource, insn);
 
-  def_info *prev = dl.prev_def ();
+  def_info *prev = dl.last_def_of_prev_group ();
   ebb_info *ebb = insn->ebb ();
   if (!prev || prev->ebb () != ebb)
     {
@@ -143,8 +143,8 @@ restrict_movement_for_dead_range (insn_range_info &move_range,
     }
 
   // Stop the instruction moving beyond the next relevant definition of REGNO.
-  def_info *next = first_def_ignoring (dl.matching_or_next_def (),
-				       ignore_clobbers::YES, ignore);
+  def_info *next = dl.matching_set_or_first_def_of_next_group ();
+  next = first_def_ignoring (next, ignore_clobbers::YES, ignore);
   if (next)
     move_range = move_earlier_than (move_range, next->insn ());
 

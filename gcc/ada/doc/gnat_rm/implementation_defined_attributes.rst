@@ -606,13 +606,6 @@ in this example:
   end Gen;
 
 
-Attribute Lock_Free
-===================
-.. index:: Lock_Free
-
-``P'Lock_Free``, where P is a protected object, returns True if a
-pragma ``Lock_Free`` applies to P.
-
 Attribute Loop_Entry
 ====================
 .. index:: Loop_Entry
@@ -629,10 +622,13 @@ to the value an expression had upon entry to the subprogram. The
 relevant loop is either identified by the given loop name, or it is the
 innermost enclosing loop when no loop name is given.
 
-A ``Loop_Entry`` attribute can only occur within a
-``Loop_Variant`` or ``Loop_Invariant`` pragma. A common use of
-``Loop_Entry`` is to compare the current value of objects with their
-initial value at loop entry, in a ``Loop_Invariant`` pragma.
+A ``Loop_Entry`` attribute can only occur within an ``Assert``,
+``Assert_And_Cut``, ``Assume``, ``Loop_Variant`` or ``Loop_Invariant`` pragma.
+In addition, such a pragma must be one of the items in the sequence
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+A common use of ``Loop_Entry`` is to compare the current value of objects with
+their initial value at loop entry, in a ``Loop_Invariant`` pragma.
 
 The effect of using ``X'Loop_Entry`` is the same as declaring
 a constant initialized with the initial value of ``X`` at loop
@@ -1043,7 +1039,7 @@ are relaxed. Instead, the following rules apply:
 * the enclosing machine scalar is defined as the smallest machine
   scalar starting at a position no greater than
   ``position + first_bit / storage_element_size`` and covering
-  storage elements at least up to ``position + (last_bit + storage_element_size - 1) / storage_element_size```
+  storage elements at least up to ``position + (last_bit + storage_element_size - 1) / storage_element_size``
 * the position of the component is interpreted relative to that machine
   scalar.
 
@@ -1056,6 +1052,46 @@ If a component of ``T`` is itself of a record or array type, the specfied
 ``Scalar_Storage_Order`` does *not* apply to that nested type: an explicit
 attribute definition clause must be provided for the component type as well
 if desired.
+
+Representation changes that explicitly or implicitly toggle the scalar storage
+order are not supported and may result in erroneous execution of the program,
+except when performed by means of an instance of ``Ada.Unchecked_Conversion``.
+
+In particular, overlays are not supported and a warning is given for them:
+
+.. code-block:: ada
+
+     type Rec_LE is record
+        I : Integer;
+     end record;
+
+     for Rec_LE use record
+        I at 0 range 0 .. 31;
+     end record;
+
+     for Rec_LE'Bit_Order use System.Low_Order_First;
+     for Rec_LE'Scalar_Storage_Order use System.Low_Order_First;
+
+     type Rec_BE is record
+        I : Integer;
+     end record;
+
+     for Rec_BE use record
+        I at 0 range 0 .. 31;
+     end record;
+
+     for Rec_BE'Bit_Order use System.High_Order_First;
+     for Rec_BE'Scalar_Storage_Order use System.High_Order_First;
+
+     R_LE : Rec_LE;
+
+     R_BE : Rec_BE;
+     for R_BE'Address use R_LE'Address;
+
+``warning: overlay changes scalar storage order [enabled by default]``
+
+In most cases, such representation changes ought to be replaced by an
+instantiation of a function or procedure provided by ``GNAT.Byte_Swapping``.
 
 Note that the scalar storage order only affects the in-memory data
 representation. It has no effect on the representation used by stream
@@ -1587,13 +1623,13 @@ Multi-dimensional arrays can be modified, as shown by this example:
 
 which changes element (1,2) to 20 and (3,4) to 30.
 
-Attribute Valid_Image
+Attribute Valid_Value
 =======================
-.. index:: Valid_Image
+.. index:: Valid_Value
 
-The ``'Valid_Image`` attribute is defined for enumeration types other than
+The ``'Valid_Value`` attribute is defined for enumeration types other than
 those in package Standard. This attribute is a function that takes
-a String, and returns Boolean. ``T'Valid_Image (S)`` returns True
+a String, and returns Boolean. ``T'Valid_Value (S)`` returns True
 if and only if ``T'Value (S)`` would not raise Constraint_Error.
 
 Attribute Valid_Scalars

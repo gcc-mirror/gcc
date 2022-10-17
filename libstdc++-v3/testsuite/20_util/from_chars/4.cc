@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -300,9 +300,11 @@ test_max_mantissa()
 
   if (Float_limits::is_iec559 && Float_limits::digits < UInt_limits::digits)
   {
+#ifdef _GLIBCXX_USE_C99_MATH_TR1
     std::printf("Testing %d-bit float, using %zu-bit integer\n",
 	Float_limits::digits + (int)std::log2(Float_limits::max_exponent) + 1,
 	sizeof(UIntT) * __CHAR_BIT__);
+#endif
 
     std::from_chars_result res;
     FloatT flt;

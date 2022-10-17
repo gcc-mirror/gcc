@@ -9,10 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "gcc_tmpnam.h"
 
 int main (void)
 {
-  char *tmpfname = tmpnam (0);
+  char *tmpfname = gcc_tmpnam (0);
   FILE *f = fopen (tmpfname, "w");
   if (!f)
     {

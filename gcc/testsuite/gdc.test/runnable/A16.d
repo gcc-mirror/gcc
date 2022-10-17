@@ -1,6 +1,13 @@
-// EXTRA_SOURCES: imports/A16a.d
+/*
+EXTRA_SOURCES: imports/A16a.d
+RUN_OUTPUT:
+---
+class AA16
+class B16
+---
+*/
 
-import std.stdio;
+import core.stdc.stdio;
 
 class AA16
 {

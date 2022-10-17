@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,9 @@
 
 with System.Arith_Double;
 
-package body System.Arith_128 is
+package body System.Arith_128
+  with SPARK_Mode
+is
 
    subtype Uns128 is Interfaces.Unsigned_128;
    subtype Uns64  is Interfaces.Unsigned_64;

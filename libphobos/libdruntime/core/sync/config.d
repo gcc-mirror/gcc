@@ -3,7 +3,7 @@
  * specific to this package.
  *
  * Copyright: Copyright Sean Kelly 2005 - 2009.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Sean Kelly
  * Source:    $(DRUNTIMESRC core/sync/_config.d)
  */
@@ -18,16 +18,17 @@ module core.sync.config;
 
 version (Posix)
 {
-    private import core.sys.posix.time;
-    private import core.sys.posix.sys.time;
-    private import core.time;
+    import core.sys.posix.pthread;
+    import core.sys.posix.time;
+    import core.sys.posix.sys.time;
+    import core.time;
 
 
-    void mktspec( ref timespec t ) nothrow
+    void mktspec( ref timespec t ) nothrow @nogc
     {
-        static if ( false && is( typeof( clock_gettime ) ) )
+        static if ( is (typeof ( pthread_condattr_setclock ) ) )
         {
-            clock_gettime( CLOCK_REALTIME, &t );
+            clock_gettime( CLOCK_MONOTONIC, &t );
         }
         else
         {
@@ -41,14 +42,14 @@ version (Posix)
     }
 
 
-    void mktspec( ref timespec t, Duration delta ) nothrow
+    void mktspec( ref timespec t, Duration delta ) nothrow @nogc
     {
         mktspec( t );
         mvtspec( t, delta );
     }
 
 
-    void mvtspec( ref timespec t, Duration delta ) nothrow
+    void mvtspec( ref timespec t, Duration delta ) nothrow @nogc
     {
         auto val  = delta;
              val += dur!"seconds"( t.tv_sec );

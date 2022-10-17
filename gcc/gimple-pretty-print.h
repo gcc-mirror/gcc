@@ -1,6 +1,6 @@
 /* Various declarations for pretty formatting of GIMPLE statements and
    expressions.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-pretty-print.h"
 
-/* In gimple-pretty-print.c  */
+/* In gimple-pretty-print.cc  */
 extern void debug_gimple_stmt (gimple *);
 extern void debug_gimple_seq (gimple_seq);
 extern void print_gimple_seq (FILE *, gimple_seq, int, dump_flags_t);

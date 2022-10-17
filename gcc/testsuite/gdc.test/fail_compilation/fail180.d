@@ -1,12 +1,12 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail180.d(23): Error: cannot modify this.x in const function
-fail_compilation/fail180.d(24): Error: cannot modify this.x in const function
-fail_compilation/fail180.d(38): Error: cannot modify this.x in const function
-fail_compilation/fail180.d(39): Error: cannot modify this.x in const function
-fail_compilation/fail180.d(50): Error: variable fail180.main.t cannot be final, perhaps you meant const?
-fail_compilation/fail180.d(62): Error: variable fail180.test.d cannot be final, perhaps you meant const?
+fail_compilation/fail180.d(23): Error: cannot modify `this.x` in `const` function
+fail_compilation/fail180.d(24): Error: cannot modify `this.x` in `const` function
+fail_compilation/fail180.d(38): Error: cannot modify `this.x` in `const` function
+fail_compilation/fail180.d(39): Error: cannot modify `this.x` in `const` function
+fail_compilation/fail180.d(50): Error: variable `fail180.main.t` cannot be `final`, perhaps you meant `const`?
+fail_compilation/fail180.d(62): Error: variable `fail180.test.d` cannot be `final`, perhaps you meant `const`?
 ---
 */
 

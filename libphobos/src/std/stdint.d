@@ -116,12 +116,12 @@
  * Macros:
  *  ATABLE=<table border="1" cellspacing="0" cellpadding="5">$0</table>
  *
- * Copyright: Copyright Digital Mars 2000 - 2009.
+ * Copyright: Copyright The D Language Foundation 2000 - 2009.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
- * Source:    $(PHOBOSSRC std/_stdint.d)
+ * Source:    $(PHOBOSSRC std/stdint.d)
  */
-/*          Copyright Digital Mars 2000 - 2009.
+/*          Copyright The D Language Foundation 2000 - 2009.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)

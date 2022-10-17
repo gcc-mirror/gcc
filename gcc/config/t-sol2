@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2021 Free Software Foundation, Inc.
+# Copyright (C) 2004-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -17,27 +17,27 @@
 # <http://www.gnu.org/licenses/>.
 
 # Solaris-specific format checking and pragmas.
-sol2-c.o: $(srcdir)/config/sol2-c.c
+sol2-c.o: $(srcdir)/config/sol2-c.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # Solaris-specific C++ mangling.
-sol2-cxx.o: $(srcdir)/config/sol2-cxx.c
+sol2-cxx.o: $(srcdir)/config/sol2-cxx.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # Solaris-specific D support.
-sol2-d.o: $(srcdir)/config/sol2-d.c
+sol2-d.o: $(srcdir)/config/sol2-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # Corresponding stub routines.
-sol2-stubs.o: $(srcdir)/config/sol2-stubs.c
+sol2-stubs.o: $(srcdir)/config/sol2-stubs.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
 # Solaris-specific attributes
-sol2.o: $(srcdir)/config/sol2.c
+sol2.o: $(srcdir)/config/sol2.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

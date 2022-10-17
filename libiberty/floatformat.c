@@ -1,5 +1,5 @@
 /* IEEE floating point support routines, for GDB, the GNU Debugger.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
 This file is part of GDB.
 
@@ -78,7 +78,7 @@ floatformat_always_valid (const struct floatformat *fmt ATTRIBUTE_UNUSED,
    a system header, what we do if not, etc.  */
 #define FLOATFORMAT_CHAR_BIT 8
 
-/* floatformats for IEEE half, single and double, big and little endian.  */
+/* floatformats for IEEE half, single, double and quad, big and little endian.  */
 const struct floatformat floatformat_ieee_half_big =
 {
   floatformat_big, 16, 0, 1, 5, 15, 31, 6, 10,
@@ -124,6 +124,22 @@ const struct floatformat floatformat_ieee_double_little =
   floatformat_little, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
   "floatformat_ieee_double_little",
+  floatformat_always_valid,
+  NULL
+};
+const struct floatformat floatformat_ieee_quad_big =
+{
+  floatformat_big, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
+  floatformat_intbit_no,
+  "floatformat_ieee_quad_big",
+  floatformat_always_valid,
+  NULL
+};
+const struct floatformat floatformat_ieee_quad_little =
+{
+  floatformat_little, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
+  floatformat_intbit_no,
+  "floatformat_ieee_quad_little",
   floatformat_always_valid,
   NULL
 };
@@ -266,22 +282,6 @@ const struct floatformat floatformat_ia64_spill_little =
   floatformat_little, 128, 0, 1, 17, 65535, 0x1ffff, 18, 64,
   floatformat_intbit_yes,
   "floatformat_ia64_spill_little",
-  floatformat_always_valid,
-  NULL
-};
-const struct floatformat floatformat_ia64_quad_big =
-{
-  floatformat_big, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
-  floatformat_intbit_no,
-  "floatformat_ia64_quad_big",
-  floatformat_always_valid,
-  NULL
-};
-const struct floatformat floatformat_ia64_quad_little =
-{
-  floatformat_little, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
-  floatformat_intbit_no,
-  "floatformat_ia64_quad_little",
   floatformat_always_valid,
   NULL
 };

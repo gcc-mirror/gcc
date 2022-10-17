@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2015-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,6 +63,16 @@ package Contracts is
 
    procedure Analyze_Contracts (L : List_Id);
    --  Analyze the contracts of all eligible constructs found in list L
+
+   procedure Analyze_Pragmas_In_Declarations (Body_Id : Entity_Id);
+   --  Perform early analysis of pragmas at the top of a given subprogram's
+   --  declarations.
+   --
+   --  The purpose of this is to analyze contract-related pragmas for later
+   --  processing, but also to handle other such pragmas before these
+   --  declarations get moved to an internal wrapper as part of contract
+   --  expansion. For example, pragmas Inline, Ghost, Volatile all need to
+   --  apply directly to the subprogram and not be moved to a wrapper.
 
    procedure Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of entry or
@@ -177,6 +187,17 @@ package Contracts is
    --    Depends
    --    Global
 
+   procedure Build_Entry_Contract_Wrapper (E : Entity_Id; Decl : Node_Id);
+   --  Build the body of a wrapper procedure for an entry or entry family that
+   --  has contract cases, preconditions, or postconditions, and add it to the
+   --  freeze actions of the related synchronized type.
+   --
+   --  The body first verifies the preconditions and case guards of the
+   --  contract cases, then invokes the entry [family], and finally verifies
+   --  the postconditions and the consequences of the contract cases. E denotes
+   --  the entry family. Decl denotes the declaration of the enclosing
+   --  synchronized type.
+
    procedure Create_Generic_Contract (Unit : Node_Id);
    --  Create a contract node for a generic package, generic subprogram, or a
    --  generic body denoted by Unit by collecting all source contract-related
@@ -187,21 +208,6 @@ package Contracts is
    --  list which contains entry, package, protected, subprogram, or task body
    --  denoted by Body_Decl. In addition, freeze the contract of the nearest
    --  enclosing package body.
-
-   function Get_Postcond_Enabled (Subp : Entity_Id) return Entity_Id;
-   --  Get the defining identifier for a subprogram's Postcond_Enabled
-   --  object created during the expansion of the subprogram's postconditions.
-
-   function Get_Result_Object_For_Postcond (Subp : Entity_Id) return Entity_Id;
-   --  Get the defining identifier for a subprogram's
-   --  Result_Object_For_Postcond object created during the expansion of the
-   --  subprogram's postconditions.
-
-   function Get_Return_Success_For_Postcond
-     (Subp : Entity_Id) return Entity_Id;
-   --  Get the defining identifier for a subprogram's
-   --  Return_Success_For_Postcond object created during the expansion of the
-   --  subprogram's postconditions.
 
    procedure Inherit_Subprogram_Contract
      (Subp      : Entity_Id;
@@ -215,6 +221,64 @@ package Contracts is
    --  Instantiate all source pragmas found in the contract of the generic
    --  subprogram declaration template denoted by Templ. The instantiated
    --  pragmas are added to list L.
+
+   procedure Make_Class_Precondition_Subps
+     (Subp_Id         : Entity_Id;
+      Late_Overriding : Boolean := False);
+   --  Build helpers that at run time evaluate statically and dynamically the
+   --  class-wide preconditions of Subp_Id; build also the indirect-call
+   --  wrapper (ICW) required to check class-wide preconditions when the
+   --  subprogram is invoked through an access-to-subprogram, or when it
+   --  overrides an inherited class-wide precondition (see AI12-0195-1).
+   --  Late_Overriding enables special handling required for late-overriding
+   --  subprograms.
+   --
+   --  For example, if we have a subprogram with the following profile:
+   --
+   --     procedure Prim (Obj : TagTyp; <additional formals>)
+   --       with Pre'Class => F1 (Obj) and F2(Obj)
+   --
+   --  We build the following helper that evaluates statically the class-wide
+   --  precondition:
+   --
+   --    function PrimSP (Obj : TagTyp) return Boolean is
+   --    begin
+   --       return F1 (Obj) and F2(Obj);
+   --    end PrimSP;
+   --
+   --   ... and the following helper that evaluates dynamically the class-wide
+   --   precondition:
+   --
+   --    function PrimDP (Obj : TagTyp'Class; ...) return Boolean is
+   --    begin
+   --       return F1 (Obj) and F2(Obj);
+   --    end PrimSP;
+   --
+   --   ... and the following indirect-call wrapper (ICW) that is used by the
+   --   code generated by the compiler for indirect calls:
+   --
+   --    procedure PrimICW (Obj : TagTyp; <additional formals> is
+   --    begin
+   --       if not PrimSP (Obj) then
+   --          $raise_assert_failure ("failed precondition in call at ...");
+   --       end if;
+   --
+   --       Prim (Obj, ...);
+   --    end Prim;
+
+   procedure Merge_Class_Conditions (Spec_Id : Entity_Id);
+   --  Merge and preanalyze all class-wide conditions of Spec_Id (class-wide
+   --  preconditions merged with operator or-else; class-wide postconditions
+   --  merged with operator and-then). Ignored pre/postconditions are also
+   --  merged since, although they are not required to generate code, their
+   --  preanalysis is required to perform semantic checks. Resulting merged
+   --  expressions are later installed by the expander in helper subprograms
+   --  which are invoked from the caller side; they are also used to build
+   --  the dispatch-table wrapper (DTW), if required.
+
+   procedure Process_Class_Conditions_At_Freeze_Point (Typ : Entity_Id);
+   --  Merge, preanalyze, and check class-wide pre/postconditions of Typ
+   --  primitives.
 
    procedure Save_Global_References_In_Contract
      (Templ  : Node_Id;

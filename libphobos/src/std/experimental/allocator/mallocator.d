@@ -1,4 +1,9 @@
-///
+// Written in the D programming language.
+/**
+The C heap allocator.
+
+Source: $(PHOBOSSRC std/experimental/allocator/mallocator.d)
+*/
 module std.experimental.allocator.mallocator;
 import std.experimental.allocator.common;
 
@@ -7,44 +12,44 @@ import std.experimental.allocator.common;
  */
 struct Mallocator
 {
-    @system unittest { testAllocator!(() => Mallocator.instance); }
+    version (StdUnittest) @system unittest { testAllocator!(() => Mallocator.instance); }
 
     /**
-    The alignment is a static constant equal to $(D platformAlignment), which
+    The alignment is a static constant equal to `platformAlignment`, which
     ensures proper alignment for any D data type.
     */
     enum uint alignment = platformAlignment;
 
     /**
     Standard allocator methods per the semantics defined above. The
-    $(D deallocate) and $(D reallocate) methods are $(D @system) because they
+    `deallocate` and `reallocate` methods are `@system` because they
     may move memory around, leaving dangling pointers in user code. Somewhat
-    paradoxically, $(D malloc) is $(D @safe) but that's only useful to safe
+    paradoxically, `malloc` is `@safe` but that's only useful to safe
     programs that can afford to leak memory allocated.
     */
-    @trusted @nogc nothrow
-    void[] allocate(size_t bytes) shared
+    @trusted @nogc nothrow pure
+    void[] allocate(size_t bytes) shared const
     {
-        import core.stdc.stdlib : malloc;
+        import core.memory : pureMalloc;
         if (!bytes) return null;
-        auto p = malloc(bytes);
+        auto p = pureMalloc(bytes);
         return p ? p[0 .. bytes] : null;
     }
 
     /// Ditto
-    @system @nogc nothrow
-    bool deallocate(void[] b) shared
+    @system @nogc nothrow pure
+    bool deallocate(void[] b) shared const
     {
-        import core.stdc.stdlib : free;
-        free(b.ptr);
+        import core.memory : pureFree;
+        pureFree(b.ptr);
         return true;
     }
 
     /// Ditto
-    @system @nogc nothrow
-    bool reallocate(ref void[] b, size_t s) shared
+    @system @nogc nothrow pure
+    bool reallocate(ref void[] b, size_t s) shared const
     {
-        import core.stdc.stdlib : realloc;
+        import core.memory : pureRealloc;
         if (!s)
         {
             // fuzzy area in the C standard, see http://goo.gl/ZpWeSE
@@ -53,46 +58,52 @@ struct Mallocator
             b = null;
             return true;
         }
-        auto p = cast(ubyte*) realloc(b.ptr, s);
+        auto p = cast(ubyte*) pureRealloc(b.ptr, s);
         if (!p) return false;
         b = p[0 .. s];
         return true;
     }
 
+    @trusted @nogc nothrow pure
+    package void[] allocateZeroed()(size_t bytes) shared const
+    {
+        import core.memory : pureCalloc;
+        if (!bytes) return null;
+        auto p = pureCalloc(1, bytes);
+        return p ? p[0 .. bytes] : null;
+    }
+
     /**
     Returns the global instance of this allocator type. The C heap allocator is
     thread-safe, therefore all of its methods and `it` itself are
-    $(D shared).
+    `shared`.
     */
     static shared Mallocator instance;
 }
 
 ///
-@nogc nothrow
-@system unittest
+@nogc @system nothrow unittest
 {
     auto buffer = Mallocator.instance.allocate(1024 * 1024 * 4);
     scope(exit) Mallocator.instance.deallocate(buffer);
     //...
 }
 
-@nogc nothrow
-@system unittest
+@nogc @system nothrow pure unittest
 {
-    @nogc nothrow
+    @nogc nothrow pure
     static void test(A)()
     {
         int* p = null;
         p = cast(int*) A.instance.allocate(int.sizeof);
-        scope(exit) A.instance.deallocate(p[0 .. int.sizeof]);
+        scope(exit) () nothrow @nogc { A.instance.deallocate(p[0 .. int.sizeof]); }();
         *p = 42;
         assert(*p == 42);
     }
     test!Mallocator();
 }
 
-@nogc nothrow
-@system unittest
+@nogc @system nothrow pure unittest
 {
     static void test(A)()
     {
@@ -199,10 +210,10 @@ version (Windows)
  */
 struct AlignedMallocator
 {
-    @system unittest { testAllocator!(() => typeof(this).instance); }
+    version (StdUnittest) @system unittest { testAllocator!(() => typeof(this).instance); }
 
     /**
-    The default alignment is $(D platformAlignment).
+    The default alignment is `platformAlignment`.
     */
     enum uint alignment = platformAlignment;
 
@@ -218,9 +229,9 @@ struct AlignedMallocator
 
     /**
     Uses $(HTTP man7.org/linux/man-pages/man3/posix_memalign.3.html,
-    $(D posix_memalign)) on Posix and
+    `posix_memalign`) on Posix and
     $(HTTP msdn.microsoft.com/en-us/library/8z34s9c6(v=vs.80).aspx,
-    $(D __aligned_malloc)) on Windows.
+    `__aligned_malloc`) on Windows.
     */
     version (Posix)
     @trusted @nogc nothrow
@@ -231,6 +242,15 @@ struct AlignedMallocator
         assert(a.isGoodDynamicAlignment);
         void* result;
         auto code = posix_memalign(&result, a, bytes);
+
+version (OSX)
+version (LDC_AddressSanitizer)
+{
+        // The return value with AddressSanitizer may be -1 instead of ENOMEM
+        // or EINVAL. See https://bugs.llvm.org/show_bug.cgi?id=36510
+        if (code == -1)
+            return null;
+}
         if (code == ENOMEM)
             return null;
 
@@ -255,9 +275,9 @@ struct AlignedMallocator
     else static assert(0);
 
     /**
-    Calls $(D free(b.ptr)) on Posix and
+    Calls `free(b.ptr)` on Posix and
     $(HTTP msdn.microsoft.com/en-US/library/17b5h8td(v=vs.80).aspx,
-    $(D __aligned_free(b.ptr))) on Windows.
+    `__aligned_free(b.ptr)`) on Windows.
     */
     version (Posix)
     @system @nogc nothrow
@@ -277,16 +297,10 @@ struct AlignedMallocator
     else static assert(0);
 
     /**
-    On Posix, forwards to $(D realloc). On Windows, forwards to
-    $(D alignedReallocate(b, newSize, platformAlignment)).
+    Forwards to $(D alignedReallocate(b, newSize, platformAlignment)).
+    Should be used with blocks obtained with `allocate` otherwise the custom
+    alignment passed with `alignedAllocate` can be lost.
     */
-    version (Posix)
-    @system @nogc nothrow
-    bool reallocate(ref void[] b, size_t newSize) shared
-    {
-        return Mallocator.instance.reallocate(b, newSize);
-    }
-    version (Windows)
     @system @nogc nothrow
     bool reallocate(ref void[] b, size_t newSize) shared
     {
@@ -294,9 +308,10 @@ struct AlignedMallocator
     }
 
     /**
-    On Posix, uses $(D alignedAllocate) and copies data around because there is
-    no realloc for aligned memory. On Windows, calls
-    $(HTTP msdn.microsoft.com/en-US/library/y69db7sx(v=vs.80).aspx,
+    On Posix there is no `realloc` for aligned memory, so `alignedReallocate` emulates
+    the needed behavior by using `alignedAllocate` to get a new block. The existing
+    block is copied to the new block and then freed.
+    On Windows, calls $(HTTPS msdn.microsoft.com/en-us/library/y69db7sx.aspx,
     $(D __aligned_realloc(b.ptr, newSize, a))).
     */
     version (Windows)
@@ -315,17 +330,40 @@ struct AlignedMallocator
         return true;
     }
 
+    /// ditto
+    version (Posix)
+    @system @nogc nothrow
+    bool alignedReallocate(ref void[] b, size_t s, uint a) shared
+    {
+        if (!s)
+        {
+            deallocate(b);
+            b = null;
+            return true;
+        }
+        auto p = alignedAllocate(s, a);
+        if (!p.ptr)
+        {
+            return false;
+        }
+        import std.algorithm.comparison : min;
+        const upTo = min(s, b.length);
+        p[0 .. upTo] = b[0 .. upTo];
+        deallocate(b);
+        b = p;
+        return true;
+    }
+
     /**
     Returns the global instance of this allocator type. The C heap allocator is
     thread-safe, therefore all of its methods and `instance` itself are
-    $(D shared).
+    `shared`.
     */
     static shared AlignedMallocator instance;
 }
 
 ///
-@nogc nothrow
-@system unittest
+@nogc @system nothrow unittest
 {
     auto buffer = AlignedMallocator.instance.alignedAllocate(1024 * 1024 * 4,
         128);
@@ -333,34 +371,60 @@ struct AlignedMallocator
     //...
 }
 
-version (unittest) version (CRuntime_DigitalMars)
-@nogc nothrow
-size_t addr(ref void* ptr) { return cast(size_t) ptr; }
+version (Posix)
+@nogc @system nothrow unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=16398
+    // test the "pseudo" alignedReallocate for Posix
+    void[] s = AlignedMallocator.instance.alignedAllocate(16, 32);
+    (cast(ubyte[]) s)[] = ubyte(1);
+    AlignedMallocator.instance.alignedReallocate(s, 32, 32);
+    ubyte[16] o;
+    o[] = 1;
+    assert((cast(ubyte[]) s)[0 .. 16] == o);
+    AlignedMallocator.instance.alignedReallocate(s, 4, 32);
+    assert((cast(ubyte[]) s)[0 .. 3] == o[0 .. 3]);
+    AlignedMallocator.instance.alignedReallocate(s, 128, 32);
+    assert((cast(ubyte[]) s)[0 .. 3] == o[0 .. 3]);
+    AlignedMallocator.instance.deallocate(s);
+
+    void[] c;
+    AlignedMallocator.instance.alignedReallocate(c, 32, 32);
+    assert(c.ptr);
+
+    version (LDC_AddressSanitizer) {} else // AddressSanitizer does not support such large memory allocations (0x10000000000 max)
+    version (DragonFlyBSD) {} else    /* FIXME: Malloc on DragonFly does not return NULL when allocating more than UINTPTR_MAX
+                                       * $(LINK: https://bugs.dragonflybsd.org/issues/3114, dragonfly bug report)
+                                       * $(LINK: https://github.com/dlang/druntime/pull/1999#discussion_r157536030, PR Discussion) */
+    assert(!AlignedMallocator.instance.alignedReallocate(c, size_t.max, 4096));
+    AlignedMallocator.instance.deallocate(c);
+}
 
 version (CRuntime_DigitalMars)
-@nogc nothrow
-@system unittest
+@nogc @system nothrow unittest
 {
     void* m;
+
+    size_t m_addr() { return cast(size_t) m; }
 
     m = _aligned_malloc(16, 0x10);
     if (m)
     {
-        assert((m.addr & 0xF) == 0);
+        assert((m_addr & 0xF) == 0);
         _aligned_free(m);
     }
 
     m = _aligned_malloc(16, 0x100);
     if (m)
     {
-        assert((m.addr & 0xFF) == 0);
+        assert((m_addr & 0xFF) == 0);
         _aligned_free(m);
     }
 
     m = _aligned_malloc(16, 0x1000);
     if (m)
     {
-        assert((m.addr & 0xFFF) == 0);
+        assert((m_addr & 0xFFF) == 0);
         _aligned_free(m);
     }
 
@@ -369,7 +433,7 @@ version (CRuntime_DigitalMars)
     {
         assert((cast(size_t) m & 0xF) == 0);
         m = _aligned_realloc(m, 32, 0x10000);
-        if (m) assert((m.addr & 0xFFFF) == 0);
+        if (m) assert((m_addr & 0xFFFF) == 0);
         _aligned_free(m);
     }
 

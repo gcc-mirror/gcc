@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2021 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2022 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -80,6 +80,17 @@ function opt_args_non_empty(name, flags, description)
 	if (args == "")
 		print "#error Empty option argument '" name "' during parsing of: " flags
 	return args
+}
+
+# Return the number of comma-separated element of S.
+function n_args(s)
+{
+	n = 1
+	while (s ~ ",") {
+		n++
+		sub("[^,]*, *", "", s)
+	}
+	return n
 }
 
 # Return the Nth comma-separated element of S.  Return the empty string
@@ -297,13 +308,18 @@ function var_set(flags)
 	}
 	if (flag_set_p("Enum.*", flags)) {
 		en = opt_args("Enum", flags);
-		return enum_index[en] ", CLVC_ENUM, 0"
+		if (flag_set_p("EnumSet", flags))
+			return enum_index[en] ", CLVC_ENUM, CLEV_SET"
+		else if (flag_set_p("EnumBitSet", flags))
+			return enum_index[en] ", CLVC_ENUM, CLEV_BITSET"
+		else
+			return enum_index[en] ", CLVC_ENUM, CLEV_NORMAL"
 	}
 	if (var_type(flags) == "const char *")
 		return "0, CLVC_STRING, 0"
 	if (flag_set_p("ByteSize", flags))
 		return "0, CLVC_SIZE, 0"
-	return "0, CLVC_BOOLEAN, 0"
+	return "0, CLVC_INTEGER, 0"
 }
 
 # Given that an option called NAME has flags FLAGS, return an initializer
@@ -356,7 +372,7 @@ function search_var_name(name, opt_numbers, opts, flags, n_opts)
     return ""
 }
 
-function integer_range_info(range_option, init, option)
+function integer_range_info(range_option, init, option, uinteger_used)
 {
     if (range_option != "") {
 	ival = init + 0;
@@ -364,44 +380,10 @@ function integer_range_info(range_option, init, option)
 	end = nth_arg(1, range_option) + 0;
 	if (init != "" && init != "-1" && (ival < start || ival > end))
 	  print "#error initial value " init " of '" option "' must be in range [" start "," end "]"
+	if (uinteger_used && start < 0)
+	  print "#error '" option"': negative IntegerRange (" start ", " end ") cannot be combined with UInteger"
 	return start ", " end
     }
     else
         return "-1, -1"
-}
-
-# Handle LangEnabledBy(ENABLED_BY_LANGS, ENABLEDBY_NAME, ENABLEDBY_POSARG,
-# ENABLEDBY_NEGARG). This function does not return anything.
-function lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enabledby_negarg)
-{
-    n_enabledby_arg_langs = split(enabledby_langs, enabledby_arg_langs, " ");
-    if (enabledby_posarg != "" && enabledby_negarg != "") {
-        with_args = "," enabledby_posarg "," enabledby_negarg
-    } else if (enabledby_posarg == "" && enabledby_negarg == "") {
-        with_args = ""
-    } else {
-        print "#error " opts[i] " LangEnabledBy("enabledby_langs","enabledby_name", " \
-            enabledby_posarg", " enabledby_negargs                  \
-            ") with three arguments, it should have either 2 or 4"
-    }
-
-    n_enabledby_array = split(enabledby_name, enabledby_array, " \\|\\| ");
-    for (k = 1; k <= n_enabledby_array; k++) {
-        enabledby_index = opt_numbers[enabledby_array[k]];
-        if (enabledby_index == "") {
-             print "#error " opts[i] " LangEnabledBy("enabledby_langs","enabledby_name", " \
-                 enabledby_posarg", " enabledby_negargs"), unknown option '" enabledby_name "'"
-        } else {
-            for (j = 1; j <= n_enabledby_arg_langs; j++) {
-                 lang_name = lang_sanitized_name(enabledby_arg_langs[j]);
-                 lang_index = lang_numbers[enabledby_arg_langs[j]];
-                 if (enables[lang_name,enabledby_array[k]] == "") {
-                     enabledby[lang_name,n_enabledby_lang[lang_index]] = enabledby_array[k];
-                     n_enabledby_lang[lang_index]++;
-                 }
-                 enables[lang_name,enabledby_array[k]] \
-                     = enables[lang_name,enabledby_array[k]] opts[i] with_args ";";
-            }
-        }
-    }
 }

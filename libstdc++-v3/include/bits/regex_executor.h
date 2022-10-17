@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,7 +60,7 @@ namespace __detail
     public:
       typedef typename iterator_traits<_BiIter>::value_type _CharT;
       typedef basic_regex<_CharT, _TraitsT>                 _RegexT;
-      typedef std::vector<sub_match<_BiIter>, _Alloc>       _ResultsVec;
+      typedef _GLIBCXX_STD_C::vector<sub_match<_BiIter>, _Alloc> _ResultsVec;
       typedef regex_constants::match_flag_type              _FlagT;
       typedef typename _TraitsT::char_class_type            _ClassT;
       typedef _NFA<_TraitsT>                                _NFAT;
@@ -78,12 +78,12 @@ namespace __detail
       _M_results(__results),
       _M_rep_count(_M_nfa.size()),
       _M_states(_M_nfa._M_start(), _M_nfa.size()),
-      _M_flags((__flags & regex_constants::match_prev_avail)
-	       ? (__flags
-		  & ~regex_constants::match_not_bol
-		  & ~regex_constants::match_not_bow)
-	       : __flags)
-      { }
+      _M_flags(__flags)
+      {
+	using namespace regex_constants;
+	if (__flags & match_prev_avail) // ignore not_bol and not_bow
+	  _M_flags &= ~(match_not_bol | match_not_bow);
+      }
 
       // Set matched when string exactly matches the pattern.
       bool
@@ -165,16 +165,39 @@ namespace __detail
       bool
       _M_at_begin() const
       {
-	return _M_current == _M_begin
-	  && !(_M_flags & (regex_constants::match_not_bol
-			   | regex_constants::match_prev_avail));
+	if (_M_current == _M_begin)
+	  {
+	    // match_not_bol means ^ does not match [_M_begin,_M_begin)
+	    if (_M_flags & regex_constants::match_not_bol)
+	      return false;
+	    // match_prev_avail means _M_begin is not the start of the input.
+	    if (_M_flags & regex_constants::match_prev_avail)
+	      {
+		// For ECMAScript multiline matches, check if the previous
+		// character is a line terminator.
+		if (_M_match_multiline())
+		  return _M_is_line_terminator(*std::prev(_M_current));
+		else
+		  return false;
+	      }
+	    else // ^ matches at _M_begin
+	      return true;
+	  }
+	else if (_M_match_multiline())
+	  return _M_is_line_terminator(*std::prev(_M_current));
+	else
+	  return false;
       }
 
       bool
       _M_at_end() const
       {
-	return _M_current == _M_end
-	  && !(_M_flags & regex_constants::match_not_eol);
+	if (_M_current == _M_end)
+	  return !(_M_flags & regex_constants::match_not_eol);
+	else if (_M_match_multiline())
+	  return _M_is_line_terminator(*_M_current);
+	else
+	  return false;
       }
 
       bool
@@ -182,6 +205,31 @@ namespace __detail
 
       bool
       _M_lookahead(_StateIdT __next);
+
+      bool
+      _M_is_line_terminator(_CharT __c) const
+      {
+	const auto& __traits = _M_re._M_automaton->_M_traits;
+	const auto& __ct = use_facet<ctype<_CharT>>(__traits.getloc());
+	const char __n{ __ct.narrow(__c, ' ') };
+	if (__n == '\n')
+	  return true;
+	if (_M_re._M_automaton->_M_options() & regex_constants::ECMAScript)
+	  {
+	    if (__n == '\r')
+	      return true;
+	    // FIXME: U+2028 (line separator) and U+2029 (paragraph separator)
+	  }
+	return false;
+      }
+
+      bool
+      _M_match_multiline() const noexcept
+      {
+	constexpr auto __m
+	  = regex_constants::ECMAScript | regex_constants::__multiline;
+	return (_M_re._M_automaton->_M_options() & __m) == __m;
+      }
 
        // Holds additional information used in BFS-mode.
       template<typename _SearchMode, typename _ResultsVec>
@@ -194,6 +242,11 @@ namespace __detail
 	  _State_info(_StateIdT __start, size_t __n)
 	  : _M_visited_states(new bool[__n]()), _M_start(__start)
 	  { }
+
+	  ~_State_info() { delete[] _M_visited_states; }
+
+	  _State_info(const _State_info&) = delete;
+	  _State_info& operator=(const _State_info&) = delete;
 
 	  bool _M_visited(_StateIdT __i)
 	  {
@@ -210,9 +263,9 @@ namespace __detail
 	  _BiIter* _M_get_sol_pos() { return nullptr; }
 
 	  // Saves states that need to be considered for the next character.
-	  vector<pair<_StateIdT, _ResultsVec>>	_M_match_queue;
+	  _GLIBCXX_STD_C::vector<pair<_StateIdT, _ResultsVec>> _M_match_queue;
 	  // Indicates which states are already visited.
-	  unique_ptr<bool[]>			_M_visited_states;
+	  bool*     _M_visited_states;
 	  // To record current solution.
 	  _StateIdT _M_start;
 	};
@@ -243,7 +296,7 @@ namespace __detail
       const _RegexT&                                        _M_re;
       const _NFAT&                                          _M_nfa;
       _ResultsVec&                                          _M_results;
-      vector<pair<_BiIter, int>>                            _M_rep_count;
+      _GLIBCXX_STD_C::vector<pair<_BiIter, int>>            _M_rep_count;
       _State_info<__search_mode, _ResultsVec>		    _M_states;
       _FlagT                                                _M_flags;
       // Do we have a solution so far?

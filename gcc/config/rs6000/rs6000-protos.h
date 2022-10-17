@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -21,7 +21,7 @@
 #ifndef GCC_RS6000_PROTOS_H
 #define GCC_RS6000_PROTOS_H
 
-/* Declare functions in rs6000.c */
+/* Declare functions in rs6000.cc */
 
 #ifdef RTX_CODE
 
@@ -30,7 +30,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int,
 				  tree, machine_mode);
 #endif /* TREE_CODE */
 
-extern bool easy_altivec_constant (rtx, machine_mode);
+extern int easy_altivec_constant (rtx, machine_mode);
 extern bool xxspltib_constant_p (rtx, machine_mode, int *, int *);
 extern int vspltis_shifted (rtx);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
@@ -73,6 +73,7 @@ extern int expand_block_move (rtx[], bool);
 extern bool expand_block_compare (rtx[]);
 extern bool expand_strn_compare (rtx[], int);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
+extern bool rs6000_is_valid_rotate_dot_mask (rtx mask, machine_mode mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
 extern bool rs6000_is_valid_shift_mask (rtx, rtx, machine_mode);
 extern bool rs6000_is_valid_insert_mask (rtx, rtx, machine_mode);
@@ -222,6 +223,37 @@ address_is_prefixed (rtx addr,
   return (iform == INSN_FORM_PREFIXED_NUMERIC
 	  || iform == INSN_FORM_PCREL_LOCAL);
 }
+
+/* Functions and data structures relating to 128-bit constants that are
+   converted to byte, half-word, word, and double-word values.  All fields are
+   kept in big endian order.  We also convert scalar values to 128-bits if they
+   are going to be loaded into vector registers.  */
+#define VECTOR_128BIT_BITS		128
+#define VECTOR_128BIT_BYTES		(128 / 8)
+#define VECTOR_128BIT_HALF_WORDS	(128 / 16)
+#define VECTOR_128BIT_WORDS		(128 / 32)
+#define VECTOR_128BIT_DOUBLE_WORDS	(128 / 64)
+
+typedef struct {
+  /* Constant as various sized items.  */
+  unsigned HOST_WIDE_INT double_words[VECTOR_128BIT_DOUBLE_WORDS];
+  unsigned int words[VECTOR_128BIT_WORDS];
+  unsigned short half_words[VECTOR_128BIT_HALF_WORDS];
+  unsigned char bytes[VECTOR_128BIT_BYTES];
+
+  unsigned original_size;		/* Constant size before splat.  */
+  bool fp_constant_p;			/* Is the constant floating point?  */
+  bool all_double_words_same;		/* Are the double words all equal?  */
+  bool all_words_same;			/* Are the words all equal?  */
+  bool all_half_words_same;		/* Are the half words all equal?  */
+  bool all_bytes_same;			/* Are the bytes all equal?  */
+} vec_const_128bit_type;
+
+extern bool vec_const_128bit_to_bytes (rtx, machine_mode,
+				       vec_const_128bit_type *);
+extern unsigned constant_generates_lxvkq (vec_const_128bit_type *);
+extern unsigned constant_generates_xxspltiw (vec_const_128bit_type *);
+extern unsigned constant_generates_xxspltidp (vec_const_128bit_type *);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -259,7 +291,7 @@ extern int rs6000_trampoline_size (void);
 extern alias_set_type get_TOC_alias_set (void);
 extern void rs6000_emit_prologue (void);
 extern void rs6000_emit_load_toc_table (int);
-extern unsigned int rs6000_dbx_register_number (unsigned int, unsigned int);
+extern unsigned int rs6000_debugger_regno (unsigned int, unsigned int);
 extern void rs6000_emit_epilogue (enum epilogue_type);
 extern void rs6000_expand_split_stack_prologue (void);
 extern void rs6000_split_stack_space_check (rtx, rtx);
@@ -272,18 +304,15 @@ extern void rs6000_call_darwin (rtx, rtx, rtx, rtx);
 extern void rs6000_sibcall_darwin (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
-extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
-extern bool rs6000_builtin_is_supported_p (enum rs6000_builtins);
-extern const char *rs6000_overloaded_builtin_name (enum rs6000_builtins);
 extern int rs6000_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern HOST_WIDE_INT rs6000_builtin_mask_calculate (void);
 extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);
 extern void rs6000_asm_output_dwarf_datarel (FILE *file, int size,
 					     const char *label);
-extern long long rs6000_const_f32_to_i32 (rtx operand);
+extern long rs6000_const_f32_to_i32 (rtx operand);
 
-/* Declare functions in rs6000-c.c */
+/* Declare functions in rs6000-c.cc */
 
 extern void rs6000_pragma_longcall (struct cpp_reader *);
 extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
@@ -291,13 +320,8 @@ extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
 extern bool rs6000_pragma_target_parse (tree, tree);
 #endif
 extern void rs6000_activate_target_options (tree new_tree);
-extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT, HOST_WIDE_INT);
-extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
-						HOST_WIDE_INT);
-
-/* Declare functions in rs6000-d.c  */
-extern void rs6000_d_target_versions (void);
-extern void rs6000_d_register_target_info (void);
+extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT);
+extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT);
 
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);

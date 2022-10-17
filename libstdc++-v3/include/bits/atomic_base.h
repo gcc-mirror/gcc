@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,11 +33,12 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <new> // For placement new
 #include <stdint.h>
 #include <bits/atomic_lockfree_defines.h>
 #include <bits/move.h>
 
-#if __cplusplus > 201703L
+#if __cplusplus > 201703L && _GLIBCXX_HOSTED
 #include <bits/atomic_wait.h>
 #endif
 
@@ -86,6 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     } memory_order;
 #endif
 
+  /// @cond undocumented
   enum __memory_order_modifier
     {
       __memory_order_mask          = 0x0ffff,
@@ -93,6 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __memory_order_hle_acquire   = 0x10000,
       __memory_order_hle_release   = 0x20000
     };
+  /// @endcond
 
   constexpr memory_order
   operator|(memory_order __m, __memory_order_modifier __mod)
@@ -105,6 +108,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     return memory_order(int(__m) & int(__mod));
   }
+
+  /// @cond undocumented
 
   // Drop release ordering as per [atomics.types.operations.req]/21
   constexpr memory_order
@@ -120,6 +125,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return memory_order(__cmpexch_failure_order2(__m & __memory_order_mask)
       | __memory_order_modifier(__m & __memory_order_modifier_mask));
   }
+
+  constexpr bool
+  __is_valid_cmpexch_failure_order(memory_order __m) noexcept
+  {
+    return (__m & __memory_order_mask) != memory_order_release
+	&& (__m & __memory_order_mask) != memory_order_acq_rel;
+  }
+
+  // Base types for atomics.
+  template<typename _IntTp>
+    struct __atomic_base;
+
+  /// @endcond
 
   _GLIBCXX_ALWAYS_INLINE void
   atomic_thread_fence(memory_order __m) noexcept
@@ -138,16 +156,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __ret;
     }
 
-  // Base types for atomics.
-  template<typename _IntTp>
-    struct __atomic_base;
-
-#if __cplusplus <= 201703L
-# define _GLIBCXX20_INIT(I)
-#else
+#if __cplusplus >= 202002L
 # define __cpp_lib_atomic_value_initialization 201911L
-# define _GLIBCXX20_INIT(I) = I
 #endif
+
+/// @cond undocumented
+#if __cpp_lib_atomic_value_initialization
+# define _GLIBCXX20_INIT(I) = I
+#else
+# define _GLIBCXX20_INIT(I)
+#endif
+/// @endcond
 
 #define ATOMIC_VAR_INIT(_VI) { _VI }
 
@@ -164,8 +183,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef unsigned char __atomic_flag_data_type;
 #endif
 
-  /**
-   *  @brief Base type for atomic_flag.
+  /// @cond undocumented
+
+  /*
+   *  Base type for atomic_flag.
    *
    *  Base type is POD with data, allowing atomic_flag to derive from
    *  it and meet the standard layout type requirement. In addition to
@@ -182,6 +203,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   _GLIBCXX_END_EXTERN_C
+
+  /// @endcond
 
 #define ATOMIC_FLAG_INIT { 0 }
 
@@ -245,13 +268,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     _GLIBCXX_ALWAYS_INLINE void
-    notify_one() const noexcept
+    notify_one() noexcept
     { std::__atomic_notify_address(&_M_i, false); }
 
     // TODO add const volatile overload
 
     _GLIBCXX_ALWAYS_INLINE void
-    notify_all() const noexcept
+    notify_all() noexcept
     { std::__atomic_notify_address(&_M_i, true); }
 
     // TODO add const volatile overload
@@ -288,6 +311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __i ? __GCC_ATOMIC_TEST_AND_SET_TRUEVAL : 0; }
   };
 
+  /// @cond undocumented
 
   /// Base class for atomic integrals.
   //
@@ -511,13 +535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_weak(__int_type& __i1, __int_type __i2,
 			    memory_order __m1, memory_order __m2) noexcept
       {
-	memory_order __b2 __attribute__ ((__unused__))
-	  = __m2 & __memory_order_mask;
-	memory_order __b1 __attribute__ ((__unused__))
-	  = __m1 & __memory_order_mask;
-	__glibcxx_assert(__b2 != memory_order_release);
-	__glibcxx_assert(__b2 != memory_order_acq_rel);
-	__glibcxx_assert(__b2 <= __b1);
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
 
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 1,
 					   int(__m1), int(__m2));
@@ -528,13 +546,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    memory_order __m1,
 			    memory_order __m2) volatile noexcept
       {
-	memory_order __b2 __attribute__ ((__unused__))
-	  = __m2 & __memory_order_mask;
-	memory_order __b1 __attribute__ ((__unused__))
-	  = __m1 & __memory_order_mask;
-	__glibcxx_assert(__b2 != memory_order_release);
-	__glibcxx_assert(__b2 != memory_order_acq_rel);
-	__glibcxx_assert(__b2 <= __b1);
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
 
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 1,
 					   int(__m1), int(__m2));
@@ -560,13 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_strong(__int_type& __i1, __int_type __i2,
 			      memory_order __m1, memory_order __m2) noexcept
       {
-	memory_order __b2 __attribute__ ((__unused__))
-	  = __m2 & __memory_order_mask;
-	memory_order __b1 __attribute__ ((__unused__))
-	  = __m1 & __memory_order_mask;
-	__glibcxx_assert(__b2 != memory_order_release);
-	__glibcxx_assert(__b2 != memory_order_acq_rel);
-	__glibcxx_assert(__b2 <= __b1);
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
 
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 0,
 					   int(__m1), int(__m2));
@@ -577,14 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
       {
-	memory_order __b2 __attribute__ ((__unused__))
-	  = __m2 & __memory_order_mask;
-	memory_order __b1 __attribute__ ((__unused__))
-	  = __m1 & __memory_order_mask;
-
-	__glibcxx_assert(__b2 != memory_order_release);
-	__glibcxx_assert(__b2 != memory_order_acq_rel);
-	__glibcxx_assert(__b2 <= __b1);
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
 
 	return __atomic_compare_exchange_n(&_M_i, &__i1, __i2, 0,
 					   int(__m1), int(__m2));
@@ -618,13 +617,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
-      notify_one() const noexcept
+      notify_one() noexcept
       { std::__atomic_notify_address(&_M_i, false); }
 
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
-      notify_all() const noexcept
+      notify_all() noexcept
       { std::__atomic_notify_address(&_M_i, true); }
 
       // TODO add const volatile overload
@@ -865,17 +864,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _GLIBCXX_ALWAYS_INLINE bool
+      compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
+			    memory_order __m1,
+			    memory_order __m2) noexcept
+      {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
+
+	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 1,
+					   int(__m1), int(__m2));
+      }
+
+      _GLIBCXX_ALWAYS_INLINE bool
+      compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
+			    memory_order __m1,
+			    memory_order __m2) volatile noexcept
+      {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
+
+	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 1,
+					   int(__m1), int(__m2));
+      }
+
+      _GLIBCXX_ALWAYS_INLINE bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1,
 			      memory_order __m2) noexcept
       {
-	memory_order __b2 __attribute__ ((__unused__))
-	  = __m2 & __memory_order_mask;
-	memory_order __b1 __attribute__ ((__unused__))
-	  = __m1 & __memory_order_mask;
-	__glibcxx_assert(__b2 != memory_order_release);
-	__glibcxx_assert(__b2 != memory_order_acq_rel);
-	__glibcxx_assert(__b2 <= __b1);
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
 
 	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 0,
 					   int(__m1), int(__m2));
@@ -886,14 +901,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
       {
-	memory_order __b2 __attribute__ ((__unused__))
-	  = __m2 & __memory_order_mask;
-	memory_order __b1 __attribute__ ((__unused__))
-	  = __m1 & __memory_order_mask;
-
-	__glibcxx_assert(__b2 != memory_order_release);
-	__glibcxx_assert(__b2 != memory_order_acq_rel);
-	__glibcxx_assert(__b2 <= __b1);
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__m2));
 
 	return __atomic_compare_exchange_n(&_M_p, &__p1, __p2, 0,
 					   int(__m1), int(__m2));
@@ -902,7 +910,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_atomic_wait
       _GLIBCXX_ALWAYS_INLINE void
       wait(__pointer_type __old,
-	   memory_order __m = memory_order_seq_cst) noexcept
+	   memory_order __m = memory_order_seq_cst) const noexcept
       {
 	std::__atomic_wait_address_v(&_M_p, __old,
 				     [__m, this]
@@ -945,17 +953,79 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __atomic_fetch_sub(&_M_p, _M_type_size(__d), int(__m)); }
     };
 
+  namespace __atomic_impl
+  {
+    // Implementation details of atomic padding handling
+
+    template<typename _Tp>
+      constexpr bool
+      __maybe_has_padding()
+      {
+#if ! __has_builtin(__builtin_clear_padding)
+	return false;
+#elif __has_builtin(__has_unique_object_representations)
+	return !__has_unique_object_representations(_Tp)
+	  && !is_same<_Tp, float>::value && !is_same<_Tp, double>::value;
+#else
+	return true;
+#endif
+      }
+
+    template<typename _Tp>
+      _GLIBCXX_ALWAYS_INLINE _Tp*
+      __clear_padding(_Tp& __val) noexcept
+      {
+	auto* __ptr = std::__addressof(__val);
+#if __has_builtin(__builtin_clear_padding)
+	if _GLIBCXX17_CONSTEXPR (__atomic_impl::__maybe_has_padding<_Tp>())
+	  __builtin_clear_padding(__ptr);
+#endif
+	return __ptr;
+      }
+
+    // Remove volatile and create a non-deduced context for value arguments.
+    template<typename _Tp>
+      using _Val = typename remove_volatile<_Tp>::type;
+
+    template<typename _Tp>
+      _GLIBCXX_ALWAYS_INLINE bool
+      __compare_exchange(_Tp& __val, _Val<_Tp>& __e, _Val<_Tp>& __i,
+			 bool __is_weak,
+			 memory_order __s, memory_order __f) noexcept
+      {
+	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
+
+	using _Vp = _Val<_Tp>;
+
+	if _GLIBCXX17_CONSTEXPR (__atomic_impl::__maybe_has_padding<_Vp>())
+	  {
+	    // We must not modify __e on success, so cannot clear its padding.
+	    // Copy into a buffer and clear that, then copy back on failure.
+	    alignas(_Vp) unsigned char __buf[sizeof(_Vp)];
+	    _Vp* __exp = ::new((void*)__buf) _Vp(__e);
+	    __atomic_impl::__clear_padding(*__exp);
+	    if (__atomic_compare_exchange(std::__addressof(__val), __exp,
+					  __atomic_impl::__clear_padding(__i),
+					  __is_weak, int(__s), int(__f)))
+	      return true;
+	    __builtin_memcpy(std::__addressof(__e), __exp, sizeof(_Vp));
+	    return false;
+	  }
+	else
+	  return __atomic_compare_exchange(std::__addressof(__val),
+					   std::__addressof(__e),
+					   std::__addressof(__i),
+					   __is_weak, int(__s), int(__f));
+      }
+  } // namespace __atomic_impl
+
 #if __cplusplus > 201703L
   // Implementation details of atomic_ref and atomic<floating-point>.
   namespace __atomic_impl
   {
-    // Remove volatile and create a non-deduced context for value arguments.
+    // Like _Val<T> above, but for difference_type arguments.
     template<typename _Tp>
-      using _Val = remove_volatile_t<_Tp>;
-
-    // As above, but for difference_type arguments.
-    template<typename _Tp>
-      using _Diff = conditional_t<is_pointer_v<_Tp>, ptrdiff_t, _Val<_Tp>>;
+      using _Diff = __conditional_t<is_pointer_v<_Tp>, ptrdiff_t, _Val<_Tp>>;
 
     template<size_t _Size, size_t _Align>
       _GLIBCXX_ALWAYS_INLINE bool
@@ -968,7 +1038,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       _GLIBCXX_ALWAYS_INLINE void
       store(_Tp* __ptr, _Val<_Tp> __t, memory_order __m) noexcept
-      { __atomic_store(__ptr, std::__addressof(__t), int(__m)); }
+      {
+	__atomic_store(__ptr, __atomic_impl::__clear_padding(__t), int(__m));
+      }
 
     template<typename _Tp>
       _GLIBCXX_ALWAYS_INLINE _Val<_Tp>
@@ -986,7 +1058,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	auto* __dest = reinterpret_cast<_Val<_Tp>*>(__buf);
-	__atomic_exchange(__ptr, std::__addressof(__desired), __dest, int(__m));
+	__atomic_exchange(__ptr, __atomic_impl::__clear_padding(__desired),
+			  __dest, int(__m));
 	return *__dest;
       }
 
@@ -996,9 +1069,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    _Val<_Tp> __desired, memory_order __success,
 			    memory_order __failure) noexcept
       {
-	return __atomic_compare_exchange(__ptr, std::__addressof(__expected),
-					 std::__addressof(__desired), true,
-					 int(__success), int(__failure));
+	return __atomic_impl::__compare_exchange(*__ptr, __expected, __desired,
+						 true, __success, __failure);
       }
 
     template<typename _Tp>
@@ -1007,9 +1079,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      _Val<_Tp> __desired, memory_order __success,
 			      memory_order __failure) noexcept
       {
-	return __atomic_compare_exchange(__ptr, std::__addressof(__expected),
-					 std::__addressof(__desired), false,
-					 int(__success), int(__failure));
+	return __atomic_impl::__compare_exchange(*__ptr, __expected, __desired,
+						 false, __success, __failure);
       }
 
 #if __cpp_lib_atomic_wait
@@ -1940,8 +2011,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Tp** _M_ptr;
     };
-
 #endif // C++2a
+
+  /// @endcond
 
   /// @} group atomics
 

@@ -1,0 +1,825 @@
+LPAREN = (
+RPAREN = )
+BACKTICK = `
+DOLLAR = $
+COMMA = ,
+QUOTE = &quot;
+LF =
+$(LF)
+
+ESCAPES =
+  /</&lt;/
+  />/&gt;/
+  /&/&amp;/
+
+H1 = <h1>$0</h1>
+H2 = <h2>$0</h2>
+H3 = <h3>$0</h3>
+H4 = <h4>$0</h4>
+H5 = <h5>$0</h5>
+H6 = <h6>$0</h6>
+B = <b>$0</b>
+I = <i>$0</i>
+EM = <em>$0</em>
+STRONG = <strong>$0</strong>
+U = <u>$0</u>
+P = <p>$0</p>
+DL = <dl>$0</dl>
+DT = <dt>$0</dt>
+DD = <dd>$0</dd>
+TABLE = <table>$0</table>
+THEAD = <thead>$0</thead>
+TBODY = <tbody>$0</tbody>
+TR = <tr>$0</tr>
+TH = <th>$0</th>
+TD = <td>$0</td>
+TH_ALIGN = <th align="$1">$+</th>
+TD_ALIGN = <td align="$1">$+</td>
+OL = <ol>$0</ol>
+OL_START = <ol start="$1">$2</ol>
+UL = <ul>$0</ul>
+LI = <li>$0</li>
+BIG = <span class="font_big">$0</span>
+SMALL = <small>$0</small>
+BR = <br>
+HR = <hr />
+LINK = <a href="$0">$0</a>
+LINK2 = <a href="$1">$+</a>
+LINK_TITLE = <a href="$1" title="$2">$3</a>
+SYMBOL_LINK = <a href="$1">$(DDOC_PSYMBOL $+)</a>
+PHOBOS_PATH = https://dlang.org/phobos/
+DOC_ROOT_std = $(PHOBOS_PATH)
+DOC_ROOT_core = $(PHOBOS_PATH)
+DOC_ROOT_etc = $(PHOBOS_PATH)
+DOC_ROOT_object = $(PHOBOS_PATH)
+DOC_EXTENSION = .html
+IMAGE = <img src="$1" alt="$+" />
+IMAGE_TITLE = <img src="$1" alt="$3" title="$2" />
+BLOCKQUOTE = <blockquote>$0</blockquote>
+DEPRECATED = $0
+
+RED = <span class="color_red">$0</span>
+BLUE = <span class="color_blue">$0</span>
+GREEN = <span class="color_green">$0</span>
+YELLOW = <span class="color_yellow">$0</span>
+BLACK = <span class="color_black">$0</span>
+WHITE = <span class="color_white">$0</span>
+
+D_CODE =
+<section class="code_listing">
+  <div class="code_sample">
+    <div class="dlang">
+      <ol class="code_lines">
+        <li><code class="code">$0</code></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+OTHER_CODE =
+<section class="code_listing">
+  <div class="code_sample">
+    <div class="dlang">
+      <ol class="code_lines">
+        <li><code class="code language-$1">$+</code></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+D_INLINECODE = <code class="code">$0</code>
+DDOC_BACKQUOTED = $(D_INLINECODE $0)
+D_COMMENT = <span class="comment">$0</span>
+D_STRING = <span class="string_literal">$0</span>
+D_KEYWORD = <span class="keyword">$0</span>
+D_PSYMBOL = <span class="psymbol">$0</span>
+D_PARAM = <span class="param">$0</span>
+
+DDOC_BLANKLINE = <br><br>
+DDOC_COMMENT = <!-- $0 -->
+
+DDOC =
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>$(TITLE)</title>
+    <style type="text/css" media="screen">
+      html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p,
+      blockquote, pre, a, abbr, address, cite, code, del, dfn, em, figure,
+      img, ins, kbd, q, s, samp, small, strong, sub, sup, var, b, u, i, dl,
+      dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption,
+      tbody, tfoot, thead, tr, th, td {
+        background: transparent none repeat scroll 0 0;
+        border: 0 none;
+        font-size: 100%;
+        margin: 0;
+        outline: 0 none;
+        padding: 0;
+        vertical-align: baseline;
+      }
+
+      h1 { font-size: 200%; }
+      h2 { font-size: 160%; }
+      h3 { font-size: 120%; }
+      h4 { font-size: 100%; }
+      h5 { font-size: 80%; }
+      h6 { font-size: 80%; font-weight: normal; }
+
+      ul, ol {
+        margin: 1.4em 0;
+      }
+      ul ul, ol ol, ul ol, ol ul {
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+      ul, ol {
+        margin-left: 2.8em;
+      }
+
+      ol {
+        list-style: decimal;
+      }
+      ol ol {
+        list-style: lower-alpha;
+      }
+      ol ol ol {
+        list-style: lower-roman;
+      }
+      ol ol ol ol {
+        list-style: decimal;
+      }
+
+      blockquote {
+        margin: 0.1em;
+        margin-left: 1em;
+        border-left: 2px solid #cccccc;
+        padding-left: 0.7em;
+      }
+
+      .color_red { color: #dc322f; }
+      .color_blue { color: #268bd2; }
+      .color_green { color: #859901; }
+      .color_yellow { color: #b58901; }
+      .color_black { color: black; }
+      .color_white { color: white; }
+
+      .font_big {
+        font-size: 1.2em;
+      }
+
+      .ddoc_section_h {
+        font-weight: bold;
+        font-size: 13px;
+        line-height: 19.5px;
+        margin-top: 11px;
+        display: block;
+      }
+
+      body.dlang .dlang {
+        display: inline-block;
+      }
+
+      body.dlang .declaration .dlang {
+          display: block;
+      }
+
+      body.dlang .ddoc_header_anchor a.dlang {
+        display: block;
+        color: rgba(0, 136, 204, 1);
+        text-decoration: none;
+      }
+
+      body.dlang .ddoc_header_anchor .code {
+        color: rgba(0, 136, 204, 1);
+      }
+
+      #ddoc_main .module {
+          border-color: currentColor rgba(233, 233, 233, 1) rgba(233, 233, 233, 1);
+          border-style: none solid solid;
+          border-width: 0 1px 1px;
+          overflow-x: hidden;
+          padding: 15px;
+      }
+
+      #ddoc_main .section .section {
+        margin-top: 0;
+      }
+
+      #ddoc_main .ddoc_module_members_section {
+          padding: 1px 0 0;
+          transition: transform 0.3s ease 0s;
+      }
+
+      #ddoc_main .ddoc_member, #ddoc_main .ddoc_module_members section.intro {
+          background: #fff none repeat scroll 0 0;
+          list-style-type: none;
+          width: 100%;
+      }
+
+      #ddoc_main .ddoc_header_anchor {
+          font-size: 1.4em;
+          transition: transform 0.3s ease 0s;
+      }
+
+      #ddoc_main .ddoc_header_anchor > .code {
+          display: inline-block;
+
+      }
+
+      #ddoc_main .ddoc_decl {
+        background-color: transparent;
+        height: 100%;
+        left: 0;
+        top: 0;
+        padding: 0;
+        padding-left: 15px;
+      }
+
+      #ddoc_main .ddoc_decl .section, #ddoc_main .section.ddoc_sections {
+        background: white none repeat scroll 0 0;
+        margin: 0;
+        padding: 5px;
+        position: relative;
+        border-radius: 5px;
+      }
+
+      #ddoc_main .ddoc_decl .section h4:first-of-type, #ddoc_main .section.ddoc_sections h4:first-of-type {
+        font-size: 13px;
+        line-height: 1.5;
+        margin-top: 21px;
+      }
+
+      #ddoc_main .section .declaration {
+          margin-top: 21px;
+      }
+
+      #ddoc_main .section .declaration .code {
+          color: rgba(0, 0, 0, 1);
+          margin-bottom: 15px;
+          padding-bottom: 6px;
+      }
+
+      #ddoc_main .declaration div .para {
+          margin-bottom: 0;
+      }
+
+      #ddoc_main .ddoc_params .graybox tr td:first-of-type {
+        padding: 7px;
+        text-align: right;
+        vertical-align: top;
+        word-break: normal;
+        white-space: nowrap;
+      }
+
+      #ddoc_main .ddoc_params .graybox {
+        border: 0 none;
+      }
+
+      #ddoc_main .ddoc_params .graybox td {
+        border-color: rgba(214, 214, 214, 1);
+      }
+
+      #ddoc_main .ddoc_params .graybox tr:first-child > td {
+        border-top: 0 none;
+      }
+
+      #ddoc_main .ddoc_params .graybox tr:last-child > td {
+        border-bottom: 0 none;
+      }
+
+      #ddoc_main .ddoc_params .graybox tr > td:first-child {
+        border-left: 0 none;
+      }
+
+      #ddoc_main .ddoc_params .graybox tr > td:last-child {
+        border-right: 0 none;
+        width: 100%;
+      }
+
+      #ddoc_main em.term, #ddoc_main em.term .code {
+        color: rgba(65, 65, 65, 1);
+        font-size: 12px;
+        font-style: italic;
+        line-height: 1.5;
+      }
+
+      #ddoc_main .see-also {
+        cursor: pointer;
+        font-family: Menlo,monospace;
+      }
+
+      #ddoc_main .ddoc_decl .section > div:last-of-type {
+        margin-bottom: 15px;
+      }
+
+      #ddoc_main .ddoc_member, #ddoc_main .ddoc_module_members {
+          transition: transform 0.3s ease 0s;
+      }
+
+      #ddoc_main .code_sample {
+        background: inherit;
+      }
+
+      #ddoc_main .declaration .code-line {
+          display: block;
+          font: 1em Menlo,monospace;
+      }
+
+      #ddoc_main a[name] {
+        margin: -112px 0 0;
+        padding-top: 112px;
+      }
+
+      #ddoc_main .ddoc_decl td {
+        max-width: inherit;
+      }
+
+      #ddoc_main .declaration a {
+        color: inherit;
+      }
+
+      #ddoc_main .declaration a:hover {
+          color: rgba(0, 136, 204, 1);
+          text-decoration: underline;
+      }
+
+      body.ddoc {
+        background-color: transparent;
+        color: rgba(0, 0, 0, 1);
+        font-family: Helvetica,Arial,sans-serif;
+        font-size: 62.5%;
+        margin: 0;
+        border: 0;
+        left: 0;
+        top: 0;
+        padding: 0;
+      }
+
+      .ddoc a[name] {
+        display: block;
+        height: 0;
+        margin: -85px 0 0;
+        padding-top: 85px;
+        width: 0;
+      }
+
+      .ddoc .module {
+          border-color: transparent;
+          background-color: rgba(255, 255, 255, 1);
+          border-color: currentColor rgba(233, 233, 233, 1) rgba(233, 233, 233, 1);
+          border-image: none;
+          border-style: none solid solid;
+          border-width: 0 1px 1px;
+          box-shadow: 0 0 1px rgba(0, 0, 0, 0.07);
+          display: block;
+          margin-left: 0;
+          min-height: calc(100% - 173px);
+          overflow: auto;
+          padding-bottom: 100px;
+      }
+
+      .ddoc .content_wrapper {
+          background-color: rgba(242, 242, 242, 1);
+          margin: 0 auto;
+          max-width: 980px;
+      }
+
+      .ddoc .section {
+        padding: 15px 25px 30px;
+      }
+
+      .ddoc .section .section {
+        margin: 30px 0 0;
+        padding: 0;
+      }
+
+      .ddoc .para {
+        color: rgba(65, 65, 65, 1);
+        font-size: 1.4em;
+        line-height: 145%;
+        margin-bottom: 15px;
+      }
+
+      .ddoc .ddoc_examples .para {
+        margin-bottom: 0;
+      }
+
+      .ddoc .module_name {
+          color: rgba(0, 0, 0, 1);
+          display: block;
+          font-family: Helvetica;
+          font-size: 2.8em;
+          font-weight: 100;
+          margin-bottom: 0;
+          padding: 15px 0;
+      }
+
+      .ddoc .module a {
+          color: rgba(0, 136, 204, 1);
+          text-decoration: none;
+      }
+
+      .ddoc .code {
+        color: rgba(128, 128, 128, 1);
+        font-family: Menlo,monospace;
+        font-size: 0.85em;
+        word-wrap: break-word;
+      }
+
+      .ddoc .code i {
+        font-style: normal;
+      }
+
+      .ddoc .code .code {
+        font-size: 1em;
+      }
+
+      .ddoc .code_sample {
+        background-clip: padding-box;
+        margin: 1px 0;
+        text-align: left;
+      }
+
+      .ddoc .code_sample {
+        display: block;
+        font-size: 1.4em;
+        margin-left: 21px;
+      }
+
+      .ddoc ol .code_sample {
+        font-size: 1em;
+      }
+
+      .ddoc .code_lines {
+        counter-reset: li;
+        line-height: 1.6em;
+        list-style: outside none none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .ddoc .code_listing .code_sample div {
+        margin-left: 13px;
+        width: 93%;
+      }
+
+      .ddoc .code_listing .code_sample div .code_lines li {
+        list-style-type: none;
+        margin: 0;
+        padding-right: 10px;
+      }
+
+      .ddoc .code_sample div .code_lines li::before {
+        margin-left: -33px;
+        margin-right: 25px;
+      }
+
+      .ddoc .code_sample div .code_lines li:nth-child(n+10)::before {
+        margin-left: -39px;
+        margin-right: 25px;
+      }
+
+      .ddoc .code_sample div .code_lines li:nth-child(n+100)::before {
+        margin-left: -46px;
+        margin-right: 25px;
+      }
+
+      .ddoc .code_sample .code_lines .code {
+        color: #000;
+      }
+
+      .ddoc div.dlang {
+        margin: 10px 0 21px;
+        padding: 4px 0 2px 10px;
+      }
+
+      .ddoc div.dlang {
+          margin: 10px 0 21px;
+          padding: 4px 0 2px 10px;
+      }
+
+      .ddoc div.dlang {
+        border-left: 5px solid rgba(0, 155, 51, 0.2);
+      }
+
+      .ddoc .code_lines li::before {
+        color: rgba(128, 128, 128, 1);
+        content: counter(li, decimal);
+        counter-increment: li;
+        font-family: Menlo,monospace;
+        font-size: 0.9em;
+        margin-right: 16px;
+      }
+
+      .ddoc .code_lines li {
+        padding-left: 0;
+        white-space: pre-wrap;
+      }
+
+      .ddoc .code_lines li:only-of-type::before {
+        color: rgba(255, 255, 255, 1);
+        content: " ";
+      }
+
+      .ddoc .code_lines li:only-of-type {
+        color: rgba(255, 255, 255, 1);
+        content: " ";
+      }
+
+      .ddoc .code_lines li:nth-child(n+10) {
+        text-indent: -17px;
+      }
+
+      .ddoc .code_lines li:nth-child(n+10)::before {
+        margin-right: 12px;
+      }
+
+      .ddoc .graybox {
+        border: 1px solid rgba(233, 233, 233, 1);
+        border-collapse: collapse;
+        border-spacing: 0;
+        empty-cells: hide;
+        margin: 20px 0 36px;
+        text-align: left;
+      }
+
+      .ddoc .graybox p {
+        margin: 0;
+        min-width: 50px;
+      }
+
+      .ddoc th {
+        margin: 0;
+        max-width: 260px;
+        padding: 5px 10px 5px 10px;
+        vertical-align: bottom;
+      }
+
+      .ddoc td {
+        border: 1px solid rgba(233, 233, 233, 1);
+        margin: 0;
+        max-width: 260px;
+        padding: 5px 10px 5px 10px;
+        vertical-align: middle;
+      }
+
+      .punctuation {
+        color: rgba(0, 0, 0, 1);
+      }
+
+      .comment {
+        color: rgba(0, 131, 18, 1);
+      }
+
+      .operator {
+        color: #000;
+      }
+
+      .keyword {
+        color: rgba(170, 13, 145, 1);
+      }
+
+      .keyword_type {
+        color: rgba(170, 51, 145, 1);
+      }
+
+      .string_literal {
+        color: rgba(196, 26, 22, 1);
+      }
+
+      .ddoc_psuper_symbol {
+        color: rgba(92, 38, 153, 1);
+      }
+
+      .param {
+        color: rgba(0, 0, 0, 1);
+      }
+
+      .psymbol {
+        color: rgba(0, 0, 0, 1);
+      }
+
+      .ddoc_member_header .ddoc_header_anchor .code {
+        font-size: 1em;
+      }
+    </style>
+  </head>
+  <body id="ddoc_main" class="ddoc dlang">
+    <div class="content_wrapper">
+      <article class="module">
+        <h1 class="module_name">$(TITLE)</h1>
+        <section id="module_content">$(BODY)</section>
+      </article>
+    </div>
+  </body>
+</html>$(LF)
+
+DDOC_MODULE_MEMBERS = <section class="section ddoc_module_members_section">
+  <div class="ddoc_module_members">
+    $(DDOC_MEMBERS $0)
+  </div>
+</section>$(LF)
+
+DDOC_CLASS_MEMBERS = $(DDOC_MEMBERS $0)$(LF)
+DDOC_STRUCT_MEMBERS = $(DDOC_MEMBERS $0)$(LF)
+DDOC_ENUM_MEMBERS = $(DDOC_MEMBERS $0)$(LF)
+DDOC_TEMPLATE_MEMBERS = $(DDOC_MEMBERS $0)$(LF)
+
+DDOC_MEMBERS = <ul class="ddoc_members">
+  $0
+</ul>
+
+DDOC_MEMBER = <li class="ddoc_member">
+  $0
+</li>
+
+DDOC_MEMBER_HEADER = <div class="ddoc_member_header">
+  $0
+</div>
+
+DDOC_HEADER_ANCHOR = <div class="ddoc_header_anchor">
+  <a href="#$1" id="$1"><code class="code">$2</code></a>
+</div>
+
+DDOC_DECL = <div class="ddoc_decl">
+  <section class="section">
+    <div class="declaration">
+      <h4>Declaration</h4>
+      <div class="dlang">
+        <p class="para">
+          <code class="code">
+            $0
+          </code>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+DDOC_ANCHOR = <span class="ddoc_anchor" id="$1"></span>
+
+DDOC_DECL_DD = <div class="ddoc_decl">
+  $0
+</div>
+
+DDOC_SECTIONS = <section class="section ddoc_sections">
+  $0
+</section>$(LF)
+
+DDOC_SUMMARY = <div class="ddoc_summary">
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_DESCRIPTION = <div class="ddoc_description">
+  <h4>Discussion</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_EXAMPLES = <div class="ddoc_examples">
+  <h4>Examples</h4>
+  <p class="para">
+    $0
+  </p>
+</div>
+
+DDOC_RETURNS = <div class="ddoc_returns">
+  <h4>Return Value</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_PARAMS = <div class="ddoc_params">
+  <h4>Parameters</h4>
+  <table cellspacing="0" cellpadding="5" border="0" class="graybox">
+    <tbody>
+      $0
+    </tbody>
+  </table>
+</div>$(LF)
+
+DDOC_PARAM_ROW = <tr class="ddoc_param_row">
+  $0
+</tr>$(LF)
+
+DDOC_PARAM_ID = <td scope="ddoc_param_id">
+  <code class="code">
+    <em class="term">$0</em>
+  </code>
+</td>$(LF)
+
+DDOC_PARAM_DESC = <td>
+  <div class="ddoc_param_desc">
+    <p class="para">
+      $0
+    </p>
+  </div>
+</td>
+
+DDOC_LICENSE = <div class="ddoc_license">
+  <h4>License</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_AUTHORS = <div class="ddoc_authors">
+  <h4>Authors</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_BUGS = <div class="ddoc_bugs">
+  <h4>Bugs</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_COPYRIGHT = <div class="ddoc_copyright">
+  <h4>Copyright</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_DATE = <div class="ddoc_date">
+  <h4>Date</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_DEPRECATED = <div class="ddoc_deprecated">
+  <h4>Deprecated</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_HISTORY = <div class="ddoc_history">
+  <h4>History</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_SEE_ALSO = <div class="ddoc_see_also">
+  <h4>See Also</h4>
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_STANDARDS = <div class="ddoc_standards">
+  <h4>Standards</h4>
+  <p class="para">
+    $0
+  </p>
+</div>
+
+DDOC_THROWS = <div class="ddoc_throws">
+  <h4>Throws</h4>
+  <p class="para">
+    $0
+  </p>
+</div>
+
+DDOC_VERSION = <div class="ddoc_version">
+  <h4>Version</h4>
+  <p class="para">
+    $0
+  </p>
+</div>
+
+DDOC_SECTION = <div class="ddoc_section">
+  <p class="para">
+    $0
+  </p>
+</div>$(LF)
+
+DDOC_SECTION_H = <span class="ddoc_section_h">$0:</span>$(LF)
+
+DDOC_DITTO = <br>
+$0
+
+DDOC_PSYMBOL = <code class="code">$0</code>
+DDOC_ENUM_BASETYPE = $0
+DDOC_PSUPER_SYMBOL = <span class="ddoc_psuper_symbol">$0</span>
+DDOC_KEYWORD = <code class="code">$0</code>
+DDOC_PARAM = <code class="code">$0</code>
+DDOC_CONSTRAINT = $(DDOC_CONSTRAINT) if ($0)
+DDOC_OVERLOAD_SEPARATOR = $0
+DDOC_TEMPLATE_PARAM_LIST = $0
+DDOC_TEMPLATE_PARAM = $0
+DDOC_LINK_AUTODETECT = $(LINK $0)
+DDOC_AUTO_PSYMBOL = $(DDOC_PSYMBOL $0)
+DDOC_AUTO_KEYWORD = $(DDOC_KEYWORD $0)
+DDOC_AUTO_PARAM = $(DDOC_PARAM $0)
+DDOC_AUTO_PSYMBOL_SUPPRESS = $0

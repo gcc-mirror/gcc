@@ -11,9 +11,9 @@ void foo() noexcept(!__is_same(T, void)) { }
 
 template<typename U>
 auto f() {
-  return []<typename T>(T, bool a = requires { C<T>; }){
+  return []<typename T>(T, bool a = requires { C<T>; }){ // { dg-warning Wmissing-requires }
     static_assert(requires { requires C<U> && (C<T> || C<T>); }); // { dg-error "assert" }
-    static_assert(requires { C<T>; });
+    static_assert(requires { C<T>; }); // { dg-warning Wmissing-requires }
     static_assert(requires { { foo<T>() } noexcept -> C; });
     static_assert(!requires { typename T::blah; }); // { dg-error "assert" }
     return 0;

@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running QNX/Neutrino.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -100,4 +100,4 @@ crti.o%s \
 
 #define TARGET_POSIX_IO
 
-#undef DBX_REGISTER_NUMBER
+#undef DEBUGGER_REGNO

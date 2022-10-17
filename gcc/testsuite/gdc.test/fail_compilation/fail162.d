@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail162.d(25): Error: template fail162.testHelper cannot deduce function from argument types !()(string, string), candidates are:
-fail_compilation/fail162.d(10):        fail162.testHelper(A...)()
-fail_compilation/fail162.d(30): Error: template instance fail162.test!("hello", "world") error instantiating
+fail_compilation/fail162.d(25): Error: none of the overloads of template `fail162.testHelper` are callable using argument types `!()(string, string)`
+fail_compilation/fail162.d(10):        Candidate is: `testHelper(A...)()`
+fail_compilation/fail162.d(30): Error: template instance `fail162.test!("hello", "world")` error instantiating
 ---
 */
 

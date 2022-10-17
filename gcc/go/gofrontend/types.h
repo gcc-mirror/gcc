@@ -1355,8 +1355,9 @@ class Type
 
   static void
   build_one_stub_method(Gogo*, Method*, const char* receiver_name,
+			const Type* receiver_type,
 			const Typed_identifier_list*, bool is_varargs,
-			Location);
+			const Typed_identifier_list*, Location);
 
   // Build direct interface stub methods for a type.
   static void
@@ -1364,12 +1365,16 @@ class Type
 
   static void
   build_one_iface_stub_method(Gogo*, Method*, const char*,
-                              const Typed_identifier_list*,
-                              bool, Location);
+                              const Typed_identifier_list*, bool,
+			      const Typed_identifier_list*, Location);
+
+  static void
+  add_return_from_results(Gogo*, Call_expression*,
+			  const Typed_identifier_list*, Location);
 
   static Expression*
   apply_field_indexes(Expression*, const Method::Field_indexes*,
-		      Location);
+		      Location, const Type**);
 
   // Look for a field or method named NAME in TYPE.
   static bool
@@ -2295,9 +2300,12 @@ class Pointer_type : public Type
   do_verify()
   { return this->to_type_->verify(); }
 
+  // If this is a pointer to a type that can't be in the heap, then
+  // the garbage collector does not have to look at this, so pretend
+  // that this is not a pointer at all.
   bool
   do_has_pointer() const
-  { return true; }
+  { return this->to_type_->in_heap(); }
 
   bool
   do_compare_is_identity(Gogo*)
@@ -2501,7 +2509,8 @@ class Struct_type : public Type
   Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
       fields_(fields), location_(location), all_methods_(NULL),
-      is_struct_incomparable_(false), has_padding_(false)
+      is_struct_incomparable_(false), has_padding_(false),
+      is_results_struct_(false)
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -2632,6 +2641,17 @@ class Struct_type : public Type
   set_has_padding()
   { this->has_padding_ = true; }
 
+  // Return whether this is a results struct created to hold the
+  // results of a function that returns multiple results.
+  bool
+  is_results_struct() const
+  { return this->is_results_struct_; }
+
+  // Record that this is a results struct.
+  void
+  set_is_results_struct()
+  { this->is_results_struct_ = true; }
+
   // Write the hash function for this type.
   void
   write_hash_function(Gogo*, Function_type*);
@@ -2742,6 +2762,9 @@ class Struct_type : public Type
   // True if this struct's backend type has padding, due to trailing
   // zero-sized field.
   bool has_padding_;
+  // True if this is a results struct created to hold the results of a
+  // function that returns multiple results.
+  bool is_results_struct_;
 };
 
 // The type of an array.
@@ -2777,7 +2800,7 @@ class Array_type : public Type
 
   // Return an expression for the pointer to the values in an array.
   Expression*
-  get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const;
+  get_value_pointer(Gogo*, Expression* array) const;
 
   // Return an expression for the length of an array with this type.
   Expression*
@@ -3249,15 +3272,6 @@ class Interface_type : public Type
   methods_are_finalized() const
   { return this->methods_are_finalized_; }
 
-  // Sort embedded interfaces by name. Needed when we are preparing
-  // to emit types into the export data.
-  void
-  sort_embedded()
-  {
-    if (parse_methods_ != NULL)
-      parse_methods_->sort_by_name();
-  }
-
  protected:
   int
   do_traverse(Traverse*);
@@ -3605,8 +3619,7 @@ class Named_type : public Type
   do_needs_key_update();
 
   bool
-  do_in_heap() const
-  { return this->in_heap_ && this->type_->in_heap(); }
+  do_in_heap() const;
 
   unsigned int
   do_hash_for_method(Gogo*, int) const;

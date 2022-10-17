@@ -1,6 +1,6 @@
 ; Processor-independent options for Darwin.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -90,11 +90,11 @@ Target RejectNegative Joined Separate Var(darwin_target_linker) Init(LD64_VERSIO
 ; Driver options.
 
 all_load
-Driver RejectNegative Alias(Zall_load)
+Driver RejectNegative
 Load all members of archive libraries, rather than only those that satisfy undefined symbols.
 
 allowable_client
-Driver RejectNegative Separate Alias(Zallowable_client)
+Driver RejectNegative Separate
 -allowable_client <name>	The output dylib is private to the client <name>.
 
 arch
@@ -102,7 +102,7 @@ Driver RejectNegative Separate
 -arch <name>	Generate output for architecture <name>.
 
 arch_errors_fatal
-Driver RejectNegative Alias(Zarch_errors_fatal)
+Driver RejectNegative
 Mismatches between file architecture and one specified by \"-arch\" are errors instead of warnings.
 
 asm_macosx_version_min=
@@ -110,15 +110,15 @@ Driver RejectNegative Joined
 The earliest macOS version on which this program will run (formatted for the assembler).
 
 bind_at_load
-Driver RejectNegative Alias(Zbind_at_load)
+Driver RejectNegative
 Generate an output executable that binds symbols on load, rather than lazily.
 
 bundle
-Driver RejectNegative Alias(Zbundle)
+Driver RejectNegative
 Generate a Mach-O bundle (file type MH_BUNDLE).
 
 bundle_loader
-Driver RejectNegative Separate Alias(Zbundle_loader)
+Driver RejectNegative Separate
 -bundle_loader <executable>	Treat <executable> (that will be loading this bundle) as if it was one of the dynamic libraries the bundle is linked against for symbol resolution.
 
 client_name
@@ -134,11 +134,12 @@ Driver RejectNegative Separate
 -current_version <number>	Set the current version for the library to <number>.
 
 dead_strip
-Driver RejectNegative Alias(Zdead_strip)
+Driver RejectNegative
 Remove code and data that is unreachable from any exported symbol (including the entry point).
 
 dylib_file
-Driver Separate Alias(Zdylib_file)
+Driver RejectNegative Separate
+-dylib_file install_name:file_name	This allows linking of a dylib with \"install_name\" but to be found in a different install position \"file_name\"
 
 dylinker
 Driver RejectNegative
@@ -149,15 +150,15 @@ Driver RejectNegative Separate
 -dylinker_install_name <path>	Only used for building dyld.
 
 dynamic
-Driver RejectNegative Alias(Zdynamic)
+Driver RejectNegative
 The default (and opposite of -static), implied by user mode executables, shared libraries and bundles.
 
 dynamiclib
-Driver RejectNegative Alias(Zdynamiclib)
+Driver RejectNegative
 Produce a Mach-O shared library (file type MH_DYLIB), synonym for \"-shared\".
 
 exported_symbols_list
-Driver RejectNegative Separate Alias(Zexported_symbols_list)
+Driver RejectNegative Separate
 -exported_symbols_list <filename>	Export global symbols in <filename> in linked output file; any symbols not mentioned will be treated as \"hidden\".
 
 filelist
@@ -169,15 +170,15 @@ Driver RejectNegative
 Used for generating code for some older kernel revisions.
 
 flat_namespace
-Driver RejectNegative Alias(Zflat_namespace)
+Driver RejectNegative
 Ignore the normal two-level namespace; resolve symbols in command line order and do not record which library provided the resolved symbol.
 
 force_cpusubtype_ALL
-Driver RejectNegative Alias(Zforce_cpusubtype_ALL)
+Driver RejectNegative
 For the assembler (and linker) permit any architecture sub-variant to be used without error.
 
 force_flat_namespace
-Driver RejectNegative Alias(Zforce_flat_namespace)
+Driver RejectNegative
 Set the output object such that, on loading, dyld will ignore any two-level namespace information and resolve symbols in the discovery order for loaded libs.
 
 framework
@@ -201,15 +202,15 @@ Driver RejectNegative
 Automatically adds space for longer path names in load commands (up to MAXPATHLEN).
 
 image_base
-Driver RejectNegative Separate Alias(Zimage_base)
+Driver RejectNegative Separate
 -image_base <address>	Specify <address> as the base address for a dylib or bundle.
 
 init
-Driver RejectNegative Separate Alias(Zinit)
+Driver RejectNegative Separate
 -init <symbol_name>	The symbol <symbol_name> will be used as the first initialiser for a dylib.
 
 install_name
-Driver RejectNegative Separate Alias(Zinstall_name)
+Driver RejectNegative Separate
 -install_name <name>	Set the install name for a dylib.
 
 keep_private_externs
@@ -217,20 +218,24 @@ Driver RejectNegative
 Usually \"private extern\" (hidden) symbols are made local when linking, this command suppresses that such that they remain exported.
 
 multi_module
-Driver RejectNegative Alias(Zmulti_module)
+Driver RejectNegative
 (Obsolete after 10.4) Multi modules are ignored at runtime since macOS 10.4.
 
 multiply_defined
-Driver RejectNegative Separate Alias(Zmultiply_defined)
+Driver RejectNegative Separate
 (Obsolete after 10.4) -multiply_defined <treatment>	Provided a mechanism for warning about symbols defined in multiple dylibs.
 
 multiply_defined_unused
-Driver RejectNegative Separate Alias(Zmultiplydefinedunused)
+Driver RejectNegative Separate
 (Obsolete after 10.4) -multiply_defined_unused <treatment>	Provided a mechanism for warning about symbols defined in the current executable also being defined in linked dylibs.
 
 no_dead_strip_inits_and_terms
-Driver RejectNegative Alias(Zno_dead_strip_inits_and_terms)
+Driver RejectNegative
 (Obsolete) Current linkers never dead-strip these items, so the option is not needed.
+
+nodefaultexport
+Driver RejectNegative
+Do not add a default symbol exports to modules or dynamic libraries.
 
 nofixprebinding
 Driver RejectNegative
@@ -299,12 +304,12 @@ Driver RejectNegative Separate Args(3)
 (Obsolete) -sectorder <segname> <sectname> <orderfile>	Replaced by a more general option \"-order_file\".
 
 seg_addr_table
-Driver RejectNegative Separate Alias(Zseg_addr_table)
+Driver RejectNegative Separate
 -seg_addr_table <file>	Specify the base addresses for dynamic libraries; <file> contains a line for each library.
 
 ; This is only usable by the ld_classic linker.
 seg_addr_table_filename
-Driver RejectNegative Separate Alias(Zfn_seg_addr_table_filename)
+Driver RejectNegative Separate
 (Obsolete, ld_classic only) -seg_addr_table_filename <path>.
 
 seg1addr
@@ -312,7 +317,7 @@ Driver RejectNegative Separate
 Synonym for \"image_base\".
 
 segaddr
-Driver RejectNegative Separate Args(2) Alias(Zsegaddr)
+Driver RejectNegative Separate Args(2)
 -segaddr <name> <address>	Set the base address of segment <name> to <address> which must be aligned to a page boundary (currently 4kb).
 
 ; This is only usable by the ld_classic linker.
@@ -329,15 +334,15 @@ Driver RejectNegative Separate Args(3)
 -segprot <segname> <max_prot> <init_prot>	The virtual memory protections for segment <segname> have maximum and initial values <max_prot> and <init_prot> respectively.  The specified values may contain \"r\", \"w\", \"x\" or \"-\" the latter meaning \"no access\".
 
 segs_read_only_addr
-Driver RejectNegative Separate Alias(Zsegs_read_only_addr)
+Driver RejectNegative Separate
 -segs_read_only_addr <address>	Specify that <address> is the base address of the read-only segments of a dylib.
 
 segs_read_write_addr
-Driver RejectNegative Separate Alias(Zsegs_read_write_addr)
+Driver RejectNegative Separate
 -segs_read_write_addr <address>	Specify that <address> is the base address address of the read-write segments of a dylib.
 
 single_module
-Driver RejectNegative Alias(Zsingle_module)
+Driver RejectNegative
 (Obsolete)	This is the default.
 
 sub_library
@@ -357,7 +362,7 @@ Driver RejectNegative
 Add extra information to the executable that can speed up dynamic loading (provided that dependent libraries are unchanged).
 
 umbrella
-Driver RejectNegative Separate Alias(Zumbrella)
+Driver RejectNegative
 -umbrella <framework>	The specified framework will be re-exported.
 
 undefined
@@ -365,11 +370,11 @@ Driver RejectNegative Separate
 -undefined <treatment>	Specify the handling for undefined symbols (default is error).
 
 unexported_symbols_list
-Driver RejectNegative Separate Alias(Zunexported_symbols_list)
+Driver RejectNegative Separate
 -unexported_symbols_list <filename>	Do not export the global symbols listed in <filename>.
 
 weak_reference_mismatches
-Driver RejectNegative Separate Alias(Zweak_reference_mismatches)
+Driver RejectNegative Separate
 -weak_reference_mismatches <treatment>	Specifies what to do if a symbol import conflicts between file (weak in one and not in another) the default is to treat the symbol as non-weak.
 
 whatsloaded
@@ -391,97 +396,3 @@ Driver RejectNegative Joined
 Mach
 Driver RejectNegative
 (Obsolete and unhandled by ld64, ignored)	ld should produce an executable (only handled by ld_classic).
-
-;; These are not "real" options, but placeholders used to hide the real options
-;; from generic options processing... FIXME: they can be eliminated now.
-
-Zall_load
-Driver
-
-Zallowable_client
-Driver Separate
-
-Zarch_errors_fatal
-Driver
-
-Zbind_at_load
-Driver
-
-Zbundle
-Driver
-
-Zbundle_loader
-Driver Separate
-
-Zdead_strip
-Driver
-
-Zdylib_file
-Driver Separate
-
-Zdynamic
-Driver
-
-Zdynamiclib
-Driver
-
-Zexported_symbols_list
-Driver Separate
-
-Zfn_seg_addr_table_filename
-Driver Separate
-
-Zflat_namespace
-Driver
-
-Zforce_cpusubtype_ALL
-Driver
-
-Zforce_flat_namespace
-Driver
-
-Zimage_base
-Driver Separate
-
-Zinit
-Driver Separate
-
-Zinstall_name
-Driver Separate
-
-Zmulti_module
-Driver
-
-Zmultiply_defined
-Driver Separate
-
-Zmultiplydefinedunused
-Driver Separate
-
-Zno_dead_strip_inits_and_terms
-Driver
-
-Zseg_addr_table
-Driver Separate
-
-Zsegaddr
-Driver Separate Args(2)
-
-Zsegs_read_only_addr
-Driver Separate
-
-Zsegs_read_write_addr
-Driver Separate
-
-Zsingle_module
-Driver
-
-Zumbrella
-Driver Separate
-
-Zunexported_symbols_list
-Driver Separate
-
-Zweak_reference_mismatches
-Driver Separate
-

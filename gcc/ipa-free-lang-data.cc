@@ -1,7 +1,7 @@
 /* Pass to free or clear language-specific data structures from
    the IL before they reach the middle end.
 
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -354,7 +354,7 @@ fld_simplified_type (tree t, class free_lang_data_d *fld)
 /* Reset the expression *EXPR_P, a size or position.
 
    ??? We could reset all non-constant sizes or positions.  But it's cheap
-   enough to not do so and refrain from adding workarounds to dwarf2out.c.
+   enough to not do so and refrain from adding workarounds to dwarf2out.cc.
 
    We need to reset self-referential sizes or positions because they cannot
    be gimplified and thus can contain a CALL_EXPR after the gimplification
@@ -613,7 +613,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
       DECL_SAVED_TREE (decl) = NULL_TREE;
 
       /* Clear the abstract origin if it refers to a method.
-         Otherwise dwarf2out.c will ICE as we splice functions out of
+         Otherwise dwarf2out.cc will ICE as we splice functions out of
          TYPE_FIELDS and thus the origin will not be output
          correctly.  */
       if (DECL_ABSTRACT_ORIGIN (decl)
@@ -672,7 +672,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
         }
     }
   /* We need to keep field decls associated with their trees. Otherwise tree
-     merging may merge some fileds and keep others disjoint wich in turn will
+     merging may merge some fields and keep others disjoint which in turn will
      not do well with TREE_CHAIN pointers linking them.
 
      Also do not drop containing types for virtual methods and tables because
@@ -1109,9 +1109,7 @@ free_lang_data (void)
   free_lang_data_in_cgraph (&fld);
 
   /* Create gimple variants for common types.  */
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     builtin_structptr_types[i].node = builtin_structptr_types[i].base;
 
   /* Reset some langhooks.  Do not reset types_compatible_p, it may
@@ -1175,7 +1173,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return free_lang_data (); }
+  unsigned int execute (function *) final override { return free_lang_data (); }
 
 }; // class pass_ipa_free_lang_data
 

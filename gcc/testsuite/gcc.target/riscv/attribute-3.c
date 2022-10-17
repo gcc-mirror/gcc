@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mriscv-attribute -mpreferred-stack-boundary=8" } */
+/* { dg-options "-mriscv-attribute -mpreferred-stack-boundary=8" } */
 int foo()
 {
 }

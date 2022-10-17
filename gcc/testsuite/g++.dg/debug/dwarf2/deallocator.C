@@ -29,7 +29,7 @@ void foo(int i)
 	  return;
 	}
     }
-  if (i)
+  if (i) // Threader makes everything after here disappear.
     {
       t test;
       if (i == 10)
@@ -42,5 +42,4 @@ void foo(int i)
 }
 // { dg-final { scan-assembler "deallocator.C:29" } }
 // { dg-final { scan-assembler "deallocator.C:24" } }
-// { dg-final { scan-assembler "deallocator.C:34" } }
 // { dg-final { scan-assembler "deallocator.C:21" } }

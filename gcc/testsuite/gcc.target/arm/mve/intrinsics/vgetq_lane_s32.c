@@ -8,7 +8,7 @@
 int32_t
 foo (int32x4_t a)
 {
-  return vgetq_lane_s32 (a, 0);
+  return vgetq_lane_s32 (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.32"  }  } */
@@ -16,7 +16,7 @@ foo (int32x4_t a)
 int32_t
 foo1 (int32x4_t a)
 {
-  return vgetq_lane (a, 0);
+  return vgetq_lane (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.32"  }  } */

@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -157,13 +157,19 @@ void test07()
 {
   int arr[3];
   any a(arr);
+#if __cpp_rtti
   VERIFY( a.type() == typeid(int*) );	// contained value is decayed
+#endif
 
   int (*p1)[3] = any_cast<int[3]>(&a);
+#if __cpp_rtti
   VERIFY( a.type() != typeid(int[3]) ); // so any_cast should return nullptr
+#endif
   VERIFY( p1 == nullptr );
   int (*p2)[] = any_cast<int[]>(&a);
+#if __cpp_rtti
   VERIFY( a.type() != typeid(int[]) );	// so any_cast should return nullptr
+#endif
   VERIFY( p2 == nullptr );
   const int (*p3)[] = any_cast<int[]>(&std::as_const(a));
   VERIFY( p3 == nullptr );

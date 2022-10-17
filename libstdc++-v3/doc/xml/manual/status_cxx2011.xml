@@ -2721,6 +2721,36 @@ particular release.
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><literal>"darn"</literal></term>
+        <listitem>
+          Use the Power ISA-3.0 <literal>DARN</literal>
+          ("Deliver A Random Number")
+          instruction to read from an on-chip hardware random number generator.
+          This token is only valid for 64-bit powerpc targets when both
+          the assembler and CPU support the corresponding instruction.
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>"hw"</literal></term>
+        <term><literal>"hardware"</literal></term>
+        <listitem>
+          Use any available CPU
+          instruction to read from an on-chip hardware random number generator.
+          This is equivalent to trying each of the following and using the
+          first that is supported:
+          <literal>"rdseed"</literal>
+          <literal>"rdrand"</literal>
+          <literal>"darn"</literal>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>"arc4random"</literal></term>
+        <term><literal>"getentropy"</literal></term>
+        <listitem>
+          Use the named C library function, if available on the target.
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><literal>"/dev/urandom"</literal></term>
         <term><literal>"/dev/random"</literal></term>
         <listitem>

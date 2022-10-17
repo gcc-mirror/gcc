@@ -1,6 +1,6 @@
 /* PR tree-optimization/98597 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wuninitialized" } */
+/* { dg-options "-O2 -fno-tree-vectorize -Wuninitialized" } */
 
 union U { double d; int i; float f; };
 struct S { char a; int b; char c; unsigned d; union U e; int f[3]; unsigned g[3]; };
@@ -44,7 +44,7 @@ foo (int *q)
   /* memcpy folding is too target dependent to test it everywhere.  */
   V u[2], v[2];
   u[0][0][0] = 1;
-  __builtin_memcpy (&v[1], &u[1], sizeof (V));		/* { dg-warning "'\\*\\(\(long \)?long unsigned int \\*\\)\\(&u\\\[1\\\]\\\[0\\\]\\\[0\\\]\\)' is used uninitialized" "" { target i?86-*-* x86_64-*-* } } */
+  __builtin_memcpy (&v[1], &u[1], sizeof (V));		/* { dg-warning "'u' is used uninitialized" "" { target i?86-*-* x86_64-*-* } } */
   baz (&v[1]);
 #endif
 }

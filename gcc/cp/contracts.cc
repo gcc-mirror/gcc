@@ -991,7 +991,6 @@ remap_contract (tree src, tree dst, tree contract, bool duplicate_p)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;
   id.transform_parameter = true;
-  id.transform_lang_insert_block = NULL;
 
   /* Make sure not to unshare trees behind the front-end's back
      since front-end specific mechanisms may rely on sharing.  */
@@ -1658,7 +1657,7 @@ build_contract_check (tree contract)
   tree if_stmt = begin_if_stmt ();
   tree cond = build_x_unary_op (EXPR_LOCATION (contract),
 				TRUTH_NOT_EXPR,
-				condition,
+				condition, NULL_TREE,
 				tf_warning_or_error);
   finish_if_stmt_cond (cond, if_stmt);
 

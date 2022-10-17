@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.1.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -32,7 +33,7 @@ do {									\
   if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128)			\
     {									\
       rs6000_long_double_type_size = 64;				\
-      if (global_options_set.x_rs6000_long_double_type_size)		\
+      if (OPTION_SET_P (rs6000_long_double_type_size))		\
 	warning (0, "soft-float and long-double-128 are incompatible");	\
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
@@ -42,7 +43,7 @@ do {									\
   if ((rs6000_isa_flags_explicit					\
        & OPTION_MASK_MINIMAL_TOC) != 0)					\
     {									\
-      if (global_options_set.x_rs6000_current_cmodel			\
+      if (OPTION_SET_P (rs6000_current_cmodel)			\
 	  && rs6000_current_cmodel != CMODEL_SMALL)			\
 	error ("%<-mcmodel%> incompatible with other toc options"); 	\
       SET_CMODEL (CMODEL_SMALL);					\
@@ -62,7 +63,7 @@ do {									\
       /* aix/ppc doesn't support -mvsx and -maltivec with Go */		\
       rs6000_isa_flags &= ~(OPTION_MASK_VSX | OPTION_MASK_ALTIVEC);	\
     }									\
-  if (!global_options_set.x_dwarf_version)				\
+  if (!OPTION_SET_P (dwarf_version))				\
     /* AIX only supports DWARF 4.  */					\
     dwarf_version = 4;							\
 } while (0)
@@ -72,7 +73,7 @@ do {									\
 #define ASM_SPEC_COMMON "-u %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amongst the various targets for
-   handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
+   handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.cc to
    provide the default assembler options if the user uses -mcpu=native, so if
    you make changes here, make them there also.  */
 #undef ASM_CPU_SPEC
@@ -136,9 +137,11 @@ do {									\
 
 #undef  TARGET_DEFAULT
 #ifdef RS6000_BI_ARCH
-#define TARGET_DEFAULT (MASK_PPC_GPOPT | MASK_PPC_GFXOPT | MASK_MFCRF | MASK_POWERPC64 | MASK_64BIT)
+#define TARGET_DEFAULT (OPTION_MASK_PPC_GPOPT | OPTION_MASK_PPC_GFXOPT \
+			| OPTION_MASK_MFCRF | MASK_POWERPC64 | MASK_64BIT)
 #else
-#define TARGET_DEFAULT (MASK_PPC_GPOPT | MASK_PPC_GFXOPT | MASK_MFCRF)
+#define TARGET_DEFAULT (OPTION_MASK_PPC_GPOPT | OPTION_MASK_PPC_GFXOPT \
+			| OPTION_MASK_MFCRF)
 #endif
 
 #undef  PROCESSOR_DEFAULT
@@ -267,6 +270,9 @@ extern long long int    atoll(const char *);
 #else
 #define SET_CMODEL(opt) do {} while (0)
 #endif
+
+/* System headers are not C++-aware.  */
+#define SYSTEM_IMPLICIT_EXTERN_C 1
 
 /* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
    but does not have crtbegin/end.  */

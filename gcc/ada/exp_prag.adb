@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Ch11;       use Exp_Ch11;
 with Exp_Util;       use Exp_Util;
-with Expander;       use Expander;
 with Inline;         use Inline;
 with Lib;            use Lib;
 with Namet;          use Namet;
@@ -106,12 +105,10 @@ package body Exp_Prag is
          end if;
       end loop;
 
-      if Present (Arg)
-        and then Nkind (Arg) = N_Pragma_Argument_Association
-      then
-         return Expression (Arg);
+      if Present (Arg) then
+         return Get_Pragma_Arg (Arg);
       else
-         return Arg;
+         return Empty;
       end if;
    end Arg_N;
 
@@ -125,7 +122,7 @@ package body Exp_Prag is
 
    begin
       --  Suppress the expansion of an ignored assertion pragma. Such a pragma
-      --  should not be transformed into a null statment because:
+      --  should not be transformed into a null statement because:
       --
       --    * The pragma may be part of the rep item chain of a type, in which
       --      case rewriting it will destroy the chain.
@@ -286,7 +283,7 @@ package body Exp_Prag is
       --  expression is not usually the best choice here, because it points to
       --  the location of the topmost tree node, which may be an operator in
       --  the middle of the source text of the expression. For example, it gets
-      --  located on the last AND keyword in a chain of boolean expressiond
+      --  located on the last AND keyword in a chain of boolean expressions
       --  AND'ed together. It is best to put the message on the first character
       --  of the condition, which is the effect of the First_Node call here.
       --  This source location is used to build the default exception message,
@@ -456,6 +453,8 @@ package body Exp_Prag is
                            New_Occurrence_Of (RTE (RE_Assert_Failure),
                                                                    Loc))))))));
 
+         Set_Comes_From_Check_Or_Contract (N);
+
       --  Case where we call the procedure
 
       else
@@ -544,6 +543,8 @@ package body Exp_Prag is
                  Name                   =>
                    New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
                  Parameter_Associations => New_List (Relocate_Node (Msg))))));
+
+         Set_Comes_From_Check_Or_Contract (N);
       end if;
 
       Analyze (N);
@@ -563,9 +564,9 @@ package body Exp_Prag is
             null;
 
          elsif Nam = Name_Assert then
-            Error_Msg_N ("?A?assertion will fail at run time", N);
+            Error_Msg_N ("?.a?assertion will fail at run time", N);
          else
-            Error_Msg_N ("?A?check will fail at run time", N);
+            Error_Msg_N ("?.a?check will fail at run time", N);
          end if;
       end if;
    end Expand_Pragma_Check;
@@ -605,14 +606,14 @@ package body Exp_Prag is
             Get_Name_String (Chars (External));
          end if;
 
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
 
          Psect :=
            Make_String_Literal (Eloc, Strval => String_From_Name_Buffer);
 
       else
          Get_Name_String (Chars (Internal));
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
          Psect :=
            Make_String_Literal (Iloc, Strval => String_From_Name_Buffer);
       end if;
@@ -752,10 +753,10 @@ package body Exp_Prag is
       --  value of which is Init_Val if present or null if not.
 
       function Build_Simple_Declaration_With_Default
-         (Decl_Id     : Entity_Id;
-          Init_Val    : Entity_Id;
-          Typ         : Entity_Id;
-          Default_Val : Entity_Id) return Node_Id;
+        (Decl_Id     : Entity_Id;
+         Init_Val    : Node_Id;
+         Typ         : Node_Id;
+         Default_Val : Node_Id) return Node_Id;
       --  Build a declaration the Defining_Identifier of which is Decl_Id, the
       --  Object_Definition of which is Typ, the value of which is Init_Val if
       --  present or Default otherwise.
@@ -983,7 +984,7 @@ package body Exp_Prag is
       function Build_Simple_Declaration_With_Default
         (Decl_Id     : Entity_Id;
          Init_Val    : Node_Id;
-         Typ         : Entity_Id;
+         Typ         : Node_Id;
          Default_Val : Node_Id) return Node_Id
       is
          Value : Node_Id := Init_Val;
@@ -1054,7 +1055,7 @@ package body Exp_Prag is
          Result : constant List_Id := New_List;
          Elmt   : Elmt_Id;
       begin
-         if Elmts = No_Elist then
+         if No (Elmts) then
             return Result;
          end if;
 
@@ -1436,6 +1437,8 @@ package body Exp_Prag is
                 Condition       => Cond,
                 Then_Statements => New_List (Error));
 
+            Set_Comes_From_Check_Or_Contract (Checks);
+
          else
             if No (Elsif_Parts (Checks)) then
                Set_Elsif_Parts (Checks, New_List);
@@ -1525,9 +1528,7 @@ package body Exp_Prag is
          begin
             --  Attribute 'Old
 
-            if Nkind (N) = N_Attribute_Reference
-              and then Attribute_Name (N) = Name_Old
-            then
+            if Is_Attribute_Old (N) then
                Pref := Prefix (N);
 
                Indirect := Indirect_Temp_Needed (Etype (Pref));
@@ -1646,6 +1647,8 @@ package body Exp_Prag is
               Make_Implicit_If_Statement (CCs,
                 Condition       => New_Occurrence_Of (Flag, Loc),
                 Then_Statements => Eval_Stmts);
+
+            Set_Comes_From_Check_Or_Contract (Evals);
 
          --  Otherwise generate:
          --    elsif Flag then
@@ -1841,6 +1844,8 @@ package body Exp_Prag is
                   Set (Flag),
                   Increment (Count)));
 
+            Set_Comes_From_Check_Or_Contract (If_Stmt);
+
             Append_To (Decls, If_Stmt);
             Analyze (If_Stmt);
 
@@ -1909,6 +1914,8 @@ package body Exp_Prag is
               Right_Opnd => Make_Integer_Literal (Loc, 0)),
           Then_Statements => CG_Stmts);
 
+      Set_Comes_From_Check_Or_Contract (CG_Checks);
+
       --  Detect a possible failure due to several case guards evaluating to
       --  True.
 
@@ -1942,15 +1949,17 @@ package body Exp_Prag is
                            New_Occurrence_Of (Msg_Str, Loc))))))))));
       end if;
 
+      --  Append the checks, but do not analyze them at this point, because
+      --  contracts get potentially expanded as part of a wrapper which gets
+      --  fully analyzed once it is fully formed.
+
       Append_To (Decls, CG_Checks);
-      Analyze (CG_Checks);
 
       --  Once all case guards are evaluated and checked, evaluate any prefixes
       --  of attribute 'Old founds in the selected consequence.
 
       if Present (Old_Evals) then
          Append_To (Decls, Old_Evals);
-         Analyze (Old_Evals);
       end if;
 
       --  Raise Assertion_Error when the corresponding consequence of a case
@@ -2012,7 +2021,7 @@ package body Exp_Prag is
             Rewrite (Expression (Lang_Char),
               Make_Character_Literal (Loc,
                 Chars              => Name_uC,
-                Char_Literal_Value => UI_From_Int (Character'Pos ('C'))));
+                Char_Literal_Value => UI_From_CC (Get_Char_Code ('C'))));
             Analyze (Expression (Lang_Char));
 
             --  Change the value of Foreign_Data
@@ -2356,10 +2365,12 @@ package body Exp_Prag is
 
    procedure Expand_Pragma_Inspection_Point (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
+
       A     : List_Id;
       Assoc : Node_Id;
-      S     : Entity_Id;
       E     : Entity_Id;
+      Rip   : Boolean;
+      S     : Entity_Id;
 
    begin
       if No (Pragma_Argument_Associations (N)) then
@@ -2390,16 +2401,43 @@ package body Exp_Prag is
          Set_Pragma_Argument_Associations (N, A);
       end if;
 
-      --  Expand the arguments of the pragma. Expanding an entity reference
-      --  is a noop, except in a protected operation, where a reference may
-      --  have to be transformed into a reference to the corresponding prival.
-      --  Are there other pragmas that may require this ???
+      --  Process the arguments of the pragma
 
+      Rip := False;
       Assoc := First (Pragma_Argument_Associations (N));
       while Present (Assoc) loop
-         Expand (Expression (Assoc));
+         --  The back end may need to take the address of the object
+
+         Set_Address_Taken (Entity (Expression (Assoc)));
+
+         --  If any of the objects have a freeze node, it must appear before
+         --  pragma Inspection_Point, otherwise the entity won't be elaborated
+         --  when Gigi processes the pragma.
+
+         if Has_Delayed_Freeze (Entity (Expression (Assoc)))
+           and then not Is_Frozen (Entity (Expression (Assoc)))
+         then
+            Error_Msg_NE
+              ("??inspection point references unfrozen object &",
+               Assoc,
+               Entity (Expression (Assoc)));
+            Rip := True;
+         end if;
+
          Next (Assoc);
       end loop;
+
+      --  When the above requirement isn't met, turn the pragma into a no-op
+
+      if Rip then
+         Error_Msg_N ("\pragma will be ignored", N);
+
+         --  We can't just remove the pragma from the tree as it might be
+         --  iterated over by the caller. Turn it into a null statement
+         --  instead.
+
+         Rewrite (N, Make_Null_Statement (Loc));
+      end if;
    end Expand_Pragma_Inspection_Point;
 
    --------------------------------------
@@ -2604,6 +2642,7 @@ package body Exp_Prag is
                  Expression =>
                    Make_Variant_Comparison (Loc,
                      Mode     => Chars (Variant),
+                     Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
@@ -2660,8 +2699,16 @@ package body Exp_Prag is
    begin
       --  If pragma is not enabled, rewrite as Null statement. If pragma is
       --  disabled, it has already been rewritten as a Null statement.
+      --
+      --  Likewise, ignore structural variants for execution.
+      --
+      --  Also do this in CodePeer mode, because the expanded code is too
+      --  complicated for CodePeer to analyse.
 
-      if Is_Ignored (N) then
+      if Is_Ignored (N)
+        or else Chars (Last_Var) = Name_Structural
+        or else CodePeer_Mode
+      then
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
          return;
@@ -2831,7 +2878,7 @@ package body Exp_Prag is
 
    procedure Expand_Pragma_Subprogram_Variant
      (Prag       : Node_Id;
-      Subp_Id    : Node_Id;
+      Subp_Id    : Entity_Id;
       Body_Decls : List_Id)
    is
       Curr_Decls : List_Id;
@@ -2965,6 +3012,7 @@ package body Exp_Prag is
                  Expression =>
                    Make_Variant_Comparison (Loc,
                      Mode     => Chars (First (Choices (Variant))),
+                     Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
@@ -3021,10 +3069,12 @@ package body Exp_Prag is
 
       Loc : constant Source_Ptr := Sloc (Prag);
 
-      Aggr         : Node_Id;
+      Aggr         : constant Node_Id :=
+        Expression (First (Pragma_Argument_Associations (Prag)));
       Formal_Map   : Elist_Id;
       Last         : Node_Id;
-      Last_Variant : Node_Id;
+      Last_Variant : constant Node_Id :=
+        Nlists.Last (Component_Associations (Aggr));
       Proc_Bod     : Node_Id;
       Proc_Decl    : Node_Id;
       Proc_Id      : Entity_Id;
@@ -3032,13 +3082,14 @@ package body Exp_Prag is
       Variant      : Node_Id;
 
    begin
-      --  Do nothing if pragma is not present or is disabled
+      --  Do nothing if pragma is not present or is disabled.
+      --  Also ignore structural variants for execution.
 
-      if Is_Ignored (Prag) then
+      if Is_Ignored (Prag)
+        or else Chars (Nlists.Last (Choices (Last_Variant))) = Name_Structural
+      then
          return;
       end if;
-
-      Aggr := Expression (First (Pragma_Argument_Associations (Prag)));
 
       --  The expansion of Subprogram Variant is quite distributed as it
       --  produces various statements to capture and compare the arguments.
@@ -3078,7 +3129,6 @@ package body Exp_Prag is
 
       Last         := Proc_Decl;
       Curr_Decls   := New_List;
-      Last_Variant := Nlists.Last (Component_Associations (Aggr));
 
       Variant := First (Component_Associations (Aggr));
       while Present (Variant) loop

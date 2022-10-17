@@ -1,5 +1,5 @@
 /* Provide a version of _doprnt in terms of fprintf.
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
    Contributed by Kaveh Ghazi  (ghazi@caip.rutgers.edu)  3/29/98
 
 This program is free software; you can redistribute it and/or modify it
@@ -55,7 +55,6 @@ Foundation, 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.  */
 	 putc(CHAR, stream); \
 	 ptr++; \
 	 total_printed++; \
-	 continue; \
      } while (0)
 
 #define PRINT_TYPE(TYPE) \

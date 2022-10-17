@@ -35,22 +35,6 @@ ulong test_bswap(ulong a) { return bswap(a); }
 int test_popcnt(uint a) { return popcnt(a); }
 // { dg-final { scan-tree-dump " __builtin_popcount(l|ll) " "original" } }
 int test_popcnt(ulong a) { return popcnt(a); }
-// { dg-final { scan-tree-dump "\\(volatile ubyte \\*\\) a;" "original" } }
-ubyte test_volatileLoad(ubyte *a) { return volatileLoad(a); }
-// { dg-final { scan-tree-dump "\\(volatile ushort \\*\\) a;" "original" } }
-ushort test_volatileLoad(ushort *a) { return volatileLoad(a); }
-// { dg-final { scan-tree-dump "\\(volatile uint \\*\\) a;" "original" } }
-uint test_volatileLoad(uint *a) { return volatileLoad(a); }
-// { dg-final { scan-tree-dump "\\(volatile ulong \\*\\) a;" "original" } }
-ulong test_volatileLoad(ulong *a) { return volatileLoad(a); }
-// { dg-final { scan-tree-dump "\\(volatile ubyte \\*\\) a = b" "original" } }
-void test_volatileStore(ubyte *a, ubyte b) { return volatileStore(a, b); }
-// { dg-final { scan-tree-dump "\\(volatile ushort \\*\\) a = b" "original" } }
-void test_volatileStore(ushort *a, ushort b) { return volatileStore(a, b); }
-// { dg-final { scan-tree-dump "\\(volatile uint \\*\\) a = b" "original" } }
-void test_volatileStore(uint *a, uint b) { return volatileStore(a, b); }
-// { dg-final { scan-tree-dump "\\(volatile ulong \\*\\) a = b" "original" } }
-void test_volatileStore(ulong *a, ulong b) { return volatileStore(a, b); }
 // { dg-final { scan-tree-dump " a r<< b;" "original" } }
 ubyte test_rol(ubyte a, uint b) { return rol!ubyte(a, b); }
 // { dg-final { scan-tree-dump " a r>> 31;" "original" } }
@@ -139,6 +123,26 @@ double test_toPrec(real a) { return toPrec!double(a); }
 real test_toPrecl(float a) { return toPrec!real(a); }
 real test_toPrecl(double a) { return toPrec!real(a); }
 real test_toPrecl(real a) { return toPrec!real(a); }
+
+//////////////////////////////////////////////////////
+// core.volatile
+
+// { dg-final { scan-tree-dump "\\(volatile ubyte \\*\\) a;" "original" } }
+ubyte test_volatileLoad(ubyte *a) { return volatileLoad(a); }
+// { dg-final { scan-tree-dump "\\(volatile ushort \\*\\) a;" "original" } }
+ushort test_volatileLoad(ushort *a) { return volatileLoad(a); }
+// { dg-final { scan-tree-dump "\\(volatile uint \\*\\) a;" "original" } }
+uint test_volatileLoad(uint *a) { return volatileLoad(a); }
+// { dg-final { scan-tree-dump "\\(volatile ulong \\*\\) a;" "original" } }
+ulong test_volatileLoad(ulong *a) { return volatileLoad(a); }
+// { dg-final { scan-tree-dump "\\(volatile ubyte \\*\\) a = b" "original" } }
+void test_volatileStore(ubyte *a, ubyte b) { return volatileStore(a, b); }
+// { dg-final { scan-tree-dump "\\(volatile ushort \\*\\) a = b" "original" } }
+void test_volatileStore(ushort *a, ushort b) { return volatileStore(a, b); }
+// { dg-final { scan-tree-dump "\\(volatile uint \\*\\) a = b" "original" } }
+void test_volatileStore(uint *a, uint b) { return volatileStore(a, b); }
+// { dg-final { scan-tree-dump "\\(volatile ulong \\*\\) a = b" "original" } }
+void test_volatileStore(ulong *a, ulong b) { return volatileStore(a, b); }
 
 //////////////////////////////////////////////////////
 // core.stdc.stdarg

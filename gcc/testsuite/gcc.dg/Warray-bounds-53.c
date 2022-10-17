@@ -83,17 +83,17 @@ void ptr_idx_range (void)
 
   i = SR (0, 1);
 
-  T (i, (int[]){ });            // { dg-warning "array subscript \\\[0, 1] is outside array bounds of 'int\\\[0]'" }
+  T (i, (int[]){ });            // { dg-warning "array subscript 0 is outside array bounds of 'int\\\[0]'" }
   T (i, (int[]){ 1 });
 
   i = SR (1, 2);
-  T (i, (int[]){ 1 });          // { dg-warning "array subscript \\\[1, 2] is outside array bounds of 'int\\\[1]'" }
+  T (i, (int[]){ 1 });          // { dg-warning "array subscript 1 is outside array bounds of 'int\\\[1]'" }
 
   i = SR (2, 3);
   T (i, (int[]){ 1, 2, 3 });
 
   i = SR (3, 4);
-  T (i, (int[]){ 2, 3, 4 });          // { dg-warning "array subscript \\\[3, 4] is outside array bounds of 'int\\\[3]'" }
+  T (i, (int[]){ 2, 3, 4 });          // { dg-warning "array subscript 3 is outside array bounds of 'int\\\[3]'" }
 }
 
 /* Some of the invalid accesses above also trigger -Wuninitialized.

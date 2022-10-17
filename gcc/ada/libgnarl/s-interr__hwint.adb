@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,39 +29,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This is reasonably generic version of this package, supporting vectored
+--  hardware interrupts using non-RTOS specific adapter routines which should
+--  easily implemented on any RTOS capable of supporting GNAT.
+
 --  Invariants:
 
---  All user-handlable signals are masked at all times in all tasks/threads
---  except possibly for the Interrupt_Manager task.
-
---  When a user task wants to have the effect of masking/unmasking an signal,
---  it must call Block_Interrupt/Unblock_Interrupt, which will have the effect
---  of unmasking/masking the signal in the Interrupt_Manager task. These
---  comments do not apply to vectored hardware interrupts, which may be masked
---  or unmasked using routined interfaced to the relevant embedded RTOS system
---  calls.
-
---  Once we associate a Signal_Server_Task with an signal, the task never goes
---  away, and we never remove the association. On the other hand, it is more
---  convenient to terminate an associated Interrupt_Server_Task for a vectored
---  hardware interrupt (since we use a binary semaphore for synchronization
---  with the umbrella handler).
-
---  There is no more than one signal per Signal_Server_Task and no more than
---  one Signal_Server_Task per signal. The same relation holds for hardware
---  interrupts and Interrupt_Server_Task's at any given time. That is, only
---  one non-terminated Interrupt_Server_Task exists for a give interrupt at
---  any time.
+--  There is no more than one interrupt per Interrupt_Server_Task and no more
+--  than one Interrupt_Server_Task per interrupt. If an interrupt handler is
+--  detached, the corresponding Interrupt_Server_Task is terminated.
 
 --  Within this package, the lock L is used to protect the various status
 --  tables. If there is a Server_Task associated with a signal or interrupt,
 --  we use the per-task lock of the Server_Task instead so that we protect the
 --  status between Interrupt_Manager and Server_Task. Protection among service
 --  requests are ensured via user calls to the Interrupt_Manager entries.
-
---  This is reasonably generic version of this package, supporting vectored
---  hardware interrupts using non-RTOS specific adapter routines which should
---  easily implemented on any RTOS capable of supporting GNAT.
 
 with Ada.Unchecked_Conversion;
 with Ada.Task_Identification;
@@ -151,13 +133,13 @@ package body System.Interrupts is
      (others => (null, Static => False));
    pragma Volatile_Components (User_Handler);
    --  Holds the protected procedure handler (if any) and its Static
-   --  information for each interrupt or signal. A handler is static iff it
+   --  information for each interrupt. A handler is static if and only if it
    --  is specified through the pragma Attach_Handler.
 
    User_Entry : array (Interrupt_ID) of Entry_Assoc :=
                   (others => (T => Null_Task, E => Null_Task_Entry));
    pragma Volatile_Components (User_Entry);
-   --  Holds the task and entry index (if any) for each interrupt / signal
+   --  Holds the task and entry index (if any) for each interrupt
 
    --  Type and Head, Tail of the list containing Registered Interrupt
    --  Handlers. These definitions are used to register the handlers

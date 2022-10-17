@@ -1,5 +1,5 @@
 /* Out-of-line LSE atomics for AArch64 architecture, Init.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by Linaro Ltd.
 
 This file is part of GCC.
@@ -38,7 +38,9 @@ _Bool __aarch64_have_lse_atomics
 
 unsigned long int __getauxval (unsigned long int);
 
-static void __attribute__((constructor))
+/* Use a higher priority to ensure it runs before user constructors
+   and library constructors with priority 100. */
+static void __attribute__((constructor (90)))
 init_have_lse_atomics (void)
 {
   unsigned long hwcap = __getauxval (AT_HWCAP);

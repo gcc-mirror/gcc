@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid -fno-implicit-constexpr" }
 export module enUm;
 // { dg-module-cmi "enUm" }
 

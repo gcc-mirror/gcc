@@ -1,5 +1,5 @@
 /* Integration of the analyzer with GCC's pass manager.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "options.h"
 #include "tree.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/engine.h"
 
@@ -66,8 +65,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate (function *) FINAL OVERRIDE;
-  unsigned int execute (function *) FINAL OVERRIDE;
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 }; // class pass_analyzer
 
 /* Only run the analyzer if -fanalyzer.  */

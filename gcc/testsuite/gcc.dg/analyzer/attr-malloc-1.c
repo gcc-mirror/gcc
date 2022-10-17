@@ -11,6 +11,12 @@ extern struct foo *foo_acquire (void)
 extern void use_foo (const struct foo *)
   __attribute__((nonnull));
 
+extern struct foo *compatible_alloc (void)
+  __attribute__ ((malloc (__builtin_free)));
+
+extern struct foo *compatible_alloc2 (void)
+  __attribute__ ((malloc (free)));
+
 void test_1 (void)
 {
   struct foo *p = foo_acquire ();
@@ -64,7 +70,7 @@ void test_6 (struct foo *p)
 void test_7 ()
 {
   struct foo f;
-  foo_release (&f); /* { dg-warning "not on the heap" "analyzer" } */
+  foo_release (&f); /* { dg-warning "on the stack" "analyzer" } */
   /* { dg-warning "'foo_release' called on unallocated object 'f'" "non-analyzer" { target *-*-* } .-1 } */
 }
 
@@ -72,4 +78,17 @@ int test_8 (struct foo *p)
 {
   foo_release (p);
   return p->m_int; /* { dg-warning "use after 'foo_release' of 'p'" } */
+}
+
+/* Recognize that __builtin_free and free are the same thing.  */
+void test_9 (void)
+{
+  struct foo *p = compatible_alloc ();
+  free (p);
+}
+
+void test_10 (void)
+{
+  struct foo *p = compatible_alloc2 ();
+  __builtin_free (p);
 }

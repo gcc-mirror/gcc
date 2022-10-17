@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,13 +17,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* In i386-common.c.  */
+/* In i386-common.cc.  */
 extern bool ix86_handle_option (struct gcc_options *opts,
 				struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 				const struct cl_decoded_option *decoded,
 				location_t loc);
 
-/* Functions in i386.c */
+/* Functions in i386.cc */
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
 extern bool ix86_function_ms_hook_prologue (const_tree fn);
@@ -53,6 +53,7 @@ extern bool ix86_using_red_zone (void);
 extern rtx ix86_gen_scratch_sse_rtx (machine_mode);
 
 extern unsigned int ix86_regmode_natural_size (machine_mode);
+extern bool ix86_check_builtin_isa_match (unsigned int fcode);
 #ifdef RTX_CODE
 extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
@@ -79,11 +80,12 @@ extern bool ix86_expand_cmpstrn_or_cmpmem (rtx, rtx, rtx, rtx, rtx, bool);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern bool legitimate_pic_address_disp_p (rtx);
-extern bool ix86_force_load_from_GOT_p (rtx);
+extern bool ix86_force_load_from_GOT_p (rtx, bool = false);
 extern void print_reg (rtx, int, FILE*);
 extern void ix86_print_operand (FILE *, rtx, int);
 
 extern void split_double_mode (machine_mode, rtx[], int, rtx[], rtx[]);
+extern void split_double_concat (machine_mode, rtx, rtx lo, rtx);
 
 extern const char *output_set_got (rtx, rtx);
 extern const char *output_387_binary_op (rtx_insn *, rtx*);
@@ -107,7 +109,7 @@ extern void ix86_expand_binary_operator (enum rtx_code,
 					 machine_mode, rtx[]);
 extern void ix86_expand_vector_logical_operator (enum rtx_code,
 						 machine_mode, rtx[]);
-extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[]);
+extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[3]);
 extern bool ix86_avoid_lea_for_add (rtx_insn *, rtx[]);
 extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
@@ -121,6 +123,8 @@ extern void ix86_expand_unary_operator (enum rtx_code, machine_mode,
 					rtx[]);
 extern rtx ix86_build_const_vector (machine_mode, bool, rtx);
 extern rtx ix86_build_signbit_mask (machine_mode, bool, bool);
+extern HOST_WIDE_INT ix86_convert_const_vector_to_integer (rtx,
+							   machine_mode);
 extern void ix86_split_convert_uns_si_sse (rtx[]);
 extern void ix86_expand_convert_uns_didf_sse (rtx, rtx);
 extern void ix86_expand_convert_uns_sixf_sse (rtx, rtx);
@@ -135,11 +139,8 @@ extern void ix86_expand_fp_absneg_operator (enum rtx_code, machine_mode,
 extern void ix86_split_fp_absneg_operator (enum rtx_code, machine_mode,
 					   rtx[]);
 extern void ix86_expand_copysign (rtx []);
-extern void ix86_split_copysign_const (rtx []);
-extern void ix86_split_copysign_var (rtx []);
 extern void ix86_expand_xorsign (rtx []);
-extern void ix86_split_xorsign (rtx []);
-extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[]);
+extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2]);
 extern bool ix86_match_ccmode (rtx, machine_mode);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_setcc (rtx, enum rtx_code, rtx, rtx);
@@ -153,8 +154,10 @@ extern bool ix86_expand_int_vec_cmp (rtx[]);
 extern bool ix86_expand_fp_vec_cmp (rtx[]);
 extern void ix86_expand_sse_movcc (rtx, rtx, rtx, rtx);
 extern void ix86_expand_sse_unpack (rtx, rtx, bool, bool);
+extern void ix86_expand_fp_spaceship (rtx, rtx, rtx);
 extern bool ix86_expand_int_addcc (rtx[]);
 extern rtx_insn *ix86_expand_call (rtx, rtx, rtx, rtx, rtx, bool);
+extern bool ix86_call_use_plt_p (rtx);
 extern void ix86_split_call_vzeroupper (rtx, rtx);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
 extern rtx ix86_zero_extend_to_Pmode (rtx);
@@ -162,6 +165,9 @@ extern void ix86_split_long_move (rtx[]);
 extern void ix86_split_ashl (rtx *, rtx, machine_mode);
 extern void ix86_split_ashr (rtx *, rtx, machine_mode);
 extern void ix86_split_lshr (rtx *, rtx, machine_mode);
+extern void ix86_expand_v1ti_shift (enum rtx_code, rtx[]);
+extern void ix86_expand_v1ti_rotate (enum rtx_code, rtx[]);
+extern void ix86_expand_v1ti_ashiftrt (rtx[]);
 extern rtx ix86_find_base_term (rtx);
 extern bool ix86_check_movabs (rtx, int);
 extern bool ix86_check_no_addr_space (rtx);
@@ -217,6 +223,10 @@ extern void ix86_move_vector_high_sse_to_mmx (rtx);
 extern void ix86_split_mmx_pack (rtx[], enum rtx_code);
 extern void ix86_split_mmx_punpck (rtx[], bool);
 extern void ix86_expand_avx_vzeroupper (void);
+extern void ix86_expand_atomic_fetch_op_loop (rtx, rtx, rtx, enum rtx_code,
+					      bool, bool);
+extern void ix86_expand_cmpxchg_loop (rtx *, rtx, rtx, rtx, rtx, rtx,
+				      bool, rtx_code_label *);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
@@ -241,6 +251,7 @@ extern unsigned int ix86_get_callcvt (const_tree);
 #endif
 
 extern rtx ix86_tls_module_base (void);
+extern bool ix86_gpr_tls_address_pattern_p (rtx);
 extern bool ix86_tls_address_pattern_p (rtx);
 extern rtx ix86_rewrite_tls_address (rtx);
 
@@ -260,17 +271,13 @@ extern void ix86_expand_sse2_mulvxdi3 (rtx, rtx, rtx);
 extern void ix86_expand_sse2_abs (rtx, rtx);
 extern bool ix86_expand_vector_init_duplicate (bool, machine_mode, rtx,
 					       rtx);
+extern bool ix86_extract_perm_from_pool_constant (int*, rtx);
 
-/* In i386-c.c  */
+/* In i386-c.cc  */
 extern void ix86_target_macros (void);
 extern void ix86_register_pragmas (void);
 
-/* In i386-d.c  */
-extern void ix86_d_target_versions (void);
-extern void ix86_d_register_target_info (void);
-extern bool ix86_d_has_stdcall_convention (unsigned int *, unsigned int *);
-
-/* In winnt.c  */
+/* In winnt.cc  */
 extern void i386_pe_unique_section (tree, int);
 extern void i386_pe_declare_function_type (FILE *, const char *, int);
 extern void i386_pe_record_external_function (tree, const char *);
@@ -303,7 +310,7 @@ extern void i386_pe_seh_unwind_emit (FILE *, rtx_insn *);
 extern void i386_pe_seh_emit_except_personality (rtx);
 extern void i386_pe_seh_init_sections (void);
 
-/* In winnt-cxx.c and winnt-stubs.c  */
+/* In winnt-cxx.cc and winnt-stubs.cc  */
 extern void i386_pe_adjust_class_at_definition (tree);
 extern bool i386_pe_type_dllimport_p (tree);
 extern bool i386_pe_type_dllexport_p (tree);
@@ -322,12 +329,12 @@ struct ix86_address
   addr_space_t seg;
 };
 
-extern int ix86_decompose_address (rtx, struct ix86_address *);
+extern bool ix86_decompose_address (rtx, struct ix86_address *);
 extern int memory_address_length (rtx, bool);
 extern void x86_output_aligned_bss (FILE *, tree, const char *,
-				    unsigned HOST_WIDE_INT, int);
+				    unsigned HOST_WIDE_INT, unsigned);
 extern void x86_elf_aligned_decl_common (FILE *, tree, const char *,
-					 unsigned HOST_WIDE_INT, int);
+					 unsigned HOST_WIDE_INT, unsigned);
 
 #ifdef RTX_CODE
 extern void ix86_fp_comparison_codes (enum rtx_code code, enum rtx_code *,
@@ -395,4 +402,9 @@ extern rtl_opt_pass *make_pass_insert_endbr_and_patchable_area
   (gcc::context *);
 extern rtl_opt_pass *make_pass_remove_partial_avx_dependency
   (gcc::context *);
-extern rtl_opt_pass *make_pass_constant_pool_broadcast (gcc::context *);
+
+extern bool ix86_has_no_direct_extern_access;
+
+/* In i386-expand.cc.  */
+bool ix86_check_builtin_isa_match (unsigned int, HOST_WIDE_INT*,
+				   HOST_WIDE_INT*);

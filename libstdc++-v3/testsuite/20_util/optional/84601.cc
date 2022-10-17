@@ -1,6 +1,7 @@
 // { dg-do compile { target c++17 }  }
 
 #include <optional>
+#include <utility>
 
 using pair_t = std::pair<int, int>;
 using opt_t = std::optional<pair_t>;

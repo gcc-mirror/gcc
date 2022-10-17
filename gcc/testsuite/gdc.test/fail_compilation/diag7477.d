@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag7477.d(13): Error: cannot implicitly convert expression `0` of type `int` to `Foo`
-fail_compilation/diag7477.d(20): Error: cannot implicitly convert expression `0` of type `int` to `string`
+fail_compilation/diag7477.d(13): Error: integral constant must be scalar type, not `Foo`
+fail_compilation/diag7477.d(20): Error: integral constant must be scalar type, not `string`
 ---
 */
 

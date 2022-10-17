@@ -1,7 +1,8 @@
 dnl Process this with autoconf to create configure
 
+AC_PREREQ(2.68)
 
-AC_INIT([libffi], [3.99999], [http://github.com/atgreen/libffi/issues])
+AC_INIT([libffi], [3.4.2], [http://github.com/libffi/libffi/issues])
 AC_CONFIG_HEADERS([fficonfig.h])
 
 AM_ENABLE_MULTILIB(, ..)
@@ -10,13 +11,6 @@ AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 
 AM_INIT_AUTOMAKE([no-dist])
-
-# See if makeinfo has been installed and is modern enough
-# that we can use it.
-ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
-                   [GNU texinfo.* \([0-9][0-9.]*\)],
-                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
-AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
 
 # We would like our source tree to be readonly. However when releases or
 # pre-releases are generated, the flex/bison generated files as well as the
@@ -54,9 +48,15 @@ m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AC_SUBST(CFLAGS)
 
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+AC_SUBST(CET_FLAGS)
+
 AM_PROG_AS
 AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
+
+AC_CHECK_TOOL(READELF, readelf)
 
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
@@ -64,12 +64,16 @@ AC_CHECK_SIZEOF([size_t])
 cat > local.exp <<EOF
 set CC_FOR_TARGET "$CC"
 set CXX_FOR_TARGET "$CXX"
+set compiler_vendor "$ax_cv_c_compiler_vendor"
 EOF
 
 AM_MAINTAINER_MODE
 
+AC_CHECK_HEADERS(sys/memfd.h)
+AC_CHECK_FUNCS([memfd_create])
+
 AC_CHECK_HEADERS(sys/mman.h)
-AC_CHECK_FUNCS([mmap mkostemp])
+AC_CHECK_FUNCS([mmap mkostemp mkstemp])
 AC_FUNC_MMAP_BLACKLIST
 
 dnl The -no-testsuite modules omit the test subdir.
@@ -181,6 +185,28 @@ case "$TARGET" in
     ;;
 esac
 
+AC_CACHE_CHECK([whether compiler supports pointer authentication],
+   libffi_cv_as_ptrauth, [
+   libffi_cv_as_ptrauth=unknown
+   AC_TRY_COMPILE(,[
+#ifdef __clang__
+# if __has_feature(ptrauth_calls)
+#  define HAVE_PTRAUTH 1
+# endif
+#endif
+
+#ifndef HAVE_PTRAUTH
+# error Pointer authentication not supported
+#endif
+		   ],
+		   [libffi_cv_as_ptrauth=yes],
+		   [libffi_cv_as_ptrauth=no])
+])
+if test "x$libffi_cv_as_ptrauth" = xyes; then
+    AC_DEFINE(HAVE_PTRAUTH, 1,
+	      [Define if your compiler supports pointer authentication.])
+fi
+
 # On PaX enable kernels that have MPROTECT enable we can't use PROT_EXEC.
 AC_ARG_ENABLE(pax_emutramp,
   [  --enable-pax_emutramp       enable pax emulated trampolines, for we can't use PROT_EXEC],
@@ -191,13 +217,13 @@ AC_ARG_ENABLE(pax_emutramp,
 
 FFI_EXEC_TRAMPOLINE_TABLE=0
 case "$target" in
-     *arm*-apple-darwin* | aarch64-apple-darwin*)
+     *arm*-apple-* | aarch64-apple-*)
        FFI_EXEC_TRAMPOLINE_TABLE=1
        AC_DEFINE(FFI_EXEC_TRAMPOLINE_TABLE, 1,
                  [Cannot use PROT_EXEC on this target, so, we revert to
                    alternative means])
      ;;
-     *-apple-darwin1* | *-*-freebsd* | *-*-kfreebsd* | *-*-openbsd* | *-pc-solaris*)
+     *-apple-* | *-*-freebsd* | *-*-kfreebsd* | *-*-openbsd* | *-pc-solaris* | *-linux-android*)
        AC_DEFINE(FFI_MMAP_EXEC_WRIT, 1,
                  [Cannot use malloc on this target, so, we revert to
                    alternative means])
@@ -240,17 +266,11 @@ fi
 if test "x$GCC" = "xyes"; then
   AC_CACHE_CHECK([whether .eh_frame section should be read-only],
       libffi_cv_ro_eh_frame, [
-  	libffi_cv_ro_eh_frame=no
+  	libffi_cv_ro_eh_frame=yes
   	echo 'extern void foo (void); void bar (void) { foo (); foo (); }' > conftest.c
-  	if $CC $CFLAGS -c -fpic -fexceptions -o conftest.o conftest.c > /dev/null 2>&1; then
-	    objdump -h conftest.o > conftest.dump 2>&1
-	    libffi_eh_frame_line=`grep -n eh_frame conftest.dump | cut -d: -f 1`
-	    if test "x$libffi_eh_frame_line" != "x"; then
-	        libffi_test_line=`expr $libffi_eh_frame_line + 1`p
-	        sed -n $libffi_test_line conftest.dump > conftest.line
-	        if grep READONLY conftest.line > /dev/null; then
-	            libffi_cv_ro_eh_frame=yes
-	        fi
+  	if $CC $CFLAGS -c -fpic -fexceptions -fno-lto -o conftest.o conftest.c > /dev/null 2>&1; then
+	    if $READELF -WS conftest.o | grep -q -n 'eh_frame .* WA'; then
+	        libffi_cv_ro_eh_frame=no
 	    fi
   	fi
   	rm -f conftest.*
@@ -270,7 +290,7 @@ if test "x$GCC" = "xyes"; then
   	echo 'int __attribute__ ((visibility ("hidden"))) foo (void) { return 1  ; }' > conftest.c
   	libffi_cv_hidden_visibility_attribute=no
   	if AC_TRY_COMMAND(${CC-cc} -Werror -S conftest.c -o conftest.s 1>&AS_MESSAGE_LOG_FD); then
-  	    if grep '\.hidden.*foo' conftest.s >/dev/null; then
+  	    if egrep '(\.hidden|\.private_extern).*foo' conftest.s >/dev/null; then
   		libffi_cv_hidden_visibility_attribute=yes
   	    fi
   	fi
@@ -282,10 +302,21 @@ if test "x$GCC" = "xyes"; then
   fi
 fi
 
+# See if makeinfo has been installed and is modern enough
+# that we can use it.
+ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
+                   [GNU texinfo.* \([0-9][0-9.]*\)],
+                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
+AM_CONDITIONAL(BUILD_DOCS, test $gcc_cv_prog_makeinfo_modern = "yes")
+
 AH_BOTTOM([
 #ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
 #ifdef LIBFFI_ASM
+#ifdef __APPLE__
+#define FFI_HIDDEN(name) .private_extern name
+#else
 #define FFI_HIDDEN(name) .hidden name
+#endif
 #else
 #define FFI_HIDDEN __attribute__ ((visibility ("hidden")))
 #endif
@@ -331,6 +362,20 @@ AC_ARG_ENABLE(raw-api,
     AC_DEFINE(FFI_NO_RAW_API, 1, [Define this if you do not want support for the raw API.])
   fi)
 
+AC_ARG_ENABLE(exec-static-tramp,
+[  --enable-exec-static-tramp  enable use of static exec trampolines])
+
+if test "$enable_exec_static_tramp" = yes; then
+case "$target" in
+     *-cygwin*)
+     ;;
+     *arm*-*-linux-* | aarch64*-*-linux-* | i*86-*-linux-* | x86_64-*-linux-*)
+       AC_DEFINE(FFI_EXEC_STATIC_TRAMP, 1,
+                 [Define this if you want statically defined trampolines])
+     ;;
+esac
+fi
+
 AC_ARG_ENABLE(purify-safety,
 [  --enable-purify-safety  purify-safe mode],
   if test "$enable_purify_safety" = "yes"; then
@@ -369,7 +414,7 @@ else
 fi
 
 # Check linker support.
-LIBAT_ENABLE_SYMVERS
+LIBFFI_ENABLE_SYMVERS
 
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
@@ -380,8 +425,8 @@ test -d src || mkdir src
 test -d src/$TARGETDIR || mkdir src/$TARGETDIR
 ], [TARGETDIR="$TARGETDIR"])
 
-AC_CONFIG_LINKS(include/ffitarget.h:src/$TARGETDIR/ffitarget.h)
-
 AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile testsuite/Makefile man/Makefile libffi.pc)
+
+AC_CONFIG_LINKS(include/ffitarget.h:src/$TARGETDIR/ffitarget.h)
 
 AC_OUTPUT

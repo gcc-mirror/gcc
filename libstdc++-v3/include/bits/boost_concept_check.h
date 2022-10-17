@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,22 @@
 
 #include <bits/c++config.h>
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
+
+namespace std  _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+  struct _Bit_iterator;
+  struct _Bit_const_iterator;
+_GLIBCXX_END_NAMESPACE_CONTAINER
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+
+namespace __gnu_debug
+{
+  template<typename _Iterator, typename _Sequence, typename _Category>
+    class _Safe_iterator;
+}
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -464,11 +480,77 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _AssignableConcept<_Tp> >();
       ++__i;                            // require preincrement operator
       __i++;                            // require postincrement operator
-      *__i++ = __t;                     // require postincrement and assignment
+      *__i++ = __val();                 // require postincrement and assignment
     }
     _Tp __i;
-    _ValueT __t;
+    // Use a function pointer here so no definition of the function needed.
+    // Just need something that returns a _ValueT (which might be a reference).
+    _ValueT (*__val)();
   };
+
+  template<typename _Tp>
+  struct _Is_vector_bool_iterator
+  { static const bool __value = false; };
+
+#ifdef _GLIBCXX_DEBUG
+  namespace __cont = ::std::_GLIBCXX_STD_C;
+#else
+  namespace __cont = ::std;
+#endif
+
+  // Trait to identify vector<bool>::iterator
+  template <>
+  struct _Is_vector_bool_iterator<__cont::_Bit_iterator>
+  { static const bool __value = true; };
+
+  // And for vector<bool>::const_iterator.
+  template <>
+  struct _Is_vector_bool_iterator<__cont::_Bit_const_iterator>
+  { static const bool __value = true; };
+
+  // And for __gnu_debug::vector<bool> iterators too.
+  template <typename _It, typename _Seq, typename _Tag>
+  struct _Is_vector_bool_iterator<__gnu_debug::_Safe_iterator<_It, _Seq, _Tag> >
+  : _Is_vector_bool_iterator<_It> { };
+
+  template <class _Tp, bool = _Is_vector_bool_iterator<_Tp>::__value>
+  struct _ForwardIteratorReferenceConcept
+  {
+    void __constraints() {
+#if __cplusplus >= 201103L
+      typedef typename std::iterator_traits<_Tp>::reference _Ref;
+      static_assert(std::is_reference<_Ref>::value,
+	  "reference type of a forward iterator must be a real reference");
+#endif
+    }
+  };
+
+  template <class _Tp, bool = _Is_vector_bool_iterator<_Tp>::__value>
+  struct _Mutable_ForwardIteratorReferenceConcept
+  {
+    void __constraints() {
+      typedef typename std::iterator_traits<_Tp>::reference _Ref;
+      typedef typename std::iterator_traits<_Tp>::value_type _Val;
+      __function_requires< _SameTypeConcept<_Ref, _Val&> >();
+    }
+  };
+
+  // vector<bool> iterators are not real forward iterators, but we ignore that.
+  template <class _Tp>
+  struct _ForwardIteratorReferenceConcept<_Tp, true>
+  {
+    void __constraints() { }
+  };
+
+  // vector<bool> iterators are not real forward iterators, but we ignore that.
+  template <class _Tp>
+  struct _Mutable_ForwardIteratorReferenceConcept<_Tp, true>
+  {
+    void __constraints() { }
+  };
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
 
   template <class _Tp>
   struct _ForwardIteratorConcept
@@ -479,8 +561,12 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _ConvertibleConcept<
         typename std::iterator_traits<_Tp>::iterator_category,
         std::forward_iterator_tag> >();
+      __function_requires< _ForwardIteratorReferenceConcept<_Tp> >();
+      _Tp& __j = ++__i;
+      const _Tp& __k = __i++;
       typedef typename std::iterator_traits<_Tp>::reference _Ref;
-      _Ref __r _IsUnused = *__i;
+      _Ref __r = *__k;
+      _Ref __r2 = *__i++;
     }
     _Tp __i;
   };
@@ -490,7 +576,9 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   {
     void __constraints() {
       __function_requires< _ForwardIteratorConcept<_Tp> >();
-      *__i++ = *__i;                    // require postincrement and assignment
+      typedef typename std::iterator_traits<_Tp>::reference _Ref;
+      typedef typename std::iterator_traits<_Tp>::value_type _Val;
+      __function_requires< _Mutable_ForwardIteratorReferenceConcept<_Tp> >();
     }
     _Tp __i;
   };
@@ -503,8 +591,10 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _ConvertibleConcept<
         typename std::iterator_traits<_Tp>::iterator_category,
         std::bidirectional_iterator_tag> >();
-      --__i;                            // require predecrement operator
-      __i--;                            // require postdecrement operator
+      _Tp& __j = --__i;                 // require predecrement operator
+      const _Tp& __k = __i--;           // require postdecrement operator
+      typedef typename std::iterator_traits<_Tp>::reference _Ref;
+      _Ref __r = *__j--;
     }
     _Tp __i;
   };
@@ -515,7 +605,6 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     void __constraints() {
       __function_requires< _BidirectionalIteratorConcept<_Tp> >();
       __function_requires< _Mutable_ForwardIteratorConcept<_Tp> >();
-      *__i-- = *__i;                    // require postdecrement and assignment
     }
     _Tp __i;
   };
@@ -530,16 +619,15 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _ConvertibleConcept<
         typename std::iterator_traits<_Tp>::iterator_category,
         std::random_access_iterator_tag> >();
-      // ??? We don't use _Ref, are we just checking for "referenceability"?
       typedef typename std::iterator_traits<_Tp>::reference _Ref;
 
-      __i += __n;                       // require assignment addition operator
+      _Tp& __j = __i += __n;            // require assignment addition operator
       __i = __i + __n; __i = __n + __i; // require addition with difference type
-      __i -= __n;                       // require assignment subtraction op
+      _Tp& __k = __i -= __n;            // require assignment subtraction op
       __i = __i - __n;                  // require subtraction with
                                         //            difference type
       __n = __i - __j;                  // require difference operator
-      (void)__i[__n];                   // require element access operator
+      _Ref __r = __i[__n];              // require element access operator
     }
     _Tp __a, __b;
     _Tp __i, __j;
@@ -552,11 +640,12 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     void __constraints() {
       __function_requires< _RandomAccessIteratorConcept<_Tp> >();
       __function_requires< _Mutable_BidirectionalIteratorConcept<_Tp> >();
-      __i[__n] = *__i;                  // require element access and assignment
     }
     _Tp __i;
     typename std::iterator_traits<_Tp>::difference_type __n;
   };
+
+#pragma GCC diagnostic pop
 
   //===========================================================================
   // Container Concepts

@@ -408,7 +408,14 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     {
       // We are assigning a non-pointer value to the interface; the
       // interface gets a copy of the value in the heap if it escapes.
-      if (rhs->is_constant())
+
+      // An exception is &global if global is notinheap, which is a
+      // pointer value but not a direct-iface type and we can't simply
+      // take its address.
+      bool is_address = (rhs->unary_expression() != NULL
+                         && rhs->unary_expression()->op() == OPERATOR_AND);
+
+      if (rhs->is_constant() && !is_address)
         obj = Expression::make_unary(OPERATOR_AND, rhs, location);
       else
         {
@@ -1419,7 +1426,12 @@ Sink_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   if (this->bvar_ == NULL)
     {
-      go_assert(this->type_ != NULL && !this->type_->is_sink_type());
+      if (this->type_ == NULL || this->type_->is_sink_type())
+	{
+	  go_assert(saw_errors());
+	  return gogo->backend()->error_expression();
+	}
+
       Named_object* fn = context->function();
       go_assert(fn != NULL);
       Bfunction* fn_ctx = fn->func_value()->get_or_make_decl(gogo, fn);
@@ -2116,9 +2128,15 @@ String_expression::do_get_backend(Translate_context* context)
 
   Location loc = this->location();
   std::vector<Bexpression*> init(2);
-  Bexpression* str_cst =
-      gogo->backend()->string_constant_expression(this->val_);
-  init[0] = gogo->backend()->address_expression(str_cst, loc);
+
+  if (this->val_.size() == 0)
+    init[0] = gogo->backend()->nil_pointer_expression();
+  else
+    {
+      Bexpression* str_cst =
+	gogo->backend()->string_constant_expression(this->val_);
+      init[0] = gogo->backend()->address_expression(str_cst, loc);
+    }
 
   Btype* int_btype = Type::lookup_integer_type("int")->get_backend(gogo);
   mpz_t lenval;
@@ -2702,7 +2720,7 @@ Integer_expression::do_import(Import_expression* imp, Location loc)
 	  return Expression::make_error(loc);
 	}
       if (pos == std::string::npos)
-	mpfr_set_ui(real, 0, MPFR_RNDN);
+	mpfr_init_set_ui(real, 0, MPFR_RNDN);
       else
 	{
 	  std::string real_str = num.substr(0, pos);
@@ -3334,97 +3352,7 @@ class Find_named_object : public Traverse
   bool found_;
 };
 
-// A reference to a const in an expression.
-
-class Const_expression : public Expression
-{
- public:
-  Const_expression(Named_object* constant, Location location)
-    : Expression(EXPRESSION_CONST_REFERENCE, location),
-      constant_(constant), type_(NULL), seen_(false)
-  { }
-
-  Named_object*
-  named_object()
-  { return this->constant_; }
-
-  const Named_object*
-  named_object() const
-  { return this->constant_; }
-
-  // Check that the initializer does not refer to the constant itself.
-  void
-  check_for_init_loop();
-
- protected:
-  int
-  do_traverse(Traverse*);
-
-  Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
-
-  bool
-  do_is_constant() const
-  { return true; }
-
-  bool
-  do_is_zero_value() const
-  { return this->constant_->const_value()->expr()->is_zero_value(); }
-
-  bool
-  do_is_static_initializer() const
-  { return true; }
-
-  bool
-  do_numeric_constant_value(Numeric_constant* nc) const;
-
-  bool
-  do_string_constant_value(std::string* val) const;
-
-  bool
-  do_boolean_constant_value(bool* val) const;
-
-  Type*
-  do_type();
-
-  // The type of a const is set by the declaration, not the use.
-  void
-  do_determine_type(const Type_context*);
-
-  void
-  do_check_types(Gogo*);
-
-  Expression*
-  do_copy()
-  { return this; }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  int
-  do_inlining_cost() const
-  { return 1; }
-
-  // When exporting a reference to a const as part of a const
-  // expression, we export the value.  We ignore the fact that it has
-  // a name.
-  void
-  do_export(Export_function_body* efb) const
-  { this->constant_->const_value()->expr()->export_expression(efb); }
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
- private:
-  // The constant.
-  Named_object* constant_;
-  // The type of this reference.  This is used if the constant has an
-  // abstract type.
-  Type* type_;
-  // Used to prevent infinite recursion when a constant incorrectly
-  // refers to itself.
-  mutable bool seen_;
-};
+// Class Const_expression.
 
 // Traversal.
 
@@ -3434,6 +3362,14 @@ Const_expression::do_traverse(Traverse* traverse)
   if (this->type_ != NULL)
     return Type::traverse(this->type_, traverse);
   return TRAVERSE_CONTINUE;
+}
+
+// Whether this is the zero value.
+
+bool
+Const_expression::do_is_zero_value() const
+{
+  return this->constant_->const_value()->expr()->is_zero_value();
 }
 
 // Lower a constant expression.  This is where we convert the
@@ -3690,6 +3626,16 @@ Const_expression::do_get_backend(Translate_context* context)
   return expr->get_backend(context);
 }
 
+// When exporting a reference to a const as part of a const
+// expression, we export the value.  We ignore the fact that it has
+// a name.
+
+void
+Const_expression::do_export(Export_function_body* efb) const
+{
+  this->constant_->const_value()->expr()->export_expression(efb);
+}
+
 // Dump ast representation for constant expression.
 
 void
@@ -3866,11 +3812,12 @@ Type_conversion_expression::do_traverse(Traverse* traverse)
   return TRAVERSE_CONTINUE;
 }
 
-// Convert to a constant at lowering time.
+// Convert to a constant at lowering time.  Also lower conversions
+// from slice to pointer-to-array, as they can panic.
 
 Expression*
 Type_conversion_expression::do_lower(Gogo*, Named_object*,
-				     Statement_inserter*, int)
+				     Statement_inserter* inserter, int)
 {
   Type* type = this->type_;
   Expression* val = this->expr_;
@@ -3956,6 +3903,57 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 							      location);
 	    }
 	}
+    }
+
+  if (type->points_to() != NULL
+      && type->points_to()->array_type() != NULL
+      && !type->points_to()->is_slice_type()
+      && val->type()->is_slice_type()
+      && Type::are_identical(type->points_to()->array_type()->element_type(),
+			     val->type()->array_type()->element_type(),
+			     0, NULL))
+    {
+      Temporary_statement* val_temp = NULL;
+      if (!val->is_multi_eval_safe())
+	{
+	  val_temp = Statement::make_temporary(val->type(), NULL, location);
+	  inserter->insert(val_temp);
+	  val = Expression::make_set_and_use_temporary(val_temp, val,
+						       location);
+	}
+
+      Type* int_type = Type::lookup_integer_type("int");
+      Temporary_statement* vallen_temp =
+	Statement::make_temporary(int_type, NULL, location);
+      inserter->insert(vallen_temp);
+
+      Expression* arrlen = type->points_to()->array_type()->length();
+      Expression* vallen =
+	Expression::make_slice_info(val, Expression::SLICE_INFO_LENGTH,
+				    location);
+      vallen = Expression::make_set_and_use_temporary(vallen_temp, vallen,
+						      location);
+      Expression* cond = Expression::make_binary(OPERATOR_GT, arrlen, vallen,
+						 location);
+
+      vallen = Expression::make_temporary_reference(vallen_temp, location);
+      Expression* panic = Runtime::make_call(Runtime::PANIC_SLICE_CONVERT,
+					     location, 2, arrlen, vallen);
+
+      Expression* nil = Expression::make_nil(location);
+      Expression* check = Expression::make_conditional(cond, panic, nil,
+						       location);
+
+      if (val_temp == NULL)
+	val = val->copy();
+      else
+	val = Expression::make_temporary_reference(val_temp, location);
+      Expression* ptr =
+	Expression::make_slice_info(val, Expression::SLICE_INFO_VALUE_POINTER,
+				    location);
+      ptr = Expression::make_unsafe_cast(type, ptr, location);
+
+      return Expression::make_compound(check, ptr, location);
     }
 
   return this;
@@ -4094,6 +4092,9 @@ Type_conversion_expression::do_numeric_constant_value(
 bool
 Type_conversion_expression::do_string_constant_value(std::string* val) const
 {
+  if (this->type_->is_string_type() && this->expr_->type()->is_string_type())
+    return this->expr_->string_constant_value(val);
+
   if (this->type_->is_string_type()
       && this->expr_->type()->integer_type() != NULL)
     {
@@ -6759,11 +6760,12 @@ Binary_expression::do_determine_type(const Type_context* context)
     {
       if ((tleft->integer_type() != NULL && tright->integer_type() != NULL)
 	  || (tleft->float_type() != NULL && tright->float_type() != NULL)
-	  || (tleft->complex_type() != NULL && tright->complex_type() != NULL))
+	  || (tleft->complex_type() != NULL && tright->complex_type() != NULL)
+	  || (tleft->is_boolean_type() && tright->is_boolean_type()))
 	{
-	  // Both sides have an abstract integer, abstract float, or
-	  // abstract complex type.  Just let CONTEXT determine
-	  // whether they may remain abstract or not.
+	  // Both sides have an abstract integer, abstract float,
+	  // abstract complex, or abstract boolean type.  Just let
+	  // CONTEXT determine whether they may remain abstract or not.
 	}
       else if (tleft->complex_type() != NULL)
 	subcontext.type = tleft;
@@ -7606,8 +7608,7 @@ Expression::comparison(Translate_context* context, Type* result_type,
 	  && left_type->array_type()->length() == NULL)
 	{
 	  Array_type* at = left_type->array_type();
-          bool is_lvalue = false;
-          left = at->get_value_pointer(context->gogo(), left, is_lvalue);
+          left = at->get_value_pointer(context->gogo(), left);
 	}
       else if (left_type->interface_type() != NULL)
 	{
@@ -7922,7 +7923,7 @@ Bound_method_expression::do_check_types(Gogo*)
 Bound_method_expression::Method_value_thunks
   Bound_method_expression::method_value_thunks;
 
-// Find or create the thunk for METHOD.
+// Find or create the thunk for FN.
 
 Named_object*
 Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
@@ -8019,12 +8020,26 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
   gogo->add_statement(s);
   Block* b = gogo->finish_block(loc);
   gogo->add_block(b, loc);
+
+  // This is called after lowering but before determine_types.
   gogo->lower_block(new_no, b);
-  gogo->flatten_block(new_no, b);
+
   gogo->finish_function(loc);
 
   ins.first->second = new_no;
   return new_no;
+}
+
+// Look up a thunk for FN.
+
+Named_object*
+Bound_method_expression::lookup_thunk(Named_object* fn)
+{
+  Method_value_thunks::const_iterator p =
+    Bound_method_expression::method_value_thunks.find(fn);
+  if (p == Bound_method_expression::method_value_thunks.end())
+    return NULL;
+  return p->second;
 }
 
 // Return an expression to check *REF for nil while dereferencing
@@ -8070,10 +8085,11 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
 {
   Location loc = this->location();
 
-  Named_object* thunk = Bound_method_expression::create_thunk(gogo,
-							      this->method_,
-							      this->function_);
-  if (thunk->is_erroneous())
+  Named_object* thunk = Bound_method_expression::lookup_thunk(this->function_);
+
+  // The thunk should have been created during the
+  // create_function_descriptors pass.
+  if (thunk == NULL || thunk->is_erroneous())
     {
       go_assert(saw_errors());
       return Expression::make_error(loc);
@@ -8252,12 +8268,16 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     this->code_ = BUILTIN_REAL;
   else if (name == "recover")
     this->code_ = BUILTIN_RECOVER;
+  else if (name == "Add")
+    this->code_ = BUILTIN_ADD;
   else if (name == "Alignof")
     this->code_ = BUILTIN_ALIGNOF;
   else if (name == "Offsetof")
     this->code_ = BUILTIN_OFFSETOF;
   else if (name == "Sizeof")
     this->code_ = BUILTIN_SIZEOF;
+  else if (name == "Slice")
+    this->code_ = BUILTIN_SLICE;
   else
     go_unreachable();
 }
@@ -8469,6 +8489,11 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 	     pa != this->args()->end();
 	     ++pa)
 	  {
+	    if ((*pa)->is_error_expression())
+	      {
+		go_assert(saw_errors());
+		return Expression::make_error(loc);
+	      }
 	    if ((*pa)->is_nil_expression())
 	      {
 		Expression* nil = Expression::make_nil(loc);
@@ -8693,6 +8718,119 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
           }
 
         return Runtime::make_call(code, loc, 3, e1, e2, e3);
+      }
+
+    case BUILTIN_ADD:
+      {
+	Expression* ptr = this->args()->front();
+	Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	ptr = Expression::make_cast(uintptr_type, ptr, loc);
+	Expression* len = this->args()->back();
+	len = Expression::make_cast(uintptr_type, len, loc);
+	Expression* add = Expression::make_binary(OPERATOR_PLUS, ptr, len,
+						  loc);
+	return Expression::make_cast(this->args()->front()->type(), add, loc);
+      }
+
+    case BUILTIN_SLICE:
+      {
+	Expression* ptr = this->args()->front();
+	Temporary_statement* ptr_temp = NULL;
+	if (!ptr->is_multi_eval_safe())
+	  {
+	    ptr_temp = Statement::make_temporary(NULL, ptr, loc);
+	    inserter->insert(ptr_temp);
+	    ptr = Expression::make_temporary_reference(ptr_temp, loc);
+	  }
+
+	Expression* len = this->args()->back();
+	Temporary_statement* len_temp = NULL;
+	if (!len->is_multi_eval_safe())
+	  {
+	    len_temp = Statement::make_temporary(NULL, len, loc);
+	    inserter->insert(len_temp);
+	    len = Expression::make_temporary_reference(len_temp, loc);
+	  }
+
+	bool fits_in_int;
+	Numeric_constant nc;
+	if (this->args()->back()->numeric_constant_value(&nc))
+	  {
+	    // We gave an error for constants that don't fit in int in
+	    // check_types.
+	    fits_in_int = true;
+	  }
+	else
+	  {
+	    Integer_type* itype = this->args()->back()->type()->integer_type();
+	    go_assert(itype != NULL);
+	    int ebits = itype->bits();
+	    int intbits =
+	      Type::lookup_integer_type("int")->integer_type()->bits();
+
+	    // We can treat ebits == intbits as small even for an
+	    // unsigned integer type, because we will convert the
+	    // value to int and then reject it in the runtime if it is
+	    // negative.
+
+	    fits_in_int = ebits <= intbits;
+	  }
+
+	Runtime::Function code = (fits_in_int
+				  ? Runtime::UNSAFESLICE
+				  : Runtime::UNSAFESLICE64);
+	Expression* td =
+	  Expression::make_type_descriptor(ptr->type()->points_to(), loc);
+	Expression* check = Runtime::make_call(code, loc, 3,
+					       td, ptr, len);
+
+	if (ptr_temp == NULL)
+	  ptr = ptr->copy();
+	else
+	  ptr = Expression::make_temporary_reference(ptr_temp, loc);
+	Expression* nil = Expression::make_nil(loc);
+	nil = Expression::make_cast(ptr->type(), nil, loc);
+	Expression* is_nil = Expression::make_binary(OPERATOR_EQEQ, ptr, nil,
+						     loc);
+
+	if (len_temp == NULL)
+	  len = len->copy();
+	else
+	  len = Expression::make_temporary_reference(len_temp, loc);
+	Expression* zero = Expression::make_integer_ul(0, len->type(), loc);
+	Expression* is_zero = Expression::make_binary(OPERATOR_EQEQ, len, zero,
+						      loc);
+
+	Expression* cond = Expression::make_binary(OPERATOR_ANDAND, is_nil,
+						   is_zero, loc);
+
+	Type* slice_type = Type::make_array_type(ptr->type()->points_to(),
+						 NULL);
+	nil = Expression::make_nil(loc);
+	Expression* nil_slice = Expression::make_cast(slice_type, nil, loc);
+
+	if (ptr_temp == NULL)
+	  ptr = ptr->copy();
+	else
+	  ptr = Expression::make_temporary_reference(ptr_temp, loc);
+
+	if (len_temp == NULL)
+	  len = len->copy();
+	else
+	  len = Expression::make_temporary_reference(len_temp, loc);
+
+	Expression* cap;
+	if (len_temp == NULL)
+	  cap = len->copy();
+	else
+	  cap = Expression::make_temporary_reference(len_temp, loc);
+
+	Expression* slice = Expression::make_slice_value(slice_type, ptr,
+							 len, cap, loc);
+
+	slice = Expression::make_conditional(cond, nil_slice, slice, loc);
+
+	return Expression::make_compound(check, slice, loc);
       }
     }
 
@@ -9079,7 +9217,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
   Expression* a1 = Expression::make_type_descriptor(element_type, loc);
   Expression* a2 = Expression::make_temporary_reference(s1tmp, loc);
-  a2 = slice_type->array_type()->get_value_pointer(gogo, a2, false);
+  a2 = slice_type->array_type()->get_value_pointer(gogo, a2);
   a2 = Expression::make_cast(unsafe_ptr_type, a2, loc);
   Expression* a3 = Expression::make_temporary_reference(l1tmp, loc);
   Expression* a4 = Expression::make_temporary_reference(c1tmp, loc);
@@ -9174,7 +9312,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
               ref2 = Expression::make_cast(uint_type, ref2, loc);
               cond = Expression::make_binary(OPERATOR_GT, ref, ref2, loc);
               zero = Expression::make_integer_ul(0, int_type, loc);
-              call = Expression::make_conditional(cond, call, zero, loc);
+              call = Expression::make_conditional(cond, zero, call, loc);
             }
         }
       else
@@ -9781,9 +9919,11 @@ Builtin_call_expression::do_discarding_value()
     case BUILTIN_MAKE:
     case BUILTIN_NEW:
     case BUILTIN_REAL:
+    case BUILTIN_ADD:
     case BUILTIN_ALIGNOF:
     case BUILTIN_OFFSETOF:
     case BUILTIN_SIZEOF:
+    case BUILTIN_SLICE:
       this->unused_value_error();
       return false;
 
@@ -9890,6 +10030,18 @@ Builtin_call_expression::do_type()
 	  t = Type::make_error_type();
 	return t;
       }
+
+    case BUILTIN_ADD:
+      return Type::make_pointer_type(Type::make_void_type());
+
+    case BUILTIN_SLICE:
+      const Expression_list* args = this->args();
+      if (args == NULL || args->size() != 2)
+	return Type::make_error_type();
+      Type* pt = args->front()->type()->points_to();
+      if (pt == NULL)
+	return Type::make_error_type();
+      return Type::make_array_type(pt, NULL);
     }
 }
 
@@ -9951,6 +10103,28 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 	  && args->front()->type()->is_slice_type())
 	trailing_arg_types =
 	  args->front()->type()->array_type()->element_type();
+      is_print = false;
+      break;
+
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
+      // Both unsafe.Add and unsafe.Slice take two arguments, and the
+      // second arguments defaults to "int".
+      if (args != NULL && args->size() == 2)
+	{
+	  if (this->code_ == BUILTIN_SLICE)
+	    args->front()->determine_type_no_context();
+	  else
+	    {
+	      Type* pointer = Type::make_pointer_type(Type::make_void_type());
+	      Type_context subcontext(pointer, false);
+	      args->front()->determine_type(&subcontext);
+	    }
+	  Type* int_type = Type::lookup_integer_type("int");
+	  Type_context subcontext(int_type, false);
+	  args->back()->determine_type(&subcontext);
+	  return;
+	}
       is_print = false;
       break;
 
@@ -10099,16 +10273,7 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_PRINTLN:
       {
 	const Expression_list* args = this->args();
-	if (args == NULL)
-	  {
-	    if (this->code_ == BUILTIN_PRINT)
-	      go_warning_at(this->location(), 0,
-			 "no arguments for built-in function %<%s%>",
-			 (this->code_ == BUILTIN_PRINT
-			  ? "print"
-			  : "println"));
-	  }
-	else
+	if (args != NULL)
 	  {
 	    for (Expression_list::const_iterator p = args->begin();
 		 p != args->end();
@@ -10154,7 +10319,12 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_PANIC:
     case BUILTIN_SIZEOF:
     case BUILTIN_ALIGNOF:
-      this->check_one_arg();
+      if (this->check_one_arg())
+        {
+	  Expression* arg = this->one_arg();
+	  if (arg->type()->is_void_type())
+	    this->report_error(_("argument to builtin has void type"));
+        }
       break;
 
     case BUILTIN_RECOVER:
@@ -10353,6 +10523,78 @@ Builtin_call_expression::do_check_types(Gogo*)
       }
       break;
 
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
+      {
+	Numeric_constant nc;
+	unsigned long v;
+	const Expression_list* args = this->args();
+	if (args == NULL || args->size() < 2)
+	  this->report_error(_("not enough arguments"));
+	else if (args->size() > 2)
+	  this->report_error(_("too many arguments"));
+	else if (args->front()->is_error_expression()
+		 || args->front()->type()->is_error()
+		 || args->back()->is_error_expression()
+		 || args->back()->type()->is_error())
+	  this->set_is_error();
+	else if (args->back()->type()->integer_type() == NULL
+		 && (!args->back()->type()->is_abstract()
+		     || !args->back()->numeric_constant_value(&nc)
+		     || (nc.to_unsigned_long(&v)
+			 == Numeric_constant::NC_UL_NOTINT)))
+	  {
+	    if (this->code_ == BUILTIN_ADD)
+	      go_error_at(args->back()->location(), "non-integer offset");
+	    else
+	      go_error_at(args->back()->location(), "non-integer size");
+	  }
+	else if (this->code_ == BUILTIN_ADD)
+	  {
+	    Type* pointer_type =
+	      Type::make_pointer_type(Type::make_void_type());
+	    std::string reason;
+	    if (!Type::are_assignable(pointer_type, args->front()->type(),
+				      &reason))
+	      {
+		if (reason.empty())
+		  go_error_at(args->front()->location(),
+			      "argument 1 has incompatible type");
+		else
+		  go_error_at(args->front()->location(),
+			      "argument 1 has incompatible type (%s)",
+			      reason.c_str());
+		this->set_is_error();
+	      }
+	  }
+	else
+	  {
+	    if (args->front()->type()->points_to() == NULL)
+	      {
+		go_error_at(args->front()->location(),
+			    "argument 1 must be a pointer");
+		this->set_is_error();
+	      }
+
+	    unsigned int int_bits =
+	      Type::lookup_integer_type("int")->integer_type()->bits();
+
+	    mpz_t ival;
+	    if (args->back()->numeric_constant_value(&nc) && nc.to_int(&ival))
+	      {
+		if (mpz_sgn(ival) < 0
+		    || mpz_sizeinbase(ival, 2) >= int_bits)
+		  {
+		    go_error_at(args->back()->location(),
+				"slice length out of range");
+		    this->set_is_error();
+		  }
+		mpz_clear(ival);
+	      }
+	  }
+      }
+      break;
+
     default:
       go_unreachable();
     }
@@ -10397,6 +10639,8 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
     case BUILTIN_INVALID:
     case BUILTIN_NEW:
     case BUILTIN_MAKE:
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
       go_unreachable();
 
     case BUILTIN_LEN:
@@ -10760,6 +11004,14 @@ Builtin_call_expression::do_export(Export_function_body* efb) const
       // A trailing space lets us reliably identify the end of the number.
       efb->write_c_string(" ");
     }
+  else if (this->code_ == BUILTIN_ADD || this->code_ == BUILTIN_SLICE)
+    {
+      char buf[50];
+      snprintf(buf, sizeof buf, "<p%d>%s", efb->unsafe_package_index(),
+	       (this->code_ == BUILTIN_ADD ? "Add" : "Slice"));
+      efb->write_c_string(buf);
+      this->export_arguments(efb);
+    }
   else
     {
       const char *s = NULL;
@@ -10915,12 +11167,23 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 {
   Location loc = this->location();
 
+  if (this->is_error_expression())
+    return Expression::make_error(loc);
+
   // A type cast can look like a function call.
   if (this->fn_->is_type_expression()
       && this->args_ != NULL
       && this->args_->size() == 1)
-    return Expression::make_cast(this->fn_->type(), this->args_->front(),
-				 loc);
+    {
+      if (this->expected_result_count_ != 0
+	  && this->expected_result_count_ != 1)
+	{
+	  this->report_error(_("type conversion result count mismatch"));
+	  return Expression::make_error(loc);
+	}
+      return Expression::make_cast(this->fn_->type(), this->args_->front(),
+				   loc);
+    }
 
   // Because do_type will return an error type and thus prevent future
   // errors, check for that case now to ensure that the error gets
@@ -11033,6 +11296,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       // We always pass a pointer when calling a method, except for
       // direct interface types when calling a value method.
       if (!first_arg->type()->is_error()
+          && first_arg->type()->points_to() == NULL
           && !first_arg->type()->is_direct_iface_type())
 	{
 	  first_arg = Expression::make_unary(OPERATOR_AND, first_arg, loc);
@@ -11292,12 +11556,16 @@ Call_expression::intrinsify(Gogo* gogo,
   std::string package = (no->package() != NULL
                          ? no->package()->pkgpath()
                          : gogo->pkgpath());
+  bool is_method = ((no->is_function() && no->func_value()->is_method())
+		    || (no->is_function_declaration()
+			&& no->func_declaration_value()->is_method()));
   Location loc = this->location();
 
   Type* int_type = Type::lookup_integer_type("int");
   Type* int32_type = Type::lookup_integer_type("int32");
   Type* int64_type = Type::lookup_integer_type("int64");
   Type* uint_type = Type::lookup_integer_type("uint");
+  Type* uint8_type = Type::lookup_integer_type("uint8");
   Type* uint32_type = Type::lookup_integer_type("uint32");
   Type* uint64_type = Type::lookup_integer_type("uint64");
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
@@ -11308,15 +11576,16 @@ Call_expression::intrinsify(Gogo* gogo,
 
   if (package == "sync/atomic")
     {
+      if (is_method)
+	return NULL;
+
       // sync/atomic functions and runtime/internal/atomic functions
       // are very similar. In order not to duplicate code, we just
       // redirect to the latter and let the code below to handle them.
-      // In case there is no equivalent functions (slight variance
-      // in types), we just make an artificial name (begin with '$').
       // Note: no StorePointer, SwapPointer, and CompareAndSwapPointer,
       // as they need write barriers.
       if (name == "LoadInt32")
-        name = "$Loadint32";
+        name = "Loadint32";
       else if (name == "LoadInt64")
         name = "Loadint64";
       else if (name == "LoadUint32")
@@ -11328,9 +11597,9 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "LoadPointer")
         name = "Loadp";
       else if (name == "StoreInt32")
-        name = "$Storeint32";
+        name = "Storeint32";
       else if (name == "StoreInt64")
-        name = "$Storeint64";
+        name = "Storeint64";
       else if (name == "StoreUint32")
         name = "Store";
       else if (name == "StoreUint64")
@@ -11338,7 +11607,7 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "StoreUintptr")
         name = "Storeuintptr";
       else if (name == "AddInt32")
-        name = "$Xaddint32";
+        name = "Xaddint32";
       else if (name == "AddInt64")
         name = "Xaddint64";
       else if (name == "AddUint32")
@@ -11348,9 +11617,9 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "AddUintptr")
         name = "Xadduintptr";
       else if (name == "SwapInt32")
-        name = "$Xchgint32";
+        name = "Xchgint32";
       else if (name == "SwapInt64")
-        name = "$Xchgint64";
+        name = "Xchgint64";
       else if (name == "SwapUint32")
         name = "Xchg";
       else if (name == "SwapUint64")
@@ -11358,9 +11627,9 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "SwapUintptr")
         name = "Xchguintptr";
       else if (name == "CompareAndSwapInt32")
-        name = "$Casint32";
+        name = "Casint32";
       else if (name == "CompareAndSwapInt64")
-        name = "$Casint64";
+        name = "Casint64";
       else if (name == "CompareAndSwapUint32")
         name = "Cas";
       else if (name == "CompareAndSwapUint64")
@@ -11375,6 +11644,9 @@ Call_expression::intrinsify(Gogo* gogo,
 
   if (package == "runtime/internal/sys")
     {
+      if (is_method)
+	return NULL;
+
       // runtime/internal/sys functions and math/bits functions
       // are very similar. In order not to duplicate code, we just
       // redirect to the latter and let the code below to handle them.
@@ -11394,6 +11666,9 @@ Call_expression::intrinsify(Gogo* gogo,
 
   if (package == "runtime")
     {
+      if (is_method)
+	return NULL;
+
       // Handle a couple of special runtime functions.  In the runtime
       // package, getcallerpc returns the PC of the caller, and
       // getcallersp returns the frame pointer of the caller.  Implement
@@ -11424,6 +11699,9 @@ Call_expression::intrinsify(Gogo* gogo,
     }
   else if (package == "math/bits")
     {
+      if (is_method)
+	return NULL;
+
       if ((name == "ReverseBytes16" || name == "ReverseBytes32"
            || name == "ReverseBytes64" || name == "ReverseBytes")
           && this->args_ != NULL && this->args_->size() == 1)
@@ -11594,9 +11872,137 @@ Call_expression::intrinsify(Gogo* gogo,
     {
       int memorder = __ATOMIC_SEQ_CST;
 
+      if (is_method)
+	{
+	  Function_type* ftype = (no->is_function()
+				  ? no->func_value()->type()
+				  : no->func_declaration_value()->type());
+	  Type* rtype = ftype->receiver()->type()->deref();
+	  go_assert(rtype->named_type() != NULL);
+	  const std::string& rname(rtype->named_type()->name());
+	  if (rname == "Int32")
+	    {
+	      if (name == "Load")
+		name = "LoadInt32";
+	      else if (name == "Store")
+		name = "Storeint32";
+	      else if (name == "CompareAndSwap")
+		name = "Casint32";
+	      else if (name == "Swap")
+		name = "Xchgint32";
+	      else if (name == "Add")
+		name = "Xaddint32";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Int64")
+	    {
+	      if (name == "Load")
+		name = "LoadInt64";
+	      else if (name == "Store")
+		name = "Storeint64";
+	      else if (name == "CompareAndSwap")
+		name = "Casint64";
+	      else if (name == "Swap")
+		name = "Xchgint64";
+	      else if (name == "Add")
+		name = "Xaddint64";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uint8")
+	    {
+	      if (name == "Load")
+		name = "Load8";
+	      else if (name == "Store")
+		name = "Store8";
+	      else if (name == "And")
+		name = "And8";
+	      else if (name == "Or")
+		name = "Or8";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uint32")
+	    {
+	      if (name == "Load")
+		name = "Load";
+	      else if (name == "LoadAcquire")
+		name = "LoadAcq";
+	      else if (name == "Store")
+		name = "Store";
+	      else if (name == "CompareAndSwap")
+		name = "Cas";
+	      else if (name == "CompareAndSwapRelease")
+		name = "CasRel";
+	      else if (name == "Swap")
+		name = "Xchg";
+	      else if (name == "And")
+		name = "And";
+	      else if (name == "Or")
+		name = "Or";
+	      else if (name == "Add")
+		name = "Xadd";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uint64")
+	    {
+	      if (name == "Load")
+		name = "Load64";
+	      else if (name == "Store")
+		name = "Store64";
+	      else if (name == "CompareAndSwap")
+		name = "Cas64";
+	      else if (name == "Swap")
+		name = "Xchgt64";
+	      else if (name == "Add")
+		name = "Xadd64";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Uintptr")
+	    {
+	      if (name == "Load")
+		name = "Loaduintptr";
+	      else if (name == "LoadAcquire")
+		name = "Loadacquintptr";
+	      else if (name == "Store")
+		name = "Storeuintptr";
+	      else if (name == "StoreRelease")
+		name = "StoreReluintptr";
+	      else if (name == "CompareAndSwap")
+		name = "Casuintptr";
+	      else if (name == "Swap")
+		name = "Xchguintptr";
+	      else if (name == "Add")
+		name = "Xadduintptr";
+	      else
+		go_unreachable();
+	    }
+	  else if (rname == "Float64")
+	    {
+	      // Needs unsafe type conversion.  Don't intrinsify for now.
+	      return NULL;
+	    }
+	  else if (rname == "UnsafePointer")
+	    {
+	      if (name == "Load")
+		name = "Loadp";
+	      else if (name == "StoreNoWB")
+		name = "StorepoWB";
+	      else if (name == "CompareAndSwapNoWB")
+		name = "Casp1";
+	      else
+		go_unreachable();
+	    }
+	  else
+	    go_unreachable();
+	}
+
       if ((name == "Load" || name == "Load64" || name == "Loadint64" || name == "Loadp"
            || name == "Loaduint" || name == "Loaduintptr" || name == "LoadAcq"
-           || name == "$Loadint32")
+           || name == "Loadint32" || name == "Load8")
           && this->args_ != NULL && this->args_->size() == 1)
         {
           if (int_size < 8 && (name == "Load64" || name == "Loadint64"))
@@ -11616,7 +12022,7 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_LOAD_8;
               res_type = uint64_type;
             }
-          else if (name == "$Loadint32")
+          else if (name == "Loadint32")
             {
               code = Runtime::ATOMIC_LOAD_4;
               res_type = int32_type;
@@ -11653,6 +12059,11 @@ Call_expression::intrinsify(Gogo* gogo,
               res_type = uint32_type;
               memorder = __ATOMIC_ACQUIRE;
             }
+	  else if (name == "Load8")
+	    {
+	      code = Runtime::ATOMIC_LOAD_1;
+	      res_type = uint8_type;
+	    }
           else
             go_unreachable();
           Expression* a1 = this->args_->front();
@@ -11663,10 +12074,10 @@ Call_expression::intrinsify(Gogo* gogo,
 
       if ((name == "Store" || name == "Store64" || name == "StorepNoWB"
            || name == "Storeuintptr" || name == "StoreRel"
-           || name == "$Storeint32" || name == "$Storeint64")
+           || name == "Storeint32" || name == "Storeint64")
           && this->args_ != NULL && this->args_->size() == 2)
         {
-          if (int_size < 8 && (name == "Store64" || name == "$Storeint64"))
+          if (int_size < 8 && (name == "Store64" || name == "Storeint64"))
             return NULL;
 
           Runtime::Function code;
@@ -11676,9 +12087,9 @@ Call_expression::intrinsify(Gogo* gogo,
             code = Runtime::ATOMIC_STORE_4;
           else if (name == "Store64")
             code = Runtime::ATOMIC_STORE_8;
-          else if (name == "$Storeint32")
+          else if (name == "Storeint32")
             code = Runtime::ATOMIC_STORE_4;
-          else if (name == "$Storeint64")
+          else if (name == "Storeint64")
             code = Runtime::ATOMIC_STORE_8;
           else if (name == "Storeuintptr")
             code = (ptr_size == 8 ? Runtime::ATOMIC_STORE_8 : Runtime::ATOMIC_STORE_4);
@@ -11693,6 +12104,8 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_STORE_4;
               memorder = __ATOMIC_RELEASE;
             }
+	  else if (name == "Store8")
+	    code = Runtime::ATOMIC_STORE_1;
           else
             go_unreachable();
           Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
@@ -11700,7 +12113,7 @@ Call_expression::intrinsify(Gogo* gogo,
         }
 
       if ((name == "Xchg" || name == "Xchg64" || name == "Xchguintptr"
-           || name == "$Xchgint32" || name == "$Xchgint64")
+           || name == "Xchgint32" || name == "Xchgint64")
           && this->args_ != NULL && this->args_->size() == 2)
         {
           if (int_size < 8 && (name == "Xchg64" || name == "Xchgint64"))
@@ -11718,12 +12131,12 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_EXCHANGE_8;
               res_type = uint64_type;
             }
-          else if (name == "$Xchgint32")
+          else if (name == "Xchgint32")
             {
               code = Runtime::ATOMIC_EXCHANGE_4;
               res_type = int32_type;
             }
-          else if (name == "$Xchgint64")
+          else if (name == "Xchgint64")
             {
               code = Runtime::ATOMIC_EXCHANGE_8;
               res_type = int64_type;
@@ -11746,10 +12159,10 @@ Call_expression::intrinsify(Gogo* gogo,
 
       if ((name == "Cas" || name == "Cas64" || name == "Casuintptr"
            || name == "Casp1" || name == "CasRel"
-           || name == "$Casint32" || name == "$Casint64")
+           || name == "Casint32" || name == "Casint64")
           && this->args_ != NULL && this->args_->size() == 3)
         {
-          if (int_size < 8 && (name == "Cas64" || name == "$Casint64"))
+          if (int_size < 8 && (name == "Cas64" || name == "Casint64"))
             return NULL;
 
           Runtime::Function code;
@@ -11768,9 +12181,9 @@ Call_expression::intrinsify(Gogo* gogo,
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
           else if (name == "Cas64")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_8;
-          else if (name == "$Casint32")
+          else if (name == "Casint32")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
-          else if (name == "$Casint64")
+          else if (name == "Casint64")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_8;
           else if (name == "Casuintptr")
             code = (ptr_size == 8
@@ -11798,7 +12211,7 @@ Call_expression::intrinsify(Gogo* gogo,
         }
 
       if ((name == "Xadd" || name == "Xadd64" || name == "Xaddint64"
-           || name == "Xadduintptr" || name == "$Xaddint32")
+           || name == "Xadduintptr" || name == "Xaddint32")
           && this->args_ != NULL && this->args_->size() == 2)
         {
           if (int_size < 8 && (name == "Xadd64" || name == "Xaddint64"))
@@ -11816,7 +12229,7 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_ADD_FETCH_8;
               res_type = uint64_type;
             }
-          else if (name == "$Xaddint32")
+          else if (name == "Xaddint32")
             {
               code = Runtime::ATOMIC_ADD_FETCH_4;
               res_type = int32_type;
@@ -11857,6 +12270,53 @@ Call_expression::intrinsify(Gogo* gogo,
           Expression* a3 = Expression::make_integer_ul(memorder, int32_type, loc);
           return Runtime::make_call(code, loc, 3, a1, a2, a3);
         }
+    }
+  else if (package == "internal/abi")
+    {
+      if (is_method)
+	return NULL;
+
+      if ((name == "FuncPCABI0" || name == "FuncPCABIInternal")
+	  && this->args_ != NULL
+	  && this->args_->size() == 1)
+	{
+	  // We expect to see a conversion from the expression to "any".
+	  Expression* expr = this->args_->front();
+	  Type_conversion_expression* tce = expr->conversion_expression();
+	  if (tce != NULL)
+	    expr = tce->expr();
+	  Func_expression* fe = expr->func_expression();
+	  Interface_field_reference_expression* interface_method =
+	    expr->interface_field_reference_expression();
+	  if (fe != NULL)
+	    {
+	      Named_object* no = fe->named_object();
+	      Expression* ref = Expression::make_func_code_reference(no, loc);
+	      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	      return Expression::make_cast(uintptr_type, ref, loc);
+	    }
+	  else if (interface_method != NULL)
+	    return interface_method->get_function();
+	  else
+	    {
+	      expr = this->args_->front();
+	      go_assert(expr->type()->interface_type() != NULL
+			&& expr->type()->interface_type()->is_empty());
+	      expr = Expression::make_interface_info(expr,
+						     INTERFACE_INFO_OBJECT,
+						     loc);
+	      // Trust that this is a function type, which means that
+	      // it is a direct iface type and we can use EXPR
+	      // directly.  The backend representation of this
+	      // function is a pointer to a struct whose first field
+	      // is the actual function to call.
+	      Type* pvoid = Type::make_pointer_type(Type::make_void_type());
+	      Type* pfntype = Type::make_pointer_type(pvoid);
+	      Expression* ref = make_unsafe_cast(pfntype, expr, loc);
+	      return Expression::make_dereference(ref, NIL_CHECK_NOT_NEEDED,
+						  loc);
+	    }
+	}
     }
 
   return NULL;
@@ -12944,6 +13404,7 @@ Array_index_expression::do_check_types(Gogo*)
   if (array_type == NULL)
     {
       go_assert(this->array_->type()->is_error());
+      this->set_is_error();
       return;
     }
 
@@ -13334,9 +13795,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
 	}
       else
 	{
-	  Expression* valptr =
-              array_type->get_value_pointer(gogo, this->array_,
-                                            this->is_lvalue_);
+	  Expression* valptr = array_type->get_value_pointer(gogo,
+							     this->array_);
 	  Bexpression* ptr = valptr->get_backend(context);
           ptr = gogo->backend()->pointer_offset_expression(ptr, start, loc);
 
@@ -13377,8 +13837,7 @@ Array_index_expression::do_get_backend(Translate_context* context)
   Bexpression* offset = gogo->backend()->conditional_expression(bfn, int_btype,
 								cond, zero,
 								start, loc);
-  Expression* valptr = array_type->get_value_pointer(gogo, this->array_,
-                                                     this->is_lvalue_);
+  Expression* valptr = array_type->get_value_pointer(gogo, this->array_);
   Bexpression* val = valptr->get_backend(context);
   val = gogo->backend()->pointer_offset_expression(val, offset, loc);
 
@@ -14453,12 +14912,32 @@ Interface_field_reference_expression::create_thunk(Gogo* gogo,
   gogo->add_statement(s);
   Block* b = gogo->finish_block(loc);
   gogo->add_block(b, loc);
+
+  // This is called after lowering but before determine_types.
   gogo->lower_block(new_no, b);
-  gogo->flatten_block(new_no, b);
+
   gogo->finish_function(loc);
 
   ins.first->second->push_back(std::make_pair(name, new_no));
   return new_no;
+}
+
+// Lookup a thunk to call method NAME on TYPE.
+
+Named_object*
+Interface_field_reference_expression::lookup_thunk(Interface_type* type,
+						   const std::string& name)
+{
+  Interface_method_thunks::const_iterator p =
+    Interface_field_reference_expression::interface_method_thunks.find(type);
+  if (p == Interface_field_reference_expression::interface_method_thunks.end())
+    return NULL;
+  for (Method_thunks::const_iterator pm = p->second->begin();
+       pm != p->second->end();
+       ++pm)
+    if (pm->first == name)
+      return pm->second;
+  return NULL;
 }
 
 // Get the backend representation for a method value.
@@ -14474,9 +14953,11 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
     }
 
   Named_object* thunk =
-    Interface_field_reference_expression::create_thunk(context->gogo(),
-						       type, this->name_);
-  if (thunk->is_erroneous())
+    Interface_field_reference_expression::lookup_thunk(type, this->name_);
+
+  // The thunk should have been created during the
+  // create_function_descriptors pass.
+  if (thunk == NULL || thunk->is_erroneous())
     {
       go_assert(saw_errors());
       return context->backend()->error_expression();
@@ -14702,7 +15183,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	   p != method_parameters->end();
 	   ++p, ++i)
 	{
-	  if (!p->name().empty())
+	  if (!p->name().empty() && !Gogo::is_sink_name(p->name()))
 	    parameters->push_back(*p);
 	  else
 	    {
@@ -16730,6 +17211,8 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
   Location location = this->location();
   Unordered_map(unsigned int, std::vector<Expression*>) st;
   Unordered_map(unsigned int, std::vector<Expression*>) nt;
+  bool saw_false = false;
+  bool saw_true = false;
   if (this->vals_ != NULL)
     {
       if (!this->has_keys_)
@@ -16764,6 +17247,7 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	    continue;
 	  std::string sval;
 	  Numeric_constant nval;
+	  bool bval;
 	  if ((*p)->string_constant_value(&sval)) // Check string keys.
 	    {
 	      unsigned int h = Gogo::hash_string(sval, 0);
@@ -16836,6 +17320,19 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 		  // Add this new numeric key to the vector indexed by h.
 		  mit->second.push_back(*p);
 		}
+	    }
+	  else if ((*p)->boolean_constant_value(&bval))
+	    {
+	      if ((bval && saw_true) || (!bval && saw_false))
+		{
+		  go_error_at((*p)->location(),
+			      "duplicate key in map literal");
+		  return Expression::make_error(location);
+		}
+	      if (bval)
+		saw_true = true;
+	      else
+		saw_false = true;
 	    }
 	}
     }
@@ -17730,49 +18227,7 @@ Expression::make_type_info(Type* type, Type_info type_info)
   return new Type_info_expression(type, type_info);
 }
 
-// An expression that evaluates to some characteristic of a slice.
-// This is used when indexing, bound-checking, or nil checking a slice.
-
-class Slice_info_expression : public Expression
-{
- public:
-  Slice_info_expression(Expression* slice, Slice_info slice_info,
-                        Location location)
-    : Expression(EXPRESSION_SLICE_INFO, location),
-      slice_(slice), slice_info_(slice_info)
-  { }
-
- protected:
-  Type*
-  do_type();
-
-  void
-  do_determine_type(const Type_context*)
-  { }
-
-  Expression*
-  do_copy()
-  {
-    return new Slice_info_expression(this->slice_->copy(), this->slice_info_,
-                                     this->location());
-  }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
-  void
-  do_issue_nil_check()
-  { this->slice_->issue_nil_check(); }
-
- private:
-  // The slice for which we are getting information.
-  Expression* slice_;
-  // What information we want.
-  Slice_info slice_info_;
-};
+// Slice_info_expression.
 
 // Return the type of the slice info.
 
@@ -18376,12 +18831,20 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
       else
 	m = st->method_function(p->name(), &is_ambiguous);
       go_assert(m != NULL);
-      Named_object* no =
-        (this->is_pointer_
-         && this->type_->is_direct_iface_type()
-         && m->is_value_method()
-         ? m->iface_stub_object()
-         : m->named_object());
+
+      // See the comment in Type::method_constructor.
+      bool use_direct_iface_stub = false;
+      if (m->is_value_method()
+	  && this->is_pointer_
+	  && this->type_->is_direct_iface_type())
+	use_direct_iface_stub = true;
+      if (!m->is_value_method()
+	  && this->is_pointer_
+	  && !this->type_->in_heap())
+	use_direct_iface_stub = true;
+      Named_object* no = (use_direct_iface_stub
+			  ? m->iface_stub_object()
+			  : m->named_object());
 
       go_assert(no->is_function() || no->is_function_declaration());
 

@@ -9,5 +9,5 @@ program p
       integer :: n
    end type
    type(t), parameter :: vec(*) = [(t(i), i = 1, 4)]
-   type(t), parameter :: arr(*) = reshape(vec, [2, 2])   ! { dg-error "ranks 1 and 2 in assignment" }
+   type(t), parameter :: arr(*) = reshape(vec, [2, 2])   ! { dg-error "Rank mismatch" }
 end

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,14 +27,29 @@ test01()
   using I = std::common_iterator<int*, const int*>;
   static_assert( std::is_default_constructible_v<I> );
   static_assert( std::is_copy_constructible_v<I> );
+  static_assert( std::is_move_constructible_v<I> );
   static_assert( std::is_copy_assignable_v<I> );
+  static_assert( std::is_move_assignable_v<I> );
   static_assert( std::is_constructible_v<I, int*> );
   static_assert( std::is_constructible_v<I, const int*> );
 
-  struct sentinel { operator int*() const { return nullptr; } };
+  static_assert( std::is_nothrow_copy_constructible_v<I> ); // GCC extension
+  static_assert( std::is_nothrow_move_constructible_v<I> ); // GCC extension
+  static_assert( std::is_nothrow_copy_assignable_v<I> ); // GCC extension
+  static_assert( std::is_nothrow_move_assignable_v<I> ); // GCC extension
+
+  struct sentinel { operator int*() const noexcept { return nullptr; } };
   using K = std::common_iterator<int*, sentinel>;
   static_assert( std::is_constructible_v<I, const K&> );
   static_assert( std::is_assignable_v<I, const K&> );
+
+  static_assert( std::is_nothrow_assignable_v<I&, const K&> ); // GCC extension
+
+  struct sentinel_throwing { operator int*() const { return nullptr; } };
+  using K_throwing = std::common_iterator<int*, sentinel_throwing>;
+  // Conversion is noexcept(false)
+  static_assert( ! std::is_nothrow_assignable_v<I&, const K_throwing&> );
+
 
   struct sentinel2
   {
@@ -46,6 +61,12 @@ test01()
   using J = std::common_iterator<const int*, sentinel2>;
   static_assert( std::is_constructible_v<J, const I&> );
   static_assert( std::is_convertible_v<const I&, J> );
+
+  static_assert( std::is_constructible_v<J, I> );
+  static_assert( std::is_convertible_v<I, J> );
+
+  // Constructor is noexcept(false)
+  static_assert( ! std::is_nothrow_constructible_v<J, I> );
 }
 
 void
@@ -88,7 +109,7 @@ test02()
     VERIFY( i == (&i - out) );
 }
 
-void
+constexpr bool
 test03()
 {
   int arr[2] = { 1, 2 };
@@ -117,6 +138,9 @@ test03()
   VERIFY( (j - end) == -2 );
   VERIFY( (j - i) == 0 );
 
+  if (std::is_constant_evaluated())
+    return true;
+
   try
   {
     struct S { operator const int*() const { throw 1; } };
@@ -126,7 +150,11 @@ test03()
   catch (int)
   {
   }
+
+  return true;
 }
+
+static_assert( test03() );
 
 void
 test04()
@@ -149,6 +177,22 @@ test04()
   VERIFY( arr[0].i == -1 );
   VERIFY( x.i == 2 );
 }
+
+constexpr bool
+test_pr103992()
+{
+  using C1 = std::common_iterator<std::reverse_iterator<int*>,
+				  std::unreachable_sentinel_t>;
+  using C2 = std::common_iterator<std::reverse_iterator<const int*>,
+				  std::unreachable_sentinel_t>;
+  C1 c1;
+  C2 c2 = c1;
+  C1 c3 = c1;
+
+  return true;
+}
+
+static_assert( test_pr103992() );
 
 int
 main()

@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 // Asan interface list.
 //===----------------------------------------------------------------------===//
+
 INTERFACE_FUNCTION(__asan_addr_is_in_fake_stack)
 INTERFACE_FUNCTION(__asan_address_is_poisoned)
 INTERFACE_FUNCTION(__asan_after_dynamic_init)
@@ -134,6 +135,17 @@ INTERFACE_FUNCTION(__asan_stack_malloc_7)
 INTERFACE_FUNCTION(__asan_stack_malloc_8)
 INTERFACE_FUNCTION(__asan_stack_malloc_9)
 INTERFACE_FUNCTION(__asan_stack_malloc_10)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_0)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_1)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_2)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_3)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_4)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_5)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_6)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_7)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_8)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_9)
+INTERFACE_FUNCTION(__asan_stack_malloc_always_10)
 INTERFACE_FUNCTION(__asan_store1)
 INTERFACE_FUNCTION(__asan_store2)
 INTERFACE_FUNCTION(__asan_store4)

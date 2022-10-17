@@ -1,6 +1,6 @@
-// RUNNABLE_PHOBOS_TEST
+
 import core.vararg;
-import std.stdio;
+import core.stdc.stdio;
 
 /******************************************************/
 
@@ -18,10 +18,10 @@ FOO3 foox3;
 
 void foo3(int x, ...)
 {
-    printf("%d arguments\n", _arguments.length);
+    printf("%zd arguments\n", _arguments.length);
     for (int i = 0; i < _arguments.length; i++)
     {
-        writeln(_arguments[i].toString());
+        //writeln(_arguments[i].toString());
 
         if (_arguments[i] is typeid(int))
         {
@@ -74,20 +74,6 @@ void test4()
     ti = typeid(double[]);
     assert(!(ti is null));
     ti = typeid(real[]);
-    assert(!(ti is null));
-
-    ti = typeid(ifloat[]);
-    assert(!(ti is null));
-    ti = typeid(idouble[]);
-    assert(!(ti is null));
-    ti = typeid(ireal[]);
-    assert(!(ti is null));
-
-    ti = typeid(cfloat[]);
-    assert(!(ti is null));
-    ti = typeid(cdouble[]);
-    assert(!(ti is null));
-    ti = typeid(creal[]);
     assert(!(ti is null));
 
     ti = typeid(void);
@@ -210,26 +196,6 @@ void test16()
 
 /******************************************************/
 
-void test17()
-{
-    TypeInfo ti = typeid(ifloat*);
-    assert(!(ti is null));
-    assert(ti.tsize==(ifloat*).sizeof);
-    assert(ti.toString()=="ifloat*");
-}
-
-/******************************************************/
-
-void test18()
-{
-    TypeInfo ti = typeid(cfloat*);
-    assert(!(ti is null));
-    assert(ti.tsize==(cfloat*).sizeof);
-    assert(ti.toString()=="cfloat*");
-}
-
-/******************************************************/
-
 void test19()
 {
     TypeInfo ti = typeid(double*);
@@ -240,52 +206,12 @@ void test19()
 
 /******************************************************/
 
-void test20()
-{
-    TypeInfo ti = typeid(idouble*);
-    assert(!(ti is null));
-    assert(ti.tsize==(idouble*).sizeof);
-    assert(ti.toString()=="idouble*");
-}
-
-/******************************************************/
-
-void test21()
-{
-    TypeInfo ti = typeid(cdouble*);
-    assert(!(ti is null));
-    assert(ti.tsize==(cdouble*).sizeof);
-    assert(ti.toString()=="cdouble*");
-}
-
-/******************************************************/
-
 void test22()
 {
     TypeInfo ti = typeid(real*);
     assert(!(ti is null));
     assert(ti.tsize==(real*).sizeof);
     assert(ti.toString()=="real*");
-}
-
-/******************************************************/
-
-void test23()
-{
-    TypeInfo ti = typeid(ireal*);
-    assert(!(ti is null));
-    assert(ti.tsize==(ireal*).sizeof);
-    assert(ti.toString()=="ireal*");
-}
-
-/******************************************************/
-
-void test24()
-{
-    TypeInfo ti = typeid(creal*);
-    assert(!(ti is null));
-    assert(ti.tsize==(creal*).sizeof);
-    assert(ti.toString()=="creal*");
 }
 
 /******************************************************/
@@ -367,10 +293,10 @@ class Bar32 { long y = 4; }
 
 void printargs(int x, ...)
 {
-    printf("%d arguments\n", _arguments.length);
+    printf("%zd arguments\n", _arguments.length);
     for (int i = 0; i < _arguments.length; i++)
     {
-        writeln(_arguments[i].toString());
+        //writeln(_arguments[i].toString());
 
         if (_arguments[i] == typeid(int))
         {
@@ -506,7 +432,7 @@ void test40()
 }
 
 /******************************************************/
-// 9442
+// https://issues.dlang.org/show_bug.cgi?id=9442
 
 class C
 {
@@ -526,7 +452,7 @@ void test9442()
 }
 
 /******************************************************/
-// 10451
+// https://issues.dlang.org/show_bug.cgi?id=10451
 
 struct Foo10451;
 
@@ -543,7 +469,7 @@ void test10451()
 }
 
 /******************************************************/
-// 11010
+// https://issues.dlang.org/show_bug.cgi?id=11010
 
 struct S11010 { S11010* p; }
 
@@ -567,7 +493,7 @@ void test11010()
 }
 
 /******************************************************/
-// 13045
+// https://issues.dlang.org/show_bug.cgi?id=13045
 
 void test13045a()
 {
@@ -623,7 +549,7 @@ void test13045b()
 }
 
 /******************************************************/
-// 15680
+// https://issues.dlang.org/show_bug.cgi?id=15680
 
 void test15680()
 {
@@ -651,14 +577,8 @@ int main()
     test14();
     test15();
     test16();
-    test17();
-    test18();
     test19();
-    test20();
-    test21();
     test22();
-    test23();
-    test24();
     test25();
     test26();
     test27();

@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2021 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2022 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -97,10 +97,14 @@ BEGIN {
 			enum_name = opt_args_non_empty("Enum", props)
 			string = opt_args_non_empty("String", props)
 			value = opt_args_non_empty("Value", props)
+			set = opt_args("Set", props)
 			val_flags = "0"
 			val_flags = val_flags \
 			  test_flag("Canonical", props, "| CL_ENUM_CANONICAL") \
 			  test_flag("DriverOnly", props, "| CL_ENUM_DRIVER_ONLY")
+			if (set != "")
+				val_flags = val_flags "| ((" set \
+					    ") << CL_ENUM_SET_SHIFT)"
 			enum_data[enum_name] = enum_data[enum_name] \
 			  "  { " quote string quote ", " value ", " val_flags \
 			  " },\n"

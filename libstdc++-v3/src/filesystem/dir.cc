@@ -1,6 +1,6 @@
 // Class filesystem::directory_entry etc. -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,10 @@
 #ifndef _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_USE_CXX11_ABI 1
 #endif
+#ifndef _GNU_SOURCE
+// Cygwin needs this for secure_getenv
+# define _GNU_SOURCE 1
+#endif
 
 #include <bits/largefile-config.h>
 #include <experimental/filesystem>
@@ -47,14 +51,15 @@ namespace posix = std::filesystem::__gnu_posix;
 
 struct fs::_Dir : std::filesystem::_Dir_base
 {
-  _Dir(const fs::path& p, bool skip_permission_denied, error_code& ec)
-  : _Dir_base(p.c_str(), skip_permission_denied, ec)
+  _Dir(const fs::path& p, bool skip_permission_denied, bool nofollow,
+       error_code& ec)
+  : _Dir_base(p.c_str(), skip_permission_denied, nofollow, ec)
   {
     if (!ec)
       path = p;
   }
 
-  _Dir(posix::DIR* dirp, const path& p) : _Dir_base(dirp), path(p) { }
+  _Dir(_Dir_base&& d, const path& p) : _Dir_base(std::move(d)), path(p) { }
 
   _Dir(_Dir&&) = default;
 
@@ -108,6 +113,28 @@ struct fs::_Dir : std::filesystem::_Dir_base
     return false;
   }
 
+  // Return a pathname for the current directory entry, as an _At_path.
+  _Dir_base::_At_path
+  current() const noexcept
+  {
+    const fs::path& p = entry.path();
+#if _GLIBCXX_HAVE_DIRFD
+    auto len = std::prev(p.end())->native().size();
+    return {::dirfd(this->dirp), p.c_str(), p.native().size() - len};
+#else
+    return p.c_str();
+#endif
+  }
+
+  // Create a new _Dir for the directory this->entry.path().
+  _Dir
+  open_subdir(bool skip_permission_denied, bool nofollow,
+	      error_code& ec) noexcept
+  {
+    _Dir_base d(current(), skip_permission_denied, nofollow, ec);
+    return _Dir(std::move(d), entry.path());
+  }
+
   fs::path		path;
   directory_entry	entry;
   file_type		type = file_type::none;
@@ -126,11 +153,12 @@ namespace
 fs::directory_iterator::
 directory_iterator(const path& p, directory_options options, error_code* ecptr)
 {
+  // Do not report an error for permission denied errors.
   const bool skip_permission_denied
     = is_set(options, directory_options::skip_permission_denied);
 
   error_code ec;
-  _Dir dir(p, skip_permission_denied, ec);
+  _Dir dir(p, skip_permission_denied, /*nofollow*/false, ec);
 
   if (dir.dirp)
     {
@@ -182,6 +210,11 @@ fs::directory_iterator::increment(error_code& ec) noexcept
 
 struct fs::recursive_directory_iterator::_Dir_stack : std::stack<_Dir>
 {
+  _Dir_stack(_Dir&& dir)
+  {
+    this->push(std::move(dir));
+  }
+
   void clear() { c.clear(); }
 };
 
@@ -190,33 +223,27 @@ recursive_directory_iterator(const path& p, directory_options options,
                              error_code* ecptr)
 : _M_options(options), _M_pending(true)
 {
-  if (posix::DIR* dirp = posix::opendir(p.c_str()))
+  // Do not report an error for permission denied errors.
+  const bool skip_permission_denied
+    = is_set(options, directory_options::skip_permission_denied);
+
+  error_code ec;
+  _Dir dir(p, skip_permission_denied, /*nofollow*/false, ec);
+
+  if (dir.dirp)
     {
-      if (ecptr)
-	ecptr->clear();
-      auto sp = std::make_shared<_Dir_stack>();
-      sp->push(_Dir{ dirp, p });
-      if (ecptr ? sp->top().advance(*ecptr) : sp->top().advance())
-	_M_dirs.swap(sp);
-    }
-  else
-    {
-      const int err = errno;
-      if (std::filesystem::is_permission_denied_error(err)
-	  && is_set(options, fs::directory_options::skip_permission_denied))
+      auto sp = std::__make_shared<_Dir_stack>(std::move(dir));
+      if (ecptr ? sp->top().advance(skip_permission_denied, *ecptr)
+		: sp->top().advance(skip_permission_denied))
 	{
-	  if (ecptr)
-	    ecptr->clear();
-	  return;
+	  _M_dirs.swap(sp);
 	}
-
-      if (!ecptr)
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "recursive directory iterator cannot open directory", p,
-	      std::error_code(err, std::generic_category())));
-
-      ecptr->assign(err, std::generic_category());
     }
+  else if (ecptr)
+    *ecptr = ec;
+  else if (ec)
+    _GLIBCXX_THROW_OR_ABORT(fs::filesystem_error(
+	  "recursive directory iterator cannot open directory", p, ec));
 }
 
 fs::recursive_directory_iterator::~recursive_directory_iterator() = default;
@@ -270,7 +297,7 @@ fs::recursive_directory_iterator::increment(error_code& ec) noexcept
 
   if (std::exchange(_M_pending, true) && top.should_recurse(follow, ec))
     {
-      _Dir dir(top.entry.path(), skip_permission_denied, ec);
+      _Dir dir = top.open_subdir(skip_permission_denied, !follow, ec);
       if (ec)
 	{
 	  _M_dirs.reset();
@@ -289,6 +316,10 @@ fs::recursive_directory_iterator::increment(error_code& ec) noexcept
 	  return *this;
 	}
     }
+
+  if (ec)
+    _M_dirs.reset();
+
   return *this;
 }
 
@@ -312,16 +343,20 @@ fs::recursive_directory_iterator::pop(error_code& ec)
 	ec.clear();
 	return;
       }
-  } while (!_M_dirs->top().advance(skip_permission_denied, ec));
+  } while (!_M_dirs->top().advance(skip_permission_denied, ec) && !ec);
+
+  if (ec)
+    _M_dirs.reset();
 }
 
 void
 fs::recursive_directory_iterator::pop()
 {
+  [[maybe_unused]] const bool dereferenceable = _M_dirs != nullptr;
   error_code ec;
   pop(ec);
   if (ec)
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error(_M_dirs
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error(dereferenceable
 	  ? "recursive directory iterator cannot pop"
 	  : "non-dereferenceable recursive directory iterator cannot pop",
 	  ec));

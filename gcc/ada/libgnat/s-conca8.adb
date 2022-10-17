@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2008-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,10 +28,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-pragma Compiler_Unit_Warning;
-
-with System.Concat_7;
 
 package body System.Concat_8 is
 
@@ -77,26 +73,8 @@ package body System.Concat_8 is
       R (F .. L) := S7;
 
       F := L + 1;
-      L := R'Last;
+      L := F + S8'Length - 1;
       R (F .. L) := S8;
    end Str_Concat_8;
-
-   -------------------------
-   -- Str_Concat_Bounds_8 --
-   -------------------------
-
-   procedure Str_Concat_Bounds_8
-     (Lo, Hi                         : out Natural;
-      S1, S2, S3, S4, S5, S6, S7, S8 : String)
-   is
-   begin
-      System.Concat_7.Str_Concat_Bounds_7
-        (Lo, Hi, S2, S3, S4, S5, S6, S7, S8);
-
-      if S1 /= "" then
-         Hi := S1'Last + Hi - Lo + 1;
-         Lo := S1'First;
-      end if;
-   end Str_Concat_Bounds_8;
 
 end System.Concat_8;

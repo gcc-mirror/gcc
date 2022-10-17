@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,27 @@ with Ada.Text_IO;
 
 package body Gen_IL.Gen is
 
+   Statistics_Enabled : constant Boolean := False;
+   --  Change to True or False to enable/disable statistics printed by
+   --  Atree. Should normally be False, for efficiency. Also compile with
+   --  -gnatd.A to get the statistics printed.  Enabling these statistics
+   --  makes the compiler about 20% slower.
+
+   Num_Header_Slots : constant := 3;
+   --  Number of header slots; the first Num_Header_Slots slots are stored in
+   --  the header; the rest are dynamically allocated in the Slots table. We
+   --  need to subtract this off when accessing dynamic slots. The constant
+   --  Seinfo.N_Head will contain this value. Fields that are allocated in the
+   --  header slots are quicker to access.
+   --
+   --  This number can be adjusted for efficiency. We choose 3 because the
+   --  minimum node size is 3 slots, and because that causes the size of type
+   --  Node_Header to be a power of 2. We can't make it zero, however, because
+   --  C doesn't allow zero-length arrays.
+
+   N_Head : constant String := Image (Field_Offset'(Num_Header_Slots));
+   --  String form of the above
+
    Enable_Assertions : constant Boolean := True;
    --  True to enable predicates on the _Id types, and preconditions on getters
    --  and setters.
@@ -36,6 +57,9 @@ package body Gen_IL.Gen is
    --  False to allocate every field so it doesn't overlay any other fields,
    --  which results in enormous nodes. For experimenting and debugging.
    --  Should be True in normal operation, for efficiency.
+
+   SS : constant := 32; -- slot size in bits
+   SSS : constant String := Image (Bit_Offset'(SS));
 
    Inline : constant String := "Inline";
    --  For experimenting with Inline_Always
@@ -47,9 +71,10 @@ package body Gen_IL.Gen is
    All_Entities : constant Type_Vector := To_Vector (Entity_Kind, Length => 1);
 
    procedure Create_Type
-     (T      : Node_Or_Entity_Type;
-      Parent : Opt_Abstract_Type;
-      Fields : Field_Sequence);
+     (T            : Node_Or_Entity_Type;
+      Parent       : Opt_Abstract_Type;
+      Fields       : Field_Sequence;
+      Nmake_Assert : String);
    --  Called by the Create_..._Type procedures exported by this package to
    --  create an entry in the Types_Table.
 
@@ -107,9 +132,10 @@ package body Gen_IL.Gen is
    -----------------
 
    procedure Create_Type
-     (T      : Node_Or_Entity_Type;
-      Parent : Opt_Abstract_Type;
-      Fields : Field_Sequence)
+     (T            : Node_Or_Entity_Type;
+      Parent       : Opt_Abstract_Type;
+      Fields       : Field_Sequence;
+      Nmake_Assert : String)
    is
    begin
       Check_Type (T);
@@ -132,7 +158,8 @@ package body Gen_IL.Gen is
         new Type_Info'
           (Is_Union => False, Parent => Parent,
            Children | Concrete_Descendants => Type_Vectors.Empty_Vector,
-           First | Last | Fields => <>); -- filled in later
+           First | Last | Fields => <>, -- filled in later
+           Nmake_Assert => new String'(Nmake_Assert));
 
       if Parent /= No_Type then
          Append (Type_Table (Parent).Children, T);
@@ -215,7 +242,7 @@ package body Gen_IL.Gen is
      (T      : Abstract_Node;
       Fields : Field_Sequence := No_Fields) is
    begin
-      Create_Type (T, Parent => No_Type, Fields => Fields);
+      Create_Type (T, Parent => No_Type, Fields => Fields, Nmake_Assert => "");
    end Create_Root_Node_Type;
 
    -------------------------------
@@ -227,7 +254,7 @@ package body Gen_IL.Gen is
       Fields : Field_Sequence := No_Fields)
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert => "");
    end Create_Abstract_Node_Type;
 
    -------------------------------
@@ -236,10 +263,11 @@ package body Gen_IL.Gen is
 
    procedure Create_Concrete_Node_Type
      (T      : Concrete_Node; Parent : Abstract_Type;
-      Fields : Field_Sequence := No_Fields)
+      Fields : Field_Sequence := No_Fields;
+      Nmake_Assert : String := "")
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert);
    end Create_Concrete_Node_Type;
 
    -----------------------------
@@ -250,7 +278,7 @@ package body Gen_IL.Gen is
      (T      : Abstract_Entity;
       Fields : Field_Sequence := No_Fields) is
    begin
-      Create_Type (T, Parent => No_Type, Fields => Fields);
+      Create_Type (T, Parent => No_Type, Fields => Fields, Nmake_Assert => "");
    end Create_Root_Entity_Type;
 
    ---------------------------------
@@ -262,7 +290,7 @@ package body Gen_IL.Gen is
       Fields : Field_Sequence := No_Fields)
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert => "");
    end Create_Abstract_Entity_Type;
 
    ---------------------------------
@@ -274,7 +302,7 @@ package body Gen_IL.Gen is
       Fields : Field_Sequence := No_Fields)
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert => "");
    end Create_Concrete_Entity_Type;
 
    ------------------
@@ -305,7 +333,7 @@ package body Gen_IL.Gen is
             Pre => new String'(Pre),
             Pre_Get => new String'(Pre_Get),
             Pre_Set => new String'(Pre_Set),
-            Offset => <>); -- filled in later
+            Offset => Unknown_Offset);
 
       --  The Field_Table entry has already been created by the 'then' part
       --  above. Now we're seeing the same field being "created" again in a
@@ -352,7 +380,7 @@ package body Gen_IL.Gen is
               Image (Field);
          end if;
 
-         if Pre /= Field_Table (Field).Pre.all then
+         if Pre_Set /= Field_Table (Field).Pre_Set.all then
             raise Illegal with
               "mismatched extra setter-only preconditions for " &
               Image (Field);
@@ -475,8 +503,6 @@ package body Gen_IL.Gen is
       Min_Entity_Size : Field_Offset := Field_Offset'Last;
       Max_Entity_Size : Field_Offset := 0;
 
-      Average_Node_Size_In_Slots : Long_Float;
-
       Node_Field_Types_Used, Entity_Field_Types_Used : Type_Set;
 
       Setter_Needs_Parent : Field_Set :=
@@ -559,6 +585,8 @@ package body Gen_IL.Gen is
       procedure Put_Setter_Spec (S : in out Sink; F : Field_Enum);
       procedure Put_Getter_Decl (S : in out Sink; F : Field_Enum);
       procedure Put_Setter_Decl (S : in out Sink; F : Field_Enum);
+      procedure Put_Getter_Setter_Locals
+        (S : in out Sink; F : Field_Enum; Get : Boolean);
       procedure Put_Getter_Body (S : in out Sink; F : Field_Enum);
       procedure Put_Setter_Body (S : in out Sink; F : Field_Enum);
       --  Print out the specification, declaration, or body of a getter or
@@ -569,9 +597,9 @@ package body Gen_IL.Gen is
       --  Print out the precondition, if any, for a getter or setter for the
       --  given field.
 
-      procedure Put_Low_Level_Accessor_Instantiations
+      procedure Put_Casts
         (S : in out Sink; T : Type_Enum);
-      --  Print out the low-level getter and setter for a given type
+      --  Print out the Cast functions for a given type
 
       procedure Put_Traversed_Fields (S : in out Sink);
       --  Called by Put_Nodes to print out the Traversed_Fields table in
@@ -612,22 +640,17 @@ package body Gen_IL.Gen is
       --  corresponding to the Ada Node_Kind, Entity_Kind, and subtypes
       --  thereof.
 
-      procedure Put_Low_Level_C_Getter
-        (S : in out Sink; T : Type_Enum);
-      --  Used by Put_Sinfo_Dot_H and Put_Einfo_Dot_H to print out low-level
-      --  getters.
-
-      procedure Put_High_Level_C_Getters
+      procedure Put_C_Getters
         (S : in out Sink; Root : Root_Type);
       --  Used by Put_Sinfo_Dot_H and Put_Einfo_Dot_H to print out high-level
       --  getters.
 
-      procedure Put_High_Level_C_Getter
+      procedure Put_C_Getter
         (S : in out Sink; F : Field_Enum);
-      --  Used by Put_High_Level_C_Getters to print out one high-level getter.
+      --  Used by Put_C_Getters to print out one high-level getter.
 
       procedure Put_Union_Membership
-        (S : in out Sink; Root : Root_Type);
+        (S : in out Sink; Root : Root_Type; Only_Prototypes : Boolean);
       --  Used by Put_Sinfo_Dot_H and Put_Einfo_Dot_H to print out functions to
       --  test membership in a union type.
 
@@ -687,6 +710,8 @@ package body Gen_IL.Gen is
                   Type_Table (T).Last  := T;
                   Add_Concrete_Descendant_To_Ancestors
                     (Type_Table (T).Parent, T);
+                  --  Parent cannot be No_Type here, because T is a concrete
+                  --  type, and therefore not a root type.
 
                when Abstract_Type =>
                   declare
@@ -845,6 +870,7 @@ package body Gen_IL.Gen is
              | Name_Id
              | String_Id
              | Uint
+             | Uint_Subtype
              | Ureal
              | Source_Ptr
              | Union_Id
@@ -879,13 +905,13 @@ package body Gen_IL.Gen is
 
       function To_Size_In_Slots (Size_In_Bits : Bit_Offset)
         return Field_Offset is
-          ((Field_Offset (Size_In_Bits) + 31) / 32);
+          ((Field_Offset (Size_In_Bits) + (SS - 1)) / SS);
 
       function Type_Size_In_Slots (T : Concrete_Type) return Field_Offset is
         (To_Size_In_Slots (Type_Bit_Size (T))); -- rounded up to slot boundary
 
       function Type_Bit_Size_Aligned (T : Concrete_Type) return Bit_Offset is
-        (Bit_Offset (Type_Size_In_Slots (T)) * 32); -- multiple of slot size
+        (Bit_Offset (Type_Size_In_Slots (T)) * SS); -- multiple of slot size
 
       ---------------------------
       -- Compute_Field_Offsets --
@@ -919,8 +945,7 @@ package body Gen_IL.Gen is
            (F : Field_Enum; Offset : Field_Offset);
          --  Mark the offset as "in use"
 
-         function Choose_Offset
-           (F : Field_Enum) return Field_Offset;
+         procedure Choose_Offset (F : Field_Enum);
          --  Choose an offset for this field
 
          function Offset_OK
@@ -960,14 +985,14 @@ package body Gen_IL.Gen is
             end loop;
          end Set_Offset_In_Use;
 
-         function Choose_Offset
-           (F : Field_Enum) return Field_Offset is
+         procedure Choose_Offset (F : Field_Enum) is
          begin
             for Offset in Field_Offset loop
                if Offset_OK (F, Offset) then
                   Set_Offset_In_Use (F, Offset);
 
-                  return Offset;
+                  Field_Table (F).Offset := Offset;
+                  return;
                end if;
             end loop;
 
@@ -976,16 +1001,16 @@ package body Gen_IL.Gen is
               Image (Gen_IL.Internals.Bit_Offset'Last) & " is too small)";
          end Choose_Offset;
 
-         Num_Concrete_Have_Field : array (Field_Enum) of Type_Count :=
+         Weighted_Node_Frequency : array (Field_Enum) of Type_Count :=
            (others => 0);
          --  Number of concrete types that have each field
 
          function More_Types_Have_Field (F1, F2 : Field_Enum) return Boolean is
-           (Num_Concrete_Have_Field (F1) > Num_Concrete_Have_Field (F2));
+           (Weighted_Node_Frequency (F1) > Weighted_Node_Frequency (F2));
          --  True if F1 appears in more concrete types than F2
 
          function Sort_Less (F1, F2 : Field_Enum) return Boolean is
-           (if Num_Concrete_Have_Field (F1) = Num_Concrete_Have_Field (F2) then
+           (if Weighted_Node_Frequency (F1) = Weighted_Node_Frequency (F2) then
               F1 < F2
             else More_Types_Have_Field (F1, F2));
 
@@ -994,15 +1019,18 @@ package body Gen_IL.Gen is
 
          All_Fields : Field_Vector;
 
+      --  Start of processing for Compute_Field_Offsets
+
       begin
 
-         --  Compute the number of types that have each field
+         --  Compute the number of types that have each field, weighted by the
+         --  frequency of such nodes.
 
          for T in Concrete_Type loop
             for F in Field_Enum loop
                if Fields_Per_Node (T) (F) then
-                  Num_Concrete_Have_Field (F) :=
-                    Num_Concrete_Have_Field (F) + 1;
+                  Weighted_Node_Frequency (F) :=
+                    Weighted_Node_Frequency (F) + Type_Frequency (T);
                end if;
             end loop;
          end loop;
@@ -1033,8 +1061,33 @@ package body Gen_IL.Gen is
          --  complication compared to standard graph coloring is that fields
          --  are different sizes.
 
+         --  First choose offsets for some heavily-used fields, so they will
+         --  get low offsets, so they will wind up in the node header for
+         --  faster access.
+
+         Choose_Offset (Nkind);
+         pragma Assert (Field_Table (Nkind).Offset = 0);
+         Choose_Offset (Ekind);
+         pragma Assert (Field_Table (Ekind).Offset = 1);
+         Choose_Offset (Homonym);
+         pragma Assert (Field_Table (Homonym).Offset = 1);
+         Choose_Offset (Is_Immediately_Visible);
+         pragma Assert (Field_Table (Is_Immediately_Visible).Offset = 16);
+         Choose_Offset (From_Limited_With);
+         pragma Assert (Field_Table (From_Limited_With).Offset = 17);
+         Choose_Offset (Is_Potentially_Use_Visible);
+         pragma Assert (Field_Table (Is_Potentially_Use_Visible).Offset = 18);
+         Choose_Offset (Is_Generic_Instance);
+         pragma Assert (Field_Table (Is_Generic_Instance).Offset = 19);
+         Choose_Offset (Scope);
+         pragma Assert (Field_Table (Scope).Offset = 2);
+
+         --  Then loop through them all, skipping the ones we did above
+
          for F of All_Fields loop
-            Field_Table (F).Offset := Choose_Offset (F);
+            if Field_Table (F).Offset = Unknown_Offset then
+               Choose_Offset (F);
+            end if;
          end loop;
 
       end Compute_Field_Offsets;
@@ -1044,231 +1097,6 @@ package body Gen_IL.Gen is
       ------------------------
 
       procedure Compute_Type_Sizes is
-         --  Node_Counts is the number of nodes of each kind created during
-         --  compilation of a large example. This is used purely to compute an
-         --  estimate of the average node size. New node types can default to
-         --  "others => 0". At some point we can instrument Atree to print out
-         --  accurate size statistics, and remove this code.
-
-         Node_Counts : constant array (Concrete_Node) of Natural :=
-           (N_Identifier => 429298,
-            N_Defining_Identifier => 231636,
-            N_Integer_Literal => 90892,
-            N_Parameter_Specification => 62811,
-            N_Attribute_Reference => 47150,
-            N_Expanded_Name => 37375,
-            N_Selected_Component => 30699,
-            N_Subprogram_Declaration => 20744,
-            N_Freeze_Entity => 20314,
-            N_Procedure_Specification => 18901,
-            N_Object_Declaration => 18023,
-            N_Function_Specification => 16570,
-            N_Range => 16216,
-            N_Explicit_Dereference => 12198,
-            N_Component_Association => 11188,
-            N_Unchecked_Type_Conversion => 11165,
-            N_Subtype_Indication => 10727,
-            N_Procedure_Call_Statement => 10056,
-            N_Subtype_Declaration => 8141,
-            N_Handled_Sequence_Of_Statements => 8078,
-            N_Null => 7288,
-            N_Aggregate => 7222,
-            N_String_Literal => 7152,
-            N_Function_Call => 6958,
-            N_Simple_Return_Statement => 6911,
-            N_And_Then => 6867,
-            N_Op_Eq => 6845,
-            N_Call_Marker => 6683,
-            N_Pragma_Argument_Association => 6525,
-            N_Component_Definition => 6487,
-            N_Assignment_Statement => 6483,
-            N_With_Clause => 6480,
-            N_Null_Statement => 5917,
-            N_Index_Or_Discriminant_Constraint => 5877,
-            N_Generic_Association => 5667,
-            N_Full_Type_Declaration => 5573,
-            N_If_Statement => 5553,
-            N_Subprogram_Body => 5455,
-            N_Op_Add => 5443,
-            N_Type_Conversion => 5260,
-            N_Component_Declaration => 5059,
-            N_Raise_Constraint_Error => 4840,
-            N_Formal_Concrete_Subprogram_Declaration => 4602,
-            N_Expression_With_Actions => 4598,
-            N_Op_Ne => 3854,
-            N_Indexed_Component => 3834,
-            N_Op_Subtract => 3777,
-            N_Package_Specification => 3490,
-            N_Subprogram_Renaming_Declaration => 3445,
-            N_Pragma => 3427,
-            N_Case_Statement_Alternative => 3272,
-            N_Block_Statement => 3239,
-            N_Parameter_Association => 3213,
-            N_Op_Lt => 3020,
-            N_Op_Not => 2926,
-            N_Character_Literal => 2914,
-            N_Others_Choice => 2769,
-            N_Or_Else => 2576,
-            N_Itype_Reference => 2511,
-            N_Defining_Operator_Symbol => 2487,
-            N_Component_List => 2470,
-            N_Formal_Object_Declaration => 2262,
-            N_Generic_Subprogram_Declaration => 2227,
-            N_Real_Literal => 2156,
-            N_Op_Gt => 2156,
-            N_Access_To_Object_Definition => 1984,
-            N_Op_Le => 1975,
-            N_Op_Ge => 1942,
-            N_Package_Renaming_Declaration => 1811,
-            N_Formal_Type_Declaration => 1756,
-            N_Qualified_Expression => 1746,
-            N_Package_Declaration => 1729,
-            N_Record_Definition => 1651,
-            N_Allocator => 1521,
-            N_Op_Concat => 1377,
-            N_Access_Definition => 1358,
-            N_Case_Statement => 1322,
-            N_Number_Declaration => 1316,
-            N_Generic_Package_Declaration => 1311,
-            N_Slice => 1078,
-            N_Constrained_Array_Definition => 1068,
-            N_Exception_Renaming_Declaration => 1011,
-            N_Implicit_Label_Declaration => 978,
-            N_Exception_Handler => 966,
-            N_Private_Type_Declaration => 898,
-            N_Operator_Symbol => 872,
-            N_Formal_Private_Type_Definition => 867,
-            N_Range_Constraint => 849,
-            N_Aspect_Specification => 837,
-            N_Variant => 834,
-            N_Discriminant_Specification => 746,
-            N_Loop_Statement => 744,
-            N_Derived_Type_Definition => 731,
-            N_Freeze_Generic_Entity => 702,
-            N_Iteration_Scheme => 686,
-            N_Package_Instantiation => 658,
-            N_Loop_Parameter_Specification => 632,
-            N_Attribute_Definition_Clause => 608,
-            N_Compilation_Unit_Aux => 599,
-            N_Compilation_Unit => 599,
-            N_Label => 572,
-            N_Goto_Statement => 572,
-            N_In => 564,
-            N_Enumeration_Type_Definition => 523,
-            N_Object_Renaming_Declaration => 482,
-            N_If_Expression => 476,
-            N_Exception_Declaration => 472,
-            N_Reference => 455,
-            N_Incomplete_Type_Declaration => 438,
-            N_Use_Package_Clause => 401,
-            N_Unconstrained_Array_Definition => 360,
-            N_Variant_Part => 340,
-            N_Defining_Program_Unit_Name => 336,
-            N_Op_And => 334,
-            N_Raise_Program_Error => 329,
-            N_Formal_Discrete_Type_Definition => 319,
-            N_Contract => 311,
-            N_Not_In => 305,
-            N_Designator => 285,
-            N_Component_Clause => 247,
-            N_Formal_Signed_Integer_Type_Definition => 244,
-            N_Raise_Statement => 214,
-            N_Op_Expon => 205,
-            N_Op_Minus => 202,
-            N_Op_Multiply => 158,
-            N_Exit_Statement => 130,
-            N_Function_Instantiation => 129,
-            N_Discriminant_Association => 123,
-            N_Private_Extension_Declaration => 119,
-            N_Extended_Return_Statement => 117,
-            N_Op_Divide => 107,
-            N_Op_Or => 103,
-            N_Signed_Integer_Type_Definition => 101,
-            N_Record_Representation_Clause => 76,
-            N_Unchecked_Expression => 70,
-            N_Op_Abs => 63,
-            N_Elsif_Part => 62,
-            N_Formal_Floating_Point_Definition => 59,
-            N_Formal_Package_Declaration => 58,
-            N_Modular_Type_Definition => 55,
-            N_Abstract_Subprogram_Declaration => 52,
-            N_Validate_Unchecked_Conversion => 49,
-            N_Defining_Character_Literal => 36,
-            N_Raise_Storage_Error => 33,
-            N_Compound_Statement => 29,
-            N_Procedure_Instantiation => 28,
-            N_Access_Procedure_Definition => 25,
-            N_Floating_Point_Definition => 20,
-            N_Use_Type_Clause => 19,
-            N_Op_Plus => 14,
-            N_Package_Body => 13,
-            N_Op_Rem => 13,
-            N_Enumeration_Representation_Clause => 13,
-            N_Access_Function_Definition => 11,
-            N_Extension_Aggregate => 11,
-            N_Formal_Ordinary_Fixed_Point_Definition => 10,
-            N_Op_Mod => 10,
-            N_Expression_Function => 9,
-            N_Delay_Relative_Statement => 9,
-            N_Quantified_Expression => 7,
-            N_Formal_Derived_Type_Definition => 7,
-            N_Free_Statement => 7,
-            N_Iterator_Specification => 5,
-            N_Op_Shift_Left => 5,
-            N_Formal_Modular_Type_Definition => 4,
-            N_Generic_Package_Renaming_Declaration => 1,
-            N_Empty => 1,
-            N_Real_Range_Specification => 1,
-            N_Ordinary_Fixed_Point_Definition => 1,
-            N_Op_Shift_Right => 1,
-            N_Error => 1,
-            N_Mod_Clause => 1,
-            others => 0);
-
-         Total_Node_Count : constant Long_Float := 1370676.0;
-
-         type Node_Frequency_Table is array (Concrete_Node) of Long_Float;
-
-         function Init_Node_Frequency return Node_Frequency_Table;
-         --  Compute the value of the Node_Frequency table
-
-         function Average_Type_Size_In_Slots return Long_Float;
-         --  Compute the average over all concrete node types of the size,
-         --  weighted by the frequency of that node type.
-
-         function Init_Node_Frequency return Node_Frequency_Table is
-            Result : Node_Frequency_Table := (others => 0.0);
-
-         begin
-            for T in Concrete_Node loop
-               Result (T) := Long_Float (Node_Counts (T)) / Total_Node_Count;
-            end loop;
-
-            return Result;
-         end Init_Node_Frequency;
-
-         Node_Frequency : constant Node_Frequency_Table := Init_Node_Frequency;
-         --  Table mapping concrete node types to the relative frequency of
-         --  that node, in our large example. The sum of these values should
-         --  add up to approximately 1.0. For example, if Node_Frequency(K) =
-         --  0.02, then that means that approximately 2% of all nodes are K
-         --  nodes.
-
-         function Average_Type_Size_In_Slots return Long_Float is
-            --  We don't have data on entities, so we leave those out
-
-            Result : Long_Float := 0.0;
-         begin
-            for T in Concrete_Node loop
-               Result := Result +
-                 Node_Frequency (T) * Long_Float (Type_Size_In_Slots (T));
-            end loop;
-
-            return Result;
-         end Average_Type_Size_In_Slots;
-
-      --  Start of processing for Compute_Type_Sizes
-
       begin
          for T in Concrete_Type loop
             declare
@@ -1284,7 +1112,10 @@ package body Gen_IL.Gen is
                   end if;
                end loop;
 
-               Type_Bit_Size (T) := Max_Offset + 1;
+               --  No type can be smaller than the header slots
+
+               Type_Bit_Size (T) :=
+                 Bit_Offset'Max (Max_Offset + 1, SS * Num_Header_Slots);
             end;
          end loop;
 
@@ -1306,8 +1137,6 @@ package body Gen_IL.Gen is
          Max_Node_Size := To_Size_In_Slots (Max_Node_Bit_Size);
          Min_Entity_Size := To_Size_In_Slots (Min_Entity_Bit_Size);
          Max_Entity_Size := To_Size_In_Slots (Max_Entity_Bit_Size);
-
-         Average_Node_Size_In_Slots := Average_Type_Size_In_Slots;
       end Compute_Type_Sizes;
 
       ----------------------------------------
@@ -1368,6 +1197,12 @@ package body Gen_IL.Gen is
          for F in First .. Last loop
             if Field_Table (F).Field_Type in Node_Or_Entity_Type then
                Result (Node_Id) := True;
+
+            --  Subtypes of Uint all use the same Cast for Uint
+
+            elsif Field_Table (F).Field_Type in Uint_Subtype then
+               Result (Uint) := True;
+
             else
                Result (Field_Table (F).Field_Type) := True;
             end if;
@@ -1399,6 +1234,10 @@ package body Gen_IL.Gen is
          procedure Put_Id_Subtype (T : Node_Or_Entity_Type);
          --  Print out a subtype (of type Node_Id or Entity_Id) for a given
          --  nonroot abstract type.
+
+         procedure Put_Opt_Subtype (T : Node_Or_Entity_Type);
+         --  Print out an "optional" subtype; that is, one that allows
+         --  Empty. Their names start with "Opt_".
 
          procedure Put_Enum_Type is
             procedure Put_Enum_Lit (T : Node_Or_Entity_Type);
@@ -1491,6 +1330,29 @@ package body Gen_IL.Gen is
             end if;
          end Put_Id_Subtype;
 
+         procedure Put_Opt_Subtype (T : Node_Or_Entity_Type) is
+         begin
+            if Type_Table (T).Parent /= No_Type then
+               Put (S, "subtype Opt_" & Id_Image (T) & " is" & LF);
+               Increase_Indent (S, 2);
+               Put (S, Id_Image (Root));
+
+               --  Assert that the Opt_XXX subtype is empty or in the XXX
+               --  subtype.
+
+               if Enable_Assertions then
+                  Put (S, " with Predicate =>" & LF);
+                  Increase_Indent (S, 2);
+                  Put (S, "Opt_" & Id_Image (T) & " = Empty or else" & LF);
+                  Put (S, "Opt_" & Id_Image (T) & " in " & Id_Image (T));
+                  Decrease_Indent (S, 2);
+               end if;
+
+               Put (S, ";" & LF);
+               Decrease_Indent (S, 2);
+            end if;
+         end Put_Opt_Subtype;
+
       begin -- Put_Type_And_Subtypes
          Put_Enum_Type;
 
@@ -1501,7 +1363,7 @@ package body Gen_IL.Gen is
          case Root is
             when Node_Kind =>
                Put_Getter_Decl (S, Nkind);
-               Put (S, "function K (N : Node_Id) return Node_Kind renames Nkind;" & LF);
+               Put (S, "function K (N : Node_Id) return Node_Kind renames " & Image (Nkind) & ";" & LF);
                Put (S, "--  Shorthand for use in predicates and preconditions below" & LF);
                Put (S, "--  There is no procedure Set_Nkind." & LF);
                Put (S, "--  See Init_Nkind and Mutate_Nkind in Atree." & LF & LF);
@@ -1539,66 +1401,42 @@ package body Gen_IL.Gen is
             end if;
          end loop;
 
-         Put (S, "subtype Flag is Boolean;" & LF & LF);
+         Put (S, LF & "--  Optional subtypes of " & Id_Image (Root) & "." &
+              " These allow Empty." & LF & LF);
+
+         Iterate_Types (Root, Pre => Put_Opt_Subtype'Access);
+
+         Put (S, LF & "--  Optional union types:" & LF & LF);
+
+         for T in First_Abstract (Root) .. Last_Abstract (Root) loop
+            if Type_Table (T) /= null and then Type_Table (T).Is_Union then
+               Put_Opt_Subtype (T);
+            end if;
+         end loop;
+
+         Put (S, LF & "subtype Flag is Boolean;" & LF & LF);
       end Put_Type_And_Subtypes;
 
-      function Low_Level_Getter_Name (T : Type_Enum) return String is
-        ("Get_" & Image (T));
-      function Low_Level_Setter_Name (T : Type_Enum) return String is
-        ("Set_" & Image (T));
-      function Low_Level_Setter_Name (F : Field_Enum) return String is
-        (Low_Level_Setter_Name (Field_Table (F).Field_Type) &
-           (if Setter_Needs_Parent (F) then "_With_Parent" else ""));
-
       -------------------------------------------
-      -- Put_Low_Level_Accessor_Instantiations --
+      -- Put_Casts --
       -------------------------------------------
 
-      procedure Put_Low_Level_Accessor_Instantiations
+      procedure Put_Casts
         (S : in out Sink; T : Type_Enum)
       is
+         Pre : constant String :=
+           "function Cast is new Ada.Unchecked_Conversion (";
+         Lo_Type : constant String := "Field_Size_" & Image (Field_Size (T)) & "_Bit";
+         Hi_Type : constant String := Get_Set_Id_Image (T);
       begin
-         --  Special case for types that have defaults; instantiate
-         --  Get_32_Bit_Field_With_Default and pass in the Default_Val.
+         if T not in Uint_Subtype then
+            if T not in Node_Kind_Type | Entity_Kind_Type then
+               Put (S, Pre & Hi_Type & ", " & Lo_Type & ");" & LF);
+            end if;
 
-         if T in Elist_Id | Uint then
-            pragma Assert (Field_Size (T) = 32);
-
-            declare
-               Default_Val : constant String :=
-                 (if T = Elist_Id then "No_Elist" else "Uint_0");
-
-            begin
-               Put (S, LF & "function " & Low_Level_Getter_Name (T) &
-                    " is new Get_32_Bit_Field_With_Default (" &
-                    Get_Set_Id_Image (T) & ", " & Default_Val &
-                    ") with " & Inline & ";" & LF);
-            end;
-
-         --  Otherwise, instantiate the normal getter for the right size in
-         --  bits.
-
-         else
-            Put (S, LF & "function " & Low_Level_Getter_Name (T) &
-                 " is new Get_" & Image (Field_Size (T)) & "_Bit_Field (" &
-                 Get_Set_Id_Image (T) & ") with " & Inline & ";" & LF);
+            Put (S, Pre & Lo_Type & ", " & Hi_Type & ");" & LF);
          end if;
-
-         --  No special case for the setter
-
-         if T in Node_Kind_Type | Entity_Kind_Type then
-            Put (S, "pragma Warnings (Off);" & LF);
-            --  Set_Node_Kind_Type and Set_Entity_Kind_Type might not be called
-         end if;
-
-         Put (S, "procedure " & Low_Level_Setter_Name (T) & " is new Set_" &
-              Image (Field_Size (T)) & "_Bit_Field (" & Get_Set_Id_Image (T) &
-              ") with " & Inline & ";" & LF);
-
-         if T in Node_Kind_Type | Entity_Kind_Type then
-            Put (S, "pragma Warnings (On);" & LF);
-         end if;
-      end Put_Low_Level_Accessor_Instantiations;
+      end Put_Casts;
 
       ----------------------
       -- Put_Precondition --
@@ -1665,6 +1503,25 @@ package body Gen_IL.Gen is
       --  Node_Id or Entity_Id, and the getter and setter will have
       --  preconditions.
 
+      procedure Put_Get_Set_Incr
+        (S : in out Sink; F : Field_Enum; Get_Or_Set : String)
+        with Pre => Get_Or_Set in "Get" | "Set";
+      --  If statistics are enabled, put the appropriate increment statement
+
+      ----------------------
+      -- Put_Get_Set_Incr --
+      ----------------------
+
+      procedure Put_Get_Set_Incr
+        (S : in out Sink; F : Field_Enum; Get_Or_Set : String) is
+      begin
+         if Statistics_Enabled then
+            Put (S, "Atree." & Get_Or_Set & "_Count (" & F_Image (F) &
+                   ") := Atree." & Get_Or_Set & "_Count (" &
+                   F_Image (F) & ") + 1;" & LF);
+         end if;
+      end Put_Get_Set_Incr;
+
       ------------------------
       -- Node_To_Fetch_From --
       ------------------------
@@ -1685,11 +1542,9 @@ package body Gen_IL.Gen is
 
       procedure Put_Getter_Spec (S : in out Sink; F : Field_Enum) is
       begin
-         Put (S, "function " & Image (F) & LF);
-         Increase_Indent (S, 2);
-         Put (S, "(N : " & N_Type (F) & ") return " &
+         Put (S, "function " & Image (F));
+         Put (S, " (N : " & N_Type (F) & ") return " &
               Get_Set_Id_Image (Field_Table (F).Field_Type));
-         Decrease_Indent (S, 2);
       end Put_Getter_Spec;
 
       ---------------------
@@ -1702,10 +1557,59 @@ package body Gen_IL.Gen is
          Put (S, " with " & Inline);
          Increase_Indent (S, 2);
          Put_Precondition (S, F);
-
          Decrease_Indent (S, 2);
          Put (S, ";" & LF);
       end Put_Getter_Decl;
+
+      ------------------------------
+      -- Put_Getter_Setter_Locals --
+      ------------------------------
+
+      procedure Put_Getter_Setter_Locals
+        (S : in out Sink; F : Field_Enum; Get : Boolean)
+      is
+         Rec : Field_Info renames Field_Table (F).all;
+
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
+         Off : constant Field_Offset := Rec.Offset;
+         F_Per_Slot : constant Field_Offset :=
+           SS / Field_Offset (Field_Size (Rec.Field_Type));
+         Slot_Off : constant Field_Offset := Off / F_Per_Slot;
+         In_NH : constant Boolean := Slot_Off < Num_Header_Slots;
+
+         N : constant String :=
+           (if Get then Node_To_Fetch_From (F) else "N");
+
+      begin
+         Put (S, " is" & LF);
+         Increase_Indent (S, 3);
+         Put (S, "--  " & Image (F_Per_Slot) & "  " & Image (F_Size) &
+                "-bit fields per " & SSS & "-bit slot." & LF);
+         Put (S, "--  Offset " & Image (Off) & " = " &
+                Image (Slot_Off) & " slots + " & Image (Off mod F_Per_Slot) &
+                " fields in slot." & LF & LF);
+
+         Put (S, "Off : constant := " & Image (Off) & ";" & LF);
+         Put (S, "F_Size : constant := " & Image (F_Size) & ";" & LF);
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "Mask : constant := 2**F_Size - 1;" & LF);
+         end if;
+
+         Put (S, "F_Per_Slot : constant Field_Offset := Slot_Size / F_Size;" & LF);
+         Put (S, "Slot_Off : constant Field_Offset := Off / F_Per_Slot;" & LF);
+
+         if In_NH then
+            Put (S, "S : Slot renames Node_Offsets.Table (" & N & ").Slots (Slot_Off);" & LF);
+         else
+            Put (S, "S : Slot renames Slots.Table (Node_Offsets.Table (" & N & ").Offset + Slot_Off);" & LF);
+         end if;
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "V : constant Natural := Natural ((Off mod F_Per_Slot) * F_Size);" & LF);
+            Put (S, LF);
+         end if;
+      end Put_Getter_Setter_Locals;
 
       ---------------------
       -- Put_Getter_Body --
@@ -1713,6 +1617,8 @@ package body Gen_IL.Gen is
 
       procedure Put_Getter_Body (S : in out Sink; F : Field_Enum) is
          Rec : Field_Info renames Field_Table (F).all;
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
+         T : constant String := Get_Set_Id_Image (Rec.Field_Type);
       begin
          --  Note that we store the result in a local constant below, so that
          --  the "Pre => ..." can refer to it. The constant is called Val so
@@ -1721,15 +1627,43 @@ package body Gen_IL.Gen is
          --  and setter.
 
          Put_Getter_Spec (S, F);
-         Put (S, " is" & LF);
-         Increase_Indent (S, 3);
-         Put (S, "Val : constant " & Get_Set_Id_Image (Rec.Field_Type) &
-              " := " & Low_Level_Getter_Name (Rec.Field_Type) &
-              " (" & Node_To_Fetch_From (F) & ", " &
-              Image (Rec.Offset) & ");" & LF);
+         Put_Getter_Setter_Locals (S, F, Get => True);
+
+         Put (S, "Raw : constant Field_Size_" & Image (F_Size) & "_Bit :=" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "Field_Size_" & Image (F_Size) & "_Bit (");
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "Shift_Right (S, V) and Mask);" & LF);
+         else
+            Put (S, "S);" & LF);
+         end if;
+
+         Decrease_Indent (S, 2);
+
+         Put (S, "Val : constant " & T & " :=");
+
+         if Field_Has_Special_Default (Rec.Field_Type) then
+            pragma Assert (Field_Size (Rec.Field_Type) = 32);
+            Put (S, LF);
+            Increase_Indent (S, 2);
+            Put (S, "(if Raw = 0 then " & Special_Default (Rec.Field_Type) &
+                   " else " & "Cast (Raw));");
+            Decrease_Indent (S, 2);
+
+         else
+            Put (S, " Cast (Raw);");
+         end if;
+
+         Put (S, LF);
+
          Decrease_Indent (S, 3);
          Put (S, "begin" & LF);
          Increase_Indent (S, 3);
+
+         Put (S, "--  pragma Debug (Validate_Node_And_Offset (NN, Slot_Off));" & LF);
+         --  Comment out the validation, because it's too slow, and because the
+         --  relevant routines in Atree are not visible.
 
          if Rec.Pre.all /= "" then
             Put (S, "pragma Assert (" & Rec.Pre.all & ");" & LF);
@@ -1739,6 +1673,7 @@ package body Gen_IL.Gen is
             Put (S, "pragma Assert (" & Rec.Pre_Get.all & ");" & LF);
          end if;
 
+         Put_Get_Set_Incr (S, F, "Get");
          Put (S, "return Val;" & LF);
          Decrease_Indent (S, 3);
          Put (S, "end " & Image (F) & ";" & LF & LF);
@@ -1753,11 +1688,9 @@ package body Gen_IL.Gen is
          Default : constant String :=
            (if Rec.Field_Type = Flag then " := True" else "");
       begin
-         Put (S, "procedure Set_" & Image (F) & LF);
-         Increase_Indent (S, 2);
-         Put (S, "(N : " & N_Type (F) & "; Val : " &
+         Put (S, "procedure Set_" & Image (F));
+         Put (S, " (N : " & N_Type (F) & "; Val : " &
               Get_Set_Id_Image (Rec.Field_Type) & Default & ")");
-         Decrease_Indent (S, 2);
       end Put_Setter_Spec;
 
       ---------------------
@@ -1780,6 +1713,7 @@ package body Gen_IL.Gen is
 
       procedure Put_Setter_Body (S : in out Sink; F : Field_Enum) is
          Rec : Field_Info renames Field_Table (F).all;
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
 
          --  If Type_Only was specified in the call to Create_Semantic_Field,
          --  then we assert that the node is a base type. We cannot assert that
@@ -1792,9 +1726,17 @@ package body Gen_IL.Gen is
                 "Is_Base_Type (N)");
       begin
          Put_Setter_Spec (S, F);
-         Put (S, " is" & LF);
+         Put_Getter_Setter_Locals (S, F, Get => False);
+
+         Put (S, "Raw : constant Field_Size_" & Image (F_Size) & "_Bit := Cast (Val);" & LF);
+
+         Decrease_Indent (S, 3);
          Put (S, "begin" & LF);
          Increase_Indent (S, 3);
+
+         Put (S, "--  pragma Debug (Validate_Node_And_Offset_Write (N, Slot_Off));" & LF);
+         --  Comment out the validation, because it's too slow, and because the
+         --  relevant routines in Atree are not visible.
 
          if Rec.Pre.all /= "" then
             Put (S, "pragma Assert (" & Rec.Pre.all & ");" & LF);
@@ -1808,8 +1750,30 @@ package body Gen_IL.Gen is
             Put (S, "pragma Assert (" & Type_Only_Assertion & ");" & LF);
          end if;
 
-         Put (S, Low_Level_Setter_Name (F) & " (N, " & Image (Rec.Offset)
-              & ", Val);" & LF);
+         if Setter_Needs_Parent (F) then
+            declare
+               Err : constant String :=
+                 (if Rec.Field_Type = List_Id then "Error_List" else "Error");
+            begin
+               Put (S, "if Present (Val) and then Val /= " & Err & " then" & LF);
+               Increase_Indent (S, 3);
+               Put (S, "pragma Warnings (Off, ""actuals for this call may be in wrong order"");" & LF);
+               Put (S, "Set_Parent (Val, N);" & LF);
+               Put (S, "pragma Warnings (On, ""actuals for this call may be in wrong order"");" & LF);
+               Decrease_Indent (S, 3);
+               Put (S, "end if;" & LF & LF);
+            end;
+         end if;
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "S := (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Raw), V);" & LF);
+
+         else
+            Put (S, "S := Slot (Raw);" & LF);
+         end if;
+
+         Put_Get_Set_Incr (S, F, "Set");
+
          Decrease_Indent (S, 3);
          Put (S, "end Set_" & Image (F) & ";" & LF & LF);
       end Put_Setter_Body;
@@ -2032,7 +1996,7 @@ package body Gen_IL.Gen is
               when others => "Entity_Field");  -- Entity_Kind
 
       begin
-         Put (S, "--  Table of sizes in 32-bit slots for given " &
+         Put (S, "--  Table of sizes in " & SSS & "-bit slots for given " &
               Image (Root) & ", for use by Atree:" & LF);
 
          case Root is
@@ -2041,8 +2005,7 @@ package body Gen_IL.Gen is
                     Image (Min_Node_Size) & ";" & LF);
                Put (S, "Max_Node_Size : constant Field_Offset := " &
                     Image (Max_Node_Size) & ";" & LF & LF);
-               Put (S, "Average_Node_Size_In_Slots : constant := " &
-                    Average_Node_Size_In_Slots'Img & ";" & LF & LF);
+
             when Entity_Kind =>
                Put (S, LF & "Min_Entity_Size : constant Field_Offset := " &
                     Image (Min_Entity_Size) & ";" & LF);
@@ -2063,34 +2026,48 @@ package body Gen_IL.Gen is
          Put (S, "); -- Size" & LF);
          Decrease_Indent (S, 2);
 
-         declare
-            type Dummy is array
-              (First_Field (Root) .. Last_Field (Root)) of Boolean;
-            Num_Fields : constant Root_Int := Dummy'Length;
-            First_Time : Boolean := True;
-         begin
-            Put (S, LF & "--  Enumeration of all " & Image (Num_Fields)
-                 & " fields:" & LF & LF);
+         if Root = Node_Kind then
+            declare
+               type Node_Dummy is array (Node_Field) of Boolean;
+               type Entity_Dummy is array (Entity_Field) of Boolean;
+               Num_Fields : constant Root_Int :=
+                 Node_Dummy'Length + Entity_Dummy'Length;
+               First_Time : Boolean := True;
+            begin
+               Put (S, LF & "--  Enumeration of all " & Image (Num_Fields)
+                    & " fields:" & LF & LF);
 
-            Put (S, "type " & Field_Enum_Type_Name & " is" & LF);
-            Increase_Indent (S, 2);
-            Put (S, "(");
-            Increase_Indent (S, 1);
+               Put (S, "type Node_Or_Entity_Field is" & LF);
+               Increase_Indent (S, 2);
+               Put (S, "(");
+               Increase_Indent (S, 1);
 
-            for F in First_Field (Root) .. Last_Field (Root) loop
-               if First_Time then
-                  First_Time := False;
-               else
+               for F in Node_Field loop
+                  if First_Time then
+                     First_Time := False;
+                  else
+                     Put (S, "," & LF);
+                  end if;
+
+                  Put (S, F_Image (F));
+               end loop;
+
+               for F in Entity_Field loop
                   Put (S, "," & LF);
-               end if;
+                  Put (S, F_Image (F));
+               end loop;
 
-               Put (S, F_Image (F));
-            end loop;
+               Decrease_Indent (S, 1);
+               Put (S, "); -- Node_Or_Entity_Field" & LF);
+               Decrease_Indent (S, 2);
+            end;
+         end if;
 
-            Decrease_Indent (S, 1);
-            Put (S, "); -- " & Field_Enum_Type_Name & LF);
-            Decrease_Indent (S, 2);
-         end;
+         Put (S, LF & "subtype " & Field_Enum_Type_Name & " is" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "Node_Or_Entity_Field range " & F_Image (First_Field (Root)) &
+                " .. " & F_Image (Last_Field (Root)) & ";" & LF);
+         Decrease_Indent (S, 2);
 
          Put (S, LF & "type " & Field_Enum_Type_Name & "_Index is new Pos;" & LF);
          Put (S, "type " & Field_Enum_Type_Name & "_Array is array (" &
@@ -2149,34 +2126,72 @@ package body Gen_IL.Gen is
             Decrease_Indent (S, 2);
          end;
 
-         declare
-            First_Time : Boolean := True;
-         begin
-            Put (S, LF & "--  Table mapping fields to kind and offset:" & LF & LF);
+         if Root = Node_Kind then
+            declare
+               First_Time : Boolean := True;
+               FS, FB, LB : Bit_Offset;
+               --  Field size in bits, first bit, and last bit for the previous
+               --  time around the loop. Used to print a comment after ",".
 
-            Put (S, Field_Enum_Type_Name & "_Descriptors : constant array (" &
-                 Field_Enum_Type_Name & ") of Field_Descriptor :=" & LF);
+               procedure One_Comp (F : Field_Enum);
 
-            Increase_Indent (S, 2);
-            Put (S, "(");
-            Increase_Indent (S, 1);
+               --------------
+               -- One_Comp --
+               --------------
 
-            for F in First_Field (Root) .. Last_Field (Root) loop
-               if First_Time then
-                  First_Time := False;
-               else
-                  Put (S, "," & LF);
-               end if;
+               procedure One_Comp (F : Field_Enum) is
+                  pragma Annotate (Codepeer, Modified, Field_Table);
+                  Offset : constant Field_Offset := Field_Table (F).Offset;
+               begin
+                  if First_Time then
+                     First_Time := False;
+                  else
+                     Put (S, ",");
 
-               Put (S, F_Image (F) & " => (" &
-                    Image (Field_Table (F).Field_Type) & "_Field, " &
-                    Image (Field_Table (F).Offset) & ")");
-            end loop;
+                     --  Print comment showing field's bits, except for 1-bit
+                     --  fields.
 
-            Decrease_Indent (S, 1);
-            Put (S, "); -- Field_Descriptors" & LF);
-            Decrease_Indent (S, 2);
-         end;
+                     if FS /= 1 then
+                        Put (S, " -- *" & Image (FS) & " = bits " &
+                               Image (FB) & ".." & Image (LB));
+                     end if;
+
+                     Put (S, LF);
+                  end if;
+
+                  Put (S, F_Image (F) & " => (" &
+                       Image (Field_Table (F).Field_Type) & "_Field, " &
+                       Image (Offset) & ", " &
+                       Image (Field_Table (F).Type_Only) & ")");
+
+                  FS := Field_Size (F);
+                  FB := First_Bit (F, Offset);
+                  LB := Last_Bit (F, Offset);
+               end One_Comp;
+
+            begin
+               Put (S, LF & "--  Table mapping fields to kind and offset:" & LF & LF);
+
+               Put (S, "Field_Descriptors : constant array (" &
+                    "Node_Or_Entity_Field) of Field_Descriptor :=" & LF);
+
+               Increase_Indent (S, 2);
+               Put (S, "(");
+               Increase_Indent (S, 1);
+
+               for F in Node_Field loop
+                  One_Comp (F);
+               end loop;
+
+               for F in Entity_Field loop
+                  One_Comp (F);
+               end loop;
+
+               Decrease_Indent (S, 1);
+               Put (S, "); -- Field_Descriptors" & LF);
+               Decrease_Indent (S, 2);
+            end;
+         end if;
 
       end Put_Tables;
 
@@ -2242,12 +2257,43 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 2);
          Put (S, ");" & LF & LF);
 
+         Put (S, "type Type_Only_Enum is" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "(");
+
+         declare
+            First_Time : Boolean := True;
+         begin
+            for TO in Type_Only_Enum loop
+               if First_Time then
+                  First_Time := False;
+               else
+                  Put (S, ", ");
+               end if;
+
+               Put (S, Image (TO));
+            end loop;
+         end;
+
+         Decrease_Indent (S, 2);
+         Put (S, ");" & LF & LF);
+
          Put (S, "type Field_Descriptor is record" & LF);
          Increase_Indent (S, 3);
          Put (S, "Kind : Field_Kind;" & LF);
          Put (S, "Offset : Field_Offset;" & LF);
+         Put (S, "Type_Only : Type_Only_Enum;" & LF);
          Decrease_Indent (S, 3);
-         Put (S, "end record;" & LF);
+         Put (S, "end record;" & LF & LF);
+
+         --  Print out the node header types. Note that the Offset field is of
+         --  the base type, because we are using zero-origin addressing in
+         --  Atree.
+
+         Put (S, "N_Head : constant Field_Offset := " & N_Head & ";" & LF & LF);
+
+         Put (S, "Atree_Statistics_Enabled : constant Boolean := " &
+                Capitalize (Boolean'Image (Statistics_Enabled)) & ";" & LF);
 
          Decrease_Indent (S, 3);
          Put (S, LF & "end Seinfo;" & LF);
@@ -2260,39 +2306,6 @@ package body Gen_IL.Gen is
       procedure Put_Nodes is
          S : Sink;
          B : Sink;
-
-         procedure Put_Setter_With_Parent (Kind : String);
-         --  Put the low-level ..._With_Parent setter. Kind is either "Node" or
-         --  "List".
-
-         procedure Put_Setter_With_Parent (Kind : String) is
-            Error : constant String := (if Kind = "Node" then "" else "_" & Kind);
-         begin
-            Put (B, LF & "procedure Set_" & Kind & "_Id_With_Parent" & LF);
-            Increase_Indent (B, 2);
-            Put (B, "(N : Node_Id; Offset : Field_Offset; Val : " & Kind & "_Id);" & LF & LF);
-            Decrease_Indent (B, 2);
-
-            Put (B, "procedure Set_" & Kind & "_Id_With_Parent" & LF);
-            Increase_Indent (B, 2);
-            Put (B, "(N : Node_Id; Offset : Field_Offset; Val : " & Kind & "_Id) is" & LF);
-            Decrease_Indent (B, 2);
-            Put (B, "begin" & LF);
-            Increase_Indent (B, 3);
-            Put (B, "if Present (Val) and then Val /= Error" & Error & " then" & LF);
-            Increase_Indent (B, 3);
-            Put (B, "pragma Warnings (Off, ""actuals for this call may be in wrong order"");" & LF);
-            Put (B, "Set_Parent (Val, N);" & LF);
-            Put (B, "pragma Warnings (On, ""actuals for this call may be in wrong order"");" & LF);
-            Decrease_Indent (B, 3);
-            Put (B, "end if;" & LF & LF);
-
-            Put (B, "Set_" & Kind & "_Id (N, Offset, Val);" & LF);
-            Decrease_Indent (B, 3);
-            Put (B, "end Set_" & Kind & "_Id_With_Parent;" & LF);
-         end Put_Setter_With_Parent;
-
-      --  Start of processing for Put_Nodes
 
       begin
          Create_File (S, "sinfo-nodes.ads");
@@ -2325,6 +2338,7 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 3);
          Put (S, LF & "end Sinfo.Nodes;" & LF);
 
+         Put (B, "with Ada.Unchecked_Conversion;" & LF);
          Put (B, "with Atree; use Atree; use Atree.Atree_Private_Part;" & LF);
          Put (B, "with Nlists; use Nlists;" & LF);
          Put (B, "pragma Warnings (Off);" & LF);
@@ -2337,18 +2351,13 @@ package body Gen_IL.Gen is
 
          Put (B, "--  This package is automatically generated." & LF & LF);
 
-         Put (B, "--  Instantiations of low-level getters and setters that take offsets" & LF);
-         Put (B, "--  in units of the size of the field." & LF);
-
          Put (B, "pragma Style_Checks (""M200"");" & LF);
+
          for T in Special_Type loop
             if Node_Field_Types_Used (T) then
-               Put_Low_Level_Accessor_Instantiations (B, T);
+               Put_Casts (B, T);
             end if;
          end loop;
-
-         Put_Setter_With_Parent ("Node");
-         Put_Setter_With_Parent ("List");
 
          Put_Subp_Bodies (B, Node_Kind);
 
@@ -2367,7 +2376,6 @@ package body Gen_IL.Gen is
       begin
          Create_File (S, "einfo-entities.ads");
          Create_File (B, "einfo-entities.adb");
-         Put (S, "with Seinfo; use Seinfo;" & LF);
          Put (S, "with Sinfo.Nodes; use Sinfo.Nodes;" & LF);
 
          Put (S, LF & "package Einfo.Entities is" & LF & LF);
@@ -2386,6 +2394,7 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 3);
          Put (S, LF & "end Einfo.Entities;" & LF);
 
+         Put (B, "with Ada.Unchecked_Conversion;" & LF);
          Put (B, "with Atree; use Atree; use Atree.Atree_Private_Part;" & LF);
          Put (B, "with Einfo.Utils; use Einfo.Utils;" & LF);
          --  This forms a cycle between packages (via bodies, which is OK)
@@ -2395,13 +2404,11 @@ package body Gen_IL.Gen is
 
          Put (B, "--  This package is automatically generated." & LF & LF);
 
-         Put (B, "--  Instantiations of low-level getters and setters that take offsets" & LF);
-         Put (B, "--  in units of the size of the field." & LF);
-
          Put (B, "pragma Style_Checks (""M200"");" & LF);
+
          for T in Special_Type loop
             if Entity_Field_Types_Used (T) then
-               Put_Low_Level_Accessor_Instantiations (B, T);
+               Put_Casts (B, T);
             end if;
          end loop;
 
@@ -2450,7 +2457,8 @@ package body Gen_IL.Gen is
             end if;
          end loop;
 
-         Put (S, ")" & LF & "return " & Node_Or_Entity (Root) & "_Id");
+         Put (S, ")" & LF);
+         Put (S, "return " & Node_Or_Entity (Root) & "_Id");
          Decrease_Indent (S, 2);
          Decrease_Indent (S, 1);
       end Put_Make_Spec;
@@ -2464,7 +2472,8 @@ package body Gen_IL.Gen is
          for T in First_Concrete (Root) .. Last_Concrete (Root) loop
             if T not in N_Unused_At_Start | N_Unused_At_End then
                Put_Make_Spec (S, Root, T);
-               Put (S, ";" & LF & "pragma " & Inline & " (Make_" &
+               Put (S, ";" & LF);
+               Put (S, "pragma " & Inline & " (Make_" &
                     Image_Sans_N (T) & ");" & LF & LF);
             end if;
          end loop;
@@ -2561,6 +2570,11 @@ package body Gen_IL.Gen is
                   end;
                end if;
 
+               if Type_Table (T).Nmake_Assert.all /= "" then
+                  Put (S, "pragma Assert (" &
+                           Type_Table (T).Nmake_Assert.all & ");" & LF);
+               end if;
+
                Put (S, "return N;" & LF);
                Decrease_Indent (S, 3);
 
@@ -2628,6 +2642,7 @@ package body Gen_IL.Gen is
          Increase_Indent (B, 3);
 
          Put (B, "--  This package is automatically generated." & LF & LF);
+         Put (B, "pragma Style_Checks (""M200"");" & LF);
 
          Put_Make_Bodies (B, Node_Kind);
 
@@ -2664,11 +2679,11 @@ package body Gen_IL.Gen is
             return Result : Bit_Offset do
                if F = No_Field then
                   --  We don't have a field size for No_Field, so just look at
-                  --  the bits up to the next word boundary.
+                  --  the bits up to the next slot boundary.
 
                   Result := First_Bit;
 
-                  while (Result + 1) mod 32 /= 0
+                  while (Result + 1) mod SS /= 0
                     and then Type_Layout (T) (Result + 1) = No_Field
                   loop
                      Result := Result + 1;
@@ -2681,19 +2696,19 @@ package body Gen_IL.Gen is
          end Get_Last_Bit;
 
          function First_Bit_Image (First_Bit : Bit_Offset) return String is
-            W : constant Bit_Offset := First_Bit / 32;
-            B : constant Bit_Offset := First_Bit mod 32;
-            pragma Assert (W * 32 + B = First_Bit);
+            W : constant Bit_Offset := First_Bit / SS;
+            B : constant Bit_Offset := First_Bit mod SS;
+            pragma Assert (W * SS + B = First_Bit);
          begin
             return
-              Image (W) & "*32" & (if B = 0 then "" else " + " & Image (B));
+              Image (W) & "*" & SSS & (if B = 0 then "" else " + " & Image (B));
          end First_Bit_Image;
 
          function Last_Bit_Image (Last_Bit : Bit_Offset) return String is
-            W : constant Bit_Offset := (Last_Bit + 1) / 32;
+            W : constant Bit_Offset := (Last_Bit + 1) / SS;
          begin
-            if W * 32 - 1 = Last_Bit then
-               return Image (W) & "*32 - 1";
+            if W * SS - 1 = Last_Bit then
+               return Image (W) & "*" & SSS & " - 1";
             else
                return First_Bit_Image (Last_Bit);
             end if;
@@ -2766,7 +2781,8 @@ package body Gen_IL.Gen is
 
          Put (S, "--  This package is not used by the compiler." & LF);
          Put (S, "--  The body contains tables that are intended to be used by humans to" & LF);
-         Put (S, "--  help understand the layout of various data structures." & LF & LF);
+         Put (S, "--  help understand the layout of various data structures." & LF);
+         Put (S, "--  Search for ""--"" to find major sections of code." & LF & LF);
 
          Put (S, "pragma Elaborate_Body;" & LF);
 
@@ -2806,6 +2822,7 @@ package body Gen_IL.Gen is
 
          declare
             First_Time : Boolean := True;
+
          begin
             for T in Concrete_Type loop
                if First_Time then
@@ -2827,40 +2844,45 @@ package body Gen_IL.Gen is
                declare
                   First_Time : Boolean := True;
                   First_Bit : Bit_Offset := 0;
+                  F : Opt_Field_Enum;
+
+                  function Node_Field_Of_Entity return String is
+                     (if T in Entity_Type and then F in Node_Field then
+                       " -- N" else "");
+                  --  A comment to put out for fields of entities that are
+                  --  shared with nodes, such as Chars.
+
                begin
                   while First_Bit < Type_Bit_Size_Aligned (T) loop
                      if First_Time then
                         First_Time := False;
                      else
-                        Put (B, "," & LF);
+                        Put (B, "," & Node_Field_Of_Entity & LF);
                      end if;
 
+                     F := Type_Layout (T) (First_Bit);
+
                      declare
-                        F : constant Opt_Field_Enum :=
-                          Type_Layout (T) (First_Bit);
+                        Last_Bit : constant Bit_Offset :=
+                          Get_Last_Bit (T, F, First_Bit);
                      begin
-                        declare
-                           Last_Bit : constant Bit_Offset :=
-                             Get_Last_Bit (T, F, First_Bit);
-                        begin
+                        pragma Assert
+                          (Type_Layout (T) (First_Bit .. Last_Bit) =
+                                           (First_Bit .. Last_Bit => F));
+
+                        if Last_Bit = First_Bit then
+                           Put (B, First_Bit_Image (First_Bit) & " => " &
+                                Image_Or_Waste (F));
+                        else
                            pragma Assert
-                             (Type_Layout (T) (First_Bit .. Last_Bit) =
-                                              (First_Bit .. Last_Bit => F));
+                             (if F /= No_Field then
+                               First_Bit mod Field_Size (F) = 0);
+                           Put (B, First_Bit_Image (First_Bit) & " .. " &
+                                Last_Bit_Image (Last_Bit) & " => " &
+                                Image_Or_Waste (F));
+                        end if;
 
-                           if Last_Bit = First_Bit then
-                              Put (B, First_Bit_Image (First_Bit) & " => " &
-                                   Image_Or_Waste (F));
-                           else
-                              pragma Assert
-                                (if F /= No_Field then
-                                  First_Bit mod Field_Size (F) = 0);
-                              Put (B, First_Bit_Image (First_Bit) & " .. " &
-                                   Last_Bit_Image (Last_Bit) & " => " &
-                                   Image_Or_Waste (F));
-                           end if;
-
-                           First_Bit := Last_Bit + 1;
-                        end;
+                        First_Bit := Last_Bit + 1;
                      end;
                   end loop;
                end;
@@ -2966,6 +2988,8 @@ package body Gen_IL.Gen is
          end Put_Kind_Subtype;
 
       begin
+         Put_Union_Membership (S, Root, Only_Prototypes => True);
+
          Iterate_Types (Root, Pre => Put_Enum_Lit'Access);
 
          Put (S, "#define Number_" & Node_Or_Entity (Root) & "_Kinds " &
@@ -2973,87 +2997,94 @@ package body Gen_IL.Gen is
 
          Iterate_Types (Root, Pre => Put_Kind_Subtype'Access);
 
-         Put_Union_Membership (S, Root);
+         Put_Union_Membership (S, Root, Only_Prototypes => False);
       end Put_C_Type_And_Subtypes;
 
-      ----------------------------
-      -- Put_Low_Level_C_Getter --
-      ----------------------------
+      ------------------
+      -- Put_C_Getter --
+      ------------------
 
-      procedure Put_Low_Level_C_Getter
-        (S : in out Sink; T : Type_Enum)
-      is
-         T_Image : constant String := Get_Set_Id_Image (T);
-
-      begin
-         Put (S, "INLINE " & T_Image & "" & LF);
-         Put (S, "Get_" & Image (T) & " (Node_Id N, Field_Offset Offset)" & LF);
-
-         Increase_Indent (S, 3);
-
-         --  Same special case as in Put_Low_Level_Accessor_Instantiations
-
-         if T in Elist_Id | Uint then
-            pragma Assert (Field_Size (T) = 32);
-
-            declare
-               Default_Val : constant String :=
-                 (if T = Elist_Id then "No_Elist" else "Uint_0");
-
-            begin
-               Put (S, "{ return (" & T_Image &
-                    ") Get_32_Bit_Field_With_Default(N, Offset, " &
-                    Default_Val & "); }" & LF & LF);
-            end;
-
-         else
-            Put (S, "{ return (" & T_Image & ") Get_" &
-                 Image (Field_Size (T)) & "_Bit_Field(N, Offset); }" & LF & LF);
-         end if;
-
-         Decrease_Indent (S, 3);
-      end Put_Low_Level_C_Getter;
-
-      -----------------------------
-      -- Put_High_Level_C_Getter --
-      -----------------------------
-
-      procedure Put_High_Level_C_Getter
+      procedure Put_C_Getter
         (S : in out Sink; F : Field_Enum)
       is
+         Rec : Field_Info renames Field_Table (F).all;
+
+         Off : constant Field_Offset := Rec.Offset;
+         F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
+         F_Per_Slot : constant Field_Offset :=
+           SS / Field_Offset (Field_Size (Rec.Field_Type));
+         Slot_Off : constant Field_Offset := Off / F_Per_Slot;
+         In_NH : constant Boolean := Slot_Off < Num_Header_Slots;
+
+         N : constant String := Node_To_Fetch_From (F);
       begin
-         Put (S, "INLINE " & Get_Set_Id_Image (Field_Table (F).Field_Type) &
+         Put (S, "INLINE " & Get_Set_Id_Image (Rec.Field_Type) &
               " " & Image (F) & " (Node_Id N)" & LF);
 
+         Put (S, "{" & LF);
          Increase_Indent (S, 3);
-         Put (S, "{ return " &
-              Low_Level_Getter_Name (Field_Table (F).Field_Type) &
-              "(" & Node_To_Fetch_From (F) & ", " &
-              Image (Field_Table (F).Offset) & "); }" & LF & LF);
+         Put (S, "const Field_Offset Off = " & Image (Rec.Offset) & ";" & LF);
+         Put (S, "const Field_Offset F_Size = " & Image (F_Size) & ";" & LF);
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "const any_slot Mask = (1 << F_Size) - 1;" & LF);
+         end if;
+
+         Put (S, "const Field_Offset F_Per_Slot = Slot_Size / F_Size;" & LF);
+         Put (S, "const Field_Offset Slot_Off = Off / F_Per_Slot;" & LF);
+         Put (S, LF);
+         if In_NH then
+            Put (S, "any_slot slot = Node_Offsets_Ptr[" & N & "].Slots[Slot_Off];" & LF);
+         else
+            Put (S, "any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[" & N &
+                   "].Offset + Slot_Off);" & LF);
+         end if;
+
+         if Field_Size (Rec.Field_Type) /= SS then
+            Put (S, "unsigned int Raw = (slot >> (Off % F_Per_Slot) * F_Size) & Mask;" & LF);
+         else
+            Put (S, "unsigned int Raw = slot;" & LF);
+         end if;
+
+         Put (S, Get_Set_Id_Image (Rec.Field_Type) & " val = ");
+
+         if Field_Has_Special_Default (Rec.Field_Type) then
+            Increase_Indent (S, 2);
+            Put (S, "(Raw? Raw : " & Special_Default (Rec.Field_Type) & ")");
+            Decrease_Indent (S, 2);
+
+         else
+            Put (S, "Raw");
+         end if;
+
+         Put (S, ";" & LF);
+
+         Put (S, "return val;" & LF);
          Decrease_Indent (S, 3);
-      end Put_High_Level_C_Getter;
+         Put (S, "}" & LF & LF);
+      end Put_C_Getter;
 
-      ------------------------------
-      -- Put_High_Level_C_Getters --
-      ------------------------------
+      -------------------
+      -- Put_C_Getters --
+      -------------------
 
-      procedure Put_High_Level_C_Getters
+      procedure Put_C_Getters
         (S : in out Sink; Root : Root_Type)
       is
       begin
          Put (S, "// Getters for fields" & LF & LF);
 
          for F in First_Field (Root) .. Last_Field (Root) loop
-            Put_High_Level_C_Getter (S, F);
+            Put_C_Getter (S, F);
          end loop;
-      end Put_High_Level_C_Getters;
+      end Put_C_Getters;
 
       --------------------------
       -- Put_Union_Membership --
       --------------------------
 
       procedure Put_Union_Membership
-        (S : in out Sink; Root : Root_Type) is
+        (S : in out Sink; Root : Root_Type; Only_Prototypes : Boolean) is
 
          procedure Put_Ors (T : Abstract_Type);
          --  Print the "or" (i.e. "||") of tests whether kind is in each child
@@ -3087,22 +3118,27 @@ package body Gen_IL.Gen is
          end Put_Ors;
 
       begin
-         Put (S, LF & "// Membership tests for union types" & LF & LF);
+         if not Only_Prototypes then
+            Put (S, LF & "// Membership tests for union types" & LF & LF);
+         end if;
 
          for T in First_Abstract (Root) .. Last_Abstract (Root) loop
             if Type_Table (T) /= null and then Type_Table (T).Is_Union then
                Put (S, "INLINE Boolean" & LF);
                Put (S, "Is_In_" & Image (T) & " (" &
-                    Node_Or_Entity (Root) & "_Kind kind)" & LF);
+                    Node_Or_Entity (Root) & "_Kind kind)" &
+                    (if Only_Prototypes then ";" else "") & LF);
 
-               Put (S, "{" & LF);
-               Increase_Indent (S, 3);
-               Put (S, "return" & LF);
-               Increase_Indent (S, 3);
-               Put_Ors (T);
-               Decrease_Indent (S, 3);
-               Decrease_Indent (S, 3);
-               Put (S, ";" & LF & "}" & LF);
+               if not Only_Prototypes then
+                  Put (S, "{" & LF);
+                  Increase_Indent (S, 3);
+                  Put (S, "return" & LF);
+                  Increase_Indent (S, 3);
+                  Put_Ors (T);
+                  Decrease_Indent (S, 3);
+                  Decrease_Indent (S, 3);
+                  Put (S, ";" & LF & "}" & LF);
+               end if;
 
                Put (S, "" & LF);
             end if;
@@ -3124,16 +3160,24 @@ package body Gen_IL.Gen is
 
          Put (S, "typedef Boolean Flag;" & LF & LF);
 
+         Put (S, "#define N_Head " & N_Head & LF);
+         Put (S, "" & LF);
+         Put (S, "typedef struct Node_Header {" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "any_slot Slots[N_Head];" & LF);
+         Put (S, "Field_Offset Offset;" & LF);
+         Decrease_Indent (S, 2);
+         Put (S, "} Node_Header;" & LF & LF);
+
+         Put (S, "extern Node_Header *Node_Offsets_Ptr;" & LF);
+         Put (S, "extern any_slot *Slots_Ptr;" & LF & LF);
+
          Put_C_Type_And_Subtypes (S, Node_Kind);
 
          Put (S, "// Getters corresponding to instantiations of Atree.Get_n_Bit_Field"
                  & LF & LF);
 
-         for T in Special_Type loop
-            Put_Low_Level_C_Getter (S, T);
-         end loop;
-
-         Put_High_Level_C_Getters (S, Node_Kind);
+         Put_C_Getters (S, Node_Kind);
 
          Put (S, "#ifdef __cplusplus" & LF);
          Put (S, "}" & LF);
@@ -3188,11 +3232,7 @@ package body Gen_IL.Gen is
 
          Put_C_Type_And_Subtypes (S, Entity_Kind);
 
-         --  Note that we do not call Put_Low_Level_C_Getter here. Those are in
-         --  sinfo.h, so every file that #includes einfo.h must #include
-         --  sinfo.h first.
-
-         Put_High_Level_C_Getters (S, Entity_Kind);
+         Put_C_Getters (S, Entity_Kind);
 
          Put (S, "// Abstract type queries" & LF & LF);
 

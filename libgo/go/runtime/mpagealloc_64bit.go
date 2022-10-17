@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build amd64 !ios,arm64 mips64 mips64le ppc64 ppc64le riscv64 s390x arm64be alpha sparc64 ia64
-
-// See mpagealloc_32bit.go for why ios/arm64 is excluded here.
+//go:build amd64 || arm64 || mips64 || mips64le || ppc64 || ppc64le || riscv64 || s390x || arm64be || alpha || sparc64 || ia64
 
 package runtime
 

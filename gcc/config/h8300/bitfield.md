@@ -338,17 +338,6 @@
 }
   [(set_attr "length_table" "bitfield")])
 
-;;(define_expand "cstore<mode>4"
-;;  [(use (match_operator 1 "eqne_operator"
-;;         [(match_operand:QHSI 2 "h8300_dst_operand" "")
-;;          (match_operand:QHSI 3 "h8300_src_operand" "")]))
-;;   (clobber (match_operand:QHSI 0 "register_operand"))]
-;;  "TARGET_H8300SX"
-;;  {
-;;    h8300_expand_store (operands);
-;;    DONE;
-;;  })
-
 ;;(define_insn "*bstzhireg"
 ;;  [(set (match_operand:HI 0 "register_operand" "=r")
 ;;	(match_operator:HI 1 "eqne_operator" [(cc0) (const_int 0)]))]

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#define Parent atree__parent
+#define Parent atree__node_parent
 extern Node_Id Parent (Node_Id);
 
 #define Original_Node atree__original_node
@@ -64,68 +64,6 @@ Present (Tree_Id N)
 
 #define Current_Error_Node atree__current_error_node
 extern Node_Id Current_Error_Node;
-
-/* The following code corresponds to the Get_n_Bit_Field functions (for
-   various n) in package Atree.  The low-level getters in sinfo.h call
-   these even-lower-level getters.  */
-
-extern Field_Offset *Node_Offsets_Ptr;
-extern any_slot *Slots_Ptr;
-
-INLINE unsigned int Get_1_Bit_Field (Node_Id, Field_Offset);
-INLINE unsigned int Get_2_Bit_Field (Node_Id, Field_Offset);
-INLINE unsigned int Get_4_Bit_Field (Node_Id, Field_Offset);
-INLINE unsigned int Get_8_Bit_Field (Node_Id, Field_Offset);
-INLINE unsigned int Get_32_Bit_Field (Node_Id, Field_Offset);
-INLINE unsigned int Get_32_Bit_Field_With_Default (Node_Id, Field_Offset,
-						   unsigned int);
-
-INLINE unsigned int
-Get_1_Bit_Field (Node_Id N, Field_Offset Offset)
-{
-  const Field_Offset L = Slot_Size / 1;
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
-  return (slot >> (Offset % L) * (Slot_Size / L)) & 1;
-}
-
-INLINE unsigned int
-Get_2_Bit_Field (Node_Id N, Field_Offset Offset)
-{
-  const Field_Offset L = Slot_Size / 2;
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
-  return (slot >> (Offset % L) * (Slot_Size / L)) & 3;
-}
-
-INLINE unsigned int
-Get_4_Bit_Field (Node_Id N, Field_Offset Offset)
-{
-  const Field_Offset L = Slot_Size / 4;
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
-  return (slot >> (Offset % L) * (Slot_Size / L)) & 15;
-}
-
-INLINE unsigned int
-Get_8_Bit_Field (Node_Id N, Field_Offset Offset)
-{
-  const Field_Offset L = Slot_Size / 8;
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
-  return (slot >> (Offset % L) * (Slot_Size / L)) & 255;
-}
-
-INLINE unsigned int
-Get_32_Bit_Field (Node_Id N, Field_Offset Offset)
-{
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset);
-  return slot;
-}
-
-INLINE unsigned int
-Get_32_Bit_Field_With_Default (Node_Id N, Field_Offset Offset,
-			       unsigned int Default_Value)
-{
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset);
-  return slot == Empty ? Default_Value : slot;
-}
 
 #ifdef __cplusplus
 }

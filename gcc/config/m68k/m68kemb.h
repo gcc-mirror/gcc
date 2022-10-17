@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  "embedded" 68XXX.
    This is meant to be included after m68k.h.
-   Copyright (C) 1994-2021 Free Software Foundation, Inc.  */
+   Copyright (C) 1994-2022 Free Software Foundation, Inc.  */
 
 /* Override the SVR4 ABI for this target.  */
 
@@ -39,7 +39,7 @@
     }						\
   while (0)
 
-/* Override the default LIB_SPEC from gcc.c.  We don't currently support
+/* Override the default LIB_SPEC from gcc.cc.  We don't currently support
    profiling, or libg.a.  */
 
 #undef  LIB_SPEC

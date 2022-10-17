@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2021 Free Software Foundation, Inc.
+# Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@ gcc_parallel_test_enable 0
 # having to deal with .dSYM directories, as long as -gsplit-dwarf is
 # not supported on platforms that use .dSYM directories.
 set gsplit_dwarf "-g -gsplit-dwarf"
-if ![check_no_compiler_messages gsplitdwarf object {
-    void foo (void) { }
+if ![check_no_compiler_messages gsplitdwarf executable {
+    int main (void) { return 0; }
 } "$gsplit_dwarf"] {
     set gsplit_dwarf ""
 }
@@ -78,6 +78,13 @@ if {[board_info $dest exists output_format]} {
     append link_options " additional_flags=-Wl,-oformat,[board_info $dest output_format]"
 }
 
+
+set devnull "/dev/null"
+if { [info exists ::env(OS)] && [string match "Windows*" $::env(OS)] } {
+    # Windows uses special file named "nul" as a substitute for /dev/null
+    set devnull "nul"
+}
+
 # Avoid possible influence from the make jobserver,
 # otherwise ltrans0.ltrans_args files may be missing.
 if [info exists env(MAKEFLAGS)] {
@@ -116,8 +123,23 @@ if [info exists env(MAKEFLAGS)] {
 # it weren't for
 # https://core.tcl-lang.org/tcl/tktview?name=5bbd044812), but .{i,s,o}
 # and .[iso] will pass even if only the .o is present.
+
+# Return a list containing two lists, the first naming the passes, the
+# second naming the fails.  If test ends with a question mark, the
+# test is taken as a preparatory test or cleanup, and no pass or fail
+# results will be logged, though the lists will still be built and
+# returned.
 array unset outests *
 proc outest { test sources opts dirs outputs } {
+    if { [string index $test end] == "?" } {
+	set quiet 1
+    } else {
+	set quiet 0
+    }
+
+    set passes {}
+    set fails {}
+
     global b srcdir subdir
     global outests
 
@@ -182,15 +204,15 @@ proc outest { test sources opts dirs outputs } {
 		set o "$og"
 	    }
 	    if { [file exists $d$o] } then {
-		pass "$test: $d$o"
+		lappend passes "$d$o"
 		file delete $d$o
 	    } else {
 	        set ogl [glob -nocomplain -path $d -- $o]
 		if { $ogl != {} } {
-		    pass "$test: $d$o"
+		    lappend passes "$d$o"
 		    file delete $ogl
 		} else {
-		    fail "$test: $d$o"
+		    lappend fails "$d$o"
 		}
 	    }
 	}
@@ -219,17 +241,27 @@ proc outest { test sources opts dirs outputs } {
     }
 
     if { [llength $outb] == 0 } then {
-	pass "$test: extra"
+	lappend passes "extra"
     } else {
-	fail "$test: extra\n$outb"
+	lappend fails "extra\n$outb"
     }
 
     if { [string equal "$gcc_output" ""] } then {
-	pass "$test: std out"
+	lappend passes "std out"
     } else {
-	fail "$test: std out\n$gcc_output"
+	lappend fails "std out\n$gcc_output"
     }
 
+    if !$quiet {
+	foreach p $passes {
+	    pass "$test: $p"
+	}
+	foreach f $fails {
+	    fail "$test: $f"
+	}
+    }
+
+    return [list $passes $fails]
 }
 
 set sing {-0.c}
@@ -279,6 +311,19 @@ if { "$aout" != "" } then {
     set oaout "-o $aout"
 }
 
+# Clean up any left-overs from an earlier interrupted run.
+outest "$b-cleanup?" $sing "$oaout" {alt/ dir/ o/ od/ obj/} {{} {} {} {} {} {$aout}}
+
+# Sometimes the -I or -L flags that cause the compiler driver to save
+# .args.[01], instead of leaving it for the linker to save .ld1_args,
+# is hiding in driver self specs.
+if !$skip_atsave {
+    set atsave_test_out [outest "$b-skip-atsave?" $sing "@/dev/null -o $b.exe -save-temps" {} {{.args.1}}]
+    if { [lindex [lindex $atsave_test_out 0] 0] == "$b.args.1" } {
+	set skip_atsave 1
+    }
+}
+
 # Driver-chosen outputs.
 outest "$b-1 asm default 1" $sing "-S" {} {{-0.s}}
 outest "$b-2 asm default 2" $mult "-S" {} {{-1.s -2.s}}
@@ -315,10 +360,10 @@ outest "$b-21 exe savetmp named2" $mult "-o $b.exe -save-temps" {} {{--1.i --1.s
 
 # Additional files are created when an @file is used
 if !$skip_atsave {
-outest "$b-22 exe savetmp namedb-2" $sing "@/dev/null -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
-outest "$b-23 exe savetmp named2-2" $mult "@/dev/null -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
-outest "$b-24 exe savetmp named2-3" $mult "@/dev/null -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
-outest "$b-25 exe savetmp named2-4" $mult "@/dev/null -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
+outest "$b-22 exe savetmp namedb-2" $sing "@$devnull -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b-23 exe savetmp named2-2" $mult "@$devnull -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b-24 exe savetmp named2-3" $mult "@$devnull -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
+outest "$b-25 exe savetmp named2-4" $mult "@$devnull -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
 }
 
 # Setting the main output to a dir selects it as the default aux&dump
@@ -676,7 +721,7 @@ outest "$b-291 lto mult named-2" $mult "-o $b.exe -O2 -flto -fno-use-linker-plug
 outest "$b-292 lto sing nameddir-2" $sing "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.c.???i.icf --0.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
 outest "$b-293 lto mult nameddir-2" $mult "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
 if !$skip_atsave {
-outest "$b-294 lto sing unnamed-3" $sing "@/dev/null -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage -save-temps $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a--0.o a--0.s a--0.i a.ltrans0.o a.ltrans.out a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.args.0 a.ltrans0.ltrans.s a.wpa.args.0 a.lto_args a.ld1_args a.ltrans_args a.ltrans0.ltrans.args.0 a.ld_args $aout}}
+outest "$b-294 lto sing unnamed-3" $sing "@$devnull -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage -save-temps $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a--0.o a--0.s a--0.i a.ltrans0.o a.ltrans.out a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.args.0 a.ltrans0.ltrans.s a.wpa.args.0 a.lto_args a.ld1_args a.ltrans_args a.ltrans0.ltrans.args.0 a.ld_args $aout}}
 }
 }
 

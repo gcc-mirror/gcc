@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -70,7 +70,7 @@
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (!global_options_set.x_g_switch_value)				\
+  if (!OPTION_SET_P (g_switch_value))				\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
 									\
   if (rs6000_abi_name == NULL)						\
@@ -197,16 +197,16 @@ do {									\
     }									\
 									\
   if (TARGET_PLTSEQ != rs6000_pltseq					\
-      && global_options_set.x_rs6000_pltseq)				\
+      && OPTION_SET_P (rs6000_pltseq))				\
     {									\
       error ("%qs not supported by your assembler", "-mpltseq");	\
     }									\
 									\
   if (DEFAULT_ABI == ABI_V4 && TARGET_PLTSEQ && !TARGET_SECURE_PLT)	\
     {									\
-      if (global_options_set.x_rs6000_pltseq)				\
+      if (OPTION_SET_P (rs6000_pltseq))				\
 	{								\
-	  if (global_options_set.x_secure_plt)				\
+	  if (OPTION_SET_P (secure_plt))				\
 	    error ("%qs and %qs are incompatible",			\
 		   "-mpltseq", "-mbss-plt");				\
 	  else								\
@@ -309,7 +309,7 @@ do {									\
    in bits).  This macro must evaluate to a value equal to or larger
    than STACK_BOUNDARY.
    For the SYSV ABI and variants the alignment of the stack pointer
-   is usually controlled manually in rs6000.c. However, to maintain
+   is usually controlled manually in rs6000.cc. However, to maintain
    alignment across alloca () in all circumstances,
    PREFERRED_STACK_BOUNDARY needs to be set as well.
    This has the additional advantage of allowing a bigger maximum
@@ -504,9 +504,6 @@ extern int fixuplabelno;
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Historically we have also supported stabs debugging.  */
-#define DBX_DEBUGGING_INFO 1
-
 #define TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
 #define TARGET_IN_SMALL_DATA_P  rs6000_elf_in_small_data_p
 
@@ -514,11 +511,6 @@ extern int fixuplabelno;
 
 #define	RS6000_OUTPUT_BASENAME(FILE, NAME)	\
     assemble_name (FILE, NAME)
-
-/* We have to output the stabs for the function name *first*, before
-   outputting its label.  */
-
-#define	DBX_FUNCTION_FIRST
 
 /* This is the end of what might become sysv4dbx.h.  */
 

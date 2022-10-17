@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-fdump-tree-original" }
 ! PR 30865 - passing a subroutine optional argument to size(dim=...)
 ! used to segfault.
 program main
@@ -19,3 +20,6 @@ contains
     ires = size (a1, dim=opt1)
   end subroutine checkv
 end program main
+
+! Ensure inline code is generated, cf. PR fortran/94070
+! { dg-final { scan-tree-dump-not "_gfortran_size" "original" } } 

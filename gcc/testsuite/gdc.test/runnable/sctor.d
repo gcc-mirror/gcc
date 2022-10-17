@@ -1,5 +1,11 @@
-// REQUIRED_ARGS:
-// PERMUTE_ARGS: -w -d -de -dw
+/*
+REQUIRED_ARGS: -w -de
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 extern(C) int printf(const char*, ...);
 
@@ -117,7 +123,7 @@ struct S4
 }
 
 /***************************************************/
-// 8117
+// https://issues.dlang.org/show_bug.cgi?id=8117
 
 struct S8117
 {
@@ -136,7 +142,7 @@ void test8117()
 }
 
 /***************************************************/
-// 9665
+// https://issues.dlang.org/show_bug.cgi?id=9665
 
 struct X9665
 {
@@ -182,7 +188,7 @@ void test9665()
 }
 
 /***************************************************/
-// 11246
+// https://issues.dlang.org/show_bug.cgi?id=11246
 
 struct Foo11246
 {
@@ -223,7 +229,7 @@ void test11246()
 }
 
 /***************************************************/
-// 13515
+// https://issues.dlang.org/show_bug.cgi?id=13515
 
 Object[string][100] aa13515;
 
@@ -253,7 +259,7 @@ void test13515()
 }
 
 /***************************************************/
-// 14409
+// https://issues.dlang.org/show_bug.cgi?id=14409
 
 class B14409 { this(int) {} }
 class C14409 : B14409
@@ -268,7 +274,7 @@ class C14409 : B14409
 }
 
 /***************************************************/
-// 14376
+// https://issues.dlang.org/show_bug.cgi?id=14376
 
 auto map14376()
 {
@@ -294,7 +300,7 @@ struct S14376
 }
 
 /***************************************************/
-// 14351
+// https://issues.dlang.org/show_bug.cgi?id=14351
 
 class B14351
 {
@@ -317,7 +323,7 @@ class D14351c : B14351
 }
 
 /***************************************************/
-// 14450
+// https://issues.dlang.org/show_bug.cgi?id=14450
 
 struct S14450a      // non-template struct + non template ctors - OK
 {
@@ -366,7 +372,7 @@ void test14450()
 }
 
 /***************************************************/
-// 14944
+// https://issues.dlang.org/show_bug.cgi?id=14944
 
 static int[2] tbl14944;
 
@@ -386,7 +392,8 @@ void test14944()
 }
 
 /***************************************************/
-// 15258 - a field initialization affects other overlapped fields
+// https://issues.dlang.org/show_bug.cgi?id=15258
+// a field initialization affects other overlapped fields
 
 class C15258
 {
@@ -403,17 +410,61 @@ class C15258
 }
 
 /***************************************************/
-// 15665
+// https://issues.dlang.org/show_bug.cgi?id=15869
 
-scope class C15665 (V)
-{
-    this () {}
+struct Set {
+    @disable this(this);
+    int value = 0;
 }
 
-void test15665()
-{
-    scope foo = new C15665!int;
+Set clobber(ref Set a) {
+    Set ret; // <- This overwrites *a, i.e. &ret is the same as a
+    ret.value = a.value; // <- Now a.value is 0
+    return ret;
 }
+
+struct XX {
+    Set a = Set(1);
+    this(int n) {
+        a = clobber(a); // fix is to make this an assignment, not a construction
+    }
+}
+void test15869()
+{
+    Set a = Set(1);
+    a = clobber(a);
+    assert(a.value == 1);
+
+    XX xx = XX(0);
+    assert(xx.a.value == 1);
+}
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19389
+
+struct Foo19389 {
+    int x;
+
+    this(int dummy) { x = dummy; }
+}
+
+struct Bar19389 {
+    Foo19389 a;
+    Foo19389 b;
+
+    this(int dummy) {
+        a = (b = Foo19389(dummy));
+    }
+}
+
+
+void test19389()
+{
+    Bar19389 bar = Bar19389(7);
+    assert(bar.a.x == 7);
+    assert(bar.b.x == 7); // fails
+}
+
 
 /***************************************************/
 
@@ -425,7 +476,8 @@ int main()
     test13515();
     test14450();
     test14944();
-    test15665();
+    test15869();
+    test19389();
 
     printf("Success\n");
     return 0;

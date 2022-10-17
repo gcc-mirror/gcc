@@ -5,5 +5,5 @@ template<typename> void foo() {}
 
 void bar()
 {
-  foo<auto>(); // { dg-error "not permitted|invalid|no matching function" }
+  foo<auto>(); // { dg-error "" }
 }

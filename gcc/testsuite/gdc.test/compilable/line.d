@@ -26,5 +26,3 @@ static assert(__FILE_FULL_PATH__[$ - 9 .. $] == "newfile.d");
 static assert(__LINE__ == 201);
 static assert(__FILE__ == "newfile.d");
 static assert(__FILE_FULL_PATH__[$ - 9 .. $] == "newfile.d");
-
-

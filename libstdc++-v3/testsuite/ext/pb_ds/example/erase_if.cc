@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -48,7 +48,7 @@ using namespace __gnu_pbds;
 
 // The following functor takes a map's value-type object and returns
 // whether its key is between two numbers.
-struct between : public unary_function<pair<const int, char>, bool>
+struct between
 {
   // Constructor taking two numbers determining a range.
   between(int b, int e) : m_b(b), m_e(e)
@@ -56,7 +56,7 @@ struct between : public unary_function<pair<const int, char>, bool>
 
   // Operator determining whether a value-type object's key is within
   // the range.
-  inline bool
+  bool
   operator()(const pair<const int, char>& r_val)
   { return r_val.first >= m_b&&  r_val.first < m_e; }
 

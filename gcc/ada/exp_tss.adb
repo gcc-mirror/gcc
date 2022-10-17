@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package body Exp_Tss is
      (Typ : Entity_Id;
       Ref : Entity_Id := Empty) return Entity_Id
    is
-      Full_Type : E;
+      Full_Type : Entity_Id;
       Proc      : Entity_Id;
 
    begin

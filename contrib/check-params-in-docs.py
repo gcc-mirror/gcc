@@ -47,7 +47,7 @@ ignored = {'logical-op-non-short-circuit'}
 params = {}
 
 for line in open(args.params_output).readlines():
-    if line.startswith('  '):
+    if line.startswith(' ' * 2) and not line.startswith(' ' * 8):
         r = get_param_tuple(line)
         params[r[0]] = r[1]
 
@@ -57,15 +57,20 @@ texi = dropwhile(lambda x: 'item --param' not in x, texi)
 texi = takewhile(lambda x: '@node Instrumentation Options' not in x, texi)
 texi = list(texi)[1:]
 
-token = '@item '
-texi = [x[len(token):] for x in texi if x.startswith(token)]
-# skip digits
-texi = [x for x in texi if not x[0].isdigit()]
-# skip aarch64 params
-texi = [x for x in texi if not x.startswith('aarch64')]
-sorted_texi = sorted(texi)
+texi_params = []
+for line in texi:
+    for token in ('@item ', '@itemx '):
+        if line.startswith(token):
+            texi_params.append(line[len(token):])
+            break
 
-texi_set = set(texi) - ignored
+# skip digits
+texi_params = [x for x in texi_params if not x[0].isdigit()]
+# skip aarch64 params
+texi_params = [x for x in texi_params if not x.startswith('aarch64')]
+sorted_params = sorted(texi_params)
+
+texi_set = set(texi_params) - ignored
 params_set = set(params.keys()) - ignored
 
 success = True
@@ -83,8 +88,5 @@ if len(missing):
         print(params[m])
         print()
     success = False
-
-if texi != sorted_texi:
-    print('WARNING: not sorted alphabetically!')
 
 sys.exit(0 if success else 1)

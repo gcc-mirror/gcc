@@ -1,5 +1,5 @@
 /* This file contains the list of the debug counter for GCC.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    or for each copy instruction in register coalescing,
    or constant-propagation for each insn,
    or a block straightening, etc.
-   See dce.c for an example. With the dbg_cnt () call in dce.c,
+   See dce.cc for an example. With the dbg_cnt () call in dce.cc,
    now a developer can use -fdbg-cnt=dce:N
    to stop doing the dead code elimination after N times.
 
@@ -144,6 +144,10 @@ echo ubound: $ub
    Please keep the list sorted in alphabetic order.  */
 DEBUG_COUNTER (asan_use_after_scope)
 DEBUG_COUNTER (auto_inc_dec)
+DEBUG_COUNTER (back_thread1)
+DEBUG_COUNTER (back_thread2)
+DEBUG_COUNTER (back_threadfull1)
+DEBUG_COUNTER (back_threadfull2)
 DEBUG_COUNTER (ccp)
 DEBUG_COUNTER (cfg_cleanup)
 DEBUG_COUNTER (cprop)
@@ -171,16 +175,19 @@ DEBUG_COUNTER (if_after_reload)
 DEBUG_COUNTER (if_conversion)
 DEBUG_COUNTER (if_conversion_tree)
 DEBUG_COUNTER (if_to_switch)
+DEBUG_COUNTER (ipa_attr)
 DEBUG_COUNTER (ipa_cp_bits)
 DEBUG_COUNTER (ipa_cp_values)
 DEBUG_COUNTER (ipa_cp_vr)
 DEBUG_COUNTER (ipa_mod_ref)
+DEBUG_COUNTER (ipa_mod_ref_pta)
 DEBUG_COUNTER (ipa_sra_params)
 DEBUG_COUNTER (ipa_sra_retvalues)
 DEBUG_COUNTER (ira_move)
 DEBUG_COUNTER (ivopts_loop)
 DEBUG_COUNTER (lim)
 DEBUG_COUNTER (local_alloc_for_sched)
+DEBUG_COUNTER (loop_unswitch)
 DEBUG_COUNTER (match)
 DEBUG_COUNTER (merged_ipa_icf)
 DEBUG_COUNTER (phiopt_edge_range)

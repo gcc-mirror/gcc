@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2021 Free Software Foundation, Inc.
+# Copyright (C) 2000-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -40,22 +40,22 @@ endif
 
 PASSES_EXTRA += $(srcdir)/config/avr/avr-passes.def
 
-driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
+driver-avr.o: $(srcdir)/config/avr/driver-avr.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(srcdir)/config/avr/avr-arch.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-avr-devices.o: $(srcdir)/config/avr/avr-devices.c \
+avr-devices.o: $(srcdir)/config/avr/avr-devices.cc \
   $(srcdir)/config/avr/avr-mcus.def \
   $(srcdir)/config/avr/avr-arch.h \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-avr-c.o: $(srcdir)/config/avr/avr-c.c \
+avr-c.o: $(srcdir)/config/avr/avr-c.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-avr-log.o: $(srcdir)/config/avr/avr-log.c \
+avr-log.o: $(srcdir)/config/avr/avr-log.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(INPUT_H) dumpfile.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
@@ -81,13 +81,13 @@ AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 avr-mcus: $(srcdir)/doc/avr-mmcu.texi ; @true
 
 # Make sure that native -mmcu= support is in sync with -mmcu= documentation.
-gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
-  $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c \
+gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.cc \
+  $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.cc \
   $(srcdir)/config/avr/avr-arch.h
-	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $< -o $@
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
 
-gen-avr-mmcu-specs$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-specs.c \
-  $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c \
+gen-avr-mmcu-specs$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-specs.cc \
+  $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.cc \
   $(srcdir)/config/avr/avr-arch.h $(TM_H)
 	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@ $(INCLUDES)
 
@@ -127,6 +127,7 @@ t-multilib-avr: $(srcdir)/config/avr/genmultilib.awk \
 		-v HAVE_LONG_DOUBLE64=$(HAVE_LONG_DOUBLE64) 		\
 		-v with_double=$(WITH_DOUBLE) 				\
 		-v with_long_double=$(WITH_LONG_DOUBLE)			\
+		-v with_multilib_list=$(TM_MULTILIB_CONFIG)		\
 		-f $< $< $(AVR_MCUS) > $@
 
 include t-multilib-avr

@@ -69,7 +69,7 @@ int ary ()
 {
   deleted = 0;
 
-  Baz *p = new Baz[5];
+  Baz *p = new Baz[1];
   try { delete[] p; }
   catch (...) { return deleted != 1;}
   return 1;

@@ -1,6 +1,6 @@
 /* Communication between GCC and libgomp.
 
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -40,11 +40,22 @@
 #define GOMP_MAP_FLAG_SPECIAL_0		(1 << 2)
 #define GOMP_MAP_FLAG_SPECIAL_1		(1 << 3)
 #define GOMP_MAP_FLAG_SPECIAL_2		(1 << 4)
+#define GOMP_MAP_FLAG_SPECIAL_3		(1 << 5)
 #define GOMP_MAP_FLAG_SPECIAL_4		(1 << 6)
 #define GOMP_MAP_FLAG_SPECIAL		(GOMP_MAP_FLAG_SPECIAL_1 \
 					 | GOMP_MAP_FLAG_SPECIAL_0)
 #define GOMP_MAP_DEEP_COPY		(GOMP_MAP_FLAG_SPECIAL_4 \
 					 | GOMP_MAP_FLAG_SPECIAL_2)
+/* This value indicates the map was created implicitly according to
+   OpenMP rules.  */
+#define GOMP_MAP_IMPLICIT		(GOMP_MAP_FLAG_SPECIAL_3 \
+					 | GOMP_MAP_FLAG_SPECIAL_4)
+/* Mask for entire set of special map kind bits.  */
+#define GOMP_MAP_FLAG_SPECIAL_BITS	(GOMP_MAP_FLAG_SPECIAL_0 \
+					 | GOMP_MAP_FLAG_SPECIAL_1 \
+					 | GOMP_MAP_FLAG_SPECIAL_2 \
+					 | GOMP_MAP_FLAG_SPECIAL_3 \
+					 | GOMP_MAP_FLAG_SPECIAL_4)
 /* Flag to force a specific behavior (or else, trigger a run-time error).  */
 #define GOMP_MAP_FLAG_FORCE		(1 << 7)
 
@@ -132,6 +143,11 @@ enum gomp_map_kind
        No refcount is bumped by this, and the store is done unconditionally.  */
     GOMP_MAP_ALWAYS_POINTER =		(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_FLAG_SPECIAL | 1),
+    /* Like GOMP_MAP_POINTER, but allow zero-length array section, i.e. set to
+       NULL if target is not mapped.  */
+    GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION
+      =					(GOMP_MAP_FLAG_SPECIAL_2
+					 | GOMP_MAP_FLAG_SPECIAL | 2),
     /* Forced deallocation of zero length array section.  */
     GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION
       =					(GOMP_MAP_FLAG_SPECIAL_2
@@ -151,6 +167,12 @@ enum gomp_map_kind
     /* In OpenACC, detach a pointer to a mapped struct field.  */
     GOMP_MAP_FORCE_DETACH =		(GOMP_MAP_DEEP_COPY
 					 | GOMP_MAP_FLAG_FORCE | 1),
+
+    /* Like GOMP_MAP_ATTACH, but allow attaching to zero-length array sections
+       (i.e. set to NULL when array section is not mapped) Currently only used
+       by OpenMP.  */
+    GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION
+      =					(GOMP_MAP_DEEP_COPY | 2),
 
     /* Internal to GCC, not used in libgomp.  */
     /* Do not map, but pointer assign a pointer instead.  */
@@ -175,7 +197,8 @@ enum gomp_map_kind
   ((X) == GOMP_MAP_ALWAYS_POINTER)
 
 #define GOMP_MAP_POINTER_P(X) \
-  ((X) == GOMP_MAP_POINTER)
+  ((X) == GOMP_MAP_POINTER \
+   || (X) == GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION)
 
 #define GOMP_MAP_ALWAYS_TO_P(X) \
   (((X) == GOMP_MAP_ALWAYS_TO) || ((X) == GOMP_MAP_ALWAYS_TOFROM))
@@ -185,6 +208,9 @@ enum gomp_map_kind
 
 #define GOMP_MAP_ALWAYS_P(X) \
   (GOMP_MAP_ALWAYS_TO_P (X) || ((X) == GOMP_MAP_ALWAYS_FROM))
+
+#define GOMP_MAP_IMPLICIT_P(X) \
+  (((X) & GOMP_MAP_FLAG_SPECIAL_BITS) == GOMP_MAP_IMPLICIT)
 
 
 /* Asynchronous behavior.  Keep in sync with
@@ -207,8 +233,19 @@ enum gomp_map_kind
 #define GOMP_DEVICE_HSA			7
 #define GOMP_DEVICE_GCN			8
 
+/* We have a compatibility issue.  OpenMP 5.2 introduced
+   omp_initial_device with value of -1 which clashes with our
+   GOMP_DEVICE_ICV, so we need to remap user supplied device
+   ids, -1 (aka omp_initial_device) to GOMP_DEVICE_HOST_FALLBACK,
+   and -2 (one of many non-conforming device numbers, but with
+   OMP_TARGET_OFFLOAD=mandatory needs to be treated a
+   omp_invalid_device) to -3 (so that for dev_num >= -2U we can
+   subtract 1).  -4 is then what we use for omp_invalid_device,
+   which unlike the other non-conforming device numbers results
+   in fatal error regardless of OMP_TARGET_OFFLOAD.  */
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
+#define GOMP_DEVICE_INVALID		-4
 
 /* GOMP_task/GOMP_taskloop* flags argument.  */
 #define GOMP_TASK_FLAG_UNTIED		(1 << 0)
@@ -222,6 +259,7 @@ enum gomp_map_kind
 #define GOMP_TASK_FLAG_NOGROUP		(1 << 11)
 #define GOMP_TASK_FLAG_REDUCTION	(1 << 12)
 #define GOMP_TASK_FLAG_DETACH		(1 << 13)
+#define GOMP_TASK_FLAG_STRICT		(1 << 14)
 
 /* GOMP_target{_ext,update_ext,enter_exit_data} flags argument.  */
 #define GOMP_TARGET_FLAG_NOWAIT		(1 << 0)
@@ -244,10 +282,10 @@ enum gomp_map_kind
 /* Versions of libgomp and device-specific plugins.  GOMP_VERSION
    should be incremented whenever an ABI-incompatible change is introduced
    to the plugin interface defined in libgomp/libgomp.h.  */
-#define GOMP_VERSION	1
+#define GOMP_VERSION	2
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_INTEL_MIC 0
-#define GOMP_VERSION_GCN 1
+#define GOMP_VERSION_GCN 2
 
 #define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
 #define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)
@@ -301,6 +339,13 @@ enum gomp_map_kind
 #define GOMP_DEPEND_OUT			2
 #define GOMP_DEPEND_INOUT		3
 #define GOMP_DEPEND_MUTEXINOUTSET	4
+#define GOMP_DEPEND_INOUTSET		5
+
+/* Flag values for OpenMP 'requires' directive features.  */
+#define GOMP_REQUIRES_UNIFIED_ADDRESS       0x10
+#define GOMP_REQUIRES_UNIFIED_SHARED_MEMORY 0x20
+#define GOMP_REQUIRES_REVERSE_OFFLOAD       0x80
+#define GOMP_REQUIRES_TARGET_USED           0x200
 
 /* HSA specific data structures.  */
 

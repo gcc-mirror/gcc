@@ -1,7 +1,7 @@
 /* Functions to enable and disable individual warnings on an expression
    and statement basis.
 
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -62,22 +62,22 @@ set_no_warning_bit (gimple *stmt, bool value)
   stmt->no_warning = value;
 }
 
-/* Return EXPR location or zero.  */
+/* Return EXPR location or 'UNKNOWN_LOCATION'.  */
 
-static inline key_type_t
-convert_to_key (const_tree expr)
+static inline location_t
+get_location (const_tree expr)
 {
   if (DECL_P (expr))
     return DECL_SOURCE_LOCATION (expr);
   if (EXPR_P (expr))
     return EXPR_LOCATION (expr);
-  return 0;
+  return UNKNOWN_LOCATION;
 }
 
-/* Return STMT location (may be zero).  */
+/* Return STMT location (may be 'UNKNOWN_LOCATION').  */
 
-static inline key_type_t
-convert_to_key (const gimple *stmt)
+static inline location_t
+get_location (const gimple *stmt)
 {
   return gimple_location (stmt);
 }
@@ -87,25 +87,31 @@ convert_to_key (const gimple *stmt)
 static nowarn_spec_t *
 get_nowarn_spec (const_tree expr)
 {
-  const key_type_t key = convert_to_key (expr);
+  const location_t loc = get_location (expr);
 
-  if (!get_no_warning_bit (expr) || !key)
+  if (RESERVED_LOCATION_P (loc))
     return NULL;
 
-  return nowarn_map ? nowarn_map->get (key) : NULL;
+  if (!get_no_warning_bit (expr))
+    return NULL;
+
+  return nowarn_map ? nowarn_map->get (loc) : NULL;
 }
 
-/* Return the no-warning bitmap for stateemt STMT.  */
+/* Return the no-warning bitmap for statement STMT.  */
 
 static nowarn_spec_t *
 get_nowarn_spec (const gimple *stmt)
 {
-  const key_type_t key = convert_to_key (stmt);
+  const location_t loc = get_location (stmt);
+
+  if (RESERVED_LOCATION_P (loc))
+    return NULL;
 
   if (!get_no_warning_bit (stmt))
     return NULL;
 
-  return nowarn_map ? nowarn_map->get (key) : NULL;
+  return nowarn_map ? nowarn_map->get (loc) : NULL;
 }
 
 /* Return true if warning OPT is suppressed for decl/expression EXPR.
@@ -153,9 +159,10 @@ suppress_warning (tree expr, opt_code opt /* = all_warnings */,
   if (opt == no_warning)
     return;
 
-  const key_type_t key = convert_to_key (expr);
+  const location_t loc = get_location (expr);
 
-  supp = suppress_warning_at (key, opt, supp) || supp;
+  if (!RESERVED_LOCATION_P (loc))
+    supp = suppress_warning_at (loc, opt, supp) || supp;
   set_no_warning_bit (expr, supp);
 }
 
@@ -169,9 +176,10 @@ suppress_warning (gimple *stmt, opt_code opt /* = all_warnings */,
   if (opt == no_warning)
     return;
 
-  const key_type_t key = convert_to_key (stmt);
+  const location_t loc = get_location (stmt);
 
-  supp = suppress_warning_at (key, opt, supp) || supp;
+  if (!RESERVED_LOCATION_P (loc))
+    supp = suppress_warning_at (loc, opt, supp) || supp;
   set_no_warning_bit (stmt, supp);
 }
 
@@ -181,28 +189,36 @@ suppress_warning (gimple *stmt, opt_code opt /* = all_warnings */,
 template <class ToType, class FromType>
 void copy_warning (ToType to, FromType from)
 {
-  const key_type_t to_key = convert_to_key (to);
+  const location_t to_loc = get_location (to);
 
-  if (nowarn_spec_t *from_map = get_nowarn_spec (from))
-    {
-      /* If there's an entry in the map the no-warning bit must be set.  */
-      gcc_assert (get_no_warning_bit (from));
+  const bool supp = get_no_warning_bit (from);
 
-      if (!nowarn_map)
-	nowarn_map = xint_hash_map_t::create_ggc (32);
-
-      nowarn_map->put (to_key, *from_map);
-      set_no_warning_bit (to, true);
-    }
+  nowarn_spec_t *from_spec = get_nowarn_spec (from);
+  if (RESERVED_LOCATION_P (to_loc))
+    /* We cannot set no-warning dispositions for 'to', so we have no chance but
+       lose those potentially set for 'from'.  */
+    ;
   else
     {
-      if (nowarn_map)
-	nowarn_map->remove (to_key);
+      if (from_spec)
+	{
+	  /* If there's an entry in the map the no-warning bit must be set.  */
+	  gcc_assert (supp);
 
-      /* The no-warning bit might be set even if there's no entry
-	 in the map.  */
-      set_no_warning_bit (to, get_no_warning_bit (from));
+	  gcc_checking_assert (nowarn_map);
+	  nowarn_spec_t tem = *from_spec;
+	  nowarn_map->put (to_loc, tem);
+	}
+      else if (supp)
+	{
+	  if (nowarn_map)
+	    nowarn_map->remove (to_loc);
+	}
     }
+
+  /* The no-warning bit might be set even if the map has not been consulted, or
+     otherwise if there's no entry in the map.  */
+  set_no_warning_bit (to, supp);
 }
 
 /* Copy the warning disposition mapping from one expression to another.  */
@@ -210,6 +226,8 @@ void copy_warning (ToType to, FromType from)
 void
 copy_warning (tree to, const_tree from)
 {
+  if (to == from)
+    return;
   copy_warning<tree, const_tree>(to, from);
 }
 
@@ -234,5 +252,7 @@ copy_warning (gimple *to, const_tree from)
 void
 copy_warning (gimple *to, const gimple *from)
 {
+  if (to == from)
+    return;
   copy_warning<gimple *, const gimple *>(to, from);
 }

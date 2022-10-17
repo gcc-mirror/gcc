@@ -12,4 +12,4 @@ public:
 
 struct y { // { dg-error "unknown array size in delete" }
     int a; C b[];
-} y = { 1, { { 2, 3 } } }; // { dg-error "unknown array size in delete" }
+} y = { 1, { { 2, 3 } } };

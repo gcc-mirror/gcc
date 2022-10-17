@@ -1,5 +1,5 @@
 /* Fallback FPU-related code (for systems not otherwise supported).
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -66,9 +66,16 @@ get_fpu_except_flags (void)
 
 int
 get_fpu_rounding_mode (void)
-{   
+{
   return 0;
-}               
+}
+
+
+int
+support_fpu_rounding_mode (int mode __attribute__((unused)))
+{
+  return 0;
+}
 
 
 void

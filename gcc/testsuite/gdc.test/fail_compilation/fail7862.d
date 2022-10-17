@@ -3,12 +3,12 @@ TEST_OUTPUT:
 ---
 A: false
 A: false
-fail_compilation/fail7862.d(26): Error: template instance nonExistent!() template 'nonExistent' is not defined
-fail_compilation/fail7862.d(25): Error: template instance fail7862.B!(A) error instantiating
+fail_compilation/fail7862.d(26): Error: template instance `nonExistent!()` template `nonExistent` is not defined
+fail_compilation/fail7862.d(25): Error: template instance `fail7862.B!(A)` error instantiating
 ---
 */
 
-// 7862
+// https://issues.dlang.org/show_bug.cgi?id=7862
 
 template B(T) {
   mixin(
@@ -27,4 +27,3 @@ struct A {
 }
 
 auto d = A.init.c;
-

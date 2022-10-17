@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice14146.d(15): Error: constructor ice14146.Array.this default constructor for structs only allowed with @disable, no body, and no parameters
+fail_compilation/ice14146.d(15): Error: constructor `ice14146.Array.this` default constructor for structs only allowed with `@disable`, no body, and no parameters
 ---
 */
 

@@ -1,6 +1,6 @@
 module imports.std15017variant;
 
-struct VariantN(size_t maxDataSize)
+struct VariantN(uint maxDataSize)
 {
     VariantN opAssign() { return this; }
 

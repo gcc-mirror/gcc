@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-asynchronous-unwind-tables -fsched2-use-superblocks -fdump-rtl-sched2 -fdump-rtl-bbro" } */
+/* { dg-options "-O2 -fno-asynchronous-unwind-tables -fsched2-use-superblocks -fdump-rtl-sched2 -fdump-rtl-bbro -fno-stack-protector" } */
 /* { dg-require-effective-target scheduling } */
 
 typedef int aligned __attribute__ ((aligned (64)));

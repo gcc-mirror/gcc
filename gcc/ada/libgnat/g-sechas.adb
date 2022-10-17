@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,7 +238,7 @@ package body GNAT.Secure_Hashes is
                      mod FC.M_State.Block_Length;
          declare
             Pad : Stream_Element_Array (1 .. 1 + Zeroes + Size_Length) :=
-                    (1 => 128, others => 0);
+                    [1 => 128, others => 0];
 
             Index       : Stream_Element_Offset;
             First_Index : Stream_Element_Offset;
@@ -281,7 +281,7 @@ package body GNAT.Secure_Hashes is
             declare
                Outer_C : Context;
                Opad    : Stream_Element_Array :=
-                 (1 .. Stream_Element_Offset (Block_Length) => 16#5c#);
+                 [1 .. Stream_Element_Offset (Block_Length) => 16#5c#];
 
             begin
                for J in C.Key'Range loop
@@ -329,7 +329,7 @@ package body GNAT.Secure_Hashes is
 
             declare
                Ipad : Stream_Element_Array :=
-                 (1 .. Stream_Element_Offset (Block_Length) => 16#36#);
+                 [1 .. Stream_Element_Offset (Block_Length) => 16#36#];
 
             begin
                for J in C.Key'Range loop

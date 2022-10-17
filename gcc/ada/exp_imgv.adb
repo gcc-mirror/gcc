@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,8 @@ with Namet;          use Namet;
 with Nmake;          use Nmake;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
 with Rtsfind;        use Rtsfind;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Res;        use Sem_Res;
@@ -88,7 +90,7 @@ package body Exp_Imgv is
       Lit  : Entity_Id;
       Nlit : Nat;
       S_Id : Entity_Id;
-      S_N  : Nat;
+      S_N  : Nat := 0;
       Str  : String_Id;
 
       package SPHG renames System.Perfect_Hash_Generators;
@@ -157,8 +159,11 @@ package body Exp_Imgv is
                    Make_Component_Definition (Loc,
                      Aliased_Present    => False,
                      Subtype_Indication => New_Occurrence_Of (Ctyp, Loc))),
-             Expression          => Make_Aggregate (Loc, Expressions => V)));
+             Expression          => Make_Aggregate (Loc, Expressions => V,
+                                      Is_Enum_Array_Aggregate => True)));
       end Append_Table_To;
+
+   --  Start of Build_Enumeration_Image_Tables
 
    begin
       --  Nothing to do for types other than a root enumeration type
@@ -247,7 +252,7 @@ package body Exp_Imgv is
       Append_Table_To (Act, Eind, Nlit, Ityp, Ind);
 
       --  If the number of literals is not greater than Threshold, then we are
-      --  done. Otherwise we compute a (perfect) hash function for use by the
+      --  done. Otherwise we generate a (perfect) hash function for use by the
       --  Value attribute.
 
       if Nlit > Threshold then
@@ -283,12 +288,15 @@ package body Exp_Imgv is
 
          --  If the unit where the type is declared is the main unit, and the
          --  number of literals is greater than Threshold_For_Size when we are
-         --  optimizing for size, and -gnatd_h is not specified, try to compute
+         --  optimizing for size, and the restriction No_Implicit_Loops is not
+         --  active, and -gnatd_h is not specified, and not GNAT_Mode, generate
          --  the hash function.
 
          if In_Main_Unit
            and then (Optimize_Size = 0 or else Nlit > Threshold_For_Size)
+           and then not Restriction_Active (No_Implicit_Loops)
            and then not Debug_Flag_Underscore_H
+           and then not GNAT_Mode
          then
             declare
                LB : constant Positive := 2 * Positive (Nlit) + 1;
@@ -1039,6 +1047,15 @@ package body Exp_Imgv is
          return;
       end if;
 
+      --  If Image should be transformed using Put_Image, then do so. See
+      --  Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
+         return;
+      end if;
+
       Ptyp := Underlying_Type (Entity (Pref));
 
       --  Ada 2022 allows 'Image on private types, so fetch the underlying
@@ -1058,15 +1075,7 @@ package body Exp_Imgv is
 
       Enum_Case := False;
 
-      --  If this is a case where Image should be transformed using Put_Image,
-      --  then do so. See Exp_Put_Image for details.
-
-      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
-         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
-         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
-         return;
-
-      elsif Rtyp = Standard_Boolean then
+      if Rtyp = Standard_Boolean then
          --  Use inline expansion if the -gnatd_x switch is not passed to the
          --  compiler. Otherwise expand into a call to the runtime.
 

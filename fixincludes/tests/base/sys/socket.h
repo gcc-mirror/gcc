@@ -13,6 +13,7 @@
 #ifndef _KERNEL
 #ifdef __cplusplus
 extern "C++" {
+extern "C" int naccept(int, struct sockaddr *, socklen_t *);
 #endif  /* AIX_EXTERNCPP1_CHECK */
 
 

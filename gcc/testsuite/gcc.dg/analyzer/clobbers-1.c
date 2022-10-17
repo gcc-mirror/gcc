@@ -25,9 +25,8 @@ void test_1 (void)
   __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 }
 
-void test_2 (void)
+void test_2 (struct foo f)
 {
-  struct foo f;
   f.i = 42;
   if (f.j)
     __analyzer_eval (f.j); /* { dg-warning "TRUE" } */

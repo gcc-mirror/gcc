@@ -1,4 +1,5 @@
 // PERMUTE_ARGS:
+// EXTRA_FILES: imports/bug8922.d
 void test()
 {
     import imports.bug8922;
@@ -6,4 +7,3 @@ void test()
     enum x = __traits(parent, imports.bug8922).stringof;
     static assert(x == "package imports");
 }
-

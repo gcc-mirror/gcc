@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre -fdisable-tree-evrp -fdump-tree-vrp1 -std=gnu89" } */
+/* { dg-options "-O2 -fno-tree-fre -fdisable-tree-evrp -fdump-tree-vrp1 -std=gnu89 -fno-thread-jumps" } */
 
 foo (int *p)
 {
@@ -27,4 +27,5 @@ L78:
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.. != 0B to 1" 2 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_" 2 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "!= 0B to 1" 2 "vrp1" } } */

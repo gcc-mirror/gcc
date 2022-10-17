@@ -1,4 +1,3 @@
-
 import core.stdc.stdio;
 
 /*******************************************/
@@ -31,7 +30,7 @@ void test1()
     IO io = new IO();
     printf("io = %p\n", io);
     foo(io, io);
-    delete io;
+    destroy(io);
 }
 
 /*******************************************/
@@ -45,7 +44,7 @@ class C : I
 void test2()
 {
     I i = new C();
-    delete i;
+    destroy(i);
 
   {
     scope I j = new C();
@@ -79,7 +78,7 @@ void test3()
     j.f();
     K3 k = a;
     k.f();
-    assert(&j.f == &k.f); // Bugzilla 3706
+    assert(&j.f == &k.f); // https://issues.dlang.org/show_bug.cgi?id=3706
 }
 
 /*******************************************/

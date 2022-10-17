@@ -1,5 +1,5 @@
 /* Demangler for the Rust programming language
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Written by David Tolnay (dtolnay@gmail.com).
    Rewritten by Eduard-Mihai Burtescu (eddyb@lyken.rs) for v0 support.
 
@@ -74,6 +74,12 @@ struct rust_demangler
   /* Rust mangling version, with legacy mangling being -1. */
   int version;
 
+  /* Recursion depth.  */
+  unsigned int recursion;
+  /* Maximum number of times demangle_path may be called recursively.  */
+#define RUST_MAX_RECURSION_COUNT  1024
+#define RUST_NO_RECURSION_LIMIT   ((unsigned int) -1)
+
   uint64_t bound_lifetime_depth;
 };
 
@@ -120,7 +126,7 @@ parse_integer_62 (struct rust_demangler *rdm)
     return 0;
 
   x = 0;
-  while (!eat (rdm, '_'))
+  while (!eat (rdm, '_') && !rdm->errored)
     {
       c = next (rdm);
       x *= 62;
@@ -671,6 +677,15 @@ demangle_path (struct rust_demangler *rdm, int in_value)
   if (rdm->errored)
     return;
 
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	goto fail_return;
+    }
+
   switch (tag = next (rdm))
     {
     case 'C':
@@ -688,10 +703,7 @@ demangle_path (struct rust_demangler *rdm, int in_value)
     case 'N':
       ns = next (rdm);
       if (!ISLOWER (ns) && !ISUPPER (ns))
-        {
-          rdm->errored = 1;
-          return;
-        }
+	goto fail_return;
 
       demangle_path (rdm, in_value);
 
@@ -776,9 +788,15 @@ demangle_path (struct rust_demangler *rdm, int in_value)
         }
       break;
     default:
-      rdm->errored = 1;
-      return;
+      goto fail_return;
     }
+  goto pass_return;
+
+ fail_return:
+  rdm->errored = 1;
+ pass_return:
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
 }
 
 static void
@@ -868,6 +886,19 @@ demangle_type (struct rust_demangler *rdm)
     {
       PRINT (basic);
       return;
+    }
+
+   if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	{
+	  rdm->errored = 1;
+	  -- rdm->recursion;
+	  return;
+	}
     }
 
   switch (tag)
@@ -1030,6 +1061,9 @@ demangle_type (struct rust_demangler *rdm)
       rdm->next--;
       demangle_path (rdm, 0);
     }
+
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
 }
 
 /* A trait in a trait object may have some "existential projections"
@@ -1047,6 +1081,18 @@ demangle_path_maybe_open_generics (struct rust_demangler *rdm)
 
   if (rdm->errored)
     return open;
+
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	{
+	  /* FIXME: There ought to be a way to report
+	     that the recursion limit has been reached.  */
+	  rdm->errored = 1;
+	  goto end_of_func;
+	}
+    }
 
   if (eat (rdm, 'B'))
     {
@@ -1073,6 +1119,11 @@ demangle_path_maybe_open_generics (struct rust_demangler *rdm)
     }
   else
     demangle_path (rdm, 0);
+
+ end_of_func:
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
+
   return open;
 }
 
@@ -1114,6 +1165,15 @@ demangle_const (struct rust_demangler *rdm)
   if (rdm->errored)
     return;
 
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	goto fail_return;
+    }
+
   if (eat (rdm, 'B'))
     {
       backref = parse_integer_62 (rdm);
@@ -1124,7 +1184,7 @@ demangle_const (struct rust_demangler *rdm)
           demangle_const (rdm);
           rdm->next = old_next;
         }
-      return;
+      goto pass_return;
     }
 
   ty_tag = next (rdm);
@@ -1133,7 +1193,7 @@ demangle_const (struct rust_demangler *rdm)
     /* Placeholder. */
     case 'p':
       PRINT ("_");
-      return;
+      goto pass_return;
 
     /* Unsigned integer types. */
     case 'h':
@@ -1166,18 +1226,21 @@ demangle_const (struct rust_demangler *rdm)
       break;
 
     default:
-      rdm->errored = 1;
-      return;
+      goto fail_return;
     }
 
-  if (rdm->errored)
-    return;
-
-  if (rdm->verbose)
+  if (!rdm->errored && rdm->verbose)
     {
       PRINT (": ");
       PRINT (basic_type (ty_tag));
     }
+  goto pass_return;
+
+ fail_return:
+  rdm->errored = 1;
+ pass_return:
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
 }
 
 static void
@@ -1320,6 +1383,7 @@ rust_demangle_callback (const char *mangled, int options,
   rdm.skipping_printing = 0;
   rdm.verbose = (options & DMGL_VERBOSE) != 0;
   rdm.version = 0;
+  rdm.recursion = (options & DMGL_NO_RECURSE_LIMIT) ? RUST_NO_RECURSION_LIMIT : 0;
   rdm.bound_lifetime_depth = 0;
 
   /* Rust symbols always start with _R (v0) or _ZN (legacy). */
@@ -1340,13 +1404,19 @@ rust_demangle_callback (const char *mangled, int options,
   /* Rust symbols (v0) use only [_0-9a-zA-Z] characters. */
   for (p = rdm.sym; *p; p++)
     {
+      /* Rust v0 symbols can have '.' suffixes, ignore those.  */
+      if (rdm.version == 0 && *p == '.')
+        break;
+
       rdm.sym_len++;
 
       if (*p == '_' || ISALNUM (*p))
         continue;
 
-      /* Legacy Rust symbols can also contain [.:$] characters. */
-      if (rdm.version == -1 && (*p == '$' || *p == '.' || *p == ':'))
+      /* Legacy Rust symbols can also contain [.:$] characters.
+         Or @ in the .suffix (which will be skipped, see below). */
+      if (rdm.version == -1 && (*p == '$' || *p == '.' || *p == ':'
+                                || *p == '@'))
         continue;
 
       return 0;
@@ -1355,7 +1425,16 @@ rust_demangle_callback (const char *mangled, int options,
   /* Legacy Rust symbols need to be handled separately. */
   if (rdm.version == -1)
     {
-      /* Legacy Rust symbols always end with E. */
+      /* Legacy Rust symbols always end with E.  But can be followed by a
+         .suffix (which we want to ignore).  */
+      int dot_suffix = 1;
+      while (rdm.sym_len > 0 &&
+             !(dot_suffix && rdm.sym[rdm.sym_len - 1] == 'E'))
+        {
+          dot_suffix = rdm.sym[rdm.sym_len - 1] == '.';
+          rdm.sym_len--;
+        }
+
       if (!(rdm.sym_len > 0 && rdm.sym[rdm.sym_len - 1] == 'E'))
         return 0;
       rdm.sym_len--;

@@ -1,5 +1,5 @@
 // REQUIRED_ARGS: -o-
-
+// EXTRA_FILES: imports/test10375a.d
 import imports.test10375a;
 
 void packIt(Pack)(Pack p){ }  //3

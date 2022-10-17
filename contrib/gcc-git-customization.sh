@@ -7,7 +7,7 @@ ask () {
     question=$1
     default=$2
     var=$3
-    echo -n $question "["$default"]? "
+    printf "%s [%s]? " "$question" "$default"
     read answer
     if [ "x$answer" = "x" ]
     then
@@ -22,13 +22,14 @@ git config alias.svn-rev '!f() { rev=$1; shift; git log --all --grep="^From-SVN:
 
 # Add git commands to convert git commit to monotonically increasing revision number
 # and vice versa
-git config alias.gcc-descr \!"f() { if test \${1:-no} = --full; then c=\${2:-master}; r=\$(git describe --all --abbrev=40 --match 'basepoints/gcc-[0-9]*' \$c | sed -n 's,^\\(tags/\\)\\?basepoints/gcc-,r,p'); expr match \${r:-no} '^r[0-9]\\+\$' >/dev/null && r=\${r}-0-g\$(git rev-parse \${2:-master}); else c=\${1:-master}; r=\$(git describe --all --match 'basepoints/gcc-[0-9]*' \$c | sed -n 's,^\\(tags/\\)\\?basepoints/gcc-\\([0-9]\\+\\)-\\([0-9]\\+\\)-g[0-9a-f]*\$,r\\2-\\3,p;s,^\\(tags/\\)\\?basepoints/gcc-\\([0-9]\\+\\)\$,r\\2-0,p'); fi; if test -n \$r; then o=\$(git config --get gcc-config.upstream); rr=\$(echo \$r | sed -n 's,^r\\([0-9]\\+\\)-[0-9]\\+\\(-g[0-9a-f]\\+\\)\\?\$,\\1,p'); if git rev-parse --verify --quiet \${o:-origin}/releases/gcc-\$rr >/dev/null; then m=releases/gcc-\$rr; else m=master; fi; git merge-base --is-ancestor \$c \${o:-origin}/\$m && \echo \${r}; fi; }; f"
-git config alias.gcc-undescr \!"f() { o=\$(git config --get gcc-config.upstream); r=\$(echo \$1 | sed -n 's,^r\\([0-9]\\+\\)-[0-9]\\+\$,\\1,p'); n=\$(echo \$1 | sed -n 's,^r[0-9]\\+-\\([0-9]\\+\\)\$,\\1,p'); test -z \$r && echo Invalid id \$1 && exit 1; h=\$(git rev-parse --verify --quiet \${o:-origin}/releases/gcc-\$r); test -z \$h && h=\$(git rev-parse --verify --quiet \${o:-origin}/master); p=\$(git describe --all --match 'basepoints/gcc-'\$r \$h | sed -n 's,^\\(tags/\\)\\?basepoints/gcc-[0-9]\\+-\\([0-9]\\+\\)-g[0-9a-f]*\$,\\2,p;s,^\\(tags/\\)\\?basepoints/gcc-[0-9]\\+\$,0,p'); git rev-parse --verify \$h~\$(expr \$p - \$n); }; f"
+git config alias.gcc-descr '!f() { "`git rev-parse --show-toplevel`/contrib/git-descr.sh" $@; } ; f'
+git config alias.gcc-undescr '!f() { "`git rev-parse --show-toplevel`/contrib/git-undescr.sh" $@; } ; f'
 
 git config alias.gcc-verify '!f() { "`git rev-parse --show-toplevel`/contrib/gcc-changelog/git_check_commit.py" $@; } ; f'
 git config alias.gcc-backport '!f() { "`git rev-parse --show-toplevel`/contrib/git-backport.py" $@; } ; f'
+git config alias.gcc-fix-changelog '!f() { "`git rev-parse --show-toplevel`/contrib/git-fix-changelog.py" $@; } ; f'
 git config alias.gcc-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/mklog.py" $@; } ; f'
-git config alias.gcc-commit-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/git-commit-mklog.py" $@; }; f'
+git config alias.gcc-commit-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/git-commit-mklog.py" "$@"; }; f'
 
 # Make diff on MD files use "(define" as a function marker.
 # Use this in conjunction with a .gitattributes file containing
@@ -109,7 +110,7 @@ then
 	# This is a pure guess, but for many people it might be OK.
 	remote_id=$(whoami)
     else
-	remote_id=$(echo $url | sed -r "s|^.*ssh://(.+)@gcc.gnu.org.*$|\1|")
+	remote_id=$(echo $url | sed 's|^.*ssh://\(..*\)@gcc.gnu.org.*$|\1|')
 	if [ x$remote_id = x$url ]
 	then
 	    remote_id=$(whoami)
@@ -117,7 +118,7 @@ then
     fi
 fi
 
-ask "Account name on gcc.gnu.org (for your personal branches area)" $remote_id remote_id
+ask "Account name on gcc.gnu.org (for your personal branches area)" "$remote_id" remote_id
 git config "gcc-config.user" "$remote_id"
 
 old_pfx=$(git config --get "gcc-config.userpfx")
@@ -134,16 +135,20 @@ git config "gcc-config.userpfx" "$new_pfx"
 echo
 ask "Install prepare-commit-msg git hook for 'git commit-mklog' alias" yes dohook
 if [ "x$dohook" = xyes ]; then
-    hookdir=`git rev-parse --git-path hooks`
-    if [ -f "$hookdir/prepare-commit-msg" ]; then
-	echo " Moving existing prepare-commit-msg hook to prepare-commit-msg.bak"
-	mv "$hookdir/prepare-commit-msg" "$hookdir/prepare-commit-msg.bak"
+    hookdir=`git rev-parse --git-path hooks 2>/dev/null`
+    if [ $? -eq 0 ]; then
+	if [ -f "$hookdir/prepare-commit-msg" ]; then
+	    echo " Moving existing prepare-commit-msg hook to prepare-commit-msg.bak"
+	    mv "$hookdir/prepare-commit-msg" "$hookdir/prepare-commit-msg.bak"
+	fi
+	install -c "`git rev-parse --show-toplevel`/contrib/prepare-commit-msg" "$hookdir"
+    else
+	echo " `git --version` is too old, cannot find hooks dir"
     fi
-    install -c "`git rev-parse --show-toplevel`/contrib/prepare-commit-msg" "$hookdir"
 fi
 
 # Scan the existing settings to see if there are any we need to rewrite.
-vendors=$(git config --get-all "remote.${upstream}.fetch" "refs/vendors/" | sed -r "s:.*refs/vendors/([^/]+)/.*:\1:" | sort | uniq)
+vendors=$(git config --get-all "remote.${upstream}.fetch" "refs/vendors/" | sed 's:.*refs/vendors/\([^/][^/]*\)/.*:\1:' | sort | uniq)
 url=$(git config --get "remote.${upstream}.url")
 pushurl=$(git config --get "remote.${upstream}.pushurl")
 for v in $vendors

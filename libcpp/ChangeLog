@@ -1,3 +1,674 @@
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* include/line-map.h: Add discriminator to location_adhoc_data.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): Add external declaration.
+	(get_discriminator_from_loc): Add external declaration.
+	(COMBINE_LOCATION_DATA): Add discriminator parameter.
+	* lex.cc (get_location_for_byte_range_in_cur_line) Pass 0 discriminator
+	in a call to COMBINE_LOCATION_DATA.
+	(warn_about_normalization): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	(_cpp_lex_direct): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	* line-map.cc (location_adhoc_data_hash): Use discriminator compute
+	location_adhoc_data hash.
+	(location_adhoc_data_eq): Use discriminator when comparing
+	location_adhoc_data.
+	(can_be_stored_compactly_p): Check discriminator to determine
+	compact storage.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): New function to get the discriminator
+	from an ad-hoc location.
+	(get_discriminator_from_loc): New function to get the discriminator
+	from a location.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* expr.cc (interpret_float_suffix): Allow {f,F}{16,32,64,128} and
+	{f,F}{32,64,128}x suffixes for C++.
+
+2022-09-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* line-map.cc (location_adhoc_data_update): Remove reliance on
+	undefined behavior.
+	(get_combined_adhoc_loc): Likewise.
+	(rebuild_location_adhoc_htab): Fix issue where the htab was not
+	properly updated.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add true_false.
+	* expr.cc (eval_token): Check true_false not cplusplus to
+	determine whether to handle true and false keywords.
+	* init.cc (struct lang_flags): Add true_false.
+	(lang_defaults): Update.
+	(cpp_set_lang): Set true_false.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add cpp_warn_unicode member.
+	(enum cpp_warning_reason): Add CPP_W_UNICODE.
+	* init.cc (cpp_create_reader): Initialize cpp_warn_unicode.
+	* charset.cc (_cpp_valid_ucn): In possible identifier contexts, don't
+	handle \u{ or \N{ specially in -std=c* modes except -std=c++2{3,b}.
+	In possible identifier contexts, don't emit an error and punt
+	if \N isn't followed by {, or if \N{} surrounds some lower case
+	letters or _.  In possible identifier contexts when not C++23, don't
+	emit an error but warning about unknown character names and treat as
+	separate tokens.  When treating as separate tokens \u{ or \N{, emit
+	warnings.
+
+2022-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.cc (lang_defaults): Disable trigraphs for C2x.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* include/cpplib.h (BOL): Move macro to 1 << 12 since it is
+	not used by C/C++'s unsigned char token flags.
+	(DECIMAL_INT): New, using 1 << 6, so that it is visible as
+	part of C/C++'s 8 bits of token flags.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* include/cpplib.h (struct cpp_options): Implement C++23
+	P2295R6 - Support for UTF-8 as a portable source file encoding.
+	Add cpp_warn_invalid_utf8 and cpp_input_charset_explicit fields.
+	(enum cpp_warning_reason): Add CPP_W_INVALID_UTF8 enumerator.
+	* init.cc (cpp_create_reader): Initialize cpp_warn_invalid_utf8
+	and cpp_input_charset_explicit.
+	* charset.cc (_cpp_valid_utf8): Adjust function comment.
+	* lex.cc (UCS_LIMIT): Define.
+	(utf8_continuation): New const variable.
+	(utf8_signifier): Move earlier in the file.
+	(_cpp_warn_invalid_utf8, _cpp_handle_multibyte_utf8): New functions.
+	(_cpp_skip_block_comment): Handle -Winvalid-utf8 warning.
+	(skip_line_comment): Likewise.
+	(lex_raw_string, lex_string): Likewise.
+	(_cpp_lex_direct): Likewise.
+
+2022-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/106778
+	* makeuname2c.cc (write_nodes): Reverse order of && operands in
+	assert.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106647
+	* charset.cc (wide_str_to_charconst): Implement P2362R3 - Remove
+	non-encodable wide character literals and multicharacter.  For
+	C++23 use CPP_DL_ERROR instead of CPP_DL_WARNING for
+	"character constant too long for its type" diagnostics on CPP_WCHAR
+	literals.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* charset.cc: Implement C++23 P2071R2 - Named universal character
+	escapes.  Include uname2c.h.
+	(hangul_syllables, hangul_count): New variables.
+	(struct uname2c_data): New type.
+	(_cpp_uname2c, _cpp_uname2c_uax44_lm2): New functions.
+	(_cpp_valid_ucn): Use them.  Handle named universal character escapes.
+	(convert_ucn): Adjust comment.
+	(convert_escape): Call convert_ucn even for \N.
+	(_cpp_interpret_identifier): Handle named universal character escapes.
+	* lex.cc (get_bidi_ucn): Fix up function comment formatting.
+	(get_bidi_named): New function.
+	(forms_identifier_p, lex_string): Handle named universal character
+	escapes.
+	* makeuname2c.cc: New file.  Small parts copied from makeucnid.cc.
+	* uname2c.h: New generated file.
+
+2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106646
+	* init.cc: Implement C++23 P2437R1 - Support for #warning.
+	(lang_defaults): Set warning_directive for GNUCXX23 and CXX23.
+	* directives.cc (directive_diagnostics): Use different wording of
+	#warning pedwarn for C++.
+
+2022-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106645
+	* include/cpplib.h (struct cpp_options): Implement
+	P2290R3 - Delimited escape sequences.  Add delimite_escape_seqs
+	member.
+	* init.cc (struct lang_flags): Likewise.
+	(lang_defaults): Add delim column.
+	(cpp_set_lang): Copy over delimite_escape_seqs.
+	* charset.cc (extend_char_range): New function.
+	(_cpp_valid_ucn): Use it.  Handle delimited escape sequences.
+	(convert_hex): Likewise.
+	(convert_oct): Likewise.
+	(convert_ucn): Use extend_char_range.
+	(convert_escape): Call convert_oct even for \o.
+	(_cpp_interpret_identifier): Handle delimited escape sequences.
+	* lex.cc (get_bidi_ucn_1): Likewise.  Add end argument, fill it in.
+	(get_bidi_ucn): Adjust get_bidi_ucn_1 caller.  Use end argument to
+	compute num_bytes.
+
+2022-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add warning_directive.
+	* init.cc (struct lang_flags, lang_defaults): Add
+	warning_directive.
+	* directives.cc (DIRECTIVE_TABLE): Mark #warning as STDC2X not
+	EXTENSION.
+	(directive_diagnostics): Diagnose #warning with -Wc11-c2x-compat,
+	or with -pedantic for a standard not supporting #warning.
+
+2022-08-16  Tom Honermann  <tom@honermann.net>
+
+	PR c++/106423
+	* include/cpplib.h (cpp_warning_reason): Add CPP_W_CXX20_COMPAT.
+	* init.cc (cpp_create_reader): Add cpp_warn_cxx20_compat.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	PR preprocessor/106426
+	* charset.cc (narrow_str_to_charconst): Set signedness of CPP_UTF8CHAR
+	literals based on unsigned_utf8char.
+	* include/cpplib.h (cpp_options): Add unsigned_utf8char.
+	* init.cc (cpp_create_reader): Initialize unsigned_utf8char.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/line-map.h (label_text::take_or_copy): Remove.
+	(label_text::moved_from): Rename to release.
+	(label_text::m_buffer, label_text::m_owned): Make private.
+	(label_text::get, label_text::is_owned): New accessors.
+
+2022-07-13  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/106272
+	* include/line-map.h (class label_text): Don't std::move in a return
+	statement.
+
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* directives.cc (destringize_and_run): Override the location of
+	the CPP_PRAGMA token from a _Pragma directive to the location of
+	the expansion point, as is done for the tokens lexed from it.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h: Include <utility>.
+	(class label_text): Delete maybe_free method in favor of a
+	destructor.  Add move ctor and assignment operator.  Add deletion
+	of the copy ctor and copy-assignment operator.  Rename field
+	m_caller_owned to m_owned.  Add std::move where necessary; add
+	moved_from member function.
+
+2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* ucnid.h: Regenerated for Unicode 14.0.
+
+2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Generated from updated Unicode data files.
+
+2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* expr.cc (_cpp_parse_expr): Handle CPP_PADDING by just another
+	token.
+
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* lex.cc: Replace uses of "FINAL" and "OVERRIDE" with "final" and
+	"override".
+
+2022-02-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (po/$(PACKAGE).pot): Also handle cpp_warning_at,
+	cpp_pedwarning_at and cpp_error_at.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/104147
+	* macro.cc (funlike_invocation_p): For padding prefer a token
+	with val.source non-NULL especially if it has PREV_WHITE set
+	on val.source->flags.  Add gcc_assert that CPP_PADDING tokens
+	don't have PREV_WHITE set in flags.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* directives.cc (destringize_and_run): Push &pfile->avoid_paste
+	instead of a copy of pfile->directive_result for the CPP_PADDING
+	case.
+
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* include/cpplib.h (enum cpp_bidirectional_level): Add
+	bidirectional_ucn.  Set values explicitly.
+	* internal.h (cpp_reader): Adjust warn_bidi_p.
+	* lex.cc (maybe_warn_bidi_on_close): Don't warn about UCNs
+	unless UCN checking is on.
+	(maybe_warn_bidi_on_char): Likewise.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	* include/line-map.h (class line_maps): Re-arrange fields
+	to minimize padding.
+	(class rich_location): Likewise.
+	* line-map.cc (rich_location::rich_location): Adjust.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Rename .c names to .cc.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Rename .c names to .cc.
+	* charset.cc (convert_escape): Likewise.
+	* directives.cc (directive_diagnostics): Likewise.
+	(_cpp_handle_directive): Likewise.
+	(lex_macro_node): Likewise.
+	* include/cpplib.h (struct _cpp_file): Likewise.
+	(PURE_ZERO): Likewise.
+	(cpp_defined): Likewise.
+	(cpp_error_at): Likewise.
+	(cpp_forall_identifiers): Likewise.
+	(cpp_compare_macros): Likewise.
+	(cpp_get_converted_source): Likewise.
+	(cpp_read_state): Likewise.
+	(cpp_directive_only_process): Likewise.
+	(struct cpp_decoded_char): Likewise.
+	* include/line-map.h (enum lc_reason): Likewise.
+	(enum location_aspect): Likewise.
+	* include/mkdeps.h: Likewise.
+	* init.cc (cpp_destroy): Likewise.
+	(cpp_finish): Likewise.
+	* internal.h (struct cpp_reader): Likewise.
+	(_cpp_defined_macro_p): Likewise.
+	(_cpp_backup_tokens_direct): Likewise.
+	(_cpp_destroy_hashtable): Likewise.
+	(_cpp_has_header): Likewise.
+	(_cpp_expand_op_stack): Likewise.
+	(_cpp_commit_buff): Likewise.
+	(_cpp_restore_special_builtin): Likewise.
+	(_cpp_bracket_include): Likewise.
+	(_cpp_replacement_text_len): Likewise.
+	(ufputs): Likewise.
+	* line-map.cc (linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_check_files_exited): Likewise.
+	(line_map_new_raw): Likewise.
+	* traditional.cc (enum ls): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* charset.c: Moved to...
+	* charset.cc: ...here.
+	* directives.c: Moved to...
+	* directives.cc: ...here.
+	* errors.c: Moved to...
+	* errors.cc: ...here.
+	* expr.c: Moved to...
+	* expr.cc: ...here.
+	* files.c: Moved to...
+	* files.cc: ...here.
+	* identifiers.c: Moved to...
+	* identifiers.cc: ...here.
+	* init.c: Moved to...
+	* init.cc: ...here.
+	* lex.c: Moved to...
+	* lex.cc: ...here.
+	* line-map.c: Moved to...
+	* line-map.cc: ...here.
+	* macro.c: Moved to...
+	* macro.cc: ...here.
+	* makeucnid.c: Moved to...
+	* makeucnid.cc: ...here.
+	* mkdeps.c: Moved to...
+	* mkdeps.cc: ...here.
+	* pch.c: Moved to...
+	* pch.cc: ...here.
+	* symtab.c: Moved to...
+	* symtab.cc: ...here.
+	* traditional.c: Moved to...
+	* traditional.cc: ...here.
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	* files.c (_cpp_find_file): Substitute a valid pointer for
+	an invalid one to avoid -Wuse-after-free.
+
+2022-01-12  Clément Chigot  <clement.chigot@atos.net>
+
+	* configure.ac: Check sizeof ino_t and dev_t.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* include/cpplib.h (INO_T_CPP): Change for AIX.
+	(DEV_T_CPP): New macro.
+	(struct cpp_dir): Use it.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/89971
+	* macro.c (replace_args): For ##__VA_OPT__, if __VA_OPT__ expands
+	to no tokens at all, drop PASTE_LEFT flag from the previous token.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/102432
+	* lex.c (_cpp_lex_direct): If buffer->need_line while
+	pfile->state.in_deferred_pragma, return CPP_PRAGMA_EOL token instead
+	of assertion failure.
+
+2021-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* include/line-map.h (class line_maps): Add GTY((callback)) to
+	reallocator and round_alloc_size members.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* init.c (struct lang_flags): Remove cxx23_identifiers.
+	(lang_defaults): Remove cxx23_identifiers initializers.
+	(cpp_set_lang): Don't copy cxx23_identifiers.
+	* include/cpplib.h (struct cpp_options): Adjust comment about
+	c11_identifiers.  Remove cxx23_identifiers field.
+	* lex.c (warn_about_normalization): Use cplusplus instead of
+	cxx23_identifiers.
+	* charset.c (ucn_valid_in_identifier): Likewise.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103415
+	* macro.c (stringify_arg): Remove va_opt argument and va_opt handling.
+	(paste_tokens): On successful paste or in PREV_WHITE and
+	PREV_FALLTHROUGH flags from the *plhs token to the new token.
+	(replace_args): Adjust stringify_arg callers.  For #__VA_OPT__,
+	perform token pasting in a separate loop before stringify_arg call.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* charset.c (convert_escape): Remove unreachable break.
+
+2021-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* init.c (lang_defaults): Enable cxx23_identifiers for
+	-std={gnu,c}++{11,14,17,20} too.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Makefile.in: Use ETAGS variable in TAGS target.
+	* configure: Regenerate.
+	* configure.ac: Allow ETAGS variable to be overridden.
+
+2021-11-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR preprocessor/103355
+	* system.h (ATTR_LIKELY): Fix definition.
+
+2021-11-23  Marek Polacek  <polacek@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR preprocessor/103355
+	* lex.c: Use ATTR_LIKELY instead of [[likely]].
+	* system.h (ATTR_LIKELY): Define.
+
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR preprocessor/103165
+	* internal.h (struct lexer_state): Add ignore__Pragma field.
+	* macro.c (builtin_macro): Don't interpret _Pragma if
+	pfile->state.ignore__Pragma.
+	(expand_arg): Temporarily set pfile->state.ignore__Pragma to 1.
+
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/103026
+	* lex.c (struct bidi::context): New.
+	(bidi::vec): Convert to a vec of context rather than unsigned
+	char.
+	(bidi::ctx_at): Rename to...
+	(bidi::pop_kind_at): ...this and reimplement for above change.
+	(bidi::current_ctx): Update for change to vec.
+	(bidi::current_ctx_ucn_p): Likewise.
+	(bidi::current_ctx_loc): New.
+	(bidi::on_char): Update for usage of context struct.  Add "loc"
+	param and pass it when pushing contexts.
+	(get_location_for_byte_range_in_cur_line): New.
+	(get_bidi_utf8): Rename to...
+	(get_bidi_utf8_1): ...this, reintroducing...
+	(get_bidi_utf8): ...as a wrapper, setting *OUT when the result is
+	not NONE.
+	(get_bidi_ucn): Rename to...
+	(get_bidi_ucn_1): ...this, reintroducing...
+	(get_bidi_ucn): ...as a wrapper, setting *OUT when the result is
+	not NONE.
+	(class unpaired_bidi_rich_location): New.
+	(maybe_warn_bidi_on_close): Use unpaired_bidi_rich_location when
+	reporting on unpaired bidi chars.  Split into singular vs plural
+	spellings.
+	(maybe_warn_bidi_on_char): Pass in a location_t rather than a
+	const uchar * and use it when emitting warnings, and when calling
+	bidi::on_char.
+	(_cpp_skip_block_comment): Capture location when kind is not NONE
+	and pass it to maybe_warn_bidi_on_char.
+	(skip_line_comment): Likewise.
+	(forms_identifier_p): Likewise.
+	(lex_raw_string): Likewise.
+	(lex_string): Likewise.
+
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/103026
+	* lex.c (maybe_warn_bidi_on_close): Use a rich_location
+	and call set_escape_on_output (true) on it.
+	(maybe_warn_bidi_on_char): Likewise.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103130
+	* lex.c (cpp_directive_only_process): Treat even \*/ as end of block
+	comment.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* include/cpplib.h (enum cpp_bidirectional_level): New.
+	(struct cpp_options): Add cpp_warn_bidirectional.
+	(enum cpp_warning_reason): Add CPP_W_BIDIRECTIONAL.
+	* internal.h (struct cpp_reader): Add warn_bidi_p member
+	function.
+	* init.c (cpp_create_reader): Set cpp_warn_bidirectional.
+	* lex.c (bidi): New namespace.
+	(get_bidi_utf8): New function.
+	(get_bidi_ucn): Likewise.
+	(maybe_warn_bidi_on_close): Likewise.
+	(maybe_warn_bidi_on_char): Likewise.
+	(_cpp_skip_block_comment): Implement warning about bidirectional
+	control characters.
+	(skip_line_comment): Likewise.
+	(forms_identifier_p): Likewise.
+	(lex_identifier): Likewise.
+	(lex_string): Likewise.
+	(lex_raw_string): Likewise.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (convert_escape): Use encoding_rich_location when
+	complaining about nonprintable unknown escape sequences.
+	(cpp_display_width_computation::::cpp_display_width_computation):
+	Pass in policy rather than tabstop.
+	(cpp_display_width_computation::process_next_codepoint): Add "out"
+	param and populate *out if non-NULL.
+	(cpp_display_width_computation::advance_display_cols): Pass NULL
+	to process_next_codepoint.
+	(cpp_byte_column_to_display_column): Pass in policy rather than
+	tabstop.  Pass NULL to process_next_codepoint.
+	(cpp_display_column_to_byte_column): Pass in policy rather than
+	tabstop.
+	* errors.c (cpp_diagnostic_get_current_location): New function,
+	splitting out the logic from...
+	(cpp_diagnostic): ...here.
+	(cpp_warning_at): New function.
+	(cpp_pedwarning_at): New function.
+	* include/cpplib.h (cpp_warning_at): New decl for rich_location.
+	(cpp_pedwarning_at): Likewise.
+	(struct cpp_decoded_char): New.
+	(struct cpp_char_column_policy): New.
+	(cpp_display_width_computation::cpp_display_width_computation):
+	Replace "tabstop" param with "policy".
+	(cpp_display_width_computation::process_next_codepoint): Add "out"
+	param.
+	(cpp_display_width_computation::m_tabstop): Replace with...
+	(cpp_display_width_computation::m_policy): ...this.
+	(cpp_byte_column_to_display_column): Replace "tabstop" param with
+	"policy".
+	(cpp_display_width): Likewise.
+	(cpp_display_column_to_byte_column): Likewise.
+	* include/line-map.h (rich_location::escape_on_output_p): New.
+	(rich_location::set_escape_on_output): New.
+	(rich_location::m_escape_on_output): New.
+	* internal.h (cpp_diagnostic_get_current_location): New decl.
+	(class encoding_rich_location): New.
+	* lex.c (skip_whitespace): Use encoding_rich_location when
+	complaining about null characters.
+	(warn_about_normalization): Generate a source range when
+	complaining about improperly normalized tokens, rather than just a
+	point, and use encoding_rich_location so that the source code
+	is escaped on printing.
+	* line-map.c (rich_location::rich_location): Initialize
+	m_escape_on_output.
+
+2021-10-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102409
+	* directives.c (destringize_and_run): Add PRAGMA_OP to the
+	CPP_PRAGMA token's flags to mark is as coming from _Pragma.
+	* include/cpplib.h (PRAGMA_OP): #define, to be used with token flags.
+	* macro.c (collect_args): Only handle CPP_PRAGMA special if PRAGMA_OP
+	is set.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Makefile.in: Add dummy install-dvi target.
+
+2021-10-18  Martin Liska  <mliska@suse.cz>
+
+	* charset.c (convert_oct): Remove unused but set variable.
+
+2021-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.c (lang_defaults): Implement P2334R1, enable elifdef for
+	-std=c++23 and -std=gnu++23.
+	* directives.c (_cpp_handle_directive): Support elifdef/elifndef if
+	either CPP_OPTION (pfile, elifdef) or !CPP_OPTION (pfile, std).
+	(do_elif): For older non-std modes if pedantic pedwarn about
+	#elifdef/#elifndef directives that change behavior.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* include/cpplib.h (struct cpp_options): Add cxx23_identifiers.
+	* charset.c (CXX23, NXX23): New enumerators.
+	(CID, NFC, NKC, CTX): Renumber.
+	(ucn_valid_in_identifier): Implement P1949R7 - use CXX23 and
+	NXX23 flags for cxx23_identifiers.  For start character in
+	non-pedantic mode, allow characters that are allowed as start
+	characters in any of the supported language modes, rather than
+	disallowing characters allowed only as non-start characters in
+	current mode but for characters from other language modes allowing
+	them even if they are never allowed at start.
+	* init.c (struct lang_flags): Add cxx23_identifiers.
+	(lang_defaults): Add cxx23_identifiers column.
+	(cpp_set_lang): Initialize CPP_OPTION (pfile, cxx23_identifiers).
+	* lex.c (warn_about_normalization): If cxx23_identifiers, use
+	cpp_pedwarning_with_line instead of cpp_warning_with_line for
+	"is not in NFC" diagnostics.
+	* makeucnid.c: Adjust usage comment.
+	(CXX23, NXX23): New enumerators.
+	(all_languages): Add CXX23.
+	(not_NFC, not_NFKC, maybe_not_NFC): Renumber.
+	(read_derivedcore): New function.
+	(write_table): Print also CXX23 and NXX23 columns.
+	(main): Require 5 arguments instead of 4, call read_derivedcore.
+	* ucnid.h: Regenerated using Unicode 13.0.0 files.
+
+2021-09-01  Jason Merrill  <jason@redhat.com>
+
+	* macro.c (replace_args): When __VA_OPT__ is on the LHS of ##,
+	remove trailing avoid_paste tokens.
+
+2021-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101488
+	* macro.c (replace_args): Fix up handling of CPP_PADDING tokens at the
+	start or end of __VA_OPT__ arguments when preceeded or followed by ##.
+
+2021-08-31  Martin Sebor  <msebor@redhat.com>
+
+	* include/line-map.h (class rich_location): Disable copying and
+	assignment.
+
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* charset.c (init_iconv_desc): Adapt to permit PFILE argument to
+	be NULL.
+	(_cpp_convert_input): Likewise. Also move UTF-8 BOM logic to...
+	(cpp_check_utf8_bom): ...here.  New function.
+	(cpp_input_conversion_is_trivial): New function.
+	* files.c (read_file_guts): Allow PFILE argument to be NULL.  Add
+	INPUT_CHARSET argument as an alternate source of this information.
+	(read_file): Pass the new argument to read_file_guts.
+	(cpp_get_converted_source): New function.
+	* include/cpplib.h (struct cpp_converted_source): Declare.
+	(cpp_get_converted_source): Declare.
+	(cpp_input_conversion_is_trivial): Declare.
+	(cpp_check_utf8_bom): Declare.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* macro.c (vaopt_state): Add m_stringify member.
+	(vaopt_state::vaopt_state): Initialize it.
+	(vaopt_state::update): Overwrite it.
+	(vaopt_state::stringify): New method.
+	(stringify_arg): Replace arg argument with first, count arguments
+	and add va_opt argument.  Use first instead of arg->first and
+	count instead of arg->count, for va_opt add paste_tokens handling.
+	(paste_tokens): Fix up len calculation.  Don't spell rhs twice,
+	instead use %.*s to supply lhs and rhs spelling lengths.  Don't call
+	_cpp_backup_tokens here.
+	(paste_all_tokens): Call it here instead.
+	(replace_args): Adjust stringify_arg caller.  For vaopt_state::END
+	if stringify is true handle __VA_OPT__ stringification.
+	(create_iso_definition): Handle # __VA_OPT__ similarly to # macro_arg.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101638
+	* macro.c (cpp_sys_macro_p): Return true instead of
+	crashing on builtin macros.
+
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* ucnid.h: Regenerated using Unicode 13.0.0 files.
+
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* makeucnid.c (write_table): Fix computation of last_combine.
+	* ucnid.h: Regenerated using Unicode 6.3.0 files.
+
 2021-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100796
@@ -6748,7 +7419,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

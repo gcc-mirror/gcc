@@ -3,7 +3,7 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2009-2021 Free Software Foundation, Inc.
+// Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,12 +21,12 @@
 // <http://www.gnu.org/licenses/>.
 
 
-#include <functional> // std::unary_function, std::ref
+#include <functional> // std::ref
 #include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
 
-struct nonconst : public std::unary_function<std::thread::id&, void>
+struct nonconst
 {
   void operator()(std::thread::id& id)
   {

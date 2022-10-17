@@ -55,7 +55,7 @@ void * foo1e (void)
 extern void * ffoo1f (void);    
 void * foo1f (void)
 {
-  if (ffoo1f) /* { dg-warning "" } */
+  if (ffoo1f) /* { dg-warning "-Waddress" } */
     ffoo1f ();
   return 0;
 }
@@ -68,7 +68,9 @@ void * ffoox1g (void) { return (void *)0; }
 extern void * ffoo1g (void)  __attribute__((weak, alias ("ffoox1g")));
 void * foo1g (void)
 {
-  if (ffoo1g)
+  /* ffoo1g is a weak alias for a symbol defined in this file, expect
+     a -Waddress for the test (which is folded to true).  */
+  if (ffoo1g)       // { dg-warning "-Waddress" }
     ffoo1g ();
   return 0;
 }

@@ -1,4 +1,6 @@
-! { dg-do compile { target { i?86-*-* x86_64-*-* } } }
+! { dg-do compile }
+! { dg-require-effective-target fortran_real_10 }
+! { dg-require-effective-target fortran_real_16 }
 ! { dg-options "-Wall" }
 ! Code contributed by Manfred Schwarb <manfred99 at gmx dot ch>
 ! PR fortran/91497
@@ -8,13 +10,13 @@
 !
 program foo
 
-      real*4 a,aa
-      real*8 b,bb
-      real*10 c,cc
-      real*16 d
-      integer*2 e,ee
-      integer*4 f,ff
-      integer*8 g,gg
+      real(4) a,aa
+      real(8) b,bb
+      real(10) c,cc
+      real(16) d
+      integer(2) e,ee
+      integer(4) f,ff
+      integer(8) g,gg
       PARAMETER(a=3.1415927_4)
       PARAMETER(b=3.1415927_8)
       PARAMETER(c=3.1415927_10)
@@ -36,11 +38,10 @@ program foo
       aa=CEILING(b)
       aa=CEILING(c)
       aa=CEILING(d)
-      !---unknown but documented type conversions:
+      !---DEC specific type conversions (-fdec):
       !!aa=FLOATI(e)
       !!aa=FLOATJ(f)
       !!aa=FLOATK(g)
-      !---documentation is wrong for sngl:
       aa=SNGL(c)
       aa=SNGL(d)
       bb=REAL(c, kind=8)
@@ -98,7 +99,7 @@ program foo
       ff=IFIX(a)
       ff=IDINT(b)
       ff=IDNINT(b)
-      !---LONG not allowed anymore in gfortran 10 (?):
+      !---LONG support got removed:
       !!ff=LONG(a)
       !!ff=LONG(b)
       !!ff=LONG(c)

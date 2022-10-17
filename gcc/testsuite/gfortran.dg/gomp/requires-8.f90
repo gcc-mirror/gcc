@@ -1,10 +1,14 @@
+module m0
+  integer :: x
+end module m0
+
 module m  !  { dg-error "has OpenMP device constructs/routines but does not set !.OMP REQUIRES UNIFIED_SHARED_MEMORY but other program units do" }
   !$omp requires reverse_offload
 contains
  subroutine foo
   interface
    subroutine bar2
-     !$!omp requires dynamic_allocators
+     !$omp requires dynamic_allocators
    end subroutine
   end interface
   !$omp target
@@ -13,10 +17,14 @@ contains
  end subroutine foo
 end module m
 
-subroutine bar  ! { dg-error "has OpenMP device constructs/routines but does not set !.OMP REQUIRES REVERSE_OFFSET but other program units do" }
+subroutine bar
   !use m
-  !$omp requires unified_shared_memory
+  !$omp requires unified_shared_memory  ! Possibly OK - needs OpenMP Lang Spec clarification (-> #3240)
   !$omp declare target
 end subroutine bar
 
-! { dg-prune-output "not yet supported" }
+subroutine foobar  ! { dg-error "has OpenMP device constructs/routines but does not set !.OMP REQUIRES REVERSE_OFFLOAD but other program units do" }
+  use m0
+  !$omp requires unified_shared_memory
+  !$omp target enter data map(to:x)
+end subroutine foobar

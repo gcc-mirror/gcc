@@ -5,6 +5,7 @@
  * Copyright: Dominic Sayers, Jacob Carlborg 2008-.
  * Test schema documentation: Copyright © 2011, Daniel Marschall
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0)
+ * Dominic Sayers graciously granted permission to use the Boost license via email on Feb 22, 2011.
  * Version: 3.0.13 - Version 3.0 of the original PHP implementation: $(LINK http://www.dominicsayers.com/isemail)
  *
  * Standards:
@@ -20,13 +21,11 @@
  *             $(LI $(LINK http://tools.ietf.org/html/rfc5322))
  *          )
  *
- * Source: $(PHOBOSSRC std/net/_isemail.d)
+ * Source: $(PHOBOSSRC std/net/isemail.d)
  */
 module std.net.isemail;
 
-// FIXME
-import std.range.primitives; // : ElementType;
-import std.regex;
+import std.range.primitives : back, front, ElementType, popFront, popBack;
 import std.traits;
 import std.typecons : Flag, Yes, No;
 
@@ -41,7 +40,7 @@ import std.typecons : Flag, Yes, No;
  *
  * Params:
  *     email = The email address to check
- *     checkDNS = If $(D Yes.checkDns) then a DNS check for MX records will be made
+ *     checkDNS = If `Yes.checkDns` then a DNS check for MX records will be made
  *     errorLevel = Determines the boundary between valid and invalid addresses.
  *                  Status codes above this number will be returned as-is,
  *                  status codes below will be returned as EmailStatusCode.valid.
@@ -72,10 +71,6 @@ if (isSomeChar!(Char))
 
     alias tstring = const(Char)[];
     alias Token = TokenImpl!(Char);
-
-    static ipRegex = ctRegex!(`\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}`~
-                        `(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`.to!(const(Char)[]));
-    static fourChars = ctRegex!(`^[0-9A-Fa-f]{0,4}$`.to!(const(Char)[]));
 
     enum defaultThreshold = 16;
     int threshold;
@@ -398,12 +393,11 @@ if (isSomeChar!(Char))
                             auto maxGroups = 8;
                             size_t index = -1;
                             auto addressLiteral = parseData[EmailPart.componentLiteral];
-                            auto matchesIp = addressLiteral.matchAll(ipRegex).map!(a => a.hit).array;
+                            const(Char)[] ipSuffix = matchIPSuffix(addressLiteral);
 
-                            if (!matchesIp.empty)
+                            if (ipSuffix.length)
                             {
-                                index = addressLiteral.lastIndexOf(matchesIp.front);
-
+                                index = addressLiteral.length - ipSuffix.length;
                                 if (index != 0)
                                     addressLiteral = addressLiteral[0 .. index] ~ "0:0";
                             }
@@ -417,7 +411,7 @@ if (isSomeChar!(Char))
                             else
                             {
                                 auto ipV6 = addressLiteral[5 .. $];
-                                matchesIp = ipV6.split(Token.colon);
+                                auto matchesIp = ipV6.split(Token.colon);
                                 immutable groupCount = matchesIp.length;
                                 index = ipV6.indexOf(Token.doubleColon);
 
@@ -452,7 +446,7 @@ if (isSomeChar!(Char))
                                     returnStatus ~= EmailStatusCode.rfc5322IpV6ColonEnd;
 
                                 else if (!matchesIp
-                                        .filter!(a => a.matchFirst(fourChars).empty)
+                                        .filter!(a => !isUpToFourHexChars(a))
                                         .empty)
                                     returnStatus ~= EmailStatusCode.rfc5322IpV6BadChar;
 
@@ -1273,9 +1267,9 @@ if (isSomeChar!(Char))
 /**
  * Flag for indicating if the isEmail function should perform a DNS check or not.
  *
- * If set to $(D CheckDns.no), isEmail does not perform DNS checking.
+ * If set to `CheckDns.no`, isEmail does not perform DNS checking.
  *
- * Otherwise if set to $(D CheckDns.yes), isEmail performs DNS checking.
+ * Otherwise if set to `CheckDns.yes`, isEmail performs DNS checking.
  */
 alias CheckDns = Flag!"checkDns";
 
@@ -1309,37 +1303,37 @@ struct EmailStatus
     }
 
     /// Returns: If the email address is valid or not.
-    @property bool valid() const @safe @nogc pure nothrow
+    @property bool valid() const @safe @nogc pure nothrow scope
     {
         return valid_;
     }
 
     /// Returns: The local part of the email address, that is, the part before the @ sign.
-    @property string localPart() const @safe @nogc pure nothrow
+    @property string localPart() const @safe @nogc pure nothrow return scope
     {
         return localPart_;
     }
 
     /// Returns: The domain part of the email address, that is, the part after the @ sign.
-    @property string domainPart() const @safe @nogc pure nothrow
+    @property string domainPart() const @safe @nogc pure nothrow return scope
     {
         return domainPart_;
     }
 
     /// Returns: The email status code
-    @property EmailStatusCode statusCode() const @safe @nogc pure nothrow
+    @property EmailStatusCode statusCode() const @safe @nogc pure nothrow scope
     {
         return statusCode_;
     }
 
     /// Returns: A describing string of the status code
-    @property string status() const @safe @nogc pure nothrow
+    @property string status() const @safe @nogc pure nothrow scope
     {
         return statusCodeDescription(statusCode_);
     }
 
     /// Returns: A textual representation of the email status
-    string toString() const @safe pure
+    string toString() const @safe pure scope
     {
         import std.format : format;
         return format("EmailStatus\n{\n\tvalid: %s\n\tlocalPart: %s\n\tdomainPart: %s\n\tstatusCode: %s\n}", valid,
@@ -1789,7 +1783,7 @@ enum AsciiToken
  * )
  */
 int compareFirstN(alias pred = "a < b", S1, S2) (S1 s1, S2 s2, size_t length)
-if (is(Unqual!(ElementType!(S1)) == dchar) && is(Unqual!(ElementType!(S2)) == dchar))
+if (is(immutable ElementType!(S1) == immutable dchar) && is(immutable ElementType!(S2) == immutable dchar))
 {
     import std.uni : icmp;
     auto s1End = length <= s1.length ? length : s1.length;
@@ -1861,4 +1855,97 @@ const(T)[] get (T) (const(T)[] str, size_t index, dchar c)
 {
     assert("abc".get(1, 'b') == "b");
     assert("löv".get(1, 'ö') == "ö");
+}
+
+/+
+Replacement for:
+---
+static fourChars = ctRegex!(`^[0-9A-Fa-f]{0,4}$`.to!(const(Char)[]));
+...
+a => a.matchFirst(fourChars).empty
+---
++/
+bool isUpToFourHexChars(Char)(scope const(Char)[] s)
+{
+    import std.ascii : isHexDigit;
+    if (s.length > 4) return false;
+    foreach (c; s)
+        if (!isHexDigit(c)) return false;
+    return true;
+}
+
+@nogc nothrow pure @safe unittest
+{
+    assert(!isUpToFourHexChars("12345"));
+    assert(!isUpToFourHexChars("defg"));
+    assert(isUpToFourHexChars("1A0a"));
+}
+
+/+
+Replacement for:
+---
+static ipRegex = ctRegex!(`\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}`~
+                    `(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`.to!(const(Char)[]));
+...
+auto matchesIp = addressLiteral.matchAll(ipRegex).map!(a => a.hit).array;
+----
+Note that only the first item of "matchAll" was ever used in practice
+so we can return `const(Char)[]` instead of `const(Char)[][]` using a
+zero-length string to indicate no match.
++/
+const(Char)[] matchIPSuffix(Char)(return scope const(Char)[] s) @nogc nothrow pure @safe
+{
+    size_t end = s.length;
+    if (end < 7) return null;
+    // Check the first three `[.]\d{1,3}`
+    foreach (_; 0 .. 3)
+    {
+        size_t start = void;
+        if (end >= 2 && s[end-2] == '.')
+            start = end - 2;
+        else if (end >= 3 && s[end-3] == '.')
+            start = end - 3;
+        else if (end >= 4 && s[end-4] == '.')
+            start = end - 4;
+        else
+            return null;
+        uint x = 0;
+        foreach (i; start + 1 .. end)
+        {
+            uint c = cast(uint) s[i] - '0';
+            if (c > 9) return null;
+            x = x * 10 + c;
+        }
+        if (x > 255) return null;
+        end = start;
+    }
+    // Check the final `\d{1,3}`.
+    if (end < 1) return null;
+    size_t start = end - 1;
+    uint x = cast(uint) s[start] - '0';
+    if (x > 9) return null;
+    if (start > 0 && cast(uint) s[start-1] - '0' <= 9)
+    {
+        --start;
+        x += 10 * (cast(uint) s[start] - '0');
+        if (start > 0 && cast(uint) s[start-1] - '0' <= 9)
+        {
+            --start;
+            x += 100 * (cast(uint) s[start] - '0');
+        }
+    }
+    if (x > 255) return null;
+    // Must either be at start of string or preceded by a non-word character.
+    // (TO DETERMINE: is the definition of "word character" ASCII only?)
+    if (start == 0) return s;
+    const b = s[start - 1];
+    import std.ascii : isAlphaNum;
+    if (isAlphaNum(b) || b == '_') return null;
+    return s[start .. $];
+}
+
+@nogc nothrow pure @safe unittest
+{
+    assert(matchIPSuffix("255.255.255.255") == "255.255.255.255");
+    assert(matchIPSuffix("babaev 176.16.0.1") == "176.16.0.1");
 }

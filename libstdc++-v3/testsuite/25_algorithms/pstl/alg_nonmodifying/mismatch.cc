@@ -2,7 +2,7 @@
 // { dg-options "-ltbb" }
 // { dg-do run { target c++17 } }
 // { dg-timeout-factor 3 }
-// { dg-require-effective-target tbb-backend }
+// { dg-require-effective-target tbb_backend }
 
 //===-- mismatch.pass.cpp -------------------------------------------------===//
 //

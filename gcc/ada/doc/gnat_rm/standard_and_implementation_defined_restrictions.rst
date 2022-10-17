@@ -184,7 +184,9 @@ No_Dependence
 .. index:: No_Dependence
 
 [RM 13.12.1] This restriction ensures at compile time that there are no
-dependences on a library unit.
+dependences on a library unit. For GNAT, this includes implicit implementation
+dependences on units of the runtime library that are created by the compiler
+to support specific constructs of the language.
 
 No_Direct_Boolean_Operators
 ---------------------------
@@ -239,7 +241,7 @@ The following example indicates constructs that violate this restriction.
   with Pkg; use Pkg;
   procedure Example is
     procedure Test (O : T'Class) is
-      N : Natural  := O'Size;--  Error: Dispatching call
+      N : Natural := O'Size; --  Error: Dispatching call
       C : T'Class := O;      --  Error: implicit Dispatching Call
     begin
       if O in DT'Class then  --  OK   : Membership test
@@ -492,6 +494,13 @@ No_Local_Protected_Objects
 [RM D.7] This restriction ensures at compile time that protected objects are
 only declared at the library level.
 
+No_Local_Tagged_Types
+---------------------
+.. index:: No_Local_Tagged_Types
+
+[GNAT] This restriction ensures at compile time that tagged types are only
+declared at the library level.
+
 No_Local_Timing_Events
 ----------------------
 .. index:: No_Local_Timing_Events
@@ -655,6 +664,18 @@ since they do not need to worry about dispatching stream operations.
 To take maximum advantage of this space-saving optimization, any
 unit declaring a tagged type should be compiled with the restriction,
 though this is not required.
+
+No_Tagged_Type_Registration
+---------------------------
+.. index:: No_Tagged_Type_Registration
+
+[GNAT] If this restriction is active, then class-wide streaming
+attributes are not supported. In addition, the subprograms in
+Ada.Tags are not supported.
+If this restriction is active, the generated code is simplified by
+omitting the otherwise-required global registration of tagged types when they
+are declared. This restriction may be necessary in order to also apply
+the No_Elaboration_Code restriction.
 
 No_Task_Allocators
 ------------------
@@ -870,6 +891,44 @@ used, the compiler is allowed to suppress the elaboration counter normally
 associated with the unit. This counter is typically used to check for access
 before elaboration and to control multiple elaboration attempts.
 
+No_Dynamic_Accessibility_Checks
+-------------------------------
+.. index:: No_Dynamic_Accessibility_Checks
+
+[GNAT] No dynamic accessibility checks are generated when this restriction is
+in effect. Instead, dangling references are prevented via more conservative
+compile-time checking. More specifically, existing compile-time checks are
+enforced but with more conservative assumptions about the accessibility levels
+of the relevant entities. These conservative assumptions eliminate the need for
+dynamic accessibility checks.
+
+These new rules for computing (at compile-time) the accessibility level of an
+anonymous access type T are as follows:
+
+*
+ If T is a function result type then, from the caller's perspective, its level
+ is that of the innermost master enclosing the function call. From the callee's
+ perspective, the level of parameters and local variables of the callee is
+ statically deeper than the level of T.
+
+ For any other accessibility level L such that the level of parameters and local
+ variables of the callee is statically deeper than L, the level of T (from the
+ callee's perspective) is also statically deeper than L.
+*
+ If T is the type of a formal parameter then, from the caller's perspective,
+ its level is at least as deep as that of the type of the corresponding actual
+ parameter (whatever that actual parameter might be). From the callee's
+ perspective, the level of parameters and local variables of the callee is
+ statically deeper than the level of T.
+*
+ If T is the type of a discriminant then its level is that of the discriminated
+ type.
+*
+ If T is the type of a stand-alone object then its level is the level of the
+ object.
+*
+ In all other cases, the level of T is as defined by the existing rules of Ada.
+
 No_Dynamic_Sized_Objects
 ------------------------
 .. index:: No_Dynamic_Sized_Objects
@@ -1011,4 +1070,3 @@ follows::
 or equivalently::
 
   gnatprove -P project.gpr --mode=check_all
-

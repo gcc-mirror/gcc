@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2021 Free Software Foundation, Inc.
+// Copyright (C) 2017-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,21 +38,37 @@ private:
   char c = 'a';
 };
 
-struct codecvt : std::codecvt<wchar_t, char, std::mbstate_t> { };
 
 void
 test01()
 {
+#ifdef _GLIBCXX_USE_WCHAR_T
+  struct codecvt : std::codecvt<wchar_t, char, std::mbstate_t> { };
   // https://gcc.gnu.org/ml/libstdc++/2017-11/msg00022.html
   streambuf sb;
   std::wbuffer_convert<codecvt> conv(&sb);
   VERIFY( sb.in_avail() == 0 );
   wchar_t c = conv.sgetc();
   VERIFY( c == L'a' );
+#endif
+}
+
+
+void
+test02()
+{
+  struct codecvt : std::codecvt<char16_t, char, std::mbstate_t> { };
+  // https://gcc.gnu.org/ml/libstdc++/2017-11/msg00022.html
+  streambuf sb;
+  std::wbuffer_convert<codecvt, char16_t> conv(&sb);
+  VERIFY( sb.in_avail() == 0 );
+  char16_t c = conv.sgetc();
+  VERIFY( c == u'a' );
 }
 
 int
 main()
 {
   test01();
+  test02();
 }

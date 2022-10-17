@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,6 +60,9 @@ along with GCC; see the file COPYING3.  If not see
    - unary: a normal unary optab, such as vec_reverse_<mode>
    - binary: a normal binary optab, such as vec_interleave_lo_<mode>
    - ternary: a normal ternary optab, such as fma<mode>4
+
+   - unary_convert: a single-input conversion optab, such as
+     lround<srcmode><dstmode>2.
 
    - cond_binary: a conditional binary optab, such as cond_add<mode>
    - cond_ternary: a conditional ternary optab, such as cond_fma_rev<mode>
@@ -169,6 +172,8 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_FLOOR, ECF_CONST | ECF_NOTHROW, first,
 DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_CEIL, ECF_CONST | ECF_NOTHROW, first,
 			      savg_ceil, uavg_ceil, binary)
 
+DEF_INTERNAL_SIGNED_OPTAB_FN (MULH, ECF_CONST | ECF_NOTHROW, first,
+			      smul_highpart, umul_highpart, binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (MULHS, ECF_CONST | ECF_NOTHROW, first,
 			      smulhs, umulhs, binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (MULHRS, ECF_CONST | ECF_NOTHROW, first,
@@ -186,6 +191,8 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MIN, ECF_CONST, first,
 			      cond_smin, cond_umin, cond_binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MAX, ECF_CONST, first,
 			      cond_smax, cond_umax, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_FMIN, ECF_CONST, cond_fmin, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_FMAX, ECF_CONST, cond_fmax, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_AND, ECF_CONST | ECF_NOTHROW,
 		       cond_and, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_IOR, ECF_CONST | ECF_NOTHROW,
@@ -202,6 +209,8 @@ DEF_INTERNAL_OPTAB_FN (COND_FMS, ECF_CONST, cond_fms, cond_ternary)
 DEF_INTERNAL_OPTAB_FN (COND_FNMA, ECF_CONST, cond_fnma, cond_ternary)
 DEF_INTERNAL_OPTAB_FN (COND_FNMS, ECF_CONST, cond_fnms, cond_ternary)
 
+DEF_INTERNAL_OPTAB_FN (COND_NEG, ECF_CONST, cond_neg, cond_unary)
+
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 
 DEF_INTERNAL_OPTAB_FN (REDUC_PLUS, ECF_CONST | ECF_NOTHROW,
@@ -210,6 +219,10 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (REDUC_MAX, ECF_CONST | ECF_NOTHROW, first,
 			      reduc_smax_scal, reduc_umax_scal, unary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (REDUC_MIN, ECF_CONST | ECF_NOTHROW, first,
 			      reduc_smin_scal, reduc_umin_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_FMAX, ECF_CONST | ECF_NOTHROW,
+		       reduc_fmax_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_FMIN, ECF_CONST | ECF_NOTHROW,
+		       reduc_fmin_scal, unary)
 DEF_INTERNAL_OPTAB_FN (REDUC_AND, ECF_CONST | ECF_NOTHROW,
 		       reduc_and_scal, unary)
 DEF_INTERNAL_OPTAB_FN (REDUC_IOR, ECF_CONST | ECF_NOTHROW,
@@ -257,6 +270,26 @@ DEF_INTERNAL_FLT_FLOATN_FN (SQRT, ECF_CONST, sqrt, unary)
 DEF_INTERNAL_FLT_FN (TAN, ECF_CONST, tan, unary)
 DEF_INTERNAL_FLT_FN (TANH, ECF_CONST, tanh, unary)
 
+/* Floating-point to integer conversions.
+
+   ??? Here we preserve the I/L/LL prefix convention from the
+   corresponding built-in functions, rather than make the internal
+   functions polymorphic in both the argument and the return types.
+   Perhaps an alternative would be to pass a zero of the required
+   return type as a second parameter.  */
+DEF_INTERNAL_FLT_FN (ICEIL, ECF_CONST, lceil, unary_convert)
+DEF_INTERNAL_FLT_FN (IFLOOR, ECF_CONST, lfloor, unary_convert)
+DEF_INTERNAL_FLT_FN (IRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FN (IROUND, ECF_CONST, lround, unary_convert)
+DEF_INTERNAL_FLT_FN (LCEIL, ECF_CONST, lceil, unary_convert)
+DEF_INTERNAL_FLT_FN (LFLOOR, ECF_CONST, lfloor, unary_convert)
+DEF_INTERNAL_FLT_FN (LRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FN (LROUND, ECF_CONST, lround, unary_convert)
+DEF_INTERNAL_FLT_FN (LLCEIL, ECF_CONST, lceil, unary_convert)
+DEF_INTERNAL_FLT_FN (LLFLOOR, ECF_CONST, lfloor, unary_convert)
+DEF_INTERNAL_FLT_FN (LLRINT, ECF_CONST, lrint, unary_convert)
+DEF_INTERNAL_FLT_FN (LLROUND, ECF_CONST, lround, unary_convert)
+
 /* FP rounding.  */
 DEF_INTERNAL_FLT_FLOATN_FN (CEIL, ECF_CONST, ceil, unary)
 DEF_INTERNAL_FLT_FLOATN_FN (FLOOR, ECF_CONST, floor, unary)
@@ -282,7 +315,8 @@ DEF_INTERNAL_OPTAB_FN (COMPLEX_ADD_ROT270, ECF_CONST, cadd270, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL, ECF_CONST, cmul, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL_CONJ, ECF_CONST, cmul_conj, binary)
 DEF_INTERNAL_OPTAB_FN (VEC_ADDSUB, ECF_CONST, vec_addsub, binary)
-
+DEF_INTERNAL_OPTAB_FN (VEC_FMADDSUB, ECF_CONST, vec_fmaddsub, ternary)
+DEF_INTERNAL_OPTAB_FN (VEC_FMSUBADD, ECF_CONST, vec_fmsubadd, ternary)
 
 /* FP scales.  */
 DEF_INTERNAL_FLT_FN (LDEXP, ECF_CONST, ldexp, binary)
@@ -302,6 +336,7 @@ DEF_INTERNAL_INT_FN (FFS, ECF_CONST | ECF_NOTHROW, ffs, unary)
 DEF_INTERNAL_INT_FN (PARITY, ECF_CONST | ECF_NOTHROW, parity, unary)
 DEF_INTERNAL_INT_FN (POPCOUNT, ECF_CONST | ECF_NOTHROW, popcount, unary)
 
+DEF_INTERNAL_FN (GOMP_TARGET_REV, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_USE_SIMT, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMT_ENTER, ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (GOMP_SIMT_ENTER_ALLOC, ECF_LEAF | ECF_NOTHROW, NULL)
@@ -349,6 +384,7 @@ DEF_INTERNAL_FN (MUL_OVERFLOW, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (TSAN_FUNC_EXIT, ECF_NOVOPS | ECF_LEAF | ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (VA_ARG, ECF_NOTHROW | ECF_LEAF, NULL)
 DEF_INTERNAL_FN (VEC_CONVERT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+DEF_INTERNAL_FN (RAWMEMCHR, ECF_PURE | ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* An unduplicable, uncombinable function.  Generally used to preserve
    a CFG property in the face of jump threading, tail merging or
@@ -356,6 +392,10 @@ DEF_INTERNAL_FN (VEC_CONVERT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
    between uses.  See internal-fn.h for usage.  */
 DEF_INTERNAL_FN (UNIQUE, ECF_NOTHROW, NULL)
 DEF_INTERNAL_FN (PHI, 0, NULL)
+
+/* A function to represent an artifical initialization to an uninitialized
+   automatic variable.  */
+DEF_INTERNAL_FN (DEFERRED_INIT, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* DIM_SIZE and DIM_POS return the size of a particular compute
    dimension and the executing thread's position within that
@@ -387,6 +427,11 @@ DEF_INTERNAL_FN (ATOMIC_BIT_TEST_AND_SET, ECF_LEAF, NULL)
 DEF_INTERNAL_FN (ATOMIC_BIT_TEST_AND_COMPLEMENT, ECF_LEAF, NULL)
 DEF_INTERNAL_FN (ATOMIC_BIT_TEST_AND_RESET, ECF_LEAF, NULL)
 DEF_INTERNAL_FN (ATOMIC_COMPARE_EXCHANGE, ECF_LEAF, NULL)
+DEF_INTERNAL_FN (ATOMIC_ADD_FETCH_CMP_0, ECF_LEAF, NULL)
+DEF_INTERNAL_FN (ATOMIC_SUB_FETCH_CMP_0, ECF_LEAF, NULL)
+DEF_INTERNAL_FN (ATOMIC_AND_FETCH_CMP_0, ECF_LEAF, NULL)
+DEF_INTERNAL_FN (ATOMIC_OR_FETCH_CMP_0, ECF_LEAF, NULL)
+DEF_INTERNAL_FN (ATOMIC_XOR_FETCH_CMP_0, ECF_LEAF, NULL)
 
 /* To implement [[fallthrough]].  */
 DEF_INTERNAL_FN (FALLTHROUGH, ECF_LEAF | ECF_NOTHROW, NULL)
@@ -408,6 +453,18 @@ DEF_INTERNAL_FN (NOP, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
 
 /* Temporary vehicle for __builtin_shufflevector.  */
 DEF_INTERNAL_FN (SHUFFLEVECTOR, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+
+/* <=> optimization.  */
+DEF_INTERNAL_FN (SPACESHIP, ECF_CONST | ECF_LEAF | ECF_NOTHROW, NULL)
+
+/* __builtin_trap created from/for __builtin_unreachable.  */
+DEF_INTERNAL_FN (TRAP, ECF_CONST | ECF_LEAF | ECF_NORETURN
+		       | ECF_NOTHROW | ECF_COLD | ECF_LOOPING_CONST_OR_PURE,
+		 NULL)
+
+/* [[assume (cond)]].  */
+DEF_INTERNAL_FN (ASSUME, ECF_CONST | ECF_LEAF | ECF_NOTHROW
+			 | ECF_LOOPING_CONST_OR_PURE, NULL)
 
 #undef DEF_INTERNAL_INT_FN
 #undef DEF_INTERNAL_FLT_FN

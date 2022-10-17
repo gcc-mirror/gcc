@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for playing back recorded API calls.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <utility> // for std::pair
 
 #include "timevar.h"
+#include "varasm.h"
 
 #include "jit-recording.h"
 
@@ -109,7 +110,8 @@ public:
   new_global (location *loc,
 	      enum gcc_jit_global_kind kind,
 	      type *type,
-	      const char *name);
+	      const char *name,
+	      enum global_var_flags flags);
 
   lvalue *
   new_global_initialized (location *loc,
@@ -118,7 +120,19 @@ public:
                           size_t element_size,
                           size_t initializer_num_elem,
                           const void *initializer,
-                          const char *name);
+			  const char *name,
+			  enum global_var_flags flags);
+
+  rvalue *
+  new_ctor (location *log,
+	    type *type,
+	    const auto_vec<field*> *fields,
+	    const auto_vec<rvalue*> *rvalues);
+
+
+  void
+  global_set_init_rvalue (lvalue* variable,
+			  rvalue* init);
 
   template <typename HOST_TYPE>
   rvalue *
@@ -166,6 +180,11 @@ public:
   new_cast (location *loc,
 	    rvalue *expr,
 	    type *type_);
+
+  rvalue *
+  new_bitcast (location *loc,
+	       rvalue *expr,
+	       type *type_);
 
   lvalue *
   new_array_access (location *loc,
@@ -271,7 +290,12 @@ private:
   source_file *
   get_source_file (const char *filename);
 
+  tree
+  get_tree_node_for_type (enum gcc_jit_types type_);
+
   void handle_locations ();
+
+  void init_types ();
 
   const char * get_path_c_file () const;
   const char * get_path_s_file () const;
@@ -281,7 +305,8 @@ private:
   global_new_decl (location *loc,
                    enum gcc_jit_global_kind kind,
                    type *type,
-                   const char *name);
+		   const char *name,
+		   enum global_var_flags flags);
   lvalue *
   global_finalize_lvalue (tree inner);
 
@@ -353,7 +378,7 @@ class compile_to_memory : public context
 {
  public:
   compile_to_memory (recording::context *ctxt);
-  void postprocess (const char *ctxt_progname) FINAL OVERRIDE;
+  void postprocess (const char *ctxt_progname) final override;
 
   result *get_result_obj () const { return m_result; }
 
@@ -367,7 +392,7 @@ class compile_to_file : public context
   compile_to_file (recording::context *ctxt,
 		   enum gcc_jit_output_kind output_kind,
 		   const char *output_path);
-  void postprocess (const char *ctxt_progname) FINAL OVERRIDE;
+  void postprocess (const char *ctxt_progname) final override;
 
  private:
   void
@@ -458,7 +483,7 @@ public:
   function(context *ctxt, tree fndecl, enum gcc_jit_function_kind kind);
 
   void gt_ggc_mx ();
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   tree get_return_type_as_tree () const;
 
@@ -537,7 +562,7 @@ public:
   block (function *func,
 	 const char *name);
 
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   tree as_label_decl () const { return m_label_decl; }
 
@@ -670,6 +695,33 @@ public:
   rvalue *
   get_address (location *loc);
 
+  void
+  set_tls_model (enum tls_model tls_model)
+  {
+    set_decl_tls_model (as_tree (), tls_model);
+  }
+
+  void
+  set_link_section (const char* name)
+  {
+    set_decl_section_name (as_tree (), name);
+  }
+
+  void
+  set_register_name (const char* reg_name)
+  {
+    set_user_assembler_name (as_tree (), reg_name);
+    DECL_REGISTER (as_tree ()) = 1;
+    DECL_HARD_REGISTER (as_tree ()) = 1;
+  }
+
+  void
+  set_alignment (int alignment)
+  {
+      SET_DECL_ALIGN (as_tree (), alignment * BITS_PER_UNIT);
+      DECL_USER_ALIGN (as_tree ()) = 1;
+  }
+
 private:
   bool mark_addressable (location *loc);
 };
@@ -698,7 +750,7 @@ class source_file : public wrapper
 {
 public:
   source_file (tree filename);
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   source_line *
   get_source_line (int line_num);
@@ -719,7 +771,7 @@ class source_line : public wrapper
 {
 public:
   source_line (source_file *file, int line_num);
-  void finalizer () FINAL OVERRIDE;
+  void finalizer () final override;
 
   location *
   get_location (recording::location *rloc, int column_num);

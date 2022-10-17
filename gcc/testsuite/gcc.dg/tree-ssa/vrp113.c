@@ -13,5 +13,3 @@ int f(int a) {
       case 7: return 19;
     }
 }
-
-/* { dg-final { scan-tree-dump "return 3;" "vrp1" { xfail *-*-* } } } */

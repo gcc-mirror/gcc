@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -470,7 +470,11 @@ DEFTREECODE (INDIRECT_REF, "indirect_ref", tcc_reference, 1)
    OBJ_TYPE_REF_OBJECT: Is the object on whose behalf the lookup is
    being performed.  Through this the optimizers may be able to statically
    determine the dynamic type of the object.
-   OBJ_TYPE_REF_TOKEN: An integer index to the virtual method table.  */
+   OBJ_TYPE_REF_TOKEN: An integer index to the virtual method table.
+   The integer index should have as type the original type of
+   OBJ_TYPE_REF_OBJECT; as pointer type conversions are useless in GIMPLE,
+   the type of OBJ_TYPE_REF_OBJECT can change to an unrelated pointer
+   type during optimizations.  */
 DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", tcc_expression, 3)
 
 /* Used to represent the brace-enclosed initializers for a structure or an
@@ -696,7 +700,9 @@ DEFTREECODE (POINTER_PLUS_EXPR, "pointer_plus_expr", tcc_binary, 2)
 DEFTREECODE (POINTER_DIFF_EXPR, "pointer_diff_expr", tcc_binary, 2)
 
 /* Highpart multiplication.  For an integral type with precision B,
-   returns bits [2B-1, B] of the full 2*B product.  */
+   returns bits [2B-1, B] of the full 2*B product.  Both operands
+   and the result should have integer types of the same precision
+   and signedness.  */
 DEFTREECODE (MULT_HIGHPART_EXPR, "mult_highpart_expr", tcc_binary, 2)
 
 /* Division for integer result that rounds the quotient toward zero.  */
@@ -977,7 +983,7 @@ DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 2)
    Operand 1 is CASE_HIGH.  If it is NULL_TREE, the label is a simple
      (one-value) case label.  If it is non-NULL_TREE, the case is a range.
    Operand 2 is CASE_LABEL, which has the corresponding LABEL_DECL.
-   Operand 3 is CASE_CHAIN.  This operand is only used in tree-cfg.c to
+   Operand 3 is CASE_CHAIN.  This operand is only used in tree-cfg.cc to
      speed up the lookup of case labels which use a particular edge in
      the control flow graph.  */
 DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 4)
@@ -1213,10 +1219,20 @@ DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 3)
    Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_SINGLE, "omp_single", tcc_statement, 2)
 
+/* OpenMP - #pragma omp scope
+   Operand 0: OMP_SCOPE_BODY: Masked section body.
+   Operand 1: OMP_SCOPE_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_SCOPE, "omp_scope", tcc_statement, 2)
+
 /* OpenMP - #pragma omp taskgroup
    Operand 0: OMP_TASKGROUP_BODY: Taskgroup body.
    Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_TASKGROUP, "omp_taskgroup", tcc_statement, 2)
+
+/* OpenMP - #pragma omp masked
+   Operand 0: OMP_MASKED_BODY: Masked section body.
+   Operand 1: OMP_MASKED_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_MASKED, "omp_masked", tcc_statement, 2)
 
 /* OpenMP - #pragma omp scan
    Operand 0: OMP_SCAN_BODY: Scan body.
@@ -1335,10 +1351,12 @@ DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
 DEFTREECODE (SAD_EXPR, "sad_expr", tcc_expression, 3)
 
 /* Widening multiplication.
-   The two arguments are of type t1.
-   The result is of type t2, such that t2 is at least twice
-   the size of t1. WIDEN_MULT_EXPR is equivalent to first widening (promoting)
-   the arguments from type t1 to type t2, and then multiplying them.  */
+   The two arguments are of type t1 and t2, both integral types that
+   have the same precision, but possibly different signedness.
+   The result is of integral type t3, such that t3 is at least twice
+   the size of t1/t2. WIDEN_MULT_EXPR is equivalent to first widening
+   (promoting) the arguments from type t1 to type t3, and from t2 to
+   type t3 and then multiplying them.  */
 DEFTREECODE (WIDEN_MULT_EXPR, "widen_mult_expr", tcc_binary, 2)
 
 /* Widening multiply-accumulate.

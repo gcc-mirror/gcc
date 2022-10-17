@@ -791,8 +791,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 
   // The types are convertible if they have identical underlying
   // types, ignoring struct field tags.
-  if ((lhs->named_type() != NULL || rhs->named_type() != NULL)
-      && Type::are_identical(lhs->base(), rhs->base(), 0, reason))
+  if (Type::are_identical(lhs->base(), rhs->base(), 0, reason))
     return true;
 
   // The types are convertible if they are both unnamed pointer types
@@ -841,6 +840,15 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 	  && (e->integer_type()->is_byte() || e->integer_type()->is_rune()))
 	return true;
     }
+
+  // A slice may be converted to a pointer-to-array.
+  if (rhs->is_slice_type()
+      && lhs->points_to() != NULL
+      && lhs->points_to()->array_type() != NULL
+      && !lhs->points_to()->is_slice_type()
+      && Type::are_identical(lhs->points_to()->array_type()->element_type(),
+			     rhs->array_type()->element_type(), 0, reason))
+    return true;
 
   // An unsafe.Pointer type may be converted to any pointer type or to
   // a type whose underlying type is uintptr, and vice-versa.
@@ -1756,6 +1764,9 @@ Type::needs_specific_type_functions(Gogo* gogo)
 Named_object*
 Type::hash_function(Gogo* gogo, Function_type* hash_fntype)
 {
+  if (this->named_type() != NULL)
+    go_assert(!this->named_type()->is_alias());
+
   if (!this->is_comparable())
     return NULL;
 
@@ -2059,6 +2070,9 @@ Type::write_identity_hash(Gogo* gogo, int64_t size)
 Named_object*
 Type::equal_function(Gogo* gogo, Named_type* name, Function_type* equal_fntype)
 {
+  if (this->named_type() != NULL)
+    go_assert(!this->named_type()->is_alias());
+
   // If the unaliased type is not a named type, then the type does not
   // have a name after all.
   if (name != NULL)
@@ -2250,7 +2264,7 @@ Named_object*
 Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 			   Function_type* equal_fntype)
 {
-  std::pair<Type*, Named_object*> val(name != NULL ? name : this, NULL);
+  std::pair<Type*, Named_object*> val(name != NULL ? name : this, nullptr);
   std::pair<Type_function::iterator, bool> ins =
     Type::type_equal_functions_table.insert(val);
   if (!ins.second)
@@ -2455,8 +2469,16 @@ Type::is_direct_iface_type() const
 bool
 Type::is_direct_iface_type_helper(Unordered_set(const Type*)* visited) const
 {
-  if (this->points_to() != NULL
-      || this->channel_type() != NULL
+  if (this->points_to() != NULL)
+    {
+      // Pointers to notinheap types must be stored indirectly.  See
+      // https://golang.org/issue/42076.
+      if (!this->points_to()->in_heap())
+	return false;
+      return true;
+    }
+
+  if (this->channel_type() != NULL
       || this->function_type() != NULL
       || this->map_type() != NULL)
     return true;
@@ -2497,13 +2519,18 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Expression_list* vals = new Expression_list();
   vals->reserve(12);
 
-  if (!this->has_pointer())
+  bool has_pointer;
+  if (name != NULL)
+    has_pointer = name->has_pointer();
+  else
+    has_pointer = this->has_pointer();
+  if (!has_pointer)
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   if (this->is_direct_iface_type())
     runtime_type_kind |= RUNTIME_TYPE_KIND_DIRECT_IFACE;
   int64_t ptrsize;
   int64_t ptrdata;
-  if (this->needs_gcprog(gogo, &ptrsize, &ptrdata))
+  if (has_pointer && this->needs_gcprog(gogo, &ptrsize, &ptrdata))
     runtime_type_kind |= RUNTIME_TYPE_KIND_GC_PROG;
 
   Struct_field_list::const_iterator p = fields->begin();
@@ -2514,7 +2541,10 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   ++p;
   go_assert(p->is_field_name("ptrdata"));
   type_info = Expression::TYPE_INFO_DESCRIPTOR_PTRDATA;
-  vals->push_back(Expression::make_type_info(this, type_info));
+  if (has_pointer)
+    vals->push_back(Expression::make_type_info(this, type_info));
+  else
+    vals->push_back(Expression::make_integer_ul(0, p->type(), bloc));
 
   ++p;
   go_assert(p->is_field_name("hash"));
@@ -2560,7 +2590,12 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   ++p;
   go_assert(p->is_field_name("gcdata"));
-  vals->push_back(Expression::make_gc_symbol(this));
+  if (has_pointer)
+    vals->push_back(Expression::make_gc_symbol(this));
+  else
+    vals->push_back(Expression::make_cast(p->type(),
+					  Expression::make_nil(bloc),
+					  bloc));
 
   ++p;
   go_assert(p->is_field_name("string"));
@@ -2787,6 +2822,9 @@ class Ptrmask
 void
 Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 {
+  if (!type->has_pointer())
+    return;
+
   switch (type->base()->classification())
     {
     default:
@@ -2829,9 +2867,6 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 
     case Type::TYPE_STRUCT:
       {
-	if (!type->has_pointer())
-	  return;
-
 	const Struct_field_list* fields = type->struct_type()->fields();
 	int64_t soffset = 0;
 	for (Struct_field_list::const_iterator pf = fields->begin();
@@ -2869,9 +2904,6 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 	}
       else
 	{
-	  if (!type->has_pointer())
-	    return;
-
 	  int64_t len;
 	  if (!type->array_type()->int_length(&len))
 	    {
@@ -3588,10 +3620,36 @@ Type::method_constructor(Gogo*, Type* method_type,
       vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
     }
 
-  bool use_direct_iface_stub =
-    this->points_to() != NULL
-    && this->points_to()->is_direct_iface_type()
-    && m->is_value_method();
+  // The direct_iface_stub dereferences the value stored in the
+  // interface when calling the method.
+  //
+  // We need this for a value method if this type is a pointer to a
+  // direct-iface type.  For example, if we have "type C chan int" and M
+  // is a value method on C, then since a channel is a direct-iface type
+  // M expects a value of type C.  We are generating the method table
+  // for *C, so the value stored in the interface is *C.  We have to
+  // call the direct-iface stub to dereference *C to get C to pass to M.
+  //
+  // We also need this for a pointer method if the pointer itself is not
+  // a direct-iface type, as arises for notinheap types.  In this case
+  // we have "type NIH ..." where NIH is go:notinheap.  Since NIH is
+  // notinheap, *NIH is a pointer type that is not a direct-iface type,
+  // so the value stored in the interface is actually **NIH.  The method
+  // expects *NIH, so we have to call the direct-iface stub to
+  // dereference **NIH to get *NIH to pass to M.  (This case doesn't
+  // arise for value methods because pointer types can't have methods,
+  // so there is no such thing as a value method for type *NIH.)
+
+  bool use_direct_iface_stub = false;
+  if (m->is_value_method()
+      && this->points_to() != NULL
+      && this->points_to()->is_direct_iface_type())
+    use_direct_iface_stub = true;
+  if (!m->is_value_method()
+      && this->points_to() != NULL
+      && !this->is_direct_iface_type())
+    use_direct_iface_stub = true;
+
   Named_object* no = (use_direct_iface_stub
                       ? m->iface_stub_object()
                       : (m->needs_stub_method()
@@ -4596,8 +4654,11 @@ class Sink_type : public Type
   { return false; }
 
   Btype*
-  do_get_backend(Gogo*)
-  { go_unreachable(); }
+  do_get_backend(Gogo* gogo)
+  {
+    go_assert(saw_errors());
+    return gogo->backend()->error_type();
+  }
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)
@@ -5007,6 +5068,7 @@ Function_type::get_backend_fntype(Gogo* gogo)
 		  Struct_type* st = Type::make_struct_type(sfl,
 							   this->location());
 		  st->set_is_struct_incomparable();
+		  st->set_is_results_struct();
 		  ins.first->second = st->get_backend(gogo);
 		}
 	      bresult_struct = ins.first->second;
@@ -5250,7 +5312,7 @@ Function_type::do_export(Export* exp) const
   if (results != NULL)
     {
       exp->write_c_string(" ");
-      if (results->size() == 1 && results->begin()->name().empty())
+      if (results->size() == 1)
 	exp->write_type(results->begin()->type());
       else
 	{
@@ -6369,7 +6431,7 @@ Struct_type::interface_method_table(Interface_type* interface,
 				    bool is_pointer)
 {
   std::pair<Struct_type*, Struct_type::Struct_method_table_pair*>
-    val(this, NULL);
+    val(this, nullptr);
   std::pair<Struct_type::Struct_method_tables::iterator, bool> ins =
     Struct_type::struct_method_tables.insert(val);
 
@@ -6410,12 +6472,21 @@ get_backend_struct_fields(Gogo* gogo, Struct_type* type, bool use_placeholder,
 			     ? p->type()->get_backend_placeholder(gogo)
 			     : p->type()->get_backend(gogo));
       (*bfields)[i].location = p->location();
-      lastsize = gogo->backend()->type_size((*bfields)[i].btype);
-      if (lastsize != 0)
-        saw_nonzero = true;
+      int64_t size = gogo->backend()->type_size((*bfields)[i].btype);
+      if (size != 0)
+	saw_nonzero = true;
+
+      if (size > 0 || !Gogo::is_sink_name(p->field_name()))
+	lastsize = size;
+      else
+	{
+	  // There is an unreferenceable field of zero size.  This
+	  // doesn't affect whether we may need zero padding, so leave
+	  // lastsize unchanged.
+	}
     }
   go_assert(i == fields->size());
-  if (saw_nonzero && lastsize == 0)
+  if (saw_nonzero && lastsize == 0 && !type->is_results_struct())
     {
       // For nonzero-sized structs which end in a zero-sized thing, we add
       // an extra byte of padding to the type. This padding ensures that
@@ -6638,7 +6709,8 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
       subkey = Expression::make_cast(key_arg_type, subkey, bloc);
 
       // Get the hash function to use for the type of this field.
-      Named_object* hash_fn = pf->type()->hash_function(gogo, hash_fntype);
+      Named_object* hash_fn =
+	pf->type()->unalias()->hash_function(gogo, hash_fntype);
 
       // Call the hash function for the field, passing retval as the seed.
       ref = Expression::make_temporary_reference(retval, bloc);
@@ -6895,7 +6967,7 @@ Struct_type::do_import(Import* imp)
 
 bool
 Struct_type::can_write_to_c_header(
-    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* needs,
     std::vector<const Named_object*>* declare) const
 {
   const Struct_field_list* fields = this->fields_;
@@ -6906,7 +6978,7 @@ Struct_type::can_write_to_c_header(
        p != fields->end();
        ++p)
     {
-      if (!this->can_write_type_to_c_header(p->type(), requires, declare))
+      if (!this->can_write_type_to_c_header(p->type(), needs, declare))
 	return false;
       if (Gogo::message_name(p->field_name()) == "_")
 	sinks++;
@@ -6921,7 +6993,7 @@ Struct_type::can_write_to_c_header(
 bool
 Struct_type::can_write_type_to_c_header(
     const Type* t,
-    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* needs,
     std::vector<const Named_object*>* declare) const
 {
   t = t->forwarded();
@@ -6955,13 +7027,13 @@ Struct_type::can_write_type_to_c_header(
       return true;
 
     case TYPE_STRUCT:
-      return t->struct_type()->can_write_to_c_header(requires, declare);
+      return t->struct_type()->can_write_to_c_header(needs, declare);
 
     case TYPE_ARRAY:
       if (t->is_slice_type())
 	return true;
       return this->can_write_type_to_c_header(t->array_type()->element_type(),
-					      requires, declare);
+					      needs, declare);
 
     case TYPE_NAMED:
       {
@@ -6977,10 +7049,10 @@ Struct_type::can_write_type_to_c_header(
 	    // We will accept empty struct fields, but not print them.
 	    if (t->struct_type()->total_field_count() == 0)
 	      return true;
-	    requires->push_back(no);
-	    return t->struct_type()->can_write_to_c_header(requires, declare);
+	    needs->push_back(no);
+	    return t->struct_type()->can_write_to_c_header(needs, declare);
 	  }
-	return this->can_write_type_to_c_header(t->base(), requires, declare);
+	return this->can_write_type_to_c_header(t->base(), needs, declare);
       }
 
     case TYPE_CALL_MULTIPLE_RESULT:
@@ -7078,9 +7150,9 @@ Struct_type::write_field_to_c_header(std::ostream& os, const std::string& name,
 
     case TYPE_POINTER:
       {
-	std::vector<const Named_object*> requires;
+	std::vector<const Named_object*> needs;
 	std::vector<const Named_object*> declare;
-	if (!this->can_write_type_to_c_header(t->points_to(), &requires,
+	if (!this->can_write_type_to_c_header(t->points_to(), &needs,
 					      &declare))
 	  os << "void*";
 	else
@@ -7357,7 +7429,10 @@ bool
 Array_type::do_verify()
 {
   if (this->element_type()->is_error_type())
-    return false;
+    {
+      this->set_is_error();
+      return false;
+    }
   if (!this->verify_length())
     {
       this->length_ = Expression::make_error(this->length_->location());
@@ -7491,8 +7566,8 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   gogo->start_block(bloc);
 
   // Get the hash function for the element type.
-  Named_object* hash_fn = this->element_type_->hash_function(gogo,
-							     hash_fntype);
+  Named_object* hash_fn =
+    this->element_type_->unalias()->hash_function(gogo, hash_fntype);
 
   // Get a pointer to this element in the loop.
   Expression* subkey = Expression::make_temporary_reference(key, bloc);
@@ -7753,7 +7828,7 @@ Array_type::finish_backend_element(Gogo* gogo)
 // Return an expression for a pointer to the values in ARRAY.
 
 Expression*
-Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
+Array_type::get_value_pointer(Gogo*, Expression* array) const
 {
   if (this->length() != NULL)
     {
@@ -7766,25 +7841,6 @@ Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
     }
 
   // Slice.
-
-  if (is_lvalue)
-    {
-      Temporary_reference_expression* tref =
-          array->temporary_reference_expression();
-      Var_expression* ve = array->var_expression();
-      if (tref != NULL)
-        {
-          tref = tref->copy()->temporary_reference_expression();
-          tref->set_is_lvalue();
-          array = tref;
-        }
-      else if (ve != NULL)
-        {
-          ve = new Var_expression(ve->named_object(), ve->location());
-          array = ve;
-        }
-    }
-
   return Expression::make_slice_info(array,
                                      Expression::SLICE_INFO_VALUE_POINTER,
                                      array->location());
@@ -8398,8 +8454,8 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ++p;
   go_assert(p->is_field_name("hasher"));
   Function_type* hasher_fntype = p->type()->function_type();
-  Named_object* hasher_fn = this->key_type_->hash_function(gogo,
-							   hasher_fntype);
+  Named_object* hasher_fn =
+    this->key_type_->unalias()->hash_function(gogo, hasher_fntype);
   if (hasher_fn == NULL)
     vals->push_back(Expression::make_cast(hasher_fntype,
 					  Expression::make_nil(bloc),
@@ -8988,6 +9044,9 @@ Interface_type::finalize_methods()
   if (this->parse_methods_ == NULL)
     return;
 
+  // The exporter uses parse_methods_.
+  this->parse_methods_->sort_by_name();
+
   this->all_methods_ = new Typed_identifier_list();
   this->all_methods_->reserve(this->parse_methods_->size());
   Typed_identifier_list inherit;
@@ -9275,15 +9334,17 @@ Interface_type::is_compatible_for_assign(const Interface_type* t,
 // Hash code.
 
 unsigned int
-Interface_type::do_hash_for_method(Gogo*, int) const
+Interface_type::do_hash_for_method(Gogo*, int flags) const
 {
   go_assert(this->methods_are_finalized_);
+  Typed_identifier_list* methods = (((flags & COMPARE_EMBEDDED_INTERFACES) != 0)
+				    ? this->parse_methods_
+				    : this->all_methods_);
   unsigned int ret = 0;
-  if (this->all_methods_ != NULL)
+  if (methods != NULL)
     {
-      for (Typed_identifier_list::const_iterator p =
-	     this->all_methods_->begin();
-	   p != this->all_methods_->end();
+      for (Typed_identifier_list::const_iterator p = methods->begin();
+	   p != methods->end();
 	   ++p)
 	{
 	  ret = Gogo::hash_string(p->name(), ret);
@@ -10416,6 +10477,57 @@ Named_type::finalize_methods(Gogo* gogo)
       return;
     }
 
+  // Remove any aliases in the local method receiver types.
+  Bindings* methods = this->local_methods_;
+  if (methods != NULL)
+    {
+      for (Bindings::const_declarations_iterator p =
+	     methods->begin_declarations();
+	   p != methods->end_declarations();
+	   ++p)
+	{
+	  Named_object* no = p->second;
+	  Function_type* fntype;
+	  if (no->is_function())
+	    fntype = no->func_value()->type();
+	  else if (no->is_function_declaration())
+	    fntype = no->func_declaration_value()->type();
+	  else
+	    {
+	      go_assert(saw_errors());
+	      continue;
+	    }
+
+	  Type* rtype = fntype->receiver()->type();
+	  bool is_pointer = false;
+	  Type* pt = rtype->points_to();
+	  if (pt != NULL)
+	    {
+	      rtype = pt;
+	      is_pointer = true;
+	    }
+	  if (rtype->named_type() != this)
+	    {
+	      if (rtype->unalias() != this)
+		{
+		  go_assert(saw_errors());
+		  continue;
+		}
+
+	      rtype = this;
+	      if (is_pointer)
+		rtype = Type::make_pointer_type(rtype);
+
+	      if (no->is_function())
+		no->func_value()->set_receiver_type(rtype);
+	      else if (no->is_function_declaration())
+		no->func_declaration_value()->set_receiver_type(rtype);
+	      else
+		go_unreachable();
+	    }
+	}
+    }
+
   Type::finalize_methods(gogo, this, this->location_, &this->all_methods_);
 }
 
@@ -10791,6 +10903,10 @@ Named_type::do_verify()
 bool
 Named_type::do_has_pointer() const
 {
+  // A type that is not in the heap has no pointers that we care about.
+  if (!this->in_heap_)
+    return false;
+
   if (this->seen_)
     return false;
   this->seen_ = true;
@@ -10839,6 +10955,20 @@ Named_type::do_needs_key_update()
   this->seen_in_compare_is_identity_ = true;
   bool ret = this->type_->needs_key_update();
   this->seen_in_compare_is_identity_ = false;
+  return ret;
+}
+
+// Return whether this type is permitted in the heap.
+bool
+Named_type::do_in_heap() const
+{
+  if (!this->in_heap_)
+    return false;
+  if (this->seen_)
+    return true;
+  this->seen_ = true;
+  bool ret = this->type_->in_heap();
+  this->seen_ = false;
   return ret;
 }
 
@@ -11374,7 +11504,7 @@ Type::finalize_methods(Gogo* gogo, const Type* type, Location location,
       *all_methods = NULL;
     }
   Type::build_stub_methods(gogo, type, *all_methods, location);
-  if (type->is_direct_iface_type())
+  if (type->is_direct_iface_type() || !type->in_heap())
     Type::build_direct_iface_stub_methods(gogo, type, *all_methods, location);
 }
 
@@ -11680,8 +11810,9 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	{
 	  stub = gogo->start_function(stub_name, stub_type, false,
 				      fntype->location());
-	  Type::build_one_stub_method(gogo, m, buf, stub_params,
-				      fntype->is_varargs(), location);
+	  Type::build_one_stub_method(gogo, m, buf, receiver_type, stub_params,
+				      fntype->is_varargs(), stub_results,
+				      location);
 	  gogo->finish_function(fntype->location());
 
 	  if (type->named_type() == NULL && stub->is_function())
@@ -11701,16 +11832,20 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 void
 Type::build_one_stub_method(Gogo* gogo, Method* method,
 			    const char* receiver_name,
+			    const Type* receiver_type,
 			    const Typed_identifier_list* params,
 			    bool is_varargs,
+			    const Typed_identifier_list* results,
 			    Location location)
 {
   Named_object* receiver_object = gogo->lookup(receiver_name, NULL);
   go_assert(receiver_object != NULL);
 
   Expression* expr = Expression::make_var_reference(receiver_object, location);
-  expr = Type::apply_field_indexes(expr, method->field_indexes(), location);
-  if (expr->type()->points_to() == NULL)
+  const Type* expr_type = receiver_type;
+  expr = Type::apply_field_indexes(expr, method->field_indexes(), location,
+				   &expr_type);
+  if (expr_type->points_to() == NULL)
     expr = Expression::make_unary(OPERATOR_AND, expr, location);
 
   Expression_list* arguments;
@@ -11735,8 +11870,7 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
 						location);
-
-  gogo->add_statement(Statement::make_return_from_call(call, location));
+  Type::add_return_from_results(gogo, call, results, location);
 }
 
 // Build direct interface stub methods for TYPE as needed.  METHODS
@@ -11754,12 +11888,23 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
   if (methods == NULL)
     return;
 
+  bool is_direct_iface = type->is_direct_iface_type();
+  bool in_heap = type->in_heap();
   for (Methods::const_iterator p = methods->begin();
        p != methods->end();
        ++p)
     {
       Method* m = p->second;
-      if (!m->is_value_method())
+
+      // We need a direct-iface stub for a value method for a
+      // direct-iface type, and for a pointer method for a not-in-heap
+      // type.
+      bool need_stub = false;
+      if (is_direct_iface && m->is_value_method())
+        need_stub = true;
+      if (!in_heap && !m->is_value_method())
+        need_stub = true;
+      if (!need_stub || m->is_ambiguous())
         continue;
 
       Type* receiver_type = const_cast<Type*>(type);
@@ -11834,8 +11979,9 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
         {
           stub = gogo->start_function(stub_name, stub_type, false,
                                       fntype->location());
-          Type::build_one_iface_stub_method(gogo, m, buf, stub_params,
-                                            fntype->is_varargs(), loc);
+	  Type::build_one_iface_stub_method(gogo, m, buf, stub_params,
+					    fntype->is_varargs(), stub_results,
+					    loc);
           gogo->finish_function(fntype->location());
 
           if (type->named_type() == NULL && stub->is_function())
@@ -11862,7 +12008,9 @@ void
 Type::build_one_iface_stub_method(Gogo* gogo, Method* method,
                                   const char* receiver_name,
                                   const Typed_identifier_list* params,
-                                  bool is_varargs, Location loc)
+				  bool is_varargs,
+				  const Typed_identifier_list* results,
+				  Location loc)
 {
   Named_object* receiver_object = gogo->lookup(receiver_name, NULL);
   go_assert(receiver_object != NULL);
@@ -11894,31 +12042,63 @@ Type::build_one_iface_stub_method(Gogo* gogo, Method* method,
   go_assert(func != NULL);
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
                                                 loc);
+  Type::add_return_from_results(gogo, call, results, loc);
+}
 
-  gogo->add_statement(Statement::make_return_from_call(call, loc));
+// Build and add a return statement from a call expression and a list
+// of result parameters.  All we need to know is the number of
+// results.
+
+void
+Type::add_return_from_results(Gogo* gogo, Call_expression* call,
+				const Typed_identifier_list* results,
+				Location loc)
+{
+  Statement* s;
+  if (results == NULL || results->empty())
+    s = Statement::make_statement(call, true);
+  else
+    {
+      Expression_list* vals = new Expression_list();
+      size_t rc = results->size();
+      if (rc == 1)
+	vals->push_back(call);
+      else
+	{
+	  for (size_t i = 0; i < rc; ++i)
+	    vals->push_back(Expression::make_call_result(call, i));
+	}
+      s = Statement::make_return_statement(vals, loc);
+    }
+
+  gogo->add_statement(s);
 }
 
 // Apply FIELD_INDEXES to EXPR.  The field indexes have to be applied
-// in reverse order.
+// in reverse order.  *PEXPR_TYPE maintains the type of EXPR; we use
+// this to avoid calling EXPR->type() before the lowering pass.
 
 Expression*
 Type::apply_field_indexes(Expression* expr,
 			  const Method::Field_indexes* field_indexes,
-			  Location location)
+			  Location location,
+			  const Type** pexpr_type)
 {
   if (field_indexes == NULL)
     return expr;
-  expr = Type::apply_field_indexes(expr, field_indexes->next, location);
-  Struct_type* stype = expr->type()->deref()->struct_type();
+  expr = Type::apply_field_indexes(expr, field_indexes->next, location,
+				   pexpr_type);
+  const Type* expr_type = *pexpr_type;
+  const Struct_type* stype = expr_type->deref()->struct_type();
   go_assert(stype != NULL
 	     && field_indexes->field_index < stype->field_count());
-  if (expr->type()->struct_type() == NULL)
+  if (expr_type->struct_type() == NULL)
     {
-      go_assert(expr->type()->points_to() != NULL);
+      go_assert(expr_type->points_to()->struct_type() == stype);
       expr = Expression::make_dereference(expr, Expression::NIL_CHECK_DEFAULT,
                                           location);
-      go_assert(expr->type()->struct_type() == stype);
     }
+  *pexpr_type = stype->field(field_indexes->field_index)->type();
   return Expression::make_field_reference(expr, field_indexes->field_index,
 					  location);
 }

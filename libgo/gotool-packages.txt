@@ -27,20 +27,20 @@ cmd/go/internal/modinfo
 cmd/go/internal/modload
 cmd/go/internal/mvs
 cmd/go/internal/par
-cmd/go/internal/renameio
 cmd/go/internal/robustio
 cmd/go/internal/run
 cmd/go/internal/search
 cmd/go/internal/str
 cmd/go/internal/test
+cmd/go/internal/test/internal/genflags
 cmd/go/internal/tool
 cmd/go/internal/trace
-cmd/go/internal/txtar
 cmd/go/internal/vcs
 cmd/go/internal/version
 cmd/go/internal/vet
 cmd/go/internal/web
 cmd/go/internal/work
+cmd/go/internal/workcmd
 cmd/internal/browser
 cmd/internal/buildid
 cmd/internal/codesign
@@ -48,6 +48,7 @@ cmd/internal/diff
 cmd/internal/edit
 cmd/internal/objabi
 cmd/internal/pkgpath
+cmd/internal/quoted
 cmd/internal/sys
 cmd/internal/test2json
 cmd/internal/traceviewer
@@ -62,6 +63,7 @@ golang.org/x/mod/sumdb/dirhash
 golang.org/x/mod/sumdb/note
 golang.org/x/mod/sumdb/tlog
 golang.org/x/mod/zip
+golang.org/x/sync/semaphore
 golang.org/x/tools/go/analysis
 golang.org/x/tools/go/analysis/internal/analysisflags
 golang.org/x/tools/go/analysis/internal/facts
@@ -86,6 +88,7 @@ golang.org/x/tools/go/analysis/passes/nilfunc
 golang.org/x/tools/go/analysis/passes/pkgfact
 golang.org/x/tools/go/analysis/passes/printf
 golang.org/x/tools/go/analysis/passes/shift
+golang.org/x/tools/go/analysis/passes/sigchanyzer
 golang.org/x/tools/go/analysis/passes/stdmethods
 golang.org/x/tools/go/analysis/passes/stringintconv
 golang.org/x/tools/go/analysis/passes/structtag
@@ -103,5 +106,7 @@ golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/types/typeutil
 golang.org/x/tools/internal/analysisinternal
 golang.org/x/tools/internal/lsp/fuzzy
+golang.org/x/tools/internal/typeparams
+golang.org/x/tools/txtar
 golang.org/x/xerrors
 golang.org/x/xerrors/internal

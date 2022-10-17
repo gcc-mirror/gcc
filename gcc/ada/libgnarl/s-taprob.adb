@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --            Copyright (C) 1991-2017, Florida State University             --
---                     Copyright (C) 1995-2021, AdaCore                     --
+--                     Copyright (C) 1995-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package body System.Tasking.Protected_Objects is
    -- Local Data --
    ----------------
 
-   Locking_Policy : Character;
+   Locking_Policy : constant Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
    -------------------------

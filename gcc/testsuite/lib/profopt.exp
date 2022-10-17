@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2021 Free Software Foundation, Inc.
+# Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -289,8 +289,8 @@ proc auto-profopt-execute { src } {
         return
     }
     set profile_wrapper [profopt-perf-wrapper]
-    set profile_option "-g -DFOR_AUTOFDO_TESTING"
-    set feedback_option "-fauto-profile -DFOR_AUTOFDO_TESTING"
+    set profile_option "-gdwarf-4 -DFOR_AUTOFDO_TESTING"
+    set feedback_option "-fauto-profile -DFOR_AUTOFDO_TESTING -fearly-inlining"
     set run_autofdo 1
     profopt-execute $src
     unset profile_wrapper
@@ -451,7 +451,7 @@ proc profopt-execute { src } {
 	    # convert profile
 	    if { $run_autofdo == 1 } {
                 set bprefix "afdo."
-		set cmd "create_gcov --binary $execname1 --profile=$tmpdir/$base.perf.data -gcov_version=1 --gcov=$tmpdir/$bprefix$base.$ext"
+		set cmd "create_gcov --binary $execname1 --profile=$tmpdir/$base.perf.data -gcov_version=2 --gcov=$tmpdir/$bprefix$base.$ext"
 		verbose "Running $cmd"
 		set id [remote_spawn "" $cmd]
 		if { $id < 0 } {

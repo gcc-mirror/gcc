@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,9 @@
 // ISO C++ 14882:
 //
 
-// Instantiations in this file are only for the new SSO std::string ABI
+// Instantiations in this file are only for the new SSO std::string ABI.
+#define _GLIBCXX_USE_CXX11_ABI 1
+
 #include <sstream>
 
 #if _GLIBCXX_USE_CXX11_ABI

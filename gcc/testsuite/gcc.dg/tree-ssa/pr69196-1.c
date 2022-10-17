@@ -1,7 +1,7 @@
 /* { dg-do compile { target sparc*-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fdump-tree-thread1-details -fdisable-tree-ethread" } */
 
-/* { dg-final { scan-tree-dump "FSM did not thread around loop and would copy too many statements" "thread1" } } */
+/* { dg-final { scan-tree-dump "Did not thread around loop and would copy too many statements" "thread1" } } */
 
 
 typedef __builtin_va_list __gnuc_va_list;

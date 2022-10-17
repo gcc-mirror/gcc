@@ -11,4 +11,3 @@ class TemplateDecl : OverloadableDecl
 {
     mixin Visitors;
 }
-

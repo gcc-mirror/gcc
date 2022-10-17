@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -436,7 +436,7 @@ extern bool bitmap_clear_bit (bitmap, int);
 extern bool bitmap_set_bit (bitmap, int);
 
 /* Return true if a bit is set in a bitmap.  */
-extern int bitmap_bit_p (const_bitmap, int);
+extern bool bitmap_bit_p (const_bitmap, int);
 
 /* Set and get multiple bit values in a sparse bitmap.  This allows a bitmap to
    function as a sparse array of bit patterns where the patterns are
@@ -963,6 +963,9 @@ class auto_bitmap
 
   bitmap_head m_bits;
 };
+
+extern void debug (const auto_bitmap &ref);
+extern void debug (const auto_bitmap *ptr);
 
 /* Base class for bitmap_view; see there for details.  */
 template<typename T, typename Traits = array_traits<T> >

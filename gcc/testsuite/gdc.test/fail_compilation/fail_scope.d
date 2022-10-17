@@ -1,29 +1,29 @@
 /*
-PERMUTE_ARGS:
-REQUIRED_ARGS: -dip25
+REQUIRED_ARGS:
 TEST_OUTPUT:
 ---
+fail_compilation/fail_scope.d(30): Deprecation: scope parameter `da` may not be returned
+fail_compilation/fail_scope.d(32): Deprecation: scope parameter `o` may not be returned
+fail_compilation/fail_scope.d(33): Deprecation: scope parameter `dg` may not be returned
+fail_compilation/fail_scope.d(40): Deprecation: scope parameter `p` may not be returned
 fail_compilation/fail_scope.d(45): Error: returning `cast(char[])string` escapes a reference to local variable `string`
 fail_compilation/fail_scope.d(63): Error: returning `s.bar()` escapes a reference to local variable `s`
+fail_compilation/fail_scope.d(74): Error: `fail_scope.foo8` called with argument types `(int)` matches both:
+fail_compilation/fail_scope.d(68):     `fail_scope.foo8(ref int x)`
+and:
+fail_compilation/fail_scope.d(69):     `fail_scope.foo8(return ref int x)`
 fail_compilation/fail_scope.d(82): Error: returning `& string` escapes a reference to local variable `string`
 fail_compilation/fail_scope.d(92): Error: returning `cast(int[])a` escapes a reference to local variable `a`
 fail_compilation/fail_scope.d(100): Error: returning `cast(int[])a` escapes a reference to local variable `a`
-fail_compilation/fail_scope.d(108): Error: escaping reference to outer local variable `x`
-fail_compilation/fail_scope.d(127): Error: returning `s.bar()` escapes a reference to local variable `s`
+fail_compilation/fail_scope.d(108): Deprecation: escaping reference to outer local variable `x`
+fail_compilation/fail_scope.d(127): Deprecation: returning `s.bar()` escapes a reference to local variable `s`
 fail_compilation/fail_scope.d(137): Error: returning `foo16226(i)` escapes a reference to local variable `i`
 ---
-//fail_compilation/fail_scope.d(30): Error: scope variable `da` may not be returned
-//fail_compilation/fail_scope.d(32): Error: scope variable `o` may not be returned
-//fail_compilation/fail_scope.d(33): Error: scope variable `dg` may not be returned
 //fail_compilation/fail_scope.d(35): Error: scope variable `da` may not be returned
 //fail_compilation/fail_scope.d(37): Error: scope variable `o` may not be returned
 //fail_compilation/fail_scope.d(38): Error: scope variable `dg` may not be returned
 //fail_compilation/fail_scope.d(40): Error: scope variable `p` may not be returned
 */
-
-
-
-
 
 alias int delegate() dg_t;
 
@@ -86,7 +86,7 @@ char* fail141()
 
 int[] test1313b()
 out{}
-body
+do
 {
     int[2] a;
     return a;
@@ -94,7 +94,7 @@ body
 
 int[] test1313a()
 //out{}
-body
+do
 {
     int[2] a;
     return a;
@@ -142,4 +142,3 @@ ref foo16226(ref int bar) @safe
 {
     return bar;
 }
-

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target alloca } */
+/* { dg-additional-options "-fno-ipa-modref" } */
 
 #include <stdlib.h>
 #include <string.h>
@@ -137,7 +138,7 @@ void test_11 (void)
 
 /* alloca.  */
 
-void test_12 (void)
+int test_12 (void)
 {
   void *p = __builtin_alloca (256);
   void *q = __builtin_alloca (256);
@@ -145,14 +146,14 @@ void test_12 (void)
   /* alloca results should be unique.  */
   __analyzer_eval (p == q); /* { dg-warning "FALSE" } */
 
-  // FIXME: complain about uses of poisoned values
+  return *(int *)p; /* { dg-warning "use of uninitialized value '\\*\\(int \\*\\)p" } */
 }
 
 /* Use of uninit value.  */
 int test_12a (void)
 {
-  int i;
-  return i; // FIXME: do we see the return stmt?
+  int i; /* { dg-message "region created on stack here" } */
+  return i; /* { dg-warning "use of uninitialized value 'i'" } */
 }
 
 void test_12b (void *p, void *q)
@@ -162,12 +163,14 @@ void test_12b (void *p, void *q)
 
 int test_12c (void)
 {
-  int i;
+  int i; /* { dg-message "region created on stack here" } */
   int j;
 
-  j = i; // FIXME: should complain about this
+  j = i; /* { dg-warning "use of uninitialized value 'i'" } */
 
-  return j;
+  /* We should not emit followup warnings after the first warning about
+     an uninitialized value.  */
+  return j; /* { dg-bogus "use of uninitialized value" } */
 }
 
 struct coord
@@ -346,9 +349,11 @@ void test_18 (int i)
 
 void test_19 (void)
 {
-  int i, j;
+  int i, j; /* { dg-message "region created on stack here" } */
   /* Compare two uninitialized locals.  */
-    __analyzer_eval (i == j); /* { dg-warning "UNKNOWN" } */
+    __analyzer_eval (i == j); /* { dg-warning "UNKNOWN" "unknown " } */
+    /* { dg-warning "use of uninitialized value 'i'" "uninit i" { target *-*-* } .-1 } */
+    /* { dg-warning "use of uninitialized value 'j'" "uninit j" { target *-*-* } .-2 } */
 }
 
 void test_20 (int i, int j)
@@ -619,8 +624,7 @@ void test_29a (struct coord p[])
   __analyzer_eval (q[-2].y == 107025); /* { dg-warning "TRUE" } */
 
   q -= 2;
-  __analyzer_eval (q == &p[7]); /* { dg-warning "UNKNOWN" } */
-  // TODO: make this be TRUE
+  __analyzer_eval (q == &p[7]); /* { dg-warning "TRUE" } */
 
   __analyzer_eval (q->x == 107024); /* { dg-warning "TRUE" } */
   __analyzer_eval (q->y == 107025); /* { dg-warning "TRUE" } */
@@ -628,7 +632,7 @@ void test_29a (struct coord p[])
 
 void test_29b (void)
 {
-  struct coord p[11];
+  struct coord p[11]; /* { dg-message "region created on stack here" } */
   struct coord *q;
 
   p[0].x = 100024;
@@ -649,8 +653,10 @@ void test_29b (void)
   __analyzer_eval (p[9].x == 109024); /* { dg-warning "TRUE" } */
   __analyzer_eval (p[9].y == 109025); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value 'p\\\[10\\\].x'" "uninit" { target *-*-* } .-1 } */
+  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value 'p\\\[10\\\].y'" "uninit" { target *-*-* } .-1 } */
 
   q = &p[7];
 
@@ -698,8 +704,10 @@ void test_29c (int len)
   __analyzer_eval (p[9].x == 109024); /* { dg-warning "TRUE" } */
   __analyzer_eval (p[9].y == 109025); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value '\\*p\\\[10\\\].x'" "uninit" { target *-*-* } .-1 } */
+  __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" "unknown" } */
+  /* { dg-warning "use of uninitialized value '\\*p\\\[10\\\].y'" "uninit" { target *-*-* } .-1 } */
 
   q = &p[7];
 
@@ -810,16 +818,16 @@ void test_36 (int i)
 
 int test_37 (void)
 {
-  int *ptr;
-  return *ptr; /* { dg-warning "use of uninitialized value 'ptr'" "uninit-warning-removed" { xfail *-*-* } } */
+  int *ptr; /* { dg-message "region created on stack here" } */
+  return *ptr; /* { dg-warning "use of uninitialized value 'ptr'" } */
 }
 
 /* Write through uninitialized pointer.  */
 
 void test_37a (int i)
 {
-  int *ptr;
-  *ptr = i; /* { dg-warning "use of uninitialized value 'ptr'" "uninit-warning-removed" { xfail *-*-* } } */
+  int *ptr; /* { dg-message "region created on stack here" } */
+  *ptr = i; /* { dg-warning "use of uninitialized value 'ptr'" } */
 }
 
 // TODO: the various other ptr deref poisonings

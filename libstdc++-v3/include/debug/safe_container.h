@@ -1,6 +1,6 @@
 // Safe container implementation  -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,16 +48,17 @@ namespace __gnu_debug
       { return *static_cast<_SafeContainer*>(this); }
 
     protected:
-      _Safe_container&
-      _M_safe() _GLIBCXX_NOEXCEPT
-      { return *this; }
-
 #if __cplusplus >= 201103L
       _Safe_container() = default;
       _Safe_container(const _Safe_container&) = default;
       _Safe_container(_Safe_container&&) = default;
 
-      _Safe_container(_Safe_container&& __x, const _Alloc& __a)
+    private:
+      _Safe_container(_Safe_container&& __x, const _Alloc&, std::true_type)
+      : _Safe_container(std::move(__x))
+      { }
+
+      _Safe_container(_Safe_container&& __x, const _Alloc& __a, std::false_type)
       : _Safe_container()
       {
 	if (__x._M_cont().get_allocator() == __a)
@@ -65,9 +66,14 @@ namespace __gnu_debug
 	else
 	  __x._M_invalidate_all();
       }
+
+    protected:
+      _Safe_container(_Safe_container&& __x, const _Alloc& __a)
+      : _Safe_container(std::move(__x), __a,
+		      typename std::allocator_traits<_Alloc>::is_always_equal{})
+      { }
 #endif
 
-    public:
       // Copy assignment invalidate all iterators.
       _Safe_container&
       operator=(const _Safe_container&) _GLIBCXX_NOEXCEPT

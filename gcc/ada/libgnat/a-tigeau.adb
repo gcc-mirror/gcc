@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -317,7 +317,6 @@ package body Ada.Text_IO.Generic_Aux is
       Ptr    : in out Integer)
    is
       Junk : Boolean;
-      pragma Unreferenced (Junk);
    begin
       Load_Extended_Digits (File, Buf, Ptr, Junk);
    end Load_Extended_Digits;
@@ -385,7 +384,7 @@ package body Ada.Text_IO.Generic_Aux is
       Buf  : out String;
       Ptr  : in out Natural)
    is
-      Loaded   : Boolean;
+      Loaded : Boolean;
 
    begin
       --  Skip initial blanks, and load possible sign

@@ -26,6 +26,7 @@ void dealloc (void*);
 A (dealloc) void* alloc (int);
 
 void sink (void*);
+void* source (void);
 
 void test_alloc_A (void)
 {
@@ -107,35 +108,35 @@ void test_realloc_A (void *ptr)
 }
 
 
-void test_realloc (void *ptr)
+void test_realloc (void)
 {
   extern void free (void*);
   extern void* realloc (void*, size_t);
 
   {
-    void *p = realloc (ptr, 1);
+    void *p = realloc (source (), 1);
     p = realloc_A (p, 2);
     __builtin_free (p);
   }
 
   {
-    void *p = realloc (ptr, 2);
+    void *p = realloc (source (), 2);
     p = realloc_A (p, 2);
     free (p);
   }
 
   {
-    void *p = realloc (ptr, 3);
+    void *p = realloc (source (), 3);
     free (p);
   }
 
   {
-    void *p = realloc (ptr, 4);
+    void *p = realloc (source (), 4);
     __builtin_free (p);
   }
 
   {
-    void *p = realloc (ptr, 5);         // { dg-message "returned from 'realloc'" }
+    void *p = realloc (source (), 5);   // { dg-message "returned from 'realloc'" }
     dealloc (p);                        // { dg-warning "'dealloc' called on pointer returned from a mismatched allocation function" }
   }
 }

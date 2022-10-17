@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com> and
                   Reva Cuthbertson <reva@cup.hp.com>
 
@@ -131,7 +131,7 @@ do {								\
 #define REGISTER_TARGET_PRAGMAS() \
   c_register_pragma (0, "builtin", ia64_hpux_handle_builtin_pragma)
 
-/* Tell ia64.c that we are using the HP linker and we should delay output of
+/* Tell ia64.cc that we are using the HP linker and we should delay output of
    function extern declarations so that we don't output them for functions
    which are never used (and may not be defined).  */
 

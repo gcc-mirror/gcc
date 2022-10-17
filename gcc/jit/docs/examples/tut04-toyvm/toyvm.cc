@@ -1,6 +1,6 @@
 /* A simple stack-based virtual machine to demonstrate
    JIT-compilation.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdlib.h>
 #include <string.h>
 
-#include <dejagnu.h>
+#include "jit-dejagnu.h"
 
 #include <libgccjit++.h>
 
@@ -633,7 +633,7 @@ compilation_state::create_function (const char *funcname)
   /* Create a block per operation.  */
   for (int pc = 0; pc < toyvmfn.fn_num_ops; pc++)
     {
-      char buf[16];
+      char buf[100];
       sprintf (buf, "instr%i", pc);
       op_blocks[pc] = fn.new_block (buf);
     }

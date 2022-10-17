@@ -1,28 +1,41 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag1730.d(38): Error: mutable method diag1730.S.func is not callable using a inout object
-fail_compilation/diag1730.d(40): Error: immutable method diag1730.S.iFunc is not callable using a inout object
-fail_compilation/diag1730.d(41): Error: shared mutable method diag1730.S.sFunc is not callable using a non-shared inout object
-fail_compilation/diag1730.d(42): Error: shared const method diag1730.S.scFunc is not callable using a non-shared inout object
-fail_compilation/diag1730.d(57): Error: immutable method diag1730.S.iFunc is not callable using a mutable object
-fail_compilation/diag1730.d(58): Error: shared method diag1730.S.sFunc is not callable using a non-shared object
-fail_compilation/diag1730.d(59): Error: shared const method diag1730.S.scFunc is not callable using a non-shared mutable object
-fail_compilation/diag1730.d(62): Error: mutable method diag1730.S.func is not callable using a const object
-fail_compilation/diag1730.d(64): Error: immutable method diag1730.S.iFunc is not callable using a const object
-fail_compilation/diag1730.d(65): Error: shared mutable method diag1730.S.sFunc is not callable using a non-shared const object
-fail_compilation/diag1730.d(66): Error: shared const method diag1730.S.scFunc is not callable using a non-shared const object
-fail_compilation/diag1730.d(69): Error: mutable method diag1730.S.func is not callable using a immutable object
-fail_compilation/diag1730.d(72): Error: shared mutable method diag1730.S.sFunc is not callable using a immutable object
-fail_compilation/diag1730.d(76): Error: non-shared method diag1730.S.func is not callable using a shared object
-fail_compilation/diag1730.d(77): Error: non-shared const method diag1730.S.cFunc is not callable using a shared mutable object
-fail_compilation/diag1730.d(78): Error: immutable method diag1730.S.iFunc is not callable using a shared mutable object
-fail_compilation/diag1730.d(81): Error: non-shared inout method diag1730.S.wFunc is not callable using a shared mutable object
-fail_compilation/diag1730.d(83): Error: non-shared mutable method diag1730.S.func is not callable using a shared const object
-fail_compilation/diag1730.d(84): Error: non-shared const method diag1730.S.cFunc is not callable using a shared const object
-fail_compilation/diag1730.d(85): Error: immutable method diag1730.S.iFunc is not callable using a shared const object
-fail_compilation/diag1730.d(86): Error: shared mutable method diag1730.S.sFunc is not callable using a shared const object
-fail_compilation/diag1730.d(88): Error: non-shared inout method diag1730.S.wFunc is not callable using a shared const object
+fail_compilation/diag1730.d(51): Error: mutable method `diag1730.S.func` is not callable using a `inout` object
+fail_compilation/diag1730.d(43):        Consider adding `const` or `inout` here
+fail_compilation/diag1730.d(53): Error: `immutable` method `diag1730.S.iFunc` is not callable using a `inout` object
+fail_compilation/diag1730.d(54): Error: `shared` mutable method `diag1730.S.sFunc` is not callable using a non-shared `inout` object
+fail_compilation/diag1730.d(46):        Consider adding `const` or `inout` here
+fail_compilation/diag1730.d(55): Error: `shared` `const` method `diag1730.S.scFunc` is not callable using a non-shared `inout` object
+fail_compilation/diag1730.d(70): Error: `immutable` method `diag1730.S.iFunc` is not callable using a mutable object
+fail_compilation/diag1730.d(71): Error: `shared` method `diag1730.S.sFunc` is not callable using a non-shared object
+fail_compilation/diag1730.d(72): Error: `shared` `const` method `diag1730.S.scFunc` is not callable using a non-shared mutable object
+fail_compilation/diag1730.d(75): Error: mutable method `diag1730.S.func` is not callable using a `const` object
+fail_compilation/diag1730.d(43):        Consider adding `const` or `inout` here
+fail_compilation/diag1730.d(77): Error: `immutable` method `diag1730.S.iFunc` is not callable using a `const` object
+fail_compilation/diag1730.d(78): Error: `shared` mutable method `diag1730.S.sFunc` is not callable using a non-shared `const` object
+fail_compilation/diag1730.d(46):        Consider adding `const` or `inout` here
+fail_compilation/diag1730.d(79): Error: `shared` `const` method `diag1730.S.scFunc` is not callable using a non-shared `const` object
+fail_compilation/diag1730.d(82): Error: mutable method `diag1730.S.func` is not callable using a `immutable` object
+fail_compilation/diag1730.d(43):        Consider adding `const` or `inout` here
+fail_compilation/diag1730.d(85): Error: `shared` mutable method `diag1730.S.sFunc` is not callable using a `immutable` object
+fail_compilation/diag1730.d(46):        Consider adding `const` or `inout` here
+fail_compilation/diag1730.d(89): Error: non-shared method `diag1730.S.func` is not callable using a `shared` object
+fail_compilation/diag1730.d(43):        Consider adding `shared` here
+fail_compilation/diag1730.d(90): Error: non-shared `const` method `diag1730.S.cFunc` is not callable using a `shared` mutable object
+fail_compilation/diag1730.d(44):        Consider adding `shared` here
+fail_compilation/diag1730.d(91): Error: `immutable` method `diag1730.S.iFunc` is not callable using a `shared` mutable object
+fail_compilation/diag1730.d(94): Error: non-shared `inout` method `diag1730.S.wFunc` is not callable using a `shared` mutable object
+fail_compilation/diag1730.d(48):        Consider adding `shared` here
+fail_compilation/diag1730.d(96): Error: non-shared mutable method `diag1730.S.func` is not callable using a `shared` `const` object
+fail_compilation/diag1730.d(43):        Consider adding `shared` here
+fail_compilation/diag1730.d(97): Error: non-shared `const` method `diag1730.S.cFunc` is not callable using a `shared` `const` object
+fail_compilation/diag1730.d(44):        Consider adding `shared` here
+fail_compilation/diag1730.d(98): Error: `immutable` method `diag1730.S.iFunc` is not callable using a `shared` `const` object
+fail_compilation/diag1730.d(99): Error: `shared` mutable method `diag1730.S.sFunc` is not callable using a `shared` `const` object
+fail_compilation/diag1730.d(46):        Consider adding `const` or `inout` here
+fail_compilation/diag1730.d(101): Error: non-shared `inout` method `diag1730.S.wFunc` is not callable using a `shared` `const` object
+fail_compilation/diag1730.d(48):        Consider adding `shared` here
 ---
 */
 struct S
@@ -87,4 +100,3 @@ void main()
     scObj.scFunc();
     scObj.wFunc(); // ng
 }
-

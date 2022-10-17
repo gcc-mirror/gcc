@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2022 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #ifdef HAVE_PTHREAD_AFFINITY_NP
 
@@ -222,6 +223,46 @@ gomp_affinity_finalize_place_list (bool quiet)
   return true;
 }
 
+/* Find the index of the last level cache.  We assume the index
+   of the last level cache is the same for all logical CPUs.
+   Also, if there are multiple caches with the same highest level,
+   assume they have the same shared_cpu_list and pick the last one
+   from them (highest index number).  */
+
+static int
+gomp_affinity_find_last_cache_level (char *name, size_t prefix_len,
+				     unsigned long cpu)
+{
+  int ret = -1;
+  unsigned long maxval = 0;
+  char *line = NULL;
+  size_t linelen = 0;
+  FILE *f;
+
+  for (int l = 0; l < 128; l++)
+    {
+      sprintf (name + prefix_len, "%lu/cache/index%u/level", cpu, l);
+      f = fopen (name, "r");
+      if (f == NULL)
+	break;
+      if (getline (&line, &linelen, f) > 0)
+	{
+	  unsigned long val;
+	  char *p;
+	  errno = 0;
+	  val = strtoul (line, &p, 10);
+	  if (!errno && p > line && val >= maxval)
+	    {
+	      ret = l;
+	      maxval = val;
+	    }
+	}
+      fclose (f);
+    }
+  free (line);
+  return ret;
+}
+
 static void
 gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 			    cpu_set_t *copy, char *name, bool quiet)
@@ -231,12 +272,29 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
   char *line = NULL;
   size_t linelen = 0;
   unsigned long i, max = 8 * gomp_cpuset_size;
+  int init = -1;
 
   for (i = 0; i < max && gomp_places_list_len < count; i++)
     if (CPU_ISSET_S (i, gomp_cpuset_size, copy))
       {
-	sprintf (name + prefix_len, "%lu/topology/%s_siblings_list",
-		 i, this_level == 3 ? "core" : "thread");
+	if (level == 4)
+	  {
+	    if (init == -1)
+	      {
+		init = gomp_affinity_find_last_cache_level (name, prefix_len,
+							    i);
+		if (init == -1)
+		  {
+		    CPU_CLR_S (i, gomp_cpuset_size, copy);
+		    continue;
+		  }
+		sprintf (name + prefix_len,
+			 "%lu/cache/index%u/shared_cpu_list", i, init);
+	      }
+	  }
+	else
+	  sprintf (name + prefix_len, "%lu/topology/%s_siblings_list",
+		   i, this_level == 3 ? "core" : "thread");
 	f = fopen (name, "r");
 	if (f == NULL)
 	  {
@@ -245,7 +303,7 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 	  }
 	if (getline (&line, &linelen, f) > 0)
 	  {
-	    char *p = line;
+	    char *p = line, *end;
 	    void *pl = gomp_places_list[gomp_places_list_len];
 	    if (level == this_level)
 	      gomp_affinity_init_place (pl);
@@ -253,16 +311,18 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 	      {
 		unsigned long first, last;
 		errno = 0;
-		first = strtoul (p, &p, 10);
-		if (errno)
+		first = strtoul (p, &end, 10);
+		if (errno || end == p)
 		  break;
+		p = end;
 		last = first;
 		if (*p == '-')
 		  {
 		    errno = 0;
-		    last = strtoul (p + 1, &p, 10);
-		    if (errno || last < first)
+		    last = strtoul (p + 1, &end, 10);
+		    if (errno || end == p + 1 || last < first)
 		      break;
+		    p = end;
 		  }
 		for (; first <= last; first++)
 		  if (!CPU_ISSET_S (first, gomp_cpuset_size, copy))
@@ -280,8 +340,13 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
 		      if (gomp_affinity_add_cpus (pl, first, 1, 0, true))
 			{
 			  CPU_CLR_S (first, gomp_cpuset_size, copy);
-			  if (level == 1)
-			    gomp_places_list_len++;
+			  if (level == 1
+			      && ++gomp_places_list_len >= count)
+			    {
+			      fclose (f);
+			      free (line);
+			      return;
+			    }
 			}
 		    }
 		if (*p == ',')
@@ -297,11 +362,112 @@ gomp_affinity_init_level_1 (int level, int this_level, unsigned long count,
   free (line);
 }
 
+static void
+gomp_affinity_init_numa_domains (unsigned long count, cpu_set_t *copy,
+				 char *name)
+{
+  FILE *f;
+  char *nline = NULL, *line = NULL;
+  size_t nlinelen = 0, linelen = 0;
+  char *q;
+  size_t prefix_len = sizeof ("/sys/devices/system/node/") - 1;
+
+  strcpy (name, "/sys/devices/system/node/online");
+  f = fopen (name, "r");
+  if (f == NULL || getline (&nline, &nlinelen, f) <= 0)
+    {
+      if (f)
+	fclose (f);
+      return;
+    }
+  fclose (f);
+  q = nline;
+  while (*q && *q != '\n' && gomp_places_list_len < count)
+    {
+      unsigned long nfirst, nlast;
+      char *end;
+
+      errno = 0;
+      nfirst = strtoul (q, &end, 10);
+      if (errno || end == q)
+	break;
+      q = end;
+      nlast = nfirst;
+      if (*q == '-')
+	{
+	  errno = 0;
+	  nlast = strtoul (q + 1, &end, 10);
+	  if (errno || end == q + 1 || nlast < nfirst)
+	    break;
+	  q = end;
+	}
+      for (; nfirst <= nlast && gomp_places_list_len < count; nfirst++)
+	{
+	  sprintf (name + prefix_len, "node%lu/cpulist", nfirst);
+	  f = fopen (name, "r");
+	  if (f == NULL)
+	    continue;
+	  if (getline (&line, &linelen, f) > 0)
+	    {
+	      char *p = line;
+	      void *pl = NULL;
+	      bool seen = false;
+
+	      while (*p && *p != '\n')
+		{
+		  unsigned long first, last;
+
+		  errno = 0;
+		  first = strtoul (p, &end, 10);
+		  if (errno || end == p)
+		    break;
+		  p = end;
+		  last = first;
+		  if (*p == '-')
+		    {
+		      errno = 0;
+		      last = strtoul (p + 1, &end, 10);
+		      if (errno || end == p + 1 || last < first)
+			break;
+		      p = end;
+		    }
+		  for (; first <= last; first++)
+		    {
+		      if (!CPU_ISSET_S (first, gomp_cpuset_size, copy))
+			continue;
+		      if (pl == NULL)
+			{
+			  pl = gomp_places_list[gomp_places_list_len];
+			  gomp_affinity_init_place (pl);
+			}
+		      if (gomp_affinity_add_cpus (pl, first, 1, 0, true))
+			{
+			  CPU_CLR_S (first, gomp_cpuset_size, copy);
+			  if (!seen)
+			    {
+			      gomp_places_list_len++;
+			      seen = true;
+			    }
+			}
+		    }
+		  if (*p == ',')
+		    ++p;
+		}
+	    }
+	  fclose (f);
+	}
+      if (*q == ',')
+	++q;
+    }
+  free (line);
+  free (nline);
+}
+
 bool
 gomp_affinity_init_level (int level, unsigned long count, bool quiet)
 {
   char name[sizeof ("/sys/devices/system/cpu/cpu/topology/"
-		    "thread_siblings_list") + 3 * sizeof (unsigned long)];
+		    "thread_siblings_list") + 6 * sizeof (unsigned long)];
   cpu_set_t *copy;
 
   if (gomp_cpusetp)
@@ -319,7 +485,11 @@ gomp_affinity_init_level (int level, unsigned long count, bool quiet)
   copy = gomp_alloca (gomp_cpuset_size);
   strcpy (name, "/sys/devices/system/cpu/cpu");
   memcpy (copy, gomp_cpusetp, gomp_cpuset_size);
-  gomp_affinity_init_level_1 (level, 3, count, copy, name, quiet);
+  if (level == 5)
+    gomp_affinity_init_numa_domains (count, copy, name);
+  else
+    gomp_affinity_init_level_1 (level, level > 3 ? level : 3, count, copy,
+				name, quiet);
   if (gomp_places_list_len == 0)
     {
       if (!quiet)

@@ -11,6 +11,7 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 AM_CXXFLAGS += -std=gnu++14
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
+AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 toolexeclib_LTLIBRARIES = libasan.la
@@ -38,7 +39,6 @@ asan_files = \
 	asan_posix.cpp \
 	asan_premap_shadow.cpp \
 	asan_report.cpp \
-	asan_rtems.cpp \
 	asan_rtl.cpp \
 	asan_shadow_setup.cpp \
 	asan_stack.cpp \

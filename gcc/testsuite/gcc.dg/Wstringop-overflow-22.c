@@ -260,13 +260,12 @@ T (puts_unlocked, a);       // { dg-warning "missing terminating nul" "puts_unlo
 
 // Exerise exec functions.
 T (execl, a, s, NULL);      // { dg-warning "missing terminating nul" "execl" }
-T (execl, a, s, NULL);      // { dg-warning "missing terminating nul" "execl" }
-T (execle, a, s, NULL, NULL);   // { dg-warning "missing terminating nul" "execl" }
-T (execlp, a, s, NULL);     // { dg-warning "missing terminating nul" "execl" }
+T (execle, a, s, NULL, NULL);   // { dg-warning "missing terminating nul" "execle" }
+T (execlp, a, s, NULL);     // { dg-warning "missing terminating nul" "execlp" }
 
-T (execv, a, &d);           // { dg-warning "missing terminating nul" "execl" }
-T (execve, a, &d, &d);      // { dg-warning "missing terminating nul" "execl" }
-T (execvp, a, &d);          // { dg-warning "missing terminating nul" "execl" }
+T (execv, a, &d);           // { dg-warning "missing terminating nul" "execv" }
+T (execve, a, &d, &d);      // { dg-warning "missing terminating nul" "execve" }
+T (execvp, a, &d);          // { dg-warning "missing terminating nul" "execvp" }
 
 T (gettext, a);             // { dg-warning "missing terminating nul" "gettext" }
 

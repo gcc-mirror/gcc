@@ -72,7 +72,9 @@ struct S5
 }
 static assert(__traits(isZeroInit, S5));
 
-version(D_SIMD):
-import core.simd : int4;
-static assert(__traits(isZeroInit, Holder!(int4, 0)));
-static assert(!__traits(isZeroInit, Holder!(int4, 1)));
+template Vector(T) { alias __vector(T) Vector; }
+static if (is(Vector!(int[4])))
+{
+    static assert(__traits(isZeroInit, Holder!(Vector!(int[4]), 0)));
+    static assert(!__traits(isZeroInit, Holder!(Vector!(int[4]), 1)));
+}

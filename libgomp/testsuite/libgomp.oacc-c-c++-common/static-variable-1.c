@@ -298,7 +298,10 @@ static void t2(void)
 
 #pragma acc data \
   copy(results_1, results_2, results_3)
-  /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
+  /* { dg-note {variable 'num_gangs_request_1\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target { c && { ! __OPTIMIZE__ } } } .-2 } */
+  /* { dg-note {variable 'num_gangs_request_2\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target { c && { ! __OPTIMIZE__ } } } .-3 } */
+  /* { dg-note {variable 'num_gangs_request_3\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target { c && { ! __OPTIMIZE__ } } } .-4 } */
+  /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-5 } */
   {
     for (int i = 0; i < i_limit; ++i)
       {

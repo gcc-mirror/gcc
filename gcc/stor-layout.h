@@ -1,5 +1,5 @@
-/* Definitions and declarations for stor-layout.c.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+/* Definitions and declarations for stor-layout.cc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ test(const char* s)
   String s3 __attribute__((unused)) = s1;
   s1 = std::move(s1);
 
-  s1.begin(); // causes COW string to "leak"
+  (void) s1.begin(); // causes COW string to "leak"
   s1 = std::move(s1);
 
   String s4 __attribute__((unused)) = s1;

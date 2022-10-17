@@ -1,4 +1,4 @@
-// PREMUTE_ARGS:
+// PERMUTE_ARGS:
 struct S9613
 {
     int f(

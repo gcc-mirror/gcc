@@ -2,7 +2,6 @@ import core.runtime;
 import core.stdc.stdio;
 import core.stdc.string;
 import core.thread;
-
 import core.sys.posix.dlfcn;
 
 version (DragonFlyBSD) import core.sys.dragonflybsd.dlfcn : RTLD_NOLOAD;

@@ -1,5 +1,5 @@
 ## Makefile for the Phobos standard library.
-## Copyright (C) 2012-2021 Free Software Foundation, Inc.
+## Copyright (C) 2012-2022 Free Software Foundation, Inc.
 ##
 ## GCC is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,8 +19,9 @@
 include $(top_srcdir)/d_rules.am
 
 # Make sure GDC can find libdruntime and libphobos include files
-D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) \
-	-I $(top_srcdir)/libdruntime -I ../libdruntime -I .
+D_EXTRA_DFLAGS=-fpreview=dip1000 -fpreview=dtorfields -fpreview=fieldwise \
+	-nostdinc -I $(srcdir) -I $(top_srcdir)/libdruntime \
+	-I ../libdruntime -I .
 
 # D flags for compilation
 AM_DFLAGS= \
@@ -45,8 +46,12 @@ libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
+if ENABLE_LIBDRUNTIME_ONLY
+libgphobos_la_LIBADD = ../libdruntime/libgdruntime_convenience.la
+else
 libgphobos_la_LIBADD = \
     ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+endif
 libgphobos_la_DEPENDENCIES = \
     ../libdruntime/libgdruntime_convenience.la libgphobos.spec
 
@@ -79,23 +84,26 @@ PHOBOS_DSOURCES =
 
 else
 
-PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
-	std/algorithm/comparison.d std/algorithm/internal.d \
-	std/algorithm/iteration.d std/algorithm/mutation.d \
-	std/algorithm/package.d std/algorithm/searching.d \
-	std/algorithm/setops.d std/algorithm/sorting.d std/array.d std/ascii.d \
-	std/base64.d std/bigint.d std/bitmanip.d std/compiler.d std/complex.d \
-	std/concurrency.d std/container/array.d std/container/binaryheap.d \
-	std/container/dlist.d std/container/package.d std/container/rbtree.d \
-	std/container/slist.d std/container/util.d std/conv.d std/csv.d \
-	std/datetime/date.d std/datetime/interval.d std/datetime/package.d \
+PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
+	std/algorithm/internal.d std/algorithm/iteration.d \
+	std/algorithm/mutation.d std/algorithm/package.d \
+	std/algorithm/searching.d std/algorithm/setops.d \
+	std/algorithm/sorting.d std/array.d std/ascii.d std/base64.d \
+	std/bigint.d std/bitmanip.d std/checkedint.d std/compiler.d \
+	std/complex.d std/concurrency.d std/container/array.d \
+	std/container/binaryheap.d std/container/dlist.d \
+	std/container/package.d std/container/rbtree.d std/container/slist.d \
+	std/container/util.d std/conv.d std/csv.d std/datetime/date.d \
+	std/datetime/interval.d std/datetime/package.d \
 	std/datetime/stopwatch.d std/datetime/systime.d \
 	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
-	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
-	std/digest/murmurhash.d std/digest/package.d std/digest/ripemd.d \
-	std/digest/sha.d std/encoding.d std/exception.d \
+	std/digest/hmac.d std/digest/md.d std/digest/murmurhash.d \
+	std/digest/package.d std/digest/ripemd.d std/digest/sha.d \
+	std/encoding.d std/exception.d \
 	std/experimental/allocator/building_blocks/affix_allocator.d \
+	std/experimental/allocator/building_blocks/aligned_block_list.d \
 	std/experimental/allocator/building_blocks/allocator_list.d \
+	std/experimental/allocator/building_blocks/ascending_page_allocator.d \
 	std/experimental/allocator/building_blocks/bitmapped_block.d \
 	std/experimental/allocator/building_blocks/bucketizer.d \
 	std/experimental/allocator/building_blocks/fallback_allocator.d \
@@ -119,27 +127,35 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/experimental/logger/core.d std/experimental/logger/filelogger.d \
 	std/experimental/logger/multilogger.d \
 	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
-	std/experimental/typecons.d std/file.d std/format.d std/functional.d \
-	std/getopt.d std/internal/cstring.d std/internal/math/biguintcore.d \
-	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
-	std/internal/math/gammafunction.d std/internal/scopebuffer.d \
+	std/file.d std/format/internal/floats.d std/format/internal/read.d \
+	std/format/internal/write.d std/format/package.d std/format/read.d \
+	std/format/spec.d std/format/write.d std/functional.d std/getopt.d \
+	std/int128.d std/internal/attributes.d std/internal/cstring.d \
+	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
+	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
+	std/internal/memory.d std/internal/scopebuffer.d \
 	std/internal/test/dummyrange.d std/internal/test/range.d \
 	std/internal/test/uda.d std/internal/unicode_comp.d \
 	std/internal/unicode_decomp.d std/internal/unicode_grapheme.d \
 	std/internal/unicode_norm.d std/internal/unicode_tables.d \
-	std/internal/windows/advapi32.d std/json.d std/math.d \
+	std/internal/windows/advapi32.d std/json.d std/logger/core.d \
+	std/logger/filelogger.d std/logger/multilogger.d \
+	std/logger/nulllogger.d std/logger/package.d std/math/algebraic.d \
+	std/math/constants.d std/math/exponential.d std/math/hardware.d \
+	std/math/operations.d std/math/package.d std/math/remainder.d \
+	std/math/rounding.d std/math/traits.d std/math/trigonometry.d \
 	std/mathspecial.d std/meta.d std/mmfile.d std/net/curl.d \
-	std/net/isemail.d std/numeric.d std/outbuffer.d std/parallelism.d \
-	std/path.d std/process.d std/random.d std/range/interfaces.d \
-	std/range/package.d std/range/primitives.d \
+	std/net/isemail.d std/numeric.d std/outbuffer.d std/package.d \
+	std/parallelism.d std/path.d std/process.d std/random.d \
+	std/range/interfaces.d std/range/package.d std/range/primitives.d \
 	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 	std/regex/internal/ir.d std/regex/internal/kickstart.d \
 	std/regex/internal/parser.d std/regex/internal/tests.d \
 	std/regex/internal/tests2.d std/regex/internal/thompson.d \
 	std/regex/package.d std/signals.d std/socket.d std/stdint.d \
-	std/stdio.d std/string.d std/system.d std/traits.d std/typecons.d \
-	std/typetuple.d std/uni.d std/uri.d std/utf.d std/uuid.d std/variant.d \
-	std/windows/charset.d std/windows/registry.d std/windows/syserror.d \
-	std/xml.d std/zip.d std/zlib.d
+	std/stdio.d std/string.d std/sumtype.d std/system.d std/traits.d \
+	std/typecons.d std/typetuple.d std/uni/package.d std/uri.d std/utf.d \
+	std/uuid.d std/variant.d std/windows/charset.d std/windows/registry.d \
+	std/windows/syserror.d std/zip.d std/zlib.d
 
 endif

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Free Software Foundation, Inc.
+// Copyright (C) 2021-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,7 @@
 // { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
+// { dg-xfail-run-if "rename is not POSIX-compliant" { *-*-rtems* } }
 
 #include <experimental/filesystem>
 #include <testsuite_hooks.h>
@@ -75,9 +76,7 @@ test01()
 void
 test_symlinks()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-#else
+#ifndef NO_SYMLINKS
   std::error_code ec;
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
 

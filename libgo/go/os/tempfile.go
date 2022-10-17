@@ -4,7 +4,10 @@
 
 package os
 
-import "errors"
+import (
+	"errors"
+	"internal/itoa"
+)
 
 // fastrand provided by runtime.
 // We generate random temporary file names so that there's a good
@@ -13,7 +16,7 @@ import "errors"
 func fastrand() uint32
 
 func nextRandom() string {
-	return uitoa(uint(fastrand()))
+	return itoa.Uitoa(uint(fastrand()))
 }
 
 // CreateTemp creates a new temporary file in the directory dir,
@@ -43,7 +46,7 @@ func CreateTemp(dir, pattern string) (*File, error) {
 			if try++; try < 10000 {
 				continue
 			}
-			return nil, &PathError{Op: "createtemp", Path: dir + string(PathSeparator) + prefix + "*" + suffix, Err: ErrExist}
+			return nil, &PathError{Op: "createtemp", Path: prefix + "*" + suffix, Err: ErrExist}
 		}
 		return f, err
 	}

@@ -1,5 +1,5 @@
 ;; Predicate definitions for S/390 and zSeries.
-;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;; Contributed by Hartmut Penner (hpenner@de.ibm.com) and
 ;;                Ulrich Weigand (uweigand@de.ibm.com).
 ;;
@@ -101,10 +101,13 @@
 
 (define_special_predicate "bras_sym_operand"
   (ior (and (match_code "symbol_ref")
-	    (match_test "!flag_pic || SYMBOL_REF_LOCAL_P (op)"))
+	    (ior (match_test "!flag_pic")
+		 (match_test "SYMBOL_REF_LOCAL_P (op)")
+		 (and (match_test "TARGET_64BIT")
+		      (match_test "SYMBOL_REF_FUNCTION_P (op)"))))
        (and (match_code "const")
 	    (and (match_test "GET_CODE (XEXP (op, 0)) == UNSPEC")
-		 (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_PLT")))))
+		 (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_PLT31")))))
 
 ;; Return true if OP is a PLUS that is not a legitimate
 ;; operand for the LA instruction.
@@ -197,7 +200,7 @@
       && XINT (op, 1) == UNSPEC_GOTENT)
     return true;
   if (GET_CODE (op) == UNSPEC
-      && XINT (op, 1) == UNSPEC_PLT)
+      && XINT (op, 1) == UNSPEC_PLT31)
     return true;
   if (GET_CODE (op) == UNSPEC
       && XINT (op, 1) == UNSPEC_INDNTPOFF)
@@ -591,3 +594,15 @@
 (define_predicate "addv_const_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= -32768 && INTVAL (op) <= 32767")))
+
+; Match (subreg (reg ...)) operands.
+; Used for movstrict destination operands
+; When replacing pseudos with hard regs reload strips away the
+; subregs. Accept also plain registers then to prevent the insn from
+; becoming unrecognizable.
+(define_predicate "subreg_register_operand"
+  (ior (and (match_code "subreg")
+	    (match_test "register_operand (SUBREG_REG (op), GET_MODE (SUBREG_REG (op)))"))
+       (and (match_code "reg")
+	    (match_test "reload_completed || reload_in_progress")
+	    (match_test "register_operand (op, GET_MODE (op))"))))

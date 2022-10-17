@@ -1,7 +1,7 @@
 # Makefile for the libiberty library.
 # Originally written by K. Richard Pixley <rich@cygnus.com>.
 #
-# Copyright (C) 1990-2021 Free Software Foundation, Inc.
+# Copyright (C) 1990-2022 Free Software Foundation, Inc.
 #
 # This file is part of the libiberty library.
 # Libiberty is free software; you can redistribute it and/or
@@ -29,6 +29,7 @@ bindir = @bindir@
 libdir = @libdir@
 includedir = @includedir@
 target_header_dir = @target_header_dir@
+dvidir = @dvidir@
 objext = @OBJEXT@
 
 SHELL = @SHELL@
@@ -276,7 +277,24 @@ $(TESTLIB): $(REQUIRED_OFILES) $(CONFIGURED_OFILES)
 info: libiberty.info info-subdir
 install-info: install-info-subdir
 clean-info: clean-info-subdir
-dvi: libiberty.dvi dvi-subdir
+
+LIBIBERTY_DVIFILES = libiberty.dvi
+
+dvi: $(LIBIBERTY_DVIFILES) dvi-subdir
+
+.PHONY: install-dvi
+
+dvi__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+
+install-dvi: $(LIBIBERTY_DVIFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)"
+	@list='$(LIBIBERTY_DVIFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/$$f"; \
+	done
 
 LIBIBERTY_PDFFILES = libiberty.pdf
 
@@ -411,8 +429,10 @@ stamp-noasandir:
 
 .PHONY: all etags tags TAGS ls clean stage1 stage2
 
+ETAGS = @ETAGS@
+
 etags tags TAGS: etags-subdir
-	cd $(srcdir) && etags $(CFILES)
+	cd $(srcdir) && $(ETAGS) $(CFILES)
 
 # The standalone demangler (c++filt) has been moved to binutils.
 # But make this target work anyway for demangler hacking.

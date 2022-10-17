@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2021, AdaCore                     --
+--                     Copyright (C) 2000-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -167,7 +167,7 @@ package body GNAT.CGI.Debug is
 
    package body HTML_IO is
 
-      NL : constant String := (1 => ASCII.LF);
+      NL : constant String := [ASCII.LF];
 
       function Bold (S : String) return String;
       --  Returns S as an HTML bold string
@@ -270,7 +270,7 @@ package body GNAT.CGI.Debug is
 
       function Title (IO : Format; Str : String) return String is
          Spaces : constant Natural := (80 - Str'Length) / 2;
-         Indent : constant String (1 .. Spaces) := (others => ' ');
+         Indent : constant String (1 .. Spaces) := [others => ' '];
       begin
          return Indent & Str & New_Line (IO);
       end Title;

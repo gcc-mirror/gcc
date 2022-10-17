@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,6 +158,18 @@ package body Switch.B is
 
                elsif Underscore then
                   Set_Underscored_Debug_Flag (C);
+
+                  if Debug_Flag_Underscore_C then
+                     Enable_CUDA_Expansion := True;
+                  end if;
+                  if Debug_Flag_Underscore_D then
+                     Enable_CUDA_Device_Expansion := True;
+                  end if;
+                  if Enable_CUDA_Expansion and Enable_CUDA_Device_Expansion
+                  then
+                     Bad_Switch (Switch_Chars);
+                  end if;
+
                   Underscore := False;
 
                --    letter
@@ -312,7 +324,7 @@ package body Switch.B is
 
             Ptr := Max + 1;
 
-            if not Is_Read_Accessible_File (Force_Elab_Order_File.all) then
+            if not Is_Regular_File (Force_Elab_Order_File.all) then
                Osint.Fail (Force_Elab_Order_File.all & ": file not found");
             end if;
 
@@ -375,6 +387,12 @@ package body Switch.B is
             else
                Bad_Switch (Switch_Chars);
             end if;
+
+         --  Processing for k switch
+
+         when 'k' =>
+            Ptr := Ptr + 1;
+            Check_Elaboration_Flags := False;
 
          --  Processing for K switch
 

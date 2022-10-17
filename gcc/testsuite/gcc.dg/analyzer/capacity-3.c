@@ -1,10 +1,12 @@
+/* { dg-require-effective-target alloca } */
+
 #include <stdlib.h>
 #include "analyzer-decls.h"
 
 static void __attribute__((noinline))
 __analyzer_callee_1 (size_t inner_sz)
 {
-  void *p = alloca (inner_sz);
+  void *p = __builtin_alloca (inner_sz);
   __analyzer_dump_capacity (p); /* { dg-warning "capacity: 'INIT_VAL\\(outer_sz_\[^\n\r\]*\\)'" } */
 }
 

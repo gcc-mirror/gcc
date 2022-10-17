@@ -1,3 +1,71 @@
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* mh-pa-hpux10: Removed.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Arnaud Charlet  <charlet@adacore.com>
+
+	* acx.m4 (AC_PROG_GNAT): Update conftest.adb to include
+	features required of the host gnat compiler.
+
+2022-06-01  David Seifert  <soap@gentoo.org>
+
+	PR plugins/95648
+	* gcc-plugin.m4: Use libtool's $ac_cv_prog_OBJDUMP.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* dfp.m4: Add aarch64 support.
+
+2022-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* dfp.m4: Add license header.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* picflag.m4: Default add build option '-fpic' for LoongArch.
+
+2021-12-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103528
+	* acx.m4 (ACX_PROG_GDC): Add check whether D compiler works.
+
+2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc-plugin.m4 (GCC_PLUGIN_OPTION): New.
+
+2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc-plugin.m4 (GCC_PLUGIN_OPTION): New.
+
+2021-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc-plugin.m4: Save and process CXXFLAGS.
+
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* acx.m4 (ACX_PROG_GDC): New m4 function.
+
+2021-09-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/102389
+	* bootstrap-lto-lean.mk: Handle NM like RANLIB AND AR.
+	* bootstrap-lto.mk: Likewise.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mh-darwin: Require a non-shared host configuration to
+	enable  mdynamic-no-pic where that is supported.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mh-darwin: Make this specific to handling the
+	mdynamic-no-pic case.
+
 2021-06-14  Michael Forney  <mforney@mforney.org>
 
 	* gettext.m4 (AM_GNU_GETTEXT): Skip checks for the internal

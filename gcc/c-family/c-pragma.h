@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,24 +42,33 @@ enum pragma_kind {
   PRAGMA_OACC_UPDATE,
   PRAGMA_OACC_WAIT,
 
+  /* PRAGMA_OMP__START_ should be equal to the first PRAGMA_OMP_* code.  */
   PRAGMA_OMP_ALLOCATE,
+  PRAGMA_OMP__START_ = PRAGMA_OMP_ALLOCATE,
+  PRAGMA_OMP_ASSUME,
+  PRAGMA_OMP_ASSUMES,
   PRAGMA_OMP_ATOMIC,
   PRAGMA_OMP_BARRIER,
+  PRAGMA_OMP_BEGIN,
   PRAGMA_OMP_CANCEL,
   PRAGMA_OMP_CANCELLATION_POINT,
   PRAGMA_OMP_CRITICAL,
   PRAGMA_OMP_DECLARE,
   PRAGMA_OMP_DEPOBJ,
   PRAGMA_OMP_DISTRIBUTE,
-  PRAGMA_OMP_END_DECLARE_TARGET,
+  PRAGMA_OMP_ERROR,
+  PRAGMA_OMP_END,
   PRAGMA_OMP_FLUSH,
   PRAGMA_OMP_FOR,
   PRAGMA_OMP_LOOP,
+  PRAGMA_OMP_NOTHING,
+  PRAGMA_OMP_MASKED,
   PRAGMA_OMP_MASTER,
   PRAGMA_OMP_ORDERED,
   PRAGMA_OMP_PARALLEL,
   PRAGMA_OMP_REQUIRES,
   PRAGMA_OMP_SCAN,
+  PRAGMA_OMP_SCOPE,
   PRAGMA_OMP_SECTION,
   PRAGMA_OMP_SECTIONS,
   PRAGMA_OMP_SIMD,
@@ -72,6 +81,8 @@ enum pragma_kind {
   PRAGMA_OMP_TASKYIELD,
   PRAGMA_OMP_THREADPRIVATE,
   PRAGMA_OMP_TEAMS,
+  /* PRAGMA_OMP__LAST_ should be equal to the last PRAGMA_OMP_* code.  */
+  PRAGMA_OMP__LAST_ = PRAGMA_OMP_TEAMS,
 
   PRAGMA_GCC_PCH_PREPROCESS,
   PRAGMA_IVDEP,
@@ -81,8 +92,8 @@ enum pragma_kind {
 };
 
 
-/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0, 4.5
-   and 5.0.  Used internally by both C and C++ parsers.  */
+/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0, 4.5, 5.0,
+   5.1 and 5.2.  Used internally by both C and C++ parsers.  */
 enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_NONE = 0,
 
@@ -100,11 +111,15 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_DEVICE,
   PRAGMA_OMP_CLAUSE_DEVICE_TYPE,
   PRAGMA_OMP_CLAUSE_DIST_SCHEDULE,
+  PRAGMA_OMP_CLAUSE_DOACROSS,
+  PRAGMA_OMP_CLAUSE_ENTER,
+  PRAGMA_OMP_CLAUSE_FILTER,
   PRAGMA_OMP_CLAUSE_FINAL,
   PRAGMA_OMP_CLAUSE_FIRSTPRIVATE,
   PRAGMA_OMP_CLAUSE_FOR,
   PRAGMA_OMP_CLAUSE_FROM,
   PRAGMA_OMP_CLAUSE_GRAINSIZE,
+  PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR,
   PRAGMA_OMP_CLAUSE_HINT,
   PRAGMA_OMP_CLAUSE_IF,
   PRAGMA_OMP_CLAUSE_IN_REDUCTION,
@@ -160,6 +175,7 @@ enum pragma_omp_clause {
   PRAGMA_OACC_CLAUSE_HOST,
   PRAGMA_OACC_CLAUSE_INDEPENDENT,
   PRAGMA_OACC_CLAUSE_NO_CREATE,
+  PRAGMA_OACC_CLAUSE_NOHOST,
   PRAGMA_OACC_CLAUSE_NUM_GANGS,
   PRAGMA_OACC_CLAUSE_NUM_WORKERS,
   PRAGMA_OACC_CLAUSE_PRESENT,
@@ -207,7 +223,7 @@ union gen_pragma_handler {
 };
 /* Internally used to keep the data of the handler.  */
 struct internal_pragma_handler {
-  union gen_pragma_handler handler;
+  union gen_pragma_handler handler, early_handler;
   /* Permits to know if handler is a pragma_handler_1arg (extra_data is false)
      or a pragma_handler_2arg (extra_data is true).  */
   bool extra_data;
@@ -229,6 +245,17 @@ extern void c_register_pragma_with_expansion_and_data (const char *space,
                                                    pragma_handler_2arg handler,
                                                        void *data);
 extern void c_invoke_pragma_handler (unsigned int);
+
+/* Early pragma handlers run in addition to the normal ones.  They can be used
+   by frontends such as C++ that may want to process some pragmas during lexing
+   before they start processing them.  */
+extern void
+c_register_pragma_with_early_handler (const char *space, const char *name,
+				      pragma_handler_1arg handler,
+				      pragma_handler_1arg early_handler);
+extern void c_invoke_early_pragma_handler (unsigned int);
+extern void c_pp_invoke_early_pragma_handler (unsigned int);
+
 
 extern void maybe_apply_pragma_weak (tree);
 extern void maybe_apply_pending_pragma_weaks (void);

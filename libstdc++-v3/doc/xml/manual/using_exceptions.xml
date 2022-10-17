@@ -188,6 +188,87 @@ exception neutrality and exception safety.
 
 </section>
 
+<section xml:id="intro.using.exception.alloc" xreflabel="Memory allocation for exceptions"><info><title>Memory allocation</title></info>
+
+  <para>
+    When the program throws an exception the runtime will obtain storage for
+    a <code>__cxa_exception</code> header and the thrown object itself.
+    Libstdc++ will try to use <code>malloc</code> to obtain storage,
+    but provides an emergency buffer to be used if malloc fails,
+    as described by the <link xmlns:xlink="http://www.w3.org/1999/xlink"
+    xlink:href="https://itanium-cxx-abi.github.io/cxx-abi/abi-eh.html#imp-emergency">Itanium
+    exception handling ABI</link>.
+  </para>
+
+  <para>
+    Contrary to the ABI, the libstdc++ emergency buffer is not always 64kB,
+    and does not always allocate 1kB chunks. The buffer is used as a pool for
+    variable-sized allocations, so that it doesn't waste space for smaller
+    exception objects such as <code>std::bad_alloc</code>.
+    The total size of the buffer is scaled appropriately for the target.
+    Specifically it depends on <code>sizeof(void*)</code>, so that a 64-bit
+    system uses a larger pool than a 32-bit system. This is done because for
+    32-bit systems the exception objects (and the exception header) require
+    less space, and core counts and thread counts are typically lower as well.
+  </para>
+
+  <para>
+    By default, libstdc++ will use <code>malloc</code> to allocate the buffer
+    on program startup.
+    <xref linkend="manual.intro.setup.configure"/> libstdc++ with the
+    <code>--enable-libstdcxx-static-eh-pool</code> option will make it
+    use a static buffer instead of using <code>malloc</code>.
+  </para>
+
+  <para>
+    The buffer size is chosen automatically, but can be overridden
+    by configuring with <code>--with-libstdcxx-eh-pool-obj-count=NUM</code>,
+    where <code>NUM</code> is the number of simultaneous allocations that
+    should be supported. The size of the pool will be sufficient for
+    <code>NUM</code> exceptions of <code>6 * sizeof(void*)</code> bytes,
+    plus another <code>NUM</code> exceptions captured in
+    <classname>std::exception_ptr</classname> and rethrown using
+    <code>std::rethrow_exception</code>. The buffer size determined by the
+    obj-count value applies whether the buffer is reserved as static storage
+    or is allocated dynamically.
+    Setting obj-count to zero will disable the pool, so that no emergency
+    buffer is present.
+  </para>
+
+  <para>
+    For a dynamic buffer, the default size can also be changed at runtime,
+    per-process, via the <literal>GLIBCXX_TUNABLES</literal> environment
+    variable.
+    The <literal>GLIBCXX_TUNABLES</literal> environment variable should be
+    a string of colon-separated <emphasis>name=value</emphasis> pairs. The
+    following names will be recognized, with the specified semantics:
+  </para>
+
+  <variablelist>
+  <varlistentry>
+  <term><code>glibcxx.eh_pool.obj_count</code></term>
+  <listitem>
+    The number of exception objects to provide space for in the pool.
+    The value must be a non-negative integer and has the same meaning as the
+    <code>--with-libstdcxx-eh-pool-obj-count</code> option for
+    <filename>configure</filename>.
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>glibcxx.eh_pool.obj_size</code></term>
+  <listitem>
+    The expected size of exception objects that the pool might get used for.
+    The value must be a positive integer, and is measured in units of
+    <code>sizeof(void*)</code>. The default value is <literal>6</literal>
+    which is large enough to store any exception type thrown by libstdc++.
+    Exceptions larger than this can still be allocated from the pool,
+    but larger exceptions will exhaust the pool more rapidly.
+  </listitem>
+  </varlistentry>
+  </variablelist>
+
+</section>
+
 <section xml:id="intro.using.exception.no" xreflabel="-fno-exceptions"><info><title>Doing without</title></info>
 
   <para>
@@ -534,6 +615,15 @@ is called.
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
 	      xlink:href="http://gcc.gnu.org/PR25191">
       GCC Bug 25191: exception_defines.h #defines try/catch
+	</link>
+      </title>
+  </biblioentry>
+
+  <biblioentry>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="https://www.gnu.org/software/libc/manual/html_node/Tunables.html">
+      Tunables, The GNU C Library
 	</link>
       </title>
   </biblioentry>

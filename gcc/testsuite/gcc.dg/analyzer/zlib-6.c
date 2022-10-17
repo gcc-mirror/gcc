@@ -16,15 +16,8 @@ typedef struct inflate_blocks_state {
 
 extern int inflate_flush(inflate_blocks_statef *, z_stream *, int);
 
-int inflate_blocks(inflate_blocks_statef *s, z_stream *z, int r) {
-  uInt t;
-  uLong b;
-  uInt k;
-  Byte *p;
-  uInt n;
-  Byte *q;
-  uInt m;
-
+int inflate_blocks(inflate_blocks_statef *s, z_stream *z, int r,
+		   uLong b, uInt k, Byte *p, uInt n, Byte *q, uInt m) {
   while (k < (3)) {
     {
       if (n)
@@ -41,7 +34,7 @@ int inflate_blocks(inflate_blocks_statef *s, z_stream *z, int r) {
         return inflate_flush(s, z, r);
       }
     };
-    b |= ((uLong)(n--, *p++)) << k; /* { dg-warning "use of uninitialized value" "uninit-warning-removed" { xfail *-*-* } } */
+    b |= ((uLong)(n--, *p++)) << k;
     k += 8;
   }
 }

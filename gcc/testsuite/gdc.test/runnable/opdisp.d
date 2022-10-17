@@ -1,3 +1,9 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 extern (C) int printf(const char* fmt, ...);
 
 int pass(int n){ return n; }
@@ -265,7 +271,7 @@ void test6()
 }
 
 /**********************************************/
-// 7578
+// https://issues.dlang.org/show_bug.cgi?id=7578
 
 struct Foo7578
 {

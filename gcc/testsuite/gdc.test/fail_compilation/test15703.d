@@ -1,11 +1,10 @@
 /*
 REQUIRED_ARGS: -m32
-PERMUTE_ARGS:
 TEST_OUTPUT:
 ---
-fail_compilation/test15703.d(17): Error: cast from Object[] to uint[] not allowed in safe code
-fail_compilation/test15703.d(19): Error: cast from object.Object to const(uint)* not allowed in safe code
-fail_compilation/test15703.d(22): Error: cast from uint[] to Object[] not allowed in safe code
+fail_compilation/test15703.d(16): Error: cast from `Object[]` to `uint[]` not allowed in safe code
+fail_compilation/test15703.d(18): Error: cast from `object.Object` to `const(uint)*` not allowed in safe code
+fail_compilation/test15703.d(21): Error: cast from `uint[]` to `Object[]` not allowed in safe code
 ---
 */
 
@@ -29,4 +28,3 @@ void test2() @safe
     const(ubyte)[] a;
     auto b = cast(const(uint[])) a;
 }
-

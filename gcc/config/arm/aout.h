@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
    This file is part of GCC.
@@ -143,15 +143,6 @@
 
 #ifndef NO_DOLLAR_IN_LABEL
 #define NO_DOLLAR_IN_LABEL 1
-#endif
-
-/* Generate DBX debugging information.  riscix.h will undefine this because
-   the native assembler does not support stabs.  */
-#define DBX_DEBUGGING_INFO 1
-
-/* Acorn dbx moans about continuation chars, so don't use any.  */
-#ifndef DBX_CONTIN_LENGTH
-#define DBX_CONTIN_LENGTH  0
 #endif
 
 /* Output a function label definition.  */

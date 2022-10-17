@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,15 +29,27 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
 with System.Case_Util; use System.Case_Util;
 
-package body System.Val_Util is
+package body System.Val_Util
+  with SPARK_Mode
+is
 
    ---------------
    -- Bad_Value --
    ---------------
 
    procedure Bad_Value (S : String) is
+      pragma Annotate (GNATprove, Intentional, "exception might be raised",
+                       "Intentional exception from Bad_Value");
    begin
       --  Bad_Value might be called with very long strings allocated on the
       --  heap. Limit the size of the message so that we avoid creating a
@@ -49,6 +61,44 @@ package body System.Val_Util is
          raise Constraint_Error with "bad input for 'Value: """ & S & '"';
       end if;
    end Bad_Value;
+
+   ---------------------------
+   -- First_Non_Space_Ghost --
+   ---------------------------
+
+   function First_Non_Space_Ghost
+     (S        : String;
+      From, To : Integer) return Positive
+   is
+   begin
+      for J in From .. To loop
+         if S (J) /= ' ' then
+            return J;
+         end if;
+
+         pragma Loop_Invariant (for all K in From .. J => S (K) = ' ');
+      end loop;
+
+      raise Program_Error;
+   end First_Non_Space_Ghost;
+
+   -----------------------
+   -- Last_Number_Ghost --
+   -----------------------
+
+   function Last_Number_Ghost (Str : String) return Positive is
+   begin
+      for J in Str'Range loop
+         if Str (J) not in '0' .. '9' | '_' then
+            return J - 1;
+         end if;
+
+         pragma Loop_Invariant
+           (for all K in Str'First .. J => Str (K) in '0' .. '9' | '_');
+      end loop;
+
+      return Str'Last;
+   end Last_Number_Ghost;
 
    ----------------------
    -- Normalize_String --
@@ -62,21 +112,33 @@ package body System.Val_Util is
       F := S'First;
       L := S'Last;
 
+      --  Case of empty string
+
+      if F > L then
+         return;
+      end if;
+
       --  Scan for leading spaces
 
-      while F <= L and then S (F) = ' ' loop
+      while F < L and then S (F) = ' ' loop
+         pragma Loop_Invariant (F in S'First .. L - 1);
+         pragma Loop_Invariant (for all J in S'First .. F => S (J) = ' ');
          F := F + 1;
       end loop;
 
-      --  Case of no nonspace characters found
+      --  Case of no nonspace characters found. Decrease L to ensure L < F
+      --  without risking an overflow if F is Integer'Last.
 
-      if F > L then
+      if S (F) = ' ' then
+         L := L - 1;
          return;
       end if;
 
       --  Scan for trailing spaces
 
       while S (L) = ' ' loop
+         pragma Loop_Invariant (L in F + 1 .. S'Last);
+         pragma Loop_Invariant (for all J in L .. S'Last => S (J) = ' ');
          L := L - 1;
       end loop;
 
@@ -85,6 +147,8 @@ package body System.Val_Util is
       if S (F) /= ''' then
          for J in F .. L loop
             S (J) := To_Upper (S (J));
+            pragma Loop_Invariant
+              (for all K in F .. J => S (K) = To_Upper (S'Loop_Entry (K)));
          end loop;
       end if;
    end Normalize_String;
@@ -93,13 +157,14 @@ package body System.Val_Util is
    -- Scan_Exponent --
    -------------------
 
-   function Scan_Exponent
+   procedure Scan_Exponent
      (Str  : String;
       Ptr  : not null access Integer;
       Max  : Integer;
-      Real : Boolean := False) return Integer
+      Exp  : out Integer;
+      Real : Boolean := False)
    is
-      P : Natural := Ptr.all;
+      P : Integer := Ptr.all;
       M : Boolean;
       X : Integer;
 
@@ -107,8 +172,12 @@ package body System.Val_Util is
       if P >= Max
         or else (Str (P) /= 'E' and then Str (P) /= 'e')
       then
-         return 0;
+         Exp := 0;
+         return;
       end if;
+      pragma Annotate
+        (CodePeer, False_Positive, "test always false",
+         "the slice might be empty or not start with an 'e'");
 
       --  We have an E/e, see if sign follows
 
@@ -118,7 +187,8 @@ package body System.Val_Util is
          P := P + 1;
 
          if P > Max then
-            return 0;
+            Exp := 0;
+            return;
          else
             M := False;
          end if;
@@ -127,7 +197,8 @@ package body System.Val_Util is
          P := P + 1;
 
          if P > Max or else not Real then
-            return 0;
+            Exp := 0;
+            return;
          else
             M := True;
          end if;
@@ -137,7 +208,8 @@ package body System.Val_Util is
       end if;
 
       if Str (P) not in '0' .. '9' then
-         return 0;
+         Exp := 0;
+         return;
       end if;
 
       --  Scan out the exponent value as an unsigned integer. Values larger
@@ -148,28 +220,47 @@ package body System.Val_Util is
 
       X := 0;
 
-      loop
-         if X < (Integer'Last / 10) then
-            X := X * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
-         end if;
+      declare
+         Rest : constant String := Str (P .. Max) with Ghost;
+         Last : constant Natural := Last_Number_Ghost (Rest) with Ghost;
 
-         P := P + 1;
+      begin
+         pragma Assert (Is_Natural_Format_Ghost (Rest));
 
-         exit when P > Max;
+         loop
+            pragma Assert (Str (P) in '0' .. '9');
 
-         if Str (P) = '_' then
-            Scan_Underscore (Str, P, Ptr, Max, False);
-         else
-            exit when Str (P) not in '0' .. '9';
-         end if;
-      end loop;
+            if X < (Integer'Last / 10) then
+               X := X * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
+            end if;
+
+            pragma Loop_Invariant (X >= 0);
+            pragma Loop_Invariant (P in Rest'First .. Last);
+            pragma Loop_Invariant (Str (P) in '0' .. '9');
+            pragma Loop_Invariant
+              (Scan_Natural_Ghost (Rest, Rest'First, 0)
+               = Scan_Natural_Ghost (Rest, P + 1, X));
+
+            P := P + 1;
+
+            exit when P > Max;
+
+            if Str (P) = '_' then
+               Scan_Underscore (Str, P, Ptr, Max, False);
+            else
+               exit when Str (P) not in '0' .. '9';
+            end if;
+         end loop;
+
+         pragma Assert (P = Last + 1);
+      end;
 
       if M then
          X := -X;
       end if;
 
       Ptr.all := P;
-      return X;
+      Exp := X;
    end Scan_Exponent;
 
    --------------------
@@ -182,7 +273,7 @@ package body System.Val_Util is
       Max   : Integer;
       Start : out Positive)
    is
-      P : Natural := Ptr.all;
+      P : Integer := Ptr.all;
 
    begin
       if P > Max then
@@ -194,6 +285,12 @@ package body System.Val_Util is
       while Str (P) = ' ' loop
          P := P + 1;
 
+         pragma Loop_Invariant (Ptr.all = Ptr.all'Loop_Entry);
+         pragma Loop_Invariant (P in Ptr.all .. Max);
+         pragma Loop_Invariant (for some J in P .. Max => Str (J) /= ' ');
+         pragma Loop_Invariant
+           (for all J in Ptr.all .. P - 1 => Str (J) = ' ');
+
          if P > Max then
             Ptr.all := P;
             Bad_Value (Str);
@@ -201,6 +298,8 @@ package body System.Val_Util is
       end loop;
 
       Start := P;
+
+      pragma Assert (Start = First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Skip past an initial plus sign
 
@@ -227,7 +326,7 @@ package body System.Val_Util is
       Minus : out Boolean;
       Start : out Positive)
    is
-      P : Natural := Ptr.all;
+      P : Integer := Ptr.all;
 
    begin
       --  Deal with case of null string (all blanks). As per spec, we raise
@@ -242,6 +341,12 @@ package body System.Val_Util is
       while Str (P) = ' ' loop
          P := P + 1;
 
+         pragma Loop_Invariant (Ptr.all = Ptr.all'Loop_Entry);
+         pragma Loop_Invariant (P in Ptr.all .. Max);
+         pragma Loop_Invariant (for some J in P .. Max => Str (J) /= ' ');
+         pragma Loop_Invariant
+           (for all J in Ptr.all .. P - 1 => Str (J) = ' ');
+
          if P > Max then
             Ptr.all := P;
             Bad_Value (Str);
@@ -249,6 +354,8 @@ package body System.Val_Util is
       end loop;
 
       Start := P;
+
+      pragma Assert (Start = First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Remember an initial minus sign
 
@@ -289,6 +396,8 @@ package body System.Val_Util is
          if Str (J) /= ' ' then
             Bad_Value (Str);
          end if;
+
+         pragma Loop_Invariant (for all K in P .. J => Str (K) = ' ');
       end loop;
    end Scan_Trailing_Blanks;
 

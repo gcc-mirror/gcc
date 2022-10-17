@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package Lib is
    --  Type to hold list of indirect references to unit number table
 
    type Compiler_State_Type is (Parsing, Analyzing);
-   Compiler_State : Compiler_State_Type;
+   Compiler_State : Compiler_State_Type := Parsing;
    --  Indicates current state of compilation. This is used to implement the
    --  function In_Extended_Main_Source_Unit.
 
@@ -633,6 +633,12 @@ package Lib is
    function In_Extended_Main_Source_Unit (Loc : Source_Ptr) return Boolean;
    --  Same function as above, but argument is a source pointer
 
+   function ipu (N : Node_Or_Entity_Id) return Boolean;
+   --  Same as In_Predefined_Unit, but renamed so it can assist debugging.
+   --  Otherwise, there is a disambiguous name conflict in the two versions of
+   --  In_Predefined_Unit which makes it inconvient to set as a breakpoint
+   --  condition.
+
    function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean;
    --  Returns True if the given node or entity appears within the source text
    --  of a predefined unit (i.e. within Ada, Interfaces, System or within one
@@ -926,7 +932,9 @@ private
    --  The following table records a mapping between a name and the entry in
    --  the units table whose Unit_Name is this name. It is used to speed up
    --  the Is_Loaded function, whose original implementation (linear search)
-   --  could account for 2% of the time spent in the front end. Note that, in
+   --  could account for 2% of the time spent in the front end. When the unit
+   --  is an instance of a generic, the unit might get duplicated in the unit
+   --  table - see Make_Instance_Unit for more information. Note that, in
    --  the case of source files containing multiple units, the units table may
    --  temporarily contain two entries with the same Unit_Name during parsing,
    --  which means that the mapping must be to the first entry in the table.

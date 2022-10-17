@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,9 +102,12 @@ package Gen_IL.Gen is
 
    procedure Create_Concrete_Node_Type
      (T : Concrete_Node; Parent : Abstract_Type;
-      Fields : Field_Sequence := No_Fields);
+      Fields : Field_Sequence := No_Fields;
+      Nmake_Assert : String := "");
    --  Create a concrete node type. Every node is an instance of a concrete
-   --  node type.
+   --  node type. Nmake_Assert is an assertion to put in the Make_... function
+   --  in the generated Nmake package. It should be a String that represents a
+   --  Boolean expression.
 
    procedure Create_Root_Entity_Type
      (T : Abstract_Entity;
@@ -151,13 +154,14 @@ package Gen_IL.Gen is
    --  only for syntactic fields. Flag fields of syntactic nodes always have a
    --  default value, which is False unless specified as Default_True. Pre is
    --  an additional precondition for the field getter and setter, in addition
-   --  to the precondition that asserts that the type has that field. Pre_Get
-   --  and Pre_Set are similar to Pre, but for the getter or setter only,
-   --  respectively.
+   --  to the precondition that asserts that the type has that field. It should
+   --  be a String that represents a Boolean expression. Pre_Get and Pre_Set
+   --  are similar to Pre, but for the getter or setter only, respectively.
    --
    --  If multiple calls to these occur for the same Field but different types,
-   --  the Field_Type and Pre must match. Default_Value should match for
-   --  syntactic fields. See the declaration of Type_Only_Enum for Type_Only.
+   --  the Field_Type, Pre, Pre_Get, and Pre_Set must match. Default_Value
+   --  should match for syntactic fields. See the declaration of Type_Only_Enum
+   --  for Type_Only.
    --
    --  (The matching Default_Value requirement is a simplification from the
    --  earlier hand-written version.)
@@ -200,9 +204,22 @@ package Gen_IL.Gen is
    --  Gen_IL.Fields, and delete all occurrences from Gen_IL.Gen.Gen_Entities.
 
    --  If a field is not set, it is initialized by default to whatever value is
-   --  represented by all-zero bits, with two exceptions: Elist fields default
-   --  to No_Elist, and Uint fields default to Uint_0. In retrospect, it would
-   --  have been better to use No_Uint instead of Uint_0.
+   --  represented by all-zero bits, with some exceptions. This means Flags are
+   --  initialized to False, Node_Ids and List_Ids are initialized to Empty,
+   --  and enumeration fields are initialized to 'First of the type (assuming
+   --  there is no representation clause).
+   --
+   --  Elists default to No_Elist.
+   --
+   --  Fields of type Uint (but not its subtypes) are initialized to No_Uint.
+   --  Fields of subtypes Valid_Uint, Unat, Upos, Nonzero_Uint, and Ureal have
+   --  no default; it is an error to call a getter before calling the setter.
+   --  Likewise, other types whose range does not include zero have no default
+   --  (see package Types for the ranges).
+   --
+   --  If a node is created by a function in Nmake, then the defaults are
+   --  different from what is specified above. The parameters of Make_...
+   --  functions can have defaults specified; see Create_Syntactic_Field.
 
    procedure Create_Node_Union_Type
      (T : Abstract_Node; Children : Type_Array);

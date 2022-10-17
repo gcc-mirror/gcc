@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -197,12 +197,29 @@ is
       Count     : Count_Type)
    is
    begin
-      --  In the general case, we pass the buck to Insert, but for efficiency,
-      --  we check for the usual case where Count = 1 and the vector has enough
-      --  room for at least one more element.
+      --  In the general case, we take the slow path; for efficiency,
+      --  we check for the common case where Count = 1 .
 
-      if Count = 1
-        and then Container.Elements /= null
+      if Count = 1 then
+         Append (Container, New_Item);
+      else
+         Append_Slow_Path (Container, New_Item, Count);
+      end if;
+   end Append;
+
+   ------------
+   -- Append --
+   ------------
+
+   procedure Append (Container : in out Vector;
+                     New_Item  :        Element_Type)
+   is
+   begin
+      --  For performance, check for the common special case where the
+      --  container already has room for at least one more element.
+      --  In the general case, pass the buck to Insert.
+
+      if Container.Elements /= null
         and then Container.Last /= Container.Elements.Last
       then
          TC_Check (Container.TC);
@@ -223,21 +240,9 @@ is
             Container.Elements.EA (New_Last) := new Element_Type'(New_Item);
             Container.Last := New_Last;
          end;
-
       else
-         Append_Slow_Path (Container, New_Item, Count);
+         Insert (Container, Last_Index (Container) + 1, New_Item, 1);
       end if;
-   end Append;
-
-   ------------
-   -- Append --
-   ------------
-
-   procedure Append (Container : in out Vector;
-                        New_Item   :        Element_Type)
-   is
-   begin
-      Insert (Container, Last_Index (Container) + 1, New_Item, 1);
    end Append;
 
    ----------------------
@@ -1027,7 +1032,7 @@ is
                              SA (Index_Type'First .. Source.Last);
                   begin
                      TA (Index_Type'First .. J) := Src;
-                     Src := (others => null);
+                     Src := [others => null];
                   end;
 
                   Source.Last := No_Index;
@@ -1472,7 +1477,7 @@ is
                      --  we started by clearing out all of the stale values,
                      --  leaving a "hole" in the middle of the array.
 
-                     E (K .. Index - 1) := (others => null);
+                     E (K .. Index - 1) := [others => null];
                      raise;
                end;
             end if;
@@ -2157,7 +2162,7 @@ is
                end if;
 
                E (Index .. New_Last) := E (Before .. Container.Last);
-               E (Before .. Index - 1) := (others => null);
+               E (Before .. Index - 1) := [others => null];
             end if;
          end;
 

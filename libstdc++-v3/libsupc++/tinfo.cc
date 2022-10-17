@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994-2021 Free Software Foundation, Inc.
+// Copyright (C) 1994-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -32,6 +32,10 @@ std::type_info::
 
 #if !__GXX_TYPEINFO_EQUALITY_INLINE
 
+#if __cplusplus > 202002L
+# error "this file must be compiled with C++20 or older to define operator=="
+#endif
+
 // We can't rely on common symbols being shared between shared objects.
 bool std::type_info::
 operator== (const std::type_info& arg) const _GLIBCXX_NOEXCEPT
@@ -47,6 +51,9 @@ operator== (const std::type_info& arg) const _GLIBCXX_NOEXCEPT
 #endif
 }
 
+bool
+std::type_info::__equal (const std::type_info& arg) const _GLIBCXX_NOEXCEPT
+__attribute__((alias("_ZNKSt9type_infoeqERKS_")));
 #endif
 
 namespace std {

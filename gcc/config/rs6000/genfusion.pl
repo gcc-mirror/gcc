@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # Generate fusion.md
 #
-# Copyright (C) 2020,2021 Free Software Foundation, Inc.
+# Copyright (C) 2020-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,7 +25,7 @@ use strict;
 print <<'EOF';
 ;; Generated automatically by genfusion.pl
 
-;; Copyright (C) 2020,2021 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -118,7 +118,7 @@ sub gen_ld_cmpi_p10
 	  } else {
 	      print "   (set (match_operand:${result} 0 \"gpc_reg_operand\" \"=r\") (${extend}_extend:${result} (match_dup 1)))]\n";
 	  }
-	  print "  \"(TARGET_P10_FUSION && TARGET_P10_FUSION_LD_CMPI)\"\n";
+	  print "  \"(TARGET_P10_FUSION)\"\n";
 	  print "  \"l${ldst}${echr}%X1 %0,%1\\;cmp${cmpl}di %2,%0,%3\"\n";
 	  print "  \"&& reload_completed\n";
 	  print "   && (cc_reg_not_cr0_operand (operands[2], CCmode)\n";
@@ -166,8 +166,8 @@ sub gen_logical_addsubf
 	$outer_op, $outer_comp, $outer_inv, $outer_rtl, $inner, @inner_ops,
 	$inner_comp, $inner_inv, $inner_rtl, $inner_op, $both_commute, $c4,
 	$bc, $inner_arg0, $inner_arg1, $inner_exp, $outer_arg2, $outer_exp,
-	$target_flag, $ftype, $insn, $is_subf, $is_rsubf, $outer_32, $outer_42,
-	$outer_name, $fuse_type);
+	$ftype, $insn, $is_subf, $is_rsubf, $outer_32, $outer_42,$outer_name,
+	$fuse_type);
   KIND: foreach $kind ('scalar','vector') {
       @outer_ops = @logicals;
       if ( $kind eq 'vector' ) {
@@ -199,18 +199,15 @@ sub gen_logical_addsubf
 	$outer_rtl = $rtlop{$outer};
 	@inner_ops = @logicals;
 	$ftype = "logical-logical";
-	$target_flag = "TARGET_P10_FUSION_2LOGICAL";
 	if ( exists $isaddsub{$outer} ) {
 	    @inner_ops = sort keys %logicals_addsub;
 	    $ftype = "logical-add";
-	    $target_flag = "TARGET_P10_FUSION_LOGADD";
 	} elsif ( $kind ne 'vector' && exists $logicals_addsub{$outer} ) {
 	    push (@inner_ops, @addsub);
 	}
       INNER: foreach $inner ( @inner_ops ) {
 	  if ( exists $isaddsub{$inner} ) {
 	      $ftype = "add-logical";
-	      $target_flag = "TARGET_P10_FUSION_ADDLOG";
 	  }
 	  $inner_comp = $complement{$inner};
 	  $inner_inv = $invert{$inner};
@@ -265,8 +262,8 @@ sub gen_logical_addsubf
 (define_insn "*fuse_${inner_op}_${outer_name}"
   [(set (match_operand:${mode} 3 "${pred}" "=&0,&1,&${constraint},${constraint}")
         ${outer_exp})
-   (clobber (match_scratch:${mode} 4 "=X,X,X,&r"))]
-  "(TARGET_P10_FUSION && $target_flag)"
+   (clobber (match_scratch:${mode} 4 "=X,X,X,&${constraint}"))]
+  "(TARGET_P10_FUSION)"
   "@
    ${inner_op} %3,%1,%0\\;${outer_op} %3,${outer_32}
    ${inner_op} %3,%1,%0\\;${outer_op} %3,${outer_32}
@@ -313,7 +310,7 @@ sub gen_addadd
                      (match_operand:${mode} 1 "${pred}" "%${c4}"))
            (match_operand:${mode} 2 "${pred}" "${c4}")))
    (clobber (match_scratch:${mode} 4 "=X,X,X,&${constraint}"))]
-  "(TARGET_P10_FUSION && TARGET_P10_FUSION_2ADD)"
+  "(TARGET_P10_FUSION)"
   "@
    ${op} %3,%1,%0\\;${op} %3,%3,%2
    ${op} %3,%1,%0\\;${op} %3,%3,%2

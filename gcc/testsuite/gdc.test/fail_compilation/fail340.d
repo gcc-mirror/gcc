@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail340.d(18): Error: variable fail340.w of type struct const(CopyTest) uses this(this), which is not allowed in static initialization
-fail_compilation/fail340.d(19):        while evaluating: `static assert(w.x == 55.0000)`
+fail_compilation/fail340.d(18): Error: variable `fail340.w` of type struct `const(CopyTest)` uses `this(this)`, which is not allowed in static initialization
+fail_compilation/fail340.d(19):        while evaluating: `static assert(w.x == 55.0)`
 ---
 */
 

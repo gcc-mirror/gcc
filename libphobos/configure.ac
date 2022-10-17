@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-# Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# Copyright (C) 2006-2022 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -189,18 +189,6 @@ AC_MSG_CHECKING([for host support for libphobos])
 . ${srcdir}/configure.tgt
 case ${host} in
   x86_64-*-solaris2.* | i?86-*-solaris2.*)
-    # libphobos doesn't compile with the Solaris/x86 assembler due to a
-    # relatively low linelength limit.
-    as_prog=`$CC -print-prog-name=as`
-    if test -n "$as_prog" && $as_prog -v /dev/null 2>&1 | grep GNU > /dev/null 2>&1; then
-      druntime_cv_use_gas=yes;
-    else
-      druntime_cv_use_gas=no;
-    fi
-    rm -f a.out
-    if test x$druntime_cv_use_gas = xno; then
-      LIBPHOBOS_SUPPORTED=no
-    fi
     # 64-bit D execution fails with Solaris ld without -z relax=transtls support.
     if test "$druntime_ld_gld" = "no" && test "$druntime_ld_relax_transtls" = "no"; then
       LIBPHOBOS_SUPPORTED=no
@@ -265,7 +253,7 @@ SPEC_PHOBOS_DEPS="$LIBS"
 AC_SUBST(SPEC_PHOBOS_DEPS)
 
 # Libdruntime / phobos soname version
-libtool_VERSION=2:0:0
+libtool_VERSION=4:0:0
 AC_SUBST(libtool_VERSION)
 
 # Set default flags (after DRUNTIME_WERROR!)

@@ -1,4 +1,4 @@
-c { dg-additional-options "-std=legacy" }
+c { dg-additional-options "-std=legacy -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-too-complex" }
 
       SUBROUTINE PPADD (A, C, BH)
 

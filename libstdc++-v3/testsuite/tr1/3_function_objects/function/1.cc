@@ -1,6 +1,6 @@
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,6 +73,7 @@ void test01()
     }
   VERIFY( thrown );
 
+#if __cpp_rtti
   // target_type returns typeid(void)
   VERIFY( f1.target_type() == typeid(void) );
 
@@ -83,6 +84,7 @@ void test01()
   const function<int(float)>& f1c = f1;
   VERIFY( f1c.target<int (*)(float)>() == 0 );
   VERIFY( !f1c );
+#endif
 }
 
 int main()

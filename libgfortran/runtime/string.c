@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -23,6 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
+#include <assert.h>
 #include <string.h>
 #include <strings.h>
 
@@ -169,21 +170,54 @@ find_option (st_parameter_common *cmp, const char *s1, gfc_charlen_type s1_len,
 }
 
 
-/* gfc_itoa()-- Integer to decimal conversion.
-   The itoa function is a widespread non-standard extension to
-   standard C, often declared in <stdlib.h>.  Even though the itoa
-   defined here is a static function we take care not to conflict with
-   any prior non-static declaration.  Hence the 'gfc_' prefix, which
-   is normally reserved for functions with external linkage.  Notably,
-   in contrast to the *printf() family of functions, this ought to be
-   async-signal-safe.  */
+/* Fast helper function for a positive value that fits in uint64_t.  */
+
+static inline char *
+itoa64 (uint64_t n, char *p)
+{
+  while (n != 0)
+    {
+      *--p = '0' + (n % 10);
+      n /= 10;
+    }
+  return p;
+}
+
+
+#if defined(HAVE_GFC_INTEGER_16)
+# define TEN19 ((GFC_UINTEGER_LARGEST) 1000000 * (GFC_UINTEGER_LARGEST) 1000000 * (GFC_UINTEGER_LARGEST) 10000000)
+
+/* Same as itoa64(), with zero padding of 19 digits.  */
+
+static inline char *
+itoa64_pad19 (uint64_t n, char *p)
+{
+  for (int k = 0; k < 19; k++)
+    {
+      *--p = '0' + (n % 10);
+      n /= 10;
+    }
+  return p;
+}
+#endif
+
+
+/* Integer to decimal conversion.
+
+   This function is much more restricted than the widespread (but
+   non-standard) itoa() function.  This version has the following
+   characteristics:
+
+     - it takes only non-negative arguments
+     - it is async-signal-safe (we use it runtime/backtrace.c)
+     - it works in base 10 (see xtoa, otoa, btoa functions
+       in io/write.c for other radices)
+ */
 
 const char *
-gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
+gfc_itoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 {
-  int negative;
   char *p;
-  GFC_UINTEGER_LARGEST t;
 
   if (len < GFC_ITOA_BUF_SIZE)
     sys_abort ();
@@ -191,24 +225,37 @@ gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
   if (n == 0)
     return "0";
 
-  negative = 0;
-  t = n;
-  if (n < 0)
-    {
-      negative = 1;
-      t = -(GFC_UINTEGER_LARGEST) n;  /* Must use unsigned to protect from overflow. */
-    }
-
   p = buffer + GFC_ITOA_BUF_SIZE - 1;
   *p = '\0';
 
-  while (t != 0)
-    {
-      *--p = '0' + (t % 10);
-      t /= 10;
-    }
+#if defined(HAVE_GFC_INTEGER_16)
+  /* On targets that have a 128-bit integer type, division in that type
+     is slow, because it occurs through a function call. We avoid that.  */
 
-  if (negative)
-    *--p = '-';
-  return p;
+  if (n <= UINT64_MAX)
+    /* If the value fits in uint64_t, use the fast function. */
+    return itoa64 (n, p);
+  else
+    {
+      /* Otherwise, break down into smaller bits by division. Two calls to
+	 the uint64_t function are not sufficient for all 128-bit unsigned
+	 integers (we would need three calls), but they do suffice for all
+	 values up to 2^127, which is the largest that Fortran can produce
+	 (-HUGE(0_16)-1) with its signed integer types.  */
+      _Static_assert (sizeof(GFC_UINTEGER_LARGEST) <= 2 * sizeof(uint64_t),
+		      "integer too large");
+
+      GFC_UINTEGER_LARGEST r;
+      r = n % TEN19;
+      n = n / TEN19;
+      assert (r <= UINT64_MAX);
+      p = itoa64_pad19 (r, p);
+
+      assert(n <= UINT64_MAX);
+      return itoa64 (n, p);
+    }
+#else
+  /* On targets where the largest integer is 64-bit, just use that.  */
+  return itoa64 (n, p);
+#endif
 }

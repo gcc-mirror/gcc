@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,6 @@ package body Targparm is
       D32,  --   Duration_32_Bits
       DEN,  --   Denorm
       EXS,  --   Exit_Status_Supported
-      FEX,  --   Frontend_Exceptions
       MOV,  --   Machine_Overflows
       MRN,  --   Machine_Rounds
       PAS,  --   Preallocated_Stacks
@@ -79,7 +78,6 @@ package body Targparm is
    D32_Str : aliased constant Source_Buffer := "Duration_32_Bits";
    DEN_Str : aliased constant Source_Buffer := "Denorm";
    EXS_Str : aliased constant Source_Buffer := "Exit_Status_Supported";
-   FEX_Str : aliased constant Source_Buffer := "Frontend_Exceptions";
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
    MRN_Str : aliased constant Source_Buffer := "Machine_Rounds";
    PAS_Str : aliased constant Source_Buffer := "Preallocated_Stacks";
@@ -110,7 +108,6 @@ package body Targparm is
       D32 => D32_Str'Access,
       DEN => DEN_Str'Access,
       EXS => EXS_Str'Access,
-      FEX => FEX_Str'Access,
       MOV => MOV_Str'Access,
       MRN => MRN_Str'Access,
       PAS => PAS_Str'Access,
@@ -157,15 +154,12 @@ package body Targparm is
          return;
       end if;
 
-      Name_Buffer (1 .. 10) := "system.ads";
-      Name_Len := 10;
-
-      Read_Source_File (Name_Find, 0, Hi, Text, FD);
+      Read_Source_File (Name_Find ("system.ads"), 0, Hi, Text, FD);
 
       if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
 
-         if FD = Null_FD then
+         if FD = Osint.Null_FD then
             Write_Line ("cannot locate file system.ads");
          else
             Write_Line ("no read access for file system.ads");
@@ -803,7 +797,6 @@ package body Targparm is
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
-                     when FEX => Frontend_Exceptions_On_Target       := Result;
                      when MOV => Machine_Overflows_On_Target         := Result;
                      when MRN => Machine_Rounds_On_Target            := Result;
                      when PAS => Preallocated_Stacks_On_Target       := Result;

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build linux,arm64 linux,riscv,riscv64
+//go:build (linux && arm64) || (linux && riscv) || (linux && riscv64)
+// +build linux,arm64 linux,riscv linux,riscv64
 
 package main
 

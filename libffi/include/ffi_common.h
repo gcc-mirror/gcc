@@ -5,6 +5,27 @@
                   
    Common internal definitions and macros. Only necessary for building
    libffi.
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation
+   files (the ``Software''), to deal in the Software without
+   restriction, including without limitation the rights to use, copy,
+   modify, merge, publish, distribute, sublicense, and/or sell copies
+   of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+   HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
    ----------------------------------------------------------------------- */
 
 #ifndef FFI_COMMON_H
@@ -74,13 +95,38 @@ void ffi_type_test(ffi_type *a, char *file, int line);
 #define FFI_ASSERT_VALID_TYPE(x)
 #endif
 
-#define ALIGN(v, a)  (((((size_t) (v))-1) | ((a)-1))+1)
-#define ALIGN_DOWN(v, a) (((size_t) (v)) & -a)
+/* v cast to size_t and aligned up to a multiple of a */
+#define FFI_ALIGN(v, a)  (((((size_t) (v))-1) | ((a)-1))+1)
+/* v cast to size_t and aligned down to a multiple of a */
+#define FFI_ALIGN_DOWN(v, a) (((size_t) (v)) & -a)
 
 /* Perform machine dependent cif processing */
 ffi_status ffi_prep_cif_machdep(ffi_cif *cif);
 ffi_status ffi_prep_cif_machdep_var(ffi_cif *cif,
 	 unsigned int nfixedargs, unsigned int ntotalargs);
+
+
+#if HAVE_LONG_DOUBLE_VARIANT
+/* Used to adjust size/alignment of ffi types.  */
+void ffi_prep_types (ffi_abi abi);
+#endif
+
+/* Used internally, but overridden by some architectures */
+ffi_status ffi_prep_cif_core(ffi_cif *cif,
+			     ffi_abi abi,
+			     unsigned int isvariadic,
+			     unsigned int nfixedargs,
+			     unsigned int ntotalargs,
+			     ffi_type *rtype,
+			     ffi_type **atypes);
+
+/* Translate a data pointer to a code pointer.  Needed for closures on
+   some targets.  */
+void *ffi_data_to_code_pointer (void *data) FFI_HIDDEN;
+
+/* The arch code calls this to determine if a given closure has a
+   static trampoline. */
+int ffi_tramp_is_present (void *closure) FFI_HIDDEN;
 
 /* Extended cif, used in callback from assembly routine */
 typedef struct

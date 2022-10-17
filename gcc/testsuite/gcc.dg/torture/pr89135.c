@@ -28,7 +28,7 @@ h:
 	  g = foo ();
 	  *o = g;
 	  if (c)
-	    goto *d;
+	    goto *(void*)d;
 	}
     }
   goto *i;

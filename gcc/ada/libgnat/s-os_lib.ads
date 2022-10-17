@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,9 +48,6 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.OS_Lib (file g-os_lib.ads).
 
-pragma Compiler_Unit_Warning;
-
-with System;
 with System.Strings;
 
 package System.OS_Lib is
@@ -168,12 +165,16 @@ package System.OS_Lib is
    -- Time_t Stuff --
    ------------------
 
-   --  Note: Do not use time_t in the compiler and host based tools,
-   --  instead use OS_Time. These 3 declarations are indended for use only
-   --  by consumers of the GNAT.OS_Lib renaming of this package.
+   --  Note: Do not use time_t in the compiler and host-based tools; instead
+   --  use OS_Time.
 
-   subtype time_t is Long_Integer;
-   --  C time_t type of the time representation
+   subtype time_t is Long_Long_Integer;
+   --  C time_t can be either long or long long, so we choose the Ada
+   --  equivalent of the latter because eventually that will be the
+   --  type used out of necessity. This may affect some user code on 32-bit
+   --  targets that have not yet migrated to the Posix 2008 standard,
+   --  particularly pre version 5 32-bit Linux. Do not change this
+   --  declaration without coordinating it with conversions in Ada.Calendar.
 
    function To_C (Time : OS_Time) return time_t;
    --  Convert OS_Time to C time_t type

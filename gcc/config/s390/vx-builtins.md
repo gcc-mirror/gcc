@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility builtins.
-;;  Copyright (C) 2015-2021 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2022 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -22,7 +22,7 @@
 
 (define_mode_iterator V_HW_32_64 [V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VI_HW_SD [V4SI V2DI])
-(define_mode_iterator V_HW_4 [V4SI V4SF])
+
 ; Full size vector modes with more than one element which are directly supported in vector registers by the hardware.
 (define_mode_iterator VEC_HW  [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VECF_HW [(V4SF "TARGET_VXE") V2DF])
@@ -232,28 +232,27 @@
   [(set_attr "op_type" "VRS,VRX,VSI")])
 
 
-; FIXME: The following two patterns might using vec_merge. But what is
-; the canonical form: (vec_select (vec_merge op0 op1)) or (vec_merge
-; (vec_select op0) (vec_select op1)
 ; vmrhb, vmrhh, vmrhf, vmrhg
-(define_insn "vec_mergeh<mode>"
-  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
-	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
-			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
-		       UNSPEC_VEC_MERGEH))]
+(define_expand "vec_mergeh<mode>"
+  [(match_operand:V_128_NOSINGLE 0 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 1 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 2 "register_operand" "")]
   "TARGET_VX"
-  "vmrh<bhfgq>\t%v0,%1,%2"
-  [(set_attr "op_type" "VRR")])
+{
+  s390_expand_merge (operands[0], operands[1], operands[2], true);
+  DONE;
+})
 
 ; vmrlb, vmrlh, vmrlf, vmrlg
-(define_insn "vec_mergel<mode>"
-  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
-	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
-			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
-		     UNSPEC_VEC_MERGEL))]
+(define_expand "vec_mergel<mode>"
+  [(match_operand:V_128_NOSINGLE 0 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 1 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 2 "register_operand" "")]
   "TARGET_VX"
-  "vmrl<bhfgq>\t%v0,%1,%2"
-  [(set_attr "op_type" "VRR")])
+{
+  s390_expand_merge (operands[0], operands[1], operands[2], false);
+  DONE;
+})
 
 
 ; Vector pack
@@ -404,27 +403,21 @@
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
+; Incoming op3 is in vec_permi format and will we turned into a
+; permute vector consisting of op3 and op4.
 (define_expand "vec_permi<mode>"
-  [(set (match_operand:V_HW_64                  0 "register_operand"   "")
-	(unspec:V_HW_64 [(match_operand:V_HW_64 1 "register_operand"   "")
-			 (match_operand:V_HW_64 2 "register_operand"   "")
-			 (match_operand:QI      3 "const_mask_operand" "")]
-			UNSPEC_VEC_PERMI))]
+  [(set (match_operand:V_HW_2   0 "register_operand" "")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand" "")
+	  (match_operand:V_HW_2 2 "register_operand" ""))
+	 (parallel [(match_operand:QI 3 "const_mask_operand" "") (match_dup 4)])))]
   "TARGET_VX"
 {
   HOST_WIDE_INT val = INTVAL (operands[3]);
-  operands[3] = GEN_INT ((val & 1) | (val & 2) << 1);
+  operands[3] = GEN_INT ((val & 2) >> 1);
+  operands[4] = GEN_INT ((val & 1) + 2);
 })
-
-(define_insn "*vec_permi<mode>"
-  [(set (match_operand:V_HW_64                  0 "register_operand"  "=v")
-	(unspec:V_HW_64 [(match_operand:V_HW_64 1 "register_operand"   "v")
-			 (match_operand:V_HW_64 2 "register_operand"   "v")
-			 (match_operand:QI      3 "const_mask_operand" "C")]
-			UNSPEC_VEC_PERMI))]
-  "TARGET_VX && (UINTVAL (operands[3]) & 10) == 0"
-  "vpdi\t%v0,%v1,%v2,%b3"
-  [(set_attr "op_type" "VRR")])
 
 
 ; Vector replicate
@@ -447,42 +440,45 @@
 (define_insn "vec_scatter_element<V_HW_4:mode>_DI"
   [(set (mem:<non_vec>
 	 (plus:DI (zero_extend:DI
-		   (unspec:SI [(match_operand:V4SI 1 "register_operand"   "v")
-			       (match_operand:QI   3 "const_mask_operand" "C")]
-			      UNSPEC_VEC_EXTRACT))
-		  (match_operand:SI                2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_4          0 "register_operand"   "v")
-			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
+		   (vec_select:SI
+		    (match_operand:V4SI           1 "register_operand"   "v")
+		    (parallel [(match_operand:QI  3 "const_mask_operand" "C")])))
+	  (match_operand:SI                       2 "address_operand"    "ZQ")))
+	(vec_select:<non_vec>
+	 (match_operand:V_HW_4                    0 "register_operand"   "v")
+	 (parallel [(match_dup 3)])))]
   "TARGET_VX && TARGET_64BIT && UINTVAL (operands[3]) < 4"
   "vscef\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
 
 ; A 31 bit target address is generated from 64 bit elements
 ; vsceg
-(define_insn "vec_scatter_element<V_HW_64:mode>_SI"
+(define_insn "vec_scatter_element<V_HW_2:mode>_SI"
   [(set (mem:<non_vec>
 	 (plus:SI (subreg:SI
-		   (unspec:<non_vec_int> [(match_operand:V_HW_64 1 "register_operand"   "v")
-					  (match_operand:QI      3 "const_mask_operand" "C")]
-					 UNSPEC_VEC_EXTRACT) 4)
-		  (match_operand:SI                              2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_64                0 "register_operand"   "v")
-			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
-  "TARGET_VX && !TARGET_64BIT && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_64:MODE>mode)"
-  "vsce<V_HW_64:bhfgq>\t%v0,%O2(%v1,%R2),%3"
+		   (vec_select:<non_vec_int>
+		    (match_operand:<TOINTVEC>     1 "register_operand"   "v")
+		    (parallel [(match_operand:QI  3 "const_mask_operand" "C")])) 4)
+	  (match_operand:SI                       2 "address_operand"    "ZQ")))
+    (vec_select:<non_vec>
+     (match_operand:V_HW_2                        0 "register_operand"   "v")
+     (parallel [(match_dup 3)])))]
+  "TARGET_VX && !TARGET_64BIT && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_2:MODE>mode)"
+  "vsce<V_HW_2:bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
 
 ; Element size and target address size is the same
 ; vscef, vsceg
 (define_insn "vec_scatter_element<mode>_<non_vec_int>"
   [(set (mem:<non_vec>
-	 (plus:<non_vec_int> (unspec:<non_vec_int>
-			      [(match_operand:<TOINTVEC> 1 "register_operand"   "v")
-			       (match_operand:QI         3 "const_mask_operand" "C")]
-			      UNSPEC_VEC_EXTRACT)
-			     (match_operand:DI           2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_32_64     0 "register_operand"   "v")
-			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
+	 (plus:<non_vec_int>
+	  (vec_select:<non_vec_int>
+	   (match_operand:<TOINTVEC>      1 "register_operand"   "v")
+	    (parallel [(match_operand:QI  3 "const_mask_operand" "C")]))
+	  (match_operand:DI               2 "address_operand"   "ZQ")))
+	(vec_select:<non_vec>
+	 (match_operand:V_HW_32_64        0 "register_operand"   "v")
+	 (parallel [(match_dup 3)])))]
   "TARGET_VX && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_32_64:MODE>mode)"
   "vsce<bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
@@ -521,15 +517,15 @@
 ; implemented as: op0 = (op1 & op3) | (op2 & ~op3)
 
 ; Used to expand the vec_sel builtin. Operands op1 and op2 already got
-; swapped in s390-c.c when we get here.
+; swapped in s390-c.cc when we get here.
 
 (define_insn "vsel<mode>"
-  [(set (match_operand:V_HW                      0 "register_operand" "=v")
-	(ior:V_HW
-	 (and:V_HW (match_operand:V_HW           1 "register_operand"  "v")
-		   (match_operand:V_HW           3 "register_operand"  "v"))
-	 (and:V_HW (not:V_HW (match_dup 3))
-		   (match_operand:V_HW           2 "register_operand"  "v"))))]
+  [(set (match_operand:V_HW_FT               0 "register_operand" "=v")
+	(ior:V_HW_FT
+	 (and:V_HW_FT (match_operand:V_HW_FT 1 "register_operand"  "v")
+		      (match_operand:V_HW_FT 3 "register_operand"  "v"))
+	 (and:V_HW_FT (not:V_HW_FT (match_dup 3))
+		      (match_operand:V_HW_FT 2 "register_operand"  "v"))))]
   "TARGET_VX"
   "vsel\t%v0,%1,%2,%3"
   [(set_attr "op_type" "VRR")])
@@ -1373,32 +1369,6 @@
 
 ; Vector find element equal
 
-; vfeebs, vfeehs, vfeefs
-; vfeezbs, vfeezhs, vfeezfs
-(define_insn "*vfees<mode>"
-  [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
-			   (match_operand:QI 3 "const_mask_operand" "C")]
-			  UNSPEC_VEC_VFEE))
-   (set (reg:CCRAW CC_REGNUM)
-	(unspec:CCRAW [(match_dup 1)
-		       (match_dup 2)
-		       (match_dup 3)]
-		      UNSPEC_VEC_VFEECC))]
-  "TARGET_VX"
-{
-  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
-
-  gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
-  flags &= ~VSTRING_FLAG_CS;
-
-  if (flags == VSTRING_FLAG_ZS)
-    return "vfeez<bhfgq>s\t%v0,%v1,%v2";
-  return "vfee<bhfgq>s\t%v0,%v1,%v2,%b3";
-}
-  [(set_attr "op_type" "VRR")])
-
 ; vfeeb, vfeeh, vfeef
 (define_insn "vfee<mode>"
   [(set (match_operand:VI_HW_QHS                    0 "register_operand" "=v")
@@ -1922,9 +1892,11 @@
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VFLR))
    (set (match_operand:SF 1 "memory_operand" "")
-	(unspec:SF [(match_dup 2) (const_int 0)] UNSPEC_VEC_EXTRACT))
+	(vec_select:SF (match_dup 2)
+	 (parallel [(const_int 0)])))
    (set (match_dup 3)
-	(unspec:SF [(match_dup 2) (const_int 2)] UNSPEC_VEC_EXTRACT))]
+	(vec_select:SF (match_dup 2)
+	 (parallel [(const_int 2)])))]
   "TARGET_VX"
 {
   operands[2] = gen_reg_rtx (V4SFmode);
@@ -2214,6 +2186,68 @@
    vster<bhfgq>\t%v1,%v0"
   [(set_attr "op_type" "*,VRX,VRX")])
 
+; The emulation pattern below will also accept
+;  vst (eltswap (vl))
+; i.e. both operands in memory, which reload needs to fix.
+; Split into
+;  vl
+;  vster (=vst (eltswap))
+; since we prefer vster over vler as long as the latter
+; does not support alignment hints.
+(define_split
+  [(set (match_operand:VEC_HW                 0 "memory_operand" "")
+	(unspec:VEC_HW [(match_operand:VEC_HW 1 "memory_operand" "")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VXE2 && can_create_pseudo_p ()"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0)
+	(unspec:VEC_HW [(match_dup 2)] UNSPEC_VEC_ELTSWAP))]
+{
+  operands[2] = gen_reg_rtx (<MODE>mode);
+})
+
+
+; Swapping v2df/v2di can be done via vpdi on z13 and z14.
+(define_split
+  [(set (match_operand:V_HW_2                 0 "register_operand" "")
+	(unspec:V_HW_2 [(match_operand:V_HW_2 1 "register_operand" "")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VX && can_create_pseudo_p ()"
+  [(set (match_operand:V_HW_2     0 "register_operand" "=v")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand"  "v")
+	  (match_dup 1))
+	 (parallel [(const_int 1) (const_int 2)])))]
+)
+
+
+; Swapping v4df/v4si can be done via vpdi and rot.
+(define_split
+  [(set (match_operand:V_HW_4                 0 "register_operand" "")
+	(unspec:V_HW_4 [(match_operand:V_HW_4 1 "register_operand" "")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VX && can_create_pseudo_p ()"
+  [(set (match_dup 2)
+	(vec_select:V_HW_4
+	 (vec_concat:<vec_2x_nelts>
+	  (match_dup 1)
+	  (match_dup 1))
+	 (parallel [(const_int 2) (const_int 3) (const_int 4) (const_int 5)])))
+ (set (match_dup 3)
+  (subreg:V2DI (match_dup 2) 0))
+ (set (match_dup 4)
+  (rotate:V2DI
+   (match_dup 3)
+   (const_int 32)))
+ (set (match_operand:V_HW_4 0)
+  (subreg:V_HW_4 (match_dup 4) 0))]
+{
+  operands[2] = gen_reg_rtx (<MODE>mode);
+  operands[3] = gen_reg_rtx (V2DImode);
+  operands[4] = gen_reg_rtx (V2DImode);
+})
+
 ; z15 has instructions for doing element reversal from mem to reg
 ; or the other way around.  For reg to reg or on pre z15 machines
 ; we have to emulate it with vector permute.
@@ -2292,10 +2326,10 @@
 ; *a = vec_revb (b)[1];                            get-element-bswap-4.c
 ; vstebrh, vstebrf, vstebrg
 (define_insn "*vec_extract_bswap_vec<mode>"
-  [(set (match_operand:<non_vec>                                    0 "memory_operand"   "=R")
-	(unspec:<non_vec> [(bswap:V_HW_HSD (match_operand:V_HW_HSD  1 "register_operand"  "v"))
-			   (match_operand:SI                        2 "const_int_operand" "C")]
-			   UNSPEC_VEC_EXTRACT))]
+  [(set (match_operand:<non_vec>                  0 "memory_operand"   "=R")
+	(vec_select:<non_vec>
+	 (bswap:V_HW_HSD (match_operand:V_HW_HSD  1 "register_operand"  "v"))
+	 (parallel [(match_operand:SI             2 "const_int_operand" "C")])))]
   "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
   "vstebr<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRX")])
@@ -2304,11 +2338,11 @@
 ; *a = __builtin_bswap32 (b[1]);                   get-element-bswap-2.c
 ; vstebrh, vstebrf, vstebrg
 (define_insn "*vec_extract_bswap_elem<mode>"
-  [(set (match_operand:<non_vec>                     0 "memory_operand"   "=R")
+  [(set (match_operand:<non_vec>                  0 "memory_operand"   "=R")
 	(bswap:<non_vec>
-	 (unspec:<non_vec> [(match_operand:V_HW_HSD  1 "register_operand"  "v")
-			    (match_operand:SI        2 "const_int_operand" "C")]
-			   UNSPEC_VEC_EXTRACT)))]
+	 (vec_select:<non_vec>
+	  (match_operand:V_HW_HSD                 1 "register_operand"  "v")
+	  (parallel [(match_operand:SI            2 "const_int_operand" "C")]))))]
   "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
   "vstebr<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRX")])

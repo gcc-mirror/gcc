@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,7 @@ with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch8;        use Sem_Ch8;
+with Sem_Cat;        use Sem_Cat;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
@@ -84,7 +85,7 @@ package body Checks is
    --  such as Apply_Scalar_Range_Check that do not insert any code can be
    --  safely called even when the Expander is inactive (but Errors_Detected
    --  is 0). The benefit of executing this code when expansion is off, is
-   --  the ability to emit constraint error warning for static expressions
+   --  the ability to emit constraint error warnings for static expressions
    --  even when we are not generating code.
 
    --  The above is modified in gnatprove mode to ensure that proper check
@@ -846,7 +847,7 @@ package body Checks is
             else
                Error_Msg_N
                  ("\address value may be incompatible with alignment of "
-                  & "object?X?", AC);
+                  & "object?.x?", AC);
             end if;
          end if;
 
@@ -1236,9 +1237,14 @@ package body Checks is
          --  ops, but if they appear in an assignment or similar contexts
          --  there is no overflow check that starts from that parent node,
          --  so apply check now.
+         --  Similarly, if these expressions are nested, we should go on.
 
          if Nkind (P) in N_If_Expression | N_Case_Expression
            and then not Is_Signed_Integer_Arithmetic_Op (Parent (P))
+         then
+            null;
+         elsif Nkind (P) in N_If_Expression | N_Case_Expression
+            and then Nkind (Op) in N_If_Expression | N_Case_Expression
          then
             null;
          else
@@ -1387,6 +1393,8 @@ package body Checks is
 
          if Nkind (N) = N_Aggregate
            and then No (Expressions (N))
+           and then Nkind (First (Component_Associations (N))) =
+             N_Component_Association
            and then Nkind
             (First (Choices (First (Component_Associations (N)))))
               = N_Others_Choice
@@ -2170,7 +2178,7 @@ package body Checks is
          Lo_OK := (Ifirst > 0);
 
       else
-         Lo := Machine (Expr_Type, UR_From_Uint (Ifirst), Round_Even, Expr);
+         Lo := Machine_Number (Expr_Type, UR_From_Uint (Ifirst), Expr);
          Lo_OK := (Lo >= UR_From_Uint (Ifirst));
       end if;
 
@@ -2213,7 +2221,7 @@ package body Checks is
          Hi := UR_From_Uint (Ilast) + Ureal_Half;
          Hi_OK := (Ilast < 0);
       else
-         Hi := Machine (Expr_Type, UR_From_Uint (Ilast), Round_Even, Expr);
+         Hi := Machine_Number (Expr_Type, UR_From_Uint (Ilast), Expr);
          Hi_OK := (Hi <= UR_From_Uint (Ilast));
       end if;
 
@@ -2289,6 +2297,15 @@ package body Checks is
       Assign : constant Node_Id := Parent (Target);
 
    begin
+      --  Do not apply length checks if parent is still an assignment statement
+      --  with Suppress_Assignment_Checks flag set.
+
+      if Nkind (Assign) = N_Assignment_Statement
+        and then Suppress_Assignment_Checks (Assign)
+      then
+         return;
+      end if;
+
       --  No check is needed for the initialization of an object whose
       --  nominal subtype is unconstrained.
 
@@ -2936,14 +2953,28 @@ package body Checks is
 
          --  Similarly, if the expression is an aggregate in an object
          --  declaration, apply it to the object after the declaration.
-         --  This is only necessary in rare cases of tagged extensions
-         --  initialized with an aggregate with an "others => <>" clause.
+
+         --  This is only necessary in cases of tagged extensions
+         --  initialized with an aggregate with an "others => <>" clause,
+         --  when the subtypes of LHS and RHS do not statically match or
+         --  when we know the object's type will be rewritten later.
+         --  The condition for the later is copied from the
+         --  Analyze_Object_Declaration procedure when it actually builds the
+         --  subtype.
 
          elsif Nkind (Par) = N_Object_Declaration then
-            Insert_Action_After (Par,
-              Make_Predicate_Check (Typ,
-                New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
-            return;
+            if Subtypes_Statically_Match
+                 (Etype (Defining_Identifier (Par)), Typ)
+              and then (Nkind (N) = N_Extension_Aggregate
+                         or else (Is_Definite_Subtype (Typ)
+                                   and then Build_Default_Subtype_OK (Typ)))
+            then
+               Insert_Action_After (Par,
+                  Make_Predicate_Check (Typ,
+                    New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+               return;
+            end if;
+
          end if;
       end if;
 
@@ -3323,13 +3354,6 @@ package body Checks is
 
                      Bad_Value (Warn => SPARK_Mode = On);
 
-                     --  In GNATprove mode, we enable the range check so that
-                     --  GNATprove will issue a message if it cannot be proved.
-
-                     if GNATprove_Mode then
-                        Enable_Range_Check (Expr);
-                     end if;
-
                      return;
                   end if;
 
@@ -3558,9 +3582,12 @@ package body Checks is
    -- Apply_Subscript_Validity_Checks --
    -------------------------------------
 
-   procedure Apply_Subscript_Validity_Checks (Expr : Node_Id) is
+   procedure Apply_Subscript_Validity_Checks
+     (Expr            : Node_Id;
+      No_Check_Needed : Dimension_Set := Empty_Dimension_Set) is
       Sub : Node_Id;
 
+      Dimension : Pos := 1;
    begin
       pragma Assert (Nkind (Expr) = N_Indexed_Component);
 
@@ -3574,11 +3601,16 @@ package body Checks is
          --  for the subscript, and that convert will do the necessary validity
          --  check.
 
-         Ensure_Valid (Sub, Holes_OK => True);
+         if (No_Check_Needed = Empty_Dimension_Set)
+           or else not No_Check_Needed.Elements (Dimension)
+         then
+            Ensure_Valid (Sub, Holes_OK => True);
+         end if;
 
          --  Move to next subscript
 
          Next (Sub);
+         Dimension := Dimension + 1;
       end loop;
    end Apply_Subscript_Validity_Checks;
 
@@ -4451,8 +4483,8 @@ package body Checks is
 
             Discard_Node
               (Compile_Time_Constraint_Error
-                 (N      => N,
-                  Msg    =>
+                 (N   => N,
+                  Msg =>
                     "(Ada 2005) null-excluding component % of object % must "
                     & "be initialized??",
                   Ent => Defining_Identifier (Comp)));
@@ -4463,8 +4495,8 @@ package body Checks is
          elsif Array_Comp then
             Discard_Node
               (Compile_Time_Constraint_Error
-                 (N      => N,
-                  Msg    =>
+                 (N   => N,
+                  Msg =>
                     "(Ada 2005) null-excluding array components must "
                     & "be initialized??",
                   Ent => Defining_Identifier (N)));
@@ -5062,7 +5094,8 @@ package body Checks is
         --  Don't deal with enumerated types with non-standard representation
 
         or else (Is_Enumeration_Type (Typ)
-                   and then Present (Enum_Pos_To_Rep (Base_Type (Typ))))
+                   and then Present (Enum_Pos_To_Rep
+                                       (Implementation_Base_Type (Typ))))
 
         --  Ignore type for which an error has been posted, since range in
         --  this case may well be a bogosity deriving from the error. Also
@@ -5465,22 +5498,49 @@ package body Checks is
          --  we do NOT do this for the case of a modular type where the
          --  possible upper bound on the value is above the base type high
          --  bound, because that means the result could wrap.
+         --  Same applies for the lower bound if it is negative.
 
-         if Lor > Lo
-           and then not (Is_Modular_Integer_Type (Typ) and then Hir > Hbound)
-         then
-            Lo := Lor;
-         end if;
+         if Is_Modular_Integer_Type (Typ) then
+            if Lor > Lo and then Hir <= Hbound then
+               Lo := Lor;
+            end if;
 
-         --  Similarly, if the refined value of the high bound is less than the
-         --  value so far, then reset it to the more restrictive value. Again,
-         --  we do not do this if the refined low bound is negative for a
-         --  modular type, since this would wrap.
+            if Hir < Hi and then Lor >= Uint_0 then
+               Hi := Hir;
+            end if;
 
-         if Hir < Hi
-           and then not (Is_Modular_Integer_Type (Typ) and then Lor < Uint_0)
-         then
-            Hi := Hir;
+         else
+            if Lor > Hi or else Hir < Lo then
+
+               --  If the ranges are disjoint, return the computed range.
+
+               --  The current range-constraining logic would require returning
+               --  the base type's bounds. However, this would miss an
+               --  opportunity to warn about out-of-range values for some cases
+               --  (e.g. when type's upper bound is equal to base type upper
+               --  bound).
+
+               --  The alternative of always returning the computed values,
+               --  even when ranges are intersecting, has unwanted effects
+               --  (mainly useless constraint checks are inserted) in the
+               --  Enable_Overflow_Check and Apply_Scalar_Range_Check as these
+               --  bounds have a special interpretation.
+
+               Lo := Lor;
+               Hi := Hir;
+            else
+
+               --  If the ranges Lor .. Hir and Lo .. Hi intersect, try to
+               --  refine the returned range.
+
+               if Lor > Lo then
+                  Lo := Lor;
+               end if;
+
+               if Hir < Hi then
+                  Hi := Hir;
+               end if;
+            end if;
          end if;
       end if;
 
@@ -5561,7 +5621,7 @@ package body Checks is
       --  the results in Lo_Right, Hi_Right, Lo_Left, Hi_Left.
 
       function Round_Machine (B : Ureal) return Ureal;
-      --  B is a real bound. Round it using mode Round_Even.
+      --  B is a real bound. Round it to the nearest machine number.
 
       -----------------
       -- OK_Operands --
@@ -5587,7 +5647,7 @@ package body Checks is
 
       function Round_Machine (B : Ureal) return Ureal is
       begin
-         return Machine (Typ, B, Round_Even, N);
+         return Machine_Number (Typ, B, N);
       end Round_Machine;
 
    --  Start of processing for Determine_Range_R
@@ -6412,7 +6472,7 @@ package body Checks is
       end if;
 
       --  Do not set range check flag if parent is assignment statement or
-      --  object declaration with Suppress_Assignment_Checks flag set
+      --  object declaration with Suppress_Assignment_Checks flag set.
 
       if Nkind (Parent (N)) in N_Assignment_Statement | N_Object_Declaration
         and then Suppress_Assignment_Checks (Parent (N))
@@ -6674,8 +6734,9 @@ package body Checks is
       elsif not Comes_From_Source (Expr)
         and then not
           (Nkind (Expr) = N_Identifier
-            and then Present (Renamed_Object (Entity (Expr)))
-            and then Comes_From_Source (Renamed_Object (Entity (Expr))))
+            and then Present (Renamed_Entity_Or_Object (Entity (Expr)))
+            and then
+              Comes_From_Source (Renamed_Entity_Or_Object (Entity (Expr))))
         and then not Force_Validity_Checks
         and then (Nkind (Expr) /= N_Unchecked_Type_Conversion
                     or else Kill_Range_Check (Expr))
@@ -6898,6 +6959,7 @@ package body Checks is
       elsif Is_Known_Valid (Typ) then
          if Is_Entity_Name (Expr)
            and then Ekind (Entity (Expr)) = E_Variable
+           and then Known_Esize (Entity (Expr))
            and then Esize (Entity (Expr)) > Esize (Typ)
          then
             return False;
@@ -7238,7 +7300,10 @@ package body Checks is
    -- Generate_Index_Checks --
    ---------------------------
 
-   procedure Generate_Index_Checks (N : Node_Id) is
+   procedure Generate_Index_Checks
+     (N                : Node_Id;
+      Checks_Generated : out Dimension_Set)
+   is
 
       function Entity_Of_Prefix return Entity_Id;
       --  Returns the entity of the prefix of N (or Empty if not found)
@@ -7273,6 +7338,8 @@ package body Checks is
    --  Start of processing for Generate_Index_Checks
 
    begin
+      Checks_Generated.Elements := (others => False);
+
       --  Ignore call if the prefix is not an array since we have a serious
       --  error in the sources. Ignore it also if index checks are suppressed
       --  for array object or type.
@@ -7335,6 +7402,8 @@ package body Checks is
                          Prefix         => New_Occurrence_Of (Etype (A), Loc),
                          Attribute_Name => Name_Range)),
                 Reason => CE_Index_Check_Failed));
+
+            Checks_Generated.Elements (1) := True;
          end if;
 
       --  General case
@@ -7421,6 +7490,8 @@ package body Checks is
                                Duplicate_Subexpr_Move_Checks (Sub)),
                            Right_Opnd => Range_N),
                       Reason => CE_Index_Check_Failed));
+
+                  Checks_Generated.Elements (Ind) := True;
                end if;
 
                Next_Index (A_Idx);
@@ -7831,10 +7902,8 @@ package body Checks is
                      New_Occurrence_Of (Target_Base_Type, Loc),
                    Constant_Present    => True,
                    Expression          =>
-                     Make_Unchecked_Type_Conversion (Loc,
-                       Subtype_Mark =>
-                         New_Occurrence_Of (Target_Base_Type, Loc),
-                       Expression   => Duplicate_Subexpr (N))),
+                     Unchecked_Convert_To
+                       (Target_Base_Type, Duplicate_Subexpr (N))),
 
                  Make_Raise_Constraint_Error (Loc,
                    Condition =>
@@ -8067,7 +8136,7 @@ package body Checks is
       Is_High_Bound : Boolean   := False)
    is
       Loc : constant Source_Ptr := Sloc (Expr);
-      Typ : constant Entity_Id  := Etype (Expr);
+      Typ : Entity_Id           := Etype (Expr);
       Exp : Node_Id;
 
    begin
@@ -8127,6 +8196,7 @@ package body Checks is
       while Nkind (Exp) = N_Type_Conversion loop
          Exp := Expression (Exp);
       end loop;
+      Typ := Etype (Exp);
 
       --  Do not generate a check for a variable which already validates the
       --  value of an assignable object.
@@ -8205,6 +8275,14 @@ package body Checks is
             if Do_Range_Check (Validated_Object (Var_Id)) then
                Set_Do_Range_Check (Exp);
                Set_Do_Range_Check (Validated_Object (Var_Id), False);
+            end if;
+
+            --  In case of a type conversion, an expansion of the expr may be
+            --  needed (eg. fixed-point as actual).
+
+            if Exp /= Expr then
+               pragma Assert (Nkind (Expr) = N_Type_Conversion);
+               Analyze_And_Resolve (Expr);
             end if;
 
             PV := New_Occurrence_Of (Var_Id, Loc);
@@ -8643,7 +8721,7 @@ package body Checks is
          return;
 
       --  Do not generate an elaboration check if the related subprogram is
-      --  not subjected to accessibility checks.
+      --  not subject to elaboration checks.
 
       elsif Elaboration_Checks_Suppressed (Subp_Id) then
          return;
@@ -8653,14 +8731,20 @@ package body Checks is
       elsif Restriction_Active (No_Elaboration_Code) then
          return;
 
+      --  If pragma Pure or Preelaborate applies, then these elaboration checks
+      --  cannot fail, so do not generate them.
+
+      elsif In_Preelaborated_Unit then
+         return;
+
       --  Do not generate an elaboration check if exceptions cannot be used,
       --  caught, or propagated.
 
       elsif not Exceptions_OK then
          return;
 
-      --  Do not consider subprograms which act as compilation units, because
-      --  they cannot be the target of a dispatching call.
+      --  Do not consider subprograms that are compilation units, because they
+      --  cannot be the target of a dispatching call.
 
       elsif Nkind (Context) = N_Compilation_Unit then
          return;
@@ -8690,10 +8774,10 @@ package body Checks is
       elsif Analyzed (Subp_Body) then
          return;
 
-      --  Do not consider primitives which occur within an instance that acts
-      --  as a compilation unit. Such an instance defines its spec and body out
-      --  of order (body is first) within the tree, which causes the reference
-      --  to the elaboration flag to appear as an undefined symbol.
+      --  Do not consider primitives that occur within an instance that is a
+      --  compilation unit. Such an instance defines its spec and body out of
+      --  order (body is first) within the tree, which causes the reference to
+      --  the elaboration flag to appear as an undefined symbol.
 
       elsif Within_Compilation_Unit_Instance (Subp_Id) then
          return;
@@ -9061,7 +9145,7 @@ package body Checks is
 
       function In_Result_Range return Boolean is
       begin
-         if Lo = No_Uint or else Hi = No_Uint then
+         if No (Lo) or else No (Hi) then
             return False;
 
          elsif Is_OK_Static_Subtype (Etype (N)) then
@@ -9082,7 +9166,7 @@ package body Checks is
 
       procedure Max (A : in out Uint; B : Uint) is
       begin
-         if A = No_Uint or else B > A then
+         if No (A) or else B > A then
             A := B;
          end if;
       end Max;
@@ -9093,7 +9177,7 @@ package body Checks is
 
       procedure Min (A : in out Uint; B : Uint) is
       begin
-         if A = No_Uint or else B < A then
+         if No (A) or else B < A then
             A := B;
          end if;
       end Min;
@@ -9199,14 +9283,14 @@ package body Checks is
             Minimize_Eliminate_Overflows
               (Then_DE, Lo, Hi, Top_Level => False);
 
-            if Lo = No_Uint then
+            if No (Lo) then
                Bignum_Operands := True;
             end if;
 
             Minimize_Eliminate_Overflows
               (Else_DE, Rlo, Rhi, Top_Level => False);
 
-            if Rlo = No_Uint then
+            if No (Rlo) then
                Bignum_Operands := True;
             else
                Long_Long_Integer_Operands :=
@@ -9281,7 +9365,7 @@ package body Checks is
                   Minimize_Eliminate_Overflows
                     (Aexp, Lo, Hi, Top_Level => False);
 
-                  if Lo = No_Uint then
+                  if No (Lo) then
                      Bignum_Operands := True;
                   elsif Etype (Aexp) = LLIB then
                      Long_Long_Integer_Operands := True;
@@ -9370,7 +9454,7 @@ package body Checks is
       --  numbers at compile time for very little gain (the number of cases
       --  in which we could slip back from bignum mode is small).
 
-      if Rlo = No_Uint or else (Binary and then Llo = No_Uint) then
+      if No (Rlo) or else (Binary and then No (Llo)) then
          Lo := No_Uint;
          Hi := No_Uint;
          Bignum_Operands := True;
@@ -9443,7 +9527,7 @@ package body Checks is
       --  0 .. 1, but the cases are rare and it is not worth the effort.
       --  Failing to do this switching back is only an efficiency issue.
 
-      elsif Lo = No_Uint or else Lo < LLLo or else Hi > LLHi then
+      elsif No (Lo) or else Lo < LLLo or else Hi > LLHi then
 
          --  OK, we are definitely outside the range of Long_Long_Integer. The
          --  question is whether to move to Bignum mode, or stay in the domain
@@ -9766,9 +9850,6 @@ package body Checks is
             when N_Attribute_Reference =>
                Set_Do_Overflow_Check (N, False);
 
-            when N_Function_Call =>
-               Set_Do_Tag_Check (N, False);
-
             when N_Op =>
                Set_Do_Overflow_Check (N, False);
 
@@ -9804,7 +9885,6 @@ package body Checks is
 
             when N_Type_Conversion =>
                Set_Do_Length_Check   (N, False);
-               Set_Do_Tag_Check      (N, False);
                Set_Do_Overflow_Check (N, False);
 
             when others =>
@@ -9871,8 +9951,8 @@ package body Checks is
       --    Typ'Length /= Exp'Length
 
       function Length_Mismatch_Info_Message
-        (Left_Element_Count  : Uint;
-         Right_Element_Count : Uint) return String;
+        (Left_Element_Count  : Unat;
+         Right_Element_Count : Unat) return String;
       --  Returns a message indicating how many elements were expected
       --  (Left_Element_Count) and how many were found (Right_Element_Count).
 
@@ -10070,14 +10150,14 @@ package body Checks is
       ----------------------------------
 
       function Length_Mismatch_Info_Message
-        (Left_Element_Count  : Uint;
-         Right_Element_Count : Uint) return String
+        (Left_Element_Count  : Unat;
+         Right_Element_Count : Unat) return String
       is
 
-         function Plural_Vs_Singular_Ending (Count : Uint) return String;
+         function Plural_Vs_Singular_Ending (Count : Unat) return String;
          --  Returns an empty string if Count is 1; otherwise returns "s"
 
-         function Plural_Vs_Singular_Ending (Count : Uint) return String is
+         function Plural_Vs_Singular_Ending (Count : Unat) return String is
          begin
             if Count = 1 then
                return "";
@@ -10087,12 +10167,19 @@ package body Checks is
          end Plural_Vs_Singular_Ending;
 
       begin
-         return "expected " & UI_Image (Left_Element_Count)
+         return "expected "
+                  & UI_Image (Left_Element_Count, Format => Decimal)
                   & " element"
                   & Plural_Vs_Singular_Ending (Left_Element_Count)
-                  & "; found " & UI_Image (Right_Element_Count)
+                  & "; found "
+                  & UI_Image (Right_Element_Count, Format => Decimal)
                   & " element"
                   & Plural_Vs_Singular_Ending (Right_Element_Count);
+         --  "Format => Decimal" above is needed because otherwise UI_Image
+         --  can sometimes return a hexadecimal number 16#...#, but "#" means
+         --  something special to Errout. A previous version used the default
+         --  Auto, which was essentially the same bug as documented here:
+         --  https://xkcd.com/327/ .
       end Length_Mismatch_Info_Message;
 
       -----------------
@@ -10291,14 +10378,14 @@ package body Checks is
                            if L_Length > R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
-                                  (Wnode, "too few elements for}??", T_Typ,
+                                  (Wnode, "too few elements for}!!??", T_Typ,
                                    Extra_Msg => Length_Mismatch_Info_Message
                                                   (L_Length, R_Length)));
 
                            elsif L_Length < R_Length then
                               Add_Check
                                 (Compile_Time_Constraint_Error
-                                  (Wnode, "too many elements for}??", T_Typ,
+                                  (Wnode, "too many elements for}!!??", T_Typ,
                                    Extra_Msg => Length_Mismatch_Info_Message
                                                   (L_Length, R_Length)));
                            end if;
@@ -10388,7 +10475,7 @@ package body Checks is
       Exptyp      : Entity_Id;
       Cond        : Node_Id := Empty;
       Do_Access   : Boolean := False;
-      Wnode       : Node_Id  := Warn_Node;
+      Wnode       : Node_Id := Warn_Node;
       Ret_Result  : Check_Result := (Empty, Empty);
       Num_Checks  : Natural := 0;
 
@@ -10430,6 +10517,11 @@ package body Checks is
       --  Returns expression to compute:
       --    N'First or N'Last using Duplicate_Subexpr_No_Checks
 
+      function Is_Cond_Expr_Ge (N : Node_Id; V : Node_Id) return Boolean;
+      function Is_Cond_Expr_Le (N : Node_Id; V : Node_Id) return Boolean;
+      --  Return True if N is a conditional expression whose dependent
+      --  expressions are all known and greater/lower than or equal to V.
+
       function Range_E_Cond
         (Exptyp : Entity_Id;
          Typ    : Entity_Id;
@@ -10451,6 +10543,16 @@ package body Checks is
          Indx : Nat) return Node_Id;
       --  Return expression to compute:
       --    Exp'First < Typ'First or else Exp'Last > Typ'Last
+
+      function "<" (Left, Right : Node_Id) return Boolean
+      is (if Is_Floating_Point_Type (S_Typ)
+          then Expr_Value_R (Left) < Expr_Value_R (Right)
+          else Expr_Value   (Left) < Expr_Value   (Right));
+      function "<=" (Left, Right : Node_Id) return Boolean
+      is (if Is_Floating_Point_Type (S_Typ)
+          then Expr_Value_R (Left) <= Expr_Value_R (Right)
+          else Expr_Value   (Left) <= Expr_Value   (Right));
+      --  Convenience comparison functions of integer or floating point values
 
       ---------------
       -- Add_Check --
@@ -10632,6 +10734,60 @@ package body Checks is
               Make_Integer_Literal (Loc, Indx)));
       end Get_N_Last;
 
+      ---------------------
+      -- Is_Cond_Expr_Ge --
+      ---------------------
+
+      function Is_Cond_Expr_Ge (N : Node_Id; V : Node_Id) return Boolean is
+      begin
+         --  Only if expressions are relevant for the time being
+
+         if Nkind (N) = N_If_Expression then
+            declare
+               Cond  : constant Node_Id := First (Expressions (N));
+               Thenx : constant Node_Id := Next (Cond);
+               Elsex : constant Node_Id := Next (Thenx);
+
+            begin
+               return Compile_Time_Known_Value (Thenx)
+                 and then V <= Thenx
+                 and then
+                   ((Compile_Time_Known_Value (Elsex) and then V <= Elsex)
+                    or else Is_Cond_Expr_Ge (Elsex, V));
+            end;
+
+         else
+            return False;
+         end if;
+      end Is_Cond_Expr_Ge;
+
+      ---------------------
+      -- Is_Cond_Expr_Le --
+      ---------------------
+
+      function Is_Cond_Expr_Le (N : Node_Id; V : Node_Id) return Boolean is
+      begin
+         --  Only if expressions are relevant for the time being
+
+         if Nkind (N) = N_If_Expression then
+            declare
+               Cond  : constant Node_Id := First (Expressions (N));
+               Thenx : constant Node_Id := Next (Cond);
+               Elsex : constant Node_Id := Next (Thenx);
+
+            begin
+               return Compile_Time_Known_Value (Thenx)
+                 and then Thenx <= V
+                 and then
+                   ((Compile_Time_Known_Value (Elsex) and then Elsex <= V)
+                    or else Is_Cond_Expr_Le (Elsex, V));
+            end;
+
+         else
+            return False;
+         end if;
+      end Is_Cond_Expr_Le;
+
       ------------------
       -- Range_E_Cond --
       ------------------
@@ -10712,13 +10868,6 @@ package body Checks is
                  Right_Opnd =>
                    Get_E_First_Or_Last (Loc, Typ, Indx, Name_Last)));
       end Range_N_Cond;
-
-      function "<" (Left, Right : Node_Id) return Boolean
-      is (if Is_Floating_Point_Type (S_Typ)
-          then Expr_Value_R (Left) < Expr_Value_R (Right)
-          else Expr_Value   (Left) < Expr_Value   (Right));
-      --  Convenience comparison function of integer or floating point
-      --  values.
 
    --  Start of processing for Selected_Range_Checks
 
@@ -10815,6 +10964,14 @@ package body Checks is
                then
                   LB := T_LB;
                   Known_LB := True;
+
+               --  Similarly; deal with the case where the low bound is a
+               --  conditional expression whose result is greater than or
+               --  equal to the target low bound.
+
+               elsif Is_Cond_Expr_Ge (LB, T_LB) then
+                  LB := T_LB;
+                  Known_LB := True;
                end if;
 
                --  Likewise for the high bound
@@ -10825,6 +10982,10 @@ package body Checks is
                elsif Ekind (Etype (HB)) = E_Signed_Integer_Subtype
                  and then Scalar_Range (Etype (HB)) = Scalar_Range (T_Typ)
                then
+                  HB := T_HB;
+                  Known_HB := True;
+
+               elsif Is_Cond_Expr_Le (HB, T_HB) then
                   HB := T_HB;
                   Known_HB := True;
                end if;
@@ -10872,8 +11033,8 @@ package body Checks is
                   Add_Check
                     (Compile_Time_Constraint_Error
                        ((if Present (Warn_Node)
-                        then Warn_Node else Low_Bound (Expr)),
-                        "static value does not equal lower bound of}??",
+                         then Warn_Node else Low_Bound (Expr)),
+                         "static value does not equal lower bound of}??",
                         T_Typ));
                   Check_Added := True;
                end if;
@@ -11312,7 +11473,7 @@ package body Checks is
                     renames Alignment_Warnings.Table (J);
          begin
             if Known_Alignment (AWR.E)
-              and then ((AWR.A /= No_Uint
+              and then ((Present (AWR.A)
                           and then AWR.A mod Alignment (AWR.E) = 0)
                         or else (Present (AWR.P)
                                   and then Has_Compatible_Alignment

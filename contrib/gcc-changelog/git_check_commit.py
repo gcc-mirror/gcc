@@ -29,6 +29,8 @@ parser.add_argument('-g', '--git-path', default='.',
                     help='Path to git repository')
 parser.add_argument('-p', '--print-changelog', action='store_true',
                     help='Print final changelog entires')
+parser.add_argument('-v', '--verbose', action='store_true',
+                    help='Print verbose information')
 args = parser.parse_args()
 
 retval = 0
@@ -41,6 +43,8 @@ for git_commit in parse_git_revisions(args.git_path, args.revisions):
     else:
         for error in git_commit.errors:
             print('ERR: %s' % error)
+            if args.verbose and error.details:
+                print(error.details)
         retval = 1
 
 exit(retval)

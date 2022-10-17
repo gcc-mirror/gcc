@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,6 +89,7 @@ package Aspects is
       Aspect_Default_Storage_Pool,
       Aspect_Default_Value,
       Aspect_Depends,                       -- GNAT
+      Aspect_Designated_Storage_Model,      -- GNAT
       Aspect_Dimension,                     -- GNAT
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
@@ -147,6 +148,7 @@ package Aspects is
       Aspect_SPARK_Mode,                    -- GNAT
       Aspect_Stable_Properties,
       Aspect_Static_Predicate,
+      Aspect_Storage_Model_Type,            -- GNAT
       Aspect_Storage_Pool,
       Aspect_Storage_Size,
       Aspect_Stream_Size,
@@ -187,6 +189,7 @@ package Aspects is
       Aspect_Atomic_Components,
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
+      Aspect_CUDA_Device,                   -- GNAT
       Aspect_CUDA_Global,                   -- GNAT
       Aspect_Exclusive_Functions,
       Aspect_Export,
@@ -233,7 +236,7 @@ package Aspects is
        Aspect_Implicit_Dereference | Aspect_Constant_Indexing |
        Aspect_Variable_Indexing | Aspect_Aggregate |
        Aspect_Max_Entry_Queue_Length
-       --  | Aspect_No_Controlled_Parts
+        | Aspect_No_Controlled_Parts
        --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration
        ;  --  see RM 13.1.1(18.7)
 
@@ -379,6 +382,7 @@ package Aspects is
       Aspect_Default_Storage_Pool       => Expression,
       Aspect_Default_Value              => Expression,
       Aspect_Depends                    => Expression,
+      Aspect_Designated_Storage_Model   => Name,
       Aspect_Dimension                  => Expression,
       Aspect_Dimension_System           => Expression,
       Aspect_Dispatching_Domain         => Expression,
@@ -437,6 +441,7 @@ package Aspects is
       Aspect_SPARK_Mode                 => Optional_Name,
       Aspect_Stable_Properties          => Expression,
       Aspect_Static_Predicate           => Expression,
+      Aspect_Storage_Model_Type         => Optional_Expression,
       Aspect_Storage_Pool               => Name,
       Aspect_Storage_Size               => Expression,
       Aspect_Stream_Size                => Expression,
@@ -476,6 +481,7 @@ package Aspects is
       Aspect_Contract_Cases               => False,
       Aspect_Convention                   => True,
       Aspect_CPU                          => False,
+      Aspect_CUDA_Device                  => False,
       Aspect_CUDA_Global                  => False,
       Aspect_Default_Component_Value      => True,
       Aspect_Default_Initial_Condition    => False,
@@ -483,6 +489,7 @@ package Aspects is
       Aspect_Default_Storage_Pool         => True,
       Aspect_Default_Value                => True,
       Aspect_Depends                      => False,
+      Aspect_Designated_Storage_Model     => True,
       Aspect_Dimension                    => False,
       Aspect_Dimension_System             => False,
       Aspect_Dispatching_Domain           => False,
@@ -542,6 +549,7 @@ package Aspects is
       Aspect_SPARK_Mode                   => False,
       Aspect_Stable_Properties            => False,
       Aspect_Static_Predicate             => False,
+      Aspect_Storage_Model_Type           => False,
       Aspect_Storage_Pool                 => True,
       Aspect_Storage_Size                 => True,
       Aspect_Stream_Size                  => True,
@@ -627,6 +635,7 @@ package Aspects is
       Aspect_Contract_Cases               => Name_Contract_Cases,
       Aspect_Convention                   => Name_Convention,
       Aspect_CPU                          => Name_CPU,
+      Aspect_CUDA_Device                  => Name_CUDA_Device,
       Aspect_CUDA_Global                  => Name_CUDA_Global,
       Aspect_Default_Component_Value      => Name_Default_Component_Value,
       Aspect_Default_Initial_Condition    => Name_Default_Initial_Condition,
@@ -634,6 +643,7 @@ package Aspects is
       Aspect_Default_Storage_Pool         => Name_Default_Storage_Pool,
       Aspect_Default_Value                => Name_Default_Value,
       Aspect_Depends                      => Name_Depends,
+      Aspect_Designated_Storage_Model     => Name_Designated_Storage_Model,
       Aspect_Dimension                    => Name_Dimension,
       Aspect_Dimension_System             => Name_Dimension_System,
       Aspect_Disable_Controlled           => Name_Disable_Controlled,
@@ -723,6 +733,7 @@ package Aspects is
       Aspect_Stable_Properties            => Name_Stable_Properties,
       Aspect_Static                       => Name_Static,
       Aspect_Static_Predicate             => Name_Static_Predicate,
+      Aspect_Storage_Model_Type           => Name_Storage_Model_Type,
       Aspect_Storage_Pool                 => Name_Storage_Pool,
       Aspect_Storage_Size                 => Name_Storage_Size,
       Aspect_Stream_Size                  => Name_Stream_Size,
@@ -761,6 +772,14 @@ package Aspects is
    pragma Inline (Get_Aspect_Id);
    --  Given an aspect specification, return the corresponding aspect_id value.
    --  If the name does not match any aspect, return No_Aspect.
+
+   function Is_Aspect_Id (Aspect : Name_Id) return Boolean;
+   pragma Inline (Is_Aspect_Id);
+   --  Return True if a corresponding aspect id exists
+
+   function Is_Aspect_Id (Aspect : Node_Id) return Boolean;
+   pragma Inline (Is_Aspect_Id);
+   --  Return True if a corresponding aspect id exists
 
    ------------------------------------
    -- Delaying Evaluation of Aspects --
@@ -803,11 +822,11 @@ package Aspects is
    --  set on the parent type if it has delayed representation aspects. This
    --  flag Has_Delayed_Rep_Aspects indicates that if we derive from this type
    --  we have to worry about making sure we inherit any delayed aspects. The
-   --  second flag is set on a derived type: May_Have_Inherited_Rep_Aspects
+   --  second flag is set on a derived type: May_Inherit_Delayed_Rep_Aspects
    --  is set if the parent type has Has_Delayed_Rep_Aspects set.
 
-   --  When we freeze a derived type, if the May_Have_Inherited_Rep_Aspects
-   --  flag is set, then we call Freeze.Inherit_Delayed_Rep_Aspects when
+   --  When we freeze a derived type, if the May_Inherit_Delayed_Rep_Aspects
+   --  flag is set, then we call Sem_Ch13.Inherit_Delayed_Rep_Aspects when
    --  the derived type is frozen, which deals with the necessary copying of
    --  information from the parent type, which must be frozen at that point
    --  (since freezing the derived type first freezes the parent type).
@@ -872,11 +891,13 @@ package Aspects is
       Aspect_Attach_Handler               => Always_Delay,
       Aspect_Constant_Indexing            => Always_Delay,
       Aspect_CPU                          => Always_Delay,
+      Aspect_CUDA_Device                  => Always_Delay,
       Aspect_CUDA_Global                  => Always_Delay,
       Aspect_Default_Iterator             => Always_Delay,
       Aspect_Default_Storage_Pool         => Always_Delay,
       Aspect_Default_Value                => Always_Delay,
       Aspect_Default_Component_Value      => Always_Delay,
+      Aspect_Designated_Storage_Model     => Always_Delay,
       Aspect_Discard_Names                => Always_Delay,
       Aspect_Dispatching_Domain           => Always_Delay,
       Aspect_Dynamic_Predicate            => Always_Delay,
@@ -928,6 +949,7 @@ package Aspects is
       Aspect_Simple_Storage_Pool          => Always_Delay,
       Aspect_Simple_Storage_Pool_Type     => Always_Delay,
       Aspect_Static_Predicate             => Always_Delay,
+      Aspect_Storage_Model_Type           => Always_Delay,
       Aspect_Storage_Pool                 => Always_Delay,
       Aspect_Stream_Size                  => Always_Delay,
       Aspect_String_Literal               => Always_Delay,

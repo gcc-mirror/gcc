@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C - C language.
-# Copyright (C) 1994-2021 Free Software Foundation, Inc.
+# Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -71,15 +71,15 @@ endif
 # compute checksum over all object files and the options
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
-cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+cc1-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
 	$(C_OBJS) $(BACKEND) $(LIBDEPS) 
 	if [ -f ../stage_final ] \
 	   && cmp -s ../stage_current ../stage_final; then \
-	  cp ../prev-gcc/cc1-checksum.c cc1-checksum.c; \
+	  cp ../prev-gcc/cc1-checksum.cc cc1-checksum.cc; \
 	else \
 	  build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
-                     checksum-options > cc1-checksum.c.tmp && 		 \
-	  $(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c; \
+                     checksum-options > cc1-checksum.cc.tmp && 		 \
+	  $(srcdir)/../move-if-change cc1-checksum.cc.tmp cc1-checksum.cc; \
 	fi
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
@@ -99,17 +99,18 @@ c.dvi:
 c.pdf:
 c.html:
 c.install-info:
+c.install-dvi:
 c.install-pdf:
 c.install-html:
 c.all.cross:
 c.start.encap:
 c.rest.encap:
 c.srcinfo:
-c.srcextra: gengtype-lex.c
+c.srcextra: gengtype-lex.cc
 	-cp -p $^ $(srcdir)
 c.tags: force
-	cd $(srcdir)/c; etags -o TAGS.sub *.c *.h; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	cd $(srcdir)/c; $(ETAGS) -o TAGS.sub *.cc *.h; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 c.man:
 c.srcman:
 

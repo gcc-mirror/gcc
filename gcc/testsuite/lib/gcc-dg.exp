@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ load_lib scanltranstree.exp
 load_lib scanipa.exp
 load_lib scanwpaipa.exp
 load_lib scanlang.exp
+load_lib scansarif.exp
 load_lib timeout.exp
 load_lib timeout-dg.exp
 load_lib prune.exp
@@ -315,13 +316,13 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     # to avoid a second failure for excess errors.
     # "Error reporting routines re-entered" ICE says "Internal" rather than
     # "internal", so match that too.
-    if [string match {*[Ii]nternal compiler error*} $comp_output] {
+    if [regexp -line -- {[Ii]nternal compiler error.*} $comp_output ice] {
 	upvar 2 name name
 	if { $expect_ice == 0 } {
-	  fail "$name (internal compiler error)"
+	  fail "$name ($ice)"
 	} else {
 	  # We expected an ICE and we got it.
-	  xfail "$name (internal compiler error)"
+	  xfail "$name ($ice)"
 	  # Prune the ICE from the output.
 	  set comp_output [prune_ices $comp_output]
 	}
@@ -641,7 +642,6 @@ proc gcc-dg-frontend-supports-ctf { target_compile trivial } {
 proc gcc-dg-target-supports-debug-format { target_compile trivial type } {
     global srcdir subdir
 
-    if {$type == "-gctf" && [istarget *-*-aix*]} { return 0 }
     set comp_output [$target_compile \
 	    "$srcdir/$subdir/$trivial" "trivial.S" assembly \
 	    "additional_flags=$type"]
@@ -656,7 +656,7 @@ proc gcc-dg-target-supports-debug-format { target_compile trivial type } {
 proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
     if ![info exists DEBUG_TORTURE_OPTIONS] {
 	set DEBUG_TORTURE_OPTIONS ""
-	foreach type {-gctf -gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+} {
+	foreach type {-gctf -gdwarf-2} {
 	    if [expr [gcc-dg-target-supports-debug-format \
 		      $target_compile $trivial $type]] {
 		if { $type == "-gctf" } {
@@ -1192,8 +1192,18 @@ proc process-message { msgproc msgprefix dgargs } {
     upvar dg-messages dg-messages
 
     if { [llength $dgargs] == 5 } {
-	set num [get-absolute-line [lindex $dgargs 0] [lindex $dgargs 4]]
-	set dgargs [lreplace $dgargs 4 4 $num]
+	set useline [lindex $dgargs 0]
+
+	# Resolve absolute line number.
+	set line [get-absolute-line $useline [lindex $dgargs 4]]
+	set dgargs [lreplace $dgargs 4 4 $line]
+
+	if { $line != $useline } {
+	    # Make sure that we get unique test names if different USELINEs
+	    # refer to the same LINE.
+	    set comment "[lindex $dgargs 2] at line $useline"
+	    set dgargs [lreplace $dgargs 2 2 $comment]
+	}
     }
 
     # Process the dg- directive, including adding the regular expression

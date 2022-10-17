@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -853,7 +853,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
       elsif Count <= Max_Length then
          Result.Current_Length := Count;
          Result.Data (1 .. Slen) := Source.Data (1 .. Slen);
-         Result.Data (Slen + 1 .. Count) := (others => Pad);
+         Result.Data (Slen + 1 .. Count) := [others => Pad];
 
       else
          Result.Current_Length := Max_Length;
@@ -861,17 +861,17 @@ package body Ada.Strings.Wide_Wide_Superbounded is
          case Drop is
             when Strings.Right =>
                Result.Data (1 .. Slen) := Source.Data (1 .. Slen);
-               Result.Data (Slen + 1 .. Max_Length) := (others => Pad);
+               Result.Data (Slen + 1 .. Max_Length) := [others => Pad];
 
             when Strings.Left =>
                if Npad >= Max_Length then
-                  Result.Data := (others => Pad);
+                  Result.Data := [others => Pad];
 
                else
                   Result.Data (1 .. Max_Length - Npad) :=
                     Source.Data (Count - Max_Length + 1 .. Slen);
                   Result.Data (Max_Length - Npad + 1 .. Max_Length) :=
-                    (others => Pad);
+                    [others => Pad];
                end if;
 
             when Strings.Error =>
@@ -899,18 +899,18 @@ package body Ada.Strings.Wide_Wide_Superbounded is
 
       elsif Count <= Max_Length then
          Source.Current_Length := Count;
-         Source.Data (Slen + 1 .. Count) := (others => Pad);
+         Source.Data (Slen + 1 .. Count) := [others => Pad];
 
       else
          Source.Current_Length := Max_Length;
 
          case Drop is
             when Strings.Right =>
-               Source.Data (Slen + 1 .. Max_Length) := (others => Pad);
+               Source.Data (Slen + 1 .. Max_Length) := [others => Pad];
 
             when Strings.Left =>
                if Npad > Max_Length then
-                  Source.Data := (others => Pad);
+                  Source.Data := [others => Pad];
 
                else
                   Temp := Source.Data;
@@ -1389,7 +1389,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
          Result.Current_Length := Max_Length;
       end if;
 
-      Result.Data (1 .. Result.Current_Length) := (others => Item);
+      Result.Data (1 .. Result.Current_Length) := [others => Item];
       return Result;
    end Super_Replicate;
 
@@ -1498,11 +1498,11 @@ package body Ada.Strings.Wide_Wide_Superbounded is
            or else High > Source.Current_Length
          then
             raise Index_Error;
-         else
-            Result.Current_Length := High - Low + 1;
-            Result.Data (1 .. Result.Current_Length) :=
-              Source.Data (Low .. High);
          end if;
+
+         Result.Current_Length := (if Low > High then 0 else High - Low + 1);
+         Result.Data (1 .. Result.Current_Length) :=
+           Source.Data (Low .. High);
       end return;
    end Super_Slice;
 
@@ -1517,10 +1517,10 @@ package body Ada.Strings.Wide_Wide_Superbounded is
         or else High > Source.Current_Length
       then
          raise Index_Error;
-      else
-         Target.Current_Length := High - Low + 1;
-         Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
       end if;
+
+      Target.Current_Length := (if Low > High then 0 else High - Low + 1);
+      Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
    end Super_Slice;
 
    ----------------
@@ -1546,7 +1546,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
 
       elsif Count <= Max_Length then
          Result.Current_Length := Count;
-         Result.Data (1 .. Npad) := (others => Pad);
+         Result.Data (1 .. Npad) := [others => Pad];
          Result.Data (Npad + 1 .. Count) := Source.Data (1 .. Slen);
 
       else
@@ -1555,16 +1555,16 @@ package body Ada.Strings.Wide_Wide_Superbounded is
          case Drop is
             when Strings.Right =>
                if Npad >= Max_Length then
-                  Result.Data := (others => Pad);
+                  Result.Data := [others => Pad];
 
                else
-                  Result.Data (1 .. Npad) := (others => Pad);
+                  Result.Data (1 .. Npad) := [others => Pad];
                   Result.Data (Npad + 1 .. Max_Length) :=
                     Source.Data (1 .. Max_Length - Npad);
                end if;
 
             when Strings.Left =>
-               Result.Data (1 .. Max_Length - Slen) := (others => Pad);
+               Result.Data (1 .. Max_Length - Slen) := [others => Pad];
                Result.Data (Max_Length - Slen + 1 .. Max_Length) :=
                  Source.Data (1 .. Slen);
 
@@ -1596,7 +1596,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
 
       elsif Count <= Max_Length then
          Source.Current_Length := Count;
-         Source.Data (1 .. Npad) := (others => Pad);
+         Source.Data (1 .. Npad) := [others => Pad];
          Source.Data (Npad + 1 .. Count) := Temp (1 .. Slen);
 
       else
@@ -1605,10 +1605,10 @@ package body Ada.Strings.Wide_Wide_Superbounded is
          case Drop is
             when Strings.Right =>
                if Npad >= Max_Length then
-                  Source.Data := (others => Pad);
+                  Source.Data := [others => Pad];
 
                else
-                  Source.Data (1 .. Npad) := (others => Pad);
+                  Source.Data (1 .. Npad) := [others => Pad];
                   Source.Data (Npad + 1 .. Max_Length) :=
                     Temp (1 .. Max_Length - Npad);
                end if;
@@ -1752,7 +1752,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
          end loop;
       end if;
 
-      Source.Data := (others => Wide_Wide_NUL);
+      Source.Data := [others => Wide_Wide_NUL];
       Source.Current_Length := Last - First + 1;
       Source.Data (1 .. Source.Current_Length) := Temp (First .. Last);
    end Super_Trim;

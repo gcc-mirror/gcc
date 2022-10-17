@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -471,11 +471,7 @@ package body Exp_Code is
       --  Case of list of arguments
 
       elsif Nkind (Arg) = N_Aggregate then
-         if Expressions (Arg) = No_List then
-            Operand_Var := Empty;
-         else
-            Operand_Var := First (Expressions (Arg));
-         end if;
+         Operand_Var := First (Expressions (Arg));
 
       --  Otherwise must be default (no operands) case
 

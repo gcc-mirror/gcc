@@ -24,10 +24,9 @@ struct {
   unsigned char pcr_select[4];
 } sel;
 
+unsigned char buf[64];
 int bar(void)
 {
-  static unsigned char buf[64];
-
   sel.size_of_select = 3;
   foo(buf, sel.pcr_select, sel.size_of_select);
 
@@ -52,8 +51,6 @@ foo2(unsigned char * to, const unsigned char * from, int n)
 
 int baz(void)
 {
-  static unsigned char buf[64];
-
   sel.size_of_select = 5;
   foo2(buf, sel.pcr_select, sel.size_of_select);
 

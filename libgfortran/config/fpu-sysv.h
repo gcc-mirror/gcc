@@ -1,5 +1,5 @@
 /* SysV FPU-related code (for systems not otherwise supported).
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -374,9 +374,12 @@ set_fpu_rounding_mode (int mode)
 
 
 int
-support_fpu_rounding_mode (int mode __attribute__((unused)))
+support_fpu_rounding_mode (int mode)
 {
-  return 1;
+  if (mode == GFC_FPE_AWAY)
+    return 0;
+  else
+    return 1;
 }
 
 

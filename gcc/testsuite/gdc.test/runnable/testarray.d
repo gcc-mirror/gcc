@@ -3,7 +3,7 @@
 
 import core.memory;
 
-// see http://forum.dlang.org/thread/4BB6296E.6050506@digitalmars.com for more info
+// see https://forum.dlang.org/thread/4BB6296E.6050506@digitalmars.com for more info
 
 // failure case for bug fixed by druntime rev 282
 // how it works:

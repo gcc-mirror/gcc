@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2021 Free Software Foundation, Inc.
+// Copyright (C) 2012-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +23,7 @@
 void test01()
 {
   std::array<int, 0> a;
-  a.front();
+  (void) a.front();
 }
 
 int main()

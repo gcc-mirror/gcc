@@ -2,7 +2,7 @@
 /* { dg-require-effective-target arm_hard_ok } */
 /* { dg-require-effective-target arm_v8_2a_i8mm_ok } */
 /* { dg-add-options arm_v8_2a_i8mm }  */
-/* { dg-additional-options "-O -save-temps -mbig-endian -mfloat-abi=hard" } */
+/* { dg-additional-options "-O -save-temps -mfloat-abi=hard -mbig-endian -mfpu=auto" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include <arm_neon.h>
@@ -18,6 +18,17 @@
 int32x2_t usfoo (int32x2_t r, uint8x8_t x, int8x8_t y)
 {
   return vusdot_s32 (r, x, y);
+}
+
+/*
+**usfooq:
+**	...
+**	vusdot\.s8	q0, q1, q2
+**	bx	lr
+*/
+int32x4_t usfooq (int32x4_t r, uint8x16_t x, int8x16_t y)
+{
+  return vusdotq_s32 (r, x, y);
 }
 
 /*
@@ -67,6 +78,52 @@ int32x4_t sfooq_lane (int32x4_t r, int8x16_t x, uint8x8_t y)
 }
 
 /*
+**usfoo_laneq:
+**	...
+**	vusdot\.s8	d0, d1, d3\[0\]
+**	bx	lr
+*/
+int32x2_t usfoo_laneq (int32x2_t r, uint8x8_t x, int8x16_t y)
+{
+  return vusdot_laneq_s32 (r, x, y, 2);
+}
+
+/*
+**usfooq_laneq:
+**	...
+**	vusdot\.s8	q0, q1, d5\[1\]
+**	bx	lr
+*/
+int32x4_t usfooq_laneq (int32x4_t r, uint8x16_t x, int8x16_t y)
+{
+  return vusdotq_laneq_s32 (r, x, y, 3);
+}
+
+/* Signed-Unsigned Dot Product instructions.  */
+
+/*
+**sfoo_laneq:
+**	...
+**	vsudot\.u8	d0, d1, d3\[0\]
+**	bx	lr
+*/
+int32x2_t sfoo_laneq (int32x2_t r, int8x8_t x, uint8x16_t y)
+{
+  return vsudot_laneq_s32 (r, x, y, 2);
+}
+
+/*
+**sfooq_laneq:
+**	...
+**	vsudot\.u8	q0, q1, d5\[1\]
+**	bx	lr
+*/
+int32x4_t sfooq_laneq (int32x4_t r, int8x16_t x, uint8x16_t y)
+{
+  return vsudotq_laneq_s32 (r, x, y, 3);
+}
+
+/*
 **usfoo_untied:
 **	...
 **	vusdot\.s8	d1, d2, d3
@@ -89,3 +146,4 @@ int32x2_t usfoo_lane_untied (int32x2_t unused, int32x2_t r, uint8x8_t x, int8x8_
 {
   return vusdot_lane_s32 (r, x, y, 0);
 }
+

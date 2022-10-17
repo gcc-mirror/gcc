@@ -1,6 +1,6 @@
-// http://www.digitalmars.com/webnews/newsgroups.php?art_group=digitalmars.D.bugs&article_id=4769
+// https://www.digitalmars.com/d/archives/digitalmars/D/bugs/4769.html
 
-// EXTRA_SOURCES: imports/art4769a.d imports/art4769b.d
+// COMPILED_IMPORTS: imports/art4769a.d imports/art4769b.d
 // PERMUTE_ARGS:
 
 module art4769;
@@ -16,4 +16,3 @@ struct Vector(T)
 	{
 	}
 }
-

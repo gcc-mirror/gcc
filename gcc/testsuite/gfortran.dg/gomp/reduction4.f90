@@ -40,7 +40,7 @@ do i=1,10
   a = a + 1
 end do
 
-!$omp simd reduction(task,+:a)  ! { dg-error "invalid 'task' reduction modifier on construct other than 'parallel', 'do' or 'sections'" }
+!$omp simd reduction(task,+:a)  ! { dg-error "invalid 'task' reduction modifier on construct other than 'parallel', 'do', 'sections' or 'scope'" }
 do i=1,10
   a = a + 1
 end do
@@ -137,7 +137,7 @@ end
 ! { dg-final { scan-tree-dump-times "#pragma omp sections reduction\\(task,\\\+:a\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) reduction\\(\\\+:a\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) reduction\\(task,\\\+:a\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp target in_reduction\\(\\\+:b\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target map\\(always,tofrom:b\\) in_reduction\\(\\\+:b\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task in_reduction\\(\\\+:a\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp teams reduction\\(\\\+:b\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp taskloop reduction\\(\\\+:a\\) in_reduction\\(\\\+:b\\)" 2 "original" } }

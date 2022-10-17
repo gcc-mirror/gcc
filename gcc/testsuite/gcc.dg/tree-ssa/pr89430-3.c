@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cselim-details" } */
+/* { dg-options "-O2 -ftree-cselim -fdump-tree-cselim-details" } */
 
 unsigned a[2];
 unsigned test(unsigned k, unsigned b) {

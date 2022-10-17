@@ -52,12 +52,6 @@ enum
     RUSAGE_CHILDREN,
 }
 
-struct rlimit
-{
-    rlim_t rlim_cur;
-    rlim_t rlim_max;
-}
-
 struct rusage
 {
     timeval ru_utime;
@@ -74,19 +68,10 @@ enum
     RLIMIT_STACK,
     RLIMIT_AS,
 }
-
-int getpriority(int, id_t);
-int getrlimit(int, rlimit*);
-int getrusage(int, rusage*);
-int setpriority(int, id_t, int);
-int setrlimit(int, const rlimit*);
 */
 
-
-version (CRuntime_Glibc)
+version (linux)
 {
-    // rusage and some other constants in the Bionic section below really
-    // come from the linux kernel headers, but they're all mixed right now.
     enum
     {
         PRIO_PROCESS = 0,
@@ -111,6 +96,7 @@ version (CRuntime_Glibc)
     {
         RUSAGE_SELF     =  0,
         RUSAGE_CHILDREN = -1,
+        RUSAGE_THREAD = 1
     }
 
     struct rusage
@@ -131,6 +117,8 @@ version (CRuntime_Glibc)
         c_long ru_nsignals;
         c_long ru_nvcsw;
         c_long ru_nivcsw;
+        version (CRuntime_Musl)
+            c_long[16] __reserved;
     }
 
     enum
@@ -200,9 +188,8 @@ else version (FreeBSD)
     enum
     {
         RLIM_INFINITY   = (cast(rlim_t)((cast(ulong) 1 << 63) - 1)),
-        // FreeBSD explicitly does not define the following:
-        //RLIM_SAVED_MAX,
-        //RLIM_SAVED_CUR,
+        RLIM_SAVED_MAX  = RLIM_INFINITY,
+        RLIM_SAVED_CUR  = RLIM_INFINITY,
     }
 
     enum
@@ -258,9 +245,8 @@ else version (NetBSD)
     enum
     {
         RLIM_INFINITY   = (cast(rlim_t)((cast(ulong) 1 << 63) - 1)),
-        // FreeBSD explicitly does not define the following:
-        //RLIM_SAVED_MAX,
-        //RLIM_SAVED_CUR,
+        RLIM_SAVED_MAX = RLIM_INFINITY,
+        RLIM_SAVED_CUR = RLIM_INFINITY,
     }
 
     enum
@@ -375,9 +361,8 @@ else version (DragonFlyBSD)
     enum
     {
         RLIM_INFINITY   = (cast(rlim_t)((cast(ulong) 1 << 63) - 1)),
-        // DragonFlyBSD explicitly does not define the following:
-        //RLIM_SAVED_MAX,
-        //RLIM_SAVED_CUR,
+        RLIM_SAVED_MAX  = RLIM_INFINITY,
+        RLIM_SAVED_CUR  = RLIM_INFINITY,
     }
 
     enum
@@ -474,162 +459,22 @@ else version (Solaris)
         RLIMIT_AS     = 6,
     }
 }
-else version (CRuntime_Bionic)
+else
+    static assert (false, "Unsupported platform");
+
+/*
+struct rlimit
 {
-    enum
-    {
-        PRIO_PROCESS = 0,
-        PRIO_PGRP    = 1,
-        PRIO_USER    = 2,
-    }
-
-    alias c_ulong rlim_t;
-    enum RLIM_INFINITY = cast(c_ulong)(~0UL);
-
-    enum
-    {
-        RUSAGE_SELF     =  0,
-        RUSAGE_CHILDREN = -1,
-    }
-
-    struct rusage
-    {
-        timeval ru_utime;
-        timeval ru_stime;
-        c_long ru_maxrss;
-        c_long ru_ixrss;
-        c_long ru_idrss;
-        c_long ru_isrss;
-        c_long ru_minflt;
-        c_long ru_majflt;
-        c_long ru_nswap;
-        c_long ru_inblock;
-        c_long ru_oublock;
-        c_long ru_msgsnd;
-        c_long ru_msgrcv;
-        c_long ru_nsignals;
-        c_long ru_nvcsw;
-        c_long ru_nivcsw;
-    }
-
-    enum
-    {
-        RLIMIT_CORE   = 4,
-        RLIMIT_CPU    = 0,
-        RLIMIT_DATA   = 2,
-        RLIMIT_FSIZE  = 1,
-        RLIMIT_NOFILE = 7,
-        RLIMIT_STACK  = 3,
-        RLIMIT_AS     = 9,
-    }
+    rlim_t rlim_cur;
+    rlim_t rlim_max;
 }
-else version (CRuntime_Musl)
-{
-    alias ulong rlim_t;
-    enum RLIM_INFINITY = cast(c_ulong)(~0UL);
 
-    int getrlimit(int, rlimit*);
-    int setrlimit(int, const scope rlimit*);
-    alias getrlimit getrlimit64;
-    alias setrlimit setrlimit64;
-    enum
-    {
-        RUSAGE_SELF = 0,
-        RUSAGE_CHILDREN = -1,
-        RUSAGE_THREAD = 1
-    }
-    struct rusage
-    {
-        timeval ru_utime;
-        timeval ru_stime;
-        c_long ru_maxrss;
-        c_long ru_ixrss;
-        c_long ru_idrss;
-        c_long ru_isrss;
-        c_long ru_minflt;
-        c_long ru_majflt;
-        c_long ru_nswap;
-        c_long ru_inblock;
-        c_long ru_oublock;
-        c_long ru_msgsnd;
-        c_long ru_msgrcv;
-        c_long ru_nsignals;
-        c_long ru_nvcsw;
-        c_long ru_nivcsw;
-        c_long[16] __reserved;
-    }
-
-    enum
-    {
-        RLIMIT_CPU    = 0,
-        RLIMIT_FSIZE  = 1,
-        RLIMIT_DATA   = 2,
-        RLIMIT_STACK  = 3,
-        RLIMIT_CORE   = 4,
-        RLIMIT_NOFILE = 7,
-        RLIMIT_AS     = 9,
-    }
-}
-else version (CRuntime_UClibc)
-{
-    enum
-    {
-        PRIO_PROCESS = 0,
-        PRIO_PGRP    = 1,
-        PRIO_USER    = 2,
-    }
-
-    static if (__USE_FILE_OFFSET64)
-         alias ulong rlim_t;
-    else
-         alias c_ulong rlim_t;
-
-    static if (__USE_FILE_OFFSET64)
-        enum RLIM_INFINITY = 0xffffffffffffffffUL;
-    else
-        enum RLIM_INFINITY = cast(c_ulong)(~0UL);
-
-    enum RLIM_SAVED_MAX = RLIM_INFINITY;
-    enum RLIM_SAVED_CUR = RLIM_INFINITY;
-
-    enum
-    {
-        RUSAGE_SELF     =  0,
-        RUSAGE_CHILDREN = -1,
-    }
-
-    struct rusage
-    {
-        timeval ru_utime;
-        timeval ru_stime;
-        c_long ru_maxrss;
-        c_long ru_ixrss;
-        c_long ru_idrss;
-        c_long ru_isrss;
-        c_long ru_minflt;
-        c_long ru_majflt;
-        c_long ru_nswap;
-        c_long ru_inblock;
-        c_long ru_oublock;
-        c_long ru_msgsnd;
-        c_long ru_msgrcv;
-        c_long ru_nsignals;
-        c_long ru_nvcsw;
-        c_long ru_nivcsw;
-    }
-
-    enum
-    {
-        RLIMIT_CORE   = 4,
-        RLIMIT_CPU    = 0,
-        RLIMIT_DATA   = 2,
-        RLIMIT_FSIZE  = 1,
-        RLIMIT_NOFILE = 7,
-        RLIMIT_STACK  = 3,
-        RLIMIT_AS     = 9,
-    }
-}
-else static assert (false, "Unsupported platform");
+int getpriority(int, id_t);
+int getrlimit(int, rlimit*);
+int getrusage(int, rusage*);
+int setpriority(int, id_t, int);
+int setrlimit(int, const rlimit*);
+*/
 
 struct rlimit
 {
@@ -641,40 +486,6 @@ version (CRuntime_Glibc)
 {
     int getpriority(int, id_t);
     int setpriority(int, id_t, int);
-}
-else version (FreeBSD)
-{
-    int getpriority(int, int);
-    int setpriority(int, int, int);
-}
-else version (DragonFlyBSD)
-{
-    int getpriority(int, int);
-    int setpriority(int, int, int);
-}
-else version (CRuntime_Bionic)
-{
-    int getpriority(int, int);
-    int setpriority(int, int, int);
-}
-else version (Solaris)
-{
-    int getpriority(int, id_t);
-    int setpriority(int, id_t, int);
-}
-else version (Darwin)
-{
-    int getpriority(int, id_t);
-    int setpriority(int, id_t, int);
-}
-else version (CRuntime_UClibc)
-{
-    int getpriority(int, id_t);
-    int setpriority(int, id_t, int);
-}
-
-version (CRuntime_Glibc)
-{
     static if (__USE_FILE_OFFSET64)
     {
         int getrlimit64(int, rlimit*);
@@ -689,50 +500,76 @@ version (CRuntime_Glibc)
     }
     int getrusage(int, rusage*);
 }
-else version (CRuntime_Bionic)
-{
-    int getrlimit(int, rlimit*);
-    int getrusage(int, rusage*);
-    int setrlimit(int, const scope rlimit*);
-}
-else version (Darwin)
-{
-    int getrlimit(int, rlimit*);
-    int getrusage(int, rusage*);
-    int setrlimit(int, const scope rlimit*);
-}
 else version (FreeBSD)
 {
+    int getpriority(int, int);
     int getrlimit(int, rlimit*);
     int getrusage(int, rusage*);
+    int setpriority(int, int, int);
     int setrlimit(int, const scope rlimit*);
 }
 else version (NetBSD)
 {
+    int getpriority(int, int);
     int getrlimit(int, rlimit*);
     int getrusage(int, rusage*);
+    int setpriority(int, int, int);
     int setrlimit(int, const scope rlimit*);
 }
 else version (OpenBSD)
 {
+    int getpriority(int, int);
     int getrlimit(int, rlimit*);
     int getrusage(int, rusage*);
+    int setpriority(int, int, int);
     int setrlimit(int, const scope rlimit*);
 }
 else version (DragonFlyBSD)
 {
+    int getpriority(int, int);
     int getrlimit(int, rlimit*);
     int getrusage(int, rusage*);
+    int setpriority(int, int, int);
     int setrlimit(int, const scope rlimit*);
+}
+else version (CRuntime_Bionic)
+{
+    int getpriority(int, int);
+    int getrlimit(int, rlimit*);
+    int getrusage(int, rusage*);
+    int setpriority(int, int, int);
+    int setrlimit(int, const scope rlimit*);
+}
+else version (CRuntime_Musl)
+{
+    int getpriority(int, id_t);
+    int setpriority(int, id_t, int);
+    int getrlimit(int, rlimit*);
+    int setrlimit(int, const scope rlimit*);
+    alias getrlimit getrlimit64;
+    alias setrlimit setrlimit64;
+    int getrusage(int, rusage*);
 }
 else version (Solaris)
 {
+    int getpriority(int, int);
     int getrlimit(int, rlimit*);
     int getrusage(int, rusage*);
+    int setpriority(int, int, int);
+    int setrlimit(int, const scope rlimit*);
+}
+else version (Darwin)
+{
+    int getpriority(int, id_t);
+    int getrlimit(int, rlimit*);
+    int getrusage(int, rusage*);
+    int setpriority(int, id_t, int);
     int setrlimit(int, const scope rlimit*);
 }
 else version (CRuntime_UClibc)
 {
+    int getpriority(int, id_t);
+    int setpriority(int, id_t, int);
     static if (__USE_FILE_OFFSET64)
     {
         int getrlimit64(int, rlimit*);
@@ -747,3 +584,5 @@ else version (CRuntime_UClibc)
     }
     int getrusage(int, rusage*);
 }
+else
+    static assert (false, "Unsupported platform");

@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V atomic operations.
-;; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -26,10 +26,6 @@
   UNSPEC_ATOMIC_STORE
   UNSPEC_MEMORY_BARRIER
 ])
-
-(define_code_iterator any_atomic [plus ior xor and])
-(define_code_attr atomic_optab
-  [(plus "add") (ior "or") (xor "xor") (and "and")])
 
 ;; Memory barriers.
 

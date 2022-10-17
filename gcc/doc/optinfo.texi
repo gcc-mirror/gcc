@@ -1,4 +1,4 @@
-@c Copyright (C) 2013-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2013-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -24,7 +24,7 @@ information about various compiler transformations and optimizations.
 
 A dump_manager class is defined in @file{dumpfile.h}. Various passes
 register dumping pass-specific information via @code{dump_register} in
-@file{passes.c}. During the registration, an optimization pass can
+@file{passes.cc}. During the registration, an optimization pass can
 select its optimization group (@pxref{Optimization groups}). After
 that optimization information corresponding to the entire group
 (presumably from multiple passes) can be output via command-line
@@ -155,7 +155,7 @@ file name. The caller only needs to decide which dump output
 information is relevant, and under what conditions. This determines
 the associated flags.
 
-Consider the following example from @file{loop-unroll.c} where an
+Consider the following example from @file{loop-unroll.cc} where an
 informative message about a loop (along with its location) is printed
 when any of the following flags is enabled
 @itemize @minus

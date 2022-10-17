@@ -1,5 +1,5 @@
 /* Tree switch conversion for GNU compiler.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,19 +130,19 @@ public:
   {}
 
   cluster_type
-  get_type ()
+  get_type () final override
   {
     return SIMPLE_CASE;
   }
 
   tree
-  get_low ()
+  get_low () final override
   {
     return m_low;
   }
 
   tree
-  get_high ()
+  get_high () final override
   {
     return m_high;
   }
@@ -153,13 +153,13 @@ public:
   }
 
   void
-  debug ()
+  debug () final override
   {
     dump (stderr);
   }
 
   void
-  dump (FILE *f, bool details ATTRIBUTE_UNUSED = false)
+  dump (FILE *f, bool details ATTRIBUTE_UNUSED = false) final override
   {
     PRINT_CASE (f, get_low ());
     if (get_low () != get_high ())
@@ -170,14 +170,21 @@ public:
     fprintf (f, " ");
   }
 
-  void emit (tree, tree, tree, basic_block, location_t)
+  void emit (tree, tree, tree, basic_block, location_t) final override
   {
     gcc_unreachable ();
   }
 
-  bool is_single_value_p ()
+  bool is_single_value_p () final override
   {
     return tree_int_cst_equal (get_low (), get_high ());
+  }
+
+  /* Return number of comparisons needed for the case.  */
+  unsigned
+  get_comparison_count ()
+  {
+    return m_range_p ? 2 : 1;
   }
 
   /* Low value of the case.  */
@@ -217,24 +224,24 @@ public:
   ~group_cluster ();
 
   tree
-  get_low ()
+  get_low () final override
   {
     return m_cases[0]->get_low ();
   }
 
   tree
-  get_high ()
+  get_high () final override
   {
     return m_cases[m_cases.length () - 1]->get_high ();
   }
 
   void
-  debug ()
+  debug () final override
   {
     dump (stderr);
   }
 
-  void dump (FILE *f, bool details = false);
+  void dump (FILE *f, bool details = false) final override;
 
   /* List of simple clusters handled by the group.  */
   vec<simple_cluster *> m_cases;
@@ -242,7 +249,7 @@ public:
 
 /* Concrete subclass of group_cluster representing a collection
    of cases to be implemented as a jump table.
-   The "emit" vfunc gernerates a nested switch statement which
+   The "emit" vfunc generates a nested switch statement which
    is later lowered to a jump table.  */
 
 class jump_table_cluster: public group_cluster
@@ -254,22 +261,26 @@ public:
   {}
 
   cluster_type
-  get_type ()
+  get_type () final override
   {
     return JUMP_TABLE;
   }
 
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb, location_t loc);
+	     tree default_label_expr, basic_block default_bb, location_t loc)
+    final override;
 
   /* Find jump tables of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
   static vec<cluster *> find_jump_tables (vec<cluster *> &clusters);
 
   /* Return true when cluster starting at START and ending at END (inclusive)
-     can build a jump-table.  */
+     can build a jump-table.  COMPARISON_COUNT is number of comparison
+     operations needed if the clusters are expanded as decision tree.
+     MAX_RATIO tells about the maximum code growth (in percent).  */
   static bool can_be_handled (const vec<cluster *> &clusters, unsigned start,
-			      unsigned end);
+			      unsigned end, unsigned HOST_WIDE_INT max_ratio,
+			      unsigned HOST_WIDE_INT comparison_count);
 
   /* Return true if cluster starting at START and ending at END (inclusive)
      is profitable transformation.  */
@@ -356,7 +367,7 @@ public:
   {}
 
   cluster_type
-  get_type ()
+  get_type () final override
   {
     return BIT_TEST;
   }
@@ -378,7 +389,8 @@ public:
     There *MUST* be max_case_bit_tests or less unique case
     node targets.  */
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb, location_t loc);
+	     tree default_label_expr, basic_block default_bb, location_t loc)
+     final override;
 
   /* Find bit tests of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
@@ -419,7 +431,8 @@ public:
   static basic_block hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 						    tree cond,
 						    basic_block case_bb,
-						    profile_probability prob);
+						    profile_probability prob,
+						    location_t);
 
   /* Return whether bit test expansion is allowed.  */
   static inline bool is_enabled (void)

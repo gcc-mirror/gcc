@@ -4,10 +4,12 @@
 /*
 TEST_OUTPUT:
 ---
-compilable/ddoc10236.d(33): Warning: Ddoc: parameter count mismatch
-compilable/ddoc10236.d(45): Warning: Ddoc: function declaration has no parameter 'y'
-compilable/ddoc10236.d(57): Warning: Ddoc: function declaration has no parameter 'y'
-compilable/ddoc10236.d(57): Warning: Ddoc: parameter count mismatch
+compilable/ddoc10236.d(35): Warning: Ddoc: parameter count mismatch, expected 2, got 1
+compilable/ddoc10236.d(47): Warning: Ddoc: function declaration has no parameter 'y'
+compilable/ddoc10236.d(59): Warning: Ddoc: function declaration has no parameter 'y'
+compilable/ddoc10236.d(59): Warning: Ddoc: parameter count mismatch, expected 1, got 2
+compilable/ddoc10236.d(71): Warning: Ddoc: parameter count mismatch, expected 2, got 0
+compilable/ddoc10236.d(71):        Note that the format is `param = description`
 ---
 */
 
@@ -55,5 +57,17 @@ void foo_no_param_y(int x, int z)		// Warning: Ddoc: function declaration has no
  */
 
 void foo_count_mismatch_no_param_y(int x)
+{
+}
+
+/***********************************
+ * foo_count_mismatch_wrong_format does this.
+ * Params:
+ *	x :	is for this
+ *		and not for that
+ *	y :	is for that
+ */
+
+void foo_count_mismatch_wrong_format(int x, int y)
 {
 }

@@ -1,6 +1,6 @@
-/* Declarations for insn-output.c and other code to write to asm_out_file.
-   These functions are defined in final.c, and varasm.c.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+/* Declarations for insn-output.cc and other code to write to asm_out_file.
+   These functions are defined in final.cc, and varasm.cc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ extern void init_final (const char *);
 extern void app_enable (void);
 
 /* Disable APP processing of subsequent output.
-   Called from varasm.c before most kinds of output.  */
+   Called from varasm.cc before most kinds of output.  */
 extern void app_disable (void);
 
 /* Return the number of slots filled in the current
@@ -86,16 +86,16 @@ extern void output_operand (rtx, int);
 extern void output_operand_lossage (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 /* Output a string of assembler code, substituting insn operands.
-   Defined in final.c.  */
+   Defined in final.cc.  */
 extern void output_asm_insn (const char *, rtx *);
 
 /* Compute a worst-case reference address of a branch so that it
    can be safely used in the presence of aligned labels.
-   Defined in final.c.  */
+   Defined in final.cc.  */
 extern int insn_current_reference_address (rtx_insn *);
 
 /* Find the alignment associated with a CODE_LABEL.
-   Defined in final.c.  */
+   Defined in final.cc.  */
 extern align_flags label_to_alignment (rtx);
 
 /* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
@@ -147,7 +147,7 @@ extern void leaf_renumber_regs_insn (rtx);
 /* Locate the proper template for the given insn-code.  */
 extern const char *get_insn_template (int, rtx_insn *);
 
-/* Functions in varasm.c.  */
+/* Functions in varasm.cc.  */
 
 /* Emit any pending weak declarations.  */
 extern void weak_finish (void);
@@ -198,10 +198,6 @@ extern void assemble_end_function (tree, const char *);
    DONT_OUTPUT_DATA if nonzero means don't actually output the
    initial value (that will be done by the caller).  */
 extern void assemble_variable (tree, int, int, int);
-
-/* Put the vtable verification constructor initialization function
-   into the preinit array.  */
-extern void assemble_vtv_preinit_initializer (tree);
 
 /* Assemble everything that is needed for a variable declaration that has
    no definition in the current translation unit.  */
@@ -308,7 +304,7 @@ extern void output_quoted_string (FILE *, const char *);
    sequence is being output, so it can be used as a test in the
    insn output code.
 
-   This variable is defined  in final.c.  */
+   This variable is defined  in final.cc.  */
 extern rtx_sequence *final_sequence;
 
 /* File in which assembler code is being written.  */
@@ -365,44 +361,53 @@ extern void default_function_switched_text_sections (FILE *, tree, bool);
 extern void no_asm_to_stream (FILE *);
 
 /* Flags controlling properties of a section.  */
-#define SECTION_ENTSIZE	 0x000ff	/* entity size in section */
-#define SECTION_CODE	 0x00100	/* contains code */
-#define SECTION_WRITE	 0x00200	/* data is writable */
-#define SECTION_DEBUG	 0x00400	/* contains debug data */
-#define SECTION_LINKONCE 0x00800	/* is linkonce */
-#define SECTION_SMALL	 0x01000	/* contains "small data" */
-#define SECTION_BSS	 0x02000	/* contains zeros only */
-#define SECTION_FORGET	 0x04000	/* forget that we've entered the section */
-#define SECTION_MERGE	 0x08000	/* contains mergeable data */
-#define SECTION_STRINGS  0x10000	/* contains zero terminated strings without
-					   embedded zeros */
-#define SECTION_OVERRIDE 0x20000	/* allow override of default flags */
-#define SECTION_TLS	 0x40000	/* contains thread-local storage */
-#define SECTION_NOTYPE	 0x80000	/* don't output @progbits */
-#define SECTION_DECLARED 0x100000	/* section has been used */
-#define SECTION_STYLE_MASK 0x600000	/* bits used for SECTION_STYLE */
-#define SECTION_COMMON   0x800000	/* contains common data */
-#define SECTION_RELRO	 0x1000000	/* data is readonly after relocation processing */
-#define SECTION_EXCLUDE  0x2000000	/* discarded by the linker */
-#define SECTION_RETAIN	 0x4000000	/* retained by the linker.  */
-#define SECTION_LINK_ORDER 0x8000000	/* section needs link-order.  */
+enum section_flag
+{
+  /* This SECTION_STYLE is used for unnamed sections that we can switch
+     to using a special assembler directive.  */
+  SECTION_UNNAMED = 0,
 
-/* NB: The maximum SECTION_MACH_DEP is 0x10000000 since AVR needs 4 bits
-   in SECTION_MACH_DEP.  */
-#define SECTION_MACH_DEP 0x10000000	/* subsequent bits reserved for target */
+  SECTION_ENTSIZE = (1UL << 8) - 1,	/* entity size in section */
+  SECTION_CODE = 1UL << 8,		/* contains code */
+  SECTION_WRITE = 1UL << 9,		/* data is writable */
 
-/* This SECTION_STYLE is used for unnamed sections that we can switch
-   to using a special assembler directive.  */
-#define SECTION_UNNAMED	 0x000000
+  SECTION_DEBUG = 1UL << 10,		/* contains debug data */
+  SECTION_LINKONCE = 1UL << 11,		/* is linkonce */
+  SECTION_SMALL = 1UL << 12,		/* contains "small data" */
+  SECTION_BSS = 1UL << 13,		/* contains zeros only */
+  SECTION_MERGE = 1UL << 14,		/* contains mergeable data */
+  SECTION_STRINGS = 1UL << 15,		/* contains zero terminated strings
+					   without embedded zeros */
+  SECTION_OVERRIDE = 1UL << 16,		/* allow override of default flags */
+  SECTION_TLS = 1UL << 17,		/* contains thread-local storage */
+  SECTION_NOTYPE = 1UL << 18,		/* don't output @progbits */
+  SECTION_DECLARED = 1UL << 19,		/* section has been used */
 
-/* This SECTION_STYLE is used for named sections that we can switch
-   to using a general section directive.  */
-#define SECTION_NAMED	 0x200000
+  /* This SECTION_STYLE is used for named sections that we can switch
+     to using a general section directive.  */
+  SECTION_NAMED = 1UL << 20,
 
-/* This SECTION_STYLE is used for sections that we cannot switch to at
-   all.  The choice of section is implied by the directive that we use
-   to declare the object.  */
-#define SECTION_NOSWITCH 0x400000
+  /* This SECTION_STYLE is used for sections that we cannot switch to at
+     all.  The choice of section is implied by the directive that we use
+     to declare the object.  */
+  SECTION_NOSWITCH = 1UL << 21,
+
+  /* bits used for SECTION_STYLE */
+  SECTION_STYLE_MASK = SECTION_NAMED | SECTION_NOSWITCH,
+
+  SECTION_COMMON = 1UL << 22,		/* contains common data */
+  SECTION_RELRO = 1UL << 23,		/* data is readonly after
+					   relocation processing */
+  SECTION_EXCLUDE = 1UL << 24,		/* discarded by the linker */
+  SECTION_RETAIN = 1UL << 25,		/* retained by the linker.  */
+  SECTION_LINK_ORDER = 1UL << 26,	/* section needs link-order.  */
+
+  /* NB: The maximum SECTION_MACH_DEP is (1UL << 28) since AVR needs 4 bits
+     in SECTION_MACH_DEP.  */
+  SECTION_MACH_DEP = 1UL << 27,
+
+  /* subsequent bits reserved for target */
+};
 
 /* A helper function for default_elf_select_section and
    default_elf_unique_section.  Categorizes the DECL.  */
@@ -461,7 +466,7 @@ struct GTY(()) named_section {
 
 /* A callback that writes the assembly code for switching to an unnamed
    section.  The argument provides callback-specific data.  */
-typedef void (*unnamed_section_callback) (const void *);
+typedef void (*unnamed_section_callback) (const char *);
 
 /* Information about a SECTION_UNNAMED section.  */
 struct GTY(()) unnamed_section {
@@ -469,8 +474,8 @@ struct GTY(()) unnamed_section {
 
   /* The callback used to switch to the section, and the data that
      should be passed to the callback.  */
-  unnamed_section_callback GTY ((skip)) callback;
-  const void *GTY ((skip)) data;
+  unnamed_section_callback GTY ((callback)) callback;
+  const char *data;
 
   /* The next entry in the chain of unnamed sections.  */
   section *next;
@@ -494,7 +499,7 @@ struct GTY(()) noswitch_section {
   struct section_common common;
 
   /* The callback used to assemble decls in this section.  */
-  noswitch_section_callback GTY ((skip)) callback;
+  noswitch_section_callback GTY ((callback)) callback;
 };
 
 /* Information about a section, which may be named or unnamed.  */
@@ -529,8 +534,8 @@ extern GTY(()) section *bss_noswitch_section;
 extern GTY(()) section *in_section;
 extern GTY(()) bool in_cold_section_p;
 
-extern section *get_unnamed_section (unsigned int, void (*) (const void *),
-				     const void *);
+extern section *get_unnamed_section (unsigned int, void (*) (const char *),
+				     const char *);
 extern section *get_section (const char *, unsigned int, tree,
 			     bool not_existing = false);
 extern section *get_named_section (tree, const char *, int);
@@ -552,7 +557,7 @@ extern section *get_cdtor_priority_section (int, bool);
 
 extern bool unlikely_text_section_p (section *);
 extern void switch_to_section (section *, tree = nullptr);
-extern void output_section_asm_op (const void *);
+extern void output_section_asm_op (const char *);
 
 extern void record_tm_clone_pair (tree, tree);
 extern void finish_tm_clone_pairs (void);

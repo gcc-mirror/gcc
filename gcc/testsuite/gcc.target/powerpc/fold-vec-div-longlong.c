@@ -19,5 +19,8 @@ test6 (vector unsigned long long x, vector unsigned long long y)
 {
   return vec_div (x, y);
 }
-/* { dg-final { scan-assembler-times {\mdivd\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mdivdu\M} 2 } } */
+
+/* { dg-final { scan-assembler-times {\mdivd\M}   2 { target { ! has_arch_pwr10 } } } } */
+/* { dg-final { scan-assembler-times {\mdivdu\M}  2 { target { ! has_arch_pwr10 } } } } */
+/* { dg-final { scan-assembler-times {\mvdivsd\M} 1 { target {   has_arch_pwr10 } } } } */
+/* { dg-final { scan-assembler-times {\mvdivud\M} 1 { target {   has_arch_pwr10 } } } } */

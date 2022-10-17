@@ -1,5 +1,8 @@
 void add90 (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i+=2)
     {
       c[i] = a[i] - b[i+1];
@@ -11,6 +14,9 @@ void add90 (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 
 void add270 (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i+=2)
     {
       c[i] = a[i] + b[i+1];
@@ -22,6 +28,9 @@ void add270 (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 
 void addMixed (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i+=4)
     {
       c[i] = a[i] - b[i+1];
@@ -34,6 +43,9 @@ void addMixed (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 void add90HandUnrolled (TYPE a[restrict N], TYPE b[restrict N],
 			TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < (N /2); i+=4)
     {
       c[i] = a[i] - b[i+1];
@@ -48,6 +60,9 @@ void add90HandUnrolled (TYPE a[restrict N], TYPE b[restrict N],
 void add90Hybrid (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N],
 		  TYPE d[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i+=2)
     {
       c[i] = a[i] - b[i+1];

@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!	-*- c++ -*-
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_VECTOR
 #define INCLUDE_ALGORITHM
 #define INCLUDE_MAP
+#define INCLUDE_MEMORY
 #include "system.h"
 
 // We don't want or need to be aware of networking

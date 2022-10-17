@@ -672,7 +672,7 @@ void test61()
 template Tuple63(T...){
     alias T Tuple63;
 }
-// Bugzilla 3336
+// https://issues.dlang.org/show_bug.cgi?id=3336
 static assert(!is(int[ Tuple63!(int, int) ]));
 
 void test63()
@@ -691,7 +691,7 @@ void test1411()
 }
 
 /***************************************/
-// Bugzilla 4444
+// https://issues.dlang.org/show_bug.cgi?id=4444
 
 void test4444()
 {
@@ -701,7 +701,7 @@ void test4444()
 }
 
 /***************************************/
-// 13864
+// https://issues.dlang.org/show_bug.cgi?id=13864
 
 struct Tuple13864(T...)
 {
@@ -721,7 +721,7 @@ void test13864()
 }
 
 /***************************************/
-// 4884
+// https://issues.dlang.org/show_bug.cgi?id=4884
 
 struct A4884(T...)
 {
@@ -736,7 +736,7 @@ void test4884()
 }
 
 /***************************************/
-// 4920
+// https://issues.dlang.org/show_bug.cgi?id=4920
 
 struct Test4920(parameters_...)
 {
@@ -751,7 +751,7 @@ void test4920()
 }
 
 /***************************************/
-// 4940
+// https://issues.dlang.org/show_bug.cgi?id=4940
 
 template Tuple4940(T...)
 {
@@ -777,7 +777,7 @@ struct S4940add
     long x;
 }
 
-ref S4940add get4940add(ref S4940add s){ return s; }
+ref S4940add get4940add(return ref S4940add s){ return s; }
 
 void test4940add()
 {
@@ -787,7 +787,7 @@ void test4940add()
 }
 
 /***************************************/
-// 6530
+// https://issues.dlang.org/show_bug.cgi?id=6530
 
 struct S6530
 {
@@ -876,7 +876,7 @@ void testCopy()
 }
 
 /***************************************/
-// 6700
+// https://issues.dlang.org/show_bug.cgi?id=6700
 
 template bug6700(TList ...) {
     const int bug6700 = 2;
@@ -886,7 +886,7 @@ TypeTuple!(int, long) TT6700;
 static assert(bug6700!( (TT6700[1..$]) )==2);
 
 /***************************************/
-// 6966
+// https://issues.dlang.org/show_bug.cgi?id=6966
 
 template X6966(T...)
 {
@@ -896,7 +896,7 @@ static assert(is(X6966!(int) == const(int)));
 static assert(is(X6966!(int, 0) == const(int)));
 
 /***************************************/
-// 7233
+// https://issues.dlang.org/show_bug.cgi?id=7233
 
 struct Foo7233 { int x, y; }
 Foo7233[] front7233(Foo7233[][] a)
@@ -920,7 +920,7 @@ void test7233()
 }
 
 /***************************************/
-// 7263
+// https://issues.dlang.org/show_bug.cgi?id=7263
 
 template TypeTuple7263(T...){ alias T TypeTuple7263; }
 
@@ -940,13 +940,13 @@ void test7263()
 }
 
 /***************************************/
-// 8244
+// https://issues.dlang.org/show_bug.cgi?id=8244
 
 TypeTuple!(int,int)[] x8244;
 static assert(is(typeof(x8244) == TypeTuple!(int, int)));
 
 /***************************************/
-// 9017
+// https://issues.dlang.org/show_bug.cgi?id=9017
 
 template X9017(Args...)
 {
@@ -974,13 +974,13 @@ void test9017()
 }
 
 /***************************************/
-// 10279
+// https://issues.dlang.org/show_bug.cgi?id=10279
 
 void foo10279(int[][] strs...) @trusted { }
 void bar10279() @safe { foo10279(); }
 
 /***************************************/
-// 13508
+// https://issues.dlang.org/show_bug.cgi?id=13508
 
 struct S13508
 {
@@ -1001,7 +1001,7 @@ void test13508() @safe @nogc
 }
 
 /***************************************/
-// 14395
+// https://issues.dlang.org/show_bug.cgi?id=14395
 
 int v2u14395(uint[1] ar...)
 {
@@ -1019,7 +1019,7 @@ void test14395()
 }
 
 /***************************************/
-// 10414
+// https://issues.dlang.org/show_bug.cgi?id=10414
 
 void foo10414(void delegate()[] ...) { }
 
@@ -1057,7 +1057,7 @@ void test14179()
 }
 
 /***************************************/
-// 10722
+// https://issues.dlang.org/show_bug.cgi?id=10722
 
 struct S10722
 {

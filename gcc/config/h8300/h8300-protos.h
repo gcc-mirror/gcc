@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 version
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_H8300_PROTOS_H
 #define GCC_H8300_PROTOS_H
 
-/* Declarations for functions used in insn-output.c.  */
+/* Declarations for functions used in insn-output.cc.  */
 #ifdef RTX_CODE
 extern unsigned int compute_mov_length (rtx *);
 extern const char *output_plussi (rtx *, bool);
@@ -45,7 +45,6 @@ extern int compute_a_shift_cc (rtx *, rtx_code);
 #ifdef HAVE_ATTR_cc
 extern enum attr_cc compute_plussi_cc (rtx *);
 #endif
-extern void h8300_expand_branch (rtx[]);
 extern void h8300_expand_store (rtx[]);
 extern bool expand_a_shift (machine_mode, enum rtx_code, rtx[]);
 extern int h8300_shift_needs_scratch_p (int, machine_mode, rtx_code);
@@ -60,7 +59,7 @@ extern int byte_accesses_mergeable_p (rtx, rtx);
 extern int same_cmp_preceding_p (rtx_insn *);
 extern int same_cmp_following_p (rtx_insn *);
 
-/* Used in builtins.c */
+/* Used in builtins.cc */
 extern rtx h8300_return_addr_rtx (int, rtx);
 
 /* Classifies an h8sx shift operation.
@@ -94,7 +93,7 @@ extern int h8300_tiny_data_p (tree);
 
 extern int h8300_can_use_return_insn_p (void);
 extern void h8300_expand_prologue (void);
-extern void h8300_expand_epilogue (void);
+extern void h8300_expand_epilogue (bool);
 extern int h8300_current_function_interrupt_function_p (void);
 extern int h8300_current_function_monitor_function_p (void);
 extern int h8300_initial_elimination_offset (int, int);

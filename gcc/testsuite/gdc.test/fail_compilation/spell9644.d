@@ -1,17 +1,16 @@
 // REQUIRED_ARGS: -o-
-// PERMUTE_ARGS:
-
+// EXTRA_FILES: imports/spell9644a.d imports/spell9644b.d
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/spell9644.d(27): Error: undefined identifier `b`
-fail_compilation/spell9644.d(28): Error: undefined identifier `xx`
-fail_compilation/spell9644.d(29): Error: undefined identifier `cb`, did you mean variable `ab`?
-fail_compilation/spell9644.d(30): Error: undefined identifier `bc`, did you mean variable `abc`?
-fail_compilation/spell9644.d(31): Error: undefined identifier `ccc`
-fail_compilation/spell9644.d(33): Error: undefined identifier `cor2`, did you mean variable `cor1`?
-fail_compilation/spell9644.d(34): Error: undefined identifier `pua`, did you mean variable `pub`?
-fail_compilation/spell9644.d(35): Error: undefined identifier `priw`
+fail_compilation/spell9644.d(26): Error: undefined identifier `b`
+fail_compilation/spell9644.d(27): Error: undefined identifier `xx`
+fail_compilation/spell9644.d(28): Error: undefined identifier `cb`, did you mean variable `ab`?
+fail_compilation/spell9644.d(29): Error: undefined identifier `bc`, did you mean variable `abc`?
+fail_compilation/spell9644.d(30): Error: undefined identifier `ccc`
+fail_compilation/spell9644.d(32): Error: undefined identifier `cor2`, did you mean variable `cor1`?
+fail_compilation/spell9644.d(33): Error: undefined identifier `pua`, did you mean variable `pub`?
+fail_compilation/spell9644.d(34): Error: undefined identifier `priw`
 ---
 */
 

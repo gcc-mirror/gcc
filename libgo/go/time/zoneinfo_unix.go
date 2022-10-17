@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin,!ios dragonfly freebsd hurd linux,!android netbsd openbsd solaris
+//go:build aix || (darwin && !ios) || dragonfly || freebsd || hurd || (linux && !android) || netbsd || openbsd || solaris
 
 // Parse "zoneinfo" time zone file.
 // This is a fairly standard file format used on OS X, Linux, BSD, Sun, and others.

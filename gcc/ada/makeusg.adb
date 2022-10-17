@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,6 +53,13 @@ begin
    Write_Eol;
 
    Display_Usage_Version_And_Help;
+
+   --  Line for -P
+
+   Write_Str ("  -Pproj   Build GNAT Project File proj using GPRbuild");
+   Write_Eol;
+   Write_Str ("           Treats all other switches as GPRbuild switches");
+   Write_Eol;
 
    --  Line for -a
 
@@ -167,11 +174,6 @@ begin
    --  Line for -p
 
    Write_Str ("  -p       Create missing obj, lib and exec dirs");
-   Write_Eol;
-
-   --  Line for -P
-
-   Write_Str ("  -Pproj   Use GNAT Project File proj");
    Write_Eol;
 
    --  Line for -q

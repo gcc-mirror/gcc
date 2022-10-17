@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,5 +25,6 @@ test01()
 {
   std::wstring_view s((const wchar_t*)nullptr);	// { dg-warning "\\\[-Wnonnull" }
   std::wstring_view t((wchar_t*)nullptr);	// { dg-warning "\\\[-Wnonnull" }
-  std::wstring_view u(nullptr);			// { dg-warning "\\\[-Wnonnull" }
+  std::wstring_view u(nullptr);			// { dg-warning "\\\[-Wnonnull" "" { target c++20_down } }
+// { dg-error "deleted" "P2166R1" { target c++23 } 0 }
 }

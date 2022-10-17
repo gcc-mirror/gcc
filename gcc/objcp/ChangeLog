@@ -1,3 +1,42 @@
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (obj-c++.tags): Look at *.cc.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/105355
+	* lang-specs.h: Use Separate syntax.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Rename .c names to .cc.
+	* config-lang.in: Likewise.
+	* lang-specs.h: Likewise.
+	* objcp-decl.cc (objcp_end_compound_stmt): Likewise.
+	* objcp-lang.cc (struct lang_hooks): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* objcp-decl.c: Moved to...
+	* objcp-decl.cc: ...here.
+	* objcp-lang.c: Moved to...
+	* objcp-lang.cc: ...here.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Add dummy objc++.install-dvi target.
+
+2021-10-11  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR objc++/56604
+	* Make-lang.in: Add obj-c++.srcman: line.
+
 2021-06-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* Make-lang.in (cc1objplus-checksum.c): Check previous
@@ -600,7 +639,7 @@
 	* objcp-lang.c: Likewise.
 
 
-Copyright (C) 2005-2021 Free Software Foundation, Inc.
+Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

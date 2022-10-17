@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2021 Free Software Foundation, Inc.
+# Copyright (C) 2007-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ load_lib target-supports.exp
 load_lib gfortran-dg.exp
 load_lib atomic-dg.exp
 
-# Return 1 if the the assembler understands .machine and .machinemode.  The
+# Return 1 if the assembler understands .machine and .machinemode.  The
 # target attribute needs that feature to work.
 proc check_effective_target_target_attribute { } {
     if { ![check_runtime s390_check_machine_machinemode [subst {

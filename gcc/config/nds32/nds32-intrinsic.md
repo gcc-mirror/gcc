@@ -1,5 +1,5 @@
 ;; Intrinsic patterns description of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -301,8 +301,8 @@
       offset = 32;
     }
   else
-    error ("__nds32__clr_pending_hwint not support NDS32_INT_SWI,"
-	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+    error ("%<__nds32__clr_pending_hwint%> not support %<NDS32_INT_SWI%>,"
+	   " %<NDS32_INT_ALZ%>, %<NDS32_INT_IDIVZE%>, %<NDS32_INT_DSSIM%>");
 
   /* $INT_PEND type is write one clear.  */
   clr_hwint = GEN_INT (1 << (INTVAL (operands[0]) - offset));
@@ -359,8 +359,8 @@
       operands[2] = GEN_INT (31 - (INTVAL (operands[1]) - 32));
     }
   else
-    error ("get_pending_int not support NDS32_INT_ALZ,"
-	   " NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+    error ("%<get_pending_int%> not support %<NDS32_INT_ALZ%>,"
+	   " %<NDS32_INT_IDIVZE%>, %<NDS32_INT_DSSIM%>");
 
   /* mfsr op0, sytem_reg  */
   if (system_reg != NULL_RTX)
@@ -417,8 +417,8 @@
       offset = 48;
     }
   else
-    error ("set_int_priority not support NDS32_INT_SWI,"
-	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+    error ("i%<set_int_priority%> not support %<NDS32_INT_SWI%>,"
+	   " %<NDS32_INT_ALZ%>, %<NDS32_INT_IDIVZE%>, %<NDS32_INT_DSSIM%>");
 
   mask = GEN_INT (~(3 << 2 * (INTVAL (operands[0]) - offset)));
   priority = GEN_INT ((int) (INTVAL (operands[1])
@@ -477,8 +477,8 @@
       offset = 48;
     }
   else
-    error ("set_int_priority not support NDS32_INT_SWI,"
-	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+    error ("%<set_int_priority%> not support %<NDS32_INT_SWI%>,"
+	   " %<NDS32_INT_ALZ%>, %<NDS32_INT_IDIVZE%>, %<NDS32_INT_DSSIM%>");
 
   priority = GEN_INT (31 - 2 * (INTVAL (operands[1]) - offset));
 
@@ -514,8 +514,8 @@
       offset = 32;
     }
   else
-    error ("__nds32__set_trig_type_level not support NDS32_INT_SWI,"
-	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+    error ("%<__nds32__set_trig_type_level%> not support %<NDS32_INT_SWI%>,"
+	   " %<NDS32_INT_ALZ%>, %<NDS32_INT_IDIVZE%>, %<NDS32_INT_DSSIM%>");
 
   if (system_reg != NULL_RTX)
     {
@@ -551,8 +551,8 @@
       offset = 32;
     }
   else
-    error ("__nds32__set_trig_type_edge not support NDS32_INT_SWI,"
-	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+    error ("%<__nds32__set_trig_type_edge%> not support %<NDS32_INT_SWI%>,"
+	   " %<NDS32_INT_ALZ%>, %<NDS32_INT_IDIVZE%>, %<NDS32_INT_DSSIM%>");
 
   if (system_reg != NULL_RTX)
     {
@@ -588,8 +588,8 @@
       offset = 32;
     }
   else
-    error ("__nds32__get_trig_type not support NDS32_INT_SWI,"
-	   " NDS32_INT_ALZ, NDS32_INT_IDIVZE, NDS32_INT_DSSIM");
+    error ("%<__nds32__get_trig_type%> not support %<NDS32_INT_SWI%>,"
+	   " %<NDS32_INT_ALZ%>, %<NDS32_INT_IDIVZE%>, %<NDS32_INT_DSSIM%>");
 
   if (system_reg != NULL_RTX)
     {

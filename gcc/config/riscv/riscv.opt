@@ -1,6 +1,6 @@
 ; Options for the RISC-V port of the compiler
 ;
-; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -92,7 +92,7 @@ Target RejectNegative Joined Var(riscv_cpu_string)
 -mcpu=PROCESSOR	Use architecture of and optimize the output for PROCESSOR.
 
 msmall-data-limit=
-Target Joined Separate UInteger Var(g_switch_value) Init(8)
+Target Joined UInteger Var(g_switch_value) Init(8)
 -msmall-data-limit=N	Put global and static data smaller than <number> bytes into a special section (on some targets).
 
 msave-restore
@@ -132,6 +132,12 @@ Target Bool Var(riscv_mrelax) Init(1)
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses.
 
+mcsr-check
+Target Bool Var(riscv_mcsr_check) Init(0)
+Enable the CSR checking for the ISA-dependent CRS and the read-only CSR.
+The ISA-dependent CSR are only valid when the specific ISA is set.  The
+read-only CSR can not be written by the CSR instructions.
+
 Mask(64BIT)
 
 Mask(MUL)
@@ -145,6 +151,8 @@ Mask(DOUBLE_FLOAT)
 Mask(RVC)
 
 Mask(RVE)
+
+Mask(VECTOR)
 
 mriscv-attribute
 Target Var(riscv_emit_attribute_p) Init(-1)
@@ -194,6 +202,27 @@ long riscv_stack_protector_guard_offset = 0
 
 TargetVariable
 int riscv_zi_subext
+
+TargetVariable
+int riscv_zb_subext
+
+TargetVariable
+int riscv_zk_subext
+
+TargetVariable
+int riscv_vector_elen_flags
+
+TargetVariable
+int riscv_zvl_flags
+
+TargetVariable
+int riscv_zicmo_subext
+
+TargetVariable
+int riscv_zf_subext
+
+TargetVariable
+int riscv_zm_subext
 
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)

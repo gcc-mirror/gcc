@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build !gccgo
 // +build !gccgo
 
 package main
@@ -31,8 +32,6 @@ void cpuHog() {
 void cpuHog2() {
 }
 
-static int cpuHogCount;
-
 struct cgoTracebackArg {
 	uintptr_t  context;
 	uintptr_t  sigContext;
@@ -49,13 +48,6 @@ void pprofCgoTraceback(void* parg) {
 	arg->buf[0] = (uintptr_t)(cpuHog) + 0x10;
 	arg->buf[1] = (uintptr_t)(cpuHog2) + 0x4;
 	arg->buf[2] = 0;
-	++cpuHogCount;
-}
-
-// getCpuHogCount fetches the number of times we've seen cpuHog in the
-// traceback.
-int getCpuHogCount() {
-	return cpuHogCount;
 }
 */
 import "C"
@@ -88,7 +80,7 @@ func CgoPprof() {
 	}
 
 	t0 := time.Now()
-	for C.getCpuHogCount() < 2 && time.Since(t0) < time.Second {
+	for time.Since(t0) < time.Second {
 		C.cpuHog()
 	}
 

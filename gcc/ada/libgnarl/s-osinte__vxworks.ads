@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --            Copyright (C) 1991-2017, Florida State University             --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,12 @@ with Interfaces.C;
 with System.VxWorks;
 with System.VxWorks.Ext;
 with System.Multiprocessors;
+with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
+
+   package SVE renames System.VxWorks.Ext;
 
    subtype int             is Interfaces.C.int;
    subtype unsigned        is Interfaces.C.unsigned;
@@ -55,6 +58,10 @@ package System.OS_Interface is
    type long_long          is new Long_Long_Integer;
    type unsigned_long_long is mod 2 ** long_long'Size;
    type size_t             is mod 2 ** Standard'Address_Size;
+
+   subtype STATUS    is SVE.STATUS;
+   subtype BOOL      is SVE.BOOL;
+   subtype vx_freq_t is SVE.vx_freq_t;
 
    -----------
    -- Errno --
@@ -200,7 +207,7 @@ package System.OS_Interface is
       oset : access sigset_t) return int;
    pragma Import (C, pthread_sigmask, "sigprocmask");
 
-   subtype t_id is System.VxWorks.Ext.t_id;
+   subtype t_id is SVE.t_id;
    subtype Thread_Id is t_id;
    --  Thread_Id and t_id are VxWorks identifiers for tasks. This value,
    --  although represented as a Long_Integer, is in fact an address. With
@@ -210,27 +217,24 @@ package System.OS_Interface is
    function kill (pid : t_id; sig : Signal) return int;
    pragma Inline (kill);
 
-   function getpid return t_id renames System.VxWorks.Ext.getpid;
+   function getpid return t_id renames SVE.getpid;
 
-   function Task_Stop (tid : t_id) return int
-     renames System.VxWorks.Ext.Task_Stop;
+   function Task_Stop (tid : t_id) return STATUS renames SVE.Task_Stop;
    --  If we are in the kernel space, stop the task whose t_id is given in
    --  parameter in such a way that it can be examined by the debugger. This
    --  typically maps to taskSuspend on VxWorks 5 and to taskStop on VxWorks 6.
 
-   function Task_Cont (tid : t_id) return int
-     renames System.VxWorks.Ext.Task_Cont;
+   function Task_Cont (tid : t_id) return STATUS renames SVE.Task_Cont;
    --  If we are in the kernel space, continue the task whose t_id is given
    --  in parameter if it has been stopped previously to be examined by the
    --  debugger (e.g. by taskStop). It typically maps to taskResume on VxWorks
    --  5 and to taskCont on VxWorks 6.
 
-   function Int_Lock return int renames System.VxWorks.Ext.Int_Lock;
+   function Int_Lock return int renames SVE.Int_Lock;
    --  If we are in the kernel space, lock interrupts. It typically maps to
    --  intLock.
 
-   function Int_Unlock (Old : int) return int
-     renames System.VxWorks.Ext.Int_Unlock;
+   procedure Int_Unlock (Old : int) renames SVE.Int_Unlock;
    --  If we are in the kernel space, unlock interrupts. It typically maps to
    --  intUnlock. The parameter Old is only used on PowerPC where it contains
    --  the returned value from Int_Lock (the old MPSR).
@@ -239,7 +243,11 @@ package System.OS_Interface is
    -- Time --
    ----------
 
-   type time_t is new unsigned_long;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
+   --  Time_t here used to be unsigned to match the VxWorks header declaration.
+   --  The header declaration has changed in newer releases and is now signed
+   --  for applications.
 
    type timespec is record
       ts_sec  : time_t;
@@ -280,34 +288,28 @@ package System.OS_Interface is
    -- VxWorks specific API --
    --------------------------
 
-   subtype STATUS is int;
-   --  Equivalent of the C type STATUS
-
-   OK    : constant STATUS := 0;
-   ERROR : constant STATUS := Interfaces.C.int (-1);
-
    function taskIdVerify (tid : t_id) return STATUS;
    pragma Import (C, taskIdVerify, "taskIdVerify");
 
    function taskIdSelf return t_id;
    pragma Import (C, taskIdSelf, "taskIdSelf");
 
-   function taskOptionsGet (tid : t_id; pOptions : access int) return int;
+   function taskOptionsGet (tid : t_id; pOptions : access int) return STATUS;
    pragma Import (C, taskOptionsGet, "taskOptionsGet");
 
-   function taskSuspend (tid : t_id) return int;
+   function taskSuspend (tid : t_id) return STATUS;
    pragma Import (C, taskSuspend, "taskSuspend");
 
-   function taskResume (tid : t_id) return int;
+   function taskResume (tid : t_id) return STATUS;
    pragma Import (C, taskResume, "taskResume");
 
-   function taskIsSuspended (tid : t_id) return int;
+   function taskIsSuspended (tid : t_id) return BOOL;
    pragma Import (C, taskIsSuspended, "taskIsSuspended");
 
-   function taskDelay (ticks : int) return int;
+   function taskDelay (ticks : int) return STATUS;
    pragma Import (C, taskDelay, "taskDelay");
 
-   function sysClkRateGet return int;
+   function sysClkRateGet return vx_freq_t;
    pragma Import (C, sysClkRateGet, "sysClkRateGet");
 
    --  VxWorks 5.x specific functions
@@ -315,17 +317,17 @@ package System.OS_Interface is
    --  taskVarLib: eg VxWorks 6 RTPs
 
    function taskVarAdd
-     (tid : t_id; pVar : access System.Address) return int;
+     (tid : t_id; pVar : access System.Address) return STATUS;
    pragma Import (C, taskVarAdd, "taskVarAdd");
 
    function taskVarDelete
-     (tid : t_id; pVar : access System.Address) return int;
+     (tid : t_id; pVar : access System.Address) return STATUS;
    pragma Import (C, taskVarDelete, "taskVarDelete");
 
    function taskVarSet
      (tid   : t_id;
       pVar  : access System.Address;
-      value : System.Address) return int;
+      value : System.Address) return STATUS;
    pragma Import (C, taskVarSet, "taskVarSet");
 
    function taskVarGet
@@ -374,15 +376,15 @@ package System.OS_Interface is
    procedure taskDelete (tid : t_id);
    pragma Import (C, taskDelete, "taskDelete");
 
-   function Set_Time_Slice (ticks : int) return int
-     renames System.VxWorks.Ext.Set_Time_Slice;
+   function Set_Time_Slice (ticks : int) return STATUS renames
+     SVE.Set_Time_Slice;
    --  Calls kernelTimeSlice under VxWorks 5.x, VxWorks 653, or in VxWorks 6
    --  kernel apps. Returns ERROR for RTPs, VxWorks 5 /CERT
 
-   function taskPriorityGet (tid : t_id; pPriority : access int) return int;
+   function taskPriorityGet (tid : t_id; pPriority : access int) return STATUS;
    pragma Import (C, taskPriorityGet, "taskPriorityGet");
 
-   function taskPrioritySet (tid : t_id; newPriority : int) return int;
+   function taskPrioritySet (tid : t_id; newPriority : int) return STATUS;
    pragma Import (C, taskPrioritySet, "taskPrioritySet");
 
    --  Semaphore creation flags
@@ -414,7 +416,7 @@ package System.OS_Interface is
    --  semTake() timeout with ticks > NO_WAIT
    S_objLib_OBJ_TIMEOUT     : constant := M_objLib + 4;
 
-   subtype SEM_ID is System.VxWorks.Ext.SEM_ID;
+   subtype SEM_ID is SVE.SEM_ID;
    --  typedef struct semaphore *SEM_ID;
 
    --  We use two different kinds of VxWorks semaphores: mutex and binary
@@ -428,14 +430,13 @@ package System.OS_Interface is
    function semMCreate (options : int) return SEM_ID;
    pragma Import (C, semMCreate, "semMCreate");
 
-   function semDelete (Sem : SEM_ID) return int
-     renames System.VxWorks.Ext.semDelete;
+   function semDelete (Sem : SEM_ID) return STATUS renames SVE.semDelete;
    --  Delete a semaphore
 
-   function semGive (Sem : SEM_ID) return int;
+   function semGive (Sem : SEM_ID) return STATUS;
    pragma Import (C, semGive, "semGive");
 
-   function semTake (Sem : SEM_ID; timeout : int) return int;
+   function semTake (Sem : SEM_ID; timeout : int) return STATUS;
    pragma Import (C, semTake, "semTake");
    --  Attempt to take binary semaphore.  Error is returned if operation
    --  times out
@@ -453,16 +454,16 @@ package System.OS_Interface is
    function Binary_Semaphore_Create return Binary_Semaphore_Id;
    pragma Inline (Binary_Semaphore_Create);
 
-   function Binary_Semaphore_Delete (ID : Binary_Semaphore_Id) return int;
+   function Binary_Semaphore_Delete (ID : Binary_Semaphore_Id) return STATUS;
    pragma Inline (Binary_Semaphore_Delete);
 
-   function Binary_Semaphore_Obtain (ID : Binary_Semaphore_Id) return int;
+   function Binary_Semaphore_Obtain (ID : Binary_Semaphore_Id) return STATUS;
    pragma Inline (Binary_Semaphore_Obtain);
 
-   function Binary_Semaphore_Release (ID : Binary_Semaphore_Id) return int;
+   function Binary_Semaphore_Release (ID : Binary_Semaphore_Id) return STATUS;
    pragma Inline (Binary_Semaphore_Release);
 
-   function Binary_Semaphore_Flush (ID : Binary_Semaphore_Id) return int;
+   function Binary_Semaphore_Flush (ID : Binary_Semaphore_Id) return STATUS;
    pragma Inline (Binary_Semaphore_Flush);
 
    ------------------------------------------------------------
@@ -477,16 +478,16 @@ package System.OS_Interface is
    function Interrupt_Connect
      (Vector    : Interrupt_Vector;
       Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int;
+      Parameter : System.Address := System.Null_Address) return STATUS;
    pragma Inline (Interrupt_Connect);
    --  Use this to set up an user handler. The routine installs a user handler
    --  which is invoked after the OS has saved enough context for a high-level
    --  language routine to be safely invoked.
 
-   function Interrupt_Context return int;
+   function Interrupt_Context return BOOL;
    pragma Inline (Interrupt_Context);
-   --  Return 1 if executing in an interrupt context; return 0 if executing in
-   --  a task context.
+   --  Return 1 (TRUE) if executing in an interrupt context;
+   --  return 0 (FALSE) if executing in a task context.
 
    function Interrupt_Number_To_Vector (intNum : int) return Interrupt_Vector;
    pragma Inline (Interrupt_Number_To_Vector);
@@ -498,12 +499,12 @@ package System.OS_Interface is
    --------------------------------
 
    function taskCpuAffinitySet (tid : t_id; CPU : int) return int
-     renames System.VxWorks.Ext.taskCpuAffinitySet;
+    renames SVE.taskCpuAffinitySet;
    --  For SMP run-times the affinity to CPU.
    --  For uniprocessor systems return ERROR status.
 
    function taskMaskAffinitySet (tid : t_id; CPU_Set : unsigned) return int
-     renames System.VxWorks.Ext.taskMaskAffinitySet;
+     renames SVE.taskMaskAffinitySet;
    --  For SMP run-times the affinity to CPU_Set.
    --  For uniprocessor systems return ERROR status.
 
@@ -519,5 +520,5 @@ private
 
    ERROR_PID : constant pid_t := -1;
 
-   type sigset_t is new System.VxWorks.Ext.sigset_t;
+   type sigset_t is new SVE.sigset_t;
 end System.OS_Interface;

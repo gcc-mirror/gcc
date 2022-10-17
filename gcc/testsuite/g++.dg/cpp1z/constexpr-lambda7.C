@@ -8,5 +8,5 @@ struct NonLiteral {
   int n;
 };
 
-static_assert( ID (NonLiteral{3}).n == 3); // { dg-error "non-literal" }
+static_assert( ID (NonLiteral{3}).n == 3); // { dg-error "non-literal" "" { target { ! implicit_constexpr } } }
 // { dg-prune-output "static assertion" }

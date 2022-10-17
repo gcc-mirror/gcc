@@ -1,3 +1,9 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 import core.stdc.stdio : printf;
 
 //------------------------------------------------------------------------------
@@ -71,5 +77,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-
-

@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,14 +24,14 @@
 // [string::find.first.not.of]
 // [string::find.last.not.of]
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void
 test03()
 {
   std::string_view str1("bar");
-  std::string str2("foobar");
+  __gnu_test::string str2("foobar");
 
   auto x = str2.find(str1);
   VERIFY (x == 3);

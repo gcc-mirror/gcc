@@ -6,59 +6,73 @@ import collections
 import glob
 import argparse
 
+
 class Platform(object):
     pass
 
+
 class simulator_platform(Platform):
-    directory = 'darwin_ios'
-    sdk = 'iphonesimulator'
     arch = 'i386'
     triple = 'i386-apple-darwin11'
-    version_min = '-miphoneos-version-min=7.0'
 
     prefix = "#ifdef __i386__\n\n"
     suffix = "\n\n#endif"
     src_dir = 'x86'
-    src_files = ['darwin.S', 'win32.S', 'ffi.c']
+    src_files = ['sysv.S', 'ffi.c', 'internal.h']
 
 
 class simulator64_platform(Platform):
-    directory = 'darwin_ios'
-    sdk = 'iphonesimulator'
     arch = 'x86_64'
     triple = 'x86_64-apple-darwin13'
-    version_min = '-miphoneos-version-min=7.0'
 
     prefix = "#ifdef __x86_64__\n\n"
     suffix = "\n\n#endif"
     src_dir = 'x86'
-    src_files = ['darwin64.S', 'ffi64.c']
+    src_files = ['unix64.S', 'ffi64.c', 'ffiw64.c', 'win64.S', 'internal64.h', 'asmnames.h']
 
 
 class device_platform(Platform):
-    directory = 'darwin_ios'
-    sdk = 'iphoneos'
     arch = 'armv7'
     triple = 'arm-apple-darwin11'
-    version_min = '-miphoneos-version-min=7.0'
 
     prefix = "#ifdef __arm__\n\n"
     suffix = "\n\n#endif"
     src_dir = 'arm'
-    src_files = ['sysv.S', 'trampoline.S', 'ffi.c']
+    src_files = ['sysv.S', 'ffi.c', 'internal.h']
 
 
 class device64_platform(Platform):
-    directory = 'darwin_ios'
-    sdk = 'iphoneos'
     arch = 'arm64'
     triple = 'aarch64-apple-darwin13'
-    version_min = '-miphoneos-version-min=7.0'
 
     prefix = "#ifdef __arm64__\n\n"
     suffix = "\n\n#endif"
     src_dir = 'aarch64'
-    src_files = ['sysv.S', 'ffi.c']
+    src_files = ['sysv.S', 'ffi.c', 'internal.h']
+
+
+class ios_simulator_platform(simulator_platform):
+    directory = 'darwin_ios'
+    sdk = 'iphonesimulator'
+    version_min = '-miphoneos-version-min=7.0'
+
+
+class ios_simulator64_platform(simulator64_platform):
+    directory = 'darwin_ios'
+    sdk = 'iphonesimulator'
+    version_min = '-miphoneos-version-min=7.0'
+
+
+class ios_device_platform(device_platform):
+    directory = 'darwin_ios'
+    sdk = 'iphoneos'
+    version_min = '-miphoneos-version-min=7.0'
+
+
+class ios_device64_platform(device64_platform):
+    directory = 'darwin_ios'
+    sdk = 'iphoneos'
+    version_min = '-miphoneos-version-min=7.0'
 
 
 class desktop32_platform(Platform):
@@ -68,7 +82,7 @@ class desktop32_platform(Platform):
     triple = 'i386-apple-darwin10'
     version_min = '-mmacosx-version-min=10.6'
     src_dir = 'x86'
-    src_files = ['darwin.S', 'win32.S', 'ffi.c']
+    src_files = ['sysv.S', 'ffi.c', 'internal.h']
 
     prefix = "#ifdef __i386__\n\n"
     suffix = "\n\n#endif"
@@ -84,16 +98,39 @@ class desktop64_platform(Platform):
     prefix = "#ifdef __x86_64__\n\n"
     suffix = "\n\n#endif"
     src_dir = 'x86'
-    src_files = ['darwin64.S', 'ffi64.c']
+    src_files = ['unix64.S', 'ffi64.c', 'ffiw64.c', 'win64.S', 'internal64.h', 'asmnames.h']
+
+
+class tvos_simulator64_platform(simulator64_platform):
+    directory = 'darwin_tvos'
+    sdk = 'appletvsimulator'
+    version_min = '-mtvos-version-min=9.0'
+
+
+class tvos_device64_platform(device64_platform):
+    directory = 'darwin_tvos'
+    sdk = 'appletvos'
+    version_min = '-mtvos-version-min=9.0'
+
+
+class watchos_simulator_platform(simulator_platform):
+    directory = 'darwin_watchos'
+    sdk = 'watchsimulator'
+    version_min = '-mwatchos-version-min=4.0'
+
+
+class watchos_device_platform(device_platform):
+    directory = 'darwin_watchos'
+    sdk = 'watchos'
+    arch = 'armv7k'
+    version_min = '-mwatchos-version-min=4.0'
 
 
 def mkdir_p(path):
     try:
         os.makedirs(path)
     except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST:
-            pass
-        else:
+        if exc.errno != errno.EEXIST:
             raise
 
 
@@ -102,8 +139,11 @@ def move_file(src_dir, dst_dir, filename, file_suffix=None, prefix='', suffix=''
     out_filename = filename
 
     if file_suffix:
-        split_name = os.path.splitext(filename)
-        out_filename = "%s_%s%s" % (split_name[0], file_suffix, split_name[1])
+        if filename in ['internal64.h', 'asmnames.h', 'internal.h']:
+            out_filename = filename
+        else:
+            split_name = os.path.splitext(filename)
+            out_filename = "%s_%s%s" % (split_name[0], file_suffix, split_name[1])
 
     with open(os.path.join(src_dir, filename)) as in_file:
         with open(os.path.join(dst_dir, out_filename), 'w') as out_file:
@@ -142,7 +182,7 @@ def build_target(platform, platform_headers):
     mkdir_p(build_dir)
     env = dict(CC=xcrun_cmd('clang'),
                LD=xcrun_cmd('ld'),
-               CFLAGS='%s' % (platform.version_min))
+               CFLAGS='%s -fembed-bitcode' % (platform.version_min))
     working_dir = os.getcwd()
     try:
         os.chdir(build_dir)
@@ -162,39 +202,47 @@ def build_target(platform, platform_headers):
             platform_headers[filename].add((platform.prefix, platform.arch, platform.suffix))
 
 
-def make_tramp():
-    with open('src/arm/trampoline.S', 'w') as tramp_out:
-        p = subprocess.Popen(['bash', 'src/arm/gentramp.sh'], stdout=tramp_out)
-        p.wait()
-
-
-def generate_source_and_headers(generate_osx=True, generate_ios=True):
+def generate_source_and_headers(
+    generate_osx=True,
+    generate_ios=True,
+    generate_tvos=True,
+    generate_watchos=True,
+):
     copy_files('src', 'darwin_common/src', pattern='*.c')
     copy_files('include', 'darwin_common/include', pattern='*.h')
 
     if generate_ios:
-        make_tramp()
-        copy_src_platform_files(simulator_platform)
-        copy_src_platform_files(simulator64_platform)
-        copy_src_platform_files(device_platform)
-        copy_src_platform_files(device64_platform)
+        copy_src_platform_files(ios_simulator_platform)
+        copy_src_platform_files(ios_simulator64_platform)
+        copy_src_platform_files(ios_device_platform)
+        copy_src_platform_files(ios_device64_platform)
     if generate_osx:
-        copy_src_platform_files(desktop32_platform)
         copy_src_platform_files(desktop64_platform)
+    if generate_tvos:
+        copy_src_platform_files(tvos_simulator64_platform)
+        copy_src_platform_files(tvos_device64_platform)
+    if generate_watchos:
+        copy_src_platform_files(watchos_simulator_platform)
+        copy_src_platform_files(watchos_device_platform)
 
     platform_headers = collections.defaultdict(set)
 
     if generate_ios:
-        build_target(simulator_platform, platform_headers)
-        build_target(simulator64_platform, platform_headers)
-        build_target(device_platform, platform_headers)
-        build_target(device64_platform, platform_headers)
+        build_target(ios_simulator_platform, platform_headers)
+        build_target(ios_simulator64_platform, platform_headers)
+        build_target(ios_device_platform, platform_headers)
+        build_target(ios_device64_platform, platform_headers)
     if generate_osx:
-        build_target(desktop32_platform, platform_headers)
         build_target(desktop64_platform, platform_headers)
+    if generate_tvos:
+        build_target(tvos_simulator64_platform, platform_headers)
+        build_target(tvos_device64_platform, platform_headers)
+    if generate_watchos:
+        build_target(watchos_simulator_platform, platform_headers)
+        build_target(watchos_device_platform, platform_headers)
 
     mkdir_p('darwin_common/include')
-    for header_name, tag_tuples in platform_headers.iteritems():
+    for header_name, tag_tuples in platform_headers.items():
         basename, suffix = os.path.splitext(header_name)
         with open(os.path.join('darwin_common/include', header_name), 'w') as header:
             for tag_tuple in tag_tuples:
@@ -204,6 +252,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--only-ios', action='store_true', default=False)
     parser.add_argument('--only-osx', action='store_true', default=False)
+    parser.add_argument('--only-tvos', action='store_true', default=False)
+    parser.add_argument('--only-watchos', action='store_true', default=False)
     args = parser.parse_args()
 
-    generate_source_and_headers(generate_osx=not args.only_ios, generate_ios=not args.only_osx)
+    generate_source_and_headers(
+        generate_osx=not args.only_ios and not args.only_tvos and not args.only_watchos,
+        generate_ios=not args.only_osx and not args.only_tvos and not args.only_watchos,
+        generate_tvos=not args.only_ios and not args.only_osx and not args.only_watchos,
+        generate_watchos=not args.only_ios and not args.only_osx and not args.only_tvos,
+    )

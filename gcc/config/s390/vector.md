@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility
-;;  Copyright (C) 2015-2021 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2022 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -36,7 +36,6 @@
 (define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")
 			     (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
-(define_mode_iterator V_HW_64 [V2DI V2DF])
 (define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
 (define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
 
@@ -50,7 +49,10 @@
 (define_mode_iterator VI_HW_HSD [V8HI  V4SI V2DI])
 (define_mode_iterator VI_HW_HS  [V8HI  V4SI])
 (define_mode_iterator VI_HW_QH  [V16QI V8HI])
-(define_mode_iterator VI_HW_4   [V4SI V4SF])
+
+; Directly supported vector modes with a certain number of elements
+(define_mode_iterator V_HW_2   [V2DI V2DF])
+(define_mode_iterator V_HW_4   [V4SI V4SF])
 
 ; All integer vector modes supported in a vector register + TImode
 (define_mode_iterator VIT [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1TI TI])
@@ -60,6 +62,12 @@
 (define_mode_iterator VFT [(V1SF "TARGET_VXE") (V2SF "TARGET_VXE") (V4SF "TARGET_VXE")
 			   V1DF V2DF
 			   (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
+
+; All modes present in V_HW and VFT.
+(define_mode_iterator V_HW_FT [V16QI V8HI V4SI V2DI (V1TI "TARGET_VXE") V1DF
+			       V2DF (V1SF "TARGET_VXE") (V2SF "TARGET_VXE")
+			       (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")
+			       (TF "TARGET_VXE")])
 
 ; FP vector modes directly supported by the HW.  This does not include
 ; vector modes using only part of a vector register and should be used
@@ -163,20 +171,36 @@
 		       (DF "d") (V1DF "d") (V2DF "d")
 		       (TF "x") (V1TF "x")])
 
-; Vector with doubled element size.
+; Vector with widened element size but half the number of elements.
 (define_mode_attr vec_double [(V1QI "V1HI") (V2QI "V1HI") (V4QI "V2HI") (V8QI "V4HI") (V16QI "V8HI")
 			      (V1HI "V1SI") (V2HI "V1SI") (V4HI "V2SI") (V8HI "V4SI")
 			      (V1SI "V1DI") (V2SI "V1DI") (V4SI "V2DI")
 			      (V1DI "V1TI") (V2DI "V1TI")
 			      (V1SF "V1DF") (V2SF "V1DF") (V4SF "V2DF")])
 
-; Vector with half the element size.
+; Vector with shrinked element size but twice the number of elements.
 (define_mode_attr vec_half [(V1HI "V2QI") (V2HI "V4QI") (V4HI "V8QI") (V8HI "V16QI")
 			    (V1SI "V2HI") (V2SI "V4HI") (V4SI "V8HI")
 			    (V1DI "V2SI") (V2DI "V4SI")
 			    (V1TI "V2DI")
 			    (V1DF "V2SF") (V2DF "V4SF")
 			    (V1TF "V1DF")])
+
+; Vector with twice the number of elements but same element size.
+(define_mode_attr vec_2x_nelts [(V1QI "V2QI") (V2QI "V4QI") (V4QI "V8QI") (V8QI "V16QI") (V16QI "V32QI")
+				(V1HI "V2HI") (V2HI "V4HI") (V4HI "V8HI") (V8HI "V16HI")
+				(V1SI "V2SI") (V2SI "V4SI") (V4SI "V8SI")
+				(V1DI "V2DI") (V2DI "V4DI")
+				(V1SF "V2SF") (V2SF "V4SF") (V4SF "V8SF")
+				(V1DF "V2DF") (V2DF "V4DF")])
+
+; Vector with widened element size and the same number of elements.
+(define_mode_attr vec_2x_wide [(V1QI "V1HI") (V2QI "V2HI") (V4QI "V4HI") (V8QI "V8HI") (V16QI "V16HI")
+			       (V1HI "V1SI") (V2HI "V2SI") (V4HI "V4SI") (V8HI "V8SI")
+			       (V1SI "V1DI") (V2SI "V2DI") (V4SI "V4DI")
+			       (V1DI "V1TI") (V2DI "V2TI")
+			       (V1SF "V1DF") (V2SF "V2DF") (V4SF "V4DF")
+			       (V1DF "V1TF") (V2DF "V2TF")])
 
 ; Vector with half the element size AND half the number of elements.
 (define_mode_attr vec_halfhalf
@@ -246,11 +270,13 @@
 	(match_operand:V_128 1 "register_operand" ""))]
   "TARGET_VX && GENERAL_REG_P (operands[0]) && VECTOR_REG_P (operands[1])"
   [(set (match_dup 2)
-	(unspec:DI [(subreg:V2DI (match_dup 1) 0)
-		    (const_int 0)] UNSPEC_VEC_EXTRACT))
+       (vec_select:DI
+         (subreg:V2DI (match_dup 1) 0)
+           (parallel [(const_int 0)])))
    (set (match_dup 3)
-	(unspec:DI [(subreg:V2DI (match_dup 1) 0)
-		    (const_int 1)] UNSPEC_VEC_EXTRACT))]
+       (vec_select:DI
+         (subreg:V2DI (match_dup 1) 0)
+           (parallel [(const_int 1)])))]
 {
   operands[2] = operand_subword (operands[0], 0, 0, <MODE>mode);
   operands[3] = operand_subword (operands[0], 1, 0, <MODE>mode);
@@ -487,22 +513,24 @@
   [(set_attr "op_type" "VRS")])
 
 
-; FIXME: Support also vector mode operands for 0
-; FIXME: This should be (vec_select ..) or something but it does only allow constant selectors :(
-; This is used via RTL standard name as well as for expanding the builtin
+;; FIXME: Support also vector mode operands for 0
+;; This is used via RTL standard name as well as for expanding the builtin
 (define_expand "vec_extract<mode><non_vec_l>"
-  [(set (match_operand:<non_vec> 0 "nonimmediate_operand" "")
-	(unspec:<non_vec> [(match_operand:V  1 "register_operand" "")
-			   (match_operand:SI 2 "nonmemory_operand" "")]
-			  UNSPEC_VEC_EXTRACT))]
-  "TARGET_VX")
+  [(set (match_operand:<non_vec>    0 "nonimmediate_operand" "")
+       (vec_select:<non_vec>
+         (match_operand:V           1 "register_operand" "")
+         (parallel
+          [(match_operand:SI        2 "nonmemory_operand" "")])))]
+  "TARGET_VX"
+)
 
 ; vlgvb, vlgvh, vlgvf, vlgvg, vsteb, vsteh, vstef, vsteg
 (define_insn "*vec_extract<mode>"
-  [(set (match_operand:<non_vec> 0 "nonimmediate_operand"          "=d,R")
-	(unspec:<non_vec> [(match_operand:V  1 "register_operand"   "v,v")
-			   (match_operand:SI 2 "nonmemory_operand" "an,I")]
-			  UNSPEC_VEC_EXTRACT))]
+  [(set (match_operand:<non_vec> 0 "nonimmediate_operand" "=d,R")
+       (vec_select:<non_vec>
+         (match_operand:V        1 "nonmemory_operand"  "v,v")
+         (parallel
+          [(match_operand:SI     2 "nonmemory_operand" "an,I")])))]
   "TARGET_VX
    && (!CONST_INT_P (operands[2])
        || UINTVAL (operands[2]) < GET_MODE_NUNITS (<V:MODE>mode))"
@@ -513,11 +541,11 @@
 
 ; vlgvb, vlgvh, vlgvf, vlgvg
 (define_insn "*vec_extract<mode>_plus"
-  [(set (match_operand:<non_vec>                      0 "nonimmediate_operand" "=d")
-	(unspec:<non_vec> [(match_operand:V           1 "register_operand"      "v")
-			   (plus:SI (match_operand:SI 2 "nonmemory_operand"     "a")
-				    (match_operand:SI 3 "const_int_operand"     "n"))]
-			   UNSPEC_VEC_EXTRACT))]
+  [(set (match_operand:<non_vec>       0 "nonimmediate_operand" "=d")
+	(vec_select:<non_vec>
+	 (match_operand:V              1 "register_operand"      "v")
+	 (plus:SI (match_operand:SI    2 "nonmemory_operand"     "a")
+	  (parallel [(match_operand:SI 3 "const_int_operand"     "n")]))))]
   "TARGET_VX"
   "vlgv<bhfgq>\t%0,%v1,%Y3(%2)"
   [(set_attr "op_type" "VRS")])
@@ -532,8 +560,8 @@
 })
 
 (define_insn "*vec_vllezlf<mode>"
-  [(set (match_operand:VI_HW_4              0 "register_operand" "=v")
-	(vec_concat:VI_HW_4
+  [(set (match_operand:V_HW_4              0 "register_operand" "=v")
+	(vec_concat:V_HW_4
 	 (vec_concat:<vec_halfnumelts>
 	  (match_operand:<non_vec> 1 "memory_operand"    "R")
 	  (const_int 0))
@@ -748,6 +776,146 @@
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
+
+; First DW of op1 and second DW of op2
+(define_insn "@vpdi1<mode>"
+  [(set (match_operand:V_HW_2   0 "register_operand" "=v")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand"  "v")
+	  (match_operand:V_HW_2 2 "register_operand"  "v"))
+	 (parallel [(const_int 0) (const_int 3)])))]
+  "TARGET_VX"
+  "vpdi\t%v0,%v1,%v2,1"
+  [(set_attr "op_type" "VRR")])
+
+; Second DW of op1 and first of op2
+(define_insn "@vpdi4<mode>"
+  [(set (match_operand:V_HW_2   0 "register_operand" "=v")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand"  "v")
+	  (match_operand:V_HW_2 2 "register_operand"  "v"))
+	 (parallel [(const_int 1) (const_int 2)])))]
+  "TARGET_VX"
+  "vpdi\t%v0,%v1,%v2,4"
+  [(set_attr "op_type" "VRR")])
+
+; Second DW of op1 and first DW of op2 (when interpreted as 2-element vector).
+(define_insn "@vpdi4_2<mode>"
+  [(set (match_operand:V_HW_4   0 "register_operand" "=v")
+	(vec_select:V_HW_4
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_4 1 "register_operand"  "v")
+	  (match_operand:V_HW_4 2 "register_operand"  "v"))
+	 (parallel [(const_int 2) (const_int 3) (const_int 4) (const_int 5)])))]
+  "TARGET_VX"
+  "vpdi\t%v0,%v1,%v2,4"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrhb"
+  [(set (match_operand:V16QI                     0 "register_operand" "=v")
+        (vec_select:V16QI
+	  (vec_concat:V32QI (match_operand:V16QI 1 "register_operand"  "v")
+			    (match_operand:V16QI 2 "register_operand"  "v"))
+	  (parallel [(const_int 0) (const_int 16)
+		     (const_int 1) (const_int 17)
+		     (const_int 2) (const_int 18)
+		     (const_int 3) (const_int 19)
+		     (const_int 4) (const_int 20)
+		     (const_int 5) (const_int 21)
+		     (const_int 6) (const_int 22)
+		     (const_int 7) (const_int 23)])))]
+  "TARGET_VX"
+  "vmrhb\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrlb"
+  [(set (match_operand:V16QI                     0 "register_operand" "=v")
+        (vec_select:V16QI
+	  (vec_concat:V32QI (match_operand:V16QI 1 "register_operand"  "v")
+			    (match_operand:V16QI 2 "register_operand"  "v"))
+	  (parallel [(const_int  8) (const_int 24)
+		     (const_int  9) (const_int 25)
+		     (const_int 10) (const_int 26)
+		     (const_int 11) (const_int 27)
+		     (const_int 12) (const_int 28)
+		     (const_int 13) (const_int 29)
+		     (const_int 14) (const_int 30)
+		     (const_int 15) (const_int 31)])))]
+  "TARGET_VX"
+  "vmrlb\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrhh"
+  [(set (match_operand:V8HI                     0 "register_operand" "=v")
+        (vec_select:V8HI
+	  (vec_concat:V16HI (match_operand:V8HI 1 "register_operand"  "v")
+			    (match_operand:V8HI 2 "register_operand"  "v"))
+	  (parallel [(const_int 0) (const_int 8)
+		     (const_int 1) (const_int 9)
+		     (const_int 2) (const_int 10)
+		     (const_int 3) (const_int 11)])))]
+  "TARGET_VX"
+  "vmrhh\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrlh"
+  [(set (match_operand:V8HI                     0 "register_operand" "=v")
+        (vec_select:V8HI
+	  (vec_concat:V16HI (match_operand:V8HI 1 "register_operand"  "v")
+			    (match_operand:V8HI 2 "register_operand"  "v"))
+	  (parallel [(const_int 4) (const_int 12)
+		     (const_int 5) (const_int 13)
+		     (const_int 6) (const_int 14)
+		     (const_int 7) (const_int 15)])))]
+  "TARGET_VX"
+  "vmrlh\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrhf"
+  [(set (match_operand:V_HW_4                              0 "register_operand" "=v")
+        (vec_select:V_HW_4
+	  (vec_concat:<vec_2x_nelts> (match_operand:V_HW_4 1 "register_operand"  "v")
+				     (match_operand:V_HW_4 2 "register_operand"  "v"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 1) (const_int 5)])))]
+  "TARGET_VX"
+  "vmrhf\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrlf"
+  [(set (match_operand:V_HW_4                              0 "register_operand" "=v")
+        (vec_select:V_HW_4
+	  (vec_concat:<vec_2x_nelts> (match_operand:V_HW_4 1 "register_operand"  "v")
+				     (match_operand:V_HW_4 2 "register_operand"  "v"))
+	  (parallel [(const_int 2) (const_int 6)
+		     (const_int 3) (const_int 7)])))]
+  "TARGET_VX"
+  "vmrlf\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrhg"
+  [(set (match_operand:V_HW_2                              0 "register_operand" "=v")
+        (vec_select:V_HW_2
+	  (vec_concat:<vec_2x_nelts> (match_operand:V_HW_2 1 "register_operand"  "v")
+				     (match_operand:V_HW_2 2 "register_operand"  "v"))
+	  (parallel [(const_int 0) (const_int 2)])))]
+  "TARGET_VX"
+  "vmrhg\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vmrlg"
+  [(set (match_operand:V_HW_2                              0 "register_operand" "=v")
+        (vec_select:V_HW_2
+	  (vec_concat:<vec_2x_nelts> (match_operand:V_HW_2 1 "register_operand"  "v")
+				     (match_operand:V_HW_2 2 "register_operand"  "v"))
+	  (parallel [(const_int 1) (const_int 3)])))]
+  "TARGET_VX"
+  "vmrlg\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
+
 (define_insn "*tf_to_fprx2_0"
   [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "+f") 0)
 	(subreg:DF (match_operand:TF    1 "general_operand"       "v") 0))]
@@ -779,7 +947,6 @@
   operands[5] = simplify_gen_subreg (DFmode, operands[1], TFmode, 8);
 })
 
-; vec_perm_const for V2DI using vpdi?
 
 ;;
 ;; Vector integer arithmetic instructions
@@ -1103,6 +1270,23 @@
   "<vec_shifts_mnem><bhfgq>\t%v0,%v1,%Y2"
   [(set_attr "op_type" "VRS")])
 
+; verllg for V4SI/V4SF.  This swaps the first and the second two
+; elements of a vector and is only valid in that context.
+(define_expand "rotl<mode>3_di"
+ [
+ (set (match_dup 2)
+  (subreg:V2DI (match_operand:V_HW_4 1) 0))
+ (set (match_dup 3)
+  (rotate:V2DI
+   (match_dup 2)
+   (const_int 32)))
+ (set (match_operand:V_HW_4 0)
+  (subreg:V_HW_4 (match_dup 3) 0))]
+ "TARGET_VX"
+ {
+  operands[2] = gen_reg_rtx (V2DImode);
+  operands[3] = gen_reg_rtx (V2DImode);
+ })
 
 ; Shift each element by corresponding vector element
 
@@ -1271,12 +1455,14 @@
 	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
 			     UNSPEC_VEC_UMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
-	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
-			     UNSPEC_VEC_MERGEL))]
+        (vec_select:<vec_double>
+	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (match_dup 5)))]
   "TARGET_VX"
  {
    operands[3] = gen_reg_rtx (<vec_double>mode);
    operands[4] = gen_reg_rtx (<vec_double>mode);
+   operands[5] = s390_expand_merge_perm_const (<vec_double>mode, false);
  })
 
 (define_expand "vec_widen_umult_hi_<mode>"
@@ -1288,12 +1474,14 @@
 	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
 			     UNSPEC_VEC_UMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
-	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
-			     UNSPEC_VEC_MERGEH))]
+        (vec_select:<vec_double>
+	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (match_dup 5)))]
   "TARGET_VX"
  {
    operands[3] = gen_reg_rtx (<vec_double>mode);
    operands[4] = gen_reg_rtx (<vec_double>mode);
+   operands[5] = s390_expand_merge_perm_const (<vec_double>mode, true);
  })
 
 (define_expand "vec_widen_smult_lo_<mode>"
@@ -1305,12 +1493,14 @@
 	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
 			     UNSPEC_VEC_SMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
-	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
-			     UNSPEC_VEC_MERGEL))]
+        (vec_select:<vec_double>
+	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (match_dup 5)))]
   "TARGET_VX"
  {
    operands[3] = gen_reg_rtx (<vec_double>mode);
    operands[4] = gen_reg_rtx (<vec_double>mode);
+   operands[5] = s390_expand_merge_perm_const (<vec_double>mode, false);
  })
 
 (define_expand "vec_widen_smult_hi_<mode>"
@@ -1322,12 +1512,14 @@
 	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
 			     UNSPEC_VEC_SMULT_ODD))
    (set (match_operand:<vec_double>                 0 "register_operand" "")
-	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
-			     UNSPEC_VEC_MERGEH))]
+        (vec_select:<vec_double>
+	 (vec_concat:<vec_2x_wide> (match_dup 3) (match_dup 4))
+	 (match_dup 5)))]
   "TARGET_VX"
  {
    operands[3] = gen_reg_rtx (<vec_double>mode);
    operands[4] = gen_reg_rtx (<vec_double>mode);
+   operands[5] = s390_expand_merge_perm_const (<vec_double>mode, true);
  })
 
 ; vec_widen_ushiftl_hi
@@ -1816,9 +2008,9 @@
 })
 
 (define_insn "*vec_load_pair<mode>"
-  [(set (match_operand:V_HW_64                       0 "register_operand" "=v,v")
-	(vec_concat:V_HW_64 (match_operand:<non_vec> 1 "register_operand"  "d,v")
-			    (match_operand:<non_vec> 2 "register_operand"  "d,v")))]
+  [(set (match_operand:V_HW_2                       0 "register_operand" "=v,v")
+	(vec_concat:V_HW_2 (match_operand:<non_vec> 1 "register_operand"  "d,v")
+			   (match_operand:<non_vec> 2 "register_operand"  "d,v")))]
   "TARGET_VX"
   "@
    vlvgp\t%v0,%1,%2
@@ -1833,6 +2025,32 @@
   "TARGET_VX"
   "vll\t%v0,%1,%2"
   [(set_attr "op_type" "VRS")])
+
+; vfeebs, vfeehs, vfeefs
+; vfeezbs, vfeezhs, vfeezfs
+(define_insn "@vec_vfees<mode>"
+  [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
+			   (match_operand:QI 3 "const_mask_operand" "C")]
+			  UNSPEC_VEC_VFEE))
+   (set (reg:CCRAW CC_REGNUM)
+	(unspec:CCRAW [(match_dup 1)
+		       (match_dup 2)
+		       (match_dup 3)]
+		      UNSPEC_VEC_VFEECC))]
+  "TARGET_VX"
+{
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
+
+  gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
+  flags &= ~VSTRING_FLAG_CS;
+
+  if (flags == VSTRING_FLAG_ZS)
+    return "vfeez<bhfgq>s\t%v0,%v1,%v2";
+  return "vfee<bhfgq>s\t%v0,%v1,%v2";
+}
+  [(set_attr "op_type" "VRR")])
 
 ; vfenebs, vfenehs, vfenefs
 ; vfenezbs, vfenezhs, vfenezfs
@@ -2166,29 +2384,35 @@
 
 (define_expand "vec_unpacks_lo_v4sf"
   [(set (match_dup 2)
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
-		      (match_dup 1)]
-		     UNSPEC_VEC_MERGEL))
-   (set (match_operand:V2DF               0 "register_operand" "=v")
+        (vec_select:V4SF
+	 (vec_concat:V8SF (match_operand:V4SF 1 "register_operand" "") (match_dup 1))
+	 (match_dup 3)))
+   (set (match_operand:V2DF                   0 "register_operand" "")
 	(float_extend:V2DF
 	 (vec_select:V2SF
 	  (match_dup 2)
 	  (parallel [(const_int 0) (const_int 2)]))))]
   "TARGET_VX"
-{ operands[2] = gen_reg_rtx(V4SFmode); })
+{
+  operands[2] = gen_reg_rtx(V4SFmode);
+  operands[3] = s390_expand_merge_perm_const (V4SFmode, false);
+})
 
 (define_expand "vec_unpacks_hi_v4sf"
   [(set (match_dup 2)
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
-		      (match_dup 1)]
-		     UNSPEC_VEC_MERGEH))
-   (set (match_operand:V2DF               0 "register_operand" "=v")
+        (vec_select:V4SF
+	 (vec_concat:V8SF (match_operand:V4SF 1 "register_operand" "") (match_dup 1))
+	 (match_dup 3)))
+   (set (match_operand:V2DF                   0 "register_operand" "")
 	(float_extend:V2DF
 	 (vec_select:V2SF
 	  (match_dup 2)
 	  (parallel [(const_int 0) (const_int 2)]))))]
   "TARGET_VX"
-{ operands[2] = gen_reg_rtx(V4SFmode); })
+{
+  operands[2] = gen_reg_rtx(V4SFmode);
+  operands[3] = s390_expand_merge_perm_const (V4SFmode, true);
+})
 
 
 ; double -> long double
@@ -2204,29 +2428,35 @@
 
 (define_expand "vec_unpacks_lo_v2df"
   [(set (match_dup 2)
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "v")
-		      (match_dup 1)]
-		     UNSPEC_VEC_MERGEL))
-   (set (match_operand:V1TF               0 "register_operand" "=v")
+        (vec_select:V2DF
+	 (vec_concat:V4DF (match_operand:V2DF 1 "register_operand" "") (match_dup 1))
+	 (match_dup 3)))
+   (set (match_operand:V1TF                   0 "register_operand" "")
 	(float_extend:V1TF
 	 (vec_select:V1DF
 	  (match_dup 2)
 	  (parallel [(const_int 0)]))))]
   "TARGET_VXE"
-{ operands[2] = gen_reg_rtx (V2DFmode); })
+{
+  operands[2] = gen_reg_rtx (V2DFmode);
+  operands[3] = s390_expand_merge_perm_const (V2DFmode, false);
+})
 
 (define_expand "vec_unpacks_hi_v2df"
   [(set (match_dup 2)
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "v")
-		      (match_dup 1)]
-		     UNSPEC_VEC_MERGEH))
-   (set (match_operand:V1TF               0 "register_operand" "=v")
+        (vec_select:V2DF
+	 (vec_concat:V4DF (match_operand:V2DF 1 "register_operand" "") (match_dup 1))
+	 (match_dup 3)))
+   (set (match_operand:V1TF                   0 "register_operand" "")
 	(float_extend:V1TF
 	 (vec_select:V1DF
 	  (match_dup 2)
 	  (parallel [(const_int 0)]))))]
   "TARGET_VXE"
-{ operands[2] = gen_reg_rtx (V2DFmode); })
+{
+  operands[2] = gen_reg_rtx (V2DFmode);
+  operands[3] = s390_expand_merge_perm_const (V2DFmode, true);
+})
 
 
 ; 2 x v2df -> 1 x v4sf

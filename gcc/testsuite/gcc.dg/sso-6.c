@@ -3,7 +3,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int32plus } */
 
-#pragma scalar_storage_order /* { dg-warning "missing .big-endian.little-endian.default." } */
+#pragma scalar_storage_order /* { dg-warning "missing .big-endian., .little-endian., or .default." } */
 
 #pragma scalar_storage_order big-endian
 
@@ -36,7 +36,7 @@ struct S5
   int i;
 };
 
-#pragma scalar_storage_order other /* { dg-warning "expected .big-endian.little-endian.default." } */
+#pragma scalar_storage_order other /* { dg-warning "expected .big-endian., .little-endian., or .default." } */
 
 struct S1 my_s1 = { 0x12345678 };
 struct S2 my_s2 = { 0x12345678 };

@@ -104,6 +104,7 @@
 <para>The following library components provide extra debugging
   capabilities in debug mode:</para>
 <itemizedlist>
+  <listitem><para><code>std::array</code> (no safe iterators)</para></listitem>
   <listitem><para><code>std::basic_string</code> (no safe iterators and see note below)</para></listitem>
   <listitem><para><code>std::bitset</code></para></listitem>
   <listitem><para><code>std::deque</code></para></listitem>
@@ -122,7 +123,7 @@
 <para>N.B. although there are precondition checks for some string operations,
 e.g.  <code>operator[]</code>,
 they will not always be run when using the <code>char</code> and
-<code>wchar_t</code> specialisations (<code>std::string</code> and
+<code>wchar_t</code> specializations (<code>std::string</code> and
 <code>std::wstring</code>).  This is because libstdc++ uses GCC's
 <code>extern template</code> extension to provide explicit instantiations
 of <code>std::string</code> and <code>std::wstring</code>, and those
@@ -160,6 +161,12 @@ which always works correctly.
   <code>GLIBCXX_DEBUG_MESSAGE_LENGTH</code> can be used to request a
   different length.</para>
 
+<para>Note that libstdc++ is able to produce backtraces on error.
+  It requires that you configure libstdc++ build with
+  <option>--enable-libstdcxx-backtrace=yes</option>.
+  Use <code>-D_GLIBCXX_DEBUG_BACKTRACE</code> to activate it.
+  You'll then have to link with libstdc++_libbacktrace static library
+  (<option>-lstdc++_libbacktrace</option>) to build your application.</para>
 </section>
 
 <section xml:id="debug_mode.using.specific" xreflabel="Using Specific"><info><title>Using a Specific Debug Container</title></info>
@@ -263,7 +270,7 @@ which always works correctly.
 </tgroup>
 </table>
 
-<para>In addition, when compiling in C++11 mode, these additional
+<para>When compiling in C++11 mode (or newer), these
 containers have additional debug capability.
 </para>
 
@@ -285,12 +292,6 @@ containers have additional debug capability.
   </row>
 </thead>
 <tbody>
-  <row>
-    <entry><classname>std::array</classname></entry>
-    <entry><filename class="headerfile">array</filename></entry>
-    <entry><classname>__gnu_debug::array</classname></entry>
-    <entry><filename class="headerfile">&lt;debug/array&gt;</filename></entry>
-  </row>
   <row>
     <entry><classname>std::forward_list</classname></entry>
     <entry><filename class="headerfile">forward_list</filename></entry>
@@ -324,6 +325,20 @@ containers have additional debug capability.
 </tbody>
 </tgroup>
 </table>
+
+<para>Prior to GCC 11 a debug version of <classname>std::array</classname>
+was available as <classname>__gnu_debug::array</classname> in the
+header <filename class="headerfile">&lt;debug/array&gt;</filename>.
+Because <classname>array::iterator</classname> is just a pointer,
+the debug <classname>array</classname> can't check iterator operations,
+it can only check direct accesses to the container.
+Starting with GCC 11 all the debug capabilities are available in
+<classname>std::array</classname>, without needing a separate type,
+so <classname>__gnu_debug::array</classname> is just an alias for
+<classname>std::array</classname>.
+That alias is deprecated and may be removed in a future release.
+</para>
+
 </section>
 </section>
 
@@ -384,14 +399,14 @@ containers have additional debug capability.
     less recompilation) but are more complicated to implement than
     the lower-numbered conformance levels.
       <orderedlist inheritnum="ignore" continuation="restarts">
-	<listitem><para><emphasis>Full recompilation</emphasis>: The user must recompile his or
-	her entire application and all C++ libraries it depends on,
+	<listitem><para><emphasis>Full recompilation</emphasis>: The user must recompile
+	their entire application and all C++ libraries it depends on,
 	including the C++ standard library that ships with the
 	compiler. This must be done even if only a small part of the
 	program can use debugging features.</para></listitem>
 
 	<listitem><para><emphasis>Full user recompilation</emphasis>: The user must recompile
-	his or her entire application and all C++ libraries it depends
+	their entire application and all C++ libraries it depends
 	on, but not the C++ standard library itself. This must be done
 	even if only a small part of the program can use debugging
 	features. This can be achieved given a full recompilation
@@ -400,7 +415,7 @@ containers have additional debug capability.
 	one, e.g., a multilibs approach.</para></listitem>
 
 	<listitem><para><emphasis>Partial recompilation</emphasis>: The user must recompile the
-	parts of his or her application and the C++ libraries it
+	parts of their application and the C++ libraries it
 	depends on that will use the debugging facilities
 	directly. This means that any code that uses the debuggable
 	standard containers would need to be recompiled, but code
@@ -408,7 +423,7 @@ containers have additional debug capability.
 	would not have to be recompiled.</para></listitem>
 
 	<listitem><para><emphasis>Per-use recompilation</emphasis>: The user must recompile the
-	parts of his or her application and the C++ libraries it
+	parts of their application and the C++ libraries it
 	depends on where debugging should occur, and any other code
 	that interacts with those containers. This means that a set of
 	translation units that accesses a particular standard

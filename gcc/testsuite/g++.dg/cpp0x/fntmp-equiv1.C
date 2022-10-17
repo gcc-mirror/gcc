@@ -3,21 +3,21 @@
 
 int d(int, int);
 template <long> class e {};
-template <unsigned long f, unsigned b, typename> e<sizeof(d(f, b))> d();
-template <unsigned long f, unsigned b, typename> e<d(f, b)> d();
+template <class T> e<sizeof(d(T{}, T{}))> d(...);
+template <class T> e<d(T{}, T{})> d(...);
 
 template <class T, class U> constexpr T d2(T, U) { return 42; }
-template <unsigned long f, unsigned b, typename> e<d2(f, b)> d2();
-template <unsigned long f, unsigned b, typename> e<d2(f, b)> d2();
+template <class T> e<d2(T{}, T{})> d2(...);
+template <class T> e<d2(T{}, T{})> d2(...);
 
 template <typename a, typename c> a d3(a, c);
-template <unsigned long f, unsigned b, typename> e<sizeof(d3(f, b))> d3();
-template <unsigned long f, unsigned b, typename> e<sizeof(d3(f, b))> d3();
+template <class T> e<sizeof(d3(T{}, T{}))> d3(...);
+template <class T> e<sizeof(d3(T{}, T{}))> d3(...);
 
 
 int main()
 {
-  d<1,2,int>();
-  d2<1,2,int>();
-  d3<1,2,int>();
+  d<int>();
+  d2<int>();
+  d3<int>();
 }

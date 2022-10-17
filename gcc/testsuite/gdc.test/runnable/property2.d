@@ -1,4 +1,3 @@
-// PERMUTE_ARGS: -property
 /*
 TEST_OUTPUT:
 ---
@@ -19,23 +18,13 @@ RUN_OUTPUT:
 Success
 ---
 */
-
 extern (C) int printf(const char* fmt, ...);
-
-// Is -property option specified?
-enum enforceProperty = !__traits(compiles, {
-    int prop(){ return 1; }
-    int n = prop;
-});
 
 /*******************************************/
 
 template select(alias v1, alias v2)
 {
-    static if (enforceProperty)
-        enum select = v1;
-    else
-        enum select = v2;
+    enum select = v2;
 }
 
 struct Test(int N)
@@ -48,32 +37,28 @@ struct Test(int N)
         ref foo(){ getset = 1; return value; }
 
         enum result = select!(0, 1);
-        // -property    test.d(xx): Error: not a property foo
-        // (no option)  prints "getter"
+        // prints "getter"
     }
     static if (N == 1)
     {
         ref foo(int x){ getset = 2; value = x; return value; }
 
         enum result = select!(0, 2);
-        // -property    test.d(xx): Error: not a property foo
-        // (no option)  prints "setter"
+        // prints "setter"
     }
     static if (N == 2)
     {
         @property ref foo(){ getset = 1; return value; }
 
         enum result = select!(1, 1);
-        // -property    prints "getter"
-        // (no option)  prints "getter"
+        // prints "getter"
     }
     static if (N == 3)
     {
         @property ref foo(int x){ getset = 2; value = x; return value; }
 
         enum result = select!(2, 2);
-        // -property    prints "setter"
-        // (no option)  prints "setter"
+        // prints "setter"
     }
 
 
@@ -83,8 +68,7 @@ struct Test(int N)
         ref foo(int x){ getset = 2; value = x; return value; }
 
         enum result = select!(0, 2);
-        // -property    test.d(xx): Error: not a property foo
-        // (no option)  prints "setter"
+        // prints "setter"
     }
     static if (N == 5)
     {
@@ -92,8 +76,7 @@ struct Test(int N)
                   ref foo(int x){ getset = 2; value = x; return value; }
 
         enum result = select!(0, 0);
-        // -property    test.d(xx): Error: cannot overload both property and non-property functions
-        // (no option)  test.d(xx): Error: cannot overload both property and non-property functions
+        // test.d(xx): Error: cannot overload both property and non-property functions
     }
     static if (N == 6)
     {
@@ -101,8 +84,7 @@ struct Test(int N)
         @property ref foo(int x){ getset = 2; value = x; return value; }
 
         enum result = select!(0, 0);
-        // -property    test.d(xx): Error: cannot overload both property and non-property functions
-        // (no option)  test.d(xx): Error: cannot overload both property and non-property functions
+        // test.d(xx): Error: cannot overload both property and non-property functions
     }
     static if (N == 7)
     {
@@ -110,8 +92,7 @@ struct Test(int N)
         @property ref foo(int x){ getset = 2; value = x; return value; }
 
         enum result = select!(2, 2);
-        // -property    prints "setter"
-        // (no option)  prints "setter"
+        // prints "setter"
     }
 }
 
@@ -153,7 +134,7 @@ void test1()
 }
 
 /*******************************************/
-// 7722
+// https://issues.dlang.org/show_bug.cgi?id=7722
 
 class Foo7722 {}
 void spam7722(Foo7722 f) {}
@@ -161,10 +142,7 @@ void spam7722(Foo7722 f) {}
 void test7722()
 {
     auto f = new Foo7722;
-    static if (enforceProperty)
-        static assert(!__traits(compiles, f.spam7722));
-    else
-        f.spam7722;
+    f.spam7722;
 }
 
 /*******************************************/
@@ -179,10 +157,7 @@ void test7722()
             assert(dg(0) == v);
     }
 
-    static if (enforceProperty)
-        checkImpl!(v1)();
-    else
-        checkImpl!(v2)();
+    checkImpl!(v2)();
 }
 
 struct S {}
@@ -292,7 +267,7 @@ void test7722b()
 }
 
 /*******************************************/
-// 7174
+// https://issues.dlang.org/show_bug.cgi?id=7174
 
 void test7174()
 {
@@ -301,7 +276,7 @@ void test7174()
 }
 
 /***************************************************/
-// 7274
+// https://issues.dlang.org/show_bug.cgi?id=7274
 
 @property foo7274(){ return "test"; }
 @property bar7274(){ return "kernel32.lib"; }
@@ -316,7 +291,7 @@ void test7274()
 }
 
 /***************************************************/
-// 7275
+// https://issues.dlang.org/show_bug.cgi?id=7275
 
 void test7275()
 {
@@ -333,7 +308,7 @@ void test7275()
 }
 
 /*****************************************/
-// 7538
+// https://issues.dlang.org/show_bug.cgi?id=7538
 
 void test7538()
 {
@@ -478,7 +453,7 @@ void test7538()
 }
 
 /*****************************************/
-// 8251
+// https://issues.dlang.org/show_bug.cgi?id=8251
 
 struct S8251
 {
@@ -515,13 +490,13 @@ void test8251()
 }
 
 /*****************************************/
-// 9063
+// https://issues.dlang.org/show_bug.cgi?id=9063
 
 @property bool foo9063(){ return true; }
 static assert(foo9063);
 
 /*****************************************/
-// 9234
+// https://issues.dlang.org/show_bug.cgi?id=9234
 
 class Fizz9234
 {
@@ -533,7 +508,7 @@ struct Foo9234(alias F) {}
 struct Foo9234(string thunk) {}
 
 /*****************************************/
-// 10103
+// https://issues.dlang.org/show_bug.cgi?id=10103
 
 mixin template Getter10103()
 {
@@ -577,7 +552,7 @@ void test10103()
 }
 
 /*****************************************/
-// 10197
+// https://issues.dlang.org/show_bug.cgi?id=10197
 
 template OriginalType10197(T)
 {

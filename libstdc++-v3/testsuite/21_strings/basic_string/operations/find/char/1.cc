@@ -1,6 +1,6 @@
 // 1999-06-09 bkoz
 
-// Copyright (C) 1994-2021 Free Software Foundation, Inc.
+// Copyright (C) 1994-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,22 +19,22 @@
 
 // 21.3.6.1 basic_string find
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void test01(void)
 {
-  typedef std::string::size_type csize_type;
-  typedef std::string::const_reference cref;
-  typedef std::string::reference ref;
-  csize_type npos = std::string::npos;
+  typedef __gnu_test::string::size_type csize_type;
+  typedef __gnu_test::string::const_reference cref;
+  typedef __gnu_test::string::reference ref;
+  csize_type npos = __gnu_test::string::npos;
   csize_type csz01, csz02;
 
   const char str_lit01[] = "mave";
-  const std::string str01("mavericks, santa cruz");
-  std::string str02(str_lit01);
-  std::string str03("s, s");
-  std::string str04;
+  const __gnu_test::string str01("mavericks, santa cruz");
+  __gnu_test::string str02(str_lit01);
+  __gnu_test::string str03("s, s");
+  __gnu_test::string str04;
 
   // size_type find(const string&, size_type pos = 0) const;
   csz01 = str01.find(str01);

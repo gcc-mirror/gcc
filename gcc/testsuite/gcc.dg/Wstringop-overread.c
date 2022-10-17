@@ -317,9 +317,9 @@ void test_strnlen_array (int i, int i0, unsigned n)
   T (strnlen (a1, n));
 
   T (strnlen (a1 + 1, 0));
-  T (strnlen (a1 + 1, 1));      // { dg-warning "'strnlen' reading 1 byte from a region of size 0" }
+  T (strnlen (a1 + 1, 1));      // { dg-warning "'strnlen' specified bound 1 exceeds source size 0" }
   T (strnlen (a1 + 1, i0));
-  T (strnlen (a1 + 1, i0 + 1)); // { dg-warning "'strnlen' reading between 1 and \[0-9\]+ bytes from a region of size 0" }
+  T (strnlen (a1 + 1, i0 + 1)); // { dg-warning "'strnlen' specified bound \\\[1, \\d+] exceeds source size 0" }
   T (strnlen (a1 + 1, n));
   T (strnlen (a1 + i, 0));
   T (strnlen (a1 + i, 1));
@@ -335,7 +335,7 @@ void test_strnlen_array (int i, int i0, unsigned n)
   T (strnlen (a1 + i0, 2));     // { dg-warning "'strnlen' specified bound 2 exceeds source size 1" }
   T (strnlen (a1 + i0, n));
   T (strnlen (a1 + i0 + 1, 0));
-  T (strnlen (a1 + i0 + 1, 1)); // { dg-warning "'strnlen' reading 1 byte from a region of size 0" }
+  T (strnlen (a1 + i0 + 1, 1)); // { dg-warning "'strnlen' specified bound 1 exceeds source size 0" }
   T (strnlen (a1 + i0 + 1, n));
 
   T (strnlen (a2, 0));
@@ -344,10 +344,10 @@ void test_strnlen_array (int i, int i0, unsigned n)
   T (strnlen (a2, n));
   T (strnlen (a2 + 1, 0));
   T (strnlen (a2 + 1, 1));
-  T (strnlen (a2 + 1, 2));      // { dg-warning "'strnlen' specified bound 2 exceeds source size 1"  "pr87492" { xfail *-*-* } }
+  T (strnlen (a2 + 1, 2));      // { dg-warning "'strnlen' specified bound 2 exceeds source size 1"  "pr87492" }
   T (strnlen (a2 + 1, n));
   T (strnlen (a2 + 2, 0));
-  T (strnlen (a2 + 2, 1));      // { dg-warning "'strnlen' reading 1 byte from a region of size 0" }
+  T (strnlen (a2 + 2, 1));      // { dg-warning "'strnlen' specified bound 1 exceeds source size 0" }
   T (strnlen (a2 + 2, n));
   T (strnlen (a2 + i, 0));
   T (strnlen (a2 + i, 1));
@@ -365,13 +365,13 @@ void test_strnlen_array (int i, int i0, unsigned n)
 
   T (strnlen (a2 + i0 + 1, 0));
   T (strnlen (a2 + i0 + 1, 1));
-  T (strnlen (a2 + i0 + 1, 2));
+  T (strnlen (a2 + i0 + 1, 2)); // { dg-warning "'strnlen' specified bound 2 exceeds source size 1" }
   T (strnlen (a2 + i0 + 1, n));
 
   T (strnlen (a2 + i0 + 2, 0));
-  T (strnlen (a2 + i0 + 2, 1)); // { dg-warning "'strnlen' reading 1 byte from a region of size 0" }
+  T (strnlen (a2 + i0 + 2, 1)); // { dg-warning "'strnlen' specified bound 1 exceeds source size 0" }
   T (strnlen (a2 + i0 + 2, i0));
-  T (strnlen (a2 + i0 + 2, i0 + 1)); // { dg-warning "'strnlen' reading between 1 and \[0-9\]+ bytes from a region of size 0" }
+  T (strnlen (a2 + i0 + 2, i0 + 1)); // { dg-warning "'strnlen' specified bound \\\[1, \\d+] exceeds source size 0" }
   T (strnlen (a2 + i0 + 2, n));
 }
 
@@ -512,9 +512,9 @@ void test_strndup_array (int i, int i0, unsigned n)
   T (strndup (a1, 2));          // { dg-warning "'strndup' specified bound 2 exceeds source size 1" }
   T (strndup (a1, n));
   T (strndup (a1 + 1, 0));
-  T (strndup (a1 + 1, 1));      // { dg-warning "'strndup' reading 1 byte from a region of size 0" }
+  T (strndup (a1 + 1, 1));      // { dg-warning "'strndup' specified bound 1 exceeds source size 0" }
   T (strndup (a1 + 1, i0));
-  T (strndup (a1 + 1, i0 + 1)); // { dg-warning "'strndup' reading between 1 and \[0-9\]+ bytes from a region of size 0" }
+  T (strndup (a1 + 1, i0 + 1)); // { dg-warning "'strndup' specified bound \\\[1, \\d+] exceeds source size 0" }
   T (strndup (a1 + 1, n));
   T (strndup (a1 + i, 0));
   T (strndup (a1 + i, 1));
@@ -529,7 +529,7 @@ void test_strndup_array (int i, int i0, unsigned n)
   T (strndup (a1 + i0, 1));
   T (strndup (a1 + i0, n));
   T (strndup (a1 + i0 + 1, 0));
-  T (strndup (a1 + i0 + 1, 1)); // { dg-warning "'strndup' reading 1 byte from a region of size 0" }
+  T (strndup (a1 + i0 + 1, 1)); // { dg-warning "'strndup' specified bound 1 exceeds source size 0" }
   T (strndup (a1 + i0 + 1, n));
 
   T (strndup (a2, 0));
@@ -538,10 +538,10 @@ void test_strndup_array (int i, int i0, unsigned n)
   T (strndup (a2, n));
   T (strndup (a2 + 1, 0));
   T (strndup (a2 + 1, 1));
-  T (strndup (a2 + 1, 2));
+  T (strndup (a2 + 1, 2));      // { dg-warning "'strndup' specified bound 2 exceeds source size 1" }
   T (strndup (a2 + 1, n));
   T (strndup (a2 + 2, 0));
-  T (strndup (a2 + 2, 1));      // { dg-warning "'strndup' reading 1 byte from a region of size 0" }
+  T (strndup (a2 + 2, 1));      // { dg-warning "'strndup' specified bound 1 exceeds source size 0" }
   T (strndup (a2 + 2, n));
   T (strndup (a2 + i, 0));
   T (strndup (a2 + i, 1));
@@ -559,13 +559,13 @@ void test_strndup_array (int i, int i0, unsigned n)
 
   T (strndup (a2 + i0 + 1, 0));
   T (strndup (a2 + i0 + 1, 1));
-  T (strndup (a2 + i0 + 1, 2));
+  T (strndup (a2 + i0 + 1, 2)); // { dg-warning "'strndup' specified bound 2 exceeds source size 1" }
   T (strndup (a2 + i0 + 1, n));
 
   T (strndup (a2 + i0 + 2, 0));
-  T (strndup (a2 + i0 + 2, 1)); // { dg-warning "'strndup' reading 1 byte from a region of size 0" }
+  T (strndup (a2 + i0 + 2, 1)); // { dg-warning "'strndup' specified bound 1 exceeds source size 0" }
   T (strndup (a2 + i0 + 2, i0));
-  T (strndup (a2 + i0 + 2, i0 + 1)); // { dg-warning "'strndup' reading between 1 and \[0-9\]+ bytes from a region of size 0" }
+  T (strndup (a2 + i0 + 2, i0 + 1)); // { dg-warning "'strndup' specified bound \\\[1, \\d+] exceeds source size 0" }
   T (strndup (a2 + i0 + 2, n));
 }
 

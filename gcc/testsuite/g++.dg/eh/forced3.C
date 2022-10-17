@@ -53,7 +53,7 @@ doit () throw()
 
 int main()
 { 
-  std::set_unexpected (handle_unexpected);
+  std::set_unexpected (handle_unexpected); // { dg-warning "deprecated" "" { target c++11 } }
   doit ();
   abort ();
 }

@@ -11,15 +11,13 @@
 // Interceptors for operators new and delete.
 //===----------------------------------------------------------------------===//
 
+#include <stddef.h>
+
 #include "asan_allocator.h"
 #include "asan_internal.h"
-#include "asan_malloc_local.h"
 #include "asan_report.h"
 #include "asan_stack.h"
-
 #include "interception/interception.h"
-
-#include <stddef.h>
 
 // C++ operators can't have dllexport attributes on Windows. We export them
 // anyway by passing extra -export flags to the linker, which is exactly that
@@ -72,14 +70,12 @@ enum class align_val_t: size_t {};
 // For local pool allocation, align to SHADOW_GRANULARITY to match asan
 // allocator behavior.
 #define OPERATOR_NEW_BODY(type, nothrow)            \
-  MAYBE_ALLOCATE_FROM_LOCAL_POOL(nothrow);          \
   GET_STACK_TRACE_MALLOC;                           \
   void *res = asan_memalign(0, size, &stack, type); \
   if (!nothrow && UNLIKELY(!res))                   \
     ReportOutOfMemory(size, &stack);                \
   return res;
 #define OPERATOR_NEW_BODY_ALIGN(type, nothrow)                \
-  MAYBE_ALLOCATE_FROM_LOCAL_POOL(nothrow);                    \
   GET_STACK_TRACE_MALLOC;                                     \
   void *res = asan_memalign((uptr)align, size, &stack, type); \
   if (!nothrow && UNLIKELY(!res))                             \
@@ -93,7 +89,7 @@ enum class align_val_t: size_t {};
 // delete.
 // To make sure that C++ allocation/deallocation operators are overridden on
 // OS X we need to intercept them using their mangled names.
-#if !SANITIZER_MAC
+#if !SANITIZER_APPLE
 CXX_OPERATOR_ATTRIBUTE
 void *operator new(size_t size)
 { OPERATOR_NEW_BODY(FROM_NEW, false /*nothrow*/); }
@@ -119,7 +115,7 @@ CXX_OPERATOR_ATTRIBUTE
 void *operator new[](size_t size, std::align_val_t align, std::nothrow_t const&)
 { OPERATOR_NEW_BODY_ALIGN(FROM_NEW_BR, true /*nothrow*/); }
 
-#else  // SANITIZER_MAC
+#else  // SANITIZER_APPLE
 INTERCEPTOR(void *, _Znwm, size_t size) {
   OPERATOR_NEW_BODY(FROM_NEW, false /*nothrow*/);
 }
@@ -132,29 +128,25 @@ INTERCEPTOR(void *, _ZnwmRKSt9nothrow_t, size_t size, std::nothrow_t const&) {
 INTERCEPTOR(void *, _ZnamRKSt9nothrow_t, size_t size, std::nothrow_t const&) {
   OPERATOR_NEW_BODY(FROM_NEW_BR, true /*nothrow*/);
 }
-#endif  // !SANITIZER_MAC
+#endif  // !SANITIZER_APPLE
 
 #define OPERATOR_DELETE_BODY(type) \
-  if (IS_FROM_LOCAL_POOL(ptr)) return;\
-  GET_STACK_TRACE_FREE;\
+  GET_STACK_TRACE_FREE;            \
   asan_delete(ptr, 0, 0, &stack, type);
 
 #define OPERATOR_DELETE_BODY_SIZE(type) \
-  if (IS_FROM_LOCAL_POOL(ptr)) return;\
-  GET_STACK_TRACE_FREE;\
+  GET_STACK_TRACE_FREE;                 \
   asan_delete(ptr, size, 0, &stack, type);
 
 #define OPERATOR_DELETE_BODY_ALIGN(type) \
-  if (IS_FROM_LOCAL_POOL(ptr)) return;\
-  GET_STACK_TRACE_FREE;\
+  GET_STACK_TRACE_FREE;                  \
   asan_delete(ptr, 0, static_cast<uptr>(align), &stack, type);
 
 #define OPERATOR_DELETE_BODY_SIZE_ALIGN(type) \
-  if (IS_FROM_LOCAL_POOL(ptr)) return;\
-  GET_STACK_TRACE_FREE;\
+  GET_STACK_TRACE_FREE;                       \
   asan_delete(ptr, size, static_cast<uptr>(align), &stack, type);
 
-#if !SANITIZER_MAC
+#if !SANITIZER_APPLE
 CXX_OPERATOR_ATTRIBUTE
 void operator delete(void *ptr) NOEXCEPT
 { OPERATOR_DELETE_BODY(FROM_NEW); }
@@ -192,7 +184,7 @@ CXX_OPERATOR_ATTRIBUTE
 void operator delete[](void *ptr, size_t size, std::align_val_t align) NOEXCEPT
 { OPERATOR_DELETE_BODY_SIZE_ALIGN(FROM_NEW_BR); }
 
-#else  // SANITIZER_MAC
+#else  // SANITIZER_APPLE
 INTERCEPTOR(void, _ZdlPv, void *ptr)
 { OPERATOR_DELETE_BODY(FROM_NEW); }
 INTERCEPTOR(void, _ZdaPv, void *ptr)
@@ -201,4 +193,4 @@ INTERCEPTOR(void, _ZdlPvRKSt9nothrow_t, void *ptr, std::nothrow_t const&)
 { OPERATOR_DELETE_BODY(FROM_NEW); }
 INTERCEPTOR(void, _ZdaPvRKSt9nothrow_t, void *ptr, std::nothrow_t const&)
 { OPERATOR_DELETE_BODY(FROM_NEW_BR); }
-#endif  // !SANITIZER_MAC
+#endif  // !SANITIZER_APPLE

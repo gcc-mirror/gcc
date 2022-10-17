@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -67,11 +67,16 @@ ialias_redirect (omp_get_thread_limit)
 ialias_redirect (omp_set_max_active_levels)
 ialias_redirect (omp_get_max_active_levels)
 ialias_redirect (omp_get_supported_active_levels)
+ialias_redirect (omp_set_num_teams)
+ialias_redirect (omp_get_max_teams)
+ialias_redirect (omp_set_teams_thread_limit)
+ialias_redirect (omp_get_teams_thread_limit)
 ialias_redirect (omp_get_level)
 ialias_redirect (omp_get_ancestor_thread_num)
 ialias_redirect (omp_get_team_size)
 ialias_redirect (omp_get_active_level)
 ialias_redirect (omp_in_final)
+ialias_redirect (omp_in_explicit_task)
 ialias_redirect (omp_get_cancellation)
 ialias_redirect (omp_get_proc_bind)
 ialias_redirect (omp_get_num_places)
@@ -83,6 +88,7 @@ ialias_redirect (omp_get_partition_place_nums)
 ialias_redirect (omp_set_default_device)
 ialias_redirect (omp_get_default_device)
 ialias_redirect (omp_get_num_devices)
+ialias_redirect (omp_get_device_num)
 ialias_redirect (omp_get_num_teams)
 ialias_redirect (omp_get_team_num)
 ialias_redirect (omp_is_initial_device)
@@ -94,6 +100,8 @@ ialias_redirect (omp_init_allocator)
 ialias_redirect (omp_destroy_allocator)
 ialias_redirect (omp_set_default_allocator)
 ialias_redirect (omp_get_default_allocator)
+ialias_redirect (omp_display_env)
+ialias_redirect (omp_fulfill_event)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
@@ -476,6 +484,48 @@ omp_in_final_ (void)
 }
 
 int32_t
+omp_in_explicit_task_ (void)
+{
+  return omp_in_explicit_task ();
+}
+
+void
+omp_set_num_teams_ (const int32_t *num_teams)
+{
+  omp_set_num_teams (*num_teams);
+}
+
+void
+omp_set_num_teams_8_ (const int64_t *num_teams)
+{
+  omp_set_num_teams (TO_INT (*num_teams));
+}
+
+int32_t
+omp_get_max_teams_ (void)
+{
+  return omp_get_max_teams ();
+}
+
+void
+omp_set_teams_thread_limit_ (const int32_t *thread_limit)
+{
+  omp_set_teams_thread_limit (*thread_limit);
+}
+
+void
+omp_set_teams_thread_limit_8_ (const int64_t *thread_limit)
+{
+  omp_set_teams_thread_limit (TO_INT (*thread_limit));
+}
+
+int32_t
+omp_get_teams_thread_limit_ (void)
+{
+  return omp_get_teams_thread_limit ();
+}
+
+int32_t
 omp_get_cancellation_ (void)
 {
   return omp_get_cancellation ();
@@ -596,6 +646,12 @@ int32_t
 omp_get_initial_device_ (void)
 {
   return omp_get_initial_device ();
+}
+
+int32_t
+omp_get_device_num_ (void)
+{
+  return omp_get_device_num ();
 }
 
 int32_t
@@ -736,3 +792,19 @@ omp_get_default_allocator_ ()
 {
   return (intptr_t) omp_get_default_allocator ();
 }
+
+#ifndef LIBGOMP_OFFLOADED_ONLY
+
+void
+omp_display_env_ (const int32_t *verbose)
+{
+  omp_display_env (*verbose);
+}
+
+void
+omp_display_env_8_ (const int64_t *verbose)
+{
+  omp_display_env (!!*verbose);
+}
+
+#endif /* LIBGOMP_OFFLOADED_ONLY */

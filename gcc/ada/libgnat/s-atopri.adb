@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2012-2021, Free Software Foundation, Inc.     --
+--              Copyright (C) 2012-2022, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,171 +31,43 @@
 
 package body System.Atomic_Primitives is
 
-   ----------------------
-   -- Lock_Free_Read_8 --
-   ----------------------
+   --------------------
+   -- Lock_Free_Read --
+   --------------------
 
-   function Lock_Free_Read_8 (Ptr : Address) return uint8 is
+   function Lock_Free_Read (Ptr : Address) return Atomic_Type is
+      function My_Atomic_Load is new Atomic_Load (Atomic_Type);
+
    begin
-      if uint8'Atomic_Always_Lock_Free then
-         return Atomic_Load_8 (Ptr, Acquire);
+      if Atomic_Type'Atomic_Always_Lock_Free then
+         return My_Atomic_Load (Ptr, Acquire);
       else
          raise Program_Error;
       end if;
-   end Lock_Free_Read_8;
+   end Lock_Free_Read;
 
-   -----------------------
-   -- Lock_Free_Read_16 --
-   -----------------------
+   -------------------------
+   -- Lock_Free_Try_Write --
+   -------------------------
 
-   function Lock_Free_Read_16 (Ptr : Address) return uint16 is
-   begin
-      if uint16'Atomic_Always_Lock_Free then
-         return Atomic_Load_16 (Ptr, Acquire);
-      else
-         raise Program_Error;
-      end if;
-   end Lock_Free_Read_16;
-
-   -----------------------
-   -- Lock_Free_Read_32 --
-   -----------------------
-
-   function Lock_Free_Read_32 (Ptr : Address) return uint32 is
-   begin
-      if uint32'Atomic_Always_Lock_Free then
-         return Atomic_Load_32 (Ptr, Acquire);
-      else
-         raise Program_Error;
-      end if;
-   end Lock_Free_Read_32;
-
-   -----------------------
-   -- Lock_Free_Read_64 --
-   -----------------------
-
-   function Lock_Free_Read_64 (Ptr : Address) return uint64 is
-   begin
-      if uint64'Atomic_Always_Lock_Free then
-         return Atomic_Load_64 (Ptr, Acquire);
-      else
-         raise Program_Error;
-      end if;
-   end Lock_Free_Read_64;
-
-   ---------------------------
-   -- Lock_Free_Try_Write_8 --
-   ---------------------------
-
-   function Lock_Free_Try_Write_8
+   function Lock_Free_Try_Write
       (Ptr      : Address;
-       Expected : in out uint8;
-       Desired  : uint8) return Boolean
+       Expected : in out Atomic_Type;
+       Desired  : Atomic_Type) return Boolean
    is
-      Actual : uint8;
+      function My_Atomic_Compare_Exchange is
+        new Atomic_Compare_Exchange (Atomic_Type);
 
    begin
       if Expected /= Desired then
-
-         if uint8'Atomic_Always_Lock_Free then
-            Actual := Sync_Compare_And_Swap_8 (Ptr, Expected, Desired);
+         if Atomic_Type'Atomic_Always_Lock_Free then
+            return My_Atomic_Compare_Exchange (Ptr, Expected'Address, Desired);
          else
             raise Program_Error;
-         end if;
-
-         if Actual /= Expected then
-            Expected := Actual;
-            return False;
          end if;
       end if;
 
       return True;
-   end Lock_Free_Try_Write_8;
+   end Lock_Free_Try_Write;
 
-   ----------------------------
-   -- Lock_Free_Try_Write_16 --
-   ----------------------------
-
-   function Lock_Free_Try_Write_16
-      (Ptr      : Address;
-       Expected : in out uint16;
-       Desired  : uint16) return Boolean
-   is
-      Actual : uint16;
-
-   begin
-      if Expected /= Desired then
-
-         if uint16'Atomic_Always_Lock_Free then
-            Actual := Sync_Compare_And_Swap_16 (Ptr, Expected, Desired);
-         else
-            raise Program_Error;
-         end if;
-
-         if Actual /= Expected then
-            Expected := Actual;
-            return False;
-         end if;
-      end if;
-
-      return True;
-   end Lock_Free_Try_Write_16;
-
-   ----------------------------
-   -- Lock_Free_Try_Write_32 --
-   ----------------------------
-
-   function Lock_Free_Try_Write_32
-      (Ptr      : Address;
-       Expected : in out uint32;
-       Desired  : uint32) return Boolean
-   is
-      Actual : uint32;
-
-   begin
-      if Expected /= Desired then
-
-         if uint32'Atomic_Always_Lock_Free then
-            Actual := Sync_Compare_And_Swap_32 (Ptr, Expected, Desired);
-         else
-            raise Program_Error;
-         end if;
-
-         if Actual /= Expected then
-            Expected := Actual;
-            return False;
-         end if;
-      end if;
-
-      return True;
-   end Lock_Free_Try_Write_32;
-
-   ----------------------------
-   -- Lock_Free_Try_Write_64 --
-   ----------------------------
-
-   function Lock_Free_Try_Write_64
-      (Ptr      : Address;
-       Expected : in out uint64;
-       Desired  : uint64) return Boolean
-   is
-      Actual : uint64;
-
-   begin
-      if Expected /= Desired then
-
-         if uint64'Atomic_Always_Lock_Free then
-            Actual := Sync_Compare_And_Swap_64 (Ptr, Expected, Desired);
-         else
-            raise Program_Error;
-         end if;
-
-         if Actual /= Expected then
-            Expected := Actual;
-            return False;
-         end if;
-      end if;
-
-      return True;
-   end Lock_Free_Try_Write_64;
 end System.Atomic_Primitives;

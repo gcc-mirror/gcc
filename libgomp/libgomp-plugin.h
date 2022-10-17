@@ -1,6 +1,6 @@
 /* The libgomp plugin API.
 
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -102,6 +102,12 @@ struct addr_pair
   uintptr_t end;
 };
 
+/* This following symbol is used to name the target side variable struct that
+   holds the designated ICVs of the target device. The symbol needs to be
+   available to libgomp code and the offload plugin (which in the latter case
+   must be stringified).  */
+#define GOMP_ADDITIONAL_ICVS __gomp_additional_icvs
+
 /* Miscellaneous functions.  */
 extern void *GOMP_PLUGIN_malloc (size_t) __attribute__ ((malloc));
 extern void *GOMP_PLUGIN_malloc_cleared (size_t) __attribute__ ((malloc));
@@ -119,12 +125,12 @@ extern void GOMP_PLUGIN_fatal (const char *, ...)
 extern const char *GOMP_OFFLOAD_get_name (void);
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
 extern int GOMP_OFFLOAD_get_type (void);
-extern int GOMP_OFFLOAD_get_num_devices (void);
+extern int GOMP_OFFLOAD_get_num_devices (unsigned int);
 extern bool GOMP_OFFLOAD_init_device (int);
 extern bool GOMP_OFFLOAD_fini_device (int);
 extern unsigned GOMP_OFFLOAD_version (void);
 extern int GOMP_OFFLOAD_load_image (int, unsigned, const void *,
-				    struct addr_pair **);
+				    struct addr_pair **, uint64_t **);
 extern bool GOMP_OFFLOAD_unload_image (int, unsigned, const void *);
 extern void *GOMP_OFFLOAD_alloc (int, size_t);
 extern bool GOMP_OFFLOAD_free (int, void *);

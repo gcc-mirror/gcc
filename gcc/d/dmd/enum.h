@@ -1,26 +1,23 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
- * http://www.digitalmars.com
+ * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
- * http://www.boost.org/LICENSE_1_0.txt
+ * https://www.boost.org/LICENSE_1_0.txt
  * https://github.com/dlang/dmd/blob/master/src/dmd/enum.h
  */
 
 #pragma once
 
-#include "root/root.h"
 #include "dsymbol.h"
 #include "declaration.h"
-#include "tokens.h"
 
 class Identifier;
 class Type;
 class Expression;
-class VarDeclaration;
 
-class EnumDeclaration : public ScopeDsymbol
+class EnumDeclaration final : public ScopeDsymbol
 {
 public:
     /* The separate, and distinct, cases are:
@@ -33,39 +30,42 @@ public:
      */
     Type *type;                 // the TypeEnum
     Type *memtype;              // type of the members
-    Prot protection;
+    Visibility visibility;
 
     Expression *maxval;
     Expression *minval;
     Expression *defaultval;     // default initializer
+private:
+    uint8_t bitFields;
+public:
+    bool isdeprecated() const;
+    bool isdeprecated(bool v);
+    bool added() const;
+    bool added(bool v);
+    bool inuse() const;
+    bool inuse(bool v);
 
-    bool isdeprecated;
-    bool added;
-    int inuse;
-
-    EnumDeclaration(Loc loc, Identifier *id, Type *memtype);
-    Dsymbol *syntaxCopy(Dsymbol *s);
-    void addMember(Scope *sc, ScopeDsymbol *sds);
-    void setScope(Scope *sc);
-    bool oneMember(Dsymbol **ps, Identifier *ident);
-    Type *getType();
-    const char *kind() const;
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    bool isDeprecated();                // is Dsymbol deprecated?
-    Prot prot();
-    Expression *getMaxMinValue(Loc loc, Identifier *id);
+    EnumDeclaration *syntaxCopy(Dsymbol *s) override;
+    void addMember(Scope *sc, ScopeDsymbol *sds) override;
+    void setScope(Scope *sc) override;
+    bool oneMember(Dsymbol **ps, Identifier *ident) override;
+    Type *getType() override;
+    const char *kind() const override;
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    bool isDeprecated() const override;       // is Dsymbol deprecated?
+    Visibility visible() override;
     bool isSpecial() const;
-    Expression *getDefaultValue(Loc loc);
-    Type *getMemtype(Loc loc);
+    Expression *getDefaultValue(const Loc &loc);
+    Type *getMemtype(const Loc &loc);
 
-    EnumDeclaration *isEnumDeclaration() { return this; }
+    EnumDeclaration *isEnumDeclaration() override { return this; }
 
     Symbol *sinit;
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 
-class EnumMember : public VarDeclaration
+class EnumMember final : public VarDeclaration
 {
 public:
     /* Can take the following forms:
@@ -83,13 +83,9 @@ public:
 
     EnumDeclaration *ed;
 
-    EnumMember(Loc loc, Identifier *id, Expression *value, Type *origType);
-    EnumMember(Loc loc, Identifier *id, Expression *value, Type *memType,
-        StorageClass stc, UserAttributeDeclaration *uad, DeprecatedDeclaration *dd);
-    Dsymbol *syntaxCopy(Dsymbol *s);
-    const char *kind() const;
-    Expression *getVarExp(Loc loc, Scope *sc);
+    EnumMember *syntaxCopy(Dsymbol *s) override;
+    const char *kind() const override;
 
-    EnumMember *isEnumMember() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    EnumMember *isEnumMember() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };

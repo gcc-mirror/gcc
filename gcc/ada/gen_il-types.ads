@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,10 @@ package Gen_IL.Types is
       Name_Id,
       String_Id,
       Uint,
+      Valid_Uint,
+      Unat,
+      Upos,
+      Nonzero_Uint,
       Ureal,
 
       Node_Kind_Type, -- Type of result of Nkind function, i.e. Node_Kind
@@ -73,6 +77,7 @@ package Gen_IL.Types is
 
       Node_Kind, -- root of node type hierarchy
       N_Access_To_Subprogram_Definition,
+      N_Alternative,
       N_Array_Type_Definition,
       N_Binary_Op,
       N_Body_Stub,
@@ -80,13 +85,21 @@ package Gen_IL.Types is
       N_Delay_Statement,
       N_Direct_Name,
       N_Entity,
+      N_Entity_Name,
       N_Formal_Subprogram_Declaration,
       N_Generic_Declaration,
       N_Generic_Instantiation,
       N_Generic_Renaming_Declaration,
+      N_Has_Bounds,
       N_Has_Chars,
+      N_Has_Condition,
       N_Has_Entity,
       N_Has_Etype,
+      N_Is_Case_Choice,
+      N_Is_Decl,
+      N_Is_Exception_Choice,
+      N_Is_Index,
+      N_Is_Range,
       N_Multiplying_Operator,
       N_Later_Decl_Item,
       N_Membership_Test,
@@ -107,7 +120,6 @@ package Gen_IL.Types is
       N_Statement_Other_Than_Procedure_Call,
       N_Subprogram_Call,
       N_Subprogram_Instantiation,
-      N_Has_Condition,
       N_Subexpr,
       N_Subprogram_Specification,
       N_Unary_Op,
@@ -140,12 +152,15 @@ package Gen_IL.Types is
       Elementary_Kind,
       Enumeration_Kind,
       Entry_Kind,
+      Evaluable_Kind,
+      Exception_Or_Object_Kind,
       Fixed_Point_Kind,
       Float_Kind,
       Formal_Kind,
       Formal_Object_Kind,
       Generic_Subprogram_Kind,
       Generic_Unit_Kind,
+      Global_Name_Kind,
       Incomplete_Kind,
       Incomplete_Or_Private_Kind,
       Integer_Kind,
@@ -162,10 +177,12 @@ package Gen_IL.Types is
       Record_Kind,
       Record_Field_Kind,
       Scalar_Kind,
-      Subprogram_Kind,
       Signed_Integer_Kind,
+      Subprogram_Type_Or_Kind,
+      Subprogram_Kind,
       Task_Kind,
       Type_Kind,
+      Void_Or_Type_Kind,
 
       --  End of abstract entity types.
 
@@ -560,14 +577,18 @@ package Gen_IL.Types is
       | N_Defining_Operator_Symbol;
 
    subtype Opt_Abstract_Type is Opt_Type_Enum with
-        Predicate => Opt_Abstract_Type = No_Type or
-        Opt_Abstract_Type in Abstract_Type;
+     Predicate => Opt_Abstract_Type in No_Type | Abstract_Type;
 
    subtype Type_Boundaries is Type_Enum with
-        Predicate => Type_Boundaries in
-          Between_Abstract_Node_And_Abstract_Entity_Types |
-          Between_Abstract_Entity_And_Concrete_Node_Types |
-          Between_Concrete_Node_And_Concrete_Entity_Types;
+     Predicate => Type_Boundaries in
+       Between_Abstract_Node_And_Abstract_Entity_Types |
+       Between_Abstract_Entity_And_Concrete_Node_Types |
+       Between_Concrete_Node_And_Concrete_Entity_Types;
    --  These are not used, other than to separate the various subranges.
+
+   subtype Uint_Subtype is Type_Enum with
+     Predicate => Uint_Subtype in Valid_Uint | Unat | Upos | Nonzero_Uint;
+   --  These are the subtypes of Uint that have predicates restricting their
+   --  values.
 
 end Gen_IL.Types;

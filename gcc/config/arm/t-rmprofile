@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2021 Free Software Foundation, Inc.
+# Copyright (C) 2016-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -54,7 +54,7 @@ MULTILIB_REQUIRED	+= mthumb/march=armv8.1-m.main+mve/mfloat-abi=hard
 MULTILIB_MATCHES	+= march?armv6s-m=march?armv6-m
 
 # For all MULITIB_MATCHES for v8-m and above add mlibarch? on the right hand side
-# of = in the variant string instead of march?.  This is needed becuase all the
+# of = in the variant string instead of march?.  This is needed because all the
 # MULITIB_MATCHES variant strings are compared with mlibarch option for multilib
 # linking.
 

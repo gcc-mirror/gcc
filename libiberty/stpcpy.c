@@ -1,5 +1,5 @@
 /* Implement the stpcpy function.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.
@@ -33,7 +33,7 @@ Copies the string @var{src} into @var{dst}.  Returns a pointer to
 #include <stddef.h>
 
 extern size_t strlen (const char *);
-extern PTR memcpy (PTR, const PTR, size_t);
+extern void *memcpy (void *, const void *, size_t);
 
 char *
 stpcpy (char *dst, const char *src)

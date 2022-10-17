@@ -19,4 +19,5 @@ foo (int x)
 /* { dg-final { scan-assembler "r13" } } */
 /* { dg-final { scan-assembler "r0" } } */
 /* { dg-final { scan-assembler "fp" } } */
-/* { dg-final { scan-assembler "fp,64" } } */
+/* { dg-final { scan-assembler "fp,64" { target { *-elf32-* } } } } */
+/* { dg-final { scan-assembler "fp,60" { target { *-linux-* } } } } */

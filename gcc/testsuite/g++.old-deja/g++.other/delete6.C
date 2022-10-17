@@ -25,4 +25,4 @@ inline void A::operator delete(void*p)
 
 int main()
 {A *ap=new A;
-delete ap;}
+delete ap;}			// { dg-prune-output "unallocated object 'i'" }

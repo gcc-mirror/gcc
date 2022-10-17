@@ -29,7 +29,9 @@ case ${query} in
     --gdcflags)
       GDCFLAGS_default="-fmessage-length=0 -fno-show-column"
       GDCFLAGS_config="@WARN_DFLAGS@ @GDCFLAGS@ @CET_DFLAGS@
-		       @phobos_compiler_shared_flag@ -fno-release -funittest"
+		       @phobos_compiler_shared_flag@
+		       -fall-instantiations -fpreview=dip1000
+		       -fno-release -funittest"
       echo ${GDCFLAGS_default} ${GDCFLAGS_config}
       ;;
     --gdcpaths)
@@ -46,6 +48,7 @@ case ${query} in
     --gdcldflags)
       GDCLDFLAGS="-B${BUILD_DIR}/src
                   -B${BUILD_DIR}/libdruntime/gcc
+                  -B${BUILD_DIR}/src/.libs
                   -L${BUILD_DIR}/src/.libs"
       echo ${GDCLDFLAGS}
       ;;

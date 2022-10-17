@@ -1,5 +1,5 @@
 /* Library interface to C front end
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -31,6 +31,7 @@
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
 
+#define INCLUDE_MEMORY
 #include "gcc-plugin.h"
 #include "system.h"
 #include "coretypes.h"

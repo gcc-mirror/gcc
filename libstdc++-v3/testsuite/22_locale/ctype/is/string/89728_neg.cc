@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2021 Free Software Foundation, Inc.
+// Copyright (C) 2021-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-error "complete" "" { target *-*-* } 0 }
+// { dg-error "invalid 'static_cast'" "" { target { ! rtti }  } 0 }
 
 #include <locale>
 
@@ -52,7 +53,6 @@ void test01()
   std::tolower(make_str<char, 12>(), loc);	// { dg-error "required from here" }
 }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 void test02()
 {
   const std::locale& loc = std::locale::classic();
@@ -74,4 +74,3 @@ void test02()
   std::toupper(make_str<wchar_t, 11>(), loc);	// { dg-error "required from here" }
   std::tolower(make_str<wchar_t, 12>(), loc);	// { dg-error "required from here" }
 }
-#endif

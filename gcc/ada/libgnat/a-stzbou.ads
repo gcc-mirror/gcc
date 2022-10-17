@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -496,8 +496,8 @@ package Ada.Strings.Wide_Wide_Bounded is
                                    (Max_Length         => Max_Length,
                                     Current_Length     => 0,
                                     Data               =>
-                                      (1 .. Max_Length =>
-                                        Wide_Wide_Superbounded.Wide_Wide_NUL));
+                                      [1 .. Max_Length =>
+                                        Wide_Wide_Superbounded.Wide_Wide_NUL]);
 
       pragma Inline (To_Bounded_Wide_Wide_String);
 

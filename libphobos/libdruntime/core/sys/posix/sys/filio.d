@@ -34,3 +34,15 @@ version (Darwin)
     enum uint FIOGETOWN = _IOR!(int)('f', 123); // get owner
     enum uint FIODTYPE  = _IOR!(int)('f', 122); // get d_type
 }
+
+version (OpenBSD)
+{
+    // File-descriptor ioctl's
+    enum uint FIOCLEX   = _IO('f', 1);         // set close on exec on fd
+    enum uint FIONCLEX  = _IO('f', 2);         // remove close on exec
+    enum uint FIONREAD  = _IOR!(int)('f', 127); // get # bytes to read
+    enum uint FIONBIO   = _IOW!(int)('f', 126); // set/clear non-blocking i/o
+    enum uint FIOASYNC  = _IOW!(int)('f', 125); // set/clear async i/o
+    enum uint FIOSETOWN = _IOW!(int)('f', 124); // set owner
+    enum uint FIOGETOWN = _IOR!(int)('f', 123); // get owner
+}

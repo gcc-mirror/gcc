@@ -13,7 +13,7 @@ int main()
 
 // --------------------
 
-struct complex 			// { dg-message "no .constexpr. constructor" }
+struct complex 			// { dg-message "no .constexpr. constructor" "" { target { ! implicit_constexpr } } }
 {
   complex(double r, double i) : re(r), im(i) { }
   constexpr double real() const { return re; } // { dg-error "not a literal type" "" { target c++11_only } }
@@ -24,23 +24,23 @@ private:
   double im;
 };
 
-constexpr complex co1(0, 1);	   // { dg-error "19:the type .const complex. of .constexpr. variable .co1. is not literal" }
-constexpr double dd2 = co1.real(); // { dg-error "|in .constexpr. expansion of " }
+constexpr complex co1(0, 1);	   // { dg-error "19:the type .const complex. of .constexpr. variable .co1. is not literal" "" { target { ! implicit_constexpr } } }
+constexpr double dd2 = co1.real(); // { dg-error "|in .constexpr. expansion of " "" { target { ! implicit_constexpr } } }
 
 // --------------------
 
-struct base		       // { dg-message "no .constexpr. constructor" }
+struct base		       // { dg-message "no .constexpr. constructor" "" { target { ! implicit_constexpr } } }
 {
   int _M_i;
   base() : _M_i(5) { }
 };
 
-struct derived : public base	// { dg-message "base class" }
+struct derived : public base	// { dg-message "base class" "" { target { ! implicit_constexpr } } }
 {
-  constexpr derived(): base() { } // { dg-error "non-.constexpr. function" }
+  constexpr derived(): base() { } // { dg-error "non-.constexpr. function" "" { target { ! implicit_constexpr } } }
 };
 
-constexpr derived obj;		// { dg-error "not literal" }
+constexpr derived obj;		// { dg-error "not literal" "" { target { ! implicit_constexpr } } }
 
 // --------------------
 

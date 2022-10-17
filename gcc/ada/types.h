@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -261,6 +261,10 @@ typedef Int String_Id;
 
 /* Type used for representation of universal integers.  */
 typedef Int Uint;
+typedef Uint Valid_Uint;
+typedef Uint Unat;
+typedef Uint Upos;
+typedef Uint Nonzero_Uint;
 
 /* Used to indicate missing Uint value.  */
 #define No_Uint Uint_Low_Bound

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MIPS NetBSD systems.
-   Copyright (C) 1993-2021 Free Software Foundation, Inc.
+   Copyright (C) 1993-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,9 +84,10 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__mips=3");				\
       else if (ISA_MIPS4)					\
 	builtin_define ("__mips=4");				\
-      else if (mips_isa >= 32 && mips_isa < 64)			\
+      else if (mips_isa >= MIPS_ISA_MIPS32			\
+	       && mips_isa < MIPS_ISA_MIPS64)			\
 	builtin_define ("__mips=32");				\
-      else if (mips_isa >= 64)					\
+      else if (mips_isa >= MIPS_ISA_MIPS64)			\
 	builtin_define ("__mips=64");				\
       if (mips_isa_rev > 0)					\
         builtin_define_with_int_value ("__mips_isa_rev",	\

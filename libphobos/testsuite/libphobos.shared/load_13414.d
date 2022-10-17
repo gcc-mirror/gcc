@@ -16,8 +16,17 @@ void runTest(string name)
     *cast(void function()*).dlsym(h, "_D9lib_1341420sharedStaticDtorHookOPFZv") = &sharedStaticDtorHook;
 
     Runtime.unloadLibrary(h);
-    assert(tlsDtor == 1);
-    assert(dtor == 1);
+    version (CRuntime_Musl)
+    {
+        // On Musl, unloadLibrary is a no-op because dlclose is a no-op
+        assert(tlsDtor == 0);
+        assert(dtor == 0);
+    }
+    else
+    {
+        assert(tlsDtor == 1);
+        assert(dtor == 1);
+    }
 }
 
 void main(string[] args)

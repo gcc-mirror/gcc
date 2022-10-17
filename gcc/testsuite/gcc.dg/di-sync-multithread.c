@@ -70,6 +70,8 @@ worker (void* data)
          case this to carry across the 32bit boundary.  */
       for (tmp2 = 0; tmp2 < 64; tmp2++)
 	{
+	  sched_yield ();
+
 	  /* Add 2 using the two different adds.  */
 	  tmp1 = __sync_add_and_fetch (&workspace, add1bit);
 	  tmp3 = __sync_fetch_and_add (&workspace, add1bit);
@@ -103,6 +105,8 @@ worker (void* data)
 
       for (tmp2 = 0; tmp2 < 64; tmp2++)
 	{
+	  sched_yield ();
+
 	  /* Subtract 2 using the two different subs.  */
 	  tmp1=__sync_sub_and_fetch (&workspace, add1bit);
 	  tmp3=__sync_fetch_and_sub (&workspace, add1bit);
@@ -178,6 +182,8 @@ main ()
 	t, err);
   };
 
+  sched_yield ();
+
 #ifdef _WIN32
   Sleep (5000);
 #else
@@ -186,6 +192,8 @@ main ()
 
   /* Stop please.  */
   __sync_lock_test_and_set (&doquit, 1ll);
+
+  sched_yield ();
 
   for (t = 0; t < 3; t++)
     {

@@ -1,5 +1,5 @@
 ;; ARM NEON coprocessor Machine Description
-;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -458,15 +458,6 @@
   [(set_attr "type" "neon_store1_one_lane_q,neon_to_gp_q")]
 )
 
-(define_expand "vec_init<mode><V_elem_l>"
-  [(match_operand:VDQ 0 "s_register_operand")
-   (match_operand 1 "" "")]
-  "TARGET_NEON || TARGET_HAVE_MVE"
-{
-  neon_expand_vector_init (operands[0], operands[1]);
-  DONE;
-})
-
 ;; Doubleword and quadword arithmetic.
 
 ;; NOTE: some other instructions also support 64-bit integer
@@ -644,6 +635,13 @@
  [(set_attr "type" "neon_fp_mla_s<q>")]
 )
 
+(define_expand "<NEON_VRINT:nvrint_pattern><VCVTF:mode>2"
+  [(set (match_operand:VCVTF 0 "s_register_operand")
+        (unspec:VCVTF [(match_operand:VCVTF 1 "s_register_operand")]
+		      NEON_VRINT))]
+  "TARGET_NEON && TARGET_VFP5 && flag_unsafe_math_optimizations"
+)
+
 (define_insn "neon_vrint<NEON_VRINT:nvrint_variant><VCVTF:mode>"
   [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
         (unspec:VCVTF [(match_operand:VCVTF 1
@@ -652,6 +650,14 @@
   "TARGET_NEON && TARGET_VFP5"
   "vrint<nvrint_variant>.f32\\t%<V_reg>0, %<V_reg>1"
   [(set_attr "type" "neon_fp_round_<V_elem_ch><q>")]
+)
+
+(define_expand "l<NEON_VCVT:nvrint_pattern><su_optab><VCVTF:mode><v_cmp_result>2"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand")
+	(FIXUORS:<V_cmp_result>
+	  (unspec:VCVTF [(match_operand:VCVTF 1 "register_operand")]
+			NEON_VCVT)))]
+  "TARGET_NEON && TARGET_VFP5 && flag_unsafe_math_optimizations"
 )
 
 (define_insn "neon_vcvt<NEON_VCVT:nvrint_variant><su_optab><VCVTF:mode><v_cmp_result>"
@@ -1402,6 +1408,45 @@
   "vqsub.<V_u_elem>\t%P0, %P1, %P2"
   [(set_attr "type" "neon_qsub<q>")]
 )
+
+(define_expand "vec_cmp<mode><v_cmp_result>"
+  [(set (match_operand:<V_cmp_result> 0 "s_register_operand")
+	(match_operator:<V_cmp_result> 1 "comparison_operator"
+	  [(match_operand:VDQWH 2 "s_register_operand")
+	   (match_operand:VDQWH 3 "reg_or_zero_operand")]))]
+  "TARGET_NEON
+   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand")
+	(match_operator:VDQIW 1 "comparison_operator"
+	  [(match_operand:VDQIW 2 "s_register_operand")
+	   (match_operand:VDQIW 3 "reg_or_zero_operand")]))]
+  "TARGET_NEON"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode><v_cmp_result>"
+  [(set (match_operand:VDQWH 0 "s_register_operand")
+	(if_then_else:VDQWH
+	  (match_operand:<V_cmp_result> 3 "s_register_operand")
+	  (match_operand:VDQWH 1 "s_register_operand")
+	  (match_operand:VDQWH 2 "s_register_operand")))]
+  "TARGET_NEON
+   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  emit_insn (gen_neon_vbsl<mode> (operands[0], operands[3], operands[1],
+				  operands[2]));
+  DONE;
+})
 
 ;; Patterns for builtins.
 
@@ -2875,18 +2920,47 @@
 })
 
 
-;; These instructions map to the __builtins for the Dot Product operations.
-(define_insn "neon_<sup>dot<vsi2qi>"
+;; These map to the auto-vectorizer Dot Product optab.
+;; The auto-vectorizer expects a dot product builtin that also does an
+;; accumulation into the provided register.
+;; Given the following pattern
+;;
+;; for (i=0; i<len; i++) {
+;;     c = a[i] * b[i];
+;;     r += c;
+;; }
+;; return result;
+;;
+;; This can be auto-vectorized to
+;; r  = a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];
+;;
+;; given enough iterations.  However the vectorizer can keep unrolling the loop
+;; r += a[4]*b[4] + a[5]*b[5] + a[6]*b[6] + a[7]*b[7];
+;; r += a[8]*b[8] + a[9]*b[9] + a[10]*b[10] + a[11]*b[11];
+;; ...
+;;
+;; and so the vectorizer provides r, in which the result has to be accumulated.
+(define_insn "<sup>dot_prod<vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand" "=w")
-	(plus:VCVTI (match_operand:VCVTI 1 "register_operand" "0")
-		    (unspec:VCVTI [(match_operand:<VSI2QI> 2
-							"register_operand" "w")
-				   (match_operand:<VSI2QI> 3
-							"register_operand" "w")]
-		DOTPROD)))]
+	(plus:VCVTI
+	  (unspec:VCVTI [(match_operand:<VSI2QI> 1 "register_operand" "w")
+			 (match_operand:<VSI2QI> 2 "register_operand" "w")]
+			 DOTPROD)
+	  (match_operand:VCVTI 3 "register_operand" "0")))]
   "TARGET_DOTPROD"
-  "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
+  "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "neon_dot<q>")]
+)
+
+;; These instructions map to the __builtins for the Dot Product operations
+(define_expand "neon_<sup>dot<vsi2qi>"
+  [(set (match_operand:VCVTI 0 "register_operand" "=w")
+	(plus:VCVTI
+	  (unspec:VCVTI [(match_operand:<VSI2QI> 2 "register_operand")
+			 (match_operand:<VSI2QI> 3 "register_operand")]
+			 DOTPROD)
+	  (match_operand:VCVTI 1 "register_operand")))]
+  "TARGET_DOTPROD"
 )
 
 ;; These instructions map to the __builtins for the Dot Product operations.
@@ -2907,17 +2981,40 @@
 ;; indexed operations.
 (define_insn "neon_<sup>dot_lane<vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand" "=w")
-	(plus:VCVTI (match_operand:VCVTI 1 "register_operand" "0")
-		    (unspec:VCVTI [(match_operand:<VSI2QI> 2
-							"register_operand" "w")
-				   (match_operand:V8QI 3 "register_operand" "t")
-				   (match_operand:SI 4 "immediate_operand" "i")]
-		DOTPROD)))]
+	(plus:VCVTI
+	  (unspec:VCVTI [(match_operand:<VSI2QI> 2 "register_operand" "w")
+			 (match_operand:V8QI 3 "register_operand" "t")
+			 (match_operand:SI 4 "immediate_operand" "i")]
+			 DOTPROD)
+	  (match_operand:VCVTI 1 "register_operand" "0")))]
+  "TARGET_DOTPROD"
+  "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]";
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+;; These instructions map to the __builtins for the Dot Product
+;; indexed operations.
+(define_insn "neon_<sup>dot_laneq<vsi2qi>"
+  [(set (match_operand:VCVTI 0 "register_operand" "=w")
+	(plus:VCVTI
+	  (unspec:VCVTI [(match_operand:<VSI2QI> 2 "register_operand" "w")
+			 (match_operand:V16QI 3 "register_operand" "t")
+			 (match_operand:SI 4 "immediate_operand" "i")]
+			 DOTPROD)
+	  (match_operand:VCVTI 1 "register_operand" "0")))]
   "TARGET_DOTPROD"
   {
-    operands[4]
-      = GEN_INT (NEON_ENDIAN_LANE_N (V8QImode, INTVAL (operands[4])));
-    return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]";
+    int lane = INTVAL (operands[4]);
+    if (lane > GET_MODE_NUNITS (V2SImode) - 1)
+      {
+	operands[4] = GEN_INT (lane - GET_MODE_NUNITS (V2SImode));
+	return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %f3[%c4]";
+      }
+    else
+      {
+	operands[4] = GEN_INT (lane);
+	return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %e3[%c4]";
+      }
   }
   [(set_attr "type" "neon_dot<q>")]
 )
@@ -2934,51 +3031,50 @@
 	    DOTPROD_I8MM)
 	  (match_operand:VCVTI 1 "register_operand" "0")))]
   "TARGET_I8MM"
+  "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+;; These instructions map to the __builtins for the Dot Product
+;; indexed operations in the v8.6 I8MM extension.
+(define_insn "neon_<sup>dot_laneq<vsi2qi>"
+  [(set (match_operand:VCVTI 0 "register_operand" "=w")
+	(plus:VCVTI
+	  (unspec:VCVTI [(match_operand:<VSI2QI> 2 "register_operand" "w")
+			 (match_operand:V16QI 3 "register_operand" "t")
+			 (match_operand:SI 4 "immediate_operand" "i")]
+			 DOTPROD_I8MM)
+	  (match_operand:VCVTI 1 "register_operand" "0")))]
+  "TARGET_I8MM"
   {
-    operands[4] = GEN_INT (INTVAL (operands[4]));
-    return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %P3[%c4]";
+    int lane = INTVAL (operands[4]);
+    if (lane > GET_MODE_NUNITS (V2SImode) - 1)
+      {
+	operands[4] = GEN_INT (lane - GET_MODE_NUNITS (V2SImode));
+	return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %f3[%c4]";
+      }
+    else
+      {
+	operands[4] = GEN_INT (lane);
+	return "v<sup>dot.<opsuffix>\\t%<V_reg>0, %<V_reg>2, %e3[%c4]";
+      }
   }
   [(set_attr "type" "neon_dot<q>")]
 )
 
-;; These expands map to the Dot Product optab the vectorizer checks for.
-;; The auto-vectorizer expects a dot product builtin that also does an
-;; accumulation into the provided register.
-;; Given the following pattern
-;;
-;; for (i=0; i<len; i++) {
-;;     c = a[i] * b[i];
-;;     r += c;
-;; }
-;; return result;
-;;
-;; This can be auto-vectorized to
-;; r  = a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];
-;;
-;; given enough iterations.  However the vectorizer can keep unrolling the loop
-;; r += a[4]*b[4] + a[5]*b[5] + a[6]*b[6] + a[7]*b[7];
-;; r += a[8]*b[8] + a[9]*b[9] + a[10]*b[10] + a[11]*b[11];
-;; ...
-;;
-;; and so the vectorizer provides r, in which the result has to be accumulated.
-(define_expand "<sup>dot_prod<vsi2qi>"
+;; Auto-vectorizer pattern for usdot
+(define_expand "usdot_prod<vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand")
 	(plus:VCVTI (unspec:VCVTI [(match_operand:<VSI2QI> 1
 							"register_operand")
 				   (match_operand:<VSI2QI> 2
 							"register_operand")]
-		     DOTPROD)
+		     UNSPEC_DOT_US)
 		    (match_operand:VCVTI 3 "register_operand")))]
-  "TARGET_DOTPROD"
-{
-  emit_insn (
-    gen_neon_<sup>dot<vsi2qi> (operands[3], operands[3], operands[1],
-				 operands[2]));
-  emit_insn (gen_rtx_SET (operands[0], operands[3]));
-  DONE;
-})
+  "TARGET_I8MM"
+)
 
-(define_expand "neon_copysignf<mode>"
+(define_expand "copysign<mode>3"
   [(match_operand:VCVTF 0 "register_operand")
    (match_operand:VCVTF 1 "register_operand")
    (match_operand:VCVTF 2 "register_operand")]
@@ -5924,6 +6020,43 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
+(define_expand "vec_unpack<US>_hi_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand"))]
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2); i++)
+     RTVEC_ELT (v, i) = GEN_INT ((<V_mode_nunits>/2) + i);
+  
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+   emit_insn (gen_neon_vec_unpack<US>_hi_<mode> (operands[0], 
+                                                 operands[1], 
+					         t1));
+   DONE;
+  }
+)
+
+(define_expand "vec_unpack<US>_lo_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand"))]
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2) ; i++)
+     RTVEC_ELT (v, i) = GEN_INT (i);
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+   emit_insn (gen_neon_vec_unpack<US>_lo_<mode> (operands[0], 
+                                                 operands[1], 
+				   	         t1));
+   DONE;
+  }
+)
+
 (define_insn "neon_vec_<US>mult_lo_<mode>"
  [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
        (mult:<V_unpack> (SE:<V_unpack> (vec_select:<V_HALF>
@@ -6139,7 +6272,7 @@ if (BYTES_BIG_ENDIAN)
 ; because the ordering of vector elements in Q registers is different from what
 ; the semantics of the instructions require.
 
-(define_insn "neon_quad_vec_pack_trunc_<mode>"
+(define_insn "vec_pack_trunc_<mode>"
  [(set (match_operand:<V_narrow_pack> 0 "register_operand" "=&w")
        (vec_concat:<V_narrow_pack> 
 		(truncate:<V_narrow> 

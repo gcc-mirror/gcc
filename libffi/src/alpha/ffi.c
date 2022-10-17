@@ -98,7 +98,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 	case FFI_TYPE_VOID:
 	case FFI_TYPE_STRUCT:
 	  /* Passed by value in N slots.  */
-	  bytes += ALIGN(itype->size, FFI_SIZEOF_ARG);
+	  bytes += FFI_ALIGN(itype->size, FFI_SIZEOF_ARG);
 	  break;
 
 	case FFI_TYPE_COMPLEX:
@@ -285,7 +285,7 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
 	case FFI_TYPE_STRUCT:
 	  size = ty->size;
 	  memcpy(argp + argn, valp, size);
-	  argn += ALIGN(size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
+	  argn += FFI_ALIGN(size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 	  break;
 
 	case FFI_TYPE_COMPLEX:
@@ -421,7 +421,7 @@ ffi_closure_osf_inner (ffi_cif *cif,
 	case FFI_TYPE_VOID:
 	case FFI_TYPE_STRUCT:
 	  size = ty->size;
-	  argn += ALIGN(size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
+	  argn += FFI_ALIGN(size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 	  break;
 
 	case FFI_TYPE_FLOAT:

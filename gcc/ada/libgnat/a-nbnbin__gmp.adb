@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019-2021, Free Software Foundation, Inc.      --
+--             Copyright (C) 2019-2022, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -327,7 +327,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Big_Integer is
+   function From_String (Arg : String) return Valid_Big_Integer is
       function mpz_set_str
         (this : access mpz_t;
          str  : System.Address;

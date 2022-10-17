@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail59.d(50): Error: outer class C1 'this' needed to 'new' nested class C2
+fail_compilation/fail59.d(50): Error: cannot construct nested class `C2` because no implicit `this` reference to outer class `C1` is available
 ---
 */
 

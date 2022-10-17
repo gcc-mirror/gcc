@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fcheck-new -fno-tree-vrp -fdump-tree-forwprop1" } */
+/* { dg-options "-O -fcheck-new -fno-tree-vrp -fdump-tree-forwprop1 -fno-thread-jumps" } */
 
 #include <new>
 

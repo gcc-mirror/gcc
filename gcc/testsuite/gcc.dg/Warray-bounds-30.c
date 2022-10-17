@@ -120,7 +120,7 @@ void test_global_short_2dim_array (void)
   T (&p[1]);
   T (&p[2]);
   T (&p[3]);
-  T (&p[16]);       /* { dg-warning "subscript 16 is \(above|outside\) array bounds of .short int\\\[3]" } */
+  T (&p[16]);       /* { dg-warning "subscript 16 is \(above|outside\) array bounds of .short int\\\[3]" "pr??????" { xfail *-*-* } } */
   T (&p[MAX]);      /* { dg-warning "subscript -?\[0-9\]+ is \(above|outside\) array bounds of .short int\\\[3]" } */
 }
 

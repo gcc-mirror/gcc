@@ -1,6 +1,7 @@
 /* PR middle-end/98578 - ICE warning on uninitialized VLA access
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -fno-ipa-modref" }
+   { dg-require-effective-target alloca } */
 
 void* malloc (__SIZE_TYPE__);
 

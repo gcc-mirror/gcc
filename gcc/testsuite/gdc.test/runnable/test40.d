@@ -2,7 +2,7 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS:
 
-import std.stdio;
+import core.stdc.stdio;
 import imports.test40a;
 
 class Foo {
@@ -13,4 +13,3 @@ class Foo {
 void main() {
         Bar.foobar();
 }
-

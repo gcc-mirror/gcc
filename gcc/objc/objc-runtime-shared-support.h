@@ -1,5 +1,5 @@
 /* Support routines shared by all runtimes.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Iain Sandoe
 
 This file is part of GCC.
@@ -63,7 +63,7 @@ extern tree build_descriptor_table_initializer (tree, tree);
 extern tree build_method_prototype_list_template (tree, int);
 extern tree build_protocol_initializer (tree, tree, tree, tree, tree);
 
-/* Moved or new routines in objc-runtime-shared-support.c  */
+/* Moved or new routines in objc-runtime-shared-support.cc  */
 
 extern tree build_selector (tree);
 extern tree build_method_template (void);

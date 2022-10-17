@@ -1,4 +1,10 @@
-// EXTRA_SOURCES: imports/test10a.d
+/*
+EXTRA_SOURCES: imports/test10a.d
+RUN_OUTPUT:
+---
+it is 32
+---
+*/
 
 import imports.test10a;
 

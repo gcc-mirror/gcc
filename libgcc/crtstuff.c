@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -261,7 +261,8 @@ STATIC func_ptr __DTOR_LIST__[1]
 /* Stick a label at the beginning of the frame unwind info so we can register
    and deregister it with the exception handling library code.  */
 STATIC EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
-     __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__), aligned(4)))
+     __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__),
+		    aligned(__alignof__ (void *))))
      = { };
 #endif /* USE_EH_FRAME_REGISTRY */
 

@@ -40,6 +40,8 @@ template <typename _Tp, typename _Alloc>
 template <typename...>
 void vector<_Tp, _Alloc>::_M_realloc_insert() {
   __alloc_traits::pointer __trans_tmp_5;
+  /* __len is used uninitialized below, which might trigger warnings,
+     even without -Wall (and other than -Wuninitialized).  */
   long __len(__len || max_size()), __elems_before;
   __trans_tmp_5 = _M_allocate___n
     ? __alloc_traits::allocate(_M_impl, _M_allocate___n)
@@ -62,3 +64,5 @@ void ReadTrackChunk()
     case MIDIST_PITCHBEND:
       block.data.push_back();
 }
+
+// { dg-prune-output "warning" }

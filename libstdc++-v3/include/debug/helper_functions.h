@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -124,11 +124,8 @@ namespace __gnu_debug
     inline bool
     __check_singular(_Iterator const& __x)
     {
-      return
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-	__builtin_is_constant_evaluated() ? false :
-#endif
-	__check_singular_aux(std::__addressof(__x));
+      return ! std::__is_constant_evaluated()
+	       && __check_singular_aux(std::__addressof(__x));
     }
 
   /** Non-NULL pointers are nonsingular. */
@@ -136,13 +133,7 @@ namespace __gnu_debug
     _GLIBCXX_CONSTEXPR
     inline bool
     __check_singular(_Tp* const& __ptr)
-    {
-      return
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-	__builtin_is_constant_evaluated() ? false :
-#endif
-	__ptr == 0;
-    }
+    { return __ptr == 0; }
 
   /** We say that integral types for a valid range, and defer to other
    *  routines to realize what to do with integral types instead of

@@ -1,5 +1,5 @@
 /* Definitions for LynxOS on i386.
-   Copyright (C) 1993-2021 Free Software Foundation, Inc.
+   Copyright (C) 1993-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,9 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* LynxOS's GDB counts the floating point registers from 16.  */
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)						\
-  (TARGET_64BIT ? dbx64_register_map[n]					\
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n)						\
+  (TARGET_64BIT ? debugger64_register_map[n]					\
    : (n) == 0 ? 0							\
    : (n) == 1 ? 2							\
    : (n) == 2 ? 1							\
@@ -60,11 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_OUTPUT_ALIGN
 
-/* Undefine the definition from elfos.h to enable our default.  */
-
-#undef PREFERRED_DEBUGGING_TYPE
-
-/* The file i386.c defines TARGET_HAVE_TLS unconditionally if
+/* The file i386.cc defines TARGET_HAVE_TLS unconditionally if
    HAVE_AS_TLS is defined.  HAVE_AS_TLS is defined as gas support for
    TLS is detected by configure.  We undefine it here.  */
 

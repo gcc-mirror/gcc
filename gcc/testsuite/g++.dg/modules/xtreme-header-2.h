@@ -1,8 +1,7 @@
 // Everything that transitively includes <ranges>
 
 #include <algorithm>
-// FIXME: PR 97549
-// #include <execution>
+#include <execution>
 #include <functional>
 #include <future>
 #include <memory>

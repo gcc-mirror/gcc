@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The arguments to NAMED_*CST are:
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
-     -- the value it has, for use in trans-types.c  
+     -- the value it has, for use in trans-types.cc  
      -- the standard that supports this type  */
 
 NAMED_INTCST (ISOCBINDING_INT, "c_int", gfc_c_int_kind, GFC_STD_F2003)
@@ -114,9 +114,14 @@ NAMED_REALCST (ISOCBINDING_DOUBLE, "c_double", \
                get_real_kind_from_node (double_type_node), GFC_STD_F2003)
 NAMED_REALCST (ISOCBINDING_LONG_DOUBLE, "c_long_double", \
                get_real_kind_from_node (long_double_type_node), GFC_STD_F2003)
+
+/* GNU Extension.  Note that the equivalence here is specifically to
+   the IEEE 128-bit type _Float128; if that does not map onto a type
+   otherwise supported by the Fortran front end, get_real_kind_from_node
+   will reject it as unsupported.  */
 NAMED_REALCST (ISOCBINDING_FLOAT128, "c_float128", \
-	       gfc_float128_type_node == NULL_TREE \
-		  ? -4 : get_real_kind_from_node (gfc_float128_type_node), \
+		(float128_type_node == NULL_TREE \
+		 ? -4 : get_real_kind_from_node (float128_type_node)), \
 	       GFC_STD_GNU)
 NAMED_CMPXCST (ISOCBINDING_FLOAT_COMPLEX, "c_float_complex", \
                get_real_kind_from_node (float_type_node), GFC_STD_F2003)
@@ -124,9 +129,11 @@ NAMED_CMPXCST (ISOCBINDING_DOUBLE_COMPLEX, "c_double_complex", \
                get_real_kind_from_node (double_type_node), GFC_STD_F2003)
 NAMED_CMPXCST (ISOCBINDING_LONG_DOUBLE_COMPLEX, "c_long_double_complex", \
                get_real_kind_from_node (long_double_type_node), GFC_STD_F2003)
+
+/* GNU Extension.  Similar issues to c_float128 above.  */
 NAMED_CMPXCST (ISOCBINDING_FLOAT128_COMPLEX, "c_float128_complex", \
-	       gfc_float128_type_node == NULL_TREE \
-		  ? -4 : get_real_kind_from_node (gfc_float128_type_node), \
+		(float128_type_node == NULL_TREE \
+		 ? -4 : get_real_kind_from_node (float128_type_node)), \
 	       GFC_STD_GNU)
 
 NAMED_LOGCST (ISOCBINDING_BOOL, "c_bool", \

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2008-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
-with System.Concat_2;
-
 package body System.Concat_3 is
 
    pragma Suppress (All_Checks);
@@ -54,25 +50,8 @@ package body System.Concat_3 is
       R (F .. L) := S2;
 
       F := L + 1;
-      L := R'Last;
+      L := F + S3'Length - 1;
       R (F .. L) := S3;
    end Str_Concat_3;
-
-   -------------------------
-   -- Str_Concat_Bounds_3 --
-   -------------------------
-
-   procedure Str_Concat_Bounds_3
-     (Lo, Hi     : out Natural;
-      S1, S2, S3 : String)
-   is
-   begin
-      System.Concat_2.Str_Concat_Bounds_2 (Lo, Hi, S2, S3);
-
-      if S1 /= "" then
-         Hi := S1'Last + Hi - Lo + 1;
-         Lo := S1'First;
-      end if;
-   end Str_Concat_Bounds_3;
 
 end System.Concat_3;

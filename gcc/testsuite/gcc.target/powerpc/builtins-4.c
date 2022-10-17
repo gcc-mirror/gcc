@@ -119,6 +119,18 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
 	return vec_sldw (x, y, 3);
 }
 
+vector float
+test_vf_sldw_vf_vf (vector float x, vector float y)
+{
+  return vec_sldw (x, y, 3);
+}
+
+vector double
+test_vd_sldw_vd_vd (vector double x, vector double y)
+{
+  return vec_sldw (x, y, 1);
+}
+
 vector signed int long long
 test_sll_vsill_vsill_vuc (vector signed long long int x,
 			  vector unsigned char y)
@@ -146,14 +158,16 @@ test_sll_vuill_vuill_vuc (vector unsigned long long int x,
      test_slo_vsll_slo_vsll_vuc    1 vslo
      test_slo_vull_slo_vull_vsc    1 vslo
      test_slo_vull_slo_vull_vuc    1 vslo
-     test_vsc_sldw_vsc_vsc         1 xxlor
-     test_vuc_sldw_vuc_vuc         1 xxlor
-     test_vssi_sldw_vssi_vssi      1 xxlor
-     test_vusi_sldw_vusi_vusi      1 xxlor
-     test_vsi_sldw_vsi_vsi         1 xxlor
-     test_vui_sldw_vui_vui         1 xxlor
-     test_vsl_sldw_vsl_vsl         1 xxlor
-     test_vul_sldw_vul_vul         1 xxlor
+     test_vsc_sldw_vsc_vsc         1 xxlor, 1 xxsldwi
+     test_vuc_sldw_vuc_vuc         1 xxlor, 1 xxsldwi
+     test_vssi_sldw_vssi_vssi      1 xxlor, 1 xxsldwi
+     test_vusi_sldw_vusi_vusi      1 xxlor, 1 xxsldwi
+     test_vsi_sldw_vsi_vsi         1 xxlor, 1 xxsldwi
+     test_vui_sldw_vui_vui         1 xxlor, 1 xxsldwi
+     test_vsl_sldw_vsl_vsl         1 xxlor, 1 xxsldwi
+     test_vul_sldw_vul_vul         1 xxlor, 1 xxsldwi
+     test_vf_sldw_vf_vf            1 xxlor, 1 xxsldwi
+     test_vd_sldw_vd_vd            1 xxlor, 1 xxsldwi
      test_sll_vsill_vsill_vuc      1 vsl
      test_sll_vuill_vuill_vuc      1 vsl  */
 
@@ -161,6 +175,6 @@ test_sll_vuill_vuill_vuc (vector unsigned long long int x,
 /* { dg-final { scan-assembler-times "xvnabssp"  1 } } */
 /* { dg-final { scan-assembler-times "xvnabsdp"  1 } } */
 /* { dg-final { scan-assembler-times "vslo"      4 } } */
-/* { dg-final { scan-assembler-times "xxlor"     30 } } */
+/* { dg-final { scan-assembler-times "xxlor"     32 } } */
 /* { dg-final { scan-assembler-times {\mvsl\M}   5 } } */
-
+/* { dg-final { scan-assembler-times {\mxxsldwi\M} 10 } } */

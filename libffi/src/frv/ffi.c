@@ -107,7 +107,7 @@ void *ffi_prep_args(char *stack, extended_cif *ecif)
       count += z;
     }
 
-  return (stack + ((count > 24) ? 24 : ALIGN_DOWN(count, 8)));
+  return (stack + ((count > 24) ? 24 : FFI_ALIGN_DOWN(count, 8)));
 }
 
 /* Perform machine dependent cif processing */
@@ -118,7 +118,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   else
     cif->flags = cif->rtype->size;
 
-  cif->bytes = ALIGN (cif->bytes, 8);
+  cif->bytes = FFI_ALIGN (cif->bytes, 8);
 
   return FFI_OK;
 }

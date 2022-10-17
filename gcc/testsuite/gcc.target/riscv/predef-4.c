@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv64ia -mabi=lp64 -mcmodel=medlow" } */
+/* { dg-options "-march=rv64ia -mabi=lp64 -mcmodel=medlow" } */
 
 int main () {
 #if !defined(__riscv)
@@ -56,9 +56,6 @@ int main () {
 #error "__riscv_cmodel_medlow"
 #endif
 #if defined(__riscv_cmodel_medany)
-#error "__riscv_cmodel_medlow"
-#endif
-#if defined(__riscv_cmodel_pic)
 #error "__riscv_cmodel_medlow"
 #endif
 

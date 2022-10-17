@@ -1,5 +1,5 @@
 /* A graph for exploring trees of feasible paths through the egraph.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -29,15 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-path.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
-#include "sbitmap.h"
 #include "bitmap.h"
-#include "tristate.h"
-#include "selftest.h"
 #include "ordered-hash-map.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -129,7 +122,7 @@ infeasible_node::dump_dot (graphviz_out *gv,
 
   pp_string (pp, "rejected constraint:");
   pp_newline (pp);
-  m_rc.dump_to_pp (pp);
+  m_rc->dump_to_pp (pp);
 
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
@@ -178,12 +171,13 @@ feasible_graph::add_node (const exploded_node *enode,
 }
 
 /* Add an infeasible_node to this graph and an infeasible_edge connecting
-   to it from SRC_FNODE, capturing a failure of RC along EEDGE.  */
+   to it from SRC_FNODE, capturing a failure of RC along EEDGE.
+   Takes ownership of RC.  */
 
 void
 feasible_graph::add_feasibility_problem (feasible_node *src_fnode,
 					 const exploded_edge *eedge,
-					 const rejected_constraint &rc)
+					 rejected_constraint *rc)
 {
   infeasible_node *dst_fnode
     = new infeasible_node (eedge->m_dest, m_nodes.length (), rc);
@@ -215,6 +209,71 @@ feasible_graph::make_epath (feasible_node *fnode) const
   epath->m_edges.reverse ();
 
   return epath;
+}
+
+/* Dump the path to DST_FNODE in textual form to PP.  */
+
+void
+feasible_graph::dump_feasible_path (const feasible_node &dst_fnode,
+				    pretty_printer *pp) const
+{
+  const feasible_node *fnode = &dst_fnode;
+
+  auto_vec<const feasible_edge *> fpath;
+
+  /* FG is actually a tree.  Built the path backwards, by walking
+     backwards from FNODE until we reach the origin.  */
+  while (fnode->get_inner_node ()->m_index != 0)
+    {
+      gcc_assert (fnode->m_preds.length () == 1);
+      feasible_edge *pred_fedge
+	= static_cast <feasible_edge *> (fnode->m_preds[0]);
+      fpath.safe_push (pred_fedge);
+      fnode = static_cast <const feasible_node *> (pred_fedge->m_src);
+    }
+
+  /* Now reverse it.  */
+  fpath.reverse ();
+
+  for (unsigned i = 0; i < fpath.length (); i++)
+    {
+      const feasible_edge *fedge = fpath[i];
+      const feasible_node *src_fnode
+	= static_cast <const feasible_node *> (fedge->m_src);
+      const feasible_node *dest_fnode
+	= static_cast <const feasible_node *> (fedge->m_dest);
+
+      pp_printf (pp, "fpath[%i]: FN %i (EN %i) -> FN %i (EN %i)",
+		 i,
+		 src_fnode->get_index (),
+		 src_fnode->get_inner_node ()->m_index,
+		 dest_fnode->get_index (),
+		 dest_fnode->get_inner_node ()->m_index);
+      pp_newline (pp);
+      pp_printf (pp, "  FN %i (EN %i):",
+		 dest_fnode->get_index (),
+		 dest_fnode->get_inner_node ()->m_index);
+      pp_newline (pp);
+      const program_point &point = dest_fnode->get_inner_node ()->get_point ();
+      point.print (pp, format (true));
+      dest_fnode->get_state ().dump_to_pp (pp, true, true);
+      pp_newline (pp);
+    }
+}
+
+/* Dump the path to DST_FNODE in textual form to FILENAME.  */
+
+void
+feasible_graph::dump_feasible_path (const feasible_node &dst_fnode,
+				    const char *filename) const
+{
+  FILE *fp = fopen (filename, "w");
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp.buffer->stream = fp;
+  dump_feasible_path (dst_fnode, &pp);
+  pp_flush (&pp);
+  fclose (fp);
 }
 
 /* Dump stats about this graph to LOGGER.  */

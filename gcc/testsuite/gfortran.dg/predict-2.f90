@@ -2,10 +2,10 @@
 ! { dg-options "-O2 -fdump-tree-profile_estimate" }
 
 subroutine test(block, array)
-integer :: i,j, block(9), array(2)
+integer :: i,j, block(9), array(4)
 
 do i = array(1), array(2), 2
-    do j = array(1), array(2), 3
+    do j = array(3), array(4), 3
        block(i) = j
     end do
 end do

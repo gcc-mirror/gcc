@@ -1,14 +1,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail10980.d(22): Error: variable fail10980.s1b of type struct immutable(S1) uses this(this), which is not allowed in static initialization
-fail_compilation/fail10980.d(28): Error: variable fail10980.s1d of type struct immutable(S1) uses this(this), which is not allowed in static initialization
-fail_compilation/fail10980.d(27): Error: static variable s1x cannot be read at compile time
-fail_compilation/fail10980.d(28):        called from here: bar1()
-fail_compilation/fail10980.d(38): Error: variable fail10980.s2b of type struct immutable(S2) uses this(this), which is not allowed in static initialization
-fail_compilation/fail10980.d(44): Error: variable fail10980.s2d of type struct immutable(S2) uses this(this), which is not allowed in static initialization
-fail_compilation/fail10980.d(43): Error: static variable s2x cannot be read at compile time
-fail_compilation/fail10980.d(44):        called from here: bar2()
+fail_compilation/fail10980.d(22): Error: variable `fail10980.s1b` of type struct `immutable(S1)` uses `this(this)`, which is not allowed in static initialization
+fail_compilation/fail10980.d(28): Error: variable `fail10980.s1d` of type struct `immutable(S1)` uses `this(this)`, which is not allowed in static initialization
+fail_compilation/fail10980.d(27): Error: static variable `s1x` cannot be read at compile time
+fail_compilation/fail10980.d(28):        called from here: `bar1()`
+fail_compilation/fail10980.d(38): Error: variable `fail10980.s2b` of type struct `immutable(S2)` uses `this(this)`, which is not allowed in static initialization
+fail_compilation/fail10980.d(44): Error: variable `fail10980.s2d` of type struct `immutable(S2)` uses `this(this)`, which is not allowed in static initialization
+fail_compilation/fail10980.d(43): Error: static variable `s2x` cannot be read at compile time
+fail_compilation/fail10980.d(44):        called from here: `bar2()`
 ---
 */
 

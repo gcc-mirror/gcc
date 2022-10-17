@@ -1,4 +1,6 @@
 // PR c++/51577
+// Verify we don't consider later-declared namespace-scope operator overloads
+// when instantiating a dependent operator expression that occurs at block scope.
 
 template <class T> void f (T x) {
   +x; // { dg-error "no match" }
@@ -50,59 +52,7 @@ template <class T> void f (T x) {
 
 namespace N { struct A { }; }
 
-void operator+(N::A);
-void operator-(N::A);
-void operator*(N::A);
-void operator~(N::A);
-#if __cplusplus >= 201103L
-void operator&(N::A) = delete;
-#else
-void operator&(N::A);
-#endif
-void operator!(N::A);
-void operator++(N::A);
-void operator--(N::A);
-void operator++(N::A, int);
-void operator--(N::A, int);
-
-void operator->*(N::A, N::A);
-void operator/(N::A, N::A);
-void operator*(N::A, N::A);
-void operator+(N::A, N::A);
-void operator-(N::A, N::A);
-void operator%(N::A, N::A);
-void operator&(N::A, N::A);
-void operator|(N::A, N::A);
-void operator^(N::A, N::A);
-void operator<<(N::A, N::A);
-void operator>>(N::A, N::A);
-void operator&&(N::A, N::A);
-void operator||(N::A, N::A);
-#if __cplusplus >= 201103L
-void operator,(N::A, N::A) = delete;
-#else
-void operator,(N::A, N::A);
-#endif
-
-void operator==(N::A, N::A);
-void operator!=(N::A, N::A);
-void operator<(N::A, N::A);
-void operator>(N::A, N::A);
-void operator<=(N::A, N::A);
-void operator>=(N::A, N::A);
-#if __cplusplus > 201703L
-void operator<=>(N::A, N::A);
-#endif
-
-void operator+=(N::A, N::A);
-void operator-=(N::A, N::A);
-void operator*=(N::A, N::A);
-void operator/=(N::A, N::A);
-void operator%=(N::A, N::A);
-void operator|=(N::A, N::A);
-void operator^=(N::A, N::A);
-void operator<<=(N::A, N::A);
-void operator>>=(N::A, N::A);
+#include "operator-3-ops.h"
 
 int main() {
   f(N::A());

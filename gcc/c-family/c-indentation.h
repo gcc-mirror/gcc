@@ -1,5 +1,5 @@
-/* Definitions for c-indentation.c.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Definitions for c-indentation.cc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,3 +1,542 @@
+2022-10-12  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+
+	* libtool.m4 (*vxworks*): When enable_shared, set dynamic_linker
+	and friends for rtp !large. Assume the linker has the required
+	abilities and set lt_cv_deplibs_check_method.
+
+2022-09-30  Olivier Hainque  <hainque@adacore.com>
+
+	* configure.ac (*vxworks*): If enable_shared is not
+	set, set to "no" and add --disable-shared to target and
+	host_configargs.
+	* configure: Regenerate.
+
+2022-09-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* MAINTAINERS: Update my email address and DCO entry.
+
+2022-09-23  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-09-15  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-09-07  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-09-07  Tom de Vries  <tdevries@suse.de>
+
+	* configure.ac: Set extra_host_libiberty_configure_flags and
+	extra_host_zlib_configure_flags in separate case statements.
+	* configure: Regenerate.
+
+2022-09-06  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* MAINTAINERS: Update c-sky port maintainers' emails.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* configure.ac: Delete hpux9 and hpux10.
+
+2022-08-18  Sergei Trofimovich  <siarheit@google.com>
+
+	* Makefile.def: Drop libelf module and gcc-configure dependency
+	on it.
+	* Makefile.in: Regenerate with 'autogen Makefile.def'.
+	* Makefile.tpl (HOST_EXPORTS): Drop unused LIBELFLIBS and
+	LIBELFINC.
+	* configure: Regenrate.
+	* configure.ac (host_libs): Drop unused libelf.
+
+2022-08-18  Sergei Trofimovich  <siarheit@google.com>
+
+	* Makefile.in: Regenerate.
+
+2022-08-04  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* MAINTAINERS: Add myself as AutoFDO maintainer.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Arnaud Charlet  <charlet@adacore.com>
+
+	* configure: Regenerate.
+
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR bootstrap/106472
+	* Makefile.def (dependencies): Make configure-target-libgo depend
+	upon all-target-libbacktrace.
+
+2022-07-27  David Faust  <david.faust@oracle.com>
+
+	* MAINTAINERS: Add myself as reviewer for CTF and BTF.
+
+2022-07-27  Richard Biener  <rguenther@suse.de>
+
+	* MAINTAINERS (Roger Sayle): Update e-mail address.
+
+2022-07-21  Sam Feifer  <sfeifer@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-07-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* MAINTAINERS: Add myself as Ada front end co-maintainer.
+
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* .gitignore: Do not ignore config.h.
+
+2022-07-15  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* MAINTAINERS: Add myself to Write After Approval.
+
+2022-07-04  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: fix sorting of names
+
+2022-07-03  Immad Mir  <mirimmad17@gmail.com>
+
+	* MAINTAINERS: add myself.
+
+2022-07-03  Immad Mir  <mirimmad17@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval and DCO.
+
+2022-07-02  Tim Lange  <mail@tim-lange.me>
+
+	* MAINTAINERS: Add myself.
+
+2022-07-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	Revert:
+	2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.tpl (HOST_EXPORTS): Add TFLAGS to GCC_FOR_TARGET.
+	(EXTRA_GCC_FLAGS): Likewise.
+	* Makefile.in: Rebuilt.
+
+2022-06-28  konglin1  <lingling.kong@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-27  Tom de Vries  <tdevries@suse.de>
+
+	* configure.ac: Build libiberty pic variant for gdbserver.
+	* configure: Regenerate.
+
+2022-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Correct use of $host.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Remove tilegx and tilepro entries.
+	* configure.ac: Remove tilegx and tilepro stanzas.
+	* configure: Rebuilt.
+
+2022-05-28  Bruce Korb  <bkorb@gnu.org>
+
+	* .gitignore: Ignore vim swap files
+
+2022-05-13  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2022-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* MAINTAINERS: Remove myself from DCO section.
+
+2022-05-09  Xi Ruoyao  <xry111@xry111.site>
+
+	* MAINTAINERS: Update my email address.
+
+2022-05-09  Clément Chigot  <chigot@adacore.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-05-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* MAINTAINERS: Add myself as PowerPC port co-maintainer and to DCO
+	section.
+
+2022-04-19  Richard Henderson  <rth@gcc.gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
+2022-04-01  Qian Jianhua  <qianjh@fujitsu.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+
+	* MAINTAINERS: (CPU Port Maintainers): Add myself and
+	Lulu as LoongArch port maintainer.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure.ac: Add LoongArch tuples.
+	* configure: Regenerate.
+
+2022-03-28  Tom Tromey  <tromey@adacore.com>
+
+	* configure.ac: Remove --with-mpfr-dir and --with-gmp-dir.
+	* configure: Rebuild.
+
+2022-03-24  Bill Schmidt  <bill.schmidt@gmail.com>
+
+	* MAINTAINERS: Change my information.
+
+2022-03-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* MAINTAINERS: Add myself to DCO section.
+
+2022-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix incorrect option in comment.
+	* configure: Regenerate.
+
+2022-03-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* Makefile.def (dependencies): Make configure-sim depend on
+	all-readline.
+	* Makefile.in: Regenerate.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* MAINTAINERS (Write After Approval): Update my e-mail address.
+
+2022-02-08  Ulrich Weigand  <ulrich.weigand@de.ibm.com>
+
+	* MAINTAINERS: Remove Hartmut Penner as s390 maintainer.
+
+2022-01-31  Ed Smith-Rowland  <esmithrowland@gmail.com>
+
+	* MAINTAINERS: Update my email and add myself to the DCO list.
+
+2022-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/67102
+	* Makefile.def: Have configure-target-libffi depend on
+	all-target-libstdc++-v3.
+	* Makefile.in: Regenerate.
+
+2022-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104181
+	* build.log: Remove.
+
+2022-01-20  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Adjust email address based on IRC request.
+
+2022-01-18  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Rename .c names to .cc.
+
+2022-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am: Remove.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: New file.
+
+2022-01-11  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Sort 2 names.
+
+2022-01-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix obvious issues with sorting.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	* build.log: New file.
+
+2022-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Add DCO entry.  Sort that list.
+
+2022-01-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* MAINTAINERS: Change of email address in both DCO and
+	Write After Approval list.
+
+2021-12-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+
+2021-12-21  Martin Liska  <mliska@suse.cz>
+
+	* config.sub: Change mode back to 755.
+
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	* config.sub: Sync from master.
+
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-12-16  Matthias Seidel  <mseidel@apache.org>
+
+	* config.sub: Fix typo.
+
+2021-12-16  Matthias Seidel  <mseidel@apache.org>
+
+	* config.sub: Fix typo.
+
+2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	* configure.ac: Include config/gcc-plugin.m4.
+	AC_SUBST AR_PLUGIN_OPTION and RANLIB_PLUGIN_OPTION.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Pass --plugin to AR and
+	RANLIB if possible.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (BUILD_CFLAGS): New.
+	(CFLAGS): Append $(BUILD_CFLAGS).
+	(CXXFLAGS): Likewise.
+	(PGO_BUILD_GEN_FLAGS_TO_PASS): New.
+	(PGO_BUILD_TRAINING_CFLAGS): Likewise.
+	(PGO_BUILD_TRAINING_CXXFLAGS): Likewise.
+	(PGO_BUILD_TRAINING_FLAGS_TO_PASS): Likewise.
+	(PGO_BUILD_TRAINING_MFLAGS): Likewise.
+	(PGO_BUILD_USE_FLAGS_TO_PASS): Likewise.
+	(PGO-TRAINING-TARGETS): Likewise.
+	(PGO_BUILD_TRAINING): Likewise.
+	(all): Add '+' to the command line for recursive make.  Support
+	the PGO build.
+	* configure.ac: Add --enable-pgo-build[=lto].
+	AC_SUBST PGO_BUILD_GEN_CFLAGS, PGO_BUILD_USE_CFLAGS and
+	PGO_BUILD_LTO_CFLAGS.  Enable the PGO build in Makefile.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	* configure.ac: Include config/gcc-plugin.m4.
+	AC_SUBST AR_PLUGIN_OPTION and RANLIB_PLUGIN_OPTION.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Pass --plugin to AR and
+	RANLIB if possible.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2021-12-14  Marc Poulhiès  <poulhies@adacore.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2021-12-06  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	* MAINTAINERS: Adding myself.
+
+2021-12-02  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	* configure: Regenerate.
+	* configure.ac: For CPP_FOR_BUILD use $(CC_FOR_BUILD) -E instead of
+	$(CPP).
+
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.def: Add bootstrap to libbacktrace, libphobos, zlib, and
+	libatomic.
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Fix command for GDC.
+	(STAGE1_CONFIGURE_FLAGS): Add --with-libphobos-druntime-only if
+	target-libphobos-bootstrap.
+	(STAGE2_CONFIGURE_FLAGS): Likewise.
+	* configure: Regenerate.
+	* configure.ac: Add support for bootstrapping D front-end.
+
+2021-11-16  Martin Uecker  <uecker@gcc.gnu.org>
+
+	* MAINTAINERS: Add myself to DCO section and update email address.
+
+2021-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Ensure that PIC (shared) defaults are set
+	correctly for Darwin.
+
+2021-11-16  Jim Wilson  <jim.wilson.gcc@gmail.com>
+
+	* MAINTAINERS: Update my address.
+
+2021-11-12  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.def (configure-opcodes): Depend on configure-bfd.
+	* Makefile.in: Regenerate.
+
+2021-11-03  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* MAINTAINERS: Clarify the policy WRT the Write After Approval
+	list.
+
+2021-11-02  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* MAINTAINERS (Reviewers, arc): Remove my entry.
+	(Write After Approval): Add an entry for myself.
+
+2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* Makefile.tpl: Add CPP_FOR_BUILD and CPPFLAGS_FOR_BUILD support
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add CPP_FOR_BUILD and CPPFLAGS_FOR_BUILD support
+
+2021-10-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Fix up Maciej's entries.
+
+2021-10-26  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as a VAX port
+	maintainer.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Makefile.def: Handle install-dvi target.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerate.
+
+2021-10-19  Clément Chigot  <clement.chigot@atos.net>
+
+	* MAINTAINERS: Add myself for write after approval.
+
+2021-10-12  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* Makefile.def: Mark libcody, libdecnumber,
+	c++tools, libgcc, and libobjc as missing TAGS
+	targets.
+	* Makefile.in: Regenerate.
+
+2021-10-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* MAINTAINERS: Add myself to DCO section and update email
+	address.
+
+2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* MAINTAINERS: Add myself to DCO section.
+
+2021-09-28  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* configure: Regenerate.
+	* configure.ac (skipdirs): Add the contents of target_configdirs if
+	we are not building gcc.
+
+2021-09-24  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* Makefile.def: Back-port commits ba4d88ad892f and
+	755ba58ebef0 from binutils-gdb repository.
+	* Makefile.in: Regenerated.
+
+2021-09-20  Harald Anlauf  <anlauf@gmx.de>
+
+	* MAINTAINERS (Reviewers): Add myself as Fortran reviewer.
+
+2021-09-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Add a jit check target for the jit
+	language.
+	* Makefile.in: Regenerate.
+
+2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/67102
+	* Makefile.def: Have configure-target-libffi depend on
+	all-target-libstdc++-v3.
+	* Makefile.in: Regenerate.
+
+2021-09-10  Petter Tomner  <tomner@kth.se>
+
+	* MAINTAINERS: Me added to DCO and write after approval
+
+2021-09-01  YunQiang Su  <syq@debian.org>
+
+	* MAINTAINERS: Add myself for write after approval.
+
+2021-08-31  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* Makefile.def: Add all-gdb dependency on all-libbacktrace.
+	* Makefile.in: Regenerate.
+
+2021-08-21  Dragan Mladjenovic  <Dragan.Mladjenovic@syrmia.com>
+
+	* MAINTAINERS: Add myself for write after approval.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Make the state of the configured host
+	shared flag available to makefile fragements.
+
+2021-08-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .dir-locals.el (bug-reference-url-format): Use https.
+
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .dir-locals.el (c-mode): Change fill-column to 79.
+
+2021-07-15  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* MAINTAINERS: Add myself to DCO section.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Adjust cases for which it is necessary to
+	include the Darwin host config fragment.
+
+2021-07-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* MAINTAINERS: Add myself for write after approval and DCO.
+
 2021-07-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.def: Add dsymutil defs.

@@ -1,8 +1,8 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 10
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
-// 294
+// https://issues.dlang.org/show_bug.cgi?id=294
 
 /// The foo
 struct Foo(T) { }
@@ -142,7 +142,7 @@ struct S
 
     /****
      */
-    const pure nothrow this(this) { }
+    pure nothrow this(this) { }
 
     /****
      */
@@ -171,13 +171,13 @@ struct T
     /****
      */
     this(A...)(A args) { }
-    
+
     ///
     this(int){}
 }
 
 
-// 14547
+// https://issues.dlang.org/show_bug.cgi?id=14547
 
 /// doc-comment
 int x14547 = 1;

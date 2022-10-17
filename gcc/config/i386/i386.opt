@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -404,6 +404,10 @@ momit-leaf-frame-pointer
 Target Mask(OMIT_LEAF_FRAME_POINTER) Save
 Omit the frame pointer in leaf functions.
 
+mrelax-cmpxchg-loop
+Target Mask(RELAX_CMPXCHG_LOOP) Save
+Relax cmpxchg loop for atomic_fetch_{or,xor,and,nand} by adding load and cmp before cmpxchg, execute pause and loop back to load and compare if load value is not expected.
+
 mpc32
 Target RejectNegative
 Set 80387 floating-point precision to 32-bit.
@@ -619,6 +623,14 @@ Enum(prefer_vector_width) String(256) Value(PVW_AVX256)
 
 EnumValue
 Enum(prefer_vector_width) String(512) Value(PVW_AVX512)
+
+mmove-max=
+Target RejectNegative Joined Var(ix86_move_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
+Maximum number of bits that can be moved from memory to memory efficiently.
+
+mstore-max=
+Target RejectNegative Joined Var(ix86_store_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
+Maximum number of bits that can be stored to memory efficiently.
 
 ;; ISA support
 
@@ -1035,7 +1047,7 @@ Enable shadow stack built-in functions from Control-flow Enforcement
 Technology (CET).
 
 mcet-switch
-Target Undocumented Var(flag_cet_switch) Init(0)
+Target Var(flag_cet_switch) Init(0)
 Turn on CET instrumentation for switch statements that use a jump table and
 an indirect jump.
 
@@ -1071,6 +1083,10 @@ Enum(indirect_branch) String(thunk-inline) Value(indirect_branch_thunk_inline)
 
 EnumValue
 Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
+
+mindirect-branch-cs-prefix
+Target Var(ix86_indirect_branch_cs_prefix) Init(0)
+Add CS prefix to call and jmp to indirect thunk with branch target in r8-r15 registers.
 
 mindirect-branch-register
 Target Var(ix86_indirect_branch_register) Init(0)
@@ -1112,6 +1128,26 @@ Enum(instrument_return) String(nop5) Value(instrument_return_nop5)
 mrecord-return
 Target Var(ix86_flag_record_return) Init(0)
 Generate a __return_loc section pointing to all return instrumentation code.
+
+mharden-sls=
+Target RejectNegative Joined Enum(harden_sls) Var(ix86_harden_sls) Init(harden_sls_none)
+Generate code to mitigate against straight line speculation.
+
+Enum
+Name(harden_sls) Type(enum harden_sls)
+Known choices for mitigation against straight line speculation with -mharden-sls=:
+
+EnumValue
+Enum(harden_sls) String(none) Value(harden_sls_none)
+
+EnumValue
+Enum(harden_sls) String(return) Value(harden_sls_return)
+
+EnumValue
+Enum(harden_sls) String(indirect-jmp) Value(harden_sls_indirect_jmp)
+
+EnumValue
+Enum(harden_sls) String(all) Value(harden_sls_all)
 
 mavx512bf16
 Target Mask(ISA2_AVX512BF16) Var(ix86_isa_flags2) Save
@@ -1166,3 +1202,15 @@ Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property.
 mmwait
 Target Mask(ISA2_MWAIT) Var(ix86_isa_flags2) Save
 Support MWAIT and MONITOR built-in functions and code generation.
+
+mavx512fp16
+Target Mask(ISA2_AVX512FP16) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512FP16 built-in functions and code generation.
+
+mdirect-extern-access
+Target Var(ix86_direct_extern_access) Init(1)
+Do not use GOT to access external symbols.
+
+-param=x86-stlf-window-ninsns=
+Target Joined UInteger Var(x86_stlf_window_ninsns) Init(64) Param
+Instructions number above which STFL stall penalty can be compensated.

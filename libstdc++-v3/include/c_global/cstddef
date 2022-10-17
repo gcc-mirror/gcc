@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,7 +63,7 @@ namespace std
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-#define __cpp_lib_byte 201603
+#define __cpp_lib_byte 201603L
 
   /// std::byte
   enum class byte : unsigned char {};
@@ -73,9 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<> struct __byte_operand<char> { using __type = byte; };
   template<> struct __byte_operand<signed char> { using __type = byte; };
   template<> struct __byte_operand<unsigned char> { using __type = byte; };
-#ifdef _GLIBCXX_USE_WCHAR_T
   template<> struct __byte_operand<wchar_t> { using __type = byte; };
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<> struct __byte_operand<char8_t> { using __type = byte; };
 #endif
@@ -121,55 +119,66 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __byte_op_t = typename __byte_operand<_IntegerType>::__type;
 
   template<typename _IntegerType>
+    [[__gnu__::__always_inline__]]
     constexpr __byte_op_t<_IntegerType>
     operator<<(byte __b, _IntegerType __shift) noexcept
     { return (byte)(unsigned char)((unsigned)__b << __shift); }
 
   template<typename _IntegerType>
+    [[__gnu__::__always_inline__]]
     constexpr __byte_op_t<_IntegerType>
     operator>>(byte __b, _IntegerType __shift) noexcept
     { return (byte)(unsigned char)((unsigned)__b >> __shift); }
 
+  [[__gnu__::__always_inline__]]
   constexpr byte
   operator|(byte __l, byte __r) noexcept
   { return (byte)(unsigned char)((unsigned)__l | (unsigned)__r); }
 
+  [[__gnu__::__always_inline__]]
   constexpr byte
   operator&(byte __l, byte __r) noexcept
   { return (byte)(unsigned char)((unsigned)__l & (unsigned)__r); }
 
+  [[__gnu__::__always_inline__]]
   constexpr byte
   operator^(byte __l, byte __r) noexcept
   { return (byte)(unsigned char)((unsigned)__l ^ (unsigned)__r); }
 
+  [[__gnu__::__always_inline__]]
   constexpr byte
   operator~(byte __b) noexcept
   { return (byte)(unsigned char)~(unsigned)__b; }
 
   template<typename _IntegerType>
+    [[__gnu__::__always_inline__]]
     constexpr __byte_op_t<_IntegerType>&
     operator<<=(byte& __b, _IntegerType __shift) noexcept
     { return __b = __b << __shift; }
 
   template<typename _IntegerType>
+    [[__gnu__::__always_inline__]]
     constexpr __byte_op_t<_IntegerType>&
     operator>>=(byte& __b, _IntegerType __shift) noexcept
     { return __b = __b >> __shift; }
 
+  [[__gnu__::__always_inline__]]
   constexpr byte&
   operator|=(byte& __l, byte __r) noexcept
   { return __l = __l | __r; }
 
+  [[__gnu__::__always_inline__]]
   constexpr byte&
   operator&=(byte& __l, byte __r) noexcept
   { return __l = __l & __r; }
 
+  [[__gnu__::__always_inline__]]
   constexpr byte&
   operator^=(byte& __l, byte __r) noexcept
   { return __l = __l ^ __r; }
 
   template<typename _IntegerType>
-    [[nodiscard]]
+    [[nodiscard,__gnu__::__always_inline__]]
     constexpr _IntegerType
     to_integer(__byte_op_t<_IntegerType> __b) noexcept
     { return _IntegerType(__b); }

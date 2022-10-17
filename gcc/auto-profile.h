@@ -1,5 +1,5 @@
-/* auto-profile.h - Defines data exported from auto-profile.c
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+/* auto-profile.h - Defines data exported from auto-profile.cc
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Dehao Chen (dehao@google.com)
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 // PR c++/37276
-
+// { dg-additional-options -fno-inline }
 // { dg-final { scan-assembler "_ZSt5atanhd" } }
 
 namespace std

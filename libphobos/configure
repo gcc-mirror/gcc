@@ -5382,7 +5382,7 @@ fi
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
 
   ac_ext=d
 ac_compile='$GDC -c $GDCFLAGS conftest.$ac_ext >&5'
@@ -5392,7 +5392,7 @@ ac_compiler_gnu=yes
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking If $GDC can compile D sources" >&5
 $as_echo_n "checking If $GDC can compile D sources... " >&6; }
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 
 
 extern(C) int main() {
@@ -6796,6 +6796,11 @@ sysv4 | sysv4.3*)
   ;;
 
 tpf*)
+  lt_cv_deplibs_check_method=pass_all
+  ;;
+vxworks*)
+  # Assume VxWorks cross toolchains are built on Linux, possibly
+  # as canadian for Windows hosts.
   lt_cv_deplibs_check_method=pass_all
   ;;
 esac
@@ -11309,6 +11314,25 @@ uts4*)
   shlibpath_var=LD_LIBRARY_PATH
   ;;
 
+# Shared libraries for VwWorks, >= 7 only at this stage
+# and (fpic) still incompatible with "large" code models
+# in a few configurations. Only for RTP mode in any case,
+# and upon explicit request at configure time.
+vxworks7*)
+  dynamic_linker=no
+  case ${with_multisubdir}-${enable_shared} in
+    *large*)
+      ;;
+    *mrtp*-yes)
+      version_type=linux
+      need_lib_prefix=no
+      need_version=no
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+      soname_spec='${libname}${release}${shared_ext}$major'
+      dynamic_linker="$host_os module_loader"
+      ;;
+  esac
+  ;;
 *)
   dynamic_linker=no
   ;;
@@ -11750,7 +11774,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11753 "configure"
+#line 11777 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11856,7 +11880,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11859 "configure"
+#line 11883 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12097,7 +12121,7 @@ CC="$lt_save_CC"
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime  $GDCFLAGS"
 
 
 # Source file extension for D test sources.
@@ -14089,7 +14113,7 @@ fi
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
 
     ac_ext=d
 ac_compile='$GDC -c $GDCFLAGS conftest.$ac_ext >&5'
@@ -14098,7 +14122,7 @@ ac_compiler_gnu=yes
 
     GDCFLAGS="$GDCFLAGS -g -Werror -ffunction-sections -fdata-sections"
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 int foo; void bar() { }
 
 extern(C) int main() {
@@ -14562,7 +14586,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   gdc_save_DFLAGS=$GDCFLAGS
-  GDCFLAGS="-fno-moduleinfo -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
+  GDCFLAGS="-fno-druntime -nostdinc -I $phobos_cv_abs_srcdir/libdruntime -nophoboslib $GDCFLAGS"
 
   ac_ext=d
 ac_compile='$GDC -c $GDCFLAGS conftest.$ac_ext >&5'
@@ -14576,7 +14600,7 @@ if ${ac_cv_search_malloc+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int malloc();
 
 extern(C) int main() {
@@ -14622,7 +14646,7 @@ if ${ac_cv_search_pthread_create+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int pthread_create();
 
 extern(C) int main() {
@@ -14668,7 +14692,7 @@ if ${ac_cv_search_cosf+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int cosf();
 
 extern(C) int main() {
@@ -14714,7 +14738,7 @@ if ${ac_cv_search_clock_gettime+:} false; then :
 else
   ac_func_search_save_LIBS=$LIBS
 cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
  extern(C) int clock_gettime();
 
 extern(C) int main() {
@@ -14765,7 +14789,7 @@ $as_echo_n "checking for atomic builtins for byte... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
@@ -14799,7 +14823,7 @@ $as_echo_n "checking for atomic builtins for short... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
@@ -14833,7 +14857,7 @@ $as_echo_n "checking for atomic builtins for int... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
@@ -14867,7 +14891,7 @@ $as_echo_n "checking for atomic builtins for long... " >&6; }
 else
 
     cat > conftest.$ac_ext <<_ACEOF
-module mod;
+module object;
 import gcc.builtins;
 
 extern(C) int main() {
@@ -15475,18 +15499,6 @@ $as_echo_n "checking for host support for libphobos... " >&6; }
 . ${srcdir}/configure.tgt
 case ${host} in
   x86_64-*-solaris2.* | i?86-*-solaris2.*)
-    # libphobos doesn't compile with the Solaris/x86 assembler due to a
-    # relatively low linelength limit.
-    as_prog=`$CC -print-prog-name=as`
-    if test -n "$as_prog" && $as_prog -v /dev/null 2>&1 | grep GNU > /dev/null 2>&1; then
-      druntime_cv_use_gas=yes;
-    else
-      druntime_cv_use_gas=no;
-    fi
-    rm -f a.out
-    if test x$druntime_cv_use_gas = xno; then
-      LIBPHOBOS_SUPPORTED=no
-    fi
     # 64-bit D execution fails with Solaris ld without -z relax=transtls support.
     if test "$druntime_ld_gld" = "no" && test "$druntime_ld_relax_transtls" = "no"; then
       LIBPHOBOS_SUPPORTED=no
@@ -15566,7 +15578,7 @@ SPEC_PHOBOS_DEPS="$LIBS"
 
 
 # Libdruntime / phobos soname version
-libtool_VERSION=2:0:0
+libtool_VERSION=4:0:0
 
 
 # Set default flags (after DRUNTIME_WERROR!)

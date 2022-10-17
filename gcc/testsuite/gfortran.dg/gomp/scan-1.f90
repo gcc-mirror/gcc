@@ -105,6 +105,11 @@ subroutine f3 (c, d)
     ! ...
   !$omp end teams
 
+  !$omp scope reduction (inscan, +: a)
+    ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" "" { target *-*-* } .-1 }
+    ! ...
+  !$omp end scope
+
   !$omp target parallel do reduction (inscan, +: a) map (c, d)
   ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" "" { target *-*-* } .-1 }
   do i = 1, 64

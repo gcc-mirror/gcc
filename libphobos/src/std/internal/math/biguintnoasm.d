@@ -61,10 +61,10 @@ uint multibyteAddSub(char op)(uint[] dest, const(uint) [] src1,
     }
     c[19]=0x3333_3333;
     uint carry = multibyteAddSub!('+')(c[0 .. 18], b[0 .. 18], a[0 .. 18], 0);
-    assert(c[0]==0x8000_0003);
-    assert(c[1]==4);
-    assert(c[19]==0x3333_3333); // check for overrun
-    assert(carry == 1);
+    assert(c[0]==0x8000_0003, "c[0] has invalid value");
+    assert(c[1]==4, "c[1] must be for");
+    assert(c[19]==0x3333_3333, "c[19] has invalid value"); // check for overrun
+    assert(carry == 1, "carry must be 1");
     for (size_t i = 0; i < a.length; ++i)
     {
         a[i] = b[i] = c[i] = 0;
@@ -75,10 +75,10 @@ uint multibyteAddSub(char op)(uint[] dest, const(uint) [] src1,
     b[10]=0x1D950C84;
     a[5] =0x44444444;
     carry = multibyteAddSub!('-')(a[0 .. 12], a[0 .. 12], b[0 .. 12], 0);
-    assert(a[11] == 0);
+    assert(a[11] == 0, "a[11] must be 0");
     for (size_t i = 0; i < 10; ++i)
         if (i != 5)
-            assert(a[i] == 0);
+            assert(a[i] == 0, "a[1] must be 0");
 
     for (size_t q = 3; q < 36; ++q)
     {
@@ -89,7 +89,7 @@ uint multibyteAddSub(char op)(uint[] dest, const(uint) [] src1,
         a[q-2]=0x040000;
         b[q-2]=0x040000;
        carry = multibyteAddSub!('-')(a[0 .. q], a[0 .. q], b[0 .. q], 0);
-       assert(a[q-2]==0);
+       assert(a[q-2]==0, "a[q-2] must be 0");
     }
 }
 
@@ -193,7 +193,7 @@ void multibyteShr(uint [] dest, const(uint) [] src, uint numbits)
 uint multibyteMul(uint[] dest, const(uint)[] src, uint multiplier, uint carry)
     pure @nogc @safe
 {
-    assert(dest.length == src.length);
+    assert(dest.length == src.length, "dest and src must have the same length");
     ulong c = carry;
     for (size_t i = 0; i < src.length; ++i)
     {
@@ -220,7 +220,7 @@ uint multibyteMul(uint[] dest, const(uint)[] src, uint multiplier, uint carry)
 uint multibyteMulAdd(char op)(uint [] dest, const(uint)[] src,
     uint multiplier, uint carry) pure @nogc @safe
 {
-    assert(dest.length == src.length);
+    assert(dest.length == src.length, "dest and src must have the same length");
     ulong c = carry;
     for (size_t i = 0; i < src.length; ++i)
     {

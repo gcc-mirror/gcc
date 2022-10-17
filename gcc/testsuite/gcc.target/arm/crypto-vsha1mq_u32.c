@@ -31,5 +31,5 @@ uint32_t foo (void)
 TEST_SHA1M_VEC_SELECT (GET_LANE)
 
 /* { dg-final { scan-assembler-times {sha1m.32\tq[0-9]+, q[0-9]+} 5 } } */
-/* { dg-final { scan-assembler-times {vdup.32\tq[0-9]+, r[0-9]+} 3 } } */
-/* { dg-final { scan-assembler-times {vmov.32\tr[0-9]+, d[0-9]+\[[0-9]+\]+} 4 } } */
+/* { dg-final { scan-assembler-times {vdup.32\tq[0-9]+, r[0-9]+} 4 } } */
+/* { dg-final { scan-assembler-times {vmov.32\tr[0-9]+, d[0-9]+\[[0-9]+\]+} 3 } } */

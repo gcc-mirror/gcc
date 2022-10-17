@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2814,7 +2814,7 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
 
 #define _mm512_mask_fpclass_ps_mask(u, x, c)				\
   ((__mmask16) __builtin_ia32_fpclassps512_mask ((__v16sf) (__m512) (x),\
-						 (int) (c),(__mmask8)(u)))
+						 (int) (c),(__mmask16)(u)))
 
 #define _mm512_fpclass_pd_mask(X, C)                                    \
   ((__mmask8) __builtin_ia32_fpclasspd512_mask ((__v8df) (__m512d) (X), \
@@ -2822,7 +2822,7 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
 
 #define _mm512_fpclass_ps_mask(x, c)                                    \
   ((__mmask16) __builtin_ia32_fpclassps512_mask ((__v16sf) (__m512) (x),\
-						 (int) (c),(__mmask8)-1))
+						 (int) (c),(__mmask16)-1))
 
 #define _mm_reduce_sd(A, B, C)						\
   ((__m128d) __builtin_ia32_reducesd_mask ((__v2df)(__m128d)(A),	\

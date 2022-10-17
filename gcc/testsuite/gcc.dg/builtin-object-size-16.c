@@ -54,7 +54,9 @@ static int nfails;
 typedef __SIZE_TYPE__ size_t;
 
 extern char ax[];
+#ifndef __builtin_object_size
 char ax2[];               /* { dg-warning "assumed to have one element" } */
+#endif
 
 extern char a0[0];
 static char a1[1];

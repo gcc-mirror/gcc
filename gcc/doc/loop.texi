@@ -1,4 +1,4 @@
-@c Copyright (C) 2006-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2006-2022 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -79,14 +79,15 @@ and its subloops in the numbering.  The index of a loop never changes.
 
 The entries of the @code{larray} field should not be accessed directly.
 The function @code{get_loop} returns the loop description for a loop with
-the given index.  @code{number_of_loops} function returns number of
-loops in the function.  To traverse all loops, use @code{FOR_EACH_LOOP}
-macro.  The @code{flags} argument of the macro is used to determine
-the direction of traversal and the set of loops visited.  Each loop is
+the given index.  @code{number_of_loops} function returns number of loops
+in the function.  To traverse all loops, use a range-based for loop with
+class @code{loops_list} instance. The @code{flags} argument passed to the
+constructor function of class @code{loops_list} is used to determine the
+direction of traversal and the set of loops visited.  Each loop is
 guaranteed to be visited exactly once, regardless of the changes to the
 loop tree, and the loops may be removed during the traversal.  The newly
-created loops are never traversed, if they need to be visited, this
-must be done separately after their creation.
+created loops are never traversed, if they need to be visited, this must
+be done separately after their creation.
 
 Each basic block contains the reference to the innermost loop it belongs
 to (@code{loop_father}).  For this reason, it is only possible to have
@@ -209,7 +210,7 @@ loop in depth-first search order in reversed CFG, ordered by dominance
 relation, and breath-first search order, respectively.
 @item @code{single_exit}: Returns the single exit edge of the loop, or
 @code{NULL} if the loop has more than one exit.  You can only use this
-function if LOOPS_HAVE_MARKED_SINGLE_EXITS property is used.
+function if @code{LOOPS_HAVE_RECORDED_EXITS} is used.
 @item @code{get_loop_exit_edges}: Enumerates the exit edges of a loop.
 @item @code{just_once_each_iteration_p}: Returns true if the basic block
 is executed exactly once during each iteration of a loop (that is, it
@@ -248,8 +249,8 @@ are only reliable for the innermost loops:
 @item @code{create_iv}: Creates a new induction variable.  Only works on
 GIMPLE@.  @code{standard_iv_increment_position} can be used to find a
 suitable place for the iv increment.
-@item @code{duplicate_loop_to_header_edge},
-@code{tree_duplicate_loop_to_header_edge}: These functions (on RTL and
+@item @code{duplicate_loop_body_to_header_edge},
+@code{tree_duplicate_loop_body_to_header_edge}: These functions (on RTL and
 on GIMPLE) duplicate the body of the loop prescribed number of times on
 one of the edges entering loop header, thus performing either loop
 unrolling or loop peeling.  @code{can_duplicate_loop_p}
@@ -503,7 +504,7 @@ false unconditionally.
 @cindex Data Dependency Analysis
 
 The code for the data dependence analysis can be found in
-@file{tree-data-ref.c} and its interface and data structures are
+@file{tree-data-ref.cc} and its interface and data structures are
 described in @file{tree-data-ref.h}.  The function that computes the
 data dependences for all the array and pointer references for a given
 loop is @code{compute_data_dependences_for_loop}.  This function is

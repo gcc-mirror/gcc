@@ -1,3 +1,3 @@
-host-darwin.o : $(srcdir)/config/host-darwin.c
+host-darwin.o : $(srcdir)/config/host-darwin.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

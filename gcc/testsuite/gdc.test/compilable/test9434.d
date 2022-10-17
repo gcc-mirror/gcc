@@ -1,3 +1,4 @@
+// EXTRA_FILES: test9435.d
 import test9435;//semantic;
 
 template Visitors()

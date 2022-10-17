@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail34.d(31): Error: duplicate `case "123"` in switch statement
+fail_compilation/fail34.d(31): Error: duplicate `case "123"` in `switch` statement
 ---
 */
 

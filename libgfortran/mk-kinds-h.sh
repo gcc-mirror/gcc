@@ -2,8 +2,8 @@
 LC_ALL=C
 export LC_ALL
 
-if test "$#" -ne 3; then
-  echo "Usage $0 int_kinds real_kinds compile"
+if test "$#" -ne 4; then
+  echo "Usage $0 int_kinds real_kinds compile use_iec_60559"
   exit 1
 fi
 
@@ -11,6 +11,7 @@ fi
 possible_integer_kinds="$1"
 possible_real_kinds="$2"
 compile="$3"
+use_iec_60559="$4"
 
 largest=""
 smallest=""
@@ -49,7 +50,7 @@ echo ""
 
 
 # Get the kind value for long double, so we may disambiguate it
-# from __float128.
+# from _Float128.
 echo "use iso_c_binding; print *, c_long_double ; end" > tmq$$.f90
 long_double_kind=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
 			| sed 's/ *TRANSFER *//'`
@@ -64,15 +65,24 @@ for k in $possible_real_kinds; do
     case $k in
       4) ctype="float" ; cplxtype="complex float" ; suffix="f" ;;
       8) ctype="double" ; cplxtype="complex double" ; suffix="" ;;
+      # If we have a REAL(KIND=10), it is always long double
       10) ctype="long double" ; cplxtype="complex long double" ; suffix="l" ;;
-      16) if [ $long_double_kind -eq 10 ]; then
-	    ctype="__float128"
-	    cplxtype="_Complex float __attribute__((mode(TC)))"
-	    suffix="q"
+      # If we have a REAL(KIND=16), it is either long double or _Float128
+      16) if [ $long_double_kind -ne 16 ]; then
+	    ctype="_Float128"
+	    cplxtype="_Complex _Float128"
+	    echo "#define GFC_REAL_16_IS_FLOAT128"
+	    if [ x$use_iec_60559 = xyes ]; then
+	      suffix="f128"
+	      echo "#define GFC_REAL_16_USE_IEC_60559"
+	    else
+	      suffix="q"
+	    fi
 	  else
 	    ctype="long double"
 	    cplxtype="complex long double"
 	    suffix="l"
+	    echo "#define GFC_REAL_16_IS_LONG_DOUBLE"
 	  fi ;;
       *) echo "$0: Unknown type" >&2 ; exit 1 ;;
     esac
@@ -80,6 +90,12 @@ for k in $possible_real_kinds; do
     # Check for the value of HUGE
     echo "print *, huge(0._$k) ; end" > tmq$$.f90
     huge=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
+		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
+    rm -f tmq$$.*
+
+    # Check for the value of TINY
+    echo "print *, tiny(0._$k) ; end" > tmq$$.f90
+    tiny=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
 		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
     rm -f tmq$$.*
 
@@ -101,6 +117,7 @@ for k in $possible_real_kinds; do
     echo "#define HAVE_GFC_REAL_${k}"
     echo "#define HAVE_GFC_COMPLEX_${k}"
     echo "#define GFC_REAL_${k}_HUGE ${huge}${suffix}"
+    echo "#define GFC_REAL_${k}_TINY ${tiny}${suffix}"
     echo "#define GFC_REAL_${k}_LITERAL_SUFFIX ${suffix}"
     if [ "x$suffix" = "x" ]; then
       echo "#define GFC_REAL_${k}_LITERAL(X) (X)"

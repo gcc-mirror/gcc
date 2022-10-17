@@ -1,6 +1,7 @@
 // REQUIRED_ARGS: -g
 
-// 104. fails only with -g
+// https://issues.dlang.org/show_bug.cgi?id=104
+// fails only with -g
 
 Foofunc f;
 alias int Foo;

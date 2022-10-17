@@ -101,7 +101,7 @@ void ffi_prep_args (char *stack, extended_cif *ecif)
 
       /* Align argp as appropriate for the argument type.  */
       if ((alignment - 1) & (unsigned) argp)
-	argp = (char *) ALIGN (argp, alignment);
+	argp = (char *) FFI_ALIGN (argp, alignment);
 
       /* Copy the argument, promoting integral types smaller than a
 	 word to word size.  */
@@ -230,7 +230,7 @@ ffi_closure_helper (unsigned char *args,
 
       /* Align argp as appropriate for the argument type.  */
       if ((alignment - 1) & (unsigned) argp)
-	argp = (char *) ALIGN (argp, alignment);
+	argp = (char *) FFI_ALIGN (argp, alignment);
 
       /* Arguments smaller than an int are promoted to int.  */
       if (size < sizeof (int))

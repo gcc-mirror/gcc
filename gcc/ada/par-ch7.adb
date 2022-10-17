@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,21 +70,6 @@ package body Ch7 is
    --    package DEFINING_PROGRAM_UNIT_NAME is
    --      new generic_package_NAME [GENERIC_ACTUAL_PART]
    --        [ASPECT_SPECIFICATIONS];
-
-   --  The value in Pf_Flags indicates which of these possible declarations
-   --  is acceptable to the caller:
-
-   --    Pf_Flags.Spcn                 Set if specification OK
-   --    Pf_Flags.Decl                 Set if declaration OK
-   --    Pf_Flags.Gins                 Set if generic instantiation OK
-   --    Pf_Flags.Pbod                 Set if proper body OK
-   --    Pf_Flags.Rnam                 Set if renaming declaration OK
-   --    Pf_Flags.Stub                 Set if body stub OK
-
-   --  If an inappropriate form is encountered, it is scanned out but an error
-   --  message indicating that it is appearing in an inappropriate context is
-   --  issued. The only possible settings for Pf_Flags are those defined as
-   --  constants in package Par.
 
    --  Note: in all contexts where a package specification is required, there
    --  is a terminating semicolon. This semicolon is scanned out in the case

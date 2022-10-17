@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/link14541traits.d
 import imports.link14541traits;
 
 void main()

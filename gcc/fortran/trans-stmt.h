@@ -1,5 +1,5 @@
 /* Header for statement translation functions
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -27,13 +27,13 @@ tree gfc_trans_code_cond (gfc_code *, tree);
 
 /* All other gfc_trans_* should only need be called by gfc_trans_code */
 
-/* trans-expr.c */
+/* trans-expr.cc */
 tree gfc_trans_assign (gfc_code *);
 tree gfc_trans_pointer_assign (gfc_code *);
 tree gfc_trans_init_assign (gfc_code *);
 tree gfc_trans_class_init_assign (gfc_code *);
 
-/* trans-stmt.c */
+/* trans-stmt.cc */
 tree gfc_trans_cycle (gfc_code *);
 tree gfc_trans_critical (gfc_code *);
 tree gfc_trans_exit (gfc_code *);
@@ -66,15 +66,15 @@ tree gfc_trans_sync_team (gfc_code *);
 tree gfc_trans_where (gfc_code *);
 tree gfc_trans_allocate (gfc_code *);
 tree gfc_trans_deallocate (gfc_code *);
-tree gfc_trans_deallocate_array (tree);
 
-/* trans-openmp.c */
+/* trans-openmp.cc */
 tree gfc_trans_omp_directive (gfc_code *);
 void gfc_trans_omp_declare_simd (gfc_namespace *);
+void gfc_trans_omp_declare_variant (gfc_namespace *);
 tree gfc_trans_oacc_directive (gfc_code *);
 tree gfc_trans_oacc_declare (gfc_namespace *);
 
-/* trans-io.c */
+/* trans-io.cc */
 tree gfc_trans_open (gfc_code *);
 tree gfc_trans_close (gfc_code *);
 tree gfc_trans_read (gfc_code *);

@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -de
+// EXTRA_FILES: imports/imp16085.d imports/imp16085b.d
 // PERMUTE_ARGS:
 import imports.imp16085;
 

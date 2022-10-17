@@ -14,7 +14,7 @@ get_exponent (double *p)
 {
   double source = *p;
 
-  return scalar_extract_exp (source);	/* { dg-error "'__builtin_vec_scalar_extract_exp' is not supported in this compiler configuration" } */
+  return scalar_extract_exp (source);	/* { dg-error "'__builtin_vsx_scalar_extract_exp' requires the" } */
 }
 
 

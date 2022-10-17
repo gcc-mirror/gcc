@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,7 +112,7 @@ package body Debug is
    --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
-   --  d.A
+   --  d.A  Enable statistics printing in Atree
    --  d.B  Generate a bug box on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
@@ -140,9 +140,9 @@ package body Debug is
    --  d.Z  Do not enable expansion in configurable run-time mode
 
    --  d_a  Stop elaboration checks on accept or select statement
-   --  d_b  Use compatibility model under No_Dynamic_Accessibility_Checks
+   --  d_b  Use designated type model under No_Dynamic_Accessibility_Checks
    --  d_c  CUDA compilation : compile for the host
-   --  d_d
+   --  d_d  CUDA compilation : compile for the device
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
    --  d_g  Disable large static aggregates
@@ -156,10 +156,10 @@ package body Debug is
    --  d_o
    --  d_p  Ignore assertion pragmas for elaboration
    --  d_q
-   --  d_r
+   --  d_r  Disable the use of the return slot in functions
    --  d_s  Stop elaboration checks on synchronous suspension
-   --  d_t
-   --  d_u
+   --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
+   --  d_u  In LLVM-based CCG, dump flows
    --  d_v  Enable additional checks and debug printouts in Atree
    --  d_w
    --  d_x  Disable inline expansion of Image attribute for enumeration types
@@ -183,7 +183,7 @@ package body Debug is
    --  d_O
    --  d_P
    --  d_Q
-   --  d_R
+   --  d_R  For LLVM, dump the representation of records
    --  d_S
    --  d_T  Output trace information on invocation path recording
    --  d_U  Disable prepending messages with "error:".
@@ -201,7 +201,7 @@ package body Debug is
    --  d6   Default access unconstrained to thin pointers
    --  d7   Suppress version/source stamp/compilation time for -gnatv/-gnatl
    --  d8   Force opposite endianness in packed stuff
-   --  d9   Allow lock free implementation
+   --  d9
 
    --  d.1  Enable unnesting of nested procedures
    --  d.2  Allow statements in declarative part
@@ -210,8 +210,8 @@ package body Debug is
    --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
-   --  d.8
-   --  d.9  Disable build-in-place for nonlimited types
+   --  d.8  Disable unconditional inlining of expression functions
+   --  d.9
 
    --  d_1
    --  d_2
@@ -345,8 +345,8 @@ package body Debug is
 
    --  d_a  Ignore the effects of pragma Elaborate_All
    --  d_b  Ignore the effects of pragma Elaborate_Body
-   --  d_c
-   --  d_d
+   --  d_c  CUDA compilation : compile/bind for the host
+   --  d_d  CUDA compilation : compile/bind for the device
    --  d_e  Ignore the effects of pragma Elaborate
    --  d_f
    --  d_g
@@ -830,6 +830,11 @@ package body Debug is
    --       handling of Inline_Always by the front end on such targets. For the
    --       targets that do not use the GCC back end, this switch is ignored.
 
+   --  d.A  Enable statistics printing in Atree. First set Statistics_Enabled
+   --       in gen_il-gen.adb to True, then rebuild, then run the compiler
+   --       with -gnatd.A. You might want to apply "sort -nr" to parts of the
+   --       output.
+
    --  d.B  Generate a bug box when we see an abort_statement, even though
    --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
    --       some code containing an abort_statement, and compile it with
@@ -956,6 +961,10 @@ package body Debug is
    --       behavior is similar to that of No_Entry_Calls_In_Elaboration_Code,
    --       but does not penalize actual entry calls in elaboration code.
 
+   --  d_b  When the restriction No_Dynamic_Accessibility_Checks is enabled,
+   --       use the simple "designated type" accessibility model, instead of
+   --       using the implicit level of the anonymous access type declaration.
+
    --  d_e  The compiler ignores simple entry calls, asynchronous transfer of
    --       control, conditional entry calls, timed entry calls, and requeue
    --       statements in both the static and dynamic elaboration models.
@@ -984,9 +993,21 @@ package body Debug is
    --       semantics of invariants and postconditions in both the static and
    --       dynamic elaboration models.
 
+   --  d_r  The compiler does not make use of the return slot in the expansion
+   --       of functions returning a by-reference type. If this use is required
+   --       for these functions to return on the primary stack, then they are
+   --       changed to return on the secondary stack instead.
+
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
+
+   --  d_t  In the LLVM-based CCG, do an additional dump of the LLVM IR
+   --       after the pass that does transformations to the IR into a
+   --       filename ending with .trans.ll.
+
+   --  d_u  In the LLVM-based CCG, dump flows, both when originally created
+   --       and after transformations.
 
    --  d_v  Enable additional checks and debug printouts in Atree
 
@@ -1010,6 +1031,9 @@ package body Debug is
    --       causes output to be generated showing each call or instantiation as
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
+
+   --  d_R  In the LLVM backend, output the internal representation of
+   --       each record
 
    --  d_T  The compiler outputs trace information to standard output whenever
    --       an invocation path is recorded.
@@ -1065,9 +1089,6 @@ package body Debug is
    --       opposite endianness from the actual correct value. Useful in
    --       testing out code generation from the packed routines.
 
-   --  d9   This allows lock free implementation for protected objects
-   --       (see Exp_Ch9).
-
    --  d.1  Sets Opt.Unnest_Subprogram_Mode to enable unnesting of subprograms.
    --       This special pass does not actually unnest things, but it ensures
    --       that a nested procedure does not contain any uplevel references.
@@ -1097,8 +1118,9 @@ package body Debug is
    --       issues (e.g., assuming that a low bound of an array parameter
    --       of an unconstrained subtype belongs to the index subtype).
 
-   --  d.9  Enable build-in-place for function calls returning some nonlimited
-   --       types.
+   --  d.8  By default calls to expression functions are always inlined.
+   --       This debug flag turns off this behavior, making them subject
+   --       to the usual inlining heuristics of the code generator.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

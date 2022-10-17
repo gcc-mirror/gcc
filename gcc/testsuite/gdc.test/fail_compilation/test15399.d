@@ -1,14 +1,14 @@
 /* https://issues.dlang.org/show_bug.cgi?id=15399
 TEST_OUTPUT:
 ---
-fail_compilation/test15399.d(31): Error: writing to misaligned pointer in field S1.ptr is not @safe
-fail_compilation/test15399.d(32): Error: writing to misaligned pointer in field S2.ptr is not @safe
-fail_compilation/test15399.d(33): Error: taking address of misaligned pointer in field S1.ptr is not @safe
-fail_compilation/test15399.d(34): Error: taking address of misaligned pointer in field S2.ptr is not @safe
-fail_compilation/test15399.d(35): Error: 'ref' of misaligned pointer in field S1.ptr is not @safe
-fail_compilation/test15399.d(36): Error: 'ref' of misaligned pointer in field S2.ptr is not @safe
-fail_compilation/test15399.d(37): Error: 'out' of misaligned pointer in field S1.ptr is not @safe
-fail_compilation/test15399.d(38): Error: 'out' of misaligned pointer in field S2.ptr is not @safe
+fail_compilation/test15399.d(32): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(33): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(34): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(35): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(36): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(37): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(38): Error: field `S1.ptr` cannot modify misaligned pointers in `@safe` code
+fail_compilation/test15399.d(39): Error: field `S2.ptr` cannot modify misaligned pointers in `@safe` code
 ---
 */
 
@@ -44,4 +44,3 @@ struct S2
 @safe void bar(ref int*);
 @safe void cbar(ref const int*);
 @safe void sinister(out int*);
-

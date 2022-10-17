@@ -17,7 +17,7 @@ func initTestingZone() {
 		z, err = loadLocation("America/Los_Angeles", zoneSources)
 	}
 	if err != nil {
-		panic("cannot load America/Los_Angeles for testing: " + err.Error())
+		panic("cannot load America/Los_Angeles for testing: " + err.Error() + "; you may want to use -tags=timetzdata")
 	}
 	z.name = "Local"
 	localLoc = *z
@@ -36,7 +36,7 @@ func forceZipFileForTesting(zipOnly bool) {
 var Interrupt = interrupt
 var DaysIn = daysIn
 
-func empty(arg interface{}, seq uintptr) {}
+func empty(arg any, seq uintptr) {}
 
 // Test that a runtimeTimer with a period that would overflow when on
 // expiration does not throw or cause other timers to hang.
@@ -67,4 +67,6 @@ func CheckRuntimeTimerPeriodOverflow() {
 var (
 	MinMonoTime = Time{wall: 1 << 63, ext: -1 << 63, loc: UTC}
 	MaxMonoTime = Time{wall: 1 << 63, ext: 1<<63 - 1, loc: UTC}
+
+	NotMonoNegativeTime = Time{wall: 0, ext: -1<<63 + 50}
 )

@@ -1,7 +1,7 @@
 /* PR tree-optimization/94573 */
 /* { dg-do compile } */
 /* { dg-require-effective-target store_merge } */
-/* { dg-options "-O2 -fdump-tree-store-merging-details" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging-details" } */
 /* { dg-final { scan-tree-dump "New sequence of 4 stores to replace old one of 8 stores" "store-merging" { target lp64 } } } */
 
 int var[43][12];

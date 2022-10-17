@@ -1,14 +1,15 @@
-// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -Jrunnable/extra-files
 // EXTRA_FILES: extra-files/foo37.txt extra-files/std14198/uni.d
 
-import std.stdio;
+import core.stdc.stdio;
 
 void main()
 {
-    writefln(import("foo37.txt"));
+    auto s = import("foo37.txt");
+    printf("%.*s\n", cast(int)s.length, s.ptr);
     // also want to ensure that we can access
     // imports in a subdirectory of the -J path
-    writefln(import("std14198/uni.d"));
+    s = import("std14198/uni.d");
+    printf("%.*s\n", cast(int)s.length, s.ptr);
 }

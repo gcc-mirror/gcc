@@ -1,5 +1,5 @@
 # General rules that all nds32/ targets must have.
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 # Contributed by Andes Technology Corporation.
 #
 # This file is part of GCC.
@@ -19,7 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 
-nds32-md-auxiliary.o: $(srcdir)/config/nds32/nds32-md-auxiliary.c \
+nds32-md-auxiliary.o: $(srcdir)/config/nds32/nds32-md-auxiliary.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -29,9 +29,9 @@ nds32-md-auxiliary.o: $(srcdir)/config/nds32/nds32-md-auxiliary.c \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-md-auxiliary.c
+		$(srcdir)/config/nds32/nds32-md-auxiliary.cc
 
-nds32-memory-manipulation.o: $(srcdir)/config/nds32/nds32-memory-manipulation.c \
+nds32-memory-manipulation.o: $(srcdir)/config/nds32/nds32-memory-manipulation.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -41,9 +41,9 @@ nds32-memory-manipulation.o: $(srcdir)/config/nds32/nds32-memory-manipulation.c 
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-memory-manipulation.c
+		$(srcdir)/config/nds32/nds32-memory-manipulation.cc
 
-nds32-predicates.o: $(srcdir)/config/nds32/nds32-predicates.c \
+nds32-predicates.o: $(srcdir)/config/nds32/nds32-predicates.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -53,9 +53,9 @@ nds32-predicates.o: $(srcdir)/config/nds32/nds32-predicates.c \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-predicates.c
+		$(srcdir)/config/nds32/nds32-predicates.cc
 
-nds32-intrinsic.o: $(srcdir)/config/nds32/nds32-intrinsic.c \
+nds32-intrinsic.o: $(srcdir)/config/nds32/nds32-intrinsic.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -65,10 +65,10 @@ nds32-intrinsic.o: $(srcdir)/config/nds32/nds32-intrinsic.c \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-intrinsic.c
+		$(srcdir)/config/nds32/nds32-intrinsic.cc
 
 nds32-pipelines-auxiliary.o: \
-  $(srcdir)/config/nds32/nds32-pipelines-auxiliary.c \
+  $(srcdir)/config/nds32/nds32-pipelines-auxiliary.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -78,10 +78,10 @@ nds32-pipelines-auxiliary.o: \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-pipelines-auxiliary.c
+		$(srcdir)/config/nds32/nds32-pipelines-auxiliary.cc
 
 nds32-isr.o: \
-  $(srcdir)/config/nds32/nds32-isr.c \
+  $(srcdir)/config/nds32/nds32-isr.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -91,10 +91,10 @@ nds32-isr.o: \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-isr.c
+		$(srcdir)/config/nds32/nds32-isr.cc
 
 nds32-cost.o: \
-  $(srcdir)/config/nds32/nds32-cost.c \
+  $(srcdir)/config/nds32/nds32-cost.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -104,10 +104,10 @@ nds32-cost.o: \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-cost.c
+		$(srcdir)/config/nds32/nds32-cost.cc
 
 nds32-fp-as-gp.o: \
-  $(srcdir)/config/nds32/nds32-fp-as-gp.c \
+  $(srcdir)/config/nds32/nds32-fp-as-gp.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -117,10 +117,10 @@ nds32-fp-as-gp.o: \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-fp-as-gp.c
+		$(srcdir)/config/nds32/nds32-fp-as-gp.cc
 
 nds32-relax-opt.o: \
-  $(srcdir)/config/nds32/nds32-relax-opt.c \
+  $(srcdir)/config/nds32/nds32-relax-opt.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -130,10 +130,10 @@ nds32-relax-opt.o: \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-relax-opt.c
+		$(srcdir)/config/nds32/nds32-relax-opt.cc
 
 nds32-utils.o: \
-  $(srcdir)/config/nds32/nds32-utils.c \
+  $(srcdir)/config/nds32/nds32-utils.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
@@ -143,4 +143,4 @@ nds32-utils.o: \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/nds32/nds32-utils.c
+		$(srcdir)/config/nds32/nds32-utils.cc

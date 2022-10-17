@@ -87,7 +87,7 @@ void wide_ptr_deref_range (ptrdiff_t i, size_t j)
   T (*p);
 
   p = W8 + SR (9, 123);
-  T (*p);                     /* { dg-warning "array subscript \\\[9, 123] is outside array bounds of .\[a-z \]+\\\[9]." } */
+  T (*p);                     /* { dg-warning "array subscript 9 is outside array bounds of .\[a-z \]+\\\[9]." } */
 }
 
 void wide_ptr_index_range (void)
@@ -99,7 +99,7 @@ void wide_ptr_index_range (void)
   T (p[SR (-8, 0)]);
   T (p[SR (0, MAX)]);
   T (p[SR (1, 9)]);
-  T (p[SR (8, 9)]);           /* { dg-warning "array subscript \\\[8, 9] is outside array bounds of .\[a-z \]+\\\[8]." } */
+  T (p[SR (8, 9)]);           /* { dg-warning "array subscript 8 is outside array bounds of .\[a-z \]+\\\[8]." } */
 
   p = W7 + SR (4, 6);
   T (p[5]);                   /* { dg-warning "array subscript \\\[9, 11] is outside array bounds of .\[a-z \]+\\\[8]." } */
@@ -123,7 +123,7 @@ void wide_ptr_index_range_1 (void)
     int i = SR (1, 2);
     const wchar_t *p1 = W2 + i;
 
-    T (p1[2]);                /* { dg-warning "array subscript \\\[3, 4] is outside array bounds of .\[a-z \]+\\\[3]." } */
+    T (p1[2]);                /* { dg-warning "array subscript 3 is outside array bounds of .\[a-z \]+\\\[3]." } */
   }
 }
 
@@ -140,17 +140,17 @@ void wide_ptr_index_range_chain (void)
     T (p1[-1]);
     T (p1[0]);
     T (p1[1]);
-    T (p1[2]);                /* { dg-warning "array subscript \\\[3, 4] is outside array bounds of .\[a-z \]+\\\[3]." } */
+    T (p1[2]);                /* { dg-warning "array subscript 3 is outside array bounds of .\[a-z \]+\\\[3]." } */
 
-    T (p2[-5]);               /* { dg-warning "array subscript \\\[-3, -1] is outside array bounds of .\[a-z \]+\\\[3]." } */
-    T (p2[-4]);
+    T (p2[-5]);               /* { dg-warning "array subscript \\\[-3, -2] is outside array bounds of .\[a-z \]+\\\[3]." } */
+    T (p2[-4]);               /* { dg-warning "array subscript \\\[-2, -1] is outside array bounds of .\[a-z \]+\\\[3]." } */
     T (p2[-1]);
     T (p2[0]);
-    T (p2[1]);                /* { dg-warning "array subscript \\\[3, 5] is outside array bounds of .\[a-z \]+\\\[3]." } */
+    T (p2[1]);                /* { dg-warning "array subscript 3 is outside array bounds of .\[a-z \]+\\\[3]." } */
 
-    T (p3[0]);                /* { dg-warning "array subscript \\\[3, 6] is outside array bounds of .\[a-z \]+\\\[3]." } */
-    T (p3[1]);                /* { dg-warning "array subscript \\\[4, 7] is outside array bounds of .\[a-z \]+\\\[3]." } */
-    T (p3[9999]);             /* { dg-warning "array subscript \\\[10002, 10005] is outside array bounds of .\[a-z \]+\\\[3]." "" { target size20plus} } */
+    T (p3[0]);                /* { dg-warning "array subscript 3 is outside array bounds of .\[a-z \]+\\\[3]." } */
+    T (p3[1]);                /* { dg-warning "array subscript 4 is outside array bounds of .\[a-z \]+\\\[3]." } */
+    T (p3[9999]);             /* { dg-warning "array subscript 10002 is outside array bounds of .\[a-z \]+\\\[3]." "" { target size20plus} } */
     /* { dg-warning "array subscript \\\[-6382, -6379] is outside array bounds of .\[a-z \]+\\\[3]." "" { target { ! size20plus } } .-1 } */
     /* Large offsets are indistinguishable from negative values.  */
     T (p3[DIFF_MAX]);         /* { dg-warning "array subscript" "bug" { xfail *-*-* } } */
@@ -166,9 +166,9 @@ void wide_ptr_index_range_chain (void)
     T (p1[-2]);
     T (p1[1]);
     T (p1[2]);
-    T (p1[3]);                /* { dg-warning "array subscript \\\[4, 5] is outside array bounds of .\[a-z \]+\\\[4]." } */
+    T (p1[3]);                /* { dg-warning "array subscript 4 is outside array bounds of .\[a-z \]+\\\[4]." } */
 
-    T (p3[1]);                /* { dg-warning "array subscript \\\[4, 7] is outside array bounds of .\[a-z \]+\\\[4]." } */
+    T (p3[1]);                /* { dg-warning "array subscript 4 is outside array bounds of .\[a-z \]+\\\[4]." } */
   }
 }
 
@@ -180,5 +180,5 @@ void wide_ptr_index_range_4 (void)
   const wchar_t *p3 = p2 + i;
   const wchar_t *p4 = p3 + i;
 
-  T (p4[1]);                  /* { dg-warning "array subscript \\\[5, 9] is outside array bounds of .\[a-z \]+\\\[5]." } */
+  T (p4[1]);                  /* { dg-warning "array subscript 5 is outside array bounds of .\[a-z \]+\\\[5]." } */
 }

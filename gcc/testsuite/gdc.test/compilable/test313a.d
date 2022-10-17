@@ -1,5 +1,6 @@
 /*
 REQUIRED_ARGS: -de
+EXTRA_FILES: imports/a313.d imports/a313templatemixin1.d imports/a313templatemixin2.d imports/b313.d imports/pkg313/c313.d
 */
 module test313;
 

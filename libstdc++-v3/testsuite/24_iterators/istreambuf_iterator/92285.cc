@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-require-effective-target hosted }
+
 #include <iterator>
 #include <iostream>
 #include <testsuite_hooks.h>
@@ -24,8 +26,8 @@
 
 typedef std::input_iterator_tag category;
 typedef std::char_traits<char>::off_type off_type;
-typedef std::iterator<category, char, off_type, char*, char> good;
-typedef std::iterator<category, char, off_type, char*, char&> bad;
+typedef std::iterator<category, char, off_type, char*, char> good; // { dg-warning "is deprecated" "" { target c++17 } }
+typedef std::iterator<category, char, off_type, char*, char&> bad; // { dg-warning "is deprecated" "" { target c++17 } }
 
 bool check(good&) { return true; }
 void check(bad&) { }

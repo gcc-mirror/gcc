@@ -3,11 +3,11 @@
 /**
  * Support UTF-8 on Windows 95, 98 and ME systems.
  *
- * Copyright: Copyright Digital Mars 2005 - 2009.
+ * Copyright: Copyright The D Language Foundation" 2005 - 2009.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
  */
-/*          Copyright Digital Mars 2005 - 2009.
+/*          Copyright The D Language Foundation" 2005 - 2009.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
@@ -30,7 +30,7 @@ version (StdDdoc)
      * Authors:
      *      yaneurao, Walter Bright, Stewart Gordon
      */
-    const(char)* toMBSz(in char[] s, uint codePage = 0);
+    const(char)* toMBSz(scope const(char)[] s, uint codePage = 0);
 
     /**********************************************
      * Converts the null-terminated string s from a Windows 8-bit character set
@@ -50,14 +50,14 @@ else:
 
 version (Windows):
 
-import core.sys.windows.windows;
+import core.sys.windows.winbase, core.sys.windows.winnls;
 import std.conv;
 import std.string;
 import std.windows.syserror;
 
 import std.internal.cstring;
 
-const(char)* toMBSz(in char[] s, uint codePage = 0)
+const(char)* toMBSz(scope const(char)[] s, uint codePage = 0)
 {
     // Only need to do this if any chars have the high bit set
     foreach (char c; s)
@@ -76,19 +76,14 @@ const(char)* toMBSz(in char[] s, uint codePage = 0)
                         to!int(result.length), null, null);
             }
 
-            if (!readLen || readLen != result.length)
-            {
-                throw new Exception("Couldn't convert string: " ~
-                        sysErrorString(GetLastError()));
-            }
-
+            wenforce(readLen && readLen == result.length, "Couldn't convert string");
             return result.ptr;
         }
     }
     return std.string.toStringz(s);
 }
 
-string fromMBSz(immutable(char)* s, int codePage = 0)
+string fromMBSz(return scope immutable(char)* s, int codePage = 0)
 {
     const(char)* c;
 
@@ -107,16 +102,10 @@ string fromMBSz(immutable(char)* s, int codePage = 0)
                         to!int(result.length));
             }
 
-            if (!readLen || readLen != result.length)
-            {
-                throw new Exception("Couldn't convert string: " ~
-                    sysErrorString(GetLastError()));
-            }
+            wenforce(readLen && readLen == result.length, "Couldn't convert string");
 
             return result[0 .. result.length-1].to!string; // omit trailing null
         }
     }
     return s[0 .. c-s];         // string is ASCII, no conversion necessary
 }
-
-

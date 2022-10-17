@@ -1,5 +1,5 @@
 /* elf.c -- Get debug data from an ELF file for backtraces.
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,12 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <unistd.h>
 
 #ifdef HAVE_DL_ITERATE_PHDR
-#include <link.h>
+ #ifdef HAVE_LINK_H
+  #include <link.h>
+ #endif
+ #ifdef HAVE_SYS_LINK_H
+  #include <sys/link.h>
+ #endif
 #endif
 
 #include "backtrace.h"
@@ -1796,7 +1801,7 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
 	      /* An uncompressed block.  */
 
 	      /* If we've read ahead more than a byte, back up.  */
-	      while (bits > 8)
+	      while (bits >= 8)
 		{
 		  --pin;
 		  bits -= 8;
@@ -3172,10 +3177,10 @@ elf_uncompress_lzma_block (const unsigned char *compressed,
   /* Block header CRC.  */
   computed_crc = elf_crc32 (0, compressed + block_header_offset,
 			    block_header_size - 4);
-  stream_crc = (compressed[off]
-		| (compressed[off + 1] << 8)
-		| (compressed[off + 2] << 16)
-		| (compressed[off + 3] << 24));
+  stream_crc = ((uint32_t)compressed[off]
+		| ((uint32_t)compressed[off + 1] << 8)
+		| ((uint32_t)compressed[off + 2] << 16)
+		| ((uint32_t)compressed[off + 3] << 24));
   if (unlikely (computed_crc != stream_crc))
     {
       elf_uncompress_failed ();
@@ -3785,10 +3790,10 @@ elf_uncompress_lzma (struct backtrace_state *state,
 
   /* Next comes a CRC of the stream flags.  */
   computed_crc = elf_crc32 (0, compressed + 6, 2);
-  stream_crc = (compressed[8]
-		| (compressed[9] << 8)
-		| (compressed[10] << 16)
-		| (compressed[11] << 24));
+  stream_crc = ((uint32_t)compressed[8]
+		| ((uint32_t)compressed[9] << 8)
+		| ((uint32_t)compressed[10] << 16)
+		| ((uint32_t)compressed[11] << 24));
   if (unlikely (computed_crc != stream_crc))
     {
       elf_uncompress_failed ();
@@ -3829,10 +3834,10 @@ elf_uncompress_lzma (struct backtrace_state *state,
 
   /* Before that is a footer CRC.  */
   computed_crc = elf_crc32 (0, compressed + offset, 6);
-  stream_crc = (compressed[offset - 4]
-		| (compressed[offset - 3] << 8)
-		| (compressed[offset - 2] << 16)
-		| (compressed[offset - 1] << 24));
+  stream_crc = ((uint32_t)compressed[offset - 4]
+		| ((uint32_t)compressed[offset - 3] << 8)
+		| ((uint32_t)compressed[offset - 2] << 16)
+		| ((uint32_t)compressed[offset - 1] << 24));
   if (unlikely (computed_crc != stream_crc))
     {
       elf_uncompress_failed ();
@@ -3888,10 +3893,10 @@ elf_uncompress_lzma (struct backtrace_state *state,
   /* Next is a CRC of the index.  */
   computed_crc = elf_crc32 (0, compressed + index_offset,
 			    offset - index_offset);
-  stream_crc = (compressed[offset]
-		| (compressed[offset + 1] << 8)
-		| (compressed[offset + 2] << 16)
-		| (compressed[offset + 3] << 24));
+  stream_crc = ((uint32_t)compressed[offset]
+		| ((uint32_t)compressed[offset + 1] << 8)
+		| ((uint32_t)compressed[offset + 2] << 16)
+		| ((uint32_t)compressed[offset + 3] << 24));
   if (unlikely (computed_crc != stream_crc))
     {
       elf_uncompress_failed ();

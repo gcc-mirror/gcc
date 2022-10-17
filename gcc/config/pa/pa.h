@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -130,19 +130,12 @@ extern unsigned long total_code_bytes;
    and the old mnemonics are dialect zero.  */
 #define ASSEMBLER_DIALECT (TARGET_PA_20 ? 1 : 0)
 
-/* Override some settings from dbxelf.h.  */
-
 /* We do not have to be compatible with dbx, so we enable gdb extensions
    by default.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
-/* This used to be zero (no max length), but big enums and such can
-   cause huge strings which killed gas.
-
-   We also have to avoid lossage in dbxout.c -- it does not compute the
-   string size accurately, so we are real conservative here.  */
-#undef DBX_CONTIN_LENGTH
-#define DBX_CONTIN_LENGTH 3000
+/* Select dwarf2 as the preferred debug format.  */
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* GDB always assumes the current function's frame begins at the value
    of the stack pointer upon entry to the current function.  Accessing
@@ -255,11 +248,17 @@ typedef struct GTY(()) machine_function
    is UNITS_PER_WORD.  Otherwise, it is the constant value that is the
    smallest value that UNITS_PER_WORD can have at run-time.
 
-   FIXME: This needs to be 4 when TARGET_64BIT is true to suppress the
-   building of various TImode routines in libgcc.  The HP runtime
-   specification doesn't provide the alignment requirements and calling
-   conventions for TImode variables.  */
-#define MIN_UNITS_PER_WORD 4
+   This needs to be 8 when TARGET_64BIT is true to allow building various
+   TImode routines in libgcc.  However, we also need the DImode DIVMOD
+   routines because they are not currently implemented in pa.md.
+   
+   The HP runtime specification doesn't provide the alignment requirements
+   and calling conventions for TImode variables.  */
+#ifdef IN_LIBGCC2
+#define MIN_UNITS_PER_WORD      UNITS_PER_WORD
+#else
+#define MIN_UNITS_PER_WORD      4
+#endif
 
 /* The widest floating point format supported by the hardware.  Note that
    setting this influences some Ada floating point type sizes, currently
@@ -671,7 +670,7 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
 /* The profile counter if emitted must come before the prologue.  */
 #define PROFILE_BEFORE_PROLOGUE 1
 
-/* We never want final.c to emit profile counters.  When profile
+/* We never want final.cc to emit profile counters.  When profile
    counters are required, we have to defer emitting them to the end
    of the current file.  */
 #define NO_PROFILE_COUNTERS 1
@@ -721,7 +720,7 @@ extern int may_call_alloca;
    They give nonzero only if X is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(X) \
@@ -833,7 +832,6 @@ extern int may_call_alloca;
 
 #define INT14_OK_STRICT \
   (TARGET_SOFT_FLOAT                                                   \
-   || TARGET_DISABLE_FPREGS                                            \
    || (TARGET_PA_20 && !TARGET_ELF32))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
@@ -911,7 +909,7 @@ extern int may_call_alloca;
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.  */
+   macro is used in only one place: `find_reloads_address' in reload.cc.  */
 
 #define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND_L, WIN) 	     \
 do {									     \
@@ -1301,10 +1299,6 @@ do {									     \
 #define MAX_PCREL17F_OFFSET (TARGET_HPUX ? 198164 : 217856)
 
 #define NEED_INDICATE_EXEC_STACK 0
-
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS pa_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO pa_d_register_target_info
 
 /* Output default function prologue for hpux.  */
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue

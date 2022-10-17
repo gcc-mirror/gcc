@@ -1,8 +1,8 @@
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/b26a.d
 // PERMUTE_ARGS:
 
-// 382
+// https://issues.dlang.org/show_bug.cgi?id=382
 
 struct List(T) {
         interface A {}

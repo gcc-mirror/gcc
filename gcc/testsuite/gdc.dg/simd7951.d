@@ -19,4 +19,5 @@ void test7951_2()
     f1.array = v1;
     f2.array = v2;
     f3 = f1 + f2;
+    assert((cast(float[4])f3)[2] == 6);
 }

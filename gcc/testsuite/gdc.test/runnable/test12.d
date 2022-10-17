@@ -1,4 +1,3 @@
-// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS: -unittest -O -release -inline -fPIC -g
 
 extern(C) int printf(const char*, ...);
@@ -156,7 +155,7 @@ int[] fun(int i)
     {
         assert(result[0] == 2);
     }
-    body
+    do
     {
         char result;
         int[] res = new int[10];
@@ -312,15 +311,15 @@ void test12()
 
 class A13
 {
-    int opShl(char* v) { return 1; }
-    int opShl(string v) { return 2; }
+    int opBinary(string op : "<<")(char* v) { return 1; }
+    int opBinary(string op : "<<")(string v) { return 2; }
 }
 
 void test13()
 {
         A13 a = new A13();
         int i;
-        i = a.opShl(cast(string)"");
+        i = a << cast(string) "";
         assert(i == 2);
         i = a << cast(string)"";
         assert(i == 2);
@@ -366,32 +365,32 @@ union U6
 
 void test14()
 {
-   printf("%d %d %d\n", U1.a.offsetof, U1.b.offsetof, U1.sizeof);
+   printf("%zd %zd %zd\n", U1.a.offsetof, U1.b.offsetof, U1.sizeof);
    assert(U1.a.offsetof == 0);
    assert(U1.b.offsetof == 0);
    assert(U1.sizeof == 4);
 
-   printf("%d %d %d\n", U2.a.offsetof, U2.b.offsetof, U2.sizeof);
+   printf("%zd %zd %zd\n", U2.a.offsetof, U2.b.offsetof, U2.sizeof);
    assert(U2.a.offsetof == 0);
    assert(U2.b.offsetof == 0);
    assert(U2.sizeof == 8);
 
-   printf("%d %d %d\n", U3.a.offsetof, U3.b.offsetof, U3.sizeof);
+   printf("%zd %zd %zd\n", U3.a.offsetof, U3.b.offsetof, U3.sizeof);
    assert(U3.a.offsetof == 0);
    assert(U3.b.offsetof == 0);
    assert(U3.sizeof == 8);
 
-   printf("%d %d %d\n", U4.a.offsetof, U4.b.offsetof, U4.sizeof);
+   printf("%zd %zd %zd\n", U4.a.offsetof, U4.b.offsetof, U4.sizeof);
    assert(U4.a.offsetof == 0);
    assert(U4.b.offsetof == 0);
    assert(U4.sizeof == 4);
 
-   printf("%d %d %d\n", U5.a.offsetof, U5.b.offsetof, U5.sizeof);
+   printf("%zd %zd %zd\n", U5.a.offsetof, U5.b.offsetof, U5.sizeof);
    assert(U5.a.offsetof == 0);
    assert(U5.b.offsetof == 0);
    assert(U5.sizeof == 8);
 
-   printf("%d %d %d\n", U6.a.offsetof, U6.b.offsetof, U6.sizeof);
+   printf("%zd %zd %zd\n", U6.a.offsetof, U6.b.offsetof, U6.sizeof);
    assert(U6.a.offsetof == 0);
    assert(U6.b.offsetof == 0);
    assert(U6.sizeof == 8);
@@ -434,7 +433,7 @@ class Cout17
   printf("%d",x);
   return this;
  }
- alias set opShl;
+ alias opBinary(string op : "<<") = set;
 }
 
 void test17()
@@ -671,9 +670,9 @@ void test31()
 
     printf("%s\n", foo.ptr);
     auto s = typeid(typeof(foo.ptr)).toString();
-    printf("%.*s\n", s.length, s.ptr);
+    printf("%.*s\n", cast(int)s.length, s.ptr);
     s = typeid(char*).toString();
-    printf("%.*s\n", s.length, s.ptr);
+    printf("%.*s\n", cast(int)s.length, s.ptr);
     assert(typeid(typeof(foo.ptr)) == typeid(immutable(char)*));
 }
 
@@ -689,7 +688,7 @@ class Qwert32
 
     void foo()
     {
-        printf("yuiop = %d, asdfg = %d\n", Qwert32.yuiop.offsetof, Qwert32.asdfg.offsetof);
+        printf("yuiop = %zd, asdfg = %zd\n", Qwert32.yuiop.offsetof, Qwert32.asdfg.offsetof);
         version(D_LP64)
         {
             assert(Qwert32.yuiop.offsetof == 16);
@@ -778,7 +777,7 @@ void test36()
 {
     A36 a = new A36;
 
-    printf("A36.sizeof = %d\n", a.classinfo.initializer.length);
+    printf("A36.sizeof = %zd\n", a.classinfo.initializer.length);
     printf("%d\n", a.s);
     printf("%d\n", a.a);
     printf("%d\n", a.b);
@@ -819,7 +818,7 @@ class Foo38
 {
     static void display_name()
     {
-        printf("%.*s\n", Object.classinfo.name.length, Object.classinfo.name.ptr);
+        printf("%.*s\n", cast(int)Object.classinfo.name.length, Object.classinfo.name.ptr);
         assert(Object.classinfo.name == "object.Object");
         assert(super.classinfo.name == "object.Object");
         assert(this.classinfo.name == "test12.Foo38");
@@ -833,7 +832,7 @@ void test38()
 
 
 /**************************************/
-// http://www.digitalmars.com/d/archives/digitalmars/D/bugs/2409.html
+// https://www.digitalmars.com/d/archives/digitalmars/D/bugs/2409.html
 
 class C39
 {
@@ -951,31 +950,28 @@ struct Shell
 
     const int opCmp(ref const Shell s)
     {
-        import std.algorithm;
-        return std.algorithm.cmp(this.str, s.str);
+        // Obviously not Unicode-aware...
+        foreach (const i, const a; this.str)
+        {
+            const b = s.str[i];
+            if (a < b) return -1;
+            if (a > b) return 1;
+        }
+
+        if (this.str.length < s.str.length) return -1;
+        if (this.str.length > s.str.length) return  1;
+        return 0;
     }
 }
 
 void test45()
 {
-    import std.algorithm;
+    Shell a = Shell("hello");
+    Shell b = Shell("betty");
+    Shell c = Shell("fred");
 
-    Shell[3] a;
-
-    a[0].str = "hello";
-    a[1].str = "betty";
-    a[2].str = "fred";
-
-    a[].sort;
-
-    foreach (Shell s; a)
-    {
-        printf("%.*s\n", s.str.length, s.str.ptr);
-    }
-
-    assert(a[0].str == "betty");
-    assert(a[1].str == "fred");
-    assert(a[2].str == "hello");
+    assert(a > b);
+    assert(b < c);
 }
 
 /**************************************/
@@ -1153,7 +1149,7 @@ void test55()
 
 void writefln(string s)
 {
-    printf("%.*s\n", s.length, s.ptr);
+    printf("%.*s\n", cast(int)s.length, s.ptr);
 }
 
 void test58()
@@ -1250,4 +1246,3 @@ int main(string[] argv)
     printf("Success\n");
     return 0;
 }
-

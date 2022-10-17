@@ -1,5 +1,12 @@
-// EXTRA_SOURCES: imports/Other.d
-// PERMUTE_ARGS:
+/*
+EXTRA_SOURCES: imports/Other.d
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+Same
+other
+---
+*/
 
 module Same; // makes no difference if removed
 import core.stdc.stdio;

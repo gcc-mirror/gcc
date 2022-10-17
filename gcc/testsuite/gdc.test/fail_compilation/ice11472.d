@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice11472.d(13): Error: template instance fun2!fun fun2 is not a template declaration, it is a function
-fail_compilation/ice11472.d(18): Error: template instance ice11472.fun1!(fun3) error instantiating
+fail_compilation/ice11472.d(13): Error: template instance `fun2!fun` `fun2` is not a template declaration, it is a function
+fail_compilation/ice11472.d(18): Error: template instance `ice11472.fun1!(fun3)` error instantiating
 ---
 */
 

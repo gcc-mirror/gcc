@@ -353,7 +353,7 @@ Lret_type13:
 	bgt	Lstructend		; not a special small case
 	b	Lsmallstruct		; see if we need more.
 #else
-	cmpi	0,r0,4
+	cmpwi	0,r0,4
 	bgt	Lfinish		; not by value
 	lg	r3,0(r5)
 	b	Lfinish
@@ -494,8 +494,8 @@ LSFDE1:
 LASFDE1:
 	.long	LASFDE1-EH_frame1	; FDE CIE offset
 	.g_long	Lstartcode-.	; FDE initial location
-	.set	L$set$3,LFE1-Lstartcode
-	.g_long	L$set$3	; FDE address range
+	.set	L$set$2,LFE1-Lstartcode
+	.g_long	L$set$2	; FDE address range
 	.byte   0x0     ; uleb128 0x0; Augmentation size
 	.byte	0x4	; DW_CFA_advance_loc4
 	.set	L$set$3,LCFI1-LCFI0

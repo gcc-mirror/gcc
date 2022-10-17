@@ -1,3 +1,9 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 extern(C) int printf(const char*, ...);
 
 void test14040()
@@ -38,6 +44,12 @@ int mul11ret3(T)(ref T s)
 {
     s *= 11;
     return 3;
+}
+
+auto cat11ret3(T)(ref T s)
+{
+    s ~= 11;
+    return [3];
 }
 
 void add()
@@ -141,6 +153,25 @@ void shr()
     static assert(test(0x80) == 0x40);
 }
 
+void cat()
+{
+    static auto test1(int[] val) { val ~= cat11ret3(val); return val; }
+    assert(test1([1]) == [1, 11, 3]);
+    static assert(test1([1]) == [1, 11, 3]);
+
+    static auto test2(int[] val) { val = val ~ cat11ret3(val); return val; }
+    // FIXME: assert(test2([1]) == [1, 3]);
+    static assert(test2([1]) == [1, 3]);
+
+    static auto test3(int[] val) { (val ~= 7) ~= cat11ret3(val); return val; }
+    assert(test3([2]) == [2, 7, 11, 3]);
+    static assert(test3([2]) == [2, 7, 11, 3]);
+
+    static auto test4(int[] val) { (val ~= cat11ret3(val)) ~= 7; return val; }
+    assert(test4([2]) == [2, 11, 3, 7]);
+    static assert(test4([2]) == [2, 11, 3, 7]);
+}
+
 void ldc_github_1617()
 {
     add();
@@ -150,6 +181,7 @@ void ldc_github_1617()
     addptr();
     lhsCast();
     shr();
+    cat();
 }
 
 /******************************************/

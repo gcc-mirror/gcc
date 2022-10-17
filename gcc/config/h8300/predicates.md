@@ -1,5 +1,5 @@
 ;; Predicate definitions for Renesas H8/300.
-;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -506,6 +506,8 @@
 {
   if (GET_MODE (op) == mode
       && (GET_CODE (XEXP (op, 0)) != PRE_DEC
+	  && GET_CODE (XEXP (op, 0)) != PRE_INC
+	  && GET_CODE (XEXP (op, 0)) != POST_DEC
 	  && GET_CODE (XEXP (op, 0)) != POST_INC))
     return 1;
   return 0;

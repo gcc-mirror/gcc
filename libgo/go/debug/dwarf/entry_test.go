@@ -84,6 +84,19 @@ func TestRangesSection(t *testing.T) {
 	testRanges(t, "testdata/ranges.elf", want)
 }
 
+func TestRangesRnglistx(t *testing.T) {
+	want := []wantRange{
+		{0x401000, [][2]uint64{{0x401020, 0x40102c}, {0x401000, 0x40101d}}},
+		{0x40101c, [][2]uint64{{0x401020, 0x40102c}, {0x401000, 0x40101d}}},
+		{0x40101d, nil},
+		{0x40101f, nil},
+		{0x401020, [][2]uint64{{0x401020, 0x40102c}, {0x401000, 0x40101d}}},
+		{0x40102b, [][2]uint64{{0x401020, 0x40102c}, {0x401000, 0x40101d}}},
+		{0x40102c, nil},
+	}
+	testRanges(t, "testdata/rnglistx.elf", want)
+}
+
 func testRanges(t *testing.T, name string, want []wantRange) {
 	d := elfData(t, name)
 	r := d.Reader()
@@ -264,7 +277,7 @@ func TestUnitIteration(t *testing.T) {
 	for _, file := range files {
 		t.Run(file, func(t *testing.T) {
 			d := elfData(t, file)
-			var units [2][]interface{}
+			var units [2][]any
 			for method := range units {
 				for r := d.Reader(); ; {
 					ent, err := r.Next()

@@ -61,7 +61,7 @@ unsigned int ffi_prep_args(char *stack, extended_cif *ecif)
 		argp -= z;
 
 		/* Align if necessary */
-		argp = (char *) ALIGN_DOWN(ALIGN_DOWN(argp, (*p_arg)->alignment), 4);
+		argp = (char *) FFI_ALIGN_DOWN(FFI_ALIGN_DOWN(argp, (*p_arg)->alignment), 4);
 
 		if (z < sizeof(int)) {
 			z = sizeof(int);
@@ -93,7 +93,7 @@ unsigned int ffi_prep_args(char *stack, extended_cif *ecif)
 
 	/* return the size of the arguments to be passed in registers,
 	   padded to an 8 byte boundary to preserve stack alignment */
-	return ALIGN(MIN(stack - argp, 6*4), 8);
+	return FFI_ALIGN(MIN(stack - argp, 6*4), 8);
 }
 
 /* Perform machine dependent cif processing */
@@ -112,20 +112,20 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
 		/* Add any padding if necessary */
 		if (((*ptr)->alignment - 1) & bytes)
-			bytes = ALIGN(bytes, (*ptr)->alignment);
+			bytes = FFI_ALIGN(bytes, (*ptr)->alignment);
 
-		bytes += ALIGN((*ptr)->size, 4);
+		bytes += FFI_ALIGN((*ptr)->size, 4);
 	}
 
 	/* Ensure arg space is aligned to an 8-byte boundary */
-	bytes = ALIGN(bytes, 8);
+	bytes = FFI_ALIGN(bytes, 8);
 
 	/* Make space for the return structure pointer */
 	if (cif->rtype->type == FFI_TYPE_STRUCT) {
 		bytes += sizeof(void*);
 
 		/* Ensure stack is aligned to an 8-byte boundary */
-		bytes = ALIGN(bytes, 8);
+		bytes = FFI_ALIGN(bytes, 8);
 	}
 
 	cif->bytes = bytes;
@@ -319,7 +319,7 @@ static void ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 		if (alignment < 4)
 			alignment = 4;
 		if ((alignment - 1) & (unsigned)argp)
-			argp = (char *) ALIGN(argp, alignment);
+			argp = (char *) FFI_ALIGN(argp, alignment);
 
 		z = (*p_arg)->size;
 		*p_argv = (void*) argp;

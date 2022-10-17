@@ -2,7 +2,7 @@
 
 // 2008-05-25  Sebastian Redl  <sebastian.redl@getdesigned.at>
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,9 @@ void test02()
   try {
     rethrow_exception(make_exception_ptr(runtime_error("test")));
   } catch(exception &e) {
+#if __cpp_rtti
     VERIFY( typeid(e) == typeid(runtime_error) );
+#endif
     VERIFY( strcmp(e.what(), "test") == 0 );
   }
 }

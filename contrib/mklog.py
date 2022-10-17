@@ -28,6 +28,7 @@
 
 import argparse
 import datetime
+import json
 import os
 import re
 import subprocess
@@ -40,6 +41,7 @@ from unidiff import PatchSet
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
+CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
@@ -71,8 +73,6 @@ PATCH must be generated using diff(1)'s -up or -cp options
 
 script_folder = os.path.realpath(__file__)
 root = os.path.dirname(os.path.dirname(script_folder))
-
-firstpr = ''
 
 
 def find_changelog(path):
@@ -147,17 +147,29 @@ def append_changelog_line(out, relative_path, text):
     return out
 
 
+def get_rel_path_if_prefixed(path, folder):
+    if path.startswith(folder):
+        return path[len(folder):].lstrip('/')
+    else:
+        return path
+
+
 def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                        additional_prs=None):
+    global prs
+    prs = []
+
     changelogs = {}
     changelog_list = []
-    prs = []
     out = ''
     diff = PatchSet(data)
-    global firstpr
 
     if additional_prs:
-        prs = [pr for pr in additional_prs if pr not in prs]
+        for apr in additional_prs:
+            if not apr.startswith('PR ') and '/' in apr:
+                apr = 'PR ' + apr
+            if apr not in prs:
+                prs.append(apr)
     for file in diff:
         # skip files that can't be parsed
         if file.path == '/dev/null':
@@ -200,9 +212,6 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                 if pr not in this_file_prs and pr2 not in prs:
                     prs.append(pr2)
 
-    if prs:
-        firstpr = prs[0]
-
     if fill_pr_titles:
         out += get_pr_titles(prs)
 
@@ -223,7 +232,7 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
         for file in sorted(files, key=sort_changelog_files):
             assert file.path.startswith(changelog)
             in_tests = 'testsuite' in changelog or 'testsuite' in file.path
-            relative_path = file.path[len(changelog):].lstrip('/')
+            relative_path = get_rel_path_if_prefixed(file.path, changelog)
             functions = []
             if file.is_added_file:
                 msg = 'New test.' if in_tests else 'New file.'
@@ -231,13 +240,17 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
             elif file.is_removed_file:
                 out = append_changelog_line(out, relative_path, 'Removed.')
             elif hasattr(file, 'is_rename') and file.is_rename:
-                out = append_changelog_line(out, relative_path, 'Moved to...')
-                new_path = file.target_file[2:]
                 # A file can be theoretically moved to a location that
                 # belongs to a different ChangeLog.  Let user fix it.
-                if new_path.startswith(changelog):
-                    new_path = new_path[len(changelog):].lstrip('/')
-                out += '\t* %s: ...here.\n' % (new_path)
+                #
+                # Since unidiff 0.7.0, path.file == path.target_file[2:],
+                # it used to be path.source_file[2:]
+                relative_path = get_rel_path_if_prefixed(file.source_file[2:],
+                                                         changelog)
+                out = append_changelog_line(out, relative_path, 'Moved to...')
+                new_path = get_rel_path_if_prefixed(file.target_file[2:],
+                                                    changelog)
+                out += f'\t* {new_path}: ...here.\n'
             elif os.path.basename(file.path) in generated_files:
                 out += '\t* %s: Regenerate.\n' % (relative_path)
                 append_changelog_line(out, relative_path, 'Regenerate.')
@@ -313,7 +326,17 @@ def update_copyright(data):
                 f.write(content)
 
 
+def skip_line_in_changelog(line):
+    if line.lower().startswith(CO_AUTHORED_BY_PREFIX) or line.startswith('#'):
+        return False
+    return True
+
+
 if __name__ == '__main__':
+    extra_args = os.getenv('GCC_MKLOG_ARGS')
+    if extra_args:
+        sys.argv += json.loads(extra_args)
+
     parser = argparse.ArgumentParser(description=help_message)
     parser.add_argument('input', nargs='?',
                         help='Patch file (or missing, read standard input)')
@@ -346,15 +369,16 @@ if __name__ == '__main__':
                                     args.fill_up_bug_titles, args.pr_numbers)
         if args.changelog:
             lines = open(args.changelog).read().split('\n')
-            start = list(takewhile(lambda l: not l.startswith('#'), lines))
+            start = list(takewhile(skip_line_in_changelog, lines))
             end = lines[len(start):]
             with open(args.changelog, 'w') as f:
                 if not start or not start[0]:
-                    # initial commit subject line 'component: [PRnnnnn]'
-                    m = prnum_regex.match(firstpr)
-                    if m:
-                        title = f'{m.group("comp")}: [PR{m.group("num")}]'
-                        start.insert(0, title)
+                    if len(prs) == 1:
+                        # initial commit subject line 'component: [PRnnnnn]'
+                        m = prnum_regex.match(prs[0])
+                        if m:
+                            title = f'{m.group("comp")}: [PR{m.group("num")}]'
+                            start.insert(0, title)
                 if start:
                     # append empty line
                     if start[-1] != '':

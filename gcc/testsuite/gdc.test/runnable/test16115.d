@@ -25,7 +25,7 @@ auto call()
     else // assert error
     {
         //return n = tagx, null;
-        return n = Test.tag, null;
+        return n = Test.tag;
         //return n = Test.tag;
     }
 }

@@ -1,6 +1,6 @@
 ## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2021 Free Software Foundation, Inc.
+## Copyright (C) 1997-2022 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -28,8 +28,16 @@ else
 filesystem_dir =
 endif
 
+if ENABLE_BACKTRACE
+backtrace_dir = libbacktrace
+backtrace_supported_h = $(backtrace_dir)/backtrace-supported.h
+else
+backtrace_dir =
+backtrace_supported_h =
+endif
+
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
-SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir)
+SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir)
 
 # Cross compiler support.
 if VTV_CYGMIN
@@ -64,6 +72,9 @@ vpath % $(top_srcdir)/src/c++20
 if ENABLE_FILESYSTEM_TS
 vpath % $(top_srcdir)/src/filesystem
 endif
+if ENABLE_BACKTRACE
+vpath % $(top_srcdir)/src/libbacktrace
+endif
 
 if GLIBCXX_LDBL_COMPAT
 ldbl_compat_sources = compatibility-ldbl.cc
@@ -85,6 +96,16 @@ else
 ldbl_alt128_compat_sources =
 endif
 
+if ENABLE_SYMVERS_GNU_NAMESPACE
+cxx0x_compat_sources =
+else
+cxx0x_compat_sources = \
+	compatibility-atomic-c++0x.cc \
+	compatibility-c++0x.cc \
+	compatibility-chrono.cc \
+	compatibility-condvar.cc \
+	compatibility-thread-c++0x.cc
+endif
 
 parallel_compat_sources = \
 	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
@@ -97,11 +118,7 @@ cxx98_sources = \
 	${ldbl_compat_sources}
 
 cxx11_sources = \
-	compatibility-c++0x.cc \
-	compatibility-atomic-c++0x.cc \
-	compatibility-thread-c++0x.cc \
-	compatibility-chrono.cc \
-	compatibility-condvar.cc \
+	${cxx0x_compat_sources} \
 	${ldbl_alt128_compat_sources}
 
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
@@ -267,7 +284,9 @@ CXXLINK = \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXX) \
 	$(VTV_CXXLINKFLAGS) \
-	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
+	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) \
+	$(LTLDFLAGS) $(LTLIBICONV) \
+	-o $@
 
 # Symbol versioning for shared libraries.
 if ENABLE_SYMVERS
@@ -369,7 +388,7 @@ endif
 # Build a debug variant.
 # Take care to fix all possibly-relative paths.
 debugdir = ${glibcxx_builddir}/src/debug
-stamp-debug:
+stamp-debug: Makefile $(foreach dir,$(SUBDIRS),$(dir)/Makefile)
 	if test ! -d ${debugdir} || test ! -f ${debugdir}/Makefile ; then \
 	  mkdir -p ${debugdir}; \
 	  for d in $(SUBDIRS); do mkdir -p  ${debugdir}/$$d; done; \
@@ -393,7 +412,15 @@ stamp-debug:
 	fi; \
 	echo `date` > stamp-debug;
 
-build-debug: stamp-debug
+if ENABLE_BACKTRACE
+${debugdir}/$(backtrace_supported_h): $(backtrace_supported_h) stamp-debug
+	cp $< $@
+debug_backtrace_supported_h = ${debugdir}/$(backtrace_supported_h)
+else
+debug_backtrace_supported_h =
+endif
+
+build-debug: stamp-debug $(debug_backtrace_supported_h)
 	  (cd ${debugdir}; \
 	  mv Makefile Makefile.tmp; \
 	  sed -e 's,all-local: all-once,all-local:,' \

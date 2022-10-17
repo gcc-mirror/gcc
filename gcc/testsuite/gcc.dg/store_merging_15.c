@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target store_merge } */
-/* { dg-options "-O2 -fdump-tree-store-merging" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging" } */
 
 struct S { unsigned char a, b; unsigned short c; unsigned char d, e, f, g; unsigned long long h; };
 

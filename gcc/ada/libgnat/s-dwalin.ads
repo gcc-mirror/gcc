@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2009-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,51 +30,45 @@
 ------------------------------------------------------------------------------
 
 --  This package provides routines to read DWARF line number information from
---  a generic object file with as little overhead as possible. This allows
---  conversions from PC addresses to human readable source locations.
+--  a binary file with as little overhead as possible. This allows conversions
+--  from PC addresses to human-readable source locations.
 --
---  Objects must be built with debugging information, however only the
---  .debug_line section of the object file is referenced. In cases where object
---  size is a consideration it's possible to strip all other .debug sections,
---  which will decrease the size of the object significantly.
+--  Files must be compiled with at least minimal debugging information (-g1).
 
-with Ada.Exceptions.Traceback;
-
-with System.Object_Reader;
-with System.Storage_Elements;
 with System.Bounded_Strings;
+with System.Object_Reader;
+with System.Traceback_Entries;
 
 package System.Dwarf_Lines is
 
-   package AET renames Ada.Exceptions.Traceback;
+   package STE renames System.Traceback_Entries;
    package SOR renames System.Object_Reader;
 
    type Dwarf_Context (In_Exception : Boolean := False) is private;
-   --  Type encapsulation the state of the Dwarf reader. When In_Exception
-   --  is True we are parsing as part of a exception handler decorator, we do
-   --  not want an exception to be raised, the parsing is done safely skipping
-   --  DWARF file that cannot be read or with stripped debug section for
-   --  example.
+   --  Type encapsulating the state of the DWARF reader. When In_Exception is
+   --  True, we are parsing as part of an exception handler decorator so we do
+   --  not want another exception to be raised and the parsing is done safely,
+   --  skipping binary files that cannot be read or have been stripped from
+   --  their debug sections for example.
 
    procedure Open
      (File_Name :     String;
       C         : out Dwarf_Context;
       Success   : out Boolean);
    procedure Close (C : in out Dwarf_Context);
-   --  Open and close files
+   --  Open and close a file
 
    procedure Set_Load_Address (C : in out Dwarf_Context; Addr : Address);
-   --  Set the load address of a file. This is used to rebase PIE (Position
-   --  Independant Executable) binaries.
+   --  Set the run-time load address of a file. Used to rebase PIE (Position
+   --  Independent Executable) binaries.
 
    function Is_Inside (C : Dwarf_Context; Addr : Address) return Boolean;
    pragma Inline (Is_Inside);
-   --  Return true iff a run-time address Addr is within the module
+   --  Return whether a run-time address Addr lies within the file
 
-   function Low_Address (C : Dwarf_Context)
-      return System.Address;
+   function Low_Address (C : Dwarf_Context) return Address;
    pragma Inline (Low_Address);
-   --  Return the lowest address of C, accounting for the module load address
+   --  Return the lowest run-time address of the file
 
    procedure Dump (C : in out Dwarf_Context);
    --  Dump each row found in the object's .debug_lines section to standard out
@@ -83,11 +77,11 @@ package System.Dwarf_Lines is
    --  Dump the cache (if present)
 
    procedure Enable_Cache (C : in out Dwarf_Context);
-   --  Read symbols information to speed up Symbolic_Traceback.
+   --  Read symbol information to speed up Symbolic_Traceback.
 
    procedure Symbolic_Traceback
      (Cin          :        Dwarf_Context;
-      Traceback    :        AET.Tracebacks_Array;
+      Traceback    :        STE.Tracebacks_Array;
       Suppress_Hex :        Boolean;
       Symbol_Found :    out Boolean;
       Res          : in out System.Bounded_Strings.Bounded_String);
@@ -102,45 +96,64 @@ package System.Dwarf_Lines is
 private
    --  The following section numbers reference
 
-   --    "DWARF Debugging Information Format, Version 3"
+   --    "DWARF Debugging Information Format, Version 5"
 
    --  published by the Standards Group, http://freestandards.org.
 
    --  6.2.2 State Machine Registers
 
    type Line_Info_Registers is record
-      Address        : SOR.uint64;
-      File           : SOR.uint32;
-      Line           : SOR.uint32;
-      Column         : SOR.uint32;
-      Is_Stmt        : Boolean;
-      Basic_Block    : Boolean;
-      End_Sequence   : Boolean;
-      Prologue_End   : Boolean;
-      Epilogue_Begin : Boolean;
-      ISA            : SOR.uint32;
-      Is_Row         : Boolean;
+      Address            : SOR.uint64;
+      File               : SOR.uint32;
+      Line               : SOR.uint32;
+      Column             : SOR.uint32;
+      Is_Stmt            : Boolean;
+      Basic_Block        : Boolean;
+      End_Sequence       : Boolean;
+      --  Prologue_End   : Boolean;
+      --  Epilogue_Begin : Boolean;
+      --  ISA            : SOR.uint32;
+      --  Discriminator  : SOR.uint32;  -- DWARF 4/5
+      Is_Row             : Boolean;     -- local
    end record;
 
-   --  6.2.4 The Line Number Program Prologue
+   --  6.2.4 The Line Number Program Header
 
-   MAX_OPCODE_LENGTHS : constant := 256;
+   MAX_OPCODE : constant := 256;
 
-   type Opcodes_Lengths_Array is
-     array (SOR.uint32 range 1 .. MAX_OPCODE_LENGTHS) of SOR.uint8;
+   type Opcode_Length_Array is array (1 .. MAX_OPCODE) of SOR.uint8;
 
-   type Line_Info_Prologue is record
-      Unit_Length       : SOR.uint32;
-      Version           : SOR.uint16;
-      Prologue_Length   : SOR.uint32;
-      Min_Isn_Length    : SOR.uint8;
-      Default_Is_Stmt   : SOR.uint8;
-      Line_Base         : SOR.int8;
-      Line_Range        : SOR.uint8;
-      Opcode_Base       : SOR.uint8;
-      Opcode_Lengths    : Opcodes_Lengths_Array;
-      Includes_Offset   : SOR.Offset;
-      File_Names_Offset : SOR.Offset;
+   MAX_ENTRY : constant := 5;
+
+   type Entry_Format_Pair is record
+      C_Type : SOR.uint32;
+      Form   : SOR.uint32;
+   end record;
+
+   type Entry_Format_Array is array (1 .. MAX_ENTRY) of Entry_Format_Pair;
+
+   type Line_Info_Header is record
+      Unit_Length                  : SOR.Offset;
+      Version                      : SOR.uint16;
+      Address_Size                 : SOR.uint8;           -- DWARF 5
+      Segment_Selector_Size        : SOR.uint8;           -- DWARF 5
+      Header_Length                : SOR.uint32;
+      Minimum_Insn_Length          : SOR.uint8;
+      Maximum_Op_Per_Insn          : SOR.uint8;           -- DWARF 4/5
+      Default_Is_Stmt              : SOR.uint8;
+      Line_Base                    : SOR.int8;
+      Line_Range                   : SOR.uint8;
+      Opcode_Base                  : SOR.uint8;
+      --  Standard_Opcode_Lengths  : Opcode_Length_Array;
+      Directory_Entry_Format_Count : SOR.uint8;           -- DWARF 5
+      Directory_Entry_Format       : Entry_Format_Array;  -- DWARF 5
+      Directories_Count            : SOR.uint32;          -- DWARF 5
+      Directories                  : SOR.Offset;
+      File_Name_Entry_Format_Count : SOR.uint8;           -- DWARF 5
+      File_Name_Entry_Format       : Entry_Format_Array;  -- DWARF 5
+      File_Names_Count             : SOR.uint32;          -- DWARF 5
+      File_Names                   : SOR.Offset;
+      Is64                         : Boolean;             -- local
    end record;
 
    type Search_Entry is record
@@ -160,13 +173,13 @@ private
    type Search_Array_Access is access Search_Array;
 
    type Dwarf_Context (In_Exception : Boolean := False) is record
-      Low, High  : System.Storage_Elements.Storage_Offset;
-      --  Bounds of the module, per the module object file
+      Low, High : Address;
+      --  Address bounds for executable code
 
       Obj : SOR.Object_File_Access;
       --  The object file containing dwarf sections
 
-      Load_Address : System.Address := System.Null_Address;
+      Load_Address : Address := Null_Address;
       --  The address at which the object file was loaded at run time
 
       Has_Debug : Boolean;
@@ -175,15 +188,16 @@ private
       Cache : Search_Array_Access;
       --  Quick access to symbol and debug info (when present).
 
-      Lines   : SOR.Mapped_Stream;
-      Aranges : SOR.Mapped_Stream;
-      Info    : SOR.Mapped_Stream;
-      Abbrev  : SOR.Mapped_Stream;
-      --  Dwarf line, aranges, info and abbrev sections
+      Abbrev   : SOR.Mapped_Stream;
+      Aranges  : SOR.Mapped_Stream;
+      Info     : SOR.Mapped_Stream;
+      Lines    : SOR.Mapped_Stream;
+      Line_Str : SOR.Mapped_Stream;  -- DWARF 5
+      --  DWARF sections
 
-      Prologue      : Line_Info_Prologue;
-      Registers     : Line_Info_Registers;
-      Next_Prologue : SOR.Offset;
+      Header      : Line_Info_Header;
+      Registers   : Line_Info_Registers;
+      Next_Header : SOR.Offset;
       --  State for lines
    end record;
 

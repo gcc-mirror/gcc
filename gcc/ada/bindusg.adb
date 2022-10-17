@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,6 +155,11 @@ package body Bindusg is
       Write_Line
         ("  -I-       Don't look for sources & library files in default "
          & "directory");
+
+      --  Line for -k switch
+
+      Write_Line
+        ("  -k        Disable checking of elaboration flags");
 
       --  Line for -K switch
 

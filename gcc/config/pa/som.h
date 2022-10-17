@@ -1,5 +1,5 @@
 /* Definitions for SOM assembler support.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,20 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* So we can conditionalize small amounts of code in pa.c or pa.md.  */
+/* So we can conditionalize small amounts of code in pa.cc or pa.md.  */
 #undef TARGET_SOM
 #define TARGET_SOM 1
-
-/* We do not use BINCL stabs in SOM.
-   ??? If it does not hurt, we probably should to avoid useless divergence
-   from other embedded stabs implementations.  */
-#undef DBX_USE_BINCL
-
-#define DBX_LINES_FUNCTION_RELATIVE 1
-
-/* gdb needs a null N_SO at the end of each file for scattered loading.  */
-
-#define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 
 /* HPUX has a program 'chatr' to list the dependencies of dynamically
    linked executables and shared libraries.  */

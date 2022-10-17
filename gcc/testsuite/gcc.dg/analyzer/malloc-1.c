@@ -189,7 +189,7 @@ void test_15 (void)
 
 void test_16 (void)
 {
-  void *p, *q;
+  void *p, *q; /* { dg-message "region created on stack here" } */
 
   p = malloc (1024);
   if (!p)
@@ -204,8 +204,7 @@ void test_16 (void)
   bar ();
 
  fail:
-  free (q); /* { dg-warning "free of uninitialized 'q'" "" { xfail *-*-* } } */ 
-  /* TODO(xfail): implement uninitialized detection.  */
+  free (q); /* { dg-warning "use of uninitialized value 'q'" } */
   free (p);
 }
 
@@ -272,23 +271,23 @@ int *test_23a (int n)
 
 int test_24 (void)
 {
-  void *ptr = __builtin_alloca (sizeof (int)); /* { dg-message "memory is allocated on the stack here" } */
-  free (ptr); /* { dg-warning "'free' of memory allocated on the stack by 'alloca' \\('ptr'\\) will corrupt the heap \\\[CWE-590\\\]" } */
+  void *ptr = __builtin_alloca (sizeof (int)); /* { dg-message "region created on stack here" } */
+  free (ptr); /* { dg-warning "'free' of 'ptr' which points to memory on the stack \\\[CWE-590\\\]" } */
 }
 
 int test_25 (void)
 {
-  char tmp[100];
-  void *p = tmp; /* { dg-message "pointer is from here" } */
-  free (p); /* { dg-warning "'free' of 'p' which points to memory not on the heap \\\[CWE-590\\\]" } */
+  char tmp[100]; /* { dg-message "region created on stack here" } */
+  void *p = tmp;
+  free (p); /* { dg-warning "'free' of 'p' which points to memory on the stack \\\[CWE-590\\\]" } */
   /* TODO: more precise messages here.  */
 }
 
-char global_buffer[100];
+char global_buffer[100]; /* { dg-message "region created here" } */
 
 int test_26 (void)
 {
-  void *p = global_buffer; /* { dg-message "pointer is from here" } */
+  void *p = global_buffer;
   free (p); /* { dg-warning "'free' of 'p' which points to memory not on the heap \\\[CWE-590\\\]" } */
   /* TODO: more precise messages here.  */
 }
@@ -458,9 +457,9 @@ test_39 (int i)
 int *
 test_40 (int i)
 {
-  int *p = (int*)malloc(sizeof(int*));
-  i = *p; /* { dg-warning "dereference of possibly-NULL 'p' \\\[CWE-690\\\]" } */
-  /* TODO: (it's also uninitialized) */
+  int *p = (int*)malloc(sizeof(int*)); /* { dg-message "region created on heap here" } */
+  i = *p; /* { dg-warning "dereference of possibly-NULL 'p' \\\[CWE-690\\\]" "possibly-null" } */
+  /* { dg-warning "use of uninitialized value '\\*p'" "uninit" { target *-*-*} .-1 } */
   return p;
 }
 
@@ -608,5 +607,23 @@ int test_49 (int i)
   *p = 1; /* { dg-warning "dereference of NULL 'p' \\\[CWE-476\\\]" } */
   return x;
 }
+
+/* Free of function, and of label within function.  */
+
+void test_50a (void)
+{
+}
+
+void test_50b (void)
+{
+  free (test_50a); /* { dg-warning "'free' of '&test_50a' which points to memory not on the heap \\\[CWE-590\\\]" } */
+}
+
+void test_50c (void)
+{
+ my_label:
+  free (&&my_label); /* { dg-warning "'free' of '&my_label' which points to memory not on the heap \\\[CWE-590\\\]" } */
+}
+
 
 /* { dg-prune-output "\\\[-Wfree-nonheap-object" } */

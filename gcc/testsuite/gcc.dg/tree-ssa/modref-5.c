@@ -24,4 +24,4 @@ main()
     __builtin_abort ();
   return 0;
 }
-/* { dg-final { scan-tree-dump "parm 1 flags: nodirectescape" "modref1"  } } */
+/* { dg-final { scan-tree-dump "parm 1 flags: no_direct_clobber no_direct_escape" "modref1"  } } */

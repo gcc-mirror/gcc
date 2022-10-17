@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -21,6 +21,10 @@
 
 #ifndef GCC_AARCH64_OPTS_H
 #define GCC_AARCH64_OPTS_H
+
+#ifndef USED_FOR_TARGET
+typedef uint64_t aarch64_feature_flags;
+#endif
 
 /* The various cores that implement AArch64.  */
 enum aarch64_processor
@@ -96,6 +100,12 @@ enum aarch64_sve_vector_bits_enum {
 enum stack_protector_guard {
   SSP_SYSREG,			/* per-thread canary in special system register */
   SSP_GLOBAL			/* global canary */
+};
+
+/* The key type that -msign-return-address should use.  */
+enum aarch64_key_type {
+  AARCH64_KEY_A,
+  AARCH64_KEY_B
 };
 
 #endif

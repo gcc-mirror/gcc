@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,47 +42,9 @@
 # error This file should not be compiled for this configuration.
 #endif
 
-namespace
-{
-  struct io_error_category : std::error_category
-  {
-    virtual const char*
-    name() const noexcept
-    { return "iostream"; }
-
-    _GLIBCXX_DEFAULT_ABI_TAG
-    virtual std::string message(int __ec) const
-    {
-      std::string __msg;
-      switch (std::io_errc(__ec))
-      {
-      case std::io_errc::stream:
-          __msg = "iostream error";
-          break;
-      default:
-          __msg = "Unknown error";
-          break;
-      }
-      return __msg;
-    }
-  };
-
-  const io_error_category&
-  __io_category_instance() noexcept
-  {
-    static const io_error_category __ec{};
-    return __ec;
-  }
-
-} // namespace
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  const error_category&
-  iostream_category() noexcept
-  { return __io_category_instance(); }
 
   ios_base::failure::failure(const string& __str)
   : system_error(io_errc::stream, __str) { }

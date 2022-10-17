@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build ignore
-// +build amd64 386 arm ppc64le ppc64 s390x arm64
+//go:build ignore && (amd64 || 386 || arm || ppc64le || ppc64 || s390x || arm64)
 
 package md5
 

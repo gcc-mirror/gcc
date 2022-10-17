@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail9537.d(26): Error: foo(tuple(1, 2)) is not an lvalue
+fail_compilation/fail9537.d(26): Error: `foo(tuple(1, 2))` is not an lvalue and cannot be modified
 ---
 */
 

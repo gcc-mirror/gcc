@@ -1,12 +1,12 @@
 /**
  * Contains druntime startup and shutdown routines.
  *
- * Copyright: Copyright Digital Mars 2000 - 2013.
+ * Copyright: Copyright Digital Mars 2000 - 2018.
  * License: Distributed under the
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Walter Bright, Sean Kelly
- * Source: $(DRUNTIMESRC src/rt/_dmain2.d)
+ * Source: $(DRUNTIMESRC rt/_dmain2.d)
  */
 
 /* NOTE: This file has been patched from the original DMD distribution to
@@ -14,22 +14,27 @@
  */
 module rt.dmain2;
 
-private
-{
-    import rt.memory;
-    import rt.sections;
-    import core.atomic;
-    import core.stdc.stddef;
-    import core.stdc.stdlib;
-    import core.stdc.string;
-    import core.stdc.stdio;   // for printf()
-    import core.stdc.errno : errno;
-}
+import rt.memory;
+import rt.sections;
+import core.atomic;
+import core.stdc.stddef;
+import core.stdc.stdlib;
+import core.stdc.string;
+import core.stdc.stdio;   // for printf()
+import core.stdc.errno : errno;
 
 version (Windows)
 {
-    private import core.stdc.wchar_;
-    private import core.sys.windows.windows;
+    import core.stdc.wchar_;
+    import core.sys.windows.basetsd : HANDLE;
+    import core.sys.windows.shellapi : CommandLineToArgvW;
+    import core.sys.windows.winbase : FreeLibrary, GetCommandLineW, GetProcAddress,
+        IsDebuggerPresent, LoadLibraryW, LocalFree, WriteFile;
+    import core.sys.windows.wincon : CONSOLE_SCREEN_BUFFER_INFO, GetConsoleOutputCP,
+        GetConsoleScreenBufferInfo;
+    import core.sys.windows.winnls : CP_UTF8, MultiByteToWideChar, WideCharToMultiByte;
+    import core.sys.windows.winnt : WCHAR;
+    import core.sys.windows.winuser : MB_ICONERROR, MessageBoxW;
 
     pragma(lib, "shell32.lib"); // needed for CommandLineToArgvW
 }
@@ -47,26 +52,31 @@ version (DragonFlyBSD)
     import core.stdc.fenv;
 }
 
-extern (C) void _d_monitor_staticctor();
-extern (C) void _d_monitor_staticdtor();
-extern (C) void _d_critical_init();
-extern (C) void _d_critical_term();
+// not sure why we can't define this in one place, but this is to keep this
+// module from importing core.runtime.
+struct UnitTestResult
+{
+    size_t executed;
+    size_t passed;
+    bool runMain;
+    bool summarize;
+}
+
+extern (C) void _d_monitor_staticctor() @nogc nothrow;
+extern (C) void _d_monitor_staticdtor() @nogc nothrow;
+extern (C) void _d_critical_init() @nogc nothrow;
+extern (C) void _d_critical_term() @nogc nothrow;
 extern (C) void gc_init();
 extern (C) void gc_term();
-extern (C) void lifetime_init();
+extern (C) void thread_init() @nogc nothrow;
+extern (C) void thread_term() @nogc nothrow;
 extern (C) void rt_moduleCtor();
 extern (C) void rt_moduleTlsCtor();
 extern (C) void rt_moduleDtor();
 extern (C) void rt_moduleTlsDtor();
 extern (C) void thread_joinAll();
-extern (C) bool runModuleUnitTests();
-extern (C) void _d_initMonoTime();
-
-version (OSX)
-{
-    // The bottom of the stack
-    extern (C) __gshared void* __osx_stack_end = cast(void*)0xC0000000;
-}
+extern (C) UnitTestResult runModuleUnitTests();
+extern (C) void _d_initMonoTime() @nogc nothrow;
 
 version (CRuntime_Microsoft)
 {
@@ -82,9 +92,6 @@ extern (C) string[] rt_args()
 {
     return _d_args;
 }
-
-// make arguments passed to main available for being filtered by runtime initializers
-extern(C) __gshared char[][] _d_main_args = null;
 
 // This variable is only ever set by a debugger on initialization so it should
 // be fine to leave it as __gshared.
@@ -123,16 +130,16 @@ extern (C) int rt_init()
         // this initializes mono time before anything else to allow usage
         // in other druntime systems.
         _d_initMonoTime();
-        gc_init();
+        thread_init();
+        // TODO: fixme - calls GC.addRange -> Initializes GC
         initStaticDataGC();
-        lifetime_init();
         rt_moduleCtor();
         rt_moduleTlsCtor();
         return 1;
     }
     catch (Throwable t)
     {
-        _initCount = 0;
+        atomicStore!(MemoryOrder.raw)(_initCount, 0);
         _d_print_throwable(t);
     }
     _d_critical_term();
@@ -145,7 +152,7 @@ extern (C) int rt_init()
  */
 extern (C) int rt_term()
 {
-    if (!_initCount) return 0; // was never initialized
+    if (atomicLoad!(MemoryOrder.raw)(_initCount) == 0) return 0; // was never initialized
     if (atomicOp!"-="(_initCount, 1)) return 1;
 
     try
@@ -154,6 +161,7 @@ extern (C) int rt_term()
         thread_joinAll();
         rt_moduleDtor();
         gc_term();
+        thread_term();
         return 1;
     }
     catch (Throwable t)
@@ -234,73 +242,21 @@ extern (C) CArgs rt_cArgs() @nogc
     return _cArgs;
 }
 
-/***********************************
- * Run the given main function.
- * Its purpose is to wrap the D main()
- * function and catch any unhandled exceptions.
- */
+/// Type of the D main() function (`_Dmain`).
 private alias extern(C) int function(char[][] args) MainFunc;
 
-extern (C) int _d_run_main(int argc, char **argv, MainFunc mainFunc)
+/**
+ * Sets up the D char[][] command-line args, initializes druntime,
+ * runs embedded unittests and then runs the given D main() function,
+ * optionally catching and printing any unhandled exceptions.
+ */
+extern (C) int _d_run_main(int argc, char** argv, MainFunc mainFunc)
 {
+    // Set up _cArgs and array of D char[] slices, then forward to _d_run_main2
+
     // Remember the original C argc/argv
     _cArgs.argc = argc;
     _cArgs.argv = argv;
-
-    int result;
-
-    version (OSX)
-    {   /* OSX does not provide a way to get at the top of the
-         * stack, except for the magic value 0xC0000000.
-         * But as far as the gc is concerned, argv is at the top
-         * of the main thread's stack, so save the address of that.
-         */
-        __osx_stack_end = cast(void*)&argv;
-    }
-
-    version (FreeBSD) version (D_InlineAsm_X86)
-    {
-        /*
-         * FreeBSD/i386 sets the FPU precision mode to 53 bit double.
-         * Make it 64 bit extended.
-         */
-        ushort fpucw;
-        asm
-        {
-            fstsw   fpucw;
-            or      fpucw, 0b11_00_111111; // 11: use 64 bit extended-precision
-                                           // 111111: mask all FP exceptions
-            fldcw   fpucw;
-        }
-    }
-    version (CRuntime_Microsoft)
-    {
-        // enable full precision for reals
-        version (D_InlineAsm_X86_64)
-        {
-            asm
-            {
-                push    RAX;
-                fstcw   word ptr [RSP];
-                or      [RSP], 0b11_00_111111; // 11: use 64 bit extended-precision
-                                               // 111111: mask all FP exceptions
-                fldcw   word ptr [RSP];
-                pop     RAX;
-            }
-        }
-        else version (D_InlineAsm_X86)
-        {
-            asm
-            {
-                push    EAX;
-                fstcw   word ptr [ESP];
-                or      [ESP], 0b11_00_111111; // 11: use 64 bit extended-precision
-                // 111111: mask all FP exceptions
-                fldcw   word ptr [ESP];
-                pop     EAX;
-            }
-        }
-    }
 
     version (Windows)
     {
@@ -309,10 +265,10 @@ extern (C) int _d_run_main(int argc, char **argv, MainFunc mainFunc)
          * Then, reparse into wargc/wargs, and then use Windows API to convert
          * to UTF-8.
          */
-        const wchar_t* wCommandLine = GetCommandLineW();
+        const wCommandLine = GetCommandLineW();
         immutable size_t wCommandLineLength = wcslen(wCommandLine);
         int wargc;
-        wchar_t** wargs = CommandLineToArgvW(wCommandLine, &wargc);
+        auto wargs = CommandLineToArgvW(wCommandLine, &wargc);
         // assert(wargc == argc); /* argc can be broken by Unicode arguments */
 
         // Allocate args[] on the stack - use wargc
@@ -357,6 +313,114 @@ extern (C) int _d_run_main(int argc, char **argv, MainFunc mainFunc)
     else
         static assert(0);
 
+    return _d_run_main2(args, totalArgsLength, mainFunc);
+}
+
+/**
+ * Windows-specific version for wide command-line arguments, e.g.,
+ * from a wmain/wWinMain C entry point.
+ * This wide version uses the specified arguments, unlike narrow
+ * _d_run_main which uses the actual (wide) process arguments instead.
+ */
+version (Windows)
+extern (C) int _d_wrun_main(int argc, wchar** wargv, MainFunc mainFunc)
+{
+     // Allocate args[] on the stack
+    char[][] args = (cast(char[]*) alloca(argc * (char[]).sizeof))[0 .. argc];
+
+    // 1st pass: compute each argument's length as UTF-16 and UTF-8
+    size_t totalArgsLength = 0;
+    foreach (i; 0 .. argc)
+    {
+        const warg = wargv[i];
+        const size_t wlen = wcslen(warg) + 1; // incl. terminating null
+        assert(wlen <= cast(size_t) int.max, "wlen cannot exceed int.max");
+        const int len = WideCharToMultiByte(CP_UTF8, 0, warg, cast(int) wlen, null, 0, null, null);
+        args[i] = (cast(char*) wlen)[0 .. len]; // args[i].ptr = wlen, args[i].length = len
+        totalArgsLength += len;
+    }
+
+    // Allocate a single buffer for all (null-terminated) argument strings in UTF-8 on the stack
+    char* utf8Buffer = cast(char*) alloca(totalArgsLength);
+
+    // 2nd pass: convert to UTF-8 and finalize `args`
+    char* utf8 = utf8Buffer;
+    foreach (i; 0 .. argc)
+    {
+        const wlen = cast(int) args[i].ptr;
+        const len = cast(int) args[i].length;
+        WideCharToMultiByte(CP_UTF8, 0, wargv[i], wlen, utf8, len, null, null);
+        args[i] = utf8[0 .. len-1]; // excl. terminating null
+        utf8 += len;
+    }
+
+    // Set C argc/argv; argv is a new stack-allocated array of UTF-8 C strings
+    char*[] argv = (cast(char**) alloca(argc * (char*).sizeof))[0 .. argc];
+    foreach (i, ref arg; argv)
+        arg = args[i].ptr;
+    _cArgs.argc = argc;
+    _cArgs.argv = argv.ptr;
+
+    totalArgsLength -= argc; // excl. null terminator per arg
+    return _d_run_main2(args, totalArgsLength, mainFunc);
+}
+
+private extern (C) int _d_run_main2(char[][] args, size_t totalArgsLength, MainFunc mainFunc)
+{
+    int result;
+
+    version (FreeBSD) version (D_InlineAsm_X86)
+    {
+        /*
+         * FreeBSD/i386 sets the FPU precision mode to 53 bit double.
+         * Make it 64 bit extended.
+         */
+        ushort fpucw;
+        asm
+        {
+            fstsw   fpucw;
+            or      fpucw, 0b11_00_111111; // 11: use 64 bit extended-precision
+                                           // 111111: mask all FP exceptions
+            fldcw   fpucw;
+        }
+    }
+    version (CRuntime_Microsoft)
+    {
+        // enable full precision for reals
+        version (D_InlineAsm_X86_64)
+        {
+            asm
+            {
+                push    RAX;
+                fstcw   word ptr [RSP];
+                or      [RSP], 0b11_00_111111; // 11: use 64 bit extended-precision
+                                               // 111111: mask all FP exceptions
+                fldcw   word ptr [RSP];
+                pop     RAX;
+            }
+        }
+        else version (D_InlineAsm_X86)
+        {
+            asm
+            {
+                push    EAX;
+                fstcw   word ptr [ESP];
+                or      [ESP], 0b11_00_111111; // 11: use 64 bit extended-precision
+                // 111111: mask all FP exceptions
+                fldcw   word ptr [ESP];
+                pop     EAX;
+            }
+        }
+        else version (GNU_InlineAsm)
+        {
+            size_t fpu_cw;
+            asm { "fstcw %0" : "=m" (fpu_cw); }
+            fpu_cw |= 0b11_00_111111;  // 11: use 64 bit extended-precision
+                                       // 111111: mask all FP exceptions
+            asm { "fldcw %0" : "=m" (fpu_cw); }
+        }
+    }
+
     /* Create a copy of args[] on the stack to be used for main, so that rt_args()
      * cannot be modified by the user.
      * Note that when this function returns, _d_args will refer to garbage.
@@ -368,28 +432,33 @@ extern (C) int _d_run_main(int argc, char **argv, MainFunc mainFunc)
         char[][] argsCopy = buff[0 .. args.length];
         auto argBuff = cast(char*) (buff + args.length);
         size_t j = 0;
+        import rt.config : rt_cmdline_enabled;
+        bool parseOpts = rt_cmdline_enabled!();
         foreach (arg; args)
         {
-            if (arg.length < 6 || arg[0..6] != "--DRT-") // skip D runtime options
-            {
-                argsCopy[j++] = (argBuff[0 .. arg.length] = arg[]);
-                argBuff += arg.length;
-            }
+            // Do not pass Druntime options to the program
+            if (parseOpts && arg.length >= 6 && arg[0 .. 6] == "--DRT-")
+                continue;
+            // https://issues.dlang.org/show_bug.cgi?id=20459
+            if (arg == "--")
+                parseOpts = false;
+            argsCopy[j++] = (argBuff[0 .. arg.length] = arg[]);
+            argBuff += arg.length;
         }
         args = argsCopy[0..j];
     }
 
-    bool trapExceptions = rt_trapExceptions;
+    auto useExceptionTrap = parseExceptionOptions();
 
     version (Windows)
     {
         if (IsDebuggerPresent())
-            trapExceptions = false;
+            useExceptionTrap = false;
     }
 
     void tryExec(scope void delegate() dg)
     {
-        if (trapExceptions)
+        if (useExceptionTrap)
         {
             try
             {
@@ -417,8 +486,34 @@ extern (C) int _d_run_main(int argc, char **argv, MainFunc mainFunc)
     //       thrown during cleanup, however, will abort the cleanup process.
     void runAll()
     {
-        if (rt_init() && runModuleUnitTests())
-            tryExec({ result = mainFunc(args); });
+        if (rt_init())
+        {
+            auto utResult = runModuleUnitTests();
+            assert(utResult.passed <= utResult.executed);
+            if (utResult.passed == utResult.executed)
+            {
+                if (utResult.summarize)
+                {
+                    if (utResult.passed == 0)
+                        .fprintf(.stderr, "No unittests run\n");
+                    else
+                        .fprintf(.stderr, "%d modules passed unittests\n",
+                                 cast(int)utResult.passed);
+                }
+                if (utResult.runMain)
+                    tryExec({ result = mainFunc(args); });
+                else
+                    result = EXIT_SUCCESS;
+            }
+            else
+            {
+                if (utResult.summarize)
+                    .fprintf(.stderr, "%d/%d modules FAILED unittests\n",
+                             cast(int)(utResult.executed - utResult.passed),
+                             cast(int)utResult.executed);
+                result = EXIT_FAILURE;
+            }
+        }
         else
             result = EXIT_FAILURE;
 
@@ -443,20 +538,32 @@ extern (C) int _d_run_main(int argc, char **argv, MainFunc mainFunc)
 
 private void formatThrowable(Throwable t, scope void delegate(in char[] s) nothrow sink)
 {
-    for (; t; t = t.next)
+    foreach (u; t)
     {
-        t.toString(sink); sink("\n");
+        u.toString(sink); sink("\n");
 
-        auto e = cast(Error)t;
+        auto e = cast(Error)u;
         if (e is null || e.bypassedException is null) continue;
 
         sink("=== Bypassed ===\n");
-        for (auto t2 = e.bypassedException; t2; t2 = t2.next)
+        foreach (t2; e.bypassedException)
         {
             t2.toString(sink); sink("\n");
         }
         sink("=== ~Bypassed ===\n");
     }
+}
+
+private auto parseExceptionOptions()
+{
+    import rt.config : rt_configOption;
+    import core.internal.parseoptions : rt_parseOption;
+    const optName = "trapExceptions";
+    auto option = rt_configOption(optName);
+    auto trap = rt_trapExceptions;
+    if (option.length)
+        rt_parseOption(optName, option, trap, "");
+    return trap;
 }
 
 extern (C) void _d_print_throwable(Throwable t)
@@ -468,17 +575,17 @@ extern (C) void _d_print_throwable(Throwable t)
     {
         static struct WSink
         {
-            wchar_t* ptr; size_t len;
+            WCHAR* ptr; size_t len;
 
-            void sink(in char[] s) scope nothrow
+            void sink(const scope char[] s) scope nothrow
             {
                 if (!s.length) return;
                 int swlen = MultiByteToWideChar(
                         CP_UTF8, 0, s.ptr, cast(int)s.length, null, 0);
                 if (!swlen) return;
 
-                auto newPtr = cast(wchar_t*)realloc(ptr,
-                        (this.len + swlen + 1) * wchar_t.sizeof);
+                auto newPtr = cast(WCHAR*)realloc(ptr,
+                        (this.len + swlen + 1) * WCHAR.sizeof);
                 if (!newPtr) return;
                 ptr = newPtr;
                 auto written = MultiByteToWideChar(
@@ -486,7 +593,7 @@ extern (C) void _d_print_throwable(Throwable t)
                 len += written;
             }
 
-            wchar_t* get() { if (ptr) ptr[len] = 0; return ptr; }
+            typeof(ptr) get() { if (ptr) ptr[len] = 0; return ptr; }
 
             void free() { .free(ptr); }
         }
@@ -515,7 +622,7 @@ extern (C) void _d_print_throwable(Throwable t)
             {
                 WSink caption;
                 if (t)
-                    caption.sink(t.classinfo.name);
+                    caption.sink(typeid(t).name);
 
                 // Avoid static user32.dll dependency for console applications
                 // by loading it dynamically as needed
@@ -560,7 +667,7 @@ extern (C) void _d_print_throwable(Throwable t)
 
     void sink(in char[] buf) scope nothrow
     {
-        fprintf(stderr, "%.*s", cast(int)buf.length, buf.ptr);
+        fwrite(buf.ptr, char.sizeof, buf.length, stderr);
     }
     formatThrowable(t, &sink);
 }

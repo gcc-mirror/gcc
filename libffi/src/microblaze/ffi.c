@@ -35,7 +35,7 @@ extern void ffi_closure_SYSV(void);
 
 #define WORD_SIZE			sizeof(unsigned int)
 #define ARGS_REGISTER_SIZE	(WORD_SIZE * 6)
-#define WORD_ALIGN(x)		ALIGN(x, WORD_SIZE)
+#define WORD_FFI_ALIGN(x)		FFI_ALIGN(x, WORD_SIZE)
 
 /* ffi_prep_args is called by the assembly routine once stack space
    has been allocated for the function's arguments */
@@ -46,11 +46,11 @@ void ffi_prep_args(void* stack, extended_cif* ecif)
 	void** p_argv;
 	void* stack_args_p = stack;
 
-	p_argv = ecif->avalue;
-
 	if (ecif == NULL || ecif->cif == NULL) {
 		return; /* no description to prepare */
 	}
+
+	p_argv = ecif->avalue;
 
 	if ((ecif->cif->rtype != NULL) &&
 			(ecif->cif->rtype->type == FFI_TYPE_STRUCT))
@@ -74,7 +74,7 @@ void ffi_prep_args(void* stack, extended_cif* ecif)
 		int type = (*p_arg)->type;
 		void* value = p_argv[i];
 		char* addr = stack_args_p;
-		int aligned_size = WORD_ALIGN(size);
+		int aligned_size = WORD_FFI_ALIGN(size);
 
 		/* force word alignment on the stack */
 		stack_args_p += aligned_size;
@@ -259,7 +259,7 @@ void ffi_closure_call_SYSV(void* register_args, void* stack_args,
 				avalue[i] = ptr;
 				break;
 		}
-		ptr += WORD_ALIGN(arg_types[i]->size);
+		ptr += WORD_FFI_ALIGN(arg_types[i]->size);
 	}
 
 	/* set the return type info passed back to the wrapper */

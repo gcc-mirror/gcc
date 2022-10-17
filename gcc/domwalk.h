@@ -1,5 +1,5 @@
 /* Generic dominator tree walker
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -62,8 +62,9 @@ public:
 
   /* You can provide a mapping of basic-block index to RPO if you
      have that readily available or you do multiple walks.  If you
-     specify NULL as BB_INDEX_TO_RPO dominator children will not be
-     walked in RPO order.  */
+     specify NULL as BB_INDEX_TO_RPO this mapping will be computed
+     lazily at walk time.  If you specify -1 dominator children will
+     not be walked in RPO order.  */
   dom_walker (cdi_direction direction, enum reachability = ALL_BLOCKS,
 	      int *bb_index_to_rpo = NULL);
 

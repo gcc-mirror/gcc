@@ -1,5 +1,5 @@
 /* Single-image implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -478,12 +478,11 @@ convert_type (void *dst, int dst_type, int dst_kind, void *src, int src_type,
   typedef long double real128t;
   typedef _Complex long double complex128t;
 #elif defined(HAVE_GFC_REAL_16)
-  typedef _Complex float __attribute__((mode(TC))) __complex128;
-  typedef __float128 real128t;
-  typedef __complex128 complex128t;
+  typedef _Float128 real128t;
+  typedef _Complex _Float128 complex128t;
 #elif defined(HAVE_GFC_REAL_10)
   typedef long double real128t;
-  typedef long double complex128t;
+  typedef _Complex long double complex128t;
 #else
   typedef double real128t;
   typedef _Complex double complex128t;

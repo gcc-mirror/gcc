@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 #   Written by Ian Lance Taylor <iant@google.com>.
 
 # This program is free software; you can redistribute it and/or modify
@@ -231,6 +231,9 @@ proc go-set-goarch { } {
 	}
 	"riscv64-*-*" {
 	    set goarch "riscv64"
+	}
+	"loongarch64-*-*" {
+	    set goarch "loongarch64"
 	}
 	"s390*-*-*" {
 	    if [check_effective_target_ilp32] {

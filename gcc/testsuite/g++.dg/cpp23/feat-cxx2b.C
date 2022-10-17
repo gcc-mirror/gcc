@@ -134,8 +134,8 @@
 
 #ifndef __cpp_constexpr
 #  error "__cpp_constexpr"
-#elif __cpp_constexpr != 201907
-#  error "__cpp_constexpr != 201907"
+#elif __cpp_constexpr != 202110
+#  error "__cpp_constexpr != 202110"
 #endif
 
 #ifndef __cpp_decltype_auto
@@ -422,7 +422,7 @@
 #  error "__cpp_nontype_template_parameter_auto != 201606"
 #endif
 
-// C++20 features
+// C++20 features:
 
 #ifndef __cpp_conditional_explicit
 #  error "__cpp_conditional_explicit"
@@ -459,6 +459,44 @@
 #elif __cpp_aggregate_paren_init != 201902
 #  error "__cpp_aggregate_paren_init != 201902"
 #endif
+
+#ifndef __cpp_char8_t
+#  error "__cpp_char8_t"
+#elif __cpp_char8_t != 202207
+#  error "__cpp_char8_t != 202207"
+#endif
+
+#ifndef __cpp_designated_initializers
+#  error "__cpp_designated_initializers"
+#elif __cpp_designated_initializers != 201707
+#  error "__cpp_designated_initializers != 201707"
+#endif
+
+#ifndef __cpp_constexpr_in_decltype
+#  error "__cpp_constexpr_in_decltype"
+#elif __cpp_constexpr_in_decltype != 201711
+#  error "__cpp_constexpr_in_decltype != 201711"
+#endif
+
+#ifndef __cpp_consteval
+#  error "__cpp_consteval"
+#elif __cpp_consteval != 201811
+#  error "__cpp_consteval != 201811"
+#endif
+
+#ifndef __cpp_concepts
+#  error "__cpp_concepts"
+#elif __cpp_concepts != 202002
+#  error "__cpp_concepts != 202002"
+#endif
+
+#ifndef __cpp_using_enum
+#  error "__cpp_using_enum"
+#elif __cpp_using_enum != 201907
+#  error "__cpp_using_enum != 201907"
+#endif
+
+// C++20 attributes:
 
 #ifdef __has_cpp_attribute
 
@@ -502,42 +540,6 @@
 #  error "__has_cpp_attribute"
 #endif
 
-#ifndef __cpp_char8_t
-#  error "__cpp_char8_t"
-#elif __cpp_char8_t != 201811
-#  error "__cpp_char8_t != 201811"
-#endif
-
-#ifndef __cpp_designated_initializers
-#  error "__cpp_designated_initializers"
-#elif __cpp_designated_initializers != 201707
-#  error "__cpp_designated_initializers != 201707"
-#endif
-
-#ifndef __cpp_constexpr_in_decltype
-#  error "__cpp_constexpr_in_decltype"
-#elif __cpp_constexpr_in_decltype != 201711
-#  error "__cpp_constexpr_in_decltype != 201711"
-#endif
-
-#ifndef __cpp_consteval
-#  error "__cpp_consteval"
-#elif __cpp_consteval != 201811
-#  error "__cpp_consteval != 201811"
-#endif
-
-#ifndef __cpp_concepts
-#  error "__cpp_concepts"
-#elif __cpp_concepts != 201907
-#  error "__cpp_concepts != 201907"
-#endif
-
-#ifndef __cpp_using_enum
-#  error "__cpp_using_enum"
-#elif __cpp_using_enum != 201907
-#  error "__cpp_using_enum != 201907"
-#endif
-
 // C++23 features:
 
 #ifndef __cpp_size_t_suffix
@@ -550,4 +552,40 @@
 #  error "__cpp_if_consteval"
 #elif __cpp_if_consteval != 202106
 #  error "__cpp_if_consteval != 202106"
+#endif
+
+#ifndef __cpp_multidimensional_subscript
+#  error "__cpp_multidimensional_subscript"
+#elif __cpp_multidimensional_subscript != 202110
+#  error "__cpp_multidimensional_subscript != 202110"
+#endif
+
+#ifndef __cpp_named_character_escapes
+#  error "__cpp_named_character_escapes"
+#elif __cpp_named_character_escapes != 202207
+#  error "__cpp_named_character_escapes != 202207"
+#endif
+
+#ifndef __cpp_static_call_operator
+#  error "__cpp_static_call_operator"
+#elif __cpp_static_call_operator != 202207
+#  error "__cpp_static_call_operator != 202207"
+#endif
+
+#ifndef __cpp_implicit_move
+#  error "__cpp_implicit_move"
+#elif __cpp_implicit_move != 202207
+#  error "__cpp_implicit_move != 202207"
+#endif
+
+//  C++23 attributes:
+
+#ifdef __has_cpp_attribute
+#  if ! __has_cpp_attribute(assume)
+#    error "__has_cpp_attribute(assume)"
+#  elif __has_cpp_attribute(assume) != 202207
+#    error "__has_cpp_attribute(assume) != 202207"
+#  endif
+#else
+#  error "__has_cpp_attribute"
 #endif

@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libcpp.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2004-2021 Free Software Foundation, Inc.
+# Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 #This file is part of libcpp.
 
@@ -89,14 +89,14 @@ libcpp_a_OBJS = charset.o directives.o errors.o \
 	expr.o files.o identifiers.o init.o lex.o line-map.o macro.o \
 	mkdeps.o pch.o symtab.o traditional.o
 
-libcpp_a_SOURCES = charset.c directives.c errors.c \
-	expr.c files.c identifiers.c init.c lex.c line-map.c macro.c \
-	mkdeps.c pch.c symtab.c traditional.c
+libcpp_a_SOURCES = charset.cc directives.cc errors.cc \
+	expr.cc files.cc identifiers.cc init.cc lex.cc line-map.cc macro.cc \
+	mkdeps.cc pch.cc symtab.cc traditional.cc
 
 all: libcpp.a $(USED_CATALOGS)
 
 .SUFFIXES:
-.SUFFIXES: .c .gmo .o .obj .po .pox
+.SUFFIXES: .cc .gmo .o .obj .po .pox
 
 libcpp.a: $(libcpp_a_OBJS)
 	-rm -f libcpp.a
@@ -195,6 +195,7 @@ html:
 info:
 install-info:
 install-pdf:
+install-dvi:
 install-man:
 install-html:
 
@@ -202,7 +203,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 
 .PHONY: installdirs install install-strip mostlyclean clean distclean \
   maintainer-clean check installcheck dvi pdf html info install-info \
-  install-man update-po install-html
+  install-man update-po install-html install-pdf install-dvi
 
 # Dependency rule.
 COMPILE.base = $(COMPILER) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(COMPILER_FLAGS) -c
@@ -222,7 +223,7 @@ endif
 
 # Implicit rules and I18N
 
-.c.o:
+.cc.o:
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
@@ -251,10 +252,13 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	  --keyword=cpp_warning:3 \
 	  --keyword=cpp_pedwarning:3 \
 	  --keyword=cpp_warning_syshdr:3 \
+	  --keyword=cpp_warning_at:4 \
+	  --keyword=cpp_pedwarning_at:4 \
 	  --keyword=cpp_error_with_line:5 \
 	  --keyword=cpp_warning_with_line:5 \
 	  --keyword=cpp_pedwarning_with_line:5 \
 	  --keyword=cpp_warning_with_line_syshdr:5 \
+	  --keyword=cpp_error_at:4 \
 	  --keyword=cpp_errno:3 \
 	  --keyword=SYNTAX_ERROR --keyword=SYNTAX_ERROR2 \
 	  --copyright-holder="Free Software Foundation, Inc." \
@@ -263,11 +267,13 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	sed 's:$(srcdir)/::g' <po/$(PACKAGE).pot.tmp >po/$(PACKAGE).pot
 	rm po/$(PACKAGE).pot.tmp
 
+ETAGS = @ETAGS@
+
 TAGS_SOURCES = $(libcpp_a_SOURCES) internal.h system.h ucnid.h \
     include/cpplib.h include/line-map.h include/mkdeps.h include/symtab.h
 
 TAGS: $(TAGS_SOURCES)
-	cd $(srcdir) && etags $(TAGS_SOURCES)
+	cd $(srcdir) && $(ETAGS) $(TAGS_SOURCES)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

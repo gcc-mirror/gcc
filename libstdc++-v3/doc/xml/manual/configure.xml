@@ -118,12 +118,10 @@
 
  <varlistentry><term><code>--enable-libstdcxx-allocator=OPTION  </code></term>
  <listitem><para>Select a target-specific underlying std::allocator.  The
-	choices are 'new' to specify a wrapper for new, 'malloc' to
-	specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
-	'pool' for the SGI pooled allocator or 'bitmap' for a bitmap allocator.
-	See this page for more information on allocator
-	<link linkend="allocator.ext">extensions</link>. This option
-	can change the library ABI.
+	choices are 'new' to specify a wrapper for new, and 'malloc' to
+	specify a wrapper for malloc.
+	See <xref linkend="allocator.ext"/> for more information.
+	This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 
@@ -368,6 +366,11 @@
      </para>
  </listitem></varlistentry>
 
+ <varlistentry><term><code>--disable-libstdcxx-hosted</code></term>
+ <listitem>
+   <para>This is an alias for <code>--disable-hosted-libstdcxx</code>.</para>
+ </listitem></varlistentry>
+
 <varlistentry><term><code>--disable-libstdcxx-verbose</code></term>
  <listitem>
    <para>
@@ -445,6 +448,24 @@
       as the usual libstdc++ and libsupc++ libraries. This is enabled by
       default on select POSIX targets where it is known to work and disabled
       otherwise.
+    </para>
+ </listitem></varlistentry>
+
+ <varlistentry><term><code>--enable-libstdcxx-static-eh-pool</code></term>
+ <listitem>
+    <para>Use a fixed-size static buffer for the emergency exception handling
+      pool (see <xref linkend="intro.using.exception.alloc"/>). The default
+      is to allocate the pool on program startup using <code>malloc</code>.
+      With this option, a static buffer will be provided by libstdc++ instead.
+      This does not change the library ABI.
+    </para>
+ </listitem></varlistentry>
+
+ <varlistentry><term><code>--with-libstdcxx-eh-pool-obj-count=NUM</code></term>
+ <listitem>
+    <para>Set the size of the emergency exception handling pool. NUM is the
+      number of simultaneous allocated exceptions to support.
+      This does not change the library ABI.
     </para>
  </listitem></varlistentry>
 

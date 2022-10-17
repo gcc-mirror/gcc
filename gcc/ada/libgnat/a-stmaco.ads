@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -64,37 +64,37 @@ private
    package L renames Ada.Characters.Latin_1;
 
    Control_Set               : constant Character_Set :=
-     (L.NUL                  ..  L.US                  => True,
+     [L.NUL                  ..  L.US                  => True,
       L.DEL                  ..  L.APC                 => True,
-      others                                           => False);
+      others                                           => False];
 
    Graphic_Set               : constant Character_Set :=
-     (L.Space                ..  L.Tilde               => True,
+     [L.Space                ..  L.Tilde               => True,
       L.No_Break_Space       ..  L.LC_Y_Diaeresis      => True,
-      others                                           => False);
+      others                                           => False];
 
    Letter_Set                : constant Character_Set :=
-     ('A'                    .. 'Z'                    => True,
+     ['A'                    .. 'Z'                    => True,
       L.LC_A                 ..  L.LC_Z                => True,
       L.UC_A_Grave           ..  L.UC_O_Diaeresis      => True,
       L.UC_O_Oblique_Stroke  ..  L.LC_O_Diaeresis      => True,
       L.LC_O_Oblique_Stroke  ..  L.LC_Y_Diaeresis      => True,
-      others                                           => False);
+      others                                           => False];
 
    Lower_Set                 : constant Character_Set :=
-     (L.LC_A                 ..  L.LC_Z                => True,
+     [L.LC_A                 ..  L.LC_Z                => True,
       L.LC_German_Sharp_S    ..  L.LC_O_Diaeresis      => True,
       L.LC_O_Oblique_Stroke  ..  L.LC_Y_Diaeresis      => True,
-      others                                           => False);
+      others                                           => False];
 
    Upper_Set                 : constant Character_Set :=
-     ('A'                    ..  'Z'                   => True,
+     ['A'                    ..  'Z'                   => True,
       L.UC_A_Grave           ..  L.UC_O_Diaeresis      => True,
       L.UC_O_Oblique_Stroke  ..  L.UC_Icelandic_Thorn  => True,
-      others                                           => False);
+      others                                           => False];
 
    Basic_Set                 : constant Character_Set :=
-     ('A'                    .. 'Z'                    => True,
+     ['A'                    .. 'Z'                    => True,
       L.LC_A                 ..  L.LC_Z                => True,
       L.UC_AE_Diphthong      ..  L.UC_AE_Diphthong     => True,
       L.LC_AE_Diphthong      ..  L.LC_AE_Diphthong     => True,
@@ -103,40 +103,40 @@ private
       L.LC_Icelandic_Thorn   ..  L.LC_Icelandic_Thorn  => True,
       L.UC_Icelandic_Eth     ..  L.UC_Icelandic_Eth    => True,
       L.LC_Icelandic_Eth     ..  L.LC_Icelandic_Eth    => True,
-      others                                           => False);
+      others                                           => False];
 
    Decimal_Digit_Set         : constant Character_Set :=
-     ('0'                    ..  '9'                   => True,
-      others                                           => False);
+     ['0'                    ..  '9'                   => True,
+      others                                           => False];
 
    Hexadecimal_Digit_Set     : constant Character_Set :=
-     ('0'                    ..  '9'                   => True,
+     ['0'                    ..  '9'                   => True,
       'A'                    ..  'F'                   => True,
       L.LC_A                 ..  L.LC_F                => True,
-      others                                           => False);
+      others                                           => False];
 
    Alphanumeric_Set          : constant Character_Set :=
-     ('0'                    ..  '9'                   => True,
+     ['0'                    ..  '9'                   => True,
       'A'                    ..  'Z'                   => True,
       L.LC_A                 ..  L.LC_Z                => True,
       L.UC_A_Grave           ..  L.UC_O_Diaeresis      => True,
       L.UC_O_Oblique_Stroke  ..  L.LC_O_Diaeresis      => True,
       L.LC_O_Oblique_Stroke  ..  L.LC_Y_Diaeresis      => True,
-      others                                           => False);
+      others                                           => False];
 
    Special_Set               : constant Character_Set :=
-     (L.Space                ..  L.Solidus             => True,
+     [L.Space                ..  L.Solidus             => True,
       L.Colon                ..  L.Commercial_At       => True,
       L.Left_Square_Bracket  ..  L.Grave               => True,
       L.Left_Curly_Bracket   ..  L.Tilde               => True,
       L.No_Break_Space       ..  L.Inverted_Question   => True,
       L.Multiplication_Sign  ..  L.Multiplication_Sign => True,
       L.Division_Sign        ..  L.Division_Sign       => True,
-      others                                           => False);
+      others                                           => False];
 
    ISO_646_Set               : constant Character_Set :=
-     (L.NUL                  ..  L.DEL                 => True,
-      others                                           => False);
+     [L.NUL                  ..  L.DEL                 => True,
+      others                                           => False];
 
    Lower_Case_Map : constant Character_Mapping :=
      (L.NUL                         &  -- NUL                             0

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail150.d(22): Error: e.new is only for allocating nested classes
+fail_compilation/fail150.d(22): Error: `.new` is only for allocating nested classes
 ---
 */
 

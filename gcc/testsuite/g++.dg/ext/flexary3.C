@@ -16,7 +16,7 @@ struct s {
 
 int main()
 {
-    struct s s = { .c = 0 };	// { dg-error "initializer" }
+    struct s s = { .c = 0 };
     // { dg-error "non-static initialization of a flexible array member" "" { target *-*-* } .-1 }
     return 0;
 }

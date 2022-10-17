@@ -1,6 +1,6 @@
 // 1999-06-08 bkoz
 
-// Copyright (C) 1999-2021 Free Software Foundation, Inc.
+// Copyright (C) 1999-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,7 +53,7 @@ void test01(void)
   cref cref3 = str01.at(csz01 - 1);
   VERIFY( cref3 == L'a' );
   try {
-    str01.at(csz01);
+    (void) str01.at(csz01);
     VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {
@@ -68,7 +68,7 @@ void test01(void)
   ref ref3 = str02.at(csz02 - 1);
   VERIFY( ref3 == L'a' );
   try {
-    str02.at(csz02);
+    (void) str02.at(csz02);
     VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {

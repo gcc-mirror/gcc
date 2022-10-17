@@ -1,11 +1,7 @@
-// RUNNABLE_PHOBOS_TEST
 module test;
 
+import core.stdc.stdio;
 import core.vararg;
-import std.stdio;
-import std.string;
-
-extern(C) int printf(const char*, ...);
 
 /*******************************************/
 
@@ -117,37 +113,20 @@ void test8()
 {
    int[] test;
    test.length = 10;
-   // Show address of array start and its length (10)
-   writefln("%s %s", cast(uint)test.ptr, test.length);
+   assert(test.length == 10);
+   assert(test.ptr != null);
 
    test.length = 1;
-   // Show address of array start and its length (1)
-   writefln("%s %s", cast(uint)test.ptr, test.length);
+   assert(test.length == 1);
+   assert(test.ptr != null);
 
    test.length = 8;
-   // Show address of array start and its length (8)
-   writefln("%s %s", cast(uint)test.ptr, test.length);
+   assert(test.length == 8);
+   assert(test.ptr != null);
 
    test.length = 0;
-   // Shows 0 and 0!
-   writefln("%s %s", cast(uint)test.ptr, test.length);
    assert(test.length == 0);
    assert(test.ptr != null);
-}
-
-/*******************************************/
-
-cdouble y9;
-
-cdouble f9(cdouble x)
-{
-    return (y9 = x);
-}
-
-void test9()
-{
-    f9(1.0+2.0i);
-    assert(y9 == 1.0+2.0i);
 }
 
 /*******************************************/
@@ -227,10 +206,10 @@ void test14()
 
 void func15(...)
 in {
-    writefln("Arguments len = %d\n", _arguments.length);
+    printf("Arguments len = %d\n", cast(int)_arguments.length);
     assert(_arguments.length == 2);
 }
-body {
+do {
 
 }
 
@@ -402,11 +381,9 @@ void test22()
 void test23()
 {
     auto t=['a','b','c','d'];
-    writeln(typeid(typeof(t)));
     assert(is(typeof(t) == char[]));
 
     const t2=['a','b','c','d','e'];
-    writeln(typeid(typeof(t2)));
     assert(is(typeof(t2) == const(const(char)[])));
 }
 
@@ -420,16 +397,6 @@ int foo24(int i ...)
 void test24()
 {
     assert(foo24(3) == 3);
-}
-
-/*******************************************/
-
-void test25()
-{
-    ireal x = 4.0Li;
-    ireal y = 4.0Li;
-    ireal z = 4Li;
-    creal c = 4L + 0Li;
 }
 
 /*******************************************/
@@ -688,7 +655,6 @@ template a34(string name, T...)
         string localchar;
         foreach (a34; T)
         {
-            writefln(`hello`);
             localchar ~= a34.mangleof;
         }
         return localchar;
@@ -697,7 +663,7 @@ template a34(string name, T...)
 
 void test34()
 {
-    writeln(a34!("Adf"[], typeof("adf"),uint)("Adf"[],"adf",1234));
+    assert(a34!("Adf"[], typeof("adf"),uint)("Adf"[],"adf",1234) == "Ayak");
 }
 
 /*******************************************/
@@ -722,7 +688,6 @@ template a36(AnotherT,string name,T...){
         AnotherT localchar;
         foreach(a;T)
         {
-            writefln(`hello`);
             localchar~=a.mangleof;
         }
         return cast(AnotherT)localchar;
@@ -734,7 +699,7 @@ void test36()
     string b="adf";
     uint i=123;
     char[3] c="Adf";
-    writeln(a36!(typeof(b),"Adf")());
+    assert(a36!(typeof(b),"Adf")() == "");
 }
 
 /*******************************************/
@@ -780,8 +745,7 @@ void test39()
 {
     void print(string[] strs)
     {
-        writeln(strs);
-        assert(format("%s", strs) == `["Matt", "Andrew"]`);
+        assert(strs == ["Matt", "Andrew"]);
     }
 
     print(["Matt", "Andrew"]);
@@ -803,7 +767,7 @@ void test40()
 
     with (c.propName)
     {
-        writeln(toString());
+        assert(toString() == "test.test40.C");
     }
 
     auto foo = c.propName;
@@ -829,7 +793,7 @@ void test41()
     assert(x3 == 1);
 
     //test [0 .. 2] = 'b'; // this line should assert
-    writef ("%s\n", test.ptr [0 .. 2]);
+    assert(test.ptr[0 .. 2] == "ba");
 }
 
 /*******************************************/
@@ -846,6 +810,12 @@ void test42()
 
 /*******************************************/
 
+void vararg43(string fmt, ...)
+{
+    assert(_arguments[0] is typeid(const string));
+    assert(va_arg!(const string)(_argptr) == "hello");
+}
+
 struct A43
 {
     static const MY_CONST_STRING = "hello";
@@ -854,7 +824,7 @@ struct A43
     {
         // This will either print garbage or throw a UTF exception.
         // But if never_called() is commented out, then it will work.
-        writefln("%s", MY_CONST_STRING);
+        vararg43("%s", MY_CONST_STRING);
     }
 }
 
@@ -862,7 +832,7 @@ void never_called43()
 {
     // This can be anything; there just needs to be a reference to
     // A43.MY_CONST_STRING somewhere.
-    writefln("%s", A43.MY_CONST_STRING);
+    vararg43("%s", A43.MY_CONST_STRING);
 }
 
 void test43()
@@ -873,6 +843,12 @@ void test43()
 
 /*******************************************/
 
+void vararg44(string fmt, ...)
+{
+    assert(_arguments[0] is typeid(const string));
+    assert(va_arg!(const string)(_argptr) == "hello");
+}
+
 class A44
 {
     static const MY_CONST_STRING = "hello";
@@ -881,7 +857,7 @@ class A44
     {
         // This will either print garbage or throw a UTF exception.
         // But if never_called() is commented out, then it will work.
-        writefln("%s", MY_CONST_STRING);
+        vararg44("%s", MY_CONST_STRING);
     }
 }
 
@@ -889,7 +865,7 @@ void never_called44()
 {
     // This can be anything; there just needs to be a reference to
     // A44.MY_CONST_STRING somewhere.
-    writefln("%s", A44.MY_CONST_STRING);
+    vararg44("%s", A44.MY_CONST_STRING);
 }
 
 void test44()
@@ -941,9 +917,9 @@ void test47()
 void test48()
 {
     Object o = new Object();
-    printf("%.*s\n", typeof(o).classinfo.name.length, typeof(o).classinfo.name.ptr);
-    printf("%.*s\n", (typeof(o)).classinfo.name.length, (typeof(o)).classinfo.name.ptr);
-    printf("%.*s\n", (Object).classinfo.name.length, (Object).classinfo.name.ptr);
+    printf("%.*s\n", cast(int)typeof(o).classinfo.name.length, typeof(o).classinfo.name.ptr);
+    printf("%.*s\n", cast(int)(typeof(o)).classinfo.name.length, (typeof(o)).classinfo.name.ptr);
+    printf("%.*s\n", cast(int)(Object).classinfo.name.length, (Object).classinfo.name.ptr);
 }
 
 /*******************************************/
@@ -1076,13 +1052,11 @@ void test58()
     static S a = {i: 1};
     static S b;
 
-    writefln("a.bar: %s, %s", a.bar, a.abc);
     assert(a.i == 1);
     assert(a.bar[0] == 4);
     assert(a.bar[1] == 4);
     assert(a.bar[2] == 4);
     assert(a.bar[3] == 4);
-    writefln("b.bar: %s, %s", b.bar, b.abc);
     assert(b.i == 0);
     assert(b.bar[0] == 4);
     assert(b.bar[1] == 4);
@@ -1093,10 +1067,18 @@ void test58()
 
 /*******************************************/
 
+void vararg59(...)
+{
+    if (_arguments[0] is typeid(size_t))
+        assert(va_arg!size_t(_argptr) == 454);
+    else
+        assert(va_arg!string(_argptr) == "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234");
+}
+
 void bug59(string s)()
 {
-  writeln(s);
-  writeln(s.length);
+  vararg59(s);
+  vararg59(s.length);
 }
 
 void test59()
@@ -1139,7 +1121,6 @@ void test62()
     Vector62 a;
     a.set(1,2,24);
     a = a * 2;
-    writeln(a.x, a.y, a.z);
     assert(a.x == 2);
     assert(a.y == 4);
     assert(a.z == 48);
@@ -1158,7 +1139,7 @@ struct Vector62
       z = _z;
     }
 
-    Vector62 opMul(float s)
+    Vector62 opBinary(string op : "*")(float s)
     {
       Vector62 ret;
       ret.x = x*s;
@@ -1191,8 +1172,6 @@ void test63()
 {
     Data63 d; d.x = 1; d.y = 2;
     d = frob(d);
-    writeln(d.x);
-    writeln(d.y);
     assert(d.x == 3 && d.y == -1);
 }
 
@@ -1200,8 +1179,8 @@ void test63()
 
 class Foo64
 {
-    this() { writefln("Foo64 created"); }
-    ~this() { writefln("Foo64 destroyed"); }
+    this() { }
+    ~this() { }
 }
 
 template Mix64()
@@ -1249,6 +1228,49 @@ void test65()
 
 
 /*******************************************/
+// https://issues.dlang.org/show_bug.cgi?id=18576
+
+void delegate() callback;
+
+struct S66 {
+    int x;
+    @disable this(this);
+
+    this(int x) {
+        this.x = x;
+        callback = &inc;
+    }
+    void inc() {
+        x++;
+    }
+}
+
+auto f66()
+{
+    return g66();   // RVO should be done
+}
+
+auto g66()
+{
+    return h66();   // RVO should be done
+}
+
+auto h66()
+{
+    return S66(100);
+}
+
+void test18576()
+{
+    auto s = f66();
+    printf("%p vs %p\n", &s, callback.ptr);
+    callback();
+    printf("s.x = %d\n", s.x);
+    assert(s.x == 101);
+    assert(&s == callback.ptr);
+}
+
+/*******************************************/
 
 void main()
 {
@@ -1261,7 +1283,6 @@ void main()
     test6();
     test7();
     test8();
-    test9();
     test10();
     test11();
     test12();
@@ -1276,7 +1297,6 @@ void main()
     test22();
     test23();
     test24();
-    test25();
     test26();
     test27();
     test28();
@@ -1315,7 +1335,7 @@ void main()
     test63();
     test64();
     test65();
+    test18576();
 
     printf("Success\n");
 }
-

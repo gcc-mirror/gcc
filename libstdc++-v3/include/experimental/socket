@@ -1,6 +1,6 @@
 // <experimental/socket> -*- C++ -*-
 
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,8 @@
 #define _GLIBCXX_EXPERIMENTAL_SOCKET
 
 #pragma GCC system_header
+
+#include <bits/requires_hosted.h> // experimental is currently omitted
 
 #if __cplusplus >= 201402L
 
@@ -293,11 +295,14 @@ inline namespace v1
       static const int _S_level = SOL_SOCKET;
       static const int _S_name = SO_SNDLOWAT;
     };
+#endif // HAVE_SYS_SOCKET_H
 
     enum shutdown_type : int { };
+#if defined SHUT_RD && defined SHUT_WR && defined SHUT_RDWR
     static constexpr shutdown_type shutdown_receive = (shutdown_type)SHUT_RD;
     static constexpr shutdown_type shutdown_send    = (shutdown_type)SHUT_WR;
     static constexpr shutdown_type shutdown_both    = (shutdown_type)SHUT_RDWR;
+#endif
 
     enum wait_type : int { };
 #ifdef _GLIBCXX_HAVE_POLL_H
@@ -311,14 +316,20 @@ inline namespace v1
 #endif
 
     enum message_flags : int { };
+#if defined MSG_PEEK && defined MSG_OOB && defined MSG_DONTROUTE
     static constexpr message_flags message_peek
       = (message_flags)MSG_PEEK;
     static constexpr message_flags message_out_of_band
       = (message_flags)MSG_OOB;
     static constexpr message_flags message_do_not_route
       = (message_flags)MSG_DONTROUTE;
+#endif
 
-    static const int max_listen_connections = SOMAXCONN;
+#ifdef SOMAXCONN
+    static constexpr int max_listen_connections = SOMAXCONN;
+#else
+    static constexpr int max_listen_connections = 4;
+#endif
 
     // message_flags bitmask operations are defined as hidden friends.
 
@@ -350,6 +361,7 @@ inline namespace v1
     operator^=(message_flags& __f1, message_flags __f2) noexcept
     { return __f1 = (__f1 ^ __f2); }
 
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
   protected:
     struct __msg_hdr : ::msghdr
     {
@@ -429,16 +441,16 @@ inline namespace v1
 
     __socket_impl(__socket_impl&& __rhs)
     : _M_ctx(__rhs._M_ctx),
-      _M_sockfd(std::exchange(__rhs._M_sockfd, -1)),
-      _M_bits(std::exchange(__rhs._M_bits, {}))
+      _M_sockfd(std::__exchange(__rhs._M_sockfd, -1)),
+      _M_bits(std::__exchange(__rhs._M_bits, {}))
     { }
 
     __socket_impl&
     operator=(__socket_impl&& __rhs)
     {
       _M_ctx = __rhs._M_ctx;
-      _M_sockfd = std::exchange(__rhs._M_sockfd, -1);
-      _M_bits = std::exchange(__rhs._M_bits, {});
+      _M_sockfd = std::__exchange(__rhs._M_sockfd, -1);
+      _M_bits = std::__exchange(__rhs._M_bits, {});
       return *this;
     }
 
@@ -483,7 +495,7 @@ inline namespace v1
     void
     native_non_blocking(bool __mode, error_code& __ec)
     {
-#ifdef _GLIBCXX_HAVE_FCNTL_H
+#if defined _GLIBCXX_HAVE_FCNTL_H && defined _GLIBCXX_HAVE_DECL_O_NONBLOCK
       int __flags = ::fcntl(_M_sockfd, F_GETFL, 0);
       if (__flags >= 0)
 	{
@@ -508,7 +520,7 @@ inline namespace v1
     bool
     native_non_blocking() const
     {
-#ifdef _GLIBCXX_HAVE_FCNTL_H
+#if defined _GLIBCXX_HAVE_FCNTL_H && defined _GLIBCXX_HAVE_DECL_O_NONBLOCK
       if (_M_bits.native_non_blocking == -1)
 	{
 	  const int __flags = ::fcntl(_M_sockfd, F_GETFL, 0);
@@ -615,7 +627,7 @@ inline namespace v1
       {
 	__glibcxx_assert(is_open());
 	cancel(__ec);
-	return std::exchange(_M_sockfd, -1);
+	return std::__exchange(_M_sockfd, -1);
       }
 
       template<typename _SettableSocketOption>
@@ -714,7 +726,9 @@ inline namespace v1
 	  {
 	    error_code __ec;
 	    cancel(__ec);
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	    set_option(socket_base::linger{false, chrono::seconds{}}, __ec);
+#endif
 	    ::close(_M_sockfd);
 	  }
       }
@@ -1892,11 +1906,13 @@ inline namespace v1
       { open(__protocol); }
 
       basic_socket_acceptor(io_context& __ctx, const endpoint_type& __endpoint,
-			    bool __reuse_addr = true)
+			    [[__maybe_unused__]] bool __reuse_addr = true)
       : basic_socket_acceptor(__ctx, __endpoint.protocol())
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (__reuse_addr)
 	  set_option(reuse_address(true));
+#endif
 	bind(__endpoint);
 	listen();
       }

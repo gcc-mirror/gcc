@@ -1,5 +1,5 @@
 /* libgcc routines for 68000 w/o floating-point hardware.
-   Copyright (C) 1994-2021 Free Software Foundation, Inc.
+   Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -435,7 +435,10 @@ $_exception_handler:
 	.text
 	FUNC(__mulsi3)
 	.globl	SYM (__mulsi3)
+	.globl	SYM (__mulsi3_internal)
+	.hidden	SYM (__mulsi3_internal)
 SYM (__mulsi3):
+SYM (__mulsi3_internal):
 	movew	sp@(4), d0	/* x0 -> d0 */
 	muluw	sp@(10), d0	/* x0*y1 */
 	movew	sp@(6), d1	/* x1 -> d1 */
@@ -458,7 +461,10 @@ SYM (__mulsi3):
 	.text
 	FUNC(__udivsi3)
 	.globl	SYM (__udivsi3)
+	.globl	SYM (__udivsi3_internal)
+	.hidden	SYM (__udivsi3_internal)
 SYM (__udivsi3):
+SYM (__udivsi3_internal):
 #ifndef __mcoldfire__
 	movel	d2, sp@-
 	movel	sp@(12), d1	/* d1 = divisor */
@@ -534,7 +540,10 @@ L2:	subql	IMM (1),d4
 	.text
 	FUNC(__divsi3)
 	.globl	SYM (__divsi3)
+	.globl	SYM (__divsi3_internal)
+	.hidden	SYM (__divsi3_internal)
 SYM (__divsi3):
+SYM (__divsi3_internal):
 	movel	d2, sp@-
 
 	moveq	IMM (1), d2	/* sign of result stored in d2 (=1 or =-1) */
@@ -557,7 +566,7 @@ L1:	movel	sp@(8), d0	/* d0 = dividend */
 
 L2:	movel	d1, sp@-
 	movel	d0, sp@-
-	PICCALL	SYM (__udivsi3)	/* divide abs(dividend) by abs(divisor) */
+	PICCALL	SYM (__udivsi3_internal)	/* divide abs(dividend) by abs(divisor) */
 	addql	IMM (8), sp
 
 	tstb	d2
@@ -577,13 +586,13 @@ SYM (__umodsi3):
 	movel	sp@(4), d0	/* d0 = dividend */
 	movel	d1, sp@-
 	movel	d0, sp@-
-	PICCALL	SYM (__udivsi3)
+	PICCALL	SYM (__udivsi3_internal)
 	addql	IMM (8), sp
 	movel	sp@(8), d1	/* d1 = divisor */
 #ifndef __mcoldfire__
 	movel	d1, sp@-
 	movel	d0, sp@-
-	PICCALL	SYM (__mulsi3)	/* d0 = (a/b)*b */
+	PICCALL	SYM (__mulsi3_internal)	/* d0 = (a/b)*b */
 	addql	IMM (8), sp
 #else
 	mulsl	d1,d0
@@ -603,13 +612,13 @@ SYM (__modsi3):
 	movel	sp@(4), d0	/* d0 = dividend */
 	movel	d1, sp@-
 	movel	d0, sp@-
-	PICCALL	SYM (__divsi3)
+	PICCALL	SYM (__divsi3_internal)
 	addql	IMM (8), sp
 	movel	sp@(8), d1	/* d1 = divisor */
 #ifndef __mcoldfire__
 	movel	d1, sp@-
 	movel	d0, sp@-
-	PICCALL	SYM (__mulsi3)	/* d0 = (a/b)*b */
+	PICCALL	SYM (__mulsi3_internal)	/* d0 = (a/b)*b */
 	addql	IMM (8), sp
 #else
 	mulsl	d1,d0

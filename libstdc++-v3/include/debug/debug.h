@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,7 +61,7 @@ namespace __gnu_debug
     struct _Safe_iterator;
 }
 
-#ifndef _GLIBCXX_DEBUG
+#if ! defined _GLIBCXX_DEBUG || ! _GLIBCXX_HOSTED
 
 # define __glibcxx_requires_cond(_Cond,_Msg)
 # define __glibcxx_requires_valid_range(_First,_Last)
@@ -118,9 +118,17 @@ namespace __gnu_debug
   __glibcxx_check_heap(_First,_Last)
 # define __glibcxx_requires_heap_pred(_First,_Last,_Pred)	\
   __glibcxx_check_heap_pred(_First,_Last,_Pred)
-# define __glibcxx_requires_string(_String) __glibcxx_check_string(_String)
-# define __glibcxx_requires_string_len(_String,_Len)	\
-  __glibcxx_check_string_len(_String,_Len)
+# if __cplusplus < 201103L
+#  define __glibcxx_requires_string(_String)	\
+  _GLIBCXX_DEBUG_PEDASSERT(_String != 0)
+#  define __glibcxx_requires_string_len(_String,_Len)	\
+  _GLIBCXX_DEBUG_PEDASSERT(_String != 0 || _Len == 0)
+# else
+#  define __glibcxx_requires_string(_String)	\
+  _GLIBCXX_DEBUG_PEDASSERT(_String != nullptr)
+#  define __glibcxx_requires_string_len(_String,_Len)	\
+  _GLIBCXX_DEBUG_PEDASSERT(_String != nullptr || _Len == 0)
+# endif
 # define __glibcxx_requires_irreflexive(_First,_Last)	\
   __glibcxx_check_irreflexive(_First,_Last)
 # define __glibcxx_requires_irreflexive2(_First,_Last)	\

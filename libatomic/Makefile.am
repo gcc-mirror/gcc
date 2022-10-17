@@ -1,4 +1,4 @@
-##  Copyright (C) 2012-2021 Free Software Foundation, Inc.
+##  Copyright (C) 2012-2022 Free Software Foundation, Inc.
 ##  Contributed by Richard Henderson <rth@redhat.com>.
 ##
 ##  This file is part of the GNU Atomic Library (libatomic).
@@ -138,8 +138,9 @@ IFUNC_OPTIONS	     = -march=i586
 libatomic_la_LIBADD += $(addsuffix _8_1_.lo,$(SIZEOBJS))
 endif
 if ARCH_X86_64
-IFUNC_OPTIONS	     = -mcx16
-libatomic_la_LIBADD += $(addsuffix _16_1_.lo,$(SIZEOBJS))
+IFUNC_OPTIONS	     = -mcx16 -mcx16
+libatomic_la_LIBADD += $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
+		       $(addsuffix _16_2_.lo,$(SIZEOBJS))
 endif
 endif
 

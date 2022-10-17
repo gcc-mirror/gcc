@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Snames; use Snames;
 
 with GNAT;                 use GNAT;
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
+with System.String_Hash;
 
 package body ALI is
 
@@ -251,6 +252,7 @@ package body ALI is
       'E' | --  external
       'G' | --  invocation graph
       'I' | --  interrupt
+      'K' | --  CUDA kernels
       'L' | --  linker option
       'M' | --  main program
       'N' | --  notes
@@ -268,7 +270,7 @@ package body ALI is
 
       --  Still available:
 
-      'B' | 'F' | 'H' | 'J' | 'K' | 'O' | 'Q' => False);
+      'B' | 'F' | 'H' | 'J' | 'O' | 'Q' => False);
 
    ------------------------------
    -- Add_Invocation_Construct --
@@ -578,20 +580,18 @@ package body ALI is
    function Hash
      (IS_Rec : Invocation_Signature_Record) return Bucket_Range_Type
    is
+      function String_Hash is new System.String_Hash.Hash
+        (Char_Type => Character,
+         Key_Type  => String,
+         Hash_Type => Bucket_Range_Type);
+
       Buffer : Bounded_String (2052);
-      IS_Nam : Name_Id;
 
    begin
-      --  The hash is obtained in the following manner:
-      --
-      --    * A String signature based on the scope, name, line number, column
-      --      number, and locations, in the following format:
+      --  The hash is obtained from a signature based on the scope, name, line
+      --  number, column number, and locations, in the following format:
       --
       --         scope__name__line_column__locations
-      --
-      --    * The String is converted into a Name_Id
-      --
-      --    * The absolute value of the Name_Id is used as the hash
 
       Append (Buffer, IS_Rec.Scope);
       Append (Buffer, "__");
@@ -606,8 +606,7 @@ package body ALI is
          Append (Buffer, IS_Rec.Locations);
       end if;
 
-      IS_Nam := Name_Find (Buffer);
-      return Bucket_Range_Type (abs IS_Nam);
+      return String_Hash (To_String (Buffer));
    end Hash;
 
    --------------------
@@ -672,7 +671,6 @@ package body ALI is
       SSO_Default_Specified                  := False;
       Task_Dispatching_Policy_Specified      := ' ';
       Unreserve_All_Interrupts_Specified     := False;
-      Frontend_Exceptions_Specified          := False;
       Zero_Cost_Exceptions_Specified         := False;
    end Initialize_ALI;
 
@@ -892,7 +890,6 @@ package body ALI is
    function Scan_ALI
      (F                : File_Name_Type;
       T                : Text_Buffer_Ptr;
-      Ignore_ED        : Boolean;
       Err              : Boolean;
       Ignore_Lines     : String  := "X";
       Ignore_Errors    : Boolean := False;
@@ -964,19 +961,18 @@ package body ALI is
       --  special characters are included in the returned name.
 
       function Get_Name
-        (Ignore_Spaces  : Boolean := False;
-         Ignore_Special : Boolean := False;
+        (Ignore_Special : Boolean := False;
          May_Be_Quoted  : Boolean := False) return Name_Id;
       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
       --  length in Name_Len, as well as being returned in Name_Id form).
       --  If Lower is set to True then the Name_Buffer will be converted to
       --  all lower case, for systems where file names are not case sensitive.
       --  This ensures that gnatbind works correctly regardless of the case
-      --  of the file name on all systems. The termination condition depends
-      --  on the settings of Ignore_Spaces and Ignore_Special:
+      --  of the file name on all systems.
       --
-      --    If Ignore_Spaces is False (normal case), then scan is terminated
-      --    by the normal end of field condition (EOL, space, horizontal tab)
+      --  The scan is terminated by the normal end of field condition
+      --  (EOL, space, horizontal tab). Furthermore, the termination condition
+      --  depends on the setting of Ignore_Special:
       --
       --    If Ignore_Special is False (normal case), the scan is terminated by
       --    a typeref bracket or an equal sign except for the special case of
@@ -987,7 +983,6 @@ package body ALI is
       --    the name is 'unquoted'. In this case Ignore_Special is ignored and
       --    assumed to be True.
       --
-      --  It is an error to set both Ignore_Spaces and Ignore_Special to True.
       --  This function handles wide characters properly.
 
       function Get_Nat return Nat;
@@ -1241,8 +1236,7 @@ package body ALI is
       --------------
 
       function Get_Name
-        (Ignore_Spaces  : Boolean := False;
-         Ignore_Special : Boolean := False;
+        (Ignore_Special : Boolean := False;
          May_Be_Quoted  : Boolean := False) return Name_Id
       is
          Char : Character;
@@ -1299,7 +1293,7 @@ package body ALI is
             loop
                Add_Char_To_Name_Buffer (Getc);
 
-               exit when At_End_Of_Field and then not Ignore_Spaces;
+               exit when At_End_Of_Field;
 
                if not Ignore_Special then
                   if Name_Buffer (1) = '"' then
@@ -1319,8 +1313,7 @@ package body ALI is
                      exit when Nextc = ',';
 
                      --  Terminate if left bracket not part of wide char
-                     --  sequence Note that we only recognize brackets
-                     --  notation so far ???
+                     --  sequence.
 
                      exit when Nextc = '[' and then T (P + 1) /= '"';
 
@@ -1751,12 +1744,14 @@ package body ALI is
       ALIs.Table (Id) := (
         Afile                        => F,
         Compile_Errors               => False,
+        First_CUDA_Kernel            => CUDA_Kernels.Last + 1,
         First_Interrupt_State        => Interrupt_States.Last + 1,
         First_Sdep                   => No_Sdep_Id,
         First_Specific_Dispatching   => Specific_Dispatching.Last + 1,
         First_Unit                   => No_Unit_Id,
         GNATprove_Mode               => False,
         Invocation_Graph_Encoding    => No_Encoding,
+        Last_CUDA_Kernel             => CUDA_Kernels.Last,
         Last_Interrupt_State         => Interrupt_States.Last,
         Last_Sdep                    => No_Sdep_Id,
         Last_Specific_Dispatching    => Specific_Dispatching.Last,
@@ -1781,7 +1776,6 @@ package body ALI is
         Unit_Exception_Table         => False,
         Ver                          => (others => ' '),
         Ver_Len                      => 0,
-        Frontend_Exceptions          => False,
         Zero_Cost_Exceptions         => False);
 
       --  Now we acquire the input lines from the ALI file. Note that the
@@ -1924,6 +1918,24 @@ package body ALI is
          C := Getc;
       end loop A_Loop;
 
+      --  Acquire 'K' lines if present
+
+      Check_Unknown_Line;
+
+      while C = 'K' loop
+         if Ignore ('K') then
+            Skip_Line;
+
+         else
+            Skip_Space;
+            CUDA_Kernels.Append ((Kernel_Name => Get_Name));
+            ALIs.Table (Id).Last_CUDA_Kernel := CUDA_Kernels.Last;
+            Skip_Eol;
+         end if;
+
+         C := Getc;
+      end loop;
+
       --  Acquire P line
 
       Check_Unknown_Line;
@@ -1978,9 +1990,10 @@ package body ALI is
             elsif C = 'F' then
                C := Getc;
 
+               --  Old front-end exceptions marker, ignore
+
                if C = 'X' then
-                  ALIs.Table (Id).Frontend_Exceptions := True;
-                  Frontend_Exceptions_Specified := True;
+                  null;
                else
                   Fatal_Error_Ignore;
                end if;
@@ -2066,7 +2079,24 @@ package body ALI is
                --  Processing for SS
 
                elsif C = 'S' then
-                  Opt.Sec_Stack_Used := True;
+                  --  Special case: a-tags/i-c* by themselves should not set
+                  --  Sec_Stack_Used, only if other code uses the secondary
+                  --  stack should we set this flag. This ensures that we do
+                  --  not bring the secondary stack unnecessarily when using
+                  --  one of these packages and not actually using the
+                  --  secondary stack.
+
+                  declare
+                     File : constant String := Get_Name_String (F);
+                  begin
+                     if File /= "a-tags.ali"
+                       and then File /= "i-c.ali"
+                       and then File /= "i-cstrin.ali"
+                       and then File /= "i-cpoint.ali"
+                     then
+                        Opt.Sec_Stack_Used := True;
+                     end if;
+                  end;
 
                --  Invalid switch starting with S
 
@@ -2938,9 +2968,7 @@ package body ALI is
 
                         --  Store AD indication unless ignore required
 
-                        if not Ignore_ED then
-                           Withs.Table (Withs.Last).Elab_All_Desirable := True;
-                        end if;
+                        Withs.Table (Withs.Last).Elab_All_Desirable := True;
 
                      elsif Nextc = 'E' then
                         P := P + 1;
@@ -2957,12 +2985,9 @@ package body ALI is
                            Checkc ('D');
                            Check_At_End_Of_Field;
 
-                           --  Store ED indication unless ignore required
+                           --  Store ED indication
 
-                           if not Ignore_ED then
-                              Withs.Table (Withs.Last).Elab_Desirable :=
-                                True;
-                           end if;
+                           Withs.Table (Withs.Last).Elab_Desirable := True;
                         end if;
 
                      else
@@ -3213,13 +3238,10 @@ package body ALI is
             Skip_Space;
             Sdep.Increment_Last;
 
-            --  In the following call, Lower is not set to True, this is either
-            --  a bug, or it deserves a special comment as to why this is so???
-
             --  The file/path name may be quoted
 
             Sdep.Table (Sdep.Last).Sfile :=
-              Get_File_Name (May_Be_Quoted => True);
+              Get_File_Name (Lower => True, May_Be_Quoted => True);
 
             Sdep.Table (Sdep.Last).Stamp := Get_Stamp;
             Sdep.Table (Sdep.Last).Dummy_Entry :=

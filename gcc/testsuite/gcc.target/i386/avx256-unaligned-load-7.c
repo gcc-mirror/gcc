@@ -16,10 +16,10 @@ __attribute__ ((noinline))
 void
 foo (void)
 {
-  mp = (char **) malloc (N);
-  lp = (char **) malloc (N);
-  ep = (char **) malloc (N);
-  fp = (char **) malloc (N);
+  mp = (char **) malloc (N * sizeof (char **));
+  lp = (char **) malloc (N * sizeof (char **));
+  ep = (char **) malloc (N * sizeof (char **));
+  fp = (char **) malloc (N * sizeof (char **));
 }
 
 void

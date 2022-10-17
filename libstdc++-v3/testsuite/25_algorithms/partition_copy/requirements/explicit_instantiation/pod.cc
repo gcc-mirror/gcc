@@ -1,8 +1,9 @@
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile { target c++11 } }
 
 // 2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +33,6 @@ namespace std
   typedef std::pointer_to_unary_function<value_type, bool> predicate_type;
 
   template pair<iterator_type, iterator_type>
-    partition_copy(iterator_type, iterator_type, 
+    partition_copy(iterator_type, iterator_type,
 		   iterator_type, iterator_type, predicate_type);
-} 
+}

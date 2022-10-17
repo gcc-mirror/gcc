@@ -3,4 +3,5 @@
 
 void foo();
 
-auto f = (auto(*)())(&foo);  // { dg-error "invalid" }
+auto f = (auto(*)())(&foo);  // { dg-error "expected" }
+// { dg-error "only available" "" { target c++20_down } .-1 }

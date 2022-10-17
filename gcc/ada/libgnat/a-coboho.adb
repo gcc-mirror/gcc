@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2015-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2015-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,7 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 with System.Put_Images;
 
 package body Ada.Containers.Bounded_Holders is
@@ -54,7 +54,7 @@ package body Ada.Containers.Bounded_Holders is
    end Size_In_Storage_Elements;
 
    function Cast is new
-     Unchecked_Conversion (System.Address, Element_Access);
+     Ada.Unchecked_Conversion (System.Address, Element_Access);
 
    ---------
    -- "=" --

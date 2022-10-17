@@ -7,15 +7,11 @@ version(CRuntime_Microsoft)
         extern __gshared uint _DP_end;
         extern __gshared uint _TP_beg;
         extern __gshared uint _TP_end;
-        extern int _tls_start;
-        extern int _tls_end;
     }
     alias _DPbegin = _DP_beg;
     alias _DPend = _DP_end;
     alias _TPbegin = _TP_beg;
     alias _TPend = _TP_end;
-    alias _tlsstart = _tls_start;
-    alias _tlsend = _tls_end;
 
     __gshared void[] dataSection;
     shared static this()
@@ -25,7 +21,16 @@ version(CRuntime_Microsoft)
                                               void[] function(string name) nothrow @nogc);
         dataSection = findImageSection(".data");
     }
-    
+
+    void[] tlsRange;
+    static this()
+    {
+        import core.internal.traits : externDFunc;
+        alias initTLSRanges = externDFunc!("rt.sections_win64.initTLSRanges",
+                                              void[] function() nothrow @nogc);
+        tlsRange = initTLSRanges();
+    }
+
     version = ptrref_supported;
 }
 else version(Win32)
@@ -39,6 +44,13 @@ else version(Win32)
         extern int _tlsstart;
         extern int _tlsend;
     }
+
+    void[] tlsRange;
+    static this()
+    {
+		tlsRange = (cast(void*)&_tlsstart)[0.. cast(void*)&_tlsend - cast(void*)&_tlsstart];
+	}
+
     version = ptrref_supported;
 }
 
@@ -91,13 +103,13 @@ void main()
 version(ptrref_supported):
 
 bool findTlsPtr(const(void)* ptr)
-{    
+{
     debug(PRINT) printf("findTlsPtr %p\n", ptr);
     for (uint* p = &_TPbegin; p < &_TPend; p++)
     {
-        void* addr = cast(void*) &_tlsstart + *p;
+        void* addr = tlsRange.ptr + *p;
         debug(PRINT) printf("  try %p\n", addr);
-        assert(addr < &_tlsend);
+        assert(*p < tlsRange.length);
         if (addr == ptr)
             return true;
     }
@@ -114,7 +126,7 @@ bool findDataPtr(const(void)* ptr)
             void* addr = dataSection.ptr + *p;
         else
             void* addr = *p;
-        
+
         if (addr == ptr)
             return true;
     }
@@ -125,6 +137,9 @@ void testRefPtr()
 {
     debug(PRINT) printf("&_DPbegin %p\n", &_DPbegin);
     debug(PRINT) printf("&_DPend   %p\n", &_DPend);
+
+    debug(PRINT) printf("&_TPbegin %p\n", &_TPbegin);
+    debug(PRINT) printf("&_TPend   %p\n", &_TPend);
 
     assert(!findDataPtr(cast(void*)&sharedInt));
     assert(!findTlsPtr(&tlsInt));
@@ -143,7 +158,7 @@ void testRefPtr()
 
     assert(!findTlsPtr(cast(size_t*)&tlsStr)); // length
     assert(findTlsPtr(cast(size_t*)&tlsStr + 1)); // ptr
-    
+
     // monitor is manually managed
     assert(!findDataPtr(cast(size_t*)cast(void*)Class.classinfo + 1));
     assert(!findDataPtr(cast(size_t*)cast(void*)Class.classinfo + 1));
@@ -152,7 +167,7 @@ void testRefPtr()
     assert(!findTlsPtr(&arr));
     assert(!findDataPtr(cast(size_t*)&arr + 1));
     assert(!findTlsPtr(cast(size_t*)&arr + 1));
-    
+
     assert(findDataPtr(cast(size_t*)&strArr[0] + 1)); // ptr in _DATA!
     assert(findDataPtr(cast(size_t*)&strArr[1] + 1)); // ptr in _DATA!
     strArr[1] = "c";

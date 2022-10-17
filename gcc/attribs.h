@@ -1,5 +1,5 @@
 /* Declarations and definitions dealing with attribute handling.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ATTRIBS_H
 
 extern const struct attribute_spec *lookup_attribute_spec (const_tree);
+extern void free_attr_data ();
 extern void init_attributes (void);
 
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
@@ -38,15 +39,18 @@ extern tree get_attribute_name (const_tree);
 extern tree get_attribute_namespace (const_tree);
 extern void apply_tm_attr (tree, tree);
 extern tree make_attribute (const char *, const char *, tree);
+extern bool attribute_ignored_p (tree);
+extern bool attribute_ignored_p (const attribute_spec *const);
 
 extern struct scoped_attributes* register_scoped_attributes (const struct attribute_spec *,
-							     const char *);
+							     const char *,
+							     bool = false);
 
 extern char *sorted_attr_string (tree);
 extern bool common_function_versions (tree, tree);
-extern char *make_unique_name (tree, const char *, bool);
 extern tree make_dispatcher_decl (const tree);
 extern bool is_function_default_version (const tree);
+extern void handle_ignored_attributes_option (vec<char *> *);
 
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTES
    is ATTRIBUTE.
@@ -58,6 +62,7 @@ extern tree build_type_attribute_variant (tree, tree);
 extern tree build_decl_attribute_variant (tree, tree);
 extern tree build_type_attribute_qual_variant (tree, tree, int);
 
+extern bool simple_cst_list_equal (const_tree, const_tree);
 extern bool attribute_value_equal (const_tree, const_tree);
 
 /* Return 0 if the attributes for two types are incompatible, 1 if they
@@ -76,6 +81,10 @@ extern tree merge_type_attributes (tree, tree);
    modified list.  */
 
 extern tree remove_attribute (const char *, tree);
+
+/* Similarly but also with specific attribute namespace.  */
+
+extern tree remove_attribute (const char *, const char *, tree);
 
 /* Given two attributes lists, return a list of their union.  */
 
@@ -108,6 +117,10 @@ extern int attribute_list_contained (const_tree, const_tree);
    for size.  */
 extern tree private_lookup_attribute (const char *attr_name, size_t attr_len,
 				      tree list);
+extern tree private_lookup_attribute (const char *attr_ns,
+				      const char *attr_name,
+				      size_t attr_ns_len, size_t attr_len,
+				      tree list);
 
 extern unsigned decls_mismatched_attributes (tree, tree, tree,
 					     const char* const[],
@@ -115,17 +128,34 @@ extern unsigned decls_mismatched_attributes (tree, tree, tree,
 
 extern void maybe_diag_alias_attributes (tree, tree);
 
+/* For a given string S of length L, strip leading and trailing '_' characters
+   so that we have a canonical form of attribute names.  NB: This function may
+   change S and L.  */
+
+template <typename T>
+inline bool
+canonicalize_attr_name (const char *&s, T &l)
+{
+  if (l > 4 && s[0] == '_' && s[1] == '_' && s[l - 1] == '_' && s[l - 2] == '_')
+    {
+      s += 2;
+      l -= 4;
+      return true;
+    }
+  return false;
+}
+
 /* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
    so that we have a canonical form of attribute names.  */
 
 static inline tree
 canonicalize_attr_name (tree attr_name)
 {
-  const size_t l = IDENTIFIER_LENGTH (attr_name);
+  size_t l = IDENTIFIER_LENGTH (attr_name);
   const char *s = IDENTIFIER_POINTER (attr_name);
 
-  if (l > 4 && s[0] == '_' && s[1] == '_' && s[l - 1] == '_' && s[l - 2] == '_')
-    return get_identifier_with_length (s + 2, l - 4);
+  if (canonicalize_attr_name (s, l))
+    return get_identifier_with_length (s, l);
 
   return attr_name;
 }
@@ -158,6 +188,22 @@ is_attribute_p (const char *attr_name, const_tree ident)
 		      IDENTIFIER_POINTER (ident), IDENTIFIER_LENGTH (ident));
 }
 
+/* Given an attribute ATTR and a string ATTR_NS, return true
+   if the attribute namespace is valid for the string.  ATTR_NS "" stands
+   for standard attribute (NULL get_attribute_namespace) or "gnu"
+   namespace.  */
+
+static inline bool
+is_attribute_namespace_p (const char *attr_ns, const_tree attr)
+{
+  tree ident = get_attribute_namespace (attr);
+  if (attr_ns == NULL)
+    return ident == NULL_TREE;
+  if (attr_ns[0])
+    return ident && is_attribute_p (attr_ns, ident);
+  return ident == NULL_TREE || is_attribute_p ("gnu", ident);
+}
+
 /* Given an attribute name ATTR_NAME and a list of attributes LIST,
    return a pointer to the attribute's list element if the attribute
    is part of the list, or NULL_TREE if not found.  If the attribute
@@ -169,7 +215,11 @@ is_attribute_p (const char *attr_name, const_tree ident)
 static inline tree
 lookup_attribute (const char *attr_name, tree list)
 {
-  gcc_checking_assert (attr_name[0] != '_');
+  if (CHECKING_P && attr_name[0] != '_')
+    {
+      size_t attr_len = strlen (attr_name);
+      gcc_checking_assert (!canonicalize_attr_name (attr_name, attr_len));
+    }
   /* In most cases, list is NULL_TREE.  */
   if (list == NULL_TREE)
     return NULL_TREE;
@@ -180,6 +230,37 @@ lookup_attribute (const char *attr_name, tree list)
 	 In most cases attr_name is a string constant, and the compiler
 	 will optimize the strlen() away.  */
       return private_lookup_attribute (attr_name, attr_len, list);
+    }
+}
+
+/* Similar to lookup_attribute, but also match the attribute namespace.
+   ATTR_NS "" stands for either standard attribute or "gnu" namespace.  */
+
+static inline tree
+lookup_attribute (const char *attr_ns, const char *attr_name, tree list)
+{
+  if (CHECKING_P && attr_name[0] != '_')
+    {
+      size_t attr_len = strlen (attr_name);
+      gcc_checking_assert (!canonicalize_attr_name (attr_name, attr_len));
+    }
+  if (CHECKING_P && attr_ns && attr_ns[0] != '_')
+    {
+      size_t attr_ns_len = strlen (attr_ns);
+      gcc_checking_assert (!canonicalize_attr_name (attr_ns, attr_ns_len));
+    }
+  /* In most cases, list is NULL_TREE.  */
+  if (list == NULL_TREE)
+    return NULL_TREE;
+  else
+    {
+      size_t attr_ns_len = attr_ns ? strlen (attr_ns) : 0;
+      size_t attr_len = strlen (attr_name);
+      /* Do the strlen() before calling the out-of-line implementation.
+	 In most cases attr_name is a string constant, and the compiler
+	 will optimize the strlen() away.  */
+      return private_lookup_attribute (attr_ns, attr_name,
+				       attr_ns_len, attr_len, list);
     }
 }
 
@@ -200,7 +281,8 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
       size_t attr_len = strlen (attr_name);
       while (list)
 	{
-	  size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
+	  tree name = get_attribute_name (list);
+	  size_t ident_len = IDENTIFIER_LENGTH (name);
 
 	  if (attr_len > ident_len)
 	    {
@@ -208,9 +290,9 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
 	      continue;
 	    }
 
-	  const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
-	  gcc_checking_assert (attr_len == 0 || p[0] != '_');
-
+	  const char *p = IDENTIFIER_POINTER (name);
+	  gcc_checking_assert (attr_len == 0 || p[0] != '_'
+			       || (ident_len > 1 && p[1] != '_'));
 	  if (strncmp (attr_name, p, attr_len) == 0)
 	    break;
 
@@ -315,7 +397,5 @@ typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
 extern void init_attr_rdwr_indices (rdwr_map *, tree);
 extern attr_access *get_parm_access (rdwr_map &, tree,
 				     tree = current_function_decl);
-
-extern unsigned fndecl_dealloc_argno (tree fndecl);
 
 #endif // GCC_ATTRIBS_H

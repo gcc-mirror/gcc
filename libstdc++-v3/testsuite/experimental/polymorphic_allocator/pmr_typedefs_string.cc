@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++14 } }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 #include <experimental/string>
 
@@ -51,7 +51,6 @@ static_assert(std::is_same<xpmr::u32string,
 		      xpmr::polymorphic_allocator<char32_t>>>::value,
     "pmr::u32string");
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert(std::is_same<xpmr::basic_string<wchar_t>,
     std::basic_string<wchar_t, std::char_traits<wchar_t>,
 		      xpmr::polymorphic_allocator<wchar_t>>>::value,
@@ -64,4 +63,3 @@ static_assert(std::is_same<xpmr::wstring,
     std::basic_string<wchar_t, std::char_traits<wchar_t>,
 		      xpmr::polymorphic_allocator<wchar_t>>>::value,
     "pmr::wstring");
-#endif

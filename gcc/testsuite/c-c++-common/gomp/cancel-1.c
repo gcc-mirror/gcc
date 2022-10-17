@@ -39,6 +39,28 @@ f2 (void)
       #pragma omp cancellation point sections	/* { dg-error "not closely nested inside" } */
       #pragma omp cancellation point taskgroup	/* { dg-error "not closely nested inside" } */
     }
+    #pragma omp masked
+    {
+      #pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */
+      #pragma omp cancel for			/* { dg-error "not closely nested inside" } */
+      #pragma omp cancel sections		/* { dg-error "not closely nested inside" } */
+      #pragma omp cancel taskgroup		/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point parallel	/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point for	/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point sections	/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point taskgroup	/* { dg-error "not closely nested inside" } */
+    }
+    #pragma omp scope
+    {
+      #pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */
+      #pragma omp cancel for			/* { dg-error "not closely nested inside" } */
+      #pragma omp cancel sections		/* { dg-error "not closely nested inside" } */
+      #pragma omp cancel taskgroup		/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point parallel	/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point for	/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point sections	/* { dg-error "not closely nested inside" } */
+      #pragma omp cancellation point taskgroup	/* { dg-error "not closely nested inside" } */
+    }
     #pragma omp single
     {
       #pragma omp cancel parallel		/* { dg-error "not closely nested inside" } */

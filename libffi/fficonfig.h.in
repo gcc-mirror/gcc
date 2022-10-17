@@ -17,6 +17,9 @@
 /* Define this if you want extra debugging. */
 #undef FFI_DEBUG
 
+/* Define this if you want statically defined trampolines */
+#undef FFI_EXEC_STATIC_TRAMP
+
 /* Cannot use PROT_EXEC on this target, so, we revert to alternative means */
 #undef FFI_EXEC_TRAMPOLINE_TABLE
 
@@ -76,11 +79,17 @@
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
 
+/* Define to 1 if you have the `memfd_create' function. */
+#undef HAVE_MEMFD_CREATE
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
 /* Define to 1 if you have the `mkostemp' function. */
 #undef HAVE_MKOSTEMP
+
+/* Define to 1 if you have the `mkstemp' function. */
+#undef HAVE_MKSTEMP
 
 /* Define to 1 if you have the `mmap' function. */
 #undef HAVE_MMAP
@@ -93,6 +102,9 @@
 
 /* Define if read-only mmap of a plain file works. */
 #undef HAVE_MMAP_FILE
+
+/* Define if your compiler supports pointer authentication. */
+#undef HAVE_PTRAUTH
 
 /* Define if .eh_frame sections should be read-only. */
 #undef HAVE_RO_EH_FRAME
@@ -109,6 +121,9 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the <sys/memfd.h> header file. */
+#undef HAVE_SYS_MEMFD_H
+
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
 
@@ -122,7 +137,7 @@
 #undef HAVE_UNISTD_H
 
 /* Define to 1 if GNU symbol versioning is used for libatomic. */
-#undef LIBAT_GNU_SYMBOL_VERSIONING
+#undef LIBFFI_GNU_SYMBOL_VERSIONING
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -194,7 +209,11 @@
 
 #ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
 #ifdef LIBFFI_ASM
+#ifdef __APPLE__
+#define FFI_HIDDEN(name) .private_extern name
+#else
 #define FFI_HIDDEN(name) .hidden name
+#endif
 #else
 #define FFI_HIDDEN __attribute__ ((visibility ("hidden")))
 #endif

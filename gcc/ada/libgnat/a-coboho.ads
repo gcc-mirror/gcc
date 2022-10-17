@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2015-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2015-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -70,7 +70,9 @@ package Ada.Containers.Bounded_Holders is
    --  System.Storage_Unit; e.g. creating Holders from 5-bit objects won't
    --  work.
 
-   type Holder is private;
+   type Holder is private
+     with Preelaborable_Initialization
+            => Element_Type'Preelaborable_Initialization;
 
    function "=" (Left, Right : Holder) return Boolean;
 

@@ -116,3 +116,13 @@ subroutine subr10 (x)
      x = x * x - 1
   end if
 end subroutine subr10
+
+subroutine subr20 (x)
+  !$acc routine (subr20) nohost nohost ! { dg-error "Duplicated 'nohost' clause" }
+  integer, intent(inout) :: x
+  if (x < 1) then
+     x = 1
+  else
+     x = x * x - 1
+  end if
+end subroutine subr20

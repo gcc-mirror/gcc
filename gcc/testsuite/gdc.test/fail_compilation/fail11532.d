@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11532.d(17): Error: cannot pass static arrays to extern(C) vararg functions
-fail_compilation/fail11532.d(18): Error: cannot pass dynamic arrays to extern(C) vararg functions
-fail_compilation/fail11532.d(19): Error: cannot pass static arrays to extern(C++) vararg functions
-fail_compilation/fail11532.d(20): Error: cannot pass dynamic arrays to extern(C++) vararg functions
+fail_compilation/fail11532.d(17): Error: cannot pass static arrays to `extern(C)` vararg functions
+fail_compilation/fail11532.d(18): Error: cannot pass dynamic arrays to `extern(C)` vararg functions
+fail_compilation/fail11532.d(19): Error: cannot pass static arrays to `extern(C++)` vararg functions
+fail_compilation/fail11532.d(20): Error: cannot pass dynamic arrays to `extern(C++)` vararg functions
 ---
 */
 

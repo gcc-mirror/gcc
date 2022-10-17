@@ -1,5 +1,5 @@
 /* Profile counter container type.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -185,7 +185,7 @@ public:
   static profile_probability very_unlikely ()
     {
       /* Be consistent with PROB_VERY_UNLIKELY in predict.h.  */
-      profile_probability r = guessed_always ().apply_scale (1, 2000);
+      profile_probability r = guessed_always () / 2000;
       r.m_val--;
       return r;
     }
@@ -193,14 +193,14 @@ public:
   static profile_probability unlikely ()
     {
       /* Be consistent with PROB_VERY_LIKELY in predict.h.  */
-      profile_probability r = guessed_always ().apply_scale (1, 5);
+      profile_probability r = guessed_always () / 5;
       r.m_val--;
       return r;
     }
 
   static profile_probability even ()
     {
-      return guessed_always ().apply_scale (1, 2);
+      return guessed_always () / 2;
     }
 
   static profile_probability very_likely ()
@@ -600,6 +600,28 @@ public:
       return initialized_p () && other.initialized_p () && m_val >= other.m_val;
     }
 
+  profile_probability operator* (int64_t num) const
+    {
+      return apply_scale (num, 1);
+    }
+
+  profile_probability operator*= (int64_t num)
+    {
+      *this = apply_scale (num, 1);
+      return *this;
+    }
+
+  profile_probability operator/ (int64_t den) const
+    {
+      return apply_scale (1, den);
+    }
+
+  profile_probability operator/= (int64_t den)
+    {
+      *this = apply_scale (1, den);
+      return *this;
+    }
+
   /* Get the value of the count.  */
   uint32_t value () const { return m_val; }
 
@@ -608,6 +630,9 @@ public:
 
   /* Output THIS to F.  */
   void dump (FILE *f) const;
+
+  /* Output THIS to BUFFER.  */
+  void dump (char *buffer) const;
 
   /* Print THIS to stderr.  */
   void debug () const;
@@ -804,7 +829,7 @@ public:
     }
 
   /* Get the value of the count.  */
-  uint32_t value () const { return m_val; }
+  uint64_t value () const { return m_val; }
 
   /* Get the quality of the count.  */
   enum profile_quality quality () const { return m_quality; }
@@ -987,6 +1012,28 @@ public:
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return ipa ().initialized_p () && ipa ().m_val >= (uint64_t) other;
+    }
+
+  profile_count operator* (int64_t num) const
+    {
+      return apply_scale (num, 1);
+    }
+
+  profile_count operator*= (int64_t num)
+    {
+      *this = apply_scale (num, 1);
+      return *this;
+    }
+
+  profile_count operator/ (int64_t den) const
+    {
+      return apply_scale (1, den);
+    }
+
+  profile_count operator/= (int64_t den)
+    {
+      *this = apply_scale (1, den);
+      return *this;
     }
 
   /* Return true when value is not zero and can be used for scaling. 
@@ -1207,6 +1254,9 @@ public:
 
   /* Output THIS to F.  */
   void dump (FILE *f) const;
+
+  /* Output THIS to BUFFER.  */
+  void dump (char *buffer) const;
 
   /* Print THIS to stderr.  */
   void debug () const;

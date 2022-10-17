@@ -19,6 +19,7 @@ import "unsafe"
 
 //sysnb	pipe(p *[2]_C_int) (err error)
 //pipe(p *[2]_C_int) _C_int
+
 func Pipe(p []int) (err error) {
 	if len(p) != 2 {
 		return EINVAL
@@ -32,6 +33,7 @@ func Pipe(p []int) (err error) {
 
 //sys	utimes(path string, times *[2]Timeval) (err error)
 //utimes(path *byte, times *[2]Timeval) _C_int
+
 func Utimes(path string, tv []Timeval) (err error) {
 	if len(tv) != 2 {
 		return EINVAL
@@ -240,6 +242,7 @@ func FDZero(set *FdSet) {
 
 //sysnb	gettimeofday(tv *Timeval, tz *byte) (err error)
 //gettimeofday(tv *Timeval, tz *byte) _C_int
+
 func Gettimeofday(tv *Timeval) (err error) {
 	return gettimeofday(tv, nil)
 }

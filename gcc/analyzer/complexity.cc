@@ -1,5 +1,5 @@
 /* Measuring the complexity of svalues/regions.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -38,11 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "fold-const.h"
 #include "tree-pretty-print.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "options.h"
@@ -88,6 +84,22 @@ complexity::from_pair (const complexity &c1, const complexity &c2)
 {
   return complexity (c1.m_num_nodes + c2.m_num_nodes + 1,
 		     MAX (c1.m_max_depth, c2.m_max_depth) + 1);
+}
+
+/* Get complexity for a new node that references the svalues in VEC.  */
+
+complexity
+complexity::from_vec_svalue (const vec<const svalue *> &vec)
+{
+  unsigned num_nodes = 0;
+  unsigned max_depth = 0;
+  for (auto iter_sval : vec)
+    {
+      const complexity &iter_c = iter_sval->get_complexity ();
+      num_nodes += iter_c.m_num_nodes;
+      max_depth = MAX (max_depth, iter_c.m_max_depth);
+    }
+  return complexity (num_nodes + 1, max_depth + 1);
 }
 
 } // namespace ana

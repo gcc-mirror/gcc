@@ -1,5 +1,5 @@
 /* Generic implementation of the PACK intrinsic
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -85,6 +85,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
+  bool zero_sized;
   index_type n;
   index_type dim;
   index_type nelem;
@@ -114,10 +115,13 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   else
     runtime_error ("Funny sized logical array");
 
+  zero_sized = false;
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
+      if (extent[n] <= 0)
+	zero_sized = true;
       sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,n);
       mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
     }
@@ -125,6 +129,11 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
     sstride[0] = size;
   if (mstride[0] == 0)
     mstride[0] = mask_kind;
+
+  if (zero_sized)
+    sptr = NULL;
+  else
+    sptr = array->base_addr;
 
   if (ret->base_addr == NULL || unlikely (compile_options.bounds_check))
     {
@@ -298,7 +307,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 /* FIXME: This here is a hack, which will have to be removed when
    the array descriptor is reworked.  Currently, we don't store the
    kind value for the type, but only the size.  Because on targets with
-   __float128, we have sizeof(logn double) == sizeof(__float128),
+   _Float128, we have sizeof(long double) == sizeof(_Float128),
    we cannot discriminate here and have to fall back to the generic
    handling (which is suboptimal).  */
 #if !defined(GFC_REAL_16_IS_FLOAT128)
@@ -330,7 +339,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 /* FIXME: This here is a hack, which will have to be removed when
    the array descriptor is reworked.  Currently, we don't store the
    kind value for the type, but only the size.  Because on targets with
-   __float128, we have sizeof(logn double) == sizeof(__float128),
+   _Float128, we have sizeof(long double) == sizeof(_Float128),
    we cannot discriminate here and have to fall back to the generic
    handling (which is suboptimal).  */
 #if !defined(GFC_REAL_16_IS_FLOAT128)

@@ -4,7 +4,7 @@
 
 // Before the fix that came with this test, we'd output an error for
 // the __INT_MAX__ token.  That token has a BUILTINS_LOCATION
-// location, so the the location prefix in the warning message would
+// location, so the location prefix in the warning message would
 // be:
 //     <built-in>:0:0: warning: conversion to 'float' alters 'int' constant value
 //

@@ -1,4 +1,4 @@
-
+// EXTRA_FILES: test15519_y.d
 import test15519_y;
 
 extern(C++, ns)

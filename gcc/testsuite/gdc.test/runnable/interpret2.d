@@ -1,5 +1,11 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
-//import std.stdio;
+//import core.stdc.stdio;
 extern(C) int printf(const char*, ...);
 
 template Tuple(A...)
@@ -52,7 +58,7 @@ void test1()
     assert(z1 == 8194);
 }
 
-/***** Bug 2850 *********************************/
+/***** https://issues.dlang.org/show_bug.cgi?id=2850 *****/
 
 /* These tests are not passing, and shouldn't pass. A non-first field in a union
 being initialized cannot be converted to an expression, at least not until there are
@@ -122,11 +128,11 @@ void test2()
 }
 }
 
-/***** Bug 3779 *********************************/
+/***** https://issues.dlang.org/show_bug.cgi?id=3779 *****/
 
 static const bug3779 = ["123"][0][$-1];
 
-/***** Bug 1880 *********************************/
+/***** https://issues.dlang.org/show_bug.cgi?id=1880 *****/
 
 
 enum Property1880 {First=1,Second=2}

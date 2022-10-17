@@ -151,6 +151,8 @@ version (GNUFP)
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/sparc/fpu/bits/fenv.h
     else version (SPARC_Any)
     {
+        import core.stdc.config : c_ulong;
+
         alias fenv_t = c_ulong;
         alias fexcept_t = c_ulong;
     }
@@ -481,7 +483,7 @@ else version (CRuntime_UClibc)
 
         alias fexcept_t = ushort;
     }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         struct fenv_t
         {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
+//go:build aix || darwin || dragonfly || freebsd || hurd || linux || netbsd || openbsd || solaris
 
 package syscall
 
@@ -156,6 +156,9 @@ func Read(fd int, p []byte) (n int, err error) {
 	if msanenabled && n > 0 {
 		msanWrite(unsafe.Pointer(&p[0]), n)
 	}
+	if asanenabled && n > 0 {
+		asanWrite(unsafe.Pointer(&p[0]), n)
+	}
 	return
 }
 
@@ -176,6 +179,9 @@ func Write(fd int, p []byte) (n int, err error) {
 	}
 	if msanenabled && n > 0 {
 		msanRead(unsafe.Pointer(&p[0]), n)
+	}
+	if asanenabled && n > 0 {
+		asanRead(unsafe.Pointer(&p[0]), n)
 	}
 	return
 }

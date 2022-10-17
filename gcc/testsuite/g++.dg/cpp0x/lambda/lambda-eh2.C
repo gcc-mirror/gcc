@@ -7,7 +7,7 @@
 
 int main( void )
 {
-  std::set_unexpected( []{ throw 0; } );
+  std::set_unexpected( []{ throw 0; } ); // { dg-warning "deprecated" }
   try
     {
       []() throw( int ) { throw nullptr; }();	// { dg-warning "deprecated" }

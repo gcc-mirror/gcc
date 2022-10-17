@@ -1,6 +1,6 @@
 // { dg-do compile { target c++17 } }
 
-// Copyright (C) 2017-2021 Free Software Foundation, Inc.
+// Copyright (C) 2017-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,12 +29,12 @@ int main()
   s.insert(0, {"abc", 1});
   s.replace(0, 1, {"abc", 1});
   s.replace(s.begin(), s.begin(), {"abc", 1});
-  s.find({"abc", 1});
-  s.rfind({"abc", 1});
-  s.find_first_of({"abc", 1});
-  s.find_last_of({"abc", 1});
-  s.find_first_not_of({"abc", 1});
-  s.find_last_not_of({"abc", 1});
-  s.compare({"abc", 1});
-  s.compare(0, 1, {"abc", 1});
+  (void) s.find({"abc", 1});
+  (void) s.rfind({"abc", 1});
+  (void) s.find_first_of({"abc", 1});
+  (void) s.find_last_of({"abc", 1});
+  (void) s.find_first_not_of({"abc", 1});
+  (void) s.find_last_not_of({"abc", 1});
+  (void) s.compare({"abc", 1});
+  (void) s.compare(0, 1, {"abc", 1});
 }

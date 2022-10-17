@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -412,10 +412,10 @@ package Sinput is
    --  Initialized so that some tools (such as gprbuild) can be built with
    --  -gnatVa and pragma Initialize_Scalars without problems.
 
-   Current_Source_Unit : Unit_Number_Type;
-   --  Unit number of source file currently being scanned. The special value
-   --  of No_Unit indicates that the configuration pragma file is currently
-   --  being scanned (this has no entry in the unit table).
+   Current_Source_Unit : Unit_Number_Type := No_Unit;
+   --  Unit number of source file currently being scanned. Initialized to
+   --  No_Unit for pre-processing and the configuration pragma file scanning,
+   --  since both stages have no corresponding entry in the unit table.
 
    Source_gnat_adc : Source_File_Index := No_Source_File;
    --  This is set if a gnat.adc file is present to reference this file
@@ -693,14 +693,11 @@ package Sinput is
    --  names in some situations.
 
    procedure Write_Location (P : Source_Ptr);
-   --  Writes out a string of the form fff:nn:cc, where fff, nn, cc are the
-   --  file name, line number and column corresponding to the given source
-   --  location. No_Location and Standard_Location appear as the strings
-   --  <no location> and <standard location>. If the location is within an
-   --  instantiation, then the instance location is appended, enclosed in
-   --  square brackets (which can nest if necessary). Note that this routine
-   --  is used only for internal compiler debugging output purposes (which
-   --  is why the somewhat cryptic use of brackets is acceptable).
+   --  Writes P, in the form fff:nn:cc, where fff, nn, cc are the file name,
+   --  line number and column corresponding to the given source location. If
+   --  the location is within an instantiation, then the instance location is
+   --  appended, enclosed in square brackets, which can nest if necessary. This
+   --  is used only for debugging output.
 
    procedure wl (P : Source_Ptr);
    pragma Export (Ada, wl);

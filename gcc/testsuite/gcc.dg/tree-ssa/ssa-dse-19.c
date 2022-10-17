@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-optimized" } */
 int g(_Complex int*);
 int f(void)
 {

@@ -7,7 +7,7 @@ void abort ();
 unsigned int
 do_compare (unsigned int a, unsigned int b)
 {
-  return __builtin_cmpb (a, b);  /* { dg-warning "implicit declaration of function '__builtin_cmpb'" } */
+  return __builtin_cmpb (a, b);  /* { dg-error "'__builtin_p6_cmpb_32' requires the '-mcpu=power6' option" } */
 }
 
 void

@@ -20,4 +20,4 @@ module C
 use A
 use B ! { dg-error "Cannot open module file" }
 end module C
-! { dg-excess-errors "compilation terminated" }
+! { dg-prune-output "compilation terminated" }

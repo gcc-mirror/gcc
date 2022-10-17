@@ -36,7 +36,10 @@
 
 typedef u8 tag_t;
 
-#if defined(__x86_64__)
+#if defined(HWASAN_ALIASING_MODE)
+#  if !defined(__x86_64__)
+#    error Aliasing mode is only supported on x86_64
+#  endif
 // Tags are done in middle bits using userspace aliasing.
 constexpr unsigned kAddressTagShift = 39;
 constexpr unsigned kTagBits = 3;
@@ -49,12 +52,16 @@ constexpr unsigned kTagBits = 3;
 // simpler/faster shadow calculation.
 constexpr unsigned kTaggableRegionCheckShift =
     __sanitizer::Max(kAddressTagShift + kTagBits + 1U, 44U);
+#elif defined(__x86_64__)
+// Tags are done in upper bits using Intel LAM.
+constexpr unsigned kAddressTagShift = 57;
+constexpr unsigned kTagBits = 6;
 #else
 // TBI (Top Byte Ignore) feature of AArch64: bits [63:56] are ignored in address
 // translation and can be used to store a tag.
 constexpr unsigned kAddressTagShift = 56;
 constexpr unsigned kTagBits = 8;
-#endif  // defined(__x86_64__)
+#endif  // defined(HWASAN_ALIASING_MODE)
 
 // Mask for extracting tag bits from the lower 8 bits.
 constexpr uptr kTagMask = (1UL << kTagBits) - 1;
@@ -95,11 +102,13 @@ extern bool hwasan_init_is_running;
 extern int hwasan_report_count;
 
 bool InitShadow();
-void InitPrctl();
+void InitializeOsSupport();
 void InitThreads();
 void InitializeInterceptors();
 
 void HwasanAllocatorInit();
+void HwasanAllocatorLock();
+void HwasanAllocatorUnlock();
 
 void *hwasan_malloc(uptr size, StackTrace *stack);
 void *hwasan_calloc(uptr nmemb, uptr size, StackTrace *stack);
@@ -129,8 +138,11 @@ void InstallAtExitHandler();
 
 void HwasanTSDInit();
 void HwasanTSDThreadInit();
+void HwasanAtExit();
 
 void HwasanOnDeadlySignal(int signo, void *info, void *context);
+
+void HwasanInstallAtForkHandler();
 
 void UpdateMemoryUsage();
 
@@ -138,41 +150,70 @@ void AppendToErrorMessageBuffer(const char *buffer);
 
 void AndroidTestTlsSlot();
 
+// This is a compiler-generated struct that can be shared between hwasan
+// implementations.
+struct AccessInfo {
+  uptr addr;
+  uptr size;
+  bool is_store;
+  bool is_load;
+  bool recover;
+};
+
+// Given access info and frame information, unwind the stack and report the tag
+// mismatch.
+void HandleTagMismatch(AccessInfo ai, uptr pc, uptr frame, void *uc,
+                       uptr *registers_frame = nullptr);
+
+// This dispatches to HandleTagMismatch but sets up the AccessInfo, program
+// counter, and frame pointer.
+void HwasanTagMismatch(uptr addr, uptr pc, uptr frame, uptr access_info,
+                       uptr *registers_frame, size_t outsize);
+
 }  // namespace __hwasan
 
-#define HWASAN_MALLOC_HOOK(ptr, size)       \
-  do {                                    \
-    if (&__sanitizer_malloc_hook) {       \
-      __sanitizer_malloc_hook(ptr, size); \
-    }                                     \
-    RunMallocHooks(ptr, size);            \
-  } while (false)
-#define HWASAN_FREE_HOOK(ptr)       \
-  do {                            \
-    if (&__sanitizer_free_hook) { \
-      __sanitizer_free_hook(ptr); \
-    }                             \
-    RunFreeHooks(ptr);            \
-  } while (false)
-
-#if HWASAN_WITH_INTERCEPTORS && defined(__aarch64__)
+#if HWASAN_WITH_INTERCEPTORS
 // For both bionic and glibc __sigset_t is an unsigned long.
 typedef unsigned long __hw_sigset_t;
 // Setjmp and longjmp implementations are platform specific, and hence the
-// interception code is platform specific too.  As yet we've only implemented
-// the interception for AArch64.
-typedef unsigned long long __hw_register_buf[22];
+// interception code is platform specific too.
+#  if defined(__aarch64__)
+constexpr size_t kHwRegisterBufSize = 22;
+#  elif defined(__x86_64__)
+constexpr size_t kHwRegisterBufSize = 8;
+#  elif SANITIZER_RISCV64
+// saving PC, 12 int regs, sp, 12 fp regs
+#    ifndef __riscv_float_abi_soft
+constexpr size_t kHwRegisterBufSize = 1 + 12 + 1 + 12;
+#    else
+constexpr size_t kHwRegisterBufSize = 1 + 12 + 1;
+#    endif
+#  endif
+typedef unsigned long long __hw_register_buf[kHwRegisterBufSize];
 struct __hw_jmp_buf_struct {
   // NOTE: The machine-dependent definition of `__sigsetjmp'
   // assume that a `__hw_jmp_buf' begins with a `__hw_register_buf' and that
   // `__mask_was_saved' follows it.  Do not move these members or add others
   // before it.
+  //
+  // We add a __magic field to our struct to catch cases where libc's setjmp
+  // populated the jmp_buf instead of our interceptor.
   __hw_register_buf __jmpbuf; // Calling environment.
-  int __mask_was_saved;       // Saved the signal mask?
+  unsigned __mask_was_saved : 1;  // Saved the signal mask?
+  unsigned __magic : 31;      // Used to distinguish __hw_jmp_buf from jmp_buf.
   __hw_sigset_t __saved_mask; // Saved signal mask.
 };
 typedef struct __hw_jmp_buf_struct __hw_jmp_buf[1];
 typedef struct __hw_jmp_buf_struct __hw_sigjmp_buf[1];
-#endif // HWASAN_WITH_INTERCEPTORS && __aarch64__
+constexpr unsigned kHwJmpBufMagic = 0x248ACE77;
+#endif  // HWASAN_WITH_INTERCEPTORS
+
+#define ENSURE_HWASAN_INITED()      \
+  do {                              \
+    CHECK(!hwasan_init_is_running); \
+    if (!hwasan_inited) {           \
+      __hwasan_init();              \
+    }                               \
+  } while (0)
 
 #endif  // HWASAN_H

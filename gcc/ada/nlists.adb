@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1013,12 +1013,12 @@ package body Nlists is
    -- Parent --
    ------------
 
-   function Parent (List : List_Id) return Node_Or_Entity_Id is
+   function List_Parent (List : List_Id) return Node_Or_Entity_Id is
    begin
       pragma Assert (Present (List));
       pragma Assert (List <= Lists.Last);
       return Lists.Table (List).Parent;
-   end Parent;
+   end List_Parent;
 
    ----------
    -- Pick --
@@ -1442,12 +1442,12 @@ package body Nlists is
    -- Set_Parent --
    ----------------
 
-   procedure Set_Parent (List : List_Id; Node : Node_Or_Entity_Id) is
+   procedure Set_List_Parent (List : List_Id; Node : Node_Or_Entity_Id) is
    begin
       pragma Assert (not Locked);
       pragma Assert (List <= Lists.Last);
       Lists.Table (List).Parent := Node;
-   end Set_Parent;
+   end Set_List_Parent;
 
    --------------
    -- Set_Prev --

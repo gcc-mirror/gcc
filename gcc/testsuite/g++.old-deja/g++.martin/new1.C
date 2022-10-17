@@ -1,5 +1,5 @@
 // { dg-do run  }
-//Lifetime of temporaries: 
+//Lifetime of temporaries:
 //egcs 2.92 performs cleanup for temporaries inside new expressions
 //after the new is complete, not at the end of the full expression.
 
@@ -71,8 +71,8 @@ void test1()
     func(new B(A(10).addr()));
   }catch(int){
   }
-  CHECK(ctor_done==1);
-  CHECK(new_done==2);
+  CHECK(new_done==1);
+  CHECK(ctor_done==2);
   CHECK(func_done==3);
   CHECK(dtor_done==4);
   CHECK(delete_done==0);
@@ -86,10 +86,10 @@ void test2()
     func(new B(A(10).addr()));
   }catch(int){
   }
-  CHECK(ctor_done==1);
-  CHECK(new_done==2);
+  CHECK(new_done==1);
+  CHECK(ctor_done==0);
   CHECK(func_done==0);
-  CHECK(dtor_done==3);
+  CHECK(dtor_done==0);
   CHECK(delete_done==0);
 }
 
@@ -101,11 +101,11 @@ void test3()
     func(new B(A(10).addr()));
   }catch(int){
   }
-  CHECK(new_done==0);
-  CHECK(ctor_done==1);
+  CHECK(new_done==1);
+  CHECK(ctor_done==2);
   CHECK(func_done==0);
   CHECK(dtor_done==0);
-  CHECK(delete_done==0);
+  CHECK(delete_done==3);
 }
 
 int main()

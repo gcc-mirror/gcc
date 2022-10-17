@@ -1,10 +1,10 @@
-// Issue 3703 - static array assignment
-
+// https://issues.dlang.org/show_bug.cgi?id=3703
+// static array assignment
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3703.d(18): Error: mismatched array lengths, 2 and 1
-fail_compilation/fail3703.d(20): Error: mismatched array lengths, 2 and 1
+fail_compilation/fail3703.d(18): Error: mismatched array lengths 2 and 1 for assignment `b[] = a`
+fail_compilation/fail3703.d(20): Error: mismatched array lengths 2 and 1 for assignment `b[] = a`
 fail_compilation/fail3703.d(22): Error: mismatched array lengths, 3 and 2
 fail_compilation/fail3703.d(23): Error: mismatched array lengths, 2 and 3
 fail_compilation/fail3703.d(25): Error: mismatched array lengths, 3 and 2

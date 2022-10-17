@@ -1,5 +1,5 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>,
    Steve Kargl and Janne Blomqvist.
 
@@ -76,6 +76,16 @@ iexport_proto(random_r16);
 
 extern void arandom_r16 (gfc_array_r16 *);
 export_proto(arandom_r16);
+
+#endif
+
+#ifdef HAVE_GFC_REAL_17
+
+extern void random_r17 (GFC_REAL_17 *);
+iexport_proto(random_r17);
+
+extern void arandom_r17 (gfc_array_r17 *);
+export_proto(arandom_r17);
 
 #endif
 
@@ -158,6 +168,27 @@ rnumber_16 (GFC_REAL_16 *f, GFC_UINTEGER_8 v1, GFC_UINTEGER_8 v2)
   v2 = v2 & mask;
   *f = (GFC_REAL_16) v1 * GFC_REAL_16_LITERAL(0x1.p-64)
     + (GFC_REAL_16) v2 * GFC_REAL_16_LITERAL(0x1.p-128);
+}
+#endif
+
+#ifdef HAVE_GFC_REAL_17
+
+/* For REAL(KIND=16), we only need to mask off the lower bits.  */
+
+static void
+rnumber_17 (GFC_REAL_17 *f, GFC_UINTEGER_8 v1, GFC_UINTEGER_8 v2)
+{
+  GFC_UINTEGER_8 mask;
+#if GFC_REAL_17_RADIX == 2
+  mask = ~ (GFC_UINTEGER_8) 0u << (128 - GFC_REAL_17_DIGITS);
+#elif GFC_REAL_17_RADIX == 16
+  mask = ~ (GFC_UINTEGER_8) 0u << ((32 - GFC_REAL_17_DIGITS) * 4);
+#else
+#error "GFC_REAL_17_RADIX has unknown value"
+#endif
+  v2 = v2 & mask;
+  *f = (GFC_REAL_17) v1 * GFC_REAL_17_LITERAL(0x1.p-64)
+    + (GFC_REAL_17) v2 * GFC_REAL_17_LITERAL(0x1.p-128);
 }
 #endif
 
@@ -445,6 +476,28 @@ iexport(random_r16);
 
 #endif
 
+/*  This function produces a REAL(16) value from the uniform distribution
+    with range [0,1).  */
+
+#ifdef HAVE_GFC_REAL_17
+
+void
+random_r17 (GFC_REAL_17 *x)
+{
+  GFC_UINTEGER_8 r1, r2;
+  prng_state* rs = get_rand_state();
+
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
+  r1 = prng_next (rs);
+  r2 = prng_next (rs);
+  rnumber_17 (x, r1, r2);
+}
+iexport(random_r17);
+
+
+#endif
+
 /*  This function fills a REAL(4) array with values from the uniform
     distribution with range [0,1).  */
 
@@ -688,6 +741,77 @@ arandom_r16 (gfc_array_r16 *x)
       uint64_t r1 = prng_next (rs);
       uint64_t r2 = prng_next (rs);
       rnumber_16 (dest, r1, r2);
+
+      /* Advance to the next element.  */
+      dest += stride0;
+      count[0]++;
+      /* Advance to the next source element.  */
+      index_type n = 0;
+      while (count[n] == extent[n])
+        {
+          /* When we get to the end of a dimension, reset it and increment
+             the next dimension.  */
+          count[n] = 0;
+          /* We could precalculate these products, but this is a less
+             frequently used path so probably not worth it.  */
+          dest -= stride[n] * extent[n];
+          n++;
+          if (n == dim)
+            {
+              dest = NULL;
+              break;
+            }
+          else
+            {
+              count[n]++;
+              dest += stride[n];
+            }
+        }
+    }
+}
+
+#endif
+
+#ifdef HAVE_GFC_REAL_17
+
+/*  This function fills a REAL(16) array with values from the uniform
+    distribution with range [0,1).  */
+
+void
+arandom_r17 (gfc_array_r17 *x)
+{
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
+  index_type stride0;
+  index_type dim;
+  GFC_REAL_17 *dest;
+  prng_state* rs = get_rand_state();
+
+  dest = x->base_addr;
+
+  dim = GFC_DESCRIPTOR_RANK (x);
+
+  for (index_type n = 0; n < dim; n++)
+    {
+      count[n] = 0;
+      stride[n] = GFC_DESCRIPTOR_STRIDE(x,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(x,n);
+      if (extent[n] <= 0)
+        return;
+    }
+
+  stride0 = stride[0];
+
+  if (unlikely (!rs->init))
+    init_rand_state (rs, false);
+
+  while (dest)
+    {
+      /* random_r17 (dest);  */
+      uint64_t r1 = prng_next (rs);
+      uint64_t r2 = prng_next (rs);
+      rnumber_17 (dest, r1, r2);
 
       /* Advance to the next element.  */
       dest += stride0;

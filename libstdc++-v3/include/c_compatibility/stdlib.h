@@ -1,6 +1,6 @@
 // -*- C++ -*- compatibility header.
 
-// Copyright (C) 2002-2021 Free Software Foundation, Inc.
+// Copyright (C) 2002-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +44,9 @@ using std::exit;
 # endif
 # ifdef _GLIBCXX_HAVE_QUICK_EXIT
   using std::quick_exit;
+# endif
+# if _GLIBCXX_USE_C99_STDLIB
+  using std::_Exit;
 # endif
 #endif
 

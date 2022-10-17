@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --            (Version for IBM Mainframe Packed Decimal Format)             --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package Interfaces.Packed_Decimal is
    --  Range of possible byte lengths
 
    Packed_Size : constant array (1 .. 18) of Byte_Length :=
-      (01 => 01,    -- Length in bytes for digits 1
+      [01 => 01,    -- Length in bytes for digits 1
        02 => 02,    -- Length in bytes for digits 2
        03 => 02,    -- Length in bytes for digits 2
        04 => 03,    -- Length in bytes for digits 2
@@ -108,7 +108,7 @@ package Interfaces.Packed_Decimal is
        15 => 08,    -- Length in bytes for digits 2
        16 => 09,    -- Length in bytes for digits 2
        17 => 09,    -- Length in bytes for digits 2
-       18 => 10);   -- Length in bytes for digits 2
+       18 => 10];   -- Length in bytes for digits 2
 
    -------------------------
    -- Conversion Routines --

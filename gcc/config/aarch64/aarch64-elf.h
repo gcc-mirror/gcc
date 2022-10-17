@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -143,8 +143,5 @@ ASM_MABI_SPEC
 
 #undef TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"%%%s"
-
-/* Stabs debug not required.  */
-#undef DBX_DEBUGGING_INFO
 
 #endif /* GCC_AARCH64_ELF_H */

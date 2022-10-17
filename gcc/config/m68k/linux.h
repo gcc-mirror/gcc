@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -146,10 +146,6 @@ along with GCC; see the file COPYING3.  If not see
     fprintf (FILE, "\tjbsr _mcount\n");					\
 }
 
-/* Do not break .stabs pseudos into continuations.  */
-
-#define DBX_CONTIN_LENGTH 0
-
 /* 1 if N is a possible register number for a function value.  For
    m68k/SVR4 allow d0, a0, or fp0 as return registers, for integral,
    pointer, or floating types, respectively.  Reject fp0 if not using
@@ -228,8 +224,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+#undef DEBUGGER_REGNO
+#define DEBUGGER_REGNO(REGNO) (REGNO)
 
 #undef  SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

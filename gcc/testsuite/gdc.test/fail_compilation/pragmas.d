@@ -1,16 +1,10 @@
-/*
-REQUIRED_ARGS:
-PERMUTE_ARGS:
-*/
-
 /************************************************************/
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/pragmas.d(103): Error: boolean expression expected for pragma(inline)
-fail_compilation/pragmas.d(108): Error: boolean expression expected for pragma(inline)
-fail_compilation/pragmas.d(113): Error: pragma(inline, true or false) expected, not `"string"`
+fail_compilation/pragmas.d(103): Error: boolean expression expected for `pragma(inline)`
+fail_compilation/pragmas.d(108): Error: boolean expression expected for `pragma(inline)`
 fail_compilation/pragmas.d(118): Error: unrecognized `pragma(unrecognized)`
 ---
 */
@@ -29,12 +23,10 @@ void test2()
 
 void test3()
 {
-    pragma(inline, "string");
+    pragma(inline, "string"); // works now
 }
 
 void test4()
 {
     pragma(unrecognized, "string");
 }
-
-

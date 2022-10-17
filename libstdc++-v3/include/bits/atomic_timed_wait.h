@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,11 +37,9 @@
 #if __cpp_lib_atomic_wait
 #include <bits/functional_hash.h>
 #include <bits/this_thread_sleep.h>
-
-#include <chrono>
+#include <bits/chrono.h>
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-#include <exception> // std::terminate
 #include <sys/time.h>
 #endif
 
@@ -101,12 +99,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	if (__e)
 	  {
-	    if ((errno != ETIMEDOUT) && (errno != EINTR)
-		&& (errno != EAGAIN))
+	    if (errno == ETIMEDOUT)
+	      return false;
+	    if (errno != EINTR && errno != EAGAIN)
 	      __throw_system_error(errno);
-	    return true;
 	  }
-	return false;
+	return true;
       }
 
     // returns true if wait ended before timeout
@@ -139,6 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // (e.g. __ulock_wait())which is better than pthread_cond_clockwait
 #endif // ! PLATFORM_TIMED_WAIT
 
+#ifdef _GLIBCXX_HAS_GTHREADS
     // Returns true if wait ended before timeout.
     // _Clock must be either steady_clock or system_clock.
     template<typename _Clock, typename _Dur>
@@ -194,6 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return false;
 	  }
       }
+#endif // _GLIBCXX_HAS_GTHREADS
 
     struct __timed_waiter_pool : __waiter_pool_base
     {
@@ -213,6 +213,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      lock_guard<mutex> __l(_M_mtx);
 	      return __cond_wait_until(_M_cv, _M_mtx, __atime);
 	    }
+	  else
+	    return true;
 #endif // _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
 	}
     };
@@ -238,6 +240,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __now = __wait_clock_t::now();
 	if (_M_deadline <= __now)
 	  return false;
+
+	// FIXME: this_thread::sleep_for not available #ifdef _GLIBCXX_NO_SLEEP
 
 	auto __elapsed = __now - _M_t0;
 	if (__elapsed > 128ms)

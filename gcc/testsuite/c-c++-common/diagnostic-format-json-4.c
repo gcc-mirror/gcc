@@ -19,6 +19,7 @@ int test (void)
 
 /* { dg-regexp "\"kind\": \"note\"" } */
 /* { dg-regexp "\"message\": \"...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'\"" } */
+/* { dg-regexp "\"escape-source\": false" } */
 
 /* { dg-regexp "\"caret\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
@@ -39,6 +40,7 @@ int test (void)
 /* { dg-regexp "\"kind\": \"warning\"" } */
 /* { dg-regexp "\"column-origin\": 1" } */
 /* { dg-regexp "\"message\": \"this 'if' clause does not guard...\"" } */
+/* { dg-regexp "\"escape-source\": false" } */
 /* { dg-regexp "\"option\": \"-Wmisleading-indentation\"" } */
 /* { dg-regexp "\"option_url\": \"https:\[^\n\r\"\]*#index-Wmisleading-indentation\"" } */
 

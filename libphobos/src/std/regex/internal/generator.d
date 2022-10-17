@@ -13,7 +13,7 @@ module std.regex.internal.generator;
 @trusted private struct SampleGenerator(Char)
 {
     import std.array : appender, Appender;
-    import std.format : formattedWrite;
+    import std.format.write : formattedWrite;
     import std.random : Xorshift;
     import std.regex.internal.ir : Regex, IR, IRL;
     import std.utf : isValidDchar, byChar;

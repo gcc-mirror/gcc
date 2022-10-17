@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@ template<typename T>
       a.moved_from = true;
     }
 
-    T* allocate(unsigned n) { return std::allocator<T>{}.allcoate(n); }
+    T* allocate(unsigned n) { return std::allocator<T>{}.allocate(n); }
     void deallocate(T* p, unsigned n) { std::allocator<T>{}.deallocate(p, n); }
 
     bool moved_to;

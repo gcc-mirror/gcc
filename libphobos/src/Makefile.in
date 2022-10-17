@@ -148,7 +148,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@am__objects_1 = etc/c/curl.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/sqlite3.lo etc/c/zlib.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/zlib.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/comparison.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/internal.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/iteration.lo \
@@ -159,8 +159,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/sorting.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/array.lo std/ascii.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/base64.lo std/bigint.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/bitmanip.lo std/compiler.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/complex.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/bitmanip.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/checkedint.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/compiler.lo std/complex.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/concurrency.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/array.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/binaryheap.lo \
@@ -178,7 +179,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/timezone.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/demangle.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/crc.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/digest.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/hmac.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/md.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/murmurhash.lo \
@@ -188,7 +188,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/encoding.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/exception.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/affix_allocator.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/aligned_block_list.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/allocator_list.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/ascending_page_allocator.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bitmapped_block.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bucketizer.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/fallback_allocator.lo \
@@ -215,14 +217,23 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/multilogger.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/nulllogger.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/package.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/typecons.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/file.lo std/format.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/file.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/floats.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/read.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/write.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/read.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/spec.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/write.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/functional.lo std/getopt.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/int128.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/attributes.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/cstring.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintnoasm.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/errorfunction.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/gammafunction.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/memory.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/scopebuffer.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/dummyrange.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/range.lo \
@@ -233,11 +244,26 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_norm.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_tables.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/json.lo std/math.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/json.lo std/logger/core.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/filelogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/multilogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/nulllogger.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/algebraic.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/constants.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/exponential.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/hardware.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/operations.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/remainder.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/rounding.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/traits.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/trigonometry.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/mathspecial.lo std/meta.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/mmfile.lo std/net/curl.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/net/isemail.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/numeric.lo std/outbuffer.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/package.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/parallelism.lo std/path.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/process.lo std/random.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/interfaces.lo \
@@ -254,16 +280,17 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/package.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/signals.lo std/socket.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/stdint.lo std/stdio.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/string.lo std/system.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/traits.lo std/typecons.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typetuple.lo std/uni.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/uri.lo std/utf.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/uuid.lo std/variant.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/string.lo std/sumtype.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/system.lo std/traits.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typecons.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typetuple.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/uni/package.lo std/uri.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/utf.lo std/uuid.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/variant.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/charset.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/registry.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/syserror.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/xml.lo std/zip.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zlib.lo
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zip.lo std/zlib.lo
 am__objects_2 = $(am__objects_1)
 am__objects_3 = $(am__objects_2)
 am_libgphobos_la_OBJECTS = $(am__objects_3)
@@ -476,8 +503,9 @@ LTDCOMPILE = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 # Include D build rules
 
 # Make sure GDC can find libdruntime and libphobos include files
-D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) \
-	-I $(top_srcdir)/libdruntime -I ../libdruntime -I .
+D_EXTRA_DFLAGS = -fpreview=dip1000 -fpreview=dtorfields -fpreview=fieldwise \
+	-nostdinc -I $(srcdir) -I $(top_srcdir)/libdruntime \
+	-I ../libdruntime -I .
 
 
 # D flags for compilation
@@ -504,9 +532,10 @@ libgphobos_la_LIBTOOLFLAGS =
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
     -version-info $(libtool_VERSION)
 
-libgphobos_la_LIBADD = \
-    ../libdruntime/libgdruntime_convenience.la $(LIBZ)
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@libgphobos_la_LIBADD = \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@    ../libdruntime/libgdruntime_convenience.la $(LIBZ)
 
+@ENABLE_LIBDRUNTIME_ONLY_TRUE@libgphobos_la_LIBADD = ../libdruntime/libgdruntime_convenience.la
 libgphobos_la_DEPENDENCIES = \
     ../libdruntime/libgdruntime_convenience.la libgphobos.spec
 
@@ -518,23 +547,26 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
 
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/comparison.d std/algorithm/internal.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/iteration.d std/algorithm/mutation.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/package.d std/algorithm/searching.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/setops.d std/algorithm/sorting.d std/array.d std/ascii.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/base64.d std/bigint.d std/bitmanip.d std/compiler.d std/complex.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/concurrency.d std/container/array.d std/container/binaryheap.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/dlist.d std/container/package.d std/container/rbtree.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/slist.d std/container/util.d std/conv.d std/csv.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/date.d std/datetime/interval.d std/datetime/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/internal.d std/algorithm/iteration.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/mutation.d std/algorithm/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/searching.d std/algorithm/setops.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/sorting.d std/array.d std/ascii.d std/base64.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/bigint.d std/bitmanip.d std/checkedint.d std/compiler.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/complex.d std/concurrency.d std/container/array.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/binaryheap.d std/container/dlist.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/package.d std/container/rbtree.d std/container/slist.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/util.d std/conv.d std/csv.d std/datetime/date.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/interval.d std/datetime/package.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/stopwatch.d std/datetime/systime.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/murmurhash.d std/digest/package.d std/digest/ripemd.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/sha.d std/encoding.d std/exception.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/hmac.d std/digest/md.d std/digest/murmurhash.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/package.d std/digest/ripemd.d std/digest/sha.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/encoding.d std/exception.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/affix_allocator.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/aligned_block_list.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/allocator_list.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/ascending_page_allocator.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bitmapped_block.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/bucketizer.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/fallback_allocator.d \
@@ -558,28 +590,36 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/core.d std/experimental/logger/filelogger.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/multilogger.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/typecons.d std/file.d std/format.d std/functional.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/getopt.d std/internal/cstring.d std/internal/math/biguintcore.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/gammafunction.d std/internal/scopebuffer.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/file.d std/format/internal/floats.d std/format/internal/read.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/write.d std/format/package.d std/format/read.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/spec.d std/format/write.d std/functional.d std/getopt.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/int128.d std/internal/attributes.d std/internal/cstring.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/memory.d std/internal/scopebuffer.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/dummyrange.d std/internal/test/range.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/uda.d std/internal/unicode_comp.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_decomp.d std/internal/unicode_grapheme.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_norm.d std/internal/unicode_tables.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.d std/json.d std/math.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.d std/json.d std/logger/core.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/filelogger.d std/logger/multilogger.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/nulllogger.d std/logger/package.d std/math/algebraic.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/constants.d std/math/exponential.d std/math/hardware.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/operations.d std/math/package.d std/math/remainder.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/rounding.d std/math/traits.d std/math/trigonometry.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/mathspecial.d std/meta.d std/mmfile.d std/net/curl.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/net/isemail.d std/numeric.d std/outbuffer.d std/parallelism.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/path.d std/process.d std/random.d std/range/interfaces.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/package.d std/range/primitives.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/net/isemail.d std/numeric.d std/outbuffer.d std/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/parallelism.d std/path.d std/process.d std/random.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/interfaces.d std/range/package.d std/range/primitives.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/ir.d std/regex/internal/kickstart.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/parser.d std/regex/internal/tests.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests2.d std/regex/internal/thompson.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/package.d std/signals.d std/socket.d std/stdint.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/stdio.d std/string.d std/system.d std/traits.d std/typecons.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typetuple.d std/uni.d std/uri.d std/utf.d std/uuid.d std/variant.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/charset.d std/windows/registry.d std/windows/syserror.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/xml.d std/zip.d std/zlib.d
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/stdio.d std/string.d std/sumtype.d std/system.d std/traits.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typecons.d std/typetuple.d std/uni/package.d std/uri.d std/utf.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/uuid.d std/variant.d std/windows/charset.d std/windows/registry.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/syserror.d std/zip.d std/zlib.d
 
 
 # Source file definitions. Boring stuff, auto-generated with
@@ -662,7 +702,6 @@ etc/c/$(am__dirstamp):
 	@$(MKDIR_P) etc/c
 	@: > etc/c/$(am__dirstamp)
 etc/c/curl.lo: etc/c/$(am__dirstamp)
-etc/c/sqlite3.lo: etc/c/$(am__dirstamp)
 etc/c/zlib.lo: etc/c/$(am__dirstamp)
 std/algorithm/$(am__dirstamp):
 	@$(MKDIR_P) std/algorithm
@@ -683,6 +722,7 @@ std/ascii.lo: std/$(am__dirstamp)
 std/base64.lo: std/$(am__dirstamp)
 std/bigint.lo: std/$(am__dirstamp)
 std/bitmanip.lo: std/$(am__dirstamp)
+std/checkedint.lo: std/$(am__dirstamp)
 std/compiler.lo: std/$(am__dirstamp)
 std/complex.lo: std/$(am__dirstamp)
 std/concurrency.lo: std/$(am__dirstamp)
@@ -712,7 +752,6 @@ std/digest/$(am__dirstamp):
 	@$(MKDIR_P) std/digest
 	@: > std/digest/$(am__dirstamp)
 std/digest/crc.lo: std/digest/$(am__dirstamp)
-std/digest/digest.lo: std/digest/$(am__dirstamp)
 std/digest/hmac.lo: std/digest/$(am__dirstamp)
 std/digest/md.lo: std/digest/$(am__dirstamp)
 std/digest/murmurhash.lo: std/digest/$(am__dirstamp)
@@ -726,7 +765,11 @@ std/experimental/allocator/building_blocks/$(am__dirstamp):
 	@: > std/experimental/allocator/building_blocks/$(am__dirstamp)
 std/experimental/allocator/building_blocks/affix_allocator.lo:  \
 	std/experimental/allocator/building_blocks/$(am__dirstamp)
+std/experimental/allocator/building_blocks/aligned_block_list.lo:  \
+	std/experimental/allocator/building_blocks/$(am__dirstamp)
 std/experimental/allocator/building_blocks/allocator_list.lo:  \
+	std/experimental/allocator/building_blocks/$(am__dirstamp)
+std/experimental/allocator/building_blocks/ascending_page_allocator.lo:  \
 	std/experimental/allocator/building_blocks/$(am__dirstamp)
 std/experimental/allocator/building_blocks/bitmapped_block.lo:  \
 	std/experimental/allocator/building_blocks/$(am__dirstamp)
@@ -788,14 +831,27 @@ std/experimental/logger/nulllogger.lo:  \
 	std/experimental/logger/$(am__dirstamp)
 std/experimental/logger/package.lo:  \
 	std/experimental/logger/$(am__dirstamp)
-std/experimental/typecons.lo: std/experimental/$(am__dirstamp)
 std/file.lo: std/$(am__dirstamp)
-std/format.lo: std/$(am__dirstamp)
+std/format/internal/$(am__dirstamp):
+	@$(MKDIR_P) std/format/internal
+	@: > std/format/internal/$(am__dirstamp)
+std/format/internal/floats.lo: std/format/internal/$(am__dirstamp)
+std/format/internal/read.lo: std/format/internal/$(am__dirstamp)
+std/format/internal/write.lo: std/format/internal/$(am__dirstamp)
+std/format/$(am__dirstamp):
+	@$(MKDIR_P) std/format
+	@: > std/format/$(am__dirstamp)
+std/format/package.lo: std/format/$(am__dirstamp)
+std/format/read.lo: std/format/$(am__dirstamp)
+std/format/spec.lo: std/format/$(am__dirstamp)
+std/format/write.lo: std/format/$(am__dirstamp)
 std/functional.lo: std/$(am__dirstamp)
 std/getopt.lo: std/$(am__dirstamp)
+std/int128.lo: std/$(am__dirstamp)
 std/internal/$(am__dirstamp):
 	@$(MKDIR_P) std/internal
 	@: > std/internal/$(am__dirstamp)
+std/internal/attributes.lo: std/internal/$(am__dirstamp)
 std/internal/cstring.lo: std/internal/$(am__dirstamp)
 std/internal/math/$(am__dirstamp):
 	@$(MKDIR_P) std/internal/math
@@ -804,6 +860,7 @@ std/internal/math/biguintcore.lo: std/internal/math/$(am__dirstamp)
 std/internal/math/biguintnoasm.lo: std/internal/math/$(am__dirstamp)
 std/internal/math/errorfunction.lo: std/internal/math/$(am__dirstamp)
 std/internal/math/gammafunction.lo: std/internal/math/$(am__dirstamp)
+std/internal/memory.lo: std/internal/$(am__dirstamp)
 std/internal/scopebuffer.lo: std/internal/$(am__dirstamp)
 std/internal/test/$(am__dirstamp):
 	@$(MKDIR_P) std/internal/test
@@ -822,7 +879,27 @@ std/internal/windows/$(am__dirstamp):
 std/internal/windows/advapi32.lo:  \
 	std/internal/windows/$(am__dirstamp)
 std/json.lo: std/$(am__dirstamp)
-std/math.lo: std/$(am__dirstamp)
+std/logger/$(am__dirstamp):
+	@$(MKDIR_P) std/logger
+	@: > std/logger/$(am__dirstamp)
+std/logger/core.lo: std/logger/$(am__dirstamp)
+std/logger/filelogger.lo: std/logger/$(am__dirstamp)
+std/logger/multilogger.lo: std/logger/$(am__dirstamp)
+std/logger/nulllogger.lo: std/logger/$(am__dirstamp)
+std/logger/package.lo: std/logger/$(am__dirstamp)
+std/math/$(am__dirstamp):
+	@$(MKDIR_P) std/math
+	@: > std/math/$(am__dirstamp)
+std/math/algebraic.lo: std/math/$(am__dirstamp)
+std/math/constants.lo: std/math/$(am__dirstamp)
+std/math/exponential.lo: std/math/$(am__dirstamp)
+std/math/hardware.lo: std/math/$(am__dirstamp)
+std/math/operations.lo: std/math/$(am__dirstamp)
+std/math/package.lo: std/math/$(am__dirstamp)
+std/math/remainder.lo: std/math/$(am__dirstamp)
+std/math/rounding.lo: std/math/$(am__dirstamp)
+std/math/traits.lo: std/math/$(am__dirstamp)
+std/math/trigonometry.lo: std/math/$(am__dirstamp)
 std/mathspecial.lo: std/$(am__dirstamp)
 std/meta.lo: std/$(am__dirstamp)
 std/mmfile.lo: std/$(am__dirstamp)
@@ -833,6 +910,7 @@ std/net/curl.lo: std/net/$(am__dirstamp)
 std/net/isemail.lo: std/net/$(am__dirstamp)
 std/numeric.lo: std/$(am__dirstamp)
 std/outbuffer.lo: std/$(am__dirstamp)
+std/package.lo: std/$(am__dirstamp)
 std/parallelism.lo: std/$(am__dirstamp)
 std/path.lo: std/$(am__dirstamp)
 std/process.lo: std/$(am__dirstamp)
@@ -864,11 +942,15 @@ std/socket.lo: std/$(am__dirstamp)
 std/stdint.lo: std/$(am__dirstamp)
 std/stdio.lo: std/$(am__dirstamp)
 std/string.lo: std/$(am__dirstamp)
+std/sumtype.lo: std/$(am__dirstamp)
 std/system.lo: std/$(am__dirstamp)
 std/traits.lo: std/$(am__dirstamp)
 std/typecons.lo: std/$(am__dirstamp)
 std/typetuple.lo: std/$(am__dirstamp)
-std/uni.lo: std/$(am__dirstamp)
+std/uni/$(am__dirstamp):
+	@$(MKDIR_P) std/uni
+	@: > std/uni/$(am__dirstamp)
+std/uni/package.lo: std/uni/$(am__dirstamp)
 std/uri.lo: std/$(am__dirstamp)
 std/utf.lo: std/$(am__dirstamp)
 std/uuid.lo: std/$(am__dirstamp)
@@ -879,7 +961,6 @@ std/windows/$(am__dirstamp):
 std/windows/charset.lo: std/windows/$(am__dirstamp)
 std/windows/registry.lo: std/windows/$(am__dirstamp)
 std/windows/syserror.lo: std/windows/$(am__dirstamp)
-std/xml.lo: std/$(am__dirstamp)
 std/zip.lo: std/$(am__dirstamp)
 std/zlib.lo: std/$(am__dirstamp)
 
@@ -908,6 +989,10 @@ mostlyclean-compile:
 	-rm -f std/experimental/allocator/building_blocks/*.lo
 	-rm -f std/experimental/logger/*.$(OBJEXT)
 	-rm -f std/experimental/logger/*.lo
+	-rm -f std/format/*.$(OBJEXT)
+	-rm -f std/format/*.lo
+	-rm -f std/format/internal/*.$(OBJEXT)
+	-rm -f std/format/internal/*.lo
 	-rm -f std/internal/*.$(OBJEXT)
 	-rm -f std/internal/*.lo
 	-rm -f std/internal/math/*.$(OBJEXT)
@@ -916,6 +1001,10 @@ mostlyclean-compile:
 	-rm -f std/internal/test/*.lo
 	-rm -f std/internal/windows/*.$(OBJEXT)
 	-rm -f std/internal/windows/*.lo
+	-rm -f std/logger/*.$(OBJEXT)
+	-rm -f std/logger/*.lo
+	-rm -f std/math/*.$(OBJEXT)
+	-rm -f std/math/*.lo
 	-rm -f std/net/*.$(OBJEXT)
 	-rm -f std/net/*.lo
 	-rm -f std/range/*.$(OBJEXT)
@@ -924,6 +1013,8 @@ mostlyclean-compile:
 	-rm -f std/regex/*.lo
 	-rm -f std/regex/internal/*.$(OBJEXT)
 	-rm -f std/regex/internal/*.lo
+	-rm -f std/uni/*.$(OBJEXT)
+	-rm -f std/uni/*.lo
 	-rm -f std/windows/*.$(OBJEXT)
 	-rm -f std/windows/*.lo
 
@@ -945,14 +1036,19 @@ clean-libtool:
 	-rm -rf std/experimental/allocator/.libs std/experimental/allocator/_libs
 	-rm -rf std/experimental/allocator/building_blocks/.libs std/experimental/allocator/building_blocks/_libs
 	-rm -rf std/experimental/logger/.libs std/experimental/logger/_libs
+	-rm -rf std/format/.libs std/format/_libs
+	-rm -rf std/format/internal/.libs std/format/internal/_libs
 	-rm -rf std/internal/.libs std/internal/_libs
 	-rm -rf std/internal/math/.libs std/internal/math/_libs
 	-rm -rf std/internal/test/.libs std/internal/test/_libs
 	-rm -rf std/internal/windows/.libs std/internal/windows/_libs
+	-rm -rf std/logger/.libs std/logger/_libs
+	-rm -rf std/math/.libs std/math/_libs
 	-rm -rf std/net/.libs std/net/_libs
 	-rm -rf std/range/.libs std/range/_libs
 	-rm -rf std/regex/.libs std/regex/_libs
 	-rm -rf std/regex/internal/.libs std/regex/internal/_libs
+	-rm -rf std/uni/.libs std/uni/_libs
 	-rm -rf std/windows/.libs std/windows/_libs
 install-toolexeclibDATA: $(toolexeclib_DATA)
 	@$(NORMAL_INSTALL)
@@ -1070,14 +1166,19 @@ distclean-generic:
 	-rm -f std/experimental/allocator/$(am__dirstamp)
 	-rm -f std/experimental/allocator/building_blocks/$(am__dirstamp)
 	-rm -f std/experimental/logger/$(am__dirstamp)
+	-rm -f std/format/$(am__dirstamp)
+	-rm -f std/format/internal/$(am__dirstamp)
 	-rm -f std/internal/$(am__dirstamp)
 	-rm -f std/internal/math/$(am__dirstamp)
 	-rm -f std/internal/test/$(am__dirstamp)
 	-rm -f std/internal/windows/$(am__dirstamp)
+	-rm -f std/logger/$(am__dirstamp)
+	-rm -f std/math/$(am__dirstamp)
 	-rm -f std/net/$(am__dirstamp)
 	-rm -f std/range/$(am__dirstamp)
 	-rm -f std/regex/$(am__dirstamp)
 	-rm -f std/regex/internal/$(am__dirstamp)
+	-rm -f std/uni/$(am__dirstamp)
 	-rm -f std/windows/$(am__dirstamp)
 
 maintainer-clean-generic:

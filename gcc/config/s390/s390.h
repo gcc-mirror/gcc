@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
 		  Ulrich Weigand (uweigand@de.ibm.com).
 		  Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
@@ -43,12 +43,12 @@ enum processor_flags
   PF_VXE2 = 8192,
   PF_Z15 = 16384,
   PF_NNPA = 32768,
-  PF_ARCH14 = 65536
+  PF_Z16 = 65536
 };
 
 /* This is necessary to avoid a warning about comparing different enum
    types.  */
-#define s390_tune_attr ((enum attr_cpu)(s390_tune > PROCESSOR_8561_Z15 ? PROCESSOR_8561_Z15 : s390_tune ))
+#define s390_tune_attr ((enum attr_cpu)(s390_tune > PROCESSOR_3931_Z16 ? PROCESSOR_3931_Z16 : s390_tune ))
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility regardless of the
@@ -110,10 +110,10 @@ enum processor_flags
 	(s390_arch_flags & PF_VXE2)
 #define TARGET_CPU_VXE2_P(opts) \
 	(opts->x_s390_arch_flags & PF_VXE2)
-#define TARGET_CPU_ARCH14 \
-	(s390_arch_flags & PF_ARCH14)
-#define TARGET_CPU_ARCH14_P(opts) \
-	(opts->x_s390_arch_flags & PF_ARCH14)
+#define TARGET_CPU_Z16 \
+	(s390_arch_flags & PF_Z16)
+#define TARGET_CPU_Z16_P(opts) \
+	(opts->x_s390_arch_flags & PF_Z16)
 #define TARGET_CPU_NNPA \
 	(s390_arch_flags & PF_NNPA)
 #define TARGET_CPU_NNPA_P(opts) \
@@ -177,9 +177,9 @@ enum processor_flags
 	(TARGET_VX && TARGET_CPU_VXE2)
 #define TARGET_VXE2_P(opts)						\
 	(TARGET_VX_P (opts) && TARGET_CPU_VXE2_P (opts))
-#define TARGET_ARCH14 (TARGET_ZARCH && TARGET_CPU_ARCH14)
-#define TARGET_ARCH14_P(opts)						\
-	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_ARCH14_P (opts))
+#define TARGET_Z16 (TARGET_ZARCH && TARGET_CPU_Z16)
+#define TARGET_Z16_P(opts)						\
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z16_P (opts))
 #define TARGET_NNPA					\
 	(TARGET_ZARCH && TARGET_CPU_NNPA)
 #define TARGET_NNPA_P(opts)						\
@@ -246,10 +246,6 @@ enum processor_flags
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() s390_cpu_cpp_builtins (pfile)
-
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS s390_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO s390_d_register_target_info
 
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
@@ -332,6 +328,11 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 
 #define STACK_SIZE_MODE (Pmode)
 
+/* Make the stack pointer to be moved downwards while issuing stack probes with
+   -fstack-check.  We need this to prevent memory below the stack pointer from
+   being accessed.  */
+#define STACK_CHECK_MOVING_SP 1
+
 #ifndef IN_LIBGCC2
 
 /* Width of a word, in units (bytes).  */
@@ -399,7 +400,7 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 
-/* Work around target_flags dependency in ada/targtyps.c.  */
+/* Work around target_flags dependency in ada/targtyps.cc.  */
 #define WIDEST_HARDWARE_FP_SIZE 64
 
 /* We use "unsigned char" as default.  */
@@ -700,7 +701,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Define the dwarf register mapping.
    v16-v31 -> 68-83
    rX      -> X      otherwise  */
-#define DBX_REGISTER_NUMBER(regno)				\
+#define DEBUGGER_REGNO(regno)				\
   (((regno) >= 38 && (regno) <= 53) ? (regno) + 30 : (regno))
 
 /* Frame registers.  */
@@ -812,7 +813,7 @@ CUMULATIVE_ARGS;
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.  */
+   macro is used in only one place: `find_reloads_address' in reload.cc.  */
 #define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND, WIN)	\
   do {									\
     rtx new_rtx = legitimize_reload_address ((AD), (MODE),		\
@@ -824,7 +825,7 @@ CUMULATIVE_ARGS;
       }									\
   } while (0)
 
-/* Helper macro for s390.c and s390.md to check for symbolic constants.  */
+/* Helper macro for s390.cc and s390.md to check for symbolic constants.  */
 #define SYMBOLIC_CONST(X)						\
   (GET_CODE (X) == SYMBOL_REF						\
    || GET_CODE (X) == LABEL_REF						\
@@ -1208,7 +1209,7 @@ struct GTY(()) machine_function
 #define TARGET_INDIRECT_BRANCH_TABLE s390_indirect_branch_table
 
 #ifdef GENERATOR_FILE
-/* gencondmd.c is built before insn-flags.h.  Use an arbitrary opaque value
+/* gencondmd.cc is built before insn-flags.h.  Use an arbitrary opaque value
    that cannot be optimized away by gen_insn.  */
 #define HAVE_TF(icode) TARGET_HARD_FLOAT
 #else

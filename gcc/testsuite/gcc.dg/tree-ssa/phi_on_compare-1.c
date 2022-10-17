@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-vrp1" } */
+/* { dg-options "-Ofast -fdump-tree-dom2" } */
 
 void g (int);
 void g1 (int);
@@ -27,4 +27,9 @@ f (long a, long b, long c, long d, long x)
   g (a);
 }
 
-/* { dg-final { scan-tree-dump-times "Removing basic block" 1 "vrp1" } } */
+/* This is actually a regression.  The backward threader cannot thread
+   the above scenario, but it is being caught by the DOM threader
+   which still uses the forward threader.  We should implement this
+   optimization in the backward threader before killing the forward
+   threader.  Similarly for the other phi_on_compare-*.c tests.  */
+/* { dg-final { scan-tree-dump-times "Removing basic block" 1 "dom2" } } */

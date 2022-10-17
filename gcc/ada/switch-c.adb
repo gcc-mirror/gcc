@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -390,6 +390,9 @@ package body Switch.C is
                      elsif Underscore then
                         Set_Underscored_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd_" & C);
+                        if Debug_Flag_Underscore_C then
+                           Enable_CUDA_Expansion := True;
+                        end if;
 
                      --  Normal flag
 
@@ -451,7 +454,6 @@ package body Switch.C is
 
                Debug_Generated_Code := True;
                Xref_Active := False;
-               Set_Debug_Flag ('g');
 
             --  -gnate? (extended switches)
 
@@ -601,7 +603,8 @@ package body Switch.C is
                      Exception_Extra_Info := True;
                      Ptr := Ptr + 1;
 
-                  --  -gnatef (full source path for brief error messages)
+                  --  -gnatef (full source path for brief error messages and
+                  --  absolute paths for -fdiagnostics-format=json)
 
                   when 'f' =>
                      Store_Switch := False;
@@ -1286,7 +1289,7 @@ package body Switch.C is
 
                else
                   declare
-                     OK  : Boolean;
+                     OK : Boolean;
 
                   begin
                      Set_Validity_Check_Options
@@ -1409,7 +1412,7 @@ package body Switch.C is
                   Store_Switch := False;
 
                   declare
-                     OK  : Boolean;
+                     OK : Boolean;
 
                   begin
                      Set_Style_Check_Options

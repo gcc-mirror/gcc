@@ -60,7 +60,7 @@ subroutine test2 (x, px)
   integer, allocatable :: a
   type(t2), pointer :: ta
 
-  call move_alloc (px, ta)      ! { dg-error "cannot be INTENT.IN." }
+  call move_alloc (px, ta)      ! { dg-error "must be ALLOCATABLE" }
   call move_alloc (x%a, a)      ! { dg-error "cannot be INTENT.IN." }
   call move_alloc (x%ptr%a, a)  ! OK (3)
   call move_alloc (px%a, a)     ! OK (4)
@@ -84,7 +84,7 @@ subroutine test3 (x, px)
   integer, allocatable :: a
   class(t2), pointer :: ta
 
-  call move_alloc (px, ta)      ! { dg-error "cannot be INTENT.IN." }
+  call move_alloc (px, ta)      ! { dg-error "must be ALLOCATABLE" }
   call move_alloc (x%a, a)      ! { dg-error "cannot be INTENT.IN." }
   call move_alloc (x%ptr%a, a)  ! OK (6)
   call move_alloc (px%a, a)     ! OK (7)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2009-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,7 @@ package GNAT.Secure_Hashes.SHA2_32 is
    --  SHA-224 and SHA-256 operate on 32-bit big endian words
 
    K : constant Hash_State.State (0 .. 63) :=
-         (16#428a2f98#, 16#71374491#, 16#b5c0fbcf#, 16#e9b5dba5#,
+         [16#428a2f98#, 16#71374491#, 16#b5c0fbcf#, 16#e9b5dba5#,
           16#3956c25b#, 16#59f111f1#, 16#923f82a4#, 16#ab1c5ed5#,
           16#d807aa98#, 16#12835b01#, 16#243185be#, 16#550c7dc3#,
           16#72be5d74#, 16#80deb1fe#, 16#9bdc06a7#, 16#c19bf174#,
@@ -65,7 +65,7 @@ package GNAT.Secure_Hashes.SHA2_32 is
           16#19a4c116#, 16#1e376c08#, 16#2748774c#, 16#34b0bcb5#,
           16#391c0cb3#, 16#4ed8aa4a#, 16#5b9cca4f#, 16#682e6ff3#,
           16#748f82ee#, 16#78a5636f#, 16#84c87814#, 16#8cc70208#,
-          16#90befffa#, 16#a4506ceb#, 16#bef9a3f7#, 16#c67178f2#);
+          16#90befffa#, 16#a4506ceb#, 16#bef9a3f7#, 16#c67178f2#];
    --  Constants from FIPS PUB 180-3
 
    function Sigma0 (X : Word) return Word;
@@ -86,23 +86,23 @@ package GNAT.Secure_Hashes.SHA2_32 is
       S1         => S1);
 
    SHA224_Init_State : constant Hash_State.State (0 .. 7) :=
-                         (0 => 16#c1059ed8#,
+                         [0 => 16#c1059ed8#,
                           1 => 16#367cd507#,
                           2 => 16#3070dd17#,
                           3 => 16#f70e5939#,
                           4 => 16#ffc00b31#,
                           5 => 16#68581511#,
                           6 => 16#64f98fa7#,
-                          7 => 16#befa4fa4#);
+                          7 => 16#befa4fa4#];
    SHA256_Init_State : constant Hash_State.State (0 .. 7) :=
-                         (0 => 16#6a09e667#,
+                         [0 => 16#6a09e667#,
                           1 => 16#bb67ae85#,
                           2 => 16#3c6ef372#,
                           3 => 16#a54ff53a#,
                           4 => 16#510e527f#,
                           5 => 16#9b05688c#,
                           6 => 16#1f83d9ab#,
-                          7 => 16#5be0cd19#);
+                          7 => 16#5be0cd19#];
    --  Initialization vectors from FIPS PUB 180-3
 
 end GNAT.Secure_Hashes.SHA2_32;

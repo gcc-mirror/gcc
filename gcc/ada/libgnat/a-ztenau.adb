@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -229,7 +229,7 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_Aux is
       Start : out Natural;
       Stop  : out Natural)
    is
-      WC  : Wide_Wide_Character;
+      WC : Wide_Wide_Character;
 
    --  Processing for Scan_Enum_Lit
 
@@ -303,8 +303,6 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_Aux is
 
             exit when
               Is_Character (WC)
-                and then
-                  not Is_Letter (To_Character (WC))
                 and then
                   not Is_Letter (To_Character (WC))
                 and then

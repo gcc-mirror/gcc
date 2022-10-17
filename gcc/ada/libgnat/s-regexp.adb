@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2021, AdaCore                     --
+--                     Copyright (C) 1999-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,9 +122,9 @@ package body System.Regexp is
    is
       S : String := Pattern;
       --  The pattern which is really compiled (when the pattern is case
-      --  insensitive, we convert this string to lower-cases
+      --  insensitive, we convert this string to lower-cases).
 
-      Map : Mapping := (others => 0);
+      Map : Mapping := [others => 0];
       --  Mapping between characters and columns in the tables
 
       Alphabet_Size : Column_Index := 0;
@@ -209,8 +209,59 @@ package body System.Regexp is
          --  The last occurrence of an opening parenthesis, if Glob=False,
          --  or the last occurrence of an opening curly brace, if Glob=True.
 
+         procedure Find_Close_Bracket;
+         --  Go through the pattern to find a closing bracket. Raise an
+         --  exception if none is found.
+
          procedure Raise_Exception_If_No_More_Chars (K : Integer := 0);
-         --  If no more characters are raised, call Raise_Exception
+         --  If J + K > S'Last then call Raise_Exception
+
+         ------------------------
+         -- Find_Close_Bracket --
+         ------------------------
+
+         procedure Find_Close_Bracket is
+            Possible_Range_Start : Boolean := True;
+            --  Set True everywhere a range character '-' can occur
+
+         begin
+            loop
+               exit when S (J) = Close_Bracket;
+
+               Raise_Exception_If_No_More_Chars (1);
+               --  The current character is not a close_bracket, thus it should
+               --  be followed by at least one more char. If not, no close
+               --  bracket is present and the pattern is ill-formed.
+
+               if S (J) = '-' and then S (J + 1) /= Close_Bracket then
+                  if not Possible_Range_Start then
+                     Raise_Exception
+                        ("No mix of ranges is allowed in "
+                        & "regular expression", J);
+                  end if;
+
+                  J := J + 1;
+                  Raise_Exception_If_No_More_Chars (1);
+
+                  Possible_Range_Start := False;
+                  --  Range cannot be followed by '-' character,
+                  --  except as last character in the set.
+
+               else
+                  Possible_Range_Start := True;
+               end if;
+
+               if S (J) = '\' then
+                  J := J + 1;
+                  Raise_Exception_If_No_More_Chars (1);
+                  --  We ignore the next character and need to check we have
+                  --  one more available character. This is necessary for
+                  --  the erroneous [\] pattern which stands for [\]] or [\\].
+               end if;
+
+               J := J + 1;
+            end loop;
+         end Find_Close_Bracket;
 
          --------------------------------------
          -- Raise_Exception_If_No_More_Chars --
@@ -240,63 +291,23 @@ package body System.Regexp is
                      end if;
                   end if;
 
-                  --  The first character never has a special meaning
-
+                  --  Characters ']' and '-' are meant as literals when first
+                  --  in the list.  As such, they have no special meaning and
+                  --  we pass them.
                   if S (J) = ']' or else S (J) = '-' then
                      J := J + 1;
                      Raise_Exception_If_No_More_Chars;
                   end if;
 
-                  --  The set of characters cannot be empty
-
                   if S (J) = ']' then
+                     --  ??? This message is misleading since the check forbids
+                     --  the sets []] and [-] but not the empty set [].
                      Raise_Exception
                        ("Set of characters cannot be empty in regular "
                           & "expression", J);
                   end if;
 
-                  declare
-                     Possible_Range_Start : Boolean := True;
-                     --  Set True everywhere a range character '-' can occur
-
-                  begin
-                     loop
-                        exit when S (J) = Close_Bracket;
-
-                        --  The current character should be followed by a
-                        --  closing bracket.
-
-                        Raise_Exception_If_No_More_Chars (1);
-
-                        if S (J) = '-'
-                          and then S (J + 1) /= Close_Bracket
-                        then
-                           if not Possible_Range_Start then
-                              Raise_Exception
-                                ("No mix of ranges is allowed in "
-                                   & "regular expression", J);
-                           end if;
-
-                           J := J + 1;
-                           Raise_Exception_If_No_More_Chars;
-
-                           --  Range cannot be followed by '-' character,
-                           --  except as last character in the set.
-
-                           Possible_Range_Start := False;
-
-                        else
-                           Possible_Range_Start := True;
-                        end if;
-
-                        if S (J) = '\' then
-                           J := J + 1;
-                           Raise_Exception_If_No_More_Chars;
-                        end if;
-
-                        J := J + 1;
-                     end loop;
-                  end;
+                  Find_Close_Bracket;
 
                   --  A closing bracket can end an elmt or term
 
@@ -430,6 +441,9 @@ package body System.Regexp is
                           ("'|' operator must be "
                            & "applied to a term in regular expression", J);
                      end if;
+
+                     --  A second term must follow
+                     Raise_Exception_If_No_More_Chars (K => 1);
 
                      Past_Elmt := False;
                      Past_Term := False;
@@ -1089,7 +1103,7 @@ package body System.Regexp is
       --  Start of processing for Create_Primary_Table
 
       begin
-         Table.all := (others => (others => 0));
+         Table.all := [others => [others => 0]];
          Create_Simple (S'First, S'Last, Start_State, End_State);
          Num_States := Current_State;
       end Create_Primary_Table;
@@ -1358,7 +1372,7 @@ package body System.Regexp is
       --  Start of processing for Create_Primary_Table_Glob
 
       begin
-         Table.all := (others => (others => 0));
+         Table.all := [others => [others => 0]];
          Create_Simple (S'First, S'Last, Start_State, End_State);
          Num_States := Current_State;
       end Create_Primary_Table_Glob;
@@ -1378,7 +1392,7 @@ package body System.Regexp is
          pragma Pack (Meta_State);
          --  Whether a state from first_table belongs to a metastate.
 
-         No_States : constant Meta_State := (others => False);
+         No_States : constant Meta_State := [others => False];
 
          type Meta_States_Array is array (State_Index range <>) of Meta_State;
          type Meta_States_List is access all Meta_States_Array;
@@ -1430,25 +1444,25 @@ package body System.Regexp is
             if Meta_States = null then
                Meta_States := new Meta_States_Array
                   (1 .. State_Index'Max (Last_Index, Meta) + 1);
-               Meta_States (Meta_States'Range) := (others => No_States);
+               Meta_States (Meta_States'Range) := [others => No_States];
 
                Table := new Meta_States_Transition_Arr
                   (1 .. State_Index'Max (Last_Index, Meta) + 1);
-               Table.all := (others => (others => 0));
+               Table.all := [others => [others => 0]];
 
             elsif Meta > Meta_States'Last then
                Meta_States := new Meta_States_Array
                   (1 .. State_Index'Max (2 * Tmp'Last, Meta));
                Meta_States (Tmp'Range) := Tmp.all;
                Meta_States (Tmp'Last + 1 .. Meta_States'Last) :=
-                  (others => No_States);
+                  [others => No_States];
                Unchecked_Free (Tmp);
 
                Table := new Meta_States_Transition_Arr
                   (1 .. State_Index'Max (2 * Tmp2'Last, Meta) + 1);
                Table (Tmp2'Range) := Tmp2.all;
                Table (Tmp2'Last + 1 .. Table'Last) :=
-                  (others => (others => 0));
+                  [others => [others => 0]];
                Unchecked_Free (Tmp2);
             end if;
          end Ensure_Meta_State;
@@ -1581,9 +1595,9 @@ package body System.Regexp is
                  R => new Regexp_Value'
                       (Alphabet_Size => 0,
                        Num_States    => 1,
-                       Map           => (others => 0),
-                       States        => (others => (others => 1)),
-                       Is_Final      => (others => True),
+                       Map           => [others => 0],
+                       States        => [others => [others => 1]],
+                       Is_Final      => [others => True],
                        Case_Sensitive => True));
       end if;
 
@@ -1712,7 +1726,7 @@ package body System.Regexp is
          New_Columns := Table'Last (2) * (Column / Table'Last (2) + 1);
          New_Table := new Regexp_Array (Table'First (1) .. New_Lines,
                                         Table'First (2) .. New_Columns);
-         New_Table.all := (others => (others => 0));
+         New_Table.all := [others => [others => 0]];
 
          for J in Table'Range (1) loop
             for K in Table'Range (2) loop

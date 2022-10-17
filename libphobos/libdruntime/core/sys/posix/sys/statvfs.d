@@ -44,7 +44,7 @@ version (CRuntime_Glibc) {
     }
     /* Definitions for the flag in `f_flag'.  These definitions should be
       kept in sync with the definitions in <sys/mount.h>.  */
-    static if (__USE_GNU)
+    static if (_GNU_SOURCE)
     {
         enum FFlag
         {

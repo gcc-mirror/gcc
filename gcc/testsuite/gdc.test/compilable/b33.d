@@ -1,4 +1,4 @@
-// EXTRA_SOURCES: imports/b33a.d
+// COMPILED_IMPORTS: imports/b33a.d
 // PERMUTE_ARGS:
 
 module b33;
@@ -9,4 +9,3 @@ size_t fn()
 {
     return find( "123" );
 }
-

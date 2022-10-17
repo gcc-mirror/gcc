@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,9 +27,9 @@ with Atree;    use Atree;
 with Csets;    use Csets;
 with Errout;   use Errout;
 with Hostparm; use Hostparm;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
-with Scans;    use Scans;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
@@ -52,9 +52,6 @@ package body Scng is
 
    Special_Characters : array (Character) of Boolean := (others => False);
    --  For characters that are Special token, the value is True
-
-   Comment_Is_Token : Boolean := False;
-   --  True if comments are tokens
 
    End_Of_Line_Is_Token : Boolean := False;
    --  True if End_Of_Line is a token
@@ -130,11 +127,7 @@ package body Scng is
 
    procedure Check_End_Of_Line is
       Len : constant Int :=
-              Int (Scan_Ptr) -
-                Int (Current_Line_Start) -
-                  Wide_Char_Byte_Count;
-
-   --  Start of processing for Check_End_Of_Line
+              Int (Scan_Ptr - Current_Line_Start) - Wide_Char_Byte_Count;
 
    begin
       if Style_Check then
@@ -230,16 +223,16 @@ package body Scng is
 
       --  Initialize scan control variables
 
-      Current_Source_File       := Index;
-      Source                    := Source_Text (Current_Source_File);
-      Scan_Ptr                  := Source_First (Current_Source_File);
-      Token                     := No_Token;
-      Token_Ptr                 := Scan_Ptr;
-      Current_Line_Start        := Scan_Ptr;
-      Token_Node                := Empty;
-      Token_Name                := No_Name;
-      Start_Column              := Set_Start_Column;
-      First_Non_Blank_Location  := Scan_Ptr;
+      Current_Source_File      := Index;
+      Source                   := Source_Text (Current_Source_File);
+      Scan_Ptr                 := Source_First (Current_Source_File);
+      Token                    := No_Token;
+      Token_Ptr                := Scan_Ptr;
+      Current_Line_Start       := Scan_Ptr;
+      Token_Node               := Empty;
+      Token_Name               := No_Name;
+      Start_Column             := Set_Start_Column;
+      First_Non_Blank_Location := Scan_Ptr;
 
       Initialize_Checksum;
       Wide_Char_Byte_Count := 0;
@@ -262,9 +255,6 @@ package body Scng is
    ----------
 
    procedure Scan is
-
-      Start_Of_Comment : Source_Ptr;
-      --  Record start of comment position
 
       Underline_Found : Boolean;
       --  During scanning of an identifier, set to True if last character
@@ -321,6 +311,49 @@ package body Scng is
       function Start_Of_Wide_Character return Boolean;
       --  Returns True if the scan pointer is pointing to the start of a wide
       --  character sequence, does not modify the scan pointer in any case.
+
+      procedure Check_Bidi (Code : Char_Code);
+      --  Give a warning if Code is a bidirectional character, which can cause
+      --  security vulnerabilities. See the following article:
+      --
+      --  @article{boucher_trojansource_2021,
+      --      title = {Trojan {Source}: {Invisible} {Vulnerabilities}},
+      --      author = {Nicholas Boucher and Ross Anderson},
+      --      year = {2021},
+      --      journal = {Preprint},
+      --      eprint = {2111.00169},
+      --      archivePrefix = {arXiv},
+      --      primaryClass = {cs.CR},
+      --      url = {https://arxiv.org/abs/2111.00169}
+      --  }
+
+      ----------------
+      -- Check_Bidi --
+      ----------------
+
+      type Bidi_Characters is
+        (LRE, RLE, LRO, RLO, LRI, RLI, FSI, PDF, PDI);
+      Bidi_Character_Codes : constant array (Bidi_Characters) of Char_Code :=
+        (LRE => 16#202A#,
+         RLE => 16#202B#,
+         LRO => 16#202D#,
+         RLO => 16#202E#,
+         LRI => 16#2066#,
+         RLI => 16#2067#,
+         FSI => 16#2068#,
+         PDF => 16#202C#,
+         PDI => 16#2069#);
+      --  Above are the bidirectional characters, along with their Unicode code
+      --  points.
+
+      procedure Check_Bidi (Code : Char_Code) is
+      begin
+         for Bidi_Code of Bidi_Character_Codes loop
+            if Code = Bidi_Code then
+               Error_Msg ("??bidirectional wide character", Wptr);
+            end if;
+         end loop;
+      end Check_Bidi;
 
       -----------------------
       -- Double_Char_Token --
@@ -729,6 +762,15 @@ package body Scng is
             if UI_Scale = 0 then
                Int_Literal_Value := UI_Num_Value;
 
+            --  When the exponent is large, computing is expected to take a
+            --  rather unreasonable time. We generate an error so that it
+            --  does not appear that the compiler has gotten stuck. Such a
+            --  large exponent is most likely a typo anyway.
+
+            elsif UI_Scale >= 800_000 then
+               Error_Msg_SC ("exponent too large");
+               Int_Literal_Value := No_Uint;
+
             --  Avoid doing possibly expensive calculations in cases like
             --  parsing 163E800_000# when semantics will not be done anyway.
             --  This is especially useful when parsing garbled input.
@@ -1070,6 +1112,8 @@ package body Scng is
                   if Err then
                      Error_Illegal_Wide_Character;
                      Code := Get_Char_Code (' ');
+                  else
+                     Check_Bidi (Code);
                   end if;
 
                   Accumulate_Checksum (Code);
@@ -1371,7 +1415,7 @@ package body Scng is
             Token := Tok_Left_Paren;
 
             if Style_Check then
-               Style.Check_Left_Paren;
+               Style.Check_Left_Paren_Square_Bracket;
             end if;
 
             return;
@@ -1380,13 +1424,18 @@ package body Scng is
 
          when '[' =>
 
-            --  [] under -gnatX is an aggregate notation and the special
+            --  [] under -gnat2022 is an aggregate notation and the special
             --  wide character notation becomes unsupported since the two
             --  are ambiguous.
 
-            if Extensions_Allowed then
+            if Ada_Version >= Ada_2022 then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Bracket;
+
+               if Style_Check then
+                  Style.Check_Left_Paren_Square_Bracket;
+               end if;
+
                return;
 
             elsif Source (Scan_Ptr + 1) = '"' then
@@ -1554,10 +1603,6 @@ package body Scng is
                   return;
                end if;
 
-               --  Otherwise scan out the comment
-
-               Start_Of_Comment := Scan_Ptr;
-
                --  Loop to scan comment (this loop runs more than once only if
                --  a horizontal tab or other non-graphic character is scanned)
 
@@ -1611,11 +1656,11 @@ package body Scng is
 
                   elsif Start_Of_Wide_Character then
                      declare
-                        Wptr : constant Source_Ptr := Scan_Ptr;
                         Code : Char_Code;
                         Err  : Boolean;
 
                      begin
+                        Wptr := Scan_Ptr;
                         Scan_Wide (Source, Scan_Ptr, Code, Err);
 
                         --  If not well formed wide character, then just skip
@@ -1629,6 +1674,8 @@ package body Scng is
                         elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
                            Scan_Ptr := Wptr;
                            exit;
+                        else
+                           Check_Bidi (Code);
                         end if;
                      end;
 
@@ -1654,18 +1701,8 @@ package body Scng is
                   end if;
                end loop;
 
-               --  Note that, except when comments are tokens, we do NOT
-               --  execute a return here, instead we fall through to reexecute
-               --  the scan loop to look for a token.
-
-               if Comment_Is_Token then
-                  Name_Len := Integer (Scan_Ptr - Start_Of_Comment);
-                  Name_Buffer (1 .. Name_Len) :=
-                    String (Source (Start_Of_Comment .. Scan_Ptr - 1));
-                  Comment_Id := Name_Find;
-                  Token := Tok_Comment;
-                  return;
-               end if;
+               --  Note that we do not return here; instead we fall through to
+               --  reexecute the scan loop to look for a token.
             end if;
          end Minus_Case;
 
@@ -1710,15 +1747,9 @@ package body Scng is
             --  In Ada 2022, a target name (i.e. @) is a valid prefix of an
             --  attribute, and functions like a name.
 
-            if Prev_Token = Tok_All
-              or else Prev_Token = Tok_At_Sign
-              or else Prev_Token = Tok_Delta
-              or else Prev_Token = Tok_Digits
-              or else Prev_Token = Tok_Identifier
-              or else Prev_Token = Tok_Project
-              or else Prev_Token = Tok_Right_Paren
-              or else Prev_Token = Tok_Right_Bracket
-              or else Prev_Token in Token_Class_Literal
+            if Prev_Token in Tok_All | Tok_At_Sign | Tok_Delta | Tok_Digits |
+              Tok_Identifier | Tok_Project | Tok_Right_Paren |
+              Tok_Right_Bracket | Token_Class_Literal
             then
                Token := Tok_Apostrophe;
 
@@ -1736,23 +1767,26 @@ package body Scng is
                if Start_Of_Wide_Character then
                   Wptr := Scan_Ptr;
                   Scan_Wide (Source, Scan_Ptr, Code, Err);
-                  Accumulate_Checksum (Code);
 
                   if Err then
                      Error_Illegal_Wide_Character;
                      Code := Character'Pos (' ');
 
                   --  In Ada 95 mode we allow any wide character in a character
-                  --  literal, but in Ada 2005, the set of characters allowed
-                  --  is restricted to graphic characters.
+                  --  literal, but in later versions, the set of characters
+                  --  allowed is restricted to graphic characters.
 
                   elsif Ada_Version >= Ada_2005
                     and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
                   then
-                     Error_Msg -- CODEFIX????
+                     Error_Msg -- CODEFIX
                        ("(Ada 2005) non-graphic character not permitted " &
                         "in character literal", Wptr);
+                  else
+                     Check_Bidi (Code);
                   end if;
+
+                  Accumulate_Checksum (Code);
 
                   if Source (Scan_Ptr) /= ''' then
                         Error_Msg_S ("missing apostrophe");
@@ -2012,15 +2046,15 @@ package body Scng is
          --  Underline character
 
          when '_' =>
-            if Special_Characters ('_') then
-               Token_Ptr := Scan_Ptr;
-               Scan_Ptr := Scan_Ptr + 1;
-               Token := Tok_Special;
-               Special_Character := '_';
-               return;
+            --  Identifiers with leading underscores are not allowed in Ada.
+            --  However, we allow them in the run-time library, so we can
+            --  create names that are hidden from normal Ada code. For an
+            --  example, search for "Name_uNext", which is "_Next".
+
+            if not In_Internal_Unit (Scan_Ptr) then
+               Error_Msg_S ("identifier cannot start with underline");
             end if;
 
-            Error_Msg_S ("identifier cannot start with underline");
             Name_Len := 1;
             Name_Buffer (1) := '_';
             Scan_Ptr := Scan_Ptr + 1;
@@ -2072,42 +2106,19 @@ package body Scng is
                Error_Illegal_Character;
             end if;
 
-         --  Invalid control characters
+         --  Illegal characters
 
-         when ACK
-            | ASCII.SO
-            | BEL
-            | BS
-            | CAN
-            | DC1
-            | DC2
-            | DC3
-            | DC4
-            | DEL
-            | DLE
-            | EM
-            | ENQ
-            | EOT
-            | ETB
-            | ETX
-            | FS
-            | GS
-            | NAK
-            | NUL
-            | RS
-            | SI
-            | SOH
-            | STX
-            | SYN
-            | US
+         when ACK | ASCII.SO | BEL | BS | CAN | DC1 | DC2 | DC3 | DC4 | DEL
+           | DLE | EM | ENQ | EOT | ETB | ETX | FS | GS | NAK | NUL | RS | SI
+           | SOH | STX | SYN | US
+           | '?' | '`' | '\' | '^' | '~'
          =>
             Error_Illegal_Character;
 
-         --  Invalid graphic characters
-         --  Note that '@' is handled elsewhere, because following AI12-125
-         --  it denotes the target_name of an assignment.
+         --  Special preprocessor characters. If Set_Special_Character has been
+         --  called, return a Special token. Otherwise give an error.
 
-         when '#' | '$' | '?' | '`' | '\' | '^' | '~' =>
+         when Special_Preprocessor_Character =>
 
             --  If Set_Special_Character has been called for this character,
             --  set Scans.Special_Character and return a Special token.
@@ -2650,15 +2661,6 @@ package body Scng is
          end if;
    end Scan;
 
-   --------------------------
-   -- Set_Comment_As_Token --
-   --------------------------
-
-   procedure Set_Comment_As_Token (Value : Boolean) is
-   begin
-      Comment_Is_Token := Value;
-   end Set_Comment_As_Token;
-
    ------------------------------
    -- Set_End_Of_Line_As_Token --
    ------------------------------
@@ -2672,15 +2674,9 @@ package body Scng is
    -- Set_Special_Character --
    ---------------------------
 
-   procedure Set_Special_Character (C : Character) is
+   procedure Set_Special_Character (C : Special_Preprocessor_Character) is
    begin
-      case C is
-         when '#' | '$' | '_' | '?' | '@' | '`' | '\' | '^' | '~' =>
-            Special_Characters (C) := True;
-
-         when others =>
-            null;
-      end case;
+      Special_Characters (C) := True;
    end Set_Special_Character;
 
    ----------------------
@@ -2701,52 +2697,13 @@ package body Scng is
 
       Tabs_Loop : loop
 
-         --  Inner loop scans past blanks as fast as possible, bumping Scan_Ptr
-         --  past the blanks and adjusting Start_Column to account for them.
+         --  Inner loop scans past blanks, bumping Scan_Ptr past the blanks and
+         --  adjusting Start_Column to account for them.
 
-         Blanks_Loop : loop
-            if Source (Scan_Ptr) = ' ' then
-               if Source (Scan_Ptr + 1) = ' ' then
-                  if Source (Scan_Ptr + 2) = ' ' then
-                     if Source (Scan_Ptr + 3) = ' ' then
-                        if Source (Scan_Ptr + 4) = ' ' then
-                           if Source (Scan_Ptr + 5) = ' ' then
-                              if Source (Scan_Ptr + 6) = ' ' then
-                                 Scan_Ptr := Scan_Ptr + 7;
-                                 Start_Column := Start_Column + 7;
-                              else
-                                 Scan_Ptr := Scan_Ptr + 6;
-                                 Start_Column := Start_Column + 6;
-                                 exit Blanks_Loop;
-                              end if;
-                           else
-                              Scan_Ptr := Scan_Ptr + 5;
-                              Start_Column := Start_Column + 5;
-                              exit Blanks_Loop;
-                           end if;
-                        else
-                           Scan_Ptr := Scan_Ptr + 4;
-                           Start_Column := Start_Column + 4;
-                           exit Blanks_Loop;
-                        end if;
-                     else
-                        Scan_Ptr := Scan_Ptr + 3;
-                        Start_Column := Start_Column + 3;
-                        exit Blanks_Loop;
-                     end if;
-                  else
-                     Scan_Ptr := Scan_Ptr + 2;
-                     Start_Column := Start_Column + 2;
-                     exit Blanks_Loop;
-                  end if;
-               else
-                  Scan_Ptr := Scan_Ptr + 1;
-                  Start_Column := Start_Column + 1;
-                  exit Blanks_Loop;
-               end if;
-            else
-               exit Blanks_Loop;
-            end if;
+         Blanks_Loop :
+         while Source (Scan_Ptr) = ' ' loop
+            Scan_Ptr := Scan_Ptr + 1;
+            Start_Column := Start_Column + 1;
          end loop Blanks_Loop;
 
          --  Outer loop keeps going only if a horizontal tab follows
@@ -2771,7 +2728,7 @@ package body Scng is
 
    exception
       when Constraint_Error =>
-         return Start_Column;
+         return Column_Number'Last;
    end Set_Start_Column;
 
 end Scng;

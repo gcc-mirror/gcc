@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009-2021 Free Software Foundation, Inc.
+// Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,11 +68,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
       struct _Shift
-      { static const _UIntType __value = 0; };
+      { static constexpr _UIntType __value = 0; };
 
     template<typename _UIntType, size_t __w>
       struct _Shift<_UIntType, __w, true>
-      { static const _UIntType __value = _UIntType(1) << __w; };
+      { static constexpr _UIntType __value = _UIntType(1) << __w; };
 
     template<int __s,
 	     int __which = ((__s <= __CHAR_BIT__ * sizeof (int))
@@ -88,20 +88,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<int __s>
       struct _Select_uint_least_t<__s, 4>
-      { typedef unsigned int type; };
+      { using type = unsigned int; };
 
     template<int __s>
       struct _Select_uint_least_t<__s, 3>
-      { typedef unsigned long type; };
+      { using type = unsigned long; };
 
     template<int __s>
       struct _Select_uint_least_t<__s, 2>
-      { typedef unsigned long long type; };
+      { using type = unsigned long long; };
 
 #if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
     template<int __s>
       struct _Select_uint_least_t<__s, 1>
-      { typedef unsigned __int128 type; };
+      { __extension__ using type = unsigned __int128; };
 #endif
 
     // Assume a != 0, a < m, c < m, x < m.
@@ -111,11 +111,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              bool __schrage_ok = __m % __a < __m / __a>
       struct _Mod
       {
-	typedef typename _Select_uint_least_t<std::__lg(__a)
-					      + std::__lg(__m) + 2>::type _Tp2;
 	static _Tp
 	__calc(_Tp __x)
-	{ return static_cast<_Tp>((_Tp2(__a) * __x + __c) % __m); }
+	{
+	  using _Tp2
+	    = typename _Select_uint_least_t<std::__lg(__a)
+					    + std::__lg(__m) + 2>::type;
+	  return static_cast<_Tp>((_Tp2(__a) * __x + __c) % __m);
+	}
       };
 
     // Schrage.
@@ -195,16 +198,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Engine& _M_g;
       };
 
+    // Detect whether a template argument _Sseq is a valid seed sequence for
+    // a random number engine _Engine with result type _Res.
+    // Used to constrain _Engine::_Engine(_Sseq&) and _Engine::seed(_Sseq&)
+    // as required by [rand.eng.general].
+
     template<typename _Sseq>
       using __seed_seq_generate_t = decltype(
 	  std::declval<_Sseq&>().generate(std::declval<uint_least32_t*>(),
 					  std::declval<uint_least32_t*>()));
 
-    // Detect whether _Sseq is a valid seed sequence for
-    // a random number engine _Engine with result type _Res.
     template<typename _Sseq, typename _Engine, typename _Res,
 	     typename _GenerateCheck = __seed_seq_generate_t<_Sseq>>
-      using __is_seed_seq = __and_<
+      using _If_seed_seq_for = _Require<
         __not_<is_same<__remove_cvref_t<_Sseq>, _Engine>>,
 	is_unsigned<typename _Sseq::result_type>,
 	__not_<is_convertible<_Sseq, _Res>>
@@ -260,8 +266,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __m out of bounds");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, linear_congruential_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, linear_congruential_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -499,8 +506,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __f out of bound");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, mersenne_twister_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, mersenne_twister_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -699,8 +707,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __w out of bounds");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, subtract_with_carry_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, subtract_with_carry_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -891,8 +900,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _RandomNumberEngine::result_type result_type;
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, discard_block_engine, result_type>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, discard_block_engine,
+				       result_type>;
 
       // parameter values
       static constexpr size_t block_size = __p;
@@ -1110,8 +1120,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "template argument substituting __w out of bounds");
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, independent_bits_engine, _UIntType>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, independent_bits_engine,
+				       _UIntType>;
 
     public:
       /** The type of the generated random value. */
@@ -1333,8 +1344,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _RandomNumberEngine::result_type result_type;
 
       template<typename _Sseq>
-	using _If_seed_seq = typename enable_if<__detail::__is_seed_seq<
-	  _Sseq, shuffle_order_engine, result_type>::value>::type;
+	using _If_seed_seq
+	  = __detail::_If_seed_seq_for<_Sseq, shuffle_order_engine,
+				       result_type>;
 
       static constexpr size_t table_size = __k;
 
@@ -1663,7 +1675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     void _M_init(const char*, size_t); // not exported from the shared library
 
-    union
+    __extension__ union
     {
       struct
       {

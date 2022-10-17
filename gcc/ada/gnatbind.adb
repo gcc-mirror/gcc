@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,7 @@ with Switch;   use Switch;
 with Switch.B; use Switch.B;
 with Targparm; use Targparm;
 with Types;    use Types;
+with Uintp;
 
 with System.Case_Util; use System.Case_Util;
 with System.Response_File;
@@ -125,7 +126,6 @@ procedure Gnatbind is
         Scan_ALI
           (F             => Std_Lib_File,
            T             => Text,
-           Ignore_ED     => False,
            Err           => False,
            Ignore_Errors => Debug_Flag_I);
 
@@ -618,6 +618,7 @@ begin
    --  is in some cases important.
 
    Csets.Initialize;
+   Uintp.Initialize;
    Snames.Initialize;
 
    --  Scan the switches and arguments. Note that Snames must already be
@@ -770,7 +771,6 @@ begin
             Id := Scan_ALI
                     (F                => Main_Lib_File,
                      T                => Text,
-                     Ignore_ED        => False,
                      Err              => False,
                      Ignore_Errors    => Debug_Flag_I,
                      Directly_Scanned => True);

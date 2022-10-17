@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fanalyzer" } */
+/* { dg-require-effective-target analyzer } */
 
 #include "gil.h"
 

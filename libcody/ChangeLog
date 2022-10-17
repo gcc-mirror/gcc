@@ -1,3 +1,23 @@
+2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (revision.stamp): Replace $() and += with more
+	portable shell constructs.
+
+2022-03-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* netclient.cc (OpenInet6): Do not provide a dummy port number
+	in the getaddrinfo() call.
+
+2021-11-01  Martin Liska  <mliska@suse.cz>
+
+	PR other/102657
+	* Makefile.in: Add mostlyclean Makefile target.
+
+2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* netserver.cc (ListenInet6): Set pointer to null after
+	deallocation.
+
 2021-04-06  Nathan Sidwell  <nathan@acm.org>
 
 	* LICENSE.gcc: Delete.
@@ -167,7 +187,7 @@
 	* tests/jouster: New.
 
 
-Copyright (C) 2020-2021 Free Software Foundation, Inc.
+Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,4 +1,4 @@
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,10 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#if __cplusplus != 201103L
+# error This file must be compiled as C++11
+#endif
+
 #define _GLIBCXX_USE_CXX11_ABI 1
 #include <clocale>
 #include <cstring>
@@ -27,6 +31,7 @@
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
 #include <locale>
+#include <ext/atomicity.h>
 #include <ext/concurrence.h>
 
 #if _GLIBCXX_USE_DUAL_ABI
@@ -317,6 +322,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   locale::_S_initialize_once() throw()
   {
+    // Need to check this because we could get called once from _S_initialize()
+    // when the program is single-threaded, and then again (via __gthread_once)
+    // when it's multi-threaded.
+    if (_S_classic)
+      return;
+
     // 2 references.
     // One reference for _S_classic, one for _S_global
     _S_classic = new (&c_locale_impl) _Impl(2);
@@ -328,10 +339,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   locale::_S_initialize()
   {
 #ifdef __GTHREADS
-    if (__gthread_active_p())
+    if (!__gnu_cxx::__is_single_threaded())
       __gthread_once(&_S_once, _S_initialize_once);
 #endif
-    if (!_S_classic)
+    if (__builtin_expect(!_S_classic, 0))
       _S_initialize_once();
   }
 

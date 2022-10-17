@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2021 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
-   <http://www.gnu.org/licenses/>.
+   <https://www.gnu.org/licenses/>.
 
 .. default-domain:: cpp
 
@@ -29,9 +29,9 @@ compilation.
 
 You can set up options on it, and add types, functions and code.
 Invoking :func:`gccjit::context::compile` on it gives you a
-:c:type:`gcc_jit_result *`.
+:c:expr:`gcc_jit_result *`.
 
-It is a thin wrapper around the C API's :c:type:`gcc_jit_context *`.
+It is a thin wrapper around the C API's :c:expr:`gcc_jit_context *`.
 
 Lifetime-management
 -------------------
@@ -48,7 +48,7 @@ cleanup of such objects is done for you when the context is released.
 .. function:: void gccjit::context::release ()
 
   This function releases all resources associated with the given context.
-  Both the context itself and all of its :c:type:`gccjit::object *`
+  Both the context itself and all of its :expr:`gccjit::object *`
   instances are cleaned up.  It should be called exactly once on a given
   context.
 
@@ -141,7 +141,7 @@ Debugging
    If "update_locations" is true, then also set up :class:`gccjit::location`
    information throughout the context, pointing at the dump file as if it
    were a source file.  This may be of use in conjunction with
-   :c:macro:`GCCJIT::BOOL_OPTION_DEBUGINFO` to allow stepping through the
+   :c:macro:`GCC_JIT_BOOL_OPTION_DEBUGINFO` to allow stepping through the
    code in a debugger.
 
 .. function:: void\

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -240,7 +240,7 @@ between the two is that @code{LIB_SPEC} is used at the end of the
 command given to the linker.
 
 If this macro is not defined, a default is provided that
-loads the standard C library from the usual place.  See @file{gcc.c}.
+loads the standard C library from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac LIBGCC_SPEC
@@ -287,7 +287,7 @@ difference between the two is that @code{STARTFILE_SPEC} is used at
 the very beginning of the command given to the linker.
 
 If this macro is not defined, a default is provided that loads the
-standard C startup file from the usual place.  See @file{gcc.c}.
+standard C startup file from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac ENDFILE_SPEC
@@ -392,7 +392,7 @@ The default value of this macro is empty string.
 @defmac LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
 linker.  When you do this, you will need to update your port each time a
-change is made to the link command line within @file{gcc.c}.  Therefore,
+change is made to the link command line within @file{gcc.cc}.  Therefore,
 define this macro only if you need to completely redefine the command
 line for invoking the linker and there is no other way to accomplish
 the effect you need.  Overriding this macro may be avoidable by overriding
@@ -736,6 +736,9 @@ options are changed via @code{#pragma GCC optimize} or by using the
 
 @hook TARGET_OPTION_INIT_STRUCT
 
+@hook TARGET_COMPUTE_MULTILIB
+
+
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
@@ -929,6 +932,9 @@ Do not define this macro if it would never modify @var{m}.
 @end defmac
 
 @hook TARGET_C_EXCESS_PRECISION
+Return a value, with the same meaning as the C99 macro
+@code{FLT_EVAL_METHOD} that describes which excess precision should be
+applied.
 
 @hook TARGET_PROMOTE_FUNCTION_MODE
 
@@ -1432,7 +1438,7 @@ The string can contain more than one keyword.  If so, separate them with
 spaces, and write first any length keyword, then @code{unsigned} if
 appropriate, and finally @code{int}.  The string must exactly match one
 of the data type names defined in the function
-@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.c}.
+@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.cc}.
 You may not omit @code{int} or change the order---that would cause the
 compiler to crash on startup.
 
@@ -1960,7 +1966,7 @@ they must be consecutively numbered.  Furthermore, the existing
 support for stack-like registers is specific to the 80387 floating
 point coprocessor.  If you have a new architecture that uses
 stack-like registers, you will need to do substantial work on
-@file{reg-stack.c} and write your machine description to cooperate
+@file{reg-stack.cc} and write your machine description to cooperate
 with it, as well as defining these macros.
 
 @defmac STACK_REGS
@@ -2276,7 +2282,7 @@ intermediate registers or scratch registers.
 
 If copying a register @var{class} in @var{mode} to @var{x} requires an
 intermediate or scratch register, @code{SECONDARY_OUTPUT_RELOAD_CLASS}
-was supposed to be defined be defined to return the largest register
+was supposed to be defined to return the largest register
 class required.  If the
 requirements for input and output reloads were the same, the macro
 @code{SECONDARY_RELOAD_CLASS} should have been used instead of defining both
@@ -2476,7 +2482,7 @@ on the stack, e.g., by @code{alloca}.
 
 The default value for this macro is @code{STACK_POINTER_OFFSET} plus the
 length of the outgoing arguments.  The default is correct for most
-machines.  See @file{function.c} for details.
+machines.  See @file{function.cc} for details.
 @end defmac
 
 @defmac INITIAL_FRAME_ADDRESS_RTX
@@ -2567,6 +2573,12 @@ number that is considered to always have the value zero.  This should
 only be defined if the target has an architected zero register, and
 someone decided it was a good idea to use that register number to
 terminate the stack backtrace.  New ports should avoid this.
+@end defmac
+
+@defmac DWARF_VERSION_DEFAULT
+A C expression whose value is the default dwarf standard version we'll honor
+and advertise when generating dwarf debug information, in absence of
+an explicit @option{-gdwarf-@var{version}} option on the command line.
 @end defmac
 
 @hook TARGET_DWARF_HANDLE_FRAME_UNSPEC
@@ -3006,7 +3018,7 @@ Define this macro if the target's representation for dwarf registers
 used in .eh_frame or .debug_frame is different from that used in other
 debug info sections.  Given a GCC hard register number, this macro
 should return the .eh_frame register number.  The default is
-@code{DBX_REGISTER_NUMBER (@var{regno})}.
+@code{DEBUGGER_REGNO (@var{regno})}.
 
 @end defmac
 
@@ -3777,14 +3789,6 @@ These machine description macros help implement varargs:
 
 @hook TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 
-@hook TARGET_LOAD_BOUNDS_FOR_ARG
-
-@hook TARGET_STORE_BOUNDS_FOR_ARG
-
-@hook TARGET_LOAD_RETURNED_BOUNDS
-
-@hook TARGET_STORE_RETURNED_BOUNDS
-
 @node Trampolines
 @section Support for Nested Functions
 @cindex support for nested functions
@@ -4079,9 +4083,9 @@ preserve functionality of inline assembly constructs using the
 
 @defmac FIND_BASE_TERM (@var{x})
 A C expression to determine the base term of address @var{x},
-or to provide a simplified version of @var{x} from which @file{alias.c}
+or to provide a simplified version of @var{x} from which @file{alias.cc}
 can easily find the base term.  This macro is used in only two places:
-@code{find_base_value} and @code{find_base_term} in @file{alias.c}.
+@code{find_base_value} and @code{find_base_term} in @file{alias.cc}.
 
 It is always safe for this macro to not be defined.  It exists so
 that alias analysis can understand machine-dependent addresses.
@@ -4187,13 +4191,7 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
 
-@hook TARGET_VECTORIZE_INIT_COST
-
-@hook TARGET_VECTORIZE_ADD_STMT_COST
-
-@hook TARGET_VECTORIZE_FINISH_COST
-
-@hook TARGET_VECTORIZE_DESTROY_COST_DATA
+@hook TARGET_VECTORIZE_CREATE_COSTS
 
 @hook TARGET_VECTORIZE_BUILTIN_GATHER
 
@@ -4222,6 +4220,10 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_GOACC_ADJUST_PRIVATE_DECL
 
 @hook TARGET_GOACC_EXPAND_VAR_DECL
+
+@hook TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD
+
+@hook TARGET_GOACC_SHARED_MEM_LAYOUT
 
 @node Anchored Addresses
 @section Anchored Addresses
@@ -4752,11 +4754,11 @@ section}, which holds initialized writable data; and the @dfn{bss
 section}, which holds uninitialized data.  Some systems have other kinds
 of sections.
 
-@file{varasm.c} provides several well-known sections, such as
+@file{varasm.cc} provides several well-known sections, such as
 @code{text_section}, @code{data_section} and @code{bss_section}.
 The normal way of controlling a @code{@var{foo}_section} variable
 is to define the associated @code{@var{FOO}_SECTION_ASM_OP} macro,
-as described below.  The macros are only read once, when @file{varasm.c}
+as described below.  The macros are only read once, when @file{varasm.cc}
 initializes itself, so their values must be run-time constants.
 They may however depend on command-line flags.
 
@@ -4776,7 +4778,7 @@ in @code{TARGET_ASM_INIT_SECTIONS}.  The same is true of
 create a distinct @code{readonly_data_section}, the default is to
 reuse @code{text_section}.
 
-All the other @file{varasm.c} sections are optional, and are null
+All the other @file{varasm.cc} sections are optional, and are null
 if the target does not provide them.
 
 @defmac TEXT_SECTION_ASM_OP
@@ -5307,7 +5309,7 @@ A C statement (sans semicolon) to output to the stdio stream
 is the alignment specified as the number of bits.
 
 Try to use function @code{asm_output_aligned_bss} defined in file
-@file{varasm.c} when defining this macro.  If unable, use the expression
+@file{varasm.cc} when defining this macro.  If unable, use the expression
 @code{assemble_name (@var{stream}, @var{name})} to output the name itself;
 before and after that, output the additional assembler syntax for defining
 the name, and a newline.
@@ -5638,7 +5640,7 @@ requires changes to @var{decl}, such as putting it in a separate section.
 A C expression which evaluates to true if the target supports one-only
 semantics.
 
-If you don't define this macro, @file{varasm.c} provides a default
+If you don't define this macro, @file{varasm.cc} provides a default
 definition.  If @code{MAKE_DECL_ONE_ONLY} is defined, the default
 definition is @samp{1}; otherwise, it is @samp{0}.  Define this macro if
 you want to control one-only symbol support with a compiler flag, or if
@@ -6022,6 +6024,8 @@ encountering an @code{init_priority} attribute.
 
 @hook TARGET_HAVE_CTORS_DTORS
 
+@hook TARGET_DTORS_FROM_CXA_ATEXIT
+
 @hook TARGET_ASM_CONSTRUCTOR
 
 @hook TARGET_ASM_DESTRUCTOR
@@ -6246,7 +6250,7 @@ being output.
 @defmacx IMMEDIATE_PREFIX
 If defined, C string expressions to be used for the @samp{%R}, @samp{%L},
 @samp{%U}, and @samp{%I} options of @code{asm_fprintf} (see
-@file{final.c}).  These are useful when a single @file{md} file must
+@file{final.cc}).  These are useful when a single @file{md} file must
 support multiple assembler formats.  In that case, the various @file{tm.h}
 files can define these macros differently.
 @end defmac
@@ -6608,11 +6612,10 @@ This describes how to specify debugging information.
 
 @menu
 * All Debuggers::      Macros that affect all debugging formats uniformly.
-* DBX Options::        Macros enabling specific options in DBX format.
-* DBX Hooks::          Hook macros for varying DBX format.
-* File Names and DBX:: Macros controlling output of file names in DBX format.
 * DWARF::              Macros for DWARF format.
 * VMS Debug::          Macros for VMS debug format.
+* CTF Debug::          Macros for CTF debug format.
+* BTF Debug::          Macros for BTF debug format.
 @end menu
 
 @node All Debuggers
@@ -6621,21 +6624,21 @@ This describes how to specify debugging information.
 @c prevent bad page break with this line
 These macros affect all debugging formats.
 
-@defmac DBX_REGISTER_NUMBER (@var{regno})
-A C expression that returns the DBX register number for the compiler
+@defmac DEBUGGER_REGNO (@var{regno})
+A C expression that returns the debugger register number for the compiler
 register number @var{regno}.  In the default macro provided, the value
 of this expression will be @var{regno} itself.  But sometimes there are
-some registers that the compiler knows about and DBX does not, or vice
+some registers that the compiler knows about and debugger does not, or vice
 versa.  In such cases, some register may need to have one number in the
-compiler and another for DBX@.
+compiler and another for debugger@.
 
 If two registers have consecutive numbers inside GCC, and they can be
 used as a pair to hold a multiword value, then they @emph{must} have
-consecutive numbers after renumbering with @code{DBX_REGISTER_NUMBER}.
+consecutive numbers after renumbering with @code{DEBUGGER_REGNO}.
 Otherwise, debuggers will be unable to access such a pair, because they
 expect register pairs to be consecutive in their own numbering scheme.
 
-If you find yourself defining @code{DBX_REGISTER_NUMBER} in way that
+If you find yourself defining @code{DEBUGGER_REGNO} in way that
 does not preserve register pairs, then what you must do instead is
 redefine the actual register numbering scheme.
 @end defmac
@@ -6645,7 +6648,7 @@ A C expression that returns the integer offset value for an automatic
 variable having address @var{x} (an RTL expression).  The default
 computation assumes that @var{x} is based on the frame-pointer and
 gives the offset from the frame-pointer.  This is required for targets
-that produce debugging output for DBX and allow the frame-pointer to be
+that produce debugging output for debugger and allow the frame-pointer to be
 eliminated when the @option{-g} option is used.
 @end defmac
 
@@ -6659,233 +6662,25 @@ having address @var{x} (an RTL expression).  The nominal offset is
 A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
-debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+debugging output.  Currently, the allowable values are
+@code{DWARF2_DEBUG}, @code{VMS_DEBUG},
 and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
 exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined, GCC uses the
-value @code{DWARF2_DEBUG}.  Otherwise, if @code{DBX_DEBUGGING_INFO} is
-defined, GCC uses @code{DBX_DEBUG}.
+value @code{DWARF2_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
-user can always get a specific type of output by using @option{-gstabs},
-@option{-gdwarf-2}, @option{-gxcoff}, or @option{-gvms}.
-@end defmac
-
-@node DBX Options
-@subsection Specific Options for DBX Output
-
-@c prevent bad page break with this line
-These are specific options for DBX output.
-
-@defmac DBX_DEBUGGING_INFO
-Define this macro if GCC should produce debugging output for DBX
-in response to the @option{-g} option.
-@end defmac
-
-@defmac XCOFF_DEBUGGING_INFO
-Define this macro if GCC should produce XCOFF format debugging output
-in response to the @option{-g} option.  This is a variant of DBX format.
+user can always get a specific type of output by using  @option{-gdwarf-2},
+or @option{-gvms}.
 @end defmac
 
 @defmac DEFAULT_GDB_EXTENSIONS
 Define this macro to control whether GCC should by default generate
-GDB's extended version of DBX debugging information (assuming DBX-format
-debugging information is enabled at all).  If you don't define the
+GDB's extended version of debugging information.  If you don't define the
 macro, the default is 1: always generate the extended information
 if there is any occasion to.
-@end defmac
-
-@defmac DEBUG_SYMS_TEXT
-Define this macro if all @code{.stabs} commands should be output while
-in the text section.
-@end defmac
-
-@defmac ASM_STABS_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabs\t"} to define an ordinary debugging symbol.
-If you don't define this macro, @code{"\t.stabs\t"} is used.  This macro
-applies only to DBX debugging information format.
-@end defmac
-
-@defmac ASM_STABD_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabd\t"} to define a debugging symbol whose
-value is the current location.  If you don't define this macro,
-@code{"\t.stabd\t"} is used.  This macro applies only to DBX debugging
-information format.
-@end defmac
-
-@defmac ASM_STABN_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabn\t"} to define a debugging symbol with no
-name.  If you don't define this macro, @code{"\t.stabn\t"} is used.  This
-macro applies only to DBX debugging information format.
-@end defmac
-
-@defmac DBX_NO_XREFS
-Define this macro if DBX on your system does not support the construct
-@samp{xs@var{tagname}}.  On some systems, this construct is used to
-describe a forward reference to a structure named @var{tagname}.
-On other systems, this construct is not supported at all.
-@end defmac
-
-@defmac DBX_CONTIN_LENGTH
-A symbol name in DBX-format debugging information is normally
-continued (split into two separate @code{.stabs} directives) when it
-exceeds a certain length (by default, 80 characters).  On some
-operating systems, DBX requires this splitting; on others, splitting
-must not be done.  You can inhibit splitting by defining this macro
-with the value zero.  You can override the default splitting-length by
-defining this macro as an expression for the length you desire.
-@end defmac
-
-@defmac DBX_CONTIN_CHAR
-Normally continuation is indicated by adding a @samp{\} character to
-the end of a @code{.stabs} string when a continuation follows.  To use
-a different character instead, define this macro as a character
-constant for the character you want to use.  Do not define this macro
-if backslash is correct for your system.
-@end defmac
-
-@defmac DBX_STATIC_STAB_DATA_SECTION
-Define this macro if it is necessary to go to the data section before
-outputting the @samp{.stabs} pseudo-op for a non-global static
-variable.
-@end defmac
-
-@defmac DBX_TYPE_DECL_STABS_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a typedef.  The default is @code{N_LSYM}.
-@end defmac
-
-@defmac DBX_STATIC_CONST_VAR_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a static variable located in the text section.  DBX format does not
-provide any ``right'' way to do this.  The default is @code{N_FUN}.
-@end defmac
-
-@defmac DBX_REGPARM_STABS_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a parameter passed in registers.  DBX format does not provide any
-``right'' way to do this.  The default is @code{N_RSYM}.
-@end defmac
-
-@defmac DBX_REGPARM_STABS_LETTER
-The letter to use in DBX symbol data to identify a symbol as a parameter
-passed in registers.  DBX format does not customarily provide any way to
-do this.  The default is @code{'P'}.
-@end defmac
-
-@defmac DBX_FUNCTION_FIRST
-Define this macro if the DBX information for a function and its
-arguments should precede the assembler code for the function.  Normally,
-in DBX format, the debugging information entirely follows the assembler
-code.
-@end defmac
-
-@defmac DBX_BLOCKS_FUNCTION_RELATIVE
-Define this macro, with value 1, if the value of a symbol describing
-the scope of a block (@code{N_LBRAC} or @code{N_RBRAC}) should be
-relative to the start of the enclosing function.  Normally, GCC uses
-an absolute address.
-@end defmac
-
-@defmac DBX_LINES_FUNCTION_RELATIVE
-Define this macro, with value 1, if the value of a symbol indicating
-the current line number (@code{N_SLINE}) should be relative to the
-start of the enclosing function.  Normally, GCC uses an absolute address.
-@end defmac
-
-@defmac DBX_USE_BINCL
-Define this macro if GCC should generate @code{N_BINCL} and
-@code{N_EINCL} stabs for included header files, as on Sun systems.  This
-macro also directs GCC to output a type number as a pair of a file
-number and a type number within the file.  Normally, GCC does not
-generate @code{N_BINCL} or @code{N_EINCL} stabs, and it outputs a single
-number for a type number.
-@end defmac
-
-@node DBX Hooks
-@subsection Open-Ended Hooks for DBX Format
-
-@c prevent bad page break with this line
-These are hooks for DBX format.
-
-@defmac DBX_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
-A C statement to output DBX debugging information before code for line
-number @var{line} of the current source file to the stdio stream
-@var{stream}.  @var{counter} is the number of time the macro was
-invoked, including the current invocation; it is intended to generate
-unique labels in the assembly output.
-
-This macro should not be defined if the default output is correct, or
-if it can be made correct by defining @code{DBX_LINES_FUNCTION_RELATIVE}.
-@end defmac
-
-@defmac NO_DBX_FUNCTION_END
-Some stabs encapsulation formats (in particular ECOFF), cannot handle the
-@code{.stabs "",N_FUN,,0,0,Lscope-function-1} gdb dbx extension construct.
-On those machines, define this macro to turn this feature off without
-disturbing the rest of the gdb extensions.
-@end defmac
-
-@defmac NO_DBX_BNSYM_ENSYM
-Some assemblers cannot handle the @code{.stabd BNSYM/ENSYM,0,0} gdb dbx
-extension construct.  On those machines, define this macro to turn this
-feature off without disturbing the rest of the gdb extensions.
-@end defmac
-
-@node File Names and DBX
-@subsection File Names in DBX Format
-
-@c prevent bad page break with this line
-This describes file names in DBX format.
-
-@defmac DBX_OUTPUT_MAIN_SOURCE_FILENAME (@var{stream}, @var{name})
-A C statement to output DBX debugging information to the stdio stream
-@var{stream}, which indicates that file @var{name} is the main source
-file---the file specified as the input file for compilation.
-This macro is called only once, at the beginning of compilation.
-
-This macro need not be defined if the standard form of output
-for DBX debugging information is appropriate.
-
-It may be necessary to refer to a label equal to the beginning of the
-text section.  You can use @samp{assemble_name (stream, ltext_label_name)}
-to do so.  If you do this, you must also set the variable
-@var{used_ltext_label_name} to @code{true}.
-@end defmac
-
-@defmac NO_DBX_MAIN_SOURCE_DIRECTORY
-Define this macro, with value 1, if GCC should not emit an indication
-of the current directory for compilation and current source language at
-the beginning of the file.
-@end defmac
-
-@defmac NO_DBX_GCC_MARKER
-Define this macro, with value 1, if GCC should not emit an indication
-that this object file was compiled by GCC@.  The default is to emit
-an @code{N_OPT} stab at the beginning of every source file, with
-@samp{gcc2_compiled.} for the string and value 0.
-@end defmac
-
-@defmac DBX_OUTPUT_MAIN_SOURCE_FILE_END (@var{stream}, @var{name})
-A C statement to output DBX debugging information at the end of
-compilation of the main source file @var{name}.  Output should be
-written to the stdio stream @var{stream}.
-
-If you don't define this macro, nothing special is output at the end
-of compilation, which is correct for most machines.
-@end defmac
-
-@defmac DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
-Define this macro @emph{instead of} defining
-@code{DBX_OUTPUT_MAIN_SOURCE_FILE_END}, if what needs to be output at
-the end of compilation is an @code{N_SO} stab with an empty string,
-whose value is the highest absolute text address in the file.
 @end defmac
 
 @need 2000
@@ -6899,14 +6694,14 @@ Here are macros for DWARF output.
 Define this macro if GCC should produce dwarf version 2 format
 debugging output in response to the @option{-g} option.
 
-@hook TARGET_DWARF_CALLING_CONVENTION
-
 To support optional call frame debugging information, you must also
 define @code{INCOMING_RETURN_ADDR_RTX} and either set
 @code{RTX_FRAME_RELATED_P} on the prologue insns if you use RTL for the
 prologue, or call @code{dwarf2out_def_cfa} and @code{dwarf2out_reg_save}
 as appropriate from @code{TARGET_ASM_FUNCTION_PROLOGUE} if you don't.
 @end defmac
+
+@hook TARGET_DWARF_CALLING_CONVENTION
 
 @defmac DWARF2_FRAME_INFO
 Define this macro to a nonzero value if GCC should always output
@@ -6992,6 +6787,30 @@ is to generate minimal debug info for a traceback in the absence of
 @option{-g} unless explicitly overridden with @option{-g0}.  This
 behavior is controlled by @code{TARGET_OPTION_OPTIMIZATION} and
 @code{TARGET_OPTION_OVERRIDE}.
+@end defmac
+
+@need 2000
+@node CTF Debug
+@subsection Macros for CTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for CTF debug format.
+
+@defmac CTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in CTF debug
+format in response to the @option{-gctf} option.
+@end defmac
+
+@need 2000
+@node BTF Debug
+@subsection Macros for BTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for BTF debug format.
+
+@defmac BTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in BTF debug
+format in response to the @option{-gbtf} option.
 @end defmac
 
 @node Floating Point
@@ -7169,6 +6988,10 @@ on this implementation detail.
 @hook TARGET_OPTION_FUNCTION_VERSIONS
 
 @hook TARGET_CAN_INLINE_P
+
+@hook TARGET_UPDATE_IPA_FN_TARGET_INFO
+
+@hook TARGET_NEED_IPA_FN_TARGET_INFO
 
 @hook TARGET_RELAYOUT_FUNCTION
 
@@ -7917,6 +7740,8 @@ to by @var{ce_info}.
 
 @hook TARGET_INVALID_WITHIN_DOLOOP
 
+@hook TARGET_PREFERRED_DOLOOP_MODE
+
 @hook TARGET_LEGITIMATE_COMBINED_INSN
 
 @hook TARGET_CAN_FOLLOW_JUMP
@@ -7957,6 +7782,8 @@ lists.
 @hook TARGET_GEN_CCMP_FIRST
 
 @hook TARGET_GEN_CCMP_NEXT
+
+@hook TARGET_GEN_MEMSET_SCRATCH_RTX
 
 @hook TARGET_LOOP_UNROLL_ADJUST
 
@@ -8015,7 +7842,8 @@ If defined, this macro is the number of entries in
 If defined, this macro is the name of a global variable containing
 target-specific format overrides for the @option{-Wformat} option. The
 default is to have no target-specific format overrides. If defined,
-@code{TARGET_FORMAT_TYPES} must be defined, too.
+@code{TARGET_FORMAT_TYPES} and @code{TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT}
+must be defined, too.
 @end defmac
 
 @defmac TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT
@@ -8072,6 +7900,8 @@ and the associated definitions of those functions.
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 
 @hook TARGET_HAS_IFUNC_P
+
+@hook TARGET_IFUNC_REF_LOCAL_OK
 
 @hook TARGET_ATOMIC_ALIGN_FOR_MODE
 
@@ -8148,3 +7978,7 @@ maintainer is familiar with.
 @hook TARGET_MEMTAG_EXTRACT_TAG
 
 @hook TARGET_MEMTAG_UNTAGGED_POINTER
+
+@hook TARGET_GCOV_TYPE_SIZE
+
+@hook TARGET_HAVE_SHADOW_CALL_STACK

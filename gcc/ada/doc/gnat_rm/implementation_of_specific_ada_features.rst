@@ -402,7 +402,7 @@ routines, since these are architecture independent.
 If active synchronization is required for access to the variables in the
 shared passive package, then as described in the Ada Reference Manual, the
 package may contain protected objects used for this purpose. In this case
-a lock file (whose name is :file:`___lock` (three underscores)
+a lock file (whose name is :file:`___lock`, with three underscores)
 is created in the shared memory directory.
 
 .. index:: ___lock file (for shared passive packages)
@@ -671,6 +671,26 @@ cannot be modified by full assignment. This is because in the presence of
 aliasing all views of the object (which may be manipulated by different tasks,
 say) must be consistent, so it is imperative that the object, once created,
 remain invariant.
+
+.. _Image_Values_For_Nonscalar_Types:
+
+Image Values For Nonscalar Types
+================================
+
+Ada 2022 defines the Image, Wide_Image, and Wide_Wide image attributes
+for nonscalar types; earlier Ada versions defined these attributes only
+for scalar types. Ada RM 4.10 provides some general guidance regarding
+the default implementation of these attributes and the GNAT compiler
+follows that guidance. However, beyond that the precise details of the
+image text generated in these cases are deliberately not documented and are
+subject to change. In particular, users should not rely on formatting details
+(such as spaces or line breaking), record field order, image values for access
+types, image values for types that have ancestor or subcomponent types
+declared in non-Ada2022 code, image values for predefined types, or the
+compiler's choices regarding the implementation permissions described in
+Ada RM 4.10. This list is not intended to be exhaustive. If more precise
+control of image text is required for some type T, then T'Put_Image should be
+explicitly specified.
 
 .. _Strict_Conformance_to_the_Ada_Reference_Manual:
 

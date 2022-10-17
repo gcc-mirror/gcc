@@ -114,13 +114,12 @@ var _cos = [...]float64{
 // Special cases are:
 //	Cos(±Inf) = NaN
 //	Cos(NaN) = NaN
-
-//extern cos
-func libc_cos(float64) float64
-
 func Cos(x float64) float64 {
 	return libc_cos(x)
 }
+
+//extern cos
+func libc_cos(float64) float64
 
 func cos(x float64) float64 {
 	const (
@@ -181,13 +180,12 @@ func cos(x float64) float64 {
 //	Sin(±0) = ±0
 //	Sin(±Inf) = NaN
 //	Sin(NaN) = NaN
-
-//extern sin
-func libc_sin(float64) float64
-
 func Sin(x float64) float64 {
 	return libc_sin(x)
 }
+
+//extern sin
+func libc_sin(float64) float64
 
 func sin(x float64) float64 {
 	const (

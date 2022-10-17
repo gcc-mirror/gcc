@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,20 +33,17 @@
 #pragma GCC system_header
 
 #include <bits/atomic_base.h>
+#include <bits/chrono.h>
 #if __cpp_lib_atomic_wait
 #include <bits/atomic_timed_wait.h>
 #include <ext/numeric_traits.h>
 #endif // __cpp_lib_atomic_wait
 
 #ifdef _GLIBCXX_HAVE_POSIX_SEMAPHORE
-# include <exception>	// std::terminate
 # include <cerrno>	// errno, EINTR, EAGAIN etc.
 # include <limits.h>	// SEM_VALUE_MAX
 # include <semaphore.h>	// sem_t, sem_init, sem_wait, sem_post etc.
 #endif
-
-#include <chrono>
-#include <type_traits>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -82,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__err && (errno == EINTR))
 	    continue;
 	  else if (__err)
-	    std::terminate();
+	    std::__terminate();
 	  else
 	    break;
 	}
@@ -99,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else if (__err && (errno == EAGAIN))
 	    return false;
 	  else if (__err)
-	    std::terminate();
+	    std::__terminate();
 	  else
 	    break;
 	}
@@ -113,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	   auto __err = sem_post(&_M_semaphore);
 	   if (__err)
-	     std::terminate();
+	     std::__terminate();
 	}
     }
 
@@ -140,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      else if (errno == ETIMEDOUT || errno == EINVAL)
 		return false;
 	      else
-		std::terminate();
+		std::__terminate();
 	    }
 	  else
 	    break;

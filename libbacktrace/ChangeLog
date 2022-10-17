@@ -1,3 +1,88 @@
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-07-08  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Check for sys/link.h.  Use either link.h or
+	sys/link.h when checking for dl_iterate_phdr.
+	* elf.c: Include sys/link.h if available.
+	* configure, config.h.in: Regenerate.
+
+2022-07-07  Ian Lance Taylor  <iant@golang.org>
+
+	* macho.c (backtrace_initialize) [HAVE_MACH_O_DYLD_H]: Don't exit
+	loop if we can't find debug info for one shared library.
+
+2022-07-07  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (MAKETESTS): New variable split out of TESTS.
+	(CLEANFILES): Replace TESTS with BUILDTESTS and MAKETESTS.
+	* Makefile.in: Regenerate.
+
+2022-06-27  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Use grep instead of fgrep.
+	* configure, Makefile.in: Regenerate.
+
+2022-05-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/105721
+	* README: Update.
+
+2022-04-05  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_zlib_inflate): Don't skip initial aligned byte in
+	uncompressed block.
+
+2022-02-17  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (find_address_ranges): Handle skeleton units.
+	(read_function_entry): Likewise.
+
+2022-02-16  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (build_address_map): Initialize DWARF 5 fields of unit.
+
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* configure: Regenerate.
+
+2021-12-28  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libbacktrace/103822
+	* Makefile.am: Fix newline.
+	* Makefile.in: Regenerate.
+
+2021-11-12  Martin Liska  <mliska@suse.cz>
+
+	PR libbacktrace/103167
+	* elf.c (elf_uncompress_lzma_block): Cast to unsigned int.
+	(elf_uncompress_lzma): Likewise.
+	* xztest.c (test_samples): memcpy only if v > 0.
+
+2021-10-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/102742
+	* btest.c (MIN_DESCRIPTOR): New.
+	(MAX_DESCRIPTOR): Likewise.
+	(check_available_files): Likewise.
+	(check_open_files): Check only file descriptors that
+	were not available at the entry.
+	(main): Call check_available_files.
+
+2021-08-13  Sergei Trofimovich  <siarheit@google.com>
+
+	* install-debuginfo-for-buildid.sh.in: Force non-localized readelf
+	output with LANG=C.
+
 2021-06-28  Clément Chigot  <clement.chigot@atos.net>
 
 	* xcoff.c (SSUBTYP_DWRNGES): New define.
@@ -1762,7 +1847,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2021 Free Software Foundation, Inc.
+Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

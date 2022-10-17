@@ -1,5 +1,5 @@
 /* Definitions for option handling for ARM.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -68,5 +68,11 @@ enum arm_tp_type {
 enum arm_tls_type {
   TLS_GNU,
   TLS_GNU2
+};
+
+/* Where to get the canary for the stack protector.  */
+enum stack_protector_guard {
+  SSP_TLSREG,                  /* per-thread canary in TLS register */
+  SSP_GLOBAL                   /* global canary */
 };
 #endif

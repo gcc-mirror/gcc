@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,8 @@
 // { dg-do compile { target c++17 } }
 
 #include <forward_list>
-#include <memory_resource>
+
+std::pmr::forward_list<int> c{1, 2, 3, 4};
 
 struct X { };
 

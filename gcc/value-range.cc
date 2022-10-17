@@ -1,5 +1,5 @@
 /* Support routines for value ranges.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Major hacks by Aldy Hernandez <aldyh@redhat.com> and
    Andrew MacLeod <amacleod@redhat.com>.
 
@@ -27,8 +27,760 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "tree-pretty-print.h"
+#include "value-range-pretty-print.h"
 #include "fold-const.h"
 #include "gimple-range.h"
+
+void
+irange::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+void
+unsupported_range::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+// Convenience function only available for integers and pointers.
+
+wide_int
+Value_Range::lower_bound () const
+{
+  if (is_a <irange> (*m_vrange))
+    return as_a <irange> (*m_vrange).lower_bound ();
+  gcc_unreachable ();
+}
+
+// Convenience function only available for integers and pointers.
+
+wide_int
+Value_Range::upper_bound () const
+{
+  if (is_a <irange> (*m_vrange))
+    return as_a <irange> (*m_vrange).upper_bound ();
+  gcc_unreachable ();
+}
+
+void
+Value_Range::dump (FILE *out) const
+{
+  if (m_vrange)
+    m_vrange->dump (out);
+  else
+    fprintf (out, "NULL");
+}
+
+DEBUG_FUNCTION void
+debug (const Value_Range &r)
+{
+  r.dump (stderr);
+  fprintf (stderr, "\n");
+}
+
+// Default vrange definitions.
+
+bool
+vrange::contains_p (tree) const
+{
+  return varying_p ();
+}
+
+bool
+vrange::singleton_p (tree *) const
+{
+  return false;
+}
+
+void
+vrange::set (tree min, tree, value_range_kind)
+{
+  set_varying (TREE_TYPE (min));
+}
+
+tree
+vrange::type () const
+{
+  return void_type_node;
+}
+
+bool
+vrange::supports_type_p (const_tree) const
+{
+  return false;
+}
+
+void
+vrange::set_undefined ()
+{
+  m_kind = VR_UNDEFINED;
+}
+
+void
+vrange::set_varying (tree)
+{
+  m_kind = VR_VARYING;
+}
+
+bool
+vrange::union_ (const vrange &r)
+{
+  if (r.undefined_p () || varying_p ())
+    return false;
+  if (undefined_p () || r.varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::intersect (const vrange &r)
+{
+  if (undefined_p () || r.varying_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::zero_p () const
+{
+  return false;
+}
+
+bool
+vrange::nonzero_p () const
+{
+  return false;
+}
+
+void
+vrange::set_nonzero (tree type)
+{
+  set_varying (type);
+}
+
+void
+vrange::set_zero (tree type)
+{
+  set_varying (type);
+}
+
+void
+vrange::set_nonnegative (tree type)
+{
+  set_varying (type);
+}
+
+bool
+vrange::fits_p (const vrange &) const
+{
+  return true;
+}
+
+// Assignment operator for generic ranges.  Copying incompatible types
+// is not allowed.
+
+vrange &
+vrange::operator= (const vrange &src)
+{
+  if (is_a <irange> (src))
+    as_a <irange> (*this) = as_a <irange> (src);
+  else if (is_a <frange> (src))
+    as_a <frange> (*this) = as_a <frange> (src);
+  else
+    gcc_unreachable ();
+  return *this;
+}
+
+// Equality operator for generic ranges.
+
+bool
+vrange::operator== (const vrange &src) const
+{
+  if (is_a <irange> (src))
+    return as_a <irange> (*this) == as_a <irange> (src);
+  if (is_a <frange> (src))
+    return as_a <frange> (*this) == as_a <frange> (src);
+  gcc_unreachable ();
+}
+
+// Wrapper for vrange_printer to dump a range to a file.
+
+void
+vrange::dump (FILE *file) const
+{
+  pretty_printer buffer;
+  pp_needs_newline (&buffer) = true;
+  buffer.buffer->stream = file;
+  vrange_printer vrange_pp (&buffer);
+  this->accept (vrange_pp);
+  pp_flush (&buffer);
+}
+
+bool
+irange::supports_type_p (const_tree type) const
+{
+  return supports_p (type);
+}
+
+// Return TRUE if R fits in THIS.
+
+bool
+irange::fits_p (const vrange &r) const
+{
+  return m_max_ranges >= as_a <irange> (r).num_pairs ();
+}
+
+void
+irange::set_nonnegative (tree type)
+{
+  set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
+}
+
+void
+frange::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+// Flush denormal endpoints to the appropriate 0.0.
+
+void
+frange::flush_denormals_to_zero ()
+{
+  if (undefined_p () || known_isnan ())
+    return;
+
+  // Flush [x, -DENORMAL] to [x, -0.0].
+  if (real_isdenormal (&m_max) && real_isneg (&m_max))
+    {
+      m_max = dconst0;
+      if (HONOR_SIGNED_ZEROS (m_type))
+	m_max.sign = 1;
+    }
+  // Flush [+DENORMAL, x] to [+0.0, x].
+  if (real_isdenormal (&m_min) && !real_isneg (&m_min))
+    m_min = dconst0;
+}
+
+// Setter for franges.
+
+void
+frange::set (tree type,
+	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
+	     value_range_kind kind)
+{
+  switch (kind)
+    {
+    case VR_UNDEFINED:
+      set_undefined ();
+      return;
+    case VR_VARYING:
+    case VR_ANTI_RANGE:
+      set_varying (type);
+      return;
+    case VR_RANGE:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  // Handle NANs.
+  if (real_isnan (&min) || real_isnan (&max))
+    {
+      gcc_checking_assert (real_identical (&min, &max));
+      bool sign = real_isneg (&min);
+      set_nan (type, sign);
+      return;
+    }
+
+  m_kind = kind;
+  m_type = type;
+  m_min = min;
+  m_max = max;
+  if (HONOR_NANS (m_type))
+    {
+      m_pos_nan = true;
+      m_neg_nan = true;
+    }
+  else
+    {
+      m_pos_nan = false;
+      m_neg_nan = false;
+    }
+
+  // For -ffinite-math-only we can drop ranges outside the
+  // representable numbers to min/max for the type.
+  if (flag_finite_math_only)
+    {
+      REAL_VALUE_TYPE min_repr = frange_val_min (m_type);
+      REAL_VALUE_TYPE max_repr = frange_val_max (m_type);
+      if (real_less (&m_min, &min_repr))
+	m_min = min_repr;
+      if (real_less (&max_repr, &m_max))
+	m_max = max_repr;
+    }
+
+  // Check for swapped ranges.
+  gcc_checking_assert (real_compare (LE_EXPR, &min, &max));
+
+  normalize_kind ();
+
+  flush_denormals_to_zero ();
+
+  if (flag_checking)
+    verify_range ();
+}
+
+void
+frange::set (tree min, tree max, value_range_kind kind)
+{
+  set (TREE_TYPE (min),
+       *TREE_REAL_CST_PTR (min), *TREE_REAL_CST_PTR (max), kind);
+}
+
+// Normalize range to VARYING or UNDEFINED, or vice versa.  Return
+// TRUE if anything changed.
+//
+// A range with no known properties can be dropped to VARYING.
+// Similarly, a VARYING with any properties should be dropped to a
+// VR_RANGE.  Normalizing ranges upon changing them ensures there is
+// only one representation for a given range.
+
+bool
+frange::normalize_kind ()
+{
+  if (m_kind == VR_RANGE
+      && frange_val_is_min (m_min, m_type)
+      && frange_val_is_max (m_max, m_type))
+    {
+      if (m_pos_nan && m_neg_nan)
+	{
+	  set_varying (m_type);
+	  return true;
+	}
+    }
+  else if (m_kind == VR_VARYING)
+    {
+      if (!m_pos_nan || !m_neg_nan)
+	{
+	  m_kind = VR_RANGE;
+	  m_min = frange_val_min (m_type);
+	  m_max = frange_val_max (m_type);
+	  return true;
+	}
+    }
+  else if (m_kind == VR_NAN && !m_pos_nan && !m_neg_nan)
+    set_undefined ();
+  return false;
+}
+
+// Union or intersect the zero endpoints of two ranges.  For example:
+//   [-0,  x] U [+0,  x] => [-0,  x]
+//   [ x, -0] U [ x, +0] => [ x, +0]
+//   [-0,  x] ^ [+0,  x] => [+0,  x]
+//   [ x, -0] ^ [ x, +0] => [ x, -0]
+//
+// UNION_P is true when performing a union, or false when intersecting.
+
+bool
+frange::combine_zeros (const frange &r, bool union_p)
+{
+  gcc_checking_assert (!undefined_p () && !known_isnan ());
+
+  bool changed = false;
+  if (real_iszero (&m_min) && real_iszero (&r.m_min)
+      && real_isneg (&m_min) != real_isneg (&r.m_min))
+    {
+      m_min.sign = union_p;
+      changed = true;
+    }
+  if (real_iszero (&m_max) && real_iszero (&r.m_max)
+      && real_isneg (&m_max) != real_isneg (&r.m_max))
+    {
+      m_max.sign = !union_p;
+      changed = true;
+    }
+  // If the signs are swapped, the resulting range is empty.
+  if (m_min.sign == 0 && m_max.sign == 1)
+    {
+      if (maybe_isnan ())
+	m_kind = VR_NAN;
+      else
+	set_undefined ();
+      changed = true;
+    }
+  return changed;
+}
+
+// Union two ranges when one is known to be a NAN.
+
+bool
+frange::union_nans (const frange &r)
+{
+  gcc_checking_assert (known_isnan () || r.known_isnan ());
+
+  if (known_isnan ())
+    {
+      m_kind = r.m_kind;
+      m_min = r.m_min;
+      m_max = r.m_max;
+    }
+  m_pos_nan |= r.m_pos_nan;
+  m_neg_nan |= r.m_neg_nan;
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return true;
+}
+
+bool
+frange::union_ (const vrange &v)
+{
+  const frange &r = as_a <frange> (v);
+
+  if (r.undefined_p () || varying_p ())
+    return false;
+  if (undefined_p () || r.varying_p ())
+    {
+      *this = r;
+      return true;
+    }
+
+  // Combine NAN info.
+  if (known_isnan () || r.known_isnan ())
+    return union_nans (r);
+  bool changed = false;
+  if (m_pos_nan != r.m_pos_nan || m_neg_nan != r.m_neg_nan)
+    {
+      m_pos_nan |= r.m_pos_nan;
+      m_neg_nan |= r.m_neg_nan;
+      changed = true;
+    }
+
+  // Combine endpoints.
+  if (real_less (&r.m_min, &m_min))
+    {
+      m_min = r.m_min;
+      changed = true;
+    }
+  if (real_less (&m_max, &r.m_max))
+    {
+      m_max = r.m_max;
+      changed = true;
+    }
+
+  if (HONOR_SIGNED_ZEROS (m_type))
+    changed |= combine_zeros (r, true);
+
+  changed |= normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return changed;
+}
+
+// Intersect two ranges when one is known to be a NAN.
+
+bool
+frange::intersect_nans (const frange &r)
+{
+  gcc_checking_assert (known_isnan () || r.known_isnan ());
+
+  m_pos_nan &= r.m_pos_nan;
+  m_neg_nan &= r.m_neg_nan;
+  if (maybe_isnan ())
+    m_kind = VR_NAN;
+  else
+    set_undefined ();
+  if (flag_checking)
+    verify_range ();
+  return true;
+}
+
+bool
+frange::intersect (const vrange &v)
+{
+  const frange &r = as_a <frange> (v);
+
+  if (undefined_p () || r.varying_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (varying_p ())
+    {
+      *this = r;
+      return true;
+    }
+
+  // Combine NAN info.
+  if (known_isnan () || r.known_isnan ())
+    return intersect_nans (r);
+  bool changed = false;
+  if (m_pos_nan != r.m_pos_nan || m_neg_nan != r.m_neg_nan)
+    {
+      m_pos_nan &= r.m_pos_nan;
+      m_neg_nan &= r.m_neg_nan;
+      changed = true;
+    }
+
+  // Combine endpoints.
+  if (real_less (&m_min, &r.m_min))
+    {
+      m_min = r.m_min;
+      changed = true;
+    }
+  if (real_less (&r.m_max, &m_max))
+    {
+      m_max = r.m_max;
+      changed = true;
+    }
+  // If the endpoints are swapped, the resulting range is empty.
+  if (real_less (&m_max, &m_min))
+    {
+      if (maybe_isnan ())
+	m_kind = VR_NAN;
+      else
+	set_undefined ();
+      if (flag_checking)
+	verify_range ();
+      return true;
+    }
+
+  if (HONOR_SIGNED_ZEROS (m_type))
+    changed |= combine_zeros (r, false);
+
+  changed |= normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return changed;
+}
+
+frange &
+frange::operator= (const frange &src)
+{
+  m_kind = src.m_kind;
+  m_type = src.m_type;
+  m_min = src.m_min;
+  m_max = src.m_max;
+  m_pos_nan = src.m_pos_nan;
+  m_neg_nan = src.m_neg_nan;
+
+  if (flag_checking)
+    verify_range ();
+  return *this;
+}
+
+bool
+frange::operator== (const frange &src) const
+{
+  if (m_kind == src.m_kind)
+    {
+      if (undefined_p ())
+	return true;
+
+      if (varying_p ())
+	return types_compatible_p (m_type, src.m_type);
+
+      if (known_isnan () || src.known_isnan ())
+	return false;
+
+      return (real_identical (&m_min, &src.m_min)
+	      && real_identical (&m_max, &src.m_max)
+	      && m_pos_nan == src.m_pos_nan
+	      && m_neg_nan == src.m_neg_nan
+	      && types_compatible_p (m_type, src.m_type));
+    }
+  return false;
+}
+
+// Return TRUE if range contains the TREE_REAL_CST_PTR in CST.
+
+bool
+frange::contains_p (tree cst) const
+{
+  gcc_checking_assert (m_kind != VR_ANTI_RANGE);
+  const REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (cst);
+
+  if (undefined_p ())
+    return false;
+
+  if (varying_p ())
+    return true;
+
+  if (real_isnan (rv))
+    {
+      // No NAN in range.
+      if (!m_pos_nan && !m_neg_nan)
+	return false;
+      // Both +NAN and -NAN are present.
+      if (m_pos_nan && m_neg_nan)
+	return true;
+      return m_neg_nan == rv->sign;
+    }
+  if (known_isnan ())
+    return false;
+
+  if (real_compare (GE_EXPR, rv, &m_min) && real_compare (LE_EXPR, rv, &m_max))
+    {
+      // Make sure the signs are equal for signed zeros.
+      if (HONOR_SIGNED_ZEROS (m_type) && real_iszero (rv))
+	return m_min.sign == m_max.sign && m_min.sign == rv->sign;
+      return true;
+    }
+  return false;
+}
+
+// If range is a singleton, place it in RESULT and return TRUE.  If
+// RESULT is NULL, just return TRUE.
+//
+// A NAN can never be a singleton.
+
+bool
+frange::singleton_p (tree *result) const
+{
+  if (m_kind == VR_RANGE && real_identical (&m_min, &m_max))
+    {
+      // Return false for any singleton that may be a NAN.
+      if (HONOR_NANS (m_type) && maybe_isnan ())
+	return false;
+
+      if (MODE_COMPOSITE_P (TYPE_MODE (m_type)))
+	{
+	  // For IBM long doubles, if the value is +-Inf or is exactly
+	  // representable in double, the other double could be +0.0
+	  // or -0.0.  Since this means there is more than one way to
+	  // represent a value, return false to avoid propagating it.
+	  // See libgcc/config/rs6000/ibm-ldouble-format for details.
+	  if (real_isinf (&m_min))
+	    return false;
+	  REAL_VALUE_TYPE r;
+	  real_convert (&r, DFmode, &m_min);
+	  if (real_identical (&r, &m_min))
+	    return false;
+	}
+
+      if (result)
+	*result = build_real (m_type, m_min);
+      return true;
+    }
+  return false;
+}
+
+bool
+frange::supports_type_p (const_tree type) const
+{
+  return supports_p (type);
+}
+
+void
+frange::verify_range ()
+{
+  switch (m_kind)
+    {
+    case VR_UNDEFINED:
+      gcc_checking_assert (!m_type);
+      return;
+    case VR_VARYING:
+      gcc_checking_assert (m_type);
+      gcc_checking_assert (m_pos_nan && m_neg_nan);
+      gcc_checking_assert (frange_val_is_min (m_min, m_type));
+      gcc_checking_assert (frange_val_is_max (m_max, m_type));
+      return;
+    case VR_RANGE:
+      gcc_checking_assert (m_type);
+      break;
+    case VR_NAN:
+      gcc_checking_assert (m_type);
+      gcc_checking_assert (m_pos_nan || m_neg_nan);
+      return;
+    default:
+      gcc_unreachable ();
+    }
+
+  // NANs cannot appear in the endpoints of a range.
+  gcc_checking_assert (!real_isnan (&m_min) && !real_isnan (&m_max));
+
+  // Make sure we don't have swapped ranges.
+  gcc_checking_assert (!real_less (&m_max, &m_min));
+
+  // [ +0.0, -0.0 ] is nonsensical.
+  gcc_checking_assert (!(real_iszero (&m_min, 0) && real_iszero (&m_max, 1)));
+
+  // If all the properties are clear, we better not span the entire
+  // domain, because that would make us varying.
+  if (m_pos_nan && m_neg_nan)
+    gcc_checking_assert (!frange_val_is_min (m_min, m_type)
+			 || !frange_val_is_max (m_max, m_type));
+}
+
+// We can't do much with nonzeros yet.
+void
+frange::set_nonzero (tree type)
+{
+  set_varying (type);
+}
+
+// We can't do much with nonzeros yet.
+bool
+frange::nonzero_p () const
+{
+  return false;
+}
+
+// Set range to [+0.0, +0.0] if honoring signed zeros, or [0.0, 0.0]
+// otherwise.
+
+void
+frange::set_zero (tree type)
+{
+  if (HONOR_SIGNED_ZEROS (type))
+    {
+      REAL_VALUE_TYPE dconstm0 = dconst0;
+      dconstm0.sign = 1;
+      set (type, dconstm0, dconst0);
+      clear_nan ();
+    }
+  else
+    set (type, dconst0, dconst0);
+}
+
+// Return TRUE for any zero regardless of sign.
+
+bool
+frange::zero_p () const
+{
+  return (m_kind == VR_RANGE
+	  && real_iszero (&m_min)
+	  && real_iszero (&m_max));
+}
+
+void
+frange::set_nonnegative (tree type)
+{
+  set (type, dconst0, frange_val_max (type));
+
+  // Set +NAN as the only possibility.
+  if (HONOR_NANS (type))
+    update_nan (/*sign=*/false);
+}
 
 // Here we copy between any two irange's.  The ranges can be legacy or
 // multi-ranges, and copying between any combination works correctly.
@@ -61,6 +813,9 @@ irange::operator= (const irange &src)
 
   m_num_ranges = lim;
   m_kind = src.m_kind;
+  m_nonzero_mask = src.m_nonzero_mask;
+  if (flag_checking)
+    verify_range ();
   return *this;
 }
 
@@ -115,6 +870,7 @@ irange::copy_to_legacy (const irange &src)
       m_base[0] = src.m_base[0];
       m_base[1] = src.m_base[1];
       m_kind = src.m_kind;
+      m_nonzero_mask = src.m_nonzero_mask;
       return;
     }
   // Copy multi-range to legacy.
@@ -179,6 +935,7 @@ irange::irange_set (tree min, tree max)
   m_base[1] = max;
   m_num_ranges = 1;
   m_kind = VR_RANGE;
+  m_nonzero_mask = NULL;
   normalize_kind ();
 
   if (flag_checking)
@@ -252,6 +1009,7 @@ irange::irange_set_anti_range (tree min, tree max)
     }
 
   m_kind = VR_RANGE;
+  m_nonzero_mask = NULL;
   normalize_kind ();
 
   if (flag_checking)
@@ -270,20 +1028,9 @@ irange::irange_set_anti_range (tree min, tree max)
 void
 irange::set (tree min, tree max, value_range_kind kind)
 {
-  if (!legacy_mode_p ())
-    {
-      if (kind == VR_RANGE)
-	irange_set (min, max);
-      else
-	{
-	  gcc_checking_assert (kind == VR_ANTI_RANGE);
-	  irange_set_anti_range (min, max);
-	}
-      return;
-    }
   if (kind == VR_UNDEFINED)
     {
-      set_undefined ();
+      irange::set_undefined ();
       return;
     }
 
@@ -295,6 +1042,22 @@ irange::set (tree min, tree max, value_range_kind kind)
       return;
     }
 
+  if (TREE_OVERFLOW_P (min))
+    min = drop_tree_overflow (min);
+  if (TREE_OVERFLOW_P (max))
+    max = drop_tree_overflow (max);
+
+  if (!legacy_mode_p ())
+    {
+      if (kind == VR_RANGE)
+	irange_set (min, max);
+      else
+	{
+	  gcc_checking_assert (kind == VR_ANTI_RANGE);
+	  irange_set_anti_range (min, max);
+	}
+      return;
+    }
   // Nothing to canonicalize for symbolic ranges.
   if (TREE_CODE (min) != INTEGER_CST
       || TREE_CODE (max) != INTEGER_CST)
@@ -303,6 +1066,7 @@ irange::set (tree min, tree max, value_range_kind kind)
       m_base[0] = min;
       m_base[1] = max;
       m_num_ranges = 1;
+      m_nonzero_mask = NULL;
       return;
     }
 
@@ -352,6 +1116,7 @@ irange::set (tree min, tree max, value_range_kind kind)
   m_base[0] = min;
   m_base[1] = max;
   m_num_ranges = 1;
+  m_nonzero_mask = NULL;
   normalize_kind ();
   if (flag_checking)
     verify_range ();
@@ -362,6 +1127,7 @@ irange::set (tree min, tree max, value_range_kind kind)
 void
 irange::verify_range ()
 {
+  gcc_checking_assert (m_discriminator == VR_IRANGE);
   if (m_kind == VR_UNDEFINED)
     {
       gcc_checking_assert (m_num_ranges == 0);
@@ -369,6 +1135,8 @@ irange::verify_range ()
     }
   if (m_kind == VR_VARYING)
     {
+      gcc_checking_assert (!m_nonzero_mask
+			   || wi::to_wide (m_nonzero_mask) == -1);
       gcc_checking_assert (m_num_ranges == 1);
       gcc_checking_assert (varying_compatible_p ());
       return;
@@ -462,11 +1230,12 @@ irange::legacy_equal_p (const irange &other) const
   return (vrp_operand_equal_p (tree_lower_bound (0),
 			       other.tree_lower_bound (0))
 	  && vrp_operand_equal_p (tree_upper_bound (0),
-				  other.tree_upper_bound (0)));
+				  other.tree_upper_bound (0))
+	  && get_nonzero_bits () == other.get_nonzero_bits ());
 }
 
 bool
-irange::equal_p (const irange &other) const
+irange::operator== (const irange &other) const
 {
   if (legacy_mode_p ())
     {
@@ -484,6 +1253,9 @@ irange::equal_p (const irange &other) const
   if (m_num_ranges != other.m_num_ranges)
     return false;
 
+  if (m_num_ranges == 0)
+    return true;
+
   for (unsigned i = 0; i < m_num_ranges; ++i)
     {
       tree lb = tree_lower_bound (i);
@@ -494,7 +1266,7 @@ irange::equal_p (const irange &other) const
 	  || !operand_equal_p (ub, ub_other, 0))
 	return false;
     }
-  return true;
+  return get_nonzero_bits () == other.get_nonzero_bits ();
 }
 
 /* Return TRUE if this is a symbolic range.  */
@@ -636,6 +1408,15 @@ irange::contains_p (tree cst) const
     }
 
   gcc_checking_assert (TREE_CODE (cst) == INTEGER_CST);
+
+  // See if we can exclude CST based on the nonzero bits.
+  if (m_nonzero_mask)
+    {
+      wide_int cstw = wi::to_wide (cst);
+      if (cstw != 0 && wi::bit_and (wi::to_wide (m_nonzero_mask), cstw) == 0)
+	return false;
+    }
+
   signop sign = TYPE_SIGN (TREE_TYPE (cst));
   wide_int v = wi::to_wide (cst);
   for (unsigned r = 0; r < m_num_ranges; ++r)
@@ -1431,10 +2212,11 @@ irange::legacy_union (irange *vr0, const irange *vr1)
 
 /* Meet operation for value ranges.  Given two value ranges VR0 and
    VR1, store in VR0 a range that contains both VR0 and VR1.  This
-   may not be the smallest possible such range.  */
+   may not be the smallest possible such range.
+   Return TRUE if the original value changes.  */
 
-void
-irange::union_ (const irange *other)
+bool
+irange::legacy_verbose_union_ (const irange *other)
 {
   if (legacy_mode_p ())
     {
@@ -1442,7 +2224,7 @@ irange::union_ (const irange *other)
 	{
 	  int_range<1> tmp = *other;
 	  legacy_union (this, &tmp);
-	  return;
+	  return true;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1461,20 +2243,20 @@ irange::union_ (const irange *other)
 	  dump_value_range (dump_file, this);
 	  fprintf (dump_file, "\n");
 	}
-      return;
+      return true;
     }
 
   if (other->legacy_mode_p ())
     {
       int_range<2> wider = *other;
-      irange_union (wider);
+      return irange_union (wider);
     }
   else
-    irange_union (*other);
+    return irange_union (*other);
 }
 
-void
-irange::intersect (const irange *other)
+bool
+irange::legacy_verbose_intersect (const irange *other)
 {
   if (legacy_mode_p ())
     {
@@ -1482,7 +2264,7 @@ irange::intersect (const irange *other)
 	{
 	  int_range<1> tmp = *other;
 	  legacy_intersect (this, &tmp);
-	  return;
+	  return true;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1501,34 +2283,108 @@ irange::intersect (const irange *other)
 	  dump_value_range (dump_file, this);
 	  fprintf (dump_file, "\n");
 	}
-      return;
+      return true;
     }
 
   if (other->legacy_mode_p ())
     {
       int_range<2> wider;
       wider = *other;
-      irange_intersect (wider);
+      return irange_intersect (wider);
     }
   else
-    irange_intersect (*other);
+    return irange_intersect (*other);
+}
+
+// Perform an efficient union with R when both ranges have only a single pair.
+// Excluded are VARYING and UNDEFINED ranges.
+
+bool
+irange::irange_single_pair_union (const irange &r)
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!r.undefined_p () && !varying_p ());
+
+  signop sign = TYPE_SIGN (TREE_TYPE (m_base[0]));
+  // Check if current lower bound is also the new lower bound.
+  if (wi::le_p (wi::to_wide (m_base[0]), wi::to_wide (r.m_base[0]), sign))
+    {
+      // If current upper bound is new upper bound, we're done.
+      if (wi::le_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+	return union_nonzero_bits (r);
+      // Otherwise R has the new upper bound.
+      // Check for overlap/touching ranges, or single target range.
+      if (m_max_ranges == 1
+	  || wi::to_widest (m_base[1]) + 1 >= wi::to_widest (r.m_base[0]))
+	m_base[1] = r.m_base[1];
+      else
+	{
+	  // This is a dual range result.
+	  m_base[2] = r.m_base[0];
+	  m_base[3] = r.m_base[1];
+	  m_num_ranges = 2;
+	}
+      union_nonzero_bits (r);
+      return true;
+    }
+
+  // Set the new lower bound to R's lower bound.
+  tree lb = m_base[0];
+  m_base[0] = r.m_base[0];
+
+  // If R fully contains THIS range, just set the upper bound.
+  if (wi::ge_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+    m_base[1] = r.m_base[1];
+  // Check for overlapping ranges, or target limited to a single range.
+  else if (m_max_ranges == 1
+	   || wi::to_widest (r.m_base[1]) + 1 >= wi::to_widest (lb))
+    ;
+  else
+    {
+      // Left with 2 pairs.
+      m_num_ranges = 2;
+      m_base[2] = lb;
+      m_base[3] = m_base[1];
+      m_base[1] = r.m_base[1];
+    }
+  union_nonzero_bits (r);
+  return true;
 }
 
 // union_ for multi-ranges.
 
-void
+bool
 irange::irange_union (const irange &r)
 {
   gcc_checking_assert (!legacy_mode_p () && !r.legacy_mode_p ());
 
-  if (r.undefined_p () || varying_p ())
-    return;
+  if (r.undefined_p ())
+    return false;
 
-  if (undefined_p () || r.varying_p ())
+  if (undefined_p ())
     {
       operator= (r);
-      return;
+      if (flag_checking)
+	verify_range ();
+      return true;
     }
+
+  if (varying_p ())
+    return false;
+
+  if (r.varying_p ())
+    {
+      set_varying (type ());
+      return true;
+    }
+
+  // Special case one range union one range.
+  if (m_num_ranges == 1 && r.m_num_ranges == 1)
+    return irange_single_pair_union (r);
+
+  // If this ranges fully contains R, then we need do nothing.
+  if (irange_contains_p (r))
+    return union_nonzero_bits (r);
 
   // Do not worry about merging and such by reserving twice as many
   // pairs as needed, and then simply sort the 2 ranges into this
@@ -1542,70 +2398,50 @@ irange::irange_union (const irange &r)
   // the merge is performed.
   //
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
-  tree ttype = r.type ();
-  signop sign = TYPE_SIGN (ttype);
-
-  auto_vec<tree, 20> res;
-  wide_int u1 ;
-  wi::overflow_type ovf;
+  auto_vec<tree, 20> res (m_num_ranges * 2 + r.m_num_ranges * 2);
   unsigned i = 0, j = 0, k = 0;
 
   while (i < m_num_ranges * 2 && j < r.m_num_ranges * 2)
     {
       // lower of Xi and Xj is the lowest point.
-      if (wi::le_p (wi::to_wide (m_base[i]), wi::to_wide (r.m_base[j]), sign))
+      if (wi::to_widest (m_base[i]) <= wi::to_widest (r.m_base[j]))
 	{
-	  res.safe_push (m_base[i]);
-	  res.safe_push (m_base[i + 1]);
+	  res.quick_push (m_base[i]);
+	  res.quick_push (m_base[i + 1]);
 	  k += 2;
 	  i += 2;
 	}
       else
 	{
-	  res.safe_push (r.m_base[j]);
-	  res.safe_push (r.m_base[j + 1]);
+	  res.quick_push (r.m_base[j]);
+	  res.quick_push (r.m_base[j + 1]);
 	  k += 2;
 	  j += 2;
 	}
     }
   for ( ; i < m_num_ranges * 2; i += 2)
     {
-      res.safe_push (m_base[i]);
-      res.safe_push (m_base[i + 1]);
+      res.quick_push (m_base[i]);
+      res.quick_push (m_base[i + 1]);
       k += 2;
     }
   for ( ; j < r.m_num_ranges * 2; j += 2)
     {
-      res.safe_push (r.m_base[j]);
-      res.safe_push (r.m_base[j + 1]);
+      res.quick_push (r.m_base[j]);
+      res.quick_push (r.m_base[j + 1]);
       k += 2;
     }
 
   // Now normalize the vector removing any overlaps.
   i = 2;
-  int prec = TYPE_PRECISION (ttype);
-  wide_int max_val = wi::max_value (prec, sign);
   for (j = 2; j < k ; j += 2)
     {
-      wide_int val_im1 = wi::to_wide (res[i - 1]);
-      if (val_im1 == max_val)
-	break;
-      u1 = wi::add (val_im1, 1, sign, &ovf);
-
-      // Overflow indicates we are at MAX already.
-      // A wide int bug requires the previous max_val check
-      // trigger: gcc.c-torture/compile/pr80443.c  with -O3
-      if (ovf == wi::OVF_OVERFLOW)
-	break;
-
-      wide_int val_j = wi::to_wide (res[j]);
-      wide_int val_jp1 = wi::to_wide (res[j+1]);
       // Current upper+1 is >= lower bound next pair, then we merge ranges.
-      if (wi::ge_p (u1, val_j, sign))
+      if (wi::to_widest (res[i - 1]) + 1 >= wi::to_widest (res[j]))
 	{
 	  // New upper bounds is greater of current or the next one.
-	  if (wi::gt_p (val_jp1, val_im1, sign))
-	    res [i - 1] = res[j + 1];
+	  if (wi::to_widest (res[j + 1]) > wi::to_widest (res[i - 1]))
+	    res[i - 1] = res[j + 1];
 	}
       else
 	{
@@ -1636,31 +2472,93 @@ irange::irange_union (const irange &r)
   m_num_ranges = i / 2;
 
   m_kind = VR_RANGE;
-  normalize_kind ();
-
-  if (flag_checking)
-    verify_range ();
+  union_nonzero_bits (r);
+  return true;
 }
 
-// intersect for multi-ranges.
+// Return TRUE if THIS fully contains R.  No undefined or varying cases.
 
-void
+bool
+irange::irange_contains_p (const irange &r) const
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!r.undefined_p () && !varying_p ());
+
+  // In order for THIS to fully contain R, all of the pairs within R must
+  // be fully contained by the pairs in this object.
+  signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
+  unsigned ri = 0;
+  unsigned i = 0;
+  tree rl = r.m_base[0];
+  tree ru = r.m_base[1];
+  tree l = m_base[0];
+  tree u = m_base[1];
+  while (1)
+    {
+      // If r is contained within this range, move to the next R
+      if (wi::ge_p (wi::to_wide (rl), wi::to_wide (l), sign)
+	  && wi::le_p (wi::to_wide (ru), wi::to_wide (u), sign))
+	{
+	  // This pair is OK, Either done, or bump to the next.
+	  if (++ri >= r.num_pairs ())
+	    return true;
+	  rl = r.m_base[ri * 2];
+	  ru = r.m_base[ri * 2 + 1];
+	  continue;
+	}
+      // Otherwise, check if this's pair occurs before R's.
+      if (wi::lt_p (wi::to_wide (u), wi::to_wide (rl), sign))
+	{
+	  // There's still at least one pair of R left.
+	  if (++i >= num_pairs ())
+	    return false;
+	  l = m_base[i * 2];
+	  u = m_base[i * 2 + 1];
+	  continue;
+	}
+      return false;
+    }
+  return false;
+}
+
+
+// Intersect for multi-ranges.  Return TRUE if anything changes.
+
+bool
 irange::irange_intersect (const irange &r)
 {
   gcc_checking_assert (!legacy_mode_p () && !r.legacy_mode_p ());
+  gcc_checking_assert (undefined_p () || r.undefined_p ()
+		       || range_compatible_p (type (), r.type ()));
 
-  if (undefined_p () || r.varying_p ())
-    return;
+  if (undefined_p ())
+    return false;
   if (r.undefined_p ())
     {
       set_undefined ();
-      return;
+      return true;
     }
+  if (r.varying_p ())
+    return false;
   if (varying_p ())
     {
       operator= (r);
-      return;
+      return true;
     }
+
+  if (r.num_pairs () == 1)
+    {
+      bool res = intersect (r.lower_bound (), r.upper_bound ());
+      if (undefined_p ())
+	return true;
+
+      res |= intersect_nonzero_bits (r);
+      return res;
+    }
+
+  // If R fully contains this, then intersection will change nothing.
+  if (r.irange_contains_p (*this))
+    return intersect_nonzero_bits (r);
 
   signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
   unsigned bld_pair = 0;
@@ -1729,13 +2627,93 @@ irange::irange_intersect (const irange &r)
   // At the exit of this loop, it is one of 2 things:
   // ran out of r1, or r2, but either means we are done.
   m_num_ranges = bld_pair;
+  if (m_num_ranges == 0)
+    {
+      set_undefined ();
+      return true;
+    }
 
   m_kind = VR_RANGE;
-  normalize_kind ();
+  intersect_nonzero_bits (r);
+  return true;
+}
 
+
+// Multirange intersect for a specified wide_int [lb, ub] range.
+// Return TRUE if intersect changed anything.
+//
+// NOTE: It is the caller's responsibility to intersect the nonzero masks.
+
+bool
+irange::intersect (const wide_int& lb, const wide_int& ub)
+{
+  // Undefined remains undefined.
+  if (undefined_p ())
+    return false;
+
+  if (legacy_mode_p ())
+    {
+      intersect (int_range<1> (type (), lb, ub));
+      return true;
+    }
+
+  tree range_type = type();
+  signop sign = TYPE_SIGN (range_type);
+
+  gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (lb));
+  gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (ub));
+
+  // If this range is fuly contained, then intersection will do nothing.
+  if (wi::ge_p (lower_bound (), lb, sign)
+      && wi::le_p (upper_bound (), ub, sign))
+    return false;
+
+  unsigned bld_index = 0;
+  unsigned pair_lim = num_pairs ();
+  for (unsigned i = 0; i < pair_lim; i++)
+    {
+      tree pairl = m_base[i * 2];
+      tree pairu = m_base[i * 2 + 1];
+      // Once UB is less than a pairs lower bound, we're done.
+      if (wi::lt_p (ub, wi::to_wide (pairl), sign))
+	break;
+      // if LB is greater than this pairs upper, this pair is excluded.
+      if (wi::lt_p (wi::to_wide (pairu), lb, sign))
+	continue;
+
+      // Must be some overlap.  Find the highest of the lower bounds,
+      // and set it
+      if (wi::gt_p (lb, wi::to_wide (pairl), sign))
+	m_base[bld_index * 2] = wide_int_to_tree (range_type, lb);
+      else
+	m_base[bld_index * 2] = pairl;
+
+      // ...and choose the lower of the upper bounds and if the base pair
+      // has the lower upper bound, need to check next pair too.
+      if (wi::lt_p (ub, wi::to_wide (pairu), sign))
+	{
+	  m_base[bld_index++ * 2 + 1] = wide_int_to_tree (range_type, ub);
+	  break;
+	}
+      else
+	m_base[bld_index++ * 2 + 1] = pairu;
+    }
+
+  m_num_ranges = bld_index;
+  if (m_num_ranges == 0)
+    {
+      set_undefined ();
+      return true;
+    }
+
+  m_kind = VR_RANGE;
+  // No need to call normalize_kind(), as the caller will do this
+  // while intersecting the nonzero mask.
   if (flag_checking)
     verify_range ();
+  return true;
 }
+
 
 // Signed 1-bits are strange.  You can't subtract 1, because you can't
 // represent the number 1.  This works around that for the invert routine.
@@ -1799,6 +2777,7 @@ irange::invert ()
   signop sign = TYPE_SIGN (ttype);
   wide_int type_min = wi::min_value (prec, sign);
   wide_int type_max = wi::max_value (prec, sign);
+  m_nonzero_mask = NULL;
   if (m_num_ranges == m_max_ranges
       && lower_bound () != type_min
       && upper_bound () != type_max)
@@ -1873,78 +2852,207 @@ irange::invert ()
     verify_range ();
 }
 
-static void
-dump_bound_with_infinite_markers (FILE *file, tree bound)
-{
-  tree type = TREE_TYPE (bound);
-  wide_int type_min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-  wide_int type_max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+// Return the nonzero bits inherent in the range.
 
-  if (INTEGRAL_TYPE_P (type)
-      && !TYPE_UNSIGNED (type)
-      && TREE_CODE (bound) == INTEGER_CST
-      && wi::to_wide (bound) == type_min
-      && TYPE_PRECISION (type) != 1)
-    fprintf (file, "-INF");
-  else if (TREE_CODE (bound) == INTEGER_CST
-	   && wi::to_wide (bound) == type_max
-	   && TYPE_PRECISION (type) != 1)
-    fprintf (file, "+INF");
+wide_int
+irange::get_nonzero_bits_from_range () const
+{
+  // For legacy symbolics.
+  if (!constant_p ())
+    return wi::shwi (-1, TYPE_PRECISION (type ()));
+
+  wide_int min = lower_bound ();
+  wide_int max = upper_bound ();
+  wide_int xorv = min ^ max;
+  if (xorv != 0)
+    {
+      unsigned prec = TYPE_PRECISION (type ());
+      xorv = wi::mask (prec - wi::clz (xorv), false, prec);
+    }
+  return min | xorv;
+}
+
+// If the the nonzero mask can be trivially converted to a range, do
+// so and return TRUE.
+
+bool
+irange::set_range_from_nonzero_bits ()
+{
+  gcc_checking_assert (!undefined_p ());
+  if (!m_nonzero_mask)
+    return false;
+  unsigned popcount = wi::popcount (wi::to_wide (m_nonzero_mask));
+
+  // If we have only one bit set in the mask, we can figure out the
+  // range immediately.
+  if (popcount == 1)
+    {
+      // Make sure we don't pessimize the range.
+      if (!contains_p (m_nonzero_mask))
+	return false;
+
+      bool has_zero = contains_p (build_zero_cst (type ()));
+      tree nz = m_nonzero_mask;
+      set (nz, nz);
+      m_nonzero_mask = nz;
+      if (has_zero)
+	{
+	  int_range<2> zero;
+	  zero.set_zero (type ());
+	  union_ (zero);
+	}
+      return true;
+    }
+  else if (popcount == 0)
+    {
+      set_zero (type ());
+      return true;
+    }
+  return false;
+}
+
+void
+irange::set_nonzero_bits (const wide_int_ref &bits)
+{
+  gcc_checking_assert (!undefined_p ());
+  unsigned prec = TYPE_PRECISION (type ());
+
+  if (bits == -1)
+    {
+      m_nonzero_mask = NULL;
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+      return;
+    }
+
+  // Drop VARYINGs with a nonzero mask to a plain range.
+  if (m_kind == VR_VARYING && bits != -1)
+    m_kind = VR_RANGE;
+
+  wide_int nz = wide_int::from (bits, prec, TYPE_SIGN (type ()));
+  m_nonzero_mask = wide_int_to_tree (type (), nz);
+  if (set_range_from_nonzero_bits ())
+    return;
+
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+}
+
+// Return the nonzero bitmask.  This will return the nonzero bits plus
+// the nonzero bits inherent in the range.
+
+wide_int
+irange::get_nonzero_bits () const
+{
+  gcc_checking_assert (!undefined_p ());
+  // The nonzero mask inherent in the range is calculated on-demand.
+  // For example, [0,255] does not have a 0xff nonzero mask by default
+  // (unless manually set).  This saves us considerable time, because
+  // setting it at creation incurs a large penalty for irange::set.
+  // At the time of writing there was a 5% slowdown in VRP if we kept
+  // the mask precisely up to date at all times.  Instead, we default
+  // to -1 and set it when explicitly requested.  However, this
+  // function will always return the correct mask.
+  if (m_nonzero_mask)
+    return wi::to_wide (m_nonzero_mask) & get_nonzero_bits_from_range ();
   else
-    print_generic_expr (file, bound);
+    return get_nonzero_bits_from_range ();
 }
 
-void
-irange::dump (FILE *file) const
+// Convert tree mask to wide_int.  Returns -1 for NULL masks.
+
+inline wide_int
+mask_to_wi (tree mask, tree type)
 {
-  if (undefined_p ())
+  if (mask)
+    return wi::to_wide (mask);
+  else
+    return wi::shwi (-1, TYPE_PRECISION (type));
+}
+
+// Intersect the nonzero bits in R into THIS and normalize the range.
+// Return TRUE if the intersection changed anything.
+
+bool
+irange::intersect_nonzero_bits (const irange &r)
+{
+  gcc_checking_assert (!undefined_p () && !r.undefined_p ());
+
+  if (!m_nonzero_mask && !r.m_nonzero_mask)
     {
-      fprintf (file, "UNDEFINED");
-      return;
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+      return false;
     }
-  print_generic_expr (file, type ());
-  fprintf (file, " ");
-  if (varying_p ())
+
+  bool changed = false;
+  tree t = type ();
+  if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
     {
-      fprintf (file, "VARYING");
-      return;
+      wide_int nz = get_nonzero_bits () & r.get_nonzero_bits ();
+      m_nonzero_mask = wide_int_to_tree (t, nz);
+      if (set_range_from_nonzero_bits ())
+	return true;
+      changed = true;
     }
- if (legacy_mode_p ())
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return changed;
+}
+
+// Union the nonzero bits in R into THIS and normalize the range.
+// Return TRUE if the union changed anything.
+
+bool
+irange::union_nonzero_bits (const irange &r)
+{
+  gcc_checking_assert (!undefined_p () && !r.undefined_p ());
+
+  if (!m_nonzero_mask && !r.m_nonzero_mask)
     {
-      fprintf (file, "%s[", (m_kind == VR_ANTI_RANGE) ? "~" : "");
-      dump_bound_with_infinite_markers (file, min ());
-      fprintf (file, ", ");
-      dump_bound_with_infinite_markers (file, max ());
-      fprintf (file, "]");
-      return;
+      normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+      return false;
     }
-  for (unsigned i = 0; i < m_num_ranges; ++i)
+
+  bool changed = false;
+  tree t = type ();
+  if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
     {
-      tree lb = m_base[i * 2];
-      tree ub = m_base[i * 2 + 1];
-      fprintf (file, "[");
-      dump_bound_with_infinite_markers (file, lb);
-      fprintf (file, ", ");
-      dump_bound_with_infinite_markers (file, ub);
-      fprintf (file, "]");
+      wide_int nz = get_nonzero_bits () | r.get_nonzero_bits ();
+      m_nonzero_mask = wide_int_to_tree (t, nz);
+      // No need to call set_range_from_nonzero_bits, because we'll
+      // never narrow the range.  Besides, it would cause endless
+      // recursion because of the union_ in
+      // set_range_from_nonzero_bits.
+      changed = true;
     }
+  normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return changed;
 }
 
 void
-dump_value_range (FILE *file, const irange *vr)
+dump_value_range (FILE *file, const vrange *vr)
 {
   vr->dump (file);
 }
 
 DEBUG_FUNCTION void
-debug (const irange *vr)
+debug (const vrange *vr)
 {
   dump_value_range (stderr, vr);
   fprintf (stderr, "\n");
 }
 
 DEBUG_FUNCTION void
-debug (const irange &vr)
+debug (const vrange &vr)
 {
   debug (&vr);
 }
@@ -2047,7 +3155,7 @@ vrp_operand_equal_p (const_tree val1, const_tree val2)
   return true;
 }
 
-// ?? These stubs are for ipa-prop.c which use a value_range in a
+// ?? These stubs are for ipa-prop.cc which use a value_range in a
 // hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
 // instead of picking up the gt_ggc_mx (T *) version.
 void
@@ -2487,6 +3595,415 @@ range_tests_misc ()
   ASSERT_TRUE (r0.contains_p (UINT (2)));
 }
 
+static void
+range_tests_nonzero_bits ()
+{
+  int_range<2> r0, r1;
+
+  // Adding nonzero bits to a varying drops the varying.
+  r0.set_varying (integer_type_node);
+  r0.set_nonzero_bits (255);
+  ASSERT_TRUE (!r0.varying_p ());
+  // Dropping the nonzero bits brings us back to varying.
+  r0.set_nonzero_bits (-1);
+  ASSERT_TRUE (r0.varying_p ());
+
+  // Test contains_p with nonzero bits.
+  r0.set_zero (integer_type_node);
+  ASSERT_TRUE (r0.contains_p (INT (0)));
+  ASSERT_FALSE (r0.contains_p (INT (1)));
+  r0.set_nonzero_bits (0xfe);
+  ASSERT_FALSE (r0.contains_p (INT (0x100)));
+  ASSERT_FALSE (r0.contains_p (INT (0x3)));
+
+  // Union of nonzero bits.
+  r0.set_varying (integer_type_node);
+  r0.set_nonzero_bits (0xf0);
+  r1.set_varying (integer_type_node);
+  r1.set_nonzero_bits (0xf);
+  r0.union_ (r1);
+  ASSERT_TRUE (r0.get_nonzero_bits () == 0xff);
+
+  // Intersect of nonzero bits.
+  r0.set (INT (0), INT (255));
+  r0.set_nonzero_bits (0xfe);
+  r1.set_varying (integer_type_node);
+  r1.set_nonzero_bits (0xf0);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.get_nonzero_bits () == 0xf0);
+
+  // Intersect where the mask of nonzero bits is implicit from the range.
+  r0.set_varying (integer_type_node);
+  r1.set (INT (0), INT (255));
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.get_nonzero_bits () == 0xff);
+
+  // The union of a mask of 0xff..ffff00 with a mask of 0xff spans the
+  // entire domain, and makes the range a varying.
+  r0.set_varying (integer_type_node);
+  wide_int x = wi::shwi (0xff, TYPE_PRECISION (integer_type_node));
+  x = wi::bit_not (x);
+  r0.set_nonzero_bits (x); 	// 0xff..ff00
+  r1.set_varying (integer_type_node);
+  r1.set_nonzero_bits (0xff);
+  r0.union_ (r1);
+  ASSERT_TRUE (r0.varying_p ());
+
+  // Test that setting a nonzero bit of 1 does not pessimize the range.
+  r0.set_zero (integer_type_node);
+  r0.set_nonzero_bits (1);
+  ASSERT_TRUE (r0.zero_p ());
+}
+
+// Build an frange from string endpoints.
+
+static inline frange
+frange_float (const char *lb, const char *ub, tree type = float_type_node)
+{
+  REAL_VALUE_TYPE min, max;
+  gcc_assert (real_from_string (&min, lb) == 0);
+  gcc_assert (real_from_string (&max, ub) == 0);
+  return frange (type, min, max);
+}
+
+static void
+range_tests_nan ()
+{
+  frange r0, r1;
+  REAL_VALUE_TYPE q, r;
+  bool signbit;
+
+  // Equal ranges but with differing NAN bits are not equal.
+  if (HONOR_NANS (float_type_node))
+    {
+      r1 = frange_float ("10", "12");
+      r0 = r1;
+      ASSERT_EQ (r0, r1);
+      r0.clear_nan ();
+      ASSERT_NE (r0, r1);
+      r0.update_nan ();
+      ASSERT_EQ (r0, r1);
+
+      // [10, 20] NAN ^ [30, 40] NAN = NAN.
+      r0 = frange_float ("10", "20");
+      r1 = frange_float ("30", "40");
+      r0.intersect (r1);
+      ASSERT_TRUE (r0.known_isnan ());
+
+      // [3,5] U [5,10] NAN = ... NAN
+      r0 = frange_float ("3", "5");
+      r0.clear_nan ();
+      r1 = frange_float ("5", "10");
+      r0.union_ (r1);
+      ASSERT_TRUE (r0.maybe_isnan ());
+    }
+
+  // NAN ranges are not equal to each other.
+  r0.set_nan (float_type_node);
+  r1 = r0;
+  ASSERT_FALSE (r0 == r1);
+  ASSERT_FALSE (r0 == r0);
+  ASSERT_TRUE (r0 != r0);
+
+  // [5,6] U NAN = [5,6] NAN.
+  r0 = frange_float ("5", "6");
+  r0.clear_nan ();
+  r1.set_nan (float_type_node);
+  r0.union_ (r1);
+  real_from_string (&q, "5");
+  real_from_string (&r, "6");
+  ASSERT_TRUE (real_identical (&q, &r0.lower_bound ()));
+  ASSERT_TRUE (real_identical (&r, &r0.upper_bound ()));
+  ASSERT_TRUE (r0.maybe_isnan ());
+
+  // NAN U NAN = NAN
+  r0.set_nan (float_type_node);
+  r1.set_nan (float_type_node);
+  r0.union_ (r1);
+  ASSERT_TRUE (r0.known_isnan ());
+
+  // [INF, INF] NAN ^ NAN = NAN
+  r0.set_nan (float_type_node);
+  r1 = frange_float ("+Inf", "+Inf");
+  if (!HONOR_NANS (float_type_node))
+    r1.update_nan ();
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.known_isnan ());
+
+  // NAN ^ NAN = NAN
+  r0.set_nan (float_type_node);
+  r1.set_nan (float_type_node);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.known_isnan ());
+
+  // +NAN ^ -NAN = UNDEFINED
+  r0.set_nan (float_type_node, false);
+  r1.set_nan (float_type_node, true);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.undefined_p ());
+
+  // VARYING ^ NAN = NAN.
+  r0.set_nan (float_type_node);
+  r1.set_varying (float_type_node);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.known_isnan ());
+
+  // [3,4] ^ NAN = UNDEFINED.
+  r0 = frange_float ("3", "4");
+  r0.clear_nan ();
+  r1.set_nan (float_type_node);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.undefined_p ());
+
+  // [-3, 5] ^ NAN = UNDEFINED
+  r0 = frange_float ("-3", "5");
+  r0.clear_nan ();
+  r1.set_nan (float_type_node);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.undefined_p ());
+
+  // Setting the NAN bit to yes does not make us a known NAN.
+  r0.set_varying (float_type_node);
+  r0.update_nan ();
+  ASSERT_FALSE (r0.known_isnan ());
+
+  // NAN is in a VARYING.
+  r0.set_varying (float_type_node);
+  real_nan (&r, "", 1, TYPE_MODE (float_type_node));
+  tree nan = build_real (float_type_node, r);
+  ASSERT_TRUE (r0.contains_p (nan));
+
+  // -NAN is in a VARYING.
+  r0.set_varying (float_type_node);
+  q = real_value_negate (&r);
+  tree neg_nan = build_real (float_type_node, q);
+  ASSERT_TRUE (r0.contains_p (neg_nan));
+
+  // Clearing the NAN on a [] NAN is the empty set.
+  r0.set_nan (float_type_node);
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.undefined_p ());
+
+  // [10,20] NAN ^ [21,25] NAN = [NAN]
+  r0 = frange_float ("10", "20");
+  r0.update_nan ();
+  r1 = frange_float ("21", "25");
+  r1.update_nan ();
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.known_isnan ());
+
+  // NAN U [5,6] should be [5,6] +-NAN.
+  r0.set_nan (float_type_node);
+  r1 = frange_float ("5", "6");
+  r1.clear_nan ();
+  r0.union_ (r1);
+  real_from_string (&q, "5");
+  real_from_string (&r, "6");
+  ASSERT_TRUE (real_identical (&q, &r0.lower_bound ()));
+  ASSERT_TRUE (real_identical (&r, &r0.upper_bound ()));
+  ASSERT_TRUE (!r0.signbit_p (signbit));
+  ASSERT_TRUE (r0.maybe_isnan ());
+}
+
+static void
+range_tests_signed_zeros ()
+{
+  tree zero = build_zero_cst (float_type_node);
+  tree neg_zero = fold_build1 (NEGATE_EXPR, float_type_node, zero);
+  frange r0, r1;
+  bool signbit;
+
+  // [0,0] contains [0,0] but not [-0,-0] and vice versa.
+  r0 = frange (zero, zero);
+  r1 = frange (neg_zero, neg_zero);
+  ASSERT_TRUE (r0.contains_p (zero));
+  ASSERT_TRUE (!r0.contains_p (neg_zero));
+  ASSERT_TRUE (r1.contains_p (neg_zero));
+  ASSERT_TRUE (!r1.contains_p (zero));
+
+  // Test contains_p() when we know the sign of the zero.
+  r0 = frange (zero, zero);
+  ASSERT_TRUE (r0.contains_p (zero));
+  ASSERT_FALSE (r0.contains_p (neg_zero));
+  r0 = frange (neg_zero, neg_zero);
+  ASSERT_TRUE (r0.contains_p (neg_zero));
+  ASSERT_FALSE (r0.contains_p (zero));
+
+  // The intersection of zeros that differ in sign is a NAN (or
+  // undefined if not honoring NANs).
+  r0 = frange (neg_zero, neg_zero);
+  r1 = frange (zero, zero);
+  r0.intersect (r1);
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r0.known_isnan ());
+  else
+    ASSERT_TRUE (r0.undefined_p ());
+
+  // The union of zeros that differ in sign is a zero with unknown sign.
+  r0 = frange (zero, zero);
+  r1 = frange (neg_zero, neg_zero);
+  r0.union_ (r1);
+  ASSERT_TRUE (r0.zero_p () && !r0.signbit_p (signbit));
+
+  // [-0, +0] has an unknown sign.
+  r0 = frange (neg_zero, zero);
+  ASSERT_TRUE (r0.zero_p () && !r0.signbit_p (signbit));
+
+  // [-0, +0] ^ [0, 0] is [0, 0]
+  r0 = frange (neg_zero, zero);
+  r1 = frange (zero, zero);
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.zero_p ());
+
+  r0 = frange_float ("+0", "5");
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
+
+  r0 = frange_float ("-0", "5");
+  r0.clear_nan ();
+  ASSERT_TRUE (!r0.signbit_p (signbit));
+
+  r0 = frange_float ("-0", "10");
+  r1 = frange_float ("0", "5");
+  r0.intersect (r1);
+  ASSERT_TRUE (real_iszero (&r0.lower_bound (), false));
+
+  r0 = frange_float ("-0", "5");
+  r1 = frange_float ("0", "5");
+  r0.union_ (r1);
+  ASSERT_TRUE (real_iszero (&r0.lower_bound (), true));
+
+  r0 = frange_float ("-5", "-0");
+  r0.update_nan ();
+  r1 = frange_float ("0", "0");
+  r1.update_nan ();
+  r0.intersect (r1);
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r0.known_isnan ());
+  else
+    ASSERT_TRUE (r0.undefined_p ());
+
+  r0.set_nonnegative (float_type_node);
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r0.maybe_isnan ());
+}
+
+static void
+range_tests_signbit ()
+{
+  frange r0, r1;
+  bool signbit;
+
+  // Negative numbers should have the SIGNBIT set.
+  r0 = frange_float ("-5", "-1");
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.signbit_p (signbit) && signbit);
+  // Positive numbers should have the SIGNBIT clear.
+  r0 = frange_float ("1", "10");
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
+  // Numbers containing zero should have an unknown SIGNBIT.
+  r0 = frange_float ("0", "10");
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
+  // Numbers spanning both positive and negative should have an
+  // unknown SIGNBIT.
+  r0 = frange_float ("-10", "10");
+  r0.clear_nan ();
+  ASSERT_TRUE (!r0.signbit_p (signbit));
+  r0.set_varying (float_type_node);
+  ASSERT_TRUE (!r0.signbit_p (signbit));
+}
+
+static void
+range_tests_floats ()
+{
+  frange r0, r1;
+
+  if (HONOR_NANS (float_type_node))
+    range_tests_nan ();
+  range_tests_signbit ();
+
+  if (HONOR_SIGNED_ZEROS (float_type_node))
+    range_tests_signed_zeros ();
+
+  // A range of [-INF,+INF] is actually VARYING if no other properties
+  // are set.
+  r0 = frange_float ("-Inf", "+Inf");
+  if (r0.maybe_isnan ())
+    ASSERT_TRUE (r0.varying_p ());
+  // ...unless it has some special property...
+  r0.clear_nan ();
+  ASSERT_FALSE (r0.varying_p ());
+
+  // For most architectures, where float and double are different
+  // sizes, having the same endpoints does not necessarily mean the
+  // ranges are equal.
+  if (!types_compatible_p (float_type_node, double_type_node))
+    {
+      r0 = frange_float ("3.0", "3.0", float_type_node);
+      r1 = frange_float ("3.0", "3.0", double_type_node);
+      ASSERT_NE (r0, r1);
+    }
+
+  // [3,5] U [10,12] = [3,12].
+  r0 = frange_float ("3", "5");
+  r1 = frange_float ("10", "12");
+  r0.union_ (r1);
+  ASSERT_EQ (r0, frange_float ("3", "12"));
+
+  // [5,10] U [4,8] = [4,10]
+  r0 = frange_float ("5", "10");
+  r1 = frange_float ("4", "8");
+  r0.union_ (r1);
+  ASSERT_EQ (r0, frange_float ("4", "10"));
+
+  // [3,5] U [4,10] = [3,10]
+  r0 = frange_float ("3", "5");
+  r1 = frange_float ("4", "10");
+  r0.union_ (r1);
+  ASSERT_EQ (r0, frange_float ("3", "10"));
+
+  // [4,10] U [5,11] = [4,11]
+  r0 = frange_float ("4", "10");
+  r1 = frange_float ("5", "11");
+  r0.union_ (r1);
+  ASSERT_EQ (r0, frange_float ("4", "11"));
+
+  // [3,12] ^ [10,12] = [10,12].
+  r0 = frange_float ("3", "12");
+  r1 = frange_float ("10", "12");
+  r0.intersect (r1);
+  ASSERT_EQ (r0, frange_float ("10", "12"));
+
+  // [10,12] ^ [11,11] = [11,11]
+  r0 = frange_float ("10", "12");
+  r1 = frange_float ("11", "11");
+  r0.intersect (r1);
+  ASSERT_EQ (r0, frange_float ("11", "11"));
+
+  // [10,20] ^ [5,15] = [10,15]
+  r0 = frange_float ("10", "20");
+  r1 = frange_float ("5",  "15");
+  r0.intersect (r1);
+  ASSERT_EQ (r0, frange_float ("10", "15"));
+
+  // [10,20] ^ [15,25] = [15,20]
+  r0 = frange_float ("10", "20");
+  r1 = frange_float ("15", "25");
+  r0.intersect (r1);
+  ASSERT_EQ (r0, frange_float ("15", "20"));
+
+  // [10,20] ^ [21,25] = []
+  r0 = frange_float ("10", "20");
+  r0.clear_nan ();
+  r1 = frange_float ("21", "25");
+  r1.clear_nan ();
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.undefined_p ());
+}
+
 void
 range_tests ()
 {
@@ -2494,6 +4011,8 @@ range_tests ()
   range_tests_irange3 ();
   range_tests_int_range_max ();
   range_tests_strict_enum ();
+  range_tests_nonzero_bits ();
+  range_tests_floats ();
   range_tests_misc ();
 }
 

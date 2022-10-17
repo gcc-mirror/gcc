@@ -1,6 +1,6 @@
 // <string> Forward declarations -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,9 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<> struct char_traits<char>;
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   template<> struct char_traits<wchar_t>;
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<> struct char_traits<char8_t>;
@@ -78,10 +76,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
   /// A string of @c char
   typedef basic_string<char>    string;   
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   /// A string of @c wchar_t
   typedef basic_string<wchar_t> wstring;   
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   /// A string of @c char8_t

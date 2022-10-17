@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-// REQUIRED_ARGS: -d -dip1000
+// REQUIRED_ARGS: -d -preview=dip1000
 
 extern(C) int printf(const char*, ...);
 
@@ -242,22 +242,6 @@ void test7435() {
 
 /********************************************/
 
-char[] dup12()(char[] a) // although inferred pure, don't infer a is 'return'
-{
-    char[] res;
-    foreach (ref e; a)
-    {}
-    return res;
-}
-
-char[] foo12()
-{
-    char[10] buf;
-    return dup12(buf);
-}
-
-/********************************************/
-
 void test7049() @safe
 {
     int count = 0;
@@ -293,8 +277,6 @@ void test11()
     static int* p;
     static int i;
     bar11(p, &i);
-
-    bar11((i,p), &i);  // comma expressions are deprecated, but need to test them
 }
 
 /********************************************/
@@ -302,7 +284,7 @@ void test11()
 
 int test17432(scope int delegate() dg)
 {
-	return dg();
+        return dg();
 }
 
 // stripped down version of std.traits.Parameters
@@ -342,6 +324,53 @@ template test14(T)
 test14!(char[] function(return char[])) x14;
 
 /********************************************/
+// https://issues.dlang.org/show_bug.cgi?id=17935
+
+struct ByChunk(IO)
+{
+@safe:
+    ~this() scope
+    {}
+
+    ubyte[] buf;
+    IO io;
+}
+
+struct IO
+{
+    ~this() @safe @nogc scope
+    {}
+}
+
+@safe @nogc void test17395()
+{
+    ubyte[256] buf;
+    auto chunks = ByChunk!IO(buf[], IO());
+    chunks.__xdtor(); // auto-generated inclusive (fields and struct) dtor
+}
+
+/********************************************/
+// https://issues.dlang.org/show_bug.cgi?id=20569
+
+void test20569() @safe
+{
+    static struct S
+    {
+        int value;
+        int* pointer;
+    }
+
+    /* explicit `scope`: */
+    scope S s1;
+    scope int* p1 = &s1.value;
+
+    /* inferred `scope`: */
+    int x;
+    S s2 = S(0, &x);
+    int* p2 = &s2.value;
+}
+
+/********************************************/
 
 void main()
 {
@@ -359,6 +388,8 @@ void main()
     test7049();
     test16747();
     test11();
+    test17395();
+    test20569();
 
     printf("Success\n");
 }

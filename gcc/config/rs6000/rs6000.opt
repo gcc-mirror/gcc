@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -96,10 +96,6 @@ enum rs6000_cmodel rs6000_current_cmodel = CMODEL_SMALL
 TargetVariable
 unsigned int rs6000_recip_control
 
-;; Mask of what builtin functions are allowed
-TargetVariable
-HOST_WIDE_INT rs6000_builtin_mask
-
 ;; Debug flags
 TargetVariable
 unsigned int rs6000_debug
@@ -154,10 +150,6 @@ Target RejectNegative Undocumented WarnRemoved
 maltivec
 Target Mask(ALTIVEC) Var(rs6000_isa_flags)
 Use AltiVec instructions.
-
-mfold-gimple
-Target Var(rs6000_fold_gimple) Init(1)
-Enable early gimple folding of builtins.
 
 mhard-dfp
 Target Mask(DFP) Var(rs6000_isa_flags)
@@ -491,28 +483,8 @@ Target Mask(P8_VECTOR) Var(rs6000_isa_flags)
 Use vector and scalar instructions added in ISA 2.07.
 
 mpower10-fusion
-Target Mask(P10_FUSION) Var(rs6000_isa_flags)
+Target Undocumented Mask(P10_FUSION) Var(rs6000_isa_flags)
 Fuse certain integer operations together for better performance on power10.
-
-mpower10-fusion-ld-cmpi
-Target Undocumented Mask(P10_FUSION_LD_CMPI) Var(rs6000_isa_flags)
-Fuse certain integer operations together for better performance on power10.
-
-mpower10-fusion-2logical
-Target Undocumented Mask(P10_FUSION_2LOGICAL) Var(rs6000_isa_flags)
-Fuse pairs of scalar or vector logical operations together for better performance on power10.
-
-mpower10-fusion-logical-add
-Target Undocumented Mask(P10_FUSION_LOGADD) Var(rs6000_isa_flags)
-Fuse scalar logical op with add/subf for better performance on power10.
-
-mpower10-fusion-add-logical
-Target Undocumented Mask(P10_FUSION_ADDLOG) Var(rs6000_isa_flags)
-Fuse scalar add/subf with logical op for better performance on power10.
-
-mpower10-fusion-2add
-Target Undocumented Mask(P10_FUSION_2ADD) Var(rs6000_isa_flags)
-Fuse dependent pairs of add or vaddudm instructions for better performance on power10.
 
 mcrypto
 Target Mask(CRYPTO) Var(rs6000_isa_flags)
@@ -556,10 +528,6 @@ Use vector instructions added in ISA 3.0.
 mpower9-minmax
 Target Undocumented Mask(P9_MINMAX) Var(rs6000_isa_flags)
 Use the new min/max instructions defined in ISA 3.0.
-
-mtoc-fusion
-Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
-Fuse medium/large code model toc references with the memory instruction.
 
 mmodulo
 Target Undocumented Mask(MODULO) Var(rs6000_isa_flags)
@@ -639,3 +607,71 @@ Enable instructions that guard against return-oriented programming attacks.
 mprivileged
 Target Var(rs6000_privileged) Init(0)
 Generate code that will run in privileged state.
+
+msplat-word-constant
+Target Var(TARGET_SPLAT_WORD_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the XXSPLTIW instruction.
+
+msplat-float-constant
+Target Var(TARGET_SPLAT_FLOAT_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the XXSPLTIDP instruction.
+
+mieee128-constant
+Target Var(TARGET_IEEE128_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the LXVKQ instruction.
+
+; Documented parameters
+
+-param=rs6000-vect-unroll-limit=
+Target Joined UInteger Var(rs6000_vect_unroll_limit) Init(4) IntegerRange(1, 64) Param
+Used to limit unroll factor which indicates how much the autovectorizer may
+unroll a loop.  The default value is 4.
+
+; Undocumented parameters
+-param=rs6000-density-pct-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_pct_threshold) Init(85) IntegerRange(0, 100) Param
+When costing for loop vectorization, we probably need to penalize the loop body
+cost if the existing cost model may not adequately reflect delays from
+unavailable vector resources.  We collect the cost for vectorized statements
+and non-vectorized statements separately, check the proportion of vec_cost to
+total cost of vec_cost and non vec_cost, and penalize only if the proportion
+exceeds the threshold specified by this parameter.  The default value is 85.
+
+-param=rs6000-density-size-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_size_threshold) Init(70) IntegerRange(0, 1000) Param
+Like parameter rs6000-density-pct-threshold, we also check the total sum of
+vec_cost and non vec_cost, and penalize only if the sum exceeds the threshold
+specified by this parameter.  The default value is 70.
+
+-param=rs6000-density-penalty=
+Target Undocumented Joined UInteger Var(rs6000_density_penalty) Init(10) IntegerRange(0, 1000) Param
+When both heuristics with rs6000-density-pct-threshold and
+rs6000-density-size-threshold are satisfied, we decide to penalize the loop
+body cost by the value which is specified by this parameter.  The default
+value is 10.
+
+-param=rs6000-density-load-pct-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_load_pct_threshold) Init(45) IntegerRange(0, 100) Param
+When costing for loop vectorization, we probably need to penalize the loop body
+cost by accounting for excess strided or elementwise loads.  We collect the
+numbers for general statements and load statements according to the information
+for statements to be vectorized, check the proportion of load statements, and
+penalize only if the proportion exceeds the threshold specified by this
+parameter.  The default value is 45.
+
+-param=rs6000-density-load-num-threshold=
+Target Undocumented Joined UInteger Var(rs6000_density_load_num_threshold) Init(20) IntegerRange(0, 1000) Param
+Like parameter rs6000-density-load-pct-threshold, we also check if the total
+number of load statements exceeds the threshold specified by this parameter,
+and penalize only if it's satisfied.  The default value is 20.
+
+-param=rs6000-vect-unroll-issue=
+Target Undocumented Joined UInteger Var(rs6000_vect_unroll_issue) Init(4) IntegerRange(1, 128) Param
+Indicate how many non memory access vector instructions can be issued per
+cycle, it's used in unroll factor determination for autovectorizer.  The
+default value is 4.
+
+-param=rs6000-vect-unroll-reduc-threshold=
+Target Undocumented Joined UInteger Var(rs6000_vect_unroll_reduc_threshold) Init(1) Param
+When reduction factor computed for a loop exceeds the threshold specified by
+this parameter, prefer to unroll this loop.  The default value is 1.

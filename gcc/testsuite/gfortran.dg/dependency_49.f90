@@ -11,4 +11,5 @@ program main
   a%x = a%x(2:3)
   print *,a%x
 end program main
-! { dg-final { scan-tree-dump-times "__var_1" 4 "original" } }
+! The temporary var appears three times: declaration, copy-in and copy-out
+! { dg-final { scan-tree-dump-times "__var_1" 3 "original" } }

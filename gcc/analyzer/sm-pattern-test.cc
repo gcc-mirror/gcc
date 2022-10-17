@@ -1,7 +1,7 @@
 /* A state machine for use in DejaGnu tests, to check that
    pattern-matching works as expected.
 
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -30,13 +30,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
+#include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
@@ -52,20 +54,20 @@ class pattern_test_state_machine : public state_machine
 public:
   pattern_test_state_machine (logger *logger);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return false; }
+  bool inherited_state_p () const final override { return false; }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
-		     tree lhs,
+		     const svalue *lhs,
 		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE;
+  bool can_purge_p (state_t s) const final override;
 };
 
 class pattern_match : public pending_diagnostic_subclass<pattern_match>
@@ -74,7 +76,7 @@ public:
   pattern_match (tree lhs, enum tree_code op, tree rhs)
   : m_lhs (lhs), m_op (op), m_rhs (rhs) {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "pattern_match"; }
+  const char *get_kind () const final override { return "pattern_match"; }
 
   bool operator== (const pattern_match &other) const
   {
@@ -83,9 +85,15 @@ public:
 	    && same_tree_p (m_rhs, other.m_rhs));
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
-    return warning_at (rich_loc, 0, "pattern match on %<%E %s %E%>",
+    return 0;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    return warning_at (rich_loc, get_controlling_option (),
+		       "pattern match on %<%E %s %E%>",
 		       m_lhs, op_symbol_code (m_op), m_rhs);
   }
 
@@ -118,18 +126,22 @@ void
 pattern_test_state_machine::on_condition (sm_context *sm_ctxt,
 					  const supernode *node,
 					  const gimple *stmt,
-					  tree lhs,
+					  const svalue *lhs,
 					  enum tree_code op,
-					  tree rhs) const
+					  const svalue *rhs) const
 {
   if (stmt == NULL)
     return;
 
-  if (!CONSTANT_CLASS_P (rhs))
+  tree rhs_cst = rhs->maybe_get_constant ();
+  if (!rhs_cst)
     return;
 
-  pending_diagnostic *diag = new pattern_match (lhs, op, rhs);
-  sm_ctxt->warn (node, stmt, lhs, diag);
+  if (tree lhs_expr = sm_ctxt->get_diagnostic_tree (lhs))
+    {
+      pending_diagnostic *diag = new pattern_match (lhs_expr, op, rhs_cst);
+      sm_ctxt->warn (node, stmt, lhs_expr, diag);
+    }
 }
 
 bool

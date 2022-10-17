@@ -1,0 +1,33 @@
+# Extra DImode libgcc2 functions to build.
+lib2difuncs = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _cmpdi2 _ucmpdi2
+
+# Build lib2difuncs.
+lib2difuncs-o = $(patsubst %,%_di$(objext),$(lib2difuncs))
+$(lib2difuncs-o): %_di$(objext): $(srcdir)/libgcc2.c
+	$(gcc_compile) -DLIBGCC2_UNITS_PER_WORD=4 -DL$* -c $< $(vis_hide)
+libgcc-objects += $(lib2difuncs-o)
+
+ifeq ($(enable_shared),yes)
+lib2difuncs-s-o = $(patsubst %,%_di_s$(objext),$(lib2difuncs))
+$(lib2difuncs-s-o): %_di_s$(objext): $(srcdir)/libgcc2.c
+	$(gcc_s_compile) -DLIBGCC2_UNITS_PER_WORD=4 -DL$* -c $<
+libgcc-s-objects += $(lib2difuncs-s-o)
+endif
+
+# Extra DImode divmod functions to build.
+lib2didivmodfuncs = _divdi3 _moddi3 _udivdi3 _umoddi3
+
+# Build lib2didivmodfuncs.
+lib2didivmod-o = $(patsubst %,%_di$(objext),$(lib2didivmodfuncs))
+$(lib2didivmod-o): %_di$(objext): $(srcdir)/libgcc2.c
+	$(gcc_compile) -DLIBGCC2_UNITS_PER_WORD=4 -DL$* -c $< \
+	  $(LIB2_DIVMOD_EXCEPTION_FLAGS) $(vis_hide)
+libgcc-objects += $(lib2didivmod-o)
+
+ifeq ($(enable_shared),yes)
+lib2didivmod-s-o = $(patsubst %,%_di_s$(objext),$(lib2didivmodfuncs))
+$(lib2didivmod-s-o): %_di_s$(objext): $(srcdir)/libgcc2.c
+	$(gcc_s_compile) -DLIBGCC2_UNITS_PER_WORD=4 -DL$* -c $< \
+	  $(LIB2_DIVMOD_EXCEPTION_FLAGS)
+libgcc-s-objects += $(lib2didivmod-s-o)
+endif

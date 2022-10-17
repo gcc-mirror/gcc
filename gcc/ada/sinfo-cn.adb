@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,7 +56,6 @@ package body Sinfo.CN is
    procedure Change_Conversion_To_Unchecked (N : Node_Id) is
    begin
       Set_Do_Overflow_Check (N, False);
-      Set_Do_Tag_Check (N, False);
       Set_Do_Length_Check (N, False);
       Mutate_Nkind (N, N_Unchecked_Type_Conversion);
    end Change_Conversion_To_Unchecked;

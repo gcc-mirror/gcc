@@ -1,3 +1,86 @@
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* go-lang.cc (go_langhook_init): Do not initialize
+	void_list_node.
+
+2022-09-02  Martin Liska  <mliska@suse.cz>
+
+	* go-lang.cc (go_langhook_pushdecl): Remove -gstabs option support, DBX-related
+	  macros and DBX debugging info support.
+	* gospec.cc (lang_specific_driver): Likewise.
+
+2022-07-16  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::struct_field_expression): Handle a void
+	expression, as for f().x where f returns a zero-sized type.
+
+2022-07-15  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Handle a void
+	argument, as for f(g()) where g returns a zero-sized type.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* go-lang.cc (go_get_sarif_source_language): New.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (go.tags): Look at *.cc.
+
+2022-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* gospec.cc: Revert 2022-02-09 change:
+	(RTLIB, RT_LIBRARY): Don't define.
+	(lang_specific_driver): Don't add -lrt if linking statically
+	on GNU/Linux.
+
+2022-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* gospec.cc (RTLIB, RT_LIBRARY): Define.
+	(lang_specific_driver): Add -lrt if linking statically on
+	GNU/Linux.
+
+2022-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define builtins
+	__atomic_load_1 and __atomic_store_1.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* config-lang.in: Rename .c names to .cc.
+	* go-backend.cc: Likewise.
+	* go-lang.cc: Likewise.
+	* gospec.cc: Likewise.
+	* lang-specs.h: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* go-backend.c: Moved to...
+	* go-backend.cc: ...here.
+	* go-lang.c: Moved to...
+	* go-lang.cc: ...here.
+	* gospec.c: Moved to...
+	* gospec.cc: ...here.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* gccgo.texi: Replace http:// with https.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* go-lang.c (go_langhook_init_options_struct): Set also
+	  x_flag_default_complex_method.
+
 2021-06-29  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::static_chain_variable): Set
@@ -1787,7 +1870,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2021 Free Software Foundation, Inc.
+Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,6 +1,6 @@
 // 1999-05-11 bkoz
 
-// Copyright (C) 1999-2021 Free Software Foundation, Inc.
+// Copyright (C) 1999-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,15 +71,15 @@ void test01()
   sz01 = str01.size();
   sz02 = str01.length();
   VERIFY( sz01 == sz02 );
-  str01.c_str();
+  (void) str01.c_str();
   sz01 = str01.size();
   sz02 = str01.length();
   VERIFY( sz01 == sz02 );
 
   sz01 = str01.length();
-  str01.c_str();
+  (void) str01.c_str();
   str011 = str01 +  L"_addendum_";
-  str01.c_str();
+  (void) str01.c_str();
   sz02 = str01.length();    
   VERIFY( sz01 == sz02 );
   sz02 = str011.length();

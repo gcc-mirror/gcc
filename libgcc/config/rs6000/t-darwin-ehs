@@ -1,0 +1,3 @@
+# We need the save_world and anu unwind fallback code for the EH library.
+
+LIBEHSOBJS += darwin-world_s.o darwin-fallback.o

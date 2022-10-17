@@ -1,6 +1,6 @@
 /* Plugin for NVPTX execution.
 
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -34,13 +34,18 @@
 #define _GNU_SOURCE
 #include "openacc.h"
 #include "config.h"
+#include "symcat.h"
 #include "libgomp-plugin.h"
 #include "oacc-plugin.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
 
 #include <pthread.h>
-#include <cuda.h>
+#ifndef PLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H
+# include "cuda/cuda.h"
+#else
+# include <cuda.h>
+#endif
 #include <stdbool.h>
 #include <limits.h>
 #include <string.h>
@@ -80,7 +85,7 @@ CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 
 #define DO_PRAGMA(x) _Pragma (#x)
 
-#if PLUGIN_NVPTX_DYNAMIC
+#ifndef PLUGIN_NVPTX_LINK_LIBCUDA
 # include <dlfcn.h>
 
 struct cuda_lib_s {
@@ -1170,9 +1175,14 @@ GOMP_OFFLOAD_get_type (void)
 }
 
 int
-GOMP_OFFLOAD_get_num_devices (void)
+GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
-  return nvptx_get_num_devices ();
+  int num_devices = nvptx_get_num_devices ();
+  /* Return -1 if no omp_requires_mask cannot be fulfilled but
+     devices were present.  */
+  if (num_devices > 0 && omp_requires_mask != 0)
+    return -1;
+  return num_devices;
 }
 
 bool
@@ -1256,16 +1266,19 @@ nvptx_set_clocktick (CUmodule module, struct ptx_device *dev)
 }
 
 /* Load the (partial) program described by TARGET_DATA to device
-   number ORD.  Allocate and return TARGET_TABLE.  */
+   number ORD.  Allocate and return TARGET_TABLE.  If not NULL, REV_FN_TABLE
+   will contain the on-device addresses of the functions for reverse offload.
+   To be freed by the caller.  */
 
 int
 GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
-			 struct addr_pair **target_table)
+			 struct addr_pair **target_table,
+			 uint64_t **rev_fn_table)
 {
   CUmodule module;
   const char *const *var_names;
   const struct targ_fn_launch *fn_descs;
-  unsigned int fn_entries, var_entries, i, j;
+  unsigned int fn_entries, var_entries, other_entries, i, j;
   struct targ_fn_descriptor *targ_fns;
   struct addr_pair *targ_tbl;
   const nvptx_tdata_t *img_header = (const nvptx_tdata_t *) target_data;
@@ -1295,8 +1308,11 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   fn_entries = img_header->fn_num;
   fn_descs = img_header->fn_descs;
 
+  /* Currently, other_entries contains only the struct of ICVs.  */
+  other_entries = 1;
+
   targ_tbl = GOMP_PLUGIN_malloc (sizeof (struct addr_pair)
-				 * (fn_entries + var_entries));
+				 * (fn_entries + var_entries + other_entries));
   targ_fns = GOMP_PLUGIN_malloc (sizeof (struct targ_fn_descriptor)
 				 * fn_entries);
 
@@ -1345,9 +1361,40 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       targ_tbl->end = targ_tbl->start + bytes;
     }
 
+  CUdeviceptr varptr;
+  size_t varsize;
+  CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &varptr, &varsize,
+				  module, XSTRING (GOMP_ADDITIONAL_ICVS));
+
+  if (r == CUDA_SUCCESS)
+    {
+      targ_tbl->start = (uintptr_t) varptr;
+      targ_tbl->end = (uintptr_t) (varptr + varsize);
+    }
+  else
+    /* The variable was not in this image.  */
+    targ_tbl->start = targ_tbl->end = 0;
+
+  if (rev_fn_table && fn_entries == 0)
+    *rev_fn_table = NULL;
+  else if (rev_fn_table)
+    {
+      CUdeviceptr var;
+      size_t bytes;
+      r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &var, &bytes, module,
+			     "$offload_func_table");
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuModuleGetGlobal error: %s", cuda_error (r));
+      assert (bytes == sizeof (uint64_t) * fn_entries);
+      *rev_fn_table = GOMP_PLUGIN_malloc (sizeof (uint64_t) * fn_entries);
+      r = CUDA_CALL_NOCHECK (cuMemcpyDtoH, *rev_fn_table, var, bytes);
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuMemcpyDtoH error: %s", cuda_error (r));
+    }
+
   nvptx_set_clocktick (module, dev);
 
-  return fn_entries + var_entries;
+  return fn_entries + var_entries + other_entries;
 }
 
 /* Unload the program described by TARGET_DATA.  DEV_DATA is the

@@ -98,7 +98,7 @@
   [(return)]
   ""
   {
-    h8300_expand_epilogue ();
+    h8300_expand_epilogue (false);
     DONE;
   })
 
@@ -121,3 +121,11 @@
   gcc_unreachable ();
 }
   [(set_attr "length" "20")])
+
+(define_expand "sibcall_epilogue"
+  [(const_int 0)]
+  ""
+  {
+    h8300_expand_epilogue (true);
+    DONE;
+  })

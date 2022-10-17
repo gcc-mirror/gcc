@@ -139,6 +139,17 @@ You may specify any of the following switches to ``gnatmake``:
   all other options.
 
 
+.. index:: -P  (gnatmake)
+
+:switch:`-P{project}`
+  Build GNAT project file ``project`` using GPRbuild. When this switch is
+  present, all other command-line switches are treated as GPRbuild switches
+  and not ``gnatmake`` switches.
+
+.. -- Comment:
+  :ref:`gnatmake_and_Project_Files`.
+
+
 .. index:: --GCC=compiler_name  (gnatmake)
 
 :switch:`--GCC={compiler_name}`
@@ -521,15 +532,6 @@ You may specify any of the following switches to ``gnatmake``:
 
 :switch:`-p`
   Same as :switch:`--create-missing-dirs`
-
-.. index:: -P  (gnatmake)
-
-:switch:`-P{project}`
-  Use project file ``project``. Only one such switch can be used.
-
-.. -- Comment:
-  :ref:`gnatmake_and_Project_Files`.
-
 
 .. index:: -q  (gnatmake)
 
@@ -1238,7 +1240,8 @@ Alphabetical List of All Switches
 :switch:`-fdiagnostics-format=json`
   Makes GNAT emit warning and error messages as JSON. Inhibits printing of
   text warning and errors messages except if :switch:`-gnatv` or
-  :switch:`-gnatl` are present.
+  :switch:`-gnatl` are present. Uses absolute file paths when used along
+  :switch:`-gnatef`.
 
 
 .. index:: -fdump-scos  (gcc)
@@ -1454,7 +1457,7 @@ Alphabetical List of All Switches
   Check syntax and semantics only (no code generation attempted). When the
   compiler is invoked by ``gnatmake``, if the switch :switch:`-gnatc` is
   only given to the compiler (after :switch:`-cargs` or in package Compiler of
-  the project file, ``gnatmake`` will fail because it will not find the
+  the project file), ``gnatmake`` will fail because it will not find the
   object file after compilation. If ``gnatmake`` is called with
   :switch:`-gnatc` as a builder switch (before :switch:`-cargs` or in package
   Builder of the project file) then ``gnatmake`` will not fail because
@@ -1497,9 +1500,10 @@ Alphabetical List of All Switches
 
 :switch:`-gnateA`
   Check that the actual parameters of a subprogram call are not aliases of one
-  another. To qualify as aliasing, the actuals must denote objects of a composite
-  type, their memory locations must be identical or overlapping, and at least one
-  of the corresponding formal parameters must be of mode OUT or IN OUT.
+  another. To qualify as aliasing, their memory locations must be identical or
+  overlapping, at least one of the corresponding formal parameters must be of
+  mode OUT or IN OUT, and at least one of the corresponding formal parameters
+  must have its parameter passing mechanism not specified.
 
 
   .. code-block:: ada
@@ -1581,7 +1585,8 @@ Alphabetical List of All Switches
 .. index:: -gnatef  (gcc)
 
 :switch:`-gnatef`
-  Display full source path name in brief error messages.
+  Display full source path name in brief error messages and absolute paths in
+  :switch:`-fdiagnostics-format=json`'s output.
 
 
 .. index:: -gnateF  (gcc)
@@ -1714,6 +1719,7 @@ Alphabetical List of All Switches
     Float_Words_BE             : Nat; -- Float words stored big-endian?
     Int_Size                   : Pos; -- Standard.Integer'Size
     Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+    Long_Long_Long_Size        : Pos; -- Standard.Long_Long_Long_Integer'Size
     Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
     Long_Size                  : Pos; -- Standard.Long_Integer'Size
     Maximum_Alignment          : Pos; -- Maximum permitted alignment
@@ -1785,7 +1791,7 @@ Alphabetical List of All Switches
 
 
   where ``name`` is the string name of the type (which can have
-  single spaces embedded in the name (e.g. long double), ``digs`` is
+  single spaces embedded in the name, e.g. long double), ``digs`` is
   the number of digits for the floating-point type, ``float_rep`` is
   the float representation (I for IEEE-754-Binary, which is
   the only one supported at this time),
@@ -1811,6 +1817,7 @@ Alphabetical List of All Switches
     Float_Words_BE                0
     Int_Size                     64
     Long_Double_Size            128
+    Long_Long_Long_Size         128
     Long_Long_Size               64
     Long_Size                    64
     Maximum_Alignment            16
@@ -2388,7 +2395,7 @@ format:
 :switch:`-gnatv`
   The ``v`` stands for verbose.
   The effect of this setting is to write long-format error
-  messages to :file:`stdout` (the standard output file.
+  messages to :file:`stdout` (the standard output file).
   The same program compiled with the
   :switch:`-gnatv` switch would generate:
 
@@ -2488,7 +2495,7 @@ format:
   brief format error messages to :file:`stderr` (the standard error
   file) as well as the verbose
   format message or full listing (which as usual is written to
-  :file:`stdout` (the standard output file).
+  :file:`stdout`, the standard output file).
 
 
 .. index:: -gnatm  (gcc)
@@ -3274,8 +3281,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   If this warning option is activated, then warnings are generated for
   calls to subprograms marked with ``pragma Obsolescent`` and
   for use of features in Annex J of the Ada Reference Manual. In the
-  case of Annex J, not all features are flagged. In particular use
-  of the renamed packages (like ``Text_IO``) and use of package
+  case of Annex J, not all features are flagged. In particular, uses of package
   ``ASCII`` are not flagged, since these are very common and
   would generate many annoying positive warnings. The default is that
   such warnings are not generated.
@@ -3581,6 +3587,25 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   ordering.
 
 
+.. index:: -gnatw_p  (gcc)
+
+:switch:`-gnatw_p`
+  *Activate warnings for pedantic checks.*
+
+  This switch activates warnings for the failure of certain pedantic checks.
+  The only case currently supported is a check that the subtype_marks given
+  for corresponding formal parameter and function results in a subprogram
+  declaration and its body denote the same subtype declaration. The default
+  is that such warnings are not given.
+
+.. index:: -gnatw_P  (gcc)
+
+:switch:`-gnatw_P`
+  *Suppress warnings for pedantic checks.*
+
+  This switch suppresses warnings on violations of pedantic checks.
+
+
 .. index:: -gnatwq  (gcc)
 .. index:: Parentheses, warnings
 
@@ -3682,6 +3707,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   * Comparison of an object or (unary or binary) operation of boolean type to
     an explicit True value.
+
+  * Import of parent package.
 
   The default is that warnings for redundant constructs are not given.
 
@@ -4157,16 +4184,16 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   This switch enables most warnings from the GCC back end.
   The code generator detects a number of warning situations that are missed
   by the GNAT front end, and this switch can be used to activate them.
-  The use of this switch also sets the default front end warning mode to
-  :switch:`-gnatwa`, that is, most front end warnings activated as well.
+  The use of this switch also sets the default front-end warning mode to
+  :switch:`-gnatwa`, that is, most front-end warnings are activated as well.
 
 
 .. index:: -w (gcc)
 
 :switch:`-w`
   Conversely, this switch suppresses warnings from the GCC back end.
-  The use of this switch also sets the default front end warning mode to
-  :switch:`-gnatws`, that is, front end warnings suppressed as well.
+  The use of this switch also sets the default front-end warning mode to
+  :switch:`-gnatws`, that is, front-end warnings are suppressed as well.
 
 
 .. index:: -Werror (gcc)
@@ -4175,6 +4202,9 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   This switch causes warnings from the GCC back end to be treated as
   errors.  The warning string still appears, but the warning messages are
   counted as errors, and prevent the generation of an object file.
+  The use of this switch also sets the default front-end warning mode to
+  :switch:`-gnatwe`, that is, front-end warning messages and style check
+  messages are treated as errors as well.
 
 
 A string of warning parameters can be used in the same parameter. For example::
@@ -4304,15 +4334,31 @@ Debugging and Assertion Control
   Which is a shorthand for::
 
        pragma Assertion_Policy
-         (Assert               => Check,
-          Static_Predicate     => Check,
-          Dynamic_Predicate    => Check,
-          Pre                  => Check,
-          Pre'Class            => Check,
-          Post                 => Check,
-          Post'Class           => Check,
-          Type_Invariant       => Check,
-          Type_Invariant'Class => Check);
+       --  Ada RM assertion pragmas
+         (Assert                    => Check,
+          Static_Predicate          => Check,
+          Dynamic_Predicate         => Check,
+          Pre                       => Check,
+          Pre'Class                 => Check,
+          Post                      => Check,
+          Post'Class                => Check,
+          Type_Invariant            => Check,
+          Type_Invariant'Class      => Check,
+          Default_Initial_Condition => Check,
+       --  GNAT specific assertion pragmas
+          Assert_And_Cut            => Check,
+          Assume                    => Check,
+          Contract_Cases            => Check,
+          Debug                     => Check,
+          Ghost                     => Check,
+          Initial_Condition         => Check,
+          Loop_Invariant            => Check,
+          Loop_Variant              => Check,
+          Postcondition             => Check,
+          Precondition              => Check,
+          Predicate                 => Check,
+          Refined_Post              => Check,
+          Subprogram_Variant        => Check);
 
   The pragmas ``Assert`` and ``Debug`` normally have no effect and
   are ignored. This switch, where ``a`` stands for 'assert', causes
@@ -4411,7 +4457,7 @@ to the default checks required by Ada as described above.
 
   All validity checks are turned on.
   That is, :switch:`-gnatVa` is
-  equivalent to ``gnatVcdfimoprst``.
+  equivalent to ``gnatVcdefimoprst``.
 
 
 .. index:: -gnatVc  (gcc)
@@ -4419,8 +4465,8 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVc`
   *Validity checks for copies.*
 
-  The right hand side of assignments, and the initializing values of
-  object declarations are validity checked.
+  The right-hand side of assignments, and the (explicit) initializing values
+  of object declarations are validity checked.
 
 
 .. index:: -gnatVd  (gcc)
@@ -4428,12 +4474,14 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVd`
   *Default (RM) validity checks.*
 
-  Some validity checks are done by default following normal Ada semantics
-  (RM 13.9.1 (9-11)).
-  A check is done in case statements that the expression is within the range
-  of the subtype. If it is not, Constraint_Error is raised.
-  For assignments to array components, a check is done that the expression used
-  as index is within the range. If it is not, Constraint_Error is raised.
+  Some validity checks are required by Ada (see RM 13.9.1 (9-11)); these
+  (and only these) validity checks are enabled by default.
+  For case statements (and case expressions) that lack a "when others =>"
+  choice, a check is made that the value of the selector expression
+  belongs to its nominal subtype. If it does not, Constraint_Error is raised.
+  For assignments to array components (and for indexed components in some
+  other contexts), a check is made that each index expression belongs to the
+  corresponding index subtype. If it does not, Constraint_Error is raised.
   Both these validity checks may be turned off using switch :switch:`-gnatVD`.
   They are turned on by default. If :switch:`-gnatVD` is specified, a subsequent
   switch :switch:`-gnatVd` will leave the checks turned on.
@@ -4446,28 +4494,31 @@ to the default checks required by Ada as described above.
 .. index:: -gnatVe  (gcc)
 
 :switch:`-gnatVe`
-  *Validity checks for elementary components.*
+  *Validity checks for scalar components.*
 
-  In the absence of this switch, assignments to record or array components are
-  not validity checked, even if validity checks for assignments generally
-  (:switch:`-gnatVc`) are turned on. In Ada, assignment of composite values do not
-  require valid data, but assignment of individual components does. So for
-  example, there is a difference between copying the elements of an array with a
-  slice assignment, compared to assigning element by element in a loop. This
-  switch allows you to turn off validity checking for components, even when they
-  are assigned component by component.
-
+  In the absence of this switch, assignments to scalar components of
+  enclosing record or array objects are not validity checked, even if
+  validity checks for assignments generally (:switch:`-gnatVc`) are turned on.
+  Specifying this switch enables such checks.
+  This switch has no effect if the :switch:`-gnatVc` switch is not specified.
 
 .. index:: -gnatVf  (gcc)
 
 :switch:`-gnatVf`
   *Validity checks for floating-point values.*
 
-  In the absence of this switch, validity checking occurs only for discrete
-  values. If :switch:`-gnatVf` is specified, then validity checking also applies
+  Specifying this switch enables validity checking for floating-point
+  values in the same contexts where validity checking is enabled for
+  other scalar values.
+  In the absence of this switch, validity checking is not performed for
+  floating-point values. This takes precedence over other statements about
+  performing validity checking for scalar objects in various scenarios.
+  One way to look at it is that if this switch is not set, then whenever
+  any of the other rules in this section use the word "scalar" they
+  really mean "scalar and not floating-point".
+  If :switch:`-gnatVf` is specified, then validity checking also applies
   for floating-point values, and NaNs and infinities are considered invalid,
-  as well as out of range values for constrained types. Note that this means
-  that standard IEEE infinity mode is not allowed. The exact contexts
+  as well as out-of-range values for constrained types. The exact contexts
   in which floating-point values are checked depends on the setting of other
   options. For example, :switch:`-gnatVif` or :switch:`-gnatVfi`
   (the order does not matter) specifies that floating-point parameters of mode
@@ -4514,7 +4565,8 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVo`
   *Validity checks for operator and attribute operands.*
 
-  Arguments for predefined operators and attributes are validity checked.
+  Scalar arguments for predefined operators and for attributes are
+  validity checked.
   This includes all operators in package ``Standard``,
   the shift operators defined as intrinsic in package ``Interfaces``
   and operands for attributes such as ``Pos``. Checks are also made
@@ -4528,22 +4580,22 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVp`
   *Validity checks for parameters.*
 
-  This controls the treatment of parameters within a subprogram (as opposed
-  to :switch:`-gnatVi` and :switch:`-gnatVm` which control validity testing
-  of parameters on a call. If either of these call options is used, then
-  normally an assumption is made within a subprogram that the input arguments
-  have been validity checking at the point of call, and do not need checking
-  again within a subprogram). If :switch:`-gnatVp` is set, then this assumption
-  is not made, and parameters are not assumed to be valid, so their validity
-  will be checked (or rechecked) within the subprogram.
-
+  This controls the treatment of formal parameters within a subprogram (as
+  opposed to :switch:`-gnatVi` and :switch:`-gnatVm`, which control validity
+  testing of actual parameters of a call). If either of these call options is
+  specified, then normally an assumption is made within a subprogram that
+  the validity of any incoming formal parameters of the corresponding mode(s)
+  has already been checked at the point of call and does not need rechecking.
+  If :switch:`-gnatVp` is set, then this assumption is not made and so their
+  validity may be checked (or rechecked) within the subprogram. If neither of
+  the two call-related options is specified, then this switch has no effect.
 
 .. index:: -gnatVr  (gcc)
 
 :switch:`-gnatVr`
   *Validity checks for function returns.*
 
-  The expression in ``return`` statements in functions is validity
+  The expression in simple ``return`` statements in functions is validity
   checked.
 
 
@@ -4552,9 +4604,10 @@ to the default checks required by Ada as described above.
 :switch:`-gnatVs`
   *Validity checks for subscripts.*
 
-  All subscripts expressions are checked for validity, whether they appear
-  on the right side or left side (in default mode only left side subscripts
-  are validity checked).
+  All subscript expressions are checked for validity, whatever context
+  they occur in (in default mode some subscripts are not validity checked;
+  for example, validity checking may be omitted in some cases involving
+  a read of a component of an array).
 
 
 .. index:: -gnatVt  (gcc)
@@ -5140,7 +5193,7 @@ checks to be performed. The following checks are defined:
 
 
 .. end of switch description (leave this comment to ease automatic parsing for
-.. GNAT Studio
+.. GNAT Studio)
 
 In the above rules, appearing in column one is always permitted, that is,
 counts as meeting either a requirement for a required preceding space,
@@ -5990,10 +6043,10 @@ Debugging Control
 
 :switch:`-gnatx`
   Normally the compiler generates full cross-referencing information in
-  the :file:`ALI` file. This information is used by a number of tools,
-  including ``gnatfind`` and ``gnatxref``. The :switch:`-gnatx` switch
-  suppresses this information. This saves some space and may slightly
-  speed up compilation, but means that these tools cannot be used.
+  the :file:`ALI` file. This information is used by a number of tools.
+  The :switch:`-gnatx` switch suppresses this information. This saves some space
+  and may slightly speed up compilation, but means that tools depending
+  on this information cannot be used.
 
 
 .. index:: -fgnat-encodings  (gcc)
@@ -6178,10 +6231,32 @@ Linker switches can be specified after :switch:`-largs` builder switch.
 .. index:: -fuse-ld=name
 
 :switch:`-fuse-ld={name}`
-  Linker to be used. The default is ``bfd`` for :file:`ld.bfd`,
-  the alternative being ``gold`` for :file:`ld.gold`. The later is
-  a more recent and faster linker, but only available on GNU/Linux
+  Linker to be used. The default is ``bfd`` for :file:`ld.bfd`; ``gold``
+  (for :file:`ld.gold`) and ``mold`` (for :file:`ld.mold`) are more
+  recent and faster alternatives, but only available on GNU/Linux
   platforms.
+
+  .. only:: PRO
+
+    The GNAT distribution for native Linux platforms includes ``mold``,
+    compiled against OpenSSL version 1.1; however, the distribution does
+    not include OpenSSL.  In order to use this linker, you may either:
+
+    * use your system's OpenSSL library, if the version matches: in this
+      situation, you need not do anything beside using the
+      :switch:`-fuse-ld=mold` switch,
+
+    * obtain a source distribution for OpenSSL 1.1, compile the
+      :file:`libcrypto.so` library and install it in the directory of
+      your choice, then include this directory in the
+      :envvar:`LD_LIBRARY_PATH` environment variable,
+
+    * install another copy of ``mold`` by other means in the directory
+      of your choice, and include this directory in the :envvar:`PATH`
+      environment variable; you may find this alternative preferable if
+      the copy of ``mold`` included in GNAT does not suit your needs
+      (e.g. being able to link against your system's OpenSSL, or using
+      another version of ``mold``).
 
 .. _Binding_with_gnatbind:
 
@@ -6488,6 +6563,22 @@ be presented in subsequent sections.
   Do not look for sources in the current directory where ``gnatbind`` was
   invoked, and do not look for ALI files in the directory containing the
   ALI file named in the ``gnatbind`` command line.
+
+
+  .. index:: -k  (gnatbind)
+
+:switch:`-k`
+  Disable checking of elaboration flags. When using :switch:`-n`
+  either explicitly or implicitly, :switch:`-F` is also implied,
+  unless :switch:`-k` is used. This switch should be used with care
+  and you should ensure manually that elaboration routines are not called
+  twice unintentionally.
+
+
+  .. index:: -K  (gnatbind)
+
+:switch:`-K`
+  Give list of linker options specified for link.
 
 
   .. index:: -l  (gnatbind)
@@ -7593,9 +7684,9 @@ which might help you in case your project has a lot of subdirectories.
   ##    Each of these csc is put in its own directory.
   ##    Their name are referenced by the directory names.
   ##    They will be compiled into shared library (although this would also work
-  ##    with static libraries
+  ##    with static libraries)
   ##  - The main program (and possibly other packages that do not belong to any
-  ##    csc is put in the top level directory (where the Makefile is).
+  ##    csc) is put in the top level directory (where the Makefile is).
   ##       toplevel_dir __ first_csc  (sources) __ lib (will contain the library)
   ##                    \\_ second_csc (sources) __ lib (will contain the library)
   ##                    \\_ ...

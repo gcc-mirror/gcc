@@ -63,7 +63,7 @@
 #define ANON_PROMOTED(type,val,type_promoted, val_promoted, offset,...)	\
   ANON(type_promoted, val_promoted, offset, __VA_ARGS__)
 /* Composite larger than 16 bytes is replaced by a pointer to a copy prepared
-   by the caller, so here we extrat the pointer, deref it and compare the
+   by the caller, so here we extract the pointer, deref it and compare the
    content with that of the original one.  */
 #define PTR(type, val, offset, ...) {					\
   type * ptr;								\

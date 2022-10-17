@@ -7,4 +7,3 @@ void main()
     boo(1);
     foo();
 }
-

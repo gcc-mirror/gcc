@@ -1,6 +1,6 @@
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,18 +52,23 @@ void test06()
   function<int()> f(ref(x));
   VERIFY( f );
   VERIFY( f() == 17 );
+#if __cpp_rtti
   VERIFY( f.target_type() == typeid(noncopyable_function_object_type) );
   VERIFY( f.target<noncopyable_function_object_type>() == &x );
+#endif
 
   function<int()> g = f;
   VERIFY( g );
   VERIFY( g() == 17 );
+#if __cpp_rtti
   VERIFY( g.target_type() == typeid(noncopyable_function_object_type) );
   VERIFY( g.target<noncopyable_function_object_type>() == &x );
+#endif
 
   function<int()> h = cref(x);
   VERIFY( h );
   VERIFY( h() == 42 );
+#if __cpp_rtti
   VERIFY( h.target_type() == typeid(noncopyable_function_object_type) );
   VERIFY( h.target<const noncopyable_function_object_type>() == &x );
   VERIFY( h.target<const noncopyable_function_object_type>() == &x );
@@ -71,6 +76,7 @@ void test06()
   const function<int()>& hc = h;
   VERIFY( h.target<noncopyable_function_object_type>() == 0 );
   VERIFY( hc.target<noncopyable_function_object_type>() == &x );
+#endif
 }
 
 int main()

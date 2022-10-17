@@ -1,10 +1,10 @@
-@c Copyright (C) 2004-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2022 Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 2004-2022 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -170,7 +170,7 @@ and warnings}.
 
 @item Link Options
 @xref{Link Options,,Options for influencing the linking step}.
-@gccoptlist{-static-libgfortran}
+@gccoptlist{-static-libgfortran  -static-libquadmath}
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
@@ -227,7 +227,7 @@ form is determined by the file extension.
 @item -fall-intrinsics
 @opindex @code{fall-intrinsics}
 This option causes all intrinsic procedures (including the GNU-specific
-extensions) to be accepted.  This can be useful with @option{-std=f95} to
+extensions) to be accepted.  This can be useful with @option{-std=} to
 force standard-compliance but get access to the full range of intrinsics
 available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
 will be ignored and no user-defined procedure with the same name as any
@@ -397,7 +397,7 @@ lines in the source file. The default value is 132.
 @item -fmax-identifier-length=@var{n}
 @opindex @code{fmax-identifier-length=}@var{n}
 Specify the maximum allowed identifier length. Typical values are
-31 (Fortran 95) and 63 (Fortran 2003 and Fortran 2008).
+31 (Fortran 95) and 63 (Fortran 2003 and later).
 
 @item -fimplicit-none
 @opindex @code{fimplicit-none}
@@ -570,10 +570,46 @@ Enhance test coverage by forcing most forall assignments to use temporary.
 @cindex preprocessor
 @cindex options, preprocessor
 @cindex CPP
+@cindex FPP
+@cindex Conditional compilation
+@cindex Preprocessing
+@cindex preprocessor, include file handling
 
-Preprocessor related options. See section 
-@ref{Preprocessing and conditional compilation} for more detailed
-information on preprocessing in @command{gfortran}.
+Many Fortran compilers including GNU Fortran allow passing the source code
+through a C preprocessor (CPP; sometimes also called the Fortran preprocessor,
+FPP) to allow for conditional compilation.  In the case of GNU Fortran,
+this is the GNU C Preprocessor in the traditional mode.  On systems with
+case-preserving file names, the preprocessor is automatically invoked if the
+filename extension is @file{.F}, @file{.FOR}, @file{.FTN}, @file{.fpp},
+@file{.FPP}, @file{.F90}, @file{.F95}, @file{.F03} or @file{.F08}.  To manually
+invoke the preprocessor on any file, use @option{-cpp}, to disable
+preprocessing on files where the preprocessor is run automatically, use
+@option{-nocpp}.
+
+If a preprocessed file includes another file with the Fortran @code{INCLUDE}
+statement, the included file is not preprocessed.  To preprocess included
+files, use the equivalent preprocessor statement @code{#include}.
+
+If GNU Fortran invokes the preprocessor, @code{__GFORTRAN__}
+is defined.  The macros @code{__GNUC__}, @code{__GNUC_MINOR__} and
+@code{__GNUC_PATCHLEVEL__} can be used to determine the version of the
+compiler.  See @ref{Top,,Overview,cpp,The C Preprocessor} for details.
+
+GNU Fortran supports a number of @code{INTEGER} and @code{REAL} kind types
+in additional to the kind types required by the Fortran standard.
+The availability of any given kind type is architecture dependent.  The
+following pre-defined preprocessor macros can be used to conditionally
+include code for these additional kind types: @code{__GFC_INT_1__},
+@code{__GFC_INT_2__}, @code{__GFC_INT_8__}, @code{__GFC_INT_16__},
+@code{__GFC_REAL_10__}, and @code{__GFC_REAL_16__}.
+
+While CPP is the de-facto standard for preprocessing Fortran code,
+Part 3 of the Fortran 95 standard (ISO/IEC 1539-3:1998) defines
+Conditional Compilation, which is not widely used and not directly
+supported by the GNU Fortran compiler.  You can use the program coco
+to preprocess such files (@uref{http://www.daniellnagle.com/coco.html}).
+
+The following options control preprocessing of Fortran code:
 
 @table @gcctabopt
 @item -cpp
@@ -1056,6 +1092,11 @@ The type of a function result is declared more than once with the same type.  If
 
 @item
 A @code{CHARACTER} variable is declared with negative length.
+
+@item
+With @option{-fopenmp}, for fixed-form source code, when an @code{omx}
+vendor-extension sentinel is encountered. (The equivalent @code{ompx},
+used in free-form source code, is diagnosed by default.)
 @end itemize
 
 @item -Wtabs
@@ -1389,6 +1430,20 @@ configured, this option has no effect.
 @end table
 
 
+@table @gcctabopt
+@item -static-libquadmath
+@opindex @code{static-libquadmath}
+On systems that provide @file{libquadmath} as a shared and a static
+library, this option forces the use of the static version. If no
+shared version of @file{libquadmath} was built when the compiler was
+configured, this option has no effect.
+
+Please note that the @file{libquadmath} runtime library is licensed under the
+GNU Lesser General Public License (LGPL), and linking it statically introduces
+requirements when redistributing the resulting binaries.
+@end table
+
+
 @node Runtime Options
 @section Influencing runtime behavior
 @cindex options, runtime
@@ -1399,10 +1454,20 @@ These options affect the runtime behavior of programs compiled with GNU Fortran.
 @item -fconvert=@var{conversion}
 @opindex @code{fconvert=}@var{conversion}
 Specify the representation of data for unformatted files.  Valid
-values for conversion are: @samp{native}, the default; @samp{swap},
-swap between big- and little-endian; @samp{big-endian}, use big-endian
-representation for unformatted files; @samp{little-endian}, use little-endian
-representation for unformatted files.
+values for conversion on most systems are: @samp{native}, the default;
+@samp{swap}, swap between big- and little-endian; @samp{big-endian}, use
+big-endian representation for unformatted files; @samp{little-endian}, use
+little-endian representation for unformatted files.
+
+On POWER systems which suppport @option{-mabi=ieeelongdouble},
+there are additional options, which can be combined with others with
+commas.  Those are
+@itemize @w{}
+@item @option{-fconvert=r16_ieee} Use IEEE 128-bit format for
+@code{REAL(KIND=16)}.
+@item @option{-fconvert=r16_ibm} Use IBM long double format for
+@code{REAL(KIND=16)}.
+@end itemize
 
 @emph{This option has an effect only when used in the main program.
 The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment
@@ -1822,7 +1887,7 @@ except when optimizing for size via @option{-Os}.  If the code
 contains a very large number of argument that have to be packed, code
 size and also compilation time may become excessive.  If that is the
 case, it may be better to disable this option.  Instances of packing
-can be found by using by using @option{-Warray-temporaries}.
+can be found by using @option{-Warray-temporaries}.
 
 @item -fexternal-blas
 @opindex @code{fexternal-blas}
@@ -2032,7 +2097,7 @@ does not generate prototypes for @code{BIND(C)} procedures, use
 @option{-fc-prototypes} for that.
 
 The generated prototypes may need inclusion of an appropriate
-header, such as as @code{<stdint.h>} or @code{<stdlib.h>}.
+header, such as @code{<stdint.h>} or @code{<stdlib.h>}.
 
 This is primarily meant for legacy code to ensure that existing C
 bindings match what @command{gfortran} emits.  The generated C

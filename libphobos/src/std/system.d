@@ -3,10 +3,11 @@
 /**
  * Information about the target operating system, environment, and CPU.
  *
- *  Copyright: Copyright Digital Mars 2000 - 2011
+ *  Copyright: Copyright The D Language Foundation 2000 - 2011
  *  License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
- *  Authors:   $(HTTP digitalmars.com, Walter Bright) and Jonathan M Davis
- *  Source:    $(PHOBOSSRC std/_system.d)
+ *  Authors:   $(HTTP digitalmars.com, Walter Bright) and
+               $(HTTP jmdavisprog.com, Jonathan M Davis)
+ *  Source:    $(PHOBOSSRC std/system.d)
  */
 module std.system;
 
@@ -18,8 +19,8 @@ immutable
         Note:
             This is for cases where you need a value representing the OS at
             runtime. If you're doing something which should compile differently
-            on different OSes, then please use $(D version (Windows)),
-            $(D version (linux)), etc.
+            on different OSes, then please use `version (Windows)`,
+            `version (linux)`, etc.
 
         See_Also:
             $(DDSUBLINK spec/version,PredefinedVersions, Predefined Versions)
@@ -35,10 +36,12 @@ immutable
         watchOS,   /// watchOS
         freeBSD,   /// FreeBSD
         netBSD,    /// NetBSD
+        openBSD,   /// OpenBSD
         dragonFlyBSD, /// DragonFlyBSD
         solaris,   /// Solaris
         android,   /// Android
-        otherPosix /// Other Posix Systems
+        otherPosix, /// Other Posix Systems
+        unknown,   /// Unknown
     }
 
     /// The OS that the program was compiled for.
@@ -52,9 +55,10 @@ immutable
     else version (watchOS) OS os = OS.watchOS;
     else version (FreeBSD) OS os = OS.freeBSD;
     else version (NetBSD)  OS os = OS.netBSD;
+    else version (OpenBSD) OS os = OS.openBSD;
     else version (DragonFlyBSD) OS os = OS.dragonFlyBSD;
     else version (Posix)   OS os = OS.otherPosix;
-    else static assert(0, "Unknown OS.");
+    else OS os = OS.unknown;
 
     /++
         Byte order endianness.
@@ -63,8 +67,8 @@ immutable
             This is intended for cases where you need to deal with endianness at
             runtime. If you're doing something which should compile differently
             depending on whether you're compiling on a big endian or little
-            endian machine, then please use $(D version (BigEndian)) and
-            $(D version (LittleEndian)).
+            endian machine, then please use `version (BigEndian)` and
+            `version (LittleEndian)`.
 
         See_Also:
             $(DDSUBLINK spec/version,PredefinedVersions, Predefined Versions)

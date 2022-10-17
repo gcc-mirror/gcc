@@ -1,6 +1,6 @@
 /* Target definitions for PowerPC64 running Darwin (Mac OS X) for a 64b host
    supporting a 32b multilib.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -21,7 +21,7 @@
 
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC64 | MASK_64BIT \
-			| MASK_MULTIPLE | MASK_PPC_GFXOPT)
+			| OPTION_MASK_MULTIPLE | OPTION_MASK_PPC_GFXOPT)
 
 #undef DARWIN_ARCH_SPEC
 #define DARWIN_ARCH_SPEC "%{m32:ppc;:ppc64}"

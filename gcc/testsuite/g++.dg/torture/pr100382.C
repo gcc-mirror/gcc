@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-additional-options -fno-delete-dead-exceptions }
 
 int x, y;
 int __attribute__((pure,noinline)) foo () { if (x) throw 1; return y; }

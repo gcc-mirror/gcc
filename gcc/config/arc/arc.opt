@@ -1,6 +1,6 @@
 ; Options for the Synopsys DesignWare ARC port of the compiler
 ;
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -276,6 +276,9 @@ Enum(arc_tune_attr) String(arc750d) Value(ARC_TUNE_ARC700_4_2_XMAC)
 EnumValue
 Enum(arc_tune_attr) String(core3) Value(ARC_TUNE_CORE_3)
 
+EnumValue
+Enum(arc_tune_attr) String(release31a) Value(ARC_TUNE_ARCHS4X_REL31A)
+
 mindexed-loads
 Target Var(TARGET_INDEXED_LOADS) Init(TARGET_INDEXED_LOADS_DEFAULT)
 Enable the use of indexed loads.
@@ -305,12 +308,14 @@ Target Ignore
 Does nothing.  Preserved for backward compatibility.
 
 mRcq
-Target Var(TARGET_Rcq)
-Enable Rcq constraint handling - most short code generation depends on this.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
+
 
 mRcw
-Target Var(TARGET_Rcw)
-Enable Rcw constraint handling - ccfsm condexec mostly depends on this.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
+
 
 mearly-cbranchsi
 Target Var(TARGET_EARLY_CBRANCHSI)

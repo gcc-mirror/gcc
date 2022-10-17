@@ -1,6 +1,6 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -172,19 +172,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Cxx_hashtable_define_trivial_hash(unsigned long long)
 
 #ifdef __GLIBCXX_TYPE_INT_N_0
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0 unsigned)
 #endif
 #ifdef __GLIBCXX_TYPE_INT_N_1
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_1 unsigned)
 #endif
 #ifdef __GLIBCXX_TYPE_INT_N_2
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_2 unsigned)
 #endif
 #ifdef __GLIBCXX_TYPE_INT_N_3
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3)
+  __extension__
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3 unsigned)
 #endif
 
@@ -272,10 +280,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @} group hashes
 
-  // Hint about performance of hash functor. If not fast the hash-based
-  // containers will cache the hash code.
-  // Default behavior is to consider that hashers are fast unless specified
-  // otherwise.
+  /** Hint about performance of hash functions.
+   *
+   * If a given hash function object is not fast, the hash-based containers
+   * will cache the hash code.
+   * The default behavior is to consider that hashers are fast unless specified
+   * otherwise.
+   *
+   * Users can specialize this for their own hash functions in order to force
+   * caching of hash codes in unordered containers. Specializing this trait
+   * affects the ABI of the unordered containers, so use it carefully.
+   */
   template<typename _Hash>
     struct __is_fast_hash : public std::true_type
     { };

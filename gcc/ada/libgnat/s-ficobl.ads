@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 1992-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ with Ada.Streams;
 with Interfaces.C_Streams;
 with System.CRTL;
 
-package System.File_Control_Block is
+package System.File_Control_Block with SPARK_Mode => Off is
    pragma Preelaborate;
 
    ----------------------------

@@ -1,5 +1,5 @@
 ;; Constraint definitions for ARM and Thumb
-;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -32,7 +32,7 @@
 
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
-;;			 Ds, Dt, Dp, Dz, Tu, Te
+;;			 Dj, Ds, Dt, Dp, Dz, Tu, Te
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
 ;; in Thumb-2 state: Ha, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Rd, Rf, Rb, Ra,
 ;;		     Rg, Ri
@@ -312,6 +312,12 @@
  (and (match_code "const_vector")
       (match_test "(TARGET_NEON || TARGET_HAVE_MVE) && op == CONST0_RTX (mode)")))
 
+(define_constraint "DB"
+ "@internal
+  In ARM/Thumb-2 state with MVE a constant vector of booleans."
+ (and (match_code "const_vector")
+      (match_test "TARGET_HAVE_MVE && GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL")))
+
 (define_constraint "Da"
  "@internal
   In ARM/Thumb-2 state a const_int, const_double or const_vector that can
@@ -347,6 +353,14 @@
   and low SImode words can be generated as immediates in 32-bit instructions."
  (and (match_code "const_double,const_int")
       (match_test "TARGET_32BIT && arm_const_double_by_immediates (op)")))
+
+(define_constraint "Dj"
+  "@internal
+   In cores with the v6t2 ISA, a constant with exactly one consecutive
+   string of zero bits."
+  (and (match_code "const_int")
+       (match_test "arm_arch_thumb2
+		    && exact_log2 (~ival + (~ival & -~ival)) >= 0")))
 
 (define_constraint "Dm"
  "@internal

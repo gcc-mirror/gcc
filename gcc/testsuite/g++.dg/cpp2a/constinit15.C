@@ -6,7 +6,7 @@ struct B {
 };
 
 struct A {
-    constinit static inline B b1{}; // { dg-error "does not have a constant initializer|call to non-.constexpr. function" }
+    constinit static inline B b1{}; // { dg-error "does not have a constant initializer|call to non-.constexpr. function" "" { target { ! implicit_constexpr } } }
 };
 
 int main() {

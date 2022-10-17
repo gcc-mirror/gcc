@@ -1,5 +1,5 @@
 /*
-REQUIRED_ARGS:
+REQUIRED_ARGS: -preview=rvaluerefparam
 TEST_OUTPUT:
 ---
 cast(void)0
@@ -28,3 +28,10 @@ void test3() { pragma(msg, V); }
 pragma(msg, foo());
 pragma(msg, main());
 pragma(msg, V);
+
+/*************************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8255
+
+struct G {}
+struct F(T) { void f(ref T) {} }
+pragma(msg, F!G().f(G.init));

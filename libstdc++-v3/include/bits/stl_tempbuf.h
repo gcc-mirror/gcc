@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,8 +56,11 @@
 #ifndef _STL_TEMPBUF_H
 #define _STL_TEMPBUF_H 1
 
-#include <bits/stl_algobase.h>
+#include <new>
+#include <bits/exception_defines.h>
 #include <bits/stl_construct.h>
+#include <bits/stl_pair.h>
+#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -96,6 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Provides the nothrow exception guarantee.
    */
   template<typename _Tp>
+    _GLIBCXX17_DEPRECATED
     pair<_Tp*, ptrdiff_t>
     get_temporary_buffer(ptrdiff_t __len) _GLIBCXX_NOEXCEPT
     {

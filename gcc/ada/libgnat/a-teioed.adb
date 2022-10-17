@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -279,13 +279,13 @@ package body Ada.Text_IO.Editing is
            or else Pic.Start_Currency < Pic.Radix_Position
          then
             Answer (Pic.Start_Currency .. Pic.End_Currency) :=
-                                                        (others => ' ');
+                                                        [others => ' '];
             Answer (Pic.End_Currency - Currency_Symbol'Length + 1 ..
                     Pic.End_Currency) := Currency_Symbol;
 
          else
             Answer (Pic.Start_Currency .. Pic.End_Currency) :=
-                                                        (others => ' ');
+                                                        [others => ' '];
             Answer (Pic.Start_Currency ..
                     Pic.Start_Currency + Currency_Symbol'Length - 1) :=
                                                         Currency_Symbol;

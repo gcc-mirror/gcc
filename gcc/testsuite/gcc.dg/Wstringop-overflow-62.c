@@ -117,7 +117,7 @@ void test_min (void)
   {
     /* Exercise a pointer pointing to a known object plus constant offset
        with one pointing to an unknown object.  */
-    char a6[6];               // { dg-message ": destination object 'a6'" "note" }
+    char a6[6];               // { dg-message "(at offset 1 into )?destination object 'a6'" "note" }
     char *p1 = ptr;
     char *p2 = a6 + 1;
     char *q = MIN (p1, p2);
@@ -217,14 +217,14 @@ void test_max (void)
   {
     /* Exercise both pointers pointing to the same object plus constant
        offset.  */
-    char a2[2];               // { dg-message "at offset 1 into destination object 'a2' of size 2" "note" }
+    char a2[2];
     char *pi = a2 + 1;
     char *pj = a2 + 2;
 
     char *q = MAX (pi, pj);
 
-    memset (q, 0, 1);
-    memset (q, 0, 2);         // { dg-warning "writing 2 bytes into a region of size 1 " }
+    memset (q, 0, 1);         // { dg-warning "writing 1 byte into a region of size 0 " }
+    memset (q, 0, 2);         // { dg-warning "writing 2 bytes into a region of size 0 " }
   }
 
   {

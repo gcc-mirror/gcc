@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,6 @@ with Sem_Warn;       use Sem_Warn;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
-with Snames;         use Snames;
 with Stand;          use Stand;
 
 package body Sem_Ch11 is
@@ -431,13 +430,10 @@ package body Sem_Ch11 is
 
       --  If the current scope is a subprogram, entry or task body or declare
       --  block then this is the right place to check for hanging useless
-      --  assignments from the statement sequence. Skip this in the body of a
-      --  postcondition, since in that case there are no source references, and
-      --  we need to preserve deferred references from the enclosing scope.
+      --  assignments from the statement sequence.
 
-      if (Is_Subprogram_Or_Entry (Current_Scope)
-           and then Chars (Current_Scope) /= Name_uPostconditions)
-         or else Ekind (Current_Scope) in E_Block | E_Task_Type
+      if Is_Subprogram_Or_Entry (Current_Scope)
+        or else Ekind (Current_Scope) in E_Block | E_Task_Type
       then
          Warn_On_Useless_Assignments (Current_Scope);
       end if;
@@ -460,10 +456,6 @@ package body Sem_Ch11 is
       Exception_Name : Entity_Id        := Empty;
 
    begin
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("raise expression", N);
-      end if;
-
       --  Check exception restrictions on the original source
 
       if Comes_From_Source (N) then
@@ -615,15 +607,7 @@ package body Sem_Ch11 is
 
          else
             Set_Local_Raise_Not_OK (P);
-
-            --  Do not check the restriction if the reraise statement is part
-            --  of the code generated for an AT-END handler. That's because
-            --  if the restriction is actually active, we never generate this
-            --  raise anyway, so the apparent violation is bogus.
-
-            if not From_At_End (N) then
-               Check_Restriction (No_Exception_Propagation, N);
-            end if;
+            Check_Restriction (No_Exception_Propagation, N);
          end if;
 
       --  Normal case with exception id present

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build hurd || linux
 // +build hurd linux
 
 // glibc library calls.
@@ -9,6 +10,7 @@
 package syscall
 
 import (
+	"internal/itoa"
 	"internal/race"
 	"unsafe"
 )
@@ -18,6 +20,7 @@ import (
 
 //sys	futimesat(dirfd int, path *byte, times *[2]Timeval) (err error)
 //futimesat(dirfd _C_int, path *byte, times *[2]Timeval) _C_int
+
 func Futimesat(dirfd int, path string, tv []Timeval) (err error) {
 	if len(tv) != 2 {
 		return EINVAL
@@ -28,7 +31,7 @@ func Futimesat(dirfd int, path string, tv []Timeval) (err error) {
 func Futimes(fd int, tv []Timeval) (err error) {
 	// Believe it or not, this is the best we can do on GNU/Linux
 	// (and is what glibc does).
-	return Utimes("/proc/self/fd/"+itoa(fd), tv)
+	return Utimes("/proc/self/fd/"+itoa.Itoa(fd), tv)
 }
 
 //sys	accept4(fd int, sa *RawSockaddrAny, len *Socklen_t, flags int) (nfd int, err error)
@@ -98,6 +101,7 @@ func ReadDirent(fd int, buf []byte) (n int, err error) {
 
 //sysnb	pipe2(p *[2]_C_int, flags int) (err error)
 //pipe2(p *[2]_C_int, flags _C_int) _C_int
+
 func Pipe2(p []int, flags int) (err error) {
 	if len(p) != 2 {
 		return EINVAL
@@ -111,6 +115,7 @@ func Pipe2(p []int, flags int) (err error) {
 
 //sys	sendfile(outfd int, infd int, offset *Offset_t, count int) (written int, err error)
 //sendfile64(outfd _C_int, infd _C_int, offset *Offset_t, count Size_t) Ssize_t
+
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
 	if race.Enabled {
 		race.ReleaseMerge(unsafe.Pointer(&ioSync))

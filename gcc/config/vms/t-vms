@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2009-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,18 +23,18 @@ vms-crtlmap.h: $(srcdir)/config/vms/vms-crtlmap.map  \
 	$(AWK) -f $(srcdir)/config/vms/make-crtlmap.awk \
 	  $(srcdir)/config/vms/vms-crtlmap.map > $@
 
-vms.o: $(srcdir)/config/vms/vms.c $(TREE_H) $(CONFIG_H) $(SYSTEM_H) \
+vms.o: $(srcdir)/config/vms/vms.cc $(TREE_H) $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_P_H) vms-crtlmap.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $< -o $@
 
-vms-c.o: $(srcdir)/config/vms/vms-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+vms-c.o: $(srcdir)/config/vms/vms-c.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(CPPLIB_H) $(TREE_H) c-family/c-pragma.h toplev.h $(GGC_H) \
   $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           $(PREPROCESSOR_DEFINES) $< -o $@
 
-vms-f.o: $(srcdir)/config/vms/vms-f.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+vms-f.o: $(srcdir)/config/vms/vms-f.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           $(PREPROCESSOR_DEFINES) $< -o $@

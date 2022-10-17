@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2021 Free Software Foundation, Inc.
+// Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
+// { dg-do run { target { c++11 && { ! c++23 } } } }
 
 #include <typeinfo>
 #include <exception>
@@ -66,21 +68,27 @@ void test01 ()
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(int) == *exc->exceptionType );
+#endif
   }
   try {
     throw 0LL;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(long long int) == *exc->exceptionType );
+#endif
   }
   try {
     throw 0.0;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(double) == *exc->exceptionType );
+#endif
   }
 }
 

@@ -1,6 +1,6 @@
 ; analyzer.opt -- Options for the analyzer.
 
-; Copyright (C) 2019-2021 Free Software Foundation, Inc.
+; Copyright (C) 2019-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -43,7 +43,7 @@ Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
 -param=analyzer-max-svalue-depth=
-Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(13) Param
+Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(12) Param
 The maximum depth of a symbolic value, before approximating the value as unknown.
 
 -param=analyzer-min-snodes-for-call-summary=
@@ -53,6 +53,10 @@ The minimum number of supernodes within a function for the analyzer to consider 
 -param=analyzer-max-enodes-for-full-dump=
 Common Joined UInteger Var(param_analyzer_max_enodes_for_full_dump) Init(200) Param
 The maximum depth of exploded nodes that should appear in a dot dump before switching to a less verbose format.
+
+Wanalyzer-allocation-size
+Common Var(warn_analyzer_allocation_size) Init(1) Warning
+Warn about code paths in which a pointer to a buffer is assigned to an incompatible type.
 
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning
@@ -66,6 +70,30 @@ Wanalyzer-exposure-through-output-file
 Common Var(warn_analyzer_exposure_through_output_file) Init(1) Warning
 Warn about code paths in which sensitive data is written to a file.
 
+Wanalyzer-exposure-through-uninit-copy
+Common Var(warn_analyzer_exposure_through_uninit_copy) Init(1) Warning
+Warn about code paths in which sensitive data is copied across a security boundary.
+
+Wanalyzer-fd-access-mode-mismatch
+Common Var(warn_analyzer_fd_mode_mismatch) Init(1) Warning
+Warn about code paths in which read on a write-only file descriptor is attempted, or vice versa.
+
+Wanalyzer-fd-double-close
+Common Var(warn_analyzer_fd_double_close) Init(1) Warning
+Warn about code paths in which a file descriptor can be closed more than once.
+
+Wanalyzer-fd-leak
+Common Var(warn_analyzer_fd_leak) Init(1) Warning
+Warn about code paths in which a file descriptor is not closed.
+
+Wanalyzer-fd-use-after-close
+Common Var(warn_analyzer_fd_use_after_close) Init(1) Warning
+Warn about code paths in which a read or write is performed on a closed file descriptor.
+
+Wanalyzer-fd-use-without-check
+Common Var(warn_analyzer_fd_use_without_check) Init(1) Warning
+Warn about code paths in which a file descriptor is used without being checked for validity.
+
 Wanalyzer-file-leak
 Common Var(warn_analyzer_file_leak) Init(1) Warning
 Warn about code paths in which a stdio FILE is not closed.
@@ -74,6 +102,14 @@ Wanalyzer-free-of-non-heap
 Common Var(warn_analyzer_free_of_non_heap) Init(1) Warning
 Warn about code paths in which a non-heap pointer is freed.
 
+Wanalyzer-imprecise-fp-arithmetic
+Common Var(warn_analyzer_imprecise_fp_arithmetic) Init(1) Warning
+Warn about code paths in which floating-point arithmetic is used in locations where precise computation is needed.
+
+Wanalyzer-jump-through-null
+Common Var(warn_analyzer_jump_through_null) Init(1) Warning
+Warn about code paths in which a NULL function pointer is called.
+
 Wanalyzer-malloc-leak
 Common Var(warn_analyzer_malloc_leak) Init(1) Warning
 Warn about code paths in which a heap-allocated pointer leaks.
@@ -81,6 +117,10 @@ Warn about code paths in which a heap-allocated pointer leaks.
 Wanalyzer-mismatching-deallocation
 Common Var(warn_analyzer_mismatching_deallocation) Init(1) Warning
 Warn about code paths in which the wrong deallocation function is called.
+
+Wanalyzer-out-of-bounds
+Common Var(warn_analyzer_out_of_bounds) Init(1) Warning
+Warn about code paths in which a write or read to a buffer is out-of-bounds.
 
 Wanalyzer-possible-null-argument
 Common Var(warn_analyzer_possible_null_argument) Init(1) Warning
@@ -102,6 +142,10 @@ Wanalyzer-null-dereference
 Common Var(warn_analyzer_null_dereference) Init(1) Warning
 Warn about code paths in which a NULL pointer is dereferenced.
 
+Wanalyzer-putenv-of-auto-var
+Common Var(warn_analyzer_putenv_of_auto_var) Init(1) Warning
+Warn about code paths in which an on-stack buffer is passed to putenv.
+
 Wanalyzer-shift-count-negative
 Common Var(warn_analyzer_shift_count_negative) Init(1) Warning
 Warn about code paths in which a shift with negative count is attempted.
@@ -114,9 +158,25 @@ Wanalyzer-stale-setjmp-buffer
 Common Var(warn_analyzer_stale_setjmp_buffer) Init(1) Warning
 Warn about code paths in which a longjmp rewinds to a jmp_buf saved in a stack frame that has returned.
 
+Wanalyzer-tainted-allocation-size
+Common Var(warn_analyzer_tainted_allocation_size) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as an allocation size.
+
 Wanalyzer-tainted-array-index
 Common Var(warn_analyzer_tainted_array_index) Init(1) Warning
 Warn about code paths in which an unsanitized value is used as an array index.
+
+Wanalyzer-tainted-divisor
+Common Var(warn_analyzer_tainted_divisor) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as a divisor.
+
+Wanalyzer-tainted-offset
+Common Var(warn_analyzer_tainted_offset) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as a pointer offset.
+
+Wanalyzer-tainted-size
+Common Var(warn_analyzer_tainted_size) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as a size.
 
 Wanalyzer-use-after-free
 Common Var(warn_analyzer_use_after_free) Init(1) Warning
@@ -126,6 +186,22 @@ Wanalyzer-use-of-pointer-in-stale-stack-frame
 Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
 Warn about code paths in which a pointer to a stale stack frame is used.
 
+Wanalyzer-va-arg-type-mismatch
+Common Var(warn_analyzer_va_arg_type_mismatch) Init(1) Warning
+Warn about code paths in which va_arg uses the wrong type.
+
+Wanalyzer-va-list-exhausted
+Common Var(warn_analyzer_va_list_exhausted) Init(1) Warning
+Warn about code paths in which va_arg is used too many times on a va_list.
+
+Wanalyzer-va-list-leak
+Common Var(warn_analyzer_va_list_leak) Init(1) Warning
+Warn about code paths in which va_start or va_copy is used without a corresponding va_end.
+
+Wanalyzer-va-list-use-after-va-end
+Common Var(warn_analyzer_va_list_use_after_va_end) Init(1) Warning
+Warn about code paths in which a va_list is used after va_end.
+
 Wanalyzer-write-to-const
 Common Var(warn_analyzer_write_to_const) Init(1) Warning
 Warn about code paths which attempt to write to a const object.
@@ -133,6 +209,10 @@ Warn about code paths which attempt to write to a const object.
 Wanalyzer-write-to-string-literal
 Common Var(warn_analyzer_write_to_string_literal) Init(1) Warning
 Warn about code paths which attempt to write to a string literal.
+
+Wanalyzer-use-of-uninitialized-value
+Common Var(warn_analyzer_use_of_uninitialized_value) Init(1) Warning
+Warn about code paths in which an uninitialized value is used.
 
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
@@ -169,6 +249,10 @@ Enable transitivity of constraints during analysis.
 fanalyzer-call-summaries
 Common Var(flag_analyzer_call_summaries) Init(0)
 Approximate the effect of function calls to simplify analysis.
+
+fanalyzer-undo-inlining
+Common Var(flag_analyzer_undo_inlining) Init(1)
+Try to reconstruct function calls and returns after inlining.
 
 fanalyzer-verbose-edges
 Common Var(flag_analyzer_verbose_edges) Init(0)
@@ -210,6 +294,10 @@ fdump-analyzer-exploded-nodes-3
 Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
 Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
 
+fdump-analyzer-exploded-paths
+Common RejectNegative Var(flag_dump_analyzer_exploded_paths)
+Dump a textual representation of each diagnostic's exploded path to SRCFILE.IDX.KIND.epath.txt.
+
 fdump-analyzer-feasibility
 Common RejectNegative Var(flag_dump_analyzer_feasibility)
 Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot.
@@ -225,5 +313,9 @@ Dump state-purging information to a SRCFILE.state-purge.dot file.
 fdump-analyzer-supergraph
 Common RejectNegative Var(flag_dump_analyzer_supergraph)
 Dump the analyzer supergraph to a SRCFILE.supergraph.dot file.
+
+fdump-analyzer-untracked
+Common RejectNegative Var(flag_dump_analyzer_untracked)
+Emit custom warnings with internal details intended for analyzer developers.
 
 ; This comment is to ensure we retain the blank line above.

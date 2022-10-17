@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+   Copyright (C) 1997-2022 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -203,7 +203,7 @@
 
 /* Make both r2 and r13 available for allocation.  */
 #define FIXED_R2 0
-#define FIXED_R13 0
+#define FIXED_R13 TARGET_64BIT
 
 /* Base register for access to local variables of the function.  */
 
@@ -212,6 +212,9 @@
 
 #undef  RS6000_PIC_OFFSET_TABLE_REGNUM
 #define RS6000_PIC_OFFSET_TABLE_REGNUM 31
+
+#undef FIRST_SAVED_GP_REGNO
+#define FIRST_SAVED_GP_REGNO 13
 
 /* Darwin's stack must remain 16-byte aligned for both 32 and 64 bit
    ABIs.  */
@@ -243,10 +246,10 @@
 
    The default value for this macro is `STACK_POINTER_OFFSET' plus the
    length of the outgoing arguments.  The default is correct for most
-   machines.  See `function.c' for details.
+   machines.  See `function.cc' for details.
 
    This value must be a multiple of STACK_BOUNDARY (hard coded in
-   `emit-rtl.c').  */
+   `emit-rtl.cc').  */
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
@@ -303,7 +306,7 @@
 #define GLOBAL_ASM_OP "\t.globl "
 #undef TARGET_ASM_GLOBALIZE_LABEL
 
-/* This is how to output an internal label prefix.  rs6000.c uses this
+/* This is how to output an internal label prefix.  rs6000.cc uses this
    when generating traceback tables.  */
 /* Not really used for Darwin?  */
 
@@ -364,7 +367,7 @@
    default as well.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_PPC_GFXOPT)
+#define TARGET_DEFAULT (OPTION_MASK_MULTIPLE | OPTION_MASK_PPC_GFXOPT)
 
 /* Darwin always uses IBM long double, never IEEE long double.  */
 #undef  TARGET_IEEEQUAD
@@ -504,8 +507,8 @@
 #define SUBTARGET_INIT_BUILTINS						\
 do {									\
   darwin_patch_builtins ();						\
-  rs6000_builtin_decls[(unsigned) (RS6000_BUILTIN_CFSTRING)]		\
-    = darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_CFSTRING)); \
+  rs6000_builtin_decls[(unsigned) (RS6000_BIF_CFSTRING)]		\
+    = darwin_init_cfstring_builtins ((unsigned) (RS6000_BIF_CFSTRING)); \
 } while(0)
 
 /* So far, there is no rs6000_fold_builtin, if one is introduced, then

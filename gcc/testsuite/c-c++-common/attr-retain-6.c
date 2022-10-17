@@ -17,6 +17,9 @@ free_slotinfo (struct dtv_slotinfo_list **elemp)
   return 1;
 }
 
+/* Prune out the valid warning for the function above:
+   { dg-prune-output "-Winfinite-recursion" } */
+
 __attribute__ ((section ("__libc_freeres_fn")))
 void free_mem (void)
 /* { dg-warning "'.*' without 'retain' attribute and '.*' with 'retain' attribute are placed in a section with the same name" "" { target R_flag_in_section } .-1 } */

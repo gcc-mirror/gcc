@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mno-avx -msse2 -mtune=generic" } */
 
 extern char *dst;

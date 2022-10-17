@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-
+// EXTRA_FILES: imports/test61a.d
 import imports.test61a;
 alias imports.test61a.bar bar;
 

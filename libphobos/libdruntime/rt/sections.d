@@ -5,7 +5,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Walter Bright, Sean Kelly, Martin Nowak
- * Source: $(DRUNTIMESRC src/rt/_sections.d)
+ * Source: $(DRUNTIMESRC rt/_sections.d)
  */
 
 /* NOTE: This file has been patched from the original DMD distribution to
@@ -26,9 +26,22 @@ version (GNU)
     public import gcc.sections;
 else version (CRuntime_Glibc)
     public import rt.sections_elf_shared;
+else version (CRuntime_Musl)
+    public import rt.sections_elf_shared;
 else version (FreeBSD)
     public import rt.sections_elf_shared;
 else version (NetBSD)
+    public import rt.sections_elf_shared;
+else version (OpenBSD)
+{
+    /**
+     * OpenBSD is missing support needed for elf_shared.
+     * See the top of sections_solaris.d for more info.
+     */
+
+    public import rt.sections_solaris;
+}
+else version (DragonFlyBSD)
     public import rt.sections_elf_shared;
 else version (Solaris)
     public import rt.sections_solaris;
@@ -47,6 +60,8 @@ else version (CRuntime_Microsoft)
     public import rt.sections_win64;
 else version (CRuntime_Bionic)
     public import rt.sections_android;
+else version (CRuntime_UClibc)
+    public import rt.sections_elf_shared;
 else
     static assert(0, "unimplemented");
 

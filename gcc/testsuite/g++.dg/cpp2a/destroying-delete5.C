@@ -18,7 +18,7 @@ void * Expression::operator new(std::size_t sz)
 
 int i;
 
-void Expression::operator delete(Expression *p, std::destroying_delete_t)
+void Expression::operator delete(Expression *p, std::destroying_delete_t) // { dg-message "destroying delete" }
 {
   Expression * e = p;
   ::i = e->i;
@@ -28,7 +28,7 @@ void Expression::operator delete(Expression *p, std::destroying_delete_t)
 
 int main()
 {
-  auto p = new Expression();
+  auto p = new Expression();	// { dg-warning "no corresponding dealloc" }
   p->i = 1;
   delete p;
   if (i != 1)

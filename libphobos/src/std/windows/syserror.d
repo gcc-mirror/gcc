@@ -3,12 +3,12 @@
 /**
  * Convert Win32 error code to string.
  *
- * Copyright: Copyright Digital Mars 2006 - 2013.
+ * Copyright: Copyright The D Language Foundation" 2006 - 2013.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
  * Credits:   Based on code written by Regan Heath
  */
-/*          Copyright Digital Mars 2006 - 2013.
+/*          Copyright The D Language Foundation" 2006 - 2013.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
@@ -26,7 +26,7 @@ version (StdDdoc)
 
     /** Query the text for a Windows error code, as returned by
         $(LINK2 http://msdn.microsoft.com/en-us/library/windows/desktop/ms679360.aspx,
-        $(D GetLastError)), as a D string.
+        `GetLastError`), as a D string.
      */
     string sysErrorString(
         DWORD errCode,
@@ -37,20 +37,20 @@ version (StdDdoc)
     /*********************
        Thrown if errors that set
        $(LINK2 http://msdn.microsoft.com/en-us/library/windows/desktop/ms679360.aspx,
-       $(D GetLastError)) occur.
+       `GetLastError`) occur.
      */
     class WindowsException : Exception
     {
         private alias DWORD = int;
-        final @property DWORD code(); /// $(D GetLastError)'s return value.
-        this(DWORD code, string str=null, string file = null, size_t line = 0) @trusted;
+        final @property DWORD code(); /// `GetLastError`'s return value.
+        this(DWORD code, string str=null, string file = null, size_t line = 0) nothrow @trusted;
     }
 
     /++
-        If $(D !!value) is true, $(D value) is returned. Otherwise,
+        If `!!value` is true, `value` is returned. Otherwise,
         $(D new WindowsException(GetLastError(), msg)) is thrown.
-        $(D WindowsException) assumes that the last operation set
-        $(D GetLastError()) appropriately.
+        `WindowsException` assumes that the last operation set
+        `GetLastError()` appropriately.
 
         Example:
         --------------------
@@ -65,10 +65,10 @@ else:
 
 version (Windows):
 
-import core.sys.windows.windows;
-import std.array : appender;
-import std.conv : to;
-import std.format : formattedWrite;
+import core.sys.windows.winbase, core.sys.windows.winnt;
+import std.array : appender, Appender;
+import std.conv : to, toTextRange, text;
+import std.exception;
 import std.windows.charset;
 
 string sysErrorString(
@@ -79,14 +79,23 @@ string sysErrorString(
 {
     auto buf = appender!string();
 
-    if (!putSysError(errCode, buf, MAKELANGID(langId, subLangId)))
-    {
-        throw new Exception(
-            "failed getting error string for WinAPI error code: " ~
-            sysErrorString(GetLastError()));
-    }
+    wenforce(
+        // Ignore unlikely UTF decoding errors, always report the actual error (`errCode`)
+        putSysError(errCode, buf, MAKELANGID(langId, subLangId)).ifThrown(false),
+        text("Could not fetch error string for WinAPI code ", errCode)
+    );
 
     return buf.data;
+}
+
+@safe unittest
+{
+    import std.algorithm.searching;
+
+    assert(sysErrorString(ERROR_PATH_NOT_FOUND) !is null);
+
+    const msg = collectExceptionMsg!WindowsException(sysErrorString(DWORD.max));
+    assert(msg.startsWith(`Could not fetch error string for WinAPI code 4294967295: `));
 }
 
 bool putSysError(Writer)(DWORD code, Writer w, /*WORD*/int langId = 0)
@@ -114,19 +123,18 @@ bool putSysError(Writer)(DWORD code, Writer w, /*WORD*/int langId = 0)
         return false;
 }
 
-
 class WindowsException : Exception
 {
-    import core.sys.windows.windows : DWORD;
+    import core.sys.windows.windef : DWORD;
 
-    final @property DWORD code() { return _code; } /// $(D GetLastError)'s return value.
+    final @property DWORD code() { return _code; } /// `GetLastError`'s return value.
     private DWORD _code;
 
-    this(DWORD code, string str=null, string file = null, size_t line = 0) @trusted
+    this(DWORD code, string str=null, string file = null, size_t line = 0) nothrow @trusted
     {
         _code = code;
 
-        auto buf = appender!string();
+        auto buf = appender!(char[]);
 
         if (str != null)
         {
@@ -135,18 +143,43 @@ class WindowsException : Exception
                 buf.put(": ");
         }
 
-        if (code)
+        if (code && writeErrorMessage(code, buf))
         {
-            auto success = putSysError(code, buf);
-            formattedWrite(buf, success ? " (error %d)" : "Error %d", code);
+            buf.put(" (error ");
+            toTextRange(code, buf);
+            buf.put(')');
         }
 
-        super(buf.data, file, line);
+        super(cast(immutable) buf.data, file, line);
     }
 }
 
+/// Writes the error string associated to `code` into `buf`.
+/// Writes `Error <code>` when the error message lookup fails
+private bool writeErrorMessage(DWORD code, ref Appender!(char[]) buf) nothrow
+{
+    bool success;
+    try
+    {
+        // Reset the buffer to undo partial changes
+        const len = buf[].length;
+        scope (failure) buf.shrinkTo(len);
 
-T wenforce(T, S)(T value, lazy S msg = null,
+        success = putSysError(code, buf);
+    }
+    catch (Exception) {}
+
+    // Write the error code instead if we couldn't find the string
+    if (!success)
+    {
+        buf.put("Error ");
+        toTextRange(code, buf);
+    }
+
+    return success;
+}
+
+T wenforce(T, S = string)(T value, lazy S msg = null,
 string file = __FILE__, size_t line = __LINE__)
 if (isSomeString!S)
 {
@@ -177,11 +210,9 @@ T wenforce(T)(T condition, const(char)[] name, const(wchar)* namez, string file 
     throw new WindowsException(GetLastError(), names, file, line);
 }
 
-version (Windows)
 @system unittest
 {
     import std.algorithm.searching : startsWith, endsWith;
-    import std.exception;
     import std.string;
 
     auto e = collectException!WindowsException(
@@ -198,4 +229,30 @@ version (Windows)
 
     e = new WindowsException(0, "Test");
     assert(e.msg == "Test");
+}
+
+@safe nothrow unittest
+{
+    import std.algorithm.searching : endsWith;
+
+    auto e = new WindowsException(ERROR_FILE_NOT_FOUND);
+    assert(e.msg.endsWith("(error 2)"));
+
+    e = new WindowsException(DWORD.max);
+    assert(e.msg == "Error 4294967295");
+}
+
+/// Tries to translate an error code from the Windows API to the corresponding
+/// error message. Returns `Error <code>` on failure
+package (std) string generateSysErrorMsg(DWORD errCode = GetLastError()) nothrow @trusted
+{
+    auto buf = appender!(char[]);
+    cast(void) writeErrorMessage(errCode, buf);
+    return cast(immutable) buf[];
+}
+
+nothrow @safe unittest
+{
+    assert(generateSysErrorMsg(ERROR_PATH_NOT_FOUND) !is null);
+    assert(generateSysErrorMsg(DWORD.max) == "Error 4294967295");
 }

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fno-early-inlining" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fno-early-inlining -fno-thread-jumps" } */
 
 
 inline int ten()

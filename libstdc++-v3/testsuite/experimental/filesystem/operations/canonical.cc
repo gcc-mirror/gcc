@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,11 +30,11 @@ test01()
 {
   std::error_code ec;
   auto p = __gnu_test::nonexistent_path();
-  canonical( p, ec );
+  (void) canonical( p, ec );
   VERIFY( ec );
 
   p = fs::current_path();
-  canonical( p, ec );
+  (void) canonical( p, ec );
   VERIFY( !ec );
 
   const auto root = fs::absolute("/");
@@ -67,7 +67,7 @@ test02()
   fs::path p = "rel", base = __gnu_test::nonexistent_path();
   fs::path e1, e2;
   try {
-    canonical(p, base);
+    (void) canonical(p, base);
   } catch (const fs::filesystem_error& e) {
     e1 = e.path1();
     e2 = e.path2();

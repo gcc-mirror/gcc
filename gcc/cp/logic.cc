@@ -1,5 +1,5 @@
 /* Derivation and subsumption rules for constraints.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by Andrew Sutton (andrew.n.sutton@gmail.com)
 
 This file is part of GCC.
@@ -223,9 +223,7 @@ struct formula
 
   formula (tree t)
   {
-    /* This should call emplace_back(). There's an extra copy being
-       invoked by using push_back().  */
-    m_clauses.push_back (t);
+    m_clauses.emplace_back (t);
     m_current = m_clauses.begin ();
   }
 
@@ -248,8 +246,7 @@ struct formula
   clause& branch ()
   {
     gcc_assert (!done ());
-    m_clauses.push_back (*m_current);
-    return m_clauses.back ();
+    return *m_clauses.insert (std::next (m_current), *m_current);
   }
 
   /* Returns the position of the current clause.  */
@@ -285,6 +282,14 @@ struct formula
   const_iterator end () const
   {
     return m_clauses.end ();
+  }
+
+  /* Remove the specified clause from the formula.  */
+
+  void erase (iterator i)
+  {
+    gcc_assert (i != m_current);
+    m_clauses.erase (i);
   }
 
   std::list<clause> m_clauses; /* The list of clauses.  */
@@ -490,7 +495,6 @@ cnf_size_r (tree t)
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (0, false);
-	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{
@@ -531,7 +535,6 @@ cnf_size_r (tree t)
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (2, false);
-	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{
@@ -659,39 +662,6 @@ decompose_clause (formula& f, clause& c, rules r)
   f.advance ();
 }
 
-/* Decompose the logical formula F according to the logical
-   rules determined by R.  The result is a formula containing
-   clauses that contain only atomic terms.  */
-
-void
-decompose_formula (formula& f, rules r)
-{
-  while (!f.done ())
-    decompose_clause (f, *f.current (), r);
-}
-
-/* Fully decomposing T into a list of sequents, each comprised of
-   a list of atomic constraints, as if T were an antecedent.  */
-
-static formula
-decompose_antecedents (tree t)
-{
-  formula f (t);
-  decompose_formula (f, left);
-  return f;
-}
-
-/* Fully decomposing T into a list of sequents, each comprised of
-   a list of atomic constraints, as if T were a consequent.  */
-
-static formula
-decompose_consequents (tree t)
-{
-  formula f (t);
-  decompose_formula (f, right);
-  return f;
-}
-
 static bool derive_proof (clause&, tree, rules);
 
 /* Derive a proof of both operands of T.  */
@@ -742,28 +712,6 @@ derive_proof (clause& c, tree t, rules r)
     default:
       return derive_atomic_proof (c, t);
   }
-}
-
-/* Derive a proof of T from disjunctive clauses in F.  */
-
-static bool
-derive_proofs (formula& f, tree t, rules r)
-{
-  for (formula::iterator i = f.begin(); i != f.end(); ++i)
-    if (!derive_proof (*i, t, r))
-      return false;
-  return true;
-}
-
-/* The largest number of clauses in CNF or DNF we accept as input
-   for subsumption. This an upper bound of 2^16 expressions.  */
-static int max_problem_size = 16;
-
-static inline bool
-diagnose_constraint_size (tree t)
-{
-  error_at (input_location, "%qE exceeds the maximum constraint complexity", t);
-  return false;
 }
 
 /* Key/value pair for caching subsumption results. This associates a pair of
@@ -845,31 +793,33 @@ subsumes_constraints_nonnull (tree lhs, tree rhs)
   if (bool *b = lookup_subsumption(lhs, rhs))
     return *b;
 
-  int n1 = dnf_size (lhs);
-  int n2 = cnf_size (rhs);
-
-  /* Make sure we haven't exceeded the largest acceptable problem.  */
-  if (std::min (n1, n2) >= max_problem_size)
-    {
-      if (n1 < n2)
-        diagnose_constraint_size (lhs);
-      else
-	diagnose_constraint_size (rhs);
-      return false;
-    }
-
-  /* Decompose the smaller of the two formulas, and recursively
-     check for implication of the larger.  */
-  bool result;
-  if (n1 <= n2)
-    {
-      formula dnf = decompose_antecedents (lhs);
-      result = derive_proofs (dnf, rhs, left);
-    }
+  tree x, y;
+  rules r;
+  if (dnf_size (lhs) <= cnf_size (rhs))
+    /* When LHS looks simpler than RHS, we'll determine subsumption by
+       decomposing LHS into its disjunctive normal form and checking that
+       each (conjunctive) clause in the decomposed LHS implies RHS.  */
+    x = lhs, y = rhs, r = left;
   else
+    /* Otherwise, we'll determine subsumption by decomposing RHS into its
+       conjunctive normal form and checking that each (disjunctive) clause
+       in the decomposed RHS implies LHS.  */
+    x = rhs, y = lhs, r = right;
+
+  /* Decompose X into a list of sequents according to R, and recursively
+     check for implication of Y.  */
+  bool result = true;
+  formula f (x);
+  while (!f.done ())
     {
-      formula cnf = decompose_consequents (rhs);
-      result = derive_proofs (cnf, lhs, right);
+      auto i = f.current ();
+      decompose_clause (f, *i, r);
+      if (!derive_proof (*i, y, r))
+	{
+	  result = false;
+	  break;
+	}
+      f.erase (i);
     }
 
   return save_subsumption (lhs, rhs, result);

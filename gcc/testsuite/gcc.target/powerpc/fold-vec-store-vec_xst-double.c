@@ -27,4 +27,4 @@ BUILD_VAR_TEST( test7,  vector double, signed long long, vector double );
 BUILD_VAR_TEST( test8,  vector double, signed int, vector double );
 BUILD_CST_TEST( test9,  vector double, 12, vector double );
 
-/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxvx\M|\mstvx\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstxvx\M|\mstvx\M|\mpstxv\M} 6 } } */

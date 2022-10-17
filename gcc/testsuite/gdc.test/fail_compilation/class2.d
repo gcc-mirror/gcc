@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/class2.d(11): Error: class class2.C identity assignment operator overload is illegal
+fail_compilation/class2.d(11): Error: class `class2.C` identity assignment operator overload is illegal
 ---
 */
 

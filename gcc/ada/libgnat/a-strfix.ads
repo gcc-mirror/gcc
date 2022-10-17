@@ -13,14 +13,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore.
-
-pragma Assertion_Policy (Pre => Ignore);
-
-with Ada.Strings.Maps;
-
 --  The language-defined package Strings.Fixed provides string-handling
 --  subprograms for fixed-length strings; that is, for values of type
 --  Standard.String. Several of these subprograms are procedures that modify
@@ -40,6 +32,20 @@ with Ada.Strings.Maps;
 --  these effects. Similar control is provided by the string transformation
 --  procedures.
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
+
+with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
+with Ada.Strings.Search;
+
 package Ada.Strings.Fixed with SPARK_Mode is
    pragma Preelaborate;
 
@@ -57,7 +63,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  The Move procedure copies characters from Source to Target. If Source
    --  has the same length as Target, then the effect is to assign Source to
    --  Target. If Source is shorter than Target then:
@@ -108,57 +115,62 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping_Function) return Natural
    with
-     Pre            =>
-       Pattern'Length /= 0
-         and then (if Source'Length /= 0 then From in Source'Range),
+     Pre            => Pattern'Length > 0
+       and then Mapping /= null
+       and then (if Source'Length > 0 then From in Source'Range),
 
      Post           => Index'Result in 0 | Source'Range,
      Contract_Cases =>
 
-        --  If no slice in the considered range of Source matches Pattern,
-        --  then 0 is returned.
+       --  If Source is the empty string, then 0 is returned
 
-       ((for all J in Source'Range =>
-           (if (if Going = Forward
-                then J in From .. Source'Last - Pattern'Length + 1
-                else J <= From - Pattern'Length + 1)
-            then Translate (Source (J .. J - 1 + Pattern'Length), Mapping)
-                 /= Pattern))
+       (Source'Length = 0
         =>
           Index'Result = 0,
 
-        --  Otherwise, a valid index is returned
+        --  If some slice of Source matches Pattern, then a valid index is
+        --  returned.
 
-        others
+        Source'Length > 0
+          and then
+            (for some J in
+              (if Going = Forward then From else Source'First)
+               .. (if Going = Forward then Source'Last else From)
+                - (Pattern'Length - 1) =>
+              Ada.Strings.Search.Match (Source, Pattern, Mapping, J))
         =>
-
           --  The result is in the considered range of Source
 
-          (if Going = Forward
-           then Index'Result in From .. Source'Last - Pattern'Length + 1
-           else Index'Result in Source'First .. From - Pattern'Length + 1)
+          Index'Result in
+            (if Going = Forward then From else Source'First)
+            .. (if Going = Forward then Source'Last else From)
+             - (Pattern'Length - 1)
 
             --  The slice beginning at the returned index matches Pattern
 
             and then
-              Translate (Source (Index'Result
-                                 .. Index'Result - 1 + Pattern'Length),
-                         Mapping)
-              = Pattern
+              Ada.Strings.Search.Match (Source, Pattern, Mapping, Index'Result)
 
-            --  The result is the smallest or largest index which satisfies the
-            --  matching, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  The result is the smallest or largest index which satisfies
+            --  the matching, respectively when Going = Forward and Going =
+            --  Backward.
 
             and then
               (for all J in Source'Range =>
                  (if (if Going = Forward
                       then J in From .. Index'Result - 1
-                      else J - 1 in Index'Result .. From - Pattern'Length)
-                  then Translate (Source (J .. J - 1 + Pattern'Length),
-                                  Mapping)
-                       /= Pattern))),
-     Global         => null;
+                      else J - 1 in Index'Result
+                                    .. From - Pattern'Length)
+                  then not (Ada.Strings.Search.Match
+                              (Source, Pattern, Mapping, J)))),
+
+        --  Otherwise, 0 is returned
+
+        others
+        =>
+          Index'Result = 0),
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    pragma Ada_05 (Index);
 
    function Index
@@ -168,57 +180,61 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    with
-     Pre            =>
-       Pattern'Length /= 0
-         and then (if Source'Length /= 0 then From in Source'Range),
+     Pre            => Pattern'Length > 0
+       and then (if Source'Length > 0 then From in Source'Range),
 
      Post           => Index'Result in 0 | Source'Range,
      Contract_Cases =>
 
-        --  If no slice in the considered range of Source matches Pattern,
-        --  then 0 is returned.
+       --  If Source is the empty string, then 0 is returned
 
-       ((for all J in Source'Range =>
-           (if (if Going = Forward
-                then J in From .. Source'Last - Pattern'Length + 1
-                else J <= From - Pattern'Length + 1)
-            then Translate (Source (J .. J - 1 + Pattern'Length), Mapping)
-                 /= Pattern))
+       (Source'Length = 0
         =>
           Index'Result = 0,
 
-        --  Otherwise, a valid index is returned
+        --  If some slice of Source matches Pattern, then a valid index is
+        --  returned.
 
-        others
+        Source'Length > 0
+          and then
+            (for some J in
+              (if Going = Forward then From else Source'First)
+              .. (if Going = Forward then Source'Last else From)
+               - (Pattern'Length - 1) =>
+              Ada.Strings.Search.Match (Source, Pattern, Mapping, J))
         =>
-
           --  The result is in the considered range of Source
 
-          (if Going = Forward
-           then Index'Result in From .. Source'Last - Pattern'Length + 1
-           else Index'Result in Source'First .. From - Pattern'Length + 1)
+          Index'Result in
+            (if Going = Forward then From else Source'First)
+            .. (if Going = Forward then Source'Last else From)
+             - (Pattern'Length - 1)
 
-            --  The slice beginning at the returned index matches Pattern
+          --  The slice beginning at the returned index matches Pattern
 
-            and then
-              Translate (Source (Index'Result
-                                 .. Index'Result - 1 + Pattern'Length),
-                         Mapping)
-              = Pattern
+          and then
+            Ada.Strings.Search.Match (Source, Pattern, Mapping, Index'Result)
 
             --  The result is the smallest or largest index which satisfies the
             --  matching, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  Going = Backward.
 
             and then
               (for all J in Source'Range =>
                  (if (if Going = Forward
                       then J in From .. Index'Result - 1
-                      else J - 1 in Index'Result .. From - Pattern'Length)
-                  then Translate (Source (J .. J - 1 + Pattern'Length),
-                                  Mapping)
-                       /= Pattern))),
-     Global         => null;
+                      else J - 1 in Index'Result
+                                    .. From - Pattern'Length)
+                  then not (Ada.Strings.Search.Match
+                              (Source, Pattern, Mapping, J)))),
+
+        --  Otherwise, 0 is returned
+
+        others
+        =>
+          Index'Result = 0),
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    pragma Ada_05 (Index);
 
    --  Each Index function searches, starting from From, for a slice of
@@ -245,37 +261,33 @@ package Ada.Strings.Fixed with SPARK_Mode is
      Post           => Index'Result in 0 | Source'Range,
      Contract_Cases =>
 
-        --  If Source is empty, or if no slice of Source matches Pattern, then
-        --  0 is returned.
+       --  If Source is the empty string, then 0 is returned
 
        (Source'Length = 0
-          or else
-            (for all J in Source'First .. Source'Last - Pattern'Length + 1 =>
-               Translate (Source (J .. J - 1 + Pattern'Length), Mapping)
-               /= Pattern)
         =>
           Index'Result = 0,
 
-        --  Otherwise, a valid index is returned
+        --  If some slice of Source matches Pattern, then a valid index is
+        --  returned.
 
-        others
+        Source'Length > 0
+          and then
+            (for some J in
+              Source'First .. Source'Last - (Pattern'Length - 1) =>
+                Ada.Strings.Search.Match (Source, Pattern, Mapping, J))
         =>
-
           --  The result is in the considered range of Source
 
-          Index'Result in Source'First .. Source'Last - Pattern'Length + 1
+          Index'Result in Source'First .. Source'Last - (Pattern'Length - 1)
 
             --  The slice beginning at the returned index matches Pattern
 
             and then
-              Translate (Source (Index'Result
-                                 .. Index'Result - 1 + Pattern'Length),
-                         Mapping)
-              = Pattern
+              Ada.Strings.Search.Match (Source, Pattern, Mapping, Index'Result)
 
-            --  The result is the smallest or largest index which satisfies the
-            --  matching, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  The result is the smallest or largest index which satisfies
+            --  the matching, respectively when Going = Forward and Going =
+            --  Backward.
 
             and then
               (for all J in Source'Range =>
@@ -283,10 +295,16 @@ package Ada.Strings.Fixed with SPARK_Mode is
                       then J <= Index'Result - 1
                       else J - 1 in Index'Result
                                     .. Source'Last - Pattern'Length)
-                  then Translate (Source (J .. J - 1 + Pattern'Length),
-                                  Mapping)
-                       /= Pattern))),
-     Global         => null;
+                  then not (Ada.Strings.Search.Match
+                              (Source, Pattern, Mapping, J)))),
+
+        --  Otherwise, 0 is returned
+
+        others
+        =>
+          Index'Result = 0),
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
 
    function Index
      (Source  : String;
@@ -294,42 +312,38 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping_Function) return Natural
    with
-     Pre            => Pattern'Length > 0,
+     Pre            => Pattern'Length > 0 and then Mapping /= null,
 
      Post           => Index'Result in 0 | Source'Range,
      Contract_Cases =>
 
-        --  If Source is empty, or if no slice of Source matches Pattern, then
-        --  0 is returned.
+       --  If Source is the empty string, then 0 is returned
 
        (Source'Length = 0
-          or else
-            (for all J in Source'First .. Source'Last - Pattern'Length + 1 =>
-               Translate (Source (J .. J - 1 + Pattern'Length), Mapping)
-               /= Pattern)
         =>
           Index'Result = 0,
 
-        --  Otherwise, a valid index is returned
+        --  If some slice of Source matches Pattern, then a valid index is
+        --  returned.
 
-        others
+        Source'Length > 0
+          and then
+            (for some J in
+              Source'First .. Source'Last - (Pattern'Length - 1) =>
+                Ada.Strings.Search.Match (Source, Pattern, Mapping, J))
         =>
-
           --  The result is in the considered range of Source
 
-          Index'Result in Source'First .. Source'Last - Pattern'Length + 1
+          Index'Result in Source'First .. Source'Last - (Pattern'Length - 1)
 
-            --  The slice beginning at the returned index matches Pattern
+          --  The slice beginning at the returned index matches Pattern
 
-            and then
-              Translate (Source (Index'Result
-                                 .. Index'Result - 1 + Pattern'Length),
-                         Mapping)
-              = Pattern
+          and then
+            Ada.Strings.Search.Match (Source, Pattern, Mapping, Index'Result)
 
-            --  The result is the smallest or largest index which satisfies the
-            --  matching, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  The result is the smallest or largest index which satisfies
+            --  the matching, respectively when Going = Forward and Going =
+            --  Backward.
 
             and then
               (for all J in Source'Range =>
@@ -337,10 +351,16 @@ package Ada.Strings.Fixed with SPARK_Mode is
                       then J <= Index'Result - 1
                       else J - 1 in Index'Result
                                     .. Source'Last - Pattern'Length)
-                  then Translate (Source (J .. J - 1 + Pattern'Length),
-                                  Mapping)
-                       /= Pattern))),
-     Global         => null;
+                  then not (Ada.Strings.Search.Match
+                              (Source, Pattern, Mapping, J)))),
+
+        --  Otherwise, 0 is returned
+
+        others
+        =>
+          Index'Result = 0),
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
 
    --  If Going = Forward, returns:
    --
@@ -367,7 +387,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
         =>
           Index'Result = 0,
 
-        --  Otherwise, a index in the range of Source is returned
+        --  Otherwise, an index in the range of Source is returned
 
         others
         =>
@@ -377,15 +397,15 @@ package Ada.Strings.Fixed with SPARK_Mode is
           Index'Result in Source'Range
 
             --  The character at the returned index satisfies the property
-            --  Test on Set
+            --  Test on Set.
 
             and then
               (Test = Inside)
               = Ada.Strings.Maps.Is_In (Source (Index'Result), Set)
 
-            --  The result is the smallest or largest index which satisfies the
-            --  property, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  The result is the smallest or largest index which satisfies
+            --  the property, respectively when Going = Forward and Going =
+            --  Backward.
 
             and then
               (for all J in Source'Range =>
@@ -393,7 +413,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
                        and then (J < Index'Result) = (Going = Forward)
                   then (Test = Inside)
                        /= Ada.Strings.Maps.Is_In (Source (J), Set)))),
-     Global         => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
 
    function Index
      (Source  : String;
@@ -402,22 +423,23 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Test    : Membership := Inside;
       Going   : Direction := Forward) return Natural
    with
-     Pre            => (if Source'Length /= 0 then From in Source'Range),
-
+     Pre            => (if Source'Length > 0 then From in Source'Range),
      Post           => Index'Result in 0 | Source'Range,
      Contract_Cases =>
 
-        --  If no character in the considered slice of Source satisfies the
-        --  property Test on Set, then 0 is returned.
+        --  If Source is the empty string, or no character of the considered
+        --  slice of Source satisfies the property Test on Set, then 0 is
+        --  returned.
 
-       ((for all I in Source'Range =>
-           (if I = From
-                 or else (I > From) = (Going = Forward)
-            then (Test = Inside) /= Ada.Strings.Maps.Is_In (Source (I), Set)))
+        (Source'Length = 0
+          or else
+            (for all J in Source'Range =>
+               (if J = From or else (J > From) = (Going = Forward) then
+                  (Test = Inside) /= Ada.Strings.Maps.Is_In (Source (J), Set)))
         =>
           Index'Result = 0,
 
-        --  Otherwise, an index in the range of Source is returned
+        --  Otherwise, an index in the considered range of Source is returned
 
         others
         =>
@@ -426,7 +448,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
 
           Index'Result in Source'Range
             and then (Index'Result = From
-                        or else (Index'Result > From) = (Going = Forward))
+                       or else
+                         (Index'Result > From) = (Going = Forward))
 
             --  The character at the returned index satisfies the property
             --  Test on Set.
@@ -435,20 +458,20 @@ package Ada.Strings.Fixed with SPARK_Mode is
               (Test = Inside)
               = Ada.Strings.Maps.Is_In (Source (Index'Result), Set)
 
-            --  The result is the smallest or largest index which satisfies the
-            --  property, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  The result is the smallest or largest index which satisfies
+            --  the property, respectively when Going = Forward and Going =
+            --  Backward.
 
             and then
               (for all J in Source'Range =>
                  (if J /= Index'Result
-                       and then (J < Index'Result) = (Going = Forward)
-                       and then (J = From
-                                   or else (J > From) = (Going = Forward))
-                  then
-                    (Test = Inside)
-                    /= Ada.Strings.Maps.Is_In (Source (J), Set)))),
-     Global         => null;
+                    and then (J < Index'Result) = (Going = Forward)
+                    and then (J = From
+                                or else (J > From) = (Going = Forward))
+                  then (Test = Inside)
+                       /= Ada.Strings.Maps.Is_In (Source (J), Set)))),
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    pragma Ada_05 (Index);
    --  Index searches for the first or last occurrence of any of a set of
    --  characters (when Test=Inside), or any of the complement of a set of
@@ -469,12 +492,14 @@ package Ada.Strings.Fixed with SPARK_Mode is
      Post           => Index_Non_Blank'Result in 0 | Source'Range,
      Contract_Cases =>
 
-        --  If all characters in the considered slice of Source are Space
-        --  characters, then 0 is returned.
+        --  If Source is the empty string, or all characters in the considered
+        --  slice of Source are Space characters, then 0 is returned.
 
-       ((for all J in Source'Range =>
-           (if J = From or else (J > From) = (Going = Forward)
-            then Source (J) = ' '))
+        (Source'Length = 0
+          or else
+            (for all J in Source'Range =>
+               (if J = From or else (J > From) = (Going = Forward) then
+                  Source (J) = ' '))
         =>
           Index_Non_Blank'Result = 0,
 
@@ -496,7 +521,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
 
             --  The result is the smallest or largest index which is not a
             --  Space character, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  Going = Backward.
 
             and then
               (for all J in Source'Range =>
@@ -506,7 +531,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
                        and then (J = From or else (J > From)
                                 = (Going = Forward))
                   then Source (J) = ' '))),
-     Global         => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    pragma Ada_05 (Index_Non_Blank);
    --  Returns Index (Source, Maps.To_Set(Space), From, Outside, Going)
 
@@ -535,8 +561,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
             and then Source (Index_Non_Blank'Result) /= ' '
 
             --  The result is the smallest or largest index which is not a
-            --  Space character, respectively when Going = Forward and
-            --  Going = Backwards.
+            --  Space character, respectively when Going = Forward and Going
+            --  = Backward.
 
             and then
               (for all J in Source'Range =>
@@ -544,7 +570,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
                        and then (J < Index_Non_Blank'Result)
                               = (Going = Forward)
                   then Source (J) = ' '))),
-     Global         => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    --  Returns Index (Source, Maps.To_Set(Space), Outside, Going)
 
    function Count
@@ -552,16 +579,18 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Pattern : String;
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    with
-     Pre    => Pattern'Length /= 0,
-     Global => null;
+     Pre      => Pattern'Length /= 0,
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    function Count
      (Source  : String;
       Pattern : String;
       Mapping : Maps.Character_Mapping_Function) return Natural
    with
-     Pre    => Pattern'Length /= 0,
-     Global => null;
+     Pre      => Pattern'Length /= 0 and then Mapping /= null,
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    --  Returns the maximum number of nonoverlapping slices of Source that match
    --  Pattern with respect to Mapping. If Pattern is the null string then
@@ -571,7 +600,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
      (Source : String;
       Set    : Maps.Character_Set) return Natural
    with
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    --  Returns the number of occurrences in Source of characters that are in
    --  Set.
 
@@ -629,7 +659,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
                then
                  (Test = Inside)
                  /= Ada.Strings.Maps.Is_In (Source (Last + 1), Set))),
-     Global         => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    pragma Ada_2012 (Find_Token);
    --  If Source is not the null string and From is not in Source'Range, then
    --  Index_Error is raised. Otherwise, First is set to the index of the first
@@ -646,6 +677,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
       First  : out Positive;
       Last   : out Natural)
    with
+     Pre            => Source'First > 0,
      Contract_Cases =>
 
         --  If Source is the empty string, or if no character of Source
@@ -690,7 +722,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
                then
                  (Test = Inside)
                  /= Ada.Strings.Maps.Is_In (Source (Last + 1), Set))),
-     Global => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    --  Equivalent to Find_Token (Source, Set, Source'First, Test, First, Last)
 
    ------------------------------------
@@ -701,6 +734,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
      (Source  : String;
       Mapping : Maps.Character_Mapping_Function) return String
    with
+     Pre    => Mapping /= null,
      Post   =>
 
        --  Lower bound of the returned string is 1
@@ -718,7 +752,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
            (for all J in Source'Range =>
               Translate'Result (J - Source'First + 1)
               = Mapping (Source (J))),
-     Global => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
 
    function Translate
      (Source  : String;
@@ -741,7 +776,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
            (for all J in Source'Range =>
               Translate'Result (J - Source'First + 1)
               = Ada.Strings.Maps.Value (Mapping, Source (J))),
-     Global => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
 
    --  Returns the string S whose length is Source'Length and such that S (I)
    --  is the character to which Mapping maps the corresponding element of
@@ -751,58 +787,35 @@ package Ada.Strings.Fixed with SPARK_Mode is
      (Source  : in out String;
       Mapping : Maps.Character_Mapping_Function)
    with
-     Post   =>
+     Pre      => Mapping /= null,
+     Post     =>
 
-       --  Each character in Source after the call is the translation of
-       --  the character at the same position before the call, through Mapping.
+       --  Each character in Source after the call is the translation of the
+       --  character at the same position before the call, through Mapping.
 
        (for all J in Source'Range => Source (J) = Mapping (Source'Old (J))),
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    procedure Translate
      (Source  : in out String;
       Mapping : Maps.Character_Mapping)
    with
-     Post   =>
+     Post     =>
 
-       --  Each character in Source after the call is the translation of
-       --  the character at the same position before the call, through Mapping.
+       --  Each character in Source after the call is the translation of the
+       --  character at the same position before the call, through Mapping.
 
        (for all J in Source'Range =>
           Source (J) = Ada.Strings.Maps.Value (Mapping, Source'Old (J))),
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    --  Equivalent to Source := Translate(Source, Mapping)
 
    ---------------------------------------
    -- String Transformation Subprograms --
    ---------------------------------------
-
-   procedure Replace_Slice
-     (Source  : in out String;
-      Low     : Positive;
-      High    : Natural;
-      By      : String;
-      Drop    : Truncation := Error;
-      Justify : Alignment  := Left;
-      Pad     : Character  := Space)
-   with
-     Pre    =>
-
-       --  Incomplete contract
-
-       Low - 1 <= Source'Last
-         and then High >= Source'First - 1,
-     Global => null;
-   --  If Low > Source'Last+1, or High < Source'First - 1, then Index_Error is
-   --  propagated. Otherwise:
-   --
-   --  * If High >= Low, then the returned string comprises
-   --    Source (Source'First .. Low - 1)
-   --    & By & Source(High + 1 .. Source'Last), but with lower bound 1.
-   --
-   --  * If High < Low, then the returned string is
-   --    Insert (Source, Before => Low, New_Item => By).
 
    function Replace_Slice
      (Source : String;
@@ -834,19 +847,19 @@ package Ada.Strings.Fixed with SPARK_Mode is
           --  Length of the returned string
 
           Replace_Slice'Result'Length
-          = Natural'Max (0, Low - Source'First)
+          = Integer'Max (0, Low - Source'First)
             + By'Length
-            + Natural'Max (Source'Last - High, 0)
+            + Integer'Max (Source'Last - High, 0)
 
             --  Elements starting at Low are replaced by elements of By
 
             and then
-              Replace_Slice'Result (1 .. Natural'Max (0, Low - Source'First))
+              Replace_Slice'Result (1 .. Integer'Max (0, Low - Source'First))
               = Source (Source'First .. Low - 1)
             and then
               Replace_Slice'Result
-                (Natural'Max (0, Low - Source'First) + 1
-                 .. Natural'Max (0, Low - Source'First) + By'Length)
+                (Integer'Max (0, Low - Source'First) + 1
+                 .. Integer'Max (0, Low - Source'First) + By'Length)
               = By
 
             --  When there are remaining characters after the replaced slice,
@@ -856,7 +869,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
               (if High < Source'Last
                then
                  Replace_Slice'Result
-                   (Natural'Max (0, Low - Source'First) + By'Length + 1
+                   (Integer'Max (0, Low - Source'First) + By'Length + 1
                     .. Replace_Slice'Result'Last)
                  = Source (High + 1 .. Source'Last)),
 
@@ -889,7 +902,41 @@ package Ada.Strings.Fixed with SPARK_Mode is
                   (Low - Source'First + By'Length + 1
                    .. Replace_Slice'Result'Last)
                 = Source (Low .. Source'Last))),
-     Global         => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
+   --  If Low > Source'Last + 1, or High < Source'First - 1, then Index_Error
+   --  is propagated. Otherwise:
+   --
+   --  * If High >= Low, then the returned string comprises
+   --    Source (Source'First .. Low - 1)
+   --    & By & Source(High + 1 .. Source'Last), but with lower bound 1.
+   --
+   --  * If High < Low, then the returned string is
+   --    Insert (Source, Before => Low, New_Item => By).
+
+   procedure Replace_Slice
+     (Source  : in out String;
+      Low     : Positive;
+      High    : Natural;
+      By      : String;
+      Drop    : Truncation := Error;
+      Justify : Alignment  := Left;
+      Pad     : Character  := Space)
+   with
+     Pre      =>
+       Low - 1 <= Source'Last
+         and then High >= Source'First - 1
+         and then (if High >= Low
+                   then Natural'Max (0, Low - Source'First)
+                        <= Natural'Last
+                           - By'Length
+                           - Natural'Max (Source'Last - High, 0)
+                   else Source'Length <= Natural'Last - By'Length),
+
+   --  Incomplete contract
+
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to:
    --
    --    Move (Replace_Slice (Source, Low, High, By),
@@ -929,15 +976,16 @@ package Ada.Strings.Fixed with SPARK_Mode is
          --  are appended to the returned string.
 
          and then
-           (if Before - 1 < Source'Last
+           (if Before <= Source'Last
             then
               Insert'Result
                 (Before - Source'First + New_Item'Length + 1
                  .. Insert'Result'Last)
               = Source (Before .. Source'Last)),
-     Global => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    --  Propagates Index_Error if Before is not in
-   --  Source'First .. Source'Last+1; otherwise, returns
+   --  Source'First .. Source'Last + 1; otherwise, returns
    --  Source (Source'First .. Before - 1)
    --  & New_Item & Source(Before..Source'Last), but with lower bound 1.
 
@@ -947,11 +995,14 @@ package Ada.Strings.Fixed with SPARK_Mode is
       New_Item : String;
       Drop     : Truncation := Error)
    with
-     Pre    => Before - 1 in Source'First - 1 .. Source'Last,
+     Pre      =>
+       Before - 1 in Source'First - 1 .. Source'Last
+         and then Source'Length <= Natural'Last - New_Item'Length,
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to Move (Insert (Source, Before, New_Item), Source, Drop)
 
    function Overwrite
@@ -959,13 +1010,13 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Position : Positive;
       New_Item : String) return String
    with
-     Pre    =>
+     Pre      =>
        Position - 1 in Source'First - 1 .. Source'Last
          and then
            (if Position - Source'First >= Source'Length - New_Item'Length
             then Position - Source'First <= Natural'Last - New_Item'Length),
 
-     Post   =>
+     Post     =>
 
        --  Lower bound of the returned string is 1
 
@@ -1000,7 +1051,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
                 (Position - Source'First + New_Item'Length + 1
                  .. Overwrite'Result'Last)
               = Source (Position + New_Item'Length .. Source'Last)),
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    --  Propagates Index_Error if Position is not in
    --  Source'First .. Source'Last + 1; otherwise, returns the string obtained
    --  from Source by consecutively replacing characters starting at Position
@@ -1014,11 +1066,16 @@ package Ada.Strings.Fixed with SPARK_Mode is
       New_Item : String;
       Drop     : Truncation := Right)
    with
-     Pre    => Position - 1 in Source'First - 1 .. Source'Last,
+     Pre      =>
+       Position - 1 in Source'First - 1 .. Source'Last
+         and then
+           (if Position - Source'First >= Source'Length - New_Item'Length
+            then Position - Source'First <= Natural'Last - New_Item'Length),
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to Move(Overwrite(Source, Position, New_Item), Source, Drop)
 
    function Delete
@@ -1066,7 +1123,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
         others          =>
           Delete'Result'Length = Source'Length
             and then Delete'Result = Source),
-     Global         => null;
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    --  If From <= Through, the returned string is
    --  Replace_Slice(Source, From, Through, ""); otherwise, it is Source with
    --  lower bound 1.
@@ -1078,13 +1136,14 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Justify : Alignment := Left;
       Pad     : Character := Space)
    with
-     Pre    => (if From <= Through
-                then (From in Source'Range
-                        and then Through <= Source'Last)),
+     Pre      => (if From <= Through
+                  then (From in Source'Range
+                          and then Through <= Source'Last)),
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to:
    --
    --     Move (Delete (Source, From, Through),
@@ -1098,7 +1157,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
      (Source : String;
       Side   : Trim_End) return String
    with
-     Post   =>
+     Post     =>
 
        --  Lower bound of the returned string is 1
 
@@ -1114,32 +1173,17 @@ package Ada.Strings.Fixed with SPARK_Mode is
             --  Otherwise, the returned string is a slice of Source
 
             else
-              (for some Low in Source'Range =>
-                 (for some High in Source'Range =>
-
-                    --  Trim returns the slice of Source between Low and High
-
-                    Trim'Result = Source (Low .. High)
-
-                      --  Values of Low and High and the characters at their
-                      --  position depend on Side.
-
-                      and then
-                        (if Side = Left then High = Source'Last
-                         else Source (High) /= ' ')
-                      and then
-                        (if Side = Right then Low = Source'First
-                         else Source (Low) /= ' ')
-
-                      --  All characters outside range Low .. High are
-                      --  Space characters.
-
-                      and then
-                        (for all J in Source'Range =>
-                           (if J < Low then Source (J) = ' ')
-                              and then
-                                (if J > High then Source (J) = ' '))))),
-     Global => null;
+              (declare
+                 Low  : constant Positive :=
+                   (if Side = Right then Source'First
+                    else Index_Non_Blank (Source, Forward));
+                 High : constant Positive :=
+                   (if Side = Left then Source'Last
+                    else Index_Non_Blank (Source, Backward));
+               begin
+                 Trim'Result = Source (Low .. High))),
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    --  Returns the string obtained by removing from Source all leading Space
    --  characters (if Side = Left), all trailing Space characters (if
    --  Side = Right), or all leading and trailing Space characters (if
@@ -1154,7 +1198,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to:
    --
    --     Move (Trim (Source, Side), Source, Justify=>Justify, Pad=>Pad).
@@ -1184,31 +1229,15 @@ package Ada.Strings.Fixed with SPARK_Mode is
         --  Otherwise, the returned string is a slice of Source
 
         else
-          (for some Low in Source'Range =>
-             (for some High in Source'Range =>
-
-                --  Trim returns the slice of Source between Low and High
-
-                Trim'Result = Source (Low .. High)
-
-                  --  Characters at the bounds of the returned string are
-                  --  not contained in Left or Right.
-
-                  and then not Ada.Strings.Maps.Is_In (Source (Low), Left)
-                  and then not Ada.Strings.Maps.Is_In (Source (High), Right)
-
-                  --  All characters before Low are contained in Left.
-                  --  All characters after High are contained in Right.
-
-                  and then
-                    (for all K in Source'Range =>
-                       (if K < Low
-                        then
-                          Ada.Strings.Maps.Is_In (Source (K), Left))
-                            and then
-                              (if K > High then
-                               Ada.Strings.Maps.Is_In (Source (K), Right)))))),
-     Global => null;
+           (declare
+              Low  : constant Positive :=
+                Index (Source, Left, Outside, Forward);
+              High : constant Positive :=
+                Index (Source, Right, Outside, Backward);
+            begin
+              Trim'Result = Source (Low .. High))),
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    --  Returns the string obtained by removing from Source all leading
    --  characters in Left and all trailing characters in Right.
 
@@ -1222,7 +1251,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to:
    --
    --     Move (Trim (Source, Left, Right),
@@ -1258,8 +1288,9 @@ package Ada.Strings.Fixed with SPARK_Mode is
           Head'Result (1 .. Source'Length) = Source
             and then
               Head'Result (Source'Length + 1 .. Count)
-              = (1 .. Count - Source'Length => Pad)),
-     Global         => null;
+              = [1 .. Count - Source'Length => Pad]),
+     Global         => null,
+     Annotate       => (GNATprove, Always_Return);
    --  Returns a string of length Count. If Count <= Source'Length, the string
    --  comprises the first Count characters of Source. Otherwise, its contents
    --  are Source concatenated with Count - Source'Length Pad characters.
@@ -1273,7 +1304,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to:
    --
    --     Move (Head (Source, Count, Pad),
@@ -1315,14 +1347,15 @@ package Ada.Strings.Fixed with SPARK_Mode is
            --  characters.
 
           (if Source'Length = 0
-           then Tail'Result = (1 .. Count => Pad)
+           then Tail'Result = [1 .. Count => Pad]
            else
              Tail'Result (1 .. Count - Source'Length)
-             = (1 .. Count - Source'Length => Pad)
+             = [1 .. Count - Source'Length => Pad]
                and then
                  Tail'Result (Count - Source'Length + 1 .. Tail'Result'Last)
                  = Source)),
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    --  Returns a string of length Count. If Count <= Source'Length, the string
    --  comprises the last Count characters of Source. Otherwise, its contents
    --  are Count-Source'Length Pad characters concatenated with Source.
@@ -1336,7 +1369,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
 
      --  Incomplete contract
 
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Might_Not_Return);
    --  Equivalent to:
    --
    --     Move (Tail (Source, Count, Pad),
@@ -1350,7 +1384,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
      (Left  : Natural;
       Right : Character) return String
    with
-     Post   =>
+     Post     =>
 
        --  Lower bound of the returned string is 1
 
@@ -1363,7 +1397,8 @@ package Ada.Strings.Fixed with SPARK_Mode is
          --  All characters of the returned string are Right
 
          and then (for all C of "*"'Result => C = Right),
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    function "*"
      (Left  : Natural;
@@ -1384,10 +1419,10 @@ package Ada.Strings.Fixed with SPARK_Mode is
          --  Content of the string is Right concatenated with itself Left times
 
          and then
-           (for all J in 0 .. Left - 1 =>
-              "*"'Result (J * Right'Length + 1 .. (J + 1) * Right'Length)
-              = Right),
-     Global => null;
+           (for all K in "*"'Result'Range =>
+              "*"'Result (K) = Right (Right'First + (K - 1) mod Right'Length)),
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    --  These functions replicate a character or string a specified number of
    --  times. The first function returns a string whose length is Left and each

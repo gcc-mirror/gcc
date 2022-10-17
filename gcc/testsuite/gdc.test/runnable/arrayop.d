@@ -48,28 +48,28 @@ template Floating(T)
 
         abc = null;
         A()[] = B()[] + C()[];
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         assert(a[0] == 5);
         assert(a[1] == 7);
         assert(a[2] == 9);
 
         abc = null;
         A()[] = B()[] + 4;
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 5);
         assert(a[1] == 6);
         assert(a[2] == 7);
 
         abc = null;
         A()[] = 4 + B()[];
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 5);
         assert(a[1] == 6);
         assert(a[2] == 7);
 
         abc = null;
         A()[] = D() + B()[];
-        assert(abc == "DBA");
+        assert(abc == "ADB");
         assert(a[0] == 5);
         assert(a[1] == 6);
         assert(a[2] == 7);
@@ -77,7 +77,7 @@ template Floating(T)
         a = [11, 22, 33];
         abc = null;
         A()[] += B()[];
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 12);
         assert(a[1] == 24);
         assert(a[2] == 36);
@@ -115,14 +115,14 @@ template Floating(T)
         a = [11, 22, 33];
         abc = null;
         A()[] += 4 + B()[];
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 16);
         assert(a[1] == 28);
         assert(a[2] == 40);
 
         abc = null;
         A()[] = B()[] - C()[];
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%Lg, %Lg, %Lg\n", cast(real)a[0], cast(real)a[1], cast(real)a[2]);
         assert(a[0] == -3);
         assert(a[1] == -3);
@@ -130,7 +130,7 @@ template Floating(T)
 
         abc = null;
         A()[] = -B()[] - C()[];
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%Lg, %Lg, %Lg\n", cast(real)a[0], cast(real)a[1], cast(real)a[2]);
         assert(a[0] == -5);
         assert(a[1] == -7);
@@ -138,7 +138,7 @@ template Floating(T)
 
         abc = null;
         A()[] = B()[] + C()[] * 4;
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%Lg, %Lg, %Lg\n", cast(real)a[0], cast(real)a[1], cast(real)a[2]);
         assert(a[0] == 17);
         assert(a[1] == 22);
@@ -146,7 +146,7 @@ template Floating(T)
 
         abc = null;
         A()[] = B()[] + C()[] * B()[];
-        assert(abc == "BCBA");
+        assert(abc == "ABCB");
         printf("%Lg, %Lg, %Lg\n", cast(real)a[0], cast(real)a[1], cast(real)a[2]);
         assert(a[0] == 5);
         assert(a[1] == 12);
@@ -154,7 +154,7 @@ template Floating(T)
 
         abc = null;
         A()[] = B()[] + C()[] / 2;
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%Lg, %Lg, %Lg\n", cast(real)a[0], cast(real)a[1], cast(real)a[2]);
         assert(a[0] == 3);
         assert(a[1] == 4.5);
@@ -162,7 +162,7 @@ template Floating(T)
 
         abc = null;
         A()[] = B()[] + C()[] % 2;
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%Lg, %Lg, %Lg\n", cast(real)a[0], cast(real)a[1], cast(real)a[2]);
         assert(a[0] == 1);
         assert(a[1] == 3);
@@ -226,28 +226,28 @@ template Integral(T)
 
         abc = null;
         A()[] = B()[] + C()[];
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         assert(a[0] == 5);
         assert(a[1] == 7);
         assert(a[2] == 9);
 
         abc = null;
         A()[] = B()[] + 4;
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 5);
         assert(a[1] == 6);
         assert(a[2] == 7);
 
         abc = null;
         A()[] = 4 + B()[];
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 5);
         assert(a[1] == 6);
         assert(a[2] == 7);
 
         abc = null;
         A()[] = D() + B()[];
-        assert(abc == "DBA");
+        assert(abc == "ADB");
         assert(a[0] == 5);
         assert(a[1] == 6);
         assert(a[2] == 7);
@@ -255,7 +255,7 @@ template Integral(T)
         a = [11, 22, 33];
         abc = null;
         A()[] += B()[];
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 12);
         assert(a[1] == 24);
         assert(a[2] == 36);
@@ -311,14 +311,14 @@ template Integral(T)
         a = [11, 22, 33];
         abc = null;
         A()[] += 4 + B()[];
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 16);
         assert(a[1] == 28);
         assert(a[2] == 40);
 
         abc = null;
         A()[] = B()[] - C()[];
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%lld, %lld, %lld\n", cast(long)a[0], cast(long)a[1], cast(long)a[2]);
         assert(a[0] == -3);
         assert(a[1] == -3);
@@ -326,7 +326,7 @@ template Integral(T)
 
         abc = null;
         A()[] = -B()[] - C()[];
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%lld, %lld, %lld\n", cast(long)a[0], cast(long)a[1], cast(long)a[2]);
         assert(a[0] == -5);
         assert(a[1] == -7);
@@ -334,7 +334,7 @@ template Integral(T)
 
         abc = null;
         A()[] = B()[] + C()[] * 4;
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%lld, %lld, %lld\n", cast(long)a[0], cast(long)a[1], cast(long)a[2]);
         assert(a[0] == 17);
         assert(a[1] == 22);
@@ -342,7 +342,7 @@ template Integral(T)
 
         abc = null;
         A()[] = B()[] + C()[] * B()[];
-        assert(abc == "BCBA");
+        assert(abc == "ABCB");
         printf("%lld, %lld, %lld\n", cast(long)a[0], cast(long)a[1], cast(long)a[2]);
         assert(a[0] == 5);
         assert(a[1] == 12);
@@ -350,7 +350,7 @@ template Integral(T)
 
         abc = null;
         A()[] = B()[] + C()[] / 2;
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%lld, %lld, %lld\n", cast(long)a[0], cast(long)a[1], cast(long)a[2]);
         assert(a[0] == 3);
         assert(a[1] == 4);
@@ -358,7 +358,7 @@ template Integral(T)
 
         abc = null;
         A()[] = B()[] + C()[] % 2;
-        assert(abc == "BCA");
+        assert(abc == "ABC");
         printf("%lld, %lld, %lld\n", cast(long)a[0], cast(long)a[1], cast(long)a[2]);
         assert(a[0] == 1);
         assert(a[1] == 3);
@@ -366,28 +366,28 @@ template Integral(T)
 
         abc = null;
         A()[] = ~B()[];
-        assert(abc == "BA");
-        assert(a[0] == ~cast(T)1);
-        assert(a[1] == ~cast(T)2);
-        assert(a[2] == ~cast(T)3);
+        assert(abc == "AB");
+        assert(a[0] == cast(T) ~1);
+        assert(a[1] == cast(T) ~2);
+        assert(a[2] == cast(T) ~3);
 
         abc = null;
         A()[] = B()[] & 2;
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 0);
         assert(a[1] == 2);
         assert(a[2] == 2);
 
         abc = null;
         A()[] = B()[] | 2;
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 3);
         assert(a[1] == 2);
         assert(a[2] == 3);
 
         abc = null;
         A()[] = B()[] ^ 2;
-        assert(abc == "BA");
+        assert(abc == "AB");
         assert(a[0] == 3);
         assert(a[1] == 0);
         assert(a[2] == 1);
@@ -439,7 +439,7 @@ void test4662()
 }
 
 /***************************************************/
-// 5284
+// https://issues.dlang.org/show_bug.cgi?id=5284
 
 void bug5284_1()
 {
@@ -550,7 +550,7 @@ void test8390() {
 }
 
 /************************************************************************/
-// 8651
+// https://issues.dlang.org/show_bug.cgi?id=8651
 
 void test8651()
 {
@@ -605,7 +605,7 @@ void test8651()
 }
 
 /************************************************************************/
-// 9656
+// https://issues.dlang.org/show_bug.cgi?id=9656
 
 void test9656()
 {
@@ -628,14 +628,14 @@ void test9656()
 
     {
         int[] ma = [1,2,3];
-        immutable ia = ma.dup;
+        immutable ia = ma.idup;
     }
 
 
     {
         static struct V { int val; }
         V[] ma = [V(1), V(2)];
-        immutable ia = ma.dup;
+        immutable ia = ma.idup;
     }
 
     {
@@ -651,7 +651,7 @@ void test9656()
 }
 
 /************************************************************************/
-// 10282
+// https://issues.dlang.org/show_bug.cgi?id=10282
 
 void test10282()
 {
@@ -669,7 +669,7 @@ void test10282()
 }
 
 /************************************************************************/
-// 10433
+// https://issues.dlang.org/show_bug.cgi?id=10433
 
 void test10433()
 {
@@ -684,7 +684,7 @@ void test10433()
 }
 
 /************************************************************************/
-// 10684
+// https://issues.dlang.org/show_bug.cgi?id=10684
 
 void test10684a()
 {
@@ -716,7 +716,7 @@ void test10684b()
 }
 
 /************************************************************************/
-// 11376
+// https://issues.dlang.org/show_bug.cgi?id=11376
 
 template TL11376(T...)
 {
@@ -732,7 +732,7 @@ auto sumArrs11376(T0, T1)(T0[] a, T1[] b)
 static assert(!__traits(compiles, sumArrs11376(TL11376!(string[], string).init)));
 
 /************************************************************************/
-// 11525
+// https://issues.dlang.org/show_bug.cgi?id=11525
 
 void test11525()
 {
@@ -756,7 +756,7 @@ void test11525()
 }
 
 /************************************************************************/
-// 12250
+// https://issues.dlang.org/show_bug.cgi?id=12250
 
 void f12250(inout int[] p, inout int[] q, int[] r)
 {
@@ -774,7 +774,7 @@ void test12250()
 }
 
 /************************************************************************/
-// 12179
+// https://issues.dlang.org/show_bug.cgi?id=12179
 
 void test12179()
 {
@@ -792,7 +792,7 @@ void test12179()
     foo(a[] |= a[]);
     foo(a[] ^^= a[]);
 
-    // from issue 11992
+    // from https://issues.dlang.org/show_bug.cgi?id=11992
     int[]   arr1;
     int[][] arr2;
     arr1 ~= (a[] = [1] + a[]); // OK
@@ -800,7 +800,7 @@ void test12179()
 }
 
 /************************************************************************/
-// 12780
+// https://issues.dlang.org/show_bug.cgi?id=12780
 
 void test12780()
 {
@@ -854,7 +854,7 @@ void test12780()
 }
 
 /************************************************************************/
-// 13497
+// https://issues.dlang.org/show_bug.cgi?id=13497
 
 void test13497()
 {
@@ -866,7 +866,7 @@ void test13497()
 }
 
 /************************************************************************/
-// 14649
+// https://issues.dlang.org/show_bug.cgi?id=14649
 
 void test14649()
 {
@@ -891,7 +891,7 @@ void test14649()
 }
 
 /************************************************************************/
-// 14851
+// https://issues.dlang.org/show_bug.cgi?id=14851
 
 void test14851()
 {

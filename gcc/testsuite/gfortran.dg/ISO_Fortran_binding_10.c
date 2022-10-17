@@ -2,7 +2,7 @@
 
 /* Contributed by Reinhold Bader  <Bader@lrz.de> */
 
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include <ISO_Fortran_binding.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>

@@ -1,6 +1,6 @@
 /* Arm MVE intrinsics include file.
 
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by Arm.
 
    This file is part of GCC.
@@ -3524,7 +3524,7 @@ __arm_vaddlvq_u32 (uint32x4_t __a)
   return __builtin_mve_vaddlvq_uv4si (__a);
 }
 
-__extension__ extern __inline int64_t
+__extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vctp16q (uint32_t __a)
 {

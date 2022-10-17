@@ -1,6 +1,6 @@
 // <experimental/internet> -*- C++ -*-
 
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201402L
 
 #include <experimental/netfwd>
@@ -61,6 +63,10 @@
 # include <netdb.h>		// getaddrinfo etc.
 #endif
 
+#if defined _WIN32 && __has_include(<ws2tcpip.h>)
+# include <ws2tcpip.h>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -85,6 +91,12 @@ namespace ip
     host_not_found = EAI_NONAME,
     host_not_found_try_again = EAI_AGAIN,
     service_not_found = EAI_SERVICE
+    // N.B. POSIX defines additional errors that have no enumerator here:
+    // EAI_BADFLAGS, EAI_FAIL, EAI_FAMILY, EAI_MEMORY, EAI_SOCKTYPE, EAI_SYSTEM
+    // Some C libraries define additional errors:
+    // EAI_BADHINTS, EAI_OVERFLOW, EAI_PROTOCOL
+    // Some C libraries define additional (obsolete?) errors:
+    // EAI_ADDRFAMILY, EAI_NODATA
 #endif
   };
 
@@ -112,6 +124,19 @@ namespace ip
 
   inline error_condition make_error_condition(resolver_errc __e) noexcept
   { return error_condition(static_cast<int>(__e), resolver_category()); }
+
+  /// @cond undocumented
+  inline error_code
+  __make_resolver_error_code(int __ai_err,
+			     [[__maybe_unused__]] int __sys_err) noexcept
+  {
+#ifdef EAI_SYSTEM
+    if (__builtin_expect(__ai_err == EAI_SYSTEM, 0))
+      return error_code(__sys_err, std::generic_category());
+#endif
+    return error_code(__ai_err, resolver_category());
+  }
+  /// @endcond
 
   /// @}
 
@@ -263,7 +288,11 @@ namespace ip
     _S_ntoh_32(uint32_t __n) { return __builtin_bswap32(__n); }
 #endif
 
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     in_addr_t _M_addr; // network byte order
+#else
+    uint32_t _M_addr;
+#endif
   };
 
   /// An IPv6 address.
@@ -433,13 +462,15 @@ namespace ip
     // constructors:
     constexpr address() noexcept : _M_v4(), _M_is_v4(true) { }
 
+#if __cpp_constexpr_dynamic_alloc
     constexpr
+#endif
     address(const address& __a) noexcept : _M_uninit(), _M_is_v4(__a._M_is_v4)
     {
       if (_M_is_v4)
-	::new (std::addressof(_M_v4)) address_v4(__a.to_v4());
+	std::_Construct(std::addressof(_M_v4), __a.to_v4());
       else
-	::new (std::addressof(_M_v6)) address_v6(__a.to_v6());
+	std::_Construct(std::addressof(_M_v6), __a.to_v6());
     }
 
     constexpr
@@ -462,7 +493,7 @@ namespace ip
     address&
     operator=(const address_v4& __a) noexcept
     {
-      ::new (std::addressof(_M_v4)) address_v4(__a);
+      std::_Construct(std::addressof(_M_v4), __a);
       _M_is_v4 = true;
       return *this;
     }
@@ -470,7 +501,7 @@ namespace ip
     address&
     operator=(const address_v6& __a) noexcept
     {
-      ::new (std::addressof(_M_v6)) address_v6(__a);
+      std::_Construct(std::addressof(_M_v6), __a);
       _M_is_v4 = false;
       return *this;
     }
@@ -705,7 +736,7 @@ namespace ip
   inline address_v4
   make_address_v4(string_view __str, error_code& __ec) noexcept
   {
-    char __buf[INET_ADDRSTRLEN];
+    char __buf[16]; // INET_ADDRSTRLEN isn't defined on Windows
     auto __len = __str.copy(__buf, sizeof(__buf));
     if (__len == sizeof(__buf))
       {
@@ -1686,9 +1717,15 @@ namespace ip
 #ifdef AI_NUMERICSERV
     static constexpr flags numeric_service	= (flags)AI_NUMERICSERV;
 #endif
+#ifdef AI_V4MAPPED
     static constexpr flags v4_mapped		= (flags)AI_V4MAPPED;
+#endif
+#ifdef AI_ALL
     static constexpr flags all_matching		= (flags)AI_ALL;
+#endif
+#ifdef AI_ADDRCONFIG
     static constexpr flags address_configured	= (flags)AI_ADDRCONFIG;
+#endif
 
     friend constexpr flags
     operator&(flags __f1, flags __f2) noexcept
@@ -1997,7 +2034,7 @@ namespace ip
 
       if (int __err = ::getaddrinfo(__h, __s, &__hints, &__sai._M_p))
 	{
-	  __ec.assign(__err, resolver_category());
+	  __ec = ip::__make_resolver_error_code(__err, errno);
 	  return;
 	}
       __ec.clear();
@@ -2026,8 +2063,8 @@ namespace ip
     basic_resolver_results(const endpoint_type& __ep, error_code& __ec)
     {
 #ifdef _GLIBCXX_HAVE_NETDB_H
-      char __host_name[256];
-      char __service_name[128];
+      char __host_name[1025];	// glibc NI_MAXHOST
+      char __service_name[32];  // glibc NI_MAXSERV
       int __flags = 0;
       if (__ep.protocol().type() == SOCK_DGRAM)
 	__flags |= NI_DGRAM;
@@ -2045,7 +2082,7 @@ namespace ip
 				__flags);
 	}
       if (__err)
-	__ec.assign(__err, resolver_category());
+	__ec = ip::__make_resolver_error_code(__err, errno);
       else
 	{
 	  __ec.clear();
@@ -2102,7 +2139,7 @@ namespace ip
     using resolver = basic_resolver<tcp>;	 ///< A TCP resolver.
     using socket = basic_stream_socket<tcp>;	 ///< A TCP socket.
     using acceptor = basic_socket_acceptor<tcp>; ///< A TCP acceptor.
-    using iostream = basic_socket_iostream<tcp>; /// A TCP iostream.
+    using iostream = basic_socket_iostream<tcp>; ///< A TCP iostream.
 
 #ifdef TCP_NODELAY
     /// Disable coalescing of small segments (i.e. the Nagle algorithm).

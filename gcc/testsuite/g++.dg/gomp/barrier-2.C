@@ -9,4 +9,4 @@ void f3(bool p)
 {
   if (p)
     #pragma omp barrier		// { dg-error "compound statements" }
-}				// { dg-error "" }
+}

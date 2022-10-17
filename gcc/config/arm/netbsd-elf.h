@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, NetBSD/arm ELF version.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
    This file is part of GCC.
@@ -84,9 +84,6 @@
 
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
-
-/* We don't have any limit on the length as out debugger is GDB.  */
-#undef DBX_CONTIN_LENGTH
 
 /* NetBSD does its profiling differently to the Acorn compiler. We
    don't need a word following the mcount call; and to skip it

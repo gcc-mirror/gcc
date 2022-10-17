@@ -11,9 +11,9 @@ class Foo
 {
     void foo()
     out (res) { assert(res > 5); }
-    body {}
+    do {}
 
     auto bar()
     out (res) { assert (res > 5); }
-    body { return; }
+    do { return; }
 }

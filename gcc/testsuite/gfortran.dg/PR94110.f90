@@ -9,6 +9,16 @@ program asa_p
 
   integer, parameter :: n = 7
 
+  type t
+  end type t
+
+  interface
+    subroutine fc2 (x)
+      import :: t
+      class(t), pointer, intent(in) :: x(..)
+    end subroutine
+  end interface
+
   integer :: p(n)
   integer :: s
 
@@ -83,6 +93,11 @@ contains
     end select
     return
   end function sum_p_ar
+
+  subroutine sub1(y)
+    type(t), target :: y(*)
+    call fc2 (y) ! { dg-error "Actual argument for .x. cannot be an assumed-size array" } 
+  end subroutine sub1
 
 end program asa_p
 

@@ -1,4 +1,5 @@
-// PERMUTE_ARGS: -inline -g -O -d
+// REQUIRED_ARGS:  -d
+// PERMUTE_ARGS: -inline -g -O
 void main()
 {
     auto darray1 = new int*[](10);

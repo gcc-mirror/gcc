@@ -3,7 +3,7 @@ This module implements a red-black tree container.
 
 This module is a submodule of $(MREF std, container).
 
-Source: $(PHOBOSSRC std/container/_rbtree.d)
+Source: $(PHOBOSSRC std/container/rbtree.d)
 
 Copyright: Red-black tree code copyright (C) 2008- by Steven Schveighoffer. Other code
 copyright 2010- Andrei Alexandrescu. All rights reserved by the respective holders.
@@ -61,7 +61,7 @@ import std.functional : binaryFun;
 
 public import std.container.util;
 
-version (unittest) debug = RBDoChecks;
+version (StdUnittest) debug = RBDoChecks;
 
 //debug = RBDoChecks;
 
@@ -111,7 +111,7 @@ struct RBNode(V)
     /**
      * Get the left child
      */
-    @property inout(RBNode)* left() inout
+    @property inout(RBNode)* left() inout return scope
     {
         return _left;
     }
@@ -119,7 +119,7 @@ struct RBNode(V)
     /**
      * Get the right child
      */
-    @property inout(RBNode)* right() inout
+    @property inout(RBNode)* right() inout return scope
     {
         return _right;
     }
@@ -127,7 +127,7 @@ struct RBNode(V)
     /**
      * Get the parent
      */
-    @property inout(RBNode)* parent() inout
+    @property inout(RBNode)* parent() inout return scope
     {
         return _parent;
     }
@@ -136,9 +136,12 @@ struct RBNode(V)
      * Set the left child.  Also updates the new child's parent node.  This
      * does not update the previous child.
      *
+     * $(RED Warning: If the node this is called on is a local variable, a stack pointer can be
+     * escaped through `newNode.parent`. It's marked `@trusted` only for backwards compatibility.)
+     *
      * Returns newNode
      */
-    @property Node left(Node newNode)
+    @property Node left(return scope Node newNode) @trusted
     {
         _left = newNode;
         if (newNode !is null)
@@ -150,9 +153,12 @@ struct RBNode(V)
      * Set the right child.  Also updates the new child's parent node.  This
      * does not update the previous child.
      *
+     * $(RED Warning: If the node this is called on is a local variable, a stack pointer can be
+     * escaped through `newNode.parent`. It's marked `@trusted` only for backwards compatibility.)
+     *
      * Returns newNode
      */
-    @property Node right(Node newNode)
+    @property Node right(return scope Node newNode) @trusted
     {
         _right = newNode;
         if (newNode !is null)
@@ -183,9 +189,9 @@ struct RBNode(V)
     Node rotateR()
     in
     {
-        assert(_left !is null);
+        assert(_left !is null, "left node must not be null");
     }
-    body
+    do
     {
         // sets _left._parent also
         if (isLeftNode)
@@ -226,9 +232,9 @@ struct RBNode(V)
     Node rotateL()
     in
     {
-        assert(_right !is null);
+        assert(_right !is null, "right node must not be null");
     }
-    body
+    do
     {
         // sets _right._parent also
         if (isLeftNode)
@@ -255,9 +261,9 @@ struct RBNode(V)
     @property bool isLeftNode() const
     in
     {
-        assert(_parent !is null);
+        assert(_parent !is null, "parent must not be null");
     }
-    body
+    do
     {
         return _parent._left is &this;
     }
@@ -371,7 +377,7 @@ struct RBNode(V)
      * Returns the next highest valued node in the tree after this one, or end
      * if this was the highest-valued node.
      */
-    Node remove(Node end)
+    Node remove(Node end) return
     {
         //
         // remove this node from the tree, fixing the color if necessary.
@@ -542,7 +548,8 @@ struct RBNode(V)
                 _parent.right = null;
         }
 
-        // clean references to help GC - Bugzilla 12915
+        // clean references to help GC
+        // https://issues.dlang.org/show_bug.cgi?id=12915
         _left = _right = _parent = null;
 
         return ret;
@@ -551,7 +558,7 @@ struct RBNode(V)
     /**
      * Return the leftmost descendant of this node.
      */
-    @property inout(RBNode)* leftmost() inout
+    @property inout(RBNode)* leftmost() inout return
     {
         inout(RBNode)* result = &this;
         while (result._left !is null)
@@ -562,7 +569,7 @@ struct RBNode(V)
     /**
      * Return the rightmost descendant of this node
      */
-    @property inout(RBNode)* rightmost() inout
+    @property inout(RBNode)* rightmost() inout return
     {
         inout(RBNode)* result = &this;
         while (result._right !is null)
@@ -576,7 +583,7 @@ struct RBNode(V)
      * You should never call this on the marker node, as it is assumed that
      * there is a valid next node.
      */
-    @property inout(RBNode)* next() inout
+    @property inout(RBNode)* next() inout return
     {
         inout(RBNode)* n = &this;
         if (n.right is null)
@@ -595,7 +602,7 @@ struct RBNode(V)
      * You should never call this on the leftmost node of the tree as it is
      * assumed that there is a valid previous node.
      */
-    @property inout(RBNode)* prev() inout
+    @property inout(RBNode)* prev() inout return
     {
         inout(RBNode)* n = &this;
         if (n.left is null)
@@ -662,7 +669,7 @@ private struct RBRange(N)
     }
 
     /**
-     * Returns $(D true) if the range is _empty
+     * Returns `true` if the range is _empty
      */
     @property bool empty() const
     {
@@ -706,7 +713,7 @@ private struct RBRange(N)
     }
 
     /**
-     * Trivial _save implementation, needed for $(D isForwardRange).
+     * Trivial _save implementation, needed for `isForwardRange`.
      */
     @property RBRange save()
     {
@@ -723,15 +730,15 @@ private struct RBRange(N)
  *
  * To use a different comparison than $(D "a < b"), pass a different operator string
  * that can be used by $(REF binaryFun, std,functional), or pass in a
- * function, delegate, functor, or any type where $(D less(a, b)) results in a $(D bool)
+ * function, delegate, functor, or any type where $(D less(a, b)) results in a `bool`
  * value.
  *
  * Note that less should produce a strict ordering.  That is, for two unequal
- * elements $(D a) and $(D b), $(D less(a, b) == !less(b, a)). $(D less(a, a)) should
- * always equal $(D false).
+ * elements `a` and `b`, $(D less(a, b) == !less(b, a)). $(D less(a, a)) should
+ * always equal `false`.
  *
- * If $(D allowDuplicates) is set to $(D true), then inserting the same element more than
- * once continues to add more elements.  If it is $(D false), duplicate elements are
+ * If `allowDuplicates` is set to `true`, then inserting the same element more than
+ * once continues to add more elements.  If it is `false`, duplicate elements are
  * ignored on insertion.  If duplicates are allowed, then new elements are
  * inserted after all existing duplicate elements.
  */
@@ -745,11 +752,11 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
 
     alias _less = binaryFun!less;
 
-    version (unittest)
+    version (StdUnittest)
     {
         static if (is(typeof(less) == string))
         {
-            private enum doUnittest = isIntegral!T && (less == "a < b" || less == "a > b");
+            private enum doUnittest = is(byte : T) && isIntegral!T && (less == "a < b" || less == "a > b");
         }
         else
             enum doUnittest = false;
@@ -789,7 +796,8 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
 
     private void _setup()
     {
-        assert(!_end); //Make sure that _setup isn't run more than once.
+        //Make sure that _setup isn't run more than once.
+        assert(!_end, "Setup must only be run once");
         _begin = _end = allocate();
     }
 
@@ -804,7 +812,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
     }
 
     /**
-     * The range types for $(D RedBlackTree)
+     * The range types for `RedBlackTree`
      */
     alias Range = RBRange!(RBNode*);
     alias ConstRange = RBRange!(const(RBNode)*); /// Ditto
@@ -874,9 +882,12 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
         }
     }
 
-    // add an element to the tree, returns the node added, or the existing node
-    // if it has already been added and allowDuplicates is false
-    private auto _add(Elem n)
+    /* add an element to the tree, returns the node added, or the existing node
+     * if it has already been added and allowDuplicates is false
+     * Returns:
+     *   true if node was added
+     */
+    private bool _add(return scope Elem n)
     {
         Node result;
         static if (!allowDuplicates)
@@ -884,7 +895,8 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
 
         if (!_end.left)
         {
-            _end.left = _begin = result = allocate(n);
+            result = allocate(n);
+            (() @trusted { _end.left = _begin = result; }) ();
         }
         else
         {
@@ -900,7 +912,8 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
                         //
                         // add to right of new parent
                         //
-                        newParent.left = result = allocate(n);
+                        result = allocate(n);
+                        (() @trusted { newParent.left = result; }) ();
                         break;
                     }
                 }
@@ -921,7 +934,8 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
                         //
                         // add to right of new parent
                         //
-                        newParent.right = result = allocate(n);
+                        result = allocate(n);
+                        (() @trusted { newParent.right = result; }) ();
                         break;
                     }
                 }
@@ -930,19 +944,16 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
             if (_begin.left)
                 _begin = _begin.left;
         }
-
         static if (allowDuplicates)
         {
             result.setColor(_end);
             debug(RBDoChecks)
                 check();
             ++_length;
-            return result;
+            return true;
         }
         else
         {
-            import std.typecons : Tuple;
-
             if (added)
             {
                 ++_length;
@@ -950,16 +961,16 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
             }
             debug(RBDoChecks)
                 check();
-            return Tuple!(bool, "added", Node, "n")(added, result);
+            return added;
         }
     }
 
 
     /**
-     * Check if any elements exist in the container.  Returns $(D false) if at least
+     * Check if any elements exist in the container.  Returns `false` if at least
      * one element exists.
      */
-    @property bool empty()
+    @property bool empty() const // pure, nothrow, @safe, @nogc: are inferred
     {
         return _end.left is null;
     }
@@ -1025,7 +1036,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      *
      * Complexity: $(BIGOH 1)
      */
-    Elem front()
+    inout(Elem) front() inout
     {
         return _begin.value;
     }
@@ -1035,13 +1046,13 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      *
      * Complexity: $(BIGOH log(n))
      */
-    Elem back()
+    inout(Elem) back() inout
     {
         return _end.prev.value;
     }
 
     /++
-        $(D in) operator. Check to see if the given element exists in the
+        `in` operator. Check to see if the given element exists in the
         container.
 
        Complexity: $(BIGOH log(n))
@@ -1075,7 +1086,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
 
         auto thisRange = this[];
         auto thatRange = that[];
-        return equal!(function(Elem a, Elem b) => !_less(a,b) && !_less(b,a))
+        return equal!((Elem a, Elem b) => !_less(a,b) && !_less(b,a))
                      (thisRange, thatRange);
     }
 
@@ -1092,6 +1103,134 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
         assert(t1 != t3);
         assert(t1 != t4);
         assert(t1 != o);  // pathological case, must not crash
+    }
+
+    /**
+     * Generates a hash for the tree. Note that with a custom comparison function
+     * it may not hold that if two rbtrees are equal, the hashes of the trees
+     * will be equal.
+     */
+    override size_t toHash() nothrow @safe
+    {
+        size_t hash = cast(size_t) 0x6b63_616c_4264_6552UL;
+        foreach (ref e; this[])
+            // As in boost::hash_combine
+            // https://www.boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine
+            hash += .hashOf(e) + 0x9e3779b9 + (hash << 6) + (hash >>> 2);
+        return hash;
+    }
+
+    static if (doUnittest) @system unittest
+    {
+        auto t1 = new RedBlackTree(1,2,3,4);
+        auto t2 = new RedBlackTree(1,2,3,4);
+        auto t3 = new RedBlackTree(1,2,3,5);
+        auto t4 = new RedBlackTree(1,2,3,4,5);
+
+        assert(t1.toHash() == t2.toHash);
+
+        assert(t1.toHash() != t3.toHash);
+        assert(t2.toHash() != t3.toHash);
+
+        assert(t3.toHash() != t4.toHash);
+        assert(t1.toHash() != t4.toHash);
+
+        // empty tree
+        auto t5 = new RedBlackTree();
+        auto t6 = new RedBlackTree();
+
+        assert(t5.toHash() == t6.toHash());
+
+        auto t7 = new RedBlackTree!string("red", "black");
+        auto t8 = new RedBlackTree!string("white", "black");
+        auto t9 = new RedBlackTree!string("red", "black");
+
+        assert(t7.toHash() == t9.toHash());
+        assert(t7.toHash() != t8.toHash());
+
+        static struct MyInt
+        {
+            int x;
+
+          @safe:
+
+            this(int init_x)
+            {
+                x = init_x;
+            }
+
+            size_t toHash() const nothrow
+            {
+                return typeid(x).getHash(&x) ^ 0xF0F0_F0F0;
+            }
+
+            int opCmp(const MyInt that) const
+            {
+                return (x > that.x) - (x < that.x);
+            }
+
+            bool opEquals(const MyInt that) const
+            {
+                return (this.x == that.x);
+            }
+        }
+
+        auto rbt1 = new RedBlackTree!MyInt(MyInt(1), MyInt(2), MyInt(3), MyInt(4));
+        auto rbt2 = new RedBlackTree!MyInt(MyInt(1), MyInt(2), MyInt(3), MyInt(4));
+
+        assert(rbt1.toHash() == rbt2.toHash());
+        assert(rbt1.toHash() != t1.toHash());
+
+        auto rbt3 = new RedBlackTree!MyInt(MyInt(4), MyInt(2), MyInt(3), MyInt(4));
+
+        assert(rbt1.toHash() != rbt3.toHash());
+
+        class MyInt2
+        {
+            int x;
+
+            this(int init_x)
+            {
+                x = init_x;
+            }
+
+            override size_t toHash() const @safe nothrow
+            {
+                return typeid(x).getHash(&x) ^ 0xF0F0_F0F0;
+            }
+
+            int opCmp(const MyInt2 that) const
+            {
+                return (x > that.x) - (x < that.x);
+            }
+
+            bool opEquals(const MyInt2 that) const
+            {
+                return (this.x == that.x);
+            }
+        }
+
+        static bool nullSafeLess(scope const MyInt2 a, scope const MyInt2 b)
+        {
+            return a is null ? b !is null : (b !is null && a < b);
+        }
+
+        auto rbt4 = new RedBlackTree!MyInt2(new MyInt2(1), new MyInt2(9), new MyInt2(3), new MyInt2(42));
+        auto rbt5 = new RedBlackTree!MyInt2(new MyInt2(1), new MyInt2(9), new MyInt2(3), new MyInt2(42));
+        auto rbt6 = new RedBlackTree!(MyInt2, nullSafeLess)(new MyInt2(9), new MyInt2(3), new MyInt2(42));
+        auto rbt7 = new RedBlackTree!(MyInt2, nullSafeLess)(null);
+
+        assert(rbt6.toHash() != rbt5.toHash());
+        assert(rbt6.toHash() != rbt4.toHash());
+        assert(rbt6.toHash() != rbt7.toHash());
+        assert(rbt4.toHash() == rbt5.toHash());
+
+        auto rbt8 = new RedBlackTree!(MyInt2, nullSafeLess)(null, new MyInt2(9), null, new MyInt2(42));
+        auto rbt9 = new RedBlackTree!(MyInt2, nullSafeLess)(null, new MyInt2(9), null, new MyInt2(42));
+        auto rbt10 = new RedBlackTree!(MyInt2, nullSafeLess)(new MyInt2(94), null, new MyInt2(147));
+
+        assert(rbt8.toHash() == rbt9.toHash());
+        assert(rbt8.toHash() != rbt10.toHash());
     }
 
     /**
@@ -1131,7 +1270,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
         }
         else
         {
-            return(_add(stuff).added ? 1 : 0);
+            return _add(stuff);
         }
     }
 
@@ -1143,7 +1282,9 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      *
      * Complexity: $(BIGOH m * log(n))
      */
-    size_t stableInsert(Stuff)(Stuff stuff) if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, Elem))
+    size_t stableInsert(Stuff)(scope Stuff stuff)
+        if (isInputRange!Stuff &&
+            isImplicitlyConvertible!(ElementType!Stuff, Elem))
     {
         size_t result = 0;
         static if (allowDuplicates)
@@ -1158,8 +1299,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
         {
             foreach (e; stuff)
             {
-                if (_add(e).added)
-                    ++result;
+                result += _add(e);
             }
         }
         return result;
@@ -1322,7 +1462,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
     }
 
     /++
-        Removes the given $(D Take!Range) from the container
+        Removes the given `Take!Range` from the container
 
         Returns: A range containing all of the elements that were after the
                  given range.
@@ -1377,7 +1517,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
     /++
        Removes elements from the container that are equal to the given values
        according to the less comparator. One element is removed for each value
-       given which is in the container. If $(D allowDuplicates) is true,
+       given which is in the container. If `allowDuplicates` is true,
        duplicates are removed only if duplicate values are given.
 
        Returns: The number of elements removed.
@@ -1401,7 +1541,7 @@ assert(equal(rbt[], [5]));
     }
 
     /++ Ditto +/
-    size_t removeKey(U)(U[] elems)
+    size_t removeKey(U)(scope U[] elems)
         if (isImplicitlyConvertible!(U, Elem))
     {
         immutable lenBefore = length;
@@ -1649,7 +1789,7 @@ assert(equal(rbt[], [5]));
          * Check the tree for validity.  This is called after every add or remove.
          * This should only be enabled to debug the implementation of the RB Tree.
          */
-        void check()
+        void check() @trusted
         {
             //
             // check implementation of the tree
@@ -1712,7 +1852,8 @@ assert(equal(rbt[], [5]));
      */
     static if (is(typeof((){FormatSpec!(char) fmt; formatValue((const(char)[]) {}, ConstRange.init, fmt);})))
     {
-        void toString(scope void delegate(const(char)[]) sink, FormatSpec!char fmt) const {
+        void toString(scope void delegate(const(char)[]) sink, scope const ref FormatSpec!char fmt) const
+        {
             sink("RedBlackTree(");
             sink.formatValue(this[], fmt);
             sink(")");
@@ -1814,11 +1955,18 @@ assert(equal(rbt[], [5]));
     test!byte();
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=19626
+@safe pure unittest
+{
+    enum T { a, b }
+    alias t = RedBlackTree!T;
+}
+
 import std.range.primitives : isInputRange, ElementType;
 import std.traits : isArray, isSomeString;
 
 /++
-    Convenience function for creating a $(D RedBlackTree!E) from a list of
+    Convenience function for creating a `RedBlackTree!E` from a list of
     values.
 
     Params:
@@ -1907,7 +2055,7 @@ if ( is(typeof(binaryFun!less((ElementType!Stuff).init, (ElementType!Stuff).init
 }
 
 //Combinations not in examples.
-@safe pure unittest
+@system pure unittest
 {
     auto rbt1 = redBlackTree!(true, string)("hello", "hello");
     auto rbt2 = redBlackTree!((a, b){return a < b;}, double)(5.1, 2.3);
@@ -2022,8 +2170,12 @@ if ( is(typeof(binaryFun!less((ElementType!Stuff).init, (ElementType!Stuff).init
 @safe pure unittest
 {
     const rt1 = redBlackTree(5,4,3,2,1);
-    static assert(is(typeof(rt1.length)));
-    static assert(is(typeof(5 in rt1)));
+    void allQualifiers() pure nothrow @safe @nogc {
+        assert(!rt1.empty);
+        assert(rt1.length == 5);
+        assert(5 in rt1);
+    }
+    allQualifiers();
 
     static assert(is(typeof(rt1.upperBound(3).front) == const(int)));
     import std.algorithm.comparison : equal;
@@ -2037,21 +2189,24 @@ if ( is(typeof(binaryFun!less((ElementType!Stuff).init, (ElementType!Stuff).init
 @safe pure unittest
 {
     immutable rt1 = redBlackTree(5,4,3,2,1);
+    static assert(is(typeof(rt1.empty)));
     static assert(is(typeof(rt1.length)));
+    static assert(is(typeof(5 in rt1)));
 
     static assert(is(typeof(rt1.upperBound(3).front) == immutable(int)));
     import std.algorithm.comparison : equal;
     assert(rt1.upperBound(2).equal([3, 4, 5]));
 }
 
-// issue 15941
+// https://issues.dlang.org/show_bug.cgi?id=15941
 @safe pure unittest
 {
     class C {}
     RedBlackTree!(C, "cast(void*)a < cast(void*) b") tree;
 }
 
-@safe pure unittest // const/immutable elements (issue 17519)
+// const/immutable elements (https://issues.dlang.org/show_bug.cgi?id=17519)
+@safe pure unittest
 {
     RedBlackTree!(immutable int) t1;
     RedBlackTree!(const int) t2;
@@ -2062,4 +2217,14 @@ if ( is(typeof(binaryFun!less((ElementType!Stuff).init, (ElementType!Stuff).init
     t3.insert([1, 2, 3].map!(x => immutable S(new int(x))));
     static assert(!__traits(compiles, *t3.front.p = 4));
     assert(*t3.front.p == 1);
+}
+
+// make sure the comparator can be a delegate
+@safe pure unittest
+{
+    import std.algorithm.comparison : equal;
+
+    auto t = new RedBlackTree!(int, delegate(a, b) => a > b);
+    t.insert([1, 3, 5, 4, 2]);
+    assert(t[].equal([5, 4, 3, 2, 1]));
 }

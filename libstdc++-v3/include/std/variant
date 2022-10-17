@@ -1,6 +1,6 @@
 // <variant> -*- C++ -*-
 
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,45 +33,31 @@
 
 #if __cplusplus >= 201703L
 
+#include <initializer_list>
 #include <type_traits>
-#include <utility>
 #include <bits/enable_special_members.h>
-#include <bits/functexcept.h>
-#include <bits/move.h>
+#include <bits/exception_defines.h>
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
-#include <ext/aligned_buffer.h>
 #include <bits/parse_numbers.h>
-#include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
-#if __cplusplus > 201703L
+#include <bits/utility.h> // in_place_index_t
+#if __cplusplus >= 202002L
 # include <compare>
+#endif
+
+#if __cpp_concepts >= 202002L && __cpp_constexpr >= 201811L
+// P2231R1 constexpr needs constexpr unions and constrained destructors.
+# define __cpp_lib_variant 202106L
+#else
+# include <ext/aligned_buffer.h> // Use __aligned_membuf instead of union.
+# define __cpp_lib_variant 202102L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-namespace __detail
-{
-namespace __variant
-{
-  template<size_t _Np, typename... _Types>
-    struct _Nth_type;
-
-  template<size_t _Np, typename _First, typename... _Rest>
-    struct _Nth_type<_Np, _First, _Rest...>
-    : _Nth_type<_Np-1, _Rest...> { };
-
-  template<typename _First, typename... _Rest>
-    struct _Nth_type<0, _First, _Rest...>
-    { using type = _First; };
-
-} // namespace __variant
-} // namespace __detail
-
-#define __cpp_lib_variant 201606L
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;
@@ -96,16 +82,24 @@ namespace __variant
   template<typename _Variant>
     inline constexpr size_t variant_size_v = variant_size<_Variant>::value;
 
+  template<typename... _Types>
+    inline constexpr size_t
+    variant_size_v<variant<_Types...>> = sizeof...(_Types);
+
+  template<typename... _Types>
+    inline constexpr size_t
+    variant_size_v<const variant<_Types...>> = sizeof...(_Types);
+
   template<size_t _Np, typename _Variant>
     struct variant_alternative;
 
-  template<size_t _Np, typename _First, typename... _Rest>
-    struct variant_alternative<_Np, variant<_First, _Rest...>>
-    : variant_alternative<_Np-1, variant<_Rest...>> {};
+  template<size_t _Np, typename... _Types>
+    struct variant_alternative<_Np, variant<_Types...>>
+    {
+      static_assert(_Np < sizeof...(_Types));
 
-  template<typename _First, typename... _Rest>
-    struct variant_alternative<0, variant<_First, _Rest...>>
-    { using type = _First; };
+      using type = typename _Nth_type<_Np, _Types...>::type;
+    };
 
   template<size_t _Np, typename _Variant>
     using variant_alternative_t =
@@ -113,15 +107,15 @@ namespace __variant
 
   template<size_t _Np, typename _Variant>
     struct variant_alternative<_Np, const _Variant>
-    { using type = add_const_t<variant_alternative_t<_Np, _Variant>>; };
+    { using type = const variant_alternative_t<_Np, _Variant>; };
 
   template<size_t _Np, typename _Variant>
     struct variant_alternative<_Np, volatile _Variant>
-    { using type = add_volatile_t<variant_alternative_t<_Np, _Variant>>; };
+    { using type = volatile variant_alternative_t<_Np, _Variant>; };
 
   template<size_t _Np, typename _Variant>
     struct variant_alternative<_Np, const volatile _Variant>
-    { using type = add_cv_t<variant_alternative_t<_Np, _Variant>>; };
+    { using type = const volatile variant_alternative_t<_Np, _Variant>; };
 
   inline constexpr size_t variant_npos = -1;
 
@@ -146,6 +140,7 @@ namespace __variant
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants);
 
   template <typename... _Types, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     decltype(auto)
     __variant_cast(_Tp&& __rhs)
     {
@@ -164,19 +159,6 @@ namespace __detail
 {
 namespace __variant
 {
-  // Returns the first appearance of _Tp in _Types.
-  // Returns sizeof...(_Types) if _Tp is not in _Types.
-  template<typename _Tp, typename... _Types>
-    struct __index_of : std::integral_constant<size_t, 0> {};
-
-  template<typename _Tp, typename... _Types>
-    inline constexpr size_t __index_of_v = __index_of<_Tp, _Types...>::value;
-
-  template<typename _Tp, typename _First, typename... _Rest>
-    struct __index_of<_Tp, _First, _Rest...> :
-      std::integral_constant<size_t, is_same_v<_Tp, _First>
-	? 0 : __index_of_v<_Tp, _Rest...> + 1> {};
-
   // used for raw visitation
   struct __variant_cookie {};
   // used for raw visitation with indices passed in
@@ -202,8 +184,34 @@ namespace __variant
 	  std::forward<_Variants>(__variants)...);
     }
 
+  // The __as function templates implement the exposition-only "as-variant"
+
+  template<typename... _Types>
+    constexpr std::variant<_Types...>&
+    __as(std::variant<_Types...>& __v) noexcept
+    { return __v; }
+
+  template<typename... _Types>
+    constexpr const std::variant<_Types...>&
+    __as(const std::variant<_Types...>& __v) noexcept
+    { return __v; }
+
+  template<typename... _Types>
+    constexpr std::variant<_Types...>&&
+    __as(std::variant<_Types...>&& __v) noexcept
+    { return std::move(__v); }
+
+  template<typename... _Types>
+    constexpr const std::variant<_Types...>&&
+    __as(const std::variant<_Types...>&& __v) noexcept
+    { return std::move(__v); }
+
+  // For C++17:
   // _Uninitialized<T> is guaranteed to be a trivially destructible type,
   // even if T is not.
+  // For C++20:
+  // _Uninitialized<T> is trivially destructible iff T is, so _Variant_union
+  // needs a constrained non-trivial destructor.
   template<typename _Type, bool = std::is_trivially_destructible_v<_Type>>
     struct _Uninitialized;
 
@@ -234,6 +242,39 @@ namespace __variant
   template<typename _Type>
     struct _Uninitialized<_Type, false>
     {
+#if __cpp_lib_variant >= 202106L
+      template<typename... _Args>
+	constexpr
+	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
+	: _M_storage(std::forward<_Args>(__args)...)
+	{ }
+
+      constexpr ~_Uninitialized() { }
+
+      _Uninitialized(const _Uninitialized&) = default;
+      _Uninitialized(_Uninitialized&&) = default;
+      _Uninitialized& operator=(const _Uninitialized&) = default;
+      _Uninitialized& operator=(_Uninitialized&&) = default;
+
+      constexpr const _Type& _M_get() const & noexcept
+      { return _M_storage; }
+
+      constexpr _Type& _M_get() & noexcept
+      { return _M_storage; }
+
+      constexpr const _Type&& _M_get() const && noexcept
+      { return std::move(_M_storage); }
+
+      constexpr _Type&& _M_get() && noexcept
+      { return std::move(_M_storage); }
+
+      struct _Empty_byte { };
+
+      union {
+	_Empty_byte _M_empty;
+	_Type _M_storage;
+      };
+#else
       template<typename... _Args>
 	constexpr
 	_Uninitialized(in_place_index_t<0>, _Args&&... __args)
@@ -255,29 +296,29 @@ namespace __variant
       { return std::move(*_M_storage._M_ptr()); }
 
       __gnu_cxx::__aligned_membuf<_Type> _M_storage;
+#endif
     };
-
-  template<typename _Union>
-    constexpr decltype(auto)
-    __get(in_place_index_t<0>, _Union&& __u) noexcept
-    { return std::forward<_Union>(__u)._M_first._M_get(); }
 
   template<size_t _Np, typename _Union>
     constexpr decltype(auto)
-    __get(in_place_index_t<_Np>, _Union&& __u) noexcept
+    __get_n(_Union&& __u) noexcept
     {
-      return __variant::__get(in_place_index<_Np-1>,
-			      std::forward<_Union>(__u)._M_rest);
+      if constexpr (_Np == 0)
+	return std::forward<_Union>(__u)._M_first._M_get();
+      else if constexpr (_Np == 1)
+	return std::forward<_Union>(__u)._M_rest._M_first._M_get();
+      else if constexpr (_Np == 2)
+	return std::forward<_Union>(__u)._M_rest._M_rest._M_first._M_get();
+      else
+	return __variant::__get_n<_Np - 3>(
+		 std::forward<_Union>(__u)._M_rest._M_rest._M_rest);
     }
 
   // Returns the typed storage for __v.
   template<size_t _Np, typename _Variant>
     constexpr decltype(auto)
     __get(_Variant&& __v) noexcept
-    {
-      return __variant::__get(std::in_place_index<_Np>,
-			      std::forward<_Variant>(__v)._M_u);
-    }
+    { return __variant::__get_n<_Np>(std::forward<_Variant>(__v)._M_u); }
 
   template<typename... _Types>
     struct _Traits
@@ -324,7 +365,13 @@ namespace __variant
 
   // Defines members and ctors.
   template<typename... _Types>
-    union _Variadic_union { };
+    union _Variadic_union
+    {
+      _Variadic_union() = default;
+
+      template<size_t _Np, typename... _Args>
+	_Variadic_union(in_place_index_t<_Np>, _Args&&...) = delete;
+    };
 
   template<typename _First, typename... _Rest>
     union _Variadic_union<_First, _Rest...>
@@ -332,14 +379,30 @@ namespace __variant
       constexpr _Variadic_union() : _M_rest() { }
 
       template<typename... _Args>
-	constexpr _Variadic_union(in_place_index_t<0>, _Args&&... __args)
+	constexpr
+	_Variadic_union(in_place_index_t<0>, _Args&&... __args)
 	: _M_first(in_place_index<0>, std::forward<_Args>(__args)...)
 	{ }
 
       template<size_t _Np, typename... _Args>
-	constexpr _Variadic_union(in_place_index_t<_Np>, _Args&&... __args)
+	constexpr
+	_Variadic_union(in_place_index_t<_Np>, _Args&&... __args)
 	: _M_rest(in_place_index<_Np-1>, std::forward<_Args>(__args)...)
 	{ }
+
+#if __cpp_lib_variant >= 202106L
+      _Variadic_union(const _Variadic_union&) = default;
+      _Variadic_union(_Variadic_union&&) = default;
+      _Variadic_union& operator=(const _Variadic_union&) = default;
+      _Variadic_union& operator=(_Variadic_union&&) = default;
+
+      ~_Variadic_union() = default;
+
+      constexpr ~_Variadic_union()
+	requires (!__has_trivial_destructor(_First))
+	      || (!__has_trivial_destructor(_Variadic_union<_Rest...>))
+      { }
+#endif
 
       _Uninitialized<_First> _M_first;
       _Variadic_union<_Rest...> _M_rest;
@@ -397,7 +460,8 @@ namespace __variant
 	_M_index{_Np}
 	{ }
 
-      void _M_reset()
+      constexpr void
+      _M_reset()
       {
 	if (!_M_valid()) [[unlikely]]
 	  return;
@@ -410,15 +474,9 @@ namespace __variant
 	_M_index = static_cast<__index_type>(variant_npos);
       }
 
+      _GLIBCXX20_CONSTEXPR
       ~_Variant_storage()
       { _M_reset(); }
-
-      void*
-      _M_storage() const noexcept
-      {
-	return const_cast<void*>(static_cast<const void*>(
-	    std::addressof(_M_u)));
-      }
 
       constexpr bool
       _M_valid() const noexcept
@@ -448,21 +506,21 @@ namespace __variant
 	_M_index{_Np}
 	{ }
 
-      void _M_reset() noexcept
+      constexpr void
+      _M_reset() noexcept
       { _M_index = static_cast<__index_type>(variant_npos); }
-
-      void*
-      _M_storage() const noexcept
-      {
-	return const_cast<void*>(static_cast<const void*>(
-	    std::addressof(_M_u)));
-      }
 
       constexpr bool
       _M_valid() const noexcept
       {
 	if constexpr (__variant::__never_valueless<_Types...>())
 	  return true;
+	// It would be nice if we could just return true for -fno-exceptions.
+	// It's possible (but inadvisable) that a std::variant could become
+	// valueless in a translation unit compiled with -fexceptions and then
+	// be passed to functions compiled with -fno-exceptions. We would need
+	// some #ifdef _GLIBCXX_NO_EXCEPTIONS_GLOBALLY property to elide all
+	// checks for valueless_by_exception().
 	return this->_M_index != static_cast<__index_type>(variant_npos);
       }
 
@@ -471,30 +529,22 @@ namespace __variant
       __index_type _M_index;
     };
 
+  // Implementation of v.emplace<N>(args...).
+  template<size_t _Np, bool _Triv, typename... _Types, typename... _Args>
+    _GLIBCXX20_CONSTEXPR
+    inline void
+    __emplace(_Variant_storage<_Triv, _Types...>& __v, _Args&&... __args)
+    {
+      __v._M_reset();
+      auto* __addr = std::__addressof(__variant::__get_n<_Np>(__v._M_u));
+      std::_Construct(__addr, std::forward<_Args>(__args)...);
+      // Construction didn't throw, so can set the new index now:
+      __v._M_index = _Np;
+    }
+
   template<typename... _Types>
     using _Variant_storage_alias =
 	_Variant_storage<_Traits<_Types...>::_S_trivial_dtor, _Types...>;
-
-  template<typename _Tp, typename _Up>
-    void __variant_construct_single(_Tp&& __lhs, _Up&& __rhs_mem)
-    {
-      void* __storage = std::addressof(__lhs._M_u);
-      using _Type = remove_reference_t<decltype(__rhs_mem)>;
-      if constexpr (!is_same_v<_Type, __variant_cookie>)
-        ::new (__storage)
-	  _Type(std::forward<decltype(__rhs_mem)>(__rhs_mem));
-    }
-
-  template<typename... _Types, typename _Tp, typename _Up>
-    void __variant_construct(_Tp&& __lhs, _Up&& __rhs)
-    {
-      __lhs._M_index = __rhs._M_index;
-      __variant::__raw_visit([&__lhs](auto&& __rhs_mem) mutable
-        {
-	  __variant_construct_single(std::forward<_Tp>(__lhs),
-	      std::forward<decltype(__rhs_mem)>(__rhs_mem));
-	}, __variant_cast<_Types...>(std::forward<_Up>(__rhs)));
-    }
 
   // The following are (Copy|Move) (ctor|assign) layers for forwarding
   // triviality and handling non-trivial SMF behaviors.
@@ -505,10 +555,19 @@ namespace __variant
       using _Base = _Variant_storage_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Copy_ctor_base(const _Copy_ctor_base& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_copy_ctor)
       {
-	__variant_construct<_Types...>(*this, __rhs);
+	__variant::__raw_idx_visit(
+	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
+	  {
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j != variant_npos)
+	      std::_Construct(std::__addressof(this->_M_u),
+			      in_place_index<__j>, __rhs_mem);
+	  }, __variant_cast<_Types...>(__rhs));
+	this->_M_index = __rhs._M_index;
       }
 
       _Copy_ctor_base(_Copy_ctor_base&&) = default;
@@ -533,27 +592,21 @@ namespace __variant
       using _Base = _Copy_ctor_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Move_ctor_base(_Move_ctor_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_ctor)
       {
-	__variant_construct<_Types...>(*this, std::move(__rhs));
+	__variant::__raw_idx_visit(
+	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
+	  {
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j != variant_npos)
+	      std::_Construct(std::__addressof(this->_M_u),
+			      in_place_index<__j>,
+			      std::forward<decltype(__rhs_mem)>(__rhs_mem));
+	  }, __variant_cast<_Types...>(std::move(__rhs)));
+	this->_M_index = __rhs._M_index;
       }
-
-      template<typename _Up>
-        void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
-        {
-	  this->_M_reset();
-	  __variant_construct_single(*this, std::forward<_Up>(__rhs));
-	  this->_M_index = __rhs_index;
-	}
-
-      template<typename _Up>
-        void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
-        {
-	  this->_M_reset();
-	  __variant_construct_single(*this, __rhs);
-	  this->_M_index = __rhs_index;
-	}
 
       _Move_ctor_base(const _Move_ctor_base&) = default;
       _Move_ctor_base& operator=(const _Move_ctor_base&) = default;
@@ -565,22 +618,6 @@ namespace __variant
     {
       using _Base = _Copy_ctor_alias<_Types...>;
       using _Base::_Base;
-
-      template<typename _Up>
-        void _M_destructive_move(unsigned short __rhs_index, _Up&& __rhs)
-        {
-	  this->_M_reset();
-	  __variant_construct_single(*this, std::forward<_Up>(__rhs));
-	  this->_M_index = __rhs_index;
-	}
-
-      template<typename _Up>
-        void _M_destructive_copy(unsigned short __rhs_index, const _Up& __rhs)
-        {
-	  this->_M_reset();
-	  __variant_construct_single(*this, __rhs);
-	  this->_M_index = __rhs_index;
-	}
     };
 
   template<typename... _Types>
@@ -593,6 +630,7 @@ namespace __variant
       using _Base = _Move_ctor_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Copy_assign_base&
       operator=(const _Copy_assign_base& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_copy_assign)
@@ -600,31 +638,24 @@ namespace __variant
 	__variant::__raw_idx_visit(
 	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
-	    if constexpr (__rhs_index != variant_npos)
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j == variant_npos)
+	      this->_M_reset(); // Make *this valueless.
+	    else if (this->_M_index == __j)
+	      __variant::__get<__j>(*this) = __rhs_mem;
+	    else
 	      {
-		if (this->_M_index == __rhs_index)
-		  __variant::__get<__rhs_index>(*this) = __rhs_mem;
+		using _Tj = typename _Nth_type<__j, _Types...>::type;
+		if constexpr (is_nothrow_copy_constructible_v<_Tj>
+			      || !is_nothrow_move_constructible_v<_Tj>)
+		  __variant::__emplace<__j>(*this, __rhs_mem);
 		else
 		  {
-		    using __rhs_type = __remove_cvref_t<decltype(__rhs_mem)>;
-		    if constexpr (is_nothrow_copy_constructible_v<__rhs_type>
-			|| !is_nothrow_move_constructible_v<__rhs_type>)
-		      // The standard says this->emplace<__rhs_type>(__rhs_mem)
-		      // should be used here, but _M_destructive_copy is
-		      // equivalent in this case. Either copy construction
-		      // doesn't throw, so _M_destructive_copy gives strong
-		      // exception safety guarantee, or both copy construction
-		      // and move construction can throw, so emplace only gives
-		      // basic exception safety anyway.
-		      this->_M_destructive_copy(__rhs_index, __rhs_mem);
-		    else
-		      __variant_cast<_Types...>(*this)
-			= variant<_Types...>(std::in_place_index<__rhs_index>,
-					     __rhs_mem);
+		    using _Variant = variant<_Types...>;
+		    _Variant& __self = __variant_cast<_Types...>(*this);
+		    __self = _Variant(in_place_index<__j>, __rhs_mem);
 		  }
 	      }
-	    else
-	      this->_M_reset();
 	  }, __variant_cast<_Types...>(__rhs));
 	return *this;
       }
@@ -651,6 +682,7 @@ namespace __variant
       using _Base = _Copy_assign_alias<_Types...>;
       using _Base::_Base;
 
+      _GLIBCXX20_CONSTEXPR
       _Move_assign_base&
       operator=(_Move_assign_base&& __rhs)
 	  noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
@@ -658,13 +690,23 @@ namespace __variant
 	__variant::__raw_idx_visit(
 	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
-	    if constexpr (__rhs_index != variant_npos)
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j != variant_npos)
 	      {
-		if (this->_M_index == __rhs_index)
-		  __variant::__get<__rhs_index>(*this) = std::move(__rhs_mem);
+		if (this->_M_index == __j)
+		  __variant::__get<__j>(*this) = std::move(__rhs_mem);
 		else
-		  __variant_cast<_Types...>(*this)
-		    .template emplace<__rhs_index>(std::move(__rhs_mem));
+		  {
+		    using _Tj = typename _Nth_type<__j, _Types...>::type;
+		    if constexpr (is_nothrow_move_constructible_v<_Tj>)
+		      __variant::__emplace<__j>(*this, std::move(__rhs_mem));
+		    else
+		      {
+			using _Variant = variant<_Types...>;
+			_Variant& __self = __variant_cast<_Types...>(*this);
+			__self.template emplace<__j>(std::move(__rhs_mem));
+		      }
+		  }
 	      }
 	    else
 	      this->_M_reset();
@@ -694,8 +736,7 @@ namespace __variant
       using _Base = _Move_assign_alias<_Types...>;
 
       constexpr
-      _Variant_base()
-	  noexcept(_Traits<_Types...>::_S_nothrow_default_ctor)
+      _Variant_base() noexcept(_Traits<_Types...>::_S_nothrow_default_ctor)
       : _Variant_base(in_place_index<0>) { }
 
       template<size_t _Np, typename... _Args>
@@ -710,28 +751,9 @@ namespace __variant
       _Variant_base& operator=(_Variant_base&&) = default;
     };
 
-  // For how many times does _Tp appear in _Tuple?
-  template<typename _Tp, typename _Tuple>
-    struct __tuple_count;
-
-  template<typename _Tp, typename _Tuple>
-    inline constexpr size_t __tuple_count_v =
-      __tuple_count<_Tp, _Tuple>::value;
-
   template<typename _Tp, typename... _Types>
-    struct __tuple_count<_Tp, tuple<_Types...>>
-    : integral_constant<size_t, 0> { };
-
-  template<typename _Tp, typename _First, typename... _Rest>
-    struct __tuple_count<_Tp, tuple<_First, _Rest...>>
-    : integral_constant<
-	size_t,
-	__tuple_count_v<_Tp, tuple<_Rest...>> + is_same_v<_Tp, _First>> { };
-
-  // TODO: Reuse this in <tuple> ?
-  template<typename _Tp, typename... _Types>
-    inline constexpr bool __exactly_once =
-      __tuple_count_v<_Tp, tuple<_Types...>> == 1;
+    inline constexpr bool __exactly_once
+      = std::__find_uniq_type_in_pack<_Tp, _Types...>() < sizeof...(_Types);
 
   // Helper used to check for valid conversions that don't involve narrowing.
   template<typename _Ti> struct _Arr { _Ti _M_x[1]; };
@@ -742,7 +764,7 @@ namespace __variant
     {
       // This function means 'using _Build_FUN<I, T, Ti>::_S_fun;' is valid,
       // but only static functions will be considered in the call below.
-      void _S_fun();
+      void _S_fun() = delete;
     };
 
   // "... for which Ti x[] = {std::forward<T>(t)}; is well-formed."
@@ -773,34 +795,28 @@ namespace __variant
 
   // The index selected for FUN(std::forward<T>(t)), or variant_npos if none.
   template<typename _Tp, typename _Variant, typename = void>
-    struct __accepted_index
-    : integral_constant<size_t, variant_npos>
-    { };
+    inline constexpr size_t
+    __accepted_index = variant_npos;
 
   template<typename _Tp, typename _Variant>
-    struct __accepted_index<_Tp, _Variant, void_t<_FUN_type<_Tp, _Variant>>>
-    : _FUN_type<_Tp, _Variant>
-    { };
+    inline constexpr size_t
+    __accepted_index<_Tp, _Variant, void_t<_FUN_type<_Tp, _Variant>>>
+      = _FUN_type<_Tp, _Variant>::value;
 
-  // Returns the raw storage for __v.
-  template<typename _Variant>
-    void* __get_storage(_Variant&& __v) noexcept
-    { return __v._M_storage(); }
+  template<typename _Maybe_variant_cookie, typename _Variant,
+	   typename = __remove_cvref_t<_Variant>>
+    inline constexpr bool
+    __extra_visit_slot_needed = false;
 
-  template <typename _Maybe_variant_cookie, typename _Variant>
-    struct _Extra_visit_slot_needed
-    {
-      template <typename> struct _Variant_never_valueless;
+  template<typename _Var, typename... _Types>
+    inline constexpr bool
+    __extra_visit_slot_needed<__variant_cookie, _Var, variant<_Types...>>
+      = !__variant::__never_valueless<_Types...>();
 
-      template <typename... _Types>
-	struct _Variant_never_valueless<variant<_Types...>>
-	: bool_constant<__variant::__never_valueless<_Types...>()> {};
-
-      static constexpr bool value =
-	(is_same_v<_Maybe_variant_cookie, __variant_cookie>
-	 || is_same_v<_Maybe_variant_cookie, __variant_idx_cookie>)
-	&& !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
-    };
+  template<typename _Var, typename... _Types>
+    inline constexpr bool
+    __extra_visit_slot_needed<__variant_idx_cookie, _Var, variant<_Types...>>
+      = !__variant::__never_valueless<_Types...>();
 
   // Used for storing a multi-dimensional vtable.
   template<typename _Tp, size_t... _Dimensions>
@@ -857,7 +873,7 @@ namespace __variant
       using _Variant = typename _Nth_type<__index, _Variants...>::type;
 
       static constexpr int __do_cookie =
-	_Extra_visit_slot_needed<_Ret, _Variant>::value ? 1 : 0;
+	__extra_visit_slot_needed<_Ret, _Variant> ? 1 : 0;
 
       using _Tp = _Ret(*)(_Visitor, _Variants...);
 
@@ -936,7 +952,7 @@ namespace __variant
 	_S_apply_all_alts(_Array_type& __vtable,
 			  std::index_sequence<__var_indices...>)
 	{
-	  if constexpr (_Extra_visit_slot_needed<_Result_type, _Next>::value)
+	  if constexpr (__extra_visit_slot_needed<_Result_type, _Next>)
 	    (_S_apply_single_alt<true, __var_indices>(
 	      __vtable._M_arr[__var_indices + 1],
 	      &(__vtable._M_arr[0])), ...);
@@ -1063,8 +1079,12 @@ namespace __variant
 			      std::index_sequence<__indices...>>
     : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
 
-  template<size_t _Np, typename _Variant>
-    using __get_t = decltype(std::get<_Np>(std::declval<_Variant>()));
+  // Equivalent to decltype(get<_Np>(as-variant(declval<_Variant>())))
+  template<size_t _Np, typename _Variant,
+      typename _AsV = decltype(__variant::__as(std::declval<_Variant>())),
+      typename _Tp = variant_alternative_t<_Np, remove_reference_t<_AsV>>>
+    using __get_t
+      = __conditional_t<is_lvalue_reference_v<_Variant>, _Tp&, _Tp&&>;
 
   // Return type of std::visit.
   template<typename _Visitor, typename... _Variants>
@@ -1085,61 +1105,57 @@ namespace __variant
 } // namespace __variant
 } // namespace __detail
 
-  template<size_t _Np, typename _Variant, typename... _Args>
-    void __variant_construct_by_index(_Variant& __v, _Args&&... __args)
-    {
-      __v._M_index = _Np;
-      auto&& __storage = __detail::__variant::__get<_Np>(__v);
-      ::new ((void*)std::addressof(__storage))
-        remove_reference_t<decltype(__storage)>
-	  (std::forward<_Args>(__args)...);
-    }
-
   template<typename _Tp, typename... _Types>
     constexpr bool
     holds_alternative(const variant<_Types...>& __v) noexcept
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      return __v.index() == __detail::__variant::__index_of_v<_Tp, _Types...>;
+      return __v.index() == std::__find_uniq_type_in_pack<_Tp, _Types...>();
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr _Tp& get(variant<_Types...>& __v)
+    constexpr _Tp&
+    get(variant<_Types...>& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(__v);
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr _Tp&& get(variant<_Types...>&& __v)
+    constexpr _Tp&&
+    get(variant<_Types...>&& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	std::move(__v));
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(std::move(__v));
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr const _Tp& get(const variant<_Types...>& __v)
+    constexpr const _Tp&
+    get(const variant<_Types...>& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(__v);
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr const _Tp&& get(const variant<_Types...>&& __v)
+    constexpr const _Tp&&
+    get(const variant<_Types...>&& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	std::move(__v));
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(std::move(__v));
     }
 
   template<size_t _Np, typename... _Types>
@@ -1176,8 +1192,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	  __ptr);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get_if<__n>(__ptr);
     }
 
   template<typename _Tp, typename... _Types>
@@ -1187,8 +1203,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	  __ptr);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get_if<__n>(__ptr);
     }
 
   struct monostate { };
@@ -1271,6 +1287,7 @@ namespace __variant
     visit(_Visitor&&, _Variants&&...);
 
   template<typename... _Types>
+    _GLIBCXX20_CONSTEXPR
     inline enable_if_t<(is_move_constructible_v<_Types> && ...)
 			&& (is_swappable_v<_Types> && ...)>
     swap(variant<_Types...>& __lhs, variant<_Types...>& __rhs)
@@ -1328,10 +1345,8 @@ namespace __variant
     {
     private:
       template <typename... _UTypes, typename _Tp>
-	friend decltype(auto) __variant_cast(_Tp&&);
-      template<size_t _Np, typename _Variant, typename... _Args>
-	friend void __variant_construct_by_index(_Variant& __v,
-						 _Args&&... __args);
+	friend _GLIBCXX20_CONSTEXPR decltype(auto)
+	__variant_cast(_Tp&&);
 
       static_assert(sizeof...(_Types) > 0,
 		    "variant must have at least one alternative");
@@ -1356,17 +1371,17 @@ namespace __variant
 
       template<typename _Tp>
 	static constexpr size_t __accepted_index
-	  = __detail::__variant::__accepted_index<_Tp, variant>::value;
+	  = __detail::__variant::__accepted_index<_Tp, variant>;
 
       template<size_t _Np, typename = enable_if_t<(_Np < sizeof...(_Types))>>
-	using __to_type = variant_alternative_t<_Np, variant>;
+	using __to_type = typename _Nth_type<_Np, _Types...>::type;
 
       template<typename _Tp, typename = enable_if_t<__not_self<_Tp>>>
 	using __accepted_type = __to_type<__accepted_index<_Tp>>;
 
       template<typename _Tp>
-	static constexpr size_t __index_of =
-	  __detail::__variant::__index_of_v<_Tp, _Types...>;
+	static constexpr size_t __index_of
+	  = std::__find_uniq_type_in_pack<_Tp, _Types...>();
 
       using _Traits = __detail::__variant::_Traits<_Types...>;
 
@@ -1387,7 +1402,7 @@ namespace __variant
       variant(variant&&) = default;
       variant& operator=(const variant&) = default;
       variant& operator=(variant&&) = default;
-      ~variant() = default;
+      _GLIBCXX20_CONSTEXPR ~variant() = default;
 
       template<typename _Tp,
 	       typename = enable_if_t<sizeof...(_Types) != 0>,
@@ -1444,6 +1459,7 @@ namespace __variant
 	{ }
 
       template<typename _Tp>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<__exactly_once<__accepted_type<_Tp&&>>
 		    && is_constructible_v<__accepted_type<_Tp&&>, _Tp>
 		    && is_assignable_v<__accepted_type<_Tp&&>&, _Tp>,
@@ -1468,6 +1484,7 @@ namespace __variant
 	}
 
       template<typename _Tp, typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>,
 		    _Tp&>
 	emplace(_Args&&... __args)
@@ -1477,6 +1494,7 @@ namespace __variant
 	}
 
       template<typename _Tp, typename _Up, typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
 		    && __exactly_once<_Tp>,
 		    _Tp&>
@@ -1487,31 +1505,27 @@ namespace __variant
 	}
 
       template<size_t _Np, typename... _Args>
-	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
-				       _Args...>,
-		    variant_alternative_t<_Np, variant>&>
+	_GLIBCXX20_CONSTEXPR
+	enable_if_t<is_constructible_v<__to_type<_Np>, _Args...>,
+		    __to_type<_Np>&>
 	emplace(_Args&&... __args)
 	{
-	  static_assert(_Np < sizeof...(_Types),
-			"The index must be in [0, number of alternatives)");
-	  using type = variant_alternative_t<_Np, variant>;
+	  namespace __variant = std::__detail::__variant;
+	  using type = typename _Nth_type<_Np, _Types...>::type;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type, _Args...>)
 	    {
-	      this->_M_reset();
-	      __variant_construct_by_index<_Np>(*this,
-		  std::forward<_Args>(__args)...);
+	      __variant::__emplace<_Np>(*this, std::forward<_Args>(__args)...);
 	    }
 	  else if constexpr (is_scalar_v<type>)
 	    {
 	      // This might invoke a potentially-throwing conversion operator:
 	      const type __tmp(std::forward<_Args>(__args)...);
-	      // But these steps won't throw:
-	      this->_M_reset();
-	      __variant_construct_by_index<_Np>(*this, __tmp);
+	      // But this won't throw:
+	      __variant::__emplace<_Np>(*this, __tmp);
 	    }
-	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>()
+	  else if constexpr (__variant::_Never_valueless_alt<type>()
 	      && _Traits::_S_move_assign)
 	    {
 	      // This construction might throw:
@@ -1524,42 +1538,30 @@ namespace __variant
 	    {
 	      // This case only provides the basic exception-safety guarantee,
 	      // i.e. the variant can become valueless.
-	      this->_M_reset();
-	      __try
-		{
-		  __variant_construct_by_index<_Np>(*this,
-		    std::forward<_Args>(__args)...);
-		}
-	      __catch (...)
-		{
-		  using __index_type = decltype(this->_M_index);
-		  this->_M_index = static_cast<__index_type>(variant_npos);
-		  __throw_exception_again;
-		}
+	      __variant::__emplace<_Np>(*this, std::forward<_Args>(__args)...);
 	    }
 	  return std::get<_Np>(*this);
 	}
 
       template<size_t _Np, typename _Up, typename... _Args>
-	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
+	_GLIBCXX20_CONSTEXPR
+	enable_if_t<is_constructible_v<__to_type<_Np>,
 				       initializer_list<_Up>&, _Args...>,
-		    variant_alternative_t<_Np, variant>&>
+		    __to_type<_Np>&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
-	  static_assert(_Np < sizeof...(_Types),
-			"The index must be in [0, number of alternatives)");
-	  using type = variant_alternative_t<_Np, variant>;
+	  namespace __variant = std::__detail::__variant;
+	  using type = typename _Nth_type<_Np, _Types...>::type;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type,
 						   initializer_list<_Up>&,
 						   _Args...>)
 	    {
-	      this->_M_reset();
-	      __variant_construct_by_index<_Np>(*this, __il,
-		  std::forward<_Args>(__args)...);
+	      __variant::__emplace<_Np>(*this, __il,
+					std::forward<_Args>(__args)...);
 	    }
-	  else if constexpr (__detail::__variant::_Never_valueless_alt<type>()
+	  else if constexpr (__variant::_Never_valueless_alt<type>()
 	      && _Traits::_S_move_assign)
 	    {
 	      // This construction might throw:
@@ -1572,21 +1574,17 @@ namespace __variant
 	    {
 	      // This case only provides the basic exception-safety guarantee,
 	      // i.e. the variant can become valueless.
-	      this->_M_reset();
-	      __try
-		{
-		  __variant_construct_by_index<_Np>(*this, __il,
-		    std::forward<_Args>(__args)...);
-		}
-	      __catch (...)
-		{
-		  using __index_type = decltype(this->_M_index);
-		  this->_M_index = static_cast<__index_type>(variant_npos);
-		  __throw_exception_again;
-		}
+	      __variant::__emplace<_Np>(*this, __il,
+					std::forward<_Args>(__args)...);
 	    }
 	  return std::get<_Np>(*this);
 	}
+
+      template<size_t _Np, typename... _Args>
+	enable_if_t<!(_Np < sizeof...(_Types))> emplace(_Args&&...) = delete;
+
+      template<typename _Tp, typename... _Args>
+	enable_if_t<!__exactly_once<_Tp>> emplace(_Args&&...) = delete;
 
       constexpr bool valueless_by_exception() const noexcept
       { return !this->_M_valid(); }
@@ -1602,66 +1600,66 @@ namespace __variant
 	  return size_t(__index_type(this->_M_index + 1)) - 1;
       }
 
+      _GLIBCXX20_CONSTEXPR
       void
       swap(variant& __rhs)
       noexcept((__is_nothrow_swappable<_Types>::value && ...)
 	       && is_nothrow_move_constructible_v<variant>)
       {
-	__detail::__variant::__raw_idx_visit(
+	static_assert((is_move_constructible_v<_Types> && ...));
+
+	// Handle this here to simplify the visitation.
+	if (__rhs.valueless_by_exception()) [[__unlikely__]]
+	  {
+	    if (!this->valueless_by_exception()) [[__likely__]]
+	      __rhs.swap(*this);
+	    return;
+	  }
+
+	namespace __variant = __detail::__variant;
+
+	__variant::__raw_idx_visit(
 	  [this, &__rhs](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
-	    if constexpr (__rhs_index != variant_npos)
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j != variant_npos)
 	      {
-		if (this->index() == __rhs_index)
+		if (this->index() == __j)
 		  {
-		    auto& __this_mem =
-		      std::get<__rhs_index>(*this);
 		    using std::swap;
-		    swap(__this_mem, __rhs_mem);
+		    swap(std::get<__j>(*this), __rhs_mem);
 		  }
 		else
 		  {
-		    if (!this->valueless_by_exception()) [[__likely__]]
-		      {
-			auto __tmp(std::move(__rhs_mem));
-			__rhs = std::move(*this);
-			this->_M_destructive_move(__rhs_index,
-						  std::move(__tmp));
-		      }
+		    auto __tmp(std::move(__rhs_mem));
+
+		    if constexpr (_Traits::_S_trivial_move_assign)
+		      __rhs = std::move(*this);
 		    else
-		      {
-			this->_M_destructive_move(__rhs_index,
-						  std::move(__rhs_mem));
-			__rhs._M_reset();
-		      }
-		  }
-	      }
-	    else
-	      {
-		if (!this->valueless_by_exception()) [[__likely__]]
-		  {
-		    __rhs = std::move(*this);
-		    this->_M_reset();
+		      __variant::__raw_idx_visit(
+			[&__rhs](auto&& __this_mem, auto __this_index) mutable
+			{
+			  constexpr size_t __k = __this_index;
+			  if constexpr (__k != variant_npos)
+			    __variant::__emplace<__k>(__rhs,
+						      std::move(__this_mem));
+			}, *this);
+
+		    __variant::__emplace<__j>(*this, std::move(__tmp));
 		  }
 	      }
 	  }, __rhs);
       }
 
-    private:
-
 #if defined(__clang__) && __clang_major__ <= 7
     public:
       using _Base::_M_u; // See https://bugs.llvm.org/show_bug.cgi?id=31852
-    private:
 #endif
 
+    private:
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto)
 	__detail::__variant::__get(_Vp&& __v) noexcept;
-
-      template<typename _Vp>
-	friend void*
-	__detail::__variant::__get_storage(_Vp&& __v) noexcept;
 
 #define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
       template<typename... _Tp> \
@@ -1728,12 +1726,94 @@ namespace __variant
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      constexpr auto& __vtable = __detail::__variant::__gen_vtable<
-	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
+      // Get the silly case of visiting no variants out of the way first.
+      if constexpr (sizeof...(_Variants) == 0)
+	{
+	  if constexpr (is_void_v<_Result_type>)
+	    return (void) std::forward<_Visitor>(__visitor)();
+	  else
+	    return std::forward<_Visitor>(__visitor)();
+	}
+      else
+	{
+	  constexpr size_t __max = 11; // "These go to eleven."
 
-      auto __func_ptr = __vtable._M_access(__variants.index()...);
-      return (*__func_ptr)(std::forward<_Visitor>(__visitor),
-			   std::forward<_Variants>(__variants)...);
+	  // The type of the first variant in the pack.
+	  using _V0 = typename _Nth_type<0, _Variants...>::type;
+	  // The number of alternatives in that first variant.
+	  constexpr auto __n = variant_size_v<remove_reference_t<_V0>>;
+
+	  if constexpr (sizeof...(_Variants) > 1 || __n > __max)
+	    {
+	      // Use a jump table for the general case.
+	      constexpr auto& __vtable = __detail::__variant::__gen_vtable<
+		_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
+
+	      auto __func_ptr = __vtable._M_access(__variants.index()...);
+	      return (*__func_ptr)(std::forward<_Visitor>(__visitor),
+				   std::forward<_Variants>(__variants)...);
+	    }
+	  else // We have a single variant with a small number of alternatives.
+	    {
+	      // A name for the first variant in the pack.
+	      _V0& __v0
+		= [](_V0& __v, ...) -> _V0& { return __v; }(__variants...);
+
+	      using __detail::__variant::_Multi_array;
+	      using __detail::__variant::__gen_vtable_impl;
+	      using _Ma = _Multi_array<_Result_type (*)(_Visitor&&, _V0&&)>;
+
+#ifdef _GLIBCXX_DEBUG
+# define _GLIBCXX_VISIT_UNREACHABLE __builtin_trap
+#else
+# define _GLIBCXX_VISIT_UNREACHABLE __builtin_unreachable
+#endif
+
+#define _GLIBCXX_VISIT_CASE(N)						\
+  case N:								\
+  {									\
+    if constexpr (N < __n)						\
+      {									\
+	return __gen_vtable_impl<_Ma, index_sequence<N>>::		\
+	  __visit_invoke(std::forward<_Visitor>(__visitor),		\
+			 std::forward<_V0>(__v0));		\
+      }									\
+    else _GLIBCXX_VISIT_UNREACHABLE();					\
+  }
+
+	      switch (__v0.index())
+		{
+		  _GLIBCXX_VISIT_CASE(0)
+		  _GLIBCXX_VISIT_CASE(1)
+		  _GLIBCXX_VISIT_CASE(2)
+		  _GLIBCXX_VISIT_CASE(3)
+		  _GLIBCXX_VISIT_CASE(4)
+		  _GLIBCXX_VISIT_CASE(5)
+		  _GLIBCXX_VISIT_CASE(6)
+		  _GLIBCXX_VISIT_CASE(7)
+		  _GLIBCXX_VISIT_CASE(8)
+		  _GLIBCXX_VISIT_CASE(9)
+		  _GLIBCXX_VISIT_CASE(10)
+		case variant_npos:
+		  using __detail::__variant::__variant_idx_cookie;
+		  using __detail::__variant::__variant_cookie;
+		  if constexpr (is_same_v<_Result_type, __variant_idx_cookie>
+				|| is_same_v<_Result_type, __variant_cookie>)
+		    {
+		      using _Npos = index_sequence<variant_npos>;
+		      return __gen_vtable_impl<_Ma, _Npos>::
+			__visit_invoke(std::forward<_Visitor>(__visitor),
+				       std::forward<_V0>(__v0));
+		    }
+		  else
+		    _GLIBCXX_VISIT_UNREACHABLE();
+		default:
+		  _GLIBCXX_VISIT_UNREACHABLE();
+		}
+#undef _GLIBCXX_VISIT_CASE
+#undef _GLIBCXX_VISIT_UNREACHABLE
+	    }
+	}
     }
   /// @endcond
 
@@ -1741,7 +1821,9 @@ namespace __variant
     constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      if ((__variants.valueless_by_exception() || ...))
+      namespace __variant = std::__detail::__variant;
+
+      if ((__variant::__as(__variants).valueless_by_exception() || ...))
 	__throw_bad_variant_access("std::visit: variant is valueless");
 
       using _Result_type
@@ -1751,10 +1833,11 @@ namespace __variant
 
       if constexpr (sizeof...(_Variants) == 1)
 	{
+	  using _Vp = decltype(__variant::__as(std::declval<_Variants>()...));
+
 	  constexpr bool __visit_rettypes_match = __detail::__variant::
-	    __check_visitor_results<_Visitor, _Variants...>(
-	      std::make_index_sequence<
-	        std::variant_size<remove_reference_t<_Variants>...>::value>());
+	    __check_visitor_results<_Visitor, _Vp>(
+	      make_index_sequence<variant_size_v<remove_reference_t<_Vp>>>());
 	  if constexpr (!__visit_rettypes_match)
 	    {
 	      static_assert(__visit_rettypes_match,
@@ -1765,12 +1848,12 @@ namespace __variant
 	  else
 	    return std::__do_visit<_Tag>(
 	      std::forward<_Visitor>(__visitor),
-	      std::forward<_Variants>(__variants)...);
+	      static_cast<_Vp>(__variants)...);
 	}
       else
 	return std::__do_visit<_Tag>(
 	  std::forward<_Visitor>(__visitor),
-	  std::forward<_Variants>(__variants)...);
+	  __variant::__as(std::forward<_Variants>(__variants))...);
     }
 
 #if __cplusplus > 201703L
@@ -1778,11 +1861,13 @@ namespace __variant
     constexpr _Res
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      if ((__variants.valueless_by_exception() || ...))
+      namespace __variant = std::__detail::__variant;
+
+      if ((__variant::__as(__variants).valueless_by_exception() || ...))
 	__throw_bad_variant_access("std::visit<R>: variant is valueless");
 
       return std::__do_visit<_Res>(std::forward<_Visitor>(__visitor),
-				   std::forward<_Variants>(__variants)...);
+	  __variant::__as(std::forward<_Variants>(__variants))...);
     }
 #endif
 

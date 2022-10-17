@@ -4,7 +4,7 @@
    of memory allocated by calloc() even if one or more nul bytes are
    written into it.
    { dg-do compile }
-   { dg-options "-O2 -fdump-tree-optimized" } */
+   { dg-options "-O2 -fno-tree-vectorize -fdump-tree-optimized" } */
 
 unsigned n0, n1;
 

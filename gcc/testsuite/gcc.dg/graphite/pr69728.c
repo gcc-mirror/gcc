@@ -24,6 +24,4 @@ fn1 ()
    run into scheduling issues before here, not being able to handle
    empty domains.  */
 
-/* XFAILed by fix for PR86865.  */
-
-/* { dg-final { scan-tree-dump "loop nest optimized" "graphite" { xfail *-*-* } } }  */
+/* { dg-final { scan-tree-dump "loop nest optimized" "graphite" } } */

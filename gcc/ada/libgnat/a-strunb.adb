@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -505,8 +505,14 @@ package body Ada.Strings.Unbounded is
       --  Note: Don't try to free statically allocated null string
 
       if Object.Reference /= Null_String'Access then
-         Deallocate (Object.Reference);
-         Object.Reference := Null_Unbounded_String.Reference;
+         declare
+            Old : String_Access := Object.Reference;
+            --  The original reference cannot be null, so we must create a
+            --  copy which will become null when deallocated.
+         begin
+            Deallocate (Old);
+            Object.Reference := Null_Unbounded_String.Reference;
+         end;
          Object.Last := 0;
       end if;
    end Finalize;
@@ -715,7 +721,7 @@ package body Ada.Strings.Unbounded is
       Realloc_For_Chunk (Source, New_Item'Length);
 
       Source.Reference
-        (Before +  New_Item'Length .. Source.Last + New_Item'Length) :=
+        (Before + New_Item'Length .. Source.Last + New_Item'Length) :=
            Source.Reference (Before .. Source.Last);
 
       Source.Reference (Before .. Before + New_Item'Length - 1) := New_Item;
@@ -827,9 +833,13 @@ package body Ada.Strings.Unbounded is
             Tmp : constant String_Access :=
               new String (1 .. New_Rounded_Up_Size);
 
+            Old : String_Access := Source.Reference;
+            --  The original reference cannot be null, so we must create a copy
+            --  which will become null when deallocated.
+
          begin
             Tmp (1 .. Source.Last) := Source.Reference (1 .. Source.Last);
-            Free (Source.Reference);
+            Free (Old);
             Source.Reference := Tmp;
          end;
       end if;

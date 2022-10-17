@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail337.d(13): Error: static assert  `0` is false
-fail_compilation/fail337.d(26):        instantiated from here: bar!()
-fail_compilation/fail337.d(33):        100 recursive instantiations from here: foo!196
-fail_compilation/fail337.d(41):        253 recursive instantiations from here: baz!300
+fail_compilation/fail337.d(13): Error: static assert:  `0` is false
+fail_compilation/fail337.d(26):        instantiated from here: `bar!()`
+fail_compilation/fail337.d(33):        100 recursive instantiations from here: `foo!196`
+fail_compilation/fail337.d(41):        253 recursive instantiations from here: `baz!300`
 ---
 */
 

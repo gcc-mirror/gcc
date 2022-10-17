@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -300,12 +300,9 @@ package body Exp_Dist is
       NVList      : Entity_Id;
       Parameter   : Entity_Id;
       Constrained : Boolean;
-      RACW_Ctrl   : Boolean := False;
       Any         : Entity_Id) return Node_Id;
    --  Return a call to Add_Item to add the Any corresponding to the designated
    --  formal Parameter (with the indicated Constrained status) to NVList.
-   --  RACW_Ctrl must be set to True for controlling formals of distributed
-   --  object primitive operations.
 
    --------------------
    -- Stub_Structure --
@@ -1089,7 +1086,6 @@ package body Exp_Dist is
       NVList      : Entity_Id;
       Parameter   : Entity_Id;
       Constrained : Boolean;
-      RACW_Ctrl   : Boolean := False;
       Any         : Entity_Id) return Node_Id
    is
       Parameter_Name_String : String_Id;
@@ -1146,7 +1142,7 @@ package body Exp_Dist is
 
       Parameter_Name_String := String_From_Name_Buffer;
 
-      if RACW_Ctrl or else Nkind (Parameter) = N_Defining_Identifier then
+      if Nkind (Parameter) = N_Defining_Identifier then
 
          --  When the parameter passed to Add_Parameter_To_NVList is an
          --  Extra_Constrained parameter, Parameter is an N_Defining_
@@ -1424,6 +1420,7 @@ package body Exp_Dist is
               and then Chars (Current_Primitive) /= Name_uAlignment
               and then not
                 (Is_TSS (Current_Primitive, TSS_Deep_Finalize) or else
+                 Is_TSS (Current_Primitive, TSS_Put_Image)     or else
                  Is_TSS (Current_Primitive, TSS_Stream_Input)  or else
                  Is_TSS (Current_Primitive, TSS_Stream_Output) or else
                  Is_TSS (Current_Primitive, TSS_Stream_Read)   or else
@@ -2911,7 +2908,7 @@ package body Exp_Dist is
    ---------------------------------
 
    procedure Expand_Calling_Stubs_Bodies (Unit_Node : Node_Id) is
-      Spec  : constant Node_Id := Specification (Unit_Node);
+      Spec : constant Node_Id := Specification (Unit_Node);
    begin
       Add_Calling_Stubs_To_Declarations (Spec);
    end Expand_Calling_Stubs_Bodies;
@@ -8603,6 +8600,8 @@ package body Exp_Dist is
 
             Use_Opaque_Representation : Boolean;
 
+            Real_Rep : Node_Id;
+
          begin
             --  For a derived type, we can't go past the base type (to the
             --  parent type) here, because that would cause the attribute's
@@ -8637,10 +8636,10 @@ package body Exp_Dist is
             Use_Opaque_Representation := False;
 
             if Has_Stream_Attribute_Definition
-                 (Typ, TSS_Stream_Output, At_Any_Place => True)
+                 (Typ, TSS_Stream_Output, Real_Rep, At_Any_Place => True)
               or else
                Has_Stream_Attribute_Definition
-                 (Typ, TSS_Stream_Write, At_Any_Place => True)
+                 (Typ, TSS_Stream_Write, Real_Rep, At_Any_Place => True)
             then
                --  If user-defined stream attributes are specified for this
                --  type, use them and transmit data as an opaque sequence of
@@ -9441,6 +9440,8 @@ package body Exp_Dist is
             --  When True, use stream attributes and represent type as an
             --  opaque sequence of bytes.
 
+            Real_Rep : Node_Id;
+
          begin
             --  For a derived type, we can't go past the base type (to the
             --  parent type) here, because that would cause the attribute's
@@ -9495,10 +9496,10 @@ package body Exp_Dist is
             Use_Opaque_Representation := False;
 
             if Has_Stream_Attribute_Definition
-                 (Typ, TSS_Stream_Output, At_Any_Place => True)
+                 (Typ, TSS_Stream_Output, Real_Rep, At_Any_Place => True)
               or else
                Has_Stream_Attribute_Definition
-                 (Typ, TSS_Stream_Write,  At_Any_Place => True)
+                 (Typ, TSS_Stream_Write, Real_Rep, At_Any_Place => True)
             then
                --  If user-defined stream attributes are specified for this
                --  type, use them and transmit data as an opaque sequence of
@@ -10627,6 +10628,8 @@ package body Exp_Dist is
             Type_Name_Str    : String_Id;
             Type_Repo_Id_Str : String_Id;
 
+            Real_Rep : Node_Id;
+
          --  Start of processing for Build_TypeCode_Function
 
          begin
@@ -10660,10 +10663,10 @@ package body Exp_Dist is
               (Type_Name_Str, Type_Repo_Id_Str, Parameters);
 
             if Has_Stream_Attribute_Definition
-                 (Typ, TSS_Stream_Output, At_Any_Place => True)
+                 (Typ, TSS_Stream_Output, Real_Rep, At_Any_Place => True)
               or else
                Has_Stream_Attribute_Definition
-                 (Typ, TSS_Stream_Write, At_Any_Place => True)
+                 (Typ, TSS_Stream_Write, Real_Rep, At_Any_Place => True)
             then
                --  If user-defined stream attributes are specified for this
                --  type, use them and transmit data as an opaque sequence of

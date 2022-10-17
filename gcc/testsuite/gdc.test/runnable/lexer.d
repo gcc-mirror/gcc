@@ -1,5 +1,11 @@
 // REQUIRED_ARGS:
-
+/*
+TEST_OUTPUT:
+---
+runnable/lexer.d(81): Deprecation: `version( <integer> )` is deprecated, use version identifiers instead
+runnable/lexer.d(82): Deprecation: `debug( <integer> )` is deprecated, use debug identifiers instead
+---
+*/
 
 /*********************************************************/
 
@@ -53,7 +59,7 @@ void test7()
 }
 
 /*********************************************************/
-// 4633
+// https://issues.dlang.org/show_bug.cgi?id=4633
 
 template Types(alias v)
 {
@@ -71,7 +77,7 @@ void test8()
 
 /*********************************************************/
 
-// bug 6584
+// https://issues.dlang.org/show_bug.cgi?id=6584
 version(9223372036854775807){}
 debug(9223372036854775807){}
 

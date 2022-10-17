@@ -26,11 +26,12 @@ script_location = os.path.realpath(__file__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('location', metavar = 'dump_file',
-    help = 'Location with SPEC benchmarks')
+    help = 'Sub-folder with SPEC benchmarks (e.g. Programming/cpu2017/benchspec/CPU)')
 parser.add_argument('-s', '--sorting', dest = 'sorting',
     choices = ['branches', 'branch-hitrate', 'hitrate', 'coverage', 'name'],
     default = 'branches')
 parser.add_argument('-d', '--def-file', help = 'path to predict.def')
+parser.add_argument('-v', '--verbose', action = 'store_true', help = 'Print verbose informations')
 
 args = parser.parse_args()
 
@@ -53,12 +54,14 @@ for b in sorted(benchmarks):
     temp.close()
 
     print()
-    print(b)
+    print(f' {b} '.center(160, '='))
     sys.stdout.flush()
     p = [os.path.join(os.path.dirname(script_location), 'analyze_brprob.py'),
         temp.name, '--sorting', args.sorting]
-    if args.def_file != None:
+    if args.def_file:
         p += ['-d', args.def_file]
+    if args.verbose:
+        p.append('-v')
 
     p = subprocess.check_call(p)
     sys.stdout.flush()

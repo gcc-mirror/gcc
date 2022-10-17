@@ -1,4 +1,4 @@
-// 6999: inout in front of return type
+// https://issues.dlang.org/show_bug.cgi?id=6999: inout in front of return type
 
 struct A
 {

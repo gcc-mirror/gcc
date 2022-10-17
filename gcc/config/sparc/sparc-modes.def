@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for Sun SPARC.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -22,6 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* 128-bit floating point */
 FLOAT_MODE (TF, 16, ieee_quad_format);
+
+/* We need a 32-byte mode to return structures in the 64-bit ABI.  */
+INT_MODE (OI, 32);
 
 /* Add any extra modes needed to represent the condition code.
 

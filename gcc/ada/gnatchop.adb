@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -721,7 +721,7 @@ procedure Gnatchop is
       begin
          Parse_Token (Source, Parse_Ptr, Token_Ptr);
 
-         if Source'Last  + 1 - Token_Ptr < Literal'Length
+         if Source'Last + 1 - Token_Ptr < Literal'Length
            or else
              Source (Token_Ptr .. Token_Ptr + Literal'Length - 1) /= Literal
          then

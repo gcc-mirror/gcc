@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                     Copyright (C) 1996-2021, AdaCore                     --
+--                     Copyright (C) 1996-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -403,10 +403,11 @@ package System.Regpat is
    --  (e.g. case sensitivity,...).
 
    procedure Compile
-     (Matcher         : out Pattern_Matcher;
-      Expression      : String;
-      Final_Code_Size : out Program_Size;
-      Flags           : Regexp_Flags := No_Flags);
+     (Matcher              : out Pattern_Matcher;
+      Expression           : String;
+      Final_Code_Size      : out Program_Size;
+      Flags                : Regexp_Flags := No_Flags;
+      Error_When_Too_Small : Boolean := True);
    --  Compile a regular expression into internal code
 
    --  This procedure is significantly faster than the Compile function since
@@ -426,7 +427,25 @@ package System.Regpat is
    --  expression.
    --
    --  This function raises Storage_Error if Matcher is too small to hold
-   --  the resulting code (i.e. Matcher.Size has too small a value).
+   --  the resulting code (i.e. Matcher.Size has too small a value) only when
+   --  the paramter Error_When_Too_Small is set to True. Otherwise, no error
+   --  will be raised and the required size will be placed in the
+   --  Final_Code_Size parameter.
+   --
+   --  Thus when Error_When_Too_Small is specified as false a check will need
+   --  to be made to ensure successful compilation - as in:
+   --
+   --     ...
+   --     Compile
+   --       (Matcher, Expr, Code_Size, Flags, Error_When_Too_Small => False);
+   --
+   --     if Matcher.Size < Code_Size then
+   --        declare
+   --           New_Matcher : Pattern_Matcher (1..Code_Size);
+   --        begin
+   --           Compile (New_Matcher, Expr, Code_Size, Flags);
+   --        end;
+   --     end if;
    --
    --  Expression_Error is raised if the string Expression does not contain
    --  a valid regular expression.
@@ -482,18 +501,17 @@ package System.Regpat is
    --    Data_First is the lower bound for the match, i.e. Data (Data_First)
    --    will be the first character to be examined. If Data_First is set to
    --    the special value of -1 (the default), then the first character to
-   --    be examined is Data (Data_First). However, the regular expression
-   --    character ^ (start of string) still refers to the first character
+   --    be examined is Data (Data'First). However, the regular expression
+   --    character ^ (start of string) always refers to the first character
    --    of the full string (Data (Data'First)), which is why there is a
    --    separate mechanism for specifying Data_First.
 
    --    Data_Last is the upper bound for the match, i.e. Data (Data_Last)
    --    will be the last character to be examined. If Data_Last is set to
    --    the special value of Positive'Last (the default), then the last
-   --    character to be examined is Data (Data_Last). However, the regular
-   --    expression character $ (end of string) still refers to the last
-   --    character of the full string (Data (Data'Last)), which is why there
-   --    is a separate mechanism for specifying Data_Last.
+   --    character to be examined is Data (Data'Last). However, the regular
+   --    expression character $ (end of string) always refers to the last
+   --    character of the full string (Data (Data'Last)).
 
    --    Note: the use of Data_First and Data_Last is not equivalent to
    --    simply passing a slice as Expression because of the handling of
@@ -640,10 +658,10 @@ private
       Paren_Count      : Natural      := 0;          --  # paren groups
       Flags            : Regexp_Flags := No_Flags;
       Program          : Program_Data (Program_First .. Size) :=
-                           (others => ASCII.NUL);
+                           [others => ASCII.NUL];
    end record;
 
    Never_Match : constant Pattern_Matcher :=
-      (0, ASCII.NUL, False, 0, 0, 0, No_Flags, (others => ASCII.NUL));
+      (0, ASCII.NUL, False, 0, 0, 0, No_Flags, [others => ASCII.NUL]);
 
 end System.Regpat;

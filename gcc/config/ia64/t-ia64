@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2021 Free Software Foundation, Inc.
+# Copyright (C) 2000-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,13 +16,13 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
+ia64-c.o: $(srcdir)/config/ia64/ia64-c.cc $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) $(CPPLIB_H) $(C_COMMON_H) $(C_PRAGMA_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/ia64/ia64-c.c
+		$(srcdir)/config/ia64/ia64-c.cc
 
 # genattrtab generates very long string literals.
 insn-attrtab.o-warn = -Wno-error
 
-ia64.o: $(srcdir)/config/ia64/ia64.c debug.h $(PARAMS_H) sel-sched.h reload.h \
+ia64.o: $(srcdir)/config/ia64/ia64.cc debug.h $(PARAMS_H) sel-sched.h reload.h \
 	$(OPTS_H) dumpfile.h $(HASH_TABLE_H)

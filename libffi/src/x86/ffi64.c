@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
-   ffi64.c - Copyright (c) 2013  The Written Word, Inc.
-             Copyright (c) 2011  Anthony Green
+   ffi64.c - Copyright (c) 2011, 2018  Anthony Green
+             Copyright (c) 2013  The Written Word, Inc.
              Copyright (c) 2008, 2010  Red Hat, Inc.
              Copyright (c) 2002, 2007  Bo Thorsen <bo@suse.de>
 
@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <tramp.h>
 #include "internal64.h"
 
 #ifdef __x86_64__
@@ -217,10 +218,10 @@ classify_argument (ffi_type *type, enum x86_64_reg_class classes[],
     case FFI_TYPE_STRUCT:
       {
 	const size_t UNITS_PER_WORD = 8;
-	size_t words = (type->size + byte_offset + UNITS_PER_WORD - 1)
-		       / UNITS_PER_WORD;
+        size_t words = (type->size + byte_offset + UNITS_PER_WORD - 1)
+                       / UNITS_PER_WORD;
 	ffi_type **ptr;
-	int i;
+	unsigned int i;
 	enum x86_64_reg_class subclasses[MAX_CLASSES];
 
 	/* If the struct is larger than 32 bytes, pass it on the stack.  */
@@ -244,14 +245,15 @@ classify_argument (ffi_type *type, enum x86_64_reg_class classes[],
 	  {
 	    size_t num, pos;
 
-	    byte_offset = ALIGN (byte_offset, (*ptr)->alignment);
+	    byte_offset = FFI_ALIGN (byte_offset, (*ptr)->alignment);
 
 	    num = classify_argument (*ptr, subclasses, byte_offset % 8);
 	    if (num == 0)
 	      return 0;
-	    pos = byte_offset / 8;
-	    for (i = 0; i < num && (i + pos) < words; i++)
+            pos = byte_offset / 8;
+            for (i = 0; i < num && (i + pos) < words; i++)
 	      {
+		size_t pos = byte_offset / 8;
 		classes[i + pos] =
 		  merge_classes (subclasses[i], classes[i + pos]);
 	      }
@@ -283,7 +285,7 @@ classify_argument (ffi_type *type, enum x86_64_reg_class classes[],
 
 	    /* The X86_64_SSEUP_CLASS should be always preceded by
 	       X86_64_SSE_CLASS or X86_64_SSEUP_CLASS.  */
-	    if (classes[i] == X86_64_SSEUP_CLASS
+	    if (i > 1 && classes[i] == X86_64_SSEUP_CLASS
 		&& classes[i - 1] != X86_64_SSE_CLASS
 		&& classes[i - 1] != X86_64_SSEUP_CLASS)
 	      {
@@ -294,7 +296,7 @@ classify_argument (ffi_type *type, enum x86_64_reg_class classes[],
 
 	    /*  If X86_64_X87UP_CLASS isn't preceded by X86_64_X87_CLASS,
 		everything should be passed in memory.  */
-	    if (classes[i] == X86_64_X87UP_CLASS
+	    if (i > 1 && classes[i] == X86_64_X87UP_CLASS
 		&& (classes[i - 1] != X86_64_X87_CLASS))
 	      {
 		/* The first one should never be X86_64_X87UP_CLASS.  */
@@ -351,7 +353,8 @@ examine_argument (ffi_type *type, enum x86_64_reg_class classes[MAX_CLASSES],
 		  _Bool in_return, int *pngpr, int *pnsse)
 {
   size_t n;
-  int i, ngpr, nsse;
+  unsigned int i;
+  int ngpr, nsse;
 
   n = classify_argument (type, classes, 0);
   if (n == 0)
@@ -389,14 +392,24 @@ examine_argument (ffi_type *type, enum x86_64_reg_class classes[MAX_CLASSES],
 
 /* Perform machine dependent cif processing.  */
 
-ffi_status
+#ifndef __ILP32__
+extern ffi_status
+ffi_prep_cif_machdep_efi64(ffi_cif *cif);
+#endif
+
+ffi_status FFI_HIDDEN
 ffi_prep_cif_machdep (ffi_cif *cif)
 {
-  int gprcount, ssecount, i, avn, ngpr, nsse, flags;
+  int gprcount, ssecount, i, avn, ngpr, nsse;
+  unsigned flags;
   enum x86_64_reg_class classes[MAX_CLASSES];
   size_t bytes, n, rtype_size;
   ffi_type *rtype;
 
+#ifndef __ILP32__
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
+    return ffi_prep_cif_machdep_efi64(cif);
+#endif
   if (cif->abi != FFI_UNIX64)
     return FFI_BAD_ABI;
 
@@ -441,9 +454,11 @@ ffi_prep_cif_machdep (ffi_cif *cif)
     case FFI_TYPE_DOUBLE:
       flags = UNIX64_RET_XMM64;
       break;
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
     case FFI_TYPE_LONGDOUBLE:
       flags = UNIX64_RET_X87;
       break;
+#endif
     case FFI_TYPE_STRUCT:
       n = examine_argument (cif->rtype, classes, 1, &ngpr, &nsse);
       if (n == 0)
@@ -489,7 +504,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 	case FFI_TYPE_SINT32:
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
-	  flags = UNIX64_RET_ST_RAX_RDX | (rtype_size << UNIX64_SIZE_SHIFT);
+	  flags = UNIX64_RET_ST_RAX_RDX | ((unsigned) rtype_size << UNIX64_SIZE_SHIFT);
 	  break;
 	case FFI_TYPE_FLOAT:
 	  flags = UNIX64_RET_XMM64;
@@ -524,7 +539,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 	  if (align < 8)
 	    align = 8;
 
-	  bytes = ALIGN (bytes, align);
+	  bytes = FFI_ALIGN (bytes, align);
 	  bytes += cif->arg_types[i]->size;
 	}
       else
@@ -537,7 +552,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
     flags |= UNIX64_FLAG_XMM_ARGS;
 
   cif->flags = flags;
-  cif->bytes = ALIGN (bytes, 8);
+  cif->bytes = (unsigned) FFI_ALIGN (bytes, 8);
 
   return FFI_OK;
 }
@@ -599,7 +614,7 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
 	    align = 8;
 
 	  /* Pass this argument in memory.  */
-	  argp = (void *) ALIGN (argp, align);
+	  argp = (void *) FFI_ALIGN (argp, align);
 	  memcpy (argp, avalue[i], size);
 	  argp += size;
 	}
@@ -607,7 +622,7 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
 	{
 	  /* The argument is passed entirely in registers.  */
 	  char *a = (char *) avalue[i];
-	  int j;
+	  unsigned int j;
 
 	  for (j = 0; j < n; j++, a += 8, size -= 8)
 	    {
@@ -641,10 +656,10 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
 		  break;
 		case X86_64_SSE_CLASS:
 		case X86_64_SSEDF_CLASS:
-		  reg_args->sse[ssecount++].i64 = *(UINT64 *) a;
+		  memcpy (&reg_args->sse[ssecount++].i64, a, sizeof(UINT64));
 		  break;
 		case X86_64_SSESF_CLASS:
-		  reg_args->sse[ssecount++].i32 = *(UINT32 *) a;
+		  memcpy (&reg_args->sse[ssecount++].i32, a, sizeof(UINT32));
 		  break;
 		default:
 		  abort();
@@ -658,21 +673,63 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
 		   flags, rvalue, fn);
 }
 
+#ifndef __ILP32__
+extern void
+ffi_call_efi64(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue);
+#endif
+
 void
 ffi_call (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
+#ifndef __ILP32__
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
+    {
+      ffi_call_efi64(cif, fn, rvalue, avalue);
+      return;
+    }
+#endif
   ffi_call_int (cif, fn, rvalue, avalue, NULL);
 }
+
+#ifdef FFI_GO_CLOSURES
+
+#ifndef __ILP32__
+extern void
+ffi_call_go_efi64(ffi_cif *cif, void (*fn)(void), void *rvalue,
+		  void **avalue, void *closure);
+#endif
 
 void
 ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue,
 	     void **avalue, void *closure)
 {
+#ifndef __ILP32__
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
+    {
+      ffi_call_go_efi64(cif, fn, rvalue, avalue, closure);
+      return;
+    }
+#endif
   ffi_call_int (cif, fn, rvalue, avalue, closure);
 }
 
+#endif /* FFI_GO_CLOSURES */
+
 extern void ffi_closure_unix64(void) FFI_HIDDEN;
 extern void ffi_closure_unix64_sse(void) FFI_HIDDEN;
+#if defined(FFI_EXEC_STATIC_TRAMP)
+extern void ffi_closure_unix64_alt(void) FFI_HIDDEN;
+extern void ffi_closure_unix64_sse_alt(void) FFI_HIDDEN;
+#endif
+
+#ifndef __ILP32__
+extern ffi_status
+ffi_prep_closure_loc_efi64(ffi_closure* closure,
+			   ffi_cif* cif,
+			   void (*fun)(ffi_cif*, void*, void**, void*),
+			   void *user_data,
+			   void *codeloc);
+#endif
 
 ffi_status
 ffi_prep_closure_loc (ffi_closure* closure,
@@ -681,17 +738,23 @@ ffi_prep_closure_loc (ffi_closure* closure,
 		      void *user_data,
 		      void *codeloc)
 {
-  static const unsigned char trampoline[16] = {
-    /* leaq  -0x7(%rip),%r10   # 0x0  */
-    0x4c, 0x8d, 0x15, 0xf9, 0xff, 0xff, 0xff,
-    /* jmpq  *0x3(%rip)        # 0x10 */
-    0xff, 0x25, 0x03, 0x00, 0x00, 0x00,
-    /* nopl  (%rax) */
-    0x0f, 0x1f, 0x00
+  static const unsigned char trampoline[24] = {
+    /* endbr64 */
+    0xf3, 0x0f, 0x1e, 0xfa,
+    /* leaq  -0xb(%rip),%r10   # 0x0  */
+    0x4c, 0x8d, 0x15, 0xf5, 0xff, 0xff, 0xff,
+    /* jmpq  *0x7(%rip)        # 0x18 */
+    0xff, 0x25, 0x07, 0x00, 0x00, 0x00,
+    /* nopl  0(%rax) */
+    0x0f, 0x1f, 0x80, 0x00, 0x00, 0x00, 0x00
   };
   void (*dest)(void);
   char *tramp = closure->tramp;
 
+#ifndef __ILP32__
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
+    return ffi_prep_closure_loc_efi64(closure, cif, fun, user_data, codeloc);
+#endif
   if (cif->abi != FFI_UNIX64)
     return FFI_BAD_ABI;
 
@@ -700,9 +763,24 @@ ffi_prep_closure_loc (ffi_closure* closure,
   else
     dest = ffi_closure_unix64;
 
-  memcpy (tramp, trampoline, sizeof(trampoline));
-  *(UINT64 *)(tramp + 16) = (uintptr_t)dest;
+#if defined(FFI_EXEC_STATIC_TRAMP)
+  if (ffi_tramp_is_present(closure))
+    {
+      /* Initialize the static trampoline's parameters. */
+      if (dest == ffi_closure_unix64_sse)
+        dest = ffi_closure_unix64_sse_alt;
+      else
+        dest = ffi_closure_unix64_alt;
+      ffi_tramp_set_parms (closure->ftramp, dest, closure);
+      goto out;
+    }
+#endif
 
+  /* Initialize the dynamic trampoline. */
+  memcpy (tramp, trampoline, sizeof(trampoline));
+  *(UINT64 *)(tramp + sizeof (trampoline)) = (uintptr_t)dest;
+
+out:
   closure->cif = cif;
   closure->fun = fun;
   closure->user_data = user_data;
@@ -757,7 +835,7 @@ ffi_closure_unix64_inner(ffi_cif *cif,
 	    align = 8;
 
 	  /* Pass this argument in memory.  */
-	  argp = (void *) ALIGN (argp, align);
+	  argp = (void *) FFI_ALIGN (argp, align);
 	  avalue[i] = argp;
 	  argp += arg_types[i]->size;
 	}
@@ -783,7 +861,7 @@ ffi_closure_unix64_inner(ffi_cif *cif,
       else
 	{
 	  char *a = alloca (16);
-	  int j;
+	  unsigned int j;
 
 	  avalue[i] = a;
 	  for (j = 0; j < n; j++, a += 8)
@@ -803,13 +881,25 @@ ffi_closure_unix64_inner(ffi_cif *cif,
   return flags;
 }
 
+#ifdef FFI_GO_CLOSURES
+
 extern void ffi_go_closure_unix64(void) FFI_HIDDEN;
 extern void ffi_go_closure_unix64_sse(void) FFI_HIDDEN;
+
+#ifndef __ILP32__
+extern ffi_status
+ffi_prep_go_closure_efi64(ffi_go_closure* closure, ffi_cif* cif,
+			  void (*fun)(ffi_cif*, void*, void**, void*));
+#endif
 
 ffi_status
 ffi_prep_go_closure (ffi_go_closure* closure, ffi_cif* cif,
 		     void (*fun)(ffi_cif*, void*, void**, void*))
 {
+#ifndef __ILP32__
+  if (cif->abi == FFI_EFI64 || cif->abi == FFI_GNUW64)
+    return ffi_prep_go_closure_efi64(closure, cif, fun);
+#endif
   if (cif->abi != FFI_UNIX64)
     return FFI_BAD_ABI;
 
@@ -821,5 +911,19 @@ ffi_prep_go_closure (ffi_go_closure* closure, ffi_cif* cif,
 
   return FFI_OK;
 }
+
+#endif /* FFI_GO_CLOSURES */
+
+#if defined(FFI_EXEC_STATIC_TRAMP)
+void *
+ffi_tramp_arch (size_t *tramp_size, size_t *map_size)
+{
+  extern void *trampoline_code_table;
+
+  *map_size = UNIX64_TRAMP_MAP_SIZE;
+  *tramp_size = UNIX64_TRAMP_SIZE;
+  return &trampoline_code_table;
+}
+#endif
 
 #endif /* __x86_64__ */

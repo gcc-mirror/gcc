@@ -1,7 +1,9 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
+
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,23 +67,31 @@ void test06()
   function<int()> f(ref(x));
   VERIFY( f );
   VERIFY( f() == 17 );
+#if __cpp_rtti
   VERIFY( f.target_type() == typeid(std::ref(x)) ); // LWG 2781
+#endif
   VERIFY( wraps(f, x) );
 
   function<int()> g = f;
   VERIFY( g );
   VERIFY( g() == 17 );
+#if __cpp_rtti
   VERIFY( g.target_type() == f.target_type() );
+#endif
   VERIFY( wraps(g, x) );
 
   function<int()> h = cref(x);
   VERIFY( h );
   VERIFY( h() == 42 );
+#if __cpp_rtti
   VERIFY( h.target_type() == typeid(std::cref(x)) );
+#endif
   VERIFY( wraps(h, as_const(x)) );
 
   const function<int()>& hc = h;
+#if __cpp_rtti
   VERIFY( hc.target_type() == h.target_type() );
+#endif
   VERIFY( wraps(hc, as_const(x)) );
 }
 

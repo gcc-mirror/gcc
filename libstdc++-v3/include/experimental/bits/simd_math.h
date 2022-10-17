@@ -1,6 +1,6 @@
 // Math overloads for simd -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,6 +60,7 @@ template <typename _DoubleR, typename _Tp, typename _Abi>
 template <typename _Tp, typename _Abi, typename...,                            \
 	  typename _R = _Math_return_type_t<                                   \
 	    decltype(std::__name(declval<double>())), _Tp, _Abi>>              \
+  _GLIBCXX_SIMD_ALWAYS_INLINE                                                  \
   enable_if_t<is_floating_point_v<_Tp>, _R>                                    \
   __name(simd<_Tp, _Abi> __x)                                                  \
   { return {__private_init, _Abi::_SimdImpl::_S_##__name(__data(__x))}; }
@@ -125,6 +126,7 @@ template <                                                                     \
   typename _Arg2 = _Extra_argument_type<__arg2, _Tp, _Abi>,                    \
   typename _R = _Math_return_type_t<                                           \
     decltype(std::__name(declval<double>(), _Arg2::declval())), _Tp, _Abi>>    \
+  _GLIBCXX_SIMD_ALWAYS_INLINE                                                  \
   enable_if_t<is_floating_point_v<_Tp>, _R>                                    \
   __name(const simd<_Tp, _Abi>& __x, const typename _Arg2::type& __y)          \
   {                                                                            \
@@ -155,6 +157,7 @@ template <typename _Tp, typename _Abi, typename...,                            \
 	    decltype(std::__name(declval<double>(), _Arg2::declval(),          \
 				 _Arg3::declval())),                           \
 	    _Tp, _Abi>>                                                        \
+  _GLIBCXX_SIMD_ALWAYS_INLINE                                                  \
   enable_if_t<is_floating_point_v<_Tp>, _R>                                    \
   __name(const simd<_Tp, _Abi>& __x, const typename _Arg2::type& __y,          \
 	 const typename _Arg3::type& __z)                                      \
@@ -399,6 +402,7 @@ template <typename _Abi>
 // }}}
 // __extract_exponent_as_int {{{
 template <typename _Tp, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC
   rebind_simd_t<int, simd<_Tp, _Abi>>
   __extract_exponent_as_int(const simd<_Tp, _Abi>& __v)
   {
@@ -422,7 +426,8 @@ template <typename ImplFun, typename FallbackFun, typename... _Args>
     -> decltype(__impl_fun(static_cast<_Args&&>(__args)...))
   { return __impl_fun(static_cast<_Args&&>(__args)...); }
 
-template <typename ImplFun, typename FallbackFun, typename... _Args>
+template <typename ImplFun, typename FallbackFun, typename... _Args,
+	  typename = __detail::__odr_helper>
   inline auto
   __impl_or_fallback_dispatch(float, ImplFun&&, FallbackFun&& __fallback_fun,
 			      _Args&&... __args)
@@ -458,7 +463,7 @@ _GLIBCXX_SIMD_MATH_CALL2_(atan2, _Tp)
  * Fix sign.
  */
 // cos{{{
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   cos(const simd<_Tp, _Abi>& __x)
   {
@@ -504,7 +509,7 @@ template <typename _Tp>
 
 //}}}
 // sin{{{
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   sin(const simd<_Tp, _Abi>& __x)
   {
@@ -566,6 +571,7 @@ _GLIBCXX_SIMD_MATH_CALL_(expm1)
 // frexp {{{
 #if _GLIBCXX_SIMD_X86INTRIN
 template <typename _Tp, size_t _Np>
+  _GLIBCXX_SIMD_INTRINSIC
   _SimdWrapper<_Tp, _Np>
   __getexp(_SimdWrapper<_Tp, _Np> __x)
   {
@@ -594,6 +600,7 @@ template <typename _Tp, size_t _Np>
   }
 
 template <typename _Tp, size_t _Np>
+  _GLIBCXX_SIMD_INTRINSIC
   _SimdWrapper<_Tp, _Np>
   __getmant_avx512(_SimdWrapper<_Tp, _Np> __x)
   {
@@ -634,7 +641,7 @@ template <typename _Tp, size_t _Np>
  * The return value will be in the range [0.5, 1.0[
  * The @p __e value will be an integer defining the power-of-two exponent
  */
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   frexp(const simd<_Tp, _Abi>& __x, _Samesize<int, simd<_Tp, _Abi>>* __exp)
   {
@@ -739,7 +746,7 @@ _GLIBCXX_SIMD_MATH_CALL_(log2)
 
 //}}}
 // logb{{{
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point<_Tp>::value, simd<_Tp, _Abi>>
   logb(const simd<_Tp, _Abi>& __x)
   {
@@ -814,7 +821,7 @@ template <typename _Tp, typename _Abi>
   }
 
 //}}}
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   modf(const simd<_Tp, _Abi>& __x, simd<_Tp, _Abi>* __iptr)
   {
@@ -848,6 +855,7 @@ _GLIBCXX_SIMD_MATH_CALL_(fabs)
 // [parallel.simd.math] only asks for is_floating_point_v<_Tp> and forgot to
 // allow signed integral _Tp
 template <typename _Tp, typename _Abi>
+  _GLIBCXX_SIMD_ALWAYS_INLINE
   enable_if_t<!is_floating_point_v<_Tp> && is_signed_v<_Tp>, simd<_Tp, _Abi>>
   abs(const simd<_Tp, _Abi>& __x)
   { return {__private_init, _Abi::_SimdImpl::_S_abs(__data(__x))}; }
@@ -930,7 +938,7 @@ template <typename _R, typename _ToApply, typename _Tp, typename... _Tps>
 	      __data(__args)...)};
   }
 
-template <typename _VV>
+template <typename _VV, typename = __detail::__odr_helper>
   __remove_cvref_t<_VV>
   __hypot(_VV __x, _VV __y)
   {
@@ -1069,7 +1077,7 @@ template <typename _Tp, typename _Abi>
 
 _GLIBCXX_SIMD_CVTING2(hypot)
 
-  template <typename _VV>
+  template <typename _VV, typename = __detail::__odr_helper>
   __remove_cvref_t<_VV>
   __hypot(_VV __x, _VV __y, _VV __z)
   {
@@ -1271,7 +1279,7 @@ _GLIBCXX_SIMD_MATH_CALL2_(fmod, _Tp)
 _GLIBCXX_SIMD_MATH_CALL2_(remainder, _Tp)
 _GLIBCXX_SIMD_MATH_CALL3_(remquo, _Tp, int*)
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   copysign(const simd<_Tp, _Abi>& __x, const simd<_Tp, _Abi>& __y)
   {
@@ -1303,12 +1311,14 @@ _GLIBCXX_SIMD_MATH_CALL_(isfinite)
 // `int isinf(double)`.
 template <typename _Tp, typename _Abi, typename...,
 	  typename _R = _Math_return_type_t<bool, _Tp, _Abi>>
+  _GLIBCXX_SIMD_ALWAYS_INLINE
   enable_if_t<is_floating_point_v<_Tp>, _R>
   isinf(simd<_Tp, _Abi> __x)
   { return {__private_init, _Abi::_SimdImpl::_S_isinf(__data(__x))}; }
 
 template <typename _Tp, typename _Abi, typename...,
 	  typename _R = _Math_return_type_t<bool, _Tp, _Abi>>
+  _GLIBCXX_SIMD_ALWAYS_INLINE
   enable_if_t<is_floating_point_v<_Tp>, _R>
   isnan(simd<_Tp, _Abi> __x)
   { return {__private_init, _Abi::_SimdImpl::_S_isnan(__data(__x))}; }
@@ -1316,6 +1326,7 @@ template <typename _Tp, typename _Abi, typename...,
 _GLIBCXX_SIMD_MATH_CALL_(isnormal)
 
 template <typename..., typename _Tp, typename _Abi>
+  _GLIBCXX_SIMD_ALWAYS_INLINE
   simd_mask<_Tp, _Abi>
   signbit(simd<_Tp, _Abi> __x)
   {
@@ -1363,7 +1374,7 @@ simd_div_t<__llongv<_Abi>> div(__llongv<_Abi> numer,
 */
 
 // special math {{{
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   assoc_laguerre(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 		 const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __m,
@@ -1374,7 +1385,7 @@ template <typename _Tp, typename _Abi>
     });
   }
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   assoc_legendre(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 		 const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __m,
@@ -1398,7 +1409,7 @@ _GLIBCXX_SIMD_MATH_CALL2_(ellint_2, _Tp)
 _GLIBCXX_SIMD_MATH_CALL3_(ellint_3, _Tp, _Tp)
 _GLIBCXX_SIMD_MATH_CALL_(expint)
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   hermite(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	  const simd<_Tp, _Abi>& __x)
@@ -1407,7 +1418,7 @@ template <typename _Tp, typename _Abi>
       [&](auto __i) { return std::hermite(__n[__i], __x[__i]); });
   }
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   laguerre(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	   const simd<_Tp, _Abi>& __x)
@@ -1416,7 +1427,7 @@ template <typename _Tp, typename _Abi>
       [&](auto __i) { return std::laguerre(__n[__i], __x[__i]); });
   }
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   legendre(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	   const simd<_Tp, _Abi>& __x)
@@ -1427,7 +1438,7 @@ template <typename _Tp, typename _Abi>
 
 _GLIBCXX_SIMD_MATH_CALL_(riemann_zeta)
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   sph_bessel(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	     const simd<_Tp, _Abi>& __x)
@@ -1436,7 +1447,7 @@ template <typename _Tp, typename _Abi>
       [&](auto __i) { return std::sph_bessel(__n[__i], __x[__i]); });
   }
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   sph_legendre(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __l,
 	       const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __m,
@@ -1447,7 +1458,7 @@ template <typename _Tp, typename _Abi>
     });
   }
 
-template <typename _Tp, typename _Abi>
+template <typename _Tp, typename _Abi, typename = __detail::__odr_helper>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   sph_neumann(const fixed_size_simd<unsigned, simd_size_v<_Tp, _Abi>>& __n,
 	      const simd<_Tp, _Abi>& __x)

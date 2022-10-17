@@ -1,6 +1,6 @@
 // Reference-counted versatile string base -*- C++ -*-
 
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,8 @@
 
 #ifndef _RC_STRING_BASE_H
 #define _RC_STRING_BASE_H 1
+
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
 #include <ext/atomicity.h>
 #include <ext/alloc_traits.h>
@@ -719,7 +721,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     inline bool
     __rc_string_base<wchar_t, std::char_traits<wchar_t>,
@@ -730,7 +731,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return true;
       return false;
     }
-#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

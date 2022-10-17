@@ -12,4 +12,3 @@ template DataStreamability(T)
        printf("hallo\n");
      }
 }
-

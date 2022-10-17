@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice14621.d(22): Error: static assert  `false` is false
-fail_compilation/ice14621.d(28):        instantiated from here: erroneousTemplateInstantiation!()
+fail_compilation/ice14621.d(22): Error: static assert:  `false` is false
+fail_compilation/ice14621.d(28):        instantiated from here: `erroneousTemplateInstantiation!()`
 ---
 */
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,7 +311,7 @@ package body Prepcomp is
 
          --  Check the switches that may follow
 
-         while Token /= Tok_End_Of_Line and then Token /= Tok_EOF loop
+         while Token not in Tok_End_Of_Line | Tok_EOF loop
             if Token /= Tok_Minus then
                Error_Msg -- CODEFIX
                  ("`'-` expected", Token_Ptr);
@@ -755,7 +755,7 @@ package body Prepcomp is
    begin
       Set_Ignore_Errors (To => True);
 
-      while Token /= Tok_End_Of_Line and then Token /= Tok_EOF loop
+      while Token not in Tok_End_Of_Line | Tok_EOF loop
          Scan;
       end loop;
 

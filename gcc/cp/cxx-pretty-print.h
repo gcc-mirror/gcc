@@ -1,5 +1,5 @@
 /* Interface for the GNU C++ pretty-printer.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -34,27 +34,27 @@ class cxx_pretty_printer : public c_pretty_printer
 public:
   cxx_pretty_printer ();
 
-  pretty_printer *clone () const OVERRIDE;
+  pretty_printer *clone () const override;
 
-  void constant (tree);
-  void id_expression (tree);
-  void primary_expression (tree);
-  void postfix_expression (tree);
-  void unary_expression (tree);
-  void multiplicative_expression (tree);
-  void conditional_expression (tree);
-  void assignment_expression (tree);
-  void expression (tree);
-  void type_id (tree);
-  void statement (tree);
-  void declaration (tree);
-  void declaration_specifiers (tree);
-  void simple_type_specifier (tree);
-  void function_specifier (tree);
-  void declarator (tree);
-  void direct_declarator (tree);
-  void abstract_declarator (tree);
-  void direct_abstract_declarator (tree);
+  void constant (tree) final override;
+  void id_expression (tree) final override;
+  void primary_expression (tree) final override;
+  void postfix_expression (tree) final override;
+  void unary_expression (tree) final override;
+  void multiplicative_expression (tree) final override;
+  void conditional_expression (tree) final override;
+  void assignment_expression (tree) final override;
+  void expression (tree) final override;
+  void type_id (tree) final override;
+  void statement (tree) final override;
+  void declaration (tree) final override;
+  void declaration_specifiers (tree) final override;
+  void simple_type_specifier (tree) final override;
+  void function_specifier (tree) final override;
+  void declarator (tree) final override;
+  void direct_declarator (tree) final override;
+  void abstract_declarator (tree) final override;
+  void direct_abstract_declarator (tree) final override;
 
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;
@@ -90,7 +90,7 @@ void pp_cxx_colon_colon (cxx_pretty_printer *);
 void pp_cxx_separate_with (cxx_pretty_printer *, int);
 
 void pp_cxx_canonical_template_parameter (cxx_pretty_printer *, tree);
-void pp_cxx_trait_expression (cxx_pretty_printer *, tree);
+void pp_cxx_trait (cxx_pretty_printer *, tree);
 void pp_cxx_va_arg_expression (cxx_pretty_printer *, tree);
 void pp_cxx_offsetof_expression (cxx_pretty_printer *, tree);
 void pp_cxx_addressof_expression (cxx_pretty_printer *, tree);

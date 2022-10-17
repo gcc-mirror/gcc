@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2021 Free Software Foundation, Inc.
+// Copyright (C) 2017-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,9 +39,7 @@ test01()
   fs::create_directory(bar/"baz");
   fs::path p;
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-#else
+#ifndef NO_SYMLINKS
   fs::create_symlink("../bar", foo/"bar");
 
   p = fs::weakly_canonical(dir/"foo//./bar///../biz/.");

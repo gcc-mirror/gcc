@@ -1,5 +1,5 @@
 /* Header file for any pass which requires SSA routines.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,6 +49,7 @@ extern void init_tree_ssa (function *, int size = 0);
 extern void delete_tree_ssa (function *);
 extern bool tree_ssa_useless_type_conversion (tree);
 extern tree tree_ssa_strip_useless_type_conversions (tree);
+extern tree find_released_ssa_name (tree *, int *, void *);
 
 
 extern bool ssa_defined_default_def_p (tree t);

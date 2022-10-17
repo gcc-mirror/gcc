@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,7 +65,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --  the routine for the argument one past the last present argument, but
    --  that is the only case in which a non-present argument can be referenced.
 
-   procedure Check_Arg_Count (Required : Int);
+   procedure Check_Arg_Count (Required : Nat);
    --  Check argument count for pragma = Required. If not give error and raise
    --  Error_Resync.
 
@@ -155,7 +155,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    -- Check_Arg_Count --
    ---------------------
 
-   procedure Check_Arg_Count (Required : Int) is
+   procedure Check_Arg_Count (Required : Nat) is
    begin
       if Arg_Count /= Required then
          Error_Msg_N ("wrong number of arguments for pragma%", Pragma_Node);
@@ -393,24 +393,6 @@ begin
             Ada_Version := Ada_2022;
             Ada_Version_Explicit := Ada_2022;
             Ada_Version_Pragma := Pragma_Node;
-         end if;
-
-      ---------------------------
-      -- Compiler_Unit_Warning --
-      ---------------------------
-
-      --  This pragma must be processed at parse time, since the resulting
-      --  status may be tested during the parsing of the program.
-
-      when Pragma_Compiler_Unit
-         | Pragma_Compiler_Unit_Warning
-      =>
-         Check_Arg_Count (0);
-
-         --  Only recognized in main unit
-
-         if Current_Source_Unit = Main_Unit then
-            Compiler_Unit := True;
          end if;
 
       -----------
@@ -1284,8 +1266,7 @@ begin
 
          elsif Nkind (A) = N_Character_Literal then
             declare
-               R : constant Char_Code :=
-                     Char_Code (UI_To_Int (Char_Literal_Value (A)));
+               R : constant Char_Code := UI_To_CC (Char_Literal_Value (A));
             begin
                if In_Character_Range (R) then
                   Wide_Character_Encoding_Method :=
@@ -1338,6 +1319,7 @@ begin
          | Pragma_CPP_Virtual
          | Pragma_CPP_Vtable
          | Pragma_CPU
+         | Pragma_CUDA_Device
          | Pragma_CUDA_Execute
          | Pragma_CUDA_Global
          | Pragma_C_Pass_By_Copy

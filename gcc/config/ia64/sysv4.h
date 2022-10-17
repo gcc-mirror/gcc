@@ -1,6 +1,6 @@
 /* Override definitions in elfos.h to be correct for IA64.
 
-Copyright (C) 2000-2021 Free Software Foundation, Inc.
+Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,9 +30,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Stabs does not work properly for 64-bit targets.  */
-#undef DBX_DEBUGGING_INFO
-
 /* Various pseudo-ops for which the Intel assembler uses non-standard
    definitions.  */
 
@@ -59,10 +56,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    the Intel simulator.  So we must explicitly put variables in .bss
    instead.  This matters only if we care about the Intel assembler.  */
 
-/* This is asm_output_aligned_bss from varasm.c without the
+/* This is asm_output_aligned_bss from varasm.cc without the
    (*targetm.asm_out.globalize_label) call at the beginning.  */
 
-/* This is for final.c, because it is used by ASM_DECLARE_OBJECT_NAME.  */
+/* This is for final.cc, because it is used by ASM_DECLARE_OBJECT_NAME.  */
 extern int size_directive_output;
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
@@ -103,8 +100,8 @@ do {						\
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini,\"ax\",\"progbits\""
 
-#define DBX_REGISTER_NUMBER(REGNO) \
-  ia64_dbx_register_number(REGNO)
+#define DEBUGGER_REGNO(REGNO) \
+  ia64_debugger_regno(REGNO)
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"

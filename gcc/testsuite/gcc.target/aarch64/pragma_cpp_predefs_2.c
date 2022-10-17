@@ -240,6 +240,20 @@
 #endif
 #pragma GCC pop_options
 
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.7-a")
+#ifndef __ARM_FEATURE_LS64
+#error "__ARM_FEATURE_LS64 is not defined but should be!"
+#endif
+#pragma GCC pop_options
+
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.7-a+ls64")
+#ifndef __ARM_FEATURE_LS64
+#error "__ARM_FEATURE_LS64 is not defined but should be!"
+#endif
+#pragma GCC pop_options
+
 #pragma GCC pop_options
 
 int

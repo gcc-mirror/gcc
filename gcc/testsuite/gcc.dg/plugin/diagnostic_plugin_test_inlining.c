@@ -15,12 +15,12 @@
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimple-expr.h"
 #include "is-a.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
 #include "tree.h"
 #include "tree-pass.h"
 #include "intl.h"
@@ -133,7 +133,7 @@ test_inlining (gimple *stmt)
       return;
     }
 
-  warning_at (call->location, 0, "%G%s", call,
+  warning_at (call->location, 0, "%s",
 	      TREE_STRING_POINTER (t_string));
 }
 

@@ -3,7 +3,7 @@
 //
 // 2009-08-14  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
 //
-// Copyright (C) 2009-2021 Free Software Foundation, Inc.
+// Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,7 @@
 
 #include <random>
 #include <sstream>
+#include <testsuite_hooks.h>
 
 void
 test01()
@@ -37,10 +38,43 @@ test01()
   str << u;
 
   str >> v;
+  VERIFY( u == v );
+}
+
+void
+test_pr105502()
+{
+  // PR libstdc++/105502 std::normal_distribution deserialization issue
+  std::stringstream str;
+  std::normal_distribution<> d{1, 2}, d2;
+  std::minstd_rand0 g;
+  str << d;
+  VERIFY( str );
+  str >> d2;
+  VERIFY( str );
+  VERIFY( d == d2 );
+
+  (void) d(g); // sets d._M_saved_available = true
+  str.str("");
+  str.clear();
+  str << d;
+  VERIFY( str );
+  str >> d2;
+  VERIFY( str );
+  VERIFY( d == d2 );
+
+  (void) d(g); // sets d._M_saved_available = false
+  str.str("");
+  str.clear();
+  str << d;
+  VERIFY( str );
+  str >> d2;
+  VERIFY( str );
+  VERIFY( d == d2 );
 }
 
 int main()
 {
   test01();
-  return 0;
+  test_pr105502();
 }

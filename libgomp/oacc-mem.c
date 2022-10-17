@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -202,7 +202,7 @@ memcpy_tofrom_device (bool from, void *d, void *h, size_t s, int async,
   if (from)
     gomp_copy_dev2host (thr->dev, aq, h, d, s);
   else
-    gomp_copy_host2dev (thr->dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
+    gomp_copy_host2dev (thr->dev, aq, d, h, s, false, /* TODO: cbuf? */ NULL);
 
   if (profiling_p)
     {
@@ -874,7 +874,7 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
   goacc_aq aq = get_goacc_asyncqueue (async);
 
   if (is_dev)
-    gomp_copy_host2dev (acc_dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
+    gomp_copy_host2dev (acc_dev, aq, d, h, s, false, /* TODO: cbuf? */ NULL);
   else
     gomp_copy_dev2host (acc_dev, aq, h, d, s);
 
@@ -937,7 +937,7 @@ acc_attach_async (void **hostaddr, int async)
     }
 
   gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n, (uintptr_t) hostaddr,
-		       0, NULL);
+		       0, NULL, false);
 
   gomp_mutex_unlock (&acc_dev->lock);
 }
@@ -1141,7 +1141,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  if ((kinds[i] & 0xff) == GOMP_MAP_ATTACH)
 	    {
 	      gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n,
-				   (uintptr_t) h, s, NULL);
+				   (uintptr_t) h, s, NULL, false);
 	      /* OpenACC 'attach'/'detach' doesn't affect structured/dynamic
 		 reference counts ('n->refcount', 'n->dynamic_refcount').  */
 	    }
@@ -1159,7 +1159,8 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 		splay_tree_key m
 		  = lookup_host (acc_dev, hostaddrs[j], sizeof (void *));
 		gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, m,
-				     (uintptr_t) hostaddrs[j], sizes[j], NULL);
+				     (uintptr_t) hostaddrs[j], sizes[j], NULL,
+				     false);
 	      }
 
 	  bool processed = false;

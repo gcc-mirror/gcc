@@ -1,6 +1,6 @@
 // Filesystem declarations -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,7 @@
 
 #include <system_error>
 #include <cstdint>
-#include <chrono>
+#include <bits/chrono.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -280,7 +280,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   bool copy_file(const path& __from, const path& __to, copy_options __option);
   bool copy_file(const path& __from, const path& __to, copy_options __option,
-		 error_code&) noexcept;
+		 error_code&);
 
   path current_path();
 

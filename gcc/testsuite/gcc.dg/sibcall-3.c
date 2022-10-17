@@ -5,7 +5,7 @@
    Copyright (C) 2002 Free Software Foundation Inc.
    Contributed by Hans-Peter Nilsson  <hp@bitrange.com>  */
 
-/* { dg-do run { xfail { { cris-*-* h8300-*-* hppa*64*-*-* m32r-*-* mcore-*-* mn10300-*-* msp430*-*-* nds32*-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa*-*-* } || { arm*-*-* && { ! arm32 } } } } } */
+/* { dg-do run { xfail { { cris-*-* h8300-*-* hppa*64*-*-* m32r-*-* mcore-*-* mn10300-*-* msp430*-*-* nds32*-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa*-*-* nvptx*-*-* } || { arm*-*-* && { ! arm32 } } } } } */
 /* -mlongcall disables sibcall patterns.  */
 /* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
@@ -40,7 +40,7 @@ int main ()
    reasonably sure is to make them have the same contents (regarding the
    n tests).  */
 
-static void __attribute__((noinline)) ATTR
+static void __attribute__((noipa)) ATTR
 recurser_void1 (int n)
 {
   if (n == 0 || n == 7 || n == 8)
@@ -52,7 +52,7 @@ recurser_void1 (int n)
   recurser_void2 (n + 1);
 }
 
-static void __attribute__((noinline)) ATTR
+static void __attribute__((noipa)) ATTR
 recurser_void2 (int n)
 {
   if (n == 0 || n == 7 || n == 8)
@@ -66,7 +66,7 @@ recurser_void2 (int n)
 
 void *trackpoint;
 
-void __attribute__ ((noinline))
+void __attribute__ ((noipa))
 track (int n)
 {
   char stackpos[1];

@@ -1,6 +1,6 @@
 // Concepts and traits for use with iterators -*- C++ -*-
 
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,15 +32,35 @@
 
 #pragma GCC system_header
 
+#if __cplusplus >= 202002L
 #include <concepts>
 #include <bits/ptr_traits.h>	// to_address
 #include <bits/ranges_cmp.h>	// identity, ranges::less
 
-#if __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /** A sentinel type that can be used to check for the end of a range.
+   *
+   * For some iterator types the past-the-end sentinel value is independent
+   * of the underlying sequence, and a default sentinel can be used with them.
+   * For example, a `std::counted_iterator` keeps a count of how many elements
+   * remain, and so checking for the past-the-end value only requires checking
+   * if that count has reached zero. A past-the-end `std::istream_iterator` is
+   * equal to the default-constructed value, which can be easily checked.
+   *
+   * Comparing iterators of these types to `std::default_sentinel` is a
+   * convenient way to check if the end has been reached.
+   *
+   * @since C++20
+   */
+  struct default_sentinel_t { };
+
+  /// A default sentinel value.
+  inline constexpr default_sentinel_t default_sentinel{};
+
+#if __cpp_lib_concepts
   struct input_iterator_tag;
   struct output_iterator_tag;
   struct forward_iterator_tag;
@@ -120,6 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using __type = typename __result<_Tp>::type;
 
 	template<std::__detail::__dereferenceable _Tp>
+	  [[nodiscard]]
 	  constexpr __type<_Tp>
 	  operator()(_Tp&& __e) const
 	  noexcept(_S_noexcept<_Tp>())
@@ -553,6 +574,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __max_diff_type;
     class __max_size_type;
 
+    __extension__
     template<typename _Tp>
       concept __is_signed_int128
 #if __SIZEOF_INT128__
@@ -561,6 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= false;
 #endif
 
+    __extension__
     template<typename _Tp>
       concept __is_unsigned_int128
 #if __SIZEOF_INT128__
@@ -921,9 +944,6 @@ namespace ranges
 
   inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 
-  struct default_sentinel_t { };
-  inline constexpr default_sentinel_t default_sentinel{};
-
   // This is the namespace for [range.access] CPOs.
   namespace ranges::__cust_access
   {
@@ -980,7 +1000,8 @@ namespace ranges
 
   } // namespace __detail
 
+#endif // C++20 library concepts
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++20 library concepts
+#endif // C++20
 #endif // _ITERATOR_CONCEPTS_H

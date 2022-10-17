@@ -1,4 +1,10 @@
-// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+OK
+---
+*/
 
 extern(C) int printf(const char*, ...);
 
@@ -71,5 +77,3 @@ int main()
         assert(Newline.OKset == 1);
         return 0;
 }
-
-

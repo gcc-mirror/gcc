@@ -1,7 +1,7 @@
 /* Regression test for PR/80725.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=zEC12" } */
+/* { dg-options "-O2 -march=zEC12 -Wno-int-to-pointer-cast" } */
 
 int a, e;
 const char b;
@@ -18,7 +18,7 @@ foo (int x, int y)
     while (a < x)
       {
 	if (y)
-	  goto *d;
+	  goto *(void *)d;
 	g = b | b + g;
 	bar (g);
 	c = (char) (long) foo;

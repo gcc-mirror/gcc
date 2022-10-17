@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,8 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
+
+with Ada.Containers.Stable_Sorting; use Ada.Containers.Stable_Sorting;
 
 with System; use type System.Address;
 with System.Put_Images;
@@ -65,7 +67,7 @@ is
       Source   : in out List;
       Position : Node_Access);
 
-   function Vet (Position : Cursor) return Boolean;
+   function Vet (Position : Cursor) return Boolean with Inline;
    --  Checks invariants of the cursor and its designated container, as a
    --  simple way of detecting dangling references (see operation Free for a
    --  description of the detection mechanism), returning True if all checks
@@ -731,73 +733,6 @@ is
       ----------
 
       procedure Sort (Container : in out List) is
-         procedure Partition (Pivot : Node_Access; Back  : Node_Access);
-         --  Comment ???
-
-         procedure Sort (Front, Back : Node_Access);
-         --  Comment??? Confusing name??? change name???
-
-         ---------------
-         -- Partition --
-         ---------------
-
-         procedure Partition (Pivot : Node_Access; Back : Node_Access) is
-            Node : Node_Access;
-
-         begin
-            Node := Pivot.Next;
-            while Node /= Back loop
-               if Node.Element.all < Pivot.Element.all then
-                  declare
-                     Prev : constant Node_Access := Node.Prev;
-                     Next : constant Node_Access := Node.Next;
-
-                  begin
-                     Prev.Next := Next;
-
-                     if Next = null then
-                        Container.Last := Prev;
-                     else
-                        Next.Prev := Prev;
-                     end if;
-
-                     Node.Next := Pivot;
-                     Node.Prev := Pivot.Prev;
-
-                     Pivot.Prev := Node;
-
-                     if Node.Prev = null then
-                        Container.First := Node;
-                     else
-                        Node.Prev.Next := Node;
-                     end if;
-
-                     Node := Next;
-                  end;
-
-               else
-                  Node := Node.Next;
-               end if;
-            end loop;
-         end Partition;
-
-         ----------
-         -- Sort --
-         ----------
-
-         procedure Sort (Front, Back : Node_Access) is
-            Pivot : constant Node_Access :=
-              (if Front = null then Container.First else Front.Next);
-         begin
-            if Pivot /= Back then
-               Partition (Pivot, Back);
-               Sort (Front, Pivot);
-               Sort (Pivot, Back);
-            end if;
-         end Sort;
-
-      --  Start of processing for Sort
-
       begin
          if Container.Length <= 1 then
             return;
@@ -813,8 +748,42 @@ is
 
          declare
             Lock : With_Lock (Container.TC'Unchecked_Access);
+
+            package Descriptors is new List_Descriptors
+              (Node_Ref => Node_Access, Nil => null);
+            use Descriptors;
+
+            function Next (N : Node_Access) return Node_Access is (N.Next);
+            procedure Set_Next (N : Node_Access; Next : Node_Access)
+              with Inline;
+            procedure Set_Prev (N : Node_Access; Prev : Node_Access)
+              with Inline;
+            function "<" (L, R : Node_Access) return Boolean is
+              (L.Element.all < R.Element.all);
+            procedure Update_Container (List : List_Descriptor) with Inline;
+
+            procedure Set_Next (N : Node_Access; Next : Node_Access) is
+            begin
+               N.Next := Next;
+            end Set_Next;
+
+            procedure Set_Prev (N : Node_Access; Prev : Node_Access) is
+            begin
+               N.Prev := Prev;
+            end Set_Prev;
+
+            procedure Update_Container (List : List_Descriptor) is
+            begin
+               Container.First  := List.First;
+               Container.Last   := List.Last;
+               Container.Length := List.Length;
+            end Update_Container;
+
+            procedure Sort_List is new Doubly_Linked_List_Sort;
          begin
-            Sort (Front => null, Back => null);
+            Sort_List (List_Descriptor'(First  => Container.First,
+                                        Last   => Container.Last,
+                                        Length => Container.Length));
          end;
 
          pragma Assert (Container.First.Prev = null);
@@ -933,7 +902,6 @@ is
       Count     : Count_Type := 1)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
    begin
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;
@@ -2135,6 +2103,10 @@ is
 
    function Vet (Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = null then
          return Position.Container = null;
       end if;

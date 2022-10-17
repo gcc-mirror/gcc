@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,6 @@
 --  This package provides a method for generating a traceback of the current
 --  execution location. The traceback shows the locations of calls in the call
 --  chain, up to either the top or a designated number of levels.
-
-pragma Compiler_Unit_Warning;
 
 with System.Traceback_Entries;
 

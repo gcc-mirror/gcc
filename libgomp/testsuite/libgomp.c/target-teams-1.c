@@ -35,76 +35,115 @@ foo (int a, int b, long c, long d)
     abort ();
   #pragma omp target map(from: err)
   #pragma omp teams
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1;
+  {
+    err = omp_get_num_teams () < 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1;
+  }
   if (err)
     abort ();
   #pragma omp target teams map(from: err)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1;
+  {
+    err = omp_get_num_teams () < 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1;
+  }
   if (err)
     abort ();
   #pragma omp target map(from: err)
   #pragma omp teams num_teams (4)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > 4;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > 4;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1;
+  }
   if (err)
     abort ();
   #pragma omp target teams num_teams (4) map(from: err)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > 4;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > 4;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1;
+  }
   if (err)
     abort ();
   #pragma omp target map(from: err)
   #pragma omp teams thread_limit (7)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_thread_limit () > 7;
+  {
+    err = omp_get_num_teams () < 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > 7;
+  }
   if (err)
     abort ();
   #pragma omp target teams thread_limit (7) map(from: err)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_thread_limit () > 7;
+  {
+    err = omp_get_num_teams () < 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > 7;
+  }
   if (err)
     abort ();
   #pragma omp target map(from: err)
   #pragma omp teams num_teams (4) thread_limit (8)
   {
     {
-      err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	    || omp_get_num_teams () > 4 || omp_get_thread_limit () > 8;
+      err = omp_get_num_teams () < 1 || omp_get_num_teams () > 4;
     }
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > 8;
   }
   if (err)
     abort ();
   #pragma omp target teams num_teams (4) thread_limit (8) map(from: err)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > 4 || omp_get_thread_limit () > 8;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > 4;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > 8;
+  }
   if (err)
     abort ();
   #pragma omp target map(from: err)
   #pragma omp teams num_teams (a) thread_limit (b)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > a || omp_get_thread_limit () > b;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > a;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > b;
+  }
   if (err)
     abort ();
   #pragma omp target teams num_teams (a) thread_limit (b) map(from: err)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > a || omp_get_thread_limit () > b;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > a;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > b;
+  }
   if (err)
     abort ();
   #pragma omp target map(from: err)
   #pragma omp teams num_teams (c + 1) thread_limit (d - 1)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > c + 1 || omp_get_thread_limit () > d - 1;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > c + 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > d - 1;
+  }
   if (err)
     abort ();
   #pragma omp target teams num_teams (c + 1) thread_limit (d - 1) map(from: err)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > c + 1 || omp_get_thread_limit () > d - 1;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > c + 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > d - 1;
+  }
   if (err)
     abort ();
   #pragma omp target map (always, to: c, d) map(from: err)
   #pragma omp teams num_teams (c + 1) thread_limit (d - 1)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > c + 1 || omp_get_thread_limit () > d - 1;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > c + 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > d - 1;
+  }
   if (err)
     abort ();
   #pragma omp target data map (to: c, d)
@@ -116,8 +155,11 @@ foo (int a, int b, long c, long d)
        their device and original values match is unclear.  */
     #pragma omp target map (to: c, d) map(from: err)
     #pragma omp teams num_teams (c + 1) thread_limit (d - 1)
-    err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	  || omp_get_num_teams () > c + 1 || omp_get_thread_limit () > d - 1;
+    {
+      err = omp_get_num_teams () < 1 || omp_get_num_teams () > c + 1;
+      #pragma omp parallel if(0)
+      err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > d - 1;
+    }
     if (err)
       abort ();
   }
@@ -125,21 +167,30 @@ foo (int a, int b, long c, long d)
      target involved.  */
   #pragma omp target map(from: err)
   #pragma omp teams num_teams (baz () + 1) thread_limit (baz () - 1)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > baz () + 1 || omp_get_thread_limit () > baz () - 1;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > baz () + 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > baz () - 1;
+  }
   if (err)
     abort ();
   #pragma omp target teams num_teams (baz () + 1) thread_limit (baz () - 1) map(from: err)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > baz () + 1 || omp_get_thread_limit () > baz () - 1;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > baz () + 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > baz () - 1;
+  }
   if (err)
     abort ();
   /* This one can't be optimized, as v might have different value between
      host and target.  */
   #pragma omp target map(from: err)
   #pragma omp teams num_teams (v + 1) thread_limit (v - 1)
-  err = omp_get_num_teams () < 1 || omp_get_thread_limit () < 1
-	|| omp_get_num_teams () > v + 1 || omp_get_thread_limit () > v - 1;
+  {
+    err = omp_get_num_teams () < 1 || omp_get_num_teams () > v + 1;
+    #pragma omp parallel if(0)
+    err |= omp_get_thread_limit () < 1 || omp_get_thread_limit () > v - 1;
+  }
   if (err)
     abort ();
 }

@@ -24,7 +24,7 @@ int main ()
   f (n);
   h (d);
   qp = (unsigned long*)__builtin_alloca(4099*8) + 1;
-  dnp = (unsigned long*)__builtin_alloca (2049*8);
+  dnp = (unsigned long*)__builtin_alloca (2049*8) + 1;
   alloc = 1;
   for (test = 0; test < 1; test++)
     {

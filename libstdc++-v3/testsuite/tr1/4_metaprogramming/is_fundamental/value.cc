@@ -1,6 +1,6 @@
 // 2004-12-03  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,9 +32,7 @@ void test01()
   VERIFY( (test_category<is_fundamental, char>(true)) );
   VERIFY( (test_category<is_fundamental, signed char>(true)) );
   VERIFY( (test_category<is_fundamental, unsigned char>(true)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( (test_category<is_fundamental, wchar_t>(true)) );
-#endif
   VERIFY( (test_category<is_fundamental, short>(true)) );
   VERIFY( (test_category<is_fundamental, unsigned short>(true)) );
   VERIFY( (test_category<is_fundamental, int>(true)) );

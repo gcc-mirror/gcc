@@ -168,8 +168,12 @@ GOMP_OFFLOAD_get_type (void)
 }
 
 extern "C" int
-GOMP_OFFLOAD_get_num_devices (void)
+GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
+  /* Return -1 if no omp_requires_mask cannot be fulfilled but
+     devices were present.  */
+  if (num_devices > 0 && omp_requires_mask != 0)
+    return -1;
   TRACE ("(): return %d", num_devices);
   return num_devices;
 }
@@ -345,7 +349,8 @@ GOMP_OFFLOAD_version (void)
 
 extern "C" int
 GOMP_OFFLOAD_load_image (int device, const unsigned version,
-			 const void *target_image, addr_pair **result)
+			 const void *target_image, addr_pair **result,
+			 uint64_t ** /* rev_fn_table */)
 {
   TRACE ("(device = %d, target_image = %p)", device, target_image);
 

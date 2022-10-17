@@ -20,7 +20,7 @@ C { dg-options "-std=legacy" }
           END IF
           CALL DLALN2( .FALSE., 2, 2, SMIN, ONE,
      $                            T( J-1, J-1 ), LDT, ONE, ONE,  ! { dg-warning "Type mismatch" }
-     $                            XNORM, IERR )
+     $                            XNORM, IERR )  ! { dg-warning "Type mismatch" }
           CALL DAXPY( J-2, -X( 1, 1 ), T( 1, J-1 ), 1,
      $                           WORK( 1+N ), 1 )
           CALL DAXPY( J-2, -X( 2, 2 ), T( 1, J ), 1,

@@ -43,8 +43,8 @@ extern(C++, foo) extern(C++, bar) void f8() {}  // OK
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/parseStc2.d(50): Error: redundant protection attribute `public`
-fail_compilation/parseStc2.d(51): Error: conflicting protection attribute `public` and `private`
+fail_compilation/parseStc2.d(50): Error: redundant visibility attribute `public`
+fail_compilation/parseStc2.d(51): Error: conflicting visibility attribute `public` and `private`
 ---
 */
 public public void f9() {}

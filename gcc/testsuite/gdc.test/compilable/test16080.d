@@ -4,4 +4,3 @@
 // https://issues.dlang.org/show_bug.cgi?id=16080
 
 import imp16080;
-

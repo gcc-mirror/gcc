@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 2020-2021, Free Software Foundation, Inc.      --
+--             Copyright (C) 2020-2022, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,12 +30,17 @@
 --  when tasks start.
 
 package Ada.Task_Initialization is
-   pragma Preelaborate (Task_Initialization);
+   pragma Preelaborate;
+   pragma No_Elaboration_Code_All;
 
    type Initialization_Handler is access procedure;
 
    procedure Set_Initialization_Handler (Handler : Initialization_Handler);
-   --  Set the global task initialization handler to Handler
+   --  Set the global task initialization handler to Handler.
+   --  Note that only tasks created after this procedure is called will trigger
+   --  a call to Handler. You can use Ada's elaboration rules and pragma
+   --  Elaborate_All, or the pragma Linker_Constructor to ensure this
+   --  procedure is called early.
 
 private
    pragma Favor_Top_Level (Initialization_Handler);

@@ -121,10 +121,13 @@ AC_SUBST(CFLAGS)
 # in both places for now and restore CFLAGS at the end of config.
 save_CFLAGS="$CFLAGS"
 
+AC_ARG_ENABLE([werror],
+  [AS_HELP_STRING([--disable-werror], [disable building with -Werror])])
 # Add -Wall -Werror if we are using GCC.
-if test "x$GCC" = "xyes"; then
-  XCFLAGS="$XCFLAGS -Wall -Werror"
-fi
+AS_IF([test "x$GCC" = "xyes"],
+  [XCFLAGS="$XCFLAGS -Wall"])
+AS_IF([test "x$enable_werror" != "xno" && test "x$GCC" = "xyes"],
+  [XCFLAGS="$XCFLAGS -Werror"])
 
 # Find other programs we need.
 AC_CHECK_TOOL(AR, ar)
@@ -438,13 +441,15 @@ fi
 if test $OMP_NEST_LOCK_25_SIZE -gt 8 || test $OMP_NEST_LOCK_25_ALIGN -gt $OMP_NEST_LOCK_25_SIZE; then
   OMP_NEST_LOCK_25_KIND=8
 fi
-if test $OMP_DEPEND_KIND -eq 16; then
-  if test $OMP_INT128_SIZE -ne 16; then
-    AC_MSG_ERROR([unsupported system, cannot find Fortran int kind=16, needed for omp_depend_kind])
-  fi
-else
-  if test $OMP_DEPEND_KIND -ne 8; then
-    AC_MSG_ERROR([unsupported system, cannot find Fortran integer kind for omp_depend_kind])
+if test "$ac_cv_fc_compiler_gnu" = yes; then
+  if test $OMP_DEPEND_KIND -eq 16; then
+    if test $OMP_INT128_SIZE -ne 16; then
+      AC_MSG_ERROR([unsupported system, cannot find Fortran int kind=16, needed for omp_depend_kind])
+    fi
+  else
+    if test $OMP_DEPEND_KIND -ne 8; then
+      AC_MSG_ERROR([unsupported system, cannot find Fortran integer kind for omp_depend_kind])
+    fi
   fi
 fi
 

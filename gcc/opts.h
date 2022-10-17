@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
 enum cl_var_type {
-  /* The switch is enabled when FLAG_VAR is nonzero.  */
-  CLVC_BOOLEAN,
+  /* The switch is an integer value.  */
+  CLVC_INTEGER,
 
   /* The switch is enabled when FLAG_VAR == VAR_VALUE.  */
   CLVC_EQUAL,
@@ -50,6 +50,18 @@ enum cl_var_type {
   /* The switch should be stored in the VEC pointed to by FLAG_VAR for
      later processing.  */
   CLVC_DEFER
+};
+
+/* Values for var_value member of CLVC_ENUM.  */
+enum cl_enum_var_value {
+  /* Enum without EnumSet or EnumBitSet.  */
+  CLEV_NORMAL,
+
+  /* EnumSet.  */
+  CLEV_SET,
+
+  /* EnumBitSet.  */
+  CLEV_BITSET
 };
 
 struct cl_option
@@ -170,6 +182,7 @@ extern const unsigned int cl_lang_count;
 /* Flags for an enumerated option argument.  */
 #define CL_ENUM_CANONICAL	(1 << 0) /* Canonical for this value.  */
 #define CL_ENUM_DRIVER_ONLY	(1 << 1) /* Only accepted in the driver.  */
+#define CL_ENUM_SET_SHIFT	2	 /* Shift for enum set.  */
 
 /* Structure describing an enumerated option argument.  */
 
@@ -226,6 +239,7 @@ extern const unsigned int cl_enums_count;
 #define CL_ERR_NEGATIVE		(1 << 6) /* Negative form of option
 					    not permitted (together
 					    with OPT_SPECIAL_unknown).  */
+#define CL_ERR_ENUM_SET_ARG	(1 << 7) /* Bad argument of enumerated set.  */
 
 /* Structure describing the result of decoding an option.  */
 
@@ -260,8 +274,13 @@ struct cl_decoded_option
 
   /* For a boolean option, 1 for the true case and 0 for the "no-"
      case.  For an unsigned integer option, the value of the
-     argument.  1 in all other cases.  */
+     argument.  For enum the value of the enumerator corresponding
+     to argument string.  1 in all other cases.  */
   HOST_WIDE_INT value;
+
+  /* For EnumSet the value mask.  Variable should be changed to
+     value | (prev_value & ~mask).  */
+  HOST_WIDE_INT mask;
 
   /* Any flags describing errors detected in this option.  */
   int errors;
@@ -374,7 +393,8 @@ extern bool get_option_state (struct gcc_options *, int,
 extern void set_option (struct gcc_options *opts,
 			struct gcc_options *opts_set,
 			int opt_index, HOST_WIDE_INT value, const char *arg,
-			int kind, location_t loc, diagnostic_context *dc);
+			int kind, location_t loc, diagnostic_context *dc,
+			HOST_WIDE_INT = 0);
 extern void *option_flag_var (int opt_index, struct gcc_options *opts);
 bool handle_generated_option (struct gcc_options *opts,
 			      struct gcc_options *opts_set,
@@ -428,6 +448,8 @@ extern bool target_handle_option (struct gcc_options *opts,
 extern void finish_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    location_t loc);
+extern void diagnose_options (gcc_options *opts, gcc_options *opts_set,
+			      location_t loc);
 extern void print_help (struct gcc_options *opts, unsigned int lang_mask, const
 			char *help_option_argument);
 extern void default_options_optimization (struct gcc_options *opts,
@@ -451,6 +473,7 @@ extern const struct sanitizer_opts_s
   unsigned int flag;
   size_t len;
   bool can_recover;
+  bool can_trap;
 } sanitizer_opts[];
 
 extern const struct zero_call_used_regs_opts_s
@@ -499,5 +522,45 @@ extern char *gen_producer_string (const char *language_string,
       (OPTS)->x_ ## OPTION = VALUE; \
   } \
   while (false)
+
+/* Return true if OPTION is set by user in global options.  */
+
+#define OPTION_SET_P(OPTION) global_options_set.x_ ## OPTION
+
+/* Find all the switches given to us
+   and make a vector describing them.
+   The elements of the vector are strings, one per switch given.
+   If a switch uses following arguments, then the `part1' field
+   is the switch itself and the `args' field
+   is a null-terminated vector containing the following arguments.
+   Bits in the `live_cond' field are:
+   SWITCH_LIVE to indicate this switch is true in a conditional spec.
+   SWITCH_FALSE to indicate this switch is overridden by a later switch.
+   SWITCH_IGNORE to indicate this switch should be ignored (used in %<S).
+   SWITCH_IGNORE_PERMANENTLY to indicate this switch should be ignored.
+   SWITCH_KEEP_FOR_GCC to indicate that this switch, otherwise ignored,
+   should be included in COLLECT_GCC_OPTIONS.
+   in all do_spec calls afterwards.  Used for %<S from self specs.
+   The `known' field describes whether this is an internal switch.
+   The `validated' field describes whether any spec has looked at this switch;
+   if it remains false at the end of the run, the switch must be meaningless.
+   The `ordering' field is used to temporarily mark switches that have to be
+   kept in a specific order.  */
+
+#define SWITCH_LIVE    			(1 << 0)
+#define SWITCH_FALSE   			(1 << 1)
+#define SWITCH_IGNORE			(1 << 2)
+#define SWITCH_IGNORE_PERMANENTLY	(1 << 3)
+#define SWITCH_KEEP_FOR_GCC		(1 << 4)
+
+struct switchstr
+{
+  const char *part1;
+  const char **args;
+  unsigned int live_cond;
+  bool known;
+  bool validated;
+  bool ordering;
+};
 
 #endif

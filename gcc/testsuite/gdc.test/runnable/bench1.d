@@ -1,5 +1,12 @@
-// REQUIRED_ARGS:
-// EXECUTE_ARGS: 10000
+/*
+REQUIRED_ARGS:
+EXECUTE_ARGS: 10000
+RUN_OUTPUT:
+---
+count = 10000
+70000
+---
+*/
 
 extern(C) int printf(const char *, ...);
 extern(C) int atoi(const char *);
@@ -18,7 +25,7 @@ extern(C) int atoi(const char *);
             s ~= "hello\n";
         for (loop = 0; loop < count; loop ++)
             s ~= "h";
-        printf ("%d\n", s.length);
+        printf ("%llu\n", cast(ulong) s.length);
         //printf("%.*s\n", s[0..100]);
         assert(s.length == count * (6 + 1));
         s.length = 3;
@@ -27,4 +34,3 @@ extern(C) int atoi(const char *);
         s.length = 1000;
         return 0;
     }
-

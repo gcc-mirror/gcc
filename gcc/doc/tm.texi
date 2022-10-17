@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -240,7 +240,7 @@ between the two is that @code{LIB_SPEC} is used at the end of the
 command given to the linker.
 
 If this macro is not defined, a default is provided that
-loads the standard C library from the usual place.  See @file{gcc.c}.
+loads the standard C library from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac LIBGCC_SPEC
@@ -287,7 +287,7 @@ difference between the two is that @code{STARTFILE_SPEC} is used at
 the very beginning of the command given to the linker.
 
 If this macro is not defined, a default is provided that loads the
-standard C startup file from the usual place.  See @file{gcc.c}.
+standard C startup file from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac ENDFILE_SPEC
@@ -392,7 +392,7 @@ The default value of this macro is empty string.
 @defmac LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
 linker.  When you do this, you will need to update your port each time a
-change is made to the link command line within @file{gcc.c}.  Therefore,
+change is made to the link command line within @file{gcc.cc}.  Therefore,
 define this macro only if you need to completely redefine the command
 line for invoking the linker and there is no other way to accomplish
 the effect you need.  Overriding this macro may be avoidable by overriding
@@ -736,7 +736,7 @@ If a target implements string objects then this hook should return
 @end deftypefn
 
 @deftypefn {C Target Hook} void TARGET_CHECK_STRING_OBJECT_FORMAT_ARG (tree @var{format_arg}, tree @var{args_list})
-If a target implements string objects then this hook should should
+If a target implements string objects then this hook should
 provide a facility to check the function arguments in @var{args_list}
 against the format specifiers in @var{format_arg} where the type of
 @var{format_arg} is one recognized as a valid string reference type.
@@ -777,6 +777,23 @@ options are changed via @code{#pragma GCC optimize} or by using the
 @deftypefn {Common Target Hook} void TARGET_OPTION_INIT_STRUCT (struct gcc_options *@var{opts})
 Set target-dependent initial values of fields in @var{opts}.
 @end deftypefn
+
+@deftypefn {Common Target Hook} {const char *} TARGET_COMPUTE_MULTILIB (const struct switchstr *@var{switches}, int @var{n_switches}, const char *@var{multilib_dir}, const char *@var{multilib_defaults}, const char *@var{multilib_select}, const char *@var{multilib_matches}, const char *@var{multilib_exclusions}, const char *@var{multilib_reuse})
+Some targets like RISC-V might have complicated multilib reuse rules which
+are hard to implement with the current multilib scheme.  This hook allows
+targets to override the result from the built-in multilib mechanism.
+@var{switches} is the raw option list with @var{n_switches} items;
+@var{multilib_dir} is the multi-lib result which is computed by the built-in
+multi-lib mechanism;
+@var{multilib_defaults} is the default options list for multi-lib;
+@var{multilib_select} is the string containing the list of supported
+multi-libs, and the option checking list.
+@var{multilib_matches}, @var{multilib_exclusions}, and @var{multilib_reuse}
+are corresponding to @var{MULTILIB_MATCHES}, @var{MULTILIB_EXCLUSIONS},
+and @var{MULTILIB_REUSE}.
+The default definition does nothing but return @var{multilib_dir} directly.
+@end deftypefn
+
 
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
@@ -982,20 +999,26 @@ Do not define this macro if it would never modify @var{m}.
 Return a value, with the same meaning as the C99 macro
 @code{FLT_EVAL_METHOD} that describes which excess precision should be
 applied.  @var{type} is either @code{EXCESS_PRECISION_TYPE_IMPLICIT},
-@code{EXCESS_PRECISION_TYPE_FAST}, or
-@code{EXCESS_PRECISION_TYPE_STANDARD}.  For
+@code{EXCESS_PRECISION_TYPE_FAST},
+@code{EXCESS_PRECISION_TYPE_STANDARD}, or
+@code{EXCESS_PRECISION_TYPE_FLOAT16}.  For
 @code{EXCESS_PRECISION_TYPE_IMPLICIT}, the target should return which
 precision and range operations will be implictly evaluated in regardless
 of the excess precision explicitly added.  For
-@code{EXCESS_PRECISION_TYPE_STANDARD} and
+@code{EXCESS_PRECISION_TYPE_STANDARD}, 
+@code{EXCESS_PRECISION_TYPE_FLOAT16}, and
 @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the
 explicit excess precision that should be added depending on the
-value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.
+value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{|}16@r{]}}.
 Note that unpredictable explicit excess precision does not make sense,
 so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}
-when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD} or
+when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},
+@code{EXCESS_PRECISION_TYPE_FLOAT16} or
 @code{EXCESS_PRECISION_TYPE_FAST}.
 @end deftypefn
+Return a value, with the same meaning as the C99 macro
+@code{FLT_EVAL_METHOD} that describes which excess precision should be
+applied.
 
 @deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
@@ -1488,7 +1511,7 @@ ordinary types as @samp{@w{U @var{n} @var{name} @var{code}}}, where
 @var{name} is the name used for the type qualifier in source code,
 @var{n} is the length of @var{name} as above, and @var{code} is the
 code used to represent the unqualified version of this type.  (See
-@code{write_builtin_type} in @file{cp/mangle.c} for the list of
+@code{write_builtin_type} in @file{cp/mangle.cc} for the list of
 codes.)  In both cases the spaces are for clarity; do not include any
 spaces in your string.
 
@@ -1661,7 +1684,7 @@ The string can contain more than one keyword.  If so, separate them with
 spaces, and write first any length keyword, then @code{unsigned} if
 appropriate, and finally @code{int}.  The string must exactly match one
 of the data type names defined in the function
-@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.c}.
+@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.cc}.
 You may not omit @code{int} or change the order---that would cause the
 compiler to crash on startup.
 
@@ -2341,7 +2364,7 @@ they must be consecutively numbered.  Furthermore, the existing
 support for stack-like registers is specific to the 80387 floating
 point coprocessor.  If you have a new architecture that uses
 stack-like registers, you will need to do substantial work on
-@file{reg-stack.c} and write your machine description to cooperate
+@file{reg-stack.cc} and write your machine description to cooperate
 with it, as well as defining these macros.
 
 @defmac STACK_REGS
@@ -2793,7 +2816,7 @@ intermediate registers or scratch registers.
 
 If copying a register @var{class} in @var{mode} to @var{x} requires an
 intermediate or scratch register, @code{SECONDARY_OUTPUT_RELOAD_CLASS}
-was supposed to be defined be defined to return the largest register
+was supposed to be defined to return the largest register
 class required.  If the
 requirements for input and output reloads were the same, the macro
 @code{SECONDARY_RELOAD_CLASS} should have been used instead of defining both
@@ -2871,7 +2894,7 @@ However, this default behavior is not correct on some machines, such as
 the DEC Alpha, that store short integers in floating-point registers
 differently than in integer registers.  On those machines, the default
 widening will not work correctly and you must define this hook to
-suppress that widening in some cases.  See the file @file{alpha.c} for
+suppress that widening in some cases.  See the file @file{alpha.cc} for
 details.
 
 With LRA, the default is to use @var{mode} unmodified.
@@ -3172,7 +3195,7 @@ on the stack, e.g., by @code{alloca}.
 
 The default value for this macro is @code{STACK_POINTER_OFFSET} plus the
 length of the outgoing arguments.  The default is correct for most
-machines.  See @file{function.c} for details.
+machines.  See @file{function.cc} for details.
 @end defmac
 
 @defmac INITIAL_FRAME_ADDRESS_RTX
@@ -3269,6 +3292,12 @@ number that is considered to always have the value zero.  This should
 only be defined if the target has an architected zero register, and
 someone decided it was a good idea to use that register number to
 terminate the stack backtrace.  New ports should avoid this.
+@end defmac
+
+@defmac DWARF_VERSION_DEFAULT
+A C expression whose value is the default dwarf standard version we'll honor
+and advertise when generating dwarf debug information, in absence of
+an explicit @option{-gdwarf-@var{version}} option on the command line.
 @end defmac
 
 @deftypefn {Target Hook} void TARGET_DWARF_HANDLE_FRAME_UNSPEC (const char *@var{label}, rtx @var{pattern}, int @var{index})
@@ -3762,7 +3791,7 @@ Define this macro if the target's representation for dwarf registers
 used in .eh_frame or .debug_frame is different from that used in other
 debug info sections.  Given a GCC hard register number, this macro
 should return the .eh_frame register number.  The default is
-@code{DBX_REGISTER_NUMBER (@var{regno})}.
+@code{DEBUGGER_REGNO (@var{regno})}.
 
 @end defmac
 
@@ -4073,12 +4102,6 @@ The return value is usually either a @code{reg} RTX for the hard
 register in which to pass the argument, or zero to pass the argument
 on the stack.
 
-The return value can be a @code{const_int} which means argument is
-passed in a target specific slot with specified number.  Target hooks
-should be used to store or load argument in such case.  See
-@code{TARGET_STORE_BOUNDS_FOR_ARG} and @code{TARGET_LOAD_BOUNDS_FOR_ARG}
-for more information.
-
 The value of the expression can also be a @code{parallel} RTX@.  This is
 used when an argument is passed in multiple locations.  The mode of the
 @code{parallel} should be the mode of the entire argument.  The
@@ -4386,7 +4409,7 @@ type of @var{type}. If @var{type} is not a valid va_list type, it returns
 This hook performs target-specific gimplification of
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the
 arguments to @code{va_arg}; the latter two are as in
-@code{gimplify.c:gimplify_expr}.
+@code{gimplify.cc:gimplify_expr}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (scalar_int_mode @var{mode})
@@ -4420,7 +4443,7 @@ must work.
 The default version of this hook returns true for any mode
 required to handle the basic C types (as defined by the port).
 Included here are the double-word arithmetic supported by the
-code in @file{optabs.c}.
+code in @file{optabs.cc}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (machine_mode @var{mode})
@@ -5424,37 +5447,6 @@ defined, then define this hook to return @code{true} if
 Otherwise, you should not define this hook.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_LOAD_BOUNDS_FOR_ARG (rtx @var{slot}, rtx @var{arg}, rtx @var{slot_no})
-This hook is used by expand pass to emit insn to load bounds of
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case
-bounds of @var{arg} are not passed in register.  If @var{slot} is a
-memory, then bounds are loaded as for regular pointer loaded from
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer
-constant holding number of the target dependent special slot which
-should be used to obtain bounds.  Hook returns RTX holding loaded bounds.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_STORE_BOUNDS_FOR_ARG (rtx @var{arg}, rtx @var{slot}, rtx @var{bounds}, rtx @var{slot_no})
-This hook is used by expand pass to emit insns to store @var{bounds} of
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case
-@var{bounds} of @var{arg} are not passed in register.  If @var{slot} is a
-memory, then @var{bounds} are stored as for regular pointer stored in
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer
-constant holding number of the target dependent special slot which
-should be used to store @var{bounds}.
-@end deftypefn
-
-@deftypefn {Target Hook} rtx TARGET_LOAD_RETURNED_BOUNDS (rtx @var{slot})
-This hook is used by expand pass to emit insn to load bounds
-returned by function call in @var{slot}.  Hook returns RTX holding
-loaded bounds.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_STORE_RETURNED_BOUNDS (rtx @var{slot}, rtx @var{bounds})
-This hook is used by expand pass to emit insn to store @var{bounds}
-returned by function call into @var{slot}.
-@end deftypefn
-
 @node Trampolines
 @section Support for Nested Functions
 @cindex support for nested functions
@@ -5673,7 +5665,7 @@ are ABI-mandated names that the compiler should provide.
 @deftypefn {Target Hook} void TARGET_INIT_LIBFUNCS (void)
 This hook should declare additional library routines or rename
 existing ones, using the functions @code{set_optab_libfunc} and
-@code{init_one_libfunc} defined in @file{optabs.c}.
+@code{init_one_libfunc} defined in @file{optabs.cc}.
 @code{init_optabs} calls this macro after initializing all the normal
 library routines.
 
@@ -5899,9 +5891,9 @@ preserve functionality of inline assembly constructs using the
 
 @defmac FIND_BASE_TERM (@var{x})
 A C expression to determine the base term of address @var{x},
-or to provide a simplified version of @var{x} from which @file{alias.c}
+or to provide a simplified version of @var{x} from which @file{alias.cc}
 can easily find the base term.  This macro is used in only two places:
-@code{find_base_value} and @code{find_base_term} in @file{alias.c}.
+@code{find_base_value} and @code{find_base_term} in @file{alias.cc}.
 
 It is always safe for this macro to not be defined.  It exists so
 that alias analysis can understand machine-dependent addresses.
@@ -6119,14 +6111,18 @@ for the given scalar type @var{type}.  @var{is_packed} is false if the scalar
 access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, machine_mode @var{op_mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
 This hook is used to test whether the target can permute up to two
-vectors of mode @var{mode} using the permutation vector @code{sel}, and
-also to emit such a permutation.  In the former case @var{in0}, @var{in1}
-and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
-the source vectors and @var{out} is the destination vector; all three are
-registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if
-@var{sel} describes a permutation on one vector instead of two.
+vectors of mode @var{op_mode} using the permutation vector @code{sel},
+producing a vector of mode @var{mode}.  The hook is also used to emit such
+a permutation.
+
+When the hook is being used to test whether the target supports a permutation,
+@var{in0}, @var{in1}, and @var{out} are all null.  When the hook is being used
+to emit a permutation, @var{in0} and @var{in1} are the source vectors of mode
+@var{op_mode} and @var{out} is the destination vector of mode @var{mode}.
+@var{in1} is the same as @var{in0} if @var{sel} describes a permutation on one
+vector instead of two.
 
 Return true if the operation is possible, emitting instructions for it
 if rtxes are provided.
@@ -6249,7 +6245,7 @@ type @code{internal_fn}) should be considered expensive when the mask is
 all zeros.  GCC can then try to branch around the instruction instead.
 @end deftypefn
 
-@deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (class loop *@var{loop_info}, bool @var{costing_for_scalar})
+@deftypefn {Target Hook} {class vector_costs *} TARGET_VECTORIZE_CREATE_COSTS (vec_info *@var{vinfo}, bool @var{costing_for_scalar})
 This hook should initialize target-specific data structures in preparation
 for modeling the costs of vectorizing a loop or basic block.  The default
 allocates three unsigned integers for accumulating costs for the prologue,
@@ -6258,29 +6254,6 @@ non-NULL, it identifies the loop being vectorized; otherwise a single block
 is being vectorized.  If @var{costing_for_scalar} is true, it indicates the
 current cost model is for the scalar version of a loop or block; otherwise
 it is for the vector version.
-@end deftypefn
-
-@deftypefn {Target Hook} unsigned TARGET_VECTORIZE_ADD_STMT_COST (class vec_info *@var{}, void *@var{data}, int @var{count}, enum vect_cost_for_stmt @var{kind}, class _stmt_vec_info *@var{stmt_info}, tree @var{vectype}, int @var{misalign}, enum vect_cost_model_location @var{where})
-This hook should update the target-specific @var{data} in response to
-adding @var{count} copies of the given @var{kind} of statement to a
-loop or basic block.  The default adds the builtin vectorizer cost for
-the copies of the statement to the accumulator specified by @var{where},
-(the prologue, body, or epilogue) and returns the amount added.  The
-return value should be viewed as a tentative cost that may later be
-revised.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_VECTORIZE_FINISH_COST (void *@var{data}, unsigned *@var{prologue_cost}, unsigned *@var{body_cost}, unsigned *@var{epilogue_cost})
-This hook should complete calculations of the cost of vectorizing a loop
-or basic block based on @var{data}, and return the prologue, body, and
-epilogue costs as unsigned integers.  The default returns the value of
-the three accumulators.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_VECTORIZE_DESTROY_COST_DATA (void *@var{data})
-This hook should release @var{data} and any related data structures
-allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the
-accumulator.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_GATHER (const_tree @var{mem_vectype}, const_tree @var{index_type}, int @var{scale})
@@ -6303,6 +6276,9 @@ stores.
 This hook should set @var{vecsize_mangle}, @var{vecsize_int}, @var{vecsize_float}
 fields in @var{simd_clone} structure pointed by @var{clone_info} argument and also
 @var{simdlen} field if it was previously 0.
+@var{vecsize_mangle} is a marker for the backend only. @var{vecsize_int} and
+@var{vecsize_float} should be left zero on targets where the number of lanes is
+not determined by the bitsize (in which case @var{simdlen} is always used).
 The hook should return 0 if SIMD clones shouldn't be emitted,
 or number of @var{vecsize_mangle} variants that should be emitted.
 @end deftypefn
@@ -6407,6 +6383,22 @@ Only define this hook if your accelerator target needs to expand certain
 @code{VAR_DECL} nodes in a way that differs from the default.  You can also adjust
 private variables at OpenACC device-lowering time using the
 @code{TARGET_GOACC_ADJUST_PRIVATE_DECL} target hook.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD (tree @var{rec}, bool @var{sender}, const char *@var{name}, unsigned HOST_WIDE_INT @var{offset})
+Create a record used to propagate local-variable state from an active
+worker to other workers.  A possible implementation might adjust the type
+of REC to place the new variable in shared GPU memory.
+
+Presence of this target hook indicates that middle end neutering/broadcasting
+be used.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_GOACC_SHARED_MEM_LAYOUT (unsigned HOST_WIDE_INT *@var{}, unsigned HOST_WIDE_INT *@var{}, @var{int[]}, unsigned @var{HOST_WIDE_INT[]}, unsigned @var{HOST_WIDE_INT[]})
+Lay out a fixed shared-memory region on the target.  The LO and HI
+arguments should be set to a range of addresses that can be used for worker
+broadcasting. The dimensions, reduction size and gang-private size
+arguments are for the current offload region.
 @end deftypefn
 
 @node Anchored Addresses
@@ -7607,11 +7599,11 @@ section}, which holds initialized writable data; and the @dfn{bss
 section}, which holds uninitialized data.  Some systems have other kinds
 of sections.
 
-@file{varasm.c} provides several well-known sections, such as
+@file{varasm.cc} provides several well-known sections, such as
 @code{text_section}, @code{data_section} and @code{bss_section}.
 The normal way of controlling a @code{@var{foo}_section} variable
 is to define the associated @code{@var{FOO}_SECTION_ASM_OP} macro,
-as described below.  The macros are only read once, when @file{varasm.c}
+as described below.  The macros are only read once, when @file{varasm.cc}
 initializes itself, so their values must be run-time constants.
 They may however depend on command-line flags.
 
@@ -7631,7 +7623,7 @@ in @code{TARGET_ASM_INIT_SECTIONS}.  The same is true of
 create a distinct @code{readonly_data_section}, the default is to
 reuse @code{text_section}.
 
-All the other @file{varasm.c} sections are optional, and are null
+All the other @file{varasm.cc} sections are optional, and are null
 if the target does not provide them.
 
 @defmac TEXT_SECTION_ASM_OP
@@ -7778,7 +7770,7 @@ This macro is irrelevant if there is no separate readonly data section.
 
 @deftypefn {Target Hook} void TARGET_ASM_INIT_SECTIONS (void)
 Define this hook if you need to do something special to set up the
-@file{varasm.c} sections, or if your target has some special sections
+@file{varasm.cc} sections, or if your target has some special sections
 of its own that you need to create.
 
 GCC calls this hook after processing the command line, but before writing
@@ -7917,7 +7909,7 @@ encode more than one bit of information, but this practice is now
 discouraged; use @code{SYMBOL_REF_FLAGS}.
 
 The default definition of this hook, @code{default_encode_section_info}
-in @file{varasm.c}, sets a number of commonly-useful bits in
+in @file{varasm.cc}, sets a number of commonly-useful bits in
 @code{SYMBOL_REF_FLAGS}.  Check whether the default does what you need
 before overriding it.
 @end deftypefn
@@ -8466,7 +8458,7 @@ A C statement (sans semicolon) to output to the stdio stream
 is the alignment specified as the number of bits.
 
 Try to use function @code{asm_output_aligned_bss} defined in file
-@file{varasm.c} when defining this macro.  If unable, use the expression
+@file{varasm.cc} when defining this macro.  If unable, use the expression
 @code{assemble_name (@var{stream}, @var{name})} to output the name itself;
 before and after that, output the additional assembler syntax for defining
 the name, and a newline.
@@ -8827,7 +8819,7 @@ requires changes to @var{decl}, such as putting it in a separate section.
 A C expression which evaluates to true if the target supports one-only
 semantics.
 
-If you don't define this macro, @file{varasm.c} provides a default
+If you don't define this macro, @file{varasm.cc} provides a default
 definition.  If @code{MAKE_DECL_ONE_ONLY} is defined, the default
 definition is @samp{1}; otherwise, it is @samp{0}.  Define this macro if
 you want to control one-only symbol support with a compiler flag, or if
@@ -8892,7 +8884,7 @@ systems.  This macro is used in @code{assemble_name}.
 @end defmac
 
 @deftypefn {Target Hook} tree TARGET_MANGLE_ASSEMBLER_NAME (const char *@var{name})
-Given a symbol @var{name}, perform same mangling as @code{varasm.c}'s
+Given a symbol @var{name}, perform same mangling as @code{varasm.cc}'s
 @code{assemble_name}, but in memory rather than to a file stream, returning
 result as an @code{IDENTIFIER_NODE}.  Required for correct LTO symtabs.  The
 default implementation calls the @code{TARGET_STRIP_NAME_ENCODING} hook and
@@ -9248,6 +9240,14 @@ collecting constructors and destructors to be run at startup and exit.
 It is false if we must use @command{collect2}.
 @end deftypevr
 
+@deftypevr {Target Hook} bool TARGET_DTORS_FROM_CXA_ATEXIT
+This value is true if the target wants destructors to be queued to be
+run from __cxa_atexit.  If this is the case then, for each priority level,
+a new constructor will be entered that registers the destructors for that
+level with __cxa_atexit (and there will be no destructors emitted).
+It is false the method implied by @code{have_ctors_dtors} is used.
+@end deftypevr
+
 @deftypefn {Target Hook} void TARGET_ASM_CONSTRUCTOR (rtx @var{symbol}, int @var{priority})
 If defined, a function that outputs assembler code to arrange to call
 the function referenced by @var{symbol} at initialization time.
@@ -9499,7 +9499,7 @@ being output.
 @defmacx IMMEDIATE_PREFIX
 If defined, C string expressions to be used for the @samp{%R}, @samp{%L},
 @samp{%U}, and @samp{%I} options of @code{asm_fprintf} (see
-@file{final.c}).  These are useful when a single @file{md} file must
+@file{final.cc}).  These are useful when a single @file{md} file must
 support multiple assembler formats.  In that case, the various @file{tm.h}
 files can define these macros differently.
 @end defmac
@@ -9942,11 +9942,10 @@ This describes how to specify debugging information.
 
 @menu
 * All Debuggers::      Macros that affect all debugging formats uniformly.
-* DBX Options::        Macros enabling specific options in DBX format.
-* DBX Hooks::          Hook macros for varying DBX format.
-* File Names and DBX:: Macros controlling output of file names in DBX format.
 * DWARF::              Macros for DWARF format.
 * VMS Debug::          Macros for VMS debug format.
+* CTF Debug::          Macros for CTF debug format.
+* BTF Debug::          Macros for BTF debug format.
 @end menu
 
 @node All Debuggers
@@ -9955,21 +9954,21 @@ This describes how to specify debugging information.
 @c prevent bad page break with this line
 These macros affect all debugging formats.
 
-@defmac DBX_REGISTER_NUMBER (@var{regno})
-A C expression that returns the DBX register number for the compiler
+@defmac DEBUGGER_REGNO (@var{regno})
+A C expression that returns the debugger register number for the compiler
 register number @var{regno}.  In the default macro provided, the value
 of this expression will be @var{regno} itself.  But sometimes there are
-some registers that the compiler knows about and DBX does not, or vice
+some registers that the compiler knows about and debugger does not, or vice
 versa.  In such cases, some register may need to have one number in the
-compiler and another for DBX@.
+compiler and another for debugger@.
 
 If two registers have consecutive numbers inside GCC, and they can be
 used as a pair to hold a multiword value, then they @emph{must} have
-consecutive numbers after renumbering with @code{DBX_REGISTER_NUMBER}.
+consecutive numbers after renumbering with @code{DEBUGGER_REGNO}.
 Otherwise, debuggers will be unable to access such a pair, because they
 expect register pairs to be consecutive in their own numbering scheme.
 
-If you find yourself defining @code{DBX_REGISTER_NUMBER} in way that
+If you find yourself defining @code{DEBUGGER_REGNO} in way that
 does not preserve register pairs, then what you must do instead is
 redefine the actual register numbering scheme.
 @end defmac
@@ -9979,7 +9978,7 @@ A C expression that returns the integer offset value for an automatic
 variable having address @var{x} (an RTL expression).  The default
 computation assumes that @var{x} is based on the frame-pointer and
 gives the offset from the frame-pointer.  This is required for targets
-that produce debugging output for DBX and allow the frame-pointer to be
+that produce debugging output for debugger and allow the frame-pointer to be
 eliminated when the @option{-g} option is used.
 @end defmac
 
@@ -9993,233 +9992,25 @@ having address @var{x} (an RTL expression).  The nominal offset is
 A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
-debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+debugging output.  Currently, the allowable values are
+@code{DWARF2_DEBUG}, @code{VMS_DEBUG},
 and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
 exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined, GCC uses the
-value @code{DWARF2_DEBUG}.  Otherwise, if @code{DBX_DEBUGGING_INFO} is
-defined, GCC uses @code{DBX_DEBUG}.
+value @code{DWARF2_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
-user can always get a specific type of output by using @option{-gstabs},
-@option{-gdwarf-2}, @option{-gxcoff}, or @option{-gvms}.
-@end defmac
-
-@node DBX Options
-@subsection Specific Options for DBX Output
-
-@c prevent bad page break with this line
-These are specific options for DBX output.
-
-@defmac DBX_DEBUGGING_INFO
-Define this macro if GCC should produce debugging output for DBX
-in response to the @option{-g} option.
-@end defmac
-
-@defmac XCOFF_DEBUGGING_INFO
-Define this macro if GCC should produce XCOFF format debugging output
-in response to the @option{-g} option.  This is a variant of DBX format.
+user can always get a specific type of output by using  @option{-gdwarf-2},
+or @option{-gvms}.
 @end defmac
 
 @defmac DEFAULT_GDB_EXTENSIONS
 Define this macro to control whether GCC should by default generate
-GDB's extended version of DBX debugging information (assuming DBX-format
-debugging information is enabled at all).  If you don't define the
+GDB's extended version of debugging information.  If you don't define the
 macro, the default is 1: always generate the extended information
 if there is any occasion to.
-@end defmac
-
-@defmac DEBUG_SYMS_TEXT
-Define this macro if all @code{.stabs} commands should be output while
-in the text section.
-@end defmac
-
-@defmac ASM_STABS_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabs\t"} to define an ordinary debugging symbol.
-If you don't define this macro, @code{"\t.stabs\t"} is used.  This macro
-applies only to DBX debugging information format.
-@end defmac
-
-@defmac ASM_STABD_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabd\t"} to define a debugging symbol whose
-value is the current location.  If you don't define this macro,
-@code{"\t.stabd\t"} is used.  This macro applies only to DBX debugging
-information format.
-@end defmac
-
-@defmac ASM_STABN_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabn\t"} to define a debugging symbol with no
-name.  If you don't define this macro, @code{"\t.stabn\t"} is used.  This
-macro applies only to DBX debugging information format.
-@end defmac
-
-@defmac DBX_NO_XREFS
-Define this macro if DBX on your system does not support the construct
-@samp{xs@var{tagname}}.  On some systems, this construct is used to
-describe a forward reference to a structure named @var{tagname}.
-On other systems, this construct is not supported at all.
-@end defmac
-
-@defmac DBX_CONTIN_LENGTH
-A symbol name in DBX-format debugging information is normally
-continued (split into two separate @code{.stabs} directives) when it
-exceeds a certain length (by default, 80 characters).  On some
-operating systems, DBX requires this splitting; on others, splitting
-must not be done.  You can inhibit splitting by defining this macro
-with the value zero.  You can override the default splitting-length by
-defining this macro as an expression for the length you desire.
-@end defmac
-
-@defmac DBX_CONTIN_CHAR
-Normally continuation is indicated by adding a @samp{\} character to
-the end of a @code{.stabs} string when a continuation follows.  To use
-a different character instead, define this macro as a character
-constant for the character you want to use.  Do not define this macro
-if backslash is correct for your system.
-@end defmac
-
-@defmac DBX_STATIC_STAB_DATA_SECTION
-Define this macro if it is necessary to go to the data section before
-outputting the @samp{.stabs} pseudo-op for a non-global static
-variable.
-@end defmac
-
-@defmac DBX_TYPE_DECL_STABS_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a typedef.  The default is @code{N_LSYM}.
-@end defmac
-
-@defmac DBX_STATIC_CONST_VAR_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a static variable located in the text section.  DBX format does not
-provide any ``right'' way to do this.  The default is @code{N_FUN}.
-@end defmac
-
-@defmac DBX_REGPARM_STABS_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a parameter passed in registers.  DBX format does not provide any
-``right'' way to do this.  The default is @code{N_RSYM}.
-@end defmac
-
-@defmac DBX_REGPARM_STABS_LETTER
-The letter to use in DBX symbol data to identify a symbol as a parameter
-passed in registers.  DBX format does not customarily provide any way to
-do this.  The default is @code{'P'}.
-@end defmac
-
-@defmac DBX_FUNCTION_FIRST
-Define this macro if the DBX information for a function and its
-arguments should precede the assembler code for the function.  Normally,
-in DBX format, the debugging information entirely follows the assembler
-code.
-@end defmac
-
-@defmac DBX_BLOCKS_FUNCTION_RELATIVE
-Define this macro, with value 1, if the value of a symbol describing
-the scope of a block (@code{N_LBRAC} or @code{N_RBRAC}) should be
-relative to the start of the enclosing function.  Normally, GCC uses
-an absolute address.
-@end defmac
-
-@defmac DBX_LINES_FUNCTION_RELATIVE
-Define this macro, with value 1, if the value of a symbol indicating
-the current line number (@code{N_SLINE}) should be relative to the
-start of the enclosing function.  Normally, GCC uses an absolute address.
-@end defmac
-
-@defmac DBX_USE_BINCL
-Define this macro if GCC should generate @code{N_BINCL} and
-@code{N_EINCL} stabs for included header files, as on Sun systems.  This
-macro also directs GCC to output a type number as a pair of a file
-number and a type number within the file.  Normally, GCC does not
-generate @code{N_BINCL} or @code{N_EINCL} stabs, and it outputs a single
-number for a type number.
-@end defmac
-
-@node DBX Hooks
-@subsection Open-Ended Hooks for DBX Format
-
-@c prevent bad page break with this line
-These are hooks for DBX format.
-
-@defmac DBX_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
-A C statement to output DBX debugging information before code for line
-number @var{line} of the current source file to the stdio stream
-@var{stream}.  @var{counter} is the number of time the macro was
-invoked, including the current invocation; it is intended to generate
-unique labels in the assembly output.
-
-This macro should not be defined if the default output is correct, or
-if it can be made correct by defining @code{DBX_LINES_FUNCTION_RELATIVE}.
-@end defmac
-
-@defmac NO_DBX_FUNCTION_END
-Some stabs encapsulation formats (in particular ECOFF), cannot handle the
-@code{.stabs "",N_FUN,,0,0,Lscope-function-1} gdb dbx extension construct.
-On those machines, define this macro to turn this feature off without
-disturbing the rest of the gdb extensions.
-@end defmac
-
-@defmac NO_DBX_BNSYM_ENSYM
-Some assemblers cannot handle the @code{.stabd BNSYM/ENSYM,0,0} gdb dbx
-extension construct.  On those machines, define this macro to turn this
-feature off without disturbing the rest of the gdb extensions.
-@end defmac
-
-@node File Names and DBX
-@subsection File Names in DBX Format
-
-@c prevent bad page break with this line
-This describes file names in DBX format.
-
-@defmac DBX_OUTPUT_MAIN_SOURCE_FILENAME (@var{stream}, @var{name})
-A C statement to output DBX debugging information to the stdio stream
-@var{stream}, which indicates that file @var{name} is the main source
-file---the file specified as the input file for compilation.
-This macro is called only once, at the beginning of compilation.
-
-This macro need not be defined if the standard form of output
-for DBX debugging information is appropriate.
-
-It may be necessary to refer to a label equal to the beginning of the
-text section.  You can use @samp{assemble_name (stream, ltext_label_name)}
-to do so.  If you do this, you must also set the variable
-@var{used_ltext_label_name} to @code{true}.
-@end defmac
-
-@defmac NO_DBX_MAIN_SOURCE_DIRECTORY
-Define this macro, with value 1, if GCC should not emit an indication
-of the current directory for compilation and current source language at
-the beginning of the file.
-@end defmac
-
-@defmac NO_DBX_GCC_MARKER
-Define this macro, with value 1, if GCC should not emit an indication
-that this object file was compiled by GCC@.  The default is to emit
-an @code{N_OPT} stab at the beginning of every source file, with
-@samp{gcc2_compiled.} for the string and value 0.
-@end defmac
-
-@defmac DBX_OUTPUT_MAIN_SOURCE_FILE_END (@var{stream}, @var{name})
-A C statement to output DBX debugging information at the end of
-compilation of the main source file @var{name}.  Output should be
-written to the stdio stream @var{stream}.
-
-If you don't define this macro, nothing special is output at the end
-of compilation, which is correct for most machines.
-@end defmac
-
-@defmac DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
-Define this macro @emph{instead of} defining
-@code{DBX_OUTPUT_MAIN_SOURCE_FILE_END}, if what needs to be output at
-the end of compilation is an @code{N_SO} stab with an empty string,
-whose value is the highest absolute text address in the file.
 @end defmac
 
 @need 2000
@@ -10233,18 +10024,18 @@ Here are macros for DWARF output.
 Define this macro if GCC should produce dwarf version 2 format
 debugging output in response to the @option{-g} option.
 
-@deftypefn {Target Hook} int TARGET_DWARF_CALLING_CONVENTION (const_tree @var{function})
-Define this to enable the dwarf attribute @code{DW_AT_calling_convention} to
-be emitted for each function.  Instead of an integer return the enum
-value for the @code{DW_CC_} tag.
-@end deftypefn
-
 To support optional call frame debugging information, you must also
 define @code{INCOMING_RETURN_ADDR_RTX} and either set
 @code{RTX_FRAME_RELATED_P} on the prologue insns if you use RTL for the
 prologue, or call @code{dwarf2out_def_cfa} and @code{dwarf2out_reg_save}
 as appropriate from @code{TARGET_ASM_FUNCTION_PROLOGUE} if you don't.
 @end defmac
+
+@deftypefn {Target Hook} int TARGET_DWARF_CALLING_CONVENTION (const_tree @var{function})
+Define this to enable the dwarf attribute @code{DW_AT_calling_convention} to
+be emitted for each function.  Instead of an integer return the enum
+value for the @code{DW_CC_} tag.
+@end deftypefn
 
 @defmac DWARF2_FRAME_INFO
 Define this macro to a nonzero value if GCC should always output
@@ -10372,6 +10163,30 @@ is to generate minimal debug info for a traceback in the absence of
 @option{-g} unless explicitly overridden with @option{-g0}.  This
 behavior is controlled by @code{TARGET_OPTION_OPTIMIZATION} and
 @code{TARGET_OPTION_OVERRIDE}.
+@end defmac
+
+@need 2000
+@node CTF Debug
+@subsection Macros for CTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for CTF debug format.
+
+@defmac CTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in CTF debug
+format in response to the @option{-gctf} option.
+@end defmac
+
+@need 2000
+@node BTF Debug
+@subsection Macros for BTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for BTF debug format.
+
+@defmac BTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in BTF debug
+format in response to the @option{-gbtf} option.
 @end defmac
 
 @node Floating Point
@@ -10597,7 +10412,7 @@ the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  You can also
 add @code{handle_dll_attribute} in the attribute table for your port
 to perform initial processing of the @samp{dllimport} and
 @samp{dllexport} attributes.  This is done in @file{i386/cygwin.h} and
-@file{i386/i386.c}, for example.
+@file{i386/i386.cc}, for example.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VALID_DLLIMPORT_ATTRIBUTE_P (const_tree @var{decl})
@@ -10715,6 +10530,37 @@ This target hook returns @code{false} if the @var{caller} function
 cannot inline @var{callee}, based on target specific information.  By
 default, inlining is not allowed if the callee function has function
 specific target options and the caller does not use the same options.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_UPDATE_IPA_FN_TARGET_INFO (unsigned int& @var{info}, const gimple* @var{stmt})
+Allow target to analyze all gimple statements for the given function to
+record and update some target specific information for inlining.  A typical
+example is that a caller with one isa feature disabled is normally not
+allowed to inline a callee with that same isa feature enabled even which is
+attributed by always_inline, but with the conservative analysis on all
+statements of the callee if we are able to guarantee the callee does not
+exploit any instructions from the mismatch isa feature, it would be safe to
+allow the caller to inline the callee.
+@var{info} is one @code{unsigned int} value to record information in which
+one set bit indicates one corresponding feature is detected in the analysis,
+@var{stmt} is the statement being analyzed.  Return true if target still
+need to analyze the subsequent statements, otherwise return false to stop
+subsequent analysis.
+The default version of this hook returns false.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_NEED_IPA_FN_TARGET_INFO (const_tree @var{decl}, unsigned int& @var{info})
+Allow target to check early whether it is necessary to analyze all gimple
+statements in the given function to update target specific information for
+inlining.  See hook @code{update_ipa_fn_target_info} for usage example of
+target specific information.  This hook is expected to be invoked ahead of
+the iterating with hook @code{update_ipa_fn_target_info}.
+@var{decl} is the function being analyzed, @var{info} is the same as what
+in hook @code{update_ipa_fn_target_info}, target can do one time update
+into @var{info} without iterating for some case.  Return true if target
+decides to analyze all gimple statements to collect information, otherwise
+return false.
+The default version of this hook returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_RELAYOUT_FUNCTION (tree @var{fndecl})
@@ -11708,11 +11554,12 @@ from shared libraries (DLLs).
 You need not define this macro if it would always evaluate to zero.
 @end defmac
 
-@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
+@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs}, location_t @var{loc})
 This target hook may add @dfn{clobbers} to @var{clobbers} and
 @var{clobbered_regs} for any hard regs the port wishes to automatically
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected
-to avoid clobbering a register that is already used by the asm.
+to avoid clobbering a register that is already used by the asm.  @var{loc}
+is the source location of the asm.
 
 It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and
 @var{constraints} as necessary for other pre-processing.  In this case the
@@ -11984,6 +11831,15 @@ By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_PREFERRED_DOLOOP_MODE (machine_mode @var{mode})
+This hook takes a @var{mode} for a doloop IV, where @code{mode} is the
+original mode for the operation.  If the target prefers an alternate
+@code{mode} for the operation, then this hook should return that mode;
+otherwise the original @code{mode} should be returned.  For example, on a
+64-bit target, @code{DImode} might be preferred over @code{SImode}.  Both the
+original and the returned modes should be @code{MODE_INT}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx_insn *@var{insn})
 Take an instruction in @var{insn} and return @code{false} if the instruction
 is not appropriate as a combination of two or more instructions.  The
@@ -12122,6 +11978,13 @@ This function prepares to emit a conditional comparison within a sequence
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
 @end deftypefn
 
+@deftypefn {Target Hook} rtx TARGET_GEN_MEMSET_SCRATCH_RTX (machine_mode @var{mode})
+This hook should return an rtx for a scratch register in @var{mode} to
+be used when expanding memset calls.  The backend can use a hard scratch
+register to avoid stack realignment when expanding memset.  The default
+is @code{gen_reg_rtx}.
+@end deftypefn
+
 @deftypefn {Target Hook} unsigned TARGET_LOOP_UNROLL_ADJUST (unsigned @var{nunroll}, class loop *@var{loop})
 This target hook returns a new value for the number of times @var{loop}
 should be unrolled. The parameter @var{nunroll} is the number of times
@@ -12186,7 +12049,8 @@ If defined, this macro is the number of entries in
 If defined, this macro is the name of a global variable containing
 target-specific format overrides for the @option{-Wformat} option. The
 default is to have no target-specific format overrides. If defined,
-@code{TARGET_FORMAT_TYPES} must be defined, too.
+@code{TARGET_FORMAT_TYPES} and @code{TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT}
+must be defined, too.
 @end defmac
 
 @defmac TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT
@@ -12286,6 +12150,13 @@ This target hook emits instructions to zero the subset of @var{selected_regs}
 that could conceivably contain values that are useful to an attacker.
 Return the set of registers that were actually cleared.
 
+For most targets, the returned set of registers is a subset of
+@var{selected_regs}, however, for some of the targets (for example MIPS),
+clearing some registers that are in the @var{selected_regs} requires
+clearing other call used registers that are not in the @var{selected_regs},
+under such situation, the returned set of registers must be a subset of all
+call used registers.
+
 The default implementation uses normal move instructions to zero
 all the registers in @var{selected_regs}.  Define this hook if the
 target has more efficient ways of zeroing certain registers,
@@ -12344,6 +12215,11 @@ This value should be set if the result written by
 It returns true if the target supports GNU indirect functions.
 The support includes the assembler, linker and dynamic linker.
 The default value of this hook is based on target's libc.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_IFUNC_REF_LOCAL_OK (void)
+Return true if it is OK to reference indirect function resolvers
+locally.  The default is to return false.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned int} TARGET_ATOMIC_ALIGN_FOR_MODE (machine_mode @var{mode})
@@ -12536,3 +12412,19 @@ Return an RTX representing @var{tagged_pointer} with its tag set to zero.
 Store the result in @var{target} if convenient.
 The default clears the top byte of the original pointer.
 @end deftypefn
+
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_GCOV_TYPE_SIZE (void)
+Returns the gcov type size in bits.  This type is used for example for
+counters incremented by profiling and code-coverage events.  The default
+value is 64, if the type size of long long is greater than 32, otherwise the
+default value is 32.  A 64-bit type is recommended to avoid overflows of the
+counters.  If the @option{-fprofile-update=atomic} is used, then the
+counters are incremented using atomic operations.  Targets not supporting
+64-bit atomic operations may override the default value and request a 32-bit
+type.
+@end deftypefn
+
+@deftypevr {Target Hook} bool TARGET_HAVE_SHADOW_CALL_STACK
+This value is true if the target platform supports
+@option{-fsanitize=shadow-call-stack}.  The default value is false.
+@end deftypevr

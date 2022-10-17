@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,8 @@
 #include <debug/vector>
 
 #include <cassert>
-#include <cstdio>
+#include <cstdio>	// for std::fprintf, stderr
+#include <cstdlib>	// for std::abort
 #include <cctype>	// for std::isspace.
 #include <cstring>	// for std::strstr.
 
@@ -42,6 +43,24 @@
 #include <cxxabi.h>	// for __cxa_demangle.
 
 #include "mutex_pool.h"
+
+#ifdef _GLIBCXX_VERBOSE_ASSERT
+namespace std
+{
+  [[__noreturn__]]
+  void
+  __glibcxx_assert_fail(const char* file, int line,
+			const char* function, const char* condition) noexcept
+  {
+    if (file && function && condition)
+      fprintf(stderr, "%s:%d: %s: Assertion '%s' failed.\n",
+	      file, line, function, condition);
+    else if (function)
+      fprintf(stderr, "%s: Undefined behavior detected.\n", function);
+    abort();
+  }
+}
+#endif
 
 using namespace std;
 
@@ -407,7 +426,9 @@ namespace __gnu_debug
   _M_reset() throw ()
   {
     __atomic_store_n(&_M_sequence, (_Safe_sequence_base*)0, __ATOMIC_RELEASE);
-    _M_version = 0;
+    // Do not reset version, so that a detached iterator does not look like a
+    // value-initialized one.
+    // _M_version = 0;
     _M_prior = 0;
     _M_next = 0;
   }
@@ -573,8 +594,8 @@ namespace
     : _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
     { get_max_length(_M_max_length); }
 
+    static constexpr int _S_indent = 4;
     std::size_t	_M_max_length;
-    enum { _M_indent = 4 } ;
     std::size_t	_M_column;
     bool	_M_first_line;
     bool	_M_wordwrap;
@@ -590,10 +611,12 @@ namespace
   void
   print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc = -1)
   {
-    if (nbc >= 0)
-      ctx._M_column += fprintf(stderr, "%.*s", (int)nbc, str);
-    else
-      ctx._M_column += fprintf(stderr, "%s", str);
+    if (nbc != 0)
+      {
+	ctx._M_column += (nbc > 0)
+	  ? fprintf(stderr, "%.*s", (int)nbc, str)
+	  : fprintf(stderr, "%s", str);
+      }
   }
 
   void
@@ -603,7 +626,7 @@ namespace
     if (length == 0)
       return;
 
-    // Consider first '\n' at begining cause it impacts column.
+    // First consider '\n' at the beginning because it impacts the column.
     if (word[0] == '\n')
       {
 	fprintf(stderr, "\n");
@@ -625,8 +648,8 @@ namespace
 	// If this isn't the first line, indent
 	if (ctx._M_column == 1 && !ctx._M_first_line)
 	  {
-	    const char spacing[ctx._M_indent + 1] = "    ";
-	    print_raw(ctx, spacing, ctx._M_indent);
+	    const char spacing[PrintContext::_S_indent + 1] = "    ";
+	    print_raw(ctx, spacing, PrintContext::_S_indent);
 	  }
 
 	int written = fprintf(stderr, "%.*s", (int)length, word);
@@ -659,7 +682,7 @@ namespace
 
 	    pos += 2; // advance past "__"
 	    if (memcmp(pos, cxx1998, 9) == 0)
-	      pos += 9; // advance part "cxx1998::"
+	      pos += 9; // advance past "cxx1998::"
 
 	    str = pos;
 	  }
@@ -748,7 +771,8 @@ namespace
 	 "before-begin",
 	 "dereferenceable (start-of-reverse-sequence)",
 	 "dereferenceable (reverse)",
-	 "past-the-reverse-end"
+	 "past-the-reverse-end",
+	 "singular (value-initialized)"
 	};
       print_word(ctx, state_names[iterator._M_state]);
     }
@@ -1071,6 +1095,58 @@ namespace
   void
   print_string(PrintContext& ctx, const char* str, ptrdiff_t nbc)
   { print_string(ctx, str, nbc, nullptr, 0); }
+
+#if _GLIBCXX_HAVE_STACKTRACE
+  int
+  print_backtrace(void* data, __UINTPTR_TYPE__ pc, const char* filename,
+		  int lineno, const char* function)
+  {
+    const int bufsize = 64;
+    char buf[bufsize];
+
+    PrintContext& ctx = *static_cast<PrintContext*>(data);
+
+    int written = __builtin_sprintf(buf, "%p ", (void*)pc);
+    print_word(ctx, buf, written);
+
+    int ret = 0;
+    if (function)
+      {
+	int status;
+	char* demangled_name =
+	  __cxxabiv1::__cxa_demangle(function, NULL, NULL, &status);
+	if (status == 0)
+	  pretty_print(ctx, demangled_name, &print_raw);
+	else
+	  print_word(ctx, function);
+
+	free(demangled_name);
+	ret = strstr(function, "main") ? 1 : 0;
+      }
+
+    print_literal(ctx, "\n");
+
+    if (filename)
+      {
+	bool wordwrap = false;
+	swap(wordwrap, ctx._M_wordwrap);
+	print_word(ctx, filename);
+
+	if (lineno)
+	  {
+	    written = __builtin_sprintf(buf, ":%u\n", lineno);
+	    print_word(ctx, buf, written);
+	  }
+	else
+	  print_literal(ctx, "\n");
+	swap(wordwrap, ctx._M_wordwrap);
+      }
+    else
+      print_literal(ctx, "???:0\n");
+
+    return ret;
+  }
+#endif
 }
 
 namespace __gnu_debug
@@ -1116,6 +1192,17 @@ namespace __gnu_debug
 	ctx._M_first_line = true;
 	print_literal(ctx, "\n");
       }
+
+#if _GLIBCXX_HAVE_STACKTRACE
+    if (_M_backtrace_state)
+      {
+	print_literal(ctx, "Backtrace:\n");
+	_M_backtrace_full(
+	  _M_backtrace_state, 1, print_backtrace, nullptr, &ctx);
+	ctx._M_first_line = true;
+	print_literal(ctx, "\n");
+      }
+#endif
 
     print_literal(ctx, "Error: ");
 

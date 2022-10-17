@@ -4,6 +4,8 @@
 ! { dg-additional-options "--param=openacc-privatization=noisy" } for
 ! testing/documenting aspects of that functionality.
 
+! { dg-additional-options -Wuninitialized }
+
 ! See also '../../c-c++-common/goacc/privatization-1-routine_gang.c'.
 !TODO More cases should be added here.
 
@@ -39,9 +41,8 @@ contains
           !$acc atomic write ! ... to force 'TREE_ADDRESSABLE'.
           y = a
   end subroutine f
-    ! { dg-note {variable 'i' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { xfail *-*-* } l_routine$c_routine }
-    ! { dg-note {variable 'j' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { xfail *-*-* } l_routine$c_routine }
-    ! { dg-note {variable 'a' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO" { xfail *-*-* } l_routine$c_routine }
+    ! { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_routine$c_routine }
+    ! { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_routine$c_routine }
+    ! { dg-note {variable 'a' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_routine$c_routine }
     ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { xfail *-*-* } l_routine$c_routine }
-    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_routine$c_routine }
 end module m

@@ -86,6 +86,7 @@
 #define _FP_DIV_MEAT_D(R,X,Y)   _FP_DIV_MEAT_2_udiv(D,R,X,Y)
 #define _FP_DIV_MEAT_Q(R,X,Y)   _FP_DIV_MEAT_4_udiv(Q,R,X,Y)
 
+#define _FP_NANFRAC_H		_FP_QNANBIT_H
 #define _FP_NANFRAC_S		_FP_QNANBIT_S
 #define _FP_NANFRAC_D		_FP_QNANBIT_D, 0
 /* Even if XFmode is 12byte,  we have to pad it to

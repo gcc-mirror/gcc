@@ -50,6 +50,10 @@ pragma Restrictions (No_Finalization);
 --  access type on incomplete type Perm_Tree_Wrapper (which is required for
 --  defining a recursive type).
 
+pragma Restrictions (No_Tasking);
+--  Make it explicit that tasking is not used in the compiler, which also
+--  allows generating simpler and more efficient code.
+
 package System is
    pragma Pure;
    --  Note that we take advantage of the implementation permission to make

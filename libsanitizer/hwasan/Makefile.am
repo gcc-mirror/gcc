@@ -8,16 +8,19 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 AM_CXXFLAGS += -std=gnu++14
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
+AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 toolexeclib_LTLIBRARIES = libhwasan.la
 
 hwasan_files = \
+	hwasan_allocation_functions.cpp \
 	hwasan_allocator.cpp \
 	hwasan.cpp \
 	hwasan_dynamic_shadow.cpp \
 	hwasan_exceptions.cpp \
 	hwasan_flags.inc \
+	hwasan_fuchsia.cpp \
 	hwasan_globals.cpp \
 	hwasan_interceptors.cpp \
 	hwasan_interceptors_vfork.S \
@@ -25,8 +28,10 @@ hwasan_files = \
 	hwasan_memintrinsics.cpp \
 	hwasan_new_delete.cpp \
 	hwasan_poisoning.cpp \
+	hwasan_preinit.cpp \
 	hwasan_report.cpp \
-	hwasan_setjmp.S \
+	hwasan_setjmp_aarch64.S \
+	hwasan_setjmp_x86_64.S \
 	hwasan_tag_mismatch_aarch64.S \
 	hwasan_thread.cpp \
 	hwasan_thread_list.cpp \

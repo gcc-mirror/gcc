@@ -1,6 +1,6 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -168,7 +168,6 @@ bool gfc_check_spread (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_srand (gfc_expr *);
 bool gfc_check_stat (gfc_expr *, gfc_expr *);
 bool gfc_check_storage_size (gfc_expr *, gfc_expr *);
-bool gfc_check_sum (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_symlnk (gfc_expr *, gfc_expr *);
 bool gfc_check_team_number (gfc_expr *);
 bool gfc_check_transf_bit_intrins (gfc_actual_arglist *);
@@ -459,7 +458,6 @@ void gfc_resolve_asinh (gfc_expr *, gfc_expr *);
 void gfc_resolve_atan (gfc_expr *, gfc_expr *);
 void gfc_resolve_atanh (gfc_expr *, gfc_expr *);
 void gfc_resolve_atan2 (gfc_expr *, gfc_expr *, gfc_expr *);
-void gfc_resolve_atan2d (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_atomic_def (gfc_code *);
 void gfc_resolve_atomic_ref (gfc_code *);
 void gfc_resolve_besn (gfc_expr *, gfc_expr *, gfc_expr *);
@@ -521,7 +519,8 @@ void gfc_resolve_ibits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ibset (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_image_index (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_image_status (gfc_expr *, gfc_expr *, gfc_expr *);
-void gfc_resolve_index_func (gfc_expr *, gfc_actual_arglist *);
+void gfc_resolve_index_func (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+			     gfc_expr *);
 void gfc_resolve_ierrno (gfc_expr *);
 void gfc_resolve_ieor (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ichar (gfc_expr *, gfc_expr *, gfc_expr *);
@@ -542,7 +541,6 @@ void gfc_resolve_rshift (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_lshift (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ishft (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ishftc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
-void gfc_resolve_kill (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_lbound (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_lcobound (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_len (gfc_expr *, gfc_expr *, gfc_expr *);
@@ -658,7 +656,6 @@ void gfc_resolve_gmtime (gfc_code *);
 void gfc_resolve_hostnm_sub (gfc_code *);
 void gfc_resolve_idate (gfc_code *);
 void gfc_resolve_itime (gfc_code *);
-void gfc_resolve_kill_sub (gfc_code *);
 void gfc_resolve_lstat_sub (gfc_code *);
 void gfc_resolve_ltime (gfc_code *);
 void gfc_resolve_mvbits (gfc_code *);

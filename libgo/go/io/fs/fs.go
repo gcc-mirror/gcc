@@ -73,8 +73,8 @@ func ValidPath(name string) bool {
 
 // A File provides access to a single file.
 // The File interface is the minimum implementation required of the file.
-// A file may implement additional interfaces, such as
-// ReadDirFile, ReaderAt, or Seeker, to provide additional or optimized functionality.
+// Directory files should also implement ReadDirFile.
+// A file may implement io.ReaderAt or io.Seeker as optimizations.
 type File interface {
 	Stat() (FileInfo, error)
 	Read([]byte) (int, error)
@@ -86,7 +86,7 @@ type File interface {
 type DirEntry interface {
 	// Name returns the name of the file (or subdirectory) described by the entry.
 	// This name is only the final element of the path (the base name), not the entire path.
-	// For example, Name would return "hello.go" not "/home/gopher/hello.go".
+	// For example, Name would return "hello.go" not "home/gopher/hello.go".
 	Name() string
 
 	// IsDir reports whether the entry describes a directory.
@@ -153,7 +153,7 @@ type FileInfo interface {
 	Mode() FileMode     // file mode bits
 	ModTime() time.Time // modification time
 	IsDir() bool        // abbreviation for Mode().IsDir()
-	Sys() interface{}   // underlying data source (can return nil)
+	Sys() any           // underlying data source (can return nil)
 }
 
 // A FileMode represents a file's mode and permission bits.

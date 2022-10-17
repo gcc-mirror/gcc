@@ -1,5 +1,5 @@
 /* Measuring the complexity of svalues/regions.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -36,6 +36,7 @@ struct complexity
   complexity (const region *reg);
   complexity (const svalue *sval);
   static complexity from_pair (const complexity &c1, const complexity &c);
+  static complexity from_vec_svalue (const vec<const svalue *> &vec);
 
   /* The total number of svalues and regions in the tree of this
      entity, including the entity itself.  */

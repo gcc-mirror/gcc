@@ -1,0 +1,8 @@
+(function "func"
+  (insn-chain
+    (block 2
+      (edge-from entry (flags "FALLTHRU"))
+      (edge-to exit (flags "FALLTHRU"))
+    ) ;; block 2
+  ) ;; insn-chain
+) ;; function

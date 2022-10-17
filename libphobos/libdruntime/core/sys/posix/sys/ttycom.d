@@ -214,3 +214,104 @@ else version (FreeBSD)
     enum uint NETGRAPHDISC = 6;   // Netgraph tty node discipline
     enum uint H4DISC   = 7;       // Netgraph Blutooth H4 discipline
 }
+else version (OpenBSD)
+{
+    struct winsize {
+        ushort  ws_row;     // rows, in characters
+        ushort  ws_col;     // columns, in characters
+        ushort  ws_xpixel;  // horizontal size, pixels
+        ushort  ws_ypixel;  // vertical size, pixels
+    }
+
+    struct tstamps {
+        int ts_set;         // TIOCM_CAR and/or TIOCM_CTS
+        int ts_clr;
+    }
+
+    // Serial/TTY ioctl's
+                                               // 0-2 compat
+                                               // 3-7 unused
+                                               // 8-10 compat
+                                               // 11-12 unused
+    enum uint TIOCEXCL  = _IO('t', 13);        // set exclusive use of tty
+    enum uint TIOCNXCL  = _IO('t', 14);        // reset exclusive use of tty
+    enum uint TIOCFLUSH = _IOW!(int)('t', 16); // flush buffers
+                            // 17-18 compat
+    enum uint TIOCGETA  = _IOR!(termios)('t', 19); // get termios struct
+    enum uint TIOCSETA  = _IOW!(termios)('t', 20); // set termios struct
+    enum uint TIOCSETAW = _IOW!(termios)('t', 21); // drain output, set
+    enum uint TIOCSETAF = _IOW!(termios)('t', 22); // drn out, fls in, set
+                            // 23-25 unused
+    enum uint TIOCGETD  = _IOR!(int)('t', 26); // get line discipline
+    enum uint TIOCSETD  = _IOW!(int)('t', 27); // set line discipline
+    enum uint TIOCSETVERAUTH = _IOW!(int)('t', 28);     // set verified auth
+    enum uint TIOCCLRVERAUTH = _IO('t', 29);     // clear verified auth
+    enum uint TIOCCHKVERAUTH = _IO('t', 30);     // check verified auth
+                            // 31-89 unused
+    enum uint TIOCSTSTAMP = _IOW!(tstamps)('t', 90); // timestamp reasons
+    enum uint TIOCGTSTAMP = _IOR!(timeval)('t', 91); // get timestamp
+                            // 92-93 device flags
+    enum uint TIOCSFLAGS = _IOW!(int)('t', 92); // set device flags
+    enum uint TIOCGFLAGS = _IOR!(int)('t', 93); // get device flags
+                            // 94-97 conflicts: tun and tap
+    enum uint TIOCDRAIN = _IO('t', 94); // wait till output drained
+    enum uint TIOCSIG   = _IOW!(int)('t', 95); // pty: generate signal
+    enum uint TIOCEXT   = _IOW!(int)('t', 96); // pty: external processing
+    enum uint TIOCSCTTY = _IO('t', 97);        // become controlling tty
+    enum uint TIOCCONS  = _IOW!(int)('t', 98); // become virtual console
+    enum uint TIOCGSID  = _IOR!(int)('t', 99); // get session id
+                            // 100 unused
+    enum uint TIOCSTAT  = _IO('t', 101);       // simulate ^T status message
+    enum uint TIOCUCNTL = _IOW!(int)('t', 102); // pty: set/clr usr cntl mode
+    enum uint   UIOCCMD(n) = _IO('u', n);       // usr cntl op "n"
+    enum uint TIOCSWINSZ = _IOW!(winsize)('t', 103); // set window size
+    enum uint TIOCGWINSZ = _IOR!(winsize)('t', 104); // get window size
+    enum uint TIOCREMOTE = _IOW!(int)('t', 105); // remote input editing
+    enum uint TIOCMGET  = _IOR!(int)('t', 106); // get all modem bits
+    enum uint   TIOCM_LE  = 0x01;               // line enable
+    enum uint   TIOCM_DTR = 0x02;               // data terminal ready
+    enum uint   TIOCM_RTS = 0x04;               // request to send
+    enum uint   TIOCM_ST  = 0x08;               // secondary transmit
+    enum uint   TIOCM_SR  = 0x10;               // secondary receive
+    enum uint   TIOCM_CTS = 0x20;               // clear to send
+    enum uint   TIOCM_CAR = 0x40;               // carrier detect
+    enum uint   TIOCM_RNG = 0x80;               // ring
+    enum uint   TIOCM_DSR = 0x100;              // data set ready
+    enum uint   TIOCM_CD  = TIOCM_CAR;
+    enum uint   TIOCM_RI = TIOCM_RNG;
+    enum uint TIOCMBIC  = _IOW!(int)('t', 107); // bic modem bits
+    enum uint TIOCMBIS  = _IOW!(int)('t', 108); // bis modem bits
+    enum uint TIOCMSET  = _IOW!(int)('t', 109); // set all modem bits
+    enum uint TIOCSTART = _IO('t', 110);        // start output like ^Q
+    enum uint TIOCSTOP  = _IO('t', 111);        // stop output like ^S
+    enum uint TIOCPKT   = _IOW!(int)('t', 112); // pty: set/clr packet mode
+    enum uint TIOCPKT_DATA       = 0x00;        // data packet
+    enum uint TIOCPKT_FLUSHREAD  = 0x01;        // flush packet
+    enum uint TIOCPKT_FLUSHWRITE = 0x02;        // flush packet
+    enum uint TIOCPKT_STOP       = 0x04;        // stop output
+    enum uint TIOCPKT_START      = 0x08;        // start output
+    enum uint TIOCPKT_NOSTOP     = 0x10;        // no more ^S, ^Q
+    enum uint TIOCPKT_DOSTOP     = 0x20;        // now do ^S, ^Q
+    enum uint TIOCPKT_IOCTL      = 0x40;        // state change of pty driver
+    enum uint TIOCNOTTY = _IO('t', 113);        // void tty association
+                             // 114 unused
+    enum uint TIOCOUTQ  = _IOR!(int)('t', 115); // output queue size
+                             // 116-117 compat
+    enum uint TIOCSPGRP = _IOW!(int)('t', 118); // set pgrp of tty
+    enum uint TIOCGPGRP = _IOR!(int)('t', 119); // get pgrp of tty
+
+    enum uint TIOCCDTR  = _IO('t', 120);       // clear data terminal ready
+    enum uint TIOCSDTR  = _IO('t', 121);       // set data terminal ready
+    enum uint TIOCCBRK  = _IO('t', 122);       // clear break bit
+    enum uint TIOCSBRK  = _IO('t', 123);       // set break bit
+                            // 124-127 compat
+
+    enum uint TTYDISC  = 0;       // termios tty line discipline
+    enum uint TABLDISC = 3;       // tablet description
+    enum uint SLIPDISC = 4;       // serial IP discipline
+    enum uint PPPDISC  = 5;       // PPP discipline
+    enum uint STRIPDISC = 6;      // metricom wireless IP discipline
+    enum uint NMEADISC = 7;       // NMEA0183 discipline
+    enum uint MSTSDISC = 8;       // Meinberg time string discipline
+    enum uint ENDRUNDISC = 9;     // Endrun time format discipline
+}

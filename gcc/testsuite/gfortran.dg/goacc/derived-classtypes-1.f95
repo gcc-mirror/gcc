@@ -1,3 +1,5 @@
+! { dg-additional-options -Wuninitialized }
+
 type :: type1
   integer :: a
 end type type1

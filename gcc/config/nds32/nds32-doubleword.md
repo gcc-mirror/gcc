@@ -1,5 +1,5 @@
 ;; DImode/DFmode patterns description of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -150,7 +150,7 @@
   /* Construct highpart rtx.  */
   /* Note that operands[1] can be VOIDmode constant,
      so we need to use gen_highpart_mode().
-     Refer to gcc/emit-rtl.c for more information.  */
+     Refer to gcc/emit-rtl.cc for more information.  */
   operands[4] = gen_highpart (SImode, operands[0]);
   operands[5] = gen_highpart_mode (SImode,
 				   GET_MODE (operands[0]), operands[1]);

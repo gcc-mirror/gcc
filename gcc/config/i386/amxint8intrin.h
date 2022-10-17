@@ -1,4 +1,4 @@
-/* Copyright (C) 2020-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -34,7 +34,7 @@
 #define __DISABLE_AMX_INT8__
 #endif /* __AMX_INT8__ */
 
-#if defined(__x86_64__) && defined(__AMX_INT8__)
+#if defined(__x86_64__)
 #define _tile_int8_dp_internal(name,dst,src1,src2)					\
   __asm__ volatile							\
   ("{"#name"\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|"#name"\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)

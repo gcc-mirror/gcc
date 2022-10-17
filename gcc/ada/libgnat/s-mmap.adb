@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2021, AdaCore                     --
+--                     Copyright (C) 2007-2022, AdaCore                     --
 --                                                                          --
 -- This library is free software;  you can redistribute it and/or modify it --
 -- under terms of the  GNU General Public License  as published by the Free --
@@ -367,7 +367,7 @@ package body System.Mmap is
       Length  : File_Size := 0;
       Mutable : Boolean := False) return Mapped_Region
    is
-      Region  : Mapped_Region := Invalid_Mapped_Region;
+      Region : Mapped_Region := Invalid_Mapped_Region;
    begin
       Read (File, Region, Offset, Length, Mutable);
       return Region;

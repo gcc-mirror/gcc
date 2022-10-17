@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -151,6 +151,14 @@
   (and (match_code "const,symbol_ref,label_ref")
        (match_test "aarch64_symbolic_address_p (op)")
        (match_test "aarch64_mov_operand_p (op, GET_MODE (op))")))
+
+;; const is needed here to support UNSPEC_SALT_ADDR.
+(define_constraint "Usw"
+  "@internal
+   A constraint that matches a small GOT access."
+  (and (match_code "const,symbol_ref")
+       (match_test "aarch64_classify_symbolic_expression (op)
+		     == SYMBOL_SMALL_GOT_4G")))
 
 (define_constraint "Uss"
   "@internal
@@ -436,6 +444,14 @@
  (and (match_code "const,const_vector")
       (match_test "aarch64_simd_shift_imm_p (op, GET_MODE (op),
 						 true)")))
+
+(define_constraint "D1"
+  "@internal
+ A constraint that matches vector of immediates that is bits(mode)-1."
+ (and (match_code "const,const_vector")
+      (match_test "aarch64_const_vec_all_same_in_range_p (op,
+			GET_MODE_UNIT_BITSIZE (mode) - 1,
+			GET_MODE_UNIT_BITSIZE (mode) - 1)")))
 
 (define_constraint "Dr"
   "@internal

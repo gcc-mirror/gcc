@@ -8,6 +8,10 @@
 #define RN_MASK  0x3LL             /* RN field mask */
 
 void abort (void);
+void __attribute__ ((noipa)) wrap_set_fpscr_rn (int val)
+{
+  __builtin_set_fpscr_rn (val);
+}
 
 int main ()
 {
@@ -43,7 +47,8 @@ int main ()
     }		  
 
   /* Test float rounding mode builtin with const value argument.  */
-  __builtin_set_fpscr_rn(3);
+  val = 3;
+  __builtin_set_fpscr_rn (val);
   conv_val.d = __builtin_mffs();
   ll_value = conv_val.ll & RN_MASK;
 
@@ -58,7 +63,7 @@ int main ()
     }		  
 
   val = 2;
-  __builtin_set_fpscr_rn(val);
+  __builtin_set_fpscr_rn (val);
   conv_val.d = __builtin_mffs();
   ll_value = conv_val.ll & RN_MASK;
 
@@ -74,7 +79,7 @@ int main ()
 
   /* Reset to 0 for testing */
   val = 0;
-  __builtin_set_fpscr_rn(val);
+  __builtin_set_fpscr_rn (val);
 
   __builtin_mtfsb1(31);
   conv_val.d = __builtin_mffs();
@@ -157,7 +162,7 @@ int main ()
 
   /* Test builtin float rounding mode with variable as argument.  */
   val = 0;
-  __builtin_set_fpscr_rn(val);
+  wrap_set_fpscr_rn (val);
   conv_val.d = __builtin_mffs();
   ll_value = conv_val.ll & RN_MASK;
 
@@ -172,7 +177,7 @@ int main ()
     }		  
 
   val = 3;
-  __builtin_set_fpscr_rn(val);
+  wrap_set_fpscr_rn (val);
   conv_val.d = __builtin_mffs();
   ll_value = conv_val.ll & RN_MASK;
 

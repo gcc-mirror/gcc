@@ -1,5 +1,5 @@
 ;; Machine Description for shared bits common to IWMMXT and Neon.
-;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -265,44 +265,96 @@
 ;; remainder.  Because of this, expand early.
 (define_expand "cml<fcmac1><conj_op><mode>4"
   [(set (match_operand:VF 0 "register_operand")
-	(plus:VF (match_operand:VF 1 "register_operand")
-		 (unspec:VF [(match_operand:VF 2 "register_operand")
-			     (match_operand:VF 3 "register_operand")]
-			    VCMLA_OP)))]
+	(plus:VF (unspec:VF [(match_operand:VF 1 "register_operand")
+			     (match_operand:VF 2 "register_operand")]
+			    VCMLA_OP)
+		 (match_operand:VF 3 "register_operand")))]
   "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT
 		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_arm_vcmla<rotsplit1><mode> (tmp, operands[1],
-					     operands[3], operands[2]));
+  emit_insn (gen_arm_vcmla<rotsplit1><mode> (tmp, operands[3],
+					     operands[2], operands[1]));
   emit_insn (gen_arm_vcmla<rotsplit2><mode> (operands[0], tmp,
-					     operands[3], operands[2]));
+					     operands[2], operands[1]));
   DONE;
 })
 
-(define_expand "movmisalign<mode>"
- [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
-	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]
+(define_expand "@movmisalign<mode>"
+ [(set (match_operand:VDQ 0 "nonimmediate_operand")
+	(unspec:VDQ [(match_operand:VDQ 1 "general_operand")]
 	 UNSPEC_MISALIGNED_ACCESS))]
  "ARM_HAVE_<MODE>_LDST && !BYTES_BIG_ENDIAN
   && unaligned_access && !TARGET_REALLY_IWMMXT"
 {
- rtx adjust_mem;
- /* This pattern is not permitted to fail during expansion: if both arguments
-    are non-registers (e.g. memory := constant, which can be created by the
-    auto-vectorizer), force operand 1 into a register.  */
- if (!s_register_operand (operands[0], <MODE>mode)
-     && !s_register_operand (operands[1], <MODE>mode))
-   operands[1] = force_reg (<MODE>mode, operands[1]);
+  rtx *memloc;
+  bool for_store = false;
+  /* This pattern is not permitted to fail during expansion: if both arguments
+     are non-registers (e.g. memory := constant, which can be created by the
+     auto-vectorizer), force operand 1 into a register.  */
+  if (!s_register_operand (operands[0], <MODE>mode)
+      && !s_register_operand (operands[1], <MODE>mode))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
 
- if (s_register_operand (operands[0], <MODE>mode))
-   adjust_mem = operands[1];
- else
-   adjust_mem = operands[0];
+  if (s_register_operand (operands[0], <MODE>mode))
+    memloc = &operands[1];
+  else
+    {
+      memloc = &operands[0];
+      for_store = true;
+    }
 
- /* Legitimize address.  */
- if (!neon_vector_mem_operand (adjust_mem, 2, true))
-   XEXP (adjust_mem, 0) = force_reg (Pmode, XEXP (adjust_mem, 0));
+  /* For MVE, vector loads/stores must be aligned to the element size.  If the
+     alignment is less than that convert the load/store to a suitable mode.  */
+  if (TARGET_HAVE_MVE
+      && (MEM_ALIGN (*memloc)
+	  < GET_MODE_ALIGNMENT (GET_MODE_INNER (<MODE>mode))))
+    {
+      scalar_mode new_smode;
+      switch (MEM_ALIGN (*memloc))
+	{
+	case 64:
+	case 32:
+	  new_smode = SImode;
+	  break;
+	case 16:
+	  new_smode = HImode;
+	  break;
+	default:
+	  new_smode = QImode;
+	  break;
+	}
+      machine_mode new_mode
+	= mode_for_vector (new_smode,
+			   GET_MODE_SIZE (<MODE>mode)
+			   / GET_MODE_SIZE (new_smode)).require ();
+      rtx new_mem = adjust_address (*memloc, new_mode, 0);
+
+      if (!for_store)
+	{
+	  rtx reg = gen_reg_rtx (new_mode);
+	  emit_insn (gen_movmisalign (new_mode, reg, new_mem));
+	  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, reg));
+	  DONE;
+	}
+      emit_insn (gen_movmisalign (new_mode, new_mem,
+				  gen_lowpart (new_mode, operands[1])));
+      DONE;
+    }
+
+  /* Legitimize address.  */
+  if ((TARGET_HAVE_MVE
+       && !mve_vector_mem_operand (<MODE>mode, XEXP (*memloc, 0), false))
+      || (!TARGET_HAVE_MVE
+	  && !neon_vector_mem_operand (*memloc, 2, false)))
+    {
+      rtx new_mem
+	= replace_equiv_address (*memloc,
+				 force_reg (Pmode, XEXP (*memloc, 0)),
+				 false);
+      gcc_assert (MEM_ALIGN (new_mem) == MEM_ALIGN (*memloc));
+      *memloc = new_mem;
+    }
 })
 
 (define_insn "mve_vshlq_<supf><mode>"
@@ -361,33 +413,6 @@
       emit_insn (gen_mve_vshlq_u<mode> (operands[0], operands[1], neg));
       DONE;
     }
-})
-
-(define_expand "vec_cmp<mode><v_cmp_result>"
-  [(set (match_operand:<V_cmp_result> 0 "s_register_operand")
-	(match_operator:<V_cmp_result> 1 "comparison_operator"
-	  [(match_operand:VDQWH 2 "s_register_operand")
-	   (match_operand:VDQWH 3 "reg_or_zero_operand")]))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT
-   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
-			     operands[2], operands[3], false, false);
-  DONE;
-})
-
-(define_expand "vec_cmpu<mode><mode>"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(match_operator:VDQIW 1 "comparison_operator"
-	  [(match_operand:VDQIW 2 "s_register_operand")
-	   (match_operand:VDQIW 3 "reg_or_zero_operand")]))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT"
-{
-  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
-			     operands[2], operands[3], false, false);
-  DONE;
 })
 
 ;; Conditional instructions.  These are comparisons with conditional moves for
@@ -458,31 +483,6 @@
    && !TARGET_REALLY_IWMMXT"
 {
   arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
-(define_expand "vcond_mask_<mode><v_cmp_result>"
-  [(set (match_operand:VDQWH 0 "s_register_operand")
-        (if_then_else:VDQWH
-          (match_operand:<V_cmp_result> 3 "s_register_operand")
-          (match_operand:VDQWH 1 "s_register_operand")
-          (match_operand:VDQWH 2 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT
-   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  if (TARGET_NEON)
-    {
-      emit_insn (gen_neon_vbsl (<MODE>mode, operands[0], operands[3],
-                                operands[1], operands[2]));
-    }
-  else if (TARGET_HAVE_MVE)
-    {
-      emit_insn (gen_mve_vpselq (VPSELQ_S, <MODE>mode, operands[0],
-                                 operands[1], operands[2], operands[3]));
-    }
-  else
-    gcc_unreachable ();
   DONE;
 })
 
@@ -632,73 +632,11 @@
   "ARM_HAVE_<MODE>_ARITH
    && !TARGET_REALLY_IWMMXT"
 )
-
-;; vmovl[tb] are not available for V4SI on MVE
-(define_expand "vec_unpack<US>_hi_<mode>"
-  [(set (match_operand:<V_unpack> 0 "register_operand")
-	(SE:<V_unpack> (vec_select:<V_HALF>
-			 (match_operand:VU 1 "register_operand")
-			 (match_dup 2))))]
- "ARM_HAVE_<MODE>_ARITH
-  && !TARGET_REALLY_IWMMXT
-  && ! (<MODE>mode == V4SImode && TARGET_HAVE_MVE)
-  && !BYTES_BIG_ENDIAN"
-  {
-    rtvec v = rtvec_alloc (<V_mode_nunits>/2);
-    int i;
-    for (i = 0; i < (<V_mode_nunits>/2); i++)
-      RTVEC_ELT (v, i) = GEN_INT ((<V_mode_nunits>/2) + i);
-
-    operands[2] = gen_rtx_PARALLEL (<MODE>mode, v);
-  }
-)
-
-;; vmovl[tb] are not available for V4SI on MVE
-(define_expand "vec_unpack<US>_lo_<mode>"
-  [(set (match_operand:<V_unpack> 0 "register_operand")
-	(SE:<V_unpack> (vec_select:<V_HALF>
-			 (match_operand:VU 1 "register_operand")
-			 (match_dup 2))))]
- "ARM_HAVE_<MODE>_ARITH
-  && !TARGET_REALLY_IWMMXT
-  && ! (<MODE>mode == V4SImode && TARGET_HAVE_MVE)
-  && !BYTES_BIG_ENDIAN"
-  {
-    rtvec v = rtvec_alloc (<V_mode_nunits>/2);
-    int i;
-    for (i = 0; i < (<V_mode_nunits>/2) ; i++)
-      RTVEC_ELT (v, i) = GEN_INT (i);
-
-    operands[2] = gen_rtx_PARALLEL (<MODE>mode, v);
-
-  }
-)
-
-;; vmovn[tb] are not available for V2DI on MVE
-(define_expand "vec_pack_trunc_<mode>"
- [(set (match_operand:<V_narrow_pack> 0 "register_operand")
-       (vec_concat:<V_narrow_pack>
-		(truncate:<V_narrow>
-			(match_operand:VN 1 "register_operand"))
-		(truncate:<V_narrow>
-			(match_operand:VN 2 "register_operand"))))]
- "ARM_HAVE_<MODE>_ARITH
-  && !TARGET_REALLY_IWMMXT
-  && ! (<MODE>mode == V2DImode && TARGET_HAVE_MVE)
-  && !BYTES_BIG_ENDIAN"
- {
-   if (TARGET_NEON)
-     {
-       emit_insn (gen_neon_quad_vec_pack_trunc_<mode> (operands[0], operands[1],
-						       operands[2]));
-     }
-   else
-     {
-       rtx tmpreg = gen_reg_rtx (<V_narrow_pack>mode);
-       emit_insn (gen_mve_vec_pack_trunc_lo (<MODE>mode, tmpreg, operands[1]));
-       emit_insn (gen_mve_vmovntq (VMOVNTQ_S, <MODE>mode,
-				   operands[0], tmpreg, operands[2]));
-     }
-   DONE;
- }
-)
+(define_expand "vec_init<mode><V_elem_l>"
+  [(match_operand:VDQX 0 "s_register_operand")
+   (match_operand 1 "" "")]
+  "TARGET_NEON || (TARGET_HAVE_MVE && VALID_MVE_MODE (<MODE>mode))"
+{
+  neon_expand_vector_init (operands[0], operands[1]);
+  DONE;
+})

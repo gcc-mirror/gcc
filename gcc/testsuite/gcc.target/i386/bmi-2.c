@@ -1,6 +1,6 @@
 /* { dg-do compile { target { ! ia32  } } } */
 /* { dg-options "-O2 -fno-ipa-icf -mbmi " } */
-/* { dg-final { scan-assembler "andn\[^\\n]*rax" } } */
+/* { dg-final { scan-assembler-times "andn\[^\\n]*rax" 2 } } */
 /* { dg-final { scan-assembler-times "bextr\[ \\t]+\[^\\n]*rax" 2 } } */
 /* { dg-final { scan-assembler-times "blsi\[^\\n]*rax" 2 } } */
 /* { dg-final { scan-assembler-times "blsmsk\[^\\n]*rax" 2 } } */
@@ -13,6 +13,12 @@ unsigned long long
 func_andn64 (unsigned long long X, unsigned long long Y)
 {
   return __andn_u64 (X, Y);
+}
+
+unsigned long long
+func_andn64_2 (unsigned long long X, unsigned long long Y)
+{
+  return _andn_u64 (X, Y);
 }
 
 unsigned long long

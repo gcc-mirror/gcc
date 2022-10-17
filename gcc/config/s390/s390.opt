@@ -1,6 +1,6 @@
 ; Options for the S/390 / zSeries port of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -116,7 +116,10 @@ EnumValue
 Enum(processor_type) String(arch13) Value(PROCESSOR_8561_Z15)
 
 EnumValue
-Enum(processor_type) String(arch14) Value(PROCESSOR_ARCH14)
+Enum(processor_type) String(arch14) Value(PROCESSOR_3931_Z16)
+
+EnumValue
+Enum(processor_type) String(z16) Value(PROCESSOR_3931_Z16)
 
 EnumValue
 Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
@@ -318,3 +321,7 @@ and the default behavior is to emit separate multiplication and addition
 instructions for long doubles in vector registers, because measurements show
 that this improves performance.  This option allows overriding it for testing
 purposes.
+
+munroll-only-small-loops
+Target Undocumented Var(unroll_only_small_loops) Init(0) Save
+; Use conservative small loop unrolling.

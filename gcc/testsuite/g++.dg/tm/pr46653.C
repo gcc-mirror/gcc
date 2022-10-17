@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fgnu-tm -O" }
+// { dg-options "-fgnu-tm -O -fno-implicit-constexpr" }
 
 class shared_count
 {

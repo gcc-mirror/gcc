@@ -1,5 +1,5 @@
 ;; Constraint definitions for IA-32 and x86-64.
-;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -166,7 +166,12 @@
 ;;  s  Sibcall memory operand, not valid for TARGET_X32
 ;;  w  Call memory operand, not valid for TARGET_X32
 ;;  z  Constant call address operand.
-;;  C  SSE constant operand.
+;;  C  Integer SSE constant with all bits set operand.
+;;  F  Floating-point SSE constant with all bits set operand.
+;;  H  Integer SSE constant that is 128/256bit all ones
+;;     and zero-extand to 256/512bit, or 128bit all ones
+;;     and zero-extend to 512bit.
+;;  M  x86-64 memory operand.
 
 (define_constraint "Bf"
   "@internal Flags register operand."
@@ -184,6 +189,11 @@
   "@internal Constant memory operand."
   (and (match_operand 0 "memory_operand")
        (match_test "constant_address_p (XEXP (op, 0))")))
+
+(define_memory_constraint "Bk"
+  "@internal TLS address that allows insn using non-integer registers."
+  (and (match_operand 0 "memory_operand")
+       (not (match_test "ix86_gpr_tls_address_pattern_p (op)"))))
 
 (define_special_memory_constraint "Bn"
   "@internal Memory operand without REX prefix."
@@ -216,12 +226,41 @@
   (match_operand 0 "constant_call_address_operand"))
 
 (define_constraint "BC"
-  "@internal SSE constant -1 operand."
+  "@internal integer SSE constant with all bits set operand."
   (and (match_test "TARGET_SSE")
        (ior (match_test "op == constm1_rtx")
 	    (match_operand 0 "vector_all_ones_operand"))))
 
+(define_constraint "BF"
+  "@internal floating-point SSE constant with all bits set operand."
+  (and (match_test "TARGET_SSE")
+       (match_operand 0 "float_vector_all_ones_operand")))
+
+(define_constraint "BH"
+  "@internal integer constant with last half/quarter bits set operand."
+  (ior (match_operand 0 "vector_all_ones_zero_extend_half_operand")
+       (match_operand 0 "vector_all_ones_zero_extend_quarter_operand")))
+
+;; NB: Similar to 'm', but don't use define_memory_constraint on x86-64
+;; to prevent LRA from converting the operand to the form '(mem (reg X))'
+;; where X is a base register.
+(define_constraint "BM"
+  "@internal x86-64 memory operand."
+  (and (match_code "mem")
+       (match_test "memory_address_addr_space_p (GET_MODE (op), XEXP (op, 0),
+						 MEM_ADDR_SPACE (op))")))
+
 ;; Integer constant constraints.
+(define_constraint "Wb"
+  "Integer constant in the range 0 @dots{} 7, for 8-bit shifts."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 7)")))
+
+(define_constraint "Ww"
+  "Integer constant in the range 0 @dots{} 15, for 16-bit shifts."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 15)")))
+
 (define_constraint "I"
   "Integer constant in the range 0 @dots{} 31, for 32-bit shifts."
   (and (match_code "const_int")

@@ -27,5 +27,5 @@ Foo (void)
      Setting these ranges at the definition site, causes VRP to remove the
      unreachable code altogether, leaving the following sprintf unguarded.  This
      causes the bogus warning below.  */
-  sprintf (number, "%d", i); /* { dg-bogus "writing" "" { xfail *-*-* } } */
+  sprintf (number, "%d", i); /* { dg-bogus "writing" "" } */
 }

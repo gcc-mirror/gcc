@@ -32,12 +32,12 @@ public import core.sys.posix.sys.mman;
 import core.sys.linux.config;
 
 // <bits/mman.h>
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/powerpc/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/powerpc/bits/mman.h
 version (PPC_Any)
 {
     enum PROT_SAO = 0x10;
 
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_DENYWRITE = 0x00800,
@@ -57,10 +57,10 @@ version (PPC_Any)
     //     MCL_FUTURE = 0x4000,
     // }
 }
-// https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/riscv/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/riscv/bits/mman.h
 else version (RISCV_Any)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_DENYWRITE = 0x00800,
@@ -82,10 +82,10 @@ else version (RISCV_Any)
     //     MCL_FUTURE = 0x4000,
     // }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/s390/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/s390/bits/mman.h
 else version (IBMZ_Any)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_DENYWRITE = 0x00800,
@@ -98,10 +98,10 @@ else version (IBMZ_Any)
         MAP_HUGETLB = 0x40000,
     }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/sh/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/sh/bits/mman.h
 else version (SH)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x0100,
         MAP_DENYWRITE = 0x0800,
@@ -114,10 +114,10 @@ else version (SH)
         MAP_HUGETLB = 0x40000,
     }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/sparc/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/sparc/bits/mman.h
 else version (SPARC_Any)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x0200,
         MAP_DENYWRITE = 0x0800,
@@ -138,12 +138,12 @@ else version (SPARC_Any)
     //     MCL_FUTURE = 0x4000,
     // }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/x86/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/x86/bits/mman.h
 else version (X86_Any)
 {
-    static if (__USE_MISC) enum MAP_32BIT = 0x40;
+    static if (_DEFAULT_SOURCE) enum MAP_32BIT = 0x40;
 
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_DENYWRITE = 0x00800,
@@ -156,10 +156,10 @@ else version (X86_Any)
         MAP_HUGETLB = 0x40000,
     }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/aarch64/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/aarch64/bits/mman.h
 else version (AArch64)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_DENYWRITE = 0x00800,
@@ -172,7 +172,7 @@ else version (AArch64)
         MAP_HUGETLB = 0x40000,
     }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/alpha/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/alpha/bits/mman.h
 else version (Alpha)
 {
     enum
@@ -187,11 +187,11 @@ else version (Alpha)
 
     enum MAP_SHARED = 0x01;
     enum MAP_PRIVATE = 0x02;
-    static if (__USE_MISC)
+    static if (_DEFAULT_SOURCE)
         enum MAP_TYPE = 0x0f;
 
     enum MAP_FIXED = 0x10;
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_FILE = 0,
         MAP_ANONYMOUS = MAP_ANON,
@@ -201,7 +201,7 @@ else version (Alpha)
         MAP_HUGE_MASK = 0x3f,
     }
 
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x01000,
         MAP_DENYWRITE = 0x02000,
@@ -229,13 +229,13 @@ else version (Alpha)
     //     MCL_FUTURE = 16384,
     // }
 
-    static if (__USE_GNU) enum
+    static if (_GNU_SOURCE) enum
     {
         MREMAP_MAYMOVE = 1,
         MREMAP_FIXED = 2,
     }
 
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MADV_NORMAL = 0,
         MADV_RANDOM = 1,
@@ -255,7 +255,7 @@ else version (Alpha)
     }
 
     // in core.sys.posix.sys.mman
-    // static if (__USE_XOPEN2K) enum
+    // static if (_XOPEN_SOURCE >= 600) enum
     // {
     //         POSIX_MADV_NORMAL = 0,
     //         POSIX_MADV_RANDOM = 1,
@@ -264,10 +264,10 @@ else version (Alpha)
     //         POSIX_MADV_DONTNEED = 6,
     // }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/arm/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/arm/bits/mman.h
 else version (ARM)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_DENYWRITE = 0x00800,
@@ -280,7 +280,7 @@ else version (ARM)
         MAP_HUGETLB = 0x40000,
     }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/hppa/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/hppa/bits/mman.h
 else version (HPPA_Any)
 {
     enum
@@ -295,11 +295,11 @@ else version (HPPA_Any)
 
     enum MAP_SHARED = 0x01;
     enum MAP_PRIVATE = 0x02;
-    static if (__USE_MISC)
+    static if (_DEFAULT_SOURCE)
         enum MAP_TYPE = 0x0f;
 
     enum MAP_FIXED = 0x04;
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_FILE = 0,
         MAP_ANONYMOUS = MAP_ANON,
@@ -310,7 +310,7 @@ else version (HPPA_Any)
         MAP_HUGE_MASK = 0x3f,
     }
 
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_DENYWRITE = 0x0800,
         MAP_EXECUTABLE = 0x1000,
@@ -336,13 +336,13 @@ else version (HPPA_Any)
     //     MCL_FUTURE = 2,
     // }
 
-    static if (__USE_GNU) enum
+    static if (_GNU_SOURCE) enum
     {
         MREMAP_MAYMOVE = 1,
         MREMAP_FIXED = 2,
     }
 
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MADV_NORMAL = 0,
         MADV_RANDOM = 1,
@@ -375,7 +375,7 @@ else version (HPPA_Any)
     }
 
     // in core.sys.posix.sys.mman
-    // static if (__USE_XOPEN2K) enum
+    // static if (_XOPEN_SOURCE >= 600) enum
     // {
     //     POSIX_MADV_NORMAL = 0,
     //     POSIX_MADV_RANDOM = 1,
@@ -384,10 +384,10 @@ else version (HPPA_Any)
     //     POSIX_MADV_DONTNEED = 4,
     // }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/ia64/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/ia64/bits/mman.h
 else version (IA64)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_GROWSUP = 0x00200,
@@ -401,10 +401,10 @@ else version (IA64)
         MAP_HUGETLB = 0x40000,
     }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/m68k/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/m68k/bits/mman.h
 else version (M68K)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_GROWSDOWN = 0x00100,
         MAP_DENYWRITE = 0x00800,
@@ -417,10 +417,10 @@ else version (M68K)
         MAP_HUGETLB = 0x40000,
     }
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/mips/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/mips/bits/mman.h
 else version (MIPS_Any)
 {
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_NORESERVE = 0x0400,
         MAP_GROWSDOWN = 0x1000,
@@ -440,7 +440,7 @@ else
 
 
 // <bits/mman-linux.h>
-// https://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=bits/mman-linux.h
+// https://sourceware.org/git/?p=glibc.git;a=blob;f=bits/mman-linux.h
 version (Alpha)
 {
 }
@@ -460,11 +460,11 @@ else
 
     enum MAP_SHARED = 0x01;
     enum MAP_PRIVATE = 0x02;
-    static if (__USE_MISC)
+    static if (_DEFAULT_SOURCE)
         enum MAP_TYPE = 0x0f;
 
     enum MAP_FIXED = 0x10;
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MAP_FILE = 0,
         MAP_ANONYMOUS = MAP_ANON,
@@ -482,13 +482,13 @@ else
     //     MS_INVALIDATE = 2,
     // }
 
-    static if (__USE_GNU) enum
+    static if (_GNU_SOURCE) enum
     {
         MREMAP_MAYMOVE = 1,
         MREMAP_FIXED = 2,
     }
 
-    static if (__USE_MISC) enum
+    static if (_DEFAULT_SOURCE) enum
     {
         MADV_NORMAL = 0,
         MADV_RANDOM = 1,
@@ -508,7 +508,7 @@ else
     }
 
     // in core.sys.posix.sys.mman
-    // static if (__USE_XOPEN2K) enum
+    // static if (_XOPEN_SOURCE >= 600) enum
     // {
     //     POSIX_MADV_NORMAL = 0,
     //     POSIX_MADV_RANDOM = 1,
@@ -527,15 +527,15 @@ else
 }
 
 // Workaround https://issues.dlang.org/show_bug.cgi?id=17883
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/sparc/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/sparc/bits/mman.h
 version (SPARC_Any)
 {
-    static if (__USE_MISC) enum MAP_RENAME = MAP_ANONYMOUS;
+    static if (_DEFAULT_SOURCE) enum MAP_RENAME = MAP_ANONYMOUS;
 }
-// http://sourceware.org/git/?p=glibc.git;a=blob;hb=51e945a8f950a6695754b11c1e6fba8bb750e100;f=sysdeps/unix/sysv/linux/mips/bits/mman.h
+// http://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/mips/bits/mman.h
 else version (MIPS_Any)
 {
-    static if (__USE_MISC) enum MAP_RENAME = MAP_ANONYMOUS;
+    static if (_DEFAULT_SOURCE) enum MAP_RENAME = MAP_ANONYMOUS;
 }
 
 // http://sourceware.org/git/?p=glibc.git;a=blob;f=misc/sys/mman.h
@@ -548,14 +548,14 @@ else version (MIPS_Any)
 // int munmap(void*, size_t);
 // int mprotect(void *__addr, size_t __len, int __prot);
 // int msync(void *__addr, size_t __len, int __flags);
-static if (__USE_MISC) int madvise(void *__addr, size_t __len, int __advice);
-// static if (__USE_XOPEN2K) int posix_madvise(void *__addr, size_t __len, int __advice);
+static if (_DEFAULT_SOURCE) int madvise(void *__addr, size_t __len, int __advice);
+// static if (_XOPEN_SOURCE >= 600) int posix_madvise(void *__addr, size_t __len, int __advice);
 // int mlock(const(void) *__addr, size_t __len);
 // int munlock(const(void) *__addr, size_t __len);
 // int mlockall(int __flags);
 // int munlockall();
-static if (__USE_MISC) int mincore(void *__start, size_t __len, ubyte *__vec);
-static if (__USE_GNU) void *mremap(void *__addr, size_t __old_len, size_t __new_len, int __flags, ...);
-static if (__USE_GNU) int remap_file_pages(void *__start, size_t __size, int __prot, size_t __pgoff, int __flags);
+static if (_DEFAULT_SOURCE) int mincore(void *__start, size_t __len, ubyte *__vec);
+static if (_GNU_SOURCE) void *mremap(void *__addr, size_t __old_len, size_t __new_len, int __flags, ...);
+static if (_GNU_SOURCE) int remap_file_pages(void *__start, size_t __size, int __prot, size_t __pgoff, int __flags);
 // int shm_open(in char *__name, int __oflag, mode_t __mode);
 // int shm_unlink(in char *__name);

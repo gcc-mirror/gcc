@@ -33,5 +33,5 @@ export inline auto GMF ()
 }
 
 // { dg-final { scan-assembler-not {_ZN3Bob4frobEv:} } }
-// { dg-final { scan-assembler-not {_ZN4Bill4frobEv:} } }
-// { dg-final { scan-assembler {_ZN4Bill3dobEv:} } }
+// { dg-final { scan-assembler-not {_ZNW3Foo4Bill4frobEv:} } }
+// { dg-final { scan-assembler {_ZNW3Foo4Bill3dobEv:} } }

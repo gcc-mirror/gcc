@@ -61,7 +61,40 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define AARCH64_FLAG_ARG_V_BIT	7
 #define AARCH64_FLAG_ARG_V	(1 << AARCH64_FLAG_ARG_V_BIT)
+#define AARCH64_FLAG_VARARG	(1 << 8)
 
 #define N_X_ARG_REG		8
 #define N_V_ARG_REG		8
 #define CALL_CONTEXT_SIZE	(N_V_ARG_REG * 16 + N_X_ARG_REG * 8)
+
+#if defined(FFI_EXEC_STATIC_TRAMP)
+/*
+ * For the trampoline code table mapping, a mapping size of 16K is chosen to
+ * cover the base page sizes of 4K and 16K.
+ */
+#define AARCH64_TRAMP_MAP_SHIFT	14
+#define AARCH64_TRAMP_MAP_SIZE	(1 << AARCH64_TRAMP_MAP_SHIFT)
+#define AARCH64_TRAMP_SIZE	32
+
+#endif
+
+/* Helpers for writing assembly compatible with arm ptr auth */
+#ifdef LIBFFI_ASM
+
+#ifdef HAVE_PTRAUTH
+#define SIGN_LR pacibsp
+#define SIGN_LR_WITH_REG(x) pacib lr, x
+#define AUTH_LR_AND_RET retab
+#define AUTH_LR_WITH_REG(x) autib lr, x
+#define BRANCH_AND_LINK_TO_REG blraaz
+#define BRANCH_TO_REG braaz
+#else
+#define SIGN_LR
+#define SIGN_LR_WITH_REG(x)
+#define AUTH_LR_AND_RET ret
+#define AUTH_LR_WITH_REG(x)
+#define BRANCH_AND_LINK_TO_REG blr
+#define BRANCH_TO_REG br
+#endif
+
+#endif

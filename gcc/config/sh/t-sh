@@ -1,4 +1,4 @@
-# Copyright (C) 1993-2021 Free Software Foundation, Inc.
+# Copyright (C) 1993-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -20,10 +20,10 @@ sh-mem.o: $(srcdir)/config/sh/sh-mem.cc \
   $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-sh-c.o: $(srcdir)/config/sh/sh-c.c \
+sh-c.o: $(srcdir)/config/sh/sh-c.cc \
   $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) $(TM_P_H) coretypes.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/sh/sh-c.c
+		$(srcdir)/config/sh/sh-c.cc
 
 sh_treg_combine.o: $(srcdir)/config/sh/sh_treg_combine.cc \
   $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) $(TM_P_H) coretypes.h

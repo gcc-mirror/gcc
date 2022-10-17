@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,7 +159,7 @@ package body System.Interrupts is
    end record;
 
    User_Handler : array (Interrupt_ID'Range) of Handler_Assoc :=
-                    (others => (null, Static => False));
+                    [others => (null, Static => False)];
    pragma Volatile_Components (User_Handler);
    --  Holds the protected procedure handler (if any) and its Static
    --  information for each interrupt. A handler is a Static one if it is
@@ -167,27 +167,27 @@ package body System.Interrupts is
    --  not static)
 
    User_Entry : array (Interrupt_ID'Range) of Entry_Assoc :=
-                  (others => (T => Null_Task, E => Null_Task_Entry));
+                  [others => (T => Null_Task, E => Null_Task_Entry)];
    pragma Volatile_Components (User_Entry);
    --  Holds the task and entry index (if any) for each interrupt
 
-   Blocked : array (Interrupt_ID'Range) of Boolean := (others => False);
+   Blocked : array (Interrupt_ID'Range) of Boolean := [others => False];
    pragma Atomic_Components (Blocked);
    --  True iff the corresponding interrupt is blocked in the process level
 
-   Ignored : array (Interrupt_ID'Range) of Boolean := (others => False);
+   Ignored : array (Interrupt_ID'Range) of Boolean := [others => False];
    pragma Atomic_Components (Ignored);
    --  True iff the corresponding interrupt is blocked in the process level
 
    Last_Unblocker :
-     array (Interrupt_ID'Range) of Task_Id := (others => Null_Task);
+     array (Interrupt_ID'Range) of Task_Id := [others => Null_Task];
    pragma Atomic_Components (Last_Unblocker);
    --  Holds the ID of the last Task which Unblocked this Interrupt. It
    --  contains Null_Task if no tasks have ever requested the Unblocking
    --  operation or the Interrupt is currently Blocked.
 
    Server_ID : array (Interrupt_ID'Range) of Task_Id :=
-                 (others => Null_Task);
+                 [others => Null_Task];
    pragma Atomic_Components (Server_ID);
    --  Holds the Task_Id of the Server_Task for each interrupt. Task_Id is
    --  needed to accomplish locking per Interrupt base. Also is needed to

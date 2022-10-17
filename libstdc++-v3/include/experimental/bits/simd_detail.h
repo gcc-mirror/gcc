@@ -1,6 +1,6 @@
 // Internal macros for the simd implementation -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -172,6 +172,46 @@
 #define _GLIBCXX_SIMD_HAVE_AVX512BW 1
 #else
 #define _GLIBCXX_SIMD_HAVE_AVX512BW 0
+#endif
+#ifdef __AVX512BITALG__
+#define _GLIBCXX_SIMD_HAVE_AVX512BITALG 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512BITALG 0
+#endif
+#ifdef __AVX512VBMI2__
+#define _GLIBCXX_SIMD_HAVE_AVX512VBMI2 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512VBMI2 0
+#endif
+#ifdef __AVX512VBMI__
+#define _GLIBCXX_SIMD_HAVE_AVX512VBMI 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512VBMI 0
+#endif
+#ifdef __AVX512IFMA__
+#define _GLIBCXX_SIMD_HAVE_AVX512IFMA 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512IFMA 0
+#endif
+#ifdef __AVX512CD__
+#define _GLIBCXX_SIMD_HAVE_AVX512CD 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512CD 0
+#endif
+#ifdef __AVX512VNNI__
+#define _GLIBCXX_SIMD_HAVE_AVX512VNNI 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512VNNI 0
+#endif
+#ifdef __AVX512VPOPCNTDQ__
+#define _GLIBCXX_SIMD_HAVE_AVX512VPOPCNTDQ 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512VPOPCNTDQ 0
+#endif
+#ifdef __AVX512VP2INTERSECT__
+#define _GLIBCXX_SIMD_HAVE_AVX512VP2INTERSECT 1
+#else
+#define _GLIBCXX_SIMD_HAVE_AVX512VP2INTERSECT 0
 #endif
 
 #if _GLIBCXX_SIMD_HAVE_SSE

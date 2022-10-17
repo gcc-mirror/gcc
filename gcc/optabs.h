@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -279,8 +279,8 @@ extern void emit_indirect_jump (rtx);
 #endif
 
 /* Emit a conditional move operation.  */
-rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, machine_mode,
-			   rtx, rtx, machine_mode, int);
+rtx emit_conditional_move (rtx, rtx_comparison, rtx, rtx, machine_mode, int);
+rtx emit_conditional_move (rtx, rtx, rtx, rtx, rtx, machine_mode);
 
 /* Emit a conditional negate or bitwise complement operation.  */
 rtx emit_conditional_neg_or_complement (rtx, rtx_code, machine_mode, rtx,

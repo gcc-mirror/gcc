@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,34 +34,98 @@
 --  This package provides simple casing functions that do not require the
 --  overhead of the full casing tables found in Ada.Characters.Handling.
 
---  Note that all the routines in this package are available to the user
---  via GNAT.Case_Util, which imports all the entities from this package.
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
 
-pragma Compiler_Unit_Warning;
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
 
-package System.Case_Util is
-   pragma Pure;
-
+package System.Case_Util
+  with Pure, SPARK_Mode
+is
    --  Note: all the following functions handle the full Latin-1 set
 
-   function To_Upper (A : Character) return Character;
+   function To_Upper (A : Character) return Character
+   with
+     Post => (declare
+                A_Val : constant Natural := Character'Pos (A);
+              begin
+                (if A in 'a' .. 'z'
+                   or else A_Val in 16#E0# .. 16#F6#
+                   or else A_Val in 16#F8# .. 16#FE#
+                 then
+                   To_Upper'Result = Character'Val (A_Val - 16#20#)
+                 else
+                   To_Upper'Result = A));
    --  Converts A to upper case if it is a lower case letter, otherwise
    --  returns the input argument unchanged.
 
-   procedure To_Upper (A : in out String);
-   function To_Upper (A : String) return String;
+   procedure To_Upper (A : in out String)
+   with
+     Post => (for all J in A'Range => A (J) = To_Upper (A'Old (J)));
+
+   function To_Upper (A : String) return String
+   with
+     Post => To_Upper'Result'First = A'First
+       and then To_Upper'Result'Last = A'Last
+       and then (for all J in A'Range =>
+                   To_Upper'Result (J) = To_Upper (A (J)));
    --  Folds all characters of string A to upper case
 
-   function To_Lower (A : Character) return Character;
+   function To_Lower (A : Character) return Character
+   with
+     Post => (declare
+                A_Val : constant Natural := Character'Pos (A);
+              begin
+                (if A in 'A' .. 'Z'
+                   or else A_Val in 16#C0# .. 16#D6#
+                   or else A_Val in 16#D8# .. 16#DE#
+                 then
+                   To_Lower'Result = Character'Val (A_Val + 16#20#)
+                 else
+                   To_Lower'Result = A));
    --  Converts A to lower case if it is an upper case letter, otherwise
    --  returns the input argument unchanged.
 
-   procedure To_Lower (A : in out String);
-   function To_Lower (A : String) return String;
+   procedure To_Lower (A : in out String)
+   with
+     Post => (for all J in A'Range => A (J) = To_Lower (A'Old (J)));
+
+   function To_Lower (A : String) return String
+   with
+     Post => To_Lower'Result'First = A'First
+       and then To_Lower'Result'Last = A'Last
+       and then (for all J in A'Range =>
+                   To_Lower'Result (J) = To_Lower (A (J)));
    --  Folds all characters of string A to lower case
 
-   procedure To_Mixed (A : in out String);
-   function To_Mixed (A : String) return String;
+   procedure To_Mixed (A : in out String)
+   with
+     Post =>
+       (for all J in A'Range =>
+          (if J = A'First
+             or else A'Old (J - 1) = '_'
+           then
+             A (J) = To_Upper (A'Old (J))
+           else
+             A (J) = To_Lower (A'Old (J))));
+
+   function To_Mixed (A : String) return String
+   with
+     Post => To_Mixed'Result'First = A'First
+       and then To_Mixed'Result'Last = A'Last
+       and then (for all J in A'Range =>
+                   (if J = A'First
+                      or else A (J - 1) = '_'
+                    then
+                      To_Mixed'Result (J) = To_Upper (A (J))
+                    else
+                      To_Mixed'Result (J) = To_Lower (A (J))));
    --  Converts A to mixed case (i.e. lower case, except for initial
    --  character and any character after an underscore, which are
    --  converted to upper case.

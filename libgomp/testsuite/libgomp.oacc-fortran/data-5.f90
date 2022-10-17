@@ -1,6 +1,8 @@
 ! { dg-do run }
 ! { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } }
 
+! { dg-additional-options -Wuninitialized }
+
 program refcount_test
   use openacc
   integer, allocatable :: h(:)
@@ -21,6 +23,8 @@ program refcount_test
   call acc_update_self (h)
   do i = 1, N
      if (h(i) .eq. i) c = c + 1
+     ! { dg-warning {'c' may be used uninitialized} {} { target __OPTIMIZE__ } .-1 }
+     !   { dg-note {'c' was declared here} {} { target __OPTIMIZE__ } .-2 }
   end do
   ! h[] should be filled with uninitialized device values,
   ! 'stop' if it's not.

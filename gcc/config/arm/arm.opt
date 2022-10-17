@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -82,7 +82,7 @@ EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
 ; Set to the name of target architecture which is required for
-; multilib linking.  This option is undocumented becuase it
+; multilib linking.  This option is undocumented because it
 ; should not be used by the users.
 mlibarch=
 Target RejectNegative JoinedOrMissing NoDWARFRecord DriverOnly Undocumented
@@ -268,6 +268,20 @@ Target Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions
 that may trigger Cortex-M3 errata.
 
+mfix-cmse-cve-2021-35465
+Target Var(fix_vlldm) Init(2)
+Mitigate issues with VLLDM on some M-profile devices (CVE-2021-35465).
+
+mfix-cortex-a57-aes-1742098
+Target Var(fix_aes_erratum_1742098) Init(2) Save
+Mitigate issues with AES instructions on Cortex-A57 and Cortex-A72
+(Arm erratum #1742098).
+
+mfix-cortex-a72-aes-1655431
+Target Alias(mfix-cortex-a57-aes-1742098)
+Mitigate issues with AES instructions on Cortex-A57 and Cortex-A72
+(Arm erratum #1655431).
+
 munaligned-access
 Target Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.
@@ -307,3 +321,25 @@ Generate code which uses the core registers only (r0-r14).
 mfdpic
 Target Mask(FDPIC)
 Enable Function Descriptor PIC mode.
+
+mstack-protector-guard=
+Target RejectNegative Joined Enum(stack_protector_guard) Var(arm_stack_protector_guard) Init(SSP_GLOBAL)
+Use given stack-protector guard.
+
+Enum
+Name(stack_protector_guard) Type(enum stack_protector_guard)
+Valid arguments to -mstack-protector-guard=:
+
+EnumValue
+Enum(stack_protector_guard) String(tls) Value(SSP_TLSREG)
+
+EnumValue
+Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
+
+mstack-protector-guard-offset=
+Target Joined RejectNegative String Var(arm_stack_protector_guard_offset_str)
+Use an immediate to offset from the TLS register. This option is for use with
+fstack-protector-guard=tls and not for use in user-land code.
+
+TargetVariable
+long arm_stack_protector_guard_offset = 0

@@ -18,7 +18,7 @@ struct A {
     auto i = [=] { return a; };		// { dg-warning "implicit capture" "" { target c++2a } }
     auto j = [&] { return a; };
     // P0409R2 - C++2A lambda capture [=, this]
-    auto k = [=, this] { return a; };// { dg-error "explicit by-copy capture of 'this' redundant with by-copy capture default" "" { target c++17_down } }
+    auto k = [=, this] { return a; };// { dg-error "explicit by-copy capture of 'this' with by-copy capture default only available with" "" { target c++17_down } }
     auto l = [&, this] { return a; };
     auto m = [=, *this] { return a; };// { dg-error "'*this' capture only available with" "" { target c++14_down } }
     auto n = [&, *this] { return a; };// { dg-error "'*this' capture only available with" "" { target c++14_down } }
@@ -27,12 +27,12 @@ struct A {
 					// { dg-error "'*this' capture only available with" "" { target c++14_down } .-1 }
     auto q = [=, this, *this] { return a; };// { dg-error "already captured 'this'" }
 					    // { dg-error "'*this' capture only available with" "" { target c++14_down } .-1 }
-					    // { dg-error "explicit by-copy capture of 'this' redundant with by-copy capture default" "" { target c++17_down } .-2 }
+					    // { dg-error "explicit by-copy capture of 'this' with by-copy capture default only available with" "" { target c++17_down } .-2 }
     auto r = [=, this, this] { return a; };// { dg-error "already captured 'this'" }
-					   // { dg-error "explicit by-copy capture of 'this' redundant with by-copy capture default" "" { target c++17_down } .-1 }
+					   // { dg-error "explicit by-copy capture of 'this' with by-copy capture default only available with" "" { target c++17_down } .-1 }
     auto s = [=, *this, this] { return a; };// { dg-error "already captured 'this'" }
 					    // { dg-error "'*this' capture only available with" "" { target c++14_down } .-1 }
-					    // { dg-error "explicit by-copy capture of 'this' redundant with by-copy capture default" "" { target c++17_down } .-2 }
+					    // { dg-error "explicit by-copy capture of 'this' with by-copy capture default only available with" "" { target c++17_down } .-2 }
     auto t = [=, *this, *this] { return a; };// { dg-error "already captured 'this'" }
 					     // { dg-error "'*this' capture only available with" "" { target c++14_down } .-1 }
     auto u = [&, this, *this] { return a; };// { dg-error "already captured 'this'" }

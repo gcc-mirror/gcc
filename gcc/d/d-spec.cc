@@ -1,5 +1,5 @@
 /* d-spec.c -- Specific flags and argument handling of the D front end.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -82,6 +82,9 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 
   /* "-lstdc++" if it appears on the command line.  */
   const cl_decoded_option *saw_libcxx = 0;
+
+  /* True if we saw `-static-libstdc++'.  */
+  bool saw_static_libcxx = false;
 
   /* Whether we need the C++ STD library.  */
   bool need_stdcxx = false;
@@ -248,10 +251,25 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 	  shared_libgcc = false;
 	  break;
 
+	case OPT_static_libstdc__:
+	  saw_static_libcxx = true;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+	  /* Remove -static-libstdc++ from the command only if target supports
+	     LD_STATIC_DYNAMIC.  When not supported, it is left in so that a
+	     back-end target can use outfile substitution.  */
+	  args[i] |= SKIPOPT;
+#endif
+	  break;
+
 	case OPT_static_libphobos:
 	  if (phobos_library != PHOBOS_NOLINK)
 	    phobos_library = PHOBOS_STATIC;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+	  /* Remove -static-libphobos from the command only if target supports
+	     LD_STATIC_DYNAMIC.  When not supported, it is left in so that a
+	     back-end target can use outfile substitution.  */
 	  args[i] |= SKIPOPT;
+#endif
 	  break;
 
 	case OPT_shared_libphobos:
@@ -452,16 +470,33 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 #endif
     }
 
-  if (saw_libcxx)
-    new_decoded_options[j++] = *saw_libcxx;
-  else if (need_stdcxx)
+  if (saw_libcxx || saw_static_libcxx || need_stdcxx)
     {
-      generate_option (OPT_l,
-		       (saw_profile_flag
-			? LIBSTDCXX_PROFILE
-			: LIBSTDCXX),
-		       1, CL_DRIVER, &new_decoded_options[j++]);
-      added_libraries++;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (saw_static_libcxx && !static_link)
+	{
+	  generate_option (OPT_Wl_, LD_STATIC_OPTION, 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	}
+#endif
+      if (saw_libcxx)
+	new_decoded_options[j++] = *saw_libcxx;
+      else if (need_stdcxx)
+	{
+	  generate_option (OPT_l,
+			   (saw_profile_flag
+			    ? LIBSTDCXX_PROFILE
+			    : LIBSTDCXX),
+			   1, CL_DRIVER, &new_decoded_options[j++]);
+	  added_libraries++;
+	}
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (saw_static_libcxx && !static_link)
+	{
+	  generate_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	}
+#endif
     }
 
   if (shared_libgcc && !static_link)

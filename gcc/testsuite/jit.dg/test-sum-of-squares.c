@@ -133,10 +133,10 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
      An example of using gcc_jit_context_enable_dump to verify a property
      of the compile.
 
-     In this case, verify that vrp is able to deduce the
-     bounds of the iteration variable. Specifically, verify that some
-     variable is known to be in the range negative infinity to some
-     expression based on param "n" (actually n-1).  */
-  CHECK_STRING_CONTAINS (dump_vrp1, "[-INF, n_");
+     In particular, this example verifies that we can read the dump from a
+     pass with multiple instances.  Given that the format of the VRP dump
+     is subject to change, merely verify that it contains the function
+     name.  */
+  CHECK_STRING_CONTAINS (dump_vrp1, ";; Function loop_test");
   free (dump_vrp1);
 }

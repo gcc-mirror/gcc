@@ -1,5 +1,5 @@
 /*
-REQUIRED_ARGS:
+EXTRA_FILES: imports/a314.d imports/b314.d imports/c314.d
 TEST_OUTPUT:
 ---
 fail_compilation/test314.d(19): Error: undefined identifier `renamed`

@@ -863,8 +863,8 @@ class Foo35
                 //writefln("y = %s", y);
                 assert(x == 42);
                 assert(y == 43);
-              //static assert(is(typeof(this.outer) == void*)); // Bugzilla 14442
-                static assert(is(typeof(this.outer) == Foo35)); // Bugzilla 15839
+              //static assert(is(typeof(this.outer) == void*)); // https://issues.dlang.org/show_bug.cgi?id=14442
+                static assert(is(typeof(this.outer) == Foo35)); // https://issues.dlang.org/show_bug.cgi?id=15839
             }
         };
     }
@@ -1485,7 +1485,20 @@ void test55()
 }
 
 /*******************************************/
-// 4401
+
+enum dg56 = delegate { return 5; };
+
+void test56()
+{
+    auto inner() {
+        return dg56();
+    }
+
+    assert(inner() == 5);
+}
+
+/*******************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4401
 
 void test4401()
 {
@@ -1542,7 +1555,7 @@ void test7428(){
 }
 
 /*******************************************/
-// 4612
+// https://issues.dlang.org/show_bug.cgi?id=4612
 
 struct S4612a(alias x)
 {
@@ -1604,7 +1617,7 @@ void test7199()
 }
 
 /*******************************************/
-// 7965
+// https://issues.dlang.org/show_bug.cgi?id=7965
 
 void test7965()
 {
@@ -1662,7 +1675,7 @@ void test7965a()
 }
 
 /*******************************************/
-// 8188
+// https://issues.dlang.org/show_bug.cgi?id=8188
 
 mixin template Print8188(b...)
 {
@@ -1687,7 +1700,7 @@ void test8188()
 }
 
 /*******************************************/
-// 5082
+// https://issues.dlang.org/show_bug.cgi?id=5082
 
 struct S5082 { float x; }
 
@@ -1714,7 +1727,7 @@ void test5082()
 
 
 /*******************************************/
-// 8194
+// https://issues.dlang.org/show_bug.cgi?id=8194
 
 void test8194()
 {
@@ -1727,7 +1740,7 @@ void test8194()
 }
 
 /*******************************************/
-// 8339
+// https://issues.dlang.org/show_bug.cgi?id=8339
 
 template map8339a(fun...)
 {
@@ -1822,7 +1835,7 @@ void test8339c()
 }
 
 /*******************************************/
-// 8704
+// https://issues.dlang.org/show_bug.cgi?id=8704
 
 void check8704(T, int num)()
 {
@@ -1849,7 +1862,7 @@ void test8704()
 }
 
 /*******************************************/
-// 8923
+// https://issues.dlang.org/show_bug.cgi?id=8923
 
 void test8923a()
 {
@@ -2029,7 +2042,7 @@ void test8923c()
 }
 
 /*******************************************/
-// 9003
+// https://issues.dlang.org/show_bug.cgi?id=9003
 
 void test9003()
 {
@@ -2072,7 +2085,7 @@ void test9003()
 }
 
 /*******************************************/
-// 9006
+// https://issues.dlang.org/show_bug.cgi?id=9006
 
 void test9006()
 {
@@ -2101,7 +2114,7 @@ void test9006()
 }
 
 /*******************************************/
-// 9035
+// https://issues.dlang.org/show_bug.cgi?id=9035
 
 void test9035()
 {
@@ -2144,7 +2157,7 @@ void test9035a()
 }
 
 /*******************************************/
-// 9036
+// https://issues.dlang.org/show_bug.cgi?id=9036
 
 void test9036()
 {
@@ -2201,7 +2214,7 @@ void test8863()
 +/
 
 /*******************************************/
-// 8774
+// https://issues.dlang.org/show_bug.cgi?id=8774
 
 void popFront8774()
 {
@@ -2274,7 +2287,7 @@ void test8832()
 }
 
 /*******************************************/
-// 9315
+// https://issues.dlang.org/show_bug.cgi?id=9315
 
 auto test9315()
 {
@@ -2287,7 +2300,7 @@ auto test9315()
 }
 
 /*******************************************/
-// 9244
+// https://issues.dlang.org/show_bug.cgi?id=9244
 
 void test9244()
 {
@@ -2298,7 +2311,7 @@ void test9244()
 }
 
 /*******************************************/
-// 10495
+// https://issues.dlang.org/show_bug.cgi?id=10495
 
 struct X10495
 {
@@ -2321,7 +2334,7 @@ class C10495
 }
 
 /*******************************************/
-// 11385
+// https://issues.dlang.org/show_bug.cgi?id=11385
 
 auto map11385(alias fun, R)(R range)
 {
@@ -2354,6 +2367,12 @@ enum foo11297 = function (int x)
         xmap!(y => x)(7);
    };
 
+enum goo11297 = delegate (int x)
+   {
+        //int bar(int y) { return x; } xmap!bar(7);
+        xmap!(y => x)(7);
+   };
+
 void xreduce(alias f)()
 {
     f(4);
@@ -2362,10 +2381,11 @@ void xreduce(alias f)()
 void test11297()
 {
     xreduce!foo11297();
+    xreduce!goo11297();
 }
 
 /*******************************************/
-// 11886
+// https://issues.dlang.org/show_bug.cgi?id=11886
 
 struct Lambda11886(alias fun)
 {
@@ -2388,7 +2408,7 @@ void test11886()
 }
 
 /*******************************************/
-// 12234
+// https://issues.dlang.org/show_bug.cgi?id=12234
 
 void test12234()
 {
@@ -2407,7 +2427,7 @@ void test12234()
 }
 
 /*******************************************/
-// 12981
+// https://issues.dlang.org/show_bug.cgi?id=12981
 
 template Mix12981(T)
 {
@@ -2425,7 +2445,7 @@ class B12981
 }
 
 /*******************************************/
-// 13861
+// https://issues.dlang.org/show_bug.cgi?id=13861
 
 struct Foo13861(alias f)
 {
@@ -2444,7 +2464,7 @@ void test13861()
 }
 
 /*******************************************/
-// 14398
+// https://issues.dlang.org/show_bug.cgi?id=14398
 
 void test14398()
 {
@@ -2479,7 +2499,7 @@ void test14398()
 }
 
 /*******************************************/
-// 14846
+// https://issues.dlang.org/show_bug.cgi?id=14846
 
 void foo14846(Dg)(scope Dg code)
 {
@@ -2509,14 +2529,14 @@ void test14846()
 }
 
 /*******************************************/
-// 15422
+// https://issues.dlang.org/show_bug.cgi?id=15422
 
 class App15422(T)
 {
     this() {}
 
     auto test1(T val)
-    in {} body      // necessary to reproduce the crash
+    in {} do      // necessary to reproduce the crash
     {
         struct Foo
         {
@@ -2544,7 +2564,7 @@ class App15422(T)
     }
 
     auto test2(T val)
-    //in {} body
+    //in {} do
     {
         int closVar;
         struct Foo
@@ -2662,7 +2682,7 @@ void test15422b()
 }
 
 /***************************************************/
-// 15757
+// https://issues.dlang.org/show_bug.cgi?id=15757
 
 template map15757(fun...)
 {
@@ -2700,6 +2720,45 @@ void test15757() @safe
 {
     [1,2,3].map15757!(x => x*x).wrap15757;
 }
+
+/***************************************************/
+
+// https://issues.dlang.org/show_bug.cgi?id=19384
+
+struct Vec
+{
+    uint item;
+
+    ref uint august() return
+    {
+        return item;
+        // commenting next line removes bug
+        foreach(ref val; range()) return val;
+        assert(false);
+    }
+
+    uint* august2() return
+    {
+        return &item;
+        foreach(ref val; range()) return &val;
+        assert(false);
+    }
+}
+
+struct range
+{
+    int opApply(scope int delegate(ref uint) dg) { return 0; }
+}
+
+void test19384()
+{
+    Vec preds = Vec(0xDEAD);
+    void* ptr2 = &preds.august();
+    void* ptr3 = preds.august2();
+    assert(&preds == ptr2);
+    assert(&preds == ptr3);
+}
+
 
 /***************************************************/
 
@@ -2760,6 +2819,7 @@ int main()
     test53();
     test54();
     test55();
+    test56();
     test4401();
     test7428();
     test4612();
@@ -2797,6 +2857,7 @@ int main()
     test15422a();
     test15422b();
     test15757();
+    test19384();
 
     printf("Success\n");
     return 0;

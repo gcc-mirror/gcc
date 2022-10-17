@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -529,7 +529,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: Function Entry */
 
-/* See mmix.c for TARGET_ASM_FUNCTION_PROLOGUE and
+/* See mmix.cc for TARGET_ASM_FUNCTION_PROLOGUE and
    TARGET_ASM_FUNCTION_EPILOGUE.  */
 
 /* We need to say that the epilogue uses the return address, so the
@@ -757,17 +757,8 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: All Debuggers */
 
-#define DBX_REGISTER_NUMBER(REGNO) \
- mmix_dbx_register_number (REGNO)
-
-
-/* Node: DBX Options */
-/* (empty) */
-/* Node: DBX Hooks */
-/* (empty) */
-/* Node: File Names and DBX */
-/* (empty) */
-
+#define DEBUGGER_REGNO(REGNO) \
+ mmix_debugger_regno (REGNO)
 
 /* Node: DWARF */
 #define DWARF2_DEBUGGING_INFO 1

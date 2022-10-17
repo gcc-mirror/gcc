@@ -28,9 +28,9 @@ end module
 
   type :: bad_pdt (a,b, c, d)  ! { dg-error "does not have a component" }
     real, kind :: a            ! { dg-error "must be INTEGER" }
-    INTEGER(8), kind :: b      ! { dg-error "be default integer kind" }
+    INTEGER(8), kind :: b
     real, LEN :: c             ! { dg-error "must be INTEGER" }
-    INTEGER(8), LEN :: d       ! { dg-error "be default integer kind" }
+    INTEGER(8), LEN :: d
   end type
 
   type :: mytype (a,b)

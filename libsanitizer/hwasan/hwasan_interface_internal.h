@@ -168,53 +168,13 @@ void __hwasan_thread_exit();
 SANITIZER_INTERFACE_ATTRIBUTE
 void __hwasan_print_memory_usage();
 
+// The compiler will generate this when
+// `-hwasan-record-stack-history-with-calls` is added as a flag, which will add
+// frame record information to the stack ring buffer. This is an alternative to
+// the compiler emitting instructions in the prologue for doing the same thing
+// by accessing the ring buffer directly.
 SANITIZER_INTERFACE_ATTRIBUTE
-int __sanitizer_posix_memalign(void **memptr, uptr alignment, uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_memalign(uptr alignment, uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_aligned_alloc(uptr alignment, uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer___libc_memalign(uptr alignment, uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_valloc(uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_pvalloc(uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void __sanitizer_free(void *ptr);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void __sanitizer_cfree(void *ptr);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-uptr __sanitizer_malloc_usable_size(const void *ptr);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-__hwasan::__sanitizer_struct_mallinfo __sanitizer_mallinfo();
-
-SANITIZER_INTERFACE_ATTRIBUTE
-int __sanitizer_mallopt(int cmd, int value);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void __sanitizer_malloc_stats(void);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_calloc(uptr nmemb, uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_realloc(void *ptr, uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_reallocarray(void *ptr, uptr nmemb, uptr size);
-
-SANITIZER_INTERFACE_ATTRIBUTE
-void * __sanitizer_malloc(uptr size);
+void __hwasan_add_frame_record(u64 frame_record_info);
 
 SANITIZER_INTERFACE_ATTRIBUTE
 void *__hwasan_memcpy(void *dst, const void *src, uptr size);

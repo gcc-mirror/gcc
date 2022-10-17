@@ -175,7 +175,6 @@ ffi_call_unix:
 	;;
 
 .Lst_small_struct:
-	add	sp = -16, sp
 	cmp.lt	p6, p0 = 8, in3
 	cmp.lt	p7, p0 = 16, in3
 	cmp.lt	p8, p0 = 24, in3
@@ -191,6 +190,12 @@ ffi_call_unix:
 (p8)	st8	[r18] = r11
 	mov	out1 = sp
 	mov	out2 = in3
+	;;
+	// ia64 software calling convention requires
+	// top 16 bytes of stack to be scratch space
+	// PLT resolver uses that scratch space at
+	// 'memcpy' symbol reolution time
+	add	sp = -16, sp
 	br.call.sptk.many b0 = memcpy#
 	;;
 	mov	ar.pfs = loc0
@@ -529,6 +534,7 @@ ffi_closure_unix:
 	data8	@pcrel(.Lst_int64)		// FFI_TYPE_SINT64
 	data8	@pcrel(.Lst_void)		// FFI_TYPE_STRUCT
 	data8	@pcrel(.Lst_int64)		// FFI_TYPE_POINTER
+	data8	@pcrel(.Lst_void)		// FFI_TYPE_COMPLEX (not implemented)
 	data8 	@pcrel(.Lst_small_struct)	// FFI_IA64_TYPE_SMALL_STRUCT
 	data8	@pcrel(.Lst_hfa_float)		// FFI_IA64_TYPE_HFA_FLOAT
 	data8	@pcrel(.Lst_hfa_double)		// FFI_IA64_TYPE_HFA_DOUBLE
@@ -550,6 +556,7 @@ ffi_closure_unix:
 	data8	@pcrel(.Lld_int)		// FFI_TYPE_SINT64
 	data8	@pcrel(.Lld_void)		// FFI_TYPE_STRUCT
 	data8	@pcrel(.Lld_int)		// FFI_TYPE_POINTER
+	data8	@pcrel(.Lld_void)		// FFI_TYPE_COMPLEX (not implemented)
 	data8 	@pcrel(.Lld_small_struct)	// FFI_IA64_TYPE_SMALL_STRUCT
 	data8	@pcrel(.Lld_hfa_float)		// FFI_IA64_TYPE_HFA_FLOAT
 	data8	@pcrel(.Lld_hfa_double)		// FFI_IA64_TYPE_HFA_DOUBLE

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,10 +336,18 @@ package body Sem_Aux is
 
    function First_Subtype (Typ : Entity_Id) return Entity_Id is
       B   : constant Entity_Id := Base_Type (Typ);
-      F   : constant Node_Id   := Freeze_Node (B);
+      F   : Node_Id := Freeze_Node (B);
       Ent : Entity_Id;
 
    begin
+      --  The freeze node of a ghost type might have been rewritten in a null
+      --  statement by the time gigi calls First_Subtype on the corresponding
+      --  type.
+
+      if Nkind (F) = N_Null_Statement then
+         F := Original_Node (F);
+      end if;
+
       --  If the base type has no freeze node, it is a type in Standard, and
       --  always acts as its own first subtype, except where it is one of the
       --  predefined integer types. If the type is formal, it is also a first
@@ -402,8 +410,10 @@ package body Sem_Aux is
       Ctyp : Entity_Id;
 
    begin
+      pragma Assert (Is_Tagged_Type (Typ)
+        or else Is_Class_Wide_Equivalent_Type (Typ));
+
       Ctyp := Typ;
-      pragma Assert (Is_Tagged_Type (Ctyp));
 
       if Is_Class_Wide_Type (Ctyp) then
          Ctyp := Root_Type (Ctyp);
@@ -846,10 +856,7 @@ package body Sem_Aux is
       Btype : constant Entity_Id := Base_Type (Ent);
 
    begin
-      if Error_Posted (Ent) or else Error_Posted (Btype) then
-         return False;
-
-      elsif Is_Private_Type (Btype) then
+      if Is_Private_Type (Btype) then
          declare
             Utyp : constant Entity_Id := Underlying_Type (Btype);
          begin
@@ -957,7 +964,7 @@ package body Sem_Aux is
    -- Is_Derived_Type --
    ---------------------
 
-   function Is_Derived_Type (Ent : E) return B is
+   function Is_Derived_Type (Ent : Entity_Id) return B is
       Par : Node_Id;
 
    begin
@@ -1052,15 +1059,7 @@ package body Sem_Aux is
             end if;
 
          else
-            declare
-               Utyp : constant Entity_Id := Underlying_Type (Btype);
-            begin
-               if No (Utyp) then
-                  return False;
-               else
-                  return Is_Immutably_Limited_Type (Utyp);
-               end if;
-            end;
+            return False;
          end if;
 
       elsif Is_Concurrent_Type (Btype) then
@@ -1131,10 +1130,8 @@ package body Sem_Aux is
 
          else
             declare
-               C : E;
-
+               C : Entity_Id := First_Component (Btype);
             begin
-               C := First_Component (Btype);
                while Present (C) loop
                   if Is_Limited_Type (Etype (C)) then
                      return True;
@@ -1253,15 +1250,6 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Limited_View;
-
-   -------------------------------
-   -- Is_Record_Or_Limited_Type --
-   -------------------------------
-
-   function Is_Record_Or_Limited_Type (Typ : Entity_Id) return Boolean is
-   begin
-      return Is_Record_Type (Typ) or else Is_Limited_Type (Typ);
-   end Is_Record_Or_Limited_Type;
 
    ----------------------
    -- Nearest_Ancestor --
@@ -1403,6 +1391,31 @@ package body Sem_Aux is
                                  and then not Is_Constrained (Typ))
                   and then Has_Discriminants (Typ));
    end Object_Type_Has_Constrained_Partial_View;
+
+   ------------------
+   -- Package_Body --
+   ------------------
+
+   function Package_Body (E : Entity_Id) return Node_Id is
+      Body_Decl : Node_Id;
+      Body_Id   : constant Opt_E_Package_Body_Id :=
+        Corresponding_Body (Package_Spec (E));
+
+   begin
+      if Present (Body_Id) then
+         Body_Decl := Parent (Body_Id);
+
+         if Nkind (Body_Decl) = N_Defining_Program_Unit_Name then
+            Body_Decl := Parent (Body_Decl);
+         end if;
+
+         pragma Assert (Nkind (Body_Decl) = N_Package_Body);
+
+         return Body_Decl;
+      else
+         return Empty;
+      end if;
+   end Package_Body;
 
    ------------------
    -- Package_Spec --

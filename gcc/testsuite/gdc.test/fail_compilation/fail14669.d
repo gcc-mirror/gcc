@@ -1,11 +1,11 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail14669.d(11): Error: 'auto' can only be used as part of 'auto ref' for template function parameters
-fail_compilation/fail14669.d(16): Error: template instance fail14669.foo1!() error instantiating
-fail_compilation/fail14669.d(12): Error: 'auto' can only be used as part of 'auto ref' for template function parameters
-fail_compilation/fail14669.d(17): Error: template fail14669.foo2 cannot deduce function from argument types !()(int), candidates are:
-fail_compilation/fail14669.d(12):        fail14669.foo2()(auto int a)
+fail_compilation/fail14669.d(11): Error: `auto` can only be used as part of `auto ref` for template function parameters
+fail_compilation/fail14669.d(16): Error: template instance `fail14669.foo1!()` error instantiating
+fail_compilation/fail14669.d(12): Error: `auto` can only be used as part of `auto ref` for template function parameters
+fail_compilation/fail14669.d(17): Error: none of the overloads of template `fail14669.foo2` are callable using argument types `!()(int)`
+fail_compilation/fail14669.d(12):        Candidate is: `foo2()(auto int a)`
 ---
 */
 void foo1()(auto int a) {}
@@ -20,10 +20,10 @@ void test1()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail14669.d(29): Error: 'auto' can only be used as part of 'auto ref' for template function parameters
-fail_compilation/fail14669.d(38): Error: template instance fail14669.bar1!int error instantiating
-fail_compilation/fail14669.d(30): Error: 'auto' can only be used as part of 'auto ref' for template function parameters
-fail_compilation/fail14669.d(40): Error: template instance fail14669.bar2!int error instantiating
+fail_compilation/fail14669.d(29): Error: cannot explicitly instantiate template function with `auto ref` parameter
+fail_compilation/fail14669.d(38): Error: template instance `fail14669.bar1!int` error instantiating
+fail_compilation/fail14669.d(30): Error: cannot explicitly instantiate template function with `auto ref` parameter
+fail_compilation/fail14669.d(40): Error: template instance `fail14669.bar2!int` error instantiating
 ---
 */
 void bar1(T)(auto ref T x) {}

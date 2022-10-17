@@ -4,7 +4,7 @@
  * Translated from MinGW-w64 API
  *
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_wtsapi32.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_wtsapi32.d)
  */
 module core.sys.windows.wtsapi32;
 version (Windows):

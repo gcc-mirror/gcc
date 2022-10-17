@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail176.d(13): Error: cannot modify immutable expression a[1]
-fail_compilation/fail176.d(16): Error: cannot modify immutable expression b[1]
-fail_compilation/fail176.d(19): Error: cannot modify const expression c[1]
+fail_compilation/fail176.d(13): Error: cannot modify `immutable` expression `a[1]`
+fail_compilation/fail176.d(16): Error: cannot modify `immutable` expression `b[1]`
+fail_compilation/fail176.d(19): Error: cannot modify `const` expression `c[1]`
 ---
 */
 

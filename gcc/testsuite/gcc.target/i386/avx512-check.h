@@ -87,6 +87,9 @@ main ()
 #ifdef AVX512VNNI
       && (ecx & bit_AVX512VNNI)
 #endif
+#ifdef AVX512FP16
+      && (edx & bit_AVX512FP16)
+#endif
 #ifdef VAES
       && (ecx & bit_VAES)
 #endif

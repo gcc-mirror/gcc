@@ -7,4 +7,4 @@ program p
    interface operator ( .gt. )
    end interface operator (.lt.) ! { dg-error "END INTERFACE OPERATOR" }
 end program p                    ! { dg-error "END INTERFACE" }
-! { dg-excess-errors "Unexpected end of file" }
+! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }

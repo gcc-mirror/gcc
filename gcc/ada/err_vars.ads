@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,14 +61,6 @@ package Err_Vars is
    --  not get reset by any Error_Msg call, so the caller is responsible
    --  for resetting it.
 
-   Warn_On_Instance : Boolean := False;
-   --  Normally if a warning is generated in a generic template from the
-   --  analysis of the template, then the warning really belongs in the
-   --  template, and the default value of False for this Boolean achieves
-   --  that effect. If Warn_On_Instance is set True, then the warnings are
-   --  generated on the instantiation (referring to the template) rather
-   --  than on the template itself.
-
    Raise_Exception_On_Error : Nat := 0;
    --  If this value is non-zero, then any attempt to generate an error
    --  message raises the exception Error_Msg_Exception, and the error
@@ -105,12 +97,20 @@ package Err_Vars is
    --  of the following global variables to appropriate values before making a
    --  call to one of the error message routines with a string containing the
    --  insertion character to get the value inserted in an appropriate format.
+   --
+   --  Some of these are initialized below, because they are read before being
+   --  set by clients.
+   --
+   --  Would it be desirable to use arrays (with element renamings) here
+   --  instead of individual variables, at least for the Error_Msg_Name_N and
+   --  Error_Msg_Node_N ??? This would allow simplifying existing code in some
+   --  cases (see errout.adb).
 
    Error_Msg_Col : Column_Number;
    --  Column for @ insertion character in message
 
    Error_Msg_Uint_1 : Uint;
-   Error_Msg_Uint_2 : Uint;
+   Error_Msg_Uint_2 : Uint := No_Uint;
    --  Uint values for ^ insertion characters in message
 
    --  WARNING: There is a matching C declaration of these variables in fe.h
@@ -119,21 +119,28 @@ package Err_Vars is
    --  Source location for # insertion character in message
 
    Error_Msg_Name_1 : Name_Id;
-   Error_Msg_Name_2 : Name_Id;
-   Error_Msg_Name_3 : Name_Id;
+   Error_Msg_Name_2 : Name_Id := No_Name;
+   Error_Msg_Name_3 : Name_Id := No_Name;
+   Error_Msg_Name_4 : Name_Id := No_Name;
+   Error_Msg_Name_5 : Name_Id := No_Name;
+   Error_Msg_Name_6 : Name_Id := No_Name;
    --  Name_Id values for % insertion characters in message
 
    Error_Msg_File_1 : File_Name_Type;
-   Error_Msg_File_2 : File_Name_Type;
-   Error_Msg_File_3 : File_Name_Type;
+   Error_Msg_File_2 : File_Name_Type := No_File;
+   Error_Msg_File_3 : File_Name_Type := No_File;
    --  File_Name_Type values for { insertion characters in message
 
    Error_Msg_Unit_1 : Unit_Name_Type;
-   Error_Msg_Unit_2 : Unit_Name_Type;
+   Error_Msg_Unit_2 : Unit_Name_Type := No_Unit_Name;
    --  Unit_Name_Type values for $ insertion characters in message
 
    Error_Msg_Node_1 : Node_Id;
-   Error_Msg_Node_2 : Node_Id;
+   Error_Msg_Node_2 : Node_Id := Empty;
+   Error_Msg_Node_3 : Node_Id := Empty;
+   Error_Msg_Node_4 : Node_Id := Empty;
+   Error_Msg_Node_5 : Node_Id := Empty;
+   Error_Msg_Node_6 : Node_Id := Empty;
    --  Node_Id values for & insertion characters in message
 
    Error_Msg_Warn : Boolean;

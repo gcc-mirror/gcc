@@ -12,7 +12,7 @@
 package runtime
 
 import (
-	"runtime/internal/sys"
+	"internal/goarch"
 	"unsafe"
 )
 
@@ -247,7 +247,7 @@ func dumpbv(cbv *bitvector, offset uintptr) {
 	for i := uintptr(0); i < uintptr(cbv.n); i++ {
 		if cbv.ptrbit(i) == 1 {
 			dumpint(fieldKindPtr)
-			dumpint(uint64(offset + i*sys.PtrSize))
+			dumpint(uint64(offset + i*goarch.PtrSize))
 		}
 	}
 }
@@ -294,9 +294,10 @@ func dumpgoroutine(gp *g) {
 }
 
 func dumpgs() {
+	assertWorldStopped()
+
 	// goroutines & stacks
-	for i := 0; uintptr(i) < allglen; i++ {
-		gp := allgs[i]
+	forEachG(func(gp *g) {
 		status := readgstatus(gp) // The world is stopped so gp will not be in a scan state.
 		switch status {
 		default:
@@ -309,7 +310,7 @@ func dumpgs() {
 			_Gwaiting:
 			dumpgoroutine(gp)
 		}
-	}
+	})
 }
 
 func finq_callback(fn *funcval, obj unsafe.Pointer, ft *functype, ot *ptrtype) {
@@ -387,7 +388,7 @@ func dumpparams() {
 	} else {
 		dumpbool(true) // big-endian ptrs
 	}
-	dumpint(sys.PtrSize)
+	dumpint(goarch.PtrSize)
 	var arenaStart, arenaEnd uintptr
 	for i1 := range mheap_.arenas {
 		if mheap_.arenas[i1] == nil {
@@ -408,8 +409,8 @@ func dumpparams() {
 	}
 	dumpint(uint64(arenaStart))
 	dumpint(uint64(arenaEnd))
-	dumpstr(sys.GOARCH)
-	dumpstr(sys.Goexperiment)
+	dumpstr(goarch.GOARCH)
+	dumpstr(buildVersion)
 	dumpint(uint64(ncpu))
 }
 
@@ -585,7 +586,7 @@ func dumpfields(bv bitvector) {
 
 func makeheapobjbv(p uintptr, size uintptr) bitvector {
 	// Extend the temp buffer if necessary.
-	nptr := size / sys.PtrSize
+	nptr := size / goarch.PtrSize
 	if uintptr(len(tmpbuf)) < nptr/8+1 {
 		if tmpbuf != nil {
 			sysFree(unsafe.Pointer(&tmpbuf[0]), uintptr(len(tmpbuf)), &memstats.other_sys)

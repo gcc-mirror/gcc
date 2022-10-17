@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,8 +40,10 @@ int main()
   VERIFY( has_facet<base_facet>(loc_derived) );
 
   // Standard derived facet.
+#if __cpp_rtti
   VERIFY( !has_facet<derived_facet>(loc_c) );
   VERIFY( !has_facet<derived_facet>(loc_base) );
+#endif
   VERIFY( has_facet<derived_facet>(loc_derived) );
 
 

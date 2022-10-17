@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread1-details -fdisable-tree-ethread" } */
+/* { dg-options "-O2 -fdump-tree-threadfull1-details -fdisable-tree-ethread" } */
 
 extern void abort (void);
 
@@ -37,5 +37,5 @@ c_finish_omp_clauses (tree clauses)
     }
 }
 
-/* There are 3 FSM jump threading opportunities.  */
-/* { dg-final { scan-tree-dump-times "Registering FSM" 3 "thread1"} } */
+/* There are 3 jump threading opportunities.  */
+/* { dg-final { scan-tree-dump-times "Registering jump" 3 "threadfull1"} } */

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -108,8 +108,15 @@ test02()
     VERIFY( !result );
     VERIFY( ec == std::errc::not_a_directory );
     result = create_directories(file.path/"../bar", ec);
+#if defined(__MINGW32__) || defined(__MINGW64__)
+    VERIFY( result );
+    VERIFY( !ec );
+    VERIFY( is_directory(dir.path/"bar") );
+    remove(dir.path/"bar");
+#else
     VERIFY( !result );
     VERIFY( ec );
+#endif
   }
 }
 
@@ -120,13 +127,41 @@ test03()
   const auto p = __gnu_test::nonexistent_path() / "/";
   bool result = create_directories(p);
   VERIFY( result );
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  VERIFY( exists(p/".") ); // needed due to PR libstdc++/88881
+#else
   VERIFY( exists(p) );
+#endif
   remove(p);
   result = create_directories(p/"foo/");
   VERIFY( result );
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  VERIFY( exists(p/".") ); // needed due to PR libstdc++/88881
+#else
   VERIFY( exists(p) );
+#endif
   VERIFY( exists(p/"foo") );
   remove_all(p);
+}
+
+void
+test04()
+{
+#ifndef NO_SYMLINKS
+  // PR libstdc++/101510
+  // create_directories reports an error if the path is a symlink to a dir
+  std::error_code ec = make_error_code(std::errc::invalid_argument);
+  const auto p = __gnu_test::nonexistent_path() / "";
+  fs::create_directories(p/"dir");
+  auto link = p/"link";
+  fs::create_directory_symlink("dir", link);
+  bool created = fs::create_directories(link, ec);
+  VERIFY( !created );
+  VERIFY( !ec );
+  created = fs::create_directories(link);
+  VERIFY( !created );
+  remove_all(p);
+#endif
 }
 
 int
@@ -135,4 +170,5 @@ main()
   test01();
   test02();
   test03();
+  test04();
 }

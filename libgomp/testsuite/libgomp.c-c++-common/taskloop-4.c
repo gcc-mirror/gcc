@@ -85,7 +85,8 @@ main ()
 	if (test (7, 21, 2, 15, grainsize, &ntasks, &min_iters, &max_iters) != 7
 	    || ntasks != 1 || min_iters != 7 || max_iters != 7)
 	  __builtin_abort ();
-	/* If num_tasks is present, # of task loop iters is min (# of loop iters, num_tasks).  */
+	/* If num_tasks is present, # of tasks is min (# of loop iters, num_tasks)
+	   and each task has at least one iteration.  */
 	if (test (-51, 2500, 48, 9, num_tasks, &ntasks, &min_iters, &max_iters) != 54
 	    || ntasks != 9)
 	  __builtin_abort ();

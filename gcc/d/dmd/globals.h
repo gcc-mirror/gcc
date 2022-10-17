@@ -1,10 +1,10 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
- * http://www.digitalmars.com
+ * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
- * http://www.boost.org/LICENSE_1_0.txt
+ * https://www.boost.org/LICENSE_1_0.txt
  * https://github.com/dlang/dmd/blob/master/src/dmd/globals.h
  */
 
@@ -12,12 +12,15 @@
 
 #include "root/dcompat.h"
 #include "root/ctfloat.h"
-#include "root/outbuffer.h"
+#include "common/outbuffer.h"
 #include "root/filename.h"
 #include "compiler.h"
 
 // Can't include arraytypes.h here, need to declare these directly.
 template <typename TYPE> struct Array;
+
+class FileManager;
+struct Loc;
 
 typedef unsigned char Diagnostic;
 enum
@@ -25,6 +28,13 @@ enum
     DIAGNOSTICerror,  // generate an error
     DIAGNOSTICinform, // generate a warning
     DIAGNOSTICoff     // disable diagnostic
+};
+
+typedef unsigned char MessageStyle;
+enum
+{
+    MESSAGESTYLEdigitalmars, // file(line,column): message
+    MESSAGESTYLEgnu          // file:line:column: message
 };
 
 // The state of array bounds checking
@@ -42,26 +52,17 @@ enum
 {
     CHECKACTION_D,        // call D assert on failure
     CHECKACTION_C,        // call C assert on failure
-    CHECKACTION_halt      // cause program halt on failure
+    CHECKACTION_halt,     // cause program halt on failure
+    CHECKACTION_context   // call D assert with the error context on failure
 };
 
-enum CPU
+enum JsonFieldFlags
 {
-    x87,
-    mmx,
-    sse,
-    sse2,
-    sse3,
-    ssse3,
-    sse4_1,
-    sse4_2,
-    avx,                // AVX1 instruction set
-    avx2,               // AVX2 instruction set
-    avx512,             // AVX-512 instruction set
-
-    // Special values that don't survive past the command line processing
-    baseline,           // (default) the minimum capability CPU
-    native              // the machine the compiler is being run on
+    none         = 0,
+    compilerInfo = (1 << 0),
+    buildInfo    = (1 << 1),
+    modules      = (1 << 2),
+    semantics    = (1 << 3)
 };
 
 enum CppStdRevision
@@ -69,69 +70,103 @@ enum CppStdRevision
     CppStdRevisionCpp98 = 199711,
     CppStdRevisionCpp11 = 201103,
     CppStdRevisionCpp14 = 201402,
-    CppStdRevisionCpp17 = 201703
+    CppStdRevisionCpp17 = 201703,
+    CppStdRevisionCpp20 = 202002
+};
+
+/// Trivalent boolean to represent the state of a `revert`able change
+enum class FeatureState : signed char
+{
+    default_ = -1, /// Not specified by the user
+    disabled = 0,  /// Specified as `-revert=`
+    enabled = 1    /// Specified as `-preview=`
+};
+
+struct Output
+{
+    /// Configuration for the compiler generator
+    bool doOutput;      // Output is enabled
+    bool fullOutput;    // Generate comments for hidden declarations (for -HC),
+                        // and don't strip the bodies of plain (non-template) functions (for -H)
+    DString dir;   // write to directory 'dir'
+    DString name;  // write to file 'name'
+    Array<const char*> files; // Other files associated with this output,
+                                // e.g. macro include files for Ddoc, dependencies for makedeps
+    OutBuffer* buffer;  // if this output is buffered, this is the buffer
+    int bufferLines;    // number of lines written to the buffer
 };
 
 // Put command line switches in here
 struct Param
 {
     bool obj;           // write object file
-    bool link;          // perform link
-    bool dll;           // generate shared dynamic library
-    bool lib;           // write library file instead of object file(s)
     bool multiobj;      // break one object file into multiple ones
-    bool oneobj;        // write one object file instead of multiple ones
     bool trace;         // insert profiling hooks
     bool tracegc;       // instrument calls to 'new'
     bool verbose;       // verbose compile
     bool vcg_ast;       // write-out codegen-ast
     bool showColumns;   // print character (column) numbers in diagnostics
     bool vtls;          // identify thread local variables
-    char vgc;           // identify gc usage
+    bool vtemplates;    // collect and list statistics on template instantiations
+    bool vtemplatesListInstances; // collect and list statistics on template instantiations origins
+    bool vgc;           // identify gc usage
     bool vfield;        // identify non-mutable field variables
     bool vcomplex;      // identify complex/imaginary type usage
-    char symdebug;      // insert debug symbolic information
-    bool symdebugref;   // insert debug information for all referenced types, too
-    bool alwaysframe;   // always emit standard stack frame
-    bool optimize;      // run optimizer
-    bool map;           // generate linker .map file
-    bool is64bit;       // generate 64 bit code
-    bool isLP64;        // generate code for LP64
-    bool isLinux;       // generate code for linux
-    bool isOSX;         // generate code for Mac OSX
-    bool isWindows;     // generate code for Windows
-    bool isFreeBSD;     // generate code for FreeBSD
-    bool isOpenBSD;     // generate code for OpenBSD
-    bool isSolaris;     // generate code for Solaris
-    bool hasObjectiveC; // target supports Objective-C
-    bool mscoff;        // for Win32: write COFF object files instead of OMF
+    bool vin;           // identify 'in' parameters
     Diagnostic useDeprecated;
-    bool stackstomp;    // add stack stomping code
     bool useUnitTests;  // generate unittest code
     bool useInline;     // inline expand functions
-    bool useDIP25;      // implement http://wiki.dlang.org/DIP25
     bool release;       // build release version
     bool preservePaths; // true means don't strip path from source file
     Diagnostic warnings;
-    bool pic;           // generate position-independent-code for shared libs
     bool color;         // use ANSI colors in console output
     bool cov;           // generate code coverage data
     unsigned char covPercent;   // 0..100 code coverage percentage required
-    bool nofloat;       // code should not pull in floating point support
+    bool ctfe_cov;      // generate coverage data for ctfe
     bool ignoreUnsupportedPragmas;      // rather than error on them
-    bool enforcePropertySyntax;
     bool useModuleInfo; // generate runtime module information
     bool useTypeInfo;   // generate runtime type information
     bool useExceptions; // support exception handling
     bool betterC;       // be a "better C" compiler; no dependency on D runtime
     bool addMain;       // add a default main() function
     bool allInst;       // generate code for all template instantiations
-    bool vsafe;         // use enhanced @safe checking
-    unsigned cplusplus;     // version of C++ name mangling to support
+    bool bitfields;         // support C style bit fields
+    CppStdRevision cplusplus;  // version of C++ name mangling to support
     bool showGaggedErrors;  // print gagged errors anyway
+    bool printErrorContext;  // print errors with the error context (the error line in the source file)
+    bool manual;            // open browser on compiler manual
+    bool usage;             // print usage and exit
+    bool mcpuUsage;         // print help on -mcpu switch
+    bool transitionUsage;   // print help on -transition switch
+    bool checkUsage;        // print help on -check switch
+    bool checkActionUsage;  // print help on -checkaction switch
+    bool revertUsage;       // print help on -revert switch
+    bool previewUsage;      // print help on -preview switch
+    bool externStdUsage;    // print help on -extern-std switch
+    bool hcUsage;           // print help on -HC switch
+    bool logo;              // print logo;
 
-    CPU cpu;                // CPU instruction set to target
-
+    // Options for `-preview=/-revert=`
+    FeatureState useDIP25;       // implement https://wiki.dlang.org/DIP25
+    FeatureState useDIP1000;     // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
+    bool ehnogc;                 // use @nogc exception handling
+    bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
+    bool fieldwise;              // do struct equality testing field-wise rather than by memcmp()
+    bool fixAliasThis;           // if the current scope has an alias this, check it before searching upper scopes
+    FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
+                                 // https://dconf.org/2019/talks/alexandrescu.html
+                                 // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
+                                 // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
+                                 // Implementation: https://github.com/dlang/dmd/pull/9817
+    bool noSharedAccess;         // read/write access to shared memory objects
+    bool previewIn;              // `in` means `[ref] scope const`, accepts rvalues
+    bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
+    bool shortenedMethods;       // allow => in normal function declarations
+    bool fixImmutableConv;       // error on unsound immutable conversion - https://github.com/dlang/dmd/pull/14070
+    bool fix16997;               // fix integral promotions for unary + - ~ operators
+                                 // https://issues.dlang.org/show_bug.cgi?id=16997
+    FeatureState dtorFields;     // destruct fields of partially constructed objects
+                                     // https://issues.dlang.org/show_bug.cgi?id=14246
     CHECKENABLE useInvariants;     // generate class invariant checks
     CHECKENABLE useIn;             // generate precondition checks
     CHECKENABLE useOut;            // generate postcondition checks
@@ -152,18 +187,14 @@ struct Param
     DString objname;   // .obj file output name
     DString libname;   // .lib file output name
 
-    bool doDocComments;  // process embedded documentation comments
-    DString docdir;      // write documentation file to docdir directory
-    DString docname;     // write documentation file to docname
-    Array<const char *> ddocfiles;  // macro include files for Ddoc
-
-    bool doHdrGeneration;  // process embedded documentation comments
-    DString hdrdir;        // write 'header' file to docdir directory
-    DString hdrname;       // write 'header' file to docname
-    bool hdrStripPlainFunctions; // strip the bodies of plain (non-template) functions
-
-    bool doJsonGeneration;    // write JSON file
-    DString jsonfilename;     // write JSON file to jsonfilename
+    Output ddoc;              // Generate embedded documentation comments
+    Output dihdr;             // Generate `.di` 'header' files
+    Output cxxhdr;            // Generate 'Cxx header' file
+    Output json;              // Generate JSON file
+    unsigned jsonFieldFlags;  // JSON field flags to include
+    Output makeDeps;          // Generate make file dependencies
+    Output mixinOut;          // write expanded mixins for debugging
+    Output moduleDeps;        // Generate `.deps` module dependencies
 
     unsigned debuglevel;   // debug level
     Array<const char *> *debugids;     // debug identifiers
@@ -171,27 +202,18 @@ struct Param
     unsigned versionlevel; // version level
     Array<const char *> *versionids;   // version identifiers
 
-    DString defaultlibname;     // default library for non-debug builds
-    DString debuglibname;       // default library for debug builds
-    DString mscrtlib;           // MS C runtime library
 
-    DString moduleDepsFile;     // filename for deps output
-    OutBuffer *moduleDeps;      // contents to be written to deps file
-
-    // Hidden debug switches
-    bool debugb;
-    bool debugc;
-    bool debugf;
-    bool debugr;
-    bool debugx;
-    bool debugy;
+    MessageStyle messageStyle;  // style of file/line annotations on messages
 
     bool run;           // run resulting executable
     Strings runargs;    // arguments for executable
 
+    Array<const char *> cppswitches; // preprocessor switches
+
     // Linker stuff
     Array<const char *> objfiles;
     Array<const char *> linkswitches;
+    Array<bool> linkswitchIsForCC;
     Array<const char *> libfiles;
     Array<const char *> dllfiles;
     DString deffile;
@@ -200,41 +222,49 @@ struct Param
     DString mapfile;
 };
 
-typedef unsigned structalign_t;
+struct structalign_t
+{
+    unsigned short value;
+    bool pack;
+
+    bool isDefault() const;
+    void setDefault();
+    bool isUnknown() const;
+    void setUnknown();
+    void set(unsigned value);
+    unsigned get() const;
+    bool isPack() const;
+    void setPack(bool pack);
+};
+
 // magic value means "match whatever the underlying C compiler does"
 // other values are all powers of 2
-#define STRUCTALIGN_DEFAULT ((structalign_t) ~0)
+//#define STRUCTALIGN_DEFAULT ((structalign_t) ~0)
+
+const DString mars_ext = "d";
+const DString doc_ext  = "html";     // for Ddoc generated files
+const DString ddoc_ext = "ddoc";     // for Ddoc macro include files
+const DString dd_ext   = "dd";       // for Ddoc source files
+const DString hdr_ext  = "di";       // for D 'header' import files
+const DString json_ext = "json";     // for JSON files
+const DString map_ext  = "map";      // for .map files
 
 struct Global
 {
     DString inifilename;
-    DString mars_ext;
-    DString obj_ext;
-    DString lib_ext;
-    DString dll_ext;
-    DString doc_ext;            // for Ddoc generated files
-    DString ddoc_ext;           // for Ddoc macro include files
-    DString hdr_ext;            // for D 'header' import files
-    DString cxxhdr_ext;         // for C/C++ 'header' files
-    DString json_ext;           // for JSON files
-    DString map_ext;            // for .map files
-    bool run_noext;             // allow -run sources without extensions.
 
-    DString copyright;
-    DString written;
-    const char *main_d;         // dummy filename for dummy main()
+    const DString copyright;
+    const DString written;
     Array<const char *> *path;        // Array of char*'s which form the import lookup path
     Array<const char *> *filePath;    // Array of char*'s which form the file import lookup path
 
-    DString version;         // Compiler version string
     DString vendor;          // Compiler backend name
 
     Param params;
-    unsigned errors;       // number of errors reported so far
-    unsigned warnings;     // number of warnings reported so far
-    FILE *stdmsg;          // where to send verbose messages
-    unsigned gag;          // !=0 means gag reporting of errors & warnings
-    unsigned gaggedErrors; // number of errors reported while gagged
+    unsigned errors;         // number of errors reported so far
+    unsigned warnings;       // number of warnings reported so far
+    unsigned gag;            // !=0 means gag reporting of errors & warnings
+    unsigned gaggedErrors;   // number of errors reported while gagged
     unsigned gaggedWarnings; // number of warnings reported while gagged
 
     void* console;         // opaque pointer to console for controlling text attributes
@@ -242,7 +272,12 @@ struct Global
     Array<class Identifier*>* versionids; // command line versions and predefined versions
     Array<class Identifier*>* debugids;   // command line debug versions and predefined versions
 
-    enum { recursionLimit = 500 }; // number of recursive template expansions before abort
+    bool hasMainFunction;
+    unsigned varSequenceNumber;
+
+    FileManager* fileManager;
+
+    FileName (*preprocess)(FileName, const Loc&, bool&, OutBuffer&);
 
     /* Start gagging. Return the current number of gagged errors
      */
@@ -260,26 +295,43 @@ struct Global
     void increaseErrorCount();
 
     void _init();
+
+    /**
+    Returns: the version as the number that would be returned for __VERSION__
+    */
+    unsigned versionNumber();
+
+    /**
+    Returns: the compiler version string.
+    */
+    const char * versionChars();
 };
 
 extern Global global;
 
+// Because int64_t and friends may be any integral type of the correct size,
+// we have to explicitly ask for the correct integer type to get the correct
+// mangling with dmd. The #if logic here should match the mangling of
+// Tint64 and Tuns64 in cppmangle.d.
+#if MARS && DMD_VERSION >= 2079 && DMD_VERSION <= 2081 && \
+    __APPLE__ && __SIZEOF_LONG__ == 8
+// DMD versions between 2.079 and 2.081 mapped D long to int64_t on OS X.
+typedef uint64_t dinteger_t;
+typedef int64_t sinteger_t;
+typedef uint64_t uinteger_t;
+#elif __SIZEOF_LONG__ == 8
 // Be careful not to care about sign when using dinteger_t
 // use this instead of integer_t to
 // avoid conflicts with system #include's
-typedef uint64_t dinteger_t;
+typedef unsigned long dinteger_t;
 // Signed and unsigned variants
-typedef int64_t sinteger_t;
-typedef uint64_t uinteger_t;
-
-typedef int8_t                  d_int8;
-typedef uint8_t                 d_uns8;
-typedef int16_t                 d_int16;
-typedef uint16_t                d_uns16;
-typedef int32_t                 d_int32;
-typedef uint32_t                d_uns32;
-typedef int64_t                 d_int64;
-typedef uint64_t                d_uns64;
+typedef long sinteger_t;
+typedef unsigned long uinteger_t;
+#else
+typedef unsigned long long dinteger_t;
+typedef long long sinteger_t;
+typedef unsigned long long uinteger_t;
+#endif
 
 // file location
 struct Loc
@@ -295,43 +347,58 @@ struct Loc
         filename = NULL;
     }
 
-    Loc(const char *filename, unsigned linnum, unsigned charnum);
+    Loc(const char *filename, unsigned linnum, unsigned charnum)
+    {
+        this->linnum = linnum;
+        this->charnum = charnum;
+        this->filename = filename;
+    }
 
-    const char *toChars() const;
-    bool equals(const Loc& loc);
+    const char *toChars(
+        bool showColumns = global.params.showColumns,
+        MessageStyle messageStyle = global.params.messageStyle) const;
+    bool equals(const Loc& loc) const;
 };
 
-enum LINK
+enum class LINK : uint8_t
 {
-    LINKdefault,
-    LINKd,
-    LINKc,
-    LINKcpp,
-    LINKwindows,
-    LINKobjc,
-    LINKsystem
+    default_,
+    d,
+    c,
+    cpp,
+    windows,
+    objc,
+    system
 };
 
-enum CPPMANGLE
+enum class CPPMANGLE : uint8_t
 {
-    CPPMANGLEdefault,
-    CPPMANGLEstruct,
-    CPPMANGLEclass
+    def,
+    asStruct,
+    asClass
 };
 
-enum MATCH
+enum class MATCH : int
 {
-    MATCHnomatch,       // no match
-    MATCHconvert,       // match with conversions
-    MATCHconst,         // match with conversion to const
-    MATCHexact          // exact match
+    nomatch,       // no match
+    convert,       // match with conversions
+    constant,      // match with conversion to const
+    exact          // exact match
 };
 
-enum PINLINE
+enum class PINLINE : uint8_t
 {
-    PINLINEdefault,      // as specified on the command line
-    PINLINEnever,        // never inline
-    PINLINEalways        // always inline
+    default_,     // as specified on the command line
+    never,        // never inline
+    always        // always inline
+};
+
+enum class FileType : uint8_t
+{
+    d,    /// normal D source file
+    dhdr, /// D header file (.di)
+    ddoc, /// Ddoc documentation file (.dd)
+    c,    /// C source file
 };
 
 typedef uinteger_t StorageClass;

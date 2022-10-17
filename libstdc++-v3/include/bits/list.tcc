@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -416,29 +416,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  iterator __last1 = end();
 	  iterator __first2 = __x.begin();
 	  iterator __last2 = __x.end();
-	  const size_t __orig_size = __x.size();
-	  __try {
-	    while (__first1 != __last1 && __first2 != __last2)
-	      if (*__first2 < *__first1)
-		{
-		  iterator __next = __first2;
-		  _M_transfer(__first1, __first2, ++__next);
-		  __first2 = __next;
-		}
-	      else
-		++__first1;
-	    if (__first2 != __last2)
-	      _M_transfer(__last1, __first2, __last2);
 
-	    this->_M_inc_size(__x._M_get_size());
-	    __x._M_set_size(0);
-	  }
-	  __catch(...)
+	  const _Finalize_merge __fin(*this, __x, __first2);
+
+	  while (__first1 != __last1 && __first2 != __last2)
+	    if (*__first2 < *__first1)
+	      {
+		iterator __next = __first2;
+		_M_transfer(__first1, __first2, ++__next);
+		__first2 = __next;
+	      }
+	    else
+	      ++__first1;
+	  if (__first2 != __last2)
 	    {
-	      const size_t __dist = std::distance(__first2, __last2);
-	      this->_M_inc_size(__orig_size - __dist);
-	      __x._M_set_size(__dist);
-	      __throw_exception_again;
+	      _M_transfer(__last1, __first2, __last2);
+	      __first2 = __last2;
 	    }
 	}
     }
@@ -463,30 +456,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    iterator __last1 = end();
 	    iterator __first2 = __x.begin();
 	    iterator __last2 = __x.end();
-	    const size_t __orig_size = __x.size();
-	    __try
-	      {
-		while (__first1 != __last1 && __first2 != __last2)
-		  if (__comp(*__first2, *__first1))
-		    {
-		      iterator __next = __first2;
-		      _M_transfer(__first1, __first2, ++__next);
-		      __first2 = __next;
-		    }
-		  else
-		    ++__first1;
-		if (__first2 != __last2)
-		  _M_transfer(__last1, __first2, __last2);
 
-		this->_M_inc_size(__x._M_get_size());
-		__x._M_set_size(0);
-	      }
-	    __catch(...)
+	    const _Finalize_merge __fin(*this, __x, __first2);
+
+	    while (__first1 != __last1 && __first2 != __last2)
+	      if (__comp(*__first2, *__first1))
+		{
+		  iterator __next = __first2;
+		  _M_transfer(__first1, __first2, ++__next);
+		  __first2 = __next;
+		}
+	      else
+		++__first1;
+	    if (__first2 != __last2)
 	      {
-		const size_t __dist = std::distance(__first2, __last2);
-		this->_M_inc_size(__orig_size - __dist);
-		__x._M_set_size(__dist);
-		__throw_exception_again;
+		_M_transfer(__last1, __first2, __last2);
+		__first2 = __last2;
 	      }
 	  }
       }
@@ -500,21 +485,34 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       if (this->_M_impl._M_node._M_next != &this->_M_impl._M_node
 	  && this->_M_impl._M_node._M_next->_M_next != &this->_M_impl._M_node)
       {
-        list __carry;
-        list __tmp[64];
-        list * __fill = __tmp;
-        list * __counter;
+	using __detail::_Scratch_list;
+	// The algorithm used here is largely unchanged from the SGI STL
+	// and is described in The C++ Standard Template Library by Plauger,
+	// Stepanov, Lee, Musser.
+	// Each element of *this is spliced out and merged into one of the
+	// sorted lists in __tmp, then all the lists in __tmp are merged
+	// together and then swapped back into *this.
+	// Because all nodes end up back in *this we do not need to update
+	// this->size() while nodes are temporarily moved out.
+	_Scratch_list __carry;
+	_Scratch_list __tmp[64];
+	_Scratch_list* __fill = __tmp;
+	_Scratch_list* __counter;
+
+	_Scratch_list::_Ptr_cmp<iterator, void> __ptr_comp;
+
 	__try
 	  {
 	    do
 	      {
-		__carry.splice(__carry.begin(), *this, begin());
+		__carry._M_take_one(begin()._M_node);
 
 		for(__counter = __tmp;
 		    __counter != __fill && !__counter->empty();
 		    ++__counter)
 		  {
-		    __counter->merge(__carry);
+
+		    __counter->merge(__carry, __ptr_comp);
 		    __carry.swap(*__counter);
 		  }
 		__carry.swap(*__counter);
@@ -524,14 +522,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    while ( !empty() );
 
 	    for (__counter = __tmp + 1; __counter != __fill; ++__counter)
-	      __counter->merge(*(__counter - 1));
-	    swap( *(__fill - 1) );
+	      __counter->merge(__counter[-1], __ptr_comp);
+	    __fill[-1].swap(this->_M_impl._M_node);
 	  }
 	__catch(...)
 	  {
-	    this->splice(this->end(), __carry);
+	    // Move all nodes back into *this.
+	    __carry._M_put_all(end()._M_node);
 	    for (int __i = 0; __i < sizeof(__tmp)/sizeof(__tmp[0]); ++__i)
-	      this->splice(this->end(), __tmp[__i]);
+	      __tmp[__i]._M_put_all(end()._M_node);
 	    __throw_exception_again;
 	  }
       }
@@ -617,42 +616,49 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	// Do nothing if the list has length 0 or 1.
 	if (this->_M_impl._M_node._M_next != &this->_M_impl._M_node
 	    && this->_M_impl._M_node._M_next->_M_next != &this->_M_impl._M_node)
-	  {
-	    list __carry;
-	    list __tmp[64];
-	    list * __fill = __tmp;
-	    list * __counter;
-	    __try
-	      {
-		do
-		  {
-		    __carry.splice(__carry.begin(), *this, begin());
+	{
+	  using __detail::_Scratch_list;
+	  _Scratch_list __carry;
+	  _Scratch_list __tmp[64];
+	  _Scratch_list* __fill = __tmp;
+	  _Scratch_list* __counter;
 
-		    for(__counter = __tmp;
-			__counter != __fill && !__counter->empty();
-			++__counter)
-		      {
-			__counter->merge(__carry, __comp);
-			__carry.swap(*__counter);
-		      }
-		    __carry.swap(*__counter);
-		    if (__counter == __fill)
-		      ++__fill;
-		  }
-		while ( !empty() );
+	_Scratch_list::_Ptr_cmp<iterator, _StrictWeakOrdering> __ptr_comp
+	  = { __comp };
 
-		for (__counter = __tmp + 1; __counter != __fill; ++__counter)
-		  __counter->merge(*(__counter - 1), __comp);
-		swap(*(__fill - 1));
-	      }
-	    __catch(...)
-	      {
-		this->splice(this->end(), __carry);
-		for (int __i = 0; __i < sizeof(__tmp)/sizeof(__tmp[0]); ++__i)
-		  this->splice(this->end(), __tmp[__i]);
-		__throw_exception_again;
-	      }
-	  }
+	  __try
+	    {
+	      do
+		{
+		  __carry._M_take_one(begin()._M_node);
+
+		  for(__counter = __tmp;
+		      __counter != __fill && !__counter->empty();
+		      ++__counter)
+		    {
+
+		      __counter->merge(__carry, __ptr_comp);
+		      __carry.swap(*__counter);
+		    }
+		  __carry.swap(*__counter);
+		  if (__counter == __fill)
+		    ++__fill;
+		}
+	      while ( !empty() );
+
+	      for (__counter = __tmp + 1; __counter != __fill; ++__counter)
+		__counter->merge(__counter[-1], __ptr_comp);
+	      __fill[-1].swap(this->_M_impl._M_node);
+	    }
+	  __catch(...)
+	    {
+	      // Move all nodes back into *this.
+	      __carry._M_put_all(end()._M_node);
+	      for (int __i = 0; __i < sizeof(__tmp)/sizeof(__tmp[0]); ++__i)
+		__tmp[__i]._M_put_all(end()._M_node);
+	      __throw_exception_again;
+	    }
+	}
       }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

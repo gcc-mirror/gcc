@@ -4,7 +4,7 @@
 --                                                                          --
 --                       A D A . A S S E R T I O N S                        --
 --                                                                          --
---            Copyright (C) 2015-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2015-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -38,8 +38,6 @@
 --  This is enforced by setting the corresponding assertion policy to Ignore.
 
 pragma Assertion_Policy (Pre => Ignore);
-
-pragma Compiler_Unit_Warning;
 
 package Ada.Assertions with
   SPARK_Mode, Pure

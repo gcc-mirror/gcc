@@ -5,8 +5,8 @@ fail_compilation/ice1358.d(29): Error: invalid UTF character \U80000000
 ---
 */
 
-// Issue 1358 - ICE(root.c) on Unicode codepoints greater than 0x7FFFFFFF
-
+// https://issues.dlang.org/show_bug.cgi?id=1358
+// ICE(root.c) on Unicode codepoints greater than 0x7FFFFFFF
 /* 1358. Assertion failure: '0' on line 1548 in file '..\root\root.c'
 This one is trivial.
 PATCH(lexer.c, Lexer::escapeSequence()).

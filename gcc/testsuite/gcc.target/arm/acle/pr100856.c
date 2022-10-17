@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-require-effective-target arm_v8_1m_main_cde_mve_ok } */
-/* { dg-add-options arm_v8_1m_main_cde_mve } */
+/* { dg-require-effective-target arm_v8m_main_cde_multilib } */
+/* { dg-add-options arm_v8m_main_cde } */
 
 #include "arm_cde.h"
 

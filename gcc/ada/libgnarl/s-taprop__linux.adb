@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,19 +84,19 @@ package body System.Task_Primitives.Operations is
    Next_Serial_Number : Task_Serial_Number := 100;
    --  We start at 100 (reserve some special values for using in error checks)
 
-   Time_Slice_Val : Integer;
+   Time_Slice_Val : constant Integer;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
 
-   Dispatching_Policy : Character;
+   Dispatching_Policy : constant Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
-   Locking_Policy : Character;
+   Locking_Policy : constant Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
-   Use_Alternate_Stack : constant Boolean := Alternate_Stack_Size /= 0;
+   Use_Alternate_Stack : Boolean := Alternate_Stack_Size /= 0;
    --  Whether to use an alternate signal stack for stack overflows
 
    Abort_Handler_Installed : Boolean := False;
@@ -973,8 +973,8 @@ package body System.Task_Primitives.Operations is
       elsif T.Common.Domain /= null and then
         (T.Common.Domain /= ST.System_Domain
           or else T.Common.Domain.all /=
-                    (Multiprocessors.CPU'First ..
-                     Multiprocessors.Number_Of_CPUs => True))
+                    [Multiprocessors.CPU'First ..
+                     Multiprocessors.Number_Of_CPUs => True])
       then
          declare
             CPUs    : constant size_t :=
@@ -1375,9 +1375,9 @@ package body System.Task_Primitives.Operations is
       function State
         (Int : System.Interrupt_Management.Interrupt_ID) return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
+      --  Get interrupt state. Defined in init.c.
+      --  The input argument is the interrupt number, and the result is one of
+      --  the following:
 
       Default : constant Character := 's';
       --    'n'   this interrupt not set by any Interrupt_State pragma
@@ -1408,6 +1408,12 @@ package body System.Task_Primitives.Operations is
       --  Initialize the global RTS lock
 
       Specific.Initialize (Environment_Task);
+
+      --  Do not use an alternate stack if no handler for SEGV is installed
+
+      if State (SIGSEGV) = Default then
+         Use_Alternate_Stack := False;
+      end if;
 
       if Use_Alternate_Stack then
          Environment_Task.Common.Task_Alternate_Stack :=
@@ -1494,8 +1500,8 @@ package body System.Task_Primitives.Operations is
             elsif T.Common.Domain /= null and then
               (T.Common.Domain /= ST.System_Domain
                 or else T.Common.Domain.all /=
-                          (Multiprocessors.CPU'First ..
-                           Multiprocessors.Number_Of_CPUs => True))
+                          [Multiprocessors.CPU'First ..
+                           Multiprocessors.Number_Of_CPUs => True])
             then
                --  Set the affinity to all the processors belonging to the
                --  dispatching domain. To avoid changing CPU affinities when

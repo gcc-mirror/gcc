@@ -10,7 +10,7 @@
 
 @copying
 @c man begin COPYRIGHT
-Copyright @copyright{} 1987-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 1987-2022 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -1678,7 +1678,7 @@ This formulation looks more descriptive, but historically it was less
 flexible: you had to supply at least one argument after the format
 string.  In standard C, you could not omit the comma separating the
 named argument from the variable arguments.  (Note that this
-restriction has been lifted in C++2a, and never existed in GNU C; see
+restriction has been lifted in C++20, and never existed in GNU C; see
 below.)
 
 Furthermore, if you left the variable argument empty, you would have
@@ -1690,10 +1690,10 @@ eprintf("success!\n", );
      @expansion{} fprintf(stderr, "success!\n", );
 @end smallexample
 
-This has been fixed in C++2a, and GNU CPP also has a pair of
+This has been fixed in C++20, and GNU CPP also has a pair of
 extensions which deal with this problem.
 
-First, in GNU CPP, and in C++ beginning in C++2a, you are allowed to
+First, in GNU CPP, and in C++ beginning in C++20, you are allowed to
 leave the variable argument out entirely:
 
 @smallexample
@@ -1702,7 +1702,7 @@ eprintf ("success!\n")
 @end smallexample
 
 @noindent
-Second, C++2a introduces the @code{@w{__VA_OPT__}} function macro.
+Second, C++20 introduces the @code{@w{__VA_OPT__}} function macro.
 This macro may only appear in the definition of a variadic macro.  If
 the variable argument has any tokens, then a @code{@w{__VA_OPT__}}
 invocation expands to its argument; but if the variable argument does
@@ -2461,6 +2461,24 @@ features are supported by GCC.
 @item __NO_MATH_ERRNO__
 This macro is defined if @option{-fno-math-errno} is used, or enabled
 by another option such as @option{-ffast-math} or by default.
+
+@item __RECIPROCAL_MATH__
+This macro is defined if @option{-freciprocal-math} is used, or enabled
+by another option such as @option{-ffast-math} or by default.
+
+@item __NO_SIGNED_ZEROS__
+This macro is defined if @option{-fno-signed-zeros} is used, or enabled
+by another option such as @option{-ffast-math} or by default.
+
+@item __NO_TRAPPING_MATH__
+This macro is defined if @option{-fno-trapping-math} is used.
+
+@item __ASSOCIATIVE_MATH__
+This macro is defined if @option{-fassociative-math} is used, or enabled
+by another option such as @option{-ffast-math} or by default.
+
+@item __ROUNDING_MATH__
+This macro is defined if @option{-frounding-math} is used.
 
 @item __GNUC_EXECUTION_CHARSET_NAME
 @itemx __GNUC_WIDE_EXECUTION_CHARSET_NAME
@@ -4258,7 +4276,7 @@ IP2K, MMIX, MIPS Irix 3, ARM aout, and PowerPC targets for the AIX
 operating system.
 
 You can override the default with @option{-fdollars-in-identifiers} or
-@option{fno-dollars-in-identifiers}.  @xref{fdollars-in-identifiers}.
+@option{-fno-dollars-in-identifiers}.  @xref{fdollars-in-identifiers}.
 
 @item Non-empty sequences of whitespace characters.
 

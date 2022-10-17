@@ -8,7 +8,7 @@ std::list<int*> li;
 
 void f ()
 {
-  li.size ();
+  (void) li.size ();
 }
 
 int main ()

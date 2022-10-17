@@ -62,6 +62,7 @@ go_cmd_gofmt_files = \
 
 go_cmd_cgo_files = \
 	$(cmdsrcdir)/cgo/ast.go \
+	$(cmdsrcdir)/cgo/ast_go118.go \
 	$(cmdsrcdir)/cgo/doc.go \
 	$(cmdsrcdir)/cgo/gcc.go \
 	$(cmdsrcdir)/cgo/godefs.go \
@@ -224,6 +225,7 @@ check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	cp -r $(libgosrcdir)/golang.org/x/mod check-go-dir/src/cmd/vendor/golang.org/x/
 	cp -r $(libgosrcdir)/golang.org/x/crypto check-go-dir/src/cmd/vendor/golang.org/x/
 	cp -r $(libgosrcdir)/golang.org/x/xerrors check-go-dir/src/cmd/vendor/golang.org/x/
+	cp -r $(libgosrcdir)/golang.org/x/tools check-go-dir/src/cmd/vendor/golang.org/x/
 	cp $(libgodir)/objabi.go check-go-dir/src/cmd/internal/objabi/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \
@@ -245,14 +247,14 @@ check-runtime: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	export LD_LIBRARY_PATH; \
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
-	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
+	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go $(libgodir)/goroot.go" --tag=libffi`; \
 	echo "$(ECHO_ENV) GC='$(abs_builddir)/check-gccgo -fgo-compiling-runtime' GOARCH=$${GOARCH} GOOS=$${GOOS} $(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles='$${files}' $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > runtime-testlog
 	$(CHECK_ENV) \
 	GC="$${GCCGO} -fgo-compiling-runtime"; \
 	export GC; \
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
-	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
+	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go $(libgodir)/goroot.go" --tag=libffi`; \
 	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 

@@ -2,10 +2,16 @@
 // rather than one for each element.
 // { dg-options "-fdump-tree-gimple" }
 
+#if __cplusplus < 201100L
+#define NOTHROW throw()
+#else
+#define NOTHROW noexcept
+#endif
+
 struct A
 {
   A();
-  ~A();
+  ~A() NOTHROW;
 };
 
 void f()

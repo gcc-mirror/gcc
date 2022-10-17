@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/cppeh1.d(26): Error: cannot catch C++ class objects in @safe code
+fail_compilation/cppeh1.d(26): Error: cannot catch C++ class objects in `@safe` code
 ---
 */
 

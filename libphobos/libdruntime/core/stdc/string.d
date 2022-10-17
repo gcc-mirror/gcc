@@ -35,31 +35,31 @@ nothrow:
 @nogc:
 
 ///
-inout(void)* memchr(return inout void* s, int c, size_t n) pure;
+inout(void)* memchr(return scope inout void* s, int c, size_t n) pure;
 ///
 int   memcmp(scope const void* s1, scope const void* s2, size_t n) pure;
 ///
-void* memcpy(return void* s1, scope const void* s2, size_t n) pure;
+void* memcpy(return scope void* s1, scope const void* s2, size_t n) pure;
 version (Windows)
 {
     ///
     int memicmp(scope const char* s1, scope const char* s2, size_t n);
 }
 ///
-void* memmove(return void* s1, scope const void* s2, size_t n) pure;
+void* memmove(return scope void* s1, scope const void* s2, size_t n) pure;
 ///
-void* memset(return void* s, int c, size_t n) pure;
+void* memset(return scope void* s, int c, size_t n) pure;
 
 ///
-char*  strcat(return char* s1, scope const char* s2) pure;
+char*  strcat(return scope char* s1, scope const char* s2) pure;
 ///
-inout(char)*  strchr(return inout(char)* s, int c) pure;
+inout(char)*  strchr(return scope inout(char)* s, int c) pure;
 ///
 int    strcmp(scope const char* s1, scope const char* s2) pure;
 ///
 int    strcoll(scope const char* s1, scope const char* s2);
 ///
-char*  strcpy(return char* s1, scope const char* s2) pure;
+char*  strcpy(return scope char* s1, scope const char* s2) pure;
 ///
 size_t strcspn(scope const char* s1, scope const char* s2) pure;
 ///
@@ -70,7 +70,7 @@ char*  strerror(int errnum);
 version (ReturnStrerrorR)
 {
     ///
-    const(char)* strerror_r(int errnum, return char* buf, size_t buflen);
+    const(char)* strerror_r(int errnum, return scope char* buf, size_t buflen);
 }
 // This one is
 else
@@ -80,20 +80,20 @@ else
 ///
 size_t strlen(scope const char* s) pure;
 ///
-char*  strncat(return char* s1, scope const char* s2, size_t n) pure;
+char*  strncat(return scope char* s1, scope const char* s2, size_t n) pure;
 ///
 int    strncmp(scope const char* s1, scope const char* s2, size_t n) pure;
 ///
-char*  strncpy(return char* s1, scope const char* s2, size_t n) pure;
+char*  strncpy(return scope char* s1, scope const char* s2, size_t n) pure;
 ///
-inout(char)*  strpbrk(return inout(char)* s1, scope const char* s2) pure;
+inout(char)*  strpbrk(return scope inout(char)* s1, scope const char* s2) pure;
 ///
-inout(char)*  strrchr(return inout(char)* s, int c) pure;
+inout(char)*  strrchr(return scope inout(char)* s, int c) pure;
 ///
 size_t strspn(scope const char* s1, scope const char* s2) pure;
 ///
-inout(char)*  strstr(return inout(char)* s1, scope const char* s2) pure;
+inout(char)*  strstr(return scope inout(char)* s1, scope const char* s2) pure;
 ///
-char*  strtok(return char* s1, scope const char* s2);
+char*  strtok(return scope char* s1, scope const char* s2);
 ///
 size_t strxfrm(scope char* s1, scope const char* s2, size_t n);

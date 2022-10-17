@@ -42,7 +42,7 @@ static assert(!__traits(compiles, (bool b)
     label: {}
         assert(!x);
     }
-    catch
+    catch(Throwable)
     {
     }
 }));
@@ -54,7 +54,7 @@ static assert(!__traits(compiles, (bool b)
     try
     {
     }
-    catch
+    catch(Throwable)
     {
         int x;
     label: {}
@@ -383,7 +383,7 @@ static assert(!__traits(compiles, (bool b)
 }));
 
 /***************************************************/
-// 11659
+// https://issues.dlang.org/show_bug.cgi?id=11659
 
 int test11659()
 {
@@ -394,7 +394,7 @@ int test11659()
 }
 
 /***************************************************/
-// 13321
+// https://issues.dlang.org/show_bug.cgi?id=13321
 
 void test13321(bool b)
 {
@@ -409,4 +409,3 @@ void test13321(bool b)
     x = Foo(1);
   EXIT:
 }
-

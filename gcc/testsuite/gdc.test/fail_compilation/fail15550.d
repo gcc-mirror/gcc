@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail15550.d(25): Error: partial template instance foo!int has no type
-fail_compilation/fail15550.d(26): Error: partial template instance opDispatch!"_isMatrix" has no type
-fail_compilation/fail15550.d(27): Error: partial template instance baz!"_isMatrix" has no type
+fail_compilation/fail15550.d(25): Error: partial template instance `foo!int` has no type
+fail_compilation/fail15550.d(26): Error: partial template instance `opDispatch!"_isMatrix"` has no type
+fail_compilation/fail15550.d(27): Error: partial template instance `baz!"_isMatrix"` has no type
 ---
 */
 

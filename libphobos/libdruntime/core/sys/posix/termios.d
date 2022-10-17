@@ -129,20 +129,9 @@ TCIOFF
 TCION
 TCOOFF
 TCOON
-
-speed_t cfgetispeed(const scope termios*);
-speed_t cfgetospeed(const scope termios*);
-int     cfsetispeed(termios*, speed_t);
-int     cfsetospeed(termios*, speed_t);
-int     tcdrain(int);
-int     tcflow(int, int);
-int     tcflush(int, int);
-int     tcgetattr(int, termios*);
-int     tcsendbreak(int, int);
-int     tcsetattr(int, int, const scope termios*);
 */
 
-version (CRuntime_Glibc)
+version (linux)
 {
     alias ubyte cc_t;
     alias uint  speed_t;
@@ -239,17 +228,6 @@ version (CRuntime_Glibc)
     enum TCION      = 3;
     enum TCOOFF     = 0;
     enum TCOON      = 1;
-
-    speed_t cfgetispeed(const scope termios*);
-    speed_t cfgetospeed(const scope termios*);
-    int     cfsetispeed(termios*, speed_t);
-    int     cfsetospeed(termios*, speed_t);
-    int     tcdrain(int);
-    int     tcflow(int, int);
-    int     tcflush(int, int);
-    int     tcgetattr(int, termios*);
-    int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, const scope termios*);
 }
 else version (Darwin)
 {
@@ -347,18 +325,6 @@ else version (Darwin)
     enum TCION      = 4;
     enum TCOOFF     = 1;
     enum TCOON      = 2;
-
-    speed_t cfgetispeed(const scope termios*);
-    speed_t cfgetospeed(const scope termios*);
-    int     cfsetispeed(termios*, speed_t);
-    int     cfsetospeed(termios*, speed_t);
-    int     tcdrain(int);
-    int     tcflow(int, int);
-    int     tcflush(int, int);
-    int     tcgetattr(int, termios*);
-    int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, const scope termios*);
-
 }
 else version (FreeBSD)
 {
@@ -456,17 +422,6 @@ else version (FreeBSD)
     enum TCION      = 4;
     enum TCOOFF     = 1;
     enum TCOON      = 2;
-
-    speed_t cfgetispeed(const scope termios*);
-    speed_t cfgetospeed(const scope termios*);
-    int     cfsetispeed(termios*, speed_t);
-    int     cfsetospeed(termios*, speed_t);
-    int     tcdrain(int);
-    int     tcflow(int, int);
-    int     tcflush(int, int);
-    int     tcgetattr(int, termios*);
-    int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, const scope termios*);
 }
 else version (DragonFlyBSD)
 {
@@ -564,17 +519,6 @@ else version (DragonFlyBSD)
     enum TCION      = 4;
     enum TCOOFF     = 1;
     enum TCOON      = 2;
-
-    speed_t cfgetispeed(const scope termios*);
-    speed_t cfgetospeed(const scope termios*);
-    int     cfsetispeed(termios*, speed_t);
-    int     cfsetospeed(termios*, speed_t);
-    int     tcdrain(int);
-    int     tcflow(int, int);
-    int     tcflush(int, int);
-    int     tcgetattr(int, termios*);
-    int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, const scope termios*);
 }
 else version (NetBSD)
 {
@@ -672,17 +616,6 @@ else version (NetBSD)
     enum TCION      = 4;
     enum TCOOFF     = 1;
     enum TCOON      = 2;
-
-    speed_t cfgetispeed(const scope termios*);
-    speed_t cfgetospeed(const scope termios*);
-    int     cfsetispeed(termios*, speed_t);
-    int     cfsetospeed(termios*, speed_t);
-    int     tcdrain(int);
-    int     tcflow(int, int);
-    int     tcflush(int, int);
-    int     tcgetattr(int, termios*);
-    int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, const scope termios*);
 }
 else version (OpenBSD)
 {
@@ -780,17 +713,6 @@ else version (OpenBSD)
     enum TCION      = 4;
     enum TCOOFF     = 1;
     enum TCOON      = 2;
-
-    speed_t cfgetispeed(const scope termios*);
-    speed_t cfgetospeed(const scope termios*);
-    int     cfsetispeed(termios*, speed_t);
-    int     cfsetospeed(termios*, speed_t);
-    int     tcdrain(int);
-    int     tcflow(int, int);
-    int     tcflush(int, int);
-    int     tcgetattr(int, termios*);
-    int     tcsendbreak(int, int);
-    int     tcsetattr(int, int, const scope termios*);
 }
 else version (Solaris)
 {
@@ -909,11 +831,102 @@ else version (Solaris)
     enum B307200 = 21;
     enum B460800 = 22;
     enum B921600 = 23;
+}
 
-    /*
-     * POSIX termios functions
-     * These functions get mapped into ioctls.
-     */
+/*
+speed_t cfgetispeed(const scope termios*);
+speed_t cfgetospeed(const scope termios*);
+int     cfsetispeed(termios*, speed_t);
+int     cfsetospeed(termios*, speed_t);
+int     tcdrain(int);
+int     tcflow(int, int);
+int     tcflush(int, int);
+int     tcgetattr(int, termios*);
+int     tcsendbreak(int, int);
+int     tcsetattr(int, int, const scope termios*);
+*/
+
+version (CRuntime_Glibc)
+{
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
+    int     cfsetispeed(termios*, speed_t);
+    int     cfsetospeed(termios*, speed_t);
+    int     tcdrain(int);
+    int     tcflow(int, int);
+    int     tcflush(int, int);
+    int     tcgetattr(int, termios*);
+    int     tcsendbreak(int, int);
+    int     tcsetattr(int, int, const scope termios*);
+}
+else version (Darwin)
+{
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
+    int     cfsetispeed(termios*, speed_t);
+    int     cfsetospeed(termios*, speed_t);
+    int     tcdrain(int);
+    int     tcflow(int, int);
+    int     tcflush(int, int);
+    int     tcgetattr(int, termios*);
+    int     tcsendbreak(int, int);
+    int     tcsetattr(int, int, const scope termios*);
+
+}
+else version (FreeBSD)
+{
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
+    int     cfsetispeed(termios*, speed_t);
+    int     cfsetospeed(termios*, speed_t);
+    int     tcdrain(int);
+    int     tcflow(int, int);
+    int     tcflush(int, int);
+    int     tcgetattr(int, termios*);
+    int     tcsendbreak(int, int);
+    int     tcsetattr(int, int, const scope termios*);
+}
+else version (DragonFlyBSD)
+{
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
+    int     cfsetispeed(termios*, speed_t);
+    int     cfsetospeed(termios*, speed_t);
+    int     tcdrain(int);
+    int     tcflow(int, int);
+    int     tcflush(int, int);
+    int     tcgetattr(int, termios*);
+    int     tcsendbreak(int, int);
+    int     tcsetattr(int, int, const scope termios*);
+}
+else version (NetBSD)
+{
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
+    int     cfsetispeed(termios*, speed_t);
+    int     cfsetospeed(termios*, speed_t);
+    int     tcdrain(int);
+    int     tcflow(int, int);
+    int     tcflush(int, int);
+    int     tcgetattr(int, termios*);
+    int     tcsendbreak(int, int);
+    int     tcsetattr(int, int, const scope termios*);
+}
+else version (OpenBSD)
+{
+    speed_t cfgetispeed(const scope termios*);
+    speed_t cfgetospeed(const scope termios*);
+    int     cfsetispeed(termios*, speed_t);
+    int     cfsetospeed(termios*, speed_t);
+    int     tcdrain(int);
+    int     tcflow(int, int);
+    int     tcflush(int, int);
+    int     tcgetattr(int, termios*);
+    int     tcsendbreak(int, int);
+    int     tcsetattr(int, int, const scope termios*);
+}
+else version (Solaris)
+{
     speed_t cfgetospeed(const scope termios*);
     int     cfsetospeed(termios*, speed_t);
     speed_t cfgetispeed(const scope termios*);
@@ -927,108 +940,6 @@ else version (Solaris)
 }
 else version (CRuntime_UClibc)
 {
-    alias ubyte cc_t;
-    alias uint  speed_t;
-    alias uint  tcflag_t;
-
-    enum NCCS   = 32;
-
-    struct termios
-    {
-        tcflag_t   c_iflag;
-        tcflag_t   c_oflag;
-        tcflag_t   c_cflag;
-        tcflag_t   c_lflag;
-        cc_t       c_line;
-        cc_t[NCCS] c_cc;
-        speed_t    c_ispeed;
-        speed_t    c_ospeed;
-    }
-
-    enum VINTR      = 0;
-    enum VQUIT      = 1;
-    enum VERASE     = 2;
-    enum VKILL      = 3;
-    enum VEOF       = 4;
-    enum VTIME      = 5;
-    enum VMIN       = 6;
-    enum VSWTC      = 7;
-    enum VSTART     = 8;
-    enum VSTOP      = 9;
-    enum VSUSP      = 10;
-    enum VEOL       = 11;
-    enum VREPRINT   = 12;
-    enum VDISCARD   = 13;
-    enum VWERASE    = 14;
-    enum VLNEXT     = 15;
-    enum VEOL2      = 16;
-
-    enum BRKINT     = 0x0000002; // 0000002
-    enum ICRNL      = 0x0000100; // 0000400
-    enum IGNBRK     = 0x0000001; // 0000001
-    enum IGNCR      = 0x0000080; // 0000200
-    enum IGNPAR     = 0x0000004; // 0000004
-    enum INLCR      = 0x0000040; // 0000100
-    enum INPCK      = 0x0000010; // 0000020
-    enum ISTRIP     = 0x0000020; // 0000040
-    enum IXOFF      = 0x0001000; // 0010000
-    enum IXON       = 0x0000400; // 0002000
-    enum PARMRK     = 0x0000008; // 0000010
-
-    enum OPOST      = 0x0000001; // 0000001
-
-    enum B0         = 0x0000000; // 0000000
-    enum B50        = 0x0000001; // 0000001
-    enum B75        = 0x0000002; // 0000002
-    enum B110       = 0x0000003; // 0000003
-    enum B134       = 0x0000004; // 0000004
-    enum B150       = 0x0000005; // 0000005
-    enum B200       = 0x0000006; // 0000006
-    enum B300       = 0x0000007; // 0000007
-    enum B600       = 0x0000008; // 0000010
-    enum B1200      = 0x0000009; // 0000011
-    enum B1800      = 0x000000A; // 0000012
-    enum B2400      = 0x000000B; // 0000013
-    enum B4800      = 0x000000C; // 0000014
-    enum B9600      = 0x000000D; // 0000015
-    enum B19200     = 0x000000E; // 0000016
-    enum B38400     = 0x000000F; // 0000017
-
-    enum CSIZE      = 0x0000030; // 0000060
-    enum   CS5      = 0x0000000; // 0000000
-    enum   CS6      = 0x0000010; // 0000020
-    enum   CS7      = 0x0000020; // 0000040
-    enum   CS8      = 0x0000030; // 0000060
-    enum CSTOPB     = 0x0000040; // 0000100
-    enum CREAD      = 0x0000080; // 0000200
-    enum PARENB     = 0x0000100; // 0000400
-    enum PARODD     = 0x0000200; // 0001000
-    enum HUPCL      = 0x0000400; // 0002000
-    enum CLOCAL     = 0x0000800; // 0004000
-
-    enum ECHO       = 0x0000008; // 0000010
-    enum ECHOE      = 0x0000010; // 0000020
-    enum ECHOK      = 0x0000020; // 0000040
-    enum ECHONL     = 0x0000040; // 0000100
-    enum ICANON     = 0x0000002; // 0000002
-    enum IEXTEN     = 0x0008000; // 0100000
-    enum ISIG       = 0x0000001; // 0000001
-    enum NOFLSH     = 0x0000080; // 0000200
-    enum TOSTOP     = 0x0000100; // 0000400
-
-    enum TCSANOW    = 0;
-    enum TCSADRAIN  = 1;
-    enum TCSAFLUSH  = 2;
-
-    enum TCIFLUSH   = 0;
-    enum TCOFLUSH   = 1;
-    enum TCIOFLUSH  = 2;
-
-    enum TCIOFF     = 2;
-    enum TCION      = 3;
-    enum TCOOFF     = 0;
-    enum TCOON      = 1;
-
     speed_t cfgetispeed(const scope termios*);
     speed_t cfgetospeed(const scope termios*);
     int     cfsetispeed(termios*, speed_t);

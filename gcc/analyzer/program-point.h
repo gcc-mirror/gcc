@@ -1,5 +1,5 @@
 /* Classes for representing locations within the program.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_ANALYZER_PROGRAM_POINT_H
 #define GCC_ANALYZER_PROGRAM_POINT_H
+
+#include "pretty-print.h"
+#include "analyzer/call-string.h"
 
 namespace ana {
 
@@ -104,6 +107,8 @@ public:
     return m_stmt_idx;
   }
 
+  bool final_stmt_p () const;
+
   /* Factory functions for making various kinds of program_point.  */
 
   static function_point from_function_entry (const supergraph &sg,
@@ -145,6 +150,8 @@ public:
   /* For before_stmt, go to next stmt.  */
   void next_stmt ();
 
+  function_point get_next () const;
+
  private:
   const supernode *m_supernode;
 
@@ -170,12 +177,11 @@ public:
   program_point (const function_point &fn_point,
 		 const call_string &call_string)
   : m_function_point (fn_point),
-    m_call_string (call_string)
+    m_call_string (&call_string)
   {
   }
 
   void print (pretty_printer *pp, const format &f) const;
-  void print_source_line (pretty_printer *pp) const;
   void dump () const;
 
   json::object *to_json () const;
@@ -194,7 +200,7 @@ public:
   /* Accessors.  */
 
   const function_point &get_function_point () const { return m_function_point; }
-  const call_string &get_call_string () const { return m_call_string; }
+  const call_string &get_call_string () const { return *m_call_string; }
 
   const supernode *get_supernode () const
   {
@@ -239,23 +245,14 @@ public:
   {
     if (get_kind () == PK_ORIGIN)
       return 0;
-    return m_call_string.length () + 1;
+    return get_call_string ().length () + 1;
   }
 
   /* Factory functions for making various kinds of program_point.  */
-  static program_point origin ()
-  {
-    return program_point (function_point (NULL, NULL,
-					  0, PK_ORIGIN),
-			  call_string ());
-  }
-
-  static program_point from_function_entry (const supergraph &sg,
-					    function *fun)
-  {
-    return program_point (function_point::from_function_entry (sg, fun),
-			  call_string ());
-  }
+  static program_point origin (const region_model_manager &mgr);
+  static program_point from_function_entry (const region_model_manager &mgr,
+					    const supergraph &sg,
+					    function *fun);
 
   static program_point before_supernode (const supernode *supernode,
 					 const superedge *from_edge,
@@ -285,15 +282,16 @@ public:
 
   static program_point empty ()
   {
-    return program_point (function_point::empty (), call_string ());
+    return program_point (function_point::empty ());
   }
   static program_point deleted ()
   {
-    return program_point (function_point::deleted (), call_string ());
+    return program_point (function_point::deleted ());
   }
 
   bool on_edge (exploded_graph &eg, const superedge *succ);
-
+  void push_to_call_stack (const supernode *caller, const supernode *callee);
+  void pop_from_call_stack ();
   void validate () const;
 
   /* For before_stmt, go to next stmt.  */
@@ -302,8 +300,14 @@ public:
   program_point get_next () const;
 
  private:
+  program_point (const function_point &fn_point)
+  : m_function_point (fn_point),
+    m_call_string (NULL)
+  {
+  }
+
   function_point m_function_point;
-  call_string m_call_string;
+  const call_string *m_call_string;
 };
 
 } // namespace ana

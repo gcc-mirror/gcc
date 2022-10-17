@@ -1,6 +1,13 @@
 /* { dg-additional-options "-fanalyzer-verbosity=3" } */
 
-#include <stdio.h>
+typedef struct FILE   FILE;
+
+FILE* fopen (const char*, const char*);
+int   fclose (FILE*);
+char *fgets (char *, int, FILE *);
+
+#define NULL ((void *)0)
+
 
 /* Verify that we correctly emit CFG events in the face of buffers
    being clobbered in these leak reports.  */

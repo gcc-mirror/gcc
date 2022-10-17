@@ -53,7 +53,8 @@ Any *code_statement* can potentially cause external interactions.
 See separate section on source representation.
 
 *
-  "The control functions allowed in comments.  See 2.1(14)."
+  "The semantics of an Ada program whose text is not in
+  Normalization Form C.  See 2.1(4)."
 
 See separate section on source representation.
 
@@ -86,18 +87,20 @@ parameter, checks that the optimization flag is set, and aborts if it is
 not.
 
 *
-  "The sequence of characters of the value returned by
-  ``S'Image`` when some of the graphic characters of
-  ``S'Wide_Image`` are not defined in ``Character``.  See
-  3.5(37)."
+  "The message string associated with the Assertion_Error exception raised
+  by the failure of a predicate check if there is no applicable
+  Predicate_Failure aspect.  See 3.2.4(31)."
 
-The sequence of characters is as defined by the wide character encoding
-method used for the source.  See section on source representation for
-further details.
+In the case of a Dynamic_Predicate aspect, the string is
+"Dynamic_Predicate failed at <source position>", where
+"<source position>" might be something like "foo.adb:123".
+The Static_Predicate case is handled analogously.
 
 *
   "The predefined integer types declared in
   ``Standard``.  See 3.5.4(25)."
+
+.. tabularcolumns:: |l|L|
 
 ========================= =======================================
 Type                       Representation
@@ -146,12 +149,12 @@ Type                   Representation
                        IEEE 80-bit Extended on x86 architecture
 ====================== ===============================================
 
-The default rounding mode specified by the IEEE 754 Standard is assumed for
-static computations, i.e. round to nearest, ties to even. The input routines
-yield correctly rounded values for Short_Float, Float and Long_Float at least.
-The output routines can compute up to twice as many exact digits as the value
-of ``T'Digits`` for any type, for example 30 digits for Long_Float; if more
-digits are requested, zeros are printed.
+The default rounding mode specified by the IEEE 754 Standard is assumed both
+for static and dynamic computations (that is, round to nearest, ties to even).
+The input routines yield correctly rounded values for Short_Float, Float, and
+Long_Float at least. The output routines can compute up to twice as many exact
+digits as the value of ``T'Digits`` for any type, for example 30 digits for
+Long_Float; if more digits are requested, zeros are printed.
 
 *
   "The small of an ordinary fixed point type.  See 3.5.9(8)."
@@ -192,9 +195,65 @@ Block numbers of the form :samp:`B{nnn}`, where *nnn* is a
 decimal integer are allocated.
 
 *
+  "The sequence of characters of the value returned by Tags.Expanded_Name
+  (respectively, Tags.Wide_Expanded_Name) when some of the graphic
+  characters of Tags.Wide_Wide_Expanded_Name are not defined in Character
+  (respectively, Wide_Character).  See 3.9(10.1)."
+
+This is handled in the same way as the implementation-defined behavior
+referenced in A.4.12(34).
+
+*
   "Implementation-defined attributes.  See 4.1.4(12)."
 
 See :ref:`Implementation_Defined_Attributes`.
+
+*
+  "The value of the parameter to Empty for some container aggregates.
+  See 4.3.5(40)."
+
+As per the suggestion given in the Annotated Ada RM, the default value
+of the formal parameter is used if one exists and zero is used otherwise.
+
+*
+  "The maximum number of chunks for a parallel reduction expression without
+  a chunk_specification.  See 4.5.10(21)."
+
+Feature unimplemented.
+
+*
+  "Rounding of real static expressions which are exactly half-way between
+  two machine numbers.  See 4.9(38)."
+
+Round to even is used in all such cases.
+
+*
+  "The maximum number of chunks for a parallel generalized iterator without
+  a chunk_specification.  See 5.5.2(10)."
+
+Feature unimplemented.
+
+*
+  "The number of chunks for an array component iterator.  See 5.5.2(11)."
+
+Feature unimplemented.
+
+*
+  "Any extensions of the Global aspect.  See 6.1.2(43)."
+
+Feature unimplemented.
+
+*
+  "The circumstances the implementation passes in the null value for a view
+  conversion of an access type used as an out parameter.  See 6.4.1(19)."
+
+Difficult to characterize.
+
+*
+  "Any extensions of the Default_Initial_Condition aspect.  See 7.3.3(11)."
+
+SPARK allows specifying *null* as the Default_Initial_Condition
+aspect of a type. See the SPARK reference manual for further details.
 
 *
   "Any implementation-defined time types.  See 9.6(6)."
@@ -202,14 +261,13 @@ See :ref:`Implementation_Defined_Attributes`.
 There are no implementation-defined time types.
 
 *
-  "The time base associated with relative delays."
+  "The time base associated with relative delays.  See 9.6(20)."
 
 See 9.6(20).  The time base used is that provided by the C library
 function ``gettimeofday``.
 
 *
-  "The time base of the type ``Calendar.Time``.  See
-  9.6(23)."
+  "The time base of the type ``Calendar.Time``.  See 9.6(23)."
 
 The time base used is that provided by the C library function
 ``gettimeofday``.
@@ -229,13 +287,15 @@ setting for local time, as accessed by the C library function
 There are no such limits.
 
 *
-  "Whether or not two non-overlapping parts of a composite
-  object are independently addressable, in the case where packing, record
-  layout, or ``Component_Size`` is specified for the object.  See
-  9.10(1)."
+  "The result of Calendar.Formatting.Image if its argument represents more
+  than 100 hours.  See 9.6.1(86)."
 
-Separate components are independently addressable if they do not share
-overlapping storage units.
+Calendar.Time_Error is raised.
+
+*
+  "Implementation-defined conflict check policies.  See 9.10.1(5)."
+
+There are no implementation-defined conflict check policies.
 
 *
   "The representation for a compilation.  See 10.1(2)."
@@ -281,9 +341,8 @@ options, refer to *GNAT Make Program gnatmake* in the
 :title:`GNAT User's Guide`.
 
 *
-  "The implementation-defined means, if any, of specifying
-  which compilation units are needed by a given compilation unit.  See
-  10.2(2)."
+  "The implementation-defined means, if any, of specifying which compilation
+  units are needed by a given compilation unit.  See 10.2(2)."
 
 The units needed by a given compilation unit are as defined in
 the Ada Reference Manual section 10.2(2-6).  There are no
@@ -298,17 +357,13 @@ The main program is designated by providing the name of the
 corresponding :file:`ALI` file as the input parameter to the binder.
 
 *
-  "The order of elaboration of *library_items*.  See
-  10.2(18)."
+  "The order of elaboration of *library_items*.  See 10.2(18)."
 
 The first constraint on ordering is that it meets the requirements of
 Chapter 10 of the Ada Reference Manual.  This still leaves some
-implementation dependent choices, which are resolved by first
-elaborating bodies as early as possible (i.e., in preference to specs
-where there is a choice), and second by evaluating the immediate with
-clauses of a unit to determine the probably best choice, and
-third by elaborating in alphabetical order of unit names
-where a choice still remains.
+implementation-dependent choices, which are resolved by analyzing
+the elaboration code of each unit and identifying implicit
+elaboration-order dependencies.
 
 *
   "Parameter passing and function return for the main
@@ -320,13 +375,12 @@ value is the return code of the program (overriding any value that
 may have been set by a call to ``Ada.Command_Line.Set_Exit_Status``).
 
 *
-  "The mechanisms for building and running partitions.  See
-  10.2(24)."
+  "The mechanisms for building and running partitions.  See 10.2(24)."
 
-GNAT itself supports programs with only a single partition.  The GNATDIST
+GNAT itself supports programs with only a single partition. The GNATDIST
 tool provided with the GLADE package (which also includes an implementation
 of the PCS) provides a completely flexible method for building and running
-programs consisting of multiple partitions.  See the separate GLADE manual
+programs consisting of multiple partitions. See the separate GLADE manual
 for details.
 
 *
@@ -340,12 +394,11 @@ See separate section on compilation model.
   implementation.  See 10.2(28)."
 
 Passive partitions are supported on targets where shared memory is
-provided by the operating system.  See the GLADE reference manual for
+provided by the operating system. See the GLADE reference manual for
 further details.
 
 *
-  "The information returned by ``Exception_Message``.  See
-  11.4.1(10)."
+  "The information returned by ``Exception_Message``.  See 11.4.1(10)."
 
 Exception message returns the null string unless a specific message has
 been passed by the program.
@@ -391,6 +444,38 @@ where
      the last line is a single ``LF`` character (``16#0A#``).
 
 *
+  "The sequence of characters of the value returned by
+  Exceptions.Exception_Name (respectively, Exceptions.Wide_Exception_Name)
+  when some of the graphic characters of Exceptions.Wide_Wide_Exception_Name
+  are not defined in Character (respectively, Wide_Character).
+  See 11.4.1(12.1)."
+
+This is handled in the same way as the implementation-defined behavior
+referenced in A.4.12(34).
+
+*
+  "The information returned by Exception_Information.  See 11.4.1(13)."
+
+The exception name and the source location at which the exception was
+raised are included.
+
+*
+  "Implementation-defined policy_identifiers and assertion_aspect_marks
+  allowed in a pragma Assertion_Policy.  See 11.4.2(9)."
+
+Implementation-defined assertion_aspect_marks include Assert_And_Cut,
+Assume, Contract_Cases, Debug, Ghost, Initial_Condition, Loop_Invariant,
+Loop_Variant, Postcondition, Precondition, Predicate, Refined_Post,
+Statement_Assertions, and Subprogram_Variant. Implementation-defined
+policy_identifiers include Ignore and Suppressible.
+
+*
+  "The default assertion policy.  See 11.4.2(10)."
+
+The default assertion policy is Ignore, although this can be overridden
+via compiler switches such as "-gnata".
+
+*
   "Implementation-defined check names.  See 11.5(27)."
 
 The implementation defined check names include Alignment_Check,
@@ -400,28 +485,54 @@ program can add implementation-defined check names by means of the pragma
 Check_Name. See the description of pragma ``Suppress`` for full details.
 
 *
-  "The interpretation of each aspect of representation.  See
-  13.1(20)."
+  "Existence and meaning of second parameter of pragma Unsuppress.
+  See 11.5(27.1)."
+
+The legality rules for and semantics of the second parameter of pragma
+Unsuppress match those for the second argument of pragma Suppress.
+
+*
+  "The cases that cause conflicts between the representation of the
+  ancestors of a type_declaration.  See 13.1(13.1)."
+
+No such cases exist.
+
+*
+  "The interpretation of each representation aspect.  See 13.1(20)."
 
 See separate section on data representations.
 
 *
-  "Any restrictions placed upon representation items.  See
-  13.1(20)."
+  "Any restrictions placed upon the specification of representation aspects.
+  See 13.1(20)."
 
 See separate section on data representations.
 
 *
-  "The meaning of ``Size`` for indefinite subtypes.  See
-  13.3(48)."
+  "Implementation-defined aspects, including the syntax for specifying
+  such aspects and the legality rules for such aspects.  See 13.1.1(38)."
 
-Size for an indefinite subtype is the maximum possible size, except that
-for the case of a subprogram parameter, the size of the parameter object
-is the actual size.
+See :ref:`Implementation_Defined_Aspects`.
 
 *
-  "The default external representation for a type tag.  See
-  13.3(75)."
+  "The set of machine scalars.  See 13.3(8.1)."
+
+See separate section on data representations.
+
+*
+  "The meaning of ``Size`` for indefinite subtypes.  See 13.3(48)."
+
+The Size attribute of an indefinite subtype is not less than the Size
+attribute of any object of that type.
+
+*
+  "The meaning of Object_Size for indefinite subtypes.  See 13.3(58)."
+
+The Object_Size attribute of an indefinite subtype is not less than the
+Object_Size attribute of any object of that type.
+
+*
+  "The default external representation for a type tag.  See 13.3(75)."
 
 The default external representation for a type tag is the fully expanded
 name of the type in upper case letters.
@@ -448,12 +559,10 @@ implementation, so no non-default bit ordering is supported.  The default
 bit ordering corresponds to the natural endianness of the target architecture.
 
 *
-  "The contents of the visible part of package ``System``
-  and its language-defined children.  See 13.7(2)."
+  "The contents of the visible part of package ``System``.  See 13.7(2)."
 
-See the definition of these packages in files :file:`system.ads` and
-:file:`s-stoele.ads`. Note that two declarations are added to package
-System.
+See the definition of package System in :file:`system.ads`.
+Note that two declarations are added to package System.
 
 .. code-block:: ada
 
@@ -461,14 +570,21 @@ System.
   Max_Interrupt_Priority : constant Positive := Interrupt_Priority'Last;
 
 *
-  "The contents of the visible part of package
-  ``System.Machine_Code``, and the meaning of
-  *code_statements*.  See 13.8(7)."
+  "The range of Storage_Elements.Storage_Offset, the modulus of
+  Storage_Elements.Storage_Element, and the declaration of
+  Storage_Elements.Integer_Address.  See 13.7.1(11)."
+
+See the definition of package System.Storage_Elements in :file:`s-stoele.ads`.
+
+*
+  "The contents of the visible part of package ``System.Machine_Code``,
+  and the meaning of *code_statements*.  See 13.8(7)."
 
 See the definition and documentation in file :file:`s-maccod.ads`.
 
 *
-  "The effect of unchecked conversion.  See 13.9(11)."
+  "The result of unchecked conversion for instances with scalar result
+  types whose result is not defined by the language.  See 13.9(11)."
 
 Unchecked conversion between types of the same size
 results in an uninterpreted transmission of the bits from one type
@@ -485,69 +601,43 @@ greater than the source alignment, then a copy of the result is
 made with appropriate alignment
 
 *
-  "The semantics of operations on invalid representations.
-  See 13.9.2(10-11)."
+  "The result of unchecked conversion for instances with nonscalar result
+  types whose result is not defined by the language.  See 13.9(11)."
 
-For assignments and other operations where the use of invalid values cannot
-result in erroneous behavior, the compiler ignores the possibility of invalid
-values. An exception is raised at the point where an invalid value would
-result in erroneous behavior. For example executing:
-
-.. code-block:: ada
-
-  procedure invalidvals is
-    X : Integer := -1;
-    Y : Natural range 1 .. 10;
-    for Y'Address use X'Address;
-    Z : Natural range 1 .. 10;
-    A : array (Natural range 1 .. 10) of Integer;
-  begin
-    Z := Y;     -- no exception
-    A (Z) := 3; -- exception raised;
-  end;
-
-As indicated, an exception is raised on the array assignment, but not
-on the simple assignment of the invalid negative value from Y to Z.
-
-*
-  "The manner of choosing a storage pool for an access type
-  when ``Storage_Pool`` is not specified for the type.  See 13.11(17)."
-
-There are 3 different standard pools used by the compiler when
-``Storage_Pool`` is not specified depending whether the type is local
-to a subprogram or defined at the library level and whether
-``Storage_Size``is specified or not.  See documentation in the runtime
-library units ``System.Pool_Global``, ``System.Pool_Size`` and
-``System.Pool_Local`` in files :file:`s-poosiz.ads`,
-:file:`s-pooglo.ads` and :file:`s-pooloc.ads` for full details on the
-default pools used.
+See preceding definition for the scalar result case.
 
 *
   "Whether or not the implementation provides user-accessible
   names for the standard pool type(s).  See 13.11(17)."
 
-See documentation in the sources of the run time mentioned in the previous
-paragraph.  All these pools are accessible by means of `with`\ ing
+There are 3 different standard pools used by the compiler when
+``Storage_Pool`` is not specified depending whether the type is local
+to a subprogram or defined at the library level and whether
+``Storage_Size``is specified or not. See documentation in the runtime
+library units ``System.Pool_Global``, ``System.Pool_Size`` and
+``System.Pool_Local`` in files :file:`s-poosiz.ads`,
+:file:`s-pooglo.ads` and :file:`s-pooloc.ads` for full details on the
+default pools used.  All these pools are accessible by means of `with`\ ing
 these units.
 
 *
-  "The meaning of ``Storage_Size``.  See 13.11(18)."
+  "The meaning of ``Storage_Size`` when neither the Storage_Size nor the
+  Storage_Pool is specified for an access type.  See 13.11(18)."
 
 ``Storage_Size`` is measured in storage units, and refers to the
 total space available for an access type collection, or to the primary
 stack space for a task.
 
 *
-  "Implementation-defined aspects of storage pools.  See
-  13.11(22)."
+  "The effect of specifying aspect Default_Storage_Pool on an instance
+  of a language-defined generic unit.  See 13.11.3(5)."
 
-See documentation in the sources of the run time mentioned in the
-paragraph about standard storage pools above
-for details on GNAT-defined aspects of storage pools.
+Instances of language-defined generic units are treated the same as other
+instances with respect to the Default_Storage_Pool aspect.
 
 *
-  "The set of restrictions allowed in a pragma
-  ``Restrictions``.  See 13.12(7)."
+  "Implementation-defined restrictions allowed in a pragma
+  ``Restrictions``.  See 13.12(8.7)."
 
 See :ref:`Standard_and_Implementation_Defined_Restrictions`.
 
@@ -555,14 +645,19 @@ See :ref:`Standard_and_Implementation_Defined_Restrictions`.
   "The consequences of violating limitations on
   ``Restrictions`` pragmas.  See 13.12(9)."
 
-Restrictions that can be checked at compile time result in illegalities
-if violated.  Currently there are no other consequences of violating
-restrictions.
+Restrictions that can be checked at compile time are enforced at
+compile time; violations are illegal. For other restrictions, any
+violation during program execution results in erroneous execution.
 
 *
-  "The representation used by the ``Read`` and
-  ``Write`` attributes of elementary types in terms of stream
-  elements.  See 13.13.2(9)."
+  "Implementation-defined usage profiles allowed in a pragma Profile.
+  See 13.12(15)."
+
+See :ref:`Implementation_Defined_Pragmas`.
+
+*
+  "The contents of the stream elements read and written by the Read and
+  Write attributes of elementary types.  See 13.13.2(9)."
 
 The representation is the in-memory representation of the base type of
 the type, using the number of bits corresponding to the
@@ -575,12 +670,29 @@ the type, using the number of bits corresponding to the
 See items describing the integer and floating-point types supported.
 
 *
-  "The string returned by ``Character_Set_Version``.
-  See A.3.5(3)."
+  "The values returned by Strings.Hash.  See A.4.9(3)."
 
-``Ada.Wide_Characters.Handling.Character_Set_Version`` returns
-the string "Unicode 4.0", referring to version 4.0 of the
-Unicode specification.
+This hash function has predictable collisions and is subject to
+equivalent substring attacks. It is not suitable for construction of a
+hash table keyed on possibly malicious user input.
+
+*
+  "The value returned by a call to a Text_Buffer Get procedure if any
+  character in the returned sequence is not defined in Character.
+  See A.4.12(34)."
+
+The contents of a buffer is represented internally as a UTF_8 string.
+The value return by Text_Buffer.Get is the result of passing that
+UTF_8 string to UTF_Encoding.Strings.Decode.
+
+*
+  "The value returned by a call to a Text_Buffer Wide_Get procedure if
+  any character in the returned sequence is not defined in Wide_Character.
+  See A.4.12(34)."
+
+The contents of a buffer is represented internally as a UTF_8 string.
+The value return by Text_Buffer.Wide_Get is the result of passing that
+UTF_8 string to UTF_Encoding.Wide_Strings.Decode.
 
 *
   "The accuracy actually achieved by the elementary
@@ -610,14 +722,6 @@ Maximum image width is 6864, see library file :file:`s-rannum.ads`.
 Maximum image width is 6864, see library file :file:`s-rannum.ads`.
 
 *
-  "The algorithms for random number generation.  See
-  A.5.2(32)."
-
-The algorithm is the Mersenne Twister, as documented in the source file
-:file:`s-rannum.adb`. This version of the algorithm has a period of
-2**19937-1.
-
-*
   "The string representation of a random number generator's
   state.  See A.5.2(38)."
 
@@ -626,32 +730,16 @@ the fixed-width decimal representations of the 624 32-bit integers
 of the state vector.
 
 *
-  "The minimum time interval between calls to the
-  time-dependent Reset procedure that are guaranteed to initiate different
-  random number sequences.  See A.5.2(45)."
-
-The minimum period between reset calls to guarantee distinct series of
-random numbers is one microsecond.
-
-*
   "The values of the ``Model_Mantissa``,
   ``Model_Emin``, ``Model_Epsilon``, ``Model``,
   ``Safe_First``, and ``Safe_Last`` attributes, if the Numerics
   Annex is not supported.  See A.5.3(72)."
 
-Run the compiler with *-gnatS* to produce a listing of package
-``Standard``, has the values of all numeric attributes.
+Running the compiler with *-gnatS* to produce a listing of package
+``Standard`` displays the values of these attributes.
 
 *
-  "Any implementation-defined characteristics of the
-  input-output packages.  See A.7(14)."
-
-There are no special implementation defined characteristics for these
-packages.
-
-*
-  "The value of ``Buffer_Size`` in ``Storage_IO``.  See
-  A.9(10)."
+  "The value of ``Buffer_Size`` in ``Storage_IO``.  See A.9(10)."
 
 All type representations are contiguous, and the ``Buffer_Size`` is
 the value of ``type'Size`` rounded up to the next storage unit
@@ -662,15 +750,20 @@ boundary.
   standard error See A.10(5)."
 
 These files are mapped onto the files provided by the C streams
-libraries.  See source file :file:`i-cstrea.ads` for further details.
+libraries. See source file :file:`i-cstrea.ads` for further details.
 
 *
-  "The accuracy of the value produced by ``Put``.  See
-  A.10.9(36)."
+  "The accuracy of the value produced by ``Put``.  See A.10.9(36)."
 
 If more digits are requested in the output than are represented by the
 precision of the value, zeroes are output in the corresponding least
 significant digit positions.
+
+*
+  "Current size for a stream file for which positioning is not supported.
+  See A.12.1(1.1)."
+
+Positioning is supported.
 
 *
   "The meaning of ``Argument_Count``, ``Argument``, and
@@ -680,74 +773,30 @@ These are mapped onto the ``argv`` and ``argc`` parameters of the
 main program in the natural manner.
 
 *
-  "The interpretation of the ``Form`` parameter in procedure
-  ``Create_Directory``.  See A.16(56)."
+  "The interpretation of file names and directory names.  See A.16(46)."
 
-The ``Form`` parameter is not used.
-
-*
-  "The interpretation of the ``Form`` parameter in procedure
-  ``Create_Path``.  See A.16(60)."
-
-The ``Form`` parameter is not used.
+These names are interpreted consistently with the underlying file system.
 
 *
-  "The interpretation of the ``Form`` parameter in procedure
-  ``Copy_File``.  See A.16(68)."
+  "The maxium value for a file size in Directories.  See A.16(87)."
 
-The ``Form`` parameter is case-insensitive.
-Two fields are recognized in the ``Form`` parameter::
-
-  *preserve=<value>*
-  *mode=<value>*
-
-<value> starts immediately after the character '=' and ends with the
-character immediately preceding the next comma (',') or with the last
-character of the parameter.
-
-The only possible values for preserve= are:
-
-================== ===================================================================
-Value              Meaning
-================== ===================================================================
-*no_attributes*    Do not try to preserve any file attributes. This is the
-                   default if no preserve= is found in Form.
-*all_attributes*   Try to preserve all file attributes (timestamps, access rights).
-*timestamps*       Preserve the timestamp of the copied file, but not the other
-                   file attributes.
-================== ===================================================================
-
-The only possible values for mode= are:
-
-============== ===============================================================================
-Value          Meaning
-============== ===============================================================================
-*copy*         Only do the copy if the destination file does not already exist.
-               If it already exists, Copy_File fails.
-*overwrite*    Copy the file in all cases. Overwrite an already existing destination file.
-*append*       Append the original file to the destination file. If the destination file
-               does not exist, the destination file is a copy of the source file.
-               When mode=append, the field preserve=, if it exists, is not taken into account.
-============== ===============================================================================
-
-If the Form parameter includes one or both of the fields and the value or
-values are incorrect, Copy_file fails with Use_Error.
-
-Examples of correct Forms::
-
-  Form => "preserve=no_attributes,mode=overwrite" (the default)
-  Form => "mode=append"
-  Form => "mode=copy, preserve=all_attributes"
-
-Examples of incorrect Forms::
-
-  Form => "preserve=junk"
-  Form => "mode=internal, preserve=timestamps"
+Directories.File_Size'Last is equal to Long_Long_Integer'Last .
 
 *
-  "The interpretation of the ``Pattern`` parameter, when not the null string,
-  in the ``Start_Search`` and ``Search`` procedures.
-  See A.16(104) and A.16(112)."
+  "The result for Directories.Size for a directory or special file.
+  See A.16(93)."
+
+Name_Error is raised.
+
+*
+  "The result for Directories.Modification_Time for a directory or special file.
+  See A.16(93)."
+
+Name_Error is raised.
+
+*
+  "The interpretation of a nonnull search pattern in Directories.
+  See A.16(104)."
 
 When the ``Pattern`` parameter is not the null string, it is interpreted
 according to the syntax of regular expressions as defined in the
@@ -756,9 +805,41 @@ according to the syntax of regular expressions as defined in the
 See :ref:`GNAT.Regexp_(g-regexp.ads)`.
 
 *
+  "The results of a Directories search if the contents of the directory are
+  altered while a search is in progress.  See A.16(110)."
+
+The effect of a call to Get_Next_Entry is determined by the current
+state of the directory.
+
+*
+  "The definition and meaning of an environment variable.  See A.17(1)."
+
+This definition is determined by the underlying operating system.
+
+*
+  "The circumstances where an environment variable cannot be defined.
+  See A.17(16)."
+
+  There are no such implementation-defined circumstances.
+
+*
+  "Environment names for which Set has the effect of Clear.  See A.17(17)."
+
+There are no such names.
+
+*
+  "The value of Containers.Hash_Type'Modulus. The value of
+  Containers.Count_Type'Last.  See A.18.1(7)."
+
+Containers.Hash_Type'Modulus is 2**32.
+Containers.Count_Type'Last is 2**31 - 1.
+
+*
   "Implementation-defined convention names.  See B.1(11)."
 
 The following convention names are supported
+
+.. tabularcolumns:: |l|L|
 
 ======================= ==============================================================================
 Convention Name         Interpretation
@@ -806,9 +887,8 @@ Convention Name         Interpretation
 Link names are the actual names used by the linker.
 
 *
-  "The manner of choosing link names when neither the link
-  name nor the address of an imported or exported entity is specified.  See
-  B.1(36)."
+  "The manner of choosing link names when neither the link name nor the
+  address of an imported or exported entity is specified.  See B.1(36)."
 
 The default linker name is that which would be assigned by the relevant
 external language, interpreting the Ada name as being in all lower case
@@ -845,6 +925,12 @@ See files with prefix :file:`i-` in the distributed library.
 See files with prefix :file:`i-` in the distributed library.
 
 *
+  "The definitions of certain types and constants in Interfaces.C.
+  See B.3(41)."
+
+See source file :file:`i-c.ads`.
+
+*
   "The types ``Floating``, ``Long_Floating``,
   ``Binary``, ``Long_Binary``, ``Decimal_ Element``, and
   ``COBOL_Character``; and the initialization of the variables
@@ -865,43 +951,52 @@ COBOL                 Ada
 For initialization, see the file :file:`i-cobol.ads` in the distributed library.
 
 *
-  "Support for access to machine instructions.  See C.1(1)."
+  "The types Fortran_Integer, Real, Double_Precision, and Character_Set
+  in Interfaces.Fortran.  See B.5(17)."
 
-See documentation in file :file:`s-maccod.ads` in the distributed library.
-
-*
-  "Implementation-defined aspects of access to machine
-  operations.  See C.1(9)."
-
-See documentation in file :file:`s-maccod.ads` in the distributed library.
+See source file :file:`i-fortra.ads`. These types are derived, respectively,
+from Integer, Float, Long_Float, and Character.
 
 *
-  "Implementation-defined aspects of interrupts.  See C.3(2)."
+  "Implementation-defined intrinsic subprograms.  See C.1(1)."
 
-Interrupts are mapped to signals or conditions as appropriate.  See
-definition of unit
-``Ada.Interrupt_Names`` in source file :file:`a-intnam.ads` for details
-on the interrupts supported on a particular target.
+See separate section on Intrinsic Subprograms.
 
 *
-  "Implementation-defined aspects of pre-elaboration.  See
-  C.4(13)."
+  "Any restrictions on a protected procedure or its containing type when an
+  aspect Attach_handler or Interrupt_Handler is specified.  See C.3.1(17)."
 
-GNAT does not permit a partition to be restarted without reloading,
-except under control of the debugger.
+There are no such restrictions.
 
 *
-  "The semantics of pragma ``Discard_Names``.  See C.5(7)."
+  "Any other forms of interrupt handler supported by the Attach_Handler and
+  Interrupt_Handler aspects.  See C.3.1(19)."
 
-Pragma ``Discard_Names`` causes names of enumeration literals to
-be suppressed.  In the presence of this pragma, the Image attribute
+There are no such forms.
+
+*
+  "The semantics of some attributes and functions of an entity for which
+  aspect Discard_Names is True.  See C.5(7)."
+
+If Discard_Names is True for an enumeration type, the Image attribute
 provides the image of the Pos of the literal, and Value accepts
 Pos values.
 
-For tagged types, when pragmas ``Discard_Names`` and ``No_Tagged_Streams``
-simultaneously apply, their Expanded_Name and External_Tag are initialized
-with empty strings. This is useful to avoid exposing entity names at binary
+If both of the aspects``Discard_Names`` and ``No_Tagged_Streams`` are true
+for a tagged type, its Expanded_Name and External_Tag values are
+empty strings. This is useful to avoid exposing entity names at binary
 level.
+
+*
+  "The modulus and size of Test_and_Set_Flag.  See C.6.3(8)."
+
+The modulus is 2**8. The size is 8.
+
+*
+  "The value used to represent the set value for Atomic_Test_and_Set.
+  See C.6.3(10)."
+
+The value is 1.
 
 *
   "The result of the ``Task_Identification.Image``
@@ -939,32 +1034,11 @@ Protected entries or interrupt handlers can be executed by any
 convenient thread, so the value of ``Current_Task`` is undefined.
 
 *
-  "The effect of calling ``Current_Task`` from an entry
-  body or interrupt handler.  See C.7.1(19)."
+  "Granularity of locking for Task_Attributes.  See C.7.2(16)."
 
-When GNAT can determine statically that ``Current_Task`` is called directly in
-the body of an entry (or barrier) then a warning is emitted and ``Program_Error``
-is raised at run time. Otherwise, the effect of calling ``Current_Task`` from an
-entry body or interrupt handler is to return the identification of the task
-currently executing the code.
-
-*
-  "Implementation-defined aspects of
-  ``Task_Attributes``.  See C.7.2(19)."
-
-There are no implementation-defined aspects of ``Task_Attributes``.
-
-*
-  "Values of all ``Metrics``.  See D(2)."
-
-The metrics information for GNAT depends on the performance of the
-underlying operating system.  The sources of the run-time for tasking
-implementation, together with the output from *-gnatG* can be
-used to determine the exact sequence of operating systems calls made
-to implement various tasking constructs.  Together with appropriate
-information on the performance of the underlying operating system,
-on the exact target in use, this information can be used to determine
-the required metrics.
+No locking is needed if the formal type Attribute has the size and
+alignment of either Integer or System.Address and the bit representation
+of Initial_Value is all zeroes. Otherwise, locking is performed.
 
 *
   "The declarations of ``Any_Priority`` and
@@ -993,23 +1067,14 @@ and appropriate, these threads correspond to native threads of the
 underlying operating system.
 
 *
-  "Implementation-defined *policy_identifiers* allowed
-  in a pragma ``Task_Dispatching_Policy``.  See D.2.2(3)."
+  "Implementation-defined task dispatching policies.  See D.2.2(3)."
 
-There are no implementation-defined policy-identifiers allowed in this
-pragma.
+There are no implementation-defined task dispatching policies.
 
 *
-  "Implementation-defined aspects of priority inversion.  See
-  D.2.2(16)."
+  "The value of Default_Quantum in Dispatching.Round_Robin.  See D.2.5(4)."
 
-Execution of a task cannot be preempted by the implementation processing
-of delay expirations for lower priority tasks.
-
-*
-  "Implementation-defined task dispatching.  See D.2.2(18)."
-
-The policy is the same as that of the underlying threads implementation.
+The value is 10 milliseconds.
 
 *
   "Implementation-defined *policy_identifiers* allowed
@@ -1045,12 +1110,9 @@ The ceiling priority of internal protected objects is
 There are no implementation-defined queuing policies.
 
 *
-  "On a multiprocessor, any conditions that cause the
-  completion of an aborted construct to be delayed later than what is
-  specified for a single processor.  See D.6(3)."
+  "Implementation-defined admission policies.  See D.4.1(1)."
 
-The semantics for abort on a multi-processor is the same as on a single
-processor, there are no further delays.
+There are no implementation-defined admission policies.
 
 *
   "Any operations that implicitly require heap storage
@@ -1060,43 +1122,75 @@ The only operation that implicitly requires heap storage allocation is
 task creation.
 
 *
-  "What happens when a task terminates in the presence of
-  pragma ``No_Task_Termination``. See D.7(15)."
+  "When restriction No_Dynamic_CPU_Assignment applies to a partition, the
+  processor on which a task with a CPU value of a Not_A_Specific_CPU will
+  execute.  See D.7(10)."
+
+Unknown.
+
+*
+  "When restriction No_Task_Termination applies to a partition, what happens
+  when a task terminates.  See D.7(15.1)."
 
 Execution is erroneous in that case.
 
 *
-  "Implementation-defined aspects of pragma
-  ``Restrictions``.  See D.7(20)."
+  "The behavior when restriction Max_Storage_At_Blocking is violated.
+  See D.7(17)."
 
-There are no such implementation-defined aspects.
-
-*
-  "Implementation-defined aspects of package
-  ``Real_Time``.  See D.8(17)."
-
-There are no implementation defined aspects of package ``Real_Time``.
+Execution is erroneous in that case.
 
 *
-  "Implementation-defined aspects of
-  *delay_statements*.  See D.9(8)."
+  "The behavior when restriction Max_Asynchronous_Select_Nesting is violated.
+  See D.7(18)."
 
-Any difference greater than one microsecond will cause the task to be
-delayed (see D.9(7)).
+Execution is erroneous in that case.
 
 *
-  "The upper bound on the duration of interrupt blocking
-  caused by the implementation.  See D.12(5)."
+  "The behavior when restriction Max_Tasks is violated.  See D.7(19)."
 
-The upper bound is determined by the underlying operating system.  In
-no cases is it more than 10 milliseconds.
+Execution is erroneous in that case.
+
+* "Whether the use of pragma Restrictions results in a reduction in program
+  code or data size or execution time.  See D.7(20)."
+
+  Yes it can, but the precise circumstances and properties of such reductions
+  are difficult to characterize.
+
+*
+  "The value of Barrier_Limit'Last in Synchronous_Barriers.  See D.10.1(4)."
+
+Synchronous_Barriers.Barrier_Limit'Last is Integer'Last .
+
+*
+  "When an aborted task that is waiting on a Synchronous_Barrier is aborted.
+  See D.10.1(13)."
+
+Difficult to characterize.
+
+*
+  "The value of Min_Handler_Ceiling in Execution_Time.Group_Budgets.
+  See D.14.2(7)."
+
+See source file :file:`a-etgrbu.ads`.
+
+*
+  "The value of CPU_Range'Last in System.Multiprocessors.  See D.16(4)."
+
+See source file :file:`s-multip.ads`.
+
+*
+  "The processor on which the environment task executes in the absence
+  of a value for the aspect CPU.  See D.16(13)."
+
+Unknown.
 
 *
   "The means for creating and executing distributed
   programs.  See E(5)."
 
 The GLADE package provides a utility GNATDIST for creating and executing
-distributed programs.  See the GLADE reference manual for further details.
+distributed programs. See the GLADE reference manual for further details.
 
 *
   "Any events that can result in a partition becoming
@@ -1105,22 +1199,11 @@ distributed programs.  See the GLADE reference manual for further details.
 See the GLADE reference manual for full details on such events.
 
 *
-  "The scheduling policies, treatment of priorities, and
-  management of shared resources between partitions in certain cases.  See
-  E.1(11)."
+  "The scheduling policies, treatment of priorities, and management of
+  shared resources between partitions in certain cases.  See E.1(11)."
 
 See the GLADE reference manual for full details on these aspects of
 multi-partition execution.
-
-*
-  "Events that cause the version of a compilation unit to
-  change.  See E.3(5)."
-
-Editing the source file of a compilation unit, or the source files of
-any units on which it is dependent in a significant way cause the version
-to change.  No other actions cause the version number to change.  All changes
-are significant except those which affect only layout, capitalization or
-comments.
 
 *
   "Whether the execution of the remote subprogram is
@@ -1130,14 +1213,12 @@ See the GLADE reference manual for details on the effect of abort in
 a distributed application.
 
 *
-  "Implementation-defined aspects of the PCS.  See E.5(25)."
+  "The range of type System.RPC.Partition_Id.  See E.5(14)."
 
-See the GLADE reference manual for a full description of all implementation
-defined aspects of the PCS.
+System.RPC.Partion_ID'Last is Integer'Last. See source file :file:`s-rpc.ads`.
 
 *
-  "Implementation-defined interfaces in the PCS.  See
-  E.5(26)."
+  "Implementation-defined interfaces in the PCS.  See E.5(26)."
 
 See the GLADE reference manual for a full description of all
 implementation defined interfaces.
@@ -1160,13 +1241,13 @@ Named Number         Value
   "The value of ``Max_Picture_Length`` in the package
   ``Text_IO.Editing``.  See F.3.3(16)."
 
-64
+  64
 
 *
   "The value of ``Max_Picture_Length`` in the package
   ``Wide_Text_IO.Editing``.  See F.3.4(5)."
 
-64
+  64
 
 *
   "The accuracy actually achieved by the complex elementary
@@ -1228,9 +1309,8 @@ properly generated.
 Not relevant, division is IEEE exact.
 
 *
-  "The definition of close result set, which determines the
-  accuracy of certain fixed point multiplications and divisions.  See
-  G.2.3(5)."
+  "The definition of close result set, which determines the accuracy of
+  certain fixed point multiplications and divisions.  See G.2.3(5)."
 
 Operations in the close result set are performed using IEEE long format
 floating-point arithmetic.  The input operands are converted to
@@ -1291,28 +1371,20 @@ IEEE infinite and Nan values are produced as appropriate.
 Information on those subjects is not yet available.
 
 *
-  "Information regarding bounded errors and erroneous
-  execution.  See H.2(1)."
+  "The accuracy requirements for the subprograms Solve, Inverse,
+  Determinant, Eigenvalues and Eigensystem for type Real_Matrix.
+  See G.3.1(81)."
 
-Information on this subject is not yet available.
-
-*
-  "Implementation-defined aspects of pragma
-  ``Inspection_Point``.  See H.3.2(8)."
-
-Pragma ``Inspection_Point`` ensures that the variable is live and can
-be examined by the debugger at the inspection point.
+Information on those subjects is not yet available.
 
 *
-  "Implementation-defined aspects of pragma
-  ``Restrictions``.  See H.4(25)."
+  "The accuracy requirements for the subprograms Solve, Inverse,
+  Determinant, Eigenvalues and Eigensystem for type Complex_Matrix.
+  See G.3.2(149)."
 
-There are no implementation-defined aspects of pragma ``Restrictions``.  The
-use of pragma ``Restrictions [No_Exceptions]`` has no effect on the
-generated code.  Checks must suppressed by use of pragma ``Suppress``.
+Information on those subjects is not yet available.
 
 *
-  "Any restrictions on pragma ``Restrictions``.  See
-  H.4(27)."
+  "The consequences of violating No_Hidden_Indirect_Globals.  See H.4(23.9)."
 
-There are no restrictions on pragma ``Restrictions``.
+Execution is erroneous in that case.

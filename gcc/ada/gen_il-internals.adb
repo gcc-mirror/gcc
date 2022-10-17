@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -255,7 +255,7 @@ package body Gen_IL.Internals is
    begin
       case F is
          --  Special cases for the same reason as in the above Image
-         --  function.
+         --  function for Opt_Type_Enum.
 
          when Alloc_For_BIP_Return =>
             return "Alloc_For_BIP_Return";
@@ -370,7 +370,7 @@ package body Gen_IL.Internals is
          return Image (Default);
 
       else
-         --  Strip off the prefix and capitalize it
+         --  Strip off the prefix
 
          declare
             Im : constant String := Image (Default);

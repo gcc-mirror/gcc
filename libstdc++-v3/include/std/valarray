@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- valarray class.
 
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,8 @@
 #define _GLIBCXX_VALARRAY 1
 
 #pragma GCC system_header
+
+#include <bits/requires_hosted.h> // <cmath> dependant
 
 #include <bits/c++config.h>
 #include <cmath>
@@ -137,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// _lib.valarray.cons_ construct/destroy:
       ///  Construct an empty array.
-      valarray();
+      valarray() _GLIBCXX_NOTHROW;
 
       ///  Construct an array with @a n elements.
       explicit valarray(size_t);
@@ -270,11 +272,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __i  Index of element to return.
        *  @return  Reference to the i'th element.
        */
-      _Tp&                operator[](size_t __i);
+      _Tp&                operator[](size_t __i) _GLIBCXX_NOTHROW;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 389. Const overload of valarray::operator[] returns by value.
-      const _Tp&          operator[](size_t) const;
+      const _Tp&          operator[](size_t) const _GLIBCXX_NOTHROW;
 
       // _lib.valarray.sub_ subset operations:
       /**
@@ -536,25 +538,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Apply a function to the array.
        *
        *  Returns a new valarray with elements assigned to the result of
-       *  applying func to the corresponding element of this array.  The new
+       *  applying __func to the corresponding element of this array.  The new
        *  array has the same size as this one.
        *
-       *  @param  func  Function of Tp returning Tp to apply.
+       *  @param  __func  Function of Tp returning Tp to apply.
        *  @return  New valarray with transformed elements.
        */
-      _Expr<_ValFunClos<_ValArray, _Tp>, _Tp> apply(_Tp func(_Tp)) const;
+      _Expr<_ValFunClos<_ValArray, _Tp>, _Tp> apply(_Tp __func(_Tp)) const;
 
       /**
        *  @brief  Apply a function to the array.
        *
        *  Returns a new valarray with elements assigned to the result of
-       *  applying func to the corresponding element of this array.  The new
+       *  applying __func to the corresponding element of this array.  The new
        *  array has the same size as this one.
        *
-       *  @param  func  Function of const Tp& returning Tp to apply.
+       *  @param  __func  Function of const Tp& returning Tp to apply.
        *  @return  New valarray with transformed elements.
        */
-      _Expr<_RefFunClos<_ValArray, _Tp>, _Tp> apply(_Tp func(const _Tp&)) const;
+      _Expr<_RefFunClos<_ValArray, _Tp>, _Tp> apply(_Tp __func(const _Tp&)) const;
 
       /**
        *  @brief  Resize array.
@@ -581,7 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline const _Tp&
-    valarray<_Tp>::operator[](size_t __i) const
+    valarray<_Tp>::operator[](size_t __i) const _GLIBCXX_NOTHROW
     {
       __glibcxx_requires_subscript(__i);
       return _M_data[__i];
@@ -589,7 +591,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline _Tp&
-    valarray<_Tp>::operator[](size_t __i)
+    valarray<_Tp>::operator[](size_t __i) _GLIBCXX_NOTHROW
     {
       __glibcxx_requires_subscript(__i);
       return _M_data[__i];
@@ -618,7 +620,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline
-    valarray<_Tp>::valarray() : _M_size(0), _M_data(0) {}
+    valarray<_Tp>::valarray() _GLIBCXX_NOTHROW : _M_size(0), _M_data(0) {}
 
   template<typename _Tp>
     inline
@@ -1062,18 +1064,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<class _Tp>
     inline _Expr<_ValFunClos<_ValArray, _Tp>, _Tp>
-    valarray<_Tp>::apply(_Tp func(_Tp)) const
+    valarray<_Tp>::apply(_Tp __func(_Tp)) const
     {
       typedef _ValFunClos<_ValArray, _Tp> _Closure;
-      return _Expr<_Closure, _Tp>(_Closure(*this, func));
+      return _Expr<_Closure, _Tp>(_Closure(*this, __func));
     }
 
   template<class _Tp>
     inline _Expr<_RefFunClos<_ValArray, _Tp>, _Tp>
-    valarray<_Tp>::apply(_Tp func(const _Tp &)) const
+    valarray<_Tp>::apply(_Tp __func(const _Tp &)) const
     {
       typedef _RefFunClos<_ValArray, _Tp> _Closure;
-      return _Expr<_Closure, _Tp>(_Closure(*this, func));
+      return _Expr<_Closure, _Tp>(_Closure(*this, __func));
     }
 
 #define _DEFINE_VALARRAY_UNARY_OPERATOR(_Op, _Name)                     \
@@ -1210,9 +1212,10 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
+    [[__nodiscard__]]
     inline _Tp*
-    begin(valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]); }
+    begin(valarray<_Tp>& __va) noexcept
+    { return __va.size() ? std::__addressof(__va[0]) : nullptr; }
 
   /**
    *  @brief  Return an iterator pointing to the first element of
@@ -1220,9 +1223,10 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
+    [[__nodiscard__]]
     inline const _Tp*
-    begin(const valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]); }
+    begin(const valarray<_Tp>& __va) noexcept
+    { return __va.size() ? std::__addressof(__va[0]) : nullptr; }
 
   /**
    *  @brief  Return an iterator pointing to one past the last element of
@@ -1230,9 +1234,15 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
+    [[__nodiscard__]]
     inline _Tp*
-    end(valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]) + __va.size(); }
+    end(valarray<_Tp>& __va) noexcept
+    {
+      if (auto __n = __va.size())
+	return std::__addressof(__va[0]) + __n;
+      else
+	return nullptr;
+    }
 
   /**
    *  @brief  Return an iterator pointing to one past the last element of
@@ -1240,9 +1250,15 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
+    [[__nodiscard__]]
     inline const _Tp*
-    end(const valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]) + __va.size(); }
+    end(const valarray<_Tp>& __va) noexcept
+    {
+      if (auto __n = __va.size())
+	return std::__addressof(__va[0]) + __n;
+      else
+	return nullptr;
+    }
 #endif // C++11
 
   /// @} group numeric_arrays

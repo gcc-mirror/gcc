@@ -1,6 +1,6 @@
 /* plugin-api.h -- External linker plugin API.  */
 
-/* Copyright (C) 2009-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Written by Cary Coutant <ccoutant@google.com>.
 
    This file is part of binutils.
@@ -483,44 +483,76 @@ enum ld_plugin_level
   LDPL_FATAL
 };
 
+/* Contract between a plug-in and a linker.  */
+
+enum linker_api_version
+{
+   /* The linker/plugin do not implement any of the API levels below, the API
+       is determined solely via the transfer vector.  */
+   LAPI_V0,
+
+   /* API level v1.  The linker provides get_symbols_v3, add_symbols_v2,
+      the plugin will use that and not any lower versions.
+      claim_file is thread-safe on the plugin side and
+      add_symbols on the linker side.  */
+   LAPI_V1
+};
+
+/* The linker's interface for API version negotiation.  A plug-in calls
+  the function (with its IDENTIFIER and VERSION), plus minimal and maximal
+  version of linker_api_version is provided.  Linker then returns selected
+  API version and provides its IDENTIFIER and VERSION.  The returned value
+  by linker must be in range [MINIMAL_API_SUPPORTED, MAXIMAL_API_SUPPORTED].
+  Identifier pointers remain valid as long as the plugin is loaded.  */
+
+typedef
+int
+(*ld_plugin_get_api_version) (const char *plugin_identifier,
+			      const char *plugin_version,
+			      int minimal_api_supported,
+			      int maximal_api_supported,
+			      const char **linker_identifier,
+			      const char **linker_version);
+
 /* Values for the tv_tag field of the transfer vector.  */
 
 enum ld_plugin_tag
 {
-  LDPT_NULL = 0,
-  LDPT_API_VERSION = 1,
-  LDPT_GOLD_VERSION = 2,
-  LDPT_LINKER_OUTPUT = 3,
-  LDPT_OPTION = 4,
-  LDPT_REGISTER_CLAIM_FILE_HOOK = 5,
-  LDPT_REGISTER_ALL_SYMBOLS_READ_HOOK = 6,
-  LDPT_REGISTER_CLEANUP_HOOK = 7,
-  LDPT_ADD_SYMBOLS = 8,
-  LDPT_GET_SYMBOLS = 9,
-  LDPT_ADD_INPUT_FILE = 10,
-  LDPT_MESSAGE = 11,
-  LDPT_GET_INPUT_FILE = 12,
-  LDPT_RELEASE_INPUT_FILE = 13,
-  LDPT_ADD_INPUT_LIBRARY = 14,
-  LDPT_OUTPUT_NAME = 15,
-  LDPT_SET_EXTRA_LIBRARY_PATH = 16,
-  LDPT_GNU_LD_VERSION = 17,
-  LDPT_GET_VIEW = 18,
-  LDPT_GET_INPUT_SECTION_COUNT = 19,
-  LDPT_GET_INPUT_SECTION_TYPE = 20,
-  LDPT_GET_INPUT_SECTION_NAME = 21,
-  LDPT_GET_INPUT_SECTION_CONTENTS = 22,
-  LDPT_UPDATE_SECTION_ORDER = 23,
-  LDPT_ALLOW_SECTION_ORDERING = 24,
-  LDPT_GET_SYMBOLS_V2 = 25,
-  LDPT_ALLOW_UNIQUE_SEGMENT_FOR_SECTIONS = 26,
-  LDPT_UNIQUE_SEGMENT_FOR_SECTIONS = 27,
-  LDPT_GET_SYMBOLS_V3 = 28,
-  LDPT_GET_INPUT_SECTION_ALIGNMENT = 29,
-  LDPT_GET_INPUT_SECTION_SIZE = 30,
-  LDPT_REGISTER_NEW_INPUT_HOOK = 31,
-  LDPT_GET_WRAP_SYMBOLS = 32,
-  LDPT_ADD_SYMBOLS_V2 = 33
+  LDPT_NULL,
+  LDPT_API_VERSION,
+  LDPT_GOLD_VERSION,
+  LDPT_LINKER_OUTPUT,
+  LDPT_OPTION,
+  LDPT_REGISTER_CLAIM_FILE_HOOK,
+  LDPT_REGISTER_ALL_SYMBOLS_READ_HOOK,
+  LDPT_REGISTER_CLEANUP_HOOK,
+  LDPT_ADD_SYMBOLS,
+  LDPT_GET_SYMBOLS,
+  LDPT_ADD_INPUT_FILE,
+  LDPT_MESSAGE,
+  LDPT_GET_INPUT_FILE,
+  LDPT_RELEASE_INPUT_FILE,
+  LDPT_ADD_INPUT_LIBRARY,
+  LDPT_OUTPUT_NAME,
+  LDPT_SET_EXTRA_LIBRARY_PATH,
+  LDPT_GNU_LD_VERSION,
+  LDPT_GET_VIEW,
+  LDPT_GET_INPUT_SECTION_COUNT,
+  LDPT_GET_INPUT_SECTION_TYPE,
+  LDPT_GET_INPUT_SECTION_NAME,
+  LDPT_GET_INPUT_SECTION_CONTENTS,
+  LDPT_UPDATE_SECTION_ORDER,
+  LDPT_ALLOW_SECTION_ORDERING,
+  LDPT_GET_SYMBOLS_V2,
+  LDPT_ALLOW_UNIQUE_SEGMENT_FOR_SECTIONS,
+  LDPT_UNIQUE_SEGMENT_FOR_SECTIONS,
+  LDPT_GET_SYMBOLS_V3,
+  LDPT_GET_INPUT_SECTION_ALIGNMENT,
+  LDPT_GET_INPUT_SECTION_SIZE,
+  LDPT_REGISTER_NEW_INPUT_HOOK,
+  LDPT_GET_WRAP_SYMBOLS,
+  LDPT_ADD_SYMBOLS_V2,
+  LDPT_GET_API_VERSION,
 };
 
 /* The plugin transfer vector.  */
@@ -556,6 +588,7 @@ struct ld_plugin_tv
     ld_plugin_get_input_section_size tv_get_input_section_size;
     ld_plugin_register_new_input tv_register_new_input;
     ld_plugin_get_wrap_symbols tv_get_wrap_symbols;
+    ld_plugin_get_api_version tv_get_api_version;
   } tv_u;
 };
 

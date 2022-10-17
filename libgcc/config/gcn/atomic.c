@@ -1,5 +1,5 @@
 /* AMD GCN atomic operations
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Mentor Graphics.
 
    This file is free software; you can redistribute it and/or modify it
@@ -28,9 +28,9 @@
 TYPE									     \
 __sync_val_compare_and_swap_##SIZE (TYPE *ptr, TYPE oldval, TYPE newval)     \
 {									     \
+  unsigned int valmask = (1 << (SIZE * 8)) - 1;				     \
   unsigned int *wordptr = (unsigned int *)((__UINTPTR_TYPE__ ) ptr & ~3UL);  \
   int shift = ((__UINTPTR_TYPE__ ) ptr & 3UL) * 8;			     \
-  unsigned int valmask = (1 << (SIZE * 8)) - 1;				     \
   unsigned int wordmask = ~(valmask << shift);				     \
   unsigned int oldword = *wordptr;					     \
   for (;;)								     \
@@ -57,3 +57,30 @@ __sync_bool_compare_and_swap_##SIZE (TYPE *ptr, TYPE oldval, TYPE newval)    \
 __SYNC_SUBWORD_COMPARE_AND_SWAP (unsigned char, 1)
 __SYNC_SUBWORD_COMPARE_AND_SWAP (unsigned short, 2)
 
+
+#define __ATOMIC_COMPARE_EXCHANGE(TYPE,SIZE)				      \
+bool									      \
+__atomic_compare_exchange_##SIZE (TYPE *ptr, TYPE *expected,		      \
+				  TYPE desired, bool weak,		      \
+				  int success_memorder, int failure_memorder) \
+{									      \
+  unsigned int valmask = (1 << (SIZE * 8)) - 1;				      \
+									      \
+  unsigned int *wordptr = (unsigned int *)((__UINTPTR_TYPE__ ) ptr & ~3UL);   \
+  int ptrshift = ((__UINTPTR_TYPE__ ) ptr & 3UL) * 8;			      \
+  unsigned int wordmask = ~(valmask << ptrshift);			      \
+									      \
+  unsigned int ptrword = *wordptr;					      \
+  unsigned int exptword = ptrword & wordmask;				      \
+  unsigned int newword = ptrword & wordmask;				      \
+  exptword |= ((unsigned int) *expected) << ptrshift;			      \
+  newword |= ((unsigned int) desired) << ptrshift;			      \
+  if (__atomic_compare_exchange_4 (wordptr, &exptword, newword, weak,	      \
+				   success_memorder, failure_memorder))	      \
+    return true;							      \
+  *expected = (TYPE) ((exptword >> ptrshift) & valmask);		      \
+  return false;								      \
+}
+
+__ATOMIC_COMPARE_EXCHANGE (unsigned char, 1)
+__ATOMIC_COMPARE_EXCHANGE (unsigned short, 2)

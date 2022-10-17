@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag9004.d(21): Error: template diag9004.bar cannot deduce function from argument types !()(Foo!int, int), candidates are:
-fail_compilation/diag9004.d(14):        diag9004.bar(FooT)(FooT foo, FooT.T x)
+fail_compilation/diag9004.d(21): Error: none of the overloads of template `diag9004.bar` are callable using argument types `!()(Foo!int, int)`
+fail_compilation/diag9004.d(14):        Candidate is: `bar(FooT)(FooT foo, FooT.T x)`
 ---
 */
 

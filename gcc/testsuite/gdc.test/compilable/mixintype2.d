@@ -66,3 +66,58 @@ static assert(is(T8 == const(ubyte*)));
 alias T8 = mixin(q{immutable(__traits(getMember, S, "T"))})*;
 static assert(is(T8 == immutable(float*)*));
 */
+
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=22356
+
+mixin("void") func22356(int) { }
+static assert(is(typeof(&func22356) == void function(int)));
+
+static mixin("void") func22356_s(char) { }
+static assert(is(typeof(&func22356_s) == void function(char)));
+
+mixin("int")[2] func22356_2(int) { return [1, 2]; }
+static assert(is(typeof(&func22356_2) == int[2] function(int)));
+
+mixin("int") func22356tp(S, T)(S, T) { return 1; }
+static assert(is(typeof(&func22356tp!(char, float)) == int function(char, float) pure nothrow @nogc @safe));
+
+mixin("int") x22356;
+static assert(is(typeof(x22356) == int));
+
+mixin("int")** xpp22356;
+static assert(is(typeof(xpp22356) == int**));
+
+mixin("int") y22356, z22356;
+static assert(is(typeof(y22356) == int) && is(typeof(z22356) == int));
+
+// Already working but for completeness
+void test_statements_22356()
+{
+    mixin("void") func22356(int) { }
+    static assert(is(typeof(&func22356) == void delegate(int) pure nothrow @nogc @safe));
+
+    static mixin("void") func22356_s(char) { }
+    static assert(is(typeof(&func22356_s) == void function(char) pure nothrow @nogc @safe));
+
+    mixin("int")[2] func22356_2(int) { return [1, 2]; }
+    static assert(is(typeof(&func22356_2) == int[2] delegate(int) pure nothrow @nogc @safe));
+
+    mixin("int") func22356tp(S, T)(S, T) { return 1; }
+    static assert(is(typeof(&func22356tp!(char, float)) == int delegate(char, float) pure nothrow @nogc @safe));
+
+    mixin("int") x22356;
+    static assert(is(typeof(x22356) == int));
+
+    mixin("int")** xpp22356;
+    static assert(is(typeof(xpp22356) == int**));
+
+    mixin("int") y22356, z22356;
+    static assert(is(typeof(y22356) == int) && is(typeof(z22356) == int));
+}
+
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=22969
+
+enum e = 0;
+alias a = mixin("e");

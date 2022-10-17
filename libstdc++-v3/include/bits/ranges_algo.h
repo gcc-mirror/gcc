@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -506,43 +506,7 @@ namespace ranges
 
   inline constexpr __find_end_fn find_end{};
 
-  struct __adjacent_find_fn
-  {
-    template<forward_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     typename _Proj = identity,
-	     indirect_binary_predicate<projected<_Iter, _Proj>,
-				       projected<_Iter, _Proj>> _Pred
-	       = ranges::equal_to>
-      constexpr _Iter
-      operator()(_Iter __first, _Sent __last,
-		 _Pred __pred = {}, _Proj __proj = {}) const
-      {
-	if (__first == __last)
-	  return __first;
-	auto __next = __first;
-	for (; ++__next != __last; __first = __next)
-	  {
-	    if (std::__invoke(__pred,
-			      std::__invoke(__proj, *__first),
-			      std::__invoke(__proj, *__next)))
-	      return __first;
-	  }
-	return __next;
-      }
-
-    template<forward_range _Range, typename _Proj = identity,
-	     indirect_binary_predicate<
-	       projected<iterator_t<_Range>, _Proj>,
-	       projected<iterator_t<_Range>, _Proj>> _Pred = ranges::equal_to>
-      constexpr borrowed_iterator_t<_Range>
-      operator()(_Range&& __r, _Pred __pred = {}, _Proj __proj = {}) const
-      {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       std::move(__pred), std::move(__proj));
-      }
-  };
-
-  inline constexpr __adjacent_find_fn adjacent_find{};
+  // adjacent_find is defined in <bits/ranges_util.h>.
 
   struct __is_permutation_fn
   {
@@ -1343,7 +1307,7 @@ namespace ranges
 	    *__result = *__tail;
 	    ++__result;
 	  }
-	return {__i, __result};
+	return {__i, std::move(__result)};
       }
 
     template<bidirectional_range _Range, weakly_incrementable _Out>
@@ -2362,6 +2326,7 @@ namespace ranges
 
   inline constexpr __partition_fn partition{};
 
+#if _GLIBCXX_HOSTED
   struct __stable_partition_fn
   {
     template<bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -2392,6 +2357,7 @@ namespace ranges
   };
 
   inline constexpr __stable_partition_fn stable_partition{};
+#endif
 
   template<typename _Iter, typename _Out1, typename _Out2>
     struct in_out_out_result
@@ -2423,14 +2389,14 @@ namespace ranges
   struct __partition_copy_fn
   {
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     weakly_incrementable _Out1, weakly_incrementable _O2,
+	     weakly_incrementable _Out1, weakly_incrementable _Out2,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       requires indirectly_copyable<_Iter, _Out1>
-	&& indirectly_copyable<_Iter, _O2>
-      constexpr partition_copy_result<_Iter, _Out1, _O2>
+	&& indirectly_copyable<_Iter, _Out2>
+      constexpr partition_copy_result<_Iter, _Out1, _Out2>
       operator()(_Iter __first, _Sent __last,
-		 _Out1 __out_true, _O2 __out_false,
+		 _Out1 __out_true, _Out2 __out_false,
 		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
@@ -2450,18 +2416,18 @@ namespace ranges
       }
 
     template<input_range _Range, weakly_incrementable _Out1,
-	     weakly_incrementable _O2,
+	     weakly_incrementable _Out2,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out1>
-	&& indirectly_copyable<iterator_t<_Range>, _O2>
-      constexpr partition_copy_result<borrowed_iterator_t<_Range>, _Out1, _O2>
-      operator()(_Range&& __r, _Out1 out_true, _O2 out_false,
+	&& indirectly_copyable<iterator_t<_Range>, _Out2>
+      constexpr partition_copy_result<borrowed_iterator_t<_Range>, _Out1, _Out2>
+      operator()(_Range&& __r, _Out1 __out_true, _Out2 __out_false,
 		 _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       std::move(out_true), std::move(out_false),
+		       std::move(__out_true), std::move(__out_false),
 		       std::move(__pred), std::move(__proj));
       }
   };
@@ -2902,59 +2868,7 @@ namespace ranges
 
   inline constexpr __set_symmetric_difference_fn set_symmetric_difference{};
 
-  struct __min_fn
-  {
-    template<typename _Tp, typename _Proj = identity,
-	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
-	       _Comp = ranges::less>
-      constexpr const _Tp&
-      operator()(const _Tp& __a, const _Tp& __b,
-		 _Comp __comp = {}, _Proj __proj = {}) const
-      {
-	if (std::__invoke(__comp,
-			  std::__invoke(__proj, __b),
-			  std::__invoke(__proj, __a)))
-	  return __b;
-	else
-	  return __a;
-      }
-
-    template<input_range _Range, typename _Proj = identity,
-	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
-	       _Comp = ranges::less>
-      requires indirectly_copyable_storable<iterator_t<_Range>,
-					    range_value_t<_Range>*>
-      constexpr range_value_t<_Range>
-      operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
-      {
-	auto __first = ranges::begin(__r);
-	auto __last = ranges::end(__r);
-	__glibcxx_assert(__first != __last);
-	auto __result = *__first;
-	while (++__first != __last)
-	  {
-	    auto __tmp = *__first;
-	    if (std::__invoke(__comp,
-			      std::__invoke(__proj, __tmp),
-			      std::__invoke(__proj, __result)))
-	      __result = std::move(__tmp);
-	  }
-	return __result;
-      }
-
-    template<copyable _Tp, typename _Proj = identity,
-	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
-	       _Comp = ranges::less>
-      constexpr _Tp
-      operator()(initializer_list<_Tp> __r,
-		 _Comp __comp = {}, _Proj __proj = {}) const
-      {
-	return (*this)(ranges::subrange(__r),
-		       std::move(__comp), std::move(__proj));
-      }
-  };
-
-  inline constexpr __min_fn min{};
+  // min is defined in <bits/ranges_util.h>.
 
   struct __max_fn
   {
@@ -3084,7 +2998,7 @@ namespace ranges
 	auto __last = ranges::end(__r);
 	__glibcxx_assert(__first != __last);
 	auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
-	minmax_result<range_value_t<_Range>> __result = {*__first, *__first};
+	minmax_result<range_value_t<_Range>> __result = {*__first, __result.min};
 	if (++__first == __last)
 	  return __result;
 	else

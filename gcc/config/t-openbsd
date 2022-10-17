@@ -2,6 +2,6 @@
 USER_H = $(EXTRA_HEADERS)
 
 # OpenBSD-specific D support.
-openbsd-d.o: $(srcdir)/config/openbsd-d.c
+openbsd-d.o: $(srcdir)/config/openbsd-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

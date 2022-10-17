@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Conversion;
 with System.Generic_Bignums;
 with System.Secondary_Stack;  use System.Secondary_Stack;
 with System.Shared_Bignums;   use System.Shared_Bignums;

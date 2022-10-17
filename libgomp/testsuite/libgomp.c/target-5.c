@@ -55,6 +55,7 @@ main ()
     abort ();
   #pragma omp target if (0)
   #pragma omp teams
+  #pragma omp parallel if(0)
   {
     omp_sched_t s_c;
     int c_c;

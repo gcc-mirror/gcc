@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -285,7 +285,9 @@ void test01()
   static_assert(test_property<is_nothrow_swappable,
 		std::queue<ThrowCopyConsClass>>(true), "");
   static_assert(test_property<is_nothrow_swappable,
-		std::priority_queue<ThrowCopyConsClass>>(true), "");
+		std::priority_queue<ThrowCopyConsClass,
+				    std::vector<ThrowCopyConsClass>,
+				    comps::CompareNoThrowCopyable>>(true), "");
   static_assert(test_property<is_nothrow_swappable,
 		std::stack<ThrowCopyConsClass>>(true), "");
   static_assert(test_property<is_nothrow_swappable,

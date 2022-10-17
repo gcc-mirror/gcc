@@ -817,6 +817,10 @@ now defaults to zero.
   <classname>has_trivial_copy_assign</classname> removed.
 </para>
 
+<para>
+Calling a <code>std::bind</code> result as volatile was deprecated for C++17.
+</para>
+
 <para> Profile Mode was deprecated. </para>
 
 <section xml:id="api.rel_72"><info><title><constant>7.2</constant></title></info>
@@ -1015,6 +1019,72 @@ now defaults to zero.
   Calling <function>reserve()</function> with no arguments is equivalent
   to <function>shrink_to_fit()</function>, but is deprecated.
   <function>shrink_to_fit()</function> should be used instead.
+</para>
+
+</section>
+
+<section xml:id="api.rel_121"><info><title><constant>12</constant></title></info>
+
+<para>
+The <function>std::random_shuffle</function> algorithms are deprecated
+for C++14 and later. The C++11 <function>std::shuffle</function> algorithm
+can be used instead.
+</para>
+
+<para>
+The <function>std::unexpected</function> function and related typedef and
+accessors for the unexpected handler are deprecated for C++11 and later.
+Dynamic exception specifications should be replaced with <code>noexcept</code>.
+</para>
+
+<para>
+C++98 adaptable function utilities
+(<code>std::bind1st</code>, <code>std::unary_function</code>,
+<code>std::ptr_fun</code>, <code>std::mem_fun_ref</code> etc.)
+were deprecated for C++11.
+<code>std::iterator</code>, <code>std::raw_storage_iterator</code>,
+<code>get_temporary_buffer</code>, and <code>std::not_fun</code>
+were deprecated for C++17.
+</para>
+
+<para>
+Non-standard <code>std::pair</code> constructors were deprecated.
+A non-standard default argument for
+<code>vector&lt;bool&gt;::insert(const_iterator, const bool&amp;)</code>
+was deprecated.
+</para>
+
+<para>
+The <literal>bitmap</literal>, <literal>mt</literal>, and <literal>pool</literal>
+options for <option>--enable-libstdcxx-allocator</option> were removed.
+For the <literal>new</literal> option, <classname>std::allocator</classname>
+no longer derives from <classname>__gnu_cxx::new_allocator</classname>;
+they both derive from <classname>std::__new_allocator</classname> instead.
+</para>
+
+<para>
+<function>std::condition_variable::wait</function> changed to be
+<code>noexcept(false)</code> to allow thread cancellation exceptions to
+be thrown from <function>pthread_cond_wait</function> without aborting
+the process.
+</para>
+
+</section>
+
+
+<section xml:id="api.rel_123"><info><title><constant>12.3</constant></title></info>
+<para>
+Calling a <code>std::bind</code> result as volatile is ill-formed for C++20
+and later.
+</para>
+
+</section>
+
+<section xml:id="api.rel_131"><info><title><constant>13</constant></title></info>
+
+<para>
+Tunables <variable>glibcxx.eh_pool.obj_count</variable> and
+<variable>glibcxx.eh_pool.obj_size</variable> were added.
 </para>
 
 </section>

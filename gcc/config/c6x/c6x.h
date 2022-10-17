@@ -1,5 +1,5 @@
 /* Target Definitions for TI C6X.
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
    Contributed by Andrew Jenner <andrew@codesourcery.com>
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
@@ -503,9 +503,9 @@ struct GTY(()) machine_function
     "B24", "B25", "B26", "B27", "B28", "B29", "B30", "B31",	\
     "FP", "ARGP", "ILC" }
 
-#define DBX_REGISTER_NUMBER(N) (dbx_register_map[(N)])
+#define DEBUGGER_REGNO(N) (debugger_register_map[(N)])
 
-extern unsigned const dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned const debugger_register_map[FIRST_PSEUDO_REGISTER];
 
 #define FINAL_PRESCAN_INSN c6x_final_prescan_insn
 

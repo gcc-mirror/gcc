@@ -1,6 +1,6 @@
 ;;- Machine description for GNU compiler -- S/390 / zSeries version.
 ;;  Subst patterns.
-;;  Copyright (C) 2016-2021 Free Software Foundation, Inc.
+;;  Copyright (C) 2016-2022 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.

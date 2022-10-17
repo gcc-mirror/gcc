@@ -1,5 +1,5 @@
 /* Header file for internal GCC plugin mechanism.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -170,6 +170,9 @@ extern void warn_if_plugins (void);
 extern void print_plugins_versions (FILE *file, const char *indent);
 extern void print_plugins_help (FILE *file, const char *indent);
 extern void finalize_plugins (void);
+extern void for_each_plugin (void (*cb) (const plugin_name_args *,
+					 void *user_data),
+			     void *user_data);
 
 extern bool flag_plugin_added;
 
@@ -194,10 +197,12 @@ invoke_plugin_callbacks (int event ATTRIBUTE_UNUSED,
   return PLUGEVT_NO_CALLBACK;
 }
 
-/* In attribs.c.  */
+/* In attribs.cc.  */
 
 extern void register_attribute (const struct attribute_spec *attr);
+/* The default argument for the third parameter is given in attribs.h.  */
 extern struct scoped_attributes* register_scoped_attributes (const struct attribute_spec *,
-							     const char *);
+							     const char *,
+							     bool);
 
 #endif /* PLUGIN_H */

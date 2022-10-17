@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 1992-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Img_Bool is
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
+with System.Val_Util;
+
+package body System.Img_Bool
+  with SPARK_Mode
+is
 
    -------------------
    -- Image_Boolean --
@@ -45,9 +57,13 @@ package body System.Img_Bool is
       if V then
          S (1 .. 4) := "TRUE";
          P := 4;
+         pragma Assert
+           (System.Val_Util.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
       else
          S (1 .. 5) := "FALSE";
          P := 5;
+         pragma Assert
+           (System.Val_Util.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
       end if;
    end Image_Boolean;
 

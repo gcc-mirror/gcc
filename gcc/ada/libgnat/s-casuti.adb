@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2021, AdaCore                     --
+--                     Copyright (C) 1995-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
 
-package body System.Case_Util is
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
 
+package body System.Case_Util
+  with SPARK_Mode
+is
    --------------
    -- To_Lower --
    --------------
@@ -55,6 +62,9 @@ package body System.Case_Util is
    begin
       for J in A'Range loop
          A (J) := To_Lower (A (J));
+
+         pragma Loop_Invariant
+           (for all K in A'First .. J => A (K) = To_Lower (A'Loop_Entry (K)));
       end loop;
    end To_Lower;
 
@@ -79,6 +89,15 @@ package body System.Case_Util is
          else
             A (J) := To_Lower (A (J));
          end if;
+
+         pragma Loop_Invariant
+           (for all K in A'First .. J =>
+              (if K = A'First
+                 or else A'Loop_Entry (K - 1) = '_'
+               then
+                 A (K) = To_Upper (A'Loop_Entry (K))
+               else
+                 A (K) = To_Lower (A'Loop_Entry (K))));
 
          Ucase := A (J) = '_';
       end loop;
@@ -113,6 +132,9 @@ package body System.Case_Util is
    begin
       for J in A'Range loop
          A (J) := To_Upper (A (J));
+
+         pragma Loop_Invariant
+           (for all K in A'First .. J => A (K) = To_Upper (A'Loop_Entry (K)));
       end loop;
    end To_Upper;
 

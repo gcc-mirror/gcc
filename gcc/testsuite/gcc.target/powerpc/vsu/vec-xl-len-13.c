@@ -13,5 +13,5 @@
 int
 fetch_data (float *address, size_t length)
 {
-  return __builtin_vec_lxvl (address, length);	/* { dg-warning "'__builtin_vec_lxvl'" } */
+  return __builtin_vec_lxvl (address, length);	/* { dg-error "'__builtin_vsx_lxvl' requires the" } */
 }

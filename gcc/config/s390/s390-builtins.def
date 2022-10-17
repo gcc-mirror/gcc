@@ -1,5 +1,5 @@
 /* Builtin definitions for IBM S/390 and zSeries
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
@@ -412,7 +412,7 @@ B_DEF      (s390_vec_splat_s32,         vec_splatsv4si,     0,                  
 B_DEF      (s390_vec_splat_u64,         vec_splatsv2di,     0,                  B_VX,               O1_U16,             BT_FN_UV2DI_USHORT)
 B_DEF      (s390_vec_splat_s64,         vec_splatsv2di,     0,                  B_VX,               O1_S16,             BT_FN_V2DI_SHORT)
 
-/* First two operands are swapped in s390-c.c */
+/* First two operands are swapped in s390-c.cc */
 OB_DEF     (s390_vec_insert,            s390_vec_insert_s8, s390_vec_insert_dbl,B_VX,               BT_FN_OV4SI_INT_OV4SI_INT)
 OB_DEF_VAR (s390_vec_insert_s8,         s390_vlvgb,         0,                  O3_ELEM,            BT_OV_V16QI_SCHAR_V16QI_INT)
 OB_DEF_VAR (s390_vec_insert_u8,         s390_vlvgb,         0,                  O3_ELEM,            BT_OV_UV16QI_UCHAR_UV16QI_INT)
@@ -497,7 +497,7 @@ B_DEF      (s390_vllezf_flt,            vec_insert_and_zerov4sf,0,              
 B_DEF      (s390_vllezg,                vec_insert_and_zerov2di,0,              B_VX,               0,                  BT_FN_UV2DI_ULONGLONGCONSTPTR)
 B_DEF      (s390_vllezg_dbl,            vec_insert_and_zerov2df,0,              B_INT | B_VX,       0,                  BT_FN_V2DF_DBLCONSTPTR)
 
-/* The 2nd operand will by translated in s390-c.c from 64, 128, 256, ... to 0, 1, 2, ... */
+/* The 2nd operand will by translated in s390-c.cc from 64, 128, 256, ... to 0, 1, 2, ... */
 OB_DEF     (s390_vec_load_bndry,        s390_vec_load_bndry_s8,s390_vec_load_bndry_dbl,B_VX,        BT_FN_OV4SI_INTCONSTPTR_INT)
 OB_DEF_VAR (s390_vec_load_bndry_s8,     s390_vlbb,          0,                  O2_U16,             BT_OV_V16QI_SCHARCONSTPTR_USHORT)
 OB_DEF_VAR (s390_vec_load_bndry_u8,     s390_vlbb,          0,                  O2_U16,             BT_OV_UV16QI_UCHARCONSTPTR_USHORT)
@@ -516,7 +516,7 @@ OB_DEF     (s390_vec_load_pair,         s390_vec_load_pair_s64,s390_vec_load_pai
 OB_DEF_VAR (s390_vec_load_pair_s64,     MAX,                0,                  0,                  BT_OV_V2DI_LONGLONG_LONGLONG)            /* vlvgp */
 OB_DEF_VAR (s390_vec_load_pair_u64,     MAX,                0,                  0,                  BT_OV_UV2DI_ULONGLONG_ULONGLONG)         /* vlvgp */
 
-/* First two operands are swapped in s390-c.c */
+/* First two operands are swapped in s390-c.cc */
 OB_DEF     (s390_vec_load_len,          s390_vec_load_len_s8,s390_vec_load_len_dbl,B_VX,            BT_FN_OV4SI_INTCONSTPTR_UINT)
 OB_DEF_VAR (s390_vec_load_len_s8,       s390_vll,           0,                  0,                  BT_OV_V16QI_SCHARCONSTPTR_UINT)
 OB_DEF_VAR (s390_vec_load_len_u8,       s390_vll,           0,                  0,                  BT_OV_UV16QI_UCHARCONSTPTR_UINT)
@@ -702,7 +702,7 @@ OB_DEF_VAR (s390_vec_scatter_element_dbl,s390_vsceg,        0,                  
 B_DEF      (s390_vscef,                 vec_scatter_elementv4si,0,              B_VX,               O4_U2,              BT_FN_VOID_UV4SI_UV4SI_UINTPTR_ULONGLONG)
 B_DEF      (s390_vsceg,                 vec_scatter_elementv2di,0,              B_VX,               O4_U1,              BT_FN_VOID_UV2DI_UV2DI_ULONGLONGPTR_ULONGLONG)
 
-/* First two operands are swapped in s390-c.c */
+/* First two operands are swapped in s390-c.cc */
 OB_DEF     (s390_vec_sel,               s390_vec_sel_b8_a,  s390_vec_sel_dbl_b, B_VX,               BT_FN_OV4SI_OV4SI_OV4SI_OV4SI)
 OB_DEF_VAR (s390_vec_sel_b8_a,          s390_vselb,         0,                  0,                  BT_OV_BV16QI_BV16QI_BV16QI_UV16QI)
 OB_DEF_VAR (s390_vec_sel_b8_b,          s390_vselb,         0,                  0,                  BT_OV_BV16QI_BV16QI_BV16QI_BV16QI)

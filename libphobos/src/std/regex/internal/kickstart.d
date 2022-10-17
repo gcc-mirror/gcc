@@ -393,7 +393,7 @@ public:
     // has a useful trait: if supplied with valid UTF indexes,
     // returns only valid UTF indexes
     // (that given the haystack in question is valid UTF string)
-    @trusted size_t search(const(Char)[] haystack, size_t idx)
+    @trusted size_t search(const(Char)[] haystack, size_t idx) const
     {//@BUG: apparently assumes little endian machines
         import core.stdc.string : memchr;
         import std.conv : text;
@@ -517,8 +517,8 @@ public:
     import std.conv, std.regex;
     @trusted void test_fixed(alias Kick)()
     {
-        foreach (i, v; AliasSeq!(char, wchar, dchar))
-        {
+        static foreach (i, v; AliasSeq!(char, wchar, dchar))
+        {{
             alias Char = v;
             alias String = immutable(v)[];
             auto r = regex(to!String(`abc$`));
@@ -539,12 +539,12 @@ public:
             assert(x == 3, text(Kick.stringof,v.stringof," == ", kick.length));
             x = kick.search("aabaacaa", x+1);
             assert(x == 8, text(Kick.stringof,v.stringof," == ", kick.length));
-        }
+        }}
     }
     @trusted void test_flex(alias Kick)()
     {
-        foreach (i, v; AliasSeq!(char, wchar, dchar))
-        {
+        static foreach (i, v; AliasSeq!(char, wchar, dchar))
+        {{
             alias Char = v;
             alias String = immutable(v)[];
             auto r = regex(to!String(`abc[a-z]`));
@@ -570,7 +570,7 @@ public:
             assert(kick.search("ababx",0) == 2);
             assert(kick.search("abaacba",0) == 3);//expected inexact
 
-        }
+        }}
     }
     test_fixed!(ShiftOr)();
     test_flex!(ShiftOr)();

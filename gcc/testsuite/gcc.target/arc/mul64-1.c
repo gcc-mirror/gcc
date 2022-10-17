@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "MUL64 is ARC600 extension." { ! { clmcpu } } } */
+/* { dg-skip-if "MUL64 is ARC600 extension." { { ! { clmcpu } } || *-linux-* } } */
 /* { dg-options "-O2 -mmul64 -mbig-endian -mcpu=arc600" } */
 
 /* Check if mlo/mhi registers are correctly layout when we compile for

@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -63,6 +63,14 @@ The parser understands simple typedefs such as
 @code{typedef struct @var{tag} *@var{name};} and
 @code{typedef int @var{name};}.
 These don't need to be marked.
+
+However, in combination with GTY, avoid using typedefs such as
+@code{typedef int_hash<@dots{}> @var{name};}
+for these generate infinite-recursion code.
+See @uref{https://gcc.gnu.org/PR103157,PR103157}.
+Instead, you may use
+@code{struct @var{name} : int_hash<@dots{}> @{@};},
+for example.
 
 Since @code{gengtype}'s understanding of C++ is limited, there are
 several constructs and declarations that are not supported inside
@@ -196,6 +204,15 @@ you should use @code{atomic}.
 If @code{skip} is applied to a field, the type machinery will ignore it.
 This is somewhat dangerous; the only safe use is in a union when one
 field really isn't ever used.
+
+@findex callback
+@item callback
+
+@code{callback} should be applied to fields with pointer to function type
+and causes the field to be ignored similarly to @code{skip}, except when
+writing PCH and the field is non-NULL it will remember the field's address
+for relocation purposes if the process writing PCH has different load base
+from a process reading PCH.
 
 @findex for_user
 @item for_user
@@ -373,7 +390,7 @@ they are saved and restored correctly to PCH files.
 
 The @code{special} option is used to mark types that have to be dealt
 with by special case machinery.  The parameter is the name of the
-special case.  See @file{gengtype.c} for further details.  Avoid
+special case.  See @file{gengtype.cc} for further details.  Avoid
 adding new special cases unless there is no other alternative.
 
 @findex user
@@ -466,7 +483,7 @@ void gt_pch_nx (my_struct *p)
 void gt_pch_nx (my_struct *p, gt_pointer_operator op, void *cookie)
 @{
   /* For every field 'fld', call the given pointer operator.  */
-  op (&(tp->fld), cookie);
+  op (&(tp->fld), NULL, cookie);
 @}
 @end smallexample
 
@@ -519,7 +536,7 @@ void gt_pch_nx (TP<T *> *tp, gt_pointer_operator op, void *cookie)
 @{
   /* For every field 'fld' of 'tp' with type 'T *', call the given
      pointer operator.  */
-  op (&(tp->fld), cookie);
+  op (&(tp->fld), NULL, cookie);
 @}
 
 template<typename T>
@@ -620,18 +637,17 @@ in the right place to be visible to the generated files.  For a back-end
 header file, this should be done automatically.  For a front-end header
 file, it needs to be included by the same file that includes
 @file{gtype-@var{lang}.h}.  For other header files, it needs to be
-included in @file{gtype-desc.c}, which is a generated file, so add it to
-@code{ifiles} in @code{open_base_file} in @file{gengtype.c}.
+included in @file{gtype-desc.cc}, which is a generated file, so add it to
+@code{ifiles} in @code{open_base_file} in @file{gengtype.cc}.
 
 For source files that aren't header files, the machinery will generate a
 header file that should be included in the source file you just changed.
 The file will be called @file{gt-@var{path}.h} where @var{path} is the
 pathname relative to the @file{gcc} directory with slashes replaced by
 @verb{|-|}, so for example the header file to be included in
-@file{cp/parser.c} is called @file{gt-cp-parser.c}.  The
+@file{cp/parser.cc} is called @file{gt-cp-parser.h}.  The
 generated header file should be included after everything else in the
-source file.  Don't forget to mention this file as a dependency in the
-@file{Makefile}!
+source file.
 
 @end enumerate
 
@@ -655,7 +671,10 @@ The GCC garbage collector GGC is only invoked explicitly. In contrast
 with many other garbage collectors, it is not implicitly invoked by
 allocation routines when a lot of memory has been consumed. So the
 only way to have GGC reclaim storage is to call the @code{ggc_collect}
-function explicitly.  This call is an expensive operation, as it may
+function explicitly.
+With @var{mode} @code{GGC_COLLECT_FORCE} or otherwise (default
+@code{GGC_COLLECT_HEURISTIC}) when the internal heuristic decides to
+collect, this call is potentially an expensive operation, as it may
 have to scan the entire heap.  Beware that local variables (on the GCC
 call stack) are not followed by such an invocation (as many other
 garbage collectors do): you should reference all your data from static

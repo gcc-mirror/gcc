@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail132.d(19): Error: outer class A 'this' needed to 'new' nested class B
+fail_compilation/fail132.d(19): Error: cannot construct nested class `B` because no implicit `this` reference to outer class `A` is available
 ---
 */
 

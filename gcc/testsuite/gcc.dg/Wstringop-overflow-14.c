@@ -2,7 +2,8 @@
    types than char are diagnosed.
    { dg-do compile }
    { dg-require-effective-target int32plus }
-   { dg-options "-O2 -Wall -Wno-array-bounds" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" }
+   { dg-additional-options "-mtune=generic" { target { i?86-*-* x86_64-*-* } } } */
 
 typedef __INT16_TYPE__  int16_t;
 typedef __INT32_TYPE__  int32_t;
@@ -35,8 +36,8 @@ void test_memcpy_cond (int i)
 void test_int16 (void)
 {
   char *p = a4 + 1;
-  *(int16_t*)p = 0;
-  *(int16_t*)(p + 2) = 0;   // { dg-warning "writing 2 bytes into a region of size 1" }
+  *(int16_t*)p = 0;    // { dg-warning "writing 4 bytes into a region of size 3" "pr102706" { target { vect_slp_v2hi_store_unalign } } }
+  *(int16_t*)(p + 2) = 0;   // { dg-warning "writing 2 bytes into a region of size 1" "pr102706" { xfail { vect_slp_v2hi_store_unalign } } }
 }
 
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -721,15 +721,16 @@ package body Styleg is
       end if;
    end Check_Indentation;
 
-   ----------------------
-   -- Check_Left_Paren --
-   ----------------------
+   -------------------------------------
+   -- Check_Left_Paren_Square_Bracket --
+   -------------------------------------
 
    --  In check token mode (-gnatyt), left paren must not be preceded by an
    --  identifier character or digit (a separating space is required) and may
    --  never be followed by a space.
+   --  Same applies for the left square bracket starting from Ada version 2022.
 
-   procedure Check_Left_Paren is
+   procedure Check_Left_Paren_Square_Bracket is
    begin
       if Style_Check_Tokens then
          if Token_Ptr > Source_First (Current_Source_File)
@@ -740,7 +741,7 @@ package body Styleg is
 
          Check_No_Space_After;
       end if;
-   end Check_Left_Paren;
+   end Check_Left_Paren_Square_Bracket;
 
    ---------------------------
    -- Check_Line_Max_Length --

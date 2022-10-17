@@ -79,9 +79,12 @@ $(TR
         $(SUBREF iteration, group)
         $(SUBREF iteration, joiner)
         $(SUBREF iteration, map)
+        $(SUBREF iteration, mean)
         $(SUBREF iteration, permutations)
         $(SUBREF iteration, reduce)
+        $(SUBREF iteration, splitWhen)
         $(SUBREF iteration, splitter)
+        $(SUBREF iteration, substitute)
         $(SUBREF iteration, sum)
         $(SUBREF iteration, uniq)
     )
@@ -152,12 +155,12 @@ Many functions in this package are parameterized with a $(GLOSSARY predicate).
 The predicate may be any suitable callable type
 (a function, a delegate, a $(GLOSSARY functor), or a lambda), or a
 compile-time string. The string may consist of $(B any) legal D
-expression that uses the symbol $(D a) (for unary functions) or the
-symbols $(D a) and $(D b) (for binary functions). These names will NOT
+expression that uses the symbol `a` (for unary functions) or the
+symbols `a` and `b` (for binary functions). These names will NOT
 interfere with other homonym symbols in user code because they are
 evaluated in a different context. The default for all binary
-comparison predicates is $(D "a == b") for unordered operations and
-$(D "a < b") for ordered operations.
+comparison predicates is `"a == b"` for unordered operations and
+`"a < b"` for ordered operations.
 
 Example:
 
@@ -184,7 +187,7 @@ License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 
 Authors: $(HTTP erdani.com, Andrei Alexandrescu)
 
-Source: $(PHOBOSSRC std/_algorithm/package.d)
+Source: $(PHOBOSSRC std/algorithm/package.d)
  */
 module std.algorithm;
 

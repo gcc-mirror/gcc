@@ -1,5 +1,7 @@
 module test10993;
 
+import core.demangle : demangleType;
+
 auto foo(T)(T a)
 {
 	static immutable typeof(a) q;
@@ -17,7 +19,7 @@ auto fun()
 {
 	auto x = foo!()(test!(a=>a)());
 //	pragma(msg, "fun: " ~ typeof(x).mangleof);
-	
+
 	return x;
 }
 
@@ -29,5 +31,7 @@ void main()
 	auto y = cast()x;
 	enum mangle_y = typeof(y).mangleof;
 //	pragma(msg, "y  : " ~ mangle_y);
-	static assert (mangle_y == mangle_x[1..$]);
+	enum demangle_x = demangleType(mangle_x);
+	enum demangle_y = demangleType(mangle_y);
+	static assert ("immutable(" ~ demangle_y ~ ")" == demangle_x);
 }

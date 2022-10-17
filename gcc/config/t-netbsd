@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021 Free Software Foundation, Inc.
+# Copyright (C) 2017-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,10 +16,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-netbsd.o: $(srcdir)/config/netbsd.c
+netbsd.o: $(srcdir)/config/netbsd.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-netbsd-d.o: $(srcdir)/config/netbsd-d.c
+netbsd-d.o: $(srcdir)/config/netbsd-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

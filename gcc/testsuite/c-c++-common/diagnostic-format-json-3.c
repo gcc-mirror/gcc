@@ -9,6 +9,7 @@
 
 /* { dg-regexp "\"kind\": \"error\"" } */
 /* { dg-regexp "\"column-origin\": 1" } */
+/* { dg-regexp "\"escape-source\": false" } */
 /* { dg-regexp "\"message\": \"#warning message\"" } */
 /* { dg-regexp "\"option\": \"-Werror=cpp\"" } */
 /* { dg-regexp "\"option_url\": \"https:\[^\n\r\"\]*#index-Wcpp\"" } */

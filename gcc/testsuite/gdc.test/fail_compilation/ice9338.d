@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice9338.d(13): Error: value of 'this' is not known at compile time
-fail_compilation/ice9338.d(14): Error: value of 'this' is not known at compile time
+fail_compilation/ice9338.d(13): Error: value of `this` is not known at compile time
+fail_compilation/ice9338.d(14): Error: value of `this` is not known at compile time
 ---
 */
 

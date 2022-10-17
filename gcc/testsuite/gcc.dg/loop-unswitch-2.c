@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-details" } */
+/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-all -fno-thread-jumps" } */
 
 void foo (float **a, float **b, float *c, int n, int m, int l)
 {
@@ -11,6 +11,5 @@ void foo (float **a, float **b, float *c, int n, int m, int l)
 	c[i] += a[i][k] * b[k][j];
 }
 
-/* { dg-final { scan-tree-dump-times "guard hoisted" 3 "unswitch" } } */
+/* { dg-final { scan-tree-dump-times "Guard hoisted" 3 "unswitch" } } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "unswitch" } } */
-

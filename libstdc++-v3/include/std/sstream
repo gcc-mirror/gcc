@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,8 @@
 #define _GLIBCXX_SSTREAM 1
 
 #pragma GCC system_header
+
+#include <bits/requires_hosted.h> // iostream
 
 #include <istream>
 #include <ostream>
@@ -425,6 +427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // This might not be the same character as _M_string.end() because
       // basic_stringbuf::overflow might have written to unused capacity
       // in _M_string without updating its length.
+      __attribute__((__always_inline__))
       char_type*
       _M_high_mark() const _GLIBCXX_NOEXCEPT
       {

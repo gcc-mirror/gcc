@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2022 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -28,6 +28,8 @@
 
 #include "libgomp.h"
 
+extern int __gomp_team_num __attribute__((shared));
+
 void
 GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
 		unsigned int thread_limit, unsigned int flags)
@@ -48,9 +50,7 @@ omp_get_num_teams (void)
 int
 omp_get_team_num (void)
 {
-  int ctaid;
-  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (ctaid));
-  return ctaid;
+  return __gomp_team_num;
 }
 
 ialias (omp_get_num_teams)

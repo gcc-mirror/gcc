@@ -120,205 +120,6 @@ instead of ``Character``.  The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
 
-.. _`Ada.Containers.Formal_Doubly_Linked_Lists_(a-cfdlli.ads)`:
-
-``Ada.Containers.Formal_Doubly_Linked_Lists`` (:file:`a-cfdlli.ads`)
-====================================================================
-
-.. index:: Ada.Containers.Formal_Doubly_Linked_Lists (a-cfdlli.ads)
-
-.. index:: Formal container for doubly linked lists
-
-This child of ``Ada.Containers`` defines a modified version of the
-Ada 2005 container for doubly linked lists, meant to facilitate formal
-verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014.
-
-Note that although this container was designed with formal verification
-in mind, it may well be generally useful in that it is a simplified more
-efficient version than the one defined in the standard. In particular it
-does not have the complex overhead required to detect cursor tampering.
-
-.. _`Ada.Containers.Formal_Hashed_Maps_(a-cfhama.ads)`:
-
-``Ada.Containers.Formal_Hashed_Maps`` (:file:`a-cfhama.ads`)
-============================================================
-
-.. index:: Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)
-
-.. index:: Formal container for hashed maps
-
-This child of ``Ada.Containers`` defines a modified version of the
-Ada 2005 container for hashed maps, meant to facilitate formal
-verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014.
-
-Note that although this container was designed with formal verification
-in mind, it may well be generally useful in that it is a simplified more
-efficient version than the one defined in the standard. In particular it
-does not have the complex overhead required to detect cursor tampering.
-
-.. _`Ada.Containers.Formal_Hashed_Sets_(a-cfhase.ads)`:
-
-``Ada.Containers.Formal_Hashed_Sets`` (:file:`a-cfhase.ads`)
-============================================================
-
-.. index:: Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)
-
-.. index:: Formal container for hashed sets
-
-This child of ``Ada.Containers`` defines a modified version of the
-Ada 2005 container for hashed sets, meant to facilitate formal
-verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014.
-
-Note that although this container was designed with formal verification
-in mind, it may well be generally useful in that it is a simplified more
-efficient version than the one defined in the standard. In particular it
-does not have the complex overhead required to detect cursor tampering.
-
-.. _`Ada.Containers.Formal_Ordered_Maps_(a-cforma.ads)`:
-
-``Ada.Containers.Formal_Ordered_Maps`` (:file:`a-cforma.ads`)
-=============================================================
-
-.. index:: Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)
-
-.. index:: Formal container for ordered maps
-
-This child of ``Ada.Containers`` defines a modified version of the
-Ada 2005 container for ordered maps, meant to facilitate formal
-verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014.
-
-Note that although this container was designed with formal verification
-in mind, it may well be generally useful in that it is a simplified more
-efficient version than the one defined in the standard. In particular it
-does not have the complex overhead required to detect cursor tampering.
-
-.. _`Ada.Containers.Formal_Ordered_Sets_(a-cforse.ads)`:
-
-``Ada.Containers.Formal_Ordered_Sets`` (:file:`a-cforse.ads`)
-=============================================================
-
-.. index:: Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)
-
-.. index:: Formal container for ordered sets
-
-This child of ``Ada.Containers`` defines a modified version of the
-Ada 2005 container for ordered sets, meant to facilitate formal
-verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014.
-
-Note that although this container was designed with formal verification
-in mind, it may well be generally useful in that it is a simplified more
-efficient version than the one defined in the standard. In particular it
-does not have the complex overhead required to detect cursor tampering.
-
-.. _`Ada.Containers.Formal_Vectors_(a-cofove.ads)`:
-
-``Ada.Containers.Formal_Vectors`` (:file:`a-cofove.ads`)
-========================================================
-
-.. index:: Ada.Containers.Formal_Vectors (a-cofove.ads)
-
-.. index:: Formal container for vectors
-
-This child of ``Ada.Containers`` defines a modified version of the
-Ada 2005 container for vectors, meant to facilitate formal
-verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014.
-
-Note that although this container was designed with formal verification
-in mind, it may well be generally useful in that it is a simplified more
-efficient version than the one defined in the standard. In particular it
-does not have the complex overhead required to detect cursor tampering.
-
-.. _`Ada.Containers.Formal_Indefinite_Vectors_(a-cfinve.ads)`:
-
-``Ada.Containers.Formal_Indefinite_Vectors`` (:file:`a-cfinve.ads`)
-===================================================================
-
-.. index:: Ada.Containers.Formal_Indefinite_Vectors (a-cfinve.ads)
-
-.. index:: Formal container for vectors
-
-This child of ``Ada.Containers`` defines a modified version of the
-Ada 2005 container for vectors of indefinite elements, meant to
-facilitate formal verification of code using such containers. The
-specification of this unit is compatible with SPARK 2014.
-
-Note that although this container was designed with formal verification
-in mind, it may well be generally useful in that it is a simplified more
-efficient version than the one defined in the standard. In particular it
-does not have the complex overhead required to detect cursor tampering.
-
-.. _`Ada.Containers.Functional_Vectors_(a-cofuve.ads)`:
-
-``Ada.Containers.Functional_Vectors`` (:file:`a-cofuve.ads`)
-=================================================================
-
-.. index:: Ada.Containers.Functional_Vectors (a-cofuve.ads)
-
-.. index:: Functional vectors
-
-This child of ``Ada.Containers`` defines immutable vectors. These
-containers are unbounded and may contain indefinite elements. Furthermore, to
-be usable in every context, they are neither controlled nor limited. As they
-are functional, that is, no primitives are provided which would allow modifying
-an existing container, these containers can still be used safely.
-
-Their API features functions creating new containers from existing ones.
-As a consequence, these containers are highly inefficient. They are also
-memory consuming, as the allocated memory is not reclaimed when the container
-is no longer referenced. Thus, they should in general be used in ghost code
-and annotations, so that they can be removed from the final executable. The
-specification of this unit is compatible with SPARK 2014.
-
-.. _`Ada.Containers.Functional_Sets_(a-cofuse.ads)`:
-
-``Ada.Containers.Functional_Sets`` (:file:`a-cofuse.ads`)
-=================================================================
-
-.. index:: Ada.Containers.Functional_Sets (a-cofuse.ads)
-
-.. index:: Functional sets
-
-This child of ``Ada.Containers`` defines immutable sets. These containers are
-unbounded and may contain indefinite elements. Furthermore, to be usable in
-every context, they are neither controlled nor limited. As they are functional,
-that is, no primitives are provided which would allow modifying an existing
-container, these containers can still be used safely.
-
-Their API features functions creating new containers from existing ones.
-As a consequence, these containers are highly inefficient. They are also
-memory consuming, as the allocated memory is not reclaimed when the container
-is no longer referenced. Thus, they should in general be used in ghost code
-and annotations, so that they can be removed from the final executable. The
-specification of this unit is compatible with SPARK 2014.
-
-.. _`Ada.Containers.Functional_Maps_(a-cofuma.ads)`:
-
-``Ada.Containers.Functional_Maps`` (:file:`a-cofuma.ads`)
-=================================================================
-
-.. index:: Ada.Containers.Functional_Maps (a-cofuma.ads)
-
-.. index:: Functional maps
-
-This child of ``Ada.Containers`` defines immutable maps. These containers are
-unbounded and may contain indefinite elements. Furthermore, to be usable in
-every context, they are neither controlled nor limited. As they are functional,
-that is, no primitives are provided which would allow modifying an existing
-container, these containers can still be used safely.
-
-Their API features functions creating new containers from existing ones.
-As a consequence, these containers are highly inefficient. They are also
-memory consuming, as the allocated memory is not reclaimed when the container
-is no longer referenced. Thus, they should in general be used in ghost code
-and annotations, so that they can be removed from the final executable. The
-specification of this unit is compatible with SPARK 2014.
-
 .. _`Ada.Containers.Bounded_Holders_(a-coboho.ads)`:
 
 ``Ada.Containers.Bounded_Holders`` (:file:`a-coboho.ads`)
@@ -720,6 +521,18 @@ to the resulting slices.
 Provides AWK-like parsing functions, with an easy interface for parsing one
 or more files containing formatted data.  The file is viewed as a database
 where each record is a line and a field is a data element in this line.
+
+.. _`GNAT.Binary_Search_(g-binsea.ads)`:
+
+``GNAT.Binary_Search`` (:file:`g-binsea.ads`)
+================================================
+
+.. index:: GNAT.Binary_Search (g-binsea.ads)
+
+.. index:: Binary search
+
+Allow binary search of a sorted array (or of an array-like container;
+the generic does not reference the array directly).
 
 .. _`GNAT.Bind_Environment_(g-binenv.ads)`:
 
@@ -1289,6 +1102,24 @@ copied from the printf() routine and should therefore gives identical
 output. Some generic routines are provided to be able to use types
 derived from Integer, Float or enumerations as values for the
 formatted string.
+
+.. _`GNAT.Generic_Fast_Math_Functions_(g-gfmafu.ads)`:
+
+``GNAT.Generic_Fast_Math_Functions`` (:file:`g-gfmafu.ads`)
+===========================================================
+
+.. index:: GNAT.Generic_Fast_Math_Functions (g-gfmafu.ads)
+
+.. index:: Mathematical functions
+
+Provides direct access to the underlying implementation of the common
+mathematical functions, generally from the system mathematical library.
+This differs from ``Ada.Numerics.Generic_Elementary_Functions`` in that
+the implementation may deviate from the semantics specified for these
+functions in the Reference Manual, for example ``Numerics.Argument_Error``
+is not raised. On selected platforms, some of these functions may also
+have a vector implementation that can be automatically used by the
+compiler when auto-vectorization is enabled.
 
 .. _`GNAT.Heap_Sort_(g-heasor.ads)`:
 
@@ -2163,7 +1994,7 @@ This package provides the declaration of an atomic counter type,
 together with efficient routines (using hardware
 synchronization primitives) for incrementing, decrementing,
 and testing of these counters. This package is implemented
-on most targets, including all Alpha, ia64, PowerPC, SPARC V9,
+on most targets, including all Alpha, AARCH64, ARM, ia64, PowerPC, SPARC V9,
 x86, and x86_64 platforms.
 
 .. _`System.Memory_(s-memory.ads)`:
@@ -2177,7 +2008,7 @@ x86, and x86_64 platforms.
 
 This package provides the interface to the low level routines used
 by the generated code for allocation and freeing storage for the
-default storage pool (analogous to the C routines malloc and free.
+default storage pool (analogous to the C routines malloc and free).
 It also provides a reallocation interface analogous to the C routine
 realloc. The body of this unit may be modified to provide alternative
 allocation mechanisms for the default pool, and in addition, direct

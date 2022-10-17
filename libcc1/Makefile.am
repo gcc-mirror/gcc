@@ -1,4 +1,4 @@
-## Copyright (C) 2014-2021 Free Software Foundation, Inc.
+## Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 ## This file is part of GCC.
 
@@ -27,6 +27,7 @@ AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility) $(CET_HOST_FLAGS)
 if DARWIN_DYNAMIC_LOOKUP
 AM_CXXFLAGS += -Wl,-undefined,dynamic_lookup
 endif
+override CXXFLAGS := $(subst -mdynamic-no-pic,-fPIC,$(CXXFLAGS))
 override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 # Can be simplified when libiberty becomes a normal convenience library.

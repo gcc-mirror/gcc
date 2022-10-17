@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running DragonFly with ELF format
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by John Marino <gnugcc@marino.st>
 
 This file is part of GCC.
@@ -34,14 +34,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef  DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n) \
-  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
+#undef  DEBUGGER_REGNO
+#define DEBUGGER_REGNO(n) \
+  (TARGET_64BIT ? debugger64_register_map[n] : svr4_debugger_register_map[n])
 
 #undef  NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS	1
 
-/* Tell final.c that we don't need a label passed to mcount.  */
+/* Tell final.cc that we don't need a label passed to mcount.  */
 
 #undef  MCOUNT_NAME
 #define MCOUNT_NAME ".mcount"

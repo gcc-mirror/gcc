@@ -1,8 +1,8 @@
 #!/opt/dmd/пробы/rdmd
 
-import std.stdio;
+import core.stdc.stdio;
 
 
 void main () {
-  writeln("we are here!");
+    printf("we are here!\n");
 }

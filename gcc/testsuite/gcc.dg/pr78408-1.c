@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -fdump-tree-fab1-details" } */
 /* { dg-final { scan-tree-dump-times "after previous" 17 "fab1" } } */
 
-struct S { char a[32]; };
+struct S { char a[33]; };
 struct T { char a[65536]; };
 void bar (int, struct S *, struct S *, struct T *, struct T *);
 void baz (char *, char *);

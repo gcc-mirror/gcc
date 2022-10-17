@@ -3,18 +3,17 @@
  * This module provides functions to converting different values to const(ubyte)[]
  *
  * Copyright: Copyright Igor Stepanov 2013-2013.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Igor Stepanov
  * Source: $(DRUNTIMESRC core/internal/_convert.d)
  */
 module core.internal.convert;
-import core.internal.traits : Unqual;
 
 /+
 A @nogc function can allocate memory during CTFE.
 +/
 @nogc nothrow pure @trusted
-private ubyte[] ctfe_alloc()(size_t n)
+private ubyte[] ctfe_alloc(size_t n)
 {
     if (!__ctfe)
     {
@@ -34,8 +33,7 @@ private ubyte[] ctfe_alloc()(size_t n)
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqual!T == double) || is(Unqual!T == real) ||
-                                        is(Unqual!T == ifloat) || is(Unqual!T == idouble) || is(Unqual!T == ireal))
+const(ubyte)[] toUbyte(T)(const scope ref T val) if (__traits(isFloating, T) && (is(T : real) || is(T : ireal)))
 {
     if (__ctfe)
     {
@@ -84,7 +82,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqua
             ubyte[] buff = ctfe_alloc(T.sizeof);
             enum msbSize = double.sizeof;
 
-            static if (is(Unqual!T == ireal))
+            static if (is(T : ireal))
                 double hi = toPrec!double(val.im);
             else
                 double hi = toPrec!double(val);
@@ -101,7 +99,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqua
             }
             else
             {
-                static if (is(Unqual!T == ireal))
+                static if (is(T : ireal))
                     double low = toPrec!double(val.im - hi);
                 else
                     double low = toPrec!double(val - hi);
@@ -183,7 +181,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqua
 }
 
 @safe pure nothrow @nogc
-private Float parse(bool is_denormalized = false, T)(T x) if (is(Unqual!T == ifloat) || is(Unqual!T == idouble) || is(Unqual!T == ireal))
+private Float parse(bool is_denormalized = false, T:ireal)(T x)
 {
     return parse(x.im);
 }
@@ -191,6 +189,7 @@ private Float parse(bool is_denormalized = false, T)(T x) if (is(Unqual!T == ifl
 @safe pure nothrow @nogc
 private Float parse(bool is_denormalized = false, T:real)(T x_) if (floatFormat!T != FloatFormat.Real80)
 {
+    import core.internal.traits : Unqual;
     Unqual!T x = x_;
     static assert(floatFormat!T != FloatFormat.DoubleDouble,
            "doubledouble float format not supported in CTFE");
@@ -249,6 +248,7 @@ private Float parse(bool is_denormalized = false, T:real)(T x_) if (floatFormat!
 @safe pure nothrow @nogc
 private Float parse(bool _ = false, T:real)(T x_) if (floatFormat!T == FloatFormat.Real80)
 {
+    import core.internal.traits : Unqual;
     Unqual!T x = x_;
     //HACK @@@3632@@@
 
@@ -472,14 +472,14 @@ private Float denormalizedMantissa(T)(T x, uint sign) if (floatFormat!T == Float
         return Float(fl.mantissa2 & 0x00FFFFFFFFFFFFFFUL , 0, sign, 1);
 }
 
-version (unittest)
+@system unittest
 {
-    private const(ubyte)[] toUbyte2(T)(T val)
+    static const(ubyte)[] toUbyte2(T)(T val)
     {
         return toUbyte(val).dup;
     }
 
-    private void testNumberConvert(string v)()
+    static void testNumberConvert(string v)()
     {
         enum ctval = mixin(v);
 
@@ -495,7 +495,7 @@ version (unittest)
         assert(rtbytes[0..testsize] == ctbytes[0..testsize]);
     }
 
-    private void testConvert()
+    static void testConvert()
     {
         /**Test special values*/
         testNumberConvert!("-float.infinity");
@@ -572,11 +572,6 @@ version (unittest)
         testNumberConvert!("real.min_normal/19");
         testNumberConvert!("real.min_normal/17");
 
-        /**Test imaginary values: convert algorithm is same with real values*/
-        testNumberConvert!("0.0Fi");
-        testNumberConvert!("0.0i");
-        testNumberConvert!("0.0Li");
-
         /**True random values*/
         testNumberConvert!("-0x9.0f7ee55df77618fp-13829L");
         testNumberConvert!("0x7.36e6e2640120d28p+8797L");
@@ -605,11 +600,7 @@ version (unittest)
         testNumberConvert!("cast(float)0x9.54bb0d88806f714p-7088L");
     }
 
-
-    unittest
-    {
-        testConvert();
-    }
+    testConvert();
 }
 
 
@@ -654,13 +645,13 @@ package template floatSize(T) if (is(T:real) || is(T:ireal))
 
 //  all toUbyte functions must be evaluable at compile time
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const T[] arr) if (T.sizeof == 1)
+const(ubyte)[] toUbyte(T)(return scope const T[] arr) if (T.sizeof == 1)
 {
     return cast(const(ubyte)[])arr;
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const T[] arr) if (T.sizeof > 1)
+const(ubyte)[] toUbyte(T)(return scope const T[] arr) if (T.sizeof > 1)
 {
     if (__ctfe)
     {
@@ -692,7 +683,7 @@ const(ubyte)[] toUbyte(T)(const T[] arr) if (T.sizeof > 1)
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref T val) if (__traits(isIntegral, T) && !is(T == enum) && !is(T == __vector))
+const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && !is(T == enum) && !is(T == __vector))
 {
     static if (T.sizeof == 1)
     {
@@ -709,6 +700,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (__traits(isIntegral, T) && !is(T 
     }
     else if (__ctfe)
     {
+        import core.internal.traits : Unqual;
         ubyte[] tmp = ctfe_alloc(T.sizeof);
         Unqual!T val_ = val;
         for (size_t i = 0; i < T.sizeof; ++i)
@@ -728,7 +720,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (__traits(isIntegral, T) && !is(T 
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == __vector))
+const(ubyte)[] toUbyte(T)(const ref scope T val) if (is(T == __vector))
 {
     if (!__ctfe)
         return (cast(const ubyte*) &val)[0 .. T.sizeof];
@@ -750,32 +742,12 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == __vector))
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == cfloat) || is(Unqual!T == cdouble) ||is(Unqual!T == creal))
-{
-    if (__ctfe)
-    {
-        auto re = val.re;
-        auto im = val.im;
-        auto a = re.toUbyte();
-        auto b = im.toUbyte();
-        ubyte[] result = ctfe_alloc(a.length + b.length);
-        result[0 .. a.length] = a[0 .. a.length];
-        result[a.length .. $] = b[0 .. b.length];
-        return result;
-    }
-    else
-    {
-        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
-    }
-}
-
-@trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == enum))
+const(ubyte)[] toUbyte(T)(const ref return scope T val) if (is(T == enum))
 {
     if (__ctfe)
     {
         static if (is(T V == enum)){}
-        return toUbyte(cast(const V) val);
+        return toUbyte(*cast(const V*) &val);
     }
     else
     {
@@ -789,7 +761,7 @@ nothrow pure @safe unittest
     enum Month : uint { jan = 1}
     Month m = Month.jan;
     const bytes = toUbyte(m);
-    enum ctfe_works = (() => { Month x = Month.jan; return toUbyte(x).length > 0; })();
+    enum ctfe_works = (() { Month x = Month.jan; return toUbyte(x).length > 0; })();
 }
 
 @trusted pure nothrow @nogc
@@ -807,7 +779,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == delegate) || is(T : V*, V
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == struct) || is(T == union))
+const(ubyte)[] toUbyte(T)(const return ref scope T val) if (is(T == struct) || is(T == union))
 {
     if (__ctfe)
     {
@@ -832,7 +804,11 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == struct) || is(T == union)
     }
     else
     {
-        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
+        // We're escaping a reference to `val` here because we cannot express
+        // ref return + scope, it's currently seen as ref + return scope
+        // https://issues.dlang.org/show_bug.cgi?id=22541
+        // Once fixed, the @system lambda should be removed
+        return (() @system => (cast(const(ubyte)*)&val)[0 .. T.sizeof])();
     }
 }
 

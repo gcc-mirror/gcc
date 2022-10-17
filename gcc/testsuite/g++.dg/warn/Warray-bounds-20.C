@@ -27,7 +27,7 @@ struct D1: virtual B, virtual C
      to the opening brace.  */
   D1 ()
   {                           // { dg-warning "\\\[-Warray-bounds" "brace" }
-    ci = 0;                   // { dg-warning "\\\[-Warray-bounds" "assign" { xfail *-*-* } }
+    ci = 0;                   // { dg-warning "\\\[-Warray-bounds" "assign" { xfail lp64 } }
   }
 };
 
@@ -35,7 +35,8 @@ void sink (void*);
 
 void warn_derived_ctor_access_new_decl ()
 {
-  char a[sizeof (D1)];        // { dg-message "referencing 'a'" "note" }
+  char a[sizeof (D1)];        // { dg-message "at offset 1 into object 'a' of size 40" "LP64 note" { target lp64} }
+                              // { dg-message "at offset 1 into object 'a' of size 20" "LP64 note" { target ilp32} .-1 }
   char *p = a;
   ++p;
   D1 *q = new (p) D1;
@@ -44,7 +45,7 @@ void warn_derived_ctor_access_new_decl ()
 
 void warn_derived_ctor_access_new_alloc ()
 {
-  char *p = (char*)operator new (sizeof (D1));    // { dg-message "referencing an object of size \\d+ allocated by 'void\\\* operator new\\\(" "note" }
+  char *p = (char*)operator new (sizeof (D1));    // { dg-message "at offset 1 into object of size \\d+ allocated by '\[^\n\r]*operator new\[^\n\r]*'" "note" }
   ++p;
   D1 *q = new (p) D1;
   sink (q);
@@ -52,7 +53,8 @@ void warn_derived_ctor_access_new_alloc ()
 
 void warn_derived_ctor_access_new_array_decl ()
 {
-  char b[sizeof (D1) * 2];    // { dg-message "referencing 'b'" "note" }
+  char b[sizeof (D1) * 2];    // { dg-message "at offset \\d+ into object 'b' of size 80" "LP64 note" { target lp64 } }
+                              // { dg-message "at offset \\d+ into object 'b' of size 40" "LP64 note" { target ilp32 } .-1 }
   char *p = b;
   ++p;
   D1 *q = new (p) D1[2];
@@ -61,7 +63,7 @@ void warn_derived_ctor_access_new_array_decl ()
 
 void warn_derived_ctor_access_new_array_alloc ()
 {
-  char *p = new char[sizeof (D1) * 2];            // { dg-message "referencing an object of size \\d+ allocated by 'void\\\* operator new \\\[]\\\(" "note" }
+  char *p = new char[sizeof (D1) * 2];            // { dg-message "at offset \\d+ into object of size \\d+ allocated by '\[^\n\r]*operator new\[^\n\r]*" "note" }
   ++p;
   D1 *q = new (p) D1[2];
   sink (q);

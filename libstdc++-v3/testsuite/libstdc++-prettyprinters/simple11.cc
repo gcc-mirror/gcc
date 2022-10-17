@@ -3,7 +3,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
 
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,9 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Type printers only recognize the old std::string for now.
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <string>
 #include <deque>
 #include <bitset>
@@ -30,6 +27,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <sstream>
 #include <vector>
 #include <ext/slist>
 
@@ -60,7 +58,7 @@ main()
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
-// { dg-final { regexp-test lst {std::(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
+// { dg-final { regexp-test lst {std::(__cxx11::)?(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
 
   std::list<std::string>::iterator lstiter = lst.begin();
   tem = *lstiter;
@@ -137,19 +135,19 @@ main()
   std::vector<bool>::iterator vbIt0;
 // { dg-final { note-test vbIt0 {non-dereferenceable iterator for std::vector<bool>} } }
 
-  std::_Bit_reference br = *vb.begin();
+  std::vector<bool>::reference br = *vb.begin();
 // { dg-final { note-test br {true} } }
-  std::_Bit_reference br2 = *vbIt2;
+  std::vector<bool>::reference br2 = *vbIt2;
 // { dg-final { note-test br2 {true} } }
-  std::_Bit_reference br3 = *vbIt3;
+  std::vector<bool>::reference br3 = *vbIt3;
 // { dg-final { note-test br3 {false} } }
-  std::_Bit_reference br4 = *vbIt4;
+  std::vector<bool>::reference br4 = *vbIt4;
 // { dg-final { note-test br4 {false} } }
-  std::_Bit_reference br5 = *vbIt5;
+  std::vector<bool>::reference br5 = *vbIt5;
 // { dg-final { note-test br5 {true} } }
 
- std::_Bit_reference br0;
-// { dg-final { note-test br0 {invalid std::_Bit_reference} } }
+ std::vector<bool>::reference br0;
+// { dg-final { note-test br0 {invalid std::vector<bool>::reference} } }
 
   __gnu_cxx::slist<int> sll;
   sll.push_front(23);
@@ -161,6 +159,20 @@ main()
 
   __gnu_cxx::slist<int>::iterator slliter0;
 // { dg-final { note-test slliter0 {non-dereferenceable iterator for __gnu_cxx::slist} } }
+
+  std::stringstream sstream;
+  sstream << "abc";
+// { dg-final { note-test sstream "\"abc\"" } }
+  std::stringstream ssin("input", std::ios::in);
+// { dg-final { note-test ssin "\"input\"" } }
+  std::istringstream ssin2("input");
+// { dg-final { note-test ssin2 "\"input\"" } }
+  std::ostringstream ssout;
+  ssout << "out";
+// { dg-final { note-test ssout "\"out\"" } }
+  std::stringstream redirected("xxx");
+  static_cast<std::basic_ios<std::stringstream::char_type>&>(redirected).rdbuf(sstream.rdbuf());
+// { dg-final { regexp-test redirected {std::.*stringstream redirected to .*} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT

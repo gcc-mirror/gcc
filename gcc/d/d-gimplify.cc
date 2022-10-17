@@ -1,5 +1,5 @@
-/* D-specific tree lowering bits; see also gimple.c.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+/* D-specific tree lowering bits; see also gimple.cc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -62,6 +62,18 @@ empty_modify_p (tree type, tree op)
   return empty_aggregate_p (type);
 }
 
+/* Return TRUE if EXPR is a COMPONENT_REF to a bit-field declaration.  */
+
+static bool
+bit_field_ref (const_tree expr)
+{
+  if (TREE_CODE (expr) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (expr, 1)))
+    return true;
+
+  return false;
+}
+
 /* Gimplify assignment from an INIT_EXPR or MODIFY_EXPR.  */
 
 static gimplify_status
@@ -96,6 +108,14 @@ d_gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       return GS_OK;
     }
 
+  /* Same as above, but for bit-field assignments.  */
+  if ((bit_field_ref (op0) || bit_field_ref (op1))
+      && TREE_TYPE (op0) != TREE_TYPE (op1))
+    {
+      TREE_OPERAND (*expr_p, 1) = convert (TREE_TYPE (op0), op1);
+      return GS_OK;
+    }
+
   return GS_UNHANDLED;
 }
 
@@ -120,52 +140,47 @@ d_gimplify_addr_expr (tree *expr_p)
 static gimplify_status
 d_gimplify_call_expr (tree *expr_p, gimple_seq *pre_p)
 {
-  if (CALL_EXPR_ARGS_ORDERED (*expr_p))
+  /* Strictly evaluate all arguments from left to right.  */
+  int nargs = call_expr_nargs (*expr_p);
+  location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
+
+  /* No need to enforce evaluation order if only one argument.  */
+  if (nargs < 2)
+    return GS_UNHANDLED;
+
+  /* Or if all arguments are already free of side-effects.  */
+  bool has_side_effects = false;
+  for (int i = 0; i < nargs; i++)
     {
-      /* Strictly evaluate all arguments from left to right.  */
-      int nargs = call_expr_nargs (*expr_p);
-      location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
-
-      /* No need to enforce evaluation order if only one argument.  */
-      if (nargs < 2)
-	return GS_UNHANDLED;
-
-      /* Or if all arguments are already free of side-effects.  */
-      bool has_side_effects = false;
-      for (int i = 0; i < nargs; i++)
+      if (TREE_SIDE_EFFECTS (CALL_EXPR_ARG (*expr_p, i)))
 	{
-	  if (TREE_SIDE_EFFECTS (CALL_EXPR_ARG (*expr_p, i)))
-	    {
-	      has_side_effects = true;
-	      break;
-	    }
+	  has_side_effects = true;
+	  break;
 	}
-
-      if (!has_side_effects)
-	return GS_UNHANDLED;
-
-      /* Leave the last argument for gimplify_call_expr.  */
-      for (int i = 0; i < nargs - 1; i++)
-	{
-	  tree new_arg = CALL_EXPR_ARG (*expr_p, i);
-
-	  /* If argument has a side-effect, gimplify_arg will handle it.  */
-	  if (gimplify_arg (&new_arg, pre_p, loc) == GS_ERROR)
-	    return GS_ERROR;
-
-	  /* Even if an argument itself doesn't have any side-effects, it
-	     might be altered by another argument in the list.  */
-	  if (new_arg == CALL_EXPR_ARG (*expr_p, i)
-	      && !really_constant_p (new_arg))
-	    new_arg = get_formal_tmp_var (new_arg, pre_p);
-
-	  CALL_EXPR_ARG (*expr_p, i) = new_arg;
-	}
-
-      return GS_OK;
     }
 
-  return GS_UNHANDLED;
+  if (!has_side_effects)
+    return GS_UNHANDLED;
+
+  /* Leave the last argument for gimplify_call_expr.  */
+  for (int i = 0; i < nargs - 1; i++)
+    {
+      tree new_arg = CALL_EXPR_ARG (*expr_p, i);
+
+      /* If argument has a side-effect, gimplify_arg will handle it.  */
+      if (gimplify_arg (&new_arg, pre_p, loc) == GS_ERROR)
+	return GS_ERROR;
+
+      /* Even if an argument itself doesn't have any side-effects, it
+	 might be altered by another argument in the list.  */
+      if (new_arg == CALL_EXPR_ARG (*expr_p, i)
+	  && !really_constant_p (new_arg))
+	new_arg = get_formal_tmp_var (new_arg, pre_p);
+
+      CALL_EXPR_ARG (*expr_p, i) = new_arg;
+    }
+
+  return GS_OK;
 }
 
 /* Gimplify an UNSIGNED_RSHIFT_EXPR node.  */
@@ -181,6 +196,54 @@ d_gimplify_unsigned_rshift_expr (tree *expr_p)
   *expr_p = convert (TREE_TYPE (*expr_p),
 		     build2 (RSHIFT_EXPR, type, convert (type, op0), op1));
   return GS_OK;
+}
+
+/* Gimplify an unary expression node.  */
+
+static gimplify_status
+d_gimplify_unary_expr (tree *expr_p)
+{
+  tree op0 = TREE_OPERAND (*expr_p, 0);
+
+  if (error_operand_p (op0))
+    return GS_UNHANDLED;
+
+  /* Front end doesn't know that bit-field types are really different
+     from basic types, add an explicit conversion in unary expressions.  */
+  if (bit_field_ref (op0) && TREE_TYPE (op0) != TREE_TYPE (*expr_p))
+    {
+      TREE_OPERAND (*expr_p, 0) = convert (TREE_TYPE (*expr_p), op0);
+      return GS_OK;
+    }
+
+  return GS_UNHANDLED;
+}
+
+/* Gimplify a binary expression node.  */
+
+static gimplify_status
+d_gimplify_binary_expr (tree *expr_p)
+{
+  tree op0 = TREE_OPERAND (*expr_p, 0);
+  tree op1 = TREE_OPERAND (*expr_p, 1);
+
+  if (error_operand_p (op0) || error_operand_p (op1))
+    return GS_UNHANDLED;
+
+  /* Front end doesn't know that bit-field types are really different
+     from basic types, add an explicit conversion in binary expressions.  */
+  if (bit_field_ref (op0) || bit_field_ref (op1))
+    {
+      if (TREE_TYPE (op0) != TREE_TYPE (*expr_p))
+	TREE_OPERAND (*expr_p, 0) = convert (TREE_TYPE (*expr_p), op0);
+
+      if (TREE_TYPE (op1) != TREE_TYPE (*expr_p))
+	TREE_OPERAND (*expr_p, 1) = convert (TREE_TYPE (*expr_p), op1);
+
+      return GS_OK;
+    }
+
+  return GS_UNHANDLED;
 }
 
 /* Implements the lang_hooks.gimplify_expr routine for language D.
@@ -208,6 +271,10 @@ d_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       gcc_unreachable ();
 
     default:
+      if (UNARY_CLASS_P (*expr_p) && !CONVERT_EXPR_P (*expr_p))
+	return d_gimplify_unary_expr (expr_p);
+      if (BINARY_CLASS_P (*expr_p))
+	return d_gimplify_binary_expr (expr_p);
       break;
     }
 

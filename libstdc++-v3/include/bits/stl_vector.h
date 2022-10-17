@@ -1,6 +1,6 @@
 // Vector implementation -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,8 +62,9 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 # include <compare>
+#define __cpp_lib_constexpr_vector 201907L
 #endif
 
 #include <debug/assertions.h>
@@ -94,17 +95,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	pointer _M_finish;
 	pointer _M_end_of_storage;
 
+	_GLIBCXX20_CONSTEXPR
 	_Vector_impl_data() _GLIBCXX_NOEXCEPT
 	: _M_start(), _M_finish(), _M_end_of_storage()
 	{ }
 
 #if __cplusplus >= 201103L
+	_GLIBCXX20_CONSTEXPR
 	_Vector_impl_data(_Vector_impl_data&& __x) noexcept
 	: _M_start(__x._M_start), _M_finish(__x._M_finish),
 	  _M_end_of_storage(__x._M_end_of_storage)
 	{ __x._M_start = __x._M_finish = __x._M_end_of_storage = pointer(); }
 #endif
 
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_copy_data(_Vector_impl_data const& __x) _GLIBCXX_NOEXCEPT
 	{
@@ -113,6 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_end_of_storage = __x._M_end_of_storage;
 	}
 
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_swap_data(_Vector_impl_data& __x) _GLIBCXX_NOEXCEPT
 	{
@@ -128,11 +133,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       struct _Vector_impl
 	: public _Tp_alloc_type, public _Vector_impl_data
       {
+	_GLIBCXX20_CONSTEXPR
 	_Vector_impl() _GLIBCXX_NOEXCEPT_IF(
 	    is_nothrow_default_constructible<_Tp_alloc_type>::value)
 	: _Tp_alloc_type()
 	{ }
 
+	_GLIBCXX20_CONSTEXPR
 	_Vector_impl(_Tp_alloc_type const& __a) _GLIBCXX_NOEXCEPT
 	: _Tp_alloc_type(__a)
 	{ }
@@ -140,14 +147,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
 	// Not defaulted, to enforce noexcept(true) even when
 	// !is_nothrow_move_constructible<_Tp_alloc_type>.
+	_GLIBCXX20_CONSTEXPR
 	_Vector_impl(_Vector_impl&& __x) noexcept
 	: _Tp_alloc_type(std::move(__x)), _Vector_impl_data(std::move(__x))
 	{ }
 
+	_GLIBCXX20_CONSTEXPR
 	_Vector_impl(_Tp_alloc_type&& __a) noexcept
 	: _Tp_alloc_type(std::move(__a))
 	{ }
 
+	_GLIBCXX20_CONSTEXPR
 	_Vector_impl(_Tp_alloc_type&& __a, _Vector_impl&& __rv) noexcept
 	: _Tp_alloc_type(std::move(__a)), _Vector_impl_data(std::move(__rv))
 	{ }
@@ -160,15 +170,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    typedef typename __gnu_cxx::__alloc_traits<_Tp_alloc_type>
 	      ::size_type size_type;
 
-	    static void _S_shrink(_Vector_impl&, size_type) { }
-	    static void _S_on_dealloc(_Vector_impl&) { }
+	    static _GLIBCXX20_CONSTEXPR void
+	    _S_shrink(_Vector_impl&, size_type) { }
+	    static _GLIBCXX20_CONSTEXPR void
+	    _S_on_dealloc(_Vector_impl&) { }
 
 	    typedef _Vector_impl& _Reinit;
 
 	    struct _Grow
 	    {
-	      _Grow(_Vector_impl&, size_type) { }
-	      void _M_grew(size_type) { }
+	      _GLIBCXX20_CONSTEXPR _Grow(_Vector_impl&, size_type) { }
+	      _GLIBCXX20_CONSTEXPR void _M_grew(size_type) { }
 	    };
 	  };
 
@@ -181,22 +193,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	    // Adjust ASan annotation for [_M_start, _M_end_of_storage) to
 	    // mark end of valid region as __curr instead of __prev.
-	    static void
+	    static _GLIBCXX20_CONSTEXPR void
 	    _S_adjust(_Vector_impl& __impl, pointer __prev, pointer __curr)
 	    {
+#if __cpp_lib_is_constant_evaluated
+	      if (std::is_constant_evaluated())
+		return;
+#endif
 	      __sanitizer_annotate_contiguous_container(__impl._M_start,
 		  __impl._M_end_of_storage, __prev, __curr);
 	    }
 
-	    static void
+	    static _GLIBCXX20_CONSTEXPR void
 	    _S_grow(_Vector_impl& __impl, size_type __n)
 	    { _S_adjust(__impl, __impl._M_finish, __impl._M_finish + __n); }
 
-	    static void
+	    static _GLIBCXX20_CONSTEXPR void
 	    _S_shrink(_Vector_impl& __impl, size_type __n)
 	    { _S_adjust(__impl, __impl._M_finish + __n, __impl._M_finish); }
 
-	    static void
+	    static _GLIBCXX20_CONSTEXPR void
 	    _S_on_dealloc(_Vector_impl& __impl)
 	    {
 	      if (__impl._M_start)
@@ -206,12 +222,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    // Used on reallocation to tell ASan unused capacity is invalid.
 	    struct _Reinit
 	    {
-	      explicit _Reinit(_Vector_impl& __impl) : _M_impl(__impl)
+	      explicit _GLIBCXX20_CONSTEXPR
+	      _Reinit(_Vector_impl& __impl) : _M_impl(__impl)
 	      {
 		// Mark unused capacity as valid again before deallocating it.
 		_S_on_dealloc(_M_impl);
 	      }
 
+	      _GLIBCXX20_CONSTEXPR
 	      ~_Reinit()
 	      {
 		// Mark unused capacity as invalid after reallocation.
@@ -231,12 +249,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    // Tell ASan when unused capacity is initialized to be valid.
 	    struct _Grow
 	    {
+	      _GLIBCXX20_CONSTEXPR
 	      _Grow(_Vector_impl& __impl, size_type __n)
 	      : _M_impl(__impl), _M_n(__n)
 	      { _S_grow(_M_impl, __n); }
 
+	      _GLIBCXX20_CONSTEXPR
 	      ~_Grow() { if (_M_n) _S_shrink(_M_impl, _M_n); }
 
+	      _GLIBCXX20_CONSTEXPR
 	      void _M_grew(size_type __n) { _M_n -= __n; }
 
 #if __cplusplus >= 201103L
@@ -272,14 +293,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       typedef _Alloc allocator_type;
 
+      _GLIBCXX20_CONSTEXPR
       _Tp_alloc_type&
       _M_get_Tp_allocator() _GLIBCXX_NOEXCEPT
       { return this->_M_impl; }
 
+      _GLIBCXX20_CONSTEXPR
       const _Tp_alloc_type&
       _M_get_Tp_allocator() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl; }
 
+      _GLIBCXX20_CONSTEXPR
       allocator_type
       get_allocator() const _GLIBCXX_NOEXCEPT
       { return allocator_type(_M_get_Tp_allocator()); }
@@ -290,16 +314,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Vector_base() { }
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       _Vector_base(const allocator_type& __a) _GLIBCXX_NOEXCEPT
       : _M_impl(__a) { }
 
       // Kept for ABI compatibility.
 #if !_GLIBCXX_INLINE_VERSION
+      _GLIBCXX20_CONSTEXPR
       _Vector_base(size_t __n)
       : _M_impl()
       { _M_create_storage(__n); }
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       _Vector_base(size_t __n, const allocator_type& __a)
       : _M_impl(__a)
       { _M_create_storage(__n); }
@@ -309,9 +336,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Kept for ABI compatibility.
 # if !_GLIBCXX_INLINE_VERSION
+      _GLIBCXX20_CONSTEXPR
       _Vector_base(_Tp_alloc_type&& __a) noexcept
       : _M_impl(std::move(__a)) { }
 
+      _GLIBCXX20_CONSTEXPR
       _Vector_base(_Vector_base&& __x, const allocator_type& __a)
       : _M_impl(__a)
       {
@@ -325,11 +354,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 # endif
 
+      _GLIBCXX20_CONSTEXPR
       _Vector_base(const allocator_type& __a, _Vector_base&& __x)
       : _M_impl(_Tp_alloc_type(__a), std::move(__x._M_impl))
       { }
 #endif
 
+      _GLIBCXX20_CONSTEXPR
       ~_Vector_base() _GLIBCXX_NOEXCEPT
       {
 	_M_deallocate(_M_impl._M_start,
@@ -339,6 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       _Vector_impl _M_impl;
 
+      _GLIBCXX20_CONSTEXPR
       pointer
       _M_allocate(size_t __n)
       {
@@ -346,6 +378,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return __n != 0 ? _Tr::allocate(_M_impl, __n) : pointer();
       }
 
+      _GLIBCXX20_CONSTEXPR
       void
       _M_deallocate(pointer __p, size_t __n)
       {
@@ -355,6 +388,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
     protected:
+      _GLIBCXX20_CONSTEXPR
       void
       _M_create_storage(size_t __n)
       {
@@ -461,12 +495,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		     _Tp_alloc_type&, false_type) noexcept
       { return __result; }
 
-      static pointer
+      static _GLIBCXX20_CONSTEXPR pointer
       _S_relocate(pointer __first, pointer __last, pointer __result,
 		  _Tp_alloc_type& __alloc) noexcept
       {
+#if __cpp_if_constexpr
+	// All callers have already checked _S_use_relocate() so just do it.
+	return std::__relocate_a(__first, __last, __result, __alloc);
+#else
 	using __do_it = __bool_constant<_S_use_relocate()>;
 	return _S_do_relocate(__first, __last, __result, __alloc, __do_it{});
+#endif
       }
 #endif // C++11
 
@@ -494,6 +533,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __a  An allocator object.
        */
       explicit
+      _GLIBCXX20_CONSTEXPR
       vector(const allocator_type& __a) _GLIBCXX_NOEXCEPT
       : _Base(__a) { }
 
@@ -507,6 +547,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  constructed elements.
        */
       explicit
+      _GLIBCXX20_CONSTEXPR
       vector(size_type __n, const allocator_type& __a = allocator_type())
       : _Base(_S_check_init_len(__n, __a), __a)
       { _M_default_initialize(__n); }
@@ -519,6 +560,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  This constructor fills the %vector with @a __n copies of @a __value.
        */
+      _GLIBCXX20_CONSTEXPR
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
       : _Base(_S_check_init_len(__n, __a), __a)
@@ -550,6 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  The newly-created %vector uses a copy of the allocator object used
        *  by @a __x (unless the allocator traits dictate a different object).
        */
+      _GLIBCXX20_CONSTEXPR
       vector(const vector& __x)
       : _Base(__x.size(),
 	_Alloc_traits::_S_select_on_copy(__x._M_get_Tp_allocator()))
@@ -572,7 +615,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       vector(vector&&) noexcept = default;
 
       /// Copy constructor with alternative allocator
-      vector(const vector& __x, const allocator_type& __a)
+      _GLIBCXX20_CONSTEXPR
+      vector(const vector& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(__x.size(), __a)
       {
 	this->_M_impl._M_finish =
@@ -582,10 +626,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
     private:
+      _GLIBCXX20_CONSTEXPR
       vector(vector&& __rv, const allocator_type& __m, true_type) noexcept
       : _Base(__m, std::move(__rv))
       { }
 
+      _GLIBCXX20_CONSTEXPR
       vector(vector&& __rv, const allocator_type& __m, false_type)
       : _Base(__m)
       {
@@ -604,7 +650,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     public:
       /// Move constructor with alternative allocator
-      vector(vector&& __rv, const allocator_type& __m)
+      _GLIBCXX20_CONSTEXPR
+      vector(vector&& __rv, const __type_identity_t<allocator_type>& __m)
       noexcept( noexcept(
 	vector(std::declval<vector&&>(), std::declval<const allocator_type&>(),
 	       std::declval<typename _Alloc_traits::is_always_equal>())) )
@@ -622,6 +669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  This will call the element type's copy constructor N times
        *  (where N is @a __l.size()) and do no memory reallocation.
        */
+      _GLIBCXX20_CONSTEXPR
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
       : _Base(__a)
@@ -650,6 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+	_GLIBCXX20_CONSTEXPR
 	vector(_InputIterator __first, _InputIterator __last,
 	       const allocator_type& __a = allocator_type())
 	: _Base(__a)
@@ -675,6 +724,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  not touched in any way.  Managing the pointer is the user's
        *  responsibility.
        */
+      _GLIBCXX20_CONSTEXPR
       ~vector() _GLIBCXX_NOEXCEPT
       {
 	std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
@@ -691,6 +741,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Whether the allocator is copied depends on the allocator traits.
        */
+      _GLIBCXX20_CONSTEXPR
       vector&
       operator=(const vector& __x);
 
@@ -705,6 +756,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Whether the allocator is moved depends on the allocator traits.
        */
+      _GLIBCXX20_CONSTEXPR
       vector&
       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
@@ -726,6 +778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  that the resulting %vector's size is the same as the number
        *  of elements assigned.
        */
+      _GLIBCXX20_CONSTEXPR
       vector&
       operator=(initializer_list<value_type> __l)
       {
@@ -745,6 +798,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  %vector and that the resulting %vector's size is the same as
        *  the number of elements assigned.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       assign(size_type __n, const value_type& __val)
       { _M_fill_assign(__n, __val); }
@@ -764,6 +818,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+	_GLIBCXX20_CONSTEXPR
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{ _M_assign_dispatch(__first, __last, __false_type()); }
@@ -790,6 +845,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  that the resulting %vector's size is the same as the number
        *  of elements assigned.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       assign(initializer_list<value_type> __l)
       {
@@ -807,6 +863,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       iterator
       begin() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_start); }
@@ -816,6 +873,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_start); }
@@ -825,6 +883,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       iterator
       end() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_finish); }
@@ -834,6 +893,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the last element in the %vector.  Iteration is done in
        *  ordinary element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_finish); }
@@ -843,6 +903,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  last element in the %vector.  Iteration is done in reverse
        *  element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
@@ -852,6 +913,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to the last element in the %vector.  Iteration is done in
        *  reverse element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
@@ -861,6 +923,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  before the first element in the %vector.  Iteration is done
        *  in reverse element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reverse_iterator
       rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
@@ -870,6 +933,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to one before the first element in the %vector.  Iteration
        *  is done in reverse element order.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
@@ -880,6 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]] _GLIBCXX20_CONSTEXPR
       const_iterator
       cbegin() const noexcept
       { return const_iterator(this->_M_impl._M_start); }
@@ -889,6 +954,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the last element in the %vector.  Iteration is done in
        *  ordinary element order.
        */
+      [[__nodiscard__]] _GLIBCXX20_CONSTEXPR
       const_iterator
       cend() const noexcept
       { return const_iterator(this->_M_impl._M_finish); }
@@ -898,6 +964,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to the last element in the %vector.  Iteration is done in
        *  reverse element order.
        */
+      [[__nodiscard__]] _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
@@ -907,6 +974,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to one before the first element in the %vector.  Iteration
        *  is done in reverse element order.
        */
+      [[__nodiscard__]] _GLIBCXX20_CONSTEXPR
       const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
@@ -914,11 +982,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // [23.2.4.2] capacity
       /**  Returns the number of elements in the %vector.  */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       size() const _GLIBCXX_NOEXCEPT
       { return size_type(this->_M_impl._M_finish - this->_M_impl._M_start); }
 
       /**  Returns the size() of the largest possible %vector.  */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
       { return _S_max_size(_M_get_Tp_allocator()); }
@@ -933,6 +1003,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  %vector's current size the %vector is truncated, otherwise
        *  default constructed elements are appended.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       resize(size_type __new_size)
       {
@@ -953,6 +1024,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the %vector is extended and new elements are populated with
        *  given data.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       resize(size_type __new_size, const value_type& __x)
       {
@@ -973,6 +1045,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the %vector is extended and new elements are populated with
        *  given data.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       resize(size_type __new_size, value_type __x = value_type())
       {
@@ -985,6 +1058,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
       /**  A non-binding request to reduce capacity() to size().  */
+      _GLIBCXX20_CONSTEXPR
       void
       shrink_to_fit()
       { _M_shrink_to_fit(); }
@@ -994,6 +1068,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns the total number of elements that the %vector can
        *  hold before needing to allocate more memory.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
       { return size_type(this->_M_impl._M_end_of_storage
@@ -1003,7 +1078,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns true if the %vector is empty.  (Thus begin() would
        *  equal end().)
        */
-      _GLIBCXX_NODISCARD bool
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+      bool
       empty() const _GLIBCXX_NOEXCEPT
       { return begin() == end(); }
 
@@ -1024,6 +1100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  %advance, and thus prevent a possible reallocation of memory
        *  and copying of %vector data.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       reserve(size_type __n);
 
@@ -1039,6 +1116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  out_of_range lookups are not defined. (For checked lookups
        *  see at().)
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
@@ -1057,6 +1135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  out_of_range lookups are not defined. (For checked lookups
        *  see at().)
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
@@ -1066,6 +1145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     protected:
       /// Safety check used only from at().
+      _GLIBCXX20_CONSTEXPR
       void
       _M_range_check(size_type __n) const
       {
@@ -1088,6 +1168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is first checked that it is in the range of the vector.  The
        *  function throws out_of_range if the check fails.
        */
+      _GLIBCXX20_CONSTEXPR
       reference
       at(size_type __n)
       {
@@ -1106,6 +1187,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is first checked that it is in the range of the vector.  The
        *  function throws out_of_range if the check fails.
        */
+      _GLIBCXX20_CONSTEXPR
       const_reference
       at(size_type __n) const
       {
@@ -1117,6 +1199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read/write reference to the data at the first
        *  element of the %vector.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       front() _GLIBCXX_NOEXCEPT
       {
@@ -1128,6 +1211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %vector.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       front() const _GLIBCXX_NOEXCEPT
       {
@@ -1139,6 +1223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read/write reference to the data at the last
        *  element of the %vector.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       back() _GLIBCXX_NOEXCEPT
       {
@@ -1150,6 +1235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read-only (constant) reference to the data at the
        *  last element of the %vector.
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       back() const _GLIBCXX_NOEXCEPT
       {
@@ -1164,10 +1250,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *   Returns a pointer such that [data(), data() + size()) is a valid
        *   range.  For a non-empty %vector, data() == &front().
        */
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       _Tp*
       data() _GLIBCXX_NOEXCEPT
       { return _M_data_ptr(this->_M_impl._M_start); }
 
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const _Tp*
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data_ptr(this->_M_impl._M_start); }
@@ -1183,6 +1271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  done in constant time if the %vector has preallocated space
        *  available.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       push_back(const value_type& __x)
       {
@@ -1199,12 +1288,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX20_CONSTEXPR
       void
       push_back(value_type&& __x)
       { emplace_back(std::move(__x)); }
 
       template<typename... _Args>
 #if __cplusplus > 201402L
+	_GLIBCXX20_CONSTEXPR
 	reference
 #else
 	void
@@ -1221,6 +1312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  data is needed, it should be retrieved before pop_back() is
        *  called.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       pop_back() _GLIBCXX_NOEXCEPT
       {
@@ -1244,6 +1336,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  std::list.
        */
       template<typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	iterator
 	emplace(const_iterator __position, _Args&&... __args)
 	{ return _M_emplace_aux(__position, std::forward<_Args>(__args)...); }
@@ -1259,6 +1352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  could be expensive for a %vector and if it is frequently
        *  used the user should consider using std::list.
        */
+      _GLIBCXX20_CONSTEXPR
       iterator
       insert(const_iterator __position, const value_type& __x);
 #else
@@ -1289,6 +1383,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  could be expensive for a %vector and if it is frequently
        *  used the user should consider using std::list.
        */
+      _GLIBCXX20_CONSTEXPR
       iterator
       insert(const_iterator __position, value_type&& __x)
       { return _M_insert_rval(__position, std::move(__x)); }
@@ -1306,6 +1401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  %vector and if it is frequently used the user should
        *  consider using std::list.
        */
+      _GLIBCXX20_CONSTEXPR
       iterator
       insert(const_iterator __position, initializer_list<value_type> __l)
       {
@@ -1331,6 +1427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  %vector and if it is frequently used the user should
        *  consider using std::list.
        */
+      _GLIBCXX20_CONSTEXPR
       iterator
       insert(const_iterator __position, size_type __n, const value_type& __x)
       {
@@ -1375,6 +1472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+	_GLIBCXX20_CONSTEXPR
 	iterator
 	insert(const_iterator __position, _InputIterator __first,
 	       _InputIterator __last)
@@ -1425,6 +1523,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the pointed-to memory is not touched in any way.  Managing
        *  the pointer is the user's responsibility.
        */
+      _GLIBCXX20_CONSTEXPR
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __position)
@@ -1452,6 +1551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  pointers, the pointed-to memory is not touched in any way.
        *  Managing the pointer is the user's responsibility.
        */
+      _GLIBCXX20_CONSTEXPR
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __first, const_iterator __last)
@@ -1476,6 +1576,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Whether the allocators are swapped depends on the allocator traits.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       swap(vector& __x) _GLIBCXX_NOEXCEPT
       {
@@ -1494,6 +1595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  pointed-to memory is not touched in any way.  Managing the pointer is
        *  the user's responsibility.
        */
+      _GLIBCXX20_CONSTEXPR
       void
       clear() _GLIBCXX_NOEXCEPT
       { _M_erase_at_end(this->_M_impl._M_start); }
@@ -1504,6 +1606,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  obtain @a n bytes of memory, and then copies [first,last) into it.
        */
       template<typename _ForwardIterator>
+	_GLIBCXX20_CONSTEXPR
 	pointer
 	_M_allocate_and_copy(size_type __n,
 			     _ForwardIterator __first, _ForwardIterator __last)
@@ -1554,6 +1657,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the second initialize_dispatch above
       template<typename _InputIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_range_initialize(_InputIterator __first, _InputIterator __last,
 			    std::input_iterator_tag)
@@ -1573,6 +1677,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the second initialize_dispatch above
       template<typename _ForwardIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
 			    std::forward_iterator_tag)
@@ -1589,6 +1694,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the first initialize_dispatch above and by the
       // vector(n,value,a) constructor.
+      _GLIBCXX20_CONSTEXPR
       void
       _M_fill_initialize(size_type __n, const value_type& __value)
       {
@@ -1599,6 +1705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
       // Called by the vector(n) constructor.
+      _GLIBCXX20_CONSTEXPR
       void
       _M_default_initialize(size_type __n)
       {
@@ -1616,12 +1723,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
 	{ _M_fill_assign(__n, __val); }
 
       // Called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_assign_dispatch(_InputIterator __first, _InputIterator __last,
 			   __false_type)
@@ -1629,18 +1738,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the second assign_dispatch above
       template<typename _InputIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_assign_aux(_InputIterator __first, _InputIterator __last,
 		      std::input_iterator_tag);
 
       // Called by the second assign_dispatch above
       template<typename _ForwardIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
 		      std::forward_iterator_tag);
 
       // Called by assign(n,t), and the range assign when it turns out
       // to be the same thing.
+      _GLIBCXX20_CONSTEXPR
       void
       _M_fill_assign(size_type __n, const value_type& __val);
 
@@ -1651,6 +1763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_insert_dispatch(iterator __pos, _Integer __n, _Integer __val,
 			   __true_type)
@@ -1658,6 +1771,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the range insert to implement [23.1.1]/9
       template<typename _InputIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_insert_dispatch(iterator __pos, _InputIterator __first,
 			   _InputIterator __last, __false_type)
@@ -1668,26 +1782,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the second insert_dispatch above
       template<typename _InputIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_range_insert(iterator __pos, _InputIterator __first,
 			_InputIterator __last, std::input_iterator_tag);
 
       // Called by the second insert_dispatch above
       template<typename _ForwardIterator>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_range_insert(iterator __pos, _ForwardIterator __first,
 			_ForwardIterator __last, std::forward_iterator_tag);
 
       // Called by insert(p,n,x), and the range insert when it turns out to be
       // the same thing.
+      _GLIBCXX20_CONSTEXPR
       void
       _M_fill_insert(iterator __pos, size_type __n, const value_type& __x);
 
 #if __cplusplus >= 201103L
       // Called by resize(n).
+      _GLIBCXX20_CONSTEXPR
       void
       _M_default_append(size_type __n);
 
+      _GLIBCXX20_CONSTEXPR
       bool
       _M_shrink_to_fit();
 #endif
@@ -1705,53 +1824,69 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       struct _Temporary_value
       {
 	template<typename... _Args>
-	  explicit
+	  _GLIBCXX20_CONSTEXPR explicit
 	  _Temporary_value(vector* __vec, _Args&&... __args) : _M_this(__vec)
 	  {
 	    _Alloc_traits::construct(_M_this->_M_impl, _M_ptr(),
 				     std::forward<_Args>(__args)...);
 	  }
 
+	_GLIBCXX20_CONSTEXPR
 	~_Temporary_value()
 	{ _Alloc_traits::destroy(_M_this->_M_impl, _M_ptr()); }
 
-	value_type&
-	_M_val() { return *_M_ptr(); }
+	_GLIBCXX20_CONSTEXPR value_type&
+	_M_val() noexcept { return _M_storage._M_val; }
 
       private:
-	_Tp*
-	_M_ptr() { return reinterpret_cast<_Tp*>(&__buf); }
+	_GLIBCXX20_CONSTEXPR _Tp*
+	_M_ptr() noexcept { return std::__addressof(_M_storage._M_val); }
 
-	vector* _M_this;
-	typename aligned_storage<sizeof(_Tp), alignof(_Tp)>::type __buf;
+	union _Storage
+	{
+	  constexpr _Storage() : _M_byte() { }
+	  _GLIBCXX20_CONSTEXPR ~_Storage() { }
+	  _Storage& operator=(const _Storage&) = delete;
+	  unsigned char _M_byte;
+	  _Tp _M_val;
+	};
+
+	vector*  _M_this;
+	_Storage _M_storage;
       };
 
       // Called by insert(p,x) and other functions when insertion needs to
       // reallocate or move existing elements. _Arg is either _Tp& or _Tp.
       template<typename _Arg>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_insert_aux(iterator __position, _Arg&& __arg);
 
       template<typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	void
 	_M_realloc_insert(iterator __position, _Args&&... __args);
 
       // Either move-construct at the end, or forward to _M_insert_aux.
+      _GLIBCXX20_CONSTEXPR
       iterator
       _M_insert_rval(const_iterator __position, value_type&& __v);
 
       // Try to emplace at the end, otherwise forward to _M_insert_aux.
       template<typename... _Args>
+	_GLIBCXX20_CONSTEXPR
 	iterator
 	_M_emplace_aux(const_iterator __position, _Args&&... __args);
 
       // Emplacing an rvalue of the correct type can use _M_insert_rval.
+      _GLIBCXX20_CONSTEXPR
       iterator
       _M_emplace_aux(const_iterator __position, value_type&& __v)
       { return _M_insert_rval(__position, std::move(__v)); }
 #endif
 
       // Called by _M_fill_insert, _M_insert_aux etc.
+      _GLIBCXX20_CONSTEXPR
       size_type
       _M_check_len(size_type __n, const char* __s) const
       {
@@ -1763,7 +1898,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       // Called by constructors to check initial size.
-      static size_type
+      static _GLIBCXX20_CONSTEXPR size_type
       _S_check_init_len(size_type __n, const allocator_type& __a)
       {
 	if (__n > _S_max_size(_Tp_alloc_type(__a)))
@@ -1772,7 +1907,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return __n;
       }
 
-      static size_type
+      static _GLIBCXX20_CONSTEXPR size_type
       _S_max_size(const _Tp_alloc_type& __a) _GLIBCXX_NOEXCEPT
       {
 	// std::distance(begin(), end()) cannot be greater than PTRDIFF_MAX,
@@ -1788,6 +1923,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by erase(q1,q2), clear(), resize(), _M_fill_assign,
       // _M_assign_aux.
+      _GLIBCXX20_CONSTEXPR
       void
       _M_erase_at_end(pointer __pos) _GLIBCXX_NOEXCEPT
       {
@@ -1800,9 +1936,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
       }
 
+      _GLIBCXX20_CONSTEXPR
       iterator
       _M_erase(iterator __position);
 
+      _GLIBCXX20_CONSTEXPR
       iterator
       _M_erase(iterator __first, iterator __last);
 
@@ -1811,6 +1949,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Constant-time move assignment when source object's memory can be
       // moved, either because the source's allocator will move too
       // or because the allocators are equal.
+      _GLIBCXX20_CONSTEXPR
       void
       _M_move_assign(vector&& __x, true_type) noexcept
       {
@@ -1822,6 +1961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Do move assignment when it might not be possible to move source
       // object's memory, resulting in a linear-time operation.
+      _GLIBCXX20_CONSTEXPR
       void
       _M_move_assign(vector&& __x, false_type)
       {
@@ -1840,12 +1980,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       template<typename _Up>
+	_GLIBCXX20_CONSTEXPR
 	_Up*
 	_M_data_ptr(_Up* __ptr) const _GLIBCXX_NOEXCEPT
 	{ return __ptr; }
 
 #if __cplusplus >= 201103L
       template<typename _Ptr>
+	_GLIBCXX20_CONSTEXPR
 	typename std::pointer_traits<_Ptr>::element_type*
 	_M_data_ptr(_Ptr __ptr) const
 	{ return empty() ? nullptr : std::__to_address(__ptr); }
@@ -1888,6 +2030,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  and if corresponding elements compare equal.
   */
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return (__x.size() == __y.size()
@@ -1906,6 +2049,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  `<` and `>=` etc.
   */
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     inline __detail::__synth3way_t<_Tp>
     operator<=>(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     {
@@ -1958,6 +2102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// See std::vector::swap().
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     inline void
     swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
     _GLIBCXX_NOEXCEPT_IF(noexcept(__x.swap(__y)))

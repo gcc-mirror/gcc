@@ -1,7 +1,9 @@
 // { dg-do compile { target c++11 } }
 // { dg-prune-output "must be a complete" }
+// { dg-prune-output "'value' is not a member of 'std::(__8::)?is_move_cons" }
+// { dg-prune-output "invalid use of incomplete type" }
 
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@
 generic
 
    type Int is range <>;
+   type Uns is mod <>;
 
    with procedure Scaled_Divide
           (X, Y, Z : Int;
@@ -43,7 +44,6 @@ generic
            Round : Boolean);
 
 package System.Image_F is
-   pragma Pure;
 
    procedure Image_Fixed
      (V    : Int;

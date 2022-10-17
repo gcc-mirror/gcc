@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,15 +58,14 @@ namespace __detail
     {
     public:
       typedef typename _TraitsT::char_type        _CharT;
-      typedef const _CharT*                       _IterT;
       typedef _NFA<_TraitsT>              	  _RegexT;
       typedef regex_constants::syntax_option_type _FlagT;
 
-      _Compiler(_IterT __b, _IterT __e,
+      _Compiler(const _CharT* __b, const _CharT* __e,
 		const typename _TraitsT::locale_type& __traits, _FlagT __flags);
 
       shared_ptr<const _RegexT>
-      _M_get_nfa()
+      _M_get_nfa() noexcept
       { return std::move(_M_nfa); }
 
     private:
@@ -122,13 +121,45 @@ namespace __detail
 	void
 	_M_insert_bracket_matcher(bool __neg);
 
-      // Returns true if successfully matched one term and should continue.
+      // Cache of the last atom seen in a bracketed range expression.
+      struct _BracketState
+      {
+	enum class _Type : char { _None, _Char, _Class } _M_type = _Type::_None;
+	_CharT _M_char = _CharT();
+
+	void
+	set(_CharT __c) noexcept { _M_type = _Type::_Char; _M_char = __c; }
+
+	_GLIBCXX_NODISCARD _CharT
+	get() const noexcept { return _M_char; }
+
+	void
+	reset(_Type __t = _Type::_None) noexcept { _M_type = __t; }
+
+	explicit operator bool() const noexcept
+	{ return _M_type != _Type::_None; }
+
+	// Previous token was a single character.
+	_GLIBCXX_NODISCARD bool
+	_M_is_char() const noexcept { return _M_type == _Type::_Char; }
+
+	// Previous token was a character class, equivalent class,
+	// collating symbol etc.
+	_GLIBCXX_NODISCARD bool
+	_M_is_class() const noexcept { return _M_type == _Type::_Class; }
+      };
+
+      template<bool __icase, bool __collate>
+	using _BracketMatcher
+	  = std::__detail::_BracketMatcher<_TraitsT, __icase, __collate>;
+
+      // Returns true if successfully parsed one term and should continue
+      // compiling a bracket expression.
       // Returns false if the compiler should move on.
       template<bool __icase, bool __collate>
 	bool
-	_M_expression_term(pair<bool, _CharT>& __last_char,
-			   _BracketMatcher<_TraitsT, __icase, __collate>&
-			   __matcher);
+	_M_expression_term(_BracketState& __last_char,
+			   _BracketMatcher<__icase, __collate>& __matcher);
 
       int
       _M_cur_int_value(int __radix);
@@ -144,6 +175,26 @@ namespace __detail
 	return ret;
       }
 
+      static _FlagT
+      _S_validate(_FlagT __f)
+      {
+	using namespace regex_constants;
+	switch (__f & (ECMAScript|basic|extended|awk|grep|egrep))
+	  {
+	  case ECMAScript:
+	  case basic:
+	  case extended:
+	  case awk:
+	  case grep:
+	  case egrep:
+	    return __f;
+	  case _FlagT(0):
+	    return __f | ECMAScript;
+	  default:
+	    std::__throw_regex_error(_S_grammar, "conflicting grammar options");
+	  }
+      }
+
       _FlagT              _M_flags;
       _ScannerT           _M_scanner;
       shared_ptr<_RegexT> _M_nfa;
@@ -152,47 +203,6 @@ namespace __detail
       const _TraitsT&     _M_traits;
       const _CtypeT&      _M_ctype;
     };
-
-  template<typename _Tp>
-    struct __is_contiguous_iter : is_pointer<_Tp>::type { };
-
-  template<typename _Tp, typename _Cont>
-    struct
-    __is_contiguous_iter<__gnu_cxx::__normal_iterator<_Tp*, _Cont>>
-    : true_type { };
-
-  template<typename _Iter, typename _TraitsT>
-    using __enable_if_contiguous_iter
-      = __enable_if_t< __is_contiguous_iter<_Iter>::value,
-                       std::shared_ptr<const _NFA<_TraitsT>> >;
-
-  template<typename _Iter, typename _TraitsT>
-    using __disable_if_contiguous_iter
-      = __enable_if_t< !__is_contiguous_iter<_Iter>::value,
-                       std::shared_ptr<const _NFA<_TraitsT>> >;
-
-  template<typename _TraitsT, typename _FwdIter>
-    inline __enable_if_contiguous_iter<_FwdIter, _TraitsT>
-    __compile_nfa(_FwdIter __first, _FwdIter __last,
-		  const typename _TraitsT::locale_type& __loc,
-		  regex_constants::syntax_option_type __flags)
-    {
-      size_t __len = __last - __first;
-      const auto* __cfirst = __len ? std::__addressof(*__first) : nullptr;
-      using _Cmplr = _Compiler<_TraitsT>;
-      return _Cmplr(__cfirst, __cfirst + __len, __loc, __flags)._M_get_nfa();
-    }
-
-  template<typename _TraitsT, typename _FwdIter>
-    inline __disable_if_contiguous_iter<_FwdIter, _TraitsT>
-    __compile_nfa(_FwdIter __first, _FwdIter __last,
-		  const typename _TraitsT::locale_type& __loc,
-		  regex_constants::syntax_option_type __flags)
-    {
-      const basic_string<typename _TraitsT::char_type> __str(__first, __last);
-      return __compile_nfa<_TraitsT>(__str.data(), __str.data() + __str.size(),
-				     __loc, __flags);
-    }
 
   // [28.13.14]
   template<typename _TraitsT, bool __icase, bool __collate>
@@ -211,9 +221,9 @@ namespace __detail
       _CharT
       _M_translate(_CharT __ch) const
       {
-	if (__icase)
+	if _GLIBCXX17_CONSTEXPR (__icase)
 	  return _M_traits.translate_nocase(__ch);
-	else if (__collate)
+	else if _GLIBCXX17_CONSTEXPR (__collate)
 	  return _M_traits.translate(__ch);
 	else
 	  return __ch;
@@ -275,9 +285,10 @@ namespace __detail
       bool
       _M_match_range(_CharT __first, _CharT __last, _CharT __ch) const
       {
-	if (!__icase)
+	if _GLIBCXX17_CONSTEXPR (!__icase)
 	  return __first <= __ch && __ch <= __last;
-	return this->_M_in_range_icase(__first, __last, __ch);
+	else
+	  return this->_M_in_range_icase(__first, __last, __ch);
       }
     };
 
@@ -507,17 +518,17 @@ namespace __detail
 
     private:
       // Currently we only use the cache for char
-      typedef typename std::is_same<_CharT, char>::type _UseCache;
+      using _UseCache = typename std::is_same<_CharT, char>::type;
 
       static constexpr size_t
       _S_cache_size =
 	1ul << (sizeof(_CharT) * __CHAR_BIT__ * int(_UseCache::value));
 
       struct _Dummy { };
-      typedef typename std::conditional<_UseCache::value,
-					std::bitset<_S_cache_size>,
-					_Dummy>::type _CacheT;
-      typedef typename std::make_unsigned<_CharT>::type _UnsignedCharT;
+      using _CacheT = std::__conditional_t<_UseCache::value,
+					   std::bitset<_S_cache_size>,
+					   _Dummy>;
+      using _UnsignedCharT = typename std::make_unsigned<_CharT>::type;
 
       bool
       _M_apply(_CharT __ch, false_type) const;
@@ -538,10 +549,10 @@ namespace __detail
       { }
 
     private:
-      std::vector<_CharT>                       _M_char_set;
-      std::vector<_StringT>                     _M_equiv_set;
-      std::vector<pair<_StrTransT, _StrTransT>> _M_range_set;
-      std::vector<_CharClassT>                  _M_neg_class_set;
+      _GLIBCXX_STD_C::vector<_CharT>            _M_char_set;
+      _GLIBCXX_STD_C::vector<_StringT>          _M_equiv_set;
+      _GLIBCXX_STD_C::vector<pair<_StrTransT, _StrTransT>> _M_range_set;
+      _GLIBCXX_STD_C::vector<_CharClassT>       _M_neg_class_set;
       _CharClassT                               _M_class_set;
       _TransT                                   _M_translator;
       const _TraitsT&                           _M_traits;

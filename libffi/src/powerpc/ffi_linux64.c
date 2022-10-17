@@ -38,7 +38,8 @@
 /* About the LINUX64 ABI.  */
 enum {
   NUM_GPR_ARG_REGISTERS64 = 8,
-  NUM_FPR_ARG_REGISTERS64 = 13
+  NUM_FPR_ARG_REGISTERS64 = 13,
+  NUM_VEC_ARG_REGISTERS64 = 12,
 };
 enum { ASM_NEEDS_REGISTERS64 = 4 };
 
@@ -63,10 +64,31 @@ ffi_prep_types_linux64 (ffi_abi abi)
 
 
 static unsigned int
-discover_homogeneous_aggregate (const ffi_type *t, unsigned int *elnum)
+discover_homogeneous_aggregate (ffi_abi abi,
+                                const ffi_type *t,
+                                unsigned int *elnum)
 {
   switch (t->type)
     {
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+    case FFI_TYPE_LONGDOUBLE:
+      /* 64-bit long doubles are equivalent to doubles. */
+      if ((abi & FFI_LINUX_LONG_DOUBLE_128) == 0)
+        {
+          *elnum = 1;
+          return FFI_TYPE_DOUBLE;
+        }
+      /* IBM extended precision values use unaligned pairs
+         of FPRs, but according to the ABI must be considered
+         distinct from doubles. They are also limited to a
+         maximum of four members in a homogeneous aggregate. */
+      else if ((abi & FFI_LINUX_LONG_DOUBLE_IEEE128) == 0)
+        {
+          *elnum = 2;
+          return FFI_TYPE_LONGDOUBLE;
+        }
+      /* Fall through. */
+#endif
     case FFI_TYPE_FLOAT:
     case FFI_TYPE_DOUBLE:
       *elnum = 1;
@@ -79,7 +101,7 @@ discover_homogeneous_aggregate (const ffi_type *t, unsigned int *elnum)
 	while (*el)
 	  {
 	    unsigned int el_elt, el_elnum = 0;
-	    el_elt = discover_homogeneous_aggregate (*el, &el_elnum);
+	    el_elt = discover_homogeneous_aggregate (abi, *el, &el_elnum);
 	    if (el_elt == 0
 		|| (base_elt && base_elt != el_elt))
 	      return 0;
@@ -110,13 +132,23 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
 {
   ffi_type **ptr;
   unsigned bytes;
-  unsigned i, fparg_count = 0, intarg_count = 0;
+  unsigned i, fparg_count = 0, intarg_count = 0, vecarg_count = 0;
   unsigned flags = cif->flags;
-  unsigned int elt, elnum;
+  unsigned elt, elnum, rtype;
 
 #if FFI_TYPE_LONGDOUBLE == FFI_TYPE_DOUBLE
-  /* If compiled without long double support..  */
-  if ((cif->abi & FFI_LINUX_LONG_DOUBLE_128) != 0)
+  /* If compiled without long double support... */
+  if ((cif->abi & FFI_LINUX_LONG_DOUBLE_128) != 0 ||
+      (cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+    return FFI_BAD_ABI;
+#elif !defined(__VEC__)
+  /* If compiled without vector register support (used by assembly)... */
+  if ((cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+    return FFI_BAD_ABI;
+#else
+  /* If the IEEE128 flag is set, but long double is only 64 bits wide... */
+  if ((cif->abi & FFI_LINUX_LONG_DOUBLE_128) == 0 &&
+      (cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
     return FFI_BAD_ABI;
 #endif
 
@@ -138,10 +170,19 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
 #endif
 
   /* Return value handling.  */
-  switch (cif->rtype->type)
+  rtype = cif->rtype->type;
+#if _CALL_ELF == 2
+homogeneous:
+#endif
+  switch (rtype)
     {
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
     case FFI_TYPE_LONGDOUBLE:
+      if ((cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+        {
+          flags |= FLAG_RETURNS_VEC;
+          break;
+        }
       if ((cif->abi & FFI_LINUX_LONG_DOUBLE_128) != 0)
 	flags |= FLAG_RETURNS_128BITS;
       /* Fall through.  */
@@ -164,19 +205,18 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
 
     case FFI_TYPE_STRUCT:
 #if _CALL_ELF == 2
-      elt = discover_homogeneous_aggregate (cif->rtype, &elnum);
+      elt = discover_homogeneous_aggregate (cif->abi, cif->rtype, &elnum);
       if (elt)
-	{
-	  if (elt == FFI_TYPE_DOUBLE)
-	    flags |= FLAG_RETURNS_64BITS;
-	  flags |= FLAG_RETURNS_FP | FLAG_RETURNS_SMST;
-	  break;
-	}
+        {
+          flags |= FLAG_RETURNS_SMST;
+          rtype = elt;
+          goto homogeneous;
+        }
       if (cif->rtype->size <= 16)
-	{
-	  flags |= FLAG_RETURNS_SMST;
-	  break;
-	}
+        {
+          flags |= FLAG_RETURNS_SMST;
+          break;
+        }
 #endif
       intarg_count++;
       flags |= FLAG_RETVAL_REFERENCE;
@@ -198,6 +238,15 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
 	{
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	case FFI_TYPE_LONGDOUBLE:
+          if ((cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+            {
+              vecarg_count++;
+              /* Align to 16 bytes, plus the 16-byte argument. */
+              intarg_count = (intarg_count + 3) & ~0x1;
+              if (vecarg_count > NUM_VEC_ARG_REGISTERS64)
+                flags |= FLAG_ARG_NEEDS_PSAVE;
+              break;
+            }
 	  if ((cif->abi & FFI_LINUX_LONG_DOUBLE_128) != 0)
 	    {
 	      fparg_count++;
@@ -221,10 +270,21 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
 		align = 16;
 	      align = align / 8;
 	      if (align > 1)
-		intarg_count = ALIGN (intarg_count, align);
+		intarg_count = FFI_ALIGN (intarg_count, align);
 	    }
 	  intarg_count += ((*ptr)->size + 7) / 8;
-	  elt = discover_homogeneous_aggregate (*ptr, &elnum);
+	  elt = discover_homogeneous_aggregate (cif->abi, *ptr, &elnum);
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+          if (elt == FFI_TYPE_LONGDOUBLE &&
+              (cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+            {
+              vecarg_count += elnum;
+              if (vecarg_count > NUM_VEC_ARG_REGISTERS64)
+                flags |= FLAG_ARG_NEEDS_PSAVE;
+              break;
+            }
+	  else
+#endif
 	  if (elt)
 	    {
 	      fparg_count += elnum;
@@ -263,10 +323,17 @@ ffi_prep_cif_linux64_core (ffi_cif *cif)
     flags |= FLAG_FP_ARGUMENTS;
   if (intarg_count > 4)
     flags |= FLAG_4_GPR_ARGUMENTS;
+  if (vecarg_count != 0)
+    flags |= FLAG_VEC_ARGUMENTS;
 
   /* Space for the FPR registers, if needed.  */
   if (fparg_count != 0)
     bytes += NUM_FPR_ARG_REGISTERS64 * sizeof (double);
+  /* Space for the vector registers, if needed, aligned to 16 bytes. */
+  if (vecarg_count != 0) {
+    bytes = (bytes + 15) & ~0xF;
+    bytes += NUM_VEC_ARG_REGISTERS64 * sizeof (float128);
+  }
 
   /* Stack space.  */
 #if _CALL_ELF == 2
@@ -349,6 +416,8 @@ ffi_prep_cif_linux64_var (ffi_cif *cif,
    |--------------------------------------------| |
    |   FPR registers f1-f13 (optional)	13*8	| |
    |--------------------------------------------| |
+   |   VEC registers v2-v13 (optional)  12*16   | |
+   |--------------------------------------------| |
    |   Parameter save area		        | |
    |--------------------------------------------| |
    |   TOC save area			8	| |
@@ -378,6 +447,7 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
     unsigned long *ul;
     float *f;
     double *d;
+    float128 *f128;
     size_t p;
   } valp;
 
@@ -391,10 +461,15 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
   valp rest;
   valp next_arg;
 
-  /* 'fpr_base' points at the space for fpr3, and grows upwards as
+  /* 'fpr_base' points at the space for f1, and grows upwards as
      we use FPR registers.  */
   valp fpr_base;
   unsigned int fparg_count;
+
+  /* 'vec_base' points at the space for v2, and grows upwards as
+     we use vector registers.  */
+  valp vec_base;
+  unsigned int vecarg_count;
 
   unsigned int i, words, nargs, nfixedargs;
   ffi_type **ptr;
@@ -412,6 +487,7 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
     unsigned long **ul;
     float **f;
     double **d;
+    float128 **f128;
   } p_argv;
   unsigned long gprvalue;
   unsigned long align;
@@ -426,11 +502,21 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 #endif
   fpr_base.d = gpr_base.d - NUM_FPR_ARG_REGISTERS64;
   fparg_count = 0;
+  /* Place the vector args below the FPRs, if used, else the GPRs. */
+  if (ecif->cif->flags & FLAG_FP_ARGUMENTS)
+    vec_base.p = fpr_base.p & ~0xF;
+  else
+    vec_base.p = gpr_base.p;
+  vec_base.f128 -= NUM_VEC_ARG_REGISTERS64;
+  vecarg_count = 0;
   next_arg.ul = gpr_base.ul;
 
   /* Check that everything starts aligned properly.  */
   FFI_ASSERT (((unsigned long) (char *) stack & 0xF) == 0);
   FFI_ASSERT (((unsigned long) stacktop.c & 0xF) == 0);
+  FFI_ASSERT (((unsigned long) gpr_base.c & 0xF) == 0);
+  FFI_ASSERT (((unsigned long) gpr_end.c  & 0xF) == 0);
+  FFI_ASSERT (((unsigned long) vec_base.c & 0xF) == 0);
   FFI_ASSERT ((bytes & 0xF) == 0);
 
   /* Deal with return values that are actually pass-by-reference.  */
@@ -455,6 +541,22 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 	{
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	case FFI_TYPE_LONGDOUBLE:
+          if ((ecif->cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+            {
+              next_arg.p = FFI_ALIGN (next_arg.p, 16);
+              if (next_arg.ul == gpr_end.ul)
+                next_arg.ul = rest.ul;
+              if (vecarg_count < NUM_VEC_ARG_REGISTERS64 && i < nfixedargs)
+		memcpy (vec_base.f128++, *p_argv.f128, sizeof (float128));
+              else
+		memcpy (next_arg.f128, *p_argv.f128, sizeof (float128));
+              if (++next_arg.f128 == gpr_end.f128)
+                next_arg.f128 = rest.f128;
+              vecarg_count++;
+              FFI_ASSERT (__LDBL_MANT_DIG__ == 113);
+              FFI_ASSERT (flags & FLAG_VEC_ARGUMENTS);
+              break;
+            }
 	  if ((ecif->cif->abi & FFI_LINUX_LONG_DOUBLE_128) != 0)
 	    {
 	      double_tmp = (*p_argv.d)[0];
@@ -492,7 +594,9 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 	  /* Fall through.  */
 #endif
 	case FFI_TYPE_DOUBLE:
+#if _CALL_ELF != 2
 	do_double:
+#endif
 	  double_tmp = **p_argv.d;
 	  if (fparg_count < NUM_FPR_ARG_REGISTERS64 && i < nfixedargs)
 	    {
@@ -511,7 +615,9 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 	  break;
 
 	case FFI_TYPE_FLOAT:
+#if _CALL_ELF != 2
 	do_float:
+#endif
 	  double_tmp = **p_argv.f;
 	  if (fparg_count < NUM_FPR_ARG_REGISTERS64 && i < nfixedargs)
 	    {
@@ -548,9 +654,13 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 	      if (align > 16)
 		align = 16;
 	      if (align > 1)
-		next_arg.p = ALIGN (next_arg.p, align);
+                {
+                  next_arg.p = FFI_ALIGN (next_arg.p, align);
+                  if (next_arg.ul == gpr_end.ul)
+                    next_arg.ul = rest.ul;
+                }
 	    }
-	  elt = discover_homogeneous_aggregate (*ptr, &elnum);
+	  elt = discover_homogeneous_aggregate (ecif->cif->abi, *ptr, &elnum);
 	  if (elt)
 	    {
 #if _CALL_ELF == 2
@@ -558,9 +668,29 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 		void *v;
 		float *f;
 		double *d;
+		float128 *f128;
 	      } arg;
 
 	      arg.v = *p_argv.v;
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+              if (elt == FFI_TYPE_LONGDOUBLE &&
+                  (ecif->cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+                {
+                  do
+                    {
+                      if (vecarg_count < NUM_VEC_ARG_REGISTERS64
+                          && i < nfixedargs)
+		        memcpy (vec_base.f128++, arg.f128, sizeof (float128));
+                      else
+		        memcpy (next_arg.f128, arg.f128++, sizeof (float128));
+                      if (++next_arg.f128 == gpr_end.f128)
+                        next_arg.f128 = rest.f128;
+                      vecarg_count++;
+                    }
+                  while (--elnum != 0);
+                }
+              else
+#endif
 	      if (elt == FFI_TYPE_FLOAT)
 		{
 		  do
@@ -576,11 +706,9 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
 		      fparg_count++;
 		    }
 		  while (--elnum != 0);
-		  if ((next_arg.p & 3) != 0)
-		    {
-		      if (++next_arg.f == gpr_end.f)
-			next_arg.f = rest.f;
-		    }
+		  if ((next_arg.p & 7) != 0)
+                    if (++next_arg.f == gpr_end.f)
+                      next_arg.f = rest.f;
 		}
 	      else
 		do
@@ -733,17 +861,20 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 			    void *user_data,
 			    void *rvalue,
 			    unsigned long *pst,
-			    ffi_dblfl *pfr)
+                            ffi_dblfl *pfr,
+                            float128 *pvec)
 {
   /* rvalue is the pointer to space for return value in closure assembly */
   /* pst is the pointer to parameter save area
      (r3-r10 are stored into its first 8 slots by ffi_closure_LINUX64) */
   /* pfr is the pointer to where f1-f13 are stored in ffi_closure_LINUX64 */
+  /* pvec is the pointer to where v2-v13 are stored in ffi_closure_LINUX64 */
 
   void **avalue;
   ffi_type **arg_types;
   unsigned long i, avn, nfixedargs;
   ffi_dblfl *end_pfr = pfr + NUM_FPR_ARG_REGISTERS64;
+  float128 *end_pvec = pvec + NUM_VEC_ARG_REGISTERS64;
   unsigned long align;
 
   avalue = alloca (cif->nargs * sizeof (void *));
@@ -811,9 +942,9 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 	      if (align > 16)
 		align = 16;
 	      if (align > 1)
-		pst = (unsigned long *) ALIGN ((size_t) pst, align);
+		pst = (unsigned long *) FFI_ALIGN ((size_t) pst, align);
 	    }
-	  elt = discover_homogeneous_aggregate (arg_types[i], &elnum);
+	  elt = discover_homogeneous_aggregate (cif->abi, arg_types[i], &elnum);
 	  if (elt)
 	    {
 #if _CALL_ELF == 2
@@ -822,6 +953,7 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 		unsigned long *ul;
 		float *f;
 		double *d;
+		float128 *f128;
 		size_t p;
 	      } to, from;
 
@@ -829,6 +961,17 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 		 aggregate size is not greater than the space taken by
 		 the registers so store back to the register/parameter
 		 save arrays.  */
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+              if (elt == FFI_TYPE_LONGDOUBLE &&
+                  (cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+                {
+                  if (pvec + elnum <= end_pvec)
+                    to.v = pvec;
+                  else
+                    to.v = pst;
+                }
+              else
+#endif
 	      if (pfr + elnum <= end_pfr)
 		to.v = pfr;
 	      else
@@ -836,6 +979,23 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 
 	      avalue[i] = to.v;
 	      from.ul = pst;
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+              if (elt == FFI_TYPE_LONGDOUBLE &&
+                  (cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+                {
+                  do
+                    {
+                      if (pvec < end_pvec && i < nfixedargs)
+		        memcpy (to.f128, pvec++, sizeof (float128));
+                      else
+		        memcpy (to.f128, from.f128, sizeof (float128));
+                      to.f128++;
+                      from.f128++;
+                    }
+                  while (--elnum != 0);
+                }
+              else
+#endif
 	      if (elt == FFI_TYPE_FLOAT)
 		{
 		  do
@@ -891,7 +1051,18 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	case FFI_TYPE_LONGDOUBLE:
-	  if ((cif->abi & FFI_LINUX_LONG_DOUBLE_128) != 0)
+          if ((cif->abi & FFI_LINUX_LONG_DOUBLE_IEEE128) != 0)
+            {
+              if (((unsigned long) pst & 0xF) != 0)
+                ++pst;
+              if (pvec < end_pvec && i < nfixedargs)
+                avalue[i] = pvec++;
+              else
+                avalue[i] = pst;
+              pst += 2;
+              break;
+            }
+          else if ((cif->abi & FFI_LINUX_LONG_DOUBLE_128) != 0)
 	    {
 	      if (pfr + 1 < end_pfr && i + 1 < nfixedargs)
 		{
@@ -915,7 +1086,9 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 	  /* Fall through.  */
 #endif
 	case FFI_TYPE_DOUBLE:
+#if _CALL_ELF != 2
 	do_double:
+#endif
 	  /* On the outgoing stack all values are aligned to 8 */
 	  /* there are 13 64bit floating point registers */
 
@@ -930,7 +1103,9 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
 	  break;
 
 	case FFI_TYPE_FLOAT:
+#if _CALL_ELF != 2
 	do_float:
+#endif
 	  if (pfr < end_pfr && i < nfixedargs)
 	    {
 	      /* Float values are stored as doubles in the
@@ -962,13 +1137,17 @@ ffi_closure_helper_LINUX64 (ffi_cif *cif,
   /* Tell ffi_closure_LINUX64 how to perform return type promotions.  */
   if ((cif->flags & FLAG_RETURNS_SMST) != 0)
     {
-      if ((cif->flags & FLAG_RETURNS_FP) == 0)
+      if ((cif->flags & (FLAG_RETURNS_FP | FLAG_RETURNS_VEC)) == 0)
 	return FFI_V2_TYPE_SMALL_STRUCT + cif->rtype->size - 1;
+      else if ((cif->flags & FLAG_RETURNS_VEC) != 0)
+        return FFI_V2_TYPE_VECTOR_HOMOG;
       else if ((cif->flags & FLAG_RETURNS_64BITS) != 0)
 	return FFI_V2_TYPE_DOUBLE_HOMOG;
       else
 	return FFI_V2_TYPE_FLOAT_HOMOG;
     }
+  if ((cif->flags & FLAG_RETURNS_VEC) != 0)
+    return FFI_V2_TYPE_VECTOR;
   return cif->rtype->type;
 }
 #endif

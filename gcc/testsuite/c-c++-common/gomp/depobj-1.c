@@ -21,6 +21,9 @@ f1 (void)
   ;
   #pragma omp depobj(pdepobj[0]) depend(mutexinoutset:a)
   #pragma omp depobj(*pdepobj) destroy
+  #pragma omp depobj(depobja[0]) depend(inoutset: a)
+  #pragma omp depobj(depobja[0]) update(mutexinoutset)
+  #pragma omp depobj(depobja[0]) update(inoutset)
 }
 
 void
@@ -38,7 +41,7 @@ f2 (void)
   #pragma omp depobj (a) destroy			/* { dg-error "type of 'depobj' expression is not 'omp_depend_t'" } */
   #pragma omp depobj (depobj) depend(depobj:a)		/* { dg-error "does not have 'omp_depend_t' type in 'depend' clause with 'depobj' dependence type" } */
   #pragma omp depobj (depobj) depend(depobj:*depobjb)	/* { dg-error "'depobj' dependence type specified in 'depend' clause on 'depobj' construct" } */
-  #pragma omp depobj (depobj) update(foobar)		/* { dg-error "expected 'in', 'out', 'inout' or 'mutexinoutset'" } */
+  #pragma omp depobj (depobj) update(foobar)		/* { dg-error "expected 'in', 'out', 'inout', 'mutexinoutset' or 'inoutset'" } */
   #pragma omp depobj (depobj) depend(in: *depobja)	/* { dg-error "should not have 'omp_depend_t' type in 'depend' clause with dependence type" } */
   #pragma omp depobj (depobj) depend(in: a) depend(in: b)	/* { dg-error "expected" } */
   #pragma omp depobj (depobj) depend(in: a) update(out)	/* { dg-error "expected" } */

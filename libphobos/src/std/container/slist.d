@@ -4,7 +4,7 @@ It can be used as a stack.
 
 This module is a submodule of $(MREF std, container).
 
-Source: $(PHOBOSSRC std/container/_slist.d)
+Source: $(PHOBOSSRC std/container/slist.d)
 
 Copyright: 2010- Andrei Alexandrescu. All rights reserved by the respective holders.
 
@@ -51,9 +51,10 @@ public import std.container.util;
    Implements a simple and fast singly-linked list.
    It can be used as a stack.
 
-   $(D SList) uses reference semantics.
+   `SList` uses reference semantics.
  */
 struct SList(T)
+if (!is(T == shared))
 {
     import std.exception : enforce;
     import std.range : Take;
@@ -81,13 +82,13 @@ struct SList(T)
 
     private ref inout(Node*) _first() @property @safe nothrow pure inout
     {
-        assert(_root);
+        assert(_root, "root pointer must not be null");
         return _root._next;
     }
 
     private static Node * findLastNode(Node * n)
     {
-        assert(n);
+        assert(n, "Node n pointer must not be null");
         auto ahead = n._next;
         while (ahead)
         {
@@ -99,7 +100,8 @@ struct SList(T)
 
     private static Node * findLastNode(Node * n, size_t limit)
     {
-        assert(n && limit);
+        assert(n, "Node n pointer must not be null");
+        assert(limit, "limit must be greater than 0");
         auto ahead = n._next;
         while (ahead)
         {
@@ -112,7 +114,7 @@ struct SList(T)
 
     private static Node * findNode(Node * n, Node * findMe)
     {
-        assert(n);
+        assert(n, "Node n pointer must not be null");
         auto ahead = n._next;
         while (ahead != findMe)
         {
@@ -121,6 +123,60 @@ struct SList(T)
             ahead = n._next;
         }
         return n;
+    }
+
+    private static Node* findNodeByValue(Node* n, T value)
+    {
+        if (!n) return null;
+        auto ahead = n._next;
+        while (ahead && ahead._payload != value)
+        {
+            n = ahead;
+            ahead = n._next;
+        }
+        return n;
+    }
+
+    private static auto createNodeChain(Stuff)(Stuff stuff)
+    if (isImplicitlyConvertible!(Stuff, T))
+    {
+        import std.range : only;
+        return createNodeChain(only(stuff));
+    }
+
+    private static auto createNodeChain(Stuff)(Stuff stuff)
+    if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))
+    {
+        static struct Chain
+        {
+            Node* first;
+            Node* last;
+            size_t length;
+        }
+
+        Chain ch;
+
+        foreach (item; stuff)
+        {
+            auto newNode = new Node(null, item);
+            (ch.first ? ch.last._next : ch.first) = newNode;
+            ch.last = newNode;
+            ++ch.length;
+        }
+
+        return ch;
+    }
+
+    private static size_t insertAfterNode(Stuff)(Node* n, Stuff stuff)
+    {
+        auto ch = createNodeChain(stuff);
+
+        if (!ch.length) return 0;
+
+        ch.last._next = n._next;
+        n._next = ch.first;
+
+        return ch.length;
     }
 
 /**
@@ -132,7 +188,7 @@ Constructor taking a number of nodes
     }
 
 /**
-Constructor taking an input range
+Constructor taking an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
      */
     this(Stuff)(Stuff stuff)
     if (isInputRange!Stuff
@@ -145,8 +201,8 @@ Constructor taking an input range
 /**
 Comparison for equality.
 
-Complexity: $(BIGOH min(n, n1)) where $(D n1) is the number of
-elements in $(D rhs).
+Complexity: $(BIGOH min(n, n1)) where `n1` is the number of
+elements in `rhs`.
      */
     bool opEquals(const SList rhs) const
     {
@@ -217,7 +273,7 @@ Defines the container's primary range, which embodies a forward range.
     }
 
 /**
-Property returning $(D true) if and only if the container has no
+Property returning `true` if and only if the container has no
 elements.
 
 Complexity: $(BIGOH 1)
@@ -253,7 +309,7 @@ Complexity: $(BIGOH 1)
     }
 
 /**
-Forward to $(D opSlice().front).
+Forward to `opSlice().front`.
 
 Complexity: $(BIGOH 1)
      */
@@ -271,37 +327,41 @@ Complexity: $(BIGOH 1)
     }
 
 /**
-Returns a new $(D SList) that's the concatenation of $(D this) and its
-argument. $(D opBinaryRight) is only defined if $(D Stuff) does not
-define $(D opBinary).
+Returns a new `SList` that's the concatenation of `this` and its
+argument. `opBinaryRight` is only defined if `Stuff` does not
+define `opBinary`.
      */
     SList opBinary(string op, Stuff)(Stuff rhs)
     if (op == "~" && is(typeof(SList(rhs))))
     {
-        auto toAdd = SList(rhs);
-        if (empty) return toAdd;
-        // TODO: optimize
-        auto result = dup;
-        auto n = findLastNode(result._first);
-        n._next = toAdd._first;
-        return result;
+        import std.range : chain, only;
+
+        static if (isInputRange!Stuff)
+            alias r = rhs;
+        else
+            auto r = only(rhs);
+
+        return SList(this[].chain(r));
     }
 
     /// ditto
     SList opBinaryRight(string op, Stuff)(Stuff lhs)
     if (op == "~" && !is(typeof(lhs.opBinary!"~"(this))) && is(typeof(SList(lhs))))
     {
-        auto toAdd = SList(lhs);
-        if (empty) return toAdd;
-        auto result = dup;
-        result.insertFront(toAdd[]);
-        return result;
+        import std.range : chain, only;
+
+        static if (isInputRange!Stuff)
+            alias r = lhs;
+        else
+            auto r = only(lhs);
+
+        return SList(r.chain(this[]));
     }
 
 /**
-Removes all contents from the $(D SList).
+Removes all contents from the `SList`.
 
-Postcondition: $(D empty)
+Postcondition: `empty`
 
 Complexity: $(BIGOH 1)
      */
@@ -333,49 +393,26 @@ Complexity: $(BIGOH n)
     }
 
 /**
-Inserts $(D stuff) to the front of the container. $(D stuff) can be a
-value convertible to $(D T) or a range of objects convertible to $(D
+Inserts `stuff` to the front of the container. `stuff` can be a
+value convertible to `T` or a range of objects convertible to $(D
 T). The stable version behaves the same, but guarantees that ranges
 iterating over the container are never invalidated.
 
 Returns: The number of elements inserted
 
-Complexity: $(BIGOH m), where $(D m) is the length of $(D stuff)
+Complexity: $(BIGOH m), where `m` is the length of `stuff`
      */
     size_t insertFront(Stuff)(Stuff stuff)
-    if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))
+    if (isInputRange!Stuff || isImplicitlyConvertible!(Stuff, T))
     {
         initialize();
-        size_t result;
-        Node * n, newRoot;
-        foreach (item; stuff)
-        {
-            auto newNode = new Node(null, item);
-            (newRoot ? n._next : newRoot) = newNode;
-            n = newNode;
-            ++result;
-        }
-        if (!n) return 0;
-        // Last node points to the old root
-        n._next = _first;
-        _first = newRoot;
-        return result;
+        return insertAfterNode(_root, stuff);
     }
 
     /// ditto
-    size_t insertFront(Stuff)(Stuff stuff)
-    if (isImplicitlyConvertible!(Stuff, T))
-    {
-        initialize();
-        auto newRoot = new Node(_first, stuff);
-        _first = newRoot;
-        return 1;
-    }
-
-/// ditto
     alias insert = insertFront;
 
-/// ditto
+    /// ditto
     alias stableInsert = insert;
 
     /// ditto
@@ -386,7 +423,7 @@ Picks one value in an unspecified position in the container, removes
 it from the container, and returns it. The stable version behaves the same,
 but guarantees that ranges iterating over the container are never invalidated.
 
-Precondition: $(D !empty)
+Precondition: `!empty`
 
 Returns: The element removed.
 
@@ -409,7 +446,7 @@ Removes the value at the front of the container. The stable version
 behaves the same, but guarantees that ranges iterating over the
 container are never invalidated.
 
-Precondition: $(D !empty)
+Precondition: `!empty`
 
 Complexity: $(BIGOH 1).
      */
@@ -423,9 +460,9 @@ Complexity: $(BIGOH 1).
     alias stableRemoveFront = removeFront;
 
 /**
-Removes $(D howMany) values at the front or back of the
+Removes `howMany` values at the front or back of the
 container. Unlike the unparameterized versions above, these functions
-do not throw if they could not remove $(D howMany) elements. Instead,
+do not throw if they could not remove `howMany` elements. Instead,
 if $(D howMany > n), all elements are removed. The returned value is
 the effective number of elements removed. The stable version behaves
 the same, but guarantees that ranges iterating over the container are
@@ -450,22 +487,22 @@ Complexity: $(BIGOH howMany * log(n)).
     alias stableRemoveFront = removeFront;
 
 /**
-Inserts $(D stuff) after range $(D r), which must be a range
+Inserts `stuff` after range `r`, which must be a range
 previously extracted from this container. Given that all ranges for a
 list end at the end of the list, this function essentially appends to
-the list and uses $(D r) as a potentially fast way to reach the last
-node in the list. Ideally $(D r) is positioned near or at the last
+the list and uses `r` as a potentially fast way to reach the last
+node in the list. Ideally `r` is positioned near or at the last
 element of the list.
 
-$(D stuff) can be a value convertible to $(D T) or a range of objects
-convertible to $(D T). The stable version behaves the same, but
+`stuff` can be a value convertible to `T` or a range of objects
+convertible to `T`. The stable version behaves the same, but
 guarantees that ranges iterating over the container are never
 invalidated.
 
 Returns: The number of values inserted.
 
-Complexity: $(BIGOH k + m), where $(D k) is the number of elements in
-$(D r) and $(D m) is the length of $(D stuff).
+Complexity: $(BIGOH k + m), where `k` is the number of elements in
+`r` and `m` is the length of `stuff`.
 
 Example:
 --------------------
@@ -478,6 +515,7 @@ assert(std.algorithm.equal(sl[], ["a", "b", "c", "d", "e"]));
      */
 
     size_t insertAfter(Stuff)(Range r, Stuff stuff)
+    if (isInputRange!Stuff || isImplicitlyConvertible!(Stuff, T))
     {
         initialize();
         if (!_first)
@@ -487,27 +525,25 @@ assert(std.algorithm.equal(sl[], ["a", "b", "c", "d", "e"]));
         }
         enforce(r._head);
         auto n = findLastNode(r._head);
-        SList tmp;
-        auto result = tmp.insertFront(stuff);
-        n._next = tmp._first;
-        return result;
+        return insertAfterNode(n, stuff);
     }
 
 /**
-Similar to $(D insertAfter) above, but accepts a range bounded in
+Similar to `insertAfter` above, but accepts a range bounded in
 count. This is important for ensuring fast insertions in the middle of
-the list.  For fast insertions after a specified position $(D r), use
+the list.  For fast insertions after a specified position `r`, use
 $(D insertAfter(take(r, 1), stuff)). The complexity of that operation
-only depends on the number of elements in $(D stuff).
+only depends on the number of elements in `stuff`.
 
 Precondition: $(D r.original.empty || r.maxLength > 0)
 
 Returns: The number of values inserted.
 
-Complexity: $(BIGOH k + m), where $(D k) is the number of elements in
-$(D r) and $(D m) is the length of $(D stuff).
+Complexity: $(BIGOH k + m), where `k` is the number of elements in
+`r` and `m` is the length of `stuff`.
      */
     size_t insertAfter(Stuff)(Take!Range r, Stuff stuff)
+    if (isInputRange!Stuff || isImplicitlyConvertible!(Stuff, T))
     {
         auto orig = r.source;
         if (!orig._head)
@@ -524,12 +560,7 @@ $(D r) and $(D m) is the length of $(D stuff).
             orig.popFront();
         }
         // insert here
-        SList tmp;
-        tmp.initialize();
-        tmp._first = orig._head._next;
-        auto result = tmp.insertFront(stuff);
-        orig._head._next = tmp._first;
-        return result;
+        return insertAfterNode(orig._head, stuff);
     }
 
 /// ditto
@@ -555,7 +586,7 @@ Complexity: $(BIGOH n)
     }
 
 /**
-Removes a $(D Take!Range) from the list in linear time.
+Removes a `Take!Range` from the list in linear time.
 
 Returns: A range comprehending the elements after the removed range.
 
@@ -589,6 +620,61 @@ Complexity: $(BIGOH n)
 
 /// ditto
     alias stableLinearRemove = linearRemove;
+
+/**
+Removes the first occurence of an element from the list in linear time.
+
+Returns: True if the element existed and was successfully removed, false otherwise.
+
+Params:
+    value = value of the node to be removed
+
+Complexity: $(BIGOH n)
+     */
+    bool linearRemoveElement(T value)
+    {
+        auto n1 = findNodeByValue(_root, value);
+
+        if (n1 && n1._next)
+        {
+            n1._next = n1._next._next;
+            return true;
+        }
+
+        return false;
+    }
+}
+
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+
+    auto e = SList!int();
+    auto b = e.linearRemoveElement(2);
+    assert(b == false);
+    assert(e.empty());
+    auto a = SList!int(-1, 1, 2, 1, 3, 4);
+    b = a.linearRemoveElement(1);
+    assert(equal(a[], [-1, 2, 1, 3, 4]));
+    assert(b == true);
+    b = a.linearRemoveElement(-1);
+    assert(b == true);
+    assert(equal(a[], [2, 1, 3, 4]));
+    b = a.linearRemoveElement(1);
+    assert(b == true);
+    assert(equal(a[], [2, 3, 4]));
+    b = a.linearRemoveElement(2);
+    assert(b == true);
+    b = a.linearRemoveElement(20);
+    assert(b == false);
+    assert(equal(a[], [3, 4]));
+    b = a.linearRemoveElement(4);
+    assert(b == true);
+    assert(equal(a[], [3]));
+    b = a.linearRemoveElement(3);
+    assert(b == true);
+    assert(a.empty());
+    a.linearRemoveElement(3);
 }
 
 @safe unittest
@@ -793,9 +879,9 @@ Complexity: $(BIGOH n)
     auto s = make!(SList!int)(1, 2, 3);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=5193
 @safe unittest
 {
-    // 5193
     static struct Data
     {
         const int val;
@@ -813,17 +899,17 @@ Complexity: $(BIGOH n)
     assert(r.front == 1);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=14920
 @safe unittest
 {
-    // issue 14920
     SList!int s;
     s.insertAfter(s[], 1);
     assert(s.front == 1);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=15659
 @safe unittest
 {
-    // issue 15659
     SList!int s;
     s.clear();
 }
@@ -843,4 +929,12 @@ Complexity: $(BIGOH n)
 
     s.reverse();
     assert(s[].equal([3, 2, 1]));
+}
+
+@safe unittest
+{
+    auto s = SList!int([4, 6, 8, 12, 16]);
+    auto d = s.dup;
+    assert(d !is s);
+    assert(d == s);
 }

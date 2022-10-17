@@ -1,5 +1,5 @@
 # Makefile for the D runtime library.
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 include $(top_srcdir)/d_rules.am
 
 # Make sure GDC can find libdruntime include files
-D_EXTRA_DFLAGS=-nostdinc -I $(srcdir) -I .
+D_EXTRA_DFLAGS=-fpreview=dip1000 -fpreview=fieldwise -fpreview=dtorfields \
+	       -nostdinc -I $(srcdir) -I .
 
 # D flags for compilation
 AM_DFLAGS= \
@@ -38,7 +39,7 @@ ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \
 	$(DRUNTIME_DSOURCES_OPENBSD) $(DRUNTIME_DSOURCES_POSIX) \
 	$(DRUNTIME_DSOURCES_SOLARIS) $(DRUNTIME_DSOURCES_WINDOWS) \
 	$(DRUNTIME_DSOURCES_GENERATED) $(DRUNTIME_DISOURCES) \
-	$(DRUNTIME_DSOURCES_STDCXX)
+	$(DRUNTIME_DSOURCES_ELF) $(DRUNTIME_DSOURCES_STDCXX)
 
 # Setup source files depending on configure
 DRUNTIME_SOURCES_CONFIGURED =
@@ -119,6 +120,7 @@ endif
 DRUNTIME_DSOURCES_GENERATED = gcc/config.d gcc/libbacktrace.d
 
 ALL_DRUNTIME_SOURCES = $(DRUNTIME_DSOURCES) $(DRUNTIME_CSOURCES) \
+	$(DRUNTIME_DSOURCES_ELF) $(DRUNTIME_DSOURCES_STDCXX) \
 	$(DRUNTIME_SOURCES_CONFIGURED) $(DRUNTIME_DSOURCES_GENERATED)
 
 # Need this library to both be part of libgphobos.a, and installed separately.
@@ -166,12 +168,31 @@ install-data-local:
 DRUNTIME_CSOURCES = core/stdc/errno_.c
 
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
-	core/checkedint.d core/cpuid.d core/demangle.d core/exception.d \
-	core/internal/abort.d core/internal/arrayop.d \
-	core/internal/attributes.d core/internal/convert.d \
-	core/internal/hash.d core/internal/spinlock.d core/internal/string.d \
-	core/internal/traits.d core/math.d core/memory.d core/runtime.d \
-	core/simd.d core/stdc/assert_.d core/stdc/complex.d core/stdc/config.d \
+	core/builtins.d core/checkedint.d core/cpuid.d core/demangle.d \
+	core/exception.d core/gc/config.d core/gc/gcinterface.d \
+	core/gc/registry.d core/int128.d core/internal/abort.d \
+	core/internal/array/appending.d core/internal/array/arrayassign.d \
+	core/internal/array/capacity.d core/internal/array/casting.d \
+	core/internal/array/comparison.d core/internal/array/concatenation.d \
+	core/internal/array/construction.d core/internal/array/duplication.d \
+	core/internal/array/equality.d core/internal/array/operations.d \
+	core/internal/array/utils.d core/internal/atomic.d \
+	core/internal/attributes.d core/internal/container/array.d \
+	core/internal/container/common.d core/internal/container/hashtab.d \
+	core/internal/container/treap.d core/internal/convert.d \
+	core/internal/dassert.d core/internal/destruction.d \
+	core/internal/entrypoint.d core/internal/gc/bits.d \
+	core/internal/gc/impl/conservative/gc.d \
+	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
+	core/internal/gc/os.d core/internal/gc/pooltable.d \
+	core/internal/gc/proxy.d core/internal/hash.d core/internal/lifetime.d \
+	core/internal/moving.d core/internal/parseoptions.d \
+	core/internal/postblit.d core/internal/qsort.d \
+	core/internal/spinlock.d core/internal/string.d \
+	core/internal/switch_.d core/internal/traits.d core/internal/utf.d \
+	core/internal/util/array.d core/internal/util/math.d core/lifetime.d \
+	core/math.d core/memory.d core/runtime.d core/simd.d \
+	core/stdc/assert_.d core/stdc/complex.d core/stdc/config.d \
 	core/stdc/ctype.d core/stdc/errno.d core/stdc/fenv.d \
 	core/stdc/float_.d core/stdc/inttypes.d core/stdc/limits.d \
 	core/stdc/locale.d core/stdc/math.d core/stdc/signal.d \
@@ -179,28 +200,28 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/stdc/stdio.d core/stdc/stdlib.d core/stdc/string.d \
 	core/stdc/tgmath.d core/stdc/time.d core/stdc/wchar_.d \
 	core/stdc/wctype.d core/sync/barrier.d core/sync/condition.d \
-	core/sync/config.d core/sync/exception.d core/sync/mutex.d \
-	core/sync/rwmutex.d core/sync/semaphore.d core/thread/context.d \
-	core/thread/fiber.d core/thread/osthread.d core/thread/package.d \
-	core/thread/threadbase.d core/thread/threadgroup.d core/thread/types.d \
-	core/time.d core/vararg.d core/volatile.d gc/bits.d gc/config.d \
-	gc/gcinterface.d gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d \
-	gc/pooltable.d gc/proxy.d gcc/attribute.d gcc/attributes.d \
+	core/sync/config.d core/sync/event.d core/sync/exception.d \
+	core/sync/mutex.d core/sync/package.d core/sync/rwmutex.d \
+	core/sync/semaphore.d core/thread/context.d core/thread/fiber.d \
+	core/thread/osthread.d core/thread/package.d core/thread/threadbase.d \
+	core/thread/threadgroup.d core/thread/types.d core/time.d \
+	core/vararg.d core/volatile.d gcc/attribute.d gcc/attributes.d \
 	gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d gcc/gthread.d \
 	gcc/sections/common.d gcc/sections/elf.d gcc/sections/macho.d \
-	gcc/sections/package.d gcc/sections/pecoff.d gcc/unwind/arm.d \
-	gcc/unwind/arm_common.d gcc/unwind/c6x.d gcc/unwind/generic.d \
-	gcc/unwind/package.d gcc/unwind/pe.d object.d rt/aApply.d rt/aApplyR.d \
-	rt/aaA.d rt/adi.d rt/arrayassign.d rt/arraycast.d rt/arraycat.d \
-	rt/cast_.d rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d \
+	gcc/sections/package.d gcc/sections/pecoff.d gcc/simd.d \
+	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
+	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
+	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d \
+	rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d rt/ehalloc.d \
 	rt/invariant.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
-	rt/obj.d rt/qsort.d rt/sections.d rt/switch_.d rt/tlsgc.d \
-	rt/util/array.d rt/util/container/array.d rt/util/container/common.d \
-	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/random.d \
-	rt/util/typeinfo.d rt/util/utf.d
+	rt/profilegc.d rt/sections.d rt/tlsgc.d rt/util/typeinfo.d \
+	rt/util/utility.d
 
-DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
-	core/stdcpp/typeinfo.d
+DRUNTIME_DSOURCES_STDCXX = core/stdcpp/allocator.d core/stdcpp/array.d \
+	core/stdcpp/exception.d core/stdcpp/memory.d core/stdcpp/new_.d \
+	core/stdcpp/string.d core/stdcpp/string_view.d \
+	core/stdcpp/type_traits.d core/stdcpp/typeinfo.d core/stdcpp/utility.d \
+	core/stdcpp/vector.d core/stdcpp/xutility.d
 
 DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/err.d \
 	core/sys/bionic/fcntl.d core/sys/bionic/stdlib.d \
@@ -233,6 +254,8 @@ DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 	core/sys/dragonflybsd/sys/mman.d core/sys/dragonflybsd/sys/socket.d \
 	core/sys/dragonflybsd/sys/sysctl.d core/sys/dragonflybsd/time.d
 
+DRUNTIME_DSOURCES_ELF = core/sys/elf/package.d
+
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 	core/sys/freebsd/dlfcn.d core/sys/freebsd/err.d \
 	core/sys/freebsd/execinfo.d core/sys/freebsd/netinet/in_.d \
@@ -249,17 +272,19 @@ DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
 	core/sys/linux/err.d core/sys/linux/errno.d core/sys/linux/execinfo.d \
-	core/sys/linux/fcntl.d core/sys/linux/ifaddrs.d core/sys/linux/link.d \
+	core/sys/linux/fcntl.d core/sys/linux/fs.d core/sys/linux/ifaddrs.d \
+	core/sys/linux/io_uring.d core/sys/linux/link.d \
 	core/sys/linux/netinet/in_.d core/sys/linux/netinet/tcp.d \
-	core/sys/linux/sched.d core/sys/linux/stdio.d core/sys/linux/string.d \
+	core/sys/linux/perf_event.d core/sys/linux/sched.d \
+	core/sys/linux/stdio.d core/sys/linux/string.d \
 	core/sys/linux/sys/auxv.d core/sys/linux/sys/eventfd.d \
 	core/sys/linux/sys/file.d core/sys/linux/sys/inotify.d \
 	core/sys/linux/sys/mman.d core/sys/linux/sys/prctl.d \
-	core/sys/linux/sys/signalfd.d core/sys/linux/sys/socket.d \
-	core/sys/linux/sys/sysinfo.d core/sys/linux/sys/time.d \
-	core/sys/linux/sys/xattr.d core/sys/linux/termios.d \
-	core/sys/linux/time.d core/sys/linux/timerfd.d core/sys/linux/tipc.d \
-	core/sys/linux/unistd.d
+	core/sys/linux/sys/procfs.d core/sys/linux/sys/signalfd.d \
+	core/sys/linux/sys/socket.d core/sys/linux/sys/sysinfo.d \
+	core/sys/linux/sys/time.d core/sys/linux/sys/xattr.d \
+	core/sys/linux/termios.d core/sys/linux/time.d \
+	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/err.d core/sys/netbsd/execinfo.d \
@@ -271,13 +296,14 @@ DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/sys/sysctl.d core/sys/netbsd/time.d
 
 DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
-	core/sys/openbsd/err.d core/sys/openbsd/stdlib.d \
-	core/sys/openbsd/string.d core/sys/openbsd/sys/cdefs.d \
-	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
-	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
-	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
-	core/sys/openbsd/sys/sysctl.d core/sys/openbsd/time.d \
-	core/sys/openbsd/unistd.d
+	core/sys/openbsd/err.d core/sys/openbsd/execinfo.d \
+	core/sys/openbsd/pthread_np.d core/sys/openbsd/pwd.d \
+	core/sys/openbsd/stdlib.d core/sys/openbsd/string.d \
+	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
+	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
+	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
+	core/sys/openbsd/sys/mman.d core/sys/openbsd/sys/sysctl.d \
+	core/sys/openbsd/time.d core/sys/openbsd/unistd.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
@@ -402,4 +428,4 @@ DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/winuser.d core/sys/windows/winver.d \
 	core/sys/windows/wtsapi32.d core/sys/windows/wtypes.d
 
-DRUNTIME_DISOURCES = __entrypoint.di __main.di
+DRUNTIME_DISOURCES = __builtins.di __main.di

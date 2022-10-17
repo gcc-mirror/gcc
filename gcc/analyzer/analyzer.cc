@@ -1,5 +1,5 @@
 /* Utility functions for the analyzer.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "diagnostic.h"
 #include "intl.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 
 #if ENABLE_ANALYZER
@@ -63,8 +62,53 @@ get_stmt_location (const gimple *stmt, function *fun)
 static tree
 fixup_tree_for_diagnostic_1 (tree expr, hash_set<tree> *visited);
 
+/* Attemp to generate a tree for the LHS of ASSIGN_STMT.
+   VISITED must be non-NULL; it is used to ensure termination.  */
+
+static tree
+get_diagnostic_tree_for_gassign_1 (const gassign *assign_stmt,
+				   hash_set<tree> *visited)
+{
+  enum tree_code code = gimple_assign_rhs_code (assign_stmt);
+
+  /* Reverse the effect of extract_ops_from_tree during
+     gimplification.  */
+  switch (get_gimple_rhs_class (code))
+    {
+    default:
+    case GIMPLE_INVALID_RHS:
+      gcc_unreachable ();
+    case GIMPLE_TERNARY_RHS:
+    case GIMPLE_BINARY_RHS:
+    case GIMPLE_UNARY_RHS:
+      {
+	tree t = make_node (code);
+	TREE_TYPE (t) = TREE_TYPE (gimple_assign_lhs (assign_stmt));
+	unsigned num_rhs_args = gimple_num_ops (assign_stmt) - 1;
+	for (unsigned i = 0; i < num_rhs_args; i++)
+	  {
+	    tree op = gimple_op (assign_stmt, i + 1);
+	    if (op)
+	      {
+		op = fixup_tree_for_diagnostic_1 (op, visited);
+		if (op == NULL_TREE)
+		  return NULL_TREE;
+	      }
+	    TREE_OPERAND (t, i) = op;
+	  }
+	return t;
+      }
+    case GIMPLE_SINGLE_RHS:
+      {
+	tree op = gimple_op (assign_stmt, 1);
+	op = fixup_tree_for_diagnostic_1 (op, visited);
+	return op;
+      }
+    }
+}
+
 /*  Subroutine of fixup_tree_for_diagnostic_1, called on SSA names.
-    Attempt to reconstruct a a tree expression for SSA_NAME
+    Attempt to reconstruct a tree expression for SSA_NAME
     based on its def-stmt.
     SSA_NAME must be non-NULL.
     VISITED must be non-NULL; it is used to ensure termination.
@@ -86,56 +130,22 @@ maybe_reconstruct_from_def_stmt (tree ssa_name,
     {
     default:
       gcc_unreachable ();
+    case GIMPLE_ASM:
     case GIMPLE_NOP:
     case GIMPLE_PHI:
       /* Can't handle these.  */
       return NULL_TREE;
     case GIMPLE_ASSIGN:
-      {
-	enum tree_code code = gimple_assign_rhs_code (def_stmt);
-
-	/* Reverse the effect of extract_ops_from_tree during
-	   gimplification.  */
-	switch (get_gimple_rhs_class (code))
-	  {
-	  default:
-	  case GIMPLE_INVALID_RHS:
-	    gcc_unreachable ();
-	  case GIMPLE_TERNARY_RHS:
-	  case GIMPLE_BINARY_RHS:
-	  case GIMPLE_UNARY_RHS:
-	    {
-	      tree t = make_node (code);
-	      TREE_TYPE (t) = TREE_TYPE (ssa_name);
-	      unsigned num_rhs_args = gimple_num_ops (def_stmt) - 1;
-	      for (unsigned i = 0; i < num_rhs_args; i++)
-		{
-		  tree op = gimple_op (def_stmt, i + 1);
-		  if (op)
-		    {
-		      op = fixup_tree_for_diagnostic_1 (op, visited);
-		      if (op == NULL_TREE)
-			return NULL_TREE;
-		    }
-		  TREE_OPERAND (t, i) = op;
-		}
-	      return t;
-	    }
-	  case GIMPLE_SINGLE_RHS:
-	    {
-	      tree op = gimple_op (def_stmt, 1);
-	      op = fixup_tree_for_diagnostic_1 (op, visited);
-	      return op;
-	    }
-	  }
-      }
-      break;
+      return get_diagnostic_tree_for_gassign_1
+	(as_a <const gassign *> (def_stmt), visited);
     case GIMPLE_CALL:
       {
 	gcall *call_stmt = as_a <gcall *> (def_stmt);
 	tree return_type = gimple_call_return_type (call_stmt);
 	tree fn = fixup_tree_for_diagnostic_1 (gimple_call_fn (call_stmt),
 					       visited);
+	if (fn == NULL_TREE)
+	  return NULL_TREE;
 	unsigned num_args = gimple_call_num_args (call_stmt);
 	auto_vec<tree> args (num_args);
 	for (unsigned i = 0; i < num_args; i++)
@@ -146,6 +156,7 @@ maybe_reconstruct_from_def_stmt (tree ssa_name,
 	      return NULL_TREE;
 	    args.quick_push (arg);
 	  }
+	gcc_assert (fn);
 	return build_call_array_loc (gimple_location (call_stmt),
 				     return_type, fn,
 				     num_args, args.address ());
@@ -165,8 +176,13 @@ fixup_tree_for_diagnostic_1 (tree expr, hash_set<tree> *visited)
       && TREE_CODE (expr) == SSA_NAME
       && (SSA_NAME_VAR (expr) == NULL_TREE
 	  || DECL_ARTIFICIAL (SSA_NAME_VAR (expr))))
-    if (tree expr2 = maybe_reconstruct_from_def_stmt (expr, visited))
-      return expr2;
+    {
+      if (tree var = SSA_NAME_VAR (expr))
+	if (VAR_P (var) && DECL_HAS_DEBUG_EXPR_P (var))
+	  return DECL_DEBUG_EXPR (var);
+      if (tree expr2 = maybe_reconstruct_from_def_stmt (expr, visited))
+	return expr2;
+    }
   return expr;
 }
 
@@ -186,6 +202,15 @@ fixup_tree_for_diagnostic (tree expr)
 {
   hash_set<tree> visited;
   return fixup_tree_for_diagnostic_1 (expr, &visited);
+}
+
+/* Attempt to generate a tree for the LHS of ASSIGN_STMT.  */
+
+tree
+get_diagnostic_tree_for_gassign (const gassign *assign_stmt)
+{
+  hash_set<tree> visited;
+  return get_diagnostic_tree_for_gassign_1 (assign_stmt, &visited);
 }
 
 } // namespace ana
@@ -215,10 +240,10 @@ is_special_named_call_p (const gcall *call, const char *funcname,
 /* Helper function for checkers.  Is FNDECL an extern fndecl at file scope
    that has the given FUNCNAME?
 
-   Compare with special_function_p in calls.c.  */
+   Compare with special_function_p in calls.cc.  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname)
+is_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -245,7 +270,7 @@ is_named_call_p (tree fndecl, const char *funcname)
 }
 
 /* Return true if FNDECL is within the namespace "std".
-   Compare with cp/typeck.c: decl_in_std_namespace_p, but this doesn't
+   Compare with cp/typeck.cc: decl_in_std_namespace_p, but this doesn't
    rely on being the C++ FE (or handle inline namespaces inside of std).  */
 
 static inline bool
@@ -270,7 +295,7 @@ is_std_function_p (const_tree fndecl)
 /* Like is_named_call_p, but look for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname)
+is_std_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -292,7 +317,7 @@ is_std_named_call_p (tree fndecl, const char *funcname)
    arguments?  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname,
+is_named_call_p (const_tree fndecl, const char *funcname,
 		 const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);
@@ -310,7 +335,7 @@ is_named_call_p (tree fndecl, const char *funcname,
 /* Like is_named_call_p, but check for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname,
+is_std_named_call_p (const_tree fndecl, const char *funcname,
 		     const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);
@@ -405,6 +430,44 @@ make_label_text (bool can_colorize, const char *fmt, ...)
   va_start (ap, fmt);
 
   ti.format_spec = _(fmt);
+  ti.args_ptr = &ap;
+  ti.err_no = 0;
+  ti.x_data = NULL;
+  ti.m_richloc = &rich_loc;
+
+  pp_format (pp, &ti);
+  pp_output_formatted_text (pp);
+
+  va_end (ap);
+
+  label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
+  delete pp;
+  return result;
+}
+
+/* As above, but with singular vs plural.  */
+
+label_text
+make_label_text_n (bool can_colorize, int n,
+		   const char *singular_fmt,
+		   const char *plural_fmt, ...)
+{
+  pretty_printer *pp = global_dc->printer->clone ();
+  pp_clear_output_area (pp);
+
+  if (!can_colorize)
+    pp_show_color (pp) = false;
+
+  text_info ti;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+
+  va_list ap;
+
+  va_start (ap, plural_fmt);
+
+  const char *fmt = ngettext (singular_fmt, plural_fmt, n);
+
+  ti.format_spec = fmt;
   ti.args_ptr = &ap;
   ti.err_no = 0;
   ti.x_data = NULL;

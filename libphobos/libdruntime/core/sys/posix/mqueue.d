@@ -147,7 +147,7 @@ int mq_notify (mqd_t mqdes, const(sigevent)* notification);
 
 
 /**
- * Receive the oldest message with the highest priority the the message queue
+ * Receive the oldest message with the highest priority the message queue
  *
  * Params:
  *   mqdes      = Message queue descriptor.
@@ -164,7 +164,7 @@ ssize_t mq_receive (mqd_t mqdes, char* msg_ptr, size_t msg_len, uint* msg_prio);
 
 
 /**
- * Receive the oldest message with the highest priority the the message queue,
+ * Receive the oldest message with the highest priority the message queue,
  * wait up to a certain timeout.
  *
  * Params:

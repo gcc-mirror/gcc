@@ -33,7 +33,7 @@ end module test
 ! Check that only one loop is analyzed, and that it can be parallelized.
 ! { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops1" } }
 ! TODO, PR70545.
-! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint\\)\\)" 1 "parloops1" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint, noclone\\)\\)" 1 "parloops1" { xfail *-*-* } } }
 ! { dg-final { scan-tree-dump-not "FAILED:" "parloops1" } }
 
 ! Check that the loop has been split off into a function.

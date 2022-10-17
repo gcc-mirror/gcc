@@ -2,7 +2,7 @@
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,13 +51,11 @@ void test01()
   static_assert( is_same<test22_type, const signed char>::value,
                  "make_signed<const char>" );
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_signed<volatile wchar_t>::type  	test23_type;
   static_assert( is_signed<test23_type>::value
                  && is_volatile<test23_type>::value
                  && sizeof(test23_type) == sizeof(volatile wchar_t),
                  "make_signed<volatile wchar_t>" );
-#endif
 
   // Chapter 48, chapter 20. Smallest rank such that new signed type same size.
   typedef make_signed<test_enum>::type  	test24_type;
@@ -68,7 +66,7 @@ void test01()
 
 #ifndef __STRICT_ANSI__
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   typedef make_signed<unsigned __int128>::type  test25_type;
   static_assert( is_same<test25_type, __int128>::value,
                  "make_signed<unsigned __int128>" );

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -65,18 +65,24 @@ gomp_aligned_alloc (size_t al, size_t size)
   void *ret;
   if (al < sizeof (void *))
     al = sizeof (void *);
-#ifdef HAVE_ALIGNED_ALLOC
-  ret = aligned_alloc (al, size);
-#elif defined(HAVE__ALIGNED_MALLOC)
-  ret = _aligned_malloc (size, al);
-#elif defined(HAVE_POSIX_MEMALIGN)
-  if (posix_memalign (&ret, al, size) != 0)
-    ret = NULL;
-#elif defined(HAVE_MEMALIGN)
+#ifdef HAVE_MEMALIGN
   {
     extern void *memalign (size_t, size_t);
     ret = memalign (al, size);
   }
+#elif defined(HAVE_POSIX_MEMALIGN)
+  if (posix_memalign (&ret, al, size) != 0)
+    ret = NULL;
+#elif defined(HAVE_ALIGNED_ALLOC)
+  {
+    size_t sz = (size + al - 1) & ~(al - 1);
+    if (__builtin_expect (sz >= size, 1))
+      ret = aligned_alloc (al, sz);
+    else
+      ret = NULL;
+  }
+#elif defined(HAVE__ALIGNED_MALLOC)
+  ret = _aligned_malloc (size, al);
 #else
   ret = NULL;
   if ((al & (al - 1)) == 0 && size)
@@ -100,6 +106,8 @@ gomp_aligned_free (void *ptr)
 {
 #ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
   free (ptr);
+#elif defined(HAVE__ALIGNED_MALLOC)
+  _aligned_free (ptr);
 #else
   if (ptr)
     free (((void **) ptr)[-1]);

@@ -1,16 +1,16 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail14304.d(26): Error: cannot modify read-only constant S14304(1)
-fail_compilation/fail14304.d(58):        called from here: sle14304.modify()
-fail_compilation/fail14304.d(35): Error: cannot modify read-only constant [1:1, 2:2]
-fail_compilation/fail14304.d(61):        called from here: modify14304(aae14304)
-fail_compilation/fail14304.d(41): Error: cannot modify read-only constant [1, 2, 3]
-fail_compilation/fail14304.d(64):        called from here: modify14304(cast(const(int)[])index14304)
-fail_compilation/fail14304.d(47): Error: cannot modify read-only constant [1.414, 1.732, 2.00000]
-fail_compilation/fail14304.d(67):        called from here: modify14304(cast(const(double)[])slice14304)
-fail_compilation/fail14304.d(53): Error: cannot modify read-only string literal "abc"
-fail_compilation/fail14304.d(70):        called from here: modify14304(cast(const(char)[])str14304)
+fail_compilation/fail14304.d(26): Error: reinterpreting cast from `const(S14304)*` to `S14304*` is not supported in CTFE
+fail_compilation/fail14304.d(58):        called from here: `sle14304.modify()`
+fail_compilation/fail14304.d(35): Error: cannot modify read-only constant `[1:1, 2:2]`
+fail_compilation/fail14304.d(61):        called from here: `modify14304(aae14304)`
+fail_compilation/fail14304.d(41): Error: cannot modify read-only constant `[1, 2, 3]`
+fail_compilation/fail14304.d(64):        called from here: `modify14304(cast(const(int)[])index14304)`
+fail_compilation/fail14304.d(46): Error: array cast from `immutable(double[])` to `double[]` is not supported at compile time
+fail_compilation/fail14304.d(67):        called from here: `modify14304(cast(const(double)[])slice14304)`
+fail_compilation/fail14304.d(53): Error: cannot modify read-only string literal `"abc"`
+fail_compilation/fail14304.d(70):        called from here: `modify14304(cast(const(char)[])str14304)`
 ---
 */
 

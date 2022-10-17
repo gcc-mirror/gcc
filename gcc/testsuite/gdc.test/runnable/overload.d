@@ -1,5 +1,13 @@
-// EXTRA_SOURCES: imports/ovs1528a.d imports/ovs1528b.d
-// EXTRA_SOURCES: imports/template_ovs1.d imports/template_ovs2.d imports/template_ovs3.d
+/*
+REQUIRED_ARGS: -preview=rvaluerefparam
+EXTRA_SOURCES: imports/ovs1528a.d imports/ovs1528b.d
+EXTRA_SOURCES: imports/template_ovs1.d imports/template_ovs2.d imports/template_ovs3.d
+EXTRA_FILES: imports/m8668a.d imports/m8668b.d imports/m8668c.d
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 import imports.template_ovs1;
 import imports.template_ovs2;
@@ -12,7 +20,7 @@ template Id(      T){ alias T Id; }
 template Id(alias A){ alias A Id; }
 
 /***************************************************/
-// 1528
+// https://issues.dlang.org/show_bug.cgi?id=1528
 
 int foo1528(long){ return 1; }
 int foo1528(int[]){ return 2; }
@@ -313,7 +321,7 @@ void test1528d()
 }
 
 /***************************************************/
-// 1680
+// https://issues.dlang.org/show_bug.cgi?id=1680
 
 struct S1680
 {
@@ -360,7 +368,7 @@ void test1680()
 }
 
 /***************************************************/
-// 7418
+// https://issues.dlang.org/show_bug.cgi?id=7418
 
 int foo7418(uint a)   { return 1; }
 int foo7418(char[] a) { return 2; }
@@ -378,7 +386,7 @@ void test7418()
 }
 
 /***************************************************/
-// 7552
+// https://issues.dlang.org/show_bug.cgi?id=7552
 
 struct S7552
 {
@@ -434,7 +442,7 @@ void test7552()
 }
 
 /***************************************************/
-// 8668
+// https://issues.dlang.org/show_bug.cgi?id=8668
 
 import imports.m8668a;
 import imports.m8668c; //replace with m8668b to make it work
@@ -446,7 +454,7 @@ void test8668()
 }
 
 /***************************************************/
-// 8943
+// https://issues.dlang.org/show_bug.cgi?id=8943
 
 void test8943()
 {
@@ -461,7 +469,7 @@ void test8943()
 }
 
 /***************************************************/
-// 9410
+// https://issues.dlang.org/show_bug.cgi?id=9410
 
 struct S {}
 int foo(float f, ref S s) { return 1; }
@@ -470,11 +478,17 @@ void test9410()
 {
     S s;
     assert(foo(1, s  ) == 1); // works fine. Print: ref
-    assert(foo(1, S()) == 2); // Fails with: Error: S() is not an lvalue
+
+    /* With the rvalue to ref param change, this calls the 'ref' version
+     * because both are the same match level, but the 'ref' version is
+     * considered "more specialized", as the non-ref version undergoes
+     * a "conversion" to call the ref version.
+     */
+    assert(foo(1, S()) == 1);
 }
 
 /***************************************************/
-// 10171
+// https://issues.dlang.org/show_bug.cgi?id=10171
 
 struct B10171(T) { static int x; }
 
@@ -484,7 +498,8 @@ void test10171()
 }
 
 /***************************************************/
-// 1900 - template overload set
+// https://issues.dlang.org/show_bug.cgi?id=1900
+// template overload set
 
 void test1900a()
 {
@@ -623,7 +638,7 @@ void test1900e()
 }
 
 /***************************************************/
-// 1900
+// https://issues.dlang.org/show_bug.cgi?id=1900
 
 void test1900()
 {
@@ -669,7 +684,7 @@ mixin Foo1900!(char) B1900;
 alias Bar1900!(int) bar1900;    // error
 
 /***************************************************/
-// 7780
+// https://issues.dlang.org/show_bug.cgi?id=7780
 
 mixin template A7780()
 {
@@ -710,7 +725,7 @@ void test7849()
 }
 
 /***************************************************/
-// 8352
+// https://issues.dlang.org/show_bug.cgi?id=8352
 
 void test8352()
 {
@@ -721,7 +736,7 @@ void test8352()
 }
 
 /***************************************************/
-// 8441
+// https://issues.dlang.org/show_bug.cgi?id=8441
 
 mixin template T8441a(string i)
 {
@@ -819,7 +834,7 @@ void test8441c()
 }
 
 /***************************************************/
-// 9235
+// https://issues.dlang.org/show_bug.cgi?id=9235
 
 template FlowEvaluator9235()
 {
@@ -893,7 +908,7 @@ void test9235b()
 }
 
 /***************************************************/
-// 10658
+// https://issues.dlang.org/show_bug.cgi?id=10658
 
 alias Val10658 = imports.template_ovs1.Val10658;
 alias Val10658 = imports.template_ovs2.Val10658;
@@ -1009,7 +1024,7 @@ void test11785()
 }
 
 /***************************************************/
-// 11915
+// https://issues.dlang.org/show_bug.cgi?id=11915
 
 int f11915(    int) { return 1; }
 int f11915(ref int) { return 2; }
@@ -1025,7 +1040,7 @@ void test11915()
 }
 
 /***************************************************/
-// 11916
+// https://issues.dlang.org/show_bug.cgi?id=11916
 
 auto f11916(T)(    T)            { return 1; }
 auto f11916(T)(out T) if (false) { return 2; }
@@ -1054,12 +1069,12 @@ void test11916()
 }
 
 /***************************************************/
-// 13783
+// https://issues.dlang.org/show_bug.cgi?id=13783
 
 enum E13783 { a = 5 }
 
     inout(int) f(    inout(int) t) { return t * 2; }
-ref inout(int) f(ref inout(int) t) { return t; }
+ref inout(int) f(return ref inout(int) t) { return t; }
 
 void test13783()
 {
@@ -1068,7 +1083,7 @@ void test13783()
 }
 
 /***************************************************/
-// 14858
+// https://issues.dlang.org/show_bug.cgi?id=14858
 
 int foo14858()() { return 1; }
 int bar14858(int) { return 2; }
@@ -1083,7 +1098,7 @@ void test14858()
 }
 
 /***************************************************/
-// 14989
+// https://issues.dlang.org/show_bug.cgi?id=14989
 
 template Foo14989(T) if (is(T == int))    { enum Foo14989 = 1; }
 template Bar14989(T) if (is(T == double)) { enum Bar14989 = 2; }
@@ -1136,7 +1151,7 @@ void test14989()
 }
 
 /***************************************************/
-// 14965
+// https://issues.dlang.org/show_bug.cgi?id=14965
 
 auto f14965a1() { return f14965a1(123); }
 int f14965a1(int x) { return x; }
@@ -1212,6 +1227,40 @@ void test14965()
 }
 
 /***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=21481
+
+struct S21481
+{
+    void funB2(char a) {}
+    alias funB = funB2;
+    // template as first symbol in overload set and overloading an alias
+    void funB()(float t) {}
+    void funB(int b) {}     // function was lost -> OK now
+}
+
+void test21481()
+{
+    static assert(__traits(getOverloads, S21481, "funB", true).length == 3);
+}
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=21522
+
+struct S21522
+{
+    // alias to template as first symbol in overload set
+    void funA2()(int a) {}
+    void funA2(char a) {}   // function was lost -> OK now
+    alias funA = funA2;
+    void funA(float b) {}
+}
+
+void test21522()
+{
+    static assert(__traits(getOverloads, S21522, "funA", true).length == 3);
+}
+
+/***************************************************/
 
 int main()
 {
@@ -1247,6 +1296,8 @@ int main()
     test13783();
     test14858();
     test14965();
+    test21481();
+    test21522();
 
     printf("Success\n");
     return 0;

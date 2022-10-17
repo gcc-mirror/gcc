@@ -7,8 +7,8 @@
 package runtime
 
 import (
+	"internal/goarch"
 	"runtime/internal/atomic"
-	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -24,6 +24,10 @@ const (
 	tflagRegularMemory tflag = 1 << 3 // equal and hash can treat values of this type as a single region of t.size bytes
 )
 
+// Needs to be in sync with
+// go/types.cc
+// ../reflect/type.go:/^type.rtype.
+// ../internal/reflectlite/type.go:/^type.rtype.
 type _type struct {
 	size       uintptr
 	ptrdata    uintptr
@@ -118,7 +122,7 @@ type maptype struct {
 }
 
 // Note: flag values must match those used in the TMAP case
-// in ../cmd/compile/internal/gc/reflect.go:dtypesym.
+// in ../cmd/compile/internal/reflectdata/reflect.go:writeType.
 func (mt *maptype) indirectkey() bool { // store ptr to key instead of key itself
 	return mt.flags&1 != 0
 }
@@ -233,7 +237,7 @@ func reflect_lookupType(s string) *_type {
 			typelist.types = make(map[string]uintptr, n)
 			for _, list := range typelist.lists {
 				for i := 0; i < list.count; i++ {
-					typ := *(**_type)(add(unsafe.Pointer(&list.types), uintptr(i)*sys.PtrSize))
+					typ := *(**_type)(add(unsafe.Pointer(&list.types), uintptr(i)*goarch.PtrSize))
 					typelist.types[typ.string()] = uintptr(unsafe.Pointer(typ))
 				}
 			}

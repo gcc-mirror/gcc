@@ -1,12 +1,11 @@
 /*
 REQUIRED_ARGS: -o-
-PERMUTE_ARGS:
 TEST_OUTPUT:
 ---
-fail_compilation/fail11562.d(16): Error: cannot goto in or out of `finally` block
-fail_compilation/fail11562.d(37): Error: cannot goto in or out of `finally` block
-fail_compilation/fail11562.d(49): Error: cannot goto in or out of `finally` block
-fail_compilation/fail11562.d(64): Error: cannot goto in or out of `finally` block
+fail_compilation/fail11562.d(15): Error: cannot `goto` in or out of `finally` block
+fail_compilation/fail11562.d(36): Error: cannot `goto` in or out of `finally` block
+fail_compilation/fail11562.d(48): Error: cannot `goto` in or out of `finally` block
+fail_compilation/fail11562.d(63): Error: cannot `goto` in or out of `finally` block
 ---
 */
 

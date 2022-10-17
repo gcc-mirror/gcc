@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-Wcast-result" }
+// { dg-options "-Wcast-result -Wno-deprecated" }
 
 void test()
 {

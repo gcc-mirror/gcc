@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,18 @@ void test01()
 {
   X x[1];
   // Should not be able to create vector using uninitialized_copy:
-  std::vector<X> v1{x, x+1};	// { dg-error "here" }
+  std::vector<X> v1{x, x+1};	// { dg-error "here" "" { target c++17_down } }
+  // { dg-error "deleted function 'X::X" "" { target c++20 } 0 }
+}
+
+void test02()
+{
+  struct Y : X { };
 
   // Should not be able to create vector using uninitialized_fill_n:
-  std::vector<X> v2{2u, X{}};	// { dg-error "here" }
+  std::vector<Y> v2{2u, Y{}};	// { dg-error "here" "" { target c++17_down } }
+  // { dg-error "deleted function .*Y::Y" "" { target c++20 } 0 }
 }
-// { dg-error "constructible from value" "" { target *-*-* } 0 }
-// { dg-error "constructible from input" "" { target *-*-* } 0 }
+
+// { dg-error "must be constructible from input type" "" { target *-*-* } 0 }
+// { dg-prune-output "construct_at" }

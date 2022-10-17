@@ -1,28 +1,37 @@
 /**
- * The exception module defines all system-level exceptions and provides a
- * mechanism to alter system-level error handling.
- *
- * Copyright: Copyright Sean Kelly 2005 - 2013.
- * License: Distributed under the
- *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
- *    (See accompanying file LICENSE)
- * Authors:   Sean Kelly and Jonathan M Davis
- * Source:    $(DRUNTIMESRC core/_exception.d)
- */
+    The exception module defines all system-level exceptions and provides a
+    mechanism to alter system-level error handling.
 
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
+    Copyright: Copyright Sean Kelly 2005 - 2013.
+    License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+    Authors:   Sean Kelly and $(HTTP jmdavisprog.com, Jonathan M Davis)
+    Source:    $(DRUNTIMESRC core/_exception.d)
  */
 module core.exception;
+
+// Compiler lowers final switch default case to this (which is a runtime error)
+void __switch_errorT()(string file = __FILE__, size_t line = __LINE__) @trusted
+{
+    // Consider making this a compile time check.
+    version (D_Exceptions)
+        throw staticError!SwitchError("No appropriate switch clause found", file, line, null);
+    else
+        assert(0, "No appropriate switch clause found");
+}
 
 /**
  * Thrown on a range error.
  */
 class RangeError : Error
 {
-    @safe pure nothrow this( string file = __FILE__, size_t line = __LINE__, Throwable next = null )
+    this( string file = __FILE__, size_t line = __LINE__, Throwable next = null ) @nogc nothrow pure @safe
     {
         super( "Range violation", file, line, next );
+    }
+
+    protected this( string msg, string file, size_t line, Throwable next = null ) @nogc nothrow pure @safe
+    {
+        super( msg, file, line, next );
     }
 }
 
@@ -45,23 +54,158 @@ unittest
     }
 }
 
+/**
+ * Thrown when an out of bounds array index is accessed.
+ */
+class ArrayIndexError : RangeError
+{
+    /// Index into array
+    const size_t index;
+    /// Length of indexed array
+    const size_t length;
+
+    // Buffer to avoid GC allocations
+    private immutable char[100] msgBuf = '\0';
+
+    this(size_t index, size_t length, string file = __FILE__,
+         size_t line = __LINE__, Throwable next = null) @nogc nothrow pure @safe
+    {
+        this.index  = index;
+        this.length = length;
+
+        // Constructing the message is a bit clumsy:
+        // It's essentially `printf("index [%zu] is out of bounds for array of length [%zu]", index, length)`,
+        // but even `snprintf` isn't `pure`.
+        // Also string concatenation isn't `@nogc`, and casting to/from immutable isn't `@safe`
+        import core.internal.string : unsignedToTempString;
+        char[msgBuf.length] buf = void;
+        char[20] tmpBuf = void;
+        char[] sink = buf[];
+        sink.rangeMsgPut("index [");
+        sink.rangeMsgPut(unsignedToTempString!10(index, tmpBuf));
+        sink.rangeMsgPut("] is out of bounds for array of length ");
+        sink.rangeMsgPut(unsignedToTempString!10(length, tmpBuf));
+        this.msgBuf = buf;
+        super(msgBuf[0..$-sink.length], file, line, next);
+    }
+}
+
+@safe pure unittest
+{
+    assert(new ArrayIndexError(900, 700).msg == "index [900] is out of bounds for array of length 700");
+    // Ensure msg buffer doesn't overflow on large numbers
+    assert(new ArrayIndexError(size_t.max, size_t.max-1).msg);
+}
+
+unittest
+{
+    try
+    {
+        _d_arraybounds_indexp("test", 400, 9, 3);
+        assert(0, "no ArrayIndexError thrown");
+    }
+    catch (ArrayIndexError re)
+    {
+        assert(re.file   == "test");
+        assert(re.line   == 400);
+        assert(re.index  == 9);
+        assert(re.length == 3);
+    }
+}
+
+/**
+ * Thrown when an out of bounds array slice is created
+ */
+class ArraySliceError : RangeError
+{
+    /// Lower/upper bound passed to slice: `array[lower .. upper]`
+    const size_t lower, upper;
+    /// Length of sliced array
+    const size_t length;
+
+    private immutable char[120] msgBuf = '\0';
+
+    this(size_t lower, size_t upper, size_t length, string file = __FILE__,
+         size_t line = __LINE__, Throwable next = null) @nogc nothrow pure @safe
+    {
+        this.lower  = lower;
+        this.upper  = upper;
+        this.length = length;
+
+        // Constructing the message is a bit clumsy for the same reasons as ArrayIndexError
+        import core.internal.string : unsignedToTempString;
+        char[msgBuf.length] buf = void;
+        char[20] tmpBuf = void;
+        char[] sink = buf;
+        sink.rangeMsgPut("slice [");
+        sink.rangeMsgPut(unsignedToTempString!10(lower, tmpBuf));
+        sink.rangeMsgPut(" .. ");
+        sink.rangeMsgPut(unsignedToTempString!10(upper, tmpBuf));
+        sink.rangeMsgPut("] ");
+        if (lower > upper)
+        {
+            sink.rangeMsgPut("has a larger lower index than upper index");
+        }
+        else
+        {
+            sink.rangeMsgPut("extends past source array of length ");
+            sink.rangeMsgPut(unsignedToTempString!10(length, tmpBuf));
+        }
+
+        this.msgBuf = buf;
+        super(msgBuf[0..$-sink.length], file, line, next);
+    }
+}
+
+@safe pure unittest
+{
+    assert(new ArraySliceError(40, 80, 20).msg == "slice [40 .. 80] extends past source array of length 20");
+    assert(new ArraySliceError(90, 70, 20).msg == "slice [90 .. 70] has a larger lower index than upper index");
+    // Ensure msg buffer doesn't overflow on large numbers
+    assert(new ArraySliceError(size_t.max, size_t.max, size_t.max-1).msg);
+}
+
+unittest
+{
+    try
+    {
+        _d_arraybounds_slicep("test", 400, 1, 7, 3);
+        assert(0, "no ArraySliceError thrown");
+    }
+    catch (ArraySliceError re)
+    {
+        assert(re.file   == "test");
+        assert(re.line   == 400);
+        assert(re.lower  == 1);
+        assert(re.upper  == 7);
+        assert(re.length == 3);
+    }
+}
+
+/// Mini `std.range.primitives: put` for constructor of ArraySliceError / ArrayIndexError
+private void rangeMsgPut(ref char[] r, scope const(char)[] e) @nogc nothrow pure @safe
+{
+    assert(r.length >= e.length); // don't throw ArraySliceError inside ArrayIndexError ctor
+    r[0 .. e.length] = e[];
+    r = r[e.length .. $];
+}
 
 /**
  * Thrown on an assert error.
  */
 class AssertError : Error
 {
-    @safe pure nothrow this( string file, size_t line )
+    @safe pure nothrow @nogc this( string file, size_t line )
     {
         this(cast(Throwable)null, file, line);
     }
 
-    @safe pure nothrow this( Throwable next, string file = __FILE__, size_t line = __LINE__ )
+    @safe pure nothrow @nogc this( Throwable next, string file = __FILE__, size_t line = __LINE__ )
     {
         this( "Assertion failure", file, line, next);
     }
 
-    @safe pure nothrow this( string msg, string file = __FILE__, size_t line = __LINE__, Throwable next = null )
+    @safe pure nothrow @nogc this( string msg, string file = __FILE__, size_t line = __LINE__, Throwable next = null )
     {
         super( msg, file, line, next );
     }
@@ -187,32 +331,6 @@ unittest
 }
 
 /**
- * Thrown on hidden function error.
- * $(RED Deprecated.
- *   This feature is not longer part of the language.)
- */
-deprecated class HiddenFuncError : Error
-{
-    @safe pure nothrow this( ClassInfo ci )
-    {
-        super( "Hidden method called for " ~ ci.name );
-    }
-}
-
-deprecated unittest
-{
-    ClassInfo info = new ClassInfo;
-    info.name = "testInfo";
-
-    {
-        auto hfe = new HiddenFuncError(info);
-        assert(hfe.next is null);
-        assert(hfe.msg == "Hidden method called for testInfo");
-    }
-}
-
-
-/**
  * Thrown on an out of memory error.
  */
 class OutOfMemoryError : Error
@@ -312,20 +430,32 @@ unittest
 
 
 /**
+* Thrown on a configuration error.
+*/
+class ForkError : Error
+{
+    this( string file = __FILE__, size_t line = __LINE__, Throwable next = null ) @nogc nothrow pure @safe
+    {
+        super( "fork() failed", file, line, next );
+    }
+}
+
+
+/**
  * Thrown on a switch error.
  */
 class SwitchError : Error
 {
-    @safe pure nothrow this( string file = __FILE__, size_t line = __LINE__, Throwable next = null )
+    @safe pure nothrow @nogc this( string msg, string file = __FILE__, size_t line = __LINE__, Throwable next = null )
     {
-        super( "No appropriate switch clause found", file, line, next );
+        super( msg, file, line, next );
     }
 }
 
 unittest
 {
     {
-        auto se = new SwitchError();
+        auto se = new SwitchError("No appropriate switch clause found");
         assert(se.file == __FILE__);
         assert(se.line == __LINE__ - 2);
         assert(se.next is null);
@@ -333,7 +463,7 @@ unittest
     }
 
     {
-        auto se = new SwitchError("hello", 42, new Exception("It's an Exception!"));
+        auto se = new SwitchError("No appropriate switch clause found", "hello", 42, new Exception("It's an Exception!"));
         assert(se.file == "hello");
         assert(se.line == 42);
         assert(se.next !is null);
@@ -349,7 +479,7 @@ class UnicodeException : Exception
 {
     size_t idx;
 
-    this( string msg, size_t idx, string file = __FILE__, size_t line = __LINE__, Throwable next = null ) @safe pure nothrow
+    this( string msg, size_t idx, string file = __FILE__, size_t line = __LINE__, Throwable next = null ) @safe pure nothrow @nogc
     {
         super( msg, file, line, next );
         this.idx = idx;
@@ -407,19 +537,6 @@ alias AssertHandler = void function(string file, size_t line, string msg) nothro
     _assertHandler = handler;
 }
 
-/**
- * Overrides the default assert hander with a user-supplied version.
- * $(RED Deprecated.
- *   Please use $(LREF assertHandler) instead.)
- *
- * Params:
- *  h = The new assert handler.  Set to null to use the default handler.
- */
-deprecated void setAssertHandler( AssertHandler h ) @trusted nothrow @nogc
-{
-    assertHandler = h;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Overridable Callbacks
@@ -438,7 +555,7 @@ deprecated void setAssertHandler( AssertHandler h ) @trusted nothrow @nogc
 extern (C) void onAssertError( string file = __FILE__, size_t line = __LINE__ ) nothrow
 {
     if ( _assertHandler is null )
-        throw new AssertError( file, line );
+        throw staticError!AssertError(file, line);
     _assertHandler( file, line, null);
 }
 
@@ -456,7 +573,7 @@ extern (C) void onAssertError( string file = __FILE__, size_t line = __LINE__ ) 
 extern (C) void onAssertErrorMsg( string file, size_t line, string msg ) nothrow
 {
     if ( _assertHandler is null )
-        throw new AssertError( msg, file, line );
+        throw staticError!AssertError(msg, file, line);
     _assertHandler( file, line, msg );
 }
 
@@ -482,7 +599,7 @@ extern (C) void onUnittestErrorMsg( string file, size_t line, string msg ) nothr
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * A callback for array bounds errors in D.  A $(LREF RangeError) will be thrown.
+ * A callback for general array bounds errors in D. A $(LREF RangeError) will be thrown.
  *
  * Params:
  *  file = The name of the file that signaled this error.
@@ -491,11 +608,47 @@ extern (C) void onUnittestErrorMsg( string file, size_t line, string msg ) nothr
  * Throws:
  *  $(LREF RangeError).
  */
-extern (C) void onRangeError( string file = __FILE__, size_t line = __LINE__ ) @safe pure nothrow
+extern (C) void onRangeError( string file = __FILE__, size_t line = __LINE__ ) @trusted pure nothrow @nogc
 {
-    throw new RangeError( file, line, null );
+    throw staticError!RangeError(file, line, null);
 }
 
+/**
+ * A callback for array slice out of bounds errors in D.
+ *
+ * Params:
+ *  lower  = the lower bound of the index passed of a slice
+ *  upper  = the upper bound of the index passed of a slice or the index if not a slice
+ *  length = length of the array
+ *  file = The name of the file that signaled this error.
+ *  line = The line number on which this error occurred.
+ *
+ * Throws:
+ *  $(LREF ArraySliceError).
+ */
+extern (C) void onArraySliceError( size_t lower = 0, size_t upper = 0, size_t length = 0,
+                              string file = __FILE__, size_t line = __LINE__ ) @trusted pure nothrow @nogc
+{
+    throw staticError!ArraySliceError(lower, upper, length, file, line, null);
+}
+
+/**
+ * A callback for array index out of bounds errors in D.
+ *
+ * Params:
+ *  index  = index in the array
+ *  length = length of the array
+ *  file = The name of the file that signaled this error.
+ *  line = The line number on which this error occurred.
+ *
+ * Throws:
+ *  $(LREF ArrayIndexError).
+ */
+extern (C) void onArrayIndexError( size_t index = 0, size_t length = 0,
+                              string file = __FILE__, size_t line = __LINE__ ) @trusted pure nothrow @nogc
+{
+    throw staticError!ArrayIndexError(index, length, file, line, null);
+}
 
 /**
  * A callback for finalize errors in D.  A $(LREF FinalizeError) will be thrown.
@@ -516,42 +669,49 @@ extern (C) void onFinalizeError( TypeInfo info, Throwable e, string file = __FIL
     throw staticError!FinalizeError(info, e, file, line);
 }
 
-
-/**
- * A callback for hidden function errors in D.  A $(LREF HiddenFuncError) will be
- * thrown.
- * $(RED Deprecated.
- *   This feature is not longer part of the language.)
- *
- * Throws:
- *  $(LREF HiddenFuncError).
- */
-deprecated extern (C) void onHiddenFuncError( Object o ) @safe pure nothrow
+version (D_BetterC)
 {
-    throw new HiddenFuncError( typeid(o) );
+    // When compiling with -betterC we use template functions so if they are
+    // used the bodies are copied into the user's program so there is no need
+    // for the D runtime during linking.
+
+    // In the future we might want to convert all functions in this module to
+    // templates even for ordinary builds instead of providing them as an
+    // extern(C) library.
+
+    void onOutOfMemoryError()(void* pretend_sideffect = null) @nogc nothrow pure @trusted
+    {
+        assert(0, "Memory allocation failed");
+    }
+    alias onOutOfMemoryErrorNoGC = onOutOfMemoryError;
+
+    void onInvalidMemoryOperationError()(void* pretend_sideffect = null) @nogc nothrow pure @trusted
+    {
+        assert(0, "Invalid memory operation");
+    }
 }
-
-
-/**
- * A callback for out of memory errors in D.  An $(LREF OutOfMemoryError) will be
- * thrown.
- *
- * Throws:
- *  $(LREF OutOfMemoryError).
- */
-extern (C) void onOutOfMemoryError(void* pretend_sideffect = null) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
+else
 {
-    // NOTE: Since an out of memory condition exists, no allocation must occur
-    //       while generating this object.
-    throw staticError!OutOfMemoryError();
-}
+    /**
+     * A callback for out of memory errors in D.  An $(LREF OutOfMemoryError) will be
+     * thrown.
+     *
+     * Throws:
+     *  $(LREF OutOfMemoryError).
+     */
+    extern (C) void onOutOfMemoryError(void* pretend_sideffect = null) @trusted pure nothrow @nogc /* dmd @@@BUG11461@@@ */
+    {
+        // NOTE: Since an out of memory condition exists, no allocation must occur
+        //       while generating this object.
+        throw staticError!OutOfMemoryError();
+    }
 
-extern (C) void onOutOfMemoryErrorNoGC() @trusted nothrow @nogc
-{
-    // suppress stacktrace until they are @nogc
-    throw staticError!OutOfMemoryError(false);
+    extern (C) void onOutOfMemoryErrorNoGC() @trusted nothrow @nogc
+    {
+        // suppress stacktrace until they are @nogc
+        throw staticError!OutOfMemoryError(false);
+    }
 }
-
 
 /**
  * A callback for invalid memory operations in D.  An
@@ -569,20 +729,19 @@ extern (C) void onInvalidMemoryOperationError(void* pretend_sideffect = null) @t
 
 
 /**
- * A callback for switch errors in D.  A $(LREF SwitchError) will be thrown.
+ * A callback for errors in the case of a failed fork in D.  A $(LREF ForkError) will be thrown.
  *
  * Params:
  *  file = The name of the file that signaled this error.
  *  line = The line number on which this error occurred.
  *
  * Throws:
- *  $(LREF SwitchError).
+ *  $(LREF ConfigurationError).
  */
-extern (C) void onSwitchError( string file = __FILE__, size_t line = __LINE__ ) @safe pure nothrow
+extern (C) void onForkError( string file = __FILE__, size_t line = __LINE__ ) @trusted pure nothrow @nogc
 {
-    throw new SwitchError( file, line, null );
+    throw staticError!ForkError( file, line, null );
 }
-
 
 /**
  * A callback for unicode errors in D.  A $(LREF UnicodeException) will be thrown.
@@ -611,7 +770,6 @@ extern (C) void onAssertErrorMsg(string file, size_t line, string msg);
 extern (C) void onUnittestErrorMsg(string file, size_t line, string msg);
 extern (C) void onRangeError(string file, size_t line);
 extern (C) void onHiddenFuncError(Object o);
-extern (C) void onSwitchError(string file, size_t line);
 +/
 
 /***********************************
@@ -621,8 +779,6 @@ extern (C) void onSwitchError(string file, size_t line);
 
 extern (C)
 {
-    // Use ModuleInfo to get file name for "m" versions
-
     /* One of these three is called upon an assert() fail.
      */
     void _d_assertp(immutable(char)* file, uint line)
@@ -659,34 +815,48 @@ extern (C)
         _d_unittest_msg("unittest failure", file, line);
     }
 
-    /* Called when an array index is out of bounds
-     */
+    /// Called when an invalid array index/slice or associative array key is accessed
     void _d_arrayboundsp(immutable(char*) file, uint line)
     {
         import core.stdc.string : strlen;
         onRangeError(file[0 .. strlen(file)], line);
     }
 
+    /// ditto
     void _d_arraybounds(string file, uint line)
     {
         onRangeError(file, line);
     }
 
-    /* Called when a switch statement has no DefaultStatement, yet none of the cases match
-     */
-    void _d_switch_errorm(immutable(ModuleInfo)* m, uint line)
+    /// Called when an out of range slice of an array is created
+    void _d_arraybounds_slicep(immutable(char*) file, uint line, size_t lower, size_t upper, size_t length)
     {
-        onSwitchError(m.name, line);
+        import core.stdc.string : strlen;
+        onArraySliceError(lower, upper, length, file[0 .. strlen(file)], line);
     }
 
-    void _d_switch_error(string file, uint line)
+    /// ditto
+    void _d_arraybounds_slice(string file, uint line, size_t lower, size_t upper, size_t length)
     {
-        onSwitchError(file, line);
+        onArraySliceError(lower, upper, length, file, line);
+    }
+
+    /// Called when an out of range array index is accessed
+    void _d_arraybounds_indexp(immutable(char*) file, uint line, size_t index, size_t length)
+    {
+        import core.stdc.string : strlen;
+        onArrayIndexError(index, length, file[0 .. strlen(file)], line);
+    }
+
+    /// ditto
+    void _d_arraybounds_index(string file, uint line, size_t index, size_t length)
+    {
+        onArrayIndexError(index, length, file, line);
     }
 }
 
 // TLS storage shared for all errors, chaining might create circular reference
-private void[128] _store;
+private align(2 * size_t.sizeof) void[256] _store;
 
 // only Errors for now as those are rarely chained
 private T staticError(T, Args...)(auto ref Args args)
@@ -698,11 +868,11 @@ private T staticError(T, Args...)(auto ref Args args)
         static assert(__traits(classInstanceSize, T) <= _store.length,
                       T.stringof ~ " is too large for staticError()");
 
-        _store[0 .. __traits(classInstanceSize, T)] = typeid(T).initializer[];
         return cast(T) _store.ptr;
     }
     auto res = (cast(T function() @trusted pure nothrow @nogc) &get)();
-    res.__ctor(args);
+    import core.lifetime : emplace;
+    emplace(res, args);
     return res;
 }
 

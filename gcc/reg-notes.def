@@ -1,5 +1,5 @@
 /* Register note definitions.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -209,7 +209,7 @@ REG_NOTE (TM)
    ACCUMULATE_OUTGOING_ARGS is false.  */
 REG_NOTE (ARGS_SIZE)
 
-/* Used for communication between IRA and caller-save.c, indicates
+/* Used for communication between IRA and caller-save.cc, indicates
    that the return value of a call can be used to reinitialize a
    pseudo reg.  */
 REG_NOTE (RETURNED)

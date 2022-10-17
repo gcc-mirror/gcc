@@ -1,3 +1,40 @@
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* plugin/configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* plugin/configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_load_image):
+	Add (unused) uint64_t **rev_fn_table argument.
+
+2022-08-25  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* plugin/configure: Regenerate.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_num_devices):
+	Return -1 when device available but omp_requires_mask != 0.
+
+2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	* include/coi/source/COIBuffer_source.h: Convert 2 chars to
+	unicode.
+
 2021-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR libgomp/100747

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,7 +72,7 @@ package System.Stack_Checking.Operations is
 private
    Cache : aliased Stack_Access := Null_Stack;
 
-   pragma Export (C, Cache, "_gnat_stack_cache");
-   pragma Export (C, Stack_Check, "_gnat_stack_check");
+   pragma Export (C, Cache, "__gnat_stack_cache");
+   pragma Export (C, Stack_Check, "__gnat_stack_check");
 
 end System.Stack_Checking.Operations;

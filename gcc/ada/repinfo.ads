@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,12 +118,12 @@ package Repinfo is
    --  this field is done only in -gnatR3 mode, and in other modes, the value
    --  is set to Uint_Minus_1.
 
-   subtype Node_Ref is Uint;
+   subtype Node_Ref is Unegative;
    --  Subtype used for negative Uint values used to represent nodes
 
    subtype Node_Ref_Or_Val is Uint;
-   --  Subtype used for values that can either be a Node_Ref (negative)
-   --  or a value (non-negative)
+   --  Subtype used for values that can be a Node_Ref (negative) or a value
+   --  (non-negative) or No_Uint.
 
    type TCode is range 0 .. 27;
    --  Type used on Ada side to represent DEFTREECODE values defined in
@@ -189,7 +189,7 @@ package Repinfo is
    --    "name"                 :  string
    --    "location"             :  string
    --    "record"               :  array of components
-   --    "variant"              :  array of variants
+   --    "[parent_]*variant"    :  array of variants
    --    "formal"               :  array of formal parameters
    --    "mechanism"            :  string
    --    "Size"                 :  numerical expression
@@ -209,8 +209,9 @@ package Repinfo is
    --    fully qualified Ada name. The value of "location" is the expanded
    --    chain of instantiation locations that contains the entity.
    --    "record" is present for every record type and its value is the list of
-   --    components. "variant" is present only if the record type has a variant
-   --    part and its value is the list of variants.
+   --    components. "[parent_]*variant" is present only if the record type, or
+   --    one of its ancestors (parent, grand-parent, etc) if it's an extension,
+   --    has a variant part and its value is the list of variants.
    --    "formal" is present for every subprogram and entry, and its value is
    --    the list of formal parameters. "mechanism" is present for functions
    --    only and its value is the return mechanim.
@@ -305,7 +306,7 @@ package Repinfo is
    --  In the case of components, if the location of the component is static,
    --  then all four fields (Component_Bit_Offset, Normalized_Position, Esize,
    --  and Normalized_First_Bit) are set to appropriate values. In the case of
-   --  a non-static component location, Component_Bit_Offset is not used and
+   --  a nonstatic component location, Component_Bit_Offset is not used and
    --  is left set to Unknown. Normalized_Position and Normalized_First_Bit
    --  are set appropriately.
 

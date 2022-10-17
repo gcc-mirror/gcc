@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,6 @@ with Restrict;       use Restrict;
 with Rident;         use Rident;
 with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
-with Sem_Ch8;        use Sem_Ch8;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
 with Sinfo;          use Sinfo;
@@ -76,113 +75,16 @@ package body Exp_Ch11 is
    ---------------------------
 
    --  For a handled statement sequence that has a cleanup (At_End_Proc
-   --  field set), an exception handler of the following form is required:
+   --  field set), perform any needed expansion.
 
-   --     exception
-   --       when all others =>
-   --          cleanup call
-   --          raise;
-
-   --  Note: this exception handler is treated rather specially by
-   --  subsequent expansion in two respects:
-
-   --    The normal call to Undefer_Abort is omitted
-   --    The raise call does not do Defer_Abort
-
-   --  This is because the current tasking code seems to assume that
-   --  the call to the cleanup routine that is made from an exception
-   --  handler for the abort signal is called with aborts deferred.
-
-   --  This expansion is only done if we have front end exception handling.
-   --  If we have back end exception handling, then the AT END handler is
-   --  left alone, and cleanups (including the exceptional case) are handled
-   --  by the back end.
-
-   --  In the front end case, the exception handler described above handles
-   --  the exceptional case. The AT END handler is left in the generated tree
-   --  and the code generator (e.g. gigi) must still handle proper generation
-   --  of cleanup calls for the non-exceptional case.
+   --  Do nothing by default. We used to perform a special expansion for
+   --  front-end SJLJ, and we may want to customize this processing in
+   --  the future for new back-ends.
 
    procedure Expand_At_End_Handler (HSS : Node_Id; Blk_Id : Entity_Id) is
-      Clean   : constant Entity_Id  := Entity (At_End_Proc (HSS));
-      Ohandle : Node_Id;
-      Stmnts  : List_Id;
-
-      Loc : constant Source_Ptr := No_Location;
-      --  Location used for expansion. We quite deliberately do not set a
-      --  specific source location for the expanded handler. This makes
-      --  sense since really the handler is not associated with specific
-      --  source. We used to set this to Sloc (Clean), but that caused
-      --  useless and annoying bouncing around of line numbers in the
-      --  debugger in some circumstances.
-
+      pragma Unreferenced (Blk_Id);
    begin
-      pragma Assert (Present (Clean));
-      pragma Assert (No (Exception_Handlers (HSS)));
-
-      --  Back end exception schemes don't need explicit handlers to
-      --  trigger AT-END actions on exceptional paths.
-
-      if Back_End_Exceptions then
-         return;
-      end if;
-
-      --  Don't expand an At End handler if we have already had configurable
-      --  run-time violations, since likely this will just be a matter of
-      --  generating useless cascaded messages
-
-      if Configurable_Run_Time_Violations > 0 then
-         return;
-      end if;
-
-      --  Don't expand an At End handler if we are not allowing exceptions
-      --  or if exceptions are transformed into local gotos, and never
-      --  propagated (No_Exception_Propagation).
-
-      if No_Exception_Handlers_Set then
-         return;
-      end if;
-
-      if Present (Blk_Id) then
-         Push_Scope (Blk_Id);
-      end if;
-
-      Ohandle :=
-        Make_Others_Choice (Loc);
-      Set_All_Others (Ohandle);
-
-      Stmnts := New_List (
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (Clean, Loc)));
-
-      --  Generate reraise statement as last statement of AT-END handler,
-      --  unless we are under control of No_Exception_Propagation, in which
-      --  case no exception propagation is possible anyway, so we do not need
-      --  a reraise (the AT END handler in this case is only for normal exits
-      --  not for exceptional exits). Also, we flag the Reraise statement as
-      --  being part of an AT END handler to prevent signalling this reraise
-      --  as a violation of the restriction when it is not set.
-
-      if not Restriction_Active (No_Exception_Propagation) then
-         declare
-            Rstm : constant Node_Id := Make_Raise_Statement (Loc);
-         begin
-            Set_From_At_End (Rstm);
-            Append_To (Stmnts, Rstm);
-         end;
-      end if;
-
-      Set_Exception_Handlers (HSS, New_List (
-        Make_Implicit_Exception_Handler (Loc,
-          Exception_Choices => New_List (Ohandle),
-          Statements        => Stmnts)));
-
-      Analyze_List (Stmnts, Suppress => All_Checks);
-      Expand_Exception_Handlers (HSS);
-
-      if Present (Blk_Id) then
-         Pop_Scope;
-      end if;
+      pragma Assert (Present (Entity (At_End_Proc (HSS))));
    end Expand_At_End_Handler;
 
    -------------------------------
@@ -813,7 +715,7 @@ package body Exp_Ch11 is
                   --  case we have to generate possible diagnostics.
 
                elsif Has_Local_Raise (Handler)
-                 and then Local_Raise_Statements (Handler) /= No_Elist
+                 and then Present (Local_Raise_Statements (Handler))
                then
                   Relmt := First_Elmt (Local_Raise_Statements (Handler));
                   while Present (Relmt) loop
@@ -987,13 +889,11 @@ package body Exp_Ch11 is
                --        ...
                --     end;
 
-               --  This expansion is only performed when using front-end
-               --  exceptions. Gigi will insert a call to initialize the
-               --  choice parameter.
+               --  This expansion is only performed when using CodePeer.
+               --  Gigi will insert a call to initialize the choice parameter.
 
                if Present (Choice_Parameter (Handler))
-                 and then (Front_End_Exceptions
-                            or else CodePeer_Mode)
+                 and then CodePeer_Mode
                then
                   declare
                      Cparm : constant Entity_Id  := Choice_Parameter (Handler);
@@ -1088,10 +988,19 @@ package body Exp_Ch11 is
 
    --  (protecting test only needed if not at library level)
 
-   --     exceptF : Boolean := True --  static data
+   --     exceptF : aliased System.Atomic_Operations.Test_And_Set.
+   --                         .Test_And_Set_Flag; --  static data
+   --     if not Atomic_Test_And_Set (exceptF) then
+   --        Register_Exception (except'Unrestricted_Access);
+   --     end if;
+
+   --  If a No_Tasking restriction is in effect, or if Test_And_Set_Flag
+   --  is unavailable, then use Boolean instead. In that case, we generate:
+   --
+   --     exceptF : Boolean := True; --  static data
    --     if exceptF then
-   --        exceptF := False;
-   --        Register_Exception (except'Unchecked_Access);
+   --        ExceptF := False;
+   --        Register_Exception (except'Unrestricted_Access);
    --     end if;
 
    procedure Expand_N_Exception_Declaration (N : Node_Id) is
@@ -1227,7 +1136,7 @@ package body Exp_Ch11 is
       Set_Is_Statically_Allocated (Ex_Id);
 
       --  Create the aggregate list for type Standard.Exception_Type:
-      --  Handled_By_Other component: False
+      --  Not_Handled_By_Others component: False
 
       L := Empty_List;
       Append_To (L, New_Occurrence_Of (Standard_False, Loc));
@@ -1237,7 +1146,7 @@ package body Exp_Ch11 is
       Append_To (L,
         Make_Character_Literal (Loc,
           Chars              => Name_uA,
-          Char_Literal_Value => UI_From_Int (Character'Pos ('A'))));
+          Char_Literal_Value => UI_From_CC (Get_Char_Code ('A'))));
 
       --  Name_Length component: Nam'Length
 
@@ -1275,7 +1184,7 @@ package body Exp_Ch11 is
 
       Force_Static_Allocation_Of_Referenced_Objects (Expression (N));
 
-      --  Register_Exception (except'Unchecked_Access);
+      --  Register_Exception (except'Unrestricted_Access);
 
       if not No_Exception_Handlers_Set
         and then not Restriction_Active (No_Exception_Registration)
@@ -1296,27 +1205,57 @@ package body Exp_Ch11 is
             Flag_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Chars (Id), 'F'));
-
-            Insert_Action (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Flag_Id,
-                Object_Definition   =>
-                  New_Occurrence_Of (Standard_Boolean, Loc),
-                Expression          =>
-                  New_Occurrence_Of (Standard_True, Loc)));
-
             Set_Is_Statically_Allocated (Flag_Id);
 
-            Append_To (L,
-              Make_Assignment_Statement (Loc,
-                Name       => New_Occurrence_Of (Flag_Id, Loc),
-                Expression => New_Occurrence_Of (Standard_False, Loc)));
+            declare
+               Use_Test_And_Set_Flag : constant Boolean :=
+                 (not Global_No_Tasking)
+                 and then RTE_Available (RE_Test_And_Set_Flag);
 
-            Insert_After_And_Analyze (N,
-              Make_Implicit_If_Statement (N,
-                Condition       => New_Occurrence_Of (Flag_Id, Loc),
-                Then_Statements => L));
+               Flag_Decl : Node_Id;
+               Condition : Node_Id;
+            begin
+               if Use_Test_And_Set_Flag then
+                  Flag_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Flag_Id,
+                      Aliased_Present     => True,
+                      Object_Definition   =>
+                        New_Occurrence_Of (RTE (RE_Test_And_Set_Flag), Loc));
+               else
+                  Flag_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Flag_Id,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Standard_Boolean, Loc),
+                      Expression          =>
+                        New_Occurrence_Of (Standard_True, Loc));
+               end if;
 
+               Insert_Action (N, Flag_Decl);
+
+               if Use_Test_And_Set_Flag then
+                  Condition :=
+                    Make_Op_Not (Loc,
+                      Make_Function_Call (Loc,
+                        Name => New_Occurrence_Of
+                                  (RTE (RE_Atomic_Test_And_Set), Loc),
+                        Parameter_Associations =>
+                          New_List (New_Occurrence_Of (Flag_Id, Loc))));
+               else
+                  Condition := New_Occurrence_Of (Flag_Id, Loc);
+
+                  Append_To (L,
+                    Make_Assignment_Statement (Loc,
+                    Name       => New_Occurrence_Of (Flag_Id, Loc),
+                    Expression => New_Occurrence_Of (Standard_False, Loc)));
+               end if;
+
+               Insert_After_And_Analyze (N,
+                 Make_Implicit_If_Statement (N,
+                   Condition       => Condition,
+                   Then_Statements => L));
+            end;
          else
             Insert_List_After_And_Analyze (N, L);
          end if;
@@ -1366,9 +1305,6 @@ package body Exp_Ch11 is
       then
          pragma Assert (not Is_Thunk (Current_Scope));
          Expand_Cleanup_Actions (Parent (N));
-
-      else
-         Set_First_Real_Statement (N, First (Statements (N)));
       end if;
    end Expand_N_Handled_Sequence_Of_Statements;
 
@@ -1411,37 +1347,19 @@ package body Exp_Ch11 is
       --     in
       --       raise Constraint_Error;
 
-      --  unless the flag Convert_To_Return_False is set, in which case
-      --  the transformation is to:
-
-      --     do
-      --       return False;
-      --     in
-      --       raise Constraint_Error;
-
       --  The raise constraint error can never be executed. It is just a dummy
       --  node that can be labeled with an arbitrary type.
 
       RCE := Make_Raise_Constraint_Error (Loc, Reason => CE_Explicit_Raise);
       Set_Etype (RCE, Typ);
 
-      if Convert_To_Return_False (N) then
-         Rewrite (N,
-           Make_Expression_With_Actions (Loc,
-             Actions     => New_List (
-               Make_Simple_Return_Statement (Loc,
-                 Expression => New_Occurrence_Of (Standard_False, Loc))),
-               Expression => RCE));
-
-      else
-         Rewrite (N,
-           Make_Expression_With_Actions (Loc,
-             Actions     => New_List (
-               Make_Raise_Statement (Loc,
-                 Name       => Name (N),
-                 Expression => Expression (N))),
-               Expression => RCE));
-      end if;
+      Rewrite (N,
+        Make_Expression_With_Actions (Loc,
+          Actions     => New_List (
+            Make_Raise_Statement (Loc,
+              Name       => Name (N),
+              Expression => Expression (N))),
+            Expression => RCE));
 
       Analyze_And_Resolve (N, Typ);
    end Expand_N_Raise_Expression;
@@ -1489,7 +1407,7 @@ package body Exp_Ch11 is
             H := Find_Local_Handler (Entity (Name (N)), N);
 
             if Present (H) then
-               if Local_Raise_Statements (H) = No_Elist then
+               if No (Local_Raise_Statements (H)) then
                   Set_Local_Raise_Statements (H, New_Elmt_List);
                end if;
 
@@ -1626,8 +1544,8 @@ package body Exp_Ch11 is
             --  If the exception is a renaming, use the exception that it
             --  renames (which might be a predefined exception, e.g.).
 
-            if Present (Renamed_Object (Id)) then
-               Id := Renamed_Object (Id);
+            if Present (Renamed_Entity (Id)) then
+               Id := Renamed_Entity (Id);
             end if;
 
             --  Build a C-compatible string in case of no exception handlers,
@@ -1678,9 +1596,7 @@ package body Exp_Ch11 is
          --  GNATprove all code with exceptions falls outside the subset of
          --  code which can be formally analyzed.
 
-         if not CodePeer_Mode
-           and then Back_End_Exceptions
-         then
+         if not CodePeer_Mode then
             return;
          end if;
 
@@ -1820,10 +1736,10 @@ package body Exp_Ch11 is
 
             if Configurable_Run_Time_Mode then
                Error_Msg_NE
-                 ("\?X?& may call Last_Chance_Handler", N, E);
+                 ("\?.x?& may call Last_Chance_Handler", N, E);
             else
                Error_Msg_NE
-                 ("\?X?& may result in unhandled exception", N, E);
+                 ("\?.x?& may result in unhandled exception", N, E);
             end if;
          end if;
       end;
@@ -2122,7 +2038,7 @@ package body Exp_Ch11 is
          Warn_No_Exception_Propagation_Active (N);
 
          Error_Msg_N
-           ("\?X?this handler can never be entered, and has been removed", N);
+           ("\?.x?this handler can never be entered, and has been removed", N);
       end if;
    end Warn_If_No_Local_Raise;
 
@@ -2139,10 +2055,10 @@ package body Exp_Ch11 is
 
          if Configurable_Run_Time_Mode then
             Error_Msg_N
-              ("\?X?Last_Chance_Handler will be called on exception", N);
+              ("\?.x?Last_Chance_Handler will be called on exception", N);
          else
             Error_Msg_N
-              ("\?X?execution may raise unhandled exception", N);
+              ("\?.x?execution may raise unhandled exception", N);
          end if;
       end if;
    end Warn_If_No_Propagation;
@@ -2154,7 +2070,7 @@ package body Exp_Ch11 is
    procedure Warn_No_Exception_Propagation_Active (N : Node_Id) is
    begin
       Error_Msg_N
-        ("?X?pragma Restrictions (No_Exception_Propagation) in effect", N);
+        ("?.x?pragma Restrictions (No_Exception_Propagation) in effect", N);
    end Warn_No_Exception_Propagation_Active;
 
 end Exp_Ch11;

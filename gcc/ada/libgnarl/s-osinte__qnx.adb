@@ -7,7 +7,7 @@
 --                                   B o d y                                --
 --                                                                          --
 --             Copyright (C) 1991-2017, Florida State University            --
---                     Copyright (C) 1995-2021, AdaCore                     --
+--                     Copyright (C) 1995-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,7 +87,7 @@ package body System.OS_Interface is
      (Prio : System.Any_Priority) return Interfaces.C.int
    is
    begin
-      return Interfaces.C.int (Prio + 1);
+      return Interfaces.C.int (Prio) + 1;
    end To_Target_Priority;
 
    -----------------

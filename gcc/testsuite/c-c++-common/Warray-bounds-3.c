@@ -158,7 +158,7 @@ void test_memcpy_overflow (char *d, const char *s, size_t n)
      but known access size is detected.  This works except with small
      sizes that are powers of 2 due to bug .  */
   T (char, 1, arr + SR (DIFF_MAX - 1, DIFF_MAX), s, 1);
-  T (char, 1, arr + SR (DIFF_MAX - 1, DIFF_MAX), s, 2);  /* { dg-warning "pointer overflow between offset \\\[\[0-9\]+, \[0-9\]+] and size 2 accessing array " "bug " { xfail non_strict_align } } */
+  T (char, 1, arr + SR (DIFF_MAX - 1, DIFF_MAX), s, 2);  /* { dg-warning "\\\[-Warray-bounds" } */
   T (char, 1, arr + SR (DIFF_MAX - 2, DIFF_MAX), s, 3);  /* { dg-warning "pointer overflow between offset \\\[\[0-9\]+, \[0-9\]+] and size 3 accessing array " "memcpy" } */
   T (char, 1, arr + SR (DIFF_MAX - 4, DIFF_MAX), s, 5);  /* { dg-warning "pointer overflow between offset \\\[\[0-9\]+, \[0-9\]+] and size 5 accessing array " "memcpy" } */
 }
@@ -178,7 +178,7 @@ void test_memcpy_bounds_memarray_range (void)
 
   TM (ma.a5, ma.a5 + i, ma.a5, 1);
   TM (ma.a5, ma.a5 + i, ma.a5, 3);
-  TM (ma.a5, ma.a5 + i, ma.a5, 5);
+  TM (ma.a5, ma.a5 + i, ma.a5, 5);     /* { dg-warning "\\\[-Warray-bounds" "pr101374" { xfail *-*-* } } */
   TM (ma.a5, ma.a5 + i, ma.a5, 7);     /* diagnosed with -Warray-bounds=2 */
 }
 

@@ -199,6 +199,47 @@ OMP_5.0.1 {
 	omp_fulfill_event_;
 } OMP_5.0;
 
+OMP_5.0.2 {
+  global:
+	omp_get_device_num;
+	omp_get_device_num_;
+	omp_aligned_alloc;
+	omp_calloc;
+	omp_aligned_calloc;
+	omp_realloc;
+} OMP_5.0.1;
+
+OMP_5.1 {
+  global:
+	omp_display_env;
+	omp_display_env_;
+	omp_display_env_8_;
+	omp_set_num_teams;
+	omp_set_num_teams_;
+	omp_set_num_teams_8_;
+	omp_get_max_teams;
+	omp_get_max_teams_;
+	omp_set_teams_thread_limit;
+	omp_set_teams_thread_limit_;
+	omp_set_teams_thread_limit_8_;
+	omp_get_teams_thread_limit;
+	omp_get_teams_thread_limit_;
+} OMP_5.0.2;
+
+OMP_5.1.1 {
+  global:
+	omp_get_mapped_ptr;
+	omp_target_is_accessible;
+	omp_target_memcpy_async;
+	omp_target_memcpy_rect_async;
+} OMP_5.1;
+
+OMP_5.2 {
+  global:
+	omp_in_explicit_task;
+	omp_in_explicit_task_;
+} OMP_5.1.1;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
@@ -366,6 +407,19 @@ GOMP_5.0.1 {
 	GOMP_alloc;
 	GOMP_free;
 } GOMP_5.0;
+
+GOMP_5.1 {
+  global:
+	GOMP_error;
+	GOMP_scope_start;
+	GOMP_warning;
+	GOMP_teams4;
+} GOMP_5.0.1;
+
+GOMP_5.1.1 {
+  global:
+	GOMP_taskwait_depend_nowait;
+} GOMP_5.1;
 
 OACC_2.0 {
   global:

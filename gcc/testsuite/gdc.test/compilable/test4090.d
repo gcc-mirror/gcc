@@ -12,9 +12,6 @@ void test4090a()
         // inference + qualifier + ref
         foreach (          ref x; arr) static assert(is(typeof(x) == int));
         foreach (    const ref x; arr) static assert(is(typeof(x) == const int));
-      static assert(!__traits(compiles, {
-        foreach (immutable ref x; arr) {}
-      }));
 
         // with exact type + qualifier
         foreach (          int x; arr) static assert(is(typeof(x) == int));
@@ -24,25 +21,11 @@ void test4090a()
         // with exact type + qualifier + ref
         foreach (          ref int x; arr) static assert(is(typeof(x) == int));
         foreach (    const ref int x; arr) static assert(is(typeof(x) == const int));
-      static assert(!__traits(compiles, {
-        foreach (immutable ref int x; arr) {}
-      }));
 
         // convertible type + qualifier
         foreach (          double x; arr) static assert(is(typeof(x) == double));
         foreach (    const double x; arr) static assert(is(typeof(x) == const double));
         foreach (immutable double x; arr) static assert(is(typeof(x) == immutable double));
-
-        // convertible type + qualifier + ref
-      static assert(!__traits(compiles, {
-        foreach (          ref double x; arr) {}
-      }));
-      static assert(!__traits(compiles, {
-        foreach (    const ref double x; arr) {}
-      }));
-      static assert(!__traits(compiles, {
-        foreach (immutable ref double x; arr) {}
-      }));
     }
     // for the immutable elements
     {

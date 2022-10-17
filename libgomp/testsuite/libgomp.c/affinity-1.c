@@ -1,5 +1,5 @@
 /* Affinity tests.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
    GCC is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -48,7 +48,7 @@ struct place
 };
 struct places
 {
-  char name[40];
+  const char *name;
   int count;
   struct place places[8];
 } places_array[] = {
@@ -62,7 +62,10 @@ struct places
     { { 1, 1 }, { 2, 1 }, { 3, 1 },
       { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 } } },
   { "{0,1},{3,2,4},{6,5,!6},{6},{7:2:-1,!6}", 5,
-    { { 0, 2 }, { 2, 3 }, { 5, 1 }, { 6, 1 }, { 7, 1 } } }
+    { { 0, 2 }, { 2, 3 }, { 5, 1 }, { 6, 1 }, { 7, 1 } } },
+  { "1,2,{2,3,!2},3,3,!3,!{5:3:-1,!4,!5},{4},5,!4,!5,"
+    "1:2,!{1},!2,7:3:-2,!{5},!7,!3", 3,
+    { { 1, 1 }, { 2, 1 }, { 3, 1 } } }
 };
 
 unsigned long contig_cpucount;
@@ -183,9 +186,14 @@ main ()
   int test_false = env_proc_bind && strcmp (env_proc_bind, "false") == 0;
   int test_true = env_proc_bind && strcmp (env_proc_bind, "true") == 0;
   int test_spread_master_close
-    = env_proc_bind && strcmp (env_proc_bind, "spread,master,close") == 0;
+    = (env_proc_bind
+       && (strcmp (env_proc_bind, "spread,master,close") == 0
+	   || strcmp (env_proc_bind, "spread,primary,close") == 0));
   char *env_places = getenv ("OMP_PLACES");
   int test_places = 0;
+
+  if (omp_proc_bind_master != omp_proc_bind_primary)
+    abort ();
 
 #ifdef DO_FORK
   if (env_places == NULL && contig_cpucount >= 8 && test_false
@@ -193,10 +201,11 @@ main ()
     {
       int i, j, status;
       pid_t pid;
-      for (j = 0; j < 2; j++)
+      for (j = 0; j < 3; j++)
 	{
-	  if (setenv ("OMP_PROC_BIND", j ? "spread,master,close" : "true", 1)
-	      < 0)
+	  if (setenv ("OMP_PROC_BIND",
+		      j > 1 ? "spread,primary,close"
+			    : (j ? "spread,master,close" : "true"), 1) < 0)
 	    break;
 	  for (i = sizeof (places_array) / sizeof (places_array[0]) - 1;
 	       i; --i)

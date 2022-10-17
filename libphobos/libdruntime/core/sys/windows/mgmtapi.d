@@ -5,7 +5,7 @@
  *
  * Authors: Stewart Gordon
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_mgmtapi.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_mgmtapi.d)
  */
 module core.sys.windows.mgmtapi;
 version (Windows):

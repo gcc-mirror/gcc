@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -238,8 +238,11 @@ test07()
   std::pmr::monotonic_buffer_resource mbr(&cr);
   try
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Walloc-size-larger-than="
     // Try to allocate a ridiculous size:
     void* p = mbr.allocate(std::size_t(-2), 1);
+#pragma GCC diagnostic pop
     // Should not reach here!
     VERIFY( !"attempt to allocate SIZE_MAX-1 should not have succeeded" );
     throw p;

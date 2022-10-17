@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,9 @@ test01()
 #if __cpp_lib_to_chars >= 201611L
 #if _GLIBCXX_USE_C99_FENV_TR1
   double d;
+#ifdef FE_DOWNWARD
   std::fesetround(FE_DOWNWARD);
+#endif
   const std::string s = "0.099999999999999999999999999";
   auto res = std::from_chars(s.data(), s.data() + s.length(), d);
   VERIFY( res.ec == std::errc{} );

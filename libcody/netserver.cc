@@ -140,6 +140,7 @@ int ListenInet6 (char const **e, char const *name, int port, unsigned backlog)
 
  listen:;
   freeaddrinfo (addrs);
+  addrs = nullptr;
 
   if (listen (fd, backlog ? backlog : 17) < 0)
     {

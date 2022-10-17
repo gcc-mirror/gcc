@@ -10,8 +10,8 @@
 </info>
 
 <para>
-In this implementation the <literal>-std=gnu++2a</literal> or
-<literal>-std=c++2a</literal> flag must be used to enable language
+In this implementation the <literal>-std=gnu++20</literal> or
+<literal>-std=c++20</literal> flag must be used to enable language
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
@@ -25,8 +25,8 @@ not in any particular release.
 </para>
 
 <para>
-The following table lists new library features that have been accepted into
-the C++20 working draft. The "Proposal" column provides a link to the
+The following table lists new library features that are included in
+the C++20 standard. The "Proposal" column provides a link to the
 ISO C++ committee proposal that describes the feature, while the "Status"
 column indicates the first version of GCC that contains an implementation of
 this feature (if it has been implemented).
@@ -94,7 +94,7 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <entry>  P0595R2 <code>std::is_constant_evaluated()</code> </entry>
+      <entry>  <code>std::is_constant_evaluated()</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0595r2.html">
         P0595R2 </link>
@@ -114,24 +114,22 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Making <code>std::string</code> constexpr </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0980r1.pdf">
         P0980R1 </link>
       </entry>
-      <entry/>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_constexpr_string &gt;= 201907L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Making <code>std::vector</code> constexpr </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1004r2.pdf">
         P1004R2 </link>
       </entry>
-      <entry/>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_constexpr_vector &gt;= 201907L</code> </entry>
     </row>
 
@@ -294,13 +292,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Layout-compatibility and pointer-interconvertibility traits </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0466r5.pdf">
         P0466R5 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry>
         <informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
         <row><entry> <code>__cpp_lib_is_layout_compatible &gt;= 201907L</code> </entry></row>
@@ -362,7 +359,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0053r7.pdf">
         P0053R7 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry> <code>__cpp_lib_syncbuf &gt;= 201711L</code> </entry>
     </row>
 
@@ -372,7 +369,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0753r2.pdf">
         P0753R2 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry> <code>__cpp_lib_syncbuf &gt;= 201803L</code> </entry>
     </row>
 
@@ -387,24 +384,22 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  The Curious Case of Padding Bits, Featuring Atomic Compare-and-Exchange </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0528r3.html">
         P0528R3 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 13.1 </entry>
       <entry />
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Atomic <code>shared_ptr</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0718r2.html">
         P0718R2 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry> <code> __cpp_lib_atomic_shared_ptr &gt;= 201711L</code> </entry>
     </row>
 
@@ -545,6 +540,16 @@ or any notes about the implementation.
       <entry />
     </row>
 
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Avoid template bloat for <code>safe_ranges</code> in combination with ‘subrange-y’ view adaptors.</entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1739r4.html">
+        P1739R4 </link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
 
 
     <row>
@@ -637,7 +642,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0966r1.html">
         P0966R1 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry />
     </row>
 
@@ -884,13 +889,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Extending <code>make_shared</code> to Support Arrays </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0674r1.html">
         P0674R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_shared_ptr_arrays &gt;= 201707L</code> </entry>
     </row>
 
@@ -927,13 +931,22 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Smart pointer creation with default initialization </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1020r1.html">
         P1020R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
+      <entry> <code>__cpp_lib_smart_ptr_for_overwrite &gt;= 201811L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Rename "default_init" Functions </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p1973r1.pdf">
+        P1973R1 </link>
+      </entry>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_smart_ptr_for_overwrite &gt;= 201811L</code> </entry>
     </row>
 
@@ -1035,7 +1048,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0476r2.html">
         P0476R2 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry> <code>__cpp_lib_bit_cast &gt;= 201806L</code> </entry>
     </row>
 
@@ -1070,13 +1083,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Reviewing Deprecated Facilities of C++17 for C++20 </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0619r4.html">
         P0619R4 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry />
     </row>
 
@@ -1391,7 +1403,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">
         P0553R4 </link>
       </entry>
-      <entry align="center"> 10.1 </entry>
+      <entry align="center"> 9.1 </entry>
       <entry> <code>__cpp_lib_bitops &gt;= 201907L</code> (since 9.4, see Note 1) </entry>
     </row>
 
@@ -1421,7 +1433,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1208r6.pdf">
         P1208R6 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry>
         <code>__cpp_lib_source_location &gt;= 201907L</code>
       </entry>
@@ -1433,7 +1445,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0408r7.pdf">
         P0408R7 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry />
     </row>
 

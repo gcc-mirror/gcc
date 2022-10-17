@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2021, Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 package body System.CRC32 is
 
    Init   : constant CRC32 := 16#FFFF_FFFF#;  -- Initial value
@@ -41,7 +39,7 @@ package body System.CRC32 is
    --  than processing the byte bit by bit.
 
    Table : constant array (CRC32 range 0 .. 255) of CRC32 :=
-     (16#0000_0000#, 16#7707_3096#, 16#EE0E_612C#, 16#9909_51BA#,
+     [16#0000_0000#, 16#7707_3096#, 16#EE0E_612C#, 16#9909_51BA#,
       16#076D_C419#, 16#706A_F48F#, 16#E963_A535#, 16#9E64_95A3#,
       16#0EDB_8832#, 16#79DC_B8A4#, 16#E0D5_E91E#, 16#97D2_D988#,
       16#09B6_4C2B#, 16#7EB1_7CBD#, 16#E7B8_2D07#, 16#90BF_1D91#,
@@ -104,7 +102,7 @@ package body System.CRC32 is
       16#BDBD_F21C#, 16#CABA_C28A#, 16#53B3_9330#, 16#24B4_A3A6#,
       16#BAD0_3605#, 16#CDD7_0693#, 16#54DE_5729#, 16#23D9_67BF#,
       16#B366_7A2E#, 16#C461_4AB8#, 16#5D68_1B02#, 16#2A6F_2B94#,
-      16#B40B_BE37#, 16#C30C_8EA1#, 16#5A05_DF1B#, 16#2D02_EF8D#);
+      16#B40B_BE37#, 16#C30C_8EA1#, 16#5A05_DF1B#, 16#2D02_EF8D#];
 
    ---------------
    -- Get_Value --

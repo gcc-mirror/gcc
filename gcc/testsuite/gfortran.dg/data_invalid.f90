@@ -40,7 +40,7 @@ SUBROUTINE data_init_array_invalid()
   data       e(2) / 2 /                          ! { dg-error "re-initialization" }
 
   integer :: f(3) = 0                            ! { dg-error "already is initialized" }
-  data       f(2) / 1 /
+  data       f(2) / 1 /                          ! { dg-error "already is initialized" }
 
   ! full array initializer, re-initialize subsection
   integer :: g(3)
@@ -48,7 +48,7 @@ SUBROUTINE data_init_array_invalid()
   data       g(1:2) / 2*2 /                      ! { dg-error "re-initialization" }
 
   integer :: h(3) = 1                            ! { dg-error "already is initialized" }
-  data       h(2:3) / 2*2 /
+  data       h(2:3) / 2*2 /                      ! { dg-error "already is initialized" }
 
   ! full array initializer, re-initialize full array
   integer :: i(3)
@@ -56,7 +56,7 @@ SUBROUTINE data_init_array_invalid()
   data       i   / 2,2,2 /                       ! { dg-error "re-initialization" }
 
   integer :: j(3) = 1                            ! { dg-error "already is initialized" }
-  data       j   / 3*2 /
+  data       j   / 3*2 /                         ! { dg-error "already is initialized" }
 END SUBROUTINE
 
 SUBROUTINE data_init_matrix_invalid()
@@ -85,7 +85,7 @@ SUBROUTINE data_init_matrix_invalid()
   data       e(2,3) / 2 /                        ! { dg-error "re-initialization" }
 
   integer :: f(3,3) = 1                          ! { dg-error "already is initialized" }
-  data       f(3,2) / 2 /
+  data       f(3,2) / 2 /                        ! { dg-error "already is initialized" }
 
   ! full array initializer, re-initialize subsection
   integer :: g(3,3)
@@ -93,7 +93,7 @@ SUBROUTINE data_init_matrix_invalid()
   data       g(2:3,2:3) / 2, 2*3, 4 /            ! { dg-error "re-initialization" }
 
   integer :: h(3,3) = 1                          ! { dg-error "already is initialized" }
-  data       h(2:3,2:3) / 2, 2*3, 4 /
+  data       h(2:3,2:3) / 2, 2*3, 4 /            ! { dg-error "already is initialized" }
 
   ! full array initializer, re-initialize full array
   integer :: i(3,3)
@@ -101,7 +101,7 @@ SUBROUTINE data_init_matrix_invalid()
   data       i   / 9 * 1 /                       ! { dg-error "re-initialization" }
 
   integer :: j(3,3) = 0                          ! { dg-error "already is initialized" }
-  data       j   / 9 * 1 /
+  data       j   / 9 * 1 /                       ! { dg-error "already is initialized" }
 END SUBROUTINE
 
 SUBROUTINE data_init_misc_invalid()
@@ -112,11 +112,9 @@ SUBROUTINE data_init_misc_invalid()
   ! index out-of-bounds, direct access
   integer :: b(3)
   data       b(-2) / 1 /                         ! { dg-error "below array lower bound" }
-
+                                                 ! { dg-warning "is out of bounds" "" { target *-*-* } .-1 }
   ! index out-of-bounds, implied do-loop (PR32315)
   integer :: i
   character(len=20), dimension(4) :: string
   data (string(i), i = 1, 5) / 'A', 'B', 'C', 'D', 'E' /   ! { dg-error "above array upper bound" }
 END SUBROUTINE
-
-! { dg-excess-errors "" }

@@ -6,9 +6,9 @@ fail_compilation/fail_contracts3.d(13): Error: function `fail_contracts3.D.foo` 
 */
 
 class C {
-       void foo(){}
+	void foo(){}
 }
 
 class D : C {
-       override void foo()in{}do{}
+	override void foo()in{}do{}
 }

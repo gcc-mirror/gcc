@@ -50,7 +50,7 @@ foo ()
   #pragma omp sections
   {
     bar (12);
-    bar (13);			/* { dg-error "pragma omp section" } */
+    bar (13);
     #pragma omp section
     bar (14);
   }
@@ -63,11 +63,29 @@ foo ()
     bar (15);
     #pragma omp section
     bar (16);
-    bar (17);			/* { dg-error "pragma omp section" } */
+    bar (17);
   }
   #pragma omp sections
   {
     bar (18);
+    #pragma omp section
+  }				/* { dg-error "expression before" } */
+  #pragma omp sections
+  {
+    #pragma omp section
+    #pragma omp section		/* { dg-error "may only be used in" } */
+    bar (19);
+  }
+  #pragma omp sections
+  {
+    bar (20);
+    #pragma omp section
+    #pragma omp section		/* { dg-error "may only be used in" } */
+    bar (21);
+  }
+  #pragma omp sections
+  {
+    bar (22);
     #pragma omp section
   }				/* { dg-error "expression before" } */
 }

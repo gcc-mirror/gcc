@@ -1,6 +1,6 @@
 ; Options for the eBPF compiler port.
 
-; Copyright (C) 2019-2021 Free Software Foundation, Inc.
+; Copyright (C) 2019-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -127,3 +127,36 @@ Generate little-endian eBPF.
 mframe-limit=
 Target Joined RejectNegative UInteger IntegerRange(0, 32767) Var(bpf_frame_limit) Init(512)
 Set a hard limit for the size of each stack frame, in bytes.
+
+mco-re
+Target Mask(BPF_CORE)
+Generate all necessary information for BPF Compile Once - Run Everywhere.
+
+; Selecting BPF ISA features and versions
+
+mjmpext
+Target Var(bpf_has_jmpext) Init(-1)
+Enable extra conditional-branch instructions j(s)lt and j(s)le.
+
+malu32
+Target Var(bpf_has_alu32) Init(-1)
+Enable 32-bit ALU instructions.
+
+mjmp32
+Target Var(bpf_has_jmp32) Init(-1)
+Enable 32-bit jump instructions.
+
+mcpu=
+Target RejectNegative Joined Var(bpf_isa) Enum(bpf_isa) Init(ISA_V3)
+
+Enum
+Name(bpf_isa) Type(enum bpf_isa_version)
+
+EnumValue
+Enum(bpf_isa) String(v1) Value(ISA_V1)
+
+EnumValue
+Enum(bpf_isa) String(v2) Value(ISA_V2)
+
+EnumValue
+Enum(bpf_isa) String(v3) Value(ISA_V3)

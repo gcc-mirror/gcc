@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mcpu=power10 -save-temps" } */
+/* { dg-options "-mdejagnu-cpu=power10 -save-temps" } */
 /* { dg-require-effective-target power10_hw } */
 
 /* Check that the expected 128-bit instructions are generated if the processor
@@ -11,9 +11,9 @@
 /* { dg-final { scan-assembler-times {\mvrlq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvrlqnm\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvrlqmi\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mvcmpequq\M} 16 } } */
-/* { dg-final { scan-assembler-times {\mvcmpgtsq\M} 16 } } */
-/* { dg-final { scan-assembler-times {\mvcmpgtuq\M} 16 } } */
+/* { dg-final { scan-assembler-times {\mvcmpequq\M} 24 } } */
+/* { dg-final { scan-assembler-times {\mvcmpgtsq\M} 26 } } */
+/* { dg-final { scan-assembler-times {\mvcmpgtuq\M} 26 } } */
 /* { dg-final { scan-assembler-times {\mvmuloud\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmulesd\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmulosd\M} 1 } } */

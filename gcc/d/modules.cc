@@ -1,5 +1,5 @@
 /* modules.cc -- D module initialization and termination.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -121,11 +121,14 @@ static module_info *current_testing_module;
 
 static Module *current_module_decl;
 
+/* Any inline symbols that were deferred during codegen.  */
+vec<Declaration *> *deferred_inline_declarations;
+
 /* Returns an internal function identified by IDENT.  This is used
    by both module initialization and dso handlers.  */
 
 static FuncDeclaration *
-get_internal_fn (tree ident, const Prot &prot)
+get_internal_fn (tree ident, const Visibility &visibility)
 {
   Module *mod = current_module_decl;
   const char *name = IDENTIFIER_POINTER (ident);
@@ -141,11 +144,11 @@ get_internal_fn (tree ident, const Prot &prot)
 
   FuncDeclaration *fd = FuncDeclaration::genCfunc (NULL, Type::tvoid,
 						   Identifier::idPool (name));
-  fd->generated = true;
-  fd->loc = Loc (mod->srcfile->toChars (), 1, 0);
+  fd->isGenerated (true);
+  fd->loc = Loc (mod->srcfile.toChars (), 1, 0);
   fd->parent = mod;
-  fd->protection = prot;
-  fd->semanticRun = PASSsemantic3done;
+  fd->visibility = visibility;
+  fd->semanticRun = PASS::semantic3done;
 
   return fd;
 }
@@ -156,7 +159,9 @@ get_internal_fn (tree ident, const Prot &prot)
 static tree
 build_internal_fn (tree ident, tree expr)
 {
-  FuncDeclaration *fd = get_internal_fn (ident, Prot (Prot::private_));
+  Visibility visibility;
+  visibility.kind = Visibility::private_;
+  FuncDeclaration *fd = get_internal_fn (ident, visibility);
   tree decl = get_symbol_decl (fd);
 
   tree old_context = start_function (fd);
@@ -338,8 +343,9 @@ build_dso_cdtor_fn (bool ctor_p)
 	}
     }
    */
-  FuncDeclaration *fd = get_internal_fn (get_identifier (name),
-					 Prot (Prot::public_));
+  Visibility visibility;
+  visibility.kind = Visibility::public_;
+  FuncDeclaration *fd = get_internal_fn (get_identifier (name), visibility);
   tree decl = get_symbol_decl (fd);
 
   TREE_PUBLIC (decl) = 1;
@@ -721,6 +727,9 @@ build_module_tree (Module *decl)
   current_testing_module = &mitest;
   current_module_decl = decl;
 
+  vec<Declaration *> deferred_decls = vNULL;
+  deferred_inline_declarations = &deferred_decls;
+
   /* Layout module members.  */
   if (decl->members)
     {
@@ -740,7 +749,8 @@ build_module_tree (Module *decl)
       /* Associate the module info symbol with a mock module.  */
       const char *name = concat (GDC_PREFIX ("modtest__"),
 				 decl->ident->toChars (), NULL);
-      Module *tm = Module::create (decl->arg, Identifier::idPool (name), 0, 0);
+      Module *tm = Module::create (decl->arg.ptr, Identifier::idPool (name),
+				   0, 0);
       Dsymbols members;
 
       /* Setting parent puts module in the same package as the current, to
@@ -780,9 +790,7 @@ build_module_tree (Module *decl)
 
   /* Default behavior is to always generate module info because of templates.
      Can be switched off for not compiling against runtime library.  */
-  if (global.params.useModuleInfo
-      && Module::moduleinfo != NULL
-      && decl->ident != Identifier::idPool ("__entrypoint"))
+  if (global.params.useModuleInfo && Module::moduleinfo != NULL)
     {
       if (mi.ctors || mi.ctorgates)
 	decl->sctor = build_funcs_gates_fn (get_identifier ("*__modctor"),
@@ -809,9 +817,14 @@ build_module_tree (Module *decl)
       layout_moduleinfo (decl);
     }
 
+  /* Process all deferred functions after finishing module.  */
+  for (size_t i = 0; i < deferred_decls.length (); ++i)
+    build_decl_tree (deferred_decls[i]);
+
   current_moduleinfo = NULL;
   current_testing_module = NULL;
   current_module_decl = NULL;
+  deferred_inline_declarations = NULL;
 }
 
 /* Returns the current function or module context for the purpose
@@ -884,6 +897,15 @@ register_module_decl (Declaration *d)
       if (fd->isUnitTestDeclaration ())
 	vec_safe_push (minfo->unitTests, decl);
     }
+}
+
+/* Add DECL as a declaration to emit at the end of the current module.  */
+
+void
+d_defer_declaration (Declaration *decl)
+{
+  gcc_assert (deferred_inline_declarations != NULL);
+  deferred_inline_declarations->safe_push (decl);
 }
 
 /* Wrapup all global declarations and start the final compilation.  */

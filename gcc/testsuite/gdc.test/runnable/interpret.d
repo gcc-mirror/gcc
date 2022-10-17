@@ -1,23 +1,16 @@
-/* RUNNABLE_PHOBOS_TEST
+/*
 TEST_OUTPUT:
 ---
 true
 g
 &Test109S(&Test109S(<recursion>))
-runnable/interpret.d(3197): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3199): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3202): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3205): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3206): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3212): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3213): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/interpret.d(3216): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
 tfoo
 tfoo
 Crash!
 ---
 */
-import std.stdio;
+
+import core.stdc.stdio;
 
 template Tuple(A...)
 {
@@ -813,7 +806,7 @@ void test36()
 
 string someCompileTimeFunction()
 {
-    return "writefln(\"Wowza!\");";
+    return "printf(\"Wowza!\n\");";
 }
 
 void test37()
@@ -871,7 +864,6 @@ string UpToSpace(string x)
 void test40()
 {
     const y = UpToSpace("first space was after first");
-    writeln(y);
     assert(y == "first");
 }
 
@@ -893,7 +885,6 @@ int foo41(int i)
 void test41()
 {
     const y = foo41(3);
-    writeln(y);
     assert(y == 6);
 }
 
@@ -915,7 +906,6 @@ int foo42(int i)
 void test42()
 {
     const y = foo42(3);
-    writeln(y);
     assert(y == 6);
 }
 
@@ -937,7 +927,6 @@ int bar(string a)
 void test43()
 {
     const int foo = bar("a b c d");
-    writeln(foo);
     assert(foo == 28);
 }
 
@@ -963,11 +952,11 @@ void test45()
 
 /************************************************/
 
-const int foo46[5] = [0,1,2,3,4];
+const int[5] foo46 = [0,1,2,3,4];
 
 void test46()
 {
-    writeln(eval!(foo46[3]));
+    printf("%d\n", eval!(foo46[3]));
 }
 
 /************************************************/
@@ -1017,7 +1006,6 @@ dstring testd49(dstring input)
 void test49()
 {
     static x = testd49("hello");
-    writeln(x);
     assert(x == "el");
 }
 
@@ -1126,26 +1114,29 @@ bool equals54(string a, string b)
 
 /************************************************/
 
-const string foo55[2] = ["a", "b"];
+const string[2] foo55 = ["a", "b"];
 string retsth55(int i) { return foo55[i]; }
 
 void test55()
 {
-    writeln(eval!(foo55[0]));
-    writeln(eval!(retsth55(0)));
+    enum res1 = eval!(foo55[0]);
+    printf("%.*s\n", cast(int)res1.length, res1.ptr);
+    enum res2 = eval!(retsth55(0));
+    printf("%.*s\n", cast(int)res2.length, res2.ptr);
 }
 
 /************************************************/
 
 string retsth56(int i)
 {
-    static const string foo[2] = ["a", "b"];
+    static const string[2] foo = ["a", "b"];
     return foo[i];
 }
 
 void test56()
 {
-    writeln(eval!(retsth56(0)));
+    enum result = eval!(retsth56(0));
+    printf("%.*s\n", cast(int)result.length, result.ptr);
 }
 
 /************************************************/
@@ -1178,7 +1169,6 @@ void test58()
     assert(b.length == 2);
     assert(b[0] == 2);
     assert(b[1] == 3);
-    writeln(b);
 }
 
 /************************************************/
@@ -1622,7 +1612,6 @@ const string s83 = mixItemList83();
 
 void test83()
 {
-    writeln(s83);
     assert(s83 == "item");
 }
 
@@ -1813,7 +1802,7 @@ string foo90(string a, string b)
 void test90()
 {
     static const string xxx = foo90("A", "xxx");
-    printf("%.*s\n", xxx.length, xxx.ptr);
+    printf("%.*s\n", cast(int)xxx.length, xxx.ptr);
     assert(xxx == "A");
 }
 
@@ -2199,12 +2188,12 @@ struct Q
 {
     int x;
     char y;
-    int opAddAssign(int w)
+    int opOpAssign(string op)(int w) if (op == "+")
     {
         x += w;
         return x + w;
     }
-    Q opSubAssign(int w)
+    Q opOpAssign(string op)(int w) if (op == "-")
     {
         x -= w;
         version(D_Version2) { mixin("return this;"); } else { mixin("return *this;"); }
@@ -2300,7 +2289,7 @@ static assert(memtest8() == 6 + 17);
 
 // --------- CTFE REF PASSING TESTS --------
 
-// Bugzilla 1950 - CTFE doesn't work correctly for structs passed by ref
+// https://issues.dlang.org/show_bug.cgi?id=1950 - CTFE doesn't work correctly for structs passed by ref
 struct S1950
 {
     int x;
@@ -2412,7 +2401,8 @@ int nested2(int x)
 
 static assert(nested2(7) == 17 + 8 + 10);
 
-// 1605 D1 & D2. break in switch with goto breaks in ctfe
+// https://issues.dlang.org/show_bug.cgi?id=1605
+// D1 & D2. break in switch with goto breaks in ctfe
 int bug1605()
 {
     int i = 0;
@@ -2430,7 +2420,8 @@ int bug1605()
 
 static assert(bug1605() == 27);
 
-// 2564. D2 only. CTFE: the index in a tuple foreach is uninitialized (bogus error)
+// https://issues.dlang.org/show_bug.cgi?id=2564
+// D2 only. CTFE: the index in a tuple foreach is uninitialized (bogus error)
 // NOTE: Beware of optimizer bug 3264.
 
 int bug2564()
@@ -2444,7 +2435,8 @@ int bug2564()
 static int bug2564b = bug2564();
 
 
-// 1461 D1 + D2. Local variable as template alias parameter breaks CTFE
+// https://issues.dlang.org/show_bug.cgi?id=1461
+// D1 + D2. Local variable as template alias parameter breaks CTFE
 void bug1461()
 {
     int x;
@@ -2620,7 +2612,7 @@ int delegtest6()
 {
     DelegStruct s;
     s.a = 5;
-    FoolishStruct k[3];
+    FoolishStruct[3] k;
     DelegType u = &s.bar;
     k[1].z = u;
     return k[1].z(3);
@@ -2655,8 +2647,9 @@ static assert(lazyTest2(17) == 18);
 
 version(D_Version2)
 {
-// Bug 4020 and 4027 are D2 only
-
+// https://issues.dlang.org/show_bug.cgi?id=4020
+// https://issues.dlang.org/show_bug.cgi?id=4027
+// D2 only
 struct PostblitCrash
 {
     int x;
@@ -2814,7 +2807,7 @@ void bug4257b()
 }
 
 /************************************************/
-// 5117
+// https://issues.dlang.org/show_bug.cgi?id=5117
 
 static int dummy5117 = test5117();
 
@@ -2853,7 +2846,7 @@ int test5117b()
     assert(s.value == 1);     // fails, value == 0
     return 0;
 }
-ref S5117b getRef5117b(ref S5117b s) { return s; }
+ref S5117b getRef5117b(return ref S5117b s) { return s; }
 
 struct S5117b
 {
@@ -2862,7 +2855,7 @@ struct S5117b
 }
 
 /************************************************/
-// 6439
+// https://issues.dlang.org/show_bug.cgi?id=6439
 
 struct A6439
 {
@@ -2902,7 +2895,7 @@ static assert(!is(typeof(Compileable!(
     }(3)
 ))));
 
-// 6504 regression
+// https://issues.dlang.org/show_bug.cgi?id=6504 regression
 void test6504()
 {
     for (int i = 0; i < 3; ++i)
@@ -2913,7 +2906,7 @@ void test6504()
     }
 }
 
-// 8818 regression
+// https://issues.dlang.org/show_bug.cgi?id=8818 regression
 void test8818()
 {
     static bool test()
@@ -3148,7 +3141,7 @@ void test108()
 }
 */
 
-/***** Bug 5678 *********************************/
+/***** https://issues.dlang.org/show_bug.cgi?id=5678 *****/
 
 /*
 struct Bug5678
@@ -3185,41 +3178,104 @@ struct Test110s { this(int, int, int){} }
 auto test110 = [Test110f(1, Test110s(1, 2, 3))];
 
 /************************************************/
-// 6907
+// https://issues.dlang.org/show_bug.cgi?id=6907
+// FIXME: Shouldn't this go in core.memory now that `delete` has been removed?
 
 int test6907()
 {
+    import core.memory : __delete;
+
     int dtor1;
     class C { ~this() { ++dtor1; } }
 
     // delete on Object
-    { Object o; delete o; }
+    { Object o; if (!__ctfe) __delete(o); }
     { scope o = new Object(); }
-    { Object o = new Object(); delete o; }
+    { Object o = new Object(); if (!__ctfe) __delete(o); }
 
     // delete on C
-    { C c; delete c; }
-    { { scope c = new C(); } assert(dtor1 == 1); }
-    { { scope Object o = new C(); } assert(dtor1 == 2); }
-    { C c = new C(); delete c; assert(dtor1 == 3); }
-    { Object o = new C(); delete o; assert(dtor1 == 4); }
+    {
+        C c;
+        if (!__ctfe)
+            __delete(c);
+    }
+    {
+        { scope c = new C(); }
+        assert(dtor1 == 1);
+    }
+    {
+        { scope Object o = new C(); }
+        assert(dtor1 == 2);
+    }
+    {
+        C c = new C();
+        if (__ctfe)
+        {
+            c.__dtor();
+            c = null;
+        }
+        else
+            __delete(c);
+        assert(dtor1 == 3);
+    }
+    {
+        Object o = new C();
+        if (__ctfe)
+        {
+            (cast(C)o).__dtor();
+            o = null;
+        }
+        else
+            __delete(o);
+        assert(dtor1 == 4);
+    }
 
     int dtor2;
     struct S1 { ~this() { ++dtor2; } }
 
     // delete on S1
-    { S1* p; delete p; }
-    { S1* p = new S1(); delete p; assert(dtor2 == 1); }
+    {
+        S1* p;
+        // https://issues.dlang.org/show_bug.cgi?id=22779
+        // Uncomment after druntime fix
+        version (none)
+        {
+            if (!__ctfe)
+                __delete(p);
+        }
+    }
+    {
+        S1* p = new S1();
+        if (__ctfe)
+        {
+            (*p).__dtor();
+            destroy(p);
+        }
+        else
+            __delete(p);
+        assert(dtor2 == 1);
+    }
 
     // delete on S1[]
-    { S1[] a = [S1(), S1()]; delete a; assert(dtor2 == 3); }
+    {
+        S1[] a = [S1(), S1()];
+        if (__ctfe)
+        {
+            a[1].__dtor();
+            a[0].__dtor();
+            destroy(a);
+        }
+        else
+            __delete(a);
+        assert(dtor2 == 3);
+    }
 
     return 1;
 }
 static assert(test6907());
 
 /************************************************/
-// 9023
+// https://issues.dlang.org/show_bug.cgi?id=9023
 
 bool test9023()
 {
@@ -3244,7 +3300,7 @@ bool test9023()
 static assert(test9023());
 
 /************************************************/
-// 15817
+// https://issues.dlang.org/show_bug.cgi?id=15817
 
 S[] split15817(S)(S s)
 {
@@ -3292,11 +3348,11 @@ void test9954()
 }
 
 /************************************************/
-// 10483
+// https://issues.dlang.org/show_bug.cgi?id=10483
 
 struct Bug10483
 {
-    int val[3][4];
+    int[3][4] val;
 }
 
 struct Outer10483
@@ -3340,7 +3396,7 @@ void test112()
 }
 
 /************************************************/
-// 10687
+// https://issues.dlang.org/show_bug.cgi?id=10687
 
 enum Foo10687 : uint { A, B, C, D, E }
 immutable uint[5][] m10687 = [[0, 1, 2, 3, 4]];
@@ -3363,7 +3419,6 @@ void test113()
 
     static void compare(real a, real b)
     {
-        writefln("compare(%30.30f, %30.30f);", a, b);
         assert(fabs(a - b) < 128 * real.epsilon);
     }
 
@@ -3399,7 +3454,22 @@ void test113()
 }
 
 /************************************************/
-// 14140
+
+bool test114()
+{
+    string fizzBuzz()
+    {
+        string result = "fizz ";
+        return result ~= "buzz";
+    }
+
+    assert(fizzBuzz() == "fizz buzz");
+    return true;
+}
+static assert(test114());
+
+/************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14140
 
 struct S14140
 {
@@ -3442,7 +3512,7 @@ void test14140()
 }
 
 /************************************************/
-// 14862
+// https://issues.dlang.org/show_bug.cgi?id=14862
 
 struct S14862
 {
@@ -3470,7 +3540,7 @@ void test14862()
 }
 
 /************************************************/
-// 15681
+// https://issues.dlang.org/show_bug.cgi?id=15681
 
 void test15681()
 {
@@ -3540,6 +3610,146 @@ void testToPrec()
     assert(toPrec!float(rtpif) == rtpif);
     assert(toPrec!double(rtpif) == rtpif);
     assert(toPrec!real(rtpif) == rtpif);
+}
+
+/************************************************/
+
+auto test20366()
+{
+    const(char)[] s = ['h', 'e', 'l', '\xef', '\xbd', '\x8c', 'o'];
+
+    foreach_reverse (dchar c; s)
+    {
+    }
+
+    return true;
+}
+static assert(test20366());
+
+/************************************************/
+
+bool test20400()
+{
+    char[] s = cast(char[])"1234";
+    char[] ret = s[2 .. $];
+    ret.length += 1;
+    ret[$-1] = '5';
+    assert(ret == "345");
+
+    return true;
+}
+static assert(test20400());
+
+/************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=21878
+
+struct A21878
+{
+    int i;
+    ref inout(int) opIndex(size_t idx) inout return { return i; }
+}
+
+struct B21878
+{
+    A21878[1] a;
+    ref inout(int) opIndex(size_t idx) inout return { return a[0][idx]; }
+}
+
+bool ctfeFunc21878()
+{
+    A21878 a;
+    a[0] = 42;
+    assert(a[0] == 42); // OK
+
+    B21878 b;
+    b[0] = 42;
+    assert(b[0] == 42); // OK <- fails
+
+    return true;
+}
+
+void test21878()
+{
+    enum eval = ctfeFunc21878();
+    ctfeFunc21878(); // succeeds at runtime
+}
+
+/************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=20133
+
+void bar20133(ref string text)
+{
+    text = text[1 .. $];
+    assert(text.length < 3);
+    if (text.length == 2) assert(text == "oo");
+    if (text.length == 1) assert(text == "o");
+    if (text.length == 0) assert(text == "");
+    string tcopy = text;
+    if (tcopy.length > 0)
+        bar20133(tcopy);
+    assert(tcopy.length < 2);
+    if (tcopy.length == 1) assert(tcopy == "o");
+    if (tcopy.length == 0) assert(tcopy == "");
+}
+
+void bar20133_2(ref string text)
+{
+    auto ptext = &text;
+    *ptext = text[1 .. $];
+    assert(text.length < 3);
+    if (text.length == 2) assert(text == "oo");
+    if (text.length == 1) assert(text == "o");
+    if (text.length == 0) assert(text == "");
+    string tcopy = text;
+    if (tcopy.length > 0)
+        bar20133_2(tcopy);
+    assert(tcopy.length < 2);
+    if (tcopy.length == 1) assert(tcopy == "o");
+    if (tcopy.length == 0) assert(tcopy == "");
+}
+
+alias fun20133 = {
+    string input = "foo";
+    bar20133(input);
+    assert(input == "oo");
+    return input;
+};
+
+alias fun20133_2 = {
+    string input = "foo";
+    bar20133_2(input);
+    assert(input == "oo");
+    return input;
+};
+
+void test20133()
+{
+    enum ctest = fun20133();
+    enum ctest2 = fun20133_2();
+    auto rtest = fun20133();
+    auto rtest2 = fun20133_2();
+}
+
+/************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=22530
+
+class D22530 { }
+
+class C22530
+{
+    D22530 y = new D22530;
+    alias y this;
+}
+
+void test22530()
+{
+    // fixed
+    static assert(cast(D22530)(new C22530) is null);
+    static assert((1 ? cast(D22530)(new C22530) : new D22530) is null);
+
+    // runtime version already works
+    assert(cast(D22530)(new C22530) is null);
+    assert((1 ? cast(D22530)(new C22530) : new D22530) is null);
 }
 
 /************************************************/
@@ -3657,6 +3867,7 @@ int main()
     test109();
     test112();
     test113();
+    test114();
     test6439();
     test6504();
     test8818();
@@ -3667,6 +3878,11 @@ int main()
     test14140();
     test14862();
     test15681();
+    test20366();
+    test20400();
+    test21878();
+    test20133();
+    test22530();
 
     printf("Success\n");
     return 0;

@@ -1,6 +1,6 @@
 /* Implementation of the BESSEL_JN and BESSEL_YN transformational
    function using a recurrence algorithm.
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -29,7 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
+#if defined(GFC_REAL_16_USE_IEC_60559)
+#define MATHFUNC(funcname) funcname ## f128
+#else
 #define MATHFUNC(funcname) funcname ## q
+#endif
 #else
 #define MATHFUNC(funcname) funcname ## l
 #endif

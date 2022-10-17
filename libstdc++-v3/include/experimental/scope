@@ -1,0 +1,499 @@
+// <experimental/scope> -*- C++ -*-
+
+// Copyright The GNU Toolchain Authors.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file experimental/scope
+ *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
+ */
+
+#ifndef _GLIBCXX_EXPERIMENTAL_SCOPE
+#define _GLIBCXX_EXPERIMENTAL_SCOPE 1
+
+#pragma GCC system_header
+
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
+#if __cplusplus >= 202002L
+
+#include <concepts>
+#include <exception> // uncaught_exceptions
+#include <bits/refwrap.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+namespace experimental::inline fundamentals_v3
+{
+#define __cpp_lib_experimental_scope 201902
+
+  template<typename _Tp, typename _Up>
+    concept __not_same_as = !same_as<_Tp, _Up>;
+
+  template<typename _Tp>
+    concept __not_lvalue_ref = !is_lvalue_reference_v<_Tp>;
+
+  template<typename _Ef>
+    class [[nodiscard]] scope_exit
+    {
+    public:
+      template<typename _Efp>
+	requires __not_same_as<remove_cvref_t<_Efp>, scope_exit>
+	      && constructible_from<_Ef, _Efp>
+	[[nodiscard]] explicit
+	scope_exit(_Efp&& __f) noexcept(is_nothrow_constructible_v<_Ef, _Efp&>)
+#ifdef __cpp_exceptions
+	try
+#endif
+	: _M_exit_function(__f)
+	{ }
+#ifdef __cpp_exceptions
+	catch (...) { __f(); }
+#endif
+
+      template<typename _Efp>
+	requires __not_same_as<remove_cvref_t<_Efp>, scope_exit>
+	      && constructible_from<_Ef, _Efp>
+	      && __not_lvalue_ref<_Efp>
+	      && is_nothrow_constructible_v<_Ef, _Efp>
+	explicit
+	scope_exit(_Efp&& __f) noexcept
+	: _M_exit_function(std::forward<_Efp>(__f))
+	{ }
+
+      scope_exit(scope_exit&& __rhs) noexcept
+      requires is_nothrow_move_constructible_v<_Ef>
+      : _M_exit_function(std::forward<_Ef>(__rhs._M_exit_function))
+      { __rhs.release(); }
+
+      scope_exit(scope_exit&& __rhs)
+      noexcept(is_nothrow_copy_constructible_v<_Ef>)
+      requires (!is_nothrow_move_constructible_v<_Ef>)
+	    && is_copy_constructible_v<_Ef>
+      : _M_exit_function(__rhs._M_exit_function)
+      { __rhs.release(); }
+
+      scope_exit(const scope_exit&) = delete;
+      scope_exit& operator=(const scope_exit&) = delete;
+      scope_exit& operator=(scope_exit&&) = delete;
+
+      ~scope_exit() noexcept(noexcept(this->_M_exit_function))
+      {
+	if (_M_execute_on_destruction)
+	  _M_exit_function();
+      }
+
+      void release() noexcept { _M_execute_on_destruction = false; }
+
+    private:
+      [[no_unique_address]] _Ef _M_exit_function;
+      bool _M_execute_on_destruction = true;
+    };
+
+  template<typename _Ef>
+    scope_exit(_Ef) -> scope_exit<_Ef>;
+
+  template<typename _Ef>
+    class [[nodiscard]] scope_fail
+    {
+    public:
+      template<typename _Efp>
+	requires __not_same_as<remove_cvref_t<_Efp>, scope_fail>
+	      && constructible_from<_Ef, _Efp>
+	explicit
+	scope_fail(_Efp&& __f) noexcept(is_nothrow_constructible_v<_Ef, _Efp&>)
+#ifdef __cpp_exceptions
+	try
+#endif
+	: _M_exit_function(__f)
+	{ }
+#ifdef __cpp_exceptions
+	catch (...) { __f(); }
+#endif
+
+      template<typename _Efp>
+	requires __not_same_as<remove_cvref_t<_Efp>, scope_fail>
+	      && constructible_from<_Ef, _Efp>
+	      && __not_lvalue_ref<_Efp>
+	      && is_nothrow_constructible_v<_Ef, _Efp>
+	explicit
+	scope_fail(_Efp&& __f) noexcept
+	: _M_exit_function(std::forward<_Efp>(__f))
+	{ }
+
+      scope_fail(scope_fail&& __rhs) noexcept
+      requires is_nothrow_move_constructible_v<_Ef>
+      : _M_exit_function(std::forward<_Ef>(__rhs._M_exit_function))
+      { __rhs.release(); }
+
+      scope_fail(scope_fail&& __rhs)
+      noexcept(is_nothrow_copy_constructible_v<_Ef>)
+      requires (!is_nothrow_move_constructible_v<_Ef>)
+	    && is_copy_constructible_v<_Ef>
+      : _M_exit_function(__rhs._M_exit_function)
+      { __rhs.release(); }
+
+      scope_fail(const scope_fail&) = delete;
+      scope_fail& operator=(const scope_fail&) = delete;
+      scope_fail& operator=(scope_fail&&) = delete;
+
+      ~scope_fail() noexcept(noexcept(this->_M_exit_function))
+      {
+	if (std::uncaught_exceptions() > _M_uncaught_init)
+	  _M_exit_function();
+      }
+
+      void release() noexcept { _M_uncaught_init = __INT_MAX__; }
+
+    private:
+      [[no_unique_address]] _Ef _M_exit_function;
+      int _M_uncaught_init = std::uncaught_exceptions();
+    };
+
+  template<typename _Ef>
+    scope_fail(_Ef) -> scope_fail<_Ef>;
+
+  template<typename _Ef>
+    class [[nodiscard]] scope_success
+    {
+    public:
+      template<typename _Efp>
+	requires __not_same_as<remove_cvref_t<_Efp>, scope_success>
+	      && constructible_from<_Ef, _Efp>
+	explicit
+	scope_success(_Efp&& __f) noexcept(is_nothrow_constructible_v<_Ef, _Efp&>)
+	: _M_exit_function(__f)
+	{ }
+
+      template<typename _Efp>
+	requires __not_same_as<remove_cvref_t<_Efp>, scope_success>
+	      && constructible_from<_Ef, _Efp>
+	      && __not_lvalue_ref<_Efp>
+	      && is_nothrow_constructible_v<_Ef, _Efp>
+	explicit
+	scope_success(_Efp&& __f) noexcept
+	: _M_exit_function(std::forward<_Efp>(__f))
+	{ }
+
+      scope_success(scope_success&& __rhs) noexcept
+      requires is_nothrow_move_constructible_v<_Ef>
+      : _M_exit_function(std::forward<_Ef>(__rhs._M_exit_function))
+      { __rhs.release(); }
+
+      scope_success(scope_success&& __rhs)
+      noexcept(is_nothrow_copy_constructible_v<_Ef>)
+      requires (!is_nothrow_move_constructible_v<_Ef>)
+	    && is_copy_constructible_v<_Ef>
+      : _M_exit_function(__rhs._M_exit_function)
+      { __rhs.release(); }
+
+      scope_success(const scope_success&) = delete;
+      scope_success& operator=(const scope_success&) = delete;
+      scope_success& operator=(scope_success&&) = delete;
+
+      ~scope_success() noexcept(noexcept(this->_M_exit_function))
+      {
+	if (std::uncaught_exceptions() <= _M_uncaught_init)
+	  _M_exit_function();
+      }
+
+      void release() noexcept { _M_uncaught_init = -__INT_MAX__; }
+
+    private:
+      [[no_unique_address]] _Ef _M_exit_function;
+      int _M_uncaught_init = std::uncaught_exceptions();
+    };
+
+  template<typename _Ef>
+    scope_success(_Ef) -> scope_success<_Ef>;
+
+  template<typename _Resrc, typename _Del>
+    class [[nodiscard]] unique_resource
+    {
+      static_assert(!is_rvalue_reference_v<_Resrc>);
+      static_assert(!is_reference_v<_Del>);
+
+      struct _Dummy { constexpr void release() { } };
+
+      template<typename _Tp>
+	struct _Wrap
+	{
+	  template<typename _Up>
+	    requires is_constructible_v<_Tp, _Up>
+	    _Wrap(_Up&&)
+	    noexcept(is_nothrow_constructible_v<_Tp, _Up>);
+
+	  template<typename _Up, typename _Del2>
+	    requires is_constructible_v<_Tp, _Up>
+	    _Wrap(_Up&& __r, _Del2&& __d)
+	    noexcept(is_nothrow_constructible_v<_Tp, _Up>)
+	    : _M_t(std::forward<_Up>(__r))
+	    { __d.release(); }
+
+	  _Wrap() = default;
+
+	  _Wrap(_Wrap&&) = default;
+
+	  _Wrap(_Wrap&& __rhs) noexcept(is_nothrow_constructible_v<_Tp, _Tp&>)
+	  requires (!is_nothrow_move_constructible_v<_Tp>)
+	  : _M_t(__rhs._M_t)
+	  { }
+
+	  _Wrap& operator=(const _Wrap&) = default;
+
+	  _Wrap& operator=(_Wrap&&) = default;
+
+	  constexpr _Tp& get() noexcept { return _M_t; }
+	  constexpr const _Tp& get() const noexcept { return _M_t; }
+
+	  [[no_unique_address]] _Tp _M_t{};
+	};
+
+      template<typename _Tp>
+	struct _Wrap<_Tp&>
+	{
+	  template<typename _Up>
+	    requires is_constructible_v<reference_wrapper<_Tp>, _Up>
+	    _Wrap(_Up&&)
+	    noexcept(is_nothrow_constructible_v<reference_wrapper<_Tp>, _Up>);
+
+	  template<typename _Up, typename _Del2>
+	    _Wrap(_Up&& __r, _Del2&& __d)
+	    noexcept(is_nothrow_constructible_v<reference_wrapper<_Tp>, _Up>)
+	    : _M_p(__builtin_addressof(static_cast<_Tp&>(__r)))
+	    { __d.release(); }
+
+	  _Wrap() = delete;
+
+	  _Wrap(const _Wrap&) = default;
+
+	  _Wrap& operator=(const _Wrap&) = default;
+
+	  _Tp& get() noexcept { return *_M_p; }
+	  const _Tp& get() const noexcept { return *_M_p; }
+
+	  _Tp* _M_p = nullptr;
+	};
+
+      using _Res1 = _Wrap<_Resrc>;
+
+      template<typename _Tp, typename _Up>
+	requires is_constructible_v<_Tp, _Up>
+	  && (is_nothrow_constructible_v<_Tp, _Up>
+		|| is_constructible_v<_Tp, _Up&>)
+	using _Fwd_t
+	  = __conditional_t<is_nothrow_constructible_v<_Tp, _Up>, _Up, _Up&>;
+
+      template<typename _Tp, typename _Up>
+	static constexpr _Fwd_t<_Tp, _Up>
+	_S_fwd(_Up& __u)
+	{ return static_cast<_Fwd_t<_Tp, _Up>&&>(__u); }
+
+      template<typename _Tp, typename _Up, typename _Del2, typename _Res2>
+	static constexpr auto
+	_S_guard(_Del2& __d, _Res2& __r)
+	{
+	  if constexpr (is_nothrow_constructible_v<_Tp, _Up>)
+	    return _Dummy{};
+	  else
+	    return scope_fail{[&] { __d(__r); }};
+	}
+
+    public:
+      unique_resource() = default;
+
+      template<typename _Res2, typename _Del2>
+	requires requires {
+	  typename _Fwd_t<_Res1, _Res2>;
+	  typename _Fwd_t<_Del, _Del2>;
+	}
+	unique_resource(_Res2&& __r, _Del2&& __d)
+	noexcept((is_nothrow_constructible_v<_Res1, _Res2>
+		    || is_nothrow_constructible_v<_Res1, _Res2&>)
+		  &&
+		 (is_nothrow_constructible_v<_Del, _Del2>
+		    || is_nothrow_constructible_v<_Del, _Del2&>))
+	: _M_res(_S_fwd<_Res1, _Res2>(__r),
+		 _S_guard<_Res1, _Res2>(__d, __r)),
+	  _M_del(_S_fwd<_Del, _Del2>(__d),
+		 _S_guard<_Del, _Del2>(__d, _M_res.get())),
+	  _M_exec_on_reset(true)
+	{ }
+
+      unique_resource(unique_resource&& __rhs) noexcept
+      requires is_nothrow_move_constructible_v<_Res1>
+	    && is_nothrow_move_constructible_v<_Del>
+      : _M_res(std::move(__rhs._M_res)),
+	_M_del(std::move(__rhs._M_del)),
+	_M_exec_on_reset(std::__exchange(__rhs._M_exec_on_reset, false))
+      { }
+
+      unique_resource(unique_resource&& __rhs)
+      requires is_nothrow_move_constructible_v<_Res1>
+	    && (!is_nothrow_move_constructible_v<_Del>)
+      : _M_res(std::move(__rhs._M_res)),
+	_M_del(_S_fwd<_Del, _Del>(__rhs._M_del.get()),
+	       scope_fail([&]{
+		 if (__rhs._M_exec_on_reset)
+		   {
+		     __rhs._M_del.get()(_M_res.get());
+		     __rhs.release();
+		   }
+	       })),
+	_M_exec_on_reset(std::__exchange(__rhs._M_exec_on_reset, false))
+      { }
+
+      unique_resource(unique_resource&& __rhs)
+      requires (!is_nothrow_move_constructible_v<_Res1>)
+      : unique_resource(__rhs._M_res.get(), __rhs._M_del.get(), _Dummy{})
+      {
+	if (__rhs._M_exec_on_reset)
+	  {
+	    _M_exec_on_reset = true;
+	    __rhs._M_exec_on_reset = false;
+	  }
+      }
+
+      // 3.3.3.3, Destructor
+      ~unique_resource() { reset(); }
+
+      // 3.3.3.4, Assignment
+      unique_resource&
+      operator=(unique_resource&& __rhs)
+      noexcept(is_nothrow_move_assignable_v<_Res1>
+		&& is_nothrow_move_assignable_v<_Del>)
+      {
+	reset();
+	if constexpr (is_nothrow_move_assignable_v<_Res1>)
+	  {
+	    if constexpr (is_nothrow_move_assignable_v<_Del>)
+	      {
+		_M_res = std::move(__rhs._M_res);
+		_M_del = std::move(__rhs._M_del);
+	      }
+	    else
+	      {
+		_M_del = __rhs._M_del;
+		_M_res = std::move(__rhs._M_res);
+	      }
+	  }
+	else
+	  {
+	    if constexpr (is_nothrow_move_assignable_v<_Del>)
+	      {
+		_M_res = __rhs._M_res;
+		_M_del = std::move(__rhs._M_del);
+	      }
+	    else
+	      {
+		_M_res = __rhs._M_res;
+		_M_del = __rhs._M_del;
+	      }
+	  }
+	_M_exec_on_reset = std::__exchange(__rhs._M_exec_on_reset, false);
+	return *this;
+      }
+
+      // 3.3.3.5, Other member functions
+      void
+      reset() noexcept
+      {
+	if (_M_exec_on_reset)
+	  {
+	    _M_exec_on_reset = false;
+	    _M_del.get()(_M_res.get());
+	  }
+      }
+
+      template<typename _Res2>
+	void
+	reset(_Res2&& __r)
+	{
+	  reset();
+	  if constexpr (is_nothrow_assignable_v<_Res1&, _Res2>)
+	    _M_res.get() = std::forward<_Res2>(__r);
+	  else
+	    _M_res.get() = const_cast<const remove_reference_t<_Res2>&>(__r);
+	  _M_exec_on_reset = true;
+	}
+
+      void
+      release() noexcept
+      { _M_exec_on_reset = false; }
+
+      const _Resrc&
+      get() const noexcept
+      { return _M_res.get(); }
+
+      add_lvalue_reference_t<remove_pointer_t<_Resrc>>
+      operator*() const noexcept
+      requires is_pointer_v<_Resrc> && (!is_void_v<remove_pointer_t<_Resrc>>)
+      { return *get(); }
+
+      _Resrc operator->() const noexcept
+      requires is_pointer_v<_Resrc>
+      { return _M_res.get(); }
+
+      const _Del&
+      get_deleter() const noexcept
+      { return _M_del.get(); }
+
+    private:
+      [[no_unique_address]] _Res1 _M_res{};
+      [[no_unique_address]] _Wrap<_Del> _M_del{};
+      bool _M_exec_on_reset = false;
+
+      template<typename _Res2, typename _Del2, typename _St>
+	friend unique_resource<decay_t<_Res2>, decay_t<_Del2>>
+	make_unique_resource_checked(_Res2&&, const _St&, _Del2&&)
+	noexcept(is_nothrow_constructible_v<decay_t<_Res2>, _Res2>
+		  && is_nothrow_constructible_v<decay_t<_Del2>, _Del2>);
+
+      template<typename _Res2, typename _Del2>
+	unique_resource(_Res2&& __r, _Del2&& __d, _Dummy __noop)
+	noexcept(is_nothrow_constructible_v<_Resrc, _Res2>
+		  && is_nothrow_constructible_v<_Del, _Del2>)
+	: _M_res(std::forward<_Res2>(__r), __noop),
+	  _M_del(std::forward<_Del>(__d), __noop)
+	{ }
+    };
+
+  template<typename _Resrc, typename _Del>
+    unique_resource(_Resrc, _Del) -> unique_resource<_Resrc, _Del>;
+
+  template<typename _Resrc, typename _Del, typename _St = decay_t<_Resrc>>
+    unique_resource<decay_t<_Resrc>, decay_t<_Del>>
+    make_unique_resource_checked(_Resrc&& __r, const _St& __invalid, _Del&& __d)
+    noexcept(is_nothrow_constructible_v<decay_t<_Resrc>, _Resrc>
+	      && is_nothrow_constructible_v<decay_t<_Del>, _Del>)
+    {
+      if (__r == __invalid)
+	return { std::forward<_Resrc>(__r), std::forward<_Del>(__d), {} };
+      return { std::forward<_Resrc>(__r), std::forward<_Del>(__d) };
+    }
+
+} // namespace experimental::fundamentals_v3
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++20
+#endif // _GLIBCXX_EXPERIMENTAL_SCOPE

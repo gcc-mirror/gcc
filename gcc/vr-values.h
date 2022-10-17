@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,18 +30,22 @@ along with GCC; see the file COPYING3.  If not see
 class simplify_using_ranges
 {
 public:
-  simplify_using_ranges (class range_query *query = NULL);
+  simplify_using_ranges (range_query *query = NULL,
+			 int not_executable_flag = 0);
   ~simplify_using_ranges ();
-  void set_range_query (class range_query *q) { query = q; }
+  void set_range_query (class range_query *q, int not_executable_flag = 0)
+      { query = q; m_not_executable_flag = not_executable_flag; }
 
   bool simplify (gimple_stmt_iterator *);
 
   // ?? These should be cleaned, merged, and made private.
   tree vrp_evaluate_conditional (tree_code, tree, tree, gimple *);
   void vrp_visit_cond_stmt (gcond *, edge *);
+  bool fold_cond (gcond *);
   tree vrp_evaluate_conditional_warnv_with_ops (gimple *stmt, enum tree_code,
 						tree, tree, bool,
 						bool *, bool *);
+  bool simplify_casted_cond (gcond *);
 
 private:
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
@@ -50,7 +54,6 @@ private:
   bool simplify_bit_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_min_or_max_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_cond_using_ranges_1 (gcond *);
-  bool fold_cond (gcond *);
   bool simplify_switch_using_ranges (gswitch *);
   bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
 					       gimple *);
@@ -66,6 +69,7 @@ private:
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
 							     tree, tree,
 							     bool *, gimple *s);
+  void set_and_propagate_unexecutable (edge e);
   void cleanup_edges_and_switches (void);
 
   /* Vectors of edges that need removing and switch statements that
@@ -81,6 +85,8 @@ private:
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
   class range_query *query;
+  int m_not_executable_flag;   // Non zero if not_executable flag exists.
+  vec<edge> m_flag_set_edges;  // List of edges with flag to be cleared.
 };
 
 /* The VR_VALUES class holds the current view of range information
@@ -103,12 +109,12 @@ class vr_values : public range_query
   vr_values (void);
   ~vr_values (void);
 
-  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt) OVERRIDE;
-  virtual tree value_of_expr (tree, gimple * = NULL) OVERRIDE;
-  virtual tree value_on_edge (edge, tree) OVERRIDE;
-  virtual tree value_of_stmt (gimple *, tree = NULL_TREE) OVERRIDE;
+  virtual bool range_of_expr (vrange &r, tree expr, gimple *stmt) override;
+  virtual tree value_of_expr (tree, gimple * = NULL) override;
+  virtual tree value_on_edge (edge, tree) override;
+  virtual tree value_of_stmt (gimple *, tree = NULL_TREE) override;
   virtual const value_range_equiv *get_value_range (const_tree,
-						    gimple * = NULL) OVERRIDE;
+						    gimple * = NULL) override;
   void set_vr_value (tree, value_range_equiv *);
   value_range_equiv *swap_vr_value (tree, value_range_equiv *);
 
@@ -118,7 +124,7 @@ class vr_values : public range_query
   tree op_with_constant_singleton_value_range (tree);
   void adjust_range_with_scev (value_range_equiv *, class loop *,
 			       gimple *, tree);
-  virtual void dump (FILE *) OVERRIDE;
+  virtual void dump (FILE *) override;
 
   void extract_range_for_var_from_comparison_expr (tree, enum tree_code,
 						   tree, tree,

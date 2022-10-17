@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O2 -funroll-all-loops -fdump-rtl-loop2_unroll-details -fdump-tree-cunrolli-details" }
+-- { dg-options "-O2 -funroll-all-loops -fno-tree-vectorize -fdump-rtl-loop2_unroll-details -fdump-tree-cunrolli-details" }
 
 package body Unroll1 is
 

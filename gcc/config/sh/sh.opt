@@ -1,6 +1,6 @@
 ; Options for the SH port of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -207,7 +207,7 @@ Target RejectNegative Mask(ALIGN_DOUBLE)
 Align doubles at 64-bit boundaries.
 
 mdiv=
-Target RejectNegative Joined Var(sh_div_str) Init("")
+Target Save RejectNegative Joined Var(sh_div_str) Init("")
 Division strategy, one of: call-div1, call-fp, call-table.
 
 mdivsi3_libfunc=

@@ -2,7 +2,8 @@
 ! { dg-options "-fdump-tree-original -fcheck=pointer" }
 !
 ! Test the fix for PR82376. The pointer check was doubling up the call
-! to new. The fix reduces the count of 'new' from 5 to 4.
+! to new. The fix reduces the count of 'new' from 5 to 4, or to 3, when
+! counting only calls.
 !
 ! Contributed by José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 !
@@ -56,4 +57,4 @@ contains
   end subroutine set
 
 end program main_p
-! { dg-final { scan-tree-dump-times "new" 4 "original" } }
+! { dg-final { scan-tree-dump-times { new \(} 3 "original" } }

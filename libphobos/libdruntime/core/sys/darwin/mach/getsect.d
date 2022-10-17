@@ -468,4 +468,3 @@ const(section)* getsectbynamefromheaderwithswap_64(
     const scope char* section,
     int fSwap
 );
-

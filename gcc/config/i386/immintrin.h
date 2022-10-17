@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -93,6 +93,12 @@
 #include <avx512vp2intersectintrin.h>
 
 #include <avx512vp2intersectvlintrin.h>
+
+#ifdef __SSE2__
+#include <avx512fp16intrin.h>
+
+#include <avx512fp16vlintrin.h>
+#endif
 
 #include <shaintrin.h>
 

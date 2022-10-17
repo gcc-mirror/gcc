@@ -1,10 +1,4 @@
-// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
-
-import std.algorithm : map;
-import std.random : Random, uniform, unpredictableSeed;
-import std.range : repeat;
-import std.stdio : writeln;
 
 // Quick, dirty and inefficient AA using linear search, useful for testing.
 struct LinearAA(K, V) {
@@ -33,7 +27,7 @@ struct LinearAA(K, V) {
         return val;
     }
 
-    V* opIn_r(K key) {
+    V* opBinaryRight(string op : "in")(K key) {
         foreach(i, k; keys) {
             if(key == k) {
                 return values.ptr + i;
@@ -67,24 +61,35 @@ struct LinearAA(K, V) {
     }
 }
 
-void main() {
-    Random gen;
-    uint[] seed;
-    gen.seed(map!((a) {
-        seed ~= unpredictableSeed;
-        return seed[$-1]; })(repeat(0)));
-    writeln(seed);
+extern (C) int rand();
+
+uint random(const uint max = uint.max)
+{
+    version (Windows)
+    {
+        // RAND_MAX is quite low for windows, extend the range by
+        // abusing multiple random values and rounding errors.
+        const a = rand(), b = rand();
+        const c = a < b ? double(a) / b : double(b) / a;
+        return (cast(int) (c * max)) % max;
+    }
+    else
+        return rand() % max;
+}
+
+void main()
+{
     foreach(iter; 0..10) {  // Bug only happens after a few iterations.
-        writeln(iter);
+
         uint[size_t] builtin;
         LinearAA!(size_t, uint) linAA;
         uint[] nums = new uint[100_000];
         foreach(ref num; nums) {
-            num = uniform(0U, uint.max, gen);
+            num = random();
         }
 
         foreach(i; 0..10_000) {
-            auto index = uniform(0, nums.length, gen);
+            auto index = random(cast(uint) nums.length);
             if(index in builtin) {
                 assert(index in linAA);
                 assert(builtin[index] == nums[index]);
@@ -106,4 +111,3 @@ void main() {
         }
     }
 }
-

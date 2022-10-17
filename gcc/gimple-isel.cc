@@ -1,5 +1,5 @@
 /* Schedule GIMPLE vector statements.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,28 +43,29 @@ along with GCC; see the file COPYING3.  If not see
 /* Expand all ARRAY_REF(VIEW_CONVERT_EXPR) gimple assignments into calls to
    internal function based on vector type of selected expansion.
    i.e.:
-     VIEW_CONVERT_EXPR<int[4]>(u)[_1] =  = i_4(D);
+     VIEW_CONVERT_EXPR<int[4]>(u)[_1] = i_4(D);
    =>
      _7 = u;
      _8 = .VEC_SET (_7, i_4(D), _1);
      u = _8;  */
 
-static gimple *
-gimple_expand_vec_set_expr (gimple_stmt_iterator *gsi)
+static bool
+gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
 {
   enum tree_code code;
   gcall *new_stmt = NULL;
   gassign *ass_stmt = NULL;
+  bool cfg_changed = false;
 
   /* Only consider code == GIMPLE_ASSIGN.  */
   gassign *stmt = dyn_cast<gassign *> (gsi_stmt (*gsi));
   if (!stmt)
-    return NULL;
+    return false;
 
   tree lhs = gimple_assign_lhs (stmt);
   code = TREE_CODE (lhs);
   if (code != ARRAY_REF)
-    return NULL;
+    return false;
 
   tree val = gimple_assign_rhs1 (stmt);
   tree op0 = TREE_OPERAND (lhs, 0);
@@ -76,7 +77,7 @@ gimple_expand_vec_set_expr (gimple_stmt_iterator *gsi)
       tree pos = TREE_OPERAND (lhs, 1);
       tree view_op0 = TREE_OPERAND (op0, 0);
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
-      if (auto_var_in_fn_p (view_op0, cfun->decl)
+      if (auto_var_in_fn_p (view_op0, fun->decl)
 	  && !TREE_ADDRESSABLE (view_op0) && can_vec_set_var_idx_p (outermode))
 	{
 	  location_t loc = gimple_location (stmt);
@@ -98,19 +99,23 @@ gimple_expand_vec_set_expr (gimple_stmt_iterator *gsi)
 	  gimple_set_location (ass_stmt, loc);
 	  gsi_insert_before (gsi, ass_stmt, GSI_SAME_STMT);
 
+	  basic_block bb = gimple_bb (stmt);
 	  gimple_move_vops (ass_stmt, stmt);
-	  gsi_remove (gsi, true);
+	  if (gsi_remove (gsi, true)
+	      && gimple_purge_dead_eh_edges (bb))
+	    cfg_changed = true;
+	  *gsi = gsi_for_stmt (ass_stmt);
 	}
     }
 
-  return ass_stmt;
+  return cfg_changed;
 }
 
 /* Expand all VEC_COND_EXPR gimple assignments into calls to internal
    function based on type of selected expansion.  */
 
 static gimple *
-gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
+gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 			     hash_map<tree, unsigned int> *vec_cond_ssa_name_uses)
 {
   tree lhs, op0a = NULL_TREE, op0b = NULL_TREE;
@@ -191,7 +196,6 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 						     tcode);
 
 	  /* Try to fold x CMP y ? -1 : 0 to x CMP y.  */
-
 	  if (can_compute_op0
 	      && integer_minus_onep (op1)
 	      && integer_zerop (op2)
@@ -203,14 +207,19 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 	      return new_stmt;
 	    }
 
-	  if (can_compute_op0
-	      && used_vec_cond_exprs >= 2
-	      && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
-		  != CODE_FOR_nothing))
-	    {
-	      /* Keep the SSA name and use vcond_mask.  */
-	      tcode = TREE_CODE (op0);
-	    }
+	  /* When the compare has EH we do not want to forward it when
+	     it has multiple uses and in general because of the complication
+	     with EH redirection.  */
+	  if (stmt_can_throw_internal (fun, def_stmt))
+	    tcode = TREE_CODE (op0);
+
+	  /* If we can compute op0 and have multiple uses, keep the SSA
+	     name and use vcond_mask.  */
+	  else if (can_compute_op0
+		   && used_vec_cond_exprs >= 2
+		   && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
+		       != CODE_FOR_nothing))
+	    tcode = TREE_CODE (op0);
 	}
       else
 	tcode = TREE_CODE (op0);
@@ -241,6 +250,14 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 			GET_MODE_NUNITS (cmp_op_mode)));
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
+  /* Some targets do not have vcondeq and only vcond with NE/EQ
+     but not vcondu, so make sure to also try vcond here as
+     vcond_icode_p would canonicalize the optab query to.  */
+  if (icode == CODE_FOR_nothing
+      && (tcode == NE_EXPR || tcode == EQ_EXPR)
+      && ((icode = get_vcond_icode (mode, cmp_op_mode, !unsignedp))
+	  != CODE_FOR_nothing))
+    unsignedp = !unsignedp;
   if (icode == CODE_FOR_nothing)
     {
       if (tcode == LT_EXPR
@@ -260,10 +277,7 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 	  return gimple_build_call_internal (IFN_VCONDEQ, 5, op0a, op0b, op1,
 					     op2, tcode_tree);
 	}
-    }
 
-  if (icode == CODE_FOR_nothing)
-    {
       gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0))
 		  && can_compute_op0
 		  && (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
@@ -282,18 +296,19 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
    VEC_COND_EXPR assignments.  */
 
 static unsigned int
-gimple_expand_vec_exprs (void)
+gimple_expand_vec_exprs (struct function *fun)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
   hash_map<tree, unsigned int> vec_cond_ssa_name_uses;
   auto_bitmap dce_ssa_names;
+  bool cfg_changed = false;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple *g = gimple_expand_vec_cond_expr (&gsi,
+	  gimple *g = gimple_expand_vec_cond_expr (fun, &gsi,
 						   &vec_cond_ssa_name_uses);
 	  if (g != NULL)
 	    {
@@ -302,7 +317,7 @@ gimple_expand_vec_exprs (void)
 	      gsi_replace (&gsi, g, false);
 	    }
 
-	  gimple_expand_vec_set_expr (&gsi);
+	  cfg_changed |= gimple_expand_vec_set_expr (fun, &gsi);
 	  if (gsi_end_p (gsi))
 	    break;
 	}
@@ -314,7 +329,7 @@ gimple_expand_vec_exprs (void)
 
   simple_dce_from_worklist (dce_ssa_names);
 
-  return 0;
+  return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
 namespace {
@@ -340,14 +355,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return true;
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *fun) final override
     {
-      return gimple_expand_vec_exprs ();
+      return gimple_expand_vec_exprs (fun);
     }
 
 }; // class pass_gimple_isel

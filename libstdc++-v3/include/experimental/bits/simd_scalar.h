@@ -1,6 +1,6 @@
 // Simd scalar ABI specific implementations -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -155,7 +155,8 @@ struct _SimdImplScalar
 
   // _S_masked_load {{{2
   template <typename _Tp, typename _Up>
-    static inline _Tp _S_masked_load(_Tp __merge, bool __k,
+    _GLIBCXX_SIMD_INTRINSIC
+    static _Tp _S_masked_load(_Tp __merge, bool __k,
 				     const _Up* __mem) noexcept
     {
       if (__k)
@@ -165,83 +166,97 @@ struct _SimdImplScalar
 
   // _S_store {{{2
   template <typename _Tp, typename _Up>
-    static inline void _S_store(_Tp __v, _Up* __mem, _TypeTag<_Tp>) noexcept
+    _GLIBCXX_SIMD_INTRINSIC
+    static void _S_store(_Tp __v, _Up* __mem, _TypeTag<_Tp>) noexcept
     { __mem[0] = static_cast<_Up>(__v); }
 
   // _S_masked_store {{{2
   template <typename _Tp, typename _Up>
-    static inline void _S_masked_store(const _Tp __v, _Up* __mem,
+    _GLIBCXX_SIMD_INTRINSIC
+    static void _S_masked_store(const _Tp __v, _Up* __mem,
 				       const bool __k) noexcept
     { if (__k) __mem[0] = __v; }
 
   // _S_negate {{{2
   template <typename _Tp>
-    static constexpr inline bool _S_negate(_Tp __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr bool _S_negate(_Tp __x) noexcept
     { return !__x; }
 
   // _S_reduce {{{2
   template <typename _Tp, typename _BinaryOperation>
-    static constexpr inline _Tp
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp
     _S_reduce(const simd<_Tp, simd_abi::scalar>& __x, const _BinaryOperation&)
     { return __x._M_data; }
 
   // _S_min, _S_max {{{2
   template <typename _Tp>
-    static constexpr inline _Tp _S_min(const _Tp __a, const _Tp __b)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_min(const _Tp __a, const _Tp __b)
     { return std::min(__a, __b); }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_max(const _Tp __a, const _Tp __b)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_max(const _Tp __a, const _Tp __b)
     { return std::max(__a, __b); }
 
   // _S_complement {{{2
   template <typename _Tp>
-    static constexpr inline _Tp _S_complement(_Tp __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_complement(_Tp __x) noexcept
     { return static_cast<_Tp>(~__x); }
 
   // _S_unary_minus {{{2
   template <typename _Tp>
-    static constexpr inline _Tp _S_unary_minus(_Tp __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_unary_minus(_Tp __x) noexcept
     { return static_cast<_Tp>(-__x); }
 
   // arithmetic operators {{{2
   template <typename _Tp>
-    static constexpr inline _Tp _S_plus(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_plus(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      + __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_minus(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_minus(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      - __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_multiplies(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_multiplies(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      * __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_divides(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_divides(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      / __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_modulus(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_modulus(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      % __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_bit_and(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_bit_and(_Tp __x, _Tp __y)
     {
       if constexpr (is_floating_point_v<_Tp>)
 	{
@@ -254,7 +269,8 @@ struct _SimdImplScalar
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_bit_or(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_bit_or(_Tp __x, _Tp __y)
     {
       if constexpr (is_floating_point_v<_Tp>)
 	{
@@ -267,7 +283,8 @@ struct _SimdImplScalar
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_bit_xor(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_bit_xor(_Tp __x, _Tp __y)
     {
       if constexpr (is_floating_point_v<_Tp>)
 	{
@@ -280,11 +297,13 @@ struct _SimdImplScalar
     }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_bit_shift_left(_Tp __x, int __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_bit_shift_left(_Tp __x, int __y)
     { return static_cast<_Tp>(__promote_preserving_unsigned(__x) << __y); }
 
   template <typename _Tp>
-    static constexpr inline _Tp _S_bit_shift_right(_Tp __x, int __y)
+    _GLIBCXX_SIMD_INTRINSIC
+    static constexpr _Tp _S_bit_shift_right(_Tp __x, int __y)
     { return static_cast<_Tp>(__promote_preserving_unsigned(__x) >> __y); }
 
   // math {{{2
@@ -553,11 +572,13 @@ struct _SimdImplScalar
 
   // _S_increment & _S_decrement{{{2
   template <typename _Tp>
-    constexpr static inline void _S_increment(_Tp& __x)
+    _GLIBCXX_SIMD_INTRINSIC
+    constexpr static void _S_increment(_Tp& __x)
     { ++__x; }
 
   template <typename _Tp>
-    constexpr static inline void _S_decrement(_Tp& __x)
+    _GLIBCXX_SIMD_INTRINSIC
+    constexpr static void _S_decrement(_Tp& __x)
     { --__x; }
 
 
@@ -582,6 +603,7 @@ struct _SimdImplScalar
 
   // smart_reference access {{{2
   template <typename _Tp, typename _Up>
+    _GLIBCXX_SIMD_INTRINSIC
     constexpr static void _S_set(_Tp& __v, [[maybe_unused]] int __i,
 				 _Up&& __x) noexcept
     {
@@ -677,25 +699,32 @@ struct _MaskImplScalar
   }
 
   // logical and bitwise operators {{{2
+  _GLIBCXX_SIMD_INTRINSIC
   static constexpr bool _S_logical_and(bool __x, bool __y)
   { return __x && __y; }
 
+  _GLIBCXX_SIMD_INTRINSIC
   static constexpr bool _S_logical_or(bool __x, bool __y)
   { return __x || __y; }
 
+  _GLIBCXX_SIMD_INTRINSIC
   static constexpr bool _S_bit_not(bool __x)
   { return !__x; }
 
+  _GLIBCXX_SIMD_INTRINSIC
   static constexpr bool _S_bit_and(bool __x, bool __y)
   { return __x && __y; }
 
+  _GLIBCXX_SIMD_INTRINSIC
   static constexpr bool _S_bit_or(bool __x, bool __y)
   { return __x || __y; }
 
+  _GLIBCXX_SIMD_INTRINSIC
   static constexpr bool _S_bit_xor(bool __x, bool __y)
   { return __x != __y; }
 
   // smart_reference access {{{2
+  _GLIBCXX_SIMD_INTRINSIC
   constexpr static void _S_set(bool& __k, [[maybe_unused]] int __i,
 			       bool __x) noexcept
   {

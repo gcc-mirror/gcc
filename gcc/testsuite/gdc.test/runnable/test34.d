@@ -1,18 +1,8 @@
-// RUNNABLE_PHOBOS_TEST
-/*
-TEST_OUTPUT:
----
-Object
----
-*/
-
 module test34;
 
-import std.stdio;
-import std.string;
-import std.format;
 import core.exception;
-
+import core.stdc.stdio;
+import core.vararg;
 
 /************************************************/
 
@@ -26,16 +16,12 @@ void test1()
 
     auto hfoo = ti_foo.toHash();
     auto hbar = ti_bar.toHash();
-    writefln("typeid(Foo).toHash: ", hfoo);
-    writefln("typeid(Bar).toHash: ", hbar);
     assert(hfoo != hbar);
 
     auto e = (ti_foo == ti_bar);
-    writefln("opEquals: ", e ? "equal" : "not equal");
     assert(!e);
 
     auto c = (ti_foo.opCmp(ti_bar) == 0);
-    writefln("opCmp: ", c ? "equal" : "not equal");
     assert(!c);
 }
 
@@ -63,7 +49,6 @@ Struct[1] table;
 Struct getfirst()
 {
     foreach(v; table) {
-        writeln(v.langID);
         assert(v.langID == 1);
         return v;
     }
@@ -73,7 +58,6 @@ Struct getfirst()
 Struct getsecond()
 {
     foreach(ref v; table) {
-        writeln(v.langID);
         assert(v.langID == 1);
         return v;
     }
@@ -85,11 +69,9 @@ void test3()
     table[0].langID = 1;
 
     auto v = getfirst();
-    writeln(v.langID);
     assert(v.langID == 1);
 
     v = getsecond();
-    writeln(v.langID);
     assert(v.langID == 1);
 }
 
@@ -198,11 +180,6 @@ template parseInteger(string s)
 
 void test7()
 {
-    writeln(parseUinteger!("1234abc").value);
-    writeln(parseUinteger!("1234abc").rest);
-    writeln(parseInteger!("-1234abc").value);
-    writeln(parseInteger!("-1234abc").rest);
-
     assert(parseUinteger!("1234abc").value == "1234");
     assert(parseUinteger!("1234abc").rest == "abc");
     assert(parseInteger!("-1234abc").value == "-1234");
@@ -284,10 +261,8 @@ class B34 : A34 { }
 void test11()
 {
   A34 test=new B34;
-  writefln("Test is ", test.toString);
   assert(test.toString == "test34.B34");
   A34 test_2=cast(A34)(new B34);
-  writefln("Test 2 is ", test_2.toString);
   assert(test_2.toString == "test34.B34");
 }
 
@@ -357,7 +332,6 @@ struct Iterator16(T : Basic16!(T, U), U)
 {
     static void Foo()
     {
-        writeln(typeid(T), typeid(U));
         assert(is(T == int));
         assert(is(U == float));
     }
@@ -529,11 +503,8 @@ template Mang(alias F)
 
 template moo(alias A)
 {
-    pragma(msg,"   ");
     const string a = Mang!(A).mangledname;
-    pragma(msg,"   ");
     static assert(Mang!(A).mangledname == a); // FAILS !!!
-    pragma(msg,"   ");
 }
 
 void test27()
@@ -658,8 +629,37 @@ struct Vector34
 
     public string toString()
     {
-        return std.string.format("<%f, %f, %f>", x, y, z);
+        return formatImpl("<%f, %f, %f>", x, y, z);
     }
+
+    private static string formatImpl(string fmt, ...)
+    {
+        string ret = "<";
+        bool comma;
+        foreach (arg; _arguments)
+        {
+            assert(arg is typeid(float));
+            if (comma)
+                ret ~= ", ";
+            auto f = va_arg!float(_argptr);
+            if (f == 1)
+                ret ~= "1.000000";
+            else if (f == 0)
+                ret ~= "0.000000";
+            else
+                assert(0);
+            comma = true;
+        }
+        ret ~= ">";
+        return ret;
+    }
+}
+
+string format34(string fmt, ...)
+{
+    assert(_arguments[0] is typeid(Vector34));
+    auto arg = va_arg!Vector34(_argptr);
+    return arg.toString();
 }
 
 class Foo34
@@ -679,17 +679,12 @@ class Foo34
     private void bar()
     {
         auto s = foobar();
-        writef("Returned: %s\n", s);
-        assert(std.string.format("%s", s) == "<1.000000, 0.000000, 0.000000>");
+        assert(format34("%s", s) == "<1.000000, 0.000000, 0.000000>");
     }
 
     public Vector34 foobar()
     {
-        writef("Returning %s\n", v);
-
         return v;
-        Vector34 b = Vector34();
-        return b;
     }
 }
 
@@ -704,18 +699,18 @@ void test34()
 
 void foo35()
 {
-        uint a;
-        uint b;
-        uint c;
-        extern (Windows) int function(int i, int j, int k) xxx;
+    uint a;
+    uint b;
+    uint c;
+    extern (Windows) int function(int i, int j, int k) xxx;
 
-        a = 1;
-        b = 2;
-        c = 3;
+    a = 1;
+    b = 2;
+    c = 3;
 
-        xxx = cast(typeof(xxx))(a + b);
-        throw new Exception("xxx");
-        xxx( 4, 5, 6 );
+    xxx = cast(typeof(xxx))(a + b);
+    throw new Exception("xxx");
+    xxx( 4, 5, 6 );
 }
 
 void test35()
@@ -737,7 +732,7 @@ void test37()
     {
         synchronized
         {
-            writefln("Hello world!");
+            printf("Hello world!\n");
         }
     }
 }
@@ -768,7 +763,7 @@ static Rect sizeTest(bool empty) {
 }
 
 void print38(Rect r) {
-    writefln("(%d, %d)-(%d, %d)", r.left, r.top, r.right, r.bottom);
+    printf("(%d, %d)-(%d, %d)\n", r.left, r.top, r.right, r.bottom);
     assert(r.left == 0);
     assert(r.right == 0);
     assert(r.top == 0);
@@ -781,37 +776,66 @@ Rect defaultRect() {
 
 /************************************************/
 
+void varargs39(...)
+{
+    if (_arguments[0] is typeid(double[]))
+    {
+        auto arg = va_arg!(double[])(_argptr);
+        assert(arg.length == 1 && arg[0] == 1 || arg[0] == 2);
+    }
+    else if (_arguments[0] is typeid(double[][]))
+    {
+        auto arg = va_arg!(double[][])(_argptr);
+        assert(arg == [[1],[2]]);
+    }
+    else if (_arguments[0] is typeid(double[1][]))
+    {
+        auto arg = va_arg!(double[1][])(_argptr);
+        assert(arg == [[1], [2]]);
+    }
+    else
+        assert(0);
+}
+
 void test39()
 {
    double[][] foo = [[1.0],[2.0]];
 
-   writeln(foo[0]); // --> [1] , ok
-   writeln(foo[1]); // --> [2] , ok
-
-   writeln(foo);       // --> [[1],4.63919e-306]  ack!
-   writefln("%s", foo); // --> ditto
-   auto f = std.string.format("%s", foo);
-   assert(f == "[[1], [2]]");
+   varargs39(foo[0]); // --> [1] , ok
+   varargs39(foo[1]); // --> [2] , ok
+   varargs39(foo);    // --> [[1],4.63919e-306]  ack!
 
    double[1][2] bar;
    bar[0][0] = 1.0;
    bar[1][0] = 2.0;
 
-   writeln(bar);       // Error: Access violation
-   auto r = std.string.format("%s", bar);
-   assert(r == "[[1], [2]]");
+   varargs39(bar);    // Error: Access violation
 }
 
 /************************************************/
+
+void varargs40(...)
+{
+    if (_arguments[0] is typeid(int[char]))
+    {
+        auto x = va_arg!(int[char])(_argptr);
+        assert(x == ['b':123]);
+    }
+    else if (_arguments[0] is typeid(int))
+    {
+        auto x = va_arg!int(_argptr);
+        assert(x == 123);
+    }
+    else
+        assert(0);
+}
 
 void test40()
 {
     int[char] x;
     x['b'] = 123;
-    writeln(x);
-    auto r = std.string.format("%s", x);
-    assert(r == "['b':123]");
-    writeln(x['b']);
+    varargs40(x);
+    varargs40(x['b']);
 }
 
 /************************************************/
@@ -855,12 +879,28 @@ void test44()
 
 /************************************************/
 
+void varargs45(...)
+{
+    if (_arguments[0] is typeid(const(char[3])[]))
+    {
+        auto a = va_arg!(const(char[3])[])(_argptr);
+        assert(a == ["abc", "def"]);
+    }
+    else if (_arguments[0] is typeid(const(char)[][]))
+    {
+        auto b = va_arg!(const(char)[][])(_argptr);
+        assert(b == ["abc", "def"]);
+    }
+    else
+        assert(0);
+}
+
 void test45()
 {
-    //char[3][] a = ["abc", "def"];
-    //writefln(a);
-    //char[][2] b = ["abc", "def"];
-    //writefln(b);
+    const(char)[3][] a = ["abc", "def"];
+    varargs45(a);
+    const(char)[][2] b = ["abc", "def"];
+    varargs45(b);
 }
 
 /************************************************/
@@ -981,26 +1021,22 @@ void test49()
 
   version (all)
   {
-    writefln("Before test 1: ", a.v);
-    if (a == a.init) { writeln(a.v,"(a==a.init)"); assert(0); }
-    else { writeln(a.v,"(a!=a.init)"); assert(a.v == 10); }
+    if (a == a.init) { assert(0); }
+    else { assert(a.v == 10); }
   }
   else
   {
-    writefln("Before test 1: ", a.v);
-    if (a == a.init) { writeln(a.v,"(a==a.init)"); assert(a.v == 10); }
-    else { writeln(a.v,"(a!=a.init)"); assert(0); }
+    if (a == a.init) { assert(a.v == 10); }
+    else { assert(0); }
   }
 
     a.v = 100;
-    writefln("Before test 2: ", a.v);
-    if (a == a.init) { writeln(a.v,"(a==a.init)"); assert(0); }
-    else { writeln(a.v,"(a!=a.init)"); assert(a.v == 100); }
+    if (a == a.init) { assert(0); }
+    else { assert(a.v == 100); }
 
     a = A(1000);
-    writefln("Before test 3: ", a.v);
-    if (a == a.init) { writeln(a.v,"(a==a.init)"); assert(0); }
-    else { writeln(a.v,"(a!=a.init)"); assert(a.v == 1000); }
+    if (a == a.init) { assert(0); }
+    else { assert(a.v == 1000); }
 
   version (all)
     assert(a.init.v == 0);
@@ -1044,14 +1080,6 @@ struct TestStruct
 
 void func53(TestStruct[2] testarg)
 {
-    writeln(testarg[0].dummy0);
-    writeln(testarg[0].dummy1);
-    writeln(testarg[0].dummy2);
-
-    writeln(testarg[1].dummy0);
-    writeln(testarg[1].dummy1);
-    writeln(testarg[1].dummy2);
-
     assert(testarg[0].dummy0 == 0);
     assert(testarg[0].dummy1 == 1);
     assert(testarg[0].dummy2 == 2);
@@ -1061,11 +1089,10 @@ void func53(TestStruct[2] testarg)
     assert(testarg[1].dummy2 == 2);
 }
 
-TestStruct m53[2];
+TestStruct[2] m53;
 
 void test53()
 {
-    writeln(&m53);
     func53(m53);
 }
 
@@ -1076,13 +1103,11 @@ void test54()
     double a = 0;
     double b = 1;
     // Internal error: ..\ztc\cg87.c 3233
-//    a += (1? b: 1+1i)*1i;
-    writeln(a);
-//    assert(a == 0);
+    a += ((1? b: 1+1i)*1i).re;
+    assert(a == 0);
     // Internal error: ..\ztc\cod2.c 1680
-//    a += (b?1:b-1i)*1i;
-    writeln(a);
-//    assert(a == 0);
+    a += ((b?1:b-1i)*1i).re;
+    assert(a == 0);
 }
 
 /************************************************/
@@ -1101,7 +1126,7 @@ void test55()
 /************************************************/
 
 template t56() { alias Object t56; }
-pragma(msg, t56!().stringof);
+static assert(t56!().stringof == "Object");
 
 void test56()
 {
@@ -1115,9 +1140,6 @@ void test57()
 
     static if (is(AA T : T[U], U : const char[]))
     {
-        writeln(typeid(T));
-        writeln(typeid(U));
-
         assert(is(T == long));
         assert(is(U == const(char)[]));
     }
@@ -1129,9 +1151,7 @@ void test57()
 
     static if (is(int[10] W : W[V], int V))
     {
-        writeln(typeid(W));
         assert(is(W == int));
-        writeln(V);
         assert(V == 10);
     }
 
@@ -1295,7 +1315,5 @@ void main()
     test61();
     test62();
 
-    writefln("Success");
+    printf("Success\n");
 }
-
-

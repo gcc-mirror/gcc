@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,7 +187,7 @@ begin
    --  Line for -gnatef switch
 
    Write_Switch_Char ("ef");
-   Write_Line ("Full source path in brief error messages");
+   Write_Line ("Full source path in brief error messages and JSON output");
 
    --  Line for -gnateF switch
 
@@ -483,8 +483,10 @@ begin
    Write_Line ("        .B   turn off warnings for biased representation");
    Write_Line ("        c+   turn on warnings for constant conditional");
    Write_Line ("        C*   turn off warnings for constant conditional");
-   Write_Line ("        .c+  turn on warnings for unrepped components");
-   Write_Line ("        .C*  turn off warnings for unrepped components");
+   Write_Line ("        .c+  turn on warnings for components without " &
+                                                     "representation clauses");
+   Write_Line ("        .C*  turn off warnings for components without " &
+                                                     "representation clauses");
    Write_Line ("        _c*  turn on warnings for unknown " &
                                                  "Compile_Time_Warning");
    Write_Line ("        _C   turn off warnings for unknown " &
@@ -555,6 +557,8 @@ begin
                                                   "order");
    Write_Line ("        .P*  turn off warnings for suspicious parameter " &
                                                   "order");
+   Write_Line ("        _p   turn on warnings for pedantic checks");
+   Write_Line ("        _P   turn off warnings for pedantic checks");
    Write_Line ("        q*+  turn on warnings for questionable " &
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &

@@ -1,16 +1,16 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail351.d(14): Error: cast(uint)this.num[index] is not an lvalue
+fail_compilation/fail351.d(14): Error: expression `this.num[index]` of type `immutable(uint)` is not implicitly convertible to return type `ref uint`
 ---
 */
 
-// 2780
+// https://issues.dlang.org/show_bug.cgi?id=2780
 
 struct Immutable {
     immutable uint[2] num;
 
-    ref uint opIndex(size_t index) immutable {
+    ref uint opIndex(size_t index) immutable return {
         return num[index];
     }
 }

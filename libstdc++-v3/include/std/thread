@@ -1,6 +1,6 @@
 // <thread> -*- C++ -*-
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // concurrency
+
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
@@ -50,12 +52,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * @defgroup threads Threads
    * @ingroup concurrency
+   * @since C++11
    *
    * Classes for thread support.
    * @{
    */
 
   // std::thread is defined in <bits/std_thread.h>
+
+  /// @relates std::thread::id @{
 
 #if __cpp_lib_three_way_comparison
   inline strong_ordering
@@ -96,10 +101,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	return __out << __id._M_thread;
     }
+  /// @}
 
 #ifdef __cpp_lib_jthread
 
-  /// A thread that can be requested to stop and automatically joined.
+  /// @cond undocumented
+#ifndef __STRICT_ANSI__
+    template<typename _Callable, typename... _Args>
+      constexpr bool __pmf_expects_stop_token = false;
+
+    template<typename _Callable, typename _Obj, typename... _Args>
+      constexpr bool __pmf_expects_stop_token<_Callable, _Obj, _Args...>
+	= __and_<is_member_function_pointer<remove_reference_t<_Callable>>,
+		 is_invocable<_Callable, _Obj, stop_token, _Args...>>::value;
+#endif
+    /// @endcond
+
+  /** A thread with cancellation and automatic joining.
+   *
+   * Unlike `std::thread`, destroying a joinable `std::jthread` will not
+   * terminate the process. Instead, it will try to request its thread to
+   * stop, then will join it.
+   *
+   * A `std::jthread` has a `std::stop_source` member which will be passed
+   * as the first argument to the callable that runs in the new thread
+   * (as long as the callable will accept that argument). That can then
+   * be used to send a stop request that the new thread can test for.
+   *
+   * @headerfile thread
+   * @since C++20
+   */
   class jthread
   {
   public:
@@ -211,6 +242,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static thread
       _S_create(stop_source& __ssrc, _Callable&& __f, _Args&&... __args)
       {
+#ifndef __STRICT_ANSI__
+	if constexpr (__pmf_expects_stop_token<_Callable, _Args...>)
+	  return _S_create_pmf(__ssrc, __f, std::forward<_Args>(__args)...);
+	else
+#endif
 	if constexpr(is_invocable_v<decay_t<_Callable>, stop_token,
 				    decay_t<_Args>...>)
 	  return thread{std::forward<_Callable>(__f), __ssrc.get_token(),
@@ -225,6 +261,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  std::forward<_Args>(__args)...};
 	  }
       }
+
+#ifndef __STRICT_ANSI__
+    template<typename _Callable, typename _Obj, typename... _Args>
+      static thread
+      _S_create_pmf(stop_source& __ssrc, _Callable __f, _Obj&& __obj,
+		    _Args&&... __args)
+      {
+	return thread{__f, std::forward<_Obj>(__obj), __ssrc.get_token(),
+		      std::forward<_Args>(__args)...};
+      }
+#endif
 
     stop_source _M_stop_source;
     thread _M_thread;

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail275.d(10): Error: circular reference to variable 'fail275.C.x'
+fail_compilation/fail275.d(10): Error: circular reference to variable `fail275.C.x`
 ---
 */
 // REQUIRED_ARGS: -d

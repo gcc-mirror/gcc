@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -66,52 +66,52 @@ private
    subtype WC is Wide_Character;
 
    Control_Ranges           : aliased constant Wide_Character_Ranges :=
-     ((W.NUL, W.US),
-      (W.DEL, W.APC));
+     [(W.NUL, W.US),
+      (W.DEL, W.APC)];
 
    Control_Set              : constant Wide_Character_Set :=
      (AF.Controlled with
       Control_Ranges'Unrestricted_Access);
 
    Graphic_Ranges           : aliased constant Wide_Character_Ranges :=
-     ((W.Space,       W.Tilde),
-      (WC'Val (256), WC'Last));
+     [(W.Space,      W.Tilde),
+      (WC'Val (256), WC'Last)];
 
    Graphic_Set              : constant Wide_Character_Set :=
      (AF.Controlled with
       Graphic_Ranges'Unrestricted_Access);
 
    Letter_Ranges            : aliased constant Wide_Character_Ranges :=
-     (('A',                   'Z'),
+     [('A',                   'Z'),
       (W.LC_A,                W.LC_Z),
       (W.UC_A_Grave,          W.UC_O_Diaeresis),
       (W.UC_O_Oblique_Stroke, W.LC_O_Diaeresis),
-      (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis));
+      (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis)];
 
    Letter_Set               : constant Wide_Character_Set :=
      (AF.Controlled with
       Letter_Ranges'Unrestricted_Access);
 
    Lower_Ranges             : aliased constant Wide_Character_Ranges :=
-     (1 => (W.LC_A,                 W.LC_Z),
+     [1 => (W.LC_A,                 W.LC_Z),
       2 => (W.LC_German_Sharp_S,   W.LC_O_Diaeresis),
-      3 => (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis));
+      3 => (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis)];
 
    Lower_Set                : constant Wide_Character_Set :=
      (AF.Controlled with
       Lower_Ranges'Unrestricted_Access);
 
    Upper_Ranges             : aliased constant Wide_Character_Ranges :=
-     (1 => ('A',                   'Z'),
+     [1 => ('A',                   'Z'),
       2 => (W.UC_A_Grave,          W.UC_O_Diaeresis),
-      3 => (W.UC_O_Oblique_Stroke, W.UC_Icelandic_Thorn));
+      3 => (W.UC_O_Oblique_Stroke, W.UC_Icelandic_Thorn)];
 
    Upper_Set                : constant Wide_Character_Set :=
      (AF.Controlled with
       Upper_Ranges'Unrestricted_Access);
 
    Basic_Ranges             : aliased constant Wide_Character_Ranges :=
-     (1 => ('A',                   'Z'),
+     [1 => ('A',                   'Z'),
       2 => (W.LC_A,                W.LC_Z),
       3 => (W.UC_AE_Diphthong,     W.UC_AE_Diphthong),
       4 => (W.LC_AE_Diphthong,     W.LC_AE_Diphthong),
@@ -119,62 +119,62 @@ private
       6 => (W.UC_Icelandic_Thorn,  W.UC_Icelandic_Thorn),
       7 => (W.LC_Icelandic_Thorn,  W.LC_Icelandic_Thorn),
       8 => (W.UC_Icelandic_Eth,    W.UC_Icelandic_Eth),
-      9 => (W.LC_Icelandic_Eth,    W.LC_Icelandic_Eth));
+      9 => (W.LC_Icelandic_Eth,    W.LC_Icelandic_Eth)];
 
    Basic_Set                : constant Wide_Character_Set :=
      (AF.Controlled with
       Basic_Ranges'Unrestricted_Access);
 
    Decimal_Digit_Ranges     : aliased constant Wide_Character_Ranges :=
-     (1 => ('0', '9'));
+     [('0', '9')];
 
    Decimal_Digit_Set        : constant Wide_Character_Set :=
      (AF.Controlled with
       Decimal_Digit_Ranges'Unrestricted_Access);
 
    Hexadecimal_Digit_Ranges : aliased constant Wide_Character_Ranges :=
-     (1 => ('0', '9'),
+     [1 => ('0', '9'),
       2 => ('A', 'F'),
-      3 => (W.LC_A, W.LC_F));
+      3 => (W.LC_A, W.LC_F)];
 
    Hexadecimal_Digit_Set    : constant Wide_Character_Set :=
      (AF.Controlled with
       Hexadecimal_Digit_Ranges'Unrestricted_Access);
 
    Alphanumeric_Ranges      : aliased constant Wide_Character_Ranges :=
-     (1 => ('0',                   '9'),
+     [1 => ('0',                   '9'),
       2 => ('A',                   'Z'),
       3 => (W.LC_A,                W.LC_Z),
       4 => (W.UC_A_Grave,          W.UC_O_Diaeresis),
       5 => (W.UC_O_Oblique_Stroke, W.LC_O_Diaeresis),
-      6 => (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis));
+      6 => (W.LC_O_Oblique_Stroke, W.LC_Y_Diaeresis)];
 
    Alphanumeric_Set         : constant Wide_Character_Set :=
      (AF.Controlled with
       Alphanumeric_Ranges'Unrestricted_Access);
 
    Special_Graphic_Ranges   : aliased constant Wide_Character_Ranges :=
-     (1 => (Wide_Space,            W.Solidus),
+     [1 => (Wide_Space,            W.Solidus),
       2 => (W.Colon,               W.Commercial_At),
       3 => (W.Left_Square_Bracket, W.Grave),
       4 => (W.Left_Curly_Bracket,  W.Tilde),
       5 => (W.No_Break_Space,      W.Inverted_Question),
       6 => (W.Multiplication_Sign, W.Multiplication_Sign),
-      7 => (W.Division_Sign,       W.Division_Sign));
+      7 => (W.Division_Sign,       W.Division_Sign)];
 
    Special_Graphic_Set      : constant Wide_Character_Set :=
      (AF.Controlled with
       Special_Graphic_Ranges'Unrestricted_Access);
 
    ISO_646_Ranges           : aliased constant Wide_Character_Ranges :=
-     (1 => (W.NUL, W.DEL));
+     [(W.NUL, W.DEL)];
 
    ISO_646_Set              : constant Wide_Character_Set :=
      (AF.Controlled with
       ISO_646_Ranges'Unrestricted_Access);
 
    Character_Ranges         : aliased constant Wide_Character_Ranges :=
-     (1 => (W.NUL, WC'Val (255)));
+     [(W.NUL, WC'Val (255))];
 
    Character_Set            : constant Wide_Character_Set :=
      (AF.Controlled with

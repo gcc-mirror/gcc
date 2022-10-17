@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Gen_IL.Types;
-
 package Gen_IL.Fields is
 
    --  The following is "optional field enumeration" -- i.e. it is Field_Enum
@@ -36,8 +34,7 @@ package Gen_IL.Fields is
    --  which might need to be kept in sync when modifying this.
 
    --  Be sure to put new fields in the appropriate subrange (Field_Enum,
-   --  Node_Header_Field, Node_Field, Entity_Field -- search for comments
-   --  below).
+   --  Node_Field, Entity_Field -- search for comments below).
 
    type Opt_Field_Enum is
      (No_Field,
@@ -91,7 +88,6 @@ package Gen_IL.Fields is
       Body_Required,
       Body_To_Inline,
       Box_Present,
-      By_Ref,
       Char_Literal_Value,
       Chars,
       Check_Address_Alignment,
@@ -100,6 +96,7 @@ package Gen_IL.Fields is
       Class_Present,
       Classifications,
       Cleanup_Actions,
+      Comes_From_Check_Or_Contract,
       Comes_From_Extended_Return_Statement,
       Compile_Time_Known_Aggregate,
       Component_Associations,
@@ -121,7 +118,6 @@ package Gen_IL.Fields is
       Contract_Test_Cases,
       Controlling_Argument,
       Conversion_OK,
-      Convert_To_Return_False,
       Corresponding_Aspect,
       Corresponding_Body,
       Corresponding_Entry_Body,
@@ -150,14 +146,12 @@ package Gen_IL.Fields is
       Discrete_Subtype_Definitions,
       Discriminant_Specifications,
       Discriminant_Type,
-      Do_Accessibility_Check,
       Do_Discriminant_Check,
       Do_Division_Check,
       Do_Length_Check,
       Do_Overflow_Check,
       Do_Range_Check,
       Do_Storage_Check,
-      Do_Tag_Check,
       Elaborate_All_Desirable,
       Elaborate_All_Present,
       Elaborate_Desirable,
@@ -190,13 +184,11 @@ package Gen_IL.Fields is
       First_Inlined_Subprogram,
       First_Name,
       First_Named_Actual,
-      First_Real_Statement,
       First_Subtype_Link,
       Float_Truncate,
       Formal_Type_Definition,
       Forwards_OK,
       From_Aspect_Specification,
-      From_At_End,
       From_At_Mod,
       From_Conditional_Expression,
       From_Default,
@@ -263,6 +255,8 @@ package Gen_IL.Fields is
       Is_Folded_In_Parser,
       Is_Generic_Contract_Pragma,
       Is_Homogeneous_Aggregate,
+      Is_Parenthesis_Aggregate,
+      Is_Enum_Array_Aggregate,
       Is_Ignored,
       Is_Ignored_Ghost_Pragma,
       Is_In_Discriminant_Check,
@@ -463,7 +457,9 @@ package Gen_IL.Fields is
       Can_Never_Be_Null,
       Can_Use_Internal_Rep,
       Checks_May_Be_Suppressed,
-      Class_Wide_Clone,
+      Class_Postconditions,
+      Class_Preconditions,
+      Class_Preconditions_Subprogram,
       Class_Wide_Type,
       Cloned_Subtype,
       Component_Alignment,
@@ -511,6 +507,7 @@ package Gen_IL.Fields is
       Discriminant_Default_Value,
       Discriminant_Number,
       Dispatch_Table_Wrappers,
+      Dynamic_Call_Helper,
       DT_Entry_Count,
       DT_Offset_To_Top_Func,
       DT_Position,
@@ -651,9 +648,12 @@ package Gen_IL.Fields is
       Hiding_Loop_Variable,
       Hidden_In_Formal_Instance,
       Homonym,
+      Ignored_Class_Postconditions,
+      Ignored_Class_Preconditions,
       Ignore_SPARK_Mode_Pragmas,
       Import_Pragma,
       Incomplete_Actuals,
+      Indirect_Call_Wrapper,
       In_Package_Body,
       In_Private_Part,
       In_Use,
@@ -679,6 +679,7 @@ package Gen_IL.Fields is
       Is_Checked_Ghost_Entity,
       Is_Child_Unit,
       Is_Class_Wide_Equivalent_Type,
+      Is_Class_Wide_Wrapper,
       Is_Compilation_Unit,
       Is_Completely_Hidden,
       Is_Concurrent_Record_Type,
@@ -695,6 +696,7 @@ package Gen_IL.Fields is
       Is_Discrim_SO_Function,
       Is_Discriminant_Check_Function,
       Is_Dispatch_Table_Entity,
+      Is_Dispatch_Table_Wrapper,
       Is_Dispatching_Operation,
       Is_Elaboration_Checks_OK_Id,
       Is_Elaboration_Warnings_OK_Id,
@@ -752,7 +754,6 @@ package Gen_IL.Fields is
       Is_Partial_Invariant_Procedure,
       Is_Potentially_Use_Visible,
       Is_Predicate_Function,
-      Is_Predicate_Function_M,
       Is_Preelaborated,
       Is_Primitive,
       Is_Primitive_Wrapper,
@@ -830,7 +831,6 @@ package Gen_IL.Fields is
       Nonzero_Is_True,
       Normalized_First_Bit,
       Normalized_Position,
-      Normalized_Position_Max,
       OK_To_Rename,
       Optimize_Alignment_Space,
       Optimize_Alignment_Time,
@@ -848,6 +848,7 @@ package Gen_IL.Fields is
       Partial_View_Has_Unknown_Discr,
       Pending_Access_Types,
       Postconditions_Proc,
+      Predicate_Expression,
       Prev_Entity,
       Prival,
       Prival_Link,
@@ -870,7 +871,6 @@ package Gen_IL.Fields is
       Relative_Deadline_Variable,
       Renamed_In_Spec,
       Renamed_Or_Alias, -- Shared among Alias, Renamed_Entity, Renamed_Object
-      Renaming_Map,
       Requires_Overriding,
       Return_Applies_To,
       Return_Present,
@@ -896,6 +896,7 @@ package Gen_IL.Fields is
       Spec_Entity,
       SSO_Set_High_By_Default,
       SSO_Set_Low_By_Default,
+      Static_Call_Helper,
       Static_Discrete_Predicate,
       Static_Elaboration_Desired,
       Static_Initialization,
@@ -929,7 +930,8 @@ package Gen_IL.Fields is
       Warnings_Off_Used_Unmodified,
       Warnings_Off_Used_Unreferenced,
       Was_Hidden,
-      Wrapped_Entity
+      Wrapped_Entity,
+      Wrapped_Statements
 
       --  End of entity fields.
      ); -- Opt_Field_Enum
@@ -938,14 +940,5 @@ package Gen_IL.Fields is
      range Opt_Field_Enum'Succ (No_Field) .. Opt_Field_Enum'Last;
    --  Enumeration of fields -- Opt_Field_Enum without the special null value
    --  No_Field.
-
-   subtype Node_Header_Field is Field_Enum with Predicate =>
-     Node_Header_Field in Nkind .. Link | Ekind;
-
-   use Gen_IL.Types;
-
-   subtype Node_Header_Type is Type_Enum range
-     Node_Kind_Type .. Union_Id;
-   --  Types of node header fields
 
 end Gen_IL.Fields;

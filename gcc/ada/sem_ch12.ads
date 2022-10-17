@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,23 +36,6 @@ package Sem_Ch12 is
    procedure Analyze_Formal_Type_Declaration            (N : Node_Id);
    procedure Analyze_Formal_Subprogram_Declaration      (N : Node_Id);
    procedure Analyze_Formal_Package_Declaration         (N : Node_Id);
-
-   function Build_Function_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id;
-   --  In GNATprove mode, create a wrapper function for actuals that are
-   --  functions with any number of formal parameters, in order to propagate
-   --  their contract to the renaming declarations generated for them. This
-   --  is called after the renaming declaration created for the formal in the
-   --  instance has been analyzed, and the actual is known.
-
-   function Build_Operator_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id;
-   --  In GNATprove mode, create a wrapper function for actuals that are
-   --  operators, in order to propagate their contract to the renaming
-   --  declarations generated for them. The types are (the instances of)
-   --  the types of the formal subprogram.
 
    procedure Start_Generic;
    --  Must be invoked before starting to process a generic spec or body
@@ -126,6 +109,10 @@ package Sem_Ch12 is
    --  Called after semantic analysis, to complete the instantiation of
    --  function and procedure instances. The flag Body_Optional has the
    --  same purpose as described for Instantiate_Package_Body.
+
+   function Is_Abbreviated_Instance (E : Entity_Id) return Boolean;
+   --  Return true if E is a package created for an abbreviated instantiation
+   --  to check conformance between formal package and corresponding actual.
 
    function Need_Subprogram_Instance_Body
      (N    : Node_Id;

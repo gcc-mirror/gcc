@@ -1,5 +1,5 @@
 
-version(D_SIMD)
+static if (__traits(compiles, __vector(float[4])))
 {
 	struct Foo
 	{

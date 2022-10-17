@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail2361.d(13): Error: cannot modify immutable expression c
+fail_compilation/fail2361.d(14): Error: the `delete` keyword is obsolete
+fail_compilation/fail2361.d(14):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
 ---
 */
 

@@ -404,13 +404,19 @@
 #endif
 
 
+/* Define if your assembler supports eh_frame pcrel encoding. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT
+#endif
+
+
 /* Define if your assembler supports the R_PPC64_ENTRY relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_ENTRY_MARKERS
 #endif
 
 
-/* Define if your assembler supports explicit relocations. */
+/* Define if your assembler supports explicit relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_EXPLICIT_RELOCS
 #endif
@@ -443,12 +449,6 @@
 /* Define true if the assembler supports '.long foo@GOTOFF'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_GOTOFF_IN_DATA
-#endif
-
-
-/* Define if your assembler supports the --gstabs option. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_GSTABS_DEBUG_FLAG
 #endif
 
 
@@ -616,6 +616,13 @@
 #endif
 
 
+/* Define if your Mac OS X assembler supports -mllvm -x86-pad-for-align=false.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MLLVM_X86_PAD_FOR_ALIGN
+#endif
+
+
 /* Define if your Mac OS X assembler supports the -mmacos-version-min option.
    */
 #ifndef USED_FOR_TARGET
@@ -730,12 +737,6 @@
    against hidden symbols. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
-#endif
-
-
-/* Define if your assembler supports .stabs. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_STABS_DIRECTIVE
 #endif
 
 
@@ -1324,6 +1325,13 @@
 #endif
 
 
+/* Define if your Arm assembler permits context-specific feature extensions.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_ARM_EXTENDED_ARCH
+#endif
+
+
 /* Define if your assembler supports .balign and .p2align. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN
@@ -1440,12 +1448,6 @@
 /* Define if your assembler supports .weakref. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_WEAKREF
-#endif
-
-
-/* Define if your assembler has fixed global_load functions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_GCN_ASM_GLOBAL_LOAD_FIXED
 #endif
 
 
@@ -1668,6 +1670,12 @@
    into PC-relative form. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_PERSONALITY_RELAXATION
+#endif
+
+
+/* Define if the PE linker supports --disable-dynamicbase option. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PE_DISABLE_DYNAMICBASE
 #endif
 
 
@@ -1931,6 +1939,12 @@
 #endif
 
 
+/* Define to 1 if you have the <sys/auxv.h> header file. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SYS_AUXV_H
+#endif
+
+
 /* Define to 1 if you have the <sys/file.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SYS_FILE_H
@@ -2128,6 +2142,18 @@
 #endif
 
 
+/* Define if O_NONBLOCK supported by fcntl. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_O_NONBLOCK
+#endif
+
+
+/* Define which stat syscall is able to handle 64bit indodes. */
+#ifndef USED_FOR_TARGET
+#undef HOST_STAT_FOR_64BIT_INODES
+#endif
+
+
 /* Define as const if the declaration of iconv() needs const. */
 #ifndef USED_FOR_TARGET
 #undef ICONV_CONST
@@ -2143,6 +2169,12 @@
 /* Define to 1 if ld64 supports '-export_dynamic'. */
 #ifndef USED_FOR_TARGET
 #undef LD64_HAS_EXPORT_DYNAMIC
+#endif
+
+
+/* Define to 1 if ld64 supports '-platform_version'. */
+#ifndef USED_FOR_TARGET
+#undef LD64_HAS_PLATFORM_VERSION
 #endif
 
 
@@ -2283,6 +2315,18 @@
 /* Define to PREFIX/include if cpp should also search that directory. */
 #ifndef USED_FOR_TARGET
 #undef PREFIX_INCLUDE_DIR
+#endif
+
+
+/* The size of `dev_t', as computed by sizeof. */
+#ifndef USED_FOR_TARGET
+#undef SIZEOF_DEV_T
+#endif
+
+
+/* The size of `ino_t', as computed by sizeof. */
+#ifndef USED_FOR_TARGET
+#undef SIZEOF_INO_T
 #endif
 
 
@@ -2634,3 +2678,7 @@
 #undef vfork
 #endif
 
+/* Define to 1 if you have the `getauxval' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GETAUXVAL
+#endif

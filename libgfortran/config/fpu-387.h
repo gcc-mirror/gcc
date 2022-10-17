@@ -1,5 +1,5 @@
 /* FPU-related code for x86 and x86_64 processors.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -418,9 +418,12 @@ get_fpu_rounding_mode (void)
 }
 
 int
-support_fpu_rounding_mode (int mode __attribute__((unused)))
+support_fpu_rounding_mode (int mode)
 {
-  return 1;
+  if (mode == GFC_FPE_AWAY)
+    return 0;
+  else
+    return 1;
 }
 
 void

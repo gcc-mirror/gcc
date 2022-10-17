@@ -4,6 +4,7 @@ extern GPF SUFFIX(floor) (GPF);
 extern GPF SUFFIX(nearbyint) (GPF);
 extern GPF SUFFIX(rint) (GPF);
 extern GPF SUFFIX(round) (GPF);
+extern GPF SUFFIX(roundeven) (GPF);
 
 GPF test1a (GPF x)
 {
@@ -64,3 +65,14 @@ GPF test6b (GPF x)
 {
   return SUFFIX(round)(x);
 }
+
+GPF test7a (GPF x)
+{
+  return SUFFIX(__builtin_roundeven)(x);
+}
+
+GPF test7b (GPF x)
+{
+  return SUFFIX(roundeven)(x);
+}
+

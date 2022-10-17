@@ -1,6 +1,6 @@
 // <experimental/executor> -*- C++ -*-
 
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201402L
 
 #include <algorithm>
@@ -43,7 +45,6 @@
 #include <thread>
 #include <tuple>
 #include <unordered_map>
-#include <utility>
 #include <experimental/netfwd>
 #include <bits/unique_ptr.h>
 #include <experimental/bits/net.h>
@@ -390,7 +391,7 @@ inline namespace v1
 	= typename __result_type::completion_handler_type;
 
     private:
-      using __handler_type = conditional_t<
+      using __handler_type = __conditional_t<
 	is_same<_CompletionToken, completion_handler_type>::value,
 	completion_handler_type&,
 	completion_handler_type>;

@@ -1,6 +1,6 @@
 // Pointer Traits -*- C++ -*-
 
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,11 @@
 #include <bits/move.h>
 
 #if __cplusplus > 201703L
-#define __cpp_lib_constexpr_memory 201811L
+#include <concepts>
+# ifndef __cpp_lib_constexpr_memory
+// Defined to a newer value in bits/unique_ptr.h for C++23
+#  define __cpp_lib_constexpr_memory 201811L
+# endif
 namespace __gnu_debug { struct _Safe_iterator_base; }
 #endif
 
@@ -43,89 +47,148 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /// @cond undocumented
+
   class __undefined;
 
-  // Given Template<T, ...> return T, otherwise invalid.
+  // For a specialization `SomeTemplate<T, Types...>` the member `type` is T,
+  // otherwise `type` is `__undefined`.
   template<typename _Tp>
     struct __get_first_arg
     { using type = __undefined; };
 
-  template<template<typename, typename...> class _Template, typename _Tp,
+  template<template<typename, typename...> class _SomeTemplate, typename _Tp,
            typename... _Types>
-    struct __get_first_arg<_Template<_Tp, _Types...>>
+    struct __get_first_arg<_SomeTemplate<_Tp, _Types...>>
     { using type = _Tp; };
 
-  template<typename _Tp>
-    using __get_first_arg_t = typename __get_first_arg<_Tp>::type;
-
-  // Given Template<T, ...> and U return Template<U, ...>, otherwise invalid.
+  // For a specialization `SomeTemplate<T, Args...>` and a type `U` the member
+  // `type` is `SomeTemplate<U, Args...>`, otherwise there is no member `type`.
   template<typename _Tp, typename _Up>
     struct __replace_first_arg
     { };
 
-  template<template<typename, typename...> class _Template, typename _Up,
+  template<template<typename, typename...> class _SomeTemplate, typename _Up,
            typename _Tp, typename... _Types>
-    struct __replace_first_arg<_Template<_Tp, _Types...>, _Up>
-    { using type = _Template<_Up, _Types...>; };
+    struct __replace_first_arg<_SomeTemplate<_Tp, _Types...>, _Up>
+    { using type = _SomeTemplate<_Up, _Types...>; };
 
-  template<typename _Tp, typename _Up>
-    using __replace_first_arg_t = typename __replace_first_arg<_Tp, _Up>::type;
+  // Detect the element type of a pointer-like type.
+  template<typename _Ptr, typename = void>
+    struct __ptr_traits_elem : __get_first_arg<_Ptr>
+    { };
 
-  template<typename _Tp>
-    using __make_not_void
-      = typename conditional<is_void<_Tp>::value, __undefined, _Tp>::type;
-
-  /**
-   * @brief  Uniform interface to all pointer-like types
-   * @ingroup pointer_abstractions
-  */
+  // Use _Ptr::element_type if is a valid type.
+#if __cpp_concepts
+  template<typename _Ptr> requires requires { typename _Ptr::element_type; }
+    struct __ptr_traits_elem<_Ptr, void>
+    { using type = typename _Ptr::element_type; };
+#else
   template<typename _Ptr>
-    struct pointer_traits
+    struct __ptr_traits_elem<_Ptr, __void_t<typename _Ptr::element_type>>
+    { using type = typename _Ptr::element_type; };
+#endif
+
+  template<typename _Ptr>
+    using __ptr_traits_elem_t = typename __ptr_traits_elem<_Ptr>::type;
+
+  /// @endcond
+
+  // Define pointer_traits<P>::pointer_to.
+  template<typename _Ptr, typename _Elt, bool = is_void<_Elt>::value>
+    struct __ptr_traits_ptr_to
+    {
+      using pointer = _Ptr;
+      using element_type = _Elt;
+
+      /**
+       *  @brief  Obtain a pointer to an object
+       *  @param  __r  A reference to an object of type `element_type`
+       *  @return `pointer::pointer_to(__e)`
+       *  @pre `pointer::pointer_to(__e)` is a valid expression.
+      */
+      static pointer
+      pointer_to(element_type& __e)
+#if __cpp_lib_concepts
+      requires requires {
+	{ pointer::pointer_to(__e) } -> convertible_to<pointer>;
+      }
+#endif
+      { return pointer::pointer_to(__e); }
+    };
+
+  // Do not define pointer_traits<P>::pointer_to if element type is void.
+  template<typename _Ptr, typename _Elt>
+    struct __ptr_traits_ptr_to<_Ptr, _Elt, true>
+    { };
+
+  // Partial specialization defining pointer_traits<T*>::pointer_to(T&).
+  template<typename _Tp>
+    struct __ptr_traits_ptr_to<_Tp*, _Tp, false>
+    {
+      using pointer = _Tp*;
+      using element_type = _Tp;
+
+      /**
+       *  @brief  Obtain a pointer to an object
+       *  @param  __r  A reference to an object of type `element_type`
+       *  @return `addressof(__r)`
+      */
+      static _GLIBCXX20_CONSTEXPR pointer
+      pointer_to(element_type& __r) noexcept
+      { return std::addressof(__r); }
+    };
+
+  template<typename _Ptr, typename _Elt>
+    struct __ptr_traits_impl : __ptr_traits_ptr_to<_Ptr, _Elt>
     {
     private:
       template<typename _Tp>
-	using __element_type = typename _Tp::element_type;
-
-      template<typename _Tp>
-	using __difference_type = typename _Tp::difference_type;
-
-      template<typename _Tp, typename _Up, typename = void>
-	struct __rebind : __replace_first_arg<_Tp, _Up> { };
+	using __diff_t = typename _Tp::difference_type;
 
       template<typename _Tp, typename _Up>
-	struct __rebind<_Tp, _Up, __void_t<typename _Tp::template rebind<_Up>>>
-	{ using type = typename _Tp::template rebind<_Up>; };
+	using __rebind = __type_identity<typename _Tp::template rebind<_Up>>;
 
     public:
       /// The pointer type.
       using pointer = _Ptr;
 
       /// The type pointed to.
-      using element_type
-	= __detected_or_t<__get_first_arg_t<_Ptr>, __element_type, _Ptr>;
+      using element_type = _Elt;
 
       /// The type used to represent the difference between two pointers.
-      using difference_type
-	= __detected_or_t<ptrdiff_t, __difference_type, _Ptr>;
+      using difference_type = __detected_or_t<ptrdiff_t, __diff_t, _Ptr>;
 
       /// A pointer to a different type.
       template<typename _Up>
-        using rebind = typename __rebind<_Ptr, _Up>::type;
-
-      static _Ptr
-      pointer_to(__make_not_void<element_type>& __e)
-      { return _Ptr::pointer_to(__e); }
-
-      static_assert(!is_same<element_type, __undefined>::value,
-	  "pointer type defines element_type or is like SomePointer<T, Args>");
+	using rebind = typename __detected_or_t<__replace_first_arg<_Ptr, _Up>,
+						__rebind, _Ptr, _Up>::type;
     };
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3545. std::pointer_traits should be SFINAE-friendly
+  template<typename _Ptr>
+    struct __ptr_traits_impl<_Ptr, __undefined>
+    { };
+
+  /**
+   * @brief  Uniform interface to all pointer-like types
+   * @headerfile memory
+   * @ingroup pointer_abstractions
+   * @since C++11
+  */
+  template<typename _Ptr>
+    struct pointer_traits : __ptr_traits_impl<_Ptr, __ptr_traits_elem_t<_Ptr>>
+    { };
 
   /**
    * @brief  Partial specialization for built-in pointers.
+   * @headerfile memory
    * @ingroup pointer_abstractions
+   * @since C++11
   */
   template<typename _Tp>
-    struct pointer_traits<_Tp*>
+    struct pointer_traits<_Tp*> : __ptr_traits_ptr_to<_Tp*, _Tp>
     {
       /// The pointer type
       typedef _Tp* pointer;
@@ -133,18 +196,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp  element_type;
       /// Type used to represent the difference between two pointers
       typedef ptrdiff_t difference_type;
-
-      template<typename _Up>
-        using rebind = _Up*;
-
-      /**
-       *  @brief  Obtain a pointer to an object
-       *  @param  __r  A reference to an object of type @c element_type
-       *  @return @c addressof(__r)
-      */
-      static _GLIBCXX20_CONSTEXPR pointer
-      pointer_to(__make_not_void<element_type>& __r) noexcept
-      { return std::addressof(__r); }
+      /// A pointer to a different type.
+      template<typename _Up> using rebind = _Up*;
     };
 
   /// Convenience alias for rebinding pointers.

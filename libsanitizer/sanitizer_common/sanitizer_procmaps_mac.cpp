@@ -10,7 +10,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "sanitizer_platform.h"
-#if SANITIZER_MAC
+#if SANITIZER_APPLE
 #include "sanitizer_common.h"
 #include "sanitizer_placement_new.h"
 #include "sanitizer_procmaps.h"
@@ -136,29 +136,39 @@ void MemoryMappingLayout::LoadFromCache() {
   // No-op on Mac for now.
 }
 
+static bool IsDyldHdr(const mach_header *hdr) {
+  return (hdr->magic == MH_MAGIC || hdr->magic == MH_MAGIC_64) &&
+         hdr->filetype == MH_DYLINKER;
+}
+
 // _dyld_get_image_header() and related APIs don't report dyld itself.
 // We work around this by manually recursing through the memory map
 // until we hit a Mach header matching dyld instead. These recurse
 // calls are expensive, but the first memory map generation occurs
 // early in the process, when dyld is one of the only images loaded,
-// so it will be hit after only a few iterations.
-static mach_header *get_dyld_image_header() {
-  unsigned depth = 1;
-  vm_size_t size = 0;
+// so it will be hit after only a few iterations.  These assumptions don't
+// hold on macOS 13+ anymore (dyld itself has moved into the shared cache).
+
+// FIXME: Unfortunately, the upstream revised version to deal with macOS 13+
+// is incompatible with GCC and also uses APIs not available on earlier
+// systems which we support; backed out for now.
+
+static mach_header *GetDyldImageHeaderViaVMRegion() {
   vm_address_t address = 0;
-  kern_return_t err = KERN_SUCCESS;
-  mach_msg_type_number_t count = VM_REGION_SUBMAP_INFO_COUNT_64;
 
   while (true) {
+    vm_size_t size = 0;
+    unsigned depth = 1;
     struct vm_region_submap_info_64 info;
-    err = vm_region_recurse_64(mach_task_self(), &address, &size, &depth,
-                               (vm_region_info_t)&info, &count);
+    mach_msg_type_number_t count = VM_REGION_SUBMAP_INFO_COUNT_64;
+    kern_return_t err =
+        vm_region_recurse_64(mach_task_self(), &address, &size, &depth,
+                             (vm_region_info_t)&info, &count);
     if (err != KERN_SUCCESS) return nullptr;
 
     if (size >= sizeof(mach_header) && info.protection & kProtectionRead) {
       mach_header *hdr = (mach_header *)address;
-      if ((hdr->magic == MH_MAGIC || hdr->magic == MH_MAGIC_64) &&
-          hdr->filetype == MH_DYLINKER) {
+      if (IsDyldHdr(hdr)) {
         return hdr;
       }
     }
@@ -167,7 +177,21 @@ static mach_header *get_dyld_image_header() {
 }
 
 const mach_header *get_dyld_hdr() {
-  if (!dyld_hdr) dyld_hdr = get_dyld_image_header();
+  if (!dyld_hdr) {
+    // On macOS 13+, dyld itself has moved into the shared cache.  Looking it up
+    // via vm_region_recurse_64() causes spins/hangs/crashes.
+    // FIXME: find a way to do this compatible with GCC.
+    if (GetMacosAlignedVersion() >= MacosVersion(13, 0)) {
+        VReport(1,
+                "looking up the dyld image header in the shared cache on "
+                "macOS 13+ is not yet supported.  Falling back to "
+                "lookup via vm_region_recurse_64().\n");
+        dyld_hdr = GetDyldImageHeaderViaVMRegion();
+    } else {
+      dyld_hdr = GetDyldImageHeaderViaVMRegion();
+    }
+    CHECK(dyld_hdr);
+  }
 
   return dyld_hdr;
 }
@@ -376,4 +400,4 @@ void MemoryMappingLayout::DumpListOfModules(
 
 }  // namespace __sanitizer
 
-#endif  // SANITIZER_MAC
+#endif  // SANITIZER_APPLE

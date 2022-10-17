@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre -fdisable-tree-evrp -fdump-tree-vrp1-details -fdelete-null-pointer-checks" } */
+/* { dg-options "-O2 -fno-tree-fre -fdisable-tree-evrp -fdump-tree-vrp1-details -fdelete-null-pointer-checks -fno-thread-jumps" } */
 
 int
 foo (int i, int *p)
@@ -34,6 +34,3 @@ foo (int i, int *p)
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 0" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 0" 0 "vrp1" { target {   keeps_null_pointer_checks } } } } */
-
-/* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\]" 2 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
-/* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\]" 1 "vrp1" { target {   keeps_null_pointer_checks } } } } */

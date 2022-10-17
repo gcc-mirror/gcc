@@ -1,5 +1,5 @@
 /* runtime.def -- Definitions for D runtime functions.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,36 +26,43 @@ along with GCC; see the file COPYING3.  If not see
    extern(C) - for those that are not, ensure to use correct mangling.  */
 
 /* Helper macros for parameter building.  */
-#define P0()		    0
-#define P1(T1)		    1, LCT_ ## T1
-#define P2(T1, T2)	    2, LCT_ ## T1, LCT_ ## T2
-#define P3(T1, T2, T3)	    3, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3
-#define P4(T1, T2, T3, T4)  4, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4
-#define RT(T1)		    LCT_ ## T1
+#define P0()	0
+#define P1(T1)	1, LCT_ ## T1
+#define P2(T1, T2) \
+		2, LCT_ ## T1, LCT_ ## T2
+#define P3(T1, T2, T3) \
+		3, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3
+#define P4(T1, T2, T3, T4) \
+		4, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4
+#define P5(T1, T2, T3, T4, T5)  \
+		5, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4, LCT_ ## T5
+#define RT(T1)	LCT_ ## T1
 
 /* Used when an assert() contract fails.  */
-DEF_D_RUNTIME (ASSERT, "_d_assert", RT(VOID), P2(STRING, UINT), ECF_NORETURN)
+DEF_D_RUNTIME (ASSERTP, "_d_assertp", RT(VOID), P2(IMMUTABLE_CHARPTR, UINT),
+	       ECF_NORETURN)
 DEF_D_RUNTIME (ASSERT_MSG, "_d_assert_msg", RT(VOID), P3(STRING, STRING, UINT),
 	       ECF_NORETURN)
 
 /* Used when an assert() contract fails in a unittest function.  */
-DEF_D_RUNTIME (UNITTEST, "_d_unittest", RT(VOID), P2(STRING, UINT),
+DEF_D_RUNTIME (UNITTESTP, "_d_unittestp", RT(VOID), P2(IMMUTABLE_CHARPTR, UINT),
 	       ECF_NORETURN)
 DEF_D_RUNTIME (UNITTEST_MSG, "_d_unittest_msg", RT(VOID),
 	       P3(STRING, STRING, UINT), ECF_NORETURN)
 
 /* Used when an array index outside the bounds of its range.  */
-DEF_D_RUNTIME (ARRAY_BOUNDS, "_d_arraybounds", RT(VOID), P2(STRING, UINT),
+DEF_D_RUNTIME (ARRAYBOUNDSP, "_d_arrayboundsp", RT(VOID),
+	       P2(IMMUTABLE_CHARPTR, UINT), ECF_NORETURN)
+DEF_D_RUNTIME (ARRAYBOUNDS_SLICEP, "_d_arraybounds_slicep", RT(VOID),
+	       P5(IMMUTABLE_CHARPTR, UINT, SIZE_T, SIZE_T, SIZE_T),
 	       ECF_NORETURN)
+DEF_D_RUNTIME (ARRAYBOUNDS_INDEXP, "_d_arraybounds_indexp", RT(VOID),
+	       P4(IMMUTABLE_CHARPTR, UINT, SIZE_T, SIZE_T), ECF_NORETURN)
 
 /* Used when calling new on a class.  */
 DEF_D_RUNTIME (NEWCLASS, "_d_newclass", RT(OBJECT), P1(CONST_CLASSINFO), 0)
 
-/* Used when calling delete on a class or interface.  */
-DEF_D_RUNTIME (DELCLASS, "_d_delclass", RT(VOID), P1(VOIDPTR), 0)
-DEF_D_RUNTIME (DELINTERFACE, "_d_delinterface", RT(VOID), P1(VOIDPTR), 0)
-
-/* Same as deleting a class, but used for stack-allocated classes.  */
+/* Used when calling delete on a stack-allocated class or interface.  */
 DEF_D_RUNTIME (CALLFINALIZER, "_d_callfinalizer", RT(VOID), P1(VOIDPTR), 0)
 DEF_D_RUNTIME (CALLINTERFACEFINALIZER, "_d_callinterfacefinalizer", RT(VOID),
 	       P1(VOIDPTR), 0)
@@ -70,11 +77,6 @@ DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
    initializer is nonzero.  */
 DEF_D_RUNTIME (NEWITEMT, "_d_newitemT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
 DEF_D_RUNTIME (NEWITEMIT, "_d_newitemiT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
-
-/* Used when calling delete on a pointer.  */
-DEF_D_RUNTIME (DELMEMORY, "_d_delmemory", RT(VOID), P1(POINTER_VOIDPTR), 0)
-DEF_D_RUNTIME (DELSTRUCT, "_d_delstruct", RT(VOID),
-	       P2(POINTER_VOIDPTR, TYPEINFO), 0)
 
 /* Used when calling new on an array.  The `i' variant is for when the
    initializer is nonzero, and the `m' variant is when initializing a
@@ -92,21 +94,10 @@ DEF_D_RUNTIME (NEWARRAYMITX, "_d_newarraymiTX", RT(ARRAY_VOID),
 DEF_D_RUNTIME (ARRAYLITERALTX, "_d_arrayliteralTX", RT(VOIDPTR),
 	       P2(CONST_TYPEINFO, SIZE_T), 0)
 
-/* Used when calling delete on an array.  */
-DEF_D_RUNTIME (DELARRAYT, "_d_delarray_t", RT(VOID),
-	       P2(ARRAYPTR_VOID, CONST_TYPEINFO), 0)
-
 /* Used for value equality (x == y) and comparisons (x < y) of non-trivial
    arrays.  Such as an array of structs or classes.  */
 DEF_D_RUNTIME (ADEQ2, "_adEq2", RT(INT),
 	       P3(ARRAY_VOID, ARRAY_VOID, CONST_TYPEINFO), 0)
-DEF_D_RUNTIME (ADCMP2, "_adCmp2", RT(INT),
-	       P3(ARRAY_VOID, ARRAY_VOID, CONST_TYPEINFO), 0)
-
-/* Used when casting from one array type to another where the index type
-   sizes differ.  Such as from int[] to short[].  */
-DEF_D_RUNTIME (ARRAYCAST, "_d_arraycast", RT(ARRAY_VOID),
-	       P3(SIZE_T, SIZE_T, ARRAY_VOID), 0)
 
 /* Used for (array.length = n) expressions.  The `i' variant is for when the
    initializer is nonzero.  */
@@ -123,24 +114,6 @@ DEF_D_RUNTIME (ALLOCMEMORY, "_d_allocmemory", RT(VOIDPTR), P1(SIZE_T),
    and destination are equal in size and do not overlap.  */
 DEF_D_RUNTIME (ARRAYCOPY, "_d_arraycopy", RT(ARRAY_VOID),
 	       P3(SIZE_T, ARRAY_VOID, ARRAY_VOID), 0)
-
-/* Used for array assignments from an existing array.  The `set' variant is for
-   when the assignment value is a single element.  */
-DEF_D_RUNTIME (ARRAYASSIGN, "_d_arrayassign", RT(ARRAY_VOID),
-	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)
-DEF_D_RUNTIME (ARRAYASSIGN_L, "_d_arrayassign_l", RT(ARRAY_VOID),
-	       P4(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID, VOIDPTR), 0)
-DEF_D_RUNTIME (ARRAYASSIGN_R, "_d_arrayassign_r", RT(ARRAY_VOID),
-	       P4(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID, VOIDPTR), 0)
-DEF_D_RUNTIME (ARRAYSETASSIGN, "_d_arraysetassign", RT(VOIDPTR),
-	       P4(VOIDPTR, VOIDPTR, SIZE_T, CONST_TYPEINFO), 0)
-
-/* Used for constructing a new array from an existing array.  The `set' variant
-   is for when the constructor value is a single element.  */
-DEF_D_RUNTIME (ARRAYCTOR, "_d_arrayctor", RT(ARRAY_VOID),
-	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)
-DEF_D_RUNTIME (ARRAYSETCTOR, "_d_arraysetctor", RT(VOIDPTR),
-	       P4(VOIDPTR, VOIDPTR, SIZE_T, CONST_TYPEINFO), 0)
 
 /* Used for concatenating two or more arrays together.  Then `n' variant is
    for when there is more than two arrays to handle.  */
@@ -160,13 +133,10 @@ DEF_D_RUNTIME (ARRAYAPPENDCD, "_d_arrayappendcd", RT(ARRAY_VOID),
 DEF_D_RUNTIME (ARRAYAPPENDWD, "_d_arrayappendwd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
 
-/* Used for appending an existing array to another.  */
-DEF_D_RUNTIME (ARRAYAPPENDT, "_d_arrayappendT", RT(ARRAY_VOID),
-	       P3(TYPEINFO, ARRAYPTR_BYTE, ARRAY_BYTE), 0)
-
 /* Used for allocating a new associative array.  */
 DEF_D_RUNTIME (ASSOCARRAYLITERALTX, "_d_assocarrayliteralTX", RT(VOIDPTR),
 	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)
+DEF_D_RUNTIME (AANEW, "_aaNew", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
 
 /* Used for value equality of two associative arrays.  */
 DEF_D_RUNTIME (AAEQUAL, "_aaEqual", RT(INT),
@@ -202,23 +172,10 @@ DEF_D_RUNTIME (CXA_END_CATCH, "__cxa_end_catch", RT(VOID), P0(), 0)
 DEF_D_RUNTIME (INVARIANT, "_D9invariant12_d_invariantFC6ObjectZv", RT(VOID),
 	       P1(OBJECT), 0)
 
-/* Used when performing a switch/cases on a string.  The `u' and `d' variants
-   are for UTF-16 and UTF-32 strings respectively.  */
-DEF_D_RUNTIME (SWITCH_STRING, "_d_switch_string", RT(INT),
-	       P2(ARRAY_STRING, STRING), 0)
-DEF_D_RUNTIME (SWITCH_USTRING, "_d_switch_ustring", RT(INT),
-	       P2(ARRAY_WSTRING, WSTRING), 0)
-DEF_D_RUNTIME (SWITCH_DSTRING, "_d_switch_dstring", RT(INT),
-	       P2(ARRAY_DSTRING, DSTRING), 0)
-
-/* Used when throwing an error that a switch statement has no default case,
-   and yet none of the existing cases matched.  */
-DEF_D_RUNTIME (SWITCH_ERROR, "_d_switch_error", RT(VOID), P2(STRING, UINT),
-	       ECF_NORETURN)
-
 #undef P0
 #undef P1
 #undef P2
 #undef P3
 #undef P4
+#undef P5
 #undef RT

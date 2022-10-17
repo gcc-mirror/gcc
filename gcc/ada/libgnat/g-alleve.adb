@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3779,7 +3779,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
          return D;
       end Saturate;
 
-      --  Start of processing for vpksxus
+   --  Start of processing for vpksxus
 
    begin
       for J in 0 .. N - 1 loop

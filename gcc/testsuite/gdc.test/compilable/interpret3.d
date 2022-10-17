@@ -2,8 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-compilable/interpret3.d(2914): Deprecation: `case` variables have to be `const` or `immutable`
-compilable/interpret3.d(6351): Deprecation: identity comparison of static arrays implicitly coerces them to slices, which are compared by reference
+compilable/interpret3.d(6350): Deprecation: identity comparison of static arrays implicitly coerces them to slices, which are compared by reference
 ---
 */
 
@@ -14,9 +13,9 @@ template compiles(int T)
 
 alias TypeTuple(T...) = T;
 
-/**************************************************
-    3901 Arbitrary struct assignment, ref return
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=3901
+// Arbitrary struct assignment, ref return
 
 struct ArrayRet
 {
@@ -31,7 +30,7 @@ int arrayRetTest(int z)
 }
 static assert(arrayRetTest(51) == 51);
 
-// Bugzilla 3842 -- must not segfault
+// https://issues.dlang.org/show_bug.cgi?id=3842 -- must not segfault
 int ice3842(int z)
 {
     ArrayRet w;
@@ -85,24 +84,24 @@ struct RetRefStruct
 
 // Return value reference tests, for D2 only.
 
-ref RetRefStruct reffunc1(ref RetRefStruct a)
+ref RetRefStruct reffunc1(return ref RetRefStruct a)
 {
     int y = a.x;
     return a;
 }
 
-ref RetRefStruct reffunc2(ref RetRefStruct a)
+ref RetRefStruct reffunc2(return ref RetRefStruct a)
 {
     RetRefStruct z = a;
     return reffunc1(a);
 }
 
-ref int reffunc7(ref RetRefStruct aa)
+ref int reffunc7(return ref RetRefStruct aa)
 {
     return reffunc1(aa).x;
 }
 
-ref int reffunc3(ref int a)
+ref int reffunc3(return ref int a)
 {
     return a;
 }
@@ -111,18 +110,18 @@ struct RefTestStruct
 {
     RetRefStruct r;
 
-    ref RefTestStruct reffunc4(ref RetRefStruct[3] a)
+    ref RefTestStruct reffunc4(ref RetRefStruct[3] a) return
     {
         return this;
     }
 
-    ref int reffunc6()
+    ref int reffunc6() return
     {
         return this.r.x;
     }
 }
 
-ref RetRefStruct reffunc5(ref RetRefStruct[3] a)
+ref RetRefStruct reffunc5(return ref RetRefStruct[3] a)
 {
     int t = 1;
     for (int i = 0; i < 10; ++i)
@@ -189,9 +188,9 @@ static assert(retRefTest2() == 2);
 static assert(retRefTest3() == 26);
 static assert(retRefTest4() == 218);
 
-/**************************************************
-    Bug 7887 assign to returned reference
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7887
+// assign to returned reference
 
 bool test7887()
 {
@@ -202,9 +201,9 @@ bool test7887()
 }
 static assert(test7887());
 
-/**************************************************
-    Bug 7473 struct non-ref
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7473
+// struct non-ref
 
 struct S7473
 {
@@ -242,9 +241,8 @@ void bug7473b(S7473b s)
     s.m.i = 2;
 }
 
-/**************************************************
-    Bug 4389
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4389
 
 int bug4389()
 {
@@ -296,7 +294,8 @@ string ice4390()
 
 static assert(mixin(ice4390()) == ``);
 
-// bug 5248 (D1 + D2)
+// https://issues.dlang.org/show_bug.cgi?id=5248
+// (D1 + D2)
 struct Leaf5248
 {
     string Compile_not_ovloaded()
@@ -316,9 +315,9 @@ struct Matrix5248
 
 static assert(Matrix5248().Compile());
 
-/**************************************************
-    4837   >>>=
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4837
+// >>>=
 
 bool bug4837()
 {
@@ -333,9 +332,9 @@ bool bug4837()
 
 static assert(bug4837());
 
-/**************************************************
-  10252 shift out of range
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10252
+// shift out of range
 
 int lshr10252(int shift)
 {
@@ -362,9 +361,9 @@ static assert(!is(typeof(compiles!(rshr10252(80)))));
 static assert( is(typeof(compiles!(ushr10252( 2)))));
 static assert(!is(typeof(compiles!(ushr10252(60)))));
 
-/**************************************************
-  1982 CTFE null problems
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=1982
+// CTFE null problems
 
 enum a1982 = [1, 2, 3];
 static assert(a1982 !is null);
@@ -375,16 +374,16 @@ static assert(!foo1982().length);
 
 static assert(null is null);
 
-/**************************************************
-  7988 CTFE return values should be allowed in compile-time expressions
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7988
+// CTFE return values should be allowed in compile-time expressions
 
 class X7988 { int y; this() { y = 2; } }
 static assert((new X7988).y == 2);
 
-/**************************************************
-  8253 ICE: calling of member function of non-CTFE class variable
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8253
+// ICE: calling of member function of non-CTFE class variable
 
 class Bug8253
 {
@@ -396,9 +395,9 @@ class Bug8253
 Bug8253 m8253;
 static assert(!is(typeof(compiles!(m8253.j()))));
 
-/**************************************************
-  8285 Issue with slice returned from CTFE function
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8285
+// Issue with slice returned from CTFE function
 
 string foo8285()
 {
@@ -475,9 +474,9 @@ int thisbug2()
 
 static assert(thisbug2());
 
-/**************************************************
-   6972 ICE with cast()cast()assign
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6972
+// ICE with cast()cast()assign
 
 int bug6972()
 {
@@ -487,9 +486,8 @@ int bug6972()
 }
 static assert(bug6972() == 3);
 
-/**************************************************
-    Bug 6164
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6164
 
 size_t bug6164()
 {
@@ -641,7 +639,7 @@ size_t bug5524(int x, int[] more...)
 static assert(bug5524(3) == 10);
 
 
-// 5722
+// https://issues.dlang.org/show_bug.cgi?id=5722
 
 static assert(("" ~ "\&copy;"[0]).length == 1);
 const char[] null5722 = null;
@@ -650,8 +648,13 @@ static assert(("\&copy;"[0] ~ null5722).length == 1);
 
 /*******************************************
  * Tests for CTFE Array support.
- * Including bugs 1330, 3801, 3835, 4050,
- * 4051, 5147, and major functionality
+ * https://issues.dlang.org/show_bug.cgi?id=1330
+ * https://issues.dlang.org/show_bug.cgi?id=3801
+ * https://issues.dlang.org/show_bug.cgi?id=3835
+ * https://issues.dlang.org/show_bug.cgi?id=4050
+ * https://issues.dlang.org/show_bug.cgi?id=4051
+ * https://issues.dlang.org/show_bug.cgi?id=5147
+ * and major functionality
  *******************************************/
 
 char[] bug1330StringIndex()
@@ -971,7 +974,7 @@ auto bug5852(const(string) s)
 }
 static assert(bug5852("abc") == 3);
 
-// 7217
+// https://issues.dlang.org/show_bug.cgi?id=7217
 
 struct S7217 { int[] arr; }
 
@@ -998,7 +1001,8 @@ static assert(
     return true;
 }());
 
-// 7185 char[].length = n
+// https://issues.dlang.org/show_bug.cgi?id=7185
+// char[].length = n
 
 bool bug7185()
 {
@@ -1021,9 +1025,8 @@ bool bug9908()
 }
 static assert(bug9908());
 
-/*******************************************
-    6934
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6934
 
 struct Struct6934
 {
@@ -1049,15 +1052,13 @@ int bug6934()
 }
 static assert(bug6934());
 
-/*******************************************
-             Bug 5671
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5671
 
 static assert(['a', 'b'] ~ "c" == "abc");
 
-/*******************************************
-      8624
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8624
 
 int evil8624()
 {
@@ -1070,9 +1071,9 @@ int evil8624()
 }
 static assert(evil8624());
 
-/*******************************************
-        8644 array literal >,<
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8644
+// array literal >,<
 
 int bug8644()
 {
@@ -1090,18 +1091,16 @@ int bug8644()
 }
 static assert(bug8644());
 
-/*******************************************
-        Bug 6159
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6159
 
 struct A6159 {}
 
 static assert({ return A6159.init is A6159.init; }());
 static assert({ return [1] is [1]; }());
 
-/*******************************************
-        Bug 5685
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5685
 
 string bug5685()
 {
@@ -1115,9 +1114,9 @@ struct Bug5865
     }
 }
 
-/*******************************************
-    6235 - Regression ICE on $ in template
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6235
+// Regression ICE on $ in template
 
 struct Bug6235(R)
 {
@@ -1126,15 +1125,14 @@ struct Bug6235(R)
 
 Bug6235!(ubyte[]) bug6235;
 
-/*******************************************
-    8673 ICE
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8673
+// ICE
 
 enum dollar8673 = [0][(() => $ - 1)()];
 
-/*******************************************
-        Bug 5840
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5840
 
 struct Bug5840
 {
@@ -1164,9 +1162,8 @@ int bug5840(int u)
 }
 static assert(bug5840(1) == 56);
 
-/*******************************************
-        7810
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7810
 
 int bug7810()
 {
@@ -1207,9 +1204,8 @@ public:
 }
 const testTODsThrownZ = TimeOfDayZ(0);
 
-/*******************************************
-        Bug 5954
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5954
 
 struct Bug5954
 {
@@ -1225,9 +1221,8 @@ void bug5954()
     static assert(f.x == 10);
 }
 
-/*******************************************
-        Bug 5972
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5972
 
 int bug5972()
 {
@@ -1258,16 +1253,16 @@ int wconcat(wstring replace)
 }
 static assert(wconcat("X"w));
 
-/*******************************************
-    10397 string concat
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10397
+// string concat
 
 static assert(!is(typeof(compiles!("abc" ~ undefined))));
 static assert(!is(typeof(compiles!(otherundefined ~ "abc"))));
 
-/*******************************************
-    9634 struct concat
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9634
+// struct concat
 
 struct Bug9634
 {
@@ -1292,9 +1287,8 @@ bool bug9634()
 
 static assert(bug9634());
 
-/*******************************************
-    Bug 4001: A Space Oddity
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4001: A Space Oddity
 
 int space() { return 4001; }
 
@@ -1305,15 +1299,14 @@ void oddity4001(int q)
     static assert(bowie == 4001);
 }
 
-/*******************************************
-    Bug 3779
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=3779
 
 static const bug3779 = ["123"][0][$ - 1];
 
-/*******************************************
-    Bug 8893 ICE with bad struct literal
-*******************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8893
+// ICE with bad struct literal
 
 struct Foo8893
 {
@@ -1333,7 +1326,7 @@ struct Zadok
 {
     int[3] z;
     char[4] s = void;
-    ref int[] fog(ref int[] q) { return q; }
+    ref int[] fog(return ref int[] q) { return q; }
     int bfg()
     {
         z[0] = 56;
@@ -1394,9 +1387,9 @@ int quop()
 static assert(quop() == 8);
 static assert(quop() == 8); // check for clobbering
 
-/**************************************************
-   Bug 5676 tuple assign of struct that has void opAssign
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5676
+// tuple assign of struct that has void opAssign
 
 struct S5676
 {
@@ -1420,9 +1413,9 @@ bool ice5676()
 
 static assert(ice5676());
 
-/**************************************************
-   Bug 5682 Wrong CTFE with operator overloading
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5682
+// Wrong CTFE with operator overloading
 
 struct A
 {
@@ -1555,9 +1548,9 @@ int sdfgasf()
 }
 static assert(sdfgasf() == 1);
 
-/**************************************************
-   8830 slice of slice.ptr
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8830
+// slice of slice.ptr
 
 string bug8830(string s)
 {
@@ -1566,9 +1559,9 @@ string bug8830(string s)
 }
 static assert(bug8830("hello") == "el");
 
-/**************************************************
-   8608 ICE
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8608
+// ICE
 
 void bug8608(ref int m) {}
 void test8608()
@@ -1584,9 +1577,8 @@ void test8608()
     static assert(!is(typeof(compiles!(foo(true) ))));
 }
 
-/**************************************************
-   Bug 7770
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7770
 
 immutable char[] foo7770 = "abcde";
 
@@ -1609,9 +1601,9 @@ void baz7770()
     static assert(bug7770b(foo7770[$ - 2]));
 }
 
-/**************************************************
-   8601 ICE
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8601
+// ICE
 
 dchar bug8601(dstring s)
 {
@@ -1622,9 +1614,8 @@ dchar bug8601(dstring s)
 enum dstring e8601 = [cast(dchar)'o', 'n'];
 static assert(bug8601(e8601) == 'n');
 
-/**************************************************
-   Bug 6015
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6015
 
 struct Foo6015
 {
@@ -1644,9 +1635,8 @@ bool func6015(string input)
 
 static assert(func6015("test"));
 
-/**************************************************
-   Bug 6001
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6001
 
 void bug6001e(ref int[] s)
 {
@@ -1694,10 +1684,11 @@ bool bug6001h()
 }
 static assert(bug6001h());
 
-/**************************************************
-   10243 wrong code *&arr as ref parameter
-   10551 wrong code (&arr)[0] as ref parameter
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10243
+// wrong code *&arr as ref parameter
+// https://issues.dlang.org/show_bug.cgi?id=10551
+// wrong code (&arr)[0] as ref parameter
 
 void bug10243(ref int n)
 {
@@ -1725,9 +1716,8 @@ bool test10243()
 
 static assert(test10243());
 
-/**************************************************
-   Bug 4910
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4910
 
 int bug4910(int a)
 {
@@ -1739,9 +1729,9 @@ static assert(!is(typeof(Compiles!(bug4910(var4910)))));
 
 static assert(bug4910(123));
 
-/**************************************************
-    Bug 5845 - Regression(2.041)
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5845
+// Regression(2.041)
 
 void test5845(ulong cols) {}
 
@@ -1762,9 +1752,8 @@ ulong nqueen(int n)
 
 static assert(nqueen(2) == 65);
 
-/**************************************************
-    Bug 5258
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5258
 
 struct Foo5258 { int x; }
 void bar5258(int n, ref Foo5258 fong)
@@ -1819,9 +1808,8 @@ size_t bug5258c()
 }
 static assert(bug5258c() == 20);
 
-/**************************************************
-    Bug 6049
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6049
 
 struct Bug6049
 {
@@ -1834,9 +1822,8 @@ const Bug6049[] foo6049 = [Bug6049(6),  Bug6049(17)];
 
 static assert(foo6049[0].m == 6);
 
-/**************************************************
-    Bug 6052
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6052
 
 struct Bug6052
 {
@@ -1939,9 +1926,8 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    Bug 6749
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6749
 
 struct CtState
 {
@@ -1989,9 +1975,9 @@ int keyAssign()
 }
 static assert(keyAssign() == 5);
 
-/**************************************************
-    Bug 6054 -- AA literals
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6054
+// AA literals
 
 enum x6054 = {
     auto p = {
@@ -2002,9 +1988,8 @@ enum x6054 = {
     return p;
 }();
 
-/**************************************************
-    Bug 6077
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6077
 
 enum bug6077 = {
     string s;
@@ -2012,9 +1997,9 @@ enum bug6077 = {
     return s ~ t;
 }();
 
-/**************************************************
-    Bug 6078 -- Pass null array by ref
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6078
+// Pass null array by ref
 
 struct Foo6078
 {
@@ -2042,9 +2027,9 @@ static assert({
     return bug6078(f.bar);
 }() == 2);
 
-/**************************************************
-    Bug 6079 -- Array bounds checking
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6079
+// Array bounds checking
 
 static assert(!is(typeof(compiles!({
     int[] x = [1, 2, 3, 4];
@@ -2053,9 +2038,8 @@ static assert(!is(typeof(compiles!({
 }()
 ))));
 
-/**************************************************
-    Bug 6100
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6100
 
 struct S6100
 {
@@ -2071,9 +2055,9 @@ S6100 init6100(int x)
 static const S6100[2] s6100a = [init6100(1), init6100(2)];
 static assert(s6100a[0].a == 1);
 
-/**************************************************
-    Bug 4825 -- failed with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4825
+// failed with -inline
 
 int a4825()
 {
@@ -2095,9 +2079,9 @@ void c4825()
     static const int f = b4825();
 }
 
-/**************************************************
-    Bug 5708 -- failed with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5708
+// failed with -inline
 
 string b5708(string s) { return s; }
 string a5708(string s) { return b5708(s); }
@@ -2109,9 +2093,9 @@ void bug5708()
     static assert(a5708("bar") == "bar");
 }
 
-/**************************************************
-    Bug 6120 -- failed with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6120
+// failed with -inline
 
 struct Bug6120(T)
 {
@@ -2122,9 +2106,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    Bug 6123 -- failed with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6123
+// failed with -inline
 
 struct Bug6123(T)
 {
@@ -2137,9 +2121,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    Bug 6053 -- ICE involving pointers
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6053
+// ICE involving pointers
 
 static assert({
     int* a = null;
@@ -2328,9 +2312,9 @@ bool nullptrcmp()
 }
 static assert(nullptrcmp());
 
-/**************************************************
- 10840 null pointer in dotvar
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10840
+// null pointer in dotvar
 
 struct Data10840
 {
@@ -2357,9 +2341,9 @@ bool bug10840(int n)
 static assert(bug10840(0));
 static assert(!is(typeof(Compileable!(bug10840(1)))));
 
-/**************************************************
-  8216 ptr inside a pointer range
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8216
+// ptr inside a pointer range
 
 // Four-pointer relations. Return true if [p1 .. p2] points inside [q1 .. q2]
 // (where the end points don't coincide).
@@ -2405,9 +2389,9 @@ bool bug8216()
 }
 static assert(bug8216());
 
-/**************************************************
-  6517 ptr++, ptr--
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6517
+// ptr++, ptr--
 
 int bug6517()
 {
@@ -2468,16 +2452,15 @@ static assert({
     return 6;
 }() == 6);
 
-/**************************************************
-  Reduced version of bug 5615
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5615
 
 const(char)[] passthrough(const(char)[] x)
 {
     return x;
 }
 
-sizediff_t checkPass(Char1)(const(Char1)[] s)
+ptrdiff_t checkPass(Char1)(const(Char1)[] s)
 {
     const(Char1)[] balance = s[1 .. $];
     return passthrough(balance).ptr - s.ptr;
@@ -2490,12 +2473,12 @@ static assert(checkPass("foobar") == 1);
 
 struct Toq
 {
-    const(char)* m;
+    char* m;
 }
 
 Toq ptrRet(bool b)
 {
-    string x = "abc";
+    char[] x = "abc".dup;
     return Toq(b ? x[0 .. 1].ptr : null);
 }
 
@@ -2588,9 +2571,9 @@ struct AList
 
 static assert(AList.checkList() == 2);
 
-/**************************************************
-    7194 pointers as struct members
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7194
+// pointers as struct members
 
 struct S7194 { int* p, p2; }
 
@@ -2620,9 +2603,9 @@ int g7194()
 static assert(f7194() == 0);
 static assert(!is(typeof(compiles!(g7194()))));
 
-/**************************************************
-    7248 recursive struct pointers in array
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7248
+// recursive struct pointers in array
 
 struct S7248 { S7248* ptr; }
 
@@ -2636,9 +2619,9 @@ bool bug7248()
 }
 static assert(bug7248());
 
-/**************************************************
-    7216 calling a struct pointer member
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7216
+// calling a struct pointer member
 
 struct S7216
 {
@@ -2662,9 +2645,9 @@ bool bug7216()
 
 static assert(bug7216());
 
-/**************************************************
-    10858 Wrong code with array of pointers
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10858
+// Wrong code with array of pointers
 
 bool bug10858()
 {
@@ -2675,9 +2658,9 @@ bool bug10858()
 }
 static assert(bug10858());
 
-/**************************************************
-    12528 - painting inout type for value type literals
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12528
+// painting inout type for value type literals
 
 inout(T)[] dup12528(T)(inout(T)[] a)
 {
@@ -2692,9 +2675,9 @@ enum arr12528V2 = dup12528([0, 1]);
 static assert(arr12528V1 == [0]);
 static assert(arr12528V2 == [0, 1]);
 
-/**************************************************
-    9745 Allow pointers to static variables
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9745
+// Allow pointers to static variables
 
 shared int x9745;
 shared int[5] y9745;
@@ -2751,9 +2734,9 @@ bool test9745b()
 }
 static assert(test9745b());
 
-/**************************************************
-    9364 ICE with pointer to local struct
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9364
+// ICE with pointer to local struct
 
 struct S9364
 {
@@ -2769,9 +2752,9 @@ bool bug9364()
 
 static assert(bug9364());
 
-/**************************************************
-    10251 Pointers to const globals
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10251
+// Pointers to const globals
 
 static const int glob10251 = 7;
 
@@ -2783,9 +2766,9 @@ const(int)* bug10251()
 static a10251 = &glob10251; //  OK
 static b10251 = bug10251();
 
-/**************************************************
-    4065 [CTFE] AA "in" operator doesn't work
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4065
+// [CTFE] AA "in" operator doesn't work
 
 bool bug4065(string s)
 {
@@ -2807,9 +2790,9 @@ static assert(!bug4065("xx"));
 static assert( bug4065("aa"));
 static assert( bug4065("bb"));
 
-/**************************************************
-    12689 - assigning via pointer from 'in' expression
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12689
+// assigning via pointer from 'in' expression
 
 int g12689()
 {
@@ -2855,9 +2838,9 @@ int ptrSlice()
 }
 static assert(ptrSlice() == 2);
 
-/**************************************************
-    6344 - create empty slice from null pointer
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6344
+// create empty slice from null pointer
 
 static assert({
     char* c = null;
@@ -2865,18 +2848,18 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    8365 - block assignment of enum arrays
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8365
+// block assignment of enum arrays
 
 enum E8365 { first = 7, second, third, fourth }
 static assert({ E8365[2]       x; return x[0];       }() == E8365.first);
 static assert({ E8365[2][2]    x; return x[0][0];    }() == E8365.first);
 static assert({ E8365[2][2][2] x; return x[0][0][0]; }() == E8365.first);
 
-/**************************************************
-    4448 - labelled break + continue
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4448
+// labelled break + continue
 
 int bug4448()
 {
@@ -2918,27 +2901,27 @@ L1:
 }
 static assert(bug4448b() == 3);
 
-/**************************************************
-    6985 - non-constant case
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6985
+// Formerly, non-constant case, but switch cases with mutable cases now error
+// Currently: run-time constant variable case
 
 int bug6985(int z)
 {
-    int q = z * 2 - 6;
+    const int q = z * 2 - 6;
     switch(z)
     {
     case q:
-        q = 87;
-        break;
+        return 87;
     default:
     }
     return q;
 }
 static assert(bug6985(6) == 87);
 
-/**************************************************
-    6281 - [CTFE] A null pointer '!is null' returns 'true'
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6281
+// [CTFE] A null pointer '!is null' returns 'true'
 
 static assert(!{
     auto p = null;
@@ -2950,9 +2933,9 @@ static assert(!{
     return p != null;
 }());
 
-/**************************************************
-    6331 - evaluate SliceExp on if condition
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6331
+// evaluate SliceExp on if condition
 
 bool bug6331(string s)
 {
@@ -2962,9 +2945,9 @@ bool bug6331(string s)
 }
 static assert(bug6331("str"));
 
-/**************************************************
-    6283 - assign to AA with slice as index
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6283
+// assign to AA with slice as index
 
 static assert({
     immutable p = "pp";
@@ -2992,9 +2975,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6282 - dereference 'in' of an AA
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6282
+// dereference 'in' of an AA
 
 static assert({
     int[] w = new int[4];
@@ -3008,9 +2991,9 @@ static assert({
     return n;
 }() == "1");
 
-/**************************************************
-    6337 - member function call on struct literal
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6337
+// member function call on struct literal
 
 struct Bug6337
 {
@@ -3027,17 +3010,16 @@ struct Bug6337
 }
 static assert(Bug6337().ctfe() == 6);
 
-/**************************************************
-    6603 call manifest function pointer
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6603
+// call manifest function pointer
 
 int f6603(int a) { return a + 5; }
 enum bug6603 = &f6603;
 static assert(bug6603(6) == 11);
 
-/**************************************************
-    6375
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6375
 
 struct D6375
 {
@@ -3067,9 +3049,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6280 Converting pointers to bool
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6280
+// Converting pointers to bool
 
 static assert({
     if ((0 in [0:0])) {}
@@ -3077,9 +3059,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6276 ~=
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6276
+// ~=
 
 struct Bug6276
 {
@@ -3092,9 +3074,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6374   ptr[n] = x, x = ptr[n]
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6374
+// ptr[n] = x, x = ptr[n]
 
 static assert({
     int[] arr = [1];
@@ -3104,9 +3086,9 @@ static assert({
     return arr[0];
 }() == 2);
 
-/**************************************************
-    6306  recursion and local variables
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6306
+// recursion and local variables
 
 void recurse6306()
 {
@@ -3124,9 +3106,9 @@ bool bug6306(bool b)
 }
 static assert(bug6306(true));
 
-/**************************************************
-    6386  ICE on unsafe pointer cast
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6386
+// ICE on unsafe pointer cast
 
 static assert(!is(typeof(compiles!({
     int x = 123;
@@ -3145,9 +3127,9 @@ static assert({
     return *q;
 }());
 
-/**************************************************
-    6420  ICE on dereference of invalid pointer
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6420
+// ICE on dereference of invalid pointer
 
 static assert({
     // Should compile, but pointer can't be dereferenced
@@ -3202,9 +3184,9 @@ static assert(!is(typeof(compiles!({
 }()
 ))));
 
-/**************************************************
-    6250  deref pointers to array
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6250
+// deref pointers to array
 
 int[]* simple6250(int[]* x) { return x; }
 
@@ -3280,9 +3262,9 @@ long ctfeSort6250b()
 
 static assert(ctfeSort6250b() == 57);
 
-/**************************************************
-    6672 circular references in array
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6672
+// circular references in array
 
 void bug6672(ref string lhs, ref string rhs)
 {
@@ -3334,9 +3316,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6399 (*p).length = n
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6399
+// (*p).length = n
 
 struct A6399
 {
@@ -3354,9 +3336,9 @@ static assert({
     return a.subLen();
 }() == 4);
 
-/**************************************************
-    7789 (*p).length++ where *p is null
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7789
+// (*p).length++ where *p is null
 
 struct S7789
 {
@@ -3371,9 +3353,9 @@ struct S7789
 
 static assert(S7789().foo());
 
-/**************************************************
-    6418 member named 'length'
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6418
+// member named 'length'
 
 struct Bug6418
 {
@@ -3381,9 +3363,9 @@ struct Bug6418
 }
 static assert(Bug6418.init.length == 189);
 
-/**************************************************
-    4021 rehash
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4021
+// rehash
 
 bool bug4021()
 {
@@ -3393,9 +3375,9 @@ bool bug4021()
 }
 static assert(bug4021());
 
-/**************************************************
-    11629 crash on AA.rehash
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11629
+// crash on AA.rehash
 
 struct Base11629
 {
@@ -3413,10 +3395,11 @@ struct Base11629
 }
 enum ct11629 = Base11629(4);
 
-/**************************************************
-    3512 foreach (dchar; string)
-    6558 foreach (int, dchar; string)
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=3512
+// foreach (dchar; string)
+// https://issues.dlang.org/show_bug.cgi?id=6558
+// foreach (int, dchar; string)
 
 bool test3512()
 {
@@ -3552,9 +3535,9 @@ bool test3512()
 }
 static assert(test3512());
 
-/**************************************************
-    6510 ICE only with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6510
+// ICE only with -inline
 
 struct Stack6510
 {
@@ -3585,9 +3568,9 @@ void test6510()
     static assert(bug6510() == 3);
 }
 
-/**************************************************
-    6511   arr[] shouldn't make a copy
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6511
+// arr[] shouldn't make a copy
 
 T bug6511(T)()
 {
@@ -3598,9 +3581,9 @@ T bug6511(T)()
 static assert(bug6511!ulong() == 2);
 static assert(bug6511!long() == 2);
 
-/**************************************************
-    6512   new T[][]
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6512
+// new T[][]
 
 bool bug6512(int m)
 {
@@ -3620,9 +3603,9 @@ bool bug6512(int m)
 }
 static assert(bug6512(3));
 
-/**************************************************
-    6516   ICE(constfold.c)
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6516
+// ICE(constfold.c)
 
 dstring bug6516()
 {
@@ -3631,9 +3614,9 @@ dstring bug6516()
 
 static assert(bug6516() == ""d);
 
-/**************************************************
-    6727   ICE(interpret.c)
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6727
+// ICE(interpret.c)
 
 const(char)* ice6727(const(char)* z) { return z; }
 static assert({
@@ -3641,9 +3624,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6721   Cannot get pointer to start of char[]
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6721
+// Cannot get pointer to start of char[]
 
 static assert({
     char[] c1 = "".dup;
@@ -3653,9 +3636,9 @@ static assert({
     return 6;
 }() == 6);
 
-/**************************************************
-    6693   Assign to null AA
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6693
+// Assign to null AA
 
 struct S6693
 {
@@ -3672,9 +3655,9 @@ static assert({
     return 6693;
 }() == 6693);
 
-/**************************************************
-    7602   Segfault AA.keys on null AA
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7602
+// Segfault AA.keys on null AA
 
 string[] test7602()
 {
@@ -3684,9 +3667,9 @@ string[] test7602()
 
 enum bug7602 = test7602();
 
-/**************************************************
-    6739   Nested AA assignment
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6739
+// Nested AA assignment
 
 static assert({
     int[int][int][int] aaa;
@@ -3703,9 +3686,9 @@ static assert({
     return kk;
 }() == 9);
 
-/**************************************************
-    6751   ref AA assignment
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6751
+// ref AA assignment
 
 void bug6751(ref int[int] aa)
 {
@@ -3763,9 +3746,9 @@ void bug6751c(ref int[int][int] aa)
     aa = [38: [56 : 77]];
 }
 
-/**************************************************
-   7790   AA foreach ref
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7790
+// AA foreach ref
 
 struct S7790
 {
@@ -3781,18 +3764,18 @@ size_t bug7790(S7790[string] tree)
 
 static assert(bug7790(["a":S7790(0)]) == 1);
 
-/**************************************************
-    6765   null AA.length
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6765
+// null AA.length
 
 static assert({
     int[int] w;
     return w.length;
 }() == 0);
 
-/**************************************************
-    6769   AA.keys, AA.values with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6769
+// AA.keys, AA.values with -inline
 
 static assert({
     double[char[3]] w = ["abc" : 2.3];
@@ -3800,9 +3783,9 @@ static assert({
     return w.keys.length;
 }() == 1);
 
-/**************************************************
-    4022   AA.get
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4022
+// AA.get
 
 static assert({
     int[int] aa = [58: 13];
@@ -3812,9 +3795,9 @@ static assert({
     return r;
 }() == 1000);
 
-/**************************************************
-    6775 AA.opApply
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6775
+// AA.opApply
 
 static assert({
     int[int] aa = [58: 17, 45:6];
@@ -3844,9 +3827,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    7890   segfault struct with AA field
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7890
+// segfault struct with AA field
 
 struct S7890
 {
@@ -3907,9 +3890,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6800 bad pointer casts
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6800
+// bad pointer casts
 
 bool badpointer(int k)
 {
@@ -3974,9 +3957,9 @@ static assert(!is(typeof(compiles!(badpointer(6)))));
 static assert(!is(typeof(compiles!(badpointer(7)))));
 static assert(!is(typeof(compiles!(badpointer(8)))));
 
-/**************************************************
-    10211 Allow casts S**->D**, when S*->D* is OK
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10211
+// Allow casts S**->D**, when S*->D* is OK
 
 int bug10211()
 {
@@ -3991,9 +3974,9 @@ int bug10211()
 
 static assert(bug10211());
 
-/**************************************************
-    10568 CTFE rejects function pointer safety casts
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10568
+// CTFE rejects function pointer safety casts
 
 @safe void safetyDance() {}
 
@@ -4006,9 +3989,9 @@ int isItSafeToDance()
 
 static assert(isItSafeToDance());
 
-/**************************************************
-    12296 CTFE rejects const compatible AA pointer cast
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12296
+// CTFE rejects const compatible AA pointer cast
 
 int test12296()
 {
@@ -4019,9 +4002,9 @@ int test12296()
 }
 static assert(test12296());
 
-/**************************************************
-    9170 Allow reinterpret casts float<->int
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9170
+// Allow reinterpret casts float<->int
 
 int f9170(float x)
 {
@@ -4077,9 +4060,9 @@ bool bug9170()
 
 static assert(bug9170());
 
-/**************************************************
-    6792 ICE with pointer cast of indexed array
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6792
+// ICE with pointer cast of indexed array
 
 struct S6792
 {
@@ -4139,9 +4122,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-   7780 array cast
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7780
+// array cast
 
 int bug7780(int testnum)
 {
@@ -4164,9 +4147,9 @@ static assert( is(typeof(compiles!(bug7780(0)))));
 static assert(!is(typeof(compiles!(bug7780(1)))));
 static assert(!is(typeof(compiles!(bug7780(2)))));
 
-/**************************************************
-    14028 - static array pointer that refers existing array elements.
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14028
+// static array pointer that refers existing array elements.
 
 int test14028a(size_t ofs)(bool ct)
 {
@@ -4244,9 +4227,9 @@ static assert(!is(typeof(compiles!(test14028b(3)))));
 static assert(test14028b(4));
 static assert(!is(typeof(compiles!(test14028b(5)))));
 
-/**************************************************
-    10275 cast struct literals to immutable
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10275
+// cast struct literals to immutable
 
 struct Bug10275
 {
@@ -4266,9 +4249,9 @@ int test10275()
 
 static assert(test10275());
 
-/**************************************************
-    6851 passing pointer by argument
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6851
+// passing pointer by argument
 
 void set6851(int* pn)
 {
@@ -4284,9 +4267,8 @@ void bug6851()
 }
 static assert({ bug6851(); return true; }());
 
-/**************************************************
-    7876
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7876
 
 int* bug7876(int n) @system
 {
@@ -4328,9 +4310,8 @@ static assert(!is(typeof(compiles!(test7876(0)))));
 static assert( is(typeof(compiles!(test7876(11)))));
 static assert(!is(typeof(compiles!(test7876(10)))));
 
-/**************************************************
-    11824
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11824
 
 int f11824(T)()
 {
@@ -4345,9 +4326,9 @@ int f11824(T)()
 static assert(f11824!int());        // OK
 static assert(f11824!(int[])());    // OK <- NG
 
-/**************************************************
-    6817 if converted to &&, only with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6817
+// if converted to &&, only with -inline
 
 static assert({
     void toggle()
@@ -4369,9 +4350,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6816 nested function can't access this
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6816
+// nested function can't access this
 
 struct S6816
 {
@@ -4384,9 +4365,9 @@ struct S6816
 
 enum s6816 = S6816().foo();
 
-/**************************************************
-    7277 ICE nestedstruct.init.tupleof
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7277
+// ICE nestedstruct.init.tupleof
 
 struct Foo7277
 {
@@ -4406,9 +4387,9 @@ struct Foo7277
 
 static assert(Foo7277().func() == 17);
 
-/**************************************************
-    10217 ICE. CTFE version of 9315
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10217
+// ICE. CTFE version of 9315
 
 bool bug10217()
 {
@@ -4424,9 +4405,9 @@ bool bug10217()
 
 static assert(bug10217());
 
-/**************************************************
-    8276 ICE
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8276
+// ICE
 
 void bug8676(int n)
 {
@@ -4525,7 +4506,7 @@ auto classtest1(int n)
 }
 static assert(classtest1(1));
 static assert(classtest1(2));
-static assert(classtest1(7)); // bug 7154
+static assert(classtest1(7)); // https://issues.dlang.org/show_bug.cgi?id=7154
 
 // can't initialize enum with not null class
 SomeClass classtest2(int n)
@@ -4555,9 +4536,9 @@ int classtest3()
 
 static assert(classtest3());
 
-/**************************************************
-    12016 class cast and qualifier reinterpret
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12016
+// class cast and qualifier reinterpret
 
 class B12016 { }
 
@@ -4571,9 +4552,9 @@ bool f12016(immutable B12016 b)
 
 static assert(f12016(new immutable C12016));
 
-/**************************************************
-    10610 ice immutable implicit conversion
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10610
+// ice immutable implicit conversion
 
 class Bug10610(T)
 {
@@ -4590,9 +4571,9 @@ void ice10610()
    static assert (T10610.min.baz());
 }
 
-/**************************************************
-    13141 regression fix caused by 10610
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13141
+// regression fix caused by 10610
 
 struct MapResult13141(alias pred)
 {
@@ -4613,24 +4594,24 @@ string[] array13141(R)(R r)
 //immutable string[] splitterNames = [4].map!(e => "4").array();
 immutable string[] splitterNames13141 = MapResult13141!(e => "4")([4]).array13141();
 
-/**************************************************
-    11587 AA compare
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11587
+// AA compare
 
 static assert([1:2, 3:4] == [3:4, 1:2]);
 
-/**************************************************
-    14325 more AA comparisons
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14325
+// more AA comparisons
 
 static assert([1:1] != [1:2, 2:1]);      // OK
 static assert([1:1] != [1:2]);           // OK
 static assert([1:1] != [2:1]);           // OK <- Error
 static assert([1:1, 2:2] != [3:3, 4:4]); // OK <- Error
 
-/**************************************************
-    7147 typeid()
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7147
+// typeid()
 
 static assert({
     TypeInfo xxx = typeid(Object);
@@ -4650,9 +4631,9 @@ static assert(!is(typeof(compiles!(bug7147(0)))));
 static assert( is(typeof(compiles!(bug7147(1)))));
 
 
-/**************************************************
-    14123 - identity TypeInfo objects
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14123
+// identity TypeInfo objects
 
 static assert({
     bool eq(TypeInfo t1, TypeInfo t2)
@@ -4679,9 +4660,9 @@ static assert({
     return 1;
 }());
 
-/**************************************************
-    6885 wrong code with new array
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6885
+// wrong code with new array
 
 struct S6885
 {
@@ -4704,9 +4685,9 @@ int bug6885()
 
 static assert(bug6885());
 
-/**************************************************
-    6886 ICE with new array of dynamic arrays
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6886
+// ICE with new array of dynamic arrays
 
 int bug6886()
 {
@@ -4719,13 +4700,13 @@ int bug6886()
 
 static assert(bug6886());
 
-/**************************************************
-    10198 Multidimensional struct block initializer
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10198
+// Multidimensional struct block initializer
 
 struct Block10198
 {
-    int val[3][4];
+    int[4][3] val;
 }
 
 int bug10198()
@@ -4737,9 +4718,9 @@ int bug10198()
 }
 static assert(bug10198());
 
-/**************************************************
-    14440 Multidimensional block initialization should create distinct arrays for each elements
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14440
+// Multidimensional block initialization should create distinct arrays for each elements
 
 struct Matrix14440(E, size_t row, size_t col)
 {
@@ -5112,9 +5093,9 @@ int testsFromEH()
 }
 static assert(testsFromEH());
 
-/**************************************************
-    With + synchronized statements + bug 6901
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6901
+// With + synchronized statements
 
 struct With1
 {
@@ -5197,9 +5178,9 @@ int testwith()
 
 static assert(testwith());
 
-/**************************************************
-    9236 ICE  switch with(EnumType)
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9236
+// ICE  switch with(EnumType)
 
 enum Command9236
 {
@@ -5231,9 +5212,9 @@ bool bug9236(Command9236 cmd)
 
 static assert(bug9236(Command9236.Any));
 
-/**************************************************
-    6416 static struct declaration
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6416
+// static struct declaration
 
 static assert({
     static struct S { int y = 7; }
@@ -5243,18 +5224,18 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    10499 static template struct declaration
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10499
+// static template struct declaration
 
 static assert({
     static struct Result() {}
     return true;
 }());
 
-/**************************************************
-    13757 extern(C) alias declaration
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13757
+// extern(C) alias declaration
 
 static assert({
     alias FP1 = extern(C) int function();
@@ -5262,9 +5243,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6522 opAssign + foreach ref
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6522
+// opAssign + foreach ref
 
 struct Foo6522
 {
@@ -5285,9 +5266,9 @@ bool foo6522()
 
 static assert(foo6522());
 
-/**************************************************
-    7245 pointers + foreach ref
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7245
+// pointers + foreach ref
 
 int bug7245(int testnum)
 {
@@ -5311,11 +5292,13 @@ int bug7245(int testnum)
 static assert(bug7245(0) == 6);
 static assert(bug7245(1) == 5);
 
-/**************************************************
-    8498 modifying foreach
-    7658 foreach ref
-    8539 nested funcs, ref param, -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8498
+// modifying foreach
+// https://issues.dlang.org/show_bug.cgi?id=7658
+// foreach ref
+// https://issues.dlang.org/show_bug.cgi?id=8539
+// nested funcs, ref param, -inline
 
 int bug8498()
 {
@@ -5356,9 +5339,11 @@ int bug8539()
 
 static assert(bug8539());
 
-/**************************************************
-    7874, 13297, 13740 - better lvalue handling
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7874
+// https://issues.dlang.org/show_bug.cgi?id=13297
+// https://issues.dlang.org/show_bug.cgi?id=13740
+// better lvalue handling
 
 int bug7874(int x){ return ++x = 1; }
 static assert(bug7874(0) == 1);
@@ -5399,9 +5384,8 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    6919
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6919
 
 void bug6919(int* val)
 {
@@ -5428,9 +5412,8 @@ void test6919b()
 }
 static assert({ test6919b(); return true; }());
 
-/**************************************************
-    6995
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6995
 
 struct Foo6995
 {
@@ -5442,9 +5425,9 @@ struct Foo6995
 
 static assert(Foo6995.index!(27)() == 27);
 
-/**************************************************
-    7043 ref with -inline
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7043
+// ref with -inline
 
 int bug7043(S)(ref int x)
 {
@@ -5456,9 +5439,9 @@ static assert({
     return bug7043!(char)(i);
 }() == 416);
 
-/**************************************************
-    6037 recursive ref
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6037
+// recursive ref
 
 void bug6037(ref int x, bool b)
 {
@@ -5484,9 +5467,9 @@ int bug6037outer()
 
 static assert(bug6037outer() == 401);
 
-/**************************************************
-    14299 - [REG2.067a], more than one depth of recursive call with ref
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14299
+// [REG2.067a], more than one depth of recursive call with ref
 
 string gen14299(int max, int idx, ref string name)
 {
@@ -5512,9 +5495,9 @@ static assert(test14299(3) ==   "01233210");
 static assert(test14299(4) ==  "0123443210");
 static assert(test14299(5) == "012345543210");
 
-/**************************************************
-    7940 wrong code for complicated assign
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7940
+// wrong code for complicated assign
 
 struct Bug7940
 {
@@ -5539,9 +5522,9 @@ int bug7940()
 
 static assert(bug7940());
 
-/**************************************************
-    10298 wrong code for struct array literal init
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10298
+// wrong code for struct array literal init
 
 struct Bug10298
 {
@@ -5563,9 +5546,9 @@ int bug10298()
 
 static assert(bug10298());
 
-/**************************************************
-    7266 dotvar ref parameters
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7266
+// dotvar ref parameters
 
 struct S7266 { int a; }
 
@@ -5594,9 +5577,9 @@ void out7266(out int b)
 
 static assert(bug7266());
 
-/**************************************************
-    9982 dotvar assign through pointer
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9982
+// dotvar assign through pointer
 
 struct Bug9982
 {
@@ -5614,7 +5597,8 @@ int test9982()
 
 static assert(test9982());
 
-// 9982, rejects-valid case
+// https://issues.dlang.org/show_bug.cgi?id=9982
+// rejects-valid case
 
 struct SS9982
 {
@@ -5635,9 +5619,9 @@ void emplace9982(Bug9982* chunk, Bug9982 arg)
 enum s9982 = Bug9982(3);
 enum p9982 = SS9982(s9982);
 
-/**************************************************
-    11618 dotvar assign through casted pointer
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11618
+// dotvar assign through casted pointer
 
 struct Tuple11618(T...)
 {
@@ -5652,9 +5636,9 @@ static assert({
     return (result[0] == dchar.init);
 }());
 
-/**************************************************
-    7143 'is' for classes
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7143
+// 'is' for classes
 
 class C7143
 {
@@ -5708,9 +5692,9 @@ static assert(bug7143(4) == 48);
 static assert(bug7143(5) == 48);
 static assert(bug7143(6) == 188);
 
-/**************************************************
-    7147 virtual function calls from base class
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7147
+// virtual function calls from base class
 
 class A7147
 {
@@ -5735,9 +5719,8 @@ int test7147()
 
 static assert(test7147() == 1);
 
-/**************************************************
-    7158
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7158
 
 class C7158
 {
@@ -5755,9 +5738,8 @@ bool test7158()
 }
 static assert(test7158());
 
-/**************************************************
-    8484
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8484
 
 class C8484
 {
@@ -5783,9 +5765,8 @@ int test8484()
 }
 static assert(test8484() == 7);
 
-/**************************************************
-    7419
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7419
 
 struct X7419
 {
@@ -5805,9 +5786,9 @@ void bug7419()
     static assert(x == 3);
 }
 
-/**************************************************
-    9445 ice
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9445
+// ice
 
 template c9445(T...) { }
 
@@ -5817,9 +5798,9 @@ void ice9445(void delegate() expr, void function() f2)
     static assert(!is(typeof(c9445!(expr()))));
 }
 
-/**************************************************
-    10452 delegate ==
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10452
+// delegate ==
 
 struct S10452
 {
@@ -5836,7 +5817,7 @@ class C10452
     bool func() { return true; }
 }
 
-bool delegate() ref10452(ref S10452 s)
+bool delegate() ref10452(return ref S10452 s)
 {
     return &s.func;
 }
@@ -5884,9 +5865,9 @@ bool test10452()
 }
 static assert(test10452());
 
-/**************************************************
-    7162 and 4711
-**************************************************/
+/**************************************************/
+//https://issues.dlang.org/show_bug.cgi?id=7162
+// https://issues.dlang.org/show_bug.cgi?id=4711
 
 void f7162() { }
 
@@ -5894,16 +5875,16 @@ bool ice7162()
 {
     false && f7162();
     false || f7162();
-    false && f7162();  // bug 4711
+    false && f7162();  // https://issues.dlang.org/show_bug.cgi?id=4711
     true && f7162();
     return true;
 }
 
 static assert(ice7162());
 
-/**************************************************
-    8857, only with -inline (creates an &&)
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8857
+// only with -inline (creates an &&)
 
 struct Result8857 { char[] next; }
 
@@ -5921,9 +5902,8 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    7527
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7527
 
 struct Bug7527
 {
@@ -5940,9 +5920,8 @@ int bug7527()
 
 static assert(!is(typeof(compiles!(bug7527()))));
 
-/**************************************************
-    7527
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7527
 
 int bug7380;
 
@@ -5952,9 +5931,8 @@ static assert(!is(typeof( compiles!(
     }()
 ))));
 
-/**************************************************
-    7165
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7165
 
 struct S7165
 {
@@ -5964,9 +5942,8 @@ struct S7165
 
 static assert(!S7165().f());
 
-/**************************************************
-    7187
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7187
 
 int[] f7187() { return [0]; }
 int[] f7187b(int n) { return [0]; }
@@ -5997,9 +5974,9 @@ bool g7187c(const(int)[] r)
 static assert(g7187c(f7187c()));
 
 
-/**************************************************
-    6933 struct destructors
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6933
+// struct destructors
 
 struct Bug6933
 {
@@ -6016,9 +5993,8 @@ int test6933()
 
 static assert(test6933());
 
-/**************************************************
-    7197
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7197
 
 int foo7197(int[] x...)
 {
@@ -6046,9 +6022,8 @@ bool testEScmp()
 
 static assert(testEScmp());
 
-/**************************************************
-    7667
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7667
 
 bool baz7667(int[] vars...)
 {
@@ -6071,9 +6046,8 @@ bool bug7667()
 }
 enum e7667 = bug7667();
 
-/**************************************************
-    7536
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7536
 
 bool bug7536(string expr)
 {
@@ -6086,9 +6060,9 @@ void vop()
     static assert(bug7536(x7536));
 }
 
-/**************************************************
-    6681 unions
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6681
+// unions
 
 struct S6681
 {
@@ -6130,9 +6104,9 @@ static assert(!is(typeof(compiles!(bug6681(1)))));
 static assert(!is(typeof(compiles!(bug6681(3)))));
 static assert(!is(typeof(compiles!(bug6681(4)))));
 
-/**************************************************
-    9113 ICE with struct in union
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9113
+// ICE with struct in union
 
 union U9113
 {
@@ -6170,9 +6144,9 @@ int uniontest1()
 
 static assert(uniontest1());
 
-/**************************************************
-    6438 void
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6438
+// void
 
 struct S6438
 {
@@ -6209,9 +6183,9 @@ static assert( is(typeof(compiles!(bug6438(1)))));
 static assert(!is(typeof(compiles!(bug6438(2)))));
 static assert(!is(typeof(compiles!(bug6438(3)))));
 
-/**************************************************
-    10994 void static array members
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10994
+// void static array members
 
 struct Bug10994
 {
@@ -6220,9 +6194,9 @@ struct Bug10994
 
 static bug10994 = Bug10994.init;
 
-/**************************************************
-    10937 struct inside union
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10937
+// struct inside union
 
 struct S10937
 {
@@ -6247,9 +6221,8 @@ struct S10937
 enum test10937 = S10937(7);
 enum west10937 = S10937(2);
 
-/**************************************************
-    13831
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13831
 
 struct Vector13831()
 {
@@ -6276,9 +6249,8 @@ struct Chunk13831
     static const Chunk13831* unknownChunk = new Chunk13831(Coord13831());
 }
 
-/**************************************************
-    7732
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7732
 
 struct AssociativeArray
 {
@@ -6299,9 +6271,8 @@ int test7732()
 
 static assert(test7732());
 
-/**************************************************
-    7784
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7784
 struct Foo7784
 {
     void bug()
@@ -6329,15 +6300,13 @@ bool ctfe7784()
 
 static assert(ctfe7784());
 
-/**************************************************
-    7781
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7781
 
-static assert(({ return; }(), true));
+static assert(({ return true; }()));
 
-/**************************************************
-    7785
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7785
 
 bool bug7785(int n)
 {
@@ -6359,9 +6328,8 @@ static assert(bug7785(1));
 static assert(!is(typeof(compiles!(bug7785(2)))));
 static assert(!is(typeof(compiles!(bug7785(3)))));
 
-/**************************************************
-    7987
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7987
 
 class C7987
 {
@@ -6400,9 +6368,9 @@ bool bug7987()
 
 static assert(bug7987());
 
-/**************************************************
-    10579 typeinfo.func() must not segfault
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10579
+// typeinfo.func() must not segfault
 
 static assert(!is(typeof(compiles!(typeid(int).toString.length))));
 
@@ -6414,9 +6382,9 @@ Bug10579 uninitialized10579;
 
 static assert(!is(typeof(compiles!(uninitialized10579.foo()))));
 
-/**************************************************
-    10804 mixin ArrayLiteralExp typed string
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10804
+// mixin ArrayLiteralExp typed string
 
 void test10804()
 {
@@ -6476,7 +6444,7 @@ C73 test73 = func73();
 
 struct S74
 {
-    int n[1];
+    int[1] n;
     static S74 test(){ S74 ret = void; ret.n[0] = 0; return ret; }
 }
 
@@ -6509,7 +6477,7 @@ label:
             break label;        // doesn't work.
     }
 }
-body
+do
 {
     int x = 0;
 label:
@@ -6526,7 +6494,8 @@ label:
 static assert(bug8865());
 
 /******************************************************/
-// 15450 labeled foreach + continue/break
+// https://issues.dlang.org/show_bug.cgi?id=15450
+// labeled foreach + continue/break
 
 static assert({
   L1:
@@ -6590,7 +6559,8 @@ static assert( __traits(compiles, { static const Test76     t76 = new const(Test
 static assert( __traits(compiles, { static immutable Test76 t76 = new immutable Test76(0); return t76; }));
 static assert(!__traits(compiles, { static Test76           t76 = new Test76(0);           return t76; }));
 
-/***** Bug 5678 *********************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5678
 
 struct Bug5678
 {
@@ -6599,9 +6569,9 @@ struct Bug5678
 
 static assert(!__traits(compiles, { enum const(Bug5678)* b5678 = new const(Bug5678)(0); return b5678; }));
 
-/**************************************************
-    10782 run semantic2 for class field
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10782
+// run semantic2 for class field
 
 enum e10782 = 0;
 class C10782 { int x = e10782; }
@@ -6612,9 +6582,9 @@ string f10782()
 }
 mixin(f10782());
 
-/**************************************************
-    10929 NRVO support in CTFE
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=10929
+// NRVO support in CTFE
 
 struct S10929
 {
@@ -6646,9 +6616,9 @@ bool test10929()
 };
 static assert(test10929());
 
-/**************************************************
-    9245 - support postblit call on array assignments
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=9245
+// support postblit call on array assignments
 
 bool test9245()
 {
@@ -6712,9 +6682,9 @@ bool test9245()
 }
 static assert(test9245());
 
-/**************************************************
-    12906 don't call postblit on blit initializing
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12906
+// don't call postblit on blit initializing
 
 struct S12906 { this(this) { assert(0); } }
 
@@ -6723,9 +6693,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    11510 support overlapped field access in CTFE
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11510
+// support overlapped field access in CTFE
 
 struct S11510
 {
@@ -6750,9 +6720,9 @@ bool test11510()
 }
 static assert(test11510());
 
-/**************************************************
-    11534 - subtitude inout
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11534
+// subtitude inout
 
 struct MultiArray11534
 {
@@ -6776,9 +6746,9 @@ enum test11534 = () {
     return 0;
 }();
 
-/**************************************************
-    11941 - Regression of 11534 fix
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11941
+// Regression of 11534 fix
 
 void takeConst11941(const string[]) {}
 string[] identity11941(string[] x) { return x; }
@@ -6808,9 +6778,9 @@ bool test11941b()
 }
 static assert(test11941b());
 
-/**************************************************
-    11535 - element-wise assignment from string to ubyte array literal
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11535
+// element-wise assignment from string to ubyte array literal
 
 struct Hash11535
 {
@@ -6834,33 +6804,12 @@ auto md5_digest11535(T...)(scope const T data)
 
 static assert(md5_digest11535(`TEST`) == [84, 69, 83, 84, 0, 0]);
 
-/**************************************************
-    11540 - goto label + try-catch-finally / with statement
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11540
+// goto label + try-catch-finally / with statement
 
 static assert(()
 {
-    // enter to TryCatchStatement.body
-    {
-        bool c = false;
-        try
-        {
-            if (c)  // need to bypass front-end optimization
-                throw new Exception("");
-            else
-            {
-                goto Lx;
-              L1:
-                c = true;
-            }
-        }
-        catch (Exception e) {}
-
-      Lx:
-        if (!c)
-            goto L1;
-    }
-
     // jump inside TryCatchStatement.body
     {
         bool c = false;
@@ -6952,37 +6901,6 @@ static assert(()
 
 static assert(()
 {
-    // enter forward to TryFinallyStatement.body
-    {
-        bool c = false;
-        goto L0;
-        c = true;
-        try
-        {
-          L0:
-            ;
-        }
-        finally {}
-        assert(!c);
-    }
-
-    // enter back to TryFinallyStatement.body
-    {
-        bool c = false;
-        try
-        {
-            goto Lx;
-          L1:
-            c = true;
-        }
-        finally {
-        }
-
-      Lx:
-        if (!c)
-            goto L1;
-    }
-
     // jump inside TryFinallyStatement.body
     {
         try
@@ -7055,9 +6973,9 @@ static assert(()
     return 1;
 }());
 
-/**************************************************
-    11627 -  cast dchar to char at compile time on AA assignment
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11627
+//cast dchar to char at compile time on AA assignment
 
 bool test11627()
 {
@@ -7071,9 +6989,9 @@ bool test11627()
 }
 static assert(test11627());
 
-/**************************************************
-    11664 - ignore function local static variables
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11664
+// ignore function local static variables
 
 bool test11664()
 {
@@ -7083,9 +7001,9 @@ bool test11664()
 }
 static assert(test11664());
 
-/**************************************************
-    12110 - operand of dereferencing does not need to be an lvalue
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12110
+// operand of dereferencing does not need to be an lvalue
 
 struct SliceOverIndexed12110
 {
@@ -7117,9 +7035,9 @@ struct Uint24Array12110
 
 static m12110 = Uint24Array12110([0x80]);
 
-/**************************************************
-    12310 - heap allocation for built-in sclar types
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12310
+// heap allocation for built-in sclar types
 
 bool test12310()
 {
@@ -7141,9 +7059,9 @@ bool test12310()
 }
 static assert(test12310());
 
-/**************************************************
-    12499 - initialize TupleDeclaraion in CTFE
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12499
+// initialize TupleDeclaraion in CTFE
 
 auto f12499()
 {
@@ -7153,9 +7071,9 @@ auto f12499()
 }
 static assert(f12499() == 5);
 
-/**************************************************
-    12602 - slice in struct literal members
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12602
+// slice in struct literal members
 
 struct Result12602
 {
@@ -7251,9 +7169,9 @@ static assert(testWrap12602b() == [1,2,1,2]);
 static assert(testWrap12602c() == [1,2,1,2]);
 static assert(testWrap12602d() == [1,2,1,2]);
 
-/**************************************************
-    12677 - class type initializing from DotVarExp
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12677
+// class type initializing from DotVarExp
 
 final class C12677
 {
@@ -7272,9 +7190,9 @@ struct S12677
     auto f = new C12677();
 }
 
-/**************************************************
-    12851 - interpret function local const static array
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12851
+// interpret function local const static array
 
 void test12851()
 {
@@ -7282,9 +7200,9 @@ void test12851()
     alias staticZip = TypeTuple!(arr[0]);
 }
 
-/**************************************************
-    13630 - indexing and setting array element via pointer
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13630
+// indexing and setting array element via pointer
 
 struct S13630(T)
 {
@@ -7303,15 +7221,14 @@ struct S13630(T)
 
 enum s13630 = S13630!float(1);
 
-/**************************************************
-    13827
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13827
 
 struct Matrix13827(T, uint N)
 {
     private static defaultMatrix()
     {
-        T arr[N];
+        T[N] arr;
         return arr;
     }
 
@@ -7331,9 +7248,9 @@ struct Matrix13827(T, uint N)
 }
 enum m13827 = Matrix13827!(int, 3)(1, 2, 3);
 
-/**************************************************
-    13847 - support DotTypeExp
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13847
+// support DotTypeExp
 
 class B13847
 {
@@ -7378,9 +7295,9 @@ static assert({
     return true;
 }());
 
-/**************************************************
-    12495 - cast from string to immutable(ubyte)[]
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12495
+// cast from string to immutable(ubyte)[]
 
 string getStr12495()
 {
@@ -7401,9 +7318,9 @@ auto indexOf12495(string s)
 }
 static assert(indexOf12495(getStr12495()) == 0);
 
-/**************************************************
-    13992 - Repainting pointer arithmetic result
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13992
+// Repainting pointer arithmetic result
 
 enum hash13992 = hashOf13992("abcd".ptr);
 
@@ -7416,9 +7333,9 @@ enum hash13992 = hashOf13992("abcd".ptr);
     return hash;
 }
 
-/**************************************************
-    13739 - Precise copy for ArrayLiteralExp elements
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13739
+// Precise copy for ArrayLiteralExp elements
 
 static assert(
 {
@@ -7436,9 +7353,9 @@ static assert(
     return 1;
 }());
 
-/**************************************************
-    14463 - ICE on slice assignment without postblit
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14463
+// ICE on slice assignment without postblit
 
 struct Boo14463
 {
@@ -7450,9 +7367,9 @@ struct Boo14463
 }
 immutable Boo14463 a14463 = Boo14463([1]);
 
-/**************************************************
-    13295 - Don't copy struct literal in VarExp::interpret()
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13295
+// Don't copy struct literal in VarExp::interpret()
 
 struct S13295
 {
@@ -7483,9 +7400,9 @@ int foo14061(int[] a)
 }
 static assert(foo14061([1]));
 
-/**************************************************
-    14024 - CTFE version
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14024
+// CTFE version
 
 bool test14024()
 {
@@ -7535,9 +7452,9 @@ bool test14024()
 }
 static assert(test14024());
 
-/**************************************************
-    14304 - cache of static immutable value
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14304
+// cache of static immutable value
 
 immutable struct Bug14304
 {
@@ -7565,9 +7482,9 @@ void test14304()
     static assert(bt == "fun");
 }
 
-/**************************************************
-    14371 - evaluate BinAssignExp as lvalue
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14371
+// evaluate BinAssignExp as lvalue
 
 int test14371()
 {
@@ -7577,9 +7494,9 @@ int test14371()
 }
 static assert(test14371() == 2);
 
-/**************************************************
-    7151 - [CTFE] cannot compare classes with ==
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7151
+// [CTFE] cannot compare classes with ==
 
 bool test7151()
 {
@@ -7589,9 +7506,9 @@ bool test7151()
 static assert(test7151());
 
 
-/**************************************************
-    12603 - [CTFE] goto does not correctly call dtors
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=12603
+// [CTFE] goto does not correctly call dtors
 
 struct S12603
 {
@@ -7702,9 +7619,9 @@ auto structInCaseScope()
 
 static assert(!structInCaseScope());
 
-/**************************************************
-    15233 - ICE in TupleExp, Copy On Write bug
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=15233
+// ICE in TupleExp, Copy On Write bug
 
 alias TT15233(stuff ...) = stuff;
 
@@ -7713,23 +7630,23 @@ enum tup15233 = TT15233!(Tok15233(), "foo");
 static assert(tup15233[0] == Tok15233());
 static assert(tup15233[1] == "foo");
 
-/**************************************************
-    15251 - void cast in ForStatement.increment
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=15251
+// void cast in ForStatement.increment
 
 int test15251()
 {
     for (ubyte lwr = 19;
         lwr != 20;
-        cast(void)++lwr)    // have to to be evaluated with ctfeNeedNothing
+        cast(void)++lwr)    // have to to be evaluated with CTFEGoal.Nothing
     {}
     return 1;
 }
 static assert(test15251());
 
-/**************************************************
-    15998 - Sagfault caused by memory corruption
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=15998
+// Sagfault caused by memory corruption
 
 immutable string[2] foo15998 = ["",""];
 immutable string[2][] bar15998a = foo15998 ~ baz15998;
@@ -7744,9 +7661,9 @@ auto baz15998()
 static assert(bar15998a == [["", ""]]);
 static assert(bar15998b == [["", ""]]);
 
-/**************************************************
-    16094 - Non-overlapped slice assignment on an aggregate
-**************************************************/
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=16094
+// Non-overlapped slice assignment on an aggregate
 
 char[] f16094a()
 {
@@ -7787,6 +7704,94 @@ struct RBNode(T)
 
 static assert(!__traits(compiles, { alias bug18057 = RBNode!int; }));
 
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19140
+
+void test19140()
+{
+    real f19140();
+    static if (__traits(compiles, (){ enum real r = f19140(); })) {}
+}
+
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19074
+
+struct S19074a { }
+
+struct S19074b
+{
+    S19074a field;
+    this(S19074a) { }
+
+    static const S19074b* data = new S19074b(S19074a());
+}
+
+void test19074()
+{
+    auto var = S19074b.data;
+}
+
+/************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19447
+
+bool f19447()
+{
+    int[3] c=1;
+    assert(c[0]==1);
+    g19447(c[0..2]);
+    assert(c[0]!=1); //fails
+    assert(c[0]==2);
+    return true;
+}
+void g19447(ref int[2] a)
+{
+    int[2] b=2;
+    a=b;
+    //a[]=b;            // works
+    //a[] = b[];                // works
+    assert(a[0]==2);
+}
+static assert(f19447());
+
+/***/
+
+char[] mangle19447(char[] dst)
+{
+   dst.length = 10;
+   size_t i = "_D".length;
+   dst[0 .. i] = "_D";
+   return dst;
+}
+
+static char[] x19447 = mangle19447(null);
+
+/***/
+enum KindEnum
+{
+    integer,
+    arrayOf
+}
+
+struct FullKind
+{
+    KindEnum[] contents;
+
+    this(KindEnum ) { opAssign; }
+
+    this(KindEnum , FullKind contentKind)
+    {
+         contents = contentKind.contents;
+    }
+
+    void opAssign()
+    {
+        contents = [];
+    }
+}
+
+enum fk = FullKind(KindEnum.integer);
+enum fk2 = FullKind(KindEnum.arrayOf, fk);
+
 /************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=9937
 
@@ -7803,3 +7808,101 @@ int test9937()
 }
 
 static assert(test9937());
+
+/************************************************/
+// static array .tupleof
+
+struct SArrayTupleEquiv(T)
+{
+    T f1;
+    T f2;
+}
+
+// basic .tupleof invariants
+bool testSArrayTupleA()
+{
+    int[2] xs;
+    assert(xs.tupleof == TypeTuple!(0, 0));
+    assert(xs.tupleof == (cast(int[2])[0, 0]).tupleof);
+
+    xs.tupleof = TypeTuple!(1, 2);
+    assert(xs.tupleof == TypeTuple!(1, 2));
+
+    auto ys = SArrayTupleEquiv!int(1, 2);
+    assert(xs.tupleof == ys.tupleof);
+
+    return true;
+}
+static assert(testSArrayTupleA());
+
+// tuples with side effects
+bool testSArrayTupleB()
+{
+    // Counter records lifetime events in copies/dtors, as a cheap way to check that .tupleof for
+    // static arrays exhibit all the same side effects as an equivalent struct's .tupleof
+    int[int] copies;
+    int[int] dtors;
+    struct Counter
+    {
+        int id = -1;
+
+        this(this)
+        {
+            copies[id] = copies.get(id, 0) + 1;
+        }
+
+        ~this()
+        {
+            dtors[id] = dtors.get(id, 0) + 1;
+        }
+    }
+
+    void consume(Counter, Counter) {}
+    Counter[2] produce(int id1, int id2)
+    {
+        return [Counter(id1), Counter(id2)];
+    }
+
+    // first sample expected behavior from struct .tupleof
+    // braces create a subscope, shortening lifetimes
+    {
+        auto a = SArrayTupleEquiv!Counter(Counter(0), Counter(1));
+
+        typeof(a) b;
+        b.tupleof = a.tupleof;
+
+        Counter x, y;
+        TypeTuple!(x, y) = a.tupleof;
+
+        a.tupleof[0] = Counter(2);
+        a.tupleof[1] = Counter(3);
+        consume(a.tupleof);
+
+        a.tupleof = produce(4, 5).tupleof;
+    }
+    int[int][2] expected = [copies.dup, dtors.dup];
+    copies = null; // .clear is not CTFE friendly
+    dtors = null;
+
+    // the real test -- sample behavior of array .tupleof
+    {
+        Counter[2] a = [Counter(0), Counter(1)];
+
+        typeof(a) b;
+        b.tupleof = a.tupleof;
+
+        Counter x, y;
+        TypeTuple!(x, y) = a.tupleof;
+
+        a.tupleof[0] = Counter(2);
+        a.tupleof[1] = Counter(3);
+        consume(a.tupleof);
+
+        a.tupleof = produce(4, 5).tupleof;
+    }
+    assert(expected[0] == copies);
+    assert(expected[1] == dtors);
+
+    return true;
+}
+static assert(testSArrayTupleB());

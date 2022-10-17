@@ -28,6 +28,16 @@ import (
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	if Getenv("GO_OS_TEST_DRAIN_STDIN") == "1" {
+		os.Stdout.Close()
+		io.Copy(io.Discard, os.Stdin)
+		Exit(0)
+	}
+
+	Exit(m.Run())
+}
+
 var dot = []string{
 	"dir.go",
 	"env.go",
@@ -52,34 +62,31 @@ var sysdir = func() *sysDir {
 				"libpowermanager.so",
 			},
 		}
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			wd, err := syscall.Getwd()
-			if err != nil {
-				wd = err.Error()
-			}
-			sd := &sysDir{
-				filepath.Join(wd, "..", ".."),
-				[]string{
-					"ResourceRules.plist",
-					"Info.plist",
-				},
-			}
-			found := true
-			for _, f := range sd.files {
-				path := filepath.Join(sd.name, f)
-				if _, err := Stat(path); err != nil {
-					found = false
-					break
-				}
-			}
-			if found {
-				return sd
-			}
-			// In a self-hosted iOS build the above files might
-			// not exist. Look for system files instead below.
+	case "ios":
+		wd, err := syscall.Getwd()
+		if err != nil {
+			wd = err.Error()
 		}
+		sd := &sysDir{
+			filepath.Join(wd, "..", ".."),
+			[]string{
+				"ResourceRules.plist",
+				"Info.plist",
+			},
+		}
+		found := true
+		for _, f := range sd.files {
+			path := filepath.Join(sd.name, f)
+			if _, err := Stat(path); err != nil {
+				found = false
+				break
+			}
+		}
+		if found {
+			return sd
+		}
+		// In a self-hosted iOS build the above files might
+		// not exist. Look for system files instead below.
 	case "windows":
 		return &sysDir{
 			Getenv("SystemRoot") + "\\system32\\drivers\\etc",
@@ -113,20 +120,16 @@ func size(name string, t *testing.T) int64 {
 	if err != nil {
 		t.Fatal("open failed:", err)
 	}
-	defer file.Close()
-	var buf [100]byte
-	len := 0
-	for {
-		n, e := file.Read(buf[0:])
-		len += n
-		if e == io.EOF {
-			break
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Error(err)
 		}
-		if e != nil {
-			t.Fatal("read failed:", e)
-		}
+	}()
+	n, err := io.Copy(io.Discard, file)
+	if err != nil {
+		t.Fatal(err)
 	}
-	return int64(len)
+	return n
 }
 
 func equal(name1, name2 string) (r bool) {
@@ -142,13 +145,8 @@ func equal(name1, name2 string) (r bool) {
 // localTmp returns a local temporary directory not on NFS.
 func localTmp() string {
 	switch runtime.GOOS {
-	case "android", "windows":
+	case "android", "ios", "windows":
 		return TempDir()
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			return TempDir()
-		}
 	}
 	return "/tmp"
 }
@@ -572,15 +570,12 @@ func TestReaddirnamesOneAtATime(t *testing.T) {
 	switch runtime.GOOS {
 	case "android":
 		dir = "/system/bin"
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			wd, err := Getwd()
-			if err != nil {
-				t.Fatal(err)
-			}
-			dir = wd
+	case "ios":
+		wd, err := Getwd()
+		if err != nil {
+			t.Fatal(err)
 		}
+		dir = wd
 	case "plan9":
 		dir = "/bin"
 	case "windows":
@@ -615,11 +610,7 @@ func TestReaddirNValues(t *testing.T) {
 	if testing.Short() {
 		t.Skip("test.short; skipping")
 	}
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatalf("TempDir: %v", err)
-	}
-	defer RemoveAll(dir)
+	dir := t.TempDir()
 	for i := 1; i <= 105; i++ {
 		f, err := Create(filepath.Join(dir, fmt.Sprintf("%d", i)))
 		if err != nil {
@@ -714,11 +705,7 @@ func TestReaddirStatFailures(t *testing.T) {
 		// testing it wouldn't work.
 		t.Skipf("skipping test on %v", runtime.GOOS)
 	}
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatalf("TempDir: %v", err)
-	}
-	defer RemoveAll(dir)
+	dir := t.TempDir()
 	touch(t, filepath.Join(dir, "good1"))
 	touch(t, filepath.Join(dir, "x")) // will disappear or have an error
 	touch(t, filepath.Join(dir, "good2"))
@@ -1409,22 +1396,19 @@ func TestChdirAndGetwd(t *testing.T) {
 		dirs = []string{"/system/bin"}
 	case "plan9":
 		dirs = []string{"/", "/usr"}
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			dirs = nil
-			for _, d := range []string{"d1", "d2"} {
-				dir, err := os.MkdirTemp("", d)
-				if err != nil {
-					t.Fatalf("TempDir: %v", err)
-				}
-				// Expand symlinks so path equality tests work.
-				dir, err = filepath.EvalSymlinks(dir)
-				if err != nil {
-					t.Fatalf("EvalSymlinks: %v", err)
-				}
-				dirs = append(dirs, dir)
+	case "ios":
+		dirs = nil
+		for _, d := range []string{"d1", "d2"} {
+			dir, err := os.MkdirTemp("", d)
+			if err != nil {
+				t.Fatalf("TempDir: %v", err)
 			}
+			// Expand symlinks so path equality tests work.
+			dir, err = filepath.EvalSymlinks(dir)
+			if err != nil {
+				t.Fatalf("EvalSymlinks: %v", err)
+			}
+			dirs = append(dirs, dir)
 		}
 	}
 	oldwd := Getenv("PWD")
@@ -1771,8 +1755,8 @@ func TestHostname(t *testing.T) {
 	// and the /bin/hostname only returns the first component
 	want := runBinHostname(t)
 	if hostname != want {
-		i := strings.Index(hostname, ".")
-		if i < 0 || hostname[0:i] != want {
+		host, _, ok := strings.Cut(hostname, ".")
+		if !ok || host != want {
 			t.Errorf("Hostname() = %q, want %q", hostname, want)
 		}
 	}
@@ -1951,22 +1935,16 @@ func TestAppend(t *testing.T) {
 
 func TestStatDirWithTrailingSlash(t *testing.T) {
 	// Create new temporary directory and arrange to clean it up.
-	path, err := os.MkdirTemp("", "_TestStatDirWithSlash_")
-	if err != nil {
-		t.Fatalf("TempDir: %s", err)
-	}
-	defer RemoveAll(path)
+	path := t.TempDir()
 
 	// Stat of path should succeed.
-	_, err = Stat(path)
-	if err != nil {
+	if _, err := Stat(path); err != nil {
 		t.Fatalf("stat %s failed: %s", path, err)
 	}
 
 	// Stat of path+"/" should succeed too.
 	path += "/"
-	_, err = Stat(path)
-	if err != nil {
+	if _, err := Stat(path); err != nil {
 		t.Fatalf("stat %s failed: %s", path, err)
 	}
 }
@@ -2093,12 +2071,7 @@ func TestLargeWriteToConsole(t *testing.T) {
 func TestStatDirModeExec(t *testing.T) {
 	const mode = 0111
 
-	path, err := os.MkdirTemp("", "go-build")
-	if err != nil {
-		t.Fatalf("Failed to create temp directory: %v", err)
-	}
-	defer RemoveAll(path)
-
+	path := t.TempDir()
 	if err := Chmod(path, 0777); err != nil {
 		t.Fatalf("Chmod %q 0777: %v", path, err)
 	}
@@ -2162,12 +2135,7 @@ func TestStatStdin(t *testing.T) {
 func TestStatRelativeSymlink(t *testing.T) {
 	testenv.MustHaveSymlink(t)
 
-	tmpdir, err := os.MkdirTemp("", "TestStatRelativeSymlink")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer RemoveAll(tmpdir)
-
+	tmpdir := t.TempDir()
 	target := filepath.Join(tmpdir, "target")
 	f, err := Create(target)
 	if err != nil {
@@ -2303,9 +2271,18 @@ func testKillProcess(t *testing.T, processKiller func(p *Process)) {
 	testenv.MustHaveExec(t)
 	t.Parallel()
 
-	// Re-exec the test binary itself to emulate "sleep 1".
-	cmd := osexec.Command(Args[0], "-test.run", "TestSleep")
-	err := cmd.Start()
+	// Re-exec the test binary to start a process that hangs until stdin is closed.
+	cmd := osexec.Command(Args[0])
+	cmd.Env = append(os.Environ(), "GO_OS_TEST_DRAIN_STDIN=1")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = cmd.Start()
 	if err != nil {
 		t.Fatalf("Failed to start test process: %v", err)
 	}
@@ -2314,19 +2291,14 @@ func testKillProcess(t *testing.T, processKiller func(p *Process)) {
 		if err := cmd.Wait(); err == nil {
 			t.Errorf("Test process succeeded, but expected to fail")
 		}
+		stdin.Close() // Keep stdin alive until the process has finished dying.
 	}()
 
-	time.Sleep(100 * time.Millisecond)
-	processKiller(cmd.Process)
-}
+	// Wait for the process to be started.
+	// (It will close its stdout when it reaches TestMain.)
+	io.Copy(io.Discard, stdout)
 
-// TestSleep emulates "sleep 1". It is a helper for testKillProcess, so we
-// don't have to rely on an external "sleep" command being available.
-func TestSleep(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping in short mode")
-	}
-	time.Sleep(time.Second)
+	processKiller(cmd.Process)
 }
 
 func TestKillStartProcess(t *testing.T) {
@@ -2464,8 +2436,6 @@ func TestRemoveAllRace(t *testing.T) {
 // Test that reading from a pipe doesn't use up a thread.
 func TestPipeThreads(t *testing.T) {
 	switch runtime.GOOS {
-	case "freebsd":
-		t.Skip("skipping on FreeBSD; issue 19093")
 	case "illumos", "solaris":
 		t.Skip("skipping on Solaris and illumos; issue 19111")
 	case "windows":
@@ -2773,5 +2743,23 @@ func TestReadFileProc(t *testing.T) {
 	}
 	if len(data) == 0 || data[len(data)-1] != '\n' {
 		t.Fatalf("read %s: not newline-terminated: %q", name, data)
+	}
+}
+
+func TestWriteStringAlloc(t *testing.T) {
+	if runtime.GOOS == "js" {
+		t.Skip("js allocates a lot during File.WriteString")
+	}
+	d := t.TempDir()
+	f, err := Create(filepath.Join(d, "whiteboard.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	allocs := testing.AllocsPerRun(100, func() {
+		f.WriteString("I will not allocate when passed a string longer than 32 bytes.\n")
+	})
+	if allocs != 0 {
+		t.Errorf("expected 0 allocs for File.WriteString, got %v", allocs)
 	}
 }

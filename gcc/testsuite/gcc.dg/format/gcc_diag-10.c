@@ -64,8 +64,8 @@ void test_cdiag (tree t, gimple *gc)
   cdiag ("%D", t);       /* { dg-warning ".D. conversion used unquoted" } */
   cdiag ("%E", t);
   cdiag ("%F", t);       /* { dg-warning ".F. conversion used unquoted" } */
-  cdiag ("%G", gc);
-  cdiag ("%K", t);
+  cdiag ("%G", gc);      /* { dg-warning "format" } */
+  cdiag ("%K", t);       /* { dg-warning "format" } */
 
   cdiag ("%R");       /* { dg-warning "unmatched color reset directive" } */
   cdiag ("%r", "");   /* { dg-warning "unterminated color directive" } */
@@ -80,8 +80,8 @@ void test_cdiag (tree t, gimple *gc)
   cdiag ("%<%D%>", t);
   cdiag ("%<%E%>", t);
   cdiag ("%<%F%>", t);
-  cdiag ("%<%G%>", gc);  /* { dg-warning ".G. conversion used within a quoted sequence" } */
-  cdiag ("%<%K%>", t);   /* { dg-warning ".K. conversion used within a quoted sequence" } */
+  cdiag ("%<%G%>", gc);  /* { dg-warning "format" } */
+  cdiag ("%<%K%>", t);   /* { dg-warning "format" } */
 
   cdiag ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
   cdiag ("%<%r%>", "");  /* { dg-warning "unterminated color directive" } */
@@ -103,8 +103,8 @@ void test_tdiag (tree t, gimple *gc)
 
   tdiag ("%D", t);       /* { dg-warning ".D. conversion used unquoted" } */
   tdiag ("%E", t);
-  tdiag ("%G", gc);
-  tdiag ("%K", t);
+  tdiag ("%G", gc);     /* { dg-warning "format" } */
+  tdiag ("%K", t);      /* { dg-warning "format" } */
 
   tdiag ("%R");          /* { dg-warning "unmatched color reset directive" } */
   tdiag ("%r", "");   /* { dg-warning "unterminated color directive" } */
@@ -118,8 +118,8 @@ void test_tdiag (tree t, gimple *gc)
 
   tdiag ("%<%D%>", t);
   tdiag ("%<%E%>", t);
-  tdiag ("%<%G%>", gc);  /* { dg-warning ".G. conversion used within a quoted sequence" } */
-  tdiag ("%<%K%>", t);   /* { dg-warning ".K. conversion used within a quoted sequence" } */
+  tdiag ("%<%G%>", gc);  /* { dg-warning "format" } */
+  tdiag ("%<%K%>", t);   /* { dg-warning "format" } */
 
   tdiag ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
   tdiag ("%<%r%>", "");  /* { dg-warning "unterminated color directive" } */
@@ -138,8 +138,8 @@ void test_cxxdiag (tree t, gimple *gc)
   cxxdiag ("%D", t);     /* { dg-warning ".D. conversion used unquoted" } */
   cxxdiag ("%E", t);
   cxxdiag ("%F", t);     /* { dg-warning ".F. conversion used unquoted" } */
-  cxxdiag ("%G", gc);
-  cxxdiag ("%K", t);
+  cxxdiag ("%G", gc);    /* { dg-warning "format" } */
+  cxxdiag ("%K", t);     /* { dg-warning "format" } */
 
   cxxdiag ("%R");        /* { dg-warning "unmatched color reset directive" } */
   cxxdiag ("%r", "");    /* { dg-warning "unterminated color directive" } */

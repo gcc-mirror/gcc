@@ -1,6 +1,6 @@
 // <any> -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,10 +33,11 @@
 
 #if __cplusplus >= 201703L
 
+#include <initializer_list>
 #include <typeinfo>
 #include <new>
-#include <utility>
 #include <type_traits>
+#include <bits/utility.h> // in_place_type_t
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -71,8 +72,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief A type-safe container of any type.
    *
-   *  An @c any object's state is either empty or it stores a contained object
+   *  An `any` object's state is either empty or it stores a contained object
    *  of CopyConstructible type.
+   *
+   *  @since C++17
    */
   class any
   {
@@ -101,9 +104,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct _Manager_external; // creates contained object on the heap
 
     template<typename _Tp>
-      using _Manager = conditional_t<_Internal<_Tp>::value,
-				     _Manager_internal<_Tp>,
-				     _Manager_external<_Tp>>;
+      using _Manager = __conditional_t<_Internal<_Tp>::value,
+				       _Manager_internal<_Tp>,
+				       _Manager_external<_Tp>>;
 
     template<typename _Tp, typename _VTp = decay_t<_Tp>>
       using _Decay_if_not_any = enable_if_t<!is_same_v<_VTp, any>, _VTp>;
@@ -182,8 +185,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Construct with a copy of @p __value as the contained object.
     template <typename _Tp, typename _VTp = _Decay_if_not_any<_Tp>,
 	      typename _Mgr = _Manager<_VTp>,
-	      enable_if_t<is_copy_constructible<_VTp>::value
-			  && !__is_in_place_type<_VTp>::value, bool> = true>
+	      enable_if_t<is_copy_constructible_v<_VTp>
+			  && !__is_in_place_type_v<_VTp>, bool> = true>
       any(_Tp&& __value)
       : _M_manager(&_Mgr::_S_manage)
       {
@@ -336,9 +339,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
+    /// @cond undocumented
     template<typename _Tp>
       static constexpr bool __is_valid_cast()
       { return __or_<is_reference<_Tp>, is_copy_constructible<_Tp>>::value; }
+    /// @endcond
 
   private:
     enum _Op {
@@ -355,8 +360,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void (*_M_manager)(_Op, const any*, _Arg*);
     _Storage _M_storage;
 
+    /// @cond undocumented
     template<typename _Tp>
       friend void* __any_caster(const any* __any);
+    /// @endcond
 
     // Manage in-place contained object.
     template<typename _Tp>
@@ -421,16 +428,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Exchange the states of two @c any objects.
   inline void swap(any& __x, any& __y) noexcept { __x.swap(__y); }
 
-  /// Create an any holding a @c _Tp constructed from @c __args.
+  /// Create an `any` holding a `_Tp` constructed from `__args...`.
   template <typename _Tp, typename... _Args>
-    any make_any(_Args&&... __args)
+    inline
+    enable_if_t<is_constructible_v<any, in_place_type_t<_Tp>, _Args...>, any>
+    make_any(_Args&&... __args)
     {
       return any(in_place_type<_Tp>, std::forward<_Args>(__args)...);
     }
 
-  /// Create an any holding a @c _Tp constructed from @c __il and @c __args.
+  /// Create an `any` holding a `_Tp` constructed from `__il` and `__args...`.
   template <typename _Tp, typename _Up, typename... _Args>
-    any make_any(initializer_list<_Up> __il, _Args&&... __args)
+    inline
+    enable_if_t<is_constructible_v<any, in_place_type_t<_Tp>,
+				   initializer_list<_Up>&, _Args...>, any>
+    make_any(initializer_list<_Up> __il, _Args&&... __args)
     {
       return any(in_place_type<_Tp>, __il, std::forward<_Args>(__args)...);
     }

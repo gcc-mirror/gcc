@@ -167,6 +167,9 @@ proc fixed_host_execute {args} {
     if {![file exists ${executable}]} {
 	perror "The executable, \"$executable\" is missing" 0
 	return "No source file found"
+    } elseif {![file executable ${executable}]} {
+	perror "The executable, \"$executable\" is not usable" 0
+	return "Bad executable found"
     }
 
     verbose "params: $params" 2
@@ -194,84 +197,125 @@ proc fixed_host_execute {args} {
     set args [concat $args ${params}]
     verbose "args: $args" 2
 
-    eval spawn -noecho $args
+    # We checked that the executable exists above, and can be executed, but
+    # that does not cover other reasons that the launch could fail (e.g.
+    # missing or malformed params); catch such cases here and report them.
+    set err [catch "spawn -noecho $args" pid]
+    set sub_proc_id $spawn_id
+    if { $pid <= 0 || $err != 0 || $sub_proc_id < 0 } {
+        warning "failed to spawn : $args : err = $err"
+    }
 
-    expect_after full_buffer {	error "got full_buffer" }
+    # Increase the buffer size, if needed to avoid spurious buffer-full
+    # events; GCC uses 10000; chose a power of two here.
+    set current_max_match [match_max -i $sub_proc_id]
+    if { $current_max_match < 8192 } {
+        match_max -i $sub_proc_id 8192
+        set used [match_max -i $sub_proc_id]
+    }
+
+    # If we get a buffer-full error, that seems to be unrecoverable so try to
+    # exit in a reasonable manner to avoid wedged processes.
+    expect_after full_buffer {
+        verbose -log "fixed_host_execute: $args FULL BUFFER"
+        # FIXME: this all assumes that closing the connection will cause the
+        # sub-process to terminate (but that is not going to be the case if,
+        # for example, there is something started with -nohup somewhere).
+        # We should explicitly kill it here.
+        # Set the process to be a nowait exit.
+        wait -nowait -i $sub_proc_id
+        catch close
+        perror "${executable} got full_buffer"
+        return "${executable} got full_buffer"
+    }
 
     set prefix "\[^\r\n\]*"
+    # Work around a Darwin tcl or termios bug that sometimes inserts extra
+    # CR characters into the cooked tty stream
+    set endline "\r\n"
+    if { [istarget *-*-darwin*] } {
+        set endline "\r(\r)*\n"
+    }
+    
+    # Note that the logic here assumes that we cannot (validly) get single
+    # carriage return or line feed characters in the stream.  If those occur,
+    # it will stop any further matching.  We arange for the matching to be
+    # at the start of the buffer - so that if there is any spurious output
+    # to be discarded, it must be done explicitly - not by matching part-way
+    # through the buffer.
     expect {
-	-re "^$prefix\[0-9\]\[0-9\]:..:..:${text}*\r\n" {
+	-re "^$prefix\[0-9\]\[0-9\]:..:..:${text}*$endline" {
 	    regsub "\[\n\r\t\]*NOTE: $text\r\n" $expect_out(0,string) "" output
 	    verbose "$output" 3
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tNOTE:\[^\r\n\]+\r\n" {
-	    regsub "\[\n\r\t\]*NOTE: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 6 end-2]
-	    verbose "$output" 2
+	-re "^\tNOTE: (\[^\r\n\]+)$endline" {
+	    # discard notes.
+	    verbose "Ignored note: $expect_out(1,string)" 2
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tPASSED:\[^\r\n\]+\r\n" {
-	    regsub "\[\n\r\t\]*PASSED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end-2]
-	    pass "$output"
+	-re "^\tPASSED: (\[^\r\n\]+)$endline" {
+	    pass "$expect_out(1,string)"
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tFAILED:\[^\r\n\]+\r\n" {
-	    regsub "\[\n\r\t\]*FAILED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end-2]
-	    fail "$output"
+	-re "^\tFAILED: (\[^\r\n\]+)$endline" {
+	    fail "$expect_out(1,string)"
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tUNTESTED:\[^\r\n\]+\r\n" {
-	    regsub "\[\n\r\t\]*TESTED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end-2]
-	    untested "$output"
+	-re "^\tUNTESTED: (\[^\r\n\]+)$endline" {
+	    untested "$expect_out(1,string)"
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^$prefix\tUNRESOLVED:\[^\r\n\]+\r\n" {
-	    regsub "\[\n\r\t\]*UNRESOLVED: $text\r\n" $expect_out(0,string) "" output
-	    set output [string range $output 8 end-2]
-	    unresolved "$output"
+	-re "^\tUNRESOLVED: (\[^\r\n\]+)$endline" {
+	    unresolved "$expect_out(1,string)"
 	    set timetol 0
 	    exp_continue
 	}
-	-re "^Totals" {
-	    verbose "All done" 2
+	-re "^$prefix$endline" {
+            # This matches and discards any other lines (including blank ones).
+            if { [string length $expect_out(buffer)] <= 2 } {
+                set output "blank line"
+            } else {
+	        set output [string range $expect_out(buffer) 0 end-2]
+	    }
+	    verbose -log "DISCARDED $expect_out(spawn_id) : $output"
+	    exp_continue
 	}
 	eof {
-	    #	    unresolved "${executable} died prematurely"
-	    #	    catch close
-	    #	    return "${executable} died prematurely"
+	    # This seems to be the only way that we can reliably know that the
+	    # output is finished since there are cases where further output
+	    # follows the dejagnu test harness totals.
+	    verbose "saw eof" 2
 	}
 	timeout {
-	    warning "Timed out executing test case"
 	    if { $timetol <= 2 } {
+	        verbose -log "Timed out with retry (timeout = $timeout)"
 		incr timetol
 		exp_continue
 	    } else {
+	        warning "Timed out executing testcase (timeout = $timeout)"
 		catch close
 		return "Timed out executing test case"
 	    }
 	}
-	-re "^$prefix\r\n" {
-	    exp_continue
-	}
     }
 
-    # Use "wait" before "close": valgrind might not have finished
-    # writing the log out before we parse it, so we need to wait for
-    # the spawnee to finish.
-
-    catch wait wres
-    verbose "wres: $wres" 2
-    verify_exit_status $executable $wres
-
+    # Use "wait" to pick up the sub-process exit state.  If the sub-process is
+    # writing to a file (perhaps under valgrind) then that also needs to be
+    # complete; only attempt this on a valid spawn.
+    if { $sub_proc_id > 0 } {
+        verbose "waiting for $sub_proc_id" 1
+        # Be explicit about what we are waiting for.
+        catch "wait -i $sub_proc_id" wres
+        verbose "wres: $wres" 2
+        verify_exit_status $executable $wres
+    }
+ 
     if $run_under_valgrind {
 	upvar 2 name name
 	parse_valgrind_logfile $name $valgrind_logfile
@@ -375,6 +419,34 @@ proc dg-jit-set-exe-params { args } {
     foreach arg [lrange $args 1 [llength $args] ] {
 	lappend jit-exe-params [jit-expand-vars $arg]
     }
+}
+
+# For test-debuginfo.c. Starts gdb, does cmds and checks the output against match
+proc jit-check-debug-info { obj_file cmds match } {
+    verbose "Checking debug info for $obj_file with match: $match"
+
+    if { [catch {exec gdb -v} fid] } {
+        verbose "No gdb seems to be in path. Can't check debug info. Reporting 'unsupported'."
+        unsupported "No gdb seems to be in path. Can't check debug info"
+        return
+    }
+
+    spawn gdb $obj_file
+
+    verbose "Disable color styling in GDB newer then 8.3 (errors on older)"
+    send "set style enabled off\n"
+
+    foreach cmd $cmds {
+        send $cmd
+    }
+    expect {
+        -re $match { pass OK }
+        default { fail FAIL }
+    }
+
+    # Quit gdb
+    send "set confirm off\n"
+    send "q\n"
 }
 
 proc jit-dg-test { prog do_what extra_tool_flags } {
@@ -792,6 +864,39 @@ proc jit-verify-assembler { args } {
     jit-run-executable ${executable_from_asm} ${dg-output-text}
 }
 
+# Assuming that a .s file has been written out named
+# OUTPUT_FILENAME, check that the argument matches the
+# output file.
+# For use by the test-link-section-assembler.c testcase.
+proc jit-verify-assembler-output { args } {
+    verbose "jit-verify-assembler: $args"
+
+    set dg-output-text [lindex $args 0]
+    verbose "dg-output-text: ${dg-output-text}"
+
+    upvar 2 name name
+    verbose "name: $name"
+
+    upvar 2 prog prog
+    verbose "prog: $prog"
+    set asm_filename [jit-get-output-filename $prog]
+    verbose "  asm_filename: ${asm_filename}"
+
+    # Read the assembly file.
+    set f [open $asm_filename r]
+    set content [read $f]
+    close $f
+
+    # Verify that the assembly matches the regex.
+    if { ![regexp ${dg-output-text} $content] } {
+	fail "${asm_filename} output pattern test, is ${content}, should match ${dg-output-text}"
+	verbose "Failed test for output pattern ${dg-output-text}" 3
+    } else {
+	pass "${asm_filename} output pattern test, ${dg-output-text}"
+	verbose "Passed test for output pattern ${dg-output-text}" 3
+    }
+
+}
 # Assuming that a .o file has been written out named
 # OUTPUT_FILENAME, invoke the driver to try to turn it into
 # an executable, and try to run the result.
@@ -914,9 +1019,14 @@ proc jit-verify-executable { args } {
     jit-run-executable $output_filename ${dg-output-text}
 }
 
+set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror"
+
 # We need to link with --export-dynamic for test-calling-external-function.c
 # so that the JIT-built code can call into functions from the main program.
-set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror -Wl,--export-dynamic"
+
+if { [check_effective_target_rdynamic] } {
+  set DEFAULT_CFLAGS "$DEFAULT_CFLAGS -rdynamic"
+}
 
 # Main loop.  This will invoke jig-dg-test on each test-*.c file.
 dg-runtest $tests "" $DEFAULT_CFLAGS
