@@ -124,6 +124,23 @@ extern const char *mangle_builtin_type (const_tree);
 extern bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 #endif
 extern void handle_pragma_vector (void);
+extern tree builtin_decl (unsigned, bool);
+extern rtx expand_builtin (unsigned int, tree, rtx);
 }
+
+/* We classify builtin types into two classes:
+   1. General builtin class which is defined in riscv_builtins.
+   2. Vector builtin class which is a special builtin architecture
+      that implement intrinsic short into "pragma".  */
+enum riscv_builtin_class
+{
+  RISCV_BUILTIN_GENERAL,
+  RISCV_BUILTIN_VECTOR
+};
+
+const unsigned int RISCV_BUILTIN_SHIFT = 1;
+
+/* Mask that selects the riscv_builtin_class part of a function code.  */
+const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
 
 #endif /* ! GCC_RISCV_PROTOS_H */

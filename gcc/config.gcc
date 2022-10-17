@@ -520,6 +520,8 @@ riscv*)
 	extra_objs="${extra_objs} riscv-vector-builtins.o"
 	d_target_objs="riscv-d.o"
 	extra_headers="riscv_vector.h"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.cc"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.h"
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
