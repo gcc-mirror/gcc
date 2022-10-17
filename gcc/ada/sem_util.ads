@@ -1887,7 +1887,7 @@ package Sem_Util is
 
    function Is_Bounded_String (T : Entity_Id) return Boolean;
    --  True if T is a bounded string type. Used to make sure "=" composes
-   --  properly for bounded string types.
+   --  properly for bounded string types (see 4.5.2(32.1/1)).
 
    function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes a procedure with synchronization

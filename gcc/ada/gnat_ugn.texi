@@ -10733,6 +10733,9 @@ switch are:
 @code{-gnatw.q} (questionable layout of record types)
 
 @item 
+@code{-gnatw_q} (ignored equality)
+
+@item 
 @code{-gnatw_r} (out-of-order record representation clauses)
 
 @item 
@@ -11946,6 +11949,34 @@ The default is that these warnings are not given.
 
 This switch suppresses warnings for cases where the default layout of
 a record type would very likely cause inefficiencies.
+@end table
+
+@geindex -gnatw_q (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_q}
+
+`Activate warnings for ignored equality operators.'
+
+This switch activates warnings for a user-defined “=” function that does
+not compose (i.e. is ignored for a predefined “=” for a composite type
+containing a component whose type has the user-defined “=” as
+primitive). Note that the user-defined “=” must be a primitive operator
+in order to trigger the warning.
+
+The default is that these warnings are not given.
+@end table
+
+@geindex -gnatw_Q (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_Q}
+
+`Suppress warnings for ignored equality operators.'
 @end table
 
 @geindex -gnatwr (gcc)

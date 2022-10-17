@@ -151,14 +151,17 @@ package body Exp_Ch4 is
    --  where we allow comparison of "out of range" values.
 
    function Expand_Composite_Equality
-     (Nod : Node_Id;
-      Typ : Entity_Id;
-      Lhs : Node_Id;
-      Rhs : Node_Id) return Node_Id;
+     (Outer_Type : Entity_Id;
+      Nod        : Node_Id;
+      Comp_Type  : Entity_Id;
+      Lhs        : Node_Id;
+      Rhs        : Node_Id) return Node_Id;
    --  Local recursive function used to expand equality for nested composite
    --  types. Used by Expand_Record/Array_Equality. Nod provides the Sloc value
    --  for generated code. Lhs and Rhs are the left and right sides for the
-   --  comparison, and Typ is the type of the objects to compare.
+   --  comparison, and Comp_Typ is the type of the objects to compare.
+   --  Outer_Type is the composite type containing a component of type
+   --  Comp_Type -- used for printing messages.
 
    procedure Expand_Concatenate (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of a sequence of two or more operands
@@ -1721,7 +1724,8 @@ package body Exp_Ch4 is
              Prefix      => Make_Identifier (Loc, Chars (B)),
              Expressions => Index_List2);
 
-         Test := Expand_Composite_Equality (Nod, Component_Type (Typ), L, R);
+         Test := Expand_Composite_Equality
+           (Typ, Nod, Component_Type (Typ), L, R);
 
          --  If some (sub)component is an unchecked_union, the whole operation
          --  will raise program error.
@@ -1953,7 +1957,6 @@ package body Exp_Ch4 is
       if Ltyp /= Rtyp then
          Ltyp := Base_Type (Ltyp);
          Rtyp := Base_Type (Rtyp);
-         pragma Assert (Ltyp = Rtyp);
       end if;
 
       --  If the array type is distinct from the type of the arguments, it
@@ -1976,6 +1979,7 @@ package body Exp_Ch4 is
          New_Rhs := Rhs;
       end if;
 
+      pragma Assert (Ltyp = Rtyp);
       First_Idx := First_Index (Ltyp);
 
       --  If optimization is enabled and the array boils down to a couple of
@@ -1983,7 +1987,6 @@ package body Exp_Ch4 is
       --  which should be easier to optimize by the code generator.
 
       if Optimization_Level > 0
-        and then Ltyp = Rtyp
         and then Is_Constrained (Ltyp)
         and then Number_Dimensions (Ltyp) = 1
         and then Compile_Time_Known_Bounds (Ltyp)
@@ -2010,7 +2013,7 @@ package body Exp_Ch4 is
                 Prefix      => New_Copy_Tree (New_Rhs),
                 Expressions => New_List (New_Copy_Tree (Low_B)));
 
-            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R);
+            TestL := Expand_Composite_Equality (Ltyp, Nod, Ctyp, L, R);
 
             L :=
               Make_Indexed_Component (Loc,
@@ -2022,7 +2025,7 @@ package body Exp_Ch4 is
                 Prefix      => New_Rhs,
                 Expressions => New_List (New_Copy_Tree (High_B)));
 
-            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R);
+            TestH := Expand_Composite_Equality (Ltyp, Nod, Ctyp, L, R);
 
             return
               Make_And_Then (Loc, Left_Opnd => TestL, Right_Opnd => TestH);
@@ -2435,20 +2438,21 @@ package body Exp_Ch4 is
    --  case because it is not possible to respect normal Ada visibility rules.
 
    function Expand_Composite_Equality
-     (Nod : Node_Id;
-      Typ : Entity_Id;
-      Lhs : Node_Id;
-      Rhs : Node_Id) return Node_Id
+     (Outer_Type : Entity_Id;
+      Nod        : Node_Id;
+      Comp_Type  : Entity_Id;
+      Lhs        : Node_Id;
+      Rhs        : Node_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Nod);
       Full_Type : Entity_Id;
       Eq_Op     : Entity_Id;
 
    begin
-      if Is_Private_Type (Typ) then
-         Full_Type := Underlying_Type (Typ);
+      if Is_Private_Type (Comp_Type) then
+         Full_Type := Underlying_Type (Comp_Type);
       else
-         Full_Type := Typ;
+         Full_Type := Comp_Type;
       end if;
 
       --  If the private type has no completion the context may be the
@@ -2473,7 +2477,7 @@ package body Exp_Ch4 is
       --  Case of tagged record types
 
       if Is_Tagged_Type (Full_Type) then
-         Eq_Op := Find_Primitive_Eq (Typ);
+         Eq_Op := Find_Primitive_Eq (Comp_Type);
          pragma Assert (Present (Eq_Op));
 
          return
@@ -2635,18 +2639,20 @@ package body Exp_Ch4 is
 
          --  Equality composes in Ada 2012 for untagged record types. It also
          --  composes for bounded strings, because they are part of the
-         --  predefined environment. We could make it compose for bounded
-         --  strings by making them tagged, or by making sure all subcomponents
-         --  are set to the same value, even when not used. Instead, we have
-         --  this special case in the compiler, because it's more efficient.
+         --  predefined environment (see 4.5.2(32.1/1)). We could make it
+         --  compose for bounded strings by making them tagged, or by making
+         --  sure all subcomponents are set to the same value, even when not
+         --  used. Instead, we have this special case in the compiler, because
+         --  it's more efficient.
 
-         elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Typ) then
-
+         elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Comp_Type)
+         then
             --  If no TSS has been created for the type, check whether there is
             --  a primitive equality declared for it.
 
             declare
-               Op : constant Node_Id := Build_Eq_Call (Typ, Loc, Lhs, Rhs);
+               Op : constant Node_Id :=
+                 Build_Eq_Call (Comp_Type, Loc, Lhs, Rhs);
 
             begin
                --  Use user-defined primitive if it exists, otherwise use
@@ -2666,6 +2672,33 @@ package body Exp_Ch4 is
       --  Case of non-record types (always use predefined equality)
 
       else
+         --  Print a warning if there is a user-defined "=", because it can be
+         --  surprising that the predefined "=" takes precedence over it.
+
+         --  Suppress the warning if the "user-defined" one is in the
+         --  predefined library, because those are defined to compose
+         --  properly by RM-4.5.2(32.1/1). Intrinsics also compose.
+
+         declare
+            Op : constant Entity_Id := Find_Primitive_Eq (Comp_Type);
+         begin
+            if Warn_On_Ignored_Equality
+              and then Present (Op)
+              and then not In_Predefined_Unit (Base_Type (Comp_Type))
+              and then not Is_Intrinsic_Subprogram (Op)
+            then
+               pragma Assert
+                 (Is_First_Subtype (Outer_Type)
+                   or else Is_Generic_Actual_Type (Outer_Type));
+               Error_Msg_Node_1 := Outer_Type;
+               Error_Msg_Node_2 := Comp_Type;
+               Error_Msg
+                 ("?_q?""="" for type & uses predefined ""="" for }", Loc);
+               Error_Msg_Sloc := Sloc (Op);
+               Error_Msg ("\?_q?""="" # is ignored here", Loc);
+            end if;
+         end;
+
          return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
       end if;
    end Expand_Composite_Equality;
@@ -13347,7 +13380,7 @@ package body Exp_Ch4 is
             end if;
 
             Check :=
-              Expand_Composite_Equality (Nod, Etype (C),
+              Expand_Composite_Equality (Typ, Nod, Etype (C),
                Lhs =>
                  Make_Selected_Component (Loc,
                    Prefix        => New_Lhs,

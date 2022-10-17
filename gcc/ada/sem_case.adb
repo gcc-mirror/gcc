@@ -192,8 +192,13 @@ package body Sem_Case is
            record
               Low, High : Uint;
            end record;
+         function "=" (X, Y : Discrete_Range_Info) return Boolean is abstract;
+         --  Here (and below), we don't use "=", which is a good thing,
+         --  because it wouldn't work, because the user-defined "=" on
+         --  Uint does not compose according to Ada rules.
 
          type Composite_Range_Info is array (Part_Id) of Discrete_Range_Info;
+         function "=" (X, Y : Composite_Range_Info) return Boolean is abstract;
 
          type Choice_Range_Info (Is_Others : Boolean := False) is
            record
@@ -204,6 +209,7 @@ package body Sem_Case is
                     null;
               end case;
            end record;
+         function "=" (X, Y : Choice_Range_Info) return Boolean is abstract;
 
          type Choices_Range_Info is array (Choice_Id) of Choice_Range_Info;
 
