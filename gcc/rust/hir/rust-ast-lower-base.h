@@ -313,6 +313,8 @@ protected:
   HIR::Literal lower_literal (const AST::Literal &literal);
 
   HIR::ExternBlock *lower_extern_block (AST::ExternBlock &extern_block);
+
+  HIR::ClosureParam lower_closure_param (AST::ClosureParam &param);
 };
 
 } // namespace HIR

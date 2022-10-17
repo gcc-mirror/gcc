@@ -382,7 +382,7 @@ ConstChecker::visit (FieldAccessExpr &expr)
 }
 
 void
-ConstChecker::visit (ClosureExprInner &expr)
+ConstChecker::visit (ClosureExpr &expr)
 {}
 
 void
@@ -394,10 +394,6 @@ ConstChecker::visit (BlockExpr &expr)
   if (expr.has_expr ())
     expr.get_final_expr ()->accept_vis (*this);
 }
-
-void
-ConstChecker::visit (ClosureExprInnerTyped &expr)
-{}
 
 void
 ConstChecker::visit (ContinueExpr &expr)

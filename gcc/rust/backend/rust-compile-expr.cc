@@ -2803,5 +2803,11 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 						   expr.get_locus ());
 }
 
+void
+CompileExpr::visit (HIR::ClosureExpr &expr)
+{
+  gcc_unreachable ();
+}
+
 } // namespace Compile
 } // namespace Rust

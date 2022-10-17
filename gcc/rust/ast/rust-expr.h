@@ -2134,8 +2134,6 @@ struct ClosureParam
 private:
   std::vector<Attribute> outer_attrs;
   std::unique_ptr<Pattern> pattern;
-
-  // bool has_type_given;
   std::unique_ptr<Type> type;
   Location locus;
 
@@ -2202,19 +2200,19 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Pattern> &get_pattern ()
   {
     rust_assert (pattern != nullptr);
     return pattern;
   }
 
-  // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type ()
   {
     rust_assert (has_type_given ());
     return type;
   }
+
+  Location get_locus () const { return locus; }
 };
 
 // Base closure definition expression AST node - abstract
@@ -2248,6 +2246,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  bool get_has_move () const { return has_move; }
 };
 
 // Represents a non-type-specified closure expression AST node
@@ -2307,7 +2307,6 @@ public:
     return closure_inner == nullptr;
   }
 
-  // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_definition_expr ()
   {
     rust_assert (closure_inner != nullptr);
