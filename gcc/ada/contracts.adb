@@ -42,13 +42,13 @@ with Nmake;          use Nmake;
 with Opt;            use Opt;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch12;       use Sem_Ch12;
 with Sem_Ch13;       use Sem_Ch13;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Prag;       use Sem_Prag;
-with Sem_Res;        use Sem_Res;
 with Sem_Type;       use Sem_Type;
 with Sem_Util;       use Sem_Util;
 with Sinfo;          use Sinfo;
@@ -4755,7 +4755,7 @@ package body Contracts is
          Install_Formals (Subp);
          Inside_Class_Condition_Preanalysis := True;
 
-         Preanalyze_And_Resolve (Expr, Standard_Boolean);
+         Preanalyze_Spec_Expression (Expr, Standard_Boolean);
 
          Inside_Class_Condition_Preanalysis := False;
          Remove_Formals (Subp);
