@@ -1748,9 +1748,12 @@ emit_preconditions (tree attr)
 /* Emit statements for postcondition attributes.  */
 
 void
-emit_postconditions (tree contracts)
+emit_postconditions_cleanup (tree contracts)
 {
-  return emit_contract_conditions (contracts, POSTCONDITION_STMT);
+  tree stmts = push_stmt_list ();
+  emit_contract_conditions (contracts, POSTCONDITION_STMT);
+  stmts = pop_stmt_list (stmts);
+  push_cleanup (NULL_TREE, stmts, /*eh_only*/false);
 }
 
 /* We're compiling the pre/postcondition function CONDFN; remap any FN

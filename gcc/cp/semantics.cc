@@ -610,7 +610,8 @@ set_cleanup_locs (tree stmts, location_t loc)
   if (TREE_CODE (stmts) == CLEANUP_STMT)
     {
       tree t = CLEANUP_EXPR (stmts);
-      protected_set_expr_location (t, loc);
+      if (t && TREE_CODE (t) != POSTCONDITION_STMT)
+	protected_set_expr_location (t, loc);
       /* Avoid locus differences for C++ cdtor calls depending on whether
 	 cdtor_returns_this: a conversion to void is added to discard the return
 	 value, and this conversion ends up carrying the location, and when it
@@ -2063,6 +2064,7 @@ finish_mem_initializers (tree mem_inits)
   else
     {
       emit_preconditions (DECL_CONTRACTS (current_function_decl));
+      emit_postconditions_cleanup (DECL_CONTRACTS (current_function_decl));
       emit_mem_initializers (mem_inits);
     }
 }

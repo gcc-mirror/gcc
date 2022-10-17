@@ -7785,7 +7785,7 @@ extern tree get_contracts_original_fn		(tree);
 
 extern void emit_assertion			(tree);
 extern void emit_preconditions			(tree);
-extern void emit_postconditions			(tree);
+extern void emit_postconditions_cleanup		(tree);
 extern void maybe_update_postconditions		(tree);
 extern void start_function_contracts		(tree);
 extern void finish_function_contracts		(tree);

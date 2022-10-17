@@ -17816,9 +17816,6 @@ store_parm_decls (tree current_function_parms)
 void
 maybe_return_this (void)
 {
-  // FIXME make this work like other functions
-  emit_postconditions (DECL_CONTRACTS (current_function_decl));
-
   if (targetm.cxx.cdtor_returns_this ())
     {
       /* Return the address of the object.  */
@@ -17839,6 +17836,9 @@ static void
 begin_destructor_body (void)
 {
   tree compound_stmt;
+
+  emit_preconditions (DECL_CONTRACTS (current_function_decl));
+  emit_postconditions_cleanup (DECL_CONTRACTS (current_function_decl));
 
   /* If the CURRENT_CLASS_TYPE is incomplete, we will have already
      issued an error message.  We still want to try to process the
@@ -17898,8 +17898,6 @@ begin_destructor_body (void)
 	 will be properly destroyed if we throw.  */
       push_base_cleanups ();
     }
-
-  emit_preconditions (DECL_CONTRACTS (current_function_decl));
 }
 
 /* Do the necessary processing for the beginning of a function body, which
