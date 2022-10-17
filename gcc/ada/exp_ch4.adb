@@ -1725,7 +1725,8 @@ package body Exp_Ch4 is
              Expressions => Index_List2);
 
          Test := Expand_Composite_Equality
-           (Typ, Nod, Component_Type (Typ), L, R);
+           (Outer_Type => Typ, Nod => Nod, Comp_Type => Component_Type (Typ),
+            Lhs => L, Rhs => R);
 
          --  If some (sub)component is an unchecked_union, the whole operation
          --  will raise program error.
@@ -2013,7 +2014,9 @@ package body Exp_Ch4 is
                 Prefix      => New_Copy_Tree (New_Rhs),
                 Expressions => New_List (New_Copy_Tree (Low_B)));
 
-            TestL := Expand_Composite_Equality (Ltyp, Nod, Ctyp, L, R);
+            TestL := Expand_Composite_Equality
+              (Outer_Type => Ltyp, Nod => Nod, Comp_Type => Ctyp,
+               Lhs => L, Rhs => R);
 
             L :=
               Make_Indexed_Component (Loc,
@@ -2025,7 +2028,9 @@ package body Exp_Ch4 is
                 Prefix      => New_Rhs,
                 Expressions => New_List (New_Copy_Tree (High_B)));
 
-            TestH := Expand_Composite_Equality (Ltyp, Nod, Ctyp, L, R);
+            TestH := Expand_Composite_Equality
+              (Outer_Type => Ltyp, Nod => Nod, Comp_Type => Ctyp,
+               Lhs => L, Rhs => R);
 
             return
               Make_And_Then (Loc, Left_Opnd => TestL, Right_Opnd => TestH);
@@ -13380,15 +13385,16 @@ package body Exp_Ch4 is
             end if;
 
             Check :=
-              Expand_Composite_Equality (Typ, Nod, Etype (C),
-               Lhs =>
-                 Make_Selected_Component (Loc,
-                   Prefix        => New_Lhs,
-                   Selector_Name => New_Occurrence_Of (C, Loc)),
-               Rhs =>
-                 Make_Selected_Component (Loc,
-                   Prefix        => New_Rhs,
-                   Selector_Name => New_Occurrence_Of (C, Loc)));
+              Expand_Composite_Equality
+                (Outer_Type => Typ, Nod => Nod, Comp_Type => Etype (C),
+                 Lhs =>
+                   Make_Selected_Component (Loc,
+                     Prefix        => New_Lhs,
+                     Selector_Name => New_Occurrence_Of (C, Loc)),
+                 Rhs =>
+                   Make_Selected_Component (Loc,
+                     Prefix        => New_Rhs,
+                     Selector_Name => New_Occurrence_Of (C, Loc)));
 
             --  If some (sub)component is an unchecked_union, the whole
             --  operation will raise program error.
