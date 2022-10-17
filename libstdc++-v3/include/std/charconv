@@ -51,7 +51,7 @@
 #endif
 
 #if __cplusplus > 202002L
-# define __cpp_lib_constexpr_charconv 202202L
+# define __cpp_lib_constexpr_charconv 202207L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
