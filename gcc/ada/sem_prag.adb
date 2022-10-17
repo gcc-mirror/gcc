@@ -31719,43 +31719,45 @@ package body Sem_Prag is
    --  Start of processing for Non_Significant_Pragma_Reference
 
    begin
+      --  Reference might appear either directly as expression of a pragma
+      --  argument association, e.g. pragma Export (...), or within an
+      --  aggregate with component associations, e.g. pragma Refined_State
+      --  ((... => ...)).
+
       P := Parent (N);
-
-      if Nkind (P) /= N_Pragma_Argument_Association then
-
-         --  References within pragma Refined_State are not significant. They
-         --  can't be recognized using pragma argument number, because they
-         --  appear inside refinement clauses that rely on aggregate syntax.
-
-         if In_Pragma_Expression (N, Name_Refined_State) then
-            return True;
-         end if;
-
-         return False;
-
-      else
-         Id := Get_Pragma_Id (Parent (P));
-         C := Sig_Flags (Id);
-         AN := Arg_No;
-
-         if AN = 0 then
-            return False;
-         end if;
-
-         case C is
-            when -1 =>
-               return False;
-
-            when 0 =>
-               return True;
-
-            when 92 .. 99 =>
-               return AN < (C - 90);
-
+      loop
+         case Nkind (P) is
+            when N_Pragma_Argument_Association =>
+               exit;
+            when N_Aggregate | N_Component_Association =>
+               P := Parent (P);
             when others =>
-               return AN /= C;
+               return False;
          end case;
+      end loop;
+
+      AN := Arg_No;
+
+      if AN = 0 then
+         return False;
       end if;
+
+      Id := Get_Pragma_Id (Parent (P));
+      C := Sig_Flags (Id);
+
+      case C is
+         when -1 =>
+            return False;
+
+         when 0 =>
+            return True;
+
+         when 92 .. 99 =>
+            return AN < (C - 90);
+
+         when others =>
+            return AN /= C;
+      end case;
    end Is_Non_Significant_Pragma_Reference;
 
    ------------------------------
