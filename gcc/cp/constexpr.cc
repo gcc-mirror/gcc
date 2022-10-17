@@ -7740,11 +7740,14 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	tree c = CONTRACT_CONDITION (t);
 	if (semantic == CCS_ASSUME)
 	  {
+#if 0
 	    /* For an assume contract, try evaluating it without instantiating
 	       anything.  If non-constant, assume it's satisfied.  */
+	    /* This breaks contracts-assume6.C.  */
 
 	    if (!cp_tree_defined_p (c))
 	      break;
+#endif
 
 	    bool dummy_nc = false, dummy_ov = false;
 	    constexpr_ctx new_ctx = *ctx;
