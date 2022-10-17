@@ -455,6 +455,12 @@
         end interface
 
         interface
+          function omp_in_explicit_task ()
+            logical (4) :: omp_in_explicit_task
+          end function omp_in_explicit_task
+        end interface
+
+        interface
           function omp_get_cancellation ()
             logical (4) :: omp_get_cancellation
           end function omp_get_cancellation

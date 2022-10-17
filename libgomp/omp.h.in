@@ -249,6 +249,7 @@ extern int omp_get_team_size (int) __GOMP_NOTHROW;
 extern int omp_get_active_level (void) __GOMP_NOTHROW;
 
 extern int omp_in_final (void) __GOMP_NOTHROW;
+extern int omp_in_explicit_task (void) __GOMP_NOTHROW;
 
 extern int omp_get_cancellation (void) __GOMP_NOTHROW;
 extern omp_proc_bind_t omp_get_proc_bind (void) __GOMP_NOTHROW;
