@@ -1,4 +1,4 @@
-/* Windows support needed only by D front-end.
+/* Cygwin support needed only by D front-end.
    Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify it under
@@ -25,51 +25,46 @@ along with GCC; see the file COPYING3.  If not see
 #include "d/d-target.h"
 #include "d/d-target-def.h"
 
-/* Implement TARGET_D_OS_VERSIONS for Windows targets.  */
+/* Implement TARGET_D_OS_VERSIONS for Cygwin targets.  */
 
 static void
-winnt_d_os_builtins (void)
+cygwin_d_os_builtins (void)
 {
   d_add_builtin_version ("Windows");
-  d_add_builtin_version ("MinGW");
-
-  if (TARGET_64BIT && ix86_abi == MS_ABI)
-    d_add_builtin_version ("Win64");
-  else if (!TARGET_64BIT)
-    d_add_builtin_version ("Win32");
-
-  d_add_builtin_version ("CRuntime_Microsoft");
+  d_add_builtin_version ("Cygwin");
+  d_add_builtin_version ("Posix");
+  d_add_builtin_version ("CRuntime_Newlib");
 }
 
 /* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
 
 static tree
-winnt_d_handle_target_object_format (void)
+cygwin_d_handle_target_object_format (void)
 {
   const char *objfmt = "coff";
 
   return build_string_literal (strlen (objfmt) + 1, objfmt);
 }
 
-/* Implement TARGET_D_REGISTER_OS_TARGET_INFO for Windows targets.  */
+/* Implement TARGET_D_REGISTER_OS_TARGET_INFO for Cygwin targets.  */
 
 static void
-winnt_d_register_target_info (void)
+cygwin_d_register_target_info (void)
 {
   const struct d_target_info_spec handlers[] = {
-    { "objectFormat", winnt_d_handle_target_object_format },
+    { "objectFormat", cygwin_d_handle_target_object_format },
     { NULL, NULL },
   };
 
   d_add_target_info_handlers (handlers);
 }
 #undef TARGET_D_OS_VERSIONS
-#define TARGET_D_OS_VERSIONS winnt_d_os_builtins
+#define TARGET_D_OS_VERSIONS cygwin_d_os_builtins
 
 #undef TARGET_D_REGISTER_OS_TARGET_INFO
-#define TARGET_D_REGISTER_OS_TARGET_INFO winnt_d_register_target_info
+#define TARGET_D_REGISTER_OS_TARGET_INFO cygwin_d_register_target_info
 
-/* Define TARGET_D_MINFO_SECTION for Windows targets.  */
+/* Define TARGET_D_MINFO_SECTION for Cygwin targets.  */
 
 #undef TARGET_D_MINFO_SECTION
 #define TARGET_D_MINFO_SECTION "minfo"
@@ -80,7 +75,7 @@ winnt_d_register_target_info (void)
 #undef TARGET_D_MINFO_END_NAME
 #define TARGET_D_MINFO_END_NAME "__stop_minfo"
 
-/* Define TARGET_D_TEMPLATES_ALWAYS_COMDAT for Windows targets.  */
+/* Define TARGET_D_TEMPLATES_ALWAYS_COMDAT for Cygwin targets.  */
 
 #undef TARGET_D_TEMPLATES_ALWAYS_COMDAT
 #define TARGET_D_TEMPLATES_ALWAYS_COMDAT true
