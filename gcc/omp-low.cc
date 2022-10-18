@@ -11409,7 +11409,7 @@ oacc_privatization_candidate_p (const location_t loc, const tree c,
      At present, no compiler-generated artificial variables require such
      sharing semantics, so this is safe.  */
 
-  if (res && DECL_ARTIFICIAL (decl))
+  if (res && block && DECL_ARTIFICIAL (decl))
     {
       res = false;
 
