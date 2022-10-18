@@ -424,6 +424,7 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/deque \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/execution \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/filesystem \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/format \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/forward_list \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/fstream \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/future \

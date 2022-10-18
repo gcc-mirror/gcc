@@ -1815,6 +1815,32 @@ class StdAtomicPrinter:
             val = self.val['_M_i']
         return '%s<%s> = { %s }' % (self.typename, str(self.value_type), val)
 
+class StdFormatArgsPrinter:
+    "Print a std::basic_format_args"
+    # TODO: add printer for basic_format_arg<C> and print out children
+    # TODO: add printer for basic_format_args<C>::_Store<Args...>
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        targs = get_template_arg_list(self.val.type)
+        char_type = get_template_arg_list(targs[0])[1]
+        if char_type == gdb.lookup_type('char'):
+            typ = 'std::format_args'
+        elif char_type == gdb.lookup_type('wchar_t'):
+            typ = 'std::wformat_args'
+        else:
+            typ = 'std::basic_format_args'
+
+        size = self.val['_M_packed_size']
+        if size == 1:
+            return "%s with 1 argument" % (typ)
+        if size == 0:
+            size = self.val['_M_unpacked_size']
+        return "%s with %d arguments" % (typ, size)
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -2355,6 +2381,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'weak_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'strong_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'span', StdSpanPrinter)
+    libstdcxx_printer.add_version('std::', 'basic_format_args', StdFormatArgsPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)
