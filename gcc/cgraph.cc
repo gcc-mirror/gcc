@@ -3751,7 +3751,9 @@ cgraph_node::verify_node (void)
 	   && (!DECL_EXTERNAL (decl) || inlined_to)
 	   && !flag_wpa)
     {
-      if (this_cfun->cfg)
+      if ((this_cfun->curr_properties & PROP_assumptions_done) != 0)
+	;
+      else if (this_cfun->cfg)
 	{
 	  hash_set<gimple *> stmts;
 

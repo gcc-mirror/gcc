@@ -2660,6 +2660,15 @@ execute_one_pass (opt_pass *pass)
       if (dom_info_available_p (CDI_POST_DOMINATORS))
        free_dominance_info (CDI_POST_DOMINATORS);
 
+      if (cfun->assume_function)
+	{
+	  /* For assume functions, don't release body, keep it around.  */
+	  cfun->curr_properties |= PROP_assumptions_done;
+	  pop_cfun ();
+	  current_pass = NULL;
+	  return true;
+	}
+
       tree fn = cfun->decl;
       pop_cfun ();
       gcc_assert (!cfun);

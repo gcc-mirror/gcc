@@ -1736,6 +1736,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 					      (as_a <gomp_critical *> (stmt)));
 	  break;
 
+	case GIMPLE_ASSUME:
+	  s1 = remap_gimple_seq (gimple_assume_body (stmt), id);
+	  copy = gimple_build_assume (gimple_assume_guard (stmt), s1);
+	  break;
+
 	case GIMPLE_TRANSACTION:
 	  {
 	    gtransaction *old_trans_stmt = as_a <gtransaction *> (stmt);

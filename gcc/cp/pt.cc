@@ -21140,10 +21140,7 @@ tsubst_copy_and_build (tree t,
 		      ret = error_mark_node;
 		      break;
 		    }
-		  ret = build_call_expr_internal_loc (EXPR_LOCATION (t),
-						      IFN_ASSUME,
-						      void_type_node, 1,
-						      arg);
+		  ret = build_assume_call (EXPR_LOCATION (t), arg);
 		  RETURN (ret);
 		}
 	      break;

@@ -4253,6 +4253,12 @@ pass_fold_builtins::execute (function *fun)
 	    }
 
 	  callee = gimple_call_fndecl (stmt);
+	  if (!callee
+	      && gimple_call_internal_p (stmt, IFN_ASSUME))
+	    {
+	      gsi_remove (&i, true);
+	      continue;
+	    }
 	  if (!callee || !fndecl_built_in_p (callee, BUILT_IN_NORMAL))
 	    {
 	      gsi_next (&i);
