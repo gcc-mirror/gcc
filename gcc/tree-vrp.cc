@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range-path.h"
 #include "value-pointer-equiv.h"
 #include "gimple-fold.h"
+#include "tree-dfa.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -4465,6 +4466,39 @@ public:
   bool gate (function *fun) final override { return fun->assume_function; }
   unsigned int execute (function *) final override
     {
+      assume_query query;
+      if (dump_file)
+	fprintf (dump_file, "Assumptions :\n--------------\n");
+
+      for (tree arg = DECL_ARGUMENTS (cfun->decl); arg; arg = DECL_CHAIN (arg))
+	{
+	  tree name = ssa_default_def (cfun, arg);
+	  if (!name || !gimple_range_ssa_p (name))
+	    continue;
+	  tree type = TREE_TYPE (name);
+	  if (!Value_Range::supports_type_p (type))
+	    continue;
+	  Value_Range assume_range (type);
+	  if (query.assume_range_p (assume_range, name))
+	    {
+	      // Set the global range of NAME to anything calculated.
+	      set_range_info (name, assume_range);
+	      if (dump_file)
+		{
+		  print_generic_expr (dump_file, name, TDF_SLIM);
+		  fprintf (dump_file, " -> ");
+		  assume_range.dump (dump_file);
+		  fputc ('\n', dump_file);
+		}
+	    }
+	}
+      if (dump_file)
+	{
+	  fputc ('\n', dump_file);
+	  gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
+	  if (dump_flags & TDF_DETAILS)
+	    query.dump (dump_file);
+	}
       return TODO_discard_function;
     }
 
