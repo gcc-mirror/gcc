@@ -4814,6 +4814,20 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      warned = 1;
 	      pending_xref_error ();
 	    }
+	  else if (declspecs->typespec_kind != ctsk_tagdef
+		   && declspecs->typespec_kind != ctsk_tagfirstref
+		   && declspecs->typespec_kind != ctsk_tagfirstref_attrs
+		   && code == ENUMERAL_TYPE)
+	    {
+	      bool warned_enum = false;
+	      if (warned != 1)
+		warned_enum = pedwarn (input_location, OPT_Wpedantic,
+				       "empty declaration of %<enum%> type "
+				       "does not redeclare tag");
+	      if (warned_enum)
+		warned = 1;
+	      pending_xref_error ();
+	    }
 	  else
 	    {
 	      pending_invalid_xref = NULL_TREE;
