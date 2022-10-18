@@ -10795,6 +10795,52 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 }
 
 
+/* Initialize class descriptor's TKR infomation.  */
+
+void
+gfc_trans_class_array (gfc_symbol * sym, gfc_wrapped_block * block)
+{
+  tree type, etype;
+  tree tmp;
+  tree descriptor;
+  stmtblock_t init;
+  locus loc;
+  int rank;
+
+  /* Make sure the frontend gets these right.  */
+  gcc_assert (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+	      && (CLASS_DATA (sym)->attr.class_pointer
+		  || CLASS_DATA (sym)->attr.allocatable));
+
+  gcc_assert (VAR_P (sym->backend_decl)
+	      || TREE_CODE (sym->backend_decl) == PARM_DECL);
+
+  if (sym->attr.dummy)
+    return;
+
+  descriptor = gfc_class_data_get (sym->backend_decl);
+  type = TREE_TYPE (descriptor);
+
+  if (type == NULL || !GFC_DESCRIPTOR_TYPE_P (type))
+    return;
+
+  gfc_save_backend_locus (&loc);
+  gfc_set_backend_locus (&sym->declared_at);
+  gfc_init_block (&init);
+
+  rank = CLASS_DATA (sym)->as ? (CLASS_DATA (sym)->as->rank) : (0);
+  gcc_assert (rank>=0);
+  tmp = gfc_conv_descriptor_dtype (descriptor);
+  etype = gfc_get_element_type (type);
+  tmp = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp), tmp,
+			 gfc_get_dtype_rank_type (rank, etype));
+  gfc_add_expr_to_block (&init, tmp);
+
+  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
+  gfc_restore_backend_locus (&loc);
+}
+
+
 /* NULLIFY an allocatable/pointer array on function entry, free it on exit.
    Do likewise, recursively if necessary, with the allocatable components of
    derived types.  This function is also called for assumed-rank arrays, which
