@@ -5025,6 +5025,9 @@ cxx_init_decl_processing (void)
   if (flag_exceptions)
     init_exception_processing ();
 
+  if (flag_contracts)
+    init_contract_processing ();
+
   if (modules_p ())
     init_modules (parse_in);
 

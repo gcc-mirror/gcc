@@ -1967,4 +1967,27 @@ apply_postcondition_to_return (tree expr)
   return call;
 }
 
+/* Set up built-ins for contracts.  */
+
+void
+init_contract_processing (void)
+{
+  /* std::contract_violation */
+  tree tmp = build_function_type_list (integer_type_node,
+				  boolean_type_node,
+				  integer_type_node,
+				  const_string_type_node,
+				  const_string_type_node,
+				  const_string_type_node,
+				  const_string_type_node,
+				  const_string_type_node,
+				  integer_type_node,
+				  NULL_TREE);
+  on_contract_violation_fn =
+    build_cp_library_fn_ptr ("__on_contract_violation", tmp, ECF_COLD);
+  on_contract_violation_never_fn =
+    build_cp_library_fn_ptr ("__on_contract_violation", tmp,
+			     ECF_COLD | ECF_NORETURN);
+}
+
 #include "gt-cp-contracts.h"

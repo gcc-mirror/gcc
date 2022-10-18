@@ -7751,6 +7751,7 @@ enum contract_matching_context
   cmc_override
 };
 
+extern void init_contract_processing		();
 extern tree invalidate_contract			(tree);
 extern tree make_postcondition_variable		(cp_expr);
 extern tree make_postcondition_variable		(cp_expr, tree);
