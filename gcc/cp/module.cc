@@ -10034,15 +10034,11 @@ trees_out::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
       tree vec = TREE_VALUE (parms);
 
       tree_node (TREE_TYPE (vec));
-      tree dflt = error_mark_node;
       for (unsigned ix = TREE_VEC_LENGTH (vec); ix--;)
 	{
 	  tree parm = TREE_VEC_ELT (vec, ix);
-	  if (dflt)
-	    {
-	      dflt = TREE_PURPOSE (parm);
-	      tree_node (dflt);
-	    }
+	  tree dflt = TREE_PURPOSE (parm);
+	  tree_node (dflt);
 
 	  if (streaming_p ())
 	    {
@@ -10072,19 +10068,15 @@ trees_in::tpl_parms_fini (tree tmpl, unsigned tpl_levels)
        tpl_levels--; parms = TREE_CHAIN (parms))
     {
       tree vec = TREE_VALUE (parms);
-      tree dflt = error_mark_node;
 
       TREE_TYPE (vec) = tree_node ();
       for (unsigned ix = TREE_VEC_LENGTH (vec); ix--;)
 	{
 	  tree parm = TREE_VEC_ELT (vec, ix);
-	  if (dflt)
-	    {
-	      dflt = tree_node ();
-	      if (get_overrun ())
-		return false;
-	      TREE_PURPOSE (parm) = dflt;
-	    }
+	  tree dflt = tree_node ();
+	  if (get_overrun ())
+	    return false;
+	  TREE_PURPOSE (parm) = dflt;
 
 	  tree decl = TREE_VALUE (parm);
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
