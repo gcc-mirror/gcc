@@ -19604,6 +19604,22 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
+/* Canonicalize vec_perm index to make the first index
+   always comes from the first vector.  */
+static void
+ix86_vec_perm_index_canon (struct expand_vec_perm_d *d)
+{
+  unsigned nelt = d->nelt;
+  if (d->perm[0] < nelt)
+    return;
+
+  for (unsigned i = 0; i != nelt; i++)
+    d->perm[i] = (d->perm[i] + nelt) % (2 * nelt);
+
+  std::swap (d->op0, d->op1);
+  return;
+}
+
 /* A subroutine of ix86_expand_vec_perm_const_1. Try to implement D
    in terms of a pair of shufps+ shufps/pshufd instructions.  */
 static bool
@@ -19621,6 +19637,7 @@ expand_vec_perm_shufps_shufps (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
+  ix86_vec_perm_index_canon (d);
   for (i = 0; i < 4; ++i)
     count += d->perm[i] > 3 ? 1 : 0;
 
