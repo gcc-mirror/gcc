@@ -1890,6 +1890,190 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef __glibcxx_long_double_traps
 #undef __glibcxx_long_double_tinyness_before
 
+#if __cplusplus > 202202L
+
+#define __glibcxx_concat3_(P,M,S) P ## M ## S
+#define __glibcxx_concat3(P,M,S) __glibcxx_concat3_ (P,M,S)
+
+#define __glibcxx_float_n(BITSIZE)					\
+  __extension__								\
+  template<>								\
+    struct numeric_limits<_Float##BITSIZE>				\
+    {									\
+      static constexpr bool is_specialized = true;			\
+									\
+      static constexpr _Float##BITSIZE					\
+      min() noexcept							\
+      { return __glibcxx_concat3 (__FLT, BITSIZE, _MIN__); }		\
+									\
+      static constexpr _Float##BITSIZE					\
+      max() noexcept							\
+      { return __glibcxx_concat3 (__FLT, BITSIZE, _MAX__); }		\
+									\
+      static constexpr _Float##BITSIZE					\
+      lowest() noexcept							\
+      { return -__glibcxx_concat3 (__FLT, BITSIZE, _MAX__); }		\
+									\
+      static constexpr int digits					\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _MANT_DIG__);		\
+      static constexpr int digits10					\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _DIG__);			\
+      static constexpr int max_digits10					\
+	= __glibcxx_max_digits10 (__glibcxx_concat3 (__FLT, BITSIZE,	\
+						     _MANT_DIG__));	\
+      static constexpr bool is_signed = true;				\
+      static constexpr bool is_integer = false;				\
+      static constexpr bool is_exact = false;				\
+      static constexpr int radix					\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _RADIX__);			\
+									\
+      static constexpr _Float##BITSIZE					\
+      epsilon() noexcept						\
+      { return __glibcxx_concat3 (__FLT, BITSIZE, _EPSILON__); }	\
+									\
+      static constexpr _Float##BITSIZE 					\
+      round_error() noexcept { return 0.5F##BITSIZE; }			\
+									\
+      static constexpr int min_exponent					\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _MIN_EXP__);		\
+      static constexpr int min_exponent10				\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _MIN_10_EXP__);		\
+      static constexpr int max_exponent					\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _MAX_EXP__);		\
+      static constexpr int max_exponent10				\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _MAX_10_EXP__);		\
+									\
+      static constexpr bool has_infinity				\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _HAS_INFINITY__);		\
+      static constexpr bool has_quiet_NaN				\
+	= __glibcxx_concat3 (__FLT, BITSIZE, _HAS_QUIET_NAN__);		\
+      static constexpr bool has_signaling_NaN				\
+	= has_quiet_NaN;						\
+      static constexpr float_denorm_style has_denorm			\
+	= bool(__glibcxx_concat3 (__FLT, BITSIZE, _HAS_DENORM__))	\
+	  ? denorm_present : denorm_absent;				\
+      static constexpr bool has_denorm_loss = false;			\
+									\
+      static constexpr _Float##BITSIZE					\
+      infinity() noexcept						\
+      { return __builtin_huge_valf##BITSIZE(); }			\
+									\
+      static constexpr _Float##BITSIZE					\
+      quiet_NaN() noexcept						\
+      { return __builtin_nanf##BITSIZE(""); }				\
+									\
+      static constexpr _Float##BITSIZE					\
+      signaling_NaN() noexcept						\
+      { return __builtin_nansf##BITSIZE(""); }				\
+									\
+      static constexpr _Float##BITSIZE					\
+      denorm_min() noexcept						\
+      { return __glibcxx_concat3 (__FLT, BITSIZE, _DENORM_MIN__); }	\
+									\
+      static constexpr bool is_iec559					\
+	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;\
+      static constexpr bool is_bounded = true; 				\
+      static constexpr bool is_modulo = false; 				\
+									\
+      static constexpr bool traps = false; 				\
+      static constexpr bool tinyness_before = false; 			\
+      static constexpr float_round_style round_style 			\
+	= round_to_nearest; 						\
+    }; 									\
+
+#ifdef __STDCPP_FLOAT16_T__
+__glibcxx_float_n(16)
+#endif
+#ifdef __STDCPP_FLOAT32_T__
+__glibcxx_float_n(32)
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+__glibcxx_float_n(64)
+#endif
+#ifdef __STDCPP_FLOAT128_T__
+__glibcxx_float_n(128)
+#endif
+#undef __glibcxx_float_n
+#undef __glibcxx_concat3
+#undef __glibcxx_concat3_
+
+#ifdef __STDCPP_BFLOAT16_T__
+  __extension__
+  template<>
+    struct numeric_limits<__gnu_cxx::__bfloat16_t>
+    {
+      static constexpr bool is_specialized = true;
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      min() noexcept
+      { return __BFLT16_MIN__; }
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      max() noexcept
+      { return __BFLT16_MAX__; }
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      lowest() noexcept
+      { return -__BFLT16_MAX__; }
+
+      static constexpr int digits = __BFLT16_MANT_DIG__;
+      static constexpr int digits10 = __BFLT16_DIG__;
+      static constexpr int max_digits10
+	= __glibcxx_max_digits10 (__BFLT16_MANT_DIG__);
+      static constexpr bool is_signed = true;
+      static constexpr bool is_integer = false;
+      static constexpr bool is_exact = false;
+      static constexpr int radix = __BFLT16_RADIX__;
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      epsilon() noexcept
+      { return __BFLT16_EPSILON__; }
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      round_error() noexcept { return 0.5BF16; }
+
+      static constexpr int min_exponent = __BFLT16_MIN_EXP__;
+      static constexpr int min_exponent10 = __BFLT16_MIN_10_EXP__;
+      static constexpr int max_exponent = __BFLT16_MAX_EXP__;
+      static constexpr int max_exponent10 = __BFLT16_MAX_10_EXP__;
+
+      static constexpr bool has_infinity = __BFLT16_HAS_INFINITY__;
+      static constexpr bool has_quiet_NaN = __BFLT16_HAS_QUIET_NAN__;
+      static constexpr bool has_signaling_NaN = has_quiet_NaN;
+      static constexpr float_denorm_style has_denorm
+	= bool(__BFLT16_HAS_DENORM__)
+	  ? denorm_present : denorm_absent;
+      static constexpr bool has_denorm_loss = false;
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      infinity() noexcept
+      { return __gnu_cxx::__bfloat16_t(__builtin_huge_valf()); }
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      quiet_NaN() noexcept
+      { return __gnu_cxx::__bfloat16_t(__builtin_nanf("")); }
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      signaling_NaN() noexcept
+      { return __builtin_nansf16b(""); }
+
+      static constexpr __gnu_cxx::__bfloat16_t
+      denorm_min() noexcept
+      { return __BFLT16_DENORM_MIN__; }
+
+      static constexpr bool is_iec559
+	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;
+      static constexpr bool is_bounded = true;
+      static constexpr bool is_modulo = false;
+
+      static constexpr bool traps = false;
+      static constexpr bool tinyness_before = false;
+      static constexpr float_round_style round_style = round_to_nearest;
+    };
+#endif
+
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

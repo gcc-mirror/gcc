@@ -133,71 +133,97 @@ namespace numbers
   inline constexpr double egamma = egamma_v<double>;
   inline constexpr double phi = phi_v<double>;
 
+#define __glibcxx_numbers(TYPE, SUFFIX) \
+  /* e */						\
+  template<>						\
+    inline constexpr TYPE e_v<TYPE>			\
+      = 2.718281828459045235360287471352662498##SUFFIX;	\
+							\
+  /* log_2 e */						\
+  template<>						\
+    inline constexpr TYPE log2e_v<TYPE>			\
+      = 1.442695040888963407359924681001892137##SUFFIX;	\
+							\
+  /* log_10 e */					\
+  template<>						\
+    inline constexpr TYPE log10e_v<TYPE>		\
+      = 0.434294481903251827651128918916605082##SUFFIX;	\
+							\
+  /* pi */						\
+  template<>						\
+    inline constexpr TYPE pi_v<TYPE>			\
+      = 3.141592653589793238462643383279502884##SUFFIX;	\
+							\
+  /* 1/pi */						\
+  template<>						\
+    inline constexpr TYPE inv_pi_v<TYPE>		\
+      = 0.318309886183790671537767526745028724##SUFFIX;	\
+							\
+  /* 1/sqrt(pi) */					\
+  template<>						\
+    inline constexpr TYPE inv_sqrtpi_v<TYPE>		\
+      = 0.564189583547756286948079451560772586##SUFFIX;	\
+							\
+  /* log_e 2 */						\
+  template<>						\
+    inline constexpr TYPE ln2_v<TYPE>			\
+      = 0.693147180559945309417232121458176568##SUFFIX;	\
+							\
+  /* log_e 10 */					\
+  template<>						\
+    inline constexpr TYPE ln10_v<TYPE>			\
+      = 2.302585092994045684017991454684364208##SUFFIX;	\
+							\
+  /* sqrt(2) */						\
+  template<>						\
+    inline constexpr TYPE sqrt2_v<TYPE>			\
+      = 1.414213562373095048801688724209698079##SUFFIX;	\
+							\
+  /* sqrt(3) */						\
+  template<>						\
+    inline constexpr TYPE sqrt3_v<TYPE>			\
+      = 1.732050807568877293527446341505872367##SUFFIX;	\
+							\
+  /* 1/sqrt(3) */					\
+  template<>						\
+    inline constexpr TYPE inv_sqrt3_v<TYPE>		\
+      = 0.577350269189625764509148780501957456##SUFFIX;	\
+							\
+  /* The Euler-Mascheroni constant */			\
+  template<>						\
+    inline constexpr TYPE egamma_v<TYPE>		\
+      = 0.577215664901532860606512090082402431##SUFFIX;	\
+							\
+  /* The golden ratio, (1+sqrt(5))/2 */			\
+  template<>						\
+    inline constexpr TYPE phi_v<TYPE>			\
+      = 1.618033988749894848204586834365638118##SUFFIX
+
+#ifdef __STDCPP_FLOAT16_T__
+__glibcxx_numbers (_Float16, F16);
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+__glibcxx_numbers (_Float32, F32);
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+__glibcxx_numbers (_Float64, F64);
+#endif
+
+#ifdef __STDCPP_FLOAT128_T__
+__glibcxx_numbers (_Float128, F128);
+#endif
+
+#ifdef __STDCPP_BFLOAT128_T__
+__glibcxx_numbers (__gnu_cxx::__bfloat16_t, BF16);
+#endif
+
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
-  template<>
-    inline constexpr __float128 e_v<__float128>
-      = 2.718281828459045235360287471352662498Q;
-
-  /// log_2 e
-  template<>
-    inline constexpr __float128 log2e_v<__float128>
-      = 1.442695040888963407359924681001892137Q;
-
-  /// log_10 e
-  template<>
-    inline constexpr __float128 log10e_v<__float128>
-      = 0.434294481903251827651128918916605082Q;
-
-  /// pi
-  template<>
-    inline constexpr __float128 pi_v<__float128>
-      = 3.141592653589793238462643383279502884Q;
-
-  /// 1/pi
-  template<>
-    inline constexpr __float128 inv_pi_v<__float128>
-      = 0.318309886183790671537767526745028724Q;
-
-  /// 1/sqrt(pi)
-  template<>
-    inline constexpr __float128 inv_sqrtpi_v<__float128>
-      = 0.564189583547756286948079451560772586Q;
-
-  /// log_e 2
-  template<>
-    inline constexpr __float128 ln2_v<__float128>
-      = 0.693147180559945309417232121458176568Q;
-
-  /// log_e 10
-  template<>
-    inline constexpr __float128 ln10_v<__float128>
-      = 2.302585092994045684017991454684364208Q;
-
-  /// sqrt(2)
-  template<>
-    inline constexpr __float128 sqrt2_v<__float128>
-      = 1.414213562373095048801688724209698079Q;
-
-  /// sqrt(3)
-  template<>
-    inline constexpr __float128 sqrt3_v<__float128>
-      = 1.732050807568877293527446341505872367Q;
-
-  /// 1/sqrt(3)
-  template<>
-    inline constexpr __float128 inv_sqrt3_v<__float128>
-      = 0.577350269189625764509148780501957456Q;
-
-  /// The Euler-Mascheroni constant
-  template<>
-    inline constexpr __float128 egamma_v<__float128>
-      = 0.577215664901532860606512090082402431Q;
-
-  /// The golden ratio, (1+sqrt(5))/2
-  template<>
-    inline constexpr __float128 phi_v<__float128>
-      = 1.618033988749894848204586834365638118Q;
+__glibcxx_numbers (__float128, Q);
 #endif // USE_FLOAT128
+
+#undef __glibcxx_numbers
 
 } // namespace numbers
 /// @}

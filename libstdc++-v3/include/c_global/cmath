@@ -515,6 +515,564 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     tanh(_Tp __x)
     { return __builtin_tanh(__x); }
 
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr _Float16
+  acos(_Float16 __x)
+  { return _Float16(__builtin_acosf(__x)); }
+
+  constexpr _Float16
+  asin(_Float16 __x)
+  { return _Float16(__builtin_asinf(__x)); }
+
+  constexpr _Float16
+  atan(_Float16 __x)
+  { return _Float16(__builtin_atanf(__x)); }
+
+  constexpr _Float16
+  atan2(_Float16 __y, _Float16 __x)
+  { return _Float16(__builtin_atan2f(__y, __x)); }
+
+  constexpr _Float16
+  ceil(_Float16 __x)
+  { return _Float16(__builtin_ceilf(__x)); }
+
+  constexpr _Float16
+  cos(_Float16 __x)
+  { return _Float16(__builtin_cosf(__x)); }
+
+  constexpr _Float16
+  cosh(_Float16 __x)
+  { return _Float16(__builtin_coshf(__x)); }
+
+  constexpr _Float16
+  exp(_Float16 __x)
+  { return _Float16(__builtin_expf(__x)); }
+
+  constexpr _Float16
+  fabs(_Float16 __x)
+  { return _Float16(__builtin_fabsf(__x)); }
+
+  constexpr _Float16
+  floor(_Float16 __x)
+  { return _Float16(__builtin_floorf(__x)); }
+
+  constexpr _Float16
+  fmod(_Float16 __x, _Float16 __y)
+  { return _Float16(__builtin_fmodf(__x, __y)); }
+
+  inline _Float16
+  frexp(_Float16 __x, int* __exp)
+  { return _Float16(__builtin_frexpf(__x, __exp)); }
+
+  constexpr _Float16
+  ldexp(_Float16 __x, int __exp)
+  { return _Float16(__builtin_ldexpf(__x, __exp)); }
+
+  constexpr _Float16
+  log(_Float16 __x)
+  { return _Float16(__builtin_logf(__x)); }
+
+  constexpr _Float16
+  log10(_Float16 __x)
+  { return _Float16(__builtin_log10f(__x)); }
+
+  inline _Float16
+  modf(_Float16 __x, _Float16* __iptr)
+  {
+    float __i, __ret = __builtin_modff(__x, &__i);
+    *__iptr = _Float16(__i);
+    return _Float16(__ret);
+  }
+
+  constexpr _Float16
+  pow(_Float16 __x, _Float16 __y)
+  { return _Float16(__builtin_powf(__x, __y)); }
+
+  constexpr _Float16
+  sin(_Float16 __x)
+  { return _Float16(__builtin_sinf(__x)); }
+
+  constexpr _Float16
+  sinh(_Float16 __x)
+  { return _Float16(__builtin_sinhf(__x)); }
+
+  constexpr _Float16
+  sqrt(_Float16 __x)
+  { return _Float16(__builtin_sqrtf(__x)); }
+
+  constexpr _Float16
+  tan(_Float16 __x)
+  { return _Float16(__builtin_tanf(__x)); }
+
+  constexpr _Float16
+  tanh(_Float16 __x)
+  { return _Float16(__builtin_tanhf(__x)); }
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr _Float32
+  acos(_Float32 __x)
+  { return __builtin_acosf(__x); }
+
+  constexpr _Float32
+  asin(_Float32 __x)
+  { return __builtin_asinf(__x); }
+
+  constexpr _Float32
+  atan(_Float32 __x)
+  { return __builtin_atanf(__x); }
+
+  constexpr _Float32
+  atan2(_Float32 __y, _Float32 __x)
+  { return __builtin_atan2f(__y, __x); }
+
+  constexpr _Float32
+  ceil(_Float32 __x)
+  { return __builtin_ceilf(__x); }
+
+  constexpr _Float32
+  cos(_Float32 __x)
+  { return __builtin_cosf(__x); }
+
+  constexpr _Float32
+  cosh(_Float32 __x)
+  { return __builtin_coshf(__x); }
+
+  constexpr _Float32
+  exp(_Float32 __x)
+  { return __builtin_expf(__x); }
+
+  constexpr _Float32
+  fabs(_Float32 __x)
+  { return __builtin_fabsf(__x); }
+
+  constexpr _Float32
+  floor(_Float32 __x)
+  { return __builtin_floorf(__x); }
+
+  constexpr _Float32
+  fmod(_Float32 __x, _Float32 __y)
+  { return __builtin_fmodf(__x, __y); }
+
+  inline _Float32
+  frexp(_Float32 __x, int* __exp)
+  { return __builtin_frexpf(__x, __exp); }
+
+  constexpr _Float32
+  ldexp(_Float32 __x, int __exp)
+  { return __builtin_ldexpf(__x, __exp); }
+
+  constexpr _Float32
+  log(_Float32 __x)
+  { return __builtin_logf(__x); }
+
+  constexpr _Float32
+  log10(_Float32 __x)
+  { return __builtin_log10f(__x); }
+
+  inline _Float32
+  modf(_Float32 __x, _Float32* __iptr)
+  {
+    float __i, __ret = __builtin_modff(__x, &__i);
+    *__iptr = __i;
+    return __ret;
+  }
+
+  constexpr _Float32
+  pow(_Float32 __x, _Float32 __y)
+  { return __builtin_powf(__x, __y); }
+
+  constexpr _Float32
+  sin(_Float32 __x)
+  { return __builtin_sinf(__x); }
+
+  constexpr _Float32
+  sinh(_Float32 __x)
+  { return __builtin_sinhf(__x); }
+
+  constexpr _Float32
+  sqrt(_Float32 __x)
+  { return __builtin_sqrtf(__x); }
+
+  constexpr _Float32
+  tan(_Float32 __x)
+  { return __builtin_tanf(__x); }
+
+  constexpr _Float32
+  tanh(_Float32 __x)
+  { return __builtin_tanhf(__x); }
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  constexpr _Float64
+  acos(_Float64 __x)
+  { return __builtin_acos(__x); }
+
+  constexpr _Float64
+  asin(_Float64 __x)
+  { return __builtin_asin(__x); }
+
+  constexpr _Float64
+  atan(_Float64 __x)
+  { return __builtin_atan(__x); }
+
+  constexpr _Float64
+  atan2(_Float64 __y, _Float64 __x)
+  { return __builtin_atan2(__y, __x); }
+
+  constexpr _Float64
+  ceil(_Float64 __x)
+  { return __builtin_ceil(__x); }
+
+  constexpr _Float64
+  cos(_Float64 __x)
+  { return __builtin_cos(__x); }
+
+  constexpr _Float64
+  cosh(_Float64 __x)
+  { return __builtin_cosh(__x); }
+
+  constexpr _Float64
+  exp(_Float64 __x)
+  { return __builtin_exp(__x); }
+
+  constexpr _Float64
+  fabs(_Float64 __x)
+  { return __builtin_fabs(__x); }
+
+  constexpr _Float64
+  floor(_Float64 __x)
+  { return __builtin_floor(__x); }
+
+  constexpr _Float64
+  fmod(_Float64 __x, _Float64 __y)
+  { return __builtin_fmod(__x, __y); }
+
+  inline _Float64
+  frexp(_Float64 __x, int* __exp)
+  { return __builtin_frexp(__x, __exp); }
+
+  constexpr _Float64
+  ldexp(_Float64 __x, int __exp)
+  { return __builtin_ldexp(__x, __exp); }
+
+  constexpr _Float64
+  log(_Float64 __x)
+  { return __builtin_log(__x); }
+
+  constexpr _Float64
+  log10(_Float64 __x)
+  { return __builtin_log10(__x); }
+
+  inline _Float64
+  modf(_Float64 __x, _Float64* __iptr)
+  {
+    double __i, __ret = __builtin_modf(__x, &__i);
+    *__iptr = __i;
+    return __ret;
+  }
+
+  constexpr _Float64
+  pow(_Float64 __x, _Float64 __y)
+  { return __builtin_pow(__x, __y); }
+
+  constexpr _Float64
+  sin(_Float64 __x)
+  { return __builtin_sin(__x); }
+
+  constexpr _Float64
+  sinh(_Float64 __x)
+  { return __builtin_sinh(__x); }
+
+  constexpr _Float64
+  sqrt(_Float64 __x)
+  { return __builtin_sqrt(__x); }
+
+  constexpr _Float64
+  tan(_Float64 __x)
+  { return __builtin_tan(__x); }
+
+  constexpr _Float64
+  tanh(_Float64 __x)
+  { return __builtin_tanh(__x); }
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
+  constexpr _Float128
+  acos(_Float128 __x)
+  { return __builtin_acosl(__x); }
+
+  constexpr _Float128
+  asin(_Float128 __x)
+  { return __builtin_asinl(__x); }
+
+  constexpr _Float128
+  atan(_Float128 __x)
+  { return __builtin_atanl(__x); }
+
+  constexpr _Float128
+  atan2(_Float128 __y, _Float128 __x)
+  { return __builtin_atan2l(__y, __x); }
+
+  constexpr _Float128
+  ceil(_Float128 __x)
+  { return __builtin_ceill(__x); }
+
+  constexpr _Float128
+  cos(_Float128 __x)
+  { return __builtin_cosl(__x); }
+
+  constexpr _Float128
+  cosh(_Float128 __x)
+  { return __builtin_coshl(__x); }
+
+  constexpr _Float128
+  exp(_Float128 __x)
+  { return __builtin_expl(__x); }
+
+  constexpr _Float128
+  fabs(_Float128 __x)
+  { return __builtin_fabsl(__x); }
+
+  constexpr _Float128
+  floor(_Float128 __x)
+  { return __builtin_floorl(__x); }
+
+  constexpr _Float128
+  fmod(_Float128 __x, _Float128 __y)
+  { return __builtin_fmodl(__x, __y); }
+
+  inline _Float128
+  frexp(_Float128 __x, int* __exp)
+  { return __builtin_frexpl(__x, __exp); }
+
+  constexpr _Float128
+  ldexp(_Float128 __x, int __exp)
+  { return __builtin_ldexpl(__x, __exp); }
+
+  constexpr _Float128
+  log(_Float128 __x)
+  { return __builtin_logl(__x); }
+
+  constexpr _Float128
+  log10(_Float128 __x)
+  { return __builtin_log10l(__x); }
+
+  inline _Float128
+  modf(_Float128 __x, _Float128* __iptr)
+  {
+    long double __i, __ret = __builtin_modfl(__x, &__i);
+    *__iptr = __i;
+    return __ret;
+  }
+
+  constexpr _Float128
+  pow(_Float128 __x, _Float128 __y)
+  { return __builtin_powl(__x, __y); }
+
+  constexpr _Float128
+  sin(_Float128 __x)
+  { return __builtin_sinl(__x); }
+
+  constexpr _Float128
+  sinh(_Float128 __x)
+  { return __builtin_sinhl(__x); }
+
+  constexpr _Float128
+  sqrt(_Float128 __x)
+  { return __builtin_sqrtl(__x); }
+
+  constexpr _Float128
+  tan(_Float128 __x)
+  { return __builtin_tanl(__x); }
+
+  constexpr _Float128
+  tanh(_Float128 __x)
+  { return __builtin_tanhl(__x); }
+#elif defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
+  constexpr _Float128
+  acos(_Float128 __x)
+  { return __builtin_acosf128(__x); }
+
+  constexpr _Float128
+  asin(_Float128 __x)
+  { return __builtin_asinf128(__x); }
+
+  constexpr _Float128
+  atan(_Float128 __x)
+  { return __builtin_atanf128(__x); }
+
+  constexpr _Float128
+  atan2(_Float128 __y, _Float128 __x)
+  { return __builtin_atan2f128(__y, __x); }
+
+  constexpr _Float128
+  ceil(_Float128 __x)
+  { return __builtin_ceilf128(__x); }
+
+  constexpr _Float128
+  cos(_Float128 __x)
+  { return __builtin_cosf128(__x); }
+
+  constexpr _Float128
+  cosh(_Float128 __x)
+  { return __builtin_coshf128(__x); }
+
+  constexpr _Float128
+  exp(_Float128 __x)
+  { return __builtin_expf128(__x); }
+
+  constexpr _Float128
+  fabs(_Float128 __x)
+  { return __builtin_fabsf128(__x); }
+
+  constexpr _Float128
+  floor(_Float128 __x)
+  { return __builtin_floorf128(__x); }
+
+  constexpr _Float128
+  fmod(_Float128 __x, _Float128 __y)
+  { return __builtin_fmodf128(__x, __y); }
+
+  inline _Float128
+  frexp(_Float128 __x, int* __exp)
+  { return __builtin_frexpf128(__x, __exp); }
+
+  constexpr _Float128
+  ldexp(_Float128 __x, int __exp)
+  { return __builtin_ldexpf128(__x, __exp); }
+
+  constexpr _Float128
+  log(_Float128 __x)
+  { return __builtin_logf128(__x); }
+
+  constexpr _Float128
+  log10(_Float128 __x)
+  { return __builtin_log10f128(__x); }
+
+  inline _Float128
+  modf(_Float128 __x, _Float128* __iptr)
+  { return __builtin_modff128(__x, __iptr); }
+
+  constexpr _Float128
+  pow(_Float128 __x, _Float128 __y)
+  { return __builtin_powf128(__x, __y); }
+
+  constexpr _Float128
+  sin(_Float128 __x)
+  { return __builtin_sinf128(__x); }
+
+  constexpr _Float128
+  sinh(_Float128 __x)
+  { return __builtin_sinhf128(__x); }
+
+  constexpr _Float128
+  sqrt(_Float128 __x)
+  { return __builtin_sqrtf128(__x); }
+
+  constexpr _Float128
+  tan(_Float128 __x)
+  { return __builtin_tanf128(__x); }
+
+  constexpr _Float128
+  tanh(_Float128 __x)
+  { return __builtin_tanhf128(__x); }
+#endif
+
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr __gnu_cxx::__bfloat16_t
+  acos(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_acosf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  asin(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_asinf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  atan(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_atanf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  atan2(__gnu_cxx::__bfloat16_t __y, __gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_atan2f(__y, __x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  ceil(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_ceilf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  cos(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_cosf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  cosh(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_coshf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  exp(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_expf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  fabs(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_fabsf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  floor(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_floorf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  fmod(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_fmodf(__x, __y)); }
+
+  inline __gnu_cxx::__bfloat16_t
+  frexp(__gnu_cxx::__bfloat16_t __x, int* __exp)
+  { return __gnu_cxx::__bfloat16_t(__builtin_frexpf(__x, __exp)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  ldexp(__gnu_cxx::__bfloat16_t __x, int __exp)
+  { return __gnu_cxx::__bfloat16_t(__builtin_ldexpf(__x, __exp)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  log(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_logf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  log10(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_log10f(__x)); }
+
+  inline __gnu_cxx::__bfloat16_t
+  modf(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t* __iptr)
+  {
+    float __i, __ret = __builtin_modff(__x, &__i);
+    *__iptr = __gnu_cxx::__bfloat16_t(__i);
+    return __gnu_cxx::__bfloat16_t(__ret);
+  }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  pow(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_powf(__x, __y)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  sin(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_sinf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  sinh(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_sinhf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  sqrt(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_sqrtf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  tan(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_tanf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  tanh(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_tanhf(__x)); }
+#endif
+
 #if _GLIBCXX_USE_C99_MATH
 #if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
 
@@ -948,6 +1506,262 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #endif // C++11
+
+#ifdef __STDCPP_FLOAT16_T__
+  constexpr int
+  fpclassify(_Float16 __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  constexpr bool
+  isfinite(_Float16 __x)
+  { return __builtin_isfinite(__x); }
+
+  constexpr bool
+  isinf(_Float16 __x)
+  { return __builtin_isinf(__x); }
+
+  constexpr bool
+  isnan(_Float16 __x)
+  { return __builtin_isnan(__x); }
+
+  constexpr bool
+  isnormal(_Float16 __x)
+  { return __builtin_isnormal(__x); }
+
+  constexpr bool
+  signbit(_Float16 __x)
+  { return __builtin_signbit(__x); }
+
+  constexpr bool
+  isgreater(_Float16 __x, _Float16 __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  constexpr bool
+  isgreaterequal(_Float16 __x, _Float16 __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  constexpr bool
+  isless(_Float16 __x, _Float16 __y)
+  { return __builtin_isless(__x, __y); }
+
+  constexpr bool
+  islessequal(_Float16 __x, _Float16 __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  constexpr bool
+  islessgreater(_Float16 __x, _Float16 __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  constexpr bool
+  isunordered(_Float16 __x, _Float16 __y)
+  { return __builtin_isunordered(__x, __y); }
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+  constexpr int
+  fpclassify(_Float32 __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  constexpr bool
+  isfinite(_Float32 __x)
+  { return __builtin_isfinite(__x); }
+
+  constexpr bool
+  isinf(_Float32 __x)
+  { return __builtin_isinf(__x); }
+
+  constexpr bool
+  isnan(_Float32 __x)
+  { return __builtin_isnan(__x); }
+
+  constexpr bool
+  isnormal(_Float32 __x)
+  { return __builtin_isnormal(__x); }
+
+  constexpr bool
+  signbit(_Float32 __x)
+  { return __builtin_signbit(__x); }
+
+  constexpr bool
+  isgreater(_Float32 __x, _Float32 __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  constexpr bool
+  isgreaterequal(_Float32 __x, _Float32 __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  constexpr bool
+  isless(_Float32 __x, _Float32 __y)
+  { return __builtin_isless(__x, __y); }
+
+  constexpr bool
+  islessequal(_Float32 __x, _Float32 __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  constexpr bool
+  islessgreater(_Float32 __x, _Float32 __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  constexpr bool
+  isunordered(_Float32 __x, _Float32 __y)
+  { return __builtin_isunordered(__x, __y); }
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+  constexpr int
+  fpclassify(_Float64 __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  constexpr bool
+  isfinite(_Float64 __x)
+  { return __builtin_isfinite(__x); }
+
+  constexpr bool
+  isinf(_Float64 __x)
+  { return __builtin_isinf(__x); }
+
+  constexpr bool
+  isnan(_Float64 __x)
+  { return __builtin_isnan(__x); }
+
+  constexpr bool
+  isnormal(_Float64 __x)
+  { return __builtin_isnormal(__x); }
+
+  constexpr bool
+  signbit(_Float64 __x)
+  { return __builtin_signbit(__x); }
+
+  constexpr bool
+  isgreater(_Float64 __x, _Float64 __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  constexpr bool
+  isgreaterequal(_Float64 __x, _Float64 __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  constexpr bool
+  isless(_Float64 __x, _Float64 __y)
+  { return __builtin_isless(__x, __y); }
+
+  constexpr bool
+  islessequal(_Float64 __x, _Float64 __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  constexpr bool
+  islessgreater(_Float64 __x, _Float64 __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  constexpr bool
+  isunordered(_Float64 __x, _Float64 __y)
+  { return __builtin_isunordered(__x, __y); }
+#endif
+
+#ifdef __STDCPP_FLOAT128_T__
+  constexpr int
+  fpclassify(_Float128 __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  constexpr bool
+  isfinite(_Float128 __x)
+  { return __builtin_isfinite(__x); }
+
+  constexpr bool
+  isinf(_Float128 __x)
+  { return __builtin_isinf(__x); }
+
+  constexpr bool
+  isnan(_Float128 __x)
+  { return __builtin_isnan(__x); }
+
+  constexpr bool
+  isnormal(_Float128 __x)
+  { return __builtin_isnormal(__x); }
+
+  constexpr bool
+  signbit(_Float128 __x)
+  { return __builtin_signbit(__x); }
+
+  constexpr bool
+  isgreater(_Float128 __x, _Float128 __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  constexpr bool
+  isgreaterequal(_Float128 __x, _Float128 __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  constexpr bool
+  isless(_Float128 __x, _Float128 __y)
+  { return __builtin_isless(__x, __y); }
+
+  constexpr bool
+  islessequal(_Float128 __x, _Float128 __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  constexpr bool
+  islessgreater(_Float128 __x, _Float128 __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  constexpr bool
+  isunordered(_Float128 __x, _Float128 __y)
+  { return __builtin_isunordered(__x, __y); }
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+  constexpr int
+  fpclassify(__gnu_cxx::__bfloat16_t __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  constexpr bool
+  isfinite(__gnu_cxx::__bfloat16_t __x)
+  { return __builtin_isfinite(__x); }
+
+  constexpr bool
+  isinf(__gnu_cxx::__bfloat16_t __x)
+  { return __builtin_isinf(__x); }
+
+  constexpr bool
+  isnan(__gnu_cxx::__bfloat16_t __x)
+  { return __builtin_isnan(__x); }
+
+  constexpr bool
+  isnormal(__gnu_cxx::__bfloat16_t __x)
+  { return __builtin_isnormal(__x); }
+
+  constexpr bool
+  signbit(__gnu_cxx::__bfloat16_t __x)
+  { return __builtin_signbit(__x); }
+
+  constexpr bool
+  isgreater(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  constexpr bool
+  isgreaterequal(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  constexpr bool
+  isless(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __builtin_isless(__x, __y); }
+
+  constexpr bool
+  islessequal(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  constexpr bool
+  islessgreater(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  constexpr bool
+  isunordered(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __builtin_isunordered(__x, __y); }
+#endif
+
 #endif /* _GLIBCXX_USE_C99_FP_MACROS_DYNAMIC */
 #endif /* _GLIBCXX_USE_C99_MATH */
 
@@ -1843,6 +2657,811 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __builtin_trunc(__x); }
 #endif
 
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr _Float16
+  acosh(_Float16 __x)
+  { return _Float16(__builtin_acoshf(__x)); }
+
+  constexpr _Float16
+  asinh(_Float16 __x)
+  { return _Float16(__builtin_asinhf(__x)); }
+
+  constexpr _Float16
+  atanh(_Float16 __x)
+  { return _Float16(__builtin_atanhf(__x)); }
+
+  constexpr _Float16
+  cbrt(_Float16 __x)
+  { return _Float16(__builtin_cbrtf(__x)); }
+
+  constexpr _Float16
+  copysign(_Float16 __x, _Float16 __y)
+  { return __builtin_copysignf16(__x, __y); }
+
+  constexpr _Float16
+  erf(_Float16 __x)
+  { return _Float16(__builtin_erff(__x)); }
+
+  constexpr _Float16
+  erfc(_Float16 __x)
+  { return _Float16(__builtin_erfcf(__x)); }
+
+  constexpr _Float16
+  exp2(_Float16 __x)
+  { return _Float16(__builtin_exp2f(__x)); }
+
+  constexpr _Float16
+  expm1(_Float16 __x)
+  { return _Float16(__builtin_expm1f(__x)); }
+
+  constexpr _Float16
+  fdim(_Float16 __x, _Float16 __y)
+  { return _Float16(__builtin_fdimf(__x, __y)); }
+
+  constexpr _Float16
+  fma(_Float16 __x, _Float16 __y, _Float16 __z)
+  { return _Float16(__builtin_fmaf(__x, __y, __z)); }
+
+  constexpr _Float16
+  fmax(_Float16 __x, _Float16 __y)
+  { return _Float16(__builtin_fmaxf(__x, __y)); }
+
+  constexpr _Float16
+  fmin(_Float16 __x, _Float16 __y)
+  { return _Float16(__builtin_fminf(__x, __y)); }
+
+  constexpr _Float16
+  hypot(_Float16 __x, _Float16 __y)
+  { return _Float16(__builtin_hypotf(__x, __y)); }
+
+  constexpr int
+  ilogb(_Float16 __x)
+  { return _Float16(__builtin_ilogbf(__x)); }
+
+  constexpr _Float16
+  lgamma(_Float16 __x)
+  { return _Float16(__builtin_lgammaf(__x)); }
+
+  constexpr long long
+  llrint(_Float16 __x)
+  { return _Float16(__builtin_llrintf(__x)); }
+
+  constexpr long long
+  llround(_Float16 __x)
+  { return _Float16(__builtin_llroundf(__x)); }
+
+  constexpr _Float16
+  log1p(_Float16 __x)
+  { return _Float16(__builtin_log1pf(__x)); }
+
+  // DR 568.
+  constexpr _Float16
+  log2(_Float16 __x)
+  { return _Float16(__builtin_log2f(__x)); }
+
+  constexpr _Float16
+  logb(_Float16 __x)
+  { return _Float16(__builtin_logbf(__x)); }
+
+  constexpr long
+  lrint(_Float16 __x)
+  { return _Float16(__builtin_lrintf(__x)); }
+
+  constexpr long
+  lround(_Float16 __x)
+  { return _Float16(__builtin_lroundf(__x)); }
+
+  constexpr _Float16
+  nearbyint(_Float16 __x)
+  { return _Float16(__builtin_nearbyintf(__x)); }
+
+  // nextafter not implemented so far.
+
+  constexpr _Float16
+  remainder(_Float16 __x, _Float16 __y)
+  { return _Float16(__builtin_remainderf(__x, __y)); }
+
+  inline _Float16
+  remquo(_Float16 __x, _Float16 __y, int* __pquo)
+  { return _Float16(__builtin_remquof(__x, __y, __pquo)); }
+
+  constexpr _Float16
+  rint(_Float16 __x)
+  { return _Float16(__builtin_rintf(__x)); }
+
+  constexpr _Float16
+  round(_Float16 __x)
+  { return _Float16(__builtin_roundf(__x)); }
+
+  constexpr _Float16
+  scalbln(_Float16 __x, long __ex)
+  { return _Float16(__builtin_scalblnf(__x, __ex)); }
+
+  constexpr _Float16
+  scalbn(_Float16 __x, int __ex)
+  { return _Float16(__builtin_scalbnf(__x, __ex)); }
+
+  constexpr _Float16
+  tgamma(_Float16 __x)
+  { return _Float16(__builtin_tgammaf(__x)); }
+
+  constexpr _Float16
+  trunc(_Float16 __x)
+  { return _Float16(__builtin_truncf(__x)); }
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr _Float32
+  acosh(_Float32 __x)
+  { return __builtin_acoshf(__x); }
+
+  constexpr _Float32
+  asinh(_Float32 __x)
+  { return __builtin_asinhf(__x); }
+
+  constexpr _Float32
+  atanh(_Float32 __x)
+  { return __builtin_atanhf(__x); }
+
+  constexpr _Float32
+  cbrt(_Float32 __x)
+  { return __builtin_cbrtf(__x); }
+
+  constexpr _Float32
+  copysign(_Float32 __x, _Float32 __y)
+  { return __builtin_copysignf(__x, __y); }
+
+  constexpr _Float32
+  erf(_Float32 __x)
+  { return __builtin_erff(__x); }
+
+  constexpr _Float32
+  erfc(_Float32 __x)
+  { return __builtin_erfcf(__x); }
+
+  constexpr _Float32
+  exp2(_Float32 __x)
+  { return __builtin_exp2f(__x); }
+
+  constexpr _Float32
+  expm1(_Float32 __x)
+  { return __builtin_expm1f(__x); }
+
+  constexpr _Float32
+  fdim(_Float32 __x, _Float32 __y)
+  { return __builtin_fdimf(__x, __y); }
+
+  constexpr _Float32
+  fma(_Float32 __x, _Float32 __y, _Float32 __z)
+  { return __builtin_fmaf(__x, __y, __z); }
+
+  constexpr _Float32
+  fmax(_Float32 __x, _Float32 __y)
+  { return __builtin_fmaxf(__x, __y); }
+
+  constexpr _Float32
+  fmin(_Float32 __x, _Float32 __y)
+  { return __builtin_fminf(__x, __y); }
+
+  constexpr _Float32
+  hypot(_Float32 __x, _Float32 __y)
+  { return __builtin_hypotf(__x, __y); }
+
+  constexpr int
+  ilogb(_Float32 __x)
+  { return __builtin_ilogbf(__x); }
+
+  constexpr _Float32
+  lgamma(_Float32 __x)
+  { return __builtin_lgammaf(__x); }
+
+  constexpr long long
+  llrint(_Float32 __x)
+  { return __builtin_llrintf(__x); }
+
+  constexpr long long
+  llround(_Float32 __x)
+  { return __builtin_llroundf(__x); }
+
+  constexpr _Float32
+  log1p(_Float32 __x)
+  { return __builtin_log1pf(__x); }
+
+  // DR 568.
+  constexpr _Float32
+  log2(_Float32 __x)
+  { return __builtin_log2f(__x); }
+
+  constexpr _Float32
+  logb(_Float32 __x)
+  { return __builtin_logbf(__x); }
+
+  constexpr long
+  lrint(_Float32 __x)
+  { return __builtin_lrintf(__x); }
+
+  constexpr long
+  lround(_Float32 __x)
+  { return __builtin_lroundf(__x); }
+
+  constexpr _Float32
+  nearbyint(_Float32 __x)
+  { return __builtin_nearbyintf(__x); }
+
+  constexpr _Float32
+  nextafter(_Float32 __x, _Float32 __y)
+  { return __builtin_nextafterf(__x, __y); }
+
+  constexpr _Float32
+  remainder(_Float32 __x, _Float32 __y)
+  { return __builtin_remainderf(__x, __y); }
+
+  inline _Float32
+  remquo(_Float32 __x, _Float32 __y, int* __pquo)
+  { return __builtin_remquof(__x, __y, __pquo); }
+
+  constexpr _Float32
+  rint(_Float32 __x)
+  { return __builtin_rintf(__x); }
+
+  constexpr _Float32
+  round(_Float32 __x)
+  { return __builtin_roundf(__x); }
+
+  constexpr _Float32
+  scalbln(_Float32 __x, long __ex)
+  { return __builtin_scalblnf(__x, __ex); }
+
+  constexpr _Float32
+  scalbn(_Float32 __x, int __ex)
+  { return __builtin_scalbnf(__x, __ex); }
+
+  constexpr _Float32
+  tgamma(_Float32 __x)
+  { return __builtin_tgammaf(__x); }
+
+  constexpr _Float32
+  trunc(_Float32 __x)
+  { return __builtin_truncf(__x); }
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  constexpr _Float64
+  acosh(_Float64 __x)
+  { return __builtin_acosh(__x); }
+
+  constexpr _Float64
+  asinh(_Float64 __x)
+  { return __builtin_asinh(__x); }
+
+  constexpr _Float64
+  atanh(_Float64 __x)
+  { return __builtin_atanh(__x); }
+
+  constexpr _Float64
+  cbrt(_Float64 __x)
+  { return __builtin_cbrt(__x); }
+
+  constexpr _Float64
+  copysign(_Float64 __x, _Float64 __y)
+  { return __builtin_copysign(__x, __y); }
+
+  constexpr _Float64
+  erf(_Float64 __x)
+  { return __builtin_erf(__x); }
+
+  constexpr _Float64
+  erfc(_Float64 __x)
+  { return __builtin_erfc(__x); }
+
+  constexpr _Float64
+  exp2(_Float64 __x)
+  { return __builtin_exp2(__x); }
+
+  constexpr _Float64
+  expm1(_Float64 __x)
+  { return __builtin_expm1(__x); }
+
+  constexpr _Float64
+  fdim(_Float64 __x, _Float64 __y)
+  { return __builtin_fdim(__x, __y); }
+
+  constexpr _Float64
+  fma(_Float64 __x, _Float64 __y, _Float64 __z)
+  { return __builtin_fma(__x, __y, __z); }
+
+  constexpr _Float64
+  fmax(_Float64 __x, _Float64 __y)
+  { return __builtin_fmax(__x, __y); }
+
+  constexpr _Float64
+  fmin(_Float64 __x, _Float64 __y)
+  { return __builtin_fmin(__x, __y); }
+
+  constexpr _Float64
+  hypot(_Float64 __x, _Float64 __y)
+  { return __builtin_hypot(__x, __y); }
+
+  constexpr int
+  ilogb(_Float64 __x)
+  { return __builtin_ilogb(__x); }
+
+  constexpr _Float64
+  lgamma(_Float64 __x)
+  { return __builtin_lgamma(__x); }
+
+  constexpr long long
+  llrint(_Float64 __x)
+  { return __builtin_llrint(__x); }
+
+  constexpr long long
+  llround(_Float64 __x)
+  { return __builtin_llround(__x); }
+
+  constexpr _Float64
+  log1p(_Float64 __x)
+  { return __builtin_log1p(__x); }
+
+  // DR 568.
+  constexpr _Float64
+  log2(_Float64 __x)
+  { return __builtin_log2(__x); }
+
+  constexpr _Float64
+  logb(_Float64 __x)
+  { return __builtin_logb(__x); }
+
+  constexpr long
+  lrint(_Float64 __x)
+  { return __builtin_lrint(__x); }
+
+  constexpr long
+  lround(_Float64 __x)
+  { return __builtin_lround(__x); }
+
+  constexpr _Float64
+  nearbyint(_Float64 __x)
+  { return __builtin_nearbyint(__x); }
+
+  constexpr _Float64
+  nextafter(_Float64 __x, _Float64 __y)
+  { return __builtin_nextafter(__x, __y); }
+
+  constexpr _Float64
+  remainder(_Float64 __x, _Float64 __y)
+  { return __builtin_remainder(__x, __y); }
+
+  inline _Float64
+  remquo(_Float64 __x, _Float64 __y, int* __pquo)
+  { return __builtin_remquo(__x, __y, __pquo); }
+
+  constexpr _Float64
+  rint(_Float64 __x)
+  { return __builtin_rint(__x); }
+
+  constexpr _Float64
+  round(_Float64 __x)
+  { return __builtin_round(__x); }
+
+  constexpr _Float64
+  scalbln(_Float64 __x, long __ex)
+  { return __builtin_scalbln(__x, __ex); }
+
+  constexpr _Float64
+  scalbn(_Float64 __x, int __ex)
+  { return __builtin_scalbn(__x, __ex); }
+
+  constexpr _Float64
+  tgamma(_Float64 __x)
+  { return __builtin_tgamma(__x); }
+
+  constexpr _Float64
+  trunc(_Float64 __x)
+  { return __builtin_trunc(__x); }
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
+  constexpr _Float128
+  acosh(_Float128 __x)
+  { return __builtin_acoshl(__x); }
+
+  constexpr _Float128
+  asinh(_Float128 __x)
+  { return __builtin_asinhl(__x); }
+
+  constexpr _Float128
+  atanh(_Float128 __x)
+  { return __builtin_atanhl(__x); }
+
+  constexpr _Float128
+  cbrt(_Float128 __x)
+  { return __builtin_cbrtl(__x); }
+
+  constexpr _Float128
+  copysign(_Float128 __x, _Float128 __y)
+  { return __builtin_copysignl(__x, __y); }
+
+  constexpr _Float128
+  erf(_Float128 __x)
+  { return __builtin_erfl(__x); }
+
+  constexpr _Float128
+  erfc(_Float128 __x)
+  { return __builtin_erfcl(__x); }
+
+  constexpr _Float128
+  exp2(_Float128 __x)
+  { return __builtin_exp2l(__x); }
+
+  constexpr _Float128
+  expm1(_Float128 __x)
+  { return __builtin_expm1l(__x); }
+
+  constexpr _Float128
+  fdim(_Float128 __x, _Float128 __y)
+  { return __builtin_fdiml(__x, __y); }
+
+  constexpr _Float128
+  fma(_Float128 __x, _Float128 __y, _Float128 __z)
+  { return __builtin_fmal(__x, __y, __z); }
+
+  constexpr _Float128
+  fmax(_Float128 __x, _Float128 __y)
+  { return __builtin_fmaxl(__x, __y); }
+
+  constexpr _Float128
+  fmin(_Float128 __x, _Float128 __y)
+  { return __builtin_fminl(__x, __y); }
+
+  constexpr _Float128
+  hypot(_Float128 __x, _Float128 __y)
+  { return __builtin_hypotl(__x, __y); }
+
+  constexpr int
+  ilogb(_Float128 __x)
+  { return __builtin_ilogbl(__x); }
+
+  constexpr _Float128
+  lgamma(_Float128 __x)
+  { return __builtin_lgammal(__x); }
+
+  constexpr long long
+  llrint(_Float128 __x)
+  { return __builtin_llrintl(__x); }
+
+  constexpr long long
+  llround(_Float128 __x)
+  { return __builtin_llroundl(__x); }
+
+  constexpr _Float128
+  log1p(_Float128 __x)
+  { return __builtin_log1pl(__x); }
+
+  // DR 568.
+  constexpr _Float128
+  log2(_Float128 __x)
+  { return __builtin_log2l(__x); }
+
+  constexpr _Float128
+  logb(_Float128 __x)
+  { return __builtin_logbl(__x); }
+
+  constexpr long
+  lrint(_Float128 __x)
+  { return __builtin_lrintl(__x); }
+
+  constexpr long
+  lround(_Float128 __x)
+  { return __builtin_lroundl(__x); }
+
+  constexpr _Float128
+  nearbyint(_Float128 __x)
+  { return __builtin_nearbyintl(__x); }
+
+  constexpr _Float128
+  nextafter(_Float128 __x, _Float128 __y)
+  { return __builtin_nextafterl(__x, __y); }
+
+  constexpr _Float128
+  remainder(_Float128 __x, _Float128 __y)
+  { return __builtin_remainderl(__x, __y); }
+
+  inline _Float128
+  remquo(_Float128 __x, _Float128 __y, int* __pquo)
+  { return __builtin_remquol(__x, __y, __pquo); }
+
+  constexpr _Float128
+  rint(_Float128 __x)
+  { return __builtin_rintl(__x); }
+
+  constexpr _Float128
+  round(_Float128 __x)
+  { return __builtin_roundl(__x); }
+
+  constexpr _Float128
+  scalbln(_Float128 __x, long __ex)
+  { return __builtin_scalblnl(__x, __ex); }
+
+  constexpr _Float128
+  scalbn(_Float128 __x, int __ex)
+  { return __builtin_scalbnl(__x, __ex); }
+
+  constexpr _Float128
+  tgamma(_Float128 __x)
+  { return __builtin_tgammal(__x); }
+
+  constexpr _Float128
+  trunc(_Float128 __x)
+  { return __builtin_truncl(__x); }
+#elif defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
+  constexpr _Float128
+  acosh(_Float128 __x)
+  { return __builtin_acoshf128(__x); }
+
+  constexpr _Float128
+  asinh(_Float128 __x)
+  { return __builtin_asinhf128(__x); }
+
+  constexpr _Float128
+  atanh(_Float128 __x)
+  { return __builtin_atanhf128(__x); }
+
+  constexpr _Float128
+  cbrt(_Float128 __x)
+  { return __builtin_cbrtf128(__x); }
+
+  constexpr _Float128
+  copysign(_Float128 __x, _Float128 __y)
+  { return __builtin_copysignf128(__x, __y); }
+
+  constexpr _Float128
+  erf(_Float128 __x)
+  { return __builtin_erff128(__x); }
+
+  constexpr _Float128
+  erfc(_Float128 __x)
+  { return __builtin_erfcf128(__x); }
+
+  constexpr _Float128
+  exp2(_Float128 __x)
+  { return __builtin_exp2f128(__x); }
+
+  constexpr _Float128
+  expm1(_Float128 __x)
+  { return __builtin_expm1f128(__x); }
+
+  constexpr _Float128
+  fdim(_Float128 __x, _Float128 __y)
+  { return __builtin_fdimf128(__x, __y); }
+
+  constexpr _Float128
+  fma(_Float128 __x, _Float128 __y, _Float128 __z)
+  { return __builtin_fmaf128(__x, __y, __z); }
+
+  constexpr _Float128
+  fmax(_Float128 __x, _Float128 __y)
+  { return __builtin_fmaxf128(__x, __y); }
+
+  constexpr _Float128
+  fmin(_Float128 __x, _Float128 __y)
+  { return __builtin_fminf128(__x, __y); }
+
+  constexpr _Float128
+  hypot(_Float128 __x, _Float128 __y)
+  { return __builtin_hypotf128(__x, __y); }
+
+  constexpr int
+  ilogb(_Float128 __x)
+  { return __builtin_ilogbf128(__x); }
+
+  constexpr _Float128
+  lgamma(_Float128 __x)
+  { return __builtin_lgammaf128(__x); }
+
+  constexpr long long
+  llrint(_Float128 __x)
+  { return __builtin_llrintf128(__x); }
+
+  constexpr long long
+  llround(_Float128 __x)
+  { return __builtin_llroundf128(__x); }
+
+  constexpr _Float128
+  log1p(_Float128 __x)
+  { return __builtin_log1pf128(__x); }
+
+  // DR 568.
+  constexpr _Float128
+  log2(_Float128 __x)
+  { return __builtin_log2f128(__x); }
+
+  constexpr _Float128
+  logb(_Float128 __x)
+  { return __builtin_logbf128(__x); }
+
+  constexpr long
+  lrint(_Float128 __x)
+  { return __builtin_lrintf128(__x); }
+
+  constexpr long
+  lround(_Float128 __x)
+  { return __builtin_lroundf128(__x); }
+
+  constexpr _Float128
+  nearbyint(_Float128 __x)
+  { return __builtin_nearbyintf128(__x); }
+
+  constexpr _Float128
+  nextafter(_Float128 __x, _Float128 __y)
+  { return __builtin_nextafterf128(__x, __y); }
+
+  constexpr _Float128
+  remainder(_Float128 __x, _Float128 __y)
+  { return __builtin_remainderf128(__x, __y); }
+
+  inline _Float128
+  remquo(_Float128 __x, _Float128 __y, int* __pquo)
+  { return __builtin_remquof128(__x, __y, __pquo); }
+
+  constexpr _Float128
+  rint(_Float128 __x)
+  { return __builtin_rintf128(__x); }
+
+  constexpr _Float128
+  round(_Float128 __x)
+  { return __builtin_roundf128(__x); }
+
+  constexpr _Float128
+  scalbln(_Float128 __x, long __ex)
+  { return __builtin_scalblnf128(__x, __ex); }
+
+  constexpr _Float128
+  scalbn(_Float128 __x, int __ex)
+  { return __builtin_scalbnf128(__x, __ex); }
+
+  constexpr _Float128
+  tgamma(_Float128 __x)
+  { return __builtin_tgammaf128(__x); }
+
+  constexpr _Float128
+  trunc(_Float128 __x)
+  { return __builtin_truncf128(__x); }
+#endif
+
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr __gnu_cxx::__bfloat16_t
+  acosh(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_acoshf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  asinh(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_asinhf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  atanh(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_atanhf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  cbrt(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_cbrtf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  copysign(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_copysignf(__x, __y)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  erf(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_erff(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  erfc(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_erfcf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  exp2(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_exp2f(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  expm1(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_expm1f(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  fdim(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_fdimf(__x, __y)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  fma(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y, __gnu_cxx::__bfloat16_t __z)
+  { return __gnu_cxx::__bfloat16_t(__builtin_fmaf(__x, __y, __z)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  fmax(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_fmaxf(__x, __y)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  fmin(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_fminf(__x, __y)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  hypot(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_hypotf(__x, __y)); }
+
+  constexpr int
+  ilogb(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_ilogbf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  lgamma(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_lgammaf(__x)); }
+
+  constexpr long long
+  llrint(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_llrintf(__x)); }
+
+  constexpr long long
+  llround(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_llroundf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  log1p(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_log1pf(__x)); }
+
+  // DR 568.
+  constexpr __gnu_cxx::__bfloat16_t
+  log2(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_log2f(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  logb(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_logbf(__x)); }
+
+  constexpr long
+  lrint(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_lrintf(__x)); }
+
+  constexpr long
+  lround(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_lroundf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  nearbyint(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_nearbyintf(__x)); }
+
+  // nextafter not implemented so far.
+
+  constexpr __gnu_cxx::__bfloat16_t
+  remainder(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  { return __gnu_cxx::__bfloat16_t(__builtin_remainderf(__x, __y)); }
+
+  inline __gnu_cxx::__bfloat16_t
+  remquo(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y, int* __pquo)
+  { return __gnu_cxx::__bfloat16_t(__builtin_remquof(__x, __y, __pquo)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  rint(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_rintf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  round(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_roundf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  scalbln(__gnu_cxx::__bfloat16_t __x, long __ex)
+  { return __gnu_cxx::__bfloat16_t(__builtin_scalblnf(__x, __ex)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  scalbn(__gnu_cxx::__bfloat16_t __x, int __ex)
+  { return __gnu_cxx::__bfloat16_t(__builtin_scalbnf(__x, __ex)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  tgamma(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_tgammaf(__x)); }
+
+  constexpr __gnu_cxx::__bfloat16_t
+  trunc(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_truncf(__x)); }
+#endif
+
+
 #endif // _GLIBCXX_USE_C99_MATH_TR1
 #endif // C++11
 
@@ -1885,6 +3504,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __type = __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>;
       return std::__hypot3<__type>(__x, __y, __z);
     }
+
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  inline _Float16
+  hypot(_Float16 __x, _Float16 __y, _Float16 __z)
+  { return std::__hypot3<_Float16>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  inline _Float32
+  hypot(_Float32 __x, _Float32 __y, _Float32 __z)
+  { return std::__hypot3<_Float32>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  inline _Float64
+  hypot(_Float64 __x, _Float64 __y, _Float64 __z)
+  { return std::__hypot3<_Float64>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) \
+    && (defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128) \
+	|| defined(_GLIBCXX_HAVE_FLOAT128_MATH))
+  inline _Float128
+  hypot(_Float128 __x, _Float128 __y, _Float128 __z)
+  { return std::__hypot3<_Float128>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  inline __gnu_cxx::__bfloat16_t
+  hypot(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y, __gnu_cxx::__bfloat16_t __z)
+  { return std::__hypot3<__gnu_cxx::__bfloat16_t>(__x, __y, __z); }
+#endif
+
 #endif // C++17
 
 #if __cplusplus >= 202002L
@@ -1928,6 +3580,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __type = __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>;
       return std::__lerp<__type>(__x, __y, __z);
     }
+
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  inline _Float16
+  lerp(_Float16 __x, _Float16 __y, _Float16 __z) noexcept
+  { return std::__lerp<_Float16>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  inline _Float32
+  lerp(_Float32 __x, _Float32 __y, _Float32 __z) noexcept
+  { return std::__lerp<_Float32>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  inline _Float64
+  lerp(_Float64 __x, _Float64 __y, _Float64 __z) noexcept
+  { return std::__lerp<_Float64>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) \
+    && (defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128) \
+	|| defined(_GLIBCXX_HAVE_FLOAT128_MATH))
+  inline _Float128
+  lerp(_Float128 __x, _Float128 __y, _Float128 __z) noexcept
+  { return std::__lerp<_Float128>(__x, __y, __z); }
+#endif
+
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  inline __gnu_cxx::__bfloat16_t
+  lerp(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y, __gnu_cxx::__bfloat16_t __z) noexcept
+  { return std::__lerp<__gnu_cxx::__bfloat16_t>(__x, __y, __z); }
+#endif
+
 #endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION

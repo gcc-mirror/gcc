@@ -97,6 +97,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   abs(__GLIBCXX_TYPE_INT_N_3 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr _Float16
+  abs(_Float16 __x)
+  { return _Float16(__builtin_fabsf(__x)); }
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr _Float32
+  abs(_Float32 __x)
+  { return __builtin_fabsf(__x); }
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  constexpr _Float64
+  abs(_Float64 __x)
+  { return __builtin_fabs(__x); }
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
+  constexpr _Float128
+  abs(_Float128 __x)
+  { return __builtin_fabsl(__x); }
+#elif defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
+  constexpr _Float128
+  abs(_Float128 __x)
+  { return __builtin_fabsf128(__x); }
+#endif
+
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  constexpr __gnu_cxx::__bfloat16_t
+  abs(__gnu_cxx::__bfloat16_t __x)
+  { return __gnu_cxx::__bfloat16_t(__builtin_fabsf(__x)); }
+#endif
+
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
   __extension__ inline _GLIBCXX_CONSTEXPR
   __float128
