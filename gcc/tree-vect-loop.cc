@@ -8485,9 +8485,15 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
      second and later operands are tentative and will be updated when we have
      vectorized the latch definition.  */
   edge le = loop_latch_edge (LOOP_VINFO_LOOP (loop_vinfo));
-  gimple_stmt_iterator gsi2
-    = gsi_for_stmt (SSA_NAME_DEF_STMT (PHI_ARG_DEF_FROM_EDGE (phi, le)));
-  gsi_next (&gsi2);
+  gimple *latch_def = SSA_NAME_DEF_STMT (PHI_ARG_DEF_FROM_EDGE (phi, le));
+  gimple_stmt_iterator gsi2;
+  if (is_a <gphi *> (latch_def))
+    gsi2 = gsi_after_labels (gimple_bb (latch_def));
+  else
+    {
+      gsi2 = gsi_for_stmt (latch_def);
+      gsi_next (&gsi2);
+    }
 
   for (unsigned i = 0; i < ncopies; ++i)
     {
