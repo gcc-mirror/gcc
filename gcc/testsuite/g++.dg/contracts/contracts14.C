@@ -20,7 +20,7 @@ void handle_contract_violation(const std::contract_violation &violation) {
     << " " << violation.line_number()
     << " " << violation.file_name()
     << std::endl;
-  throw -violation.line_number();
+  throw -(int)violation.line_number();
 }
 
 int fun() {

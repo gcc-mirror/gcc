@@ -39,6 +39,7 @@
 
 #include <bits/c++config.h>
 #include <string_view>
+#include <cstdint>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -49,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   class contract_violation {
-    int _M_line; // FIXME uint_least32_t
+    uint_least32_t _M_line;
     const char* _M_file;
     const char* _M_function;
     const char* _M_comment;
@@ -62,7 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                         contract_violation_continuation_mode __m)
       : _M_line(__l), _M_file(__f), _M_function(__fn), _M_comment(__c),
 	_M_level(__lv), _M_role(__r), _M_continue(__m) { }
-    int line_number() const noexcept { return _M_line; }
+    uint_least32_t line_number() const noexcept { return _M_line; }
     string_view file_name() const noexcept { return _M_file; }
     string_view function_name() const noexcept { return _M_function; }
     string_view comment() const noexcept { return _M_comment; }
