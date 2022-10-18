@@ -1,5 +1,9 @@
 2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn.cc (gcn_init_cumulative_args): Disallow gfx908.
+
+2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
+
 	* plugin/plugin-gcn.c (HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED): New.
 	(HSA_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT): New.
 	(HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG): New.

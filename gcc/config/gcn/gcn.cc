@@ -2925,6 +2925,7 @@ gcn_init_cumulative_args (CUMULATIVE_ARGS *cum /* Argument info to init */ ,
 	case PROCESSOR_FIJI:
 	case PROCESSOR_VEGA10:
 	case PROCESSOR_VEGA20:
+	case PROCESSOR_GFX908:
 	  error ("GPU architecture does not support Unified Shared Memory");
 	default:
 	  ;
