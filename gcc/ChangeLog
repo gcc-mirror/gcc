@@ -1,3 +1,38 @@
+2022-10-17  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	PR target/99685
+	* config/rs6000/rs6000-call.c (rs6000_function_arg_advance_1): Bump
+	register count when not splitting IEEE 128-bit Complex.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* tree-ssa.c (non_rewritable_mem_ref_base): Avoid BIT_FIELD_REFs
+	of bitfields.
+	(maybe_rewrite_mem_ref_base): Likewise.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106892
+	* tree-predcom.c (ref_at_iteration): Do not associate the
+	constant part of the offset into the MEM_REF offset
+	operand, across a non-zero offset.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref):
+	Divide using offset_ints.
+
 2022-10-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:

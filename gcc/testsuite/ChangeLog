@@ -1,3 +1,27 @@
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* gfortran.dg/pr106934.f90: New testcase.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106892
+	* gcc.dg/torture/pr106892.c: New testcase.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gcc.dg/pr106189.c: New testcase.
+
 2022-10-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:
