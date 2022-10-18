@@ -386,15 +386,6 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
       int j;
       struct expr_eval_op *op;
 
-      /* We allow call stmt to have fewer arguments than the callee function
-         (especially for K&R style programs).  So bound check here (we assume
-         m_known_aggs vector is either empty or has the same length as
-         m_known_vals).  */
-      gcc_checking_assert (!avals->m_known_aggs.length ()
-			   || !avals->m_known_vals.length ()
-			   || (avals->m_known_vals.length ()
-			       == avals->m_known_aggs.length ()));
-
       if (c->agg_contents)
 	{
 	  if (c->code == ipa_predicate::changed
@@ -402,14 +393,14 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	      && (avals->safe_sval_at(c->operand_num) == error_mark_node))
 	    continue;
 
-	  if (ipa_agg_value_set *agg = avals->safe_aggval_at (c->operand_num))
+	  if (tree sval = avals->safe_sval_at (c->operand_num))
+	    val = ipa_find_agg_cst_from_init (sval, c->offset, c->by_ref);
+	  if (!val)
 	    {
-	      tree sval = avals->safe_sval_at (c->operand_num);
-	      val = ipa_find_agg_cst_for_param (agg, sval, c->offset,
-						c->by_ref);
+	      ipa_argagg_value_list avs (avals);
+	      val = avs.get_value (c->operand_num, c->offset / BITS_PER_UNIT,
+				   c->by_ref);
 	    }
-	  else
-	    val = NULL_TREE;
 	}
       else
 	{
@@ -674,17 +665,9 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 
 		/* Determine known aggregate values.  */
 		if (fre_will_run_p (caller))
-		  {
-		    ipa_agg_value_set agg
-			= ipa_agg_value_set_from_jfunc (caller_parms_info,
-							caller, &jf->agg);
-		    if (agg.items.length ())
-		      {
-			if (!avals->m_known_aggs.length ())
-			  avals->m_known_aggs.safe_grow_cleared (count, true);
-			avals->m_known_aggs[i] = agg;
-		      }
-		  }
+		  ipa_push_agg_values_from_jfunc (caller_parms_info,
+						  caller, &jf->agg, i,
+						  &avals->m_known_aggs);
 	      }
 
 	    /* For calls used in polymorphic calls we further determine
@@ -3446,8 +3429,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
 	{
 	  if (ipa_is_param_used_by_indirect_call (params_summary, i)
 	      && (avals->safe_sval_at (i)
-		  || (avals->m_known_aggs.length () > i
-		      && avals->m_known_aggs[i].items.length ())))
+		  || (ipa_argagg_value_list (avals).value_for_index_p (i))))
 	    use_table = false;
 	  else if (ipa_is_param_used_by_polymorphic_call (params_summary, i)
 		   && (avals->m_known_contexts.length () > i
@@ -3583,14 +3565,12 @@ ipa_cached_call_context::duplicate_from (const ipa_call_context &ctx)
   m_avals.m_known_aggs = vNULL;
   if (ctx.m_avals.m_known_aggs.exists ())
     {
-      unsigned int n = MIN (ctx.m_avals.m_known_aggs.length (), nargs);
-
-      for (unsigned int i = 0; i < n; i++)
+      const ipa_argagg_value_list avl (&ctx.m_avals);
+      for (unsigned int i = 0; i < nargs; i++)
 	if (ipa_is_param_used_by_indirect_call (params_summary, i)
-	    && !ctx.m_avals.m_known_aggs[i].is_empty ())
+	    && avl.value_for_index_p (i))
 	  {
-	    m_avals.m_known_aggs
-	      = ipa_copy_agg_values (ctx.m_avals.m_known_aggs);
+	    m_avals.m_known_aggs = ctx.m_avals.m_known_aggs.copy ();
 	    break;
 	  }
     }
@@ -3607,7 +3587,7 @@ ipa_cached_call_context::release ()
   /* See if context is initialized at first place.  */
   if (!m_node)
     return;
-  ipa_release_agg_values (m_avals.m_known_aggs, true);
+  m_avals.m_known_aggs.release ();
   m_avals.m_known_vals.release ();
   m_avals.m_known_contexts.release ();
   m_inline_param_summary.release ();
@@ -3708,28 +3688,59 @@ ipa_call_context::equal_to (const ipa_call_context &ctx)
     }
   if (m_avals.m_known_aggs.exists () || ctx.m_avals.m_known_aggs.exists ())
     {
-      for (unsigned int i = 0; i < nargs; i++)
+      unsigned i = 0, j = 0;
+      while (i < m_avals.m_known_aggs.length ()
+	     || j < ctx.m_avals.m_known_aggs.length ())
 	{
-	  if (!ipa_is_param_used_by_indirect_call (params_summary, i))
-	    continue;
-	  if (i >= m_avals.m_known_aggs.length ()
-	      || m_avals.m_known_aggs[i].is_empty ())
+	  if (i >= m_avals.m_known_aggs.length ())
 	    {
-	      if (i < ctx.m_avals.m_known_aggs.length ()
-		  && !ctx.m_avals.m_known_aggs[i].is_empty ())
+	      int idx2 = ctx.m_avals.m_known_aggs[j].index;
+	      if (ipa_is_param_used_by_indirect_call (params_summary, idx2))
 		return false;
+	      j++;
 	      continue;
 	    }
-	  if (i >= ctx.m_avals.m_known_aggs.length ()
-	      || ctx.m_avals.m_known_aggs[i].is_empty ())
+	  if (j >= ctx.m_avals.m_known_aggs.length ())
 	    {
-	      if (i < m_avals.m_known_aggs.length ()
-		  && !m_avals.m_known_aggs[i].is_empty ())
+	      int idx1 = m_avals.m_known_aggs[i].index;
+	      if (ipa_is_param_used_by_indirect_call (params_summary, idx1))
 		return false;
+	      i++;
 	      continue;
 	    }
-	  if (!m_avals.m_known_aggs[i].equal_to (ctx.m_avals.m_known_aggs[i]))
+
+	  int idx1 = m_avals.m_known_aggs[i].index;
+	  int idx2 = ctx.m_avals.m_known_aggs[j].index;
+	  if (idx1 < idx2)
+	    {
+	      if (ipa_is_param_used_by_indirect_call (params_summary, idx1))
+		return false;
+	      i++;
+	      continue;
+	    }
+	  if (idx1 > idx2)
+	    {
+	      if (ipa_is_param_used_by_indirect_call (params_summary, idx2))
+		return false;
+	      j++;
+	      continue;
+	    }
+	  if (!ipa_is_param_used_by_indirect_call (params_summary, idx1))
+	    {
+	      i++;
+	      j++;
+	      continue;
+	    }
+
+	  if ((m_avals.m_known_aggs[i].unit_offset
+	       != ctx.m_avals.m_known_aggs[j].unit_offset)
+	      || (m_avals.m_known_aggs[i].by_ref
+	       != ctx.m_avals.m_known_aggs[j].by_ref)
+	      || !operand_equal_p (m_avals.m_known_aggs[i].value,
+				   ctx.m_avals.m_known_aggs[j].value))
 	    return false;
+	  i++;
+	  j++;
 	}
     }
   return true;

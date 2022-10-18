@@ -3612,7 +3612,7 @@ find_constructor_constant_at_offset (tree constructor, HOST_WIDE_INT req_offset)
    invariant from a static constructor and if so, return it.  Otherwise return
    NULL. */
 
-static tree
+tree
 ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref)
 {
   if (by_ref)
@@ -3632,47 +3632,24 @@ ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref)
   return find_constructor_constant_at_offset (DECL_INITIAL (scalar), offset);
 }
 
-/* Retrieve value from AGG, a set of known offset/value for an aggregate or
-   static initializer of SCALAR (which can be NULL) for the given OFFSET or
-   return NULL if there is none.  BY_REF specifies whether the value has to be
-   passed by reference or by value.  If FROM_GLOBAL_CONSTANT is non-NULL, then
-   the boolean it points to is set to true if the value comes from an
-   initializer of a constant.  */
+/* Retrieve value from AGG_JFUNC for the given OFFSET or return NULL if there
+   is none.  BY_REF specifies whether the value has to be passed by reference
+   or by value.  */
 
-tree
-ipa_find_agg_cst_for_param (const ipa_agg_value_set *agg, tree scalar,
-			    HOST_WIDE_INT offset, bool by_ref,
-			    bool *from_global_constant)
+static tree
+ipa_find_agg_cst_from_jfunc_items (struct ipa_agg_jump_function *agg_jfunc,
+				   ipa_node_params *src_info,
+				   cgraph_node *src_node,
+				   HOST_WIDE_INT offset, bool by_ref)
 {
-  struct ipa_agg_value *item;
-  int i;
+  if (by_ref != agg_jfunc->by_ref)
+    return NULL_TREE;
 
-  if (scalar)
-    {
-      tree res = ipa_find_agg_cst_from_init (scalar, offset, by_ref);
-      if (res)
-	{
-	  if (from_global_constant)
-	    *from_global_constant = true;
-	  return res;
-	}
-    }
+  for (const ipa_agg_jf_item &item : agg_jfunc->items)
+    if (item.offset == offset)
+      return ipa_agg_value_from_jfunc (src_info, src_node, &item);
 
-  if (!agg
-      || by_ref != agg->by_ref)
-    return NULL;
-
-  FOR_EACH_VEC_ELT (agg->items, i, item)
-    if (item->offset == offset)
-      {
-	/* Currently we do not have clobber values, return NULL for them once
-	   we do.  */
-	gcc_checking_assert (is_gimple_ip_invariant (item->value));
-	if (from_global_constant)
-	  *from_global_constant = false;
-	return item->value;
-      }
-  return NULL;
+  return NULL_TREE;
 }
 
 /* Remove a reference to SYMBOL from the list of references of a node given by
@@ -3769,24 +3746,19 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
 				  class ipa_node_params *new_root_info)
 {
   struct cgraph_edge *cs;
-  tree target;
+  tree target = NULL_TREE;
   bool agg_contents = ie->indirect_info->agg_contents;
   tree scalar = ipa_value_from_jfunc (new_root_info, jfunc, target_type);
   if (agg_contents)
     {
-      bool from_global_constant;
-      ipa_agg_value_set agg = ipa_agg_value_set_from_jfunc (new_root_info,
-							    new_root,
-							    &jfunc->agg);
-      target = ipa_find_agg_cst_for_param (&agg, scalar,
-					   ie->indirect_info->offset,
-					   ie->indirect_info->by_ref,
-					   &from_global_constant);
-      agg.release ();
-      if (target
-	  && !from_global_constant
-	  && !ie->indirect_info->guaranteed_unmodified)
-	return NULL;
+      if (scalar)
+	target = ipa_find_agg_cst_from_init (scalar, ie->indirect_info->offset,
+					     ie->indirect_info->by_ref);
+      if (!target && ie->indirect_info->guaranteed_unmodified)
+	target = ipa_find_agg_cst_from_jfunc_items (&jfunc->agg, new_root_info,
+						    new_root,
+						    ie->indirect_info->offset,
+						    ie->indirect_info->by_ref);
     }
   else
     target = scalar;
@@ -3861,15 +3833,14 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
     {
       tree vtable;
       unsigned HOST_WIDE_INT offset;
-      tree scalar = (jfunc->type == IPA_JF_CONST) ? ipa_get_jf_constant (jfunc)
-	: NULL;
-      ipa_agg_value_set agg = ipa_agg_value_set_from_jfunc (new_root_info,
-							    new_root,
-							    &jfunc->agg);
-      tree t = ipa_find_agg_cst_for_param (&agg, scalar,
-					   ie->indirect_info->offset,
-					   true);
-      agg.release ();
+      tree t = NULL_TREE;
+      if (jfunc->type == IPA_JF_CONST)
+	t = ipa_find_agg_cst_from_init (ipa_get_jf_constant (jfunc),
+					ie->indirect_info->offset, true);
+      if (!t)
+	t = ipa_find_agg_cst_from_jfunc_items (&jfunc->agg, new_root_info,
+					       new_root,
+					       ie->indirect_info->offset, true);
       if (t && vtable_pointer_value_to_vtable (t, &vtable, &offset))
 	{
 	  bool can_refer;
@@ -6062,23 +6033,6 @@ ipcp_transform_function (struct cgraph_node *node)
 
   return modified_mem_access ? TODO_update_ssa_only_virtuals : 0;
 }
-
-
-/* Return true if OTHER describes same agg value.  */
-bool
-ipa_agg_value::equal_to (const ipa_agg_value &other)
-{
-  return offset == other.offset
-	 && operand_equal_p (value, other.value, 0);
-}
-
-/* Destructor also removing individual aggregate values.  */
-
-ipa_auto_call_arg_values::~ipa_auto_call_arg_values ()
-{
-  ipa_release_agg_values (m_known_aggs, false);
-}
-
 
 
 #include "gt-ipa-prop.h"
