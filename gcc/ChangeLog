@@ -1,3 +1,9 @@
+2022-10-17  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	PR target/99685
+	* config/rs6000/rs6000-call.c (rs6000_function_arg_advance_1): Bump
+	register count when not splitting IEEE 128-bit Complex.
+
 2022-10-14  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
