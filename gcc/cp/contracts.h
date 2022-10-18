@@ -59,6 +59,7 @@ checked_contract_p (contract_semantic cs)
   return cs >= CCS_NEVER;
 }
 
+/* Must match std::contract_violation_continuation_mode in <contract>.  */
 enum contract_continuation
 {
   NEVER_CONTINUE,
