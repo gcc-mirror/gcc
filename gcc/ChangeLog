@@ -1,3 +1,182 @@
+2022-10-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/101697
+	* config/h8300/combiner.md: Replace '<' preincment constraint with
+	ZA/Z1..ZH/Z7 combinations.
+	* config/h8300/movepush.md: Similarly
+
+2022-10-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/constraints.md (Za..Zh): New constraints for
+	autoinc addresses using a specific register.
+	* config/h8300/h8300.cc (pre_incdec_with_reg): New function.
+	* config/h8300/h8300-protos.h (pre_incdec_with_reg): Add prototype.
+
+2022-10-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/i386/cet.c: Remove accidental commit.
+	* config/i386/driver-mingw32.c: Likewise.
+	* config/i386/i386-builtins.c: Likewise.
+	* config/i386/i386-d.c:  Likewise.
+	* config/i386/i386-expand.c: Likewise.
+	* config/i386/i386-features.c: Likewise.
+	* config/i386/i386-options.c: Likewise.
+	* config/i386/t-cet: Likewise.
+	* config/i386/x86-tune-sched-atom.c: Likewise.
+	* config/i386/x86-tune-sched-bd.c: Likewise.
+	* config/i386/x86-tune-sched-core.c: Likewise.
+	* config/i386/x86-tune-sched.c: Likewise.
+
+2022-10-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* common/config/h8300/h8300-common.cc (h8300_option_optimization_table):
+	Enable redundant extension elimination at -O2 and above.
+	* config/i386/cet.c: New file.
+	* config/i386/driver-mingw32.c: New file.
+	* config/i386/i386-builtins.c: New file.
+	* config/i386/i386-d.c: New file.
+	* config/i386/i386-expand.c: New file.
+	* config/i386/i386-features.c: New file.
+	* config/i386/i386-options.c: New file.
+	* config/i386/t-cet: New file.
+	* config/i386/x86-tune-sched-atom.c: New file.
+	* config/i386/x86-tune-sched-bd.c: New file.
+	* config/i386/x86-tune-sched-core.c: New file.
+	* config/i386/x86-tune-sched.c: New file.
+
+2022-10-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/extensions.md (CCZN setting zero extended load): Add
+	missing splitter.
+
+2022-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107293
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges):
+	Check that condition post-dominates the definition point.
+
+2022-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107286
+	* value-range.cc (range_tests_floats): Do not test for -Inf when
+	flag_finite_math_only.
+
+2022-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op):
+	Provide relation_trio class.
+	* gimple-range-gori.cc (gori_compute::refine_using_relation):
+	Provide relation_trio class.
+	(gori_compute::refine_using_relation): Ditto.
+	(gori_compute::compute_operand1_range): Provide lhs_op2 and
+	op1_op2 relations via relation_trio class.
+	(gori_compute::compute_operand2_range): Ditto.
+	* gimple-range-op.cc (gimple_range_op_handler::calc_op1): Use
+	relation_trio instead of relation_kind.
+	(gimple_range_op_handler::calc_op2): Ditto.
+	(*::fold_range): Ditto.
+	* gimple-range-op.h (gimple_range_op::calc_op1): Adjust prototypes.
+	(gimple_range_op::calc_op2): Adjust prototypes.
+	* range-op-float.cc (*::fold_range): Use relation_trio instead of
+	relation_kind.
+	(*::op1_range): Ditto.
+	(*::op2_range): Ditto.
+	* range-op.cc (*::fold_range): Use relation_trio instead of
+	relation_kind.
+	(*::op1_range): Ditto.
+	(*::op2_range): Ditto.
+	* range-op.h (class range_operator): Adjust prototypes.
+	(class range_operator_float): Ditto.
+	(class range_op_handler): Adjust prototypes.
+	(relop_early_resolve): Pickup op1_op2 relation from relation_trio.
+	* value-relation.cc (VREL_LAST): Adjust use to be one past the end of
+	the enum.
+	(relation_oracle::validate_relation): Use relation_trio in call
+	to fold_range.
+	* value-relation.h (enum relation_kind_t): Add VREL_LAST as
+	final element.
+	(class relation_trio): New.
+	(TRIO_VARYING, TRIO_SHIFT, TRIO_MASK): New.
+
+2022-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_not_equal::op1_range): Check for
+	VREL_EQ after singleton.
+	(foperator_unordered::op1_range): Set VARYING before calling
+	clear_nan().
+	(foperator_ordered::op1_range): Set rather than clear NAN if both
+	operands are the same.
+
+2022-10-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (value_relation::dump): Change message.
+	* value-relation.h (value_relation::set_relation): If op1 is the
+	same as op2 do not create a relation.
+
+2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/gcn.cc (VnMODE): Use 'case E_QImode:' instead of
+	'case QImode:', etc.
+
+2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimple-expr.cc (mark_addressable_2): Tag as 'static'.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR tree-optimization/99409
+	PR tree-optimization/99394
+	* tree-vectorizer.h (vect_def_type::vect_first_order_recurrence): Add.
+	(stmt_vec_info_type::recurr_info_type): Likewise.
+	(vectorizable_recurr): New function.
+	* tree-vect-loop.cc (vect_phi_first_order_recurrence_p): New
+	function.
+	(vect_analyze_scalar_cycles_1): Look for first order
+	recurrences.
+	(vect_analyze_loop_operations): Handle them.
+	(vect_transform_loop): Likewise.
+	(vectorizable_recurr): New function.
+	(maybe_set_vectorized_backedge_value): Handle the backedge value
+	setting in the first order recurrence PHI and the permutes.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Handle first order
+	recurrences.
+	(vect_transform_stmt): Likewise.
+	(vect_is_simple_use): Likewise.
+	(vect_is_simple_use): Likewise.
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Likewise.
+	(vect_build_slp_tree_2): Likewise.
+	(vect_schedule_scc): Handle the backedge value setting in the
+	first order recurrence PHI and the permutes.
+
+2022-10-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/t-riscv: Change Tab into 2 space.
+
+2022-10-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc (mangle_builtin_type): Move down the function.
+
+2022-10-17  Arsen Arsenovic  <arsen@aarsen.me>
+
+	* config.gcc: --target=*-elf --without-{newlib,headers} should
+	provide stdint.h.
+
+2022-10-17  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h:
+	(get_intel_cpu): Handle Meteorlake.
+	* common/config/i386/i386-common.cc:
+	(processor_alias_table): Add Meteorlake.
+
+2022-10-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h:
+	(get_intel_cpu): Handle Raptorlake.
+	* common/config/i386/i386-common.cc:
+	(processor_alias_table): Add Raptorlake.
+
 2022-10-16  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* config/h8300/constraints.md (Z0..Z7): New register

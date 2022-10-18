@@ -1,3 +1,10 @@
+2022-10-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101449
+	* module.cc (trees_out::write_function_def): Stream the
+	parms and result of the constexpr_fundef entry.
+	(trees_in::read_function_def): Likewise.
+
 2022-10-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106304
