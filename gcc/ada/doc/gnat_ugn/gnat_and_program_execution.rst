@@ -1252,8 +1252,8 @@ most often, and are therefore the most time-consuming.
 better handle Ada programs and multitasking.
 It is currently supported on the following platforms
 
-* linux x86/x86_64
-* windows x86
+* Linux x86/x86_64
+* Windows x86/x86_64 (without PIE support)
 
 In order to profile a program using ``gprof``, several steps are needed:
 
@@ -1290,6 +1290,10 @@ be specified once when using gnatmake:
 Note that only the objects that were compiled with the ``-pg`` switch will
 be profiled; if you need to profile your whole project, use the ``-f``
 gnatmake switch to force full recompilation.
+
+Note that on Windows, gprof does not support PIE. The ``-no-pie`` switch
+should be added to the linker flags to disable this feature.
+
 
 .. _Program_execution:
 
