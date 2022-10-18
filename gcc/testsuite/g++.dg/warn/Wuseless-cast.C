@@ -62,11 +62,11 @@ A prvalue();
 
 void f()
 {
-  int n; 
+  int n;
 
-  (int)(n);                    // { dg-warning "3:useless cast" }
-  static_cast<int>(n);         // { dg-warning "3:useless cast" }
-  reinterpret_cast<int>(n);    // { dg-warning "3:useless cast" }
+  (int)(n);
+  static_cast<int>(n);
+  reinterpret_cast<int>(n);
 
   (int*)(&n);                  // { dg-warning "3:useless cast" }
   const_cast<int*>(&n);        // { dg-warning "3:useless cast" }
@@ -100,8 +100,8 @@ void f()
 
   A a;
 
-  (A)(a);                     // { dg-warning "3:useless cast" }
-  static_cast<A>(a);          // { dg-warning "3:useless cast" }
+  (A)(a);
+  static_cast<A>(a);
 
   (A*)(&a);                   // { dg-warning "3:useless cast" }
   const_cast<A*>(&a);         // { dg-warning "3:useless cast" }
