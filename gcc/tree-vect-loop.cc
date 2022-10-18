@@ -6083,7 +6083,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     }
 
   /* Record this operation if it could be reused by the epilogue loop.  */
-  if (STMT_VINFO_REDUC_TYPE (reduc_info) == TREE_CODE_REDUCTION)
+  if (STMT_VINFO_REDUC_TYPE (reduc_info) == TREE_CODE_REDUCTION
+      && vec_num == 1)
     loop_vinfo->reusable_accumulators.put (scalar_results[0],
 					   { orig_reduc_input, reduc_info });
 
@@ -6678,10 +6679,20 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	}
       if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
 	only_slp_reduc_chain = false;
-      /* ???  For epilogue generation live members of the chain need
+      /* For epilogue generation live members of the chain need
          to point back to the PHI via their original stmt for
-	 info_for_reduction to work.  */
-      if (STMT_VINFO_LIVE_P (vdef))
+	 info_for_reduction to work.  For SLP we need to look at
+	 all lanes here - even though we only will vectorize from
+	 the SLP node with live lane zero the other live lanes also
+	 need to be identified as part of a reduction to be able
+	 to skip code generation for them.  */
+      if (slp_for_stmt_info)
+	{
+	  for (auto s : SLP_TREE_SCALAR_STMTS (slp_for_stmt_info))
+	    if (STMT_VINFO_LIVE_P (s))
+	      STMT_VINFO_REDUC_DEF (vect_orig_stmt (s)) = phi_info;
+	}
+      else if (STMT_VINFO_LIVE_P (vdef))
 	STMT_VINFO_REDUC_DEF (def) = phi_info;
       gimple_match_op op;
       if (!gimple_extract_op (vdef->stmt, &op))
@@ -8754,10 +8765,6 @@ vectorizable_live_operation (vec_info *vinfo,
 	     all involved stmts together.  */
 	  else if (slp_index != 0)
 	    return true;
-	  else
-	    /* For SLP reductions the meta-info is attached to
-	       the representative.  */
-	    stmt_info = SLP_TREE_REPRESENTATIVE (slp_node);
 	}
       stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
       gcc_assert (reduc_info->is_reduc_info);

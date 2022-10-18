@@ -4504,7 +4504,23 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 
   /* Handle purely internal nodes.  */
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
-    return vectorizable_slp_permutation (vinfo, NULL, node, cost_vec);
+    {
+      if (!vectorizable_slp_permutation (vinfo, NULL, node, cost_vec))
+	return false;
+
+      stmt_vec_info slp_stmt_info;
+      unsigned int i;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, slp_stmt_info)
+	{
+	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
+	      && !vectorizable_live_operation (vinfo,
+					       slp_stmt_info, NULL, node,
+					       node_instance, i,
+					       false, cost_vec))
+	    return false;
+	}
+      return true;
+    }
 
   gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
 
@@ -7344,8 +7360,6 @@ vect_schedule_slp_node (vec_info *vinfo,
 	}
     }
 
-  bool done_p = false;
-
   /* Handle purely internal nodes.  */
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
     {
@@ -7356,9 +7370,18 @@ vect_schedule_slp_node (vec_info *vinfo,
 	 but open-code it here (partly).  */
       bool done = vectorizable_slp_permutation (vinfo, &si, node, NULL);
       gcc_assert (done);
-      done_p = true;
+      stmt_vec_info slp_stmt_info;
+      unsigned int i;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, slp_stmt_info)
+	if (STMT_VINFO_LIVE_P (slp_stmt_info))
+	  {
+	    done = vectorizable_live_operation (vinfo,
+						slp_stmt_info, &si, node,
+						instance, i, true, NULL);
+	    gcc_assert (done);
+	  }
     }
-  if (!done_p)
+  else
     vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
 }
 

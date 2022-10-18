@@ -1,3 +1,118 @@
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107254
+	* gfortran.dg/vect/pr107254.f90: New testcase.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107212
+	* gcc.dg/vect/pr107212-1.c: New testcase.
+	* gcc.dg/vect/pr107212-2.c: Likewise.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107160
+	* gcc.dg/vect/pr107160.c: New testcase.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107107
+	* gcc.dg/pr107107.c: New testcase.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* g++.dg/torture/pr106922.C: New testcase.
+
+2022-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106922
+	* g++.dg/tree-ssa/pr106922.C: Scan in cddce3 dump rather than
+	dce3.  Remove -fdump-tree-pre-details from dg-options.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* gcc.dg/tree-ssa/ssa-fre-100.c: New testcase.
+	* g++.dg/tree-ssa/pr106922.C: Adjust.
+
+2022-10-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-10-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106925
+	* g++.dg/cpp0x/initlist-defarg3.C: New test.
+
+2022-10-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/106817
+	* gfortran.dg/intent_optimize_4.f90: New test.
+
+2022-10-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/105012
+	* gfortran.dg/intent_out_15.f90: New test.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106934
+	* gfortran.dg/pr106934.f90: New testcase.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106922
+	* g++.dg/tree-ssa/pr106922.C: New testcase.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106892
+	* gcc.dg/torture/pr106892.c: New testcase.
+
+2022-10-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105937
+	* g++.dg/uninit-pr105937.C: New testcase.
+
 2022-10-08  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:

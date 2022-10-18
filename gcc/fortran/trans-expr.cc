@@ -6029,7 +6029,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_charlen cl;
   gfc_expr *e;
   gfc_symbol *fsym;
-  stmtblock_t post;
   enum {MISSING = 0, ELEMENTAL, SCALAR, SCALAR_POINTER, ARRAY};
   gfc_component *comp = NULL;
   int arglen;
@@ -6073,7 +6072,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   else
     info = NULL;
 
+  stmtblock_t post, clobbers;
   gfc_init_block (&post);
+  gfc_init_block (&clobbers);
   gfc_init_interface_mapping (&mapping);
   if (!comp)
     {
@@ -6406,7 +6407,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				&& e->symtree->n.sym->attr.pointer))
 			&& fsym && fsym->attr.target)
 		/* Make sure the function only gets called once.  */
-		gfc_conv_expr_reference (&parmse, e, false);
+		gfc_conv_expr_reference (&parmse, e);
 	      else if (e->expr_type == EXPR_FUNCTION
 		       && e->symtree->n.sym->result
 		       && e->symtree->n.sym->result != e->symtree->n.sym
@@ -6513,22 +6514,37 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    }
 		  else
 		    {
-		      bool add_clobber;
-		      add_clobber = fsym && fsym->attr.intent == INTENT_OUT
-			&& !fsym->attr.allocatable && !fsym->attr.pointer
-			&& e->symtree && e->symtree->n.sym
-			&& !e->symtree->n.sym->attr.dimension
-			&& !e->symtree->n.sym->attr.pointer
-			&& !e->symtree->n.sym->attr.allocatable
-			/* See PR 41453.  */
-			&& !e->symtree->n.sym->attr.dummy
-			/* FIXME - PR 87395 and PR 41453  */
-			&& e->symtree->n.sym->attr.save == SAVE_NONE
-			&& !e->symtree->n.sym->attr.associate_var
-			&& e->ts.type != BT_CHARACTER && e->ts.type != BT_DERIVED
-			&& e->ts.type != BT_CLASS && !sym->attr.elemental;
+		      gfc_conv_expr_reference (&parmse, e);
 
-		      gfc_conv_expr_reference (&parmse, e, add_clobber);
+		      if (fsym
+			  && fsym->attr.intent == INTENT_OUT
+			  && !fsym->attr.allocatable
+			  && !fsym->attr.pointer
+			  && e->expr_type == EXPR_VARIABLE
+			  && e->ref == NULL
+			  && e->symtree
+			  && e->symtree->n.sym
+			  && !e->symtree->n.sym->attr.dimension
+			  && !e->symtree->n.sym->attr.pointer
+			  && !e->symtree->n.sym->attr.allocatable
+			  /* See PR 41453.  */
+			  && !e->symtree->n.sym->attr.dummy
+			  /* FIXME - PR 87395 and PR 41453  */
+			  && e->symtree->n.sym->attr.save == SAVE_NONE
+			  && !e->symtree->n.sym->attr.associate_var
+			  && e->ts.type != BT_CHARACTER
+			  && e->ts.type != BT_DERIVED
+			  && e->ts.type != BT_CLASS
+			  && !sym->attr.elemental)
+			{
+			  tree var;
+			  /* FIXME: This fails if var is passed by reference, see PR
+			     41453.  */
+			  var = build_fold_indirect_ref_loc (input_location,
+							     parmse.expr);
+			  tree clobber = build_clobber (TREE_TYPE (var));
+			  gfc_add_modify (&clobbers, var, clobber);
+			}
 		    }
 		  /* Catch base objects that are not variables.  */
 		  if (e->ts.type == BT_CLASS
@@ -7395,6 +7411,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       vec_safe_push (arglist, parmse.expr);
     }
+  gfc_add_block_to_block (&se->pre, &clobbers);
   gfc_finish_interface_mapping (&mapping, &se->pre, &se->post);
 
   if (comp)
@@ -9495,7 +9512,7 @@ gfc_conv_expr_type (gfc_se * se, gfc_expr * expr, tree type)
    values only.  */
 
 void
-gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
+gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 {
   gfc_ss *ss;
   tree var;
@@ -9535,16 +9552,6 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 	  gfc_add_modify (&se->pre, var, se->expr);
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  se->expr = var;
-	}
-      else if (add_clobber && expr->ref == NULL)
-	{
-	  tree clobber;
-	  tree var;
-	  /* FIXME: This fails if var is passed by reference, see PR
-	     41453.  */
-	  var = expr->symtree->n.sym->backend_decl;
-	  clobber = build_clobber (TREE_TYPE (var));
-	  gfc_add_modify (&se->pre, var, clobber);
 	}
       return;
     }

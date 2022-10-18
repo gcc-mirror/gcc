@@ -1,3 +1,12 @@
+2022-10-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-10-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106925
+	* except.cc (maybe_splice_retval_cleanup): Check current_function_decl.
+	Make the bool const.
+
 2022-09-29  Jason Merrill  <jason@redhat.com>
 
 	* class.cc (check_methods): Call constraints_satisfied_p.
