@@ -3,7 +3,7 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on" }
 #include <iostream>
-#include <contract>
+#include <experimental/contract>
 
 int
 __on_contract_violation (bool continue_,

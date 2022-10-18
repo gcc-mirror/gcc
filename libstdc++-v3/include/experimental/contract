@@ -23,7 +23,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-// FIXME experimental
 // FIXME string_view vs. freestanding
 // FIXME remove on_contract_violation?
 

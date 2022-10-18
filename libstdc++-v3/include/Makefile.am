@@ -32,7 +32,6 @@ std_freestanding = \
 	${std_srcdir}/bit \
 	${std_srcdir}/bitset \
 	${std_srcdir}/concepts \
-	${std_srcdir}/contract \
 	${std_srcdir}/coroutine \
 	${std_srcdir}/expected \
 	${std_srcdir}/functional \
@@ -769,6 +768,7 @@ experimental_headers = \
 	${experimental_srcdir}/array \
 	${experimental_srcdir}/buffer \
 	${experimental_srcdir}/chrono \
+	${experimental_srcdir}/contract \
 	${experimental_srcdir}/deque \
 	${experimental_srcdir}/executor \
 	${experimental_srcdir}/forward_list \

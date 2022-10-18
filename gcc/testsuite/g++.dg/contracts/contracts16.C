@@ -3,7 +3,7 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts" }
 #include <iostream>
-#include <contract>
+#include <experimental/contract>
 
 void handle_contract_violation(const std::contract_violation &violation) {
   std::cerr << "custom std::handle_contract_violation called:"

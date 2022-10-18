@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <contract>
+#include <experimental/contract>
 #include <iostream>
 #include <cstdlib>
 
