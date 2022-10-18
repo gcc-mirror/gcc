@@ -154,5 +154,37 @@ TypeCheckContext::peek_context ()
   return return_type_stack.back ().first;
 }
 
+// TypeCheckContextItem
+
+TyTy::FnType *
+TypeCheckContextItem::get_context_type ()
+{
+  auto &context = *TypeCheckContext::get ();
+
+  HirId reference = UNKNOWN_HIRID;
+  switch (get_type ())
+    {
+    case ITEM:
+      reference = get_item ()->get_mappings ().get_hirid ();
+      break;
+
+    case IMPL_ITEM:
+      reference = get_impl_item ().second->get_mappings ().get_hirid ();
+      break;
+
+    case TRAIT_ITEM:
+      reference = get_trait_item ()->get_mappings ().get_hirid ();
+      break;
+    }
+
+  rust_assert (reference != UNKNOWN_HIRID);
+
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = context.lookup_type (reference, &lookup);
+  rust_assert (ok);
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+  return static_cast<TyTy::FnType *> (lookup);
+}
+
 } // namespace Resolver
 } // namespace Rust

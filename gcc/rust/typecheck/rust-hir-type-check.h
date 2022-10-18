@@ -70,6 +70,8 @@ public:
     return item.trait_item;
   }
 
+  TyTy::FnType *get_context_type ();
+
 private:
   union Item
   {

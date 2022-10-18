@@ -2131,6 +2131,8 @@ public:
   };
   std::unique_ptr<Expr> &get_expr () { return expr; }
 
+  std::vector<ClosureParam> &get_params () { return params; }
+
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
