@@ -9393,21 +9393,10 @@ package body Sem_Res is
       Apply_Check (Then_Expr);
 
       --  If ELSE expression present, just resolve using the determined type
-      --  If type is universal, resolve to any member of the class.
 
       if Present (Else_Expr) then
-         if Typ = Universal_Integer then
-            Resolve (Else_Expr, Any_Integer);
-
-         elsif Typ = Universal_Real then
-            Resolve (Else_Expr, Any_Real);
-
-         else
-            Resolve (Else_Expr, Result_Type);
-         end if;
-
+         Resolve (Else_Expr, Result_Type);
          Check_Unset_Reference (Else_Expr);
-
          Apply_Check (Else_Expr);
 
          --  Apply RM 4.5.7 (17/3): whether the expression is statically or
