@@ -871,6 +871,29 @@ public:
     ok = true;
   }
 
+  void visit (const ClosureType &type) override
+  {
+    if (base->get_def_id () != type.get_def_id ())
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    if (!base->get_parameters ().can_eq (&type.get_parameters (), false))
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    if (!base->get_result_type ().can_eq (&type.get_result_type (), false))
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
 private:
   const BaseType *get_base () const override { return base; }
   const ClosureType *base;

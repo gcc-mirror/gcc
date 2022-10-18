@@ -103,6 +103,13 @@ protected:
 			     HIR::OperatorExprMeta expr, TyTy::BaseType *lhs,
 			     TyTy::BaseType *rhs);
 
+  bool resolve_fn_trait_call (HIR::CallExpr &expr,
+			      TyTy::BaseType *function_tyty,
+			      TyTy::BaseType **result);
+
+  HIR::PathIdentSegment
+  resolve_possible_fn_trait_call_method_name (const TyTy::BaseType &receiver);
+
 private:
   TypeCheckExpr ();
 

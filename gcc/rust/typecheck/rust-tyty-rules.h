@@ -624,7 +624,45 @@ class ClosureRules : public BaseRules
 public:
   ClosureRules (ClosureType *base) : BaseRules (base), base (base) {}
 
-  // TODO
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+  void visit (ClosureType &type) override
+  {
+    if (base->get_def_id () != type.get_def_id ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    TyTy::BaseType *args_res
+      = base->get_parameters ().unify (&type.get_parameters ());
+    if (args_res == nullptr || args_res->get_kind () == TypeKind::ERROR)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    TyTy::BaseType *res
+      = base->get_result_type ().unify (&type.get_result_type ());
+    if (res == nullptr || res->get_kind () == TypeKind::ERROR)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
 
 private:
   BaseType *get_base () override { return base; }
