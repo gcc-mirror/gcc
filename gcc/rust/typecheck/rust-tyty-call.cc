@@ -216,29 +216,77 @@ TypeCheckCallExpr::visit (FnPtr &type)
 
 // method call checker
 
-void
-TypeCheckMethodCallExpr::visit (FnType &type)
+TypeCheckMethodCallExpr::TypeCheckMethodCallExpr (
+  Analysis::NodeMapping call_mappings, std::vector<Argument> &args,
+  Location call_locus, Location receiver_locus, TyTy::BaseType *adjusted_self,
+  Resolver::TypeCheckContext *context)
+  : call_mappings (call_mappings), arguments (args), call_locus (call_locus),
+    receiver_locus (receiver_locus), adjusted_self (adjusted_self),
+    context (context), mappings (Analysis::Mappings::get ())
+{}
+
+BaseType *
+TypeCheckMethodCallExpr::go (FnType *ref, HIR::MethodCallExpr &call,
+			     TyTy::BaseType *adjusted_self,
+			     Resolver::TypeCheckContext *context)
+{
+  std::vector<Argument> args;
+  for (auto &arg : call.get_arguments ())
+    {
+      BaseType *argument_expr_tyty
+	= Resolver::TypeCheckExpr::Resolve (arg.get ());
+      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (arg->get_locus (),
+			 "failed to resolve type for argument");
+	  return new ErrorType (ref->get_ref ());
+	}
+
+      Argument a (arg->get_mappings (), argument_expr_tyty, arg->get_locus ());
+      args.push_back (std::move (a));
+    }
+
+  TypeCheckMethodCallExpr checker (call.get_mappings (), args,
+				   call.get_locus (),
+				   call.get_receiver ()->get_locus (),
+				   adjusted_self, context);
+  return checker.check (*ref);
+}
+
+BaseType *
+TypeCheckMethodCallExpr::go (FnType *ref, Analysis::NodeMapping call_mappings,
+			     std::vector<Argument> &args, Location call_locus,
+			     Location receiver_locus,
+			     TyTy::BaseType *adjusted_self,
+			     Resolver::TypeCheckContext *context)
+{
+  TypeCheckMethodCallExpr checker (call_mappings, args, call_locus,
+				   receiver_locus, adjusted_self, context);
+  return checker.check (*ref);
+}
+
+BaseType *
+TypeCheckMethodCallExpr::check (FnType &type)
 {
   Resolver::TypeCheckBase::unify_site (
-    call.get_mappings ().get_hirid (), TyWithLocation (type.get_self_type ()),
-    TyWithLocation (adjusted_self, call.get_receiver ()->get_locus ()),
-    call.get_locus ());
+    call_mappings.get_hirid (), TyWithLocation (type.get_self_type ()),
+    TyWithLocation (adjusted_self, receiver_locus), call_locus);
 
   // +1 for the receiver self
-  size_t num_args_to_call = call.num_params () + 1;
+  size_t num_args_to_call = arguments.size () + 1;
   if (num_args_to_call != type.num_params ())
     {
-      rust_error_at (call.get_locus (),
+      rust_error_at (call_locus,
 		     "unexpected number of arguments %lu expected %lu",
-		     (unsigned long) call.num_params (),
+		     (unsigned long) num_args_to_call,
 		     (unsigned long) type.num_params ());
-      return;
+      return new ErrorType (type.get_ref ());
     }
 
   size_t i = 1;
-  for (auto &argument : call.get_arguments ())
+  for (auto &argument : arguments)
     {
-      Location arg_locus = argument->get_locus ();
+      Location arg_locus = argument.get_locus ();
 
       auto fnparam = type.param_at (i);
       HIR::Pattern *fn_param_pattern = fnparam.first;
@@ -248,25 +296,15 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 	    ? mappings->lookup_location (param_ty->get_ref ())
 	    : fn_param_pattern->get_locus ();
 
-      auto argument_expr_tyty
-	= Resolver::TypeCheckExpr::Resolve (argument.get ());
-      if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
-	{
-	  rust_error_at (
-	    argument->get_locus (),
-	    "failed to resolve type for argument expr in CallExpr");
-	  return;
-	}
-
-      HirId coercion_side_id = argument->get_mappings ().get_hirid ();
+      auto argument_expr_tyty = argument.get_argument_type ();
+      HirId coercion_side_id = argument.get_mappings ().get_hirid ();
       auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
 	coercion_side_id, TyWithLocation (param_ty, param_locus),
-	TyWithLocation (argument_expr_tyty, arg_locus), argument->get_locus ());
+	TyWithLocation (argument_expr_tyty, arg_locus), arg_locus);
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
-	  rust_error_at (argument->get_locus (),
-			 "Type Resolution failure on parameter");
-	  return;
+	  rust_error_at (arg_locus, "Type Resolution failure on parameter");
+	  return new ErrorType (type.get_ref ());
 	}
 
       i++;
@@ -274,15 +312,15 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 
   if (i != num_args_to_call)
     {
-      rust_error_at (call.get_locus (),
+      rust_error_at (call_locus,
 		     "unexpected number of arguments %lu expected %lu",
-		     (unsigned long) i, (unsigned long) call.num_params ());
-      return;
+		     (unsigned long) i, (unsigned long) arguments.size ());
+      return new ErrorType (type.get_ref ());
     }
 
   type.monomorphize ();
 
-  resolved = type.get_return_type ()->monomorphized_clone ();
+  return type.get_return_type ()->monomorphized_clone ();
 }
 
 } // namespace TyTy
