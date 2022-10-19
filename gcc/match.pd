@@ -1331,8 +1331,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (~X - ~Y) -> Y - X.  */
 (simplify
  (minus (bit_not @0) (bit_not @1))
-  (with { tree utype = unsigned_type_for (type); }
-   (convert (minus (convert:utype @1) (convert:utype @0)))))
+  (if (!TYPE_OVERFLOW_SANITIZED (type))
+   (with { tree utype = unsigned_type_for (type); }
+    (convert (minus (convert:utype @1) (convert:utype @0))))))
 
 /* ~(X - Y) -> ~X + Y.  */
 (simplify
@@ -8176,5 +8177,6 @@ and,
 
 /* -x & 1 -> x & 1.  */
 (simplify 
-  (bit_and (negate @0) integer_onep@1)
-  (bit_and @0 @1))
+ (bit_and (negate @0) integer_onep@1)
+ (if (!TYPE_OVERFLOW_SANITIZED (type))
+  (bit_and @0 @1)))
