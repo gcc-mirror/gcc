@@ -7895,7 +7895,7 @@ This attribute works similar to the @code{section} attribute
 but adds additional checking.
 
 @table @asis
-@item @bullet{}@tie{} Ordinary AVR cores with 32 general purpose registers:
+@item @bullet{} Ordinary AVR cores with 32 general purpose registers:
 @code{progmem} affects the location
 of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
@@ -7920,7 +7920,7 @@ normally resides in the data memory (RAM).
 See also the @ref{AVR Named Address Spaces} section for
 an alternate way to locate and access data in flash memory.
 
-@item @bullet{}@tie{} AVR cores with flash memory visible in the RAM address range:
+@item @bullet{} AVR cores with flash memory visible in the RAM address range:
 On such devices, there is no need for attribute @code{progmem} or
 @ref{AVR Named Address Spaces,,@code{__flash}} qualifier at all.
 Just use standard C / C++.  The compiler will generate @code{LD*}
@@ -7933,7 +7933,7 @@ avoiding @code{progmem} and @code{__flash}.  This applies to devices from
 families @code{avrtiny} and @code{avrxmega3}, see @ref{AVR Options} for
 an overview.
 
-@item @bullet{}@tie{}Reduced AVR Tiny cores like ATtiny40:
+@item @bullet{} Reduced AVR Tiny cores like ATtiny40:
 The compiler adds @code{0x4000}
 to the addresses of objects and declarations in @code{progmem} and locates
 the objects in flash memory, namely in section @code{.progmem.data}.

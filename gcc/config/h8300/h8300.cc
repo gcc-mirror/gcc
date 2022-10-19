@@ -5531,6 +5531,32 @@ h8300_ok_for_sibcall_p (tree fndecl, tree)
 
   return 1;
 }
+
+/* Return TRUE if OP is a PRE_INC or PRE_DEC
+   instruction using REG, FALSE otherwise.  */
+
+bool
+pre_incdec_with_reg (rtx op, int reg)
+{
+  /* OP must be a MEM.  */
+  if (GET_CODE (op) != MEM)
+    return false;
+
+  /* The address must be a PRE_INC or PRE_DEC.  */
+  op = XEXP (op, 0);
+  if (GET_CODE (op) != PRE_DEC && GET_CODE (op) != PRE_INC)
+    return false;
+
+  /* It must be a register that is being incremented
+     or decremented.  */
+  op = XEXP (op, 0);
+  if (!REG_P (op))
+    return false;
+
+  /* Finally, check that the register number matches.  */
+  return REGNO (op) == reg;
+}
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE

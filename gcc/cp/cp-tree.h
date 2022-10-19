@@ -8280,6 +8280,7 @@ extern tree predeclare_vla			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
 extern tree process_stmt_hotness_attribute	(tree, location_t);
+extern tree build_assume_call			(location_t, tree);
 extern tree process_stmt_assume_attribute	(tree, tree, location_t);
 extern bool simple_empty_class_p		(tree, tree, tree_code);
 extern tree fold_builtin_source_location	(location_t);

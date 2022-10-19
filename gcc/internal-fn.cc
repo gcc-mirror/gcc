@@ -4526,5 +4526,4 @@ expand_TRAP (internal_fn, gcall *)
 void
 expand_ASSUME (internal_fn, gcall *)
 {
-  gcc_unreachable ();
 }

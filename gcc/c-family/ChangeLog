@@ -1,3 +1,11 @@
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* c-common.cc (c_common_type_for_size): Add fallback to
+	widest_unsigned_literal_type_node or
+	widest_integer_literal_type_node for precision that may not
+	exactly match the precision of those types.
+
 2022-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.cc (c_cpp_builtins): If bfloat16_type_node,

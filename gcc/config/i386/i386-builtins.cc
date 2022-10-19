@@ -126,7 +126,7 @@ BDESC_VERIFYS (IX86_BUILTIN_MAX,
 static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
 tree ix86_float16_type_node = NULL_TREE;
-tree ix86_bf16_ptr_type_node = NULL_TREE;
+tree ix86_bf16_type_node = NULL_TREE;
 
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
@@ -1373,17 +1373,16 @@ ix86_register_bf16_builtin_type (void)
 {
   if (bfloat16_type_node == NULL_TREE)
     {
-      bfloat16_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (bfloat16_type_node) = 16;
-      SET_TYPE_MODE (bfloat16_type_node, BFmode);
-      layout_type (bfloat16_type_node);
+      ix86_bf16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (ix86_bf16_type_node) = 16;
+      SET_TYPE_MODE (ix86_bf16_type_node, BFmode);
+      layout_type (ix86_bf16_type_node);
     }
+  else
+    ix86_bf16_type_node = bfloat16_type_node;
 
   if (!maybe_get_identifier ("__bf16") && TARGET_SSE2)
-    {
-      lang_hooks.types.register_builtin_type (bfloat16_type_node, "__bf16");
-      ix86_bf16_ptr_type_node = build_pointer_type (bfloat16_type_node);
-    }
+    lang_hooks.types.register_builtin_type (ix86_bf16_type_node, "__bf16");
 }
 
 static void

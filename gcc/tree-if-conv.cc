@@ -1416,9 +1416,6 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
   basic_block exit_bb = NULL;
   vec<basic_block> region;
 
-  if (find_data_references_in_loop (loop, refs) == chrec_dont_know)
-    return false;
-
   calculate_dominance_info (CDI_DOMINATORS);
 
   for (i = 0; i < loop->num_nodes; i++)
@@ -1541,12 +1538,11 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
    - if its basic blocks and phi nodes are if convertible.  */
 
 static bool
-if_convertible_loop_p (class loop *loop)
+if_convertible_loop_p (class loop *loop, vec<data_reference_p> *refs)
 {
   edge e;
   edge_iterator ei;
   bool res = false;
-  vec<data_reference_p> refs;
 
   /* Handle only innermost loop.  */
   if (!loop || loop->inner)
@@ -1578,15 +1574,7 @@ if_convertible_loop_p (class loop *loop)
     if (loop_exit_edge_p (loop, e))
       return false;
 
-  refs.create (5);
-  res = if_convertible_loop_p_1 (loop, &refs);
-
-  data_reference_p dr;
-  unsigned int i;
-  for (i = 0; refs.iterate (i, &dr); i++)
-    free (dr->aux);
-
-  free_data_refs (refs);
+  res = if_convertible_loop_p_1 (loop, refs);
 
   delete innermost_DR_map;
   innermost_DR_map = NULL;
@@ -3499,6 +3487,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   auto_vec <gassign *, 4> writes_to_lower;
   bitmap exit_bbs;
   edge pe;
+  vec<data_reference_p> refs;
 
  again:
   rloop = NULL;
@@ -3508,6 +3497,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   need_to_predicate = false;
   need_to_rewrite_undefined = false;
   any_complicated_phi = false;
+  refs.create (5);
 
   /* Apply more aggressive if-conversion when loop or its outer loop were
      marked with simd pragma.  When that's the case, we try to if-convert
@@ -3537,11 +3527,14 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
       goto cleanup;
     }
 
+  if (find_data_references_in_loop (loop, &refs) == chrec_dont_know)
+    goto cleanup;
+
   if (loop->num_nodes > 2)
     {
       need_to_ifcvt = true;
 
-      if (!if_convertible_loop_p (loop) || !dbg_cnt (if_conversion_tree))
+      if (!if_convertible_loop_p (loop, &refs) || !dbg_cnt (if_conversion_tree))
 	goto cleanup;
 
       if ((need_to_predicate || any_complicated_phi)
@@ -3658,6 +3651,13 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   todo |= TODO_cleanup_cfg;
 
  cleanup:
+  data_reference_p dr;
+  unsigned int i;
+  for (i = 0; refs.iterate (i, &dr); i++)
+    free (dr->aux);
+
+  refs.truncate (0);
+
   if (ifc_bbs)
     {
       unsigned int i;

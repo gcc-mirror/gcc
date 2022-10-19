@@ -228,6 +228,7 @@
 # include <stacktrace>
 #endif
 #include <stdatomic.h>
+#include <stdfloat>
 #endif
 
 #endif // HOSTED

@@ -5139,6 +5139,9 @@ verify_gimple_stmt (gimple *stmt)
 	 how to setup the parallel iteration.  */
       return false;
 
+    case GIMPLE_ASSUME:
+      return false;
+
     case GIMPLE_DEBUG:
       return verify_gimple_debug (stmt);
 
@@ -5250,6 +5253,10 @@ verify_gimple_in_seq_2 (gimple_seq stmts)
 	case GIMPLE_CATCH:
 	  err |= verify_gimple_in_seq_2 (gimple_catch_handler (
 					   as_a <gcatch *> (stmt)));
+	  break;
+
+	case GIMPLE_ASSUME:
+	  err |= verify_gimple_in_seq_2 (gimple_assume_body (stmt));
 	  break;
 
 	case GIMPLE_TRANSACTION:

@@ -1,3 +1,130 @@
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107164
+	* gcc.dg/c99-tag-4.c, gcc.dg/c99-tag-5.c, gcc.dg/c99-tag-6.c: New
+	tests.
+
+2022-10-18  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/107213
+	* c-c++-common/pointer-to-fn1.c: Only run on i?86/x86_64.
+
+2022-10-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105045
+	* g++.dg/modules/pr105045_a.C: New test.
+	* g++.dg/modules/pr105045_b.C: New test.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* gcc.dg/c11-enum-1.c, gcc.dg/c11-enum-2.c, gcc.dg/c11-enum-3.c,
+	gcc.dg/c2x-enum-1.c, gcc.dg/c2x-enum-2.c, gcc.dg/c2x-enum-3.c,
+	gcc.dg/c2x-enum-4.c, gcc.dg/c2x-enum-5.c: New tests.
+	* gcc.dg/pr30260.c: Explicitly use -std=gnu11.  Update expected
+	diagnostics.
+	* gcc.dg/torture/pr25183.c: Update expected diagnostics.
+
+2022-10-18  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-agg-11.c: Adjust dumps.
+	* gcc.dg/ipa/ipcp-agg-8.c: Likewise.
+
+2022-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107302
+	* gcc.dg/vect/pr107302.c: New testcase.
+
+2022-10-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/pr107275.c: New test.
+
+2022-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* g++.dg/cpp23/attr-assume5.C: New test.
+	* g++.dg/cpp23/attr-assume6.C: New test.
+	* g++.dg/cpp23/attr-assume7.C: New test.
+
+2022-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107301
+	* gcc.dg/torture/pr107301.c: New testcase.
+
+2022-10-18  Liwei Xu  <liwei.xu@intel.com>
+
+	PR testsuite/107220
+	* gcc.dg/tree-ssa/forwprop-19.c: Move scanning pass from
+	forwprop1 to dse1, This fixs the test case fail.
+
+2022-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107273
+	* gcc.dg/tree-ssa/pr107273-1.c: New.
+	* gcc.dg/tree-ssa/pr107273-2.c: New.
+
+2022-10-17  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104330
+	* gfortran.dg/pr104330.f90: New test.
+
+2022-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107293
+	* gcc.dg/tree-ssa/pr107293.c: New test.
+
+2022-10-17  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/93483
+	PR fortran/107216
+	PR fortran/107219
+	* gfortran.dg/array_constructor_56.f90: New test.
+	* gfortran.dg/array_constructor_57.f90: New test.
+
+2022-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107272
+	* gfortran.dg/pr107272.f90: New test.
+
+2022-10-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107266
+	* gfortran.dg/char4_decl.f90: New test.
+	* gfortran.dg/char4_decl-2.f90: New test.
+
+2022-10-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101449
+	* g++.dg/modules/cexpr-3_a.C: New test.
+	* g++.dg/modules/cexpr-3_b.C: New test.
+
+2022-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/105820
+	* g++.dg/tree-ssa/pr105820.c: New test.
+
+2022-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-3a.c: New.
+	* gcc.dg/tree-ssa/vrp-float-4a.c: New.
+	* gcc.dg/tree-ssa/vrp-float-5a.c: New.
+
+2022-10-17  Richard Biener  <rguenther@suse.de>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR tree-optimization/99409
+	PR tree-optimization/99394
+	* gcc.dg/vect/vect-recurr-1.c: New testcase.
+	* gcc.dg/vect/vect-recurr-2.c: Likewise.
+	* gcc.dg/vect/vect-recurr-3.c: Likewise.
+	* gcc.dg/vect/vect-recurr-4.c: Likewise.
+	* gcc.dg/vect/vect-recurr-5.c: Likewise.
+	* gcc.dg/vect/vect-recurr-6.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s252.c: Un-XFAIL.
+	* gcc.dg/vect/tsvc/vect-tsvc-s254.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s291.c: Likewise.
+
 2022-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/c2x-ucnid-1-utf8.c, gcc.dg/cpp/c2x-ucnid-1.c: New

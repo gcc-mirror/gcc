@@ -2052,6 +2052,31 @@ dump_gimple_omp_return (pretty_printer *buffer, const gimple *gs, int spc,
     }
 }
 
+/* Dump a GIMPLE_ASSUME tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_assume (pretty_printer *buffer, const gimple *gs,
+		    int spc, dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    dump_gimple_fmt (buffer, spc, flags,
+		     "%G [GUARD=%T] <%+BODY <%S> >",
+		     gs, gimple_assume_guard (gs),
+		     gimple_assume_body (gs));
+  else
+    {
+      pp_string (buffer, "[[assume (");
+      dump_generic_node (buffer, gimple_assume_guard (gs), spc, flags, false);
+      pp_string (buffer, ")]]");
+      newline_and_indent (buffer, spc + 2);
+      pp_left_brace (buffer);
+      pp_newline (buffer);
+      dump_gimple_seq (buffer, gimple_assume_body (gs), spc + 4, flags);
+      newline_and_indent (buffer, spc + 2);
+      pp_right_brace (buffer);
+    }
+}
+
 /* Dump a GIMPLE_TRANSACTION tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -2839,6 +2864,10 @@ pp_gimple_stmt_1 (pretty_printer *buffer, const gimple *gs, int spc,
 	pp_string (buffer, "unlikely by ");
       pp_string (buffer, predictor_name (gimple_predict_predictor (gs)));
       pp_string (buffer, " predictor.");
+      break;
+
+    case GIMPLE_ASSUME:
+      dump_gimple_assume (buffer, gs, spc, flags);
       break;
 
     case GIMPLE_TRANSACTION:

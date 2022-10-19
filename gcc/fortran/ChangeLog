@@ -1,3 +1,51 @@
+2022-10-17  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104330
+	* simplify.cc (gfc_simplify_image_index): Do not dereference NULL
+	pointer.
+
+2022-10-17  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/93483
+	PR fortran/107216
+	PR fortran/107219
+	* arith.cc (reduce_unary): Handled expressions are EXP_CONSTANT and
+	EXPR_ARRAY.  Do not attempt to reduce otherwise.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Moved check for EXP_CONSTANT and EXPR_ARRAY
+	from here ...
+	(reduce_binary): ... to here.
+	(eval_intrinsic): Catch failed reductions.
+	* gfortran.h (GFC_INTRINSIC_OPS): New enum ARITH_NOT_REDUCED to keep
+	track of expressions that were not reduced by the arithmetic evaluation
+	code.
+
+2022-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107272
+	* arith.cc (gfc_arith_not): Operand must be of type BT_LOGICAL.
+	(gfc_arith_and): Likewise.
+	(gfc_arith_or): Likewise.
+	(gfc_arith_eqv): Likewise.
+	(gfc_arith_neqv): Likewise.
+	(gfc_arith_eq): Compare consistency of types of operands.
+	(gfc_arith_ne): Likewise.
+	(gfc_arith_gt): Likewise.
+	(gfc_arith_ge): Likewise.
+	(gfc_arith_lt): Likewise.
+	(gfc_arith_le): Likewise.
+
+2022-10-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107266
+	* trans-expr.cc (gfc_conv_string_parameter): Use passed
+	type to honor character kind.
+	* trans-types.cc (gfc_sym_type): Honor character kind.
+	* trans-decl.cc (gfc_conv_cfi_to_gfc): Fix handling kind=4
+	character strings.
+
 2022-10-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100971

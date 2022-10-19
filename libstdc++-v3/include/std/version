@@ -302,7 +302,7 @@
 #if __cplusplus > 202002L
 // c++23
 #define __cpp_lib_byteswap 202110L
-#define __cpp_lib_constexpr_charconv 202202L
+#define __cpp_lib_constexpr_charconv 202207L
 #define __cpp_lib_constexpr_typeinfo 202106L
 #if __cpp_concepts >= 202002L
 # define __cpp_lib_expected 202202L

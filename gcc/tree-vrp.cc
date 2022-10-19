@@ -4441,6 +4441,35 @@ public:
   int my_pass;
 }; // class pass_vrp
 
+const pass_data pass_data_assumptions =
+{
+  GIMPLE_PASS, /* type */
+  "assumptions", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_ASSUMPTIONS, /* tv_id */
+  PROP_ssa, /* properties_required */
+  PROP_assumptions_done, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_end */
+};
+
+class pass_assumptions : public gimple_opt_pass
+{
+public:
+  pass_assumptions (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_assumptions, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *fun) final override { return fun->assume_function; }
+  unsigned int execute (function *) final override
+    {
+      return TODO_discard_function;
+    }
+
+}; // class pass_assumptions
+
 } // anon namespace
 
 gimple_opt_pass *
@@ -4453,4 +4482,10 @@ gimple_opt_pass *
 make_pass_early_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt, pass_data_early_vrp);
+}
+
+gimple_opt_pass *
+make_pass_assumptions (gcc::context *ctx)
+{
+  return new pass_assumptions (ctx);
 }

@@ -202,6 +202,7 @@ static bool omp_maybe_offloaded_ctx (omp_context *ctx);
     case GIMPLE_TRY: \
     case GIMPLE_CATCH: \
     case GIMPLE_EH_FILTER: \
+    case GIMPLE_ASSUME: \
     case GIMPLE_TRANSACTION: \
       /* The sub-statements for these should be walked.  */ \
       *handled_ops_p = false; \
@@ -14412,6 +14413,9 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GIMPLE_TRY:
       lower_omp (gimple_try_eval_ptr (stmt), ctx);
       lower_omp (gimple_try_cleanup_ptr (stmt), ctx);
+      break;
+    case GIMPLE_ASSUME:
+      lower_omp (gimple_assume_body_ptr (stmt), ctx);
       break;
     case GIMPLE_TRANSACTION:
       lower_omp (gimple_transaction_body_ptr (as_a <gtransaction *> (stmt)),

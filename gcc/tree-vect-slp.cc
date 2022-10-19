@@ -693,6 +693,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	    case vect_reduction_def:
 	    case vect_induction_def:
 	    case vect_nested_cycle:
+	    case vect_first_order_recurrence:
 	      break;
 
 	    default:
@@ -1732,7 +1733,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  }
 	else if (def_type == vect_reduction_def
 		 || def_type == vect_double_reduction_def
-		 || def_type == vect_nested_cycle)
+		 || def_type == vect_nested_cycle
+		 || def_type == vect_first_order_recurrence)
 	  {
 	    /* Else def types have to match.  */
 	    stmt_vec_info other_info;
@@ -1746,7 +1748,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      }
 	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 	    /* Reduction initial values are not explicitely represented.  */
-	    if (!nested_in_vect_loop_p (loop, stmt_info))
+	    if (def_type != vect_first_order_recurrence
+		&& !nested_in_vect_loop_p (loop, stmt_info))
 	      skip_args[loop_preheader_edge (loop)->dest_idx] = true;
 	    /* Reduction chain backedge defs are filled manually.
 	       ???  Need a better way to identify a SLP reduction chain PHI.
@@ -9210,11 +9213,34 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	  child = SLP_TREE_CHILDREN (phi_node)[dest_idx];
 	  if (!child || SLP_TREE_DEF_TYPE (child) != vect_internal_def)
 	    continue;
+	  unsigned n = SLP_TREE_VEC_STMTS (phi_node).length ();
 	  /* Simply fill all args.  */
-	  for (unsigned i = 0; i < SLP_TREE_VEC_STMTS (phi_node).length (); ++i)
-	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[i]),
-			 vect_get_slp_vect_def (child, i),
-			 e, gimple_phi_arg_location (phi, dest_idx));
+	  if (STMT_VINFO_DEF_TYPE (SLP_TREE_REPRESENTATIVE (phi_node))
+	      != vect_first_order_recurrence)
+	    for (unsigned i = 0; i < n; ++i)
+	      add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[i]),
+			   vect_get_slp_vect_def (child, i),
+			   e, gimple_phi_arg_location (phi, dest_idx));
+	  else
+	    {
+	      /* Unless it is a first order recurrence which needs
+		 args filled in for both the PHI node and the permutes.  */
+	      gimple *perm = SLP_TREE_VEC_STMTS (phi_node)[0];
+	      gimple *rphi = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (perm));
+	      add_phi_arg (as_a <gphi *> (rphi),
+			   vect_get_slp_vect_def (child, n - 1),
+			   e, gimple_phi_arg_location (phi, dest_idx));
+	      for (unsigned i = 0; i < n; ++i)
+		{
+		  gimple *perm = SLP_TREE_VEC_STMTS (phi_node)[i];
+		  if (i > 0)
+		    gimple_assign_set_rhs1 (perm,
+					    vect_get_slp_vect_def (child, i - 1));
+		  gimple_assign_set_rhs2 (perm,
+					  vect_get_slp_vect_def (child, i));
+		  update_stmt (perm);
+		}
+	    }
 	}
     }
 }

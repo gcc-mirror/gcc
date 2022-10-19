@@ -1,3 +1,24 @@
+2022-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Quote variable.
+
+2022-10-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* unwind-generic.h (_Unwind_Frames_Increment): Add the EXC
+	argument.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Pass EXC to
+	_Unwind_Frames_Increment.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Take the EXC argument.  Return _URC_FATAL_PHASE2_ERROR if the
+	return address on normal stack doesn't match the return address
+	on shadow stack.
+
+2022-10-17  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2.h (struct frame_state_reg_info): Move cfa_how member
+	and reduce its size.
+
 2022-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/t-softfp (softfp_extensions): Add bfsf.

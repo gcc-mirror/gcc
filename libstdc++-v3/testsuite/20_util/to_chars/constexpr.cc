@@ -5,7 +5,7 @@
 
 #ifndef __cpp_lib_constexpr_charconv
 # error "Feature-test macro for constexpr charconv missing in <charconv>"
-#elif __cpp_lib_constexpr_charconv != 202202L
+#elif __cpp_lib_constexpr_charconv != 202207L
 # error "Feature-test macro for constexpr charconv has wrong value in <charconv>"
 #endif
 

@@ -402,7 +402,7 @@ VnMODE (int n, machine_mode mode)
 {
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       switch (n)
 	{
 	case 2: return V2QImode;
@@ -413,7 +413,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64QImode;
 	}
       break;
-    case HImode:
+    case E_HImode:
       switch (n)
 	{
 	case 2: return V2HImode;
@@ -424,7 +424,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64HImode;
 	}
       break;
-    case HFmode:
+    case E_HFmode:
       switch (n)
 	{
 	case 2: return V2HFmode;
@@ -435,7 +435,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64HFmode;
 	}
       break;
-    case SImode:
+    case E_SImode:
       switch (n)
 	{
 	case 2: return V2SImode;
@@ -446,7 +446,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64SImode;
 	}
       break;
-    case SFmode:
+    case E_SFmode:
       switch (n)
 	{
 	case 2: return V2SFmode;
@@ -457,7 +457,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64SFmode;
 	}
       break;
-    case DImode:
+    case E_DImode:
       switch (n)
 	{
 	case 2: return V2DImode;
@@ -468,7 +468,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64DImode;
 	}
       break;
-    case DFmode:
+    case E_DFmode:
       switch (n)
 	{
 	case 2: return V2DFmode;

@@ -1,3 +1,26 @@
+2022-10-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105045
+	* module.cc (trees_out::tpl_parms_fini): Don't assume default
+	template arguments must be trailing.
+	(trees_in::tpl_parms_fini): Likewise.
+
+2022-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* cp-tree.h (build_assume_call): Declare.
+	* parser.cc (cp_parser_omp_assumption_clauses): Use build_assume_call.
+	* cp-gimplify.cc (build_assume_call): New function.
+	(process_stmt_assume_attribute): Use build_assume_call.
+	* pt.cc (tsubst_copy_and_build): Likewise.
+
+2022-10-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101449
+	* module.cc (trees_out::write_function_def): Stream the
+	parms and result of the constexpr_fundef entry.
+	(trees_in::read_function_def): Likewise.
+
 2022-10-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106304

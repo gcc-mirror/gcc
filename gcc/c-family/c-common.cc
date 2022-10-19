@@ -2298,6 +2298,10 @@ c_common_type_for_size (unsigned int bits, int unsignedp)
   if (bits <= TYPE_PRECISION (intDI_type_node))
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
 
+  if (bits <= TYPE_PRECISION (widest_integer_literal_type_node))
+    return (unsignedp ? widest_unsigned_literal_type_node
+	    : widest_integer_literal_type_node);
+
   return NULL_TREE;
 }
 

@@ -11,7 +11,7 @@ riscv-vector-builtins.o: $(srcdir)/config/riscv/riscv-vector-builtins.cc \
   $(FUNCTION_H) fold-const.h gimplify.h explow.h stor-layout.h $(REGS_H) \
   alias.h langhooks.h attribs.h stringpool.h \
   $(srcdir)/config/riscv/riscv-vector-builtins.h \
-	$(srcdir)/config/riscv/riscv-vector-builtins.def
+  $(srcdir)/config/riscv/riscv-vector-builtins.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-vector-builtins.cc
 

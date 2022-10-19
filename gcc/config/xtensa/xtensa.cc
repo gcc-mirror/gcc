@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hw-doloop.h"
 #include "rtl-iter.h"
 #include "insn-attr.h"
+#include "tree-pass.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -199,6 +200,7 @@ static void xtensa_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 				    HOST_WIDE_INT delta,
 				    HOST_WIDE_INT vcall_offset,
 				    tree function);
+static bool xtensa_lra_p (void);
 
 static rtx xtensa_delegitimize_address (rtx);
 
@@ -295,7 +297,7 @@ static rtx xtensa_delegitimize_address (rtx);
 #define TARGET_CANNOT_FORCE_CONST_MEM xtensa_cannot_force_const_mem
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
+#define TARGET_LRA_P xtensa_lra_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xtensa_legitimate_address_p
@@ -492,21 +494,30 @@ xtensa_mask_immediate (HOST_WIDE_INT v)
 int
 xt_true_regnum (rtx x)
 {
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     {
-      if (reg_renumber
-	  && REGNO (x) >= FIRST_PSEUDO_REGISTER
-	  && reg_renumber[REGNO (x)] >= 0)
+      if (! HARD_REGISTER_P (x)
+	  && reg_renumber
+	  && (lra_in_progress || reg_renumber[REGNO (x)] >= 0))
 	return reg_renumber[REGNO (x)];
       return REGNO (x);
     }
-  if (GET_CODE (x) == SUBREG)
+  if (SUBREG_P (x))
     {
       int base = xt_true_regnum (SUBREG_REG (x));
-      if (base >= 0 && base < FIRST_PSEUDO_REGISTER)
-        return base + subreg_regno_offset (REGNO (SUBREG_REG (x)),
-                                           GET_MODE (SUBREG_REG (x)),
-                                           SUBREG_BYTE (x), GET_MODE (x));
+
+      if (base >= 0
+	  && HARD_REGISTER_NUM_P (base))
+	{
+	  struct subreg_info info;
+
+	  subreg_get_info (lra_in_progress
+			   ? (unsigned) base : REGNO (SUBREG_REG (x)),
+			   GET_MODE (SUBREG_REG (x)),
+			   SUBREG_BYTE (x), GET_MODE (x), &info);
+	  if (info.representable_p)
+	    return base + info.offset;
+	}
     }
   return -1;
 }
@@ -2474,6 +2485,36 @@ xtensa_shlrd_which_direction (rtx op0, rtx op1)
     return LSHIFTRT;	/* shrd  */
 
   return UNKNOWN;
+}
+
+
+/* Return true after "split1" pass has been finished.  */
+
+bool
+xtensa_split1_finished_p (void)
+{
+  return cfun && (cfun->curr_properties & PROP_rtl_split_insns);
+}
+
+
+/* Split a DImode pair of reg (operand[0]) and const_int (operand[1]) into
+   two SImode pairs, the low-part (operands[0] and [1]) and the high-part
+   (operands[2] and [3]).  */
+
+void
+xtensa_split_DI_reg_imm (rtx *operands)
+{
+  rtx lowpart, highpart;
+
+  if (WORDS_BIG_ENDIAN)
+    split_double (operands[1], &highpart, &lowpart);
+  else
+    split_double (operands[1], &lowpart, &highpart);
+
+  operands[3] = highpart;
+  operands[2] = gen_highpart (SImode, operands[0]);
+  operands[1] = lowpart;
+  operands[0] = gen_lowpart (SImode, operands[0]);
 }
 
 
@@ -5117,6 +5158,14 @@ xtensa_delegitimize_address (rtx op)
       break;
     }
   return op;
+}
+
+/* Implement TARGET_LRA_P.  */
+
+static bool
+xtensa_lra_p (void)
+{
+  return TARGET_LRA;
 }
 
 #include "gt-xtensa.h"

@@ -1,3 +1,24 @@
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107164
+	* c-decl.cc (shadow_tag_warned): If pedantic, diagnose "enum tag;"
+	with previous declaration visible.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* c-decl.cc (finish_enum): If any enumerators do not fit in int,
+	convert all to the type of the enumeration.  pedwarn if no integer
+	type fits all enumerators and default to
+	widest_integer_literal_type_node in that case.  Otherwise pedwarn
+	for type wider than intmax_t.
+	(build_enumerator): pedwarn for enumerators outside the range of
+	uintmax_t or intmax_t, and otherwise use pedwarn_c11 for
+	enumerators outside the range of int.  On overflow, attempt to
+	find a wider type that can hold the value of the next enumerator.
+	Do not convert value to type determined with
+	c_common_type_for_size.
+
 2022-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.cc (convert_arguments): Don't promote __bf16 to
