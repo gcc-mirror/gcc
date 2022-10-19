@@ -1351,7 +1351,11 @@ foperator_unordered_le::op1_range (frange &r, tree type,
       break;
 
     case BRS_FALSE:
-      if (build_gt (r, type, op2))
+      // A false UNORDERED_LE means both operands are !NAN, so it's
+      // impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_gt (r, type, op2))
 	r.clear_nan ();
       break;
 
@@ -1375,7 +1379,11 @@ foperator_unordered_le::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      if (build_lt (r, type, op1))
+      // A false UNORDERED_LE means both operands are !NAN, so it's
+      // impossible for op1 to be a NAN.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else if (build_lt (r, type, op1))
 	r.clear_nan ();
       break;
 
@@ -1434,7 +1442,11 @@ foperator_unordered_gt::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      if (build_le (r, type, op2))
+      // A false UNORDERED_GT means both operands are !NAN, so it's
+      // impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_le (r, type, op2))
 	r.clear_nan ();
       break;
 
@@ -1458,7 +1470,11 @@ foperator_unordered_gt::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      if (build_ge (r, type, op1))
+      // A false UNORDERED_GT means both operands are !NAN, so it's
+      // impossible for op1 to be a NAN.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else if (build_ge (r, type, op1))
 	r.clear_nan ();
       break;
 
@@ -1517,7 +1533,11 @@ foperator_unordered_ge::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      if (build_lt (r, type, op2))
+      // A false UNORDERED_GE means both operands are !NAN, so it's
+      // impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_lt (r, type, op2))
 	r.clear_nan ();
       break;
 
@@ -1540,7 +1560,11 @@ foperator_unordered_ge::op2_range (frange &r, tree type,
       break;
 
     case BRS_FALSE:
-      if (build_gt (r, type, op1))
+      // A false UNORDERED_GE means both operands are !NAN, so it's
+      // impossible for op1 to be a NAN.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else if (build_gt (r, type, op1))
 	r.clear_nan ();
       break;
 
@@ -1606,10 +1630,17 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
       break;
 
     case BRS_FALSE:
-      // The false side indictates !NAN and not equal.  We can at least
-      // represent !NAN.
-      r.set_varying (type);
-      r.clear_nan ();
+      // A false UNORDERED_EQ means both operands are !NAN, so it's
+      // impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else
+	{
+	  // The false side indictates !NAN and not equal.  We can at least
+	  // represent !NAN.
+	  r.set_varying (type);
+	  r.clear_nan ();
+	}
       break;
 
     default:
