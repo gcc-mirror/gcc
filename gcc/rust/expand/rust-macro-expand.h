@@ -230,7 +230,7 @@ struct MacroExpander
   MacroExpander (AST::Crate &crate, ExpansionCfg cfg, Session &session)
     : cfg (cfg), crate (crate), session (session),
       sub_stack (SubstitutionScope ()),
-      expanded_fragment (AST::ASTFragment::create_error ()),
+      expanded_fragment (AST::Fragment::create_error ()),
       resolver (Resolver::Resolver::get ()),
       mappings (Analysis::Mappings::get ())
   {}
@@ -246,10 +246,9 @@ struct MacroExpander
   void expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon);
 
   // Expands a single declarative macro.
-  AST::ASTFragment expand_decl_macro (Location locus,
-				      AST::MacroInvocData &invoc,
-				      AST::MacroRulesDefinition &rules_def,
-				      bool semicolon);
+  AST::Fragment expand_decl_macro (Location locus, AST::MacroInvocData &invoc,
+				   AST::MacroRulesDefinition &rules_def,
+				   bool semicolon);
 
   void expand_cfg_attrs (AST::AttrVec &attrs);
   bool fails_cfg (const AST::AttrVec &attr) const;
@@ -260,7 +259,7 @@ struct MacroExpander
   bool try_match_rule (AST::MacroRule &match_rule,
 		       AST::DelimTokenTree &invoc_token_tree);
 
-  AST::ASTFragment transcribe_rule (
+  AST::Fragment transcribe_rule (
     AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
     std::map<std::string, MatchedFragmentContainer> &matched_fragments,
     bool semicolon, ContextType ctx);
@@ -314,16 +313,16 @@ struct MacroExpander
 
   ContextType peek_context () { return context.back (); }
 
-  void set_expanded_fragment (AST::ASTFragment &&fragment)
+  void set_expanded_fragment (AST::Fragment &&fragment)
   {
     expanded_fragment = std::move (fragment);
   }
 
-  AST::ASTFragment take_expanded_fragment (AST::ASTVisitor &vis)
+  AST::Fragment take_expanded_fragment (AST::ASTVisitor &vis)
   {
-    AST::ASTFragment old_fragment = std::move (expanded_fragment);
+    AST::Fragment old_fragment = std::move (expanded_fragment);
     auto accumulator = std::vector<AST::SingleASTNode> ();
-    expanded_fragment = AST::ASTFragment::create_error ();
+    expanded_fragment = AST::Fragment::create_error ();
     auto early_name_resolver = Resolver::EarlyNameResolver ();
 
     for (auto &node : old_fragment.get_nodes ())
@@ -345,7 +344,7 @@ struct MacroExpander
 	    auto new_nodes = expanded_fragment.get_nodes ();
 	    std::move (new_nodes.begin (), new_nodes.end (),
 		       std::back_inserter (accumulator));
-	    expanded_fragment = AST::ASTFragment (accumulator);
+	    expanded_fragment = AST::Fragment (accumulator);
 	  }
 	expansion_depth--;
       }
@@ -358,7 +357,7 @@ private:
   Session &session;
   SubstitutionScope sub_stack;
   std::vector<ContextType> context;
-  AST::ASTFragment expanded_fragment;
+  AST::Fragment expanded_fragment;
 
 public:
   Resolver::Resolver *resolver;

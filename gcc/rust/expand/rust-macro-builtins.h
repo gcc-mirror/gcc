@@ -20,6 +20,7 @@
 #define RUST_MACRO_BUILTINS_H
 
 #include "rust-ast.h"
+#include "rust-ast-fragment.h"
 #include "rust-location.h"
 
 /**
@@ -61,6 +62,7 @@
 
 /* If assert is defined as a macro this file will not parse, so undefine this
    before continuing.  */
+// TODO: Rename all functions here `*_handler`
 #ifdef assert
 #undef assert
 #endif
@@ -69,38 +71,34 @@ namespace Rust {
 class MacroBuiltin
 {
 public:
-  static AST::ASTFragment assert (Location invoc_locus,
-				  AST::MacroInvocData &invoc);
-
-  static AST::ASTFragment file (Location invoc_locus,
-				AST::MacroInvocData &invoc);
-
-  static AST::ASTFragment column (Location invoc_locus,
-				  AST::MacroInvocData &invoc);
-
-  static AST::ASTFragment include_bytes (Location invoc_locus,
-					 AST::MacroInvocData &invoc);
-
-  static AST::ASTFragment include_str (Location invoc_locus,
-				       AST::MacroInvocData &invoc);
-
-  static AST::ASTFragment compile_error (Location invoc_locus,
-					 AST::MacroInvocData &invoc);
-
-  static AST::ASTFragment concat (Location invoc_locus,
-				  AST::MacroInvocData &invoc);
-
-  static AST::ASTFragment env (Location invoc_locus,
+  static AST::Fragment assert (Location invoc_locus,
 			       AST::MacroInvocData &invoc);
 
-  static AST::ASTFragment cfg (Location invoc_locus,
+  static AST::Fragment file (Location invoc_locus, AST::MacroInvocData &invoc);
+
+  static AST::Fragment column (Location invoc_locus,
 			       AST::MacroInvocData &invoc);
 
-  static AST::ASTFragment include (Location invoc_locus,
-				   AST::MacroInvocData &invoc);
+  static AST::Fragment include_bytes (Location invoc_locus,
+				      AST::MacroInvocData &invoc);
 
-  static AST::ASTFragment line (Location invoc_locus,
+  static AST::Fragment include_str (Location invoc_locus,
+				    AST::MacroInvocData &invoc);
+
+  static AST::Fragment compile_error (Location invoc_locus,
+				      AST::MacroInvocData &invoc);
+
+  static AST::Fragment concat (Location invoc_locus,
+			       AST::MacroInvocData &invoc);
+
+  static AST::Fragment env (Location invoc_locus, AST::MacroInvocData &invoc);
+
+  static AST::Fragment cfg (Location invoc_locus, AST::MacroInvocData &invoc);
+
+  static AST::Fragment include (Location invoc_locus,
 				AST::MacroInvocData &invoc);
+
+  static AST::Fragment line (Location invoc_locus, AST::MacroInvocData &invoc);
 };
 } // namespace Rust
 
