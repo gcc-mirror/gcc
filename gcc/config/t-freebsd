@@ -19,3 +19,7 @@
 freebsd-d.o: $(srcdir)/config/freebsd-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+freebsd-rust.o: $(srcdir)/config/freebsd-rust.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)

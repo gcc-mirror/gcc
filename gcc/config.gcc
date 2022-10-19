@@ -790,6 +790,8 @@ case ${target} in
   d_target_objs="${d_target_objs} dragonfly-d.o"
   tmake_file="${tmake_file} t-dragonfly"
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} dragonfly-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later
@@ -841,9 +843,14 @@ case ${target} in
   d_target_objs="${d_target_objs} freebsd-d.o"
   tmake_file="${tmake_file} t-freebsd"
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} freebsd-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-fuchsia*)
   native_system_header_dir=/include
+  tmake_file="t-fuchsia"
+  rust_target_objs="${rust_target_objs} fuchsia-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
   extra_options="$extra_options gnu-user.opt"
@@ -912,6 +919,12 @@ case ${target} in
       gcc_cv_initfini_array=yes
       ;;
   esac
+  case $target in
+    *linux*)
+      rust_target_objs="${rust_target_objs} linux-rust.o"
+      target_has_targetrustm=yes
+      ;;
+  esac
   ;;
 *-*-netbsd*)
   tm_p_file="${tm_p_file} netbsd-protos.h"
@@ -932,6 +945,8 @@ case ${target} in
       default_gnu_indirect_function=yes
       ;;
   esac
+  rust_target_objs="${rust_target_objs} netbsd-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
@@ -947,6 +962,8 @@ case ${target} in
   esac
   d_target_objs="${d_target_objs} openbsd-d.o"
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} openbsd-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-phoenix*)
   gas=yes
@@ -1011,6 +1028,8 @@ case ${target} in
       ;;
   esac
   target_has_targetdm=yes
+  rust_target_objs="${rust_target_objs} sol2-rust.o"
+  target_has_targetrustm=yes
   ;;
 *-*-*vms*)
   extra_options="${extra_options} vms/vms.opt"
@@ -1042,6 +1061,9 @@ case ${target} in
   cxx_target_objs="${cxx_target_objs} vxworks-c.o"
   extra_headers="${extra_headers} ../vxworks/vxworks-predef.h"
   target_has_targetcm="yes"
+
+  rust_target_objs="${rust_target_objs} vxworks-rust.o"
+  target_has_targetrustm=yes
 
   # This private header exposes a consistent interface for checks on
   # the VxWorks version our runtime header files need to perform, based on
@@ -2100,6 +2122,8 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	d_target_objs="${d_target_objs} winnt-d.o"
 	target_has_targetcm="yes"
 	target_has_targetdm="yes"
+	rust_target_objs="${rust_target_objs} winnt-rust.o"
+	target_has_targetrustm="yes"
 	case ${target} in
 		x86_64-*-* | *-w64-*)
 			need_64bit_isa=yes

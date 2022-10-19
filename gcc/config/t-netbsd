@@ -23,3 +23,7 @@ netbsd.o: $(srcdir)/config/netbsd.cc
 netbsd-d.o: $(srcdir)/config/netbsd-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+netbsd-rust.o: $(srcdir)/config/netbsd-rust.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
