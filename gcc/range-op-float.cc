@@ -239,7 +239,9 @@ frange_add_zeros (frange &r, tree type)
     }
 }
 
-// Build a range that is <= VAL and store it in R.
+// Build a range that is <= VAL and store it in R.  Return TRUE if
+// further changes may be needed for R, or FALSE if R is in its final
+// form.
 
 static bool
 build_le (frange &r, tree type, const frange &val)
@@ -255,7 +257,9 @@ build_le (frange &r, tree type, const frange &val)
   return true;
 }
 
-// Build a range that is < VAL and store it in R.
+// Build a range that is < VAL and store it in R.  Return TRUE if
+// further changes may be needed for R, or FALSE if R is in its final
+// form.
 
 static bool
 build_lt (frange &r, tree type, const frange &val)
@@ -277,7 +281,9 @@ build_lt (frange &r, tree type, const frange &val)
   return true;
 }
 
-// Build a range that is >= VAL and store it in R.
+// Build a range that is >= VAL and store it in R.  Return TRUE if
+// further changes may be needed for R, or FALSE if R is in its final
+// form.
 
 static bool
 build_ge (frange &r, tree type, const frange &val)
@@ -293,7 +299,9 @@ build_ge (frange &r, tree type, const frange &val)
   return true;
 }
 
-// Build a range that is > VAL and store it in R.
+// Build a range that is > VAL and store it in R.  Return TRUE if
+// further changes may be needed for R, or FALSE if R is in its final
+// form.
 
 static bool
 build_gt (frange &r, tree type, const frange &val)
@@ -979,11 +987,8 @@ foperator_ge::op2_range (frange &r, tree type,
       // The TRUE side of NAN >= x is unreachable.
       if (op1.known_isnan ())
 	r.set_undefined ();
-      else
-	{
-	  build_le (r, type, op1);
-	  r.clear_nan ();
-	}
+      else if (build_le (r, type, op1))
+	r.clear_nan ();
       break;
 
     case BRS_FALSE:
@@ -1354,8 +1359,8 @@ foperator_unordered_le::op1_range (frange &r, tree type,
       break;
 
     case BRS_FALSE:
-      build_gt (r, type, op2);
-      r.clear_nan ();
+      if (build_gt (r, type, op2))
+	r.clear_nan ();
       break;
 
     default:
@@ -1378,8 +1383,8 @@ foperator_unordered_le::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_lt (r, type, op1);
-      r.clear_nan ();
+      if (build_lt (r, type, op1))
+	r.clear_nan ();
       break;
 
     default:
@@ -1437,8 +1442,8 @@ foperator_unordered_gt::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_le (r, type, op2);
-      r.clear_nan ();
+      if (build_le (r, type, op2))
+	r.clear_nan ();
       break;
 
     default:
@@ -1461,8 +1466,8 @@ foperator_unordered_gt::op2_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_ge (r, type, op1);
-      r.clear_nan ();
+      if (build_ge (r, type, op1))
+	r.clear_nan ();
       break;
 
     default:
@@ -1520,8 +1525,8 @@ foperator_unordered_ge::op1_range (frange &r,
       break;
 
     case BRS_FALSE:
-      build_lt (r, type, op2);
-      r.clear_nan ();
+      if (build_lt (r, type, op2))
+	r.clear_nan ();
       break;
 
     default:
@@ -1543,8 +1548,8 @@ foperator_unordered_ge::op2_range (frange &r, tree type,
       break;
 
     case BRS_FALSE:
-      build_gt (r, type, op1);
-      r.clear_nan ();
+      if (build_gt (r, type, op1))
+	r.clear_nan ();
       break;
 
     default:
