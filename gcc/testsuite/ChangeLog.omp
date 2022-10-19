@@ -1,3 +1,11 @@
+2022-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/affinity-clause-1.f90: Revert to upsteam version,
+	update one scan-tree item.
+	* gfortran.dg/gomp/depend-4.f90: Revert to upstream version.
+	* gfortran.dg/gomp/depend-5.f90: Likewise.
+	* gfortran.dg/gomp/depend-6.f90: Likewise.
+
 2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/depend-5.f90: Update scan-tree-dump.

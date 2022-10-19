@@ -172,36 +172,36 @@ end
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:depvar\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(in:depvar\\)" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "&object = &ss;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:8|16)\\) = sp;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:16|32)\\) = sa;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:24|48)\\) = &aa;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:32|64)\\) = \\(void \\*\\\[0:\\\] \\* restrict\\) aaa.data;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:40|80)\\) = \\(void \\*\\\[0:\\\] \\*\\) aap.data;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:48|96)\\) = dss;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:56|112)\\) = \\*dsp;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:64|128)\\) = \\*dsa;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:72|144)\\) = daa;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:80|160)\\) = \\(void \\*\\\[0:\\\] \\* restrict\\) daaa->data;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:88|176)\\) = \\(void \\*\\\[0:\\\] \\*\\) daap->data;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:96|192)\\) = doss;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:104|208)\\) = \\*dosp;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:112|224)\\) = \\*dosa;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:120|240)\\) = doaa;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:128|256)\\) = \\(void \\*\\\[0:\\\] \\* restrict\\) doaaa->data;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:136|272)\\) = \\(void \\*\\\[0:\\\] \\*\\) doaap->data;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:144|288)\\) = &dssv;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object \\+ (?:152|304)\\) = &dossv;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[0\\\] = &ss;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[1\\\] = sp;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[2\\\] = sa;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[3\\\] = &aa;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[4\\\] = .void \\*\\\[0:\\\] \\* restrict\\) aaa.data;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[5\\\] = .void \\*\\\[0:\\\] \\*\\) aap.data;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[6\\\] = dss;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[7\\\] = \\*dsp;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[8\\\] = \\*dsa;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[9\\\] = daa;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[10\\\] = .void \\*\\\[0:\\\] \\* restrict\\) daaa->data;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[11\\\] = .void \\*\\\[0:\\\] \\*\\) daap->data;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[12\\\] = doss;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[13\\\] = \\*dosp;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[14\\\] = \\*dosa;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[15\\\] = doaa;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[16\\\] = .void \\*\\\[0:\\\] \\* restrict\\) doaaa->data;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[17\\\] = .void \\*\\\[0:\\\] \\*\\) doaap->data;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[18\\\] = &dssv;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[19\\\] = &dossv;" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "&elem = \\(void \\* \\*\\) &aa \\+ (?:4|8);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:8|16)\\) = \\(void \\* \\*\\) aaa.data \\+ \\(sizetype\\) \\(\\(aaa.offset \\+ 2\\) \\* (?:4|8)\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:16|32)\\) = \\(void \\* \\*\\) \\(aap.data \\+ \\(sizetype\\) \\(\\(aap.offset \\+ aap.dim\\\[0\\\].stride \\* 2\\) \\* aap.span\\)\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:24|48)\\) = \\(void \\* \\*\\) daa \\+ (?:4|8);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:32|64)\\) = \\(void \\* \\*\\) daaa->data \\+ \\(sizetype\\) \\(\\(daaa->offset \\+ 2\\) \\* (?:4|8)\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:40|80)\\) = \\(void \\* \\*\\) \\(daap->data \\+ \\(sizetype\\) \\(\\(daap->offset \\+ daap->dim\\\[0\\\].stride \\* 2\\) \\* daap->span\\)\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:48|96)\\) = \\(void \\* \\*\\) doaa \\+ (?:4|8);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:56|112)\\) = \\(void \\* \\*\\) doaaa->data \\+ \\(sizetype\\) \\(\\(doaaa->offset \\+ 2\\) \\* (?:4|8)\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem \\+ (?:64|128)\\) = \\(void \\* \\*\\) \\(doaap->data \\+ \\(sizetype\\) \\(\\(doaap->offset \\+ doaap->dim\\\[0\\\].stride \\* 2\\) \\* doaap->span\\)\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[0\\\] = &aa\\\[1\\\];" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[1\\\] = &\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) aaa.data\\)\\\[aaa.offset \\+ 2\\\];" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[2\\\] = \\(void \\* \\*\\) \\(aap.data \\+ .sizetype. \\(\\(aap.offset \\+ aap.dim\\\[0\\\].stride \\* 2\\) \\* aap.span\\)\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[3\\\] = &\\(\\*daa\\)\\\[1\\\];" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[4\\\] = &\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) daaa->data\\)\\\[daaa->offset \\+ 2\\\];" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[5\\\] = \\(void \\* \\*\\) \\(daap->data \\+ .sizetype. \\(\\(daap->offset \\+ daap->dim\\\[0\\\].stride \\* 2\\) \\* daap->span\\)\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[6\\\] = &\\(\\*doaa\\)\\\[1\\\];" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[7\\\] = &\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) doaaa->data\\)\\\[doaaa->offset \\+ 2\\\];" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[8\\\] = \\(void \\* \\*\\) \\(doaap->data \\+ .sizetype. \\(\\(doaap->offset \\+ doaap->dim\\\[0\\\].stride \\* 2\\) \\* doaap->span\\)\\);" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:ss\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*sp\\)" 1 "original" } }
@@ -222,13 +222,13 @@ end
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(void \\*\\\[0:\\\] \\* restrict\\) doaaa->data\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(void \\*\\\[0:\\\] \\*\\) doaap->data\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:aa\\\[1\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(\\(void \\* \\*\\) aaa.data \\+ \\(sizetype\\) \\(\\(aaa.offset \\+ 2\\) \\* (?:4|8)\\)\\)\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) aaa.data\\)\\\[aaa.offset \\+ 2\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(void \\* \\*\\) \\(aap.data \\+ \\(sizetype\\) \\(\\(aap.offset \\+ aap.dim\\\[0\\\].stride \\* 2\\) \\* aap.span\\)\\)\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(\\(void \\* \\*\\) daa \\+ (?:4|8)\\)\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(\\(void \\* \\*\\) daaa->data \\+ \\(sizetype\\) \\(\\(daaa->offset \\+ 2\\) \\* (?:4|8)\\)\\)\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\(\\*daa\\)\\\[1\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) daaa->data\\)\\\[daaa->offset \\+ 2\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(void \\* \\*\\) \\(daap->data \\+ \\(sizetype\\) \\(\\(daap->offset \\+ daap->dim\\\[0\\\].stride \\* 2\\) \\* daap->span\\)\\)\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(\\(void \\* \\*\\) doaa \\+ (?:4|8)\\)\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(\\(void \\* \\*\\) doaaa->data \\+ \\(sizetype\\) \\(\\(doaaa->offset \\+ 2\\) \\* (?:4|8)\\)\\)\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\(\\*doaa\\)\\\[1\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) doaaa->data\\)\\\[doaaa->offset \\+ 2\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(void \\* \\*\\) \\(doaap->data \\+ \\(sizetype\\) \\(\\(doaap->offset \\+ doaap->dim\\\[0\\\].stride \\* 2\\) \\* doaap->span\\)\\)\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:dossv\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:dssv\\)" 1 "original" } }
@@ -253,7 +253,7 @@ end
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = \\*dosa;" 3 "gimple" } }
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = doaaa->data;" 4 "gimple" } }
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = doaap->data;" 4 "gimple" } }
-! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = daa \\+ (?:4|8);" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = doaa \\+ (?:4|8);" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = &\\(\\*daa\\)\\\[1\\\];" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = &\\(\\*doaa\\)\\\[1\\\];" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "= &dssv;" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "= &dossv;" 1 "gimple" } }

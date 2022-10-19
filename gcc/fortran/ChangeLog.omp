@@ -1,3 +1,9 @@
+2022-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-array.cc (non_negative_strides_array_p): Fix handling
+	of GFC_DECL_SAVED_DESCRIPTOR.
+	(gfc_conv_array_ref): Use ARRAY_REF again when possible.
+
 2022-09-28  Paul-Antoine Arras  <pa@codesourcery.com>
 
 	* parse.cc (gfc_ascii_statement): Missing $ in !$OMP END METADIRECTIVE.

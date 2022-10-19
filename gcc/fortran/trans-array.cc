@@ -3754,11 +3754,16 @@ non_negative_strides_array_p (tree expr)
 
   /* If the array was originally a dummy with a descriptor, strides can be
      negative.  */
-  if (DECL_P (expr)
-      && DECL_LANG_SPECIFIC (expr)
-      && GFC_DECL_SAVED_DESCRIPTOR (expr)
-      && GFC_DECL_SAVED_DESCRIPTOR (expr) != expr)
-    return non_negative_strides_array_p (GFC_DECL_SAVED_DESCRIPTOR (expr));
+  tree decl = expr;
+  STRIP_NOPS (decl);
+  if (TREE_CODE (decl) == INDIRECT_REF)
+    decl = TREE_OPERAND (decl, 0);
+
+  if (DECL_P (decl)
+      && DECL_LANG_SPECIFIC (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl) != expr)
+    return non_negative_strides_array_p (GFC_DECL_SAVED_DESCRIPTOR (decl));
 
   return true;
 }
@@ -4251,12 +4256,13 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     {
       /* Build a linearized array reference using the offset from all
 	 dimensions.  */
+      bool non_neg = non_negative_strides_array_p (se->expr);
       if (!integer_zerop (cst_offset))
 	offset = fold_build2_loc (input_location, PLUS_EXPR,
 				  gfc_array_index_type, offset, cst_offset);
       se->class_vptr = vptr;
       vptr = get_class_array_vptr (se->expr, vptr);
-      se->expr = gfc_build_array_ref (base, offset, cooked_decl, false, vptr);
+      se->expr = gfc_build_array_ref (base, offset, cooked_decl, non_neg, vptr);
     }
   else
     /* Return the outermost ARRAY_REF we already built.  */
