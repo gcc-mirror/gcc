@@ -137,11 +137,11 @@ print_mcus (size_t n_mcus)
     
   qsort (mcus, n_mcus, sizeof (avr_mcu_t*), comparator);
 
-  printf ("@*@var{mcu}@tie{}=");
+  printf ("  :samp:`{mcu}=`");
 
   for (i = 0; i < n_mcus; i++)
     {
-      printf (" @code{%s}%s", mcus[i]->name, i == n_mcus-1 ? ".\n\n" : ",");
+      printf (" ``%s``%s", mcus[i]->name, i == n_mcus-1 ? ".\n\n" : ",");
 
       if (i && !strcmp (mcus[i]->name, mcus[i-1]->name))
 	{
@@ -162,20 +162,18 @@ int main (void)
   size_t i, n_mcus = 0;
   const avr_mcu_t *mcu;
 
-  printf ("@c Copyright (C) 2012-2022 Free Software Foundation, Inc.\n");
-  printf ("@c This is part of the GCC manual.\n");
-  printf ("@c For copying conditions, see the file "
-	  "gcc/doc/include/fdl.texi.\n\n");
+  printf ("..\n");
+  printf ("  Copyright 1988-2022 Free Software Foundation, Inc.\n");
+  printf ("  This is part of the GCC manual.\n");
+  printf ("  For copying conditions, see the copyright.rst file.\n\n");
 
-  printf ("@c This file is generated automatically using\n");
-  printf ("@c gcc/config/avr/gen-avr-mmcu-texi.cc from:\n");
-  printf ("@c	 gcc/config/avr/avr-arch.h\n");
-  printf ("@c	 gcc/config/avr/avr-devices.cc\n");
-  printf ("@c	 gcc/config/avr/avr-mcus.def\n\n");
+  printf ("  This file is generated automatically using\n");
+  printf ("  gcc/config/avr/gen-avr-mmcu-texi.cc from:\n");
+  printf ("    gcc/config/avr/avr-arch.h\n");
+  printf ("    gcc/config/avr/avr-devices.cc\n");
+  printf ("    gcc/config/avr/avr-mcus.def\n\n");
 
-  printf ("@c Please do not edit manually.\n\n");
-
-  printf ("@table @code\n\n");
+  printf ("  Please do not edit manually.\n\n");
 
   for (mcu = avr_mcu_types; mcu->name; mcu++)
     {
@@ -187,9 +185,9 @@ int main (void)
 	  print_mcus (n_mcus);
 	  n_mcus = 0;
 
-	  for (i = 0; i < ARRAY_SIZE (avr_texinfo); i++)
-	    if (arch_id == avr_texinfo[i].arch_id)
-	      printf ("@item %s\n%s\n", mcu->name, avr_texinfo[i].texinfo);
+	  for (i = 0; i < ARRAY_SIZE (avr_rst); i++)
+	    if (arch_id == avr_rst[i].arch_id)
+	      printf ("``%s``\n  %s\n\n", mcu->name, avr_rst[i].texinfo);
 	}
       else if (arch_id == (enum avr_arch_id) mcu->arch_id)
 	{
@@ -198,7 +196,6 @@ int main (void)
     }
 
   print_mcus (n_mcus);
-  printf ("@end table\n");
 
   return EXIT_SUCCESS;
 }

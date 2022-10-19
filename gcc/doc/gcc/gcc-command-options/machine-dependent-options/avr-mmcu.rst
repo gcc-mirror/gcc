@@ -95,3 +95,4 @@
   This ISA is implemented by the minimal AVR core and supported for assembler only.
 
   :samp:`{mcu}=` ``attiny11``, ``attiny12``, ``attiny15``, ``attiny28``, ``at90s1200``.
+
