@@ -1280,6 +1280,8 @@ foperator_abs::op1_range (frange &r, tree type,
 class foperator_unordered_lt : public range_operator_float
 {
   using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1302,7 +1304,69 @@ public:
 	return true;
       }
   }
+  bool op1_range (frange &r, tree type,
+		  const irange &lhs,
+		  const frange &op2,
+		  relation_trio trio) const final override;
+  bool op2_range (frange &r, tree type,
+		  const irange &lhs,
+		  const frange &op1,
+		  relation_trio trio) const final override;
 } fop_unordered_lt;
+
+bool
+foperator_unordered_lt::op1_range (frange &r, tree type,
+				   const irange &lhs,
+				   const frange &op2,
+				   relation_trio) const
+{
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      build_lt (r, type, op2);
+      break;
+
+    case BRS_FALSE:
+      // A false UNORDERED_LT means both operands are !NAN, so it's
+      // impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else if (build_ge (r, type, op2))
+	r.clear_nan ();
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+bool
+foperator_unordered_lt::op2_range (frange &r, tree type,
+				   const irange &lhs,
+				   const frange &op1,
+				   relation_trio) const
+{
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      build_gt (r, type, op1);
+      break;
+
+    case BRS_FALSE:
+      // A false UNORDERED_LT means both operands are !NAN, so it's
+      // impossible for op1 to be a NAN.
+      if (op1.known_isnan ())
+	r.set_undefined ();
+      else if (build_le (r, type, op1))
+	r.clear_nan ();
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
 
 class foperator_unordered_le : public range_operator_float
 {
