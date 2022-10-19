@@ -82,7 +82,12 @@ enum e5 { e5a = __LONG_MAX__,
 	  e5b, e5c, e5d = ((typeof (e5b)) -1) < 0,
 	  e5e = (unsigned long) -1,
 	  e5f, e5g = ((typeof (e5e)) -1) > 0,
-	  TYPE_CHECK (e5a, long), TYPE_CHECK (e5e, unsigned long) };
+#if __LONG_MAX__ > __INT_MAX__
+	  TYPE_CHECK (e5a, long),
+#else
+	  TYPE_CHECK (e5a, int),
+#endif
+	  TYPE_CHECK (e5e, unsigned long) };
 extern enum e5 e5v;
 extern typeof (e5a) e5v;
 extern typeof (e5b) e5v;
