@@ -64,10 +64,30 @@ test02()
   VERIFY( ranges::equal(v, (int[]){1, 4, 7}) );
 }
 
+void
+test03()
+{
+  // PR libstdc++/107313
+  int x[] = {1, 2, 3, 4, 5};
+  __gnu_test::test_input_range<int> rx(x);
+  auto r = views::counted(rx.begin(), 4) | views::stride(2);
+  auto i = r.begin();
+  std::default_sentinel_t s = r.end();
+  VERIFY( s != i );
+  VERIFY( s - i == 2 && i - s == -2 );
+  ++i;
+  VERIFY( s != i );
+  VERIFY( s - i == 1 && i - s == -1 );
+  ++i;
+  VERIFY( s == i );
+  VERIFY( s - i == 0 && i - s == 0 );
+}
+
 int
 main()
 {
   static_assert(test01());
   test02<__gnu_test::test_input_range<int>>();
   test02<__gnu_test::test_forward_range<int>>();
+  test03();
 }

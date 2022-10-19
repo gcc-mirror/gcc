@@ -7874,7 +7874,7 @@ namespace views::__adaptor
     friend constexpr difference_type
     operator-(default_sentinel_t __y, const _Iterator& __x)
       requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
-    { return __detail::__div_ceil(__x._M_end, __x._M_current, __x._M_stride); }
+    { return __detail::__div_ceil(__x._M_end - __x._M_current, __x._M_stride); }
 
     friend constexpr difference_type
     operator-(const _Iterator& __x, default_sentinel_t __y)
