@@ -21,22 +21,13 @@
 namespace Rust {
 namespace AST {
 
-Fragment::Fragment (std::vector<SingleASTNode> nodes, bool fragment_is_error)
-  : kind (fragment_is_error ? FragmentKind::Error : FragmentKind::Complete),
-    nodes (std::move (nodes))
-{
-  if (fragment_is_error)
-    rust_assert (nodes.empty ());
-}
+Fragment::Fragment (FragmentKind kind, std::vector<SingleASTNode> nodes)
+  : kind (kind), nodes (std::move (nodes))
+{}
 
 Fragment::Fragment (Fragment const &other) : kind (other.get_kind ())
 {
-  nodes.clear ();
-  nodes.reserve (other.nodes.size ());
-  for (auto &n : other.nodes)
-    {
-      nodes.push_back (n);
-    }
+  *this = other;
 }
 
 Fragment &
@@ -56,7 +47,19 @@ Fragment::operator= (Fragment const &other)
 Fragment
 Fragment::create_error ()
 {
-  return Fragment ({}, true);
+  return Fragment (FragmentKind::Error, {});
+}
+
+Fragment
+Fragment::complete (std::vector<AST::SingleASTNode> nodes)
+{
+  return Fragment (FragmentKind::Complete, std::move (nodes));
+}
+
+Fragment
+Fragment::unexpanded ()
+{
+  return Fragment (FragmentKind::Unexpanded, {});
 }
 
 std::vector<SingleASTNode> &

@@ -57,11 +57,23 @@ enum class FragmentKind
 class Fragment
 {
 public:
-  Fragment (std::vector<SingleASTNode> nodes, bool fragment_is_error = false);
   Fragment (Fragment const &other);
+  Fragment &operator= (Fragment const &other);
+
+  /**
+   * Create an error fragment
+   */
   static Fragment create_error ();
 
-  Fragment &operator= (Fragment const &other);
+  /**
+   * Create a complete AST fragment
+   */
+  static Fragment complete (std::vector<AST::SingleASTNode> nodes);
+
+  /**
+   * Create a fragment which contains unexpanded nodes
+   */
+  static Fragment unexpanded ();
 
   FragmentKind get_kind () const;
   std::vector<SingleASTNode> &get_nodes ();
@@ -78,6 +90,8 @@ public:
   void accept_vis (ASTVisitor &vis);
 
 private:
+  Fragment (FragmentKind kind, std::vector<SingleASTNode> nodes);
+
   FragmentKind kind;
 
   /**
