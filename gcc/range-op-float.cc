@@ -166,20 +166,15 @@ range_operator_float::op1_op2_relation (const frange &lhs ATTRIBUTE_UNUSED) cons
   return VREL_VARYING;
 }
 
-// Return TRUE if OP1 is known to be free of NANs.
+// Return TRUE if OP1 and OP2 may be a NAN.
 
 static inline bool
-finite_operand_p (const frange &op1)
+maybe_isnan (const frange &op1, const frange &op2)
 {
-  return flag_finite_math_only || !op1.maybe_isnan ();
-}
+  if (flag_finite_math_only)
+    return false;
 
-// Return TRUE if OP1 and OP2 are known to be free of NANs.
-
-static inline bool
-finite_operands_p (const frange &op1, const frange &op2)
-{
-  return flag_finite_math_only || (!op1.maybe_isnan () && !op2.maybe_isnan ());
+  return op1.maybe_isnan () || op2.maybe_isnan ();
 }
 
 // Floating version of relop_early_resolve that takes into account NAN
@@ -196,7 +191,7 @@ frelop_early_resolve (irange &r, tree type,
 
   // We can fold relations from the oracle when we know both operands
   // are free of NANs, or when -ffinite-math-only.
-  return (finite_operands_p (op1, op2)
+  return (!maybe_isnan (op1, op2)
 	  && relop_early_resolve (r, type, op1, op2, rel, my_rel));
 }
 
@@ -391,7 +386,7 @@ foperator_equal::fold_range (irange &r, tree type,
       else
 	r = range_false (type);
     }
-  else if (finite_operands_p (op1, op2))
+  else if (!maybe_isnan (op1, op2))
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
@@ -441,7 +436,7 @@ foperator_equal::op1_range (frange &r, tree type,
       // If the result is false, the only time we know anything is
       // if OP2 is a constant.
       else if (op2.singleton_p ()
-	       || (finite_operand_p (op2) && op2.zero_p ()))
+	       || (!op2.maybe_isnan () && op2.zero_p ()))
 	{
 	  REAL_VALUE_TYPE tmp = op2.lower_bound ();
 	  r.set (type, tmp, tmp, VR_ANTI_RANGE);
@@ -494,7 +489,7 @@ foperator_not_equal::fold_range (irange &r, tree type,
       else
 	r = range_false (type);
     }
-  else if (finite_operands_p (op1, op2))
+  else if (!maybe_isnan (op1, op2))
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
@@ -590,7 +585,7 @@ foperator_lt::fold_range (irange &r, tree type,
 
   if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
-  else if (finite_operands_p (op1, op2))
+  else if (!maybe_isnan (op1, op2))
     {
       if (real_less (&op1.upper_bound (), &op2.lower_bound ()))
 	r = range_true (type);
@@ -706,7 +701,7 @@ foperator_le::fold_range (irange &r, tree type,
 
   if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
-  else if (finite_operands_p (op1, op2))
+  else if (!maybe_isnan (op1, op2))
     {
       if (real_compare (LE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
 	r = range_true (type);
@@ -814,7 +809,7 @@ foperator_gt::fold_range (irange &r, tree type,
 
   if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
-  else if (finite_operands_p (op1, op2))
+  else if (!maybe_isnan (op1, op2))
     {
       if (real_compare (GT_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
 	r = range_true (type);
@@ -930,7 +925,7 @@ foperator_ge::fold_range (irange &r, tree type,
 
   if (op1.known_isnan () || op2.known_isnan ())
     r = range_false (type);
-  else if (finite_operands_p (op1, op2))
+  else if (!maybe_isnan (op1, op2))
     {
       if (real_compare (GE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
 	r = range_true (type);
@@ -1302,7 +1297,7 @@ public:
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
-    if (finite_operands_p (op1, op2) || r == range_true (type))
+    if (!maybe_isnan (op1, op2) || r == range_true (type))
       return true;
     else
       {
@@ -1331,7 +1326,7 @@ public:
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
-    if (finite_operands_p (op1, op2) || r == range_true (type))
+    if (!maybe_isnan (op1, op2) || r == range_true (type))
       return true;
     else
       {
@@ -1412,7 +1407,7 @@ public:
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
-    if (finite_operands_p (op1, op2) || r == range_true (type))
+    if (!maybe_isnan (op1, op2) || r == range_true (type))
       return true;
     else
       {
@@ -1495,7 +1490,7 @@ public:
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
-    if (finite_operands_p (op1, op2) || r == range_true (type))
+    if (!maybe_isnan (op1, op2) || r == range_true (type))
       return true;
     else
       {
@@ -1577,7 +1572,7 @@ public:
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
-    if (finite_operands_p (op1, op2) || r == range_true (type))
+    if (!maybe_isnan (op1, op2) || r == range_true (type))
       return true;
     else
       {
