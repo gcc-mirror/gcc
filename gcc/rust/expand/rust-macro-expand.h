@@ -344,7 +344,7 @@ struct MacroExpander
 	    auto new_nodes = expanded_fragment.get_nodes ();
 	    std::move (new_nodes.begin (), new_nodes.end (),
 		       std::back_inserter (accumulator));
-	    expanded_fragment = AST::Fragment (accumulator);
+	    expanded_fragment = AST::Fragment::complete (accumulator);
 	  }
 	expansion_depth--;
       }

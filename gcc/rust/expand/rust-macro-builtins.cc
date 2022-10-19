@@ -279,7 +279,7 @@ MacroBuiltin::file (Location invoc_locus, AST::MacroInvocData &invoc)
     = Session::get_instance ().linemap->location_file (invoc_locus);
   auto file_str = AST::SingleASTNode (make_string (invoc_locus, current_file));
 
-  return AST::Fragment ({file_str});
+  return AST::Fragment::complete ({file_str});
 }
 
 AST::Fragment
@@ -292,7 +292,7 @@ MacroBuiltin::column (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::LiteralExpr (std::to_string (current_column), AST::Literal::INT,
 			  PrimitiveCoreType::CORETYPE_U32, {}, invoc_locus)));
 
-  return AST::Fragment ({column_no});
+  return AST::Fragment::complete ({column_no});
 }
 
 /* Expand builtin macro include_bytes!("filename"), which includes the contents
@@ -335,7 +335,7 @@ MacroBuiltin::include_bytes (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::BorrowExpr (std::move (array), false, false, {}, invoc_locus));
 
   auto node = AST::SingleASTNode (std::move (borrow));
-  return AST::Fragment ({node});
+  return AST::Fragment::complete ({node});
 }
 
 /* Expand builtin macro include_str!("filename"), which includes the contents
@@ -362,7 +362,7 @@ MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
   std::string str ((const char *) &bytes[0], bytes.size ());
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
-  return AST::Fragment ({node});
+  return AST::Fragment::complete ({node});
 }
 
 /* Expand builtin macro compile_error!("error"), which forces a compile error
@@ -430,7 +430,7 @@ MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
     return AST::Fragment::create_error ();
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
-  return AST::Fragment ({node});
+  return AST::Fragment::complete ({node});
 }
 
 /* Expand builtin macro env!(), which inspects an environment variable at
@@ -491,7 +491,7 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
     }
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, env_value));
-  return AST::Fragment ({node});
+  return AST::Fragment::complete ({node});
 }
 
 AST::Fragment
@@ -527,7 +527,7 @@ MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::LiteralExpr (result ? "true" : "false", AST::Literal::BOOL,
 			  PrimitiveCoreType::CORETYPE_BOOL, {}, invoc_locus)));
 
-  return AST::Fragment ({literal_exp});
+  return AST::Fragment::complete ({literal_exp});
 }
 
 /* Expand builtin macro include!(), which includes a source file at the current
@@ -584,7 +584,7 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
       nodes.push_back (node);
     }
 
-  return AST::Fragment (nodes);
+  return AST::Fragment::complete (nodes);
 }
 
 AST::Fragment
@@ -597,7 +597,7 @@ MacroBuiltin::line (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::LiteralExpr (std::to_string (current_line), AST::Literal::INT,
 			  PrimitiveCoreType::CORETYPE_U32, {}, invoc_locus)));
 
-  return AST::Fragment ({line_no});
+  return AST::Fragment::complete ({line_no});
 }
 
 } // namespace Rust

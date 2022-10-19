@@ -729,7 +729,7 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
       nodes.emplace_back (std::move (node));
     }
 
-  return AST::Fragment (std::move (nodes));
+  return AST::Fragment::complete (std::move (nodes));
 }
 
 /**
@@ -840,7 +840,7 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
 {
   auto expr = parser.parse_expr ();
 
-  return AST::Fragment ({std::move (expr)});
+  return AST::Fragment::complete ({std::move (expr)});
 }
 
 /**
@@ -855,7 +855,7 @@ transcribe_type (Parser<MacroInvocLexer> &parser)
   for (auto err : parser.get_errors ())
     err.emit_error ();
 
-  return AST::Fragment ({std::move (type)});
+  return AST::Fragment::complete ({std::move (type)});
 }
 
 static AST::Fragment

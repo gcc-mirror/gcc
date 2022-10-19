@@ -60,7 +60,7 @@ public:
   {
     auto fragment = expander.take_expanded_fragment (*this);
     unsigned int original_depth = expander.expansion_depth;
-    auto final_fragment = AST::Fragment ({}, true);
+    auto final_fragment = AST::Fragment::create_error ();
 
     while (fragment.should_expand ())
       {
