@@ -10468,7 +10468,7 @@ expand_omp_target (struct omp_region *region)
       t3 = t2;
       t4 = t2;
     }
-  else if (TREE_VEC_LENGTH (t) == 3)
+  else if (TREE_VEC_LENGTH (t) == 3 || is_gimple_omp_oacc (entry_stmt))
     {
       t1 = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (TREE_VEC_ELT (t, 1))));
       t1 = size_binop (PLUS_EXPR, t1, size_int (1));

@@ -1,3 +1,8 @@
+2022-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-expand.cc (expand_omp_target): Fix OpenACC in case there
+	are more than 3 arguments to the builtin function.
+
 2022-07-12  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gimple-loop-versioning.cc (loop_versioning::loop_versioning): Add
