@@ -416,8 +416,15 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 		  rtx tof = NULL_RTX;
 		  if (fromi)
 		    {
-		      rtx toi = gen_reg_rtx (toi_mode);
-		      convert_mode_scalar (toi, fromi, 1);
+		      rtx toi;
+		      if (GET_MODE (fromi) == VOIDmode)
+			toi = simplify_unary_operation (ZERO_EXTEND, toi_mode,
+							fromi, fromi_mode);
+		      else
+			{
+			  toi = gen_reg_rtx (toi_mode);
+			  convert_mode_scalar (toi, fromi, 1);
+			}
 		      toi
 			= maybe_expand_shift (LSHIFT_EXPR, toi_mode, toi,
 					      GET_MODE_PRECISION (to_mode)
