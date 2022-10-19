@@ -1162,7 +1162,8 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   rust_debug ("type-checking method_call: {%s}", lookup->debug_str ().c_str ());
 
   TyTy::BaseType *function_ret_tyty
-    = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, adjusted_self, context);
+    = TyTy::TypeCheckMethodCallExpr::go (static_cast<TyTy::FnType *> (lookup),
+					 expr, adjusted_self, context);
   if (function_ret_tyty == nullptr
       || function_ret_tyty->get_kind () == TyTy::TypeKind::ERROR)
     {
