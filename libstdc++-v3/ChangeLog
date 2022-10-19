@@ -1,3 +1,63 @@
+2022-10-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (stride_view): Define.
+	(stride_view::_Iterator): Define.
+	(views::__detail::__can_stride_view): Define.
+	(views::_Stride, views::stride): Define.
+	* testsuite/std/ranges/adaptors/stride/1.cc: New test.
+
+2022-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	* include/std/stdfloat: New file.
+	* include/std/numbers (__glibcxx_numbers): Define and use it
+	for __float128 explicit instantiations as well as
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t.
+	* include/std/atomic (atomic<_Float16>, atomic<_Float32>,
+	atomic<_Float64>, atomic<_Float128>, atomic<__gnu_cxx::__bfloat16_t>):
+	New explicit instantiations.
+	* include/std/type_traits (__is_floating_point_helper<_Float16>,
+	__is_floating_point_helper<_Float32>,
+	__is_floating_point_helper<_Float64>,
+	__is_floating_point_helper<_Float128>,
+	__is_floating_point_helper<__gnu_cxx::__bfloat16_t>): Likewise.
+	* include/std/limits (__glibcxx_concat3_, __glibcxx_concat3,
+	__glibcxx_float_n): Define.
+	(numeric_limits<_Float16>, numeric_limits<_Float32>,
+	numeric_limits<_Float64>, numeric_limits<_Float128>,
+	numeric_limits<__gnu_cxx::__bfloat16_t>): New explicit instantiations.
+	* include/bits/std_abs.h (abs): New overloads for
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t.
+	* include/bits/c++config (_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128): Define
+	if long double is IEEE quad.
+	(__gnu_cxx::__bfloat16_t): New using.
+	* include/c_global/cmath (acos, asin, atan, atan2, ceil, cos, cosh,
+	exp, fabs, floor, fmod, frexp, ldexp, log, log10, modf, pow, sin,
+	sinh, sqrt, tan, tanh, fpclassify, isfinite, isinf, isnan, isnormal,
+	signbit, isgreater, isgreaterequal, isless, islessequal,
+	islessgreater, isunordered, acosh, asinh, atanh, cbrt, copysign, erf,
+	erfc, exp2, expm1, fdim, fma, fmax, fmin, hypot, ilogb, lgamma,
+	llrint, llround, log1p, log2, logb, lrint, lround, nearbyint,
+	nextafter, remainder, rint, round, scalbln, scalbn, tgamma, trunc,
+	lerp): New overloads with _Float{16,32,64,128} or
+	__gnu_cxx::__bfloat16_t types.
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_HAVE_FLOAT128_MATH):
+	Prepare for definition if glibc 2.26 and later implements *f128 APIs
+	but comment out the actual definition for now.
+	* include/ext/type_traits.h (__promote<_Float16>, __promote<_Float32>,
+	__promote<_Float64>, __promote<_Float128>,
+	__promote<__gnu_cxx::__bfloat16_t>): New specializations.
+	* include/Makefile.am (std_headers): Add stdfloat.
+	* include/Makefile.in: Regenerated.
+	* include/precompiled/stdc++.h: Include stdfloat.
+	* testsuite/18_support/headers/stdfloat/types_std.cc: New test.
+	* testsuite/18_support/headers/limits/synopsis_cxx23.cc: New test.
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c++23.cc:
+	New test.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++23.cc: New test.
+	* testsuite/26_numerics/numbers/4.cc: New test.
+	* testsuite/29_atomics/atomic_float/requirements_cxx23.cc: New test.
+
 2022-10-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/charconv (__cpp_lib_constexpr_charconv): Define to

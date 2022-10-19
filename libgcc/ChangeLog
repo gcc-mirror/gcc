@@ -1,3 +1,7 @@
+2022-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Quote variable.
+
 2022-10-17  H.J. Lu  <hjl.tools@gmail.com>
 
 	* unwind-generic.h (_Unwind_Frames_Increment): Add the EXC

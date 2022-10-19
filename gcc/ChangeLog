@@ -1,3 +1,224 @@
+2022-10-18  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_agg_value): Remove type.
+	(ipa_agg_value_set): Likewise.
+	(ipa_copy_agg_values): Remove function.
+	(ipa_release_agg_values): Likewise.
+	(ipa_auto_call_arg_values) Add a forward declaration.
+	(ipa_call_arg_values): Likewise.
+	(class ipa_argagg_value_list): New constructors, added member function
+	value_for_index_p.
+	(class ipa_auto_call_arg_values): Removed the destructor and member
+	function safe_aggval_at.  Use ipa_argagg_values for m_known_aggs.
+	(class ipa_call_arg_values): Removed member function safe_aggval_at.
+	Use ipa_argagg_values for m_known_aggs.
+	(ipa_get_indirect_edge_target): Removed declaration.
+	(ipa_find_agg_cst_for_param): Likewise.
+	(ipa_find_agg_cst_from_init): New declaration.
+	(ipa_agg_value_from_jfunc): Likewise.
+	(ipa_agg_value_set_from_jfunc): Removed declaration.
+	(ipa_push_agg_values_from_jfunc): New declaration.
+	* ipa-cp.cc (ipa_agg_value_from_node): Renamed to
+	ipa_agg_value_from_jfunc, made public.
+	(ipa_agg_value_set_from_jfunc): Removed.
+	(ipa_push_agg_values_from_jfunc): New function.
+	(ipa_get_indirect_edge_target_1): Removed known_aggs parameter, use
+	avs for this purpose too.
+	(ipa_get_indirect_edge_target): Removed the overload working on
+	ipa_auto_call_arg_values, use ipa_argagg_value_list in the remaining
+	one.
+	(devirtualization_time_bonus): Use ipa_argagg_value_list and
+	ipa_get_indirect_edge_target_1 instead of
+	ipa_get_indirect_edge_target.
+	(context_independent_aggregate_values): Removed function.
+	(gather_context_independent_values): Work on ipa_argagg_value_list.
+	(estimate_local_effects): Likewise, define some iterator variables
+	only in the construct where necessary.
+	(ipcp_discover_new_direct_edges): Adjust the call to
+	ipa_get_indirect_edge_target_1.
+	(push_agg_values_for_index_from_edge): Adjust the call
+	ipa_agg_value_from_node which has been renamed to
+	ipa_agg_value_from_jfunc.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Work on
+	ipa_argagg_value_list.
+	(evaluate_properties_for_edge): Replace manual filling in aggregate
+	values with call to ipa_push_agg_values_from_jfunc.
+	(estimate_calls_size_and_time): Work on ipa_argagg_value_list.
+	(ipa_cached_call_context::duplicate_from): Likewise.
+	(ipa_cached_call_context::release): Likewise.
+	(ipa_call_context::equal_to): Likewise.
+	* ipa-prop.cc (ipa_find_agg_cst_from_init): Make public.
+	(ipa_find_agg_cst_for_param): Removed function.
+	(ipa_find_agg_cst_from_jfunc_items): New function.
+	(try_make_edge_direct_simple_call): Replace calls to
+	ipa_agg_value_set_from_jfunc and ipa_find_agg_cst_for_param with
+	ipa_find_agg_cst_from_init and ipa_find_agg_cst_from_jfunc_items.
+	(try_make_edge_direct_virtual_call): Replace calls to
+	ipa_agg_value_set_from_jfunc and ipa_find_agg_cst_for_param with
+	simple query of constant jump function and a call to
+	ipa_find_agg_cst_from_jfunc_items.
+	(ipa_auto_call_arg_values::~ipa_auto_call_arg_values): Removed.
+
+2022-10-18  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (IPA_PROP_ARG_INDEX_LIMIT_BITS): New.
+	(ipcp_transformation): Added forward declaration.
+	(ipa_argagg_value): New type.
+	(ipa_argagg_value_list): New type.
+	(ipa_agg_replacement_value): Removed type.
+	(ipcp_transformation): Switch from using ipa_agg_replacement_value
+	to ipa_argagg_value_list.
+	(ipa_get_agg_replacements_for_node): Removed.
+	(ipa_dump_agg_replacement_values): Removed declaration.
+	* ipa-cp.cc: Define INCLUDE_ALGORITHM.
+	(values_equal_for_ipcp_p): Moved up in the file.
+	(ipa_argagg_value_list::dump): New function.
+	(ipa_argagg_value_list::debug): Likewise.
+	(ipa_argagg_value_list::get_elt): Likewise.
+	(ipa_argagg_value_list::get_elt_for_index): Likewise.
+	(ipa_argagg_value_list::get_value): New overloaded functions.
+	(ipa_argagg_value_list::superset_of_p): New function.
+	(new ipa_argagg_value_list::push_adjusted_values): Likewise.
+	(push_agg_values_from_plats): Likewise.
+	(intersect_argaggs_with): Likewise.
+	(get_clone_agg_value): Removed.
+	(ipa_agg_value_from_node): Make last parameter const, use
+	ipa_argagg_value_list to search values coming from clones.
+	(ipa_get_indirect_edge_target_1): Use ipa_argagg_value_list to search
+	values coming from clones.
+	(ipcp_discover_new_direct_edges): Pass around a vector of
+	ipa_argagg_values rather than a link list of replacement values.
+	(cgraph_edge_brings_value_p): Use ipa_argagg_value_list to search
+	values coming from clones.
+	(create_specialized_node): Work with a vector of ipa_argagg_values
+	rather than a link list of replacement values.
+	(self_recursive_agg_pass_through_p): Make the pointer parameters
+	const.
+	(copy_plats_to_inter): Removed.
+	(intersect_with_plats): Likewise.
+	(agg_replacements_to_vector): Likewise.
+	(intersect_with_agg_replacements): Likewise.
+	(intersect_aggregates_with_edge): Likewise.
+	(push_agg_values_for_index_from_edge): Likewise.
+	(push_agg_values_from_edge): Likewise.
+	(find_aggregate_values_for_callers_subset): Rewrite.
+	(cgraph_edge_brings_all_agg_vals_for_node): Likewise.
+	(ipcp_val_agg_replacement_ok_p): Use ipa_argagg_value_list to search
+	aggregate values.
+	(decide_about_value): Work with a vector of ipa_argagg_values rather
+	than a link list of replacement values.
+	(decide_whether_version_node): Likewise.
+	(ipa_analyze_node): Check number of parameters, assert that there
+	are no descriptors when bailing out.
+	* ipa-prop.cc (ipa_set_node_agg_value_chain): Switch to a vector of
+	ipa_argagg_value.
+	(ipa_node_params_t::duplicate): Removed superfluous handling of
+	ipa_agg_replacement_values.  Name of src parameter removed because
+	it is no longer used.
+	(ipcp_transformation_t::duplicate): Replaced duplication of
+	ipa_agg_replacement_values with copying vector m_agg_values.
+	(ipa_dump_agg_replacement_values): Removed.
+	(write_ipcp_transformation_info): Stream the new data-structure
+	instead of the old.
+	(read_ipcp_transformation_info): Likewise.
+	(adjust_agg_replacement_values): Work with ipa_argagg_values instead
+	of linked lists of ipa_agg_replacement_values, copy the items and
+	truncate the vector as necessary to keep it sorted instead of marking
+	items as invalid.  Return one bool if CFG should be updated.
+	(ipcp_modif_dom_walker): Store ipcp_transformation instead of
+	linked list of ipa_agg_replacement_values.
+	(ipcp_modif_dom_walker::before_dom_children): Use
+	ipa_argagg_value_list instead of walking a list of
+	ipa_agg_replacement_values.
+	(ipcp_transform_function): Switch to the new data structure, adjust
+	dumping.
+
+2022-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107302
+	* tree-vect-loop.cc (vectorizable_recurrence): Fix vec_perm
+	placement for a PHI latch def.
+
+2022-10-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/107275
+	* tree-if-conv.cc (if_convertible_loop_p_1): Move
+	find_data_references_in_loop call from here...
+	(if_convertible_loop_p): And move data-reference vector initialization
+	from here...
+	(tree_if_conversion):... to here.
+
+2022-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* gimple.def (GIMPLE_ASSUME): New statement kind.
+	* gimple.h (struct gimple_statement_assume): New type.
+	(is_a_helper <gimple_statement_assume *>::test,
+	is_a_helper <const gimple_statement_assume *>::test): New.
+	(gimple_build_assume): Declare.
+	(gimple_has_substatements): Return true for GIMPLE_ASSUME.
+	(gimple_assume_guard, gimple_assume_set_guard,
+	gimple_assume_guard_ptr, gimple_assume_body_ptr, gimple_assume_body):
+	New inline functions.
+	* gsstruct.def (GSS_ASSUME): New.
+	* gimple.cc (gimple_build_assume): New function.
+	(gimple_copy): Handle GIMPLE_ASSUME.
+	* gimple-pretty-print.cc (dump_gimple_assume): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_ASSUME.
+	* gimple-walk.cc (walk_gimple_op): Handle GIMPLE_ASSUME.
+	* omp-low.cc (WALK_SUBSTMTS): Likewise.
+	(lower_omp_1): Likewise.
+	* omp-oacc-kernels-decompose.cc (adjust_region_code_walk_stmt_fn):
+	Likewise.
+	* tree-cfg.cc (verify_gimple_stmt, verify_gimple_in_seq_2): Likewise.
+	* function.h (struct function): Add assume_function bitfield.
+	* gimplify.cc (gimplify_call_expr): If the assumption isn't
+	simple enough, expand it into GIMPLE_ASSUME wrapped block or
+	for -O0 drop it.
+	* gimple-low.cc: Include attribs.h.
+	(create_assumption_fn): New function.
+	(struct lower_assumption_data): New type.
+	(find_assumption_locals_r, assumption_copy_decl,
+	adjust_assumption_stmt_r, adjust_assumption_stmt_op,
+	lower_assumption): New functions.
+	(lower_stmt): Handle GIMPLE_ASSUME.
+	* tree-ssa-ccp.cc (pass_fold_builtins::execute): Remove
+	IFN_ASSUME calls.
+	* lto-streamer-out.cc (output_struct_function_base): Pack
+	assume_function bit.
+	* lto-streamer-in.cc (input_struct_function_base): And unpack it.
+	* cgraphunit.cc (cgraph_node::expand): Don't verify assume_function
+	has TREE_ASM_WRITTEN set and don't release its body.
+	(symbol_table::compile): Allow assume functions not to have released
+	body.
+	* internal-fn.cc (expand_ASSUME): Remove gcc_unreachable.
+	* passes.cc (execute_one_pass): For TODO_discard_function don't
+	release body of assume functions.
+	* cgraph.cc (cgraph_node::verify_node): Don't verify cgraph nodes
+	of PROP_assumptions_done functions.
+	* tree-pass.h (PROP_assumptions_done): Define.
+	(TODO_discard_function): Adjust comment.
+	(make_pass_assumptions): Declare.
+	* passes.def (pass_assumptions): Add.
+	* timevar.def (TV_TREE_ASSUMPTIONS): New.
+	* tree-inline.cc (remap_gimple_stmt): Handle GIMPLE_ASSUME.
+	* tree-vrp.cc (pass_data_assumptions): New variable.
+	(pass_assumptions): New class.
+	(make_pass_assumptions): New function.
+
+2022-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107301
+	* gimple-ssa-isolate-paths.cc (handle_return_addr_local_phi_arg):
+	Check whether we can duplicate the block.
+	(find_implicit_erroneous_behavior): Likewise.
+
+2022-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107273
+	* value-relation.cc (equiv_oracle::add_partial_equiv): Merge
+	instead of copying precison of each member.
+
 2022-10-17  Jeff Law  <jeffreyalaw@gmail.com>
 
 	PR target/101697
