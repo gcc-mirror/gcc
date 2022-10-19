@@ -383,7 +383,9 @@ ConstChecker::visit (FieldAccessExpr &expr)
 
 void
 ConstChecker::visit (ClosureExpr &expr)
-{}
+{
+  expr.get_expr ()->accept_vis (*this);
+}
 
 void
 ConstChecker::visit (BlockExpr &expr)

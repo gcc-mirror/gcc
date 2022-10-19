@@ -285,6 +285,11 @@ public:
       item->accept_vis (*this);
   }
 
+  void visit (HIR::ClosureExpr &expr) override
+  {
+    expr.get_expr ()->accept_vis (*this);
+  }
+
 private:
   std::vector<HirId> worklist;
   std::set<HirId> liveSymbols;
