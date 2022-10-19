@@ -147,6 +147,35 @@ public:
     mono_fns[dId].push_back ({ref, fn});
   }
 
+  void insert_closure_decl (const TyTy::ClosureType *ref, tree fn)
+  {
+    auto dId = ref->get_def_id ();
+    auto it = mono_closure_fns.find (dId);
+    if (it == mono_closure_fns.end ())
+      mono_closure_fns[dId] = {};
+
+    mono_closure_fns[dId].push_back ({ref, fn});
+  }
+
+  tree lookup_closure_decl (const TyTy::ClosureType *ref)
+  {
+    auto dId = ref->get_def_id ();
+    auto it = mono_closure_fns.find (dId);
+    if (it == mono_closure_fns.end ())
+      return error_mark_node;
+
+    for (auto &i : it->second)
+      {
+	const TyTy::ClosureType *t = i.first;
+	tree fn = i.second;
+
+	if (ref->is_equal (*t))
+	  return fn;
+      }
+
+    return error_mark_node;
+  }
+
   bool lookup_function_decl (HirId id, tree *fn, DefId dId = UNKNOWN_DEFID,
 			     const TyTy::BaseType *ref = nullptr,
 			     const std::string &asm_name = std::string ())
@@ -343,6 +372,8 @@ private:
   std::vector<tree> loop_begin_labels;
   std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, tree>>>
     mono_fns;
+  std::map<DefId, std::vector<std::pair<const TyTy::ClosureType *, tree>>>
+    mono_closure_fns;
   std::map<HirId, tree> implicit_pattern_bindings;
   std::map<hashval_t, tree> main_variants;
 

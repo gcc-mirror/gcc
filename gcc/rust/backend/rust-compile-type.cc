@@ -97,9 +97,15 @@ TyTyResolveCompile::visit (const TyTy::InferType &)
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::ClosureType &)
+TyTyResolveCompile::visit (const TyTy::ClosureType &type)
 {
-  gcc_unreachable ();
+  std::vector<Backend::typed_identifier> fields;
+  tree type_record = ctx->get_backend ()->struct_type (fields);
+  RS_CLOSURE_FLAG (type_record) = 1;
+
+  std::string named_struct_str = type.get_ident ().path.get () + "{{closure}}";
+  translated = ctx->get_backend ()->named_type (named_struct_str, type_record,
+						type.get_ident ().locus);
 }
 
 void

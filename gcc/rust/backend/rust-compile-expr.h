@@ -142,6 +142,16 @@ protected:
 			  const TyTy::ArrayType &array_tyty, tree array_type,
 			  HIR::ArrayElemsCopied &elems);
 
+protected:
+  tree generate_closure_function (HIR::ClosureExpr &expr,
+				  TyTy::ClosureType &closure_tyty,
+				  tree compiled_closure_tyty);
+
+  tree generate_closure_fntype (HIR::ClosureExpr &expr,
+				const TyTy::ClosureType &closure_tyty,
+				tree compiled_closure_tyty,
+				TyTy::FnType **fn_tyty);
+
 private:
   CompileExpr (Context *ctx);
 

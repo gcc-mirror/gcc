@@ -13,6 +13,8 @@ static const std::string kMangledRef = "$RF$";
 static const std::string kMangledPtr = "$BP$";
 static const std::string kMangledLeftSqParen = "$u5b$";	 // [
 static const std::string kMangledRightSqParen = "$u5d$"; // ]
+static const std::string kMangledLeftBrace = "$u7b$";	 // {
+static const std::string kMangledRightBrace = "$u7d$";	 // }
 static const std::string kQualPathBegin = "_" + kMangledSubstBegin;
 static const std::string kMangledComma = "$C$";
 
@@ -66,6 +68,10 @@ legacy_mangle_name (const std::string &name)
 	m = kMangledLeftSqParen;
       else if (c == ']')
 	m = kMangledRightSqParen;
+      else if (c == '{')
+	m = kMangledLeftBrace;
+      else if (c == '}')
+	m = kMangledRightBrace;
       else if (c == ',')
 	m = kMangledComma;
       else if (c == ':')
