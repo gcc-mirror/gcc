@@ -3437,6 +3437,8 @@ range_tests_misc ()
     max.union_ (min);
     ASSERT_TRUE (max.varying_p ());
   }
+  // Test that we can set a range of true+false for a 1-bit signed int.
+  r0 = range_true_and_false (one_bit_type);
 
   // Test inversion of 1-bit signed integers.
   {
