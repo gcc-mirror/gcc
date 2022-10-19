@@ -84,10 +84,43 @@ test03()
   return true;
 }
 
+constexpr bool
+test04()
+{
+  // Verify P2474R2 changes to views::take/drop.
+  auto r = views::repeat(42);
+
+  auto rt = r | views::take(10);
+  static_assert(views::__detail::__is_repeat_view<decltype(rt)>);
+  VERIFY( ranges::equal(rt, views::repeat(42, 10)) );
+
+  auto rd = r | views::drop(10);
+  static_assert(std::same_as<decltype(rd), decltype(r)>);
+
+  auto br = views::repeat(42, 37);
+
+  auto brt = br | views::take(10);
+  static_assert(std::same_as<decltype(brt), decltype(br)>);
+  VERIFY( ranges::equal(brt, views::repeat(42, 10)) );
+
+  auto brt100 = br | views::take(100);
+  VERIFY( ranges::equal(brt100, br) );
+
+  auto brd = br | views::drop(10);
+  static_assert(std::same_as<decltype(brd), decltype(br)>);
+  VERIFY( ranges::equal(brd, views::repeat(42, 27)) );
+
+  auto brd100 = br | views::drop(100);
+  VERIFY( ranges::empty(brd100) );
+
+  return true;
+}
+
 int
 main()
 {
   static_assert(test01());
   static_assert(test02());
   static_assert(test03());
+  static_assert(test04());
 }

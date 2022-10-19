@@ -2257,6 +2257,13 @@ namespace views::__adaptor
       template<typename _Winc, typename _Bound>
 	inline constexpr bool __is_iota_view<iota_view<_Winc, _Bound>> = true;
 
+      template<typename _Range>
+	inline constexpr bool __is_repeat_view = false;
+
+      template<typename _Range>
+	constexpr auto
+	__take_of_repeat_view(_Range&&, range_difference_t<_Range>); // defined later
+
       template<typename _Range, typename _Dp>
 	concept __can_take_view
 	  = requires { take_view(std::declval<_Range>(), std::declval<_Dp>()); };
@@ -2291,6 +2298,8 @@ namespace views::__adaptor
 	      else
 		return iota_view(*__begin, *__end);
 	    }
+	  else if constexpr (__detail::__is_repeat_view<_Tp>)
+	    return __detail::__take_of_repeat_view(std::forward<_Range>(__r), __n);
 	  else
 	    return take_view(std::forward<_Range>(__r), __n);
 	}
@@ -2527,6 +2536,10 @@ namespace views::__adaptor
   {
     namespace __detail
     {
+      template<typename _Range>
+	constexpr auto
+	__drop_of_repeat_view(_Range&&, range_difference_t<_Range>); // defined later
+
       template<typename _Range, typename _Dp>
 	concept __can_drop_view
 	  = requires { drop_view(std::declval<_Range>(), std::declval<_Dp>()); };
@@ -2568,6 +2581,8 @@ namespace views::__adaptor
 	      else
 		return _Tp(__begin, __end);
 	    }
+	  else if constexpr (__detail::__is_repeat_view<_Tp>)
+	    return __detail::__drop_of_repeat_view(std::forward<_Range>(__r), __n);
 	  else
 	    return drop_view(std::forward<_Range>(__r), __n);
 	}
@@ -7367,6 +7382,14 @@ namespace views::__adaptor
 
     struct _Iterator;
 
+    template<typename _Range>
+    friend constexpr auto
+    views::__detail::__take_of_repeat_view(_Range&&, range_difference_t<_Range>);
+
+    template<typename _Range>
+    friend constexpr auto
+    views::__detail::__drop_of_repeat_view(_Range&&, range_difference_t<_Range>);
+
   public:
     repeat_view() requires default_initializable<_Tp> = default;
 
@@ -7540,6 +7563,9 @@ namespace views::__adaptor
   {
     namespace __detail
     {
+      template<typename _Tp, typename _Bound>
+	inline constexpr bool __is_repeat_view<repeat_view<_Tp, _Bound>> = true;
+
       template<typename _Tp>
 	concept __can_repeat_view
 	  = requires { repeat_view(std::declval<_Tp>()); };
@@ -7565,6 +7591,36 @@ namespace views::__adaptor
     };
 
     inline constexpr _Repeat repeat;
+
+    namespace __detail
+    {
+      template<typename _Range>
+	constexpr auto
+	__take_of_repeat_view(_Range&& __r, range_difference_t<_Range> __n)
+	{
+	  using _Tp = remove_cvref_t<_Range>;
+	  static_assert(__is_repeat_view<_Tp>);
+	  if constexpr (sized_range<_Tp>)
+	    return views::repeat(*__r._M_value, std::min(ranges::distance(__r), __n));
+	  else
+	    return views::repeat(*__r._M_value, __n);
+	}
+
+      template<typename _Range>
+	constexpr auto
+	__drop_of_repeat_view(_Range&& __r, range_difference_t<_Range> __n)
+	{
+	  using _Tp = remove_cvref_t<_Range>;
+	  static_assert(__is_repeat_view<_Tp>);
+	  if constexpr (sized_range<_Tp>)
+	    {
+	      auto __sz = ranges::distance(__r);
+	      return views::repeat(*__r._M_value, __sz - std::min(__sz, __n));
+	    }
+	  else
+	    return __r;
+	}
+    }
   }
 
   template<input_range _Vp>
