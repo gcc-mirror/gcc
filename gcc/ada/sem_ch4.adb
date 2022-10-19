@@ -4389,8 +4389,6 @@ package body Sem_Ch4 is
             end loop;
          end if;
       end if;
-
-      Set_Etype  (N, T);
    end Analyze_Qualified_Expression;
 
    -----------------------------------
