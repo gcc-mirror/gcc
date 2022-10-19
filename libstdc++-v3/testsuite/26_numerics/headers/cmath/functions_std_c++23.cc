@@ -63,7 +63,7 @@ test_functions (T *p, int *q, long int *r, long long int *s)
   p[36] = std::fmod (p[36], p[103]);
   p[37] = std::remainder (p[37], p[104]);
   p[38] = std::copysign (p[38], p[105]);
-//  p[39] = std::nextafter (p[39], p[106]);
+  p[39] = std::nextafter (p[39], p[106]);
   p[40] = std::fdim (p[40], p[107]);
   p[41] = std::fmax (p[41], p[108]);
   p[42] = std::fmin (p[42], p[109]);
@@ -102,13 +102,13 @@ test_functions (T *p, int *q, long int *r, long long int *s)
   p[75] = std::riemann_zeta (p[75]);
   p[76] = std::sph_bessel (q[12], p[76]);
   p[77] = std::sph_legendre (q[13], q[14], p[77]);
-  p[78] = std::sph_neumann (q[15], q[16], p[78]);
+  p[78] = std::sph_neumann (q[15], p[78]);
 }
 
 int
 main ()
 {
-  int q[17] = {};
+  int q[16] = {};
   long int r[16] = {};
   long long int s[16] = {};
 #if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)

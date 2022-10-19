@@ -2755,7 +2755,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   nearbyint(_Float16 __x)
   { return _Float16(__builtin_nearbyintf(__x)); }
 
-  // nextafter not implemented so far.
+  inline _Float16
+  nextafter(_Float16 __x, _Float16 __y)
+  {
+#ifdef __INT16_TYPE__
+    using __float16_int_type = __INT16_TYPE__;
+#else
+    using __float16_int_type = short int;
+#endif
+    __float16_int_type __hx, __hy, __ix, __iy;
+    __builtin_memcpy(&__hx, &__x, sizeof(__x));
+    __builtin_memcpy(&__hy, &__y, sizeof(__x));
+    __ix = __hx & 0x7fff;	// |x|
+    __iy = __hy & 0x7fff;	// |y|
+    if (__ix > 0x7c00 || __iy > 0x7c00) // x or y is NaN
+      return __x + __y;
+    if (__x == __y)
+      return __y;		// x == y, return y
+    if (__ix == 0)		// x == 0
+      {
+	__hy = (__hy & 0x8000) | 1;	// return +-__FLT16_DENORM_MIN__
+	__builtin_memcpy(&__x, &__hy, sizeof(__x));
+	__builtin_nextafterf(0.0f, 1.0f);	// raise underflow
+	return __x;
+      }
+    if (__hx >= 0)		// x > 0
+      {
+	if (__hx > __hy)	// x > y, x -= ulp
+	  --__hx;
+	else			// x < y, x += ulp
+	  ++__hx;
+      }
+    else			// x < 0
+      {
+	if (__hy >= 0 || __hx > __hy)	// x < y, x -= ulp
+	  --__hx;
+	else			// x > y, x += ulp
+	  ++__hx;
+      }
+    __hy = __hx & 0x7c00;
+    if (__hy >= 0x7c00)
+      __builtin_nextafterf(__FLT_MAX__, __builtin_inff());	// overflow
+    else if (__hy < 0x0400)
+      __builtin_nextafterf(__FLT_MIN__, 0.0f);	// underflow
+    __builtin_memcpy(&__x, &__hx, sizeof(__x));
+    return __x;
+  }
 
   constexpr _Float16
   remainder(_Float16 __x, _Float16 __y)
@@ -3426,7 +3471,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   nearbyint(__gnu_cxx::__bfloat16_t __x)
   { return __gnu_cxx::__bfloat16_t(__builtin_nearbyintf(__x)); }
 
-  // nextafter not implemented so far.
+  inline __gnu_cxx::__bfloat16_t
+  nextafter(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
+  {
+#ifdef __INT16_TYPE__
+    using __bfloat16_int_type = __INT16_TYPE__;
+#else
+    using __bfloat16_int_type = short int;
+#endif
+    __bfloat16_int_type __hx, __hy, __ix, __iy;
+    __builtin_memcpy(&__hx, &__x, sizeof(__x));
+    __builtin_memcpy(&__hy, &__y, sizeof(__x));
+    __ix = __hx & 0x7fff;	// |x|
+    __iy = __hy & 0x7fff;	// |y|
+    if (__ix > 0x7f80 || __iy > 0x7f80) // x or y is NaN
+      return __x + __y;
+    if (__x == __y)
+      return __y;		// x == y, return y
+    if (__ix == 0)		// x == 0
+      {
+	__hy = (__hy & 0x8000) | 1;	// return +-__BFLT16_DENORM_MIN__
+	__builtin_memcpy(&__x, &__hy, sizeof(__x));
+	__builtin_nextafterf(0.0f, 1.0f);	// raise underflow
+	return __x;
+      }
+    if (__hx >= 0)		// x > 0
+      {
+	if (__hx > __hy)	// x > y, x -= ulp
+	  --__hx;
+	else			// x < y, x += ulp
+	  ++__hx;
+      }
+    else			// x < 0
+      {
+	if (__hy >= 0 || __hx > __hy)	// x < y, x -= ulp
+	  --__hx;
+	else			// x > y, x += ulp
+	  ++__hx;
+      }
+    __hy = __hx & 0x7f80;
+    if (__hy >= 0x7f80)
+      __builtin_nextafterf(__FLT_MAX__, __builtin_inff());	// overflow
+    else if (__hy < 0x0080)
+      __builtin_nextafterf(__FLT_MIN__, 0.0f);	// underflow
+    __builtin_memcpy(&__x, &__hx, sizeof(__x));
+    return __x;
+  }
 
   constexpr __gnu_cxx::__bfloat16_t
   remainder(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)

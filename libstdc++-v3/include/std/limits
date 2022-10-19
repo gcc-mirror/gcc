@@ -1890,7 +1890,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef __glibcxx_long_double_traps
 #undef __glibcxx_long_double_tinyness_before
 
-#if __cplusplus > 202202L
+#if __cplusplus > 202002L
 
 #define __glibcxx_concat3_(P,M,S) P ## M ## S
 #define __glibcxx_concat3(P,M,S) __glibcxx_concat3_ (P,M,S)
@@ -1924,8 +1924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr bool is_signed = true;				\
       static constexpr bool is_integer = false;				\
       static constexpr bool is_exact = false;				\
-      static constexpr int radix					\
-	= __glibcxx_concat3 (__FLT, BITSIZE, _RADIX__);			\
+      static constexpr int radix = __FLT_RADIX__;			\
 									\
       static constexpr _Float##BITSIZE					\
       epsilon() noexcept						\
@@ -2023,7 +2022,7 @@ __glibcxx_float_n(128)
       static constexpr bool is_signed = true;
       static constexpr bool is_integer = false;
       static constexpr bool is_exact = false;
-      static constexpr int radix = __BFLT16_RADIX__;
+      static constexpr int radix = __FLT_RADIX__;
 
       static constexpr __gnu_cxx::__bfloat16_t
       epsilon() noexcept
