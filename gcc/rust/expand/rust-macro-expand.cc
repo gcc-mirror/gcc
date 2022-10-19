@@ -26,7 +26,7 @@
 #include "rust-early-name-resolver.h"
 
 namespace Rust {
-AST::ASTFragment
+AST::Fragment
 MacroExpander::expand_decl_macro (Location invoc_locus,
 				  AST::MacroInvocData &invoc,
 				  AST::MacroRulesDefinition &rules_def,
@@ -103,7 +103,7 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
       RichLocation r (invoc_locus);
       r.add_range (rules_def.get_locus ());
       rust_error_at (r, "Failed to match any rule within macro");
-      return AST::ASTFragment::create_error ();
+      return AST::Fragment::create_error ();
     }
 
   return transcribe_rule (*matched_rule, invoc_token_tree, matched_fragments,
@@ -139,7 +139,7 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   //      - else is unreachable
   //  - derive container macro - unreachable
 
-  auto fragment = AST::ASTFragment::create_error ();
+  auto fragment = AST::Fragment::create_error ();
   invoc_data.set_expander (this);
 
   // lookup the rules
@@ -707,7 +707,7 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 /**
  * Helper function to refactor calling a parsing function 0 or more times
  */
-static AST::ASTFragment
+static AST::Fragment
 parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
 	    std::function<AST::SingleASTNode ()> parse_fn)
 {
@@ -723,13 +723,13 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
 	  for (auto err : parser.get_errors ())
 	    err.emit_error ();
 
-	  return AST::ASTFragment::create_error ();
+	  return AST::Fragment::create_error ();
 	}
 
       nodes.emplace_back (std::move (node));
     }
 
-  return AST::ASTFragment (std::move (nodes));
+  return AST::Fragment (std::move (nodes));
 }
 
 /**
@@ -738,7 +738,7 @@ parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_many_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
@@ -753,7 +753,7 @@ transcribe_many_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_many_ext (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
@@ -768,7 +768,7 @@ transcribe_many_ext (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_many_trait_items (Parser<MacroInvocLexer> &parser,
 			     TokenId &delimiter)
 {
@@ -784,7 +784,7 @@ transcribe_many_trait_items (Parser<MacroInvocLexer> &parser,
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_many_impl_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
@@ -799,7 +799,7 @@ transcribe_many_impl_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  * @param parser Parser to extract items from
  * @param delimiter Id of the token on which parsing should stop
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
 				  TokenId &delimiter)
 {
@@ -815,7 +815,7 @@ transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
  * @param parser Parser to extract statements from
  * @param delimiter Id of the token on which parsing should stop
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   auto restrictions = ParseRestrictions ();
@@ -835,12 +835,12 @@ transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
  *
  * @param parser Parser to extract statements from
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_expression (Parser<MacroInvocLexer> &parser)
 {
   auto expr = parser.parse_expr ();
 
-  return AST::ASTFragment ({std::move (expr)});
+  return AST::Fragment ({std::move (expr)});
 }
 
 /**
@@ -848,17 +848,17 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
  *
  * @param parser Parser to extract statements from
  */
-static AST::ASTFragment
+static AST::Fragment
 transcribe_type (Parser<MacroInvocLexer> &parser)
 {
   auto type = parser.parse_type (true);
   for (auto err : parser.get_errors ())
     err.emit_error ();
 
-  return AST::ASTFragment ({std::move (type)});
+  return AST::Fragment ({std::move (type)});
 }
 
-static AST::ASTFragment
+static AST::Fragment
 transcribe_on_delimiter (Parser<MacroInvocLexer> &parser, bool semicolon,
 			 AST::DelimType delimiter, TokenId last_token_id)
 {
@@ -868,7 +868,7 @@ transcribe_on_delimiter (Parser<MacroInvocLexer> &parser, bool semicolon,
     return transcribe_expression (parser);
 } // namespace Rust
 
-static AST::ASTFragment
+static AST::Fragment
 transcribe_context (MacroExpander::ContextType ctx,
 		    Parser<MacroInvocLexer> &parser, bool semicolon,
 		    AST::DelimType delimiter, TokenId last_token_id)
@@ -929,7 +929,7 @@ tokens_to_str (std::vector<std::unique_ptr<AST::Token>> &tokens)
   return str;
 }
 
-AST::ASTFragment
+AST::Fragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
   std::map<std::string, MatchedFragmentContainer> &matched_fragments,
@@ -951,7 +951,7 @@ MacroExpander::transcribe_rule (
   rust_debug ("substituted tokens: %s",
 	      tokens_to_str (substituted_tokens).c_str ());
 
-  // parse it to an ASTFragment
+  // parse it to an Fragment
   MacroInvocLexer lex (std::move (substituted_tokens));
   Parser<MacroInvocLexer> parser (lex);
 
@@ -994,7 +994,7 @@ MacroExpander::transcribe_rule (
     {
       for (auto &err : parser.get_errors ())
 	rust_error_at (err.locus, "%s", err.message.c_str ());
-      return AST::ASTFragment::create_error ();
+      return AST::Fragment::create_error ();
     }
 
   // are all the tokens used?

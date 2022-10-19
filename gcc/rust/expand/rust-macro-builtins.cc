@@ -66,7 +66,7 @@ macro_end_token (AST::DelimTokenTree &invoc_token_tree,
 
 /* Expand and extract an expression from the macro */
 
-static inline AST::ASTFragment
+static inline AST::Fragment
 try_expand_macro_expression (AST::Expr *expr, MacroExpander *expander)
 {
   rust_assert (expander);
@@ -264,25 +264,25 @@ load_file_bytes (const char *filename)
 }
 } // namespace
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::assert (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   rust_debug ("assert!() called");
 
-  return AST::ASTFragment::create_error ();
+  return AST::Fragment::create_error ();
 }
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::file (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_file
     = Session::get_instance ().linemap->location_file (invoc_locus);
   auto file_str = AST::SingleASTNode (make_string (invoc_locus, current_file));
 
-  return AST::ASTFragment ({file_str});
+  return AST::Fragment ({file_str});
 }
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::column (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_column
@@ -292,14 +292,14 @@ MacroBuiltin::column (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::LiteralExpr (std::to_string (current_column), AST::Literal::INT,
 			  PrimitiveCoreType::CORETYPE_U32, {}, invoc_locus)));
 
-  return AST::ASTFragment ({column_no});
+  return AST::Fragment ({column_no});
 }
 
 /* Expand builtin macro include_bytes!("filename"), which includes the contents
    of the given file as reference to a byte array. Yields an expression of type
    &'static [u8; N].  */
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::include_bytes (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   /* Get target filename from the macro invocation, which is treated as a path
@@ -308,7 +308,7 @@ MacroBuiltin::include_bytes (Location invoc_locus, AST::MacroInvocData &invoc)
     = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
-    return AST::ASTFragment::create_error ();
+    return AST::Fragment::create_error ();
 
   std::string target_filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
@@ -335,14 +335,14 @@ MacroBuiltin::include_bytes (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::BorrowExpr (std::move (array), false, false, {}, invoc_locus));
 
   auto node = AST::SingleASTNode (std::move (borrow));
-  return AST::ASTFragment ({node});
+  return AST::Fragment ({node});
 }
 
 /* Expand builtin macro include_str!("filename"), which includes the contents
    of the given file as a string. The file must be UTF-8 encoded. Yields an
    expression of type &'static str.  */
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   /* Get target filename from the macro invocation, which is treated as a path
@@ -351,7 +351,7 @@ MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
     = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
-    return AST::ASTFragment::create_error ();
+    return AST::Fragment::create_error ();
 
   std::string target_filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
@@ -362,30 +362,30 @@ MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
   std::string str ((const char *) &bytes[0], bytes.size ());
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
-  return AST::ASTFragment ({node});
+  return AST::Fragment ({node});
 }
 
 /* Expand builtin macro compile_error!("error"), which forces a compile error
    during the compile time. */
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::compile_error (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto lit_expr
     = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
-    return AST::ASTFragment::create_error ();
+    return AST::Fragment::create_error ();
 
   std::string error_string = lit_expr->as_string ();
   rust_error_at (invoc_locus, "%s", error_string.c_str ());
 
-  return AST::ASTFragment::create_error ();
+  return AST::Fragment::create_error ();
 }
 
 /* Expand builtin macro concat!(), which joins all the literal parameters
    into a string with no delimiter. */
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
@@ -427,16 +427,16 @@ MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
   parser.skip_token (last_token_id);
 
   if (has_error)
-    return AST::ASTFragment::create_error ();
+    return AST::Fragment::create_error ();
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
-  return AST::ASTFragment ({node});
+  return AST::Fragment ({node});
 }
 
 /* Expand builtin macro env!(), which inspects an environment variable at
    compile time. */
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
@@ -451,11 +451,11 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
   auto expanded_expr = try_expand_many_expr (parser, invoc_locus, last_token_id,
 					     invoc.get_expander (), has_error);
   if (has_error)
-    return AST::ASTFragment::create_error ();
+    return AST::Fragment::create_error ();
   if (expanded_expr.size () < 1 || expanded_expr.size () > 2)
     {
       rust_error_at (invoc_locus, "env! takes 1 or 2 arguments");
-      return AST::ASTFragment::create_error ();
+      return AST::Fragment::create_error ();
     }
   if (expanded_expr.size () > 0)
     {
@@ -463,7 +463,7 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
 	    = try_extract_string_literal_from_fragment (invoc_locus,
 							expanded_expr[0])))
 	{
-	  return AST::ASTFragment::create_error ();
+	  return AST::Fragment::create_error ();
 	}
     }
   if (expanded_expr.size () > 1)
@@ -472,7 +472,7 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
 	    = try_extract_string_literal_from_fragment (invoc_locus,
 							expanded_expr[1])))
 	{
-	  return AST::ASTFragment::create_error ();
+	  return AST::Fragment::create_error ();
 	}
     }
 
@@ -487,14 +487,14 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
 		       lit_expr->as_string ().c_str ());
       else
 	rust_error_at (invoc_locus, "%s", error_expr->as_string ().c_str ());
-      return AST::ASTFragment::create_error ();
+      return AST::Fragment::create_error ();
     }
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, env_value));
-  return AST::ASTFragment ({node});
+  return AST::Fragment ({node});
 }
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   // only parse if not already parsed
@@ -519,7 +519,7 @@ MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
   /* TODO: assuming that cfg! macros can only have one meta item inner, like cfg
    * attributes */
   if (invoc.get_meta_items ().size () != 1)
-    return AST::ASTFragment::create_error ();
+    return AST::Fragment::create_error ();
 
   bool result = invoc.get_meta_items ()[0]->check_cfg_predicate (
     Session::get_instance ());
@@ -527,13 +527,13 @@ MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::LiteralExpr (result ? "true" : "false", AST::Literal::BOOL,
 			  PrimitiveCoreType::CORETYPE_BOOL, {}, invoc_locus)));
 
-  return AST::ASTFragment ({literal_exp});
+  return AST::Fragment ({literal_exp});
 }
 
 /* Expand builtin macro include!(), which includes a source file at the current
  scope compile time. */
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   /* Get target filename from the macro invocation, which is treated as a path
@@ -542,7 +542,7 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
     = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
-    return AST::ASTFragment::create_error ();
+    return AST::Fragment::create_error ();
 
   std::string filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
@@ -556,7 +556,7 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
     {
       rust_error_at (lit_expr->get_locus (),
 		     "cannot open included file %qs: %m", target_filename);
-      return AST::ASTFragment::create_error ();
+      return AST::Fragment::create_error ();
     }
 
   rust_debug ("Attempting to parse included file %s", target_filename);
@@ -574,7 +574,7 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
     {
       // inform the user that the errors above are from a included file
       rust_inform (invoc_locus, "included from here");
-      return AST::ASTFragment::create_error ();
+      return AST::Fragment::create_error ();
     }
 
   std::vector<AST::SingleASTNode> nodes{};
@@ -584,10 +584,10 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
       nodes.push_back (node);
     }
 
-  return AST::ASTFragment (nodes);
+  return AST::Fragment (nodes);
 }
 
-AST::ASTFragment
+AST::Fragment
 MacroBuiltin::line (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_line
@@ -597,7 +597,7 @@ MacroBuiltin::line (Location invoc_locus, AST::MacroInvocData &invoc)
     new AST::LiteralExpr (std::to_string (current_line), AST::Literal::INT,
 			  PrimitiveCoreType::CORETYPE_U32, {}, invoc_locus)));
 
-  return AST::ASTFragment ({line_no});
+  return AST::Fragment ({line_no});
 }
 
 } // namespace Rust

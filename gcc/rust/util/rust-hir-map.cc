@@ -840,8 +840,8 @@ Mappings::iterate_trait_items (
 void
 Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
 {
-  static std::map<std::string, std::function<AST::ASTFragment (
-				 Location, AST::MacroInvocData &)>>
+  static std::map<
+    std::string, std::function<AST::Fragment (Location, AST::MacroInvocData &)>>
     builtin_macros = {
       {"assert", MacroBuiltin::assert},
       {"file", MacroBuiltin::file},
