@@ -4721,6 +4721,26 @@ package body Sem_Ch3 is
                   Expand_Sliding_Conversion (E, T);
                end if;
 
+               if In_Spec_Expression and then In_Declare_Expr > 0 then
+                  --  It is too early to be doing expansion-ish things,
+                  --  so exit early. But we have to set Ekind (Id) now so
+                  --  that subsequent uses of this entity are not rejected
+                  --  via the same mechanism that (correctly) rejects
+                  --  "X : Integer := X;".
+
+                  if Constant_Present (N) then
+                     Mutate_Ekind         (Id, E_Constant);
+                     Set_Is_True_Constant (Id);
+                  else
+                     Mutate_Ekind (Id, E_Variable);
+                     if Present (E) then
+                        Set_Has_Initial_Value (Id);
+                     end if;
+                  end if;
+
+                  goto Leave;
+               end if;
+
                Expand_Subtype_From_Expr
                  (N             => N,
                   Unc_Type      => T,
