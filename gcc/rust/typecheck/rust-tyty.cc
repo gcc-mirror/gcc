@@ -1696,8 +1696,17 @@ ClosureType::can_eq (const BaseType *other, bool emit_errors) const
 bool
 ClosureType::is_equal (const BaseType &other) const
 {
-  gcc_unreachable ();
-  return false;
+  if (other.get_kind () != TypeKind::CLOSURE)
+    return false;
+
+  const ClosureType &other2 = static_cast<const ClosureType &> (other);
+  if (get_def_id () != other2.get_def_id ())
+    return false;
+
+  if (!get_parameters ().is_equal (other2.get_parameters ()))
+    return false;
+
+  return get_result_type ().is_equal (other2.get_result_type ());
 }
 
 BaseType *
