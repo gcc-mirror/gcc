@@ -152,6 +152,9 @@ protected:
 				tree compiled_closure_tyty,
 				TyTy::FnType **fn_tyty);
 
+  bool generate_possible_fn_trait_call (HIR::CallExpr &expr, tree receiver,
+					tree *result);
+
 private:
   CompileExpr (Context *ctx);
 

@@ -1693,53 +1693,10 @@ CompileExpr::visit (HIR::CallExpr &expr)
   auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
 
   // is this a closure call?
-  if (RS_CLOSURE_TYPE_P (TREE_TYPE (fn_address)))
-    {
-      rust_assert (tyty->get_kind () == TyTy::TypeKind::CLOSURE);
-      TyTy::ClosureType *closure = static_cast<TyTy::ClosureType *> (tyty);
-
-      std::vector<tree> tuple_arg_vals;
-      for (auto &argument : expr.get_arguments ())
-	{
-	  auto rvalue = CompileExpr::Compile (argument.get (), ctx);
-	  tuple_arg_vals.push_back (rvalue);
-	}
-
-      tree tuple_args_tyty
-	= TyTyResolveCompile::compile (ctx, &closure->get_parameters ());
-      tree tuple_args
-	= ctx->get_backend ()->constructor_expression (tuple_args_tyty, false,
-						       tuple_arg_vals, -1,
-						       expr.get_locus ());
-
-      // need to apply any autoderef's to the self argument
-      HirId autoderef_mappings_id = expr.get_mappings ().get_hirid ();
-      std::vector<Resolver::Adjustment> *adjustments = nullptr;
-      bool ok
-	= ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
-							&adjustments);
-      rust_assert (ok);
-
-      // apply adjustments for the fn call
-      tree self
-	= resolve_adjustements (*adjustments, fn_address, expr.get_locus ());
-
-      // args are always self, and the tuple of the args we are passing where
-      // self is the path of the call-expr in this case the fn_address
-      std::vector<tree> args;
-      args.push_back (self);
-      args.push_back (tuple_args);
-
-      // get the fn call address
-      tree closure_call_site = ctx->lookup_closure_decl (closure);
-      tree closure_call_address
-	= address_expression (closure_call_site, expr.get_locus ());
-      translated
-	= ctx->get_backend ()->call_expression (closure_call_address, args,
-						nullptr /* static chain ?*/,
-						expr.get_locus ());
-      return;
-    }
+  bool possible_trait_call
+    = generate_possible_fn_trait_call (expr, fn_address, &translated);
+  if (possible_trait_call)
+    return;
 
   bool is_varadic = false;
   if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
@@ -3066,6 +3023,71 @@ CompileExpr::generate_closure_fntype (HIR::ClosureExpr &expr,
   rust_assert (item_tyty->get_kind () == TyTy::TypeKind::FNDEF);
   *fn_tyty = static_cast<TyTy::FnType *> (item_tyty);
   return TyTyResolveCompile::compile (ctx, item_tyty);
+}
+
+bool
+CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
+					      tree receiver, tree *result)
+{
+  TyTy::FnType *fn_sig = nullptr;
+  bool found_overload = ctx->get_tyctx ()->lookup_operator_overload (
+    expr.get_mappings ().get_hirid (), &fn_sig);
+  if (!found_overload)
+    return false;
+
+  auto id = fn_sig->get_ty_ref ();
+  auto dId = fn_sig->get_id ();
+
+  tree function = error_mark_node;
+  bool found_closure = ctx->lookup_function_decl (id, &function, dId, fn_sig);
+  if (!found_closure)
+    {
+      // something went wrong we still return true as this was meant to be an fn
+      // trait call
+      *result = error_mark_node;
+      return true;
+    }
+
+  // need to apply any autoderef's to the self argument
+  HirId autoderef_mappings_id = expr.get_mappings ().get_hirid ();
+  std::vector<Resolver::Adjustment> *adjustments = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
+							  &adjustments);
+  rust_assert (ok);
+
+  // apply adjustments for the fn call
+  tree self = resolve_adjustements (*adjustments, receiver, expr.get_locus ());
+
+  // resolve the arguments
+  std::vector<tree> tuple_arg_vals;
+  for (auto &argument : expr.get_arguments ())
+    {
+      auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+      tuple_arg_vals.push_back (rvalue);
+    }
+
+  // this is always the 2nd argument in the function signature
+  tree fnty = TREE_TYPE (function);
+  tree fn_arg_tys = TYPE_ARG_TYPES (fnty);
+  tree tuple_args_tyty_chain = TREE_CHAIN (fn_arg_tys);
+  tree tuple_args_tyty = TREE_VALUE (tuple_args_tyty_chain);
+
+  tree tuple_args
+    = ctx->get_backend ()->constructor_expression (tuple_args_tyty, false,
+						   tuple_arg_vals, -1,
+						   expr.get_locus ());
+
+  // args are always self, and the tuple of the args we are passing where
+  // self is the path of the call-expr in this case the fn_address
+  std::vector<tree> args;
+  args.push_back (self);
+  args.push_back (tuple_args);
+
+  tree call_address = address_expression (function, expr.get_locus ());
+  *result = ctx->get_backend ()->call_expression (call_address, args,
+						  nullptr /* static chain ?*/,
+						  expr.get_locus ());
+  return true;
 }
 
 } // namespace Compile
