@@ -1740,6 +1740,70 @@ package body Sem_Ch4 is
          return;
       end if;
 
+      --  The expression must be of a discrete type which must be determinable
+      --  independently of the context in which the expression occurs, but
+      --  using the fact that the expression must be of a discrete type.
+      --  Moreover, the type this expression must not be a character literal
+      --  (which is always ambiguous).
+
+      --  If error already reported by Resolve, nothing more to do
+
+      if Exp_Btype = Any_Discrete or else Exp_Btype = Any_Type then
+         return;
+
+      --  Special case message for character literal
+
+      elsif Exp_Btype = Any_Character then
+         Error_Msg_N
+           ("character literal as case expression is ambiguous", Expr);
+         return;
+      end if;
+
+      --  If the case expression is a formal object of mode in out, then
+      --  treat it as having a nonstatic subtype by forcing use of the base
+      --  type (which has to get passed to Check_Case_Choices below). Also
+      --  use base type when the case expression is parenthesized.
+
+      if Paren_Count (Expr) > 0
+        or else (Is_Entity_Name (Expr)
+                  and then Ekind (Entity (Expr)) = E_Generic_In_Out_Parameter)
+      then
+         Exp_Type := Exp_Btype;
+      end if;
+
+      --  The case expression alternatives cover the range of a static subtype
+      --  subject to aspect Static_Predicate. Do not check the choices when the
+      --  case expression has not been fully analyzed yet because this may lead
+      --  to bogus errors.
+
+      if Is_OK_Static_Subtype (Exp_Type)
+        and then Has_Static_Predicate_Aspect (Exp_Type)
+        and then In_Spec_Expression
+      then
+         null;
+
+      --  Call Analyze_Choices and Check_Choices to do the rest of the work
+
+      else
+         Analyze_Choices (Alternatives (N), Exp_Type);
+         Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
+
+         if Exp_Type = Universal_Integer and then not Others_Present then
+            Error_Msg_N
+              ("case on universal integer requires OTHERS choice", Expr);
+            return;
+         end if;
+      end if;
+
+      --  RM 4.5.7(10/3): If the case_expression is the operand of a type
+      --  conversion, the type of the case_expression is the target type
+      --  of the conversion.
+
+      if Nkind (Parent (N)) = N_Type_Conversion then
+         Set_Etype (N, Etype (Parent (N)));
+         return;
+      end if;
+
       --  Loop through the interpretations of the first expression and check
       --  the other expressions if present.
 
@@ -1761,25 +1825,6 @@ package body Sem_Ch4 is
 
             Get_Next_Interp (I, It);
          end loop;
-      end if;
-
-      --  The expression must be of a discrete type which must be determinable
-      --  independently of the context in which the expression occurs, but
-      --  using the fact that the expression must be of a discrete type.
-      --  Moreover, the type this expression must not be a character literal
-      --  (which is always ambiguous).
-
-      --  If error already reported by Resolve, nothing more to do
-
-      if Exp_Btype = Any_Discrete or else Exp_Btype = Any_Type then
-         return;
-
-      --  Special casee message for character literal
-
-      elsif Exp_Btype = Any_Character then
-         Error_Msg_N
-           ("character literal as case expression is ambiguous", Expr);
-         return;
       end if;
 
       --  If no possible interpretation has been found, the type of the wrong
@@ -1828,43 +1873,6 @@ package body Sem_Ch4 is
                   Second_Expr,
                   Etype (Second_Expr));
             end if;
-         end if;
-
-         return;
-      end if;
-
-      --  If the case expression is a formal object of mode in out, then
-      --  treat it as having a nonstatic subtype by forcing use of the base
-      --  type (which has to get passed to Check_Case_Choices below). Also
-      --  use base type when the case expression is parenthesized.
-
-      if Paren_Count (Expr) > 0
-        or else (Is_Entity_Name (Expr)
-                  and then Ekind (Entity (Expr)) = E_Generic_In_Out_Parameter)
-      then
-         Exp_Type := Exp_Btype;
-      end if;
-
-      --  The case expression alternatives cover the range of a static subtype
-      --  subject to aspect Static_Predicate. Do not check the choices when the
-      --  case expression has not been fully analyzed yet because this may lead
-      --  to bogus errors.
-
-      if Is_OK_Static_Subtype (Exp_Type)
-        and then Has_Static_Predicate_Aspect (Exp_Type)
-        and then In_Spec_Expression
-      then
-         null;
-
-      --  Call Analyze_Choices and Check_Choices to do the rest of the work
-
-      else
-         Analyze_Choices (Alternatives (N), Exp_Type);
-         Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
-
-         if Exp_Type = Universal_Integer and then not Others_Present then
-            Error_Msg_N
-              ("case on universal integer requires OTHERS choice", Expr);
          end if;
       end if;
    end Analyze_Case_Expression;
@@ -2553,6 +2561,15 @@ package body Sem_Ch4 is
 
       if Present (Else_Expr) then
          Analyze_Expression (Else_Expr);
+      end if;
+
+      --  RM 4.5.7(10/3): If the if_expression is the operand of a type
+      --  conversion, the type of the if_expression is the target type
+      --  of the conversion.
+
+      if Nkind (Parent (N)) = N_Type_Conversion then
+         Set_Etype (N, Etype (Parent (N)));
+         return;
       end if;
 
       --  Loop through the interpretations of the THEN expression and check the
