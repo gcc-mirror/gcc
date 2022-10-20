@@ -138,8 +138,7 @@ public:
 class svldnt1_gather_extend_impl : public extending_load
 {
 public:
-  constexpr svldnt1_gather_extend_impl (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -178,11 +177,7 @@ public:
 class svmovl_lb_impl : public unspec_based_function_base
 {
 public:
-  constexpr svmovl_lb_impl (int unspec_for_sint, int unspec_for_uint,
-			    int unspec_for_fp)
-    : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
-				  unspec_for_fp)
-  {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -393,8 +388,7 @@ public:
 class svstnt1_scatter_truncate_impl : public truncating_store
 {
 public:
-  constexpr svstnt1_scatter_truncate_impl (scalar_int_mode to_mode)
-    : truncating_store (to_mode) {}
+  using truncating_store::truncating_store;
 
   rtx
   expand (function_expander &e) const override

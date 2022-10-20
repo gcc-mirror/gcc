@@ -536,8 +536,7 @@ public:
 class svcnt_bhwd_pat_impl : public svcnt_bhwd_impl
 {
 public:
-  constexpr svcnt_bhwd_pat_impl (machine_mode ref_mode)
-    : svcnt_bhwd_impl (ref_mode) {}
+  using svcnt_bhwd_impl::svcnt_bhwd_impl;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -588,8 +587,7 @@ public:
 class svcreate_impl : public quiet<multi_vector_function>
 {
 public:
-  constexpr svcreate_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -722,12 +720,7 @@ public:
 class svdotprod_lane_impl : public unspec_based_function_base
 {
 public:
-  constexpr svdotprod_lane_impl (int unspec_for_sint,
-				 int unspec_for_uint,
-				 int unspec_for_float)
-    : unspec_based_function_base (unspec_for_sint,
-				  unspec_for_uint,
-				  unspec_for_float) {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -1003,8 +996,7 @@ public:
 class svget_impl : public quiet<multi_vector_function>
 {
 public:
-  constexpr svget_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -1118,8 +1110,7 @@ public:
 class svld1_extend_impl : public extending_load
 {
 public:
-  constexpr svld1_extend_impl (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -1158,8 +1149,7 @@ public:
 class svld1_gather_extend_impl : public extending_load
 {
 public:
-  constexpr svld1_gather_extend_impl (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -1289,8 +1279,7 @@ public:
 class svld234_impl : public full_width_access
 {
 public:
-  constexpr svld234_impl (unsigned int vectors_per_tuple)
-    : full_width_access (vectors_per_tuple) {}
+  using full_width_access::full_width_access;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1372,8 +1361,7 @@ public:
 class svldff1_gather_extend : public extending_load
 {
 public:
-  constexpr svldff1_gather_extend (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -2070,8 +2058,7 @@ public:
 class svset_impl : public quiet<multi_vector_function>
 {
 public:
-  constexpr svset_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -2199,8 +2186,7 @@ public:
 class svst1_scatter_truncate_impl : public truncating_store
 {
 public:
-  constexpr svst1_scatter_truncate_impl (scalar_int_mode to_mode)
-    : truncating_store (to_mode) {}
+  using truncating_store::truncating_store;
 
   rtx
   expand (function_expander &e) const override
@@ -2219,8 +2205,7 @@ public:
 class svst1_truncate_impl : public truncating_store
 {
 public:
-  constexpr svst1_truncate_impl (scalar_int_mode to_mode)
-    : truncating_store (to_mode) {}
+  using truncating_store::truncating_store;
 
   rtx
   expand (function_expander &e) const override
@@ -2235,8 +2220,7 @@ public:
 class svst234_impl : public full_width_access
 {
 public:
-  constexpr svst234_impl (unsigned int vectors_per_tuple)
-    : full_width_access (vectors_per_tuple) {}
+  using full_width_access::full_width_access;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -2351,8 +2335,7 @@ public:
 class svundef_impl : public quiet<multi_vector_function>
 {
 public:
-  constexpr svundef_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   rtx
   expand (function_expander &e) const override
