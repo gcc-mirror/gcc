@@ -1559,7 +1559,7 @@ pass_manager::register_pass (struct register_pass_info *pass_info)
    compile ()
        ipa_passes () 			-> all_small_ipa_passes
 					-> Analysis of all_regular_ipa_passes
-	* possible LTO streaming at copmilation time *
+	* possible LTO streaming at compilation time *
 					-> Execution of all_regular_ipa_passes
 	* possible LTO streaming at link time *
 					-> all_late_ipa_passes
