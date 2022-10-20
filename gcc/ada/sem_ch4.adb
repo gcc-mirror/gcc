@@ -4323,16 +4323,14 @@ package body Sem_Ch4 is
    ----------------------------------
 
    procedure Analyze_Qualified_Expression (N : Node_Id) is
-      Mark : constant Entity_Id := Subtype_Mark (N);
       Expr : constant Node_Id   := Expression (N);
+      Mark : constant Entity_Id := Subtype_Mark (N);
+
       I    : Interp_Index;
       It   : Interp;
       T    : Entity_Id;
 
    begin
-      Analyze_Expression (Expr);
-
-      Set_Etype (N, Any_Type);
       Find_Type (Mark);
       T := Entity (Mark);
 
@@ -4352,6 +4350,8 @@ package body Sem_Ch4 is
       end if;
 
       Set_Etype (N, T);
+
+      Analyze_Expression (Expr);
 
       if T = Any_Type then
          return;
@@ -5948,9 +5948,9 @@ package body Sem_Ch4 is
       It  : Interp;
 
    begin
+      Set_Etype (N, Any_Type);
       Analyze_Expression (L);
       Analyze_Expression (R);
-      Set_Etype (N, Any_Type);
 
       if not Is_Overloaded (L) then
          if Root_Type (Etype (L)) = Standard_Boolean
@@ -6083,7 +6083,9 @@ package body Sem_Ch4 is
    -----------------------------
 
    procedure Analyze_Type_Conversion (N : Node_Id) is
-      Expr : constant Node_Id := Expression (N);
+      Expr : constant Node_Id   := Expression (N);
+      Mark : constant Entity_Id := Subtype_Mark (N);
+
       Typ  : Entity_Id;
 
    begin
@@ -6100,11 +6102,13 @@ package body Sem_Ch4 is
       --  Otherwise full type analysis is required, as well as some semantic
       --  checks to make sure the argument of the conversion is appropriate.
 
-      Find_Type (Subtype_Mark (N));
-      Typ := Entity (Subtype_Mark (N));
+      Find_Type (Mark);
+      Typ := Entity (Mark);
       Set_Etype (N, Typ);
-      Check_Fully_Declared (Typ, N);
+
       Analyze_Expression (Expr);
+
+      Check_Fully_Declared (Typ, N);
       Validate_Remote_Type_Type_Conversion (N);
 
       --  Only remaining step is validity checks on the argument. These
@@ -6227,10 +6231,12 @@ package body Sem_Ch4 is
    ----------------------------------
 
    procedure Analyze_Unchecked_Expression (N : Node_Id) is
+      Expr : constant Node_Id := Expression (N);
+
    begin
-      Analyze (Expression (N), Suppress => All_Checks);
-      Set_Etype (N, Etype (Expression (N)));
-      Save_Interps (Expression (N), N);
+      Analyze (Expr, Suppress => All_Checks);
+      Set_Etype (N, Etype (Expr));
+      Save_Interps (Expr, N);
    end Analyze_Unchecked_Expression;
 
    ---------------------------------------
@@ -6238,10 +6244,13 @@ package body Sem_Ch4 is
    ---------------------------------------
 
    procedure Analyze_Unchecked_Type_Conversion (N : Node_Id) is
+      Expr : constant Node_Id   := Expression (N);
+      Mark : constant Entity_Id := Subtype_Mark (N);
+
    begin
-      Find_Type (Subtype_Mark (N));
-      Analyze_Expression (Expression (N));
-      Set_Etype (N, Entity (Subtype_Mark (N)));
+      Find_Type (Mark);
+      Set_Etype (N, Entity (Mark));
+      Analyze_Expression (Expr);
    end Analyze_Unchecked_Type_Conversion;
 
    ------------------------------------
