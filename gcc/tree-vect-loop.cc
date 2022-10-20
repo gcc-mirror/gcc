@@ -543,6 +543,7 @@ vect_phi_first_order_recurrence_p (loop_vec_info loop_vinfo, class loop *loop,
   tree ldef = PHI_ARG_DEF_FROM_EDGE (phi, latch);
   if (TREE_CODE (ldef) != SSA_NAME
       || SSA_NAME_IS_DEFAULT_DEF (ldef)
+      || is_a <gphi *> (SSA_NAME_DEF_STMT (ldef))
       || !flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (ldef))))
     return false;
 
@@ -8486,14 +8487,8 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
      vectorized the latch definition.  */
   edge le = loop_latch_edge (LOOP_VINFO_LOOP (loop_vinfo));
   gimple *latch_def = SSA_NAME_DEF_STMT (PHI_ARG_DEF_FROM_EDGE (phi, le));
-  gimple_stmt_iterator gsi2;
-  if (is_a <gphi *> (latch_def))
-    gsi2 = gsi_after_labels (gimple_bb (latch_def));
-  else
-    {
-      gsi2 = gsi_for_stmt (latch_def);
-      gsi_next (&gsi2);
-    }
+  gimple_stmt_iterator gsi2 = gsi_for_stmt (latch_def);
+  gsi_next (&gsi2);
 
   for (unsigned i = 0; i < ncopies; ++i)
     {
