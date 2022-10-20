@@ -441,7 +441,7 @@
   [(set (match_operand:ANYF            0 "register_operand" "=f")
 	(plus:ANYF (match_operand:ANYF 1 "register_operand" " f")
 		   (match_operand:ANYF 2 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fadd.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -572,7 +572,7 @@
   [(set (match_operand:ANYF             0 "register_operand" "=f")
 	(minus:ANYF (match_operand:ANYF 1 "register_operand" " f")
 		    (match_operand:ANYF 2 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fsub.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -742,7 +742,7 @@
   [(set (match_operand:ANYF               0 "register_operand" "=f")
 	(mult:ANYF (match_operand:ANYF    1 "register_operand" " f")
 		      (match_operand:ANYF 2 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT  || TARGET_ZFINX"
   "fmul.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmul")
    (set_attr "mode" "<UNITMODE>")])
@@ -1049,7 +1049,7 @@
   [(set (match_operand:ANYF           0 "register_operand" "=f")
 	(div:ANYF (match_operand:ANYF 1 "register_operand" " f")
 		  (match_operand:ANYF 2 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT && TARGET_FDIV"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && TARGET_FDIV"
   "fdiv.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fdiv")
    (set_attr "mode" "<UNITMODE>")])
@@ -1064,7 +1064,7 @@
 (define_insn "sqrt<mode>2"
   [(set (match_operand:ANYF            0 "register_operand" "=f")
 	(sqrt:ANYF (match_operand:ANYF 1 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT && TARGET_FDIV"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && TARGET_FDIV"
 {
     return "fsqrt.<fmt>\t%0,%1";
 }
@@ -1079,7 +1079,7 @@
 	(fma:ANYF (match_operand:ANYF 1 "register_operand" " f")
 		  (match_operand:ANYF 2 "register_operand" " f")
 		  (match_operand:ANYF 3 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fmadd.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1090,7 +1090,7 @@
 	(fma:ANYF (match_operand:ANYF           1 "register_operand" " f")
 		  (match_operand:ANYF           2 "register_operand" " f")
 		  (neg:ANYF (match_operand:ANYF 3 "register_operand" " f"))))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT  || TARGET_ZFINX"
   "fmsub.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1102,7 +1102,7 @@
 	    (neg:ANYF (match_operand:ANYF 1 "register_operand" " f"))
 	    (match_operand:ANYF           2 "register_operand" " f")
 	    (neg:ANYF (match_operand:ANYF 3 "register_operand" " f"))))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT  || TARGET_ZFINX"
   "fnmadd.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1114,7 +1114,7 @@
 	    (neg:ANYF (match_operand:ANYF 1 "register_operand" " f"))
 	    (match_operand:ANYF           2 "register_operand" " f")
 	    (match_operand:ANYF           3 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fnmsub.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1127,7 +1127,7 @@
 		(neg:ANYF (match_operand:ANYF 1 "register_operand" " f"))
 		(match_operand:ANYF           2 "register_operand" " f")
 		(neg:ANYF (match_operand:ANYF 3 "register_operand" " f")))))]
-  "TARGET_HARD_FLOAT && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "fmadd.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1140,7 +1140,7 @@
 		(neg:ANYF (match_operand:ANYF 1 "register_operand" " f"))
 		(match_operand:ANYF           2 "register_operand" " f")
 		(match_operand:ANYF           3 "register_operand" " f"))))]
-  "TARGET_HARD_FLOAT && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "fmsub.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1153,7 +1153,7 @@
 		(match_operand:ANYF 1 "register_operand" " f")
 		(match_operand:ANYF 2 "register_operand" " f")
 		(match_operand:ANYF 3 "register_operand" " f"))))]
-  "TARGET_HARD_FLOAT && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "fnmadd.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1166,7 +1166,7 @@
 		(match_operand:ANYF           1 "register_operand" " f")
 		(match_operand:ANYF           2 "register_operand" " f")
 		(neg:ANYF (match_operand:ANYF 3 "register_operand" " f")))))]
-  "TARGET_HARD_FLOAT && !HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "fnmsub.<fmt>\t%0,%1,%2,%3"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
@@ -1181,7 +1181,7 @@
 (define_insn "abs<mode>2"
   [(set (match_operand:ANYF           0 "register_operand" "=f")
 	(abs:ANYF (match_operand:ANYF 1 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fabs.<fmt>\t%0,%1"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
@@ -1191,7 +1191,7 @@
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" " f")
 		      (match_operand:ANYF 2 "register_operand" " f")]
 		     UNSPEC_COPYSIGN))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fsgnj.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
@@ -1199,7 +1199,7 @@
 (define_insn "neg<mode>2"
   [(set (match_operand:ANYF           0 "register_operand" "=f")
 	(neg:ANYF (match_operand:ANYF 1 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fneg.<fmt>\t%0,%1"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
@@ -1216,7 +1216,7 @@
 	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" " f"))
 		      (use (match_operand:ANYF 2 "register_operand" " f"))]
 		     UNSPEC_FMIN))]
-  "TARGET_HARD_FLOAT && !HONOR_SNANS (<MODE>mode)"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SNANS (<MODE>mode)"
   "fmin.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
@@ -1226,7 +1226,7 @@
 	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" " f"))
 		      (use (match_operand:ANYF 2 "register_operand" " f"))]
 		     UNSPEC_FMAX))]
-  "TARGET_HARD_FLOAT && !HONOR_SNANS (<MODE>mode)"
+  "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SNANS (<MODE>mode)"
   "fmax.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
@@ -1235,7 +1235,7 @@
   [(set (match_operand:ANYF            0 "register_operand" "=f")
 	(smin:ANYF (match_operand:ANYF 1 "register_operand" " f")
 		   (match_operand:ANYF 2 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fmin.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
@@ -1244,7 +1244,7 @@
   [(set (match_operand:ANYF            0 "register_operand" "=f")
 	(smax:ANYF (match_operand:ANYF 1 "register_operand" " f")
 		   (match_operand:ANYF 2 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fmax.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
@@ -1305,7 +1305,7 @@
   [(set (match_operand:SF     0 "register_operand" "=f")
 	(float_truncate:SF
 	    (match_operand:DF 1 "register_operand" " f")))]
-  "TARGET_DOUBLE_FLOAT"
+  "TARGET_DOUBLE_FLOAT || TARGET_ZDINX"
   "fcvt.s.d\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
@@ -1314,7 +1314,7 @@
   [(set (match_operand:HF     0 "register_operand" "=f")
        (float_truncate:HF
            (match_operand:SF 1 "register_operand" " f")))]
-  "TARGET_ZFHMIN"
+  "TARGET_ZFHMIN || TARGET_ZHINXMIN"
   "fcvt.h.s\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "HF")])
@@ -1323,7 +1323,8 @@
   [(set (match_operand:HF     0 "register_operand" "=f")
        (float_truncate:HF
            (match_operand:DF 1 "register_operand" " f")))]
-  "TARGET_ZFHMIN && TARGET_DOUBLE_FLOAT"
+  "(TARGET_ZFHMIN && TARGET_DOUBLE_FLOAT) ||
+   (TARGET_ZHINXMIN && TARGET_ZDINX)"
   "fcvt.h.d\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "HF")])
@@ -1449,7 +1450,7 @@
   [(set (match_operand:SF     0 "register_operand" "=f")
        (float_extend:SF
            (match_operand:HF 1 "register_operand" " f")))]
-  "TARGET_ZFHMIN"
+  "TARGET_ZFHMIN || TARGET_ZHINXMIN"
   "fcvt.s.h\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
@@ -1458,7 +1459,7 @@
   [(set (match_operand:DF     0 "register_operand" "=f")
 	(float_extend:DF
 	    (match_operand:SF 1 "register_operand" " f")))]
-  "TARGET_DOUBLE_FLOAT"
+  "TARGET_DOUBLE_FLOAT || TARGET_ZDINX"
   "fcvt.d.s\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "DF")])
@@ -1467,7 +1468,8 @@
   [(set (match_operand:DF     0 "register_operand" "=f")
        (float_extend:DF
            (match_operand:HF 1 "register_operand" " f")))]
-  "TARGET_ZFHMIN && TARGET_DOUBLE_FLOAT"
+  "(TARGET_ZFHMIN && TARGET_DOUBLE_FLOAT) ||
+   (TARGET_ZHINXMIN && TARGET_ZDINX)"
   "fcvt.d.h\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "DF")])
@@ -1513,7 +1515,7 @@
   [(set (match_operand:GPR      0 "register_operand" "=r")
 	(fix:GPR
 	    (match_operand:ANYF 1 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fcvt.<GPR:ifmt>.<ANYF:fmt> %0,%1,rtz"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -1522,7 +1524,7 @@
   [(set (match_operand:GPR      0 "register_operand" "=r")
 	(unsigned_fix:GPR
 	    (match_operand:ANYF 1 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT  || TARGET_ZFINX"
   "fcvt.<GPR:ifmt>u.<ANYF:fmt> %0,%1,rtz"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -1531,7 +1533,7 @@
   [(set (match_operand:ANYF    0 "register_operand" "= f")
 	(float:ANYF
 	    (match_operand:GPR 1 "reg_or_0_operand" " rJ")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fcvt.<ANYF:fmt>.<GPR:ifmt>\t%0,%z1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -1540,7 +1542,7 @@
   [(set (match_operand:ANYF    0 "register_operand" "= f")
 	(unsigned_float:ANYF
 	    (match_operand:GPR 1 "reg_or_0_operand" " rJ")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fcvt.<ANYF:fmt>.<GPR:ifmt>u\t%0,%z1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -1550,7 +1552,7 @@
 	(unspec:GPR
 	    [(match_operand:ANYF 1 "register_operand" " f")]
 	    RINT))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fcvt.<GPR:ifmt>.<ANYF:fmt> %0,%1,<rint_rm>"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<ANYF:MODE>")])
@@ -2278,7 +2280,7 @@
 			(match_operand:ANYF 2 "register_operand")])
 		      (label_ref (match_operand 3 ""))
 		      (pc)))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
 {
   riscv_expand_conditional_branch (operands[3], GET_CODE (operands[0]),
 				   operands[1], operands[2]);
@@ -2367,7 +2369,7 @@
 	(match_operator:SI 1 "fp_scc_comparison"
 	     [(match_operand:ANYF 2 "register_operand")
 	      (match_operand:ANYF 3 "register_operand")]))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
 {
   riscv_expand_float_scc (operands[0], GET_CODE (operands[1]), operands[2],
 			  operands[3]);
@@ -2379,7 +2381,7 @@
 	 (match_operator:X 1 "fp_native_comparison"
 	     [(match_operand:ANYF 2 "register_operand" " f")
 	      (match_operand:ANYF 3 "register_operand" " f")]))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "f%C1.<fmt>\t%0,%2,%3"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")])
@@ -2389,7 +2391,7 @@
 	 (unspec:X [(match_operand:ANYF 1 "register_operand")
 		    (match_operand:ANYF 2 "register_operand")]
 		   QUIET_COMPARISON))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -2809,19 +2811,19 @@
 (define_insn "riscv_frflags"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile [(const_int 0)] UNSPECV_FRFLAGS))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "frflags\t%0")
 
 (define_insn "riscv_fsflags"
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fsflags\t%0")
 
 (define_insn "*riscv_fsnvsnan<mode>2"
   [(unspec_volatile [(match_operand:ANYF 0 "register_operand" "f")
 		     (match_operand:ANYF 1 "register_operand" "f")]
 		    UNSPECV_FSNVSNAN)]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "feq.<fmt>\tzero,%0,%1"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")])
