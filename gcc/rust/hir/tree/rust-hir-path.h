@@ -529,23 +529,8 @@ protected:
 struct TypePathFunction
 {
 private:
-  // TODO: remove
-  /*bool has_inputs;
-  TypePathFnInputs inputs;*/
-  // inlined from TypePathFnInputs
   std::vector<std::unique_ptr<Type> > inputs;
-
-  // bool has_type;
   std::unique_ptr<Type> return_type;
-
-  // FIXME: think of better way to mark as invalid than taking up storage
-  bool is_invalid;
-
-  // TODO: should this have location info?
-
-protected:
-  // Constructor only used to create invalid type path functions.
-  TypePathFunction (bool is_invalid) : is_invalid (is_invalid) {}
 
 public:
   // Returns whether the return type of the function has been specified.
@@ -554,31 +539,19 @@ public:
   // Returns whether the function has inputs.
   bool has_inputs () const { return !inputs.empty (); }
 
-  // Returns whether function is in an error state.
-  bool is_error () const { return is_invalid; }
-
-  // Creates an error state function.
-  static TypePathFunction create_error () { return TypePathFunction (true); }
-
   // Constructor
   TypePathFunction (std::vector<std::unique_ptr<Type> > inputs,
-		    Type *type = nullptr)
-    : inputs (std::move (inputs)), return_type (type), is_invalid (false)
-  {}
-  // FIXME: deprecated
-
-  // Constructor
-  TypePathFunction (std::vector<std::unique_ptr<Type> > inputs,
-		    std::unique_ptr<Type> type = nullptr)
-    : inputs (std::move (inputs)), return_type (std::move (type)),
-      is_invalid (false)
+		    std::unique_ptr<Type> type)
+    : inputs (std::move (inputs)), return_type (std::move (type))
   {}
 
   // Copy constructor with clone
   TypePathFunction (TypePathFunction const &other)
-    : return_type (other.return_type->clone_type ()),
-      is_invalid (other.is_invalid)
   {
+    return_type = other.has_return_type ()
+		    ? other.get_return_type ()->clone_type ()
+		    : nullptr;
+
     inputs.reserve (other.inputs.size ());
     for (const auto &e : other.inputs)
       inputs.push_back (e->clone_type ());
@@ -589,8 +562,9 @@ public:
   // Overloaded assignment operator to clone type
   TypePathFunction &operator= (TypePathFunction const &other)
   {
-    return_type = other.return_type->clone_type ();
-    is_invalid = other.is_invalid;
+    return_type = other.has_return_type ()
+		    ? other.get_return_type ()->clone_type ()
+		    : nullptr;
 
     inputs.reserve (other.inputs.size ());
     for (const auto &e : other.inputs)
@@ -604,6 +578,23 @@ public:
   TypePathFunction &operator= (TypePathFunction &&other) = default;
 
   std::string as_string () const;
+
+  const std::vector<std::unique_ptr<Type> > &get_params () const
+  {
+    return inputs;
+  };
+  std::vector<std::unique_ptr<Type> > &get_params () { return inputs; };
+
+  const std::unique_ptr<Type> &get_return_type () const
+  {
+    rust_assert (has_return_type ());
+    return return_type;
+  };
+  std::unique_ptr<Type> &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return return_type;
+  };
 };
 
 // Segment used in type path with a function argument
@@ -638,10 +629,9 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  virtual SegmentType get_type () const override final
-  {
-    return SegmentType::FUNCTION;
-  }
+  SegmentType get_type () const override final { return SegmentType::FUNCTION; }
+
+  TypePathFunction &get_function_path () { return function_path; }
 
 protected:
   // Use covariance to override base class method
