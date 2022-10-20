@@ -10729,7 +10729,12 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
   if (DECL_CONTEXT (retval) != current_function_decl)
     return NULL_TREE;
   if (return_p)
-    return set_implicit_rvalue_p (move (expr));
+    {
+      expr = move (expr);
+      if (expr == error_mark_node)
+	return NULL_TREE;
+      return set_implicit_rvalue_p (expr);
+    }
 
   /* if the operand of a throw-expression is a (possibly parenthesized)
      id-expression that names an implicitly movable entity whose scope does not

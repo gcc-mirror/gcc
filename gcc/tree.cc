@@ -14352,7 +14352,7 @@ maybe_wrap_with_location (tree expr, location_t loc)
 
   /* For now, don't add wrappers to exceptional tree nodes, to minimize
      any impact of the wrapper nodes.  */
-  if (EXCEPTIONAL_CLASS_P (expr))
+  if (EXCEPTIONAL_CLASS_P (expr) || error_operand_p (expr))
     return expr;
 
   /* Compiler-generated temporary variables don't need a wrapper.  */
