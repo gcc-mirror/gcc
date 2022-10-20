@@ -1922,7 +1922,8 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
   tree ret = gimple_assign_lhs (first_stmt);
   tree ret_type = TREE_TYPE (ret);
   bool shift_first = true;
-  tree vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (container));
+  tree container_type = TREE_TYPE (container);
+  tree vectype = get_vectype_for_scalar_type (vinfo, container_type);
 
   /* We move the conversion earlier if the loaded type is smaller than the
      return type to enable the use of widening loads.  */
@@ -1933,14 +1934,14 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
 	= gimple_build_assign (vect_recog_temp_ssa_var (ret_type),
 			       NOP_EXPR, container);
       container = gimple_get_lhs (pattern_stmt);
-      append_pattern_def_seq (vinfo, stmt_info, pattern_stmt);
+      container_type = TREE_TYPE (container);
+      vectype = get_vectype_for_scalar_type (vinfo, container_type);
+      append_pattern_def_seq (vinfo, stmt_info, pattern_stmt, vectype);
     }
   else if (!useless_type_conversion_p (TREE_TYPE (container), ret_type))
     /* If we are doing the conversion last then also delay the shift as we may
        be able to combine the shift and conversion in certain cases.  */
     shift_first = false;
-
-  tree container_type = TREE_TYPE (container);
 
   /* If the only use of the result of this BIT_FIELD_REF + CONVERT is a
      PLUS_EXPR then do the shift last as some targets can combine the shift and
