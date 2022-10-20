@@ -4046,6 +4046,7 @@ node_template_info (tree decl, int &use)
 	       || TREE_CODE (decl) == TYPE_DECL
 	       || TREE_CODE (decl) == FUNCTION_DECL
 	       || TREE_CODE (decl) == FIELD_DECL
+	       || TREE_CODE (decl) == CONCEPT_DECL
 	       || TREE_CODE (decl) == TEMPLATE_DECL))
     {
       use_tpl = DECL_USE_TEMPLATE (decl);
