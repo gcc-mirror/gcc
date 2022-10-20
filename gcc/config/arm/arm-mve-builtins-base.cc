@@ -119,13 +119,48 @@ namespace arm_mve {
     -1, -1, -1,								\
     -1, -1, -1))
 
+  /* Helper for builtins with only unspec codes, _m predicated and _n
+     overrides, but no floating-point version.  */
+#define FUNCTION_WITH_M_N_NO_F(NAME, UNSPEC) FUNCTION			\
+  (NAME, unspec_mve_function_exact_insn,				\
+   (UNSPEC##_S, UNSPEC##_U, -1,						\
+    UNSPEC##_N_S, UNSPEC##_N_U, -1,					\
+    UNSPEC##_M_S, UNSPEC##_M_U, -1,					\
+    UNSPEC##_M_N_S, UNSPEC##_M_N_U, -1))
+
+  /* Helper for builtins with only unspec codes, _m predicated
+     overrides, no _n and no floating-point version.  */
+#define FUNCTION_WITHOUT_N_NO_F(NAME, UNSPEC) FUNCTION			\
+  (NAME, unspec_mve_function_exact_insn,				\
+   (UNSPEC##_S, UNSPEC##_U, -1,						\
+    -1, -1, -1,								\
+    UNSPEC##_M_S, UNSPEC##_M_U, -1,					\
+    -1, -1, -1))
+
+  /* Helper for builtins with only unspec codes, _m predicated and _n
+     overrides, but no unsigned and floating-point versions.  */
+#define FUNCTION_WITH_M_N_NO_U_F(NAME, UNSPEC) FUNCTION			\
+  (NAME, unspec_mve_function_exact_insn,				\
+   (UNSPEC##_S, -1, -1,							\
+    UNSPEC##_N_S, -1, -1,						\
+    UNSPEC##_M_S, -1, -1,						\
+    UNSPEC##_M_N_S, -1, -1))
+
 FUNCTION_WITH_RTX_M_N (vaddq, PLUS, VADDQ)
 FUNCTION_WITH_RTX_M (vandq, AND, VANDQ)
 FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
+FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
+FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
+FUNCTION_WITHOUT_N_NO_F (vmulhq, VMULHQ)
 FUNCTION_WITH_RTX_M_N (vmulq, MULT, VMULQ)
 FUNCTION_WITH_RTX_M_N_NO_N_F (vorrq, IOR, VORRQ)
+FUNCTION_WITH_M_N_NO_F (vqaddq, VQADDQ)
+FUNCTION_WITH_M_N_NO_U_F (vqdmulhq, VQDMULHQ)
+FUNCTION_WITH_M_N_NO_F (vqsubq, VQSUBQ)
 FUNCTION (vreinterpretq, vreinterpretq_impl,)
+FUNCTION_WITHOUT_N_NO_F (vrhaddq, VRHADDQ)
+FUNCTION_WITHOUT_N_NO_F (vrmulhq, VRMULHQ)
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)
 
