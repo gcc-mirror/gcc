@@ -414,6 +414,18 @@ proc check_effective_target_offload_device_nvptx { } {
     } ]
 }
 
+# Return 1 if using a GCN offload device.
+proc check_effective_target_offload_device_gcn { } {
+    return [check_runtime_nocache offload_device_gcn {
+      #include <omp.h>
+      #include "testsuite/libgomp.c-c++-common/on_device_arch.h"
+      int main ()
+	{
+	  return !on_device_arch_gcn ();
+	}
+    } ]
+}
+
 # Return 1 if at least one Nvidia GPU is accessible.
 
 proc check_effective_target_openacc_nvidia_accel_present { } {

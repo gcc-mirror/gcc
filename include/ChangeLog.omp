@@ -1,3 +1,10 @@
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gomp-constants.h (GOMP_DEVICE_HSA): Comment out unused define.
+
 2022-08-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	Revert:
