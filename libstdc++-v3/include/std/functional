@@ -285,35 +285,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * simplify this with variadic templates, because we're introducing
    * unique names for each.
    */
-    extern const _Placeholder<1> _1;
-    extern const _Placeholder<2> _2;
-    extern const _Placeholder<3> _3;
-    extern const _Placeholder<4> _4;
-    extern const _Placeholder<5> _5;
-    extern const _Placeholder<6> _6;
-    extern const _Placeholder<7> _7;
-    extern const _Placeholder<8> _8;
-    extern const _Placeholder<9> _9;
-    extern const _Placeholder<10> _10;
-    extern const _Placeholder<11> _11;
-    extern const _Placeholder<12> _12;
-    extern const _Placeholder<13> _13;
-    extern const _Placeholder<14> _14;
-    extern const _Placeholder<15> _15;
-    extern const _Placeholder<16> _16;
-    extern const _Placeholder<17> _17;
-    extern const _Placeholder<18> _18;
-    extern const _Placeholder<19> _19;
-    extern const _Placeholder<20> _20;
-    extern const _Placeholder<21> _21;
-    extern const _Placeholder<22> _22;
-    extern const _Placeholder<23> _23;
-    extern const _Placeholder<24> _24;
-    extern const _Placeholder<25> _25;
-    extern const _Placeholder<26> _26;
-    extern const _Placeholder<27> _27;
-    extern const _Placeholder<28> _28;
-    extern const _Placeholder<29> _29;
+#if __cpp_inline_variables
+#  define _GLIBCXX_PLACEHOLDER inline
+#else
+#  define _GLIBCXX_PLACEHOLDER extern
+#endif
+
+    _GLIBCXX_PLACEHOLDER const _Placeholder<1> _1;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<2> _2;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<3> _3;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<4> _4;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<5> _5;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<6> _6;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<7> _7;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<8> _8;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<9> _9;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<10> _10;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<11> _11;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<12> _12;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<13> _13;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<14> _14;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<15> _15;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<16> _16;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<17> _17;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<18> _18;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<19> _19;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<20> _20;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<21> _21;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<22> _22;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<23> _23;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<24> _24;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<25> _25;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<26> _26;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<27> _27;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<28> _28;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<29> _29;
+
+#undef _GLIBCXX_PLACEHOLDER
   }
 
   /**
