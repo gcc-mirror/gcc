@@ -3485,6 +3485,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_CXX11
 #endif
 
+  template<typename _Str>
+    _GLIBCXX20_CONSTEXPR
+    inline _Str
+    __str_concat(typename _Str::value_type const* __lhs,
+		 typename _Str::size_type __lhs_len,
+		 typename _Str::value_type const* __rhs,
+		 typename _Str::size_type __rhs_len,
+		 typename _Str::allocator_type const& __a)
+    {
+      typedef typename _Str::allocator_type allocator_type;
+      typedef __gnu_cxx::__alloc_traits<allocator_type> _Alloc_traits;
+      _Str __str(_Alloc_traits::_S_select_on_copy(__a));
+      __str.reserve(__lhs_len + __rhs_len);
+      __str.append(__lhs, __lhs_len);
+      __str.append(__rhs, __rhs_len);
+      return __str;
+    }
+
   // operator+
   /**
    *  @brief  Concatenate two strings.
@@ -3494,13 +3512,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT, _Traits, _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     {
-      basic_string<_CharT, _Traits, _Alloc> __str(__lhs);
-      __str.append(__rhs);
-      return __str;
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs.c_str(), __lhs.size(),
+				     __rhs.c_str(), __rhs.size(),
+				     __lhs.get_allocator());
     }
 
   /**
@@ -3511,9 +3530,16 @@ _GLIBCXX_END_NAMESPACE_CXX11
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT,_Traits,_Alloc>
+    inline basic_string<_CharT,_Traits,_Alloc>
     operator+(const _CharT* __lhs,
-	      const basic_string<_CharT,_Traits,_Alloc>& __rhs);
+	      const basic_string<_CharT,_Traits,_Alloc>& __rhs)
+    {
+      __glibcxx_requires_string(__lhs);
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs, _Traits::length(__lhs),
+				     __rhs.c_str(), __rhs.size(),
+				     __rhs.get_allocator());
+    }
 
   /**
    *  @brief  Concatenate character and string.
@@ -3523,8 +3549,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT,_Traits,_Alloc>
-    operator+(_CharT __lhs, const basic_string<_CharT,_Traits,_Alloc>& __rhs);
+    inline basic_string<_CharT,_Traits,_Alloc>
+    operator+(_CharT __lhs, const basic_string<_CharT,_Traits,_Alloc>& __rhs)
+    {
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__builtin_addressof(__lhs), 1,
+				     __rhs.c_str(), __rhs.size(),
+				     __rhs.get_allocator());
+    }
 
   /**
    *  @brief  Concatenate string and C string.
@@ -3538,11 +3570,12 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const _CharT* __rhs)
     {
-      basic_string<_CharT, _Traits, _Alloc> __str(__lhs);
-      __str.append(__rhs);
-      return __str;
+      __glibcxx_requires_string(__rhs);
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs.c_str(), __lhs.size(),
+				     __rhs, _Traits::length(__rhs),
+				     __lhs.get_allocator());
     }
-
   /**
    *  @brief  Concatenate string and character.
    *  @param __lhs  First string.
@@ -3554,11 +3587,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs, _CharT __rhs)
     {
-      typedef basic_string<_CharT, _Traits, _Alloc>	__string_type;
-      typedef typename __string_type::size_type		__size_type;
-      __string_type __str(__lhs);
-      __str.append(__size_type(1), __rhs);
-      return __str;
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs.c_str(), __lhs.size(),
+				     __builtin_addressof(__rhs), 1,
+				     __lhs.get_allocator());
     }
 
 #if __cplusplus >= 201103L
