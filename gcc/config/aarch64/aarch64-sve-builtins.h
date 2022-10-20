@@ -500,6 +500,7 @@ public:
   tree load_store_cookie (tree);
 
   gimple *redirect_call (const function_instance &);
+  gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();
   gimple *fold_to_ptrue ();
   gimple *fold_to_vl_pred (unsigned int);

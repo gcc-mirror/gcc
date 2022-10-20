@@ -2615,6 +2615,13 @@ gimple_folder::redirect_call (const function_instance &instance)
   return call;
 }
 
+/* Fold the call to constant VAL.  */
+gimple *
+gimple_folder::fold_to_cstu (poly_uint64 val)
+{
+  return gimple_build_assign (lhs, build_int_cstu (TREE_TYPE (lhs), val));
+}
+
 /* Fold the call to a PTRUE, taking the element size from type suffix 0.  */
 gimple *
 gimple_folder::fold_to_ptrue ()

@@ -517,9 +517,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree count = build_int_cstu (TREE_TYPE (f.lhs),
-				 GET_MODE_NUNITS (m_ref_mode));
-    return gimple_build_assign (f.lhs, count);
+    return f.fold_to_cstu (GET_MODE_NUNITS (m_ref_mode));
   }
 
   rtx
@@ -553,10 +551,7 @@ public:
     unsigned int elements_per_vq = 128 / GET_MODE_UNIT_BITSIZE (m_ref_mode);
     HOST_WIDE_INT value = aarch64_fold_sve_cnt_pat (pattern, elements_per_vq);
     if (value >= 0)
-      {
-	tree count = build_int_cstu (TREE_TYPE (f.lhs), value);
-	return gimple_build_assign (f.lhs, count);
-      }
+      return f.fold_to_cstu (value);
 
     return NULL;
   }
