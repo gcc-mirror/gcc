@@ -171,9 +171,6 @@ range_operator_float::op1_op2_relation (const frange &lhs ATTRIBUTE_UNUSED) cons
 static inline bool
 maybe_isnan (const frange &op1, const frange &op2)
 {
-  if (flag_finite_math_only)
-    return false;
-
   return op1.maybe_isnan () || op2.maybe_isnan ();
 }
 
