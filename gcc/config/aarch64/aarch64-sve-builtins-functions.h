@@ -30,17 +30,17 @@ template<typename T>
 class quiet : public T
 {
 public:
-  CONSTEXPR quiet () : T () {}
+  constexpr quiet () : T () {}
 
   /* Unfortunately we can't use parameter packs yet.  */
   template<typename T1>
-  CONSTEXPR quiet (const T1 &t1) : T (t1) {}
+  constexpr quiet (const T1 &t1) : T (t1) {}
 
   template<typename T1, typename T2>
-  CONSTEXPR quiet (const T1 &t1, const T2 &t2) : T (t1, t2) {}
+  constexpr quiet (const T1 &t1, const T2 &t2) : T (t1, t2) {}
 
   template<typename T1, typename T2, typename T3>
-  CONSTEXPR quiet (const T1 &t1, const T2 &t2, const T3 &t3)
+  constexpr quiet (const T1 &t1, const T2 &t2, const T3 &t3)
     : T (t1, t2, t3) {}
 
   unsigned int
@@ -55,7 +55,7 @@ public:
 class multi_vector_function : public function_base
 {
 public:
-  CONSTEXPR multi_vector_function (unsigned int vectors_per_tuple)
+  constexpr multi_vector_function (unsigned int vectors_per_tuple)
     : m_vectors_per_tuple (vectors_per_tuple) {}
 
   unsigned int
@@ -74,7 +74,7 @@ public:
 class full_width_access : public multi_vector_function
 {
 public:
-  CONSTEXPR full_width_access (unsigned int vectors_per_tuple = 1)
+  constexpr full_width_access (unsigned int vectors_per_tuple = 1)
     : multi_vector_function (vectors_per_tuple) {}
 
   tree
@@ -99,7 +99,7 @@ public:
 class extending_load : public function_base
 {
 public:
-  CONSTEXPR extending_load (type_suffix_index memory_type)
+  constexpr extending_load (type_suffix_index memory_type)
     : m_memory_type (memory_type) {}
 
   unsigned int
@@ -142,7 +142,7 @@ public:
 class truncating_store : public function_base
 {
 public:
-  CONSTEXPR truncating_store (scalar_int_mode to_mode) : m_to_mode (to_mode) {}
+  constexpr truncating_store (scalar_int_mode to_mode) : m_to_mode (to_mode) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -179,7 +179,7 @@ public:
 class rtx_code_function_base : public function_base
 {
 public:
-  CONSTEXPR rtx_code_function_base (rtx_code code_for_sint,
+  constexpr rtx_code_function_base (rtx_code code_for_sint,
 				    rtx_code code_for_uint,
 				    int unspec_for_fp = -1)
     : m_code_for_sint (code_for_sint), m_code_for_uint (code_for_uint),
@@ -200,7 +200,7 @@ public:
 class rtx_code_function : public rtx_code_function_base
 {
 public:
-  CONSTEXPR rtx_code_function (rtx_code code_for_sint, rtx_code code_for_uint,
+  constexpr rtx_code_function (rtx_code code_for_sint, rtx_code code_for_uint,
 			       int unspec_for_fp = -1)
     : rtx_code_function_base (code_for_sint, code_for_uint, unspec_for_fp) {}
 
@@ -219,7 +219,7 @@ public:
 class rtx_code_function_rotated : public rtx_code_function_base
 {
 public:
-  CONSTEXPR rtx_code_function_rotated (rtx_code code_for_sint,
+  constexpr rtx_code_function_rotated (rtx_code code_for_sint,
 				       rtx_code code_for_uint,
 				       int unspec_for_fp = -1)
     : rtx_code_function_base (code_for_sint, code_for_uint, unspec_for_fp) {}
@@ -243,7 +243,7 @@ public:
 class unspec_based_function_base : public function_base
 {
 public:
-  CONSTEXPR unspec_based_function_base (int unspec_for_sint,
+  constexpr unspec_based_function_base (int unspec_for_sint,
 					int unspec_for_uint,
 					int unspec_for_fp)
     : m_unspec_for_sint (unspec_for_sint),
@@ -272,7 +272,7 @@ public:
 class unspec_based_function : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_function (int unspec_for_sint, int unspec_for_uint,
+  constexpr unspec_based_function (int unspec_for_sint, int unspec_for_uint,
 				   int unspec_for_fp)
     : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
 				  unspec_for_fp)
@@ -293,7 +293,7 @@ public:
 class unspec_based_function_rotated : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_function_rotated (int unspec_for_sint,
+  constexpr unspec_based_function_rotated (int unspec_for_sint,
 					   int unspec_for_uint,
 					   int unspec_for_fp)
     : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
@@ -321,7 +321,7 @@ template<insn_code (*CODE) (int, machine_mode)>
 class unspec_based_function_exact_insn : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_function_exact_insn (int unspec_for_sint,
+  constexpr unspec_based_function_exact_insn (int unspec_for_sint,
 					      int unspec_for_uint,
 					      int unspec_for_fp)
     : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
@@ -378,7 +378,7 @@ template<insn_code (*INT_CODE) (int, machine_mode)>
 class unspec_based_fused_function : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_fused_function (int unspec_for_sint,
+  constexpr unspec_based_fused_function (int unspec_for_sint,
 					 int unspec_for_uint,
 					 int unspec_for_fp)
     : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
@@ -413,7 +413,7 @@ template<insn_code (*INT_CODE) (int, machine_mode)>
 class unspec_based_fused_lane_function : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_fused_lane_function (int unspec_for_sint,
+  constexpr unspec_based_fused_lane_function (int unspec_for_sint,
 					      int unspec_for_uint,
 					      int unspec_for_fp)
     : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
@@ -474,7 +474,7 @@ public:
 class fixed_insn_function : public function_base
 {
 public:
-  CONSTEXPR fixed_insn_function (insn_code code) : m_code (code) {}
+  constexpr fixed_insn_function (insn_code code) : m_code (code) {}
 
   rtx
   expand (function_expander &e) const override
@@ -516,7 +516,7 @@ public:
 class binary_permute : public permute
 {
 public:
-  CONSTEXPR binary_permute (int unspec) : m_unspec (unspec) {}
+  constexpr binary_permute (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -533,13 +533,13 @@ public:
 class reduction : public function_base
 {
 public:
-  CONSTEXPR reduction (int unspec)
+  constexpr reduction (int unspec)
     : m_unspec_for_sint (unspec),
       m_unspec_for_uint (unspec),
       m_unspec_for_fp (unspec)
   {}
 
-  CONSTEXPR reduction (int unspec_for_sint, int unspec_for_uint,
+  constexpr reduction (int unspec_for_sint, int unspec_for_uint,
 		       int unspec_for_fp)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
@@ -572,7 +572,7 @@ public:
 class shift_wide : public function_base
 {
 public:
-  CONSTEXPR shift_wide (rtx_code code, int wide_unspec)
+  constexpr shift_wide (rtx_code code, int wide_unspec)
     : m_code (code), m_wide_unspec (wide_unspec) {}
 
   rtx
@@ -607,7 +607,7 @@ public:
 class unary_count : public quiet<function_base>
 {
 public:
-  CONSTEXPR unary_count (rtx_code code) : m_code (code) {}
+  constexpr unary_count (rtx_code code) : m_code (code) {}
 
   rtx
   expand (function_expander &e) const override
@@ -630,7 +630,7 @@ public:
 class while_comparison : public function_base
 {
 public:
-  CONSTEXPR while_comparison (int unspec_for_sint, int unspec_for_uint)
+  constexpr while_comparison (int unspec_for_sint, int unspec_for_uint)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint)
   {}
@@ -659,7 +659,7 @@ public:
 /* Declare the global function base NAME, creating it from an instance
    of class CLASS with constructor arguments ARGS.  */
 #define FUNCTION(NAME, CLASS, ARGS) \
-  namespace { static CONSTEXPR const CLASS NAME##_obj ARGS; } \
+  namespace { static constexpr const CLASS NAME##_obj ARGS; } \
   namespace functions { const function_base *const NAME = &NAME##_obj; }
 
 #endif
