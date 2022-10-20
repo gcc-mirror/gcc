@@ -32,59 +32,12 @@ protected:
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::TypePath *translate (AST::TypePath &type)
-  {
-    ASTLowerTypePath resolver;
-    type.accept_vis (resolver);
-    rust_assert (resolver.translated != nullptr);
-    return resolver.translated;
-  }
+  static HIR::TypePath *translate (AST::TypePath &type);
 
-  void visit (AST::TypePathSegmentFunction &) override { gcc_unreachable (); }
-
-  void visit (AST::TypePathSegment &segment) override
-  {
-    auto crate_num = mappings->get_current_crate ();
-    auto hirid = mappings->get_next_hir_id (crate_num);
-    Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
-				   UNKNOWN_LOCAL_DEFID);
-
-    HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
-    translated_segment
-      = new HIR::TypePathSegment (std::move (mapping), ident,
-				  segment.get_separating_scope_resolution (),
-				  segment.get_locus ());
-  }
-
+  void visit (AST::TypePathSegmentFunction &segment) override;
+  void visit (AST::TypePathSegment &segment) override;
   void visit (AST::TypePathSegmentGeneric &segment) override;
-
-  void visit (AST::TypePath &path) override
-  {
-    std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
-
-    for (auto &seg : path.get_segments ())
-      {
-	translated_segment = nullptr;
-	seg->accept_vis (*this);
-	if (translated_segment == nullptr)
-	  {
-	    rust_fatal_error (seg->get_locus (),
-			      "failed to translate AST TypePathSegment");
-	  }
-	translated_segments.push_back (
-	  std::unique_ptr<HIR::TypePathSegment> (translated_segment));
-      }
-
-    auto crate_num = mappings->get_current_crate ();
-    auto hirid = mappings->get_next_hir_id (crate_num);
-    Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
-				   mappings->get_next_localdef_id (crate_num));
-
-    translated
-      = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
-			   path.get_locus (),
-			   path.has_opening_scope_resolution_op ());
-  }
+  void visit (AST::TypePath &path) override;
 
 protected:
   HIR::TypePathSegment *translated_segment;
@@ -98,13 +51,7 @@ class ASTLowerQualifiedPathInType : public ASTLowerTypePath
   using ASTLowerTypePath::visit;
 
 public:
-  static HIR::QualifiedPathInType *translate (AST::QualifiedPathInType &type)
-  {
-    ASTLowerQualifiedPathInType resolver;
-    type.accept_vis (resolver);
-    rust_assert (resolver.translated != nullptr);
-    return resolver.translated;
-  }
+  static HIR::QualifiedPathInType *translate (AST::QualifiedPathInType &type);
 
   void visit (AST::QualifiedPathInType &path) override;
 
