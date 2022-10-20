@@ -1,77 +1,37 @@
-## Makefile for the C++17 sources of the GNU C++ Standard library.
+## Makefile for the GNU C++ Filesystem library.
 ##
-## Copyright (C) 1997-2022 Free Software Foundation, Inc.
+## Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ##
-## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
-
-## This file is part of the GNU ISO C++ Library.  This library is free
-## software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License as published by the
-## Free Software Foundation; either version 3, or (at your option)
+##
+## This file is part of GCC.
+##
+## GCC is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 3, or (at your option)
 ## any later version.
-
-## This library is distributed in the hope that it will be useful,
+##
+## GCC is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
-
-## You should have received a copy of the GNU General Public License along
-## with this library; see the file COPYING3.  If not see
+##
+## You should have received a copy of the GNU General Public License
+## along with GCC; see the file COPYING3.  If not see
 ## <http://www.gnu.org/licenses/>.
 
 include $(top_srcdir)/fragment.am
 
-# Convenience library for C++17 runtime.
-noinst_LTLIBRARIES = libc++17convenience.la
+toolexeclib_LTLIBRARIES = libstdc++exp.la
 
 headers =
 
-if ENABLE_DUAL_ABI
-extra_string_inst_sources = cow-string-inst.cc
-extra_fs_sources = \
-	cow-fs_dir.cc \
-	cow-fs_ops.cc \
-	cow-fs_path.cc
-else
-extra_string_inst_sources =
-extra_fs_sources =
-endif
-
-if ENABLE_EXTERN_TEMPLATE
-# XTEMPLATE_FLAGS = -fno-implicit-templates
-inst_sources = \
-	ostream-inst.cc \
-	string-inst.cc \
-	$(extra_string_inst_sources)
-else
-# XTEMPLATE_FLAGS =
-inst_sources =
-endif
-
 sources = \
-	floating_from_chars.cc \
-	floating_to_chars.cc \
-	fs_dir.cc \
-	fs_ops.cc \
-	fs_path.cc \
-	memory_resource.cc \
-	$(extra_fs_sources)
+	contract.cc
 
-vpath % $(top_srcdir)/src/c++17
+# vpath % $(top_srcdir)/src/experimental
 
-libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
-
-if GLIBCXX_LDBL_ALT128_COMPAT
-floating_from_chars.lo: floating_from_chars.cc
-	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
-floating_from_chars.o: floating_from_chars.cc
-	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
-floating_to_chars.lo: floating_to_chars.cc
-	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
-floating_to_chars.o: floating_to_chars.cc
-	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
-endif
+libstdc__exp_la_SOURCES = $(sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

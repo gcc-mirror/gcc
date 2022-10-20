@@ -2414,10 +2414,6 @@ GLIBCXX_3.4.29 {
     # std::to_chars(char*, char*, [float|double|long double], chars_format, int)
     _ZSt8to_charsPcS_[def]St12chars_formati;
 
-    # experimental contracts support
-    _Z25handle_contract_violationRKSt18contract_violation;
-    _Z23__on_contract_violationbiPKcS0_S0_S0_S0_i;
-
 } GLIBCXX_3.4.28;
 
 GLIBCXX_3.4.30 {

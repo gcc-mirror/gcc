@@ -142,6 +142,10 @@ proc g++_link_flags { paths } {
 	  append flags " -L${gccpath}/libstdc++-v3/src/.libs "
 	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
+      if [file exists "${gccpath}/libstdc++-v3/src/experimental/.libs/libstdc++exp.a"] {
+	  append flags " -L${gccpath}/libstdc++-v3/src/experimental/.libs "
+	  append ld_library_path ":${gccpath}/libstdc++-v3/src/experimental/.libs"
+      }
 
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags "-L${gccpath}/libiberty "
