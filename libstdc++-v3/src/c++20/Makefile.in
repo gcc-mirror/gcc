@@ -123,7 +123,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__20convenience_la_LIBADD =
 am__objects_1 = tzdb.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = sstream-inst.lo
-am_libc__20convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+@GLIBCXX_HOSTED_TRUE@am_libc__20convenience_la_OBJECTS =  \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_1) $(am__objects_2)
 libc__20convenience_la_OBJECTS = $(am_libc__20convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -432,7 +433,8 @@ headers =
 @ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc
 
 sources = tzdb.cc
-libc__20convenience_la_SOURCES = $(sources)  $(inst_sources)
+@GLIBCXX_HOSTED_FALSE@libc__20convenience_la_SOURCES = 
+@GLIBCXX_HOSTED_TRUE@libc__20convenience_la_SOURCES = $(sources)  $(inst_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

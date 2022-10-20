@@ -121,26 +121,26 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__11convenience_la_LIBADD =
-@ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-locale_init.lo \
+am__objects_1 = limits.lo placeholders.lo
+@ENABLE_DUAL_ABI_TRUE@am__objects_2 = cow-locale_init.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-shim_facets.lo cxx11-hash_tr1.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-ios_failure.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-shim_facets.lo cxx11-stdexcept.lo
-am__objects_2 = ctype_configure_char.lo ctype_members.lo
-am__objects_3 = chrono.lo codecvt.lo condition_variable.lo \
+am__objects_3 = ctype_configure_char.lo ctype_members.lo
+am__objects_4 = chrono.lo codecvt.lo condition_variable.lo \
 	cow-stdexcept.lo ctype.lo debug.lo functexcept.lo \
 	functional.lo futex.lo future.lo hash_c++0x.lo \
-	hashtable_c++0x.lo ios.lo ios_errcat.lo limits.lo mutex.lo \
-	placeholders.lo random.lo regex.lo shared_ptr.lo \
-	snprintf_lite.lo system_error.lo thread.lo $(am__objects_1) \
-	$(am__objects_2)
-@ENABLE_DUAL_ABI_TRUE@am__objects_4 = cow-fstream-inst.lo \
+	hashtable_c++0x.lo ios.lo ios_errcat.lo mutex.lo random.lo \
+	regex.lo shared_ptr.lo snprintf_lite.lo system_error.lo \
+	thread.lo $(am__objects_2) $(am__objects_3)
+@ENABLE_DUAL_ABI_TRUE@am__objects_5 = cow-fstream-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.lo cow-string-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-string-io-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-wstring-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-wstring-io-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-locale-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.lo sso_string.lo
-@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_5 = $(am__objects_4) \
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_6 = $(am__objects_5) \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ext11-inst.lo fstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.lo iostream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.lo locale-inst.lo \
@@ -149,7 +149,11 @@ am__objects_3 = chrono.lo codecvt.lo condition_variable.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-io-inst.lo wlocale-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-io-inst.lo
-am_libc__11convenience_la_OBJECTS = $(am__objects_3) $(am__objects_5)
+@GLIBCXX_HOSTED_FALSE@am_libc__11convenience_la_OBJECTS =  \
+@GLIBCXX_HOSTED_FALSE@	$(am__objects_1)
+@GLIBCXX_HOSTED_TRUE@am_libc__11convenience_la_OBJECTS =  \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_1) $(am__objects_4) \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_6)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -466,6 +470,10 @@ host_sources = \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-shim_facets.cc \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-stdexcept.cc
 
+sources_freestanding = \
+	limits.cc \
+	placeholders.cc
+
 sources = \
 	chrono.cc \
 	codecvt.cc \
@@ -481,9 +489,7 @@ sources = \
 	hashtable_c++0x.cc \
 	ios.cc \
 	ios_errcat.cc \
-	limits.cc \
 	mutex.cc \
-	placeholders.cc \
 	random.cc \
 	regex.cc  \
 	shared_ptr.cc \
@@ -526,7 +532,12 @@ sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-io-inst.cc
 
-libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)
+@GLIBCXX_HOSTED_FALSE@libc__11convenience_la_SOURCES = $(sources_freestanding)
+@GLIBCXX_HOSTED_TRUE@libc__11convenience_la_SOURCES = \
+@GLIBCXX_HOSTED_TRUE@	$(sources_freestanding) \
+@GLIBCXX_HOSTED_TRUE@	$(sources) \
+@GLIBCXX_HOSTED_TRUE@	$(inst_sources)
+
 
 # Rewrite the type info for __ios_failure.
 @ENABLE_DUAL_ABI_TRUE@rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt13__ios_failure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/'

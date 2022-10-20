@@ -162,7 +162,8 @@ am__objects_2 = compatibility.lo compatibility-debug_list.lo \
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128.lo \
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(am__objects_4)
 am__objects_6 = $(am__objects_3) $(am__objects_5)
-am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_6)
+@GLIBCXX_HOSTED_TRUE@am_libstdc___la_OBJECTS = $(am__objects_2) \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_6)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 @VTV_CYGMIN_FALSE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
 @VTV_CYGMIN_TRUE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
@@ -539,7 +540,10 @@ cxx11_sources = \
 	${cxx0x_compat_sources} \
 	${ldbl_alt128_compat_sources}
 
-libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
+# When freestanding, there's currently no compatibility to preserve.  Should
+# that change, any compatibility sources can be added here.
+@GLIBCXX_HOSTED_FALSE@libstdc___la_SOURCES = 
+@GLIBCXX_HOSTED_TRUE@libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
 libstdc___la_LIBADD = \
 	$(GLIBCXX_LIBS) \
 	$(top_builddir)/libsupc++/libsupc++convenience.la \

@@ -60,7 +60,11 @@ sources = \
 
 vpath % $(top_srcdir)/src/c++17
 
+if GLIBCXX_HOSTED
 libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
+else
+libc__17convenience_la_SOURCES =
+endif
 
 if GLIBCXX_LDBL_ALT128_COMPAT
 floating_from_chars.lo: floating_from_chars.cc
