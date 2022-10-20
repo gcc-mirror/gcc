@@ -1771,14 +1771,12 @@ gimple_add_init_for_auto_var (tree decl,
   tree decl_name = NULL_TREE;
   if (DECL_NAME (decl))
 
-    decl_name = build_string_literal (IDENTIFIER_LENGTH (DECL_NAME (decl)) + 1,
-				      IDENTIFIER_POINTER (DECL_NAME (decl)));
+    decl_name = build_string_literal (DECL_NAME (decl));
 
   else
     {
       char *decl_name_anonymous = xasprintf ("D.%u", DECL_UID (decl));
-      decl_name = build_string_literal (strlen (decl_name_anonymous) + 1,
-					decl_name_anonymous);
+      decl_name = build_string_literal (decl_name_anonymous);
       free (decl_name_anonymous);
     }
 

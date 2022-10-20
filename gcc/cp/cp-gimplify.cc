@@ -3378,10 +3378,10 @@ fold_builtin_source_location (location_t loc)
 	      if (const char *fname = LOCATION_FILE (loc))
 		{
 		  fname = remap_macro_filename (fname);
-		  val = build_string_literal (strlen (fname) + 1, fname);
+		  val = build_string_literal (fname);
 		}
 	      else
-		val = build_string_literal (1, "");
+		val = build_string_literal ("");
 	    }
 	  else if (strcmp (n, "_M_function_name") == 0)
 	    {
@@ -3390,7 +3390,7 @@ fold_builtin_source_location (location_t loc)
 	      if (current_function_decl)
 		name = cxx_printable_name (current_function_decl, 2);
 
-	      val = build_string_literal (strlen (name) + 1, name);
+	      val = build_string_literal (name);
 	    }
 	  else if (strcmp (n, "_M_line") == 0)
 	    val = build_int_cst (TREE_TYPE (field), LOCATION_LINE (loc));
