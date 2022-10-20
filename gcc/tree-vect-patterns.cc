@@ -2098,11 +2098,12 @@ vect_recog_bit_insert_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
   tree shifted = value;
   if (shift_n)
     {
-      pattern_stmt
-	= gimple_build_assign (vect_recog_temp_ssa_var (container_type),
-			       LSHIFT_EXPR, value, shift);
-      append_pattern_def_seq (vinfo, stmt_info, pattern_stmt);
-      shifted = gimple_get_lhs (pattern_stmt);
+      gimple_seq stmts = NULL;
+      shifted
+	= gimple_build (&stmts, LSHIFT_EXPR, container_type, value, shift);
+      if (!gimple_seq_empty_p (stmts))
+	append_pattern_def_seq (vinfo, stmt_info,
+				gimple_seq_first_stmt (stmts));
     }
 
   tree mask_t
