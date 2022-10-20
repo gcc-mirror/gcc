@@ -1,3 +1,22 @@
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_epilogue): Update the
+	condition for adding REG_CFA_DEF_CFA reg note with
+	frame_pointer_needed_indeed.
+
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* config/rs6000/vector.md (vec_shr_<mode>): Replace condition
+	TARGET_ALTIVEC with VECTOR_UNIT_ALTIVEC_OR_VSX_P.
+
 2022-10-17  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	Backported from master:

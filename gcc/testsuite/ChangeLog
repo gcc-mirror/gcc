@@ -1,3 +1,24 @@
+2022-10-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102892
+	* gcc.dg/pr102892-1.c: Remove undefined behaviour.
+
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* gcc.target/powerpc/pr96072.c: New test.
+
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* gcc.target/powerpc/pr100645.c: New test.
+
 2022-10-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
