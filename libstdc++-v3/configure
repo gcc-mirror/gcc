@@ -2619,60 +2619,6 @@ $as_echo "$ac_res" >&6; }
 
 } # ac_fn_cxx_check_func
 
-# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
-# -------------------------------------------
-# Tests whether TYPE exists after having included INCLUDES, setting cache
-# variable VAR accordingly.
-ac_fn_c_check_type ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  eval "$3=no"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-if (sizeof ($2))
-	 return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-if (sizeof (($2)))
-	    return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-else
-  eval "$3=yes"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_type
-
 # ac_fn_cxx_check_type LINENO TYPE VAR INCLUDES
 # ---------------------------------------------
 # Tests whether TYPE exists after having included INCLUDES, setting cache
@@ -12236,7 +12182,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12239 "configure"
+#line 12185 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12342,7 +12288,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12345 "configure"
+#line 12291 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16066,7 +16012,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16069 "configure"
+#line 16015 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16101,7 +16047,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16104 "configure"
+#line 16050 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16136,7 +16082,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16139 "configure"
+#line 16085 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16172,7 +16118,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16175 "configure"
+#line 16121 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16328,7 +16274,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16331 "configure"
+#line 16277 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16370,7 +16316,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16373 "configure"
+#line 16319 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -68484,412 +68430,6 @@ $as_echo "#define HAVE_LINUX_FUTEX 1" >>confdefs.h
 fi
 
 
-if test "$is_hosted" = yes; then
-# TODO: remove this and change src/c++11/compatibility-atomic-c++0x.cc to
-# use <stdint.h> instead of <gstdint.h>.
-
-
-inttype_headers=`echo inttypes.h sys/inttypes.h  | sed -e 's/,/ /g'`
-
-acx_cv_header_stdint=stddef.h
-acx_cv_header_stdint_kind="(already complete)"
-for i in stdint.h $inttype_headers; do
-  unset ac_cv_type_uintptr_t
-  unset ac_cv_type_uintmax_t
-  unset ac_cv_type_int_least32_t
-  unset ac_cv_type_int_fast32_t
-  unset ac_cv_type_uint64_t
-  $as_echo_n "looking for a compliant stdint.h in $i, " >&6
-  ac_fn_c_check_type "$LINENO" "uintmax_t" "ac_cv_type_uintmax_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_uintmax_t" = xyes; then :
-  acx_cv_header_stdint=$i
-else
-  continue
-fi
-
-  ac_fn_c_check_type "$LINENO" "uintptr_t" "ac_cv_type_uintptr_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_uintptr_t" = xyes; then :
-
-else
-  acx_cv_header_stdint_kind="(mostly complete)"
-fi
-
-  ac_fn_c_check_type "$LINENO" "int_least32_t" "ac_cv_type_int_least32_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_int_least32_t" = xyes; then :
-
-else
-  acx_cv_header_stdint_kind="(mostly complete)"
-fi
-
-  ac_fn_c_check_type "$LINENO" "int_fast32_t" "ac_cv_type_int_fast32_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_int_fast32_t" = xyes; then :
-
-else
-  acx_cv_header_stdint_kind="(mostly complete)"
-fi
-
-  ac_fn_c_check_type "$LINENO" "uint64_t" "ac_cv_type_uint64_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_uint64_t" = xyes; then :
-
-else
-  acx_cv_header_stdint_kind="(lacks uint64_t)"
-fi
-
-  break
-done
-if test "$acx_cv_header_stdint" = stddef.h; then
-  acx_cv_header_stdint_kind="(lacks uintmax_t)"
-  for i in stdint.h $inttype_headers; do
-    unset ac_cv_type_uintptr_t
-    unset ac_cv_type_uint32_t
-    unset ac_cv_type_uint64_t
-    $as_echo_n "looking for an incomplete stdint.h in $i, " >&6
-    ac_fn_c_check_type "$LINENO" "uint32_t" "ac_cv_type_uint32_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_uint32_t" = xyes; then :
-  acx_cv_header_stdint=$i
-else
-  continue
-fi
-
-    ac_fn_c_check_type "$LINENO" "uint64_t" "ac_cv_type_uint64_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_uint64_t" = xyes; then :
-
-fi
-
-    ac_fn_c_check_type "$LINENO" "uintptr_t" "ac_cv_type_uintptr_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_uintptr_t" = xyes; then :
-
-fi
-
-    break
-  done
-fi
-if test "$acx_cv_header_stdint" = stddef.h; then
-  acx_cv_header_stdint_kind="(u_intXX_t style)"
-  for i in sys/types.h $inttype_headers; do
-    unset ac_cv_type_u_int32_t
-    unset ac_cv_type_u_int64_t
-    $as_echo_n "looking for u_intXX_t types in $i, " >&6
-    ac_fn_c_check_type "$LINENO" "u_int32_t" "ac_cv_type_u_int32_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_u_int32_t" = xyes; then :
-  acx_cv_header_stdint=$i
-else
-  continue
-fi
-
-    ac_fn_c_check_type "$LINENO" "u_int64_t" "ac_cv_type_u_int64_t" "#include <sys/types.h>
-#include <$i>
-"
-if test "x$ac_cv_type_u_int64_t" = xyes; then :
-
-fi
-
-    break
-  done
-fi
-if test "$acx_cv_header_stdint" = stddef.h; then
-  acx_cv_header_stdint_kind="(using manual detection)"
-fi
-
-test -z "$ac_cv_type_uintptr_t" && ac_cv_type_uintptr_t=no
-test -z "$ac_cv_type_uint64_t" && ac_cv_type_uint64_t=no
-test -z "$ac_cv_type_u_int64_t" && ac_cv_type_u_int64_t=no
-test -z "$ac_cv_type_int_least32_t" && ac_cv_type_int_least32_t=no
-test -z "$ac_cv_type_int_fast32_t" && ac_cv_type_int_fast32_t=no
-
-# ----------------- Summarize what we found so far
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking what to include in include/gstdint.h" >&5
-$as_echo_n "checking what to include in include/gstdint.h... " >&6; }
-
-case `$as_basename -- include/gstdint.h ||
-$as_expr X/include/gstdint.h : '.*/\([^/][^/]*\)/*$' \| \
-	 Xinclude/gstdint.h : 'X\(//\)$' \| \
-	 Xinclude/gstdint.h : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X/include/gstdint.h |
-    sed '/^.*\/\([^/][^/]*\)\/*$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\/\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\/\(\/\).*/{
-	    s//\1/
-	    q
-	  }
-	  s/.*/./; q'` in
-  stdint.h) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: are you sure you want it there?" >&5
-$as_echo "$as_me: WARNING: are you sure you want it there?" >&2;} ;;
-  inttypes.h) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: are you sure you want it there?" >&5
-$as_echo "$as_me: WARNING: are you sure you want it there?" >&2;} ;;
-  *) ;;
-esac
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_header_stdint $acx_cv_header_stdint_kind" >&5
-$as_echo "$acx_cv_header_stdint $acx_cv_header_stdint_kind" >&6; }
-
-# ----------------- done included file, check C basic types --------
-
-# Lacking an uintptr_t?  Test size of void *
-case "$acx_cv_header_stdint:$ac_cv_type_uintptr_t" in
-  stddef.h:* | *:no) # The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of void *" >&5
-$as_echo_n "checking size of void *... " >&6; }
-if ${ac_cv_sizeof_void_p+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (void *))" "ac_cv_sizeof_void_p"        "$ac_includes_default"; then :
-
-else
-  if test "$ac_cv_type_void_p" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (void *)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof_void_p=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_void_p" >&5
-$as_echo "$ac_cv_sizeof_void_p" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF_VOID_P $ac_cv_sizeof_void_p
-_ACEOF
-
- ;;
-esac
-
-# Lacking an uint64_t?  Test size of long
-case "$acx_cv_header_stdint:$ac_cv_type_uint64_t:$ac_cv_type_u_int64_t" in
-  stddef.h:*:* | *:no:no) # The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of long" >&5
-$as_echo_n "checking size of long... " >&6; }
-if ${ac_cv_sizeof_long+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (long))" "ac_cv_sizeof_long"        "$ac_includes_default"; then :
-
-else
-  if test "$ac_cv_type_long" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (long)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof_long=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long" >&5
-$as_echo "$ac_cv_sizeof_long" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF_LONG $ac_cv_sizeof_long
-_ACEOF
-
- ;;
-esac
-
-if test $acx_cv_header_stdint = stddef.h; then
-  # Lacking a good header?  Test size of everything and deduce all types.
-  # The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of int" >&5
-$as_echo_n "checking size of int... " >&6; }
-if ${ac_cv_sizeof_int+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (int))" "ac_cv_sizeof_int"        "$ac_includes_default"; then :
-
-else
-  if test "$ac_cv_type_int" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (int)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof_int=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int" >&5
-$as_echo "$ac_cv_sizeof_int" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INT $ac_cv_sizeof_int
-_ACEOF
-
-
-  # The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of short" >&5
-$as_echo_n "checking size of short... " >&6; }
-if ${ac_cv_sizeof_short+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (short))" "ac_cv_sizeof_short"        "$ac_includes_default"; then :
-
-else
-  if test "$ac_cv_type_short" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (short)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof_short=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_short" >&5
-$as_echo "$ac_cv_sizeof_short" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF_SHORT $ac_cv_sizeof_short
-_ACEOF
-
-
-  # The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of char" >&5
-$as_echo_n "checking size of char... " >&6; }
-if ${ac_cv_sizeof_char+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (char))" "ac_cv_sizeof_char"        "$ac_includes_default"; then :
-
-else
-  if test "$ac_cv_type_char" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (char)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof_char=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_char" >&5
-$as_echo "$ac_cv_sizeof_char" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF_CHAR $ac_cv_sizeof_char
-_ACEOF
-
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for type equivalent to int8_t" >&5
-$as_echo_n "checking for type equivalent to int8_t... " >&6; }
-  case "$ac_cv_sizeof_char" in
-    1) acx_cv_type_int8_t=char ;;
-    *) as_fn_error $? "no 8-bit type, please report a bug" "$LINENO" 5
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int8_t" >&5
-$as_echo "$acx_cv_type_int8_t" >&6; }
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for type equivalent to int16_t" >&5
-$as_echo_n "checking for type equivalent to int16_t... " >&6; }
-  case "$ac_cv_sizeof_int:$ac_cv_sizeof_short" in
-    2:*) acx_cv_type_int16_t=int ;;
-    *:2) acx_cv_type_int16_t=short ;;
-    *) as_fn_error $? "no 16-bit type, please report a bug" "$LINENO" 5
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int16_t" >&5
-$as_echo "$acx_cv_type_int16_t" >&6; }
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for type equivalent to int32_t" >&5
-$as_echo_n "checking for type equivalent to int32_t... " >&6; }
-  case "$ac_cv_sizeof_int:$ac_cv_sizeof_long" in
-    4:*) acx_cv_type_int32_t=int ;;
-    *:4) acx_cv_type_int32_t=long ;;
-    *) as_fn_error $? "no 32-bit type, please report a bug" "$LINENO" 5
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int32_t" >&5
-$as_echo "$acx_cv_type_int32_t" >&6; }
-fi
-
-# These tests are here to make the output prettier
-
-if test "$ac_cv_type_uint64_t" != yes && test "$ac_cv_type_u_int64_t" != yes; then
-  case "$ac_cv_sizeof_long" in
-    8) acx_cv_type_int64_t=long ;;
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for type equivalent to int64_t" >&5
-$as_echo_n "checking for type equivalent to int64_t... " >&6; }
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${acx_cv_type_int64_t-'using preprocessor symbols'}" >&5
-$as_echo "${acx_cv_type_int64_t-'using preprocessor symbols'}" >&6; }
-fi
-
-# Now we can use the above types
-
-if test "$ac_cv_type_uintptr_t" != yes; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for type equivalent to intptr_t" >&5
-$as_echo_n "checking for type equivalent to intptr_t... " >&6; }
-  case $ac_cv_sizeof_void_p in
-    2) acx_cv_type_intptr_t=int16_t ;;
-    4) acx_cv_type_intptr_t=int32_t ;;
-    8) acx_cv_type_intptr_t=int64_t ;;
-    *) as_fn_error $? "no equivalent for intptr_t, please report a bug" "$LINENO" 5
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_intptr_t" >&5
-$as_echo "$acx_cv_type_intptr_t" >&6; }
-fi
-
-# ----------------- done all checks, emit header -------------
-ac_config_commands="$ac_config_commands include/gstdint.h"
-
-
-
-fi
-
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU c++filt" >&5
 $as_echo_n "checking for GNU c++filt... " >&6; }
@@ -74304,24 +73844,6 @@ fi
 
 
 
-GCC="$GCC"
-CC="$CC"
-acx_cv_header_stdint="$acx_cv_header_stdint"
-acx_cv_type_int8_t="$acx_cv_type_int8_t"
-acx_cv_type_int16_t="$acx_cv_type_int16_t"
-acx_cv_type_int32_t="$acx_cv_type_int32_t"
-acx_cv_type_int64_t="$acx_cv_type_int64_t"
-acx_cv_type_intptr_t="$acx_cv_type_intptr_t"
-ac_cv_type_uintmax_t="$ac_cv_type_uintmax_t"
-ac_cv_type_uintptr_t="$ac_cv_type_uintptr_t"
-ac_cv_type_uint64_t="$ac_cv_type_uint64_t"
-ac_cv_type_u_int64_t="$ac_cv_type_u_int64_t"
-ac_cv_type_u_int32_t="$ac_cv_type_u_int32_t"
-ac_cv_type_int_least32_t="$ac_cv_type_int_least32_t"
-ac_cv_type_int_fast32_t="$ac_cv_type_int_fast32_t"
-ac_cv_sizeof_void_p="$ac_cv_sizeof_void_p"
-
-
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
@@ -74333,7 +73855,6 @@ do
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "default-1") CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
-    "include/gstdint.h") CONFIG_COMMANDS="$CONFIG_COMMANDS include/gstdint.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "scripts/testsuite_flags") CONFIG_FILES="$CONFIG_FILES scripts/testsuite_flags" ;;
     "scripts/extract_symvers") CONFIG_FILES="$CONFIG_FILES scripts/extract_symvers" ;;
@@ -75764,378 +75285,6 @@ compiler_lib_search_path=$lt_compiler_lib_search_path_CXX
 
 # ### END LIBTOOL TAG CONFIG: CXX
 _LT_EOF
-
- ;;
-    "include/gstdint.h":C)
-if test "$GCC" = yes; then
-  echo "/* generated for " `$CC --version | sed 1q` "*/" > tmp-stdint.h
-else
-  echo "/* generated for $CC */" > tmp-stdint.h
-fi
-
-sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-  #ifndef GCC_GENERATED_STDINT_H
-  #define GCC_GENERATED_STDINT_H 1
-
-  #include <sys/types.h>
-EOF
-
-if test "$acx_cv_header_stdint" != stdint.h; then
-  echo "#include <stddef.h>" >> tmp-stdint.h
-fi
-if test "$acx_cv_header_stdint" != stddef.h; then
-  echo "#include <$acx_cv_header_stdint>" >> tmp-stdint.h
-fi
-
-sed 's/^ *//' >> tmp-stdint.h <<EOF
-  /* glibc uses these symbols as guards to prevent redefinitions.  */
-  #ifdef __int8_t_defined
-  #define _INT8_T
-  #define _INT16_T
-  #define _INT32_T
-  #endif
-  #ifdef __uint32_t_defined
-  #define _UINT32_T
-  #endif
-
-EOF
-
-# ----------------- done header, emit basic int types -------------
-if test "$acx_cv_header_stdint" = stddef.h; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    #ifndef _UINT8_T
-    #define _UINT8_T
-    #ifndef __uint8_t_defined
-    #define __uint8_t_defined
-    #ifndef uint8_t
-    typedef unsigned $acx_cv_type_int8_t uint8_t;
-    #endif
-    #endif
-    #endif
-
-    #ifndef _UINT16_T
-    #define _UINT16_T
-    #ifndef __uint16_t_defined
-    #define __uint16_t_defined
-    #ifndef uint16_t
-    typedef unsigned $acx_cv_type_int16_t uint16_t;
-    #endif
-    #endif
-    #endif
-
-    #ifndef _UINT32_T
-    #define _UINT32_T
-    #ifndef __uint32_t_defined
-    #define __uint32_t_defined
-    #ifndef uint32_t
-    typedef unsigned $acx_cv_type_int32_t uint32_t;
-    #endif
-    #endif
-    #endif
-
-    #ifndef _INT8_T
-    #define _INT8_T
-    #ifndef __int8_t_defined
-    #define __int8_t_defined
-    #ifndef int8_t
-    typedef $acx_cv_type_int8_t int8_t;
-    #endif
-    #endif
-    #endif
-
-    #ifndef _INT16_T
-    #define _INT16_T
-    #ifndef __int16_t_defined
-    #define __int16_t_defined
-    #ifndef int16_t
-    typedef $acx_cv_type_int16_t int16_t;
-    #endif
-    #endif
-    #endif
-
-    #ifndef _INT32_T
-    #define _INT32_T
-    #ifndef __int32_t_defined
-    #define __int32_t_defined
-    #ifndef int32_t
-    typedef $acx_cv_type_int32_t int32_t;
-    #endif
-    #endif
-    #endif
-EOF
-elif test "$ac_cv_type_u_int32_t" = yes; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* int8_t int16_t int32_t defined by inet code, we do the u_intXX types */
-    #ifndef _INT8_T
-    #define _INT8_T
-    #endif
-    #ifndef _INT16_T
-    #define _INT16_T
-    #endif
-    #ifndef _INT32_T
-    #define _INT32_T
-    #endif
-
-    #ifndef _UINT8_T
-    #define _UINT8_T
-    #ifndef __uint8_t_defined
-    #define __uint8_t_defined
-    #ifndef uint8_t
-    typedef u_int8_t uint8_t;
-    #endif
-    #endif
-    #endif
-
-    #ifndef _UINT16_T
-    #define _UINT16_T
-    #ifndef __uint16_t_defined
-    #define __uint16_t_defined
-    #ifndef uint16_t
-    typedef u_int16_t uint16_t;
-    #endif
-    #endif
-    #endif
-
-    #ifndef _UINT32_T
-    #define _UINT32_T
-    #ifndef __uint32_t_defined
-    #define __uint32_t_defined
-    #ifndef uint32_t
-    typedef u_int32_t uint32_t;
-    #endif
-    #endif
-    #endif
-EOF
-else
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* Some systems have guard macros to prevent redefinitions, define them.  */
-    #ifndef _INT8_T
-    #define _INT8_T
-    #endif
-    #ifndef _INT16_T
-    #define _INT16_T
-    #endif
-    #ifndef _INT32_T
-    #define _INT32_T
-    #endif
-    #ifndef _UINT8_T
-    #define _UINT8_T
-    #endif
-    #ifndef _UINT16_T
-    #define _UINT16_T
-    #endif
-    #ifndef _UINT32_T
-    #define _UINT32_T
-    #endif
-EOF
-fi
-
-# ------------- done basic int types, emit int64_t types ------------
-if test "$ac_cv_type_uint64_t" = yes; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* system headers have good uint64_t and int64_t */
-    #ifndef _INT64_T
-    #define _INT64_T
-    #endif
-    #ifndef _UINT64_T
-    #define _UINT64_T
-    #endif
-EOF
-elif test "$ac_cv_type_u_int64_t" = yes; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* system headers have an u_int64_t (and int64_t) */
-    #ifndef _INT64_T
-    #define _INT64_T
-    #endif
-    #ifndef _UINT64_T
-    #define _UINT64_T
-    #ifndef __uint64_t_defined
-    #define __uint64_t_defined
-    #ifndef uint64_t
-    typedef u_int64_t uint64_t;
-    #endif
-    #endif
-    #endif
-EOF
-elif test -n "$acx_cv_type_int64_t"; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* architecture has a 64-bit type, $acx_cv_type_int64_t */
-    #ifndef _INT64_T
-    #define _INT64_T
-    #ifndef int64_t
-    typedef $acx_cv_type_int64_t int64_t;
-    #endif
-    #endif
-    #ifndef _UINT64_T
-    #define _UINT64_T
-    #ifndef __uint64_t_defined
-    #define __uint64_t_defined
-    #ifndef uint64_t
-    typedef unsigned $acx_cv_type_int64_t uint64_t;
-    #endif
-    #endif
-    #endif
-EOF
-else
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* some common heuristics for int64_t, using compiler-specific tests */
-    #if defined __STDC_VERSION__ && (__STDC_VERSION__-0) >= 199901L
-    #ifndef _INT64_T
-    #define _INT64_T
-    #ifndef __int64_t_defined
-    #ifndef int64_t
-    typedef long long int64_t;
-    #endif
-    #endif
-    #endif
-    #ifndef _UINT64_T
-    #define _UINT64_T
-    #ifndef uint64_t
-    typedef unsigned long long uint64_t;
-    #endif
-    #endif
-
-    #elif defined __GNUC__ && defined (__STDC__) && __STDC__-0
-    /* NextStep 2.0 cc is really gcc 1.93 but it defines __GNUC__ = 2 and
-       does not implement __extension__.  But that compiler doesn't define
-       __GNUC_MINOR__.  */
-    # if __GNUC__ < 2 || (__NeXT__ && !__GNUC_MINOR__)
-    # define __extension__
-    # endif
-
-    # ifndef _INT64_T
-    # define _INT64_T
-    # ifndef int64_t
-    __extension__ typedef long long int64_t;
-    # endif
-    # endif
-    # ifndef _UINT64_T
-    # define _UINT64_T
-    # ifndef uint64_t
-    __extension__ typedef unsigned long long uint64_t;
-    # endif
-    # endif
-
-    #elif !defined __STRICT_ANSI__
-    # if defined _MSC_VER || defined __WATCOMC__ || defined __BORLANDC__
-
-    #  ifndef _INT64_T
-    #  define _INT64_T
-    #  ifndef int64_t
-    typedef __int64 int64_t;
-    #  endif
-    #  endif
-    #  ifndef _UINT64_T
-    #  define _UINT64_T
-    #  ifndef uint64_t
-    typedef unsigned __int64 uint64_t;
-    #  endif
-    #  endif
-    # endif /* compiler */
-
-    #endif /* ANSI version */
-EOF
-fi
-
-# ------------- done int64_t types, emit intptr types ------------
-if test "$ac_cv_type_uintptr_t" != yes; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* Define intptr_t based on sizeof(void*) = $ac_cv_sizeof_void_p */
-    #ifndef __uintptr_t_defined
-    #ifndef uintptr_t
-    typedef u$acx_cv_type_intptr_t uintptr_t;
-    #endif
-    #endif
-    #ifndef __intptr_t_defined
-    #ifndef intptr_t
-    typedef $acx_cv_type_intptr_t  intptr_t;
-    #endif
-    #endif
-EOF
-fi
-
-# ------------- done intptr types, emit int_least types ------------
-if test "$ac_cv_type_int_least32_t" != yes; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* Define int_least types */
-    typedef int8_t     int_least8_t;
-    typedef int16_t    int_least16_t;
-    typedef int32_t    int_least32_t;
-    #ifdef _INT64_T
-    typedef int64_t    int_least64_t;
-    #endif
-
-    typedef uint8_t    uint_least8_t;
-    typedef uint16_t   uint_least16_t;
-    typedef uint32_t   uint_least32_t;
-    #ifdef _UINT64_T
-    typedef uint64_t   uint_least64_t;
-    #endif
-EOF
-fi
-
-# ------------- done intptr types, emit int_fast types ------------
-if test "$ac_cv_type_int_fast32_t" != yes; then
-      sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* Define int_fast types.  short is often slow */
-    typedef int8_t       int_fast8_t;
-    typedef int          int_fast16_t;
-    typedef int32_t      int_fast32_t;
-    #ifdef _INT64_T
-    typedef int64_t      int_fast64_t;
-    #endif
-
-    typedef uint8_t      uint_fast8_t;
-    typedef unsigned int uint_fast16_t;
-    typedef uint32_t     uint_fast32_t;
-    #ifdef _UINT64_T
-    typedef uint64_t     uint_fast64_t;
-    #endif
-EOF
-fi
-
-if test "$ac_cv_type_uintmax_t" != yes; then
-  sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-    /* Define intmax based on what we found */
-    #ifndef intmax_t
-    #ifdef _INT64_T
-    typedef int64_t       intmax_t;
-    #else
-    typedef long          intmax_t;
-    #endif
-    #endif
-    #ifndef uintmax_t
-    #ifdef _UINT64_T
-    typedef uint64_t      uintmax_t;
-    #else
-    typedef unsigned long uintmax_t;
-    #endif
-    #endif
-EOF
-fi
-
-sed 's/^ *//' >> tmp-stdint.h <<EOF
-
-  #endif /* GCC_GENERATED_STDINT_H */
-EOF
-
-if test -r include/gstdint.h && cmp -s tmp-stdint.h include/gstdint.h; then
-  rm -f tmp-stdint.h
-else
-  mv -f tmp-stdint.h include/gstdint.h
-fi
 
  ;;
     "scripts/testsuite_flags":F) chmod +x scripts/testsuite_flags ;;
