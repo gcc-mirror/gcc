@@ -21,8 +21,9 @@
 
 ;; Register constraints
 
-(define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS : NO_REGS"
-  "A floating-point register (if available).")
+(define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS :
+  (TARGET_ZFINX ? GR_REGS : NO_REGS)"
+  "A floating-point register (if available, reuse GPR as FPR when use zfinx).")
 
 (define_register_constraint "j" "SIBCALL_REGS"
   "@internal")
