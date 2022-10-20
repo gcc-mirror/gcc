@@ -1,3 +1,8 @@
+2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/cpplib.h (struct cpp_string): Use new "string_length" GTY.
+	* include/symtab.h (struct ht_identifier): Likewise.
+
 2022-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* charset.cc (ucn_valid_in_identifier): Check xid_identifiers not

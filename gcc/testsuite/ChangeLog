@@ -1,3 +1,81 @@
+2022-10-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/format.h (int_least8_t, int_least16_t)
+	(int_least32_t, int_least64_t, uint_least8_t, uint_least16_t)
+	(uint_least32_t, uint_least64_t, int_fast8_t, int_fast16_t)
+	(int_fast32_t, int_fast64_t, uint_fast8_t, uint_fast16_t)
+	(uint_fast32_t, uint_fast64_t): New typedefs.
+	* gcc.dg/format/c11-printf-1.c, gcc.dg/format/c11-scanf-1.c,
+	gcc.dg/format/c2x-printf-1.c, gcc.dg/format/c2x-scanf-1.c,
+	gcc.dg/format/ext-9.c: Add tests using wN and wfN length
+	modifiers.
+
+2022-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105765
+	* gcc.dg/analyzer/stdarg-1-ms_abi.c: New test, based on stdarg-1.c.
+	* gcc.dg/analyzer/stdarg-1-sysv_abi.c: Likewise.
+
+2022-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85043
+	* g++.dg/warn/Wuseless-cast.C: Remove dg-warning.
+	* g++.dg/warn/Wuseless-cast3.C: New test.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): When using defaulted
+	std_list, if test has { dg-do * { target c++23 } } directive,
+	use { 23 } with which the test will run instead of { 98 14 17 20 }
+	which would make it UNSUPPORTED in all cases.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107311
+	* gcc.dg/c2x-enum-1.c (enum e5): Expect e5a type inside of
+	enum to be int rather than long if long isn't wider than int.
+
+2022-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107312
+	* gcc.target/i386/pr107312.c: New test.
+
+2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* g++.dg/pch/pch-string-nulls.C: New test.
+	* g++.dg/pch/pch-string-nulls.Hs: New test.
+
+2022-10-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/107206
+	* g++.dg/tree-ssa/pr107206.C: New test.
+
+2022-10-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/pr106355.h: Common code for new tests.
+	* gcc.target/s390/pr106355-1.c: New test.
+	* gcc.target/s390/pr106355-2.c: New test.
+	* gcc.target/s390/pr106355-3.c: New test.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107262
+	* gcc.dg/pr107262.c: New test.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106990
+	* c-c++-common/ubsan/pr106990.c: New test.
+
+2022-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106781
+	* gcc.dg/pr106781.c: New testcase.
+
+2022-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107271.c: New test.
+
 2022-10-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/107164

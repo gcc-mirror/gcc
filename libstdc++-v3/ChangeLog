@@ -1,3 +1,51 @@
+2022-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (views::__detail::__is_repeat_view): Define
+	and later define a partial specialization.
+	(views::__detail::__take_of_repeat_view): Declare and later define.
+	(views::__detail::__drop_of_repeat_view): Likewise.
+	(views::_Take::operator()): Return a repeat_view if the argument
+	is a repeat_view as per P2474R2.
+	(views::_Drop::operator()): Likewise.
+	(repeat_view): Befriend __take/drop_of_repeat_view.
+	* testsuite/std/ranges/repeat/1.cc (test04): New test.
+
+2022-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/107313
+	* include/std/ranges (stride_view::_Iterator::operator-): Fix typo.
+	* testsuite/std/ranges/adaptors/stride/1.cc (test03): New test.
+
+2022-10-19  LIU Hao  <lh_mouse@126.com>
+
+	* src/c++11/thread.cc (get_nprocs): Add new implementation
+	for native Windows targets
+
+2022-10-19  LIU Hao  <lh_mouse@126.com>
+
+	* libsupc++/atexit_thread.cc (__cxa_thread_atexit): Use
+	implementation from mcfgthread if available
+	* libsupc++/guard.cc (__cxa_guard_acquire, __cxa_guard_release,
+	__cxa_guard_abort): Use implementations from mcfgthread if
+	available
+	* configure: Regenerate
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	* include/std/limits: Fix a typo, 202202L -> 202002L.
+	(numeric_limits::<_Float16>::radix, numeric_limits::<_Float32>::radix,
+	numeric_limits::<_Float64>::radix, numeric_limits::<_Float128>::radix,
+	numeric_limits::<__gnu_cxx::__bfloat16_t>::radix): Use __FLT_RADIX__
+	macro instead of type specific macros.
+	* include/c_global/cmath (nextafter(_Float16, _Float16)): New
+	overload.
+	(nextafter(__gnu_cxx::__bfloat16_t, __gnu_cxx::__bfloat16_t)):
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++23.cc
+	(test_functions): Uncomment nextafter test.  Fix up sph_neumann call.
+	* testsuite/26_numerics/headers/cmath/nextafter_c++23.cc: New test.
+
 2022-10-18  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (stride_view): Define.

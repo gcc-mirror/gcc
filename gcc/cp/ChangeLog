@@ -1,3 +1,9 @@
+2022-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85043
+	* typeck.cc (maybe_warn_about_useless_cast): Don't warn when
+	a glvalue is cast to a non-reference type.
+
 2022-10-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105045
