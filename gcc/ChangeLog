@@ -1,3 +1,13 @@
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* config/rs6000/rs6000-logue.c (rs6000_emit_epilogue): Update the
+	condition for adding REG_CFA_DEF_CFA reg note with
+	frame_pointer_needed_indeed.
+
 2022-10-17  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	PR target/99685
