@@ -413,30 +413,36 @@ namespace __detail
       return true;
     }
 
-  // Construct and return a lookup table that maps 0-9, A-Z and a-z to their
-  // corresponding base-36 value and maps all other characters to 127.
-  constexpr auto
-  __from_chars_alnum_to_val_table()
-  {
-    constexpr unsigned char __lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
-    constexpr unsigned char __upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    struct { unsigned char __data[1u << __CHAR_BIT__] = {}; } __table;
-    for (auto& __entry : __table.__data)
-      __entry = 127;
-    for (int __i = 0; __i < 10; ++__i)
-      __table.__data['0' + __i] = __i;
-    for (int __i = 0; __i < 26; ++__i)
-      {
-	__table.__data[__lower_letters[__i]] = 10 + __i;
-	__table.__data[__upper_letters[__i]] = 10 + __i;
-      }
-    return __table;
-  }
-
-#if __cpp_lib_constexpr_charconv
   template<bool _DecOnly>
-    inline constexpr auto __table = __from_chars_alnum_to_val_table();
-#endif
+    struct __from_chars_alnum_to_val_table
+    {
+      struct type { unsigned char __data[1u << __CHAR_BIT__] = {}; };
+
+      // Construct and return a lookup table that maps 0-9, A-Z and a-z to their
+      // corresponding base-36 value and maps all other characters to 127.
+      static constexpr type
+      _S_make_table()
+      {
+	constexpr unsigned char __lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
+	constexpr unsigned char __upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	type __table;
+	for (auto& __entry : __table.__data)
+	  __entry = 127;
+	for (int __i = 0; __i < 10; ++__i)
+	  __table.__data['0' + __i] = __i;
+	for (int __i = 0; __i < 26; ++__i)
+	  {
+	    __table.__data[__lower_letters[__i]] = 10 + __i;
+	    __table.__data[__upper_letters[__i]] = 10 + __i;
+	  }
+	return __table;
+      }
+
+      // This initializer is made superficially dependent in order
+      // to prevent the compiler from wastefully constructing the
+      // table ahead of time when it's not needed.
+      static constexpr type value = (_DecOnly, _S_make_table());
+    };
 
   // If _DecOnly is true: if the character is a decimal digit, then
   // return its corresponding base-10 value, otherwise return a value >= 127.
@@ -449,16 +455,7 @@ namespace __detail
       if _GLIBCXX17_CONSTEXPR (_DecOnly)
 	return static_cast<unsigned char>(__c - '0');
       else
-	{
-#if __cpp_lib_constexpr_charconv
-	  if (std::__is_constant_evaluated())
-	    return __table<_DecOnly>.__data[__c];
-#endif
-	  // This initializer is deliberately made dependent in order to work
-	  // around modules bug PR105322.
-	  static constexpr auto __table = (_DecOnly, __from_chars_alnum_to_val_table());
-	  return __table.__data[__c];
-	}
+	return __from_chars_alnum_to_val_table<_DecOnly>::value.__data[__c];
     }
 
   /// std::from_chars implementation for integers in a power-of-two base.
