@@ -175,11 +175,27 @@ Dump::format_struct_field (StructField &field)
 
 void
 Dump::visit (Token &tok)
-{}
+{
+  stream << tok.as_string ();
+}
 
 void
 Dump::visit (DelimTokenTree &delim_tok_tree)
-{}
+{
+  auto tokens = delim_tok_tree.to_token_stream ();
+
+  indentation.increment ();
+  stream << '\n' << indentation;
+
+  for (const auto &tok : tokens)
+    {
+      stream << ' ';
+      tok->accept_vis (*this);
+    }
+
+  indentation.decrement ();
+  stream << '\n' << indentation;
+}
 
 void
 Dump::visit (AttrInputMetaItemContainer &input)
@@ -1308,22 +1324,116 @@ Dump::visit (ExternBlock &block)
   stream << "\n" << indentation << "}\n";
 }
 
-// rust-macro.h
-void
-Dump::visit (MacroMatchFragment &match)
-{}
+static std::pair<char, char>
+get_delimiters (DelimType delim)
+{
+  auto start_delim = '\0';
+  auto end_delim = '\0';
+
+  switch (delim)
+    {
+    case PARENS:
+      start_delim = '(';
+      end_delim = ')';
+      break;
+    case SQUARE:
+      start_delim = '[';
+      end_delim = ']';
+      break;
+    case CURLY:
+      start_delim = '{';
+      end_delim = '}';
+      break;
+    }
+
+  return {start_delim, end_delim};
+}
 
 void
-Dump::visit (MacroMatchRepetition &match)
-{}
+Dump::visit (MacroMatchFragment &match)
+{
+  stream << '$' << match.get_ident () << ':'
+	 << match.get_frag_spec ().as_string ();
+}
+
+void
+Dump::visit (MacroMatchRepetition &repetition)
+{
+  stream << "$(";
+
+  for (auto &match : repetition.get_matches ())
+    {
+      match->accept_vis (*this);
+      stream << ' ';
+    }
+
+  auto op_char = '\0';
+  switch (repetition.get_op ())
+    {
+    case MacroMatchRepetition::ANY:
+      op_char = '*';
+      break;
+    case MacroMatchRepetition::ONE_OR_MORE:
+      op_char = '+';
+      break;
+    case MacroMatchRepetition::ZERO_OR_ONE:
+      op_char = '?';
+      break;
+    case MacroMatchRepetition::NONE:
+      break;
+    }
+
+  stream << ')';
+
+  if (repetition.has_sep ())
+    stream << repetition.get_sep ()->as_string ();
+
+  stream << op_char;
+}
 
 void
 Dump::visit (MacroMatcher &matcher)
-{}
+{
+  auto delimiters = get_delimiters (matcher.get_delim_type ());
+
+  stream << delimiters.first;
+
+  for (auto &match : matcher.get_matches ())
+    {
+      match->accept_vis (*this);
+      stream << ' ';
+    }
+
+  stream << delimiters.second;
+}
 
 void
 Dump::visit (MacroRulesDefinition &rules_def)
-{}
+{
+  for (auto &outer_attr : rules_def.get_outer_attrs ())
+    emit_attrib (outer_attr);
+
+  stream << "macro_rules! " << rules_def.get_rule_name () << " {\n";
+
+  indentation.increment ();
+
+  for (auto &rule : rules_def.get_rules ())
+    {
+      stream << indentation;
+
+      rule.get_matcher ().accept_vis (*this);
+
+      stream << " => ";
+
+      rule.get_transcriber ().get_token_tree ().accept_vis (*this);
+
+      stream << ";\n";
+    }
+
+  indentation.decrement ();
+
+  stream << "}\n";
+}
 
 void
 Dump::visit (MacroInvocation &macro_invoc)
