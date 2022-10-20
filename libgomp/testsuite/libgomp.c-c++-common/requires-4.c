@@ -2,6 +2,8 @@
 /* { dg-additional-options "-foffload-options=nvptx-none=-misa=sm_35" { target { offload_target_nvptx } } } */
 /* { dg-additional-sources requires-4-aux.c } */
 
+/* { dg-xfail-run-if "USM via -foffload-memory=... does not support static variables" { { offload_device_nvptx } || { offload_device_gcn } } } */
+
 /* Check no diagnostic by device-compiler's or host compiler's lto1.
    Other file uses: 'requires reverse_offload', but that's inactive as
    there are no declare target directives, device constructs nor device routines  */

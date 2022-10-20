@@ -1,3 +1,8 @@
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-4.c: dg-xfail-run-if on
+	nvptx and gcn.
+
 2022-06-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Allow
