@@ -72,11 +72,11 @@ Boston, MA 02110-1301, USA@*
 @menu
 * Overview::         What is GNU Modula-2.
 * Using::            Using GNU Modula-2.
-* Licence::          Licence of GNU Modula-2.
-* Contributing::     Contributing to GNU Modula-2.
+* Licence::          Licence of GNU Modula-2
+* Copying::          GNU Public Licence V3.
+* Contributing::     Contributing to GNU Modula-2
 * Internals::        GNU Modula-2 internals.
 * EBNF::             EBNF of GNU Modula-2
-* Copying::          GNU Public Licence V3.
 * Libraries::        PIM and ISO library definitions.
 * Indices::          Document and function indices.
 @end menu
@@ -2826,7 +2826,7 @@ There are also a variety of fixed sized @code{INTEGER} and
 @code{CARDINAL} types.  The variety of the fixed sized types will
 depend upon the target architecture.
 
-@node Licence, Contributing, The ISO system module, Top
+@node Licence, Copying, The ISO system module, Top
 @section Licence of GNU Modula-2
 
 GNU Modula-2 is free software, the compiler is held under the GPL v3
@@ -2846,9 +2846,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 More information on how these licences work is available
 @uref{http://www.gnu.org/licenses/licenses.html} on the GNU web site.
 
+@c Copying node is inside the gpl_v3.texi
 @include gpl_v3.texi
 
-@node Contributing, Internals, Licence, Top
+@node Contributing, Internals, Copying, Top
 @section Contributing to GNU Modula-2
 
 Please do. But also please read the GNU Emacs info under

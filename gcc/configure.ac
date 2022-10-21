@@ -1269,6 +1269,10 @@ AC_CHECK_PROGS([FLEX], flex, [$MISSING flex])
 # Bison?
 AC_CHECK_PROGS([BISON], bison, [$MISSING bison])
 
+# Python3?
+AC_CHECK_PROG(HAVE_PYTHON, python3, "yes", "no")
+AC_CHECK_PROGS([PYTHON], python3, [$MISSING python3])
+
 # Binutils are not build modules, unlike bison/flex/makeinfo.  So we
 # check for build == host before using them.
 
@@ -7654,4 +7658,3 @@ done
 ], 
 [subdirs='$subdirs'])
 AC_OUTPUT
-

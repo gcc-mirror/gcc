@@ -18,8 +18,6 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-GM2_MAKE_DEBUG=
-
 # Actual names to use when installing a native compiler.
 GM2_INSTALL_NAME = $(shell echo gm2|sed '$(program_transform_name)')
 GM2_TARGET_INSTALL_NAME = $(target_noncanonical)-$(shell echo gm2|sed '$(program_transform_name)')
@@ -53,6 +51,7 @@ m2.serial = cc1gm2$(exeext)
 GM2_PROG_DEP=gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext)
 
 include m2/config-make
+
 LIBSTDCXX=../$(TARGET_SUBDIR)/libstdc++-v3/src/.libs/libstdc++.a
 
 PGE=m2/pge$(exeext)
@@ -138,10 +137,16 @@ $(objdir)/m2/images/gnu.eps: $(srcdir)/m2/images/gnupng
 
 m2/gm2-libs.texi: gm2-libs.texi-check; @true
 
-gm2-libs.texi-check:  m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
-                      $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def m2/gm2-ebnf.texi
-	python3 $(srcdir)/m2/tools-src/def2texi.py -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 > $(objdir)/m2/gm2-libs.texi
+ifeq ($(HAVE_PYTHON),yes)
+gm2-libs.texi-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
+                     $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def m2/gm2-ebnf.texi
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.texi
 	$(STAMP) gm2-libs.texi-check
+else
+gm2-libs.texi-check:
+	echo "not building gm2-libs.texi as python3 has not been found"
+	touch $(objdir)/m2/gm2-libs.texi
+endif
 
 m2/gm2-ebnf.texi: gm2-ebnf.texi-check; @true
 
@@ -151,21 +156,39 @@ gm2-ebnf.texi-check: $(PGE) $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf
 
 m2/SYSTEM-pim.texi: SYSTEM-pim-texi-check; @true
 
+ifeq ($(HAVE_PYTHON),yes)
 SYSTEM-pim-texi-check: $(objdir)/m2/gm2-libs/SYSTEM.def
-	python3 $(srcdir)/m2/tools-src/def2texi.py -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs/SYSTEM.def > $(objdir)/m2/SYSTEM-pim.texi
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs/SYSTEM.def -o $(objdir)/m2/SYSTEM-pim.texi
 	$(STAMP) SYSTEM-pim-texi-check
+else
+SYSTEM-pim-texi-check: $(objdir)/m2/gm2-libs/SYSTEM.def
+	echo "not building SYSTEM-pim.texi as python3 has not been found"
+	touch $(objdir)/m2/SYSTEM-pim.texi
+endif
 
 m2/SYSTEM-iso.texi:  SYSTEM-iso.texi-check; @true
 
+ifeq ($(HAVE_PYTHON),yes)
 SYSTEM-iso.texi-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
-	python3 $(srcdir)/m2/tools-src/def2texi.py -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs-iso/SYSTEM.def > $(objdir)/m2/SYSTEM-iso.texi
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs-iso/SYSTEM.def -o $(objdir)/m2/SYSTEM-iso.texi
 	$(STAMP) SYSTEM-iso.texi-check
+else
+SYSTEM-iso.texi-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
+	echo "not building SYSTEM-iso.texi as python3 has not been found"
+	touch $(objdir)/m2/SYSTEM-iso.texi
+endif
 
 m2/Builtins.texi:  Builtins.texi-check; @true
 
+ifeq ($(HAVE_PYTHON),yes)
 Builtins.texi-check:  m2/gm2-libs/Builtins.def
-	python3 $(srcdir)/m2/tools-src/def2texi.py -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def > $(objdir)/m2/Builtins.texi
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(objdir)/m2/Builtins.texi
 	$(STAMP) Builtins.texi-check
+else
+Builtins.texi-check:  m2/gm2-libs/Builtins.def
+	echo "not building SYSTEM-iso.texi as python3 has not been found"
+	touch $(objdir)/m2/Builtins.texi
+endif
 
 $(objdir)/m2/gm2-compiler-boot:
 	test -d $@ || mkdir $@

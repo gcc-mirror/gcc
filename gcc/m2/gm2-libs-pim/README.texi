@@ -34,11 +34,11 @@ routines are provided. Access to DOSCALL, graphics, time and date
 are not as these were constrained by the limitations of MS-DOS.
 
 The following libraries are contained within the base GNU Modula-2
-libraries but are also Logitech-3.0 compatible: ASCII, Storage
-and MathLib0.
+libraries and are also Logitech-3.0 compatible: @xref{gm2-libs/ASCII},
+@xref{gm2-libs/Storage} and @xref{gm2-libs/MathLib0}.  These libraries
+are always available for any dialect of the language (although their
+implementation and behaviour might differ, for example Storage ISO and
+PIM).
 
-@menu
-* gm2-libs/ASCII::ASCII.def
-* gm2-libs/Storage::Storage.def
-* gm2-libs/MathLib0::MathLib0.def
-@end menu
+The following libraries are Logitech-3.0 compatible but fall outside
+the base GNU Modula-2 libraries.
