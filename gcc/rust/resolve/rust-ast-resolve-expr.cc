@@ -581,8 +581,12 @@ ResolveExpr::visit (AST::ClosureExprInner &expr)
       resolve_closure_param (p);
     }
 
+  resolver->push_closure_context (expr.get_node_id ());
+
   ResolveExpr::go (expr.get_definition_expr ().get (), prefix,
 		   canonical_prefix);
+
+  resolver->pop_closure_context ();
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -606,8 +610,13 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
     }
 
   ResolveType::go (expr.get_return_type ().get ());
+
+  resolver->push_closure_context (expr.get_node_id ());
+
   ResolveExpr::go (expr.get_definition_block ().get (), prefix,
 		   canonical_prefix);
+
+  resolver->pop_closure_context ();
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();

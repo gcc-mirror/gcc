@@ -169,6 +169,39 @@ Scope::lookup (const CanonicalPath &ident, NodeId *id)
   return lookup != UNKNOWN_NODEID;
 }
 
+bool
+Scope::lookup_decl_type (NodeId id, Rib::ItemType *type)
+{
+  bool found = false;
+  iterate ([&] (const Rib *r) -> bool {
+    if (r->decl_was_declared_here (id))
+      {
+	bool ok = r->lookup_decl_type (id, type);
+	rust_assert (ok);
+	found = true;
+	return false;
+      }
+    return true;
+  });
+  return found;
+}
+
+bool
+Scope::lookup_rib_for_decl (NodeId id, const Rib **rib)
+{
+  bool found = false;
+  iterate ([&] (const Rib *r) -> bool {
+    if (r->decl_was_declared_here (id))
+      {
+	*rib = r;
+	found = true;
+	return false;
+      }
+    return true;
+  });
+  return found;
+}
+
 void
 Scope::iterate (std::function<bool (Rib *)> cb)
 {
@@ -435,6 +468,7 @@ Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 {
   resolved_names[refId] = defId;
   get_name_scope ().append_reference_for_def (refId, defId);
+  insert_captured_item (defId);
 }
 
 bool
@@ -529,6 +563,105 @@ Resolver::lookup_resolved_misc (NodeId refId, NodeId *defId)
 
   *defId = it->second;
   return true;
+}
+
+void
+Resolver::push_closure_context (NodeId closure_expr_id)
+{
+  auto it = closures_capture_mappings.find (closure_expr_id);
+  rust_assert (it == closures_capture_mappings.end ());
+
+  closures_capture_mappings.insert ({closure_expr_id, {}});
+  closure_context.push_back (closure_expr_id);
+}
+
+void
+Resolver::pop_closure_context ()
+{
+  rust_assert (!closure_context.empty ());
+  closure_context.pop_back ();
+}
+
+void
+Resolver::insert_captured_item (NodeId id)
+{
+  // nothing to do unless we are in a closure context
+  if (closure_context.empty ())
+    return;
+
+  // check that this is a VAR_DECL?
+  Scope &name_scope = get_name_scope ();
+  Rib::ItemType type = Rib::ItemType::Unknown;
+  bool found = name_scope.lookup_decl_type (id, &type);
+  if (!found)
+    return;
+
+  // RIB Function { let a, let b } id = 1;
+  //   RIB Closure { let c } id = 2;
+  //     RIB IfStmt { <bind a>} id = 3;
+  //   RIB ... { ... } id = 4
+  //
+  // if we have a resolved_node_id of 'a' and the current rib is '3' we know
+  // this is binding exists in a rib with id < the closure rib id, other wise
+  // its just a normal binding and we don't care
+  //
+  // Problem the node id's dont work like this because the inner most items are
+  // created first so this means the root will have a larger id and a simple
+  // less than or greater than check wont work for more complex scoping cases
+  // but we can use our current rib context to figure this out by checking if
+  // the rib id the decl we care about exists prior to the rib for the closure
+  // id
+
+  const Rib *r = nullptr;
+  bool ok = name_scope.lookup_rib_for_decl (id, &r);
+  rust_assert (ok);
+  NodeId decl_rib_node_id = r->get_node_id ();
+
+  // iterate the closure context and add in the mapping for all to handle the
+  // case of nested closures
+  for (auto &closure_expr_id : closure_context)
+    {
+      if (!decl_needs_capture (decl_rib_node_id, closure_expr_id, name_scope))
+	continue;
+
+      // is this a valid binding to take
+      bool is_var_decl_p = type == Rib::ItemType::Var;
+      if (!is_var_decl_p)
+	{
+	  // FIXME is this an error case?
+	  return;
+	}
+
+      // append it to the context info
+      auto it = closures_capture_mappings.find (closure_expr_id);
+      rust_assert (it != closures_capture_mappings.end ());
+
+      it->second.insert (id);
+    }
+}
+
+bool
+Resolver::decl_needs_capture (NodeId decl_rib_node_id,
+			      NodeId closure_rib_node_id, const Scope &scope)
+{
+  for (const auto &rib : scope.get_context ())
+    {
+      bool rib_is_closure = rib->get_node_id () == closure_rib_node_id;
+      bool rib_is_decl = rib->get_node_id () == decl_rib_node_id;
+      if (rib_is_closure)
+	return false;
+      else if (rib_is_decl)
+	return true;
+    }
+  return false;
+}
+
+const std::set<NodeId> &
+Resolver::get_captures (NodeId id) const
+{
+  auto it = closures_capture_mappings.find (id);
+  rust_assert (it != closures_capture_mappings.end ());
+  return it->second;
 }
 
 } // namespace Resolver
