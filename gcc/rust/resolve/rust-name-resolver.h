@@ -30,8 +30,9 @@ namespace Resolver {
 class Rib
 {
 public:
-  // Rust uses local_def_ids assigned by def_collector on the AST
-  // lets use NodeId instead
+  // FIXME
+  // Rust uses local_def_ids assigned by def_collector on the AST. Consider
+  // moving to a local-def-id
   Rib (CrateNum crateNum, NodeId node_id);
 
   // this takes the relative paths of items within a compilation unit for lookup
@@ -59,7 +60,6 @@ private:
   std::map<NodeId, CanonicalPath> reverse_path_mappings;
   std::map<NodeId, Location> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
-  Analysis::Mappings *mappings;
 };
 
 class Scope
@@ -172,6 +172,7 @@ private:
   Resolver ();
 
   void generate_builtins ();
+  void setup_builtin (const std::string &name, TyTy::BaseType *tyty);
 
   Analysis::Mappings *mappings;
   TypeCheckContext *tyctx;
