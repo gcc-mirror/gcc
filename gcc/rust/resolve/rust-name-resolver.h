@@ -96,6 +96,8 @@ public:
   void insert (const CanonicalPath &ident, NodeId id, Location locus,
 	       Rib::ItemType type = Rib::ItemType::Unknown);
   bool lookup (const CanonicalPath &ident, NodeId *id);
+  bool lookup_decl_type (NodeId id, Rib::ItemType *type);
+  bool lookup_rib_for_decl (NodeId id, const Rib **rib);
 
   void iterate (std::function<bool (Rib *)> cb);
   void iterate (std::function<bool (const Rib *)> cb) const;
@@ -108,6 +110,8 @@ public:
   void append_reference_for_def (NodeId refId, NodeId defId);
 
   CrateNum get_crate_num () const { return crate_num; }
+
+  const std::vector<Rib *> &get_context () const { return stack; };
 
 private:
   CrateNum crate_num;
@@ -191,6 +195,15 @@ public:
     return current_module_stack.at (current_module_stack.size () - 2);
   }
 
+  void push_closure_context (NodeId closure_expr_id);
+  void pop_closure_context ();
+  void insert_captured_item (NodeId id);
+  const std::set<NodeId> &get_captures (NodeId id) const;
+
+protected:
+  bool decl_needs_capture (NodeId decl_rib_node_id, NodeId closure_rib_node_id,
+			   const Scope &scope);
+
 private:
   Resolver ();
 
@@ -234,6 +247,10 @@ private:
 
   // keep track of the current module scope ids
   std::vector<NodeId> current_module_stack;
+
+  // captured variables mappings
+  std::vector<NodeId> closure_context;
+  std::map<NodeId, std::set<NodeId>> closures_capture_mappings;
 };
 
 } // namespace Resolver
