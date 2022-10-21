@@ -1628,13 +1628,15 @@ public:
   ClosureType (HirId ref, DefId id, RustIdent ident,
 	       TyTy::TupleType *parameters, TyVar result_type,
 	       std::vector<SubstitutionParamMapping> subst_refs,
+	       std::set<NodeId> captures,
 	       std::set<HirId> refs = std::set<HirId> (),
 	       std::vector<TypeBoundPredicate> specified_bounds
 	       = std::vector<TypeBoundPredicate> ())
     : BaseType (ref, ref, TypeKind::CLOSURE, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      parameters (parameters), result_type (std::move (result_type)), id (id)
+      parameters (parameters), result_type (std::move (result_type)), id (id),
+      captures (captures)
   {
     LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
@@ -1644,13 +1646,15 @@ public:
   ClosureType (HirId ref, HirId ty_ref, RustIdent ident, DefId id,
 	       TyTy::TupleType *parameters, TyVar result_type,
 	       std::vector<SubstitutionParamMapping> subst_refs,
+	       std::set<NodeId> captures,
 	       std::set<HirId> refs = std::set<HirId> (),
 	       std::vector<TypeBoundPredicate> specified_bounds
 	       = std::vector<TypeBoundPredicate> ())
     : BaseType (ref, ty_ref, TypeKind::CLOSURE, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      parameters (parameters), result_type (std::move (result_type)), id (id)
+      parameters (parameters), result_type (std::move (result_type)), id (id),
+      captures (captures)
   {
     LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
@@ -1699,10 +1703,13 @@ public:
 
   void setup_fn_once_output () const;
 
+  const std::set<NodeId> &get_captures () const { return captures; }
+
 private:
   TyTy::TupleType *parameters;
   TyVar result_type;
   DefId id;
+  std::set<NodeId> captures;
 };
 
 class ArrayType : public BaseType

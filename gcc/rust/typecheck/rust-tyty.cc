@@ -1675,8 +1675,7 @@ std::string
 ClosureType::as_string () const
 {
   std::string params_buf = parameters->as_string ();
-  return "|" + params_buf + "| {" + result_type.get_tyty ()->as_string ()
-	 + "} {" + raw_bounds_as_string () + "}";
+  return "|" + params_buf + "| {" + result_type.get_tyty ()->as_string () + "}";
 }
 
 BaseType *
@@ -1714,7 +1713,7 @@ ClosureType::clone () const
 {
   return new ClosureType (get_ref (), get_ty_ref (), ident, id,
 			  (TyTy::TupleType *) parameters->clone (), result_type,
-			  clone_substs (), get_combined_refs (),
+			  clone_substs (), captures, get_combined_refs (),
 			  specified_bounds);
 }
 
