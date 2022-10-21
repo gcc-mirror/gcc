@@ -3471,15 +3471,14 @@ xtensa_expand_epilogue (bool sibcall_p)
 	  if (xtensa_call_save_reg(regno))
 	    {
 	      rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
-	      rtx reg;
 
 	      offset -= UNITS_PER_WORD;
-	      emit_move_insn (reg = gen_rtx_REG (SImode, regno),
+	      emit_move_insn (gen_rtx_REG (SImode, regno),
 			      gen_frame_mem (SImode, x));
-	      if (regno == A0_REG && sibcall_p)
-		emit_use (reg);
 	    }
 	}
+      if (sibcall_p)
+	emit_use (gen_rtx_REG (SImode, A0_REG));
 
       if (cfun->machine->current_frame_size > 0)
 	{
@@ -4970,6 +4969,13 @@ xtensa_conditional_register_usage (void)
   /* Remove hard FP register from the preferred reload registers set.  */
   CLEAR_HARD_REG_BIT (reg_class_contents[(int)RL_REGS],
 		      HARD_FRAME_POINTER_REGNUM);
+
+  /* Register A0 holds the return address upon entry to a function
+     for the CALL0 ABI, but unlike the windowed register ABI, it is
+     not reserved for this purpose and may hold other values after
+     the return address has been saved.  */
+  if (!TARGET_WINDOWED_ABI)
+    fixed_regs[A0_REG] = 0;
 }
 
 /* Map hard register number to register class */
