@@ -238,6 +238,7 @@ class ExprWithoutBlock;
 // Base expression HIR node - abstract
 class Expr : public Node
 {
+protected:
   AST::AttrVec outer_attrs;
   Analysis::NodeMapping mappings;
 

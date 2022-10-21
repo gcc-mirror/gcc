@@ -69,10 +69,9 @@ public:
   void visit (HIR::RangeFullExpr &expr) override;
   void visit (HIR::RangeFromToInclExpr &expr) override;
   void visit (HIR::WhileLoopExpr &expr) override;
+  void visit (HIR::ClosureExpr &expr) override;
 
   // TODO
-  void visit (HIR::ClosureExprInnerTyped &) override {}
-  void visit (HIR::ClosureExprInner &expr) override {}
   void visit (HIR::ErrorPropagationExpr &expr) override {}
   void visit (HIR::RangeToInclExpr &expr) override {}
   void visit (HIR::WhileLetLoopExpr &expr) override {}
@@ -103,6 +102,13 @@ protected:
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
 			     HIR::OperatorExprMeta expr, TyTy::BaseType *lhs,
 			     TyTy::BaseType *rhs);
+
+  bool resolve_fn_trait_call (HIR::CallExpr &expr,
+			      TyTy::BaseType *function_tyty,
+			      TyTy::BaseType **result);
+
+  HIR::PathIdentSegment
+  resolve_possible_fn_trait_call_method_name (const TyTy::BaseType &receiver);
 
 private:
   TypeCheckExpr ();

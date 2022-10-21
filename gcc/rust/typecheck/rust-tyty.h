@@ -1626,31 +1626,35 @@ class ClosureType : public BaseType, public SubstitutionRef
 {
 public:
   ClosureType (HirId ref, DefId id, RustIdent ident,
-	       std::vector<TyVar> parameter_types, TyVar result_type,
+	       TyTy::TupleType *parameters, TyVar result_type,
 	       std::vector<SubstitutionParamMapping> subst_refs,
-	       std::set<HirId> refs = std::set<HirId> ())
+	       std::set<HirId> refs = std::set<HirId> (),
+	       std::vector<TypeBoundPredicate> specified_bounds
+	       = std::vector<TypeBoundPredicate> ())
     : BaseType (ref, ref, TypeKind::CLOSURE, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      parameter_types (std::move (parameter_types)),
-      result_type (std::move (result_type)), id (id)
+      parameters (parameters), result_type (std::move (result_type)), id (id)
   {
     LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
+    inherit_bounds (specified_bounds);
   }
 
   ClosureType (HirId ref, HirId ty_ref, RustIdent ident, DefId id,
-	       std::vector<TyVar> parameter_types, TyVar result_type,
+	       TyTy::TupleType *parameters, TyVar result_type,
 	       std::vector<SubstitutionParamMapping> subst_refs,
-	       std::set<HirId> refs = std::set<HirId> ())
+	       std::set<HirId> refs = std::set<HirId> (),
+	       std::vector<TypeBoundPredicate> specified_bounds
+	       = std::vector<TypeBoundPredicate> ())
     : BaseType (ref, ty_ref, TypeKind::CLOSURE, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      parameter_types (std::move (parameter_types)),
-      result_type (std::move (result_type)), id (id)
+      parameters (parameters), result_type (std::move (result_type)), id (id)
   {
     LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
+    inherit_bounds (specified_bounds);
   }
 
   void accept_vis (TyVisitor &vis) override;
@@ -1669,13 +1673,8 @@ public:
 
   bool is_concrete () const override final
   {
-    for (auto &param : parameter_types)
-      {
-	auto p = param.get_tyty ();
-	if (!p->is_concrete ())
-	  return false;
-      }
-    return result_type.get_tyty ()->is_concrete ();
+    return parameters->is_concrete ()
+	   && result_type.get_tyty ()->is_concrete ();
   }
 
   bool needs_generic_substitutions () const override final
@@ -1693,8 +1692,15 @@ public:
   ClosureType *
   handle_substitions (SubstitutionArgumentMappings mappings) override final;
 
+  TyTy::TupleType &get_parameters () const { return *parameters; }
+  TyTy::BaseType &get_result_type () const { return *result_type.get_tyty (); }
+
+  DefId get_def_id () const { return id; }
+
+  void setup_fn_once_output () const;
+
 private:
-  std::vector<TyVar> parameter_types;
+  TyTy::TupleType *parameters;
   TyVar result_type;
   DefId id;
 };

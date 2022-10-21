@@ -565,6 +565,64 @@ ResolveExpr::visit (AST::RangeFromToInclExpr &expr)
   ResolveExpr::go (expr.get_to_expr ().get (), prefix, canonical_prefix);
 }
 
+void
+ResolveExpr::visit (AST::ClosureExprInner &expr)
+{
+  NodeId scope_node_id = expr.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+  for (auto &p : expr.get_params ())
+    {
+      resolve_closure_param (p);
+    }
+
+  ResolveExpr::go (expr.get_definition_expr ().get (), prefix,
+		   canonical_prefix);
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
+}
+
+void
+ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
+{
+  NodeId scope_node_id = expr.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+  for (auto &p : expr.get_params ())
+    {
+      resolve_closure_param (p);
+    }
+
+  ResolveType::go (expr.get_return_type ().get ());
+  ResolveExpr::go (expr.get_definition_block ().get (), prefix,
+		   canonical_prefix);
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
+}
+
+void
+ResolveExpr::resolve_closure_param (AST::ClosureParam &param)
+{
+  PatternDeclaration::go (param.get_pattern ().get ());
+
+  if (param.has_type_given ())
+    ResolveType::go (param.get_type ().get ());
+}
+
 ResolveExpr::ResolveExpr (const CanonicalPath &prefix,
 			  const CanonicalPath &canonical_prefix)
   : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)

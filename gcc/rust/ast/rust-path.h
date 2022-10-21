@@ -898,6 +898,8 @@ public:
     rust_assert (has_return_type ());
     return return_type;
   }
+
+  Location get_locus () const { return locus; }
 };
 
 // Segment used in type path with a function argument

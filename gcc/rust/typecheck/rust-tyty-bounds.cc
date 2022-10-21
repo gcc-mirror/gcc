@@ -84,16 +84,71 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
     = HIR::GenericArgs::create_empty (type_path.get_locus ());
 
   auto &final_seg = type_path.get_final_segment ();
-  if (final_seg->is_generic_segment ())
+  switch (final_seg->get_type ())
     {
-      auto final_generic_seg
-	= static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
-      if (final_generic_seg->has_generic_args ())
-	{
-	  args = final_generic_seg->get_generic_args ();
-	}
+      case HIR::TypePathSegment::SegmentType::GENERIC: {
+	auto final_generic_seg
+	  = static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
+	if (final_generic_seg->has_generic_args ())
+	  {
+	    args = final_generic_seg->get_generic_args ();
+	  }
+      }
+      break;
+
+      case HIR::TypePathSegment::SegmentType::FUNCTION: {
+	auto final_function_seg
+	  = static_cast<HIR::TypePathSegmentFunction *> (final_seg.get ());
+	auto &fn = final_function_seg->get_function_path ();
+
+	// we need to make implicit generic args which must be an implicit Tuple
+	auto crate_num = mappings->get_current_crate ();
+	HirId implicit_args_id = mappings->get_next_hir_id ();
+	Analysis::NodeMapping mapping (crate_num,
+				       final_seg->get_mappings ().get_nodeid (),
+				       implicit_args_id, UNKNOWN_LOCAL_DEFID);
+
+	std::vector<std::unique_ptr<HIR::Type>> params_copy;
+	for (auto &p : fn.get_params ())
+	  {
+	    params_copy.push_back (p->clone_type ());
+	  }
+
+	HIR::TupleType *implicit_tuple
+	  = new HIR::TupleType (mapping, std::move (params_copy),
+				final_seg->get_locus ());
+
+	std::vector<std::unique_ptr<HIR::Type>> inputs;
+	inputs.push_back (std::unique_ptr<HIR::Type> (implicit_tuple));
+
+	args = HIR::GenericArgs ({} /* lifetimes */,
+				 std::move (inputs) /* type_args*/,
+				 {} /* binding_args*/, {} /* const_args */,
+				 final_seg->get_locus ());
+
+	// resolve the fn_once_output type
+	TyTy::BaseType *fn_once_output_ty
+	  = fn.has_return_type ()
+	      ? TypeCheckType::Resolve (fn.get_return_type ().get ())
+	      : TyTy::TupleType::get_unit_type (
+		final_seg->get_mappings ().get_hirid ());
+	context->insert_implicit_type (final_seg->get_mappings ().get_hirid (),
+				       fn_once_output_ty);
+
+	// setup the associated type.. ??
+	// fn_once_output_ty->debug ();
+      }
+      break;
+
+    default:
+      /* nothing to do */
+      break;
     }
 
+  // FIXME
+  // I think this should really be just be if the !args.is_empty() because
+  // someone might wrongly apply generic arguments where they should not and
+  // they will be missing error diagnostics
   if (predicate.requires_generic_args ())
     {
       // this is applying generic arguments to a trait reference

@@ -67,10 +67,9 @@ public:
   void visit (HIR::RangeToExpr &expr) override;
   void visit (HIR::RangeFullExpr &expr) override;
   void visit (HIR::RangeFromToInclExpr &expr) override;
+  void visit (HIR::ClosureExpr &expr) override;
 
   // TODO
-  void visit (HIR::ClosureExprInner &) override {}
-  void visit (HIR::ClosureExprInnerTyped &) override {}
   void visit (HIR::ErrorPropagationExpr &) override {}
   void visit (HIR::RangeToInclExpr &) override {}
   void visit (HIR::ForLoopExpr &) override {}
@@ -142,6 +141,19 @@ protected:
   tree array_copied_expr (Location expr_locus,
 			  const TyTy::ArrayType &array_tyty, tree array_type,
 			  HIR::ArrayElemsCopied &elems);
+
+protected:
+  tree generate_closure_function (HIR::ClosureExpr &expr,
+				  TyTy::ClosureType &closure_tyty,
+				  tree compiled_closure_tyty);
+
+  tree generate_closure_fntype (HIR::ClosureExpr &expr,
+				const TyTy::ClosureType &closure_tyty,
+				tree compiled_closure_tyty,
+				TyTy::FnType **fn_tyty);
+
+  bool generate_possible_fn_trait_call (HIR::CallExpr &expr, tree receiver,
+					tree *result);
 
 private:
   CompileExpr (Context *ctx);

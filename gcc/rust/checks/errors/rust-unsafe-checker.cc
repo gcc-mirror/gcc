@@ -453,8 +453,10 @@ UnsafeChecker::visit (FieldAccessExpr &expr)
 }
 
 void
-UnsafeChecker::visit (ClosureExprInner &expr)
-{}
+UnsafeChecker::visit (ClosureExpr &expr)
+{
+  expr.get_expr ()->accept_vis (*this);
+}
 
 void
 UnsafeChecker::visit (BlockExpr &expr)
@@ -465,10 +467,6 @@ UnsafeChecker::visit (BlockExpr &expr)
   if (expr.has_expr ())
     expr.get_final_expr ()->accept_vis (*this);
 }
-
-void
-UnsafeChecker::visit (ClosureExprInnerTyped &expr)
-{}
 
 void
 UnsafeChecker::visit (ContinueExpr &expr)

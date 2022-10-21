@@ -27,6 +27,7 @@
 #include "rust-substitution-mapper.h"
 #include "rust-hir-trait-ref.h"
 #include "rust-hir-type-bounds.h"
+#include "rust-hir-trait-resolve.h"
 #include "options.h"
 
 namespace Rust {
@@ -200,6 +201,7 @@ BaseType::bounds_compatible (const BaseType &other, Location locus,
 	  rust_error_at (r,
 			 "bounds not satisfied for %s %<%s%> is not satisfied",
 			 other.get_name ().c_str (), missing_preds.c_str ());
+	  // rust_assert (!emit_error);
 	}
     }
 
@@ -1672,7 +1674,9 @@ ClosureType::accept_vis (TyConstVisitor &vis) const
 std::string
 ClosureType::as_string () const
 {
-  return "TODO";
+  std::string params_buf = parameters->as_string ();
+  return "|" + params_buf + "| {" + result_type.get_tyty ()->as_string ()
+	 + "} {" + raw_bounds_as_string () + "}";
 }
 
 BaseType *
@@ -1692,15 +1696,26 @@ ClosureType::can_eq (const BaseType *other, bool emit_errors) const
 bool
 ClosureType::is_equal (const BaseType &other) const
 {
-  gcc_unreachable ();
-  return false;
+  if (other.get_kind () != TypeKind::CLOSURE)
+    return false;
+
+  const ClosureType &other2 = static_cast<const ClosureType &> (other);
+  if (get_def_id () != other2.get_def_id ())
+    return false;
+
+  if (!get_parameters ().is_equal (other2.get_parameters ()))
+    return false;
+
+  return get_result_type ().is_equal (other2.get_result_type ());
 }
 
 BaseType *
 ClosureType::clone () const
 {
-  return new ClosureType (get_ref (), get_ty_ref (), ident, id, parameter_types,
-			  result_type, clone_substs (), get_combined_refs ());
+  return new ClosureType (get_ref (), get_ty_ref (), ident, id,
+			  (TyTy::TupleType *) parameters->clone (), result_type,
+			  clone_substs (), get_combined_refs (),
+			  specified_bounds);
 }
 
 BaseType *
@@ -1714,6 +1729,52 @@ ClosureType::handle_substitions (SubstitutionArgumentMappings mappings)
 {
   gcc_unreachable ();
   return nullptr;
+}
+
+void
+ClosureType::setup_fn_once_output () const
+{
+  // lookup the lang items
+  auto fn_once_lang_item = Analysis::RustLangItem::ItemType::FN_ONCE;
+  auto fn_once_output_lang_item
+    = Analysis::RustLangItem::ItemType::FN_ONCE_OUTPUT;
+
+  DefId trait_id = UNKNOWN_DEFID;
+  bool trait_lang_item_defined
+    = mappings->lookup_lang_item (fn_once_lang_item, &trait_id);
+  rust_assert (trait_lang_item_defined);
+
+  DefId trait_item_id = UNKNOWN_DEFID;
+  bool trait_item_lang_item_defined
+    = mappings->lookup_lang_item (fn_once_output_lang_item, &trait_item_id);
+  rust_assert (trait_item_lang_item_defined);
+
+  // resolve to the trait
+  HIR::Item *item = mappings->lookup_defid (trait_id);
+  rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
+  HIR::Trait *trait = static_cast<HIR::Trait *> (item);
+
+  Resolver::TraitReference *trait_ref
+    = Resolver::TraitResolver::Resolve (*trait);
+  rust_assert (!trait_ref->is_error ());
+
+  // resolve to trait item
+  HIR::TraitItem *trait_item
+    = mappings->lookup_trait_item_defid (trait_item_id);
+  rust_assert (trait_item != nullptr);
+  rust_assert (trait_item->get_item_kind ()
+	       == HIR::TraitItem::TraitItemKind::TYPE);
+  std::string item_identifier = trait_item->trait_identifier ();
+
+  // setup associated types  #[lang = "fn_once_output"]
+  Resolver::TraitItemReference *item_reference = nullptr;
+  bool found = trait_ref->lookup_trait_item_by_type (
+    item_identifier, Resolver::TraitItemReference::TraitItemType::TYPE,
+    &item_reference);
+  rust_assert (found);
+
+  // setup
+  item_reference->associated_type_set (&get_result_type ());
 }
 
 void

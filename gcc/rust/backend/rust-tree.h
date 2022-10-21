@@ -82,6 +82,11 @@
 #define SLICE_TYPE_P(TYPE)                                                     \
   (TREE_CODE (TYPE) == RECORD_TYPE && TREE_LANG_FLAG_0 (TYPE))
 
+// lambda?
+#define RS_CLOSURE_FLAG TREE_LANG_FLAG_1
+#define RS_CLOSURE_TYPE_P(TYPE)                                                \
+  (TREE_CODE (TYPE) == RECORD_TYPE && TREE_LANG_FLAG_1 (TYPE))
+
 /* Returns true if NODE is a pointer to member function type.  */
 #define TYPE_PTRMEMFUNC_P(NODE)                                                \
   (TREE_CODE (NODE) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (NODE))

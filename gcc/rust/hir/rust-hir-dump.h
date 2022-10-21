@@ -78,9 +78,8 @@ private:
   virtual void visit (CallExpr &) override;
   virtual void visit (MethodCallExpr &) override;
   virtual void visit (FieldAccessExpr &) override;
-  virtual void visit (ClosureExprInner &) override;
+  virtual void visit (ClosureExpr &) override;
   virtual void visit (BlockExpr &) override;
-  virtual void visit (ClosureExprInnerTyped &) override;
   virtual void visit (ContinueExpr &) override;
   virtual void visit (BreakExpr &) override;
   virtual void visit (RangeFromToExpr &) override;

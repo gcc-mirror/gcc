@@ -34,90 +34,52 @@ public:
 		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::TupleIndexExpr &expr) override;
-
   void visit (AST::TupleExpr &expr) override;
-
   void visit (AST::PathInExpression &expr) override;
-
   void visit (AST::QualifiedPathInExpression &expr) override;
-
   void visit (AST::ReturnExpr &expr) override;
-
   void visit (AST::CallExpr &expr) override;
-
   void visit (AST::MethodCallExpr &expr) override;
-
   void visit (AST::AssignmentExpr &expr) override;
-
   void visit (AST::IdentifierExpr &expr) override;
-
   void visit (AST::ArithmeticOrLogicalExpr &expr) override;
-
   void visit (AST::CompoundAssignmentExpr &expr) override;
-
   void visit (AST::ComparisonExpr &expr) override;
-
   void visit (AST::LazyBooleanExpr &expr) override;
-
   void visit (AST::NegationExpr &expr) override;
-
   void visit (AST::TypeCastExpr &expr) override;
-
   void visit (AST::IfExpr &expr) override;
-
   void visit (AST::IfExprConseqElse &expr) override;
-
   void visit (AST::IfExprConseqIf &expr) override;
-
   void visit (AST::IfLetExpr &expr) override;
-
   void visit (AST::BlockExpr &expr) override;
-
   void visit (AST::UnsafeBlockExpr &expr) override;
-
   void visit (AST::ArrayElemsValues &elems) override;
-
   void visit (AST::ArrayExpr &expr) override;
-
   void visit (AST::ArrayIndexExpr &expr) override;
-
   void visit (AST::ArrayElemsCopied &elems) override;
-
-  // this this an empty struct constructor like 'S {}'
   void visit (AST::StructExprStruct &struct_expr) override;
-
-  // this this a struct constructor with fields
   void visit (AST::StructExprStructFields &struct_expr) override;
-
   void visit (AST::GroupedExpr &expr) override;
-
   void visit (AST::FieldAccessExpr &expr) override;
-
   void visit (AST::LoopExpr &expr) override;
-
   void visit (AST::BreakExpr &expr) override;
-
   void visit (AST::WhileLoopExpr &expr) override;
-
   void visit (AST::ForLoopExpr &expr) override;
-
   void visit (AST::ContinueExpr &expr) override;
-
   void visit (AST::BorrowExpr &expr) override;
-
   void visit (AST::DereferenceExpr &expr) override;
-
   void visit (AST::MatchExpr &expr) override;
-
   void visit (AST::RangeFromToExpr &expr) override;
-
   void visit (AST::RangeFromExpr &expr) override;
-
   void visit (AST::RangeToExpr &expr) override;
-
   void visit (AST::RangeFullExpr &expr) override;
-
   void visit (AST::RangeFromToInclExpr &expr) override;
+  void visit (AST::ClosureExprInner &expr) override;
+  void visit (AST::ClosureExprInnerTyped &expr) override;
+
+protected:
+  void resolve_closure_param (AST::ClosureParam &param);
 
 private:
   ResolveExpr (const CanonicalPath &prefix,
