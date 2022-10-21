@@ -1,3 +1,26 @@
+2022-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (lookup_and_finish_template_variable): Don't
+	instantiate if the template's scope is dependent.
+	(tsubst_copy) <case TEMPLATE_DECL>: Pass entering_scope=true
+	when substituting the class scope.
+
+2022-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102963
+	* module.cc (node_template_info): Handle CONCEPT_DECL.
+
+2022-10-20  Jonathan Wakely   <jwakely@redhat.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* Make-lang.in: Add rules to generate std-name-hint.gperf.  Adjust
+	rule to generate std-name-hint.h to allow chain rule.
+	* std-name-hint.h: Regenerated.
+	* std-name-hint.gperf: This file is now generated.
+	* cxxapi-data.csv: New file.  CSV file with C++ API data.
+	* gen-cxxapi-file.py: New file.  Generate std-name-hint.gperf
+	and module export source (in future).
+
 2022-10-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85043

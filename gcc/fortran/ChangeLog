@@ -1,3 +1,10 @@
+2022-10-20  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105633
+	* expr.cc (find_array_section): Move check for NULL pointers so
+	that both subscript triplets and vector subscripts are covered.
+
 2022-10-17  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/104330

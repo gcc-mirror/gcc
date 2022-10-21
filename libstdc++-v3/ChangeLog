@@ -1,3 +1,11 @@
+2022-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/charconv (__detail::__from_chars_alnum_to_val_table):
+	Redefine as a class template containing the members type, value and
+	_S_make_table.  Don't use a local class as the table type.
+	(__detail::__table): Remove.
+	(__detail::__from_chars_alnum_to_val): Adjust after the above.
+
 2022-10-19  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (views::__detail::__is_repeat_view): Define

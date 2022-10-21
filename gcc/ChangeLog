@@ -1,3 +1,168 @@
+2022-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c++/106654
+	* value-query.cc (get_range_global): Handle non integer ranges for
+	default def SSA names.
+
+2022-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_unordered_lt::op1_range): New.
+	(foperator_unordered_lt::op2_range): New.
+
+2022-10-20  Artem Klimov  <jakmobius@gmail.com>
+	     Alexander Monakov   <amonakov@gcc.gnu.org>
+
+	PR middle-end/99619
+	* ipa-visibility.cc (function_and_variable_visibility): Promote
+	TLS access model afer visibility optimizations.
+	* varasm.cc (have_optimized_refs): New helper.
+	(optimize_dyn_tls_for_decl_p): New helper. Use it ...
+	(decl_default_tls_model): ... here in place of 'optimize' check.
+
+2022-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_unordered_le::op1_range): Adjust
+	false side with a NAN operand.
+	(foperator_unordered_le::op2_range): Same.
+	(foperator_unordered_gt::op1_range): Same.
+	(foperator_unordered_gt::op2_range): Same.
+	(foperator_unordered_ge::op1_range): Same.
+	(foperator_unordered_ge::op2_range): Same.
+	(foperator_unordered_equal::op1_range): Same.
+
+2022-10-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/107326
+	* tree-vect-patterns.cc (vect_recog_bitfield_ref_pattern): Change
+	vectype when widening container.
+
+2022-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::set_varying): Do not set NAN flags for
+	!HONOR_NANS.
+	* value-range.cc (frange::normalize_kind): Adjust for no NAN when
+	!HONOR_NANS.
+	(frange::verify_range): Same.
+	* range-op-float.cc (maybe_isnan): Remove flag_finite_math_only check.
+
+2022-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (finite_operand_p): Remove.
+	(finite_operands_p): Rename to...
+	(maybe_isnan): ...this.
+	(frelop_early_resolve): Use maybe_isnan instead of finite_operands_p.
+	(foperator_equal::fold_range): Same.
+	(foperator_equal::op1_range): Same.
+	(foperator_not_equal::fold_range): Same.
+	(foperator_lt::fold_range): Same.
+	(foperator_le::fold_range): Same.
+	(foperator_gt::fold_range): Same.
+	(foperator_ge::fold_range): Same.
+
+2022-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* passes.cc (pass_manager::register_pass): Fix a comment
+	typo - copmilation -> compilation.
+
+2022-10-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_phi_first_order_recurrence_p):
+	Disallow latch PHI defs.
+	(vectorizable_recurr): Revert previous change.
+
+2022-10-20  Julian Brown  <julian@codesourcery.com>
+
+	PR target/105421
+	* config/gcn/gcn.cc (gcn_detect_incoming_pointer_arg): Any pointer
+	argument forces FLAT addressing mode, not just
+	pointer-to-non-aggregate.
+
+2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac (AC_CONFIG_MACRO_DIRS): Instantiate.
+	* configure: Regenerate.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(gimple_folder::fold_to_cstu): New member function.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::fold_to_cstu): Define.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svcnt_bhwd_impl::fold): Use it.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-functions.h (quiet)
+	(rtx_code_function, rtx_code_function_rotated, unspec_based_function)
+	(unspec_based_function_rotated, unspec_based_function_exact_insn)
+	(unspec_based_fused_function, unspec_based_fused_lane_function):
+	Replace constructors with using directives.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svcnt_bhwd_pat_impl)
+	(svcreate_impl, svdotprod_lane_impl, svget_impl, svld1_extend_impl)
+	(svld1_gather_extend_impl, svld234_impl, svldff1_gather_extend)
+	(svset_impl, svst1_scatter_truncate_impl, svst1_truncate_impl)
+	(svst234_impl, svundef_impl): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svldnt1_gather_extend_impl, svmovl_lb_impl): Likewise.
+	(svstnt1_scatter_truncate_impl): Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc: Replace CONSTEXPR
+	with constexpr throughout.
+	* config/aarch64/aarch64-sve-builtins-functions.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc: Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*aarch64_brk<brk_op>_cc): Remove
+	merging alternative.
+	(*aarch64_brk<brk_op>_ptest): Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_BRKP): New iterator.
+	* config/aarch64/aarch64-sve.md (*aarch64_brkn_cc): New pattern.
+	(*aarch64_brkn_ptest): Likewise.
+	(*aarch64_brk<brk_op>_cc): Restrict to SVE_BRKP.
+	(*aarch64_brk<brk_op>_ptest): Likewise.
+
+2022-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR c/107305
+	PR c/107306
+	* tree-cfg.h (verify_gimple_in_seq): Add parameter to
+	indicate whether to emit an ICE.  Add return value.
+	(verify_gimple_in_cfg): Likewise.
+	* tree-cfg.cc (verify_gimple_in_seq): Likewise.
+	(verify_gimple_in_cfg): Likewise.
+
+2022-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107240
+	* tree-vect-patterns.cc (vect_recog_bit_insert_pattern): Attempt to
+	simplify shifted value first.
+
+2022-10-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.h (compute_operand_range): Make public.
+	* gimple-range-infer.cc (gimple_infer_range::check_assume_func): New.
+	(gimple_infer_range::gimple_infer_range): Check for assume calls.
+	* gimple-range-infer.h (check_assume_func): Add prototype.
+	* gimple-range.cc (assume_query::assume_range_p): New.
+	(assume_query::range_of_expr): New.
+	(assume_query::assume_query): New.
+	(assume_query::calculate_op): New.
+	(assume_query::calculate_phi): New.
+	(assume_query::check_taken_edge): New.
+	(assume_query::calculate_stmt): New.
+	(assume_query::dump): New.
+	* gimple-range.h (class assume_query): New.
+	* tree-vrp.cc (pass_assumptions::execute): Add processing.
+
 2022-10-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op-float.cc (build_le): Document result.
