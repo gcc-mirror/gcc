@@ -9228,45 +9228,41 @@
 (define_insn "*aarch64_brk<brk_op>_cc"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
-	  [(match_operand:VNx16BI 1 "register_operand" "Upa, Upa")
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
 	   (match_dup 1)
 	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
 	   (unspec:VNx16BI
 	     [(match_dup 1)
-	      (match_operand:VNx16BI 2 "register_operand" "Upa, Upa")
-	      (match_operand:VNx16BI 3 "aarch64_simd_reg_or_zero" "Dz, 0")]
+	      (match_operand:VNx16BI 2 "register_operand" "Upa")
+	      (match_operand:VNx16BI 3 "aarch64_simd_imm_zero")]
 	     SVE_BRK_UNARY)]
 	  UNSPEC_PTEST))
-   (set (match_operand:VNx16BI 0 "register_operand" "=Upa, Upa")
+   (set (match_operand:VNx16BI 0 "register_operand" "=Upa")
 	(unspec:VNx16BI
 	  [(match_dup 1)
 	   (match_dup 2)
 	   (match_dup 3)]
 	  SVE_BRK_UNARY))]
   "TARGET_SVE"
-  "@
-   brk<brk_op>s\t%0.b, %1/z, %2.b
-   brk<brk_op>s\t%0.b, %1/m, %2.b"
+  "brk<brk_op>s\t%0.b, %1/z, %2.b"
 )
 
 ;; Same, but with only the flags result being interesting.
 (define_insn "*aarch64_brk<brk_op>_ptest"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
-	  [(match_operand:VNx16BI 1 "register_operand" "Upa, Upa")
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
 	   (match_dup 1)
 	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
 	   (unspec:VNx16BI
 	     [(match_dup 1)
-	      (match_operand:VNx16BI 2 "register_operand" "Upa, Upa")
-	      (match_operand:VNx16BI 3 "aarch64_simd_reg_or_zero" "Dz, 0")]
+	      (match_operand:VNx16BI 2 "register_operand" "Upa")
+	      (match_operand:VNx16BI 3 "aarch64_simd_imm_zero")]
 	     SVE_BRK_UNARY)]
 	  UNSPEC_PTEST))
-   (clobber (match_scratch:VNx16BI 0 "=Upa, Upa"))]
+   (clobber (match_scratch:VNx16BI 0 "=Upa"))]
   "TARGET_SVE"
-  "@
-   brk<brk_op>s\t%0.b, %1/z, %2.b
-   brk<brk_op>s\t%0.b, %1/m, %2.b"
+  "brk<brk_op>s\t%0.b, %1/z, %2.b"
 )
 
 ;; -------------------------------------------------------------------------
