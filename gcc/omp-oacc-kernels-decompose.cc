@@ -120,7 +120,8 @@ top_level_omp_for_in_stmt (gimple *stmt)
 	  for (gsi = gsi_start (body); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *body_stmt = gsi_stmt (gsi);
-	      if (gimple_code (body_stmt) == GIMPLE_ASSIGN)
+	      if (gimple_code (body_stmt) == GIMPLE_ASSIGN
+		  || gimple_code (body_stmt) == GIMPLE_DEBUG)
 		continue;
 	      else if (gimple_code (body_stmt) == GIMPLE_OMP_FOR
 		       && gsi_one_before_end_p (gsi))
@@ -1405,7 +1406,7 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
 	    = (gimple_code (stmt) == GIMPLE_ASSIGN
 	       && TREE_CODE (gimple_assign_lhs (stmt)) == VAR_DECL
 	       && DECL_ARTIFICIAL (gimple_assign_lhs (stmt)));
-	  if (!is_simple_assignment)
+	  if (!is_simple_assignment && gimple_code (stmt) != GIMPLE_DEBUG)
 	    only_simple_assignments = false;
 	}
     }
