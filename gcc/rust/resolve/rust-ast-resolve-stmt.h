@@ -64,6 +64,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
+      Rib::ItemType::Const,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (constant.get_locus ());
 	r.add_range (locus);
@@ -82,7 +83,7 @@ public:
 			 canonical_prefix);
       }
 
-    PatternDeclaration::go (stmt.get_pattern ().get ());
+    PatternDeclaration::go (stmt.get_pattern ().get (), Rib::ItemType::Var);
     if (stmt.has_type ())
       ResolveType::go (stmt.get_type ().get ());
   }
@@ -97,6 +98,7 @@ public:
 
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
+      Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (struct_decl.get_locus ());
 	r.add_range (locus);
@@ -128,6 +130,7 @@ public:
 
     resolver->get_type_scope ().insert (
       path, enum_decl.get_node_id (), enum_decl.get_locus (), false,
+      Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (enum_decl.get_locus ());
 	r.add_range (locus);
@@ -158,7 +161,7 @@ public:
     mappings->insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
-      path, item.get_node_id (), item.get_locus (), false,
+      path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (item.get_locus ());
 	r.add_range (locus);
@@ -177,7 +180,7 @@ public:
     mappings->insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
-      path, item.get_node_id (), item.get_locus (), false,
+      path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (item.get_locus ());
 	r.add_range (locus);
@@ -202,7 +205,7 @@ public:
     mappings->insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
-      path, item.get_node_id (), item.get_locus (), false,
+      path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (item.get_locus ());
 	r.add_range (locus);
@@ -227,7 +230,7 @@ public:
     mappings->insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
-      path, item.get_node_id (), item.get_locus (), false,
+      path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (item.get_locus ());
 	r.add_range (locus);
@@ -247,6 +250,7 @@ public:
 
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
+      Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (struct_decl.get_locus ());
 	r.add_range (locus);
@@ -283,6 +287,7 @@ public:
 
     resolver->get_type_scope ().insert (
       path, union_decl.get_node_id (), union_decl.get_locus (), false,
+      Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (union_decl.get_locus ());
 	r.add_range (locus);
@@ -317,6 +322,7 @@ public:
 
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
+      Rib::ItemType::Function,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (function.get_locus ());
 	r.add_range (locus);
@@ -343,7 +349,8 @@ public:
     for (auto &param : function.get_function_params ())
       {
 	ResolveType::go (param.get_type ().get ());
-	PatternDeclaration::go (param.get_pattern ().get ());
+	PatternDeclaration::go (param.get_pattern ().get (),
+				Rib::ItemType::Param);
       }
 
     // resolve the function body
