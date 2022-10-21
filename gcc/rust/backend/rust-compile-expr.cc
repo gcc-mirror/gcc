@@ -2829,10 +2829,25 @@ CompileExpr::visit (HIR::ClosureExpr &expr)
 
   // lets ignore state capture for now we need to instantiate the struct anyway
   // then generate the function
-
   std::vector<tree> vals;
-  // TODO
-  // setup argument captures based on the mode?
+  for (const auto &capture : closure_tyty->get_captures ())
+    {
+      // lookup the HirId
+      HirId ref = UNKNOWN_HIRID;
+      bool ok = ctx->get_mappings ()->lookup_node_to_hir (capture, &ref);
+      rust_assert (ok);
+
+      // lookup the var decl
+      Bvariable *var = nullptr;
+      bool found = ctx->lookup_var_decl (ref, &var);
+      rust_assert (found);
+
+      // FIXME
+      // this should bes based on the closure move-ability
+      tree var_expr = var->get_tree (expr.get_locus ());
+      tree val = address_expression (var_expr, expr.get_locus ());
+      vals.push_back (val);
+    }
 
   translated
     = ctx->get_backend ()->constructor_expression (compiled_closure_tyty, false,
@@ -2879,8 +2894,29 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   DECL_ARTIFICIAL (self_param->get_decl ()) = 1;
   param_vars.push_back (self_param);
 
+  // push a new context
+  ctx->push_closure_context (expr.get_mappings ().get_hirid ());
+
   // setup the implicit argument captures
-  // TODO
+  size_t idx = 0;
+  for (const auto &capture : closure_tyty.get_captures ())
+    {
+      // lookup the HirId
+      HirId ref = UNKNOWN_HIRID;
+      bool ok = ctx->get_mappings ()->lookup_node_to_hir (capture, &ref);
+      rust_assert (ok);
+
+      // get the assessor
+      tree binding = ctx->get_backend ()->struct_field_expression (
+	self_param->get_tree (expr.get_locus ()), idx, expr.get_locus ());
+      tree indirection = indirect_expression (binding, expr.get_locus ());
+
+      // insert bindings
+      ctx->insert_closure_binding (ref, indirection);
+
+      // continue
+      idx++;
+    }
 
   // args tuple
   tree args_type
@@ -2910,7 +2946,10 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
     }
 
   if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
-    return error_mark_node;
+    {
+      ctx->pop_closure_context ();
+      return error_mark_node;
+    }
 
   // lookup locals
   HIR::Expr *function_body = expr.get_expr ().get ();
@@ -2977,6 +3016,7 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
   DECL_SAVED_TREE (fndecl) = bind_tree;
 
+  ctx->pop_closure_context ();
   ctx->pop_fn ();
   ctx->push_function (fndecl);
 
