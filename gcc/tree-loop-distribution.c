@@ -2158,8 +2158,6 @@ struct pg_edge_callback_data
   bitmap sccs_to_merge;
   /* Array constains component information for all vertices.  */
   int *vertices_component;
-  /* Array constains postorder information for all vertices.  */
-  int *vertices_post;
   /* Vector to record all data dependence relations which are needed
      to break strong connected components by runtime alias checks.  */
   vec<ddr_p> *alias_ddrs;
@@ -2408,6 +2406,33 @@ pg_collect_alias_ddrs (struct graph *g, struct graph_edge *e, void *data)
     cbdata->alias_ddrs->safe_splice (edata->alias_ddrs);
 }
 
+/* Callback function for traversing edge E.  DATA is private
+   callback data.  */
+
+static void
+pg_unmark_merged_alias_ddrs (struct graph *, struct graph_edge *e, void *data)
+{
+  int i, j, component;
+  struct pg_edge_callback_data *cbdata;
+  struct pg_edata *edata = (struct pg_edata *) e->data;
+
+  if (edata == NULL || edata->alias_ddrs.length () == 0)
+    return;
+
+  cbdata = (struct pg_edge_callback_data *) data;
+  i = e->src;
+  j = e->dest;
+  component = cbdata->vertices_component[i];
+  /* Make sure to not skip vertices inside SCCs we are going to merge.  */
+  if (component == cbdata->vertices_component[j]
+      && bitmap_bit_p (cbdata->sccs_to_merge, component))
+    {
+      edata->alias_ddrs.release ();
+      delete edata;
+      e->data = NULL;
+    }
+}
+
 /* This is the main function breaking strong conected components in
    PARTITIONS giving reduced depdendence graph RDG.  Store data dependence
    relations for runtime alias check in ALIAS_DDRS.  */
@@ -2467,7 +2492,6 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
       cbdata.sccs_to_merge = sccs_to_merge;
       cbdata.alias_ddrs = alias_ddrs;
       cbdata.vertices_component = XNEWVEC (int, pg->n_vertices);
-      cbdata.vertices_post = XNEWVEC (int, pg->n_vertices);
       /* Record the component information which will be corrupted by next
 	 graph scc finding call.  */
       for (i = 0; i < pg->n_vertices; ++i)
@@ -2476,17 +2500,18 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
       /* Collect data dependences for runtime alias checks to break SCCs.  */
       if (bitmap_count_bits (sccs_to_merge) != (unsigned) num_sccs)
 	{
-	  /* Record the postorder information which will be corrupted by next
-	     graph SCC finding call.  */
-	  for (i = 0; i < pg->n_vertices; ++i)
-	    cbdata.vertices_post[i] = pg->vertices[i].post;
+	  /* For SCCs we want to merge clear all alias_ddrs for edges
+	     inside the component.  */
+	  for_each_edge (pg, pg_unmark_merged_alias_ddrs, &cbdata);
 
 	  /* Run SCC finding algorithm again, with alias dependence edges
 	     skipped.  This is to topologically sort partitions according to
 	     compilation time known dependence.  Note the topological order
 	     is stored in the form of pg's post order number.  */
 	  num_sccs_no_alias = graphds_scc (pg, NULL, pg_skip_alias_edge);
-	  gcc_assert (partitions->length () == (unsigned) num_sccs_no_alias);
+	  /* We cannot assert partitions->length () == num_sccs_no_alias
+	     since we are not ignoring alias edges in cycles we are
+	     going to merge.  That's required to compute correct postorder.  */
 	  /* With topological order, we can construct two subgraphs L and R.
 	     L contains edge <x, y> where x < y in terms of post order, while
 	     R contains edge <x, y> where x > y.  Edges for compilation time
@@ -2521,16 +2546,14 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 	      first->type = PTYPE_SEQUENTIAL;
 	    }
 	}
-      /* Restore the postorder information if it's corrupted in finding SCC
-	 with alias dependence edges skipped.  If reduction partition's SCC is
-	 broken by runtime alias checks, we force a negative post order to it
-	 making sure it will be scheduled in the last.  */
+      /* If reduction partition's SCC is broken by runtime alias checks,
+	 we force a negative post order to it making sure it will be scheduled
+	 in the last.  */
       if (num_sccs_no_alias > 0)
 	{
 	  j = -1;
 	  for (i = 0; i < pg->n_vertices; ++i)
 	    {
-	      pg->vertices[i].post = cbdata.vertices_post[i];
 	      struct pg_vdata *data = (struct pg_vdata *)pg->vertices[i].data;
 	      if (data->partition && partition_reduction_p (data->partition))
 		{
@@ -2543,7 +2566,6 @@ loop_distribution::break_alias_scc_partitions (struct graph *rdg,
 	}
 
       free (cbdata.vertices_component);
-      free (cbdata.vertices_post);
     }
 
   sort_partitions_by_post_order (pg, partitions);
