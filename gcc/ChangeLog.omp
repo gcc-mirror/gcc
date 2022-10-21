@@ -1,3 +1,9 @@
+2022-10-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-oacc-kernels-decompose.cc (top_level_omp_for_in_stmt,
+	decompose_kernels_region_body): Handle GIMPLE_DEBUG like
+	simple assignment.
+
 2022-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-expand.cc (expand_omp_target): Fix OpenACC in case there
