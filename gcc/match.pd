@@ -8118,7 +8118,16 @@ and,
        vec_perm_indices sel2 (builder2, 2, nelts);
 
        tree op0 = NULL_TREE;
-       if (can_vec_perm_const_p (result_mode, op_mode, sel2, false))
+       /* If the new VEC_PERM_EXPR can't be handled but both
+	  original VEC_PERM_EXPRs can, punt.
+	  If one or both of the original VEC_PERM_EXPRs can't be
+	  handled and the new one can't be either, don't increase
+	  number of VEC_PERM_EXPRs that can't be handled.  */
+       if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
+	   || (single_use (@0)
+	       ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, false)
+		  || !can_vec_perm_const_p (result_mode, op_mode, sel1, false))
+	       : !can_vec_perm_const_p (result_mode, op_mode, sel1, false)))
 	 op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
      }
      (if (op0)
