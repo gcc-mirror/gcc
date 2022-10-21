@@ -19,40 +19,17 @@
 #include "rust-name-resolver.h"
 #include "rust-ast-full.h"
 
-#define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
-  do                                                                           \
-    {                                                                          \
-      AST::PathIdentSegment seg (_X, Linemap::predeclared_location ());        \
-      auto typePath = ::std::unique_ptr<AST::TypePathSegment> (                \
-	new AST::TypePathSegment (::std::move (seg), false,                    \
-				  Linemap::predeclared_location ()));          \
-      ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;           \
-      segs.push_back (::std::move (typePath));                                 \
-      auto builtin_type                                                        \
-	= new AST::TypePath (::std::move (segs),                               \
-			     Linemap::predeclared_location (), false);         \
-      _R.push_back (builtin_type);                                             \
-      tyctx->insert_builtin (_TY->get_ref (), builtin_type->get_node_id (),    \
-			     _TY);                                             \
-      mappings->insert_node_to_hir (builtin_type->get_node_id (),              \
-				    _TY->get_ref ());                          \
-      mappings->insert_canonical_path (                                        \
-	builtin_type->get_node_id (),                                          \
-	CanonicalPath::new_seg (builtin_type->get_node_id (), _X));            \
-    }                                                                          \
-  while (0)
-
 namespace Rust {
 namespace Resolver {
 
 Rib::Rib (CrateNum crateNum, NodeId node_id)
-  : crate_num (crateNum), node_id (node_id),
-    mappings (Analysis::Mappings::get ())
+  : crate_num (crateNum), node_id (node_id)
 {}
 
 void
 Rib::insert_name (
   const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+
   std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
 {
   auto it = path_mappings.find (path);
@@ -69,8 +46,8 @@ Rib::insert_name (
     }
 
   path_mappings[path] = id;
-  reverse_path_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
-  decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
+  reverse_path_mappings.insert ({id, path});
+  decls_within_rib.insert ({id, locus});
   references[id] = {};
 }
 
@@ -387,24 +364,24 @@ Resolver::generate_builtins ()
   auto str = new TyTy::StrType (mappings->get_next_hir_id ());
   auto never = new TyTy::NeverType (mappings->get_next_hir_id ());
 
-  MKBUILTIN_TYPE ("u8", builtins, u8);
-  MKBUILTIN_TYPE ("u16", builtins, u16);
-  MKBUILTIN_TYPE ("u32", builtins, u32);
-  MKBUILTIN_TYPE ("u64", builtins, u64);
-  MKBUILTIN_TYPE ("u128", builtins, u128);
-  MKBUILTIN_TYPE ("i8", builtins, i8);
-  MKBUILTIN_TYPE ("i16", builtins, i16);
-  MKBUILTIN_TYPE ("i32", builtins, i32);
-  MKBUILTIN_TYPE ("i64", builtins, i64);
-  MKBUILTIN_TYPE ("i128", builtins, i128);
-  MKBUILTIN_TYPE ("bool", builtins, rbool);
-  MKBUILTIN_TYPE ("f32", builtins, f32);
-  MKBUILTIN_TYPE ("f64", builtins, f64);
-  MKBUILTIN_TYPE ("usize", builtins, usize);
-  MKBUILTIN_TYPE ("isize", builtins, isize);
-  MKBUILTIN_TYPE ("char", builtins, char_tyty);
-  MKBUILTIN_TYPE ("str", builtins, str);
-  MKBUILTIN_TYPE ("!", builtins, never);
+  setup_builtin ("u8", u8);
+  setup_builtin ("u16", u16);
+  setup_builtin ("u32", u32);
+  setup_builtin ("u64", u64);
+  setup_builtin ("u128", u128);
+  setup_builtin ("i8", i8);
+  setup_builtin ("i16", i16);
+  setup_builtin ("i32", i32);
+  setup_builtin ("i64", i64);
+  setup_builtin ("i128", i128);
+  setup_builtin ("bool", rbool);
+  setup_builtin ("f32", f32);
+  setup_builtin ("f64", f64);
+  setup_builtin ("usize", usize);
+  setup_builtin ("isize", isize);
+  setup_builtin ("char", char_tyty);
+  setup_builtin ("str", str);
+  setup_builtin ("!", never);
 
   // unit type ()
   TyTy::TupleType *unit_tyty
@@ -416,6 +393,26 @@ Resolver::generate_builtins ()
   tyctx->insert_builtin (unit_tyty->get_ref (), unit_type->get_node_id (),
 			 unit_tyty);
   set_unit_type_node_id (unit_type->get_node_id ());
+}
+
+void
+Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
+{
+  AST::PathIdentSegment seg (name, Linemap::predeclared_location ());
+  auto typePath = ::std::unique_ptr<AST::TypePathSegment> (
+    new AST::TypePathSegment (::std::move (seg), false,
+			      Linemap::predeclared_location ()));
+  ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;
+  segs.push_back (::std::move (typePath));
+  auto builtin_type
+    = new AST::TypePath (::std::move (segs), Linemap::predeclared_location (),
+			 false);
+  builtins.push_back (builtin_type);
+  tyctx->insert_builtin (tyty->get_ref (), builtin_type->get_node_id (), tyty);
+  mappings->insert_node_to_hir (builtin_type->get_node_id (), tyty->get_ref ());
+  mappings->insert_canonical_path (
+    builtin_type->get_node_id (),
+    CanonicalPath::new_seg (builtin_type->get_node_id (), name));
 }
 
 void
