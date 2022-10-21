@@ -28,6 +28,7 @@
 #define bit_AVXVNNI	(1 << 4)
 #define bit_AVX512BF16	(1 << 5)
 #define bit_HRESET	(1 << 22)
+#define bit_AVXIFMA	(1 << 23)
 
 /* %ecx */
 #define bit_SSE3	(1 << 0)
@@ -48,6 +49,7 @@
 #define bit_RDRND	(1 << 30)
 
 /* %edx */
+#define bit_AVXVNNIINT8 (1 << 4)
 #define bit_CMPXCHG8B	(1 << 8)
 #define bit_CMOV	(1 << 15)
 #define bit_MMX		(1 << 23)

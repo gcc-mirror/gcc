@@ -8104,11 +8104,13 @@ maybe_warn_about_useless_cast (location_t loc, tree type, tree expr,
   if (warn_useless_cast
       && complain & tf_warning)
     {
-      if ((TYPE_REF_P (type)
-	   && (TYPE_REF_IS_RVALUE (type)
-	       ? xvalue_p (expr) : lvalue_p (expr))
-	   && same_type_p (TREE_TYPE (expr), TREE_TYPE (type)))
-	  || same_type_p (TREE_TYPE (expr), type))
+      if (TYPE_REF_P (type)
+	  ? ((TYPE_REF_IS_RVALUE (type)
+	      ? xvalue_p (expr) : lvalue_p (expr))
+	     && same_type_p (TREE_TYPE (expr), TREE_TYPE (type)))
+	  /* Don't warn when converting a class object to a non-reference type,
+	     because that's a common way to create a temporary.  */
+	  : (!glvalue_p (expr) && same_type_p (TREE_TYPE (expr), type)))
 	warning_at (loc, OPT_Wuseless_cast,
 		    "useless cast to type %q#T", type);
     }

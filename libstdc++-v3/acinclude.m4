@@ -2982,7 +2982,10 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
 	    enable_hosted_libstdcxx=no
 	    ;;
 	*)
-	    enable_hosted_libstdcxx=yes
+	    case "${with_newlib}-${with_headers}" in
+	    no-no) enable_hosted_libstdcxx=no ;;
+	    *) enable_hosted_libstdcxx=yes ;;
+	    esac
 	    ;;
      esac])
 

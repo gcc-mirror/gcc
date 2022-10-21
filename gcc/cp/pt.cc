@@ -10398,14 +10398,15 @@ tree
 lookup_and_finish_template_variable (tree templ, tree targs,
 				     tsubst_flags_t complain)
 {
-  templ = lookup_template_variable (templ, targs);
-  if (!any_dependent_template_arguments_p (targs))
+  tree var = lookup_template_variable (templ, targs);
+  if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) == 1
+      && !any_dependent_template_arguments_p (targs))
     {
-      templ = finish_template_variable (templ, complain);
-      mark_used (templ);
+      var = finish_template_variable (var, complain);
+      mark_used (var);
     }
 
-  return convert_from_reference (templ);
+  return convert_from_reference (var);
 }
 
 /* If the set of template parameters PARMS contains a template parameter
@@ -17229,7 +17230,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     TEMPLATE_DECL with `D<T>' as its DECL_CONTEXT.  Now we
 	     have to substitute this with one having context `D<int>'.  */
 
-	  tree context = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
+	  tree context = tsubst_aggr_type (DECL_CONTEXT (t), args, complain,
+					   in_decl, /*entering_scope=*/true);
 	  return lookup_field (context, DECL_NAME(t), 0, false);
 	}
       else

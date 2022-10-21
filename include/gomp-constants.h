@@ -230,7 +230,7 @@ enum gomp_map_kind
 #define GOMP_DEVICE_NOT_HOST		4
 #define GOMP_DEVICE_NVIDIA_PTX		5
 #define GOMP_DEVICE_INTEL_MIC		6
-#define GOMP_DEVICE_HSA			7
+/* #define GOMP_DEVICE_HSA		7 removed.  */
 #define GOMP_DEVICE_GCN			8
 
 /* We have a compatibility issue.  OpenMP 5.2 introduced

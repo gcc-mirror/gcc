@@ -1103,8 +1103,16 @@ frange::set_varying (tree type)
   m_type = type;
   m_min = frange_val_min (type);
   m_max = frange_val_max (type);
-  m_pos_nan = true;
-  m_neg_nan = true;
+  if (HONOR_NANS (m_type))
+    {
+      m_pos_nan = true;
+      m_neg_nan = true;
+    }
+  else
+    {
+      m_pos_nan = false;
+      m_neg_nan = false;
+    }
 }
 
 inline void

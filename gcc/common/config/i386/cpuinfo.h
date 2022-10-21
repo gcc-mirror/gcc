@@ -253,12 +253,26 @@ get_amd_cpu (struct __processor_model *cpu_model,
       break;
     case 0x19:
       cpu_model->__cpu_type = AMDFAM19H;
-      /* AMD family 19h version 1.  */
+      /* AMD family 19h.  */
       if (model <= 0x0f)
 	{
 	  cpu = "znver3";
 	  CHECK___builtin_cpu_is ("znver3");
 	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER3;
+	}
+      else if ((model >= 0x10 && model <= 0x1f)
+		|| (model >= 0x60 && model <= 0xaf))
+	{
+	  cpu = "znver4";
+	  CHECK___builtin_cpu_is ("znver4");
+	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER4;
+	}
+      else if (has_cpu_feature (cpu_model, cpu_features2,
+				FEATURE_AVX512F))
+	{
+	  cpu = "znver4";
+	  CHECK___builtin_cpu_is ("znver4");
+	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER4;
 	}
       else if (has_cpu_feature (cpu_model, cpu_features2,
 				FEATURE_VAES))
@@ -793,6 +807,10 @@ get_available_features (struct __processor_model *cpu_model,
 	{
 	  if (eax & bit_AVXVNNI)
 	    set_feature (FEATURE_AVXVNNI);
+	  if (eax & bit_AVXIFMA)
+	    set_feature (FEATURE_AVXIFMA);
+	  if (edx & bit_AVXVNNIINT8)
+	    set_feature (FEATURE_AVXVNNIINT8);
 	}
       if (avx512_usable)
 	{

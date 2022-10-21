@@ -3333,6 +3333,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
 ac_config_headers="$ac_config_headers auto-host.h:config.in"
 
 
@@ -12900,7 +12901,7 @@ case ${enable_threads} in
     target_thread_file='single'
     ;;
   aix | dce | lynx | mipssde | posix | rtems | \
-  single | tpf | vxworks | win32)
+  single | tpf | vxworks | win32 | mcf)
     target_thread_file=${enable_threads}
     ;;
   *)
@@ -19713,7 +19714,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19716 "configure"
+#line 19717 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19819,7 +19820,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19822 "configure"
+#line 19823 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

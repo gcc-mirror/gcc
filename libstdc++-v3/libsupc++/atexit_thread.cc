@@ -25,6 +25,24 @@
 #include <cstdlib>
 #include <new>
 #include "bits/gthr.h"
+
+#ifdef __USING_MCFGTHREAD__
+
+#include <mcfgthread/cxa.h>
+
+namespace __cxxabiv1 {
+
+extern "C" int
+__cxa_thread_atexit (void (_GLIBCXX_CDTOR_CALLABI *dtor)(void *),
+		     void *obj, void *dso_handle) _GLIBCXX_NOTHROW
+{
+  return __MCF_cxa_thread_atexit (dtor, obj, dso_handle);
+}
+
+}  // namespace __cxxabiv1
+
+#else // __USING_MCFGTHREAD__
+
 #ifdef _GLIBCXX_THREAD_ATEXIT_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -173,3 +191,5 @@ __cxxabiv1::__cxa_thread_atexit (void (_GLIBCXX_CDTOR_CALLABI *dtor)(void *),
 }
 
 #endif /* _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL */
+
+#endif // __USING_MCFGTHREAD__

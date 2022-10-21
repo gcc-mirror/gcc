@@ -179,7 +179,11 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
   unsigned int len;
-  const unsigned char *text;
+
+  /* TEXT is always null terminated (terminator not included in len); but this
+     GTY markup arranges that PCH streaming works properly even if there is a
+     null byte in the middle of the string.  */
+  const unsigned char * GTY((string_length ("1 + %h.len"))) text;
 };
 
 /* Flags for the cpp_token structure.  */

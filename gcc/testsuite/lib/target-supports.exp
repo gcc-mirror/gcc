@@ -9522,6 +9522,30 @@ proc check_effective_target_avxvnni { } {
     } "-mavxvnni" ]
 }
 
+# Return 1 if avxifma instructions can be compiled.
+proc check_effective_target_avxifma { } {
+    return [check_no_compiler_messages avxifma object {
+	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	_mm256_maddlo_epu64  (__v4di __A, __v4di __B, __v4di __C)
+        {
+	   return __builtin_ia32_vpmadd52luq256 (__A, __B, __C);
+	}
+    } "-O0 -mavxifma" ]
+}
+
+# Return 1 if avxvnniint8 instructions can be compiled.
+proc check_effective_target_avxvnniint8 { } {
+    return [check_no_compiler_messages avxvnniint8 object {
+	typedef int __v8si __attribute__ ((__vector_size__ (32)));
+	__v8si
+	_mm256_dpbssd_epi32  (__v8si __A, __v8si __B, __v8si __C)
+        {
+	   return __builtin_ia32_vpdpbssd256 (__A, __B, __C);
+	}
+    } "-O0 -mavxvnniint8" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {
@@ -10840,6 +10864,80 @@ proc check_effective_target_fenv_exceptions_dfp {} {
 	# error Missing FE_UNDERFLOW
 	#endif
 	volatile _Decimal64 a = 0.0DD, r;
+	int
+	main (void)
+	{
+	  r = a / a;
+	  if (fetestexcept (FE_INVALID))
+	    exit (0);
+	  else
+	    abort ();
+	}
+    } [add_options_for_ieee "-std=gnu99"]]
+}
+
+# Return 1 if <fenv.h> is available with all the standard IEEE
+# exceptions and floating-point exceptions are raised by arithmetic
+# operations.  (If the target requires special options for "inexact"
+# exceptions, those need to be specified in the testcases.)
+
+proc check_effective_target_fenv_exceptions_double {} {
+    return [check_runtime fenv_exceptions_double {
+	#include <fenv.h>
+	#include <stdlib.h>
+	#ifndef FE_DIVBYZERO
+	# error Missing FE_DIVBYZERO
+	#endif
+	#ifndef FE_INEXACT
+	# error Missing FE_INEXACT
+	#endif
+	#ifndef FE_INVALID
+	# error Missing FE_INVALID
+	#endif
+	#ifndef FE_OVERFLOW
+	# error Missing FE_OVERFLOW
+	#endif
+	#ifndef FE_UNDERFLOW
+	# error Missing FE_UNDERFLOW
+	#endif
+	volatile double a = 0.0f, r;
+	int
+	main (void)
+	{
+	  r = a / a;
+	  if (fetestexcept (FE_INVALID))
+	    exit (0);
+	  else
+	    abort ();
+	}
+    } [add_options_for_ieee "-std=gnu99"]]
+}
+
+# Return 1 if <fenv.h> is available with all the standard IEEE
+# exceptions and floating-point exceptions are raised by arithmetic
+# operations.  (If the target requires special options for "inexact"
+# exceptions, those need to be specified in the testcases.)
+
+proc check_effective_target_fenv_exceptions_long_double {} {
+    return [check_runtime fenv_exceptions_long_double {
+	#include <fenv.h>
+	#include <stdlib.h>
+	#ifndef FE_DIVBYZERO
+	# error Missing FE_DIVBYZERO
+	#endif
+	#ifndef FE_INEXACT
+	# error Missing FE_INEXACT
+	#endif
+	#ifndef FE_INVALID
+	# error Missing FE_INVALID
+	#endif
+	#ifndef FE_OVERFLOW
+	# error Missing FE_OVERFLOW
+	#endif
+	#ifndef FE_UNDERFLOW
+	# error Missing FE_UNDERFLOW
+	#endif
+	volatile long double a = 0.0f, r;
 	int
 	main (void)
 	{

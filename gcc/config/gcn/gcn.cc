@@ -2809,10 +2809,14 @@ gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   return (NUM_PARM_REGS - cum_num) * regsize;
 }
 
-/* A normal function which takes a pointer argument (to a scalar) may be
-   passed a pointer to LDS space (via a high-bits-set aperture), and that only
-   works with FLAT addressing, not GLOBAL.  Force FLAT addressing if the
-   function has an incoming pointer-to-scalar parameter.  */
+/* A normal function which takes a pointer argument may be passed a pointer to
+   LDS space (via a high-bits-set aperture), and that only works with FLAT
+   addressing, not GLOBAL.  Force FLAT addressing if the function has an
+   incoming pointer parameter.  NOTE: This is a heuristic that works in the
+   offloading case, but in general, a function might read global pointer
+   variables, etc. that may refer to LDS space or other special memory areas
+   not supported by GLOBAL instructions, and then this argument check would not
+   suffice.  */
 
 static void
 gcn_detect_incoming_pointer_arg (tree fndecl)
@@ -2822,8 +2826,7 @@ gcn_detect_incoming_pointer_arg (tree fndecl)
   for (tree arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
        arg;
        arg = TREE_CHAIN (arg))
-    if (POINTER_TYPE_P (TREE_VALUE (arg))
-	&& !AGGREGATE_TYPE_P (TREE_TYPE (TREE_VALUE (arg))))
+    if (POINTER_TYPE_P (TREE_VALUE (arg)))
       cfun->machine->use_flat_addressing = true;
 }
 

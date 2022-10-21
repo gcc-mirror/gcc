@@ -1,3 +1,7 @@
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gomp-constants.h (GOMP_DEVICE_HSA): Comment out unused define.
+
 2022-10-13  Xi Ruoyao  <xry111@xry111.site>
 
 	* longlong.h [__loongarch__] (count_leading_zeros): Define.

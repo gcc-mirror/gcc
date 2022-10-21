@@ -1,3 +1,175 @@
+2022-10-20  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105633
+	* gfortran.dg/pr105633.f90: New test.
+
+2022-10-20  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_fenv_exceptions_double): New.
+	(check_effective_target_fenv_exceptions_long_double): New.
+	* gcc.dg/c2x-float-7.c: Split into 3 tests...
+	* gcc.dg/c2x-float-7a.c: Float part of c2x-float-7.c.
+	* gcc.dg/c2x-float-7b.c: Double part of c2x-float-7.c.
+	* gcc.dg/c2x-float-7c.c: Long double part of c2x-float-7.c.
+	* gcc.dg/pr95115.c: Switch to fenv_exceptions_double.
+	* gcc.dg/torture/float32x-nan-floath.c: Likewise.
+	* gcc.dg/torture/float32x-nan.c: Likewise.
+	* gcc.dg/torture/float64-nan-floath.c: Likewise.
+	* gcc.dg/torture/float64-nan.c: Likewise.
+	* gcc.dg/torture/inf-compare-1.c: Likewise.
+	* gcc.dg/torture/inf-compare-2.c: Likewise.
+	* gcc.dg/torture/inf-compare-3.c: Likewise.
+	* gcc.dg/torture/inf-compare-4.c: Likewise.
+	* gcc.dg/torture/inf-compare-5.c: Likewise.
+	* gcc.dg/torture/inf-compare-6.c: Likewise.
+	* gcc.dg/torture/inf-compare-7.c: Likewise.
+	* gcc.dg/torture/inf-compare-8.c: Likewise.
+	* gcc.dg/torture/pr52451.c: Likewise.
+	* gcc.dg/torture/pr82692.c: Likewise.
+	* gcc.dg/torture/inf-compare-1-float.c: New test.
+	* gcc.dg/torture/inf-compare-2-float.c: New test.
+	* gcc.dg/torture/inf-compare-3-float.c: New test.
+	* gcc.dg/torture/inf-compare-4-float.c: New test.
+	* gcc.dg/torture/inf-compare-5-float.c: New test.
+	* gcc.dg/torture/inf-compare-6-float.c: New test.
+	* gcc.dg/torture/inf-compare-7-float.c: New test.
+	* gcc.dg/torture/inf-compare-8-float.c: New test.
+
+2022-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-friend10.C: New test.
+
+2022-10-20  Artem Klimov  <jakmobius@gmail.com>
+	     Alexander Monakov   <amonakov@gcc.gnu.org>
+
+	PR middle-end/99619
+	* gcc.dg/tls/vis-attr-gd.c: New test.
+	* gcc.dg/tls/vis-attr-hidden-gd.c: New test.
+	* gcc.dg/tls/vis-attr-hidden.c: New test.
+	* gcc.dg/tls/vis-flag-hidden-gd.c: New test.
+	* gcc.dg/tls/vis-flag-hidden.c: New test.
+	* gcc.dg/tls/vis-pragma-hidden-gd.c: New test.
+	* gcc.dg/tls/vis-pragma-hidden.c: New test.
+
+2022-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102963
+	* g++.dg/modules/concept-7_a.C: New test.
+	* g++.dg/modules/concept-7_b.C: New test.
+
+2022-10-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/pr107326.c: New test.
+	* gcc.dg/vect/vect-bitfield-read-7.c: New test.
+
+2022-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/pr107271.c: Add -Wno-psabi to dg-options.
+	* gcc.dg/debug/btf/btf-function-3.c: Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/brka_1.c: Expect a separate
+	PTEST instruction.
+	* gcc.target/aarch64/sve/acle/general/brkb_1.c: Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/brkn_1.c: Expect separate
+	PTEST instructions.
+	* gcc.target/aarch64/sve/acle/general/brkn_2.c: New test.
+
+2022-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR c/107305
+	PR c/107306
+	* gcc.dg/gimplefe-error-15.c: New testcase.
+
+2022-10-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/cpp23/attr-assume-opt.C: New.
+
+2022-10-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/format.h (int_least8_t, int_least16_t)
+	(int_least32_t, int_least64_t, uint_least8_t, uint_least16_t)
+	(uint_least32_t, uint_least64_t, int_fast8_t, int_fast16_t)
+	(int_fast32_t, int_fast64_t, uint_fast8_t, uint_fast16_t)
+	(uint_fast32_t, uint_fast64_t): New typedefs.
+	* gcc.dg/format/c11-printf-1.c, gcc.dg/format/c11-scanf-1.c,
+	gcc.dg/format/c2x-printf-1.c, gcc.dg/format/c2x-scanf-1.c,
+	gcc.dg/format/ext-9.c: Add tests using wN and wfN length
+	modifiers.
+
+2022-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105765
+	* gcc.dg/analyzer/stdarg-1-ms_abi.c: New test, based on stdarg-1.c.
+	* gcc.dg/analyzer/stdarg-1-sysv_abi.c: Likewise.
+
+2022-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85043
+	* g++.dg/warn/Wuseless-cast.C: Remove dg-warning.
+	* g++.dg/warn/Wuseless-cast3.C: New test.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): When using defaulted
+	std_list, if test has { dg-do * { target c++23 } } directive,
+	use { 23 } with which the test will run instead of { 98 14 17 20 }
+	which would make it UNSUPPORTED in all cases.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107311
+	* gcc.dg/c2x-enum-1.c (enum e5): Expect e5a type inside of
+	enum to be int rather than long if long isn't wider than int.
+
+2022-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107312
+	* gcc.target/i386/pr107312.c: New test.
+
+2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* g++.dg/pch/pch-string-nulls.C: New test.
+	* g++.dg/pch/pch-string-nulls.Hs: New test.
+
+2022-10-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/107206
+	* g++.dg/tree-ssa/pr107206.C: New test.
+
+2022-10-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/pr106355.h: Common code for new tests.
+	* gcc.target/s390/pr106355-1.c: New test.
+	* gcc.target/s390/pr106355-2.c: New test.
+	* gcc.target/s390/pr106355-3.c: New test.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107262
+	* gcc.dg/pr107262.c: New test.
+
+2022-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106990
+	* c-c++-common/ubsan/pr106990.c: New test.
+
+2022-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106781
+	* gcc.dg/pr106781.c: New testcase.
+
+2022-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107271.c: New test.
+
 2022-10-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/107164

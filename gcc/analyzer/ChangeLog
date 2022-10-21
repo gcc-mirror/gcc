@@ -1,3 +1,16 @@
+2022-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105765
+	* varargs.cc (get_BT_VALIST_ARG): Rename to...
+	(get_va_copy_arg): ...this, and update logic for determining level
+	of indirection of va_copy's argument to use type of argument,
+	rather than looking at va_list_type_node, to correctly handle
+	__builtin_ms_va_copy.
+	(get_stateful_BT_VALIST_ARG): Rename to...
+	(get_stateful_va_copy_arg): ...this.
+	(va_list_state_machine::on_va_copy): Update for renaming.
+	(region_model::impl_call_va_copy): Likewise.
+
 2022-10-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107210

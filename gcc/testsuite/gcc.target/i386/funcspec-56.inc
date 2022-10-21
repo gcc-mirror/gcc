@@ -80,6 +80,8 @@ extern void test_keylocker (void)		__attribute__((__target__("kl")));
 extern void test_widekl (void)			__attribute__((__target__("widekl")));
 extern void test_avxvnni (void)			__attribute__((__target__("avxvnni")));
 extern void test_avx512fp16 (void)		__attribute__((__target__("avx512fp16")));
+extern void test_avxifma (void)			__attribute__((__target__("avxifma")));
+extern void test_avxvnniint8 (void)		__attribute__((__target__("avxvnniint8")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx5124fmaps(void)		__attribute__((__target__("no-avx5124fmaps")));
@@ -161,6 +163,8 @@ extern void test_no_keylocker (void)		__attribute__((__target__("no-kl")));
 extern void test_no_widekl (void)		__attribute__((__target__("no-widekl")));
 extern void test_no_avxvnni (void)		__attribute__((__target__("no-avxvnni")));
 extern void test_no_avx512fp16 (void)		__attribute__((__target__("no-avx512fp16")));
+extern void test_no_avxifma (void)		__attribute__((__target__("no-avxifma")));
+extern void test_no_avxvnniint8 (void)		__attribute__((__target__("no-avxvnniint8")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
@@ -200,6 +204,7 @@ extern void test_arch_bdver3 (void)		__attribute__((__target__("arch=bdver3")));
 extern void test_arch_znver1 (void)             __attribute__((__target__("arch=znver1")));
 extern void test_arch_znver2 (void)             __attribute__((__target__("arch=znver2")));
 extern void test_arch_znver3 (void)             __attribute__((__target__("arch=znver3")));
+extern void test_arch_znver4 (void)             __attribute__((__target__("arch=znver4")));
 
 extern void test_tune_nocona (void)		__attribute__((__target__("tune=nocona")));
 extern void test_tune_core2 (void)		__attribute__((__target__("tune=core2")));
@@ -223,6 +228,7 @@ extern void test_tune_generic (void)		__attribute__((__target__("tune=generic"))
 extern void test_tune_znver1 (void)             __attribute__((__target__("tune=znver1")));
 extern void test_tune_znver2 (void)             __attribute__((__target__("tune=znver2")));
 extern void test_tune_znver3 (void)             __attribute__((__target__("tune=znver3")));
+extern void test_tune_znver4 (void)             __attribute__((__target__("tune=znver4")));
 
 extern void test_fpmath_sse (void)		__attribute__((__target__("sse2,fpmath=sse")));
 extern void test_fpmath_387 (void)		__attribute__((__target__("sse2,fpmath=387")));

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "-O0 -Wno-psabi" } */
 
 typedef int __attribute__((__vector_size__ (16))) V;
 

@@ -1,3 +1,11 @@
+2022-10-19  LIU Hao  <lh_mouse@126.com>
+
+	* config.host: Add new cases for `mcf` thread model
+	* config/i386/gthr-mcf.h: New file
+	* config/i386/t-mingw-mcfgthread: New file
+	* config/i386/t-slibgcc-cygming: Add mcfgthread for libgcc DLL
+	* configure: Regenerate
+
 2022-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* Makefile.in: Quote variable.

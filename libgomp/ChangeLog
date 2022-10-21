@@ -1,3 +1,17 @@
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_offload_device_gcn):
+	New.
+	* testsuite/libgomp.c-c++-common/on_device_arch.h (device_arch_gcn,
+	on_device_arch_gcn): New.
+	* testsuite/libgomp.c-c++-common/requires-4a.c: New test; copied from
+	requires-4.c but using heap-allocated memory.
+
+2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/105421
+	* testsuite/libgomp.oacc-c-c++-common/private-big-1.c: New.
+
 2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/reverse-offload-sm30.c: Fix nvptx-specific

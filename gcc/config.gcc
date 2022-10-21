@@ -421,7 +421,8 @@ i[34567]86-*-* | x86_64-*-*)
 		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
 		       amxbf16intrin.h x86gprintrin.h uintrintrin.h
 		       hresetintrin.h keylockerintrin.h avxvnniintrin.h
-		       mwaitintrin.h avx512fp16intrin.h avx512fp16vlintrin.h"
+		       mwaitintrin.h avx512fp16intrin.h avx512fp16vlintrin.h
+		       avxifmaintrin.h avxvnniint8intrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -516,9 +517,11 @@ pru-*-*)
 riscv*)
 	cpu_type=riscv
 	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o"
-	extra_objs="${extra_objs} riscv-vector-builtins.o"
+	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
 	d_target_objs="riscv-d.o"
 	extra_headers="riscv_vector.h"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.cc"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.h"
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
@@ -657,7 +660,7 @@ c7 esther"
 # 64-bit x86 processors supported by --with-arch=.  Each processor
 # MUST be separated by exactly one space.
 x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
-bdver3 bdver4 znver1 znver2 znver3 btver1 btver2 k8 k8-sse3 opteron \
+bdver3 bdver4 znver1 znver2 znver3 znver4 btver1 btver2 k8 k8-sse3 opteron \
 opteron-sse3 nocona core2 corei7 corei7-avx core-avx-i core-avx2 atom \
 slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
@@ -2095,6 +2098,9 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	esac
 	if test x$enable_threads = xposix ; then
 		tm_file="${tm_file} i386/mingw-pthread.h"
+	fi
+	if test x$enable_threads = xmcf ; then
+		tm_file="${tm_file} i386/mingw-mcfgthread.h"
 	fi
 	tm_file="${tm_file} i386/mingw32.h"
 	# This makes the logic if mingw's or the w64 feature set has to be used
@@ -3637,6 +3643,10 @@ case ${target} in
 	arch=znver3
 	cpu=znver3
 	;;
+      znver4-*)
+	arch=znver4
+	cpu=znver4
+	;;
       bdver4-*)
         arch=bdver4
         cpu=bdver4
@@ -3765,6 +3775,10 @@ case ${target} in
       znver3-*)
 	arch=znver3
 	cpu=znver3
+	;;
+	  znver4-*)
+	arch=znver4
+	cpu=znver4
 	;;
       bdver4-*)
         arch=bdver4

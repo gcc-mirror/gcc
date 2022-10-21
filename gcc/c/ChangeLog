@@ -1,3 +1,10 @@
+2022-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR c/107305
+	PR c/107306
+	* gimple-parser.cc (c_parser_parse_gimple_body): Verify
+	the parsed IL and zap the body on error.
+
 2022-10-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/107164

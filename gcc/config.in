@@ -1451,6 +1451,12 @@
 #endif
 
 
+/* Define to 1 if you have the `getauxval' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GETAUXVAL
+#endif
+
+
 /* Define to 1 if you have the `getchar_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GETCHAR_UNLOCKED
@@ -2678,7 +2684,3 @@
 #undef vfork
 #endif
 
-/* Define to 1 if you have the `getauxval' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_GETAUXVAL
-#endif
