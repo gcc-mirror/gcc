@@ -601,7 +601,6 @@ GNATBIND_OBJS = \
  ada/osint-b.o    \
  ada/osint.o      \
  ada/output.o     \
- ada/restrict.o   \
  ada/rident.o     \
  ada/scans.o      \
  ada/scil_ll.o    \
@@ -629,6 +628,7 @@ GNATBIND_OBJS = \
  ada/uintp.o      \
  ada/uname.o      \
  ada/urealp.o     \
+ ada/warnsw.o     \
  ada/widechar.o   \
  ada/gnat.o       \
  ada/g-dynhta.o   \

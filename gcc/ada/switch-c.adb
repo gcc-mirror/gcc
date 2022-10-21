@@ -28,7 +28,6 @@
 --  circularities, especially for back ends using Adabkend.
 
 with Debug;    use Debug;
-with Errout;   use Errout;
 with Lib;      use Lib;
 with Osint;    use Osint;
 with Opt;      use Opt;

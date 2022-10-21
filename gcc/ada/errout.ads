@@ -59,15 +59,6 @@ package Errout is
    Error_Msg_Exception : exception renames Err_Vars.Error_Msg_Exception;
    --  Exception raised if Raise_Exception_On_Error is true
 
-   Warning_Doc_Switch : Boolean renames Err_Vars.Warning_Doc_Switch;
-   --  If this is set True, then the ??/?*?/?$?/?x?/?.x?/?_x? insertion
-   --  sequences in error messages generate appropriate tags for the output
-   --  error messages. If this switch is False, then these sequences are still
-   --  recognized (for the purposes of implementing the pattern matching in
-   --  pragmas Warnings (Off,..) and Warning_As_Error(...) but do not result
-   --  in adding the error message tag. The -gnatw.d switch sets this flag
-   --  True, -gnatw.D sets this flag False.
-
    Current_Node : Node_Id := Empty;
    --  Used by Error_Msg as a default Node_Id.
    --  Relevant only when Opt.Include_Subprogram_In_Messages is set.
