@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "fold-const.h"
+#include "intl.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -1887,7 +1888,8 @@ find_failing_clause_r (const constexpr_ctx *ctx, tree expr)
 	e = find_failing_clause_r (ctx, TREE_OPERAND (expr, 1));
       return e;
     }
-  tree e = fold_operand (expr, ctx);
+  tree e = contextual_conv_bool (expr, tf_none);
+  e = fold_operand (e, ctx);
   if (integer_zerop (e))
     /* This is the failing clause.  */
     return expr;
@@ -1935,6 +1937,61 @@ diagnose_failing_condition (tree bad, location_t cloc, bool show_expr_p,
     inform (cloc, "%qE evaluates to false", bad);
 }
 
+/* Process an assert/assume of ORIG_ARG.  If it's not supposed to be evaluated,
+   do it without changing the current evaluation state.  If it evaluates to
+   false, complain and return false; otherwise, return true.  */
+
+static bool
+cxx_eval_assert (const constexpr_ctx *ctx, tree arg, const char *msg,
+		 location_t loc, bool evaluated,
+		 bool *non_constant_p, bool *overflow_p)
+{
+  if (*non_constant_p)
+    return true;
+
+  tree eval;
+  if (!evaluated)
+    {
+      if (!potential_rvalue_constant_expression (arg))
+	return true;
+
+      constexpr_ctx new_ctx = *ctx;
+      new_ctx.quiet = true;
+      bool new_non_constant_p = false, new_overflow_p = false;
+      /* Avoid modification of existing values.  */
+      modifiable_tracker ms (new_ctx.global);
+      eval = cxx_eval_constant_expression (&new_ctx, arg, vc_prvalue,
+					   &new_non_constant_p,
+					   &new_overflow_p);
+    }
+  else
+    eval = cxx_eval_constant_expression (ctx, arg, vc_prvalue,
+					 non_constant_p,
+					 overflow_p);
+  if (!*non_constant_p && integer_zerop (eval))
+    {
+      if (!ctx->quiet)
+	{
+	  /* See if we can find which clause was failing
+	     (for logical AND).  */
+	  tree bad = find_failing_clause (ctx, arg);
+	  /* If not, or its location is unusable, fall back to the
+	     previous location.  */
+	  location_t cloc = cp_expr_loc_or_loc (bad, loc);
+
+	  /* Report the error. */
+	  auto_diagnostic_group d;
+	  error_at (cloc, msg);
+	  diagnose_failing_condition (bad, cloc, true, ctx);
+	  return bad;
+	}
+      *non_constant_p = true;
+      return false;
+    }
+
+  return true;
+}
+
 /* Evaluate a call T to a GCC internal function when possible and return
    the evaluated result or, under the control of CTX, give an error, set
    NON_CONSTANT_P, and return the unevaluated call T otherwise.  */
@@ -1955,41 +2012,11 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
       return void_node;
 
     case IFN_ASSUME:
-      if (potential_rvalue_constant_expression (CALL_EXPR_ARG (t, 0)))
-	{
-	  constexpr_ctx new_ctx = *ctx;
-	  new_ctx.quiet = true;
-	  tree arg = CALL_EXPR_ARG (t, 0);
-	  bool new_non_constant_p = false, new_overflow_p = false;
-	  /* Avoid modification of existing values.  */
-	  modifiable_tracker ms (new_ctx.global);
-	  arg = cxx_eval_constant_expression (&new_ctx, arg, vc_prvalue,
-					      &new_non_constant_p,
-					      &new_overflow_p);
-	  if (!new_non_constant_p && !new_overflow_p && integer_zerop (arg))
-	    {
-	      if (!*non_constant_p && !ctx->quiet)
-		{
-		  /* See if we can find which clause was failing
-		     (for logical AND).  */
-		  tree bad = find_failing_clause (&new_ctx,
-						  CALL_EXPR_ARG (t, 0));
-		  /* If not, or its location is unusable, fall back to the
-		     previous location.  */
-		  location_t cloc = cp_expr_loc_or_loc (bad, EXPR_LOCATION (t));
-
-		  auto_diagnostic_group d;
-
-		  /* Report the error. */
-		  error_at (cloc,
-			    "failed %<assume%> attribute assumption");
-		  diagnose_failing_condition (bad, cloc, false, &new_ctx);
-		}
-
-	      *non_constant_p = true;
-	      return t;
-	    }
-	}
+      if (!cxx_eval_assert (ctx, CALL_EXPR_ARG (t, 0),
+			    G_("failed %<assume%> attribute assumption"),
+			    EXPR_LOCATION (t), /*eval*/false,
+			    non_constant_p, overflow_p))
+	return t;
       return void_node;
 
     case IFN_ADD_OVERFLOW:
@@ -7852,36 +7879,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (semantic == CCS_IGNORE)
 	  break;
 
-	tree c = CONTRACT_CONDITION (t);
-	if (semantic == CCS_ASSUME)
-	  {
-#if 0
-	    /* For an assume contract, try evaluating it without instantiating
-	       anything.  If non-constant, assume it's satisfied.  */
-	    /* This breaks contracts-assume6.C.  */
-
-	    if (!cp_tree_defined_p (c))
-	      break;
-#endif
-
-	    bool dummy_nc = false, dummy_ov = false;
-	    constexpr_ctx new_ctx = *ctx;
-	    new_ctx.quiet = true;
-	    r = cxx_eval_constant_expression (&new_ctx, c, vc_prvalue,
-					      &dummy_nc, &dummy_ov);
-	    if (dummy_nc)
-	      break;
-	  }
-	else
-	  /* Evaluate the generated check.  */
-	  r = cxx_eval_constant_expression (ctx, c, vc_prvalue, non_constant_p,
-					    overflow_p);
-	if (r == boolean_false_node)
-	  {
-	    if (!ctx->quiet)
-	      error_at (EXPR_LOCATION (c), "contract predicate %qE is %qE", c, r);
-	    *non_constant_p = true;
-	  }
+	if (!cxx_eval_assert (ctx, CONTRACT_CONDITION (t),
+			      G_("contract predicate is false in "
+				 "constant expression"),
+			      EXPR_LOCATION (t), checked_contract_p (semantic),
+			      non_constant_p, overflow_p))
+	  *non_constant_p = true;
+	r = void_node;
       }
       break;
 

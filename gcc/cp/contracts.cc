@@ -58,8 +58,6 @@ along with GCC; see the file COPYING3.  If not see
    Assumed contracts have a similar transformation that results the body of the
    if being __builtin_unreachable ();
 
-   FIXME use build_assume_call.
-
    Parsing of pre and post contract conditions need to be deferred when the
    contracts are attached to a member function. The postcondition identifier
    cannot be used before the deduced return type of an auto function is used,
@@ -1659,38 +1657,28 @@ build_contract_check (tree contract)
   if (condition == error_mark_node)
     return NULL_TREE;
 
-  /* If an assumed contract condition is not fully defined, the current method
-     of turning it into a compile time assumption fails and emits run time
-     code.  We don't want that, so just turn these into NOP.  */
-  if (semantic == CCS_ASSUME && !cp_tree_defined_p (condition))
-    return void_node;
+  location_t loc = EXPR_LOCATION (contract);
+
+  if (semantic == CCS_ASSUME)
+    return build_assume_call (loc, condition);
 
   tree if_stmt = begin_if_stmt ();
-  tree cond = build_x_unary_op (EXPR_LOCATION (contract),
+  tree cond = build_x_unary_op (loc,
 				TRUTH_NOT_EXPR,
 				condition, NULL_TREE,
 				tf_warning_or_error);
   finish_if_stmt_cond (cond, if_stmt);
 
-  if (semantic == CCS_ASSUME)
+  /* Get the continuation mode.  */
+  contract_continuation cmode;
+  switch (semantic)
     {
-      tree unreachable_fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-      tree call = build_call_n (unreachable_fn, 0);
-      finish_expr_stmt (call);
+    case CCS_NEVER: cmode = NEVER_CONTINUE; break;
+    case CCS_MAYBE: cmode = MAYBE_CONTINUE; break;
+    default: gcc_unreachable ();
     }
-  else
-    {
-      /* Get the continuation mode.  */
-      contract_continuation cmode;
-      switch (semantic)
-	{
-	  case CCS_NEVER: cmode = NEVER_CONTINUE; break;
-	  case CCS_MAYBE: cmode = MAYBE_CONTINUE; break;
-	  default: gcc_unreachable ();
-	}
 
-      build_contract_handler_call (contract, cmode);
-    }
+  build_contract_handler_call (contract, cmode);
 
   finish_then_clause (if_stmt);
   tree scope = IF_SCOPE (if_stmt);
