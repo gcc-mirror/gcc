@@ -345,6 +345,11 @@ public:
     return mangler.mangle_item (ty, path);
   }
 
+  void push_closure_context (HirId id);
+  void pop_closure_context ();
+  void insert_closure_binding (HirId id, tree expr);
+  bool lookup_closure_binding (HirId id, tree *expr);
+
   std::vector<tree> &get_type_decls () { return type_decls; }
   std::vector<::Bvariable *> &get_var_decls () { return var_decls; }
   std::vector<tree> &get_const_decls () { return const_decls; }
@@ -376,6 +381,10 @@ private:
     mono_closure_fns;
   std::map<HirId, tree> implicit_pattern_bindings;
   std::map<hashval_t, tree> main_variants;
+
+  // closure bindings
+  std::vector<HirId> closure_scope_bindings;
+  std::map<HirId, std::map<HirId, tree>> closure_bindings;
 
   // To GCC middle-end
   std::vector<tree> type_decls;
