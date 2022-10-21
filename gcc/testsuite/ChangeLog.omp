@@ -1,3 +1,14 @@
+2022-10-21  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized-graphite.c:
+	Add "noclone" in scan-tree-dump.
+	* c-c++-common/goacc/kernels-acc-loop-reduction.c: Likewise.
+	* c-c++-common/goacc/kernels-acc-loop-smaller-equal.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-2-acc-loop.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-3-acc-loop.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-acc-loop.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-n-acc-loop.c: Likewise.
+
 2022-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/affinity-clause-1.f90: Revert to upsteam version,
