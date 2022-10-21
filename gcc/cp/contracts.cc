@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 	 "v > 0", // comment,
 	 "default", // assertion_level,
 	 "default", // assertion_role,
-	 CCS_MAYBE, // continuation_mode
+	 MAYBE_CONTINUE, // continuation_mode
 	 );
      }
 
@@ -50,8 +50,15 @@ along with GCC; see the file COPYING3.  If not see
    if the contract should not continue on violation. This prevents requiring
    including <contract> and simplifies building the call.
 
+   FIXME the overhead would be lower if we write out the contract_violation
+   object statically and pass it directly to the handler.  Though the current
+   way is more tolerant of layout changes, so maybe leave it alone until the
+   feature is more mature.
+
    Assumed contracts have a similar transformation that results the body of the
    if being __builtin_unreachable ();
+
+   FIXME use build_assume_call.
 
    Parsing of pre and post contract conditions need to be deferred when the
    contracts are attached to a member function. The postcondition identifier
@@ -135,7 +142,11 @@ along with GCC; see the file COPYING3.  If not see
    for each return, or a goto epilogue would need generated similarly to cdtors.
    For this initial implementation, generating function calls and letting
    later optimizations decide whether to inline and duplicate the actual
-   checks or whether to collapse the shared epilogue was chosen.  */
+   checks or whether to collapse the shared epilogue was chosen.
+
+   FIXME the compiler already handles sharing cleanup code on multiple exit
+   paths properly, this outlining isn't necessary if we represent the
+   postcondition as a cleanup (like I already did for dtors).  */
 
 #include "config.h"
 #include "system.h"

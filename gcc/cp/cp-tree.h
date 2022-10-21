@@ -1944,11 +1944,10 @@ struct GTY(()) saved_scope {
   int x_processing_template_decl;
   int x_processing_specialization;
   int x_processing_constraint;
+  int x_processing_contract_condition;
   int suppress_location_wrappers;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
   BOOL_BITFIELD need_pop_function_context : 1;
-
-  int x_processing_contract_condition;
 
   /* Nonzero if we are parsing the discarded statement of a constexpr
      if-statement.  */
@@ -3249,14 +3248,6 @@ struct GTY(()) lang_decl {
 #define DECL_MAYBE_IN_CHARGE_CDTOR_P(NODE)              \
   (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (NODE)            \
    || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (NODE))
-
-/* Nonzero if NODE (a FUNCTION_DECL) is a ctor or dtor that needs the cdtor
-   label and associated goto built.  */
-#define DECL_CDTOR_NEEDS_LABLED_EXIT_P(NODE)            \
-  (DECL_DESTRUCTOR_P (NODE)                             \
-   || (DECL_CONSTRUCTOR_P (NODE)       \
-       && (targetm.cxx.cdtor_returns_this ()            \
-	   || contract_any_active_p (DECL_CONTRACTS (NODE)))))
 
 /* Nonzero if NODE (a _DECL) is a cloned constructor or
    destructor.  */
