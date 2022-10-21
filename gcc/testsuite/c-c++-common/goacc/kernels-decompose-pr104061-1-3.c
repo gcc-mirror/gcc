@@ -1,7 +1,7 @@
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
 
 /* { dg-additional-options "-fcompare-debug" } -- w/o debug compiled first.
-   { dg-bogus {error: [^\n\r]+: '-fcompare-debug' failure \(length\)} TODO { xfail *-*-* } 0 } */
+   { dg-bogus {error: [^\n\r]+: '-fcompare-debug' failure \(length\)} "" { target *-*-* } 0 } */
 /* { dg-additional-options "-O1" } so that we may get some 'GIMPLE_DEBUG's.  */
 
 /* { dg-additional-options "-fopt-info-all-omp" } */
@@ -19,13 +19,13 @@ foo (void)
 #pragma acc kernels /* { dg-line l_compute1 } */
   /* { dg-note {OpenACC 'kernels' decomposition: variable 'arr_0' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute1 }
      { dg-note {variable 'arr_0' made addressable} {} { target *-*-* } l_compute1 } */
-  /* { dg-bogus {note: OpenACC 'kernels' decomposition: variable 'k' declared in block requested to be made addressable} {w/ debug} { xfail *-*-* } l_compute1 } */
-  /* { dg-bogus {note: variable 'k' made addressable} {w/ debug} { xfail *-*-* } l_compute1 } */
-  /* { dg-bogus {note: variable 'k' declared in block is candidate for adjusting OpenACC privatization level} {w/ debug} { xfail *-*-* } l_compute1 } */
+  /* { dg-bogus {note: OpenACC 'kernels' decomposition: variable 'k' declared in block requested to be made addressable} {w/ debug} { target *-*-* } l_compute1 } */
+  /* { dg-bogus {note: variable 'k' made addressable} {w/ debug} { target *-*-* } l_compute1 } */
+  /* { dg-bogus {note: variable 'k' declared in block is candidate for adjusting OpenACC privatization level} {w/ debug} { target *-*-* } l_compute1 } */
   /* { dg-note {variable 'arr_0\.0' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute1 } */
   {
-    /* { dg-bogus {note: beginning 'gang-single' part in OpenACC 'kernels' region} {w/ debug} { xfail c++ } .-1 }
-       { dg-bogus {note: beginning 'gang-single' part in OpenACC 'kernels' region} {w/ debug} { xfail c } .+1 } */
+    /* { dg-bogus {note: beginning 'gang-single' part in OpenACC 'kernels' region} {w/ debug} { target c++ } .-1 }
+       { dg-bogus {note: beginning 'gang-single' part in OpenACC 'kernels' region} {w/ debug} { target c } .+1 } */
     int k;
 
     /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } .+1 } */
