@@ -3104,12 +3104,12 @@ reduced_constant_expression_p (tree t)
     case CONSTRUCTOR:
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree field;
+      if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+	/* An initialized vector would have a VECTOR_CST.  */
+	return false;
       if (CONSTRUCTOR_NO_CLEARING (t))
 	{
-	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-	    /* An initialized vector would have a VECTOR_CST.  */
-	    return false;
-	  else if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	    {
 	      /* There must be a valid constant initializer at every array
 		 index.  */
@@ -4956,8 +4956,14 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	  TREE_SIDE_EFFECTS (ctx->ctor) = side_effects_p;
 	}
     }
-  if (*non_constant_p || !changed)
+  if (*non_constant_p)
     return t;
+  if (!changed)
+    {
+      if (VECTOR_TYPE_P (type))
+	t = fold (t);
+      return t;
+    }
   t = ctx->ctor;
   if (!t)
     t = build_constructor (type, NULL);
@@ -7387,11 +7393,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case CONSTRUCTOR:
       if (TREE_CONSTANT (t) && reduced_constant_expression_p (t))
 	{
-	  /* Don't re-process a constant CONSTRUCTOR, but do fold it to
-	     VECTOR_CST if applicable.  */
+	  /* Don't re-process a constant CONSTRUCTOR.  */
 	  verify_constructor_flags (t);
 	  if (TREE_CONSTANT (t))
-	    return fold (t);
+	    return t;
 	}
       r = cxx_eval_bare_aggregate (ctx, t, lval,
 				   non_constant_p, overflow_p);
