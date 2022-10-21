@@ -2660,6 +2660,8 @@
 
 (define_int_iterator SVE_BRK_UNARY [UNSPEC_BRKA UNSPEC_BRKB])
 
+(define_int_iterator SVE_BRKP [UNSPEC_BRKPA UNSPEC_BRKPB])
+
 (define_int_iterator SVE_BRK_BINARY [UNSPEC_BRKN UNSPEC_BRKPA UNSPEC_BRKPB])
 
 (define_int_iterator SVE_PITER [UNSPEC_PFIRST UNSPEC_PNEXT])
