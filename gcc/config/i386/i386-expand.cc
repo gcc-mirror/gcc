@@ -2626,6 +2626,35 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   machine_mode op_mode = GET_MODE (op0);
   bool is_sse = SSE_FLOAT_MODE_SSEMATH_OR_HF_P (op_mode);
 
+  if (op_mode == BFmode)
+    {
+      rtx op = gen_lowpart (HImode, op0);
+      if (CONST_INT_P (op))
+	op = simplify_const_unary_operation (FLOAT_EXTEND, SFmode,
+					     op0, BFmode);
+      else
+	{
+	  rtx t1 = gen_reg_rtx (SImode);
+	  emit_insn (gen_zero_extendhisi2 (t1, op));
+	  emit_insn (gen_ashlsi3 (t1, t1, GEN_INT (16)));
+	  op = gen_lowpart (SFmode, t1);
+	}
+      *pop0 = op;
+      op = gen_lowpart (HImode, op1);
+      if (CONST_INT_P (op))
+	op = simplify_const_unary_operation (FLOAT_EXTEND, SFmode,
+					     op1, BFmode);
+      else
+	{
+	  rtx t1 = gen_reg_rtx (SImode);
+	  emit_insn (gen_zero_extendhisi2 (t1, op));
+	  emit_insn (gen_ashlsi3 (t1, t1, GEN_INT (16)));
+	  op = gen_lowpart (SFmode, t1);
+	}
+      *pop1 = op;
+      return ix86_prepare_fp_compare_args (code, pop0, pop1);
+    }
+
   /* All of the unordered compare instructions only work on registers.
      The same is true of the fcomi compare instructions.  The XFmode
      compare instructions require registers except when comparing
@@ -3162,6 +3191,10 @@ ix86_expand_int_movcc (rtx operands[])
   if (GET_MODE (op0) == TImode
       || (GET_MODE (op0) == DImode
 	  && !TARGET_64BIT))
+    return false;
+
+  if (GET_MODE (op0) == BFmode
+      && !ix86_fp_comparison_operator (operands[1], VOIDmode))
     return false;
 
   start_sequence ();
@@ -4237,6 +4270,10 @@ ix86_expand_fp_movcc (rtx operands[])
   rtx tmp, compare_op;
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
+
+  if (GET_MODE (op0) == BFmode
+      && !ix86_fp_comparison_operator (operands[1], VOIDmode))
+    return false;
 
   if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
     {
