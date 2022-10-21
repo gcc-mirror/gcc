@@ -209,7 +209,7 @@ ResolveExpr::visit (AST::IfLetExpr &expr)
 
   for (auto &pattern : expr.get_patterns ())
     {
-      PatternDeclaration::go (pattern.get ());
+      PatternDeclaration::go (pattern.get (), Rib::ItemType::Var);
     }
 
   ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
@@ -343,7 +343,7 @@ ResolveExpr::visit (AST::LoopExpr &expr)
       auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
       resolver->get_label_scope ().insert (
 	CanonicalPath::new_seg (expr.get_node_id (), label_name),
-	label_lifetime_node_id, label.get_locus (), false,
+	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
 	[&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
@@ -400,7 +400,7 @@ ResolveExpr::visit (AST::WhileLoopExpr &expr)
       auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
       resolver->get_label_scope ().insert (
 	CanonicalPath::new_seg (label.get_node_id (), label_name),
-	label_lifetime_node_id, label.get_locus (), false,
+	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
 	[&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
@@ -429,7 +429,7 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
       auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
       resolver->get_label_scope ().insert (
 	CanonicalPath::new_seg (label.get_node_id (), label_name),
-	label_lifetime_node_id, label.get_locus (), false,
+	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
 	[&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
@@ -446,7 +446,7 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   // resolve the expression
-  PatternDeclaration::go (expr.get_pattern ().get ());
+  PatternDeclaration::go (expr.get_pattern ().get (), Rib::ItemType::Var);
   ResolveExpr::go (expr.get_iterator_expr ().get (), prefix, canonical_prefix);
   ResolveExpr::go (expr.get_loop_block ().get (), prefix, canonical_prefix);
 
@@ -520,7 +520,7 @@ ResolveExpr::visit (AST::MatchExpr &expr)
       // insert any possible new patterns
       for (auto &pattern : arm.get_patterns ())
 	{
-	  PatternDeclaration::go (pattern.get ());
+	  PatternDeclaration::go (pattern.get (), Rib::ItemType::Var);
 	}
 
       // resolve the body
@@ -617,7 +617,7 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
 void
 ResolveExpr::resolve_closure_param (AST::ClosureParam &param)
 {
-  PatternDeclaration::go (param.get_pattern ().get ());
+  PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param);
 
   if (param.has_type_given ())
     ResolveType::go (param.get_type ().get ());

@@ -30,6 +30,24 @@ namespace Resolver {
 class Rib
 {
 public:
+  enum ItemType
+  {
+    Var,
+    Param,
+    Function,
+    Type,
+    Module,
+    Static,
+    Const,
+    Trait,
+    Impl,
+    TraitImpl,
+    ExternCrate,
+    MacroDecl,
+    Label,
+    Unknown
+  };
+
   // FIXME
   // Rust uses local_def_ids assigned by def_collector on the AST. Consider
   // moving to a local-def-id
@@ -38,6 +56,7 @@ public:
   // this takes the relative paths of items within a compilation unit for lookup
   void insert_name (
     const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+    ItemType type,
     std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
 
   bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident);
@@ -46,6 +65,7 @@ public:
   void append_reference_for_def (NodeId def, NodeId ref);
   bool have_references_for_node (NodeId def) const;
   bool decl_was_declared_here (NodeId def) const;
+  bool lookup_decl_type (NodeId def, ItemType *type) const;
   void debug () const;
   std::string debug_str () const;
 
@@ -60,6 +80,7 @@ private:
   std::map<NodeId, CanonicalPath> reverse_path_mappings;
   std::map<NodeId, Location> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
+  std::map<NodeId, ItemType> decl_type_mappings;
 };
 
 class Scope
@@ -69,9 +90,11 @@ public:
 
   void
   insert (const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
+	  Rib::ItemType type,
 	  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
 
-  void insert (const CanonicalPath &ident, NodeId id, Location locus);
+  void insert (const CanonicalPath &ident, NodeId id, Location locus,
+	       Rib::ItemType type = Rib::ItemType::Unknown);
   bool lookup (const CanonicalPath &ident, NodeId *id);
 
   void iterate (std::function<bool (Rib *)> cb);

@@ -29,7 +29,7 @@ Rib::Rib (CrateNum crateNum, NodeId node_id)
 void
 Rib::insert_name (
   const CanonicalPath &path, NodeId id, Location locus, bool shadow,
-
+  ItemType type,
   std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
 {
   auto it = path_mappings.find (path);
@@ -49,6 +49,7 @@ Rib::insert_name (
   reverse_path_mappings.insert ({id, path});
   decls_within_rib.insert ({id, locus});
   references[id] = {};
+  decl_type_mappings.insert ({id, type});
 }
 
 bool
@@ -105,6 +106,17 @@ Rib::decl_was_declared_here (NodeId def) const
   return false;
 }
 
+bool
+Rib::lookup_decl_type (NodeId def, ItemType *type) const
+{
+  auto it = decl_type_mappings.find (def);
+  if (it == decl_type_mappings.end ())
+    return false;
+
+  *type = it->second;
+  return true;
+}
+
 void
 Rib::debug () const
 {
@@ -128,15 +140,17 @@ Scope::Scope (CrateNum crate_num) : crate_num (crate_num) {}
 void
 Scope::insert (
   const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
+  Rib::ItemType type,
   std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
 {
-  peek ()->insert_name (ident, id, locus, shadow, dup_cb);
+  peek ()->insert_name (ident, id, locus, shadow, type, dup_cb);
 }
 
 void
-Scope::insert (const CanonicalPath &ident, NodeId id, Location locus)
+Scope::insert (const CanonicalPath &ident, NodeId id, Location locus,
+	       Rib::ItemType type)
 {
-  peek ()->insert_name (ident, id, locus, true,
+  peek ()->insert_name (ident, id, locus, true, type,
 			[] (const CanonicalPath &, NodeId, Location) -> void {
 			});
 }
@@ -321,6 +335,7 @@ Resolver::insert_builtin_types (Rib *r)
 				  builtin->as_string ());
       r->insert_name (builtin_path, builtin->get_node_id (),
 		      Linemap::predeclared_location (), false,
+		      Rib::ItemType::Type,
 		      [] (const CanonicalPath &, NodeId, Location) -> void {});
     }
 }
