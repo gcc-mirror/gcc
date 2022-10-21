@@ -1,5 +1,10 @@
 2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
 
+	* tree-vect-data-refs.cc (vect_analyze_data_refs): Workaround an
+	address-space bug.
+
+2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn.cc (gcn_init_cumulative_args): Disallow gfx908.
 
 2022-10-24  Andrew Stubbs  <ams@codesourcery.com>

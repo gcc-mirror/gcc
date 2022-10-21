@@ -4605,7 +4605,21 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
       tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
-      if (!vectype)
+
+      /* FIXME: If the object is in an address-space in which the pointer size
+	 is different to the default address space then vectorizing here will
+	 lead to an ICE down the road because the address space information
+	 gets lost.  This work-around fixes the problem until we have a proper
+	 solution.  */
+      tree base_object = DR_REF (dr);
+      tree op = (TREE_CODE (base_object) == COMPONENT_REF
+		 || TREE_CODE (base_object) == ARRAY_REF
+		 ? TREE_OPERAND (base_object, 0) : base_object);
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));
+      bool addr_space_bug = (!ADDR_SPACE_GENERIC_P (as)
+			     && targetm.addr_space.pointer_mode (as) != Pmode);
+
+      if (!vectype || addr_space_bug)
         {
           if (dump_enabled_p ())
             {
