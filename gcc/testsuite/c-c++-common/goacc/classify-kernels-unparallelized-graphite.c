@@ -29,7 +29,7 @@ void KERNELS ()
 }
 
 /* Check the offloaded function's attributes.
-   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc parallel_kernels_graphite, omp target entrypoint\\)\\)" 1 "ompexp" } } */
+   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc parallel_kernels_graphite, omp target entrypoint, noclone\\)\\)" 1 "ompexp" } } */
 
 /* Check that Graphite can handle neither the original nor the offloaded region
    { dg-final { scan-tree-dump-times "number of SCoPs: 0" 2 "graphite" } }
@@ -38,4 +38,4 @@ void KERNELS ()
    always be 1 x 1 x 1 for non-offloading compilation).
    { dg-final { scan-tree-dump-times "(?n)Function is parallel_kernels_graphite OpenACC kernels offload" 1 "oaccloops1" } }
    { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccloops1" } }
-   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc parallel_kernels_graphite, omp target entrypoint\\)\\)" 1 "oaccloops1" } } */
+   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc parallel_kernels_graphite, omp target entrypoint, noclone\\)\\)" 1 "oaccloops1" } } */
