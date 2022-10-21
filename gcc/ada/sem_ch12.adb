@@ -11088,6 +11088,8 @@ package body Sem_Ch12 is
 
          Set_Convention (Defining_Unit_Name (New_Spec), Convention_Intrinsic);
 
+         Copy_Ghost_Aspect (Formal, To => Decl_Node);
+
          --  Eliminate the calls to it when optimization is enabled
 
          Set_Is_Inlined (Defining_Unit_Name (New_Spec));
