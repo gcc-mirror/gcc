@@ -234,41 +234,40 @@ def checkIndex(line):
 
 def parseDefinition(dir, source, build, file, needPage):
     output.write("\n")
-    f = open(findFile(dir, build, source, file), "r")
-    initState()
-    line = f.readline()
-    while (str.find(line, "(*") != -1):
-        removeInitialComments(f, line)
+    with open(findFile(dir, build, source, file), "r") as f:
+        initState()
         line = f.readline()
+        while (str.find(line, "(*") != -1):
+            removeInitialComments(f, line)
+            line = f.readline()
 
-    while (str.find(line, "DEFINITION") == -1):
-        line = f.readline()
+        while (str.find(line, "DEFINITION") == -1):
+            line = f.readline()
 
-    output.write("@example\n")
-    output.write(str.rstrip(line) + "\n")
-    line = f.readline()
-    if len(str.rstrip(line)) == 0:
-        output.write(str.replace(str.replace(str.rstrip(line),
-                                             "{", "@{"), "}", "@}") + "\n")
+        output.write("@example\n")
+        output.write(str.rstrip(line) + "\n")
         line = f.readline()
-        if (str.find(line, "(*") != -1):
-            removeFields(f, line)
+        if len(str.rstrip(line)) == 0:
+            output.write(str.replace(str.replace(str.rstrip(line),
+                                                 "{", "@{"), "}", "@}") + "\n")
+            line = f.readline()
+            if (str.find(line, "(*") != -1):
+                removeFields(f, line)
+            else:
+                output.write(str.rstrip(line) + "\n")
         else:
             output.write(str.rstrip(line) + "\n")
-    else:
-        output.write(str.rstrip(line) + "\n")
 
-    line = f.readline()
-    while line:
-        line = str.rstrip(line)
-        checkIndex(line)
-        output.write(str.replace(str.replace(line, "{", "@{"), "}", "@}"))
-        output.write("\n")
-        line = f.readline()
-    output.write("@end example\n")
-    if needPage:
-        output.write("@page\n")
-    f.close()
+            line = f.readline()
+        while line:
+            line = str.rstrip(line)
+            checkIndex(line)
+            output.write(str.replace(str.replace(line, "{", "@{"), "}", "@}"))
+            output.write("\n")
+            line = f.readline()
+        output.write("@end example\n")
+        if needPage:
+            output.write("@page\n")
 
 
 def parseModules(up, dir, build, source, listOfModules):
@@ -294,12 +293,11 @@ def parseModules(up, dir, build, source, listOfModules):
 #  doCat - displays the contents of file, name, to stdout
 
 def doCat(name):
-    file = open(name, "r")
-    line = file.readline()
-    while line:
-        output.write(str.rstrip(line) + "\n")
+    with open(name, "r") as file:
         line = file.readline()
-    file.close()
+        while line:
+            output.write(str.rstrip(line) + "\n")
+            line = file.readline()
 
 
 #  moduleMenu - generates a simple menu for all definition modules
@@ -423,13 +421,7 @@ def collectArgs():
     return args
 
 
-def main():
-    global args, output
-    args = collectArgs()
-    if args.outputfile is None:
-        output = sys.stdout
-    else:
-        output = open(args.outputfile, "w")
+def handleFile():
     if args.inputfile is None:
         displayCopyright()
         displayMenu()
@@ -437,8 +429,17 @@ def main():
     else:
         parseDefinition(".", args.sourcedir, args.builddir,
                         args.inputfile, False)
-    if not (args.outputfile is None):
-        output.close()
+
+
+def main():
+    global args, output
+    args = collectArgs()
+    if args.outputfile is None:
+        output = sys.stdout
+        handleFile()
+    else:
+        with open(args.outputfile, "w") as output:
+            handleFile()
 
 
 main()
