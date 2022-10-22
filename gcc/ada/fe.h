@@ -368,7 +368,7 @@ extern Boolean Stack_Check_Probes_On_Target;
 
 #define Get_Warn_On_Questionable_Layout	warnsw__get_warn_on_questionable_layout
 
-extern Boolean Get_Warn_On_Questionable_Layout ();
+extern Boolean Get_Warn_On_Questionable_Layout (void);
 
 // The following corresponds to Ada code in Einfo.Utils.
 
