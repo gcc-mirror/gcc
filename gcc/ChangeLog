@@ -1,3 +1,26 @@
+2022-10-21  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2022-10-20  Julian Brown  <julian@codesourcery.com>
+
+	PR target/105421
+	* config/gcn/gcn.cc (gcn_detect_incoming_pointer_arg): Any pointer
+	argument forces FLAT addressing mode, not just
+	pointer-to-non-aggregate.
+
+2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107323
+	* tree-loop-distribution.cc (pg_unmark_merged_alias_ddrs):
+	New function.
+	(loop_distribution::break_alias_scc_partitions): Revert
+	postorder save/restore from the PR94125 fix.  Instead
+	make sure to not ignore edges from SCCs we are going to
+	merge.
+
 2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

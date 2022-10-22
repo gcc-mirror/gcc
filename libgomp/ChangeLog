@@ -1,3 +1,11 @@
+2022-10-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/105421
+	* testsuite/libgomp.oacc-c-c++-common/private-big-1.c: New.
+
 2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
