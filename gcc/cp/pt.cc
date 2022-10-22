@@ -1581,6 +1581,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		 there were no definition, and vice versa.  */
 	      DECL_INITIAL (fn) = NULL_TREE;
 	      duplicate_decls (spec, fn, /*hiding=*/is_friend);
+
 	      /* The call to duplicate_decls will have applied
 		 [temp.expl.spec]:
 
@@ -10397,14 +10398,15 @@ tree
 lookup_and_finish_template_variable (tree templ, tree targs,
 				     tsubst_flags_t complain)
 {
-  templ = lookup_template_variable (templ, targs);
-  if (!any_dependent_template_arguments_p (targs))
+  tree var = lookup_template_variable (templ, targs);
+  if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) == 1
+      && !any_dependent_template_arguments_p (targs))
     {
-      templ = finish_template_variable (templ, complain);
-      mark_used (templ);
+      var = finish_template_variable (var, complain);
+      mark_used (var);
     }
 
-  return convert_from_reference (templ);
+  return convert_from_reference (var);
 }
 
 /* If the set of template parameters PARMS contains a template parameter
@@ -12185,6 +12187,7 @@ instantiate_class_template (tree type)
 	      r = tsubst (t, args, tf_error, NULL_TREE);
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
 		--processing_template_decl;
+
 	      set_current_access_from_decl (r);
 	      finish_member_declaration (r);
 	      /* Instantiate members marked with attribute used.  */
@@ -13933,6 +13936,8 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   push_to_top_level ();
   push_access_scope (fn);
   push_deferring_access_checks (dk_no_deferred);
+  /* So in_immediate_context knows this is a default argument.  */
+  begin_scope (sk_function_parms, fn);
   start_lambda_scope (parm);
 
   /* The default argument expression may cause implicitly defined
@@ -13956,6 +13961,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
     inform (input_location,
 	    "  when instantiating default argument for call to %qD", fn);
 
+  leave_scope ();
   pop_deferring_access_checks ();
   pop_access_scope (fn);
   pop_from_top_level ();
@@ -17017,7 +17023,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* This can happen for a parameter name used later in a function
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
-	  gcc_assert (cp_unevaluated_operand != 0);
+	  gcc_assert (cp_unevaluated_operand);
 	  r = tsubst_decl (t, args, complain);
 	  /* Give it the template pattern as its context; its true context
 	     hasn't been instantiated yet and this is good enough for
@@ -17224,7 +17230,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     TEMPLATE_DECL with `D<T>' as its DECL_CONTEXT.  Now we
 	     have to substitute this with one having context `D<int>'.  */
 
-	  tree context = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
+	  tree context = tsubst_aggr_type (DECL_CONTEXT (t), args, complain,
+					   in_decl, /*entering_scope=*/true);
 	  return lookup_field (context, DECL_NAME(t), 0, false);
 	}
       else
@@ -17407,6 +17414,18 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    && DECL_IMMEDIATE_FUNCTION_P (op0))
 	  SET_EXPR_LOCATION (r, input_location);
 	return r;
+      }
+
+    case EXCESS_PRECISION_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+	  {
+	    gcc_checking_assert (same_type_p (type, TREE_TYPE (op0)));
+	    return op0;
+	  }
+	return build1_loc (EXPR_LOCATION (t), code, type, op0);
       }
 
     case COMPONENT_REF:
@@ -20437,6 +20456,16 @@ tsubst_copy_and_build (tree t,
 				templated_operator_saved_lookups (t),
 				complain|decltype_flag));
 
+    case EXCESS_PRECISION_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+	  RETURN (op0);
+	RETURN (build1_loc (EXPR_LOCATION (t), EXCESS_PRECISION_EXPR,
+			    type, op0));
+      }
+
     case FIX_TRUNC_EXPR:
       /* convert_like should have created an IMPLICIT_CONV_EXPR.  */
       gcc_unreachable ();
@@ -21113,10 +21142,7 @@ tsubst_copy_and_build (tree t,
 		      ret = error_mark_node;
 		      break;
 		    }
-		  ret = build_call_expr_internal_loc (EXPR_LOCATION (t),
-						      IFN_ASSUME,
-						      void_type_node, 1,
-						      arg);
+		  ret = build_assume_call (EXPR_LOCATION (t), arg);
 		  RETURN (ret);
 		}
 	      break;
@@ -21915,6 +21941,7 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 	}
       return error_mark_node;
     }
+
   return fndecl;
 }
 
@@ -26180,12 +26207,9 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 {
   /* The arguments used to instantiate DECL, from the most general
      template.  */
-  tree code_pattern;
+  tree code_pattern = DECL_TEMPLATE_RESULT (tmpl);
 
-  code_pattern = DECL_TEMPLATE_RESULT (tmpl);
-
-  /* Make sure that we can see identifiers, and compute access
-     correctly.  */
+  /* Make sure that we can see identifiers, and compute access correctly.  */
   push_access_scope (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)

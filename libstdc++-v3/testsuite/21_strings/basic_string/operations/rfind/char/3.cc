@@ -17,23 +17,23 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 // 21.3.6.6 basic_string::find_last_not_of
 void test03()
 {
-  typedef std::string::size_type csize_type;
-  std::string::size_type pos;
-  csize_type npos = std::string::npos;
+  typedef __gnu_test::string::size_type csize_type;
+  __gnu_test::string::size_type pos;
+  csize_type npos = __gnu_test::string::npos;
 
-  std::string x;
+  __gnu_test::string x;
   pos = x.find_last_not_of('X');
   VERIFY( pos == npos );
   pos = x.find_last_not_of("XYZ");
   VERIFY( pos == npos );
 
-  std::string y("a");
+  __gnu_test::string y("a");
   pos = y.find_last_not_of('X');
   VERIFY( pos == 0 );
   pos = y.find_last_not_of('a');
@@ -43,7 +43,7 @@ void test03()
   pos = y.find_last_not_of("a");
   VERIFY( pos == npos );
 
-  std::string z("ab");
+  __gnu_test::string z("ab");
   pos = z.find_last_not_of('X');
   VERIFY( pos == 1 );
   pos = z.find_last_not_of("XYZ");

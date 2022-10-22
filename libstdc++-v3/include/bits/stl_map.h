@@ -847,7 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 #if __cplusplus >= 201703L
 	  using _P2 = remove_reference_t<_Pair>;
-	  if constexpr (__is_pair<_P2>)
+	  if constexpr (__is_pair<remove_const_t<_P2>>)
 	    if constexpr (is_same_v<allocator_type, allocator<value_type>>)
 	      if constexpr (__usable_key<typename _P2::first_type>)
 		{

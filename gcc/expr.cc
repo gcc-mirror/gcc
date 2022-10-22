@@ -344,7 +344,11 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
       gcc_assert ((GET_MODE_PRECISION (from_mode)
 		   != GET_MODE_PRECISION (to_mode))
 		  || (DECIMAL_FLOAT_MODE_P (from_mode)
-		      != DECIMAL_FLOAT_MODE_P (to_mode)));
+		      != DECIMAL_FLOAT_MODE_P (to_mode))
+		  || (REAL_MODE_FORMAT (from_mode) == &arm_bfloat_half_format
+		      && REAL_MODE_FORMAT (to_mode) == &ieee_half_format)
+		  || (REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
+		      && REAL_MODE_FORMAT (from_mode) == &ieee_half_format));
 
       if (GET_MODE_PRECISION (from_mode) == GET_MODE_PRECISION (to_mode))
 	/* Conversion between decimal float and binary float, same size.  */
@@ -363,6 +367,157 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 			  tab == sext_optab ? FLOAT_EXTEND : FLOAT_TRUNCATE);
 	  return;
 	}
+
+#ifdef HAVE_SFmode
+      if (REAL_MODE_FORMAT (from_mode) == &arm_bfloat_half_format
+	  && REAL_MODE_FORMAT (SFmode) == &ieee_single_format)
+	{
+	  if (GET_MODE_PRECISION (to_mode) > GET_MODE_PRECISION (SFmode))
+	    {
+	      /* To cut down on libgcc size, implement
+		 BFmode -> {DF,XF,TF}mode conversions by
+		 BFmode -> SFmode -> {DF,XF,TF}mode conversions.  */
+	      rtx temp = gen_reg_rtx (SFmode);
+	      convert_mode_scalar (temp, from, unsignedp);
+	      convert_mode_scalar (to, temp, unsignedp);
+	      return;
+	    }
+	  if (REAL_MODE_FORMAT (to_mode) == &ieee_half_format)
+	    {
+	      /* Similarly, implement BFmode -> HFmode as
+		 BFmode -> SFmode -> HFmode conversion where SFmode
+		 has superset of BFmode values.  We don't need
+		 to handle sNaNs by raising exception and turning
+		 into into qNaN though, as that can be done in the
+		 SFmode -> HFmode conversion too.  */
+	      rtx temp = gen_reg_rtx (SFmode);
+	      int save_flag_finite_math_only = flag_finite_math_only;
+	      flag_finite_math_only = true;
+	      convert_mode_scalar (temp, from, unsignedp);
+	      flag_finite_math_only = save_flag_finite_math_only;
+	      convert_mode_scalar (to, temp, unsignedp);
+	      return;
+	    }
+	  if (to_mode == SFmode
+	      && !HONOR_NANS (from_mode)
+	      && !HONOR_NANS (to_mode)
+	      && optimize_insn_for_speed_p ())
+	    {
+	      /* If we don't expect sNaNs, for BFmode -> SFmode we can just
+		 shift the bits up.  */
+	      machine_mode fromi_mode, toi_mode;
+	      if (int_mode_for_size (GET_MODE_BITSIZE (from_mode),
+				     0).exists (&fromi_mode)
+		  && int_mode_for_size (GET_MODE_BITSIZE (to_mode),
+					0).exists (&toi_mode))
+		{
+		  start_sequence ();
+		  rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+		  rtx tof = NULL_RTX;
+		  if (fromi)
+		    {
+		      rtx toi;
+		      if (GET_MODE (fromi) == VOIDmode)
+			toi = simplify_unary_operation (ZERO_EXTEND, toi_mode,
+							fromi, fromi_mode);
+		      else
+			{
+			  toi = gen_reg_rtx (toi_mode);
+			  convert_mode_scalar (toi, fromi, 1);
+			}
+		      toi
+			= maybe_expand_shift (LSHIFT_EXPR, toi_mode, toi,
+					      GET_MODE_PRECISION (to_mode)
+					      - GET_MODE_PRECISION (from_mode),
+					      NULL_RTX, 1);
+		      if (toi)
+			{
+			  tof = lowpart_subreg (to_mode, toi, toi_mode);
+			  if (tof)
+			    emit_move_insn (to, tof);
+			}
+		    }
+		  insns = get_insns ();
+		  end_sequence ();
+		  if (tof)
+		    {
+		      emit_insn (insns);
+		      return;
+		    }
+		}
+	    }
+	}
+      if (REAL_MODE_FORMAT (from_mode) == &ieee_single_format
+	  && REAL_MODE_FORMAT (to_mode) == &arm_bfloat_half_format
+	  && !HONOR_NANS (from_mode)
+	  && !HONOR_NANS (to_mode)
+	  && !flag_rounding_math
+	  && optimize_insn_for_speed_p ())
+	{
+	  /* If we don't expect qNaNs nor sNaNs and can assume rounding
+	     to nearest, we can expand the conversion inline as
+	     (fromi + 0x7fff + ((fromi >> 16) & 1)) >> 16.  */
+	  machine_mode fromi_mode, toi_mode;
+	  if (int_mode_for_size (GET_MODE_BITSIZE (from_mode),
+				 0).exists (&fromi_mode)
+	      && int_mode_for_size (GET_MODE_BITSIZE (to_mode),
+				    0).exists (&toi_mode))
+	    {
+	      start_sequence ();
+	      rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+	      rtx tof = NULL_RTX;
+	      do
+		{
+		  if (!fromi)
+		    break;
+		  int shift = (GET_MODE_PRECISION (from_mode)
+			       - GET_MODE_PRECISION (to_mode));
+		  rtx temp1
+		    = maybe_expand_shift (RSHIFT_EXPR, fromi_mode, fromi,
+					  shift, NULL_RTX, 1);
+		  if (!temp1)
+		    break;
+		  rtx temp2
+		    = expand_binop (fromi_mode, and_optab, temp1, const1_rtx,
+				    NULL_RTX, 1, OPTAB_DIRECT);
+		  if (!temp2)
+		    break;
+		  rtx temp3
+		    = expand_binop (fromi_mode, add_optab, fromi,
+				    gen_int_mode ((HOST_WIDE_INT_1U
+						   << (shift - 1)) - 1,
+						  fromi_mode), NULL_RTX,
+				    1, OPTAB_DIRECT);
+		  if (!temp3)
+		    break;
+		  rtx temp4
+		    = expand_binop (fromi_mode, add_optab, temp3, temp2,
+				    NULL_RTX, 1, OPTAB_DIRECT);
+		  if (!temp4)
+		    break;
+		  rtx temp5 = maybe_expand_shift (RSHIFT_EXPR, fromi_mode,
+						  temp4, shift, NULL_RTX, 1);
+		  if (!temp5)
+		    break;
+		  rtx temp6 = lowpart_subreg (toi_mode, temp5, fromi_mode);
+		  if (!temp6)
+		    break;
+		  tof = lowpart_subreg (to_mode, force_reg (toi_mode, temp6),
+					toi_mode);
+		  if (tof)
+		    emit_move_insn (to, tof);
+		}
+	      while (0);
+	      insns = get_insns ();
+	      end_sequence ();
+	      if (tof)
+		{
+		  emit_insn (insns);
+		  return;
+		}
+	    }
+	}
+#endif
 
       /* Otherwise use a libcall.  */
       libcall = convert_optab_libfunc (tab, to_mode, from_mode);
@@ -2813,50 +2968,69 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
       else
 	adj_bytelen = bytelen;
 
+      /* Deal with destination CONCATs by either storing into one of the parts
+	 or doing a copy after storing into a register or stack temporary.  */
       if (GET_CODE (dst) == CONCAT)
 	{
 	  if (known_le (bytepos + adj_bytelen,
 			GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)))))
 	    dest = XEXP (dst, 0);
+
 	  else if (known_ge (bytepos, GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)))))
 	    {
 	      bytepos -= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)));
 	      dest = XEXP (dst, 1);
 	    }
+
 	  else
 	    {
 	      machine_mode dest_mode = GET_MODE (dest);
 	      machine_mode tmp_mode = GET_MODE (tmps[i]);
-	      scalar_int_mode imode;
+	      scalar_int_mode dest_imode;
 
 	      gcc_assert (known_eq (bytepos, 0) && XVECLEN (src, 0));
 
-	      if (finish == 1
+	      /* If the source is a single scalar integer register, and the
+		 destination has a complex mode for which a same-sized integer
+		 mode exists, then we can take the left-justified part of the
+		 source in the complex mode.  */
+	      if (finish == start + 1
 		  && REG_P (tmps[i])
-		  && COMPLEX_MODE_P (dest_mode)
 		  && SCALAR_INT_MODE_P (tmp_mode)
-		  && int_mode_for_mode (dest_mode).exists (&imode))
+		  && COMPLEX_MODE_P (dest_mode)
+		  && int_mode_for_mode (dest_mode).exists (&dest_imode))
 		{
-		  if (tmp_mode != imode)
+		  const scalar_int_mode tmp_imode
+		    = as_a <scalar_int_mode> (tmp_mode);
+
+		  if (GET_MODE_BITSIZE (dest_imode)
+		      < GET_MODE_BITSIZE (tmp_imode))
 		    {
-		      rtx tmp = gen_reg_rtx (imode);
-		      emit_move_insn (tmp, gen_lowpart (imode, tmps[i]));
-		      dst = gen_lowpart (dest_mode, tmp);
+		      dest = gen_reg_rtx (dest_imode);
+		      if (BYTES_BIG_ENDIAN)
+			tmps[i] = expand_shift (RSHIFT_EXPR, tmp_mode, tmps[i],
+						GET_MODE_BITSIZE (tmp_imode)
+						- GET_MODE_BITSIZE (dest_imode),
+						NULL_RTX, 1);
+		      emit_move_insn (dest, gen_lowpart (dest_imode, tmps[i]));
+		      dst = gen_lowpart (dest_mode, dest);
 		    }
 		  else
 		    dst = gen_lowpart (dest_mode, tmps[i]);
 		}
+
+	      /* Otherwise spill the source onto the stack using the more
+		 aligned of the two modes.  */
 	      else if (GET_MODE_ALIGNMENT (dest_mode)
-		  >= GET_MODE_ALIGNMENT (tmp_mode))
+		       >= GET_MODE_ALIGNMENT (tmp_mode))
 		{
 		  dest = assign_stack_temp (dest_mode,
 					    GET_MODE_SIZE (dest_mode));
-		  emit_move_insn (adjust_address (dest,
-						  tmp_mode,
-						  bytepos),
+		  emit_move_insn (adjust_address (dest, tmp_mode, bytepos),
 				  tmps[i]);
 		  dst = dest;
 		}
+
 	      else
 		{
 		  dest = assign_stack_temp (tmp_mode,
@@ -2864,6 +3038,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 		  emit_move_insn (dest, tmps[i]);
 		  dst = adjust_address (dest, dest_mode, bytepos);
 		}
+
 	      break;
 	    }
 	}

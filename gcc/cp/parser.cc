@@ -5583,7 +5583,9 @@ cp_parser_primary_expression (cp_parser *parser,
       /* Floating-point literals are only allowed in an integral
 	 constant expression if they are cast to an integral or
 	 enumeration type.  */
-      if (TREE_CODE (token->u.value) == REAL_CST
+      if ((TREE_CODE (token->u.value) == REAL_CST
+	   || (TREE_CODE (token->u.value) == EXCESS_PRECISION_EXPR
+	       && TREE_CODE (TREE_OPERAND (token->u.value, 0)) == REAL_CST))
 	  && parser->integral_constant_expression_p
 	  && pedantic)
 	{
@@ -11519,30 +11521,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      opening parenthesis if present.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
-      bool is_consteval = false;
-      /* For C++20, before parsing the parameter list check if there is
-	 a consteval specifier in the corresponding decl-specifier-seq.  */
-      if (cxx_dialect >= cxx20)
-	{
-	  for (size_t n = cp_parser_skip_balanced_tokens (parser, 1);
-	       cp_lexer_nth_token_is (parser->lexer, n, CPP_KEYWORD); n++)
-	    {
-	      if (cp_lexer_peek_nth_token (parser->lexer, n)->keyword
-		  == RID_CONSTEVAL)
-		{
-		  is_consteval = true;
-		  break;
-		}
-	    }
-	}
-
       matching_parens parens;
       parens.consume_open (parser);
 
       begin_scope (sk_function_parms, /*entity=*/NULL_TREE);
-
-      if (is_consteval)
-	current_binding_level->immediate_fn_ctx_p = true;
 
       /* Parse parameters.  */
       param_list
@@ -11697,10 +11679,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     declarator = make_call_declarator (declarator, param_list, quals,
 				       VIRT_SPEC_UNSPECIFIED,
-                                       REF_QUAL_NONE,
+				       REF_QUAL_NONE,
 				       tx_qual,
 				       exception_spec,
-                                       return_type,
+				       return_type,
 				       trailing_requires_clause,
 				       UNKNOWN_LOCATION);
     declarator->std_attributes = std_attrs;
@@ -23186,10 +23168,6 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	      begin_scope (sk_function_parms, NULL_TREE);
 
-	      /* Signal we are in the immediate function context.  */
-	      if (flags & CP_PARSER_FLAGS_CONSTEVAL)
-		current_binding_level->immediate_fn_ctx_p = true;
-
 	      /* Parse the parameter-declaration-clause.  */
 	      params
 		= cp_parser_parameter_declaration_clause (parser, flags);
@@ -25434,6 +25412,7 @@ cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
 	  if (!parser->lexer->in_pragma)
 	    break;
 	  /* FALLTHRU */
+
 	case CPP_EOF:
 	  /* If we've run out of tokens, then there is no closing `]'.  */
 	  return false;
@@ -27514,6 +27493,7 @@ cp_parser_member_declaration (cp_parser* parser)
 							      &decl_specifiers,
 							      declarator,
 							      attributes);
+
 		  if (parser->fully_implicit_function_template_p)
 		    decl = finish_fully_implicit_template (parser, decl);
 		  /* If the member was not a friend, declare it here.  */
@@ -27537,6 +27517,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      else
 		if (declarator->kind == cdk_function)
 		  declarator->id_loc = token->location;
+
 	      /* Create the declaration.  */
 	      decl = grokfield (declarator, &decl_specifiers,
 				initializer, /*init_const_expr_p=*/true,
@@ -29131,6 +29112,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       attr_id = canonicalize_attr_name (attr_id);
       attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
 				   NULL_TREE);
+
       /* We used to treat C++11 noreturn attribute as equivalent to GNU's,
 	 but no longer: we have to be able to tell [[noreturn]] and
 	 __attribute__((noreturn)) apart.  */
@@ -29461,8 +29443,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 /* Parse a standard C++-11 attribute-specifier-seq.
 
    attribute-specifier-seq:
-     attribute-specifier-seq [opt] attribute-specifier
- */
+     attribute-specifier-seq [opt] attribute-specifier  */
 
 static tree
 cp_parser_std_attribute_spec_seq (cp_parser *parser)
@@ -31417,6 +31398,7 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
 
   /* Generate code for it, if necessary.  */
   expand_or_defer_fn (fn);
+
   /* Restore the saved values.  */
   parser->in_unbraced_linkage_specification_p
     = saved_in_unbraced_linkage_specification_p;
@@ -46030,11 +46012,7 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 	      if (!type_dependent_expression_p (t))
 		t = contextual_conv_bool (t, tf_warning_or_error);
 	      if (is_assume && !error_operand_p (t))
-		{
-		  t = build_call_expr_internal_loc (eloc, IFN_ASSUME,
-						    void_type_node, 1, t);
-		  finish_expr_stmt (t);
-		}
+		finish_expr_stmt (build_assume_call (eloc, t));
 	      if (!parens.require_close (parser))
 		cp_parser_skip_to_closing_parenthesis (parser,
 						       /*recovering=*/true,

@@ -222,11 +222,12 @@ enum gfc_intrinsic_op
    Assumptions are made about the numbering of the interface_op enums.  */
 #define GFC_INTRINSIC_OPS GFC_INTRINSIC_END
 
-/* Arithmetic results.  */
+/* Arithmetic results.  ARITH_NOT_REDUCED is used to keep track of expressions
+   that were not reduced by the arithmetic evaluation code.  */
 enum arith
 { ARITH_OK = 1, ARITH_OVERFLOW, ARITH_UNDERFLOW, ARITH_NAN,
   ARITH_DIV0, ARITH_INCOMMENSURATE, ARITH_ASYMMETRIC, ARITH_PROHIBIT,
-  ARITH_WRONGCONCAT, ARITH_INVALID_TYPE
+  ARITH_WRONGCONCAT, ARITH_INVALID_TYPE, ARITH_NOT_REDUCED
 };
 
 /* Statements.  */

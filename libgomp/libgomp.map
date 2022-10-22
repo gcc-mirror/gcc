@@ -234,6 +234,12 @@ OMP_5.1.1 {
 	omp_target_memcpy_rect_async;
 } OMP_5.1;
 
+OMP_5.2 {
+  global:
+	omp_in_explicit_task;
+	omp_in_explicit_task_;
+} OMP_5.1.1;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;

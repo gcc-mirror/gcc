@@ -1416,9 +1416,6 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
   basic_block exit_bb = NULL;
   vec<basic_block> region;
 
-  if (find_data_references_in_loop (loop, refs) == chrec_dont_know)
-    return false;
-
   calculate_dominance_info (CDI_DOMINATORS);
 
   for (i = 0; i < loop->num_nodes; i++)
@@ -1541,12 +1538,11 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
    - if its basic blocks and phi nodes are if convertible.  */
 
 static bool
-if_convertible_loop_p (class loop *loop)
+if_convertible_loop_p (class loop *loop, vec<data_reference_p> *refs)
 {
   edge e;
   edge_iterator ei;
   bool res = false;
-  vec<data_reference_p> refs;
 
   /* Handle only innermost loop.  */
   if (!loop || loop->inner)
@@ -1578,15 +1574,7 @@ if_convertible_loop_p (class loop *loop)
     if (loop_exit_edge_p (loop, e))
       return false;
 
-  refs.create (5);
-  res = if_convertible_loop_p_1 (loop, &refs);
-
-  data_reference_p dr;
-  unsigned int i;
-  for (i = 0; refs.iterate (i, &dr); i++)
-    free (dr->aux);
-
-  free_data_refs (refs);
+  res = if_convertible_loop_p_1 (loop, refs);
 
   delete innermost_DR_map;
   innermost_DR_map = NULL;
@@ -3298,10 +3286,34 @@ get_bitfield_rep (gassign *stmt, bool write, tree *bitpos,
     *struct_expr = TREE_OPERAND (comp_ref, 0);
 
   if (bitpos)
-    *bitpos
-      = fold_build2 (MINUS_EXPR, bitsizetype,
-		     DECL_FIELD_BIT_OFFSET (field_decl),
-		     DECL_FIELD_BIT_OFFSET (rep_decl));
+    {
+      /* To calculate the bitposition of the BITFIELD_REF we have to determine
+	 where our bitfield starts in relation to the container REP_DECL. The
+	 DECL_FIELD_OFFSET of the original bitfield's member FIELD_DECL tells
+	 us how many bytes from the start of the structure there are until the
+	 start of the group of bitfield members the FIELD_DECL belongs to,
+	 whereas DECL_FIELD_BIT_OFFSET will tell us how many bits from that
+	 position our actual bitfield member starts.  For the container
+	 REP_DECL adding DECL_FIELD_OFFSET and DECL_FIELD_BIT_OFFSET will tell
+	 us the distance between the start of the structure and the start of
+	 the container, though the first is in bytes and the later other in
+	 bits.  With this in mind we calculate the bit position of our new
+	 BITFIELD_REF by subtracting the number of bits between the start of
+	 the structure and the container from the number of bits from the start
+	 of the structure and the actual bitfield member. */
+      tree bf_pos = fold_build2 (MULT_EXPR, bitsizetype,
+				 DECL_FIELD_OFFSET (field_decl),
+				 build_int_cst (bitsizetype, BITS_PER_UNIT));
+      bf_pos = fold_build2 (PLUS_EXPR, bitsizetype, bf_pos,
+			    DECL_FIELD_BIT_OFFSET (field_decl));
+      tree rep_pos = fold_build2 (MULT_EXPR, bitsizetype,
+				  DECL_FIELD_OFFSET (rep_decl),
+				  build_int_cst (bitsizetype, BITS_PER_UNIT));
+      rep_pos = fold_build2 (PLUS_EXPR, bitsizetype, rep_pos,
+			     DECL_FIELD_BIT_OFFSET (rep_decl));
+
+      *bitpos = fold_build2 (MINUS_EXPR, bitsizetype, bf_pos, rep_pos);
+    }
 
   return rep_decl;
 
@@ -3475,6 +3487,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   auto_vec <gassign *, 4> writes_to_lower;
   bitmap exit_bbs;
   edge pe;
+  vec<data_reference_p> refs;
 
  again:
   rloop = NULL;
@@ -3484,6 +3497,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   need_to_predicate = false;
   need_to_rewrite_undefined = false;
   any_complicated_phi = false;
+  refs.create (5);
 
   /* Apply more aggressive if-conversion when loop or its outer loop were
      marked with simd pragma.  When that's the case, we try to if-convert
@@ -3513,11 +3527,14 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
       goto cleanup;
     }
 
+  if (find_data_references_in_loop (loop, &refs) == chrec_dont_know)
+    goto cleanup;
+
   if (loop->num_nodes > 2)
     {
       need_to_ifcvt = true;
 
-      if (!if_convertible_loop_p (loop) || !dbg_cnt (if_conversion_tree))
+      if (!if_convertible_loop_p (loop, &refs) || !dbg_cnt (if_conversion_tree))
 	goto cleanup;
 
       if ((need_to_predicate || any_complicated_phi)
@@ -3634,6 +3651,13 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   todo |= TODO_cleanup_cfg;
 
  cleanup:
+  data_reference_p dr;
+  unsigned int i;
+  for (i = 0; refs.iterate (i, &dr); i++)
+    free (dr->aux);
+
+  refs.truncate (0);
+
   if (ifc_bbs)
     {
       unsigned int i;

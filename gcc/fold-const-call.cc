@@ -1301,6 +1301,7 @@ fold_const_call (combined_fn fn, tree type, tree arg)
 
     CASE_CFN_NANS:
     CASE_FLT_FN_FLOATN_NX (CFN_BUILT_IN_NANS):
+    case CFN_BUILT_IN_NANSF16B:
     case CFN_BUILT_IN_NANSD32:
     case CFN_BUILT_IN_NANSD64:
     case CFN_BUILT_IN_NANSD128:

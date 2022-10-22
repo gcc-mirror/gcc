@@ -3164,7 +3164,14 @@ finish_compound_literal (tree type, tree compound_literal,
     {
       /* DR2351 */
       if (VOID_TYPE_P (type) && CONSTRUCTOR_NELTS (compound_literal) == 0)
-	return void_node;
+	{
+	  if (!processing_template_decl)
+	    return void_node;
+	  TREE_TYPE (compound_literal) = type;
+	  TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+	  CONSTRUCTOR_IS_DEPENDENT (compound_literal) = 0;
+	  return compound_literal;
+	}
       else if (VOID_TYPE_P (type)
 	       && processing_template_decl
 	       && maybe_zero_constructor_nelts (compound_literal))

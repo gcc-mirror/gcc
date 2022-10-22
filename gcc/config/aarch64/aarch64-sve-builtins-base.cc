@@ -177,7 +177,7 @@ public:
 class svac_impl : public function_base
 {
 public:
-  CONSTEXPR svac_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svac_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -209,7 +209,7 @@ public:
 class svadr_bhwd_impl : public function_base
 {
 public:
-  CONSTEXPR svadr_bhwd_impl (unsigned int shift) : m_shift (shift) {}
+  constexpr svadr_bhwd_impl (unsigned int shift) : m_shift (shift) {}
 
   rtx
   expand (function_expander &e) const override
@@ -259,7 +259,7 @@ public:
 class svbrk_binary_impl : public function_base
 {
 public:
-  CONSTEXPR svbrk_binary_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svbrk_binary_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -275,7 +275,7 @@ public:
 class svbrk_unary_impl : public function_base
 {
 public:
-  CONSTEXPR svbrk_unary_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svbrk_unary_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -309,7 +309,7 @@ public:
 class svclast_impl : public quiet<function_base>
 {
 public:
-  CONSTEXPR svclast_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svclast_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -381,7 +381,7 @@ public:
 class svcmp_impl : public function_base
 {
 public:
-  CONSTEXPR svcmp_impl (tree_code code, int unspec_for_fp)
+  constexpr svcmp_impl (tree_code code, int unspec_for_fp)
     : m_code (code), m_unspec_for_fp (unspec_for_fp) {}
 
   gimple *
@@ -437,7 +437,7 @@ public:
 class svcmp_wide_impl : public function_base
 {
 public:
-  CONSTEXPR svcmp_wide_impl (tree_code code, int unspec_for_sint,
+  constexpr svcmp_wide_impl (tree_code code, int unspec_for_sint,
 			     int unspec_for_uint)
     : m_code (code), m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint) {}
@@ -512,14 +512,12 @@ public:
 class svcnt_bhwd_impl : public function_base
 {
 public:
-  CONSTEXPR svcnt_bhwd_impl (machine_mode ref_mode) : m_ref_mode (ref_mode) {}
+  constexpr svcnt_bhwd_impl (machine_mode ref_mode) : m_ref_mode (ref_mode) {}
 
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree count = build_int_cstu (TREE_TYPE (f.lhs),
-				 GET_MODE_NUNITS (m_ref_mode));
-    return gimple_build_assign (f.lhs, count);
+    return f.fold_to_cstu (GET_MODE_NUNITS (m_ref_mode));
   }
 
   rtx
@@ -536,8 +534,7 @@ public:
 class svcnt_bhwd_pat_impl : public svcnt_bhwd_impl
 {
 public:
-  CONSTEXPR svcnt_bhwd_pat_impl (machine_mode ref_mode)
-    : svcnt_bhwd_impl (ref_mode) {}
+  using svcnt_bhwd_impl::svcnt_bhwd_impl;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -554,10 +551,7 @@ public:
     unsigned int elements_per_vq = 128 / GET_MODE_UNIT_BITSIZE (m_ref_mode);
     HOST_WIDE_INT value = aarch64_fold_sve_cnt_pat (pattern, elements_per_vq);
     if (value >= 0)
-      {
-	tree count = build_int_cstu (TREE_TYPE (f.lhs), value);
-	return gimple_build_assign (f.lhs, count);
-      }
+      return f.fold_to_cstu (value);
 
     return NULL;
   }
@@ -588,8 +582,7 @@ public:
 class svcreate_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svcreate_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -722,12 +715,7 @@ public:
 class svdotprod_lane_impl : public unspec_based_function_base
 {
 public:
-  CONSTEXPR svdotprod_lane_impl (int unspec_for_sint,
-				 int unspec_for_uint,
-				 int unspec_for_float)
-    : unspec_based_function_base (unspec_for_sint,
-				  unspec_for_uint,
-				  unspec_for_float) {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -961,7 +949,7 @@ public:
 class svext_bhw_impl : public function_base
 {
 public:
-  CONSTEXPR svext_bhw_impl (scalar_int_mode from_mode)
+  constexpr svext_bhw_impl (scalar_int_mode from_mode)
     : m_from_mode (from_mode) {}
 
   rtx
@@ -1003,8 +991,7 @@ public:
 class svget_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svget_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -1066,7 +1053,7 @@ public:
 class svlast_impl : public quiet<function_base>
 {
 public:
-  CONSTEXPR svlast_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svlast_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1118,8 +1105,7 @@ public:
 class svld1_extend_impl : public extending_load
 {
 public:
-  CONSTEXPR svld1_extend_impl (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -1158,8 +1144,7 @@ public:
 class svld1_gather_extend_impl : public extending_load
 {
 public:
-  CONSTEXPR svld1_gather_extend_impl (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -1289,8 +1274,7 @@ public:
 class svld234_impl : public full_width_access
 {
 public:
-  CONSTEXPR svld234_impl (unsigned int vectors_per_tuple)
-    : full_width_access (vectors_per_tuple) {}
+  using full_width_access::full_width_access;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1372,8 +1356,7 @@ public:
 class svldff1_gather_extend : public extending_load
 {
 public:
-  CONSTEXPR svldff1_gather_extend (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -1416,7 +1399,7 @@ public:
 class svldxf1_impl : public full_width_access
 {
 public:
-  CONSTEXPR svldxf1_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svldxf1_impl (int unspec) : m_unspec (unspec) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1443,7 +1426,7 @@ public:
 class svldxf1_extend_impl : public extending_load
 {
 public:
-  CONSTEXPR svldxf1_extend_impl (type_suffix_index memory_type, int unspec)
+  constexpr svldxf1_extend_impl (type_suffix_index memory_type, int unspec)
     : extending_load (memory_type), m_unspec (unspec) {}
 
   unsigned int
@@ -1633,7 +1616,7 @@ public:
 class svnot_impl : public rtx_code_function
 {
 public:
-  CONSTEXPR svnot_impl () : rtx_code_function (NOT, NOT, -1) {}
+  constexpr svnot_impl () : rtx_code_function (NOT, NOT, -1) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1681,7 +1664,7 @@ public:
 class svpfirst_svpnext_impl : public function_base
 {
 public:
-  CONSTEXPR svpfirst_svpnext_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svpfirst_svpnext_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1699,7 +1682,7 @@ public:
 class svprf_bhwd_impl : public function_base
 {
 public:
-  CONSTEXPR svprf_bhwd_impl (machine_mode mode) : m_mode (mode) {}
+  constexpr svprf_bhwd_impl (machine_mode mode) : m_mode (mode) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1723,7 +1706,7 @@ public:
 class svprf_bhwd_gather_impl : public function_base
 {
 public:
-  CONSTEXPR svprf_bhwd_gather_impl (machine_mode mode) : m_mode (mode) {}
+  constexpr svprf_bhwd_gather_impl (machine_mode mode) : m_mode (mode) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1761,7 +1744,7 @@ public:
 class svptest_impl : public function_base
 {
 public:
-  CONSTEXPR svptest_impl (rtx_code compare) : m_compare (compare) {}
+  constexpr svptest_impl (rtx_code compare) : m_compare (compare) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1866,7 +1849,7 @@ public:
 class svqdec_svqinc_bhwd_impl : public function_base
 {
 public:
-  CONSTEXPR svqdec_svqinc_bhwd_impl (rtx_code code_for_sint,
+  constexpr svqdec_svqinc_bhwd_impl (rtx_code code_for_sint,
 				     rtx_code code_for_uint,
 				     scalar_int_mode elem_mode)
     : m_code_for_sint (code_for_sint),
@@ -1913,7 +1896,7 @@ public:
 class svqdec_bhwd_impl : public svqdec_svqinc_bhwd_impl
 {
 public:
-  CONSTEXPR svqdec_bhwd_impl (scalar_int_mode elem_mode)
+  constexpr svqdec_bhwd_impl (scalar_int_mode elem_mode)
     : svqdec_svqinc_bhwd_impl (SS_MINUS, US_MINUS, elem_mode) {}
 };
 
@@ -1921,7 +1904,7 @@ public:
 class svqinc_bhwd_impl : public svqdec_svqinc_bhwd_impl
 {
 public:
-  CONSTEXPR svqinc_bhwd_impl (scalar_int_mode elem_mode)
+  constexpr svqinc_bhwd_impl (scalar_int_mode elem_mode)
     : svqdec_svqinc_bhwd_impl (SS_PLUS, US_PLUS, elem_mode) {}
 };
 
@@ -1929,7 +1912,7 @@ public:
 class svqdecp_svqincp_impl : public function_base
 {
 public:
-  CONSTEXPR svqdecp_svqincp_impl (rtx_code code_for_sint,
+  constexpr svqdecp_svqincp_impl (rtx_code code_for_sint,
 				  rtx_code code_for_uint)
     : m_code_for_sint (code_for_sint),
       m_code_for_uint (code_for_uint)
@@ -2070,8 +2053,7 @@ public:
 class svset_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svset_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -2199,8 +2181,7 @@ public:
 class svst1_scatter_truncate_impl : public truncating_store
 {
 public:
-  CONSTEXPR svst1_scatter_truncate_impl (scalar_int_mode to_mode)
-    : truncating_store (to_mode) {}
+  using truncating_store::truncating_store;
 
   rtx
   expand (function_expander &e) const override
@@ -2219,8 +2200,7 @@ public:
 class svst1_truncate_impl : public truncating_store
 {
 public:
-  CONSTEXPR svst1_truncate_impl (scalar_int_mode to_mode)
-    : truncating_store (to_mode) {}
+  using truncating_store::truncating_store;
 
   rtx
   expand (function_expander &e) const override
@@ -2235,8 +2215,7 @@ public:
 class svst234_impl : public full_width_access
 {
 public:
-  CONSTEXPR svst234_impl (unsigned int vectors_per_tuple)
-    : full_width_access (vectors_per_tuple) {}
+  using full_width_access::full_width_access;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -2296,7 +2275,7 @@ public:
 class svsub_impl : public rtx_code_function
 {
 public:
-  CONSTEXPR svsub_impl ()
+  constexpr svsub_impl ()
     : rtx_code_function (MINUS, MINUS, UNSPEC_COND_FSUB) {}
 
   rtx
@@ -2325,7 +2304,7 @@ public:
 class svtrn_impl : public binary_permute
 {
 public:
-  CONSTEXPR svtrn_impl (int base)
+  constexpr svtrn_impl (int base)
     : binary_permute (base ? UNSPEC_TRN2 : UNSPEC_TRN1), m_base (base) {}
 
   gimple *
@@ -2351,8 +2330,7 @@ public:
 class svundef_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svundef_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   rtx
   expand (function_expander &e) const override
@@ -2367,7 +2345,7 @@ public:
 class svunpk_impl : public quiet<function_base>
 {
 public:
-  CONSTEXPR svunpk_impl (bool high_p) : m_high_p (high_p) {}
+  constexpr svunpk_impl (bool high_p) : m_high_p (high_p) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -2409,7 +2387,7 @@ public:
 class svusdot_impl : public function_base
 {
 public:
-  CONSTEXPR svusdot_impl (bool su) : m_su (su) {}
+  constexpr svusdot_impl (bool su) : m_su (su) {}
 
   rtx
   expand (function_expander &e) const override
@@ -2437,7 +2415,7 @@ private:
 class svuzp_impl : public binary_permute
 {
 public:
-  CONSTEXPR svuzp_impl (unsigned int base)
+  constexpr svuzp_impl (unsigned int base)
     : binary_permute (base ? UNSPEC_UZP2 : UNSPEC_UZP1), m_base (base) {}
 
   gimple *
@@ -2460,7 +2438,7 @@ public:
 class svwhilelx_impl : public while_comparison
 {
 public:
-  CONSTEXPR svwhilelx_impl (int unspec_for_sint, int unspec_for_uint, bool eq_p)
+  constexpr svwhilelx_impl (int unspec_for_sint, int unspec_for_uint, bool eq_p)
     : while_comparison (unspec_for_sint, unspec_for_uint), m_eq_p (eq_p)
   {}
 
@@ -2547,7 +2525,7 @@ public:
 class svzip_impl : public binary_permute
 {
 public:
-  CONSTEXPR svzip_impl (unsigned int base)
+  constexpr svzip_impl (unsigned int base)
     : binary_permute (base ? UNSPEC_ZIP2 : UNSPEC_ZIP1), m_base (base) {}
 
   gimple *

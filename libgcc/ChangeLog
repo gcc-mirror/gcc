@@ -1,3 +1,59 @@
+2022-10-19  LIU Hao  <lh_mouse@126.com>
+
+	* config.host: Add new cases for `mcf` thread model
+	* config/i386/gthr-mcf.h: New file
+	* config/i386/t-mingw-mcfgthread: New file
+	* config/i386/t-slibgcc-cygming: Add mcfgthread for libgcc DLL
+	* configure: Regenerate
+
+2022-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Quote variable.
+
+2022-10-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* unwind-generic.h (_Unwind_Frames_Increment): Add the EXC
+	argument.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Pass EXC to
+	_Unwind_Frames_Increment.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Take the EXC argument.  Return _URC_FATAL_PHASE2_ERROR if the
+	return address on normal stack doesn't match the return address
+	on shadow stack.
+
+2022-10-17  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2.h (struct frame_state_reg_info): Move cfa_how member
+	and reduce its size.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/t-softfp (softfp_extensions): Add bfsf.
+	(softfp_truncations): Add tfbf xfbf dfbf sfbf hfbf.
+	(CFLAGS-extendbfsf2.c, CFLAGS-truncsfbf2.c, CFLAGS-truncdfbf2.c,
+	CFLAGS-truncxfbf2.c, CFLAGS-trunctfbf2.c, CFLAGS-trunchfbf2.c): Add
+	-msse2.
+	* config/i386/libgcc-glibc.ver (GCC_13.0.0): Export
+	__extendbfsf2 and __trunc{s,d,x,t,h}fbf2.
+	* config/i386/sfp-machine.h (_FP_NANSIGN_B): Define.
+	* config/i386/64/sfp-machine.h (_FP_NANFRAC_B): Define.
+	* config/i386/32/sfp-machine.h (_FP_NANFRAC_B): Define.
+	* soft-fp/brain.h: New file.
+	* soft-fp/truncsfbf2.c: New file.
+	* soft-fp/truncdfbf2.c: New file.
+	* soft-fp/truncxfbf2.c: New file.
+	* soft-fp/trunctfbf2.c: New file.
+	* soft-fp/trunchfbf2.c: New file.
+	* soft-fp/truncbfhf2.c: New file.
+	* soft-fp/extendbfsf2.c: New file.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Use new function.
+	* libgcov.h (gcov_write_summary): Rename to ...
+	(gcov_write_object_summary): ... this.
+
 2022-10-11  Olivier Hainque  <hainque@adacore.com>
 
 	* config.host (*vxworks*): When enable_shared, add

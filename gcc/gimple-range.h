@@ -80,4 +80,22 @@ extern gimple_ranger *enable_ranger (struct function *m,
 				     bool use_imm_uses = true);
 extern void disable_ranger (struct function *);
 
+class assume_query : public range_query
+{
+public:
+  assume_query ();
+  bool assume_range_p (vrange &r, tree name);
+  virtual bool range_of_expr (vrange &r, tree expr, gimple * = NULL);
+  void dump (FILE *f);
+protected:
+  void calculate_stmt (gimple *s, vrange &lhs_range, fur_source &src);
+  void calculate_op (tree op, gimple *s, vrange &lhs, fur_source &src);
+  void calculate_phi (gphi *phi, vrange &lhs_range, fur_source &src);
+  void check_taken_edge (edge e, fur_source &src);
+
+  ssa_global_cache global;
+  gori_compute m_gori;
+};
+
+
 #endif // GCC_GIMPLE_RANGE_H

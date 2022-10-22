@@ -1192,8 +1192,18 @@ vtv_generate_init_routine (void)
       cgraph_node::add_new_function (vtv_fndecl, false);
 
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY && !TARGET_PECOFF)
-        assemble_vtv_preinit_initializer (vtv_fndecl);
+	{
+	  tree vtv_var
+	    = build_decl (BUILTINS_LOCATION, VAR_DECL,
+			  get_identifier ("__vtv_preinit"),
+			  build_pointer_type (TREE_TYPE (vtv_fndecl)));
+	  TREE_STATIC (vtv_var) = 1;
+	  DECL_ARTIFICIAL (vtv_var) = 1;
+	  DECL_INITIAL (vtv_var) = build_fold_addr_expr (vtv_fndecl);
+	  set_decl_section_name (vtv_var, ".preinit_array");
 
+	  varpool_node::add (vtv_var);
+	}
     }
   pop_lang_context ();
 }

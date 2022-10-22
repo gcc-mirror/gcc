@@ -49,6 +49,17 @@
 // version dynamically in case it has changed since libstdc++ was configured.
 #define _GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC __GLIBC_PREREQ(2,23)
 
+// Glibc 2.26 on i?86/x86-64/ia64/ppc64le added *f128 support.
+// Glibc 2.27 added it also on many other arches but those have IEEE quad
+// long double.
+#if __GLIBC_PREREQ(2, 26) \
+    && (defined(__i386__) || defined(__x86_64__) || defined (__ia64__) \
+	|| (defined(__powerpc__) && defined(_ARCH_PWR8) \
+	    && defined(__LITTLE_ENDIAN__) && (_CALL_ELF == 2) \
+	    && defined(__FLOAT128__)))
+//# define _GLIBCXX_HAVE_FLOAT128_MATH 1
+#endif
+
 #if __GLIBC_PREREQ(2, 27)
 // Since glibc 2.27 pthread_self() is usable without linking to libpthread.
 # define _GLIBCXX_NATIVE_THREAD_ID pthread_self()

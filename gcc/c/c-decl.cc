@@ -4814,6 +4814,20 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      warned = 1;
 	      pending_xref_error ();
 	    }
+	  else if (declspecs->typespec_kind != ctsk_tagdef
+		   && declspecs->typespec_kind != ctsk_tagfirstref
+		   && declspecs->typespec_kind != ctsk_tagfirstref_attrs
+		   && code == ENUMERAL_TYPE)
+	    {
+	      bool warned_enum = false;
+	      if (warned != 1)
+		warned_enum = pedwarn (input_location, OPT_Wpedantic,
+				       "empty declaration of %<enum%> type "
+				       "does not redeclare tag");
+	      if (warned_enum)
+		warned = 1;
+	      pending_xref_error ();
+	    }
 	  else
 	    {
 	      pending_invalid_xref = NULL_TREE;
@@ -6048,11 +6062,13 @@ mark_forward_parm_decls (void)
    literal.  NON_CONST is true if the initializers contain something
    that cannot occur in a constant expression.  If ALIGNAS_ALIGN is nonzero,
    it is the (valid) alignment for this compound literal, as specified
-   with _Alignas.  */
+   with _Alignas.  SCSPECS are the storage class specifiers (C2x) from the
+   compound literal.  */
 
 tree
 build_compound_literal (location_t loc, tree type, tree init, bool non_const,
-			unsigned int alignas_align)
+			unsigned int alignas_align,
+			struct c_declspecs *scspecs)
 {
   /* We do not use start_decl here because we have a type, not a declarator;
      and do not use finish_decl because the decl should be stored inside
@@ -6060,15 +6076,33 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   tree decl;
   tree complit;
   tree stmt;
+  bool threadp = scspecs ? scspecs->thread_p : false;
+  enum c_storage_class storage_class = (scspecs
+					? scspecs->storage_class
+					: csc_none);
 
   if (type == error_mark_node
       || init == error_mark_node)
     return error_mark_node;
 
+  if (current_scope == file_scope && storage_class == csc_register)
+    {
+      error_at (loc, "file-scope compound literal specifies %<register%>");
+      storage_class = csc_none;
+    }
+
+  if (current_scope != file_scope && threadp && storage_class == csc_none)
+    {
+      error_at (loc, "compound literal implicitly auto and declared %qs",
+		scspecs->thread_gnu_p ? "__thread" : "_Thread_local");
+      threadp = false;
+    }
+
   decl = build_decl (loc, VAR_DECL, NULL_TREE, type);
   DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = 0;
-  TREE_STATIC (decl) = (current_scope == file_scope);
+  TREE_STATIC (decl) = (current_scope == file_scope
+			|| storage_class == csc_static);
   DECL_CONTEXT (decl) = current_function_decl;
   TREE_USED (decl) = 1;
   DECL_READ_P (decl) = 1;
@@ -6076,6 +6110,13 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   DECL_IGNORED_P (decl) = 1;
   C_DECL_COMPOUND_LITERAL_P (decl) = 1;
   TREE_TYPE (decl) = type;
+  if (threadp)
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
+  if (storage_class == csc_register)
+    {
+      C_DECL_REGISTER (decl) = 1;
+      DECL_REGISTER (decl) = 1;
+    }
   c_apply_type_quals_to_decl (TYPE_QUALS (strip_array_types (type)), decl);
   if (alignas_align)
     {
@@ -9358,6 +9399,10 @@ finish_enum (tree enumtype, tree values, tree attributes)
   precision = MAX (tree_int_cst_min_precision (minnode, sign),
 		   tree_int_cst_min_precision (maxnode, sign));
 
+  bool wider_than_int =
+    (tree_int_cst_lt (minnode, TYPE_MIN_VALUE (integer_type_node))
+     || tree_int_cst_lt (TYPE_MAX_VALUE (integer_type_node), maxnode));
+
   /* If the precision of the type was specified with an attribute and it
      was too small, give an error.  Otherwise, use it.  */
   if (TYPE_PRECISION (enumtype) && lookup_attribute ("mode", attributes))
@@ -9380,9 +9425,20 @@ finish_enum (tree enumtype, tree values, tree attributes)
       tem = c_common_type_for_size (precision, sign == UNSIGNED ? 1 : 0);
       if (tem == NULL)
 	{
-	  warning (0, "enumeration values exceed range of largest integer");
-	  tem = long_long_integer_type_node;
+	  /* This should only occur when both signed and unsigned
+	     values of maximum precision occur among the
+	     enumerators.  */
+	  pedwarn (input_location, 0,
+		   "enumeration values exceed range of largest integer");
+	  tem = widest_integer_literal_type_node;
 	}
+      else if (precision > TYPE_PRECISION (intmax_type_node)
+	       && !tree_int_cst_lt (minnode, TYPE_MIN_VALUE (intmax_type_node))
+	       && !tree_int_cst_lt (TYPE_MAX_VALUE (uintmax_type_node),
+				    maxnode))
+	pedwarn (input_location, OPT_Wpedantic,
+		 "enumeration values exceed range of %qs",
+		 sign == UNSIGNED ? "uintmax_t" : "intmax_t");
     }
   else
     tem = sign == UNSIGNED ? unsigned_type_node : integer_type_node;
@@ -9412,17 +9468,17 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
 	  TREE_TYPE (enu) = enumtype;
 
-	  /* The ISO C Standard mandates enumerators to have type int,
-	     even though the underlying type of an enum type is
-	     unspecified.  However, GCC allows enumerators of any
-	     integer type as an extensions.  build_enumerator()
-	     converts any enumerators that fit in an int to type int,
-	     to avoid promotions to unsigned types when comparing
-	     integers with enumerators that fit in the int range.
-	     When -pedantic is given, build_enumerator() would have
-	     already warned about those that don't fit. Here we
-	     convert the rest to the enumerator type. */
-	  if (TREE_TYPE (ini) != integer_type_node)
+	  /* Before C2X, the ISO C Standard mandates enumerators to
+	     have type int, even though the underlying type of an enum
+	     type is unspecified.  However, C2X allows enumerators of
+	     any integer type, and if an enumeration has any
+	     enumerators wider than int, all enumerators have the
+	     enumerated type after it is parsed.  Any enumerators that
+	     fit in int are given type int in build_enumerator (which
+	     is the correct type while the enumeration is being
+	     parsed), so no conversions are needed here if all
+	     enumerators fit in int.  */
+	  if (wider_than_int)
 	    ini = convert (enumtype, ini);
 
 	  DECL_INITIAL (enu) = ini;
@@ -9490,7 +9546,7 @@ tree
 build_enumerator (location_t decl_loc, location_t loc,
 		  struct c_enum_contents *the_enum, tree name, tree value)
 {
-  tree decl, type;
+  tree decl;
 
   /* Validate and default VALUE.  */
 
@@ -9541,21 +9597,45 @@ build_enumerator (location_t decl_loc, location_t loc,
     }
   /* Even though the underlying type of an enum is unspecified, the
      type of enumeration constants is explicitly defined as int
-     (6.4.4.3/2 in the C99 Standard).  GCC allows any integer type as
-     an extension.  */
-  else if (!int_fits_type_p (value, integer_type_node))
-    pedwarn (loc, OPT_Wpedantic,
-	     "ISO C restricts enumerator values to range of %<int%>");
+     (6.4.4.3/2 in the C99 Standard).  C2X allows any integer type, and
+     GCC allows such types for older standards as an extension.  */
+  bool warned_range = false;
+  if (!int_fits_type_p (value,
+			(TYPE_UNSIGNED (TREE_TYPE (value))
+			 ? uintmax_type_node
+			 : intmax_type_node)))
+    /* GCC does not consider its types larger than intmax_t to be
+       extended integer types (although C2X would permit such types to
+       be considered extended integer types if all the features
+       required by <stdint.h> and <inttypes.h> macros, such as support
+       for integer constants and I/O, were present), so diagnose if
+       such a wider type is used.  (If the wider type arose from a
+       constant of such a type, that will also have been diagnosed,
+       but this is the only diagnostic in the case where it arises
+       from choosing a wider type automatically when adding 1
+       overflows.)  */
+    warned_range = pedwarn (loc, OPT_Wpedantic,
+			    "enumerator value outside the range of %qs",
+			    (TYPE_UNSIGNED (TREE_TYPE (value))
+			     ? "uintmax_t"
+			     : "intmax_t"));
+  if (!warned_range && !int_fits_type_p (value, integer_type_node))
+    pedwarn_c11 (loc, OPT_Wpedantic,
+		 "ISO C restricts enumerator values to range of %<int%> "
+		 "before C2X");
 
-  /* The ISO C Standard mandates enumerators to have type int, even
-     though the underlying type of an enum type is unspecified.
-     However, GCC allows enumerators of any integer type as an
-     extensions.  Here we convert any enumerators that fit in an int
-     to type int, to avoid promotions to unsigned types when comparing
-     integers with enumerators that fit in the int range.  When
-     -pedantic is given, we would have already warned about those that
-     don't fit. We have to do this here rather than in finish_enum
-     because this value may be used to define more enumerators.  */
+  /* The ISO C Standard mandates enumerators to have type int before
+     C2X, even though the underlying type of an enum type is
+     unspecified.  C2X allows enumerators of any integer type.  During
+     the parsing of the enumeration, C2X specifies that constants
+     representable in int have type int, constants not representable
+     in int have the type of the given expression if any, and
+     constants not representable in int and derived by adding 1 to the
+     previous constant have the type of that constant unless the
+     addition would overflow or wraparound, in which case a wider type
+     of the same signedness is chosen automatically; after the
+     enumeration is parsed, all the constants have the type of the
+     enumeration if any do not fit in int.  */
   if (int_fits_type_p (value, integer_type_node))
     value = convert (integer_type_node, value);
 
@@ -9564,18 +9644,38 @@ build_enumerator (location_t decl_loc, location_t loc,
     = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
 		       PLUS_EXPR, value, integer_one_node, false);
   the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
+  if (the_enum->enum_overflow)
+    {
+      /* Choose a wider type with the same signedness if
+	 available.  */
+      int prec = TYPE_PRECISION (TREE_TYPE (value)) + 1;
+      bool unsignedp = TYPE_UNSIGNED (TREE_TYPE (value));
+      tree new_type = (unsignedp
+		       ? long_unsigned_type_node
+		       : long_integer_type_node);
+      if (prec > TYPE_PRECISION (new_type))
+	new_type = (unsignedp
+		    ? long_long_unsigned_type_node
+		    : long_long_integer_type_node);
+      if (prec > TYPE_PRECISION (new_type))
+	new_type = (unsignedp
+		    ? widest_unsigned_literal_type_node
+		    : widest_integer_literal_type_node);
+      if (prec <= TYPE_PRECISION (new_type))
+	{
+	  the_enum->enum_overflow = false;
+	  the_enum->enum_next_value
+	    = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
+			       PLUS_EXPR, convert (new_type, value),
+			       integer_one_node, false);
+	  gcc_assert (!tree_int_cst_lt (the_enum->enum_next_value, value));
+	}
+    }
 
   /* Now create a declaration for the enum value name.  */
 
-  type = TREE_TYPE (value);
-  type = c_common_type_for_size (MAX (TYPE_PRECISION (type),
-				      TYPE_PRECISION (integer_type_node)),
-				 (TYPE_PRECISION (type)
-				  >= TYPE_PRECISION (integer_type_node)
-				  && TYPE_UNSIGNED (type)));
-
-  decl = build_decl (decl_loc, CONST_DECL, name, type);
-  DECL_INITIAL (decl) = convert (type, value);
+  decl = build_decl (decl_loc, CONST_DECL, name, TREE_TYPE (value));
+  DECL_INITIAL (decl) = value;
   pushdecl (decl);
 
   return tree_cons (decl, value, NULL_TREE);

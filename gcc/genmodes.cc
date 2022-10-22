@@ -1527,12 +1527,43 @@ emit_mode_wider (void)
   int c;
   struct mode_data *m;
 
-  print_decl ("unsigned char", "mode_wider", "NUM_MACHINE_MODES");
+  print_decl ("unsigned char", "mode_next", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
     tagged_printf ("E_%smode",
 		   m->wider ? m->wider->name : void_mode->name,
 		   m->name);
+
+  print_closer ();
+  print_decl ("unsigned char", "mode_wider", "NUM_MACHINE_MODES");
+
+  for_all_modes (c, m)
+    {
+      struct mode_data *m2 = 0;
+
+      if (m->cl == MODE_INT
+	  || m->cl == MODE_PARTIAL_INT
+	  || m->cl == MODE_FLOAT
+	  || m->cl == MODE_DECIMAL_FLOAT
+	  || m->cl == MODE_COMPLEX_FLOAT
+	  || m->cl == MODE_FRACT
+	  || m->cl == MODE_UFRACT
+	  || m->cl == MODE_ACCUM
+	  || m->cl == MODE_UACCUM)
+	for (m2 = m->wider; m2 && m2 != void_mode; m2 = m2->wider)
+	  {
+	    if (m2->bytesize == m->bytesize
+		&& m2->precision == m->precision)
+	      continue;
+	    break;
+	  }
+
+      if (m2 == void_mode)
+	m2 = 0;
+      tagged_printf ("E_%smode",
+		     m2 ? m2->name : void_mode->name,
+		     m->name);
+    }
 
   print_closer ();
   print_decl ("unsigned char", "mode_2xwider", "NUM_MACHINE_MODES");

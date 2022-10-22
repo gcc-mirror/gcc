@@ -21,13 +21,13 @@ _Static_assert (FLT_IS_IEC_60559 == 0);
 _Static_assert (DBL_IS_IEC_60559 == 0);
 _Static_assert (LDBL_IS_IEC_60559 == 0);
 #else
-_Static_assert (FLT_IS_IEC_60559 == 2);
-_Static_assert (DBL_IS_IEC_60559 == 2);
+_Static_assert (FLT_IS_IEC_60559 == 1);
+_Static_assert (DBL_IS_IEC_60559 == 1);
 #if LDBL_MANT_DIG == 106 || LDBL_MIN_EXP == -16382
 /* IBM long double and m68k extended format do not meet the definition
    of an IEC 60559 interchange or extended format.  */
 _Static_assert (LDBL_IS_IEC_60559 == 0);
 #else
-_Static_assert (LDBL_IS_IEC_60559 == 2);
+_Static_assert (LDBL_IS_IEC_60559 == 1);
 #endif
 #endif

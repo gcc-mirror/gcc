@@ -20,6 +20,7 @@
 
 AC_INIT(package-unused, version-unused,, libobjc)
 AC_CONFIG_SRCDIR([objc/objc.h])
+AC_CONFIG_MACRO_DIRS([../config] [..])
 GCC_TOPLEV_SUBDIRS
 
 # We need the following definitions because AC_PROG_LIBTOOL relies on them

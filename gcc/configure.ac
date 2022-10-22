@@ -25,6 +25,7 @@
 
 AC_INIT
 AC_CONFIG_SRCDIR(tree.cc)
+AC_CONFIG_MACRO_DIRS([../config] [..])
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
 gcc_version=`cat $srcdir/BASE-VER`
@@ -1995,7 +1996,7 @@ case ${enable_threads} in
     target_thread_file='single'
     ;;
   aix | dce | lynx | mipssde | posix | rtems | \
-  single | tpf | vxworks | win32)
+  single | tpf | vxworks | win32 | mcf)
     target_thread_file=${enable_threads}
     ;;
   *)

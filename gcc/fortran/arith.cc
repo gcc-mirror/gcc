@@ -422,6 +422,9 @@ gfc_arith_not (gfc_expr *op1, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, op1->ts.kind, &op1->where);
   result->value.logical = !op1->value.logical;
   *resultp = result;
@@ -434,6 +437,9 @@ static arith
 gfc_arith_and (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
@@ -449,6 +455,9 @@ gfc_arith_or (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
   result->value.logical = op1->value.logical || op2->value.logical;
@@ -463,6 +472,9 @@ gfc_arith_eqv (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
   result->value.logical = op1->value.logical == op2->value.logical;
@@ -476,6 +488,9 @@ static arith
 gfc_arith_neqv (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != BT_LOGICAL || op2->ts.type != BT_LOGICAL)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_kind_max (op1, op2),
 				  &op1->where);
@@ -624,6 +639,9 @@ gfc_arith_plus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   arith rc;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
   switch (op1->ts.type)
@@ -657,6 +675,9 @@ gfc_arith_minus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
   arith rc;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
@@ -692,6 +713,9 @@ gfc_arith_times (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   gfc_expr *result;
   arith rc;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
 
   switch (op1->ts.type)
@@ -726,6 +750,9 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
   arith rc;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   rc = ARITH_OK;
 
@@ -814,6 +841,9 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   int power_sign;
   gfc_expr *result;
   arith rc;
+
+  if (!gfc_numeric_ts (&op1->ts) || !gfc_numeric_ts (&op2->ts))
+    return ARITH_INVALID_TYPE;
 
   rc = ARITH_OK;
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
@@ -1172,6 +1202,9 @@ gfc_arith_eq (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
   result->value.logical = (op1->ts.type == BT_COMPLEX)
@@ -1187,6 +1220,9 @@ static arith
 gfc_arith_ne (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
@@ -1204,6 +1240,9 @@ gfc_arith_gt (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_GT) > 0);
@@ -1217,6 +1256,9 @@ static arith
 gfc_arith_ge (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
@@ -1232,6 +1274,9 @@ gfc_arith_lt (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
 
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
+
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_LT) < 0);
@@ -1245,6 +1290,9 @@ static arith
 gfc_arith_le (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
+
+  if (op1->ts.type != op2->ts.type)
+    return ARITH_INVALID_TYPE;
 
   result = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
 				  &op1->where);
@@ -1267,14 +1315,14 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
   if (op->expr_type == EXPR_CONSTANT)
     return eval (op, result);
 
+  if (op->expr_type != EXPR_ARRAY)
+    return ARITH_NOT_REDUCED;
+
   rc = ARITH_OK;
   head = gfc_constructor_copy (op->value.constructor);
   for (c = gfc_constructor_first (head); c; c = gfc_constructor_next (c))
     {
-      if (c->expr->expr_type == EXPR_OP && c->expr->ts.type == BT_UNKNOWN)
-	rc = ARITH_INVALID_TYPE;
-      else
-	rc = reduce_unary (eval, c->expr, &r);
+      rc = reduce_unary (eval, c->expr, &r);
 
       if (rc != ARITH_OK)
 	break;
@@ -1315,8 +1363,8 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 
       if (c->expr->expr_type == EXPR_CONSTANT)
         rc = eval (c->expr, op2, &r);
-      else if (c->expr->expr_type == EXPR_OP && c->expr->ts.type == BT_UNKNOWN)
-	rc = ARITH_INVALID_TYPE;
+      else if (c->expr->expr_type != EXPR_ARRAY)
+	rc = ARITH_NOT_REDUCED;
       else
 	rc = reduce_binary_ac (eval, c->expr, op2, &r);
 
@@ -1369,8 +1417,8 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 
       if (c->expr->expr_type == EXPR_CONSTANT)
 	rc = eval (op1, c->expr, &r);
-      else if (c->expr->expr_type == EXPR_OP && c->expr->ts.type == BT_UNKNOWN)
-	rc = ARITH_INVALID_TYPE;
+      else if (c->expr->expr_type != EXPR_ARRAY)
+	rc = ARITH_NOT_REDUCED;
       else
 	rc = reduce_binary_ca (eval, op1, c->expr, &r);
 
@@ -1430,11 +1478,7 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
        c && d;
        c = gfc_constructor_next (c), d = gfc_constructor_next (d))
     {
-      if ((c->expr->expr_type == EXPR_OP && c->expr->ts.type == BT_UNKNOWN)
-	  || (d->expr->expr_type == EXPR_OP && d->expr->ts.type == BT_UNKNOWN))
-	rc = ARITH_INVALID_TYPE;
-      else
-	rc = reduce_binary (eval, c->expr, d->expr, &r);
+      rc = reduce_binary (eval, c->expr, d->expr, &r);
 
       if (rc != ARITH_OK)
 	break;
@@ -1474,6 +1518,9 @@ reduce_binary (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 
   if (op1->expr_type == EXPR_ARRAY && op2->expr_type == EXPR_CONSTANT)
     return reduce_binary_ac (eval, op1, op2, result);
+
+  if (op1->expr_type != EXPR_ARRAY || op2->expr_type != EXPR_ARRAY)
+    return ARITH_NOT_REDUCED;
 
   return reduce_binary_aa (eval, op1, op2, result);
 }
@@ -1653,7 +1700,7 @@ eval_intrinsic (gfc_intrinsic_op op,
   else
     rc = reduce_binary (eval.f3, op1, op2, &result);
 
-  if (rc == ARITH_INVALID_TYPE)
+  if (rc == ARITH_INVALID_TYPE || rc == ARITH_NOT_REDUCED)
     goto runtime;
 
   /* Something went wrong.  */

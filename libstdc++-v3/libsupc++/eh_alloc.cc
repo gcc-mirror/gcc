@@ -101,12 +101,21 @@ using namespace __cxxabiv1;
 #ifdef _GLIBCXX_EH_POOL_NOBJS
 # if _GLIBCXX_EH_POOL_NOBJS > MAX_OBJ_COUNT
 #  warning "_GLIBCXX_EH_POOL_NOBJS value is too large; ignoring it"
+# elif _GLIBCXX_EH_POOL_NOBJS < 0
+#  warning "_GLIBCXX_EH_POOL_NOBJS value is negative; ignoring it"
 # else
 #  undef EMERGENCY_OBJ_COUNT
 #  define EMERGENCY_OBJ_COUNT _GLIBCXX_EH_POOL_NOBJS
 # endif
 #endif
 
+#if defined _GLIBCXX_EH_POOL_STATIC && EMERGENCY_OBJ_COUNT == 0
+# define USE_POOL 0
+#else
+# define USE_POOL 1
+#endif
+
+#if USE_POOL
 namespace __gnu_cxx
 {
   void __freeres() noexcept;
@@ -161,7 +170,7 @@ namespace
 #ifdef _GLIBCXX_EH_POOL_STATIC
       static constexpr std::size_t arena_size
 	= buffer_size_in_bytes(EMERGENCY_OBJ_COUNT, EMERGENCY_OBJ_SIZE);
-      alignas(void*) char arena[std::max(arena_size, sizeof(free_entry))];
+      alignas(void*) char arena[arena_size];
 #else
       char *arena = nullptr;
       std::size_t arena_size = 0;
@@ -374,6 +383,7 @@ namespace __gnu_cxx
 #endif
   }
 }
+#endif // USE_POOL
 
 extern "C" void *
 __cxxabiv1::__cxa_allocate_exception(std::size_t thrown_size) noexcept
@@ -382,8 +392,10 @@ __cxxabiv1::__cxa_allocate_exception(std::size_t thrown_size) noexcept
 
   void *ret = malloc (thrown_size);
 
+#if USE_POOL
   if (!ret)
     ret = emergency_pool.allocate (thrown_size);
+#endif
 
   if (!ret)
     std::terminate ();
@@ -398,9 +410,11 @@ extern "C" void
 __cxxabiv1::__cxa_free_exception(void *vptr) noexcept
 {
   char *ptr = (char *) vptr - sizeof (__cxa_refcounted_exception);
+#if USE_POOL
   if (emergency_pool.in_pool (ptr)) [[__unlikely__]]
     emergency_pool.free (ptr);
   else
+#endif
     free (ptr);
 }
 
@@ -410,8 +424,10 @@ __cxxabiv1::__cxa_allocate_dependent_exception() noexcept
 {
   void *ret = malloc (sizeof (__cxa_dependent_exception));
 
+#if USE_POOL
   if (!ret)
     ret = emergency_pool.allocate (sizeof (__cxa_dependent_exception));
+#endif
 
   if (!ret)
     std::terminate ();
@@ -426,8 +442,10 @@ extern "C" void
 __cxxabiv1::__cxa_free_dependent_exception
   (__cxa_dependent_exception *vptr) noexcept
 {
+#if USE_POOL
   if (emergency_pool.in_pool (vptr)) [[__unlikely__]]
     emergency_pool.free (vptr);
   else
+#endif
     free (vptr);
 }

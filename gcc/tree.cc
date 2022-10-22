@@ -7711,7 +7711,7 @@ excess_precision_type (tree type)
     = (flag_excess_precision == EXCESS_PRECISION_FAST
        ? EXCESS_PRECISION_TYPE_FAST
        : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
-	  ? EXCESS_PRECISION_TYPE_FLOAT16 :EXCESS_PRECISION_TYPE_STANDARD));
+	  ? EXCESS_PRECISION_TYPE_FLOAT16 : EXCESS_PRECISION_TYPE_STANDARD));
 
   enum flt_eval_method target_flt_eval_method
     = targetm.c.excess_precision (requested_type);
@@ -7736,6 +7736,9 @@ excess_precision_type (tree type)
   machine_mode float16_type_mode = (float16_type_node
 				    ? TYPE_MODE (float16_type_node)
 				    : VOIDmode);
+  machine_mode bfloat16_type_mode = (bfloat16_type_node
+				     ? TYPE_MODE (bfloat16_type_node)
+				     : VOIDmode);
   machine_mode float_type_mode = TYPE_MODE (float_type_node);
   machine_mode double_type_mode = TYPE_MODE (double_type_node);
 
@@ -7747,16 +7750,19 @@ excess_precision_type (tree type)
 	switch (target_flt_eval_method)
 	  {
 	  case FLT_EVAL_METHOD_PROMOTE_TO_FLOAT:
-	    if (type_mode == float16_type_mode)
+	    if (type_mode == float16_type_mode
+		|| type_mode == bfloat16_type_mode)
 	      return float_type_node;
 	    break;
 	  case FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE:
 	    if (type_mode == float16_type_mode
+		|| type_mode == bfloat16_type_mode
 		|| type_mode == float_type_mode)
 	      return double_type_node;
 	    break;
 	  case FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE:
 	    if (type_mode == float16_type_mode
+		|| type_mode == bfloat16_type_mode
 		|| type_mode == float_type_mode
 		|| type_mode == double_type_mode)
 	      return long_double_type_node;
@@ -7774,16 +7780,19 @@ excess_precision_type (tree type)
 	switch (target_flt_eval_method)
 	  {
 	  case FLT_EVAL_METHOD_PROMOTE_TO_FLOAT:
-	    if (type_mode == float16_type_mode)
+	    if (type_mode == float16_type_mode
+		|| type_mode == bfloat16_type_mode)
 	      return complex_float_type_node;
 	    break;
 	  case FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE:
 	    if (type_mode == float16_type_mode
+		|| type_mode == bfloat16_type_mode
 		|| type_mode == float_type_mode)
 	      return complex_double_type_node;
 	    break;
 	  case FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE:
 	    if (type_mode == float16_type_mode
+		|| type_mode == bfloat16_type_mode
 		|| type_mode == float_type_mode
 		|| type_mode == double_type_mode)
 	      return complex_long_double_type_node;
@@ -9462,6 +9471,17 @@ build_common_tree_nodes (bool signed_char)
       SET_TYPE_MODE (FLOATN_NX_TYPE_NODE (i), mode);
     }
   float128t_type_node = float128_type_node;
+#ifdef HAVE_BFmode
+  if (REAL_MODE_FORMAT (BFmode) == &arm_bfloat_half_format
+      && targetm.scalar_mode_supported_p (BFmode)
+      && targetm.libgcc_floating_mode_supported_p (BFmode))
+    {
+      bfloat16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (bfloat16_type_node) = GET_MODE_PRECISION (BFmode);
+      layout_type (bfloat16_type_node);
+      SET_TYPE_MODE (bfloat16_type_node, BFmode);
+    }
+#endif
 
   float_ptr_type_node = build_pointer_type (float_type_node);
   double_ptr_type_node = build_pointer_type (double_type_node);

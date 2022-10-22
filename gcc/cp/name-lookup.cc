@@ -4302,8 +4302,6 @@ begin_scope (scope_kind kind, tree entity)
 
     case sk_function_parms:
       scope->keep = keep_next_level_flag;
-      if (entity)
-	scope->immediate_fn_ctx_p = DECL_IMMEDIATE_FUNCTION_P (entity);
       break;
 
     case sk_namespace:

@@ -1,3 +1,73 @@
+2022-10-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/107195
+	PR target/107344
+	* testsuite/libgomp.oacc-c-c++-common/nvptx-sese-1.c: Restore SESE
+	regions checking.
+
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_offload_device_gcn):
+	New.
+	* testsuite/libgomp.c-c++-common/on_device_arch.h (device_arch_gcn,
+	on_device_arch_gcn): New.
+	* testsuite/libgomp.c-c++-common/requires-4a.c: New test; copied from
+	requires-4.c but using heap-allocated memory.
+
+2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/105421
+	* testsuite/libgomp.oacc-c-c++-common/private-big-1.c: New.
+
+2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/reverse-offload-sm30.c: Fix nvptx-specific
+	'-foffload-options' syntax.
+
+2022-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/task-7.f90: New test.
+	* testsuite/libgomp.fortran/task-8.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-1.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-2.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-3.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-17.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-18.f90: New test.
+
+2022-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Fix up allocator -> allocate directive
+	in deprecation bullet.
+
+2022-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_in_explicit_task): Declare.
+	* omp_lib.h.in (omp_in_explicit_task): Likewise.
+	* omp_lib.f90.in (omp_in_explicit_task): New interface.
+	* libgomp.map (OMP_5.2): New symbol version, export
+	omp_in_explicit_task and omp_in_explicit_task_.
+	* task.c (omp_in_explicit_task): New function.
+	* fortran.c (omp_in_explicit_task): Add ialias_redirect.
+	(omp_in_explicit_task_): New function.
+	* libgomp.texi (OpenMP 5.2): Mark omp_in_explicit_task as implemented.
+	* testsuite/libgomp.c-c++-common/task-in-explicit-1.c: New test.
+	* testsuite/libgomp.c-c++-common/task-in-explicit-2.c: New test.
+	* testsuite/libgomp.c-c++-common/task-in-explicit-3.c: New test.
+
+2022-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_create_artificial_team): Fix up handling of invocations
+	from within explicit task.
+	* target.c (GOMP_target_ext): Likewise.
+	* testsuite/libgomp.c/task-7.c: New test.
+	* testsuite/libgomp.c/task-8.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-17.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-18.c: New test.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2022-10-11  Olivier Hainque  <hainque@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-dse1" } */
+/* { dg-options "-O -fdump-tree-dse1 -Wno-psabi" } */
 
 typedef int veci __attribute__ ((vector_size (4 * sizeof (int))));
 

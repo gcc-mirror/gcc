@@ -452,6 +452,7 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/stack \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/stacktrace \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/stdexcept \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/stdfloat \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/stop_token \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/streambuf \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/string \

@@ -2030,6 +2030,18 @@ make_temp_override (T& var, type_identity_t<T> overrider)
   return { var, overrider };
 }
 
+/* temp_override for in_consteval_if_p, which can't use make_temp_override
+   because it is a bitfield.  */
+
+struct in_consteval_if_p_temp_override {
+  bool save_in_consteval_if_p;
+  in_consteval_if_p_temp_override ()
+    : save_in_consteval_if_p (in_consteval_if_p) {}
+  void reset () { in_consteval_if_p = save_in_consteval_if_p; }
+  ~in_consteval_if_p_temp_override ()
+  { reset (); }
+};
+
 /* The cached class binding level, from the most recently exited
    class, or NULL if none.  */
 
@@ -4201,6 +4213,25 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   for ((arg) = first_aggr_init_expr_arg ((call), &(iter)); (arg);	\
        (arg) = next_aggr_init_expr_arg (&(iter)))
 
+/* We have an expression tree T that represents a call, either CALL_EXPR
+   or AGGR_INIT_EXPR.  Return a reference to the Nth argument.  */
+
+static inline tree&
+get_nth_callarg (tree t, int n)
+{
+  switch (TREE_CODE (t))
+    {
+    case CALL_EXPR:
+      return CALL_EXPR_ARG (t, n);
+
+    case AGGR_INIT_EXPR:
+      return AGGR_INIT_EXPR_ARG (t, n);
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* VEC_INIT_EXPR accessors.  */
 #define VEC_INIT_EXPR_SLOT(NODE) TREE_OPERAND (VEC_INIT_EXPR_CHECK (NODE), 0)
 #define VEC_INIT_EXPR_INIT(NODE) TREE_OPERAND (VEC_INIT_EXPR_CHECK (NODE), 1)
@@ -5843,12 +5874,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_DESTRUCTOR (1 << 5)
 /* Do not permit references to bind to temporaries.  */
 #define LOOKUP_NO_TEMP_BIND (1 << 6)
-/* We're trying to treat an lvalue as an rvalue.  */
-/* FIXME remove when we extend the P1825 semantics to all standard modes, the
-   C++20 approach uses IMPLICIT_RVALUE_P instead.  */
-#define LOOKUP_PREFER_RVALUE (LOOKUP_NO_TEMP_BIND << 1)
 /* We're inside an init-list, so narrowing conversions are ill-formed.  */
-#define LOOKUP_NO_NARROWING (LOOKUP_PREFER_RVALUE << 1)
+#define LOOKUP_NO_NARROWING (LOOKUP_NO_TEMP_BIND << 1)
 /* We're looking up a constructor for list-initialization.  */
 #define LOOKUP_LIST_INIT_CTOR (LOOKUP_NO_NARROWING << 1)
 /* This is the first parameter of a copy constructor.  */
@@ -7431,7 +7458,7 @@ extern tree get_template_argument_pack_elems	(const_tree);
 extern tree get_function_template_decl		(const_tree);
 extern tree resolve_nondeduced_context		(tree, tsubst_flags_t);
 extern tree resolve_nondeduced_context_or_error	(tree, tsubst_flags_t);
-extern hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
+extern hashval_t iterative_hash_template_arg	(tree arg, hashval_t val);
 extern tree coerce_template_parms               (tree, tree, tree);
 extern tree coerce_template_parms               (tree, tree, tree, tsubst_flags_t);
 extern tree canonicalize_type_argument		(tree, tsubst_flags_t);
@@ -7492,7 +7519,7 @@ extern tree lookup_fnfields			(tree, tree, int, tsubst_flags_t);
 extern tree lookup_member			(tree, tree, int, bool,
 						 tsubst_flags_t,
 						 access_failure_info *afi = NULL);
-extern tree lookup_member_fuzzy		(tree, tree, bool);
+extern tree lookup_member_fuzzy			(tree, tree, bool);
 extern tree locate_field_accessor		(tree, tree, bool);
 extern int look_for_overrides			(tree, tree);
 extern void get_pure_virtuals			(tree);
@@ -7880,7 +7907,6 @@ extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
 extern bool array_of_unknown_bound_p		(const_tree);
-extern bool source_location_current_p		(tree);
 extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);
@@ -8254,6 +8280,7 @@ extern tree predeclare_vla			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
 extern tree process_stmt_hotness_attribute	(tree, location_t);
+extern tree build_assume_call			(location_t, tree);
 extern tree process_stmt_assume_attribute	(tree, tree, location_t);
 extern bool simple_empty_class_p		(tree, tree, tree_code);
 extern tree fold_builtin_source_location	(location_t);
@@ -8715,6 +8742,8 @@ extended_float_type_p (tree type)
   for (int i = 0; i < NUM_FLOATN_NX_TYPES; ++i)
     if (type == FLOATN_TYPE_NODE (i))
       return true;
+  if (type == bfloat16_type_node)
+    return true;
   return false;
 }
 

@@ -7060,6 +7060,16 @@ Enable/disable the generation of the WIDEKL instructions.
 @cindex @code{target("avxvnni")} function attribute, x86
 Enable/disable the generation of the AVXVNNI instructions.
 
+@item avxifma
+@itemx no-avxifma
+@cindex @code{target("avxifma")} function attribute, x86
+Enable/disable the generation of the AVXIFMA instructions.
+
+@item avxvnniint8
+@itemx no-avxvnniint8
+@cindex @code{target("avxvnniint8")} function attribute, x86
+Enable/disable the generation of the AVXVNNIINT8 instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
@@ -7900,7 +7910,7 @@ This attribute works similar to the @code{section} attribute
 but adds additional checking.
 
 @table @asis
-@item @bullet{}@tie{} Ordinary AVR cores with 32 general purpose registers:
+@item @bullet{} Ordinary AVR cores with 32 general purpose registers:
 @code{progmem} affects the location
 of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
@@ -7925,7 +7935,7 @@ normally resides in the data memory (RAM).
 See also the @ref{AVR Named Address Spaces} section for
 an alternate way to locate and access data in flash memory.
 
-@item @bullet{}@tie{} AVR cores with flash memory visible in the RAM address range:
+@item @bullet{} AVR cores with flash memory visible in the RAM address range:
 On such devices, there is no need for attribute @code{progmem} or
 @ref{AVR Named Address Spaces,,@code{__flash}} qualifier at all.
 Just use standard C / C++.  The compiler will generate @code{LD*}
@@ -7938,7 +7948,7 @@ avoiding @code{progmem} and @code{__flash}.  This applies to devices from
 families @code{avrtiny} and @code{avrxmega3}, see @ref{AVR Options} for
 an overview.
 
-@item @bullet{}@tie{}Reduced AVR Tiny cores like ATtiny40:
+@item @bullet{} Reduced AVR Tiny cores like ATtiny40:
 The compiler adds @code{0x4000}
 to the addresses of objects and declarations in @code{progmem} and locates
 the objects in flash memory, namely in section @code{.progmem.data}.
@@ -21924,6 +21934,9 @@ AMD Family 19h CPU.
 
 @item znver3
 AMD Family 19h Zen version 3.
+
+@item znver4
+AMD Family 19h Zen version 4.
 
 @item x86-64
 Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).

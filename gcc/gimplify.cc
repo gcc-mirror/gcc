@@ -3569,7 +3569,33 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 						     fndecl, 0));
 	      return GS_OK;
 	    }
-	  /* FIXME: Otherwise expand it specially.  */
+	  /* If not optimizing, ignore the assumptions.  */
+	  if (!optimize)
+	    {
+	      *expr_p = NULL_TREE;
+	      return GS_ALL_DONE;
+	    }
+	  /* Temporarily, until gimple lowering, transform
+	     .ASSUME (cond);
+	     into:
+	     [[assume (guard)]]
+	     {
+	       guard = cond;
+	     }
+	     such that gimple lowering can outline the condition into
+	     a separate function easily.  */
+	  tree guard = create_tmp_var (boolean_type_node);
+	  *expr_p = build2 (MODIFY_EXPR, void_type_node, guard,
+			    CALL_EXPR_ARG (*expr_p, 0));
+	  *expr_p = build3 (BIND_EXPR, void_type_node, NULL, *expr_p, NULL);
+	  push_gimplify_context ();
+	  gimple_seq body = NULL;
+	  gimple *g = gimplify_and_return_first (*expr_p, &body);
+	  pop_gimplify_context (g);
+	  g = gimple_build_assume (guard, body);
+	  gimple_set_location (g, loc);
+	  gimplify_seq_add_stmt (pre_p, g);
+	  *expr_p = NULL_TREE;
 	  return GS_ALL_DONE;
 	}
 

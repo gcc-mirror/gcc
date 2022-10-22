@@ -343,7 +343,7 @@ get_range_global (vrange &r, tree name)
 	      && ((cfun && nonnull_arg_p (sym))
 		  || get_ssa_name_ptr_info_nonnull (name)))
 	    r.set_nonzero (type);
-	  else if (INTEGRAL_TYPE_P (type))
+	  else if (!POINTER_TYPE_P (type))
 	    {
 	      get_ssa_name_range_info (r, name);
 	      if (r.undefined_p ())

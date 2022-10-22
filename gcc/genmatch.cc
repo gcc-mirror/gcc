@@ -4447,8 +4447,11 @@ parser::parse_c_expr (cpp_ttype start)
       /* If this is possibly a user-defined identifier mark it used.  */
       if (token->type == CPP_NAME)
 	{
-	  id_base *idb = get_operator ((const char *)CPP_HASHNODE
-				      (token->val.node.node)->ident.str);
+	  const char *str
+	    = (const char *)CPP_HASHNODE (token->val.node.node)->ident.str;
+	  if (strcmp (str, "return") == 0)
+	    fatal_at (token, "return statement not allowed in C expression");
+	  id_base *idb = get_operator (str);
 	  user_id *p;
 	  if (idb && (p = dyn_cast<user_id *> (idb)) && p->is_oper_list)
 	    record_operlist (token->src_loc, p);
