@@ -3960,8 +3960,11 @@ range_tests_floats ()
   if (r0.maybe_isnan ())
     ASSERT_TRUE (r0.varying_p ());
   // ...unless it has some special property...
-  r0.clear_nan ();
-  ASSERT_FALSE (r0.varying_p ());
+  if (!flag_finite_math_only)
+    {
+      r0.clear_nan ();
+      ASSERT_FALSE (r0.varying_p ());
+    }
 
   // For most architectures, where float and double are different
   // sizes, having the same endpoints does not necessarily mean the
