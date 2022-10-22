@@ -1,3 +1,16 @@
+2022-10-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* acinclude.m4: Default hosted to off if building without
+	headers and without newlib.
+	* configure: Regenerate.
+
+2022-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h (move_only_function::__param_t):
+	Use __is_scalar instead of is_trivially_copyable.
+	* testsuite/20_util/move_only_function/call.cc: Check parameters
+	involving incomplete types.
+
 2022-10-20  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/charconv (__detail::__from_chars_alnum_to_val_table):

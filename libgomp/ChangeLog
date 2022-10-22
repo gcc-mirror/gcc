@@ -1,3 +1,10 @@
+2022-10-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/107195
+	PR target/107344
+	* testsuite/libgomp.oacc-c-c++-common/nvptx-sese-1.c: Restore SESE
+	regions checking.
+
 2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/lib/libgomp.exp (check_effective_target_offload_device_gcn):

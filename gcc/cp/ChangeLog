@@ -1,3 +1,21 @@
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107295
+	* constexpr.cc (reduced_constant_expression_p) <case CONSTRUCTOR>:
+	Return false for VECTOR_TYPE CONSTRUCTORs even without
+	CONSTRUCTOR_NO_CLEARING set on them.
+	(cxx_eval_bare_aggregate): If constant but !changed, fold before
+	returning VECTOR_TYPE_P CONSTRUCTOR.
+	(cxx_eval_constant_expression) <case CONSTRUCTOR>: Don't fold
+	TREE_CONSTANT CONSTRUCTOR, just return it.
+
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106863
+	* semantics.cc (finish_compound_literal): For void{}, if
+	processing_template_decl return a COMPOUND_LITERAL_P
+	CONSTRUCTOR rather than void_node.
+
 2022-10-20  Patrick Palka  <ppalka@redhat.com>
 
 	* pt.cc (lookup_and_finish_template_variable): Don't
