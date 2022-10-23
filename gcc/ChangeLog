@@ -1,3 +1,26 @@
+2022-10-22  Michael Eager  <eager@eagercon.com>
+
+	* config/microblaze/microblaze.cc
+	(microblaze_legitimize_address): Initialize 'reg' to NULL, check for NULL.
+	(microblaze_address_insns): Replace abort() with gcc_unreachable().
+	(print_operand_address): Same.
+	(microblaze_expand_move): Initialize 'p1' to NULL, check for NULL.
+	(get_branch_target): Replace abort() with gcc_unreachable().
+
+2022-10-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (range_tests_floats): Predicate [-Inf, +Inf] test
+	with !flag_finite_math_only.
+
+2022-10-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_conditional_register_usage):
+	Remove register A0 from FIXED_REGS if the CALL0 ABI.
+	(xtensa_expand_epilogue): Change to emit '(use (reg:SI A0_REG))'
+	unconditionally after restoring callee-saved registers for
+	sibling-call functions, in order to prevent misleading that
+	register A0 is free to use.
+
 2022-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/107322
