@@ -64,17 +64,6 @@ cygwin_d_register_target_info (void)
 #undef TARGET_D_REGISTER_OS_TARGET_INFO
 #define TARGET_D_REGISTER_OS_TARGET_INFO cygwin_d_register_target_info
 
-/* Define TARGET_D_MINFO_SECTION for Cygwin targets.  */
-
-#undef TARGET_D_MINFO_SECTION
-#define TARGET_D_MINFO_SECTION "minfo"
-
-#undef TARGET_D_MINFO_START_NAME
-#define TARGET_D_MINFO_START_NAME "__start_minfo"
-
-#undef TARGET_D_MINFO_END_NAME
-#define TARGET_D_MINFO_END_NAME "__stop_minfo"
-
 /* Define TARGET_D_TEMPLATES_ALWAYS_COMDAT for Cygwin targets.  */
 
 #undef TARGET_D_TEMPLATES_ALWAYS_COMDAT
