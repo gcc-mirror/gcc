@@ -5248,6 +5248,18 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
 	offset = fold_build1 (NEGATE_EXPR, TREE_TYPE (offset), offset);
       mod = fold_build2 (POINTER_PLUS_EXPR, type, val, offset);
     }
+  else if (c_promoting_integer_type_p (type)
+	   && !TYPE_UNSIGNED (type)
+	   && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+    {
+      offset = fold_convert (integer_type_node, offset);
+      mod = fold_convert (integer_type_node, val);
+      tree t = fold_build2 (inc ? PLUS_EXPR : MINUS_EXPR, integer_type_node,
+			    mod, offset);
+      mod = fold_convert (type, t);
+      if (TREE_OVERFLOW_P (mod) && !TREE_OVERFLOW_P (t))
+	TREE_OVERFLOW (mod) = false;
+    }
   else
     mod = fold_build2 (inc ? PLUS_EXPR : MINUS_EXPR, type, val, offset);
   if (!ptr)
