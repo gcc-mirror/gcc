@@ -1958,6 +1958,18 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 {
   if (CONST_POLY_INT_P (src))
     {
+      /*
+	Handle:
+	  (insn 183 182 184 6 (set (mem:QI (plus:DI (reg/f:DI 156)
+		  (const_int 96 [0x60])) [0  S1 A8])
+	  (const_poly_int:QI [8, 8]))
+	"../../../../riscv-gcc/libgcc/unwind-dw2.c":1579:3 -1 (nil))
+      */
+      if (MEM_P (dest))
+	{
+	  emit_move_insn (dest, force_reg (mode, src));
+	  return true;
+	}
       poly_int64 value = rtx_to_poly_int64 (src);
       if (!value.is_constant () && !TARGET_VECTOR)
 	{
