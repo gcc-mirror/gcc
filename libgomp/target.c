@@ -3124,6 +3124,25 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
     htab_free (refcount_set);
 }
 
+/* Handle reverse offload.  This is called by the device plugins for a
+   reverse offload; it is not called if the outer target runs on the host.  */
+
+void
+gomp_target_rev (uint64_t fn_ptr __attribute__ ((unused)),
+		 uint64_t mapnum __attribute__ ((unused)),
+		 uint64_t devaddrs_ptr __attribute__ ((unused)),
+		 uint64_t sizes_ptr __attribute__ ((unused)),
+		 uint64_t kinds_ptr __attribute__ ((unused)),
+		 int dev_num __attribute__ ((unused)),
+		 void (*dev_to_host_cpy) (void *, const void *, size_t,
+					  void *) __attribute__ ((unused)),
+		 void (*host_to_dev_cpy) (void *, const void *, size_t,
+					  void *) __attribute__ ((unused)),
+		 void *token __attribute__ ((unused)))
+{
+  __builtin_unreachable ();
+}
+
 /* Host fallback for GOMP_target_data{,_ext} routines.  */
 
 static void

@@ -1,3 +1,13 @@
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cuda/cuda.h (enum CUdevice_attribute): Add
+	CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING.
+	(CU_MEMHOSTALLOC_DEVICEMAP): Define.
+	(cuMemHostAlloc): Add prototype.
+
 2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

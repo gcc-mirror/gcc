@@ -630,3 +630,8 @@ GOMP_PLUGIN_1.3 {
 	GOMP_PLUGIN_goacc_profiling_dispatch;
 	GOMP_PLUGIN_goacc_thread;
 } GOMP_PLUGIN_1.2;
+
+GOMP_PLUGIN_1.4 {
+  global:
+	GOMP_PLUGIN_target_rev;
+} GOMP_PLUGIN_1.3;

@@ -1128,6 +1128,11 @@ extern int gomp_pause_host (void);
 extern void gomp_init_targets_once (void);
 extern int gomp_get_num_devices (void);
 extern bool gomp_target_task_fn (void *);
+extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
+			     int,
+			     void (*) (void *, const void *, size_t, void *),
+			     void (*) (void *, const void *, size_t, void *),
+			     void *);
 extern void * gomp_usm_alloc (size_t size, int device_num);
 extern void gomp_usm_free (void *device_ptr, int device_num);
 extern bool gomp_is_usm_ptr (void *ptr);

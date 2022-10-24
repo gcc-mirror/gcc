@@ -77,6 +77,7 @@ typedef enum {
   CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS = 31,
   CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR = 39,
   CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT = 40,
+  CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING = 41,
   CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR = 75,
   CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR = 76,
   CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR = 82
@@ -123,6 +124,7 @@ enum {
 #define CU_LAUNCH_PARAM_END ((void *) 0)
 #define CU_LAUNCH_PARAM_BUFFER_POINTER ((void *) 1)
 #define CU_LAUNCH_PARAM_BUFFER_SIZE ((void *) 2)
+#define CU_MEMHOSTALLOC_DEVICEMAP 0x02U
 
 enum {
   CU_STREAM_DEFAULT = 0,
@@ -180,6 +182,7 @@ CUresult cuMemAlloc (CUdeviceptr *, size_t);
 #define cuMemAllocHost cuMemAllocHost_v2
 CUresult cuMemAllocHost (void **, size_t);
 CUresult cuMemAllocManaged(CUdeviceptr *, size_t, unsigned int);
+CUresult cuMemHostAlloc (void **, size_t, unsigned int);
 CUresult cuMemcpy (CUdeviceptr, CUdeviceptr, size_t);
 #define cuMemcpyDtoDAsync cuMemcpyDtoDAsync_v2
 CUresult cuMemcpyDtoDAsync (CUdeviceptr, CUdeviceptr, size_t, CUstream);
