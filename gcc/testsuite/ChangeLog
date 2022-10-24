@@ -1,3 +1,72 @@
+2022-10-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-10-20  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105633
+	* gfortran.dg/pr105633.f90: New test.
+
+2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107323
+	* gcc.dg/tree-ssa/pr107323.c: New testcase.
+
+2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-05-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100400
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-2.c: Specify
+	'-Wfatal-errors'.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/brka_1.c: Expect a separate
+	PTEST instruction.
+	* gcc.target/aarch64/sve/acle/general/brkb_1.c: Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/brkn_1.c: Expect separate
+	PTEST instructions.
+	* gcc.target/aarch64/sve/acle/general/brkn_2.c: New test.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_1.c: Add RCPC tests.
+
+2022-10-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102892
+	* gcc.dg/pr102892-1.c: Remove undefined behaviour.
+
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* gcc.target/powerpc/pr96072.c: New test.
+
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* gcc.target/powerpc/pr100645.c: New test.
+
 2022-10-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

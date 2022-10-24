@@ -1,3 +1,85 @@
+2022-10-21  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2022-10-20  Julian Brown  <julian@codesourcery.com>
+
+	PR target/105421
+	* config/gcn/gcn.cc (gcn_detect_incoming_pointer_arg): Any pointer
+	argument forces FLAT addressing mode, not just
+	pointer-to-non-aggregate.
+
+2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107323
+	* tree-loop-distribution.cc (pg_unmark_merged_alias_ddrs):
+	New function.
+	(loop_distribution::break_alias_scc_partitions): Revert
+	postorder save/restore from the PR94125 fix.  Instead
+	make sure to not ignore edges from SCCs we are going to
+	merge.
+
+2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-05-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100400
+	* omp-oacc-kernels-decompose.cc
+	(visit_loops_in_gang_single_region) <GIMPLE_OMP_FOR>: Explicitly
+	call 'internal_error'.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*aarch64_brk<brk_op>_cc): Remove
+	merging alternative.
+	(*aarch64_brk<brk_op>_ptest): Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_BRKP): New iterator.
+	* config/aarch64/aarch64-sve.md (*aarch64_brkn_cc): New pattern.
+	(*aarch64_brkn_ptest): Likewise.
+	(*aarch64_brk<brk_op>_cc): Restrict to SVE_BRKP.
+	(*aarch64_brk<brk_op>_ptest): Likewise.
+
+2022-10-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_FOR_ARCH8_3): Add
+	AARCH64_FL_RCPC.
+	(AARCH64_ISA_RCPC): New macro.
+	* config/aarch64/aarch64-cores.def (thunderx3t110, zeus, neoverse-v1)
+	(neoverse-512tvb, saphira): Remove RCPC from these Armv8.3-A+ cores.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_RCPC when appropriate.
+
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96072
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_epilogue): Update the
+	condition for adding REG_CFA_DEF_CFA reg note with
+	frame_pointer_needed_indeed.
+
+2022-10-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-09-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/100645
+	* config/rs6000/vector.md (vec_shr_<mode>): Replace condition
+	TARGET_ALTIVEC with VECTOR_UNIT_ALTIVEC_OR_VSX_P.
+
 2022-10-17  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	Backported from master:
