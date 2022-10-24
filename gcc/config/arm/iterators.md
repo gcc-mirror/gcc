@@ -330,6 +330,9 @@
 ;; Saturating addition, subtraction
 (define_code_iterator SSPLUSMINUS [ss_plus ss_minus])
 
+;; Max/Min iterator, to factorize MVE patterns
+(define_code_iterator MAX_MIN_SU [smax umax smin umin])
+
 ;; MVE integer binary operations.
 (define_code_iterator MVE_INT_BINARY_RTX [plus minus mult])
 
@@ -1270,6 +1273,14 @@
 (define_code_attr float_sup [(unsigned_float "u") (float "s")])
 
 (define_code_attr float_SUP [(unsigned_float "U") (float "S")])
+
+;; max/min for MVE
+(define_code_attr max_min_su_str [(smax "vmax") (umax "vmax") (smin "vmin") (umin "vmin")])
+
+(define_code_attr max_min_supf [
+		 (smax "s") (umax "u")
+		 (smin "s") (umin "u")
+		 ])
 
 ;;----------------------------------------------------------------------------
 ;; Int attributes

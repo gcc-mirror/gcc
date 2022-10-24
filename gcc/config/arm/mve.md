@@ -1106,29 +1106,20 @@
 ])
 
 ;;
-;; [vmaxq_u, vmaxq_s])
+;; [vmaxq_u, vmaxq_s]
+;; [vminq_s, vminq_u]
 ;;
-(define_insn "mve_vmaxq_s<mode>"
+(define_insn "mve_<max_min_su_str>q_<max_min_supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(smax:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+	(MAX_MIN_SU:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
 		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vmax.%#<V_s_elem>\t%q0, %q1, %q2"
+  "<max_min_su_str>.<max_min_supf>%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
-(define_insn "mve_vmaxq_u<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(umax:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmax.%#<V_u_elem>\t%q0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
 
 ;;
 ;; [vmaxvq_u, vmaxvq_s])
@@ -1172,31 +1163,6 @@
   ]
   "TARGET_HAVE_MVE"
   "vminav.s%#<V_sz_elem>\t%0, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vminq_s, vminq_u])
-;;
-(define_insn "mve_vminq_s<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(smin:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmin.%#<V_s_elem>\t%q0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-(define_insn "mve_vminq_u<mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(umin:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")))
-  ]
-  "TARGET_HAVE_MVE"
-  "vmin.%#<V_u_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
