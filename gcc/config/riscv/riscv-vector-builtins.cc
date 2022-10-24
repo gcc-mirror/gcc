@@ -88,7 +88,7 @@ struct registered_function_hasher : nofree_ptr_hash<registered_function>
 };
 
 /* Static information about each RVV type.  */
-static CONSTEXPR const vector_type_info vector_types[] = {
+static constexpr const vector_type_info vector_types[] = {
 #define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, ARGS...)                          \
   {#NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
 #include "riscv-vector-builtins.def"
@@ -123,23 +123,23 @@ static const rvv_type_info i_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
-static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
+static constexpr const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
 /* A list of args for size_t func (void) function.  */
-static CONSTEXPR const rvv_arg_type_info void_args[]
+static constexpr const rvv_arg_type_info void_args[]
   = {rvv_arg_type_info (RVV_BASE_void), rvv_arg_type_info_end};
 
 /* A list of args for size_t func (size_t) function.  */
-static CONSTEXPR const rvv_arg_type_info size_args[]
+static constexpr const rvv_arg_type_info size_args[]
   = {rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
-static CONSTEXPR const predication_type_index none_preds[]
+static constexpr const predication_type_index none_preds[]
   = {PRED_TYPE_none, NUM_PRED_TYPES};
 
 /* A static operand information for size_t func (void) function registration. */
-static CONSTEXPR const rvv_op_info i_none_size_void_ops
+static constexpr const rvv_op_info i_none_size_void_ops
   = {i_ops,				/* Types */
      OP_TYPE_none,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_size), /* Return type */
@@ -147,7 +147,7 @@ static CONSTEXPR const rvv_op_info i_none_size_void_ops
 
 /* A static operand information for size_t func (size_t) function registration.
  */
-static CONSTEXPR const rvv_op_info i_none_size_size_ops
+static constexpr const rvv_op_info i_none_size_size_ops
   = {i_ops,				/* Types */
      OP_TYPE_none,			/* Suffix */
      rvv_arg_type_info (RVV_BASE_size), /* Return type */

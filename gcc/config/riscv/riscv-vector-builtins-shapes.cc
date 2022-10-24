@@ -71,7 +71,7 @@ build_all (function_builder &b, const function_group_info &group)
 /* Declare the function shape NAME, pointing it to an instance
    of class <NAME>_def.  */
 #define SHAPE(DEF, VAR) \
-  static CONSTEXPR const DEF##_def VAR##_obj; \
+  static constexpr const DEF##_def VAR##_obj; \
   namespace shapes { const function_shape *const VAR = &VAR##_obj; }
 
 /* Base class for for build.  */
