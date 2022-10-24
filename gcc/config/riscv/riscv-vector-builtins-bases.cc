@@ -72,18 +72,8 @@ public:
     e.add_input_operand (Pmode,
 			 gen_int_mode (GET_MODE_BITSIZE (inner_mode), Pmode));
 
-    /* LMUL. Define the bitmap rule as follows:
-       |      4       | 3 2 1 0 |
-       | fractional_p | factor  |
-    */
-    bool fractional_p = known_lt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
-    unsigned int factor
-      = fractional_p ? exact_div (BYTES_PER_RISCV_VECTOR, GET_MODE_SIZE (mode))
-			 .to_constant ()
-		     : exact_div (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
-			 .to_constant ();
-    e.add_input_operand (Pmode,
-			 gen_int_mode ((fractional_p << 4) | factor, Pmode));
+    /* LMUL.  */
+    e.add_input_operand (Pmode, gen_int_mode ((unsigned int) mode, Pmode));
 
     /* TA.  */
     e.add_input_operand (Pmode, gen_int_mode (1, Pmode));

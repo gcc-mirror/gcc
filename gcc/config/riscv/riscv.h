@@ -1080,4 +1080,6 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define REGISTER_TARGET_PRAGMAS() riscv_register_pragmas ()
 
+#define REGMODE_NATURAL_SIZE(MODE) riscv_regmode_natural_size (MODE)
+
 #endif /* ! GCC_RISCV_H */
