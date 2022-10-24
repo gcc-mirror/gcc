@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fdump-tree-cunrolli-details -fdump-rtl-loop2_unroll-details" }
+! { dg-options "-O2 -fdump-tree-cunrolli1-details -fdump-rtl-loop2_unroll-details" }
 ! Test that
 ! #pragma GCC unroll n
 ! works
@@ -12,7 +12,7 @@ subroutine test1(a)
   DO i=1, 8, 1
     call dummy(a(i))
   ENDDO
-! { dg-final { scan-tree-dump "12:.*: loop with 8 iterations completely unrolled" "cunrolli" } } */
+! { dg-final { scan-tree-dump "12:.*: loop with 8 iterations completely unrolled" "cunrolli1" } } */
 end subroutine test1
 
 subroutine test2(a, n)

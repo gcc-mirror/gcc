@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli-details=stderr -fno-peel-loops -fno-tree-vrp  -fdisable-tree-cunroll -fenable-tree-cunrolli1" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli1-details=stderr -fno-peel-loops -fno-tree-vrp  -fdisable-tree-cunroll -fenable-tree-cunrolli1" } */
 
 /* Blank lines can occur in the output of
-   -fdump-tree-cunrolli-details=stderr.  */
+   -fdump-tree-cunrolli1-details=stderr.  */
 /* { dg-allow-blank-lines-in-output 1 } */
 
 unsigned a[100], b[100];

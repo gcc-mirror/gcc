@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fdump-tree-cunrolli-details" }
+// { dg-options "-O2 -fdump-tree-cunrolli1-details" }
 
 template <typename T>
 void
@@ -16,4 +16,4 @@ bar (int *a, int *b, int *c)
   foo <int> (a, b, c);
 }
 
-// { dg-final { scan-tree-dump "loop with 8 iterations completely unrolled" "cunrolli" } }
+// { dg-final { scan-tree-dump "loop with 8 iterations completely unrolled" "cunrolli1" } }
