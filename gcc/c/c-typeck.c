@@ -11706,8 +11706,8 @@ build_binary_op (location_t location, enum tree_code code,
   if ((gnu_vector_type_p (type0) && code1 != VECTOR_TYPE)
       || (gnu_vector_type_p (type1) && code0 != VECTOR_TYPE))
     {
-      enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1,
-						     true);
+      enum stv_conv convert_flag = scalar_to_vector (location, code, orig_op0,
+						     orig_op1, true);
 
       switch (convert_flag)
 	{
