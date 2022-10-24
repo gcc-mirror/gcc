@@ -5026,7 +5026,7 @@ gcn_vectorization_cost (enum vect_cost_for_stmt ARG_UNUSED (type_of_cost),
 static int
 gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node),
 					    struct cgraph_simd_clone *clonei,
-					    tree base_type,
+					    tree ARG_UNUSED (base_type),
 					    int ARG_UNUSED (num))
 {
   if (known_eq (clonei->simdlen, 0U))
