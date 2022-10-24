@@ -4212,10 +4212,19 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	/* Otherwise, only known through constraints.  */
       }
 
-  /* If we have a pair of constants, compare them.  */
   if (const constant_svalue *cst_lhs = lhs->dyn_cast_constant_svalue ())
-    if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
-      return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
+    {
+      /* If we have a pair of constants, compare them.  */
+      if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
+	return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
+      else
+	{
+	  /* When we have one constant, put it on the RHS.  */
+	  std::swap (lhs, rhs);
+	  op = swap_tree_comparison (op);
+	}
+    }
+  gcc_assert (lhs->get_kind () != SK_CONSTANT);
 
   /* Handle comparison against zero.  */
   if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
