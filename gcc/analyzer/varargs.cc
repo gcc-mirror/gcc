@@ -171,9 +171,8 @@ get_va_copy_arg (const region_model *model,
   const svalue *arg_sval = model->get_rvalue (arg, ctxt);
   if (const svalue *cast = arg_sval->maybe_undo_cast ())
     arg_sval = cast;
-  /* Expect a POINTER_TYPE; does it point to an array type?  */
-  gcc_assert (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE);
-  if (TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE)
+  if (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE)
     {
       /* va_list_arg_type_node is a pointer to a va_list;
 	 return *ARG_SVAL.  */

@@ -435,3 +435,9 @@ void test_va_arg_after_return (void)
   __analyzer_called_by_test_va_arg_after_return (42, 1066);
   i = __builtin_va_arg (global_ap, int); /* { dg-warning "dereferencing pointer 'global_ap' to within stale stack frame" } */
 }
+
+void pr107349 (void)
+{
+  __builtin_ms_va_list x,y;
+  __builtin_ms_va_copy(x,y); /* { dg-warning "use of uninitialized value 'y'" } */
+} /* { dg-warning "missing call to 'va_end'" } */
