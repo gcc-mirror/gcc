@@ -152,7 +152,8 @@ static GTY (()) vec<bpf_core_section_ref, va_gc> *bpf_core_sections;
 
 void
 bpf_core_reloc_add (const tree type, const char * section_name,
-		    vec<unsigned int> *accessors, rtx_code_label *label)
+		    vec<unsigned int> *accessors, rtx_code_label *label,
+		    enum btf_core_reloc_kind kind)
 {
   char buf[40];
   unsigned int i, n = 0;
@@ -173,7 +174,7 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 
   bpfcr->bpfcr_type = get_btf_id (ctf_lookup_tree_type (ctfc, type));
   bpfcr->bpfcr_insn_label = label;
-  bpfcr->bpfcr_kind = BPF_RELO_FIELD_BYTE_OFFSET;
+  bpfcr->bpfcr_kind = kind;
 
   /* Add the CO-RE reloc to the appropriate section.  */
   bpf_core_section_ref sec;
