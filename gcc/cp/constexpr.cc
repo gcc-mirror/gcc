@@ -1799,6 +1799,24 @@ cx_error_context (void)
   return r;
 }
 
+/* E is an operand of a failed assertion, fold it either with or without
+   constexpr context.  */
+
+static tree
+fold_operand (tree e, const constexpr_ctx *ctx)
+{
+  if (ctx)
+    {
+      bool new_non_constant_p = false, new_overflow_p = false;
+      e = cxx_eval_constant_expression (ctx, e, vc_prvalue,
+					&new_non_constant_p,
+					&new_overflow_p);
+    }
+  else
+    e = fold_non_dependent_expr (e, tf_none, /*manifestly_const_eval=*/true);
+  return e;
+}
+
 /* If we have a condition in conjunctive normal form (CNF), find the first
    failing clause.  In other words, given an expression like
 
@@ -1807,7 +1825,7 @@ cx_error_context (void)
    return the first 'false'.  EXPR is the expression.  */
 
 static tree
-find_failing_clause_r (constexpr_ctx *ctx, tree expr)
+find_failing_clause_r (const constexpr_ctx *ctx, tree expr)
 {
   if (TREE_CODE (expr) == TRUTH_ANDIF_EXPR)
     {
@@ -1818,16 +1836,7 @@ find_failing_clause_r (constexpr_ctx *ctx, tree expr)
 	e = find_failing_clause_r (ctx, TREE_OPERAND (expr, 1));
       return e;
     }
-  tree e = contextual_conv_bool (expr, tf_none);
-  if (ctx)
-    {
-      bool new_non_constant_p = false, new_overflow_p = false;
-      e = cxx_eval_constant_expression (ctx, e, vc_prvalue,
-					&new_non_constant_p,
-					&new_overflow_p);
-    }
-  else
-    e = fold_non_dependent_expr (e, tf_none, /*manifestly_const_eval=*/true);
+  tree e = fold_operand (expr, ctx);
   if (integer_zerop (e))
     /* This is the failing clause.  */
     return expr;
@@ -1837,12 +1846,40 @@ find_failing_clause_r (constexpr_ctx *ctx, tree expr)
 /* Wrapper for find_failing_clause_r.  */
 
 tree
-find_failing_clause (constexpr_ctx *ctx, tree expr)
+find_failing_clause (const constexpr_ctx *ctx, tree expr)
 {
   if (TREE_CODE (expr) == TRUTH_ANDIF_EXPR)
     if (tree e = find_failing_clause_r (ctx, expr))
       expr = e;
   return expr;
+}
+
+/* Emit additional diagnostics for failing condition BAD.
+   Used by finish_static_assert and IFN_ASSUME constexpr diagnostics.
+   If SHOW_EXPR_P is true, print the condition (because it was
+   instantiation-dependent).  */
+
+void
+diagnose_failing_condition (tree bad, location_t cloc, bool show_expr_p,
+			    const constexpr_ctx *ctx /* = nullptr */)
+{
+  /* Nobody wants to see the artificial (bool) cast.  */
+  bad = tree_strip_nop_conversions (bad);
+
+  /* Actually explain the failure if this is a concept check or a
+     requires-expression.  */
+  if (concept_check_p (bad) || TREE_CODE (bad) == REQUIRES_EXPR)
+    diagnose_constraints (cloc, bad, NULL_TREE);
+  else if (COMPARISON_CLASS_P (bad)
+	   && ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0))))
+    {
+      tree op0 = fold_operand (TREE_OPERAND (bad, 0), ctx);
+      tree op1 = fold_operand (TREE_OPERAND (bad, 1), ctx);
+      tree cond = build2 (TREE_CODE (bad), boolean_type_node, op0, op1);
+      inform (cloc, "the comparison reduces to %qE", cond);
+    }
+  else if (show_expr_p)
+    inform (cloc, "%qE evaluates to false", bad);
 }
 
 /* Evaluate a call T to a GCC internal function when possible and return
@@ -1897,7 +1934,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 		  /* Report the error. */
 		  error_at (cloc,
 			    "failed %<assume%> attribute assumption");
-		  diagnose_failing_condition (bad, cloc, false);
+		  diagnose_failing_condition (bad, cloc, false, &new_ctx);
 		}
 
 	      *non_constant_p = true;

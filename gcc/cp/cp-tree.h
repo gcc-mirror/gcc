@@ -7758,7 +7758,6 @@ extern tree build_transaction_expr		(location_t, tree, int, tree);
 extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool,
 						 bool, bool);
 extern tree baselink_for_fns                    (tree);
-extern void diagnose_failing_condition		(tree, location_t, bool);
 extern void finish_static_assert                (tree, tree, location_t,
 						 bool, bool);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
@@ -8497,7 +8496,9 @@ extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
 extern bool decl_implicit_constexpr_p		(tree);
 struct constexpr_ctx;
-extern tree find_failing_clause			(constexpr_ctx *ctx, tree);
+extern tree find_failing_clause			(const constexpr_ctx *ctx, tree);
+extern void diagnose_failing_condition		(tree, location_t, bool,
+						 const constexpr_ctx * = nullptr);
 extern bool replace_decl			(tree *, tree, tree);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it
