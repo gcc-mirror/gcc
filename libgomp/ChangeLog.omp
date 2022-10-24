@@ -1,6 +1,14 @@
 2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-10-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_open_device): Initialize
+	'ptx_dev->rev_data'.
+
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/nvptx/icv-device.c (GOMP_DEVICE_NUM_VAR): Remove
