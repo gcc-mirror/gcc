@@ -214,50 +214,21 @@ impl_region_model_context::terminate_path ()
 }
 
 bool
-impl_region_model_context::get_malloc_map (sm_state_map **out_smap,
-					   const state_machine **out_sm,
-					   unsigned *out_sm_idx)
-{
-  unsigned malloc_sm_idx;
-  if (!m_ext_state.get_sm_idx_by_name ("malloc", &malloc_sm_idx))
-    return false;
-
-  *out_smap = m_new_state->m_checker_states[malloc_sm_idx];
-  *out_sm = &m_ext_state.get_sm (malloc_sm_idx);
-  *out_sm_idx = malloc_sm_idx;
-  return true;
-}
-
-bool
-impl_region_model_context::get_fd_map (sm_state_map **out_smap,
-				       const state_machine **out_sm,
-				       unsigned *out_sm_idx)
-{
-  unsigned fd_sm_idx;
-  if (!m_ext_state.get_sm_idx_by_name ("file-descriptor", &fd_sm_idx))
-    return false;
-
-  *out_smap = m_new_state->m_checker_states[fd_sm_idx];
-  *out_sm = &m_ext_state.get_sm (fd_sm_idx);
-  *out_sm_idx = fd_sm_idx;
-  return true;
-}
-
-bool
-impl_region_model_context::get_taint_map (sm_state_map **out_smap,
-					  const state_machine **out_sm,
-					  unsigned *out_sm_idx)
+impl_region_model_context::get_state_map_by_name (const char *name,
+						  sm_state_map **out_smap,
+						  const state_machine **out_sm,
+						  unsigned *out_sm_idx)
 {
   if (!m_new_state)
     return false;
 
-  unsigned taint_sm_idx;
-  if (!m_ext_state.get_sm_idx_by_name ("taint", &taint_sm_idx))
+  unsigned sm_idx;
+  if (!m_ext_state.get_sm_idx_by_name (name, &sm_idx))
     return false;
 
-  *out_smap = m_new_state->m_checker_states[taint_sm_idx];
-  *out_sm = &m_ext_state.get_sm (taint_sm_idx);
-  *out_sm_idx = taint_sm_idx;
+  *out_smap = m_new_state->m_checker_states[sm_idx];
+  *out_sm = &m_ext_state.get_sm (sm_idx);
+  *out_sm_idx = sm_idx;
   return true;
 }
 
