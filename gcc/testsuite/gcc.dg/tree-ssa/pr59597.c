@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdisable-tree-cunrolli -fdump-tree-threadfull1-details" } */
+/* { dg-options "-Ofast -fdisable-tree-cunrolli1 -fdump-tree-threadfull1-details" } */
 
 typedef unsigned short u16;
 typedef unsigned char u8;

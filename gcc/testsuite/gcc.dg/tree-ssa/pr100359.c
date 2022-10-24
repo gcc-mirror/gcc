@@ -1,6 +1,6 @@
 /* { dg-do link { target natural_alignment_32 } } */
 /* { dg-do compile { target { ! natural_alignment_32 } } } */
-/* { dg-options "-O3 -fdump-tree-cunrolli-optimized" } */
+/* { dg-options "-O3 -fdump-tree-cunrolli1-optimized" } */
 
 extern void foo(void);
 static int b, f, *a = &b;
@@ -28,5 +28,5 @@ int main() {
 }
 
 /* Verify that we unroll the inner loop early even with -O3.  */
-/* { dg-final { scan-tree-dump "loop with 1 iterations completely unrolled" "cunrolli" } }  */
-/* { dg-final { scan-tree-dump "loop with 3 iterations completely unrolled" "cunrolli" } }  */
+/* { dg-final { scan-tree-dump "loop with 1 iterations completely unrolled" "cunrolli1" } }  */
+/* { dg-final { scan-tree-dump "loop with 3 iterations completely unrolled" "cunrolli1" } }  */

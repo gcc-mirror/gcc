@@ -23,5 +23,5 @@ package body Unroll1 is
 
 end Unroll1;
 
--- { dg-final { scan-tree-dump-times "Not unrolling loop .: user didn't want it unrolled completely" 2 "cunrolli" } }
+-- { dg-final { scan-tree-dump-times "Not unrolling loop .: user didn't want it unrolled completely" 2 "cunrolli1" } }
 -- { dg-final { scan-rtl-dump-times "Not unrolling loop, user didn't want it unrolled" 2 "loop2_unroll" } }

@@ -1,3 +1,19 @@
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/ext/unroll-1.C: Change 'cunrolli' to 'cunrolli1' in
+	dg-options and scan-tree-dump.
+	* g++.dg/ext/unroll-2.C: Likewise.
+	* g++.dg/ext/unroll-3.C: Likewise.
+	* g++.dg/vect/pr36648.cc: Likewise.
+	* gcc.dg/tree-prof/init-array.c: Likewise.
+	* gcc.dg/tree-ssa/pr100359.c: Likewise.
+	* gcc.dg/tree-ssa/pr59597.c: Likewise.
+	* gcc.dg/unroll-2.c: Likewise.
+	* gfortran.dg/directive_unroll_1.f90: Likewise.
+	* gfortran.dg/directive_unroll_4.f90: Likewise.
+	* gnat.dg/unroll1.adb: Likewise.
+	* gnat.dg/unroll2.adb: Likewise.
+
 2022-10-21  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-c++-common/goacc/classify-kernels-unparallelized-graphite.c:

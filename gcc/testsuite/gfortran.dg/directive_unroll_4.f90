@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -funroll-all-loops -fdump-rtl-loop2_unroll-details -fdump-tree-cunrolli-details" }
+! { dg-options "-O2 -funroll-all-loops -fdump-rtl-loop2_unroll-details -fdump-tree-cunrolli1-details" }
 ! Test that
 ! #pragma GCC unroll n
 ! works
@@ -25,5 +25,5 @@ subroutine test2(a, n)
   ENDDO
 end subroutine test2
 
-! { dg-final { scan-tree-dump "Not unrolling loop .: user didn't want it unrolled completely" "cunrolli" } } */
+! { dg-final { scan-tree-dump "Not unrolling loop .: user didn't want it unrolled completely" "cunrolli1" } } */
 ! { dg-final { scan-rtl-dump-times "Not unrolling loop, user didn't want it unrolled" 2 "loop2_unroll" } } */

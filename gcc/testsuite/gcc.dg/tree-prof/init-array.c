@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fdump-tree-cunrolli-details" } */
+/* { dg-options "-O3 -fdump-tree-cunrolli1-details" } */
 
 static int s[10][10][10];
 static int d[10][10][10];
@@ -40,4 +40,4 @@ int main(int argc, char *argv[])
 	}	
 }
 
-/* { dg-final-use { scan-tree-dump-times "loop with 10 iterations completely unrolled" 2 "cunrolli"} } */
+/* { dg-final-use { scan-tree-dump-times "loop with 10 iterations completely unrolled" 2 "cunrolli1"} } */
