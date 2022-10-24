@@ -546,6 +546,8 @@ nvptx_open_device (int n)
   ptx_dev->omp_stacks.size = 0;
   pthread_mutex_init (&ptx_dev->omp_stacks.lock, NULL);
 
+  ptx_dev->rev_data = NULL;
+
   return ptx_dev;
 }
 
