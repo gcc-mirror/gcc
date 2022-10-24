@@ -71,29 +71,29 @@ ADJUST_BYTESIZE (VNx64BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
 
 /*
    | Mode        | MIN_VLEN=32 | MIN_VLEN=32 | MIN_VLEN=64 | MIN_VLEN=64 |
-   |             | LMUL        |  SEW/LMUL   | LMUL        | SEW/LMUL    |
-   | VNx1QI      | MF4         |  32         | MF8         | 64          |
-   | VNx2QI      | MF2         |  16         | MF4         | 32          |
-   | VNx4QI      | M1          |  8          | MF2         | 16          |
-   | VNx8QI      | M2          |  4          | M1          | 8           |
-   | VNx16QI     | M4          |  2          | M2          | 4           |
-   | VNx32QI     | M8          |  1          | M4          | 2           |
-   | VNx64QI     | N/A         |  N/A        | M8          | 1           |
-   | VNx1(HI|HF) | MF2         |  32         | MF4         | 64          |
-   | VNx2(HI|HF) | M1          |  16         | MF2         | 32          |
-   | VNx4(HI|HF) | M2          |  8          | M1          | 16          |
-   | VNx8(HI|HF) | M4          |  4          | M2          | 8           |
-   | VNx16(HI|HF)| M8          |  2          | M4          | 4           |
-   | VNx32(HI|HF)| N/A         |  N/A        | M8          | 2           |
-   | VNx1(SI|SF) | M1          |  32         | MF2         | 64          |
-   | VNx2(SI|SF) | M2          |  16         | M1          | 32          |
-   | VNx4(SI|SF) | M4          |  8          | M2          | 16          |
-   | VNx8(SI|SF) | M8          |  4          | M4          | 8           |
-   | VNx16(SI|SF)| N/A         |  N/A        | M8          | 4           |
-   | VNx1(DI|DF) | N/A         |  N/A        | M1          | 64          |
-   | VNx2(DI|DF) | N/A         |  N/A        | M2          | 32          |
-   | VNx4(DI|DF) | N/A         |  N/A        | M4          | 16          |
-   | VNx8(DI|DF) | N/A         |  N/A        | M8          | 8           |
+   |             | LMUL        | SEW/LMUL    | LMUL        | SEW/LMUL    |
+   | VNx1QI      | MF4         | 32          | MF8         | 64          |
+   | VNx2QI      | MF2         | 16          | MF4         | 32          |
+   | VNx4QI      | M1          | 8           | MF2         | 16          |
+   | VNx8QI      | M2          | 4           | M1          | 8           |
+   | VNx16QI     | M4          | 2           | M2          | 4           |
+   | VNx32QI     | M8          | 1           | M4          | 2           |
+   | VNx64QI     | N/A         | N/A         | M8          | 1           |
+   | VNx1(HI|HF) | MF2         | 32          | MF4         | 64          |
+   | VNx2(HI|HF) | M1          | 16          | MF2         | 32          |
+   | VNx4(HI|HF) | M2          | 8           | M1          | 16          |
+   | VNx8(HI|HF) | M4          | 4           | M2          | 8           |
+   | VNx16(HI|HF)| M8          | 2           | M4          | 4           |
+   | VNx32(HI|HF)| N/A         | N/A         | M8          | 2           |
+   | VNx1(SI|SF) | M1          | 32          | MF2         | 64          |
+   | VNx2(SI|SF) | M2          | 16          | M1          | 32          |
+   | VNx4(SI|SF) | M4          | 8           | M2          | 16          |
+   | VNx8(SI|SF) | M8          | 4           | M4          | 8           |
+   | VNx16(SI|SF)| N/A         | N/A         | M8          | 4           |
+   | VNx1(DI|DF) | N/A         | N/A         | M1          | 64          |
+   | VNx2(DI|DF) | N/A         | N/A         | M2          | 32          |
+   | VNx4(DI|DF) | N/A         | N/A         | M4          | 16          |
+   | VNx8(DI|DF) | N/A         | N/A         | M8          | 8           |
 */
 
 /* Define RVV modes whose sizes are multiples of 64-bit chunks.  */
