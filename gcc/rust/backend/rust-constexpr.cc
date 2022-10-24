@@ -3658,49 +3658,48 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
    whose constructor we are processing.  Add the initializer to the vector
    and return true to indicate success.  */
 
-static bool
-build_anon_member_initialization (tree member, tree init,
-				  vec<constructor_elt, va_gc> **vec_outer)
-{
-  /* MEMBER presents the relevant fields from the inside out, but we need
-     to build up the initializer from the outside in so that we can reuse
-     previously built CONSTRUCTORs if this is, say, the second field in an
-     anonymous struct.  So we use a vec as a stack.  */
-  auto_vec<tree, 2> fields;
-  do
-    {
-      fields.safe_push (TREE_OPERAND (member, 1));
-      member = TREE_OPERAND (member, 0);
-    }
-  while (ANON_AGGR_TYPE_P (TREE_TYPE (member))
-	 && TREE_CODE (member) == COMPONENT_REF);
-
-  /* VEC has the constructor elements vector for the context of FIELD.
-     If FIELD is an anonymous aggregate, we will push inside it.  */
-  vec<constructor_elt, va_gc> **vec = vec_outer;
-  tree field;
-  while (field = fields.pop (), ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-    {
-      tree ctor;
-      /* If there is already an outer constructor entry for the anonymous
-	 aggregate FIELD, use it; otherwise, insert one.  */
-      if (vec_safe_is_empty (*vec) || (*vec)->last ().index != field)
-	{
-	  ctor = build_constructor (TREE_TYPE (field), NULL);
-	  CONSTRUCTOR_APPEND_ELT (*vec, field, ctor);
-	}
-      else
-	ctor = (*vec)->last ().value;
-      vec = &CONSTRUCTOR_ELTS (ctor);
-    }
-
-  /* Now we're at the innermost field, the one that isn't an anonymous
-     aggregate.  Add its initializer to the CONSTRUCTOR and we're done.  */
-  gcc_assert (fields.is_empty ());
-  CONSTRUCTOR_APPEND_ELT (*vec, field, init);
-
-  return true;
-}
+// static bool
+// build_anon_member_initialization (tree member, tree init,
+// 				  vec<constructor_elt, va_gc> **vec_outer)
+// {
+//   /* MEMBER presents the relevant fields from the inside out, but we need
+//      to build up the initializer from the outside in so that we can reuse
+//      previously built CONSTRUCTORs if this is, say, the second field in an
+//      anonymous struct.  So we use a vec as a stack.  */
+//   auto_vec<tree, 2> fields;
+//   do
+//     {
+//       fields.safe_push (TREE_OPERAND (member, 1));
+//       member = TREE_OPERAND (member, 0);
+//   } while (ANON_AGGR_TYPE_P (TREE_TYPE (member))
+// 	   && TREE_CODE (member) == COMPONENT_REF);
+//
+//   /* VEC has the constructor elements vector for the context of FIELD.
+//      If FIELD is an anonymous aggregate, we will push inside it.  */
+//   vec<constructor_elt, va_gc> **vec = vec_outer;
+//   tree field;
+//   while (field = fields.pop (), ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+//     {
+//       tree ctor;
+//       /* If there is already an outer constructor entry for the anonymous
+// 	 aggregate FIELD, use it; otherwise, insert one.  */
+//       if (vec_safe_is_empty (*vec) || (*vec)->last ().index != field)
+// 	{
+// 	  ctor = build_constructor (TREE_TYPE (field), NULL);
+// 	  CONSTRUCTOR_APPEND_ELT (*vec, field, ctor);
+// 	}
+//       else
+// 	ctor = (*vec)->last ().value;
+//       vec = &CONSTRUCTOR_ELTS (ctor);
+//     }
+//
+//   /* Now we're at the innermost field, the one that isn't an anonymous
+//      aggregate.  Add its initializer to the CONSTRUCTOR and we're done.  */
+//   gcc_assert (fields.is_empty ());
+//   CONSTRUCTOR_APPEND_ELT (*vec, field, init);
+//
+//   return true;
+// }
 
 ///* V is a vector of constructor elements built up for the base and member
 //   initializers of a constructor for TYPE.  They need to be in increasing
@@ -3750,7 +3749,7 @@ build_anon_member_initialization (tree member, tree init,
 static bool
 build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 {
-  tree member, init;
+  tree member;
   if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == EXPR_STMT)
@@ -3835,7 +3834,8 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 	member = TREE_OPERAND (member, 1);
       else if (ANON_AGGR_TYPE_P (TREE_TYPE (aggr)))
 	/* Initializing a member of an anonymous union.  */
-	return build_anon_member_initialization (member, init, vec);
+	rust_sorry_at (Location (), "cannot handle value initialization yet");
+      // return build_anon_member_initialization (member, init, vec);
       else
 	/* We're initializing a vtable pointer in a base.  Leave it as
 	   COMPONENT_REF so we remember the path to get to the vfield.  */
@@ -3845,9 +3845,11 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
   /* Value-initialization can produce multiple initializers for the
      same field; use the last one.  */
   if (!vec_safe_is_empty (*vec) && (*vec)->last ().index == member)
-    (*vec)->last ().value = init;
+    rust_sorry_at (Location (), "cannot handle value initialization yet");
+  // (*vec)->last ().value = init;
   else
-    CONSTRUCTOR_APPEND_ELT (*vec, member, init);
+    rust_sorry_at (Location (), "cannot handle value initialization yet");
+  // CONSTRUCTOR_APPEND_ELT (*vec, member, init);
   return true;
 }
 
