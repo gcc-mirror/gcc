@@ -1,3 +1,14 @@
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/107236
+	* omp-expand.cc (expand_omp_target): Set calls_declare_variant_alt
+	in DECL_CONTEXT and not to cfun->decl.
+	* cgraphclones.cc (cgraph_node::create_clone): Copy also the
+	node's calls_declare_variant_alt value.
+
 2022-10-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-oacc-kernels-decompose.cc (top_level_omp_for_in_stmt,

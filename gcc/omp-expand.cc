@@ -10143,13 +10143,8 @@ expand_omp_target (struct omp_region *region)
 
       /* Handle the case that an inner ancestor:1 target is called by an outer
 	 target region. */
-      if (!is_ancestor)
-	cgraph_node::get (child_fn)->calls_declare_variant_alt
-	  |= cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
-      else  /* Duplicate function to create empty nonhost variant. */
+      if (is_ancestor)
 	{
-	  /* Enable pass_omp_device_lower pass.  */
-	  cgraph_node::get (cfun->decl)->calls_declare_variant_alt = 1;
 	  cgraph_node *fn2_node;
 	  child_fn2 = build_decl (DECL_SOURCE_LOCATION (child_fn),
 				  FUNCTION_DECL,
@@ -10163,7 +10158,7 @@ expand_omp_target (struct omp_region *region)
 	  TREE_PUBLIC (child_fn2) = 0;
 	  DECL_UNINLINABLE (child_fn2) = 1;
 	  DECL_EXTERNAL (child_fn2) = 0;
-	  DECL_CONTEXT (child_fn2) = NULL_TREE;
+	  DECL_CONTEXT (child_fn2) = DECL_CONTEXT (child_fn);
 	  DECL_INITIAL (child_fn2) = make_node (BLOCK);
 	  BLOCK_SUPERCONTEXT (DECL_INITIAL (child_fn2)) = child_fn2;
 	  DECL_ATTRIBUTES (child_fn)
@@ -10186,6 +10181,10 @@ expand_omp_target (struct omp_region *region)
 	  fn2_node->offloadable = 1;
 	  fn2_node->force_output = 1;
 	  node->offloadable = 0;
+
+	  /* Enable pass_omp_device_lower pass.  */
+	  fn2_node = cgraph_node::get (DECL_CONTEXT (child_fn));
+	  fn2_node->calls_declare_variant_alt = 1;
 
 	  t = build_decl (DECL_SOURCE_LOCATION (child_fn),
 			  RESULT_DECL, NULL_TREE, void_type_node);

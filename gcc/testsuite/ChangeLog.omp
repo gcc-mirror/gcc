@@ -1,3 +1,11 @@
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/107236
+	* gfortran.dg/gomp/target-device-ancestor-6.f90: New test.
+
 2022-10-21  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-c++-common/goacc/classify-kernels-unparallelized-graphite.c:
