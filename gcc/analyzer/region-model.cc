@@ -1976,6 +1976,25 @@ maybe_get_const_fn_result (const call_details &cd)
   return sval;
 }
 
+/* Update this model for an outcome of a call that returns a specific
+   integer constant.
+   If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
+   the state-merger code from merging success and failure outcomes.  */
+
+void
+region_model::update_for_int_cst_return (const call_details &cd,
+					 int retval,
+					 bool unmergeable)
+{
+  if (!cd.get_lhs_type ())
+    return;
+  const svalue *result
+    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), retval);
+  if (unmergeable)
+    result = m_mgr->get_or_create_unmergeable (result);
+  set_value (cd.get_lhs_region (), result, cd.get_ctxt ());
+}
+
 /* Update this model for an outcome of a call that returns zero.
    If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
    the state-merger code from merging success and failure outcomes.  */
@@ -1984,13 +2003,7 @@ void
 region_model::update_for_zero_return (const call_details &cd,
 				      bool unmergeable)
 {
-  if (!cd.get_lhs_type ())
-    return;
-  const svalue *result
-    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
-  if (unmergeable)
-    result = m_mgr->get_or_create_unmergeable (result);
-  set_value (cd.get_lhs_region (), result, cd.get_ctxt ());
+  update_for_int_cst_return (cd, 0, unmergeable);
 }
 
 /* Update this model for an outcome of a call that returns non-zero.  */
@@ -2302,6 +2315,14 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
+      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+	{
+	  /* Handle in "on_call_post"; bail now so that fd array
+	     is left untouched so that we can detect use-of-uninit
+	     for the case where the call fails.  */
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "putenv", call, 1)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
@@ -2380,6 +2401,12 @@ region_model::on_call_post (const gcall *call,
 	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
 	{
 	  impl_call_operator_delete (cd);
+	  return;
+	}
+      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+	{
+	  impl_call_pipe (cd);
 	  return;
 	}
       /* Was this fndecl referenced by

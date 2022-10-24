@@ -356,6 +356,7 @@ class region_model
   void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
   void impl_call_memset (const call_details &cd);
+  void impl_call_pipe (const call_details &cd);
   void impl_call_putenv (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strchr (const call_details &cd);
@@ -373,6 +374,9 @@ class region_model
 
   const svalue *maybe_get_copy_bounds (const region *src_reg,
 				       const svalue *num_bytes_sval);
+  void update_for_int_cst_return (const call_details &cd,
+				  int retval,
+				  bool unmergeable);
   void update_for_zero_return (const call_details &cd,
 			       bool unmergeable);
   void update_for_nonzero_return (const call_details &cd);
@@ -538,6 +542,9 @@ class region_model
 				      const svalue *copied_sval,
 				      const region *src_reg,
 				      region_model_context *ctxt);
+
+  /* Implemented in sm-fd.cc  */
+  void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);
 
   /* Implemented in sm-malloc.cc  */
   void on_realloc_with_move (const call_details &cd,
@@ -730,8 +737,12 @@ class region_model_context
 
   virtual const extrinsic_state *get_ext_state () const = 0;
 
-  /* Hook for clients to access the "malloc" state machine in
+  /* Hook for clients to access the "fd" state machine in
      any underlying program_state.  */
+  virtual bool get_fd_map (sm_state_map **out_smap,
+			   const state_machine **out_sm,
+			   unsigned *out_sm_idx) = 0;
+  /* Likewise for the "malloc" state machine.  */
   virtual bool get_malloc_map (sm_state_map **out_smap,
 			       const state_machine **out_sm,
 			       unsigned *out_sm_idx) = 0;
@@ -785,6 +796,12 @@ public:
 
   const extrinsic_state *get_ext_state () const override { return NULL; }
 
+  bool get_fd_map (sm_state_map **,
+		   const state_machine **,
+		   unsigned *) override
+  {
+    return false;
+  }
   bool get_malloc_map (sm_state_map **,
 		       const state_machine **,
 		       unsigned *) override
@@ -910,6 +927,13 @@ class region_model_context_decorator : public region_model_context
   const extrinsic_state *get_ext_state () const override
   {
     return m_inner->get_ext_state ();
+  }
+
+  bool get_fd_map (sm_state_map **out_smap,
+		   const state_machine **out_sm,
+		   unsigned *out_sm_idx) override
+  {
+    return m_inner->get_fd_map (out_smap, out_sm, out_sm_idx);
   }
 
   bool get_malloc_map (sm_state_map **out_smap,

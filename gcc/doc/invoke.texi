@@ -10459,6 +10459,7 @@ of the following functions for working with file descriptors:
 @item @code{close}
 @item @code{creat}
 @item @code{dup}, @code{dup2} and @code{dup3}
+@item @code{pipe}, and @code{pipe2}
 @item @code{read}
 @item @code{write}
 @end itemize

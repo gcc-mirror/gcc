@@ -96,6 +96,9 @@ class impl_region_model_context : public region_model_context
   {
     return &m_ext_state;
   }
+  bool get_fd_map (sm_state_map **out_smap,
+		   const state_machine **out_sm,
+		   unsigned *out_sm_idx) final override;
   bool get_malloc_map (sm_state_map **out_smap,
 		       const state_machine **out_sm,
 		       unsigned *out_sm_idx) final override;
