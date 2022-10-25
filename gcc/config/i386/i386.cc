@@ -15657,7 +15657,7 @@ ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high)
   if (MEM_P (operands[0]))
     return rtx_equal_p (operands[0], operands[1 + high]);
   if (MEM_P (operands[1]) && MEM_P (operands[2]))
-    return TARGET_SSE3 && rtx_equal_p (operands[1], operands[2]);
+    return false;
   return true;
 }
 
