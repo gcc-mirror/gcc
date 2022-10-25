@@ -1,3 +1,8 @@
+2022-10-25  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* omp-offload.cc (oacc_loop_auto_partitions): Removed OLF reduction
+	handling.
+
 2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* tree-vect-data-refs.cc (vect_analyze_data_refs): Workaround an

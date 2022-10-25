@@ -2265,13 +2265,6 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
 	 non-innermost available level.  */
       unsigned this_mask = GOMP_DIM_MASK (GOMP_DIM_GANG);
 
-      /* Orphan reductions cannot have gang partitioning.  */
-      if ((loop->flags & OLF_REDUCTION)
-	  && oacc_get_fn_attrib (current_function_decl)
-	  && !lookup_attribute ("omp target entrypoint",
-				DECL_ATTRIBUTES (current_function_decl)))
-	this_mask = GOMP_DIM_MASK (GOMP_DIM_WORKER);
-
       /* Find the first outermost available partition. */
       while (this_mask <= outer_mask)
 	this_mask <<= 1;
