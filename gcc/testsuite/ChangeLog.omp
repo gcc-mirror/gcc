@@ -1,3 +1,10 @@
+2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Fix target selector syntax.
+
 2022-10-26  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* gfortran.dg/goacc/orphan-reductions-1.f90: Adjust.
