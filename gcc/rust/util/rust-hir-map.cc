@@ -843,17 +843,17 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
   static std::map<
     std::string, std::function<AST::Fragment (Location, AST::MacroInvocData &)>>
     builtin_macros = {
-      {"assert", MacroBuiltin::assert},
-      {"file", MacroBuiltin::file},
-      {"line", MacroBuiltin::line},
-      {"column", MacroBuiltin::column},
-      {"include_bytes", MacroBuiltin::include_bytes},
-      {"include_str", MacroBuiltin::include_str},
-      {"compile_error", MacroBuiltin::compile_error},
-      {"concat", MacroBuiltin::concat},
-      {"env", MacroBuiltin::env},
-      {"cfg", MacroBuiltin::cfg},
-      {"include", MacroBuiltin::include},
+      {"assert", MacroBuiltin::assert_handler},
+      {"file", MacroBuiltin::file_handler},
+      {"line", MacroBuiltin::line_handler},
+      {"column", MacroBuiltin::column_handler},
+      {"include_bytes", MacroBuiltin::include_bytes_handler},
+      {"include_str", MacroBuiltin::include_str_handler},
+      {"compile_error", MacroBuiltin::compile_error_handler},
+      {"concat", MacroBuiltin::concat_handler},
+      {"env", MacroBuiltin::env_handler},
+      {"cfg", MacroBuiltin::cfg_handler},
+      {"include", MacroBuiltin::include_handler},
     };
 
   auto outer_attrs = macro->get_outer_attrs ();

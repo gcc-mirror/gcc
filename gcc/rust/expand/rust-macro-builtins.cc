@@ -265,7 +265,7 @@ load_file_bytes (const char *filename)
 } // namespace
 
 AST::Fragment
-MacroBuiltin::assert (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::assert_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   rust_debug ("assert!() called");
 
@@ -273,7 +273,7 @@ MacroBuiltin::assert (Location invoc_locus, AST::MacroInvocData &invoc)
 }
 
 AST::Fragment
-MacroBuiltin::file (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::file_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_file
     = Session::get_instance ().linemap->location_file (invoc_locus);
@@ -283,7 +283,7 @@ MacroBuiltin::file (Location invoc_locus, AST::MacroInvocData &invoc)
 }
 
 AST::Fragment
-MacroBuiltin::column (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::column_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_column
     = Session::get_instance ().linemap->location_to_column (invoc_locus);
@@ -300,7 +300,8 @@ MacroBuiltin::column (Location invoc_locus, AST::MacroInvocData &invoc)
    &'static [u8; N].  */
 
 AST::Fragment
-MacroBuiltin::include_bytes (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::include_bytes_handler (Location invoc_locus,
+				     AST::MacroInvocData &invoc)
 {
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
@@ -343,7 +344,8 @@ MacroBuiltin::include_bytes (Location invoc_locus, AST::MacroInvocData &invoc)
    expression of type &'static str.  */
 
 AST::Fragment
-MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::include_str_handler (Location invoc_locus,
+				   AST::MacroInvocData &invoc)
 {
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
@@ -368,7 +370,8 @@ MacroBuiltin::include_str (Location invoc_locus, AST::MacroInvocData &invoc)
 /* Expand builtin macro compile_error!("error"), which forces a compile error
    during the compile time. */
 AST::Fragment
-MacroBuiltin::compile_error (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::compile_error_handler (Location invoc_locus,
+				     AST::MacroInvocData &invoc)
 {
   auto lit_expr
     = parse_single_string_literal (invoc.get_delim_tok_tree (), invoc_locus,
@@ -386,7 +389,7 @@ MacroBuiltin::compile_error (Location invoc_locus, AST::MacroInvocData &invoc)
    into a string with no delimiter. */
 
 AST::Fragment
-MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::concat_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
@@ -437,7 +440,7 @@ MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
    compile time. */
 
 AST::Fragment
-MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::env_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
@@ -495,7 +498,7 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
 }
 
 AST::Fragment
-MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::cfg_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   // only parse if not already parsed
   if (!invoc.is_parsed ())
@@ -534,7 +537,7 @@ MacroBuiltin::cfg (Location invoc_locus, AST::MacroInvocData &invoc)
  scope compile time. */
 
 AST::Fragment
-MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::include_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
@@ -588,7 +591,7 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
 }
 
 AST::Fragment
-MacroBuiltin::line (Location invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::line_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_line
     = Session::get_instance ().linemap->location_to_line (invoc_locus);
