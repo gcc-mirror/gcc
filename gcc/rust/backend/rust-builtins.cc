@@ -69,10 +69,46 @@ BuiltinsContext::setup_math_fns ()
 }
 
 void
+BuiltinsContext::setup_atomic_fns ()
+{
+  define_builtin ("atomic_store", BUILT_IN_ATOMIC_STORE, "__atomic_store", NULL,
+		  build_function_type_list (void_type_node, size_type_node,
+					    build_pointer_type (void_type_node),
+					    const_ptr_type_node,
+					    integer_type_node, NULL_TREE),
+		  0);
+  define_builtin ("atomic_store_n", BUILT_IN_ATOMIC_STORE_N, "__atomic_store_n",
+		  NULL,
+		  build_varargs_function_type_list (void_type_node, NULL_TREE),
+		  0);
+  define_builtin ("atomic_store_1", BUILT_IN_ATOMIC_STORE_1, "__atomic_store_1",
+		  NULL,
+		  build_varargs_function_type_list (void_type_node, NULL_TREE),
+		  0);
+  define_builtin ("atomic_store_2", BUILT_IN_ATOMIC_STORE_2, "__atomic_store_2",
+		  NULL,
+		  build_varargs_function_type_list (void_type_node, NULL_TREE),
+		  0);
+  define_builtin ("atomic_store_4", BUILT_IN_ATOMIC_STORE_4, "__atomic_store_4",
+		  NULL,
+		  build_varargs_function_type_list (void_type_node, NULL_TREE),
+		  0);
+  define_builtin ("atomic_store_8", BUILT_IN_ATOMIC_STORE_8, "__atomic_store_8",
+		  NULL,
+		  build_varargs_function_type_list (void_type_node, NULL_TREE),
+		  0);
+  define_builtin ("atomic_store_16", BUILT_IN_ATOMIC_STORE_16,
+		  "__atomic_store_16", NULL,
+		  build_varargs_function_type_list (void_type_node, NULL_TREE),
+		  0);
+}
+
+void
 BuiltinsContext::setup ()
 {
   setup_math_fns ();
   setup_overflow_fns ();
+  setup_atomic_fns ();
 
   define_builtin ("unreachable", BUILT_IN_UNREACHABLE, "__builtin_unreachable",
 		  NULL, build_function_type (void_type_node, void_list_node),

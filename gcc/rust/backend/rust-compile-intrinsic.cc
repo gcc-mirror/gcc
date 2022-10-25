@@ -93,6 +93,17 @@ prefetch_write_data (Context *ctx, TyTy::FnType *fntype)
   return prefetch_data_handler (ctx, fntype, Prefetch::Write);
 }
 
+static tree
+atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering);
+
+static inline std::function<tree (Context *, TyTy::FnType *)>
+atomic_store_handler (int ordering)
+{
+  return [ordering] (Context *ctx, TyTy::FnType *fntype) {
+    return atomic_store_handler_inner (ctx, fntype, ordering);
+  };
+}
+
 static inline tree
 sorry_handler (Context *ctx, TyTy::FnType *fntype)
 {
@@ -105,18 +116,22 @@ sorry_handler (Context *ctx, TyTy::FnType *fntype)
 static const std::map<std::string,
 		      std::function<tree (Context *, TyTy::FnType *)>>
   generic_intrinsics = {
-    {"offset", &offset_handler},
-    {"size_of", &sizeof_handler},
-    {"transmute", &transmute_handler},
-    {"rotate_left", &rotate_left_handler},
-    {"rotate_right", &rotate_right_handler},
-    {"wrapping_add", &wrapping_add_handler},
-    {"wrapping_sub", &wrapping_sub_handler},
-    {"wrapping_mul", &wrapping_mul_handler},
-    {"copy_nonoverlapping", &copy_nonoverlapping_handler},
-    {"prefetch_read_data", &prefetch_read_data},
-    {"prefetch_write_data", &prefetch_write_data},
-    {"atomic_load", &sorry_handler},
+    {"offset", offset_handler},
+    {"size_of", sizeof_handler},
+    {"transmute", transmute_handler},
+    {"rotate_left", rotate_left_handler},
+    {"rotate_right", rotate_right_handler},
+    {"wrapping_add", wrapping_add_handler},
+    {"wrapping_sub", wrapping_sub_handler},
+    {"wrapping_mul", wrapping_mul_handler},
+    {"copy_nonoverlapping", copy_nonoverlapping_handler},
+    {"prefetch_read_data", prefetch_read_data},
+    {"prefetch_write_data", prefetch_write_data},
+    {"atomic_load", sorry_handler},
+    {"atomic_store_seqcst", atomic_store_handler (__ATOMIC_SEQ_CST)},
+    {"atomic_store_release", atomic_store_handler (__ATOMIC_RELEASE)},
+    {"atomic_store_relaxed", atomic_store_handler (__ATOMIC_RELAXED)},
+    {"atomic_store_unordered", atomic_store_handler (__ATOMIC_RELAXED)},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
@@ -552,6 +567,16 @@ copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
 }
 
 static tree
+make_unsigned_long_tree (Context *ctx, unsigned long value)
+{
+  mpz_t mpz_value;
+  mpz_init_set_ui (mpz_value, value);
+
+  return ctx->get_backend ()->integer_constant_expression (integer_type_node,
+							   mpz_value);
+}
+
+static tree
 prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
 {
   rust_assert (fntype->get_params ().size () == 2);
@@ -576,16 +601,8 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
 
   auto addr = ctx->get_backend ()->var_expression (args[0], Location ());
   auto locality = ctx->get_backend ()->var_expression (args[1], Location ());
+  auto rw_flag = make_unsigned_long_tree (ctx, kind == Prefetch::Write ? 1 : 0);
 
-  mpz_t zero;
-  mpz_t one;
-  mpz_init_set_ui (zero, 0);
-  mpz_init_set_ui (one, 1);
-
-  auto rw_flag_value = kind == Prefetch::Write ? one : zero;
-  auto rw_flag
-    = ctx->get_backend ()->integer_constant_expression (integer_type_node,
-							rw_flag_value);
   auto prefetch_raw = NULL_TREE;
   auto ok
     = BuiltinsContext::get ().lookup_simple_builtin ("prefetch", &prefetch_raw);
@@ -597,7 +614,113 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
     = ctx->get_backend ()->call_expression (prefetch, {addr, rw_flag, locality},
 					    nullptr, Location ());
 
+  TREE_READONLY (prefetch_call) = 0;
+  TREE_SIDE_EFFECTS (prefetch_call) = 1;
+
   ctx->add_statement (prefetch_call);
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static std::string
+build_atomic_builtin_name (Location locus, tree operand_type)
+{
+  static const std::map<std::string, std::string> allowed_types = {
+    {"i8", "1"},    {"i16", "2"},   {"i32", "4"},   {"i64", "8"},
+    {"i128", "16"}, {"isize", "8"}, {"u8", "1"},    {"u16", "2"},
+    {"u32", "4"},   {"u64", "8"},   {"u128", "16"}, {"usize", "8"},
+  };
+
+  // TODO: Can we maybe get the generic version (atomic_store_n) to work... This
+  // would be so much better
+
+  std::string result = "atomic_store_";
+
+  auto type_name = std::string (TYPE_NAME_STRING (operand_type));
+  if (type_name == "usize" || type_name == "isize")
+    {
+      rust_sorry_at (
+	locus, "atomics are not yet available for size types (usize, isize)");
+      return "";
+    }
+
+  // FIXME: Can we have a better looking name here?
+  // Instead of `<crate>::<module>::<type>`?
+  // Maybe instead of giving the tree node, pass the resolved Tyty before it
+  // gets compiled?
+  //
+  // Or should we perform this check somwhere else in the compiler?
+  auto type_size_str = allowed_types.find (type_name);
+  if (type_size_str == allowed_types.end ())
+    {
+      rust_error_at (locus,
+		     "atomic intrinsics are only available for basic integer "
+		     "types: got type %qs",
+		     type_name.c_str ());
+      return "";
+    }
+
+  result += type_size_str->second;
+
+  return result;
+}
+
+static tree
+atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
+{
+  rust_assert (fntype->get_params ().size () == 2);
+  rust_assert (fntype->get_num_substitutions () == 1);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // Most intrinsic functions are pure but not the atomic ones
+  TREE_READONLY (fndecl) = 0;
+  TREE_SIDE_EFFECTS (fndecl) = 1;
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  std::vector<tree> types;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars, &types);
+
+  auto ok = ctx->get_backend ()->function_set_parameters (fndecl, param_vars);
+  rust_assert (ok);
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  auto dst = ctx->get_backend ()->var_expression (param_vars[0], Location ());
+  TREE_READONLY (dst) = 0;
+
+  auto value = ctx->get_backend ()->var_expression (param_vars[1], Location ());
+  auto memorder = make_unsigned_long_tree (ctx, ordering);
+
+  auto builtin_name
+    = build_atomic_builtin_name (fntype->get_locus (), TREE_TYPE (types[0]));
+  if (builtin_name.empty ())
+    return error_mark_node;
+
+  tree atomic_store_raw = nullptr;
+  BuiltinsContext::get ().lookup_simple_builtin (builtin_name,
+						 &atomic_store_raw);
+  rust_assert (atomic_store_raw);
+
+  auto atomic_store
+    = build_fold_addr_expr_loc (Location ().gcc_location (), atomic_store_raw);
+
+  auto store_call
+    = ctx->get_backend ()->call_expression (atomic_store,
+					    {dst, value, memorder}, nullptr,
+					    Location ());
+
+  TREE_READONLY (store_call) = 0;
+  TREE_SIDE_EFFECTS (store_call) = 1;
+
+  ctx->add_statement (store_call);
 
   finalize_intrinsic_block (ctx, fndecl);
 

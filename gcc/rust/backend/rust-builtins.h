@@ -86,8 +86,8 @@ private:
   BuiltinsContext ();
 
   void setup_overflow_fns ();
-
   void setup_math_fns ();
+  void setup_atomic_fns ();
 
   void setup ();
 
