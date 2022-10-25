@@ -1,5 +1,5 @@
 /* Definitions for C++ contract levels
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.
@@ -131,20 +131,24 @@ along with GCC; see the file COPYING3.  If not see
    With the idea being that multiple return statements could collapse the
    function epilogue after inlining the pre/post functions. clang is able
    to collapse common function epilogues, while gcc needs -O3 -Os combined.
-   We're already doing this "manually" for cdtors due to the way they're already
-   implemented, forcing DECL_CDTOR_NEEDS_LABLED_EXIT_P to be true when the
-   cdtor has active contracts.
 
    Directly laying the pre contracts down in the function body doesn't have
    many issues. The post contracts may need to be repeated multiple times, once
-   for each return, or a goto epilogue would need generated similarly to cdtors.
+   for each return, or a goto epilogue would need to be generated.
    For this initial implementation, generating function calls and letting
    later optimizations decide whether to inline and duplicate the actual
    checks or whether to collapse the shared epilogue was chosen.
 
+   For cdtors a post contract is implemented using a CLEANUP_STMT.
+
    FIXME the compiler already handles sharing cleanup code on multiple exit
-   paths properly, this outlining isn't necessary if we represent the
-   postcondition as a cleanup (like I already did for dtors).  */
+   paths properly, so this outlining seems unnecessary if we represent the
+   postcondition as a cleanup for all functions.
+
+   More helpful for optimization might be to make the contracts a wrapper
+   function (for non-variadic functions), that could be inlined into a
+   caller while preserving the call to the actual function?  Either that or
+   turn a never-continue post contract into an assume in the caller.  */
 
 #include "config.h"
 #include "system.h"
