@@ -3568,7 +3568,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	      return GS_OK;
 	    }
 	  /* If not optimizing, ignore the assumptions.  */
-	  if (!optimize)
+	  if (!optimize || seen_error ())
 	    {
 	      *expr_p = NULL_TREE;
 	      return GS_ALL_DONE;
