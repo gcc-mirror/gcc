@@ -1214,6 +1214,8 @@ tail_recurse:
     {
       code = TREE_CODE (expr);
       type = TREE_TYPE (expr);
+      /* Via follow_ssa_edge_inner_loop_phi we arrive here with the
+	 GENERIC scalar evolution of the inner loop.  */
       switch (code)
 	{
 	CASE_CONVERT:
@@ -1224,6 +1226,8 @@ tail_recurse:
 	case MINUS_EXPR:
 	  rhs0 = TREE_OPERAND (expr, 0);
 	  rhs1 = TREE_OPERAND (expr, 1);
+	  STRIP_USELESS_TYPE_CONVERSION (rhs0);
+	  STRIP_USELESS_TYPE_CONVERSION (rhs1);
 	  break;
 	default:
 	  rhs0 = expr;
@@ -1260,8 +1264,6 @@ tail_recurse:
     case PLUS_EXPR:
     case MINUS_EXPR:
       /* This case is under the form "rhs0 +- rhs1".  */
-      STRIP_USELESS_TYPE_CONVERSION (rhs0);
-      STRIP_USELESS_TYPE_CONVERSION (rhs1);
       if (TREE_CODE (rhs0) == SSA_NAME
 	  && (TREE_CODE (rhs1) != SSA_NAME || code == MINUS_EXPR))
 	{
