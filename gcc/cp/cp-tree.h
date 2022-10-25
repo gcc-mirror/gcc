@@ -7468,8 +7468,8 @@ extern tree get_function_template_decl		(const_tree);
 extern tree resolve_nondeduced_context		(tree, tsubst_flags_t);
 extern tree resolve_nondeduced_context_or_error	(tree, tsubst_flags_t);
 extern hashval_t iterative_hash_template_arg	(tree arg, hashval_t val);
-extern tree coerce_template_parms               (tree, tree, tree);
-extern tree coerce_template_parms               (tree, tree, tree, tsubst_flags_t);
+extern tree coerce_template_parms		(tree, tree, tree, tsubst_flags_t,
+						 bool = true);
 extern tree canonicalize_type_argument		(tree, tsubst_flags_t);
 extern void register_local_specialization       (tree, tree);
 extern tree retrieve_local_specialization       (tree);

@@ -148,10 +148,8 @@ static void add_pending_template (tree);
 static tree reopen_tinst_level (struct tinst_level *);
 static tree tsubst_initializer_list (tree, tree);
 static tree get_partial_spec_bindings (tree, tree, tree);
-static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t,
-				   bool, bool);
 static tree coerce_innermost_template_parms (tree, tree, tree, tsubst_flags_t,
-					      bool, bool);
+					     bool = true);
 static void tsubst_enum	(tree, tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int check_non_deducible_conversion (tree, tree, unification_kind_t, int,
@@ -2172,8 +2170,7 @@ determine_specialization (tree template_id,
     {
       tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (fns));
       targs = coerce_template_parms (parms, explicit_targs, fns,
-				     tf_warning_or_error,
-				     /*req_all*/true, /*use_defarg*/true);
+				     tf_warning_or_error);
       if (targs != error_mark_node
 	  && constraints_satisfied_p (fns, targs))
         templates = tree_cons (targs, fns, templates);
@@ -7833,10 +7830,7 @@ coerce_template_args_for_ttp (tree templ, tree arglist,
     arglist = add_to_template_args (outer, arglist);
 
   tree parmlist = DECL_INNERMOST_TEMPLATE_PARMS (templ);
-  return coerce_template_parms (parmlist, arglist, templ,
-				complain,
-				/*require_all_args=*/true,
-				/*use_default_args=*/true);
+  return coerce_template_parms (parmlist, arglist, templ, complain);
 }
 
 /* A cache of template template parameters with match-all default
@@ -7910,9 +7904,7 @@ coerce_ttp_args_for_tta (tree& arg, tree pargs, tsubst_flags_t complain)
     {
       tree aparms
 	= INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (arg_tmpl));
-      pargs = coerce_template_parms (aparms, pargs, arg_tmpl, complain,
-				       /*require_all*/true,
-				       /*use_default*/true);
+      pargs = coerce_template_parms (aparms, pargs, arg_tmpl, complain);
     }
   --processing_template_decl;
   return pargs;
@@ -8079,8 +8071,7 @@ coerce_template_template_parms (tree parm_parms_full,
 	  pargs = add_to_template_args (outer_args, pargs);
 	}
 
-      pargs = coerce_template_parms (arg_parms, pargs, NULL_TREE, tf_none,
-				     /*require_all*/true, /*use_default*/true);
+      pargs = coerce_template_parms (arg_parms, pargs, NULL_TREE, tf_none);
       if (pargs != error_mark_node)
 	{
 	  tree targs = make_tree_vec (nargs);
@@ -8840,19 +8831,16 @@ pack_expansion_args_count (tree args)
    warning messages are issued under control of COMPLAIN.
 
    If REQUIRE_ALL_ARGS is false, argument deduction will be performed
-   for arguments not specified in ARGS.  Otherwise, if
-   USE_DEFAULT_ARGS is true, default arguments will be used to fill in
-   unspecified arguments.  If REQUIRE_ALL_ARGS is true, but
-   USE_DEFAULT_ARGS is false, then all arguments must be specified in
-   ARGS.  */
+   for arguments not specified in ARGS.  If REQUIRE_ALL_ARGS is true,
+   arguments not specified in ARGS must have default arguments which
+   we'll use to fill in ARGS.  */
 
-static tree
+tree
 coerce_template_parms (tree parms,
 		       tree args,
 		       tree in_decl,
 		       tsubst_flags_t complain,
-		       bool require_all_args,
-		       bool use_default_args)
+		       bool require_all_args /* = true */)
 {
   int nparms, nargs, parm_idx, arg_idx, lost = 0;
   tree orig_inner_args;
@@ -8913,9 +8901,8 @@ coerce_template_parms (tree parms,
       || (nargs < nparms - variadic_p
 	  && require_all_args
 	  && !variadic_args_p
-	  && (!use_default_args
-	      || (TREE_VEC_ELT (parms, nargs) != error_mark_node
-                  && !TREE_PURPOSE (TREE_VEC_ELT (parms, nargs))))))
+	  && (TREE_VEC_ELT (parms, nargs) != error_mark_node
+	      && !TREE_PURPOSE (TREE_VEC_ELT (parms, nargs)))))
     {
     bad_nargs:
       if (complain & tf_error)
@@ -9183,30 +9170,6 @@ coerce_template_parms (tree parms,
   return new_inner_args;
 }
 
-/* Convert all template arguments to their appropriate types, and
-   return a vector containing the innermost resulting template
-   arguments.  If any error occurs, return error_mark_node. Error and
-   warning messages are not issued.
-
-   Note that no function argument deduction is performed, and default
-   arguments are used to fill in unspecified arguments. */
-tree
-coerce_template_parms (tree parms, tree args, tree in_decl)
-{
-  return coerce_template_parms (parms, args, in_decl, tf_none, true, true);
-}
-
-/* Convert all template arguments to their appropriate type, and
-   instantiate default arguments as needed. This returns a vector
-   containing the innermost resulting template arguments, or
-   error_mark_node if unsuccessful.  */
-tree
-coerce_template_parms (tree parms, tree args, tree in_decl,
-                       tsubst_flags_t complain)
-{
-  return coerce_template_parms (parms, args, in_decl, complain, true, true);
-}
-
 /* Like coerce_template_parms.  If PARMS represents all template
    parameters levels, this function returns a vector of vectors
    representing all the resulting argument levels.  Note that in this
@@ -9219,11 +9182,10 @@ coerce_template_parms (tree parms, tree args, tree in_decl,
 
 static tree
 coerce_innermost_template_parms (tree parms,
-				  tree args,
-				  tree in_decl,
-				  tsubst_flags_t complain,
-				  bool require_all_args,
-				  bool use_default_args)
+				 tree args,
+				 tree in_decl,
+				 tsubst_flags_t complain,
+				 bool require_all_args /* = true */)
 {
   int parms_depth = TMPL_PARMS_DEPTH (parms);
   int args_depth = TMPL_ARGS_DEPTH (args);
@@ -9243,8 +9205,7 @@ coerce_innermost_template_parms (tree parms,
 	  if (cur_depth == args_depth)
 	    l = coerce_template_parms (TREE_VALUE (level),
 				       args, in_decl, complain,
-				       require_all_args,
-				       use_default_args);
+				       require_all_args);
 	  else
 	    l = TMPL_ARGS_LEVEL (args, cur_depth);
 
@@ -9257,8 +9218,7 @@ coerce_innermost_template_parms (tree parms,
   else
     coerced_args = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parms),
 					  args, in_decl, complain,
-					  require_all_args,
-					  use_default_args);
+					  require_all_args);
   return coerced_args;
 }
 
@@ -9953,9 +9913,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	 actually tsubst'd into the definition to create the
 	 instantiation.  */
       arglist = coerce_innermost_template_parms (parmlist, arglist, gen_tmpl,
-						 complain,
-						 /*require_all_args=*/true,
-						 /*use_default_args=*/true);
+						 complain);
 
       if (arglist == error_mark_node)
 	/* We were unable to bind the arguments.  */
@@ -10371,9 +10329,7 @@ finish_template_variable (tree var, tsubst_flags_t complain)
   tree arglist = TREE_OPERAND (var, 1);
 
   tree parms = DECL_TEMPLATE_PARMS (templ);
-  arglist = coerce_innermost_template_parms (parms, arglist, templ, complain,
-					     /*req_all*/true,
-					     /*use_default*/true);
+  arglist = coerce_innermost_template_parms (parms, arglist, templ, complain);
   if (arglist == error_mark_node)
     return error_mark_node;
 
@@ -15022,8 +14978,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		     the template.  */
 		  argvec = (coerce_innermost_template_parms
 			    (DECL_TEMPLATE_PARMS (gen_tmpl),
-			     argvec, t, complain,
-			     /*all*/true, /*defarg*/true));
+			     argvec, t, complain));
 		if (argvec == error_mark_node)
 		  RETURN (error_mark_node);
 		hash = spec_hasher::hash (gen_tmpl, argvec);
@@ -21956,11 +21911,8 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
   if (tmpl == error_mark_node || args == error_mark_node)
     return error_mark_node;
 
-  args =
-    coerce_innermost_template_parms (DECL_TEMPLATE_PARMS (tmpl),
-				     args, tmpl, complain,
-				     /*require_all_args=*/true,
-				     /*use_default_args=*/true);
+  args = coerce_innermost_template_parms (DECL_TEMPLATE_PARMS (tmpl),
+					  args, tmpl, complain);
 
   /* FIXME check for satisfaction in check_instantiated_args.  */
   if (flag_concepts
@@ -22210,8 +22162,7 @@ fn_type_unification (tree fn,
       explicit_targs
 	= (coerce_template_parms (tparms, explicit_targs, fn,
 				  complain|tf_partial,
-				  /*require_all_args=*/false,
-				  /*use_default_args=*/false));
+				  /*require_all_args=*/false));
       if (explicit_targs == error_mark_node)
 	goto fail;
 
@@ -23304,9 +23255,7 @@ resolve_overloaded_unification (tree tparms,
 	    continue;
 
 	  subargs = coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (fn),
-					   expl_subargs, NULL_TREE, tf_none,
-					   /*require_all_args=*/true,
-					   /*use_default_args=*/true);
+					   expl_subargs, NULL_TREE, tf_none);
 	  if (subargs != error_mark_node
 	      && !any_dependent_template_arguments_p (subargs))
 	    {
@@ -23450,9 +23399,7 @@ resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
 	    continue;
 
 	  subargs = coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (fn),
-					   expl_subargs, NULL_TREE, tf_none,
-					   /*require_all_args=*/true,
-					   /*use_default_args=*/true);
+					   expl_subargs, NULL_TREE, tf_none);
 	  if (subargs != error_mark_node
 	      && !any_dependent_template_arguments_p (subargs))
 	    {
@@ -25581,7 +25528,7 @@ get_partial_spec_bindings (tree tmpl, tree spec_tmpl, tree args)
   if (spec_args != error_mark_node)
     spec_args = coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
 				       INNERMOST_TEMPLATE_ARGS (spec_args),
-				       tmpl, tf_none, false, false);
+				       tmpl, tf_none, false);
 
   pop_tinst_level ();
 
