@@ -1887,7 +1887,8 @@ find_failing_clause_r (const constexpr_ctx *ctx, tree expr)
 	e = find_failing_clause_r (ctx, TREE_OPERAND (expr, 1));
       return e;
     }
-  tree e = fold_operand (expr, ctx);
+  tree e = contextual_conv_bool (expr, tf_none);
+  e = fold_operand (e, ctx);
   if (integer_zerop (e))
     /* This is the failing clause.  */
     return expr;
