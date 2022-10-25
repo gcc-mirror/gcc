@@ -5177,8 +5177,8 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
       if (omp_maybe_offloaded_ctx (ctx))
 	{
 	  if (sctx->is_simt)
-	    sctx->max_vf = ordered_max (sctx->max_vf, omp_max_simt_vf ());
-	  sctx->max_vf = ordered_max (sctx->max_vf, omp_max_simd_vf ());
+	    sctx->max_vf = ordered_max (sctx->max_vf, (unsigned) omp_max_simt_vf ());
+	  sctx->max_vf = ordered_max (sctx->max_vf, (unsigned) omp_max_simd_vf ());
 	}
       if (maybe_gt (sctx->max_vf, 1U))
 	{
