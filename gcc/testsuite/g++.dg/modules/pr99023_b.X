@@ -3,5 +3,5 @@
 
 // { dg-prune-output {linker input file unused} }
 
-// { dg-regexp {[^\n]*: note: include '[^\n]*/initializer_list' translated to import\n} }
+// { dg-regexp {[^\n]*: note: include '[^\n]*[/\\]initializer_list' translated to import\n} }
 NO DO NOT COMPILE
