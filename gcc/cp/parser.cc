@@ -48996,12 +48996,11 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 
   tree proto = constr ? DECL_INITIAL (constr) : NULL_TREE;
   tree synth_id = make_generic_type_name ();
-  tree synth_tmpl_parm;
   bool non_type = false;
 
   /* Synthesize the type template parameter.  */
   gcc_assert(!proto || TREE_CODE (proto) == TYPE_DECL);
-  synth_tmpl_parm = finish_template_type_parm (class_type_node, synth_id);
+  tree synth_tmpl_parm = finish_template_type_parm (class_type_node, synth_id);
 
   if (become_template)
     current_template_parms = tree_cons (size_int (current_template_depth + 1),
@@ -49016,21 +49015,26 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 			     node,
 			     /*non_type=*/non_type,
 			     /*param_pack=*/false);
+  // Process_template_parm returns the list of parms, and
+  // parser->implicit_template_parms holds the final node of the parm
+  // list.  We really want to manipulate the newly appended element.
+  gcc_checking_assert (!parser->implicit_template_parms
+		       || parser->implicit_template_parms == new_parm);
+  if (parser->implicit_template_parms)
+    new_parm = TREE_CHAIN (new_parm);
+  gcc_checking_assert (!TREE_CHAIN (new_parm));
+
+  // Record the last implicit parm node
+  parser->implicit_template_parms = new_parm;
 
   /* Mark the synthetic declaration "virtual". This is used when
      comparing template-heads to determine if whether an abbreviated
      function template is equivalent to an explicit template.
 
-     Note that DECL_ARTIFICIAL is used elsewhere for template parameters.  */
+     Note that DECL_ARTIFICIAL is used elsewhere for template
+     parameters.  */
   if (TREE_VALUE (new_parm) != error_mark_node)
     DECL_VIRTUAL_P (TREE_VALUE (new_parm)) = true;
-
-  // Chain the new parameter to the list of implicit parameters.
-  if (parser->implicit_template_parms)
-    parser->implicit_template_parms
-      = TREE_CHAIN (parser->implicit_template_parms);
-  else
-    parser->implicit_template_parms = new_parm;
 
   tree new_decl = get_local_decls ();
   if (non_type)
@@ -49059,7 +49063,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 
   /* If the new parameter was constrained, we need to add that to the
      constraints in the template parameter list.  */
-  if (tree req = TEMPLATE_PARM_CONSTRAINTS (tree_last (new_parm)))
+  if (tree req = TEMPLATE_PARM_CONSTRAINTS (new_parm))
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
       reqs = combine_constraint_expressions (reqs, req);
