@@ -5025,8 +5025,8 @@ riscv_expand_epilogue (int style)
   rtx insn;
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
-  bool need_barrier_p
-    = known_ne (get_frame_size (), cfun->machine->frame.arg_pointer_offset);
+  bool need_barrier_p = known_ne (get_frame_size ()
+				  + cfun->machine->frame.arg_pointer_offset, 0);
 
   if (cfun->machine->naked_p)
     {
