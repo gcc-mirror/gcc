@@ -13465,36 +13465,37 @@ s390_call_saved_register_used (tree call_expr)
       function_arg_info arg (TREE_TYPE (parameter), /*named=*/true);
       apply_pass_by_reference_rules (&cum_v, arg);
 
-       parm_rtx = s390_function_arg (cum, arg);
+      parm_rtx = s390_function_arg (cum, arg);
 
-       s390_function_arg_advance (cum, arg);
+      s390_function_arg_advance (cum, arg);
 
-       if (!parm_rtx)
-	 continue;
+      if (!parm_rtx)
+	continue;
 
-       if (REG_P (parm_rtx))
-	 {
-	   for (reg = 0; reg < REG_NREGS (parm_rtx); reg++)
-	     if (!call_used_or_fixed_reg_p (reg + REGNO (parm_rtx)))
-	       return true;
-	 }
+      if (REG_P (parm_rtx))
+	{
+	  int size = s390_function_arg_size (arg.mode, arg.type);
+	  int nregs = (size + UNITS_PER_LONG - 1) / UNITS_PER_LONG;
 
-       if (GET_CODE (parm_rtx) == PARALLEL)
-	 {
-	   int i;
+	  for (reg = 0; reg < nregs; reg++)
+	    if (!call_used_or_fixed_reg_p (reg + REGNO (parm_rtx)))
+	      return true;
+	}
+      else if (GET_CODE (parm_rtx) == PARALLEL)
+	{
+	  int i;
 
-	   for (i = 0; i < XVECLEN (parm_rtx, 0); i++)
-	     {
-	       rtx r = XEXP (XVECEXP (parm_rtx, 0, i), 0);
+	  for (i = 0; i < XVECLEN (parm_rtx, 0); i++)
+	    {
+	      rtx r = XEXP (XVECEXP (parm_rtx, 0, i), 0);
 
-	       gcc_assert (REG_P (r));
+	      gcc_assert (REG_P (r));
+	      gcc_assert (REG_NREGS (r) == 1);
 
-	       for (reg = 0; reg < REG_NREGS (r); reg++)
-		 if (!call_used_or_fixed_reg_p (reg + REGNO (r)))
-		   return true;
-	     }
-	 }
-
+	      if (!call_used_or_fixed_reg_p (REGNO (r)))
+		return true;
+	    }
+	}
     }
   return false;
 }
