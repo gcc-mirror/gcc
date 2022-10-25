@@ -1691,6 +1691,10 @@ riscv_compute_multilib (
     return xstrdup (multilib_infos[best_match_multi_lib].path.c_str ());
 }
 
+#undef TARGET_COMPUTE_MULTILIB
+#define TARGET_COMPUTE_MULTILIB riscv_compute_multilib
+#endif
+
 vec<const char *>
 riscv_get_valid_option_values (int option_code,
 			       const char *prefix ATTRIBUTE_UNUSED)
@@ -1725,10 +1729,6 @@ riscv_get_valid_option_values (int option_code,
 
   return v;
 }
-
-#undef TARGET_COMPUTE_MULTILIB
-#define TARGET_COMPUTE_MULTILIB riscv_compute_multilib
-#endif
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options riscv_option_optimization_table[] =
