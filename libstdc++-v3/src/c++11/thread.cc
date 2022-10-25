@@ -68,6 +68,15 @@ static inline int get_nprocs()
 #elif defined(_GLIBCXX_USE_SC_NPROC_ONLN)
 # include <unistd.h>
 # define _GLIBCXX_NPROCS sysconf(_SC_NPROC_ONLN)
+#elif defined(_WIN32)
+# include <windows.h>
+static inline int get_nprocs()
+{
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  return (int) sysinfo.dwNumberOfProcessors;
+}
+# define _GLIBCXX_NPROCS get_nprocs()
 #else
 # define _GLIBCXX_NPROCS 0
 #endif

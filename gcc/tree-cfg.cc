@@ -5139,6 +5139,9 @@ verify_gimple_stmt (gimple *stmt)
 	 how to setup the parallel iteration.  */
       return false;
 
+    case GIMPLE_ASSUME:
+      return false;
+
     case GIMPLE_DEBUG:
       return verify_gimple_debug (stmt);
 
@@ -5252,6 +5255,10 @@ verify_gimple_in_seq_2 (gimple_seq stmts)
 					   as_a <gcatch *> (stmt)));
 	  break;
 
+	case GIMPLE_ASSUME:
+	  err |= verify_gimple_in_seq_2 (gimple_assume_body (stmt));
+	  break;
+
 	case GIMPLE_TRANSACTION:
 	  err |= verify_gimple_transaction (as_a <gtransaction *> (stmt));
 	  break;
@@ -5293,13 +5300,15 @@ verify_gimple_transaction (gtransaction *stmt)
 
 /* Verify the GIMPLE statements inside the statement list STMTS.  */
 
-DEBUG_FUNCTION void
-verify_gimple_in_seq (gimple_seq stmts)
+DEBUG_FUNCTION bool
+verify_gimple_in_seq (gimple_seq stmts, bool ice)
 {
   timevar_push (TV_TREE_STMT_VERIFY);
-  if (verify_gimple_in_seq_2 (stmts))
+  bool res = verify_gimple_in_seq_2 (stmts);
+  if (res && ice)
     internal_error ("%<verify_gimple%> failed");
   timevar_pop (TV_TREE_STMT_VERIFY);
+  return res;
 }
 
 /* Return true when the T can be shared.  */
@@ -5489,8 +5498,8 @@ collect_subblocks (hash_set<tree> *blocks, tree block)
 
 /* Verify the GIMPLE statements in the CFG of FN.  */
 
-DEBUG_FUNCTION void
-verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
+DEBUG_FUNCTION bool
+verify_gimple_in_cfg (struct function *fn, bool verify_nothrow, bool ice)
 {
   basic_block bb;
   bool err = false;
@@ -5645,11 +5654,13 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
     eh_table->traverse<hash_set<gimple *> *, verify_eh_throw_stmt_node>
       (&visited_throwing_stmts);
 
-  if (err || eh_error_found)
+  if (ice && (err || eh_error_found))
     internal_error ("verify_gimple failed");
 
   verify_histograms ();
   timevar_pop (TV_TREE_STMT_VERIFY);
+
+  return (err || eh_error_found);
 }
 
 

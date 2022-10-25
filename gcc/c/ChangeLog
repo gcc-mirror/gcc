@@ -1,3 +1,68 @@
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107358
+	* c-typeck.cc (build_binary_op): Pass operands before excess precision
+	promotions to scalar_to_vector call.
+
+2022-10-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	* c-decl.cc (finish_function): Ignore hosted when deciding
+	whether to implicitly return zero, but check noreturn.
+	* c-objc-common.cc (c_missing_noreturn_ok_p): Loosen the
+	requirements to just MAIN_NAME_P when hosted, or `int main'
+	otherwise.
+
+2022-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR c/107305
+	PR c/107306
+	* gimple-parser.cc (c_parser_parse_gimple_body): Verify
+	the parsed IL and zap the body on error.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107164
+	* c-decl.cc (shadow_tag_warned): If pedantic, diagnose "enum tag;"
+	with previous declaration visible.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* c-decl.cc (finish_enum): If any enumerators do not fit in int,
+	convert all to the type of the enumeration.  pedwarn if no integer
+	type fits all enumerators and default to
+	widest_integer_literal_type_node in that case.  Otherwise pedwarn
+	for type wider than intmax_t.
+	(build_enumerator): pedwarn for enumerators outside the range of
+	uintmax_t or intmax_t, and otherwise use pedwarn_c11 for
+	enumerators outside the range of int.  On overflow, attempt to
+	find a wider type that can hold the value of the next enumerator.
+	Do not convert value to type determined with
+	c_common_type_for_size.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc (convert_arguments): Don't promote __bf16 to
+	double.
+
+2022-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (build_compound_literal): Add parameter scspecs.
+	Handle storage class specifiers.
+	* c-parser.cc (c_token_starts_compound_literal)
+	(c_parser_compound_literal_scspecs): New.
+	(c_parser_postfix_expression_after_paren_type): Add parameter
+	scspecs.  Call pedwarn_c11 for use of storage class specifiers.
+	Update call to build_compound_literal.
+	(c_parser_cast_expression, c_parser_sizeof_expression)
+	(c_parser_alignof_expression): Handle storage class specifiers for
+	compound literals.  Update calls to
+	c_parser_postfix_expression_after_paren_type.
+	(c_parser_postfix_expression): Update syntax comment.
+	* c-tree.h (build_compound_literal): Update prototype.
+	* c-typeck.cc (c_mark_addressable): Diagnose taking address of
+	register compound literal.
+
 2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-decl.cc (flexible_array_member_type_p): New function.

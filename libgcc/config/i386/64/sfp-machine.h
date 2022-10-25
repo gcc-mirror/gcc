@@ -14,6 +14,7 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #define _FP_DIV_MEAT_Q(R,X,Y)   _FP_DIV_MEAT_2_udiv(Q,R,X,Y)
 
 #define _FP_NANFRAC_H		_FP_QNANBIT_H
+#define _FP_NANFRAC_B		_FP_QNANBIT_B
 #define _FP_NANFRAC_S		_FP_QNANBIT_S
 #define _FP_NANFRAC_D		_FP_QNANBIT_D
 #define _FP_NANFRAC_E		_FP_QNANBIT_E, 0

@@ -10438,14 +10438,15 @@ tree
 lookup_and_finish_template_variable (tree templ, tree targs,
 				     tsubst_flags_t complain)
 {
-  templ = lookup_template_variable (templ, targs);
-  if (!any_dependent_template_arguments_p (targs))
+  tree var = lookup_template_variable (templ, targs);
+  if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) == 1
+      && !any_dependent_template_arguments_p (targs))
     {
-      templ = finish_template_variable (templ, complain);
-      mark_used (templ);
+      var = finish_template_variable (var, complain);
+      mark_used (var);
     }
 
-  return convert_from_reference (templ);
+  return convert_from_reference (var);
 }
 
 /* If the set of template parameters PARMS contains a template parameter
@@ -17382,7 +17383,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     TEMPLATE_DECL with `D<T>' as its DECL_CONTEXT.  Now we
 	     have to substitute this with one having context `D<int>'.  */
 
-	  tree context = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
+	  tree context = tsubst_aggr_type (DECL_CONTEXT (t), args, complain,
+					   in_decl, /*entering_scope=*/true);
 	  return lookup_field (context, DECL_NAME(t), 0, false);
 	}
       else
@@ -17565,6 +17567,18 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    && DECL_IMMEDIATE_FUNCTION_P (op0))
 	  SET_EXPR_LOCATION (r, input_location);
 	return r;
+      }
+
+    case EXCESS_PRECISION_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+	  {
+	    gcc_checking_assert (same_type_p (type, TREE_TYPE (op0)));
+	    return op0;
+	  }
+	return build1_loc (EXPR_LOCATION (t), code, type, op0);
       }
 
     case COMPONENT_REF:
@@ -20608,6 +20622,16 @@ tsubst_copy_and_build (tree t,
 				templated_operator_saved_lookups (t),
 				complain|decltype_flag));
 
+    case EXCESS_PRECISION_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+	  RETURN (op0);
+	RETURN (build1_loc (EXPR_LOCATION (t), EXCESS_PRECISION_EXPR,
+			    type, op0));
+      }
+
     case FIX_TRUNC_EXPR:
       /* convert_like should have created an IMPLICIT_CONV_EXPR.  */
       gcc_unreachable ();
@@ -21284,10 +21308,7 @@ tsubst_copy_and_build (tree t,
 		      ret = error_mark_node;
 		      break;
 		    }
-		  ret = build_call_expr_internal_loc (EXPR_LOCATION (t),
-						      IFN_ASSUME,
-						      void_type_node, 1,
-						      arg);
+		  ret = build_assume_call (EXPR_LOCATION (t), arg);
 		  RETURN (ret);
 		}
 	      break;

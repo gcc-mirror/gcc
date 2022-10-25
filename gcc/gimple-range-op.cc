@@ -202,7 +202,7 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range)
 
 bool
 gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range,
-				   const vrange &op2_range, relation_kind k)
+				   const vrange &op2_range, relation_trio k)
 {
   // Give up on empty ranges.
   if (lhs_range.undefined_p ())
@@ -237,7 +237,7 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range,
 
 bool
 gimple_range_op_handler::calc_op2 (vrange &r, const vrange &lhs_range,
-				   const vrange &op1_range, relation_kind k)
+				   const vrange &op1_range, relation_trio k)
 {
   // Give up on empty ranges.
   if (lhs_range.undefined_p ())
@@ -263,7 +263,7 @@ class cfn_constant_float_p : public range_operator_float
 public:
   using range_operator_float::fold_range;
   virtual bool fold_range (irange &r, tree type, const frange &lh,
-			   const irange &, relation_kind) const
+			   const irange &, relation_trio) const
   {
     if (lh.singleton_p ())
       {
@@ -285,7 +285,7 @@ class cfn_constant_p : public range_operator
 public:
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_kind) const
+			   const irange &, relation_trio) const
   {
     if (lh.singleton_p ())
       {
@@ -308,7 +308,7 @@ public:
   using range_operator_float::fold_range;
   using range_operator_float::op1_range;
   virtual bool fold_range (irange &r, tree type, const frange &lh,
-			   const irange &, relation_kind) const override
+			   const irange &, relation_trio) const override
   {
     bool signbit;
     if (lh.signbit_p (signbit))
@@ -322,7 +322,7 @@ public:
    return false;
   }
   virtual bool op1_range (frange &r, tree type, const irange &lhs,
-			  const frange &, relation_kind) const override
+			  const frange &, relation_trio) const override
   {
     if (lhs.zero_p ())
       {
@@ -342,6 +342,38 @@ public:
   }
 } op_cfn_signbit;
 
+// Implement range operator for CFN_BUILT_IN_COPYSIGN
+class cfn_copysign : public range_operator_float
+{
+public:
+  using range_operator_float::fold_range;
+  virtual bool fold_range (frange &r, tree type, const frange &lh,
+			   const frange &rh, relation_trio) const override
+  {
+    frange neg;
+    range_op_handler abs_op (ABS_EXPR, type);
+    range_op_handler neg_op (NEGATE_EXPR, type);
+    if (!abs_op || !abs_op.fold_range (r, type, lh, frange (type)))
+      return false;
+    if (!neg_op || !neg_op.fold_range (neg, type, r, frange (type)))
+      return false;
+
+    bool signbit;
+    if (rh.signbit_p (signbit))
+      {
+	// If the sign is negative, flip the result from ABS,
+	// otherwise leave things positive.
+	if (signbit)
+	  r = neg;
+      }
+    else
+      // If the sign is unknown, keep the positive and negative
+      // alternatives.
+      r.union_ (neg);
+    return true;
+  }
+} op_cfn_copysign;
+
 // Implement range operator for CFN_BUILT_IN_TOUPPER and CFN_BUILT_IN_TOLOWER.
 class cfn_toupper_tolower : public range_operator
 {
@@ -349,7 +381,7 @@ public:
   using range_operator::fold_range;
   cfn_toupper_tolower (bool toupper)  { m_toupper = toupper; }
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_kind) const;
+			   const irange &, relation_trio) const;
 private:
   bool get_letter_range (tree type, irange &lowers, irange &uppers) const;
   bool m_toupper;
@@ -380,7 +412,7 @@ cfn_toupper_tolower::get_letter_range (tree type, irange &lowers,
 
 bool
 cfn_toupper_tolower::fold_range (irange &r, tree type, const irange &lh,
-				 const irange &, relation_kind) const
+				 const irange &, relation_trio) const
 {
   int_range<3> lowers;
   int_range<3> uppers;
@@ -413,7 +445,7 @@ class cfn_ffs : public range_operator
 public:
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_kind) const
+			   const irange &, relation_trio) const
   {
     if (lh.undefined_p ())
       return false;
@@ -440,7 +472,7 @@ class cfn_popcount : public cfn_ffs
 public:
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &rh, relation_kind rel) const
+			   const irange &rh, relation_trio rel) const
   {
     if (lh.undefined_p ())
       return false;
@@ -470,14 +502,14 @@ public:
   cfn_clz (bool internal) { m_gimple_call_internal_p = internal; }
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_kind) const;
+			   const irange &, relation_trio) const;
 private:
   bool m_gimple_call_internal_p;
 } op_cfn_clz (false), op_cfn_clz_internal (true);
 
 bool
 cfn_clz::fold_range (irange &r, tree type, const irange &lh,
-		     const irange &, relation_kind) const
+		     const irange &, relation_trio) const
 {
   // __builtin_c[lt]z* return [0, prec-1], except when the
   // argument is 0, but that is undefined behavior.
@@ -545,14 +577,14 @@ public:
   cfn_ctz (bool internal) { m_gimple_call_internal_p = internal; }
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_kind) const;
+			   const irange &, relation_trio) const;
 private:
   bool m_gimple_call_internal_p;
 } op_cfn_ctz (false), op_cfn_ctz_internal (true);
 
 bool
 cfn_ctz::fold_range (irange &r, tree type, const irange &lh,
-		     const irange &, relation_kind) const
+		     const irange &, relation_trio) const
 {
   if (lh.undefined_p ())
     return false;
@@ -615,7 +647,7 @@ class cfn_clrsb : public range_operator
 public:
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_kind) const
+			   const irange &, relation_trio) const
   {
     if (lh.undefined_p ())
       return false;
@@ -633,7 +665,7 @@ public:
   cfn_ubsan (enum tree_code code) { m_code = code; }
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &rh, relation_kind rel) const
+			   const irange &rh, relation_trio rel) const
   {
     range_op_handler handler (m_code, type);
     gcc_checking_assert (handler);
@@ -667,7 +699,7 @@ class cfn_strlen : public range_operator
 public:
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &,
-			   const irange &, relation_kind) const
+			   const irange &, relation_trio) const
   {
     tree max = vrp_val_max (ptrdiff_type_node);
     wide_int wmax
@@ -692,7 +724,7 @@ public:
   cfn_goacc_dim (bool is_pos) { m_is_pos = is_pos; }
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &lh,
-			   const irange &, relation_kind) const
+			   const irange &, relation_trio) const
   {
     tree axis_tree;
     if (!lh.singleton_p (&axis_tree))
@@ -719,7 +751,7 @@ class cfn_parity : public range_operator
 public:
   using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const irange &,
-			   const irange &, relation_kind) const
+			   const irange &, relation_trio) const
   {
     r.set (build_zero_cst (type), build_one_cst (type));
     return true;
@@ -756,9 +788,16 @@ gimple_range_op_handler::maybe_builtin_call ()
 	m_valid = false;
       break;
 
-    case CFN_BUILT_IN_SIGNBIT:
+    CASE_FLT_FN (CFN_BUILT_IN_SIGNBIT):
       m_op1 = gimple_call_arg (call, 0);
       m_float = &op_cfn_signbit;
+      m_valid = true;
+      break;
+
+    CASE_CFN_COPYSIGN_ALL:
+      m_op1 = gimple_call_arg (call, 0);
+      m_op2 = gimple_call_arg (call, 1);
+      m_float = &op_cfn_copysign;
       m_valid = true;
       break;
 

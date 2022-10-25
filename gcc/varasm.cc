@@ -6658,6 +6658,36 @@ init_varasm_once (void)
 #endif
 }
 
+/* Determine whether SYMBOL is used in any optimized function.  */
+
+static bool
+have_optimized_refs (struct symtab_node *symbol)
+{
+  struct ipa_ref *ref;
+
+  for (int i = 0; symbol->iterate_referring (i, ref); i++)
+    {
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (ref->referring);
+
+      if (cnode && opt_for_fn (cnode->decl, optimize))
+	return true;
+    }
+
+  return false;
+}
+
+/* Check if promoting general-dynamic TLS access model to local-dynamic is
+   desirable for DECL.  */
+
+static bool
+optimize_dyn_tls_for_decl_p (const_tree decl)
+{
+  if (cfun)
+    return optimize;
+  return symtab->state >= IPA && have_optimized_refs (symtab_node::get (decl));
+}
+
+
 enum tls_model
 decl_default_tls_model (const_tree decl)
 {
@@ -6675,7 +6705,7 @@ decl_default_tls_model (const_tree decl)
 
   /* Local dynamic is inefficient when we're not combining the
      parts of the address.  */
-  else if (optimize && is_local)
+  else if (is_local && optimize_dyn_tls_for_decl_p (decl))
     kind = TLS_MODEL_LOCAL_DYNAMIC;
   else
     kind = TLS_MODEL_GLOBAL_DYNAMIC;

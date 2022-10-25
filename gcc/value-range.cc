@@ -324,6 +324,21 @@ frange::set (tree type,
       m_neg_nan = false;
     }
 
+  if (!MODE_HAS_SIGNED_ZEROS (TYPE_MODE (m_type)))
+    {
+      if (real_iszero (&m_min, 1))
+	m_min.sign = 0;
+      if (real_iszero (&m_max, 1))
+	m_max.sign = 0;
+    }
+  else if (!HONOR_SIGNED_ZEROS (m_type))
+    {
+      if (real_iszero (&m_max, 1))
+	m_max.sign = 0;
+      if (real_iszero (&m_min, 0))
+	m_min.sign = 1;
+    }
+
   // For -ffinite-math-only we can drop ranges outside the
   // representable numbers to min/max for the type.
   if (flag_finite_math_only)
@@ -332,8 +347,12 @@ frange::set (tree type,
       REAL_VALUE_TYPE max_repr = frange_val_max (m_type);
       if (real_less (&m_min, &min_repr))
 	m_min = min_repr;
+      else if (real_less (&max_repr, &m_min))
+	m_min = max_repr;
       if (real_less (&max_repr, &m_max))
 	m_max = max_repr;
+      else if (real_less (&m_max, &min_repr))
+	m_max = min_repr;
     }
 
   // Check for swapped ranges.
@@ -369,7 +388,7 @@ frange::normalize_kind ()
       && frange_val_is_min (m_min, m_type)
       && frange_val_is_max (m_max, m_type))
     {
-      if (m_pos_nan && m_neg_nan)
+      if (!HONOR_NANS (m_type) || (m_pos_nan && m_neg_nan))
 	{
 	  set_varying (m_type);
 	  return true;
@@ -377,7 +396,7 @@ frange::normalize_kind ()
     }
   else if (m_kind == VR_VARYING)
     {
-      if (!m_pos_nan || !m_neg_nan)
+      if (HONOR_NANS (m_type) && (!m_pos_nan || !m_neg_nan))
 	{
 	  m_kind = VR_RANGE;
 	  m_min = frange_val_min (m_type);
@@ -693,6 +712,8 @@ frange::supports_type_p (const_tree type) const
 void
 frange::verify_range ()
 {
+  if (flag_finite_math_only)
+    gcc_checking_assert (!maybe_isnan ());
   switch (m_kind)
     {
     case VR_UNDEFINED:
@@ -700,9 +721,12 @@ frange::verify_range ()
       return;
     case VR_VARYING:
       gcc_checking_assert (m_type);
-      gcc_checking_assert (m_pos_nan && m_neg_nan);
       gcc_checking_assert (frange_val_is_min (m_min, m_type));
       gcc_checking_assert (frange_val_is_max (m_max, m_type));
+      if (HONOR_NANS (m_type))
+	gcc_checking_assert (m_pos_nan && m_neg_nan);
+      else
+	gcc_checking_assert (!m_pos_nan && !m_neg_nan);
       return;
     case VR_RANGE:
       gcc_checking_assert (m_type);
@@ -3418,6 +3442,8 @@ range_tests_misc ()
     max.union_ (min);
     ASSERT_TRUE (max.varying_p ());
   }
+  // Test that we can set a range of true+false for a 1-bit signed int.
+  r0 = range_true_and_false (one_bit_type);
 
   // Test inversion of 1-bit signed integers.
   {
@@ -3931,11 +3957,13 @@ range_tests_floats ()
   // A range of [-INF,+INF] is actually VARYING if no other properties
   // are set.
   r0 = frange_float ("-Inf", "+Inf");
-  if (r0.maybe_isnan ())
-    ASSERT_TRUE (r0.varying_p ());
+  ASSERT_TRUE (r0.varying_p ());
   // ...unless it has some special property...
-  r0.clear_nan ();
-  ASSERT_FALSE (r0.varying_p ());
+  if (HONOR_NANS (r0.type ()))
+    {
+      r0.clear_nan ();
+      ASSERT_FALSE (r0.varying_p ());
+    }
 
   // For most architectures, where float and double are different
   // sizes, having the same endpoints does not necessarily mean the
@@ -4002,6 +4030,32 @@ range_tests_floats ()
   r1.clear_nan ();
   r0.intersect (r1);
   ASSERT_TRUE (r0.undefined_p ());
+
+  if (!flag_finite_math_only)
+    {
+      // Make sure [-Inf, -Inf] doesn't get normalized.
+      r0 = frange_float ("-Inf", "-Inf");
+      ASSERT_TRUE (real_isinf (&r0.lower_bound (), true));
+      ASSERT_TRUE (real_isinf (&r0.upper_bound (), true));
+    }
+}
+
+// Run floating range tests for various combinations of NAN and INF
+// support.
+
+static void
+range_tests_floats_various ()
+{
+  int save_finite_math_only = flag_finite_math_only;
+
+  // Test -ffinite-math-only.
+  flag_finite_math_only = 1;
+  range_tests_floats ();
+  // Test -fno-finite-math-only.
+  flag_finite_math_only = 0;
+  range_tests_floats ();
+
+  flag_finite_math_only = save_finite_math_only;
 }
 
 void
@@ -4012,7 +4066,7 @@ range_tests ()
   range_tests_int_range_max ();
   range_tests_strict_enum ();
   range_tests_nonzero_bits ();
-  range_tests_floats ();
+  range_tests_floats_various ();
   range_tests_misc ();
 }
 

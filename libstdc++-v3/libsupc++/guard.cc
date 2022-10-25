@@ -28,6 +28,35 @@
 #include <cxxabi.h>
 #include <exception>
 #include <new>
+
+#ifdef __USING_MCFGTHREAD__
+
+#include <mcfgthread/cxa.h>
+
+namespace __cxxabiv1 {
+
+extern "C" int
+__cxa_guard_acquire (__guard* g) _GLIBCXX_NOTHROW
+  {
+    return __MCF_cxa_guard_acquire(g);
+  }
+
+extern "C" void
+__cxa_guard_release (__guard* g) _GLIBCXX_NOTHROW
+  {
+    __MCF_cxa_guard_release(g);
+  }
+
+extern "C" void
+__cxa_guard_abort (__guard* g) _GLIBCXX_NOTHROW
+  {
+    __MCF_cxa_guard_abort(g);
+  }
+
+}  // namespace __cxxabiv1
+
+#else // __USING_MCFGTHREAD__
+
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 #include <bits/atomic_lockfree_defines.h>
@@ -458,3 +487,5 @@ namespace __cxxabiv1
 #endif
   }
 }
+
+#endif // __USING_MCFGTHREAD__

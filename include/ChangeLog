@@ -1,3 +1,20 @@
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cuda/cuda.h (enum CUdevice_attribute): Add
+	CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING.
+	(CU_MEMHOSTALLOC_DEVICEMAP): Define.
+	(cuMemHostAlloc): Add prototype.
+
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gomp-constants.h (GOMP_DEVICE_HSA): Comment out unused define.
+
+2022-10-13  Xi Ruoyao  <xry111@xry111.site>
+
+	* longlong.h [__loongarch__] (count_leading_zeros): Define.
+	[__loongarch__] (count_trailing_zeros): Likewise.
+	[__loongarch__] (COUNT_LEADING_ZEROS_0): Likewise.
+
 2022-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106652

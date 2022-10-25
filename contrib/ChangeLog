@@ -1,3 +1,8 @@
+2022-10-20  Jonathan Wakely   <jwakely@redhat.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* gcc_update: Add rule for gcc/cp/std-name-hint.gperf.
+
 2022-10-07  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: Remove extra fetch.

@@ -1,3 +1,22 @@
+2022-10-18  Florian Weimer  <fweimer@redhat.com>
+
+	* acinclude.m4 (ac_cv_func_strncmp_works): Add missing
+	int return type and parameter list to the definition of main.
+	Include <stdlib.h> and <string.h> for prototypes.
+	(ac_cv_c_stack_direction): Add missing
+	int return type and parameter list to the definitions of
+	main, find_stack_direction.  Include <stdlib.h> for exit
+	prototype.
+	* configure: Regenerate.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-demangle.h (D_BUILTIN_TYPE_COUNT): Increment.
+	* cp-demangle.c (cplus_demangle_builtin_types): Add std::bfloat16_t
+	entry.
+	(cplus_demangle_type): Demangle DF16b.
+	* testsuite/demangle-expected (_Z3xxxDF16b): New test.
+
 2022-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (d_prefix): 'M' components are not

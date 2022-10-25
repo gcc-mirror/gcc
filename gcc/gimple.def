@@ -406,3 +406,8 @@ DEFGSCODE(GIMPLE_PREDICT, "gimple_predict", GSS_BASE)
 
     This tuple should not exist outside of the gimplifier proper.  */
 DEFGSCODE(GIMPLE_WITH_CLEANUP_EXPR, "gimple_with_cleanup_expr", GSS_WCE)
+
+/* GIMPLE_ASSUME <GUARD, BODY> represents [[assume(cond)]].
+   BODY is the GIMPLE_BIND with the condition which sets GUARD to true
+   (otherwise UB).  */
+DEFGSCODE(GIMPLE_ASSUME, "gimple_assume", GSS_ASSUME)

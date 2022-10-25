@@ -1,5 +1,5 @@
 ! PR 92482
-! { dg-do execute}
+! { dg-do run }
 !
 ! TS 29113
 ! 8.7 Interoperability of procedures and procedure interfaces

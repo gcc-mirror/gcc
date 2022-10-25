@@ -2532,6 +2532,11 @@ cp_fold (tree x)
 
       break;
 
+    case EXCESS_PRECISION_EXPR:
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
+      x = fold_convert_loc (EXPR_LOCATION (x), TREE_TYPE (x), op0);
+      break;
+
     case INDIRECT_REF:
       /* We don't need the decltype(auto) obfuscation anymore.  */
       if (REF_PARENTHESIZED_P (x))
@@ -3113,6 +3118,17 @@ process_stmt_hotness_attribute (tree std_attrs, location_t attrs_loc)
   return std_attrs;
 }
 
+/* Build IFN_ASSUME internal call for assume condition ARG.  */
+
+tree
+build_assume_call (location_t loc, tree arg)
+{
+  if (!processing_template_decl)
+    arg = fold_build_cleanup_point_expr (TREE_TYPE (arg), arg);
+  return build_call_expr_internal_loc (loc, IFN_ASSUME, void_type_node,
+				       1, arg);
+}
+
 /* If [[assume (cond)]] appears on this statement, handle it.  */
 
 tree
@@ -3149,9 +3165,7 @@ process_stmt_assume_attribute (tree std_attrs, tree statement,
 	    arg = contextual_conv_bool (arg, tf_warning_or_error);
 	  if (error_operand_p (arg))
 	    continue;
-	  statement = build_call_expr_internal_loc (attrs_loc, IFN_ASSUME,
-						    void_type_node, 1, arg);
-	  finish_expr_stmt (statement);
+	  finish_expr_stmt (build_assume_call (attrs_loc, arg));
 	}
     }
   return remove_attribute ("gnu", "assume", std_attrs);
@@ -3381,10 +3395,10 @@ fold_builtin_source_location (location_t loc)
 	      if (const char *fname = LOCATION_FILE (loc))
 		{
 		  fname = remap_macro_filename (fname);
-		  val = build_string_literal (strlen (fname) + 1, fname);
+		  val = build_string_literal (fname);
 		}
 	      else
-		val = build_string_literal (1, "");
+		val = build_string_literal ("");
 	    }
 	  else if (strcmp (n, "_M_function_name") == 0)
 	    {
@@ -3393,7 +3407,7 @@ fold_builtin_source_location (location_t loc)
 	      if (current_function_decl)
 		name = cxx_printable_name (current_function_decl, 2);
 
-	      val = build_string_literal (strlen (name) + 1, name);
+	      val = build_string_literal (name);
 	    }
 	  else if (strcmp (n, "_M_line") == 0)
 	    val = build_int_cst (TREE_TYPE (field), LOCATION_LINE (loc));

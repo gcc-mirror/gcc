@@ -2626,6 +2626,35 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   machine_mode op_mode = GET_MODE (op0);
   bool is_sse = SSE_FLOAT_MODE_SSEMATH_OR_HF_P (op_mode);
 
+  if (op_mode == BFmode)
+    {
+      rtx op = gen_lowpart (HImode, op0);
+      if (CONST_INT_P (op))
+	op = simplify_const_unary_operation (FLOAT_EXTEND, SFmode,
+					     op0, BFmode);
+      else
+	{
+	  rtx t1 = gen_reg_rtx (SImode);
+	  emit_insn (gen_zero_extendhisi2 (t1, op));
+	  emit_insn (gen_ashlsi3 (t1, t1, GEN_INT (16)));
+	  op = gen_lowpart (SFmode, t1);
+	}
+      *pop0 = op;
+      op = gen_lowpart (HImode, op1);
+      if (CONST_INT_P (op))
+	op = simplify_const_unary_operation (FLOAT_EXTEND, SFmode,
+					     op1, BFmode);
+      else
+	{
+	  rtx t1 = gen_reg_rtx (SImode);
+	  emit_insn (gen_zero_extendhisi2 (t1, op));
+	  emit_insn (gen_ashlsi3 (t1, t1, GEN_INT (16)));
+	  op = gen_lowpart (SFmode, t1);
+	}
+      *pop1 = op;
+      return ix86_prepare_fp_compare_args (code, pop0, pop1);
+    }
+
   /* All of the unordered compare instructions only work on registers.
      The same is true of the fcomi compare instructions.  The XFmode
      compare instructions require registers except when comparing
@@ -3162,6 +3191,10 @@ ix86_expand_int_movcc (rtx operands[])
   if (GET_MODE (op0) == TImode
       || (GET_MODE (op0) == DImode
 	  && !TARGET_64BIT))
+    return false;
+
+  if (GET_MODE (op0) == BFmode
+      && !ix86_fp_comparison_operator (operands[1], VOIDmode))
     return false;
 
   start_sequence ();
@@ -4237,6 +4270,10 @@ ix86_expand_fp_movcc (rtx operands[])
   rtx tmp, compare_op;
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
+
+  if (GET_MODE (op0) == BFmode
+      && !ix86_fp_comparison_operator (operands[1], VOIDmode))
+    return false;
 
   if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
     {
@@ -12367,6 +12404,8 @@ ix86_check_builtin_isa_match (unsigned int fcode,
      OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4
      (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL) or
        OPTION_MASK_ISA2_AVXVNNI
+     (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512IFMA) or
+       OPTION_MASK_ISA2_AVXIFMA
      where for each such pair it is sufficient if either of the ISAs is
      enabled, plus if it is ored with other options also those others.
      OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
@@ -12394,6 +12433,17 @@ ix86_check_builtin_isa_match (unsigned int fcode,
     {
       isa |= OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL;
       isa2 |= OPTION_MASK_ISA2_AVXVNNI;
+    }
+
+  if ((((bisa & (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
+	== (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
+       || (bisa2 & OPTION_MASK_ISA2_AVXIFMA) != 0)
+      && (((isa & (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
+	   == (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL))
+	  || (isa2 & OPTION_MASK_ISA2_AVXIFMA) != 0))
+    {
+      isa |= OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL;
+      isa2 |= OPTION_MASK_ISA2_AVXIFMA;
     }
 
   if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE
@@ -19604,6 +19654,22 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
+/* Canonicalize vec_perm index to make the first index
+   always comes from the first vector.  */
+static void
+ix86_vec_perm_index_canon (struct expand_vec_perm_d *d)
+{
+  unsigned nelt = d->nelt;
+  if (d->perm[0] < nelt)
+    return;
+
+  for (unsigned i = 0; i != nelt; i++)
+    d->perm[i] = (d->perm[i] + nelt) % (2 * nelt);
+
+  std::swap (d->op0, d->op1);
+  return;
+}
+
 /* A subroutine of ix86_expand_vec_perm_const_1. Try to implement D
    in terms of a pair of shufps+ shufps/pshufd instructions.  */
 static bool
@@ -19621,6 +19687,7 @@ expand_vec_perm_shufps_shufps (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
+  ix86_vec_perm_index_canon (d);
   for (i = 0; i < 4; ++i)
     count += d->perm[i] > 3 ? 1 : 0;
 

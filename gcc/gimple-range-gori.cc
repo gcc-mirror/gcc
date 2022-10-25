@@ -991,7 +991,7 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
       Value_Range new_result (type);
       if (!op_handler.op1_range (new_result, type,
 				 op1_def_p ? op1_range : op2_range,
-				 other_op, k))
+				 other_op, relation_trio::lhs_op2 (k)))
 	return false;
       if (op1_def_p)
 	{
@@ -1023,7 +1023,7 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
       Value_Range new_result (type);
       if (!op_handler.op2_range (new_result, type,
 				 op1_def_p ? op1_range : op2_range,
-				 other_op, k))
+				 other_op, relation_trio::lhs_op1 (k)))
 	return false;
       if (op1_def_p)
 	{
@@ -1074,6 +1074,7 @@ gori_compute::compute_operand1_range (vrange &r,
     {
       src.get_operand (op2_range, op2);
       relation_kind k = VREL_VARYING;
+      relation_kind op_op = (op1 == op2) ? VREL_EQ : VREL_VARYING;
       if (rel)
 	{
 	 if (lhs_name == rel->op1 () && op1 == rel->op2 ())
@@ -1081,13 +1082,18 @@ gori_compute::compute_operand1_range (vrange &r,
 	 else if (lhs_name == rel->op2 () && op1 == rel->op1 ())
 	   k = relation_swap (rel->kind ());
 	 else if (op1 == rel->op1 () && op2 == rel->op2 ())
-	   refine_using_relation (op1, op1_range, op2, op2_range, src,
-				  rel->kind ());
+	   {
+	     op_op = rel->kind ();
+	     refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
+	   }
 	 else if (op1 == rel->op2 () && op2 == rel->op1 ())
-	   refine_using_relation (op1, op1_range, op2, op2_range, src,
-				  relation_swap (rel->kind ()));
+	   {
+	     op_op = relation_swap (rel->kind ());
+	     refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
+	   }
        }
-      if (!handler.calc_op1 (tmp, lhs, op2_range, k))
+      if (!handler.calc_op1 (tmp, lhs, op2_range, relation_trio (VREL_VARYING,
+								 k, op_op)))
 	return false;
     }
   else
@@ -1095,7 +1101,7 @@ gori_compute::compute_operand1_range (vrange &r,
       // We pass op1_range to the unary operation.  Nomally it's a
       // hidden range_for_type parameter, but sometimes having the
       // actual range can result in better information.
-      if (!handler.calc_op1 (tmp, lhs, op1_range, VREL_VARYING))
+      if (!handler.calc_op1 (tmp, lhs, op1_range, TRIO_VARYING))
 	return false;
     }
 
@@ -1167,23 +1173,28 @@ gori_compute::compute_operand2_range (vrange &r,
   src.get_operand (op1_range, op1);
   src.get_operand (op2_range, op2);
   relation_kind k = VREL_VARYING;
+  relation_kind op_op = (op1 == op2) ? VREL_EQ : VREL_VARYING;
   if (rel)
     {
       if (lhs_name == rel->op1 () && op2 == rel->op2 ())
-       k = rel->kind ();
+	k = rel->kind ();
       else if (lhs_name == rel->op2 () && op2 == rel->op1 ())
-       k = relation_swap (rel->kind ());
+	k = relation_swap (rel->kind ());
       else if (op1 == rel->op1 () && op2 == rel->op2 ())
-       refine_using_relation (op1, op1_range, op2, op2_range, src,
-			      rel->kind ());
+	{
+	  op_op = rel->kind ();
+	  refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
+	}
       else if (op1 == rel->op2 () && op2 == rel->op1 ())
-       refine_using_relation (op1, op1_range, op2, op2_range, src,
-			      relation_swap (rel->kind ()));
+	{
+	  op_op = relation_swap (rel->kind ());
+	  refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
+	}
     }
 
-
   // Intersect with range for op2 based on lhs and op1.
-  if (!handler.calc_op2 (tmp, lhs, op1_range, k))
+  if (!handler.calc_op2 (tmp, lhs, op1_range, relation_trio (k, VREL_VARYING,
+							     op_op)))
     return false;
 
   unsigned idx;

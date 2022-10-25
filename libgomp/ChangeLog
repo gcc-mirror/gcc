@@ -1,3 +1,71 @@
+2022-10-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_open_device): Initialize
+	'ptx_dev->rev_data'.
+
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/icv-device.c (GOMP_DEVICE_NUM_VAR): Remove
+	'static' for this variable.
+	* config/nvptx/libgomp-nvptx.h: New file.
+	* config/nvptx/target.c: Include it.
+	(GOMP_ADDITIONAL_ICVS): Declare extern var.
+	(GOMP_REV_OFFLOAD_VAR): Declare var.
+	(GOMP_target_ext): Handle reverse offload.
+	* libgomp-plugin.h (GOMP_PLUGIN_target_rev): New prototype.
+	* libgomp-plugin.c (GOMP_PLUGIN_target_rev): New, call ...
+	* target.c (gomp_target_rev): ... this new stub function.
+	* libgomp.h (gomp_target_rev): Declare.
+	* libgomp.map (GOMP_PLUGIN_1.4): New; add GOMP_PLUGIN_target_rev.
+	* plugin/cuda-lib.def (cuMemHostAlloc): Add.
+	* plugin/plugin-nvptx.c: Include libgomp-nvptx.h.
+	(struct ptx_device): Add rev_data member.
+	(nvptx_open_device): Remove async_engines query, last used in
+	r10-304-g1f4c5b9b; add unified-address assert check.
+	(GOMP_OFFLOAD_get_num_devices): Claim unified address
+	support.
+	(GOMP_OFFLOAD_load_image): Free rev_fn_table if no
+	offload functions exist. Make offload var available
+	on host and device.
+	(rev_off_dev_to_host_cpy, rev_off_host_to_dev_cpy): New.
+	(GOMP_OFFLOAD_run): Handle reverse offload.
+
+2022-10-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/107195
+	PR target/107344
+	* testsuite/libgomp.oacc-c-c++-common/nvptx-sese-1.c: Restore SESE
+	regions checking.
+
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_offload_device_gcn):
+	New.
+	* testsuite/libgomp.c-c++-common/on_device_arch.h (device_arch_gcn,
+	on_device_arch_gcn): New.
+	* testsuite/libgomp.c-c++-common/requires-4a.c: New test; copied from
+	requires-4.c but using heap-allocated memory.
+
+2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/105421
+	* testsuite/libgomp.oacc-c-c++-common/private-big-1.c: New.
+
+2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/reverse-offload-sm30.c: Fix nvptx-specific
+	'-foffload-options' syntax.
+
+2022-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/task-7.f90: New test.
+	* testsuite/libgomp.fortran/task-8.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-1.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-2.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-3.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-17.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-18.f90: New test.
+
 2022-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (OpenMP 5.2): Fix up allocator -> allocate directive

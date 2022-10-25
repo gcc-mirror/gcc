@@ -1546,7 +1546,6 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 void
 ranger_cache::apply_inferred_ranges (gimple *s)
 {
-  int_range_max r;
   bool update = true;
 
   basic_block bb = gimple_bb (s);
@@ -1572,6 +1571,7 @@ ranger_cache::apply_inferred_ranges (gimple *s)
       m_exit.add_range (name, bb, infer.range (x));
       if (update)
 	{
+	  Value_Range r (TREE_TYPE (name));
 	  if (!m_on_entry.get_bb_range (r, name, bb))
 	    exit_range (r, name, bb, RFD_READ_ONLY);
 	  if (r.intersect (infer.range (x)))

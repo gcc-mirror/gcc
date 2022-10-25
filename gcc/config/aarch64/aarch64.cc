@@ -305,7 +305,6 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 static machine_mode aarch64_simd_container_mode (scalar_mode, poly_int64);
 static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
-static HOST_WIDE_INT aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val);
 
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
@@ -5502,6 +5501,143 @@ aarch64_output_sve_vector_inc_dec (const char *operands, rtx x)
 					     factor, nelts_per_vq);
 }
 
+/* Multipliers for repeating bitmasks of width 32, 16, 8, 4, and 2.  */
+
+static const unsigned HOST_WIDE_INT bitmask_imm_mul[] =
+  {
+    0x0000000100000001ull,
+    0x0001000100010001ull,
+    0x0101010101010101ull,
+    0x1111111111111111ull,
+    0x5555555555555555ull,
+  };
+
+
+
+/* Return true if 64-bit VAL is a valid bitmask immediate.  */
+static bool
+aarch64_bitmask_imm (unsigned HOST_WIDE_INT val)
+{
+  unsigned HOST_WIDE_INT tmp, mask, first_one, next_one;
+  int bits;
+
+  /* Check for a single sequence of one bits and return quickly if so.
+     The special cases of all ones and all zeroes returns false.  */
+  tmp = val + (val & -val);
+
+  if (tmp == (tmp & -tmp))
+    return (val + 1) > 1;
+
+  /* Invert if the immediate doesn't start with a zero bit - this means we
+     only need to search for sequences of one bits.  */
+  if (val & 1)
+    val = ~val;
+
+  /* Find the first set bit and set tmp to val with the first sequence of one
+     bits removed.  Return success if there is a single sequence of ones.  */
+  first_one = val & -val;
+  tmp = val & (val + first_one);
+
+  if (tmp == 0)
+    return true;
+
+  /* Find the next set bit and compute the difference in bit position.  */
+  next_one = tmp & -tmp;
+  bits = clz_hwi (first_one) - clz_hwi (next_one);
+  mask = val ^ tmp;
+
+  /* Check the bit position difference is a power of 2, and that the first
+     sequence of one bits fits within 'bits' bits.  */
+  if ((mask >> bits) != 0 || bits != (bits & -bits))
+    return false;
+
+  /* Check the sequence of one bits is repeated 64/bits times.  */
+  return val == mask * bitmask_imm_mul[__builtin_clz (bits) - 26];
+}
+
+
+/* Return true if VAL is a valid bitmask immediate for MODE.  */
+bool
+aarch64_bitmask_imm (HOST_WIDE_INT val_in, machine_mode mode)
+{
+  if (mode == DImode)
+    return aarch64_bitmask_imm (val_in);
+
+  unsigned HOST_WIDE_INT val = val_in;
+
+  if (mode == SImode)
+    return aarch64_bitmask_imm ((val & 0xffffffff) | (val << 32));
+
+  /* Replicate small immediates to fit 64 bits.  */
+  int size = GET_MODE_UNIT_PRECISION (mode);
+  val &= (HOST_WIDE_INT_1U << size) - 1;
+  val *= bitmask_imm_mul[__builtin_clz (size) - 26];
+
+  return aarch64_bitmask_imm (val);
+}
+
+
+/* Return true if the immediate VAL can be a bitfield immediate
+   by changing the given MASK bits in VAL to zeroes, ones or bits
+   from the other half of VAL.  Return the new immediate in VAL2.  */
+static inline bool
+aarch64_check_bitmask (unsigned HOST_WIDE_INT val,
+		       unsigned HOST_WIDE_INT &val2,
+		       unsigned HOST_WIDE_INT mask)
+{
+  val2 = val & ~mask;
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  val2 = val | mask;
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  val = val & ~mask;
+  val2 = val | (((val >> 32) | (val << 32)) & mask);
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  val2 = val | (((val >> 16) | (val << 48)) & mask);
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  return false;
+}
+
+
+/* Return true if val is an immediate that can be loaded into a
+   register by a MOVZ instruction.  */
+static bool
+aarch64_movw_imm (HOST_WIDE_INT val, scalar_int_mode mode)
+{
+  if (GET_MODE_SIZE (mode) > 4)
+    {
+      if ((val & (((HOST_WIDE_INT) 0xffff) << 32)) == val
+	   || (val & (((HOST_WIDE_INT) 0xffff) << 48)) == val)
+	return 1;
+    }
+  else
+    {
+      /* Ignore sign extension.  */
+      val &= (HOST_WIDE_INT) 0xffffffff;
+    }
+  return ((val & (((HOST_WIDE_INT) 0xffff) << 0)) == val
+	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
+}
+
+
+/* Return true if VAL is an immediate that can be loaded into a
+   register in a single instruction.  */
+bool
+aarch64_move_imm (HOST_WIDE_INT val, machine_mode mode)
+{
+  scalar_int_mode int_mode;
+  if (!is_a <scalar_int_mode> (mode, &int_mode))
+    return false;
+
+  if (aarch64_movw_imm (val, int_mode) || aarch64_movw_imm (~val, int_mode))
+    return 1;
+  return aarch64_bitmask_imm (val, int_mode);
+}
+
+
 static int
 aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 				scalar_int_mode mode)
@@ -5532,7 +5668,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
 
       /* Check if we have to emit a second instruction by checking to see
-         if any of the upper 32 bits of the original DI mode value is set.  */
+	 if any of the upper 32 bits of the original DI mode value is set.  */
       if (val == val2)
 	return 1;
 
@@ -5568,36 +5704,43 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   one_match = ((~val & mask) == 0) + ((~val & (mask << 16)) == 0) +
     ((~val & (mask << 32)) == 0) + ((~val & (mask << 48)) == 0);
 
-  if (zero_match != 2 && one_match != 2)
+  if (zero_match < 2 && one_match < 2)
     {
       /* Try emitting a bitmask immediate with a movk replacing 16 bits.
 	 For a 64-bit bitmask try whether changing 16 bits to all ones or
 	 zeroes creates a valid bitmask.  To check any repeated bitmask,
 	 try using 16 bits from the other 32-bit half of val.  */
 
-      for (i = 0; i < 64; i += 16, mask <<= 16)
-	{
-	  val2 = val & ~mask;
-	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
-	    break;
-	  val2 = val | mask;
-	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
-	    break;
-	  val2 = val2 & ~mask;
-	  val2 = val2 | (((val2 >> 32) | (val2 << 32)) & mask);
-	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
-	    break;
-	}
-      if (i != 64)
-	{
-	  if (generate)
+      for (i = 0; i < 64; i += 16)
+	if (aarch64_check_bitmask (val, val2, mask << i))
+	  {
+	    if (generate)
+	      {
+		emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+		emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+					   GEN_INT ((val >> i) & 0xffff)));
+	      }
+	    return 2;
+	  }
+    }
+
+  /* Try a bitmask plus 2 movk to generate the immediate in 3 instructions.  */
+  if (zero_match + one_match == 0)
+    {
+      for (i = 0; i < 48; i += 16)
+	for (int j = i + 16; j < 64; j += 16)
+	  if (aarch64_check_bitmask (val, val2, (mask << i) | (mask << j)))
 	    {
-	      emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
-	      emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-					 GEN_INT ((val >> i) & 0xffff)));
+	      if (generate)
+		{
+		  emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+		  emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+					     GEN_INT ((val >> i) & 0xffff)));
+		  emit_insn (gen_insv_immdi (dest, GEN_INT (j),
+					       GEN_INT ((val >> j) & 0xffff)));
+		}
+	      return 3;
 	    }
-	  return 2;
-	}
     }
 
   /* Generate 2-4 instructions, skipping 16 bits of all zeroes or ones which
@@ -5643,6 +5786,99 @@ aarch64_mov128_immediate (rtx imm)
 	 + aarch64_internal_mov_immediate (NULL_RTX, hi, false, DImode) <= 4;
 }
 
+
+/* Return true if val can be encoded as a 12-bit unsigned immediate with
+   a left shift of 0 or 12 bits.  */
+bool
+aarch64_uimm12_shift (HOST_WIDE_INT val)
+{
+  return ((val & (((HOST_WIDE_INT) 0xfff) << 0)) == val
+	  || (val & (((HOST_WIDE_INT) 0xfff) << 12)) == val
+	  );
+}
+
+/* Returns the nearest value to VAL that will fit as a 12-bit unsigned immediate
+   that can be created with a left shift of 0 or 12.  */
+static HOST_WIDE_INT
+aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val)
+{
+  /* Check to see if the value fits in 24 bits, as that is the maximum we can
+     handle correctly.  */
+  gcc_assert ((val & 0xffffff) == val);
+
+  if (((val & 0xfff) << 0) == val)
+    return val;
+
+  return val & (0xfff << 12);
+}
+
+
+/* Test whether:
+
+     X = (X & AND_VAL) | IOR_VAL;
+
+   can be implemented using:
+
+     MOVK X, #(IOR_VAL >> shift), LSL #shift
+
+   Return the shift if so, otherwise return -1.  */
+int
+aarch64_movk_shift (const wide_int_ref &and_val,
+		    const wide_int_ref &ior_val)
+{
+  unsigned int precision = and_val.get_precision ();
+  unsigned HOST_WIDE_INT mask = 0xffff;
+  for (unsigned int shift = 0; shift < precision; shift += 16)
+    {
+      if (and_val == ~mask && (ior_val & mask) == ior_val)
+	return shift;
+      mask <<= 16;
+    }
+  return -1;
+}
+
+/* Create mask of ones, covering the lowest to highest bits set in VAL_IN.
+   Assumed precondition: VAL_IN Is not zero.  */
+
+unsigned HOST_WIDE_INT
+aarch64_and_split_imm1 (HOST_WIDE_INT val_in)
+{
+  int lowest_bit_set = ctz_hwi (val_in);
+  int highest_bit_set = floor_log2 (val_in);
+  gcc_assert (val_in != 0);
+
+  return ((HOST_WIDE_INT_UC (2) << highest_bit_set) -
+	  (HOST_WIDE_INT_1U << lowest_bit_set));
+}
+
+/* Create constant where bits outside of lowest bit set to highest bit set
+   are set to 1.  */
+
+unsigned HOST_WIDE_INT
+aarch64_and_split_imm2 (HOST_WIDE_INT val_in)
+{
+  return val_in | ~aarch64_and_split_imm1 (val_in);
+}
+
+/* Return true if VAL_IN is a valid 'and' bitmask immediate.  */
+
+bool
+aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode)
+{
+  scalar_int_mode int_mode;
+  if (!is_a <scalar_int_mode> (mode, &int_mode))
+    return false;
+
+  if (aarch64_bitmask_imm (val_in, int_mode))
+    return false;
+
+  if (aarch64_move_imm (val_in, int_mode))
+    return false;
+
+  unsigned HOST_WIDE_INT imm2 = aarch64_and_split_imm2 (val_in);
+
+  return aarch64_bitmask_imm (imm2, int_mode);
+}
 
 /* Return the number of temporary registers that aarch64_add_offset_1
    would need to add OFFSET to a register.  */
@@ -10098,207 +10334,6 @@ aarch64_tls_referenced_p (rtx x)
   return false;
 }
 
-
-/* Return true if val can be encoded as a 12-bit unsigned immediate with
-   a left shift of 0 or 12 bits.  */
-bool
-aarch64_uimm12_shift (HOST_WIDE_INT val)
-{
-  return ((val & (((HOST_WIDE_INT) 0xfff) << 0)) == val
-	  || (val & (((HOST_WIDE_INT) 0xfff) << 12)) == val
-	  );
-}
-
-/* Returns the nearest value to VAL that will fit as a 12-bit unsigned immediate
-   that can be created with a left shift of 0 or 12.  */
-static HOST_WIDE_INT
-aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val)
-{
-  /* Check to see if the value fits in 24 bits, as that is the maximum we can
-     handle correctly.  */
-  gcc_assert ((val & 0xffffff) == val);
-
-  if (((val & 0xfff) << 0) == val)
-    return val;
-
-  return val & (0xfff << 12);
-}
-
-/* Return true if val is an immediate that can be loaded into a
-   register by a MOVZ instruction.  */
-static bool
-aarch64_movw_imm (HOST_WIDE_INT val, scalar_int_mode mode)
-{
-  if (GET_MODE_SIZE (mode) > 4)
-    {
-      if ((val & (((HOST_WIDE_INT) 0xffff) << 32)) == val
-	  || (val & (((HOST_WIDE_INT) 0xffff) << 48)) == val)
-	return 1;
-    }
-  else
-    {
-      /* Ignore sign extension.  */
-      val &= (HOST_WIDE_INT) 0xffffffff;
-    }
-  return ((val & (((HOST_WIDE_INT) 0xffff) << 0)) == val
-	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
-}
-
-/* Test whether:
-
-     X = (X & AND_VAL) | IOR_VAL;
-
-   can be implemented using:
-
-     MOVK X, #(IOR_VAL >> shift), LSL #shift
-
-   Return the shift if so, otherwise return -1.  */
-int
-aarch64_movk_shift (const wide_int_ref &and_val,
-		    const wide_int_ref &ior_val)
-{
-  unsigned int precision = and_val.get_precision ();
-  unsigned HOST_WIDE_INT mask = 0xffff;
-  for (unsigned int shift = 0; shift < precision; shift += 16)
-    {
-      if (and_val == ~mask && (ior_val & mask) == ior_val)
-	return shift;
-      mask <<= 16;
-    }
-  return -1;
-}
-
-/* VAL is a value with the inner mode of MODE.  Replicate it to fill a
-   64-bit (DImode) integer.  */
-
-static unsigned HOST_WIDE_INT
-aarch64_replicate_bitmask_imm (unsigned HOST_WIDE_INT val, machine_mode mode)
-{
-  unsigned int size = GET_MODE_UNIT_PRECISION (mode);
-  while (size < 64)
-    {
-      val &= (HOST_WIDE_INT_1U << size) - 1;
-      val |= val << size;
-      size *= 2;
-    }
-  return val;
-}
-
-/* Multipliers for repeating bitmasks of width 32, 16, 8, 4, and 2.  */
-
-static const unsigned HOST_WIDE_INT bitmask_imm_mul[] =
-  {
-    0x0000000100000001ull,
-    0x0001000100010001ull,
-    0x0101010101010101ull,
-    0x1111111111111111ull,
-    0x5555555555555555ull,
-  };
-
-
-/* Return true if val is a valid bitmask immediate.  */
-
-bool
-aarch64_bitmask_imm (HOST_WIDE_INT val_in, machine_mode mode)
-{
-  unsigned HOST_WIDE_INT val, tmp, mask, first_one, next_one;
-  int bits;
-
-  /* Check for a single sequence of one bits and return quickly if so.
-     The special cases of all ones and all zeroes returns false.  */
-  val = aarch64_replicate_bitmask_imm (val_in, mode);
-  tmp = val + (val & -val);
-
-  if (tmp == (tmp & -tmp))
-    return (val + 1) > 1;
-
-  /* Replicate 32-bit immediates so we can treat them as 64-bit.  */
-  if (mode == SImode)
-    val = (val << 32) | (val & 0xffffffff);
-
-  /* Invert if the immediate doesn't start with a zero bit - this means we
-     only need to search for sequences of one bits.  */
-  if (val & 1)
-    val = ~val;
-
-  /* Find the first set bit and set tmp to val with the first sequence of one
-     bits removed.  Return success if there is a single sequence of ones.  */
-  first_one = val & -val;
-  tmp = val & (val + first_one);
-
-  if (tmp == 0)
-    return true;
-
-  /* Find the next set bit and compute the difference in bit position.  */
-  next_one = tmp & -tmp;
-  bits = clz_hwi (first_one) - clz_hwi (next_one);
-  mask = val ^ tmp;
-
-  /* Check the bit position difference is a power of 2, and that the first
-     sequence of one bits fits within 'bits' bits.  */
-  if ((mask >> bits) != 0 || bits != (bits & -bits))
-    return false;
-
-  /* Check the sequence of one bits is repeated 64/bits times.  */
-  return val == mask * bitmask_imm_mul[__builtin_clz (bits) - 26];
-}
-
-/* Create mask of ones, covering the lowest to highest bits set in VAL_IN.  
-   Assumed precondition: VAL_IN Is not zero.  */
-
-unsigned HOST_WIDE_INT
-aarch64_and_split_imm1 (HOST_WIDE_INT val_in)
-{
-  int lowest_bit_set = ctz_hwi (val_in);
-  int highest_bit_set = floor_log2 (val_in);
-  gcc_assert (val_in != 0);
-
-  return ((HOST_WIDE_INT_UC (2) << highest_bit_set) -
-	  (HOST_WIDE_INT_1U << lowest_bit_set));
-}
-
-/* Create constant where bits outside of lowest bit set to highest bit set
-   are set to 1.  */
-
-unsigned HOST_WIDE_INT
-aarch64_and_split_imm2 (HOST_WIDE_INT val_in)
-{
-  return val_in | ~aarch64_and_split_imm1 (val_in);
-}
-
-/* Return true if VAL_IN is a valid 'and' bitmask immediate.  */
-
-bool
-aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode)
-{
-  scalar_int_mode int_mode;
-  if (!is_a <scalar_int_mode> (mode, &int_mode))
-    return false;
-
-  if (aarch64_bitmask_imm (val_in, int_mode))
-    return false;
-
-  if (aarch64_move_imm (val_in, int_mode))
-    return false;
-
-  unsigned HOST_WIDE_INT imm2 = aarch64_and_split_imm2 (val_in);
-
-  return aarch64_bitmask_imm (imm2, int_mode);
-}
-
-/* Return true if val is an immediate that can be loaded into a
-   register in a single instruction.  */
-bool
-aarch64_move_imm (HOST_WIDE_INT val, machine_mode mode)
-{
-  scalar_int_mode int_mode;
-  if (!is_a <scalar_int_mode> (mode, &int_mode))
-    return false;
-
-  if (aarch64_movw_imm (val, int_mode) || aarch64_movw_imm (~val, int_mode))
-    return 1;
-  return aarch64_bitmask_imm (val, int_mode);
-}
 
 static bool
 aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)

@@ -223,7 +223,10 @@ riscv_init_builtins (void)
 	{
 	  tree type = riscv_build_function_type (d->prototype);
 	  riscv_builtin_decls[i]
-	    = add_builtin_function (d->name, type, i, BUILT_IN_MD, NULL, NULL);
+	    = add_builtin_function (d->name, type,
+				    (i << RISCV_BUILTIN_SHIFT)
+				      + RISCV_BUILTIN_GENERAL,
+				    BUILT_IN_MD, NULL, NULL);
 	  riscv_builtin_decl_index[d->icode] = i;
 	}
     }
@@ -234,9 +237,18 @@ riscv_init_builtins (void)
 tree
 riscv_builtin_decl (unsigned int code, bool initialize_p ATTRIBUTE_UNUSED)
 {
-  if (code >= ARRAY_SIZE (riscv_builtins))
-    return error_mark_node;
-  return riscv_builtin_decls[code];
+  unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
+  switch (code & RISCV_BUILTIN_CLASS)
+    {
+    case RISCV_BUILTIN_GENERAL:
+      if (subcode >= ARRAY_SIZE (riscv_builtins))
+	return error_mark_node;
+      return riscv_builtin_decls[subcode];
+
+    case RISCV_BUILTIN_VECTOR:
+      return riscv_vector::builtin_decl (subcode, initialize_p);
+    }
+  return error_mark_node;
 }
 
 /* Take argument ARGNO from EXP's argument list and convert it into
@@ -303,15 +315,23 @@ riscv_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
-  const struct riscv_builtin_description *d = &riscv_builtins[fcode];
-
-  switch (d->builtin_type)
+  unsigned int subcode = fcode >> RISCV_BUILTIN_SHIFT;
+  switch (fcode & RISCV_BUILTIN_CLASS)
     {
-    case RISCV_BUILTIN_DIRECT:
-      return riscv_expand_builtin_direct (d->icode, target, exp, true);
+      case RISCV_BUILTIN_VECTOR:
+	return riscv_vector::expand_builtin (subcode, exp, target);
+      case RISCV_BUILTIN_GENERAL: {
+	const struct riscv_builtin_description *d = &riscv_builtins[subcode];
 
-    case RISCV_BUILTIN_DIRECT_NO_TARGET:
-      return riscv_expand_builtin_direct (d->icode, target, exp, false);
+	switch (d->builtin_type)
+	  {
+	  case RISCV_BUILTIN_DIRECT:
+	    return riscv_expand_builtin_direct (d->icode, target, exp, true);
+
+	  case RISCV_BUILTIN_DIRECT_NO_TARGET:
+	    return riscv_expand_builtin_direct (d->icode, target, exp, false);
+	  }
+      }
     }
 
   gcc_unreachable ();

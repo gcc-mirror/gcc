@@ -95,6 +95,7 @@ std_headers = \
 	${std_srcdir}/stack \
 	${std_srcdir}/stacktrace \
 	${std_srcdir}/stdexcept \
+	${std_srcdir}/stdfloat \
 	${std_srcdir}/stop_token \
 	${std_srcdir}/streambuf \
 	${std_srcdir}/string \

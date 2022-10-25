@@ -1,3 +1,87 @@
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107349
+	* varargs.cc (get_va_copy_arg): Fix the non-pointer case.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107345
+	* region-model.cc (region_model::eval_condition_without_cm):
+	Ensure that constants are on the right-hand side before checking
+	for them.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (impl_region_model_context::get_malloc_map): Replace
+	with...
+	(impl_region_model_context::get_state_map_by_name): ...this.
+	(impl_region_model_context::get_fd_map): Delete.
+	(impl_region_model_context::get_taint_map): Delete.
+	* exploded-graph.h (impl_region_model_context::get_fd_map):
+	Delete.
+	(impl_region_model_context::get_malloc_map): Delete.
+	(impl_region_model_context::get_taint_map): Delete.
+	(impl_region_model_context::get_state_map_by_name): New.
+	* region-model.h (region_model_context::get_state_map_by_name):
+	New vfunc.
+	(region_model_context::get_fd_map): Convert from vfunc to
+	function.
+	(region_model_context::get_malloc_map): Likewise.
+	(region_model_context::get_taint_map): Likewise.
+	(noop_region_model_context::get_state_map_by_name): New.
+	(noop_region_model_context::get_fd_map): Delete.
+	(noop_region_model_context::get_malloc_map): Delete.
+	(noop_region_model_context::get_taint_map): Delete.
+	(region_model_context_decorator::get_state_map_by_name): New.
+	(region_model_context_decorator::get_fd_map): Delete.
+	(region_model_context_decorator::get_malloc_map): Delete.
+	(region_model_context_decorator::get_taint_map): Delete.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106300
+	* engine.cc (impl_region_model_context::get_fd_map): New.
+	* exploded-graph.h (impl_region_model_context::get_fd_map): New
+	decl.
+	* region-model-impl-calls.cc (region_model::impl_call_pipe): New.
+	* region-model.cc (region_model::update_for_int_cst_return): New,
+	based on...
+	(region_model::update_for_zero_return): ...this.  Reimplement in
+	terms of the former.
+	(region_model::on_call_pre): Handle "pipe" and "pipe2".
+	(region_model::on_call_post): Likewise.
+	* region-model.h (region_model::impl_call_pipe): New decl.
+	(region_model::update_for_int_cst_return): New decl.
+	(region_model::mark_as_valid_fd): New decl.
+	(region_model_context::get_fd_map): New pure virtual fn.
+	(noop_region_model_context::get_fd_map): New.
+	(region_model_context_decorator::get_fd_map): New.
+	* sm-fd.cc: Include "analyzer/program-state.h".
+	(fd_state_machine::describe_state_change): Handle transitions from
+	start state to valid states.
+	(fd_state_machine::mark_as_valid_fd): New.
+	(fd_state_machine::on_stmt): Add missing return for "creat".
+	(region_model::mark_as_valid_fd): New.
+
+2022-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105765
+	* varargs.cc (get_BT_VALIST_ARG): Rename to...
+	(get_va_copy_arg): ...this, and update logic for determining level
+	of indirection of va_copy's argument to use type of argument,
+	rather than looking at va_list_type_node, to correctly handle
+	__builtin_ms_va_copy.
+	(get_stateful_BT_VALIST_ARG): Rename to...
+	(get_stateful_va_copy_arg): ...this.
+	(va_list_state_machine::on_va_copy): Update for renaming.
+	(region_model::impl_call_va_copy): Likewise.
+
+2022-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107210
+	* svalue.cc (constant_svalue::maybe_fold_bits_within): Only
+	attempt to extract individual bits when tree_fits_uhwi_p.
+
 2022-10-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105783

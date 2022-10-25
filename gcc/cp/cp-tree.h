@@ -782,11 +782,20 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 
 /* Returns nonzero iff NODE is a declaration for the global function
    `main'.  */
-#define DECL_MAIN_P(NODE)				\
+#define DECL_MAIN_ANY_P(NODE)				\
    (DECL_EXTERN_C_FUNCTION_P (NODE)			\
     && DECL_NAME (NODE) != NULL_TREE			\
-    && MAIN_NAME_P (DECL_NAME (NODE))			\
-    && flag_hosted)
+    && MAIN_NAME_P (DECL_NAME (NODE)))
+
+/* Nonzero iff NODE is a declaration for `int main', or we are hosted. */
+#define DECL_MAIN_FREESTANDING_P(NODE)				\
+  (DECL_MAIN_ANY_P(NODE)					\
+   && (flag_hosted						\
+       || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (NODE)))	\
+	  == integer_type_node))
+
+/* Nonzero iff NODE is a declaration for `main', and we are hosted. */
+#define DECL_MAIN_P(NODE) (DECL_MAIN_ANY_P(NODE) && flag_hosted)
 
 /* Lookup walker marking.  */
 #define LOOKUP_SEEN_P(NODE) TREE_VISITED (NODE)
@@ -7974,7 +7983,6 @@ extern tree build_transaction_expr		(location_t, tree, int, tree);
 extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool,
 						 bool, bool);
 extern tree baselink_for_fns                    (tree);
-extern void diagnose_failing_condition		(tree, location_t, bool);
 extern void finish_static_assert                (tree, tree, location_t,
 						 bool, bool);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
@@ -8505,6 +8513,7 @@ extern tree predeclare_vla			(tree);
 extern void clear_fold_cache			(void);
 extern tree lookup_hotness_attribute		(tree);
 extern tree process_stmt_hotness_attribute	(tree, location_t);
+extern tree build_assume_call			(location_t, tree);
 extern tree process_stmt_assume_attribute	(tree, tree, location_t);
 extern bool simple_empty_class_p		(tree, tree, tree_code);
 extern tree fold_builtin_source_location	(location_t);
@@ -8712,7 +8721,9 @@ extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
 extern bool decl_implicit_constexpr_p		(tree);
 struct constexpr_ctx;
-extern tree find_failing_clause			(constexpr_ctx *ctx, tree);
+extern tree find_failing_clause			(const constexpr_ctx *ctx, tree);
+extern void diagnose_failing_condition		(tree, location_t, bool,
+						 const constexpr_ctx * = nullptr);
 extern bool replace_decl			(tree *, tree, tree);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it
@@ -8966,6 +8977,8 @@ extended_float_type_p (tree type)
   for (int i = 0; i < NUM_FLOATN_NX_TYPES; ++i)
     if (type == FLOATN_TYPE_NODE (i))
       return true;
+  if (type == bfloat16_type_node)
+    return true;
   return false;
 }
 

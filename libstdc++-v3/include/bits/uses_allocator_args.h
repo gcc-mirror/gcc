@@ -44,7 +44,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
-    concept _Std_pair = __is_pair<_Tp>;
+    concept _Std_pair = __is_pair<remove_cv_t<_Tp>>;
 
 /** @addtogroup allocators
  *  @{

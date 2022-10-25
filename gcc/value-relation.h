@@ -35,20 +35,21 @@ along with GCC; see the file COPYING3.  If not see
 // utilizes the relation information to enhance it's range calculations, this
 // is totally transparent to the client, and they are free to make queries.
 //
-//
-// relation_kind is a typedef of enum tree_code, but has restricted range
-// and a couple of extra values.
+// relation_kind is a new enum which represents the different relations,
+// often with a direct mapping to treee codes. ie VREL_EQ is equivalent to
+// EQ_EXPR.
 //
 // A query is made requesting the relation between SSA1 and SSA@ in a basic
 // block, or on an edge, the possible return values are:
 //
-//  EQ_EXPR, NE_EXPR, LT_EXPR, LE_EXPR, GT_EXPR, and GE_EXPR mean the same.
+//  VREL_EQ, VREL_NE, VREL_LT, VREL_LE, VREL_GT, and VREL_GE mean the same.
 //  VREL_VARYING : No relation between the 2 names.
 //  VREL_UNDEFINED : Impossible relation (ie, A < B && A > B)
 //
-// The oracle maintains EQ_EXPR relations with equivalency sets, so if a
-// relation comes back EQ_EXPR, it is also possible to query the set of
-// equivlaencies.  These are basically bitmaps over ssa_names.
+// The oracle maintains VREL_EQ relations with equivalency sets, so if a
+// relation comes back VREL_EQ, it is also possible to query the set of
+// equivlaencies.  These are basically bitmaps over ssa_names.  An iterator is
+// provided later for this activity.
 //
 // Relations are maintained via the dominace trees and are optimized assuming
 // they are registered in dominance order.   When a new relation is added, it
@@ -56,10 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 // and registered at the specified block.
 
 
-// Rather than introduce a new enumerated type for relations, we can use the
-// existing tree_codes for relations, plus add a couple of #defines for
-// the other cases.  These codes are arranged such that VREL_VARYING is the
-// first code, and all the rest are contiguous.
+// These codes are arranged such that VREL_VARYING is the first code, and all
+// the rest are contiguous.
 
 typedef enum relation_kind_t
 {
@@ -74,7 +73,8 @@ typedef enum relation_kind_t
   VREL_PE8,		// 8 bit partial equivalency
   VREL_PE16,		// 16 bit partial equivalency
   VREL_PE32,		// 32 bit partial equivalency
-  VREL_PE64		// 64 bit partial equivalency
+  VREL_PE64,		// 64 bit partial equivalency
+  VREL_LAST		// terminate, not a real relation.
 } relation_kind;
 
 // General relation kind transformations.
@@ -315,6 +315,101 @@ protected:
        ((equiv_name) = iter.get_name (&equiv_rel));			\
        iter.next ())
 
+// -----------------------------------------------------------------------
+
+// Range-ops deals with a LHS and 2 operands. A relation trio is a set of
+// 3 potential relations packed into a single unsigned value.
+//  1 - LHS relation OP1
+//  2 - LHS relation OP2
+//  3 - OP1 relation OP2
+//  VREL_VARYING is a value of 0, and is the default for each position.
+class relation_trio
+{
+public:
+  relation_trio ();
+  relation_trio (relation_kind lhs_op1, relation_kind lhs_op2,
+		 relation_kind op1_op2);
+  relation_kind lhs_op1 ();
+  relation_kind lhs_op2 ();
+  relation_kind op1_op2 ();
+  relation_trio swap_op1_op2 ();
+
+  static relation_trio lhs_op1 (relation_kind k);
+  static relation_trio lhs_op2 (relation_kind k);
+  static relation_trio op1_op2 (relation_kind k);
+
+protected:
+  unsigned m_val;
+};
+
+//  Default VREL_VARYING for all 3 relations.
+#define TRIO_VARYING	relation_trio ()
+
+#define TRIO_SHIFT	4
+#define TRIO_MASK	0x000F
+
+// These 3 classes are shortcuts for when a caller has a single relation to
+// pass as a trio, it can simply construct the appropriate one.  The other
+// unspecified realtions will be VREL_VARYING.
+
+inline relation_trio::relation_trio ()
+{
+  STATIC_ASSERT (VREL_LAST <= (1 << TRIO_SHIFT));
+  m_val = 0;
+}
+
+inline relation_trio::relation_trio (relation_kind lhs_op1,
+				     relation_kind lhs_op2,
+				     relation_kind op1_op2)
+{
+  STATIC_ASSERT (VREL_LAST <= (1 << TRIO_SHIFT));
+  unsigned i1 = (unsigned) lhs_op1;
+  unsigned i2 = ((unsigned) lhs_op2) << TRIO_SHIFT;
+  unsigned i3 = ((unsigned) op1_op2) << (TRIO_SHIFT * 2);
+  m_val = i1 | i2 | i3;
+}
+
+inline relation_trio
+relation_trio::lhs_op1 (relation_kind k)
+{
+  return relation_trio (k, VREL_VARYING, VREL_VARYING);
+}
+inline relation_trio
+relation_trio::lhs_op2 (relation_kind k)
+{
+  return relation_trio (VREL_VARYING, k, VREL_VARYING);
+}
+inline relation_trio
+relation_trio::op1_op2 (relation_kind k)
+{
+  return relation_trio (VREL_VARYING, VREL_VARYING, k);
+}
+
+inline relation_kind
+relation_trio::lhs_op1 ()
+{
+  return (relation_kind) (m_val & TRIO_MASK);
+}
+
+inline relation_kind
+relation_trio::lhs_op2 ()
+{
+  return (relation_kind) ((m_val >> TRIO_SHIFT) & TRIO_MASK);
+}
+
+inline relation_kind
+relation_trio::op1_op2 ()
+{
+  return (relation_kind) ((m_val >> (TRIO_SHIFT * 2)) & TRIO_MASK);
+}
+
+inline relation_trio
+relation_trio::swap_op1_op2 ()
+{
+  return relation_trio (lhs_op2 (), lhs_op1 (), relation_swap (op1_op2 ()));
+}
+
+// -----------------------------------------------------------------------
 
 // The value-relation class is used to encapsulate the represention of an
 // individual relation between 2 ssa-names, and to facilitate operating on
@@ -349,6 +444,13 @@ value_relation::set_relation (relation_kind r, tree n1, tree n2)
 {
   gcc_checking_assert (TREE_CODE (n1) == SSA_NAME
 		       && TREE_CODE (n2) == SSA_NAME);
+  if (n1 == n2)
+    {
+      related = VREL_VARYING;
+      name1 = NULL_TREE;
+      name2 = NULL_TREE;
+      return;
+    }
   related = r;
   name1 = n1;
   name2 = n2;

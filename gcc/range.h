@@ -50,6 +50,8 @@ static inline int_range<1>
 range_true_and_false (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
+  if (prec == 1)
+    return int_range<2> (type);
   return int_range<2> (type, wi::zero (prec), wi::one (prec));
 }
 

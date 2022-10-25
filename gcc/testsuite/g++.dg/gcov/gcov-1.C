@@ -257,20 +257,20 @@ test_switch (int i, int j)
   switch (i)				/* count(5) */
 					/* branch(end) */
     {
-      case 1:
+      case 1:				/* count(1) */
         result = do_something (2);	/* count(1) */
-        break;
+        break;				/* count(1) */
       case 2:
         result = do_something (1024);
         break;
-      case 3:
+      case 3:				/* count(3) */
       case 4:
 					/* branch(67) */
         if (j == 2)			/* count(3) */
 					/* branch(end) */
           return do_something (4);	/* count(1) */
         result = do_something (8);	/* count(2) */
-        break;
+        break;				/* count(2) */
       default:
 	result = do_something (32);	/* count(1) */
 	switch_m++;			/* count(1) */

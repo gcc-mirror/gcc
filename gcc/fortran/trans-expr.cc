@@ -10374,15 +10374,15 @@ gfc_conv_string_parameter (gfc_se * se)
        || TREE_CODE (TREE_TYPE (se->expr)) == INTEGER_TYPE)
       && TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
     {
+      type = TREE_TYPE (se->expr);
       if (TREE_CODE (se->expr) != INDIRECT_REF)
-	{
-	  type = TREE_TYPE (se->expr);
-          se->expr = gfc_build_addr_expr (build_pointer_type (type), se->expr);
-	}
+	se->expr = gfc_build_addr_expr (build_pointer_type (type), se->expr);
       else
 	{
-	  type = gfc_get_character_type_len (gfc_default_character_kind,
-					     se->string_length);
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    type = TREE_TYPE (type);
+	  type = gfc_get_character_type_len_for_eltype (type,
+							se->string_length);
 	  type = build_pointer_type (type);
 	  se->expr = gfc_build_addr_expr (type, se->expr);
 	}

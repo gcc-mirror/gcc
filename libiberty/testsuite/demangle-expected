@@ -1249,6 +1249,10 @@ xxx
 _Z3xxxDF32xDF64xDF128xCDF32xVb
 xxx(_Float32x, _Float64x, _Float128x, _Float32x _Complex, bool volatile)
 xxx
+--format=auto --no-params
+_Z3xxxDF16b
+xxx(std::bfloat16_t)
+xxx
 # https://sourceware.org/bugzilla/show_bug.cgi?id=16817
 --format=auto --no-params
 _QueueNotification_QueueController__$4PPPPPPPM_A_INotice___Z

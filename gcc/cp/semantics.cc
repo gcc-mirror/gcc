@@ -3181,7 +3181,14 @@ finish_compound_literal (tree type, tree compound_literal,
     {
       /* DR2351 */
       if (VOID_TYPE_P (type) && CONSTRUCTOR_NELTS (compound_literal) == 0)
-	return void_node;
+	{
+	  if (!processing_template_decl)
+	    return void_node;
+	  TREE_TYPE (compound_literal) = type;
+	  TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+	  CONSTRUCTOR_IS_DEPENDENT (compound_literal) = 0;
+	  return compound_literal;
+	}
       else if (VOID_TYPE_P (type)
 	       && processing_template_decl
 	       && maybe_zero_constructor_nelts (compound_literal))
@@ -11196,33 +11203,6 @@ init_cp_semantics (void)
 {
 }
 
-
-/* Emit additional diagnostics for failing condition BAD.
-   Used by finish_static_assert and IFN_ASSUME constexpr diagnostics.
-   If SHOW_EXPR_P is true, print the condition (because it was
-   instantiation-dependent).  */
-
-void
-diagnose_failing_condition (tree bad, location_t cloc, bool show_expr_p)
-{
-  /* Nobody wants to see the artificial (bool) cast.  */
-  bad = tree_strip_nop_conversions (bad);
-
-  /* Actually explain the failure if this is a concept check or a
-     requires-expression.  */
-  if (concept_check_p (bad) || TREE_CODE (bad) == REQUIRES_EXPR)
-    diagnose_constraints (cloc, bad, NULL_TREE);
-  else if (COMPARISON_CLASS_P (bad)
-	   && ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0))))
-    {
-      tree op0 = fold_non_dependent_expr (TREE_OPERAND (bad, 0));
-      tree op1 = fold_non_dependent_expr (TREE_OPERAND (bad, 1));
-      tree cond = build2 (TREE_CODE (bad), boolean_type_node, op0, op1);
-      inform (cloc, "the comparison reduces to %qE", cond);
-    }
-  else if (show_expr_p)
-    inform (cloc, "%qE evaluates to false", bad);
-}
 
 /* Build a STATIC_ASSERT for a static assertion with the condition
    CONDITION and the message text MESSAGE.  LOCATION is the location

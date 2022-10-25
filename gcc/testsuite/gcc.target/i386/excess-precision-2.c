@@ -4,8 +4,14 @@
 
 #include <float.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void abort (void);
 extern void exit (int);
+#ifdef __cplusplus
+}
+#endif
 
 volatile long double ldadd1 = 1.0l + 0x1.0p-30l;
 volatile long double ld11f = 1.1f;

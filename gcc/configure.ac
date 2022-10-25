@@ -25,6 +25,7 @@
 
 AC_INIT
 AC_CONFIG_SRCDIR(tree.cc)
+AC_CONFIG_MACRO_DIRS([../config] [..])
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
 gcc_version=`cat $srcdir/BASE-VER`
@@ -885,6 +886,9 @@ if test x${enable_multiarch} = xauto; then
     ma_msg_suffix=", disabled auto check (cross build configured without --with-sysroot)"
     enable_multiarch=no
   fi
+fi
+if test x${enable_multiarch} = xyes; then
+  AC_DEFINE(ENABLE_MULTIARCH, 1)
 fi
 AC_MSG_CHECKING(for multiarch configuration)
 AC_SUBST(enable_multiarch)
@@ -1991,7 +1995,7 @@ case ${enable_threads} in
     target_thread_file='single'
     ;;
   aix | dce | lynx | mipssde | posix | rtems | \
-  single | tpf | vxworks | win32)
+  single | tpf | vxworks | win32 | mcf)
     target_thread_file=${enable_threads}
     ;;
   *)

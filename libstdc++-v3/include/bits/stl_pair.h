@@ -889,9 +889,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Up>
     inline constexpr bool __is_pair<pair<_Tp, _Up>> = true;
-
-  template<typename _Tp, typename _Up>
-    inline constexpr bool __is_pair<const pair<_Tp, _Up>> = true;
 #endif
 
   /// @cond undocumented

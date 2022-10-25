@@ -1,3 +1,25 @@
+2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/cpplib.h (struct cpp_string): Use new "string_length" GTY.
+	* include/symtab.h (struct ht_identifier): Likewise.
+
+2022-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* charset.cc (ucn_valid_in_identifier): Check xid_identifiers not
+	cplusplus to determine whether to use CXX23 and NXX23 flags.
+	* include/cpplib.h (struct cpp_options): Add xid_identifiers.
+	* init.cc (struct lang_flags, lang_defaults): Add xid_identifiers.
+	(cpp_set_lang): Set xid_identifiers.
+	* lex.cc (warn_about_normalization): Add parameter identifier.
+	Only pedwarn about non-NFC for identifiers, not pp-numbers.
+	(_cpp_lex_direct): Update calls to warn_about_normalization.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (CPP_N_BFLOAT16): Define.
+	* expr.cc (interpret_float_suffix): Handle bf16 and BF16 suffixes for
+	C++.
+
 2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* include/line-map.h: Add discriminator to location_adhoc_data.

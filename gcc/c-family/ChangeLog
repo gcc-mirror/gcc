@@ -1,3 +1,51 @@
+2022-10-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.h (enum format_lengths): Add FMT_LEN_w8, FMT_LEN_w16,
+	FMT_LEN_w32, FMT_LEN_w64, FMT_LEN_wf8, FMT_LEN_wf16, FMT_LEN_wf32
+	and FMT_LEN_wf64.
+	(NOARGUMENTS, NOLENGTHS): Update definitions.
+	(T_I8, T2X_I8, T_I16, T2X_I16, T_I32, T2X_I32, T_I64, T2X_I64)
+	(T_U8, T2X_U8, T_U16, T2X_U16, T_U32, T2X_U32, T_U64, T2X_U64)
+	(T_IF8, T2X_IF8, T_IF16, T2X_IF16, T_IF32, T2X_IF32, T_IF64)
+	(T2X_IF64, T_UF8, T2X_UF8, T_UF16, T2X_UF16, T_UF32, T2X_UF32)
+	(T_UF64, T2X_UF64): New macros.
+	* c-format.cc (printf_length_specs, scanf_length_specs): Add wN
+	and wfN length modifiers.
+	(print_char_table, scan_char_table): Add entries using wN and wfN
+	length modifiers.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* c-common.cc (c_common_type_for_size): Add fallback to
+	widest_unsigned_literal_type_node or
+	widest_integer_literal_type_node for precision that may not
+	exactly match the precision of those types.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): If bfloat16_type_node,
+	predefine __BFLT16_*__ macros and for C++23 also
+	__STDCPP_BFLOAT16_T__.  Predefine bfloat16_type_node related
+	macros for -fbuilding-libgcc.
+	* c-lex.cc (interpret_float): Handle CPP_N_BFLOAT16.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/323
+	PR c++/107097
+	* c-common.def (EXCESS_PRECISION_EXPR): Remove comment part about
+	the tree being specific to C/ObjC.
+	* c-opts.cc (c_common_post_options): Handle flag_excess_precision
+	in C++ the same as in C.
+	* c-lex.cc (interpret_float): Set const_type to excess_precision ()
+	even for C++.
+
+2022-10-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not use
+	value 2 for *_IS_IEC_60559.
+
 2022-10-12  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/60014

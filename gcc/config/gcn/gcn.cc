@@ -402,7 +402,7 @@ VnMODE (int n, machine_mode mode)
 {
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       switch (n)
 	{
 	case 2: return V2QImode;
@@ -413,7 +413,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64QImode;
 	}
       break;
-    case HImode:
+    case E_HImode:
       switch (n)
 	{
 	case 2: return V2HImode;
@@ -424,7 +424,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64HImode;
 	}
       break;
-    case HFmode:
+    case E_HFmode:
       switch (n)
 	{
 	case 2: return V2HFmode;
@@ -435,7 +435,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64HFmode;
 	}
       break;
-    case SImode:
+    case E_SImode:
       switch (n)
 	{
 	case 2: return V2SImode;
@@ -446,7 +446,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64SImode;
 	}
       break;
-    case SFmode:
+    case E_SFmode:
       switch (n)
 	{
 	case 2: return V2SFmode;
@@ -457,7 +457,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64SFmode;
 	}
       break;
-    case DImode:
+    case E_DImode:
       switch (n)
 	{
 	case 2: return V2DImode;
@@ -468,7 +468,7 @@ VnMODE (int n, machine_mode mode)
 	case 64: return V64DImode;
 	}
       break;
-    case DFmode:
+    case E_DFmode:
       switch (n)
 	{
 	case 2: return V2DFmode;
@@ -2809,10 +2809,14 @@ gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   return (NUM_PARM_REGS - cum_num) * regsize;
 }
 
-/* A normal function which takes a pointer argument (to a scalar) may be
-   passed a pointer to LDS space (via a high-bits-set aperture), and that only
-   works with FLAT addressing, not GLOBAL.  Force FLAT addressing if the
-   function has an incoming pointer-to-scalar parameter.  */
+/* A normal function which takes a pointer argument may be passed a pointer to
+   LDS space (via a high-bits-set aperture), and that only works with FLAT
+   addressing, not GLOBAL.  Force FLAT addressing if the function has an
+   incoming pointer parameter.  NOTE: This is a heuristic that works in the
+   offloading case, but in general, a function might read global pointer
+   variables, etc. that may refer to LDS space or other special memory areas
+   not supported by GLOBAL instructions, and then this argument check would not
+   suffice.  */
 
 static void
 gcn_detect_incoming_pointer_arg (tree fndecl)
@@ -2822,8 +2826,7 @@ gcn_detect_incoming_pointer_arg (tree fndecl)
   for (tree arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
        arg;
        arg = TREE_CHAIN (arg))
-    if (POINTER_TYPE_P (TREE_VALUE (arg))
-	&& !AGGREGATE_TYPE_P (TREE_TYPE (TREE_VALUE (arg))))
+    if (POINTER_TYPE_P (TREE_VALUE (arg)))
       cfun->machine->use_flat_addressing = true;
 }
 

@@ -18103,7 +18103,8 @@ finish_function (bool inline_p)
   if (!DECL_CLONED_FUNCTION_P (fndecl))
     {
       /* Make it so that `main' always returns 0 by default.  */
-      if (DECL_MAIN_P (current_function_decl))
+      if (DECL_MAIN_FREESTANDING_P (current_function_decl)
+	  && !TREE_THIS_VOLATILE (current_function_decl))
 	finish_return_stmt (integer_zero_node);
 
       if (use_eh_spec_block (current_function_decl))

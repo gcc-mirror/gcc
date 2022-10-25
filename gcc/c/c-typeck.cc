@@ -3678,6 +3678,9 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 		promote_float_arg = false;
 		break;
 	      }
+	  /* Don't promote __bf16 either.  */
+	  if (TYPE_MAIN_VARIANT (valtype) == bfloat16_type_node)
+	    promote_float_arg = false;
 	}
 
       if (type != NULL_TREE)
@@ -5114,6 +5117,11 @@ c_mark_addressable (tree exp, bool array_ref_p)
 	break;
 
       case COMPOUND_LITERAL_EXPR:
+	if (C_DECL_REGISTER (COMPOUND_LITERAL_EXPR_DECL (x)))
+	  {
+	    error ("address of register compound literal requested");
+	    return false;
+	  }
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (x)) = 1;
 	return true;
@@ -11987,8 +11995,8 @@ build_binary_op (location_t location, enum tree_code code,
   if ((gnu_vector_type_p (type0) && code1 != VECTOR_TYPE)
       || (gnu_vector_type_p (type1) && code0 != VECTOR_TYPE))
     {
-      enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1,
-						     true);
+      enum stv_conv convert_flag = scalar_to_vector (location, code, orig_op0,
+						     orig_op1, true);
 
       switch (convert_flag)
 	{

@@ -825,6 +825,9 @@ i[34567]86-*-mingw*)
 	  posix)
 	    tmake_file="i386/t-mingw-pthread $tmake_file"
 	    ;;
+	  mcf)
+	    tmake_file="i386/t-mingw-mcfgthread $tmake_file"
+	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$ac_cv_sjlj_exceptions = xyes; then
@@ -848,6 +851,9 @@ x86_64-*-mingw*)
 	    ;;
 	  posix)
 	    tmake_file="i386/t-mingw-pthread $tmake_file"
+	    ;;
+	  mcf)
+	    tmake_file="i386/t-mingw-mcfgthread $tmake_file"
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h

@@ -1318,6 +1318,7 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
   fn->calls_eh_return = bp_unpack_value (&bp, 1);
   fn->has_force_vectorize_loops = bp_unpack_value (&bp, 1);
   fn->has_simduid_loops = bp_unpack_value (&bp, 1);
+  fn->assume_function = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
   fn->last_clique = bp_unpack_value (&bp, sizeof (short) * 8);

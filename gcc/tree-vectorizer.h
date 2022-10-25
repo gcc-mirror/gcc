@@ -65,6 +65,7 @@ enum vect_def_type {
   vect_reduction_def,
   vect_double_reduction_def,
   vect_nested_cycle,
+  vect_first_order_recurrence,
   vect_unknown_def_type
 };
 
@@ -1027,6 +1028,7 @@ enum stmt_vec_info_type {
   cycle_phi_info_type,
   lc_phi_info_type,
   phi_info_type,
+  recurr_info_type,
   loop_exit_ctrl_vec_info_type
 };
 
@@ -2331,6 +2333,8 @@ extern bool vectorizable_lc_phi (loop_vec_info, stmt_vec_info,
 				 gimple **, slp_tree);
 extern bool vectorizable_phi (vec_info *, stmt_vec_info, gimple **, slp_tree,
 			      stmt_vector_for_cost *);
+extern bool vectorizable_recurr (loop_vec_info, stmt_vec_info,
+				  gimple **, slp_tree, stmt_vector_for_cost *);
 extern bool vect_emulated_vector_p (tree);
 extern bool vect_can_vectorize_without_simd_p (tree_code);
 extern bool vect_can_vectorize_without_simd_p (code_helper);

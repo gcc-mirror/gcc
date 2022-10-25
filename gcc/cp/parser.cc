@@ -5620,7 +5620,9 @@ cp_parser_primary_expression (cp_parser *parser,
       /* Floating-point literals are only allowed in an integral
 	 constant expression if they are cast to an integral or
 	 enumeration type.  */
-      if (TREE_CODE (token->u.value) == REAL_CST
+      if ((TREE_CODE (token->u.value) == REAL_CST
+	   || (TREE_CODE (token->u.value) == EXCESS_PRECISION_EXPR
+	       && TREE_CODE (TREE_OPERAND (token->u.value, 0)) == REAL_CST))
 	  && parser->integral_constant_expression_p
 	  && pedantic)
 	{
@@ -46554,11 +46556,7 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 	      if (!type_dependent_expression_p (t))
 		t = contextual_conv_bool (t, tf_warning_or_error);
 	      if (is_assume && !error_operand_p (t))
-		{
-		  t = build_call_expr_internal_loc (eloc, IFN_ASSUME,
-						    void_type_node, 1, t);
-		  finish_expr_stmt (t);
-		}
+		finish_expr_stmt (build_assume_call (eloc, t));
 	      if (!parens.require_close (parser))
 		cp_parser_skip_to_closing_parenthesis (parser,
 						       /*recovering=*/true,

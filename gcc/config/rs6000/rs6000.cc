@@ -16341,8 +16341,8 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   signedp = GET_MODE (cr) == CCmode;
 
   isel_func = (mode == SImode
-	       ? (signedp ? gen_isel_signed_si : gen_isel_unsigned_si)
-	       : (signedp ? gen_isel_signed_di : gen_isel_unsigned_di));
+	       ? (signedp ? gen_isel_cc_si : gen_isel_ccuns_si)
+	       : (signedp ? gen_isel_cc_di : gen_isel_ccuns_di));
 
   switch (cond_code)
     {

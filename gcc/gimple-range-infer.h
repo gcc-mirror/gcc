@@ -40,6 +40,7 @@ public:
   void add_range (tree name, vrange &range);
   void add_nonzero (tree name);
 private:
+  void check_assume_func (gcall *call);
   unsigned num_args;
   static const int size_limit = 10;
   tree m_names[size_limit];

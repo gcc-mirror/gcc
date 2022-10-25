@@ -1771,14 +1771,12 @@ gimple_add_init_for_auto_var (tree decl,
   tree decl_name = NULL_TREE;
   if (DECL_NAME (decl))
 
-    decl_name = build_string_literal (IDENTIFIER_LENGTH (DECL_NAME (decl)) + 1,
-				      IDENTIFIER_POINTER (DECL_NAME (decl)));
+    decl_name = build_string_literal (DECL_NAME (decl));
 
   else
     {
       char *decl_name_anonymous = xasprintf ("D.%u", DECL_UID (decl));
-      decl_name = build_string_literal (strlen (decl_name_anonymous) + 1,
-					decl_name_anonymous);
+      decl_name = build_string_literal (decl_name_anonymous);
       free (decl_name_anonymous);
     }
 
@@ -3569,7 +3567,33 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 						     fndecl, 0));
 	      return GS_OK;
 	    }
-	  /* FIXME: Otherwise expand it specially.  */
+	  /* If not optimizing, ignore the assumptions.  */
+	  if (!optimize || seen_error ())
+	    {
+	      *expr_p = NULL_TREE;
+	      return GS_ALL_DONE;
+	    }
+	  /* Temporarily, until gimple lowering, transform
+	     .ASSUME (cond);
+	     into:
+	     [[assume (guard)]]
+	     {
+	       guard = cond;
+	     }
+	     such that gimple lowering can outline the condition into
+	     a separate function easily.  */
+	  tree guard = create_tmp_var (boolean_type_node);
+	  *expr_p = build2 (MODIFY_EXPR, void_type_node, guard,
+			    gimple_boolify (CALL_EXPR_ARG (*expr_p, 0)));
+	  *expr_p = build3 (BIND_EXPR, void_type_node, NULL, *expr_p, NULL);
+	  push_gimplify_context ();
+	  gimple_seq body = NULL;
+	  gimple *g = gimplify_and_return_first (*expr_p, &body);
+	  pop_gimplify_context (g);
+	  g = gimple_build_assume (guard, body);
+	  gimple_set_location (g, loc);
+	  gimplify_seq_add_stmt (pre_p, g);
+	  *expr_p = NULL_TREE;
 	  return GS_ALL_DONE;
 	}
 
@@ -4246,7 +4270,7 @@ gimple_boolify (tree expr)
     default:
       if (COMPARISON_CLASS_P (expr))
 	{
-	  /* There expressions always prduce boolean results.  */
+	  /* These expressions always produce boolean results.  */
 	  if (TREE_CODE (type) != BOOLEAN_TYPE)
 	    TREE_TYPE (expr) = boolean_type_node;
 	  return expr;

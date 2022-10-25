@@ -132,7 +132,7 @@ namespace ana {
      __builtin_va_start (&ap, [...]);
 
    except for the 2nd param of __builtin_va_copy, where the type
-   is already target-dependent (see the discussion of BT_VALIST_ARG
+   is already target-dependent (see the discussion of get_va_copy_arg
    below).  */
 
 /* Get a tree for diagnostics.
@@ -147,26 +147,32 @@ get_va_list_diag_arg (tree va_list_tree)
   return va_list_tree;
 }
 
-/* Get argument ARG_IDX of type BT_VALIST_ARG (for use by va_copy).
+/* Get argument ARG_IDX of va_copy.
 
    builtin-types.def has:
      DEF_PRIMITIVE_TYPE (BT_VALIST_ARG, va_list_arg_type_node)
 
    and c_common_nodes_and_builtins initializes va_list_arg_type_node
    based on whether TREE_CODE (va_list_type_node) is of ARRAY_TYPE or
-   not, giving either one or zero levels of indirection.  */
+   not, giving either one or zero levels of indirection.
+
+   Alternatively we could be dealing with __builtin_ms_va_copy or
+   __builtin_sysv_va_copy.
+
+   Handle this by looking at the types of the argument in question.  */
 
 static const svalue *
-get_BT_VALIST_ARG (const region_model *model,
-		   region_model_context *ctxt,
-		   const gcall *call,
-		   unsigned arg_idx)
+get_va_copy_arg (const region_model *model,
+		 region_model_context *ctxt,
+		 const gcall *call,
+		 unsigned arg_idx)
 {
   tree arg = gimple_call_arg (call, arg_idx);
   const svalue *arg_sval = model->get_rvalue (arg, ctxt);
   if (const svalue *cast = arg_sval->maybe_undo_cast ())
     arg_sval = cast;
-  if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
+  if (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE)
     {
       /* va_list_arg_type_node is a pointer to a va_list;
 	 return *ARG_SVAL.  */
@@ -551,19 +557,19 @@ va_list_state_machine::check_for_ended_va_list (sm_context *sm_ctxt,
 						 usage_fnname));
 }
 
-/* Get the svalue with associated va_list_state_machine state for a
-   BT_VALIST_ARG for ARG_IDX of CALL, if SM_CTXT supports this,
+/* Get the svalue with associated va_list_state_machine state for
+   ARG_IDX of CALL to va_copy, if SM_CTXT supports this,
    or NULL otherwise.  */
 
 static const svalue *
-get_stateful_BT_VALIST_ARG (sm_context *sm_ctxt,
-			    const gcall *call,
-			    unsigned arg_idx)
+get_stateful_va_copy_arg (sm_context *sm_ctxt,
+			  const gcall *call,
+			  unsigned arg_idx)
 {
   if (const program_state *new_state = sm_ctxt->get_new_program_state ())
     {
       const region_model *new_model = new_state->m_region_model;
-      const svalue *arg = get_BT_VALIST_ARG (new_model, NULL, call, arg_idx);
+      const svalue *arg = get_va_copy_arg (new_model, NULL, call, arg_idx);
       return arg;
     }
   return NULL;
@@ -576,7 +582,7 @@ va_list_state_machine::on_va_copy (sm_context *sm_ctxt,
 				   const supernode *node,
 				   const gcall *call) const
 {
-  const svalue *src_arg = get_stateful_BT_VALIST_ARG (sm_ctxt, call, 1);
+  const svalue *src_arg = get_stateful_va_copy_arg (sm_ctxt, call, 1);
   if (src_arg)
     check_for_ended_va_list (sm_ctxt, node, call, src_arg, "va_copy");
 
@@ -686,7 +692,7 @@ region_model::impl_call_va_copy (const call_details &cd)
 {
   const svalue *out_dst_ptr = cd.get_arg_svalue (0);
   const svalue *in_va_list
-    = get_BT_VALIST_ARG (this, cd.get_ctxt (), cd.get_call_stmt (), 1);
+    = get_va_copy_arg (this, cd.get_ctxt (), cd.get_call_stmt (), 1);
   in_va_list = check_for_poison (in_va_list,
 				 get_va_list_diag_arg (cd.get_arg_tree (1)),
 				 cd.get_ctxt ());

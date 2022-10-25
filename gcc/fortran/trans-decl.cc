@@ -4835,7 +4835,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->ts.type == BT_CLASS
 		&& CLASS_DATA (sym)->attr.class_pointer))
-	continue;
+	gfc_trans_class_array (sym, block);
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->attr.allocatable
 		    || (sym->attr.pointer && sym->attr.result)
@@ -4918,6 +4918,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  gfc_restore_backend_locus (&loc);
 		  tmp = NULL_TREE;
 		}
+
+	      /* Initialize descriptor's TKR information.  */
+	      if (sym->ts.type == BT_CLASS)
+		gfc_trans_class_array (sym, block);
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
@@ -7378,13 +7382,13 @@ done:
   /* Set string length for len=:, only.  */
   if (sym->ts.type == BT_CHARACTER && !sym->ts.u.cl->length)
     {
-      tmp = sym->ts.u.cl->backend_decl;
+      tmp2 = gfc_get_cfi_desc_elem_len (cfi);
+      tmp = fold_convert (TREE_TYPE (tmp2), sym->ts.u.cl->backend_decl);
       if (sym->ts.kind != 1)
 	tmp = fold_build2_loc (input_location, MULT_EXPR,
-			       gfc_array_index_type,
-			       sym->ts.u.cl->backend_decl, tmp);
-      tmp2 = gfc_get_cfi_desc_elem_len (cfi);
-      gfc_add_modify (&block, tmp2, fold_convert (TREE_TYPE (tmp2), tmp));
+			       TREE_TYPE (tmp2), tmp,
+			       build_int_cst (TREE_TYPE (tmp2), sym->ts.kind));
+      gfc_add_modify (&block, tmp2, tmp);
     }
 
   if (!sym->attr.dimension)

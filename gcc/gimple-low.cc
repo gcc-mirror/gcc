@@ -33,6 +33,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "gimple-predict.h"
 #include "gimple-fold.h"
+#include "cgraph.h"
+#include "tree-ssa.h"
+#include "value-range.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
+#include "tree-inline.h"
+#include "gimple-walk.h"
+#include "attribs.h"
 
 /* The differences between High GIMPLE and Low GIMPLE are the
    following:
@@ -237,6 +245,389 @@ lower_omp_directive (gimple_stmt_iterator *gsi, struct lower_data *data)
   gsi_next (gsi);
 }
 
+/* Create an artificial FUNCTION_DECL for assumption at LOC.  */
+
+static tree
+create_assumption_fn (location_t loc)
+{
+  tree name = clone_function_name_numbered (current_function_decl, "_assume");
+  /* Temporarily, until we determine all the arguments.  */
+  tree type = build_varargs_function_type_list (boolean_type_node, NULL_TREE);
+  tree decl = build_decl (loc, FUNCTION_DECL, name, type);
+  TREE_STATIC (decl) = 1;
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  DECL_NAMELESS (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
+  DECL_UNINLINABLE (decl) = 1;
+  DECL_EXTERNAL (decl) = 0;
+  DECL_CONTEXT (decl) = NULL_TREE;
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  tree attributes = DECL_ATTRIBUTES (current_function_decl);
+  if (lookup_attribute ("noipa", attributes) == NULL)
+    {
+      attributes = tree_cons (get_identifier ("noipa"), NULL, attributes);
+      if (lookup_attribute ("noinline", attributes) == NULL)
+	attributes = tree_cons (get_identifier ("noinline"), NULL, attributes);
+      if (lookup_attribute ("noclone", attributes) == NULL)
+	attributes = tree_cons (get_identifier ("noclone"), NULL, attributes);
+      if (lookup_attribute ("no_icf", attributes) == NULL)
+	attributes = tree_cons (get_identifier ("no_icf"), NULL, attributes);
+    }
+  DECL_ATTRIBUTES (decl) = attributes;
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
+  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
+    = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (current_function_decl);
+  DECL_FUNCTION_SPECIFIC_TARGET (decl)
+    = DECL_FUNCTION_SPECIFIC_TARGET (current_function_decl);
+  tree t = build_decl (DECL_SOURCE_LOCATION (decl),
+		       RESULT_DECL, NULL_TREE, boolean_type_node);
+  DECL_ARTIFICIAL (t) = 1;
+  DECL_IGNORED_P (t) = 1;
+  DECL_CONTEXT (t) = decl;
+  DECL_RESULT (decl) = t;
+  push_struct_function (decl);
+  cfun->function_end_locus = loc;
+  init_tree_ssa (cfun);
+  return decl;
+}
+
+struct lower_assumption_data
+{
+  copy_body_data id;
+  tree return_false_label;
+  tree guard_copy;
+  auto_vec<tree> decls;
+};
+
+/* Helper function for lower_assumptions.  Find local vars and labels
+   in the assumption sequence and remove debug stmts.  */
+
+static tree
+find_assumption_locals_r (gimple_stmt_iterator *gsi_p, bool *,
+			  struct walk_stmt_info *wi)
+{
+  lower_assumption_data *data = (lower_assumption_data *) wi->info;
+  gimple *stmt = gsi_stmt (*gsi_p);
+  tree lhs = gimple_get_lhs (stmt);
+  if (lhs && TREE_CODE (lhs) == SSA_NAME)
+    {
+      gcc_assert (SSA_NAME_VAR (lhs) == NULL_TREE);
+      data->id.decl_map->put (lhs, NULL_TREE);
+      data->decls.safe_push (lhs);
+    }
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_BIND:
+      for (tree var = gimple_bind_vars (as_a <gbind *> (stmt));
+	   var; var = DECL_CHAIN (var))
+	if (VAR_P (var)
+	    && !DECL_EXTERNAL (var)
+	    && DECL_CONTEXT (var) == data->id.src_fn)
+	  {
+	    data->id.decl_map->put (var, var);
+	    data->decls.safe_push (var);
+	  }
+      break;
+    case GIMPLE_LABEL:
+      {
+	tree label = gimple_label_label (as_a <glabel *> (stmt));
+	data->id.decl_map->put (label, label);
+	break;
+      }
+    case GIMPLE_RETURN:
+      /* If something in assumption tries to return from parent function,
+	 if it would be reached in hypothetical evaluation, it would be UB,
+	 so transform such returns into return false;  */
+      {
+	gimple *g = gimple_build_assign (data->guard_copy, boolean_false_node);
+	gsi_insert_before (gsi_p, g, GSI_SAME_STMT);
+	gimple_return_set_retval (as_a <greturn *> (stmt), data->guard_copy);
+	break;
+      }
+    case GIMPLE_DEBUG:
+      /* As assumptions won't be emitted, debug info stmts in them
+	 are useless.  */
+      gsi_remove (gsi_p, true);
+      wi->removed_stmt = true;
+      break;
+    default:
+      break;
+    }
+  return NULL_TREE;
+}
+
+/* Create a new PARM_DECL that is indentical in all respect to DECL except that
+   DECL can be either a VAR_DECL, a PARM_DECL or RESULT_DECL.  The original
+   DECL must come from ID->src_fn and the copy will be part of ID->dst_fn.  */
+
+static tree
+assumption_copy_decl (tree decl, copy_body_data *id)
+{
+  tree type = TREE_TYPE (decl);
+
+  if (is_global_var (decl))
+    return decl;
+
+  gcc_assert (VAR_P (decl)
+	      || TREE_CODE (decl) == PARM_DECL
+	      || TREE_CODE (decl) == RESULT_DECL);
+  tree copy = build_decl (DECL_SOURCE_LOCATION (decl),
+			  PARM_DECL, DECL_NAME (decl), type);
+  if (DECL_PT_UID_SET_P (decl))
+    SET_DECL_PT_UID (copy, DECL_PT_UID (decl));
+  TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
+  TREE_READONLY (copy) = TREE_READONLY (decl);
+  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
+  DECL_NOT_GIMPLE_REG_P (copy) = DECL_NOT_GIMPLE_REG_P (decl);
+  DECL_BY_REFERENCE (copy) = DECL_BY_REFERENCE (decl);
+  DECL_ARG_TYPE (copy) = type;
+  ((lower_assumption_data *) id)->decls.safe_push (decl);
+  return copy_decl_for_dup_finish (id, decl, copy);
+}
+
+/* Transform gotos out of the assumption into return false.  */
+
+static tree
+adjust_assumption_stmt_r (gimple_stmt_iterator *gsi_p, bool *,
+			  struct walk_stmt_info *wi)
+{
+  lower_assumption_data *data = (lower_assumption_data *) wi->info;
+  gimple *stmt = gsi_stmt (*gsi_p);
+  tree lab = NULL_TREE;
+  unsigned int idx = 0;
+  if (gimple_code (stmt) == GIMPLE_GOTO)
+    lab = gimple_goto_dest (stmt);
+  else if (gimple_code (stmt) == GIMPLE_COND)
+    {
+     repeat:
+      if (idx == 0)
+	lab = gimple_cond_true_label (as_a <gcond *> (stmt));
+      else
+	lab = gimple_cond_false_label (as_a <gcond *> (stmt));
+    }
+  else if (gimple_code (stmt) == GIMPLE_LABEL)
+    {
+      tree label = gimple_label_label (as_a <glabel *> (stmt));
+      DECL_CONTEXT (label) = current_function_decl;
+    }
+  if (lab)
+    {
+      if (!data->id.decl_map->get (lab))
+	{
+	  if (!data->return_false_label)
+	    data->return_false_label
+	      = create_artificial_label (UNKNOWN_LOCATION);
+	  if (gimple_code (stmt) == GIMPLE_GOTO)
+	    gimple_goto_set_dest (as_a <ggoto *> (stmt),
+				  data->return_false_label);
+	  else if (idx == 0)
+	    gimple_cond_set_true_label (as_a <gcond *> (stmt),
+					data->return_false_label);
+	  else
+	    gimple_cond_set_false_label (as_a <gcond *> (stmt),
+					 data->return_false_label);
+	}
+      if (gimple_code (stmt) == GIMPLE_COND && idx == 0)
+	{
+	  idx = 1;
+	  goto repeat;
+	}
+    }
+  return NULL_TREE;
+}
+
+/* Adjust trees in the assumption body.  Called through walk_tree.  */
+
+static tree
+adjust_assumption_stmt_op (tree *tp, int *, void *datap)
+{
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) datap;
+  lower_assumption_data *data = (lower_assumption_data *) wi->info;
+  tree t = *tp;
+  tree *newt;
+  switch (TREE_CODE (t))
+    {
+    case SSA_NAME:
+      newt = data->id.decl_map->get (t);
+      /* There shouldn't be SSA_NAMEs other than ones defined in the
+	 assumption's body.  */
+      gcc_assert (newt);
+      *tp = *newt;
+      break;
+    case LABEL_DECL:
+      newt = data->id.decl_map->get (t);
+      if (newt)
+	*tp = *newt;
+      break;
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+      *tp = remap_decl (t, &data->id);
+      break;
+    default:
+      break;
+    }
+  return NULL_TREE;
+}
+
+/* Lower assumption.
+   The gimplifier transformed:
+   .ASSUME (cond);
+   into:
+   [[assume (guard)]]
+   {
+     guard = cond;
+   }
+   which we should transform into:
+   .ASSUME (&artificial_fn, args...);
+   where artificial_fn will look like:
+   bool artificial_fn (args...)
+   {
+     guard = cond;
+     return guard;
+   }
+   with any debug stmts in the block removed and jumps out of
+   the block or return stmts replaced with return false;  */
+
+static void
+lower_assumption (gimple_stmt_iterator *gsi, struct lower_data *data)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree guard = gimple_assume_guard (stmt);
+  gimple *bind = gimple_assume_body (stmt);
+  location_t loc = gimple_location (stmt);
+  gcc_assert (gimple_code (bind) == GIMPLE_BIND);
+
+  lower_assumption_data lad;
+  hash_map<tree, tree> decl_map;
+  memset (&lad.id, 0, sizeof (lad.id));
+  lad.return_false_label = NULL_TREE;
+  lad.id.src_fn = current_function_decl;
+  lad.id.dst_fn = create_assumption_fn (loc);
+  lad.id.src_cfun = DECL_STRUCT_FUNCTION (lad.id.src_fn);
+  lad.id.decl_map = &decl_map;
+  lad.id.copy_decl = assumption_copy_decl;
+  lad.id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+  lad.id.transform_parameter = true;
+  lad.id.do_not_unshare = true;
+  lad.id.do_not_fold = true;
+  cfun->curr_properties = lad.id.src_cfun->curr_properties;
+  lad.guard_copy = create_tmp_var (boolean_type_node);
+  decl_map.put (lad.guard_copy, lad.guard_copy);
+  decl_map.put (guard, lad.guard_copy);
+  cfun->assume_function = 1;
+
+  /* Find variables, labels and SSA_NAMEs local to the assume GIMPLE_BIND.  */
+  gimple_stmt_iterator gsi2 = gsi_start (*gimple_assume_body_ptr (stmt));
+  struct walk_stmt_info wi;
+  memset (&wi, 0, sizeof (wi));
+  wi.info = (void *) &lad;
+  walk_gimple_stmt (&gsi2, find_assumption_locals_r, NULL, &wi);
+  unsigned int sz = lad.decls.length ();
+  for (unsigned i = 0; i < sz; ++i)
+    {
+      tree v = lad.decls[i];
+      tree newv;
+      /* SSA_NAMEs defined in the assume condition should be replaced
+	 by new SSA_NAMEs in the artificial function.  */
+      if (TREE_CODE (v) == SSA_NAME)
+	{
+	  newv = make_ssa_name (remap_type (TREE_TYPE (v), &lad.id));
+	  decl_map.put (v, newv);
+	}
+      /* Local vars should have context and type adjusted to the
+	 new artificial function.  */
+      else if (VAR_P (v))
+	{
+	  if (is_global_var (v) && !DECL_ASSEMBLER_NAME_SET_P (v))
+	    DECL_ASSEMBLER_NAME (v);
+	  TREE_TYPE (v) = remap_type (TREE_TYPE (v), &lad.id);
+	  DECL_CONTEXT (v) = current_function_decl;
+	}
+    }
+  /* References to other automatic vars should be replaced by
+     PARM_DECLs to the artificial function.  */
+  memset (&wi, 0, sizeof (wi));
+  wi.info = (void *) &lad;
+  walk_gimple_stmt (&gsi2, adjust_assumption_stmt_r,
+		    adjust_assumption_stmt_op, &wi);
+
+  /* At the start prepend guard = false;  */
+  gimple_seq body = NULL;
+  gimple *g = gimple_build_assign (lad.guard_copy, boolean_false_node);
+  gimple_seq_add_stmt (&body, g);
+  gimple_seq_add_stmt (&body, bind);
+  /* At the end add return guard;  */
+  greturn *gr = gimple_build_return (lad.guard_copy);
+  gimple_seq_add_stmt (&body, gr);
+  /* If there were any jumps to labels outside of the condition,
+     replace them with a jump to
+     return_false_label:
+     guard = false;
+     return guard;  */
+  if (lad.return_false_label)
+    {
+      g = gimple_build_label (lad.return_false_label);
+      gimple_seq_add_stmt (&body, g);
+      g = gimple_build_assign (lad.guard_copy, boolean_false_node);
+      gimple_seq_add_stmt (&body, g);
+      gr = gimple_build_return (lad.guard_copy);
+      gimple_seq_add_stmt (&body, gr);
+    }
+  bind = gimple_build_bind (NULL_TREE, body, NULL_TREE);
+  body = NULL;
+  gimple_seq_add_stmt (&body, bind);
+  gimple_set_body (current_function_decl, body);
+  pop_cfun ();
+
+  tree parms = NULL_TREE;
+  tree parmt = void_list_node;
+  auto_vec<tree, 8> vargs;
+  vargs.safe_grow (1 + (lad.decls.length () - sz), true);
+  /* First argument to IFN_ASSUME will be address of the
+     artificial function.  */
+  vargs[0] = build_fold_addr_expr (lad.id.dst_fn);
+  for (unsigned i = lad.decls.length (); i > sz; --i)
+    {
+      tree *v = decl_map.get (lad.decls[i - 1]);
+      gcc_assert (v && TREE_CODE (*v) == PARM_DECL);
+      DECL_CHAIN (*v) = parms;
+      parms = *v;
+      parmt = tree_cons (NULL_TREE, TREE_TYPE (*v), parmt);
+      /* Remaining arguments will be the variables/parameters
+	 mentioned in the condition.  */
+      vargs[i - sz] = lad.decls[i - 1];
+      /* If they have gimple types, we might need to regimplify
+	 them to make the IFN_ASSUME call valid.  */
+      if (is_gimple_reg_type (TREE_TYPE (vargs[i - sz]))
+	  && !is_gimple_val (vargs[i - sz]))
+	{
+	  tree t = make_ssa_name (TREE_TYPE (vargs[i - sz]));
+	  g = gimple_build_assign (t, vargs[i - sz]);
+	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  vargs[i - sz] = t;
+	}
+    }
+  DECL_ARGUMENTS (lad.id.dst_fn) = parms;
+  TREE_TYPE (lad.id.dst_fn) = build_function_type (boolean_type_node, parmt);
+
+  cgraph_node::add_new_function (lad.id.dst_fn, false);
+
+  for (unsigned i = 0; i < sz; ++i)
+    {
+      tree v = lad.decls[i];
+      if (TREE_CODE (v) == SSA_NAME)
+	release_ssa_name (v);
+    }
+
+  data->cannot_fallthru = false;
+  /* Replace GIMPLE_ASSUME statement with IFN_ASSUME call.  */
+  gcall *call = gimple_build_call_internal_vec (IFN_ASSUME, vargs);
+  gimple_set_location (call, loc);
+  gsi_replace (gsi, call, true);
+}
 
 /* Lower statement GSI.  DATA is passed through the recursion.  We try to
    track the fallthruness of statements and get rid of unreachable return
@@ -401,6 +792,10 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
       data->cannot_fallthru = false;
       lower_omp_directive (gsi, data);
       data->cannot_fallthru = false;
+      return;
+
+    case GIMPLE_ASSUME:
+      lower_assumption (gsi, data);
       return;
 
     case GIMPLE_TRANSACTION:

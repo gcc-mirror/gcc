@@ -1,3 +1,13 @@
+2022-10-19  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-18  Florian Weimer  <fweimer@redhat.com>
+
+	* configure.ac (sanitizer_supported): Include <unistd.h> for
+	syscall prototype.
+	* configure: Regenerate.
+
 2022-10-12  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

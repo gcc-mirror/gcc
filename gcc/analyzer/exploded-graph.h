@@ -96,12 +96,10 @@ class impl_region_model_context : public region_model_context
   {
     return &m_ext_state;
   }
-  bool get_malloc_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) final override;
-  bool get_taint_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) final override;
+  bool get_state_map_by_name (const char *name,
+			      sm_state_map **out_smap,
+			      const state_machine **out_sm,
+			      unsigned *out_sm_idx) override;
 
   const gimple *get_stmt () const override { return m_stmt; }
 

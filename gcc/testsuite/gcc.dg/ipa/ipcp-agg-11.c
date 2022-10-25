@@ -73,5 +73,5 @@ entry ()
 /* { dg-final { scan-ipa-dump "offset: 0, type: int, CONST: 101" "cp" } } */
 /* { dg-final { scan-ipa-dump "offset: 32, type: int, PASS THROUGH: 0, op trunc_mod_expr 7" "cp" } } */
 /* { dg-final { scan-ipa-dump "offset: 64, type: int, LOAD AGG: 1 \\\[offset: 0, by reference], op plus_expr 6" "cp" } } */
-/* { dg-final { scan-ipa-dump "Aggregate replacements: 0\\\[0]=1, 0\\\[32]=105, 0\\\[64]=-18" "cp" } } */
-/* { dg-final { scan-ipa-dump "Aggregate replacements: 0\\\[0]=101, 0\\\[32]=2, 0\\\[64]=9" "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 0\\\[0]=1\\(by_ref\\), 0\\\[4]=105\\(by_ref\\), 0\\\[8]=-18\\(by_ref\\)" "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 0\\\[0]=101, 0\\\[4]=2, 0\\\[8]=9" "cp" } } */

@@ -290,7 +290,7 @@ extern bool real_issignaling_nan (const REAL_VALUE_TYPE *);
 inline bool
 real_isdenormal (const REAL_VALUE_TYPE *r)
 {
-  return (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+  return r->cl == rvc_normal && (r->sig[SIGSZ-1] & SIG_MSB) == 0;
 }
 
 /* Determine whether a floating-point value X is finite.  */

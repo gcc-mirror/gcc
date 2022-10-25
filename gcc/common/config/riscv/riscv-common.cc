@@ -224,6 +224,14 @@ static const riscv_cpu_info riscv_cpu_tables[] =
     {NULL, NULL, NULL}
 };
 
+static const char *riscv_tunes[] =
+{
+#define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO) \
+    TUNE_NAME,
+#include "../../../config/riscv/riscv-cores.def"
+    NULL
+};
+
 static const char *riscv_supported_std_ext (void);
 
 static riscv_subset_list *current_subset_list = NULL;
@@ -1687,6 +1695,41 @@ riscv_compute_multilib (
 #define TARGET_COMPUTE_MULTILIB riscv_compute_multilib
 #endif
 
+vec<const char *>
+riscv_get_valid_option_values (int option_code,
+			       const char *prefix ATTRIBUTE_UNUSED)
+{
+  vec<const char *> v;
+  v.create (0);
+  opt_code opt = (opt_code) option_code;
+
+  switch (opt)
+    {
+    case OPT_mtune_:
+      {
+	const char **tune = &riscv_tunes[0];
+	for (;*tune; ++tune)
+	  v.safe_push (*tune);
+
+	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+	for (;cpu_info->name; ++cpu_info)
+	  v.safe_push (cpu_info->name);
+      }
+      break;
+    case OPT_mcpu_:
+      {
+	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+	for (;cpu_info->name; ++cpu_info)
+	  v.safe_push (cpu_info->name);
+      }
+      break;
+    default:
+      break;
+    }
+
+  return v;
+}
+
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options riscv_option_optimization_table[] =
   {
@@ -1700,5 +1743,8 @@ static const struct default_options riscv_option_optimization_table[] =
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION riscv_handle_option
+
+#undef  TARGET_GET_VALID_OPTION_VALUES
+#define TARGET_GET_VALID_OPTION_VALUES riscv_get_valid_option_values
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
