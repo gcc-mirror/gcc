@@ -93,6 +93,15 @@ prefetch_write_data (Context *ctx, TyTy::FnType *fntype)
   return prefetch_data_handler (ctx, fntype, Prefetch::Write);
 }
 
+static inline tree
+sorry_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  rust_sorry_at (fntype->get_locus (), "intrinsic %qs is not yet implemented",
+		 fntype->get_identifier ().c_str ());
+
+  return error_mark_node;
+}
+
 static const std::map<std::string,
 		      std::function<tree (Context *, TyTy::FnType *)>>
   generic_intrinsics = {
@@ -107,6 +116,7 @@ static const std::map<std::string,
     {"copy_nonoverlapping", &copy_nonoverlapping_handler},
     {"prefetch_read_data", &prefetch_read_data},
     {"prefetch_write_data", &prefetch_write_data},
+    {"atomic_load", &sorry_handler},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
