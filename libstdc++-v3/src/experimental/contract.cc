@@ -1,4 +1,4 @@
-// -*- C++ -*- std::contract_violation and friends
+// -*- C++ -*- std::experimental::contract_violation and friends
 // Copyright (C) 1994-2018 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
@@ -27,7 +27,7 @@
 #include <cstdlib>
 
 __attribute__ ((weak)) void
-handle_contract_violation (const std::contract_violation &violation)
+handle_contract_violation (const std::experimental::contract_violation &violation)
 {
   std::cerr << "default std::handle_contract_violation called: " << std::endl
     << " " << violation.file_name()
@@ -51,8 +51,8 @@ __on_contract_violation (bool continue_,
 			 const char *assertion_role,
 			 int continuation_mode)
 {
-  using cvmc = std::contract_violation_continuation_mode;
-  std::contract_violation violation (line_number,
+  using cvmc = std::experimental::contract_violation_continuation_mode;
+  std::experimental::contract_violation violation (line_number,
 				     file_name,
 				     function_name,
 				     comment,

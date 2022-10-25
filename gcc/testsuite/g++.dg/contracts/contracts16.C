@@ -5,7 +5,7 @@
 #include <iostream>
 #include <experimental/contract>
 
-void handle_contract_violation(const std::contract_violation &violation) {
+void handle_contract_violation(const std::experimental::contract_violation &violation) {
   std::cerr << "custom std::handle_contract_violation called:"
     << " " << violation.line_number()
     << " " << violation.file_name()
