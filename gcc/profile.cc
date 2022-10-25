@@ -1457,11 +1457,13 @@ branch_prob (bool thunk)
 	  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
 	    {
 	      location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
-	      gcc_checking_assert (!RESERVED_LOCATION_P (loc));
-	      seen_locations.add (loc);
-	      expanded_location curr_location = expand_location (loc);
-	      output_location (&streamed_locations, curr_location.file,
-			       MAX (1, curr_location.line), &offset, bb);
+	      if (!RESERVED_LOCATION_P (loc))
+		{
+		  seen_locations.add (loc);
+		  expanded_location curr_location = expand_location (loc);
+		  output_location (&streamed_locations, curr_location.file,
+				   MAX (1, curr_location.line), &offset, bb);
+		}
 	    }
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
