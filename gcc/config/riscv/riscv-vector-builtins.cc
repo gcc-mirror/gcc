@@ -202,7 +202,7 @@ rvv_switcher::rvv_switcher ()
   memcpy (m_old_have_regs_of_mode, have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
   for (int i = 0; i < NUM_MACHINE_MODES; ++i)
-    if (riscv_v_ext_enabled_vector_mode_p ((machine_mode) i))
+    if (riscv_v_ext_vector_mode_p ((machine_mode) i))
       have_regs_of_mode[i] = true;
 }
 
@@ -271,7 +271,7 @@ register_builtin_type (vector_type_index type, tree eltype, machine_mode mode)
   builtin_types[type].scalar = eltype;
   builtin_types[type].scalar_ptr = build_pointer_type (eltype);
   builtin_types[type].scalar_const_ptr = build_const_pointer (eltype);
-  if (!riscv_v_ext_enabled_vector_mode_p (mode))
+  if (!riscv_v_ext_vector_mode_p (mode))
     return;
 
   tree vectype = build_vector_type_for_mode (eltype, mode);

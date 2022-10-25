@@ -941,30 +941,12 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
   return true;
 }
 
-/* Return true if mode is the RVV mode.  */
-
-static bool
-riscv_v_ext_vector_mode_p (machine_mode mode)
-{
-#define ENTRY(MODE, REQUIREMENT)                                               \
-  case MODE##mode:                                                             \
-    return true;
-  switch (mode)
-    {
-#include "riscv-vector-switch.def"
-    default:
-      return false;
-    }
-
-  return false;
-}
-
 /* Return true if mode is the RVV enabled mode.
    For example: 'VNx1DI' mode is disabled if MIN_VLEN == 32.
    'VNx1SI' mode is enabled if MIN_VLEN == 32.  */
 
 bool
-riscv_v_ext_enabled_vector_mode_p (machine_mode mode)
+riscv_v_ext_vector_mode_p (machine_mode mode)
 {
 #define ENTRY(MODE, REQUIREMENT)                                               \
   case MODE##mode:                                                             \
@@ -977,6 +959,17 @@ riscv_v_ext_enabled_vector_mode_p (machine_mode mode)
     }
 
   return false;
+}
+
+/* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
+   NUNITS size for corresponding machine_mode.  */
+
+poly_int64
+riscv_v_adjust_nunits (machine_mode mode, int scale)
+{
+  if (riscv_v_ext_vector_mode_p (mode))
+    return riscv_vector_chunks * scale;
+  return scale;
 }
 
 /* Return true if X is a valid address for machine mode MODE.  If it is,
@@ -6420,7 +6413,7 @@ static bool
 riscv_vector_mode_supported_p (machine_mode mode)
 {
   if (TARGET_VECTOR)
-    return riscv_v_ext_enabled_vector_mode_p (mode);
+    return riscv_v_ext_vector_mode_p (mode);
 
   return false;
 }
