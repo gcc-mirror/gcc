@@ -2507,7 +2507,9 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V2SImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2HFmode:
+    case E_V2BFmode:
     case E_V8QImode:
       classes[0] = X86_64_SSE_CLASS;
       return 1;
@@ -2991,6 +2993,7 @@ pass_in_reg:
     case E_V8QImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -3240,6 +3243,7 @@ pass_in_reg:
     case E_V8QImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -15811,7 +15815,9 @@ ix86_convert_const_vector_to_integer (rtx op, machine_mode mode)
 	}
       break;
     case E_V2HFmode:
+    case E_V2BFmode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SFmode:
       for (int i = 0; i < nunits; ++i)
 	{
