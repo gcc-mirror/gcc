@@ -1925,6 +1925,16 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
   tree container_type = TREE_TYPE (container);
   tree vectype = get_vectype_for_scalar_type (vinfo, container_type);
 
+  /* Calculate shift_n before the adjustments for widening loads, otherwise
+     the container may change and we have to consider offset change for
+     widening loads on big endianness.  The shift_n calculated here can be
+     independent of widening.  */
+  unsigned HOST_WIDE_INT shift_n = bit_field_offset (bf_ref).to_constant ();
+  unsigned HOST_WIDE_INT mask_width = bit_field_size (bf_ref).to_constant ();
+  unsigned HOST_WIDE_INT prec = tree_to_uhwi (TYPE_SIZE (container_type));
+  if (BYTES_BIG_ENDIAN)
+    shift_n = prec - shift_n - mask_width;
+
   /* We move the conversion earlier if the loaded type is smaller than the
      return type to enable the use of widening loads.  */
   if (TYPE_PRECISION (TREE_TYPE (container)) < TYPE_PRECISION (ret_type)
@@ -1935,6 +1945,7 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
 			       NOP_EXPR, container);
       container = gimple_get_lhs (pattern_stmt);
       container_type = TREE_TYPE (container);
+      prec = tree_to_uhwi (TYPE_SIZE (container_type));
       vectype = get_vectype_for_scalar_type (vinfo, container_type);
       append_pattern_def_seq (vinfo, stmt_info, pattern_stmt, vectype);
     }
@@ -1952,12 +1963,6 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
 	  && gimple_assign_rhs_code (use_stmt) == PLUS_EXPR)
 	shift_first = false;
     }
-
-  unsigned HOST_WIDE_INT shift_n = bit_field_offset (bf_ref).to_constant ();
-  unsigned HOST_WIDE_INT mask_width = bit_field_size (bf_ref).to_constant ();
-  unsigned HOST_WIDE_INT prec = tree_to_uhwi (TYPE_SIZE (container_type));
-  if (BYTES_BIG_ENDIAN)
-    shift_n = prec - shift_n - mask_width;
 
   /* If we don't have to shift we only generate the mask, so just fix the
      code-path to shift_first.  */
