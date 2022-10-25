@@ -204,6 +204,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -1218,6 +1221,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
 
   {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
+
+  {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
+  {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
 
   {NULL, NULL, 0}
 };

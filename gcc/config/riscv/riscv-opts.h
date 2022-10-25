@@ -162,6 +162,12 @@ enum stack_protector_guard {
 #define MASK_ZMMUL      (1 << 0)
 #define TARGET_ZMMUL    ((riscv_zm_subext & MASK_ZMMUL) != 0)
 
+#define MASK_SVINVAL (1 << 0)
+#define MASK_SVNAPOT (1 << 1)
+
+#define TARGET_SVINVAL ((riscv_sv_subext & MASK_SVINVAL) != 0)
+#define TARGET_SVNAPOT ((riscv_sv_subext & MASK_SVNAPOT) != 0)
+
 /* Bit of riscv_zvl_flags will set contintuly, N-1 bit will set if N-bit is
    set, e.g. MASK_ZVL64B has set then MASK_ZVL32B is set, so we can use
    popcount to caclulate the minimal VLEN.  */
