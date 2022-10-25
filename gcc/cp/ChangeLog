@@ -1,3 +1,11 @@
+2022-10-24  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105725
+	* parser.c (class_decl_loc_t::add): Check CLASS_TYPE_P.
+
 2022-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106361
