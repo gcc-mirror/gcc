@@ -1,3 +1,117 @@
+2022-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR analyzer/107366
+	* diagnostic-format-sarif.cc
+	(sarif_builder::maybe_make_physical_location_object): Gracefully
+	reject locations with NULL filename.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106300
+	* doc/invoke.texi (Static Analyzer Options): Add "pipe" and
+	"pipe2" to the list of functions the analyzer has hardcoded
+	knowledge of.
+
+2022-10-24  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (build_string_literal): New one-argument overloads that
+	take tree (identifier) and const char *.
+	* builtins.cc (fold_builtin_FILE)
+	(fold_builtin_FUNCTION)
+	* gimplify.cc (gimple_add_init_for_auto_var)
+	* vtable-verify.cc (verify_bb_vtables): Simplify calls.
+
+2022-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR target/107364
+	* common/config/i386/i386-cpuinfo.h (enum processor_vendor):
+	  Reorder enum values as BUILTIN_VENDOR_MAX should not point
+	  in the middle of the valid enum values.
+
+2022-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107276
+	* tree.cc (maybe_wrap_with_location): Don't create a location wrapper
+	when the type is erroneous.
+
+2022-10-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/106583
+	* config/aarch64/aarch64.cc (aarch64_internal_mov_immediate)
+	Add support for a bitmask immediate with 2 MOVKs.
+	(aarch64_check_bitmask): New function after refactorization.
+	(aarch64_bitmask_imm): Simplify replication of small modes.
+	Split function into 64-bit only version for efficiency.
+	(aarch64_move_imm): Move near other immediate functions.
+	(aarch64_uimm12_shift): Likewise.
+	(aarch64_clamp_to_uimm12_shift): Likewise.
+	(aarch64_movk_shift): Likewise.
+	(aarch64_replicate_bitmask_imm): Likewise.
+	(aarch64_and_split_imm1): Likewise.
+	(aarch64_and_split_imm2): Likewise.
+	(aarch64_and_bitmask_imm): Likewise.
+	(aarch64_movw_imm): Likewise.
+
+2022-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107355
+	* range-op-float.cc (foperator_abs::op1_range): Handle NAN.
+
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/107236
+	* omp-expand.cc (expand_omp_target): Set calls_declare_variant_alt
+	in DECL_CONTEXT and not to cfun->decl.
+	* cgraphclones.cc (cgraph_node::create_clone): Copy also the
+	node's calls_declare_variant_alt value.
+
+2022-10-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_tunes): New.
+	(riscv_get_valid_option_values): New.
+	(TARGET_GET_VALID_OPTION_VALUES): New.
+	* config/riscv/riscv-cores.def (RISCV_TUNE): New, define options
+	for tune here.
+	(RISCV_CORE): Fix comment.
+	* config/riscv/riscv.cc (riscv_tune_info_table): Move definition to
+	riscv-cores.def.
+
+2022-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107365
+	* value-range.cc (frange::verify_range): Predicate NAN check in
+	VARYING range on HONOR_NANS instead of flag_finite_math_only.
+	(range_tests_floats): Same.
+	(range_tests_floats_various): New.
+	(range_tests): Call range_tests_floats_various.
+
+2022-10-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* lto-wrapper.cc: Quote paths in makefile.
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Support (set (mem) (const_poly_int)).
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Replace CONSTEXPR
+	with constexpr throughout.
+	* config/riscv/riscv-vector-builtins-shapes.cc (SHAPE): Likewise.
+	* config/riscv/riscv-vector-builtins.cc
+	(struct registered_function_hasher): Likewise.
+	* config/riscv/riscv-vector-builtins.h (struct rvv_arg_type_info):
+	Likewise.
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-switch.def (ENTRY): Remove unused TI/TF vector modes.
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.h (REG_CLASS_CONTENTS): Fix ALL_REGS.
+
 2022-10-22  Michael Eager  <eager@eagercon.com>
 
 	* config/microblaze/microblaze.cc

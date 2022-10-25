@@ -1,3 +1,17 @@
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107358
+	* c-typeck.cc (build_binary_op): Pass operands before excess precision
+	promotions to scalar_to_vector call.
+
+2022-10-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	* c-decl.cc (finish_function): Ignore hosted when deciding
+	whether to implicitly return zero, but check noreturn.
+	* c-objc-common.cc (c_missing_noreturn_ok_p): Loosen the
+	requirements to just MAIN_NAME_P when hosted, or `int main'
+	otherwise.
+
 2022-10-20  Richard Biener  <rguenther@suse.de>
 
 	PR c/107305

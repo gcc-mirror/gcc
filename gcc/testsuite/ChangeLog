@@ -1,3 +1,68 @@
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107349
+	* gcc.dg/analyzer/stdarg-1-ms_abi.c (pr107349): New.
+	* gcc.dg/analyzer/stdarg-1-sysv_abi.c (pr107349): New.
+	* gcc.dg/analyzer/stdarg-1.c (pr107349): New.
+
+2022-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR analyzer/107366
+	* gcc.dg/analyzer/sarif-pr107366.c: New test.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107345
+	* gcc.dg/analyzer/pr107345.c: New test.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106300
+	* gcc.dg/analyzer/pipe-1.c: New test.
+	* gcc.dg/analyzer/pipe-glibc.c: New test.
+	* gcc.dg/analyzer/pipe-manpages.c: New test.
+	* gcc.dg/analyzer/pipe2-1.c: New test.
+
+2022-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107276
+	* g++.dg/cpp2a/decomp4.C: New test.
+
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107358
+	* c-c++-common/pr107358.c: New test.
+	* g++.dg/cpp1y/pr68180.C: Remove -fexcess-precision=fast from
+	dg-options.
+
+2022-10-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/106583
+	* gcc.target/aarch64/pr106583.c: Add new test.
+
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105774
+	* g++.dg/cpp1y/constexpr-105774.C: New test.
+
+2022-10-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	* gcc.dg/noreturn-4.c: Removed.
+	* g++.dg/freestanding-main.C: New test.
+	* g++.dg/freestanding-nonint-main.C: New test.
+	* gcc.dg/freestanding-main.c: New test.
+	* gcc.dg/freestanding-nonint-main.c: New test.
+
+2022-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107355
+	* gcc.dg/tree-ssa/pr107355.c: New test.
+
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/107236
+	* gfortran.dg/gomp/target-device-ancestor-6.f90: New test.
+
 2022-10-21  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100097

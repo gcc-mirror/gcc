@@ -1,3 +1,35 @@
+2022-10-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_open_device): Initialize
+	'ptx_dev->rev_data'.
+
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/icv-device.c (GOMP_DEVICE_NUM_VAR): Remove
+	'static' for this variable.
+	* config/nvptx/libgomp-nvptx.h: New file.
+	* config/nvptx/target.c: Include it.
+	(GOMP_ADDITIONAL_ICVS): Declare extern var.
+	(GOMP_REV_OFFLOAD_VAR): Declare var.
+	(GOMP_target_ext): Handle reverse offload.
+	* libgomp-plugin.h (GOMP_PLUGIN_target_rev): New prototype.
+	* libgomp-plugin.c (GOMP_PLUGIN_target_rev): New, call ...
+	* target.c (gomp_target_rev): ... this new stub function.
+	* libgomp.h (gomp_target_rev): Declare.
+	* libgomp.map (GOMP_PLUGIN_1.4): New; add GOMP_PLUGIN_target_rev.
+	* plugin/cuda-lib.def (cuMemHostAlloc): Add.
+	* plugin/plugin-nvptx.c: Include libgomp-nvptx.h.
+	(struct ptx_device): Add rev_data member.
+	(nvptx_open_device): Remove async_engines query, last used in
+	r10-304-g1f4c5b9b; add unified-address assert check.
+	(GOMP_OFFLOAD_get_num_devices): Claim unified address
+	support.
+	(GOMP_OFFLOAD_load_image): Free rev_fn_table if no
+	offload functions exist. Make offload var available
+	on host and device.
+	(rev_off_dev_to_host_cpy, rev_off_host_to_dev_cpy): New.
+	(GOMP_OFFLOAD_run): Handle reverse offload.
+
 2022-10-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR tree-optimization/107195
