@@ -50,6 +50,22 @@ is_basic_integer_type (TyTy::BaseType *type)
     }
 }
 
+static bool
+check_for_basic_integer_type (const std::string &intrinsic_str, Location locus,
+			      TyTy::BaseType *type)
+{
+  auto is_basic_integer = is_basic_integer_type (type);
+  if (!is_basic_integer)
+    {
+      rust_error_at (
+	locus,
+	"%s intrinsics can only be used with basic integer types (got %qs)",
+	intrinsic_str.c_str (), type->get_name ().c_str ());
+    }
+
+  return is_basic_integer;
+}
+
 static tree
 offset_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
@@ -652,7 +668,7 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
 }
 
 static std::string
-build_atomic_builtin_name (Location locus, tree operand_type)
+build_atomic_builtin_name (Location locus, TyTy::BaseType *operand_type)
 {
   static const std::map<std::string, std::string> allowed_types = {
     {"i8", "1"},    {"i16", "2"},   {"i32", "4"},   {"i64", "8"},
@@ -665,7 +681,7 @@ build_atomic_builtin_name (Location locus, tree operand_type)
 
   std::string result = "atomic_store_";
 
-  auto type_name = std::string (TYPE_NAME_STRING (operand_type));
+  auto type_name = operand_type->get_name ();
   if (type_name == "usize" || type_name == "isize")
     {
       rust_sorry_at (
@@ -673,21 +689,10 @@ build_atomic_builtin_name (Location locus, tree operand_type)
       return "";
     }
 
-  // FIXME: Can we have a better looking name here?
-  // Instead of `<crate>::<module>::<type>`?
-  // Maybe instead of giving the tree node, pass the resolved Tyty before it
-  // gets compiled?
-  //
-  // Or should we perform this check somwhere else in the compiler?
   auto type_size_str = allowed_types.find (type_name);
-  if (type_size_str == allowed_types.end ())
-    {
-      rust_error_at (locus,
-		     "atomic intrinsics are only available for basic integer "
-		     "types: got type %qs",
-		     type_name.c_str ());
-      return "";
-    }
+
+  if (!check_for_basic_integer_type ("atomic", locus, operand_type))
+    return "";
 
   result += type_size_str->second;
 
@@ -726,8 +731,11 @@ atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   auto value = ctx->get_backend ()->var_expression (param_vars[1], Location ());
   auto memorder = make_unsigned_long_tree (ctx, ordering);
 
+  auto monomorphized_type
+    = fntype->get_substs ()[0].get_param_ty ()->resolve ();
+
   auto builtin_name
-    = build_atomic_builtin_name (fntype->get_locus (), TREE_TYPE (types[0]));
+    = build_atomic_builtin_name (fntype->get_locus (), monomorphized_type);
   if (builtin_name.empty ())
     return error_mark_node;
 
@@ -781,11 +789,9 @@ unchecked_op_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
 
   auto *monomorphized_type
     = fntype->get_substs ().at (0).get_param_ty ()->resolve ();
-  if (!is_basic_integer_type (monomorphized_type))
-    rust_error_at (fntype->get_locus (),
-		   "unchecked operation intrinsics can only be used with "
-		   "basic integer types (got %qs)",
-		   monomorphized_type->get_name ().c_str ());
+
+  check_for_basic_integer_type ("unchecked operation", fntype->get_locus (),
+				monomorphized_type);
 
   auto expr = build2 (op, TREE_TYPE (x), x, y);
   auto return_statement
