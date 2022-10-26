@@ -886,8 +886,12 @@ function_and_variable_visibility (bool whole_program)
 	      && vnode->ref_list.referring.length ())
 	    {
 	      enum tls_model new_model = decl_default_tls_model (decl);
-	      gcc_checking_assert (new_model >= decl_tls_model (decl));
-	      set_decl_tls_model (decl, new_model);
+	      STATIC_ASSERT (TLS_MODEL_GLOBAL_DYNAMIC < TLS_MODEL_LOCAL_DYNAMIC);
+	      STATIC_ASSERT (TLS_MODEL_INITIAL_EXEC < TLS_MODEL_LOCAL_EXEC);
+	      /* We'd prefer to assert that recomputed model is not weaker than
+		 what the front-end assigned, but cannot: see PR 107353.  */
+	      if (new_model >= decl_tls_model (decl))
+		set_decl_tls_model (decl, new_model);
 	    }
 	}
     }
