@@ -43,7 +43,7 @@ transmute_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
 rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
-wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
+wrapping_op_handler_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
 copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype);
 
@@ -67,21 +67,14 @@ rotate_right_handler (Context *ctx, TyTy::FnType *fntype)
   return rotate_handler (ctx, fntype, RROTATE_EXPR);
 }
 
-static inline tree
-wrapping_add_handler (Context *ctx, TyTy::FnType *fntype)
+const static std::function<tree (Context *, TyTy::FnType *)>
+wrapping_op_handler (tree_code op)
 {
-  return wrapping_op_handler (ctx, fntype, PLUS_EXPR);
+  return [op] (Context *ctx, TyTy::FnType *fntype) {
+    return wrapping_op_handler_inner (ctx, fntype, op);
+  };
 }
-static inline tree
-wrapping_sub_handler (Context *ctx, TyTy::FnType *fntype)
-{
-  return wrapping_op_handler (ctx, fntype, MINUS_EXPR);
-}
-static inline tree
-wrapping_mul_handler (Context *ctx, TyTy::FnType *fntype)
-{
-  return wrapping_op_handler (ctx, fntype, MULT_EXPR);
-}
+
 static inline tree
 prefetch_read_data (Context *ctx, TyTy::FnType *fntype)
 {
@@ -121,9 +114,9 @@ static const std::map<std::string,
     {"transmute", transmute_handler},
     {"rotate_left", rotate_left_handler},
     {"rotate_right", rotate_right_handler},
-    {"wrapping_add", wrapping_add_handler},
-    {"wrapping_sub", wrapping_sub_handler},
-    {"wrapping_mul", wrapping_mul_handler},
+    {"wrapping_add", wrapping_op_handler (PLUS_EXPR)},
+    {"wrapping_sub", wrapping_op_handler (MINUS_EXPR)},
+    {"wrapping_mul", wrapping_op_handler (MULT_EXPR)},
     {"copy_nonoverlapping", copy_nonoverlapping_handler},
     {"prefetch_read_data", prefetch_read_data},
     {"prefetch_write_data", prefetch_write_data},
@@ -459,7 +452,7 @@ rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
  * pub fn wrapping_{add, sub, mul}<T>(lhs: T, rhs: T) -> T;
  */
 static tree
-wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
+wrapping_op_handler_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
 {
   // wrapping_<op> intrinsics have two parameter
   rust_assert (fntype->get_params ().size () == 2);
