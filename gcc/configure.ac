@@ -887,6 +887,9 @@ if test x${enable_multiarch} = xauto; then
     enable_multiarch=no
   fi
 fi
+if test x${enable_multiarch} = xyes; then
+  AC_DEFINE(ENABLE_MULTIARCH, 1)
+fi
 AC_MSG_CHECKING(for multiarch configuration)
 AC_SUBST(enable_multiarch)
 AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)

@@ -5191,6 +5191,8 @@ cp_build_binary_op (const op_location_t &location,
 
   orig_type0 = type0 = TREE_TYPE (op0);
   orig_type1 = type1 = TREE_TYPE (op1);
+  tree non_ep_op0 = op0;
+  tree non_ep_op1 = op1;
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -5303,8 +5305,9 @@ cp_build_binary_op (const op_location_t &location,
   if ((gnu_vector_type_p (type0) && code1 != VECTOR_TYPE)
       || (gnu_vector_type_p (type1) && code0 != VECTOR_TYPE))
     {
-      enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1,
-						     complain & tf_error);
+      enum stv_conv convert_flag
+	= scalar_to_vector (location, code, non_ep_op0, non_ep_op1,
+			    complain & tf_error);
 
       switch (convert_flag)
         {
@@ -10726,7 +10729,12 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
   if (DECL_CONTEXT (retval) != current_function_decl)
     return NULL_TREE;
   if (return_p)
-    return set_implicit_rvalue_p (move (expr));
+    {
+      expr = move (expr);
+      if (expr == error_mark_node)
+	return NULL_TREE;
+      return set_implicit_rvalue_p (expr);
+    }
 
   /* if the operand of a throw-expression is a (possibly parenthesized)
      id-expression that names an implicitly movable entity whose scope does not

@@ -2216,6 +2216,7 @@ expand_simple_operations (tree expr, tree stop, hash_map<tree, tree> &cache)
 
     case PLUS_EXPR:
     case MINUS_EXPR:
+    case MULT_EXPR:
       if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (expr))
 	  && TYPE_OVERFLOW_TRAPS (TREE_TYPE (expr)))
 	return expr;

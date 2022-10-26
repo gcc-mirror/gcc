@@ -1,6 +1,6 @@
 // PR c++/68180
 // { dg-do compile { target c++14 } }
-// { dg-additional-options "-Wno-psabi -fexcess-precision=fast" }
+// { dg-additional-options "-Wno-psabi" }
 
 typedef float __attribute__( ( vector_size( 16 ) ) ) float32x4_t;
 constexpr float32x4_t fill(float x) {

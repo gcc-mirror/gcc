@@ -152,7 +152,14 @@
   (const_string "unknown"))
 
 ;; Main data type used by the insn
-(define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,HF,SF,DF,TF"
+(define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,HF,SF,DF,TF,
+  VNx1BI,VNx2BI,VNx4BI,VNx8BI,VNx16BI,VNx32BI,VNx64BI,
+  VNx1QI,VNx2QI,VNx4QI,VNx8QI,VNx16QI,VNx32QI,VNx64QI,
+  VNx1HI,VNx2HI,VNx4HI,VNx8HI,VNx16HI,VNx32HI,
+  VNx1SI,VNx2SI,VNx4SI,VNx8SI,VNx16SI,
+  VNx1DI,VNx2DI,VNx4DI,VNx8DI,
+  VNx1SF,VNx2SF,VNx4SF,VNx8SF,VNx16SF,
+  VNx1DF,VNx2DF,VNx4DF,VNx8DF"
   (const_string "unknown"))
 
 ;; True if the main data type is twice the size of a word.

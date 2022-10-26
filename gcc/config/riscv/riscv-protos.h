@@ -75,7 +75,8 @@ extern bool riscv_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx riscv_gen_gpr_save_insn (struct riscv_frame_info *);
 extern bool riscv_gpr_save_operation_p (rtx);
 extern void riscv_reinit (void);
-extern bool riscv_v_ext_enabled_vector_mode_p (machine_mode);
+extern poly_uint64 riscv_regmode_natural_size (machine_mode);
+extern bool riscv_v_ext_vector_mode_p (machine_mode);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
@@ -126,6 +127,19 @@ extern bool verify_type_context (location_t, type_context_kind, const_tree, bool
 extern void handle_pragma_vector (void);
 extern tree builtin_decl (unsigned, bool);
 extern rtx expand_builtin (unsigned int, tree, rtx);
+extern bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+extern bool legitimize_move (rtx, rtx, machine_mode);
+enum tail_policy
+{
+  TAIL_UNDISTURBED = 0,
+  TAIL_AGNOSTIC = 1,
+};
+
+enum mask_policy
+{
+  MASK_UNDISTURBED = 0,
+  MASK_AGNOSTIC = 1,
+};
 }
 
 /* We classify builtin types into two classes:

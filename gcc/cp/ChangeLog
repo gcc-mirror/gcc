@@ -1,3 +1,123 @@
+2022-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.cc (synthesize_implicit_template_parm): Fix thinko about
+	mark the new parm DECL_VIRTUAL_P.  Avoid unneccessary tree_last call.
+
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (resolve_function_concept_overload): Explicitly
+	pass complain=tf_none to coerce_template_parms.
+	(resolve_concept_check): Likewise.
+	(normalize_concept_check): Likewise.
+	* cp-tree.h (coerce_template_parms): Declare the main overload
+	and default its last parameter to true.  Remove wrapper overloads.
+	* pt.cc (determine_specialization): Adjust calls to
+	coerce_template_parms and coerce_innermost_template_parms after
+	removing their last parameter.
+	(coerce_template_args_for_ttp): Likewise.
+	(coerce_ttp_args_for_tta): Likewise.
+	(coerce_template_template_parms): Likewise.
+	(coerce_template_parms): Remove use_default_args parameter and
+	adjust function comment.  Document default argument.  Remove
+	wrapper overloads.  No longer static.
+	(coerce_innermost_template_parms): Remove use_default_args
+	parameter.  Default require_all_args to true.
+	(lookup_template_class): As with determine_specialization.
+	(finish_template_variable): Likewise.
+	(tsubst_decl): Likewise.
+	(instantiate_alias_template): Likewise.
+	(fn_type_unification): Likewise.
+	(resolve_overloaded_unification): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(get_partial_spec_bindings): Likewise.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (find_failing_clause_r): Re-add the call to
+	contextual_conv_bool.
+
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106848
+	PR c++/102600
+	* module.cc (trees_out::core_vals): Stream TYPE_MAX_VALUE and
+	TYPE_MIN_VALUE of ENUMERAL_TYPE.
+	(trees_in::core_vals): Likewise.
+	(trees_out::write_enum_def): Don't stream them here.
+	(trees_in::read_enum_def): Likewise.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (class constexpr_global_ctx): Add modifiable field,
+	get_value, get_value_ptr, put_value, remove_value, flush_modifiable
+	member functions.
+	(class modifiable_tracker): New.
+	(cxx_eval_internal_function): Use it.
+	(diagnose_failing_condition): Strip CLEANUP_POINT_EXPR.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (fold_operand): New function.
+	(find_failing_clause_r): Add const.
+	(find_failing_clause): Add const.
+	(diagnose_failing_condition): Add ctx parameter.
+	(cxx_eval_internal_function): Pass it.
+	* semantics.cc (diagnose_failing_condition): Move to constexpr.cc.
+	* cp-tree.h: Adjust.
+
+2022-10-24  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.cc (fold_builtin_source_location)
+	* vtable-class-hierarchy.cc (register_all_pairs): Simplify calls to
+	build_string_literal.
+	(build_string_from_id): Remove.
+
+2022-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107276
+	* typeck.cc (treat_lvalue_as_rvalue_p): Check the return value of move.
+
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107358
+	* typeck.cc (cp_build_binary_op): Pass operands before excess precision
+	promotions to scalar_to_vector call.
+
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105774
+	* constexpr.cc (cxx_eval_increment_expression): For signed types
+	that promote to int, evaluate PLUS_EXPR or MINUS_EXPR in int type.
+
+2022-10-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	* cp-tree.h (DECL_MAIN_P): Move most logic, besides the hosted
+	check, from here...
+	(DECL_MAIN_ANY_P): ... to here, so that it can be reused ...
+	(DECL_MAIN_FREESTANDING_P): ... here, with an additional
+	constraint on (hosted OR return type == int)
+	* decl.cc (finish_function): Use DECL_MAIN_FREESTANDING_P
+	instead of DECL_MAIN_P, to loosen the hosted requirement, but
+	check noreturn, before adding implicit returns.
+
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107295
+	* constexpr.cc (reduced_constant_expression_p) <case CONSTRUCTOR>:
+	Return false for VECTOR_TYPE CONSTRUCTORs even without
+	CONSTRUCTOR_NO_CLEARING set on them.
+	(cxx_eval_bare_aggregate): If constant but !changed, fold before
+	returning VECTOR_TYPE_P CONSTRUCTOR.
+	(cxx_eval_constant_expression) <case CONSTRUCTOR>: Don't fold
+	TREE_CONSTANT CONSTRUCTOR, just return it.
+
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106863
+	* semantics.cc (finish_compound_literal): For void{}, if
+	processing_template_decl return a COMPOUND_LITERAL_P
+	CONSTRUCTOR rather than void_node.
+
 2022-10-20  Patrick Palka  <ppalka@redhat.com>
 
 	* pt.cc (lookup_and_finish_template_variable): Don't

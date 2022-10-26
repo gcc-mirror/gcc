@@ -1523,6 +1523,25 @@ systems that support conditional traps).
 Division by zero checks use the break instruction.
 @end table
 
+@item --with-compact-branches=@var{policy}
+Specify how the compiler should generate branch instructions.
+This option is only supported on the MIPS target.
+The possibilities for @var{type} are:
+@table @code
+@item optimal
+Cause a delay slot branch to be used if one is available in the
+current ISA and the delay slot is successfully filled. If the delay slot
+is not filled, a compact branch will be chosen if one is available.
+@item never
+Ensures that compact branch instructions will never be generated.
+@item always
+Ensures that a compact branch instruction will be generated if available.
+If a compact branch instruction is not available,
+a delay slot form of the branch will be used instead.
+This option is supported from MIPS Release 6 onwards.
+For pre-R6/microMIPS/MIPS16, this option is just same as never/optimal.
+@end table
+
 @c If you make --with-llsc the default for additional targets,
 @c update the --with-llsc description in the MIPS section below.
 

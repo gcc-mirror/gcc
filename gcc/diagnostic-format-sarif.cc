@@ -595,7 +595,7 @@ sarif_builder::make_location_object (const diagnostic_event &event)
 json::object *
 sarif_builder::maybe_make_physical_location_object (location_t loc)
 {
-  if (loc <= BUILTINS_LOCATION)
+  if (loc <= BUILTINS_LOCATION || LOCATION_FILE (loc) == NULL)
     return NULL;
 
   json::object *phys_loc_obj = new json::object ();

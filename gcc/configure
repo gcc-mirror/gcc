@@ -7842,6 +7842,10 @@ if test x${enable_multiarch} = xauto; then
     enable_multiarch=no
   fi
 fi
+if test x${enable_multiarch} = xyes; then
+  $as_echo "#define ENABLE_MULTIARCH 1" >>confdefs.h
+
+fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch configuration" >&5
 $as_echo_n "checking for multiarch configuration... " >&6; }
 
@@ -19714,7 +19718,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19717 "configure"
+#line 19721 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19820,7 +19824,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19823 "configure"
+#line 19827 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

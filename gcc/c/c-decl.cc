@@ -10542,7 +10542,7 @@ finish_function (location_t end_loc)
   if (DECL_RESULT (fndecl) && DECL_RESULT (fndecl) != error_mark_node)
     DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
-  if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted
+  if (MAIN_NAME_P (DECL_NAME (fndecl)) && !TREE_THIS_VOLATILE (fndecl)
       && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
       == integer_type_node && flag_isoc99)
     {

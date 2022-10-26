@@ -9521,10 +9521,10 @@ fold_builtin_FILE (location_t loc)
 	 __FILE__ macro so it appears appropriate to use the same file prefix
 	 mappings.  */
       fname = remap_macro_filename (fname);
-    return build_string_literal (strlen (fname) + 1, fname);
+      return build_string_literal (fname);
     }
 
-  return build_string_literal (1, "");
+  return build_string_literal ("");
 }
 
 /* Fold a call to __builtin_FUNCTION to a constant string.  */
@@ -9537,7 +9537,7 @@ fold_builtin_FUNCTION ()
   if (current_function_decl)
     name = lang_hooks.decl_printable_name (current_function_decl, 0);
 
-  return build_string_literal (strlen (name) + 1, name);
+  return build_string_literal (name);
 }
 
 /* Fold a call to __builtin_LINE to an integer constant.  */

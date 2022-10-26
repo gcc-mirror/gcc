@@ -1,3 +1,8 @@
+2022-10-23  LIU Hao  <lh_mouse@126.com>
+
+	* config/i386/gthr-mcf.h: Include 'gthr_libobjc.h' when building
+	libobjc, instead of 'gthr.h'
+
 2022-10-19  LIU Hao  <lh_mouse@126.com>
 
 	* config.host: Add new cases for `mcf` thread model

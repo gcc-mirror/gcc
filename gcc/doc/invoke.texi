@@ -10421,6 +10421,7 @@ of the following functions for working with file descriptors:
 @item @code{close}
 @item @code{creat}
 @item @code{dup}, @code{dup2} and @code{dup3}
+@item @code{pipe}, and @code{pipe2}
 @item @code{read}
 @item @code{write}
 @end itemize
@@ -27048,11 +27049,13 @@ The @option{-mcompact-branches=never} option ensures that compact branch
 instructions will never be generated.
 
 The @option{-mcompact-branches=always} option ensures that a compact
-branch instruction will be generated if available.  If a compact branch
-instruction is not available, a delay slot form of the branch will be
-used instead.
+branch instruction will be generated if available for MIPS Release 6 onwards.
+If a compact branch instruction is not available (or pre-R6),
+a delay slot form of the branch will be used instead.
 
-This option is supported from MIPS Release 6 onwards.
+If it is used for MIPS16/microMIPS targets, it will be just ignored now.
+The behaviour for MIPS16/microMIPS may change in future,
+since they do have some compact branch instructions.
 
 The @option{-mcompact-branches=optimal} option will cause a delay slot
 branch to be used if one is available in the current ISA and the delay

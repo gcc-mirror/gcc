@@ -7075,7 +7075,10 @@ proc check_effective_target_vect_long_long { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+	     || ([istarget powerpc*-*-*]
+		 && ![istarget powerpc-*-linux*paired*]
+		 && [check_effective_target_has_arch_pwr8]) }}]
 }
 
 

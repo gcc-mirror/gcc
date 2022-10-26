@@ -356,6 +356,7 @@ class region_model
   void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
   void impl_call_memset (const call_details &cd);
+  void impl_call_pipe (const call_details &cd);
   void impl_call_putenv (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strchr (const call_details &cd);
@@ -373,6 +374,9 @@ class region_model
 
   const svalue *maybe_get_copy_bounds (const region *src_reg,
 				       const svalue *num_bytes_sval);
+  void update_for_int_cst_return (const call_details &cd,
+				  int retval,
+				  bool unmergeable);
   void update_for_zero_return (const call_details &cd,
 			       bool unmergeable);
   void update_for_nonzero_return (const call_details &cd);
@@ -538,6 +542,9 @@ class region_model
 				      const svalue *copied_sval,
 				      const region *src_reg,
 				      region_model_context *ctxt);
+
+  /* Implemented in sm-fd.cc  */
+  void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);
 
   /* Implemented in sm-malloc.cc  */
   void on_realloc_with_move (const call_details &cd,
@@ -730,15 +737,33 @@ class region_model_context
 
   virtual const extrinsic_state *get_ext_state () const = 0;
 
-  /* Hook for clients to access the "malloc" state machine in
+  /* Hook for clients to access the a specific state machine in
      any underlying program_state.  */
-  virtual bool get_malloc_map (sm_state_map **out_smap,
-			       const state_machine **out_sm,
-			       unsigned *out_sm_idx) = 0;
-  /* Likewise for the "taint" state machine.  */
-  virtual bool get_taint_map (sm_state_map **out_smap,
-			      const state_machine **out_sm,
-			      unsigned *out_sm_idx) = 0;
+  virtual bool get_state_map_by_name (const char *name,
+				      sm_state_map **out_smap,
+				      const state_machine **out_sm,
+				      unsigned *out_sm_idx) = 0;
+
+  /* Precanned ways for clients to access specific state machines.  */
+  bool get_fd_map (sm_state_map **out_smap,
+		   const state_machine **out_sm,
+		   unsigned *out_sm_idx)
+  {
+    return get_state_map_by_name ("file-descriptor", out_smap, out_sm,
+				  out_sm_idx);
+  }
+  bool get_malloc_map (sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx)
+  {
+    return get_state_map_by_name ("malloc", out_smap, out_sm, out_sm_idx);
+  }
+  bool get_taint_map (sm_state_map **out_smap,
+		      const state_machine **out_sm,
+		      unsigned *out_sm_idx)
+  {
+    return get_state_map_by_name ("taint", out_smap, out_sm, out_sm_idx);
+  }
 
   /* Get the current statement, if any.  */
   virtual const gimple *get_stmt () const = 0;
@@ -785,15 +810,10 @@ public:
 
   const extrinsic_state *get_ext_state () const override { return NULL; }
 
-  bool get_malloc_map (sm_state_map **,
-		       const state_machine **,
-		       unsigned *) override
-  {
-    return false;
-  }
-  bool get_taint_map (sm_state_map **,
-		      const state_machine **,
-		      unsigned *) override
+  bool get_state_map_by_name (const char *,
+			      sm_state_map **,
+			      const state_machine **,
+			      unsigned *) override
   {
     return false;
   }
@@ -912,18 +932,12 @@ class region_model_context_decorator : public region_model_context
     return m_inner->get_ext_state ();
   }
 
-  bool get_malloc_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) override
+  bool get_state_map_by_name (const char *name,
+			      sm_state_map **out_smap,
+			      const state_machine **out_sm,
+			      unsigned *out_sm_idx) override
   {
-    return m_inner->get_malloc_map (out_smap, out_sm, out_sm_idx);
-  }
-
-  bool get_taint_map (sm_state_map **out_smap,
-		      const state_machine **out_sm,
-		      unsigned *out_sm_idx) override
-  {
-    return m_inner->get_taint_map (out_smap, out_sm, out_sm_idx);
+    return m_inner->get_state_map_by_name (name, out_smap, out_sm, out_sm_idx);
   }
 
   const gimple *get_stmt () const override

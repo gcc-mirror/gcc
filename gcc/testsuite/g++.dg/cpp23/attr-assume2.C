@@ -26,7 +26,7 @@ f2 (int x)
 {
 #if __cpp_constexpr >= 201304L
   [[assume (x == 42)]];			// { dg-error "failed 'assume' attribute assumption" "" { target c++14 } }
-#endif					// { dg-message "the comparison reduces to '\\\(x == 42\\\)'" "" { target c++14 } .-1 }
+#endif					// { dg-message "the comparison reduces to '\\\(44 == 42\\\)'" "" { target c++14 } .-1 }
   return x;
 }
 
@@ -76,7 +76,7 @@ f7 (int x, int y, int z, int w)
 {
 #if __cpp_constexpr >= 201304L
   [[assume (x == 42 && y == 43 && z == 44 && w == 45)]];	// { dg-error "failed 'assume' attribute assumption" "" { target c++14 } }
-#endif					// { dg-message "the comparison reduces to '\\\(z == 44\\\)'" "" { target c++14 } .-1 }
+#endif					// { dg-message "the comparison reduces to '\\\(45 == 44\\\)'" "" { target c++14 } .-1 }
   return x;
 }
 

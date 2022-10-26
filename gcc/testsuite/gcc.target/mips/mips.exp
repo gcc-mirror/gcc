@@ -1167,10 +1167,8 @@ proc mips-dg-options { args } {
 	# We need a revision 6 or better ISA for:
 	#
 	#   - When the LSA instruction is required
-	#   - When only using compact branches
 	if { $isa_rev < 6
-	     && ([mips_have_test_option_p options "HAS_LSA"]
-		 || [mips_have_test_option_p options "-mcompact-branches=always"]) } {
+	     && ([mips_have_test_option_p options "HAS_LSA"]) } {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32r6"
 	    } else {

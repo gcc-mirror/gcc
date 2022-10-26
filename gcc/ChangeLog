@@ -1,3 +1,622 @@
+2022-10-25  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.cc (get_combined_location): Include discriminator in the
+	returned combined location.
+	(read_function_instance): Read discriminators from profiles.
+
+2022-10-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107304
+	* expr.cc (get_inner_reference): Always use TYPE_MODE for vector
+	field with vector raw mode.
+
+2022-10-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (CCEITHER): Delete.
+	(CCANY): New.
+	(un): Delete.
+	(isel_<un>signed_<GPR:mode>): Rename to...
+	(isel_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(*isel_reversed_<un>signed_<GPR:mode>): Rename to...
+	(*isel_reversed_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(setbc_<un>signed_<GPR:mode>): Rename to...
+	(setbc_<CCANY:mode>_<GPR:mode>C): ... this.  Adjust."
+	(*setbcr_<un>signed_<GPR:mode>): Rename to ...
+	(*setbcr_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(*setnbc_<un>signed_<GPR:mode>): Rename to ...
+	(*setnbc_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(*setnbcr_<un>signed_<GPR:mode>): Rename to ...
+	(*setnbcr_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(eq<mode>3 for GPR): Adjust.
+	(ne<mode>3 for GPR): Adjust.
+	* config/rs6000/rs6000-string.cc (do_isel): Adjust.
+	* config/rs6000/rs6000.cc (rs6000_emit_int_cmove): Adjust.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107176
+	PR tree-optimization/66375
+	PR tree-optimization/42512
+	* tree-scalar-evolution.cc (follow_ssa_edge_expr): Revert
+	the PR66375 fix, do not not associate PLUS_EXPR to be able
+	to use tail-recursion.
+	(follow_ssa_edge_binary): Likewise.
+	(interpret_loop_phi): Revert PR42512 fix, do not throw
+	away analyze_evolution_in_loop result after the fact.
+	(follow_ssa_edge_expr): When reaching halting_phi initalize
+	the evolution to the symbolic value of the PHI result.
+	(add_to_evolution_1): When adding the first evolution verify
+	we can handle the expression wrapping the symbolic evolution
+	and replace that in full using the initial condition.
+	(class scev_dfs): New, contains ...
+	(follow_ssa_edge_expr, follow_ssa_edge_binary,
+	follow_ssa_edge_in_condition_phi_branch,
+	follow_ssa_edge_in_condition_phi,
+	follow_ssa_edge_inner_loop_phi,
+	add_to_evolution, add_to_evolution_1): ... these with
+	loop and halting_phi arguments in class data.
+	(scev_dfs::get_ev): New toplevel DFS entry, start with
+	a chrec_dont_know evolution.
+	(analyze_evolution_in_loop): Use scev_dfs.
+
+2022-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* profile.cc (branch_prob): Be prepared for ignored functions with
+	DECL_SOURCE_LOCATION set to UNKNOWN_LOCATION.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.cc (follow_ssa_edge_expr): Move
+	STRIP_USELESS_TYPE_CONVERSIONS to where it matters.
+
+2022-10-25  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table): Use
+	CPU_ZNVER3 for znver4.
+	* config/i386/znver.md: Remove znver4 reservations.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (gimple_boolify): Fix comment typos, prduce -> produce
+	and There -> These.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107368
+	* gimplify.cc (gimplify_call_expr): For complex IFN_ASSUME
+	conditions call gimple_boolify on the condition.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config.gcc: add -with-compact-branches=policy build option.
+	* doc/install.texi: Likewise.
+	* config/mips/mips.h: Likewise.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.cc (mips_option_override): not trigger error
+	for compact-branches=always for pre-R6.
+	* config/mips/mips.h (TARGET_RTP_PIC): not trigger error for
+	compact-branches=always for pre-R6.
+	(TARGET_CB_NEVER): Likewise.
+	(TARGET_CB_ALWAYS): Likewise.
+	(struct mips_cpu_info): define macros for compact branch policy.
+	* doc/invoke.texi: Document "always" with pre-R6.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107369
+	* gimplify.cc (gimplify_call_expr): If seen_error, handle complex
+	IFN_ASSUME the same as for -O0.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* configure.ac: AC_DEFINE(ENABLE_MULTIARCH, 1)
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	* config/mips/mips.h: don't define STANDARD_STARTFILE_PREFIX_1
+	  if ENABLE_MULTIARCH is defined.
+	* config/mips/t-linux64: define correct multiarch path when
+	  multiarch is enabled.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100756
+	* tree-ssa-loop-niter.cc (expand_simple_operations): Also
+	expand multiplications by invariants.
+
+2022-10-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/107338
+	* tree-vect-patterns.cc (vect_recog_bitfield_ref_pattern): Move
+	shfit_n calculation before the adjustments for widening loads.
+
+2022-10-25  Martin Liska  <mliska@suse.cz>
+
+	* common/config/riscv/riscv-common.cc
+	  (riscv_get_valid_option_values): Get out of ifdef.
+
+2022-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR target/107364
+	* common/config/i386/i386-cpuinfo.h (enum processor_vendor):
+	Fix pedantic warning.
+
+2022-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR analyzer/107366
+	* diagnostic-format-sarif.cc
+	(sarif_builder::maybe_make_physical_location_object): Gracefully
+	reject locations with NULL filename.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106300
+	* doc/invoke.texi (Static Analyzer Options): Add "pipe" and
+	"pipe2" to the list of functions the analyzer has hardcoded
+	knowledge of.
+
+2022-10-24  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (build_string_literal): New one-argument overloads that
+	take tree (identifier) and const char *.
+	* builtins.cc (fold_builtin_FILE)
+	(fold_builtin_FUNCTION)
+	* gimplify.cc (gimple_add_init_for_auto_var)
+	* vtable-verify.cc (verify_bb_vtables): Simplify calls.
+
+2022-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR target/107364
+	* common/config/i386/i386-cpuinfo.h (enum processor_vendor):
+	  Reorder enum values as BUILTIN_VENDOR_MAX should not point
+	  in the middle of the valid enum values.
+
+2022-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107276
+	* tree.cc (maybe_wrap_with_location): Don't create a location wrapper
+	when the type is erroneous.
+
+2022-10-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/106583
+	* config/aarch64/aarch64.cc (aarch64_internal_mov_immediate)
+	Add support for a bitmask immediate with 2 MOVKs.
+	(aarch64_check_bitmask): New function after refactorization.
+	(aarch64_bitmask_imm): Simplify replication of small modes.
+	Split function into 64-bit only version for efficiency.
+	(aarch64_move_imm): Move near other immediate functions.
+	(aarch64_uimm12_shift): Likewise.
+	(aarch64_clamp_to_uimm12_shift): Likewise.
+	(aarch64_movk_shift): Likewise.
+	(aarch64_replicate_bitmask_imm): Likewise.
+	(aarch64_and_split_imm1): Likewise.
+	(aarch64_and_split_imm2): Likewise.
+	(aarch64_and_bitmask_imm): Likewise.
+	(aarch64_movw_imm): Likewise.
+
+2022-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107355
+	* range-op-float.cc (foperator_abs::op1_range): Handle NAN.
+
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/107236
+	* omp-expand.cc (expand_omp_target): Set calls_declare_variant_alt
+	in DECL_CONTEXT and not to cfun->decl.
+	* cgraphclones.cc (cgraph_node::create_clone): Copy also the
+	node's calls_declare_variant_alt value.
+
+2022-10-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_tunes): New.
+	(riscv_get_valid_option_values): New.
+	(TARGET_GET_VALID_OPTION_VALUES): New.
+	* config/riscv/riscv-cores.def (RISCV_TUNE): New, define options
+	for tune here.
+	(RISCV_CORE): Fix comment.
+	* config/riscv/riscv.cc (riscv_tune_info_table): Move definition to
+	riscv-cores.def.
+
+2022-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107365
+	* value-range.cc (frange::verify_range): Predicate NAN check in
+	VARYING range on HONOR_NANS instead of flag_finite_math_only.
+	(range_tests_floats): Same.
+	(range_tests_floats_various): New.
+	(range_tests): Call range_tests_floats_various.
+
+2022-10-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* lto-wrapper.cc: Quote paths in makefile.
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Support (set (mem) (const_poly_int)).
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Replace CONSTEXPR
+	with constexpr throughout.
+	* config/riscv/riscv-vector-builtins-shapes.cc (SHAPE): Likewise.
+	* config/riscv/riscv-vector-builtins.cc
+	(struct registered_function_hasher): Likewise.
+	* config/riscv/riscv-vector-builtins.h (struct rvv_arg_type_info):
+	Likewise.
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-switch.def (ENTRY): Remove unused TI/TF vector modes.
+
+2022-10-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.h (REG_CLASS_CONTENTS): Fix ALL_REGS.
+
+2022-10-22  Michael Eager  <eager@eagercon.com>
+
+	* config/microblaze/microblaze.cc
+	(microblaze_legitimize_address): Initialize 'reg' to NULL, check for NULL.
+	(microblaze_address_insns): Replace abort() with gcc_unreachable().
+	(print_operand_address): Same.
+	(microblaze_expand_move): Initialize 'p1' to NULL, check for NULL.
+	(get_branch_target): Replace abort() with gcc_unreachable().
+
+2022-10-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (range_tests_floats): Predicate [-Inf, +Inf] test
+	with !flag_finite_math_only.
+
+2022-10-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_conditional_register_usage):
+	Remove register A0 from FIXED_REGS if the CALL0 ABI.
+	(xtensa_expand_epilogue): Change to emit '(use (reg:SI A0_REG))'
+	unconditionally after restoring callee-saved registers for
+	sibling-call functions, in order to prevent misleading that
+	register A0 is free to use.
+
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107322
+	* config/i386/i386-expand.cc (ix86_prepare_fp_compare_args): For
+	BFmode comparisons promote arguments to SFmode and recurse.
+	(ix86_expand_int_movcc, ix86_expand_fp_movcc): Return false early
+	if comparison operands are BFmode and operands[1] is not
+	ix86_fp_comparison_operator.
+
+2022-10-21  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Recognize znver4.
+	* common/config/i386/i386-common.cc (processor_names): Add znver4.
+	(processor_alias_table): Add znver4 and modularize old znvers.
+	* common/config/i386/i386-cpuinfo.h (processor_subtypes):
+	AMDFAM19H_ZNVER4.
+	* config.gcc (x86_64-*-* |...): Likewise.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Let
+	-march=native recognize znver4 cpus.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add znver4.
+	* config/i386/i386-options.cc (m_ZNVER4): New definition.
+	(m_ZNVER): Include m_ZNVER4.
+	(processor_cost_table): Add znver4.
+	* config/i386/i386.cc (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (processor_type): Add PROCESSOR_ZNVER4.
+	(PTA_ZNVER1): New definition.
+	(PTA_ZNVER2): Likewise.
+	(PTA_ZNVER3): Likewise.
+	(PTA_ZNVER4): Likewise.
+	* config/i386/i386.md (define_attr "cpu"): Add znver4 and rename
+	md file.
+	* config/i386/x86-tune-costs.h (znver4_cost): New definition.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add znver4.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/znver1.md: Rename to znver.md.
+	* config/i386/znver.md: Add new reservations for znver4.
+	* doc/extend.texi: Add details about znver4.
+	* doc/invoke.texi: Likewise.
+
+2022-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107323
+	* tree-loop-distribution.cc (pg_unmark_merged_alias_ddrs):
+	New function.
+	(loop_distribution::break_alias_scc_partitions): Revert
+	postorder save/restore from the PR94125 fix.  Instead
+	make sure to not ignore edges from SCCs we are going to
+	merge.
+
+2022-10-21  Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv.md: Add atomic type attribute.
+	* config/riscv/sync.md: Add atomic type for atomic instructions.
+
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54346
+	* match.pd ((vec_perm (vec_perm@0 @1 @2 VECTOR_CST) @0 VECTOR_CST)):
+	Optimize nested VEC_PERM_EXPRs even if target can't handle the
+	new one provided we don't increase number of VEC_PERM_EXPRs the
+	target can't handle.
+
+2022-10-21  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc: Add riscv-vector-builtins-bases.o and riscv-vector-builtins-shapes.o
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_I_OPS): New macro.
+	(DEF_RVV_FUNCTION): Ditto.
+	(handle_pragma_vector): Add intrinsic framework.
+	* config/riscv/riscv.cc (riscv_print_operand): Add operand print for vsetvl/vsetvlmax.
+	* config/riscv/riscv.md: include vector.md.
+	* config/riscv/t-riscv: Add riscv-vector-builtins-bases.o and riscv-vector-builtins-shapes.o
+	* config/riscv/riscv-vector-builtins-bases.cc: New file.
+	* config/riscv/riscv-vector-builtins-bases.h: New file.
+	* config/riscv/riscv-vector-builtins-functions.def: New file.
+	* config/riscv/riscv-vector-builtins-shapes.cc: New file.
+	* config/riscv/riscv-vector-builtins-shapes.h: New file.
+	* config/riscv/riscv-vector-builtins-types.def: New file.
+	* config/riscv/vector.md: New file.
+
+2022-10-21  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc: Add gt files since function_instance is GTY ((user)).
+	* config/riscv/riscv-builtins.cc (riscv_init_builtins): Add RVV intrinsic framework.
+	(riscv_builtin_decl): Ditto.
+	(riscv_expand_builtin): Ditto.
+	* config/riscv/riscv-protos.h (builtin_decl): New function.
+	(expand_builtin): Ditto.
+	(enum riscv_builtin_class): New enum to classify RVV intrinsic and RISC-V general built-in.
+	* config/riscv/riscv-vector-builtins.cc (class GTY): New declaration.
+	(struct registered_function_hasher): New struct.
+	(DEF_RVV_OP_TYPE): New macro.
+	(DEF_RVV_TYPE): Ditto.
+	(DEF_RVV_PRED_TYPE): Ditto.
+	(GTY): New declaration.
+	(add_attribute): New function.
+	(check_required_extensions): Ditto.
+	(rvv_arg_type_info::get_tree_type): Ditto.
+	(function_instance::function_instance): Ditto.
+	(function_instance::operator==): Ditto.
+	(function_instance::any_type_float_p): Ditto.
+	(function_instance::get_return_type): Ditto.
+	(function_instance::get_arg_type): Ditto.
+	(function_instance::hash): Ditto.
+	(function_instance::call_properties): Ditto.
+	(function_instance::reads_global_state_p): Ditto.
+	(function_instance::modifies_global_state_p): Ditto.
+	(function_instance::could_trap_p): Ditto.
+	(function_builder::function_builder): Ditto.
+	(function_builder::~function_builder): Ditto.
+	(function_builder::allocate_argument_types): Ditto.
+	(function_builder::register_function_group): Ditto.
+	(function_builder::append_name): Ditto.
+	(function_builder::finish_name): Ditto.
+	(function_builder::get_attributes): Ditto.
+	(function_builder::add_function): Ditto.
+	(function_builder::add_unique_function): Ditto.
+	(function_call_info::function_call_info): Ditto.
+	(function_expander::function_expander): Ditto.
+	(function_expander::add_input_operand): Ditto.
+	(function_expander::generate_insn): Ditto.
+	(registered_function_hasher::hash): Ditto.
+	(registered_function_hasher::equal): Ditto.
+	(builtin_decl): Ditto.
+	(expand_builtin): Ditto.
+	(gt_ggc_mx): Define for using GCC garbage collect.
+	(gt_pch_nx): Define for using GCC garbage collect.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_OP_TYPE): New macro.
+	(DEF_RVV_PRED_TYPE): Ditto.
+	(vbool64_t): Add suffix.
+	(vbool32_t): Ditto.
+	(vbool16_t): Ditto.
+	(vbool8_t): Ditto.
+	(vbool4_t): Ditto.
+	(vbool2_t): Ditto.
+	(vbool1_t): Ditto.
+	(vint8mf8_t): Ditto.
+	(vuint8mf8_t): Ditto.
+	(vint8mf4_t): Ditto.
+	(vuint8mf4_t): Ditto.
+	(vint8mf2_t): Ditto.
+	(vuint8mf2_t): Ditto.
+	(vint8m1_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vint8m2_t): Ditto.
+	(vuint8m2_t): Ditto.
+	(vint8m4_t): Ditto.
+	(vuint8m4_t): Ditto.
+	(vint8m8_t): Ditto.
+	(vuint8m8_t): Ditto.
+	(vint16mf4_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint64m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	(vfloat64m1_t): Ditto.
+	(vfloat64m2_t): Ditto.
+	(vfloat64m4_t): Ditto.
+	(vfloat64m8_t): Ditto.
+	(vv): Ditto.
+	(vx): Ditto.
+	(v): Ditto.
+	(wv): Ditto.
+	(wx): Ditto.
+	(x_x_v): Ditto.
+	(vf2): Ditto.
+	(vf4): Ditto.
+	(vf8): Ditto.
+	(vvm): Ditto.
+	(vxm): Ditto.
+	(x_x_w): Ditto.
+	(v_v): Ditto.
+	(v_x): Ditto.
+	(vs): Ditto.
+	(mm): Ditto.
+	(m): Ditto.
+	(vf): Ditto.
+	(vm): Ditto.
+	(wf): Ditto.
+	(vfm): Ditto.
+	(v_f): Ditto.
+	(ta): Ditto.
+	(tu): Ditto.
+	(ma): Ditto.
+	(mu): Ditto.
+	(tama): Ditto.
+	(tamu): Ditto.
+	(tuma): Ditto.
+	(tumu): Ditto.
+	(tam): Ditto.
+	(tum): Ditto.
+	* config/riscv/riscv-vector-builtins.h (GCC_RISCV_VECTOR_BUILTINS_H): New macro.
+	(RVV_REQUIRE_RV64BIT): Ditto.
+	(RVV_REQUIRE_ZVE64): Ditto.
+	(RVV_REQUIRE_ELEN_FP_32): Ditto.
+	(RVV_REQUIRE_ELEN_FP_64): Ditto.
+	(enum operand_type_index): New enum.
+	(DEF_RVV_OP_TYPE): New macro.
+	(enum predication_type_index): New enum.
+	(DEF_RVV_PRED_TYPE): New macro.
+	(enum rvv_base_type): New enum.
+	(struct rvv_builtin_suffixes): New struct.
+	(struct rvv_arg_type_info): Ditto.
+	(struct rvv_type_info): Ditto.
+	(struct rvv_op_info): Ditto.
+	(class registered_function): New class.
+	(class function_base): Ditto.
+	(class function_shape): Ditto.
+	(struct function_group_info): New struct.
+	(class GTY): New class.
+	(class function_builder): Ditto.
+	(class function_call_info): Ditto.
+	(function_call_info::function_returns_void_p): New function.
+	(class function_expander): New class.
+	(function_instance::operator!=): New function.
+	(function_expander::expand): Ditto.
+	(function_expander::add_input_operand): Ditto.
+	(function_base::call_properties): Ditto.
+
+2022-10-21  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/sse.md (ssedvecmode): Rename from VI1SI.
+	(ssedvecmodelower): Rename from vi1si.
+	(sdot_prod<mode>): New define_expand.
+	(udot_prod<mode>): Ditto.
+
+2022-10-21  Kong Lingling  <lingling.kong@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Detect
+	avxvnniint8.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVXVNNIINT8_SET): New.
+	(OPTION_MASK_ISA2_AVXVNNIINT8_UNSET): Ditto.
+	(ix86_handle_option): Handle -mavxvnniint8.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AVXVNNIINT8.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	avxvnniint8.
+	* config.gcc: Add avxvnniint8intrin.h.
+	* config/i386/avxvnniint8intrin.h: New file.
+	* config/i386/cpuid.h (bit_AVXVNNIINT8): New.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AVXVNNIINT8__.
+	* config/i386/i386-options.cc (isa2_opts): Add -mavxvnniint8.
+	(ix86_valid_target_attribute_inner_p): Handle avxvnniint8.
+	* config/i386/i386-isa.def: Add DEF_PTA(AVXVNNIINT8) New..
+	* config/i386/i386.opt: Add option -mavxvnniint8.
+	* config/i386/immintrin.h: Include avxvnniint8intrin.h.
+	* config/i386/sse.md (UNSPEC_VPMADDUBSWACCD
+	UNSPEC_VPMADDUBSWACCSSD,UNSPEC_VPMADDWDACCD,
+	UNSPEC_VPMADDWDACCSSD): Rename according to new style.
+	(vpdp<vpdotprodtype>_<mode>): New define_insn.
+	* doc/extend.texi: Document avxvnniint8.
+	* doc/invoke.texi: Document -mavxvnniint8.
+	* doc/sourcebuild.texi: Document target avxvnniint8.
+
+2022-10-21  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA_AVXIFMA_SET, OPTION_MASK_ISA2_AVXIFMA_UNSET,
+	OPTION_MASK_ISA2_AVX2_UNSET): New macro.
+	(ix86_handle_option): Handle -mavxifma.
+	* common/config/i386/i386-cpuinfo.h (processor_types): Add
+	FEATURE_AVXIFMA.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	avxifma.
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect avxifma.
+	* config.gcc: Add avxifmaintrin.h
+	* config/i386/avx512ifmavlintrin.h: (_mm_madd52lo_epu64): Change
+	to macro.
+	(_mm_madd52hi_epu64): Likewise.
+	(_mm256_madd52lo_epu64): Likewise.
+	(_mm256_madd52hi_epu64): Likewise.
+	* config/i386/avxifmaintrin.h: New header.
+	* config/i386/cpuid.h (bit_AVXIFMA): New.
+	* config/i386/i386-builtin.def: Add new builtins, and correct
+	  pattern names for AVX512IFMA.
+	* config/i386/i386-builtins.cc (def_builtin): Handle AVX-IFMA
+	  builtins like AVX-VNNI.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AVXIFMA__.
+	* config/i386/i386-expand.cc (ix86_check_builtin_isa_match):
+	  Relax ISA masks for AVXIFMA.
+	* config/i386/i386-isa.def: Add AVXIFMA.
+	* config/i386/i386-options.cc (isa2_opts): Add -mavxifma.
+	(ix86_valid_target_attribute_inner_p): Handle avxifma.
+	* config/i386/i386.md (isa): Add attr avxifma and avxifmavl.
+	* config/i386/i386.opt: Add option -mavxifma.
+	* config/i386/immintrin.h: Inculde avxifmaintrin.h.
+	* config/i386/sse.md (avx_vpmadd52<vpmadd52type>_<mode>):
+	Remove.
+	(vpamdd52<vpmadd52type><mode><sd_maskz_name>): Remove.
+	(vpamdd52huq<mode>_maskz): Rename to ...
+	(vpmadd52huq<mode>_maskz): ... this.
+	(vpamdd52luq<mode>_maskz): Rename to ...
+	(vpmadd52luq<mode>_maskz): ... this.
+	(vpmadd52<vpmadd52type><mode>): New define_insn.
+	(vpmadd52<vpmadd52type>v8di): Likewise.
+	(vpmadd52<vpmadd52type><mode>_maskz_1): Likewise.
+	(vpamdd52<vpmadd52type><mode>_mask): Rename to ...
+	(vpmadd52<vpmadd52type><mode>_mask): ... this.
+	* doc/invoke.texi: Document -mavxifma.
+	* doc/extend.texi: Document avxifma.
+	* doc/sourcebuild.texi: Document target avxifma.
+
 2022-10-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR c++/106654
