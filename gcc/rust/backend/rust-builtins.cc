@@ -71,36 +71,42 @@ BuiltinsContext::setup_math_fns ()
 void
 BuiltinsContext::setup_atomic_fns ()
 {
-  define_builtin ("atomic_store", BUILT_IN_ATOMIC_STORE, "__atomic_store", NULL,
-		  build_function_type_list (void_type_node, size_type_node,
-					    build_pointer_type (void_type_node),
-					    const_ptr_type_node,
-					    integer_type_node, NULL_TREE),
-		  0);
-  define_builtin ("atomic_store_n", BUILT_IN_ATOMIC_STORE_N, "__atomic_store_n",
-		  NULL,
-		  build_varargs_function_type_list (void_type_node, NULL_TREE),
-		  0);
+  auto atomic_store_type
+    = build_varargs_function_type_list (void_type_node, NULL_TREE);
+  auto atomic_load_type = [] (tree ret_type_node) {
+    return build_function_type_list (ret_type_node,
+				     ptr_type_node, // const_ptr_type_node?
+				     integer_type_node, NULL_TREE);
+  };
+
+  // FIXME: These should be the definition for the generic version of the
+  // atomic_store builtins, but I cannot get them to work properly. Revisit
+  // later. define_builtin ("atomic_store", BUILT_IN_ATOMIC_STORE,
+  // "__atomic_store", NULL,
+  //   atomic_store_type, 0);
+  // define_builtin ("atomic_store_n", BUILT_IN_ATOMIC_STORE_N,
+  // "__atomic_store_n",
+  //   NULL, atomic_store_type, 0);
+
   define_builtin ("atomic_store_1", BUILT_IN_ATOMIC_STORE_1, "__atomic_store_1",
-		  NULL,
-		  build_varargs_function_type_list (void_type_node, NULL_TREE),
-		  0);
+		  NULL, atomic_store_type, 0);
   define_builtin ("atomic_store_2", BUILT_IN_ATOMIC_STORE_2, "__atomic_store_2",
-		  NULL,
-		  build_varargs_function_type_list (void_type_node, NULL_TREE),
-		  0);
+		  NULL, atomic_store_type, 0);
   define_builtin ("atomic_store_4", BUILT_IN_ATOMIC_STORE_4, "__atomic_store_4",
-		  NULL,
-		  build_varargs_function_type_list (void_type_node, NULL_TREE),
-		  0);
+		  NULL, atomic_store_type, 0);
   define_builtin ("atomic_store_8", BUILT_IN_ATOMIC_STORE_8, "__atomic_store_8",
-		  NULL,
-		  build_varargs_function_type_list (void_type_node, NULL_TREE),
-		  0);
+		  NULL, atomic_store_type, 0);
   define_builtin ("atomic_store_16", BUILT_IN_ATOMIC_STORE_16,
-		  "__atomic_store_16", NULL,
-		  build_varargs_function_type_list (void_type_node, NULL_TREE),
-		  0);
+		  "__atomic_store_16", NULL, atomic_store_type, 0);
+
+  define_builtin ("atomic_load_1", BUILT_IN_ATOMIC_LOAD_1, "__atomic_load_1",
+		  NULL, atomic_load_type (integer_type_node), 0);
+  define_builtin ("atomic_load_2", BUILT_IN_ATOMIC_LOAD_2, "__atomic_load_2",
+		  NULL, atomic_load_type (integer_type_node), 0);
+  define_builtin ("atomic_load_4", BUILT_IN_ATOMIC_LOAD_4, "__atomic_load_4",
+		  NULL, atomic_load_type (integer_type_node), 0);
+  define_builtin ("atomic_load_8", BUILT_IN_ATOMIC_LOAD_8, "__atomic_load_8",
+		  NULL, atomic_load_type (integer_type_node), 0);
 }
 
 void
