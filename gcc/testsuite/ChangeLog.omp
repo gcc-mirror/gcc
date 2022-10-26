@@ -1,3 +1,8 @@
+2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
+
+	* g++.dg/gomp/usm-4.C: New test.
+	* g++.dg/gomp/usm-5.C: New test.
+
 2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* g++.dg/ext/unroll-1.C: Change 'cunrolli' to 'cunrolli1' in

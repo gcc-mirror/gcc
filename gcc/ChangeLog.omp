@@ -1,3 +1,7 @@
+2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
+
+	* omp-low.cc (usm_transform): Handle operator new with alignment.
+
 2022-10-25  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* omp-offload.cc (oacc_loop_auto_partitions): Removed OLF reduction
