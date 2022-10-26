@@ -1,3 +1,7 @@
+2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
+
+	* omp-low.cc (usm_transform): Handle operator new with alignment.
+
 2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* tree-vect-data-refs.cc (vect_analyze_data_refs): Workaround an

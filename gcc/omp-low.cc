@@ -16349,6 +16349,7 @@ usm_transform (gimple_stmt_iterator *gsi_p, bool *,
       {
 	gcall *gs = as_a <gcall *> (stmt);
 	tree fndecl = gimple_call_fndecl (gs);
+	unsigned int args = gimple_call_num_args (gs);
 	if (fndecl)
 	  {
 	    tree allocator = build_int_cst (pointer_sized_int_node,
@@ -16357,7 +16358,8 @@ usm_transform (gimple_stmt_iterator *gsi_p, bool *,
 	    if ((strcmp (name, "malloc") == 0)
 		 || (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 		     && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MALLOC)
-		 || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+		 || (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+		     && args == 1)
 		 || strcmp (name, "omp_target_alloc") == 0)
 	      {
 		  tree omp_alloc_type
@@ -16371,7 +16373,9 @@ usm_transform (gimple_stmt_iterator *gsi_p, bool *,
 		gimple_set_location (g, gimple_location (stmt));
 		gsi_replace (gsi_p, g, true);
 	      }
-	    else if (strcmp (name, "aligned_alloc") == 0)
+	    else if ((strcmp (name, "aligned_alloc") == 0)
+		      || (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
+			  && args == 2))
 	      {
 		/*  May be we can also use this for new operator with
 		    std::align_val_t parameter.  */
@@ -16382,8 +16386,12 @@ usm_transform (gimple_stmt_iterator *gsi_p, bool *,
 					      NULL_TREE);
 		tree repl = build_fn_decl ("omp_aligned_alloc",
 					   omp_alloc_type);
-		tree align = gimple_call_arg (gs, 0);
-		tree size = gimple_call_arg (gs, 1);
+		int align_arg
+		  = DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl) ? 1: 0;
+		int size_arg
+		  = DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl) ? 0: 1;
+		tree align = gimple_call_arg (gs, align_arg);
+		tree size = gimple_call_arg (gs, size_arg);
 		gimple *g = gimple_build_call (repl, 3, align, size,
 					       allocator);
 		gimple_call_set_lhs (g, gimple_call_lhs (gs));

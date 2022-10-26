@@ -1,3 +1,7 @@
+2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.c++/usm-2.C: New test.
+
 2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/requires-4.c: dg-xfail-run-if on
