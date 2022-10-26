@@ -940,9 +940,10 @@
 	 because of offering further optimization opportunities.  */
       if (register_operand (operands[0], DImode))
 	{
-	  xtensa_split_DI_reg_imm (operands);
-	  emit_move_insn (operands[0], operands[1]);
-	  emit_move_insn (operands[2], operands[3]);
+	  rtx ops[4] = { operands[0], operands[1] };
+	  xtensa_split_DI_reg_imm (ops);
+	  emit_move_insn (ops[0], ops[1]);
+	  emit_move_insn (ops[2], ops[3]);
 	  DONE;
 	}
 
