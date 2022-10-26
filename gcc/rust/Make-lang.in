@@ -331,8 +331,7 @@ CFLAGS-rust/rust-lex.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-parse.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-session-manager.o += $(RUST_INCLUDES)
 
-# TODO: possibly find a way to ensure C++11 compilation level here?
-RUST_CXXFLAGS = -std=c++11 -Wno-unused-parameter -Werror=overloaded-virtual
+RUST_CXXFLAGS = $(CXXFLAGS)
 
 # build all rust/lex files in rust folder, add cross-folder includes
 rust/%.o: rust/lex/%.cc
