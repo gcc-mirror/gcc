@@ -34,6 +34,22 @@
 namespace Rust {
 namespace Compile {
 
+static bool
+is_basic_integer_type (TyTy::BaseType *type)
+{
+  switch (type->get_kind ())
+    {
+    case TyTy::INT:
+    case TyTy::UINT:
+    case TyTy::USIZE:
+    case TyTy::ISIZE:
+      return true;
+    default:
+      return false;
+      break;
+    }
+}
+
 static tree
 offset_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
@@ -105,6 +121,17 @@ atomic_store_handler (int ordering)
 }
 
 static inline tree
+unchecked_op_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
+
+const static std::function<tree (Context *, TyTy::FnType *)>
+unchecked_op_handler (tree_code op)
+{
+  return [op] (Context *ctx, TyTy::FnType *fntype) {
+    return unchecked_op_inner (ctx, fntype, op);
+  };
+}
+
+static inline tree
 sorry_handler (Context *ctx, TyTy::FnType *fntype)
 {
   rust_sorry_at (fntype->get_locus (), "intrinsic %qs is not yet implemented",
@@ -132,6 +159,13 @@ static const std::map<std::string,
     {"atomic_store_release", atomic_store_handler (__ATOMIC_RELEASE)},
     {"atomic_store_relaxed", atomic_store_handler (__ATOMIC_RELAXED)},
     {"atomic_store_unordered", atomic_store_handler (__ATOMIC_RELAXED)},
+    {"unchecked_add", unchecked_op_handler (PLUS_EXPR)},
+    {"unchecked_sub", unchecked_op_handler (MINUS_EXPR)},
+    {"unchecked_mul", unchecked_op_handler (MULT_EXPR)},
+    {"unchecked_div", unchecked_op_handler (TRUNC_DIV_EXPR)},
+    {"unchecked_rem", unchecked_op_handler (TRUNC_MOD_EXPR)},
+    {"unchecked_shl", unchecked_op_handler (LSHIFT_EXPR)},
+    {"unchecked_shr", unchecked_op_handler (RSHIFT_EXPR)},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
@@ -721,6 +755,52 @@ atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   TREE_SIDE_EFFECTS (store_call) = 1;
 
   ctx->add_statement (store_call);
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static inline tree
+unchecked_op_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
+{
+  rust_assert (fntype->get_params ().size () == 2);
+  rust_assert (fntype->get_num_substitutions () == 1);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN unchecked_<op> BODY BEGIN
+
+  auto x = ctx->get_backend ()->var_expression (param_vars[0], Location ());
+  auto y = ctx->get_backend ()->var_expression (param_vars[1], Location ());
+
+  auto *monomorphized_type
+    = fntype->get_substs ().at (0).get_param_ty ()->resolve ();
+  if (!is_basic_integer_type (monomorphized_type))
+    rust_error_at (fntype->get_locus (),
+		   "unchecked operation intrinsics can only be used with "
+		   "basic integer types (got %qs)",
+		   monomorphized_type->get_name ().c_str ());
+
+  auto expr = build2 (op, TREE_TYPE (x), x, y);
+  auto return_statement
+    = ctx->get_backend ()->return_statement (fndecl, {expr}, Location ());
+
+  ctx->add_statement (return_statement);
+
+  // BUILTIN unchecked_<op> BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
 
