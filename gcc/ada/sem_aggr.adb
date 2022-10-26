@@ -1052,7 +1052,7 @@ package body Sem_Aggr is
       elsif Is_Array_Type (Typ) and then Null_Record_Present (N) then
          Error_Msg_N ("null record forbidden in array aggregate", N);
 
-      elsif Present (Find_Aspect (Typ, Aspect_Aggregate))
+      elsif Has_Aspect (Typ, Aspect_Aggregate)
         and then Ekind (Typ) /= E_Record_Type
         and then Ada_Version >= Ada_2022
       then

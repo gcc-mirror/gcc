@@ -13309,7 +13309,7 @@ package body Sem_Util is
 
    begin
       return Nkind (Exp) = N_Aggregate
-        and then Present (Find_Aspect (Etype (Exp), Aspect_Aggregate))
+        and then Has_Aspect (Etype (Exp), Aspect_Aggregate)
         and then not Is_Record_Aggregate;
    end Is_Container_Aggregate;
 
@@ -21718,18 +21718,16 @@ package body Sem_Util is
       --  type has the appropriate user-defined literal aspect.
 
       return (Nkind (N) in N_Numeric_Or_String_Literal
-        and then Present (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N)))))
+        and then Has_Aspect (Typ, Literal_Aspect_Map (Nkind (N))))
           or else
             (Is_Entity_Name (N)
               and then Present (Entity (N))
               and then
                 ((Ekind (Entity (N)) = E_Named_Integer
-                    and then
-                      Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
+                    and then Has_Aspect (Typ, Aspect_Integer_Literal))
                    or else
                      (Ekind (Entity (N)) = E_Named_Real
-                        and then
-                          Present (Find_Aspect (Typ, Aspect_Real_Literal)))));
+                        and then Has_Aspect (Typ, Aspect_Real_Literal))));
    end Is_User_Defined_Literal;
 
    --------------------------------------
@@ -32563,7 +32561,7 @@ package body Sem_Util is
         (Typ : Entity_Id) return Boolean
       is
       begin
-         return Present (Find_Aspect (Typ, Aspect_Designated_Storage_Model));
+         return Has_Aspect (Typ, Aspect_Designated_Storage_Model);
       end Has_Designated_Storage_Model_Aspect;
 
       -----------------------------------
@@ -32573,7 +32571,7 @@ package body Sem_Util is
       function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean
       is
       begin
-         return Present (Find_Aspect (Typ, Aspect_Storage_Model_Type));
+         return Has_Aspect (Typ, Aspect_Storage_Model_Type);
       end Has_Storage_Model_Type_Aspect;
 
       --------------------------

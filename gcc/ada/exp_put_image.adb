@@ -1045,7 +1045,7 @@ package body Exp_Put_Image is
       declare
          U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
       begin
-         if Present (Find_Aspect (U_Type, Aspect_Put_Image)) then
+         if Has_Aspect (U_Type, Aspect_Put_Image) then
             return True;
          end if;
 

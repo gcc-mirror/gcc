@@ -5996,8 +5996,8 @@ package body Sem_Attr is
                --  Verify that prefix can be iterated upon.
 
                if Is_Array_Type (Typ)
-                 or else Present (Find_Aspect (Typ, Aspect_Default_Iterator))
-                 or else Present (Find_Aspect (Typ, Aspect_Iterable))
+                 or else Has_Aspect (Typ, Aspect_Default_Iterator)
+                 or else Has_Aspect (Typ, Aspect_Iterable)
                then
                   null;
                else

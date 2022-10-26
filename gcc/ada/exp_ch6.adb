@@ -3305,8 +3305,8 @@ package body Exp_Ch6 is
            or else No (Aspect)
 
            --  Do not fold if multiple applicable predicate aspects
-           or else Present (Find_Aspect (Subt, Aspect_Static_Predicate))
-           or else Present (Find_Aspect (Subt, Aspect_Predicate))
+           or else Has_Aspect (Subt, Aspect_Static_Predicate)
+           or else Has_Aspect (Subt, Aspect_Predicate)
            or else Augments_Other_Dynamic_Predicate (Aspect)
            or else CodePeer_Mode
          then
