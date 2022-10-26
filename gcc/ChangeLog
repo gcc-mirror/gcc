@@ -1,3 +1,147 @@
+2022-10-25  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.cc (get_combined_location): Include discriminator in the
+	returned combined location.
+	(read_function_instance): Read discriminators from profiles.
+
+2022-10-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107304
+	* expr.cc (get_inner_reference): Always use TYPE_MODE for vector
+	field with vector raw mode.
+
+2022-10-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (CCEITHER): Delete.
+	(CCANY): New.
+	(un): Delete.
+	(isel_<un>signed_<GPR:mode>): Rename to...
+	(isel_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(*isel_reversed_<un>signed_<GPR:mode>): Rename to...
+	(*isel_reversed_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(setbc_<un>signed_<GPR:mode>): Rename to...
+	(setbc_<CCANY:mode>_<GPR:mode>C): ... this.  Adjust."
+	(*setbcr_<un>signed_<GPR:mode>): Rename to ...
+	(*setbcr_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(*setnbc_<un>signed_<GPR:mode>): Rename to ...
+	(*setnbc_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(*setnbcr_<un>signed_<GPR:mode>): Rename to ...
+	(*setnbcr_<CCANY:mode>_<GPR:mode>): ... this.  Adjust.
+	(eq<mode>3 for GPR): Adjust.
+	(ne<mode>3 for GPR): Adjust.
+	* config/rs6000/rs6000-string.cc (do_isel): Adjust.
+	* config/rs6000/rs6000.cc (rs6000_emit_int_cmove): Adjust.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107176
+	PR tree-optimization/66375
+	PR tree-optimization/42512
+	* tree-scalar-evolution.cc (follow_ssa_edge_expr): Revert
+	the PR66375 fix, do not not associate PLUS_EXPR to be able
+	to use tail-recursion.
+	(follow_ssa_edge_binary): Likewise.
+	(interpret_loop_phi): Revert PR42512 fix, do not throw
+	away analyze_evolution_in_loop result after the fact.
+	(follow_ssa_edge_expr): When reaching halting_phi initalize
+	the evolution to the symbolic value of the PHI result.
+	(add_to_evolution_1): When adding the first evolution verify
+	we can handle the expression wrapping the symbolic evolution
+	and replace that in full using the initial condition.
+	(class scev_dfs): New, contains ...
+	(follow_ssa_edge_expr, follow_ssa_edge_binary,
+	follow_ssa_edge_in_condition_phi_branch,
+	follow_ssa_edge_in_condition_phi,
+	follow_ssa_edge_inner_loop_phi,
+	add_to_evolution, add_to_evolution_1): ... these with
+	loop and halting_phi arguments in class data.
+	(scev_dfs::get_ev): New toplevel DFS entry, start with
+	a chrec_dont_know evolution.
+	(analyze_evolution_in_loop): Use scev_dfs.
+
+2022-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* profile.cc (branch_prob): Be prepared for ignored functions with
+	DECL_SOURCE_LOCATION set to UNKNOWN_LOCATION.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.cc (follow_ssa_edge_expr): Move
+	STRIP_USELESS_TYPE_CONVERSIONS to where it matters.
+
+2022-10-25  Tejas Joshi  <TejasSanjay.Joshi@amd.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table): Use
+	CPU_ZNVER3 for znver4.
+	* config/i386/znver.md: Remove znver4 reservations.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (gimple_boolify): Fix comment typos, prduce -> produce
+	and There -> These.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107368
+	* gimplify.cc (gimplify_call_expr): For complex IFN_ASSUME
+	conditions call gimple_boolify on the condition.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config.gcc: add -with-compact-branches=policy build option.
+	* doc/install.texi: Likewise.
+	* config/mips/mips.h: Likewise.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.cc (mips_option_override): not trigger error
+	for compact-branches=always for pre-R6.
+	* config/mips/mips.h (TARGET_RTP_PIC): not trigger error for
+	compact-branches=always for pre-R6.
+	(TARGET_CB_NEVER): Likewise.
+	(TARGET_CB_ALWAYS): Likewise.
+	(struct mips_cpu_info): define macros for compact branch policy.
+	* doc/invoke.texi: Document "always" with pre-R6.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107369
+	* gimplify.cc (gimplify_call_expr): If seen_error, handle complex
+	IFN_ASSUME the same as for -O0.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* configure.ac: AC_DEFINE(ENABLE_MULTIARCH, 1)
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	* config/mips/mips.h: don't define STANDARD_STARTFILE_PREFIX_1
+	  if ENABLE_MULTIARCH is defined.
+	* config/mips/t-linux64: define correct multiarch path when
+	  multiarch is enabled.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100756
+	* tree-ssa-loop-niter.cc (expand_simple_operations): Also
+	expand multiplications by invariants.
+
+2022-10-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/107338
+	* tree-vect-patterns.cc (vect_recog_bitfield_ref_pattern): Move
+	shfit_n calculation before the adjustments for widening loads.
+
+2022-10-25  Martin Liska  <mliska@suse.cz>
+
+	* common/config/riscv/riscv-common.cc
+	  (riscv_get_valid_option_values): Get out of ifdef.
+
+2022-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR target/107364
+	* common/config/i386/i386-cpuinfo.h (enum processor_vendor):
+	Fix pedantic warning.
+
 2022-10-24  Martin Liska  <mliska@suse.cz>
 
 	PR analyzer/107366

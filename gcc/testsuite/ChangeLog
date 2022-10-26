@@ -1,3 +1,70 @@
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106848
+	PR c++/102600
+	* g++.dg/modules/enum-9_a.H: New test.
+	* g++.dg/modules/enum-9_b.C: New test.
+	* g++.dg/modules/enum-10_a.H: New test.
+	* g++.dg/modules/enum-10_b.C: New test.
+	* g++.dg/modules/enum-11_a.H: New test.
+	* g++.dg/modules/enum-11_b.C: New test.
+
+2022-10-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107304
+	* gcc.target/i386/pr107304.c: New test.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/attr-assume9.C: New test.
+	* g++.dg/cpp23/attr-assume10.C: New test.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/attr-assume2.C: Expect constant values.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107176
+	PR tree-optimization/66375
+	PR tree-optimization/42512
+	* gcc.dg/torture/pr107176.c: New testcase.
+
+2022-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/coverage1.ads: New test.
+	* gnat.dg/specs/variant_part.ads: Minor tweak.
+	* gnat.dg/specs/weak1.ads: Add dg directive.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107368
+	* gcc.dg/attr-assume-5.c: New test.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* gcc.target/mips/compact-branches-1.c: add isa_rev>=6.
+	* gcc.target/mips/mips.exp: don't add -mipsXXr6 option for
+	-mcompact-branches=always. It is usable for pre-R6 now.
+	* gcc.target/mips/compact-branches-8.c: New test.
+	* gcc.target/mips/compact-branches-9.c: New test.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107369
+	* gcc.dg/attr-assume-4.c: New test.
+	* g++.dg/cpp23/attr-assume8.C: New test.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100756
+	* gcc.dg/vect/pr100756.c: New testcase.
+
+2022-10-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_long_long): Add
+	support for powerpc*-*-*.
+
 2022-10-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107349
