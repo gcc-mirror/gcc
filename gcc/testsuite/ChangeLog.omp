@@ -1,3 +1,7 @@
+2022-10-26  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gfortran.dg/goacc/orphan-reductions-1.f90: Adjust.
+
 2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
 
 	* g++.dg/gomp/usm-4.C: New test.
