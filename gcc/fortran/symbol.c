@@ -5123,6 +5123,10 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   bool is_union1 = (ts1->type == BT_UNION);
   bool is_union2 = (ts2->type == BT_UNION);
 
+  /* A boz-literal-constant has no type.  */
+  if (ts1->type == BT_BOZ || ts2->type == BT_BOZ)
+    return false;
+
   if (is_class1
       && ts1->u.derived->components
       && ((ts1->u.derived->attr.is_class
