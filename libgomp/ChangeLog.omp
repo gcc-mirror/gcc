@@ -3,6 +3,12 @@
 	Backported from master:
 	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-runtime.f90:
+	New.
+
+	Backported from master:
+	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
 	New.
 
