@@ -3,6 +3,17 @@
 	Backported from master:
 	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/106643
+	* oacc-mem.c (goacc_enter_data_internal): Support
+	OpenACC 'declare create' with Fortran allocatable arrays, part I.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
+	New.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
+	New.
+
+	Backported from master:
+	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-runtime.f90:
 	New.
 
