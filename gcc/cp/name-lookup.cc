@@ -8596,6 +8596,13 @@ push_namespace (tree name, bool make_inline)
 	      /* This should find the slot created by pushdecl.  */
 	      gcc_checking_assert (slot && *slot == ns);
 	    }
+	  else
+	    {
+	      /* pushdecl could have expanded the hash table, so
+		 slot might be invalid.  */
+	      slot = find_namespace_slot (current_namespace, name);
+	      gcc_checking_assert (slot);
+	    }
 	  make_namespace_finish (ns, slot);
 
 	  /* Add the anon using-directive here, we don't do it in
