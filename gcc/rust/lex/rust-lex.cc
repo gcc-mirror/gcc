@@ -16,10 +16,9 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-lex.h"
-
-#include "rust-system.h"      // for rust_assert and rust_unreachable
-#include "rust-diagnostics.h" // for rust_error_at
+#include "rust-diagnostics.h"
 #include "rust-linemap.h"
 #include "rust-session-manager.h"
 #include "safe-ctype.h"

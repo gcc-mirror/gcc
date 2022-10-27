@@ -20,7 +20,7 @@
 /* This is the contribution to the `default_compilers' array in gcc.cc
    for the Rust language.  */
 
-{".rs", "@rs", 0, 1, 0},
-  {"@rs",
+{".rs", "@rust", 0, 1, 0},
+  {"@rust",
    "rust1 %i %(cc1_options) %{I*} %{L*} %D %{!fsyntax-only:%(invoke_as)}", 0, 1,
    0},

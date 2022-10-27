@@ -269,7 +269,7 @@ rust.uninstall:
 # Enable selftests for the rust frontend
 selftest-rust: s-selftest-rust
 
-RUST_SELFTEST_FLAGS = -xrs $(SELFTEST_FLAGS)
+RUST_SELFTEST_FLAGS = -xrust $(SELFTEST_FLAGS)
 RUST_SELFTEST_DEPS = rust1$(exeext) $(SELFTEST_DEPS)
 
 # Run the rust selftests

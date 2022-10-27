@@ -17,8 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-token.h"
-
-#include "rust-diagnostics.h" // for error_at
+#include "rust-diagnostics.h"
 
 namespace Rust {
 // Hackily defined way to get token description for enum value using x-macros

@@ -17,9 +17,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef RUST_CFG_PARSER_H
 #define RUST_CFG_PARSER_H
 
-#include "config.h"
 #include "rust-system.h"
-#include "coretypes.h"
 
 namespace Rust {
 /**

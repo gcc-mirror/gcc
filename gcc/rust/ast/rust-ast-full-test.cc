@@ -17,11 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-// FIXME: This does not work on Windows
-#include <string>
-#include <unistd.h>
-#include <memory>
-
+#include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
 #include "rust-ast-visitor.h"

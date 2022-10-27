@@ -19,7 +19,7 @@
 #ifndef RUST_CODEPOINT_H
 #define RUST_CODEPOINT_H
 
-#include <string>
+#include "rust-system.h"
 
 namespace Rust {
 struct Codepoint

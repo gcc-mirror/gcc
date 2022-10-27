@@ -19,10 +19,10 @@
 #ifndef RUST_AST_MACRO_H
 #define RUST_AST_MACRO_H
 
+#include "rust-system.h"
 #include "rust-ast.h"
 #include "rust-ast-fragment.h"
 #include "rust-location.h"
-#include <string>
 
 namespace Rust {
 namespace AST {
