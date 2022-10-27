@@ -73,6 +73,14 @@ private:
   Indent indentation;
 
   /**
+   * Compatibility layer for using the visitor pattern on polymorphic classes
+   * with a unified overload syntax. This allows us to call `visit` both on
+   * types implementing `accept_vis` method and for classes for which the
+   * `visit` method is directly implemented.
+   */
+  template <typename T> void visit (std::unique_ptr<T> &node);
+
+  /**
    * Format together common items of functions: Parameters, return type, block
    */
   void format_function_common (std::unique_ptr<Type> &return_type,
