@@ -1,3 +1,27 @@
+2022-10-26  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/aarch64/cpunative/info_18: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_18.c: New test.
+
+2022-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/coverage1.ads: New test.
+	* gnat.dg/specs/variant_part.ads: Minor tweak.
+	* gnat.dg/specs/weak1.ads: Add dg directive.
+
+2022-10-25  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2022-10-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/pr106355.h: Common code for new tests.
+	* gcc.target/s390/pr106355-1.c: New test.
+	* gcc.target/s390/pr106355-2.c: New test.
+	* gcc.target/s390/pr106355-3.c: New test.
+
 2022-10-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
