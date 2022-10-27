@@ -62,6 +62,13 @@ Dump::go (AST::Item &item)
   item.accept_vis (*this);
 }
 
+template <typename T>
+void
+Dump::visit (std::unique_ptr<T> &node)
+{
+  node->accept_vis (*this);
+}
+
 void
 Dump::format_function_param (FunctionParam &param)
 {
