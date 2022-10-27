@@ -13987,7 +13987,15 @@ get_module (tree name, module_state *parent, bool partition)
 static module_state *
 get_module (const char *ptr)
 {
-  if (ptr[0] == '.' ? IS_DIR_SEPARATOR (ptr[1]) : IS_ABSOLUTE_PATH (ptr))
+  /* On DOS based file systems, there is an ambiguity with A:B which can be
+     interpreted as a module Module:Partition or Drive:PATH.  Interpret strings
+     which clearly starts as pathnames as header-names and everything else is
+     treated as a (possibly malformed) named moduled.  */
+  if (IS_DIR_SEPARATOR (ptr[ptr[0] == '.']) // ./FOO or /FOO
+#if HAVE_DOS_BASED_FILE_SYSTEM
+      || (HAS_DRIVE_SPEC (ptr) && IS_DIR_SEPARATOR (ptr[2])) // A:/FOO
+#endif
+      || false)
     /* A header name.  */
     return get_module (build_string (strlen (ptr), ptr));
 
