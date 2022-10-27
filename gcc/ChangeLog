@@ -1,3 +1,18 @@
+2022-10-26  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Update
+	Ampere-1 core entry.
+
+2022-10-26  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/driver-aarch64.cc (readline): Fix off-by-one.
+
 2022-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* profile.cc (branch_prob): Be prepared for ignored functions with
