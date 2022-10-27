@@ -177,7 +177,7 @@ public:
 class svac_impl : public function_base
 {
 public:
-  constexpr svac_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svac_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -209,7 +209,7 @@ public:
 class svadr_bhwd_impl : public function_base
 {
 public:
-  constexpr svadr_bhwd_impl (unsigned int shift) : m_shift (shift) {}
+  CONSTEXPR svadr_bhwd_impl (unsigned int shift) : m_shift (shift) {}
 
   rtx
   expand (function_expander &e) const override
@@ -259,7 +259,7 @@ public:
 class svbrk_binary_impl : public function_base
 {
 public:
-  constexpr svbrk_binary_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svbrk_binary_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -275,7 +275,7 @@ public:
 class svbrk_unary_impl : public function_base
 {
 public:
-  constexpr svbrk_unary_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svbrk_unary_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -309,7 +309,7 @@ public:
 class svclast_impl : public quiet<function_base>
 {
 public:
-  constexpr svclast_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svclast_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -381,7 +381,7 @@ public:
 class svcmp_impl : public function_base
 {
 public:
-  constexpr svcmp_impl (tree_code code, int unspec_for_fp)
+  CONSTEXPR svcmp_impl (tree_code code, int unspec_for_fp)
     : m_code (code), m_unspec_for_fp (unspec_for_fp) {}
 
   gimple *
@@ -437,7 +437,7 @@ public:
 class svcmp_wide_impl : public function_base
 {
 public:
-  constexpr svcmp_wide_impl (tree_code code, int unspec_for_sint,
+  CONSTEXPR svcmp_wide_impl (tree_code code, int unspec_for_sint,
 			     int unspec_for_uint)
     : m_code (code), m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint) {}
@@ -512,7 +512,7 @@ public:
 class svcnt_bhwd_impl : public function_base
 {
 public:
-  constexpr svcnt_bhwd_impl (machine_mode ref_mode) : m_ref_mode (ref_mode) {}
+  CONSTEXPR svcnt_bhwd_impl (machine_mode ref_mode) : m_ref_mode (ref_mode) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -949,7 +949,7 @@ public:
 class svext_bhw_impl : public function_base
 {
 public:
-  constexpr svext_bhw_impl (scalar_int_mode from_mode)
+  CONSTEXPR svext_bhw_impl (scalar_int_mode from_mode)
     : m_from_mode (from_mode) {}
 
   rtx
@@ -1053,7 +1053,7 @@ public:
 class svlast_impl : public quiet<function_base>
 {
 public:
-  constexpr svlast_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svlast_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1399,7 +1399,7 @@ public:
 class svldxf1_impl : public full_width_access
 {
 public:
-  constexpr svldxf1_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svldxf1_impl (int unspec) : m_unspec (unspec) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1426,7 +1426,7 @@ public:
 class svldxf1_extend_impl : public extending_load
 {
 public:
-  constexpr svldxf1_extend_impl (type_suffix_index memory_type, int unspec)
+  CONSTEXPR svldxf1_extend_impl (type_suffix_index memory_type, int unspec)
     : extending_load (memory_type), m_unspec (unspec) {}
 
   unsigned int
@@ -1616,7 +1616,7 @@ public:
 class svnot_impl : public rtx_code_function
 {
 public:
-  constexpr svnot_impl () : rtx_code_function (NOT, NOT, -1) {}
+  CONSTEXPR svnot_impl () : rtx_code_function (NOT, NOT, -1) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1664,7 +1664,7 @@ public:
 class svpfirst_svpnext_impl : public function_base
 {
 public:
-  constexpr svpfirst_svpnext_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svpfirst_svpnext_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1682,7 +1682,7 @@ public:
 class svprf_bhwd_impl : public function_base
 {
 public:
-  constexpr svprf_bhwd_impl (machine_mode mode) : m_mode (mode) {}
+  CONSTEXPR svprf_bhwd_impl (machine_mode mode) : m_mode (mode) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1706,7 +1706,7 @@ public:
 class svprf_bhwd_gather_impl : public function_base
 {
 public:
-  constexpr svprf_bhwd_gather_impl (machine_mode mode) : m_mode (mode) {}
+  CONSTEXPR svprf_bhwd_gather_impl (machine_mode mode) : m_mode (mode) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1744,7 +1744,7 @@ public:
 class svptest_impl : public function_base
 {
 public:
-  constexpr svptest_impl (rtx_code compare) : m_compare (compare) {}
+  CONSTEXPR svptest_impl (rtx_code compare) : m_compare (compare) {}
 
   rtx
   expand (function_expander &e) const override
@@ -1849,7 +1849,7 @@ public:
 class svqdec_svqinc_bhwd_impl : public function_base
 {
 public:
-  constexpr svqdec_svqinc_bhwd_impl (rtx_code code_for_sint,
+  CONSTEXPR svqdec_svqinc_bhwd_impl (rtx_code code_for_sint,
 				     rtx_code code_for_uint,
 				     scalar_int_mode elem_mode)
     : m_code_for_sint (code_for_sint),
@@ -1896,7 +1896,7 @@ public:
 class svqdec_bhwd_impl : public svqdec_svqinc_bhwd_impl
 {
 public:
-  constexpr svqdec_bhwd_impl (scalar_int_mode elem_mode)
+  CONSTEXPR svqdec_bhwd_impl (scalar_int_mode elem_mode)
     : svqdec_svqinc_bhwd_impl (SS_MINUS, US_MINUS, elem_mode) {}
 };
 
@@ -1904,7 +1904,7 @@ public:
 class svqinc_bhwd_impl : public svqdec_svqinc_bhwd_impl
 {
 public:
-  constexpr svqinc_bhwd_impl (scalar_int_mode elem_mode)
+  CONSTEXPR svqinc_bhwd_impl (scalar_int_mode elem_mode)
     : svqdec_svqinc_bhwd_impl (SS_PLUS, US_PLUS, elem_mode) {}
 };
 
@@ -1912,7 +1912,7 @@ public:
 class svqdecp_svqincp_impl : public function_base
 {
 public:
-  constexpr svqdecp_svqincp_impl (rtx_code code_for_sint,
+  CONSTEXPR svqdecp_svqincp_impl (rtx_code code_for_sint,
 				  rtx_code code_for_uint)
     : m_code_for_sint (code_for_sint),
       m_code_for_uint (code_for_uint)
@@ -2275,7 +2275,7 @@ public:
 class svsub_impl : public rtx_code_function
 {
 public:
-  constexpr svsub_impl ()
+  CONSTEXPR svsub_impl ()
     : rtx_code_function (MINUS, MINUS, UNSPEC_COND_FSUB) {}
 
   rtx
@@ -2304,7 +2304,7 @@ public:
 class svtrn_impl : public binary_permute
 {
 public:
-  constexpr svtrn_impl (int base)
+  CONSTEXPR svtrn_impl (int base)
     : binary_permute (base ? UNSPEC_TRN2 : UNSPEC_TRN1), m_base (base) {}
 
   gimple *
@@ -2345,7 +2345,7 @@ public:
 class svunpk_impl : public quiet<function_base>
 {
 public:
-  constexpr svunpk_impl (bool high_p) : m_high_p (high_p) {}
+  CONSTEXPR svunpk_impl (bool high_p) : m_high_p (high_p) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -2387,7 +2387,7 @@ public:
 class svusdot_impl : public function_base
 {
 public:
-  constexpr svusdot_impl (bool su) : m_su (su) {}
+  CONSTEXPR svusdot_impl (bool su) : m_su (su) {}
 
   rtx
   expand (function_expander &e) const override
@@ -2415,7 +2415,7 @@ private:
 class svuzp_impl : public binary_permute
 {
 public:
-  constexpr svuzp_impl (unsigned int base)
+  CONSTEXPR svuzp_impl (unsigned int base)
     : binary_permute (base ? UNSPEC_UZP2 : UNSPEC_UZP1), m_base (base) {}
 
   gimple *
@@ -2438,7 +2438,7 @@ public:
 class svwhilelx_impl : public while_comparison
 {
 public:
-  constexpr svwhilelx_impl (int unspec_for_sint, int unspec_for_uint, bool eq_p)
+  CONSTEXPR svwhilelx_impl (int unspec_for_sint, int unspec_for_uint, bool eq_p)
     : while_comparison (unspec_for_sint, unspec_for_uint), m_eq_p (eq_p)
   {}
 
@@ -2525,7 +2525,7 @@ public:
 class svzip_impl : public binary_permute
 {
 public:
-  constexpr svzip_impl (unsigned int base)
+  CONSTEXPR svzip_impl (unsigned int base)
     : binary_permute (base ? UNSPEC_ZIP2 : UNSPEC_ZIP1), m_base (base) {}
 
   gimple *

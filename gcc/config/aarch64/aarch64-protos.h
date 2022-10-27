@@ -254,7 +254,7 @@ typedef struct simd_vec_cost advsimd_vec_cost;
 /* SVE-specific extensions to the information provided by simd_vec_cost.  */
 struct sve_vec_cost : simd_vec_cost
 {
-  constexpr sve_vec_cost (const simd_vec_cost &base,
+  CONSTEXPR sve_vec_cost (const simd_vec_cost &base,
 			  unsigned int clast_cost,
 			  unsigned int fadda_f16_cost,
 			  unsigned int fadda_f32_cost,
@@ -354,7 +354,7 @@ using aarch64_scalar_vec_issue_info = aarch64_base_vec_issue_info;
    Advanced SIMD and SVE.  */
 struct aarch64_simd_vec_issue_info : aarch64_base_vec_issue_info
 {
-  constexpr aarch64_simd_vec_issue_info (aarch64_base_vec_issue_info base,
+  CONSTEXPR aarch64_simd_vec_issue_info (aarch64_base_vec_issue_info base,
 					 unsigned int ld2_st2_general_ops,
 					 unsigned int ld3_st3_general_ops,
 					 unsigned int ld4_st4_general_ops)
@@ -382,7 +382,7 @@ using aarch64_advsimd_vec_issue_info = aarch64_simd_vec_issue_info;
    is a concept of "predicate operations".  */
 struct aarch64_sve_vec_issue_info : aarch64_simd_vec_issue_info
 {
-  constexpr aarch64_sve_vec_issue_info
+  CONSTEXPR aarch64_sve_vec_issue_info
     (aarch64_simd_vec_issue_info base,
      unsigned int pred_ops_per_cycle,
      unsigned int while_pred_ops,
