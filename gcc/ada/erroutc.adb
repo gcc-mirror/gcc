@@ -324,7 +324,7 @@ package body Erroutc is
 
       Write_Str
         ("  Optr     = ");
-      Write_Location (E.Optr);
+      Write_Location (E.Optr.Ptr);
       Write_Eol;
 
       w ("  Line     = ", Int (E.Line));
