@@ -1,5 +1,5 @@
 // -*- C++ -*- std::experimental::contract_violation and friends
-// Copyright (C) 1994-2018 Free Software Foundation, Inc.
+// Copyright (C) 1994-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -24,7 +24,6 @@
 
 #include <experimental/contract>
 #include <iostream>
-#include <cstdlib>
 
 __attribute__ ((weak)) void
 handle_contract_violation (const std::experimental::contract_violation &violation)
@@ -38,31 +37,4 @@ handle_contract_violation (const std::experimental::contract_violation &violatio
     << " " << violation.assertion_role()
     << " " << (int)violation.continuation_mode()
     << std::endl;
-}
-
-// We take POD types here to make synthesis easier
-int
-__on_contract_violation (bool continue_,
-			 int line_number,
-			 const char *file_name,
-			 const char *function_name,
-			 const char *comment,
-			 const char *assertion_level,
-			 const char *assertion_role,
-			 int continuation_mode)
-{
-  using cvmc = std::experimental::contract_violation_continuation_mode;
-  std::experimental::contract_violation violation (line_number,
-				     file_name,
-				     function_name,
-				     comment,
-				     assertion_level,
-				     assertion_role,
-				     static_cast<cvmc>(continuation_mode));
-  handle_contract_violation (violation);
-
-  if (!continue_)
-    std::abort ();
-
-  return 0;
 }

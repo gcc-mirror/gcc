@@ -26,4 +26,5 @@ struct S
 void driver()
 {
   S<int> s1(0);
+  s1.f1(2);
 }

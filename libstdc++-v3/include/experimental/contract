@@ -24,7 +24,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // FIXME string_view vs. freestanding
-// FIXME remove on_contract_violation?
 
 /** @file contract
  *  This is a Standard C++ Library header.
@@ -59,13 +58,8 @@ namespace experimental
     const char* _M_comment;
     const char* _M_level;
     const char* _M_role;
-    contract_violation_continuation_mode _M_continue;
+    signed char _M_continue;
   public:
-    contract_violation (int __l, const char* __f, const char* __fn,
-			const char* __c, const char* __lv, const char *__r,
-                        contract_violation_continuation_mode __m)
-      : _M_line(__l), _M_file(__f), _M_function(__fn), _M_comment(__c),
-	_M_level(__lv), _M_role(__r), _M_continue(__m) { }
     // From N4820
     uint_least32_t line_number() const noexcept { return _M_line; }
     string_view file_name() const noexcept { return _M_file; }
@@ -75,7 +69,7 @@ namespace experimental
     // From P1332
     string_view assertion_role() const noexcept { return _M_role; }
     contract_violation_continuation_mode continuation_mode() const noexcept
-    { return _M_continue; }
+    { return static_cast<contract_violation_continuation_mode>(_M_continue); }
   };
 
 } // namespace experimental
@@ -83,9 +77,8 @@ namespace experimental
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-  //void handle_contract_violation (const contract_violation &);
-
-  //int on_contract_violation (bool, int, const char *, const char *, const char *, const char *, const char *, int);
+// To override the contract violation handler, define
+//void ::handle_contract_violation (const std::experimental::contract_violation &);
 
 #endif // C++17
 #endif // _GLIBCXX_CONTRACT

@@ -233,8 +233,7 @@ enum cp_tree_index
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
 
-    CPTI_ON_CONTRACT_VIOLATION,
-    CPTI_ON_CONTRACT_VIOLATION_NEVER,
+    CPTI_PSEUDO_CONTRACT_VIOLATION,
 
     CPTI_SOURCE_LOCATION_IMPL,
 
@@ -270,6 +269,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 /* std::align_val_t */
 #define align_type_node			cp_global_trees[CPTI_ALIGN_TYPE]
+#define pseudo_contract_violation_type	cp_global_trees[CPTI_PSEUDO_CONTRACT_VIOLATION]
 
 /* We cache these tree nodes so as to call get_identifier less frequently.
    For identifiers for functions, including special member functions such
@@ -371,9 +371,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define free_exception_fn		cp_global_trees[CPTI_FREE_EXCEPTION_FN]
 #define throw_fn			cp_global_trees[CPTI_THROW_FN]
 #define rethrow_fn			cp_global_trees[CPTI_RETHROW_FN]
-
-#define on_contract_violation_fn        cp_global_trees[CPTI_ON_CONTRACT_VIOLATION]
-#define on_contract_violation_never_fn  cp_global_trees[CPTI_ON_CONTRACT_VIOLATION_NEVER]
 
 /* The type of the function-pointer argument to "__cxa_atexit" (or
    "std::atexit", if "__cxa_atexit" is not being used).  */

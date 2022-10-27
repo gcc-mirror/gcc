@@ -5,16 +5,6 @@
 #include <iostream>
 #include <experimental/contract>
 
-int
-__on_contract_violation (bool continue_,
-        int line_number,
-        const char * file_name,
-        const char * function_name,
-        const char * comment,
-        const char * assertion_level,
-        const char * assertion_role,
-        int continuation_mode);
-
 void handle_contract_violation(const std::experimental::contract_violation &violation) {
   std::cerr << "custom std::handle_contract_violation called:"
     << " " << violation.line_number()
@@ -29,11 +19,6 @@ int fun() {
   return 0;
 }
 
-int fun2() {
-  __on_contract_violation(true, 1, "T1", "T2", "T3", "T4", "T5", 1);
-  return 1;
-}
-
 int fun3() {
   fun();
   return 2;
@@ -45,12 +30,6 @@ int main(int, char**) {
     [[ assert: x < 0 ]];
   } catch(int &ex) {
     std::cerr << "synth caught direct: " << ex << std::endl;
-  }
-
-  try {
-    fun2();
-  } catch(int &ex) {
-    std::cerr << "caught lib direct: " << ex << std::endl;
   }
 
   try {
@@ -69,13 +48,11 @@ int main(int, char**) {
   return 0;
 }
 
-// { dg-output "custom std::handle_contract_violation called: 45 .*/contracts14.C(\n|\r\n|\r)*" }
-// { dg-output "synth caught direct: -45(\n|\r\n|\r)*" }
-// { dg-output "custom std::handle_contract_violation called: 1 T1(\n|\r\n|\r)*" }
-// { dg-output "caught lib direct: -1(\n|\r\n|\r)*" }
-// { dg-output "custom std::handle_contract_violation called: 28 .*/contracts14.C(\n|\r\n|\r)*" }
-// { dg-output "synth caught indirect: -28(\n|\r\n|\r)*" }
-// { dg-output "custom std::handle_contract_violation called: 28 .*/contracts14.C(\n|\r\n|\r)*" }
-// { dg-output "synth caught double indirect: -28(\n|\r\n|\r)*" }
+// { dg-output "custom std::handle_contract_violation called: 30 .*/contracts14.C(\n|\r\n|\r)*" }
+// { dg-output "synth caught direct: -30(\n|\r\n|\r)*" }
+// { dg-output "custom std::handle_contract_violation called: 18 .*/contracts14.C(\n|\r\n|\r)*" }
+// { dg-output "synth caught indirect: -18(\n|\r\n|\r)*" }
+// { dg-output "custom std::handle_contract_violation called: 18 .*/contracts14.C(\n|\r\n|\r)*" }
+// { dg-output "synth caught double indirect: -18(\n|\r\n|\r)*" }
 // { dg-output "end main" }
 

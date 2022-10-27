@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
    is transformed into:
 
      if (!(v > 0)) {
-       __on_contract_violation (true, // continue_
+       handle_contract_violation(__pseudo_contract_violation{
 	 5, // line_number,
 	 "main.cpp", // file_name,
 	 "fun", // function_name,
@@ -42,21 +42,18 @@ along with GCC; see the file COPYING3.  If not see
 	 "default", // assertion_level,
 	 "default", // assertion_role,
 	 MAYBE_CONTINUE, // continuation_mode
-	 );
+       });
+       terminate (); // if NEVER_CONTINUE
      }
 
-   Here, __on_contract_violation is a shim used to actually construct the
-   std::contract_violation and call the installed handler, finally terminating
-   if the contract should not continue on violation. This prevents requiring
-   including <contract> and simplifies building the call.
+   We use an internal type with the same layout as contract_violation rather
+   than try to define the latter internally and somehow deal with its actual
+   definition in a TU that includes <contract>.
 
-   FIXME the overhead would be lower if we write out the contract_violation
-   object statically and pass it directly to the handler.  Though the current
-   way is more tolerant of layout changes, so maybe leave it alone until the
-   feature is more mature.
+   ??? is it worth factoring out the calls to handle_contract_violation and
+   terminate into a local function?
 
-   Assumed contracts have a similar transformation that results the body of the
-   if being __builtin_unreachable ();
+   Assumed contracts use the same implementation as C++23 [[assume]].
 
    Parsing of pre and post contract conditions need to be deferred when the
    contracts are attached to a member function. The postcondition identifier
@@ -163,6 +160,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-iterator.h"
 #include "print-tree.h"
+#include "stor-layout.h"
 
 const int max_custom_roles = 32;
 static contract_role contract_build_roles[max_custom_roles] = {
@@ -1581,43 +1579,160 @@ get_contract_role_name (tree contract)
   return "default";
 }
 
-static void
-build_contract_handler_call (tree contract,
-			     contract_continuation cmode)
+/* Build a layout-compatible internal version of std::contract_violation.  */
+
+static tree
+get_pseudo_contract_violation_type ()
 {
-  const char *level = get_contract_level_name (contract);
-  const char *role = get_contract_role_name (contract);
-  tree comment = CONTRACT_COMMENT (contract);
+  if (!pseudo_contract_violation_type)
+    {
+      /* Must match <contract>:
+	 class contract_violation {
+	   uint_least32_t _M_line;
+	   const char* _M_file;
+	   const char* _M_function;
+	   const char* _M_comment;
+	   const char* _M_level;
+	   const char* _M_role;
+	   signed char _M_continue;
+	 If this changes, also update the initializer in
+	 build_contract_violation.  */
+      const tree types[] = { uint_least32_type_node,
+			     const_string_type_node,
+			     const_string_type_node,
+			     const_string_type_node,
+			     const_string_type_node,
+			     const_string_type_node,
+			     signed_char_type_node };
+      tree fields = NULL_TREE;
+      for (tree type : types)
+	{
+	  /* finish_builtin_struct wants fieldss chained in reverse.  */
+	  tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
+				  NULL_TREE, type);
+	  DECL_CHAIN (next) = fields;
+	  fields = next;
+	}
+      iloc_sentinel ils (input_location);
+      input_location = BUILTINS_LOCATION;
+      pseudo_contract_violation_type = make_class_type (RECORD_TYPE);
+      finish_builtin_struct (pseudo_contract_violation_type,
+			     "__pseudo_contract_violation",
+			     fields, NULL_TREE);
+      CLASSTYPE_AS_BASE (pseudo_contract_violation_type)
+	= pseudo_contract_violation_type;
+      DECL_CONTEXT (TYPE_NAME (pseudo_contract_violation_type))
+	= FROB_CONTEXT (global_namespace);
+      TREE_PUBLIC (TYPE_NAME (pseudo_contract_violation_type)) = true;
+      CLASSTYPE_LITERAL_P (pseudo_contract_violation_type) = true;
+      CLASSTYPE_LAZY_COPY_CTOR (pseudo_contract_violation_type) = true;
+      xref_basetypes (pseudo_contract_violation_type, /*bases=*/NULL_TREE);
+      pseudo_contract_violation_type
+	= cp_build_qualified_type (pseudo_contract_violation_type,
+				   TYPE_QUAL_CONST);
+    }
+  return pseudo_contract_violation_type;
+}
 
+/* Return a VAR_DECL to pass to handle_contract_violation.  */
+
+static tree
+build_contract_violation (tree contract, contract_continuation cmode)
+{
   expanded_location loc = expand_location (EXPR_LOCATION (contract));
-
-  tree continue_mode = build_int_cst (boolean_type_node, cmode != NEVER_CONTINUE);
-  tree line_number = build_int_cst (integer_type_node, loc.line);
-  tree file_name = build_string_literal (strlen (loc.file) + 1, loc.file);
-  const char *function_name_str =
+  const char *function =
     TREE_CODE (contract) == ASSERTION_STMT
       || DECL_CONSTRUCTOR_P (current_function_decl)
       || DECL_DESTRUCTOR_P (current_function_decl)
     ? current_function_name ()
     : fndecl_name (DECL_ORIGINAL_FN (current_function_decl));
-  tree function_name = build_string_literal (strlen (function_name_str) + 1,
-					     function_name_str);
-  tree level_str = build_string_literal (strlen (level) + 1, level);
-  tree role_str = build_string_literal (strlen (role) + 1, role);
+  const char *level = get_contract_level_name (contract);
+  const char *role = get_contract_role_name (contract);
 
-  /* FIXME: Do we want a string for this?.  */
-  tree continuation = build_int_cst (integer_type_node, cmode);
+  /* Must match the type layout in get_pseudo_contract_violation_type.  */
+  tree ctor = build_constructor_va
+    (init_list_type_node, 7,
+     NULL_TREE, build_int_cst (uint_least32_type_node, loc.line),
+     NULL_TREE, build_string_literal (loc.file),
+     NULL_TREE, build_string_literal (function),
+     NULL_TREE, CONTRACT_COMMENT (contract),
+     NULL_TREE, build_string_literal (level),
+     NULL_TREE, build_string_literal (role),
+     NULL_TREE, build_int_cst (signed_char_type_node, cmode));
 
-  tree violation_fn;
-  if (cmode == MAYBE_CONTINUE)
-    violation_fn = on_contract_violation_fn;
+  ctor = finish_compound_literal (get_pseudo_contract_violation_type (),
+				  ctor, tf_none);
+  protected_set_expr_location (ctor, EXPR_LOCATION (contract));
+  return ctor;
+}
+
+/* Return handle_contract_violation(), declaring it if needed.  */
+
+static tree
+declare_handle_contract_violation ()
+{
+  tree fnname = get_identifier ("handle_contract_violation");
+  tree viol_name = get_identifier ("contract_violation");
+  tree l = lookup_qualified_name (global_namespace, fnname,
+				  LOOK_want::HIDDEN_FRIEND);
+  for (tree f: lkp_range (l))
+    if (TREE_CODE (f) == FUNCTION_DECL)
+	{
+	  tree parms = TYPE_ARG_TYPES (TREE_TYPE (f));
+	  if (remaining_arguments (parms) != 1)
+	    continue;
+	  tree parmtype = non_reference (TREE_VALUE (parms));
+	  if (CLASS_TYPE_P (parmtype)
+	      && TYPE_IDENTIFIER (parmtype) == viol_name)
+	    return f;
+	}
+
+  tree id_exp = get_identifier ("experimental");
+  tree ns_exp = lookup_qualified_name (std_node, id_exp);
+
+  tree violation = error_mark_node;
+  if (TREE_CODE (ns_exp) == NAMESPACE_DECL)
+    violation = lookup_qualified_name (ns_exp, viol_name,
+				       LOOK_want::TYPE
+				       |LOOK_want::HIDDEN_FRIEND);
+
+  if (TREE_CODE (violation) == TYPE_DECL)
+    violation = TREE_TYPE (violation);
   else
-    violation_fn = on_contract_violation_never_fn;
-  tree call = build_call_n (violation_fn, 8, continue_mode, line_number,
-			    file_name, function_name, comment,
-			    level_str, role_str,
-			    continuation);
+    {
+      push_nested_namespace (std_node);
+      push_namespace (id_exp, /*inline*/false);
+      violation = make_class_type (RECORD_TYPE);
+      create_implicit_typedef (viol_name, violation);
+      DECL_SOURCE_LOCATION (TYPE_NAME (violation)) = BUILTINS_LOCATION;
+      DECL_CONTEXT (TYPE_NAME (violation)) = current_namespace;
+      pushdecl_namespace_level (TYPE_NAME (violation), /*hidden*/true);
+      pop_namespace ();
+      pop_nested_namespace (std_node);
+    }
 
+  tree argtype = cp_build_qualified_type (violation, TYPE_QUAL_CONST);
+  argtype = cp_build_reference_type (argtype, /*rval*/false);
+  tree fntype = build_function_type_list (void_type_node, argtype, NULL_TREE);
+
+  push_nested_namespace (global_namespace);
+  tree fn = build_cp_library_fn_ptr ("handle_contract_violation", fntype,
+				     ECF_COLD);
+  pushdecl_namespace_level (fn, /*hiding*/true);
+  pop_nested_namespace (global_namespace);
+
+  return fn;
+}
+
+/* Build the call to handle_contract_violation for CONTRACT.  */
+
+static void
+build_contract_handler_call (tree contract,
+			     contract_continuation cmode)
+{
+  tree violation = build_contract_violation (contract, cmode);
+  tree violation_fn = declare_handle_contract_violation ();
+  tree call = build_call_n (violation_fn, 1, build_address (violation));
   finish_expr_stmt (call);
 }
 
@@ -1683,6 +1798,8 @@ build_contract_check (tree contract)
     }
 
   build_contract_handler_call (contract, cmode);
+  if (cmode == NEVER_CONTINUE)
+    finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
 
   finish_then_clause (if_stmt);
   tree scope = IF_SCOPE (if_stmt);
@@ -1968,29 +2085,6 @@ apply_postcondition_to_return (tree expr)
   CALL_FROM_THUNK_P (call) = true;
 
   return call;
-}
-
-/* Set up built-ins for contracts.  */
-
-void
-init_contract_processing (void)
-{
-  /* std::contract_violation */
-  tree tmp = build_function_type_list (integer_type_node,
-				  boolean_type_node,
-				  integer_type_node,
-				  const_string_type_node,
-				  const_string_type_node,
-				  const_string_type_node,
-				  const_string_type_node,
-				  const_string_type_node,
-				  integer_type_node,
-				  NULL_TREE);
-  on_contract_violation_fn =
-    build_cp_library_fn_ptr ("__on_contract_violation", tmp, ECF_COLD);
-  on_contract_violation_never_fn =
-    build_cp_library_fn_ptr ("__on_contract_violation", tmp,
-			     ECF_COLD | ECF_NORETURN);
 }
 
 #include "gt-cp-contracts.h"
