@@ -13539,6 +13539,13 @@ maybe_warn_dangling_reference (const_tree decl, tree init)
     return;
   if (!TYPE_REF_P (TREE_TYPE (decl)))
     return;
+  /* Don't suppress the diagnostic just because the call comes from
+     a system header.  If the DECL is not in a system header, or if
+     -Wsystem-headers was provided, warn.  */
+  auto wsh
+    = make_temp_override (global_dc->dc_warn_system_headers,
+			  (!in_system_header_at (DECL_SOURCE_LOCATION (decl))
+			   || global_dc->dc_warn_system_headers));
   if (tree call = do_warn_dangling_reference (init))
     {
       auto_diagnostic_group d;
