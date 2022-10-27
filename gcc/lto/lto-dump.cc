@@ -347,7 +347,8 @@ lto_main (void)
       /* Dump gimple statement statistics.  */
       cgraph_node *node;
       FOR_EACH_DEFINED_FUNCTION (node)
-	node->get_untransformed_body ();
+	if (!node->alias)
+	  node->get_untransformed_body ();
       if (!GATHER_STATISTICS)
 	warning_at (input_location, 0,
 		    "Not configured with "
