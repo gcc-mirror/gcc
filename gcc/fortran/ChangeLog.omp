@@ -1,3 +1,9 @@
+2022-10-27  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* openmp.cc (oacc_is_parallel): Remove.
+	(resolve_oacc_loop_blocks): Remove "gang reduction on an orphan loop"
+	checking.
+
 2022-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-array.cc (non_negative_strides_array_p): Fix handling

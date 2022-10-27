@@ -1,3 +1,8 @@
+2022-10-27  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-typeck.cc (c_finish_omp_clauses): Remove "gang reduction on an
+	orphan loop" checking.
+
 2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

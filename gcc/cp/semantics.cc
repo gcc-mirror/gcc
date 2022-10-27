@@ -6794,7 +6794,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool mergeable_seen = false;
   bool implicit_moved = false;
   bool target_in_reduction_seen = false;
-  bool oacc_gang_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -6812,15 +6811,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
   if (ort & C_ORT_ACC)
     for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-      switch (OMP_CLAUSE_CODE (c))
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ASYNC)
         {
-	case OMP_CLAUSE_ASYNC:
 	  oacc_async = true;
 	  break;
-	case OMP_CLAUSE_GANG:
-	  oacc_gang_seen = true;
-	  break;
-	default:;
 	}
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
@@ -6837,13 +6831,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  goto check_dup_generic;
 	case OMP_CLAUSE_REDUCTION:
-	  if (oacc_gang_seen && oacc_get_fn_attrib (current_function_decl))
-	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"gang reduction on an orphan loop");
-	      remove = true;
-	      break;
-	    }
 	  if (reduction_seen == 0)
 	    reduction_seen = OMP_CLAUSE_REDUCTION_INSCAN (c) ? -1 : 1;
 	  else if (reduction_seen != -2

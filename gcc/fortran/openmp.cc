@@ -10248,11 +10248,6 @@ resolve_omp_do (gfc_code *code)
     }
 }
 
-static bool
-oacc_is_parallel (gfc_code *code)
-{
-  return code->op == EXEC_OACC_PARALLEL || code->op == EXEC_OACC_PARALLEL_LOOP;
-}
 
 static gfc_statement
 omp_code_to_statement (gfc_code *code)
@@ -10572,18 +10567,6 @@ resolve_oacc_loop_blocks (gfc_code *code)
 {
   if (!oacc_is_loop (code))
     return;
-
-  if (code->op == EXEC_OACC_LOOP
-      && code->ext.omp_clauses->lists[OMP_LIST_REDUCTION]
-      && code->ext.omp_clauses->gang)
-    {
-      fortran_omp_context *c;
-      for (c = omp_current_ctx; c; c = c->previous)
-	if (!oacc_is_loop (c->code))
-	  break;
-      if (c == NULL || !oacc_is_parallel (c->code))
-	gfc_error ("gang reduction on an orphan loop at %L", &code->loc);
-    }
 
   if (code->ext.omp_clauses->tile_list && code->ext.omp_clauses->gang
       && code->ext.omp_clauses->worker && code->ext.omp_clauses->vector)
