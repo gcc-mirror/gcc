@@ -141,6 +141,20 @@ multiarch=$9
 multilib_reuse=${10}
 enable_multilib=${11}
 
+# Sanity check: make sure we have as many dirnames as options
+if [ -n "${dirnames}" ]; then
+    set x $options
+    nboptions=$#
+    set x $dirnames
+    nbdirnames=$#
+    if [ $nbdirnames -ne $nboptions ]; then
+	echo 1>&2 "Error calling $0: Number of dirnames ($nbdirnames) does not match number of options ($nboptions)"
+	echo 1>&2 "options: ${options}"
+	echo 1>&2 "dirnames: ${dirnames}"
+	exit 1
+    fi
+fi
+
 echo "static const char *const multilib_raw[] = {"
 
 mkdir tmpmultilib.$$ || exit 1
