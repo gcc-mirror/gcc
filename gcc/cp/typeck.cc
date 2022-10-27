@@ -6179,7 +6179,8 @@ cp_build_binary_op (const op_location_t &location,
     }
   if (may_need_excess_precision
       && (orig_type0 != type0 || orig_type1 != type1)
-      && build_type == NULL_TREE)
+      && build_type == NULL_TREE
+      && result_type)
     {
       gcc_assert (common);
       semantic_result_type = cp_common_type (orig_type0, orig_type1);
