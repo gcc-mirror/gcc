@@ -227,7 +227,6 @@ void dump_list (void)
 {
   dump_list_functions ();
   dump_list_variables ();
-  return;
 }
 
 /* Dump specific variables and functions used in IL.  */
@@ -243,7 +242,6 @@ void dump_symbol ()
 	  printf ("\n");
 	}
     }
-  return;
 }
 
 /* Dump specific gimple body of specified function.  */
@@ -259,19 +257,17 @@ void dump_body ()
     return;
   }
   cgraph_node *cnode;
-  FOR_EACH_FUNCTION (cnode)
-    if (cnode->definition
-	&& !cnode->alias
-	&& !strcmp (cnode->name (), flag_dump_body))
+  FOR_EACH_DEFINED_FUNCTION (cnode)
+    if (!cnode->alias
+	&& !strcmp (cnode->asm_name (), flag_dump_body))
       {
-	printf ("Gimple Body of Function: %s\n", cnode->name ());
+	printf ("GIMPLE body of function: %s\n\n", cnode->asm_name ());
 	cnode->get_untransformed_body ();
 	debug_function (cnode->decl, flags);
 	flag = 1;
       }
   if (!flag)
     error_at (input_location, "Function not found.");
-  return;
 }
 
 /* List of command line options for dumping.  */
@@ -292,13 +288,12 @@ void dump_tool_help ()
     "  -callgraph                Dump the callgraph in graphviz format.\n"
     "  -type-stats               Dump statistics of tree types.\n"
     "  -tree-stats               Dump statistics of trees.\n"
-    "  -gimple-stats             Dump statistics of gimple statements.\n"
-    "  -dump-body=               Dump the specific gimple body.\n"
+    "  -gimple-stats             Dump statistics of GIMPLE statements.\n"
+    "  -dump-body=               Dump the specific GIMPLE body.\n"
     "  -dump-level=              Deciding the optimization level of body.\n"
     "  -help                     Display the dump tool help.\n";
 
   fputs (msg, stdout);
-  return;
 }
 
 unsigned int
@@ -365,7 +360,7 @@ lto_main (void)
 		    "%<--enable-gather-detailed-mem-stats%>.");
       else
 	{
-	  printf ("Tree Statistics\n");
+	  printf ("Tree statistics\n");
 	  dump_tree_statistics ();
 	}
     }
