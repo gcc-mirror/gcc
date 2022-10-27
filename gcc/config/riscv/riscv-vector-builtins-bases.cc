@@ -84,8 +84,8 @@ public:
   }
 };
 
-static constexpr const vsetvl<false> vsetvl_obj;
-static constexpr const vsetvl<true> vsetvlmax_obj;
+static CONSTEXPR const vsetvl<false> vsetvl_obj;
+static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 namespace bases {
 const function_base *const vsetvl = &vsetvl_obj;
 const function_base *const vsetvlmax = &vsetvlmax_obj;

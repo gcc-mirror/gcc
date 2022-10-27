@@ -171,7 +171,7 @@ struct rvv_builtin_suffixes
 /* RVV Builtin argument information.  */
 struct rvv_arg_type_info
 {
-  constexpr rvv_arg_type_info (rvv_base_type base_type_in)
+  CONSTEXPR rvv_arg_type_info (rvv_base_type base_type_in)
     : base_type (base_type_in)
   {}
   enum rvv_base_type base_type;
