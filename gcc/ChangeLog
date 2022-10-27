@@ -1,3 +1,149 @@
+2022-10-26  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc: Support __builtin_preserve_field_info.
+	(enum bpf_builtins): Add new builtin.
+	(bpf_init_builtins): Likewise.
+	(bpf_core_field_info): New function.
+	(bpf_expand_builtin): Accomodate new builtin. Refactor adding new
+	relocation to...
+	(maybe_make_core_relo): ... here. New function.
+	(bpf_resolve_overloaded_builtin): Accomodate new builtin.
+	(bpf_core_newdecl): Likewise.
+	(bpf_core_walk): Likewise.
+	(bpf_core_is_maybe_aggregate_access): Improve logic.
+	(struct core_walk_data): New.
+	* config/bpf/coreout.cc (bpf_core_reloc_add): Allow adding different
+	relocation kinds.
+	* config/bpf/coreout.h: Analogous change.
+	* doc/extend.texi: Document BPF __builtin_preserve_field_info.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* doc/invoke.texi: Document -Wdangling-reference.
+
+2022-10-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (movdi):
+	Copy operands[0...1] to ops[0...3] and then use the latter before
+	calling xtensa_split_DI_reg_imm() and emitting insns.
+
+2022-10-26  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR other/107353
+	* ipa-visibility.cc (function_and_variable_visibility):
+	Conditionally upgrade TLS model instead of asserting.
+
+2022-10-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::fold_stmt): Check if
+	stmt is non-negative and adjust the range.
+
+2022-10-26  Martin Liska  <mliska@suse.cz>
+
+	* common/config/i386/cpuinfo.h (has_cpu_feature): Add comment.
+	(reset_cpu_feature): New.
+	(get_zhaoxin_cpu): Use reset_cpu_feature.
+
+2022-10-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_expand_epilogue): Fix statement.
+
+2022-10-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/107357
+	* config/riscv/riscv-modes.def (VECTOR_BOOL_MODE): Set to minimum size.
+	(ADJUST_NUNITS): Adjust according to -march.
+	(ADJUST_BYTESIZE): Ditto.
+	* config/riscv/riscv-protos.h (riscv_v_ext_enabled_vector_mode_p):
+	Remove.
+	(riscv_v_ext_vector_mode_p): Change function implementation.
+	* config/riscv/riscv-vector-builtins.cc (rvv_switcher::rvv_switcher):
+	Change to riscv_v_ext_vector_mode_p.
+	(register_builtin_type): Ditto.
+	* config/riscv/riscv.cc (riscv_v_ext_vector_mode_p): Change to enabled
+	modes.
+	(ENTRY): Ditto.
+	(riscv_v_ext_enabled_vector_mode_p): Remove.
+	(riscv_v_adjust_nunits): New function.
+	(riscv_vector_mode_supported_p): Use riscv_v_ext_vector_mode_p instead.
+	* config/riscv/riscv.h (riscv_v_adjust_nunits): New function.
+
+2022-10-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config.gcc (riscv*): Add riscv-v.o to extra_objs.
+	* config/riscv/constraints.md (vu): New constraint.
+	(vi): Ditto.
+	(Wc0): Ditto.
+	(Wc1): Ditto.
+	* config/riscv/predicates.md (vector_length_operand): New.
+	(reg_or_mem_operand): Ditto.
+	(vector_move_operand): Ditto.
+	(vector_mask_operand): Ditto.
+	(vector_merge_operand): Ditto.
+	* config/riscv/riscv-protos.h (riscv_regmode_natural_size) New.
+	(riscv_vector::const_vec_all_same_in_range_p): Ditto.
+	(riscv_vector::legitimize_move): Ditto.
+	(tail_policy): Ditto.
+	(mask_policy): Ditto.
+	* config/riscv/riscv-v.cc: New.
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(vsetvl::expand): Refactor how LMUL encoding.
+	* config/riscv/riscv.cc (riscv_print_operand): Update how LMUL
+	print and mask operand print.
+	(riscv_regmode_natural_size): New.
+	* config/riscv/riscv.h (REGMODE_NATURAL_SIZE): New.
+	* config/riscv/riscv.md (mode): Add vector modes.
+	* config/riscv/t-riscv (riscv-v.o) New.
+	* config/riscv/vector-iterators.md: New.
+	* config/riscv/vector.md (vundefined<mode>): New.
+	(mov<mode>): New.
+	(*mov<mode>): New.
+	(@vsetvl<mode>_no_side_effects): New.
+	(@pred_mov<mode>): New.
+
+2022-10-26  Monk Chiang  <monk.chiang@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Add svinval and svnapot extension.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv-opts.h (MASK_SVINVAL): New.
+	(MASK_SVNAPOT): Ditto.
+	(TARGET_SVINVAL): Ditto.
+	(TARGET_SVNAPOT): Ditto.
+	* config/riscv/riscv.opt (riscv_sv_subext): New.
+
+2022-10-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-modes.def: Adjust table indentation in commnet.
+
+2022-10-26  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Use HONOR_*.
+	(frange::verify_range): Same.
+	* value-range.h (frange_val_min): Same.
+	(frange_val_max): Same.
+
+2022-10-26  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106460
+	* config/rs6000/rs6000.cc (rs6000_cannot_force_const_mem): Return true
+	for HIGH code rtx.
+
+2022-10-26  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Add `h`.
+	(riscv_supported_std_ext): Ditto.
+	(multi_letter_subset_rank): Remove `h`.
+	(riscv_subset_list::parse_std_ext): Handle `h` as single letter
+	extension.
+	(riscv_subset_list::parse): Ditto.
+
 2022-10-25  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* auto-profile.cc (get_combined_location): Include discriminator in the

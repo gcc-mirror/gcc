@@ -1,3 +1,16 @@
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* call.cc (expr_represents_temporary_p): New, factored out of...
+	(conv_binds_ref_to_temporary): ...here.  Don't return false just
+	because a ck_base is missing.  Use expr_represents_temporary_p.
+	(do_warn_dangling_reference): New.
+	(maybe_warn_dangling_reference): New.
+	(extend_ref_init_temps): Call maybe_warn_dangling_reference.
+	* cp-tree.h: Adjust comment.
+	* typeck.cc (check_return_expr): Suppress -Wdangling-reference
+	warnings.
+
 2022-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.cc (synthesize_implicit_template_parm): Fix thinko about
