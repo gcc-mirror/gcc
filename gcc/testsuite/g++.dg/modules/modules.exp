@@ -187,8 +187,9 @@ proc module_do_it { do_what testcase std asm_list } {
 	lappend options "additional_flags=$std"
 	set ident "$ident $std"
     }
-    if { [llength $do_what] > 3 } {
-	lappend options "additional_flags=[lindex $do_what 3]"
+    global extra_tool_flags
+    if { [llength $extra_tool_flags] } {
+	lappend options "additional_flags=$extra_tool_flags"
     }
 
     set execname "./[file tail $testcase].exe"
@@ -250,6 +251,8 @@ proc module-init { src } {
     set option_list {}
     set have_std 0
     set std_prefix "-std=c++"
+    global extra_tool_flags
+    set extra_tool_flags {}
 
     foreach op $tmp {
 	switch [lindex $op 0] {
@@ -258,11 +261,13 @@ proc module-init { src } {
 		if { [string match "*-std=*" [lindex $op 2]] } {
 		    set have_std 1
 		}
+		eval lappend extra_tool_flags [lindex $op 2]
 	    }
 	    "dg-additional-options" {
 		if { [string match "*-std=*" [lindex $op 2]] } {
 		    set have_std 1
 		}
+		eval lappend extra_tool_flags [lindex $op 2]
 	    }
 	}
     }
