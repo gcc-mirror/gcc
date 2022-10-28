@@ -27668,12 +27668,6 @@ cp_parser_member_declaration (cp_parser* parser)
 				initializer, /*init_const_expr_p=*/true,
 				asm_specification, attributes);
 
-	      /* If we've declared a member function with contracts, ensure we
-		 do late parsing for the contracts even if we have no function
-		 body to parse at that time.  */
-	      if (DECL_DECLARES_FUNCTION_P (decl) && DECL_CONTRACTS (decl))
-		vec_safe_push (unparsed_funs_with_definitions, decl);
-
 	      if (parser->fully_implicit_function_template_p)
 		{
 		  if (friend_p)
