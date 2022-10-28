@@ -387,13 +387,7 @@ c_get_alias_set (tree t)
   /* Allow aliasing between enumeral types and the underlying
      integer type.  This is required since those are compatible types.  */
   if (TREE_CODE (t) == ENUMERAL_TYPE)
-    {
-      tree t1 = c_common_type_for_size (tree_to_uhwi (TYPE_SIZE (t)),
-					/* short-cut commoning to signed
-					   type.  */
-					false);
-      return get_alias_set (t1);
-    }
+    return get_alias_set (ENUM_UNDERLYING_TYPE (t));
 
   return c_common_get_alias_set (t);
 }

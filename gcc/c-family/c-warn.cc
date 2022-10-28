@@ -1415,7 +1415,8 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
-	  || TREE_CODE (type) == ENUMERAL_TYPE)
+	  || (TREE_CODE (type) == ENUMERAL_TYPE
+	      && TREE_CODE (ENUM_UNDERLYING_TYPE (type)) != BOOLEAN_TYPE))
       && !int_fits_type_p (expr, type))
     {
       /* Do not diagnose overflow in a constant expression merely

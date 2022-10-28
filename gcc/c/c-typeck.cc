@@ -420,9 +420,11 @@ composite_type (tree t1, tree t2)
      (DR#013 question 3).  For consistency, use the enumerated type as
      the composite type.  */
 
-  if (code1 == ENUMERAL_TYPE && code2 == INTEGER_TYPE)
+  if (code1 == ENUMERAL_TYPE
+      && (code2 == INTEGER_TYPE || code2 == BOOLEAN_TYPE))
     return t1;
-  if (code2 == ENUMERAL_TYPE && code1 == INTEGER_TYPE)
+  if (code2 == ENUMERAL_TYPE
+      && (code1 == INTEGER_TYPE || code1 == BOOLEAN_TYPE))
     return t2;
 
   gcc_assert (code1 == code2);
@@ -1025,9 +1027,9 @@ tree
 common_type (tree t1, tree t2)
 {
   if (TREE_CODE (t1) == ENUMERAL_TYPE)
-    t1 = c_common_type_for_size (TYPE_PRECISION (t1), 1);
+    t1 = ENUM_UNDERLYING_TYPE (t1);
   if (TREE_CODE (t2) == ENUMERAL_TYPE)
-    t2 = c_common_type_for_size (TYPE_PRECISION (t2), 1);
+    t2 = ENUM_UNDERLYING_TYPE (t2);
 
   /* If both types are BOOLEAN_TYPE, then return boolean_type_node.  */
   if (TREE_CODE (t1) == BOOLEAN_TYPE
@@ -1125,7 +1127,7 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
       && COMPLETE_TYPE_P (t1)
       && TREE_CODE (t2) != ENUMERAL_TYPE)
     {
-      t1 = c_common_type_for_size (TYPE_PRECISION (t1), TYPE_UNSIGNED (t1));
+      t1 = ENUM_UNDERLYING_TYPE (t1);
       if (TREE_CODE (t2) != VOID_TYPE)
 	{
 	  if (enum_and_int_p != NULL)
@@ -1138,7 +1140,7 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
 	   && COMPLETE_TYPE_P (t2)
 	   && TREE_CODE (t1) != ENUMERAL_TYPE)
     {
-      t2 = c_common_type_for_size (TYPE_PRECISION (t2), TYPE_UNSIGNED (t2));
+      t2 = ENUM_UNDERLYING_TYPE (t2);
       if (TREE_CODE (t1) != VOID_TYPE)
 	{
 	  if (enum_and_int_p != NULL)
@@ -2193,15 +2195,19 @@ perform_integral_promotions (tree exp)
 
   gcc_assert (INTEGRAL_TYPE_P (type));
 
-  /* Normally convert enums to int,
-     but convert wide enums to something wider.  */
+  /* Convert enums to the result of applying the integer promotions to
+     their underlying type.  */
   if (code == ENUMERAL_TYPE)
     {
-      type = c_common_type_for_size (MAX (TYPE_PRECISION (type),
-					  TYPE_PRECISION (integer_type_node)),
-				     ((TYPE_PRECISION (type)
-				       >= TYPE_PRECISION (integer_type_node))
-				      && TYPE_UNSIGNED (type)));
+      type = ENUM_UNDERLYING_TYPE (type);
+      if (c_promoting_integer_type_p (type))
+	{
+	  if (TYPE_UNSIGNED (type)
+	      && TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
+	    type = unsigned_type_node;
+	  else
+	    type = integer_type_node;
+	}
 
       return convert (type, exp);
     }
@@ -3932,7 +3938,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
 	    }
 	  while (1);
 	}
-      if (TREE_CODE (TREE_TYPE (t)) != BOOLEAN_TYPE)
+      if (!C_BOOLEAN_TYPE_P (TREE_TYPE (t)))
 	warn_logical_not_parentheses (location, code, arg1.value, arg2.value);
     }
 
@@ -4537,7 +4543,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	  while (TREE_CODE (e) == COMPOUND_EXPR)
 	    e = TREE_OPERAND (e, 1);
 
-	  if ((TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
+	  if ((C_BOOLEAN_TYPE_P (TREE_TYPE (arg))
 	       || truth_value_p (TREE_CODE (e))))
 	    {
 	      auto_diagnostic_group d;
@@ -4669,7 +4675,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 			"decrement of enumeration value is invalid in C++");
 	}
 
-      if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
+      if (C_BOOLEAN_TYPE_P (TREE_TYPE (arg)))
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 	    warning_at (location, OPT_Wbool_operation,
@@ -4831,7 +4837,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	    goto return_build_unary_op;
 	  }
 
-	if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
+	if (C_BOOLEAN_TYPE_P (TREE_TYPE (arg)))
 	  val = boolean_increment (code, arg);
 	else
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
@@ -7087,7 +7093,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					 rhstype);
 
       bool save = in_late_binary_op;
-      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE
+      if (C_BOOLEAN_TYPE_P (type) || codel == COMPLEX_TYPE
 	  || (coder == REAL_TYPE
 	      && (codel == INTEGER_TYPE || codel == ENUMERAL_TYPE)
 	      && sanitize_flags_p (SANITIZE_FLOAT_CAST)))
@@ -7734,7 +7740,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       return convert (type, rhs);
     }
-  else if (codel == BOOLEAN_TYPE
+  else if (C_BOOLEAN_TYPE_P (type)
 	   /* The type nullptr_t may be converted to bool.  The
 	      result is false.  */
 	   && (coder == POINTER_TYPE || coder == NULLPTR_TYPE))
@@ -11002,7 +11008,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	return NULL_TREE;
 
       save = in_late_binary_op;
-      if (TREE_CODE (TREE_TYPE (res)) == BOOLEAN_TYPE
+      if (C_BOOLEAN_TYPE_P (TREE_TYPE (res))
 	  || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE
 	  || (TREE_CODE (TREE_TYPE (t)) == REAL_TYPE
 	      && (TREE_CODE (TREE_TYPE (res)) == INTEGER_TYPE
@@ -11164,7 +11170,7 @@ c_start_switch (location_t switch_loc,
 	  while (TREE_CODE (e) == COMPOUND_EXPR)
 	    e = TREE_OPERAND (e, 1);
 
-	  if ((TREE_CODE (type) == BOOLEAN_TYPE
+	  if ((C_BOOLEAN_TYPE_P (type)
 	       || truth_value_p (TREE_CODE (e)))
 	      /* Explicit cast to int suppresses this warning.  */
 	      && !(TREE_CODE (type) == INTEGER_TYPE
@@ -12493,9 +12499,9 @@ build_binary_op (location_t location, enum tree_code code,
       else if (code1 == NULLPTR_TYPE && null_pointer_constant_p (orig_op0))
 	result_type = (INTEGRAL_TYPE_P (type0)
 		       ? build_pointer_type (type0) : type0);
-      if ((TREE_CODE (TREE_TYPE (orig_op0)) == BOOLEAN_TYPE
+      if ((C_BOOLEAN_TYPE_P (TREE_TYPE (orig_op0))
 	   || truth_value_p (TREE_CODE (orig_op0)))
-	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE
+	  ^ (C_BOOLEAN_TYPE_P (TREE_TYPE (orig_op1))
 	     || truth_value_p (TREE_CODE (orig_op1))))
 	maybe_warn_bool_compare (location, code, orig_op0, orig_op1);
       break;
@@ -12638,9 +12644,9 @@ build_binary_op (location_t location, enum tree_code code,
 	  instrument_expr = build_call_expr_loc (location, tt, 2, op0, op1);
 	}
 
-      if ((TREE_CODE (TREE_TYPE (orig_op0)) == BOOLEAN_TYPE
+      if ((C_BOOLEAN_TYPE_P (TREE_TYPE (orig_op0))
 	   || truth_value_p (TREE_CODE (orig_op0)))
-	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE
+	  ^ (C_BOOLEAN_TYPE_P (TREE_TYPE (orig_op1))
 	     || truth_value_p (TREE_CODE (orig_op1))))
 	maybe_warn_bool_compare (location, code, orig_op0, orig_op1);
       break;
