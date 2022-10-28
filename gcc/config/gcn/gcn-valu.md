@@ -2466,6 +2466,23 @@
   [(set_attr "type" "vop2")
    (set_attr "length" "8,8")])
 
+(define_code_iterator fminmaxop [smin smax])
+(define_expand "<fexpander><mode>3"
+  [(set (match_operand:FP 0 "gcn_valu_dst_operand")
+	(fminmaxop:FP
+	  (match_operand:FP 1 "gcn_valu_src0_operand")
+	  (match_operand:FP 2 "gcn_valu_src1_operand")))]
+  ""
+  {})
+
+(define_expand "<fexpander><mode>3<exec>"
+  [(set (match_operand:V_FP 0 "gcn_valu_dst_operand")
+	(fminmaxop:V_FP
+	  (match_operand:V_FP 1 "gcn_valu_src0_operand")
+	  (match_operand:V_FP 2 "gcn_valu_src1_operand")))]
+  ""
+  {})
+
 ;; }}}
 ;; {{{ FP unops
 
@@ -3519,6 +3536,17 @@
     emit_insn (gen_vec_extract<mode><scalar_mode> (operands[0], tmp,
 						   last_lane));
 
+    DONE;
+  })
+
+(define_expand "reduc_<fexpander>_scal_<mode>"
+  [(match_operand:<SCALAR_MODE> 0 "register_operand")
+   (fminmaxop:V_FP
+     (match_operand:V_FP 1 "register_operand"))]
+  ""
+  {
+    /* fmin/fmax are identical to smin/smax.  */
+    emit_insn (gen_reduc_<expander>_scal_<mode> (operands[0], operands[1]));
     DONE;
   })
 
