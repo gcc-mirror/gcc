@@ -1475,14 +1475,6 @@ duplicate_function_template_decls (tree newdecl, tree olddecl)
   return false;
 }
 
-/* This temporarily contains the attribute list for a friend declaration in
-   grokdecl. Friend declarations are merged together before attributes are
-   processed, which complicates the processing of contracts. In particular, we
-   need to compare and possibly remap contracts in duplicate_decls.  */
-/* FIXME make this go away.  */
-
-static tree friend_attributes;
-
 /* A subroutine of duplicate_decls. Diagnose issues in the redeclaration of
    guarded functions.  Note that attributes on new friend declarations have not
    been processed yet, so we take those from the global above.  */
@@ -1492,11 +1484,7 @@ duplicate_contracts (tree newdecl, tree olddecl)
 {
   /* Compare contracts to see if they match.    */
   tree old_contracts = DECL_CONTRACTS (olddecl);
-  tree new_contracts;
-  if (friend_attributes)
-    new_contracts = friend_attributes;
-  else
-    new_contracts = DECL_CONTRACTS (newdecl);
+  tree new_contracts = DECL_CONTRACTS (newdecl);
 
   if (!old_contracts && !new_contracts)
     return;
@@ -2392,10 +2380,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
       /* Make sure the contracts are equivalent.  */
       tree old_contracts = DECL_CONTRACTS (old_result);
-      tree new_contracts = friend_attributes
-	? find_contract (friend_attributes)
-	: DECL_CONTRACTS (new_result);
-      if (DECL_CONTRACTS (old_result) && new_contracts)
+      tree new_contracts = DECL_CONTRACTS (new_result);
+      if (old_contracts && new_contracts)
 	{
 	  match_contract_conditions (DECL_SOURCE_LOCATION (old_result),
 				     old_contracts,
@@ -2405,10 +2391,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
 
       /* Remove contracts from old_result so they aren't appended to
-	 old_result by the merge function.  If we're duplicating because
-	 NEWDECL is a friend, do not do this!  */
-      if (!friend_attributes)
-	remove_contract_attributes (old_result);
+	 old_result by the merge function.  */
+      remove_contract_attributes (old_result);
 
       DECL_ATTRIBUTES (old_result)
 	= (*targetm.merge_decl_attributes) (old_result, new_result);
@@ -2484,27 +2468,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
 	      if (tree fc = DECL_FRIEND_CONTEXT (new_result))
 		SET_DECL_FRIEND_CONTEXT (old_result, fc);
-	    }
-
-	  /* In general, contracts are re-mapped to their parameters when
-	     instantiated. However, for friends, we need to update the
-	     previous declaration here.
-
-	     TODO: It would be nice if we could avoid doing this here.  */
-	  if (friend_attributes)
-	    {
-	      remove_contract_attributes (old_result);
-	      tree list = NULL_TREE;
-	      for (tree p = new_contracts; p; p = TREE_CHAIN (p))
-		{
-		  if (cxx_contract_attribute_p (p))
-		    list = tree_cons (TREE_PURPOSE (p),
-				      TREE_VALUE (p),
-				      NULL_TREE);
-		}
-	      nreverse (list);
-	      DECL_ATTRIBUTES (old_result)
-		= chainon (DECL_ATTRIBUTES (old_result), list);
 	    }
 	}
 
@@ -14448,14 +14411,16 @@ grokdeclarator (const cp_declarator *declarator,
 	    else if (decl && DECL_NAME (decl))
 	      {
 		set_originating_module (decl, true);
-		
+
 		if (initialized)
 		  /* Kludge: We need funcdef_flag to be true in do_friend for
 		     in-class defaulted functions, but that breaks grokfndecl.
 		     So set it here.  */
 		  funcdef_flag = true;
 
-		auto fao = make_temp_override(friend_attributes, *attrlist);
+		cplus_decl_attributes (&decl, *attrlist, 0);
+		*attrlist = NULL_TREE;
+
 		decl = do_friend (ctype, unqualified_id, decl,
 				  flags, funcdef_flag);
 		return decl;
