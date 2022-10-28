@@ -1,3 +1,16 @@
+2022-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/directive-1.c: New test.
+	* c-c++-common/gomp/clauses-6.c: New test.
+	* c-c++-common/gomp/declare-variant-2.c (f75a): Declare.
+	(f75): Use f75a as variant instead of f1 and don't expect error.
+	* g++.dg/gomp/clause-4.C (foo): Don't expect error on comma
+	before first clause.
+	* gcc.dg/gomp/clause-2.c (foo): Likewise.
+
 2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

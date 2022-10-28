@@ -1,3 +1,17 @@
+2022-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_all_clauses): Allow optional comma
+	before the first clause even in pragma syntax.
+	(cp_parser_omp_allocate, cp_parser_omp_atomic, cp_parser_omp_depobj,
+	cp_parser_omp_flush, cp_parser_omp_scan_loop_body,
+	cp_parser_omp_ordered, cp_parser_omp_assumption_clauses,
+	cp_finish_omp_declare_variant, cp_parser_omp_declare_target,
+	cp_parser_omp_declare_reduction_exprs, cp_parser_omp_requires,
+	cp_parser_omp_error): Likewise.
+
 2022-10-27  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* semantics.cc (finish_omp_clauses): Remove "gang reduction on an orphan

@@ -1,3 +1,17 @@
+2022-10-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_all_clauses): Allow optional
+	comma before the first clause.
+	(c_parser_omp_allocate, c_parser_omp_atomic, c_parser_omp_depobj,
+	c_parser_omp_flush, c_parser_omp_scan_loop_body,
+	c_parser_omp_ordered, c_finish_omp_declare_variant,
+	c_parser_omp_declare_target, c_parser_omp_declare_reduction,
+	c_parser_omp_requires, c_parser_omp_error,
+	c_parser_omp_assumption_clauses): Likewise.
+
 2022-10-27  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-typeck.cc (c_finish_omp_clauses): Remove "gang reduction on an
