@@ -1,3 +1,27 @@
+2022-11-01  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (V64_SI): Delete iterator.
+	(V64_DI): Likewise.
+	(V64_1REG): Likewise.
+	(V64_INT_1REG): Likewise.
+	(V64_2REG): Likewise.
+	(V64_ALL): Likewise.
+	(V64_FP): Likewise.
+	(reduc_<reduc_op>_scal_<mode>): Use V_ALL. Use gen_vec_extract.
+	(fold_left_plus_<mode>): Use V_FP.
+	(*<reduc_op>_dpp_shr_<mode>): Use V_1REG.
+	(*<reduc_op>_dpp_shr_<mode>): Use V_DI.
+	(*plus_carry_dpp_shr_<mode>): Use V_INT_1REG.
+	(*plus_carry_in_dpp_shr_<mode>): Use V_SI.
+	(*plus_carry_dpp_shr_<mode>): Use V_DI.
+	(mov_from_lane63_<mode>): Delete.
+	(mov_from_lane63_<mode>): Delete.
+	* config/gcn/gcn.cc (gcn_expand_reduc_scalar): Support partial vectors.
+	* config/gcn/gcn.md (unspec): Remove UNSPEC_MOV_FROM_LANE63.
+
 2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-low.cc (oacc_privatization_candidate_p) <DECL_ARTIFICIAL>:

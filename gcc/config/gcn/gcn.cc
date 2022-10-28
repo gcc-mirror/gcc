@@ -4960,23 +4960,25 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 
    The vector register SRC of mode MODE is reduced using the operation given
    by UNSPEC, and the scalar result is returned in lane 63 of a vector
-   register.  */
-/* FIXME: Implement reductions for sizes other than V64.
-          (They're currently disabled in the machine description.)  */
+   register (or lane 31, 15, 7, 3, 1 for partial vectors).  */
 
 rtx
 gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 {
   machine_mode orig_mode = mode;
+  machine_mode scalar_mode = GET_MODE_INNER (mode);
+  int vf = GET_MODE_NUNITS (mode);
   bool use_moves = (((unspec == UNSPEC_SMIN_DPP_SHR
+		      || unspec == UNSPEC_SMIN_DPP_SHR
 		      || unspec == UNSPEC_SMAX_DPP_SHR
 		      || unspec == UNSPEC_UMIN_DPP_SHR
 		      || unspec == UNSPEC_UMAX_DPP_SHR)
-		     && (mode == V64DImode
-			 || mode == V64DFmode))
+		     && (scalar_mode == DImode
+			 || scalar_mode == DFmode))
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
-			&& mode == V64DFmode));
+			&& scalar_mode == DFmode));
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
+		   : unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
 		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
 		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
 		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX
@@ -4986,23 +4988,23 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		       || unspec == UNSPEC_SMAX_DPP_SHR
 		       || unspec == UNSPEC_UMIN_DPP_SHR
 		       || unspec == UNSPEC_UMAX_DPP_SHR)
-		      && (mode == V64QImode
-			  || mode == V64HImode));
+		      && (scalar_mode == QImode
+			  || scalar_mode == HImode));
   bool unsignedp = (unspec == UNSPEC_UMIN_DPP_SHR
 		    || unspec == UNSPEC_UMAX_DPP_SHR);
   bool use_plus_carry = unspec == UNSPEC_PLUS_DPP_SHR
 			&& GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-			&& (TARGET_GCN3 || mode == V64DImode);
+			&& (TARGET_GCN3 || scalar_mode == DImode);
 
   if (use_plus_carry)
     unspec = UNSPEC_PLUS_CARRY_DPP_SHR;
 
   if (use_extends)
     {
-      rtx tmp = gen_reg_rtx (V64SImode);
+      mode = VnMODE (vf, SImode);
+      rtx tmp = gen_reg_rtx (mode);
       convert_move (tmp, src, unsignedp);
       src = tmp;
-      mode = V64SImode;
     }
 
   /* Perform reduction by first performing the reduction operation on every
@@ -5010,7 +5012,8 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
      iteration (thereby effectively reducing every 4 lanes) and so on until
      all lanes are reduced.  */
   rtx in, out = force_reg (mode, src);
-  for (int i = 0, shift = 1; i < 6; i++, shift <<= 1)
+  int iterations = exact_log2 (vf);
+  for (int i = 0, shift = 1; i < iterations; i++, shift <<= 1)
     {
       rtx shift_val = gen_rtx_CONST_INT (VOIDmode, shift);
       in = out;
