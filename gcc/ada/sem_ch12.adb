@@ -1937,7 +1937,7 @@ package body Sem_Ch12 is
                      --  take place e.g. within an enclosing generic unit.
 
                      if Has_Contracts (Analyzed_Formal)
-                       and then Expander_Active
+                       and then (Expander_Active or GNATprove_Mode)
                      then
                         Build_Subprogram_Wrappers;
                      end if;
