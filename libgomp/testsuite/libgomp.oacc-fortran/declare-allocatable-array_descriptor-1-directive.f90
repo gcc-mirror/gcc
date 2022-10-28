@@ -105,27 +105,50 @@ program test
   !$acc enter data create (b)
   ! This is now OpenACC "present":
   if (.not.acc_is_present (b)) error stop
-  ! This still has the initial array descriptor:
+  ! ..., and got the actual array descriptor installed:
   !$acc serial
-  call verify_initial
+  call verify_n1_allocated
   !$acc end serial
 
   do i = n1_lb, n1_ub
      b(i) = i - 1
   end do
 
-  ! Verify that host-to-device copy doesn't touch the device-side (still
-  ! initial) array descriptor (but it does copy the array data).
+  ! In 'declare-allocatable-array_descriptor-1-runtime.f90', this does "verify
+  ! that host-to-device copy doesn't touch the device-side (still initial)
+  ! array descriptor (but it does copy the array data").  This is here not
+  ! applicable anymore, as we've already gotten the actual array descriptor
+  ! installed.  Thus now verify that it does copy the array data.
   call acc_update_device (b)
   !$acc serial
-  call verify_initial
+  call verify_n1_allocated
   !$acc end serial
 
   b = 40
 
-  ! Verify that device-to-host copy doesn't touch the host-side array
-  ! descriptor, doesn't copy out the device-side (still initial) array
-  ! descriptor (but it does copy the array data).
+  !$acc parallel copyout (id1_1) ! No data clause for 'b' (explicit or implicit): no 'GOMP_MAP_TO_PSET'.
+  call verify_n1_values (-1)
+  id1_1 = 0
+  !$acc end parallel
+  ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma acc parallel map\(from:id1_1\)$} 1 original } }
+  ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma omp target oacc_parallel map\(from:id1_1 \[len: [0-9]+\]\)$} 1 gimple } }
+
+  !$acc parallel copy (b) copyout (id1_2)
+  ! As already present, 'copy (b)' doesn't copy; addend is still '-1'.
+  call verify_n1_values (-1)
+  id1_2 = 0
+  !$acc end parallel
+  ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma acc parallel map\(tofrom:\*\(integer\(kind=[0-9]+\)\[0:\] \* restrict\) b\.data \[len: [^\]]+\]\) map\(to:b \[pointer set, len: [0-9]+\]\) map\(alloc:\(integer\(kind=[0-9]+\)\[0:\] \* restrict\) b\.data \[pointer assign, bias: 0\]\) map\(from:id1_2\)$} 1 original } }
+  !TODO ..., but without an actual use of 'b', the gimplifier removes the
+  !TODO 'GOMP_MAP_TO_PSET':
+  ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma omp target oacc_parallel map\(tofrom:MEM <integer\(kind=[0-9]+\)\[0:\]> \[\(integer\(kind=[0-9]+\)\[0:\] \*\)[^\]]+\] \[len: [^\]]+\]\) map\(alloc:b\.data \[pointer assign, bias: 0\]\) map\(from:id1_2 \[len: [0-9]+\]\)$} 1 gimple } }
+
+  ! In 'declare-allocatable-array_descriptor-1-runtime.f90', this does "verify
+  ! that device-to-host copy doesn't touch the host-side array descriptor,
+  ! doesn't copy out the device-side (still initial) array descriptor (but it
+  ! does copy the array data)".  This is here not applicable anymore, as we've
+  ! already gotten the actual array descriptor installed.  Thus now verify that
+  ! it does copy the array data.
   call acc_update_self (b)
   call verify_n1_allocated
 
@@ -142,10 +165,18 @@ program test
   ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma omp target oacc_update map\(force_to:MEM <integer\(kind=[0-9]+\)\[0:\]> \[\(integer\(kind=[0-9]+\)\[0:\] \*\)[^\]]+\] \[len: [^\]]+\]\) map\(to:b \[pointer set, len: [0-9]+\]\) map\(alloc:b\.data \[pointer assign, bias: 0\]\) map\(force_from:id1_1 \[len: [0-9]+\]\)$} 1 gimple } }
   ! ..., but it's silently skipped in 'GOACC_update'.
   !$acc serial
-  call verify_initial
+  call verify_n1_allocated
   !$acc end serial
 
   b = 41
+
+  !$acc parallel
+  call verify_n1_values (1)
+  !$acc end parallel
+
+  !$acc parallel copy (b)
+  call verify_n1_values (1)
+  !$acc end parallel
 
   !$acc update self (b) self (id1_2)
   ! We do have 'GOMP_MAP_TO_PSET' here:
@@ -159,20 +190,9 @@ program test
      b(i) = b(i) + 2
   end do
 
-  ! Now install the actual array descriptor, via a data clause for 'b'
-  ! (explicit or implicit): must get a 'GOMP_MAP_TO_PSET', which then in
-  ! 'gomp_map_vars_internal' is handled as 'declare target', and because of
-  ! '*(void **) hostaddrs[i] != NULL', we've got 'has_always_ptrset == true',
-  ! 'always_to_cnt == 1', and therefore 'gomp_map_vars_existing' does update
-  ! the 'GOMP_MAP_TO_PSET'.
-  !$acc serial present (b) copyin (id1_1)
-  call verify_initial
-  id1_1 = 0
-  !$acc end serial
-  ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma acc serial map\(force_present:\*\(integer\(kind=[0-9]+\)\[0:\] \* restrict\) b\.data \[len: [^\]]+\]\) map\(to:b \[pointer set, len: [0-9]+\]\) map\(alloc:\(integer\(kind=[0-9]+\)\[0:\] \* restrict\) b\.data \[pointer assign, bias: 0\]\) map\(to:id1_1\)$} 1 original } }
-  !TODO ..., but without an actual use of 'b', the gimplifier removes the
-  !TODO 'GOMP_MAP_TO_PSET':
-  ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma omp target oacc_serial map\(force_present:MEM <integer\(kind=[0-9]+\)\[0:\]> \[\(integer\(kind=[0-9]+\)\[0:\] \*\)[^\]]+\] \[len: [^\]]+\]\) map\(alloc:b\.data \[pointer assign, bias: 0\]\) map\(to:id1_1 \[len: [0-9]+\]\)$} 1 gimple } }
+  ! Now test that (potentially re-)installing the actual array descriptor is a
+  ! no-op, via a data clause for 'b' (explicit or implicit): must get a
+  ! 'GOMP_MAP_TO_PSET'.
   !$acc serial present (b) copyin (id1_2)
   call verify_n1_allocated
   !TODO Use of 'b':
@@ -243,9 +263,9 @@ program test
   if (acc_is_present (b)) error stop
   !$acc enter data create (b)
   if (.not.acc_is_present (b)) error stop
-  ! This still has the previous (n1) array descriptor:
+  ! ..., and got the actual array descriptor installed:
   !$acc serial
-  call verify_n1_deallocated (.true.)
+  call verify_n2_allocated
   !$acc end serial
 
   do i = n2_lb, n2_ub
@@ -254,10 +274,18 @@ program test
 
   call acc_update_device (b)
   !$acc serial
-  call verify_n1_deallocated (.true.)
+  call verify_n2_allocated
   !$acc end serial
 
   b = -40
+
+  !$acc parallel
+  call verify_n2_values (20)
+  !$acc end parallel
+
+  !$acc parallel copy (b)
+  call verify_n2_values (20)
+  !$acc end parallel
 
   call acc_update_self (b)
   call verify_n2_allocated
@@ -269,10 +297,18 @@ program test
 
   !$acc update device (b)
   !$acc serial
-  call verify_n1_deallocated (.true.)
+  call verify_n2_allocated
   !$acc end serial
 
   b = -41
+
+  !$acc parallel
+  call verify_n2_values (-20)
+  !$acc end parallel
+
+  !$acc parallel copy (b)
+  call verify_n2_values (-20)
+  !$acc end parallel
 
   !$acc update self (b)
   call verify_n2_allocated
