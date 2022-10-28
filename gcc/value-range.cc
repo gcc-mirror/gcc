@@ -4031,7 +4031,7 @@ range_tests_floats ()
   r0.intersect (r1);
   ASSERT_TRUE (r0.undefined_p ());
 
-  if (!flag_finite_math_only)
+  if (HONOR_INFINITIES (float_type_node))
     {
       // Make sure [-Inf, -Inf] doesn't get normalized.
       r0 = frange_float ("-Inf", "-Inf");
