@@ -1,3 +1,21 @@
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107379
+	* name-lookup.cc (push_namespace): Call find_namespace_slot again
+	after pushdecl as the hash table might be expanded during pushdecl.
+
+2022-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (write_closure_template_head): New.
+	(write_closure_type_name): Call it.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107382
+	PR c++/107383
+	* typeck.cc (cp_build_binary_op): Don't compute semantic_result_type
+	if result_type is NULL.
+
 2022-10-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106393

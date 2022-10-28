@@ -1,3 +1,88 @@
+2022-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/aarch64/aarch64.h (DONT_USE_BUILTIN_SETJMP): Delete.
+
+2022-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107172
+	* config/i386/i386.md (UNSPEC_CC_NE): New.
+	Replace ne:CCC/ne:CCO with UNSPEC_CC_NE in neg patterns.
+
+2022-10-27  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc: Include tree-ssa-dce.h
+	(replace_phi_edge_with_variable):
+	New argument, dce_ssa_names. Call simple_dce_from_worklist.
+	(match_simplify_replacement): If we inserted a sequence,
+	mark the lhs of the new sequence to be possible dce.
+	Always move the statement and mark the lhs (if it is a name)
+	as possible to remove.
+
+2022-10-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h: Replace constexpr with
+	CONSTEXPR.
+	* config/aarch64/aarch64-sve-builtins-base.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-functions.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc: Likewise.
+	* config/aarch64/aarch64.cc: Likewise.
+	* config/aarch64/driver-aarch64.cc: Likewise
+
+2022-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107394
+	* value-range-storage.cc (frange_storage_slot::get_frange): Use
+	frange constructor.
+
+2022-10-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* optc-save-gen.awk: Clarify 'Init' option property usage for
+	streaming optimization.
+
+2022-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* ira.cc: Resize array after reg number increased.
+
+2022-10-27  Jiawei  <jiawei@iscas.ac.cn>
+	    Sinan Lin  <sinan@isrc.iscas.ac.cn>
+
+	* config/riscv/constraints.md (TARGET_ZFINX ? GR_REGS): Set GPRS
+	use while Zfinx is enable.
+	* config/riscv/riscv.cc (riscv_hard_regno_mode_ok): Limit odd
+	registers use when Zdinx enable in RV32 cases.
+	(riscv_option_override): New target enable MASK_FDIV.
+	(riscv_libgcc_floating_mode_supported_p): New error info when
+	use incompatible arch&abi.
+	(riscv_excess_precision): New target enable FLOAT16.
+
+2022-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/iterators.md (TARGET_ZFINX):New target.
+	(TARGET_ZDINX): Ditto.
+	(TARGET_ZHINX): Ditto.
+	* config/riscv/riscv-builtins.cc (AVAIL): Ditto.
+	(riscv_atomic_assign_expand_fenv): Ditto.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Ditto.
+	* config/riscv/riscv.md: Ditto.
+
+2022-10-27  Jiawei  <jiawei@iscas.ac.cn>
+	    Sinan Lin  <sinan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New extensions.
+	* config/riscv/arch-canonicalize: New imply relations.
+	* config/riscv/riscv-opts.h (MASK_ZFINX): New mask.
+	(MASK_ZDINX): Ditto.
+	(MASK_ZHINX): Ditto.
+	(MASK_ZHINXMIN): Ditto.
+	(TARGET_ZFINX): New target.
+	(TARGET_ZDINX): Ditto.
+	(TARGET_ZHINX): Ditto.
+	(TARGET_ZHINXMIN): Ditto.
+	* config/riscv/riscv.opt: New target variable.
+
 2022-10-26  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.cc: Support __builtin_preserve_field_info.

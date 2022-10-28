@@ -1,3 +1,37 @@
+2022-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107172
+	* gcc.target/i386/pr107172.c: New test.
+
+2022-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-ctx1-18.C: Adjust.
+	* g++.dg/abi/lambda-ctx1-18vs17.C: Adjust.
+	* g++.dg/abi/lambda-tpl1-17.C: New.
+	* g++.dg/abi/lambda-tpl1-18.C: New.
+	* g++.dg/abi/lambda-tpl1-18vs17.C: New.
+	* g++.dg/abi/lambda-tpl1.h: New.
+
+2022-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107394
+	* gcc.dg/tree-ssa/pr107394.c: New test.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107382
+	PR c++/107383
+	* g++.dg/diagnostic/bad-binary-ops2.C: New test.
+
+2022-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/_Float16-zhinx-1.c: New test.
+	* gcc.target/riscv/_Float16-zhinx-2.c: New test.
+	* gcc.target/riscv/_Float16-zhinx-3.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-1.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-2.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-3.c: New test.
+
 2022-10-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/fd-3.c (test_5): Expect "opened here" message
