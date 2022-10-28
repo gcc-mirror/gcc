@@ -4016,6 +4016,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (reversep)
     return false;
 
+  /* PR 107346.  Packed structs can have fields at offsets that are not
+     multiples of BITS_PER_UNIT.  Do not use gather/scatters in such cases.  */
+  if (!multiple_p (pbitpos, BITS_PER_UNIT))
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
