@@ -32,11 +32,6 @@
 (define_mode_iterator V_DF
 		      [V2DF V4DF V8DF V16DF V32DF V64DF])
 
-(define_mode_iterator V64_SI
-		      [V64SI])
-(define_mode_iterator V64_DI
-		      [V64DI])
-
 ; Vector modes for sub-dword modes
 (define_mode_iterator V_QIHI
 		      [V2QI V2HI
@@ -77,13 +72,6 @@
 		       V32HF V32SF
 		       V64HF V64SF])
 
-; V64_* modes are for where more general support is unimplemented
-; (e.g. reductions)
-(define_mode_iterator V64_1REG
-		      [V64QI V64HI V64SI V64HF V64SF])
-(define_mode_iterator V64_INT_1REG
-		      [V64QI V64HI V64SI])
-
 ; Vector modes for two vector registers
 (define_mode_iterator V_2REG
 		      [V2DI V2DF
@@ -92,9 +80,6 @@
 		       V16DI V16DF
 		       V32DI V32DF
 		       V64DI V64DF])
-
-(define_mode_iterator V64_2REG
-		      [V64DI V64DF])
 
 ; Vector modes with native support
 (define_mode_iterator V_noQI
@@ -157,11 +142,6 @@
 		       V16HF V16SF V16DF
 		       V32HF V32SF V32DF
 		       V64HF V64SF V64DF])
-
-(define_mode_iterator V64_ALL
-		      [V64QI V64HI V64HF V64SI V64SF V64DI V64DF])
-(define_mode_iterator V64_FP
-		      [V64HF V64SF V64DF])
 
 (define_mode_attr scalar_mode
   [(V2QI "qi") (V2HI "hi") (V2SI "si")
@@ -3528,15 +3508,16 @@
 (define_expand "reduc_<reduc_op>_scal_<mode>"
   [(set (match_operand:<SCALAR_MODE> 0 "register_operand")
 	(unspec:<SCALAR_MODE>
-	  [(match_operand:V64_ALL 1 "register_operand")]
+	  [(match_operand:V_ALL 1 "register_operand")]
 	  REDUC_UNSPEC))]
   ""
   {
     rtx tmp = gcn_expand_reduc_scalar (<MODE>mode, operands[1],
 				       <reduc_unspec>);
 
-    /* The result of the reduction is in lane 63 of tmp.  */
-    emit_insn (gen_mov_from_lane63_<mode> (operands[0], tmp));
+    rtx last_lane = GEN_INT (GET_MODE_NUNITS (<MODE>mode) - 1);
+    emit_insn (gen_vec_extract<mode><scalar_mode> (operands[0], tmp,
+						   last_lane));
 
     DONE;
   })
@@ -3547,7 +3528,7 @@
 (define_expand "fold_left_plus_<mode>"
  [(match_operand:<SCALAR_MODE> 0 "register_operand")
   (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
-  (match_operand:V64_FP 2 "gcn_alu_operand")]
+  (match_operand:V_FP 2 "gcn_alu_operand")]
   "can_create_pseudo_p ()
    && (flag_openacc || flag_openmp
        || flag_associative_math)"
@@ -3563,11 +3544,11 @@
    })
 
 (define_insn "*<reduc_op>_dpp_shr_<mode>"
-  [(set (match_operand:V64_1REG 0 "register_operand"   "=v")
-	(unspec:V64_1REG
-	  [(match_operand:V64_1REG 1 "register_operand" "v")
-	   (match_operand:V64_1REG 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"      "n")]
+  [(set (match_operand:V_1REG 0 "register_operand"   "=v")
+	(unspec:V_1REG
+	  [(match_operand:V_1REG 1 "register_operand" "v")
+	   (match_operand:V_1REG 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"        "n")]
 	  REDUC_UNSPEC))]
   ; GCN3 requires a carry out, GCN5 not
   "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
@@ -3580,11 +3561,11 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "*<reduc_op>_dpp_shr_<mode>"
-  [(set (match_operand:V64_DI 0 "register_operand"    "=v")
-	(unspec:V64_DI
-	  [(match_operand:V64_DI 1 "register_operand" "v")
-	   (match_operand:V64_DI 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"    "n")]
+  [(set (match_operand:V_DI 0 "register_operand"    "=v")
+	(unspec:V_DI
+	  [(match_operand:V_DI 1 "register_operand" "v")
+	   (match_operand:V_DI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"  "n")]
 	  REDUC_2REG_UNSPEC))]
   ""
   "#"
@@ -3609,10 +3590,10 @@
 ; Special cases for addition.
 
 (define_insn "*plus_carry_dpp_shr_<mode>"
-  [(set (match_operand:V64_INT_1REG 0 "register_operand"   "=v")
-	(unspec:V64_INT_1REG
-	  [(match_operand:V64_INT_1REG 1 "register_operand" "v")
-	   (match_operand:V64_INT_1REG 2 "register_operand" "v")
+  [(set (match_operand:V_INT_1REG 0 "register_operand"   "=v")
+	(unspec:V_INT_1REG
+	  [(match_operand:V_INT_1REG 1 "register_operand" "v")
+	   (match_operand:V_INT_1REG 2 "register_operand" "v")
 	   (match_operand:SI 3 "const_int_operand"	  "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
@@ -3626,12 +3607,12 @@
    (set_attr "length" "8")])
 
 (define_insn "*plus_carry_in_dpp_shr_<mode>"
-  [(set (match_operand:V64_SI 0 "register_operand"    "=v")
-	(unspec:V64_SI
-	  [(match_operand:V64_SI 1 "register_operand" "v")
-	   (match_operand:V64_SI 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"    "n")
-	   (match_operand:DI 4 "register_operand"     "cV")]
+  [(set (match_operand:V_SI 0 "register_operand"    "=v")
+	(unspec:V_SI
+	  [(match_operand:V_SI 1 "register_operand" "v")
+	   (match_operand:V_SI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"  "n")
+	   (match_operand:DI 4 "register_operand"   "cV")]
 	  UNSPEC_PLUS_CARRY_IN_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
   ""
@@ -3644,11 +3625,11 @@
    (set_attr "length" "8")])
 
 (define_insn_and_split "*plus_carry_dpp_shr_<mode>"
-  [(set (match_operand:V64_DI 0 "register_operand"    "=v")
-	(unspec:V64_DI
-	  [(match_operand:V64_DI 1 "register_operand" "v")
-	   (match_operand:V64_DI 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"    "n")]
+  [(set (match_operand:V_DI 0 "register_operand"    "=v")
+	(unspec:V_DI
+	  [(match_operand:V_DI 1 "register_operand" "v")
+	   (match_operand:V_DI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_int_operand"  "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
   ""
@@ -3674,38 +3655,6 @@
   }
   [(set_attr "type" "vmult")
    (set_attr "length" "16")])
-
-; Instructions to move a scalar value from lane 63 of a vector register.
-(define_insn "mov_from_lane63_<mode>"
-  [(set (match_operand:<SCALAR_MODE> 0 "register_operand" "=Sg,v")
-	(unspec:<SCALAR_MODE>
-	  [(match_operand:V64_1REG 1 "register_operand"	  "  v,v")]
-	  UNSPEC_MOV_FROM_LANE63))]
-  ""
-  "@
-   v_readlane_b32\t%0, %1, 63
-   v_mov_b32\t%0, %1 wave_ror:1"
-  [(set_attr "type" "vop3a,vop_dpp")
-   (set_attr "exec" "none,*")
-   (set_attr "length" "8")])
-
-(define_insn "mov_from_lane63_<mode>"
-  [(set (match_operand:<SCALAR_MODE> 0 "register_operand" "=Sg,v")
-	(unspec:<SCALAR_MODE>
-	  [(match_operand:V64_2REG 1 "register_operand"	  "  v,v")]
-	  UNSPEC_MOV_FROM_LANE63))]
-  ""
-  "@
-   v_readlane_b32\t%L0, %L1, 63\;v_readlane_b32\t%H0, %H1, 63
-   * if (REGNO (operands[0]) <= REGNO (operands[1]))	\
-       return \"v_mov_b32\t%L0, %L1 wave_ror:1\;\"	\
-	      \"v_mov_b32\t%H0, %H1 wave_ror:1\";	\
-     else						\
-       return \"v_mov_b32\t%H0, %H1 wave_ror:1\;\"	\
-	      \"v_mov_b32\t%L0, %L1 wave_ror:1\";"
-  [(set_attr "type" "vop3a,vop_dpp")
-   (set_attr "exec" "none,*")
-   (set_attr "length" "8")])
 
 ;; }}}
 ;; {{{ Miscellaneous
