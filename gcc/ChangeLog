@@ -1,3 +1,11 @@
+2022-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2022-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+		    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* ira.cc: Resize array after reg number increased.
+
 2022-10-26  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:
