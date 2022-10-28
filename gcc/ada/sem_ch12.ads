@@ -27,15 +27,15 @@ with Inline; use Inline;
 with Types;  use Types;
 
 package Sem_Ch12 is
-   procedure Analyze_Generic_Package_Declaration        (N : Node_Id);
-   procedure Analyze_Generic_Subprogram_Declaration     (N : Node_Id);
-   procedure Analyze_Package_Instantiation              (N : Node_Id);
-   procedure Analyze_Procedure_Instantiation            (N : Node_Id);
-   procedure Analyze_Function_Instantiation             (N : Node_Id);
-   procedure Analyze_Formal_Object_Declaration          (N : Node_Id);
-   procedure Analyze_Formal_Type_Declaration            (N : Node_Id);
-   procedure Analyze_Formal_Subprogram_Declaration      (N : Node_Id);
-   procedure Analyze_Formal_Package_Declaration         (N : Node_Id);
+   procedure Analyze_Generic_Package_Declaration    (N : Node_Id);
+   procedure Analyze_Generic_Subprogram_Declaration (N : Node_Id);
+   procedure Analyze_Package_Instantiation          (N : Node_Id);
+   procedure Analyze_Procedure_Instantiation        (N : Node_Id);
+   procedure Analyze_Function_Instantiation         (N : Node_Id);
+   procedure Analyze_Formal_Object_Declaration      (N : Node_Id);
+   procedure Analyze_Formal_Type_Declaration        (N : Node_Id);
+   procedure Analyze_Formal_Subprogram_Declaration  (N : Node_Id);
+   procedure Analyze_Formal_Package_Declaration     (N : Node_Id);
 
    procedure Start_Generic;
    --  Must be invoked before starting to process a generic spec or body
