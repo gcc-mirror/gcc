@@ -4213,7 +4213,8 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       if (kind != C_DTR_NORMAL
 	  && (c_parser_next_token_starts_declspecs (parser)
 	      || (!have_gnu_attrs
-		  && c_parser_nth_token_starts_std_attributes (parser, 1))
+		  && (c_parser_nth_token_starts_std_attributes (parser, 1)
+		      || c_parser_next_token_is (parser, CPP_ELLIPSIS)))
 	      || c_parser_next_token_is (parser, CPP_CLOSE_PAREN)))
 	{
 	  struct c_arg_info *args
@@ -4489,25 +4490,18 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr,
       c_parser_consume_token (parser);
       return ret;
     }
-  if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
+  if (c_parser_next_token_is (parser, CPP_ELLIPSIS) && !have_gnu_attrs)
     {
       struct c_arg_info *ret = build_arg_info ();
 
-      if (flag_allow_parameterless_variadic_functions)
-        {
-          /* F (...) is allowed.  */
-          ret->types = NULL_TREE;
-        }
-      else
-        {
-          /* Suppress -Wold-style-definition for this case.  */
-          ret->types = error_mark_node;
-          error_at (c_parser_peek_token (parser)->location,
-                    "ISO C requires a named argument before %<...%>");
-        }
+      ret->types = NULL_TREE;
+      pedwarn_c11 (c_parser_peek_token (parser)->location, OPT_Wpedantic,
+		   "ISO C requires a named argument before %<...%> "
+		   "before C2X");
       c_parser_consume_token (parser);
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
+	  ret->no_named_args_stdarg_p = true;
 	  c_parser_consume_token (parser);
 	  return ret;
 	}

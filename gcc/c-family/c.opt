@@ -1512,8 +1512,8 @@ fall-virtual
 C++ ObjC++ WarnRemoved
 
 fallow-parameterless-variadic-functions
-C ObjC Var(flag_allow_parameterless_variadic_functions)
-Allow variadic functions without named parameter.
+C ObjC Ignore
+Does nothing. Preserved for backward compatibility.
 
 falt-external-templates
 C++ ObjC++ WarnRemoved

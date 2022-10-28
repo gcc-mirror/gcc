@@ -475,6 +475,8 @@ struct c_arg_info {
   tree pending_sizes;
   /* True when these arguments had [*].  */
   BOOL_BITFIELD had_vla_unspec : 1;
+  /* True when the arguments are a (...) prototype.  */
+  BOOL_BITFIELD no_named_args_stdarg_p : 1;
 };
 
 /* A declarator.  */

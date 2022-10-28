@@ -4559,7 +4559,8 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v,
   /* For varargs, we do not want to skip the dummy va_dcl argument.
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
-  if (stdarg_p (fntype))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      && stdarg_p (fntype))
     ix86_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (cum->call_abi == MS_ABI)

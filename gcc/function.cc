@@ -3647,6 +3647,12 @@ assign_parms (tree fndecl)
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (fndecl)))
+    {
+      struct assign_parm_data_one data = {};
+      assign_parms_setup_varargs (&all, &data, false);
+    }
+
   FOR_EACH_VEC_ELT (fnargs, i, parm)
     {
       struct assign_parm_data_one data;

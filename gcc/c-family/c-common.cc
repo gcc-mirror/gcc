@@ -4064,7 +4064,8 @@ static tree builtin_types[(int) BT_LAST + 1];
 
 /* A helper function for c_common_nodes_and_builtins.  Build function type
    for DEF with return type RET and N arguments.  If VAR is true, then the
-   function should be variadic after those N arguments.
+   function should be variadic after those N arguments, or, if N is zero,
+   unprototyped.
 
    Takes special care not to ICE if any of the types involved are
    error_mark_node, which indicates that said type is not in fact available
@@ -4093,7 +4094,10 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
   if (t == error_mark_node)
     goto egress;
   if (var)
-    t = build_varargs_function_type_array (t, n, args);
+    if (n == 0)
+      t = build_function_type (t, NULL_TREE);
+    else
+      t = build_varargs_function_type_array (t, n, args);
   else
     t = build_function_type_array (t, n, args);
 
@@ -4661,8 +4665,7 @@ c_common_nodes_and_builtins (void)
     uintptr_type_node =
       TREE_TYPE (identifier_global_value (c_get_ident (UINTPTR_TYPE)));
 
-  default_function_type
-    = build_varargs_function_type_list (integer_type_node, NULL_TREE);
+  default_function_type = build_function_type (integer_type_node, NULL_TREE);
   unsigned_ptrdiff_type_node = c_common_unsigned_type (ptrdiff_type_node);
 
   lang_hooks.decls.pushdecl

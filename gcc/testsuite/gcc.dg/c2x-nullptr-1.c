@@ -226,6 +226,7 @@ test4 (void)
 static void
 test5 (int i, ...)
 {
+  (void) i;
   va_list ap;
   va_start (ap, i);
   if (va_arg (ap, void *))

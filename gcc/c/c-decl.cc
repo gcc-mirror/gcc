@@ -7295,7 +7295,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    type_quals = TYPE_UNQUALIFIED;
 
-	    type = build_function_type (type, arg_types);
+	    type = build_function_type (type, arg_types,
+					arg_info->no_named_args_stdarg_p);
 	    declarator = declarator->declarator;
 
 	    /* Set the TYPE_CONTEXTs for each tagged type which is local to
@@ -8060,7 +8061,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       /* In C2X, convert () to (void).  */
       if (flag_isoc2x
 	  && !arg_types
-	  && !arg_info->parms)
+	  && !arg_info->parms
+	  && !arg_info->no_named_args_stdarg_p)
 	arg_types = arg_info->types = void_list_node;
 
       /* If there is a parameter of incomplete type in a definition,
@@ -8130,6 +8132,7 @@ build_arg_info (void)
   ret->others = NULL_TREE;
   ret->pending_sizes = NULL;
   ret->had_vla_unspec = 0;
+  ret->no_named_args_stdarg_p = 0;
   return ret;
 }
 
@@ -8321,6 +8324,7 @@ get_parm_info (bool ellipsis, tree expr)
   arg_info->types = types;
   arg_info->others = others;
   arg_info->pending_sizes = expr;
+  arg_info->no_named_args_stdarg_p = ellipsis && !types;
   return arg_info;
 }
 
@@ -9935,7 +9939,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       /* Make it return void instead.  */
       TREE_TYPE (decl1)
 	= build_function_type (void_type_node,
-			       TYPE_ARG_TYPES (TREE_TYPE (decl1)));
+			       TYPE_ARG_TYPES (TREE_TYPE (decl1)),
+			       TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (decl1)));
     }
 
   if (warn_about_return_type)
@@ -10534,7 +10539,7 @@ store_parm_decls (void)
      empty argument list was converted to (void) in grokparms; in
      older C standard versions, it does not give the function a type
      with a prototype for future calls.  */
-  proto = arg_info->types != 0;
+  proto = arg_info->types != 0 || arg_info->no_named_args_stdarg_p;
 
   if (proto)
     store_parm_decls_newstyle (fndecl, arg_info);
