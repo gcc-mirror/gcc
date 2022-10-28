@@ -29688,7 +29688,7 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
       DEFPARSE_TOKENS (condition) = cp_token_cache_new (first, last);
       DEFPARSE_INSTANTIATIONS (condition) = NULL;
 
-      /* And it's corresponding contract.  */
+      /* And its corresponding contract.  */
       contract = grok_contract (attribute, mode, identifier, condition, loc);
     }
   else
