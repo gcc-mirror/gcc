@@ -14206,12 +14206,15 @@ grokdeclarator (const cp_declarator *declarator,
 	    else if (decl && DECL_NAME (decl))
 	      {
 		set_originating_module (decl, true);
-		
+
 		if (initialized)
 		  /* Kludge: We need funcdef_flag to be true in do_friend for
 		     in-class defaulted functions, but that breaks grokfndecl.
 		     So set it here.  */
 		  funcdef_flag = true;
+
+		cplus_decl_attributes (&decl, *attrlist, 0);
+		*attrlist = NULL_TREE;
 
 		decl = do_friend (ctype, unqualified_id, decl,
 				  flags, funcdef_flag);
