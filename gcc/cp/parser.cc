@@ -40443,12 +40443,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
       if (nested && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
 	break;
 
-      if (!first
-	  /* OpenMP 5.1 allows optional comma in between directive-name and
-	     clauses everywhere, but as we aren't done with OpenMP 5.0
-	     implementation yet, let's allow it for now only in C++11
-	     attributes.  */
-	  || (parser->lexer->in_omp_attribute_pragma && nested != 2))
+      if (!first || nested != 2)
 	{
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	    cp_lexer_consume_token (parser->lexer);
@@ -40881,9 +40876,7 @@ cp_parser_omp_allocate (cp_parser *parser, cp_token *pragma_tok)
   location_t loc = pragma_tok->location;
   tree nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
 
-  /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-  if (parser->lexer->in_omp_attribute_pragma
-      && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
     cp_lexer_consume_token (parser->lexer);
 
@@ -41004,7 +40997,6 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok, bool openacc)
   enum tree_code code = ERROR_MARK, opcode = NOP_EXPR;
   enum omp_memory_order memory_order = OMP_MEMORY_ORDER_UNSPECIFIED;
   bool structured_block = false;
-  bool first = true;
   tree clauses = NULL_TREE;
   bool capture = false;
   bool compare = false;
@@ -41015,13 +41007,9 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok, bool openacc)
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
-      /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-      if ((!first || parser->lexer->in_omp_attribute_pragma)
-	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
 	cp_lexer_consume_token (parser->lexer);
-
-      first = false;
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	{
@@ -41976,11 +41964,9 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
 
   tree clause = NULL_TREE;
   enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INVALID;
-  location_t c_loc = cp_lexer_peek_token (parser->lexer)->location;
-  /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-  if (parser->lexer->in_omp_attribute_pragma
-      && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
     cp_lexer_consume_token (parser->lexer);
+  location_t c_loc = cp_lexer_peek_token (parser->lexer)->location;
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
@@ -42063,9 +42049,7 @@ static void
 cp_parser_omp_flush (cp_parser *parser, cp_token *pragma_tok)
 {
   enum memmodel mo = MEMMODEL_LAST;
-  /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-  if (parser->lexer->in_omp_attribute_pragma
-      && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
     cp_lexer_consume_token (parser->lexer);
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
@@ -42790,8 +42774,7 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
 
       cp_lexer_consume_token (parser->lexer);
 
-      if (parser->lexer->in_omp_attribute_pragma
-	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
@@ -43593,9 +43576,7 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
   location_t loc = pragma_tok->location;
   int n = 1;
 
-  /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-  if (parser->lexer->in_omp_attribute_pragma
-      && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
     n = 2;
 
   if (cp_lexer_nth_token_is (parser->lexer, n, CPP_NAME))
@@ -45949,7 +45930,6 @@ static void
 cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 				  bool is_assume)
 {
-  bool first = true;
   bool no_openmp = false;
   bool no_openmp_routines = false;
   bool no_parallelism = false;
@@ -45965,13 +45945,9 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
-      /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-      if ((!first || parser->lexer->in_omp_attribute_pragma)
-	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
 	cp_lexer_consume_token (parser->lexer);
-
-      first = false;
 
       if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	break;
@@ -46209,9 +46185,7 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
   location_t finish_loc = get_finish (varid.get_location ());
   location_t varid_loc = make_location (caret_loc, start_loc, finish_loc);
 
-  /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-  if (parser->lexer->in_omp_attribute_pragma
-      && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
     cp_lexer_consume_token (parser->lexer);
 
@@ -46287,11 +46261,6 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
       cp_lexer_consume_token (parser->lexer);
       if (strcmp (kind, "simd") == 0)
 	{
-	  /* For now only in C++ attributes, do it always for OpenMP 5.1.
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
-	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
-	    cp_lexer_consume_token (parser->lexer);  */
-
 	  cl = cp_parser_omp_all_clauses (parser, OMP_DECLARE_SIMD_CLAUSE_MASK,
 					  "#pragma omp declare simd",
 					  pragma_tok);
@@ -46549,9 +46518,7 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
   int device_type = 0;
   bool only_device_type = true;
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-      /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-      || (parser->lexer->in_omp_attribute_pragma
-	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+      || (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)))
     clauses
       = cp_parser_omp_all_clauses (parser, OMP_DECLARE_TARGET_CLAUSE_MASK,
@@ -46801,9 +46768,7 @@ cp_parser_omp_declare_reduction_exprs (tree fndecl, cp_parser *parser)
   if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
     return false;
 
-  /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-  if (parser->lexer->in_omp_attribute_pragma
-      && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
     cp_lexer_consume_token (parser->lexer);
 
@@ -47235,19 +47200,14 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 static bool
 cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 {
-  bool first = true;
   enum omp_requires new_req = (enum omp_requires) 0;
 
   location_t loc = pragma_tok->location;
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
-      /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-      if ((!first || parser->lexer->in_omp_attribute_pragma)
-	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
 	cp_lexer_consume_token (parser->lexer);
-
-      first = false;
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	{
@@ -47402,19 +47362,14 @@ cp_parser_omp_error (cp_parser *parser, cp_token *pragma_tok,
   int at_compilation = -1;
   int severity_fatal = -1;
   tree message = NULL_TREE;
-  bool first = true;
   bool bad = false;
   location_t loc = pragma_tok->location;
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
-      /* For now only in C++ attributes, do it always for OpenMP 5.1.  */
-      if ((!first || parser->lexer->in_omp_attribute_pragma)
-	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
 	cp_lexer_consume_token (parser->lexer);
-
-      first = false;
 
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
 	break;
