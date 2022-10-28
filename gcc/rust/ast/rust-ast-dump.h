@@ -81,7 +81,7 @@ private:
   template <typename T> void visit (std::unique_ptr<T> &node);
 
   /**
-   * Visit all items in given collection, placing the separator in between but
+   * Visit all items in given @collection, placing the separator in between but
    * not at the end.
    * Start and end offset allow to visit only a "slice" from the collection.
    */
@@ -99,7 +99,7 @@ private:
   void visit_as_line (T &item, const std::string &trailing = "");
 
   /**
-   * Visit each item in a collection "as line".
+   * Visit each item in @collection "as line".
    *
    * @see visit_as_line
    */
@@ -107,7 +107,7 @@ private:
   void visit_items_as_lines (T &collection, const std::string &trailing = "");
 
   /**
-   * Visit each item in collection as lines inside a block delimited by braces
+   * Visit each item in @collection as lines inside a block delimited by braces
    * with increased indentation. Also includes special handling for empty
    * collection to print only the delimiters with no new line inside.
    */
