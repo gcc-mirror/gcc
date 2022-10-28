@@ -1203,11 +1203,30 @@ package body Sem_Ch12 is
       -------------------------------
 
       procedure Build_Subprogram_Wrappers is
+         function Adjust_Aspect_Sloc (N : Node_Id) return Traverse_Result;
+         --  Adjust sloc so that errors located at N will be reported with
+         --  information about the instance and not just about the generic.
+
+         ------------------------
+         -- Adjust_Aspect_Sloc --
+         ------------------------
+
+         function Adjust_Aspect_Sloc (N : Node_Id) return Traverse_Result is
+         begin
+            Adjust_Instantiation_Sloc (N, S_Adjustment);
+            return OK;
+         end Adjust_Aspect_Sloc;
+
+         procedure Adjust_Aspect_Slocs is new
+           Traverse_Proc (Adjust_Aspect_Sloc);
+
          Formal : constant Entity_Id :=
            Defining_Unit_Name (Specification (Analyzed_Formal));
          Aspect_Spec : Node_Id;
          Decl_Node   : Node_Id;
          Actual_Name : Node_Id;
+
+      --  Start of processing for Build_Subprogram_Wrappers
 
       begin
          --  Create declaration for wrapper subprogram
@@ -1247,6 +1266,7 @@ package body Sem_Ch12 is
 
          Aspect_Spec := First (Aspect_Specifications (Decl_Node));
          while Present (Aspect_Spec) loop
+            Adjust_Aspect_Slocs (Aspect_Spec);
             Set_Analyzed (Aspect_Spec, False);
             Next (Aspect_Spec);
          end loop;
