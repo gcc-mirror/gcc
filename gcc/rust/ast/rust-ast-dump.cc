@@ -945,7 +945,10 @@ Dump::visit (StructStruct &struct_item)
 
   // FIXME: where-clause
 
-  visit_items_as_block (struct_item.get_fields (), ",");
+  if (struct_item.is_unit_struct ())
+    stream << ";\n";
+  else
+    visit_items_as_block (struct_item.get_fields (), ",");
 }
 
 void
