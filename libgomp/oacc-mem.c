@@ -1224,7 +1224,10 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 
 	  struct target_mem_desc *tgt = n->tgt;
 
-	  /* Arrange so that OpenACC 'declare' code à la PR106643
+	  /* Minimal OpenACC variant corresponding to PR96668
+	     "[OpenMP] Re-mapping allocated but previously unallocated
+	     allocatable does not work" 'libgomp/target.c' changes, so that
+	     OpenACC 'declare' code à la PR106643
 	     "[gfortran + OpenACC] Allocate in module causes refcount error"
 	     has a chance to work.  */
 	  if ((kinds[i] & 0xff) == GOMP_MAP_TO_PSET
@@ -1238,6 +1241,16 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 		  /* The only thing we expect to see here.  */
 		  assert ((kinds[i + k] & 0xff) == GOMP_MAP_POINTER);
 		}
+
+	      /* Let 'goacc_map_vars' -> 'gomp_map_vars_internal' handle
+		 this.  */
+	      gomp_mutex_unlock (&acc_dev->lock);
+	      struct target_mem_desc *tgt_
+		= goacc_map_vars (acc_dev, aq, groupnum, &hostaddrs[i], NULL,
+				  &sizes[i], &kinds[i], true,
+				  GOMP_MAP_VARS_ENTER_DATA);
+	      assert (tgt_ == NULL);
+	      gomp_mutex_lock (&acc_dev->lock);
 
 	      /* Given that 'goacc_exit_data_internal'/'goacc_exit_datum_1'
 		 will always see 'n->refcount == REFCOUNT_INFINITY',
