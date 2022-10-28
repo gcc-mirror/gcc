@@ -101,7 +101,8 @@ Dump::visit_items_as_lines (T &collection, const std::string &trailing)
 
 template <typename T>
 void
-Dump::visit_items_as_block (T &collection, char left_brace, char right_brace)
+Dump::visit_items_as_block (T &collection, const std::string &line_trailing,
+			    char left_brace, char right_brace)
 {
   if (collection.empty ())
     {
@@ -112,7 +113,7 @@ Dump::visit_items_as_block (T &collection, char left_brace, char right_brace)
       stream << left_brace << '\n';
 
       indentation.increment ();
-      visit_items_as_lines (collection, ",");
+      visit_items_as_lines (collection, line_trailing);
       indentation.decrement ();
 
       stream << indentation << right_brace << '\n';
@@ -944,7 +945,7 @@ Dump::visit (StructStruct &struct_item)
 
   // FIXME: where-clause
 
-  visit_items_as_block (struct_item.get_fields ());
+  visit_items_as_block (struct_item.get_fields (), ",");
 }
 
 void
@@ -979,7 +980,7 @@ void
 Dump::visit (EnumItemStruct &item)
 {
   stream << item.get_identifier ();
-  visit_items_as_block (item.get_struct_fields ());
+  visit_items_as_block (item.get_struct_fields (), ",");
 }
 
 void
@@ -998,7 +999,7 @@ Dump::visit (Enum &enum_item)
 
   // FIXME: where-clause
 
-  visit_items_as_block (enum_item.get_variants ());
+  visit_items_as_block (enum_item.get_variants (), ",");
 }
 
 void
@@ -1010,7 +1011,7 @@ Dump::visit (Union &union_item)
 
   // FIXME: where-clause
 
-  visit_items_as_block (union_item.get_variants ());
+  visit_items_as_block (union_item.get_variants (), ",");
 }
 
 void
@@ -1114,7 +1115,7 @@ Dump::visit (Trait &trait)
       stream << ">";
     }
 
-  visit_items_as_block (trait.get_trait_items ());
+  visit_items_as_block (trait.get_trait_items (), "");
 }
 
 void
@@ -1129,7 +1130,7 @@ Dump::visit (InherentImpl &impl)
   // FIXME: Handle where-clause
   // FIXME: Handle inner attributes
 
-  visit_items_as_block (impl.get_impl_items ());
+  visit_items_as_block (impl.get_impl_items (), "");
 }
 
 void
@@ -1182,7 +1183,7 @@ Dump::visit (ExternBlock &block)
   if (block.has_abi ())
     stream << "\"" << block.get_abi () << "\" ";
 
-  visit_items_as_block (block.get_extern_items ());
+  visit_items_as_block (block.get_extern_items (), ";");
 }
 
 static std::pair<char, char>
@@ -1277,7 +1278,7 @@ Dump::visit (MacroRulesDefinition &rules_def)
 
   stream << "macro_rules! " << rules_def.get_rule_name ();
 
-  visit_items_as_block (rules_def.get_rules ());
+  visit_items_as_block (rules_def.get_rules (), ";");
 }
 
 void

@@ -112,8 +112,8 @@ private:
    * collection to print only the delimiters with no new line inside.
    */
   template <typename T>
-  void visit_items_as_block (T &collection, char left_brace = '{',
-			     char right_brace = '}');
+  void visit_items_as_block (T &collection, const std::string &line_trailing,
+			     char left_brace = '{', char right_brace = '}');
 
   /**
    * Visit common items of functions: Parameters, return type, block
