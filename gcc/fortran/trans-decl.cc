@@ -2507,8 +2507,8 @@ create_function_arglist (gfc_symbol * sym)
 {
   tree fndecl;
   gfc_formal_arglist *f;
-  tree typelist, hidden_typelist;
-  tree arglist, hidden_arglist;
+  tree typelist, hidden_typelist, optval_typelist;
+  tree arglist, hidden_arglist, optval_arglist;
   tree type;
   tree parm;
 
@@ -2518,6 +2518,7 @@ create_function_arglist (gfc_symbol * sym)
      the new FUNCTION_DECL node.  */
   arglist = NULL_TREE;
   hidden_arglist = NULL_TREE;
+  optval_arglist = NULL_TREE;
   typelist = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
 
   if (sym->attr.entry_master)
@@ -2619,6 +2620,15 @@ create_function_arglist (gfc_symbol * sym)
     if (f->sym != NULL)	/* Ignore alternate returns.  */
       hidden_typelist = TREE_CHAIN (hidden_typelist);
 
+  /* Advance hidden_typelist over optional+value argument presence flags.  */
+  optval_typelist = hidden_typelist;
+  for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
+    if (f->sym != NULL
+	&& f->sym->attr.optional && f->sym->attr.value
+	&& !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
+	&& !gfc_bt_struct (f->sym->ts.type))
+      hidden_typelist = TREE_CHAIN (hidden_typelist);
+
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     {
       char name[GFC_MAX_SYMBOL_LEN + 2];
@@ -2712,14 +2722,16 @@ create_function_arglist (gfc_symbol * sym)
 			    PARM_DECL, get_identifier (name),
 			    boolean_type_node);
 
-          hidden_arglist = chainon (hidden_arglist, tmp);
+	  optval_arglist = chainon (optval_arglist, tmp);
           DECL_CONTEXT (tmp) = fndecl;
           DECL_ARTIFICIAL (tmp) = 1;
           DECL_ARG_TYPE (tmp) = boolean_type_node;
           TREE_READONLY (tmp) = 1;
           gfc_finish_decl (tmp);
 
-	  hidden_typelist = TREE_CHAIN (hidden_typelist);
+	  /* The presence flag must be boolean.  */
+	  gcc_assert (TREE_VALUE (optval_typelist) == boolean_type_node);
+	  optval_typelist = TREE_CHAIN (optval_typelist);
 	}
 
       /* For non-constant length array arguments, make sure they use
@@ -2862,6 +2874,9 @@ create_function_arglist (gfc_symbol * sym)
       arglist = chainon (arglist, parm);
       typelist = TREE_CHAIN (typelist);
     }
+
+  /* Add hidden present status for optional+value arguments.  */
+  arglist = chainon (arglist, optval_arglist);
 
   /* Add the hidden string length parameters, unless the procedure
      is bind(C).  */
