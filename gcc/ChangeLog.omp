@@ -1,5 +1,8 @@
 2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* omp-low.cc (oacc_privatization_candidate_p) <DECL_ARTIFICIAL>:
+	Restrict to 'block's.
+
 	* omp-low.cc (lower_rec_simd_input_clauses): For 'ordered_max',
 	cast 'omp_max_simt_vf ()', 'omp_max_simd_vf ()' to 'unsigned'.
 

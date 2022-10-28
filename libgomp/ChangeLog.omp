@@ -1,3 +1,7 @@
+2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Adjust.
+
 2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
 
 	* testsuite/libgomp.c++/usm-2.C: New test.
