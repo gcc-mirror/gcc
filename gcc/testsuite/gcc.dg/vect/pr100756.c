@@ -7,7 +7,7 @@ foo (int * restrict a, int n)
   int i, result = 0;
 
   a = __builtin_assume_aligned (a, __BIGGEST_ALIGNMENT__);
-  for (i = 0; i < n * 4; i++)
+  for (i = 0; i < n * 16; i++)
     result += a[i];
   return result;
 }
