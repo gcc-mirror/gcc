@@ -261,17 +261,28 @@ frange_storage_slot::get_frange (frange &r, tree type) const
 {
   gcc_checking_assert (r.supports_type_p (type));
 
-  r.set_undefined ();
-  r.m_kind = m_kind;
-  r.m_type = type;
-  r.m_min = m_min;
-  r.m_max = m_max;
-  r.m_pos_nan = m_pos_nan;
-  r.m_neg_nan = m_neg_nan;
-  r.normalize_kind ();
+  // Handle explicit NANs.
+  if (m_kind == VR_NAN)
+    {
+      if (HONOR_NANS (type))
+	{
+	  if (m_pos_nan && m_neg_nan)
+	    r.set_nan (type);
+	  else
+	    r.set_nan (type, m_neg_nan);
+	}
+      else
+	r.set_undefined ();
+      return;
+    }
 
-  if (flag_checking)
-    r.verify_range ();
+  // Use the constructor because it will canonicalize the range.
+  r = frange (type, m_min, m_max, m_kind);
+
+  // The constructor will set the NAN bits for HONOR_NANS, but we must
+  // make sure to set the NAN sign if known.
+  if (HONOR_NANS (type) && (m_pos_nan ^ m_neg_nan) == 1)
+    r.update_nan (m_neg_nan);
 }
 
 bool

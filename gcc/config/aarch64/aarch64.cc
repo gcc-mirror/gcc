@@ -2679,7 +2679,7 @@ struct processor
 };
 
 /* Architectures implementing AArch64.  */
-static constexpr processor all_architectures[] =
+static CONSTEXPR const processor all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, D, E) \
   {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, \

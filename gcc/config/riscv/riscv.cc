@@ -5420,6 +5420,13 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	!= call_used_or_fixed_reg_p (regno + i))
       return false;
 
+  /* Only use even registers in RV32 ZDINX */
+  if (!TARGET_64BIT && TARGET_ZDINX){
+    if (GET_MODE_CLASS (mode) == MODE_FLOAT &&
+     GET_MODE_UNIT_SIZE (mode) == GET_MODE_SIZE (DFmode))
+    return !(regno & 1);
+  }
+
   return true;
 }
 
@@ -5659,7 +5666,7 @@ riscv_option_override (void)
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
-  if (TARGET_HARD_FLOAT && (target_flags_explicit & MASK_FDIV) == 0)
+  if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && (target_flags_explicit & MASK_FDIV) == 0)
     target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
@@ -5704,6 +5711,11 @@ riscv_option_override (void)
 
   if (TARGET_RVE && riscv_abi != ABI_ILP32E)
     error ("rv32e requires ilp32e ABI");
+
+  // Zfinx require abi ilp32,ilp32e or lp64.
+  if (TARGET_ZFINX && riscv_abi != ABI_ILP32
+      && riscv_abi != ABI_LP64 && riscv_abi != ABI_ILP32E)
+    error ("z*inx requires ABI ilp32, ilp32e or lp64");
 
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
@@ -6337,7 +6349,7 @@ riscv_libgcc_floating_mode_supported_p (scalar_float_mode mode)
        precision of the _FloatN type; evaluate all other operations and
        constants to the range and precision of the semantic type;
 
-   If we have the zfh extensions then we support _Float16 in native
+   If we have the zfh/zhinx extensions then we support _Float16 in native
    precision, so we should set this to 16.  */
 static enum flt_eval_method
 riscv_excess_precision (enum excess_precision_type type)
@@ -6346,8 +6358,9 @@ riscv_excess_precision (enum excess_precision_type type)
     {
     case EXCESS_PRECISION_TYPE_FAST:
     case EXCESS_PRECISION_TYPE_STANDARD:
-      return (TARGET_ZFH ? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
-			 : FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
+      return ((TARGET_ZFH || TARGET_ZHINX)
+		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
+		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
     case EXCESS_PRECISION_TYPE_IMPLICIT:
     case EXCESS_PRECISION_TYPE_FLOAT16:
       return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;

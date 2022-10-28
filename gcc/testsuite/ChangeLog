@@ -1,3 +1,111 @@
+2022-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107172
+	* gcc.target/i386/pr107172.c: New test.
+
+2022-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-ctx1-18.C: Adjust.
+	* g++.dg/abi/lambda-ctx1-18vs17.C: Adjust.
+	* g++.dg/abi/lambda-tpl1-17.C: New.
+	* g++.dg/abi/lambda-tpl1-18.C: New.
+	* g++.dg/abi/lambda-tpl1-18vs17.C: New.
+	* g++.dg/abi/lambda-tpl1.h: New.
+
+2022-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107394
+	* gcc.dg/tree-ssa/pr107394.c: New test.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107382
+	PR c++/107383
+	* g++.dg/diagnostic/bad-binary-ops2.C: New test.
+
+2022-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/_Float16-zhinx-1.c: New test.
+	* gcc.target/riscv/_Float16-zhinx-2.c: New test.
+	* gcc.target/riscv/_Float16-zhinx-3.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-1.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-2.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-3.c: New test.
+
+2022-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/fd-3.c (test_5): Expect "opened here" message
+	even when flags are symbolic.
+	(test_read_from_symbolic_fd): New.
+	(test_write_to_symbolic_fd): New.
+
+2022-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103413
+	* gfortran.dg/illegal_boz_arg_4.f90: New test.
+
+2022-10-26  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-existence-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-be.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-le.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-offset-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-size-1.c: New test.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* g++.dg/cpp23/elision4.C: Use -Wdangling-reference, add dg-warning.
+	* g++.dg/cpp23/elision7.C: Likewise.
+	* g++.dg/warn/Wdangling-pointer-2.C: Use -Wno-dangling-reference.
+	* g++.dg/warn/Wdangling-reference1.C: New test.
+	* g++.dg/warn/Wdangling-reference2.C: New test.
+	* g++.dg/warn/Wdangling-reference3.C: New test.
+
+2022-10-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/mov-1.c: New.
+	* gcc.target/riscv/rvv/base/mov-10.c: New.
+	* gcc.target/riscv/rvv/base/mov-11.c: New.
+	* gcc.target/riscv/rvv/base/mov-12.c: New.
+	* gcc.target/riscv/rvv/base/mov-13.c: New.
+	* gcc.target/riscv/rvv/base/mov-2.c: New.
+	* gcc.target/riscv/rvv/base/mov-3.c: New.
+	* gcc.target/riscv/rvv/base/mov-4.c: New.
+	* gcc.target/riscv/rvv/base/mov-5.c: New.
+	* gcc.target/riscv/rvv/base/mov-6.c: New.
+	* gcc.target/riscv/rvv/base/mov-7.c: New.
+	* gcc.target/riscv/rvv/base/mov-8.c: New.
+	* gcc.target/riscv/rvv/base/mov-9.c: New.
+
+2022-10-26  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/predef-24.c:New.
+	* gcc.target/riscv/predef-25.c:New.
+
+2022-10-26  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106460
+	* gcc.target/powerpc/pr106460.c: New test.
+
+2022-10-26  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-18.c: New.
+	* gcc.target/riscv/arch-5.c: Remove test for prefixed
+	with `h`.
+	* gcc.target/riscv/predef-23.c: New.
+
+2022-10-26  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* lib/profopt.exp: Don't force DWARF4 for AutoFDO tests
+
 2022-10-25  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106848

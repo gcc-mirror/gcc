@@ -1,3 +1,9 @@
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* include/bits/locale_classes.tcc: Add #pragma to disable
+	-Wdangling-reference with std::use_facet.
+
 2022-10-21  Arsen Arsenović  <arsen@aarsen.me>
 
 	* acinclude.m4: Default hosted to off if building without

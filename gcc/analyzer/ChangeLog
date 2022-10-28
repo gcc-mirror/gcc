@@ -1,3 +1,14 @@
+2022-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-fd.cc (fd_state_machine::on_open): Transition to "unchecked"
+	when the mode is symbolic, rather than just on integer constants.
+	(fd_state_machine::check_for_open_fd): Don't complain about
+	unchecked values in the start state.
+
+2022-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-fd.dot: New file.
+
 2022-10-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107349

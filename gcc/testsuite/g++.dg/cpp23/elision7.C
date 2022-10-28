@@ -1,5 +1,6 @@
 // PR c++/101165 - P2266R1 - Simpler implicit move
 // { dg-do compile { target c++23 } }
+// { dg-options "-Wdangling-reference" }
 
 struct X {
   X ();
@@ -68,5 +69,5 @@ f7 (T &&t)
 void
 do_f7 ()
 {
-  const int &x = f7 (0);
+  const int &x = f7 (0); // { dg-warning "dangling reference" }
 }

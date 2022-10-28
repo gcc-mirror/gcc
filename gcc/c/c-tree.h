@@ -122,6 +122,14 @@ along with GCC; see the file COPYING3.  If not see
    been folded.  */
 #define SAVE_EXPR_FOLDED_P(EXP)	TREE_LANG_FLAG_1 (SAVE_EXPR_CHECK (EXP))
 
+/* Whether a type has boolean semantics: either a boolean type or an
+   enumeration type with a boolean type as its underlying type.  */
+#define C_BOOLEAN_TYPE_P(TYPE)						\
+  (TREE_CODE (TYPE) == BOOLEAN_TYPE					\
+   || (TREE_CODE (TYPE) == ENUMERAL_TYPE				\
+       && ENUM_UNDERLYING_TYPE (TYPE) != NULL_TREE			\
+       && TREE_CODE (ENUM_UNDERLYING_TYPE (TYPE)) == BOOLEAN_TYPE))
+
 /* Record parser information about an expression that is irrelevant
    for code generation alongside a tree representing its value.  */
 struct c_expr
@@ -216,6 +224,10 @@ struct c_typespec {
   /* Whether the expression has operands suitable for use in constant
      expressions.  */
   bool expr_const_operands;
+  /* Whether the type specifier includes an enum type specifier (that
+     is, ": specifier-qualifier-list" in a declaration using
+     "enum").  */
+  bool has_enum_type_specifier;
   /* The specifier itself.  */
   tree spec;
   /* An expression to be evaluated before the type specifier, in the
@@ -412,6 +424,12 @@ struct c_declspecs {
   /* Whether any alignment specifier (even with zero alignment) was
      specified.  */
   BOOL_BITFIELD alignas_p : 1;
+  /* Whether an enum type specifier (": specifier-qualifier-list") was
+     specified other than in a definition of that enum (if so, this is
+     invalid unless it is an empty declaration "enum identifier
+     enum-type-specifier;", but such an empty declaration is valid in
+     C2x when "enum identifier;" would not be).  */
+  BOOL_BITFIELD enum_type_specifier_ref_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -525,6 +543,9 @@ struct c_enum_contents
      constant value.  */
   tree enum_next_value;
 
+  /* The enumeration type itself.  */
+  tree enum_type;
+
   /* Nonzero means that there was overflow computing enum_next_value.  */
   int enum_overflow;
 };
@@ -625,7 +646,7 @@ extern void c_warn_unused_attributes (tree);
 extern tree c_warn_type_attributes (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
-extern tree start_enum (location_t, struct c_enum_contents *, tree);
+extern tree start_enum (location_t, struct c_enum_contents *, tree, tree);
 extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree, location_t * = NULL);
@@ -637,7 +658,7 @@ extern void temp_store_parm_decls (tree, tree);
 extern void temp_pop_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree,
-					  bool, tree);
+					  bool, tree, bool);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *, location_t);
 extern struct c_declarator *build_attrs_declarator (tree,

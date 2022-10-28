@@ -110,8 +110,13 @@ c_convert (tree type, tree expr, bool init_const)
     case VOID_TYPE:
       return fold_convert_loc (loc, type, e);
 
-    case INTEGER_TYPE:
     case ENUMERAL_TYPE:
+      if (ENUM_UNDERLYING_TYPE (type) != NULL_TREE
+	  && TREE_CODE (ENUM_UNDERLYING_TYPE (type)) == BOOLEAN_TYPE)
+	goto convert_to_boolean;
+      gcc_fallthrough ();
+
+    case INTEGER_TYPE:
       if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
 	  && current_function_decl != NULL_TREE
 	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
@@ -129,6 +134,7 @@ c_convert (tree type, tree expr, bool init_const)
       goto maybe_fold;
 
     case BOOLEAN_TYPE:
+    convert_to_boolean:
       return fold_convert_loc
 	(loc, type, c_objc_common_truthvalue_conversion (input_location, expr));
 

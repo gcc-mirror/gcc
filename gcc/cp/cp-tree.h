@@ -459,7 +459,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
-      (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       ICS_ELLIPSIS_FLAG (in _CONV)
       DECL_INITIALIZED_P (in VAR_DECL)
       TYPENAME_IS_CLASS_P (in TYPENAME_TYPE)
@@ -4508,30 +4507,6 @@ get_vec_init_expr (tree t)
 #define OPAQUE_ENUM_P(TYPE)				\
   (TREE_CODE (TYPE) == ENUMERAL_TYPE && ENUM_IS_OPAQUE (TYPE))
 
-/* Determines whether an ENUMERAL_TYPE has an explicit
-   underlying type.  */
-#define ENUM_FIXED_UNDERLYING_TYPE_P(NODE) (TYPE_LANG_FLAG_5 (NODE))
-
-/* Returns the underlying type of the given enumeration type. The
-   underlying type is determined in different ways, depending on the
-   properties of the enum:
-
-     - In C++0x, the underlying type can be explicitly specified, e.g.,
-
-         enum E1 : char { ... } // underlying type is char
-
-     - In a C++0x scoped enumeration, the underlying type is int
-       unless otherwises specified:
-
-         enum class E2 { ... } // underlying type is int
-
-     - Otherwise, the underlying type is determined based on the
-       values of the enumerators. In this case, the
-       ENUM_UNDERLYING_TYPE will not be set until after the definition
-       of the enumeration is completed by finish_enum.  */
-#define ENUM_UNDERLYING_TYPE(TYPE) \
-  TREE_TYPE (ENUMERAL_TYPE_CHECK (TYPE))
-
 /* [dcl.init.aggr]
 
    An aggregate is an array or a class with no user-provided
@@ -4566,6 +4541,9 @@ get_vec_init_expr (tree t)
 
    When appearing in a CONSTRUCTOR, the expression is an unconverted
    compound literal.
+
+   When appearing in a CALL_EXPR, it means that it is a call to
+   a constructor.
 
    When appearing in a FIELD_DECL, it means that this field
    has been duly initialized in its constructor.  */

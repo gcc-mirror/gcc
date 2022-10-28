@@ -83,6 +83,16 @@ enum stack_protector_guard {
 #define TARGET_ZBC    ((riscv_zb_subext & MASK_ZBC) != 0)
 #define TARGET_ZBS    ((riscv_zb_subext & MASK_ZBS) != 0)
 
+#define MASK_ZFINX      (1 << 0)
+#define MASK_ZDINX      (1 << 1)
+#define MASK_ZHINX      (1 << 2)
+#define MASK_ZHINXMIN   (1 << 3)
+
+#define TARGET_ZFINX    ((riscv_zinx_subext & MASK_ZFINX) != 0)
+#define TARGET_ZDINX    ((riscv_zinx_subext & MASK_ZDINX) != 0)
+#define TARGET_ZHINX    ((riscv_zinx_subext & MASK_ZHINX) != 0)
+#define TARGET_ZHINXMIN ((riscv_zinx_subext & MASK_ZHINXMIN) != 0)
+
 #define MASK_ZBKB     (1 << 0)
 #define MASK_ZBKC     (1 << 1)
 #define MASK_ZBKX     (1 << 2)
