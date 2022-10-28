@@ -3,6 +3,17 @@
 	Backport from mainline:
 	2022-10-31  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (fminmaxop): New iterator.
+	(<fexpander><mode>3): New define_expand.
+	(<fexpander><mode>3<exec>): Likewise.
+	(reduc_<fexpander>_scal_<mode>): Likewise.
+	* config/gcn/gcn.md (fexpander): New attribute.
+
+2022-11-01  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-10-31  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (V64_SI): Delete iterator.
 	(V64_DI): Likewise.
 	(V64_1REG): Likewise.
