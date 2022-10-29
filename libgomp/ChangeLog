@@ -1,3 +1,13 @@
+2022-10-28  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-fortran/declare-1.f90: Adjust scan output.
+	* testsuite/libgomp.oacc-fortran/host_data-5.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+
 2022-10-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (nvptx_open_device): Initialize

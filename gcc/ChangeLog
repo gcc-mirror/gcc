@@ -1,3 +1,104 @@
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/aarch64/aarch64.cc (aarch64_setup_incoming_varargs):
+	Check TYPE_NO_NAMED_ARGS_STDARG_P.
+	* config/alpha/alpha.cc (alpha_setup_incoming_varargs): Likewise.
+	* config/arc/arc.cc (arc_setup_incoming_varargs): Likewise.
+	* config/arm/arm.cc (arm_setup_incoming_varargs): Likewise.
+	* config/csky/csky.cc (csky_setup_incoming_varargs): Likewise.
+	* config/epiphany/epiphany.cc (epiphany_setup_incoming_varargs):
+	Likewise.
+	* config/fr30/fr30.cc (fr30_setup_incoming_varargs): Likewise.
+	* config/frv/frv.cc (frv_setup_incoming_varargs): Likewise.
+	* config/ft32/ft32.cc (ft32_setup_incoming_varargs): Likewise.
+	* config/i386/i386.cc (ix86_setup_incoming_varargs): Likewise.
+	* config/ia64/ia64.cc (ia64_setup_incoming_varargs): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_setup_incoming_varargs): Likewise.
+	* config/m32r/m32r.cc (m32r_setup_incoming_varargs): Likewise.
+	* config/mcore/mcore.cc (mcore_setup_incoming_varargs): Likewise.
+	* config/mips/mips.cc (mips_setup_incoming_varargs): Likewise.
+	* config/mmix/mmix.cc (mmix_setup_incoming_varargs): Likewise.
+	* config/nds32/nds32.cc (nds32_setup_incoming_varargs): Likewise.
+	* config/nios2/nios2.cc (nios2_setup_incoming_varargs): Likewise.
+	* config/riscv/riscv.cc (riscv_setup_incoming_varargs): Likewise.
+	* config/rs6000/rs6000-call.cc (setup_incoming_varargs): Likewise.
+	* config/sh/sh.cc (sh_setup_incoming_varargs): Likewise.
+	* config/visium/visium.cc (visium_setup_incoming_varargs):
+	Likewise.
+	* config/vms/vms-c.cc (vms_c_common_override_options): Do not set
+	flag_allow_parameterless_variadic_functions.
+	* doc/invoke.texi (-fallow-parameterless-variadic-functions): Do
+	not document option.
+	* function.cc (assign_parms): Call assign_parms_setup_varargs for
+	TYPE_NO_NAMED_ARGS_STDARG_P case.
+	* ginclude/stdarg.h [__STDC_VERSION__ > 201710L] (va_start): Make
+	variadic macro.  Pass second argument of 0 to __builtin_va_start.
+	* target.def (setup_incoming_varargs): Update documentation.
+	* doc/tm.texi: Regenerate.
+	* tree-core.h (struct tree_type_common): Add
+	no_named_args_stdarg_p.
+	* tree-streamer-in.cc (unpack_ts_type_common_value_fields): Unpack
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+	* tree-streamer-out.cc (pack_ts_type_common_value_fields): Pack
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+	* tree.cc (type_cache_hasher::equal): Compare
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+	(build_function_type): Add argument no_named_args_stdarg_p.
+	(build_function_type_list_1, build_function_type_array_1)
+	(reconstruct_complex_type): Update calls to build_function_type.
+	(stdarg_p, prototype_p): Return true for (...) functions.
+	(gimple_canonical_types_compatible_p): Compare
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+	* tree.h (TYPE_NO_NAMED_ARGS_STDARG_P): New.
+	(build_function_type): Update prototype.
+
+2022-10-28  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/107346
+	* tree-vect-data-refs.cc (vect_check_gather_scatter): Reject offsets
+	that aren't multiples of BITS_PER_UNIT.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107407
+	* tree-ssa-dse.cc (dse_classify_store): Perform backedge
+	varying index check when collecting PHI uses rather than
+	after optimizing processing of the candidate defs.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107447
+	* tree-ssa-loop-im.cc (determine_max_movement): Do not
+	hoist returns-twice calls.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107435
+	* tree-vect-loop.cc (vectorizable_recurr): Convert initial
+	value to vector component type.
+
+2022-10-28  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* omp-low.cc (oacc_privatization_candidate_p): Artificial vars are not
+	privatization candidates.
+
+2022-10-28  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/107298
+	* doc/invoke.texi: Document sanitizers can trigger warnings.
+
+2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/makefile.texi (Makefile Targets): Document
+	'distclean-stage[N]'.
+
+2022-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (range_tests_floats): Use HONOR_INFINITIES.
+
 2022-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/aarch64/aarch64.h (DONT_USE_BUILTIN_SETJMP): Delete.

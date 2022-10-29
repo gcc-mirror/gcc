@@ -1,3 +1,74 @@
+2022-10-28  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wdangling-reference4.C: New test.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-stdarg-1.c, gcc.dg/c11-stdarg-2.c,
+	gcc.dg/c11-stdarg-3.c, gcc.dg/c2x-stdarg-1.c,
+	gcc.dg/c2x-stdarg-2.c, gcc.dg/c2x-stdarg-3.c,
+	gcc.dg/c2x-stdarg-4.c, gcc.dg/gnu2x-stdarg-1.c,
+	gcc.dg/torture/c2x-stdarg-split-1a.c,
+	gcc.dg/torture/c2x-stdarg-split-1b.c: New tests.
+	* gcc.dg/Wold-style-definition-2.c, gcc.dg/format/sentinel-1.c:
+	Update expected diagnostics.
+	* gcc.dg/c2x-nullptr-1.c (test5): Cast unused parameter to (void).
+	* gcc.dg/diagnostic-token-ranges.c: Use -pedantic.  Expect warning
+	in place of error.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107407
+	* gcc.dg/torture/pr107407.c: New testcase.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107447
+	* gcc.dg/torture/pr107447.c: New testcase.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107435
+	* gcc.dg/torture/pr107435.c: New testcase.
+
+2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/directive-1.c: New test.
+	* c-c++-common/gomp/clauses-6.c: New test.
+	* c-c++-common/gomp/declare-variant-2.c (f75a): Declare.
+	(f75): Use f75a as variant instead of f1 and don't expect error.
+	* g++.dg/gomp/clause-4.C (foo): Don't expect error on comma
+	before first clause.
+	* gcc.dg/gomp/clause-2.c (foo): Likewise.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr100756.c: Adjust for larger vectors.
+
+2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Fix target selector syntax.
+
+2022-10-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/107240
+	* gcc.dg/vect/vect-bitfield-read-1.c: Add effective target checking
+	vect_shift.
+	* gcc.dg/vect/vect-bitfield-read-3.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-5.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-6.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-7.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-2.c: Add effective target checking
+	vect_shift and replace vect_int with vect_long_long.
+	* gcc.dg/vect/vect-bitfield-read-4.c: Likewise.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* gcc.dg/c11-enum-4.c, gcc.dg/c11-enum-5.c, gcc.dg/c11-enum-6.c,
+	gcc.dg/c2x-enum-6.c, gcc.dg/c2x-enum-7.c, gcc.dg/c2x-enum-8.c,
+	gcc.dg/gnu2x-enum-1.c: New tests.
+
 2022-10-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/107172

@@ -1,3 +1,44 @@
+2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::filename()): Fix dangling
+	reference.
+
+2022-10-28  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/functional: Make placeholders inline, if possible.
+
+2022-10-28  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure.ac: Stop generating gstdint.h.
+	* src/c++11/compatibility-atomic-c++0x.cc: Stop using gstdint.h.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107376
+	* include/bits/regex_executor.h (_Executor::_Executor): Use same
+	allocator for _M_cur_results and _M_results.
+	* include/bits/regex_executor.tcc (_Executor::_M_main_dispatch):
+	Prevent possibly incorrect allocator propagating to
+	_M_cur_results.
+	* testsuite/28_regex/algorithms/regex_match/107376.cc: New test.
+
 2022-10-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106393

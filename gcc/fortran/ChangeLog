@@ -1,3 +1,8 @@
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* trans-types.cc (gfc_get_function_type): Do not use
+	build_varargs_function_type_vec for unprototyped function.
+
 2022-10-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103413

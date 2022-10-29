@@ -1,3 +1,29 @@
+2022-10-28  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (maybe_warn_dangling_reference): Enable the warning in
+	system headers if the decl isn't in a system header.
+
+2022-10-28  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grokdeclarator): Call decl_attributes before do_friend.
+
+2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_all_clauses): Allow optional comma
+	before the first clause even in pragma syntax.
+	(cp_parser_omp_allocate, cp_parser_omp_atomic, cp_parser_omp_depobj,
+	cp_parser_omp_flush, cp_parser_omp_scan_loop_body,
+	cp_parser_omp_ordered, cp_parser_omp_assumption_clauses,
+	cp_finish_omp_declare_variant, cp_parser_omp_declare_target,
+	cp_parser_omp_declare_reduction_exprs, cp_parser_omp_requires,
+	cp_parser_omp_error): Likewise.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* cp-tree.h (ENUM_FIXED_UNDERLYING_TYPE_P, ENUM_UNDERLYING_TYPE):
+	Remove.  Moved to c-common.h.
+
 2022-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107379
