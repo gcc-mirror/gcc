@@ -3369,6 +3369,10 @@ memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
 void
 init_alias_analysis (void)
 {
+  const bool frame_pointer_eliminated
+    = reload_completed
+      && !frame_pointer_needed
+      && targetm.can_eliminate (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM);
   unsigned int maxreg = max_reg_num ();
   int changed, pass;
   int i;
@@ -3446,12 +3450,8 @@ init_alias_analysis (void)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (static_reg_base_value[i]
 	    /* Don't treat the hard frame pointer as special if we
-	       eliminated the frame pointer to the stack pointer instead.  */
-	    && !(i == HARD_FRAME_POINTER_REGNUM
-		 && reload_completed
-		 && !frame_pointer_needed
-		 && targetm.can_eliminate (FRAME_POINTER_REGNUM,
-					   STACK_POINTER_REGNUM)))
+	       eliminated the frame pointer to the stack pointer.  */
+	    && !(i == HARD_FRAME_POINTER_REGNUM && frame_pointer_eliminated))
 	  {
 	    new_reg_base_value[i] = static_reg_base_value[i];
 	    bitmap_set_bit (reg_seen, i);
@@ -3467,10 +3467,15 @@ init_alias_analysis (void)
 		{
 		  rtx note, set;
 
+		  /* Treat the hard frame pointer as special unless we
+		     eliminated the frame pointer to the stack pointer.  */
+		  if (!frame_pointer_eliminated
+		      && modified_in_p (hard_frame_pointer_rtx, insn))
+		    continue;
+
 		  /* If this insn has a noalias note, process it,  Otherwise,
 		     scan for sets.  A simple set will have no side effects
 		     which could change the base value of any other register.  */
-
 		  if (GET_CODE (PATTERN (insn)) == SET
 		      && REG_NOTES (insn) != 0
 		      && find_reg_note (insn, REG_NOALIAS, NULL_RTX))
