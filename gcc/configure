@@ -12684,7 +12684,9 @@ objext='.o'
 # With Setjmp/Longjmp based exception handling.
 # Check whether --enable-sjlj-exceptions was given.
 if test "${enable_sjlj_exceptions+set}" = set; then :
-  enableval=$enable_sjlj_exceptions; case $target in
+  enableval=$enable_sjlj_exceptions; force_sjlj_exceptions=yes
+else
+  case $target in
   lm32*-*-*)
      force_sjlj_exceptions=yes
      enableval=yes
@@ -19718,7 +19720,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19721 "configure"
+#line 19723 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19824,7 +19826,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19827 "configure"
+#line 19829 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

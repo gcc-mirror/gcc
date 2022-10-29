@@ -1805,6 +1805,7 @@ AC_SUBST(objext)
 AC_ARG_ENABLE(sjlj-exceptions,
 [AS_HELP_STRING([--enable-sjlj-exceptions],
                 [arrange to use setjmp/longjmp exception handling])],
+[force_sjlj_exceptions=yes],
 [case $target in
   lm32*-*-*)
      force_sjlj_exceptions=yes
