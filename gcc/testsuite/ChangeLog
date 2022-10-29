@@ -1,3 +1,11 @@
+2022-10-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103413
+	* gfortran.dg/illegal_boz_arg_4.f90: New test.
+
 2022-10-25  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:
