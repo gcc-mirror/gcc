@@ -1906,6 +1906,8 @@ final class CParser(AST) : Parser!AST
                     {
                         auto str = asmName.peekString();
                         p.mangleOverride = str;
+//                      p.adFlags |= AST.VarDeclaration.nounderscore;
+                        p.adFlags |= 4; // cannot get above line to compile on Ubuntu
                     }
                 }
                 s = applySpecifier(s, specifier);
@@ -5164,18 +5166,40 @@ final class CParser(AST) : Parser!AST
         if (n.value == TOK.identifier && n.ident == Id.pop)
         {
             scan(&n);
-            while (n.value == TOK.comma)
+            size_t len = this.records.length;
+            if (n.value == TOK.rightParenthesis) // #pragma pack ( pop )
+            {
+                if (len == 0)   // nothing to pop
+                    return closingParen();
+
+                this.records.setDim(len - 1);
+                this.packs.setDim(len - 1);
+                if (len == 1)   // stack is now empty
+                    packalign.setDefault();
+                else
+                    packalign = (*this.packs)[len - 1];
+                return closingParen();
+            }
+            while (n.value == TOK.comma)        // #pragma pack ( pop ,
             {
                 scan(&n);
                 if (n.value == TOK.identifier)
                 {
-                    for (size_t len = this.records.length; len; --len)
+                    /* pragma pack(pop, identifier
+                     * Pop until identifier is found, pop that one too, and set
+                     * alignment to the new top of the stack.
+                     * If identifier is not found, do nothing.
+                     */
+                    for ( ; len; --len)
                     {
                         if ((*this.records)[len - 1] == n.ident)
                         {
-                            packalign = (*this.packs)[len - 1];
                             this.records.setDim(len - 1);
                             this.packs.setDim(len - 1);
+                            if (len > 1)
+                                packalign = (*this.packs)[len - 2];
+                            else
+                                packalign.setDefault(); // stack empty, use default
                             break;
                         }
                     }
@@ -5184,14 +5208,18 @@ final class CParser(AST) : Parser!AST
                 else if (n.value == TOK.int32Literal)
                 {
                     setPackAlign(n);
-                    this.records.push(null);
-                    this.packs.push(packalign);
+                    scan(&n);
+                }
+                else
+                {
+                    error(loc, "identifier or alignment value expected following `#pragma pack(pop,` not `%s`", n.toChars());
                     scan(&n);
                 }
             }
             return closingParen();
         }
         /* # pragma pack ( integer )
+         * Sets alignment to integer
          */
         if (n.value == TOK.int32Literal)
         {
@@ -5200,6 +5228,7 @@ final class CParser(AST) : Parser!AST
             return closingParen();
         }
         /* # pragma pack ( )
+         * Sets alignment to default
          */
         if (n.value == TOK.rightParenthesis)
         {

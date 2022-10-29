@@ -31,7 +31,6 @@ version (Posix):
 version (CRuntime_Glibc):
 extern (C):
 @nogc nothrow:
-@system:
 
 
 /// Message queue descriptor.

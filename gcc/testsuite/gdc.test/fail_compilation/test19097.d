@@ -3,7 +3,7 @@
 ---
 fail_compilation/test19097.d(44): Error: scope variable `s` may not be returned
 fail_compilation/test19097.d(48): Error: scope variable `s1` may not be returned
-fail_compilation/test19097.d(77): Error: scope variable `z` assigned to `refPtr` with longer lifetime
+fail_compilation/test19097.d(77): Error: scope variable `z` assigned to `ref` variable `refPtr` with longer lifetime
 fail_compilation/test19097.d(108): Error: scope variable `s4` may not be returned
 fail_compilation/test19097.d(126): Error: scope variable `s5c` may not be returned
 fail_compilation/test19097.d(130): Error: scope variable `s5m` may not be returned

@@ -109,7 +109,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     CPPMANGLE cppmangle;
 
     /// overridden symbol with pragma(mangle, "...") if not null
-    MangleOverride* mangleOverride;
+    MangleOverride* pMangleOverride;
 
     /**
      * !=null if is nested

@@ -22,7 +22,6 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 version (OSX)
     version = Darwin;

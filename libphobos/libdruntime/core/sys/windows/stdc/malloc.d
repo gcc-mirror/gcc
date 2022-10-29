@@ -10,7 +10,6 @@
 module core.sys.windows.stdc.malloc;
 version (CRuntime_Microsoft):
 extern (C):
-@system:
 nothrow:
 @nogc:
 

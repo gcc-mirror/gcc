@@ -15,7 +15,6 @@
 module core.sys.posix.libgen;
 
 @nogc nothrow:
-@system:
 extern (C):
 version (Posix):
 

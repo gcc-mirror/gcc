@@ -419,6 +419,7 @@ public:
     Expression *basis;
     Expressions *elements;
     OwnedBy ownedByCtfe;
+    bool onstack;
 
     static ArrayLiteralExp *create(const Loc &loc, Expressions *elements);
     static void emplace(UnionExp *pue, const Loc &loc, Expressions *elements);

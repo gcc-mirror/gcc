@@ -35,7 +35,6 @@ version (SPARC64) version = SPARC_Any;
 
 version (Posix):
 extern (C) nothrow @nogc:
-@system:
 
 //
 // Required

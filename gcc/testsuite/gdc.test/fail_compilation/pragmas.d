@@ -3,8 +3,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/pragmas.d(103): Error: boolean expression expected for `pragma(inline)`
-fail_compilation/pragmas.d(108): Error: boolean expression expected for `pragma(inline)`
+fail_compilation/pragmas.d(103): Error: one boolean expression expected for `pragma(inline)`, not 2
+fail_compilation/pragmas.d(108): Error: one boolean expression expected for `pragma(inline)`, not 2
 fail_compilation/pragmas.d(118): Error: unrecognized `pragma(unrecognized)`
 ---
 */

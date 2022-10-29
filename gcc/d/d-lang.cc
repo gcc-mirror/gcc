@@ -567,10 +567,10 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.fixAliasThis = value;
       global.params.previewIn = value;
       global.params.fix16997 = value;
-      global.params.noSharedAccess = value;
+      global.params.noSharedAccess = FeatureState::enabled;
       global.params.rvalueRefParam = FeatureState::enabled;
       global.params.inclusiveInContracts = value;
-      global.params.shortenedMethods = value;
+      global.params.systemVariables = FeatureState::enabled;
       global.params.fixImmutableConv = value;
       break;
 
@@ -619,15 +619,15 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fpreview_nosharedaccess:
-      global.params.noSharedAccess = value;
+      global.params.noSharedAccess = FeatureState::enabled;
       break;
 
     case OPT_fpreview_rvaluerefparam:
       global.params.rvalueRefParam = FeatureState::enabled;
       break;
 
-    case OPT_fpreview_shortenedmethods:
-      global.params.shortenedMethods = value;
+    case OPT_fpreview_systemvariables:
+      global.params.systemVariables = FeatureState::enabled;
       break;
 
     case OPT_frelease:

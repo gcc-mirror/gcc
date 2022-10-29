@@ -145,8 +145,8 @@ version (Windows)
     // encoded in CP_ACP on Windows instead of UTF-8.
     /+ Waiting for druntime pull 299
     +/
-    extern (C) nothrow @nogc FILE* _wfopen(in wchar* filename, in wchar* mode);
-    extern (C) nothrow @nogc FILE* _wfreopen(in wchar* filename, in wchar* mode, FILE* fp);
+    extern (C) nothrow @nogc FILE* _wfopen(scope const wchar* filename, scope const wchar* mode);
+    extern (C) nothrow @nogc FILE* _wfreopen(scope const wchar* filename, scope const wchar* mode, FILE* fp);
 
     import core.sys.windows.basetsd : HANDLE;
 }
@@ -5210,7 +5210,7 @@ enum StdFileHandle: string
             {
                 with (StdFileHandle)
                     assert(_iob == stdin || _iob == stdout || _iob == stderr);
-                impl.handle = mixin(_iob);
+                impl.handle = cast() mixin(_iob);
                 result._p = &impl;
                 atomicOp!"+="(spinlock, uint.max / 2);
                 break;

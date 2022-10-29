@@ -2872,6 +2872,12 @@ public:
                         else
                             m = v.getConstInitializer(true);
                     }
+                    else if (v.type.isTypeNoreturn())
+                    {
+                        // Noreturn field with default initializer
+                        (*elems)[fieldsSoFar + i] = null;
+                        continue;
+                    }
                     else
                         m = v.type.defaultInitLiteral(e.loc);
                     if (exceptionOrCant(m))

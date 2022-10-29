@@ -236,24 +236,32 @@ struct FieldState
     bool inFlight;      /// bit field is in flight
 }
 
+// 99.9% of Dsymbols don't have attributes (at least in druntime and Phobos),
+// so save memory by grouping them into a separate struct
+private struct DsymbolAttributes
+{
+    /// C++ namespace this symbol belongs to
+    CPPNamespaceDeclaration cppnamespace;
+    /// customized deprecation message
+    DeprecatedDeclaration depdecl_;
+    /// user defined attributes
+    UserAttributeDeclaration userAttribDecl;
+}
+
 /***********************************************************
  */
 extern (C++) class Dsymbol : ASTNode
 {
     Identifier ident;
     Dsymbol parent;
-    /// C++ namespace this symbol belongs to
-    CPPNamespaceDeclaration cppnamespace;
     Symbol* csym;           // symbol for code generator
     const Loc loc;          // where defined
     Scope* _scope;          // !=null means context to use for semantic()
     const(char)* prettystring;  // cached value of toPrettyChars()
+    private DsymbolAttributes* atts; /// attached attribute declarations
     bool errors;            // this symbol failed to pass semantic()
     PASS semanticRun = PASS.initial;
     ushort localNum;        /// perturb mangled name to avoid collisions with those in FuncDeclaration.localsymtab
-
-    DeprecatedDeclaration depdecl;           // customized deprecation message
-    UserAttributeDeclaration userAttribDecl;    // user defined attributes
 
     final extern (D) this() nothrow
     {
@@ -283,6 +291,42 @@ extern (C++) class Dsymbol : ASTNode
     override const(char)* toChars() const
     {
         return ident ? ident.toChars() : "__anonymous";
+    }
+
+    // Getters / setters for fields stored in `DsymbolAttributes`
+    final nothrow pure @safe
+    {
+        private ref DsymbolAttributes getAtts()
+        {
+            if (!atts)
+                atts = new DsymbolAttributes();
+            return *atts;
+        }
+
+        inout(DeprecatedDeclaration) depdecl() inout { return atts ? atts.depdecl_ : null; }
+        inout(CPPNamespaceDeclaration) cppnamespace() inout { return atts ? atts.cppnamespace : null; }
+        inout(UserAttributeDeclaration) userAttribDecl() inout { return atts ? atts.userAttribDecl : null; }
+
+        DeprecatedDeclaration depdecl(DeprecatedDeclaration dd)
+        {
+            if (!dd && !atts)
+                return null;
+            return getAtts().depdecl_ = dd;
+        }
+
+        CPPNamespaceDeclaration cppnamespace(CPPNamespaceDeclaration ns)
+        {
+            if (!ns && !atts)
+                return null;
+            return getAtts().cppnamespace = ns;
+        }
+
+        UserAttributeDeclaration userAttribDecl(UserAttributeDeclaration uad)
+        {
+            if (!uad && !atts)
+                return null;
+            return getAtts().userAttribDecl = uad;
+        }
     }
 
     // helper to print fully qualified (template) arguments

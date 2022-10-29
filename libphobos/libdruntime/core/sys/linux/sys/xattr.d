@@ -11,7 +11,6 @@ import core.sys.posix.sys.types;
 
 version (linux):
 extern (C):
-@system:
 nothrow:
 @nogc:
 

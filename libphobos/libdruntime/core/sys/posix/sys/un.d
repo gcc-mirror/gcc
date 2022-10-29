@@ -25,7 +25,6 @@ else version (WatchOS)
 
 version (Posix):
 extern(C):
-@system:
 
 public import core.sys.posix.sys.socket: sa_family_t;
 

@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test22680.d(104): Error: scope variable `this` assigned to non-scope `c`
+fail_compilation/test22680.d(104): Error: scope variable `this` assigned to global variable `c`
 ---
 */
 

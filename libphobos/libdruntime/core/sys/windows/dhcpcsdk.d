@@ -9,7 +9,6 @@
  */
 module core.sys.windows.dhcpcsdk;
 version (Windows):
-@system:
 
 import core.sys.windows.w32api, core.sys.windows.windef;
 

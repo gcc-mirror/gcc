@@ -344,6 +344,9 @@ Turns on generation of struct equality to use field-wise comparisons.
 @item fixaliasthis
 Implements new lookup rules that check the current scope for @code{alias this}
 before searching in upper scopes.
+@item fiximmutableconv
+Disallows unsound immutable conversions that were formerly incorrectly
+permitted.
 @item in
 Implements @code{in} parameters to mean @code{scope const [ref]} and accepts
 rvalues.
@@ -357,9 +360,8 @@ expressions.
 Turns off and disallows all access to shared memory objects.
 @item rvaluerefparam
 Implements rvalue arguments to @code{ref} parameters.
-@item shortenedmethods
-Implements use of @code{=>} for methods and top-level functions in addition to
-lambdas.
+@item systemvariables
+Disables access to variables marked @code{@@system} from @code{@@safe} code.
 @end table
 
 @item -frelease

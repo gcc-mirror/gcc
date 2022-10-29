@@ -8,7 +8,6 @@
  */
 module core.sys.windows.imm;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "imm32");

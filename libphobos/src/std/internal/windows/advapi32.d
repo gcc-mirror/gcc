@@ -36,7 +36,9 @@ pragma(lib, "advapi32.lib");
 HMODULE hAdvapi32 = null;
 extern (Windows)
 {
-    LONG function(in HKEY hkey, in LPCWSTR lpSubKey, in REGSAM samDesired, in DWORD reserved) pRegDeleteKeyExW;
+    LONG function(
+        scope const HKEY hkey, scope const LPCWSTR lpSubKey,
+        scope const REGSAM samDesired, scope const DWORD reserved) pRegDeleteKeyExW;
 }
 
 void loadAdvapi32()

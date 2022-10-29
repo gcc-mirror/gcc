@@ -45,7 +45,6 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 //
 // XOpen (XSI)

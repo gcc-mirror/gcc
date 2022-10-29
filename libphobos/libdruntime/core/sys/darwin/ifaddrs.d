@@ -29,7 +29,6 @@ version (Darwin):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 import core.sys.posix.sys.socket;
 
