@@ -1,3 +1,12 @@
+2022-10-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103413
+	* symbol.cc (gfc_type_compatible): A boz-literal-constant has no type
+	and thus is not considered compatible to any type.
+
 2022-10-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
