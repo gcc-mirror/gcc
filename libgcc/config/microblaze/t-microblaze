@@ -1,8 +1,7 @@
-LIB2FUNCS_EXCLUDE += _divsi3 _modsi3 _moddi3 _mulsi3 _udivsi3 _umodsi3
+LIB2FUNCS_EXCLUDE += _divsi3 _modsi3 _mulsi3 _udivsi3 _umodsi3
 
 LIB2ADD += \
         $(srcdir)/config/microblaze/divsi3.S \
-        $(srcdir)/config/microblaze/moddi3.S \
         $(srcdir)/config/microblaze/modsi3.S \
         $(srcdir)/config/microblaze/muldi3_hard.S \
         $(srcdir)/config/microblaze/mulsi3.S \
