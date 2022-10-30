@@ -1,3 +1,27 @@
+2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/simd19630.d: Move tests with errors to ...
+	* gdc.dg/simd19630b.d: ... here.  New test.
+	* gdc.dg/simd19630c.d: New test.
+	* gdc.dg/simd_ctfe.d: Removed.
+	* gdc.dg/simd18867.d: New test.
+	* gdc.dg/simd19788.d: New test.
+	* gdc.dg/simd21469.d: New test.
+	* gdc.dg/simd21672.d: New test.
+	* gdc.dg/simd23077.d: New test.
+	* gdc.dg/simd23084.d: New test.
+	* gdc.dg/simd23085.d: New test.
+	* gdc.dg/torture/simd19632.d: New test.
+	* gdc.dg/torture/simd20041.d: New test.
+	* gdc.dg/torture/simd21673.d: New test.
+	* gdc.dg/torture/simd21676.d: New test.
+	* gdc.dg/torture/simd22438.d: New test.
+	* gdc.dg/torture/simd23009.d: New test.
+	* gdc.dg/torture/simd23077.d: New test.
+	* gdc.dg/torture/simd8.d: New test.
+	* gdc.dg/torture/simd9.d: New test.
+	* gdc.dg/torture/simd_prefetch.d: New test.
+
 2022-10-28  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/warn/Wdangling-reference4.C: New test.

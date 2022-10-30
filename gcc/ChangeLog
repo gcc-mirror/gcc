@@ -1,3 +1,67 @@
+2022-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (sjlj-exceptions): Restore dropped line.
+	* configure: Regenerate.
+
+2022-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* alias.cc (init_alias_analysis): Do not record sets to the hard
+	frame pointer if the frame pointer has not been eliminated.
+
+2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/darwin-d.cc (TARGET_D_MINFO_START_NAME): Rename to ...
+	(TARGET_D_MINFO_SECTION_START): ...this.
+	(TARGET_D_MINFO_END_NAME): Rename to ...
+	(TARGET_D_MINFO_SECTION_END): ... this.
+	* config/elfos.h (TARGET_D_MINFO_SECTION): Remove.
+	(TARGET_D_MINFO_START_NAME): Remove.
+	(TARGET_D_MINFO_END_NAME): Remove.
+	* config/i386/cygwin-d.cc (TARGET_D_MINFO_SECTION): Remove.
+	(TARGET_D_MINFO_START_NAME): Remove.
+	(TARGET_D_MINFO_END_NAME): Remove.
+	* config/i386/winnt-d.cc (TARGET_D_MINFO_SECTION): Remove.
+	(TARGET_D_MINFO_START_NAME): Remove.
+	(TARGET_D_MINFO_END_NAME): Remove.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_D_MINFO_START_NAME): Rename to ...
+	(TARGET_D_MINFO_SECTION_START): ...this.
+	(TARGET_D_MINFO_END_NAME): Rename to ...
+	(TARGET_D_MINFO_SECTION_END): ...this.
+
+2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc: Split out glibc-d.o into linux-d.o, kfreebsd-d.o,
+	kopensolaris-d.o, and gnu-d.o.  Split out cygwin-d.o from winnt-d.o.
+	* config/arm/linux-eabi.h (EXTRA_TARGET_D_OS_VERSIONS): Remove.
+	* config/gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Remove.
+	* config/i386/cygwin.h (EXTRA_TARGET_D_OS_VERSIONS): Remove.
+	* config/i386/linux-common.h (EXTRA_TARGET_D_OS_VERSIONS): Remove.
+	* config/i386/mingw32.h (EXTRA_TARGET_D_OS_VERSIONS): Remove.
+	* config/i386/t-cygming: Add cygwin-d.o.
+	* config/i386/winnt-d.cc (winnt_d_os_builtins): Only add
+	MinGW-specific version condition.
+	* config/kfreebsd-gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Remove.
+	* config/kopensolaris-gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Remove.
+	* config/linux-android.h (ANDROID_TARGET_D_OS_VERSIONS): Remove.
+	* config/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Remove.
+	* config/mips/linux-common.h (EXTRA_TARGET_D_OS_VERSIONS): Remove.
+	* config/t-glibc: Remove glibc-d.o, add gnu-d.o, kfreebsd-d.o,
+	kopensolaris-d.o.
+	* config/t-linux: Add linux-d.o.
+	* config/glibc-d.cc: Remove file.
+	* config/gnu-d.cc: New file.
+	* config/i386/cygwin-d.cc: New file.
+	* config/kfreebsd-d.cc: New file.
+	* config/kopensolaris-d.cc: New file.
+	* config/linux-d.cc: New file.
+
+2022-10-29  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300.cc (pre_incdec_with_reg): Make reg argument
+	an unsigned int
+	* config/h8300/h8300-protos.h (pre_incdec_with_reg): Adjust prototype.
+
 2022-10-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/aarch64/aarch64.cc (aarch64_setup_incoming_varargs):
