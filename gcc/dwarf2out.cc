@@ -5600,14 +5600,15 @@ is_fortran (const_tree decl)
   return is_fortran ();
 }
 
-/* Return TRUE if the language is Rust.  */
+/* Return TRUE if the language is Rust.
+   Note, returns FALSE for dwarf_version < 5 && dwarf_strict. */
 
 static inline bool
 is_rust ()
 {
   unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
 
-  return lang == DW_LANG_Rust || lang == DW_LANG_Rust_old;
+  return lang == DW_LANG_Rust;
 }
 
 /* Return TRUE if the language is Ada.  */
@@ -25216,13 +25217,6 @@ gen_compile_unit_die (const char *filename)
     }
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;
-  else if (strcmp (language_string, "GNU Rust") == 0)
-    {
-      if (dwarf_version >= 5 || !dwarf_strict)
-	language = DW_LANG_Rust;
-      else
-	language = DW_LANG_Rust_old;
-    }
   else if (dwarf_version >= 3 || !dwarf_strict)
     {
       if (strcmp (language_string, "GNU Ada") == 0)
@@ -25248,6 +25242,8 @@ gen_compile_unit_die (const char *filename)
 	{
 	  if (strcmp (language_string, "GNU Go") == 0)
 	    language = DW_LANG_Go;
+	  else if (strcmp (language_string, "GNU Rust") == 0)
+	    language = DW_LANG_Rust;
 	}
     }
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
