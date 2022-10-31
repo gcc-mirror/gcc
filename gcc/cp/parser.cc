@@ -1607,7 +1607,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
 
 static cp_declarator *make_call_declarator
   (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier,
-   tree, tree, tree, tree, location_t);
+   tree, tree, tree, tree, tree, location_t);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1780,7 +1780,8 @@ make_ptrmem_declarator (cp_cv_quals cv_qualifiers, tree class_type,
 /* Make a declarator for the function given by TARGET, with the
    indicated PARMS.  The CV_QUALIFIERS apply to the function, as in
    "const"-qualified member function.  The EXCEPTION_SPECIFICATION
-   indicates what exceptions can be thrown.  */
+   indicates what exceptions can be thrown.  STD_ATTRS contains
+   attributes that appertain to the function type. */
 
 cp_declarator *
 make_call_declarator (cp_declarator *target,
@@ -1792,6 +1793,7 @@ make_call_declarator (cp_declarator *target,
 		      tree exception_specification,
 		      tree late_return_type,
 		      tree requires_clause,
+		      tree std_attrs,
 		      location_t parens_loc)
 {
   cp_declarator *declarator;
@@ -1815,6 +1817,8 @@ make_call_declarator (cp_declarator *target,
     }
   else
     declarator->parameter_pack_p = false;
+
+  declarator->std_attributes = std_attrs;
 
   return declarator;
 }
@@ -11684,8 +11688,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       exception_spec,
 				       return_type,
 				       trailing_requires_clause,
+				       std_attrs,
 				       UNKNOWN_LOCATION);
-    declarator->std_attributes = std_attrs;
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
@@ -23264,8 +23268,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     exception_specification,
 						     late_return,
 						     requires_clause,
+						     attrs,
 						     parens_loc);
-		  declarator->std_attributes = attrs;
 		  declarator->attributes = gnu_attrs;
 		  /* Any subsequent parameter lists are to do with
 		     return type, so are not those of the declared
