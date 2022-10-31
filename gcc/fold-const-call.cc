@@ -1438,6 +1438,7 @@ fold_const_call_sss (real_value *result, combined_fn fn,
 
     CASE_CFN_NEXTAFTER:
     CASE_CFN_NEXTAFTER_FN:
+    case CFN_BUILT_IN_NEXTAFTERF16B:
     CASE_CFN_NEXTTOWARD:
       return fold_const_nextafter (result, arg0, arg1, format);
 
