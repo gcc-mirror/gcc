@@ -26712,8 +26712,7 @@ currently_supported_simd_type (tree t, tree b)
 static int
 aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					struct cgraph_simd_clone *clonei,
-					tree base_type, int num,
-					bool explicit_p)
+					tree base_type, int num)
 {
   tree t, ret_type;
   unsigned int elt_bits, count;
@@ -26731,9 +26730,8 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || const_simdlen > 1024
 	  || (const_simdlen & (const_simdlen - 1)) != 0))
     {
-      if (explicit_p)
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "unsupported simdlen %wd", const_simdlen);
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "unsupported simdlen %wd", const_simdlen);
       return 0;
     }
 
@@ -26741,9 +26739,7 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   if (TREE_CODE (ret_type) != VOID_TYPE
       && !currently_supported_simd_type (ret_type, base_type))
     {
-      if (!explicit_p)
-	;
-      else if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
+      if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		    "GCC does not currently support mixed size types "
 		    "for %<simd%> functions");
@@ -26770,9 +26766,7 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (clonei->args[i].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM
 	  && !currently_supported_simd_type (arg_type, base_type))
 	{
-	  if (!explicit_p)
-	    ;
-	  else if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
+	  if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 			"GCC does not currently support mixed size types "
 			"for %<simd%> functions");
@@ -26802,11 +26796,9 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (clonei->simdlen.is_constant (&const_simdlen)
 	  && maybe_ne (vec_bits, 64U) && maybe_ne (vec_bits, 128U))
 	{
-	  if (explicit_p)
-	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-			"GCC does not currently support simdlen %wd for "
-			"type %qT",
-			const_simdlen, base_type);
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "GCC does not currently support simdlen %wd for type %qT",
+		      const_simdlen, base_type);
 	  return 0;
 	}
     }

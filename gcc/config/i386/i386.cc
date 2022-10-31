@@ -23345,8 +23345,7 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 static int
 ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					     struct cgraph_simd_clone *clonei,
-					     tree base_type, int num,
-					     bool explicit_p)
+					     tree base_type, int num)
 {
   int ret = 1;
 
@@ -23355,9 +23354,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || clonei->simdlen > 1024
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
-      if (explicit_p)
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "unsupported simdlen %wd", clonei->simdlen.to_constant ());
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "unsupported simdlen %wd", clonei->simdlen.to_constant ());
       return 0;
     }
 
@@ -23377,9 +23375,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  break;
 	/* FALLTHRU */
       default:
-	if (explicit_p)
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported return type %qT for simd", ret_type);
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported return type %qT for simd", ret_type);
 	return 0;
       }
 
@@ -23408,14 +23405,13 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	default:
 	  if (clonei->args[i].arg_type == SIMD_CLONE_ARG_TYPE_UNIFORM)
 	    break;
-	  if (explicit_p)
-	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-			"unsupported argument type %qT for simd", arg_type);
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "unsupported argument type %qT for simd", arg_type);
 	  return 0;
 	}
     }
 
-  if (!TREE_PUBLIC (node->decl) || !explicit_p)
+  if (!TREE_PUBLIC (node->decl))
     {
       /* If the function isn't exported, we can pick up just one ISA
 	 for the clones.  */
@@ -23486,10 +23482,9 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	cnt /= clonei->vecsize_float;
       if (cnt > (TARGET_64BIT ? 16 : 8))
 	{
-	  if (explicit_p)
-	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-			"unsupported simdlen %wd",
-			clonei->simdlen.to_constant ());
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "unsupported simdlen %wd",
+		      clonei->simdlen.to_constant ());
 	  return 0;
 	}
       }
