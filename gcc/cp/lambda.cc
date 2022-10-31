@@ -1447,13 +1447,21 @@ is_lambda_ignored_entity (tree val)
 /* Lambdas that appear in variable initializer or default argument
    scope get that in their mangling, so we need to record it.  Also,
    multiple lambdas in the same scope may need a mangling
-   discriminator.  Record in the same data structure.  */
+   discriminator.  In ABI <= 17, there is a single per-scope sequence
+   number.  In ABI >= 18, there are per-scope per-signature sequence
+   numbers.  */
+struct GTY(()) lambda_sig_count
+{
+  tree fn; // The lambda fn whose sig this is.
+  unsigned count;
+};
 struct GTY(()) lambda_discriminator
 {
   tree scope;
   unsigned nesting; // Inside a function, VAR_DECLs get the function
   		    // as scope. This counts that nesting.
   unsigned count;   // The per-scope counter.
+  vec<lambda_sig_count, va_gc> *discriminators; // Per-signature counters
 };
 // The current scope.
 static GTY(()) lambda_discriminator lambda_scope;
@@ -1475,6 +1483,7 @@ start_lambda_scope (tree decl)
       lambda_scope.scope = decl;
       lambda_scope.nesting = 0;
       lambda_scope.count = 0;
+      lambda_scope.discriminators = nullptr;
     }
 }
 
@@ -1504,6 +1513,116 @@ record_lambda_scope (tree lambda)
     }
 }
 
+// Compare lambda template heads TMPL_A and TMPL_B, used for both
+// templated lambdas, and template template parameters of said lambda.
+
+static bool
+compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
+{
+  // We only need one level of template parms
+  tree inner_a = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl_a));
+  tree inner_b = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl_b));
+
+  // We only compare explicit template parms, ignoring trailing
+  // synthetic ones.
+  int len_a = TREE_VEC_LENGTH (inner_a);
+  int len_b = TREE_VEC_LENGTH (inner_b);
+  
+  for (int ix = 0, len = MAX (len_a, len_b); ix != len; ix++)
+    {
+      tree parm_a = NULL_TREE;
+      if (ix < len_a)
+	{
+	  parm_a = TREE_VEC_ELT (inner_a, ix);
+	  if (parm_a == error_mark_node)
+	    return false;
+	  parm_a = TREE_VALUE (parm_a);
+	  if (DECL_VIRTUAL_P (parm_a))
+	    parm_a = NULL_TREE;
+	}
+      
+      tree parm_b = NULL_TREE;
+      if (ix < len_b)
+	{
+	  parm_b = TREE_VEC_ELT (inner_b, ix);
+	  if (parm_b == error_mark_node)
+	    return false;
+	  parm_b = TREE_VALUE (parm_b);
+	  if (DECL_VIRTUAL_P (parm_b))
+	    parm_b = NULL_TREE;
+	}
+
+      if (!parm_a && !parm_b)
+	// we're done
+	break;
+
+      if (!(parm_a && parm_b))
+	return false;
+
+      if (TREE_CODE (parm_a) != TREE_CODE (parm_b))
+	return false;
+
+      if (TREE_CODE (parm_a) == PARM_DECL)
+	{
+	  if (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm_a))
+	      != TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm_b)))
+	    return false;
+
+	  if (!same_type_p (TREE_TYPE (parm_a), TREE_TYPE (parm_b)))
+	    return false;
+	}
+      else 
+	{
+	  if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm_a))
+	      != TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm_b)))
+	    return false;
+
+	  if (TREE_CODE (parm_a) != TEMPLATE_DECL)
+	    gcc_checking_assert (TREE_CODE (parm_a) == TYPE_DECL);
+	  else if (!compare_lambda_template_head (parm_a, parm_b))
+	    return false;
+	}
+    }
+
+  return true;
+}
+
+// Compare lambda signatures FN_A and FN_B, they may be TEMPLATE_DECLs too.
+
+static bool
+compare_lambda_sig (tree fn_a, tree fn_b)
+{
+  if (TREE_CODE (fn_a) == TEMPLATE_DECL
+      && TREE_CODE (fn_b) == TEMPLATE_DECL)
+    {
+      if (!compare_lambda_template_head (fn_a, fn_b))
+	return false;
+      fn_a = DECL_TEMPLATE_RESULT (fn_a);
+      fn_b = DECL_TEMPLATE_RESULT (fn_b);
+    }
+  else if (TREE_CODE (fn_a) == TEMPLATE_DECL
+	   || TREE_CODE (fn_b) == TEMPLATE_DECL)
+    return false;
+
+  if (fn_a == error_mark_node
+      || fn_b == error_mark_node)
+    return false;
+
+  for (tree args_a = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn_a))),
+	 args_b = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn_b)));
+       args_a || args_b;
+       args_a = TREE_CHAIN (args_a), args_b = TREE_CHAIN (args_b))
+    {
+      if (!args_a || !args_b)
+	return false;
+      // This check also deals with differing varadicness
+      if (!same_type_p (TREE_VALUE (args_a), TREE_VALUE (args_b)))
+	return false;
+    }
+
+  return true;
+}
+
 // Record the per-scope discriminator of LAMBDA.  If the extra scope
 // is empty, we must use the empty scope counter, which might not be
 // the live one.
@@ -1515,6 +1634,33 @@ record_lambda_scope_discriminator (tree lambda)
 		|| LAMBDA_EXPR_EXTRA_SCOPE (lambda)
 		? &lambda_scope : lambda_scope_stack->begin ());
   LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda) = slot->count++;
+}
+
+// Record the per-scope per-signature discriminator of LAMBDA.  If the
+// extra scope is empty, we must use the empty scope counter, which
+// might not be the live one.
+
+void
+record_lambda_scope_sig_discriminator (tree lambda, tree fn)
+{
+  auto *slot = (vec_safe_is_empty (lambda_scope_stack)
+		|| LAMBDA_EXPR_EXTRA_SCOPE (lambda)
+		? &lambda_scope : lambda_scope_stack->begin ());
+  gcc_checking_assert (LAMBDA_EXPR_EXTRA_SCOPE (lambda) == slot->scope);
+
+  // A linear search, we're not expecting this to be a big list, and
+  // this avoids needing a signature hash function.
+  lambda_sig_count *sig;
+  if (unsigned ix = vec_safe_length (slot->discriminators))
+    for (sig = slot->discriminators->begin (); ix--; sig++)
+      if (compare_lambda_sig (fn, sig->fn))
+	goto found;
+  {
+    lambda_sig_count init = {fn, 0};
+    sig = vec_safe_push (slot->discriminators, init);
+  }
+ found:
+  LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda) = sig->count++;
 }
 
 tree
