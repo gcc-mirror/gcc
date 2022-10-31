@@ -3017,6 +3017,10 @@ irange::intersect_nonzero_bits (const irange &r)
   if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
     {
       wide_int nz = get_nonzero_bits () & r.get_nonzero_bits ();
+      // If the nonzero bits did not change, return false.
+      if (nz == get_nonzero_bits ())
+	return false;
+
       m_nonzero_mask = wide_int_to_tree (t, nz);
       if (set_range_from_nonzero_bits ())
 	return true;
