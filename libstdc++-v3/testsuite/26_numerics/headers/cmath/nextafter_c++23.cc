@@ -100,6 +100,8 @@ test ()
   VERIFY(std::fpclassify(t36) == FP_NAN);
   T t37 = std::nextafter(T(-0.0), T());
   VERIFY(t37 == T() && !std::signbit(t37));
+  static_assert(std::nextafter(T(1.0), T(2.0)) > T(1.0));
+  static_assert(std::nextafter(std::nextafter(T(1.0), T(5.0)), T(0.0)) == T(1.0));
 }
 
 int
