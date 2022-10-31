@@ -82,6 +82,8 @@ EOF
 
   loongarch*)   ARCH=loongarch ;;
 
+  riscv*)		ARCH=riscv ;;
+
   sh*)		ARCH=sh ;;
 
   sparc)
