@@ -1918,38 +1918,6 @@ maybe_check_overriding_exception_spec (tree overrider, tree basefn)
   return true;
 }
 
-/* Replace the any contract attributes on OVERRIDER with a copy where any
-   references to BASEFN's PARM_DECLs have been rewritten to the corresponding
-   PARM_DECL in OVERRIDER.  */
-
-static void
-inherit_base_contracts (tree overrider, tree basefn)
-{
-  tree last = NULL_TREE, contract_attrs = NULL_TREE;
-  for (tree a = DECL_CONTRACTS (basefn);
-      a != NULL_TREE;
-      a = CONTRACT_CHAIN (a))
-    {
-      tree c = copy_node (a);
-      TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
-					copy_node (CONTRACT_STATEMENT (c)));
-
-      tree src = basefn;
-      tree dst = overrider;
-      remap_contract (src, dst, CONTRACT_STATEMENT (c), /*duplicate_p=*/true);
-
-      CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
-	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
-
-      chainon (last, c);
-      last = c;
-      if (!contract_attrs)
-	contract_attrs = c;
-    }
-
-  set_decl_contracts (overrider, contract_attrs);
-}
-
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 

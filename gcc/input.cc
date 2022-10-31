@@ -995,7 +995,7 @@ get_source (location_t start, location_t end)
       if (line.length () < 1 && (l != expstart.line && l != expend.line))
 	continue;
 
-      /* for the first line in the range, only start at expstart.column */
+      /* For the first line in the range, only start at expstart.column */
       if (l == expstart.line)
 	{
 	  if (expstart.column == 0)
@@ -1005,7 +1005,7 @@ get_source (location_t start, location_t end)
 	  line = line.subspan (expstart.column - 1,
 			       line.length() - expstart.column + 1);
 	}
-      /* for the last line, don't go past expstart.column */
+      /* For the last line, don't go past expend.column */
       else if (l == expend.line)
 	{
 	  if (line.length () < (size_t)expend.column)
@@ -1016,7 +1016,7 @@ get_source (location_t start, location_t end)
       obstack_grow (&buf_obstack, line.get_buffer (), line.length ());
     }
 
-  /* Null terminate and finish the buf obstack.  */
+  /* NUL-terminate and finish the buf obstack.  */
   obstack_1grow (&buf_obstack, 0);
   const char *buf = (const char *) obstack_finish (&buf_obstack);
 

@@ -1588,17 +1588,6 @@ cp_ensure_no_oacc_routine (cp_parser *parser)
       parser->oacc_routine = NULL;
     }
 }
-
-/* True if ATTR is an assertion.  */
-
-bool
-cp_contract_assertion_p (const_tree attr)
-{
-  /* This is only an assertion if it is a valid cxx contract attribute and the
-     statement is an ASSERTION_STMT.  */
-  return cxx_contract_attribute_p (attr)
-    && TREE_CODE (CONTRACT_STATEMENT (attr)) == ASSERTION_STMT;
-}
 
 /* Decl-specifiers.  */
 
@@ -1923,32 +1912,23 @@ make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers,
   return parameter;
 }
 
-/* Returns a pointer to the function declarator iff DECLARATOR is a
-   declaration for a function.  Returns NULL otherwise.  */
+/* Returns true iff DECLARATOR  is a declaration for a function.  */
 
-const cp_declarator *
-find_innermost_function_declarator (const cp_declarator *declarator)
+static bool
+function_declarator_p (const cp_declarator *declarator)
 {
   while (declarator)
     {
       if (declarator->kind == cdk_function
 	  && declarator->declarator->kind == cdk_id)
-	return declarator;
+	return true;
       if (declarator->kind == cdk_id
 	  || declarator->kind == cdk_decomp
 	  || declarator->kind == cdk_error)
-	return NULL;
+	return false;
       declarator = declarator->declarator;
     }
-  return NULL;
-}
-
-/* Returns true iff DECLARATOR  is a declaration for a function.  */
-
-bool
-function_declarator_p (const cp_declarator *declarator)
-{
-  return find_innermost_function_declarator (declarator) != NULL;
+  return false;
 }
 
 /* The parser.  */
@@ -31912,8 +31892,6 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
     cp_parser_ctor_initializer_opt_and_function_body
       (parser, /*in_function_try_block=*/false);
 
-  fn = current_function_decl;
-
   /* Finish the function.  */
   fn = finish_function (inline_p);
 
@@ -32919,15 +32897,13 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
   if (UNPARSED_NOEXCEPT_SPEC_P (spec))
     vec_safe_push (unparsed_noexcepts, decl);
 
-  /* If a member function has attributes, they are all deferred.  */
+  /* Contracts are deferred.  */
   for (tree attr = DECL_ATTRIBUTES (decl); attr; attr = TREE_CHAIN (attr))
-    {
-      if (cxx_contract_attribute_p (attr))
-	{
-	  vec_safe_push (unparsed_contracts, decl);
-	  break;
-	}
-    }
+    if (cxx_contract_attribute_p (attr))
+      {
+	vec_safe_push (unparsed_contracts, decl);
+	break;
+      }
 }
 
 /* DEFAULT_ARG contains the saved tokens for the initializer of DECL,

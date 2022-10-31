@@ -848,6 +848,17 @@ cxx_contract_attribute_p (const_tree attr)
       || TREE_CODE (TREE_VALUE (TREE_VALUE (attr))) == ASSERTION_STMT);
 }
 
+/* True if ATTR is an assertion.  */
+
+bool
+cp_contract_assertion_p (const_tree attr)
+{
+  /* This is only an assertion if it is a valid cxx contract attribute and the
+     statement is an ASSERTION_STMT.  */
+  return cxx_contract_attribute_p (attr)
+    && TREE_CODE (CONTRACT_STATEMENT (attr)) == ASSERTION_STMT;
+}
+
 /* Remove all c++2a style contract attributes from the DECL_ATTRIBUTEs of the
    FUNCTION_DECL FNDECL.  */
 
@@ -2186,6 +2197,38 @@ duplicate_contracts (tree newdecl, tree olddecl)
 	  remove_contract_attributes (newdecl);
 	}
     }
+}
+
+/* Replace the any contract attributes on OVERRIDER with a copy where any
+   references to BASEFN's PARM_DECLs have been rewritten to the corresponding
+   PARM_DECL in OVERRIDER.  */
+
+void
+inherit_base_contracts (tree overrider, tree basefn)
+{
+  tree last = NULL_TREE, contract_attrs = NULL_TREE;
+  for (tree a = DECL_CONTRACTS (basefn);
+      a != NULL_TREE;
+      a = CONTRACT_CHAIN (a))
+    {
+      tree c = copy_node (a);
+      TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
+					copy_node (CONTRACT_STATEMENT (c)));
+
+      tree src = basefn;
+      tree dst = overrider;
+      remap_contract (src, dst, CONTRACT_STATEMENT (c), /*duplicate_p=*/true);
+
+      CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
+	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
+
+      chainon (last, c);
+      last = c;
+      if (!contract_attrs)
+	contract_attrs = c;
+    }
+
+  set_decl_contracts (overrider, contract_attrs);
 }
 
 #include "gt-cp-contracts.h"

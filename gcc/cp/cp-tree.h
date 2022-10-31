@@ -3747,64 +3747,6 @@ struct GTY(()) lang_decl {
 #define DECL_PENDING_INLINE_INFO(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->u.pending_inline_info)
 
-/* Return the first contract in ATTRS, or NULL_TREE if there are none.  */
-
-inline tree
-find_contract (tree attrs)
-{
-  while (attrs && !cxx_contract_attribute_p (attrs))
-    attrs = TREE_CHAIN (attrs);
-  return attrs;
-}
-
-/* True iff the FUNCTION_DECL NODE currently has any contracts.  */
-#define DECL_HAS_CONTRACTS_P(NODE) \
-  (DECL_CONTRACTS (NODE) != NULL_TREE)
-
-/* For a FUNCTION_DECL of a guarded function, this points to a list of the pre
-   and post contracts of the first decl of NODE in original order. */
-#define DECL_CONTRACTS(NODE) \
-  (find_contract (DECL_ATTRIBUTES (NODE)))
-
-/* The next contract (if any) after this one in an attribute list.  */
-#define CONTRACT_CHAIN(NODE) \
-  (find_contract (TREE_CHAIN (NODE)))
-
-/* The wrapper of the original source location of a list of contracts.  */
-#define CONTRACT_SOURCE_LOCATION_WRAPPER(NODE) \
-  (TREE_PURPOSE (TREE_VALUE (NODE)))
-
-/* The original source location of a list of contracts.  */
-#define CONTRACT_SOURCE_LOCATION(NODE) \
-  (EXPR_LOCATION (CONTRACT_SOURCE_LOCATION_WRAPPER (NODE)))
-
-/* The actual code _STMT for a contract attribute.  */
-#define CONTRACT_STATEMENT(NODE) \
-  (TREE_VALUE (TREE_VALUE (NODE)))
-
-/* For a FUNCTION_DECL of a guarded function, this holds the function decl
-   where pre contract checks are emitted.  */
-#define DECL_PRE_FN(NODE) \
-  (get_precondition_function ((NODE)))
-
-/* For a FUNCTION_DECL of a guarded function, this holds the function decl
-   where post contract checks are emitted.  */
-#define DECL_POST_FN(NODE) \
-  (get_postcondition_function ((NODE)))
-
-/* For a FUNCTION_DECL of a pre/post function, this points back to the
-   original guarded function.  */
-#define DECL_ORIGINAL_FN(NODE) \
-  (DECL_ABSTRACT_ORIGIN (NODE))
-
-/* True iff the FUNCTION_DECL is the pre function for a guarded function.  */
-#define DECL_IS_PRE_FN_P(NODE) \
-  (DECL_ORIGINAL_FN (NODE) && DECL_PRE_FN (DECL_ORIGINAL_FN (NODE)) == NODE)
-
-/* True iff the FUNCTION_DECL is the post function for a guarded function.  */
-#define DECL_IS_POST_FN_P(NODE) \
-  (DECL_ORIGINAL_FN (NODE) && DECL_POST_FN (DECL_ORIGINAL_FN (NODE)) == NODE)
-
 /* Nonzero for TYPE_DECL means that it was written 'using name = type'.  */
 #define TYPE_DECL_ALIAS_P(NODE) \
   DECL_LANG_FLAG_6 (TYPE_DECL_CHECK (NODE))
@@ -7146,7 +7088,6 @@ extern void import_export_decl			(tree);
 extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree	(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
-extern bool cp_tree_defined_p			(tree);
 extern bool decl_defined_p			(tree);
 extern bool decl_constant_var_p			(tree);
 extern bool decl_maybe_constant_var_p		(tree);
@@ -7458,8 +7399,6 @@ extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
 extern tree attr_chainon (tree, tree);
-extern bool function_declarator_p (const cp_declarator *);
-extern const cp_declarator *find_innermost_function_declarator (const cp_declarator *);
 
 /* in pt.cc */
 extern tree canonical_type_parameter		(tree);
@@ -7740,62 +7679,6 @@ extern bool perform_deferred_access_checks	(tsubst_flags_t);
 extern bool perform_or_defer_access_check	(tree, tree, tree,
 						 tsubst_flags_t,
 						 access_failure_info *afi = NULL);
-
-/* contracts.cc */
-enum contract_matching_context
-{
-  cmc_declaration,
-  cmc_override
-};
-
-extern void init_contract_processing		();
-extern tree invalidate_contract			(tree);
-extern tree make_postcondition_variable		(cp_expr);
-extern tree make_postcondition_variable		(cp_expr, tree);
-extern bool check_postcondition_result		(tree, tree, location_t);
-extern void rebuild_postconditions		(tree);
-extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
-extern tree finish_contract_attribute		(tree, tree);
-extern void update_late_contract		(tree, tree, tree);
-extern tree finish_contract_condition		(cp_expr);
-extern void remove_contract_attributes		(tree);
-extern void copy_contract_attributes		(tree, tree);
-extern tree splice_out_contracts		(tree);
-extern bool match_contract_conditions		(location_t, tree, location_t, tree, contract_matching_context);
-extern void defer_guarded_contract_match	(tree, tree, tree);
-extern void match_deferred_contracts		(tree);
-extern void remap_contract			(tree, tree, tree, bool);
-extern void remap_contracts			(tree, tree, tree, bool);
-extern void remap_dummy_this			(tree, tree *);
-extern bool contract_active_p			(tree);
-extern bool contract_any_active_p		(tree);
-extern bool contract_any_deferred_p		(tree);
-extern bool all_attributes_are_contracts_p	(tree);
-extern void build_contract_function_decls	(tree);
-extern void set_contract_functions		(tree, tree, tree);
-extern tree start_postcondition_statement	();
-extern void finish_postcondition_statement	(tree);
-extern tree build_contract_check		(tree);
-extern tree get_postcondition_result_parameter	(tree);
-extern tree get_precondition_function		(tree);
-extern tree get_postcondition_function		(tree);
-extern tree get_contracts_original_fn		(tree);
-
-extern void emit_assertion			(tree);
-extern void emit_preconditions			(tree);
-extern void emit_postconditions_cleanup		(tree);
-extern void maybe_update_postconditions		(tree);
-extern void start_function_contracts		(tree);
-extern void finish_function_contracts		(tree);
-extern tree apply_postcondition_to_return	(tree);
-extern void duplicate_contracts			(tree, tree);
-
-inline void
-set_decl_contracts (tree decl, tree contract_attrs)
-{
-  remove_contract_attributes (decl);
-  DECL_ATTRIBUTES (decl) = chainon (DECL_ATTRIBUTES (decl), contract_attrs);
-}
 
 /* RAII sentinel to ensures that deferred access checks are popped before
   a function returns.  */
@@ -8764,6 +8647,29 @@ extern bool morph_fn_to_coro			(tree, tree *, tree *);
 extern tree coro_get_actor_function		(tree);
 extern tree coro_get_destroy_function		(tree);
 extern tree coro_get_ramp_function		(tree);
+
+/* contracts.cc */
+extern tree make_postcondition_variable		(cp_expr);
+extern tree make_postcondition_variable		(cp_expr, tree);
+extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
+extern tree finish_contract_condition		(cp_expr);
+
+/* Return the first contract in ATTRS, or NULL_TREE if there are none.  */
+
+inline tree
+find_contract (tree attrs)
+{
+  while (attrs && !cxx_contract_attribute_p (attrs))
+    attrs = TREE_CHAIN (attrs);
+  return attrs;
+}
+
+inline void
+set_decl_contracts (tree decl, tree contract_attrs)
+{
+  remove_contract_attributes (decl);
+  DECL_ATTRIBUTES (decl) = chainon (DECL_ATTRIBUTES (decl), contract_attrs);
+}
 
 /* Inline bodies.  */
   

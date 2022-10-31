@@ -1,6 +1,6 @@
 /* Definitions for C++ contract levels.  Implements functionality described in
    the N4820 working draft version of contracts, P1290, P1332, and P1429.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 
 This file is part of GCC.
@@ -147,6 +147,7 @@ extern contract_level map_contract_level	(const char *);
 
 /* Check if an attribute is a cxx contract attribute.  */
 extern bool cxx_contract_attribute_p (const_tree);
+extern bool cp_contract_assertion_p (const_tree);
 
 /* Returns the default role.  */
 
@@ -162,5 +163,96 @@ extern void handle_OPT_fcontract_assumption_mode_ (const char *);
 extern void handle_OPT_fcontract_continuation_mode_ (const char *);
 extern void handle_OPT_fcontract_role_ (const char *);
 extern void handle_OPT_fcontract_semantic_ (const char *);
+
+enum contract_matching_context
+{
+  cmc_declaration,
+  cmc_override
+};
+
+/* True iff the FUNCTION_DECL NODE currently has any contracts.  */
+#define DECL_HAS_CONTRACTS_P(NODE) \
+  (DECL_CONTRACTS (NODE) != NULL_TREE)
+
+/* For a FUNCTION_DECL of a guarded function, this points to a list of the pre
+   and post contracts of the first decl of NODE in original order. */
+#define DECL_CONTRACTS(NODE) \
+  (find_contract (DECL_ATTRIBUTES (NODE)))
+
+/* The next contract (if any) after this one in an attribute list.  */
+#define CONTRACT_CHAIN(NODE) \
+  (find_contract (TREE_CHAIN (NODE)))
+
+/* The wrapper of the original source location of a list of contracts.  */
+#define CONTRACT_SOURCE_LOCATION_WRAPPER(NODE) \
+  (TREE_PURPOSE (TREE_VALUE (NODE)))
+
+/* The original source location of a list of contracts.  */
+#define CONTRACT_SOURCE_LOCATION(NODE) \
+  (EXPR_LOCATION (CONTRACT_SOURCE_LOCATION_WRAPPER (NODE)))
+
+/* The actual code _STMT for a contract attribute.  */
+#define CONTRACT_STATEMENT(NODE) \
+  (TREE_VALUE (TREE_VALUE (NODE)))
+
+/* For a FUNCTION_DECL of a guarded function, this holds the function decl
+   where pre contract checks are emitted.  */
+#define DECL_PRE_FN(NODE) \
+  (get_precondition_function ((NODE)))
+
+/* For a FUNCTION_DECL of a guarded function, this holds the function decl
+   where post contract checks are emitted.  */
+#define DECL_POST_FN(NODE) \
+  (get_postcondition_function ((NODE)))
+
+/* For a FUNCTION_DECL of a pre/post function, this points back to the
+   original guarded function.  */
+#define DECL_ORIGINAL_FN(NODE) \
+  (DECL_ABSTRACT_ORIGIN (NODE))
+
+/* True iff the FUNCTION_DECL is the pre function for a guarded function.  */
+#define DECL_IS_PRE_FN_P(NODE) \
+  (DECL_ORIGINAL_FN (NODE) && DECL_PRE_FN (DECL_ORIGINAL_FN (NODE)) == NODE)
+
+/* True iff the FUNCTION_DECL is the post function for a guarded function.  */
+#define DECL_IS_POST_FN_P(NODE) \
+  (DECL_ORIGINAL_FN (NODE) && DECL_POST_FN (DECL_ORIGINAL_FN (NODE)) == NODE)
+
+extern tree invalidate_contract			(tree);
+extern tree finish_contract_attribute		(tree, tree);
+extern void update_late_contract		(tree, tree, tree);
+extern void remove_contract_attributes		(tree);
+extern void copy_contract_attributes		(tree, tree);
+extern tree splice_out_contracts		(tree);
+extern bool check_postcondition_result		(tree, tree, location_t);
+extern void rebuild_postconditions		(tree);
+extern bool match_contract_conditions		(location_t, tree, location_t, tree, contract_matching_context);
+extern void defer_guarded_contract_match	(tree, tree, tree);
+extern void match_deferred_contracts		(tree);
+extern void remap_contract			(tree, tree, tree, bool);
+extern void remap_contracts			(tree, tree, tree, bool);
+extern void remap_dummy_this			(tree, tree *);
+extern bool contract_active_p			(tree);
+extern bool contract_any_active_p		(tree);
+extern bool contract_any_deferred_p		(tree);
+extern bool all_attributes_are_contracts_p	(tree);
+extern void build_contract_function_decls	(tree);
+extern void set_contract_functions		(tree, tree, tree);
+extern tree start_postcondition_statement	();
+extern void finish_postcondition_statement	(tree);
+extern tree build_contract_check		(tree);
+extern tree get_postcondition_result_parameter	(tree);
+extern tree get_precondition_function		(tree);
+extern tree get_postcondition_function		(tree);
+extern tree get_contracts_original_fn		(tree);
+extern void emit_assertion			(tree);
+extern void emit_preconditions			(tree);
+extern void emit_postconditions_cleanup		(tree);
+extern void maybe_update_postconditions		(tree);
+extern void start_function_contracts		(tree);
+extern void finish_function_contracts		(tree);
+extern tree apply_postcondition_to_return	(tree);
+extern void duplicate_contracts			(tree, tree);
+extern void inherit_base_contracts (tree, tree);
 
 #endif /* ! GCC_CP_CONTRACT_H */

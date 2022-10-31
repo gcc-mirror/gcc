@@ -12858,9 +12858,10 @@ grokdeclarator (const cp_declarator *declarator,
       inner_declarator = declarator->declarator;
 
       /* Check that contracts aren't misapplied.  */
-      tree contract_attr = find_contract (declarator->std_attributes);
-      if (contract_attr && !function_declarator_p (declarator))
-	diagnose_misapplied_contracts (contract_attr);
+      if (tree contract_attr = find_contract (declarator->std_attributes))
+	if (declarator->kind != cdk_function
+	    || innermost_code != cdk_function)
+	  diagnose_misapplied_contracts (contract_attr);
 
       /* We don't want to warn in parameter context because we don't
 	 yet know if the parse will succeed, and this might turn out
@@ -13256,8 +13257,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 
 	    /* Contract attributes appertain to the declaration.  */
-	    tree *p;
-	    for (p = &attrs; *p;)
+	    for (tree *p = &attrs; *p;)
 	      {
 		tree l = *p;
 		if (cxx_contract_attribute_p (l))

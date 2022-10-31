@@ -10178,7 +10178,7 @@ trees_out::fn_parms_init (tree fn)
 	tree_node (contract);
     }
 
-  /* Write a reference to contracts pre/post functions, if any to avoid
+  /* Write a reference to contracts pre/post functions, if any, to avoid
      regenerating them in importers.  */
   tree_node (DECL_PRE_FN (fn));
   tree_node (DECL_POST_FN (fn));
