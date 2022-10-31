@@ -167,7 +167,6 @@ void
 gimple_ranger::range_on_exit (vrange &r, basic_block bb, tree name)
 {
   // on-exit from the exit block?
-  gcc_checking_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
   gcc_checking_assert (gimple_range_ssa_p (name));
 
   unsigned idx;

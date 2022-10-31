@@ -1193,9 +1193,8 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   Value_Range block_result (type);
   Value_Range undefined (type);
 
-  // At this point we shouldn't be looking at the def, entry or exit block.
-  gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
-		       bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
+  // At this point we shouldn't be looking at the def, entry block.
+  gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   gcc_checking_assert (m_workback.length () == 0);
 
   // If the block cache is set, then we've already visited this block.
@@ -1434,10 +1433,15 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   // Default value is global range.
   get_global_range (r, name);
 
+  // The dominator of EXIT_BLOCK doesn't seem to be set, so at least handle
+  // the common single exit cases.
+  if (start_bb == EXIT_BLOCK_PTR_FOR_FN (cfun) && single_pred_p (start_bb))
+    bb = single_pred_edge (start_bb)->src;
+  else
+    bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
+
   // Search until a value is found, pushing blocks which may need calculating.
-  for (bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
-       bb;
-       prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+  for ( ; bb; prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       // Accumulate any block exit inferred ranges.
       m_exit.maybe_adjust_range (infer, name, bb);
