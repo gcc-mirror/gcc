@@ -1444,79 +1444,77 @@ is_lambda_ignored_entity (tree val)
   return false;
 }
 
-/* Lambdas that appear in variable initializer or default argument scope
-   get that in their mangling, so we need to record it.  We might as well
-   use the count for function and namespace scopes as well.  */
-static GTY(()) tree lambda_scope;
-static GTY(()) int lambda_count;
-struct GTY(()) tree_int
+/* Lambdas that appear in variable initializer or default argument
+   scope get that in their mangling, so we need to record it.  Also,
+   multiple lambdas in the same scope may need a mangling
+   discriminator.  Record in the same data structure.  */
+struct GTY(()) lambda_discriminator
 {
-  tree t;
-  int i;
+  tree scope;
+  unsigned nesting; // Inside a function, VAR_DECLs get the function
+  		    // as scope. This counts that nesting.
+  unsigned count;   // The per-scope counter.
 };
-static GTY(()) vec<tree_int, va_gc> *lambda_scope_stack;
+// The current scope.
+static GTY(()) lambda_discriminator lambda_scope;
+// Stack of previous scopes.
+static GTY(()) vec<lambda_discriminator, va_gc> *lambda_scope_stack;
+
+// Push DECL as lambda extra scope, also new discriminator counters.
 
 void
 start_lambda_scope (tree decl)
 {
-  tree_int ti;
-  gcc_assert (decl);
-  /* Once we're inside a function, we ignore variable scope and just push
-     the function again so that popping works properly.  */
+  gcc_checking_assert (decl);
   if (current_function_decl && TREE_CODE (decl) == VAR_DECL)
-    decl = current_function_decl;
-  ti.t = lambda_scope;
-  ti.i = lambda_count;
-  vec_safe_push (lambda_scope_stack, ti);
-  if (lambda_scope != decl)
-    {
-      /* Don't reset the count if we're still in the same function.  */
-      lambda_scope = decl;
-      lambda_count = 0;
-    }
-}
-
-void
-record_lambda_scope (tree lambda)
-{
-  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope;
-  LAMBDA_EXPR_DISCRIMINATOR (lambda) = lambda_count++;
-  if (lambda_scope)
-    {
-      tree closure = LAMBDA_EXPR_CLOSURE (lambda);
-      gcc_checking_assert (closure);
-      maybe_key_decl (lambda_scope, TYPE_NAME (closure));
-    }
-}
-
-/* This lambda is an instantiation of a lambda in a template default argument
-   that got no LAMBDA_EXPR_EXTRA_SCOPE, so this shouldn't either.  But we do
-   need to use and increment the global count to avoid collisions.  */
-
-void
-record_null_lambda_scope (tree lambda)
-{
-  if (vec_safe_is_empty (lambda_scope_stack))
-    record_lambda_scope (lambda);
+    // If we're inside a function, we ignore variable scope.  Don't push.
+    lambda_scope.nesting++;
   else
     {
-      tree_int *p = lambda_scope_stack->begin();
-      LAMBDA_EXPR_EXTRA_SCOPE (lambda) = p->t;
-      LAMBDA_EXPR_DISCRIMINATOR (lambda) = p->i++;
+      vec_safe_push (lambda_scope_stack, lambda_scope);
+      lambda_scope.scope = decl;
+      lambda_scope.nesting = 0;
+      lambda_scope.count = 0;
     }
-  gcc_assert (LAMBDA_EXPR_EXTRA_SCOPE (lambda) == NULL_TREE);
 }
+
+// Pop from the current lambda extra scope.
 
 void
 finish_lambda_scope (void)
 {
-  tree_int *p = &lambda_scope_stack->last ();
-  if (lambda_scope != p->t)
+  if (!lambda_scope.nesting--)
     {
-      lambda_scope = p->t;
-      lambda_count = p->i;
+      lambda_scope = lambda_scope_stack->last ();
+      lambda_scope_stack->pop ();
     }
-  lambda_scope_stack->pop ();
+}
+
+// Record the current lambda scope into LAMBDA
+
+void
+record_lambda_scope (tree lambda)
+{
+  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope.scope;
+  if (lambda_scope.scope)
+    {
+      tree closure = LAMBDA_EXPR_CLOSURE (lambda);
+      gcc_checking_assert (closure);
+      maybe_key_decl (lambda_scope.scope, TYPE_NAME (closure));
+    }
+}
+
+// Record the per-scope discriminator of LAMBDA.  If the extra scope
+// is empty, we must use the empty scope counter, which might not be
+// the live one.
+
+void
+record_lambda_scope_discriminator (tree lambda)
+{
+  auto *slot = (vec_safe_is_empty (lambda_scope_stack)
+		|| LAMBDA_EXPR_EXTRA_SCOPE (lambda)
+		? &lambda_scope : lambda_scope_stack->begin ());
+  LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda) = slot->count++;
 }
 
 tree
@@ -1647,6 +1645,10 @@ prune_lambda_captures (tree body)
       capp = &TREE_CHAIN (cap);
     }
 }
+
+// Record the per-scope per-signature discriminator of LAMBDA.  If the
+// extra scope is empty, we must use the empty scope counter, which
+// might not be the live one.
 
 void
 finish_lambda_function (tree body)

@@ -1,76 +1,13 @@
 // { dg-do compile { target c++14 } }
+// { dg-additional-options -fabi-version=17 }
 
 // PRs 78621
 
+#include "lambda-mangle-1.h"
+
 // We erroneously mangled lambda auto parms as-if template parameters (T<n>_),
 // rather than auto (Da). Fixed in abi version 11
-
-template<typename T> class X;
-
-template<typename T>
-T &&forward (T &v)
-{
-  return static_cast<T &&> (v);
-}
-
-template<typename T>
-void eat (T &v)
-{
-}
-
-template<typename S, typename T>
-  void eat (S &, T &v)
-{
-}
-
-void Foo ()
-{
-  auto lam = [](auto &) { };
-  auto lam_1 = [](int &, auto &) { };
-  auto lam_2 = [](auto &, X<int> &) { };
-  auto lam_3 = [](auto (*)[5]) { };
-
-  forward (lam);
-  forward (lam_1);
-  forward (lam_2);
-  forward (lam_3);
-
-  eat (lam);
-  eat (lam_1);
-  eat (lam_2);
-  eat (lam_3);
-
-  // The auto lambda should mangle similarly to the non-auto one
-  auto lambda_1 = [](float *, float *) { };
-  auto lambda_2 = [](auto *, auto *) { };
-  auto lambda_3 = [](auto *, auto *) { };
-
-  int *i;
-  
-  eat (i, lambda_1);
-  eat (i, lambda_2);
-
-  // The autos should squangle to the first one.
-  eat (lambda_2, lambda_3);
-}
-
-template<typename X> void Bar ()
-{
-  auto lambda_1 = [](X *, float *, float *) { };
-  auto lambda_2 = [](X *, auto *, auto *) { };
-  auto lambda_3 = [](X *, auto *...) {};
-  
-  int *i;
-  
-  eat (i, lambda_1);
-  eat (i, lambda_2);
-  eat (i, lambda_3);
-}
-
-void Baz ()
-{
-  Bar<short> ();
-}
+// Up to abi version 17 we had a single per-scope discriminator
 
 // { dg-final { scan-assembler "_Z7forwardIZ3FoovEUlRT_E_EOS0_S1_:" } }
 // { dg-final { scan-assembler "_Z7forwardIZ3FoovEUlRiRT_E0_EOS1_S2_:" } }

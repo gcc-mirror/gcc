@@ -11035,6 +11035,7 @@ cp_parser_lambda_expression (cp_parser* parser)
     return error_mark_node;
 
   record_lambda_scope (lambda_expr);
+  record_lambda_scope_discriminator (lambda_expr);
 
   /* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
   determine_visibility (TYPE_NAME (type));
@@ -11085,9 +11086,7 @@ cp_parser_lambda_expression (cp_parser* parser)
       ok = false;
 
     if (ok)
-      {
-	cp_parser_lambda_body (parser, lambda_expr);
-      }
+      cp_parser_lambda_body (parser, lambda_expr);
     else if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
       {
 	if (cp_parser_skip_to_closing_brace (parser))

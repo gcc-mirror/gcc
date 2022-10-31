@@ -1810,7 +1810,7 @@ write_closure_type_name (const tree type)
 
   write_method_parms (parms, /*method_p=*/1, fn);
   write_char ('E');
-  write_compact_number (LAMBDA_EXPR_DISCRIMINATOR (lambda));
+  write_compact_number (LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda));
 }
 
 /* Convert NUMBER to ascii using base BASE and generating at least
