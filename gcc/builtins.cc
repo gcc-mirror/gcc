@@ -7393,6 +7393,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       /* Just do a normal library call if we were unable to fold
 	 the values.  */
     CASE_FLT_FN (BUILT_IN_CABS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_CABS):
       break;
 
     CASE_FLT_FN (BUILT_IN_FMA):
@@ -9661,6 +9662,7 @@ fold_builtin_1 (location_t loc, tree expr, tree fndecl, tree arg0)
     break;
 
     CASE_FLT_FN (BUILT_IN_CARG):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_CARG):
       return fold_builtin_carg (loc, arg0, type);
 
     case BUILT_IN_ISASCII:

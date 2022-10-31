@@ -1112,6 +1112,7 @@ fold_const_call_sc (real_value *result, combined_fn fn,
   switch (fn)
     {
     CASE_CFN_CABS:
+    CASE_CFN_CABS_FN:
       return do_mpfr_arg2 (result, mpfr_hypot, arg_real, arg_imag, format);
 
     default:
@@ -1135,14 +1136,17 @@ fold_const_call_cc (real_value *result_real, real_value *result_imag,
   switch (fn)
     {
     CASE_CFN_CCOS:
+    CASE_CFN_CCOS_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_cos,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CCOSH:
+    CASE_CFN_CCOSH_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_cosh,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CPROJ:
+    CASE_CFN_CPROJ_FN:
       if (real_isinf (arg_real) || real_isinf (arg_imag))
 	{
 	  *result_real = dconstinf;
@@ -1157,54 +1161,67 @@ fold_const_call_cc (real_value *result_real, real_value *result_imag,
       return true;
 
     CASE_CFN_CSIN:
+    CASE_CFN_CSIN_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_sin,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CSINH:
+    CASE_CFN_CSINH_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_sinh,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CTAN:
+    CASE_CFN_CTAN_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_tan,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CTANH:
+    CASE_CFN_CTANH_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_tanh,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CLOG:
+    CASE_CFN_CLOG_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_log,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CSQRT:
+    CASE_CFN_CSQRT_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_sqrt,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CASIN:
+    CASE_CFN_CASIN_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_asin,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CACOS:
+    CASE_CFN_CACOS_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_acos,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CATAN:
+    CASE_CFN_CATAN_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_atan,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CASINH:
+    CASE_CFN_CASINH_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_asinh,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CACOSH:
+    CASE_CFN_CACOSH_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_acosh,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CATANH:
+    CASE_CFN_CATANH_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_atanh,
 			  arg_real, arg_imag, format);
 
     CASE_CFN_CEXP:
+    CASE_CFN_CEXP_FN:
       return do_mpc_arg1 (result_real, result_imag, mpc_exp,
 			  arg_real, arg_imag, format);
 
@@ -1532,6 +1549,7 @@ fold_const_call_ccc (real_value *result_real, real_value *result_imag,
   switch (fn)
     {
     CASE_CFN_CPOW:
+    CASE_CFN_CPOW_FN:
       return do_mpc_arg2 (result_real, result_imag, mpc_pow,
 			  arg0_real, arg0_imag, arg1_real, arg1_imag, format);
 
