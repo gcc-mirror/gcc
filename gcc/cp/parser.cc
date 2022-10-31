@@ -27522,6 +27522,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      decl = grokfield (declarator, &decl_specifiers,
 				initializer, /*init_const_expr_p=*/true,
 				asm_specification, attributes);
+
 	      if (parser->fully_implicit_function_template_p)
 		{
 		  if (friend_p)

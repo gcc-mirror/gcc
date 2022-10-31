@@ -731,7 +731,6 @@ end_maybe_infinite_loop (tree cond)
     }
 }
 
-
 /* Begin a conditional that might contain a declaration.  When generating
    normal code, we want the declaration to appear before the statement
    containing the conditional.  When generating template code, we want the
