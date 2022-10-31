@@ -122,6 +122,8 @@
 #include <avx512bf16vlintrin.h>
 
 #include <avx512bf16intrin.h>
+
+#include <avxneconvertintrin.h>
 #endif
 
 #include <amxtileintrin.h>

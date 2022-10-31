@@ -28950,23 +28950,27 @@
   "TARGET_AVX512BF16"
   "vcvtne2ps2bf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}")
 
-(define_expand "avx512f_cvtneps2bf16_v4sf"
+(define_expand "vcvtneps2bf16_v4sf"
   [(set (match_operand:V8BF 0 "register_operand")
 	(vec_concat:V8BF
 	  (float_truncate:V4BF
 	    (match_operand:V4SF 1 "nonimmediate_operand"))
 	  (match_dup 2)))]
-  "TARGET_AVX512BF16 && TARGET_AVX512VL"
+  "TARGET_AVXNECONVERT || (TARGET_AVX512BF16 && TARGET_AVX512VL)"
   "operands[2] = CONST0_RTX (V4BFmode);")
 
-(define_insn "*avx512f_cvtneps2bf16_v4sf"
-  [(set (match_operand:V8BF 0 "register_operand" "=v")
+(define_insn "*vcvtneps2bf16_v4sf"
+  [(set (match_operand:V8BF 0 "register_operand" "=x,v")
 	(vec_concat:V8BF
 	  (float_truncate:V4BF
-	    (match_operand:V4SF 1 "nonimmediate_operand" "vm"))
+	    (match_operand:V4SF 1 "nonimmediate_operand" "xm,vm"))
 	  (match_operand:V4BF 2 "const0_operand")))]
-  "TARGET_AVX512BF16 && TARGET_AVX512VL"
-  "vcvtneps2bf16{x}\t{%1, %0|%0, %1}")
+  "TARGET_AVXNECONVERT || (TARGET_AVX512BF16 && TARGET_AVX512VL)"
+  "@
+  %{vex%} vcvtneps2bf16{x}\t{%1, %0|%0, %1}
+  vcvtneps2bf16{x}\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "avxneconvert,avx512bf16vl")
+   (set_attr "prefix" "vex,evex")])
 
 (define_expand "avx512f_cvtneps2bf16_v4sf_maskz"
   [(match_operand:V8BF 0 "register_operand")
@@ -29018,6 +29022,18 @@
     CONST0_RTX(<sf_cvt_bf16>mode), operands[2]));
   DONE;
 })
+
+(define_insn "vcvtneps2bf16_v8sf"
+  [(set (match_operand:V8BF 0 "register_operand" "=x,v")
+	(float_truncate:V8BF
+	  (match_operand:V8SF 1 "nonimmediate_operand" "xm,vm")))]
+  "TARGET_AVXNECONVERT || (TARGET_AVX512BF16 && TARGET_AVX512VL)"
+  "@
+  %{vex%} vcvtneps2bf16{y}\t{%1, %0|%0, %1}
+  vcvtneps2bf16{y}\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "avxneconvert,avx512bf16vl")
+   (set_attr "prefix" "vex,evex")])
+
 
 (define_insn "avx512f_cvtneps2bf16_<mode><mask_name>"
   [(set (match_operand:<sf_cvt_bf16> 0 "register_operand" "=v")
@@ -29362,3 +29378,81 @@
   "TARGET_AVXVNNIINT8"
   "vpdp<vpdotprodtype>\t{%3, %2, %0|%0, %2, %3}"
    [(set_attr "prefix" "vex")])
+
+(define_insn "vbcstnebf162ps_<mode>"
+  [(set (match_operand:VF1_128_256 0 "register_operand" "=x")
+	(vec_duplicate:VF1_128_256
+	  (float_extend:SF
+	    (match_operand:BF 1 "memory_operand" "m"))))]
+  "TARGET_AVXNECONVERT"
+  "vbcstnebf162ps\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vbcstnesh2ps_<mode>"
+  [(set (match_operand:VF1_128_256 0 "register_operand" "=x")
+	(vec_duplicate:VF1_128_256
+	  (float_extend:SF
+	    (match_operand:HF 1 "memory_operand" "m"))))]
+  "TARGET_AVXNECONVERT"
+  "vbcstnesh2ps\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_mode_iterator V16BFH_256 [V16HF V16BF])
+
+(define_mode_attr bf16_ph
+  [(V8HF "ph") (V16HF "ph")
+   (V8BF "bf16") (V16BF "bf16")])
+
+(define_insn "vcvtnee<bf16_ph>2ps_<mode>"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(float_extend:V4SF
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:V8BFH_128 1 "memory_operand" "m")
+	    (parallel [(const_int 0) (const_int 2)
+		       (const_int 4) (const_int 6)]))))]
+  "TARGET_AVXNECONVERT"
+  "vcvtnee<bf16_ph>2ps\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vcvtnee<bf16_ph>2ps_<mode>"
+  [(set (match_operand:V8SF 0 "register_operand" "=x")
+	(float_extend:V8SF
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:V16BFH_256 1 "memory_operand" "m")
+	    (parallel [(const_int 0) (const_int 2)
+		       (const_int 4) (const_int 6)
+		       (const_int 8) (const_int 10)
+		       (const_int 12) (const_int 14)]))))]
+  "TARGET_AVXNECONVERT"
+  "vcvtnee<bf16_ph>2ps\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vcvtneo<bf16_ph>2ps_<mode>"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(float_extend:V4SF
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:V8BFH_128 1 "memory_operand" "m")
+	    (parallel [(const_int 1) (const_int 3)
+		       (const_int 5) (const_int 7)]))))]
+  "TARGET_AVXNECONVERT"
+  "vcvtneo<bf16_ph>2ps\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vcvtneo<bf16_ph>2ps_<mode>"
+  [(set (match_operand:V8SF 0 "register_operand" "=x")
+	(float_extend:V8SF
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:V16BFH_256 1 "memory_operand" "m")
+	    (parallel [(const_int 1) (const_int 3)
+		       (const_int 5) (const_int 7)
+		       (const_int 9) (const_int 11)
+		       (const_int 13) (const_int 15)]))))]
+  "TARGET_AVXNECONVERT"
+  "vcvtneo<bf16_ph>2ps\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "vex")
+   (set_attr "mode" "<sseinsnmode>")])

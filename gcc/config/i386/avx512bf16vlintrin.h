@@ -45,6 +45,11 @@ typedef __bf16 __m128bh __attribute__ ((__vector_size__ (16), __may_alias__));
 
 typedef __bf16 __bfloat16;
 
+#define _mm256_cvtneps_pbh(A) \
+  (__m128bh) __builtin_ia32_cvtneps2bf16_v8sf (A)
+#define _mm_cvtneps_pbh(A) \
+  (__m128bh) __builtin_ia32_cvtneps2bf16_v4sf (A)
+
 /* vcvtne2ps2bf16 */
 
 extern __inline __m256bh
@@ -93,13 +98,6 @@ _mm_maskz_cvtne2ps_pbh (__mmask8 __A, __m128 __B, __m128 __C)
 
 extern __inline __m128bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtneps_pbh (__m256 __A)
-{
-  return (__m128bh)__builtin_ia32_cvtneps2bf16_v8sf(__A);
-}
-
-extern __inline __m128bh
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_cvtneps_pbh (__m128bh __A, __mmask8 __B, __m256 __C)
 {
   return (__m128bh)__builtin_ia32_cvtneps2bf16_v8sf_mask(__C, __A, __B);
@@ -110,13 +108,6 @@ __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_cvtneps_pbh (__mmask8 __A, __m256 __B)
 {
   return (__m128bh)__builtin_ia32_cvtneps2bf16_v8sf_maskz(__B, __A);
-}
-
-extern __inline __m128bh
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtneps_pbh (__m128 __A)
-{
-  return (__m128bh)__builtin_ia32_cvtneps2bf16_v4sf(__A);
 }
 
 extern __inline __m128bh

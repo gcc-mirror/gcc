@@ -839,6 +839,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVXIFMA);
 	  if (edx & bit_AVXVNNIINT8)
 	    set_feature (FEATURE_AVXVNNIINT8);
+	  if (edx & bit_AVXNECONVERT)
+	    set_feature (FEATURE_AVXNECONVERT);
 	}
       if (avx512_usable)
 	{

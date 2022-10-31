@@ -2493,6 +2493,9 @@ Target supports the execution of @code{avx512vp2intersect} instructions.
 @item avxifma
 Target supports the execution of @code{avxifma} instructions.
 
+@item avxneconvert
+Target supports the execution of @code{avxneconvert} instructions.
+
 @item avxvnniint8
 Target supports the execution of @code{avxvnniint8} instructions.
 
