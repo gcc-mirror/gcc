@@ -673,6 +673,32 @@ namespace __detail
   from_chars(const char* __first, const char* __last, long double& __value,
 	     chars_format __fmt = chars_format::general) noexcept;
 
+  // Library routines for 16-bit extended floating point formats
+  // using float as interchange format.
+  from_chars_result
+  __from_chars_float16_t(const char* __first, const char* __last,
+			 float& __value,
+			 chars_format __fmt = chars_format::general) noexcept;
+  from_chars_result
+  __from_chars_bfloat16_t(const char* __first, const char* __last,
+			  float& __value,
+			  chars_format __fmt = chars_format::general) noexcept;
+
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32) \
+    && defined(__cpp_lib_to_chars)
+  inline from_chars_result
+  from_chars(const char* __first, const char* __last, _Float16& __value,
+	     chars_format __fmt = chars_format::general) noexcept
+  {
+    float __val;
+    from_chars_result __res
+      = __from_chars_float16_t(__first, __last, __val, __fmt);
+    if (__res.ec == errc{})
+      __value = __val;
+    return __res;
+  }
+#endif
+
 #if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
   inline from_chars_result
   from_chars(const char* __first, const char* __last, _Float32& __value,
@@ -706,6 +732,22 @@ namespace __detail
   {
     long double __val;
     from_chars_result __res = from_chars(__first, __last, __val, __fmt);
+    if (__res.ec == errc{})
+      __value = __val;
+    return __res;
+  }
+#endif
+
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32) \
+    && defined(__cpp_lib_to_chars)
+  inline from_chars_result
+  from_chars(const char* __first, const char* __last,
+	     __gnu_cxx::__bfloat16_t & __value,
+	     chars_format __fmt = chars_format::general) noexcept
+  {
+    float __val;
+    from_chars_result __res
+      = __from_chars_bfloat16_t(__first, __last, __val, __fmt);
     if (__res.ec == errc{})
       __value = __val;
     return __res;

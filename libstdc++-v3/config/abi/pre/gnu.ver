@@ -2448,6 +2448,8 @@ GLIBCXX_3.4.31 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE15_M_replace_cold*;
     _ZSt20__to_chars_float16_tPcS_fSt12chars_format;
     _ZSt21__to_chars_bfloat16_tPcS_fSt12chars_format;
+    _ZSt22__from_chars_float16_tPKcS0_RfSt12chars_format;
+    _ZSt23__from_chars_bfloat16_tPKcS0_RfSt12chars_format;
 } GLIBCXX_3.4.30;
 
 # Symbols in the support library (libsupc++) have their own tag.
