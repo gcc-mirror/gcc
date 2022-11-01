@@ -13467,7 +13467,17 @@ do_warn_dangling_reference (tree expr)
 	       can be e.g.
 		 const int& z = std::min({1, 2, 3, 4, 5, 6, 7});
 	       which doesn't dangle: std::min here returns an int.  */
-	    || !TYPE_REF_OBJ_P (TREE_TYPE (TREE_TYPE (fndecl))))
+	    || !TYPE_REF_OBJ_P (TREE_TYPE (TREE_TYPE (fndecl)))
+	    /* Don't emit a false positive for:
+		std::vector<int> v = ...;
+		std::vector<int>::const_iterator it = v.begin();
+		const int &r = *it++;
+	       because R refers to one of the int elements of V, not to
+	       a temporary object.  Member operator* may return a reference
+	       but probably not to one of its arguments.  */
+	    || (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+		&& DECL_OVERLOADED_OPERATOR_P (fndecl)
+		&& DECL_OVERLOADED_OPERATOR_IS (fndecl, INDIRECT_REF)))
 	  return NULL_TREE;
 
 	/* Here we're looking to see if any of the arguments is a temporary
