@@ -831,10 +831,13 @@ namespace __variant
 	: false_type
 	{ using element_type = _Tp; };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
       template <typename... _Args>
 	struct __untag_result<const void(*)(_Args...)>
 	: false_type
 	{ using element_type = void(*)(_Args...); };
+#pragma GCC diagnostic pop
 
       template <typename... _Args>
 	struct __untag_result<__variant_cookie(*)(_Args...)>
