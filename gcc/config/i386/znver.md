@@ -24,7 +24,7 @@
 ;; AMD znver1, znver2 and znver3 Scheduling
 ;; Modeling automatons for zen decoders, integer execution pipes,
 ;; SIMD/FP domain, AGU pipes, and dividers.
-(define_automaton "znver1, znver1_ieu, znver1_fp, znver1_agu, znver1_idiv")
+(define_automaton "znver1, znver1_ieu, znver1_fp, znver1_agu, znver1_idiv, znver1_fdiv")
 
 ;; Decoders unit has 4 decoders and all of them can decode fast path
 ;; and vector type instructions.
@@ -95,6 +95,7 @@
 
 ;; Dividers
 (define_cpu_unit "znver1-idiv" "znver1_idiv")
+(define_cpu_unit "znver1-fdiv" "znver1_fdiv")
 
 ;; Call instruction
 (define_insn_reservation "znver1_call" 1
@@ -591,27 +592,27 @@
 			 (and (eq_attr "cpu" "znver1,znver2,znver3")
 			      (and (eq_attr "type" "fdiv")
 				   (eq_attr "memory" "none")))
-			 "znver1-direct,znver1-fp3*15")
+			 "znver1-direct,znver1-fdiv*6")
 
 (define_insn_reservation "znver1_fp_op_div_load" 22
 			 (and (eq_attr "cpu" "znver1,znver2,znver3")
 			      (and (eq_attr "type" "fdiv")
 				   (eq_attr "memory" "load")))
-			 "znver1-direct,znver1-load,znver1-fp3*15")
+			 "znver1-direct,znver1-load,znver1-fdiv*6")
 
 (define_insn_reservation "znver1_fp_op_idiv_load" 27
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "type" "fdiv")
 				   (and (eq_attr "fp_int_src" "true")
 					(eq_attr "memory" "load"))))
-			 "znver1-double,znver1-load,znver1-fp3*19")
+			 "znver1-double,znver1-load,znver1-fdiv*6")
 
 (define_insn_reservation "znver2_fp_op_idiv_load" 26
 			 (and (eq_attr "cpu" "znver2,znver3")
 			      (and (eq_attr "type" "fdiv")
 				   (and (eq_attr "fp_int_src" "true")
 					(eq_attr "memory" "load"))))
-			 "znver1-double,znver1-load,znver1-fp3*19")
+			 "znver1-double,znver1-load,znver1-fdiv*6")
 
 
 ;; MMX, SSE, SSEn.n, AVX, AVX2 instructions
@@ -1088,7 +1089,7 @@
 					      (eq_attr "mode" "V8SF,V4SF,SF")))
 			      (and (eq_attr "type" "ssediv")
 				   (eq_attr "memory" "none")))
-			 "znver1-direct,znver1-fp3*10")
+			 "znver1-direct,znver1-fdiv*4")
 
 (define_insn_reservation "znver1_ssediv_ss_ps_load" 17
 			 (and (ior (and (eq_attr "cpu" "znver1")
@@ -1099,7 +1100,7 @@
 					      (eq_attr "mode" "V8SF,V4SF,SF")))
 			      (and (eq_attr "type" "ssediv")
 				   (eq_attr "memory" "load")))
-			 "znver1-direct,znver1-load,znver1-fp3*10")
+			 "znver1-direct,znver1-load,znver1-fdiv*4")
 
 (define_insn_reservation "znver1_ssediv_sd_pd" 13
 			 (and (ior (and (eq_attr "cpu" "znver1")
@@ -1110,7 +1111,7 @@
 					      (eq_attr "mode" "V4DF,V2DF,DF")))
 			      (and (eq_attr "type" "ssediv")
 				   (eq_attr "memory" "none")))
-			 "znver1-direct,znver1-fp3*13")
+			 "znver1-direct,znver1-fdiv*5")
 
 (define_insn_reservation "znver1_ssediv_sd_pd_load" 20
 			 (and (ior (and (eq_attr "cpu" "znver1")
@@ -1121,35 +1122,35 @@
 					      (eq_attr "mode" "V4DF,V2DF,DF")))
 			      (and (eq_attr "type" "ssediv")
 				   (eq_attr "memory" "load")))
-			 "znver1-direct,znver1-load,znver1-fp3*13")
+			 "znver1-direct,znver1-load,znver1-fdiv*5")
 
 (define_insn_reservation "znver1_ssediv_avx256_ps" 12
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "mode" "V8SF")
 				   (and (eq_attr "memory" "none")
 					(eq_attr "type" "ssediv"))))
-			 "znver1-double,znver1-fp3*12")
+			 "znver1-double,znver1-fdiv*8")
 
 (define_insn_reservation "znver1_ssediv_avx256_ps_load" 19
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "mode" "V8SF")
 				   (and (eq_attr "type" "ssediv")
 					(eq_attr "memory" "load"))))
-			 "znver1-double,znver1-load,znver1-fp3*12")
+			 "znver1-double,znver1-load,znver1-fdiv*8")
 
 (define_insn_reservation "znver1_ssediv_avx256_pd" 15
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "mode" "V4DF")
 				   (and (eq_attr "type" "ssediv")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-fp3*15")
+			 "znver1-double,znver1-fdiv*10")
 
 (define_insn_reservation "znver1_ssediv_avx256_pd_load" 22 
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "mode" "V4DF")
 				   (and (eq_attr "type" "ssediv")
 					(eq_attr "memory" "load"))))
-			 "znver1-double,znver1-load,znver1-fp3*15")
+			 "znver1-double,znver1-load,znver1-fdiv*10")
 ;; SSE MUL
 (define_insn_reservation "znver1_ssemul_ss_ps" 3
 			 (and (ior (and (eq_attr "cpu" "znver1")
