@@ -4372,6 +4372,28 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	emit_insn (gen_absv64df2 (target, arg));
 	return target;
       }
+    case GCN_BUILTIN_FLOORVF:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_floorv64sf2 (target, arg));
+	return target;
+      }
+    case GCN_BUILTIN_FLOORV:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_floorv64df2 (target, arg));
+	return target;
+      }
     case GCN_BUILTIN_LDEXPVF:
       {
 	if (ignore)

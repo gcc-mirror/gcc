@@ -1,5 +1,12 @@
 2022-11-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* config/gcn/gcn-builtins.def (FLOORVF): New builtin.
+	(FLOORV): New builtin.
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand GCN_BUILTIN_FLOORVF
+	and GCN_BUILTIN_FLOORV.
+
+2022-11-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* config/gcn/gcn.cc (gcn_expand_builtin_1): Fix expansion of
 	GCN_BUILTIN_FABSV.
 

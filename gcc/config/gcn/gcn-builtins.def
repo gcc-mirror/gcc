@@ -69,6 +69,16 @@ DEF_BUILTIN (FABSV, 3 /*CODE_FOR_fabsv */,
 	     _A2 (GCN_BTI_V64DF, GCN_BTI_V64DF),
 	     gcn_expand_builtin_1)
 
+DEF_BUILTIN (FLOORVF, 3 /*CODE_FOR_floorvf */,
+	     "floorvf", B_INSN,
+	     _A2 (GCN_BTI_V64SF, GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FLOORV, 3 /*CODE_FOR_floorv */,
+	     "floorv", B_INSN,
+	     _A2 (GCN_BTI_V64DF, GCN_BTI_V64DF),
+	     gcn_expand_builtin_1)
+
 DEF_BUILTIN (LDEXPVF, 3 /*CODE_FOR_ldexpvf */,
 	     "ldexpvf", B_INSN,
 	     _A3 (GCN_BTI_V64SF, GCN_BTI_V64SF, GCN_BTI_V64SI),
