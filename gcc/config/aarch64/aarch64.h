@@ -571,10 +571,6 @@ enum class aarch64_feature : unsigned char {
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, R4_REGNUM)
 #define EH_RETURN_HANDLER_RTX  aarch64_eh_return_handler_rtx ()
 
-/* Don't use __builtin_setjmp until we've defined it.  */
-#undef DONT_USE_BUILTIN_SETJMP
-#define DONT_USE_BUILTIN_SETJMP 1
-
 #undef TARGET_COMPUTE_FRAME_LAYOUT
 #define TARGET_COMPUTE_FRAME_LAYOUT aarch64_layout_frame
 

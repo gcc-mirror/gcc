@@ -6,10 +6,10 @@ fail_compilation/test14496.d(24): Error: `void` initializers for pointers not al
 fail_compilation/test14496.d(28): Error: `void` initializers for pointers not allowed in safe functions
 fail_compilation/test14496.d(48): Error: `void` initializers for pointers not allowed in safe functions
 fail_compilation/test14496.d(49): Error: `void` initializers for pointers not allowed in safe functions
+fail_compilation/test14496.d(50): Error: `void` initializers for pointers not allowed in safe functions
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=14496
-
 @safe void foo()
 {
     struct Foo {
@@ -47,4 +47,5 @@ struct Baz {
 @safe void sinister() {
     Bar bar;
     Baz baz;
+    Bar[2] bars; // https://issues.dlang.org/show_bug.cgi?id=23412
 }

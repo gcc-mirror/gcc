@@ -127,6 +127,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return  Reference to facet of type Facet.
    *  @throw  std::bad_cast if @p __loc doesn't contain a facet of type _Facet.
   */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
   template<typename _Facet>
     const _Facet&
     use_facet(const locale& __loc)
@@ -141,6 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return static_cast<const _Facet&>(*__facets[__i]);
 #endif
     }
+#pragma GCC diagnostic pop
 
 
   // Generic version does nothing.

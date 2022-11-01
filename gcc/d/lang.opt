@@ -396,9 +396,9 @@ fpreview=rvaluerefparam
 D RejectNegative
 Enable rvalue arguments to ref parameters.
 
-fpreview=shortenedmethods
+fpreview=systemvariables
 D RejectNegative
-Allow use of '=>' for methods and top-level functions in addition to lambdas.
+Disable access to variables marked `@system' from @safe code.
 
 frelease
 D

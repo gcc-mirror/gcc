@@ -158,7 +158,7 @@ public:
 class svmatch_svnmatch_impl : public function_base
 {
 public:
-  constexpr svmatch_svnmatch_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svmatch_svnmatch_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -233,7 +233,7 @@ public:
 class svqrshl_impl : public unspec_based_function
 {
 public:
-  constexpr svqrshl_impl ()
+  CONSTEXPR svqrshl_impl ()
     : unspec_based_function (UNSPEC_SQRSHL, UNSPEC_UQRSHL, -1) {}
 
   gimple *
@@ -267,7 +267,7 @@ public:
 class svqshl_impl : public unspec_based_function
 {
 public:
-  constexpr svqshl_impl ()
+  CONSTEXPR svqshl_impl ()
     : unspec_based_function (UNSPEC_SQSHL, UNSPEC_UQSHL, -1) {}
 
   gimple *
@@ -303,7 +303,7 @@ public:
 class svrshl_impl : public unspec_based_function
 {
 public:
-  constexpr svrshl_impl ()
+  CONSTEXPR svrshl_impl ()
     : unspec_based_function (UNSPEC_SRSHL, UNSPEC_URSHL, -1) {}
 
   gimple *
@@ -403,7 +403,7 @@ public:
 class svtbl2_impl : public quiet<multi_vector_function>
 {
 public:
-  constexpr svtbl2_impl () : quiet<multi_vector_function> (2) {}
+  CONSTEXPR svtbl2_impl () : quiet<multi_vector_function> (2) {}
 
   rtx
   expand (function_expander &e) const override
@@ -431,7 +431,7 @@ public:
 class svwhilerw_svwhilewr_impl : public full_width_access
 {
 public:
-  constexpr svwhilerw_svwhilewr_impl (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR svwhilerw_svwhilewr_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override

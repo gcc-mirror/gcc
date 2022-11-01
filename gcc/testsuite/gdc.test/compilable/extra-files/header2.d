@@ -162,6 +162,18 @@ align(2) struct S12200_2
 align(1):
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=14694
+inout(T)[] overlap(T)(inout(T)[] r1, inout(T)[] r2) @trusted pure nothrow
+{
+    alias U = inout(T);
+    static U* max(U* a, U* b) nothrow { return a > b ? a : b; }
+    static U* min(U* a, U* b) nothrow { return a < b ? a : b; }
+
+    auto b = max(r1.ptr, r2.ptr);
+    auto e = min(r1.ptr + r1.length, r2.ptr + r2.length);
+    return b < e ? b[0 .. e - b] : null;
+}
+
 // https://issues.dlang.org/show_bug.cgi?id=16140
 void gun()()
 {
@@ -171,6 +183,13 @@ void gun()()
     while (true)
         if (auto va = fun()) {}
         else break;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=14690
+pragma(inline, true)
+int fun(int a, int b)
+{
+    return 3;
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=16649

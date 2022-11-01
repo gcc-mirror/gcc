@@ -5536,7 +5536,7 @@ h8300_ok_for_sibcall_p (tree fndecl, tree)
    instruction using REG, FALSE otherwise.  */
 
 bool
-pre_incdec_with_reg (rtx op, int reg)
+pre_incdec_with_reg (rtx op, unsigned int reg)
 {
   /* OP must be a MEM.  */
   if (GET_CODE (op) != MEM)

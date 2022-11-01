@@ -10,7 +10,6 @@ module core.sys.linux.tipc;
 
 version (linux):
 extern (C) nothrow @nogc:
-@system:
 
 struct tipc_portid
 {

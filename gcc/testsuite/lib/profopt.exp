@@ -289,7 +289,7 @@ proc auto-profopt-execute { src } {
         return
     }
     set profile_wrapper [profopt-perf-wrapper]
-    set profile_option "-gdwarf-4 -DFOR_AUTOFDO_TESTING"
+    set profile_option "-g -DFOR_AUTOFDO_TESTING"
     set feedback_option "-fauto-profile -DFOR_AUTOFDO_TESTING -fearly-inlining"
     set run_autofdo 1
     profopt-execute $src

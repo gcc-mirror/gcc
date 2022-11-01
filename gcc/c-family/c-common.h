@@ -1004,6 +1004,30 @@ extern void c_parse_final_cleanups (void);
 /* True iff TYPE is cv decltype(nullptr).  */
 #define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
 
+/* Returns the underlying type of the given enumeration type. The
+   underlying type is determined in different ways, depending on the
+   properties of the enum:
+
+     - In C++0x or C2x, the underlying type can be explicitly specified, e.g.,
+
+         enum E1 : char { ... } // underlying type is char
+
+     - In a C++0x scoped enumeration, the underlying type is int
+       unless otherwises specified:
+
+         enum class E2 { ... } // underlying type is int
+
+     - Otherwise, the underlying type is determined based on the
+       values of the enumerators. In this case, the
+       ENUM_UNDERLYING_TYPE will not be set until after the definition
+       of the enumeration is completed by finish_enum.  */
+#define ENUM_UNDERLYING_TYPE(TYPE) \
+  TREE_TYPE (ENUMERAL_TYPE_CHECK (TYPE))
+
+/* Determines whether an ENUMERAL_TYPE has an explicit
+   underlying type.  */
+#define ENUM_FIXED_UNDERLYING_TYPE_P(NODE) (TYPE_LANG_FLAG_5 (NODE))
+
 extern tree do_case (location_t, tree, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);

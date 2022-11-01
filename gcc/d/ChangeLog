@@ -1,3 +1,32 @@
+2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (apply_user_attributes): Update for new front-end
+	interface.
+	* d-builtins.cc (d_init_versions): Predefine `D_Optimized' with
+	compiling with optimizations enabled.
+	* d-lang.cc (d_handle_option): Update for new front-end interface.
+	Handle new option `-fpreview=systemvariables'.
+	* dmd/MERGE: Merge upstream dmd e4f8919591.
+	* dmd/VERSION: Bump version to v2.101.0-beta.1.
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Treat construction of
+	static arrays from a call expression as a simple assignment.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Handle array literals with
+	`scope' storage.
+	* gdc.texi: Update documentation of `-fpreview=' options.
+	* lang.opt (fpreview=shortenedmethods): Remove.
+	(fpreview=systemvariables):  New option.
+
+2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.def (d_minfo_section): Expand documentation of hook.
+	Default initialize to "minfo".
+	(d_minfo_start_name): Rename to ...
+	(d_minfo_section_start): ... this.  Default initialize to
+	"__start_minfo".
+	(d_minfo_end_name): Rename to ...
+	(d_minfo_section_end): ... this. Default initialize to "__stop_minfo".
+	* modules.cc (register_moduleinfo): Use new targetdm hook names.
+
 2022-09-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd d579c467c1.

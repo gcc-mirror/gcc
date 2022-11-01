@@ -23,7 +23,6 @@ else version (WatchOS)
     version = Darwin;
 
 nothrow @nogc extern(C):
-@system:
 
 //
 // XOpen (XSI)

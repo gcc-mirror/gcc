@@ -9,7 +9,6 @@
  */
 module core.sys.windows.winreg;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "advapi32");

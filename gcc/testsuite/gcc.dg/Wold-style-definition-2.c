@@ -5,6 +5,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wold-style-definition" } */
 
-void bar1 ( ... ) {} /* { dg-error "ISO C requires a named argument" } */
+void bar1 ( ... ) {}
 
 void bar2 (int a, ... ) {}

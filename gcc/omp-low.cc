@@ -10710,6 +10710,28 @@ oacc_privatization_candidate_p (const location_t loc, const tree c,
 	}
     }
 
+  /* If an artificial variable has been added to a bind, e.g.
+     a compiler-generated temporary structure used by the Fortran front-end, do
+     not consider it as a privatization candidate.  Note that variables on
+     the stack are private per-thread by default: making them "gang-private"
+     for OpenACC actually means to share a single instance of a variable
+     amongst all workers and threads spawned within each gang.
+     At present, no compiler-generated artificial variables require such
+     sharing semantics, so this is safe.  */
+
+  if (res && block && DECL_ARTIFICIAL (decl))
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "isn%'t candidate for adjusting OpenACC privatization "
+		       "level: %s\n", "artificial");
+	}
+    }
+
   if (res)
     {
       if (dump_enabled_p ())

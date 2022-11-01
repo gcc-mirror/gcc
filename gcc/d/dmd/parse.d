@@ -888,6 +888,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                             error("redundant visibility attribute `%s`", AST.visibilityToChars(prot));
                     }
                     pAttrs.visibility.kind = prot;
+                    const attrloc = token.loc;
 
                     nextToken();
 
@@ -908,7 +909,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         }
                     }
 
-                    const attrloc = token.loc;
                     a = parseBlock(pLastDecl, pAttrs);
                     if (pAttrs.visibility.kind != AST.Visibility.Kind.undefined)
                     {
@@ -3168,9 +3168,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
                 if (udas)
                 {
-                    auto s = new AST.Dsymbols();
-                    s.push(em);
-                    auto uad = new AST.UserAttributeDeclaration(udas, s);
+                    auto uad = new AST.UserAttributeDeclaration(udas, new AST.Dsymbols());
                     em.userAttribDecl = uad;
                 }
 

@@ -12,7 +12,6 @@ module core.sys.posix.locale;
 
 version (Posix):
 extern(C):
-@system:
 nothrow:
 @nogc:
 

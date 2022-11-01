@@ -422,7 +422,7 @@ i[34567]86-*-* | x86_64-*-*)
 		       amxbf16intrin.h x86gprintrin.h uintrintrin.h
 		       hresetintrin.h keylockerintrin.h avxvnniintrin.h
 		       mwaitintrin.h avx512fp16intrin.h avx512fp16vlintrin.h
-		       avxifmaintrin.h avxvnniint8intrin.h"
+		       avxifmaintrin.h avxvnniint8intrin.h avxneconvertintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -516,7 +516,7 @@ pru-*-*)
 	;;
 riscv*)
 	cpu_type=riscv
-	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o"
+	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-v.o"
 	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
 	d_target_objs="riscv-d.o"
 	extra_headers="riscv_vector.h"
@@ -882,16 +882,32 @@ case ${target} in
   esac
   c_target_objs="${c_target_objs} glibc-c.o"
   cxx_target_objs="${cxx_target_objs} glibc-c.o"
-  d_target_objs="${d_target_objs} glibc-d.o"
   tmake_file="${tmake_file} t-glibc"
   target_has_targetcm=yes
-  target_has_targetdm=yes
   case $target in
     *-*-*uclibc* | *-*-uclinuxfdpiceabi)
       ;;
     *)
       # Linux targets always support .init_array.
       gcc_cv_initfini_array=yes
+      ;;
+  esac
+  case $target in
+    *-*-*linux*)
+      d_target_objs="${d_target_objs} linux-d.o"
+      target_has_targetdm=yes
+      ;;
+    *-*-kfreebsd*-gnu)
+      d_target_objs="${d_target_objs} kfreebsd-d.o"
+      target_has_targetdm=yes
+      ;;
+    *-*-kopensolaris*-gnu)
+      d_target_objs="${d_target_objs} kopensolaris-d.o"
+      target_has_targetdm=yes
+      ;;
+    *-*-gnu*)
+      d_target_objs="${d_target_objs} gnu-d.o"
+      target_has_targetdm=yes
       ;;
   esac
   ;;
@@ -2054,7 +2070,7 @@ i[34567]86-*-cygwin*)
 	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
-	d_target_objs="${d_target_objs} winnt-d.o"
+	d_target_objs="${d_target_objs} cygwin-d.o"
 	target_has_targetdm="yes"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -2072,7 +2088,7 @@ x86_64-*-cygwin*)
 	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
-	d_target_objs="${d_target_objs} winnt-d.o"
+	d_target_objs="${d_target_objs} cygwin-d.o"
 	target_has_targetdm="yes"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'

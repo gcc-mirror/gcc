@@ -315,6 +315,51 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __true_type __type;
     };
 
+#ifdef __STDCPP_FLOAT16_T__
+  template<>
+    struct __is_floating<_Float16>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+  template<>
+    struct __is_floating<_Float32>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+  template<>
+    struct __is_floating<_Float64>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
+#ifdef __STDCPP_FLOAT128_T__
+  template<>
+    struct __is_floating<_Float128>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+  template<>
+    struct __is_floating<__gnu_cxx::__bfloat16_t>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
   //
   // Pointer types
   //

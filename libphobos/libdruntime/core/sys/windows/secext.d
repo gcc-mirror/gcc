@@ -9,7 +9,6 @@
 // Don't include this file directly, use core.sys.windows.security instead.
 module core.sys.windows.secext;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "secur32");

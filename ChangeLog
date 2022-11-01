@@ -1,3 +1,7 @@
+2022-10-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* MAINTAINERS: Update email address.
+
 2022-10-21  Дилян Палаузов  <dilyan.palauzov@aegee.org>
 
 	* configure.ac: Don't configure readline if --with-system-readline is

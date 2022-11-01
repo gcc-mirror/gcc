@@ -51,6 +51,11 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"d", "f"},
   {"f", "zicsr"},
   {"d", "zicsr"},
+
+  {"zdinx", "zfinx"},
+  {"zfinx", "zicsr"},
+  {"zdinx", "zicsr"},
+
   {"zk", "zkn"},
   {"zk", "zkr"},
   {"zk", "zkt"},
@@ -99,6 +104,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zfh", "zfhmin"},
   {"zfhmin", "f"},
+  
+  {"zhinx", "zhinxmin"},
+  {"zhinxmin", "zfinx"},
 
   {NULL, NULL}
 };
@@ -145,6 +153,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"c", ISA_SPEC_CLASS_20190608, 2, 0},
   {"c", ISA_SPEC_CLASS_2P2,      2, 0},
 
+  {"h",       ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
@@ -157,6 +167,11 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbs", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zfinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zdinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zhinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zhinxmin", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zbkb",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbkc",  ISA_SPEC_CLASS_NONE, 1, 0},
@@ -201,6 +216,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zfhmin",    ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
 
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
@@ -361,21 +379,18 @@ multi_letter_subset_rank (const std::string &subset)
   gcc_assert (subset.length () >= 2);
   int high_order = -1;
   int low_order = 0;
-  /* The order between multi-char extensions: s -> h -> z -> x.  */
+  /* The order between multi-char extensions: s -> z -> x.  */
   char multiletter_class = subset[0];
   switch (multiletter_class)
     {
     case 's':
       high_order = 0;
       break;
-    case 'h':
+    case 'z':
       high_order = 1;
       break;
-    case 'z':
-      high_order = 2;
-      break;
     case 'x':
-      high_order = 3;
+      high_order = 2;
       break;
     default:
       gcc_unreachable ();
@@ -671,7 +686,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbkjtpvn";
+  return "mafdqlcbkjtpvnh";
 }
 
 /* Parsing subset version.
@@ -830,7 +845,7 @@ riscv_subset_list::parse_std_ext (const char *p)
     {
       char subset[2] = {0, 0};
 
-      if (*p == 'x' || *p == 's' || *p == 'h' || *p == 'z')
+      if (*p == 'x' || *p == 's' || *p == 'z')
 	break;
 
       if (*p == '_')
@@ -955,7 +970,7 @@ riscv_subset_list::handle_combine_ext ()
 
    Arguments:
      `p`: Current parsing position.
-     `ext_type`: What kind of extensions, 's', 'h', 'z' or 'x'.
+     `ext_type`: What kind of extensions, 's', 'z' or 'x'.
      `ext_type_str`: Full name for kind of extension.  */
 
 const char *
@@ -1097,12 +1112,6 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  /* Parsing hypervisor extension.  */
-  p = subset_list->parse_multiletter_ext (p, "h", "hypervisor extension");
-
-  if (p == NULL)
-    goto fail;
-
   /* Parsing sub-extensions.  */
   p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
 
@@ -1176,6 +1185,11 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zbc",    &gcc_options::x_riscv_zb_subext, MASK_ZBC},
   {"zbs",    &gcc_options::x_riscv_zb_subext, MASK_ZBS},
 
+  {"zfinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZFINX},
+  {"zdinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZDINX},
+  {"zhinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZHINX},
+  {"zhinxmin", &gcc_options::x_riscv_zinx_subext, MASK_ZHINXMIN},
+
   {"zbkb",   &gcc_options::x_riscv_zk_subext, MASK_ZBKB},
   {"zbkc",   &gcc_options::x_riscv_zk_subext, MASK_ZBKC},
   {"zbkx",   &gcc_options::x_riscv_zk_subext, MASK_ZBKX},
@@ -1225,6 +1239,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
 
   {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
+
+  {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
+  {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
 
   {NULL, NULL, 0}
 };

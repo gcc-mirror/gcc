@@ -1,3 +1,324 @@
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/ext-floating12.C: New test.
+
+2022-10-31  Guillermo E. Martinez  <guillermo.e.martinez@oracle.com>
+
+	* gcc.dg/debug/btf/btf-enum-1.c: Update testcase, with correct
+	info.kflags encoding.
+	* gcc.dg/debug/btf/btf-enum64-1.c: New testcase.
+
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/floatn-builtin.h: Add tests for newly added builtins.
+
+2022-10-31  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx-check.h: Add avxneconvert check.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mavxneconvert.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+	* lib/target-supports.exp:add check_effective_target_avxneconvert.
+	* gcc.target/i386/avx-ne-convert-1.c: New test.
+	* gcc.target/i386/avx-ne-convert-vbcstnebf162ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vbcstnesh2ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneebf162ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneeph2ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneobf162ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneoph2ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneps2bf16-2.c: Ditto.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1.c: Rename..
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1a.c: To this.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1b.c: New test.
+
+2022-10-31  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512bf16-cvtsbh2ss-1.c: Add fpmath option.
+	* gcc.target/i386/avx512bf16-vdpbf16ps-2.c: Fixed
+	scan-assembler.
+	* gcc.target/i386/avx512bf16vl-cvtness2sbh-1.c: Add x/y suffix
+	for vcvtneps2bf16.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1.c: Ditto.
+
+2022-10-31  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107261.c: New test.
+
+2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/simd19630.d: Move tests with errors to ...
+	* gdc.dg/simd19630b.d: ... here.  New test.
+	* gdc.dg/simd19630c.d: New test.
+	* gdc.dg/simd_ctfe.d: Removed.
+	* gdc.dg/simd18867.d: New test.
+	* gdc.dg/simd19788.d: New test.
+	* gdc.dg/simd21469.d: New test.
+	* gdc.dg/simd21672.d: New test.
+	* gdc.dg/simd23077.d: New test.
+	* gdc.dg/simd23084.d: New test.
+	* gdc.dg/simd23085.d: New test.
+	* gdc.dg/torture/simd19632.d: New test.
+	* gdc.dg/torture/simd20041.d: New test.
+	* gdc.dg/torture/simd21673.d: New test.
+	* gdc.dg/torture/simd21676.d: New test.
+	* gdc.dg/torture/simd22438.d: New test.
+	* gdc.dg/torture/simd23009.d: New test.
+	* gdc.dg/torture/simd23077.d: New test.
+	* gdc.dg/torture/simd8.d: New test.
+	* gdc.dg/torture/simd9.d: New test.
+	* gdc.dg/torture/simd_prefetch.d: New test.
+
+2022-10-28  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wdangling-reference4.C: New test.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-stdarg-1.c, gcc.dg/c11-stdarg-2.c,
+	gcc.dg/c11-stdarg-3.c, gcc.dg/c2x-stdarg-1.c,
+	gcc.dg/c2x-stdarg-2.c, gcc.dg/c2x-stdarg-3.c,
+	gcc.dg/c2x-stdarg-4.c, gcc.dg/gnu2x-stdarg-1.c,
+	gcc.dg/torture/c2x-stdarg-split-1a.c,
+	gcc.dg/torture/c2x-stdarg-split-1b.c: New tests.
+	* gcc.dg/Wold-style-definition-2.c, gcc.dg/format/sentinel-1.c:
+	Update expected diagnostics.
+	* gcc.dg/c2x-nullptr-1.c (test5): Cast unused parameter to (void).
+	* gcc.dg/diagnostic-token-ranges.c: Use -pedantic.  Expect warning
+	in place of error.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107407
+	* gcc.dg/torture/pr107407.c: New testcase.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107447
+	* gcc.dg/torture/pr107447.c: New testcase.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107435
+	* gcc.dg/torture/pr107435.c: New testcase.
+
+2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/directive-1.c: New test.
+	* c-c++-common/gomp/clauses-6.c: New test.
+	* c-c++-common/gomp/declare-variant-2.c (f75a): Declare.
+	(f75): Use f75a as variant instead of f1 and don't expect error.
+	* g++.dg/gomp/clause-4.C (foo): Don't expect error on comma
+	before first clause.
+	* gcc.dg/gomp/clause-2.c (foo): Likewise.
+
+2022-10-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr100756.c: Adjust for larger vectors.
+
+2022-10-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Fix target selector syntax.
+
+2022-10-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/107240
+	* gcc.dg/vect/vect-bitfield-read-1.c: Add effective target checking
+	vect_shift.
+	* gcc.dg/vect/vect-bitfield-read-3.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-5.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-6.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-7.c: Likewise.
+	* gcc.dg/vect/vect-bitfield-read-2.c: Add effective target checking
+	vect_shift and replace vect_int with vect_long_long.
+	* gcc.dg/vect/vect-bitfield-read-4.c: Likewise.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* gcc.dg/c11-enum-4.c, gcc.dg/c11-enum-5.c, gcc.dg/c11-enum-6.c,
+	gcc.dg/c2x-enum-6.c, gcc.dg/c2x-enum-7.c, gcc.dg/c2x-enum-8.c,
+	gcc.dg/gnu2x-enum-1.c: New tests.
+
+2022-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107172
+	* gcc.target/i386/pr107172.c: New test.
+
+2022-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-ctx1-18.C: Adjust.
+	* g++.dg/abi/lambda-ctx1-18vs17.C: Adjust.
+	* g++.dg/abi/lambda-tpl1-17.C: New.
+	* g++.dg/abi/lambda-tpl1-18.C: New.
+	* g++.dg/abi/lambda-tpl1-18vs17.C: New.
+	* g++.dg/abi/lambda-tpl1.h: New.
+
+2022-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107394
+	* gcc.dg/tree-ssa/pr107394.c: New test.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107382
+	PR c++/107383
+	* g++.dg/diagnostic/bad-binary-ops2.C: New test.
+
+2022-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/_Float16-zhinx-1.c: New test.
+	* gcc.target/riscv/_Float16-zhinx-2.c: New test.
+	* gcc.target/riscv/_Float16-zhinx-3.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-1.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-2.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-3.c: New test.
+
+2022-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/fd-3.c (test_5): Expect "opened here" message
+	even when flags are symbolic.
+	(test_read_from_symbolic_fd): New.
+	(test_write_to_symbolic_fd): New.
+
+2022-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103413
+	* gfortran.dg/illegal_boz_arg_4.f90: New test.
+
+2022-10-26  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-existence-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-be.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-le.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-offset-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-1.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-2.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-size-1.c: New test.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* g++.dg/cpp23/elision4.C: Use -Wdangling-reference, add dg-warning.
+	* g++.dg/cpp23/elision7.C: Likewise.
+	* g++.dg/warn/Wdangling-pointer-2.C: Use -Wno-dangling-reference.
+	* g++.dg/warn/Wdangling-reference1.C: New test.
+	* g++.dg/warn/Wdangling-reference2.C: New test.
+	* g++.dg/warn/Wdangling-reference3.C: New test.
+
+2022-10-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/mov-1.c: New.
+	* gcc.target/riscv/rvv/base/mov-10.c: New.
+	* gcc.target/riscv/rvv/base/mov-11.c: New.
+	* gcc.target/riscv/rvv/base/mov-12.c: New.
+	* gcc.target/riscv/rvv/base/mov-13.c: New.
+	* gcc.target/riscv/rvv/base/mov-2.c: New.
+	* gcc.target/riscv/rvv/base/mov-3.c: New.
+	* gcc.target/riscv/rvv/base/mov-4.c: New.
+	* gcc.target/riscv/rvv/base/mov-5.c: New.
+	* gcc.target/riscv/rvv/base/mov-6.c: New.
+	* gcc.target/riscv/rvv/base/mov-7.c: New.
+	* gcc.target/riscv/rvv/base/mov-8.c: New.
+	* gcc.target/riscv/rvv/base/mov-9.c: New.
+
+2022-10-26  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/predef-24.c:New.
+	* gcc.target/riscv/predef-25.c:New.
+
+2022-10-26  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106460
+	* gcc.target/powerpc/pr106460.c: New test.
+
+2022-10-26  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-18.c: New.
+	* gcc.target/riscv/arch-5.c: Remove test for prefixed
+	with `h`.
+	* gcc.target/riscv/predef-23.c: New.
+
+2022-10-26  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* lib/profopt.exp: Don't force DWARF4 for AutoFDO tests
+
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106848
+	PR c++/102600
+	* g++.dg/modules/enum-9_a.H: New test.
+	* g++.dg/modules/enum-9_b.C: New test.
+	* g++.dg/modules/enum-10_a.H: New test.
+	* g++.dg/modules/enum-10_b.C: New test.
+	* g++.dg/modules/enum-11_a.H: New test.
+	* g++.dg/modules/enum-11_b.C: New test.
+
+2022-10-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107304
+	* gcc.target/i386/pr107304.c: New test.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/attr-assume9.C: New test.
+	* g++.dg/cpp23/attr-assume10.C: New test.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/attr-assume2.C: Expect constant values.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107176
+	PR tree-optimization/66375
+	PR tree-optimization/42512
+	* gcc.dg/torture/pr107176.c: New testcase.
+
+2022-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/coverage1.ads: New test.
+	* gnat.dg/specs/variant_part.ads: Minor tweak.
+	* gnat.dg/specs/weak1.ads: Add dg directive.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107368
+	* gcc.dg/attr-assume-5.c: New test.
+
+2022-10-25  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* gcc.target/mips/compact-branches-1.c: add isa_rev>=6.
+	* gcc.target/mips/mips.exp: don't add -mipsXXr6 option for
+	-mcompact-branches=always. It is usable for pre-R6 now.
+	* gcc.target/mips/compact-branches-8.c: New test.
+	* gcc.target/mips/compact-branches-9.c: New test.
+
+2022-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107369
+	* gcc.dg/attr-assume-4.c: New test.
+	* g++.dg/cpp23/attr-assume8.C: New test.
+
+2022-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100756
+	* gcc.dg/vect/pr100756.c: New testcase.
+
+2022-10-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_long_long): Add
+	support for powerpc*-*-*.
+
 2022-10-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107349

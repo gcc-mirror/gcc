@@ -8,7 +8,6 @@
  */
 module core.sys.windows.olectl;
 version (Windows):
-@system:
 
 // In conversion from MinGW, the following was deleted:
 //#define FONTSIZE(n) {n##0000, 0}

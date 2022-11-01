@@ -87,7 +87,7 @@ struct riscv_builtin_description {
   unsigned int (*avail) (void);
 };
 
-AVAIL (hard_float, TARGET_HARD_FLOAT)
+AVAIL (hard_float, TARGET_HARD_FLOAT || TARGET_ZFINX)
 
 
 AVAIL (clean32, TARGET_ZICBOM && !TARGET_64BIT)
@@ -342,7 +342,7 @@ riscv_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 void
 riscv_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
-  if (!TARGET_HARD_FLOAT)
+  if (!(TARGET_HARD_FLOAT || TARGET_ZFINX))
     return;
 
   tree frflags = GET_BUILTIN_DECL (CODE_FOR_riscv_frflags);

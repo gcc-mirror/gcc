@@ -8,7 +8,6 @@
  */
 module core.sys.windows.winuser;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "user32");

@@ -1,3 +1,88 @@
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/complex (complex::complex converting ctor): For C++23
+	use explicit specifier with constant expression.  Explicitly cast
+	both parts to _Tp.
+	(__complex_abs, __complex_arg, __complex_cos, __complex_cosh,
+	__complex_exp, __complex_log, __complex_sin, __complex_sinh,
+	__complex_sqrt, __complex_tan, __complex_tanh, __complex_pow): Add
+	__complex__ _Float{16,32,64,128} and __complex__ decltype(0.0bf16)
+	overloads.
+	(complex<float>::complex converting ctor,
+	complex<double>::complex converting ctor,
+	complex<long double>::complex converting ctor): For C++23 implement
+	as template with explicit specifier with constant expression
+	and explicit casts.
+	(__complex_type): New template.
+	(complex): New partial specialization for types with extended floating
+	point types.
+	(__complex_acos, __complex_asin, __complex_atan, __complex_acosh,
+	__complex_asinh, __complex_atanh): Add __complex__ _Float{16,32,64,128}
+	and __complex__ decltype(0.0bf16) overloads.
+	(__complex_proj): Likewise.  Add template for complex of extended
+	floating point types.
+	* include/bits/cpp_type_traits.h (__is_floating): Specialize for
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t.
+	* testsuite/26_numerics/complex/ext_c++23.cc: New test.
+
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_HAVE_FLOAT128_MATH):
+	Uncomment.
+	* include/c_global/cmath (nextafter(_Float16, _Float16)): Make it constexpr.
+	If std::__is_constant_evaluated() call __builtin_nextafterf16.
+	(nextafter(__gnu_cxx::__bfloat16_t, __gnu_cxx::__bfloat16_t)): Similarly
+	but call __builtin_nextafterf16b.
+	* testsuite/26_numerics/headers/cmath/nextafter_c++23.cc (test): Add
+	static assertions to test constexpr nextafter.
+
+2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::filename()): Fix dangling
+	reference.
+
+2022-10-28  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/std/functional: Make placeholders inline, if possible.
+
+2022-10-28  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure.ac: Stop generating gstdint.h.
+	* src/c++11/compatibility-atomic-c++0x.cc: Stop using gstdint.h.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107376
+	* include/bits/regex_executor.h (_Executor::_Executor): Use same
+	allocator for _M_cur_results and _M_results.
+	* include/bits/regex_executor.tcc (_Executor::_M_main_dispatch):
+	Prevent possibly incorrect allocator propagating to
+	_M_cur_results.
+	* testsuite/28_regex/algorithms/regex_match/107376.cc: New test.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* include/bits/locale_classes.tcc: Add #pragma to disable
+	-Wdangling-reference with std::use_facet.
+
 2022-10-21  Arsen Arsenović  <arsen@aarsen.me>
 
 	* acinclude.m4: Default hosted to off if building without

@@ -940,25 +940,25 @@ fd_state_machine::on_open (sm_context *sm_ctxt, const supernode *node,
   if (lhs)
     {
       tree arg = gimple_call_arg (call, 1);
+      enum access_mode mode = READ_WRITE;
       if (TREE_CODE (arg) == INTEGER_CST)
 	{
 	  int flag = TREE_INT_CST_LOW (arg);
-	  enum access_mode mode = get_access_mode_from_flag (flag);
-
-	  switch (mode)
-	    {
-	    case READ_ONLY:
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
-				      m_unchecked_read_only);
-	      break;
-	    case WRITE_ONLY:
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
-				      m_unchecked_write_only);
-	      break;
-	    default:
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
-				      m_unchecked_read_write);
-	    }
+	  mode = get_access_mode_from_flag (flag);
+	}
+      switch (mode)
+	{
+	case READ_ONLY:
+	  sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				  m_unchecked_read_only);
+	  break;
+	case WRITE_ONLY:
+	  sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				  m_unchecked_write_only);
+	  break;
+	default:
+	  sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				  m_unchecked_read_write);
 	}
     }
   else
@@ -1096,7 +1096,7 @@ fd_state_machine::check_for_open_fd (
 
   else
     {
-      if (!(is_valid_fd_p (state) || (state == m_stop)))
+      if (!(is_valid_fd_p (state) || state == m_start || state == m_stop))
 	{
 	  if (!is_constant_fd_p (state))
 	    sm_ctxt->warn (

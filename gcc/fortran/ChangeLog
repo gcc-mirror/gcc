@@ -1,3 +1,14 @@
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* trans-types.cc (gfc_get_function_type): Do not use
+	build_varargs_function_type_vec for unprototyped function.
+
+2022-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103413
+	* symbol.cc (gfc_type_compatible): A boz-literal-constant has no type
+	and thus is not considered compatible to any type.
+
 2022-10-21  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100097

@@ -341,7 +341,7 @@ frange::set (tree type,
 
   // For -ffinite-math-only we can drop ranges outside the
   // representable numbers to min/max for the type.
-  if (flag_finite_math_only)
+  if (!HONOR_INFINITIES (m_type))
     {
       REAL_VALUE_TYPE min_repr = frange_val_min (m_type);
       REAL_VALUE_TYPE max_repr = frange_val_max (m_type);
@@ -712,8 +712,8 @@ frange::supports_type_p (const_tree type) const
 void
 frange::verify_range ()
 {
-  if (flag_finite_math_only)
-    gcc_checking_assert (!maybe_isnan ());
+  if (!undefined_p ())
+    gcc_checking_assert (HONOR_NANS (m_type) || !maybe_isnan ());
   switch (m_kind)
     {
     case VR_UNDEFINED:
@@ -4031,7 +4031,7 @@ range_tests_floats ()
   r0.intersect (r1);
   ASSERT_TRUE (r0.undefined_p ());
 
-  if (!flag_finite_math_only)
+  if (HONOR_INFINITIES (float_type_node))
     {
       // Make sure [-Inf, -Inf] doesn't get normalized.
       r0 = frange_float ("-Inf", "-Inf");

@@ -1201,10 +1201,10 @@ real_min_representable (const_tree type)
 inline REAL_VALUE_TYPE
 frange_val_min (const_tree type)
 {
-  if (flag_finite_math_only)
-    return real_min_representable (type);
-  else
+  if (HONOR_INFINITIES (type))
     return dconstninf;
+  else
+    return real_min_representable (type);
 }
 
 // Return the maximum value for TYPE.
@@ -1212,10 +1212,10 @@ frange_val_min (const_tree type)
 inline REAL_VALUE_TYPE
 frange_val_max (const_tree type)
 {
-  if (flag_finite_math_only)
-    return real_max_representable (type);
-  else
+  if (HONOR_INFINITIES (type))
     return dconstinf;
+  else
+    return real_max_representable (type);
 }
 
 // Return TRUE if R is the minimum value for TYPE.

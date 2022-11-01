@@ -1,3 +1,127 @@
+2022-10-28  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (maybe_warn_dangling_reference): Enable the warning in
+	system headers if the decl isn't in a system header.
+
+2022-10-28  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grokdeclarator): Call decl_attributes before do_friend.
+
+2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_all_clauses): Allow optional comma
+	before the first clause even in pragma syntax.
+	(cp_parser_omp_allocate, cp_parser_omp_atomic, cp_parser_omp_depobj,
+	cp_parser_omp_flush, cp_parser_omp_scan_loop_body,
+	cp_parser_omp_ordered, cp_parser_omp_assumption_clauses,
+	cp_finish_omp_declare_variant, cp_parser_omp_declare_target,
+	cp_parser_omp_declare_reduction_exprs, cp_parser_omp_requires,
+	cp_parser_omp_error): Likewise.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* cp-tree.h (ENUM_FIXED_UNDERLYING_TYPE_P, ENUM_UNDERLYING_TYPE):
+	Remove.  Moved to c-common.h.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107379
+	* name-lookup.cc (push_namespace): Call find_namespace_slot again
+	after pushdecl as the hash table might be expanded during pushdecl.
+
+2022-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (write_closure_template_head): New.
+	(write_closure_type_name): Call it.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107382
+	PR c++/107383
+	* typeck.cc (cp_build_binary_op): Don't compute semantic_result_type
+	if result_type is NULL.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* call.cc (expr_represents_temporary_p): New, factored out of...
+	(conv_binds_ref_to_temporary): ...here.  Don't return false just
+	because a ck_base is missing.  Use expr_represents_temporary_p.
+	(do_warn_dangling_reference): New.
+	(maybe_warn_dangling_reference): New.
+	(extend_ref_init_temps): Call maybe_warn_dangling_reference.
+	* cp-tree.h: Adjust comment.
+	* typeck.cc (check_return_expr): Suppress -Wdangling-reference
+	warnings.
+
+2022-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.cc (synthesize_implicit_template_parm): Fix thinko about
+	mark the new parm DECL_VIRTUAL_P.  Avoid unneccessary tree_last call.
+
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (resolve_function_concept_overload): Explicitly
+	pass complain=tf_none to coerce_template_parms.
+	(resolve_concept_check): Likewise.
+	(normalize_concept_check): Likewise.
+	* cp-tree.h (coerce_template_parms): Declare the main overload
+	and default its last parameter to true.  Remove wrapper overloads.
+	* pt.cc (determine_specialization): Adjust calls to
+	coerce_template_parms and coerce_innermost_template_parms after
+	removing their last parameter.
+	(coerce_template_args_for_ttp): Likewise.
+	(coerce_ttp_args_for_tta): Likewise.
+	(coerce_template_template_parms): Likewise.
+	(coerce_template_parms): Remove use_default_args parameter and
+	adjust function comment.  Document default argument.  Remove
+	wrapper overloads.  No longer static.
+	(coerce_innermost_template_parms): Remove use_default_args
+	parameter.  Default require_all_args to true.
+	(lookup_template_class): As with determine_specialization.
+	(finish_template_variable): Likewise.
+	(tsubst_decl): Likewise.
+	(instantiate_alias_template): Likewise.
+	(fn_type_unification): Likewise.
+	(resolve_overloaded_unification): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(get_partial_spec_bindings): Likewise.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (find_failing_clause_r): Re-add the call to
+	contextual_conv_bool.
+
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106848
+	PR c++/102600
+	* module.cc (trees_out::core_vals): Stream TYPE_MAX_VALUE and
+	TYPE_MIN_VALUE of ENUMERAL_TYPE.
+	(trees_in::core_vals): Likewise.
+	(trees_out::write_enum_def): Don't stream them here.
+	(trees_in::read_enum_def): Likewise.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (class constexpr_global_ctx): Add modifiable field,
+	get_value, get_value_ptr, put_value, remove_value, flush_modifiable
+	member functions.
+	(class modifiable_tracker): New.
+	(cxx_eval_internal_function): Use it.
+	(diagnose_failing_condition): Strip CLEANUP_POINT_EXPR.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (fold_operand): New function.
+	(find_failing_clause_r): Add const.
+	(find_failing_clause): Add const.
+	(diagnose_failing_condition): Add ctx parameter.
+	(cxx_eval_internal_function): Pass it.
+	* semantics.cc (diagnose_failing_condition): Move to constexpr.cc.
+	* cp-tree.h: Adjust.
+
 2022-10-24  Jason Merrill  <jason@redhat.com>
 
 	* cp-gimplify.cc (fold_builtin_source_location)

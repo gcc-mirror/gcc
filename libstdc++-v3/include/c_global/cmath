@@ -2755,9 +2755,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   nearbyint(_Float16 __x)
   { return _Float16(__builtin_nearbyintf(__x)); }
 
-  inline _Float16
+  constexpr _Float16
   nextafter(_Float16 __x, _Float16 __y)
   {
+    if (std::__is_constant_evaluated())
+      return __builtin_nextafterf16(__x, __y);
 #ifdef __INT16_TYPE__
     using __float16_int_type = __INT16_TYPE__;
 #else
@@ -3471,9 +3473,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   nearbyint(__gnu_cxx::__bfloat16_t __x)
   { return __gnu_cxx::__bfloat16_t(__builtin_nearbyintf(__x)); }
 
-  inline __gnu_cxx::__bfloat16_t
+  constexpr __gnu_cxx::__bfloat16_t
   nextafter(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y)
   {
+    if (std::__is_constant_evaluated())
+      return __builtin_nextafterf16b(__x, __y);
 #ifdef __INT16_TYPE__
     using __bfloat16_int_type = __INT16_TYPE__;
 #else

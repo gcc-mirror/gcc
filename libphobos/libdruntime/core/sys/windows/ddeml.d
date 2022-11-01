@@ -9,7 +9,6 @@
  */
 module core.sys.windows.ddeml;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "user32");

@@ -44,7 +44,7 @@ public:
 class multi_vector_function : public function_base
 {
 public:
-  constexpr multi_vector_function (unsigned int vectors_per_tuple)
+  CONSTEXPR multi_vector_function (unsigned int vectors_per_tuple)
     : m_vectors_per_tuple (vectors_per_tuple) {}
 
   unsigned int
@@ -63,7 +63,7 @@ public:
 class full_width_access : public multi_vector_function
 {
 public:
-  constexpr full_width_access (unsigned int vectors_per_tuple = 1)
+  CONSTEXPR full_width_access (unsigned int vectors_per_tuple = 1)
     : multi_vector_function (vectors_per_tuple) {}
 
   tree
@@ -88,7 +88,7 @@ public:
 class extending_load : public function_base
 {
 public:
-  constexpr extending_load (type_suffix_index memory_type)
+  CONSTEXPR extending_load (type_suffix_index memory_type)
     : m_memory_type (memory_type) {}
 
   unsigned int
@@ -131,7 +131,7 @@ public:
 class truncating_store : public function_base
 {
 public:
-  constexpr truncating_store (scalar_int_mode to_mode) : m_to_mode (to_mode) {}
+  CONSTEXPR truncating_store (scalar_int_mode to_mode) : m_to_mode (to_mode) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -168,7 +168,7 @@ public:
 class rtx_code_function_base : public function_base
 {
 public:
-  constexpr rtx_code_function_base (rtx_code code_for_sint,
+  CONSTEXPR rtx_code_function_base (rtx_code code_for_sint,
 				    rtx_code code_for_uint,
 				    int unspec_for_fp = -1)
     : m_code_for_sint (code_for_sint), m_code_for_uint (code_for_uint),
@@ -227,7 +227,7 @@ public:
 class unspec_based_function_base : public function_base
 {
 public:
-  constexpr unspec_based_function_base (int unspec_for_sint,
+  CONSTEXPR unspec_based_function_base (int unspec_for_sint,
 					int unspec_for_uint,
 					int unspec_for_fp)
     : m_unspec_for_sint (unspec_for_sint),
@@ -434,7 +434,7 @@ public:
 class fixed_insn_function : public function_base
 {
 public:
-  constexpr fixed_insn_function (insn_code code) : m_code (code) {}
+  CONSTEXPR fixed_insn_function (insn_code code) : m_code (code) {}
 
   rtx
   expand (function_expander &e) const override
@@ -476,7 +476,7 @@ public:
 class binary_permute : public permute
 {
 public:
-  constexpr binary_permute (int unspec) : m_unspec (unspec) {}
+  CONSTEXPR binary_permute (int unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -493,13 +493,13 @@ public:
 class reduction : public function_base
 {
 public:
-  constexpr reduction (int unspec)
+  CONSTEXPR reduction (int unspec)
     : m_unspec_for_sint (unspec),
       m_unspec_for_uint (unspec),
       m_unspec_for_fp (unspec)
   {}
 
-  constexpr reduction (int unspec_for_sint, int unspec_for_uint,
+  CONSTEXPR reduction (int unspec_for_sint, int unspec_for_uint,
 		       int unspec_for_fp)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
@@ -532,7 +532,7 @@ public:
 class shift_wide : public function_base
 {
 public:
-  constexpr shift_wide (rtx_code code, int wide_unspec)
+  CONSTEXPR shift_wide (rtx_code code, int wide_unspec)
     : m_code (code), m_wide_unspec (wide_unspec) {}
 
   rtx
@@ -567,7 +567,7 @@ public:
 class unary_count : public quiet<function_base>
 {
 public:
-  constexpr unary_count (rtx_code code) : m_code (code) {}
+  CONSTEXPR unary_count (rtx_code code) : m_code (code) {}
 
   rtx
   expand (function_expander &e) const override
@@ -590,7 +590,7 @@ public:
 class while_comparison : public function_base
 {
 public:
-  constexpr while_comparison (int unspec_for_sint, int unspec_for_uint)
+  CONSTEXPR while_comparison (int unspec_for_sint, int unspec_for_uint)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint)
   {}
@@ -619,7 +619,7 @@ public:
 /* Declare the global function base NAME, creating it from an instance
    of class CLASS with constructor arguments ARGS.  */
 #define FUNCTION(NAME, CLASS, ARGS) \
-  namespace { static constexpr const CLASS NAME##_obj ARGS; } \
+  namespace { static CONSTEXPR const CLASS NAME##_obj ARGS; } \
   namespace functions { const function_base *const NAME = &NAME##_obj; }
 
 #endif

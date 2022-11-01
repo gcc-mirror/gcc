@@ -1717,7 +1717,8 @@ struct GTY(()) tree_type_common {
   unsigned typeless_storage : 1;
   unsigned empty_flag : 1;
   unsigned indivisible_p : 1;
-  unsigned spare : 16;
+  unsigned no_named_args_stdarg_p : 1;
+  unsigned spare : 15;
 
   alias_set_type alias_set;
   tree pointer_to;
