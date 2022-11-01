@@ -38,3 +38,4 @@ handle_contract_violation (const std::experimental::contract_violation &violatio
     << " " << (int)violation.continuation_mode()
     << std::endl;
 }
+

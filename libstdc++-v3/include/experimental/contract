@@ -52,12 +52,12 @@ namespace experimental
   };
 
   class contract_violation {
-    uint_least32_t _M_line;
     const char* _M_file;
     const char* _M_function;
     const char* _M_comment;
     const char* _M_level;
     const char* _M_role;
+    uint_least32_t _M_line;
     signed char _M_continue;
   public:
     // From N4820

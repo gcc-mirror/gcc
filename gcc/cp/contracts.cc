@@ -1599,21 +1599,21 @@ get_pseudo_contract_violation_type ()
     {
       /* Must match <contract>:
 	 class contract_violation {
-	   uint_least32_t _M_line;
 	   const char* _M_file;
 	   const char* _M_function;
 	   const char* _M_comment;
 	   const char* _M_level;
 	   const char* _M_role;
+	   uint_least32_t _M_line;
 	   signed char _M_continue;
 	 If this changes, also update the initializer in
 	 build_contract_violation.  */
-      const tree types[] = { uint_least32_type_node,
+      const tree types[] = { const_string_type_node,
 			     const_string_type_node,
 			     const_string_type_node,
 			     const_string_type_node,
 			     const_string_type_node,
-			     const_string_type_node,
+			     uint_least32_type_node,
 			     signed_char_type_node };
       tree fields = NULL_TREE;
       for (tree type : types)
@@ -1663,12 +1663,12 @@ build_contract_violation (tree contract, contract_continuation cmode)
   /* Must match the type layout in get_pseudo_contract_violation_type.  */
   tree ctor = build_constructor_va
     (init_list_type_node, 7,
-     NULL_TREE, build_int_cst (uint_least32_type_node, loc.line),
      NULL_TREE, build_string_literal (loc.file),
      NULL_TREE, build_string_literal (function),
      NULL_TREE, CONTRACT_COMMENT (contract),
      NULL_TREE, build_string_literal (level),
      NULL_TREE, build_string_literal (role),
+     NULL_TREE, build_int_cst (uint_least32_type_node, loc.line),
      NULL_TREE, build_int_cst (signed_char_type_node, cmode));
 
   ctor = finish_compound_literal (get_pseudo_contract_violation_type (),
