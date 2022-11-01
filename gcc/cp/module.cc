@@ -10825,7 +10825,7 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		&& (!DECL_IS_UNDECLARED_BUILTIN (m_inner)
 		    || !DECL_EXTERN_C_P (m_inner)
 		    || DECL_EXTERN_C_P (d_inner))
-		/* Reject if one is they're different member of a
+		/* Reject if one is a different member of a
 		   guarded/pre/post fn set.  */
 		&& (!flag_contracts
 		    || (DECL_IS_PRE_FN_P (d_inner)

@@ -318,7 +318,7 @@ struct GTY(()) cp_parser {
   /* TRUE if the decl-specifier-seq preceding a declarator includes
      the 'friend' specifier. This prevents attributes on friend function
      declarations from being parsed in the complete class context.  */
-  /* ??? Maybe use defer_guarded_contract_match instead?  */
+  /* ??? But they should be; maybe use defer_guarded_contract_match?  */
   bool declaring_friend_p;
 
   /* TRUE if we are presently parsing a template-argument-list.  */

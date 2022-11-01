@@ -170,6 +170,28 @@ enum contract_matching_context
   cmc_override
 };
 
+/* True if NODE is any kind of contract.  */
+#define CONTRACT_P(NODE)			\
+  (TREE_CODE (NODE) == ASSERTION_STMT		\
+   || TREE_CODE (NODE) == PRECONDITION_STMT	\
+   || TREE_CODE (NODE) == POSTCONDITION_STMT)
+
+/* True if NODE is a contract condition.  */
+#define CONTRACT_CONDITION_P(NODE)		\
+  (TREE_CODE (NODE) == PRECONDITION_STMT	\
+   || TREE_CODE (NODE) == POSTCONDITION_STMT)
+
+/* True if NODE is a precondition.  */
+#define PRECONDITION_P(NODE)           \
+  (TREE_CODE (NODE) == PRECONDITION_STMT)
+
+/* True if NODE is a postcondition.  */
+#define POSTCONDITION_P(NODE)          \
+  (TREE_CODE (NODE) == POSTCONDITION_STMT)
+
+#define CONTRACT_CHECK(NODE) \
+  (TREE_CHECK3 (NODE, ASSERTION_STMT, PRECONDITION_STMT, POSTCONDITION_STMT))
+
 /* True iff the FUNCTION_DECL NODE currently has any contracts.  */
 #define DECL_HAS_CONTRACTS_P(NODE) \
   (DECL_CONTRACTS (NODE) != NULL_TREE)
@@ -195,6 +217,48 @@ enum contract_matching_context
 #define CONTRACT_STATEMENT(NODE) \
   (TREE_VALUE (TREE_VALUE (NODE)))
 
+/* True if the contract semantic was specified literally. If true, the
+   contract mode is an identifier containing the semantic. Otherwise,
+   it is a TREE_LIST whose TREE_VALUE is the level and whose TREE_PURPOSE
+   is the role.  */
+#define CONTRACT_LITERAL_MODE_P(NODE) \
+  (CONTRACT_MODE (NODE) != NULL_TREE \
+   && TREE_CODE (CONTRACT_MODE (NODE)) == IDENTIFIER_NODE)
+
+/* The identifier denoting the literal semantic of the contract.  */
+#define CONTRACT_LITERAL_SEMANTIC(NODE) \
+  (TREE_OPERAND (NODE, 0))
+
+/* The written "mode" of the contract. Either an IDENTIFIER with the
+   literal semantic or a TREE_LIST containing the level and role.  */
+#define CONTRACT_MODE(NODE) \
+  (TREE_OPERAND (CONTRACT_CHECK (NODE), 0))
+
+/* The identifier denoting the build level of the contract. */
+#define CONTRACT_LEVEL(NODE)		\
+  (TREE_VALUE (CONTRACT_MODE (NODE)))
+
+/* The identifier denoting the role of the contract */
+#define CONTRACT_ROLE(NODE)		\
+  (TREE_PURPOSE (CONTRACT_MODE (NODE)))
+
+/* The parsed condition of the contract.  */
+#define CONTRACT_CONDITION(NODE) \
+  (TREE_OPERAND (CONTRACT_CHECK (NODE), 1))
+
+/* True iff the condition of the contract NODE is not yet parsed.  */
+#define CONTRACT_CONDITION_DEFERRED_P(NODE) \
+  (TREE_CODE (CONTRACT_CONDITION (NODE)) == DEFERRED_PARSE)
+
+/* The raw comment of the contract.  */
+#define CONTRACT_COMMENT(NODE) \
+  (TREE_OPERAND (CONTRACT_CHECK (NODE), 2))
+
+/* The VAR_DECL of a postcondition result. For deferred contracts, this
+   is an IDENTIFIER.  */
+#define POSTCONDITION_IDENTIFIER(NODE) \
+  (TREE_OPERAND (POSTCONDITION_STMT_CHECK (NODE), 3))
+
 /* For a FUNCTION_DECL of a guarded function, this holds the function decl
    where pre contract checks are emitted.  */
 #define DECL_PRE_FN(NODE) \
@@ -205,54 +269,38 @@ enum contract_matching_context
 #define DECL_POST_FN(NODE) \
   (get_postcondition_function ((NODE)))
 
-/* For a FUNCTION_DECL of a pre/post function, this points back to the
-   original guarded function.  */
-#define DECL_ORIGINAL_FN(NODE) \
-  (DECL_ABSTRACT_ORIGIN (NODE))
-
 /* True iff the FUNCTION_DECL is the pre function for a guarded function.  */
 #define DECL_IS_PRE_FN_P(NODE) \
-  (DECL_ORIGINAL_FN (NODE) && DECL_PRE_FN (DECL_ORIGINAL_FN (NODE)) == NODE)
+  (DECL_ABSTRACT_ORIGIN (NODE) && DECL_PRE_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
 
 /* True iff the FUNCTION_DECL is the post function for a guarded function.  */
 #define DECL_IS_POST_FN_P(NODE) \
-  (DECL_ORIGINAL_FN (NODE) && DECL_POST_FN (DECL_ORIGINAL_FN (NODE)) == NODE)
+  (DECL_ABSTRACT_ORIGIN (NODE) && DECL_POST_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
 
-extern tree invalidate_contract			(tree);
-extern tree finish_contract_attribute		(tree, tree);
-extern void update_late_contract		(tree, tree, tree);
 extern void remove_contract_attributes		(tree);
 extern void copy_contract_attributes		(tree, tree);
-extern tree splice_out_contracts		(tree);
-extern bool check_postcondition_result		(tree, tree, location_t);
-extern void rebuild_postconditions		(tree);
-extern bool match_contract_conditions		(location_t, tree, location_t, tree, contract_matching_context);
-extern void defer_guarded_contract_match	(tree, tree, tree);
-extern void match_deferred_contracts		(tree);
-extern void remap_contract			(tree, tree, tree, bool);
 extern void remap_contracts			(tree, tree, tree, bool);
-extern void remap_dummy_this			(tree, tree *);
-extern bool contract_active_p			(tree);
-extern bool contract_any_active_p		(tree);
-extern bool contract_any_deferred_p		(tree);
-extern bool all_attributes_are_contracts_p	(tree);
-extern void build_contract_function_decls	(tree);
-extern void set_contract_functions		(tree, tree, tree);
-extern tree start_postcondition_statement	();
-extern void finish_postcondition_statement	(tree);
-extern tree build_contract_check		(tree);
-extern tree get_postcondition_result_parameter	(tree);
+extern void maybe_update_postconditions		(tree);
+extern void rebuild_postconditions		(tree);
+extern bool check_postcondition_result		(tree, tree, location_t);
 extern tree get_precondition_function		(tree);
 extern tree get_postcondition_function		(tree);
-extern tree get_contracts_original_fn		(tree);
-extern void emit_assertion			(tree);
-extern void emit_preconditions			(tree);
-extern void emit_postconditions_cleanup		(tree);
-extern void maybe_update_postconditions		(tree);
+extern void duplicate_contracts			(tree, tree);
+extern bool match_contract_conditions		(location_t, tree, location_t, tree, contract_matching_context);
+extern void match_deferred_contracts		(tree);
+extern void defer_guarded_contract_match	(tree, tree, tree);
+extern bool diagnose_misapplied_contracts	(tree);
+extern tree finish_contract_attribute		(tree, tree);
+extern tree invalidate_contract			(tree);
+extern void update_late_contract		(tree, tree, tree);
+extern tree splice_out_contracts		(tree);
+extern bool all_attributes_are_contracts_p	(tree);
+extern void inherit_base_contracts		(tree, tree);
+extern tree apply_postcondition_to_return	(tree);
 extern void start_function_contracts		(tree);
 extern void finish_function_contracts		(tree);
-extern tree apply_postcondition_to_return	(tree);
-extern void duplicate_contracts			(tree, tree);
-extern void inherit_base_contracts (tree, tree);
+extern void set_contract_functions		(tree, tree, tree);
+extern tree build_contract_check		(tree);
+extern void emit_assertion			(tree);
 
 #endif /* ! GCC_CP_CONTRACT_H */

@@ -13256,14 +13256,14 @@ grokdeclarator (const cp_declarator *declarator,
 		  returned_attrs = attr_chainon (returned_attrs, att);
 	      }
 
-	    /* Contract attributes appertain to the declaration.  */
+	    /* Actually apply the contract attributes to the declaration.  */
 	    for (tree *p = &attrs; *p;)
 	      {
 		tree l = *p;
 		if (cxx_contract_attribute_p (l))
 		  {
 		    *p = TREE_CHAIN (l);
-		    /* Intentially reverse order of contracts so they're
+		    /* Intentionally reverse order of contracts so they're
 		       reversed back into their lexical order.  */
 		    TREE_CHAIN (l) = NULL_TREE;
 		    returned_attrs = chainon (l, returned_attrs);
@@ -18244,7 +18244,6 @@ finish_function (bool inline_p)
 
   return fndecl;
 }
-
 
 /* Create the FUNCTION_DECL for a function definition.
    DECLSPECS and DECLARATOR are the parts of the declaration;

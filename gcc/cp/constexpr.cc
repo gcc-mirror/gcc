@@ -9868,9 +9868,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case POSTCONDITION_STMT:
       if (!checked_contract_p (get_contract_semantic (t)))
 	return true;
-      if (!RECUR (CONTRACT_CONDITION (t), rval))
-	return false;
-      return true;
+      return RECUR (CONTRACT_CONDITION (t), rval);
 
     case LABEL_EXPR:
       t = LABEL_EXPR_LABEL (t);

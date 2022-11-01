@@ -138,14 +138,14 @@ along with GCC; see the file COPYING3.  If not see
 
    For cdtors a post contract is implemented using a CLEANUP_STMT.
 
-   FIXME the compiler already handles sharing cleanup code on multiple exit
-   paths properly, so this outlining seems unnecessary if we represent the
-   postcondition as a cleanup for all functions.
+   FIXME the compiler already shores cleanup code on multiple exit paths, so
+   this outlining seems unnecessary if we represent the postcondition as a
+   cleanup for all functions.
 
    More helpful for optimization might be to make the contracts a wrapper
    function (for non-variadic functions), that could be inlined into a
    caller while preserving the call to the actual function?  Either that or
-   turn a never-continue post contract into an assume in the caller.  */
+   mirror a never-continue post contract with an assume in the caller.  */
 
 #include "config.h"
 #include "system.h"
@@ -942,7 +942,7 @@ void copy_contract_attributes (tree olddecl, tree newdecl)
 /* Returns the parameter corresponding to the return value of a guarded
    function D.  Returns NULL_TREE if D has no postconditions or is void.  */
 
-tree
+static tree
 get_postcondition_result_parameter (tree d)
 {
   if (!d || d == error_mark_node)
@@ -994,7 +994,7 @@ retain_decl (tree decl, copy_body_data *)
 
    This is also used to reuse a parent type's contracts on virtual methods.  */
 
-void
+static void
 remap_contract (tree src, tree dst, tree contract, bool duplicate_p)
 {
   copy_body_data id;
@@ -1101,7 +1101,7 @@ remap_dummy_this_1 (tree *tp, int *, void *data)
 /* Replace all references to dummy this parameters in EXPR with references to
    the first argument of the FUNCTION_DECL FN.  */
 
-void
+static void
 remap_dummy_this (tree fn, tree *expr)
 {
   walk_tree (expr, remap_dummy_this_1, fn, NULL);
@@ -1536,7 +1536,7 @@ handle_contracts_p (tree decl1)
 {
   return (flag_contracts
 	  && !processing_template_decl
-	  && DECL_ORIGINAL_FN (decl1) == NULL_TREE
+	  && DECL_ABSTRACT_ORIGIN (decl1) == NULL_TREE
 	  && contract_any_active_p (DECL_CONTRACTS (decl1)));
 }
 
@@ -1579,7 +1579,7 @@ build_postcondition_function (tree d)
   return build_contract_condition_function (d, /*pre=*/false);
 }
 
-void
+static void
 build_contract_function_decls (tree d)
 {
   /* Constructors and destructors have their contracts inserted inline.  */
@@ -1590,25 +1590,6 @@ build_contract_function_decls (tree d)
   tree pre = build_precondition_function (d);
   tree post = build_postcondition_function (d);
   set_contract_functions (d, pre, post);
-}
-
-/* Begin a new scope for the postcondition.  */
-
-tree
-start_postcondition_statement ()
-{
-  tree list = push_stmt_list ();
-  tree stmt = begin_compound_stmt (BCS_NORMAL);
-  return build_tree_list (list, stmt);
-}
-
-/* Finish the block containing the postcondition check.  */
-
-void
-finish_postcondition_statement (tree stmt)
-{
-  finish_compound_stmt (TREE_VALUE (stmt));
-  pop_stmt_list (TREE_PURPOSE (stmt));
 }
 
 static const char *
@@ -1887,7 +1868,7 @@ emit_assertion (tree attr)
 
 /* Emit statements for precondition attributes.  */
 
-void
+static void
 emit_preconditions (tree attr)
 {
   return emit_contract_conditions (attr, PRECONDITION_STMT);
@@ -1895,7 +1876,7 @@ emit_preconditions (tree attr)
 
 /* Emit statements for postcondition attributes.  */
 
-void
+static void
 emit_postconditions_cleanup (tree contracts)
 {
   tree stmts = push_stmt_list ();

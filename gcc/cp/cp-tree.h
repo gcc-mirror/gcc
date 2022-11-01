@@ -1380,90 +1380,6 @@ struct GTY (()) tree_static_assert {
   location_t location;
 };
 
-/* True if NODE is any kind of contract.  */
-#define CONTRACT_P(NODE)			\
-  (TREE_CODE (NODE) == ASSERTION_STMT		\
-   || TREE_CODE (NODE) == PRECONDITION_STMT	\
-   || TREE_CODE (NODE) == POSTCONDITION_STMT)
-
-/* True if NODE is a contract condition.  */
-#define CONTRACT_CONDITION_P(NODE)		\
-  (TREE_CODE (NODE) == PRECONDITION_STMT	\
-   || TREE_CODE (NODE) == POSTCONDITION_STMT)
-
-/* True if NODE is a precondition.  */
-#define PRECONDITION_P(NODE)           \
-  (TREE_CODE (NODE) == PRECONDITION_STMT)
-
-/* True if NODE is a postcondition.  */
-#define POSTCONDITION_P(NODE)          \
-  (TREE_CODE (NODE) == POSTCONDITION_STMT)
-
-#define CONTRACT_CHECK(NODE) \
-  (TREE_CHECK3 (NODE, ASSERTION_STMT, PRECONDITION_STMT, POSTCONDITION_STMT))
-
-/* Returns the computed semantic of the node.  */
-
-inline contract_semantic
-get_contract_semantic (const_tree t)
-{
-  return (contract_semantic) (TREE_LANG_FLAG_3 (CONTRACT_CHECK (t))
-      | (TREE_LANG_FLAG_2 (t) << 1)
-      | (TREE_LANG_FLAG_0 ((t)) << 2));
-}
-
-/* Sets the computed semantic of the node.  */
-
-inline void
-set_contract_semantic (tree t, contract_semantic semantic)
-{
-  TREE_LANG_FLAG_3 (CONTRACT_CHECK (t)) = semantic & 0x01;
-  TREE_LANG_FLAG_2 (t) = (semantic & 0x02) >> 1;
-  TREE_LANG_FLAG_0 (t) = (semantic & 0x04) >> 2;
-}
-
-/* True if the contract semantic was specified literally. If true, the
-   contract mode is an identifier containing the semantic. Otherwise,
-   it is a TREE_LIST whose TREE_VALUE is the level and whose TREE_PURPOSE
-   is the role.  */
-#define CONTRACT_LITERAL_MODE_P(NODE) \
-  (CONTRACT_MODE (NODE) != NULL_TREE \
-   && TREE_CODE (CONTRACT_MODE (NODE)) == IDENTIFIER_NODE)
-
-/* The identifier denoting the literal semantic of the contract.  */
-#define CONTRACT_LITERAL_SEMANTIC(NODE) \
-  (TREE_OPERAND (NODE, 0))
-
-/* The written "mode" of the contract. Either an IDENTIFIER with the
-   literal semantic or a TREE_LIST containing the level and role.  */
-#define CONTRACT_MODE(NODE) \
-  (TREE_OPERAND (CONTRACT_CHECK (NODE), 0))
-
-/* The identifier denoting the build level of the contract. */
-#define CONTRACT_LEVEL(NODE)		\
-  (TREE_VALUE (CONTRACT_MODE (NODE)))
-
-/* The identifier denoting the role of the contract */
-#define CONTRACT_ROLE(NODE)		\
-  (TREE_PURPOSE (CONTRACT_MODE (NODE)))
-
-/* The parsed condition of the contract.  */
-#define CONTRACT_CONDITION(NODE) \
-  (TREE_OPERAND (CONTRACT_CHECK (NODE), 1))
-
-/* True iff the condition of the contract NODE is not yet parsed.  */
-#define CONTRACT_CONDITION_DEFERRED_P(NODE) \
-  (TREE_CODE (CONTRACT_CONDITION (NODE)) == DEFERRED_PARSE)
-
-/* The raw comment of the contract.  */
-#define CONTRACT_COMMENT(NODE) \
-  (TREE_OPERAND (CONTRACT_CHECK (NODE), 2))
-
-/* The VAR_DECL of a postcondition result. For deferred contracts, this
-   is an IDENTIFIER.  */
-#define POSTCONDITION_IDENTIFIER(NODE) \
-  (TREE_OPERAND (POSTCONDITION_STMT_CHECK (NODE), 3))
-
 struct GTY (()) tree_argument_pack_select {
   struct tree_common common;
   tree argument_pack;
@@ -6941,7 +6857,6 @@ extern tree push_library_fn			(tree, tree, tree, int);
 extern tree push_throw_library_fn		(tree, tree);
 extern void warn_misplaced_attr_for_class_type  (location_t location,
 						 tree class_type);
-extern bool diagnose_misapplied_contracts	(tree);
 extern tree check_tag_decl			(cp_decl_specifier_seq *, bool);
 extern tree shadow_tag				(cp_decl_specifier_seq *);
 extern tree groktypename			(cp_decl_specifier_seq *, const cp_declarator *, bool);
@@ -8647,6 +8562,26 @@ set_decl_contracts (tree decl, tree contract_attrs)
 {
   remove_contract_attributes (decl);
   DECL_ATTRIBUTES (decl) = chainon (DECL_ATTRIBUTES (decl), contract_attrs);
+}
+
+/* Returns the computed semantic of the node.  */
+
+inline contract_semantic
+get_contract_semantic (const_tree t)
+{
+  return (contract_semantic) (TREE_LANG_FLAG_3 (CONTRACT_CHECK (t))
+      | (TREE_LANG_FLAG_2 (t) << 1)
+      | (TREE_LANG_FLAG_0 ((t)) << 2));
+}
+
+/* Sets the computed semantic of the node.  */
+
+inline void
+set_contract_semantic (tree t, contract_semantic semantic)
+{
+  TREE_LANG_FLAG_3 (CONTRACT_CHECK (t)) = semantic & 0x01;
+  TREE_LANG_FLAG_2 (t) = (semantic & 0x02) >> 1;
+  TREE_LANG_FLAG_0 (t) = (semantic & 0x04) >> 2;
 }
 
 /* Inline bodies.  */
