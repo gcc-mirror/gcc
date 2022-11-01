@@ -1,3 +1,7 @@
+2022-11-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gcc.target/gcn/simd-math-1.c: New testcase.
+
 2022-11-01  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-c++-common/gomp/metadirective-8.c: New test.

@@ -53,6 +53,7 @@
 #include "dwarf2.h"
 #include "gimple.h"
 #include "cgraph.h"
+#include "case-cfn-macros.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -5143,6 +5144,110 @@ gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node))
   return 0;
 }
 
+tree mathfn_built_in_explicit (tree, combined_fn);
+
+/* Implement TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION.
+   Return the function declaration of the vectorized version of the builtin
+   in the math library if available.  */
+
+tree
+gcn_vectorize_builtin_vectorized_function (unsigned int fn, tree type_out,
+					   tree type_in)
+{
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  machine_mode out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  int out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  machine_mode in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  int in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  combined_fn cfn = combined_fn (fn);
+
+  /* Keep this consistent with the list of vectorized math routines.  */
+  int implicit_p;
+  switch (fn)
+    {
+    CASE_CFN_ACOS:
+    CASE_CFN_ACOSH:
+    CASE_CFN_ASIN:
+    CASE_CFN_ASINH:
+    CASE_CFN_ATAN:
+    CASE_CFN_ATAN2:
+    CASE_CFN_ATANH:
+    CASE_CFN_COPYSIGN:
+    CASE_CFN_COS:
+    CASE_CFN_COSH:
+    CASE_CFN_ERF:
+    CASE_CFN_EXP:
+    CASE_CFN_EXP2:
+    CASE_CFN_FINITE:
+    CASE_CFN_FMOD:
+    CASE_CFN_GAMMA:
+    CASE_CFN_HYPOT:
+    CASE_CFN_ISNAN:
+    CASE_CFN_LGAMMA:
+    CASE_CFN_LOG:
+    CASE_CFN_LOG10:
+    CASE_CFN_LOG2:
+    CASE_CFN_POW:
+    CASE_CFN_REMAINDER:
+    CASE_CFN_RINT:
+    CASE_CFN_SIN:
+    CASE_CFN_SINH:
+    CASE_CFN_SQRT:
+    CASE_CFN_TAN:
+    CASE_CFN_TANH:
+    CASE_CFN_TGAMMA:
+      implicit_p = 1;
+      break;
+
+    CASE_CFN_SCALB:
+    CASE_CFN_SIGNIFICAND:
+      implicit_p = 0;
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+
+  tree out_t_node = (out_mode == DFmode) ? double_type_node : float_type_node;
+  tree fndecl = implicit_p ? mathfn_built_in (out_t_node, cfn)
+			   : mathfn_built_in_explicit (out_t_node, cfn);
+
+  const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+  char name[20];
+  sprintf (name, out_mode == DFmode ? "v%ddf_%s" : "v%dsf_%s",
+	   out_n, bname + 10);
+
+  unsigned arity = 0;
+  for (tree args = DECL_ARGUMENTS (fndecl); args; args = TREE_CHAIN (args))
+    arity++;
+
+  tree fntype = (arity == 1)
+		? build_function_type_list (type_out, type_in, NULL)
+		: build_function_type_list (type_out, type_in, type_in, NULL);
+
+  /* Build a function declaration for the vectorized function.  */
+  tree new_fndecl = build_decl (BUILTINS_LOCATION,
+				FUNCTION_DECL, get_identifier (name), fntype);
+  TREE_PUBLIC (new_fndecl) = 1;
+  DECL_EXTERNAL (new_fndecl) = 1;
+  DECL_IS_NOVOPS (new_fndecl) = 1;
+  TREE_READONLY (new_fndecl) = 1;
+
+  return new_fndecl;
+}
+
+/* Implement TARGET_LIBC_HAS_FUNCTION.  */
+
+bool
+gcn_libc_has_function (enum function_class fn_class,
+		       tree type)
+{
+  return bsd_libc_has_function (fn_class, type);
+}
+
 /* }}}  */
 /* {{{ md_reorg pass.  */
 
@@ -7232,6 +7337,11 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_simd_clone_compute_vecsize_and_simdlen
 #undef  TARGET_SIMD_CLONE_USABLE
 #define TARGET_SIMD_CLONE_USABLE gcn_simd_clone_usable
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
+  gcn_vectorize_builtin_vectorized_function
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION gcn_libc_has_function
 #undef  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   gcn_small_register_classes_for_mode_p

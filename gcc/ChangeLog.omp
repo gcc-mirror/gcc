@@ -1,4 +1,15 @@
 2022-11-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* builtins.cc (mathfn_built_in_explicit): New.
+	* config/gcn/gcn.cc: Include case-cfn-macros.h.
+	(mathfn_built_in_explicit): Add prototype.
+	(gcn_vectorize_builtin_vectorized_function): New.
+	(gcn_libc_has_function): New.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Define.
+	(TARGET_LIBC_HAS_FUNCTION): Define.
+
+2022-11-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/gcn-builtins.def (FLOORVF): New builtin.
 	(FLOORV): New builtin.

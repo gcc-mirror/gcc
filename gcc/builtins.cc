@@ -2083,6 +2083,14 @@ mathfn_built_in (tree type, combined_fn fn)
   return mathfn_built_in_1 (type, fn, /*implicit=*/ 1);
 }
 
+/* Like mathfn_built_in_1, but always use the explicit array.  */
+
+tree
+mathfn_built_in_explicit (tree type, combined_fn fn)
+{
+  return mathfn_built_in_1 (type, fn, /*implicit=*/ 0);
+}
+
 /* Like mathfn_built_in_1, but take a built_in_function and
    always use the implicit array.  */
 
