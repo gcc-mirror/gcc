@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-csky-options "-mcpu=ck801 -O1" } */
+/* { dg-skip-if  "test is specific to ck801"  { csky-*-* }  { "*" }  { "-mcpu=ck801" }  }  */
+/* { dg-csky-options "-O1" } */
 
 /* Test special code generation patterns for bit operators.  */
 
