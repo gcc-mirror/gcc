@@ -1,3 +1,15 @@
+2022-10-31  Guillermo E. Martinez  <guillermo.e.martinez@oracle.com>
+
+	* btf.h (btf_enum64): Add new definition and new symbolic
+	constant to BTF_KIND_ENUM64 and BTF_KF_ENUM_{UN,}SIGNED.
+
+2022-10-31  Lulu Cheng  <chenglulu@loongson.cn>
+	    qijingwen  <qijingwen@loongson.cn>
+
+	* vtv-change-permission.h (defined): Determines whether the macro
+	__loongarch_lp64 is defined
+	(VTV_PAGE_SIZE): Set VTV_PAGE_SIZE to 16KiB for loongarch64.
+
 2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* cuda/cuda.h (enum CUdevice_attribute): Add

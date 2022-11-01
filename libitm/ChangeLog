@@ -1,3 +1,10 @@
+2022-10-31  Xiongchuan Tan  <xc-tan@outlook.com>
+
+	* configure.tgt: Add riscv support.
+	* config/riscv/asm.h: New file.
+	* config/riscv/sjlj.S: New file.
+	* config/riscv/target.h: New file.
+
 2022-10-13  Lulu Cheng  <chenglulu@loongson.cn>
 
 	* config/loongarch/sjlj.S: Add a soft floating point condition to the

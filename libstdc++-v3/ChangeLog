@@ -1,3 +1,41 @@
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/complex (complex::complex converting ctor): For C++23
+	use explicit specifier with constant expression.  Explicitly cast
+	both parts to _Tp.
+	(__complex_abs, __complex_arg, __complex_cos, __complex_cosh,
+	__complex_exp, __complex_log, __complex_sin, __complex_sinh,
+	__complex_sqrt, __complex_tan, __complex_tanh, __complex_pow): Add
+	__complex__ _Float{16,32,64,128} and __complex__ decltype(0.0bf16)
+	overloads.
+	(complex<float>::complex converting ctor,
+	complex<double>::complex converting ctor,
+	complex<long double>::complex converting ctor): For C++23 implement
+	as template with explicit specifier with constant expression
+	and explicit casts.
+	(__complex_type): New template.
+	(complex): New partial specialization for types with extended floating
+	point types.
+	(__complex_acos, __complex_asin, __complex_atan, __complex_acosh,
+	__complex_asinh, __complex_atanh): Add __complex__ _Float{16,32,64,128}
+	and __complex__ decltype(0.0bf16) overloads.
+	(__complex_proj): Likewise.  Add template for complex of extended
+	floating point types.
+	* include/bits/cpp_type_traits.h (__is_floating): Specialize for
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t.
+	* testsuite/26_numerics/complex/ext_c++23.cc: New test.
+
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_HAVE_FLOAT128_MATH):
+	Uncomment.
+	* include/c_global/cmath (nextafter(_Float16, _Float16)): Make it constexpr.
+	If std::__is_constant_evaluated() call __builtin_nextafterf16.
+	(nextafter(__gnu_cxx::__bfloat16_t, __gnu_cxx::__bfloat16_t)): Similarly
+	but call __builtin_nextafterf16b.
+	* testsuite/26_numerics/headers/cmath/nextafter_c++23.cc (test): Add
+	static assertions to test constexpr nextafter.
+
 2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (path::filename()): Fix dangling

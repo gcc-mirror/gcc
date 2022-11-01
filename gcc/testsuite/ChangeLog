@@ -1,3 +1,54 @@
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/ext-floating12.C: New test.
+
+2022-10-31  Guillermo E. Martinez  <guillermo.e.martinez@oracle.com>
+
+	* gcc.dg/debug/btf/btf-enum-1.c: Update testcase, with correct
+	info.kflags encoding.
+	* gcc.dg/debug/btf/btf-enum64-1.c: New testcase.
+
+2022-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/floatn-builtin.h: Add tests for newly added builtins.
+
+2022-10-31  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx-check.h: Add avxneconvert check.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mavxneconvert.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+	* lib/target-supports.exp:add check_effective_target_avxneconvert.
+	* gcc.target/i386/avx-ne-convert-1.c: New test.
+	* gcc.target/i386/avx-ne-convert-vbcstnebf162ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vbcstnesh2ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneebf162ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneeph2ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneobf162ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneoph2ps-2.c: Ditto.
+	* gcc.target/i386/avx-ne-convert-vcvtneps2bf16-2.c: Ditto.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1.c: Rename..
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1a.c: To this.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1b.c: New test.
+
+2022-10-31  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512bf16-cvtsbh2ss-1.c: Add fpmath option.
+	* gcc.target/i386/avx512bf16-vdpbf16ps-2.c: Fixed
+	scan-assembler.
+	* gcc.target/i386/avx512bf16vl-cvtness2sbh-1.c: Add x/y suffix
+	for vcvtneps2bf16.
+	* gcc.target/i386/avx512bf16vl-vcvtneps2bf16-1.c: Ditto.
+
+2022-10-31  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107261.c: New test.
+
 2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/simd19630.d: Move tests with errors to ...
