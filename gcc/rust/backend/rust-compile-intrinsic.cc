@@ -50,6 +50,22 @@ is_basic_integer_type (TyTy::BaseType *type)
     }
 }
 
+static bool
+check_for_basic_integer_type (const std::string &intrinsic_str, Location locus,
+			      TyTy::BaseType *type)
+{
+  auto is_basic_integer = is_basic_integer_type (type);
+  if (!is_basic_integer)
+    {
+      rust_error_at (
+	locus,
+	"%s intrinsics can only be used with basic integer types (got %qs)",
+	intrinsic_str.c_str (), type->get_name ().c_str ());
+    }
+
+  return is_basic_integer;
+}
+
 static tree
 offset_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
@@ -104,12 +120,22 @@ prefetch_write_data (Context *ctx, TyTy::FnType *fntype)
 
 static tree
 atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering);
+static tree
+atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering);
 
 static inline std::function<tree (Context *, TyTy::FnType *)>
 atomic_store_handler (int ordering)
 {
   return [ordering] (Context *ctx, TyTy::FnType *fntype) {
     return atomic_store_handler_inner (ctx, fntype, ordering);
+  };
+}
+
+static inline std::function<tree (Context *, TyTy::FnType *)>
+atomic_load_handler (int ordering)
+{
+  return [ordering] (Context *ctx, TyTy::FnType *fntype) {
+    return atomic_load_handler_inner (ctx, fntype, ordering);
   };
 }
 
@@ -124,7 +150,7 @@ unchecked_op_handler (tree_code op)
   };
 }
 
-static inline tree
+inline tree
 sorry_handler (Context *ctx, TyTy::FnType *fntype)
 {
   rust_sorry_at (fntype->get_locus (), "intrinsic %qs is not yet implemented",
@@ -147,11 +173,14 @@ static const std::map<std::string,
     {"copy_nonoverlapping", copy_nonoverlapping_handler},
     {"prefetch_read_data", prefetch_read_data},
     {"prefetch_write_data", prefetch_write_data},
-    {"atomic_load", sorry_handler},
     {"atomic_store_seqcst", atomic_store_handler (__ATOMIC_SEQ_CST)},
     {"atomic_store_release", atomic_store_handler (__ATOMIC_RELEASE)},
     {"atomic_store_relaxed", atomic_store_handler (__ATOMIC_RELAXED)},
     {"atomic_store_unordered", atomic_store_handler (__ATOMIC_RELAXED)},
+    {"atomic_load_seqcst", atomic_load_handler (__ATOMIC_SEQ_CST)},
+    {"atomic_load_acquire", atomic_load_handler (__ATOMIC_ACQUIRE)},
+    {"atomic_load_relaxed", atomic_load_handler (__ATOMIC_RELAXED)},
+    {"atomic_load_unordered", atomic_load_handler (__ATOMIC_RELAXED)},
     {"unchecked_add", unchecked_op_handler (PLUS_EXPR)},
     {"unchecked_sub", unchecked_op_handler (MINUS_EXPR)},
     {"unchecked_mul", unchecked_op_handler (MULT_EXPR)},
@@ -652,7 +681,8 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
 }
 
 static std::string
-build_atomic_builtin_name (Location locus, tree operand_type)
+build_atomic_builtin_name (const std::string &prefix, Location locus,
+			   TyTy::BaseType *operand_type)
 {
   static const std::map<std::string, std::string> allowed_types = {
     {"i8", "1"},    {"i16", "2"},   {"i32", "4"},   {"i64", "8"},
@@ -663,9 +693,9 @@ build_atomic_builtin_name (Location locus, tree operand_type)
   // TODO: Can we maybe get the generic version (atomic_store_n) to work... This
   // would be so much better
 
-  std::string result = "atomic_store_";
+  std::string result = prefix;
 
-  auto type_name = std::string (TYPE_NAME_STRING (operand_type));
+  auto type_name = operand_type->get_name ();
   if (type_name == "usize" || type_name == "isize")
     {
       rust_sorry_at (
@@ -673,21 +703,10 @@ build_atomic_builtin_name (Location locus, tree operand_type)
       return "";
     }
 
-  // FIXME: Can we have a better looking name here?
-  // Instead of `<crate>::<module>::<type>`?
-  // Maybe instead of giving the tree node, pass the resolved Tyty before it
-  // gets compiled?
-  //
-  // Or should we perform this check somwhere else in the compiler?
   auto type_size_str = allowed_types.find (type_name);
-  if (type_size_str == allowed_types.end ())
-    {
-      rust_error_at (locus,
-		     "atomic intrinsics are only available for basic integer "
-		     "types: got type %qs",
-		     type_name.c_str ());
-      return "";
-    }
+
+  if (!check_for_basic_integer_type ("atomic", locus, operand_type))
+    return "";
 
   result += type_size_str->second;
 
@@ -726,8 +745,12 @@ atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   auto value = ctx->get_backend ()->var_expression (param_vars[1], Location ());
   auto memorder = make_unsigned_long_tree (ctx, ordering);
 
+  auto monomorphized_type
+    = fntype->get_substs ()[0].get_param_ty ()->resolve ();
+
   auto builtin_name
-    = build_atomic_builtin_name (fntype->get_locus (), TREE_TYPE (types[0]));
+    = build_atomic_builtin_name ("atomic_store_", fntype->get_locus (),
+				 monomorphized_type);
   if (builtin_name.empty ())
     return error_mark_node;
 
@@ -743,11 +766,72 @@ atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
     = ctx->get_backend ()->call_expression (atomic_store,
 					    {dst, value, memorder}, nullptr,
 					    Location ());
-
   TREE_READONLY (store_call) = 0;
   TREE_SIDE_EFFECTS (store_call) = 1;
 
   ctx->add_statement (store_call);
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static tree
+atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
+{
+  rust_assert (fntype->get_params ().size () == 1);
+  rust_assert (fntype->get_num_substitutions () == 1);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // Most intrinsic functions are pure but not the atomic ones
+  // FIXME: Is atomic_load_* pure? Feels like it shouldn't so
+  TREE_READONLY (fndecl) = 0;
+  TREE_SIDE_EFFECTS (fndecl) = 1;
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  std::vector<tree> types;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars, &types);
+
+  auto ok = ctx->get_backend ()->function_set_parameters (fndecl, param_vars);
+  rust_assert (ok);
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  auto src = ctx->get_backend ()->var_expression (param_vars[0], Location ());
+  auto memorder = make_unsigned_long_tree (ctx, ordering);
+
+  auto monomorphized_type
+    = fntype->get_substs ()[0].get_param_ty ()->resolve ();
+
+  auto builtin_name
+    = build_atomic_builtin_name ("atomic_load_", fntype->get_locus (),
+				 monomorphized_type);
+  if (builtin_name.empty ())
+    return error_mark_node;
+
+  tree atomic_load_raw = nullptr;
+  BuiltinsContext::get ().lookup_simple_builtin (builtin_name,
+						 &atomic_load_raw);
+  rust_assert (atomic_load_raw);
+
+  auto atomic_load
+    = build_fold_addr_expr_loc (Location ().gcc_location (), atomic_load_raw);
+
+  auto load_call
+    = ctx->get_backend ()->call_expression (atomic_load, {src, memorder},
+					    nullptr, Location ());
+  auto return_statement
+    = ctx->get_backend ()->return_statement (fndecl, {load_call}, Location ());
+
+  TREE_READONLY (load_call) = 0;
+  TREE_SIDE_EFFECTS (load_call) = 1;
+
+  ctx->add_statement (return_statement);
   finalize_intrinsic_block (ctx, fndecl);
 
   return fndecl;
@@ -781,11 +865,9 @@ unchecked_op_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
 
   auto *monomorphized_type
     = fntype->get_substs ().at (0).get_param_ty ()->resolve ();
-  if (!is_basic_integer_type (monomorphized_type))
-    rust_error_at (fntype->get_locus (),
-		   "unchecked operation intrinsics can only be used with "
-		   "basic integer types (got %qs)",
-		   monomorphized_type->get_name ().c_str ());
+
+  check_for_basic_integer_type ("unchecked operation", fntype->get_locus (),
+				monomorphized_type);
 
   auto expr = build2 (op, TREE_TYPE (x), x, y);
   auto return_statement
