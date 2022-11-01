@@ -29,6 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_ICONV 0
 #endif
 
+const char *
+special_fname_builtin ()
+{
+  return _("<built-in>");
+}
+
 /* Input charset configuration.  */
 static const char *default_charset_callback (const char *)
 {
@@ -275,7 +281,7 @@ expand_location_1 (location_t loc,
 
   xloc.data = block;
   if (loc <= BUILTINS_LOCATION)
-    xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");
+    xloc.file = loc == UNKNOWN_LOCATION ? NULL : special_fname_builtin ();
 
   return xloc;
 }
@@ -2194,7 +2200,7 @@ test_unknown_location ()
 static void
 test_builtins ()
 {
-  assert_loceq (_("<built-in>"), 0, 0, BUILTINS_LOCATION);
+  assert_loceq (special_fname_builtin (), 0, 0, BUILTINS_LOCATION);
   ASSERT_PRED1 (is_location_from_builtin_token, BUILTINS_LOCATION);
 }
 

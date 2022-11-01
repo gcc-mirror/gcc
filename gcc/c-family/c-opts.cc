@@ -1473,7 +1473,7 @@ c_finish_options (void)
     {
       const line_map_ordinary *bltin_map
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-					       _("<built-in>"), 0));
+					       special_fname_builtin (), 0));
       cb_file_change (parse_in, bltin_map);
       linemap_line_start (line_table, 0, 1);
 

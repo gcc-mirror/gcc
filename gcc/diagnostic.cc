@@ -470,7 +470,7 @@ diagnostic_get_location_text (diagnostic_context *context,
   const char *file = s.file ? s.file : progname;
   int line = 0;
   int col = -1;
-  if (strcmp (file, N_("<built-in>")))
+  if (strcmp (file, special_fname_builtin ()))
     {
       line = s.line;
       if (context->show_column)
