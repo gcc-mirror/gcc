@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmcons;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 

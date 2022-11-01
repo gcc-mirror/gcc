@@ -586,7 +586,7 @@ if (isInputRange!Range)
     static assert(isMutable!ValueType, "assocArray: value type must be mutable");
 
     ValueType[KeyType] aa;
-    foreach (t; r)
+    foreach (ref t; r)
         aa[t[0]] = t[1];
     return aa;
 }
@@ -4676,6 +4676,7 @@ nothrow pure @safe @nogc unittest
     assert(a == [0, 1]);
 }
 
+/// ditto
 pragma(inline, true) U[n] staticArray(U, T, size_t n)(auto ref T[n] a)
 if (!is(T == U) && is(T : U))
 {

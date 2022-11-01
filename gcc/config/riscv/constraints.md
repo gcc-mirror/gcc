@@ -21,8 +21,9 @@
 
 ;; Register constraints
 
-(define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS : NO_REGS"
-  "A floating-point register (if available).")
+(define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS :
+  (TARGET_ZFINX ? GR_REGS : NO_REGS)"
+  "A floating-point register (if available, reuse GPR as FPR when use zfinx).")
 
 (define_register_constraint "j" "SIBCALL_REGS"
   "@internal")
@@ -128,3 +129,25 @@
   "POLY_INT"
   (and (match_code "const_poly_int")
        (match_test "known_eq (rtx_to_poly_int64 (op), BYTES_PER_RISCV_VECTOR)")))
+
+(define_constraint "vu"
+  "A undefined vector value."
+  (and (match_code "unspec")
+       (match_test "XINT (op, 1) == UNSPEC_VUNDEF")))
+
+(define_constraint "vi"
+  "A vector 5-bit signed immediate."
+  (and (match_code "const_vector")
+       (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -16, 15)")))
+
+(define_constraint "Wc0"
+  "@internal
+ A constraint that matches a vector of immediate all zeros."
+ (and (match_code "const_vector")
+      (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
+(define_constraint "Wc1"
+  "@internal
+ A constraint that matches a vector of immediate all ones."
+ (and (match_code "const_vector")
+      (match_test "op == CONSTM1_RTX (GET_MODE (op))")))

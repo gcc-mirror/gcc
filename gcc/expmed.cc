@@ -2705,7 +2705,7 @@ expand_shift (enum tree_code code, machine_mode mode, rtx shifted,
 
 /* Likewise, but return 0 if that cannot be done.  */
 
-static rtx
+rtx
 maybe_expand_shift (enum tree_code code, machine_mode mode, rtx shifted,
 		    int amount, rtx target, int unsignedp)
 {
@@ -5712,7 +5712,7 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   /* Next try expanding this via the backend's cstore<mode>4.  */
   mclass = GET_MODE_CLASS (mode);
-  FOR_EACH_MODE_FROM (compare_mode, mode)
+  FOR_EACH_WIDER_MODE_FROM (compare_mode, mode)
     {
      machine_mode optab_mode = mclass == MODE_CC ? CCmode : compare_mode;
      icode = optab_handler (cstore_optab, optab_mode);

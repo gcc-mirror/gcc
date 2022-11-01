@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_TR1_MATH_H
 #define _GLIBCXX_TR1_MATH_H 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <tr1/cmath>
 
 #if _GLIBCXX_USE_C99_MATH_TR1

@@ -36,6 +36,8 @@
 #ifndef _EXTPTR_ALLOCATOR_H
 #define _EXTPTR_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <memory>
 #include <ext/numeric_traits.h>
 #include <ext/pointer.h>

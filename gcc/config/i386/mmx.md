@@ -48,7 +48,7 @@
 (define_mode_iterator MMXMODEI8 [V8QI V4HI V2SI (V1DI "TARGET_SSE2")])
 
 ;; All 8-byte vector modes handled by MMX
-(define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF V4HF])
+(define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF V4HF V4BF])
 (define_mode_iterator MMXMODE124 [V8QI V4HI V2SI V2SF])
 
 ;; Mix-n-match
@@ -58,7 +58,7 @@
 (define_mode_iterator MMXMODE248 [V4HI V2SI V1DI])
 
 ;; All 4-byte integer/float16 vector modes
-(define_mode_iterator V_32 [V4QI V2HI V1SI V2HF])
+(define_mode_iterator V_32 [V4QI V2HI V1SI V2HF V2BF])
 
 ;; 4-byte integer vector modes
 (define_mode_iterator VI_32 [V4QI V2HI])
@@ -72,7 +72,8 @@
 ;; All 2-byte, 4-byte and 8-byte vector modes with more than 1 element
 (define_mode_iterator V_16_32_64
    [V2QI V4QI V2HI V2HF
-    (V8QI "TARGET_64BIT") (V4HI "TARGET_64BIT") (V4HF "TARGET_64BIT")
+    (V8QI "TARGET_64BIT") (V4HI "TARGET_64BIT")
+    (V4HF "TARGET_64BIT") (V4BF "TARGET_64BIT")
     (V2SI "TARGET_64BIT") (V2SF "TARGET_64BIT")])
 
 ;; V2S* modes
@@ -92,6 +93,7 @@
    (V4HI "DI") (V2HI "SI")
    (V2SI "DI")
    (V4HF "DI") (V2HF "SI")
+   (V4BF "DI") (V2BF "SI")
    (V2SF "DI")])
 
 (define_mode_attr mmxdoublemode
@@ -213,9 +215,9 @@
      (cond [(eq_attr "alternative" "2")
 	      (const_string "SI")
 	    (eq_attr "alternative" "11,12")
-	      (cond [(match_test "<MODE>mode == V2SFmode")
-		       (const_string "V4SF")
-		     (match_test "<MODE>mode == V4HFmode")
+	      (cond [(match_test "<MODE>mode == V2SFmode
+				  || <MODE>mode == V4HFmode
+				  || <MODE>mode == V4BFmode")
 		       (const_string "V4SF")
 		     (ior (not (match_test "TARGET_SSE2"))
 			  (match_test "optimize_function_for_size_p (cfun)"))
@@ -227,13 +229,15 @@
 		 (ior (ior (and (match_test "<MODE>mode == V2SFmode")
 				(not (match_test "TARGET_MMX_WITH_SSE")))
 			   (not (match_test "TARGET_SSE2")))
-		      (match_test "<MODE>mode == V4HFmode")))
+		      (match_test "<MODE>mode == V4HFmode
+				  || <MODE>mode == V4BFmode")))
 	      (const_string "V2SF")
 
 	    (and (eq_attr "alternative" "14")
 		 (ior (ior (match_test "<MODE>mode == V2SFmode")
 			   (not (match_test "TARGET_SSE2")))
-		      (match_test "<MODE>mode == V4HFmode")))
+		      (match_test "<MODE>mode == V4HFmode
+				  || <MODE>mode == V4BFmode")))
 	      (const_string "V2SF")
 	   ]
 	   (const_string "DI")))
@@ -321,7 +325,8 @@
        (const_string "*")))
    (set (attr "mode")
      (cond [(eq_attr "alternative" "2,3")
-	      (cond [(match_test "<MODE>mode == V2HFmode")
+	      (cond [(match_test "<MODE>mode == V2HFmode
+				 || <MODE>mode == V2BFmode")
 		       (const_string "V4SF")
 		     (match_test "TARGET_AVX")
 		       (const_string "TI")
@@ -332,7 +337,8 @@
 		    (const_string "TI"))
 
 	    (and (eq_attr "alternative" "4,5")
-		 (ior (match_test "<MODE>mode == V2HFmode")
+		 (ior (match_test "<MODE>mode == V2HFmode
+				 || <MODE>mode == V2BFmode")
 		      (not (match_test "TARGET_SSE2"))))
 	      (const_string "SF")
 	   ]

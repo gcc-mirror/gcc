@@ -9759,8 +9759,11 @@ rs6000_init_stack_protect_guard (void)
 static bool
 rs6000_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
-  if (GET_CODE (x) == HIGH
-      && GET_CODE (XEXP (x, 0)) == UNSPEC)
+  /* If GET_CODE (x) is HIGH, the 'X' represets the high part of a symbol_ref.
+     It can not be put into a constant pool.  e.g.
+     (high:DI (unspec:DI [(symbol_ref/u:DI ("*.LC0")..)
+     (high:DI (symbol_ref:DI ("var")..)).  */
+  if (GET_CODE (x) == HIGH)
     return true;
 
   /* A TLS symbol in the TOC cannot contain a sum.  */
@@ -14930,8 +14933,14 @@ rs6000_print_patchable_function_entry (FILE *file,
   if (!(TARGET_64BIT && DEFAULT_ABI != ABI_ELFv2)
       && HAVE_GAS_SECTION_LINK_ORDER)
     flags |= SECTION_LINK_ORDER;
-  default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
-					    flags);
+  bool global_entry_needed_p = rs6000_global_entry_point_prologue_needed_p ();
+  /* For a function which needs global entry point, we will emit the
+     patchable area before and after local entry point under the control of
+     cfun->machine->global_entry_emitted, see the handling in function
+     rs6000_output_function_prologue.  */
+  if (!global_entry_needed_p || cfun->machine->global_entry_emitted)
+    default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
+					      flags);
 }
 
 enum rtx_code
@@ -16335,8 +16344,8 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   signedp = GET_MODE (cr) == CCmode;
 
   isel_func = (mode == SImode
-	       ? (signedp ? gen_isel_signed_si : gen_isel_unsigned_si)
-	       : (signedp ? gen_isel_signed_di : gen_isel_unsigned_di));
+	       ? (signedp ? gen_isel_cc_si : gen_isel_ccuns_si)
+	       : (signedp ? gen_isel_cc_di : gen_isel_ccuns_di));
 
   switch (cond_code)
     {
@@ -20270,13 +20279,12 @@ rs6000_mangle_type (const_tree type)
   if (type == bool_int_type_node) return "U6__booli";
   if (type == bool_long_long_type_node) return "U6__boolx";
 
+  if (type == float128_type_node || type == float64x_type_node)
+    return NULL;
+
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";
-  if (SCALAR_FLOAT_TYPE_P (type)
-      && FLOAT128_IEEE_P (TYPE_MODE (type))
-      /* _Float128 should mangle as DF128_ (done in generic code)
-	 rather than u9__ieee128 (used for __ieee128 and __float128).  */
-      && type != float128_type_node)
+  if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
     return "u9__ieee128";
 
   if (type == vector_pair_type_node)

@@ -17,6 +17,7 @@
 
 // { dg-options "-O1" }
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
 
 // PR middle-end/89303
 

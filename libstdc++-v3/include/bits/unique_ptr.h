@@ -541,14 +541,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __uniq_ptr_data<_Tp, _Dp> _M_t;
 
-      template<typename _Up>
-	using __remove_cv = typename remove_cv<_Up>::type;
-
       // like is_base_of<_Tp, _Up> but false if unqualified types are the same
       template<typename _Up>
 	using __is_derived_Tp
 	  = __and_< is_base_of<_Tp, _Up>,
-		    __not_<is_same<__remove_cv<_Tp>, __remove_cv<_Up>>> >;
+		    __not_<is_same<__remove_cv_t<_Tp>, __remove_cv_t<_Up>>> >;
 
     public:
       using pointer	  = typename __uniq_ptr_impl<_Tp, _Dp>::pointer;

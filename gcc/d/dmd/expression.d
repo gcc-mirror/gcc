@@ -2949,7 +2949,7 @@ extern (C++) final class ArrayLiteralExp : Expression
 
     Expressions* elements;
     OwnedBy ownedByCtfe = OwnedBy.code;
-
+    bool onstack = false;
 
     extern (D) this(const ref Loc loc, Type type, Expressions* elements)
     {

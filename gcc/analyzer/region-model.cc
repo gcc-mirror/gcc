@@ -39,18 +39,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
 #include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
 #include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
@@ -66,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
 #include "analyzer/program-state.h"
+#include "analyzer/call-summary.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "tree-object-size.h"
@@ -1255,6 +1252,12 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  {
 	    /* This is handled elsewhere.  */
 	  }
+	else if (is_special_named_call_p (call, "__analyzer_get_unknown_ptr",
+					  0))
+	  {
+	    call_details cd (call, this, ctxt);
+	    impl_call_analyzer_get_unknown_ptr (cd);
+	  }
 	else
 	  *out_unknown_side_effects = on_call_pre (call, ctxt,
 						   out_terminate_path);
@@ -1973,6 +1976,25 @@ maybe_get_const_fn_result (const call_details &cd)
   return sval;
 }
 
+/* Update this model for an outcome of a call that returns a specific
+   integer constant.
+   If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
+   the state-merger code from merging success and failure outcomes.  */
+
+void
+region_model::update_for_int_cst_return (const call_details &cd,
+					 int retval,
+					 bool unmergeable)
+{
+  if (!cd.get_lhs_type ())
+    return;
+  const svalue *result
+    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), retval);
+  if (unmergeable)
+    result = m_mgr->get_or_create_unmergeable (result);
+  set_value (cd.get_lhs_region (), result, cd.get_ctxt ());
+}
+
 /* Update this model for an outcome of a call that returns zero.
    If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
    the state-merger code from merging success and failure outcomes.  */
@@ -1981,13 +2003,7 @@ void
 region_model::update_for_zero_return (const call_details &cd,
 				      bool unmergeable)
 {
-  if (!cd.get_lhs_type ())
-    return;
-  const svalue *result
-    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
-  if (unmergeable)
-    result = m_mgr->get_or_create_unmergeable (result);
-  set_value (cd.get_lhs_region (), result, cd.get_ctxt ());
+  update_for_int_cst_return (cd, 0, unmergeable);
 }
 
 /* Update this model for an outcome of a call that returns non-zero.  */
@@ -2299,6 +2315,14 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
+      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+	{
+	  /* Handle in "on_call_post"; bail now so that fd array
+	     is left untouched so that we can detect use-of-uninit
+	     for the case where the call fails.  */
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "putenv", call, 1)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
@@ -2377,6 +2401,12 @@ region_model::on_call_post (const gcall *call,
 	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
 	{
 	  impl_call_operator_delete (cd);
+	  return;
+	}
+      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+	{
+	  impl_call_pipe (cd);
 	  return;
 	}
       /* Was this fndecl referenced by
@@ -4182,10 +4212,19 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	/* Otherwise, only known through constraints.  */
       }
 
-  /* If we have a pair of constants, compare them.  */
   if (const constant_svalue *cst_lhs = lhs->dyn_cast_constant_svalue ())
-    if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
-      return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
+    {
+      /* If we have a pair of constants, compare them.  */
+      if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
+	return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
+      else
+	{
+	  /* When we have one constant, put it on the RHS.  */
+	  std::swap (lhs, rhs);
+	  op = swap_tree_comparison (op);
+	}
+    }
+  gcc_assert (lhs->get_kind () != SK_CONSTANT);
 
   /* Handle comparison against zero.  */
   if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
@@ -5038,11 +5077,8 @@ region_model::maybe_update_for_edge (const superedge &edge,
       break;
 
     case SUPEREDGE_INTRAPROCEDURAL_CALL:
-      {
-	const callgraph_superedge *cg_sedge
-	  = as_a <const callgraph_superedge *> (&edge);
-	update_for_call_summary (*cg_sedge, ctxt);
-      }
+      /* This is a no-op for call summaries; we should already
+	 have handled the effect of the call summary at the call stmt.  */
       break;
     }
 
@@ -5140,25 +5176,34 @@ region_model::update_for_return_superedge (const return_superedge &return_edge,
   update_for_return_gcall (call_stmt, ctxt);
 }
 
-/* Update this region_model with a summary of the effect of calling
-   and returning from CG_SEDGE.
+/* Attempt to to use R to replay SUMMARY into this object.
+   Return true if it is possible.  */
 
-   TODO: Currently this is extremely simplistic: we merely set the
-   return value to "unknown".  A proper implementation would e.g. update
-   sm-state, and presumably be reworked to support multiple outcomes.  */
-
-void
-region_model::update_for_call_summary (const callgraph_superedge &cg_sedge,
-				       region_model_context *ctxt)
+bool
+region_model::replay_call_summary (call_summary_replay &r,
+				   const region_model &summary)
 {
-  /* For now, set any return value to "unknown".  */
-  const gcall *call_stmt = cg_sedge.get_call_stmt ();
-  tree lhs = gimple_call_lhs (call_stmt);
-  if (lhs)
-    mark_region_as_unknown (get_lvalue (lhs, ctxt),
-			    ctxt ? ctxt->get_uncertainty () : NULL);
+  gcc_assert (summary.get_stack_depth () == 1);
 
-  // TODO: actually implement some kind of summary here
+  m_store.replay_call_summary (r, summary.m_store);
+
+  if (!m_constraints->replay_call_summary (r, *summary.m_constraints))
+    return false;
+
+  for (auto kv : summary.m_dynamic_extents)
+    {
+      const region *summary_reg = kv.first;
+      const region *caller_reg = r.convert_region_from_summary (summary_reg);
+      if (!caller_reg)
+	continue;
+      const svalue *summary_sval = kv.second;
+      const svalue *caller_sval = r.convert_svalue_from_summary (summary_sval);
+      if (!caller_sval)
+	continue;
+      m_dynamic_extents.put (caller_reg, caller_sval);
+    }
+
+  return true;
 }
 
 /* Given a true or false edge guarded by conditional statement COND_STMT,
@@ -7123,6 +7168,57 @@ test_sub_svalue_folding ()
   ASSERT_EQ (sub->get_type (), TREE_TYPE (ct.m_x_field));
 }
 
+/* Get BIT within VAL as a symbolic value within MGR.  */
+
+static const svalue *
+get_bit (region_model_manager *mgr,
+	 bit_offset_t bit,
+	 unsigned HOST_WIDE_INT val)
+{
+  const svalue *inner_svalue
+    = mgr->get_or_create_int_cst (unsigned_type_node, val);
+  return mgr->get_or_create_bits_within (boolean_type_node,
+					 bit_range (bit, 1),
+					 inner_svalue);
+}
+
+/* Verify that bits_within_svalues are folded as expected.  */
+
+static void
+test_bits_within_svalue_folding ()
+{
+  region_model_manager mgr;
+
+  const svalue *zero = mgr.get_or_create_int_cst (boolean_type_node, 0);
+  const svalue *one = mgr.get_or_create_int_cst (boolean_type_node, 1);
+
+  {
+    const unsigned val = 0x0000;
+    for (unsigned bit = 0; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+  }
+
+  {
+    const unsigned val = 0x0001;
+    ASSERT_EQ (get_bit (&mgr, 0, val), one);
+    for (unsigned bit = 1; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+  }
+
+  {
+    const unsigned val = 0x8000;
+    for (unsigned bit = 0; bit < 15; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+    ASSERT_EQ (get_bit (&mgr, 15, val), one);
+  }
+
+  {
+    const unsigned val = 0xFFFF;
+    for (unsigned bit = 0; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), one);
+  }
+}
+
 /* Test that region::descendent_of_p works as expected.  */
 
 static void
@@ -7956,7 +8052,7 @@ static void
 test_widening_constraints ()
 {
   region_model_manager mgr;
-  program_point point (program_point::origin (mgr));
+  function_point point (program_point::origin (mgr).get_function_point ());
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_m1 = build_int_cst (integer_type_node, -1);
   tree int_1 = build_int_cst (integer_type_node, 1);
@@ -8479,6 +8575,7 @@ analyzer_region_model_cc_tests ()
   test_unaryop_svalue_folding ();
   test_binop_svalue_folding ();
   test_sub_svalue_folding ();
+  test_bits_within_svalue_folding ();
   test_descendent_of_p ();
   test_bit_range_regions ();
   test_assignment ();

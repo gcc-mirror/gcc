@@ -9,7 +9,6 @@
  */
 module core.sys.windows.sspi;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 

@@ -182,6 +182,10 @@ extern tree rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
 			         tree *args ATTRIBUTE_UNUSED,
 			         bool ignore ATTRIBUTE_UNUSED);
 
+extern void rs6000_print_patchable_function_entry (FILE *,
+						   unsigned HOST_WIDE_INT,
+						   bool);
+
 extern bool rs6000_passes_float;
 extern bool rs6000_passes_long_double;
 extern bool rs6000_passes_vector;

@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 package Weak1 is
 
    Myconst : constant Integer := 1234;

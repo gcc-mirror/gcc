@@ -4296,13 +4296,12 @@ begin_scope (scope_kind kind, tree entity)
     case sk_scoped_enum:
     case sk_transaction:
     case sk_omp:
+    case sk_stmt_expr:
       scope->keep = keep_next_level_flag;
       break;
 
     case sk_function_parms:
       scope->keep = keep_next_level_flag;
-      if (entity)
-	scope->immediate_fn_ctx_p = DECL_IMMEDIATE_FUNCTION_P (entity);
       break;
 
     case sk_namespace:
@@ -6381,7 +6380,7 @@ class namespace_limit_reached : public deferred_diagnostic
 			   std::unique_ptr<deferred_diagnostic> wrapped)
   : deferred_diagnostic (loc),
     m_limit (limit), m_name (name),
-    m_wrapped (move (wrapped))
+    m_wrapped (std::move (wrapped))
   {
   }
 
@@ -8596,6 +8595,13 @@ push_namespace (tree name, bool make_inline)
 	      slot = find_namespace_slot (current_namespace, name);
 	      /* This should find the slot created by pushdecl.  */
 	      gcc_checking_assert (slot && *slot == ns);
+	    }
+	  else
+	    {
+	      /* pushdecl could have expanded the hash table, so
+		 slot might be invalid.  */
+	      slot = find_namespace_slot (current_namespace, name);
+	      gcc_checking_assert (slot);
 	    }
 	  make_namespace_finish (ns, slot);
 

@@ -1082,7 +1082,8 @@ make_location (location_t caret, location_t start, location_t finish)
   location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
 						   pure_loc,
 						   src_range,
-						   NULL);
+						   NULL,
+						   0);
   return combined_loc;
 }
 
@@ -1092,7 +1093,7 @@ location_t
 make_location (location_t caret, source_range src_range)
 {
   location_t pure_loc = get_pure_location (caret);
-  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL);
+  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL, 0);
 }
 
 /* An expanded_location stores the column in byte units.  This function
@@ -1764,6 +1765,37 @@ get_location_within_string (cpp_reader *pfile,
 			    ranges.get_range (start_idx).m_start,
 			    ranges.get_range (end_idx).m_finish);
   return NULL;
+}
+
+/* Associate the DISCRIMINATOR with LOCUS, and return a new locus. */
+
+location_t
+location_with_discriminator (location_t locus, int discriminator)
+{
+  tree block = LOCATION_BLOCK (locus);
+  source_range src_range = get_range_from_loc (line_table, locus);
+  locus = get_pure_location (locus);
+
+  if (locus == UNKNOWN_LOCATION)
+    return locus;
+
+  return COMBINE_LOCATION_DATA (line_table, locus, src_range, block, discriminator);
+}
+
+/* Return TRUE if LOCUS represents a location with a discriminator.  */
+
+bool
+has_discriminator (location_t locus)
+{
+  return get_discriminator_from_loc (locus) != 0;
+}
+
+/* Return the discriminator for LOCUS.  */
+
+int
+get_discriminator_from_loc (location_t locus)
+{
+  return get_discriminator_from_loc (line_table, locus);
 }
 
 #if CHECKING_P

@@ -1,6 +1,7 @@
 // PR c++/91212
 // Test that C++11 implicit move semantics don't call the const copy.
-// { dg-do link }
+// In C++23, we call #2.
+// { dg-do link { target c++20_down } }
 
 struct T { int i; };
 

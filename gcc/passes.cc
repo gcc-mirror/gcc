@@ -1559,7 +1559,7 @@ pass_manager::register_pass (struct register_pass_info *pass_info)
    compile ()
        ipa_passes () 			-> all_small_ipa_passes
 					-> Analysis of all_regular_ipa_passes
-	* possible LTO streaming at copmilation time *
+	* possible LTO streaming at compilation time *
 					-> Execution of all_regular_ipa_passes
 	* possible LTO streaming at link time *
 					-> all_late_ipa_passes
@@ -2659,6 +2659,15 @@ execute_one_pass (opt_pass *pass)
 
       if (dom_info_available_p (CDI_POST_DOMINATORS))
        free_dominance_info (CDI_POST_DOMINATORS);
+
+      if (cfun->assume_function)
+	{
+	  /* For assume functions, don't release body, keep it around.  */
+	  cfun->curr_properties |= PROP_assumptions_done;
+	  pop_cfun ();
+	  current_pass = NULL;
+	  return true;
+	}
 
       tree fn = cfun->decl;
       pop_cfun ();

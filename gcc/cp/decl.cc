@@ -223,6 +223,7 @@ struct GTY((for_user)) named_label_entry {
   bool in_transaction_scope;
   bool in_constexpr_if;
   bool in_consteval_if;
+  bool in_stmt_expr;
 };
 
 #define named_labels cp_function_chain->x_named_labels
@@ -537,6 +538,9 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 	  break;
 	case sk_transaction:
 	  ent->in_transaction_scope = true;
+	  break;
+	case sk_stmt_expr:
+	  ent->in_stmt_expr = true;
 	  break;
 	case sk_block:
 	  if (level_for_constexpr_if (bl->level_chain))
@@ -2315,7 +2319,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		= DECL_DECLARED_INLINE_P (new_result);
 	      DECL_DISREGARD_INLINE_LIMITS (old_result)
 	        |= DECL_DISREGARD_INLINE_LIMITS (new_result);
-
 	    }
 	  else
 	    {
@@ -2340,12 +2343,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  DECL_INITIAL (old_result) = DECL_INITIAL (new_result);
 	  if (DECL_FUNCTION_TEMPLATE_P (newdecl))
 	    {
-	      tree parm;
-	      DECL_ARGUMENTS (old_result)
-		= DECL_ARGUMENTS (new_result);
-	      for (parm = DECL_ARGUMENTS (old_result); parm;
-		   parm = DECL_CHAIN (parm))
-		DECL_CONTEXT (parm) = old_result;
+	      DECL_ARGUMENTS (old_result) = DECL_ARGUMENTS (new_result);
+	      for (tree p = DECL_ARGUMENTS (old_result); p; p = DECL_CHAIN (p))
+		DECL_CONTEXT (p) = old_result;
 
 	      if (tree fc = DECL_FRIEND_CONTEXT (new_result))
 		SET_DECL_FRIEND_CONTEXT (old_result, fc);
@@ -3487,7 +3487,7 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
   bool complained = false;
   int identified = 0;
   bool saw_eh = false, saw_omp = false, saw_tm = false, saw_cxif = false;
-  bool saw_ceif = false;
+  bool saw_ceif = false, saw_se = false;
 
   if (exited_omp)
     {
@@ -3558,6 +3558,12 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	  if (!saw_tm)
 	    inf = G_("  enters synchronized or atomic statement");
 	  saw_tm = true;
+	  break;
+
+	case sk_stmt_expr:
+	  if (!saw_se)
+	    inf = G_("  enters statement expression");
+	  saw_se = true;
 	  break;
 
 	case sk_block:
@@ -3650,12 +3656,13 @@ check_goto (tree decl)
 
   if (ent->in_try_scope || ent->in_catch_scope || ent->in_transaction_scope
       || ent->in_constexpr_if || ent->in_consteval_if
-      || ent->in_omp_scope || !vec_safe_is_empty (ent->bad_decls))
+      || ent->in_omp_scope || ent->in_stmt_expr
+      || !vec_safe_is_empty (ent->bad_decls))
     {
       diagnostic_t diag_kind = DK_PERMERROR;
       if (ent->in_try_scope || ent->in_catch_scope || ent->in_constexpr_if
 	  || ent->in_consteval_if || ent->in_transaction_scope
-	  || ent->in_omp_scope)
+	  || ent->in_omp_scope || ent->in_stmt_expr)
 	diag_kind = DK_ERROR;
       complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
 				  &input_location, diag_kind);
@@ -3703,6 +3710,8 @@ check_goto (tree decl)
 	inform (input_location, "  enters %<constexpr if%> statement");
       else if (ent->in_consteval_if)
 	inform (input_location, "  enters %<consteval if%> statement");
+      else if (ent->in_stmt_expr)
+	inform (input_location, "  enters statement expression");
     }
 
   if (ent->in_omp_scope)
@@ -7487,7 +7496,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
     }
 
   if (init && init != error_mark_node)
-    init_code = build2 (INIT_EXPR, type, decl, init);
+    init_code = cp_build_init_expr (decl, init);
 
   if (init_code && !TREE_SIDE_EFFECTS (init_code)
       && init_code != error_mark_node)
@@ -10206,7 +10215,6 @@ grokfndecl (tree ctype,
 			orig_declarator);
 	      return NULL_TREE;
 	    }
-
 
 	  /* A friend declaration of the form friend void f<>().  Record
 	     the information in the TEMPLATE_ID_EXPR.  */
@@ -14195,12 +14203,15 @@ grokdeclarator (const cp_declarator *declarator,
 	    else if (decl && DECL_NAME (decl))
 	      {
 		set_originating_module (decl, true);
-		
+
 		if (initialized)
 		  /* Kludge: We need funcdef_flag to be true in do_friend for
 		     in-class defaulted functions, but that breaks grokfndecl.
 		     So set it here.  */
 		  funcdef_flag = true;
+
+		cplus_decl_attributes (&decl, *attrlist, 0);
+		*attrlist = NULL_TREE;
 
 		decl = do_friend (ctype, unqualified_id, decl,
 				  flags, funcdef_flag);
@@ -17841,7 +17852,8 @@ finish_function (bool inline_p)
   if (!DECL_CLONED_FUNCTION_P (fndecl))
     {
       /* Make it so that `main' always returns 0 by default.  */
-      if (DECL_MAIN_P (current_function_decl))
+      if (DECL_MAIN_FREESTANDING_P (current_function_decl)
+	  && !TREE_THIS_VOLATILE (current_function_decl))
 	finish_return_stmt (integer_zero_node);
 
       if (use_eh_spec_block (current_function_decl))
@@ -17854,14 +17866,6 @@ finish_function (bool inline_p)
   DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
 
   finish_fname_decls ();
-
-  /* If this function can't throw any exceptions, remember that.  */
-  if (!processing_template_decl
-      && !cp_function_chain->can_throw
-      && !flag_non_call_exceptions
-      && !decl_replaceable_p (fndecl,
-			      opt_for_fn (fndecl, flag_semantic_interposition)))
-    TREE_NOTHROW (fndecl) = 1;
 
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
@@ -18086,6 +18090,14 @@ finish_function (bool inline_p)
       && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
       && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
+
+  /* If this function can't throw any exceptions, remember that.  */
+  if (!processing_template_decl
+      && !cp_function_chain->can_throw
+      && !flag_non_call_exceptions
+      && !decl_replaceable_p (fndecl,
+			      opt_for_fn (fndecl, flag_semantic_interposition)))
+    TREE_NOTHROW (fndecl) = 1;
 
   /* Emit the resumer and destroyer functions now, providing that we have
      not encountered some fatal error.  */

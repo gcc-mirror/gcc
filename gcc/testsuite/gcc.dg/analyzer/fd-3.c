@@ -50,9 +50,9 @@ test_5 (char *path, void *buf)
     int flags = O_RDONLY;
     if (some_condition())
         flags |= O_NOATIME;
-    int fd = open (path, flags);
+    int fd = open (path, flags); /* { dg-message "\\(1\\) opened here" } */
     read (fd, buf, 1); /* { dg-warning "'read' on possibly invalid file descriptor 'fd'" } */
-    /* { dg-message "\\(1\\) 'fd' could be invalid" "" { target *-*-* } .-1 } */
+    /* { dg-message "\\(2\\) 'fd' could be invalid" "" { target *-*-* } .-1 } */
     close (fd);   
 }
 
@@ -82,4 +82,16 @@ test_7 (char *path, void *buf)
         
     }
     close(fd);
+}
+
+void
+test_read_from_symbolic_fd (int fd, void *buf)
+{
+  read (fd, buf, 1);
+}
+
+void
+test_write_to_symbolic_fd (int fd, void *buf)
+{
+  write (fd, buf, 1);
 }

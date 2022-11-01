@@ -2326,6 +2326,7 @@ namespace ranges
 
   inline constexpr __partition_fn partition{};
 
+#if _GLIBCXX_HOSTED
   struct __stable_partition_fn
   {
     template<bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -2356,6 +2357,7 @@ namespace ranges
   };
 
   inline constexpr __stable_partition_fn stable_partition{};
+#endif
 
   template<typename _Iter, typename _Out1, typename _Out2>
     struct in_out_out_result

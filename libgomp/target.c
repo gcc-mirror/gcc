@@ -2813,6 +2813,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 	{
 	  struct gomp_team *team = gomp_new_team (1);
 	  struct gomp_task *task = thr->task;
+	  struct gomp_task **implicit_task = &task;
 	  struct gomp_task_icv *icv = task ? &task->icv : &gomp_global_icv;
 	  team->prev_ts = thr->ts;
 	  thr->ts.team = team;
@@ -2825,15 +2826,23 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 	  thr->ts.static_trip = 0;
 	  thr->task = &team->implicit_task[0];
 	  gomp_init_task (thr->task, NULL, icv);
-	  if (task)
+	  while (*implicit_task
+		 && (*implicit_task)->kind != GOMP_TASK_IMPLICIT)
+	    implicit_task = &(*implicit_task)->parent;
+	  if (*implicit_task)
 	    {
-	      thr->task = task;
+	      thr->task = *implicit_task;
 	      gomp_end_task ();
-	      free (task);
+	      free (*implicit_task);
 	      thr->task = &team->implicit_task[0];
 	    }
 	  else
 	    pthread_setspecific (gomp_thread_destructor, thr);
+	  if (implicit_task != &task)
+	    {
+	      *implicit_task = thr->task;
+	      thr->task = task;
+	    }
 	}
       if (thr->ts.team
 	  && !thr->task->final_task)
@@ -2923,6 +2932,25 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
     }
   if (refcount_set)
     htab_free (refcount_set);
+}
+
+/* Handle reverse offload.  This is called by the device plugins for a
+   reverse offload; it is not called if the outer target runs on the host.  */
+
+void
+gomp_target_rev (uint64_t fn_ptr __attribute__ ((unused)),
+		 uint64_t mapnum __attribute__ ((unused)),
+		 uint64_t devaddrs_ptr __attribute__ ((unused)),
+		 uint64_t sizes_ptr __attribute__ ((unused)),
+		 uint64_t kinds_ptr __attribute__ ((unused)),
+		 int dev_num __attribute__ ((unused)),
+		 void (*dev_to_host_cpy) (void *, const void *, size_t,
+					  void *) __attribute__ ((unused)),
+		 void (*host_to_dev_cpy) (void *, const void *, size_t,
+					  void *) __attribute__ ((unused)),
+		 void *token __attribute__ ((unused)))
+{
+  __builtin_unreachable ();
 }
 
 /* Host fallback for GOMP_target_data{,_ext} routines.  */

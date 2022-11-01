@@ -35,6 +35,8 @@
 #ifndef _EXT_CODECVT_SPECIALIZATIONS_H
 #define _EXT_CODECVT_SPECIALIZATIONS_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <bits/c++config.h>
 #include <locale>
 #include <iconv.h>

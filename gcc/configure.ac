@@ -25,6 +25,7 @@
 
 AC_INIT
 AC_CONFIG_SRCDIR(tree.cc)
+AC_CONFIG_MACRO_DIRS([../config] [..])
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
 gcc_version=`cat $srcdir/BASE-VER`
@@ -886,6 +887,9 @@ if test x${enable_multiarch} = xauto; then
     enable_multiarch=no
   fi
 fi
+if test x${enable_multiarch} = xyes; then
+  AC_DEFINE(ENABLE_MULTIARCH, 1)
+fi
 AC_MSG_CHECKING(for multiarch configuration)
 AC_SUBST(enable_multiarch)
 AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)
@@ -1307,7 +1311,7 @@ ACX_HEADER_STRING
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIOCGWINSZ
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h iconv.h \
-		 fcntl.h ftw.h unistd.h sys/file.h sys/time.h sys/mman.h \
+		 fcntl.h ftw.h unistd.h sys/auxv.h sys/file.h sys/time.h sys/mman.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h sys/locking.h \
 		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h)
 
@@ -1525,7 +1529,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
-	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2 fstatat)
+	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2 fstatat getauxval)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1801,6 +1805,7 @@ AC_SUBST(objext)
 AC_ARG_ENABLE(sjlj-exceptions,
 [AS_HELP_STRING([--enable-sjlj-exceptions],
                 [arrange to use setjmp/longjmp exception handling])],
+[force_sjlj_exceptions=yes],
 [case $target in
   lm32*-*-*)
      force_sjlj_exceptions=yes
@@ -1991,7 +1996,7 @@ case ${enable_threads} in
     target_thread_file='single'
     ;;
   aix | dce | lynx | mipssde | posix | rtems | \
-  single | tpf | vxworks | win32)
+  single | tpf | vxworks | win32 | mcf)
     target_thread_file=${enable_threads}
     ;;
   *)
@@ -5743,13 +5748,16 @@ gcc_GAS_CHECK_FEATURE([compressed debug sections],
    if $gcc_cv_as --compress-debug-sections -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null
    then
      gcc_cv_as_compress_debug=0
-   # Since binutils 2.26, gas supports --compress-debug-sections=zlib,
-   # defaulting to the ELF gABI format.
    elif $gcc_cv_as --compress-debug-sections=zlib -o conftest.o conftest.s > /dev/null 2>&1
    then
      gcc_cv_as_compress_debug=1
      gcc_cv_as_compress_debug_option="--compress-debug-sections"
      gcc_cv_as_no_compress_debug_option="--nocompress-debug-sections"
+     # Since binutils 2.40, gas supports --compress-debug-sections=zstd.
+     if $gcc_cv_as --compress-debug-sections=zstd -o conftest.o conftest.s > /dev/null 2>&1
+     then
+       gcc_cv_as_compress_debug=2
+     fi
    else
      gcc_cv_as_compress_debug=0
    fi])
@@ -6138,6 +6146,10 @@ AC_MSG_CHECKING(linker for compressed debug sections)
 if $gcc_cv_ld --help 2>&1 | grep -- '--compress-debug-sections.*\<zlib-gabi\>' > /dev/null; then
     gcc_cv_ld_compress_debug=1
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+    # Detect zstd debug section compression support
+    if $gcc_cv_ld --help 2>&1 | grep -- '--compress-debug-sections.*\<zstd\>' > /dev/null; then
+      gcc_cv_ld_compress_debug=2
+    fi
 else
 changequote(,)dnl
   case "${target}" in

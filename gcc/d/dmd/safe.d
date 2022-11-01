@@ -26,7 +26,7 @@ import dmd.identifier;
 import dmd.mtype;
 import dmd.target;
 import dmd.tokens;
-import dmd.func : setUnsafe;
+import dmd.func : setUnsafe, setUnsafePreview;
 
 /*************************************************************
  * Check for unsafe access in @safe code:
@@ -56,6 +56,14 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
         auto ad = v.isMember2();
         if (!ad)
             return false;
+
+        import dmd.globals : global;
+        if (v.isSystem())
+        {
+            if (sc.setUnsafePreview(global.params.systemVariables, !printmsg, e.loc,
+                "cannot access `@system` field `%s.%s` in `@safe` code", ad, v))
+                return true;
+        }
 
         // needed to set v.overlapped and v.overlapUnsafe
         if (ad.sizeok != Sizeok.done)

@@ -544,6 +544,10 @@ __analyzer_eval (expr);
 will emit a warning with text "TRUE", FALSE" or "UNKNOWN" based on the
 truthfulness of the argument.  This is useful for writing DejaGnu tests.
 
+@smallexample
+__analyzer_get_unknown_ptr ();
+@end smallexample
+will obtain an unknown @code{void *}.
 
 @subsection Other Debugging Techniques
 

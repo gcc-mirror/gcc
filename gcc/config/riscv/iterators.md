@@ -59,9 +59,9 @@
 (define_mode_iterator ANYI [QI HI SI (DI "TARGET_64BIT")])
 
 ;; Iterator for hardware-supported floating-point modes.
-(define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
-			    (DF "TARGET_DOUBLE_FLOAT")
-			    (HF "TARGET_ZFH")])
+(define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT || TARGET_ZFINX")
+			    (DF "TARGET_DOUBLE_FLOAT || TARGET_ZDINX")
+			    (HF "TARGET_ZFH || TARGET_ZHINX")])
 
 ;; Iterator for floating-point modes that can be loaded into X registers.
 (define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])

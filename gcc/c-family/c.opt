@@ -555,6 +555,10 @@ Wdangling-pointer=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_dangling_pointer) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) IntegerRange(0, 2)
 Warn for uses of pointers to auto variables whose lifetime has ended.
 
+Wdangling-reference
+C++ ObjC++ Var(warn_dangling_reference) Warning LangEnabledBy(C++ ObjC++, Wall)
+Warn when a reference is bound to a temporary whose lifetime has ended.
+
 Wdate-time
 C ObjC C++ ObjC++ CPP(warn_date_time) CppReason(CPP_W_DATE_TIME) Var(cpp_warn_date_time) Init(0) Warning
 Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage.
@@ -1508,8 +1512,8 @@ fall-virtual
 C++ ObjC++ WarnRemoved
 
 fallow-parameterless-variadic-functions
-C ObjC Var(flag_allow_parameterless_variadic_functions)
-Allow variadic functions without named parameter.
+C ObjC Ignore
+Does nothing. Preserved for backward compatibility.
 
 falt-external-templates
 C++ ObjC++ WarnRemoved
@@ -2075,6 +2079,13 @@ Make \"char\" signed by default.
 fsized-deallocation
 C++ ObjC++ Var(flag_sized_deallocation) Init(-1)
 Enable C++14 sized deallocation support.
+
+fstrict-flex-arrays
+C C++ Common Alias(fstrict-flex-arrays=,3,0)
+
+fstrict-flex-arrays=
+C C++ Common Joined RejectNegative UInteger Var(flag_strict_flex_arrays) Init(0) IntegerRange(0,3)
+-fstrict-flex-arrays=<level>    Control when to treat the trailing array of a structure as a flexible array member for the purposes of accessing the elements of such an array. The default is treating all trailing arrays of structures as flexible array members.
 
 fsquangle
 C++ ObjC++ WarnRemoved

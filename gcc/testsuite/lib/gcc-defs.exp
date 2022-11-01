@@ -332,7 +332,7 @@ proc gcc_adjust_linker_flags_list { args } {
 	    continue
 	} elseif { $skip != "" } then {
 	    set skip ""
-	} elseif { $opt == "-Xlinker" } then {
+	} elseif { $opt == "-Xlinker" || $opt == "-T" } then {
 	    set skip $opt
 	} elseif { ![string match "-*" $opt] \
 		       && [file isfile $opt] } {

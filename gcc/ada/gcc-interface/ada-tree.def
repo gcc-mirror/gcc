@@ -35,6 +35,10 @@ DEFTREECODE (UNCONSTRAINED_ARRAY_TYPE, "unconstrained_array_type", tcc_type, 0)
 DEFTREECODE (UNCONSTRAINED_ARRAY_REF, "unconstrained_array_ref",
 	     tcc_reference, 1)
 
+/* Same as SAVE_EXPR, but operand 1 contains the statement used to initialize
+   the temporary instead of using the value of operand 0 directly.  */
+DEFTREECODE (LOAD_EXPR, "load_expr", tcc_expression, 2)
+
 /* An expression that returns an RTL suitable for its type.  Operand 0
    is an expression to be evaluated for side effects only.  */
 DEFTREECODE (NULL_EXPR, "null_expr", tcc_expression, 1)

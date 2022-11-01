@@ -23,5 +23,6 @@ contains
 
 end program main
 
-! { dg-final { scan-tree-dump "is_device_ptr\\(a\\)"  "gimple" } }
+! { dg-final { scan-tree-dump "has_device_addr\\(a\\)"  "gimple" } }
+! { dg-final { scan-tree-dump-not "has_device_addr\\(b\\)"  "gimple" } }
 ! { dg-final { scan-tree-dump-not "is_device_ptr\\(b\\)"  "gimple" } }

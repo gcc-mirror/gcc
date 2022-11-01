@@ -92,7 +92,7 @@ nds32_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
 #define NDS32_PUT_FS_REG(NUM, NAME) \
-  (fs->regs.reg[NUM].how = REG_SAVED_OFFSET, \
+  (fs->regs.how[NUM] = REG_SAVED_OFFSET, \
    fs->regs.reg[NUM].loc.offset = (_Unwind_Ptr) &(sc_->NAME) - new_cfa)
 
   /* Restore all registers value.  */

@@ -4596,8 +4596,9 @@ ia64_setup_incoming_varargs (cumulative_args_t cum,
 {
   CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum);
 
-  /* Skip the current argument.  */
-  ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    /* Skip the current argument.  */
+    ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {
@@ -11223,6 +11224,9 @@ ia64_mangle_type (const_tree type)
 
   if (TREE_CODE (type) != VOID_TYPE && TREE_CODE (type) != BOOLEAN_TYPE
       && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
+    return NULL;
+
+  if (type == float128_type_node || type == float64x_type_node)
     return NULL;
 
   /* On HP-UX, "long double" is mangled as "e" so __float128 is

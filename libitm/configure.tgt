@@ -80,6 +80,10 @@ EOF
 	ARCH=x86
 	;;
 
+  loongarch*)   ARCH=loongarch ;;
+
+  riscv*)		ARCH=riscv ;;
+
   sh*)		ARCH=sh ;;
 
   sparc)

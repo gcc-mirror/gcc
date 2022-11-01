@@ -135,6 +135,16 @@ Compares the results of stages 2 and 3.  This ensures that the compiler
 is running properly, since it should produce the same object files
 regardless of how it itself was compiled.
 
+@item distclean-stage@var{N} (@var{N} = 1@dots{}4, profile, feedback)
+Wipe stage @var{N} and all the following ones.
+
+For example,
+@samp{make distclean-stage3} wipes stage 3 and all the following ones,
+so that another @command{make} then rebuilds them from scratch.
+This can be useful if you're doing changes where
+``bubbling'' the changes as described above is not sufficient,
+but a full @command{make restrap} isn't necessary either.
+
 @item profiledbootstrap
 Builds a compiler with profiling feedback information.  In this case,
 the second and third stages are named @samp{profile} and @samp{feedback},

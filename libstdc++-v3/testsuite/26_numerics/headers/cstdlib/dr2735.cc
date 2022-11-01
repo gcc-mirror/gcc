@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-require-effective-target hosted }
 
 // NB: Don't include any other headers in this file.
 // LWG 2735. std::abs(short), std::abs(signed char) and others should return

@@ -200,6 +200,7 @@ enum scope_kind {
 			init-statement.  */
   sk_cond,	     /* The scope of the variable declared in the condition
 			of an if or switch statement.  */
+  sk_stmt_expr,	     /* GNU statement expression block.  */
   sk_function_parms, /* The scope containing function parameters.  */
   sk_class,	     /* The scope containing the members of a class.  */
   sk_scoped_enum,    /* The scope containing the enumerators of a C++11
@@ -306,13 +307,10 @@ struct GTY(()) cp_binding_level {
      'this_entity'.  */
   unsigned defining_class_p : 1;
 
-  /* true for SK_FUNCTION_PARMS of immediate functions.  */
-  unsigned immediate_fn_ctx_p : 1;
-
   /* True for SK_FUNCTION_PARMS of a requires-expression.  */
   unsigned requires_expression: 1;
 
-  /* 21 bits left to fill a 32-bit word.  */
+  /* 22 bits left to fill a 32-bit word.  */
 };
 
 /* The binding level currently in effect.  */

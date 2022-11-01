@@ -727,11 +727,13 @@ epiphany_setup_incoming_varargs (cumulative_args_t cum,
   machine_function_t *mf = MACHINE_FUNCTION (cfun);
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (arg.mode != BLKmode);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    gcc_assert (arg.mode != BLKmode);
 
   next_cum = *get_cumulative_args (cum);
-  next_cum = (ROUND_ADVANCE_CUM (next_cum, arg.mode, arg.type)
-	      + ROUND_ADVANCE_ARG (arg.mode, arg.type));
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    next_cum = (ROUND_ADVANCE_CUM (next_cum, arg.mode, arg.type)
+		+ ROUND_ADVANCE_ARG (arg.mode, arg.type));
   first_anon_arg = next_cum;
 
   if (first_anon_arg < MAX_EPIPHANY_PARM_REGS && !no_rtl)

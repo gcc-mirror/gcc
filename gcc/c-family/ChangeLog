@@ -1,3 +1,216 @@
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (def_fn_type): Call build_function_type for
+	zero-argument variable-argument function.
+	(c_common_nodes_and_builtins): Build default_function_type with
+	build_function_type.
+	* c.opt (fallow-parameterless-variadic-functions): Mark as ignored
+	option.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* c-common.h (ENUM_UNDERLYING_TYPE, ENUM_FIXED_UNDERLYING_TYPE_P):
+	New.  Moved from cp/cp-tree.h.
+	* c-warn.cc (warnings_for_convert_and_check): Do not consider
+	conversions to enum with underlying type bool to overflow.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* c.opt (Wdangling-reference): New.
+
+2022-10-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.h (enum format_lengths): Add FMT_LEN_w8, FMT_LEN_w16,
+	FMT_LEN_w32, FMT_LEN_w64, FMT_LEN_wf8, FMT_LEN_wf16, FMT_LEN_wf32
+	and FMT_LEN_wf64.
+	(NOARGUMENTS, NOLENGTHS): Update definitions.
+	(T_I8, T2X_I8, T_I16, T2X_I16, T_I32, T2X_I32, T_I64, T2X_I64)
+	(T_U8, T2X_U8, T_U16, T2X_U16, T_U32, T2X_U32, T_U64, T2X_U64)
+	(T_IF8, T2X_IF8, T_IF16, T2X_IF16, T_IF32, T2X_IF32, T_IF64)
+	(T2X_IF64, T_UF8, T2X_UF8, T_UF16, T2X_UF16, T_UF32, T2X_UF32)
+	(T_UF64, T2X_UF64): New macros.
+	* c-format.cc (printf_length_specs, scanf_length_specs): Add wN
+	and wfN length modifiers.
+	(print_char_table, scan_char_table): Add entries using wN and wfN
+	length modifiers.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* c-common.cc (c_common_type_for_size): Add fallback to
+	widest_unsigned_literal_type_node or
+	widest_integer_literal_type_node for precision that may not
+	exactly match the precision of those types.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): If bfloat16_type_node,
+	predefine __BFLT16_*__ macros and for C++23 also
+	__STDCPP_BFLOAT16_T__.  Predefine bfloat16_type_node related
+	macros for -fbuilding-libgcc.
+	* c-lex.cc (interpret_float): Handle CPP_N_BFLOAT16.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/323
+	PR c++/107097
+	* c-common.def (EXCESS_PRECISION_EXPR): Remove comment part about
+	the tree being specific to C/ObjC.
+	* c-opts.cc (c_common_post_options): Handle flag_excess_precision
+	in C++ the same as in C.
+	* c-lex.cc (interpret_float): Set const_type to excess_precision ()
+	even for C++.
+
+2022-10-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not use
+	value 2 for *_IS_IEC_60559.
+
+2022-10-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/60014
+	PR preprocessor/60723
+	* c-ppoutput.cc (class token_streamer): Remove member
+	line_marker_emitted to...
+	(token_streamer::stream): ...a local variable here. Set
+	print.prev_was_system_token on all code paths.
+
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.cc (c_common_post_options): Bump abi to 18.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* c-pretty-print.cc (pp_c_specifier_qualifier_list): Print only GNU
+	attributes here.
+	(c_pretty_printer::direct_abstract_declarator): Print the standard [[]]
+	attributes here.
+	(pp_c_attributes): Remove.
+	(pp_c_attributes_display): Print the [[]] form if appropriate.  Use
+	get_attribute_name.  Don't print a trailing space when printing the
+	[[]] form.
+	* c-pretty-print.h (pp_c_attributes): Remove.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_strict_flex_array_attribute): New function.
+	(c_common_attribute_table): New item for strict_flex_array.
+	* c.opt: (fstrict-flex-arrays): New option.
+	(fstrict-flex-arrays=): New option.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* name-hint.h: Use std::move.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (attribute_fallthrough_p): Lookup fallthrough attribute
+	only in gnu namespace or as standard attribute, treat fallthrough
+	attributes in other namespaces like any other unknown attribute.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Mark typeof as D_EXT11.  Add
+	typeof_unqual.
+	* c-common.h (enum rid): Add RID_TYPEOF_UNQUAL.
+	(D_EXT11): New macro.  Values of subsequent macros updated.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* c-attribs.cc (handle_assume_attribute): New function.
+	(c_common_attribute_table): Add entry for assume attribute.
+	* c-lex.cc (c_common_has_attribute): Handle
+	__have_cpp_attribute (assume).
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_omp_directives): Uncomment begin declare target
+	entry.
+
+2022-10-03  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use RID_IS_SAME instead of
+	RID_IS_SAME_AS.
+
+2022-10-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not
+	special-case __*_EPSILON__ setting for IBM long double for C2x.
+
+2022-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use cp/cp-trait.def to handle
+	C++ traits.
+	* c-common.h (enum rid): Likewise.
+
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.cc (c_common_has_attribute): Handle noreturn attribute for
+	C.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Add __remove_cv,
+	__remove_reference and __remove_cvref.
+	* c-common.h (enum rid): Add RID_REMOVE_CV, RID_REMOVE_REFERENCE
+	and RID_REMOVE_CVREF.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101165
+	PR c++/106882
+	* c-cppbuiltin.cc (c_cpp_builtins): Define __cpp_implicit_move.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-format.cc (c_keywords): Drop nothrow.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106651
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_static_call_operator=202207L for C++23.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ASSUME,
+	PRAGMA_OMP_ASSUMES and PRAGMA_OMP_BEGIN.  Rename
+	PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	* c-pragma.cc (omp_pragmas): Add assumes and begin.
+	For end rename PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	(omp_pragmas_simd): Add assume.
+	* c-common.h (c_omp_directives): Declare.
+	* c-omp.cc (omp_directives): Rename to ...
+	(c_omp_directives): ... this.  No longer static.  Uncomment
+	assume, assumes, begin assumes and end assumes entries.
+	In end declare target entry rename PRAGMA_OMP_END_DECLARE_TARGET
+	to PRAGMA_OMP_END.
+	(c_omp_categorize_directive): Adjust for omp_directives to
+	c_omp_directives renaming.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* c-common.cc (c_common_reswords): Change _Float{16,32,64,128} and
+	_Float{32,64,128}x flags from D_CONLY to 0.
+	(shorten_binary_op): Punt if common_type returns error_mark_node.
+	(shorten_compare): Likewise.
+	(c_common_nodes_and_builtins): For C++ record _Float{16,32,64,128}
+	and _Float{32,64,128}x builtin types if available.  For C++
+	clear float128t_type_node.
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__STDCPP_FLOAT{16,32,64,128}_T__ for C++23 if supported.
+	* c-lex.cc (interpret_float): For q/Q suffixes prefer
+	float128t_type_node over float128_type_node.  Allow
+	{f,F}{16,32,64,128} suffixes for C++ if supported with pedwarn
+	for C++20 and older.  Allow {f,F}{32,64,128}x suffixes for C++
+	with pedwarn.  Don't call excess_precision_type for C++.
+
 2022-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106656

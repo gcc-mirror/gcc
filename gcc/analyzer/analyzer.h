@@ -21,6 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_ANALYZER_H
 #define GCC_ANALYZER_ANALYZER_H
 
+#include "function.h"
+#include "json.h"
+#include "tristate.h"
+
 class graphviz_out;
 
 namespace ana {
@@ -114,6 +118,10 @@ class state_machine;
 class logger;
 class visitor;
 class known_function_manager;
+class call_summary;
+class call_summary_replay;
+struct per_function_data;
+struct interesting_t;
 
 /* Forward decls of functions.  */
 
@@ -262,6 +270,11 @@ public:
 
   /* Hook for making .dot label more readable.  */
   virtual void print (pretty_printer *pp) const = 0;
+
+  /* Hook for updating STATE when handling bifurcation.  */
+  virtual bool update_state (program_state *state,
+			     const exploded_edge *eedge,
+			     region_model_context *ctxt) const;
 
   /* Hook for updating MODEL within exploded_path::feasible_p
      and when handling bifurcation.  */

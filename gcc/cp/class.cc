@@ -4795,8 +4795,9 @@ check_methods (tree t)
 
   /* Check whether the eligible special member functions (P0848) are
      user-provided.  add_method arranged that the CLASSTYPE_MEMBER_VEC only
-     has the eligible ones; TYPE_FIELDS also contains ineligible overloads,
-     which is why this needs to be separate from the loop above.  */
+     has the eligible ones, unless none are eligible; TYPE_FIELDS also contains
+     ineligible overloads, which is why this needs to be separate from the loop
+     above.  */
 
   if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
     {
@@ -4819,6 +4820,10 @@ check_methods (tree t)
     {
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
+      else if (TREE_CODE (fn) == TEMPLATE_DECL)
+	/* Templates are never special members.  */;
+      else if (!constraints_satisfied_p (fn))
+	/* Not eligible.  */;
       else if (copy_fn_p (fn))
 	TYPE_HAS_COMPLEX_COPY_CTOR (t) = true;
       else if (move_fn_p (fn))
@@ -4829,6 +4834,10 @@ check_methods (tree t)
     {
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
+      else if (TREE_CODE (fn) == TEMPLATE_DECL)
+	/* Templates are never special members.  */;
+      else if (!constraints_satisfied_p (fn))
+	/* Not eligible.  */;
       else if (copy_fn_p (fn))
 	TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = true;
       else if (move_fn_p (fn))

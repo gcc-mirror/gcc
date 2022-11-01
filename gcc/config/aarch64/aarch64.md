@@ -4514,8 +4514,8 @@
 )
 
 (define_insn "*and<mode>3_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (match_operand:GPI 1 "register_operand" "%r,r")
 		  (match_operand:GPI 2 "aarch64_logical_operand" "r,<lconst>"))
 	 (const_int 0)))
@@ -4530,8 +4530,8 @@
 
 ;; zero_extend version of above
 (define_insn "*andsi3_compare0_uxtw"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:SI (match_operand:SI 1 "register_operand" "%r,r")
 		 (match_operand:SI 2 "aarch64_logical_operand" "r,K"))
 	 (const_int 0)))
@@ -4545,8 +4545,8 @@
 )
 
 (define_insn "*and_<SHIFT:optab><mode>3_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (SHIFT:GPI
 		   (match_operand:GPI 1 "register_operand" "r")
 		   (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
@@ -4565,8 +4565,8 @@
 
 ;; zero_extend version of above
 (define_insn "*and_<SHIFT:optab>si3_compare0_uxtw"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:SI (SHIFT:SI
 		  (match_operand:SI 1 "register_operand" "r")
 		  (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
@@ -4770,8 +4770,8 @@
 )
 
 (define_insn "*and_one_cmpl<mode>3_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (not:GPI
 		   (match_operand:GPI 1 "register_operand" "r"))
 		  (match_operand:GPI 2 "register_operand" "r"))
@@ -4785,8 +4785,8 @@
 
 ;; zero_extend version of above
 (define_insn "*and_one_cmplsi3_compare0_uxtw"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:SI (not:SI
 		  (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "register_operand" "r"))
@@ -4799,8 +4799,8 @@
 )
 
 (define_insn "*and_one_cmpl<mode>3_compare0_no_reuse"
-  [(set (reg:CC_NZ CC_REGNUM)
-    (compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+    (compare:CC_NZV
      (and:GPI (not:GPI
            (match_operand:GPI 0 "register_operand" "r"))
           (match_operand:GPI 1 "register_operand" "r"))
@@ -4878,8 +4878,8 @@
 )
 
 (define_insn "*and_one_cmpl_<SHIFT:optab><mode>3_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (not:GPI
 		   (SHIFT:GPI
 		    (match_operand:GPI 1 "register_operand" "r")
@@ -4901,8 +4901,8 @@
 
 ;; zero_extend version of above
 (define_insn "*and_one_cmpl_<SHIFT:optab>si3_compare0_uxtw"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:SI (not:SI
 		  (SHIFT:SI
 		   (match_operand:SI 1 "register_operand" "r")
@@ -4923,8 +4923,8 @@
 )
 
 (define_insn "*and_one_cmpl_<SHIFT:optab><mode>3_compare0_no_reuse"
-  [(set (reg:CC_NZ CC_REGNUM)
-    (compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+    (compare:CC_NZV
      (and:GPI (not:GPI
            (SHIFT:GPI
             (match_operand:GPI 0 "register_operand" "r")
@@ -5029,8 +5029,8 @@
 ")
 
 (define_insn "*and<mode>_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z
 	 (match_operand:SHORT 0 "register_operand" "r")
 	 (const_int 0)))]
   ""
@@ -5039,8 +5039,8 @@
 )
 
 (define_insn "*ands<GPI:mode>_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z
 	 (zero_extend:GPI (match_operand:SHORT 1 "register_operand" "r"))
 	 (const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=r")
@@ -5051,8 +5051,8 @@
 )
 
 (define_insn "*and<mode>3nr_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (match_operand:GPI 0 "register_operand" "%r,r")
 		  (match_operand:GPI 1 "aarch64_logical_operand" "r,<lconst>"))
 	 (const_int 0)))]
@@ -5064,24 +5064,24 @@
 )
 
 (define_split
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (match_operand:GPI 0 "register_operand")
 		  (match_operand:GPI 1 "aarch64_mov_imm_operand"))
 	 (const_int 0)))
    (clobber (match_operand:SI 2 "register_operand"))]
   ""
   [(set (match_dup 2) (match_dup 1))
-   (set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+   (set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (match_dup 0)
 		  (match_dup 2))
 	 (const_int 0)))]
 )
 
 (define_insn "*and<mode>3nr_compare0_zextract"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z
 	 (zero_extract:GPI (match_operand:GPI 0 "register_operand" "r")
 		  (match_operand:GPI 1 "const_int_operand" "n")
 		  (match_operand:GPI 2 "const_int_operand" "n"))
@@ -5102,8 +5102,8 @@
 )
 
 (define_insn "*and_<SHIFT:optab><mode>3nr_compare0"
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (SHIFT:GPI
 		   (match_operand:GPI 0 "register_operand" "r")
 		   (match_operand:QI 1 "aarch64_shift_imm_<mode>" "n"))
@@ -5119,8 +5119,8 @@
 )
 
 (define_split
-  [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+  [(set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (SHIFT:GPI
 		   (match_operand:GPI 0 "register_operand")
 		   (match_operand:QI 1 "aarch64_shift_imm_<mode>"))
@@ -5129,8 +5129,8 @@
     (clobber (match_operand:SI 3 "register_operand"))]
   ""
   [(set (match_dup 3) (match_dup 2))
-   (set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
+   (set (reg:CC_NZV CC_REGNUM)
+	(compare:CC_NZV
 	 (and:GPI (SHIFT:GPI
 		   (match_dup 0)
 		   (match_dup 1))
@@ -6468,7 +6468,7 @@
 (define_expand "<optab>dihf2"
   [(set (match_operand:HF 0 "register_operand")
 	(FLOATUORS:HF (match_operand:DI 1 "register_operand")))]
-  "TARGET_FLOAT && (TARGET_FP_F16INST || TARGET_SIMD)"
+  "TARGET_FP_F16INST || TARGET_SIMD"
 {
   if (TARGET_FP_F16INST)
     emit_insn (gen_aarch64_fp16_<optab>dihf2 (operands[0], operands[1]));
@@ -6727,7 +6727,7 @@
   [(match_operand:GPF 0 "register_operand")
    (match_operand:GPF 1 "register_operand")
    (match_operand:GPF 2 "register_operand")]
-  "TARGET_FLOAT && TARGET_SIMD"
+  "TARGET_SIMD"
 {
   rtx bitmask = gen_reg_rtx (<V_INT_EQUIV>mode);
   emit_move_insn (bitmask, GEN_INT (HOST_WIDE_INT_M1U
@@ -6744,7 +6744,7 @@
 		     (match_operand:GPF 2 "register_operand" "w,w,0,0")
 		     (match_operand:<V_INT_EQUIV> 3 "register_operand" "0,w,w,X")]
 	 UNSPEC_COPYSIGN))]
-  "TARGET_FLOAT && TARGET_SIMD"
+  "TARGET_SIMD"
   "@
    bsl\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
    bit\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
@@ -6765,7 +6765,7 @@
   [(match_operand:GPF 0 "register_operand")
    (match_operand:GPF 1 "register_operand")
    (match_operand:GPF 2 "register_operand")]
-  "TARGET_FLOAT && TARGET_SIMD"
+  "TARGET_SIMD"
 {
 
   machine_mode imode = <V_INT_EQUIV>mode;

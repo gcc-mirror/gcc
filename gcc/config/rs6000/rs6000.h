@@ -2435,6 +2435,10 @@ typedef struct GTY(()) machine_function
   bool lr_is_wrapped_separately;
   bool toc_is_wrapped_separately;
   bool mma_return_type_error;
+  /* Indicate global entry is emitted, only useful when the function requires
+     global entry.  It helps to control the patchable area before and after
+     local entry.  */
+  bool global_entry_emitted;
 } machine_function;
 #endif
 

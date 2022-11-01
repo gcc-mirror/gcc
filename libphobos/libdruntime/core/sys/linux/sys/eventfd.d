@@ -9,7 +9,6 @@ module core.sys.linux.sys.eventfd;
 version (linux):
 extern (C):
 @nogc:
-@system:
 nothrow:
 
 version (ARM)     version = ARM_Any;

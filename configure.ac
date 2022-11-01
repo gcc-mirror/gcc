@@ -247,6 +247,12 @@ if test x$with_system_zlib = xyes ; then
   noconfigdirs="$noconfigdirs zlib"
 fi
 
+# Don't compile the bundled readline/libreadline.a if --with-system-readline
+# is provided.
+if test x$with_system_readline = xyes ; then
+  noconfigdirs="$noconfigdirs readline"
+fi
+
 # some tools are so dependent upon X11 that if we're not building with X, 
 # it's not even worth trying to configure, much less build, that tool.
 
@@ -3439,6 +3445,17 @@ fi
 case "${target}" in
   mep*)
     FLAGS_FOR_TARGET="$FLAGS_FOR_TARGET -mlibrary"
+    ;;
+  # The VxWorks support for shared libraries is getting in
+  # incrementally.  Make sure it doesn't get activated implicitly:
+  *vxworks*)
+    if test "${enable_shared-unset}" = unset ; then
+      enable_shared=no
+      # So the build of libraries knows ...
+      target_configargs="${target_configargs} --disable-shared"
+      # So gcc knows ...
+      host_configargs="${host_configargs} --disable-shared"
+    fi
     ;;
 esac
 

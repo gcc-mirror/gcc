@@ -1,0 +1,109 @@
+/* An overview of the state machine from sm-fd.cc.
+   Copyright (C) 2022 Free Software Foundation, Inc.
+   Contributed by David Malcolm <dmalcolm@redhat.com>.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Keep this in-sync with sm-dot.cc  */
+
+digraph "fd" {
+
+  /* STATES. */
+
+  /* Start state.  */
+  start;
+
+  /* States representing a file descriptor that hasn't yet been
+    checked for validity after opening, for three different
+    access modes.  */
+  unchecked_read_write;
+  unchecked_read_only;
+  unchecked_write_only;
+
+  /* States for representing a file descriptor that is known to be valid (>=
+    0), for three different access modes.  */
+  valid_read_write;
+  valid_read_only;
+  valid_write_only;
+
+  /* State for a file descriptor that is known to be invalid (< 0). */
+  invalid;
+
+  /* State for a file descriptor that has been closed.  */
+  closed;
+
+  /* State for a file descriptor that we do not want to track anymore . */
+  stop;
+
+  /* TRANSITIONS. */
+
+  /* On "open".  */
+  start -> unchecked_read_only [label="on 'X = open(..., O_RDONLY);'"];
+  start -> unchecked_write_only [label="on 'X = open(..., O_WRONLY);'"];
+  start -> unchecked_read_write [label="on 'X = open(..., ...);'"];
+
+  /* On "creat".  */
+  start -> unchecked_write_only [label="on 'X = create(...);'"];
+
+  /* On "close".  */
+  start -> closed [label="on 'close(X);'"];
+  unchecked_read_write -> closed [label="on 'close(X);'"];
+  unchecked_read_only -> closed [label="on 'close(X);'"];
+  unchecked_write_only -> closed [label="on 'close(X);'"];
+  valid_read_write -> closed [label="on 'close(X);'"];
+  valid_read_only -> closed [label="on 'close(X);'"];
+  valid_write_only -> closed [label="on 'close(X);'"];
+  constant_fd -> closed [label="on 'close(X);'"];
+  closed -> stop [label="on 'close(X);':\nWarn('double close')"];
+
+  /* On "read".  */
+  closed -> closed [label="on 'read(X);':\nWarn('use after close')"];
+  unchecked_read_write -> unchecked_read_write [label="on 'read(X);:\nWarn('use without check')'"];
+  unchecked_read_only -> unchecked_read_only [label="on 'read(X);:\nWarn('use without check')'"];
+  unchecked_write_only -> unchecked_write_only [label="on 'read(X);:\nWarn('use without check')'"];
+  valid_write_only -> valid_write_only [label="on 'read(X);:\nWarn('access mode mismatch')'"];
+
+  /* On "write".  */
+  closed -> closed [label="on 'write(X);':\nWarn('use after close')"];
+  unchecked_read_write -> unchecked_read_write [label="on 'write(X);:\nWarn('use without check')'"];
+  unchecked_read_only -> unchecked_read_only [label="on 'write(X);:\nWarn('use without check')'"];
+  unchecked_write_only -> unchecked_write_only [label="on 'write(X);:\nWarn('use without check')'"];
+  valid_read_only -> valid_read_only [label="on 'write(X);:\nWarn('access mode mismatch')'"];
+
+  /* On "dup".  */
+  closed -> closed [label="on 'dup(X);':\nWarn('use after close')"];
+  /* plus stuff for the new fd.  */
+
+  /* On "pipe".  */
+  start -> valid_read_write [label="when 'pipe()' succeeds"];
+
+  /* on_condition.  */
+  unchecked_read_write -> valid_read_write [label="on 'X >= 0'"];
+  unchecked_read_only -> valid_read_only [label="on 'X >= 0'"];
+  unchecked_write_only -> valid_write_only [label="on 'X >= 0'"];
+  unchecked_read_write -> invalid [label="on 'X < 0'"];
+  unchecked_read_only -> invalid [label="on 'X < 0'"];
+  unchecked_write_only -> invalid [label="on 'X < 0'"];
+
+  /* Leaks.  */
+  unchecked_read_write -> stop [label="on leak:\nWarn('leak')"];
+  unchecked_read_only -> stop [label="on leak:\nWarn('leak')"];
+  unchecked_write_only -> stop [label="on leak:\nWarn('leak')"];
+  valid_read_write -> stop [label="on leak:\nWarn('leak')"];
+  valid_read_only -> stop [label="on leak:\nWarn('leak')"];
+  valid_write_only -> stop [label="on leak:\nWarn('leak')"];
+}

@@ -1543,6 +1543,25 @@ systems that support conditional traps).
 Division by zero checks use the break instruction.
 @end table
 
+@item --with-compact-branches=@var{policy}
+Specify how the compiler should generate branch instructions.
+This option is only supported on the MIPS target.
+The possibilities for @var{type} are:
+@table @code
+@item optimal
+Cause a delay slot branch to be used if one is available in the
+current ISA and the delay slot is successfully filled. If the delay slot
+is not filled, a compact branch will be chosen if one is available.
+@item never
+Ensures that compact branch instructions will never be generated.
+@item always
+Ensures that a compact branch instruction will be generated if available.
+If a compact branch instruction is not available,
+a delay slot form of the branch will be used instead.
+This option is supported from MIPS Release 6 onwards.
+For pre-R6/microMIPS/MIPS16, this option is just same as never/optimal.
+@end table
+
 @c If you make --with-llsc the default for additional targets,
 @c update the --with-llsc description in the MIPS section below.
 
@@ -3563,7 +3582,13 @@ information have to.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
+@uref{#amdgcn-x-amdhsa,,amdgcn-*-amdhsa}
+@item
 @uref{#amd64-x-solaris2,,amd64-*-solaris2*}
+@item
+@uref{#arc-x-elf32,,arc-*-elf32}
+@item
+@uref{#arc-linux-uclibc,,arc-linux-uclibc}
 @item
 @uref{#arm-x-eabi,,arm-*-eabi}
 @item
@@ -3571,7 +3596,13 @@ information have to.
 @item
 @uref{#bfin,,Blackfin}
 @item
+@uref{#cris,,cris}
+@item
 @uref{#dos,,DOS}
+@item
+@uref{#epiphany-x-elf,,epiphany-*-elf}
+@item
+@uref{#ft32-x-elf,,ft32-*-elf}
 @item
 @uref{#x-x-freebsd,,*-*-freebsd*}
 @item
@@ -3597,6 +3628,8 @@ information have to.
 @item
 @uref{#iq2000-x-elf,,iq2000-*-elf}
 @item
+@uref{#loongarch,,loongarch}
+@item
 @uref{#lm32-x-elf,,lm32-*-elf}
 @item
 @uref{#lm32-x-uclinux,,lm32-*-uclinux}
@@ -3607,11 +3640,15 @@ information have to.
 @item
 @uref{#m68k-x-x,,m68k-*-*}
 @item
-@uref{#m68k-uclinux,,m68k-uclinux}
+@uref{#m68k-x-uclinux,,m68k-*-uclinux}
 @item
 @uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
+@item
+@uref{#moxie-x-elf,,moxie-*-elf}
+@item
+@uref{#msp430-x-elf,,msp430-*-elf}
 @item
 @uref{#nds32le-x-elf,,nds32le-*-elf}
 @item
@@ -3650,6 +3687,10 @@ information have to.
 @uref{#riscv64-x-elf,,riscv64-*-elf}
 @item
 @uref{#riscv64-x-linux,,riscv64-*-linux}
+@item
+@uref{#rl78-x-elf,,rl78-*-elf}
+@item
+@uref{#rx-x-elf,,rx-*-elf}
 @item
 @uref{#s390-x-linux,,s390-*-linux*}
 @item
@@ -3765,14 +3806,14 @@ This is a synonym for @samp{x86_64-*-solaris2*}.
 @heading amdgcn-*-amdhsa
 AMD GCN GPU target.
 
-Instead of GNU Binutils, you will need to install LLVM 6, or later, and copy
+Instead of GNU Binutils, you will need to install LLVM 13.0.1, or later, and copy
 @file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
 @file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
 @file{bin/amdgcn-amdhsa-ranlib}.
 
-Use Newlib (2019-01-16, or newer).
+Use Newlib (3.2.0, or newer).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.github.io,,ROCm Platform}, and use
@@ -4589,8 +4630,7 @@ Instead of GNU binutils, you will need to install
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 
-You will need newlib 3.0 git revision
-cd31fbb2aea25f94d7ecedc9db16dfc87ab0c316 or later.  It can be
+You will need newlib 3.1.0 or later.  It can be
 automatically built together with GCC@.  For this, add a symbolic link
 to nvptx-newlib's @file{newlib} directory to the directory containing
 the GCC sources.

@@ -234,6 +234,12 @@ OMP_5.1.1 {
 	omp_target_memcpy_rect_async;
 } OMP_5.1;
 
+OMP_5.2 {
+  global:
+	omp_in_explicit_task;
+	omp_in_explicit_task_;
+} OMP_5.1.1;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
@@ -622,3 +628,8 @@ GOMP_PLUGIN_1.3 {
 	GOMP_PLUGIN_goacc_profiling_dispatch;
 	GOMP_PLUGIN_goacc_thread;
 } GOMP_PLUGIN_1.2;
+
+GOMP_PLUGIN_1.4 {
+  global:
+	GOMP_PLUGIN_target_rev;
+} GOMP_PLUGIN_1.3;

@@ -123,7 +123,11 @@ vrange_printer::print_real_value (tree type, const REAL_VALUE_TYPE &r) const
   char s[100];
   real_to_decimal_for_mode (s, &r, sizeof (s), 0, 1, TYPE_MODE (type));
   pp_string (pp, s);
-  if (!DECIMAL_FLOAT_TYPE_P (type))
+  if (!DECIMAL_FLOAT_TYPE_P (type)
+      // real_to_hexadecimal prints infinities and NAN as text.  No
+      // need to print them twice.
+      && !real_isinf (&r)
+      && !real_isnan (&r))
     {
       real_to_hexadecimal (s, &r, sizeof (s), 0, 1);
       pp_printf (pp, " (%s)", s);

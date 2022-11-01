@@ -19,7 +19,6 @@ public import core.stdc.inttypes;
 
 version (Posix):
 extern (C) nothrow @nogc:
-@system:
 
 //
 // Required

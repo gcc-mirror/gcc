@@ -183,6 +183,24 @@ setSigactionHandler(struct sigaction* sa, uintptr handler)
 	sa->sa_sigaction = (void*)(handler);
 }
 
+#ifdef __linux__
+
+// Workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=27417
+#ifndef sigev_notify_thread_id
+  #define sigev_notify_thread_id _sigev_un._tid
+#endif
+
+void setSigeventTID(struct sigevent*, int32_t)
+	__asm__ (GOSYM_PREFIX "runtime.setSigeventTID");
+
+void
+setSigeventTID(struct sigevent *sev, int32_t v)
+{
+	sev->sigev_notify_thread_id = v;
+}
+
+#endif // defined(__linux__)
+
 // C code to fetch values from the siginfo_t and ucontext_t pointers
 // passed to a signal handler.
 

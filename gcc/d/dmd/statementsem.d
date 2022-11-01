@@ -2010,32 +2010,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         //printf("body = %p\n", ps._body);
         if (ps.ident == Id.msg)
         {
-            if (ps.args)
-            {
-                foreach (arg; *ps.args)
-                {
-                    sc = sc.startCTFE();
-                    auto e = arg.expressionSemantic(sc);
-                    e = resolveProperties(sc, e);
-                    sc = sc.endCTFE();
-
-                    // pragma(msg) is allowed to contain types as well as expressions
-                    e = ctfeInterpretForPragmaMsg(e);
-                    if (e.op == EXP.error)
-                    {
-                        errorSupplemental(ps.loc, "while evaluating `pragma(msg, %s)`", arg.toChars());
-                        return setError();
-                    }
-                    if (auto se = e.toStringExp())
-                    {
-                        const slice = se.toUTF8(sc).peekString();
-                        fprintf(stderr, "%.*s", cast(int)slice.length, slice.ptr);
-                    }
-                    else
-                        fprintf(stderr, "%s", e.toChars());
-                }
-                fprintf(stderr, "\n");
-            }
+            if (!pragmaMsgSemantic(ps.loc, sc, ps.args))
+                return setError();
         }
         else if (ps.ident == Id.lib)
         {
@@ -2075,75 +2051,19 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
         else if (ps.ident == Id.startaddress)
         {
-            if (!ps.args || ps.args.dim != 1)
-                ps.error("function name expected for start address");
-            else
-            {
-                Expression e = (*ps.args)[0];
-                sc = sc.startCTFE();
-                e = e.expressionSemantic(sc);
-                e = resolveProperties(sc, e);
-                sc = sc.endCTFE();
-
-                e = e.ctfeInterpret();
-                (*ps.args)[0] = e;
-                Dsymbol sa = getDsymbol(e);
-                if (!sa || !sa.isFuncDeclaration())
-                {
-                    ps.error("function name expected for start address, not `%s`", e.toChars());
-                    return setError();
-                }
-                if (ps._body)
-                {
-                    ps._body = ps._body.statementSemantic(sc);
-                    if (ps._body.isErrorStatement())
-                    {
-                        result = ps._body;
-                        return;
-                    }
-                }
-                result = ps;
-                return;
-            }
+            if (!pragmaStartAddressSemantic(ps.loc, sc, ps.args))
+                return setError();
         }
         else if (ps.ident == Id.Pinline)
         {
-            PINLINE inlining = PINLINE.default_;
-            if (!ps.args || ps.args.dim == 0)
-                inlining = PINLINE.default_;
-            else if (!ps.args || ps.args.dim != 1)
+            if (auto fd = sc.func)
             {
-                ps.error("boolean expression expected for `pragma(inline)`");
-                return setError();
+                fd.inlining = evalPragmaInline(ps.loc, sc, ps.args);
             }
             else
             {
-                Expression e = (*ps.args)[0];
-                sc = sc.startCTFE();
-                e = e.expressionSemantic(sc);
-                e = resolveProperties(sc, e);
-                sc = sc.endCTFE();
-                e = e.ctfeInterpret();
-                e = e.toBoolean(sc);
-                if (e.isErrorExp())
-                {
-                    ps.error("pragma(`inline`, `true` or `false`) expected, not `%s`", (*ps.args)[0].toChars());
-                    return setError();
-                }
-
-                const opt = e.toBool();
-                if (opt.hasValue(true))
-                    inlining = PINLINE.always;
-                else if (opt.hasValue(false))
-                    inlining = PINLINE.never;
-
-                    FuncDeclaration fd = sc.func;
-                if (!fd)
-                {
-                    ps.error("`pragma(inline)` is not inside a function");
-                    return setError();
-                }
-                fd.inlining = inlining;
+                ps.error("`pragma(inline)` is not inside a function");
+                return setError();
             }
         }
         else if (!global.params.ignoreUnsupportedPragmas)
@@ -2932,13 +2852,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 }
 
                 // https://issues.dlang.org/show_bug.cgi?id=23063
-                if (texp.isTypeNoreturn() && !rs.exp.isAssertExp() && !rs.exp.isThrowExp() && !rs.exp.isCallExp())
-                {
-                    auto msg = new StringExp(rs.exp.loc, "Accessed expression of type `noreturn`");
-                    msg.type = Type.tstring;
-                    rs.exp = new AssertExp(rs.loc, IntegerExp.literal!0, msg);
-                    rs.exp.type = texp;
-                }
+                rs.exp = checkNoreturnVarAccess(rs.exp);
 
                 // @@@DEPRECATED_2.111@@@
                 const olderrors = global.startGagging();
@@ -3022,7 +2936,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
                     // If we previously assumed the function could be ref when
                     // checking for `shared`, make sure we were right
-                    if (global.params.noSharedAccess && rs.exp.type.isShared())
+                    if (global.params.noSharedAccess == FeatureState.enabled && rs.exp.type.isShared())
                     {
                         fd.error("function returns `shared` but cannot be inferred `ref`");
                         supplemental();
@@ -3648,7 +3562,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
         if (sc.func)
         {
-            sc.func.flags |= FUNCFLAG.hasCatches;
+            sc.func.hasCatches = true;
             if (flags == (FLAGcpp | FLAGd))
             {
                 tcs.error("cannot mix catching D and C++ exceptions in the same try-catch");
@@ -4924,4 +4838,84 @@ private void debugThrowWalker(Statement s)
 
     scope walker = new DebugWalker();
     s.accept(walker);
+}
+
+/***********************************************************
+ * Evaluate and print a `pragma(msg, args)`
+ *
+ * Params:
+ *    loc = location for error messages
+ *    sc = scope for argument interpretation
+ *    args = expressions to print
+ * Returns:
+ *    `true` on success
+ */
+bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
+{
+    if (!args)
+        return true;
+    foreach (arg; *args)
+    {
+        sc = sc.startCTFE();
+        auto e = arg.expressionSemantic(sc);
+        e = resolveProperties(sc, e);
+        sc = sc.endCTFE();
+
+        // pragma(msg) is allowed to contain types as well as expressions
+        e = ctfeInterpretForPragmaMsg(e);
+        if (e.op == EXP.error)
+        {
+            errorSupplemental(loc, "while evaluating `pragma(msg, %s)`", arg.toChars());
+            return false;
+        }
+        if (auto se = e.toStringExp())
+        {
+            const slice = se.toUTF8(sc).peekString();
+            fprintf(stderr, "%.*s", cast(int)slice.length, slice.ptr);
+        }
+        else
+            fprintf(stderr, "%s", e.toChars());
+    }
+    fprintf(stderr, "\n");
+    return true;
+}
+
+/***********************************************************
+ * Evaluate `pragma(startAddress, func)` and store the resolved symbol in `args`
+ *
+ * Params:
+ *    loc = location for error messages
+ *    sc = scope for argument interpretation
+ *    args = pragma arguments
+ * Returns:
+ *    `true` on success
+ */
+bool pragmaStartAddressSemantic(Loc loc, Scope* sc, Expressions* args)
+{
+    if (!args || args.dim != 1)
+    {
+        .error(loc, "function name expected for start address");
+        return false;
+    }
+    else
+    {
+        /* https://issues.dlang.org/show_bug.cgi?id=11980
+         * resolveProperties and ctfeInterpret call are not necessary.
+         */
+        Expression e = (*args)[0];
+        sc = sc.startCTFE();
+        e = e.expressionSemantic(sc);
+        // e = resolveProperties(sc, e);
+        sc = sc.endCTFE();
+
+        // e = e.ctfeInterpret();
+        (*args)[0] = e;
+        Dsymbol sa = getDsymbol(e);
+        if (!sa || !sa.isFuncDeclaration())
+        {
+            .error(loc, "function name expected for start address, not `%s`", e.toChars());
+            return false;
+        }
+    }
+    return true;
 }

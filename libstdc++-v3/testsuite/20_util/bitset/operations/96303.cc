@@ -18,6 +18,8 @@
 // { dg-options "-std=gnu++2a -pedantic" }
 // { dg-do compile { target c++2a } }
 
+// { dg-require-effective-target hosted }
+
 #include <debug/bitset>
 
 bool

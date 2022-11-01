@@ -30,18 +30,7 @@ template<typename T>
 class quiet : public T
 {
 public:
-  CONSTEXPR quiet () : T () {}
-
-  /* Unfortunately we can't use parameter packs yet.  */
-  template<typename T1>
-  CONSTEXPR quiet (const T1 &t1) : T (t1) {}
-
-  template<typename T1, typename T2>
-  CONSTEXPR quiet (const T1 &t1, const T2 &t2) : T (t1, t2) {}
-
-  template<typename T1, typename T2, typename T3>
-  CONSTEXPR quiet (const T1 &t1, const T2 &t2, const T3 &t3)
-    : T (t1, t2, t3) {}
+  using T::T;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -200,9 +189,7 @@ public:
 class rtx_code_function : public rtx_code_function_base
 {
 public:
-  CONSTEXPR rtx_code_function (rtx_code code_for_sint, rtx_code code_for_uint,
-			       int unspec_for_fp = -1)
-    : rtx_code_function_base (code_for_sint, code_for_uint, unspec_for_fp) {}
+  using rtx_code_function_base::rtx_code_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -219,10 +206,7 @@ public:
 class rtx_code_function_rotated : public rtx_code_function_base
 {
 public:
-  CONSTEXPR rtx_code_function_rotated (rtx_code code_for_sint,
-				       rtx_code code_for_uint,
-				       int unspec_for_fp = -1)
-    : rtx_code_function_base (code_for_sint, code_for_uint, unspec_for_fp) {}
+  using rtx_code_function_base::rtx_code_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -272,11 +256,7 @@ public:
 class unspec_based_function : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_function (int unspec_for_sint, int unspec_for_uint,
-				   int unspec_for_fp)
-    : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
-				  unspec_for_fp)
-  {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -293,12 +273,7 @@ public:
 class unspec_based_function_rotated : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_function_rotated (int unspec_for_sint,
-					   int unspec_for_uint,
-					   int unspec_for_fp)
-    : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
-				  unspec_for_fp)
-  {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -321,12 +296,7 @@ template<insn_code (*CODE) (int, machine_mode)>
 class unspec_based_function_exact_insn : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_function_exact_insn (int unspec_for_sint,
-					      int unspec_for_uint,
-					      int unspec_for_fp)
-    : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
-				  unspec_for_fp)
-  {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -378,12 +348,7 @@ template<insn_code (*INT_CODE) (int, machine_mode)>
 class unspec_based_fused_function : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_fused_function (int unspec_for_sint,
-					 int unspec_for_uint,
-					 int unspec_for_fp)
-    : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
-				  unspec_for_fp)
-  {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -413,12 +378,7 @@ template<insn_code (*INT_CODE) (int, machine_mode)>
 class unspec_based_fused_lane_function : public unspec_based_function_base
 {
 public:
-  CONSTEXPR unspec_based_fused_lane_function (int unspec_for_sint,
-					      int unspec_for_uint,
-					      int unspec_for_fp)
-    : unspec_based_function_base (unspec_for_sint, unspec_for_uint,
-				  unspec_for_fp)
-  {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override

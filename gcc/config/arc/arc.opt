@@ -308,12 +308,14 @@ Target Ignore
 Does nothing.  Preserved for backward compatibility.
 
 mRcq
-Target Var(TARGET_Rcq)
-Enable Rcq constraint handling - most short code generation depends on this.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
+
 
 mRcw
-Target Var(TARGET_Rcw)
-Enable Rcw constraint handling - ccfsm condexec mostly depends on this.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
+
 
 mearly-cbranchsi
 Target Var(TARGET_EARLY_CBRANCHSI)

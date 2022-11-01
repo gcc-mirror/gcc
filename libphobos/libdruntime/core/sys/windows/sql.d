@@ -8,7 +8,6 @@
  */
 module core.sys.windows.sql;
 version (Windows):
-@system:
 
 public import core.sys.windows.sqltypes;
 import core.sys.windows.windef;

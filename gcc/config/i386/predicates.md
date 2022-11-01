@@ -2107,11 +2107,11 @@
   for(i = 4; i < 7; i++)
     {
       elt = XVECEXP (op, 0, i);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != V2DImode
-	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
-	  || SET_SRC (elt) != CONST0_RTX (V2DImode))
+      if (GET_CODE (elt) != CLOBBER
+	  || GET_MODE (elt) != VOIDmode
+	  || GET_CODE (XEXP (elt, 0)) != REG
+	  || GET_MODE (XEXP (elt, 0)) != V2DImode
+	  || REGNO (XEXP (elt, 0)) != GET_SSE_REGNO (i))
 	return false;
     }
 
@@ -2157,11 +2157,11 @@
   for(i = 4; i < 7; i++)
     {
       elt = XVECEXP (op, 0, i + 1);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != V2DImode
-	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
-	  || SET_SRC (elt) != CONST0_RTX (V2DImode))
+      if (GET_CODE (elt) != CLOBBER
+	  || GET_MODE (elt) != VOIDmode
+	  || GET_CODE (XEXP (elt, 0)) != REG
+	  || GET_MODE (XEXP (elt, 0)) != V2DImode
+	  || REGNO (XEXP (elt, 0)) != GET_SSE_REGNO (i))
 	return false;
     }
 

@@ -3524,7 +3524,8 @@ nios2_setup_incoming_varargs (cumulative_args_t cum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *cum;
-  nios2_function_arg_advance (local_cum_v, arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    nios2_function_arg_advance (local_cum_v, arg);
 
   regs_to_push = NUM_ARG_REGS - local_cum.regs_used;
 

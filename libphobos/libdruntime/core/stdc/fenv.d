@@ -24,7 +24,6 @@ else version (WatchOS)
     version = Darwin;
 
 extern (C):
-@system:
 nothrow:
 @nogc:
 

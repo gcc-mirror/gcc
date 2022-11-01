@@ -21,6 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_EXPLODED_GRAPH_H
 #define GCC_ANALYZER_EXPLODED_GRAPH_H
 
+#include "alloc-pool.h"
+#include "fibonacci_heap.h"
+#include "supergraph.h"
+#include "sbitmap.h"
+#include "shortest-paths.h"
+#include "analyzer/sm.h"
+#include "analyzer/program-state.h"
+#include "analyzer/diagnostic-manager.h"
+
 namespace ana {
 
 /* Concrete implementation of region_model_context, wiring it up to the
@@ -87,12 +96,10 @@ class impl_region_model_context : public region_model_context
   {
     return &m_ext_state;
   }
-  bool get_malloc_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) final override;
-  bool get_taint_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) final override;
+  bool get_state_map_by_name (const char *name,
+			      sm_state_map **out_smap,
+			      const state_machine **out_sm,
+			      unsigned *out_sm_idx) override;
 
   const gimple *get_stmt () const override { return m_stmt; }
 
@@ -257,6 +264,23 @@ class exploded_node : public dnode<eg_traits>
 		     program_state *state,
 		     bool unknown_side_effects,
 		     region_model_context *ctxt);
+
+  on_stmt_flags replay_call_summaries (exploded_graph &eg,
+				       const supernode *snode,
+				       const gcall *call_stmt,
+				       program_state *state,
+				       path_context *path_ctxt,
+				       function *called_fn,
+				       per_function_data *called_fn_data,
+				       region_model_context *ctxt);
+  void replay_call_summary (exploded_graph &eg,
+			    const supernode *snode,
+			    const gcall *call_stmt,
+			    program_state *state,
+			    path_context *path_ctxt,
+			    function *called_fn,
+			    call_summary *summary,
+			    region_model_context *ctxt);
 
   bool on_edge (exploded_graph &eg,
 		const superedge *succ,
@@ -611,13 +635,11 @@ struct per_call_string_data
 struct per_function_data
 {
   per_function_data () {}
+  ~per_function_data ();
 
-  void add_call_summary (exploded_node *node)
-  {
-    m_summaries.safe_push (node);
-  }
+  void add_call_summary (exploded_node *node);
 
-  auto_vec<exploded_node *> m_summaries;
+  auto_vec<call_summary *> m_summaries;
 };
 
 

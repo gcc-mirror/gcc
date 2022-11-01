@@ -26,7 +26,6 @@ version (linux):
 extern (C):
 @nogc:
 nothrow:
-@system:
 
 
 private // helpers

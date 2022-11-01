@@ -1943,6 +1943,7 @@ if (Offset.length >= 1 && allSatisfy!(isValidIntegralTuple, Offset))
     return removeImpl!s(range, offset);
 }
 
+/// ditto
 deprecated("Use of non-integral tuples is deprecated. Use remove(tuple(start, end).")
 Range remove
 (SwapStrategy s = SwapStrategy.stable, Range, Offset ...)

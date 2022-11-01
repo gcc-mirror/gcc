@@ -940,14 +940,10 @@
 	 because of offering further optimization opportunities.  */
       if (register_operand (operands[0], DImode))
 	{
-	  rtx lowpart, highpart;
-
-	  if (TARGET_BIG_ENDIAN)
-	    split_double (operands[1], &highpart, &lowpart);
-	  else
-	    split_double (operands[1], &lowpart, &highpart);
-	  emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), lowpart));
-	  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), highpart));
+	  rtx ops[4] = { operands[0], operands[1] };
+	  xtensa_split_DI_reg_imm (ops);
+	  emit_move_insn (ops[0], ops[1]);
+	  emit_move_insn (ops[2], ops[3]);
 	  DONE;
 	}
 
@@ -979,6 +975,19 @@
       tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
       tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
     }
+})
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(match_operand:DI 1 "const_int_operand"))]
+  "!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
+   && ! xtensa_split1_finished_p ()"
+  [(set (match_dup 0)
+	(match_dup 1))
+   (set (match_dup 2)
+	(match_dup 3))]
+{
+  xtensa_split_DI_reg_imm (operands);
 })
 
 ;; 32-bit Integer moves
@@ -1016,6 +1025,18 @@
   [(set_attr "type" "move,move,move,load,store,store,move,move,move,move,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,6,3,3,3,3,3")])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operand:SI 1 "const_int_operand"))]
+  "!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
+   && ! xtensa_split1_finished_p ()
+   && ! xtensa_simm12b (INTVAL (operands[1]))"
+  [(set (match_dup 0)
+	(match_dup 1))]
+{
+  operands[1] = force_const_mem (SImode, operands[1]);
+})
 
 (define_split
   [(set (match_operand:SI 0 "register_operand")

@@ -1004,6 +1004,9 @@ Driver Undocumented
 ;     member initializers in C++14 and up.
 ;     Default in G++ 12.
 ;
+; 18: Corrects errors in mangling of lambdas with additional context.
+;     Default in G++ 13.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
@@ -3317,7 +3320,7 @@ Common Driver JoinedOrMissing Negative(gdwarf-)
 Generate debug information in default version of DWARF format.
 
 gdwarf-
-Common Driver Joined UInteger Var(dwarf_version) Init(5)
+Common Driver Joined UInteger Var(dwarf_version) Init(DWARF_VERSION_DEFAULT)
 Generate debug information in DWARF v2 (or later) format.
 
 gdwarf32
@@ -3419,7 +3422,10 @@ EnumValue
 Enum(compressed_debug_sections) String(zlib) Value(1)
 
 EnumValue
-Enum(compressed_debug_sections) String(zlib-gnu) Value(2)
+Enum(compressed_debug_sections) String(zstd) Value(2)
+
+EnumValue
+Enum(compressed_debug_sections) String(zlib-gnu) Value(3)
 
 gz
 Common Driver

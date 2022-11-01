@@ -2010,8 +2010,8 @@ cont:
 	         truncate them as soon as we have processed it.  This
 		 reduces temporary disk-space usage.  */
 	      if (! save_temps)
-		fprintf (mstream, "\t@-touch -r %s %s.tem > /dev/null 2>&1 "
-			 "&& mv %s.tem %s\n",
+		fprintf (mstream, "\t@-touch -r \"%s\" \"%s.tem\" > /dev/null "
+			 "2>&1 && mv \"%s.tem\" \"%s\"\n",
 			 input_name, input_name, input_name, input_name); 
 	    }
 	  else

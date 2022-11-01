@@ -24,6 +24,7 @@
 
 #include <bits/stdc++.h>
 
+#if __STDC_HOSTED__
 // "C" compatibility headers
 #include <assert.h>
 #include <ctype.h>
@@ -46,4 +47,5 @@
 #endif
 #ifdef _GLIBCXX_HAVE_WCTYPE_H
 #include <wctype.h>
+#endif
 #endif

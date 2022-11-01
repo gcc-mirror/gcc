@@ -1441,6 +1441,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DWARF_GNAT_ENCODINGS_DEFAULT DWARF_GNAT_ENCODINGS_GDB
 #endif
 
+/* When generating dwarf info, the default standard version we'll honor
+   and advertise in absence of -gdwarf-<N> on the command line.  */
+#ifndef DWARF_VERSION_DEFAULT
+#define DWARF_VERSION_DEFAULT 5
+#endif
+
 #ifndef USED_FOR_TARGET
 /* Done this way to keep gengtype happy.  */
 #if BITS_PER_UNIT == 8

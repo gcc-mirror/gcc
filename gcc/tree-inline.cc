@@ -171,7 +171,7 @@ remap_ssa_name (tree name, copy_body_data *id)
   n = id->decl_map->get (name);
   if (n)
     {
-      /* WHen we perform edge redirection as part of CFG copy, IPA-SRA can
+      /* When we perform edge redirection as part of CFG copy, IPA-SRA can
 	 remove an unused LHS from a call statement.  Such LHS can however
 	 still appear in debug statements, but their value is lost in this
 	 function and we do not want to map them.  */
@@ -1734,6 +1734,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 					      (as_a <gomp_critical *> (stmt)),
 					    gimple_omp_critical_clauses
 					      (as_a <gomp_critical *> (stmt)));
+	  break;
+
+	case GIMPLE_ASSUME:
+	  s1 = remap_gimple_seq (gimple_assume_body (stmt), id);
+	  copy = gimple_build_assume (gimple_assume_guard (stmt), s1);
 	  break;
 
 	case GIMPLE_TRANSACTION:

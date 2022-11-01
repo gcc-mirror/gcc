@@ -1,5 +1,5 @@
 /* { dg-do link { target { offload_target_nvptx } } } */
-/* { dg-additional-options "-foffload-options=nvptx-none=-march=sm_30 -foffload=-mptx=_" } */
+/* { dg-additional-options "-foffload-options=nvptx-none=-march=sm_30 -foffload-options=nvptx-none=-mptx=_" } */
 
 #pragma omp requires reverse_offload
 

@@ -37,6 +37,7 @@
 #include <cstdlib>	// for std::abort
 #include <cctype>	// for std::isspace.
 #include <cstring>	// for std::strstr.
+#include <climits>	// for INT_MAX
 
 #include <algorithm>	// for std::min.
 
@@ -609,17 +610,6 @@ namespace
     { print_word(ctx, word, Length - 1); }
 
   void
-  print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc = -1)
-  {
-    if (nbc != 0)
-      {
-	ctx._M_column += (nbc > 0)
-	  ? fprintf(stderr, "%.*s", (int)nbc, str)
-	  : fprintf(stderr, "%s", str);
-      }
-  }
-
-  void
   print_word(PrintContext& ctx, const char* word, ptrdiff_t nbc = -1)
   {
     size_t length = nbc >= 0 ? nbc : __builtin_strlen(word);
@@ -645,12 +635,9 @@ namespace
 	|| (ctx._M_column + visual_length < ctx._M_max_length)
 	|| (visual_length >= ctx._M_max_length && ctx._M_column == 1))
       {
-	// If this isn't the first line, indent
+	// If this isn't the first line, indent.
 	if (ctx._M_column == 1 && !ctx._M_first_line)
-	  {
-	    const char spacing[PrintContext::_S_indent + 1] = "    ";
-	    print_raw(ctx, spacing, PrintContext::_S_indent);
-	  }
+	  ctx._M_column += fprintf(stderr, "%*c", PrintContext::_S_indent, ' ');
 
 	int written = fprintf(stderr, "%.*s", (int)length, word);
 
@@ -1097,6 +1084,14 @@ namespace
   { print_string(ctx, str, nbc, nullptr, 0); }
 
 #if _GLIBCXX_HAVE_STACKTRACE
+  void
+  print_raw(PrintContext& ctx, const char* str, ptrdiff_t nbc)
+  {
+    if (nbc == -1)
+      nbc = INT_MAX;
+    ctx._M_column += fprintf(stderr, "%.*s", (int)nbc, str);
+  }
+
   int
   print_backtrace(void* data, __UINTPTR_TYPE__ pc, const char* filename,
 		  int lineno, const char* function)
@@ -1166,7 +1161,7 @@ namespace __gnu_debug
     PrintContext ctx;
     if (_M_file)
       {
-	print_raw(ctx, _M_file);
+	ctx._M_column += fprintf(stderr, "%s", _M_file);
 	print_literal(ctx, ":");
 	go_to_next_line = true;
       }

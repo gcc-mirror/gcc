@@ -2675,6 +2675,25 @@ uts4*)
   shlibpath_var=LD_LIBRARY_PATH
   ;;
 
+# Shared libraries for VwWorks, >= 7 only at this stage
+# and (fpic) still incompatible with "large" code models
+# in a few configurations. Only for RTP mode in any case,
+# and upon explicit request at configure time.
+vxworks7*)
+  dynamic_linker=no
+  case ${with_multisubdir}-${enable_shared} in
+    *large*)
+      ;;
+    *mrtp*-yes)
+      version_type=linux
+      need_lib_prefix=no
+      need_version=no
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+      soname_spec='${libname}${release}${shared_ext}$major'
+      dynamic_linker="$host_os module_loader"
+      ;;
+  esac
+  ;;
 *)
   dynamic_linker=no
   ;;
@@ -3160,6 +3179,11 @@ sysv4 | sysv4.3*)
   ;;
 
 tpf*)
+  lt_cv_deplibs_check_method=pass_all
+  ;;
+vxworks*)
+  # Assume VxWorks cross toolchains are built on Linux, possibly
+  # as canadian for Windows hosts.
   lt_cv_deplibs_check_method=pass_all
   ;;
 esac
@@ -6396,8 +6420,9 @@ if test "$_lt_caught_CXX_error" != yes; then
         ;;
 
       vxworks*)
-        # FIXME: insert proper C++ library support
-        _LT_TAGVAR(ld_shlibs, $1)=no
+        # For VxWorks ports, we assume the use of a GNU linker with
+        # standard elf conventions.
+        _LT_TAGVAR(ld_shlibs, $1)=yes
         ;;
 
       *)

@@ -2419,23 +2419,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     }
 }
 
-
-/* Given a function declaration (FN_DECL), this function assembles the
-   function into the .preinit_array section.  */
-
-void
-assemble_vtv_preinit_initializer (tree fn_decl)
-{
-  section *sect;
-  unsigned flags = SECTION_WRITE;
-  rtx symbol = XEXP (DECL_RTL (fn_decl), 0);
-
-  flags |= SECTION_NOTYPE;
-  sect = get_section (".preinit_array", flags, fn_decl);
-  switch_to_section (sect);
-  assemble_addr_to_section (symbol, sect);
-}
-
 /* Return 1 if type TYPE contains any pointers.  */
 
 static int
@@ -6675,6 +6658,36 @@ init_varasm_once (void)
 #endif
 }
 
+/* Determine whether SYMBOL is used in any optimized function.  */
+
+static bool
+have_optimized_refs (struct symtab_node *symbol)
+{
+  struct ipa_ref *ref;
+
+  for (int i = 0; symbol->iterate_referring (i, ref); i++)
+    {
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (ref->referring);
+
+      if (cnode && opt_for_fn (cnode->decl, optimize))
+	return true;
+    }
+
+  return false;
+}
+
+/* Check if promoting general-dynamic TLS access model to local-dynamic is
+   desirable for DECL.  */
+
+static bool
+optimize_dyn_tls_for_decl_p (const_tree decl)
+{
+  if (cfun)
+    return optimize;
+  return symtab->state >= IPA && have_optimized_refs (symtab_node::get (decl));
+}
+
+
 enum tls_model
 decl_default_tls_model (const_tree decl)
 {
@@ -6692,7 +6705,7 @@ decl_default_tls_model (const_tree decl)
 
   /* Local dynamic is inefficient when we're not combining the
      parts of the address.  */
-  else if (optimize && is_local)
+  else if (is_local && optimize_dyn_tls_for_decl_p (decl))
     kind = TLS_MODEL_LOCAL_DYNAMIC;
   else
     kind = TLS_MODEL_GLOBAL_DYNAMIC;
@@ -6967,7 +6980,6 @@ default_select_section (tree decl, int reloc,
     {
       if (! ((flag_pic && reloc)
 	     || !TREE_READONLY (decl)
-	     || TREE_SIDE_EFFECTS (decl)
 	     || !TREE_CONSTANT (decl)))
 	return readonly_data_section;
     }
@@ -7001,7 +7013,6 @@ categorize_decl_for_section (const_tree decl, int reloc)
       if (bss_initializer_p (decl))
 	ret = SECCAT_BSS;
       else if (! TREE_READONLY (decl)
-	       || TREE_SIDE_EFFECTS (decl)
 	       || (DECL_INITIAL (decl)
 		   && ! TREE_CONSTANT (DECL_INITIAL (decl))))
 	{
@@ -7042,7 +7053,6 @@ categorize_decl_for_section (const_tree decl, int reloc)
   else if (TREE_CODE (decl) == CONSTRUCTOR)
     {
       if ((reloc & targetm.asm_out.reloc_rw_mask ())
-	  || TREE_SIDE_EFFECTS (decl)
 	  || ! TREE_CONSTANT (decl))
 	ret = SECCAT_DATA;
       else

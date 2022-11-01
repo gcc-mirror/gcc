@@ -835,10 +835,15 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
 
       return true;
     }
-  else
-    FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_USE)
-      if (!add_dependency (val, lim_data, loop, true))
-	return false;
+
+  /* A stmt that receives abnormal edges cannot be hoisted.  */
+  if (is_a <gcall *> (stmt)
+      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE))
+    return false;
+
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_USE)
+    if (!add_dependency (val, lim_data, loop, true))
+      return false;
 
   if (gimple_vuse (stmt))
     {

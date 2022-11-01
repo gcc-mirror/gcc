@@ -374,6 +374,44 @@ namespace
     };
 #endif
 
+  // Wrappers around float for std::{,b}float16_t promoted to float.
+  struct floating_type_float16_t
+  {
+    float x;
+    operator float() const { return x; }
+  };
+  struct floating_type_bfloat16_t
+  {
+    float x;
+    operator float() const { return x; }
+  };
+
+  template<>
+    struct floating_type_traits<floating_type_float16_t>
+    {
+      static constexpr int mantissa_bits = 10;
+      static constexpr int exponent_bits = 5;
+      static constexpr bool has_implicit_leading_bit = true;
+      using mantissa_t = uint32_t;
+      using shortest_scientific_t = ryu::floating_decimal_128;
+
+      static constexpr uint64_t pow10_adjustment_tab[]
+	= { 0 };
+    };
+
+  template<>
+    struct floating_type_traits<floating_type_bfloat16_t>
+    {
+      static constexpr int mantissa_bits = 7;
+      static constexpr int exponent_bits = 8;
+      static constexpr bool has_implicit_leading_bit = true;
+      using mantissa_t = uint32_t;
+      using shortest_scientific_t = ryu::floating_decimal_128;
+
+      static constexpr uint64_t pow10_adjustment_tab[]
+	= { 0b0000111001110001101010010110100101010010000000000000000000000000 };
+    };
+
   // An IEEE-style decomposition of a floating-point value of type T.
   template<typename T>
     struct ieee_t
@@ -482,6 +520,79 @@ namespace
     }
 #endif
 
+  template<>
+    ieee_t<floating_type_float16_t>
+    get_ieee_repr(const floating_type_float16_t value)
+    {
+      using mantissa_t = typename floating_type_traits<float>::mantissa_t;
+      constexpr int mantissa_bits = floating_type_traits<float>::mantissa_bits;
+      constexpr int exponent_bits = floating_type_traits<float>::exponent_bits;
+
+      uint32_t value_bits = 0;
+      memcpy(&value_bits, &value.x, sizeof(value));
+
+      ieee_t<floating_type_float16_t> ieee_repr;
+      ieee_repr.mantissa
+	= static_cast<mantissa_t>(value_bits & ((uint32_t{1} << mantissa_bits) - 1u));
+      value_bits >>= mantissa_bits;
+      ieee_repr.biased_exponent
+	= static_cast<uint32_t>(value_bits & ((uint32_t{1} << exponent_bits) - 1u));
+      value_bits >>= exponent_bits;
+      ieee_repr.sign = (value_bits & 1) != 0;
+      // We have mantissa and biased_exponent from the float (originally
+      // float16_t converted to float).
+      // Transform that to float16_t mantissa and biased_exponent.
+      // If biased_exponent is 0, then value is +-0.0.
+      // If biased_exponent is 0x67..0x70, then it is a float16_t denormal.
+      if (ieee_repr.biased_exponent >= 0x67
+	  && ieee_repr.biased_exponent <= 0x70)
+	{
+	  int n = ieee_repr.biased_exponent - 0x67;
+	  ieee_repr.mantissa = ((uint32_t{1} << n)
+				| (ieee_repr.mantissa >> (mantissa_bits - n)));
+	  ieee_repr.biased_exponent = 0;
+	}
+      // If biased_exponent is 0xff, then it is a float16_t inf or NaN.
+      else if (ieee_repr.biased_exponent == 0xff)
+	{
+	  ieee_repr.mantissa >>= 13;
+	  ieee_repr.biased_exponent = 0x1f;
+	}
+      // If biased_exponent is 0x71..0x8e, then it is a float16_t normal number.
+      else if (ieee_repr.biased_exponent > 0x70)
+	{
+	  ieee_repr.mantissa >>= 13;
+	  ieee_repr.biased_exponent -= 0x70;
+	}
+      return ieee_repr;
+    }
+
+  template<>
+    ieee_t<floating_type_bfloat16_t>
+    get_ieee_repr(const floating_type_bfloat16_t value)
+    {
+      using mantissa_t = typename floating_type_traits<float>::mantissa_t;
+      constexpr int mantissa_bits = floating_type_traits<float>::mantissa_bits;
+      constexpr int exponent_bits = floating_type_traits<float>::exponent_bits;
+
+      uint32_t value_bits = 0;
+      memcpy(&value_bits, &value.x, sizeof(value));
+
+      ieee_t<floating_type_bfloat16_t> ieee_repr;
+      ieee_repr.mantissa
+	= static_cast<mantissa_t>(value_bits & ((uint32_t{1} << mantissa_bits) - 1u));
+      value_bits >>= mantissa_bits;
+      ieee_repr.biased_exponent
+	= static_cast<uint32_t>(value_bits & ((uint32_t{1} << exponent_bits) - 1u));
+      value_bits >>= exponent_bits;
+      ieee_repr.sign = (value_bits & 1) != 0;
+      // We have mantissa and biased_exponent from the float (originally
+      // bfloat16_t converted to float).
+      // Transform that to bfloat16_t mantissa and biased_exponent.
+      ieee_repr.mantissa >>= 16;
+      return ieee_repr;
+    }
+
   // Invoke Ryu to obtain the shortest scientific form for the given
   // floating-point number.
   template<typename T>
@@ -493,7 +604,9 @@ namespace
       else if constexpr (std::is_same_v<T, double>)
 	return ryu::floating_to_fd64(value);
       else if constexpr (std::is_same_v<T, long double>
-			 || std::is_same_v<T, F128_type>)
+			 || std::is_same_v<T, F128_type>
+			 || std::is_same_v<T, floating_type_float16_t>
+			 || std::is_same_v<T, floating_type_bfloat16_t>)
 	{
 	  constexpr int mantissa_bits
 	    = floating_type_traits<T>::mantissa_bits;
@@ -676,6 +789,28 @@ template<typename T>
       }
     __glibcxx_assert(first - orig_first == expected_output_length);
     return {{first, errc{}}};
+  }
+
+template<>
+  optional<to_chars_result>
+  __handle_special_value<floating_type_float16_t>(char* first,
+						  char* const last,
+						  const floating_type_float16_t value,
+						  const chars_format fmt,
+						  const int precision)
+  {
+    return __handle_special_value(first, last, value.x, fmt, precision);
+  }
+
+template<>
+  optional<to_chars_result>
+  __handle_special_value<floating_type_bfloat16_t>(char* first,
+						   char* const last,
+						   const floating_type_bfloat16_t value,
+						   const chars_format fmt,
+						   const int precision)
+  {
+    return __handle_special_value(first, last, value.x, fmt, precision);
   }
 
 // This subroutine of the floating-point to_chars overloads performs
@@ -922,7 +1057,15 @@ template<typename T>
 			       chars_format fmt)
   {
     if (fmt == chars_format::hex)
-      return __floating_to_chars_hex(first, last, value, nullopt);
+      {
+	// std::bfloat16_t has the same exponent range as std::float32_t
+	// and so we can avoid instantiation of __floating_to_chars_hex
+	// for bfloat16_t.  Shortest hex will be the same as for float.
+	if constexpr (is_same_v<T, floating_type_bfloat16_t>)
+	  return __floating_to_chars_hex(first, last, value.x, nullopt);
+	else
+	  return __floating_to_chars_hex(first, last, value, nullopt);
+      }
 
     __glibcxx_assert(fmt == chars_format::fixed
 		     || fmt == chars_format::scientific
@@ -1661,6 +1804,23 @@ to_chars(char* first, char* last, __float128 value, chars_format fmt,
   return __floating_to_chars_precision(first, last, value, fmt, precision);
 }
 #endif
+
+// Entrypoints for 16-bit floats.
+[[gnu::cold]] to_chars_result
+__to_chars_float16_t(char* first, char* last, float value,
+		     chars_format fmt) noexcept
+{
+  return __floating_to_chars_shortest(first, last,
+				      floating_type_float16_t{ value }, fmt);
+}
+
+[[gnu::cold]] to_chars_result
+__to_chars_bfloat16_t(char* first, char* last, float value,
+		      chars_format fmt) noexcept
+{
+  return __floating_to_chars_shortest(first, last,
+				      floating_type_bfloat16_t{ value }, fmt);
+}
 
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
 // Map the -mlong-double-64 long double overloads to the double overloads.

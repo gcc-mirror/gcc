@@ -615,7 +615,7 @@ private final class CppMangleVisitor : Visitor
         if (!ti)
         {
             auto ag = s.isAggregateDeclaration();
-            const ident = (ag && ag.mangleOverride) ? ag.mangleOverride.id : s.ident;
+            const ident = (ag && ag.pMangleOverride) ? ag.pMangleOverride.id : s.ident;
             this.writeNamespace(s.cppnamespace, () {
                 this.writeIdentifier(ident);
                 this.abiTags.writeSymbol(s, this);
@@ -654,14 +654,14 @@ private final class CppMangleVisitor : Visitor
         }
 
         auto ag = ti.aliasdecl ? ti.aliasdecl.isAggregateDeclaration() : null;
-        if (ag && ag.mangleOverride)
+        if (ag && ag.pMangleOverride)
         {
             this.writeNamespace(
                 ti.toAlias().cppnamespace, () {
-                    this.writeIdentifier(ag.mangleOverride.id);
-                    if (ag.mangleOverride.agg && ag.mangleOverride.agg.isInstantiated())
+                    this.writeIdentifier(ag.pMangleOverride.id);
+                    if (ag.pMangleOverride.agg && ag.pMangleOverride.agg.isInstantiated())
                     {
-                        auto to = ag.mangleOverride.agg.isInstantiated();
+                        auto to = ag.pMangleOverride.agg.isInstantiated();
                         append(to);
                         this.abiTags.writeSymbol(to.tempdecl, this);
                         template_args(to);

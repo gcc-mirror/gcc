@@ -1,3 +1,869 @@
+2022-10-28  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (maybe_warn_dangling_reference): Enable the warning in
+	system headers if the decl isn't in a system header.
+
+2022-10-28  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grokdeclarator): Call decl_attributes before do_friend.
+
+2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_all_clauses): Allow optional comma
+	before the first clause even in pragma syntax.
+	(cp_parser_omp_allocate, cp_parser_omp_atomic, cp_parser_omp_depobj,
+	cp_parser_omp_flush, cp_parser_omp_scan_loop_body,
+	cp_parser_omp_ordered, cp_parser_omp_assumption_clauses,
+	cp_finish_omp_declare_variant, cp_parser_omp_declare_target,
+	cp_parser_omp_declare_reduction_exprs, cp_parser_omp_requires,
+	cp_parser_omp_error): Likewise.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* cp-tree.h (ENUM_FIXED_UNDERLYING_TYPE_P, ENUM_UNDERLYING_TYPE):
+	Remove.  Moved to c-common.h.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107379
+	* name-lookup.cc (push_namespace): Call find_namespace_slot again
+	after pushdecl as the hash table might be expanded during pushdecl.
+
+2022-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (write_closure_template_head): New.
+	(write_closure_type_name): Call it.
+
+2022-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107382
+	PR c++/107383
+	* typeck.cc (cp_build_binary_op): Don't compute semantic_result_type
+	if result_type is NULL.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* call.cc (expr_represents_temporary_p): New, factored out of...
+	(conv_binds_ref_to_temporary): ...here.  Don't return false just
+	because a ck_base is missing.  Use expr_represents_temporary_p.
+	(do_warn_dangling_reference): New.
+	(maybe_warn_dangling_reference): New.
+	(extend_ref_init_temps): Call maybe_warn_dangling_reference.
+	* cp-tree.h: Adjust comment.
+	* typeck.cc (check_return_expr): Suppress -Wdangling-reference
+	warnings.
+
+2022-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.cc (synthesize_implicit_template_parm): Fix thinko about
+	mark the new parm DECL_VIRTUAL_P.  Avoid unneccessary tree_last call.
+
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (resolve_function_concept_overload): Explicitly
+	pass complain=tf_none to coerce_template_parms.
+	(resolve_concept_check): Likewise.
+	(normalize_concept_check): Likewise.
+	* cp-tree.h (coerce_template_parms): Declare the main overload
+	and default its last parameter to true.  Remove wrapper overloads.
+	* pt.cc (determine_specialization): Adjust calls to
+	coerce_template_parms and coerce_innermost_template_parms after
+	removing their last parameter.
+	(coerce_template_args_for_ttp): Likewise.
+	(coerce_ttp_args_for_tta): Likewise.
+	(coerce_template_template_parms): Likewise.
+	(coerce_template_parms): Remove use_default_args parameter and
+	adjust function comment.  Document default argument.  Remove
+	wrapper overloads.  No longer static.
+	(coerce_innermost_template_parms): Remove use_default_args
+	parameter.  Default require_all_args to true.
+	(lookup_template_class): As with determine_specialization.
+	(finish_template_variable): Likewise.
+	(tsubst_decl): Likewise.
+	(instantiate_alias_template): Likewise.
+	(fn_type_unification): Likewise.
+	(resolve_overloaded_unification): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(get_partial_spec_bindings): Likewise.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (find_failing_clause_r): Re-add the call to
+	contextual_conv_bool.
+
+2022-10-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106848
+	PR c++/102600
+	* module.cc (trees_out::core_vals): Stream TYPE_MAX_VALUE and
+	TYPE_MIN_VALUE of ENUMERAL_TYPE.
+	(trees_in::core_vals): Likewise.
+	(trees_out::write_enum_def): Don't stream them here.
+	(trees_in::read_enum_def): Likewise.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (class constexpr_global_ctx): Add modifiable field,
+	get_value, get_value_ptr, put_value, remove_value, flush_modifiable
+	member functions.
+	(class modifiable_tracker): New.
+	(cxx_eval_internal_function): Use it.
+	(diagnose_failing_condition): Strip CLEANUP_POINT_EXPR.
+
+2022-10-25  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (fold_operand): New function.
+	(find_failing_clause_r): Add const.
+	(find_failing_clause): Add const.
+	(diagnose_failing_condition): Add ctx parameter.
+	(cxx_eval_internal_function): Pass it.
+	* semantics.cc (diagnose_failing_condition): Move to constexpr.cc.
+	* cp-tree.h: Adjust.
+
+2022-10-24  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.cc (fold_builtin_source_location)
+	* vtable-class-hierarchy.cc (register_all_pairs): Simplify calls to
+	build_string_literal.
+	(build_string_from_id): Remove.
+
+2022-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107276
+	* typeck.cc (treat_lvalue_as_rvalue_p): Check the return value of move.
+
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107358
+	* typeck.cc (cp_build_binary_op): Pass operands before excess precision
+	promotions to scalar_to_vector call.
+
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105774
+	* constexpr.cc (cxx_eval_increment_expression): For signed types
+	that promote to int, evaluate PLUS_EXPR or MINUS_EXPR in int type.
+
+2022-10-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	* cp-tree.h (DECL_MAIN_P): Move most logic, besides the hosted
+	check, from here...
+	(DECL_MAIN_ANY_P): ... to here, so that it can be reused ...
+	(DECL_MAIN_FREESTANDING_P): ... here, with an additional
+	constraint on (hosted OR return type == int)
+	* decl.cc (finish_function): Use DECL_MAIN_FREESTANDING_P
+	instead of DECL_MAIN_P, to loosen the hosted requirement, but
+	check noreturn, before adding implicit returns.
+
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107295
+	* constexpr.cc (reduced_constant_expression_p) <case CONSTRUCTOR>:
+	Return false for VECTOR_TYPE CONSTRUCTORs even without
+	CONSTRUCTOR_NO_CLEARING set on them.
+	(cxx_eval_bare_aggregate): If constant but !changed, fold before
+	returning VECTOR_TYPE_P CONSTRUCTOR.
+	(cxx_eval_constant_expression) <case CONSTRUCTOR>: Don't fold
+	TREE_CONSTANT CONSTRUCTOR, just return it.
+
+2022-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106863
+	* semantics.cc (finish_compound_literal): For void{}, if
+	processing_template_decl return a COMPOUND_LITERAL_P
+	CONSTRUCTOR rather than void_node.
+
+2022-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (lookup_and_finish_template_variable): Don't
+	instantiate if the template's scope is dependent.
+	(tsubst_copy) <case TEMPLATE_DECL>: Pass entering_scope=true
+	when substituting the class scope.
+
+2022-10-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102963
+	* module.cc (node_template_info): Handle CONCEPT_DECL.
+
+2022-10-20  Jonathan Wakely   <jwakely@redhat.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* Make-lang.in: Add rules to generate std-name-hint.gperf.  Adjust
+	rule to generate std-name-hint.h to allow chain rule.
+	* std-name-hint.h: Regenerated.
+	* std-name-hint.gperf: This file is now generated.
+	* cxxapi-data.csv: New file.  CSV file with C++ API data.
+	* gen-cxxapi-file.py: New file.  Generate std-name-hint.gperf
+	and module export source (in future).
+
+2022-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85043
+	* typeck.cc (maybe_warn_about_useless_cast): Don't warn when
+	a glvalue is cast to a non-reference type.
+
+2022-10-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105045
+	* module.cc (trees_out::tpl_parms_fini): Don't assume default
+	template arguments must be trailing.
+	(trees_in::tpl_parms_fini): Likewise.
+
+2022-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* cp-tree.h (build_assume_call): Declare.
+	* parser.cc (cp_parser_omp_assumption_clauses): Use build_assume_call.
+	* cp-gimplify.cc (build_assume_call): New function.
+	(process_stmt_assume_attribute): Use build_assume_call.
+	* pt.cc (tsubst_copy_and_build): Likewise.
+
+2022-10-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101449
+	* module.cc (trees_out::write_function_def): Stream the
+	parms and result of the constexpr_fundef entry.
+	(trees_in::read_function_def): Likewise.
+
+2022-10-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106304
+	* constexpr.cc (cxx_dynamic_cast_fn_p): Check for abi_node
+	instead of global_namespace.
+	* rtti.cc (build_dynamic_cast_1): Set DECL_CONTEXT and
+	DECL_SOURCE_LOCATION when building dynamic_cast_node.  Push
+	it into the namespace.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (extended_float_type_p): Return true for
+	bfloat16_type_node.
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): Set
+	extended{1,2} if mv{1,2} is bfloat16_type_node.  Adjust comment.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82071
+	PR c/87390
+	PR c++/107097
+	* cp-tree.h (cp_ep_convert_and_check): Remove.
+	* cvt.cc (cp_ep_convert_and_check): Remove.
+	* call.cc (build_conditional_expr): Use excess precision for ?: with
+	one arm floating and another integral.  Don't convert first to
+	semantic result type from integral types.
+	(convert_like_internal): Don't call cp_ep_convert_and_check, instead
+	just strip EXCESS_PRECISION_EXPR before calling cp_convert_and_check
+	or cp_convert.
+	* typeck.cc (cp_build_binary_op): Set may_need_excess_precision
+	for comparisons or SPACESHIP_EXPR with at least one operand integral.
+	Don't compute semantic_result_type if build_type is non-NULL.  Call
+	cp_convert_and_check instead of cp_ep_convert_and_check.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/323
+	PR c++/107097
+	* parser.cc (cp_parser_primary_expression): Handle
+	EXCESS_PRECISION_EXPR with REAL_CST operand the same as REAL_CST.
+	* cvt.cc (cp_ep_convert_and_check): New function.
+	* call.cc (build_conditional_expr): Add excess precision support.
+	When type_after_usual_arithmetic_conversions returns error_mark_node,
+	use gcc_checking_assert that it is because of uncomparable floating
+	point ranks instead of checking all those conditions and make it
+	work also with complex types.
+	(convert_like_internal): Likewise.  Add NESTED_P argument, pass true
+	to recursive calls to convert_like.
+	(convert_like): Add NESTED_P argument, pass it through to
+	convert_like_internal.  For other overload pass false to it.
+	(convert_like_with_context): Pass false to NESTED_P.
+	(convert_arg_to_ellipsis): Add excess precision support.
+	(magic_varargs_p): For __builtin_is{finite,inf,inf_sign,nan,normal}
+	and __builtin_fpclassify return 2 instead of 1, document what it
+	means.
+	(build_over_call): Don't handle former magic 2 which is no longer
+	used, instead for magic 1 remove EXCESS_PRECISION_EXPR.
+	(perform_direct_initialization_if_possible): Pass false to NESTED_P
+	convert_like argument.
+	* constexpr.cc (cxx_eval_constant_expression): Handle
+	EXCESS_PRECISION_EXPR.
+	(potential_constant_expression_1): Likewise.
+	* pt.cc (tsubst_copy, tsubst_copy_and_build): Likewise.
+	* cp-tree.h (cp_ep_convert_and_check): Declare.
+	* cp-gimplify.cc (cp_fold): Handle EXCESS_PRECISION_EXPR.
+	* typeck.cc (cp_common_type): For COMPLEX_TYPEs, return error_mark_node
+	if recursive call returned it.
+	(convert_arguments): For magic 1 remove EXCESS_PRECISION_EXPR.
+	(cp_build_binary_op): Add excess precision support.  When
+	cp_common_type returns error_mark_node, use gcc_checking_assert that
+	it is because of uncomparable floating point ranks instead of checking
+	all those conditions and make it work also with complex types.
+	(cp_build_unary_op): Likewise.
+	(cp_build_compound_expr): Likewise.
+	(build_static_cast_1): Remove EXCESS_PRECISION_EXPR.
+
+2022-10-13  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h: Fix whitespace.
+	* parser.h: Fix whitespace.
+	* decl.cc: Fix whitespace.
+	* parser.cc: Fix whitespace.
+	* pt.cc: Fix whitespace.
+
+2022-10-13  Martin Liska  <mliska@suse.cz>
+
+	* vtable-class-hierarchy.cc (vtv_generate_init_routine): Emit
+	an artificial variable that would be put into .preinit_array
+	section.
+
+2022-10-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106925
+	* except.cc (maybe_splice_retval_cleanup): Check current_function_decl.
+	Make the bool const.
+
+2022-10-12  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (standard_conversion): Remove LOOKUP_PREFER_RVALUE code.
+	(reference_binding): Honor clk_implicit_rval even pre-C++20.
+	(implicit_conversion_1): Remove LOOKUP_PREFER_RVALUE code.
+	(build_user_type_conversion_1): Likewise.
+	(convert_like_internal): Likewise.
+	(build_over_call): Likewise.
+	* cp-tree.h (LOOKUP_PREFER_RVALUE): Remove.
+	(LOOKUP_NO_NARROWING): Adjust definition.
+	* except.cc (build_throw): Don't perform two overload resolutions.
+	* typeck.cc (maybe_warn_pessimizing_move): Don't use
+	LOOKUP_PREFER_RVALUE.
+	(check_return_expr): Don't perform two overload resolutions.
+
+2022-10-12  Jason Merrill  <jason@redhat.com>
+
+	DR 2631
+	* cp-tree.h (source_location_current_p): Remove.
+	* name-lookup.h (struct cp_binding_level): Remove
+	immediate_fn_ctx_p.
+	* call.cc (in_immediate_context): All default args
+	and DMI are potentially immediate context.
+	(immediate_invocation_p): Don't treat source_location specially.
+	(struct in_consteval_if_p_temp_override): Move to cp-tree.h.
+	* constexpr.cc (get_nth_callarg): Move to cp-tree.h.
+	* cp-gimplify.cc (cp_fold_r): Don't fold consteval.
+	* name-lookup.cc (begin_scope): Don't set immediate_fn_ctx_p.
+	* parser.cc (cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	* pt.cc (tsubst_default_argument): Open sk_function_parms level.
+	* tree.cc (source_location_current_p): Remove.
+	(bot_replace): Fold consteval here.
+	(break_out_target_exprs): Handle errors.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100134
+	* pt.cc (tsubst_friend_function): Propagate DECL_MODULE_PURVIEW_P
+	from the introduced namespace-scope function to the namespace.
+
+2022-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99377
+	* module.cc (lazy_load_binding): Clear processing_template_decl.
+	(lazy_load_pendings): Likewise.
+
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* mangle.cc (write_prefix): Add VAR_DECL & FIELD_DECL to
+	substitution table under abi=18.  Note possible mismatch.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* error.cc: Include "attribs.h".
+	(dump_type_prefix): Print only GNU attributes here.
+	(dump_type_suffix): Print standard attributes here.
+
+2022-10-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (TARGET_EXPR_ELIDING_P): New.
+	(unsafe_copy_elision_p, set_target_expr_eliding)
+	(cp_build_init_expr): Declare.
+	* call.cc (unsafe_copy_elision_p): No longer static.
+	(build_over_call, build_special_member_call)
+	(build_new_method_call): Use cp_build_init_expr.
+	* coroutines.cc (expand_one_await_expression)
+	(build_actor_fn, flatten_await_stmt, handle_nested_conditionals)
+	(await_statement_walker, morph_fn_to_coro): Use cp_build_init_expr.
+	* cp-gimplify.cc (cp_gimplify_init_expr)
+	(cp_gimplify_expr): Check TARGET_EXPR_ELIDING_P.
+	(cp_fold_r): Propagate it.
+	(cp_fold): Use cp_build_init_expr.
+	* decl.cc (check_initializer): Use cp_build_init_expr.
+	* except.cc (build_throw): Use cp_build_init_expr.
+	* init.cc (get_nsdmi): Call set_target_expr_eliding.
+	(perform_member_init, expand_default_init, expand_aggr_init_1)
+	(build_new_1, build_vec_init): Use cp_build_init_expr.
+	* method.cc (do_build_copy_constructor): Use cp_build_init_expr.
+	* semantics.cc (simplify_aggr_init_expr, finalize_nrv_r)
+	(finish_omp_reduction_clause): Use cp_build_init_expr.
+	* tree.cc (build_target_expr): Call set_target_expr_eliding.
+	(bot_manip): Copy TARGET_EXPR_ELIDING_P.
+	* typeck.cc (cp_build_modify_expr): Call set_target_expr_eliding.
+	(check_return_expr): Use cp_build_modify_expr.
+	* typeck2.cc (split_nonconstant_init_1)
+	(split_nonconstant_init): Use cp_build_init_expr.
+	(massage_init_elt): Call set_target_expr_eliding.
+	(process_init_constructor_record): Clear TARGET_EXPR_ELIDING_P on
+	unsafe copy elision.
+	(set_target_expr_eliding, cp_build_init_expr): New.
+
+2022-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107085
+	* call.cc (conv_binds_ref_to_temporary): New.
+	(ref_conv_binds_directly): Rename to...
+	(ref_conv_binds_to_temporary): ...this.  Use
+	conv_binds_ref_to_temporary.
+	* cp-tree.h (ref_conv_binds_directly): Rename to...
+	(ref_conv_binds_to_temporary): ...this.
+	* method.cc (ref_xes_from_temporary): Use ref_conv_binds_to_temporary.
+	* parser.cc (warn_for_range_copy): Likewise.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* module.cc (trees_out::core_bools): Stream out new bit
+	decl_not_flexarray.
+	(trees_in::core_bools): Stream in new bit decl_not_flexarray.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (trees_out::mark_class_def): Guard against
+	DECL_BIT_FIELD_REPRESENTATIVE not being a decl.
+
+2022-10-07  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (expand_default_init): Also push the INIT_EXPR inside a
+	CLEANUP_POINT_EXPR.
+
+2022-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104433
+	* module.cc (trees_out::core_bools): Don't override
+	DECL_EXTERNAL to true for static variables from an inline
+	function.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* module.cc (enum module_state_counts): Use array size.
+	* name-lookup.cc (class namespace_limit_reached): Likewise.
+	(class module_state): Move up in the file.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_check_std_attribute): Only do checks if
+	attribute is a standard attribute or in gnu namespace and only
+	lookup other attributes in those namespaces.
+	* cp-gimplify.cc (lookup_hotness_attribute): Adjust function comment.
+	Only return true for standard attribute or gnu namespace attribute.
+	(remove_hotness_attribute): Only remove hotness attributes when
+	they are standard or in gnu namespace, implement it in a single
+	loop rather than former 4 now 8 remove_attribute calls.
+
+2022-10-06  Jason Merrill  <jason@redhat.com>
+
+	* coroutines.cc (expand_one_await_expression): Change conversion
+	to VIEW_CONVERT_EXPR.
+	* cp-gimplify.cc (cp_genericize_r) [CONVERT_EXPR]: Add assert.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lex.cc (init_reswords): Handle D_EXT11.
+
+2022-10-06  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (optimize_specialization_lookup_p): Remove.
+	(retrieve_specialization): Assume the above returns false
+	and simplify accordingly.
+	(register_specialization): Likewise.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_assumption_clauses): Emit IFN_ASSUME
+	call for holds clause on assume construct.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* cp-tree.h (process_stmt_assume_attribute): Implement C++23
+	P1774R8 - Portable assumptions.  Declare.
+	(diagnose_failing_condition): Declare.
+	(find_failing_clause): Likewise.
+	* parser.cc (assume_attr): New enumerator.
+	(cp_parser_parenthesized_expression_list): Handle assume_attr.
+	Remove identifier variable, for id_attr push the identifier into
+	expression_list right away instead of inserting it before all the
+	others at the end.
+	(cp_parser_conditional_expression): New function.
+	(cp_parser_constant_expression): Use it.
+	(cp_parser_statement): Handle assume attribute.
+	(cp_parser_expression_statement): Likewise.
+	(cp_parser_gnu_attribute_list): Use assume_attr for assume
+	attribute.
+	(cp_parser_std_attribute): Likewise.  Handle standard assume
+	attribute like gnu::assume.
+	* cp-gimplify.cc (process_stmt_assume_attribute): New function.
+	* constexpr.cc: Include fold-const.h.
+	(find_failing_clause_r, find_failing_clause): New functions,
+	moved from semantics.cc with ctx argument added and if non-NULL,
+	call cxx_eval_constant_expression rather than fold_non_dependent_expr.
+	(cxx_eval_internal_function): Handle IFN_ASSUME.
+	(potential_constant_expression_1): Likewise.
+	* pt.cc (tsubst_copy_and_build): Likewise.
+	* semantics.cc (diagnose_failing_condition): New function.
+	(find_failing_clause_r, find_failing_clause): Moved to constexpr.cc.
+	(finish_static_assert): Use it.  Add auto_diagnostic_group.
+
+2022-10-05  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (lvalue_kind) [VIEW_CONVERT_EXPR]: Change prvalue to
+	xvalue.
+
+2022-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107154
+	* cp-gimplify.cc (cp_genericize_init_expr): Use iloc_sentinel.
+	(cp_genericize_target_expr): Likewise.
+
+2022-10-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107136
+	* Make-lang.in (CP_PLUGIN_HEADERS): Add cp-trait.def.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct omp_declare_target_attr): Rename to ...
+	(cp_omp_declare_target_attr): ... this.  Add device_type member.
+	(omp_begin_assumes_data): Rename to ...
+	(cp_omp_begin_assumes_data): ... this.
+	(struct saved_scope): Change types of omp_declare_target_attribute
+	and omp_begin_assumes.
+	* parser.cc (cp_parser_omp_clause_device_type): Uncomment
+	check_no_duplicate_clause call.
+	(cp_parser_omp_all_clauses): Fix up pasto, c_name for OMP_CLAUSE_LINK
+	should be "link" rather than "to".
+	(cp_parser_omp_declare_target): Adjust for omp_declare_target_attr
+	to cp_omp_declare_target_attr changes, push -1 as device_type.  Use
+	error_at rather than warning_at for declare target with only
+	device_type clauses.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(cp_parser_omp_begin): Add begin declare target support.  Adjust
+	for omp_begin_assumes_data to cp_omp_begin_assumes_data change.
+	(cp_parser_omp_end): Adjust for the
+	omp_declare_target_attr to cp_omp_declare_target_attr and
+	omp_begin_assumes_data to cp_omp_begin_assumes_data type changes,
+	adjust diagnostics wording and simplify format strings for easier
+	translations.
+	* semantics.cc (finish_translation_unit): Likewise.
+	* decl2.cc (cplus_decl_attributes): If device_type was present on
+	begin declare target, add "omp declare target host" and/or
+	"omp declare target nohost" attributes.
+
+2022-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (BCS_STMT_EXPR): New enumerator.
+	* name-lookup.h (enum scope_kind): Add sk_stmt_expr.
+	* name-lookup.cc (begin_scope): Handle sk_stmt_expr like sk_block.
+	* semantics.cc (begin_compound_stmt): For BCS_STMT_EXPR use
+	sk_stmt_expr.
+	* parser.cc (cp_parser_statement_expr): Use BCS_STMT_EXPR instead of
+	BCS_NORMAL.
+	* decl.cc (struct named_label_entry): Add in_stmt_expr.
+	(poplevel_named_label_1): Handle sk_stmt_expr.
+	(check_previous_goto_1): Diagnose entering of statement expression.
+	(check_goto): Likewise.
+
+2022-10-03  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Use CPTK_IS_SAME instead
+	of CPTK_IS_SAME_AS.
+	* cp-trait.def (IS_SAME_AS): Rename to ...
+	(IS_SAME): ... this.
+	* pt.cc (alias_ctad_tweaks): Use CPTK_IS_SAME instead of
+	CPTK_IS_SAME_AS.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2022-10-01  Patrick Palka  <ppalka@redhat.com>
+
+	* semantics.cc (trait_expr_value): Make cp_trait_kind switch
+	statement exhaustive.
+	(finish_trait_expr): Likewise.
+	(finish_trait_type): Likewise.
+
+2022-10-01  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_vec_init): Clear from_array for CONSTRUCTOR
+	initializer.
+
+2022-10-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.cc (cp_genericize_init): Also convert the result of
+	split_nonconstant_init to void.
+
+2022-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Likewise.
+	* cp-objcp-common.cc (names_builtin_p): Likewise.
+	* cp-tree.h (enum cp_trait_kind): Likewise.
+	* cxx-pretty-print.cc (pp_cxx_trait): Likewise.
+	* parser.cc (cp_keyword_starts_decl_specifier_p): Likewise.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_trait): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	* cp-trait.def: New file.
+
+2022-09-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.cc (cp_fold_r) [TARGET_EXPR]: Collapse
+	TARGET_EXPR within TARGET_EXPR.
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Avoid
+	adding redundant TARGET_EXPR.
+	* cp-tree.h (target_expr_needs_replace): VEC_INIT_EXPR doesn't.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102576
+	* pt.cc (listify): Use lookup_qualified_name instead of
+	get_namespace_binding.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (check_methods): Call constraints_satisfied_p.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1): Look into
+	DECL_INITIAL.  Use location wrappers.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93046
+	* call.cc (build_conditional_expr): For a?:c extension, treat
+	a reused class prvalue as an xvalue.
+
+2022-09-29  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (build_conditional_expr): Set TARGET_EXPR_NO_ELIDE on the
+	outer TARGET_EXPR.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_REMOVE_CV,
+	CPTK_REMOVE_REFERENCE and CPTK_REMOVE_CVREF.
+	* cp-objcp-common.cc (names_builtin_p): Likewise.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_REMOVE_CV,
+	CPTK_REMOVE_REFERENCE and CPTK_REMOVE_CVREF.
+	* cxx-pretty-print.cc (pp_cxx_trait): Handle CPTK_REMOVE_CV,
+	CPTK_REMOVE_REFERENCE and CPTK_REMOVE_CVREF.
+	* parser.cc (cp_keyword_starts_decl_specifier_p): Return true
+	for RID_REMOVE_CV, RID_REMOVE_REFERENCE and RID_REMOVE_CVREF.
+	(cp_parser_trait): Handle RID_REMOVE_CV, RID_REMOVE_REFERENCE
+	and RID_REMOVE_CVREF.
+	(cp_parser_simple_type_specifier): Likewise.
+	* semantics.cc (finish_trait_type): Likewise.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-objcp-common.cc (cp_common_init_ts): Replace
+	UNDERLYING_TYPE with TRAIT_TYPE.
+	* cp-tree.def (TRAIT_TYPE): Define.
+	(UNDERLYING_TYPE): Remove.
+	* cp-tree.h (TRAIT_TYPE_KIND_RAW): Define.
+	(TRAIT_TYPE_KIND): Define.
+	(TRAIT_TYPE_TYPE1): Define.
+	(TRAIT_TYPE_TYPE2): Define.
+	(WILDCARD_TYPE_P): Return true for TRAIT_TYPE.
+	(finish_trait_type): Declare.
+	* cxx-pretty-print.cc (cxx_pretty_printer::primary_expression):
+	Adjust after renaming pp_cxx_trait_expression.
+	(cxx_pretty_printer::simple_type_specifier) <case TRAIT_TYPE>:
+	New.
+	(cxx_pretty_printer::type_id): Replace UNDERLYING_TYPE with
+	TRAIT_TYPE.
+	(pp_cxx_trait_expression): Rename to ...
+	(pp_cxx_trait): ... this.  Handle TRAIT_TYPE as well.  Correct
+	pretty printing of the trailing arguments.
+	* cxx-pretty-print.h (pp_cxx_trait_expression): Rename to ...
+	(pp_cxx_trait_type): ... this.
+	* error.cc (dump_type) <case UNDERLYING_TYPE>: Remove.
+	<case TRAIT_TYPE>: New.
+	(dump_type_prefix): Replace UNDERLYING_WITH with TRAIT_TYPE.
+	(dump_type_suffix): Likewise.
+	* mangle.cc (write_type) <case UNDERLYING_TYPE>: Remove.
+	<case TRAIT_TYPE>: New.
+	* module.cc (trees_out::type_node) <case UNDERLYING_TYPE>:
+	Remove.
+	<case TRAIT_TYPE>: New.
+	(trees_in::tree_node): Likewise.
+	* parser.cc (cp_parser_primary_expression): Adjust after
+	renaming cp_parser_trait_expr.
+	(cp_parser_trait_expr): Rename to ...
+	(cp_parser_trait): ... this.  Call finish_trait_type for traits
+	that yield a type.
+	(cp_parser_simple_type_specifier): Adjust after renaming
+	cp_parser_trait_expr.
+	* pt.cc (for_each_template_parm_r) <case UNDERLYING_TYPE>:
+	Remove.
+	<case TRAIT_TYPE>: New.
+	(tsubst): Likewise.
+	(unify): Replace UNDERLYING_TYPE with TRAIT_TYPE.
+	(dependent_type_p_r): Likewise.
+	* semantics.cc (finish_underlying_type): Don't return
+	UNDERLYING_TYPE anymore when processing_template_decl.
+	(finish_trait_type): Define.
+	* tree.cc (strip_typedefs) <case UNDERLYING_TYPE>: Remove.
+	<case TRAIT_TYPE>: New.
+	(cp_walk_subtrees): Likewise.
+	* typeck.cc (structural_comptypes): Likewise.
+
+2022-09-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/100616
+	* module.cc (enum tree_tag): Add tt_nttp_var.
+	(trees_out::decl_node): Handle NTTP objects.
+	(trees_in::tree_node): Handle tt_nttp_var.
+	(depset::hash::add_binding_entry): Skip NTTP objects.
+
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* module.cc (write_location): Write discriminator.
+	(read_location): Read discriminator.
+
+2022-09-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_NTTP_OBJECT_P): New.
+	(template_parm_object_p): Delete.
+	(build_template_parm_object): Declare.
+	* cxx-pretty-print.cc (pp_cx_template_argument_list): Use DECL_NTTP_OBJECT_P.
+	* error.cc (dump_simple_decl): Likewise.
+	* mangle.cc (write_template_arg): Likewise.
+	* pt.cc (template_parm_object_p): Delete.
+	(create_template_parm_object): Separated out checking from ...
+	(get_template_parm_object): ... this, new external entry point.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101165
+	PR c++/106882
+	* call.cc (reference_binding): Check clk_implicit_rval in C++20 only.
+	* cp-tree.h (unparenthesized_id_or_class_member_access_p): Declare.
+	* pt.cc (unparenthesized_id_or_class_member_access_p): New function,
+	broken out of...
+	(do_auto_deduction): ...here.  Use it.  In C++23, maybe call
+	treat_lvalue_as_rvalue_p.
+	* tree.cc (xvalue_p): Check & clk_rvalueref, not == clk_rvalueref.
+	* typeck.cc (check_return_expr): Allow implicit move for functions
+	returning a reference as well, or when the return value type is not
+	a scalar type.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Say "nothrow" without quotes
+	rather than in quotes.
+
+2022-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/107049
+	* method.cc (is_convertible_helper): Use access check sentinel.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106651
+	* cp-tree.h (LAMBDA_EXPR_STATIC_P): Implement C++23
+	P1169R4 - static operator().  Define.
+	* parser.cc (CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR): Document
+	that it also allows static.
+	(cp_parser_lambda_declarator_opt): Handle static lambda specifier.
+	(cp_parser_decl_specifier_seq): Allow RID_STATIC for
+	CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR.
+	* decl.cc (grok_op_properties): If operator() isn't a method,
+	use a different error wording, if it is static member function,
+	allow it (for C++20 and older with a pedwarn unless it is
+	a lambda function or template instantiation).
+	* call.cc (joust): Don't ICE if one candidate is static member
+	function and the other is an indirect call.  If the parameter
+	conversion on the other candidate is user defined conversion,
+	ellipsis or bad conversion, make static member function candidate
+	a winner for that parameter.
+	* lambda.cc (maybe_add_lambda_conv_op): Handle static lambdas.
+	* error.cc (dump_lambda_function): Print static for static lambdas.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct omp_begin_assumes_data): New type.
+	(struct saved_scope): Add omp_begin_assumes member.
+	* parser.cc: Include bitmap.h.
+	(cp_parser_omp_assumption_clauses, cp_parser_omp_assume,
+	cp_parser_omp_assumes, cp_parser_omp_begin): New functions.
+	(cp_parser_omp_end_declare_target): Rename to ...
+	(cp_parser_omp_end): ... this.  Handle also end assumes.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_ASSUME.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ASSUME, PRAGMA_OMP_ASSUMES
+	and PRAGMA_OMP_BEGIN.  Handle PRAGMA_OMP_END rather than
+	PRAGMA_OMP_END_DECLARE_TARGET and call cp_parser_omp_end
+	for it rather than cp_parser_omp_end_declare_target.
+	* pt.cc (apply_late_template_attributes): Also temporarily clear
+	omp_begin_assumes.
+	* semantics.cc (finish_translation_unit): Also diagnose
+	#pragma omp begin assumes without corresponding
+	#pragma omp end assumes.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_lambda_declarator_opt): Don't diagnose
+	conflicting specifiers here.
+	(cp_storage_class_name): New variable.
+	(cp_parser_decl_specifier_seq): When setting conflicting_specifiers_p
+	for the first time, diagnose which exact specifiers conflict.
+	(cp_parser_set_storage_class): Likewise.  Move storage_class
+	computation earlier.
+	* decl.cc (grokdeclarator): Don't diagnose conflicting specifiers
+	here, just return error_mark_node.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* cp-tree.h (cp_compare_floating_point_conversion_ranks): Implement
+	P1467R9 - Extended floating-point types and standard names except
+	for std::bfloat16_t for now.  Declare.
+	(extended_float_type_p): New inline function.
+	* mangle.cc (write_builtin_type): Mangle float{16,32,64,128}_type_node
+	as DF{16,32,64,128}_.  Mangle float{32,64,128}x_type_node as
+	DF{32,64,128}x.  Remove FIXED_POINT_TYPE mangling that conflicts
+	with that.
+	* typeck2.cc (check_narrowing): If one of ftype or type is extended
+	floating-point type, compare floating-point conversion ranks.
+	* parser.cc (cp_keyword_starts_decl_specifier_p): Handle
+	CASE_RID_FLOATN_NX.
+	(cp_parser_simple_type_specifier): Likewise and diagnose missing
+	_Float<N> or _Float<N>x support if not supported by target.
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): New function.
+	(cp_common_type): If both types are REAL_TYPE and one or both are
+	extended floating-point types, select common type based on comparison
+	of floating-point conversion ranks and subranks.
+	(cp_build_binary_op): Diagnose operation with floating point arguments
+	with unordered conversion ranks.
+	* call.cc (standard_conversion): For floating-point conversion, if
+	either from or to are extended floating-point types, set conv->bad_p
+	for implicit conversion from larger to smaller conversion rank or
+	with unordered conversion ranks.
+	(convert_like_internal): Emit a pedwarn on such conversions.
+	(build_conditional_expr): Diagnose operation with floating point
+	arguments with unordered conversion ranks.
+	(convert_arg_to_ellipsis): Don't promote extended floating-point types
+	narrower than double to double.
+	(compare_ics): Implement P1467R9 [over.ics.rank]/4 changes.
+
 2022-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106656

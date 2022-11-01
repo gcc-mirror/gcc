@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PROGRAM_POINT_H
 #define GCC_ANALYZER_PROGRAM_POINT_H
 
+#include "pretty-print.h"
+#include "analyzer/call-string.h"
+
 namespace ana {
 
 class exploded_graph;

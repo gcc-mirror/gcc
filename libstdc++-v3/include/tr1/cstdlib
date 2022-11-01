@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <cstdlib>
 
 #if _GLIBCXX_HOSTED

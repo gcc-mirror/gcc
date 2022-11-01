@@ -999,7 +999,8 @@ mmix_setup_incoming_varargs (cumulative_args_t args_so_farp_v,
 
   /* We assume that one argument takes up one register here.  That should
      be true until we start messing with multi-reg parameters.  */
-  if ((7 + (MMIX_FUNCTION_ARG_SIZE (arg.mode, arg.type))) / 8 != 1)
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      && (7 + (MMIX_FUNCTION_ARG_SIZE (arg.mode, arg.type))) / 8 != 1)
     internal_error ("MMIX Internal: Last named vararg would not fit in a register");
 }
 

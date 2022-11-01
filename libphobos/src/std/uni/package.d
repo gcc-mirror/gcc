@@ -10193,16 +10193,7 @@ bool isAlpha(dchar c)
     // optimization
     if (c < 0xAA)
     {
-        size_t x = c - 'A';
-        if (x <= 'Z' - 'A')
-            return true;
-        else
-        {
-            x = c - 'a';
-            if (x <= 'z'-'a')
-                return true;
-        }
-        return false;
+        return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z');
     }
 
     return alphaTrie[c];

@@ -30,7 +30,7 @@
 
 /* This is set to the ICV values of current GPU during device initialization,
    when the offload image containing this libgomp portion is loaded.  */
-static volatile struct gomp_offload_icvs GOMP_ADDITIONAL_ICVS;
+volatile struct gomp_offload_icvs GOMP_ADDITIONAL_ICVS;
 
 void
 omp_set_default_device (int device_num __attribute__((unused)))

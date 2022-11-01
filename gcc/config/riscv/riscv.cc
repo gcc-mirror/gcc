@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "target.h"
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"
@@ -45,8 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "reload.h"
 #include "tm_p.h"
-#include "target.h"
-#include "target-def.h"
 #include "basic-block.h"
 #include "expr.h"
 #include "optabs.h"
@@ -59,6 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tm-constrs.h"
 #include "rtl-iter.h"
+
+/* This file should be included last.  */
+#include "target-def.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -375,6 +377,11 @@ static const struct attribute_spec riscv_attribute_table[] =
   { "interrupt", 0, 1, false, true, true, false,
     riscv_handle_type_attribute, NULL },
 
+  /* The following two are used for the built-in properties of the Vector type
+     and are not used externally */
+  {"RVV sizeless type", 4, 4, false, true, false, true, NULL, NULL},
+  {"RVV type", 0, 0, false, true, false, true, NULL, NULL},
+
   /* The last attribute spec is set to be NULL.  */
   { NULL,	0,  0, false, false, false, false, NULL, NULL }
 };
@@ -389,12 +396,9 @@ static const unsigned gpr_save_reg_order[] = {
 
 /* A table describing all the processors GCC knows about.  */
 static const struct riscv_tune_info riscv_tune_info_table[] = {
-  { "rocket", generic, &rocket_tune_info },
-  { "sifive-3-series", generic, &rocket_tune_info },
-  { "sifive-5-series", generic, &rocket_tune_info },
-  { "sifive-7-series", sifive_7, &sifive_7_tune_info },
-  { "thead-c906", generic, &thead_c906_tune_info },
-  { "size", generic, &optimize_size_tune_info },
+#define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO)	\
+  { TUNE_NAME, PIPELINE_MODEL, & TUNE_INFO},
+#include "riscv-cores.def"
 };
 
 void riscv_frame_info::reset(void)
@@ -937,12 +941,35 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
   return true;
 }
 
-/* Return true if mode is the RVV mode.  */
+/* Return true if mode is the RVV enabled mode.
+   For example: 'VNx1DI' mode is disabled if MIN_VLEN == 32.
+   'VNx1SI' mode is enabled if MIN_VLEN == 32.  */
 
-static bool
+bool
 riscv_v_ext_vector_mode_p (machine_mode mode)
 {
-  return VECTOR_MODE_P (mode);
+#define ENTRY(MODE, REQUIREMENT)                                               \
+  case MODE##mode:                                                             \
+    return REQUIREMENT;
+  switch (mode)
+    {
+#include "riscv-vector-switch.def"
+    default:
+      return false;
+    }
+
+  return false;
+}
+
+/* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
+   NUNITS size for corresponding machine_mode.  */
+
+poly_int64
+riscv_v_adjust_nunits (machine_mode mode, int scale)
+{
+  if (riscv_v_ext_vector_mode_p (mode))
+    return riscv_vector_chunks * scale;
+  return scale;
 }
 
 /* Return true if X is a valid address for machine mode MODE.  If it is,
@@ -1921,6 +1948,18 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 {
   if (CONST_POLY_INT_P (src))
     {
+      /*
+	Handle:
+	  (insn 183 182 184 6 (set (mem:QI (plus:DI (reg/f:DI 156)
+		  (const_int 96 [0x60])) [0  S1 A8])
+	  (const_poly_int:QI [8, 8]))
+	"../../../../riscv-gcc/libgcc/unwind-dw2.c":1579:3 -1 (nil))
+      */
+      if (MEM_P (dest))
+	{
+	  emit_move_insn (dest, force_reg (mode, src));
+	  return true;
+	}
       poly_int64 value = rtx_to_poly_int64 (src);
       if (!value.is_constant () && !TARGET_VECTOR)
 	{
@@ -3691,7 +3730,8 @@ riscv_setup_incoming_varargs (cumulative_args_t cum,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  riscv_function_arg_advance (pack_cumulative_args (&local_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    riscv_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -4098,6 +4138,68 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
   switch (letter)
     {
+      case 'm': {
+	if (riscv_v_ext_vector_mode_p (mode))
+	  {
+	    /* Calculate lmul according to mode and print the value.  */
+	    poly_int64 size = GET_MODE_SIZE (mode);
+	    unsigned int lmul;
+	    if (known_lt (size, BYTES_PER_RISCV_VECTOR))
+	      lmul = 1;
+	    else
+	      lmul = exact_div (size, BYTES_PER_RISCV_VECTOR).to_constant ();
+	    asm_fprintf (file, "%d", lmul);
+	  }
+	else if (code == CONST_INT)
+	  {
+	    /* The value in the operand is the unsigned int value
+	       converted from (enum machine_mode).
+	       This RTX is generated as follows:
+
+	       machine_mode mode = XXXmode;
+	       operand = gen_int_mode ((unsigned int)mode, Pmode);
+
+	       So we convert it back into machine_mode and then calculate
+	       the LMUL according to GET_MODE_SIZE.  */
+
+	    machine_mode rvv_mode = (machine_mode) UINTVAL (op);
+	    /* For rvv mask modes, we can not calculate LMUL simpily according
+	       to BYTES_PER_RISCV_VECTOR. When rvv_mode = VNx4BImode.
+	       Set SEW = 8, LMUL = 1 by default if TARGET_MIN_VLEN == 32.
+	       Set SEW = 8, LMUL = 1 / 2 by default if TARGET_MIN_VLEN > 32.  */
+	    bool bool_p = GET_MODE_CLASS (rvv_mode) == MODE_VECTOR_BOOL;
+	    poly_int64 m1_size = BYTES_PER_RISCV_VECTOR;
+	    poly_int64 rvv_size
+	      = bool_p ? GET_MODE_NUNITS (rvv_mode) : GET_MODE_SIZE (rvv_mode);
+	    bool fractional_p = known_lt (rvv_size, BYTES_PER_RISCV_VECTOR);
+	    unsigned int factor
+	      = fractional_p ? exact_div (m1_size, rvv_size).to_constant ()
+			     : exact_div (rvv_size, m1_size).to_constant ();
+	    asm_fprintf (file, "%s%d", fractional_p ? "mf" : "m", factor);
+	  }
+	else
+	  output_operand_lossage ("invalid vector constant");
+	break;
+      }
+      case 'p': {
+	if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	  {
+	    /* Print for RVV mask operand.
+	       If op is reg, print ",v0.t".
+	       Otherwise, don't print anything.  */
+	    if (code == REG)
+	      fprintf (file, ",%s.t", reg_names[REGNO (op)]);
+	  }
+	else if (code == CONST_INT)
+	  {
+	    /* Tail && Mask policy.  */
+	    bool agnostic_p = UINTVAL (op) & 0x1;
+	    asm_fprintf (file, "%s", agnostic_p ? "a" : "u");
+	  }
+	else
+	  output_operand_lossage ("invalid vector constant");
+	break;
+      }
     case 'h':
       if (code == HIGH)
 	op = XEXP (op, 0);
@@ -4924,8 +5026,8 @@ riscv_expand_epilogue (int style)
   rtx insn;
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
-  bool need_barrier_p
-    = known_ne (get_frame_size (), cfun->machine->frame.arg_pointer_offset);
+  bool need_barrier_p = known_ne (get_frame_size ()
+				  + cfun->machine->frame.arg_pointer_offset, 0);
 
   if (cfun->machine->naked_p)
     {
@@ -5319,6 +5421,13 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	!= call_used_or_fixed_reg_p (regno + i))
       return false;
 
+  /* Only use even registers in RV32 ZDINX */
+  if (!TARGET_64BIT && TARGET_ZDINX){
+    if (GET_MODE_CLASS (mode) == MODE_FLOAT &&
+     GET_MODE_UNIT_SIZE (mode) == GET_MODE_SIZE (DFmode))
+    return !(regno & 1);
+  }
+
   return true;
 }
 
@@ -5403,6 +5512,11 @@ riscv_file_start (void)
      relaxation in the assembler.  */
   if (! riscv_mrelax)
     fprintf (asm_out_file, "\t.option norelax\n");
+
+  /* If the user specifies "-mcsr-check" on the command line then enable csr
+     check in the assembler.  */
+  if (riscv_mcsr_check)
+    fprintf (asm_out_file, "\t.option csr-check\n");
 
   if (riscv_emit_attribute_p)
     riscv_emit_attribute ();
@@ -5553,7 +5667,7 @@ riscv_option_override (void)
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
   /* Likewise floating-point division and square root.  */
-  if (TARGET_HARD_FLOAT && (target_flags_explicit & MASK_FDIV) == 0)
+  if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && (target_flags_explicit & MASK_FDIV) == 0)
     target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
@@ -5598,6 +5712,11 @@ riscv_option_override (void)
 
   if (TARGET_RVE && riscv_abi != ABI_ILP32E)
     error ("rv32e requires ilp32e ABI");
+
+  // Zfinx require abi ilp32,ilp32e or lp64.
+  if (TARGET_ZFINX && riscv_abi != ABI_ILP32
+      && riscv_abi != ABI_LP64 && riscv_abi != ABI_ILP32E)
+    error ("z*inx requires ABI ilp32, ilp32e or lp64");
 
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
@@ -6180,6 +6299,16 @@ riscv_mangle_type (const_tree type)
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
     return "DF16_";
 
+  /* Mangle all vector type for vector extension.  */
+  /* The mangle name follows the rule of RVV LLVM
+     that is "u" + length of (abi_name) + abi_name. */
+  if (TYPE_NAME (type) != NULL)
+    {
+      const char *res = riscv_vector::mangle_builtin_type (type);
+      if (res)
+	return res;
+    }
+
   /* Use the default mangling.  */
   return NULL;
 }
@@ -6221,7 +6350,7 @@ riscv_libgcc_floating_mode_supported_p (scalar_float_mode mode)
        precision of the _FloatN type; evaluate all other operations and
        constants to the range and precision of the semantic type;
 
-   If we have the zfh extensions then we support _Float16 in native
+   If we have the zfh/zhinx extensions then we support _Float16 in native
    precision, so we should set this to 16.  */
 static enum flt_eval_method
 riscv_excess_precision (enum excess_precision_type type)
@@ -6230,9 +6359,11 @@ riscv_excess_precision (enum excess_precision_type type)
     {
     case EXCESS_PRECISION_TYPE_FAST:
     case EXCESS_PRECISION_TYPE_STANDARD:
-      return (TARGET_ZFH ? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
-			 : FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
+      return ((TARGET_ZFH || TARGET_ZHINX)
+		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
+		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
     case EXCESS_PRECISION_TYPE_IMPLICIT:
+    case EXCESS_PRECISION_TYPE_FLOAT16:
       return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
     default:
       gcc_unreachable ();
@@ -6289,6 +6420,59 @@ riscv_reinit (void)
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::riscv_run_selftests
 #endif /* #if CHECKING_P */
+
+/* Implement TARGET_VECTOR_MODE_SUPPORTED_P.  */
+
+static bool
+riscv_vector_mode_supported_p (machine_mode mode)
+{
+  if (TARGET_VECTOR)
+    return riscv_v_ext_vector_mode_p (mode);
+
+  return false;
+}
+
+/* Implement TARGET_VERIFY_TYPE_CONTEXT.  */
+
+static bool
+riscv_verify_type_context (location_t loc, type_context_kind context,
+			   const_tree type, bool silent_p)
+{
+  return riscv_vector::verify_type_context (loc, context, type, silent_p);
+}
+
+/* Implement TARGET_VECTOR_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+riscv_vector_alignment (const_tree type)
+{
+  /* ??? Checking the mode isn't ideal, but VECTOR_BOOLEAN_TYPE_P can
+     be set for non-predicate vectors of booleans.  Modes are the most
+     direct way we have of identifying real RVV predicate types.  */
+  /* FIXME: RVV didn't mention the alignment of bool, we uses
+     one byte align.  */
+  if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_BOOL)
+    return 8;
+
+  widest_int min_size
+    = constant_lower_bound (wi::to_poly_widest (TYPE_SIZE (type)));
+  return wi::umin (min_size, 128).to_uhwi ();
+}
+
+/* Implement REGMODE_NATURAL_SIZE.  */
+
+poly_uint64
+riscv_regmode_natural_size (machine_mode mode)
+{
+  /* The natural size for RVV data modes is one RVV data vector,
+     and similarly for predicates.  We can't independently modify
+     anything smaller than that.  */
+  /* ??? For now, only do this for variable-width RVV registers.
+     Doing it for constant-sized registers breaks lower-subreg.c.  */
+  if (!riscv_vector_chunks.is_constant () && riscv_v_ext_vector_mode_p (mode))
+    return BYTES_PER_RISCV_VECTOR;
+  return UNITS_PER_WORD;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -6501,6 +6685,15 @@ riscv_reinit (void)
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
 #endif
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P riscv_vector_mode_supported_p
+
+#undef TARGET_VERIFY_TYPE_CONTEXT
+#define TARGET_VERIFY_TYPE_CONTEXT riscv_verify_type_context
+
+#undef TARGET_VECTOR_ALIGNMENT
+#define TARGET_VECTOR_ALIGNMENT riscv_vector_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

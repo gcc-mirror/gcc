@@ -1,3 +1,13 @@
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-next-runtime-abi-01.cc (build_next_objc_exception_stuff):
+	Use build_function_type to build type of objc_setjmp_decl.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* objc-gnu-runtime-abi-01.cc (generate_static_references):
+	Remove unused variable.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* objc-act.h (objc_get_sarif_source_language): New decl.

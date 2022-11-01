@@ -31,7 +31,6 @@ version (linux) public import core.sys.linux.sys.time;
 
 version (Posix):
 extern (C) nothrow @nogc:
-@system:
 
 //
 // XOpen (XSI)

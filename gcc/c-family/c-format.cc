@@ -488,6 +488,14 @@ static const format_length_info printf_length_specs[] =
   { "j", FMT_LEN_j, STD_C99, NO_FMT, 0 },
   { "H", FMT_LEN_H, STD_C2X, NO_FMT, 0 },
   { "D", FMT_LEN_D, STD_C2X, "DD", FMT_LEN_DD, STD_C2X, 0 },
+  { "w8", FMT_LEN_w8, STD_C2X, NO_FMT, 0 },
+  { "w16", FMT_LEN_w16, STD_C2X, NO_FMT, 0 },
+  { "w32", FMT_LEN_w32, STD_C2X, NO_FMT, 0 },
+  { "w64", FMT_LEN_w64, STD_C2X, NO_FMT, 0 },
+  { "wf8", FMT_LEN_wf8, STD_C2X, NO_FMT, 0 },
+  { "wf16", FMT_LEN_wf16, STD_C2X, NO_FMT, 0 },
+  { "wf32", FMT_LEN_wf32, STD_C2X, NO_FMT, 0 },
+  { "wf64", FMT_LEN_wf64, STD_C2X, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -525,6 +533,14 @@ static const format_length_info scanf_length_specs[] =
   { "j", FMT_LEN_j, STD_C99, NO_FMT, 0 },
   { "H", FMT_LEN_H, STD_C2X, NO_FMT, 0 },
   { "D", FMT_LEN_D, STD_C2X, "DD", FMT_LEN_DD, STD_C2X, 0 },
+  { "w8", FMT_LEN_w8, STD_C2X, NO_FMT, 0 },
+  { "w16", FMT_LEN_w16, STD_C2X, NO_FMT, 0 },
+  { "w32", FMT_LEN_w32, STD_C2X, NO_FMT, 0 },
+  { "w64", FMT_LEN_w64, STD_C2X, NO_FMT, 0 },
+  { "wf8", FMT_LEN_wf8, STD_C2X, NO_FMT, 0 },
+  { "wf16", FMT_LEN_wf16, STD_C2X, NO_FMT, 0 },
+  { "wf32", FMT_LEN_wf32, STD_C2X, NO_FMT, 0 },
+  { "wf64", FMT_LEN_wf64, STD_C2X, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -693,26 +709,26 @@ static const format_flag_pair strfmon_flag_pairs[] =
 static const format_char_info print_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +'I",  "i",  NULL },
-  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN }, "-wp0#",     "i",  NULL },
-  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN }, "-wp0'I",    "i",  NULL },
-  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128 }, "-wp0 +#'I", "",   NULL },
-  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128 }, "-wp0 +#I",  "",   NULL },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-w",        "",   NULL },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",       "cR", NULL },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-w",        "c",  NULL },
-  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN }, "",          "W",  NULL },
+  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN,   T2X_I8,  T2X_I16, T2X_I32, T2X_I64, T2X_IF8, T2X_IF16, T2X_IF32, T2X_IF64 }, "-wp0 +'I",  "i",  NULL },
+  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "-wp0#",     "i",  NULL },
+  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "-wp0'I",    "i",  NULL },
+  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp0 +#'I", "",   NULL },
+  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp0 +#I",  "",   NULL },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-w",        "",   NULL },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp",       "cR", NULL },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-w",        "c",  NULL },
+  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN,   T2X_I8,  T2X_I16, T2X_I32, T2X_I64, T2X_IF8, T2X_IF16, T2X_IF32, T2X_IF64 }, "",          "W",  NULL },
   /* C99 conversion specifiers.  */
-  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128 }, "-wp0 +#'I", "",   NULL },
-  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64,  T2X_D128 }, "-wp0 +#",   "",   NULL },
+  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp0 +#'I", "",   NULL },
+  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp0 +#",   "",   NULL },
   /* C2X conversion specifiers.  */
-  { "b",   0, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN }, "-wp0#",     "i",  NULL },
+  { "b",   0, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "-wp0#",     "i",  NULL },
   /* X/Open conversion specifiers.  */
-  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-w",        "",   NULL },
-  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",       "R",  NULL },
+  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-w",        "",   NULL },
+  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp",       "R",  NULL },
   /* GNU conversion specifiers.  */
-  { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",       "",   NULL },
-  { "B",   0, STD_EXT, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN }, "-wp0#",     "i",  NULL },
+  { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "-wp",       "",   NULL },
+  { "B",   0, STD_EXT, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "-wp0#",     "i",  NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
@@ -860,23 +876,23 @@ static const format_char_info gcc_dump_printf_char_table[] =
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN }, "*w'I", "W",   NULL },
-  { "u",     1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN }, "*w'I", "W",   NULL },
-  { "oxX",   1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN }, "*w",   "W",   NULL },
-  { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128 }, "*w'",  "W",   NULL },
-  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*mw",   "cW",  NULL },
-  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "cW",  NULL },
-  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "cW[", NULL },
-  { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*w",   "W",   NULL },
-  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN }, "",     "W",   NULL },
+  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN,   T2X_I8,  T2X_I16, T2X_I32, T2X_I64, T2X_IF8, T2X_IF16, T2X_IF32, T2X_IF64 }, "*w'I", "W",   NULL },
+  { "u",     1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "*w'I", "W",   NULL },
+  { "oxX",   1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "*w",   "W",   NULL },
+  { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*w'",  "W",   NULL },
+  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*mw",   "cW",  NULL },
+  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*amw",  "cW",  NULL },
+  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*amw",  "cW[", NULL },
+  { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*w",   "W",   NULL },
+  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN,   T2X_I8,  T2X_I16, T2X_I32, T2X_I64, T2X_IF8, T2X_IF16, T2X_IF32, T2X_IF64 }, "",     "W",   NULL },
   /* C99 conversion specifiers.  */
-  { "F",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128 }, "*w'",  "W",   NULL },
-  { "aA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32,  T2X_D64,  T2X_D128 }, "*w'",  "W",   NULL },
+  { "F",   1, STD_C99,   { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*w'",  "W",   NULL },
+  { "aA",   1, STD_C99,  { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  T2X_D32, T2X_D64, T2X_D128, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*w'",  "W",   NULL },
   /* C2X conversion specifiers.  */
-  { "b",     1, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN }, "*w",   "W",   NULL },
+  { "b",     1, STD_C2X, { T2X_UI,  T2X_UC,  T2X_US,  T2X_UL,  T2X_ULL, TEX_ULL, T2X_ST,  T2X_UPD, T2X_UIM, BADLEN,  BADLEN,  BADLEN,   T2X_U8,  T2X_U16, T2X_U32, T2X_U64, T2X_UF8, T2X_UF16, T2X_UF32, T2X_UF64 }, "*w",   "W",   NULL },
   /* X/Open conversion specifiers.  */
-  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*mw",   "W",   NULL },
-  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "W",   NULL },
+  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*mw",   "W",   NULL },
+  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,   BADLEN,   BADLEN }, "*amw",  "W",   NULL },
   { NULL, 0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
@@ -2900,7 +2916,7 @@ static const token_t cxx_opers[] =
   };
 
 /* Common C/C++ keywords that are expected to be quoted within the format
-   string.  Keywords like auto, inline, or volatile are exccluded because
+   string.  Keywords like auto, inline, or volatile are excluded because
    they are sometimes used in common terms like /auto variables/, /inline
    function/, or /volatile access/ where they should not be quoted.  */
 
@@ -2927,7 +2943,6 @@ static const token_t c_keywords[] =
    NAME ("noinline", NULL),
    NAME ("nonnull", NULL),
    NAME ("noreturn", NULL),
-   NAME ("nothrow", NULL),
    NAME ("offsetof", NULL),
    NAME ("readonly", "read-only"),
    NAME ("readwrite", "read-write"),

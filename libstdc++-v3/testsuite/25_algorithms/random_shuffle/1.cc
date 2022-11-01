@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-add-options using-deprecated }
+// { dg-require-effective-target hosted }
 
 // 25.2.11 random_shuffle()
 

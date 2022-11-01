@@ -14,6 +14,21 @@ int b, c, e;
 int d;
 [[omp::directive (end declare target)]];
 [[omp::directive (end declare target)]];
+[[omp::directive (begin declare target, device_type (any))]];
+[[omp::directive (begin declare target)]];
+int f;
+[[omp::directive (end declare target)]];
+[[omp::directive (end declare target)]];
+[[omp::directive (begin declare target device_type (host))]];
+[[omp::directive (declare target)]];
+int g;
+[[omp::directive (end declare target)]];
+[[omp::directive (end declare target)]];
+[[omp::directive (declare target)]];
+[[omp::directive (begin declare target, device_type (nohost))]];
+int h;
+[[omp::directive (end declare target)]];
+[[omp::directive (end declare target)]];
 [[omp::directive (nothing)]];
 [[omp::directive (begin assumes no_openmp no_openmp_routines no_parallelism
 				absent (atomic, barrier, cancel, cancellation point)

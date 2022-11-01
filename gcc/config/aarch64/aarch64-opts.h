@@ -22,6 +22,10 @@
 #ifndef GCC_AARCH64_OPTS_H
 #define GCC_AARCH64_OPTS_H
 
+#ifndef USED_FOR_TARGET
+typedef uint64_t aarch64_feature_flags;
+#endif
+
 /* The various cores that implement AArch64.  */
 enum aarch64_processor
 {

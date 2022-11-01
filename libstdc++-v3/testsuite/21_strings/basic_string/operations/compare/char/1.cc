@@ -29,7 +29,7 @@
 // NB compare should be thought of as a lexographical compare, ie how
 // things would be sorted in a dictionary.
 
-#include <string>
+#include <testsuite_string.h>
 #include <cstring>
 #include <testsuite_hooks.h>
 
@@ -67,7 +67,7 @@ test_value(int result, want_value expected)
 int 
 test01()
 {
-  using namespace std;
+  using namespace __gnu_test;
 
   string 	str_0("costa rica");
   string 	str_1("costa marbella");

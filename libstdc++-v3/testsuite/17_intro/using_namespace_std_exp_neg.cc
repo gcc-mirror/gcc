@@ -20,42 +20,45 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
-#include <complex>
-#include <deque>
 #include <exception>
-#include <fstream>
 #include <functional>
-#include <iomanip>
-#include <ios>
-#include <iosfwd>
-#include <iostream>
-#include <istream>
 #include <iterator>
 #include <limits>
-#include <list>
-#include <locale>
-#include <map>
 #include <memory>
 #include <new>
 #include <numeric>
-#include <ostream>
-#include <queue>
-#include <random>
-#include <regex>
-#include <set>
-#include <sstream>
-#include <stack>
-#include <stdexcept>
-#include <streambuf>
-#include <string>
 #include <tuple>
 #include <typeinfo>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
-#include <valarray>
-#include <vector>
+
+#if __STDC_HOSTED__
+#  include <complex>
+#  include <deque>
+#  include <fstream>
+#  include <iomanip>
+#  include <ios>
+#  include <iosfwd>
+#  include <iostream>
+#  include <istream>
+#  include <list>
+#  include <locale>
+#  include <map>
+#  include <ostream>
+#  include <queue>
+#  include <random>
+#  include <regex>
+#  include <set>
+#  include <sstream>
+#  include <stack>
+#  include <stdexcept>
+#  include <streambuf>
+#  include <string>
+#  include <unordered_map>
+#  include <unordered_set>
+#  include <valarray>
+#  include <vector>
+#endif
 
 namespace gnu
 {

@@ -61,7 +61,7 @@ nios2_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
 #define NIOS2_REG(NUM,NAME)						\
-  (fs->regs.reg[NUM].how = REG_SAVED_OFFSET,				\
+  (fs->regs.how[NUM] = REG_SAVED_OFFSET,				\
    fs->regs.reg[NUM].loc.offset = (_Unwind_Ptr)&(regs->NAME) - new_cfa)
 
   if (pc[0] == (0x00800004 | (__NR_rt_sigreturn << 6)))

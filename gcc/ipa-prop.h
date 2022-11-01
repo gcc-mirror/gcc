@@ -25,6 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IPA_UNDESCRIBED_USE -1
 
+/* Index identifying an actualargument or a formal parameter may have only this
+   many bits.  */
+
+#define IPA_PROP_ARG_INDEX_LIMIT_BITS 16
+
 /* ipa-prop.cc stuff (ipa-cp, indirect inlining):  */
 
 /* A jump function for a callsite represents the values passed as actual
@@ -78,7 +83,7 @@ struct ipa_cst_ref_desc;
 /* Structure holding data required to describe a constant jump function.  */
 struct GTY(()) ipa_constant_data
 {
-  /* THe value of the constant.  */
+  /* The value of the constant.  */
   tree value;
   /* Pointer to the structure that describes the reference.  */
   struct ipa_cst_ref_desc GTY((skip)) *rdesc;
@@ -184,104 +189,105 @@ struct GTY(()) ipa_agg_jump_function
   bool by_ref;
 };
 
-/* An element in an aggregate part describing a known value at a given offset.
-   All unlisted positions are assumed to be unknown and all listed values must
-   fulfill is_gimple_ip_invariant.  */
+class ipcp_transformation;
+class ipa_auto_call_arg_values;
+class ipa_call_arg_values;
 
-struct ipa_agg_value
+/* Element of a vector describing aggregate values for a number of arguments in
+   a particular context, be it a call or the aggregate constants that a node is
+   specialized for.  */
+
+struct GTY(()) ipa_argagg_value
 {
-  /* The offset at which the known value is located within the aggregate.  */
-  HOST_WIDE_INT offset;
-
-  /* The known constant.  */
+  /* The constant value.  In the contexts where the list of known values is
+     being pruned, NULL means a variable value.  */
   tree value;
-
-  /* Return true if OTHER describes same agg value.  */
-  bool equal_to (const ipa_agg_value &other);
+  /* Unit offset within the aggregate.  */
+  unsigned unit_offset;
+  /* Index of the parameter, as it was in the original function (i.e. needs
+     remapping after parameter modification is carried out as part of clone
+     materialization).  */
+  unsigned index : IPA_PROP_ARG_INDEX_LIMIT_BITS;
+  /* Whether the value was passed by reference.  */
+  unsigned by_ref : 1;
 };
 
-/* Structure describing a set of known offset/value for aggregate.  */
+/* A view into a sorted list of aggregate values in a particular context, be it
+   a call or the aggregate constants that a node is specialized for.  The
+   actual data is stored in the vector this has been constructed from.  */
 
-struct ipa_agg_value_set
+class ipa_argagg_value_list
 {
-  /* Description of the individual item.  */
-  vec<ipa_agg_value> items;
-  /* True if the data was passed by reference (as opposed to by value).  */
-  bool by_ref;
+public:
+  ipa_argagg_value_list () = delete;
+  ipa_argagg_value_list (const vec<ipa_argagg_value, va_gc> *values)
+    : m_elts (values)
+  {}
+  ipa_argagg_value_list (const vec<ipa_argagg_value> *values)
+    : m_elts (*values)
+  {}
+  ipa_argagg_value_list (const ipa_auto_call_arg_values *aavals);
+  ipa_argagg_value_list (const ipa_call_arg_values *gavals);
+  ipa_argagg_value_list (const ipcp_transformation *tinfo);
 
-  /* Return true if OTHER describes same agg values.  */
-  bool equal_to (const ipa_agg_value_set &other)
+  /* Return the aggregate constant stored for INDEX at UNIT_OFFSET, if it is
+     passed by reference or not according to BY_REF, or NULL_TREE
+     otherwise.  */
+
+  tree get_value (int index, unsigned unit_offset, bool by_ref) const;
+
+  /* Return the aggregate constant stored for INDEX at UNIT_OFFSET, not
+     performing any check of whether value is passed by reference.  Return
+     NULL_TREE if there is no such constant.  */
+
+  tree get_value (int index, unsigned unit_offset) const;
+
+  /* Return the item describing a constant stored for INDEX at UNIT_OFFSET or
+     NULL if there is no such constant.  */
+
+  const ipa_argagg_value *get_elt (int index, unsigned unit_offset) const;
+
+
+  /* Return the first item describing a constant stored for parameter with
+     INDEX, regardless of offset or reference, or NULL if there is no such
+     constant.  */
+
+  const ipa_argagg_value *get_elt_for_index (int index) const;
+
+  /* Return true if there is an aggregate constant referring to a value passed
+     in or by parameter with INDEX (at any offset, whether by reference or
+     not).  */
+
+  bool value_for_index_p (int index) const
   {
-    if (by_ref != other.by_ref)
-      return false;
-    if (items.length () != other.items.length ())
-      return false;
-    for (unsigned int i = 0; i < items.length (); i++)
-      if (!items[i].equal_to (other.items[i]))
-	return false;
-    return true;
+    return !!get_elt_for_index (index);
   }
 
-  /* Return true if there is any value for aggregate.  */
-  bool is_empty () const
-  {
-    return items.is_empty ();
-  }
+  /* Return true if all elements present in OTHER are also present in this
+     list.  */
 
-  ipa_agg_value_set copy () const
-  {
-    ipa_agg_value_set new_copy;
+  bool superset_of_p (const ipa_argagg_value_list &other) const;
 
-    new_copy.items = items.copy ();
-    new_copy.by_ref = by_ref;
+  /* Push all items in this list that describe parameter SRC_INDEX into RES as
+     ones describing DST_INDEX while subtracting UNIT_DELTA from their unit
+     offsets but skip those which would end up with a negative offset.  */
 
-    return new_copy;
-  }
+  void push_adjusted_values (unsigned src_index, unsigned dest_index,
+			     unsigned unit_delta,
+			     vec<ipa_argagg_value> *res) const;
 
-  void release ()
-  {
-    items.release ();
-  }
+  /* Dump aggregate constants to FILE.  */
+
+  void dump (FILE *f);
+
+  /* Dump aggregate constants to stderr.  */
+
+  void DEBUG_FUNCTION debug ();
+
+  /* Array slice pointing to the actual storage.  */
+
+  array_slice<const ipa_argagg_value> m_elts;
 };
-
-/* Return copy of a vec<ipa_agg_value_set>.  */
-
-static inline vec<ipa_agg_value_set>
-ipa_copy_agg_values (const vec<ipa_agg_value_set> &aggs)
-{
-  vec<ipa_agg_value_set> aggs_copy = vNULL;
-
-  if (!aggs.is_empty ())
-    {
-      ipa_agg_value_set *agg;
-      int i;
-
-      aggs_copy.reserve_exact (aggs.length ());
-
-      FOR_EACH_VEC_ELT (aggs, i, agg)
-	aggs_copy.quick_push (agg->copy ());
-    }
-
-  return aggs_copy;
-}
-
-/* For vec<ipa_agg_value_set>, DO NOT call release(), use below function
-   instead.  Because ipa_agg_value_set contains a field of vector type, we
-   should release this child vector in each element before reclaiming the
-   whole vector.  */
-
-static inline void
-ipa_release_agg_values (vec<ipa_agg_value_set> &aggs,
-			bool release_vector = true)
-{
-  ipa_agg_value_set *agg;
-  int i;
-
-  FOR_EACH_VEC_ELT (aggs, i, agg)
-    agg->release ();
-  if (release_vector)
-    aggs.release ();
-}
 
 /* Information about zero/non-zero bits.  */
 class GTY(()) ipa_bits
@@ -460,25 +466,12 @@ ipa_get_jf_ancestor_keep_null (struct ipa_jump_func *jfunc)
 class ipa_auto_call_arg_values
 {
 public:
-  ~ipa_auto_call_arg_values ();
-
   /* If m_known_vals (vector of known "scalar" values) is sufficiantly long,
      return its element at INDEX, otherwise return NULL.  */
   tree safe_sval_at (int index)
   {
-    /* TODO: Assert non-negative index here and test.  */
     if ((unsigned) index < m_known_vals.length ())
       return m_known_vals[index];
-    return NULL;
-  }
-
-  /* If m_known_aggs is sufficiantly long, return the pointer rto its element
-     at INDEX, otherwise return NULL.  */
-  ipa_agg_value_set *safe_aggval_at (int index)
-  {
-    /* TODO: Assert non-negative index here and test.  */
-    if ((unsigned) index < m_known_aggs.length ())
-      return &m_known_aggs[index];
     return NULL;
   }
 
@@ -489,15 +482,22 @@ public:
   auto_vec<ipa_polymorphic_call_context, 32> m_known_contexts;
 
   /* Vector describing known aggregate values.  */
-  auto_vec<ipa_agg_value_set, 32> m_known_aggs;
+  auto_vec<ipa_argagg_value, 32> m_known_aggs;
 
   /* Vector describing known value ranges of arguments.  */
   auto_vec<value_range, 32> m_known_value_ranges;
 };
 
+inline
+ipa_argagg_value_list
+::ipa_argagg_value_list (const ipa_auto_call_arg_values *aavals)
+  : m_elts (aavals->m_known_aggs)
+{}
+
 /* Class bundling the various potentially known properties about actual
    arguments of a particular call.  This variant does not deallocate the
-   bundled data in any way.  */
+   bundled data in any way as the vectors can either be pointing to vectors in
+   ipa_auto_call_arg_values or be allocated independently.  */
 
 class ipa_call_arg_values
 {
@@ -522,19 +522,8 @@ public:
      return its element at INDEX, otherwise return NULL.  */
   tree safe_sval_at (int index)
   {
-    /* TODO: Assert non-negative index here and test.  */
     if ((unsigned) index < m_known_vals.length ())
       return m_known_vals[index];
-    return NULL;
-  }
-
-  /* If m_known_aggs is sufficiantly long, return the pointer rto its element
-     at INDEX, otherwise return NULL.  */
-  ipa_agg_value_set *safe_aggval_at (int index)
-  {
-    /* TODO: Assert non-negative index here and test.  */
-    if ((unsigned) index < m_known_aggs.length ())
-      return &m_known_aggs[index];
     return NULL;
   }
 
@@ -545,12 +534,17 @@ public:
   vec<ipa_polymorphic_call_context> m_known_contexts = vNULL;
 
   /* Vector describing known aggregate values.  */
-  vec<ipa_agg_value_set> m_known_aggs = vNULL;
+  vec<ipa_argagg_value> m_known_aggs = vNULL;
 
   /* Vector describing known value ranges of arguments.  */
   vec<value_range> m_known_value_ranges = vNULL;
 };
 
+inline
+ipa_argagg_value_list
+::ipa_argagg_value_list (const ipa_call_arg_values *gavals)
+  : m_elts (gavals->m_known_aggs)
+{}
 
 /* Summary describing a single formal parameter.  */
 
@@ -882,28 +876,12 @@ ipa_is_param_used_by_polymorphic_call (class ipa_node_params *info, int i)
   return (*info->descriptors)[i].used_by_polymorphic_call;
 }
 
-/* Information about replacements done in aggregates for a given node (each
-   node has its linked list).  */
-struct GTY(()) ipa_agg_replacement_value
-{
-  /* Next item in the linked list.  */
-  struct ipa_agg_replacement_value *next;
-  /* Offset within the aggregate.  */
-  HOST_WIDE_INT offset;
-  /* The constant value.  */
-  tree value;
-  /* The parameter index.  */
-  int index;
-  /* Whether the value was passed by reference.  */
-  bool by_ref;
-};
-
 /* Structure holding information for the transformation phase of IPA-CP.  */
 
 struct GTY(()) ipcp_transformation
 {
-  /* Linked list of known aggregate values.  */
-  ipa_agg_replacement_value *agg_values;
+  /* Known aggregate values.  */
+  vec<ipa_argagg_value, va_gc>  *m_agg_values;
   /* Known bits information.  */
   vec<ipa_bits *, va_gc> *bits;
   /* Value range information.  */
@@ -911,26 +889,25 @@ struct GTY(()) ipcp_transformation
 
   /* Default constructor.  */
   ipcp_transformation ()
-  : agg_values (NULL), bits (NULL), m_vr (NULL)
+  : m_agg_values (NULL), bits (NULL), m_vr (NULL)
   { }
 
   /* Default destructor.  */
   ~ipcp_transformation ()
   {
-    ipa_agg_replacement_value *agg = agg_values;
-    while (agg)
-      {
-	ipa_agg_replacement_value *next = agg->next;
-	ggc_free (agg);
-	agg = next;
-      }
+    vec_free (m_agg_values);
     vec_free (bits);
     vec_free (m_vr);
   }
 };
 
+inline
+ipa_argagg_value_list::ipa_argagg_value_list (const ipcp_transformation *tinfo)
+  : m_elts (tinfo->m_agg_values)
+{}
+
 void ipa_set_node_agg_value_chain (struct cgraph_node *node,
-				   struct ipa_agg_replacement_value *aggvals);
+				   vec<ipa_argagg_value, va_gc> *aggs);
 void ipcp_transformation_initialize (void);
 void ipcp_free_transformation_sum (void);
 
@@ -1107,15 +1084,6 @@ ipcp_get_transformation_summary (cgraph_node *node)
   return ipcp_transformation_sum->get (node);
 }
 
-/* Return the aggregate replacements for NODE, if there are any.  */
-
-static inline struct ipa_agg_replacement_value *
-ipa_get_agg_replacements_for_node (cgraph_node *node)
-{
-  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-  return ts ? ts->agg_values : NULL;
-}
-
 /* Function formal parameters related computations.  */
 void ipa_initialize_node_params (struct cgraph_node *node);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
@@ -1124,9 +1092,6 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 /* Indirect edge processing and target discovery.  */
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 				   ipa_call_arg_values *avals,
-				   bool *speculative);
-tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
-				   ipa_auto_call_arg_values *avals,
 				   bool *speculative);
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    bool speculative = false);
@@ -1139,9 +1104,8 @@ ipa_bits *ipa_get_ipa_bits_for_value (const widest_int &value,
 void ipa_analyze_node (struct cgraph_node *);
 
 /* Aggregate jump function related functions.  */
-tree ipa_find_agg_cst_for_param (const ipa_agg_value_set *agg, tree scalar,
-				 HOST_WIDE_INT offset, bool by_ref,
-				 bool *from_global_constant = NULL);
+tree ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset,
+				 bool by_ref);
 bool ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 			     vec<ipa_param_descriptor, va_gc> *descriptors,
 			     gimple *stmt, tree op, int *index_p,
@@ -1171,8 +1135,6 @@ struct ipcp_agg_lattice;
 
 extern object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool;
 
-void ipa_dump_agg_replacement_values (FILE *f,
-				      struct ipa_agg_replacement_value *av);
 void ipa_prop_write_jump_functions (void);
 void ipa_prop_read_jump_functions (void);
 void ipcp_write_transformation_summaries (void);
@@ -1180,6 +1142,8 @@ void ipcp_read_transformation_summaries (void);
 int ipa_get_param_decl_index (class ipa_node_params *, tree);
 tree ipa_value_from_jfunc (class ipa_node_params *info,
 			   struct ipa_jump_func *jfunc, tree type);
+tree ipa_agg_value_from_jfunc (ipa_node_params *info, cgraph_node *node,
+			       const ipa_agg_jf_item *item);
 unsigned int ipcp_transform_function (struct cgraph_node *node);
 ipa_polymorphic_call_context ipa_context_from_jfunc (ipa_node_params *,
 						     cgraph_edge *,
@@ -1187,9 +1151,10 @@ ipa_polymorphic_call_context ipa_context_from_jfunc (ipa_node_params *,
 						     ipa_jump_func *);
 value_range ipa_value_range_from_jfunc (ipa_node_params *, cgraph_edge *,
 					ipa_jump_func *, tree);
-ipa_agg_value_set ipa_agg_value_set_from_jfunc (ipa_node_params *,
-						cgraph_node *,
-						ipa_agg_jump_function *);
+void ipa_push_agg_values_from_jfunc (ipa_node_params *info, cgraph_node *node,
+				     ipa_agg_jump_function *agg_jfunc,
+				     unsigned dst_index,
+				     vec<ipa_argagg_value> *res);
 void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);

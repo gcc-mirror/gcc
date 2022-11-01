@@ -35,6 +35,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // locales
+
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 #include <bits/locale_facets.h>

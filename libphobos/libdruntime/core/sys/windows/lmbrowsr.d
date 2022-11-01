@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmbrowsr;
 version (Windows):
-@system:
 
 import core.sys.windows.lmcons, core.sys.windows.windef;
 

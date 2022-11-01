@@ -2349,7 +2349,7 @@ Thunk_statement::Thunk_statement(Statement_classification classification,
 				 Call_expression* call,
 				 Location location)
     : Statement(classification, location),
-      call_(call), struct_type_(NULL)
+      call_(call)
 {
 }
 
@@ -2430,15 +2430,6 @@ void
 Thunk_statement::do_determine_types()
 {
   this->call_->determine_type_no_context();
-
-  // Now that we know the types of the call, build the struct used to
-  // pass parameters.
-  Call_expression* ce = this->call_->call_expression();
-  if (ce == NULL)
-    return;
-  Function_type* fntype = ce->get_function_type();
-  if (fntype != NULL && !this->is_simple(fntype))
-    this->struct_type_ = this->build_struct(fntype);
 }
 
 // Check types in a thunk statement.
@@ -2581,6 +2572,8 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   if (this->is_simple(fntype))
     return false;
 
+  Struct_type* struct_type = this->build_struct(fntype);
+
   Expression* fn = ce->fn();
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
@@ -2600,7 +2593,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   std::string thunk_name = gogo->thunk_name();
 
   // Build the thunk.
-  this->build_thunk(gogo, thunk_name);
+  this->build_thunk(gogo, thunk_name, struct_type);
 
   // Generate code to call the thunk.
 
@@ -2630,8 +2623,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   // Build the struct.
   Expression* constructor =
-    Expression::make_struct_composite_literal(this->struct_type_, vals,
-					      location);
+    Expression::make_struct_composite_literal(struct_type, vals, location);
 
   // Allocate the initialized struct on the heap.
   constructor = Expression::make_heap_expression(constructor, location);
@@ -2745,15 +2737,6 @@ Thunk_statement::build_struct(Function_type* fntype)
       fields->push_back(Struct_field(tid));
     }
 
-  // The predeclared recover function has no argument.  However, we
-  // add an argument when building recover thunks.  Handle that here.
-  if (ce->is_recover_call())
-    {
-      fields->push_back(Struct_field(Typed_identifier("can_recover",
-						      Type::lookup_bool_type(),
-						      location)));
-    }
-
   const Expression_list* args = ce->args();
   if (args != NULL)
     {
@@ -2781,7 +2764,8 @@ Thunk_statement::build_struct(Function_type* fntype)
 // artificial, function.
 
 void
-Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
+Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
+			     Struct_type* struct_type)
 {
   Location location = this->location();
 
@@ -2807,7 +2791,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   // which is a pointer to the special structure we build.
   const char* const parameter_name = "__go_thunk_parameter";
   Typed_identifier_list* thunk_parameters = new Typed_identifier_list();
-  Type* pointer_to_struct_type = Type::make_pointer_type(this->struct_type_);
+  Type* pointer_to_struct_type = Type::make_pointer_type(struct_type);
   thunk_parameters->push_back(Typed_identifier(parameter_name,
 					       pointer_to_struct_type,
 					       location));
@@ -2914,7 +2898,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
     }
 
   Expression_list* call_params = new Expression_list();
-  const Struct_field_list* fields = this->struct_type_->fields();
+  const Struct_field_list* fields = struct_type->fields();
   Struct_field_list::const_iterator p = fields->begin();
   for (unsigned int i = 0; i < next_index; ++i)
     ++p;

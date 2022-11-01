@@ -123,14 +123,14 @@ x86_gnu_fallback_frame_state
   fs->regs.cfa_reg = 4;
   fs->regs.cfa_offset = usp - (unsigned long) context->cfa;
 
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
-  fs->regs.reg[1].how = REG_SAVED_OFFSET;
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
-  fs->regs.reg[3].how = REG_SAVED_OFFSET;
-  fs->regs.reg[5].how = REG_SAVED_OFFSET;
-  fs->regs.reg[6].how = REG_SAVED_OFFSET;
-  fs->regs.reg[7].how = REG_SAVED_OFFSET;
-  fs->regs.reg[8].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
+  fs->regs.how[1] = REG_SAVED_OFFSET;
+  fs->regs.how[2] = REG_SAVED_OFFSET;
+  fs->regs.how[3] = REG_SAVED_OFFSET;
+  fs->regs.how[5] = REG_SAVED_OFFSET;
+  fs->regs.how[6] = REG_SAVED_OFFSET;
+  fs->regs.how[7] = REG_SAVED_OFFSET;
+  fs->regs.how[8] = REG_SAVED_OFFSET;
 
   fs->retaddr_column = 8;
   fs->signal_frame = 1;

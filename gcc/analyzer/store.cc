@@ -38,24 +38,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
 #include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
 #include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
 #include "stor-layout.h"
 
@@ -3127,6 +3123,148 @@ store::loop_replay_fixup (const store *other_store,
 	      this_cluster->bind_key (key, unknown);
 	    }
 	}
+    }
+}
+
+/* Use R to replay the bindings from SUMMARY into this object.  */
+
+void
+store::replay_call_summary (call_summary_replay &r,
+			    const store &summary)
+{
+  if (summary.m_called_unknown_fn)
+    {
+      /* A call to an external function occurred in the summary.
+	 Hence we need to invalidate our knownledge of globals,
+	 escaped regions, etc.  */
+      on_unknown_fncall (r.get_call_stmt (),
+			 r.get_store_manager (),
+			 conjured_purge (r.get_caller_model (),
+					 r.get_ctxt ()));
+    }
+
+  auto_vec<const region *> keys (summary.m_cluster_map.elements ());
+  for (auto kv : summary.m_cluster_map)
+    keys.quick_push (kv.first);
+  keys.qsort (region::cmp_ptr_ptr);
+  for (auto base_reg : keys)
+    replay_call_summary_cluster (r, summary, base_reg);
+}
+
+/* Use R and SUMMARY to replay the bindings in SUMMARY_CLUSTER
+   into this object.  */
+
+void
+store::replay_call_summary_cluster (call_summary_replay &r,
+				    const store &summary,
+				    const region *summary_base_reg)
+{
+  const call_details &cd = r.get_call_details ();
+  region_model_manager *reg_mgr = r.get_manager ();
+  store_manager *mgr = reg_mgr->get_store_manager ();
+  const binding_cluster *summary_cluster
+    = summary.get_cluster (summary_base_reg);
+
+  /* Handle "ESCAPED" and "TOUCHED" flags.  */
+  if (summary_cluster->escaped_p () || summary_cluster->touched_p ())
+    if (const region *caller_reg
+	= r.convert_region_from_summary (summary_base_reg))
+      {
+	const region *caller_base_reg = caller_reg->get_base_region ();
+	if (caller_base_reg->tracked_p ()
+	    && !caller_base_reg->symbolic_for_unknown_ptr_p ())
+	  {
+	    binding_cluster *caller_cluster
+	      = get_or_create_cluster (caller_base_reg);
+	    if (summary_cluster->escaped_p ())
+	      caller_cluster->mark_as_escaped ();
+	    if (summary_cluster->touched_p ())
+	      caller_cluster->m_touched = true;
+	  }
+      }
+
+  switch (summary_base_reg->get_kind ())
+    {
+    /* Top-level regions.  */
+    case RK_FRAME:
+    case RK_GLOBALS:
+    case RK_CODE:
+    case RK_STACK:
+    case RK_HEAP:
+    case RK_ROOT:
+    /* Child regions.  */
+    case RK_FIELD:
+    case RK_ELEMENT:
+    case RK_OFFSET:
+    case RK_SIZED:
+    case RK_CAST:
+    case RK_BIT_RANGE:
+    /* Other regions.  */
+    case RK_VAR_ARG:
+    case RK_UNKNOWN:
+      /* These should never be the base region of a binding cluster.  */
+      gcc_unreachable ();
+      break;
+
+    case RK_FUNCTION:
+    case RK_LABEL:
+    case RK_STRING:
+      /* These can be marked as escaping.  */
+      break;
+
+    case RK_SYMBOLIC:
+      {
+	const symbolic_region *summary_symbolic_reg
+	  = as_a <const symbolic_region *> (summary_base_reg);
+	const svalue *summary_ptr_sval = summary_symbolic_reg->get_pointer ();
+	const svalue *caller_ptr_sval
+	  = r.convert_svalue_from_summary (summary_ptr_sval);
+	if (!caller_ptr_sval)
+	  return;
+	const region *caller_dest_reg
+	  = cd.get_model ()->deref_rvalue (caller_ptr_sval,
+					   NULL_TREE,
+					   cd.get_ctxt ());
+	const svalue *summary_sval
+	  = summary.get_any_binding (mgr, summary_base_reg);
+	if (!summary_sval)
+	  return;
+	const svalue *caller_sval
+	  = r.convert_svalue_from_summary (summary_sval);
+	if (!caller_sval)
+	  caller_sval =
+	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
+	set_value (mgr, caller_dest_reg,
+		   caller_sval, NULL /* uncertainty_t * */);
+      }
+      break;
+
+    case RK_HEAP_ALLOCATED:
+    case RK_DECL:
+      {
+	const region *caller_dest_reg
+	  = r.convert_region_from_summary (summary_base_reg);
+	if (!caller_dest_reg)
+	  return;
+	const svalue *summary_sval
+	  = summary.get_any_binding (mgr, summary_base_reg);
+	if (!summary_sval)
+	  summary_sval = reg_mgr->get_or_create_compound_svalue
+	    (summary_base_reg->get_type (),
+	     summary_cluster->get_map ());
+	const svalue *caller_sval
+	  = r.convert_svalue_from_summary (summary_sval);
+	if (!caller_sval)
+	  caller_sval =
+	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
+	set_value (mgr, caller_dest_reg,
+		   caller_sval, NULL /* uncertainty_t * */);
+      }
+      break;
+
+    case RK_ALLOCA:
+      /* Ignore bindings of alloca regions in the summary.  */
+      break;
     }
 }
 

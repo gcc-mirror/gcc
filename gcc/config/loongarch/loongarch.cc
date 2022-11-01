@@ -756,7 +756,8 @@ loongarch_setup_incoming_varargs (cumulative_args_t cum,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  loongarch_function_arg_advance (pack_cumulative_args (&local_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    loongarch_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -6472,7 +6473,7 @@ static unsigned HOST_WIDE_INT
 loongarch_asan_shadow_offset (void)
 {
   /* We only have libsanitizer support for LOONGARCH64 at present.
-     This value is taken from the file libsanitizer/asan/asan_mappint.h.  */
+     This value is taken from the file libsanitizer/asan/asan_mapping.h.  */
   return TARGET_64BIT ? (HOST_WIDE_INT_1 << 46) : 0;
 }
 

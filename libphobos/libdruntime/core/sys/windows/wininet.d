@@ -9,7 +9,6 @@
  */
 module core.sys.windows.wininet;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "wininet");

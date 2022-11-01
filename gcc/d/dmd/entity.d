@@ -25,7 +25,7 @@ nothrow:
  *      code point corresponding to the named entity
  *      ~0 for not recognized as a named entity
  */
-public uint HtmlNamedEntity(scope const char[] name) pure @nogc @safe
+public uint[2] HtmlNamedEntity(scope const char[] name) pure @nogc @safe
 {
     const firstC = tolower(name[0]);
     if (firstC >= 'a' && firstC <= 'z')
@@ -34,10 +34,10 @@ public uint HtmlNamedEntity(scope const char[] name) pure @nogc @safe
         foreach (entity; namesTable[firstC - 'a'])
         {
             if (entity.name == name)
-                return entity.value;
+                return [entity.value, entity.value2];
         }
     }
-    return ~0;
+    return [0, 0];
 }
 
 private:
@@ -52,6 +52,7 @@ struct NameId
 {
     string name;
     uint value;
+    uint value2;
 }
 
 // @todo@ order namesTable and names? by frequency
@@ -72,7 +73,7 @@ immutable NameId[] namesA =
     {"abreve",           0x00103},  // LATIN SMALL LETTER A WITH BREVE
     {"ac",               0x0223E},  // INVERTED LAZY S
     {"acd",              0x0223F},  // SINE WAVE
-//  {"acE",              0x0223E;0x00333},  // INVERTED LAZY S with double underline
+    {"acE",              0x0223E, 0x00333},  // INVERTED LAZY S with double underline
     {"Acirc",            0x000C2},  // LATIN CAPITAL LETTER A WITH CIRCUMFLEX
     {"acirc",            0x000E2},  // LATIN SMALL LETTER A WITH CIRCUMFLEX
     {"acute",            0x000B4},  // ACUTE ACCENT
@@ -157,42 +158,30 @@ immutable NameId[] namesB =
     {"backsim",          0x0223D},  // REVERSED TILDE
     {"backsimeq",        0x022CD},  // REVERSED TILDE EQUALS
     {"Backslash",        0x02216},  // SET MINUS
-//  "b.alpha",          0x1D6C2},  // MATHEMATICAL BOLD SMALL ALPHA
     {"Barv",             0x02AE7},  // SHORT DOWN TACK WITH OVERBAR
     {"barvee",           0x022BD},  // NOR
     {"barwed",           0x02305},  // PROJECTIVE
     {"Barwed",           0x02306},  // PERSPECTIVE
     {"barwedge",         0x02305},  // PROJECTIVE
-//  "b.beta",           0x1D6C3},  // MATHEMATICAL BOLD SMALL BETA
     {"bbrk",             0x023B5},  // BOTTOM SQUARE BRACKET
     {"bbrktbrk",         0x023B6},  // BOTTOM SQUARE BRACKET OVER TOP SQUARE BRACKET
-//  "b.chi",            0x1D6D8},  // MATHEMATICAL BOLD SMALL CHI
     {"bcong",            0x0224C},  // ALL EQUAL TO
     {"Bcy",              0x00411},  // CYRILLIC CAPITAL LETTER BE
     {"bcy",              0x00431},  // CYRILLIC SMALL LETTER BE
-//  "b.Delta",          0x1D6AB},  // MATHEMATICAL BOLD CAPITAL DELTA
-//  "b.delta",          0x1D6C5},  // MATHEMATICAL BOLD SMALL DELTA
     {"bdquo",            0x0201E},  // DOUBLE LOW-9 QUOTATION MARK
     {"becaus",           0x02235},  // BECAUSE
     {"because",          0x02235},  // BECAUSE
     {"Because",          0x02235},  // BECAUSE
     {"bemptyv",          0x029B0},  // REVERSED EMPTY SET
     {"bepsi",            0x003F6},  // GREEK REVERSED LUNATE EPSILON SYMBOL
-//  "b.epsi",           0x1D6C6},  // MATHEMATICAL BOLD SMALL EPSILON
-//  "b.epsiv",          0x1D6DC},  // MATHEMATICAL BOLD EPSILON SYMBOL
     {"bernou",           0x0212C},  // SCRIPT CAPITAL B
     {"Bernoullis",       0x0212C},  // SCRIPT CAPITAL B
     {"Beta",             0x00392},  // GREEK CAPITAL LETTER BETA
     {"beta",             0x003B2},  // GREEK SMALL LETTER BETA
-//  "b.eta",            0x1D6C8},  // MATHEMATICAL BOLD SMALL ETA
     {"beth",             0x02136},  // BET SYMBOL
     {"between",          0x0226C},  // BETWEEN
     {"Bfr",              0x1D505},  // MATHEMATICAL FRAKTUR CAPITAL B
     {"bfr",              0x1D51F},  // MATHEMATICAL FRAKTUR SMALL B
-//  "b.Gamma",          0x1D6AA},  // MATHEMATICAL BOLD CAPITAL GAMMA
-//  "b.gamma",          0x1D6C4},  // MATHEMATICAL BOLD SMALL GAMMA
-//  "b.Gammad",         0x1D7CA},  // MATHEMATICAL BOLD CAPITAL DIGAMMA
-//  "b.gammad",         0x1D7CB},  // MATHEMATICAL BOLD SMALL DIGAMMA
     {"Bgr",              0x00392},  // GREEK CAPITAL LETTER BETA
     {"bgr",              0x003B2},  // GREEK SMALL LETTER BETA
     {"bigcap",           0x022C2},  // N-ARY INTERSECTION
@@ -208,9 +197,6 @@ immutable NameId[] namesB =
     {"biguplus",         0x02A04},  // N-ARY UNION OPERATOR WITH PLUS
     {"bigvee",           0x022C1},  // N-ARY LOGICAL OR
     {"bigwedge",         0x022C0},  // N-ARY LOGICAL AND
-//  "b.iota",           0x1D6CA},  // MATHEMATICAL BOLD SMALL IOTA
-//  "b.kappa",          0x1D6CB},  // MATHEMATICAL BOLD SMALL KAPPA
-//  "b.kappav",         0x1D6DE},  // MATHEMATICAL BOLD KAPPA SYMBOL
     {"bkarow",           0x0290D},  // RIGHTWARDS DOUBLE DASH ARROW
     {"blacklozenge",     0x029EB},  // BLACK LOZENGE
     {"blacksquare",      0x025AA},  // BLACK SMALL SQUARE
@@ -218,21 +204,15 @@ immutable NameId[] namesB =
     {"blacktriangledown", 0x025BE},  // BLACK DOWN-POINTING SMALL TRIANGLE
     {"blacktriangleleft", 0x025C2},  // BLACK LEFT-POINTING SMALL TRIANGLE
     {"blacktriangleright", 0x025B8},  // BLACK RIGHT-POINTING SMALL TRIANGLE
-//  "b.Lambda",         0x1D6B2},  // MATHEMATICAL BOLD CAPITAL LAMDA
-//  "b.lambda",         0x1D6CC},  // MATHEMATICAL BOLD SMALL LAMDA
     {"blank",            0x02423},  // OPEN BOX
     {"blk12",            0x02592},  // MEDIUM SHADE
     {"blk14",            0x02591},  // LIGHT SHADE
     {"blk34",            0x02593},  // DARK SHADE
     {"block",            0x02588},  // FULL BLOCK
-//  "b.mu",             0x1D6CD},  // MATHEMATICAL BOLD SMALL MU
-//  "bne",              0x0003D;0x020E5},  // EQUALS SIGN with reverse slash
-//  "bnequiv",          0x02261;0x020E5},  // IDENTICAL TO with reverse slash
+    {"bne",              0x0003D, 0x020E5},  // EQUALS SIGN with reverse slash
+    {"bnequiv",          0x02261, 0x020E5},  // IDENTICAL TO with reverse slash
     {"bnot",             0x02310},  // REVERSED NOT SIGN
     {"bNot",             0x02AED},  // REVERSED DOUBLE STROKE NOT SIGN
-//  "b.nu",             0x1D6CE},  // MATHEMATICAL BOLD SMALL NU
-//  "b.Omega",          0x1D6C0},  // MATHEMATICAL BOLD CAPITAL OMEGA
-//  "b.omega",          0x1D6DA},  // MATHEMATICAL BOLD SMALL OMEGA
     {"Bopf",             0x1D539},  // MATHEMATICAL DOUBLE-STRUCK CAPITAL B
     {"bopf",             0x1D553},  // MATHEMATICAL DOUBLE-STRUCK SMALL B
     {"bot",              0x022A5},  // UP TACK
@@ -282,35 +262,18 @@ immutable NameId[] namesB =
     {"boxvR",            0x0255E},  // BOX DRAWINGS VERTICAL SINGLE AND RIGHT DOUBLE
     {"boxVr",            0x0255F},  // BOX DRAWINGS VERTICAL DOUBLE AND RIGHT SINGLE
     {"boxVR",            0x02560},  // BOX DRAWINGS DOUBLE VERTICAL AND RIGHT
-//  "b.Phi",            0x1D6BD},  // MATHEMATICAL BOLD CAPITAL PHI
-//  "b.phi",            0x1D6D7},  // MATHEMATICAL BOLD SMALL PHI
-//  "b.phiv",           0x1D6DF},  // MATHEMATICAL BOLD PHI SYMBOL
-//  "b.Pi",             0x1D6B7},  // MATHEMATICAL BOLD CAPITAL PI
-//  "b.pi",             0x1D6D1},  // MATHEMATICAL BOLD SMALL PI
-//  "b.piv",            0x1D6E1},  // MATHEMATICAL BOLD PI SYMBOL
     {"bprime",           0x02035},  // REVERSED PRIME
-//  "b.Psi",            0x1D6BF},  // MATHEMATICAL BOLD CAPITAL PSI
-//  "b.psi",            0x1D6D9},  // MATHEMATICAL BOLD SMALL PSI
     {"breve",            0x002D8},  // BREVE
     {"Breve",            0x002D8},  // BREVE
-//  "b.rho",            0x1D6D2},  // MATHEMATICAL BOLD SMALL RHO
-//  "b.rhov",           0x1D6E0},  // MATHEMATICAL BOLD RHO SYMBOL
     {"brvbar",           0x000A6},  // BROKEN BAR
     {"Bscr",             0x0212C},  // SCRIPT CAPITAL B
     {"bscr",             0x1D4B7},  // MATHEMATICAL SCRIPT SMALL B
     {"bsemi",            0x0204F},  // REVERSED SEMICOLON
-//  "b.Sigma",          0x1D6BA},  // MATHEMATICAL BOLD CAPITAL SIGMA
-//  "b.sigma",          0x1D6D4},  // MATHEMATICAL BOLD SMALL SIGMA
-//  "b.sigmav",         0x1D6D3},  // MATHEMATICAL BOLD SMALL FINAL SIGMA
     {"bsim",             0x0223D},  // REVERSED TILDE
     {"bsime",            0x022CD},  // REVERSED TILDE EQUALS
     {"bsol",             0x0005C},  // REVERSE SOLIDUS
     {"bsolb",            0x029C5},  // SQUARED FALLING DIAGONAL SLASH
     {"bsolhsub",         0x027C8},  // REVERSE SOLIDUS PRECEDING SUBSET
-//  "b.tau",            0x1D6D5},  // MATHEMATICAL BOLD SMALL TAU
-//  "b.Theta",          0x1D6AF},  // MATHEMATICAL BOLD CAPITAL THETA
-//  "b.thetas",         0x1D6C9},  // MATHEMATICAL BOLD SMALL THETA
-//  "b.thetav",         0x1D6DD},  // MATHEMATICAL BOLD THETA SYMBOL
     {"bull",             0x02022},  // BULLET
     {"bullet",           0x02022},  // BULLET
     {"bump",             0x0224E},  // GEOMETRICALLY EQUIVALENT TO
@@ -318,11 +281,6 @@ immutable NameId[] namesB =
     {"bumpE",            0x02AAE},  // EQUALS SIGN WITH BUMPY ABOVE
     {"Bumpeq",           0x0224E},  // GEOMETRICALLY EQUIVALENT TO
     {"bumpeq",           0x0224F},  // DIFFERENCE BETWEEN
-//  "b.Upsi",           0x1D6BC},  // MATHEMATICAL BOLD CAPITAL UPSILON
-//  "b.upsi",           0x1D6D6},  // MATHEMATICAL BOLD SMALL UPSILON
-//  "b.Xi",             0x1D6B5},  // MATHEMATICAL BOLD CAPITAL XI
-//  "b.xi",             0x1D6CF},  // MATHEMATICAL BOLD SMALL XI
-//  "b.zeta",           0x1D6C7},  // MATHEMATICAL BOLD SMALL ZETA
 ];
 
 immutable NameId[] namesC =
@@ -337,7 +295,7 @@ immutable NameId[] namesC =
     {"capcup",           0x02A47},  // INTERSECTION ABOVE UNION
     {"capdot",           0x02A40},  // INTERSECTION WITH DOT
     {"CapitalDifferentialD", 0x02145},  // DOUBLE-STRUCK ITALIC CAPITAL D
-//  "caps",             0x02229;0x0FE00},  // INTERSECTION with serifs
+    {"caps",             0x02229, 0x0FE00},  // INTERSECTION with serifs
     {"caret",            0x02041},  // CARET INSERTION POINT
     {"caron",            0x002C7},  // CARON
     {"Cayleys",          0x0212D},  // BLACK-LETTER CAPITAL C
@@ -440,7 +398,7 @@ immutable NameId[] namesC =
     {"cupcup",           0x02A4A},  // UNION BESIDE AND JOINED WITH UNION
     {"cupdot",           0x0228D},  // MULTISET MULTIPLICATION
     {"cupor",            0x02A45},  // UNION WITH LOGICAL OR
-//  "cups",             0x0222A;0x0FE00},  // UNION with serifs
+    {"cups",             0x0222A, 0x0FE00},  // UNION with serifs
     {"curarr",           0x021B7},  // CLOCKWISE TOP SEMICIRCLE ARROW
     {"curarrm",          0x0293C},  // TOP ARC CLOCKWISE ARROW WITH MINUS
     {"curlyeqprec",      0x022DE},  // EQUAL TO OR PRECEDES
@@ -694,7 +652,7 @@ immutable NameId[] namesF =
     {"filig",            0x0FB01},  // LATIN SMALL LIGATURE FI
     {"FilledSmallSquare", 0x025FC},  // BLACK MEDIUM SQUARE
     {"FilledVerySmallSquare", 0x025AA},  // BLACK SMALL SQUARE
-//  "fjlig",            0x00066;0x0006A},  // fj ligature
+    {"fjlig",            0x00066, 0x0006A},  // fj ligature
     {"flat",             0x0266D},  // MUSIC FLAT SIGN
     {"fllig",            0x0FB02},  // LATIN SMALL LIGATURE FL
     {"fltns",            0x025B1},  // WHITE PARALLELOGRAM
@@ -757,7 +715,7 @@ immutable NameId[] namesG =
     {"gesdot",           0x02A80},  // GREATER-THAN OR SLANTED EQUAL TO WITH DOT INSIDE
     {"gesdoto",          0x02A82},  // GREATER-THAN OR SLANTED EQUAL TO WITH DOT ABOVE
     {"gesdotol",         0x02A84},  // GREATER-THAN OR SLANTED EQUAL TO WITH DOT ABOVE LEFT
-//  "gesl",             0x022DB;0x0FE00},  // GREATER-THAN slanted EQUAL TO OR LESS-THAN
+    {"gesl",             0x022DB, 0x0FE00},  // GREATER-THAN slanted EQUAL TO OR LESS-THAN
     {"gesles",           0x02A94},  // GREATER-THAN ABOVE SLANTED EQUAL ABOVE LESS-THAN ABOVE SLANTED EQUAL
     {"Gfr",              0x1D50A},  // MATHEMATICAL FRAKTUR CAPITAL G
     {"gfr",              0x1D524},  // MATHEMATICAL FRAKTUR SMALL G
@@ -810,8 +768,8 @@ immutable NameId[] namesG =
     {"gtreqqless",       0x02A8C},  // GREATER-THAN ABOVE DOUBLE-LINE EQUAL ABOVE LESS-THAN
     {"gtrless",          0x02277},  // GREATER-THAN OR LESS-THAN
     {"gtrsim",           0x02273},  // GREATER-THAN OR EQUIVALENT TO
-//  "gvertneqq",        0x02269;0x0FE00},  // GREATER-THAN BUT NOT EQUAL TO - with vertical stroke
-//  "gvnE",             0x02269;0x0FE00},  // GREATER-THAN BUT NOT EQUAL TO - with vertical stroke
+    {"gvertneqq",        0x02269, 0x0FE00},  // GREATER-THAN BUT NOT EQUAL TO - with vertical stroke
+    {"gvnE",             0x02269, 0x0FE00},  // GREATER-THAN BUT NOT EQUAL TO - with vertical stroke
 ];
 
 immutable NameId[] namesH =
@@ -1020,7 +978,7 @@ immutable NameId[] namesL =
     {"latail",           0x02919},  // LEFTWARDS ARROW-TAIL
     {"lAtail",           0x0291B},  // LEFTWARDS DOUBLE ARROW-TAIL
     {"late",             0x02AAD},  // LARGER THAN OR EQUAL TO
-//  "lates",            0x02AAD;0x0FE00},  // LARGER THAN OR slanted EQUAL
+    {"lates",            0x02AAD, 0x0FE00},  // LARGER THAN OR slanted EQUAL
     {"lbarr",            0x0290C},  // LEFTWARDS DOUBLE DASH ARROW
     {"lBarr",            0x0290E},  // LEFTWARDS TRIPLE DASH ARROW
     {"lbbrk",            0x02772},  // LIGHT LEFT TORTOISE SHELL BRACKET ORNAMENT
@@ -1091,7 +1049,7 @@ immutable NameId[] namesL =
     {"lesdot",           0x02A7F},  // LESS-THAN OR SLANTED EQUAL TO WITH DOT INSIDE
     {"lesdoto",          0x02A81},  // LESS-THAN OR SLANTED EQUAL TO WITH DOT ABOVE
     {"lesdotor",         0x02A83},  // LESS-THAN OR SLANTED EQUAL TO WITH DOT ABOVE RIGHT
-//  "lesg",             0x022DA;0x0FE00},  // LESS-THAN slanted EQUAL TO OR GREATER-THAN
+    {"lesg",             0x022DA, 0x0FE00},  // LESS-THAN slanted EQUAL TO OR GREATER-THAN
     {"lesges",           0x02A93},  // LESS-THAN ABOVE SLANTED EQUAL ABOVE GREATER-THAN ABOVE SLANTED EQUAL
     {"lessapprox",       0x02A85},  // LESS-THAN OR APPROXIMATE
     {"lessdot",          0x022D6},  // LESS-THAN WITH DOT
@@ -1202,8 +1160,8 @@ immutable NameId[] namesL =
     {"ltrPar",           0x02996},  // DOUBLE RIGHT ARC LESS-THAN BRACKET
     {"lurdshar",         0x0294A},  // LEFT BARB UP RIGHT BARB DOWN HARPOON
     {"luruhar",          0x02966},  // LEFTWARDS HARPOON WITH BARB UP ABOVE RIGHTWARDS HARPOON WITH BARB UP
-//  "lvertneqq",        0x02268;0x0FE00},  // LESS-THAN BUT NOT EQUAL TO - with vertical stroke
-//  "lvnE",             0x02268;0x0FE00},  // LESS-THAN BUT NOT EQUAL TO - with vertical stroke
+    {"lvertneqq",        0x02268, 0x0FE00},  // LESS-THAN BUT NOT EQUAL TO - with vertical stroke
+    {"lvnE",             0x02268, 0x0FE00},  // LESS-THAN BUT NOT EQUAL TO - with vertical stroke
 ];
 
 immutable NameId[] namesM =
@@ -1263,25 +1221,25 @@ immutable NameId[] namesN =
     {"nabla",            0x02207},  // NABLA
     {"Nacute",           0x00143},  // LATIN CAPITAL LETTER N WITH ACUTE
     {"nacute",           0x00144},  // LATIN SMALL LETTER N WITH ACUTE
-//  "nang",             0x02220;0x020D2},  // ANGLE with vertical line
+    {"nang",             0x02220, 0x020D2},  // ANGLE with vertical line
     {"nap",              0x02249},  // NOT ALMOST EQUAL TO
-//  "napE",             0x02A70;0x00338},  // APPROXIMATELY EQUAL OR EQUAL TO with slash
-//  "napid",            0x0224B;0x00338},  // TRIPLE TILDE with slash
+    {"napE",             0x02A70, 0x00338},  // APPROXIMATELY EQUAL OR EQUAL TO with slash
+    {"napid",            0x0224B, 0x00338},  // TRIPLE TILDE with slash
     {"napos",            0x00149},  // LATIN SMALL LETTER N PRECEDED BY APOSTROPHE
     {"napprox",          0x02249},  // NOT ALMOST EQUAL TO
     {"natur",            0x0266E},  // MUSIC NATURAL SIGN
     {"natural",          0x0266E},  // MUSIC NATURAL SIGN
     {"naturals",         0x02115},  // DOUBLE-STRUCK CAPITAL N
     {"nbsp",             0x000A0},  // NO-BREAK SPACE
-//  "nbump",            0x0224E;0x00338},  // GEOMETRICALLY EQUIVALENT TO with slash
-//  "nbumpe",           0x0224F;0x00338},  // DIFFERENCE BETWEEN with slash
+    {"nbump",            0x0224E, 0x00338},  // GEOMETRICALLY EQUIVALENT TO with slash
+    {"nbumpe",           0x0224F, 0x00338},  // DIFFERENCE BETWEEN with slash
     {"ncap",             0x02A43},  // INTERSECTION WITH OVERBAR
     {"Ncaron",           0x00147},  // LATIN CAPITAL LETTER N WITH CARON
     {"ncaron",           0x00148},  // LATIN SMALL LETTER N WITH CARON
     {"Ncedil",           0x00145},  // LATIN CAPITAL LETTER N WITH CEDILLA
     {"ncedil",           0x00146},  // LATIN SMALL LETTER N WITH CEDILLA
     {"ncong",            0x02247},  // NEITHER APPROXIMATELY NOR ACTUALLY EQUAL TO
-//  "ncongdot",         0x02A6D;0x00338},  // CONGRUENT WITH DOT ABOVE with slash
+    {"ncongdot",         0x02A6D, 0x00338},  // CONGRUENT WITH DOT ABOVE with slash
     {"ncup",             0x02A42},  // UNION WITH OVERBAR
     {"Ncy",              0x0041D},  // CYRILLIC CAPITAL LETTER EN
     {"ncy",              0x0043D},  // CYRILLIC SMALL LETTER EN
@@ -1291,14 +1249,14 @@ immutable NameId[] namesN =
     {"nearr",            0x02197},  // NORTH EAST ARROW
     {"neArr",            0x021D7},  // NORTH EAST DOUBLE ARROW
     {"nearrow",          0x02197},  // NORTH EAST ARROW
-//  "nedot",            0x02250;0x00338},  // APPROACHES THE LIMIT with slash
+    {"nedot",            0x02250, 0x00338},  // APPROACHES THE LIMIT with slash
     {"NegativeMediumSpace", 0x0200B},  // ZERO WIDTH SPACE
     {"NegativeThickSpace", 0x0200B},  // ZERO WIDTH SPACE
     {"NegativeThinSpace", 0x0200B},  // ZERO WIDTH SPACE
     {"NegativeVeryThinSpace", 0x0200B},  // ZERO WIDTH SPACE
     {"nequiv",           0x02262},  // NOT IDENTICAL TO
     {"nesear",           0x02928},  // NORTH EAST ARROW AND SOUTH EAST ARROW
-//  "nesim",            0x02242;0x00338},  // MINUS TILDE with slash
+    {"nesim",            0x02242, 0x00338},  // MINUS TILDE with slash
     {"NestedGreaterGreater", 0x0226B},  // MUCH GREATER-THAN
     {"NestedLessLess",   0x0226A},  // MUCH LESS-THAN
     {"NewLine",          0x0000A},  // LINE FEED (LF)
@@ -1306,20 +1264,20 @@ immutable NameId[] namesN =
     {"nexists",          0x02204},  // THERE DOES NOT EXIST
     {"Nfr",              0x1D511},  // MATHEMATICAL FRAKTUR CAPITAL N
     {"nfr",              0x1D52B},  // MATHEMATICAL FRAKTUR SMALL N
-//  "ngE",              0x02267;0x00338},  // GREATER-THAN OVER EQUAL TO with slash
+    {"ngE",              0x02267, 0x00338},  // GREATER-THAN OVER EQUAL TO with slash
     {"nge",              0x02271},  // NEITHER GREATER-THAN NOR EQUAL TO
     {"ngeq",             0x02271},  // NEITHER GREATER-THAN NOR EQUAL TO
-//  "ngeqq",            0x02267;0x00338},  // GREATER-THAN OVER EQUAL TO with slash
-//  "ngeqslant",        0x02A7E;0x00338},  // GREATER-THAN OR SLANTED EQUAL TO with slash
-//  "nges",             0x02A7E;0x00338},  // GREATER-THAN OR SLANTED EQUAL TO with slash
-//  "nGg",              0x022D9;0x00338},  // VERY MUCH GREATER-THAN with slash
+    {"ngeqq",            0x02267, 0x00338},  // GREATER-THAN OVER EQUAL TO with slash
+    {"ngeqslant",        0x02A7E, 0x00338},  // GREATER-THAN OR SLANTED EQUAL TO with slash
+    {"nges",             0x02A7E, 0x00338},  // GREATER-THAN OR SLANTED EQUAL TO with slash
+    {"nGg",              0x022D9, 0x00338},  // VERY MUCH GREATER-THAN with slash
     {"Ngr",              0x0039D},  // GREEK CAPITAL LETTER NU
     {"ngr",              0x003BD},  // GREEK SMALL LETTER NU
     {"ngsim",            0x02275},  // NEITHER GREATER-THAN NOR EQUIVALENT TO
-//  "nGt",              0x0226B;0x020D2},  // MUCH GREATER THAN with vertical line
+    {"nGt",              0x0226B, 0x020D2},  // MUCH GREATER THAN with vertical line
     {"ngt",              0x0226F},  // NOT GREATER-THAN
     {"ngtr",             0x0226F},  // NOT GREATER-THAN
-//  "nGtv",             0x0226B;0x00338},  // MUCH GREATER THAN with slash
+    {"nGtv",             0x0226B, 0x00338},  // MUCH GREATER THAN with slash
     {"nharr",            0x021AE},  // LEFT RIGHT ARROW WITH STROKE
     {"nhArr",            0x021CE},  // LEFT RIGHT DOUBLE ARROW WITH STROKE
     {"nhpar",            0x02AF2},  // PARALLEL WITH HORIZONTAL STROKE
@@ -1332,24 +1290,24 @@ immutable NameId[] namesN =
     {"nlarr",            0x0219A},  // LEFTWARDS ARROW WITH STROKE
     {"nlArr",            0x021CD},  // LEFTWARDS DOUBLE ARROW WITH STROKE
     {"nldr",             0x02025},  // TWO DOT LEADER
-//  "nlE",              0x02266;0x00338},  // LESS-THAN OVER EQUAL TO with slash
+    {"nlE",              0x02266, 0x00338},  // LESS-THAN OVER EQUAL TO with slash
     {"nle",              0x02270},  // NEITHER LESS-THAN NOR EQUAL TO
     {"nleftarrow",       0x0219A},  // LEFTWARDS ARROW WITH STROKE
     {"nLeftarrow",       0x021CD},  // LEFTWARDS DOUBLE ARROW WITH STROKE
     {"nleftrightarrow",  0x021AE},  // LEFT RIGHT ARROW WITH STROKE
     {"nLeftrightarrow",  0x021CE},  // LEFT RIGHT DOUBLE ARROW WITH STROKE
     {"nleq",             0x02270},  // NEITHER LESS-THAN NOR EQUAL TO
-//  "nleqq",            0x02266;0x00338},  // LESS-THAN OVER EQUAL TO with slash
-//  "nleqslant",        0x02A7D;0x00338},  // LESS-THAN OR SLANTED EQUAL TO with slash
-//  "nles",             0x02A7D;0x00338},  // LESS-THAN OR SLANTED EQUAL TO with slash
+    {"nleqq",            0x02266, 0x00338},  // LESS-THAN OVER EQUAL TO with slash
+    {"nleqslant",        0x02A7D, 0x00338},  // LESS-THAN OR SLANTED EQUAL TO with slash
+    {"nles",             0x02A7D, 0x00338},  // LESS-THAN OR SLANTED EQUAL TO with slash
     {"nless",            0x0226E},  // NOT LESS-THAN
-//  "nLl",              0x022D8;0x00338},  // VERY MUCH LESS-THAN with slash
+    {"nLl",              0x022D8, 0x00338},  // VERY MUCH LESS-THAN with slash
     {"nlsim",            0x02274},  // NEITHER LESS-THAN NOR EQUIVALENT TO
-//  "nLt",              0x0226A;0x020D2},  // MUCH LESS THAN with vertical line
+    {"nLt",              0x0226A, 0x020D2},  // MUCH LESS THAN with vertical line
     {"nlt",              0x0226E},  // NOT LESS-THAN
     {"nltri",            0x022EA},  // NOT NORMAL SUBGROUP OF
     {"nltrie",           0x022EC},  // NOT NORMAL SUBGROUP OF OR EQUAL TO
-//  "nLtv",             0x0226A;0x00338},  // MUCH LESS THAN with slash
+    {"nLtv",             0x0226A, 0x00338},  // MUCH LESS THAN with slash
     {"nmid",             0x02224},  // DOES NOT DIVIDE
     {"NoBreak",          0x02060},  // WORD JOINER
     {"NonBreakingSpace", 0x000A0},  // NO-BREAK SPACE
@@ -1362,56 +1320,56 @@ immutable NameId[] namesN =
     {"NotDoubleVerticalBar", 0x02226},  // NOT PARALLEL TO
     {"NotElement",       0x02209},  // NOT AN ELEMENT OF
     {"NotEqual",         0x02260},  // NOT EQUAL TO
-//  "NotEqualTilde",    0x02242;0x00338},  // MINUS TILDE with slash
+    {"NotEqualTilde",    0x02242, 0x00338},  // MINUS TILDE with slash
     {"NotExists",        0x02204},  // THERE DOES NOT EXIST
     {"NotGreater",       0x0226F},  // NOT GREATER-THAN
     {"NotGreaterEqual",  0x02271},  // NEITHER GREATER-THAN NOR EQUAL TO
-//  "NotGreaterFullEqual", 0x02267;0x00338},  // GREATER-THAN OVER EQUAL TO with slash
-//  "NotGreaterGreater", 0x0226B;0x00338},  // MUCH GREATER THAN with slash
+    {"NotGreaterFullEqual", 0x02267, 0x00338},  // GREATER-THAN OVER EQUAL TO with slash
+    {"NotGreaterGreater", 0x0226B, 0x00338},  // MUCH GREATER THAN with slash
     {"NotGreaterLess",   0x02279},  // NEITHER GREATER-THAN NOR LESS-THAN
-//  "NotGreaterSlantEqual", 0x02A7E;0x00338},  // GREATER-THAN OR SLANTED EQUAL TO with slash
+    {"NotGreaterSlantEqual", 0x02A7E, 0x00338},  // GREATER-THAN OR SLANTED EQUAL TO with slash
     {"NotGreaterTilde",  0x02275},  // NEITHER GREATER-THAN NOR EQUIVALENT TO
-//  "NotHumpDownHump",  0x0224E;0x00338},  // GEOMETRICALLY EQUIVALENT TO with slash
-//  "NotHumpEqual",     0x0224F;0x00338},  // DIFFERENCE BETWEEN with slash
+    {"NotHumpDownHump",  0x0224E, 0x00338},  // GEOMETRICALLY EQUIVALENT TO with slash
+    {"NotHumpEqual",     0x0224F, 0x00338},  // DIFFERENCE BETWEEN with slash
     {"notin",            0x02209},  // NOT AN ELEMENT OF
-//  "notindot",         0x022F5;0x00338},  // ELEMENT OF WITH DOT ABOVE with slash
-//  "notinE",           0x022F9;0x00338},  // ELEMENT OF WITH TWO HORIZONTAL STROKES with slash
+    {"notindot",         0x022F5, 0x00338},  // ELEMENT OF WITH DOT ABOVE with slash
+    {"notinE",           0x022F9, 0x00338},  // ELEMENT OF WITH TWO HORIZONTAL STROKES with slash
     {"notinva",          0x02209},  // NOT AN ELEMENT OF
     {"notinvb",          0x022F7},  // SMALL ELEMENT OF WITH OVERBAR
     {"notinvc",          0x022F6},  // ELEMENT OF WITH OVERBAR
     {"NotLeftTriangle",  0x022EA},  // NOT NORMAL SUBGROUP OF
-//  "NotLeftTriangleBar", 0x029CF;0x00338},  // LEFT TRIANGLE BESIDE VERTICAL BAR with slash
+    {"NotLeftTriangleBar", 0x029CF, 0x00338},  // LEFT TRIANGLE BESIDE VERTICAL BAR with slash
     {"NotLeftTriangleEqual", 0x022EC},  // NOT NORMAL SUBGROUP OF OR EQUAL TO
     {"NotLess",          0x0226E},  // NOT LESS-THAN
     {"NotLessEqual",     0x02270},  // NEITHER LESS-THAN NOR EQUAL TO
     {"NotLessGreater",   0x02278},  // NEITHER LESS-THAN NOR GREATER-THAN
-//  "NotLessLess",      0x0226A;0x00338},  // MUCH LESS THAN with slash
-//  "NotLessSlantEqual", 0x02A7D;0x00338},  // LESS-THAN OR SLANTED EQUAL TO with slash
+    {"NotLessLess",      0x0226A, 0x00338},  // MUCH LESS THAN with slash
+    {"NotLessSlantEqual", 0x02A7D, 0x00338},  // LESS-THAN OR SLANTED EQUAL TO with slash
     {"NotLessTilde",     0x02274},  // NEITHER LESS-THAN NOR EQUIVALENT TO
-//  "NotNestedGreaterGreater", 0x02AA2;0x00338},  // DOUBLE NESTED GREATER-THAN with slash
-//  "NotNestedLessLess", 0x02AA1;0x00338},  // DOUBLE NESTED LESS-THAN with slash
+    {"NotNestedGreaterGreater", 0x02AA2, 0x00338},  // DOUBLE NESTED GREATER-THAN with slash
+    {"NotNestedLessLess", 0x02AA1, 0x00338},  // DOUBLE NESTED LESS-THAN with slash
     {"notni",            0x0220C},  // DOES NOT CONTAIN AS MEMBER
     {"notniva",          0x0220C},  // DOES NOT CONTAIN AS MEMBER
     {"notnivb",          0x022FE},  // SMALL CONTAINS WITH OVERBAR
     {"notnivc",          0x022FD},  // CONTAINS WITH OVERBAR
     {"NotPrecedes",      0x02280},  // DOES NOT PRECEDE
-//  "NotPrecedesEqual", 0x02AAF;0x00338},  // PRECEDES ABOVE SINGLE-LINE EQUALS SIGN with slash
+    {"NotPrecedesEqual", 0x02AAF, 0x00338},  // PRECEDES ABOVE SINGLE-LINE EQUALS SIGN with slash
     {"NotPrecedesSlantEqual", 0x022E0},  // DOES NOT PRECEDE OR EQUAL
     {"NotReverseElement", 0x0220C},  // DOES NOT CONTAIN AS MEMBER
     {"NotRightTriangle", 0x022EB},  // DOES NOT CONTAIN AS NORMAL SUBGROUP
-//  "NotRightTriangleBar", 0x029D0;0x00338},  // VERTICAL BAR BESIDE RIGHT TRIANGLE with slash
+    {"NotRightTriangleBar", 0x029D0, 0x00338},  // VERTICAL BAR BESIDE RIGHT TRIANGLE with slash
     {"NotRightTriangleEqual", 0x022ED},  // DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL
-//  "NotSquareSubset",  0x0228F;0x00338},  // SQUARE IMAGE OF with slash
+    {"NotSquareSubset",  0x0228F, 0x00338},  // SQUARE IMAGE OF with slash
     {"NotSquareSubsetEqual", 0x022E2},  // NOT SQUARE IMAGE OF OR EQUAL TO
-//  "NotSquareSuperset", 0x02290;0x00338},  // SQUARE ORIGINAL OF with slash
+    {"NotSquareSuperset", 0x02290, 0x00338},  // SQUARE ORIGINAL OF with slash
     {"NotSquareSupersetEqual", 0x022E3},  // NOT SQUARE ORIGINAL OF OR EQUAL TO
-//  "NotSubset",        0x02282;0x020D2},  // SUBSET OF with vertical line
+    {"NotSubset",        0x02282, 0x020D2},  // SUBSET OF with vertical line
     {"NotSubsetEqual",   0x02288},  // NEITHER A SUBSET OF NOR EQUAL TO
     {"NotSucceeds",      0x02281},  // DOES NOT SUCCEED
-//  "NotSucceedsEqual", 0x02AB0;0x00338},  // SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN with slash
+    {"NotSucceedsEqual", 0x02AB0, 0x00338},  // SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN with slash
     {"NotSucceedsSlantEqual", 0x022E1},  // DOES NOT SUCCEED OR EQUAL
-//  "NotSucceedsTilde", 0x0227F;0x00338},  // SUCCEEDS OR EQUIVALENT TO with slash
-//  "NotSuperset",      0x02283;0x020D2},  // SUPERSET OF with vertical line
+    {"NotSucceedsTilde", 0x0227F, 0x00338},  // SUCCEEDS OR EQUIVALENT TO with slash
+    {"NotSuperset",      0x02283, 0x020D2},  // SUPERSET OF with vertical line
     {"NotSupersetEqual", 0x02289},  // NEITHER A SUPERSET OF NOR EQUAL TO
     {"NotTilde",         0x02241},  // NOT TILDE
     {"NotTildeEqual",    0x02244},  // NOT ASYMPTOTICALLY EQUAL TO
@@ -1420,25 +1378,25 @@ immutable NameId[] namesN =
     {"NotVerticalBar",   0x02224},  // DOES NOT DIVIDE
     {"npar",             0x02226},  // NOT PARALLEL TO
     {"nparallel",        0x02226},  // NOT PARALLEL TO
-//  "nparsl",           0x02AFD;0x020E5},  // DOUBLE SOLIDUS OPERATOR with reverse slash
-//  "npart",            0x02202;0x00338},  // PARTIAL DIFFERENTIAL with slash
+    {"nparsl",           0x02AFD, 0x020E5},  // DOUBLE SOLIDUS OPERATOR with reverse slash
+    {"npart",            0x02202, 0x00338},  // PARTIAL DIFFERENTIAL with slash
     {"npolint",          0x02A14},  // LINE INTEGRATION NOT INCLUDING THE POLE
     {"npr",              0x02280},  // DOES NOT PRECEDE
     {"nprcue",           0x022E0},  // DOES NOT PRECEDE OR EQUAL
-//  "npre",             0x02AAF;0x00338},  // PRECEDES ABOVE SINGLE-LINE EQUALS SIGN with slash
+    {"npre",             0x02AAF, 0x00338},  // PRECEDES ABOVE SINGLE-LINE EQUALS SIGN with slash
     {"nprec",            0x02280},  // DOES NOT PRECEDE
-//  "npreceq",          0x02AAF;0x00338},  // PRECEDES ABOVE SINGLE-LINE EQUALS SIGN with slash
+    {"npreceq",          0x02AAF, 0x00338},  // PRECEDES ABOVE SINGLE-LINE EQUALS SIGN with slash
     {"nrarr",            0x0219B},  // RIGHTWARDS ARROW WITH STROKE
     {"nrArr",            0x021CF},  // RIGHTWARDS DOUBLE ARROW WITH STROKE
-//  "nrarrc",           0x02933;0x00338},  // WAVE ARROW POINTING DIRECTLY RIGHT with slash
-//  "nrarrw",           0x0219D;0x00338},  // RIGHTWARDS WAVE ARROW with slash
+    {"nrarrc",           0x02933, 0x00338},  // WAVE ARROW POINTING DIRECTLY RIGHT with slash
+    {"nrarrw",           0x0219D, 0x00338},  // RIGHTWARDS WAVE ARROW with slash
     {"nrightarrow",      0x0219B},  // RIGHTWARDS ARROW WITH STROKE
     {"nRightarrow",      0x021CF},  // RIGHTWARDS DOUBLE ARROW WITH STROKE
     {"nrtri",            0x022EB},  // DOES NOT CONTAIN AS NORMAL SUBGROUP
     {"nrtrie",           0x022ED},  // DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL
     {"nsc",              0x02281},  // DOES NOT SUCCEED
     {"nsccue",           0x022E1},  // DOES NOT SUCCEED OR EQUAL
-//  "nsce",             0x02AB0;0x00338},  // SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN with slash
+    {"nsce",             0x02AB0, 0x00338},  // SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN with slash
     {"Nscr",             0x1D4A9},  // MATHEMATICAL SCRIPT CAPITAL N
     {"nscr",             0x1D4C3},  // MATHEMATICAL SCRIPT SMALL N
     {"nshortmid",        0x02224},  // DOES NOT DIVIDE
@@ -1452,18 +1410,18 @@ immutable NameId[] namesN =
     {"nsqsupe",          0x022E3},  // NOT SQUARE ORIGINAL OF OR EQUAL TO
     {"nsub",             0x02284},  // NOT A SUBSET OF
     {"nsube",            0x02288},  // NEITHER A SUBSET OF NOR EQUAL TO
-//  "nsubE",            0x02AC5;0x00338},  // SUBSET OF ABOVE EQUALS SIGN with slash
-//  "nsubset",          0x02282;0x020D2},  // SUBSET OF with vertical line
+    {"nsubE",            0x02AC5, 0x00338},  // SUBSET OF ABOVE EQUALS SIGN with slash
+    {"nsubset",          0x02282, 0x020D2},  // SUBSET OF with vertical line
     {"nsubseteq",        0x02288},  // NEITHER A SUBSET OF NOR EQUAL TO
-//  "nsubseteqq",       0x02AC5;0x00338},  // SUBSET OF ABOVE EQUALS SIGN with slash
+    {"nsubseteqq",       0x02AC5, 0x00338},  // SUBSET OF ABOVE EQUALS SIGN with slash
     {"nsucc",            0x02281},  // DOES NOT SUCCEED
-//  "nsucceq",          0x02AB0;0x00338},  // SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN with slash
+    {"nsucceq",          0x02AB0, 0x00338},  // SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN with slash
     {"nsup",             0x02285},  // NOT A SUPERSET OF
     {"nsupe",            0x02289},  // NEITHER A SUPERSET OF NOR EQUAL TO
-//  "nsupE",            0x02AC6;0x00338},  // SUPERSET OF ABOVE EQUALS SIGN with slash
-//  "nsupset",          0x02283;0x020D2},  // SUPERSET OF with vertical line
+    {"nsupE",            0x02AC6, 0x00338},  // SUPERSET OF ABOVE EQUALS SIGN with slash
+    {"nsupset",          0x02283, 0x020D2},  // SUPERSET OF with vertical line
     {"nsupseteq",        0x02289},  // NEITHER A SUPERSET OF NOR EQUAL TO
-//  "nsupseteqq",       0x02AC6;0x00338},  // SUPERSET OF ABOVE EQUALS SIGN with slash
+    {"nsupseteqq",       0x02AC6, 0x00338},  // SUPERSET OF ABOVE EQUALS SIGN with slash
     {"ntgl",             0x02279},  // NEITHER GREATER-THAN NOR LESS-THAN
     {"Ntilde",           0x000D1},  // LATIN CAPITAL LETTER N WITH TILDE
     {"ntilde",           0x000F1},  // LATIN SMALL LETTER N WITH TILDE
@@ -1477,22 +1435,22 @@ immutable NameId[] namesN =
     {"num",              0x00023},  // NUMBER SIGN
     {"numero",           0x02116},  // NUMERO SIGN
     {"numsp",            0x02007},  // FIGURE SPACE
-//  "nvap",             0x0224D;0x020D2},  // EQUIVALENT TO with vertical line
+    {"nvap",             0x0224D, 0x020D2},  // EQUIVALENT TO with vertical line
     {"nvdash",           0x022AC},  // DOES NOT PROVE
     {"nvDash",           0x022AD},  // NOT TRUE
     {"nVdash",           0x022AE},  // DOES NOT FORCE
     {"nVDash",           0x022AF},  // NEGATED DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
-//  "nvge",             0x02265;0x020D2},  // GREATER-THAN OR EQUAL TO with vertical line
-//  "nvgt",             0x0003E;0x020D2},  // GREATER-THAN SIGN with vertical line
+    {"nvge",             0x02265, 0x020D2},  // GREATER-THAN OR EQUAL TO with vertical line
+    {"nvgt",             0x0003E, 0x020D2},  // GREATER-THAN SIGN with vertical line
     {"nvHarr",           0x02904},  // LEFT RIGHT DOUBLE ARROW WITH VERTICAL STROKE
     {"nvinfin",          0x029DE},  // INFINITY NEGATED WITH VERTICAL BAR
     {"nvlArr",           0x02902},  // LEFTWARDS DOUBLE ARROW WITH VERTICAL STROKE
-//  "nvle",             0x02264;0x020D2},  // LESS-THAN OR EQUAL TO with vertical line
-//  "nvlt",             0x0003C;0x020D2},  // LESS-THAN SIGN with vertical line
-//  "nvltrie",          0x022B4;0x020D2},  // NORMAL SUBGROUP OF OR EQUAL TO with vertical line
+    {"nvle",             0x02264, 0x020D2},  // LESS-THAN OR EQUAL TO with vertical line
+    {"nvlt",             0x0003C, 0x020D2},  // LESS-THAN SIGN with vertical line
+    {"nvltrie",          0x022B4, 0x020D2},  // NORMAL SUBGROUP OF OR EQUAL TO with vertical line
     {"nvrArr",           0x02903},  // RIGHTWARDS DOUBLE ARROW WITH VERTICAL STROKE
-//  "nvrtrie",          0x022B5;0x020D2},  // CONTAINS AS NORMAL SUBGROUP OR EQUAL TO with vertical line
-//  "nvsim",            0x0223C;0x020D2},  // TILDE OPERATOR with vertical line
+    {"nvrtrie",          0x022B5, 0x020D2},  // CONTAINS AS NORMAL SUBGROUP OR EQUAL TO with vertical line
+    {"nvsim",            0x0223C, 0x020D2},  // TILDE OPERATOR with vertical line
     {"nwarhk",           0x02923},  // NORTH WEST ARROW WITH HOOK
     {"nwarr",            0x02196},  // NORTH WEST ARROW
     {"nwArr",            0x021D6},  // NORTH WEST DOUBLE ARROW
@@ -1704,7 +1662,7 @@ immutable NameId[] namesQ =
 immutable NameId[] namesR =
 [
     {"rAarr",            0x021DB},  // RIGHTWARDS TRIPLE ARROW
-//  "race",             0x0223D;0x00331},  // REVERSED TILDE with underline
+    {"race",             0x0223D, 0x00331},  // REVERSED TILDE with underline
     {"Racute",           0x00154},  // LATIN CAPITAL LETTER R WITH ACUTE
     {"racute",           0x00155},  // LATIN SMALL LETTER R WITH ACUTE
     {"radic",            0x0221A},  // SQUARE ROOT
@@ -1932,7 +1890,7 @@ immutable NameId[] namesS =
     {"smile",            0x02323},  // SMILE
     {"smt",              0x02AAA},  // SMALLER THAN
     {"smte",             0x02AAC},  // SMALLER THAN OR EQUAL TO
-//  "smtes",            0x02AAC;0x0FE00},  // SMALLER THAN OR slanted EQUAL
+    {"smtes",            0x02AAC, 0x0FE00},  // SMALLER THAN OR slanted EQUAL
     {"SOFTcy",           0x0042C},  // CYRILLIC CAPITAL LETTER SOFT SIGN
     {"softcy",           0x0044C},  // CYRILLIC SMALL LETTER SOFT SIGN
     {"sol",              0x0002F},  // SOLIDUS
@@ -1944,9 +1902,9 @@ immutable NameId[] namesS =
     {"spadesuit",        0x02660},  // BLACK SPADE SUIT
     {"spar",             0x02225},  // PARALLEL TO
     {"sqcap",            0x02293},  // SQUARE CAP
-//  "sqcaps",           0x02293;0x0FE00},  // SQUARE CAP with serifs
+    {"sqcaps",           0x02293, 0x0FE00},  // SQUARE CAP with serifs
     {"sqcup",            0x02294},  // SQUARE CUP
-//  "sqcups",           0x02294;0x0FE00},  // SQUARE CUP with serifs
+    {"sqcups",           0x02294, 0x0FE00},  // SQUARE CUP with serifs
     {"Sqrt",             0x0221A},  // SQUARE ROOT
     {"sqsub",            0x0228F},  // SQUARE IMAGE OF
     {"sqsube",           0x02291},  // SQUARE IMAGE OF OR EQUAL TO
@@ -2082,7 +2040,7 @@ immutable NameId[] namesT =
     {"thgr",             0x003B8},  // GREEK SMALL LETTER THETA
     {"thickapprox",      0x02248},  // ALMOST EQUAL TO
     {"thicksim",         0x0223C},  // TILDE OPERATOR
-//  "ThickSpace",       0x0205F;0x0200A},  // space of width 5/18 em
+    {"ThickSpace",       0x0205F, 0x0200A},  // space of width 5/18 em
     {"thinsp",           0x02009},  // THIN SPACE
     {"ThinSpace",        0x02009},  // THIN SPACE
     {"thkap",            0x02248},  // ALMOST EQUAL TO
@@ -2245,10 +2203,10 @@ immutable NameId[] namesV =
     {"vArr",             0x021D5},  // UP DOWN DOUBLE ARROW
     {"varrho",           0x003F1},  // GREEK RHO SYMBOL
     {"varsigma",         0x003C2},  // GREEK SMALL LETTER FINAL SIGMA
-//  "varsubsetneq",     0x0228A;0x0FE00},  // SUBSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
-//  "varsubsetneqq",    0x02ACB;0x0FE00},  // SUBSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
-//  "varsupsetneq",     0x0228B;0x0FE00},  // SUPERSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
-//  "varsupsetneqq",    0x02ACC;0x0FE00},  // SUPERSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
+    {"varsubsetneq",     0x0228A, 0x0FE00},  // SUBSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
+    {"varsubsetneqq",    0x02ACB, 0x0FE00},  // SUBSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
+    {"varsupsetneq",     0x0228B, 0x0FE00},  // SUPERSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
+    {"varsupsetneqq",    0x02ACC, 0x0FE00},  // SUPERSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
     {"vartheta",         0x003D1},  // GREEK THETA SYMBOL
     {"vartriangleleft",  0x022B2},  // NORMAL SUBGROUP OF
     {"vartriangleright", 0x022B3},  // CONTAINS AS NORMAL SUBGROUP
@@ -2279,18 +2237,18 @@ immutable NameId[] namesV =
     {"Vfr",              0x1D519},  // MATHEMATICAL FRAKTUR CAPITAL V
     {"vfr",              0x1D533},  // MATHEMATICAL FRAKTUR SMALL V
     {"vltri",            0x022B2},  // NORMAL SUBGROUP OF
-//  "vnsub",            0x02282;0x020D2},  // SUBSET OF with vertical line
-//  "vnsup",            0x02283;0x020D2},  // SUPERSET OF with vertical line
+    {"vnsub",            0x02282, 0x020D2},  // SUBSET OF with vertical line
+    {"vnsup",            0x02283, 0x020D2},  // SUPERSET OF with vertical line
     {"Vopf",             0x1D54D},  // MATHEMATICAL DOUBLE-STRUCK CAPITAL V
     {"vopf",             0x1D567},  // MATHEMATICAL DOUBLE-STRUCK SMALL V
     {"vprop",            0x0221D},  // PROPORTIONAL TO
     {"vrtri",            0x022B3},  // CONTAINS AS NORMAL SUBGROUP
     {"Vscr",             0x1D4B1},  // MATHEMATICAL SCRIPT CAPITAL V
     {"vscr",             0x1D4CB},  // MATHEMATICAL SCRIPT SMALL V
-//  "vsubne",           0x0228A;0x0FE00},  // SUBSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
-//  "vsubnE",           0x02ACB;0x0FE00},  // SUBSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
-//  "vsupne",           0x0228B;0x0FE00},  // SUPERSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
-//  "vsupnE",           0x02ACC;0x0FE00},  // SUPERSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
+    {"vsubne",           0x0228A, 0x0FE00},  // SUBSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
+    {"vsubnE",           0x02ACB, 0x0FE00},  // SUBSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
+    {"vsupne",           0x0228B, 0x0FE00},  // SUPERSET OF WITH NOT EQUAL TO - variant with stroke through bottom members
+    {"vsupnE",           0x02ACC, 0x0FE00},  // SUPERSET OF ABOVE NOT EQUAL TO - variant with stroke through bottom members
     {"Vvdash",           0x022AA},  // TRIPLE VERTICAL BAR RIGHT TURNSTILE
     {"vzigzag",          0x0299A},  // VERTICAL ZIGZAG LINE
 ];

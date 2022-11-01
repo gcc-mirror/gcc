@@ -348,7 +348,7 @@ struct d_print_info
      be bigger than MAX_RECURSION_COUNT.  */
   int recursion;
   /* Non-zero if we're printing a lambda argument.  A template
-     parameter reference actually means 'auto'.  */
+     parameter reference actually means 'auto', a pack expansion means T...  */
   int is_lambda_arg;
   /* The current index into any template argument packs we are using
      for printing, or -1 to print the whole pack.  */
@@ -1609,12 +1609,10 @@ d_prefix (struct d_info *di, int substable)
 	}
       else if (peek == 'M')
 	{
-	  /* Initializer scope for a lambda.  We don't need to represent
-	     this; the normal code will just treat the variable as a type
-	     scope, which gives appropriate output.  */
-	  if (ret == NULL)
-	    return NULL;
+	  /* Initializer scope for a lambda.  We already added it as a
+  	     substitution candidate, don't do that again.  */
 	  d_advance (di, 1);
+	  continue;
 	}
       else
 	{
@@ -2489,6 +2487,7 @@ cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
   /* 33 */ { NL ("decltype(nullptr)"),	NL ("decltype(nullptr)"),
 	     D_PRINT_DEFAULT },
   /* 34 */ { NL ("_Float"),	NL ("_Float"),		D_PRINT_FLOAT },
+  /* 35 */ { NL ("std::bfloat16_t"), NL ("std::bfloat16_t"), D_PRINT_FLOAT },
 };
 
 CP_STATIC_IF_GLIBCPP_V3
@@ -2753,11 +2752,22 @@ cplus_demangle_type (struct d_info *di)
 
 	case 'F':
 	  /* DF<number>_ - _Float<number>.
-	     DF<number>x - _Float<number>x.  */
+	     DF<number>x - _Float<number>x
+	     DF16b - std::bfloat16_t.  */
 	  {
 	    int arg = d_number (di);
 	    char buf[12];
 	    char suffix = 0;
+	    if (d_peek_char (di) == 'b')
+	      {
+		if (arg != 16)
+		  return NULL;
+		d_advance (di, 1);
+		ret = d_make_builtin_type (di,
+					   &cplus_demangle_builtin_types[35]);
+		di->expansion += ret->u.s_builtin.type->len;
+		break;
+	      }
 	    if (d_peek_char (di) == 'x')
 	      suffix = 'x';
 	    if (!suffix && d_peek_char (di) != '_')
@@ -5930,9 +5940,10 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 
     case DEMANGLE_COMPONENT_PACK_EXPANSION:
       {
-	int len;
-	int i;
-	struct demangle_component *a = d_find_pack (dpi, d_left (dc));
+	struct demangle_component *a = NULL;
+
+	if (!dpi->is_lambda_arg)
+	  a = d_find_pack (dpi, d_left (dc));
 	if (a == NULL)
 	  {
 	    /* d_find_pack won't find anything if the only packs involved
@@ -5940,17 +5951,20 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	       case, just print the pattern and "...".  */
 	    d_print_subexpr (dpi, options, d_left (dc));
 	    d_append_string (dpi, "...");
-	    return;
 	  }
-
-	len = d_pack_length (a);
-	dc = d_left (dc);
-	for (i = 0; i < len; ++i)
+	else
 	  {
-	    dpi->pack_index = i;
-	    d_print_comp (dpi, options, dc);
-	    if (i < len-1)
-	      d_append_string (dpi, ", ");
+	    int len = d_pack_length (a);
+	    int i;
+
+	    dc = d_left (dc);
+	    for (i = 0; i < len; ++i)
+	      {
+		if (i)
+		  d_append_string (dpi, ", ");
+		dpi->pack_index = i;
+		d_print_comp (dpi, options, dc);
+	      }
 	  }
       }
       return;

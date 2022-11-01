@@ -1,4 +1,6 @@
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target hosted }
+
 #include <functional>
 
 struct X

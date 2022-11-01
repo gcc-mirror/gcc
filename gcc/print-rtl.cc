@@ -453,6 +453,10 @@ rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
 	  expanded_location xloc = insn_location (in_insn);
 	  fprintf (m_outfile, " \"%s\":%i:%i", xloc.file, xloc.line,
 		   xloc.column);
+	  int discriminator = insn_discriminator (in_insn);
+	    if (discriminator)
+	      fprintf (m_outfile, " discrim %d", discriminator);
+
 	}
 #endif
     }

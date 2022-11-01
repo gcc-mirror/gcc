@@ -23,6 +23,7 @@ if (__traits(isUnsigned, T))
     string result = "extern (C++) pure nothrow @nogc @safe final {";
     enum structName = __traits(identifier, S);
 
+    string initialValue = "";
     foreach (size_t i, mem; __traits(allMembers, S))
     {
         static assert(is(typeof(__traits(getMember, S, mem)) == bool));
@@ -37,8 +38,10 @@ if (__traits(isUnsigned, T))
             v ? (bitFields |= "~mask~") : (bitFields &= ~"~mask~");
             return v;
         }";
+
+        initialValue = (__traits(getMember, S.init, mem) ? "1" : "0") ~ initialValue;
     }
-    return result ~ "}\n private "~T.stringof~" bitFields;\n";
+    return result ~ "}\n private "~T.stringof~" bitFields = 0b" ~ initialValue ~ ";\n";
 }
 
 ///
@@ -48,7 +51,7 @@ unittest
     {
         bool x;
         bool y;
-        bool z;
+        bool z = 1;
     }
 
     static struct S
@@ -66,5 +69,5 @@ unittest
     s.y = true;
     assert(s.y);
     assert(!s.x);
-    assert(!s.z);
+    assert(s.z);
 }
