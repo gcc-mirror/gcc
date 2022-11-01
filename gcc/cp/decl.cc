@@ -13038,7 +13038,11 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    if (type_quals != TYPE_UNQUALIFIED)
 	      {
-		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
+		/* It's wrong, for instance, to issue a -Wignored-qualifiers
+		   warning for
+		    static_assert(!is_same_v<void(*)(), const void(*)()>);
+		    because there the qualifier matters.  */
+		if (funcdecl_p && (SCALAR_TYPE_P (type) || VOID_TYPE_P (type)))
 		  warning_at (typespec_loc, OPT_Wignored_qualifiers, "type "
 			      "qualifiers ignored on function return type");
 		/* [dcl.fct] "A volatile-qualified return type is
