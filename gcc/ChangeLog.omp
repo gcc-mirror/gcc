@@ -1,3 +1,8 @@
+2022-11-01  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* omp-expand-metadirective.cc (omp_expand_metadirective): Add already
+	processed labels to "labels" (the list of labels not to be deleted).
+
 2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
 
 	* omp-low.cc (usm_transform): Handle operator new with alignment.

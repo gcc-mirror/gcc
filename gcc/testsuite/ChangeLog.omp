@@ -1,3 +1,7 @@
+2022-11-01  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/metadirective-8.c: New test.
+
 2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
 
 	* g++.dg/gomp/usm-4.C: New test.
