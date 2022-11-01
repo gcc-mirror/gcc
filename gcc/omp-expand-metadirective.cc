@@ -65,6 +65,7 @@ omp_expand_metadirective (function *fun, basic_block bb)
 	{
 	  edge e = find_edge (bb, label_to_block (fun, label));
 	  remove_edge_and_dominated_blocks (e);
+	  labels.safe_push (label);
 	}
     }
 
