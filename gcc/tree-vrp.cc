@@ -180,7 +180,7 @@ remove_unreachable::remove_and_update_globals (bool final_p)
   bitmap_copy (dce, all_exports);
   // Don't attempt to DCE parameters.
   EXECUTE_IF_SET_IN_BITMAP (all_exports, 0, i, bi)
-    if (SSA_NAME_IS_DEFAULT_DEF (ssa_name (i)))
+    if (!ssa_name (i) || SSA_NAME_IS_DEFAULT_DEF (ssa_name (i)))
       bitmap_clear_bit (dce, i);
   simple_dce_from_worklist (dce);
 
