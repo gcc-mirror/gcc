@@ -4365,13 +4365,11 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
-	rtx exec = get_exec (-1);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
 					  EXPAND_NORMAL));
-	emit_insn (gen_absv64df2_exec
-		   (target, arg, gcn_gen_undef (V64DFmode), exec));
+	emit_insn (gen_absv64df2 (target, arg));
 	return target;
       }
     case GCN_BUILTIN_LDEXPVF:
