@@ -192,7 +192,7 @@ here is a talk on GNU Modula-2 given at
 Manchester on 8th September 2018.
 The title is, ``GNU Modula-2 update, catching semantic errors post
 code optimisation and improved debugging''
-[@url{http://floppsie.comp.glam.ac.uk/Papers/paper23/gaius-mulley-gnu-m2.pdf,slides}
+[@url{https://splendidisolation.ddns.net/Papers/paper23/talk.pdf,slides}
 and @url{https://www.youtube.com/watch?v=6jf6weRuHjk,video}].
 
 @item gm2 1.8.2
@@ -215,7 +215,7 @@ here is a talk on GNU Modula-2 given at
 Hebden Bridge on 9th September 2016.
 The title is, ``GNU Modula-2 status, whole
 program optimisation and language interoperability''
-[@url{http://floppsie.comp.glam.ac.uk/Papers/paper22/gaius-gcc-cauldron-2016.pdf,slides}
+[@url{https://splendidisolation.ddns.net/Papers/paper22/talk.pdf,slides}
 and @url{https://www.youtube.com/watch?v=8GMyxwHdr1E,video}].
 @item gm2 1.1.6
 was released on February 22nd 2016.  gm2-1.1.6 grafts onto gcc-4.7.4.
@@ -416,28 +416,13 @@ or by
 The mailing list contents can be viewed
 @url{http://lists.gnu.org/archive/html/gm2}.
 
-@node Other languages, Papers and talks, Community, Using
+@node Other languages, , Community, Using
 @section Other languages for GCC
 
 These exist and can be found on the frontends web page on the
 @uref{http://gcc.gnu.org/frontends.html, gcc web site}.
 
-@node Papers and talks, , Other languages, Using
-@section Papers and talks
-
-A paper was presented at the @uref{http://www.gccsummit.org/2006,
-GCC 2006 conference} on
-@uref{http://floppsie.comp.glam.ac.uk/Papers/paper15/mulley-proc.pdf,
-the state of GNU Modula-2}.
-
-A @uref{http://www.gccsummit.org/2010/speakers.php?types=LIGHTNING,
-lightening talk} has been given at the GCC 2010 conference titled
-"Exploiting front end knowledge to effortlessly create Python modules"
-and the slides are
-@uref{http://floppsie.comp.glam.ac.uk/Papers/paper20/talk.pdf,
-available}.
-
-@node Using, , Overview, Top
+@node Using, , Community, Top
 @chapter Using GNU Modula-2
 
 @menu
@@ -462,7 +447,6 @@ available}.
 * Built-ins::             Accessing GNU Modula-2 Built-ins.
 * The PIM system module:: SYSTEM data types and procedures.
 * The ISO system module:: SYSTEM data types, procedures and run time.
-* Papers and talks::      Papers and talks.
 * Other languages::       Other languages for GCC.
 * What is GNU Modula-2::  Brief description of GNU Modula-2.
 * Why use GNU Modula-2::  Advantages of GNU Modula-2.

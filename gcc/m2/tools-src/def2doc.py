@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# def2texi.py creates texi library documentation for all exported procedures.
+# def2doc.py creates texi library documentation for all exported procedures.
 # Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 # Copyright (C) 2000-2022 Free Software Foundation, Inc.
@@ -64,7 +64,7 @@ def emitSubSection(name):
         output.write("@subsection " + name + "\n")
     elif args.sphinx:
         output.write(name + "\n")
-        output.write("=" * len(name) + "\n")
+        output.write("-" * len(name) + "\n")
 
 
 #  displayLibraryClass - displays a node for a library directory and invokes
@@ -248,8 +248,7 @@ def parseDefinition(dir, source, build, file, needPage):
         output.write(str.rstrip(line) + "\n")
         line = f.readline()
         if len(str.rstrip(line)) == 0:
-            output.write(str.replace(str.replace(str.rstrip(line),
-                                                 "{", "@{"), "}", "@}") + "\n")
+            output.write("\n")
             line = f.readline()
             if (str.find(line, "(*") != -1):
                 removeFields(f, line)
@@ -257,8 +256,7 @@ def parseDefinition(dir, source, build, file, needPage):
                 output.write(str.rstrip(line) + "\n")
         else:
             output.write(str.rstrip(line) + "\n")
-
-            line = f.readline()
+        line = f.readline()
         while line:
             line = str.rstrip(line)
             checkIndex(line)
