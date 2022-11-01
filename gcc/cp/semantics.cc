@@ -2062,11 +2062,7 @@ finish_mem_initializers (tree mem_inits)
 				  CTOR_INITIALIZER, mem_inits));
     }
   else
-    {
-      emit_preconditions (DECL_CONTRACTS (current_function_decl));
-      emit_postconditions_cleanup (DECL_CONTRACTS (current_function_decl));
-      emit_mem_initializers (mem_inits);
-    }
+    emit_mem_initializers (mem_inits);
 }
 
 /* Obfuscate EXPR if it looks like an id-expression or member access so

@@ -17701,9 +17701,6 @@ begin_destructor_body (void)
 {
   tree compound_stmt;
 
-  emit_preconditions (DECL_CONTRACTS (current_function_decl));
-  emit_postconditions_cleanup (DECL_CONTRACTS (current_function_decl));
-
   /* If the CURRENT_CLASS_TYPE is incomplete, we will have already
      issued an error message.  We still want to try to process the
      body of the function, but initialize_vtbl_ptrs will crash if

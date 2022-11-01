@@ -1480,6 +1480,15 @@ build_contract_condition_function (tree fndecl, bool pre)
   return fn;
 }
 
+/* Return true if CONTRACT is checked or assumed under the current build
+   configuration. */
+
+bool
+contract_active_p (tree contract)
+{
+  return get_contract_semantic (contract) != CCS_IGNORE;
+}
+
 static bool
 has_active_contract_condition (tree d, tree_code c)
 {
@@ -1506,6 +1515,40 @@ static bool
 has_active_postconditions (tree d)
 {
   return has_active_contract_condition (d, POSTCONDITION_STMT);
+}
+
+/* Return true if any contract in the CONTRACT list is checked or assumed
+   under the current build configuration. */
+
+bool
+contract_any_active_p (tree contract)
+{
+  for (; contract != NULL_TREE; contract = CONTRACT_CHAIN (contract))
+    if (contract_active_p (TREE_VALUE (TREE_VALUE (contract))))
+      return true;
+  return false;
+}
+
+/* Do we need to mess with contracts for DECL1?  */
+
+static bool
+handle_contracts_p (tree decl1)
+{
+  return (flag_contracts
+	  && !processing_template_decl
+	  && DECL_ORIGINAL_FN (decl1) == NULL_TREE
+	  && contract_any_active_p (DECL_CONTRACTS (decl1)));
+}
+
+/* Should we break out DECL1's pre/post contracts into separate functions?
+   FIXME I'd like this to default to 0, but that will need an overhaul to the
+   return identifier handling to just refor to the RESULT_DECL.  */
+
+static bool
+outline_contracts_p (tree decl1)
+{
+  return (!DECL_CONSTRUCTOR_P (decl1)
+	  && !DECL_DESTRUCTOR_P (decl1));
 }
 
 /* Build the precondition checking function for D.  */
@@ -1540,7 +1583,7 @@ void
 build_contract_function_decls (tree d)
 {
   /* Constructors and destructors have their contracts inserted inline.  */
-  if (DECL_CONSTRUCTOR_P (d) || DECL_DESTRUCTOR_P (d))
+  if (!outline_contracts_p (d))
     return;
 
   /* Build the pre/post functions (or not).  */
@@ -1651,12 +1694,7 @@ static tree
 build_contract_violation (tree contract, contract_continuation cmode)
 {
   expanded_location loc = expand_location (EXPR_LOCATION (contract));
-  const char *function =
-    TREE_CODE (contract) == ASSERTION_STMT
-      || DECL_CONSTRUCTOR_P (current_function_decl)
-      || DECL_DESTRUCTOR_P (current_function_decl)
-    ? current_function_name ()
-    : fndecl_name (DECL_ORIGINAL_FN (current_function_decl));
+  const char *function = fndecl_name (DECL_ORIGIN (current_function_decl));
   const char *level = get_contract_level_name (contract);
   const char *role = get_contract_role_name (contract);
 
@@ -1745,27 +1783,6 @@ build_contract_handler_call (tree contract,
   tree violation_fn = declare_handle_contract_violation ();
   tree call = build_call_n (violation_fn, 1, build_address (violation));
   finish_expr_stmt (call);
-}
-
-/* Return true if CONTRACT is checked or assumed under the current build
-   configuration. */
-
-bool
-contract_active_p (tree contract)
-{
-  return get_contract_semantic (contract) != CCS_IGNORE;
-}
-
-/* Return true if any contract in the CONTRACT list is checked or assumed
-   under the current build configuration. */
-
-bool
-contract_any_active_p (tree contract)
-{
-  for (; contract != NULL_TREE; contract = CONTRACT_CHAIN (contract))
-    if (contract_active_p (TREE_VALUE (TREE_VALUE (contract))))
-      return true;
-  return false;
 }
 
 /* Generate the code that checks or assumes a contract, but do not attach
@@ -1984,14 +2001,15 @@ build_arg_list (tree fn)
 void
 start_function_contracts (tree decl1)
 {
-  bool starting_guarded_p = !processing_template_decl
-    && DECL_ORIGINAL_FN (decl1) == NULL_TREE
-    && contract_any_active_p (DECL_CONTRACTS (decl1))
-    && !DECL_CONSTRUCTOR_P (decl1)
-    && !DECL_DESTRUCTOR_P (decl1);
-
-  if (!starting_guarded_p)
+  if (!handle_contracts_p (decl1))
     return;
+
+  if (!outline_contracts_p (decl1))
+    {
+      emit_preconditions (DECL_CONTRACTS (current_function_decl));
+      emit_postconditions_cleanup (DECL_CONTRACTS (current_function_decl));
+      return;
+    }
 
   /* Contracts may have just been added without a chance to parse them, though
      we still need the PRE_FN available to generate a call to it.  */
@@ -2018,13 +2036,8 @@ start_function_contracts (tree decl1)
 void
 finish_function_contracts (tree fndecl)
 {
-  bool finishing_guarded_p = !processing_template_decl
-    && DECL_ORIGINAL_FN (fndecl) == NULL_TREE
-    && contract_any_active_p (DECL_CONTRACTS (fndecl))
-    && !DECL_CONSTRUCTOR_P (fndecl)
-    && !DECL_DESTRUCTOR_P (fndecl);
-
-  if (!finishing_guarded_p)
+  if (!handle_contracts_p (fndecl)
+      || !outline_contracts_p (fndecl))
     return;
 
   for (tree ca = DECL_CONTRACTS (fndecl); ca; ca = CONTRACT_CHAIN (ca))
