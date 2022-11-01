@@ -443,6 +443,9 @@ alpha*-dec-*vms*)
 	;;
 amdgcn*-*-amdhsa)
 	tmake_file="$tmake_file gcn/t-amdgcn"
+	if test x$ac_cv_header_stdc = xyes; then
+	  tmake_file="$tmake_file gcn/t-simdmath"
+	fi
 	extra_parts="crt0.o"
 	;;
 arc*-*-elf*)
