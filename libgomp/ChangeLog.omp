@@ -1,3 +1,7 @@
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-13.f90: Update test.
+
 2022-10-25  Abid Qadeer  <abidh@codesourcery.com>
 
 	* testsuite/libgomp.c++/usm-2.C: New test.

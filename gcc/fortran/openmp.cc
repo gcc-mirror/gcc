@@ -8487,8 +8487,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			   Only raise an error here if we're really sure the
 			   array isn't contiguous.  An expression such as
 			   arr(-n:n,-n:n) could be contiguous even if it looks
-			   like it may not be.  */
+			   like it may not be.
+			   And OpenMP's 'target update' permits strides for
+			   the to/from clause. */
 			if (code->op != EXEC_OACC_UPDATE
+			    && code->op != EXEC_OMP_TARGET_UPDATE
 			    && list != OMP_LIST_CACHE
 			    && list != OMP_LIST_DEPEND
 			    && !gfc_is_simply_contiguous (n->expr, false, true)
@@ -8532,7 +8535,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			int i;
 			gfc_array_ref *ar = &lastslice->u.ar;
 			for (i = 0; i < ar->dimen; i++)
-			  if (ar->stride[i] && code->op != EXEC_OACC_UPDATE)
+			  if (ar->stride[i]
+			      && code->op != EXEC_OACC_UPDATE
+			      && code->op != EXEC_OMP_TARGET_UPDATE)
 			    {
 			      gfc_error ("Stride should not be specified for "
 					 "array section in %s clause at %L",

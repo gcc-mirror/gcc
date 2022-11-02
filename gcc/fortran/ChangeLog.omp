@@ -1,3 +1,7 @@
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (resolve_omp_clauses): Apply to OpenMP target update.
+
 2022-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-array.cc (non_negative_strides_array_p): Fix handling
