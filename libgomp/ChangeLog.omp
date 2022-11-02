@@ -1,3 +1,7 @@
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-13.f90: Update test.
+
 2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang <cltang@codesourcery.com>
 

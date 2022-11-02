@@ -76,7 +76,7 @@ var3a = var3
 
 ! ---------------
 
-!$omp target update from(var1%at(2:3))
+!$omp target update from(var1%at(::2))
 
 if (var1a /= var1) error stop
 if (any (var2a /= var2)) error stop
@@ -134,17 +134,20 @@ var1a%at(2)%a = var1a%at(2)%a * 7
 var1a%at(3)%s = var1a%at(3)%s * (-3)
 
 block
-  integer, volatile :: i1,i2,i3,i4
+  integer, volatile :: i1,i2,i3,i4,i5,i6
   i1 = 1
   i2 = 2
   i3 = 1
-  i4 = 2
-  !$omp target update from(var3(i1:i2)) from(var1%at(i3:i4))
+  i4 = 1
+  i5 = 2
+  i6 = 1
+  !$omp target update from(var3(i1:i2:i3)) from(var1%at(i4:i5:i6))
   i1 = 3
   i2 = 3
   i3 = 1
   i4 = 5
-  !$omp target update from(var1%at(i1)%s) from(var1%at(i2)%a(i3:i4))
+  i5 = 1
+  !$omp target update from(var1%at(i1)%s) from(var1%at(i1)%a(i3:i4:i5))
 end block
 
 if (var1 /= var1) error stop

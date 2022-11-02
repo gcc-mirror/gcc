@@ -1,3 +1,7 @@
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (resolve_omp_clauses): Apply to OpenMP target update.
+
 2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang <cltang@codesourcery.com>
 
