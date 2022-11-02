@@ -1370,7 +1370,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    /* For logical right shifts, this is possible only if @0 doesn't
       have MSB set and the logical right shift is changed into
       arithmetic shift.  */
-   (if (!wi::neg_p (tree_nonzero_bits (@0)))
+   (if (INTEGRAL_TYPE_P (type)
+        && !wi::neg_p (tree_nonzero_bits (@0)))
     (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
      (convert (rshift (bit_not! (convert:stype @0)) @1))))))
 
@@ -7623,7 +7624,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */
 (simplify
   (plus (POPCOUNT:s @0) (POPCOUNT:s @1))
-  (if (wi::bit_and (tree_nonzero_bits (@0), tree_nonzero_bits (@1)) == 0)
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::bit_and (tree_nonzero_bits (@0), tree_nonzero_bits (@1)) == 0)
     (POPCOUNT (bit_ior @0 @1))))
 
 /* popcount(X) == 0 is X == 0, and related (in)equalities.  */
@@ -7655,15 +7657,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for pfun (POPCOUNT PARITY)
   (simplify
     (pfun @0)
-    (with { wide_int nz = tree_nonzero_bits (@0); }
-      (switch
-	(if (nz == 1)
-	  (convert @0))
-	(if (wi::popcount (nz) == 1)
-	  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
-	    (convert (rshift:utype (convert:utype @0)
-				   { build_int_cst (integer_type_node,
-						    wi::ctz (nz)); }))))))))
+    (if (INTEGRAL_TYPE_P (type))
+     (with { wide_int nz = tree_nonzero_bits (@0); }
+       (switch
+	 (if (nz == 1)
+	   (convert @0))
+	 (if (wi::popcount (nz) == 1)
+	   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+	     (convert (rshift:utype (convert:utype @0)
+				    { build_int_cst (integer_type_node,
+						     wi::ctz (nz)); })))))))))
 
 #if GIMPLE
 /* 64- and 32-bits branchless implementations of popcount are detected:
