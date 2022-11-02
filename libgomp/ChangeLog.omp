@@ -1,5 +1,9 @@
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.fortran/target-enter-data-3a.f90: New test.
+
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
 	* testsuite/libgomp.fortran/target-13.f90: Update test.
 
 2022-10-25  Abid Qadeer  <abidh@codesourcery.com>

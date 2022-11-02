@@ -1,5 +1,10 @@
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
+	* trans-openmp.cc (gfc_trans_omp_clauses): Ensure DT struct-comp with
+	array descriptor and 'alloc:' have the descriptor mapped with 'to:'.
+
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
 	* openmp.cc (resolve_omp_clauses): Apply to OpenMP target update.
 
 2022-10-19  Tobias Burnus  <tobias@codesourcery.com>

@@ -5001,7 +5001,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    = gfc_full_array_size (block, inner, rank);
 			  tree elemsz
 			    = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-			  if (GOMP_MAP_COPY_TO_P (OMP_CLAUSE_MAP_KIND (node)))
+			  if (GOMP_MAP_COPY_TO_P (OMP_CLAUSE_MAP_KIND (node))
+			      || OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_ALLOC)
 			    map_kind = GOMP_MAP_TO;
 			  else if (n->u.map_op == OMP_MAP_RELEASE
 				   || n->u.map_op == OMP_MAP_DELETE)
