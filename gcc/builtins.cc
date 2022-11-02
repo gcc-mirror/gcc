@@ -1931,6 +1931,11 @@ mathfn_built_in_2 (tree type, combined_fn fn)
   built_in_function fcodef64x = END_BUILTINS;
   built_in_function fcodef128x = END_BUILTINS;
 
+  /* If <math.h> has been included somehow, HUGE_VAL and NAN definitions
+     break the uses below.  */
+#undef HUGE_VAL
+#undef NAN
+
   switch (fn)
     {
 #define SEQ_OF_CASE_MATHFN			\
