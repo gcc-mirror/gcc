@@ -1,3 +1,61 @@
+2022-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR): New.
+	(struct tree_lambda_expr): Add discriminator_sig bitfield.
+	(recrd_lambda_scope_sig_discriminator): Declare.
+	* lambda.cc (struct lambda_sig_count): New.
+	(lambda_discriminator): Add signature vector.
+	(start_lambda_scope): Adjust.
+	(compare_lambda_template_head, compare_lambda_sig): New.
+	(record_lambda_scope_sig_discriminator): New.
+	* mangle.cc (write_closure_type): Use the scope-sig discriminator for
+	ABI >= 18.  Emit abi mangling warning if needed.
+	* module.cc (trees_out::core_vals): Stream the new discriminator.
+	(trees_in::core_vals): Likewise.
+	* parser.cc (cp_parser_lambda_declarator_opt): Call
+	record_lambda_scope_sig_discriminator.
+	* pt.cc (tsubst_lambda_expr): Likewise.
+
+2022-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (LAMBDA_EXPR_DISCRIMINATOR): Rename to ...
+	(LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR): ... here.
+	(struct tree_lambda_expr): Make default_capture_mode &
+	discriminator_scope bitfields.
+	(record_null_lambda_scope) Delete.
+	(record_lambda_scope_discriminator): Declare.
+	* lambda.cc (struct lambda_discriminator): New struct.
+	(lambda_scope, lambda_scope_stack): Adjust types.
+	(lambda_count): Delete.
+	(struct tree_int): Delete.
+	(start_lambda_scope, finish_lambda_scope): Adjust.
+	(record_lambda_scope): Only record the scope.
+	(record_lambda_scope_discriminator): New.
+	* mangle.cc (write_closure_type_name): Adjust.
+	* module.cc (trees_out::core_vals): Likewise,
+	(trees_in::core_vals): Likewise.
+	* parser.cc (cp_parser_lambda_expression): Call
+	record_lambda_scope_discriminator.
+	* pt.cc (tsubst_lambda_expr): Adjust record_lambda_scope caling.  Call
+	record_lambda_scope_discriminator. Commonize control flow on tsubsting
+	the operator function.
+
+2022-11-01  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (make_call_declarator): Add std_attrs parm.
+	(cp_parser_lambda_declarator_opt): Pass it.
+	(cp_parser_direct_declarator): Pass it.
+
+2022-11-01  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (finish_function): Set TREE_NOTHROW later in the function.
+
+2022-11-01  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (duplicate_decls): Reformat loop.
+	* parser.cc (cp_parser_member_declaration): Add newline.
+	* semantics.cc: Remove newline.
+
 2022-10-28  Marek Polacek  <polacek@redhat.com>
 
 	* call.cc (maybe_warn_dangling_reference): Enable the warning in

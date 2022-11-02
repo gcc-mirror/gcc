@@ -1,3 +1,119 @@
+2022-11-01  David Seifert  <soap@gentoo.org>
+
+	* configure.ac: Add AC_CACHE_CHECK(..., gcc_cv_sys_sdt_h).
+	* configure: Regenerate.
+
+2022-11-01  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* file-prefix-map.cc (remap_filename): Allow remapping of relative paths.
+
+2022-11-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107490
+	* range-op-float.cc (foperator_unordered_lt::op1_range): Handle
+	NANs.
+	(foperator_unordered_lt::op2_range): Same.
+	(foperator_unordered_le::op1_range): Same.
+	(foperator_unordered_le::op2_range): Same.
+	(foperator_unordered_gt::op1_range): Same.
+	(foperator_unordered_gt::op2_range): Same.
+	(foperator_unordered_ge::op1_range): Same.
+	(foperator_unordered_ge::op2_range): Same.
+
+2022-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107497
+	* tree-vrp.cc (remove_unreachable::remove_and_update_globals):
+	Check that ssa-name still exists before accessing it.
+
+2022-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* params.opt (param_vrp1_mode): Make ranger default.
+
+2022-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.cc (class remove_unreachable): New.
+	(remove_unreachable::maybe_register_block): New.
+	(remove_unreachable::remove_and_update_globals): New.
+	(rvrp_folder::rvrp_folder): Initialize m_unreachable.
+	(rvrp_folder::post_fold_bb): Maybe register unreachable block.
+	(rvrp_folder::m_unreachable): New member.
+	(execute_ranger_vrp): Add final_pass flag, remove unreachables.
+
+2022-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Allow
+	exit block to be specified.
+	(ranger_cache::range_from_dom): If exit block is specified, use
+	the immediate predecessor instead of the dominator to start.
+	* gimple-range.cc (gimple_ranger::range_on_exit): Allow query
+	for exit block.
+
+2022-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange::intersect_nonzero_bits): If new
+	non-zero mask is the same as original, flag no change.
+
+2022-11-01  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/87832
+	* config/i386/znver.md (znver1_idiv): New automaton.
+	(znver1-idiv): New unit.
+	(znver1_idiv_DI): Correct unit and cycles in the reservation.
+	(znver1_idiv_SI): Ditto.
+	(znver1_idiv_HI): Ditto.
+	(znver1_idiv_QI): Ditto.
+	(znver1_idiv_mem_DI): Ditto.
+	(znver1_idiv_mem_SI): Ditto.
+	(znver1_idiv_mem_HI): Ditto.
+	(znver1_idiv_mem_QI): Ditto.
+	(znver3_idiv_DI): Ditto.
+	(znver3_idiv_SI): Ditto.
+	(znver3_idiv_HI): Ditto.
+	(znver3_idiv_QI): Ditto.
+	(znver3_idiv_mem_DI): Ditto.
+	(znver3_idiv_mem_SI): Ditto.
+	(znver3_idiv_mem_HI): Ditto.
+	(znver3_idiv_mem_QI): Ditto.
+
+2022-11-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107057
+	* config/i386/sse.md (*vec_interleave_highv2df): Remove
+	constraint 1.
+	(*vec_interleave_lowv2df): Ditto.
+	(vec_concatv2df): Ditto.
+	(*avx512f_unpcklpd512<mask_name>): Ditto and renamed to ..
+	(avx512f_unpcklpd512<mask_name>): .. this.
+	(avx512f_movddup512<mask_name>): Change to define_insn.
+	(avx_movddup256<mask_name>): Ditto.
+	(*avx_unpcklpd256<mask_name>): Remove constraint 1 and renamed
+	to ..
+	(avx_unpcklpd256<mask_name>): .. this.
+	* config/i386/i386.cc (ix86_vec_interleave_v2df_operator_ok):
+	Disallow MEM_P (op1) && MEM_P (op2).
+
+2022-11-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/55583
+	* config/i386/i386.md (*x86_64_shld_1): Rename to ..
+	(x86_64_shld_1): .. this.
+	(*x86_shld_1): Rename to ..
+	(x86_shld_1): .. this.
+	(*x86_64_shrd_1): Rename to ..
+	(x86_64_shrd_1): .. this.
+	(*x86_shrd_1): Rename to ..
+	(x86_shrd_1): .. this.
+	(*x86_64_shld_shrd_1_nozext): New pre_reload splitter.
+	(*x86_shld_shrd_1_nozext): Ditto.
+	(*x86_64_shrd_shld_1_nozext): Ditto.
+	(*x86_shrd_shld_1_nozext): Ditto.
+
+2022-11-01  Cui,Lili  <lili.cui@intel.com>
+
+	* ipa-inline-analysis.cc (do_estimate_edge_time): Add function attribute
+	judgement for INLINE_HINT_known_hot hint.
+
 2022-10-31  Guillermo E. Martinez  <guillermo.e.martinez@oracle.com>
 
 	* btfout.cc (btf_calc_num_vbytes): Compute enumeration size depending of

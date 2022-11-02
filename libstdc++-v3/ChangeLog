@@ -1,3 +1,69 @@
+2022-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (__from_chars_float16_t,
+	__from_chars_bfloat16_t): Declare.
+	(from_chars): Add _Float16 and __gnu_cxx::__bfloat16_t overloads.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.31): Export
+	_ZSt22__from_chars_float16_tPKcS0_RfSt12chars_format and
+	_ZSt23__from_chars_bfloat16_tPKcS0_RfSt12chars_format.
+	* src/c++17/floating_from_chars.cc
+	(fast_float::floating_type_float16_t,
+	fast_float::floating_type_bfloat16_t): New classes.
+	(fast_float::binary_format<floating_type_float16_t>,
+	fast_float::binary_format<floating_type_bfloat16_t>): New
+	specializations.
+	(fast_float::to_float<floating_type_float16_t>,
+	fast_float::to_float<floating_type_bfloat16_t>,
+	fast_float::to_extended<floating_type_float16_t>,
+	fast_float::to_extended<floating_type_bfloat16_t>): Likewise.
+	(fast_float::from_chars_16): New template function.
+	(__floating_from_chars_hex): Allow instantiation with
+	fast_float::floating_type_{,b}float16_t.
+	(from_chars): Formatting fixes for float/double/long double overloads.
+	(__from_chars_float16_t, __from_chars_bfloat16_t): New functions.
+	* testsuite/20_util/to_chars/float16_c++23.cc: New test.
+
+2022-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (__to_chars_float16_t, __to_chars_bfloat16_t):
+	Declare.
+	(to_chars): Add _Float16 and __gnu_cxx::__bfloat16_t overloads.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.31): Export
+	_ZSt20__to_chars_float16_tPcS_fSt12chars_format and
+	_ZSt21__to_chars_bfloat16_tPcS_fSt12chars_format.
+	* src/c++17/floating_to_chars.cc (floating_type_float16_t,
+	floating_type_bfloat16_t): New types.
+	(floating_type_traits<floating_type_float16_t>,
+	floating_type_traits<floating_type_bfloat16_t>,
+	get_ieee_repr<floating_type_float16_t>,
+	get_ieee_repr<floating_type_bfloat16_t>,
+	__handle_special_value<floating_type_float16_t>,
+	__handle_special_value<floating_type_bfloat16_t>): New specializations.
+	(floating_to_shortest_scientific): Handle floating_type_float16_t
+	and floating_type_bfloat16_t like IEEE quad.
+	(__floating_to_chars_shortest): For floating_type_bfloat16_t call
+	__floating_to_chars_hex<float> rather than
+	__floating_to_chars_hex<floating_type_bfloat16_t> to avoid
+	instantiating the latter.
+	(__to_chars_float16_t, __to_chars_bfloat16_t): New functions.
+
+2022-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (from_chars, to_chars): Add _Float{32,64,128}
+	overloads for cases where those types match {float,double,long double}.
+	* include/std/istream (basic_istream::operator>>): Add
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t overloads.
+	* include/std/ostream (basic_ostream::operator<<): Add
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t overloads.
+	* testsuite/20_util/from_chars/8.cc: New test.
+	* testsuite/26_numerics/headers/cmath/nextafter_c++23.cc (test):
+	Formatting fixes.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++23.cc: Add
+	dg-options "-std=gnu++2b".
+	(test_functions, main): Formatting fixes.
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c++23.cc:
+	Add dg-options "-std=gnu++2b".
+
 2022-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/complex (complex::complex converting ctor): For C++23

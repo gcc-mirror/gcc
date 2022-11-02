@@ -1,3 +1,40 @@
+2022-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-sig1-18.C: New.
+	* g++.dg/abi/lambda-sig1-18vs17.C: New.
+	* g++.dg/cpp1y/lambda-mangle-1-18.C: New.
+
+2022-11-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107490
+	* gcc.dg/tree-ssa/pr107490.c: New test.
+
+2022-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr68217.c: Test [-INF, -INF][0, 0] instead of [-INF, 0].
+	* gcc.dg/tree-ssa/vrp-unreachable.c: New.  Test unreachable removal.
+
+2022-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-sig1-17.C: New.
+	* g++.dg/abi/lambda-sig1.h: New.
+	* g++.dg/cpp1y/lambda-mangle-1.C: Extracted to ...
+	* g++.dg/cpp1y/lambda-mangle-1.h: ... here.
+	* g++.dg/cpp1y/lambda-mangle-1-11.C: New
+	* g++.dg/cpp1y/lambda-mangle-1-17.C
+
+2022-11-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107057.c: New test.
+
+2022-11-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr55583.c: New test.
+
+2022-11-01  Cui,Lili  <lili.cui@intel.com>
+
+	* gcc.dg/ipa/inlinehint-6.c: New test.
+
 2022-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp23/ext-floating12.C: New test.
