@@ -1,3 +1,11 @@
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (gfc_match_omp_clauses): Permit derived types.
+	(resolve_omp_clauses):Accept noncontiguous
+	arrays.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Fixes for
+	derived-type changes; fix size for scalars.
+
 2022-10-27  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* openmp.cc (oacc_is_parallel): Remove.

@@ -5126,7 +5126,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  gcc_unreachable ();
 		}
 	      tree node = build_omp_clause (input_location, clause_code);
-	      if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
+	      if (n->expr == NULL
+		  || (n->expr->ref->type == REF_ARRAY
+		      && n->expr->ref->u.ar.type == AR_FULL
+		      && n->expr->ref->next == NULL))
 		{
 		  tree decl = gfc_trans_omp_variable (n->sym, false);
 		  if (gfc_omp_privatize_by_reference (decl))
@@ -5166,13 +5169,13 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		{
 		  tree ptr;
 		  gfc_init_se (&se, NULL);
-		  if (n->expr->ref->u.ar.type == AR_ELEMENT)
+		  if (n->expr->rank == 0)
 		    {
 		      gfc_conv_expr_reference (&se, n->expr);
 		      ptr = se.expr;
 		      gfc_add_block_to_block (block, &se.pre);
 		      OMP_CLAUSE_SIZE (node)
-			= TYPE_SIZE_UNIT (TREE_TYPE (ptr));
+			= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ptr)));
 		    }
 		  else
 		    {
