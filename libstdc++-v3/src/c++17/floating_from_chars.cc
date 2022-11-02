@@ -637,8 +637,13 @@ namespace
 	  {
 	    if (__builtin_isinf(tmpval)) // overflow
 	      ec = errc::result_out_of_range;
-	    else // underflow (LWG 3081 wants to set value = tmpval here)
+	    else if (tmpval == 0) // underflow (LWG 3081 wants to set value = tmpval here)
 	      ec = errc::result_out_of_range;
+	    else // denormal value
+	      {
+		value = tmpval;
+		ec = errc();
+	      }
 	  }
 	else if (n)
 	  {
