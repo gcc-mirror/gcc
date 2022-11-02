@@ -1,5 +1,12 @@
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
+	Adjust.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-runtime.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1.f90:
+	New.
+
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
 	Adjust.
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
