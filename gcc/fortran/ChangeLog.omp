@@ -1,5 +1,10 @@
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
+	* trans-openmp.cc (gfc_trans_omp_clauses): Ensure DT struct-comp with
+	array descriptor and 'alloc:' have the descriptor mapped with 'to:'.
+
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
 	* openmp.cc (gfc_match_omp_clauses): Permit derived types.
 	(resolve_omp_clauses):Accept noncontiguous
 	arrays.
