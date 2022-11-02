@@ -7,11 +7,10 @@
 ! host/device array descriptors.
 ! { dg-skip-if n/a { *-*-* } { -DACC_MEM_SHARED=1 } }
 
-!TODO-OpenACC-declare-allocate
-! Missing support for OpenACC "Changes from Version 2.0 to 2.5":
+! We've got support for OpenACC "Changes from Version 2.0 to 2.5":
 ! "The 'declare create' directive with a Fortran 'allocatable' has new behavior".
-! Thus, after 'allocate'/before 'deallocate', do
-! '!$acc enter data create'/'!$acc exit data delete' manually.
+! Yet, after 'allocate'/before 'deallocate', do
+! '!$acc enter data create'/'!$acc exit data delete' manually, too.
 
 
 !TODO { dg-additional-options -fno-inline } for stable results regarding OpenACC 'routine'.
@@ -101,11 +100,15 @@ program test
 
   allocate (b(n1_lb:n1_ub))
   call verify_n1_allocated
-  if (acc_is_present (b)) error stop
-  !$acc enter data create (b)
   ! This is now OpenACC "present":
   if (.not.acc_is_present (b)) error stop
   ! ..., and got the actual array descriptor installed:
+  !$acc serial
+  call verify_n1_allocated
+  !$acc end serial
+
+  !$acc enter data create (b)
+  if (.not.acc_is_present (b)) error stop
   !$acc serial
   call verify_n1_allocated
   !$acc end serial
@@ -114,11 +117,6 @@ program test
      b(i) = i - 1
   end do
 
-  ! In 'declare-allocatable-array_descriptor-1-runtime.f90', this does "verify
-  ! that host-to-device copy doesn't touch the device-side (still initial)
-  ! array descriptor (but it does copy the array data").  This is here not
-  ! applicable anymore, as we've already gotten the actual array descriptor
-  ! installed.  Thus now verify that it does copy the array data.
   call acc_update_device (b)
   !$acc serial
   call verify_n1_allocated
@@ -143,12 +141,6 @@ program test
   !TODO 'GOMP_MAP_TO_PSET':
   ! { dg-final { scan-tree-dump-times {(?n)^ *#pragma omp target oacc_parallel map\(tofrom:MEM <integer\(kind=[0-9]+\)\[0:\]> \[\(integer\(kind=[0-9]+\)\[0:\] \*\)[^\]]+\] \[len: [^\]]+\]\) map\(alloc:b\.data \[pointer assign, bias: 0\]\) map\(from:id1_2 \[len: [0-9]+\]\)$} 1 gimple } }
 
-  ! In 'declare-allocatable-array_descriptor-1-runtime.f90', this does "verify
-  ! that device-to-host copy doesn't touch the host-side array descriptor,
-  ! doesn't copy out the device-side (still initial) array descriptor (but it
-  ! does copy the array data)".  This is here not applicable anymore, as we've
-  ! already gotten the actual array descriptor installed.  Thus now verify that
-  ! it does copy the array data.
   call acc_update_self (b)
   call verify_n1_allocated
 
@@ -223,14 +215,13 @@ program test
 
   !$acc exit data delete (b)
   if (.not.allocated (b)) error stop
-  if (acc_is_present (b)) error stop
-  ! The device-side array descriptor doesn't get updated, so 'b' still appears
-  ! as "allocated":
+  if (.not.acc_is_present (b)) error stop
   !$acc serial
   call verify_n1_allocated
   !$acc end serial
 
   deallocate (b)
+  !if (acc_is_present (b)) error stop
   call verify_n1_deallocated (.false.)
   ! The device-side array descriptor doesn't get updated, so 'b' still appears
   ! as "allocated":
@@ -260,10 +251,13 @@ program test
 
   allocate (b(n2_lb:n2_ub))
   call verify_n2_allocated
-  if (acc_is_present (b)) error stop
+  if (.not.acc_is_present (b)) error stop
+  !$acc serial
+  call verify_n2_allocated
+  !$acc end serial
+
   !$acc enter data create (b)
   if (.not.acc_is_present (b)) error stop
-  ! ..., and got the actual array descriptor installed:
   !$acc serial
   call verify_n2_allocated
   !$acc end serial
@@ -337,12 +331,13 @@ program test
 
   !$acc exit data delete (b)
   if (.not.allocated (b)) error stop
-  if (acc_is_present (b)) error stop
+  if (.not.acc_is_present (b)) error stop
   !$acc serial
   call verify_n2_allocated
   !$acc end serial
 
   deallocate (b)
+  !if (acc_is_present (b)) error stop
   call verify_n2_deallocated (.false.)
   !$acc serial
   call verify_n2_allocated
