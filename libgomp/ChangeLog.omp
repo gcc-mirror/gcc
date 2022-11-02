@@ -1,5 +1,54 @@
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
+	XFAIL some OpenACC 'kernels' confusion.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90:
+	Likewise.
+
+	Backported from master:
+	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/106643
+	PR fortran/96668
+	* oacc-mem.c (goacc_enter_data_internal): Support
+	OpenACC 'declare create' with Fortran allocatable arrays, part II.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
+	Adjust.
+	* testsuite/libgomp.oacc-fortran/pr106643-1.f90: New.
+
+	Backported from master:
+	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/106643
+	* oacc-mem.c (goacc_enter_data_internal): Support
+	OpenACC 'declare create' with Fortran allocatable arrays, part I.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
+	New.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
+	New.
+
+	Backported from master:
+	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-runtime.f90:
+	New.
+
+	Backported from master:
+	2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
+	New.
+
+	Backported from master:
+	2022-11-02  Cesar Philippidis  <cesar@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90: New.
+
+2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
 	* testsuite/libgomp.fortran/target-enter-data-3a.f90: New test.
 
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
