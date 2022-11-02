@@ -7,8 +7,8 @@ struct A {
 struct D
 {
   A i;
-  bool operator==(const D& x) const = default; // { dg-error "A::operator==" }
-  bool operator!=(const D& z) const = default; // { dg-error "D::operator==" }
+  bool operator==(const D& x) const = default; // { dg-error "A::operator==" "" { target c++20_down } }
+  bool operator!=(const D& z) const = default; // { dg-error "D::operator==" "" { target c++20_down } }
 };
 
 constexpr D d{A()};

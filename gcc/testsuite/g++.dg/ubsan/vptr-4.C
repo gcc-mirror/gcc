@@ -1,7 +1,7 @@
 // Verify that -fsanitize=vptr downcast instrumentation works properly
 // inside of constexpr.
 // { dg-do compile }
-// { dg-options "-std=c++11 -fsanitize=vptr" }
+// { dg-options "-std=c++11 -fsanitize=vptr -Winvalid-constexpr -pedantic-errors" }
 
 struct S {
   constexpr S() : a(0) {}

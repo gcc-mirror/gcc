@@ -5,7 +5,7 @@ struct A { A(); };
 
 struct B {
   friend constexpr int f(B) { return 0; } // OK
-  friend constexpr int f(A) { return 0; } // { dg-error "constexpr" }
+  friend constexpr int f(A) { return 0; } // { dg-error "constexpr" "" { target c++20_down } }
 };
 
 template <class T>

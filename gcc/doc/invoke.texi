@@ -256,7 +256,7 @@ in the following sections.
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
--Winvalid-imported-macros @gol
+-Winvalid-constexpr -Winvalid-imported-macros @gol
 -Wno-invalid-offsetof  -Wno-literal-suffix @gol
 -Wmismatched-new-delete -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
@@ -3765,6 +3765,32 @@ the array, so if a class variable is constructed from a temporary
 the variable declaration statement.
 
 @end itemize
+
+@item -Winvalid-constexpr
+@opindex Winvalid-constexpr
+@opindex Wno-invalid-constexpr
+
+Warn when a function never produces a constant expression.  In C++20
+and earlier, for every @code{constexpr} function and function template,
+there must be at least one set of function arguments in at least one
+instantiation such that an invocation of the function or constructor
+could be an evaluated subexpression of a core constant expression.
+C++23 removed this restriction, so it's possible to have a function
+or a function template marked @code{constexpr} for which no invocation
+satisfies the requirements of a core constant expression.
+
+This warning is enabled as a pedantic warning by default in C++20 and
+earlier.  In C++23, @option{-Winvalid-constexpr} can be turned on, in
+which case it will be an ordinary warning.  For example:
+
+@smallexample
+void f (int& i);
+constexpr void
+g (int& i)
+@{
+  f(i); // warns by default in C++20, in C++23 only with -Winvalid-constexpr
+@}
+@end smallexample
 
 @item -Winvalid-imported-macros
 @opindex Winvalid-imported-macros

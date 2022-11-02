@@ -6,7 +6,6 @@ constexpr int foo ()
 try {			// { dg-warning "function-try-block body of 'constexpr' function only available with" "" { target c++17_down } }
   int a;		// { dg-error "uninitialized variable 'a' in 'constexpr' function" "" { target c++17_down } }
   static double b = 1.0;// { dg-error "'b' defined 'static' in 'constexpr' function only available with" "" { target c++20_down } }
-			// { dg-error "'b' defined 'static' in 'constexpr' context" "" { target c++23 } .-1 }
   goto l;		// { dg-error "'goto' in 'constexpr' function only available with" "" { target c++20_down } }
   l:;
   return 0;
@@ -22,7 +21,6 @@ constexpr int bar ()
 {
   int a;		// { dg-error "uninitialized variable 'a' in 'constexpr' function" "" { target c++17_down } }
   static long double b = 3.0;// { dg-error "'b' defined 'static' in 'constexpr' function only available with" "" { target c++20_down } }
-			// { dg-error "'b' defined 'static' in 'constexpr' context" "" { target c++23 } .-1 }
   goto l;		// { dg-error "'goto' in 'constexpr' function only available with" "" { target c++20_down } }
   l:;
   try {			// { dg-warning "'try' in 'constexpr' function only available with" "" { target c++17_down } }

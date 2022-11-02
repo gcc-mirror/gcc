@@ -1,6 +1,6 @@
 // PR c++/79664
 // { dg-do compile }
-// { dg-options "-std=c++14 -fopenmp" }
+// { dg-options "-std=c++14 -fopenmp -Winvalid-constexpr -pedantic-errors" }
 
 constexpr int
 f1 ()

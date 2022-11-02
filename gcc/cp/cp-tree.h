@@ -8450,6 +8450,7 @@ extern bool require_potential_constant_expression (tree);
 extern bool require_constant_expression (tree);
 extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
+extern bool require_potential_rvalue_constant_expression_fncheck (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE,
 						 tsubst_flags_t = tf_error);
 inline tree cxx_constant_value (tree t, tsubst_flags_t complain)

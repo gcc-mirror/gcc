@@ -14,5 +14,5 @@ foo ()
 constexpr volatile int // { dg-warning "deprecated" "" { target c++2a } }
 bar ()
 {
-  return i;  // { dg-error "lvalue-to-rvalue conversion of a volatile lvalue" }
+  return i;  // { dg-error "lvalue-to-rvalue conversion of a volatile lvalue" "" { target c++20_down } }
 }

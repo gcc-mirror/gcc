@@ -1059,6 +1059,10 @@ c_common_post_options (const char **pfilename)
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);
 
+  /* Pedwarn about invalid constexpr functions before C++23.  */
+  if (warn_invalid_constexpr == -1)
+    warn_invalid_constexpr = (cxx_dialect < cxx23);
+
   /* char8_t support is implicitly enabled in C++20 and C2X.  */
   if (flag_char8_t == -1)
     flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc2x;
