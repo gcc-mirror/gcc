@@ -1147,9 +1147,8 @@ check_for_mismatched_contracts (tree old_attr, tree new_attr,
       return true;
     }
 
-  /* Two deferred contracts tentatively match.  */
-  if (CONTRACT_CONDITION_DEFERRED_P  (old_contract)
-      && CONTRACT_CONDITION_DEFERRED_P (new_contract))
+  /* A deferred contract tentatively matches.  */
+  if (CONTRACT_CONDITION_DEFERRED_P (new_contract))
     return false;
 
   /* Compare the conditions of the contracts.  We fold immediately to avoid
@@ -1274,6 +1273,9 @@ match_deferred_contracts (tree decl)
     return;
 
   gcc_assert(!contract_any_deferred_p (DECL_CONTRACTS (decl)));
+
+  processing_template_decl_sentinel ptds;
+  processing_template_decl = uses_template_parms (decl);
 
   /* Do late contract matching.  */
   for (tree pending = *tp; pending; pending = TREE_CHAIN (pending))
@@ -2093,12 +2095,16 @@ apply_postcondition_to_return (tree expr)
 }
 
 /* A subroutine of duplicate_decls. Diagnose issues in the redeclaration of
-   guarded functions.  Note that attributes on new friend declarations have not
-   been processed yet, so we take those from the global above.  */
+   guarded functions.  */
 
 void
 duplicate_contracts (tree newdecl, tree olddecl)
 {
+  if (TREE_CODE (newdecl) == TEMPLATE_DECL)
+    newdecl = DECL_TEMPLATE_RESULT (newdecl);
+  if (TREE_CODE (olddecl) == TEMPLATE_DECL)
+    olddecl = DECL_TEMPLATE_RESULT (olddecl);
+
   /* Compare contracts to see if they match.    */
   tree old_contracts = DECL_CONTRACTS (olddecl);
   tree new_contracts = DECL_CONTRACTS (newdecl);
@@ -2134,6 +2140,11 @@ duplicate_contracts (tree newdecl, tree olddecl)
 				      new_loc, new_contracts,
 				      cmc_declaration))
 	return;
+      if (DECL_UNIQUE_FRIEND_P (newdecl))
+	/* Newdecl's contracts are still DEFERRED_PARSE, and we're about to
+	   collapse it into olddecl, so stash away olddecl's contracts for
+	   later comparison.  */
+	defer_guarded_contract_match (olddecl, olddecl, old_contracts);
     }
 
   /* Handle cases where contracts are omitted in one or the other

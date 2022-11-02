@@ -4310,9 +4310,6 @@ cp_parser_new (cp_lexer *lexer)
   /* We are not processing a declarator.  */
   parser->in_declarator_p = false;
 
-  /* We are not parsing a friend declaration.  */
-  parser->declaring_friend_p = false;
-
   /* We are not processing a template-argument-list.  */
   parser->in_template_argument_list_p = false;
 
@@ -23285,10 +23282,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    = cp_parser_exception_specification_opt (parser,
 							     flags);
 
-		  bool saved_declaring_friend_p = parser->declaring_friend_p;
-		  parser->declaring_friend_p = friend_p;
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
-		  parser->declaring_friend_p = saved_declaring_friend_p;
 
 		  cp_omp_declare_simd_data odsd;
 		  if ((flag_openmp || flag_openmp_simd)
@@ -29635,14 +29629,11 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
 
   cp_parser_require (parser, CPP_COLON, RT_COLON);
 
-  /* Defer the parsing of pre/post contracts inside class definitions.
-     Note that friends are not member functions and thus not in the complete
-     class context.  */
+  /* Defer the parsing of pre/post contracts inside class definitions.  */
   tree contract;
-  if (!assertion_p
-      && current_class_type
-      && TYPE_BEING_DEFINED (current_class_type)
-      && !parser->declaring_friend_p)
+  if (!assertion_p &&
+      current_class_type &&
+      TYPE_BEING_DEFINED (current_class_type))
     {
       /* Skip until we reach an unenclose ']'. If we ran into an unnested ']'
 	 that doesn't close the attribute, return an error and let the attribute

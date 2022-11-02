@@ -286,7 +286,6 @@ extern bool check_postcondition_result		(tree, tree, location_t);
 extern tree get_precondition_function		(tree);
 extern tree get_postcondition_function		(tree);
 extern void duplicate_contracts			(tree, tree);
-extern bool match_contract_conditions		(location_t, tree, location_t, tree, contract_matching_context);
 extern void match_deferred_contracts		(tree);
 extern void defer_guarded_contract_match	(tree, tree, tree);
 extern bool diagnose_misapplied_contracts	(tree);

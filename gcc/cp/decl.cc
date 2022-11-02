@@ -2278,16 +2278,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       gcc_assert (!DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
 
       /* Make sure the contracts are equivalent.  */
-      tree old_contracts = DECL_CONTRACTS (old_result);
-      tree new_contracts = DECL_CONTRACTS (new_result);
-      if (old_contracts && new_contracts)
-	{
-	  match_contract_conditions (DECL_SOURCE_LOCATION (old_result),
-				     old_contracts,
-				     DECL_SOURCE_LOCATION (new_result),
-				     new_contracts,
-				     cmc_declaration);
-	}
+      duplicate_contracts (newdecl, olddecl);
 
       /* Remove contracts from old_result so they aren't appended to
 	 old_result by the merge function.  */

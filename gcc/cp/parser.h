@@ -315,12 +315,6 @@ struct GTY(()) cp_parser {
      direct-declarator.  */
   bool in_declarator_p;
 
-  /* TRUE if the decl-specifier-seq preceding a declarator includes
-     the 'friend' specifier. This prevents attributes on friend function
-     declarations from being parsed in the complete class context.  */
-  /* ??? But they should be; maybe use defer_guarded_contract_match?  */
-  bool declaring_friend_p;
-
   /* TRUE if we are presently parsing a template-argument-list.  */
   bool in_template_argument_list_p;
 

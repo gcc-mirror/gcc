@@ -16,7 +16,7 @@ struct Outer {
   // error about 'p' not being declared because the contracts haven't been
   // unified or remapped.
   friend void gfn(int p) [[ pre: p > 0 ]];
-  friend void gfn(int q) [[ pre: q > 1 ]]; // { dg-error "mismatched contract" }
+  friend void gfn(int q) [[ pre: q > 1 ]]; // { dg-error "'q' was not declared" }
 
   // This should be okay.
   friend void gfn2(int q);

@@ -26,9 +26,8 @@ struct T
     return 0;
   }
 
-  // friends are not members and thus not in the complete class context.
   friend int hidden(int x, T *t)
-  [[ pre: x > 1 ]] [[ pre: t->pri > 0 ]] // { dg-error "has no member" }
+    [[ pre: x > 1 ]] [[ pre: t->pri > 0 ]]
   {
     return x;
   }
