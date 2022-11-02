@@ -844,9 +844,9 @@ template<typename T>
     const bool is_normal_number = (biased_exponent != 0);
 
     // Calculate the unbiased exponent.
-    const int32_t unbiased_exponent = (is_normal_number
-				       ? biased_exponent - exponent_bias
-				       : 1 - exponent_bias);
+    int32_t unbiased_exponent = (is_normal_number
+				 ? biased_exponent - exponent_bias
+				 : 1 - exponent_bias);
 
     // Shift the mantissa so that its bitwidth is a multiple of 4.
     constexpr unsigned rounded_mantissa_bits = (mantissa_bits + 3) / 4 * 4;
@@ -862,6 +862,16 @@ template<typename T>
 	  // The explicit mantissa bit should already be set.
 	  __glibcxx_assert(effective_mantissa & (mantissa_t{1} << (mantissa_bits
 								   - 1u)));
+      }
+    else if (!precision.has_value() && effective_mantissa)
+      {
+	// 1.8p-23 is shorter than 0.00cp-14, so if precision is
+	// omitted, try to canonicalize denormals such that they
+	// have the leading bit set.
+	int width = __bit_width(effective_mantissa);
+	int shift = rounded_mantissa_bits - width + has_implicit_leading_bit;
+	unbiased_exponent -= shift;
+	effective_mantissa <<= shift;
       }
 
     // Compute the shortest precision needed to print this value exactly,
@@ -1061,7 +1071,10 @@ template<typename T>
 	// std::bfloat16_t has the same exponent range as std::float32_t
 	// and so we can avoid instantiation of __floating_to_chars_hex
 	// for bfloat16_t.  Shortest hex will be the same as for float.
-	if constexpr (is_same_v<T, floating_type_bfloat16_t>)
+	// When we print shortest form even for denormals, we can do it
+	// for std::float16_t as well.
+	if constexpr (is_same_v<T, floating_type_float16_t>
+		      || is_same_v<T, floating_type_bfloat16_t>)
 	  return __floating_to_chars_hex(first, last, value.x, nullopt);
 	else
 	  return __floating_to_chars_hex(first, last, value, nullopt);
