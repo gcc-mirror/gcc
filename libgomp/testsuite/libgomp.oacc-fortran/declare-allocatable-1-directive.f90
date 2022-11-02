@@ -2,11 +2,10 @@
 
 ! { dg-do run }
 
-!TODO-OpenACC-declare-allocate
-! Missing support for OpenACC "Changes from Version 2.0 to 2.5":
+! We've got support for OpenACC "Changes from Version 2.0 to 2.5":
 ! "The 'declare create' directive with a Fortran 'allocatable' has new behavior".
-! Thus, after 'allocate'/before 'deallocate', do
-! '!$acc enter data create'/'!$acc exit data delete' manually.
+! Yet, after 'allocate'/before 'deallocate', do
+! '!$acc enter data create'/'!$acc exit data delete' manually, too.
 
 !TODO { dg-additional-options -fno-inline } for stable results regarding OpenACC 'routine'.
 

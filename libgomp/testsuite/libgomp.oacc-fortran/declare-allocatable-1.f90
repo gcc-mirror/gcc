@@ -2,11 +2,8 @@
 
 ! { dg-do run }
 
-!TODO-OpenACC-declare-allocate
-! Not currently implementing correct '-DACC_MEM_SHARED=0' behavior:
-! Missing support for OpenACC "Changes from Version 2.0 to 2.5":
+! We've got support for OpenACC "Changes from Version 2.0 to 2.5":
 ! "The 'declare create' directive with a Fortran 'allocatable' has new behavior".
-! { dg-xfail-run-if TODO { *-*-* } { -DACC_MEM_SHARED=0 } }
 
 !TODO { dg-additional-options -fno-inline } for stable results regarding OpenACC 'routine'.
 
