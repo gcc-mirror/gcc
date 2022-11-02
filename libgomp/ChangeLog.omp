@@ -1,6 +1,13 @@
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
+	Adjust.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90:
+	Likewise.
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
 	XFAIL some OpenACC 'kernels' confusion.
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
 	Likewise.
