@@ -7117,9 +7117,9 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_D_MINFO_SECTION
 
-@hook TARGET_D_MINFO_START_NAME
+@hook TARGET_D_MINFO_SECTION_START
 
-@hook TARGET_D_MINFO_END_NAME
+@hook TARGET_D_MINFO_SECTION_END
 
 @hook TARGET_D_HAS_STDCALL_CONVENTION
 

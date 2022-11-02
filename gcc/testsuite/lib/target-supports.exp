@@ -7075,7 +7075,10 @@ proc check_effective_target_vect_long_long { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+	     || ([istarget powerpc*-*-*]
+		 && ![istarget powerpc-*-linux*paired*]
+		 && [check_effective_target_has_arch_pwr8]) }}]
 }
 
 
@@ -9544,6 +9547,18 @@ proc check_effective_target_avxvnniint8 { } {
 	   return __builtin_ia32_vpdpbssd256 (__A, __B, __C);
 	}
     } "-O0 -mavxvnniint8" ]
+}
+
+# Return 1 if avxneconvert instructions can be compiled.
+proc check_effective_target_avxneconvert { } {
+    return [check_no_compiler_messages avxneconvert object {
+	typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
+	__m128
+	_mm_bcstnebf16_ps (const void *__P)
+	{
+	   return (__m128) __builtin_ia32_vbcstnebf162ps128 ((const __bf16 *) __P);
+	}
+    } "-O0 -mavxneconvert" ]
 }
 
 # Return 1 if sse instructions can be compiled.

@@ -15,7 +15,7 @@ import (
 //go:linkname sysFree
 
 //extern mmap
-func sysMmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr) unsafe.Pointer
+func sysMmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off _libgo_off_t_type) unsafe.Pointer
 
 //extern munmap
 func munmap(addr unsafe.Pointer, length uintptr) int32
@@ -38,7 +38,7 @@ func init() {
 }
 
 func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr) (unsafe.Pointer, int) {
-	p := sysMmap(addr, n, prot, flags, fd, off)
+	p := sysMmap(addr, n, prot, flags, fd, _libgo_off_t_type(off))
 	if uintptr(p) == _MAP_FAILED {
 		return nil, errno()
 	}
@@ -47,6 +47,7 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr) (u
 
 // Don't split the stack as this method may be invoked without a valid G, which
 // prevents us from allocating more stack.
+//
 //go:nosplit
 func sysAlloc(n uintptr, sysStat *sysMemStat) unsafe.Pointer {
 	p, err := mmap(nil, n, _PROT_READ|_PROT_WRITE, _MAP_ANON|_MAP_PRIVATE, mmapFD, 0)
@@ -165,6 +166,7 @@ func sysHugePage(v unsafe.Pointer, n uintptr) {
 
 // Don't split the stack as this function may be invoked without a valid G,
 // which prevents us from allocating more stack.
+//
 //go:nosplit
 func sysFree(v unsafe.Pointer, n uintptr, sysStat *sysMemStat) {
 	sysStat.add(-int64(n))

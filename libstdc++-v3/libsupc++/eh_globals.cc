@@ -73,7 +73,6 @@ namespace
   struct constant_init
   {
     union {
-      unsigned char unused;
       __cxa_eh_globals obj;
     };
     constexpr constant_init() : obj() { }

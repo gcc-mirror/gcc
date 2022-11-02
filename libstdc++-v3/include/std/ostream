@@ -235,6 +235,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_insert(__f); }
       ///@}
 
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+      __attribute__((__always_inline__))
+      __ostream_type&
+      operator<<(_Float16 __f)
+      {
+	return _M_insert(static_cast<double>(__f));
+      }
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+      __attribute__((__always_inline__))
+      __ostream_type&
+      operator<<(_Float32 __f)
+      {
+	return _M_insert(static_cast<double>(__f));
+      }
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+      __attribute__((__always_inline__))
+      __ostream_type&
+      operator<<(_Float64 __f)
+      {
+	return _M_insert(static_cast<double>(__f));
+      }
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
+      __attribute__((__always_inline__))
+      __ostream_type&
+      operator<<(_Float128 __f)
+      {
+	return _M_insert(static_cast<long double>(__f));
+      }
+#endif
+
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+      __attribute__((__always_inline__))
+      __ostream_type&
+      operator<<(__gnu_cxx::__bfloat16_t __f)
+      {
+	return _M_insert(static_cast<double>(__f));
+      }
+#endif
+
       /**
        *  @brief  Pointer arithmetic inserters
        *  @param  __p A variable of pointer type.

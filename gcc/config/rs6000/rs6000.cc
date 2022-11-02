@@ -9759,8 +9759,11 @@ rs6000_init_stack_protect_guard (void)
 static bool
 rs6000_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
-  if (GET_CODE (x) == HIGH
-      && GET_CODE (XEXP (x, 0)) == UNSPEC)
+  /* If GET_CODE (x) is HIGH, the 'X' represets the high part of a symbol_ref.
+     It can not be put into a constant pool.  e.g.
+     (high:DI (unspec:DI [(symbol_ref/u:DI ("*.LC0")..)
+     (high:DI (symbol_ref:DI ("var")..)).  */
+  if (GET_CODE (x) == HIGH)
     return true;
 
   /* A TLS symbol in the TOC cannot contain a sum.  */
@@ -16341,8 +16344,8 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   signedp = GET_MODE (cr) == CCmode;
 
   isel_func = (mode == SImode
-	       ? (signedp ? gen_isel_signed_si : gen_isel_unsigned_si)
-	       : (signedp ? gen_isel_signed_di : gen_isel_unsigned_di));
+	       ? (signedp ? gen_isel_cc_si : gen_isel_ccuns_si)
+	       : (signedp ? gen_isel_cc_di : gen_isel_ccuns_di));
 
   switch (cond_code)
     {

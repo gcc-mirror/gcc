@@ -41,6 +41,11 @@ LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
 IMPLIED_EXT = {
   "d" : ["f", "zicsr"],
   "f" : ["zicsr"],
+  "zdinx" : ["zfinx", "zicsr"],
+  "zfinx" : ["zicsr"],
+  "zhinx" : ["zhinxmin", "zfinx", "zicsr"],
+  "zhinxmin" : ["zfinx", "zicsr"],
+
   "zk" : ["zkn", "zkr", "zkt"],
   "zkn" : ["zbkb", "zbkc", "zbkx", "zkne", "zknd", "zknh"],
   "zks" : ["zbkb", "zbkc", "zbkx", "zksed", "zksh"],

@@ -7070,6 +7070,11 @@ Enable/disable the generation of the AVXIFMA instructions.
 @cindex @code{target("avxvnniint8")} function attribute, x86
 Enable/disable the generation of the AVXVNNIINT8 instructions.
 
+@item avxneconvert
+@itemx no-avxneconvert
+@cindex @code{target("avxneconvert")} function attribute, x86
+Enable/disable the generation of the AVXNECONVERT instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
@@ -15753,6 +15758,83 @@ Load 32-bits from the @code{struct sk_buff} packet data pointed by the register 
 
 @deftypefn {Built-in Function} void * __builtin_preserve_access_index (@var{expr})
 BPF Compile Once-Run Everywhere (CO-RE) support. Instruct GCC to generate CO-RE relocation records for any accesses to aggregate data structures (struct, union, array types) in @var{expr}. This builtin is otherwise transparent, the return value is whatever @var{expr} evaluates to. It is also overloaded: @var{expr} may be of any type (not necessarily a pointer), the return type is the same. Has no effect if @code{-mco-re} is not in effect (either specified or implied).
+@end deftypefn
+
+@deftypefn {Built-in Function} unsigned int __builtin_preserve_field_info (@var{expr}, unsigned int @var{kind})
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin is used to
+extract information to aid in struct/union relocations.  @var{expr} is
+an access to a field of a struct or union. Depending on @var{kind}, different
+information is returned to the program. A CO-RE relocation for the access in
+@var{expr} with kind @var{kind} is recorded if @code{-mco-re} is in effect.
+
+The following values are supported for @var{kind}:
+@table @var
+@item FIELD_BYTE_OFFSET = 0
+The returned value is the offset, in bytes, of the field from the
+beginning of the containing structure. For bitfields, the byte offset
+of the containing word.
+
+@item FIELD_BYTE_SIZE = 1
+The returned value is the size, in bytes, of the field. For bitfields,
+the size in bytes of the containing word.
+
+@item FIELD_EXISTENCE = 2
+The returned value is 1 if the field exists, 0 otherwise. Always 1 at
+compile time.
+
+@item FIELD_SIGNEDNESS = 3
+The returned value is 1 if the field is signed, 0 otherwise.
+
+@item FIELD_LSHIFT_U64 = 4
+@itemx FIELD_RSHIFT_U64 = 5
+The returned value is the number of bits of left- or right-shifting
+respectively needed in order to recover the original value of the field,
+after it has been loaded by a read of FIELD_BYTE_SIZE bytes into an
+unsigned 64-bit value. Primarily useful for reading bitfield values
+from structures which may change between kernel versions.
+
+@end table
+
+Note that the return value is a constant which is known at
+compile-time. If the field has a variable offset then
+FIELD_BYTE_OFFSET, FIELD_LSHIFT_U64 and FIELD_RSHIFT_U64 are not
+supported. Similarly, if the field has a variable size then
+FIELD_BYTE_SIZE, FIELD_LSHIFT_U64 and FIELD_RSHIFT_U64 are not
+supported.
+
+For example, __builtin_preserve_field_info can be used to reliably
+extract bitfield values from a structure which may change between
+kernel versions:
+
+@example
+struct S
+@{
+  short a;
+  int x:7;
+  int y:5;
+@};
+
+int
+read_y (struct S *arg)
+@{
+  unsigned long long val;
+  unsigned int offset = __builtin_preserve_field_info (arg->y, FIELD_BYTE_OFFSET);
+  unsigned int size = __builtin_presrve_field_info (arg->y, FIELD_BYTE_SIZE);
+
+  /* Read size bytes from arg + offset into val.  */
+  bpf_probe_read (&val, size, arg + offset);
+
+  val <<= __builtin_preserve_field_info (arg->y, FIELD_LSHIFT_U64);
+
+  if (__builtin_preserve_field_info (arg->y, FIELD_SIGNEDNESS))
+    val = ((long long) val >> __builtin_preserve_field_info (arg->y, FIELD_RSHIFT_U64));
+  else
+    val >>= __builtin_preserve_field_info (arg->y, FIELD_RSHIFT_U64);
+
+  return val;
+@}
+
+@end example
 @end deftypefn
 
 @node FR-V Built-in Functions

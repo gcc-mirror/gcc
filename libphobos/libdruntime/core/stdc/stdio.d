@@ -49,7 +49,6 @@ private
 }
 
 extern (C):
-@system:
 nothrow:
 @nogc:
 

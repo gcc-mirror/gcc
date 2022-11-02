@@ -8469,6 +8469,12 @@ vectorizable_recurr (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
   basic_block bb = gimple_bb (phi);
   tree preheader = PHI_ARG_DEF_FROM_EDGE (phi, pe);
+  if (!useless_type_conversion_p (TREE_TYPE (vectype), TREE_TYPE (preheader)))
+    {
+      gimple_seq stmts = NULL;
+      preheader = gimple_convert (&stmts, TREE_TYPE (vectype), preheader);
+      gsi_insert_seq_on_edge_immediate (pe, stmts);
+    }
   tree vec_init = build_vector_from_val (vectype, preheader);
   vec_init = vect_init_vector (loop_vinfo, stmt_info, vec_init, vectype, NULL);
 

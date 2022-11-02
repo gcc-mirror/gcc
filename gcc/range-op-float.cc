@@ -1269,6 +1269,15 @@ foperator_abs::op1_range (frange &r, tree type,
   positives.update_nan (/*sign=*/false);
   positives.intersect (lhs);
   r = positives;
+  // Add -NAN if relevant.
+  if (r.maybe_isnan ())
+    {
+      frange neg_nan;
+      neg_nan.set_nan (type, true);
+      r.union_ (neg_nan);
+    }
+  if (r.known_isnan ())
+    return true;
   // Then add the negative of each pair:
   // ABS(op1) = [5,20] would yield op1 => [-20,-5][5,20].
   r.union_ (frange (type,
@@ -1323,7 +1332,10 @@ foperator_unordered_lt::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_lt (r, type, op2);
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_lt (r, type, op2);
       break;
 
     case BRS_FALSE:
@@ -1350,7 +1362,10 @@ foperator_unordered_lt::op2_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_gt (r, type, op1);
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_gt (r, type, op1);
       break;
 
     case BRS_FALSE:
@@ -1411,7 +1426,10 @@ foperator_unordered_le::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_le (r, type, op2);
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_le (r, type, op2);
       break;
 
     case BRS_FALSE:
@@ -1439,7 +1457,10 @@ foperator_unordered_le::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_ge (r, type, op1);
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_ge (r, type, op1);
       break;
 
     case BRS_FALSE:
@@ -1502,7 +1523,10 @@ foperator_unordered_gt::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_gt (r, type, op2);
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_gt (r, type, op2);
       break;
 
     case BRS_FALSE:
@@ -1530,7 +1554,10 @@ foperator_unordered_gt::op2_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_lt (r, type, op1);
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_lt (r, type, op1);
       break;
 
     case BRS_FALSE:
@@ -1593,7 +1620,10 @@ foperator_unordered_ge::op1_range (frange &r,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_ge (r, type, op2);
+      if (op2.known_isnan ())
+	r.set_varying (type);
+      else
+	build_ge (r, type, op2);
       break;
 
     case BRS_FALSE:
@@ -1620,7 +1650,10 @@ foperator_unordered_ge::op2_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      build_le (r, type, op1);
+      if (op1.known_isnan ())
+	r.set_varying (type);
+      else
+	build_le (r, type, op1);
       break;
 
     case BRS_FALSE:

@@ -6112,7 +6112,9 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
 				      TYPE_FIELDS (b->type))));
 
     case FUNCTION_TYPE:
-      if (TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
+      if ((TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
+	   && (TYPE_NO_NAMED_ARGS_STDARG_P (a->type)
+	       == TYPE_NO_NAMED_ARGS_STDARG_P (b->type)))
 	  || (TYPE_ARG_TYPES (a->type)
 	      && TREE_CODE (TYPE_ARG_TYPES (a->type)) == TREE_LIST
 	      && TYPE_ARG_TYPES (b->type)
@@ -7364,10 +7366,13 @@ maybe_canonicalize_argtypes (tree argtypes,
    given arguments of types ARG_TYPES.
    ARG_TYPES is a chain of TREE_LIST nodes whose TREE_VALUEs
    are data type nodes for the arguments of the function.
+   NO_NAMED_ARGS_STDARG_P is true if this is a prototyped
+   variable-arguments function with (...) prototype (no named arguments).
    If such a type has already been constructed, reuse it.  */
 
 tree
-build_function_type (tree value_type, tree arg_types)
+build_function_type (tree value_type, tree arg_types,
+		     bool no_named_args_stdarg_p)
 {
   tree t;
   inchash::hash hstate;
@@ -7386,6 +7391,11 @@ build_function_type (tree value_type, tree arg_types)
   t = make_node (FUNCTION_TYPE);
   TREE_TYPE (t) = value_type;
   TYPE_ARG_TYPES (t) = arg_types;
+  if (no_named_args_stdarg_p)
+    {
+      gcc_assert (arg_types == NULL_TREE);
+      TYPE_NO_NAMED_ARGS_STDARG_P (t) = 1;
+    }
 
   /* If we already have such a type, use the old one.  */
   hashval_t hash = type_hash_canon_hash (t);
@@ -7436,7 +7446,7 @@ build_function_type_list_1 (bool vaargs, tree return_type, va_list argp)
       args = nreverse (args);
       TREE_CHAIN (last) = void_list_node;
     }
-  args = build_function_type (return_type, args);
+  args = build_function_type (return_type, args, vaargs && args == NULL_TREE);
 
   return args;
 }
@@ -7491,7 +7501,7 @@ build_function_type_array_1 (bool vaargs, tree return_type, int n,
   for (i = n - 1; i >= 0; i--)
     t = tree_cons (NULL_TREE, arg_types[i], t);
 
-  return build_function_type (return_type, t);
+  return build_function_type (return_type, t, vaargs && n == 0);
 }
 
 /* Build a function type.  RETURN_TYPE is the type returned by the
@@ -9994,7 +10004,8 @@ reconstruct_complex_type (tree type, tree bottom)
   else if (TREE_CODE (type) == FUNCTION_TYPE)
     {
       inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
-      outer = build_function_type (inner, TYPE_ARG_TYPES (type));
+      outer = build_function_type (inner, TYPE_ARG_TYPES (type),
+				   TYPE_NO_NAMED_ARGS_STDARG_P (type));
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
     {
@@ -11612,6 +11623,9 @@ stdarg_p (const_tree fntype)
   if (!fntype)
     return false;
 
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (fntype))
+    return true;
+
   FOREACH_FUNCTION_ARGS (fntype, t, args_iter)
     {
       n = t;
@@ -11628,6 +11642,9 @@ prototype_p (const_tree fntype)
   tree t;
 
   gcc_assert (fntype != NULL_TREE);
+
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (fntype))
+    return true;
 
   t = TYPE_ARG_TYPES (fntype);
   return (t != NULL_TREE);
@@ -13647,7 +13664,9 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 						trust_type_canonical))
 	return false;
 
-      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
+      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2)
+	  && (TYPE_NO_NAMED_ARGS_STDARG_P (t1)
+	      == TYPE_NO_NAMED_ARGS_STDARG_P (t2)))
 	return true;
       else
 	{
@@ -14352,7 +14371,7 @@ maybe_wrap_with_location (tree expr, location_t loc)
 
   /* For now, don't add wrappers to exceptional tree nodes, to minimize
      any impact of the wrapper nodes.  */
-  if (EXCEPTIONAL_CLASS_P (expr))
+  if (EXCEPTIONAL_CLASS_P (expr) || error_operand_p (expr))
     return expr;
 
   /* Compiler-generated temporary variables don't need a wrapper.  */

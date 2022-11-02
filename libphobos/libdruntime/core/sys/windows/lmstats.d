@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmstats;
 version (Windows):
-@system:
 pragma(lib, "netapi32");
 
 import core.sys.windows.lmcons, core.sys.windows.windef;

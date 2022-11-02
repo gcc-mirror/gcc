@@ -426,7 +426,8 @@ build_attributes (Expressions *eattrs)
 void
 apply_user_attributes (Dsymbol *sym, tree node)
 {
-  if (!sym->userAttribDecl)
+  UserAttributeDeclaration *uda = sym->userAttribDecl ();
+  if (uda == NULL)
     return;
 
   location_t saved_location = input_location;
@@ -436,7 +437,7 @@ apply_user_attributes (Dsymbol *sym, tree node)
   if (TYPE_P (node) && !COMPLETE_TYPE_P (node))
     attr_flags |= ATTR_FLAG_TYPE_IN_PLACE;
 
-  Expressions *attrs = sym->userAttribDecl->getAttributes ();
+  Expressions *attrs = uda->getAttributes ();
   decl_attributes (&node, build_attributes (attrs), attr_flags);
 
   input_location = saved_location;

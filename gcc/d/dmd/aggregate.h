@@ -82,7 +82,7 @@ public:
     CPPMANGLE cppmangle;
 
     // overridden symbol with pragma(mangle, "...")
-    MangleOverride *mangleOverride;
+    MangleOverride *pMangleOverride;
     /* !=NULL if is nested
      * pointing to the dsymbol that directly enclosing it.
      * 1. The function that enclosing it (nested struct and class)
@@ -174,7 +174,7 @@ public:
     structalign_t alignment;    // alignment applied outside of the struct
     ThreeState ispod;           // if struct is POD
 private:
-    uint8_t bitFields;
+    uint16_t bitFields;
 public:
     static StructDeclaration *create(const Loc &loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;

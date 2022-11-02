@@ -2343,12 +2343,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  DECL_INITIAL (old_result) = DECL_INITIAL (new_result);
 	  if (DECL_FUNCTION_TEMPLATE_P (newdecl))
 	    {
-	      tree parm;
-	      DECL_ARGUMENTS (old_result)
-		= DECL_ARGUMENTS (new_result);
-	      for (parm = DECL_ARGUMENTS (old_result); parm;
-		   parm = DECL_CHAIN (parm))
-		DECL_CONTEXT (parm) = old_result;
+	      DECL_ARGUMENTS (old_result) = DECL_ARGUMENTS (new_result);
+	      for (tree p = DECL_ARGUMENTS (old_result); p; p = DECL_CHAIN (p))
+		DECL_CONTEXT (p) = old_result;
 
 	      if (tree fc = DECL_FRIEND_CONTEXT (new_result))
 		SET_DECL_FRIEND_CONTEXT (old_result, fc);
@@ -14206,12 +14203,15 @@ grokdeclarator (const cp_declarator *declarator,
 	    else if (decl && DECL_NAME (decl))
 	      {
 		set_originating_module (decl, true);
-		
+
 		if (initialized)
 		  /* Kludge: We need funcdef_flag to be true in do_friend for
 		     in-class defaulted functions, but that breaks grokfndecl.
 		     So set it here.  */
 		  funcdef_flag = true;
+
+		cplus_decl_attributes (&decl, *attrlist, 0);
+		*attrlist = NULL_TREE;
 
 		decl = do_friend (ctype, unqualified_id, decl,
 				  flags, funcdef_flag);
@@ -17852,7 +17852,8 @@ finish_function (bool inline_p)
   if (!DECL_CLONED_FUNCTION_P (fndecl))
     {
       /* Make it so that `main' always returns 0 by default.  */
-      if (DECL_MAIN_P (current_function_decl))
+      if (DECL_MAIN_FREESTANDING_P (current_function_decl)
+	  && !TREE_THIS_VOLATILE (current_function_decl))
 	finish_return_stmt (integer_zero_node);
 
       if (use_eh_spec_block (current_function_decl))
@@ -17865,14 +17866,6 @@ finish_function (bool inline_p)
   DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
 
   finish_fname_decls ();
-
-  /* If this function can't throw any exceptions, remember that.  */
-  if (!processing_template_decl
-      && !cp_function_chain->can_throw
-      && !flag_non_call_exceptions
-      && !decl_replaceable_p (fndecl,
-			      opt_for_fn (fndecl, flag_semantic_interposition)))
-    TREE_NOTHROW (fndecl) = 1;
 
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
@@ -18097,6 +18090,14 @@ finish_function (bool inline_p)
       && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
       && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
+
+  /* If this function can't throw any exceptions, remember that.  */
+  if (!processing_template_decl
+      && !cp_function_chain->can_throw
+      && !flag_non_call_exceptions
+      && !decl_replaceable_p (fndecl,
+			      opt_for_fn (fndecl, flag_semantic_interposition)))
+    TREE_NOTHROW (fndecl) = 1;
 
   /* Emit the resumer and destroyer functions now, providing that we have
      not encountered some fatal error.  */

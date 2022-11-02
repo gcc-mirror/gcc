@@ -262,3 +262,26 @@
 
 	return true;
 })
+
+;; Predicates for the V extension.
+(define_special_predicate "vector_length_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (match_operand 0 "const_csr_operand")))
+
+(define_predicate "reg_or_mem_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "memory_operand")))
+
+(define_predicate "vector_move_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_code "const_vector")))
+
+(define_predicate "vector_mask_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
+
+(define_predicate "vector_merge_operand"
+  (ior (match_operand 0 "memory_operand")
+       (ior (match_operand 0 "register_operand")
+	    (match_test "GET_CODE (op) == UNSPEC
+			 && (XINT (op, 1) == UNSPEC_VUNDEF)"))))

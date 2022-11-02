@@ -4,9 +4,9 @@ TEST_OUTPUT:
 ---
 fail_compilation/retscope.d(22): Error: scope parameter `p` may not be returned
 fail_compilation/retscope.d(32): Error: returning `b ? nested1(& i) : nested2(& j)` escapes a reference to local variable `j`
-fail_compilation/retscope.d(45): Error: scope variable `p` assigned to non-scope `q`
+fail_compilation/retscope.d(45): Error: scope variable `p` assigned to global variable `q`
 fail_compilation/retscope.d(47): Error: address of variable `i` assigned to `q` with longer lifetime
-fail_compilation/retscope.d(48): Error: scope variable `a` assigned to non-scope `b`
+fail_compilation/retscope.d(48): Error: scope variable `a` assigned to global variable `b`
 fail_compilation/retscope.d(49): Error: address of struct temporary returned by `(*fp2)()` assigned to longer lived variable `q`
 ---
 */
@@ -662,7 +662,7 @@ int test21()
 /*********************************************
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1907): Error: scope variable `x` assigned to `this` with longer lifetime
+fail_compilation/retscope.d(1907): Error: scope variable `x` assigned to `ref` variable `this` with longer lifetime
 fail_compilation/retscope.d(1913): Error: scope variable `x` may not be returned
 ---
 */

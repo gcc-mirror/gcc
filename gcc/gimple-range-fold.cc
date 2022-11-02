@@ -494,6 +494,14 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
   else if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
     res = range_of_cond_expr (r, as_a<gassign *> (s), src);
 
+  // If the result is varying, check for basic nonnegativeness.
+  // Specifically this helps for now with strict enum in cases like
+  // g++.dg/warn/pr33738.C.
+  bool so_p;
+  if (res && r.varying_p () && INTEGRAL_TYPE_P (r.type ())
+      && gimple_stmt_nonnegative_warnv_p (s, &so_p))
+    r.set_nonnegative (r.type ());
+
   if (!res)
     {
       // If no name specified or range is unsupported, bail.

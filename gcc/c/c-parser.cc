@@ -3011,6 +3011,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	    }
 	  t.expr = NULL_TREE;
 	  t.expr_const_operands = true;
+	  t.has_enum_type_specifier = false;
 	  declspecs_add_type (name_token->location, specs, t);
 	  continue;
 	}
@@ -3027,6 +3028,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  t.spec = objc_get_protocol_qualified_type (NULL_TREE, proto);
 	  t.expr = NULL_TREE;
 	  t.expr_const_operands = true;
+	  t.has_enum_type_specifier = false;
 	  declspecs_add_type (loc, specs, t);
 	  continue;
 	}
@@ -3087,6 +3089,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  t.spec = c_parser_peek_token (parser)->value;
 	  t.expr = NULL_TREE;
 	  t.expr_const_operands = true;
+	  t.has_enum_type_specifier = false;
 	  declspecs_add_type (loc, specs, t);
 	  c_parser_consume_token (parser);
 	  break;
@@ -3151,6 +3154,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	      t.spec = error_mark_node;
 	      t.expr = NULL_TREE;
 	      t.expr_const_operands = true;
+	      t.has_enum_type_specifier = false;
 	      if (type != NULL)
 		t.spec = groktypename (type, &t.expr,
 				       &t.expr_const_operands);
@@ -3218,17 +3222,20 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 /* Parse an enum specifier (C90 6.5.2.2, C99 6.7.2.2, C11 6.7.2.2).
 
    enum-specifier:
-     enum gnu-attributes[opt] identifier[opt] { enumerator-list }
-       gnu-attributes[opt]
-     enum gnu-attributes[opt] identifier[opt] { enumerator-list , }
-       gnu-attributes[opt]
+     enum gnu-attributes[opt] identifier[opt] enum-type-specifier[opt]
+       { enumerator-list } gnu-attributes[opt]
+     enum gnu-attributes[opt] identifier[opt] enum-type-specifier[opt]
+       { enumerator-list , } gnu-attributes[opt] enum-type-specifier[opt]
      enum gnu-attributes[opt] identifier
 
-   The form with trailing comma is new in C99.  The forms with
-   gnu-attributes are GNU extensions.  In GNU C, we accept any expression
-   without commas in the syntax (assignment expressions, not just
-   conditional expressions); assignment expressions will be diagnosed
-   as non-constant.
+   The form with trailing comma is new in C99; enum-type-specifiers
+   are new in C2x.  The forms with gnu-attributes are GNU extensions.
+   In GNU C, we accept any expression without commas in the syntax
+   (assignment expressions, not just conditional expressions);
+   assignment expressions will be diagnosed as non-constant.
+
+   enum-type-specifier:
+     : specifier-qualifier-list
 
    enumerator-list:
      enumerator
@@ -3256,6 +3263,7 @@ c_parser_enum_specifier (c_parser *parser)
   tree std_attrs = NULL_TREE;
   tree attrs;
   tree ident = NULL_TREE;
+  tree fixed_underlying_type = NULL_TREE;
   location_t enum_loc;
   location_t ident_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ENUM));
@@ -3274,6 +3282,83 @@ c_parser_enum_specifier (c_parser *parser)
       enum_loc = ident_loc;
       c_parser_consume_token (parser);
     }
+  if (c_parser_next_token_is (parser, CPP_COLON)
+      /* Distinguish an enum-type-specifier from a bit-field
+	 declaration of the form "enum e : constant-expression;".  */
+      && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
+    {
+      pedwarn_c11 (enum_loc, OPT_Wpedantic,
+		   "ISO C does not support specifying %<enum%> underlying "
+		   "types before C2X");
+      if (ident)
+	{
+	  /* The tag is in scope during the enum-type-specifier (which
+	     may refer to the tag inside typeof).  */
+	  ret = parser_xref_tag (ident_loc, ENUMERAL_TYPE, ident,
+				 have_std_attrs, std_attrs, true);
+	  if (!ENUM_FIXED_UNDERLYING_TYPE_P (ret.spec))
+	    error_at (enum_loc, "%<enum%> declared both with and without "
+		      "fixed underlying type");
+	}
+      else
+	{
+	  /* There must be an enum definition, so this initialization
+	     (to avoid possible warnings about uninitialized data)
+	     will be replaced later (either with the results of that
+	     definition, or with the results of error handling for the
+	     case of no tag and no definition).  */
+	  ret.spec = NULL_TREE;
+	  ret.kind = ctsk_tagdef;
+	  ret.expr = NULL_TREE;
+	  ret.expr_const_operands = true;
+	  ret.has_enum_type_specifier = true;
+	}
+      c_parser_consume_token (parser);
+      struct c_declspecs *specs = build_null_declspecs ();
+      c_parser_declspecs (parser, specs, false, true, false, false, false,
+			  false, true, cla_prefer_id);
+      finish_declspecs (specs);
+      if (specs->default_int_p)
+	error_at (enum_loc, "no %<enum%> underlying type specified");
+      else if (TREE_CODE (specs->type) != INTEGER_TYPE
+	       && TREE_CODE (specs->type) != BOOLEAN_TYPE)
+	{
+	  error_at (enum_loc, "invalid %<enum%> underlying type");
+	  specs->type = integer_type_node;
+	}
+      else if (specs->restrict_p)
+	error_at (enum_loc, "invalid use of %<restrict%>");
+      fixed_underlying_type = TYPE_MAIN_VARIANT (specs->type);
+      if (ident)
+	{
+	  /* The type specified must be consistent with any previously
+	     specified underlying type.  If this is a newly declared
+	     type, it is now a complete type.  */
+	  if (ENUM_FIXED_UNDERLYING_TYPE_P (ret.spec)
+	      && ENUM_UNDERLYING_TYPE (ret.spec) == NULL_TREE)
+	    {
+	      TYPE_MIN_VALUE (ret.spec) =
+		TYPE_MIN_VALUE (fixed_underlying_type);
+	      TYPE_MAX_VALUE (ret.spec) =
+		TYPE_MAX_VALUE (fixed_underlying_type);
+	      TYPE_UNSIGNED (ret.spec) = TYPE_UNSIGNED (fixed_underlying_type);
+	      SET_TYPE_ALIGN (ret.spec, TYPE_ALIGN (fixed_underlying_type));
+	      TYPE_SIZE (ret.spec) = NULL_TREE;
+	      TYPE_PRECISION (ret.spec) =
+		TYPE_PRECISION (fixed_underlying_type);
+	      ENUM_UNDERLYING_TYPE (ret.spec) = fixed_underlying_type;
+	      layout_type (ret.spec);
+	    }
+	  else if (ENUM_FIXED_UNDERLYING_TYPE_P (ret.spec)
+		   && !comptypes (fixed_underlying_type,
+				  ENUM_UNDERLYING_TYPE (ret.spec)))
+	    {
+	      error_at (enum_loc, "%<enum%> underlying type incompatible with "
+			"previous declaration");
+	      fixed_underlying_type = ENUM_UNDERLYING_TYPE (ret.spec);
+	    }
+	}
+    }
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
     {
       /* Parse an enum definition.  */
@@ -3284,7 +3369,7 @@ c_parser_enum_specifier (c_parser *parser)
 	 forward order at the end.  */
       tree values;
       timevar_push (TV_PARSE_ENUM);
-      type = start_enum (enum_loc, &the_enum, ident);
+      type = start_enum (enum_loc, &the_enum, ident, fixed_underlying_type);
       values = NULL_TREE;
       c_parser_consume_token (parser);
       while (true)
@@ -3368,6 +3453,7 @@ c_parser_enum_specifier (c_parser *parser)
       ret.kind = ctsk_tagdef;
       ret.expr = NULL_TREE;
       ret.expr_const_operands = true;
+      ret.has_enum_type_specifier = fixed_underlying_type != NULL_TREE;
       timevar_pop (TV_PARSE_ENUM);
       return ret;
     }
@@ -3378,6 +3464,7 @@ c_parser_enum_specifier (c_parser *parser)
       ret.kind = ctsk_tagref;
       ret.expr = NULL_TREE;
       ret.expr_const_operands = true;
+      ret.has_enum_type_specifier = false;
       return ret;
     }
   /* Attributes may only appear when the members are defined or in
@@ -3386,15 +3473,18 @@ c_parser_enum_specifier (c_parser *parser)
      standard C).  */
   if (have_std_attrs && c_parser_next_token_is_not (parser, CPP_SEMICOLON))
     c_parser_error (parser, "expected %<;%>");
-  ret = parser_xref_tag (ident_loc, ENUMERAL_TYPE, ident, have_std_attrs,
-			 std_attrs);
-  /* In ISO C, enumerated types can be referred to only if already
-     defined.  */
-  if (pedantic && !COMPLETE_TYPE_P (ret.spec))
+  if (fixed_underlying_type == NULL_TREE)
     {
-      gcc_assert (ident);
-      pedwarn (enum_loc, OPT_Wpedantic,
-	       "ISO C forbids forward references to %<enum%> types");
+      ret = parser_xref_tag (ident_loc, ENUMERAL_TYPE, ident, have_std_attrs,
+			     std_attrs, false);
+      /* In ISO C, enumerated types without a fixed underlying type
+	 can be referred to only if already defined.  */
+      if (pedantic && !COMPLETE_TYPE_P (ret.spec))
+	{
+	  gcc_assert (ident);
+	  pedwarn (enum_loc, OPT_Wpedantic,
+		   "ISO C forbids forward references to %<enum%> types");
+	}
     }
   return ret;
 }
@@ -3590,6 +3680,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
       ret.kind = ctsk_tagdef;
       ret.expr = NULL_TREE;
       ret.expr_const_operands = true;
+      ret.has_enum_type_specifier = false;
       timevar_pop (TV_PARSE_STRUCT);
       return ret;
     }
@@ -3600,6 +3691,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
       ret.kind = ctsk_tagref;
       ret.expr = NULL_TREE;
       ret.expr_const_operands = true;
+      ret.has_enum_type_specifier = false;
       return ret;
     }
   /* Attributes may only appear when the members are defined or in
@@ -3608,7 +3700,8 @@ c_parser_struct_or_union_specifier (c_parser *parser)
     c_parser_error (parser, "expected %<;%>");
   /* ??? Existing practice is that GNU attributes are ignored after
      the struct or union keyword when not defining the members.  */
-  ret = parser_xref_tag (ident_loc, code, ident, have_std_attrs, std_attrs);
+  ret = parser_xref_tag (ident_loc, code, ident, have_std_attrs, std_attrs,
+			 false);
   return ret;
 }
 
@@ -3817,6 +3910,7 @@ c_parser_typeof_specifier (c_parser *parser)
   ret.spec = error_mark_node;
   ret.expr = NULL_TREE;
   ret.expr_const_operands = true;
+  ret.has_enum_type_specifier = false;
   if (c_parser_next_token_is_keyword (parser, RID_TYPEOF))
     {
       is_unqual = false;
@@ -4119,7 +4213,8 @@ c_parser_direct_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       if (kind != C_DTR_NORMAL
 	  && (c_parser_next_token_starts_declspecs (parser)
 	      || (!have_gnu_attrs
-		  && c_parser_nth_token_starts_std_attributes (parser, 1))
+		  && (c_parser_nth_token_starts_std_attributes (parser, 1)
+		      || c_parser_next_token_is (parser, CPP_ELLIPSIS)))
 	      || c_parser_next_token_is (parser, CPP_CLOSE_PAREN)))
 	{
 	  struct c_arg_info *args
@@ -4395,25 +4490,18 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr,
       c_parser_consume_token (parser);
       return ret;
     }
-  if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
+  if (c_parser_next_token_is (parser, CPP_ELLIPSIS) && !have_gnu_attrs)
     {
       struct c_arg_info *ret = build_arg_info ();
 
-      if (flag_allow_parameterless_variadic_functions)
-        {
-          /* F (...) is allowed.  */
-          ret->types = NULL_TREE;
-        }
-      else
-        {
-          /* Suppress -Wold-style-definition for this case.  */
-          ret->types = error_mark_node;
-          error_at (c_parser_peek_token (parser)->location,
-                    "ISO C requires a named argument before %<...%>");
-        }
+      ret->types = NULL_TREE;
+      pedwarn_c11 (c_parser_peek_token (parser)->location, OPT_Wpedantic,
+		   "ISO C requires a named argument before %<...%> "
+		   "before C2X");
       c_parser_consume_token (parser);
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
+	  ret->no_named_args_stdarg_p = true;
 	  c_parser_consume_token (parser);
 	  return ret;
 	}
@@ -17366,7 +17454,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
       if (nested && c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	break;
 
-      if (!first)
+      if (!first || nested != 2)
 	{
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
 	    c_parser_consume_token (parser);
@@ -18453,6 +18541,9 @@ c_parser_omp_allocate (location_t loc, c_parser *parser)
 {
   tree allocator = NULL_TREE;
   tree nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
+  if (c_parser_next_token_is (parser, CPP_COMMA)
+      && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+    c_parser_consume_token (parser);
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
       matching_parens parens;
@@ -18591,7 +18682,6 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
   bool structured_block = false;
   bool swapped = false;
   bool non_lvalue_p;
-  bool first = true;
   tree clauses = NULL_TREE;
   bool capture = false;
   bool compare = false;
@@ -18602,12 +18692,9 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      if (!first
-	  && c_parser_next_token_is (parser, CPP_COMMA)
+      if (c_parser_next_token_is (parser, CPP_COMMA)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
-
-      first = false;
 
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
@@ -19153,15 +19240,14 @@ restart:
 	  && TREE_CODE (TREE_OPERAND (lhs, 1)) == COMPOUND_EXPR
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (lhs, 1), 0)) == MODIFY_EXPR
 	  && TREE_OPERAND (TREE_OPERAND (lhs, 1), 1) == TREE_OPERAND (lhs, 0)
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND
-					      (TREE_OPERAND (lhs, 1), 0), 0)))
-	     == BOOLEAN_TYPE)
+	  && C_BOOLEAN_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND
+					      (TREE_OPERAND (lhs, 1), 0), 0))))
 	/* Undo effects of boolean_increment for post {in,de}crement.  */
 	lhs = TREE_OPERAND (TREE_OPERAND (lhs, 1), 0);
       /* FALLTHRU */
     case MODIFY_EXPR:
       if (TREE_CODE (lhs) == MODIFY_EXPR
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (lhs, 0))) == BOOLEAN_TYPE)
+	  && C_BOOLEAN_TYPE_P (TREE_TYPE (TREE_OPERAND (lhs, 0))))
 	{
 	  /* Undo effects of boolean_increment.  */
 	  if (integer_onep (TREE_OPERAND (lhs, 1)))
@@ -19553,6 +19639,8 @@ c_parser_omp_depobj (c_parser *parser)
   parens.skip_until_found_close (parser);
   tree clause = NULL_TREE;
   enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INVALID;
+  if (c_parser_next_token_is (parser, CPP_COMMA))
+    c_parser_consume_token (parser);
   location_t c_loc = c_parser_peek_token (parser)->location;
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
@@ -19629,6 +19717,9 @@ c_parser_omp_flush (c_parser *parser)
   location_t loc = c_parser_peek_token (parser)->location;
   c_parser_consume_pragma (parser);
   enum memmodel mo = MEMMODEL_LAST;
+  if (c_parser_next_token_is (parser, CPP_COMMA)
+      && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+    c_parser_consume_token (parser);
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
       const char *p
@@ -19720,6 +19811,9 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
       enum omp_clause_code clause = OMP_CLAUSE_ERROR;
 
       c_parser_consume_pragma (parser);
+
+      if (c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
 
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
@@ -20504,9 +20598,14 @@ c_parser_omp_ordered (c_parser *parser, enum pragma_context context,
       return false;
     }
 
-  if (c_parser_next_token_is (parser, CPP_NAME))
+  int n = 1;
+  if (c_parser_next_token_is (parser, CPP_COMMA))
+    n = 2;
+
+  if (c_parser_peek_nth_token (parser, n)->type == CPP_NAME)
     {
-      const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      const char *p
+	= IDENTIFIER_POINTER (c_parser_peek_nth_token (parser, n)->value);
 
       if (!strcmp ("depend", p) || !strcmp ("doacross", p))
 	{
@@ -22379,6 +22478,10 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 
   parens.require_close (parser);
 
+  if (c_parser_next_token_is (parser, CPP_COMMA)
+      && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+    c_parser_consume_token (parser);
+
   const char *clause = "";
   location_t match_loc = c_parser_peek_token (parser)->location;
   if (c_parser_next_token_is (parser, CPP_NAME))
@@ -22548,7 +22651,9 @@ c_parser_omp_declare_target (c_parser *parser)
   tree clauses = NULL_TREE;
   int device_type = 0;
   bool only_device_type = true;
-  if (c_parser_next_token_is (parser, CPP_NAME))
+  if (c_parser_next_token_is (parser, CPP_NAME)
+      || (c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME))
     clauses = c_parser_omp_all_clauses (parser, OMP_DECLARE_TARGET_CLAUSE_MASK,
 					"#pragma omp declare target");
   else if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
@@ -22969,10 +23074,14 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
       initializer.set_error ();
       if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
 	bad = true;
-      else if (c_parser_next_token_is (parser, CPP_NAME)
-	       && strcmp (IDENTIFIER_POINTER
+      else if (c_parser_next_token_is (parser, CPP_COMMA)
+	       && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+	c_parser_consume_token (parser);
+      if (!bad
+	  && (c_parser_next_token_is (parser, CPP_NAME)
+	      && strcmp (IDENTIFIER_POINTER
 				(c_parser_peek_token (parser)->value),
-			  "initializer") == 0)
+			  "initializer") == 0))
 	{
 	  c_parser_consume_token (parser);
 	  pop_scope ();
@@ -23165,7 +23274,6 @@ c_parser_omp_declare (c_parser *parser, enum pragma_context context)
 static void
 c_parser_omp_requires (c_parser *parser)
 {
-  bool first = true;
   enum omp_requires new_req = (enum omp_requires) 0;
 
   c_parser_consume_pragma (parser);
@@ -23173,12 +23281,9 @@ c_parser_omp_requires (c_parser *parser)
   location_t loc = c_parser_peek_token (parser)->location;
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      if (!first
-	  && c_parser_next_token_is (parser, CPP_COMMA)
+      if (c_parser_next_token_is (parser, CPP_COMMA)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
-
-      first = false;
 
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
@@ -23450,7 +23555,6 @@ c_parser_omp_error (c_parser *parser, enum pragma_context context)
   int at_compilation = -1;
   int severity_fatal = -1;
   tree message = NULL_TREE;
-  bool first = true;
   bool bad = false;
   location_t loc = c_parser_peek_token (parser)->location;
 
@@ -23458,12 +23562,9 @@ c_parser_omp_error (c_parser *parser, enum pragma_context context)
 
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      if (!first
-	  && c_parser_next_token_is (parser, CPP_COMMA)
+      if (c_parser_next_token_is (parser, CPP_COMMA)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
-
-      first = false;
 
       if (!c_parser_next_token_is (parser, CPP_NAME))
 	break;
@@ -23620,7 +23721,6 @@ c_parser_omp_error (c_parser *parser, enum pragma_context context)
 static void
 c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
 {
-  bool first = true;
   bool no_openmp = false;
   bool no_openmp_routines = false;
   bool no_parallelism = false;
@@ -23636,12 +23736,9 @@ c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
 
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      if (!first
-	  && c_parser_next_token_is (parser, CPP_COMMA)
+      if (c_parser_next_token_is (parser, CPP_COMMA)
 	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
-
-      first = false;
 
       if (!c_parser_next_token_is (parser, CPP_NAME))
 	break;

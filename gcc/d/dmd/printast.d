@@ -203,6 +203,13 @@ extern (C++) final class PrintASTVisitor : Visitor
         printf(".func: %s\n", e.func ? e.func.toChars() : "");
     }
 
+    override void visit(CompoundLiteralExp e)
+    {
+        visit(cast(Expression)e);
+        printIndent(indent + 2);
+        printf(".init: %s\n", e.initializer ? e.initializer.toChars() : "");
+    }
+
     static void printIndent(int indent)
     {
         foreach (i; 0 .. indent)

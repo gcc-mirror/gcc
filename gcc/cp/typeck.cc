@@ -5191,6 +5191,8 @@ cp_build_binary_op (const op_location_t &location,
 
   orig_type0 = type0 = TREE_TYPE (op0);
   orig_type1 = type1 = TREE_TYPE (op1);
+  tree non_ep_op0 = op0;
+  tree non_ep_op1 = op1;
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -5303,8 +5305,9 @@ cp_build_binary_op (const op_location_t &location,
   if ((gnu_vector_type_p (type0) && code1 != VECTOR_TYPE)
       || (gnu_vector_type_p (type1) && code0 != VECTOR_TYPE))
     {
-      enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1,
-						     complain & tf_error);
+      enum stv_conv convert_flag
+	= scalar_to_vector (location, code, non_ep_op0, non_ep_op1,
+			    complain & tf_error);
 
       switch (convert_flag)
         {
@@ -6176,7 +6179,8 @@ cp_build_binary_op (const op_location_t &location,
     }
   if (may_need_excess_precision
       && (orig_type0 != type0 || orig_type1 != type1)
-      && build_type == NULL_TREE)
+      && build_type == NULL_TREE
+      && result_type)
     {
       gcc_assert (common);
       semantic_result_type = cp_common_type (orig_type0, orig_type1);
@@ -10726,7 +10730,12 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
   if (DECL_CONTEXT (retval) != current_function_decl)
     return NULL_TREE;
   if (return_p)
-    return set_implicit_rvalue_p (move (expr));
+    {
+      expr = move (expr);
+      if (expr == error_mark_node)
+	return NULL_TREE;
+      return set_implicit_rvalue_p (expr);
+    }
 
   /* if the operand of a throw-expression is a (possibly parenthesized)
      id-expression that names an implicitly movable entity whose scope does not
@@ -11237,6 +11246,17 @@ check_return_expr (tree retval, bool *no_warning)
 
   if (processing_template_decl)
     return saved_retval;
+
+  /* A naive attempt to reduce the number of -Wdangling-reference false
+     positives: if we know that this function can return a variable with
+     static storage duration rather than one of its parameters, suppress
+     the warning.  */
+  if (warn_dangling_reference
+      && TYPE_REF_P (functype)
+      && bare_retval
+      && VAR_P (bare_retval)
+      && TREE_STATIC (bare_retval))
+    suppress_warning (current_function_decl, OPT_Wdangling_reference);
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)

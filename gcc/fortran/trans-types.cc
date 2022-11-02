@@ -3297,7 +3297,9 @@ arg_type_list_done:
     type = gfc_sym_type (sym);
 
   if (is_varargs)
-    type = build_varargs_function_type_vec (type, typelist);
+    /* This should be represented as an unprototyped type, not a type
+       with (...) prototype.  */
+    type = build_function_type (type, NULL_TREE);
   else
     type = build_function_type_vec (type, typelist);
 

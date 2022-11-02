@@ -223,7 +223,9 @@ btf_calc_num_vbytes (ctf_dtdef_ref dtd)
       break;
 
     case BTF_KIND_ENUM:
-      vlen_bytes += vlen * sizeof (struct btf_enum);
+      vlen_bytes += (dtd->dtd_data.ctti_size == 0x8)
+			? vlen * sizeof (struct btf_enum64)
+			: vlen * sizeof (struct btf_enum);
       break;
 
     case BTF_KIND_FUNC_PROTO:
@@ -622,6 +624,15 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
       btf_size_type = 0;
     }
 
+  if (btf_kind == BTF_KIND_ENUM)
+    {
+      btf_kflag = dtd->dtd_enum_unsigned
+		    ? BTF_KF_ENUM_UNSIGNED
+		    : BTF_KF_ENUM_SIGNED;
+      if (dtd->dtd_data.ctti_size == 0x8)
+	btf_kind = BTF_KIND_ENUM64;
+   }
+
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name, "btt_name");
   dw2_asm_output_data (4, BTF_TYPE_INFO (btf_kind, btf_kflag, btf_vlen),
 		       "btt_info: kind=%u, kflag=%u, vlen=%u",
@@ -634,6 +645,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
     case BTF_KIND_UNION:
     case BTF_KIND_ENUM:
     case BTF_KIND_DATASEC:
+    case BTF_KIND_ENUM64:
       dw2_asm_output_data (4, dtd->dtd_data.ctti_size, "btt_size: %uB",
 			   dtd->dtd_data.ctti_size);
       return;
@@ -707,13 +719,19 @@ btf_asm_sou_member (ctf_container_ref ctfc, ctf_dmdef_t * dmd)
     }
 }
 
-/* Asm'out an enum constant following a BTF_KIND_ENUM.  */
+/* Asm'out an enum constant following a BTF_KIND_ENUM{,64}.  */
 
 static void
-btf_asm_enum_const (ctf_dmdef_t * dmd)
+btf_asm_enum_const (unsigned int size, ctf_dmdef_t * dmd)
 {
   dw2_asm_output_data (4, dmd->dmd_name_offset, "bte_name");
-  dw2_asm_output_data (4, dmd->dmd_value, "bte_value");
+  if (size == 4)
+    dw2_asm_output_data (size, dmd->dmd_value, "bte_value");
+  else
+    {
+      dw2_asm_output_data (4, dmd->dmd_value & 0xffffffff, "bte_value_lo32");
+      dw2_asm_output_data (4, (dmd->dmd_value >> 32) & 0xffffffff, "bte_value_hi32");
+    }
 }
 
 /* Asm'out a function parameter description following a BTF_KIND_FUNC_PROTO.  */
@@ -871,7 +889,7 @@ output_asm_btf_sou_fields (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
       btf_asm_sou_member (ctfc, dmd);
 }
 
-/* Output all enumerator constants following a BTF_KIND_ENUM.  */
+/* Output all enumerator constants following a BTF_KIND_ENUM{,64}.  */
 
 static void
 output_asm_btf_enum_list (ctf_container_ref ARG_UNUSED (ctfc),
@@ -881,7 +899,7 @@ output_asm_btf_enum_list (ctf_container_ref ARG_UNUSED (ctfc),
 
   for (dmd = dtd->dtd_u.dtu_members;
        dmd != NULL; dmd = (ctf_dmdef_t *) ctf_dmd_list_next (dmd))
-    btf_asm_enum_const (dmd);
+    btf_asm_enum_const (dtd->dtd_data.ctti_size, dmd);
 }
 
 /* Output all function arguments following a BTF_KIND_FUNC_PROTO.  */

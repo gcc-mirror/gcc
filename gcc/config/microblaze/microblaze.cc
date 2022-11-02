@@ -1103,7 +1103,7 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
   if (GET_CODE (xinsn) == SYMBOL_REF)
     {
-      rtx reg;
+      rtx reg = NULL;
       if (microblaze_tls_symbol_p(xinsn))
         {
           reg = microblaze_legitimize_tls_address (xinsn, NULL_RTX);
@@ -1132,6 +1132,11 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	      pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pic_ref);
 	      reg = pic_ref;
 	    }
+	}
+      else
+	{
+	  /* This should never happen.  */
+	  gcc_unreachable ();
 	}
       return reg;
     }
@@ -1474,7 +1479,7 @@ microblaze_address_insns (rtx x, machine_mode mode)
 	      case TLS_DTPREL:
 		return 1;
 	      default :
-		abort();
+		gcc_unreachable ();
 	    }
 	default:
 	  break;
@@ -2624,7 +2629,7 @@ print_operand_address (FILE * file, rtx addr)
 		fputs ("@TLSDTPREL", file);
 		break;
 	      default :
-		abort();
+		gcc_unreachable ();
 		break;
 	    }
 	}
@@ -3413,7 +3418,7 @@ microblaze_expand_move (machine_mode mode, rtx operands[])
     }
   if (GET_CODE (op1) == PLUS && GET_CODE (XEXP (op1,1)) == CONST)
     {
-      rtx p0, p1, result, temp;
+      rtx p0, p1 = NULL, result, temp;
 
       p0 = XEXP (XEXP (op1,1), 0);
 
@@ -3422,6 +3427,10 @@ microblaze_expand_move (machine_mode mode, rtx operands[])
 	  p1 = XEXP (p0, 1);
 	  p0 = XEXP (p0, 0);
 	}
+
+      /* This should never happen.  */
+      if (p1 == NULL)
+	gcc_unreachable ();
 
       if (GET_CODE (p0) == UNSPEC && GET_CODE (p1) == CONST_INT
 	  && flag_pic && TARGET_PIC_DATA_TEXT_REL)
@@ -3799,7 +3808,7 @@ get_branch_target (rtx branch)
       if (GET_CODE (call) == SET)
         call = SET_SRC (call);
       if (GET_CODE (call) != CALL)
-        abort ();
+	gcc_unreachable ();
       return XEXP (XEXP (call, 0), 0);
     }
 

@@ -9,7 +9,6 @@
  */
 module core.sys.windows.aclui;
 version (Windows):
-@system:
 pragma(lib, "aclui");
 
 import core.sys.windows.w32api;

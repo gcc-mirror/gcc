@@ -6017,9 +6017,17 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
+      if (code == ENUMERAL_TYPE)
+	{
+	  /* These fields get set even for opaque enums that lack a
+	     definition, so we stream them directly for each ENUMERAL_TYPE.
+	     We stream TYPE_VALUES as part of the definition.  */
+	  WT (t->type_non_common.maxval);
+	  WT (t->type_non_common.minval);
+	}
       /* Records and unions hold FIELDS, VFIELD & BINFO on these
 	 things.  */
-      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
+      else if (!RECORD_OR_UNION_CODE_P (code))
 	{
 	  // FIXME: These are from tpl_parm_value's 'type' writing.
 	  // Perhaps it should just be doing them directly?
@@ -6319,7 +6327,8 @@ trees_out::core_vals (tree t)
       if (streaming_p ())
 	{
 	  WU (((lang_tree_node *)t)->lambda_expression.default_capture_mode);
-	  WU (((lang_tree_node *)t)->lambda_expression.discriminator);
+	  WU (((lang_tree_node *)t)->lambda_expression.discriminator_scope);
+	  WU (((lang_tree_node *)t)->lambda_expression.discriminator_sig);
 	}
       break;
 
@@ -6530,9 +6539,17 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
+      if (code == ENUMERAL_TYPE)
+	{
+	  /* These fields get set even for opaque enums that lack a
+	     definition, so we stream them directly for each ENUMERAL_TYPE.
+	     We stream TYPE_VALUES as part of the definition.  */
+	  RT (t->type_non_common.maxval);
+	  RT (t->type_non_common.minval);
+	}
       /* Records and unions hold FIELDS, VFIELD & BINFO on these
 	 things.  */
-      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
+      else if (!RECORD_OR_UNION_CODE_P (code))
 	{
 	  /* This is not clobbering TYPE_CACHED_VALUES, because this
 	     is a type that doesn't have any.  */
@@ -6803,7 +6820,8 @@ trees_in::core_vals (tree t)
 	= state->read_location (*this);
       RUC (cp_lambda_default_capture_mode_type,
 	   ((lang_tree_node *)t)->lambda_expression.default_capture_mode);
-      RU (((lang_tree_node *)t)->lambda_expression.discriminator);
+      RU (((lang_tree_node *)t)->lambda_expression.discriminator_scope);
+      RU (((lang_tree_node *)t)->lambda_expression.discriminator_sig);
       break;
 
     case OVERLOAD:
@@ -12217,8 +12235,8 @@ trees_out::write_enum_def (tree decl)
   tree type = TREE_TYPE (decl);
 
   tree_node (TYPE_VALUES (type));
-  tree_node (TYPE_MIN_VALUE (type));
-  tree_node (TYPE_MAX_VALUE (type));
+  /* Note that we stream TYPE_MIN/MAX_VALUE directly as part of the
+     ENUMERAL_TYPE.  */
 }
 
 void
@@ -12242,8 +12260,6 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
 {
   tree type = TREE_TYPE (defn);
   tree values = tree_node ();
-  tree min = tree_node ();
-  tree max = tree_node ();
 
   if (get_overrun ())
     return false;
@@ -12254,8 +12270,8 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
   if (installing)
     {
       TYPE_VALUES (type) = values;
-      TYPE_MIN_VALUE (type) = min;
-      TYPE_MAX_VALUE (type) = max;
+      /* Note that we stream TYPE_MIN/MAX_VALUE directly as part of the
+	 ENUMERAL_TYPE.  */
 
       rest_of_type_compilation (type, DECL_NAMESPACE_SCOPE_P (defn));
     }
@@ -12269,22 +12285,17 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
 	  tree new_decl = TREE_VALUE (values);
 
 	  if (DECL_NAME (known_decl) != DECL_NAME (new_decl))
-	    goto bad;
+	    break;
 	      
 	  new_decl = maybe_duplicate (new_decl);
 
 	  if (!cp_tree_equal (DECL_INITIAL (known_decl),
 			      DECL_INITIAL (new_decl)))
-	    goto bad;
+	    break;
 	}
 
       if (known || values)
-	goto bad;
-
-      if (!cp_tree_equal (TYPE_MIN_VALUE (type), min)
-	  || !cp_tree_equal (TYPE_MAX_VALUE (type), max))
 	{
-	bad:;
 	  error_at (DECL_SOURCE_LOCATION (maybe_dup),
 		    "definition of %qD does not match", maybe_dup);
 	  inform (DECL_SOURCE_LOCATION (defn),

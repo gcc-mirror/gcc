@@ -4596,8 +4596,9 @@ ia64_setup_incoming_varargs (cumulative_args_t cum,
 {
   CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum);
 
-  /* Skip the current argument.  */
-  ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    /* Skip the current argument.  */
+    ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {

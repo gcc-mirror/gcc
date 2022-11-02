@@ -455,9 +455,6 @@ vms_c_register_includes (const char *sysroot,
 void
 vms_c_common_override_options (void)
 {
-  /* Allow variadic functions without parameters (as declared in starlet).  */
-  flag_allow_parameterless_variadic_functions = TRUE;
-
   /* Initialize c_default_pointer_mode.  */
   switch (flag_vms_pointer_size)
     {

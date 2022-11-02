@@ -61,7 +61,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_HARD_FLOAT)
     builtin_define_with_int_value ("__riscv_flen", UNITS_PER_FP_REG * 8);
 
-  if (TARGET_HARD_FLOAT && TARGET_FDIV)
+  if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && TARGET_FDIV)
     {
       builtin_define ("__riscv_fdiv");
       builtin_define ("__riscv_fsqrt");

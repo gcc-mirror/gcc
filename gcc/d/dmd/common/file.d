@@ -144,9 +144,14 @@ struct FileMapping(Datum)
         import core.stdc.string : strlen;
         import core.stdc.stdlib : malloc;
         import core.stdc.string : memcpy;
-        auto totalNameLength = filename.strlen() + 1;
-        name = cast(char*) memcpy(malloc(totalNameLength), filename, totalNameLength);
-        name || assert(0, "FileMapping: Out of memory.");
+        const totalNameLength = filename.strlen() + 1;
+        auto namex = cast(char*) malloc(totalNameLength);
+        if (!namex)
+        {
+            fprintf(stderr, "FileMapping: Out of memory.");
+            exit(1);
+        }
+        name = cast(char*) memcpy(namex, filename, totalNameLength);
     }
 
     /**

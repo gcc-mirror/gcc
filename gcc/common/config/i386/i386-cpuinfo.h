@@ -34,8 +34,10 @@ enum processor_vendor
   VENDOR_CENTAUR,
   VENDOR_CYRIX,
   VENDOR_NSC,
-  BUILTIN_VENDOR_MAX = VENDOR_OTHER,
-  VENDOR_MAX
+
+  /* Maximum values must be at the end of this enum.  */
+  VENDOR_MAX,
+  BUILTIN_VENDOR_MAX = VENDOR_OTHER
 };
 
 /* Any new types or subtypes have to be inserted at the end. */
@@ -243,6 +245,7 @@ enum processor_features
   FEATURE_X86_64_V4,
   FEATURE_AVXIFMA,
   FEATURE_AVXVNNIINT8,
+  FEATURE_AVXNECONVERT,
   CPU_FEATURE_MAX
 };
 

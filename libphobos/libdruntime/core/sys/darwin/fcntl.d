@@ -15,6 +15,5 @@ version (Darwin):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 enum F_FULLFSYNC = 51;

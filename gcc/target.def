@@ -4680,7 +4680,9 @@ pass all their arguments on the stack.\n\
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data\n\
 structure, containing the values that are obtained after processing the\n\
 named arguments.  The argument @var{arg} describes the last of these named\n\
-arguments.\n\
+arguments.  The argument @var{arg} should not be used if the function type\n\
+satisfies @code{TYPE_NO_NAMED_ARGS_STDARG_P}, since in that case there are\n\
+no named arguments and all arguments are accessed with @code{va_arg}.\n\
 \n\
 The target hook should do two things: first, push onto the stack all the\n\
 argument registers @emph{not} used for the named arguments, and second,\n\

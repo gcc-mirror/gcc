@@ -6087,12 +6087,21 @@
     emit_insn (gen_p9_xxbr<VSX_XXBR>_<mode> (operands[0], operands[1]));
   else
     {
-      /* Want to have the elements in reverse order relative
-	 to the endian mode in use, i.e. in LE mode, put elements
-	 in BE order.  */
-      rtx sel = swap_endian_selector_for_mode(<MODE>mode);
-      emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
-					   operands[1], sel));
+      if (<MODE>mode == V8HImode)
+	{
+	  rtx splt = gen_reg_rtx (V8HImode);
+	  emit_insn (gen_altivec_vspltish (splt, GEN_INT (8)));
+	  emit_insn (gen_altivec_vrlh (operands[0], operands[1], splt));
+	}
+      else
+	{
+	  /* Want to have the elements in reverse order relative
+	     to the endian mode in use, i.e. in LE mode, put elements
+	     in BE order.  */
+	  rtx sel = swap_endian_selector_for_mode (<MODE>mode);
+	  emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
+					       operands[1], sel));
+	}
     }
 
   DONE;

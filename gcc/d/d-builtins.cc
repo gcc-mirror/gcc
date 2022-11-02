@@ -505,6 +505,9 @@ d_init_versions (void)
       VersionCondition::addPredefinedGlobalIdent ("D_TypeInfo");
     }
 
+  if (optimize)
+    VersionCondition::addPredefinedGlobalIdent ("D_Optimized");
+
   VersionCondition::addPredefinedGlobalIdent ("all");
 
   /* Emit all target-specific version identifiers.  */

@@ -516,7 +516,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000001 },	/* V0_REGS */		\
   { 0x00000000, 0x00000000, 0x00000000, 0xfffffffe },	/* VNoV0_REGS */	\
   { 0x00000000, 0x00000000, 0x00000000, 0xffffffff },	/* V_REGS */		\
-  { 0xffffffff, 0xffffffff, 0x00000003, 0x00000000 }	/* ALL_REGS */		\
+  { 0xffffffff, 0xffffffff, 0x0000000f, 0xffffffff }	/* ALL_REGS */		\
 }
 
 /* A C expression whose value is a register class containing hard
@@ -1019,6 +1019,7 @@ extern bool riscv_slow_unaligned_access_p;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;
 extern poly_uint16 riscv_vector_chunks;
+extern poly_int64 riscv_v_adjust_nunits (enum machine_mode, int);
 /* The number of bits and bytes in a RVV vector.  */
 #define BITS_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk * 8))
 #define BYTES_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk))
@@ -1079,5 +1080,7 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 #define REGISTER_TARGET_PRAGMAS() riscv_register_pragmas ()
+
+#define REGMODE_NATURAL_SIZE(MODE) riscv_regmode_natural_size (MODE)
 
 #endif /* ! GCC_RISCV_H */

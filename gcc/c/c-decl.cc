@@ -4817,7 +4817,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	  else if (declspecs->typespec_kind != ctsk_tagdef
 		   && declspecs->typespec_kind != ctsk_tagfirstref
 		   && declspecs->typespec_kind != ctsk_tagfirstref_attrs
-		   && code == ENUMERAL_TYPE)
+		   && code == ENUMERAL_TYPE
+		   && !declspecs->enum_type_specifier_ref_p)
 	    {
 	      bool warned_enum = false;
 	      if (warned != 1)
@@ -4881,6 +4882,38 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
     {
       error ("%<register%> in file-scope empty declaration");
       warned = 1;
+    }
+
+  if (declspecs->enum_type_specifier_ref_p && !warned)
+    {
+      if (declspecs->storage_class != csc_none)
+	{
+	  error ("storage class specifier in empty declaration with %<enum%> "
+		 "underlying type");
+	  warned = 1;
+	}
+      else if (declspecs->thread_p)
+	{
+	  error ("%qs in empty declaration with %<enum%> underlying type",
+		 declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
+	  warned = 1;
+	}
+      else if (declspecs->const_p
+	       || declspecs->volatile_p
+	       || declspecs->atomic_p
+	       || declspecs->restrict_p
+	       || declspecs->address_space)
+	{
+	  error ("type qualifier in empty declaration with %<enum%> "
+		 "underlying type");
+	  warned = 1;
+	}
+      else if (declspecs->alignas_p)
+	{
+	  error ("%<alignas%> in empty declaration with %<enum%> "
+		 "underlying type");
+	  warned = 1;
+	}
     }
 
   if (!warned && !in_system_header_at (input_location)
@@ -6496,6 +6529,16 @@ grokdeclarator (const struct c_declarator *declarator,
       }
   }
 
+  /* An enum type specifier (": specifier-qualifier-list") may only be
+     specified when the enum is being defined or in an empty
+     declaration of the form "enum identifier enum-type-specifier;".
+     Except for the case of an empty declaration that has additional
+     declaration specifiers, all invalid contexts (declarations that
+     aren't empty, type names, parameter declarations, member
+     declarations) pass through grokdeclarator.  */
+  if (declspecs->enum_type_specifier_ref_p)
+    error_at (loc, "%<enum%> underlying type may not be specified here");
+
   /* A function definition's declarator must have the form of
      a function declarator.  */
 
@@ -7252,7 +7295,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    type_quals = TYPE_UNQUALIFIED;
 
-	    type = build_function_type (type, arg_types);
+	    type = build_function_type (type, arg_types,
+					arg_info->no_named_args_stdarg_p);
 	    declarator = declarator->declarator;
 
 	    /* Set the TYPE_CONTEXTs for each tagged type which is local to
@@ -8017,7 +8061,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       /* In C2X, convert () to (void).  */
       if (flag_isoc2x
 	  && !arg_types
-	  && !arg_info->parms)
+	  && !arg_info->parms
+	  && !arg_info->no_named_args_stdarg_p)
 	arg_types = arg_info->types = void_list_node;
 
       /* If there is a parameter of incomplete type in a definition,
@@ -8087,6 +8132,7 @@ build_arg_info (void)
   ret->others = NULL_TREE;
   ret->pending_sizes = NULL;
   ret->had_vla_unspec = 0;
+  ret->no_named_args_stdarg_p = 0;
   return ret;
 }
 
@@ -8278,6 +8324,7 @@ get_parm_info (bool ellipsis, tree expr)
   arg_info->types = types;
   arg_info->others = others;
   arg_info->pending_sizes = expr;
+  arg_info->no_named_args_stdarg_p = ellipsis && !types;
   return arg_info;
 }
 
@@ -8285,12 +8332,15 @@ get_parm_info (bool ellipsis, tree expr)
    Define the tag as a forward-reference with location LOC if it is
    not defined.  HAVE_STD_ATTRS says whether any standard attributes
    were present after the struct, union or enum keyword; ATTRS are the
-   standard attributes present there.  Return a c_typespec structure
-   for the type specifier.  */
+   standard attributes present there.  HAS_ENUM_TYPE_SPECIFIER says
+   whether an enum type specifier (": specifier-qualifier-list") is
+   present; if so, this is called before that specifier is parsed, so
+   that the tag is in scope for that specifier.  Return a c_typespec
+   structure for the type specifier.  */
 
 struct c_typespec
 parser_xref_tag (location_t loc, enum tree_code code, tree name,
-		 bool have_std_attrs, tree attrs)
+		 bool have_std_attrs, tree attrs, bool has_enum_type_specifier)
 {
   struct c_typespec ret;
   tree ref;
@@ -8298,11 +8348,13 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
 
   ret.expr = NULL_TREE;
   ret.expr_const_operands = true;
+  ret.has_enum_type_specifier = has_enum_type_specifier;
 
-  /* If a cross reference is requested, look up the type
-     already defined for this tag and return it.  */
+  /* If a cross reference is requested, look up the type already
+     defined for this tag and return it.  If an enum type specifier is
+     present, only a definition in the current scope is relevant.  */
 
-  ref = lookup_tag (code, name, false, &refloc);
+  ref = lookup_tag (code, name, has_enum_type_specifier, &refloc);
   /* If this is the right type of tag, return what we found.
      (This reference will be shadowed by shadow_tag later if appropriate.)
      If this is the wrong type of tag, do not return it.  If it was the
@@ -8371,6 +8423,7 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
       TYPE_PRECISION (ref) = TYPE_PRECISION (unsigned_type_node);
       TYPE_MIN_VALUE (ref) = TYPE_MIN_VALUE (unsigned_type_node);
       TYPE_MAX_VALUE (ref) = TYPE_MAX_VALUE (unsigned_type_node);
+      ENUM_FIXED_UNDERLYING_TYPE_P (ref) = has_enum_type_specifier;
     }
 
   pushtag (loc, name, ref);
@@ -8387,7 +8440,8 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
 tree
 xref_tag (enum tree_code code, tree name)
 {
-  return parser_xref_tag (input_location, code, name, false, NULL_TREE).spec;
+  return parser_xref_tag (input_location, code, name, false, NULL_TREE,
+			  false).spec;
 }
 
 /* Make sure that the tag NAME is defined *in the current scope*
@@ -9288,12 +9342,15 @@ layout_array_type (tree t)
 /* Begin compiling the definition of an enumeration type.
    NAME is its name (or null if anonymous).
    LOC is the enum's location.
+   FIXED_UNDERLYING_TYPE is the (C2x) underlying type specified in the
+   definition.
    Returns the type object, as yet incomplete.
    Also records info about it so that build_enumerator
    may be used to declare the individual values as they are read.  */
 
 tree
-start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
+start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
+	    tree fixed_underlying_type)
 {
   tree enumtype = NULL_TREE;
   location_t enumloc = UNKNOWN_LOCATION;
@@ -9309,6 +9366,23 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
     {
       enumtype = make_node (ENUMERAL_TYPE);
       pushtag (loc, name, enumtype);
+      if (fixed_underlying_type != NULL_TREE)
+	{
+	  /* For an enum definition with a fixed underlying type, the
+	     type is complete during the definition and the
+	     enumeration constants have that type.  If there was a
+	     tag, the type was completed in c_parser_enum_specifier.
+	     If not, it must be completed here.  */
+	  ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) = true;
+	  TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (fixed_underlying_type);
+	  TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (fixed_underlying_type);
+	  TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (fixed_underlying_type);
+	  SET_TYPE_ALIGN (enumtype, TYPE_ALIGN (fixed_underlying_type));
+	  TYPE_SIZE (enumtype) = NULL_TREE;
+	  TYPE_PRECISION (enumtype) = TYPE_PRECISION (fixed_underlying_type);
+	  ENUM_UNDERLYING_TYPE (enumtype) = fixed_underlying_type;
+	  layout_type (enumtype);
+	}
     }
   /* Update type location to the one of the definition, instead of e.g.
      a forward declaration.  */
@@ -9336,10 +9410,16 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
       TYPE_VALUES (enumtype) = NULL_TREE;
     }
 
+  if (ENUM_FIXED_UNDERLYING_TYPE_P (enumtype)
+      && fixed_underlying_type == NULL_TREE)
+    error_at (loc, "%<enum%> declared with but defined without "
+	      "fixed underlying type");
+
   the_enum->enum_next_value = integer_zero_node;
+  the_enum->enum_type = enumtype;
   the_enum->enum_overflow = 0;
 
-  if (flag_short_enums)
+  if (flag_short_enums && !ENUM_FIXED_UNDERLYING_TYPE_P (enumtype))
     for (tree v = TYPE_MAIN_VARIANT (enumtype); v; v = TYPE_NEXT_VARIANT (v))
       TYPE_PACKED (v) = 1;
 
@@ -9403,54 +9483,61 @@ finish_enum (tree enumtype, tree values, tree attributes)
     (tree_int_cst_lt (minnode, TYPE_MIN_VALUE (integer_type_node))
      || tree_int_cst_lt (TYPE_MAX_VALUE (integer_type_node), maxnode));
 
-  /* If the precision of the type was specified with an attribute and it
-     was too small, give an error.  Otherwise, use it.  */
-  if (TYPE_PRECISION (enumtype) && lookup_attribute ("mode", attributes))
+
+  if (!ENUM_FIXED_UNDERLYING_TYPE_P (enumtype))
     {
-      if (precision > TYPE_PRECISION (enumtype))
+      /* If the precision of the type was specified with an attribute and it
+	 was too small, give an error.  Otherwise, use it.  */
+      if (TYPE_PRECISION (enumtype) && lookup_attribute ("mode", attributes))
 	{
-	  TYPE_PRECISION (enumtype) = 0;
-	  error ("specified mode too small for enumerated values");
+	  if (precision > TYPE_PRECISION (enumtype))
+	    {
+	      TYPE_PRECISION (enumtype) = 0;
+	      error ("specified mode too small for enumerated values");
+	    }
+	  else
+	    precision = TYPE_PRECISION (enumtype);
 	}
       else
-	precision = TYPE_PRECISION (enumtype);
-    }
-  else
-    TYPE_PRECISION (enumtype) = 0;
+	TYPE_PRECISION (enumtype) = 0;
 
-  if (TYPE_PACKED (enumtype)
-      || precision > TYPE_PRECISION (integer_type_node)
-      || TYPE_PRECISION (enumtype))
-    {
-      tem = c_common_type_for_size (precision, sign == UNSIGNED ? 1 : 0);
-      if (tem == NULL)
+      if (TYPE_PACKED (enumtype)
+	  || precision > TYPE_PRECISION (integer_type_node)
+	  || TYPE_PRECISION (enumtype))
 	{
-	  /* This should only occur when both signed and unsigned
-	     values of maximum precision occur among the
-	     enumerators.  */
-	  pedwarn (input_location, 0,
-		   "enumeration values exceed range of largest integer");
-	  tem = widest_integer_literal_type_node;
+	  tem = c_common_type_for_size (precision, sign == UNSIGNED ? 1 : 0);
+	  if (tem == NULL)
+	    {
+	      /* This should only occur when both signed and unsigned
+		 values of maximum precision occur among the
+		 enumerators.  */
+	      pedwarn (input_location, 0,
+		       "enumeration values exceed range of largest integer");
+	      tem = widest_integer_literal_type_node;
+	    }
+	  else if (precision > TYPE_PRECISION (intmax_type_node)
+		   && !tree_int_cst_lt (minnode,
+					TYPE_MIN_VALUE (intmax_type_node))
+		   && !tree_int_cst_lt (TYPE_MAX_VALUE (uintmax_type_node),
+					maxnode))
+	    pedwarn (input_location, OPT_Wpedantic,
+		     "enumeration values exceed range of %qs",
+		     sign == UNSIGNED ? "uintmax_t" : "intmax_t");
 	}
-      else if (precision > TYPE_PRECISION (intmax_type_node)
-	       && !tree_int_cst_lt (minnode, TYPE_MIN_VALUE (intmax_type_node))
-	       && !tree_int_cst_lt (TYPE_MAX_VALUE (uintmax_type_node),
-				    maxnode))
-	pedwarn (input_location, OPT_Wpedantic,
-		 "enumeration values exceed range of %qs",
-		 sign == UNSIGNED ? "uintmax_t" : "intmax_t");
+      else
+	tem = sign == UNSIGNED ? unsigned_type_node : integer_type_node;
+
+      TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (tem);
+      TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (tem);
+      TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (tem);
+      SET_TYPE_ALIGN (enumtype, TYPE_ALIGN (tem));
+      TYPE_SIZE (enumtype) = NULL_TREE;
+      TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
+      ENUM_UNDERLYING_TYPE (enumtype) =
+	c_common_type_for_size (TYPE_PRECISION (tem), TYPE_UNSIGNED (tem));
+
+      layout_type (enumtype);
     }
-  else
-    tem = sign == UNSIGNED ? unsigned_type_node : integer_type_node;
-
-  TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (tem);
-  TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (tem);
-  TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (tem);
-  SET_TYPE_ALIGN (enumtype, TYPE_ALIGN (tem));
-  TYPE_SIZE (enumtype) = NULL_TREE;
-  TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
-
-  layout_type (enumtype);
 
   if (values != error_mark_node)
     {
@@ -9477,8 +9564,10 @@ finish_enum (tree enumtype, tree values, tree attributes)
 	     fit in int are given type int in build_enumerator (which
 	     is the correct type while the enumeration is being
 	     parsed), so no conversions are needed here if all
-	     enumerators fit in int.  */
-	  if (wider_than_int)
+	     enumerators fit in int.  If the enum has a fixed
+	     underlying type, the correct type was also given in
+	     build_enumerator.  */
+	  if (!ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) && wider_than_int)
 	    ini = convert (enumtype, ini);
 
 	  DECL_INITIAL (enu) = ini;
@@ -9516,6 +9605,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
       TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);
       TYPE_UNSIGNED (tem) = TYPE_UNSIGNED (enumtype);
       TYPE_LANG_SPECIFIC (tem) = TYPE_LANG_SPECIFIC (enumtype);
+      ENUM_UNDERLYING_TYPE (tem) = ENUM_UNDERLYING_TYPE (enumtype);
     }
 
   /* Finish debugging output for this type.  */
@@ -9595,56 +9685,89 @@ build_enumerator (location_t decl_loc, location_t loc,
       if (the_enum->enum_overflow)
 	error_at (loc, "overflow in enumeration values");
     }
-  /* Even though the underlying type of an enum is unspecified, the
-     type of enumeration constants is explicitly defined as int
-     (6.4.4.3/2 in the C99 Standard).  C2X allows any integer type, and
-     GCC allows such types for older standards as an extension.  */
-  bool warned_range = false;
-  if (!int_fits_type_p (value,
-			(TYPE_UNSIGNED (TREE_TYPE (value))
-			 ? uintmax_type_node
-			 : intmax_type_node)))
-    /* GCC does not consider its types larger than intmax_t to be
-       extended integer types (although C2X would permit such types to
-       be considered extended integer types if all the features
-       required by <stdint.h> and <inttypes.h> macros, such as support
-       for integer constants and I/O, were present), so diagnose if
-       such a wider type is used.  (If the wider type arose from a
-       constant of such a type, that will also have been diagnosed,
-       but this is the only diagnostic in the case where it arises
-       from choosing a wider type automatically when adding 1
-       overflows.)  */
-    warned_range = pedwarn (loc, OPT_Wpedantic,
-			    "enumerator value outside the range of %qs",
+  if (ENUM_FIXED_UNDERLYING_TYPE_P (the_enum->enum_type))
+    {
+      /* Enumeration constants must fit in the fixed underlying type.  */
+      if (!int_fits_type_p (value, ENUM_UNDERLYING_TYPE (the_enum->enum_type)))
+	error_at (loc,
+		  "enumerator value outside the range of underlying type");
+      /* Enumeration constants for an enum with fixed underlying type
+	 have the enum type, both inside and outside the
+	 definition.  */
+      value = convert (the_enum->enum_type, value);
+    }
+  else
+    {
+      /* Even though the underlying type of an enum is unspecified, the
+	 type of enumeration constants is explicitly defined as int
+	 (6.4.4.3/2 in the C99 Standard).  C2X allows any integer type, and
+	 GCC allows such types for older standards as an extension.  */
+      bool warned_range = false;
+      if (!int_fits_type_p (value,
 			    (TYPE_UNSIGNED (TREE_TYPE (value))
-			     ? "uintmax_t"
-			     : "intmax_t"));
-  if (!warned_range && !int_fits_type_p (value, integer_type_node))
-    pedwarn_c11 (loc, OPT_Wpedantic,
-		 "ISO C restricts enumerator values to range of %<int%> "
-		 "before C2X");
+			     ? uintmax_type_node
+			     : intmax_type_node)))
+	/* GCC does not consider its types larger than intmax_t to be
+	   extended integer types (although C2X would permit such types to
+	   be considered extended integer types if all the features
+	   required by <stdint.h> and <inttypes.h> macros, such as support
+	   for integer constants and I/O, were present), so diagnose if
+	   such a wider type is used.  (If the wider type arose from a
+	   constant of such a type, that will also have been diagnosed,
+	   but this is the only diagnostic in the case where it arises
+	   from choosing a wider type automatically when adding 1
+	   overflows.)  */
+	warned_range = pedwarn (loc, OPT_Wpedantic,
+				"enumerator value outside the range of %qs",
+				(TYPE_UNSIGNED (TREE_TYPE (value))
+				 ? "uintmax_t"
+				 : "intmax_t"));
+      if (!warned_range && !int_fits_type_p (value, integer_type_node))
+	pedwarn_c11 (loc, OPT_Wpedantic,
+		     "ISO C restricts enumerator values to range of %<int%> "
+		     "before C2X");
 
-  /* The ISO C Standard mandates enumerators to have type int before
-     C2X, even though the underlying type of an enum type is
-     unspecified.  C2X allows enumerators of any integer type.  During
-     the parsing of the enumeration, C2X specifies that constants
-     representable in int have type int, constants not representable
-     in int have the type of the given expression if any, and
-     constants not representable in int and derived by adding 1 to the
-     previous constant have the type of that constant unless the
-     addition would overflow or wraparound, in which case a wider type
-     of the same signedness is chosen automatically; after the
-     enumeration is parsed, all the constants have the type of the
-     enumeration if any do not fit in int.  */
-  if (int_fits_type_p (value, integer_type_node))
-    value = convert (integer_type_node, value);
+      /* The ISO C Standard mandates enumerators to have type int before
+	 C2X, even though the underlying type of an enum type is
+	 unspecified.  C2X allows enumerators of any integer type.  During
+	 the parsing of the enumeration, C2X specifies that constants
+	 representable in int have type int, constants not representable
+	 in int have the type of the given expression if any, and
+	 constants not representable in int and derived by adding 1 to the
+	 previous constant have the type of that constant unless the
+	 addition would overflow or wraparound, in which case a wider type
+	 of the same signedness is chosen automatically; after the
+	 enumeration is parsed, all the constants have the type of the
+	 enumeration if any do not fit in int.  */
+      if (int_fits_type_p (value, integer_type_node))
+	value = convert (integer_type_node, value);
+    }
 
   /* Set basis for default for next value.  */
-  the_enum->enum_next_value
-    = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
-		       PLUS_EXPR, value, integer_one_node, false);
+  if (ENUM_FIXED_UNDERLYING_TYPE_P (the_enum->enum_type))
+    {
+      tree underlying_type = ENUM_UNDERLYING_TYPE (the_enum->enum_type);
+      if (TREE_CODE (underlying_type) == BOOLEAN_TYPE)
+	/* A value of 2 following a value of 1 overflows bool, but we
+	   cannot carry out addition directly on bool without
+	   promotion, and converting the result of arithmetic in a
+	   wider type back to bool would not produce the right result
+	   for this overflow check.  */
+	the_enum->enum_next_value = invert_truthvalue_loc (loc, value);
+      else
+	the_enum->enum_next_value
+	  = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
+			     PLUS_EXPR, convert (underlying_type, value),
+			     convert (underlying_type, integer_one_node),
+			     false);
+    }
+  else
+    the_enum->enum_next_value
+      = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
+			 PLUS_EXPR, value, integer_one_node, false);
   the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
-  if (the_enum->enum_overflow)
+  if (the_enum->enum_overflow
+      && !ENUM_FIXED_UNDERLYING_TYPE_P (the_enum->enum_type))
     {
       /* Choose a wider type with the same signedness if
 	 available.  */
@@ -9691,7 +9814,8 @@ c_simulate_enum_decl (location_t loc, const char *name,
   input_location = loc;
 
   struct c_enum_contents the_enum;
-  tree enumtype = start_enum (loc, &the_enum, get_identifier (name));
+  tree enumtype = start_enum (loc, &the_enum, get_identifier (name),
+			      NULL_TREE);
 
   tree value_chain = NULL_TREE;
   string_int_pair *value;
@@ -9815,7 +9939,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       /* Make it return void instead.  */
       TREE_TYPE (decl1)
 	= build_function_type (void_type_node,
-			       TYPE_ARG_TYPES (TREE_TYPE (decl1)));
+			       TYPE_ARG_TYPES (TREE_TYPE (decl1)),
+			       TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (decl1)));
     }
 
   if (warn_about_return_type)
@@ -10414,7 +10539,7 @@ store_parm_decls (void)
      empty argument list was converted to (void) in grokparms; in
      older C standard versions, it does not give the function a type
      with a prototype for future calls.  */
-  proto = arg_info->types != 0;
+  proto = arg_info->types != 0 || arg_info->no_named_args_stdarg_p;
 
   if (proto)
     store_parm_decls_newstyle (fndecl, arg_info);
@@ -10542,7 +10667,7 @@ finish_function (location_t end_loc)
   if (DECL_RESULT (fndecl) && DECL_RESULT (fndecl) != error_mark_node)
     DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
-  if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted
+  if (MAIN_NAME_P (DECL_NAME (fndecl)) && !TREE_THIS_VOLATILE (fndecl)
       && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
       == integer_type_node && flag_isoc99)
     {
@@ -11980,6 +12105,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    }
 	}
       specs->type = type;
+      if (spec.has_enum_type_specifier
+	  && spec.kind != ctsk_tagdef)
+	specs->enum_type_specifier_ref_p = true;
     }
 
   return specs;

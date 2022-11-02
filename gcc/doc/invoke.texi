@@ -198,7 +198,7 @@ in the following sections.
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @gccoptlist{-ansi  -std=@var{standard}  -aux-info @var{filename} @gol
--fallow-parameterless-variadic-functions  -fno-asm  @gol
+-fno-asm  @gol
 -fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch @gol
 -ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted @gol
 -flax-vector-conversions  -fms-extensions @gol
@@ -249,7 +249,8 @@ in the following sections.
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
--Wctor-dtor-privacy  -Wno-delete-incomplete @gol
+-Wctor-dtor-privacy  -Wdangling-reference @gol
+-Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare @gol
 -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
@@ -1436,7 +1437,7 @@ See RS/6000 and PowerPC Options.
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni@gol
--mavx512fp16 -mavxifma -mavxvnniint8 @gol
+-mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert @gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mkl -mwidekl @gol
@@ -2513,14 +2514,6 @@ definition (@samp{C} or @samp{F}, respectively, in the following
 character).  In the case of function definitions, a K&R-style list of
 arguments followed by their declarations is also provided, inside
 comments, after the declaration.
-
-@item -fallow-parameterless-variadic-functions
-@opindex fallow-parameterless-variadic-functions
-Accept variadic functions without named parameters.
-
-Although it is possible to define such a function, this is not very
-useful as it is not possible to read the arguments.  This is only
-supported for C as this construct is allowed by C++.
 
 @item -fno-asm
 @opindex fno-asm
@@ -3626,6 +3619,54 @@ destructors in that class are private, and it has neither friends nor
 public static member functions.  Also warn if there are no non-private
 methods, and there's at least one private member function that isn't
 a constructor or destructor.
+
+@item -Wdangling-reference @r{(C++ and Objective-C++ only)}
+@opindex Wdangling-reference
+@opindex Wno-dangling-reference
+Warn when a reference is bound to a temporary whose lifetime has ended.
+For example:
+
+@smallexample
+int n = 1;
+const int& r = std::max(n - 1, n + 1); // r is dangling
+@end smallexample
+
+In the example above, two temporaries are created, one for each
+argument, and a reference to one of the temporaries is returned.
+However, both temporaries are destroyed at the end of the full
+expression, so the reference @code{r} is dangling.  This warning
+also detects dangling references in member initializer lists:
+
+@smallexample
+const int& f(const int& i) @{ return i; @}
+struct S @{
+  const int &r; // r is dangling
+  S() : r(f(10)) @{ @}
+@};
+@end smallexample
+
+Member functions are checked as well, but only their object argument:
+
+@smallexample
+struct S @{
+   const S& self () @{ return *this; @}
+@};
+const S& s = S().self(); // s is dangling
+@end smallexample
+
+Certain functions are safe in this respect, for example @code{std::use_facet}:
+they take and return a reference, but they don't return one of its arguments,
+which can fool the warning.  Such functions can be excluded from the warning
+by wrapping them in a @code{#pragma}:
+
+@smallexample
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
+const T& foo (const T&) @{ @dots{} @}
+#pragma GCC diagnostic pop
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wdelete-non-virtual-dtor
@@ -10459,6 +10500,7 @@ of the following functions for working with file descriptors:
 @item @code{close}
 @item @code{creat}
 @item @code{dup}, @code{dup2} and @code{dup3}
+@item @code{pipe}, and @code{pipe2}
 @item @code{read}
 @item @code{write}
 @end itemize
@@ -16458,6 +16500,10 @@ or @code{__builtin_clz} invokes undefined behavior and is diagnosed
 by this option.
 
 @end table
+
+Note the enabled sanitizer options tend to increase a false-positive rate
+of selected warnings, most notably @option{-Wmaybe-uninitialized}.
+And thus we recommend to disable @option{-Werror}.
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
@@ -27090,11 +27136,13 @@ The @option{-mcompact-branches=never} option ensures that compact branch
 instructions will never be generated.
 
 The @option{-mcompact-branches=always} option ensures that a compact
-branch instruction will be generated if available.  If a compact branch
-instruction is not available, a delay slot form of the branch will be
-used instead.
+branch instruction will be generated if available for MIPS Release 6 onwards.
+If a compact branch instruction is not available (or pre-R6),
+a delay slot form of the branch will be used instead.
 
-This option is supported from MIPS Release 6 onwards.
+If it is used for MIPS16/microMIPS targets, it will be just ignored now.
+The behaviour for MIPS16/microMIPS may change in future,
+since they do have some compact branch instructions.
 
 The @option{-mcompact-branches=optimal} option will cause a delay slot
 branch to be used if one is available in the current ISA and the delay
@@ -32919,6 +32967,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mavxvnniint8
 @opindex mavxvnniint8
+@need 200
+@itemx -mavxneconvert
+@opindex mavxneconvert
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -32929,8 +32980,8 @@ XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
 UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512FP16,
-AVXIFMA, AVXVNNIINT8 or CLDEMOTE extended instruction sets. Each has a
-corresponding @option{-mno-} option to disable use of these instructions.
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT or CLDEMOTE extended instruction sets. Each
+has a corresponding @option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and

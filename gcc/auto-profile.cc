@@ -363,7 +363,8 @@ get_combined_location (location_t loc, tree decl)
   /* TODO: allow more bits for line and less bits for discriminator.  */
   if (LOCATION_LINE (loc) - DECL_SOURCE_LINE (decl) >= (1<<16))
     warning_at (loc, OPT_Woverflow, "offset exceeds 16 bytes");
-  return ((LOCATION_LINE (loc) - DECL_SOURCE_LINE (decl)) << 16);
+  return ((LOCATION_LINE (loc) - DECL_SOURCE_LINE (decl)) << 16)
+	 | get_discriminator_from_loc (loc);
 }
 
 /* Return the function decl of a given lexical BLOCK.  */
@@ -652,7 +653,7 @@ function_instance::read_function_instance (function_instance_stack *stack,
 
   for (unsigned i = 0; i < num_pos_counts; i++)
     {
-      unsigned offset = gcov_read_unsigned () & 0xffff0000;
+      unsigned offset = gcov_read_unsigned ();
       unsigned num_targets = gcov_read_unsigned ();
       gcov_type count = gcov_read_counter ();
       s->pos_counts[offset].count = count;

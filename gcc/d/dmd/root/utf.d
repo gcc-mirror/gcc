@@ -288,7 +288,7 @@ bool isUniAlpha(dchar c)
     // Binary search
     while (low <= high)
     {
-        size_t mid = (low + high) >> 1;
+        const size_t mid = low + ((high - low) >> 1);
         if (c < ALPHA_TABLE[mid][0])
             high = mid - 1;
         else if (ALPHA_TABLE[mid][1] < c)

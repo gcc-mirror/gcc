@@ -82,7 +82,6 @@ namespace pmr
       struct constant_init
       {
 	union {
-	  unsigned char unused;
 	  T obj;
 	};
 	constexpr constant_init() : obj() { }

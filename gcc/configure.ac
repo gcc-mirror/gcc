@@ -887,6 +887,9 @@ if test x${enable_multiarch} = xauto; then
     enable_multiarch=no
   fi
 fi
+if test x${enable_multiarch} = xyes; then
+  AC_DEFINE(ENABLE_MULTIARCH, 1)
+fi
 AC_MSG_CHECKING(for multiarch configuration)
 AC_SUBST(enable_multiarch)
 AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)
@@ -1806,6 +1809,7 @@ AC_SUBST(objext)
 AC_ARG_ENABLE(sjlj-exceptions,
 [AS_HELP_STRING([--enable-sjlj-exceptions],
                 [arrange to use setjmp/longjmp exception handling])],
+[force_sjlj_exceptions=yes],
 [case $target in
   lm32*-*-*)
      force_sjlj_exceptions=yes
@@ -6778,14 +6782,16 @@ AC_SUBST([enable_default_ssp])
 
 # Test for <sys/sdt.h> on the target.
 GCC_TARGET_TEMPLATE([HAVE_SYS_SDT_H])
-AC_MSG_CHECKING(sys/sdt.h in the target C library)
-have_sys_sdt_h=no
-if test -f $target_header_dir/sys/sdt.h; then
-  have_sys_sdt_h=yes
-  AC_DEFINE(HAVE_SYS_SDT_H, 1,
+AC_CACHE_CHECK([sys/sdt.h in the target C library], [gcc_cv_sys_sdt_h], [
+  gcc_cv_sys_sdt_h=no
+  if test -f $target_header_dir/sys/sdt.h; then
+    gcc_cv_sys_sdt_h=yes
+  fi
+])
+AS_IF([test x$gcc_cv_sys_sdt_h = xyes], [
+  AC_DEFINE([HAVE_SYS_SDT_H], [1],
             [Define if your target C library provides sys/sdt.h])
-fi
-AC_MSG_RESULT($have_sys_sdt_h)
+])
 
 # Check if TFmode long double should be used by default or not.
 # Some glibc targets used DFmode long double, but with glibc 2.4
