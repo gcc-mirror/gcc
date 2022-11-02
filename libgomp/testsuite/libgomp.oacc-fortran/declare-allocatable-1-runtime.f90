@@ -79,6 +79,8 @@ program test
   !   { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} {} { target *-*-* } l$c }
   !   { dg-note {variable 'i' adjusted for OpenACC privatization level: 'vector'} {} { target { ! openacc_host_selected } } l$c }
   ! { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l$c }
+  ! { dg-bogus {missed: 'auto' loop has not been analyzed} TODO { xfail __OPTIMIZE__ } l$c }
+  !   '-O1', '-O3', '-Os' only.
   ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l$c }
   do i = 1, n
      b(i) = i * a
@@ -152,6 +154,8 @@ program test
   !   { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} {} { target *-*-* } l$c }
   !   { dg-note {variable 'i' adjusted for OpenACC privatization level: 'vector'} {} { target { ! openacc_host_selected } } l$c }
   ! { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l$c }
+  ! { dg-bogus {missed: 'auto' loop has not been analyzed} TODO { xfail __OPTIMIZE__ } l$c }
+  !   '-O1', '-O2', '-O3', '-Os' only.
   ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l$c }
   do i = 1, n
      b(i) = 1.0
@@ -162,6 +166,8 @@ program test
   !   { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} {} { target *-*-* } l$c }
   !   { dg-note {variable 'i' adjusted for OpenACC privatization level: 'vector'} {} { target { ! openacc_host_selected } } l$c }
   ! { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l$c }
+  ! { dg-bogus {missed: 'auto' loop has not been analyzed} TODO { xfail __OPTIMIZE__ } l$c }
+  !   '-O1', '-O3', '-Os' only.
   ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l$c }
   do i = 1, n
      b(i) = fun1 (i) ! { dg-line l[incr c] }
@@ -193,6 +199,8 @@ program test
   !   { dg-note {variable 'i' ought to be adjusted for OpenACC privatization level: 'vector'} {} { target *-*-* } l$c }
   !   { dg-note {variable 'i' adjusted for OpenACC privatization level: 'vector'} {} { target { ! openacc_host_selected } } l$c }
   ! { dg-note {variable 'i\.[0-9]+' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l$c }
+  ! { dg-bogus {missed: 'auto' loop has not been analyzed} TODO { xfail __OPTIMIZE__ } l$c }
+  !   '-O1', '-O3', '-Os' only.
   ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l$c }
   do i = 1, n
      b(i) = 1.0
@@ -250,6 +258,8 @@ subroutine sub2
 
   !$acc parallel loop ! { dg-line l[incr c] }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l$c }
+  ! { dg-bogus {missed: 'auto' loop has not been analyzed} TODO { xfail __OPTIMIZE__ } l$c }
+  !   '-O1', '-O3', '-Os' only.
   ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l$c }
   do i = 1, n
      b(i) = 1.0
