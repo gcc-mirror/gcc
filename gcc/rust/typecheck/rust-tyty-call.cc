@@ -68,7 +68,6 @@ TypeCheckCallExpr::visit (ADTType &type)
 	  return;
 	}
 
-      delete res;
       i++;
     }
 
