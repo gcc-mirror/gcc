@@ -1,3 +1,25 @@
+2022-10-29  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	Backported from master:
+	2022-10-21  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100097
+	PR fortran/100098
+	* trans-array.cc (gfc_trans_class_array): New function to
+	initialize class descriptor's TKR information.
+	* trans-array.h (gfc_trans_class_array): Add function prototype.
+	* trans-decl.cc (gfc_trans_deferred_vars): Add calls to the new
+	function for both pointers and allocatables.
+
+2022-10-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103413
+	* symbol.cc (gfc_type_compatible): A boz-literal-constant has no type
+	and thus is not considered compatible to any type.
+
 2022-10-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

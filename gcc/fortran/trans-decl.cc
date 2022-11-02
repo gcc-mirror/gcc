@@ -4858,7 +4858,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->ts.type == BT_CLASS
 		&& CLASS_DATA (sym)->attr.class_pointer))
-	continue;
+	gfc_trans_class_array (sym, block);
       else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->attr.allocatable
 		    || (sym->attr.pointer && sym->attr.result)
@@ -4941,6 +4941,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  gfc_restore_backend_locus (&loc);
 		  tmp = NULL_TREE;
 		}
+
+	      /* Initialize descriptor's TKR information.  */
+	      if (sym->ts.type == BT_CLASS)
+		gfc_trans_class_array (sym, block);
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
