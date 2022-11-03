@@ -1,5 +1,4 @@
 // generic error tests for generalized contract redecls
-// FIXME: merge into contracts-redecl1
 // { dg-do compile }
 // { dg-options "-std=c++2a -fcontracts" }
 

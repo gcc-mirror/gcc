@@ -1,4 +1,4 @@
-## Makefile for the GNU C++ Filesystem library.
+## Makefile for experimental additions to the GNU C++ Standard library.
 ##
 ## Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ##

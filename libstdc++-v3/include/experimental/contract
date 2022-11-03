@@ -23,8 +23,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-// FIXME string_view vs. freestanding
-
 /** @file contract
  *  This is a Standard C++ Library header.
  */
