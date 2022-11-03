@@ -2490,7 +2490,6 @@ cgraph_node::make_local (cgraph_node *node, void *)
       node->externally_visible = false;
       node->forced_by_abi = false;
       node->local = true;
-      node->set_section (NULL);
       node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
 			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
 			   && !flag_incremental_link);
