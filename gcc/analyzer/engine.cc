@@ -4599,8 +4599,9 @@ exploded_path::get_final_enode () const
    feasibility_problem to *OUT.  */
 
 bool
-exploded_path::feasible_p (logger *logger, feasibility_problem **out,
-			    engine *eng, const exploded_graph *eg) const
+exploded_path::feasible_p (logger *logger,
+			   std::unique_ptr<feasibility_problem> *out,
+			   engine *eng, const exploded_graph *eg) const
 {
   LOG_SCOPE (logger);
 
@@ -4627,8 +4628,8 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 	      const program_point &src_point = src_enode.get_point ();
 	      const gimple *last_stmt
 		= src_point.get_supernode ()->get_last_stmt ();
-	      *out = new feasibility_problem (edge_idx, *eedge,
-					      last_stmt, rc);
+	      *out = make_unique<feasibility_problem> (edge_idx, *eedge,
+						       last_stmt, rc);
 	    }
 	  else
 	    delete rc;

@@ -923,7 +923,7 @@ public:
   void dump_to_file (const char *filename,
 		     const extrinsic_state &ext_state) const;
 
-  bool feasible_p (logger *logger, feasibility_problem **out,
+  bool feasible_p (logger *logger, std::unique_ptr<feasibility_problem> *out,
 		    engine *eng, const exploded_graph *eg) const;
 
   auto_vec<const exploded_edge *> m_edges;

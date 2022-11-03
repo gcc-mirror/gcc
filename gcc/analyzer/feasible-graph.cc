@@ -190,10 +190,10 @@ feasible_graph::add_feasibility_problem (feasible_node *src_fnode,
 /* Make an exploded_path from the origin to FNODE's exploded_node,
    following the edges in the feasible_graph.  */
 
-exploded_path *
+std::unique_ptr<exploded_path>
 feasible_graph::make_epath (feasible_node *fnode) const
 {
-  exploded_path *epath = new exploded_path ();
+  std::unique_ptr<exploded_path> epath (new exploded_path ());
 
   /* FG is actually a tree.  Built the path backwards, by walking
      backwards from FNODE until we reach the origin.  */

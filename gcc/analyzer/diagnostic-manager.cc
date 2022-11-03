@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/feasible-graph.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/reachability.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -85,21 +86,24 @@ public:
 
   logger *get_logger () const { return m_eg.get_logger (); }
 
-  exploded_path *get_best_epath (const exploded_node *target_enode,
-				 const char *desc, unsigned diag_idx,
-				 feasibility_problem **out_problem);
+  std::unique_ptr<exploded_path>
+  get_best_epath (const exploded_node *target_enode,
+		  const char *desc, unsigned diag_idx,
+		  std::unique_ptr<feasibility_problem> *out_problem);
 
 private:
   DISABLE_COPY_AND_ASSIGN(epath_finder);
 
-  exploded_path *explore_feasible_paths (const exploded_node *target_enode,
-					 const char *desc, unsigned diag_idx);
-  bool process_worklist_item (feasible_worklist *worklist,
-			      const trimmed_graph &tg,
-			      feasible_graph *fg,
-			      const exploded_node *target_enode,
-			      unsigned diag_idx,
-			      exploded_path **out_best_path) const;
+  std::unique_ptr<exploded_path>
+  explore_feasible_paths (const exploded_node *target_enode,
+			  const char *desc, unsigned diag_idx);
+  bool
+  process_worklist_item (feasible_worklist *worklist,
+			 const trimmed_graph &tg,
+			 feasible_graph *fg,
+			 const exploded_node *target_enode,
+			 unsigned diag_idx,
+			 std::unique_ptr<exploded_path> *out_best_path) const;
   void dump_trimmed_graph (const exploded_node *target_enode,
 			   const char *desc, unsigned diag_idx,
 			   const trimmed_graph &tg,
@@ -132,10 +136,10 @@ private:
 
    Write any feasibility_problem to *OUT_PROBLEM.  */
 
-exploded_path *
+std::unique_ptr<exploded_path>
 epath_finder::get_best_epath (const exploded_node *enode,
 			      const char *desc, unsigned diag_idx,
-			      feasibility_problem **out_problem)
+			      std::unique_ptr<feasibility_problem> *out_problem)
 {
   logger *logger = get_logger ();
   LOG_SCOPE (logger);
@@ -156,7 +160,8 @@ epath_finder::get_best_epath (const exploded_node *enode,
       /* Attempt to find the shortest feasible path using feasible_graph.  */
       if (logger)
 	logger->log ("trying to find shortest feasible path");
-      if (exploded_path *epath = explore_feasible_paths (enode, desc, diag_idx))
+      if (std::unique_ptr<exploded_path> epath
+	    = explore_feasible_paths (enode, desc, diag_idx))
 	{
 	  if (logger)
 	    logger->log ("accepting %qs at EN: %i, SN: %i (sd: %i)"
@@ -184,8 +189,8 @@ epath_finder::get_best_epath (const exploded_node *enode,
       if (logger)
 	logger->log ("trying to find shortest path ignoring feasibility");
       gcc_assert (m_sep);
-      exploded_path *epath
-	= new exploded_path (m_sep->get_shortest_path (enode));
+      std::unique_ptr<exploded_path> epath
+	= make_unique<exploded_path> (m_sep->get_shortest_path (enode));
       if (epath->feasible_p (logger, out_problem, m_eg.get_engine (), &m_eg))
 	{
 	  if (logger)
@@ -367,7 +372,7 @@ private:
      continue forever without reaching the target), or
    - getting monotonically closer to the termination threshold.  */
 
-exploded_path *
+std::unique_ptr<exploded_path>
 epath_finder::explore_feasible_paths (const exploded_node *target_enode,
 				      const char *desc, unsigned diag_idx)
 {
@@ -405,7 +410,7 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
      a limit.  */
 
   /* Set this if we find a feasible path to TARGET_ENODE.  */
-  exploded_path *best_path = NULL;
+  std::unique_ptr<exploded_path> best_path = NULL;
 
   {
     auto_checking_feasibility sentinel (mgr);
@@ -447,12 +452,13 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
    to TARGET_ENODE.  */
 
 bool
-epath_finder::process_worklist_item (feasible_worklist *worklist,
-				     const trimmed_graph &tg,
-				     feasible_graph *fg,
-				     const exploded_node *target_enode,
-				     unsigned diag_idx,
-				     exploded_path **out_best_path) const
+epath_finder::
+process_worklist_item (feasible_worklist *worklist,
+		       const trimmed_graph &tg,
+		       feasible_graph *fg,
+		       const exploded_node *target_enode,
+		       unsigned diag_idx,
+		       std::unique_ptr<exploded_path> *out_best_path) const
 {
   logger *logger = get_logger ();
 
@@ -658,14 +664,6 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
   gcc_assert (m_enode);
 }
 
-/* saved_diagnostic's dtor.  */
-
-saved_diagnostic::~saved_diagnostic ()
-{
-  delete m_best_epath;
-  delete m_problem;
-}
-
 bool
 saved_diagnostic::operator== (const saved_diagnostic &other) const
 {
@@ -808,8 +806,6 @@ saved_diagnostic::calc_best_epath (epath_finder *pf)
 {
   logger *logger = pf->get_logger ();
   LOG_SCOPE (logger);
-  delete m_best_epath;
-  delete m_problem;
   m_problem = NULL;
 
   m_best_epath = pf->get_best_epath (m_enode, m_d->get_kind (), m_idx,

@@ -38,7 +38,6 @@ public:
 		    state_machine::state_t state,
 		    std::unique_ptr<pending_diagnostic> d,
 		    unsigned idx);
-  ~saved_diagnostic ();
 
   bool operator== (const saved_diagnostic &other) const;
 
@@ -51,11 +50,11 @@ public:
 
   const feasibility_problem *get_feasibility_problem () const
   {
-    return m_problem;
+    return m_problem.get ();
   }
 
   bool calc_best_epath (epath_finder *pf);
-  const exploded_path *get_best_epath () const { return m_best_epath; }
+  const exploded_path *get_best_epath () const { return m_best_epath.get (); }
   unsigned get_epath_length () const;
 
   void add_duplicate (saved_diagnostic *other);
@@ -83,8 +82,8 @@ private:
   DISABLE_COPY_AND_ASSIGN (saved_diagnostic);
 
   unsigned m_idx;
-  exploded_path *m_best_epath; // owned
-  feasibility_problem *m_problem; // owned
+  std::unique_ptr<exploded_path> m_best_epath;
+  std::unique_ptr<feasibility_problem> m_problem;
 
   auto_vec<const saved_diagnostic *> m_duplicates;
   auto_delete_vec <pending_note> m_notes;
