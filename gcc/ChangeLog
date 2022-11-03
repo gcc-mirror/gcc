@@ -1,3 +1,32 @@
+2022-11-02  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc: Add zawrs extension.
+	* config/riscv/riscv-opts.h (MASK_ZAWRS): New.
+	(TARGET_ZAWRS): New.
+	* config/riscv/riscv.opt: New.
+
+2022-11-02  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	PR driver/93371
+	* gcc.cc (ASM_MAP): Honour -ffile-prefix-map.
+
+2022-11-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::contains_p): Fix signed zero handling.
+	(range_tests_signed_zeros): New test.
+
+2022-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* builtins.cc (mathfn_built_in_2): #undef HUGE_VAL, NAN.
+
+2022-11-02  Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/100866
+	* config/rs6000/altivec.md: (*altivec_vrl<VI_char>): Named to...
+	(altivec_vrl<VI_char>): ...this.
+	* config/rs6000/vsx.md (revb_<mode>): Call vspltish and vrlh when
+	target is Power8 and mode is V8HI.
+
 2022-11-01  David Seifert  <soap@gentoo.org>
 
 	* configure.ac: Add AC_CACHE_CHECK(..., gcc_cv_sys_sdt_h).

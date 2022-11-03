@@ -1,3 +1,12 @@
+2022-11-02  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/zawrs.c: New test.
+
+2022-11-02  Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/100866
+	* gcc.target/powerpc/pr100866-2.c: New.
+
 2022-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/abi/lambda-sig1-18.C: New.

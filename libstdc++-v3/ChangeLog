@@ -1,3 +1,43 @@
+2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/eh_globals.cc (constant_init::unused): Remove.
+	* src/c++11/system_error.cc (constant_init::unused): Remove.
+	* src/c++17/memory_resource.cc (constant_init::unused): Remove.
+
+2022-11-02  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (from_chars_impl): In the
+	ERANGE case, distinguish between a denormal result and true
+	underflow by checking if the return value is 0.
+
+2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::_M_invalid): Remove.
+
+2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__variant::_Multi_array::__untag_result):
+	Use pragma to suppress warning.
+
+2022-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libsupc++/compare (_Strong_order::_Fp_fmt): Add _Bfloat16.
+	(_Strong_order::_Bfloat16): New static data member.
+	(_Strong_order::_S_fp_fmt): Return _Bfloat16 for std::bfloat16_t.
+
+2022-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_hex): Drop const
+	from unbiased_exponent.  Canonicalize denormals such that they have
+	the leading bit set by shifting effective mantissa up and decreasing
+	unbiased_exponent.
+	(__floating_to_chars_shortest): Don't instantiate
+	__floating_to_chars_hex for float16_t either and use float instead.
+	* testsuite/20_util/to_chars/float.cc (float_to_chars_test_cases):
+	Adjust testcases for shortest hex denormals.
+	* testsuite/20_util/to_chars/double.cc (double_to_chars_test_cases):
+	Likewise.
+
 2022-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/charconv (__from_chars_float16_t,
