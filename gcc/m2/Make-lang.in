@@ -123,7 +123,7 @@ m2.pod: doc/gm2.texi $(TEXISRC)
 doc/m2.info: $(TEXISRC)
 	if test "x$(BUILD_INFO)" = xinfo; then \
 	  rm -f doc/m2.info*; \
-          $(MAKEINFO) --no-headers -I$(objdir)/m2 -I$(srcdir)/doc/include \
+          $(MAKEINFO) -I$(objdir)/m2 -I$(srcdir)/doc/include \
                       -o $@ $(srcdir)/doc/gm2.texi ; \
 	else true; fi
 
