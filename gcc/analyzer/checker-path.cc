@@ -1037,7 +1037,7 @@ rewind_event::rewind_event (const exploded_edge *eedge,
   m_rewind_info (rewind_info),
   m_eedge (eedge)
 {
-  gcc_assert (m_eedge->m_custom_info == m_rewind_info);
+  gcc_assert (m_eedge->m_custom_info.get () == m_rewind_info);
 }
 
 /* class rewind_from_longjmp_event : public rewind_event.  */

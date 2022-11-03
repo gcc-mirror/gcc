@@ -367,8 +367,7 @@ class exploded_edge : public dedge<eg_traits>
  public:
   exploded_edge (exploded_node *src, exploded_node *dest,
 		 const superedge *sedge,
-		 custom_edge_info *custom_info);
-  ~exploded_edge ();
+		 std::unique_ptr<custom_edge_info> custom_info);
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const final override;
   void dump_dot_label (pretty_printer *pp) const;
@@ -380,10 +379,8 @@ class exploded_edge : public dedge<eg_traits>
 
   /* NULL for most edges; will be non-NULL for special cases
      such as an unwind from a longjmp to a setjmp, or when
-     a signal is delivered to a signal-handler.
-
-     Owned by this class.  */
-  custom_edge_info *m_custom_info;
+     a signal is delivered to a signal-handler.  */
+  std::unique_ptr<custom_edge_info> m_custom_info;
 
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_edge);
@@ -801,7 +798,7 @@ public:
 				     exploded_node *enode_for_diag);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
 			   const superedge *sedge,
-			   custom_edge_info *custom = NULL);
+			   std::unique_ptr<custom_edge_info> custom = NULL);
 
   per_program_point_data *
   get_or_create_per_program_point_data (const program_point &);

@@ -1878,7 +1878,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
     {
       exploded_edge *eedge
 	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL,
-		       new rewind_info_t (tmp_setjmp_record, longjmp_call));
+		       make_unique<rewind_info_t> (tmp_setjmp_record, longjmp_call));
 
       /* For any diagnostics that were queued here (such as leaks) we want
 	 the checker_path to show the rewinding events after the "final event"
@@ -2089,17 +2089,10 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
 
 exploded_edge::exploded_edge (exploded_node *src, exploded_node *dest,
 			      const superedge *sedge,
-			      custom_edge_info *custom_info)
+			      std::unique_ptr<custom_edge_info> custom_info)
 : dedge<eg_traits> (src, dest), m_sedge (sedge),
-  m_custom_info (custom_info)
+  m_custom_info (std::move (custom_info))
 {
-}
-
-/* exploded_edge's dtor.  */
-
-exploded_edge::~exploded_edge ()
-{
-  delete m_custom_info;
 }
 
 /* Implementation of dedge::dump_dot vfunc for exploded_edge.
@@ -2709,12 +2702,12 @@ exploded_graph::add_function_entry (function *fun)
   program_state state (m_ext_state);
   state.push_frame (m_ext_state, fun);
 
-  custom_edge_info *edge_info = NULL;
+  std::unique_ptr<custom_edge_info> edge_info = NULL;
 
   if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (fun->decl)))
     {
       if (mark_params_as_tainted (&state, fun->decl, m_ext_state))
-	edge_info = new tainted_args_function_info (fun->decl);
+	edge_info = make_unique<tainted_args_function_info> (fun->decl);
     }
 
   if (!state.m_valid)
@@ -2722,12 +2715,9 @@ exploded_graph::add_function_entry (function *fun)
 
   exploded_node *enode = get_or_create_node (point, state, NULL);
   if (!enode)
-    {
-      delete edge_info;
-      return NULL;
-    }
+    return NULL;
 
-  add_edge (m_origin, enode, NULL, edge_info);
+  add_edge (m_origin, enode, NULL, std::move (edge_info));
 
   m_functions_with_enodes.add (fun);
 
@@ -2925,18 +2915,19 @@ exploded_graph::get_or_create_node (const program_point &point,
 
 /* Add an exploded_edge from SRC to DEST, recording its association
    with SEDGE (which may be NULL), and, if non-NULL, taking ownership
-   of REWIND_INFO.
+   of CUSTOM_INFO.
    Return the newly-created eedge.  */
 
 exploded_edge *
 exploded_graph::add_edge (exploded_node *src, exploded_node *dest,
 			  const superedge *sedge,
-			  custom_edge_info *custom_info)
+			    std::unique_ptr<custom_edge_info> custom_info)
 {
   if (get_logger ())
     get_logger ()->log ("creating edge EN: %i -> EN: %i",
 			src->m_index, dest->m_index);
-  exploded_edge *e = new exploded_edge (src, dest, sedge, custom_info);
+  exploded_edge *e = new exploded_edge (src, dest, sedge,
+					std::move (custom_info));
   digraph<eg_traits>::add_edge (e);
   return e;
 }
@@ -3183,9 +3174,8 @@ add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
 	}
     }
 
-  tainted_args_call_info *info
-    = new tainted_args_call_info (field, fndecl, loc);
-  eg->add_edge (eg->get_origin (), enode, NULL, info);
+  eg->add_edge (eg->get_origin (), enode, NULL,
+		make_unique<tainted_args_call_info> (field, fndecl, loc));
 }
 
 /* Callback for walk_tree for finding callbacks within initializers;
@@ -3782,7 +3772,7 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
 						     node);
 	  if (enode)
 	    add_edge (node,enode, NULL,
-		      new dynamic_call_info_t (call));
+		      make_unique<dynamic_call_info_t> (call));
 	  return true;
 	}
     }
@@ -4108,8 +4098,10 @@ exploded_graph::process_node (exploded_node *node)
 	   instances.  For example, to handle a "realloc" call, we
 	   might split into 3 states, for the "failure",
 	   "resizing in place", and "moving to a new buffer" cases.  */
-	for (auto edge_info : path_ctxt.get_custom_eedge_infos ())
+	for (auto edge_info_iter : path_ctxt.get_custom_eedge_infos ())
 	  {
+	    /* Take ownership of the edge infos from the path_ctxt.  */
+	    std::unique_ptr<custom_edge_info> edge_info (edge_info_iter);
 	    if (logger)
 	      {
 		logger->start_log_line ();
@@ -4136,18 +4128,12 @@ exploded_graph::process_node (exploded_node *node)
 		exploded_node *next2
 		  = get_or_create_node (next_point, bifurcated_new_state, node);
 		if (next2)
-		  {
-		    /* Take ownership of edge_info.  */
-		    add_edge (node, next2, NULL, edge_info);
-		  }
-		else
-		  delete edge_info;
+		  add_edge (node, next2, NULL, std::move (edge_info));
 	      }
 	    else
 	      {
 		if (logger)
 		  logger->log ("infeasible state, not adding node");
-		delete edge_info;
 	      }
 	  }
       }
@@ -4303,7 +4289,7 @@ exploded_graph::process_node (exploded_node *node)
 							   node);
 		if (enode)
 		  add_edge (node, enode, NULL,
-			    new dynamic_call_info_t (call, true));
+			    make_unique<dynamic_call_info_t> (call, true));
 	      }
 	  }
       }
