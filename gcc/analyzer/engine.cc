@@ -5953,10 +5953,10 @@ public:
     m_logger (logger)
   {}
 
-  void register_state_machine (state_machine *sm) final override
+  void register_state_machine (std::unique_ptr<state_machine> sm) final override
   {
     LOG_SCOPE (m_logger);
-    m_checkers->safe_push (sm);
+    m_checkers->safe_push (sm.release ());
   }
 
   void register_known_function (const char *name,

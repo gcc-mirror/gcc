@@ -410,7 +410,8 @@ gil_analyzer_init_cb (void *gcc_data, void */*user_data*/)
   LOG_SCOPE (iface->get_logger ());
   if (0)
     inform (input_location, "got here: gil_analyzer_init_cb");
-  iface->register_state_machine (new gil_state_machine (iface->get_logger ()));
+  iface->register_state_machine
+    (make_unique<gil_state_machine> (iface->get_logger ()));
 }
 
 } // namespace ana
