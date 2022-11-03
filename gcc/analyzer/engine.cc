@@ -282,7 +282,7 @@ public:
 		   const sm_state_map *old_smap,
 		   sm_state_map *new_smap,
 		   path_context *path_ctxt,
-		   stmt_finder *stmt_finder = NULL,
+		   const stmt_finder *stmt_finder = NULL,
 		   bool unknown_side_effects = false)
   : sm_context (sm_idx, sm),
     m_logger (eg.get_logger ()),
@@ -523,7 +523,7 @@ public:
   const sm_state_map *m_old_smap;
   sm_state_map *m_new_smap;
   path_context *m_path_ctxt;
-  stmt_finder *m_stmt_finder;
+  const stmt_finder *m_stmt_finder;
 
   /* Are we handling an external function with unknown side effects?  */
   bool m_unknown_side_effects;
@@ -538,9 +538,9 @@ public:
   leak_stmt_finder (const exploded_graph &eg, tree var)
   : m_eg (eg), m_var (var) {}
 
-  stmt_finder *clone () const final override
+  std::unique_ptr<stmt_finder> clone () const final override
   {
-    return new leak_stmt_finder (m_eg, m_var);
+    return make_unique<leak_stmt_finder> (m_eg, m_var);
   }
 
   const gimple *find_stmt (const exploded_path &epath)

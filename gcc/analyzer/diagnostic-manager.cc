@@ -635,7 +635,7 @@ epath_finder::dump_feasible_path (const exploded_node *target_enode,
 saved_diagnostic::saved_diagnostic (const state_machine *sm,
 				    const exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
-				    stmt_finder *stmt_finder,
+				    const stmt_finder *stmt_finder,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
@@ -662,7 +662,6 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
 
 saved_diagnostic::~saved_diagnostic ()
 {
-  delete m_stmt_finder;
   delete m_best_epath;
   delete m_problem;
 }
@@ -961,7 +960,7 @@ bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
 				    exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
-				    stmt_finder *finder,
+				    const stmt_finder *finder,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
@@ -1010,7 +1009,7 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 bool
 diagnostic_manager::add_diagnostic (exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
-				    stmt_finder *finder,
+				    const stmt_finder *finder,
 				    std::unique_ptr<pending_diagnostic> d)
 {
   gcc_assert (enode);

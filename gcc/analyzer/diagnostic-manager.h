@@ -33,7 +33,7 @@ public:
   saved_diagnostic (const state_machine *sm,
 		    const exploded_node *enode,
 		    const supernode *snode, const gimple *stmt,
-		    stmt_finder *stmt_finder,
+		    const stmt_finder *stmt_finder,
 		    tree var, const svalue *sval,
 		    state_machine::state_t state,
 		    std::unique_ptr<pending_diagnostic> d,
@@ -72,7 +72,7 @@ public:
   const exploded_node *m_enode;
   const supernode *m_snode;
   const gimple *m_stmt;
-  stmt_finder *m_stmt_finder;
+  std::unique_ptr<stmt_finder> m_stmt_finder;
   tree m_var;
   const svalue *m_sval;
   state_machine::state_t m_state;
@@ -113,7 +113,7 @@ public:
   bool add_diagnostic (const state_machine *sm,
 		       exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
-		       stmt_finder *finder,
+		       const stmt_finder *finder,
 		       tree var,
 		       const svalue *sval,
 		       state_machine::state_t state,
@@ -121,7 +121,7 @@ public:
 
   bool add_diagnostic (exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
-		       stmt_finder *finder,
+		       const stmt_finder *finder,
 		       std::unique_ptr<pending_diagnostic> d);
 
   void add_note (std::unique_ptr<pending_note> pn);

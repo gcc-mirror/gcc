@@ -991,7 +991,7 @@ class stmt_finder
 {
 public:
   virtual ~stmt_finder () {}
-  virtual stmt_finder *clone () const = 0;
+  virtual std::unique_ptr<stmt_finder> clone () const = 0;
   virtual const gimple *find_stmt (const exploded_path &epath) = 0;
 };
 
