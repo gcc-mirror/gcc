@@ -1,5 +1,5 @@
 // { dg-do run { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 // TODO: ICE on gimplify 16?
 

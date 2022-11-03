@@ -1,6 +1,6 @@
 // PR c++/73456
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 template<typename...> struct list {};
 

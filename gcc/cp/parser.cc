@@ -31450,10 +31450,11 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
   else if (cxx_dialect >= cxx11
 	   && cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
     decl = cp_parser_alias_declaration (parser);
-  else if (cxx_dialect >= cxx20 /* Implies flag_concept.  */
+  else if (flag_concepts
            && cp_lexer_next_token_is_keyword (parser->lexer, RID_CONCEPT)
-           && !cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_BOOL))
-    /* Allow 'concept bool' to be handled as per the TS.  */
+	   && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
+    /* -fconcept-ts 'concept bool' syntax is handled below, in
+	cp_parser_single_declaration.  */
     decl = cp_parser_concept_definition (parser);
   else
     {
