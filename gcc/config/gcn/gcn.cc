@@ -4927,7 +4927,6 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
   machine_mode scalar_mode = GET_MODE_INNER (mode);
   int vf = GET_MODE_NUNITS (mode);
   bool use_moves = (((unspec == UNSPEC_SMIN_DPP_SHR
-		      || unspec == UNSPEC_SMIN_DPP_SHR
 		      || unspec == UNSPEC_SMAX_DPP_SHR
 		      || unspec == UNSPEC_UMIN_DPP_SHR
 		      || unspec == UNSPEC_UMAX_DPP_SHR)
@@ -4936,7 +4935,6 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
 			&& scalar_mode == DFmode));
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
-		   : unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
 		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
 		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
 		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX
