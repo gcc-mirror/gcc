@@ -19,8 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -212,7 +214,7 @@ public:
   {
     return s != m_started;
   }
-  pending_diagnostic *on_leak (tree var) const final override;
+  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
   /* State for a va_list that the result of a va_start or va_copy.  */
   state_t m_started;
@@ -553,8 +555,8 @@ va_list_state_machine::check_for_ended_va_list (sm_context *sm_ctxt,
 {
   if (sm_ctxt->get_state (call, arg) == m_ended)
     sm_ctxt->warn (node, call, arg,
-		   new va_list_use_after_va_end (*this, arg, NULL_TREE,
-						 usage_fnname));
+		   make_unique<va_list_use_after_va_end>
+		     (*this, arg, NULL_TREE, usage_fnname));
 }
 
 /* Get the svalue with associated va_list_state_machine state for
@@ -629,10 +631,10 @@ va_list_state_machine::on_va_end (sm_context *sm_ctxt,
 /* Implementation of state_machine::on_leak vfunc for va_list_state_machine
    (for complaining about leaks of values in state 'started').  */
 
-pending_diagnostic *
+std::unique_ptr<pending_diagnostic>
 va_list_state_machine::on_leak (tree var) const
 {
-  return new va_list_leak (*this, NULL, var);
+  return make_unique<va_list_leak> (*this, NULL, var);
 }
 
 } // anonymous namespace
@@ -1000,17 +1002,19 @@ region_model::impl_call_va_arg (const call_details &cd)
 		  else
 		    {
 		      if (ctxt)
-			ctxt->warn (new va_arg_type_mismatch (va_list_tree,
-							      arg_reg,
-							      lhs_type,
-							      arg_type));
+			ctxt->warn (make_unique <va_arg_type_mismatch>
+				      (va_list_tree,
+				       arg_reg,
+				       lhs_type,
+				       arg_type));
 		      saw_problem = true;
 		    }
 		}
 	      else
 		{
 		  if (ctxt)
-		    ctxt->warn (new va_list_exhausted (va_list_tree, arg_reg));
+		    ctxt->warn (make_unique <va_list_exhausted> (va_list_tree,
+								 arg_reg));
 		  saw_problem = true;
 		}
 	    }

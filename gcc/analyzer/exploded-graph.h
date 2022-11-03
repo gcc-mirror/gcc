@@ -56,8 +56,8 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  bool warn (pending_diagnostic *d) final override;
-  void add_note (pending_note *pn) final override;
+  bool warn (std::unique_ptr<pending_diagnostic> d) final override;
+  void add_note (std::unique_ptr<pending_note> pn) final override;
   void on_svalue_leak (const svalue *) override;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) final override;

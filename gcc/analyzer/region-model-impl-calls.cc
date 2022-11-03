@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -54,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "analyzer/pending-diagnostic.h"
 #include "gimple-pretty-print.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -745,7 +747,7 @@ region_model::impl_call_putenv (const call_details &cd)
       break;
     case MEMSPACE_STACK:
       if (ctxt)
-	ctxt->warn (new putenv_of_auto_var (fndecl, reg));
+	ctxt->warn (make_unique<putenv_of_auto_var> (fndecl, reg));
       break;
     }
 }

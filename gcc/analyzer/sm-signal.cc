@@ -21,8 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -351,8 +353,8 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
 	  if (signal_unsafe_p (callee_fndecl))
 	    if (sm_ctxt->get_global_state () == m_in_signal_handler)
 	      sm_ctxt->warn (node, stmt, NULL_TREE,
-			     new signal_unsafe_call (*this, call,
-						     callee_fndecl));
+			     make_unique<signal_unsafe_call>
+			       (*this, call, callee_fndecl));
     }
 
   return false;

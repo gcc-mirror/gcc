@@ -36,13 +36,13 @@ public:
 		    stmt_finder *stmt_finder,
 		    tree var, const svalue *sval,
 		    state_machine::state_t state,
-		    pending_diagnostic *d,
+		    std::unique_ptr<pending_diagnostic> d,
 		    unsigned idx);
   ~saved_diagnostic ();
 
   bool operator== (const saved_diagnostic &other) const;
 
-  void add_note (pending_note *pn);
+  void add_note (std::unique_ptr<pending_note> pn);
 
   json::object *to_json () const;
 
@@ -76,7 +76,7 @@ public:
   tree m_var;
   const svalue *m_sval;
   state_machine::state_t m_state;
-  pending_diagnostic *m_d; // owned
+  std::unique_ptr<pending_diagnostic> m_d;
   const exploded_edge *m_trailing_eedge;
 
 private:
@@ -117,14 +117,14 @@ public:
 		       tree var,
 		       const svalue *sval,
 		       state_machine::state_t state,
-		       pending_diagnostic *d);
+		       std::unique_ptr<pending_diagnostic> d);
 
   bool add_diagnostic (exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
-		       pending_diagnostic *d);
+		       std::unique_ptr<pending_diagnostic> d);
 
-  void add_note (pending_note *pn);
+  void add_note (std::unique_ptr<pending_note> pn);
 
   void emit_saved_diagnostics (const exploded_graph &eg);
 

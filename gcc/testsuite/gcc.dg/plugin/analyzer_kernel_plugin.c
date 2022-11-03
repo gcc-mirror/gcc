@@ -1,6 +1,7 @@
 /* Proof-of-concept of a -fanalyzer plugin for the Linux kernel.  */
 /* { dg-options "-g" } */
 
+#define INCLUDE_MEMORY
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"

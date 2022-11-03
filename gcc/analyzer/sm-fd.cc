@@ -19,8 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -110,7 +112,7 @@ public:
 		     const svalue *rhs) const final override;
 
   bool can_purge_p (state_t s) const final override;
-  pending_diagnostic *on_leak (tree var) const final override;
+  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
   bool is_unchecked_fd_p (state_t s) const;
   bool is_valid_fd_p (state_t s) const;
@@ -885,9 +887,10 @@ fd_state_machine::check_for_fd_attrs (
 	    {
 
 	      sm_ctxt->warn (node, stmt, arg,
-			     new fd_use_after_close (*this, diag_arg,
-						     callee_fndecl, attr_name,
-						     arg_idx));
+			     make_unique<fd_use_after_close>
+			       (*this, diag_arg,
+				callee_fndecl, attr_name,
+				arg_idx));
 	      continue;
 	    }
 
@@ -895,9 +898,10 @@ fd_state_machine::check_for_fd_attrs (
 	    {
 	      if (!is_constant_fd_p (state))
 		sm_ctxt->warn (node, stmt, arg,
-			       new fd_use_without_check (*this, diag_arg,
-							callee_fndecl, attr_name,
-							arg_idx));
+			       make_unique<fd_use_without_check>
+				 (*this, diag_arg,
+				  callee_fndecl, attr_name,
+				  arg_idx));
 	    }
 
 	  switch (fd_attr_access_dir)
@@ -910,8 +914,11 @@ fd_state_machine::check_for_fd_attrs (
 		{
 		  sm_ctxt->warn (
 		      node, stmt, arg,
-		      new fd_access_mode_mismatch (*this, diag_arg, DIRS_WRITE,
-						   callee_fndecl, attr_name, arg_idx));
+		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
+							    DIRS_WRITE,
+							    callee_fndecl,
+							    attr_name,
+							    arg_idx));
 		}
 
 	      break;
@@ -921,8 +928,11 @@ fd_state_machine::check_for_fd_attrs (
 		{
 		  sm_ctxt->warn (
 		      node, stmt, arg,
-		      new fd_access_mode_mismatch (*this, diag_arg, DIRS_READ,
-						   callee_fndecl, attr_name, arg_idx));
+		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
+							    DIRS_READ,
+							    callee_fndecl,
+							    attr_name,
+							    arg_idx));
 		}
 
 	      break;
@@ -963,7 +973,8 @@ fd_state_machine::on_open (sm_context *sm_ctxt, const supernode *node,
     }
   else
     {
-      sm_ctxt->warn (node, stmt, NULL_TREE, new fd_leak (*this, NULL_TREE));
+      sm_ctxt->warn (node, stmt, NULL_TREE,
+		     make_unique<fd_leak> (*this, NULL_TREE));
     }
 }
 
@@ -975,7 +986,8 @@ fd_state_machine::on_creat (sm_context *sm_ctxt, const supernode *node,
   if (lhs)
     sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked_write_only);
   else
-    sm_ctxt->warn (node, stmt, NULL_TREE, new fd_leak (*this, NULL_TREE));
+    sm_ctxt->warn (node, stmt, NULL_TREE,
+		   make_unique<fd_leak> (*this, NULL_TREE));
 }
 
 void
@@ -1021,7 +1033,8 @@ fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
 	{
 	  sm_ctxt->warn (
 	      node, stmt, arg_2,
-	      new fd_use_without_check (*this, diag_arg_2, callee_fndecl));
+	      make_unique<fd_use_without_check> (*this, diag_arg_2,
+						 callee_fndecl));
 	  return;
 	}
       /* dup2 returns value of its second argument on success.But, the
@@ -1059,7 +1072,8 @@ fd_state_machine::on_close (sm_context *sm_ctxt, const supernode *node,
 
   if (is_closed_fd_p (state))
     {
-      sm_ctxt->warn (node, stmt, arg, new fd_double_close (*this, diag_arg));
+      sm_ctxt->warn (node, stmt, arg,
+		     make_unique<fd_double_close> (*this, diag_arg));
       sm_ctxt->set_next_state (stmt, arg, m_stop);
     }
 }
@@ -1091,7 +1105,8 @@ fd_state_machine::check_for_open_fd (
   if (is_closed_fd_p (state))
     {
       sm_ctxt->warn (node, stmt, arg,
-		     new fd_use_after_close (*this, diag_arg, callee_fndecl));
+		     make_unique<fd_use_after_close> (*this, diag_arg,
+						      callee_fndecl));
     }
 
   else
@@ -1101,7 +1116,8 @@ fd_state_machine::check_for_open_fd (
 	  if (!is_constant_fd_p (state))
 	    sm_ctxt->warn (
 		node, stmt, arg,
-		new fd_use_without_check (*this, diag_arg, callee_fndecl));
+		make_unique<fd_use_without_check> (*this, diag_arg,
+						   callee_fndecl));
 	}
       switch (callee_fndecl_dir)
 	{
@@ -1112,7 +1128,7 @@ fd_state_machine::check_for_open_fd (
 	    {
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
-			     new fd_access_mode_mismatch (
+			     make_unique<fd_access_mode_mismatch> (
 				 *this, diag_arg, DIRS_WRITE, callee_fndecl));
 	    }
 
@@ -1123,7 +1139,7 @@ fd_state_machine::check_for_open_fd (
 	    {
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
-			     new fd_access_mode_mismatch (
+			     make_unique<fd_access_mode_mismatch> (
 				 *this, diag_arg, DIRS_READ, callee_fndecl));
 	    }
 	  break;
@@ -1195,10 +1211,10 @@ fd_state_machine::can_purge_p (state_t s) const
     return true;
 }
 
-pending_diagnostic *
+std::unique_ptr<pending_diagnostic>
 fd_state_machine::on_leak (tree var) const
 {
-  return new fd_leak (*this, var);
+  return make_unique<fd_leak> (*this, var);
 }
 } // namespace
 

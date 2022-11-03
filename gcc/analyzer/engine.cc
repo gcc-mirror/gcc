@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "gcc-rich-location.h"
@@ -114,35 +115,29 @@ impl_region_model_context (program_state *state,
 }
 
 bool
-impl_region_model_context::warn (pending_diagnostic *d)
+impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d)
 {
   LOG_FUNC (get_logger ());
   if (m_stmt == NULL && m_stmt_finder == NULL)
     {
       if (get_logger ())
 	get_logger ()->log ("rejecting diagnostic: no stmt");
-      delete d;
       return false;
     }
   if (m_eg)
     return m_eg->get_diagnostic_manager ().add_diagnostic
       (m_enode_for_diag, m_enode_for_diag->get_supernode (),
-       m_stmt, m_stmt_finder, d);
+       m_stmt, m_stmt_finder, std::move (d));
   else
-    {
-      delete d;
-      return false;
-    }
+    return false;
 }
 
 void
-impl_region_model_context::add_note (pending_note *pn)
+impl_region_model_context::add_note (std::unique_ptr<pending_note> pn)
 {
   LOG_FUNC (get_logger ());
   if (m_eg)
-    m_eg->get_diagnostic_manager ().add_note (pn);
-  else
-    delete pn;
+    m_eg->get_diagnostic_manager ().add_note (std::move (pn));
 }
 
 void
@@ -401,10 +396,11 @@ public:
   }
 
   void warn (const supernode *snode, const gimple *stmt,
-	     tree var, pending_diagnostic *d) final override
+	     tree var,
+	     std::unique_ptr<pending_diagnostic> d) final override
   {
     LOG_FUNC (get_logger ());
-    gcc_assert (d); // take ownership
+    gcc_assert (d);
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
 
@@ -416,14 +412,15 @@ public:
 	 : m_old_smap->get_global_state ());
     m_eg.get_diagnostic_manager ().add_diagnostic
       (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
-       var, var_old_sval, current, d);
+       var, var_old_sval, current, std::move (d));
   }
 
   void warn (const supernode *snode, const gimple *stmt,
-	     const svalue *sval, pending_diagnostic *d) final override
+	     const svalue *sval,
+	     std::unique_ptr<pending_diagnostic> d) final override
   {
     LOG_FUNC (get_logger ());
-    gcc_assert (d); // take ownership
+    gcc_assert (d);
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL, NULL);
 
@@ -433,7 +430,7 @@ public:
 	 : m_old_smap->get_global_state ());
     m_eg.get_diagnostic_manager ().add_diagnostic
       (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
-       NULL_TREE, sval, current, d);
+       NULL_TREE, sval, current, std::move (d));
   }
 
   /* Hook for picking more readable trees for SSA names of temporaries,
@@ -864,12 +861,12 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
     }
 
   tree leaked_tree_for_diag = fixup_tree_for_diagnostic (leaked_tree);
-  pending_diagnostic *pd = sm.on_leak (leaked_tree_for_diag);
+  std::unique_ptr<pending_diagnostic> pd = sm.on_leak (leaked_tree_for_diag);
   if (pd)
     m_eg->get_diagnostic_manager ().add_diagnostic
       (&sm, m_enode_for_diag, m_enode_for_diag->get_supernode (),
        m_stmt, &stmt_finder,
-       leaked_tree_for_diag, sval, state, pd);
+       leaked_tree_for_diag, sval, state, std::move (pd));
 }
 
 /* Implementation of region_model_context::on_condition vfunc.
@@ -1845,7 +1842,9 @@ exploded_node::on_longjmp (exploded_graph &eg,
   /* Verify that the setjmp's call_stack hasn't been popped.  */
   if (!valid_longjmp_stack_p (longjmp_point, setjmp_point))
     {
-      ctxt->warn (new stale_jmp_buf (setjmp_call, longjmp_call, setjmp_point));
+      ctxt->warn (make_unique<stale_jmp_buf> (setjmp_call,
+					      longjmp_call,
+					      setjmp_point));
       return;
     }
 
@@ -4243,7 +4242,7 @@ exploded_graph::process_node (exploded_node *node)
 			const svalue *fn_ptr_sval
 			  = model->get_rvalue (fn_ptr, &ctxt);
 			if (fn_ptr_sval->all_zeroes_p ())
-			  ctxt.warn (new jump_through_null (call));
+			  ctxt.warn (make_unique<jump_through_null> (call));
 		      }
 
 		    /* An unknown function or a special function was called

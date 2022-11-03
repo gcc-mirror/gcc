@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -638,14 +639,14 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
-				    pending_diagnostic *d,
+				    std::unique_ptr<pending_diagnostic> d,
 				    unsigned idx)
 : m_sm (sm), m_enode (enode), m_snode (snode), m_stmt (stmt),
  /* stmt_finder could be on-stack; we want our own copy that can
     outlive that.  */
   m_stmt_finder (stmt_finder ? stmt_finder->clone () : NULL),
   m_var (var), m_sval (sval), m_state (state),
-  m_d (d), m_trailing_eedge (NULL),
+  m_d (std::move (d)), m_trailing_eedge (NULL),
   m_idx (idx),
   m_best_epath (NULL), m_problem (NULL),
   m_notes ()
@@ -662,7 +663,6 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
 saved_diagnostic::~saved_diagnostic ()
 {
   delete m_stmt_finder;
-  delete m_d;
   delete m_best_epath;
   delete m_problem;
 }
@@ -689,10 +689,10 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 /* Add PN to this diagnostic, taking ownership of it.  */
 
 void
-saved_diagnostic::add_note (pending_note *pn)
+saved_diagnostic::add_note (std::unique_ptr<pending_note> pn)
 {
   gcc_assert (pn);
-  m_notes.safe_push (pn);
+  m_notes.safe_push (pn.release ());
 }
 
 /* Return a new json::object of the form
@@ -896,7 +896,7 @@ public:
 
   pending_diagnostic *get_pending_diagnostic () const
   {
-    return m_sd.m_d;
+    return m_sd.m_d.get ();
   }
 
   bool reachable_from_p (const exploded_node *src_enode) const
@@ -955,8 +955,7 @@ diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 }
 
 /* Queue pending_diagnostic D at ENODE for later emission.
-   Return true/false signifying if the diagnostic was actually added.
-   Take ownership of D (or delete it).  */
+   Return true/false signifying if the diagnostic was actually added.  */
 
 bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
@@ -966,7 +965,7 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 				    tree var,
 				    const svalue *sval,
 				    state_machine::state_t state,
-				    pending_diagnostic *d)
+				    std::unique_ptr<pending_diagnostic> d)
 {
   LOG_FUNC (get_logger ());
 
@@ -987,7 +986,6 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 	  if (get_logger ())
 	    get_logger ()->log ("rejecting disabled warning %qs",
 				d->get_kind ());
-	  delete d;
 	  m_num_disabled_diagnostics++;
 	  return false;
 	}
@@ -995,13 +993,13 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
 
   saved_diagnostic *sd
     = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
-			    state, d, m_saved_diagnostics.length ());
+			    state, std::move (d), m_saved_diagnostics.length ());
   m_saved_diagnostics.safe_push (sd);
   enode->add_diagnostic (sd);
   if (get_logger ())
     log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
-	 snode->m_index, enode->m_index, d->get_kind ());
+	 snode->m_index, enode->m_index, sd->m_d->get_kind ());
   return true;
 }
 
@@ -1013,17 +1011,17 @@ bool
 diagnostic_manager::add_diagnostic (exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
-				    pending_diagnostic *d)
+				    std::unique_ptr<pending_diagnostic> d)
 {
   gcc_assert (enode);
   return add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE,
-			 NULL, 0, d);
+			 NULL, 0, std::move (d));
 }
 
 /* Add PN to the most recent saved_diagnostic.  */
 
 void
-diagnostic_manager::add_note (pending_note *pn)
+diagnostic_manager::add_note (std::unique_ptr<pending_note> pn)
 {
   LOG_FUNC (get_logger ());
   gcc_assert (pn);
@@ -1031,7 +1029,7 @@ diagnostic_manager::add_note (pending_note *pn)
   /* Get most recent saved_diagnostic.  */
   gcc_assert (m_saved_diagnostics.length () > 0);
   saved_diagnostic *sd = m_saved_diagnostics[m_saved_diagnostics.length () - 1];
-  sd->add_note (pn);
+  sd->add_note (std::move (pn));
 }
 
 /* Return a new json::object of the form
@@ -1386,13 +1384,13 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   emission_path.inject_any_inlined_call_events (get_logger ());
 
-  emission_path.prepare_for_emission (sd.m_d);
+  emission_path.prepare_for_emission (sd.m_d.get ());
 
   location_t loc
     = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
 
   /* Allow the pending_diagnostic to fix up the locations of events.  */
-  emission_path.fixup_locations (sd.m_d);
+  emission_path.fixup_locations (sd.m_d.get ());
 
   gcc_rich_location rich_loc (loc);
   rich_loc.set_path (&emission_path);
@@ -1783,14 +1781,12 @@ struct null_assignment_sm_context : public sm_context
   }
 
   void warn (const supernode *, const gimple *,
-	     tree, pending_diagnostic *d) final override
+	     tree, std::unique_ptr<pending_diagnostic>) final override
   {
-    delete d;
   }
   void warn (const supernode *, const gimple *,
-	     const svalue *, pending_diagnostic *d) final override
+	     const svalue *, std::unique_ptr<pending_diagnostic>) final override
   {
-    delete d;
   }
 
   tree get_diagnostic_tree (tree expr) final override
