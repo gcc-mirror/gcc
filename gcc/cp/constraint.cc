@@ -2301,6 +2301,9 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
 {
   local_specialization_stack stack (lss_copy);
 
+  /* We need to check access during the substitution.  */
+  deferring_access_check_sentinel acs (dk_no_deferred);
+
   /* A requires-expression is an unevaluated context.  */
   cp_unevaluated u;
 
