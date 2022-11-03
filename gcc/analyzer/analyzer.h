@@ -324,6 +324,8 @@ extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);
+extern bool is_pipe_call_p (const_tree fndecl, const char *funcname,
+			    const gcall *call, unsigned int num_args);
 
 extern const char *get_user_facing_name (const gcall *call);
 

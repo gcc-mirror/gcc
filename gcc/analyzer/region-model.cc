@@ -2315,8 +2315,8 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
-      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
 	{
 	  /* Handle in "on_call_post"; bail now so that fd array
 	     is left untouched so that we can detect use-of-uninit
@@ -2403,8 +2403,8 @@ region_model::on_call_post (const gcall *call,
 	  impl_call_operator_delete (cd);
 	  return;
 	}
-      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
 	{
 	  impl_call_pipe (cd);
 	  return;
