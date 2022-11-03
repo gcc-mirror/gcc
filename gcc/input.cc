@@ -949,10 +949,11 @@ location_get_source_line (const char *file_path, int line)
   return char_span (buffer, len);
 }
 
-/* Return the source text between two locations.  */
+/* Return a copy of the source text between two locations.  The caller is
+   responsible for freeing the return value.  */
 
 char *
-get_source (location_t start, location_t end)
+get_source_text_between (location_t start, location_t end)
 {
   expanded_location expstart =
     expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
