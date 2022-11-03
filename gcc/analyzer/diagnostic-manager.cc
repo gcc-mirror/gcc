@@ -1559,15 +1559,16 @@ public:
 
     int stack_depth = src_stack_depth;
 
-    m_emission_path->add_event (new state_change_event (supernode,
-							stmt,
-							stack_depth,
-							sm,
-							NULL,
-							src_sm_val,
-							dst_sm_val,
-							NULL,
-							dst_state));
+    m_emission_path->add_event
+      (make_unique<state_change_event> (supernode,
+					stmt,
+					stack_depth,
+					sm,
+					NULL,
+					src_sm_val,
+					dst_sm_val,
+					NULL,
+					dst_state));
     return false;
   }
 
@@ -1602,15 +1603,16 @@ public:
     if (!stmt)
       return false;
 
-    m_emission_path->add_event (new state_change_event (supernode,
-							stmt,
-							stack_depth,
-							sm,
-							sval,
-							src_sm_val,
-							dst_sm_val,
-							dst_origin_sval,
-							dst_state));
+    m_emission_path->add_event
+      (make_unique<state_change_event> (supernode,
+					stmt,
+					stack_depth,
+					sm,
+					sval,
+					src_sm_val,
+					dst_sm_val,
+					dst_origin_sval,
+					dst_state));
     return false;
   }
 
@@ -1743,14 +1745,15 @@ struct null_assignment_sm_context : public sm_context
     const supernode *supernode = m_point->get_supernode ();
     int stack_depth = m_point->get_stack_depth ();
 
-    m_emission_path->add_event (new state_change_event (supernode,
-							m_stmt,
-							stack_depth,
-							m_sm,
-							var_new_sval,
-							from, to,
-							NULL,
-							*m_new_state));
+    m_emission_path->add_event
+      (make_unique<state_change_event> (supernode,
+					m_stmt,
+					stack_depth,
+					m_sm,
+					var_new_sval,
+					from, to,
+					NULL,
+					*m_new_state));
   }
 
   void set_next_state (const gimple *stmt,
@@ -1765,14 +1768,15 @@ struct null_assignment_sm_context : public sm_context
     const supernode *supernode = m_point->get_supernode ();
     int stack_depth = m_point->get_stack_depth ();
 
-    m_emission_path->add_event (new state_change_event (supernode,
-							m_stmt,
-							stack_depth,
-							m_sm,
-							sval,
-							from, to,
-							NULL,
-							*m_new_state));
+    m_emission_path->add_event
+      (make_unique<state_change_event> (supernode,
+					m_stmt,
+					stack_depth,
+					m_sm,
+					sval,
+					from, to,
+					NULL,
+					*m_new_state));
   }
 
   void warn (const supernode *, const gimple *,
@@ -1907,7 +1911,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
       if (dst_point.get_supernode ()->entry_p ())
 	{
 	  emission_path->add_event
-	    (new function_entry_event
+	    (make_unique<function_entry_event>
 	     (dst_point.get_supernode ()->get_start_location (),
 	      dst_point.get_fndecl (),
 	      dst_stack_depth));
@@ -1943,16 +1947,16 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	const gcall *call = dyn_cast <const gcall *> (stmt);
 	if (call && is_setjmp_call_p (call))
 	  emission_path->add_event
-	    (new setjmp_event (stmt->location,
-			       dst_node,
-			       dst_point.get_fndecl (),
-			       dst_stack_depth,
-			       call));
+	    (make_unique<setjmp_event> (stmt->location,
+					dst_node,
+					dst_point.get_fndecl (),
+					dst_stack_depth,
+					call));
 	else
 	  emission_path->add_event
-	    (new statement_event (stmt,
-				  dst_point.get_fndecl (),
-				  dst_stack_depth, dst_state));
+	    (make_unique<statement_event> (stmt,
+					   dst_point.get_fndecl (),
+					   dst_stack_depth, dst_state));
 
 	/* Create state change events for assignment to NULL.
 	   Iterate through the stmts in dst_enode, adding state change
@@ -2042,11 +2046,12 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		 "this path would have been rejected as infeasible"
 		 " at this edge: ");
       pb.get_feasibility_problem ()->dump_to_pp (&pp);
-      emission_path->add_event (new precanned_custom_event
-				(dst_point.get_location (),
-				 dst_point.get_fndecl (),
-				 dst_stack_depth,
-				 pp_formatted_text (&pp)));
+      emission_path->add_event
+	(make_unique<precanned_custom_event>
+	 (dst_point.get_location (),
+	  dst_point.get_fndecl (),
+	  dst_stack_depth,
+	  pp_formatted_text (&pp)));
     }
 }
 
@@ -2157,17 +2162,18 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
     case SUPEREDGE_CFG_EDGE:
       {
 	emission_path->add_event
-	  (new start_cfg_edge_event (eedge,
-			       (last_stmt
-				? last_stmt->location
-				: UNKNOWN_LOCATION),
-			       src_point.get_fndecl (),
-			       src_stack_depth));
+	  (make_unique<start_cfg_edge_event> (eedge,
+					      (last_stmt
+					       ? last_stmt->location
+					       : UNKNOWN_LOCATION),
+					      src_point.get_fndecl (),
+					      src_stack_depth));
 	emission_path->add_event
-	  (new end_cfg_edge_event (eedge,
-				   dst_point.get_supernode ()->get_start_location (),
-				   dst_point.get_fndecl (),
-				   dst_stack_depth));
+	  (make_unique<end_cfg_edge_event>
+	    (eedge,
+	     dst_point.get_supernode ()->get_start_location (),
+	     dst_point.get_fndecl (),
+	     dst_stack_depth));
       }
       break;
 
@@ -2180,12 +2186,12 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
 	/* TODO: add a subclass for this, or generate events for the
 	   summary.  */
 	emission_path->add_event
-	  (new debug_event ((last_stmt
-			     ? last_stmt->location
-			     : UNKNOWN_LOCATION),
-			    src_point.get_fndecl (),
-			    src_stack_depth,
-			    "call summary"));
+	  (make_unique<debug_event> ((last_stmt
+				      ? last_stmt->location
+				      : UNKNOWN_LOCATION),
+				     src_point.get_fndecl (),
+				     src_stack_depth,
+				     "call summary"));
       }
       break;
 
@@ -2196,12 +2202,12 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
 
 	const gcall *call_stmt = return_edge->get_call_stmt ();
 	emission_path->add_event
-	  (new return_event (eedge,
-			     (call_stmt
-			      ? call_stmt->location
-			      : UNKNOWN_LOCATION),
-			     dst_point.get_fndecl (),
-			     dst_stack_depth));
+	  (make_unique<return_event> (eedge,
+				      (call_stmt
+				       ? call_stmt->location
+				       : UNKNOWN_LOCATION),
+				      dst_point.get_fndecl (),
+				      dst_stack_depth));
       }
       break;
     }

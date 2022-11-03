@@ -788,13 +788,13 @@ public:
 	  = get_num_variadic_arguments (dst_node->get_function ()->decl,
 					call_stmt);
 	emission_path->add_event
-	  (new va_arg_call_event (eedge,
-				  (last_stmt
-				   ? last_stmt->location
-				   : UNKNOWN_LOCATION),
-				  src_point.get_fndecl (),
-				  src_stack_depth,
-				  num_variadic_arguments));
+	  (make_unique<va_arg_call_event> (eedge,
+					   (last_stmt
+					    ? last_stmt->location
+					    : UNKNOWN_LOCATION),
+					   src_point.get_fndecl (),
+					   src_stack_depth,
+					   num_variadic_arguments));
       }
     else
       pending_diagnostic::add_call_event (eedge, emission_path);

@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/exploded-graph.h"
 #include "diagnostic-path.h"
 #include "analyzer/checker-path.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -178,12 +179,12 @@ pending_diagnostic::add_call_event (const exploded_edge &eedge,
   const int src_stack_depth = src_point.get_stack_depth ();
   const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
   emission_path->add_event
-    (new call_event (eedge,
-		     (last_stmt
-		      ? last_stmt->location
-		      : UNKNOWN_LOCATION),
-		     src_point.get_fndecl (),
-		     src_stack_depth));
+    (make_unique<call_event> (eedge,
+			      (last_stmt
+			       ? last_stmt->location
+			       : UNKNOWN_LOCATION),
+			      src_point.get_fndecl (),
+			      src_stack_depth));
 }
 
 } // namespace ana

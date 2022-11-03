@@ -1772,7 +1772,8 @@ public:
 	   src_point.get_fndecl (),
 	   src_stack_depth,
 	   "stack frame is popped here, invalidating saved environment");
-	emission_path->add_event (m_stack_pop_event);
+	emission_path->add_event
+	  (std::unique_ptr<custom_event> (m_stack_pop_event));
 	return false;
       }
     return false;
@@ -2015,19 +2016,21 @@ dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
   const int dest_stack_depth = dest_point.get_stack_depth ();
 
   if (m_is_returning_call)
-    emission_path->add_event (new return_event (eedge,
-						(m_dynamic_call
-						 ? m_dynamic_call->location
-						 : UNKNOWN_LOCATION),
-						dest_point.get_fndecl (),
-						dest_stack_depth));
+    emission_path->add_event
+      (make_unique<return_event> (eedge,
+				  (m_dynamic_call
+				   ? m_dynamic_call->location
+				   : UNKNOWN_LOCATION),
+				  dest_point.get_fndecl (),
+				  dest_stack_depth));
   else
-    emission_path->add_event (new call_event (eedge,
-					      (m_dynamic_call
-					       ? m_dynamic_call->location
-					       : UNKNOWN_LOCATION),
-					      src_point.get_fndecl (),
-					      src_stack_depth));
+    emission_path->add_event
+      (make_unique<call_event> (eedge,
+				(m_dynamic_call
+				 ? m_dynamic_call->location
+				 : UNKNOWN_LOCATION),
+				src_point.get_fndecl (),
+				src_stack_depth));
 }
 
 /* class rewind_info_t : public custom_edge_info.  */
@@ -2072,12 +2075,12 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
   const int dst_stack_depth = dst_point.get_stack_depth ();
 
   emission_path->add_event
-    (new rewind_from_longjmp_event
+    (make_unique<rewind_from_longjmp_event>
      (&eedge, get_longjmp_call ()->location,
       src_point.get_fndecl (),
       src_stack_depth, this));
   emission_path->add_event
-    (new rewind_to_setjmp_event
+    (make_unique<rewind_to_setjmp_event>
      (&eedge, get_setjmp_call ()->location,
       dst_point.get_fndecl (),
       dst_stack_depth, this));
@@ -2666,7 +2669,7 @@ public:
 			   const exploded_edge &) const final override
   {
     emission_path->add_event
-      (new tainted_args_function_custom_event
+      (make_unique<tainted_args_function_custom_event>
        (DECL_SOURCE_LOCATION (m_fndecl), m_fndecl, 0));
   }
 
@@ -3111,14 +3114,15 @@ public:
     /* Show the field in the struct declaration, e.g.
        "(1) field 'store' is marked with '__attribute__((tainted_args))'"  */
     emission_path->add_event
-      (new tainted_args_field_custom_event (m_field));
+      (make_unique<tainted_args_field_custom_event> (m_field));
 
     /* Show the callback in the initializer
        e.g.
        "(2) function 'gadget_dev_desc_UDC_store' used as initializer
        for field 'store' marked with '__attribute__((tainted_args))'".  */
     emission_path->add_event
-      (new tainted_args_callback_custom_event (m_loc, m_fndecl, 0, m_field));
+      (make_unique<tainted_args_callback_custom_event> (m_loc, m_fndecl,
+							0, m_field));
   }
 
 private:

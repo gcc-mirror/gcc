@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/exploded-graph.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -1262,16 +1263,16 @@ checker_path::add_region_creation_events (const region *reg,
     if (const svalue *capacity_sval = model->get_capacity (reg))
       capacity = model->get_representative_tree (capacity_sval);
 
-  add_event (new region_creation_event (reg, capacity, RCE_MEM_SPACE,
-					loc, fndecl, depth));
+  add_event (make_unique<region_creation_event> (reg, capacity, RCE_MEM_SPACE,
+						 loc, fndecl, depth));
 
   if (capacity)
-    add_event (new region_creation_event (reg, capacity, RCE_CAPACITY,
-					  loc, fndecl, depth));
+    add_event (make_unique<region_creation_event> (reg, capacity, RCE_CAPACITY,
+						   loc, fndecl, depth));
 
   if (debug)
-    add_event (new region_creation_event (reg, capacity, RCE_DEBUG,
-					  loc, fndecl, depth));
+    add_event (make_unique<region_creation_event> (reg, capacity, RCE_DEBUG,
+						   loc, fndecl, depth));
 }
 
 /* Add a warning_event to the end of this path.  */
@@ -1281,12 +1282,12 @@ checker_path::add_final_event (const state_machine *sm,
 			       const exploded_node *enode, const gimple *stmt,
 			       tree var, state_machine::state_t state)
 {
-  checker_event *end_of_path
-    = new warning_event (get_stmt_location (stmt, enode->get_function ()),
-			 enode->get_function ()->decl,
-			 enode->get_stack_depth (),
-			 sm, var, state);
-  add_event (end_of_path);
+  add_event
+    (make_unique<warning_event> (get_stmt_location (stmt,
+						    enode->get_function ()),
+				 enode->get_function ()->decl,
+				 enode->get_stack_depth (),
+				 sm, var, state));
 }
 
 void
