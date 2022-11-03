@@ -390,19 +390,23 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   for (i = 0; i < attrnum; i++)
     {
       char *attr = attrs[i];
-      char *suffix = XNEWVEC (char, strlen (attr) + 1);
 
-      create_new_asm_name (attr, suffix);
       /* Create new target clone.  */
       tree attributes = make_attribute ("target", attr,
 					DECL_ATTRIBUTES (node->decl));
 
+      char *suffix = XNEWVEC (char, strlen (attr) + 1);
+      create_new_asm_name (attr, suffix);
       cgraph_node *new_node = create_target_clone (node, definition, suffix,
 						   attributes);
-      if (new_node == NULL)
-	return false;
-      new_node->local = false;
       XDELETEVEC (suffix);
+      if (new_node == NULL)
+	{
+	  XDELETEVEC (attrs);
+	  XDELETEVEC (attr_str);
+	  return false;
+	}
+      new_node->local = false;
 
       decl2_v = new_node->function_version ();
       if (decl2_v != NULL)
