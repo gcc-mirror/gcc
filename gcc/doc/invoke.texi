@@ -3132,6 +3132,85 @@ of a loop too many expressions need to be evaluated, the resulting constexpr
 evaluation might take too long.
 The default is 33554432 (1<<25).
 
+@item -fcontracts
+@opindex fcontracts
+Enable experimental support for the C++ Contracts feature, as briefly
+added to and then removed from the C++20 working paper (N4820).  The
+implementation also includes proposed enhancements from papers P1290,
+P1332, and P1429.  This functionality is intended mostly for those
+interested in experimentation towards refining the feature to get it
+into shape for a future C++ standard.
+
+On violation of a checked contract, the violation handler is called.
+Users can replace the violation handler by defining
+@smallexample
+void handle_contract_violation (const std::experimental::contract_violation&);
+@end smallexample
+
+There are different sets of additional flags that can be used together
+to specify which contracts will be checked and how, for N4820
+contracts, P1332 contracts, or P1429 contracts; these sets cannot be
+used together.
+
+@table @gcctabopt
+@item -fcontract-mode=[on|off]
+@opindex fcontract-mode
+Control whether any contracts have any semantics at all.  Defaults to on.
+
+@item -fcontract-assumption-mode=[on|off]
+@opindex fcontract-assumption-mode
+[N4820] Control whether contracts with level @samp{axiom}
+should have the assume semantic.  Defaults to on.
+
+@item -fcontract-build-level=[off|default|audit]
+@opindex fcontract-build-level
+[N4820] Specify which level of contracts to generate checks
+for.  Defaults to @samp{default}.
+
+@item -fcontract-continuation-mode=[on|off]
+@opindex fcontract-continuation-mode
+[N4820] Control whether to allow the program to continue executing
+after a contract violation.  That is, do checked contracts have the
+@samp{maybe} semantic described below rather than the @samp{never}
+semantic.  Defaults to off.
+
+@item -fcontract-role=<name>:<default>,<audit>,<axiom>
+@opindex fcontract-role
+[P1332] Specify the concrete semantics for each contract level
+of a particular contract role.
+
+@item -fcontract-semantic=[default|audit|axiom]:<semantic>
+[P1429] Specify the concrete semantic for a particular
+contract level.
+
+@item -fcontract-strict-declarations=[on|off]
+@opindex fcontract-strict-declarations
+Control whether to reject adding contracts to a function after its
+first declaration.  Defaults to off.
+@end table
+
+The possible concrete semantics for that can be specified with
+@samp{-fcontract-role} or @samp{-fcontract-semantic} are:
+
+@table @code
+@item ignore
+This contract has no effect.
+
+@item assume
+This contract is treated like C++23 @code{[[assume]]}.
+
+@item check_never_continue
+@itemx never
+@itemx abort
+This contract is checked.  If it fails, the violation handler is
+called.  If the handler returns, @code{std::terminate} is called.
+
+@item check_maybe_continue
+@itemx maybe
+This contract is checked.  If it fails, the violation handler is
+called.  If the handler returns, execution continues normally.
+@end table
+
 @item -fcoroutines
 @opindex fcoroutines
 Enable support for the C++ coroutines extension (experimental).
