@@ -42,29 +42,27 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define TIMEVAR_POP_LEX
 
 
-  /*
-   *  m2.flex - provides a lexical analyser for GNU Modula-2
-   */
+  /* m2.flex - provides a lexical analyser for GNU Modula-2.  */
 
   struct lineInfo {
-    char            *linebuf;          /* line contents */
-    unsigned int     linelen;          /* length */
-    int              tokenpos;         /* start position of token within line */
-    int              toklen;           /* a copy of yylen (length of token) */
-    int              nextpos;          /* position after token */
-    int              actualline;       /* line number of this line */
-    int              column;           /* first column number of token on this line */
-    int              inuse;            /* do we need to keep this line info? */
+    char            *linebuf;          /* Line contents.  */
+    unsigned int     linelen;          /* Length.  */
+    int              tokenpos;         /* Start position of token within line.  */
+    int              toklen;           /* A copy of yylen (length of token).  */
+    int              nextpos;          /* Position after token.  */
+    int              actualline;       /* Line number of this line.  */
+    int              column;           /* First column number of token on this line.  */
+    int              inuse;            /* Do we need to keep this line info?  */
     struct lineInfo *next;
   };
 
   struct functionInfo {
-    char                *name;         /* function name */
-    int                  module;       /* is it really a module? */
-    struct functionInfo *next;         /* list of nested functions */
+    char                *name;         /* Function name.  */
+    int                  module;       /* Is it really a module?  */
+    struct functionInfo *next;         /* List of nested functions.  */
   };
 
-  static int                  lineno      =1;   /* a running count of the file line number */
+  static int                  lineno      =1;   /* A running count of the file line number.  */
   static char                *filename    =NULL;
   static int                  commentLevel=0;
   static struct lineInfo     *currentLine=NULL;
@@ -76,6 +74,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
   static int                  totalLines=0;
   static int                  seenOnlySpaces=TRUE;
   static void                *currentComment = NULL;
+  static FILE                *inputFile = NULL;
 
         void mcflex_mcError           (const char *);
 static  void pushLine                 (void);
@@ -287,136 +286,130 @@ VOLATILE                   { updatepos(); mcLexBuf_addTok(mcReserved_volatiletok
 
 %%
 
-/* have removed the -? from the beginning of the real/integer constant literal rules */
+/* Hand built routines.  */
 
-/*
- *  hand built routines
- */
+/* handleFile handles the __FILE__ construct by wraping it in double quotes and putting
+   it into the token buffer as a string.  */
 
-/*
- *  handleFile - handles the __FILE__ construct by wraping it in double quotes and putting
- *               it into the token buffer as a string.
- */
-
-static void handleFile (void)
+static void
+handleFile (void)
 {
-  char *s = (char *)alloca(strlen(filename)+2+1);
+  char *s = (char *)alloca (strlen (filename) + 2 + 1);
 
-  strcpy(s, "\"");
-  strcat(s, filename);
-  strcat(s, "\"");
-  mcLexBuf_addTokCharStar(mcReserved_stringtok, s);
+  strcpy (s, "\"");
+  strcat (s, filename);
+  strcat (s, "\"");
+  mcLexBuf_addTokCharStar (mcReserved_stringtok, s);
 }
 
-/*
- *  handleLine - handles the __LINE__ construct by passing an integer to
- *               the token buffer.
- */
+/* handleLine handles the __LINE__ construct by passing an integer to
+   the token buffer.  */
 
-static void handleLine (void)
+static void
+handleLine (void)
 {
   mcLexBuf_addTokInteger(mcReserved_integertok, lineno);
 }
 
-/*
- *  handleColumn - handles the __COLUMN__ construct by passing an integer to
- *                 the token buffer.
- */
+/* handleColumn handles the __COLUMN__ construct by passing an integer to
+   the token buffer.  */
 
-static void handleColumn (void)
+static void
+handleColumn (void)
 {
   mcLexBuf_addTokInteger(mcReserved_integertok, mcflex_getColumnNo());
 }
 
-/*
- *  handleDate - handles the __DATE__ construct by passing the date
- *               as a string to the token buffer.
- */
+/* handleDate handles the __DATE__ construct by passing the date
+   as a string to the token buffer.  */
 
-static void handleDate (void)
+static void
+handleDate (void)
 {
-  time_t  clock = time((long *)0);
-  char   *sdate = ctime(&clock);
-  char   *s     = (char *)alloca(strlen(sdate)+2+1);
+  time_t  clock = time ((long *)0);
+  char   *sdate = ctime (&clock);
+  char   *s     = (char *)alloca (strlen (sdate)+2+1);
   char   *p     = index(sdate, '\n');
 
   if (p != NULL) {
     *p = (char) 0;
   }
-  strcpy(s, "\"");
-  strcat(s, sdate);
-  strcat(s, "\"");
-  mcLexBuf_addTokCharStar(mcReserved_stringtok, s);
+  strcpy (s, "\"");
+  strcat (s, sdate);
+  strcat (s, "\"");
+  mcLexBuf_addTokCharStar (mcReserved_stringtok, s);
 }
 
-/*
- *  handleFunction - handles the __FUNCTION__ construct by wrapping
- *                   it in double quotes and putting it into the token
- *                   buffer as a string.
- */
+/* handleFunction handles the __FUNCTION__ construct by wrapping
+   it in double quotes and putting it into the token buffer as a string.  */
 
-static void handleFunction (void)
+static void
+handleFunction (void)
 {
   if (currentFunction == NULL)
-    mcLexBuf_addTokCharStar(mcReserved_stringtok, (char *)("\"\""));
-  else if (currentFunction->module) {
-    char *s = (char *) alloca(strlen(yytext) +
-			      strlen("\"module  initialization\"") + 1);
-    strcpy(s, "\"module ");
-    strcat(s, currentFunction->name);
-    strcat(s, " initialization\"");
-    mcLexBuf_addTokCharStar(mcReserved_stringtok, s);
-  } else {
-    char *function = currentFunction->name;
-    char *s = (char *)alloca(strlen(function)+2+1);
-    strcpy(s, "\"");
-    strcat(s, function);
-    strcat(s, "\"");
-    mcLexBuf_addTokCharStar(mcReserved_stringtok, s);
-  }
+    mcLexBuf_addTokCharStar (mcReserved_stringtok, (char *)("\"\""));
+  else if (currentFunction->module)
+    {
+      char *s = (char *) alloca (strlen (yytext) +
+				 strlen ("\"module  initialization\"") + 1);
+      strcpy (s, "\"module ");
+      strcat (s, currentFunction->name);
+      strcat (s, " initialization\"");
+      mcLexBuf_addTokCharStar (mcReserved_stringtok, s);
+    }
+  else
+    {
+      char *function = currentFunction->name;
+      char *s = (char *)alloca (strlen (function) + 2 + 1);
+      strcpy (s, "\"");
+      strcat (s, function);
+      strcat (s, "\"");
+      mcLexBuf_addTokCharStar (mcReserved_stringtok, s);
+    }
 }
 
-/*
- *  pushFunction - pushes the function name onto the stack.
- */
+/* pushFunction pushes the function name onto the stack.  */
 
-static void pushFunction (char *function, int module)
+static void
+pushFunction (char *function, int module)
 {
-  if (currentFunction == NULL) {
-    currentFunction = (struct functionInfo *)malloc (sizeof (struct functionInfo));
-    currentFunction->name = strdup(function);
-    currentFunction->next = NULL;
-    currentFunction->module = module;
-  } else {
-    struct functionInfo *f = (struct functionInfo *)malloc (sizeof (struct functionInfo));
-    f->name = strdup(function);
-    f->next = currentFunction;
-    f->module = module;
-    currentFunction = f;
-  }
+  if (currentFunction == NULL)
+    {
+      currentFunction = (struct functionInfo *)malloc (sizeof (struct functionInfo));
+      currentFunction->name = strdup (function);
+      currentFunction->next = NULL;
+      currentFunction->module = module;
+    }
+  else
+    {
+      struct functionInfo *f = (struct functionInfo *)malloc (sizeof (struct functionInfo));
+      f->name = strdup (function);
+      f->next = currentFunction;
+      f->module = module;
+      currentFunction = f;
+    }
 }
 
-/*
- *  popFunction - pops the current function.
- */
+/* popFunction pops the current function.  */
 
-static void popFunction (void)
+static void
+popFunction (void)
 {
-  if (currentFunction != NULL && currentFunction->next != NULL) {
-    struct functionInfo *f = currentFunction;
+  if (currentFunction != NULL && currentFunction->next != NULL)
+    {
+      struct functionInfo *f = currentFunction;
 
-    currentFunction = currentFunction->next;
-    if (f->name != NULL)
-      free(f->name);
-    free(f);
-  }
+      currentFunction = currentFunction->next;
+      if (f->name != NULL)
+	free (f->name);
+      free (f);
+    }
 }
 
-/*
- *  endOfComment - handles the end of comment
- */
+/* endOfComment - handles the end of comment.  */
 
-static void endOfComment (void)
+static void
+endOfComment (void)
 {
   if (commentLevel == 1) {
     mcLexBuf_addTokComment (mcReserved_commenttok, currentComment);
@@ -431,12 +424,11 @@ static void endOfComment (void)
     popLine ();
 }
 
-/*
- *  mcflex_mcError - displays the error message, s, after the code line and pointer
- *                   to the erroneous token.
- */
+/* mcflex_mcError displays the error message s after the code line and pointer
+   to the erroneous token.  */
 
-void mcflex_mcError (const char *s)
+void
+mcflex_mcError (const char *s)
 {
   if (currentLine->linebuf != NULL) {
     int i=1;
@@ -452,7 +444,8 @@ void mcflex_mcError (const char *s)
   printf("%s:%d:%s\n", filename, currentLine->actualline, s);
 }
 
-static void poperrorskip (const char *s)
+static void
+poperrorskip (const char *s)
 {
   int nextpos =currentLine->nextpos;
   int tokenpos=currentLine->tokenpos;
@@ -465,18 +458,17 @@ static void poperrorskip (const char *s)
   }
 }
 
-/*
- *  consumeLine - reads a line into a buffer, it then pushes back the whole
- *                line except the initial \n.
- */
+/* consumeLine reads a line into a buffer, it then pushes back the whole
+   line except the initial \n.  */
 
-static void consumeLine (void)
+static void
+consumeLine (void)
 {
   if (currentLine->linelen<yyleng) {
     currentLine->linebuf = (char *)realloc (currentLine->linebuf, yyleng);
     currentLine->linelen = yyleng;
   }
-  strcpy(currentLine->linebuf, yytext+1);  /* copy all except the initial \n */
+  strcpy(currentLine->linebuf, yytext+1);  /* Copy all except the initial \n */
   lineno++;
   totalLines++;
   currentLine->actualline = lineno;
@@ -484,15 +476,14 @@ static void consumeLine (void)
   currentLine->nextpos=0;
   currentLine->column=0;
   START_LINE (lineno, yyleng);
-  yyless(1);                  /* push back all but the \n */
+  yyless(1);                  /* Push back all but the \n */
   seenOnlySpaces=TRUE;
 }
 
-/*
- *  detectSpaces - scan yytext to see if only spaces have been seen.
- */
+/* detectSpaces scan yytext to see if only spaces have been seen.  */
 
-static void detectSpaces (void)
+static void
+detectSpaces (void)
 {
   char *p = yytext;
   int   i = 0;
@@ -511,12 +502,11 @@ static void detectSpaces (void)
     }
 }
 
-/*
- *  updatepos - updates the current token position.
- *              Should be used when a rule matches a token.
- */
+/* updatepos updates the current token position.
+   Should be used when a rule matches a token.  */
 
-static void updatepos (void)
+static void
+updatepos (void)
 {
   seenFunctionStart    = FALSE;
   seenEnd              = FALSE;
@@ -529,12 +519,11 @@ static void updatepos (void)
     detectSpaces ();
 }
 
-/*
- *  checkFunction - checks to see whether we have seen the start
- *                  or end of a function.
- */
+/* checkFunction checks to see whether we have seen the start
+   or end of a function.  */
 
-static void checkFunction (void)
+static void
+checkFunction (void)
 {
   if (! isDefinitionModule) {
     if (seenModuleStart)
@@ -550,19 +539,16 @@ static void checkFunction (void)
   seenModuleStart   = FALSE;
 }
 
-/*
- *  skippos - skips over this token. This function should be called
- *            if we are not returning and thus not calling getToken.
- */
+/* skippos skips over this token. This function should be called
+   if we are not returning and thus not calling getToken.  */
 
-static void skippos (void)
+static void
+skippos (void)
 {
   currentLine->tokenpos = currentLine->nextpos;
 }
 
-/*
- *  initLine - initializes a currentLine
- */
+/* initLine initializes a currentLine.  */
 
 static void initLine (void)
 {
@@ -581,11 +567,10 @@ static void initLine (void)
   currentLine->next       = NULL;
 }
 
-/*
- *  pushLine - pushes a new line structure.
- */
+/* pushLine pushes a new line structure.  */
 
-static void pushLine (void)
+static void
+pushLine (void)
 {
   if (currentLine == NULL)
     initLine();
@@ -610,11 +595,10 @@ static void pushLine (void)
   currentLine->inuse = TRUE;
 }
 
-/*
- *  popLine - pops a line structure.
- */
+/* popLine pops a line structure.  */
 
-static void popLine (void)
+static void
+popLine (void)
 {
   if (currentLine != NULL) {
     struct lineInfo *l = currentLine;
@@ -626,86 +610,85 @@ static void popLine (void)
   }
 }
 
-/*
- *  resetpos - resets the position of the next token to the start of the line.
- */
+/* resetpos resets the position of the next token to the start of the line.  */
 
-static void resetpos (void)
+static void
+resetpos (void)
 {
   if (currentLine != NULL)
     currentLine->nextpos = 0;
 }
 
-/*
- *  finishedLine - indicates that the current line does not need to be preserved when a pushLine
- *                 occurs.
- */
+/* finishedLine indicates that the current line does not need to be preserved
+   when a pushLine occurs.  */
 
-static void finishedLine (void)
+static void
+finishedLine (void)
 {
   currentLine->inuse = FALSE;
 }
 
-/*
- *  mcflex_getToken - returns a new token.
- */
+/* mcflex_getToken returns a new token.  */
 
-char *mcflex_getToken (void)
+char *
+mcflex_getToken (void)
 {
   TIMEVAR_PUSH_LEX;
   if (currentLine == NULL)
-    initLine();
+    initLine ();
   currentLine->tokenpos = currentLine->nextpos;
-  yylex();
+  yylex ();
   TIMEVAR_POP_LEX;
   return yytext;
 }
 
-/*
- *  closeSource - provided for semantic sugar
- */
+/* closeSource - provided for semantic sugar.  */
 
-void mcflex_closeSource (void)
+void
+mcflex_closeSource (void)
 {
   END_FILE ();
 }
 
-/*
- *  openSource - returns TRUE if file, s, can be opened and
- *               all tokens are taken from this file.
- */
+/* openSource returns TRUE if file s can be opened and
+   all tokens are taken from this file.  */
 
-int mcflex_openSource (char *s)
+int
+mcflex_openSource (char *s)
 {
-  FILE *f = fopen(s, "r");
+  FILE *newInputFile = fopen (s, "r");
 
-  if (f == NULL)
-    return( FALSE );
-  else {
-    isDefinitionModule = FALSE;
-    while (currentFunction != NULL) {
-      struct functionInfo *f = currentFunction;
-      currentFunction = f->next;
-      if (f->name != NULL)
-	free(f->name);
-      free(f);
+  if (newInputFile == NULL)
+    return FALSE;
+  else
+    {
+      isDefinitionModule = FALSE;
+      while (currentFunction != NULL)
+	{
+	  struct functionInfo *f = currentFunction;
+	  currentFunction = f->next;
+	  if (f->name != NULL)
+	    free (f->name);
+	  free (f);
+	}
+      yy_delete_buffer (YY_CURRENT_BUFFER);
+      if (inputFile != NULL)
+	fclose (inputFile);
+      inputFile = newInputFile;
+      yy_switch_to_buffer (yy_create_buffer (inputFile, YY_BUF_SIZE));
+      filename = strdup (s);
+      lineno =1;
+      if (currentLine != NULL)
+	currentLine->actualline = lineno;
+      START_FILE (filename, lineno);
+      return TRUE;
     }
-    yy_delete_buffer(YY_CURRENT_BUFFER);
-    yy_switch_to_buffer(yy_create_buffer(f, YY_BUF_SIZE));
-    filename = strdup(s);
-    lineno =1;
-    if (currentLine != NULL)
-      currentLine->actualline = lineno;
-    START_FILE (filename, lineno);
-    return TRUE;
-  }
 }
 
-/*
- *  mcflex_getLineNo - returns the current line number.
- */
+/* mcflex_getLineNo returns the current line number.  */
 
-int mcflex_getLineNo (void)
+int
+mcflex_getLineNo (void)
 {
   if (currentLine != NULL)
     return currentLine->actualline;
@@ -713,12 +696,11 @@ int mcflex_getLineNo (void)
     return 0;
 }
 
-/*
- *  mcflex_getColumnNo - returns the column where the current
- *                       token starts.
- */
+/* mcflex_getColumnNo returns the column where the current
+   token starts.  */
 
-int mcflex_getColumnNo (void)
+int
+mcflex_getColumnNo (void)
 {
   if (currentLine != NULL)
     return currentLine->column;
@@ -726,27 +708,38 @@ int mcflex_getColumnNo (void)
     return 0;
 }
 
-/*
- *  getTotalLines - returns the total number of lines parsed.
- */
+/* getTotalLines returns the total number of lines parsed.  */
 
-int mcflex_getTotalLines (void)
+int
+mcflex_getTotalLines (void)
 {
   return totalLines;
 }
 
-/*
- *  yywrap is called when end of file is seen. We push an eof token
- *         and tell the lexical analysis to stop.
- */
+/* yywrap is called when end of file is seen.  We push an eof token
+   and tell the lexical analysis to stop.  */
 
-int yywrap (void)
+int
+yywrap (void)
 {
-  updatepos(); mcLexBuf_addTok(mcReserved_eoftok); return 1;
+  updatepos ();
+  mcLexBuf_addTok (mcReserved_eoftok);
+  return 1;
 }
 
-void _M2_mcflex_init (void) {}
-void _M2_mcflex_finish (void) {}
+void
+_M2_mcflex_init (void)
+{
+}
+
+void
+_M2_mcflex_finish (void)
+{
+}
 
 /* This is a gross hack to satisfy linking.  */
-void _M2_mcflex_ctor (void) {}
+
+void
+_M2_mcflex_ctor (void)
+{
+}
