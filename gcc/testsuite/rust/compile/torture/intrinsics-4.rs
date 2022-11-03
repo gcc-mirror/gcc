@@ -67,7 +67,7 @@ extern "rust-intrinsic" {
 }
 
 fn main() {
-    let mut dst = 15;
+    let mut dst = 15u32;
     let new_value = 14;
 
     unsafe {

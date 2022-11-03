@@ -29,6 +29,8 @@
 #include "print-tree.h"
 #include "fold-const.h"
 #include "langhooks.h"
+#include "rust-gcc.h"
+#include "rust-constexpr.h"
 
 #include "print-tree.h"
 
@@ -243,6 +245,14 @@ static const std::map<std::string,
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
+/**
+ * Returns a FUNC_DECL corresponding to the intrinsic function FNTYPE. If a
+ * corresponding builtin exists, returns it. If not, search in the generic
+ * intrinsics declared and delegate the return to the corresponding handler.
+ *
+ * @param fntype The Rust function type that should be implemented by the
+ * compiler
+ */
 tree
 Intrinsics::compile (TyTy::FnType *fntype)
 {
@@ -250,6 +260,7 @@ Intrinsics::compile (TyTy::FnType *fntype)
 
   tree builtin = error_mark_node;
   BuiltinsContext &builtin_ctx = BuiltinsContext::get ();
+
   if (builtin_ctx.lookup_simple_builtin (fntype->get_identifier (), &builtin))
     return builtin;
 
@@ -653,17 +664,17 @@ op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
   switch (op)
     {
     case PLUS_EXPR:
-      BuiltinsContext::get ().lookup_simple_builtin ("add_overflow",
+      BuiltinsContext::get ().lookup_simple_builtin ("__builtin_add_overflow",
 						     &overflow_builtin);
       break;
 
     case MINUS_EXPR:
-      BuiltinsContext::get ().lookup_simple_builtin ("sub_overflow",
+      BuiltinsContext::get ().lookup_simple_builtin ("__builtin_sub_overflow",
 						     &overflow_builtin);
       break;
 
     case MULT_EXPR:
-      BuiltinsContext::get ().lookup_simple_builtin ("mul_overflow",
+      BuiltinsContext::get ().lookup_simple_builtin ("__builtin_mul_overflow",
 						     &overflow_builtin);
       break;
 
@@ -749,8 +760,8 @@ copy_handler_inner (Context *ctx, TyTy::FnType *fntype, bool overlaps)
     = build2 (MULT_EXPR, size_type_node, TYPE_SIZE_UNIT (param_type), count);
 
   tree memcpy_raw = nullptr;
-  BuiltinsContext::get ().lookup_simple_builtin (overlaps ? "memmove"
-							  : "memcpy",
+  BuiltinsContext::get ().lookup_simple_builtin (overlaps ? "__builtin_memmove"
+							  : "__builtin_memcpy",
 						 &memcpy_raw);
   rust_assert (memcpy_raw);
   auto memcpy = build_fold_addr_expr_loc (UNKNOWN_LOCATION, memcpy_raw);
@@ -797,18 +808,34 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
   enter_intrinsic_block (ctx, fndecl);
 
   auto addr = Backend::var_expression (args[0], UNDEF_LOCATION);
-  auto locality = Backend::var_expression (args[1], UNDEF_LOCATION);
+
+  // The core library technically allows you to pass any i32 value as a
+  // locality, but LLVM will then complain if the value cannot be constant
+  // evaluated. For now, we ignore the locality argument and instead always
+  // pass `3` (the most restrictive value). This allows us to still have
+  // prefetch behavior, just not as granular as expected. In future Rust
+  // versions, we hope that prefetch intrinsics will be split up according to
+  // locality, similarly to atomic intrinsics.
+  // The solution is to try and perform constant folding for the locality
+  // argument, or instead of creating a new function definition, modify the call
+  // site directly This has the bad side-effect of creating warnings about
+  // `unused name - locality`, which we hack away here:
+  // TODO: Take care of handling locality properly
+  Backend::var_expression (args[1], UNDEF_LOCATION);
+
   auto rw_flag = make_unsigned_long_tree (kind == Prefetch::Write ? 1 : 0);
 
   auto prefetch_raw = NULL_TREE;
-  auto ok
-    = BuiltinsContext::get ().lookup_simple_builtin ("prefetch", &prefetch_raw);
+  auto ok = BuiltinsContext::get ().lookup_simple_builtin ("__builtin_prefetch",
+							   &prefetch_raw);
   rust_assert (ok);
   auto prefetch = build_fold_addr_expr_loc (UNKNOWN_LOCATION, prefetch_raw);
 
-  auto prefetch_call
-    = Backend::call_expression (prefetch, {addr, rw_flag, locality}, nullptr,
-				UNDEF_LOCATION);
+  auto prefetch_call = Backend::call_expression (prefetch,
+						 {addr, rw_flag,
+						  // locality arg
+						  make_unsigned_long_tree (3)},
+						 nullptr, UNDEF_LOCATION);
 
   TREE_READONLY (prefetch_call) = 0;
   TREE_SIDE_EFFECTS (prefetch_call) = 1;
@@ -833,13 +860,20 @@ build_atomic_builtin_name (const std::string &prefix, location_t locus,
   // TODO: Can we maybe get the generic version (atomic_store_n) to work... This
   // would be so much better
 
-  std::string result = prefix;
+  std::string result = "__" + prefix; //  + "n";
 
   auto type_name = operand_type->get_name ();
   if (type_name == "usize" || type_name == "isize")
     {
       rust_sorry_at (
 	locus, "atomics are not yet available for size types (usize, isize)");
+      return "";
+    }
+
+  if (type_name.at (0) == 'i')
+    {
+      rust_sorry_at (locus, "atomics are not yet supported for signed "
+			    "integer types (i8, i16, i32, i64, i128)");
       return "";
     }
 
@@ -970,6 +1004,7 @@ atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   TREE_SIDE_EFFECTS (load_call) = 1;
 
   ctx->add_statement (return_statement);
+
   finalize_intrinsic_block (ctx, fndecl);
 
   return fndecl;
@@ -1060,7 +1095,8 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
   // BUILTIN size_of FN BODY BEGIN
 
   tree memset_builtin = error_mark_node;
-  BuiltinsContext::get ().lookup_simple_builtin ("memset", &memset_builtin);
+  BuiltinsContext::get ().lookup_simple_builtin ("__builtin_memset",
+						 &memset_builtin);
   rust_assert (memset_builtin != error_mark_node);
 
   // call memset with 0x01 and size of the thing see
@@ -1123,7 +1159,8 @@ move_val_init_handler (Context *ctx, TyTy::FnType *fntype)
   tree size = TYPE_SIZE_UNIT (template_parameter_type);
 
   tree memcpy_builtin = error_mark_node;
-  BuiltinsContext::get ().lookup_simple_builtin ("memcpy", &memcpy_builtin);
+  BuiltinsContext::get ().lookup_simple_builtin ("__builtin_memcpy",
+						 &memcpy_builtin);
   rust_assert (memcpy_builtin != error_mark_node);
 
   src = build_fold_addr_expr_loc (BUILTINS_LOCATION, src);
@@ -1157,7 +1194,8 @@ expect_handler_inner (Context *ctx, TyTy::FnType *fntype, bool likely)
   compile_fn_params (ctx, fntype, fndecl, &param_vars);
   tree expr = Backend::var_expression (param_vars[0], UNDEF_LOCATION);
   tree expect_fn_raw = nullptr;
-  BuiltinsContext::get ().lookup_simple_builtin ("expect", &expect_fn_raw);
+  BuiltinsContext::get ().lookup_simple_builtin ("__builtin_expect",
+						 &expect_fn_raw);
   rust_assert (expect_fn_raw);
   auto expect_fn = build_fold_addr_expr_loc (BUILTINS_LOCATION, expect_fn_raw);
 

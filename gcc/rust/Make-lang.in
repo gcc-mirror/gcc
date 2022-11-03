@@ -64,6 +64,7 @@ gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 # The compiler proper, not driver
 GRS_OBJS = \
     rust/rust-lang.o \
+    rust/rust-attribs.o \
     rust/rust-object-export.o \
     rust/rust-linemap.o \
     rust/rust-diagnostics.o \
