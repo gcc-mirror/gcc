@@ -729,9 +729,8 @@ class region_model_context
   /* Hook for clients to purge state involving SVAL.  */
   virtual void purge_state_involving (const svalue *sval) = 0;
 
-  /* Hook for clients to split state with a non-standard path.
-     Take ownership of INFO.  */
-  virtual void bifurcate (custom_edge_info *info) = 0;
+  /* Hook for clients to split state with a non-standard path.  */
+  virtual void bifurcate (std::unique_ptr<custom_edge_info> info) = 0;
 
   /* Hook for clients to terminate the standard path.  */
   virtual void terminate_path () = 0;
@@ -806,7 +805,7 @@ public:
 
   void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) override {}
 
-  void bifurcate (custom_edge_info *info) override;
+  void bifurcate (std::unique_ptr<custom_edge_info> info) override;
   void terminate_path () override;
 
   const extrinsic_state *get_ext_state () const override { return NULL; }
@@ -918,9 +917,9 @@ class region_model_context_decorator : public region_model_context
     m_inner->purge_state_involving (sval);
   }
 
-  void bifurcate (custom_edge_info *info) override
+  void bifurcate (std::unique_ptr<custom_edge_info> info) override
   {
-    m_inner->bifurcate (info);
+    m_inner->bifurcate (std::move (info));
   }
 
   void terminate_path () override

@@ -300,9 +300,8 @@ class path_context
 public:
   virtual ~path_context () {}
 
-  /* Hook for clients to split state with a non-standard path.
-     Take ownership of INFO.  */
-  virtual void bifurcate (custom_edge_info *info) = 0;
+  /* Hook for clients to split state with a non-standard path.  */
+  virtual void bifurcate (std::unique_ptr<custom_edge_info> info) = 0;
 
   /* Hook for clients to terminate the standard path.  */
   virtual void terminate_path () = 0;

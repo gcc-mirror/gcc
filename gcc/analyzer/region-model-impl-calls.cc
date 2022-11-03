@@ -629,8 +629,8 @@ region_model::impl_call_pipe (const call_details &cd)
   /* Body of region_model::impl_call_pipe.  */
   if (cd.get_ctxt ())
     {
-      cd.get_ctxt ()->bifurcate (new failure (cd));
-      cd.get_ctxt ()->bifurcate (new success (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success> (cd));
       cd.get_ctxt ()->terminate_path ();
     }
 }
@@ -1006,9 +1006,9 @@ region_model::impl_call_realloc (const call_details &cd)
 
   if (cd.get_ctxt ())
     {
-      cd.get_ctxt ()->bifurcate (new failure (cd));
-      cd.get_ctxt ()->bifurcate (new success_no_move (cd));
-      cd.get_ctxt ()->bifurcate (new success_with_move (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success_no_move> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success_with_move> (cd));
       cd.get_ctxt ()->terminate_path ();
     }
 }
@@ -1077,7 +1077,7 @@ region_model::impl_call_strchr (const call_details &cd)
 
   /* Bifurcate state, creating a "not found" out-edge.  */
   if (cd.get_ctxt ())
-    cd.get_ctxt ()->bifurcate (new strchr_call_info (cd, false));
+    cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, false));
 
   /* The "unbifurcated" state is the "found" case.  */
   strchr_call_info found (cd, true);

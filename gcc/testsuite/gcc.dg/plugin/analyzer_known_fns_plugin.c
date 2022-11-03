@@ -42,6 +42,7 @@
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-info.h"
+#include "make-unique.h"
 
 int plugin_is_GPL_compatible;
 
@@ -152,7 +153,7 @@ public:
     if (cd.get_ctxt ())
       {
 	/* Bifurcate state, creating a "failure" out-edge.  */
-	cd.get_ctxt ()->bifurcate (new copy_failure (cd));
+	cd.get_ctxt ()->bifurcate (make_unique<copy_failure> (cd));
 
 	/* The "unbifurcated" state is the "success" case.  */
 	copy_success success (cd,

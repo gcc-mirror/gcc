@@ -42,6 +42,7 @@
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-info.h"
+#include "make-unique.h"
 
 int plugin_is_GPL_compatible;
 
@@ -95,7 +96,7 @@ class copy_across_boundary_fn : public known_function
     if (ctxt)
       {
 	/* Bifurcate state, creating a "failure" out-edge.  */
-	ctxt->bifurcate (new copy_failure (cd));
+	ctxt->bifurcate (make_unique<copy_failure> (cd));
 
 	/* The "unbifurcated" state is the "success" case.  */
 	copy_success success (cd,

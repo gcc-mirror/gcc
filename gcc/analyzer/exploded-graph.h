@@ -90,7 +90,7 @@ class impl_region_model_context : public region_model_context
 
   void purge_state_involving (const svalue *sval) final override;
 
-  void bifurcate (custom_edge_info *info) final override;
+  void bifurcate (std::unique_ptr<custom_edge_info> info) final override;
   void terminate_path () final override;
   const extrinsic_state *get_ext_state () const final override
   {

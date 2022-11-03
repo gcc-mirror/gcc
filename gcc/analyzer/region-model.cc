@@ -6416,9 +6416,8 @@ noop_region_model_context::add_note (std::unique_ptr<pending_note>)
 }
 
 void
-noop_region_model_context::bifurcate (custom_edge_info *info)
+noop_region_model_context::bifurcate (std::unique_ptr<custom_edge_info>)
 {
-  delete info;
 }
 
 void

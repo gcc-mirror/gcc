@@ -193,12 +193,10 @@ impl_region_model_context::purge_state_involving (const svalue *sval)
 }
 
 void
-impl_region_model_context::bifurcate (custom_edge_info *info)
+impl_region_model_context::bifurcate (std::unique_ptr<custom_edge_info> info)
 {
   if (m_path_ctxt)
-    m_path_ctxt->bifurcate (info);
-  else
-    delete info;
+    m_path_ctxt->bifurcate (std::move (info));
 }
 
 void
@@ -1646,10 +1644,10 @@ exploded_node::replay_call_summary (exploded_graph &eg,
   call_summary_replay r (cd, called_fn, summary, ext_state);
 
   if (path_ctxt)
-    path_ctxt->bifurcate (new call_summary_edge_info (cd,
-						      called_fn,
-						      summary,
-						      ext_state));
+    path_ctxt->bifurcate (make_unique<call_summary_edge_info> (cd,
+							       called_fn,
+							       summary,
+							       ext_state));
 }
 
 
@@ -3807,7 +3805,7 @@ public:
   }
 
   void
-  bifurcate (custom_edge_info *info) final override
+  bifurcate (std::unique_ptr<custom_edge_info> info) final override
   {
     if (m_state_at_bifurcation)
       /* Verify that the state at bifurcation is consistent when we
@@ -3820,7 +3818,7 @@ public:
 	= std::unique_ptr<program_state> (new program_state (*m_cur_state));
 
     /* Take ownership of INFO.  */
-    m_custom_eedge_infos.safe_push (info);
+    m_custom_eedge_infos.safe_push (info.release ());
   }
 
   void terminate_path () final override
