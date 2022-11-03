@@ -111,6 +111,7 @@ class char_span
 };
 
 extern char_span location_get_source_line (const char *file_path, int line);
+extern char *get_source_text_between (location_t, location_t);
 
 extern bool location_missing_trailing_newline (const char *file_path);
 
