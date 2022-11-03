@@ -2861,6 +2861,9 @@ build_external_ref (location_t loc, tree id, bool fun, tree *type)
     {
       ref = decl;
       *type = TREE_TYPE (ref);
+      if (DECL_P (decl) && C_DECL_UNDERSPECIFIED (decl))
+	error_at (loc, "underspecified %qD referenced in its initializer",
+		  decl);
     }
   else if (fun)
     /* Implicit function declaration.  */
