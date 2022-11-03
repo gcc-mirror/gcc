@@ -178,6 +178,8 @@ extern void default_target_option_override (void);
 extern void hook_void_bitmap (bitmap);
 extern int default_reloc_rw_mask (void);
 extern bool default_generate_pic_addr_diff_vec (void);
+extern void default_asm_out_constructor (rtx, int);
+extern void default_asm_out_destructor (rtx, int);
 extern tree default_mangle_decl_assembler_name (tree, tree);
 extern tree default_emutls_var_fields (tree, tree *);
 extern tree default_emutls_var_init (tree, tree, tree);
