@@ -89,7 +89,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = src
+subdir = src/experimental
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/enable.m4 \
@@ -104,6 +104,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
@@ -148,28 +149,14 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_1 = compatibility-ldbl.lo
-am__objects_2 = compatibility.lo compatibility-debug_list.lo \
-	compatibility-debug_list-2.lo $(am__objects_1)
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@am__objects_3 = compatibility-atomic-c++0x.lo \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-c++0x.lo \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-chrono.lo \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-condvar.lo \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-thread-c++0x.lo
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_4 = compatibility-ldbl-alt128-cxx11.lo
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_5 =  \
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128.lo \
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(am__objects_4)
-am__objects_6 = $(am__objects_3) $(am__objects_5)
-am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_6)
-libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
-@VTV_CYGMIN_FALSE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
-@VTV_CYGMIN_TRUE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
-libvtv_la_LIBADD =
-@VTV_CYGMIN_TRUE@am_libvtv_la_OBJECTS = vtv_stubs.lo
-libvtv_la_OBJECTS = $(am_libvtv_la_OBJECTS)
-@VTV_CYGMIN_TRUE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
+libstdc__exp_la_LIBADD =
+am__objects_1 = contract.lo
+am_libstdc__exp_la_OBJECTS = $(am__objects_1)
+libstdc__exp_la_OBJECTS = $(am_libstdc__exp_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -187,10 +174,6 @@ depcomp =
 am__depfiles_maybe =
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 AM_V_CXX = $(am__v_CXX_@AM_V@)
 am__v_CXX_ = $(am__v_CXX_@AM_DEFAULT_V@)
 am__v_CXX_0 = @echo "  CXX     " $@;
@@ -200,27 +183,12 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(libstdc___la_SOURCES) $(libvtv_la_SOURCES)
-RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
-	ctags-recursive dvi-recursive html-recursive info-recursive \
-	install-data-recursive install-dvi-recursive \
-	install-exec-recursive install-html-recursive \
-	install-info-recursive install-pdf-recursive \
-	install-ps-recursive install-recursive installcheck-recursive \
-	installdirs-recursive pdf-recursive ps-recursive \
-	tags-recursive uninstall-recursive
+SOURCES = $(libstdc__exp_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
-  distclean-recursive maintainer-clean-recursive
-am__recursive_targets = \
-  $(RECURSIVE_TARGETS) \
-  $(RECURSIVE_CLEAN_TARGETS) \
-  $(am__extra_recursive_targets)
-AM_RECURSIVE_TARGETS = $(am__recursive_targets:-recursive=) TAGS CTAGS
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -240,8 +208,6 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = c++98 c++11 c++17 c++20 filesystem libbacktrace \
-	experimental
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
 ALLOCATOR_H = @ALLOCATOR_H@
@@ -482,127 +448,30 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
-@ENABLE_FILESYSTEM_TS_FALSE@filesystem_dir = 
-@ENABLE_FILESYSTEM_TS_TRUE@filesystem_dir = filesystem
-@ENABLE_BACKTRACE_FALSE@backtrace_dir = 
-@ENABLE_BACKTRACE_TRUE@backtrace_dir = libbacktrace
-SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir) experimental
-@VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libstdc++.la
-
-# Cross compiler support.
-@VTV_CYGMIN_TRUE@toolexeclib_LTLIBRARIES = libvtv.la libstdc++.la
-@VTV_CYGMIN_TRUE@libvtv_la_SOURCES = vtv_stubs.cc
-@VTV_CYGMIN_TRUE@libvtv_la_LDFLAGS = $(lt_host_flags)
-@VTV_CYGMIN_TRUE@libvtv_la_AM_CXXFLAGS = \
-@VTV_CYGMIN_TRUE@	$(glibcxx_compiler_pic_flag) \
-@VTV_CYGMIN_TRUE@	$(XTEMPLATE_FLAGS) \
-@VTV_CYGMIN_TRUE@	-Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end \
-@VTV_CYGMIN_TRUE@	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
-
-@VTV_CYGMIN_TRUE@libvtv_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-@VTV_CYGMIN_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(libvtv_la_AM_CXXFLAGS) \
-@VTV_CYGMIN_TRUE@	$(CXXFLAGS) $(libvtv_la_LDFLAGS) $(LDFLAGS) -o $@
-
-@GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
-@GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
-@ENABLE_DUAL_ABI_FALSE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@ldbl_alt128_compat_cxx11_sources = 
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@ldbl_alt128_compat_cxx11_sources = \
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128-cxx11.cc
-
-@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@ldbl_alt128_compat_sources = 
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@ldbl_alt128_compat_sources = \
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128.cc \
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	${ldbl_alt128_compat_cxx11_sources}
-
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@cxx0x_compat_sources = \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-atomic-c++0x.cc \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-c++0x.cc \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-chrono.cc \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-condvar.cc \
-@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-thread-c++0x.cc
-
-@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@cxx0x_compat_sources = 
-parallel_compat_sources = \
-	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
-
-cxx98_sources = \
-	compatibility.cc \
-	compatibility-debug_list.cc \
-	compatibility-debug_list-2.cc \
-	${ldbl_compat_sources}
-
-cxx11_sources = \
-	${cxx0x_compat_sources} \
-	${ldbl_alt128_compat_sources}
-
-libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
-libstdc___la_LIBADD = \
-	$(GLIBCXX_LIBS) \
-	$(top_builddir)/libsupc++/libsupc++convenience.la \
-	$(top_builddir)/src/c++98/libc++98convenience.la \
-	$(top_builddir)/src/c++11/libc++11convenience.la \
-	$(top_builddir)/src/c++17/libc++17convenience.la \
-	$(top_builddir)/src/c++20/libc++20convenience.la
-
-libstdc___la_DEPENDENCIES = \
-	${version_dep} \
-	$(top_builddir)/libsupc++/libsupc++convenience.la \
-	$(top_builddir)/src/c++98/libc++98convenience.la \
-	$(top_builddir)/src/c++11/libc++11convenience.la \
-	$(top_builddir)/src/c++17/libc++17convenience.la \
-	$(top_builddir)/src/c++20/libc++20convenience.la
-
-libstdc___la_LDFLAGS = \
-	-version-info $(libtool_VERSION) ${version_arg} -lm
-
-libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
-@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@@GLIBCXX_LDBL_COMPAT_TRUE@LTCXXCOMPILE64 = $(LTCXXCOMPILE)
-
-# Use special rules for compatibility-ldbl.cc compilation, as we need to
-# pass -mlong-double-64, and not use -mabi={ieee,ibm}longdouble.
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@LTCXXCOMPILE64 = \
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@  $(filter-out -mabi=ieeelongdouble -mabi=ibmlongdouble,$(LTCXXCOMPILE))
-
-@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@@GLIBCXX_LDBL_COMPAT_TRUE@CXXCOMPILE64 = $(CXXCOMPILE)
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@CXXCOMPILE64 = \
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@  $(filter-out -mabi=ieeelongdouble -mabi=ibmlongdouble,$(CXXCOMPILE))
+toolexeclib_LTLIBRARIES = libstdc++exp.la
+headers = 
+sources = \
+	contract.cc
 
 
-# A note on compatibility and static libraries.
-#
-# static lib == linked against only this version, should not need compat
-# shared lib == linked against potentially all compat versions
-#
-# Thus, the shared libs have more compat symbols, which can be found
-# segregated in the sources with -D_GLIBCXX_SHARED.
-#
-# In the sub-directories of libsupc++, src/c++98, src/c++11, src/c++17,
-# src/c++20, only -prefer-pic objects are generated for the convenience
-# libraries.
-#
-# In the main src directory, make shared and static objects just for
-# the compat libraries. Shared objects are compiled with -prefer-pic
-# -D_GLIBCXX_SHARED and in the .libs sub-directory, static objects are
-# compiled with -prefer-pic (ie, -fPIC but not -D_GLIBCXX_SHARED) and
-# the main src directory.
-#
-# Why are objects destined for libstdc++.a compiled with -fPIC? First,
-# because -fPIC is not harmful to use for objects destined for static
-# libraries. In addition, using -fPIC will allow the use of static
-# libstdc++.a in the creation of other C++ shared libraries.
+# vpath % $(top_srcdir)/src/experimental
+libstdc__exp_la_SOURCES = $(sources)
 
-# AM_CXXFLAGS needs to be in each sub-directory so that it can be
+# AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion calls for it.
-AM_CXXFLAGS_PRE = \
-	-std=gnu++98 \
-	$(glibcxx_compiler_pic_flag) \
+AM_CXXFLAGS = \
+	-std=gnu++17 -nostdinc++ \
+	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
-	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+	-fimplicit-templates
 
-AM_CXXFLAGS = $(filter-out -fvtable-verify=std,$(AM_CXXFLAGS_PRE))
+AM_MAKEFLAGS = \
+	"gxx_include_dir=$(gxx_include_dir)"
+
 
 # Libtool notes
 
@@ -629,11 +498,11 @@ AM_CXXFLAGS = $(filter-out -fvtable-verify=std,$(AM_CXXFLAGS_PRE))
 
 # 2) Need to explicitly set LTCXXCOMPILE so that EXTRA_CXX_FLAGS is
 # last. (That way, things like -O2 passed down from the toplevel can
-# be overridden by --enable-debug and --enable-cxx-flags.)
+# be overridden by --enable-debug.)
 LTCXXCOMPILE = \
-	$(LIBTOOL) --tag CXX \
+	$(LIBTOOL) --tag CXX --tag disable-shared \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CXX) $(INCLUDES) \
+	--mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(EXTRA_CXX_FLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
@@ -645,39 +514,13 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
 CXXLINK = \
-	$(LIBTOOL) --tag CXX \
+	$(LIBTOOL) --tag CXX --tag disable-shared \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXX) \
 	$(VTV_CXXLINKFLAGS) \
-	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) \
-	$(LTLDFLAGS) $(LTLIBICONV) \
-	-o $@
+	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
 
-@ENABLE_SYMVERS_TRUE@CLEANFILES = libstdc++-symbols.ver $(version_dep)
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-exported_symbols_list,libstdc++-symbols.explist
-@ENABLE_SYMVERS_FALSE@version_arg = 
-@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-M,libstdc++-symbols.ver-sun
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.explist
-@ENABLE_SYMVERS_FALSE@version_dep = 
-@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sun
-@GLIBCXX_BUILD_DEBUG_FALSE@STAMP_DEBUG = 
-
-# Added rules.
-# 1 debug library
-# 2 supra-convenience library
-@GLIBCXX_BUILD_DEBUG_TRUE@STAMP_DEBUG = build-debug
-@GLIBCXX_BUILD_DEBUG_FALSE@STAMP_INSTALL_DEBUG = 
-@GLIBCXX_BUILD_DEBUG_TRUE@STAMP_INSTALL_DEBUG = install-debug
-@GLIBCXX_BUILD_DEBUG_FALSE@CLEAN_DEBUG = 
-@GLIBCXX_BUILD_DEBUG_TRUE@CLEAN_DEBUG = debug
-@ENABLE_BACKTRACE_TRUE@backtrace_supported_h = $(backtrace_dir)/backtrace-supported.h
-@ENABLE_BACKTRACE_FALSE@debug_backtrace_supported_h = 
-@ENABLE_BACKTRACE_TRUE@debug_backtrace_supported_h = debug/$(backtrace_supported_h)
-all: all-recursive
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .cc .lo .o .obj
@@ -690,9 +533,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign --ignore-deps src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign --ignore-deps src/experimental/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign --ignore-deps src/Makefile
+	  $(AUTOMAKE) --foreign --ignore-deps src/experimental/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -747,11 +590,8 @@ clean-toolexeclibLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libstdc++.la: $(libstdc___la_OBJECTS) $(libstdc___la_DEPENDENCIES) $(EXTRA_libstdc___la_DEPENDENCIES) 
-	$(AM_V_GEN)$(libstdc___la_LINK) $(am_libstdc___la_rpath) $(libstdc___la_OBJECTS) $(libstdc___la_LIBADD) $(LIBS)
-
-libvtv.la: $(libvtv_la_OBJECTS) $(libvtv_la_DEPENDENCIES) $(EXTRA_libvtv_la_DEPENDENCIES) 
-	$(AM_V_GEN)$(libvtv_la_LINK) $(am_libvtv_la_rpath) $(libvtv_la_OBJECTS) $(libvtv_la_LIBADD) $(LIBS)
+libstdc++exp.la: $(libstdc__exp_la_OBJECTS) $(libstdc__exp_la_DEPENDENCIES) $(EXTRA_libstdc__exp_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK) -rpath $(toolexeclibdir) $(libstdc__exp_la_OBJECTS) $(libstdc__exp_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -774,61 +614,14 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 
-# This directory's subdirectories are mostly independent; you can cd
-# into them and run 'make' without going through this Makefile.
-# To change the values of 'make' variables: instead of editing Makefiles,
-# (1) if the variable is set in 'config.status', edit 'config.status'
-#     (which will cause the Makefiles to be regenerated when you run 'make');
-# (2) otherwise, pass the desired values on the 'make' command line.
-$(am__recursive_targets):
-	@fail=; \
-	if $(am__make_keepgoing); then \
-	  failcom='fail=yes'; \
-	else \
-	  failcom='exit 1'; \
-	fi; \
-	dot_seen=no; \
-	target=`echo $@ | sed s/-recursive//`; \
-	case "$@" in \
-	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
-	  *) list='$(SUBDIRS)' ;; \
-	esac; \
-	for subdir in $$list; do \
-	  echo "Making $$target in $$subdir"; \
-	  if test "$$subdir" = "."; then \
-	    dot_seen=yes; \
-	    local_target="$$target-am"; \
-	  else \
-	    local_target="$$target"; \
-	  fi; \
-	  ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
-	  || eval $$failcom; \
-	done; \
-	if test "$$dot_seen" = "no"; then \
-	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
-	fi; test -z "$$fail"
-
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
-tags: tags-recursive
+tags: tags-am
 TAGS: tags
 
 tags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
 	set x; \
 	here=`pwd`; \
-	if ($(ETAGS) --etags-include --version) >/dev/null 2>&1; then \
-	  include_option=--etags-include; \
-	  empty_fix=.; \
-	else \
-	  include_option=--include; \
-	  empty_fix=; \
-	fi; \
-	list='$(SUBDIRS)'; for subdir in $$list; do \
-	  if test "$$subdir" = .; then :; else \
-	    test ! -f $$subdir/TAGS || \
-	      set "$$@" "$$include_option=$$here/$$subdir/TAGS"; \
-	  fi; \
-	done; \
 	$(am__define_uniq_tagged_files); \
 	shift; \
 	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
@@ -841,7 +634,7 @@ tags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
 	      $$unique; \
 	  fi; \
 	fi
-ctags: ctags-recursive
+ctags: ctags-am
 
 CTAGS: ctags
 ctags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
@@ -854,7 +647,7 @@ GTAGS:
 	here=`$(am__cd) $(top_builddir) && pwd` \
 	  && $(am__cd) $(top_srcdir) \
 	  && gtags -i $(GTAGS_ARGS) "$$here"
-cscopelist: cscopelist-recursive
+cscopelist: cscopelist-am
 
 cscopelist-am: $(am__tagged_files)
 	list='$(am__tagged_files)'; \
@@ -873,22 +666,21 @@ cscopelist-am: $(am__tagged_files)
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
-check: check-recursive
-all-am: Makefile $(LTLIBRARIES) all-local
-installdirs: installdirs-recursive
-installdirs-am:
+check: check-am
+all-am: Makefile $(LTLIBRARIES)
+installdirs:
 	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-recursive
-install-exec: install-exec-recursive
-install-data: install-data-recursive
-uninstall: uninstall-recursive
+install: install-am
+install-exec: install-exec-am
+install-data: install-data-am
+uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
-installcheck: installcheck-recursive
+installcheck: installcheck-am
 install-strip:
 	if test -z '$(STRIP)'; then \
 	  $(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
@@ -902,7 +694,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -911,89 +702,87 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-recursive
+clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-local \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
+	mostlyclean-am
 
-distclean: distclean-recursive
+distclean: distclean-am
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
 
-dvi: dvi-recursive
+dvi: dvi-am
 
 dvi-am:
 
-html: html-recursive
+html: html-am
 
 html-am:
 
-info: info-recursive
+info: info-am
 
 info-am:
 
-install-data-am: install-data-local
+install-data-am:
 
-install-dvi: install-dvi-recursive
+install-dvi: install-dvi-am
 
 install-dvi-am:
 
 install-exec-am: install-toolexeclibLTLIBRARIES
 
-install-html: install-html-recursive
+install-html: install-html-am
 
 install-html-am:
 
-install-info: install-info-recursive
+install-info: install-info-am
 
 install-info-am:
 
 install-man:
 
-install-pdf: install-pdf-recursive
+install-pdf: install-pdf-am
 
 install-pdf-am:
 
-install-ps: install-ps-recursive
+install-ps: install-ps-am
 
 install-ps-am:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-recursive
+maintainer-clean: maintainer-clean-am
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-recursive
+mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-pdf: pdf-recursive
+pdf: pdf-am
 
 pdf-am:
 
-ps: ps-recursive
+ps: ps-am
 
 ps-am:
 
 uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
-.MAKE: $(am__recursive_targets) install-am install-strip
+.MAKE: install-am install-strip
 
-.PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am all-local \
-	check check-am clean clean-generic clean-libtool clean-local \
-	clean-toolexeclibLTLIBRARIES cscopelist-am ctags ctags-am \
-	distclean distclean-compile distclean-generic \
+.PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
+	clean-libtool clean-toolexeclibLTLIBRARIES cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-data-local install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip \
-	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip install-toolexeclibLTLIBRARIES \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am \
@@ -1001,151 +790,6 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
-
-@VTV_CYGMIN_TRUE@vtv_stubs.cc:
-@VTV_CYGMIN_TRUE@	rm -f $@
-@VTV_CYGMIN_TRUE@	$(LN_S) $(toplevel_srcdir)/libstdc++-v3/libsupc++/vtv_stubs.cc $@
-
-vpath % $(top_srcdir)/src/c++98
-vpath % $(top_srcdir)/src/c++11
-vpath % $(top_srcdir)/src/c++17
-vpath % $(top_srcdir)/src/c++20
-@ENABLE_FILESYSTEM_TS_TRUE@vpath % $(top_srcdir)/src/filesystem
-@ENABLE_BACKTRACE_TRUE@vpath % $(top_srcdir)/src/libbacktrace
-vpath % $(top_srcdir)/src/experimental
-@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.lo: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(LTCXXCOMPILE64) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
-@GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.o: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(CXXCOMPILE64) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
-
-# Use special rules for compatibility-ldbl-alt128.cc compilation, as we need to
-# ensure it is compiled with the correct flag.
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128.lo: compatibility-ldbl-alt128.cc
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128.o: compatibility-ldbl-alt128.cc
-@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128-cxx11.lo: compatibility-ldbl-alt128-cxx11.cc
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128-cxx11.o: compatibility-ldbl-alt128-cxx11.cc
-@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
-
-# Use special rules for C++11 files/objects.
-compatibility-c++0x.lo: compatibility-c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -c $<
-compatibility-c++0x.o: compatibility-c++0x.cc
-	$(CXXCOMPILE) -std=gnu++11 -c $<
-
-compatibility-atomic-c++0x.lo: compatibility-atomic-c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -c $<
-compatibility-atomic-c++0x.o: compatibility-atomic-c++0x.cc
-	$(CXXCOMPILE) -std=gnu++11 -c $<
-
-compatibility-thread-c++0x.lo: compatibility-thread-c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -c $<
-compatibility-thread-c++0x.o: compatibility-thread-c++0x.cc
-	$(CXXCOMPILE) -std=gnu++11 -c $<
-
-compatibility-chrono.lo: compatibility-chrono.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -c $<
-compatibility-chrono.o: compatibility-chrono.cc
-	$(CXXCOMPILE) -std=gnu++11 -c $<
-
-compatibility-condvar.lo: compatibility-condvar.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -c $<
-compatibility-condvar.o: compatibility-condvar.cc
-	$(CXXCOMPILE) -std=gnu++11 -c $<
-
-# Symbol versioning for shared libraries.
-@ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
-@ENABLE_SYMVERS_TRUE@		$(port_specific_symbol_files)
-@ENABLE_SYMVERS_TRUE@	cp ${glibcxx_srcdir}/$(SYMVER_FILE) $@.tmp
-@ENABLE_SYMVERS_TRUE@	chmod +w $@.tmp
-@ENABLE_SYMVERS_TRUE@	if test "x$(port_specific_symbol_files)" != x; then \
-@ENABLE_SYMVERS_TRUE@	  if grep '^# Appended to version file.' \
-@ENABLE_SYMVERS_TRUE@	       $(port_specific_symbol_files) > /dev/null 2>&1; then \
-@ENABLE_SYMVERS_TRUE@	    cat $(port_specific_symbol_files) >> $@.tmp; \
-@ENABLE_SYMVERS_TRUE@	  else \
-@ENABLE_SYMVERS_TRUE@	    sed -n '1,/DO NOT DELETE/p' $@.tmp > tmp.top; \
-@ENABLE_SYMVERS_TRUE@	    sed -n '/DO NOT DELETE/,$$p' $@.tmp > tmp.bottom; \
-@ENABLE_SYMVERS_TRUE@	    cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@.tmp; \
-@ENABLE_SYMVERS_TRUE@	    rm tmp.top tmp.bottom; \
-@ENABLE_SYMVERS_TRUE@	  fi; \
-@ENABLE_SYMVERS_TRUE@	fi
-@ENABLE_SYMVERS_TRUE@	$(EGREP) -v '^[ 	]*#(#| |$$)' $@.tmp | \
-@ENABLE_SYMVERS_TRUE@	  $(CC) -E -P -include $(CONFIG_HEADER) - > $@ || (rm -f $@ ; exit 1)
-@ENABLE_SYMVERS_TRUE@	rm -f $@.tmp
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver-sun : libstdc++-symbols.ver \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@		$(toplevel_srcdir)/contrib/make_sunver.pl \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	CXXFILT="$(CXXFILT)"; export CXXFILT; \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	perl $(toplevel_srcdir)/contrib/make_sunver.pl \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	  libstdc++-symbols.ver \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	 `echo ' $(libstdc___la_LIBADD) ' | \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	    sed -e 's,/\([^/.]*\)\.la,/.libs/\1.a,g' -e 's/ -l[^ ]* / /'` \
-@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	 > $@ || (rm -f $@ ; exit 1)
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.explist : libstdc++-symbols.ver \
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@		${glibcxx_srcdir}/scripts/make_exports.pl \
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	perl ${glibcxx_srcdir}/scripts/make_exports.pl \
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	  libstdc++-symbols.ver \
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	 `echo $(libstdc___la_LIBADD) | \
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
-@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	 > $@ || (rm -f $@ ; exit 1)
-
-# Control additional build primary rules.
-all-once: libstdc++convenience.la $(STAMP_DEBUG)
-install-data-once: $(STAMP_INSTALL_DEBUG)
-
-all-local: all-once
-install-data-local: install-data-once
-clean-local:
-	rm -rf libstdc++convenience.la stamp* $(CLEAN_DEBUG)
-
-# Make a non-installed convenience library, so that --disable-static
-# may work.
-libstdc++convenience.la: $(toolexeclib_LTLIBRARIES)
-	$(CXXLINK) $(libstdc___la_LIBADD) $(LIBS); \
-	if test ! -f .libs/libstdc++.a; then \
-	  cp .libs/libstdc++convenience.a .libs/libstdc++.a; \
-	fi; \
-	date > stamp-libstdc++convenience;
-
-# Build a debug variant.
-
-# Take care to fix all possibly-relative paths.
-debug/%/Makefile: %/Makefile
-	$(MKDIR_P) $(dir $@)
-	sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
-	    -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
-	    -e 's/srcdir = \.\./srcdir = ..\/../' \
-	    -e 's/VPATH = \.\./VPATH = ..\/../' \
-	    -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
-	    -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
-	  < $< > $@
-
-stamp-debug: $(foreach dir,. $(SUBDIRS),debug/$(dir)/Makefile)
-	mv debug/Makefile debug/Makefile.tmp
-	sed -e 's,all-local: all-once,all-local:,' \
-	    -e 's,install-data-local: install-data-once,install-data-local:,' \
-	    -e '/vpath/!s,src/c,src/debug/c,' \
-	  < debug/Makefile.tmp > debug/Makefile
-	rm -f debug/Makefile.tmp
-	date > stamp-debug;
-
-.SECONDARY: $(foreach dir,. $(SUBDIRS),debug/$(dir)/Makefile)
-@ENABLE_BACKTRACE_TRUE@$(debug_backtrace_supported_h): $(backtrace_supported_h) stamp-debug
-@ENABLE_BACKTRACE_TRUE@	cp $< $@
-
-build-debug: stamp-debug $(debug_backtrace_supported_h)
-	  $(MAKE) -C debug CXXFLAGS='$(DEBUG_FLAGS)' \
-	    toolexeclibdir=$(glibcxx_toolexeclibdir)/debug all
-
-# Install debug library.
-install-debug: build-debug
-	$(MAKE) -C debug CXXFLAGS='$(DEBUG_FLAGS)' \
-	  toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

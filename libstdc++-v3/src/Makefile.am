@@ -35,7 +35,7 @@ backtrace_dir =
 endif
 
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
-SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir)
+SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir) experimental
 
 # Cross compiler support.
 if VTV_CYGMIN
@@ -73,6 +73,7 @@ endif
 if ENABLE_BACKTRACE
 vpath % $(top_srcdir)/src/libbacktrace
 endif
+vpath % $(top_srcdir)/src/experimental
 
 if GLIBCXX_LDBL_COMPAT
 ldbl_compat_sources = compatibility-ldbl.cc
