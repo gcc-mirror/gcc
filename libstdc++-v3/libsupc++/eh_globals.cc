@@ -70,18 +70,8 @@ __cxxabiv1::__cxa_get_globals() _GLIBCXX_NOTHROW
 
 namespace
 {
-  struct constant_init
-  {
-    union {
-      __cxa_eh_globals obj;
-    };
-    constexpr constant_init() : obj() { }
-
-    ~constant_init() { /* do nothing, union member is not destroyed */ }
-  };
-
   // Single-threaded fallback buffer.
-  __constinit constant_init eh_globals;
+  __constinit __cxa_eh_globals eh_globals;
 }
 
 #if __GTHREADS
@@ -142,7 +132,7 @@ __cxxabiv1::__cxa_get_globals_fast() _GLIBCXX_NOTHROW
   if (init._S_init)
     g = static_cast<__cxa_eh_globals*>(__gthread_getspecific(init._M_key));
   else
-    g = &eh_globals.obj;
+    g = &eh_globals;
   return g;
 }
 
@@ -167,7 +157,7 @@ __cxxabiv1::__cxa_get_globals() _GLIBCXX_NOTHROW
 	}
     }
   else
-    g = &eh_globals.obj;
+    g = &eh_globals;
   return g;
 }
 
@@ -175,11 +165,11 @@ __cxxabiv1::__cxa_get_globals() _GLIBCXX_NOTHROW
 
 extern "C" __cxa_eh_globals*
 __cxxabiv1::__cxa_get_globals_fast() _GLIBCXX_NOTHROW
-{ return &eh_globals.obj; }
+{ return &eh_globals; }
 
 extern "C" __cxa_eh_globals*
 __cxxabiv1::__cxa_get_globals() _GLIBCXX_NOTHROW
-{ return &eh_globals.obj; }
+{ return &eh_globals; }
 
 #endif
 
