@@ -244,7 +244,7 @@ class plugin_analyzer_init_iface
 public:
   virtual void register_state_machine (state_machine *) = 0;
   virtual void register_known_function (const char *name,
-					known_function *) = 0;
+					std::unique_ptr<known_function>) = 0;
   virtual logger *get_logger () const = 0;
 };
 

@@ -48,11 +48,12 @@ known_function_manager::~known_function_manager ()
 }
 
 void
-known_function_manager::add (const char *name, known_function *kf)
+known_function_manager::add (const char *name,
+			     std::unique_ptr<known_function> kf)
 {
   LOG_FUNC_1 (get_logger (), "registering %s", name);
   tree id = get_identifier (name);
-  m_map_id_to_kf.put (id, kf);
+  m_map_id_to_kf.put (id, kf.release ());
 }
 
 const known_function *

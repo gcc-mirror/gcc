@@ -210,10 +210,11 @@ kernel_analyzer_init_cb (void *gcc_data, void */*user_data*/)
   LOG_SCOPE (iface->get_logger ());
   if (0)
     inform (input_location, "got here: kernel_analyzer_init_cb");
-  iface->register_known_function ("copy_from_user",
-				  new known_function_copy_from_user ());
+  iface->register_known_function
+    ("copy_from_user",
+     make_unique<known_function_copy_from_user> ());
   iface->register_known_function ("copy_to_user",
-				  new known_function_copy_to_user ());
+				  make_unique<known_function_copy_to_user> ());
 }
 
 } // namespace ana

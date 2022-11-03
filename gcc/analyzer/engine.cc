@@ -5960,10 +5960,10 @@ public:
   }
 
   void register_known_function (const char *name,
-				known_function *kf) final override
+				std::unique_ptr<known_function> kf) final override
   {
     LOG_SCOPE (m_logger);
-    m_known_fn_mgr->add (name, kf);
+    m_known_fn_mgr->add (name, std::move (kf));
   }
 
   logger *get_logger () const final override
