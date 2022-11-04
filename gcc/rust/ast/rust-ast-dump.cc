@@ -227,6 +227,28 @@ Dump::visit (StructField &field)
   visit (field.get_field_type ());
 }
 
+// TODO is this unique by type?
+void
+Dump::visit (std::vector<LifetimeParam> &for_lifetimes)
+{
+  // ForLifetimes :
+  //     for GenericParams
+  //
+  // GenericParams :
+  //      < >
+  //   | < (GenericParam ,)* GenericParam ,? >
+  //
+  // GenericParam :
+  //   OuterAttribute* ( LifetimeParam | TypeParam | ConstParam )
+  //
+  // LifetimeParam :
+  //   LIFETIME_OR_LABEL ( : LifetimeBounds )?
+
+  stream << "for <";
+  visit_items_joined_by_separator (for_lifetimes, " + ");
+  stream << "> ";
+}
+
 void
 Dump::visit (Token &tok)
 {
@@ -258,11 +280,35 @@ Dump::visit (IdentifierExpr &ident_expr)
 
 void
 Dump::visit (Lifetime &lifetime)
-{}
+{
+  // Syntax:
+  // Lifetime :
+  // 	LIFETIME_OR_LABEL
+  // 	| 'static
+  // 	| '_
+  stream << lifetime.as_string ();
+}
 
 void
 Dump::visit (LifetimeParam &lifetime_param)
-{}
+{
+  // Syntax:
+  //   LIFETIME_OR_LABEL ( : LifetimeBounds )?
+  // LifetimeBounds :
+  //   ( Lifetime + )* Lifetime?
+
+  // TODO what to do with outer attr? They are not mentioned in the reference.
+
+  auto lifetime = lifetime_param.get_lifetime ();
+  visit (lifetime);
+
+  if (lifetime_param.has_lifetime_bounds ())
+    {
+      stream << ": ";
+      visit_items_joined_by_separator (lifetime_param.get_lifetime_bounds (),
+				       " + ");
+    }
+}
 
 void
 Dump::visit (ConstGenericParam &lifetime_param)
@@ -805,12 +851,51 @@ Dump::visit (TypeParam &param)
 }
 
 void
+Dump::visit (WhereClause &rule)
+{
+  // Syntax:
+  // 	where ( WhereClauseItem , )* WhereClauseItem ?
+  // WhereClauseItem :
+  // 	LifetimeWhereClauseItem
+  //  	| TypeBoundWhereClauseItem
+
+  stream << " where\n";
+  indentation.increment ();
+  visit_items_as_lines (rule.get_items (), ",");
+  indentation.decrement ();
+}
+
+void
 Dump::visit (LifetimeWhereClauseItem &item)
-{}
+{
+  // Syntax:
+  // 	Lifetime : LifetimeBounds
+  // LifetimeBounds :
+  //   ( Lifetime + )* Lifetime?
+
+  visit (item.get_lifetime ());
+  stream << ": ";
+  visit_items_joined_by_separator (item.get_lifetime_bounds (), " + ");
+}
 
 void
 Dump::visit (TypeBoundWhereClauseItem &item)
-{}
+{
+  // Syntax:
+  // 	ForLifetimes? Type : TypeParamBounds?
+  // TypeParamBounds :
+  // 	TypeParamBound ( + TypeParamBound )* +?
+  // TypeParamBound :
+  //    Lifetime | TraitBound
+
+  if (item.has_for_lifetimes ())
+    visit (item.get_for_lifetimes ());
+
+  visit (item.get_type ());
+  stream << ": ";
+
+  visit_items_joined_by_separator (item.get_type_param_bounds (), " + ");
+}
 
 void
 Dump::visit (Method &method)
@@ -896,6 +981,12 @@ Dump::visit (UseDeclaration &use_decl)
 void
 Dump::visit (Function &function)
 {
+  // Syntax:
+  //   FunctionQualifiers fn IDENTIFIER GenericParams?
+  //      ( FunctionParameters? )
+  //      FunctionReturnType? WhereClause?
+  //      ( BlockExpression | ; )
+
   visit (function.get_visibility ());
 
   stream << "fn " << function.get_function_name ();
@@ -912,6 +1003,9 @@ Dump::visit (Function &function)
       visit (function.get_return_type ());
       stream << " ";
     }
+
+  if (function.has_where_clause ())
+    visit (function.get_where_clause ());
 
   auto &block = function.get_definition ();
   if (!block)
@@ -936,8 +1030,7 @@ Dump::visit (TypeAlias &type_alias)
   if (type_alias.has_generics ())
     visit (type_alias.get_generic_params ());
   if (type_alias.has_where_clause ())
-    {
-    } // FIXME: WhereClause
+    visit (type_alias.get_where_clause ());
   stream << " = ";
   visit (type_alias.get_type_aliased ());
   stream << ";\n";
@@ -949,9 +1042,8 @@ Dump::visit (StructStruct &struct_item)
   stream << "struct " << struct_item.get_identifier ();
   if (struct_item.has_generics ())
     visit (struct_item.get_generic_params ());
-
-  // FIXME: where-clause
-
+  if (struct_item.has_where_clause ())
+    visit (struct_item.get_where_clause ());
   if (struct_item.is_unit_struct ())
     stream << ";\n";
   else
@@ -964,8 +1056,8 @@ Dump::visit (TupleStruct &tuple_struct)
   stream << "struct " << tuple_struct.get_identifier ();
   if (tuple_struct.has_generics ())
     visit (tuple_struct.get_generic_params ());
-
-  // FIXME: where-clause
+  if (tuple_struct.has_where_clause ())
+    visit (tuple_struct.get_where_clause ());
 
   stream << '(';
   visit_items_joined_by_separator (tuple_struct.get_fields (), ", ");
@@ -1006,8 +1098,8 @@ Dump::visit (Enum &enum_item)
   stream << "enum " << enum_item.get_identifier ();
   if (enum_item.has_generics ())
     visit (enum_item.get_generic_params ());
-
-  // FIXME: where-clause
+  if (enum_item.has_where_clause ())
+    visit (enum_item.get_where_clause ());
 
   visit_items_as_block (enum_item.get_variants (), ",");
 }
@@ -1018,8 +1110,8 @@ Dump::visit (Union &union_item)
   stream << "union " << union_item.get_identifier ();
   if (union_item.has_generics ())
     visit (union_item.get_generic_params ());
-
-  // FIXME: where-clause
+  if (union_item.has_where_clause ())
+    visit (union_item.get_where_clause ());
 
   visit_items_as_block (union_item.get_variants (), ",");
 }
@@ -1137,7 +1229,9 @@ Dump::visit (InherentImpl &impl)
 
   visit (impl.get_type ());
 
-  // FIXME: Handle where-clause
+  if (impl.has_where_clause ())
+    visit (impl.get_where_clause ());
+
   // FIXME: Handle inner attributes
 
   visit_items_as_block (impl.get_impl_items (), "");
@@ -1451,7 +1545,19 @@ Dump::visit (ExprStmtWithBlock &stmt)
 // rust-type.h
 void
 Dump::visit (TraitBound &bound)
-{}
+{
+  // Syntax:
+  //      ?? ForLifetimes? TypePath
+  //   | ( ?? ForLifetimes? TypePath )
+
+  if (bound.has_opening_question_mark ())
+    stream << "? ";
+
+  if (bound.has_for_lifetimes ())
+    visit (bound.get_for_lifetimes ());
+
+  visit (bound.get_type_path ());
+}
 
 void
 Dump::visit (ImplTraitType &type)

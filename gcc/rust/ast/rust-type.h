@@ -46,6 +46,8 @@ public:
   // Returns whether trait bound has "for" lifetimes
   bool has_for_lifetimes () const { return !for_lifetimes.empty (); }
 
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+
   TraitBound (TypePath type_path, Location locus, bool in_parens = false,
 	      bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
