@@ -1310,6 +1310,8 @@ public:
   // Returns whether the lifetime param has any lifetime bounds.
   bool has_lifetime_bounds () const { return !lifetime_bounds.empty (); }
 
+  std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
+
   // Returns whether the lifetime param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
 

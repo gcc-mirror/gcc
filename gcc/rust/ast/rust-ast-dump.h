@@ -135,6 +135,8 @@ private:
   void visit (SimplePathSegment &segment);
   void visit (NamedFunctionParam &param);
   void visit (MacroRule &rule);
+  void visit (WhereClause &rule);
+  void visit (std::vector<LifetimeParam> &for_lifetimes);
 
   // rust-ast.h
   void visit (Token &tok);

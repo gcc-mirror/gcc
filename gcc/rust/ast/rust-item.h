@@ -236,6 +236,8 @@ public:
   // Returns whether the item has ForLifetimes
   bool has_for_lifetimes () const { return !for_lifetimes.empty (); }
 
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+
   // Returns whether the item has type param bounds
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
