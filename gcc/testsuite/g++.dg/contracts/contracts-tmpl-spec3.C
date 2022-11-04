@@ -34,12 +34,12 @@ int main(int, char**) {
 
 // { dg-output "G5 full double double, f gen R(\n|\r\n|\r)*" }
 // { dg-output "G5 full double double, f gen R(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .*(\n|\r\n|\r)*" }
+// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .* t > 0 .*(\n|\r\n|\r)*" }
+// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .* s > 0 .*(\n|\r\n|\r)*" }
+// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .* r > 0 .*(\n|\r\n|\r)*" }
 // { dg-output "G5 gen T S, f gen R(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .*(\n|\r\n|\r)*" }
-// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .*(\n|\r\n|\r)*" }
+// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .* t > 0 .*(\n|\r\n|\r)*" }
+// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .* s > 0 .*(\n|\r\n|\r)*" }
+// { dg-output "default std::handle_contract_violation called: .*.C 10 G5<int, .* r > 0 .*(\n|\r\n|\r)*" }
 // { dg-output "G5 gen T S, f gen R(\n|\r\n|\r)*" }
 
