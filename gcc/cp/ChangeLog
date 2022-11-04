@@ -1,3 +1,26 @@
+2022-11-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107488
+	* call.cc (do_warn_dangling_reference): Quash -Wdangling-reference
+	for member operator*.
+
+2022-11-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107179
+	* constraint.cc (tsubst_requires_expr): Make sure we're not
+	deferring access checks.
+
+2022-11-03  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_template_declaration_after_parameters): Fix
+	concept parsing below C++20.
+
+2022-11-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93413
+	* decl2.cc (mark_used): Don't defer synthesis of virtual
+	functions.
+
 2022-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR): New.

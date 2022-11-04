@@ -1,3 +1,10 @@
+2022-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__detail::__copy_or_move):
+	Move output iterator.
+	* testsuite/25_algorithms/copy/constrained.cc: Check copying to
+	move-only output iterator.
+
 2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/eh_globals.cc (constant_init::unused): Remove.

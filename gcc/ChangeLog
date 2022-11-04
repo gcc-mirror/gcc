@@ -1,3 +1,41 @@
+2022-11-03  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: -fconcepts no longer implies
+	-fconcepts-ts before C++20.
+
+2022-11-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (math_unop_insn): New attribute.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>, <math_unop><mode>2,
+	<math_unop><mode>2<exec>, *<math_unop><mode>2_insn,
+	*<math_unop><mode>2<exec>_insn): Use math_unop_insn to generate
+	assembler output.
+
+2022-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::update_stmt): New.
+	* gimple-range.h (gimple_ranger::update_stmt): New prototype.
+	* tree-ssa-operands.cc (update_stmt_operands): Notify range
+	query that stmt has changed.
+	* value-query.h (range_query::update_stmt): New.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* make-unique.h: New file.
+
+2022-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/107404
+	* config/i386/i386.md (eliminate reg-reg move by inverting the
+	condition of a cmove #2 peephole2): Check if eliminated move
+	initialized a register, used in the moved instruction.
+
+2022-11-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/107510
+	* config/gcn/gcn.cc (gcn_expand_reduc_scalar): Remove duplicate
+	UNSPEC_SMIN_DPP_SHR conditionals.
+
 2022-11-02  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* common/config/riscv/riscv-common.cc: Add zawrs extension.

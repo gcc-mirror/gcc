@@ -1,3 +1,172 @@
+2022-11-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107488
+	* g++.dg/warn/Wdangling-reference5.C: New test.
+
+2022-11-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107179
+	* g++.dg/cpp2a/concepts-requires31.C: New test.
+
+2022-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/pr99966.C: New.
+	* gcc.dg/pr93917.c: New.
+	* gcc.dg/pr102650.c: New.
+
+2022-11-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/concepts/auto1.C:
+	* g++.dg/concepts/auto3.C:
+	* g++.dg/concepts/auto4.C:
+	* g++.dg/concepts/class-deduction1.C:
+	* g++.dg/concepts/class5.C:
+	* g++.dg/concepts/class6.C:
+	* g++.dg/concepts/debug1.C:
+	* g++.dg/concepts/decl-diagnose.C:
+	* g++.dg/concepts/deduction-constraint1.C:
+	* g++.dg/concepts/diagnostic1.C:
+	* g++.dg/concepts/dr1430.C:
+	* g++.dg/concepts/equiv.C:
+	* g++.dg/concepts/equiv2.C:
+	* g++.dg/concepts/expression.C:
+	* g++.dg/concepts/expression2.C:
+	* g++.dg/concepts/expression3.C:
+	* g++.dg/concepts/fn-concept1.C:
+	* g++.dg/concepts/fn-concept2.C:
+	* g++.dg/concepts/fn-concept3.C:
+	* g++.dg/concepts/fn1.C:
+	* g++.dg/concepts/fn10.C:
+	* g++.dg/concepts/fn2.C:
+	* g++.dg/concepts/fn3.C:
+	* g++.dg/concepts/fn4.C:
+	* g++.dg/concepts/fn5.C:
+	* g++.dg/concepts/fn6.C:
+	* g++.dg/concepts/fn8.C:
+	* g++.dg/concepts/fn9.C:
+	* g++.dg/concepts/generic-fn-err.C:
+	* g++.dg/concepts/generic-fn.C:
+	* g++.dg/concepts/inherit-ctor1.C:
+	* g++.dg/concepts/inherit-ctor3.C:
+	* g++.dg/concepts/intro1.C:
+	* g++.dg/concepts/intro2.C:
+	* g++.dg/concepts/intro3.C:
+	* g++.dg/concepts/intro4.C:
+	* g++.dg/concepts/intro5.C:
+	* g++.dg/concepts/intro6.C:
+	* g++.dg/concepts/intro7.C:
+	* g++.dg/concepts/locations1.C:
+	* g++.dg/concepts/partial-concept-id1.C:
+	* g++.dg/concepts/partial-concept-id2.C:
+	* g++.dg/concepts/partial-spec5.C:
+	* g++.dg/concepts/placeholder2.C:
+	* g++.dg/concepts/placeholder3.C:
+	* g++.dg/concepts/placeholder4.C:
+	* g++.dg/concepts/placeholder5.C:
+	* g++.dg/concepts/placeholder6.C:
+	* g++.dg/concepts/pr65634.C:
+	* g++.dg/concepts/pr65636.C:
+	* g++.dg/concepts/pr65681.C:
+	* g++.dg/concepts/pr65848.C:
+	* g++.dg/concepts/pr67249.C:
+	* g++.dg/concepts/pr67595.C:
+	* g++.dg/concepts/pr68434.C:
+	* g++.dg/concepts/pr71127.C:
+	* g++.dg/concepts/pr71128.C:
+	* g++.dg/concepts/pr71131.C:
+	* g++.dg/concepts/pr71385.C:
+	* g++.dg/concepts/pr85065.C:
+	* g++.dg/concepts/template-parm11.C:
+	* g++.dg/concepts/template-parm12.C:
+	* g++.dg/concepts/template-parm2.C:
+	* g++.dg/concepts/template-parm3.C:
+	* g++.dg/concepts/template-parm4.C:
+	* g++.dg/concepts/template-template-parm1.C:
+	* g++.dg/concepts/var-concept1.C:
+	* g++.dg/concepts/var-concept2.C:
+	* g++.dg/concepts/var-concept3.C:
+	* g++.dg/concepts/var-concept4.C:
+	* g++.dg/concepts/var-concept5.C:
+	* g++.dg/concepts/var-concept6.C:
+	* g++.dg/concepts/var-concept7.C:
+	* g++.dg/concepts/var-templ2.C:
+	* g++.dg/concepts/var-templ3.C:
+	* g++.dg/concepts/variadic1.C:
+	* g++.dg/concepts/variadic2.C:
+	* g++.dg/concepts/variadic3.C:
+	* g++.dg/concepts/variadic4.C:
+	* g++.dg/cpp2a/concepts-pr65575.C:
+	* g++.dg/cpp2a/concepts-pr66091.C:
+	* g++.dg/cpp2a/concepts-pr84980.C:
+	* g++.dg/cpp2a/concepts-pr85265.C: Pass -fconcepts-ts.
+	* g++.dg/cpp2a/concepts-pr84979-2.C:
+	* g++.dg/cpp2a/concepts-pr84979-3.C: Same diagnostics
+	in C++20 and below.
+
+2022-11-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93413
+	* g++.dg/cpp2a/constexpr-virtual21.C: New test.
+
+2022-11-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gcc.target/gcn/unsafe-math-1.c: New.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Use std::unique_ptr for
+	state machines from plugins.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: Use std::unique_ptr for
+	known functions.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: Likewise.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: Include "make-unique.h".
+	Use std::unique_ptr in bifurcation code.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: Likewise.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Add define of
+	INCLUDE_MEMORY.  Include "make-unique.h".
+	(gil_state_machine::check_for_pyobject_in_call): Use make_unique
+	when creating pending_diagnostic.
+	(gil_state_machine::on_stmt): Likewise.
+	(gil_state_machine::check_for_pyobject_usage_without_gil): Likewise.
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: : Add define of
+	INCLUDE_MEMORY.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: Likewise.
+
+2022-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-update.c: New.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107486
+	* gcc.dg/analyzer/pipe-pr107486.c: New test.
+	* gcc.dg/analyzer/pipe-void-return.c: New test.
+
+2022-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/107404
+	* g++.target/i386/pr107404.C: New test.
+
+2022-11-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106806
+	* gcc.dg/tree-ssa/gen-vect-34.c: Adjust with vect_masked_load
+	effective target.
+
+2022-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-auto-1.c, gcc.dg/c2x-auto-2.c, gcc.dg/c2x-auto-3.c,
+	gcc.dg/c2x-auto-4.c, gcc.dg/gnu2x-auto-1.c: New tests.
+
 2022-11-02  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* gcc.target/riscv/zawrs.c: New test.
