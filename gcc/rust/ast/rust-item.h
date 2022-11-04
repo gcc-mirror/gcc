@@ -908,6 +908,7 @@ public:
 
   FunctionQualifiers get_qualifiers () { return qualifiers; }
 
+  Visibility &get_visibility () { return vis; }
   const Visibility &get_visibility () const { return vis; }
 
 protected:
@@ -1982,6 +1983,7 @@ public:
     return field_type;
   }
 
+  Visibility &get_visibility () { return visibility; }
   const Visibility &get_visibility () const { return visibility; }
 
   NodeId get_node_id () const { return node_id; }
@@ -2116,6 +2118,7 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
+  Visibility &get_visibility () { return visibility; }
   const Visibility &get_visibility () const { return visibility; }
 
   Location get_locus () const { return locus; }
@@ -4157,6 +4160,7 @@ public:
 
   Location get_locus () const { return locus; }
 
+  Visibility &get_visibility () { return visibility; }
   const Visibility &get_visibility () const { return visibility; }
 
   ExternalFunctionItem (
