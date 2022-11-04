@@ -81,6 +81,11 @@ private:
   template <typename T> void visit (std::unique_ptr<T> &node);
 
   /**
+   * @see visit<std::unique_ptr<T>>
+   */
+  template <typename T> void visit (T &node);
+
+  /**
    * Visit all items in given @collection, placing the separator in between but
    * not at the end.
    * Start and end offset allow to visit only a "slice" from the collection.
@@ -122,12 +127,12 @@ private:
 			      std::unique_ptr<BlockExpr> &block);
 
   void visit (FunctionParam &param);
-  void visit (const Attribute &attrib);
-  void visit (const Visibility &vis);
+  void visit (Attribute &attrib);
+  void visit (Visibility &vis);
   void visit (std::vector<std::unique_ptr<GenericParam>> &params);
   void visit (TupleField &field);
   void visit (StructField &field);
-  void visit (const SimplePathSegment &segment);
+  void visit (SimplePathSegment &segment);
   void visit (NamedFunctionParam &param);
   void visit (MacroRule &rule);
 

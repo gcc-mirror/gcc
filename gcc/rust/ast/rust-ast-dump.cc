@@ -66,6 +66,13 @@ Dump::visit (std::unique_ptr<T> &node)
 
 template <typename T>
 void
+Dump::visit (T &node)
+{
+  node.accept_vis (*this);
+}
+
+template <typename T>
+void
 Dump::visit_items_joined_by_separator (T &collection,
 				       const std::string &separator,
 				       size_t start_offset, size_t end_offset)
@@ -129,7 +136,7 @@ Dump::visit (FunctionParam &param)
 }
 
 void
-Dump::visit (const Attribute &attrib)
+Dump::visit (Attribute &attrib)
 {
   stream << "#[";
   visit_items_joined_by_separator (attrib.get_path ().get_segments (), "::");
@@ -158,13 +165,13 @@ Dump::visit (const Attribute &attrib)
 }
 
 void
-Dump::visit (const SimplePathSegment &segment)
+Dump::visit (SimplePathSegment &segment)
 {
   stream << segment.get_segment_name ();
 }
 
 void
-Dump::visit (const Visibility &vis)
+Dump::visit (Visibility &vis)
 {
   switch (vis.get_vis_type ())
     {
@@ -1099,7 +1106,7 @@ Dump::visit (TraitItemType &item)
 void
 Dump::visit (Trait &trait)
 {
-  for (const auto &attr : trait.get_outer_attrs ())
+  for (auto &attr : trait.get_outer_attrs ())
     {
       visit (attr);
       stream << "\n" << indentation;
