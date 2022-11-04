@@ -15,7 +15,7 @@
 
 #ifndef DIFFERENT_PRAGMAS
 #ifdef __x86_64__
-#pragma GCC target ("adx,bmi,bmi2,fsgsbase,fxsr,hreset,lwp,lzcnt,popcnt,rdrnd,rdseed,tbm,rtm,serialize,tsxldtrk,uintr,xsaveopt")
+#pragma GCC target ("adx,bmi,bmi2,cmpccxadd,fsgsbase,fxsr,hreset,lwp,lzcnt,popcnt,rdrnd,rdseed,tbm,rtm,serialize,tsxldtrk,uintr,xsaveopt")
 #else
 #pragma GCC target ("adx,bmi,bmi2,fsgsbase,fxsr,hreset,lwp,lzcnt,popcnt,rdrnd,rdseed,tbm,rtm,serialize,tsxldtrk,xsaveopt")
 #endif

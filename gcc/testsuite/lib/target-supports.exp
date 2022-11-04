@@ -9561,6 +9561,16 @@ proc check_effective_target_avxneconvert { } {
     } "-O0 -mavxneconvert" ]
 }
 
+# Return 1 if cmpccxadd instructions can be compiled.
+proc check_effective_target_cmpccxadd { } {
+    return [check_no_compiler_messages cmpccxadd object {
+	int _cmpccxadd_epi32 (int *__A, int __B, int __C, const int __D)
+        {
+	   return (int)__builtin_ia32_cmpccxadd (__A, __B, __C, 1);
+	}
+    } "-mcmpccxadd" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

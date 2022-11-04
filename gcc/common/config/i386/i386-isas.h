@@ -180,4 +180,5 @@ ISA_NAMES_TABLE_START
 			P_NONE, "-mavxvnniint8")
   ISA_NAMES_TABLE_ENTRY("avxneconvert", FEATURE_AVXNECONVERT,
 			P_NONE, "-mavxneconvert")
+  ISA_NAMES_TABLE_ENTRY("cmpccxadd", FEATURE_CMPCCXADD, P_NONE, "-mcmpccxadd")
 ISA_NAMES_TABLE_END

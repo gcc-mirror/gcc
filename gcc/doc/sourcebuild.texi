@@ -2511,6 +2511,9 @@ Target supports the execution of @code{amx-bf16} instructions.
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 
+@item cmpccxadd
+Target supports the execution of @code{cmpccxadd} instructions.
+
 @item coldfire_fpu
 Target uses a ColdFire FPU.
 

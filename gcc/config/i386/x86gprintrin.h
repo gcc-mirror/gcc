@@ -52,6 +52,8 @@
 
 #include <clzerointrin.h>
 
+#include <cmpccxaddintrin.h>
+
 #include <enqcmdintrin.h>
 
 #include <fxsrintrin.h>

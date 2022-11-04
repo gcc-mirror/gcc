@@ -7075,6 +7075,11 @@ Enable/disable the generation of the AVXVNNIINT8 instructions.
 @cindex @code{target("avxneconvert")} function attribute, x86
 Enable/disable the generation of the AVXNECONVERT instructions.
 
+@item cmpccxadd
+@itemx no-cmpccxadd
+@cindex @code{target("cmpccxadd")} function attribute, x86
+Enable/disable the generation of the CMPccXADD instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

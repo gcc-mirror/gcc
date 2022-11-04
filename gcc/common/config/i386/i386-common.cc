@@ -110,6 +110,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AMX_BF16_SET OPTION_MASK_ISA2_AMX_BF16
 #define OPTION_MASK_ISA2_AVXVNNIINT8_SET OPTION_MASK_ISA2_AVXVNNIINT8
 #define OPTION_MASK_ISA2_AVXNECONVERT_SET OPTION_MASK_ISA2_AVXNECONVERT
+#define OPTION_MASK_ISA2_CMPCCXADD_SET OPTION_MASK_ISA2_CMPCCXADD
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -283,6 +284,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_WIDEKL_UNSET OPTION_MASK_ISA2_WIDEKL
 #define OPTION_MASK_ISA2_AVXVNNIINT8_UNSET OPTION_MASK_ISA2_AVXVNNIINT8
 #define OPTION_MASK_ISA2_AVXNECONVERT_UNSET OPTION_MASK_ISA2_AVXNECONVERT
+#define OPTION_MASK_ISA2_CMPCCXADD_UNSET OPTION_MASK_ISA2_CMPCCXADD
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1178,6 +1180,19 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVXNECONVERT_UNSET;
 	  opts->x_ix86_isa_flags2_explicit
 	    |= OPTION_MASK_ISA2_AVXNECONVERT_UNSET;
+	}
+      return true;
+
+    case OPT_mcmpccxadd:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CMPCCXADD_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_CMPCCXADD_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_CMPCCXADD_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_CMPCCXADD_UNSET;
 	}
       return true;
 

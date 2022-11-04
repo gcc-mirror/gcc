@@ -230,7 +230,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mavx512fp16",	OPTION_MASK_ISA2_AVX512FP16 },
   { "-mavxifma",	OPTION_MASK_ISA2_AVXIFMA },
   { "-mavxvnniint8",	OPTION_MASK_ISA2_AVXVNNIINT8 },
-  { "-mavxneconvert",   OPTION_MASK_ISA2_AVXNECONVERT }
+  { "-mavxneconvert",   OPTION_MASK_ISA2_AVXNECONVERT },
+  { "-mcmpccxadd",      OPTION_MASK_ISA2_CMPCCXADD }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1080,6 +1081,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("avxifma", OPT_mavxifma),
     IX86_ATTR_ISA ("avxvnniint8", OPT_mavxvnniint8),
     IX86_ATTR_ISA ("avxneconvert", OPT_mavxneconvert),
+    IX86_ATTR_ISA ("cmpccxadd",   OPT_mcmpccxadd),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
