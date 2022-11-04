@@ -1911,8 +1911,20 @@ operator_mult::wi_fold (irange &r, tree type,
   // diff = max - min
   prod2 = prod3 - prod0;
   if (wi::geu_p (prod2, sizem1))
-    // The range covers all values.
-    r.set_varying (type);
+    {
+      // Multiplying by X, where X is a power of 2 is [0,0][X,+INF].
+      if (TYPE_UNSIGNED (type) && rh_lb == rh_ub
+	  && wi::exact_log2 (rh_lb) != -1 && prec > 1)
+	{
+	  r.set (type, rh_lb, wi::max_value (prec, sign));
+	  int_range<2> zero;
+	  zero.set_zero (type);
+	  r.union_ (zero);
+	}
+      else
+	// The range covers all values.
+	r.set_varying (type);
+    }
   else
     {
       wide_int new_lb = wide_int::from (prod0, prec, sign);
