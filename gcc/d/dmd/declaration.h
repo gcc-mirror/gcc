@@ -139,6 +139,7 @@ public:
     bool isWild() const         { return (storage_class & STCwild) != 0; }
     bool isAuto() const         { return (storage_class & STCauto) != 0; }
     bool isScope() const        { return (storage_class & STCscope) != 0; }
+    bool isReturn() const       { return (storage_class & STCreturn) != 0; }
     bool isSynchronized() const { return (storage_class & STCsynchronized) != 0; }
     bool isParameter() const    { return (storage_class & STCparameter) != 0; }
     bool isDeprecated() const override final { return (storage_class & STCdeprecated) != 0; }
@@ -615,7 +616,54 @@ public:
 
     AttributeViolation* safetyViolation;
 
-    unsigned flags;                     // FUNCFLAGxxxxx
+    // Formerly FUNCFLAGS
+    uint32_t flags;
+    bool purityInprocess() const;
+    bool purityInprocess(bool v);
+    bool safetyInprocess() const;
+    bool safetyInprocess(bool v);
+    bool nothrowInprocess() const;
+    bool nothrowInprocess(bool v);
+    bool nogcInprocess() const;
+    bool nogcInprocess(bool v);
+    bool returnInprocess() const;
+    bool returnInprocess(bool v);
+    bool inlineScanned() const;
+    bool inlineScanned(bool v);
+    bool inferScope() const;
+    bool inferScope(bool v);
+    bool hasCatches() const;
+    bool hasCatches(bool v);
+    bool isCompileTimeOnly() const;
+    bool isCompileTimeOnly(bool v);
+    bool printf() const;
+    bool printf(bool v);
+    bool scanf() const;
+    bool scanf(bool v);
+    bool noreturn() const;
+    bool noreturn(bool v);
+    bool isNRVO() const;
+    bool isNRVO(bool v);
+    bool isNaked() const;
+    bool isNaked(bool v);
+    bool isGenerated() const;
+    bool isGenerated(bool v);
+    bool isIntroducing() const;
+    bool isIntroducing(bool v);
+    bool hasSemantic3Errors() const;
+    bool hasSemantic3Errors(bool v);
+    bool hasNoEH() const;
+    bool hasNoEH(bool v);
+    bool inferRetType() const;
+    bool inferRetType(bool v);
+    bool hasDualContext() const;
+    bool hasDualContext(bool v);
+    bool hasAlwaysInlines() const;
+    bool hasAlwaysInlines(bool v);
+    bool isCrtCtor() const;
+    bool isCrtCtor(bool v);
+    bool isCrtDtor() const;
+    bool isCrtDtor(bool v);
 
     // Data for a function declaration that is needed for the Objective-C
     // integration.
@@ -655,22 +703,6 @@ public:
 
     bool isNogc();
     bool isNogcBypassingInference();
-    bool isNRVO() const;
-    void isNRVO(bool v);
-    bool isNaked() const;
-    void isNaked(bool v);
-    bool isGenerated() const;
-    void isGenerated(bool v);
-    bool isIntroducing() const;
-    bool hasSemantic3Errors() const;
-    bool hasNoEH() const;
-    bool inferRetType() const;
-    bool hasDualContext() const;
-    bool hasAlwaysInlines() const;
-    bool isCrtCtor() const;
-    void isCrtCtor(bool v);
-    bool isCrtDtor() const;
-    void isCrtDtor(bool v);
 
     virtual bool isNested() const;
     AggregateDeclaration *isThis() override;

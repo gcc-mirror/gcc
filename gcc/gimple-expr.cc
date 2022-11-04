@@ -912,7 +912,7 @@ mark_addressable_1 (tree x)
 
 /* Adaptor for mark_addressable_1 for use in hash_set traversal.  */
 
-bool
+static bool
 mark_addressable_2 (tree const &x, void * ATTRIBUTE_UNUSED = NULL)
 {
   mark_addressable_1 (x);

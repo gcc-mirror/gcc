@@ -149,7 +149,7 @@
      (ior (and (match_code "const_int")
 	       (match_test "(GET_MODE_CLASS (mode) == MODE_INT
 			     && xtensa_simm12b (INTVAL (op)))
-			    || can_create_pseudo_p ()"))
+			    || ! xtensa_split1_finished_p ()"))
 	  (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
 	       (match_test "(TARGET_CONST16 || TARGET_AUTO_LITPOOLS)
 			    && CONSTANT_P (op)

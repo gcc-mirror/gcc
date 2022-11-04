@@ -725,10 +725,6 @@ verify_bb_vtables (basic_block bb)
                      trace information to debug problems.  */
                   if (flag_vtv_debug)
                     {
-                      int len1 = IDENTIFIER_LENGTH
-                                                 (DECL_NAME (vtbl_var_decl));
-                      int len2 = strlen (vtable_name);
-
                       call_stmt = gimple_build_call
                                      (verify_vtbl_ptr_fndecl, 4,
                                       build1 (ADDR_EXPR,
@@ -737,12 +733,8 @@ verify_bb_vtables (basic_block bb)
                                               vtbl_var_decl),
                                       lhs,
                                       build_string_literal
-                                                  (len1 + 1,
-                                                   IDENTIFIER_POINTER
-                                                       (DECL_NAME
-                                                            (vtbl_var_decl))),
-                                      build_string_literal (len2 + 1,
-                                                            vtable_name));
+						  (DECL_NAME (vtbl_var_decl)),
+				      build_string_literal (vtable_name));
                     }
                   else
                     call_stmt = gimple_build_call

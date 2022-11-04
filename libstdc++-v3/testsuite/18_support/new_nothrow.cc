@@ -17,6 +17,7 @@
 
 // { dg-do run }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
+// { dg-require-effective-target hosted }
 
 #include <new>
 #include <stdlib.h>

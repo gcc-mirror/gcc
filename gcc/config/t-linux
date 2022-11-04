@@ -20,6 +20,10 @@ linux.o: $(srcdir)/config/linux.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
+linux-d.o: $(srcdir)/config/linux-d.cc
+	  $(COMPILE) $<
+	  $(POSTCOMPILE)
+
 linux-rust.o: $(srcdir)/config/linux-rust.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)

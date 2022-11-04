@@ -5718,6 +5718,7 @@ ira (FILE *f)
     regstat_free_ri ();
     regstat_init_n_sets_and_refs ();
     regstat_compute_ri ();
+    resize_reg_info ();
   };
 
   int max_regno_before_rm = max_reg_num ();

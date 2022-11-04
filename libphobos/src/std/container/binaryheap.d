@@ -89,6 +89,8 @@ if (isRandomAccessRange!(Store) || isRandomAccessRange!(typeof(Store.init[])))
         Store _store;
         size_t _length;
     }
+    // TODO: migrate to use the SafeRefCounted. The problem is that some member
+    // functions here become @system with a naive switch.
     private RefCounted!(Data, RefCountedAutoInitialize.no) _payload;
     // Comparison predicate
     private alias comp = binaryFun!(less);

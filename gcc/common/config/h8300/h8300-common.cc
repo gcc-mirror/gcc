@@ -32,6 +32,8 @@ static const struct default_options h8300_option_optimization_table[] =
        and/or variable-cycle branches where (cycle count taken !=
        cycle count not taken).  */
     { OPT_LEVELS_ALL, OPT_freorder_blocks, NULL, 0 },
+    /* Enable redundant extension instructions removal at -O2 and higher.  */
+    { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 

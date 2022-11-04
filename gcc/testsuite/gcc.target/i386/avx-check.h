@@ -22,7 +22,17 @@ main ()
 
   /* Run AVX test only if host has AVX support.  */
   if (((ecx & (bit_AVX | bit_OSXSAVE)) == (bit_AVX | bit_OSXSAVE))
-      && avx_os_support ())
+      && avx_os_support ()
+#ifdef AVXIFMA
+      && __builtin_cpu_supports ("avxifma")
+#endif
+#ifdef AVXVNNIINT8
+      && __builtin_cpu_supports ("avxvnniint8")
+#endif
+#ifdef AVXNECONVERT
+      && __builtin_cpu_supports ("avxneconvert")
+#endif
+      )
     {
       do_test ();
 #ifdef DEBUG

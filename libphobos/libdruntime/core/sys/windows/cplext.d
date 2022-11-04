@@ -9,7 +9,6 @@
  */
 module core.sys.windows.cplext;
 version (Windows):
-@system:
 
 enum : uint {
     CPLPAGE_MOUSE_BUTTONS      = 1,

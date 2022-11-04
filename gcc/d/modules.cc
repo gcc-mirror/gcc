@@ -438,11 +438,11 @@ register_moduleinfo (Module *decl, tree minfo)
   if (!first_module)
     return;
 
-  start_minfo_node = build_dso_registry_var (targetdm.d_minfo_start_name,
+  start_minfo_node = build_dso_registry_var (targetdm.d_minfo_section_start,
 					     ptr_type_node);
   rest_of_decl_compilation (start_minfo_node, 1, 0);
 
-  stop_minfo_node = build_dso_registry_var (targetdm.d_minfo_end_name,
+  stop_minfo_node = build_dso_registry_var (targetdm.d_minfo_section_end,
 					    ptr_type_node);
   rest_of_decl_compilation (stop_minfo_node, 1, 0);
 

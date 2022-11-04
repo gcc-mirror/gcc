@@ -35,6 +35,8 @@
   ;; Floating point unspecs.
   UNSPEC_FRINT
   UNSPEC_FCLASS
+  UNSPEC_FMAX
+  UNSPEC_FMIN
 
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
@@ -1032,8 +1034,9 @@
 
 (define_insn "fmax<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(smax:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		   (match_operand:ANYF 2 "register_operand" "f")))]
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" "f"))
+		      (use (match_operand:ANYF 2 "register_operand" "f"))]
+		     UNSPEC_FMAX))]
   ""
   "fmax.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
@@ -1041,8 +1044,9 @@
 
 (define_insn "fmin<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(smin:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		   (match_operand:ANYF 2 "register_operand" "f")))]
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" "f"))
+		      (use (match_operand:ANYF 2 "register_operand" "f"))]
+		     UNSPEC_FMIN))]
   ""
   "fmin.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")

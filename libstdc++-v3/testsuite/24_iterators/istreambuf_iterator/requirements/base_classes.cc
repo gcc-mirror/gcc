@@ -1,4 +1,6 @@
 // { dg-do compile }
+// { dg-require-effective-target hosted }
+
 // 1999-06-28 bkoz
 
 // Copyright (C) 1999-2022 Free Software Foundation, Inc.

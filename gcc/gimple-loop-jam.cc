@@ -545,11 +545,25 @@ tree_loop_unroll_and_jam (void)
 	  /* If the refs are independend there's nothing to do.  */
 	  if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
 	    continue;
+
 	  dra = DDR_A (ddr);
 	  drb = DDR_B (ddr);
-	  /* Nothing interesting for the self dependencies.  */
+
+	  /* Nothing interesting for the self dependencies, except for WAW if
+	     the access function is not affine or constant because we may end
+	     up reordering writes to the same location.  */
 	  if (dra == drb)
-	    continue;
+	    {
+	      if (DR_IS_WRITE (dra)
+		  && !DR_ACCESS_FNS (dra).is_empty ()
+		  && DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+		{
+		  unroll_factor = 0;
+		  break;
+		}
+	      else
+		continue;
+	    }
 
 	  /* Now check the distance vector, for determining a sensible
 	     outer unroll factor, and for validity of merging the inner

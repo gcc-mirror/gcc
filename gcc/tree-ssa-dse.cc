@@ -170,7 +170,7 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 	    {
 	      ao_ref_init_from_ptr_and_size
 		  (write, gimple_call_arg (stmt, 0),
-		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 2))));
+		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 3))));
 	      return true;
 	    }
 	  break;
@@ -978,14 +978,6 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 
       if (gimple_code (temp) == GIMPLE_PHI)
 	{
-	  /* If we visit this PHI by following a backedge then we have to
-	     make sure ref->ref only refers to SSA names that are invariant
-	     with respect to the loop represented by this PHI node.  */
-	  if (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt),
-			      gimple_bb (temp))
-	      && !for_each_index (ref->ref ? &ref->ref : &ref->base,
-				  check_name, gimple_bb (temp)))
-	    return DSE_STORE_LIVE;
 	  defvar = PHI_RESULT (temp);
 	  bitmap_set_bit (visited, SSA_NAME_VERSION (defvar));
 	}
@@ -1019,6 +1011,15 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	      if (!bitmap_bit_p (visited,
 				 SSA_NAME_VERSION (PHI_RESULT (use_stmt))))
 		{
+		  /* If we visit this PHI by following a backedge then we have
+		     to make sure ref->ref only refers to SSA names that are
+		     invariant with respect to the loop represented by this
+		     PHI node.  */
+		  if (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt),
+				      gimple_bb (use_stmt))
+		      && !for_each_index (ref->ref ? &ref->ref : &ref->base,
+					  check_name, gimple_bb (use_stmt)))
+		    return DSE_STORE_LIVE;
 		  defs.safe_push (use_stmt);
 		  if (!first_phi_def)
 		    first_phi_def = as_a <gphi *> (use_stmt);

@@ -1252,7 +1252,14 @@ write_prefix (const tree node)
 	{
 	  /* <data-member-prefix> := <member source-name> M */
 	  write_char ('M');
-	  return;
+
+	  /* Before ABI 18, we did not count these as substitution
+	     candidates.  This leads to incorrect demanglings (and
+	     ABI divergence to other compilers).  */
+	  if (abi_warn_or_compat_version_crosses (18))
+	    G.need_abi_warning = true;
+	  if (!abi_version_at_least (18))
+	    return;
 	}
     }
 
@@ -1720,6 +1727,66 @@ write_unnamed_type_name (const tree type)
   write_compact_number (discriminator);
 }
 
+// A template head, for templated lambdas.
+// <template-head> ::=   Tp* Ty
+//                       Tp* Tn <type>
+//                       Tp* Tt <template-head> E
+// New in ABI=18. Returns true iff we emitted anything -- used for ABI
+// version warning.
+
+static bool
+write_closure_template_head (tree tmpl)
+{
+  bool any = false;
+
+  // We only need one level of template parms
+  tree inner = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
+
+  for (int ix = 0, len = TREE_VEC_LENGTH (inner); ix != len; ix++)
+    {
+      tree parm = TREE_VEC_ELT (inner, ix);
+      if (parm == error_mark_node)
+	continue;
+      parm = TREE_VALUE (parm);
+
+      if (DECL_VIRTUAL_P (parm))
+	// A synthetic parm, we're done.
+	break;
+
+      any = true;
+      if (abi_version_at_least (18))
+	{
+	  if (TREE_CODE (parm) == PARM_DECL
+	      ? TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm))
+	      : TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm)))
+	    write_string ("Tp");
+
+	  switch (TREE_CODE (parm))
+	    {
+	    default:
+	      gcc_unreachable ();
+
+	    case TYPE_DECL:
+	      write_string ("Ty");
+	      break;
+
+	    case PARM_DECL:
+	      write_string ("Tn");
+	      write_type (TREE_TYPE (parm));
+	      break;
+
+	    case TEMPLATE_DECL:
+	      write_string ("Tt");
+	      write_closure_template_head (parm);
+	      write_string ("E");
+	      break;
+	    }
+	}
+    }
+
+  return any;
+}
+
 /* <closure-type-name> ::= Ul <lambda-sig> E [ <nonnegative number> ] _
    <lambda-sig> ::= <parameter type>+  # Parameter types or "v" if the lambda has no parameters */
 
@@ -1733,9 +1800,17 @@ write_closure_type_name (const tree type)
   MANGLE_TRACE_TREE ("closure-type-name", type);
 
   write_string ("Ul");
+
+  if (auto ti = maybe_template_info (fn))
+    if (write_closure_template_head (TI_TEMPLATE (ti)))
+      // If there were any explicit template parms, we may need to
+      // issue a mangling diagnostic.
+      if (abi_warn_or_compat_version_crosses (18))
+	G.need_abi_warning = true;
+
   write_method_parms (parms, /*method_p=*/1, fn);
   write_char ('E');
-  write_compact_number (LAMBDA_EXPR_DISCRIMINATOR (lambda));
+  write_compact_number (LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda));
 }
 
 /* Convert NUMBER to ascii using base BASE and generating at least
@@ -2389,8 +2464,9 @@ write_type (tree type)
 	      sorry ("mangling %<typeof%>, use %<decltype%> instead");
 	      break;
 
-	    case UNDERLYING_TYPE:
-	      sorry ("mangling %<__underlying_type%>");
+	    case TRAIT_TYPE:
+	      error ("use of built-in trait %qT in function signature; "
+		     "use library traits instead", type);
 	      break;
 
 	    case LANG_TYPE:
@@ -3672,7 +3748,7 @@ write_template_arg (tree node)
 	}
     }
 
-  if (template_parm_object_p (node))
+  if (TREE_CODE (node) == VAR_DECL && DECL_NTTP_OBJECT_P (node))
     /* We want to mangle the argument, not the var we stored it in.  */
     node = tparm_object_argument (node);
 

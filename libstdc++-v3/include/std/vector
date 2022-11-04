@@ -57,6 +57,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // container
+
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>

@@ -81,15 +81,15 @@ program foo
   ! Check again
   if (ieee_support_underflow_control()) then
     call ieee_get_underflow_mode(f)
-    if (.not. f) stop 3
+    if (.not. f) stop 4
   endif
   if (ieee_support_rounding(ieee_down)) then
     call ieee_get_rounding_mode(rmode)
-    if (rmode /= ieee_down) stop 4
+    if (rmode /= ieee_down) stop 5
   endif
   if (ieee_support_halting(ieee_overflow)) then
     call ieee_get_halting_mode(ieee_overflow, f)
-    if (f) stop 5
+    if (f) stop 6
   endif
 
 end program foo

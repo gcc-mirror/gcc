@@ -76,6 +76,8 @@ has_cpu_feature (struct __processor_model *cpu_model,
     }
 }
 
+/* Save FEATURE to either CPU_MODEL or CPU_FEATURES2.  */
+
 static inline void
 set_cpu_feature (struct __processor_model *cpu_model,
 		 unsigned int *cpu_features2,
@@ -97,6 +99,32 @@ set_cpu_feature (struct __processor_model *cpu_model,
       index = f / 32;
       offset = f % 32;
       cpu_features2[index] |= (1U << offset);
+    }
+}
+
+/* Drop FEATURE from either CPU_MODEL or CPU_FEATURES2.  */
+
+static inline void
+reset_cpu_feature (struct __processor_model *cpu_model,
+		   unsigned int *cpu_features2,
+		   enum processor_features feature)
+{
+  unsigned index, offset;
+  unsigned f = feature;
+
+  if (f < 32)
+    {
+      /* The first 32 features.  */
+      cpu_model->__cpu_features[0] &= ~(1U << f);
+    }
+  else
+    {
+      /* The rest of features.  cpu_features2[i] contains features from
+	 (32 + i * 32) to (31 + 32 + i * 32), inclusively.  */
+      f -= 32;
+      index = f / 32;
+      offset = f % 32;
+      cpu_features2[index] &= ~(1U << offset);
     }
 }
 
@@ -253,12 +281,26 @@ get_amd_cpu (struct __processor_model *cpu_model,
       break;
     case 0x19:
       cpu_model->__cpu_type = AMDFAM19H;
-      /* AMD family 19h version 1.  */
+      /* AMD family 19h.  */
       if (model <= 0x0f)
 	{
 	  cpu = "znver3";
 	  CHECK___builtin_cpu_is ("znver3");
 	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER3;
+	}
+      else if ((model >= 0x10 && model <= 0x1f)
+		|| (model >= 0x60 && model <= 0xaf))
+	{
+	  cpu = "znver4";
+	  CHECK___builtin_cpu_is ("znver4");
+	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER4;
+	}
+      else if (has_cpu_feature (cpu_model, cpu_features2,
+				FEATURE_AVX512F))
+	{
+	  cpu = "znver4";
+	  CHECK___builtin_cpu_is ("znver4");
+	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER4;
 	}
       else if (has_cpu_feature (cpu_model, cpu_features2,
 				FEATURE_VAES))
@@ -496,6 +538,12 @@ get_intel_cpu (struct __processor_model *cpu_model,
     case 0x9a:
     case 0xbf:
       /* Alder Lake.  */
+    case 0xb7:
+      /* Raptor Lake.  */
+    case 0xb5:
+    case 0xaa:
+    case 0xac:
+      /* Meteor Lake.  */
       cpu = "alderlake";
       CHECK___builtin_cpu_is ("corei7");
       CHECK___builtin_cpu_is ("alderlake");
@@ -545,11 +593,11 @@ get_zhaoxin_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_type = ZHAOXIN_FAM7H;
       if (model == 0x3b)
 	{
-	cpu = "lujiazui";
-	CHECK___builtin_cpu_is ("lujiazui");
-	cpu_model->__cpu_features[0] &= ~(1U <<(FEATURE_AVX & 31));
-	cpu_features2[0] &= ~(1U <<((FEATURE_F16C - 32) & 31));
-	cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_LUJIAZUI;
+	  cpu = "lujiazui";
+	  CHECK___builtin_cpu_is ("lujiazui");
+	  reset_cpu_feature (cpu_model, cpu_features2, FEATURE_AVX);
+	  reset_cpu_feature (cpu_model, cpu_features2, FEATURE_F16C);
+	  cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_LUJIAZUI;
 	}
       break;
     default:
@@ -787,6 +835,12 @@ get_available_features (struct __processor_model *cpu_model,
 	{
 	  if (eax & bit_AVXVNNI)
 	    set_feature (FEATURE_AVXVNNI);
+	  if (eax & bit_AVXIFMA)
+	    set_feature (FEATURE_AVXIFMA);
+	  if (edx & bit_AVXVNNIINT8)
+	    set_feature (FEATURE_AVXVNNIINT8);
+	  if (edx & bit_AVXNECONVERT)
+	    set_feature (FEATURE_AVXNECONVERT);
 	}
       if (avx512_usable)
 	{

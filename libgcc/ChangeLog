@@ -1,3 +1,157 @@
+2022-10-23  LIU Hao  <lh_mouse@126.com>
+
+	* config/i386/gthr-mcf.h: Include 'gthr_libobjc.h' when building
+	libobjc, instead of 'gthr.h'
+
+2022-10-19  LIU Hao  <lh_mouse@126.com>
+
+	* config.host: Add new cases for `mcf` thread model
+	* config/i386/gthr-mcf.h: New file
+	* config/i386/t-mingw-mcfgthread: New file
+	* config/i386/t-slibgcc-cygming: Add mcfgthread for libgcc DLL
+	* configure: Regenerate
+
+2022-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Quote variable.
+
+2022-10-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* unwind-generic.h (_Unwind_Frames_Increment): Add the EXC
+	argument.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Pass EXC to
+	_Unwind_Frames_Increment.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Take the EXC argument.  Return _URC_FATAL_PHASE2_ERROR if the
+	return address on normal stack doesn't match the return address
+	on shadow stack.
+
+2022-10-17  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2.h (struct frame_state_reg_info): Move cfa_how member
+	and reduce its size.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/t-softfp (softfp_extensions): Add bfsf.
+	(softfp_truncations): Add tfbf xfbf dfbf sfbf hfbf.
+	(CFLAGS-extendbfsf2.c, CFLAGS-truncsfbf2.c, CFLAGS-truncdfbf2.c,
+	CFLAGS-truncxfbf2.c, CFLAGS-trunctfbf2.c, CFLAGS-trunchfbf2.c): Add
+	-msse2.
+	* config/i386/libgcc-glibc.ver (GCC_13.0.0): Export
+	__extendbfsf2 and __trunc{s,d,x,t,h}fbf2.
+	* config/i386/sfp-machine.h (_FP_NANSIGN_B): Define.
+	* config/i386/64/sfp-machine.h (_FP_NANFRAC_B): Define.
+	* config/i386/32/sfp-machine.h (_FP_NANFRAC_B): Define.
+	* soft-fp/brain.h: New file.
+	* soft-fp/truncsfbf2.c: New file.
+	* soft-fp/truncdfbf2.c: New file.
+	* soft-fp/truncxfbf2.c: New file.
+	* soft-fp/trunctfbf2.c: New file.
+	* soft-fp/trunchfbf2.c: New file.
+	* soft-fp/truncbfhf2.c: New file.
+	* soft-fp/extendbfsf2.c: New file.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Use new function.
+	* libgcov.h (gcov_write_summary): Rename to ...
+	(gcov_write_object_summary): ... this.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (*vxworks*): When enable_shared, add
+	libgcc and crtstuff "shared" fragments for rtp except
+	large code model.
+	(aarch64*-wrs-vxworks7*): Remove t-slibgcc-libgcc from
+	the list of fragments.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arc/linux-unwind.h (arc_fallback_frame_state): Use
+	fs->regs.how[X] instead of fs->regs.reg[X].how.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.h (REG_UNSAVED, REG_SAVED_OFFSET, REG_SAVED_REG,
+	REG_SAVED_EXP, REG_SAVED_VAL_OFFSET, REG_SAVED_VAL_EXP,
+	REG_UNDEFINED): New anonymous enum, moved from inside of
+	struct frame_state_reg_info.
+	(struct frame_state_reg_info): Remove reg[].how element and the
+	anonymous enum there.  Add how element.
+	* unwind-dw2.c: Include stddef.h.
+	(uw_frame_state_for): Don't clear first
+	offsetof (_Unwind_FrameState, regs.how[0]) bytes of *fs.
+	(execute_cfa_program, __frame_state_for, uw_update_context_1,
+	uw_update_context): Use fs->regs.how[X] instead of fs->regs.reg[X].how
+	or fs.regs.how[X] instead of fs.regs.reg[X].how.
+	* config/sh/linux-unwind.h (sh_fallback_frame_state): Likewise.
+	* config/bfin/linux-unwind.h (bfin_fallback_frame_state): Likewise.
+	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Likewise.
+	* config/pa/hpux-unwind.h (UPDATE_FS_FOR_SAR, UPDATE_FS_FOR_GR,
+	UPDATE_FS_FOR_FR, UPDATE_FS_FOR_PC, pa_fallback_frame_state):
+	Likewise.
+	* config/alpha/vms-unwind.h (alpha_vms_fallback_frame_state):
+	Likewise.
+	* config/alpha/linux-unwind.h (alpha_fallback_frame_state): Likewise.
+	* config/arc/linux-unwind.h (arc_fallback_frame_state,
+	arc_frob_update_context): Likewise.
+	* config/riscv/linux-unwind.h (riscv_fallback_frame_state): Likewise.
+	* config/nios2/linux-unwind.h (NIOS2_REG): Likewise.
+	* config/nds32/linux-unwind.h (NDS32_PUT_FS_REG): Likewise.
+	* config/s390/tpf-unwind.h (s390_fallback_frame_state): Likewise.
+	* config/s390/linux-unwind.h (s390_fallback_frame_state): Likewise.
+	* config/sparc/sol2-unwind.h (sparc64_frob_update_context,
+	MD_FALLBACK_FRAME_STATE_FOR): Likewise.
+	* config/sparc/linux-unwind.h (sparc64_fallback_frame_state,
+	sparc64_frob_update_context, sparc_fallback_frame_state): Likewise.
+	* config/i386/sol2-unwind.h (x86_64_fallback_frame_state,
+	x86_fallback_frame_state): Likewise.
+	* config/i386/w32-unwind.h (i386_w32_fallback_frame_state): Likewise.
+	* config/i386/linux-unwind.h (x86_64_fallback_frame_state,
+	x86_fallback_frame_state): Likewise.
+	* config/i386/freebsd-unwind.h (x86_64_freebsd_fallback_frame_state):
+	Likewise.
+	* config/i386/dragonfly-unwind.h
+	(x86_64_dragonfly_fallback_frame_state): Likewise.
+	* config/i386/gnu-unwind.h (x86_gnu_fallback_frame_state): Likewise.
+	* config/csky/linux-unwind.h (csky_fallback_frame_state): Likewise.
+	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state):
+	Likewise.
+	* config/aarch64/freebsd-unwind.h
+	(aarch64_freebsd_fallback_frame_state): Likewise.
+	* config/aarch64/aarch64-unwind.h (aarch64_frob_update_context):
+	Likewise.
+	* config/or1k/linux-unwind.h (or1k_fallback_frame_state): Likewise.
+	* config/mips/linux-unwind.h (mips_fallback_frame_state): Likewise.
+	* config/loongarch/linux-unwind.h (loongarch_fallback_frame_state):
+	Likewise.
+	* config/m68k/linux-unwind.h (m68k_fallback_frame_state): Likewise.
+	* config/xtensa/linux-unwind.h (xtensa_fallback_frame_state):
+	Likewise.
+	* config/rs6000/darwin-fallback.c (set_offset): Likewise.
+	* config/rs6000/aix-unwind.h (MD_FROB_UPDATE_CONTEXT): Likewise.
+	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Likewise.
+	* config/rs6000/freebsd-unwind.h (frob_update_context): Likewise.
+
+2022-10-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDE): Augment comment.  Move
+	-I options for gcc/include and gcc/include-fixed at the end
+	and make them -isystem.
+
+2022-10-02  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks.h: Prevent Wpragma warning for the
+	pragma diagnostics on Wstrict-prototypes.
+
+2022-09-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxcrtstuff.c: Improve the comment attached to the use
+	of auto-host.h and of __dso_handle.  Remove redundant guard on
+	HAVE_INITFINI_ARRAY_SUPPORT within a USE_INITFINI_ARRAY section.
+
 2022-09-26  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* unwind-dw2-fde.c: Introduce a constant for in_shutdown

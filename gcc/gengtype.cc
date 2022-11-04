@@ -2403,7 +2403,7 @@ struct write_types_data
   enum write_types_kinds kind;
 };
 
-static void output_escaped_param (struct walk_type_data *d,
+static void output_escaped_param (const struct walk_type_data *d,
 				  const char *, const char *);
 static void output_mangled_typename (outf_p, const_type_p);
 static void walk_type (type_p t, struct walk_type_data *d);
@@ -2537,7 +2537,7 @@ output_mangled_typename (outf_p of, const_type_p t)
    print error messages.  */
 
 static void
-output_escaped_param (struct walk_type_data *d, const char *param,
+output_escaped_param (const struct walk_type_data *d, const char *param,
 		      const char *oname)
 {
   const char *p;
@@ -2576,7 +2576,7 @@ const char *
 get_string_option (options_p opt, const char *key)
 {
   for (; opt; opt = opt->next)
-    if (strcmp (opt->name, key) == 0)
+    if (opt->kind == OPTION_STRING && strcmp (opt->name, key) == 0)
       return opt->info.string;
   return NULL;
 }
@@ -2699,6 +2699,8 @@ walk_type (type_p t, struct walk_type_data *d)
     else if (strcmp (oo->name, "for_user") == 0)
       ;
     else if (strcmp (oo->name, "callback") == 0)
+      ;
+    else if (strcmp (oo->name, "string_length") == 0)
       ;
     else
       error_at_line (d->line, "unknown option `%s'\n", oo->name);
@@ -3251,7 +3253,22 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 	{
 	  oprintf (d->of, "%*sgt_%s_", d->indent, "", wtd->prefix);
 	  output_mangled_typename (d->of, f);
-	  oprintf (d->of, " (%s%s);\n", cast, d->val);
+
+	  /* Check if we need to call the special pch note version
+	     for strings that takes an explicit length.  */
+	  const auto length_override
+	    = (f->kind == TYPE_STRING && !strcmp (wtd->prefix, "pch_n")
+	       ? get_string_option (d->opt, "string_length")
+	       : nullptr);
+	  if (length_override)
+	    {
+	      oprintf (d->of, "2 (%s%s, ", cast, d->val);
+	      output_escaped_param (d, length_override, "string_length");
+	    }
+	  else
+	    oprintf (d->of, " (%s%s", cast, d->val);
+
+	  oprintf (d->of, ");\n");
 	  if (d->reorder_fn && wtd->reorder_note_routine)
 	    oprintf (d->of, "%*s%s (%s%s, %s%s, %s);\n", d->indent, "",
 		     wtd->reorder_note_routine, cast, d->val, cast, d->val,

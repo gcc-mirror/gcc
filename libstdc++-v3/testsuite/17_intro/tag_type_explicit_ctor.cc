@@ -20,40 +20,50 @@
 #include <new>
 #include <utility>
 #include <memory>
-#include <mutex>
+
+#if __STDC_HOSTED__
+#  include <mutex>
+#endif
 
 void f1(std::nothrow_t);
 void f2(std::piecewise_construct_t);
 void f3(std::allocator_arg_t);
+#if __STDC_HOSTED__
 void f4(std::defer_lock_t);
 void f5(std::try_to_lock_t);
 void f6(std::adopt_lock_t);
-
+#endif
 
 int main()
 {
   std::nothrow_t v1;
   std::piecewise_construct_t v2;
   std::allocator_arg_t v3;
+#if __STDC_HOSTED__
   std::defer_lock_t v4;
   std::try_to_lock_t v5;
   std::try_to_lock_t v6;
+#endif
   std::nothrow_t v7 = {}; // { dg-error "explicit" }
   std::piecewise_construct_t v8 = {}; // { dg-error "explicit" }
   std::allocator_arg_t v9 = {}; // { dg-error "explicit" }
-  std::defer_lock_t v10 = {}; // { dg-error "explicit" }
-  std::try_to_lock_t v11 = {}; // { dg-error "explicit" }
-  std::try_to_lock_t v12 = {}; // { dg-error "explicit" }
+#if __STDC_HOSTED__
+  std::defer_lock_t v10 = {};  // { dg-error "explicit" "" { target hosted } }
+  std::try_to_lock_t v11 = {}; // { dg-error "explicit" "" { target hosted } }
+  std::try_to_lock_t v12 = {}; // { dg-error "explicit" "" { target hosted } }
+#endif
   f1(std::nothrow_t{});
   f2(std::piecewise_construct_t{});
   f3(std::allocator_arg_t{});
-  f4(std::defer_lock_t{});
-  f5(std::try_to_lock_t{});
-  f6(std::adopt_lock_t{});
   f1({}); // { dg-error "explicit" }
   f2({}); // { dg-error "explicit" }
   f3({}); // { dg-error "explicit" }
-  f4({}); // { dg-error "explicit" }
-  f5({}); // { dg-error "explicit" }
-  f6({}); // { dg-error "explicit" }
+#if __STDC_HOSTED__
+  f4(std::defer_lock_t{});
+  f5(std::try_to_lock_t{});
+  f6(std::adopt_lock_t{});
+  f4({}); // { dg-error "explicit" "" { target hosted } }
+  f5({}); // { dg-error "explicit" "" { target hosted } }
+  f6({}); // { dg-error "explicit" "" { target hosted } }
+#endif
 }

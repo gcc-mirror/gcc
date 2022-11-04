@@ -99,7 +99,7 @@ public:
 
     override void visit(ArrayLiteralExp e)
     {
-        if (e.type.ty != Tarray || !e.elements || !e.elements.dim)
+        if (e.type.ty != Tarray || !e.elements || !e.elements.dim || e.onstack)
             return;
         if (f.setGC())
         {
@@ -221,7 +221,7 @@ Expression checkGC(Scope* sc, Expression e)
     FuncDeclaration f = sc.func;
     if (e && e.op != EXP.error && f && sc.intypeof != 1 && !(sc.flags & SCOPE.ctfe) &&
            (f.type.ty == Tfunction &&
-            (cast(TypeFunction)f.type).isnogc || (f.flags & FUNCFLAG.nogcInprocess) || global.params.vgc) &&
+            (cast(TypeFunction)f.type).isnogc || f.nogcInprocess || global.params.vgc) &&
            !(sc.flags & SCOPE.debug_))
     {
         scope NOGCVisitor gcv = new NOGCVisitor(f);

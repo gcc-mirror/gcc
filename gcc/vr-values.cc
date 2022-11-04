@@ -184,21 +184,23 @@ vr_values::range_of_expr (vrange &r, tree expr, gimple *stmt)
 
   if (const value_range *vr = get_value_range (expr, stmt))
     {
+      if (!vr->supports_type_p (TREE_TYPE (expr)))
+	{
+	  // vr_values::extract_range_basic() use of ranger's
+	  // fold_range() can create a situation where we are asked
+	  // for the range of an unsupported legacy type.  Since
+	  // get_value_range() above will return varying or undefined
+	  // for such types, avoid copying incompatible range types.
+	  if (vr->undefined_p ())
+	    r.set_undefined ();
+	  else
+	    r.set_varying (TREE_TYPE (expr));
+	  return true;
+	}
       if (vr->undefined_p () || vr->constant_p ())
 	r = *vr;
       else
 	{
-	  if (!vr->supports_type_p (TREE_TYPE (expr)))
-	    {
-	      // vr_values::extract_range_basic() use of ranger's
-	      // fold_range() can create a situation where we are
-	      // asked for the range of an unsupported legacy type.
-	      // Since get_value_range() above will return varying for
-	      // such types, avoid copying incompatible range types.
-	      gcc_checking_assert (vr->varying_p ());
-	      r.set_varying (TREE_TYPE (expr));
-	      return true;
-	    }
 	  value_range tmp = *vr;
 	  tmp.normalize_symbolics ();
 	  r = tmp;

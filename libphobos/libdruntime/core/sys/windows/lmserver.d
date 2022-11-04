@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmserver;
 version (Windows):
-@system:
 
 import core.sys.windows.winsvc;
 import core.sys.windows.lmcons, core.sys.windows.windef;

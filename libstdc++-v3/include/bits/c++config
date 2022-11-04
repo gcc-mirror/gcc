@@ -796,6 +796,20 @@ namespace std
 # define _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 1
 #endif
 
+// Define if long double has the IEEE binary128 format.
+#if __LDBL_MANT_DIG__ == 113 \
+  && __LDBL_MIN_EXP__ == -16381 \
+  && __LDBL_MAX_EXP__ == 16384
+# define _GLIBCXX_LDOUBLE_IS_IEEE_BINARY128 1
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+namespace __gnu_cxx
+{
+  using __bfloat16_t = decltype(0.0bf16);
+}
+#endif
+
 #ifdef __has_builtin
 # ifdef __is_identifier
 // Intel and older Clang require !__is_identifier for some built-ins:

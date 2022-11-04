@@ -16,6 +16,14 @@
 #error __ARM_FEATURE_CRYPTO not defined.
 #endif
 
+#ifndef __ARM_FEATURE_AES
+#error __ARM_FEATURE_AES not defined.
+#endif
+
+#ifndef __ARM_FEATURE_SHA2
+#error __ARM_FEATURE_SHA2 not defined.
+#endif
+
 #ifndef __ARM_NEON
 #error __ARM_NEON not defined.
 #endif

@@ -250,6 +250,7 @@ cp_gimplify_init_expr (tree *expr_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     if (tree init = TARGET_EXPR_INITIAL (from))
       {
+	gcc_checking_assert (TARGET_EXPR_ELIDING_P (from));
 	if (target_expr_needs_replace (from))
 	  {
 	    /* If this was changed by cp_genericize_target_expr, we need to
@@ -745,6 +746,11 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       /* A TARGET_EXPR that expresses direct-initialization should have been
 	 elided by cp_gimplify_init_expr.  */
       gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (*expr_p));
+      /* Likewise, but allow extra temps of trivial type so that
+	 gimplify_init_ctor_preeval can materialize subobjects of a CONSTRUCTOR
+	 on the rhs of an assignment, as in constexpr-aggr1.C.  */
+      gcc_checking_assert (!TARGET_EXPR_ELIDING_P (*expr_p)
+			   || !TREE_ADDRESSABLE (TREE_TYPE (*expr_p)));
       ret = GS_UNHANDLED;
       break;
 
@@ -892,13 +898,9 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 static void
 cp_genericize_init (tree *replace, tree from, tree to)
 {
+  tree init = NULL_TREE;
   if (TREE_CODE (from) == VEC_INIT_EXPR)
-    {
-      tree init = expand_vec_init_expr (to, from, tf_warning_or_error);
-
-      /* Make cp_gimplify_init_expr call replace_decl.  */
-      *replace = fold_convert (void_type_node, init);
-    }
+    init = expand_vec_init_expr (to, from, tf_warning_or_error);
   else if (flag_exceptions
 	   && TREE_CODE (from) == CONSTRUCTOR
 	   && TREE_SIDE_EFFECTS (from)
@@ -906,7 +908,16 @@ cp_genericize_init (tree *replace, tree from, tree to)
     {
       to = cp_stabilize_reference (to);
       replace_placeholders (from, to);
-      *replace = split_nonconstant_init (to, from);
+      init = split_nonconstant_init (to, from);
+    }
+
+  if (init)
+    {
+      if (*replace == from)
+	/* Make cp_gimplify_init_expr call replace_decl on this
+	   TARGET_EXPR_INITIAL.  */
+	init = fold_convert (void_type_node, init);
+      *replace = init;
     }
 }
 
@@ -915,6 +926,7 @@ cp_genericize_init (tree *replace, tree from, tree to)
 static void
 cp_genericize_init_expr (tree *stmt_p)
 {
+  iloc_sentinel ils = EXPR_LOCATION (*stmt_p);
   tree to = TREE_OPERAND (*stmt_p, 0);
   tree from = TREE_OPERAND (*stmt_p, 1);
   if (SIMPLE_TARGET_EXPR_P (from)
@@ -930,6 +942,7 @@ cp_genericize_init_expr (tree *stmt_p)
 static void
 cp_genericize_target_expr (tree *stmt_p)
 {
+  iloc_sentinel ils = EXPR_LOCATION (*stmt_p);
   tree slot = TARGET_EXPR_SLOT (*stmt_p);
   cp_genericize_init (&TARGET_EXPR_INITIAL (*stmt_p),
 		      TARGET_EXPR_INITIAL (*stmt_p), slot);
@@ -995,13 +1008,6 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  stmt = *stmt_p = build_zero_cst (TREE_TYPE (stmt));
 	  break;
 	}
-      break;
-
-    case CALL_EXPR:
-      if (tree fndecl = cp_get_callee_fndecl_nofold (stmt))
-	if (DECL_IMMEDIATE_FUNCTION_P (fndecl)
-	    && source_location_current_p (fndecl))
-	  *stmt_p = stmt = cxx_constant_value (stmt);
       break;
 
     default:
@@ -1084,9 +1090,9 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	}
       break;
 
-      /* These are only for genericize time; they're here rather than in
-	 cp_genericize to avoid problems with the invisible reference
-	 transition.  */
+      /* cp_genericize_{init,target}_expr are only for genericize time; they're
+	 here rather than in cp_genericize to avoid problems with the invisible
+	 reference transition.  */
     case INIT_EXPR:
       if (data->genericize)
 	cp_genericize_init_expr (stmt_p);
@@ -1095,6 +1101,19 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
     case TARGET_EXPR:
       if (data->genericize)
 	cp_genericize_target_expr (stmt_p);
+
+      /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
+	 that case, use it in place of this one.  */
+      if (tree &init = TARGET_EXPR_INITIAL (stmt))
+	{
+	  cp_walk_tree (&init, cp_fold_r, data, NULL);
+	  *walk_subtrees = 0;
+	  if (TREE_CODE (init) == TARGET_EXPR)
+	    {
+	      TARGET_EXPR_ELIDING_P (init) = TARGET_EXPR_ELIDING_P (stmt);
+	      *stmt_p = init;
+	    }
+	}
       break;
 
     default:
@@ -1572,6 +1591,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case CONVERT_EXPR:
+      gcc_checking_assert (!AGGREGATE_TYPE_P (TREE_TYPE (stmt)));
       gcc_assert (!CONVERT_EXPR_VBASE_PATH (stmt));
       break;
 
@@ -2495,6 +2515,11 @@ cp_fold (tree x)
 
       break;
 
+    case EXCESS_PRECISION_EXPR:
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
+      x = fold_convert_loc (EXPR_LOCATION (x), TREE_TYPE (x), op0);
+      break;
+
     case INDIRECT_REF:
       /* We don't need the decltype(auto) obfuscation anymore.  */
       if (REF_PARENTHESIZED_P (x))
@@ -2884,7 +2909,7 @@ cp_fold (tree x)
 		loc = EXPR_LOCATION (x);
 		tree s = build_fold_indirect_ref_loc (loc,
 						      CALL_EXPR_ARG (x, 0));
-		r = build2_loc (loc, INIT_EXPR, TREE_TYPE (s), s, r);
+		r = cp_build_init_expr (s, r);
 	      }
 	    x = r;
 	    break;
@@ -3010,7 +3035,7 @@ cp_fold (tree x)
   return x;
 }
 
-/* Look up either "hot" or "cold" in attribute list LIST.  */
+/* Look up "hot", "cold", "likely" or "unlikely" in attribute list LIST.  */
 
 tree
 lookup_hotness_attribute (tree list)
@@ -3018,24 +3043,36 @@ lookup_hotness_attribute (tree list)
   for (; list; list = TREE_CHAIN (list))
     {
       tree name = get_attribute_name (list);
-      if (is_attribute_p ("hot", name)
-	  || is_attribute_p ("cold", name)
-	  || is_attribute_p ("likely", name)
-	  || is_attribute_p ("unlikely", name))
+      if ((is_attribute_p ("hot", name)
+	   || is_attribute_p ("cold", name)
+	   || is_attribute_p ("likely", name)
+	   || is_attribute_p ("unlikely", name))
+	  && is_attribute_namespace_p ("", list))
 	break;
     }
   return list;
 }
 
-/* Remove both "hot" and "cold" attributes from LIST.  */
+/* Remove "hot", "cold", "likely" and "unlikely" attributes from LIST.  */
 
 static tree
 remove_hotness_attribute (tree list)
 {
-  list = remove_attribute ("hot", list);
-  list = remove_attribute ("cold", list);
-  list = remove_attribute ("likely", list);
-  list = remove_attribute ("unlikely", list);
+  for (tree *p = &list; *p; )
+    {
+      tree l = *p;
+      tree name = get_attribute_name (l);
+      if ((is_attribute_p ("hot", name)
+	   || is_attribute_p ("cold", name)
+	   || is_attribute_p ("likely", name)
+	   || is_attribute_p ("unlikely", name))
+	  && is_attribute_namespace_p ("", l))
+	{
+	  *p = TREE_CHAIN (l);
+	  continue;
+	}
+      p = &TREE_CHAIN (l);
+    }
   return list;
 }
 
@@ -3062,6 +3099,59 @@ process_stmt_hotness_attribute (tree std_attrs, location_t attrs_loc)
       std_attrs = remove_hotness_attribute (std_attrs);
     }
   return std_attrs;
+}
+
+/* Build IFN_ASSUME internal call for assume condition ARG.  */
+
+tree
+build_assume_call (location_t loc, tree arg)
+{
+  if (!processing_template_decl)
+    arg = fold_build_cleanup_point_expr (TREE_TYPE (arg), arg);
+  return build_call_expr_internal_loc (loc, IFN_ASSUME, void_type_node,
+				       1, arg);
+}
+
+/* If [[assume (cond)]] appears on this statement, handle it.  */
+
+tree
+process_stmt_assume_attribute (tree std_attrs, tree statement,
+			       location_t attrs_loc)
+{
+  if (std_attrs == error_mark_node)
+    return std_attrs;
+  tree attr = lookup_attribute ("gnu", "assume", std_attrs);
+  if (!attr)
+    return std_attrs;
+  /* The next token after the assume attribute is not ';'.  */
+  if (statement)
+    {
+      warning_at (attrs_loc, OPT_Wattributes,
+		  "%<assume%> attribute not followed by %<;%>");
+      attr = NULL_TREE;
+    }
+  for (; attr; attr = lookup_attribute ("gnu", "assume", TREE_CHAIN (attr)))
+    {
+      tree args = TREE_VALUE (attr);
+      int nargs = list_length (args);
+      if (nargs != 1)
+	{
+	  auto_diagnostic_group d;
+	  error_at (attrs_loc, "wrong number of arguments specified for "
+			       "%qE attribute", get_attribute_name (attr));
+	  inform (attrs_loc, "expected %i, found %i", 1, nargs);
+	}
+      else
+	{
+	  tree arg = TREE_VALUE (args);
+	  if (!type_dependent_expression_p (arg))
+	    arg = contextual_conv_bool (arg, tf_warning_or_error);
+	  if (error_operand_p (arg))
+	    continue;
+	  finish_expr_stmt (build_assume_call (attrs_loc, arg));
+	}
+    }
+  return remove_attribute ("gnu", "assume", std_attrs);
 }
 
 /* Helper of fold_builtin_source_location, return the
@@ -3288,10 +3378,10 @@ fold_builtin_source_location (location_t loc)
 	      if (const char *fname = LOCATION_FILE (loc))
 		{
 		  fname = remap_macro_filename (fname);
-		  val = build_string_literal (strlen (fname) + 1, fname);
+		  val = build_string_literal (fname);
 		}
 	      else
-		val = build_string_literal (1, "");
+		val = build_string_literal ("");
 	    }
 	  else if (strcmp (n, "_M_function_name") == 0)
 	    {
@@ -3300,7 +3390,7 @@ fold_builtin_source_location (location_t loc)
 	      if (current_function_decl)
 		name = cxx_printable_name (current_function_decl, 2);
 
-	      val = build_string_literal (strlen (name) + 1, name);
+	      val = build_string_literal (name);
 	    }
 	  else if (strcmp (n, "_M_line") == 0)
 	    val = build_int_cst (TREE_TYPE (field), LOCATION_LINE (loc));

@@ -1549,20 +1549,20 @@ aarch64_scalar_builtin_type_p (aarch64_simd_type t)
 /* Enable AARCH64_FL_* flags EXTRA_FLAGS on top of the base Advanced SIMD
    set.  */
 aarch64_simd_switcher::aarch64_simd_switcher (unsigned int extra_flags)
-  : m_old_isa_flags (aarch64_isa_flags),
+  : m_old_asm_isa_flags (aarch64_asm_isa_flags),
     m_old_general_regs_only (TARGET_GENERAL_REGS_ONLY)
 {
   /* Changing the ISA flags should be enough here.  We shouldn't need to
      pay the compile-time cost of a full target switch.  */
-  aarch64_isa_flags = AARCH64_FL_FP | AARCH64_FL_SIMD | extra_flags;
   global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
+  aarch64_set_asm_isa_flags (AARCH64_FL_FP | AARCH64_FL_SIMD | extra_flags);
 }
 
 aarch64_simd_switcher::~aarch64_simd_switcher ()
 {
   if (m_old_general_regs_only)
     global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
-  aarch64_isa_flags = m_old_isa_flags;
+  aarch64_set_asm_isa_flags (m_old_asm_isa_flags);
 }
 
 /* Implement #pragma GCC aarch64 "arm_neon.h".

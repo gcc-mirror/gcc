@@ -16,6 +16,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+vxworks-driver.o: $(srcdir)/config/vxworks-driver.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 vxworks.o: $(srcdir)/config/vxworks.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

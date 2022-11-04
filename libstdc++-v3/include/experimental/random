@@ -30,6 +30,8 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_RANDOM
 #define _GLIBCXX_EXPERIMENTAL_RANDOM 1
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201402L
 #include <random>
 #include <experimental/bits/lfts_config.h>

@@ -1852,7 +1852,7 @@ generate_static_references (void)
   tree class_name, klass, decl;
   tree cl_chain, in_chain, type
     = build_array_type (build_pointer_type (void_type_node), NULL_TREE);
-  int num_inst, num_class;
+  int num_class;
   char buf[BUFSIZE];
   vec<constructor_elt, va_gc> *decls = NULL;
 
@@ -1861,8 +1861,8 @@ generate_static_references (void)
     {
       vec<constructor_elt, va_gc> *v = NULL;
 
-      for (num_inst = 0, in_chain = TREE_PURPOSE (cl_chain);
-	   in_chain; num_inst++, in_chain = TREE_CHAIN (in_chain));
+      for (in_chain = TREE_PURPOSE (cl_chain);
+	   in_chain; in_chain = TREE_CHAIN (in_chain));
 
       snprintf (buf, BUFSIZE, "_OBJC_STATIC_INSTANCES_%d", num_class);
       decl = start_var_decl (type, buf);

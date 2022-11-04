@@ -1454,10 +1454,12 @@ package body Sem_Attr is
             Subp_Decl := Find_Related_Declaration_Or_Body (Prag);
          end if;
 
-         --  'Old objects appear in block statements as part of the expansion
-         --  of contract wrappers.
+         --  'Old objects appear in block and extended return statements as
+         --  part of the expansion of contract wrappers.
 
-         if Nkind (Subp_Decl) = N_Block_Statement then
+         if Nkind (Subp_Decl) in N_Block_Statement
+                               | N_Extended_Return_Statement
+         then
             Subp_Decl := Parent (Parent (Subp_Decl));
          end if;
 

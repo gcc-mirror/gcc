@@ -74,7 +74,8 @@ along with GCC; see the file COPYING3.  If not see
 /* ---------------------- Debug and unwind info formats ------------------  */
 
 /* Dwarf2 unwind info is supported, unless overriden by a request for a target
-   specific format.
+   specific format.  Always #define DWARF2_UNWIND_INFO to prevent defaults.h
+   from picking a possibly different value.
 
    Taking care of this here allows using DWARF2_UNWIND_INFO in #if conditions
    from the common config/vxworks.h files, included before the cpu
@@ -84,8 +85,10 @@ along with GCC; see the file COPYING3.  If not see
    #if point.  Since <cpu>/vxworks.h. is typically included after
    config/vxworks.h, #if expressions in the latter can't rely on possible
    redefinitions in the former.  */
-#if !ARM_UNWIND_INFO
 #undef DWARF2_UNWIND_INFO
+#if ARM_UNWIND_INFO
+#define DWARF2_UNWIND_INFO 0
+#else
 #define DWARF2_UNWIND_INFO 1
 #endif
 

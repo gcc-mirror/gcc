@@ -459,6 +459,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_floating_point_helper<long double>
     : public true_type { };
 
+#ifdef __STDCPP_FLOAT16_T__
+  template<>
+    struct __is_floating_point_helper<_Float16>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+  template<>
+    struct __is_floating_point_helper<_Float32>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+  template<>
+    struct __is_floating_point_helper<_Float64>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_FLOAT128_T__
+  template<>
+    struct __is_floating_point_helper<_Float128>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+  template<>
+    struct __is_floating_point_helper<__gnu_cxx::__bfloat16_t>
+    : public true_type { };
+#endif
+
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
   template<>
     struct __is_floating_point_helper<__float128>
@@ -1507,6 +1537,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef _Tp     type; };
 
   /// remove_cv
+#if __has_builtin(__remove_cv)
+  template<typename _Tp>
+    struct remove_cv
+    { using type = __remove_cv(_Tp); };
+#else
   template<typename _Tp>
     struct remove_cv
     { using type = _Tp; };
@@ -1522,6 +1557,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct remove_cv<const volatile _Tp>
     { using type = _Tp; };
+#endif
 
   /// add_const
   template<typename _Tp>
@@ -1570,17 +1606,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Reference transformations.
 
   /// remove_reference
+#if __has_builtin(__remove_reference)
   template<typename _Tp>
     struct remove_reference
-    { typedef _Tp   type; };
+    { using type = __remove_reference(_Tp); };
+#else
+  template<typename _Tp>
+    struct remove_reference
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_reference<_Tp&>
-    { typedef _Tp   type; };
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_reference<_Tp&&>
-    { typedef _Tp   type; };
+    { using type = _Tp; };
+#endif
 
   /// add_lvalue_reference
   template<typename _Tp>
@@ -1794,8 +1836,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef typename __make_unsigned_selector<_Tp>::__type type; };
 
   // Integral, but don't define.
-  template<>
-    struct make_unsigned<bool>;
+  template<> struct make_unsigned<bool>;
+  template<> struct make_unsigned<bool const>;
+  template<> struct make_unsigned<bool volatile>;
+  template<> struct make_unsigned<bool const volatile>;
 
   /// @cond undocumented
 
@@ -1924,8 +1968,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef typename __make_signed_selector<_Tp>::__type type; };
 
   // Integral, but don't define.
-  template<>
-    struct make_signed<bool>;
+  template<> struct make_signed<bool>;
+  template<> struct make_signed<bool const>;
+  template<> struct make_signed<bool volatile>;
+  template<> struct make_signed<bool const volatile>;
 
 #if __cplusplus > 201103L
   /// Alias template for make_signed
@@ -2864,7 +2910,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_invocable_impl
     : false_type
     {
-      using __nothrow_type = false_type; // For is_nothrow_invocable_r
+      using __nothrow_conv = false_type; // For is_nothrow_invocable_r
     };
 
   // Used for valid INVOKE and INVOKE<void> expressions.
@@ -2874,7 +2920,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       __void_t<typename _Result::type>>
     : true_type
     {
-      using __nothrow_type = true_type; // For is_nothrow_invocable_r
+      using __nothrow_conv = true_type; // For is_nothrow_invocable_r
     };
 
 #pragma GCC diagnostic push
@@ -2887,18 +2933,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     private:
       // The type of the INVOKE expression.
+      using _Res_t = typename _Result::type;
+
       // Unlike declval, this doesn't add_rvalue_reference, so it respects
       // guaranteed copy elision.
-      static typename _Result::type _S_get() noexcept;
+      static _Res_t _S_get() noexcept;
 
+      // Used to check if _Res_t can implicitly convert to _Tp.
       template<typename _Tp>
-	static void _S_conv(_Tp) noexcept;
+	static void _S_conv(__type_identity_t<_Tp>) noexcept;
 
       // This overload is viable if INVOKE(f, args...) can convert to _Tp.
-      template<typename _Tp, bool _Check_Noex = false,
+      template<typename _Tp,
+	       bool _Nothrow = noexcept(_S_conv<_Tp>(_S_get())),
 	       typename = decltype(_S_conv<_Tp>(_S_get())),
-	       bool _Noex = noexcept(_S_conv<_Tp>(_S_get()))>
-	static __bool_constant<_Check_Noex ? _Noex : true>
+#if __has_builtin(__reference_converts_from_temporary)
+	       bool _Dangle = __reference_converts_from_temporary(_Tp, _Res_t)
+#else
+	       bool _Dangle = false
+#endif
+	      >
+	static __bool_constant<_Nothrow && !_Dangle>
 	_S_test(int);
 
       template<typename _Tp, bool = false>
@@ -2907,10 +2962,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       // For is_invocable_r
-      using type = decltype(_S_test<_Ret>(1));
+      using type = decltype(_S_test<_Ret, /* Nothrow = */ true>(1));
 
       // For is_nothrow_invocable_r
-      using __nothrow_type = decltype(_S_test<_Ret, true>(1));
+      using __nothrow_conv = decltype(_S_test<_Ret>(1));
     };
 #pragma GCC diagnostic pop
 
@@ -3041,9 +3096,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// @cond undocumented
+  // This checks that the INVOKE<R> expression is well-formed and that the
+  // conversion to R does not throw. It does *not* check whether the INVOKE
+  // expression itself can throw. That is done by __call_is_nothrow_ instead.
   template<typename _Result, typename _Ret>
     using __is_nt_invocable_impl
-      = typename __is_invocable_impl<_Result, _Ret>::__nothrow_type;
+      = typename __is_invocable_impl<_Result, _Ret>::__nothrow_conv;
   /// @endcond
 
   /// std::is_nothrow_invocable_r
@@ -3346,20 +3404,23 @@ template<typename _Ret, typename _Fn, typename... _Args>
    */
 #define __cpp_lib_remove_cvref 201711L
 
+#if __has_builtin(__remove_cvref)
   template<typename _Tp>
     struct remove_cvref
-    : remove_cv<_Tp>
-    { };
+    { using type = __remove_cvref(_Tp); };
+#else
+  template<typename _Tp>
+    struct remove_cvref
+    { using type = typename remove_cv<_Tp>::type; };
 
   template<typename _Tp>
     struct remove_cvref<_Tp&>
-    : remove_cv<_Tp>
-    { };
+    { using type = typename remove_cv<_Tp>::type; };
 
   template<typename _Tp>
     struct remove_cvref<_Tp&&>
-    : remove_cv<_Tp>
-    { };
+    { using type = typename remove_cv<_Tp>::type; };
+#endif
 
   template<typename _Tp>
     using remove_cvref_t = typename remove_cvref<_Tp>::type;

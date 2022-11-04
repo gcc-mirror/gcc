@@ -1,5 +1,6 @@
 // { dg-options "-fno-rtti" }
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //

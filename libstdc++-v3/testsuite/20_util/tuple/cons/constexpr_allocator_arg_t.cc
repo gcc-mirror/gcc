@@ -1,5 +1,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
+// FIXME [!HOSTED]: avoidable std::allocator usage
+// { dg-require-effective-target hosted }
 //
 // Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //

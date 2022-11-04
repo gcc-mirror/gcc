@@ -2398,7 +2398,7 @@ package body Sem_Ch6 is
                            Class_Wide_Type (Etype (First_Formal (Subp))) = Typ)
                  and then Try_Object_Operation (P)
                then
-                  return;
+                  goto Leave;
 
                else
                   Analyze_Call_And_Resolve;

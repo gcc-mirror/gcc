@@ -8,7 +8,6 @@
  */
 module core.sys.windows.rpcdce;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "Rpcrt4");

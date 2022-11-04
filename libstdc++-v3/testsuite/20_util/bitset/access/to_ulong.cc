@@ -20,22 +20,11 @@
 // 23.3.5.2 bitset members
 
 #include <bitset>
-#include <stdexcept>
-#include <sstream>
 #include <testsuite_hooks.h>
 
 void test03()
 {
-  std::bitset<5>      b;
-  std::stringstream   ss("101");
-  ss.exceptions(std::ios_base::eofbit);
-
-  try
-  {
-    ss >> b;
-  }
-  catch (std::exception&) { }
-
+  std::bitset<5>      b(0b101);
   VERIFY( b.to_ulong() == 5 );
 }
 

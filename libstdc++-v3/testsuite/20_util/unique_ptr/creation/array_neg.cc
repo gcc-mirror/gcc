@@ -1,4 +1,5 @@
 // { dg-do compile { target c++14 } }
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //

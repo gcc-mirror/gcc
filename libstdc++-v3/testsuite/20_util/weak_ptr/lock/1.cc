@@ -23,6 +23,7 @@
 #include <testsuite_tr1.h>
 
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target hosted }
 
 int main()
 {

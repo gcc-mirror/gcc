@@ -2797,7 +2797,7 @@ package body Exp_Ch9 is
             Expected_Comp : Entity_Id;
             Stmt          : Node_Id;
             Stmts         : List_Id :=
-                              New_Copy_List (Statements (Hand_Stmt_Seq));
+                              New_Copy_List_Tree (Statements (Hand_Stmt_Seq));
             Typ_Size      : Int;
             Unsigned      : Entity_Id;
 

@@ -43,7 +43,7 @@
 // configure options or editing c++config.h.
 // It is not supported for freestanding implementations.
 
-#if !defined(_GLIBCXX_CONCEPT_CHECKS) || !_GLIBCXX_HOSTED
+#if !defined(_GLIBCXX_CONCEPT_CHECKS)
 
 #define __glibcxx_function_requires(...)
 #define __glibcxx_class_requires(_a,_b)

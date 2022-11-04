@@ -6683,7 +6683,8 @@ mips_setup_incoming_varargs (cumulative_args_t cum,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  mips_function_arg_advance (pack_cumulative_args (&local_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    mips_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -20277,13 +20278,7 @@ mips_option_override (void)
       target_flags |= MASK_ODD_SPREG;
     }
 
-  if (!ISA_HAS_COMPACT_BRANCHES && mips_cb == MIPS_CB_ALWAYS)
-    {
-      error ("unsupported combination: %qs%s %s",
-	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",
-	      "-mcompact-branches=always");
-    }
-  else if (!ISA_HAS_DELAY_SLOTS && mips_cb == MIPS_CB_NEVER)
+  if (!ISA_HAS_DELAY_SLOTS && mips_cb == MIPS_CB_NEVER)
     {
       error ("unsupported combination: %qs%s %s",
 	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",

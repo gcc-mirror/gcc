@@ -6923,6 +6923,11 @@ package body Exp_Util is
             if Loc < Sloc (CV) then
                return;
 
+            --  In condition of IF statement
+
+            elsif In_Subtree (N => Var, Root => Condition (CV)) then
+               return;
+
             --  After end of IF statement
 
             elsif Loc >= Sloc (CV) + Text_Ptr (UI_To_Int (End_Span (CV))) then
@@ -7009,7 +7014,12 @@ package body Exp_Util is
             if Loc < Sloc (CV) then
                return;
 
-               --  After end of IF statement
+            --  In condition of ELSIF part
+
+            elsif In_Subtree (N => Var, Root => Condition (CV)) then
+               return;
+
+            --  After end of IF statement
 
             elsif Loc >= Sloc (Stm) +
               Text_Ptr (UI_To_Int (End_Span (Stm)))
@@ -7064,6 +7074,11 @@ package body Exp_Util is
                --  Before start of body of loop
 
                if Loc < Sloc (Loop_Stmt) then
+                  return;
+
+               --  In condition of while loop
+
+               elsif In_Subtree (N => Var, Root => Condition (CV)) then
                   return;
 
                --  After end of LOOP statement

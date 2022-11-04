@@ -577,7 +577,7 @@ extern (C) void _d_print_throwable(Throwable t)
         {
             WCHAR* ptr; size_t len;
 
-            void sink(const scope char[] s) scope nothrow
+            void sink(in char[] s) scope nothrow
             {
                 if (!s.length) return;
                 int swlen = MultiByteToWideChar(

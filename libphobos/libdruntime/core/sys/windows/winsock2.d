@@ -6,7 +6,6 @@
 
 module core.sys.windows.winsock2;
 version (Windows):
-@system:
 
 pragma(lib, "ws2_32");
 

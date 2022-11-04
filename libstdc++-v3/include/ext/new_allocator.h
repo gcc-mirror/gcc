@@ -29,6 +29,8 @@
 #ifndef _NEW_ALLOCATOR_H
 #define _NEW_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <bits/new_allocator.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)

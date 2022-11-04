@@ -323,7 +323,7 @@ resolve_function_concept_overload (tree ovl, tree args)
       /* Remember the candidate if we can deduce a substitution.  */
       ++processing_template_decl;
       tree parms = TREE_VALUE (DECL_TEMPLATE_PARMS (tmpl));
-      if (tree subst = coerce_template_parms (parms, args, tmpl))
+      if (tree subst = coerce_template_parms (parms, args, tmpl, tf_none))
         {
           if (subst == error_mark_node)
             ++nerrs;
@@ -404,7 +404,7 @@ resolve_concept_check (tree check)
   tree args = TREE_OPERAND (id, 1);
   tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
   ++processing_template_decl;
-  tree result = coerce_template_parms (parms, args, tmpl);
+  tree result = coerce_template_parms (parms, args, tmpl, tf_none);
   --processing_template_decl;
   if (result == error_mark_node)
     return error_mark_node;
@@ -726,7 +726,7 @@ normalize_concept_check (tree check, tree args, norm_info info)
   /* Turn on template processing; coercing non-type template arguments
      will automatically assume they're non-dependent.  */
   ++processing_template_decl;
-  tree subst = coerce_template_parms (parms, targs, tmpl);
+  tree subst = coerce_template_parms (parms, targs, tmpl, tf_none);
   --processing_template_decl;
   if (subst == error_mark_node)
     return error_mark_node;
@@ -3592,13 +3592,13 @@ diagnose_trait_expr (tree expr, tree args)
   switch (TRAIT_EXPR_KIND (expr))
     {
     case CPTK_HAS_NOTHROW_ASSIGN:
-      inform (loc, "  %qT is not %<nothrow%> copy assignable", t1);
+      inform (loc, "  %qT is not nothrow copy assignable", t1);
       break;
     case CPTK_HAS_NOTHROW_CONSTRUCTOR:
-      inform (loc, "  %qT is not %<nothrow%> default constructible", t1);
+      inform (loc, "  %qT is not nothrow default constructible", t1);
       break;
     case CPTK_HAS_NOTHROW_COPY:
-      inform (loc, "  %qT is not %<nothrow%> copy constructible", t1);
+      inform (loc, "  %qT is not nothrow copy constructible", t1);
       break;
     case CPTK_HAS_TRIVIAL_ASSIGN:
       inform (loc, "  %qT is not trivially copy assignable", t1);
@@ -3649,7 +3649,7 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_POLYMORPHIC:
       inform (loc, "  %qT is not a polymorphic type", t1);
       break;
-    case CPTK_IS_SAME_AS:
+    case CPTK_IS_SAME:
       inform (loc, "  %qT is not the same as %qT", t1, t2);
       break;
     case CPTK_IS_STD_LAYOUT:
@@ -3674,7 +3674,7 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not trivially assignable from %qT", t1, t2);
       break;
     case CPTK_IS_NOTHROW_ASSIGNABLE:
-      inform (loc, "  %qT is not %<nothrow%> assignable from %qT", t1, t2);
+      inform (loc, "  %qT is not nothrow assignable from %qT", t1, t2);
       break;
     case CPTK_IS_CONSTRUCTIBLE:
       if (!t2)
@@ -3690,9 +3690,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
       if (!t2)
-	inform (loc, "  %qT is not %<nothrow%> default constructible", t1);
+	inform (loc, "  %qT is not nothrow default constructible", t1);
       else
-	inform (loc, "  %qT is not %<nothrow%> constructible from %qE", t1, t2);
+	inform (loc, "  %qT is not nothrow constructible from %qE", t1, t2);
       break;
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       inform (loc, "  %qT does not have unique object representations", t1);
@@ -3701,7 +3701,7 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not convertible from %qE", t2, t1);
       break;
     case CPTK_IS_NOTHROW_CONVERTIBLE:
-	inform (loc, "  %qT is not %<nothrow%> convertible from %qE", t2, t1);
+	inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
       break;
     case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
       inform (loc, "  %qT is not a reference that binds to a temporary "
@@ -3711,10 +3711,11 @@ diagnose_trait_expr (tree expr, tree args)
       inform (loc, "  %qT is not a reference that binds to a temporary "
 	      "object of type %qT (copy-initialization)", t1, t2);
       break;
-    case CPTK_BASES:
-    case CPTK_DIRECT_BASES:
-    case CPTK_UNDERLYING_TYPE:
-      /* We shouldn't see these non-expression traits.  */
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
+    case CPTK_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT_TYPE
+      /* Type-yielding traits aren't expressions.  */
       gcc_unreachable ();
     /* We deliberately omit the default case so that when adding a new
        trait we'll get reminded (by way of a warning) to handle it here.  */

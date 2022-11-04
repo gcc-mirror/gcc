@@ -3388,59 +3388,53 @@
 ;; Optimize cases were we can do a simple or direct move.
 ;; Or see if we can avoid doing the move at all
 
-(define_insn "vsx_extract_<mode>"
-  [(set (match_operand:<VEC_base> 0 "gpc_reg_operand" "=wa, wa, wr, wr")
+(define_expand "vsx_extract_<mode>"
+  [(set (match_operand:<VEC_base> 0 "gpc_reg_operand")
 	(vec_select:<VEC_base>
-	 (match_operand:VSX_D 1 "gpc_reg_operand"       "wa, wa, wa, wa")
+	 (match_operand:VSX_D 1 "gpc_reg_operand")
 	 (parallel
-	  [(match_operand:QI 2 "const_0_to_1_operand"   "wD, n,  wD, n")])))]
+	  [(match_operand:QI 2 "const_0_to_1_operand")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "")
+
+(define_insn "*vsx_extract_<mode>_0"
+  [(set (match_operand:<VEC_base> 0 "gpc_reg_operand" "=wa,wa,wr")
+	(vec_select:<VEC_base>
+	 (match_operand:VSX_D 1 "gpc_reg_operand" "0,wa,wa")
+	 (parallel
+	  [(match_operand:QI 2 "const_0_to_1_operand" "n,n,n")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)
+   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 0 : 1)"
 {
-  int element = INTVAL (operands[2]);
-  int op0_regno = REGNO (operands[0]);
-  int op1_regno = REGNO (operands[1]);
-  int fldDM;
+  if (which_alternative == 0)
+    return ASM_COMMENT_START " vec_extract to same register";
 
-  gcc_assert (IN_RANGE (element, 0, 1));
-  gcc_assert (VSX_REGNO_P (op1_regno));
+  if (which_alternative == 2)
+    return "mfvsrd %0,%x1";
 
-  if (element == VECTOR_ELEMENT_SCALAR_64BIT)
-    {
-      if (op0_regno == op1_regno)
-	return ASM_COMMENT_START " vec_extract to same register";
+  return "xxlor %x0,%x1,%x1";
+}
+  [(set_attr "type" "*,veclogical,mfvsr")
+   (set_attr "isa" "*,*,p8v")
+   (set_attr "length" "0,*,*")])
 
-      else if (INT_REGNO_P (op0_regno) && TARGET_DIRECT_MOVE
-	       && TARGET_POWERPC64)
-	return "mfvsrd %0,%x1";
-
-      else if (FP_REGNO_P (op0_regno) && FP_REGNO_P (op1_regno))
-	return "fmr %0,%1";
-
-      else if (VSX_REGNO_P (op0_regno))
-	return "xxlor %x0,%x1,%x1";
-
-      else
-	gcc_unreachable ();
-    }
-
-  else if (element == VECTOR_ELEMENT_MFVSRLD_64BIT && INT_REGNO_P (op0_regno)
-	   && TARGET_P9_VECTOR && TARGET_POWERPC64 && TARGET_DIRECT_MOVE)
+(define_insn "*vsx_extract_<mode>_1"
+  [(set (match_operand:<VEC_base> 0 "gpc_reg_operand" "=wa,wr")
+	(vec_select:<VEC_base>
+	 (match_operand:VSX_D 1 "gpc_reg_operand" "wa,wa")
+	 (parallel
+	  [(match_operand:QI 2 "const_0_to_1_operand" "n,n")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)
+   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 1 : 0)"
+{
+  if (which_alternative == 1)
     return "mfvsrld %0,%x1";
 
-  else if (VSX_REGNO_P (op0_regno))
-    {
-      fldDM = element << 1;
-      if (!BYTES_BIG_ENDIAN)
-	fldDM = 3 - fldDM;
-      operands[3] = GEN_INT (fldDM);
-      return "xxpermdi %x0,%x1,%x1,%3";
-    }
-
-  else
-    gcc_unreachable ();
+  operands[3] = GEN_INT (BYTES_BIG_ENDIAN ? 2 : 3);
+  return "xxpermdi %x0,%x1,%x1,%3";
 }
-  [(set_attr "type" "veclogical,mfvsr,mfvsr,vecperm")
-   (set_attr "isa" "*,*,p8v,p9v")])
+  [(set_attr "type" "mfvsr,vecperm")
+   (set_attr "isa" "*,p9v")])
 
 ;; Optimize extracting a single scalar element from memory.
 (define_insn_and_split "*vsx_extract_<P:mode>_<VSX_D:mode>_load"
@@ -3466,8 +3460,9 @@
   [(set (match_operand:<VEC_base> 0 "memory_operand" "=m,Z,wY")
 	(vec_select:<VEC_base>
 	 (match_operand:VSX_D 1 "register_operand" "d,v,v")
-	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "wD,wD,wD")])))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
+	 (parallel [(match_operand:QI 2 "vsx_scalar_64bit" "n,n,n")])))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)
+   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 0 : 1)"
   "@
    stfd%U0%X0 %1,%0
    stxsdx %x1,%y0

@@ -1,3 +1,300 @@
+2022-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-fd.cc (fd_state_machine::on_open): Transition to "unchecked"
+	when the mode is symbolic, rather than just on integer constants.
+	(fd_state_machine::check_for_open_fd): Don't complain about
+	unchecked values in the start state.
+
+2022-10-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-fd.dot: New file.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107349
+	* varargs.cc (get_va_copy_arg): Fix the non-pointer case.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107345
+	* region-model.cc (region_model::eval_condition_without_cm):
+	Ensure that constants are on the right-hand side before checking
+	for them.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (impl_region_model_context::get_malloc_map): Replace
+	with...
+	(impl_region_model_context::get_state_map_by_name): ...this.
+	(impl_region_model_context::get_fd_map): Delete.
+	(impl_region_model_context::get_taint_map): Delete.
+	* exploded-graph.h (impl_region_model_context::get_fd_map):
+	Delete.
+	(impl_region_model_context::get_malloc_map): Delete.
+	(impl_region_model_context::get_taint_map): Delete.
+	(impl_region_model_context::get_state_map_by_name): New.
+	* region-model.h (region_model_context::get_state_map_by_name):
+	New vfunc.
+	(region_model_context::get_fd_map): Convert from vfunc to
+	function.
+	(region_model_context::get_malloc_map): Likewise.
+	(region_model_context::get_taint_map): Likewise.
+	(noop_region_model_context::get_state_map_by_name): New.
+	(noop_region_model_context::get_fd_map): Delete.
+	(noop_region_model_context::get_malloc_map): Delete.
+	(noop_region_model_context::get_taint_map): Delete.
+	(region_model_context_decorator::get_state_map_by_name): New.
+	(region_model_context_decorator::get_fd_map): Delete.
+	(region_model_context_decorator::get_malloc_map): Delete.
+	(region_model_context_decorator::get_taint_map): Delete.
+
+2022-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106300
+	* engine.cc (impl_region_model_context::get_fd_map): New.
+	* exploded-graph.h (impl_region_model_context::get_fd_map): New
+	decl.
+	* region-model-impl-calls.cc (region_model::impl_call_pipe): New.
+	* region-model.cc (region_model::update_for_int_cst_return): New,
+	based on...
+	(region_model::update_for_zero_return): ...this.  Reimplement in
+	terms of the former.
+	(region_model::on_call_pre): Handle "pipe" and "pipe2".
+	(region_model::on_call_post): Likewise.
+	* region-model.h (region_model::impl_call_pipe): New decl.
+	(region_model::update_for_int_cst_return): New decl.
+	(region_model::mark_as_valid_fd): New decl.
+	(region_model_context::get_fd_map): New pure virtual fn.
+	(noop_region_model_context::get_fd_map): New.
+	(region_model_context_decorator::get_fd_map): New.
+	* sm-fd.cc: Include "analyzer/program-state.h".
+	(fd_state_machine::describe_state_change): Handle transitions from
+	start state to valid states.
+	(fd_state_machine::mark_as_valid_fd): New.
+	(fd_state_machine::on_stmt): Add missing return for "creat".
+	(region_model::mark_as_valid_fd): New.
+
+2022-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105765
+	* varargs.cc (get_BT_VALIST_ARG): Rename to...
+	(get_va_copy_arg): ...this, and update logic for determining level
+	of indirection of va_copy's argument to use type of argument,
+	rather than looking at va_list_type_node, to correctly handle
+	__builtin_ms_va_copy.
+	(get_stateful_BT_VALIST_ARG): Rename to...
+	(get_stateful_va_copy_arg): ...this.
+	(va_list_state_machine::on_va_copy): Update for renaming.
+	(region_model::impl_call_va_copy): Likewise.
+
+2022-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107210
+	* svalue.cc (constant_svalue::maybe_fold_bits_within): Only
+	attempt to extract individual bits when tree_fits_uhwi_p.
+
+2022-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105783
+	* region-model.cc (selftest::get_bit): New function.
+	(selftest::test_bits_within_svalue_folding): New.
+	(selfftest::analyzer_region_model_cc_tests): Call it.
+	* svalue.cc (constant_svalue::maybe_fold_bits_within): Handle the
+	case of extracting a single bit.
+
+2022-10-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107158
+	* store.cc (store::replay_call_summary_cluster): Eliminate
+	special-casing of RK_HEAP_ALLOCATED in favor of sharing code with
+	RK_DECL, avoiding an ICE due to attempting to bind a
+	compound_svalue into a binding_cluster when an svalue in the
+	summary cluster converts to a compound_svalue in the caller.
+
+2022-10-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-summary.cc (call_summary_replay::dump_to_pp): Bulletproof
+	against NULL caller regions/svalues.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* analysis-plan.cc: Simplify includes.
+	* analyzer-pass.cc: Likewise.
+	* analyzer-selftests.cc: Likewise.
+	* analyzer.cc: Likewise.
+	* analyzer.h: Add includes of "json.h" and "tristate.h".
+	* call-info.cc: Simplify includes.
+	* call-string.cc: Likewise.
+	* call-summary.cc: Likewise.
+	* checker-path.cc: Likewise.
+	* complexity.cc: Likewise.
+	* constraint-manager.cc: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* feasible-graph.cc: Likewise.
+	* known-function-manager.cc: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* program-point.cc: Likewise.
+	* program-state.cc: Likewise.
+	* region-model-asm.cc: Likewise.
+	* region-model-impl-calls.cc: Likewise.
+	* region-model-manager.cc: Likewise.
+	* region-model-reachability.cc: Likewise.
+	* region-model.cc: Likewise.
+	* region-model.h: Include "selftest.h".
+	* region.cc: Simplify includes.
+	* sm-fd.cc: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.cc: Likewise.
+	* state-purge.cc: Likewise.
+	* store.cc: Likewise.
+	* store.h: Likewise.
+	* supergraph.cc: Likewise.
+	* svalue.cc: Likewise.
+	* svalue.h: Likewise.
+	* trimmed-graph.cc: Likewise.
+	* varargs.cc: Likewise.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107060
+	* call-summary.cc
+	(call_summary_replay::convert_svalue_from_summary_1): Handle NULL
+	results from convert_svalue_from_summary in SK_UNARY_OP and
+	SK_BIN_OP.
+	* engine.cc (impl_region_model_context::on_unknown_change): Bail
+	out on svalues that can't have associated state.
+	* region-model-impl-calls.cc
+	(region_model::impl_call_analyzer_get_unknown_ptr): New.
+	* region-model.cc (region_model::on_stmt_pre): Handle
+	"__analyzer_get_unknown_ptr".
+	* region-model.h
+	(region_model::impl_call_analyzer_get_unknown_ptr): New decl.
+	* store.cc (store::replay_call_summary_cluster): Avoid trying to
+	create binding clusters for base regions that shouldn't have them.
+
+2022-10-05  Martin Liska  <mliska@suse.cz>
+
+	* call-summary.cc (call_summary_replay::call_summary_replay):
+	  Remove unused variable and arguments.
+	* call-summary.h: Likewise.
+	* engine.cc (exploded_node::on_stmt): Likewise.
+	(exploded_node::replay_call_summaries): Likewise.
+	(exploded_node::replay_call_summary): Likewise.
+	* exploded-graph.h (class exploded_node): Likewise.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107072
+	* analyzer-logging.h: Include "diagnostic-core.h".
+	* analyzer.h: Include "function.h".
+	(class call_summary): New forward decl.
+	(class call_summary_replay): New forward decl.
+	(struct per_function_data): New forward decl.
+	(struct interesting_t): New forward decl.
+	(custom_edge_info::update_state): New vfunc.
+	* call-info.cc (custom_edge_info::update_state): New.
+	* call-summary.cc: New file.
+	* call-summary.h: New file.
+	* constraint-manager.cc: Include "analyzer/call-summary.h".
+	(class replay_fact_visitor): New.
+	(constraint_manager::replay_call_summary): New.
+	* constraint-manager.h (constraint_manager::replay_call_summary):
+	New.
+	* engine.cc: Include "analyzer/call-summary.h".
+	(exploded_node::on_stmt): Handle call summaries.
+	(class call_summary_edge_info): New.
+	(exploded_node::replay_call_summaries): New.
+	(exploded_node::replay_call_summary): New.
+	(per_function_data::~per_function_data): New.
+	(per_function_data::add_call_summary): Move here from header and
+	reimplement.
+	(exploded_graph::process_node): Call update_state rather than
+	update_model when handling bifurcation
+	(viz_callgraph_node::dump_dot): Use a regular label rather
+	than an HTML table; add summaries to dump.
+	* exploded-graph.h: Include "alloc-pool.h", "fibonacci_heap.h",
+	"supergraph.h", "sbitmap.h", "shortest-paths.h", "analyzer/sm.h",
+	"analyzer/program-state.h", and "analyzer/diagnostic-manager.h".
+	(exploded_node::replay_call_summaries): New decl.
+	(exploded_node::replay_call_summary): New decl.
+	(per_function_data::~per_function_data): New decl.
+	(per_function_data::add_call_summary): Move implemention from
+	header.
+	(per_function_data::m_summaries): Update type of element.
+	* known-function-manager.h: Include "analyzer/analyzer-logging.h".
+	* program-point.h: Include "pretty-print.h" and
+	"analyzer/call-string.h".
+	* program-state.cc: Include "analyzer/call-summary.h".
+	(sm_state_map::replay_call_summary): New.
+	(program_state::replay_call_summary): New.
+	* program-state.h (sm_state_map::replay_call_summary): New decl.
+	(program_state::replay_call_summary): New decl.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_asm_output_svalue): New
+	overload.
+	* region-model-manager.h
+	(region_model_manager::get_or_create_asm_output_svalue): New
+	overload decl.
+	* region-model.cc: Include "analyzer/call-summary.h".
+	(region_model::maybe_update_for_edge): Remove call to
+	region_model::update_for_call_summary on
+	SUPEREDGE_INTRAPROCEDURAL_CALL.
+	(region_model::update_for_call_summary): Delete.
+	(region_model::replay_call_summary): New.
+	* region-model.h (region_model::replay_call_summary): New decl.
+	(region_model::update_for_call_summary): Delete decl.
+	* store.cc: Include "analyzer/call-summary.h".
+	(store::replay_call_summary): New.
+	(store::replay_call_summary_cluster): New.
+	* store.h: Include "tristate.h".
+	(is_a_helper <const ana::concrete_binding *>::test): New.
+	(store::replay_call_summary): New decl.
+	(store::replay_call_summary_cluster): New decl.
+	* supergraph.cc (get_ultimate_function_for_cgraph_edge): Remove
+	"static" from decl.
+	(supergraph_call_edge): Make stmt param const.
+	* supergraph.h: Include "ordered-hash-map.h", "cfg.h",
+	"basic-block.h", "gimple.h", "gimple-iterator.h", and "digraph.h".
+	(supergraph_call_edge): Make stmt param const.
+	(get_ultimate_function_for_cgraph_edge): New decl.
+	* svalue.cc (compound_svalue::compound_svalue): Assert that we're
+	not nesting compound_svalues.
+	* svalue.h: Include "json.h", "analyzer/store.h", and
+	"analyzer/program-point.h".
+	(asm_output_svalue::get_num_outputs): New accessor.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.h: Include "analyzer/region-model-manager.h"
+	(class region_model_manager): Move decl to...
+	* region-model-manager.h: ...this new file.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Fold -(-(VAL)) to VAL.
+
+2022-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_widening_svalue): Use a
+	function_point rather than a program_point.
+	* region-model.cc (selftest::test_widening_constraints): Likewise.
+	* region-model.h
+	(region_model_manager::get_or_create_widening_svalue): Likewise.
+	(model_merger::get_function_point): New.
+	* svalue.cc (svalue::can_merge_p): Use a function_point rather
+	than a program_point.
+	(svalue::can_merge_p): Likewise.
+	* svalue.h (widening_svalue::key_t): Likewise.
+	(widening_svalue::widening_svalue): Likewise.
+
 2022-09-12  Martin Liska  <mliska@suse.cz>
 
 	* region-model.cc (region_model::maybe_complain_about_infoleak):

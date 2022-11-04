@@ -30,7 +30,6 @@ else version (WatchOS)
 
 version (Posix):
 extern (C):
-@system:
 
 //
 // bits/typesizes.h -- underlying types for *_t.

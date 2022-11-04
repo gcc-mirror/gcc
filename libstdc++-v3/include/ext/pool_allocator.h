@@ -42,6 +42,8 @@
 #ifndef _POOL_ALLOCATOR_H
 #define _POOL_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <bits/c++config.h>
 #include <cstdlib>
 #include <new>

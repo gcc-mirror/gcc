@@ -29,6 +29,8 @@
 #ifndef _TR1_FENV_H
 #define _TR1_FENV_H 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <tr1/cfenv>
 
 #endif

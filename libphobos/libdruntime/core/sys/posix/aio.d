@@ -23,7 +23,6 @@ else version (WatchOS)
 version (Posix):
 
 extern (C):
-@system:
 @nogc:
 nothrow:
 

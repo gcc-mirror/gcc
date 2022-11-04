@@ -9,7 +9,6 @@ module core.sys.linux.perf_event;
 version (linux)  : extern (C):
 @nogc:
 nothrow:
-@system:
 
 import core.sys.posix.sys.ioctl;
 import core.sys.posix.unistd;

@@ -3655,9 +3655,13 @@ package Sem_Util is
       function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean;
       --  Returns True iff Typ specifies aspect Storage_Model_Type
 
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
       function Has_Designated_Storage_Model_Aspect
         (Typ : Entity_Id) return Boolean;
       --  Returns True iff Typ specifies aspect Designated_Storage_Model
+
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
       function Storage_Model_Object (Typ : Entity_Id) return Entity_Id;
       --  Given an access type Typ with aspect Designated_Storage_Model,
@@ -3665,6 +3669,8 @@ package Sem_Util is
       --  The object Entity_Ids returned by this function can be passed
       --  other functions declared in this interface to retrieve operations
       --  associated with Storage_Model_Type aspect of the object's type.
+
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
       function Storage_Model_Type (Obj : Entity_Id) return Entity_Id;
       --  Given an object Obj of a type specifying aspect Storage_Model_Type,
@@ -3715,11 +3721,15 @@ package Sem_Util is
       --  type, returns the procedure specified for the Copy_From choice in
       --  that aspect; returns Empty if the procedure isn't specified.
 
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
       function Storage_Model_Copy_To
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, returns the procedure specified for the Copy_To choice in that
       --  aspect; returns Empty if the procedure isn't specified.
+
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
       function Storage_Model_Storage_Size
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;

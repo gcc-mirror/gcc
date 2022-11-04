@@ -5,7 +5,7 @@
 int& bad1()
 {
   int x = 0;
-  return x;		// { dg-error "reference to local variable" }
+  return x;		// { dg-error "reference to local variable|cannot bind non-const lvalue reference" }
 }
 
 int* bad2()

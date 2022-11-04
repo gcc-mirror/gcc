@@ -2276,7 +2276,7 @@ toplev::main (int argc, char **argv)
 	start_timevars ();
       do_compile (no_backend);
 
-      if (flag_self_test)
+      if (flag_self_test && !seen_error ())
 	{
 	  if (no_backend)
 	    error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");

@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
+#include "attribs.h"
 
 /* Cached node/edge growths.  */
 fast_call_summary<edge_growth_cache_entry *, va_heap> *edge_growth_cache = NULL;
@@ -249,15 +250,19 @@ do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
       hints = estimates.hints;
     }
 
-  /* When we have profile feedback, we can quite safely identify hot
-     edges and for those we disable size limits.  Don't do that when
-     probability that caller will call the callee is low however, since it
+  /* When we have profile feedback or function attribute, we can quite safely
+     identify hot edges and for those we disable size limits.  Don't do that
+     when probability that caller will call the callee is low however, since it
      may hurt optimization of the caller's hot path.  */
-  if (edge->count.ipa ().initialized_p () && edge->maybe_hot_p ()
+  if ((edge->count.ipa ().initialized_p () && edge->maybe_hot_p ()
       && (edge->count.ipa () * 2
 	  > (edge->caller->inlined_to
 	     ? edge->caller->inlined_to->count.ipa ()
 	     : edge->caller->count.ipa ())))
+      || (lookup_attribute ("hot", DECL_ATTRIBUTES (edge->caller->decl))
+	  != NULL
+	 && lookup_attribute ("hot", DECL_ATTRIBUTES (edge->callee->decl))
+	  != NULL))
     hints |= INLINE_HINT_known_hot;
 
   gcc_checking_assert (size >= 0);

@@ -2423,6 +2423,7 @@ classify_argument (machine_mode mode, const_tree type,
       classes[1] = X86_64_SSEUP_CLASS;
       return 2;
     case E_HCmode:
+    case E_BCmode:
       classes[0] = X86_64_SSE_CLASS;
       if (!(bit_offset % 64))
 	return 1;
@@ -2506,7 +2507,9 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V2SImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2HFmode:
+    case E_V2BFmode:
     case E_V8QImode:
       classes[0] = X86_64_SSE_CLASS;
       return 1;
@@ -2990,6 +2993,7 @@ pass_in_reg:
     case E_V8QImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -3239,6 +3243,7 @@ pass_in_reg:
     case E_V8QImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -4558,7 +4563,8 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v,
   /* For varargs, we do not want to skip the dummy va_dcl argument.
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
-  if (stdarg_p (fntype))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      && stdarg_p (fntype))
     ix86_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (cum->call_abi == MS_ABI)
@@ -15651,7 +15657,7 @@ ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high)
   if (MEM_P (operands[0]))
     return rtx_equal_p (operands[0], operands[1 + high]);
   if (MEM_P (operands[1]) && MEM_P (operands[2]))
-    return TARGET_SSE3 && rtx_equal_p (operands[1], operands[2]);
+    return false;
   return true;
 }
 
@@ -15809,7 +15815,9 @@ ix86_convert_const_vector_to_integer (rtx op, machine_mode mode)
 	}
       break;
     case E_V2HFmode:
+    case E_V2BFmode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SFmode:
       for (int i = 0; i < nunits; ++i)
 	{
@@ -22428,7 +22436,7 @@ ix86_libgcc_floating_mode_supported_p (scalar_float_mode mode)
      be defined by the C front-end for AVX512FP16 intrinsics.  We will
      issue an error in ix86_expand_move for HFmode if AVX512FP16 isn't
      enabled.  */
-  return ((mode == HFmode && TARGET_SSE2)
+  return (((mode == HFmode || mode == BFmode) && TARGET_SSE2)
 	  ? true
 	  : default_libgcc_floating_mode_supported_p (mode));
 }
@@ -22725,75 +22733,26 @@ ix86_mangle_type (const_tree type)
       && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
     return NULL;
 
+  if (type == float128_type_node || type == float64x_type_node)
+    return NULL;
+
   switch (TYPE_MODE (type))
     {
     case E_BFmode:
-      return "u6__bf16";
+      return "DF16b";
     case E_HFmode:
       /* _Float16 is "DF16_".
 	 Align with clang's decision in https://reviews.llvm.org/D33719. */
       return "DF16_";
     case E_TFmode:
       /* __float128 is "g".  */
-      if (type == float128t_type_node)
-	return "g";
-      /* _Float128 should mangle as "DF128_" done in generic code.  */
-      return NULL;
+      return "g";
     case E_XFmode:
       /* "long double" or __float80 is "e".  */
       return "e";
     default:
       return NULL;
     }
-}
-
-/* Return the diagnostic message string if conversion from FROMTYPE to
-   TOTYPE is not allowed, NULL otherwise.  */
-
-static const char *
-ix86_invalid_conversion (const_tree fromtype, const_tree totype)
-{
-  if (element_mode (fromtype) != element_mode (totype))
-    {
-      /* Do no allow conversions to/from BFmode scalar types.  */
-      if (TYPE_MODE (fromtype) == BFmode)
-	return N_("invalid conversion from type %<__bf16%>");
-      if (TYPE_MODE (totype) == BFmode)
-	return N_("invalid conversion to type %<__bf16%>");
-    }
-
-  /* Conversion allowed.  */
-  return NULL;
-}
-
-/* Return the diagnostic message string if the unary operation OP is
-   not permitted on TYPE, NULL otherwise.  */
-
-static const char *
-ix86_invalid_unary_op (int op, const_tree type)
-{
-  /* Reject all single-operand operations on BFmode except for &.  */
-  if (element_mode (type) == BFmode && op != ADDR_EXPR)
-    return N_("operation not permitted on type %<__bf16%>");
-
-  /* Operation allowed.  */
-  return NULL;
-}
-
-/* Return the diagnostic message string if the binary operation OP is
-   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
-
-static const char *
-ix86_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
-			   const_tree type2)
-{
-  /* Reject all 2-operand operations on BFmode.  */
-  if (element_mode (type1) == BFmode
-      || element_mode (type2) == BFmode)
-    return N_("operation not permitted on type %<__bf16%>");
-
-  /* Operation allowed.  */
-  return NULL;
 }
 
 static GTY(()) tree ix86_tls_stack_chk_guard_decl;
@@ -23127,7 +23086,7 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
       /* Integer vector instructions execute in FP unit
 	 and can execute 3 additions and one multiplication per cycle.  */
       if ((ix86_tune == PROCESSOR_ZNVER1 || ix86_tune == PROCESSOR_ZNVER2
-	   || ix86_tune == PROCESSOR_ZNVER3)
+	   || ix86_tune == PROCESSOR_ZNVER3 || ix86_tune == PROCESSOR_ZNVER4)
    	  && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
 	return 1;
 
@@ -24852,15 +24811,6 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
-
-#undef TARGET_INVALID_CONVERSION
-#define TARGET_INVALID_CONVERSION ix86_invalid_conversion
-
-#undef TARGET_INVALID_UNARY_OP
-#define TARGET_INVALID_UNARY_OP ix86_invalid_unary_op
-
-#undef TARGET_INVALID_BINARY_OP
-#define TARGET_INVALID_BINARY_OP ix86_invalid_binary_op
 
 #undef TARGET_STACK_PROTECT_GUARD
 #define TARGET_STACK_PROTECT_GUARD ix86_stack_protect_guard

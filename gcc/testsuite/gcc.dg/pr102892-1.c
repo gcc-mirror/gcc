@@ -12,7 +12,7 @@ int
 main ()
 {
   long c = 0;
-  for (long a; a < 1; ++a)
+  for (long a = 0; a < 1; ++a)
     for (; c <= 1; c++) {
       bar();
       if (1 == b[c][0])

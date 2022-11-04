@@ -171,6 +171,9 @@ public:
   static const svalue *
   canonicalize_svalue (const svalue *sval, const extrinsic_state &ext_state);
 
+  bool replay_call_summary (call_summary_replay &r,
+			    const sm_state_map &summary);
+
 private:
   const state_machine &m_sm;
   map_t m_map;
@@ -272,6 +275,9 @@ public:
 			    const svalue *extra_sval,
 			    const extrinsic_state &ext_state,
 			    region_model_context *ctxt);
+
+  bool replay_call_summary (call_summary_replay &r,
+			    const program_state &summary);
 
   void impl_call_analyzer_dump_state (const gcall *call,
 				      const extrinsic_state &ext_state,

@@ -1,0 +1,50 @@
+/* Intrinsic type iterators for RISC-V 'V' Extension for GNU compiler.
+   Copyright (C) 2022-2022 Free Software Foundation, Inc.
+   Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3. If not see
+<http://www.gnu.org/licenses/>. */
+
+/* Use "DEF_ALL_SIGNED_INTEGER" macro include all signed integer which will be
+   iterated and registered as intrinsic functions.  */
+#ifndef DEF_RVV_I_OPS
+#define DEF_RVV_I_OPS(TYPE, REQUIRE)
+#endif
+
+DEF_RVV_I_OPS (vint8mf8_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_I_OPS (vint8mf4_t, 0)
+DEF_RVV_I_OPS (vint8mf2_t, 0)
+DEF_RVV_I_OPS (vint8m1_t, 0)
+DEF_RVV_I_OPS (vint8m2_t, 0)
+DEF_RVV_I_OPS (vint8m4_t, 0)
+DEF_RVV_I_OPS (vint8m8_t, 0)
+DEF_RVV_I_OPS (vint16mf4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_I_OPS (vint16mf2_t, 0)
+DEF_RVV_I_OPS (vint16m1_t, 0)
+DEF_RVV_I_OPS (vint16m2_t, 0)
+DEF_RVV_I_OPS (vint16m4_t, 0)
+DEF_RVV_I_OPS (vint16m8_t, 0)
+DEF_RVV_I_OPS (vint32mf2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_I_OPS (vint32m1_t, 0)
+DEF_RVV_I_OPS (vint32m2_t, 0)
+DEF_RVV_I_OPS (vint32m4_t, 0)
+DEF_RVV_I_OPS (vint32m8_t, 0)
+DEF_RVV_I_OPS (vint64m1_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_I_OPS (vint64m2_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_I_OPS (vint64m4_t, RVV_REQUIRE_ZVE64)
+DEF_RVV_I_OPS (vint64m8_t, RVV_REQUIRE_ZVE64)
+
+#undef DEF_RVV_I_OPS

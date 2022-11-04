@@ -1,5 +1,6 @@
 /* C99 6.5.9 Equality operators.
    Compare decimal float constants against each other. */
+/* { dg-additional-options "-fexcess-precision=fast" } */
 
 #include "dfp-dbg.h"
 

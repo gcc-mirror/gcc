@@ -68,13 +68,13 @@ namespace __detail
   // The caller is required to provide a buffer of exactly the right size
   // (which can be determined by the __to_chars_len function).
   template<typename _Tp>
-    void
+    _GLIBCXX23_CONSTEXPR void
     __to_chars_10_impl(char* __first, unsigned __len, _Tp __val) noexcept
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
       static_assert(is_unsigned<_Tp>::value, "implementation bug");
 
-      static constexpr char __digits[201] =
+      constexpr char __digits[201] =
 	"0001020304050607080910111213141516171819"
 	"2021222324252627282930313233343536373839"
 	"4041424344454647484950515253545556575859"

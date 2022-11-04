@@ -24797,7 +24797,8 @@ add_call_src_coords_attributes (tree stmt, dw_die_ref die)
   if (RESERVED_LOCATION_P (BLOCK_SOURCE_LOCATION (stmt)))
     return;
 
-  expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (stmt));
+  location_t locus = BLOCK_SOURCE_LOCATION (stmt);
+  expanded_location s = expand_location (locus);
 
   if (dwarf_version >= 3 || !dwarf_strict)
     {
@@ -24805,6 +24806,9 @@ add_call_src_coords_attributes (tree stmt, dw_die_ref die)
       add_AT_unsigned (die, DW_AT_call_line, s.line);
       if (debug_column_info && s.column)
 	add_AT_unsigned (die, DW_AT_call_column, s.column);
+      unsigned discr = get_discriminator_from_loc (locus);
+	if (discr != 0)
+	  add_AT_unsigned (die, DW_AT_GNU_discriminator, discr);
     }
 }
 

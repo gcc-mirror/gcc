@@ -104,7 +104,17 @@ lvalue_kind (const_tree ref)
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
-      return lvalue_kind (TREE_OPERAND (ref, 0));
+      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
+      /* As for ARRAY_REF and COMPONENT_REF, these codes turn a class prvalue
+	 into an xvalue: we need to materialize the temporary before we mess
+	 with it.  Except VIEW_CONVERT_EXPR that doesn't actually change the
+	 type, as in location wrapper and REF_PARENTHESIZED_P.	*/
+      if (op1_lvalue_kind == clk_class
+	  && !(TREE_CODE (ref) == VIEW_CONVERT_EXPR
+	       && (same_type_ignoring_top_level_qualifiers_p
+		   (TREE_TYPE (ref), TREE_TYPE (TREE_OPERAND (ref, 0))))))
+	return clk_rvalueref;
+      return op1_lvalue_kind;
 
     case ARRAY_REF:
       {
@@ -382,7 +392,7 @@ obvalue_p (const_tree ref)
 bool
 xvalue_p (const_tree ref)
 {
-  return (lvalue_kind (ref) == clk_rvalueref);
+  return (lvalue_kind (ref) & clk_rvalueref);
 }
 
 /* True if REF is a bit-field.  */
@@ -523,6 +533,9 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
       if (t == error_mark_node)
 	return error_mark_node;
     }
+
+  set_target_expr_eliding (value);
+
   t = build4 (TARGET_EXPR, type, decl, value, t, NULL_TREE);
   if (location_t eloc = cp_expr_location (value))
     SET_EXPR_LOCATION (t, eloc);
@@ -1776,10 +1789,17 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
 		   DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t),
 		   tf_none));
       break;
-    case UNDERLYING_TYPE:
-      type = strip_typedefs (UNDERLYING_TYPE_TYPE (t),
-			     remove_attributes, flags);
-      result = finish_underlying_type (type);
+    case TRAIT_TYPE:
+      {
+	tree type1 = strip_typedefs (TRAIT_TYPE_TYPE1 (t),
+				     remove_attributes, flags);
+	tree type2 = strip_typedefs (TRAIT_TYPE_TYPE2 (t),
+				     remove_attributes, flags);
+	if (type1 == TRAIT_TYPE_TYPE1 (t) && type2 == TRAIT_TYPE_TYPE2 (t))
+	  result = NULL_TREE;
+	else
+	  result = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2);
+      }
       break;
     case TYPE_PACK_EXPANSION:
       {
@@ -3105,32 +3125,6 @@ array_type_nelts_total (tree type)
   return sz;
 }
 
-/* Return true if FNDECL is std::source_location::current () method.  */
-
-bool
-source_location_current_p (tree fndecl)
-{
-  gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL
-		       && DECL_IMMEDIATE_FUNCTION_P (fndecl));
-  if (DECL_NAME (fndecl) == NULL_TREE
-      || TREE_CODE (TREE_TYPE (fndecl)) != FUNCTION_TYPE
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != RECORD_TYPE
-      || DECL_CONTEXT (fndecl) != TREE_TYPE (TREE_TYPE (fndecl))
-      || !id_equal (DECL_NAME (fndecl), "current"))
-    return false;
-
-  tree source_location = DECL_CONTEXT (fndecl);
-  if (TYPE_NAME (source_location) == NULL_TREE
-      || TREE_CODE (TYPE_NAME (source_location)) != TYPE_DECL
-      || TYPE_IDENTIFIER (source_location) == NULL_TREE
-      || !id_equal (TYPE_IDENTIFIER (source_location),
-		    "source_location")
-      || !decl_in_std_namespace_p (TYPE_NAME (source_location)))
-    return false;
-
-  return true;
-}
-
 struct bot_data
 {
   splay_tree target_remap;
@@ -3177,6 +3171,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
       TARGET_EXPR_IMPLICIT_P (u) = TARGET_EXPR_IMPLICIT_P (t);
       TARGET_EXPR_LIST_INIT_P (u) = TARGET_EXPR_LIST_INIT_P (t);
       TARGET_EXPR_DIRECT_INIT_P (u) = TARGET_EXPR_DIRECT_INIT_P (t);
+      TARGET_EXPR_ELIDING_P (u) = TARGET_EXPR_ELIDING_P (t);
 
       /* Map the old variable to the new one.  */
       splay_tree_insert (target_remap,
@@ -3277,7 +3272,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
    variables.  */
 
 static tree
-bot_replace (tree* t, int* /*walk_subtrees*/, void* data_)
+bot_replace (tree* t, int* walk_subtrees, void* data_)
 {
   bot_data &data = *(bot_data*)data_;
   splay_tree target_remap = data.target_remap;
@@ -3307,6 +3302,27 @@ bot_replace (tree* t, int* /*walk_subtrees*/, void* data_)
 			    /*check_access=*/false, /*nonnull=*/true,
 			    tf_warning_or_error);
     }
+  else if (cxx_dialect >= cxx20
+	   && (TREE_CODE (*t) == CALL_EXPR
+	       || TREE_CODE (*t) == AGGR_INIT_EXPR)
+	   && !in_immediate_context ())
+    {
+      /* Expand immediate invocations.  */
+      if (tree fndecl = cp_get_callee_fndecl_nofold (*t))
+	if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	  {
+	    /* Make in_immediate_context true within the args.  */
+	    in_consteval_if_p_temp_override ito;
+	    in_consteval_if_p = true;
+	    int nargs = call_expr_nargs (*t);
+	    for (int i = 0; i < nargs; ++i)
+	      cp_walk_tree (&get_nth_callarg (*t, i), bot_replace, data_, NULL);
+	    *t = cxx_constant_value (*t);
+	    if (*t == error_mark_node)
+	      return error_mark_node;
+	    *walk_subtrees = 0;
+	  }
+    }
 
   return NULL_TREE;
 }
@@ -3332,7 +3348,8 @@ break_out_target_exprs (tree t, bool clear_location /* = false */)
   bot_data data = { target_remap, clear_location };
   if (cp_walk_tree (&t, bot_manip, &data, NULL) == error_mark_node)
     t = error_mark_node;
-  cp_walk_tree (&t, bot_replace, &data, NULL);
+  if (cp_walk_tree (&t, bot_replace, &data, NULL) == error_mark_node)
+    t = error_mark_node;
 
   if (!--target_remap_count)
     {
@@ -5383,7 +5400,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case UNBOUND_CLASS_TEMPLATE:
     case TEMPLATE_PARM_INDEX:
     case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
       /* None of these have subtrees other than those already walked
 	 above.  */
       *walk_subtrees_p = 0;
@@ -5469,6 +5485,12 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case TRAIT_EXPR:
       WALK_SUBTREE (TRAIT_EXPR_TYPE1 (*tp));
       WALK_SUBTREE (TRAIT_EXPR_TYPE2 (*tp));
+      *walk_subtrees_p = 0;
+      break;
+
+    case TRAIT_TYPE:
+      WALK_SUBTREE (TRAIT_TYPE_TYPE1 (*tp));
+      WALK_SUBTREE (TRAIT_TYPE_TYPE2 (*tp));
       *walk_subtrees_p = 0;
       break;
 

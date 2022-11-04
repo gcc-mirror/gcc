@@ -1771,14 +1771,12 @@ gimple_add_init_for_auto_var (tree decl,
   tree decl_name = NULL_TREE;
   if (DECL_NAME (decl))
 
-    decl_name = build_string_literal (IDENTIFIER_LENGTH (DECL_NAME (decl)) + 1,
-				      IDENTIFIER_POINTER (DECL_NAME (decl)));
+    decl_name = build_string_literal (DECL_NAME (decl));
 
   else
     {
       char *decl_name_anonymous = xasprintf ("D.%u", DECL_UID (decl));
-      decl_name = build_string_literal (strlen (decl_name_anonymous) + 1,
-					decl_name_anonymous);
+      decl_name = build_string_literal (decl_name_anonymous);
       free (decl_name_anonymous);
     }
 
@@ -3554,6 +3552,51 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       enum internal_fn ifn = CALL_EXPR_IFN (*expr_p);
       auto_vec<tree> vargs (nargs);
 
+      if (ifn == IFN_ASSUME)
+	{
+	  if (simple_condition_p (CALL_EXPR_ARG (*expr_p, 0)))
+	    {
+	      /* If the [[assume (cond)]]; condition is simple
+		 enough and can be evaluated unconditionally
+		 without side-effects, expand it as
+		 if (!cond) __builtin_unreachable ();  */
+	      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
+	      *expr_p = build3 (COND_EXPR, void_type_node,
+				CALL_EXPR_ARG (*expr_p, 0), void_node,
+				build_call_expr_loc (EXPR_LOCATION (*expr_p),
+						     fndecl, 0));
+	      return GS_OK;
+	    }
+	  /* If not optimizing, ignore the assumptions.  */
+	  if (!optimize || seen_error ())
+	    {
+	      *expr_p = NULL_TREE;
+	      return GS_ALL_DONE;
+	    }
+	  /* Temporarily, until gimple lowering, transform
+	     .ASSUME (cond);
+	     into:
+	     [[assume (guard)]]
+	     {
+	       guard = cond;
+	     }
+	     such that gimple lowering can outline the condition into
+	     a separate function easily.  */
+	  tree guard = create_tmp_var (boolean_type_node);
+	  *expr_p = build2 (MODIFY_EXPR, void_type_node, guard,
+			    gimple_boolify (CALL_EXPR_ARG (*expr_p, 0)));
+	  *expr_p = build3 (BIND_EXPR, void_type_node, NULL, *expr_p, NULL);
+	  push_gimplify_context ();
+	  gimple_seq body = NULL;
+	  gimple *g = gimplify_and_return_first (*expr_p, &body);
+	  pop_gimplify_context (g);
+	  g = gimple_build_assume (guard, body);
+	  gimple_set_location (g, loc);
+	  gimplify_seq_add_stmt (pre_p, g);
+	  *expr_p = NULL_TREE;
+	  return GS_ALL_DONE;
+	}
+
       for (i = 0; i < nargs; i++)
 	{
 	  gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p,
@@ -4227,7 +4270,7 @@ gimple_boolify (tree expr)
     default:
       if (COMPARISON_CLASS_P (expr))
 	{
-	  /* There expressions always prduce boolean results.  */
+	  /* These expressions always produce boolean results.  */
 	  if (TREE_CODE (type) != BOOLEAN_TYPE)
 	    TREE_TYPE (expr) = boolean_type_node;
 	  return expr;
@@ -5601,7 +5644,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	    }
 	  break;
 	case INDIRECT_REF:
-	  {
+	  if (!TREE_ADDRESSABLE (TREE_TYPE (*from_p)))
 	    /* If we have code like
 
 	     *(const A*)(A*)&x
@@ -5610,11 +5653,13 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	     of "A"), treat the entire expression as identical to "x".
 	     This kind of code arises in C++ when an object is bound
 	     to a const reference, and if "x" is a TARGET_EXPR we want
-	     to take advantage of the optimization below.  */
-	    bool volatile_p = TREE_THIS_VOLATILE (*from_p);
-	    tree t = gimple_fold_indirect_ref_rhs (TREE_OPERAND (*from_p, 0));
-	    if (t)
+	     to take advantage of the optimization below.  But not if
+	     the type is TREE_ADDRESSABLE; then C++17 says that the
+	     TARGET_EXPR needs to be a temporary.  */
+	    if (tree t
+		= gimple_fold_indirect_ref_rhs (TREE_OPERAND (*from_p, 0)))
 	      {
+		bool volatile_p = TREE_THIS_VOLATILE (*from_p);
 		if (TREE_THIS_VOLATILE (t) != volatile_p)
 		  {
 		    if (DECL_P (t))
@@ -5627,8 +5672,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 		ret = GS_OK;
 		changed = true;
 	      }
-	    break;
-	  }
+	  break;
 
 	case TARGET_EXPR:
 	  {
@@ -9245,6 +9289,7 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
     case GOMP_MAP_RELEASE:
     case GOMP_MAP_DELETE:
     case GOMP_MAP_FORCE_ALLOC:
+    case GOMP_MAP_IF_PRESENT:
       if (node == grp->grp_end)
 	return node;
 
@@ -9323,7 +9368,6 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
     case GOMP_MAP_FORCE_DEVICEPTR:
     case GOMP_MAP_DEVICE_RESIDENT:
     case GOMP_MAP_LINK:
-    case GOMP_MAP_IF_PRESENT:
     case GOMP_MAP_FIRSTPRIVATE:
     case GOMP_MAP_FIRSTPRIVATE_INT:
     case GOMP_MAP_USE_DEVICE_PTR:
@@ -9861,6 +9905,134 @@ omp_lastprivate_for_combined_outer_constructs (struct gimplify_omp_ctx *octx,
     omp_notice_variable (octx, decl, true);
 }
 
+/* If we have mappings INNER and OUTER, where INNER is a component access and
+   OUTER is a mapping of the whole containing struct, check that the mappings
+   are compatible.  We'll be deleting the inner mapping, so we need to make
+   sure the outer mapping does (at least) the same transfers to/from the device
+   as the inner mapping.  */
+
+bool
+omp_check_mapping_compatibility (location_t loc,
+				 omp_mapping_group *outer,
+				 omp_mapping_group *inner)
+{
+  tree first_outer = *outer->grp_start, first_inner = *inner->grp_start;
+
+  gcc_assert (OMP_CLAUSE_CODE (first_outer) == OMP_CLAUSE_MAP);
+  gcc_assert (OMP_CLAUSE_CODE (first_inner) == OMP_CLAUSE_MAP);
+
+  enum gomp_map_kind outer_kind = OMP_CLAUSE_MAP_KIND (first_outer);
+  enum gomp_map_kind inner_kind = OMP_CLAUSE_MAP_KIND (first_inner);
+
+  if (outer_kind == inner_kind)
+    return true;
+
+  switch (outer_kind)
+    {
+    case GOMP_MAP_ALWAYS_TO:
+      if (inner_kind == GOMP_MAP_FORCE_PRESENT
+	  || inner_kind == GOMP_MAP_ALLOC
+	  || inner_kind == GOMP_MAP_TO)
+	return true;
+      break;
+
+    case GOMP_MAP_ALWAYS_FROM:
+      if (inner_kind == GOMP_MAP_FORCE_PRESENT
+	  || inner_kind == GOMP_MAP_ALLOC
+	  || inner_kind == GOMP_MAP_FROM)
+	return true;
+      break;
+
+    case GOMP_MAP_TO:
+    case GOMP_MAP_FROM:
+      if (inner_kind == GOMP_MAP_FORCE_PRESENT
+	  || inner_kind == GOMP_MAP_ALLOC)
+	return true;
+      break;
+
+    case GOMP_MAP_ALWAYS_TOFROM:
+    case GOMP_MAP_TOFROM:
+      if (inner_kind == GOMP_MAP_FORCE_PRESENT
+	  || inner_kind == GOMP_MAP_ALLOC
+	  || inner_kind == GOMP_MAP_TO
+	  || inner_kind == GOMP_MAP_FROM
+	  || inner_kind == GOMP_MAP_TOFROM)
+	return true;
+      break;
+
+    default:
+      ;
+    }
+
+  error_at (loc, "data movement for component %qE is not compatible with "
+	    "movement for struct %qE", OMP_CLAUSE_DECL (first_inner),
+	    OMP_CLAUSE_DECL (first_outer));
+
+  return false;
+}
+
+/* Similar to omp_resolve_clause_dependencies, but for OpenACC.  The only
+   clause dependencies we handle for now are struct element mappings and
+   whole-struct mappings on the same directive, and duplicate clause
+   detection.  */
+
+void
+oacc_resolve_clause_dependencies (vec<omp_mapping_group> *groups,
+				  hash_map<tree_operand_hash,
+					   omp_mapping_group *> *grpmap)
+{
+  int i;
+  omp_mapping_group *grp;
+  hash_set<tree_operand_hash> *seen_components = NULL;
+  hash_set<tree_operand_hash> *shown_error = NULL;
+
+  FOR_EACH_VEC_ELT (*groups, i, grp)
+    {
+      tree grp_end = grp->grp_end;
+      tree decl = OMP_CLAUSE_DECL (grp_end);
+
+      gcc_assert (OMP_CLAUSE_CODE (grp_end) == OMP_CLAUSE_MAP);
+
+      if (DECL_P (grp_end))
+	continue;
+
+      tree c = OMP_CLAUSE_DECL (*grp->grp_start);
+      while (TREE_CODE (c) == ARRAY_REF)
+	c = TREE_OPERAND (c, 0);
+      if (TREE_CODE (c) != COMPONENT_REF)
+	continue;
+      if (!seen_components)
+	seen_components = new hash_set<tree_operand_hash> ();
+      if (!shown_error)
+	shown_error = new hash_set<tree_operand_hash> ();
+      if (seen_components->contains (c)
+	  && !shown_error->contains (c))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (grp_end),
+		    "%qE appears more than once in map clauses",
+		    OMP_CLAUSE_DECL (grp_end));
+	  shown_error->add (c);
+	}
+      else
+	seen_components->add (c);
+
+      omp_mapping_group *struct_group;
+      if (omp_mapped_by_containing_struct (grpmap, decl, &struct_group)
+	  && *grp->grp_start == grp_end)
+	{
+	  omp_check_mapping_compatibility (OMP_CLAUSE_LOCATION (grp_end),
+					   struct_group, grp);
+	  /* Remove the whole of this mapping -- redundant.  */
+	  grp->deleted = true;
+	}
+    }
+
+  if (seen_components)
+    delete seen_components;
+  if (shown_error)
+    delete shown_error;
+}
+
 /* Link node NEWNODE so it is pointed to by chain INSERT_AT.  NEWNODE's chain
    is linked to the previous node pointed to by INSERT_AT.  */
 
@@ -10238,37 +10410,6 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	      break;
 	    if (scp)
 	      continue;
-	    if ((region_type & ORT_ACC) != 0)
-	      {
-		/* This duplicate checking code is currently only enabled for
-		   OpenACC.  */
-		tree d1 = OMP_CLAUSE_DECL (*sc);
-		tree d2 = OMP_CLAUSE_DECL (grp_end);
-		while (TREE_CODE (d1) == ARRAY_REF)
-		  d1 = TREE_OPERAND (d1, 0);
-		while (TREE_CODE (d2) == ARRAY_REF)
-		  d2 = TREE_OPERAND (d2, 0);
-		if (TREE_CODE (d1) == INDIRECT_REF)
-		  d1 = TREE_OPERAND (d1, 0);
-		if (TREE_CODE (d2) == INDIRECT_REF)
-		  d2 = TREE_OPERAND (d2, 0);
-		while (TREE_CODE (d1) == COMPONENT_REF)
-		  if (TREE_CODE (d2) == COMPONENT_REF
-		      && TREE_OPERAND (d1, 1) == TREE_OPERAND (d2, 1))
-		    {
-		      d1 = TREE_OPERAND (d1, 0);
-		      d2 = TREE_OPERAND (d2, 0);
-		    }
-		  else
-		    break;
-		if (d1 == d2)
-		  {
-		    error_at (OMP_CLAUSE_LOCATION (grp_end),
-			      "%qE appears more than once in map clauses",
-			      OMP_CLAUSE_DECL (grp_end));
-		    return NULL;
-		  }
-	      }
 	    if (maybe_lt (coffset, offset)
 		|| (known_eq (coffset, offset)
 		    && maybe_lt (cbitpos, bitpos)))
@@ -10400,6 +10541,11 @@ omp_build_struct_sibling_lists (enum tree_code code,
       if (DECL_P (decl))
 	continue;
 
+      /* Skip groups we marked for deletion in
+	 oacc_resolve_clause_dependencies.  */
+      if (grp->deleted)
+	continue;
+
       if (OMP_CLAUSE_CHAIN (*grp_start_p)
 	  && OMP_CLAUSE_CHAIN (*grp_start_p) != grp_end)
 	{
@@ -10436,14 +10582,14 @@ omp_build_struct_sibling_lists (enum tree_code code,
       if (TREE_CODE (decl) != COMPONENT_REF)
 	continue;
 
-      /* If we're mapping the whole struct in another node, skip creation of
-	 sibling lists.  */
+      /* If we're mapping the whole struct in another node, skip adding this
+	 node to a sibling list.  */
       omp_mapping_group *wholestruct;
-      if (!(region_type & ORT_ACC)
-	  && omp_mapped_by_containing_struct (*grpmap, OMP_CLAUSE_DECL (c),
-					      &wholestruct))
+      if (omp_mapped_by_containing_struct (*grpmap, OMP_CLAUSE_DECL (c),
+					   &wholestruct))
 	{
-	  if (*grp_start_p == grp_end)
+	  if (!(region_type & ORT_ACC)
+	      && *grp_start_p == grp_end)
 	    /* Remove the whole of this mapping -- redundant.  */
 	    grp->deleted = true;
 
@@ -10632,6 +10778,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap;
 	  grpmap = omp_index_mapping_groups (groups);
 
+	  oacc_resolve_clause_dependencies (groups, grpmap);
 	  omp_build_struct_sibling_lists (code, region_type, groups, &grpmap,
 					  list_p);
 

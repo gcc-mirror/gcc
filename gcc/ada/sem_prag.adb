@@ -25731,6 +25731,13 @@ package body Sem_Prag is
                        ("argument of pragma% must be On/Off or static string "
                         & "expression", Arg1);
 
+                  --  Use of pragma Warnings to set warning switches is
+                  --  ignored in GNATprove mode, as these switches apply to
+                  --  the compiler only.
+
+                  elsif GNATprove_Mode then
+                     null;
+
                   --  One argument string expression case
 
                   else
@@ -31608,7 +31615,7 @@ package body Sem_Prag is
       Pragma_Refined_Depends                => -1,
       Pragma_Refined_Global                 => -1,
       Pragma_Refined_Post                   => -1,
-      Pragma_Refined_State                  => -1,
+      Pragma_Refined_State                  =>  0,
       Pragma_Relative_Deadline              =>  0,
       Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,
@@ -31713,6 +31720,15 @@ package body Sem_Prag is
       P := Parent (N);
 
       if Nkind (P) /= N_Pragma_Argument_Association then
+
+         --  References within pragma Refined_State are not significant. They
+         --  can't be recognized using pragma argument number, because they
+         --  appear inside refinement clauses that rely on aggregate syntax.
+
+         if In_Pragma_Expression (N, Name_Refined_State) then
+            return True;
+         end if;
+
          return False;
 
       else

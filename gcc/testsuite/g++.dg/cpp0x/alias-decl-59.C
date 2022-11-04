@@ -5,7 +5,7 @@ template<typename>
 struct A {};
 
 template<typename T>
-using B = A<__underlying_type(T) [[gnu::aligned(4)]]>; // { dg-warning "ignoring attributes on template argument" }
+using B = A<__underlying_type(T) [[gnu::aligned(4)]]>; // { dg-warning "ignoring attributes applied to dependent type" }
 
 template<typename T>
-using B = A<__underlying_type(T) [[gnu::packed]]>; // { dg-warning "ignoring attributes on template argument" }
+using B = A<__underlying_type(T) [[gnu::packed]]>; // { dg-warning "ignoring attributes applied to dependent type" }

@@ -410,7 +410,7 @@ aarch64*-*-vxworks7*)
 	extra_parts="$extra_parts crtfastmath.o"
 	md_unwind_header=aarch64/aarch64-unwind.h
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
-	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
+	tmake_file="${tmake_file} ${cpu_type}/t-lse"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	tmake_file="${tmake_file} t-dfprules"
 	;;
@@ -825,6 +825,9 @@ i[34567]86-*-mingw*)
 	  posix)
 	    tmake_file="i386/t-mingw-pthread $tmake_file"
 	    ;;
+	  mcf)
+	    tmake_file="i386/t-mingw-mcfgthread $tmake_file"
+	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$ac_cv_sjlj_exceptions = xyes; then
@@ -848,6 +851,9 @@ x86_64-*-mingw*)
 	    ;;
 	  posix)
 	    tmake_file="i386/t-mingw-pthread $tmake_file"
+	    ;;
+	  mcf)
+	    tmake_file="i386/t-mingw-mcfgthread $tmake_file"
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
@@ -1546,6 +1552,35 @@ i[34567]86-*-linux* | x86_64-*-linux*)
 aarch64*-*-*)
 	# ILP32 needs an extra header for unwinding
 	tm_file="${tm_file} aarch64/value-unwind.h"
+	;;
+esac
+
+# Setup to build a shared libgcc for VxWorks when that was requested,
+# for library variants that support it (rtp only, code model not large).
+#
+
+case ${host} in
+*vxworks*)
+	case ${with_multisubdir}-${enable_shared} in
+	*large*)
+		;;
+	*mrtp*-yes)
+		tmake_file="${tmake_file} t-libgcc-pic"
+
+		# Arrange to set a soname on libgcc_s so DT_NEEDED entries
+		# for it refer to that alone. This ensures absence of path
+		# components which would be incorrect as the runtime loader
+		# on target has no visibility over the host filesystem.
+		tmake_file="${tmake_file} t-slibgcc-gld-nover"
+		tmake_file="${tmake_file} t-slibgcc"
+
+		# t-slibgcc-libgcc is needed on at least aarch64 (for
+		# lse) and at most harmless on other targets.
+		tmake_file="${tmake_file} t-slibgcc-libgcc"
+
+		tmake_file="${tmake_file} t-crtstuff-pic t-vxcrtstuffS"
+		;;
+	esac
 	;;
 esac
 

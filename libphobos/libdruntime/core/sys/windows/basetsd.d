@@ -9,7 +9,6 @@
  */
 module core.sys.windows.basetsd;
 version (Windows):
-@system:
 
 /*  This template is used in these modules to declare constant pointer types,
  *  in order to support both D 1.x and 2.x.

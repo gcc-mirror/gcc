@@ -9,7 +9,6 @@ version (linux):
 extern (C):
 pure:
 nothrow:
-@system:
 
 import core.stdc.stdint;
 public import core.sys.elf;

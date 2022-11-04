@@ -71,4 +71,8 @@
 # define __cpp_lib_null_iterators 201304L
 #endif
 
+#if __cplusplus >= 202002L
+#include <bits/ranges_base.h> // ranges::distance, ranges::next, ranges::prev
+#endif
+
 #endif /* _GLIBCXX_ITERATOR */

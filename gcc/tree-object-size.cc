@@ -604,9 +604,9 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	  else if (var != pt_var && TREE_CODE (pt_var) == MEM_REF)
 	    {
 	      tree v = var;
-	      /* For &X->fld, compute object size only if fld isn't the last
-		 field, as struct { int i; char c[1]; } is often used instead
-		 of flexible array member.  */
+	      /* For &X->fld, compute object size if fld isn't a flexible array
+		 member.  */
+	      bool is_flexible_array_mem_ref = false;
 	      while (v && v != pt_var)
 		switch (TREE_CODE (v))
 		  {
@@ -633,6 +633,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 			v = NULL_TREE;
 			break;
 		      }
+		    is_flexible_array_mem_ref = array_at_struct_end_p (v);
 		    while (v != pt_var && TREE_CODE (v) == COMPONENT_REF)
 		      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
 			  != UNION_TYPE
@@ -645,12 +646,9 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 			&& TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
 			   == RECORD_TYPE)
 		      {
-			tree fld_chain = DECL_CHAIN (TREE_OPERAND (v, 1));
-			for (; fld_chain; fld_chain = DECL_CHAIN (fld_chain))
-			  if (TREE_CODE (fld_chain) == FIELD_DECL)
-			    break;
-
-			if (fld_chain)
+			/* compute object size only if v is not a
+			   flexible array member.  */
+			if (!is_flexible_array_mem_ref)
 			  {
 			    v = NULL_TREE;
 			    break;

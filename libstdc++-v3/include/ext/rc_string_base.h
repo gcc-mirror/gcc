@@ -30,6 +30,8 @@
 #ifndef _RC_STRING_BASE_H
 #define _RC_STRING_BASE_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <ext/atomicity.h>
 #include <ext/alloc_traits.h>
 #include <bits/stl_iterator_base_funcs.h>

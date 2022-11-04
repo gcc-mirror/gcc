@@ -17,88 +17,223 @@
 ;; {{{ Vector iterators
 
 ; Vector modes for specific types
-; (This will make more sense when there are multiple vector sizes)
 (define_mode_iterator V_QI
-		      [V64QI])
+		      [V2QI V4QI V8QI V16QI V32QI V64QI])
 (define_mode_iterator V_HI
-		      [V64HI])
+		      [V2HI V4HI V8HI V16HI V32HI V64HI])
 (define_mode_iterator V_HF
-		      [V64HF])
+		      [V2HF V4HF V8HF V16HF V32HF V64HF])
 (define_mode_iterator V_SI
-		      [V64SI])
+		      [V2SI V4SI V8SI V16SI V32SI V64SI])
 (define_mode_iterator V_SF
-		      [V64SF])
+		      [V2SF V4SF V8SF V16SF V32SF V64SF])
 (define_mode_iterator V_DI
-		      [V64DI])
+		      [V2DI V4DI V8DI V16DI V32DI V64DI])
 (define_mode_iterator V_DF
-		      [V64DF])
+		      [V2DF V4DF V8DF V16DF V32DF V64DF])
 
 ; Vector modes for sub-dword modes
 (define_mode_iterator V_QIHI
-		      [V64QI V64HI])
+		      [V2QI V2HI
+		       V4QI V4HI
+		       V8QI V8HI
+		       V16QI V16HI
+		       V32QI V32HI
+		       V64QI V64HI])
 
 ; Vector modes for one vector register
 (define_mode_iterator V_1REG
-		      [V64QI V64HI V64SI V64HF V64SF])
+		      [V2QI V2HI V2SI V2HF V2SF
+		       V4QI V4HI V4SI V4HF V4SF
+		       V8QI V8HI V8SI V8HF V8SF
+		       V16QI V16HI V16SI V16HF V16SF
+		       V32QI V32HI V32SI V32HF V32SF
+		       V64QI V64HI V64SI V64HF V64SF])
 
 (define_mode_iterator V_INT_1REG
-		      [V64QI V64HI V64SI])
+		      [V2QI V2HI V2SI
+		       V4QI V4HI V4SI
+		       V8QI V8HI V8SI
+		       V16QI V16HI V16SI
+		       V32QI V32HI V32SI
+		       V64QI V64HI V64SI])
 (define_mode_iterator V_INT_1REG_ALT
-		      [V64QI V64HI V64SI])
+		      [V2QI V2HI V2SI
+		       V4QI V4HI V4SI
+		       V8QI V8HI V8SI
+		       V16QI V16HI V16SI
+		       V32QI V32HI V32SI
+		       V64QI V64HI V64SI])
 (define_mode_iterator V_FP_1REG
-		      [V64HF V64SF])
+		      [V2HF V2SF
+		       V4HF V4SF
+		       V8HF V8SF
+		       V16HF V16SF
+		       V32HF V32SF
+		       V64HF V64SF])
 
 ; Vector modes for two vector registers
 (define_mode_iterator V_2REG
-		      [V64DI V64DF])
+		      [V2DI V2DF
+		       V4DI V4DF
+		       V8DI V8DF
+		       V16DI V16DF
+		       V32DI V32DF
+		       V64DI V64DF])
 
 ; Vector modes with native support
 (define_mode_iterator V_noQI
-		      [V64HI V64HF V64SI V64SF V64DI V64DF])
+		      [V2HI V2HF V2SI V2SF V2DI V2DF
+		       V4HI V4HF V4SI V4SF V4DI V4DF
+		       V8HI V8HF V8SI V8SF V8DI V8DF
+		       V16HI V16HF V16SI V16SF V16DI V16DF
+		       V32HI V32HF V32SI V32SF V32DI V32DF
+		       V64HI V64HF V64SI V64SF V64DI V64DF])
 (define_mode_iterator V_noHI
-		      [V64HF V64SI V64SF V64DI V64DF])
+		      [V2HF V2SI V2SF V2DI V2DF
+		       V4HF V4SI V4SF V4DI V4DF
+		       V8HF V8SI V8SF V8DI V8DF
+		       V16HF V16SI V16SF V16DI V16DF
+		       V32HF V32SI V32SF V32DI V32DF
+		       V64HF V64SI V64SF V64DI V64DF])
 
 (define_mode_iterator V_INT_noQI
-		      [V64HI V64SI V64DI])
+		      [V2HI V2SI V2DI
+		       V4HI V4SI V4DI
+		       V8HI V8SI V8DI
+		       V16HI V16SI V16DI
+		       V32HI V32SI V32DI
+		       V64HI V64SI V64DI])
 (define_mode_iterator V_INT_noHI
-		      [V64SI V64DI])
+		      [V2SI V2DI
+		       V4SI V4DI
+		       V8SI V8DI
+		       V16SI V16DI
+		       V32SI V32DI
+		       V64SI V64DI])
 
 ; All of above
 (define_mode_iterator V_ALL
-		      [V64QI V64HI V64HF V64SI V64SF V64DI V64DF])
+		      [V2QI V2HI V2HF V2SI V2SF V2DI V2DF
+		       V4QI V4HI V4HF V4SI V4SF V4DI V4DF
+		       V8QI V8HI V8HF V8SI V8SF V8DI V8DF
+		       V16QI V16HI V16HF V16SI V16SF V16DI V16DF
+		       V32QI V32HI V32HF V32SI V32SF V32DI V32DF
+		       V64QI V64HI V64HF V64SI V64SF V64DI V64DF])
 (define_mode_iterator V_ALL_ALT
-		      [V64QI V64HI V64HF V64SI V64SF V64DI V64DF])
+		      [V2QI V2HI V2HF V2SI V2SF V2DI V2DF
+		       V4QI V4HI V4HF V4SI V4SF V4DI V4DF
+		       V8QI V8HI V8HF V8SI V8SF V8DI V8DF
+		       V16QI V16HI V16HF V16SI V16SF V16DI V16DF
+		       V32QI V32HI V32HF V32SI V32SF V32DI V32DF
+		       V64QI V64HI V64HF V64SI V64SF V64DI V64DF])
 
 (define_mode_iterator V_INT
-		      [V64QI V64HI V64SI V64DI])
+		      [V2QI V2HI V2SI V2DI
+		       V4QI V4HI V4SI V4DI
+		       V8QI V8HI V8SI V8DI
+		       V16QI V16HI V16SI V16DI
+		       V32QI V32HI V32SI V32DI
+		       V64QI V64HI V64SI V64DI])
 (define_mode_iterator V_FP
-		      [V64HF V64SF V64DF])
+		      [V2HF V2SF V2DF
+		       V4HF V4SF V4DF
+		       V8HF V8SF V8DF
+		       V16HF V16SF V16DF
+		       V32HF V32SF V32DF
+		       V64HF V64SF V64DF])
 
 (define_mode_attr scalar_mode
-  [(V64QI "qi") (V64HI "hi") (V64SI "si")
+  [(V2QI "qi") (V2HI "hi") (V2SI "si")
+   (V2HF "hf") (V2SF "sf") (V2DI "di") (V2DF "df")
+   (V4QI "qi") (V4HI "hi") (V4SI "si")
+   (V4HF "hf") (V4SF "sf") (V4DI "di") (V4DF "df")
+   (V8QI "qi") (V8HI "hi") (V8SI "si")
+   (V8HF "hf") (V8SF "sf") (V8DI "di") (V8DF "df")
+   (V16QI "qi") (V16HI "hi") (V16SI "si")
+   (V16HF "hf") (V16SF "sf") (V16DI "di") (V16DF "df")
+   (V32QI "qi") (V32HI "hi") (V32SI "si")
+   (V32HF "hf") (V32SF "sf") (V32DI "di") (V32DF "df")
+   (V64QI "qi") (V64HI "hi") (V64SI "si")
    (V64HF "hf") (V64SF "sf") (V64DI "di") (V64DF "df")])
 
 (define_mode_attr SCALAR_MODE
-  [(V64QI "QI") (V64HI "HI") (V64SI "SI")
+  [(V2QI "QI") (V2HI "HI") (V2SI "SI")
+   (V2HF "HF") (V2SF "SF") (V2DI "DI") (V2DF "DF")
+   (V4QI "QI") (V4HI "HI") (V4SI "SI")
+   (V4HF "HF") (V4SF "SF") (V4DI "DI") (V4DF "DF")
+   (V8QI "QI") (V8HI "HI") (V8SI "SI")
+   (V8HF "HF") (V8SF "SF") (V8DI "DI") (V8DF "DF")
+   (V16QI "QI") (V16HI "HI") (V16SI "SI")
+   (V16HF "HF") (V16SF "SF") (V16DI "DI") (V16DF "DF")
+   (V32QI "QI") (V32HI "HI") (V32SI "SI")
+   (V32HF "HF") (V32SF "SF") (V32DI "DI") (V32DF "DF")
+   (V64QI "QI") (V64HI "HI") (V64SI "SI")
    (V64HF "HF") (V64SF "SF") (V64DI "DI") (V64DF "DF")])
 
 (define_mode_attr vnsi
-  [(V64QI "v64si") (V64HI "v64si") (V64HF "v64si") (V64SI "v64si")
+  [(V2QI "v2si") (V2HI "v2si") (V2HF "v2si") (V2SI "v2si")
+   (V2SF "v2si") (V2DI "v2si") (V2DF "v2si")
+   (V4QI "v4si") (V4HI "v4si") (V4HF "v4si") (V4SI "v4si")
+   (V4SF "v4si") (V4DI "v4si") (V4DF "v4si")
+   (V8QI "v8si") (V8HI "v8si") (V8HF "v8si") (V8SI "v8si")
+   (V8SF "v8si") (V8DI "v8si") (V8DF "v8si")
+   (V16QI "v16si") (V16HI "v16si") (V16HF "v16si") (V16SI "v16si")
+   (V16SF "v16si") (V16DI "v16si") (V16DF "v16si")
+   (V32QI "v32si") (V32HI "v32si") (V32HF "v32si") (V32SI "v32si")
+   (V32SF "v32si") (V32DI "v32si") (V32DF "v32si")
+   (V64QI "v64si") (V64HI "v64si") (V64HF "v64si") (V64SI "v64si")
    (V64SF "v64si") (V64DI "v64si") (V64DF "v64si")])
 
 (define_mode_attr VnSI
-  [(V64QI "V64SI") (V64HI "V64SI") (V64HF "V64SI") (V64SI "V64SI")
+  [(V2QI "V2SI") (V2HI "V2SI") (V2HF "V2SI") (V2SI "V2SI")
+   (V2SF "V2SI") (V2DI "V2SI") (V2DF "V2SI")
+   (V4QI "V4SI") (V4HI "V4SI") (V4HF "V4SI") (V4SI "V4SI")
+   (V4SF "V4SI") (V4DI "V4SI") (V4DF "V4SI")
+   (V8QI "V8SI") (V8HI "V8SI") (V8HF "V8SI") (V8SI "V8SI")
+   (V8SF "V8SI") (V8DI "V8SI") (V8DF "V8SI")
+   (V16QI "V16SI") (V16HI "V16SI") (V16HF "V16SI") (V16SI "V16SI")
+   (V16SF "V16SI") (V16DI "V16SI") (V16DF "V16SI")
+   (V32QI "V32SI") (V32HI "V32SI") (V32HF "V32SI") (V32SI "V32SI")
+   (V32SF "V32SI") (V32DI "V32SI") (V32DF "V32SI")
+   (V64QI "V64SI") (V64HI "V64SI") (V64HF "V64SI") (V64SI "V64SI")
    (V64SF "V64SI") (V64DI "V64SI") (V64DF "V64SI")])
 
 (define_mode_attr vndi
-  [(V64QI "v64di") (V64HI "v64di") (V64HF "v64di") (V64SI "v64di")
+  [(V2QI "v2di") (V2HI "v2di") (V2HF "v2di") (V2SI "v2di")
+   (V2SF "v2di") (V2DI "v2di") (V2DF "v2di")
+   (V4QI "v4di") (V4HI "v4di") (V4HF "v4di") (V4SI "v4di")
+   (V4SF "v4di") (V4DI "v4di") (V4DF "v4di")
+   (V8QI "v8di") (V8HI "v8di") (V8HF "v8di") (V8SI "v8di")
+   (V8SF "v8di") (V8DI "v8di") (V8DF "v8di")
+   (V16QI "v16di") (V16HI "v16di") (V16HF "v16di") (V16SI "v16di")
+   (V16SF "v16di") (V16DI "v16di") (V16DF "v16di")
+   (V32QI "v32di") (V32HI "v32di") (V32HF "v32di") (V32SI "v32di")
+   (V32SF "v32di") (V32DI "v32di") (V32DF "v32di")
+   (V64QI "v64di") (V64HI "v64di") (V64HF "v64di") (V64SI "v64di")
    (V64SF "v64di") (V64DI "v64di") (V64DF "v64di")])
 
 (define_mode_attr VnDI
-  [(V64QI "V64DI") (V64HI "V64DI") (V64HF "V64DI") (V64SI "V64DI")
+  [(V2QI "V2DI") (V2HI "V2DI") (V2HF "V2DI") (V2SI "V2DI")
+   (V2SF "V2DI") (V2DI "V2DI") (V2DF "V2DI")
+   (V4QI "V4DI") (V4HI "V4DI") (V4HF "V4DI") (V4SI "V4DI")
+   (V4SF "V4DI") (V4DI "V4DI") (V4DF "V4DI")
+   (V8QI "V8DI") (V8HI "V8DI") (V8HF "V8DI") (V8SI "V8DI")
+   (V8SF "V8DI") (V8DI "V8DI") (V8DF "V8DI")
+   (V16QI "V16DI") (V16HI "V16DI") (V16HF "V16DI") (V16SI "V16DI")
+   (V16SF "V16DI") (V16DI "V16DI") (V16DF "V16DI")
+   (V32QI "V32DI") (V32HI "V32DI") (V32HF "V32DI") (V32SI "V32DI")
+   (V32SF "V32DI") (V32DI "V32DI") (V32DF "V32DI")
+   (V64QI "V64DI") (V64HI "V64DI") (V64HF "V64DI") (V64SI "V64DI")
    (V64SF "V64DI") (V64DI "V64DI") (V64DF "V64DI")])
 
-(define_mode_attr sdwa [(V64QI "BYTE_0") (V64HI "WORD_0") (V64SI "DWORD")])
+(define_mode_attr sdwa
+  [(V2QI "BYTE_0") (V2HI "WORD_0") (V2SI "DWORD")
+   (V4QI "BYTE_0") (V4HI "WORD_0") (V4SI "DWORD")
+   (V8QI "BYTE_0") (V8HI "WORD_0") (V8SI "DWORD")
+   (V16QI "BYTE_0") (V16HI "WORD_0") (V16SI "DWORD")
+   (V32QI "BYTE_0") (V32HI "WORD_0") (V32SI "DWORD")
+   (V64QI "BYTE_0") (V64HI "WORD_0") (V64SI "DWORD")])
 
 ;; }}}
 ;; {{{ Substitutions
@@ -180,6 +315,37 @@
 	(match_operand:V_ALL 1 "general_operand"))]
   ""
   {
+    /* Bitwise reinterpret casts via SUBREG don't work with GCN vector
+       registers, but we can convert the MEM to a mode that does work.  */
+    if (MEM_P (operands[0]) && !SUBREG_P (operands[0])
+	&& SUBREG_P (operands[1])
+	&& GET_MODE_SIZE (GET_MODE (operands[1]))
+	   == GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[1]))))
+      {
+        rtx src = SUBREG_REG (operands[1]);
+        rtx mem = copy_rtx (operands[0]);
+	PUT_MODE_RAW (mem, GET_MODE (src));
+	emit_move_insn (mem, src);
+	DONE;
+      }
+    if (MEM_P (operands[1]) && !SUBREG_P (operands[1])
+	&& SUBREG_P (operands[0])
+	&& GET_MODE_SIZE (GET_MODE (operands[0]))
+	   == GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[0]))))
+      {
+        rtx dest = SUBREG_REG (operands[0]);
+        rtx mem = copy_rtx (operands[1]);
+	PUT_MODE_RAW (mem, GET_MODE (dest));
+	emit_move_insn (dest, mem);
+	DONE;
+      }
+
+    /* SUBREG of MEM is not supported.  */
+    gcc_assert ((!SUBREG_P (operands[0])
+		 || !MEM_P (SUBREG_REG (operands[0])))
+		&& (!SUBREG_P (operands[1])
+		    || !MEM_P (SUBREG_REG (operands[1]))));
+
     if (MEM_P (operands[0]) && !lra_in_progress && !reload_completed)
       {
 	operands[1] = force_reg (<MODE>mode, operands[1]);
@@ -622,6 +788,40 @@
    (set_attr "exec" "none")
    (set_attr "laneselect" "yes")])
 
+(define_expand "vec_extract<V_ALL:mode><V_ALL_ALT:mode>"
+  [(set (match_operand:V_ALL_ALT 0 "register_operand")
+	(vec_select:V_ALL_ALT
+	  (match_operand:V_ALL 1 "register_operand")
+	  (parallel [(match_operand 2 "immediate_operand")])))]
+  "MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)
+   && <V_ALL_ALT:SCALAR_MODE>mode == <V_ALL:SCALAR_MODE>mode"
+  {
+    int numlanes = GET_MODE_NUNITS (<V_ALL_ALT:MODE>mode);
+    int firstlane = INTVAL (operands[2]) * numlanes;
+    rtx tmp;
+
+    if (firstlane == 0)
+      {
+	/* A plain move will do.  */
+	tmp = operands[1];
+      } else {
+        /* FIXME: optimize this by using DPP where available.  */
+
+        rtx permutation = gen_reg_rtx (<V_ALL:VnSI>mode);
+	emit_insn (gen_vec_series<V_ALL:vnsi> (permutation,
+					       GEN_INT (firstlane*4),
+					       GEN_INT (4)));
+
+	tmp = gen_reg_rtx (<V_ALL:MODE>mode);
+	emit_insn (gen_ds_bpermute<V_ALL:mode> (tmp, permutation, operands[1],
+						get_exec (<V_ALL:MODE>mode)));
+      }
+
+    emit_move_insn (operands[0],
+		    gen_rtx_SUBREG (<V_ALL_ALT:MODE>mode, tmp, 0));
+    DONE;
+  })
+
 (define_expand "extract_last_<mode>"
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (match_operand:DI 1 "gcn_alu_operand")
@@ -668,6 +868,16 @@
   [(match_operand:V_ALL 0 "register_operand")
    (match_operand 1)]
   ""
+  {
+    gcn_expand_vector_init (operands[0], operands[1]);
+    DONE;
+  })
+
+(define_expand "vec_init<V_ALL:mode><V_ALL_ALT:mode>"
+  [(match_operand:V_ALL 0 "register_operand")
+   (match_operand:V_ALL_ALT 1)]
+  "<V_ALL:SCALAR_MODE>mode == <V_ALL_ALT:SCALAR_MODE>mode
+   && MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)"
   {
     gcn_expand_vector_init (operands[0], operands[1]);
     DONE;
@@ -2161,6 +2371,19 @@
    (set_attr "length" "8,8")])
 
 ;; }}}
+;; {{{ Int unops
+
+(define_expand "neg<mode>2"
+  [(match_operand:V_INT 0 "register_operand")
+   (match_operand:V_INT 1 "register_operand")]
+  ""
+  {
+    emit_insn (gen_sub<mode>3 (operands[0], gcn_vec_constant (<MODE>mode, 0),
+			       operands[1]));
+    DONE;
+  })
+
+;; }}}
 ;; {{{ FP binops - special cases
 
 ; GCN does not directly provide a DFmode subtract instruction, so we do it by
@@ -2242,6 +2465,23 @@
    v_<revmnemonic>0\t%0, %2, %1"
   [(set_attr "type" "vop2")
    (set_attr "length" "8,8")])
+
+(define_code_iterator fminmaxop [smin smax])
+(define_expand "<fexpander><mode>3"
+  [(set (match_operand:FP 0 "gcn_valu_dst_operand")
+	(fminmaxop:FP
+	  (match_operand:FP 1 "gcn_valu_src0_operand")
+	  (match_operand:FP 2 "gcn_valu_src1_operand")))]
+  ""
+  {})
+
+(define_expand "<fexpander><mode>3<exec>"
+  [(set (match_operand:V_FP 0 "gcn_valu_dst_operand")
+	(fminmaxop:V_FP
+	  (match_operand:V_FP 1 "gcn_valu_src0_operand")
+	  (match_operand:V_FP 2 "gcn_valu_src1_operand")))]
+  ""
+  {})
 
 ;; }}}
 ;; {{{ FP unops
@@ -2419,10 +2659,10 @@
    (set_attr "length" "8")])
 
 (define_insn "ldexp<mode>3<exec>"
-  [(set (match_operand:V_FP 0 "register_operand"  "=v")
+  [(set (match_operand:V_FP 0 "register_operand"     "=  v")
 	(unspec:V_FP
-	  [(match_operand:V_FP 1 "gcn_alu_operand" "vB")
-	   (match_operand:V64SI 2 "gcn_alu_operand" "vSvA")]
+	  [(match_operand:V_FP 1 "gcn_alu_operand"   "  vB")
+	   (match_operand:<VnSI> 2 "gcn_alu_operand" "vSvA")]
 	  UNSPEC_LDEXP))]
   ""
   "v_ldexp%i0\t%0, %1, %2"
@@ -2452,8 +2692,8 @@
    (set_attr "length" "8")])
 
 (define_insn "frexp<mode>_exp2<exec>"
-  [(set (match_operand:V64SI 0 "register_operand" "=v")
-	(unspec:V64SI
+  [(set (match_operand:<VnSI> 0 "register_operand" "=v")
+	(unspec:<VnSI>
 	  [(match_operand:V_FP 1 "gcn_alu_operand" "vB")]
 	  UNSPEC_FREXP_EXP))]
   ""
@@ -2640,9 +2880,27 @@
 (define_mode_iterator CVT_FROM_MODE [HI SI HF SF DF])
 (define_mode_iterator CVT_TO_MODE [HI SI HF SF DF])
 
-(define_mode_iterator VCVT_MODE [V64HI V64SI V64HF V64SF V64DF])
-(define_mode_iterator VCVT_FMODE [V64HF V64SF V64DF])
-(define_mode_iterator VCVT_IMODE [V64HI V64SI])
+(define_mode_iterator VCVT_MODE
+		      [V2HI V2SI V2HF V2SF V2DF
+		       V4HI V4SI V4HF V4SF V4DF
+		       V8HI V8SI V8HF V8SF V8DF
+		       V16HI V16SI V16HF V16SF V16DF
+		       V32HI V32SI V32HF V32SF V32DF
+		       V64HI V64SI V64HF V64SF V64DF])
+(define_mode_iterator VCVT_FMODE
+		      [V2HF V2SF V2DF
+		       V4HF V4SF V4DF
+		       V8HF V8SF V8DF
+		       V16HF V16SF V16DF
+		       V32HF V32SF V32DF
+		       V64HF V64SF V64DF])
+(define_mode_iterator VCVT_IMODE
+		      [V2HI V2SI
+		       V4HI V4SI
+		       V8HI V8SI
+		       V16HI V16SI
+		       V32HI V32SI
+		       V64HI V64SI])
 
 (define_code_iterator cvt_op [fix unsigned_fix
 			      float unsigned_float
@@ -2669,8 +2927,9 @@
   [(set (match_operand:VCVT_FMODE 0 "register_operand" "=  v")
 	(cvt_op:VCVT_FMODE
 	  (match_operand:VCVT_MODE 1 "gcn_alu_operand" "vSvB")))]
-  "gcn_valid_cvt_p (<VCVT_MODE:MODE>mode, <VCVT_FMODE:MODE>mode,
-		    <cvt_name>_cvt)"
+  "MODE_VF (<VCVT_MODE:MODE>mode) == MODE_VF (<VCVT_FMODE:MODE>mode)
+   && gcn_valid_cvt_p (<VCVT_MODE:MODE>mode, <VCVT_FMODE:MODE>mode,
+		       <cvt_name>_cvt)"
   "v_cvt<cvt_operands>\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
@@ -2679,8 +2938,9 @@
   [(set (match_operand:VCVT_IMODE 0 "register_operand"  "=  v")
 	(cvt_op:VCVT_IMODE
 	  (match_operand:VCVT_FMODE 1 "gcn_alu_operand" "vSvB")))]
-  "gcn_valid_cvt_p (<VCVT_FMODE:MODE>mode, <VCVT_IMODE:MODE>mode,
-		    <cvt_name>_cvt)"
+  "MODE_VF (<VCVT_IMODE:MODE>mode) == MODE_VF (<VCVT_FMODE:MODE>mode)
+   && gcn_valid_cvt_p (<VCVT_FMODE:MODE>mode, <VCVT_IMODE:MODE>mode,
+		       <cvt_name>_cvt)"
   "v_cvt<cvt_operands>\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
@@ -3052,7 +3312,8 @@
 (define_expand "while_ultsidi"
   [(match_operand:DI 0 "register_operand")
    (match_operand:SI 1 "")
-   (match_operand:SI 2 "")]
+   (match_operand:SI 2 "")
+   (match_operand:SI 3 "")]
   ""
   {
     if (GET_CODE (operands[1]) != CONST_INT
@@ -3077,6 +3338,11 @@
 			      : ~((unsigned HOST_WIDE_INT)-1 << diff));
 	emit_move_insn (operands[0], gen_rtx_CONST_INT (VOIDmode, mask));
       }
+    if (INTVAL (operands[3]) < 64)
+      emit_insn (gen_anddi3 (operands[0], operands[0],
+			     gen_rtx_CONST_INT (VOIDmode,
+						~((unsigned HOST_WIDE_INT)-1
+						  << INTVAL (operands[3])))));
     DONE;
   })
 
@@ -3266,9 +3532,21 @@
     rtx tmp = gcn_expand_reduc_scalar (<MODE>mode, operands[1],
 				       <reduc_unspec>);
 
-    /* The result of the reduction is in lane 63 of tmp.  */
-    emit_insn (gen_mov_from_lane63_<mode> (operands[0], tmp));
+    rtx last_lane = GEN_INT (GET_MODE_NUNITS (<MODE>mode) - 1);
+    emit_insn (gen_vec_extract<mode><scalar_mode> (operands[0], tmp,
+						   last_lane));
 
+    DONE;
+  })
+
+(define_expand "reduc_<fexpander>_scal_<mode>"
+  [(match_operand:<SCALAR_MODE> 0 "register_operand")
+   (fminmaxop:V_FP
+     (match_operand:V_FP 1 "register_operand"))]
+  ""
+  {
+    /* fmin/fmax are identical to smin/smax.  */
+    emit_insn (gen_reduc_<expander>_scal_<mode> (operands[0], operands[1]));
     DONE;
   })
 
@@ -3298,7 +3576,7 @@
 	(unspec:V_1REG
 	  [(match_operand:V_1REG 1 "register_operand" "v")
 	   (match_operand:V_1REG 2 "register_operand" "v")
-	   (match_operand:SI 3 "const_int_operand"    "n")]
+	   (match_operand:SI 3 "const_int_operand"        "n")]
 	  REDUC_UNSPEC))]
   ; GCN3 requires a carry out, GCN5 not
   "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
@@ -3405,38 +3683,6 @@
   }
   [(set_attr "type" "vmult")
    (set_attr "length" "16")])
-
-; Instructions to move a scalar value from lane 63 of a vector register.
-(define_insn "mov_from_lane63_<mode>"
-  [(set (match_operand:<SCALAR_MODE> 0 "register_operand" "=Sg,v")
-	(unspec:<SCALAR_MODE>
-	  [(match_operand:V_1REG 1 "register_operand"	  "  v,v")]
-	  UNSPEC_MOV_FROM_LANE63))]
-  ""
-  "@
-   v_readlane_b32\t%0, %1, 63
-   v_mov_b32\t%0, %1 wave_ror:1"
-  [(set_attr "type" "vop3a,vop_dpp")
-   (set_attr "exec" "none,*")
-   (set_attr "length" "8")])
-
-(define_insn "mov_from_lane63_<mode>"
-  [(set (match_operand:<SCALAR_MODE> 0 "register_operand" "=Sg,v")
-	(unspec:<SCALAR_MODE>
-	  [(match_operand:V_2REG 1 "register_operand"	  "  v,v")]
-	  UNSPEC_MOV_FROM_LANE63))]
-  ""
-  "@
-   v_readlane_b32\t%L0, %L1, 63\;v_readlane_b32\t%H0, %H1, 63
-   * if (REGNO (operands[0]) <= REGNO (operands[1]))	\
-       return \"v_mov_b32\t%L0, %L1 wave_ror:1\;\"	\
-	      \"v_mov_b32\t%H0, %H1 wave_ror:1\";	\
-     else						\
-       return \"v_mov_b32\t%H0, %H1 wave_ror:1\;\"	\
-	      \"v_mov_b32\t%L0, %L1 wave_ror:1\";"
-  [(set_attr "type" "vop3a,vop_dpp")
-   (set_attr "exec" "none,*")
-   (set_attr "length" "8")])
 
 ;; }}}
 ;; {{{ Miscellaneous

@@ -107,18 +107,6 @@ module std.random;
 import std.range.primitives;
 import std.traits;
 
-version (OSX)
-    version = Darwin;
-else version (iOS)
-    version = Darwin;
-else version (TVOS)
-    version = Darwin;
-else version (WatchOS)
-    version = Darwin;
-
-version (D_InlineAsm_X86) version = InlineAsm_X86_Any;
-version (D_InlineAsm_X86_64) version = InlineAsm_X86_Any;
-
 ///
 @safe unittest
 {
@@ -177,6 +165,18 @@ version (D_InlineAsm_X86_64) version = InlineAsm_X86_Any;
     else
         assert([0, 1, 2, 4, 5].randomShuffle(rnd2).equal([4, 2, 5, 0, 1]));
 }
+
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
+version (D_InlineAsm_X86) version = InlineAsm_X86_Any;
+version (D_InlineAsm_X86_64) version = InlineAsm_X86_Any;
 
 version (StdUnittest)
 {

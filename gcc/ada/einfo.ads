@@ -222,10 +222,9 @@ package Einfo is
 --  on the actions triggered by a freeze node, which include the construction
 --  of initialization procedures and dispatch tables.
 
---  b) The presence of a freeze node on an entity is used by the back end to
---  defer elaboration of the entity until its freeze node is seen. In the
---  absence of an explicit freeze node, an entity is frozen (and elaborated)
---  at the point of declaration.
+--  b) The flag is used by the back end to defer elaboration of the entity
+--  until its freeze node is seen. In the absence of an explicit freeze node,
+--  an entity is frozen (and elaborated) at the point of declaration.
 
 --  For object declarations, the flag is set when an address clause for the
 --  object is encountered. Legality checks on the address expression only take
@@ -4824,39 +4823,6 @@ package Einfo is
 --    Z : Integer renames Y;   -- renamed object is the identifier Y
 
 --  The front-end does not store explicitly the fact that Z renames X.
-
---------------------------------------
--- Delayed Freezing and Elaboration --
---------------------------------------
-
---  The flag Has_Delayed_Freeze indicates that an entity carries an explicit
---  freeze node, which appears later in the expanded tree.
-
---  a) The flag is used by the front-end to trigger expansion actions
---  which include the generation of that freeze node. Typically this happens at
---  the end of the current compilation unit, or before the first subprogram
---  body is encountered in the current unit. See files freeze and exp_ch13 for
---  details on the actions triggered by a freeze node, which include the
---  construction of initialization procedures and dispatch tables.
-
---  b) The flag is used by the backend to defer elaboration of the entity until
---  its freeze node is seen. In the absence of an explicit freeze node, an
---  entity is frozen (and elaborated) at the point of declaration.
-
---  For object declarations, the flag is set when an address clause for the
---  object is encountered. Legality checks on the address expression only
---  take place at the freeze point of the object.
-
---  Most types have an explicit freeze node, because they cannot be elaborated
---  until all representation and operational items that apply to them have been
---  analyzed. Private types and incomplete types have the flag set as well, as
---  do task and protected types.
-
---  Implicit base types created for type derivations, as well as classwide
---  types created for all tagged types, have the flag set.
-
---  If a subprogram has an access parameter whose designated type is incomplete
---  the subprogram has the flag set.
 
 ------------------
 -- Access Kinds --

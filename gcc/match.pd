@@ -1331,8 +1331,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (~X - ~Y) -> Y - X.  */
 (simplify
  (minus (bit_not @0) (bit_not @1))
-  (with { tree utype = unsigned_type_for (type); }
-   (convert (minus (convert:utype @1) (convert:utype @0)))))
+  (if (!TYPE_OVERFLOW_SANITIZED (type))
+   (with { tree utype = unsigned_type_for (type); }
+    (convert (minus (convert:utype @1) (convert:utype @0))))))
 
 /* ~(X - Y) -> ~X + Y.  */
 (simplify
@@ -7930,131 +7931,131 @@ and,
 
     /* Build a vector of integers from the tree mask.  */
     vec_perm_builder builder;
-    if (!tree_to_vec_perm_builder (&builder, op2))
-      return NULL_TREE;
-
-    /* Create a vec_perm_indices for the integer vector.  */
-    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
-    bool single_arg = (op0 == op1);
-    vec_perm_indices sel (builder, single_arg ? 1 : 2, nelts);
   }
-  (if (sel.series_p (0, 1, 0, 1))
-   { op0; }
-   (if (sel.series_p (0, 1, nelts, 1))
-    { op1; }
-    (with
-     {
-       if (!single_arg)
-         {
-	   if (sel.all_from_input_p (0))
-	     op1 = op0;
-	   else if (sel.all_from_input_p (1))
-	     {
-	       op0 = op1;
-	       sel.rotate_inputs (1);
-	     }
-	   else if (known_ge (poly_uint64 (sel[0]), nelts))
-	     {
-	       std::swap (op0, op1);
-	       sel.rotate_inputs (1);
-	     }
-         }
-       gassign *def;
-       tree cop0 = op0, cop1 = op1;
-       if (TREE_CODE (op0) == SSA_NAME
-           && (def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op0)))
-	   && gimple_assign_rhs_code (def) == CONSTRUCTOR)
-	 cop0 = gimple_assign_rhs1 (def);
-       if (TREE_CODE (op1) == SSA_NAME
-           && (def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op1)))
-	   && gimple_assign_rhs_code (def) == CONSTRUCTOR)
-	 cop1 = gimple_assign_rhs1 (def);
-
-       tree t;
+  (if (tree_to_vec_perm_builder (&builder, op2))
+   (with
+    {
+      /* Create a vec_perm_indices for the integer vector.  */
+      poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
+      bool single_arg = (op0 == op1);
+      vec_perm_indices sel (builder, single_arg ? 1 : 2, nelts);
     }
-    (if ((TREE_CODE (cop0) == VECTOR_CST
-	  || TREE_CODE (cop0) == CONSTRUCTOR)
-	 && (TREE_CODE (cop1) == VECTOR_CST
-	     || TREE_CODE (cop1) == CONSTRUCTOR)
-	 && (t = fold_vec_perm (type, cop0, cop1, sel)))
-     { t; }
-     (with
-      {
-	bool changed = (op0 == op1 && !single_arg);
-	tree ins = NULL_TREE;
-	unsigned at = 0;
+    (if (sel.series_p (0, 1, 0, 1))
+     { op0; }
+     (if (sel.series_p (0, 1, nelts, 1))
+      { op1; }
+      (with
+       {
+         if (!single_arg)
+	   {
+	     if (sel.all_from_input_p (0))
+	       op1 = op0;
+	     else if (sel.all_from_input_p (1))
+	       {
+	         op0 = op1;
+	         sel.rotate_inputs (1);
+	       }
+	     else if (known_ge (poly_uint64 (sel[0]), nelts))
+	       {
+	         std::swap (op0, op1);
+	         sel.rotate_inputs (1);
+	       }
+	   }
+	 gassign *def;
+	 tree cop0 = op0, cop1 = op1;
+	 if (TREE_CODE (op0) == SSA_NAME
+	     && (def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op0)))
+	     && gimple_assign_rhs_code (def) == CONSTRUCTOR)
+	   cop0 = gimple_assign_rhs1 (def);
+	 if (TREE_CODE (op1) == SSA_NAME
+	     && (def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op1)))
+	     && gimple_assign_rhs_code (def) == CONSTRUCTOR)
+	   cop1 = gimple_assign_rhs1 (def);
+	 tree t;
+       }
+       (if ((TREE_CODE (cop0) == VECTOR_CST
+	     || TREE_CODE (cop0) == CONSTRUCTOR)
+	    && (TREE_CODE (cop1) == VECTOR_CST
+		|| TREE_CODE (cop1) == CONSTRUCTOR)
+	    && (t = fold_vec_perm (type, cop0, cop1, sel)))
+	{ t; }
+	(with
+	 {
+	   bool changed = (op0 == op1 && !single_arg);
+	   tree ins = NULL_TREE;
+	   unsigned at = 0;
 
-	/* See if the permutation is performing a single element
-	   insert from a CONSTRUCTOR or constant and use a BIT_INSERT_EXPR
-	   in that case.  But only if the vector mode is supported,
-	   otherwise this is invalid GIMPLE.  */
-        if (op_mode != BLKmode
-	    && (TREE_CODE (cop0) == VECTOR_CST
-		|| TREE_CODE (cop0) == CONSTRUCTOR
-		|| TREE_CODE (cop1) == VECTOR_CST
-		|| TREE_CODE (cop1) == CONSTRUCTOR))
-          {
-	    bool insert_first_p = sel.series_p (1, 1, nelts + 1, 1);
-	    if (insert_first_p)
-	      {
-	        /* After canonicalizing the first elt to come from the
-		   first vector we only can insert the first elt from
-		   the first vector.  */
-	        at = 0;
-		if ((ins = fold_read_from_vector (cop0, sel[0])))
-		  op0 = op1;
-	      }
-	    /* The above can fail for two-element vectors which always
-	       appear to insert the first element, so try inserting
-	       into the second lane as well.  For more than two
-	       elements that's wasted time.  */
-	    if (!insert_first_p || (!ins && maybe_eq (nelts, 2u)))
-	      {
-	        unsigned int encoded_nelts = sel.encoding ().encoded_nelts ();
-		for (at = 0; at < encoded_nelts; ++at)
-		  if (maybe_ne (sel[at], at))
-		    break;
-		if (at < encoded_nelts
-		    && (known_eq (at + 1, nelts)
-			|| sel.series_p (at + 1, 1, at + 1, 1)))
-		  {
-		    if (known_lt (poly_uint64 (sel[at]), nelts))
-		      ins = fold_read_from_vector (cop0, sel[at]);
-		    else
-		      ins = fold_read_from_vector (cop1, sel[at] - nelts);
-		  }
-	      }
-	  }
+	   /* See if the permutation is performing a single element
+	      insert from a CONSTRUCTOR or constant and use a BIT_INSERT_EXPR
+	      in that case.  But only if the vector mode is supported,
+	      otherwise this is invalid GIMPLE.  */
+	   if (op_mode != BLKmode
+	       && (TREE_CODE (cop0) == VECTOR_CST
+		   || TREE_CODE (cop0) == CONSTRUCTOR
+		   || TREE_CODE (cop1) == VECTOR_CST
+		   || TREE_CODE (cop1) == CONSTRUCTOR))
+	     {
+	       bool insert_first_p = sel.series_p (1, 1, nelts + 1, 1);
+	       if (insert_first_p)
+	         {
+		   /* After canonicalizing the first elt to come from the
+		      first vector we only can insert the first elt from
+		      the first vector.  */
+		   at = 0;
+		   if ((ins = fold_read_from_vector (cop0, sel[0])))
+		     op0 = op1;
+		 }
+	       /* The above can fail for two-element vectors which always
+		  appear to insert the first element, so try inserting
+		  into the second lane as well.  For more than two
+		  elements that's wasted time.  */
+	       if (!insert_first_p || (!ins && maybe_eq (nelts, 2u)))
+		 {
+		   unsigned int encoded_nelts = sel.encoding ().encoded_nelts ();
+		   for (at = 0; at < encoded_nelts; ++at)
+		     if (maybe_ne (sel[at], at))
+		       break;
+		   if (at < encoded_nelts
+		       && (known_eq (at + 1, nelts)
+			   || sel.series_p (at + 1, 1, at + 1, 1)))
+		     {
+		       if (known_lt (poly_uint64 (sel[at]), nelts))
+			 ins = fold_read_from_vector (cop0, sel[at]);
+		       else
+			 ins = fold_read_from_vector (cop1, sel[at] - nelts);
+		     }
+		 }
+	     }
 
-	/* Generate a canonical form of the selector.  */
-	if (!ins && sel.encoding () != builder)
-	  {
-	    /* Some targets are deficient and fail to expand a single
-	       argument permutation while still allowing an equivalent
-	       2-argument version.  */
-	    tree oldop2 = op2;
-	    if (sel.ninputs () == 2
-	       || can_vec_perm_const_p (result_mode, op_mode, sel, false))
-	      op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
-	    else
-	      {
-	        vec_perm_indices sel2 (builder, 2, nelts);
-		if (can_vec_perm_const_p (result_mode, op_mode, sel2, false))
-	          op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel2);
-	        else
-	          /* Not directly supported with either encoding,
-		     so use the preferred form.  */
-		  op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
-	      }
-	    if (!operand_equal_p (op2, oldop2, 0))
-	      changed = true;
-	  }
-      }
-      (if (ins)
-       (bit_insert { op0; } { ins; }
-         { bitsize_int (at * vector_element_bits (type)); })
-       (if (changed)
-        (vec_perm { op0; } { op1; } { op2; }))))))))))
+	   /* Generate a canonical form of the selector.  */
+	   if (!ins && sel.encoding () != builder)
+	     {
+	       /* Some targets are deficient and fail to expand a single
+		  argument permutation while still allowing an equivalent
+		  2-argument version.  */
+	       tree oldop2 = op2;
+	       if (sel.ninputs () == 2
+		   || can_vec_perm_const_p (result_mode, op_mode, sel, false))
+		 op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
+	       else
+		 {
+		   vec_perm_indices sel2 (builder, 2, nelts);
+		   if (can_vec_perm_const_p (result_mode, op_mode, sel2, false))
+		     op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel2);
+		   else
+		     /* Not directly supported with either encoding,
+			so use the preferred form.  */
+		     op2 = vec_perm_indices_to_tree (TREE_TYPE (op2), sel);
+		 }
+	       if (!operand_equal_p (op2, oldop2, 0))
+		 changed = true;
+	     }
+	 }
+	 (if (ins)
+	  (bit_insert { op0; } { ins; }
+	   { bitsize_int (at * vector_element_bits (type)); })
+	  (if (changed)
+	   (vec_perm { op0; } { op1; } { op2; }))))))))))))
 
 /* VEC_PERM_EXPR (v, v, mask) -> v where v contains same element.  */
 
@@ -8084,6 +8085,53 @@ and,
  (minus (vec_perm:s (mult:c@0 @1 vec_same_elem_p@2) @0 @3) @4)
  (if (TREE_CODE (@0) == SSA_NAME && num_imm_uses (@0) == 2)
   (minus (mult (vec_perm @1 @1 @3) @2) @4)))
+
+
+/* Merge
+   c = VEC_PERM_EXPR <a, b, VCST0>;
+   d = VEC_PERM_EXPR <c, c, VCST1>;
+   to
+   d = VEC_PERM_EXPR <a, b, NEW_VCST>;  */
+
+(simplify
+ (vec_perm (vec_perm@0 @1 @2 VECTOR_CST@3) @0 VECTOR_CST@4)
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+  (with
+   {
+     machine_mode result_mode = TYPE_MODE (type);
+     machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+     int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+     vec_perm_builder builder0;
+     vec_perm_builder builder1;
+     vec_perm_builder builder2 (nelts, nelts, 1);
+   }
+   (if (tree_to_vec_perm_builder (&builder0, @3)
+	&& tree_to_vec_perm_builder (&builder1, @4))
+    (with
+     {
+       vec_perm_indices sel0 (builder0, 2, nelts);
+       vec_perm_indices sel1 (builder1, 1, nelts);
+
+       for (int i = 0; i < nelts; i++)
+	 builder2.quick_push (sel0[sel1[i].to_constant ()]);
+
+       vec_perm_indices sel2 (builder2, 2, nelts);
+
+       tree op0 = NULL_TREE;
+       /* If the new VEC_PERM_EXPR can't be handled but both
+	  original VEC_PERM_EXPRs can, punt.
+	  If one or both of the original VEC_PERM_EXPRs can't be
+	  handled and the new one can't be either, don't increase
+	  number of VEC_PERM_EXPRs that can't be handled.  */
+       if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
+	   || (single_use (@0)
+	       ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, false)
+		  || !can_vec_perm_const_p (result_mode, op_mode, sel1, false))
+	       : !can_vec_perm_const_p (result_mode, op_mode, sel1, false)))
+	 op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+     }
+     (if (op0)
+      (vec_perm @1 @2 { op0; })))))))
 
 
 /* Match count trailing zeroes for simplify_count_trailing_zeroes in fwprop.
@@ -8138,5 +8186,6 @@ and,
 
 /* -x & 1 -> x & 1.  */
 (simplify 
-  (bit_and (negate @0) integer_onep@1)
-  (bit_and @0 @1))
+ (bit_and (negate @0) integer_onep@1)
+ (if (!TYPE_OVERFLOW_SANITIZED (type))
+  (bit_and @0 @1)))

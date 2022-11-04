@@ -2584,6 +2584,12 @@ someone decided it was a good idea to use that register number to
 terminate the stack backtrace.  New ports should avoid this.
 @end defmac
 
+@defmac DWARF_VERSION_DEFAULT
+A C expression whose value is the default dwarf standard version we'll honor
+and advertise when generating dwarf debug information, in absence of
+an explicit @option{-gdwarf-@var{version}} option on the command line.
+@end defmac
+
 @hook TARGET_DWARF_HANDLE_FRAME_UNSPEC
 
 @hook TARGET_DWARF_POLY_INDETERMINATE_VALUE
@@ -7120,9 +7126,9 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_D_MINFO_SECTION
 
-@hook TARGET_D_MINFO_START_NAME
+@hook TARGET_D_MINFO_SECTION_START
 
-@hook TARGET_D_MINFO_END_NAME
+@hook TARGET_D_MINFO_SECTION_END
 
 @hook TARGET_D_HAS_STDCALL_CONVENTION
 

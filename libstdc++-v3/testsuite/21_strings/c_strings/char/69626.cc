@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++98" }
 // { dg-do compile { target *-*-linux-gnu } }
+// { dg-require-effective-target hosted }
 
 #include <cstdlib>
 

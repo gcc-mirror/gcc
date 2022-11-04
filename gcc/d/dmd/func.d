@@ -182,7 +182,7 @@ public:
             catches.push(ctch);
 
             Statement s2 = new TryCatchStatement(Loc.initial, s._body, catches);
-            fd.flags &= ~FUNCFLAG.noEH;
+            fd.hasNoEH = false;
             replaceCurrent(s2);
             s2.accept(this);
         }
@@ -191,31 +191,31 @@ public:
     }
 }
 
-enum FUNCFLAG : uint
+private struct FUNCFLAG
 {
-    purityInprocess  = 1,      /// working on determining purity
-    safetyInprocess  = 2,      /// working on determining safety
-    nothrowInprocess = 4,      /// working on determining nothrow
-    nogcInprocess    = 8,      /// working on determining @nogc
-    returnInprocess  = 0x10,   /// working on inferring 'return' for parameters
-    inlineScanned    = 0x20,   /// function has been scanned for inline possibilities
-    inferScope       = 0x40,   /// infer 'scope' for parameters
-    hasCatches       = 0x80,   /// function has try-catch statements
-    compileTimeOnly  = 0x100,  /// is a compile time only function; no code will be generated for it
-    printf           = 0x200,  /// is a printf-like function
-    scanf            = 0x400,  /// is a scanf-like function
-    noreturn         = 0x800,  /// the function does not return
-    NRVO             = 0x1000, /// Support for named return value optimization
-    naked            = 0x2000, /// The function is 'naked' (see inline ASM)
-    generated        = 0x4000, /// The function is compiler generated (e.g. `opCmp`)
-    introducing      = 0x8000, /// If this function introduces the overload set
-    semantic3Errors  = 0x10000, /// If errors in semantic3 this function's frame ptr
-    noEH             = 0x20000, /// No exception unwinding is needed
-    inferRetType     = 0x40000, /// Return type is to be inferred
-    dualContext      = 0x80000, /// has a dual-context 'this' parameter
-    hasAlwaysInline  = 0x100000, /// Contains references to functions that must be inlined
-    CRTCtor          = 0x200000, /// Has attribute pragma(crt_constructor)
-    CRTDtor          = 0x400000, /// Has attribute pragma(crt_destructor)
+    bool purityInprocess;    /// working on determining purity
+    bool safetyInprocess;    /// working on determining safety
+    bool nothrowInprocess;   /// working on determining nothrow
+    bool nogcInprocess;      /// working on determining @nogc
+    bool returnInprocess;    /// working on inferring 'return' for parameters
+    bool inlineScanned;      /// function has been scanned for inline possibilities
+    bool inferScope;         /// infer 'scope' for parameters
+    bool hasCatches;         /// function has try-catch statements
+    bool isCompileTimeOnly;  /// is a compile time only function; no code will be generated for it
+    bool printf;             /// is a printf-like function
+    bool scanf;              /// is a scanf-like function
+    bool noreturn;           /// the function does not return
+    bool isNRVO = true;      /// Support for named return value optimization
+    bool isNaked;            /// The function is 'naked' (see inline ASM)
+    bool isGenerated;        /// The function is compiler generated (e.g. `opCmp`)
+    bool isIntroducing;      /// If this function introduces the overload set
+    bool hasSemantic3Errors; /// If errors in semantic3 this function's frame ptr
+    bool hasNoEH;            /// No exception unwinding is needed
+    bool inferRetType;       /// Return type is to be inferred
+    bool hasDualContext;     /// has a dual-context 'this' parameter
+    bool hasAlwaysInlines;   /// Contains references to functions that must be inlined
+    bool isCrtCtor;          /// Has attribute pragma(crt_constructor)
+    bool isCrtDtor;          /// Has attribute pragma(crt_destructor)
 }
 
 /***********************************************************
@@ -348,9 +348,9 @@ extern (C++) class FuncDeclaration : Declaration
     /// better diagnostics
     AttributeViolation* safetyViolation;
 
-    /// Function flags: A collection of boolean packed for memory efficiency
-    /// See the `FUNCFLAG` enum
-    uint flags = FUNCFLAG.NRVO;
+    /// See the `FUNCFLAG` struct
+    import dmd.common.bitfields;
+    mixin(generateBitFields!(FUNCFLAG, uint));
 
     /**
      * Data for a function declaration that is needed for the Objective-C
@@ -373,13 +373,13 @@ extern (C++) class FuncDeclaration : Declaration
         }
         this.endloc = endloc;
         if (noreturn)
-            this.flags |= FUNCFLAG.noreturn;
+            this.noreturn = true;
 
         /* The type given for "infer the return type" is a TypeFunction with
          * NULL for the return type.
          */
         if (type && type.nextOf() is null)
-            this.flags |= FUNCFLAG.inferRetType;
+            this.inferRetType = true;
     }
 
     static FuncDeclaration create(const ref Loc loc, const ref Loc endloc, Identifier id, StorageClass storage_class, Type type, bool noreturn = false)
@@ -391,7 +391,7 @@ extern (C++) class FuncDeclaration : Declaration
     {
         //printf("FuncDeclaration::syntaxCopy('%s')\n", toChars());
         FuncDeclaration f = s ? cast(FuncDeclaration)s
-                              : new FuncDeclaration(loc, endloc, ident, storage_class, type.syntaxCopy(), (flags & FUNCFLAG.noreturn) != 0);
+                              : new FuncDeclaration(loc, endloc, ident, storage_class, type.syntaxCopy(), this.noreturn != 0);
         f.frequires = frequires ? Statement.arraySyntaxCopy(frequires) : null;
         f.fensures = fensures ? Ensure.arraySyntaxCopy(fensures) : null;
         f.fbody = fbody ? fbody.syntaxCopy() : null;
@@ -522,7 +522,7 @@ extern (C++) class FuncDeclaration : Declaration
     {
         const bool dualCtx = (toParent2() != toParentLocal());
         if (dualCtx)
-            this.flags |= FUNCFLAG.dualContext;
+            this.hasDualContext = true;
         auto ad = isThis();
         if (!dualCtx && !ad && !isNested())
         {
@@ -1376,29 +1376,29 @@ extern (C++) class FuncDeclaration : Declaration
         //printf("initInferAttributes() for %s (%s)\n", toPrettyChars(), ident.toChars());
         TypeFunction tf = type.toTypeFunction();
         if (tf.purity == PURE.impure) // purity not specified
-            flags |= FUNCFLAG.purityInprocess;
+            purityInprocess = true;
 
         if (tf.trust == TRUST.default_)
-            flags |= FUNCFLAG.safetyInprocess;
+            safetyInprocess = true;
 
         if (!tf.isnothrow)
-            flags |= FUNCFLAG.nothrowInprocess;
+            nothrowInprocess = true;
 
         if (!tf.isnogc)
-            flags |= FUNCFLAG.nogcInprocess;
+            nogcInprocess = true;
 
         if (!isVirtual() || this.isIntroducing())
-            flags |= FUNCFLAG.returnInprocess;
+            returnInprocess = true;
 
         // Initialize for inferring STC.scope_
-        flags |= FUNCFLAG.inferScope;
+        inferScope = true;
     }
 
     final PURE isPure()
     {
         //printf("FuncDeclaration::isPure() '%s'\n", toChars());
         TypeFunction tf = type.toTypeFunction();
-        if (flags & FUNCFLAG.purityInprocess)
+        if (purityInprocess)
             setImpure();
         if (tf.purity == PURE.fwdref)
             tf.purityLevel();
@@ -1424,7 +1424,7 @@ extern (C++) class FuncDeclaration : Declaration
 
     final PURE isPureBypassingInference()
     {
-        if (flags & FUNCFLAG.purityInprocess)
+        if (purityInprocess)
             return PURE.fwdref;
         else
             return isPure();
@@ -1437,9 +1437,9 @@ extern (C++) class FuncDeclaration : Declaration
      */
     extern (D) final bool setImpure()
     {
-        if (flags & FUNCFLAG.purityInprocess)
+        if (purityInprocess)
         {
-            flags &= ~FUNCFLAG.purityInprocess;
+            purityInprocess = false;
             if (fes)
                 fes.func.setImpure();
         }
@@ -1448,21 +1448,32 @@ extern (C++) class FuncDeclaration : Declaration
         return false;
     }
 
+    extern (D) final uint flags()
+    {
+        return bitFields;
+    }
+
+    extern (D) final uint flags(uint f)
+    {
+        bitFields = f;
+        return bitFields;
+    }
+
     final bool isSafe()
     {
-        if (flags & FUNCFLAG.safetyInprocess)
+        if (safetyInprocess)
             setUnsafe();
         return type.toTypeFunction().trust == TRUST.safe;
     }
 
     final bool isSafeBypassingInference()
     {
-        return !(flags & FUNCFLAG.safetyInprocess) && isSafe();
+        return !(safetyInprocess) && isSafe();
     }
 
     final bool isTrusted()
     {
-        if (flags & FUNCFLAG.safetyInprocess)
+        if (safetyInprocess)
             setUnsafe();
         return type.toTypeFunction().trust == TRUST.trusted;
     }
@@ -1483,9 +1494,9 @@ extern (C++) class FuncDeclaration : Declaration
         bool gag = false, Loc loc = Loc.init, const(char)* fmt = null,
         RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
     {
-        if (flags & FUNCFLAG.safetyInprocess)
+        if (safetyInprocess)
         {
-            flags &= ~FUNCFLAG.safetyInprocess;
+            safetyInprocess = false;
             type.toTypeFunction().trust = TRUST.system;
             if (fmt || arg0)
                 safetyViolation = new AttributeViolation(loc, fmt, arg0, arg1, arg2);
@@ -1518,99 +1529,14 @@ extern (C++) class FuncDeclaration : Declaration
     final bool isNogc()
     {
         //printf("isNogc() %s, inprocess: %d\n", toChars(), !!(flags & FUNCFLAG.nogcInprocess));
-        if (flags & FUNCFLAG.nogcInprocess)
+        if (nogcInprocess)
             setGC();
         return type.toTypeFunction().isnogc;
     }
 
     final bool isNogcBypassingInference()
     {
-        return !(flags & FUNCFLAG.nogcInprocess) && isNogc();
-    }
-
-    final bool isNRVO() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.NRVO);
-    }
-
-    final void isNRVO(bool v) pure nothrow @safe @nogc
-    {
-        if (v) this.flags |= FUNCFLAG.NRVO;
-        else this.flags &= ~FUNCFLAG.NRVO;
-    }
-
-    final bool isNaked() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.naked);
-    }
-
-    final void isNaked(bool v) @safe pure nothrow @nogc
-    {
-        if (v) this.flags |= FUNCFLAG.naked;
-        else this.flags &= ~FUNCFLAG.naked;
-    }
-
-    final bool isGenerated() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.generated);
-    }
-
-    final void isGenerated(bool v) pure nothrow @safe @nogc
-    {
-        if (v) this.flags |= FUNCFLAG.generated;
-        else this.flags &= ~FUNCFLAG.generated;
-    }
-
-    final bool isIntroducing() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.introducing);
-    }
-
-    final bool hasSemantic3Errors() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.semantic3Errors);
-    }
-
-    final bool hasNoEH() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.noEH);
-    }
-
-    final bool inferRetType() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.inferRetType);
-    }
-
-    final bool hasDualContext() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.dualContext);
-    }
-
-    final bool hasAlwaysInlines() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.hasAlwaysInline);
-    }
-
-    final bool isCrtCtor() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.CRTCtor);
-    }
-
-    final void isCrtCtor(bool v) @safe pure nothrow @nogc
-    {
-        if (v) this.flags |= FUNCFLAG.CRTCtor;
-        else this.flags &= ~FUNCFLAG.CRTCtor;
-    }
-
-    final bool isCrtDtor() const scope @safe pure nothrow @nogc
-    {
-        return !!(this.flags & FUNCFLAG.CRTDtor);
-    }
-
-    final void isCrtDtor(bool v) @safe pure nothrow @nogc
-    {
-        if (v) this.flags |= FUNCFLAG.CRTDtor;
-        else this.flags &= ~FUNCFLAG.CRTDtor;
+        return !nogcInprocess && isNogc();
     }
 
     /**************************************
@@ -1622,15 +1548,15 @@ extern (C++) class FuncDeclaration : Declaration
     extern (D) final bool setGC()
     {
         //printf("setGC() %s\n", toChars());
-        if (flags & FUNCFLAG.nogcInprocess && semanticRun < PASS.semantic3 && _scope)
+        if (nogcInprocess && semanticRun < PASS.semantic3 && _scope)
         {
             this.semantic2(_scope);
             this.semantic3(_scope);
         }
 
-        if (flags & FUNCFLAG.nogcInprocess)
+        if (nogcInprocess)
         {
-            flags &= ~FUNCFLAG.nogcInprocess;
+            nogcInprocess = false;
             type.toTypeFunction().isnogc = false;
             if (fes)
                 fes.func.setGC();
@@ -3384,6 +3310,28 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     // re-resolve to check for supplemental message
     if (!global.gag || global.params.showGaggedErrors)
     {
+        if (tthis)
+        {
+            if (auto classType = tthis.isTypeClass())
+            {
+                if (auto baseClass = classType.sym.baseClass)
+                {
+                    if (auto baseFunction = baseClass.search(baseClass.loc, fd.ident))
+                    {
+                        MatchAccumulator mErr;
+                        functionResolve(mErr, baseFunction, loc, sc, tiargs, baseClass.type, fargs, null);
+                        if (mErr.last > MATCH.nomatch && mErr.lastf)
+                        {
+                            errorSupplemental(loc, "%s `%s` hides base class function `%s`",
+                                    fd.kind, fd.toPrettyChars(), mErr.lastf.toPrettyChars());
+                            errorSupplemental(loc, "add `alias %s = %s` to `%s`'s body to merge the overload sets",
+                                    fd.toChars(), mErr.lastf.toPrettyChars(), tthis.toChars());
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
         const(char)* failMessage;
         functionResolve(m, orig_s, loc, sc, tiargs, tthis, fargs, &failMessage);
         if (failMessage)
@@ -3767,7 +3715,7 @@ extern (C++) final class FuncLiteralDeclaration : FuncDeclaration
         this.fes = fes;
         // Always infer scope for function literals
         // See https://issues.dlang.org/show_bug.cgi?id=20362
-        this.flags |= FUNCFLAG.inferScope;
+        this.inferScope = true;
         //printf("FuncLiteralDeclaration() id = '%s', type = '%s'\n", this.ident.toChars(), type.toChars());
     }
 
@@ -4429,6 +4377,58 @@ bool setUnsafe(Scope* sc,
     }
 
     return sc.func.setUnsafe(gag, loc, fmt, arg0, arg1, arg2);
+}
+
+/***************************************
+ * Like `setUnsafe`, but for safety errors still behind preview switches
+ *
+ * Given a `FeatureState fs`, for example dip1000 / dip25 / systemVariables,
+ * the behavior changes based on the setting:
+ *
+ * - In case of `-revert=fs`, it does nothing.
+ * - In case of `-preview=fs`, it's the same as `setUnsafe`
+ * - By default, print a deprecation in `@safe` functions, or store an attribute violation in inferred functions.
+ *
+ * Params:
+ *   sc = used to find affected function/variable, and for checking whether we are in a deprecated / speculative scope
+ *   fs = feature state from the preview flag
+ *   gag = surpress error message
+ *   loc = location of error
+ *   msg = printf-style format string
+ *   arg0  = (optional) argument for first %s format specifier
+ *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
+ * Returns: whether an actual safe error (not deprecation) occured
+ */
+bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
+{
+    if (fs == FeatureState.disabled)
+    {
+        return false;
+    }
+    else if (fs == FeatureState.enabled)
+    {
+        return sc.setUnsafe(gag, loc, msg, arg0, arg1, arg2);
+    }
+    else
+    {
+        if (!sc.func)
+            return false;
+        if (sc.func.isSafeBypassingInference())
+        {
+            if (!gag)
+                previewErrorFunc(sc.isDeprecated(), fs)(
+                    loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : ""
+                );
+        }
+        else if (!sc.func.safetyViolation)
+        {
+            import dmd.func : AttributeViolation;
+            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);
+        }
+        return false;
+    }
 }
 
 /// Stores a reason why a function failed to infer a function attribute like `@safe` or `pure`

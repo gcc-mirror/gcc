@@ -37,9 +37,12 @@ static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 bool
 c_missing_noreturn_ok_p (tree decl)
 {
-  /* A missing noreturn is not ok for freestanding implementations and
-     ok for the `main' function in hosted implementations.  */
-  return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
+  /* A missing noreturn is ok for the `main' function.  */
+  if (!MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl)))
+    return false;
+
+  return flag_hosted
+    || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl))) == integer_type_node;
 }
 
 /* Called from check_global_declaration.  */
@@ -384,13 +387,7 @@ c_get_alias_set (tree t)
   /* Allow aliasing between enumeral types and the underlying
      integer type.  This is required since those are compatible types.  */
   if (TREE_CODE (t) == ENUMERAL_TYPE)
-    {
-      tree t1 = c_common_type_for_size (tree_to_uhwi (TYPE_SIZE (t)),
-					/* short-cut commoning to signed
-					   type.  */
-					false);
-      return get_alias_set (t1);
-    }
+    return get_alias_set (ENUM_UNDERLYING_TYPE (t));
 
   return c_common_get_alias_set (t);
 }

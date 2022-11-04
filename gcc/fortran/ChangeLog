@@ -1,3 +1,205 @@
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* trans-types.cc (gfc_get_function_type): Do not use
+	build_varargs_function_type_vec for unprototyped function.
+
+2022-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103413
+	* symbol.cc (gfc_type_compatible): A boz-literal-constant has no type
+	and thus is not considered compatible to any type.
+
+2022-10-21  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100097
+	PR fortran/100098
+	* trans-array.cc (gfc_trans_class_array): New function to
+	initialize class descriptor's TKR information.
+	* trans-array.h (gfc_trans_class_array): Add function prototype.
+	* trans-decl.cc (gfc_trans_deferred_vars): Add calls to the new
+	function for both pointers and allocatables.
+
+2022-10-20  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105633
+	* expr.cc (find_array_section): Move check for NULL pointers so
+	that both subscript triplets and vector subscripts are covered.
+
+2022-10-17  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104330
+	* simplify.cc (gfc_simplify_image_index): Do not dereference NULL
+	pointer.
+
+2022-10-17  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/93483
+	PR fortran/107216
+	PR fortran/107219
+	* arith.cc (reduce_unary): Handled expressions are EXP_CONSTANT and
+	EXPR_ARRAY.  Do not attempt to reduce otherwise.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Moved check for EXP_CONSTANT and EXPR_ARRAY
+	from here ...
+	(reduce_binary): ... to here.
+	(eval_intrinsic): Catch failed reductions.
+	* gfortran.h (GFC_INTRINSIC_OPS): New enum ARITH_NOT_REDUCED to keep
+	track of expressions that were not reduced by the arithmetic evaluation
+	code.
+
+2022-10-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107272
+	* arith.cc (gfc_arith_not): Operand must be of type BT_LOGICAL.
+	(gfc_arith_and): Likewise.
+	(gfc_arith_or): Likewise.
+	(gfc_arith_eqv): Likewise.
+	(gfc_arith_neqv): Likewise.
+	(gfc_arith_eq): Compare consistency of types of operands.
+	(gfc_arith_ne): Likewise.
+	(gfc_arith_gt): Likewise.
+	(gfc_arith_ge): Likewise.
+	(gfc_arith_lt): Likewise.
+	(gfc_arith_le): Likewise.
+
+2022-10-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107266
+	* trans-expr.cc (gfc_conv_string_parameter): Use passed
+	type to honor character kind.
+	* trans-types.cc (gfc_sym_type): Honor character kind.
+	* trans-decl.cc (gfc_conv_cfi_to_gfc): Fix handling kind=4
+	character strings.
+
+2022-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100971
+	* resolve.cc (resolve_transfer): Extend check for permissibility
+	of polymorphic elements in a data transfer to arrays.
+
+2022-10-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107217
+	* arith.cc (gfc_arith_plus): Compare consistency of types of operands.
+	(gfc_arith_minus): Likewise.
+	(gfc_arith_times): Likewise.
+	(gfc_arith_divide): Likewise.
+	(arith_power): Check that both operands are of numeric type.
+
+2022-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107215
+	* arith.cc (gfc_int2int): Check validity of type of source expr.
+	(gfc_int2real): Likewise.
+	(gfc_int2complex): Likewise.
+	(gfc_real2int): Likewise.
+	(gfc_real2real): Likewise.
+	(gfc_complex2int): Likewise.
+	(gfc_complex2real): Likewise.
+	(gfc_complex2complex): Likewise.
+	(gfc_log2log): Likewise.
+	(gfc_log2int): Likewise.
+	(gfc_int2log): Likewise.
+
+2022-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.cc (gfc_trans_omp_assume): Use create_tmp_var_raw
+	instead of gfc_create_var for TARGET_EXPR slot creation.  Create it
+	with boolean_type_node and convert.
+
+2022-10-08  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/107000
+	* arith.cc (gfc_arith_error): Define error message for
+	ARITH_INVALID_TYPE.
+	(reduce_unary): Catch arithmetic expressions with invalid type.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Likewise.
+	(eval_intrinsic): Likewise.
+	(gfc_real2complex): Source expression must be of type REAL.
+	* gfortran.h (enum arith): Add ARITH_INVALID_TYPE.
+
+2022-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_assume): New.
+	(gfc_trans_omp_directive): Call it.
+
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_assumes): New.
+	(show_omp_clauses, show_namespace): Call it.
+	(show_omp_node, show_code_node): Handle OpenMP ASSUME.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_ASSUME,
+	ST_OMP_END_ASSUME, ST_OMP_ASSUMES and ST_NOTHING.
+	(gfc_exec_op): Add EXEC_OMP_ASSUME.
+	(gfc_omp_assumptions): New struct.
+	(gfc_get_omp_assumptions): New XCNEW #define.
+	(gfc_omp_clauses, gfc_namespace): Add assume member.
+	(gfc_resolve_omp_assumptions): New prototype.
+	* match.h (gfc_match_omp_assume, gfc_match_omp_assumes): New.
+	* openmp.cc (omp_code_to_statement): Forward declare.
+	(enum gfc_omp_directive_kind, struct gfc_omp_directive): New.
+	(gfc_free_omp_clauses): Free assume member and its struct data.
+	(enum omp_mask2): Add OMP_CLAUSE_ASSUMPTIONS.
+	(gfc_omp_absent_contains_clause): New.
+	(gfc_match_omp_clauses): Call it; optionally use passed
+	omp_clauses argument.
+	(omp_verify_merge_absent_contains, gfc_match_omp_assume,
+	 gfc_match_omp_assumes, gfc_resolve_omp_assumptions): New.
+	(resolve_omp_clauses): Call the latter.
+	(gfc_resolve_omp_directive, omp_code_to_statement): Handle
+	EXEC_OMP_ASSUME.
+	* parse.cc (decode_omp_directive): Parse OpenMP ASSUME(S).
+	(next_statement, parse_executable, parse_omp_structured_block):
+	Handle ST_OMP_ASSUME.
+	(case_omp_decl): Add ST_OMP_ASSUMES.
+	(gfc_ascii_statement): Handle Assumes, optional return
+	string without '!$OMP '/'!$ACC ' prefix.
+	* parse.h (gfc_ascii_statement): Add optional bool arg to prototype.
+	* resolve.cc (gfc_resolve_blocks, gfc_resolve_code): Add
+	EXEC_OMP_ASSUME.
+	(gfc_resolve): Resolve ASSUMES directive.
+	* symbol.cc (gfc_free_namespace): Free omp_assumes member.
+	* st.cc (gfc_free_statement): Handle EXEC_OMP_ASSUME.
+	* trans-openmp.cc (gfc_trans_omp_directive): Likewise.
+	* trans.cc (trans_code): Likewise.
+
+2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (decode_omp_directive): Handle '(end) loop' and 'scan'
+	also with -fopenmp-simd.
+
+2022-10-01  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100040
+	PR fortran/100029
+	* trans-expr.cc (gfc_conv_class_to_class): Add code to have
+	assumed-rank arrays recognized as full arrays and fix the type
+	of the array assignment.
+	(gfc_conv_procedure_call): Change order of code blocks such that
+	the free of ALLOCATABLE dummy arguments with INTENT(OUT) occurs
+	first.
+
+2022-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/105318
+	* openmp.cc (resolve_omp_clauses): Update is_device_ptr restrictions
+	for OpenMP 5.1 and map to has_device_addr where applicable; map
+	use_device_ptr to use_device_addr where applicable.
+	Silence integer-range warning for device(omp_{initial,invalid}_device).
+
+2022-09-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107054
+	* simplify.cc (gfc_simplify_unpack): Replace assert by condition
+	that terminates simplification when there are not enough elements
+	in the constructor of argument VECTOR.
+
 2022-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/41453

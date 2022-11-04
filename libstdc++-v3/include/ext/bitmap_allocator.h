@@ -29,6 +29,8 @@
 #ifndef _BITMAP_ALLOCATOR_H
 #define _BITMAP_ALLOCATOR_H 1
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #include <utility> // For std::pair.
 #include <bits/functexcept.h> // For __throw_bad_alloc().
 #include <bits/stl_function.h> // For greater_equal, and less_equal.

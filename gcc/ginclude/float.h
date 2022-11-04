@@ -248,8 +248,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DBL_NORM_MAX	__DBL_NORM_MAX__
 #define LDBL_NORM_MAX	__LDBL_NORM_MAX__
 
-/* Whether each type matches an IEC 60559 format (1 for format, 2 for
-   format and operations).  */
+/* Whether each type matches an IEC 60559 format.  */
 #undef FLT_IS_IEC_60559
 #undef DBL_IS_IEC_60559
 #undef LDBL_IS_IEC_60559

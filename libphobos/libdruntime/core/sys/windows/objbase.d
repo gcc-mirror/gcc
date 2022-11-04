@@ -8,7 +8,6 @@
  */
 module core.sys.windows.objbase;
 version (Windows):
-@system:
 nothrow:
 pragma(lib, "ole32");
 

@@ -1362,7 +1362,8 @@ get_location_for_byte_range_in_cur_line (cpp_reader *pfile,
   location_t combined_loc = COMBINE_LOCATION_DATA (pfile->line_table,
 						   start_loc,
 						   src_range,
-						   NULL);
+						   NULL,
+						   0);
   return combined_loc;
 }
 
@@ -2006,7 +2007,8 @@ name_p (cpp_reader *pfile, const cpp_string *string)
 static void
 warn_about_normalization (cpp_reader *pfile, 
 			  const cpp_token *token,
-			  const struct normalize_state *s)
+			  const struct normalize_state *s,
+			  bool identifier)
 {
   if (CPP_OPTION (pfile, warn_normalize) < NORMALIZE_STATE_RESULT (s)
       && !pfile->state.skipping)
@@ -2028,7 +2030,7 @@ warn_about_normalization (cpp_reader *pfile,
 					   CPP_BUF_COLUMN (pfile->buffer,
 							   pfile->buffer->cur));
 	  loc = COMBINE_LOCATION_DATA (pfile->line_table,
-				       loc, tok_range, NULL);
+				       loc, tok_range, NULL, 0);
 	}
 
       encoding_rich_location rich_loc (pfile, loc);
@@ -2042,7 +2044,7 @@ warn_about_normalization (cpp_reader *pfile,
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
 	cpp_warning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
 			"`%.*s' is not in NFKC", (int) sz, buf);
-      else if (CPP_OPTION (pfile, cplusplus))
+      else if (identifier && CPP_OPTION (pfile, xid_identifiers))
 	cpp_pedwarning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
 				  "`%.*s' is not in NFC", (int) sz, buf);
       else
@@ -3838,7 +3840,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 	result->type = CPP_NUMBER;
 	lex_number (pfile, &result->val.str, &nst);
-	warn_about_normalization (pfile, result, &nst);
+	warn_about_normalization (pfile, result, &nst, false);
 	break;
       }
 
@@ -3887,7 +3889,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	result->val.node.node = lex_identifier (pfile, buffer->cur - 1, false,
 						&nst,
 						&result->val.node.spelling);
-	warn_about_normalization (pfile, result, &nst);
+	warn_about_normalization (pfile, result, &nst, true);
       }
 
       /* Convert named operators to their proper types.  */
@@ -4100,7 +4102,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 	  result->type = CPP_NUMBER;
 	  lex_number (pfile, &result->val.str, &nst);
-	  warn_about_normalization (pfile, result, &nst);
+	  warn_about_normalization (pfile, result, &nst, false);
 	}
       else if (*buffer->cur == '.' && buffer->cur[1] == '.')
 	buffer->cur += 2, result->type = CPP_ELLIPSIS;
@@ -4191,7 +4193,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    result->type = CPP_NAME;
 	    result->val.node.node = lex_identifier (pfile, base, true, &nst,
 						    &result->val.node.spelling);
-	    warn_about_normalization (pfile, result, &nst);
+	    warn_about_normalization (pfile, result, &nst, true);
 	    break;
 	  }
 
@@ -4256,7 +4258,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 
       result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
 					       result->src_loc,
-					       tok_range, NULL);
+					       tok_range, NULL, 0);
     }
 
   return result;

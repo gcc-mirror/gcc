@@ -29,6 +29,8 @@
 #ifndef _TR1_LIMITS_H
 #define _TR1_LIMITS_H 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <tr1/climits>
 
 #endif

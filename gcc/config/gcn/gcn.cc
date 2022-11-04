@@ -395,6 +395,97 @@ gcn_scalar_mode_supported_p (scalar_mode mode)
 	  || mode == TImode);
 }
 
+/* Return a vector mode with N lanes of MODE.  */
+
+static machine_mode
+VnMODE (int n, machine_mode mode)
+{
+  switch (mode)
+    {
+    case E_QImode:
+      switch (n)
+	{
+	case 2: return V2QImode;
+	case 4: return V4QImode;
+	case 8: return V8QImode;
+	case 16: return V16QImode;
+	case 32: return V32QImode;
+	case 64: return V64QImode;
+	}
+      break;
+    case E_HImode:
+      switch (n)
+	{
+	case 2: return V2HImode;
+	case 4: return V4HImode;
+	case 8: return V8HImode;
+	case 16: return V16HImode;
+	case 32: return V32HImode;
+	case 64: return V64HImode;
+	}
+      break;
+    case E_HFmode:
+      switch (n)
+	{
+	case 2: return V2HFmode;
+	case 4: return V4HFmode;
+	case 8: return V8HFmode;
+	case 16: return V16HFmode;
+	case 32: return V32HFmode;
+	case 64: return V64HFmode;
+	}
+      break;
+    case E_SImode:
+      switch (n)
+	{
+	case 2: return V2SImode;
+	case 4: return V4SImode;
+	case 8: return V8SImode;
+	case 16: return V16SImode;
+	case 32: return V32SImode;
+	case 64: return V64SImode;
+	}
+      break;
+    case E_SFmode:
+      switch (n)
+	{
+	case 2: return V2SFmode;
+	case 4: return V4SFmode;
+	case 8: return V8SFmode;
+	case 16: return V16SFmode;
+	case 32: return V32SFmode;
+	case 64: return V64SFmode;
+	}
+      break;
+    case E_DImode:
+      switch (n)
+	{
+	case 2: return V2DImode;
+	case 4: return V4DImode;
+	case 8: return V8DImode;
+	case 16: return V16DImode;
+	case 32: return V32DImode;
+	case 64: return V64DImode;
+	}
+      break;
+    case E_DFmode:
+      switch (n)
+	{
+	case 2: return V2DFmode;
+	case 4: return V4DFmode;
+	case 8: return V8DFmode;
+	case 16: return V16DFmode;
+	case 32: return V32DFmode;
+	case 64: return V64DFmode;
+	}
+      break;
+    default:
+      break;
+    }
+
+  return VOIDmode;
+}
+
 /* Implement TARGET_CLASS_MAX_NREGS.
  
    Return the number of hard registers needed to hold a value of MODE in
@@ -556,6 +647,23 @@ gcn_can_change_mode_class (machine_mode from, machine_mode to,
 {
   if (!vgpr_vector_mode_p (from) && !vgpr_vector_mode_p (to))
     return true;
+
+  /* Vector conversions are only valid when changing mode with a fixed number
+     of lanes, or changing number of lanes with a fixed mode.  Anything else
+     would require actual data movement.  */
+  if (VECTOR_MODE_P (from) && VECTOR_MODE_P (to)
+      && GET_MODE_NUNITS (from) != GET_MODE_NUNITS (to)
+      && GET_MODE_INNER (from) != GET_MODE_INNER (to))
+    return false;
+
+  /* Vector/scalar conversions are only permitted when the scalar mode
+     is the same or smaller than the inner vector mode.  */
+  if ((VECTOR_MODE_P (from) && !VECTOR_MODE_P (to)
+       && GET_MODE_SIZE (to) >= GET_MODE_SIZE (GET_MODE_INNER (from)))
+      || (VECTOR_MODE_P (to) && !VECTOR_MODE_P (from)
+	  && GET_MODE_SIZE (from) >= GET_MODE_SIZE (GET_MODE_INNER (to))))
+    return false;
+
   return (gcn_class_max_nregs (regclass, from)
 	  == gcn_class_max_nregs (regclass, to));
 }
@@ -595,6 +703,16 @@ gcn_class_likely_spilled_p (reg_class_t rclass)
 bool
 gcn_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
+  if (VECTOR_MODE_P (mode1) || VECTOR_MODE_P (mode2))
+    {
+      int vf1 = (VECTOR_MODE_P (mode1) ? GET_MODE_NUNITS (mode1) : 1);
+      int vf2 = (VECTOR_MODE_P (mode2) ? GET_MODE_NUNITS (mode2) : 1);
+      machine_mode inner1 = (vf1 > 1 ? GET_MODE_INNER (mode1) : mode1);
+      machine_mode inner2 = (vf2 > 1 ? GET_MODE_INNER (mode2) : mode2);
+
+      return (vf1 == vf2 || (inner1 == inner2 && vf2 <= vf1));
+    }
+
   return (GET_MODE_BITSIZE (mode1) <= MAX_FIXED_MODE_SIZE
 	  && GET_MODE_BITSIZE (mode2) <= MAX_FIXED_MODE_SIZE);
 }
@@ -616,14 +734,16 @@ gcn_truly_noop_truncation (poly_uint64 outprec, poly_uint64 inprec)
 rtx
 gcn_operand_part (machine_mode mode, rtx op, int n)
 {
-  if (GET_MODE_SIZE (mode) >= 256)
+  int vf = VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1;
+
+  if (vf > 1)
     {
-      /*gcc_assert (GET_MODE_SIZE (mode) == 256 || n == 0);  */
+      machine_mode vsimode = VnMODE (vf, SImode);
 
       if (REG_P (op))
 	{
 	  gcc_assert (REGNO (op) + n < FIRST_PSEUDO_REGISTER);
-	  return gen_rtx_REG (V64SImode, REGNO (op) + n);
+	  return gen_rtx_REG (vsimode, REGNO (op) + n);
 	}
       if (GET_CODE (op) == CONST_VECTOR)
 	{
@@ -634,10 +754,10 @@ gcn_operand_part (machine_mode mode, rtx op, int n)
 	    RTVEC_ELT (v, i) = gcn_operand_part (GET_MODE_INNER (mode),
 						 CONST_VECTOR_ELT (op, i), n);
 
-	  return gen_rtx_CONST_VECTOR (V64SImode, v);
+	  return gen_rtx_CONST_VECTOR (vsimode, v);
 	}
       if (GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_VECTOR)
-	return gcn_gen_undef (V64SImode);
+	return gcn_gen_undef (vsimode);
       gcc_unreachable ();
     }
   else if (GET_MODE_SIZE (mode) == 8 && REG_P (op))
@@ -726,7 +846,7 @@ gcn_ira_change_pseudo_allocno_class (int regno, reg_class_t cl,
 /* Create a new DImode pseudo reg and emit an instruction to initialize
    it to VAL.  */
 
-static rtx
+rtx
 get_exec (int64_t val)
 {
   rtx reg = gen_reg_rtx (DImode);
@@ -734,36 +854,11 @@ get_exec (int64_t val)
   return reg;
 }
 
-/* Return value of scalar exec register.  */
-
 rtx
-gcn_scalar_exec ()
+get_exec (machine_mode mode)
 {
-  return const1_rtx;
-}
-
-/* Return pseudo holding scalar exec register.  */
-
-rtx
-gcn_scalar_exec_reg ()
-{
-  return get_exec (1);
-}
-
-/* Return value of full exec register.  */
-
-rtx
-gcn_full_exec ()
-{
-  return constm1_rtx;
-}
-
-/* Return pseudo holding full exec register.  */
-
-rtx
-gcn_full_exec_reg ()
-{
-  return get_exec (-1);
+  int vf = (VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1);
+  return get_exec (0xffffffffffffffffUL >> (64-vf));
 }
 
 /* }}}  */
@@ -802,8 +897,13 @@ int
 gcn_inline_fp_constant_p (rtx x, bool allow_vector)
 {
   machine_mode mode = GET_MODE (x);
+  int vf = VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1;
 
-  if ((mode == V64HFmode || mode == V64SFmode || mode == V64DFmode)
+  if (vf > 1)
+    mode = GET_MODE_INNER (mode);
+
+  if (vf > 1
+      && (mode == HFmode || mode == SFmode || mode == DFmode)
       && allow_vector)
     {
       int n;
@@ -812,7 +912,7 @@ gcn_inline_fp_constant_p (rtx x, bool allow_vector)
       n = gcn_inline_fp_constant_p (CONST_VECTOR_ELT (x, 0), false);
       if (!n)
 	return 0;
-      for (int i = 1; i < 64; i++)
+      for (int i = 1; i < vf; i++)
 	if (CONST_VECTOR_ELT (x, i) != CONST_VECTOR_ELT (x, 0))
 	  return 0;
       return 1;
@@ -867,8 +967,13 @@ bool
 gcn_fp_constant_p (rtx x, bool allow_vector)
 {
   machine_mode mode = GET_MODE (x);
+  int vf = VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1;
 
-  if ((mode == V64HFmode || mode == V64SFmode || mode == V64DFmode)
+  if (vf > 1)
+    mode = GET_MODE_INNER (mode);
+
+  if (vf > 1
+      && (mode == HFmode || mode == SFmode || mode == DFmode)
       && allow_vector)
     {
       int n;
@@ -877,7 +982,7 @@ gcn_fp_constant_p (rtx x, bool allow_vector)
       n = gcn_fp_constant_p (CONST_VECTOR_ELT (x, 0), false);
       if (!n)
 	return false;
-      for (int i = 1; i < 64; i++)
+      for (int i = 1; i < vf; i++)
 	if (CONST_VECTOR_ELT (x, i) != CONST_VECTOR_ELT (x, 0))
 	  return false;
       return true;
@@ -1089,6 +1194,249 @@ gcn_gen_undef (machine_mode mode)
 {
   return gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx), UNSPEC_VECTOR);
 }
+
+/* }}}  */
+/* {{{ Utility functions.  */
+
+/*  Generalised accessor functions for instruction patterns.
+    The machine desription '@' prefix does something similar, but as of
+    GCC 10 is incompatible with define_subst, and anyway it doesn't
+    auto-handle the exec feature.
+
+    Four macros are provided; each function only needs one:
+
+    GEN_VN         - create accessor functions for all sizes of one mode
+    GEN_VNM        - create accessor functions for all sizes of all modes
+    GEN_VN_NOEXEC  - for insns without "_exec" variants
+    GEN_VNM_NOEXEC - likewise
+ 
+    E.g.  add<mode>3
+      GEN_VNM (add, 3, A(rtx dest, rtx s1, rtx s2), A(dest, s1, s2)
+
+      gen_addvNsi3 (dst, a, b)
+        -> calls gen_addv64si3, or gen_addv32si3, etc.
+
+      gen_addvNm3 (dst, a, b)
+        -> calls gen_addv64qi3, or gen_addv2di3, etc.
+
+    The mode is determined from the first parameter, which must be called
+    "dest" (or else the macro doesn't work).
+
+    Each function has two optional parameters at the end: merge_src and exec.
+    If exec is non-null, the function will call the "_exec" variant of the
+    insn.  If exec is non-null but merge_src is null then an undef unspec
+    will be created.
+
+    E.g. cont.
+      gen_addvNsi3 (v64sidst, a, b, oldval, exec)
+        -> calls gen_addv64si3_exec (v64sidst, a, b, oldval, exec)
+
+      gen_addvNm3 (v2qidst, a, b, NULL, exec)
+        -> calls gen_addv2qi3_exec (v2qidst, a, b,
+                                    gcn_gen_undef (V2QImode), exec)
+   */
+
+#define A(...) __VA_ARGS__
+#define GEN_VN_NOEXEC(PREFIX, SUFFIX, PARAMS, ARGS) \
+static rtx \
+gen_##PREFIX##vN##SUFFIX (PARAMS) \
+{ \
+  machine_mode mode = GET_MODE (dest); \
+  int n = GET_MODE_NUNITS (mode); \
+  \
+  switch (n) \
+    { \
+    case 2: return gen_##PREFIX##v2##SUFFIX (ARGS); \
+    case 4: return gen_##PREFIX##v4##SUFFIX (ARGS); \
+    case 8: return gen_##PREFIX##v8##SUFFIX (ARGS); \
+    case 16: return gen_##PREFIX##v16##SUFFIX (ARGS); \
+    case 32: return gen_##PREFIX##v32##SUFFIX (ARGS); \
+    case 64: return gen_##PREFIX##v64##SUFFIX (ARGS); \
+    } \
+  \
+  gcc_unreachable (); \
+  return NULL_RTX; \
+}
+
+#define GEN_VNM_NOEXEC(PREFIX, SUFFIX, PARAMS, ARGS) \
+GEN_VN_NOEXEC (PREFIX, qi##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN_NOEXEC (PREFIX, hi##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN_NOEXEC (PREFIX, hf##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN_NOEXEC (PREFIX, si##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN_NOEXEC (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN_NOEXEC (PREFIX, di##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN_NOEXEC (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS)) \
+static rtx \
+gen_##PREFIX##vNm##SUFFIX (PARAMS) \
+{ \
+  machine_mode mode = GET_MODE_INNER (GET_MODE (dest)); \
+  \
+  switch (mode) \
+    { \
+    case E_QImode: return gen_##PREFIX##vNqi##SUFFIX (ARGS); \
+    case E_HImode: return gen_##PREFIX##vNhi##SUFFIX (ARGS); \
+    case E_HFmode: return gen_##PREFIX##vNhf##SUFFIX (ARGS); \
+    case E_SImode: return gen_##PREFIX##vNsi##SUFFIX (ARGS); \
+    case E_SFmode: return gen_##PREFIX##vNsf##SUFFIX (ARGS); \
+    case E_DImode: return gen_##PREFIX##vNdi##SUFFIX (ARGS); \
+    case E_DFmode: return gen_##PREFIX##vNdf##SUFFIX (ARGS); \
+    default: \
+      break; \
+    } \
+  \
+  gcc_unreachable (); \
+  return NULL_RTX; \
+}
+
+#define GEN_VN(PREFIX, SUFFIX, PARAMS, ARGS) \
+static rtx \
+gen_##PREFIX##vN##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
+{ \
+  machine_mode mode = GET_MODE (dest); \
+  int n = GET_MODE_NUNITS (mode); \
+  \
+  if (exec && !merge_src) \
+	merge_src = gcn_gen_undef (mode); \
+      \
+  if (exec) \
+    switch (n) \
+      { \
+      case 2: return gen_##PREFIX##v2##SUFFIX##_exec (ARGS, merge_src, exec); \
+      case 4: return gen_##PREFIX##v4##SUFFIX##_exec (ARGS, merge_src, exec); \
+      case 8: return gen_##PREFIX##v8##SUFFIX##_exec (ARGS, merge_src, exec); \
+      case 16: return gen_##PREFIX##v16##SUFFIX##_exec (ARGS, merge_src, exec); \
+      case 32: return gen_##PREFIX##v32##SUFFIX##_exec (ARGS, merge_src, exec); \
+      case 64: return gen_##PREFIX##v64##SUFFIX##_exec (ARGS, merge_src, exec); \
+      } \
+  else \
+    switch (n) \
+      { \
+      case 2: return gen_##PREFIX##v2##SUFFIX (ARGS); \
+      case 4: return gen_##PREFIX##v4##SUFFIX (ARGS); \
+      case 8: return gen_##PREFIX##v8##SUFFIX (ARGS); \
+      case 16: return gen_##PREFIX##v16##SUFFIX (ARGS); \
+      case 32: return gen_##PREFIX##v32##SUFFIX (ARGS); \
+      case 64: return gen_##PREFIX##v64##SUFFIX (ARGS); \
+      } \
+  \
+  gcc_unreachable (); \
+  return NULL_RTX; \
+}
+
+#define GEN_VNM(PREFIX, SUFFIX, PARAMS, ARGS) \
+GEN_VN (PREFIX, qi##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN (PREFIX, hi##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN (PREFIX, hf##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN (PREFIX, si##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN (PREFIX, di##SUFFIX, A(PARAMS), A(ARGS)) \
+GEN_VN (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS)) \
+static rtx \
+gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
+{ \
+  machine_mode mode = GET_MODE_INNER (GET_MODE (dest)); \
+  \
+  switch (mode) \
+    { \
+    case E_QImode: return gen_##PREFIX##vNqi##SUFFIX (ARGS, merge_src, exec); \
+    case E_HImode: return gen_##PREFIX##vNhi##SUFFIX (ARGS, merge_src, exec); \
+    case E_HFmode: return gen_##PREFIX##vNhf##SUFFIX (ARGS, merge_src, exec); \
+    case E_SImode: return gen_##PREFIX##vNsi##SUFFIX (ARGS, merge_src, exec); \
+    case E_SFmode: return gen_##PREFIX##vNsf##SUFFIX (ARGS, merge_src, exec); \
+    case E_DImode: return gen_##PREFIX##vNdi##SUFFIX (ARGS, merge_src, exec); \
+    case E_DFmode: return gen_##PREFIX##vNdf##SUFFIX (ARGS, merge_src, exec); \
+    default: \
+      break; \
+    } \
+  \
+  gcc_unreachable (); \
+  return NULL_RTX; \
+}
+
+GEN_VNM (add,3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (add,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (add,si3_vcc_dup, A(rtx dest, rtx src1, rtx src2, rtx vcc),
+	A(dest, src1, src2, vcc))
+GEN_VN (add,di3_sext_dup2, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (add,di3_vcc_zext_dup, A(rtx dest, rtx src1, rtx src2, rtx vcc),
+	A(dest, src1, src2, vcc))
+GEN_VN (add,di3_zext_dup2, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (add,di3_vcc_zext_dup2, A(rtx dest, rtx src1, rtx src2, rtx vcc),
+	A(dest, src1, src2, vcc))
+GEN_VN (addc,si3, A(rtx dest, rtx src1, rtx src2, rtx vccout, rtx vccin),
+	A(dest, src1, src2, vccout, vccin))
+GEN_VN (and,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (ashl,si3, A(rtx dest, rtx src, rtx shift), A(dest, src, shift))
+GEN_VNM_NOEXEC (ds_bpermute,, A(rtx dest, rtx addr, rtx src, rtx exec),
+		A(dest, addr, src, exec))
+GEN_VNM (gather,_expr, A(rtx dest, rtx addr, rtx as, rtx vol),
+	 A(dest, addr, as, vol))
+GEN_VNM (mov,, A(rtx dest, rtx src), A(dest, src))
+GEN_VN (mul,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (sub,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
+GEN_VN_NOEXEC (vec_series,si, A(rtx dest, rtx x, rtx c), A(dest, x, c))
+
+#undef GEN_VNM
+#undef GEN_VN
+#undef GET_VN_FN
+#undef A
+
+/* Get icode for vector instructions without an optab.  */
+
+#define CODE_FOR(PREFIX, SUFFIX) \
+static int \
+get_code_for_##PREFIX##vN##SUFFIX (int nunits) \
+{ \
+  switch (nunits) \
+    { \
+    case 2: return CODE_FOR_##PREFIX##v2##SUFFIX; \
+    case 4: return CODE_FOR_##PREFIX##v4##SUFFIX; \
+    case 8: return CODE_FOR_##PREFIX##v8##SUFFIX; \
+    case 16: return CODE_FOR_##PREFIX##v16##SUFFIX; \
+    case 32: return CODE_FOR_##PREFIX##v32##SUFFIX; \
+    case 64: return CODE_FOR_##PREFIX##v64##SUFFIX; \
+    } \
+  \
+  gcc_unreachable (); \
+  return CODE_FOR_nothing; \
+}
+
+#define CODE_FOR_OP(PREFIX) \
+	  CODE_FOR (PREFIX, qi) \
+	CODE_FOR (PREFIX, hi) \
+	CODE_FOR (PREFIX, hf) \
+	CODE_FOR (PREFIX, si) \
+	CODE_FOR (PREFIX, sf) \
+	CODE_FOR (PREFIX, di) \
+	CODE_FOR (PREFIX, df) \
+static int \
+get_code_for_##PREFIX (machine_mode mode) \
+{ \
+  int vf = GET_MODE_NUNITS (mode); \
+  machine_mode smode = GET_MODE_INNER (mode); \
+  \
+  switch (smode) \
+    { \
+    case E_QImode: return get_code_for_##PREFIX##vNqi (vf); \
+    case E_HImode: return get_code_for_##PREFIX##vNhi (vf); \
+    case E_HFmode: return get_code_for_##PREFIX##vNhf (vf); \
+    case E_SImode: return get_code_for_##PREFIX##vNsi (vf); \
+    case E_SFmode: return get_code_for_##PREFIX##vNsf (vf); \
+    case E_DImode: return get_code_for_##PREFIX##vNdi (vf); \
+    case E_DFmode: return get_code_for_##PREFIX##vNdf (vf); \
+    default: break; \
+    } \
+  \
+  gcc_unreachable (); \
+  return CODE_FOR_nothing; \
+}
+
+CODE_FOR_OP (reload_in)
+CODE_FOR_OP (reload_out)
+
+#undef CODE_FOR_OP
+#undef CODE_FOR
 
 /* }}}  */
 /* {{{ Addresses, pointers and moves.  */
@@ -1644,103 +1992,152 @@ regno_ok_for_index_p (int regno)
   return regno == M0_REG || VGPR_REGNO_P (regno);
 }
 
-/* Generate move which uses the exec flags.  If EXEC is NULL, then it is
-   assumed that all lanes normally relevant to the mode of the move are
-   affected.  If PREV is NULL, then a sensible default is supplied for
-   the inactive lanes.  */
-
-static rtx
-gen_mov_with_exec (rtx op0, rtx op1, rtx exec = NULL, rtx prev = NULL)
-{
-  machine_mode mode = GET_MODE (op0);
-
-  if (vgpr_vector_mode_p (mode))
-    {
-      if (exec && exec != CONSTM1_RTX (DImode))
-	{
-	  if (!prev)
-	    prev = op0;
-	}
-      else
-	{
-	  if (!prev)
-	    prev = gcn_gen_undef (mode);
-	  exec = gcn_full_exec_reg ();
-	}
-
-      rtx set = gen_rtx_SET (op0, gen_rtx_VEC_MERGE (mode, op1, prev, exec));
-
-      return gen_rtx_PARALLEL (VOIDmode,
-	       gen_rtvec (2, set,
-			 gen_rtx_CLOBBER (VOIDmode,
-					  gen_rtx_SCRATCH (V64DImode))));
-    }
-
-  return (gen_rtx_PARALLEL
-	  (VOIDmode,
-	   gen_rtvec (2, gen_rtx_SET (op0, op1),
-		      gen_rtx_USE (VOIDmode,
-				   exec ? exec : gcn_scalar_exec ()))));
-}
-
-/* Generate masked move.  */
-
-static rtx
-gen_duplicate_load (rtx op0, rtx op1, rtx op2 = NULL, rtx exec = NULL)
-{
-  if (exec)
-    return (gen_rtx_SET (op0,
-			 gen_rtx_VEC_MERGE (GET_MODE (op0),
-					    gen_rtx_VEC_DUPLICATE (GET_MODE
-								   (op0), op1),
-					    op2, exec)));
-  else
-    return (gen_rtx_SET (op0, gen_rtx_VEC_DUPLICATE (GET_MODE (op0), op1)));
-}
-
 /* Expand vector init of OP0 by VEC.
    Implements vec_init instruction pattern.  */
 
 void
 gcn_expand_vector_init (rtx op0, rtx vec)
 {
-  int64_t initialized_mask = 0;
-  int64_t curr_mask = 1;
+  rtx val[64];
   machine_mode mode = GET_MODE (op0);
+  int vf = GET_MODE_NUNITS (mode);
+  machine_mode addrmode = VnMODE (vf, DImode);
+  machine_mode offsetmode = VnMODE (vf, SImode);
 
-  rtx val = XVECEXP (vec, 0, 0);
+  int64_t mem_mask = 0;
+  int64_t item_mask[64];
+  rtx ramp = gen_reg_rtx (offsetmode);
+  rtx addr = gen_reg_rtx (addrmode);
 
-  for (int i = 1; i < 64; i++)
-    if (rtx_equal_p (val, XVECEXP (vec, 0, i)))
-      curr_mask |= (int64_t) 1 << i;
+  int unit_size = GET_MODE_SIZE (GET_MODE_INNER (GET_MODE (op0)));
+  emit_insn (gen_mulvNsi3_dup (ramp, gen_rtx_REG (offsetmode, VGPR_REGNO (1)),
+			       GEN_INT (unit_size)));
 
-  if (gcn_constant_p (val))
-    emit_move_insn (op0, gcn_vec_constant (mode, val));
-  else
+  bool simple_repeat = true;
+
+  /* Expand nested vectors into one vector.  */
+  int item_count = XVECLEN (vec, 0);
+  for (int i = 0, j = 0; i < item_count; i++)
     {
-      val = force_reg (GET_MODE_INNER (mode), val);
-      emit_insn (gen_duplicate_load (op0, val));
+      rtx item = XVECEXP (vec, 0, i);
+      machine_mode mode = GET_MODE (item);
+      int units = VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1;
+      item_mask[j] = (((uint64_t)-1)>>(64-units)) << j;
+
+      if (simple_repeat && i != 0)
+	simple_repeat = item == XVECEXP (vec, 0, i-1);
+
+      /* If its a vector of values then copy them into the final location.  */
+      if (GET_CODE (item) == CONST_VECTOR)
+	{
+	  for (int k = 0; k < units; k++)
+	    val[j++] = XVECEXP (item, 0, k);
+	  continue;
+	}
+      /* Otherwise, we have a scalar or an expression that expands...  */
+
+      if (MEM_P (item))
+	{
+	  rtx base = XEXP (item, 0);
+	  if (MEM_ADDR_SPACE (item) == DEFAULT_ADDR_SPACE
+	      && REG_P (base))
+	    {
+	      /* We have a simple vector load.  We can put the addresses in
+		 the vector, combine it with any other such MEMs, and load it
+		 all with a single gather at the end.  */
+	      int64_t mask = ((0xffffffffffffffffUL
+			       >> (64-GET_MODE_NUNITS (mode)))
+			      << j);
+	      rtx exec = get_exec (mask);
+	      emit_insn (gen_subvNsi3
+			 (ramp, ramp,
+			  gcn_vec_constant (offsetmode, j*unit_size),
+			  ramp, exec));
+	      emit_insn (gen_addvNdi3_zext_dup2
+			 (addr, ramp, base,
+			  (mem_mask ? addr : gcn_gen_undef (addrmode)),
+			  exec));
+	      mem_mask |= mask;
+	    }
+	  else
+	    /* The MEM is non-trivial, so let's load it independently.  */
+	    item = force_reg (mode, item);
+	}
+      else if (!CONST_INT_P (item) && !CONST_DOUBLE_P (item))
+	/* The item may be a symbol_ref, or something else non-trivial.  */
+	item = force_reg (mode, item);
+
+      /* Duplicate the vector across each item.
+	 It is either a smaller vector register that needs shifting,
+	 or a MEM that needs loading.  */
+      val[j] = item;
+      j += units;
     }
-  initialized_mask |= curr_mask;
-  for (int i = 1; i < 64; i++)
+
+  int64_t initialized_mask = 0;
+  rtx prev = NULL;
+
+  if (mem_mask)
+    {
+      emit_insn (gen_gathervNm_expr
+		 (op0, gen_rtx_PLUS (addrmode, addr,
+				     gen_rtx_VEC_DUPLICATE (addrmode,
+							    const0_rtx)),
+		  GEN_INT (DEFAULT_ADDR_SPACE), GEN_INT (0),
+		  NULL, get_exec (mem_mask)));
+      prev = op0;
+      initialized_mask = mem_mask;
+    }
+
+  if (simple_repeat && item_count > 1 && !prev)
+    {
+      /* Special case for instances of {A, B, A, B, A, B, ....}, etc.  */
+      rtx src = gen_rtx_SUBREG (mode, val[0], 0);
+      rtx input_vf_mask = GEN_INT (GET_MODE_NUNITS (GET_MODE (val[0]))-1);
+
+      rtx permutation = gen_reg_rtx (VnMODE (vf, SImode));
+      emit_insn (gen_vec_seriesvNsi (permutation, GEN_INT (0), GEN_INT (1)));
+      rtx mask_dup = gen_reg_rtx (VnMODE (vf, SImode));
+      emit_insn (gen_vec_duplicatevNsi (mask_dup, input_vf_mask));
+      emit_insn (gen_andvNsi3 (permutation, permutation, mask_dup));
+      emit_insn (gen_ashlvNsi3 (permutation, permutation, GEN_INT (2)));
+      emit_insn (gen_ds_bpermutevNm (op0, permutation, src, get_exec (mode)));
+      return;
+    }
+
+  /* Write each value, elementwise, but coalesce matching values into one
+     instruction, where possible.  */
+  for (int i = 0; i < vf; i++)
     if (!(initialized_mask & ((int64_t) 1 << i)))
       {
-	curr_mask = (int64_t) 1 << i;
-	rtx val = XVECEXP (vec, 0, i);
-
-	for (int j = i + 1; j < 64; j++)
-	  if (rtx_equal_p (val, XVECEXP (vec, 0, j)))
-	    curr_mask |= (int64_t) 1 << j;
-	if (gcn_constant_p (val))
-	  emit_insn (gen_mov_with_exec (op0, gcn_vec_constant (mode, val),
-					get_exec (curr_mask)));
+	if (gcn_constant_p (val[i]))
+	  emit_insn (gen_movvNm (op0, gcn_vec_constant (mode, val[i]), prev,
+				 get_exec (item_mask[i])));
+	else if (VECTOR_MODE_P (GET_MODE (val[i]))
+		 && (GET_MODE_NUNITS (GET_MODE (val[i])) == vf
+		     || i == 0))
+	  emit_insn (gen_movvNm (op0, gen_rtx_SUBREG (mode, val[i], 0), prev,
+				 get_exec (item_mask[i])));
+	else if (VECTOR_MODE_P (GET_MODE (val[i])))
+	  {
+	    rtx permutation = gen_reg_rtx (VnMODE (vf, SImode));
+	    emit_insn (gen_vec_seriesvNsi (permutation, GEN_INT (-i*4),
+					   GEN_INT (4)));
+	    rtx tmp = gen_reg_rtx (mode);
+	    emit_insn (gen_ds_bpermutevNm (tmp, permutation,
+					   gen_rtx_SUBREG (mode, val[i], 0),
+					   get_exec (-1)));
+	    emit_insn (gen_movvNm (op0, tmp, prev, get_exec (item_mask[i])));
+	  }
 	else
 	  {
-	    val = force_reg (GET_MODE_INNER (mode), val);
-	    emit_insn (gen_duplicate_load (op0, val, op0,
-					   get_exec (curr_mask)));
+	    rtx reg = force_reg (GET_MODE_INNER (mode), val[i]);
+	    emit_insn (gen_vec_duplicatevNm (op0, reg, prev,
+					     get_exec (item_mask[i])));
 	  }
-	initialized_mask |= curr_mask;
+
+	initialized_mask |= item_mask[i];
+	prev = op0;
       }
 }
 
@@ -1751,18 +2148,18 @@ strided_constant (machine_mode mode, int base, int val)
 {
   rtx x = gen_reg_rtx (mode);
   emit_move_insn (x, gcn_vec_constant (mode, base));
-  emit_insn (gen_addv64si3_exec (x, x, gcn_vec_constant (mode, val * 32),
-				 x, get_exec (0xffffffff00000000)));
-  emit_insn (gen_addv64si3_exec (x, x, gcn_vec_constant (mode, val * 16),
-				 x, get_exec (0xffff0000ffff0000)));
-  emit_insn (gen_addv64si3_exec (x, x, gcn_vec_constant (mode, val * 8),
-				 x, get_exec (0xff00ff00ff00ff00)));
-  emit_insn (gen_addv64si3_exec (x, x, gcn_vec_constant (mode, val * 4),
-				 x, get_exec (0xf0f0f0f0f0f0f0f0)));
-  emit_insn (gen_addv64si3_exec (x, x, gcn_vec_constant (mode, val * 2),
-				 x, get_exec (0xcccccccccccccccc)));
-  emit_insn (gen_addv64si3_exec (x, x, gcn_vec_constant (mode, val * 1),
-				 x, get_exec (0xaaaaaaaaaaaaaaaa)));
+  emit_insn (gen_addvNm3 (x, x, gcn_vec_constant (mode, val * 32),
+			  x, get_exec (0xffffffff00000000)));
+  emit_insn (gen_addvNm3 (x, x, gcn_vec_constant (mode, val * 16),
+			  x, get_exec (0xffff0000ffff0000)));
+  emit_insn (gen_addvNm3 (x, x, gcn_vec_constant (mode, val * 8),
+			  x, get_exec (0xff00ff00ff00ff00)));
+  emit_insn (gen_addvNm3 (x, x, gcn_vec_constant (mode, val * 4),
+			  x, get_exec (0xf0f0f0f0f0f0f0f0)));
+  emit_insn (gen_addvNm3 (x, x, gcn_vec_constant (mode, val * 2),
+			  x, get_exec (0xcccccccccccccccc)));
+  emit_insn (gen_addvNm3 (x, x, gcn_vec_constant (mode, val * 1),
+			  x, get_exec (0xaaaaaaaaaaaaaaaa)));
   return x;
 }
 
@@ -1792,15 +2189,17 @@ gcn_addr_space_legitimize_address (rtx x, rtx old, machine_mode mode,
     case ADDR_SPACE_LDS:
     case ADDR_SPACE_GDS:
       /* FIXME: LDS support offsets, handle them!.  */
-      if (vgpr_vector_mode_p (mode) && GET_MODE (x) != V64SImode)
+      if (vgpr_vector_mode_p (mode)
+	  && GET_MODE_INNER (GET_MODE (x)) != SImode)
 	{
-	  rtx addrs = gen_reg_rtx (V64SImode);
+	  machine_mode simode = VnMODE (GET_MODE_NUNITS (mode), SImode);
+	  rtx addrs = gen_reg_rtx (simode);
 	  rtx base = force_reg (SImode, x);
-	  rtx offsets = strided_constant (V64SImode, 0,
+	  rtx offsets = strided_constant (simode, 0,
 					  GET_MODE_UNIT_SIZE (mode));
 
-	  emit_insn (gen_vec_duplicatev64si (addrs, base));
-	  emit_insn (gen_addv64si3 (addrs, offsets, addrs));
+	  emit_insn (gen_vec_duplicatevNsi (addrs, base));
+	  emit_insn (gen_addvNsi3 (addrs, offsets, addrs));
 	  return addrs;
 	}
       return x;
@@ -1808,16 +2207,18 @@ gcn_addr_space_legitimize_address (rtx x, rtx old, machine_mode mode,
   gcc_unreachable ();
 }
 
-/* Convert a (mem:<MODE> (reg:DI)) to (mem:<MODE> (reg:V64DI)) with the
+/* Convert a (mem:<MODE> (reg:DI)) to (mem:<MODE> (reg:VnDI)) with the
    proper vector of stepped addresses.
 
    MEM will be a DImode address of a vector in an SGPR.
-   TMP will be a V64DImode VGPR pair or (scratch:V64DI).  */
+   TMP will be a VnDImode VGPR pair or (scratch:VnDI).  */
 
 rtx
 gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 				     rtx tmp)
 {
+  machine_mode pmode = VnMODE (GET_MODE_NUNITS (mode), DImode);
+  machine_mode offmode = VnMODE (GET_MODE_NUNITS (mode), SImode);
   gcc_assert (MEM_P (mem));
   rtx mem_base = XEXP (mem, 0);
   rtx mem_index = NULL_RTX;
@@ -1841,22 +2242,18 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 
   machine_mode inner = GET_MODE_INNER (mode);
   int shift = exact_log2 (GET_MODE_SIZE (inner));
-  rtx ramp = gen_rtx_REG (V64SImode, VGPR_REGNO (1));
-  rtx undef_v64si = gcn_gen_undef (V64SImode);
+  rtx ramp = gen_rtx_REG (offmode, VGPR_REGNO (1));
   rtx new_base = NULL_RTX;
   addr_space_t as = MEM_ADDR_SPACE (mem);
 
   rtx tmplo = (REG_P (tmp)
-	       ? gcn_operand_part (V64DImode, tmp, 0)
-	       : gen_reg_rtx (V64SImode));
+	       ? gcn_operand_part (pmode, tmp, 0)
+	       : gen_reg_rtx (offmode));
 
   /* tmplo[:] = ramp[:] << shift  */
-  if (exec)
-    emit_insn (gen_ashlv64si3_exec (tmplo, ramp,
-				    gen_int_mode (shift, SImode),
-				    undef_v64si, exec));
-  else
-    emit_insn (gen_ashlv64si3 (tmplo, ramp, gen_int_mode (shift, SImode)));
+  emit_insn (gen_ashlvNsi3 (tmplo, ramp,
+			    gen_int_mode (shift, SImode),
+			    NULL, exec));
 
   if (AS_FLAT_P (as))
     {
@@ -1866,53 +2263,41 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 	{
 	  rtx mem_base_lo = gcn_operand_part (DImode, mem_base, 0);
 	  rtx mem_base_hi = gcn_operand_part (DImode, mem_base, 1);
-	  rtx tmphi = gcn_operand_part (V64DImode, tmp, 1);
+	  rtx tmphi = gcn_operand_part (pmode, tmp, 1);
 
 	  /* tmphi[:] = mem_base_hi  */
-	  if (exec)
-	    emit_insn (gen_vec_duplicatev64si_exec (tmphi, mem_base_hi,
-						    undef_v64si, exec));
-	  else
-	    emit_insn (gen_vec_duplicatev64si (tmphi, mem_base_hi));
+	  emit_insn (gen_vec_duplicatevNsi (tmphi, mem_base_hi, NULL, exec));
 
 	  /* tmp[:] += zext (mem_base)  */
 	  if (exec)
 	    {
-	      emit_insn (gen_addv64si3_vcc_dup_exec (tmplo, mem_base_lo, tmplo,
-						     vcc, undef_v64si, exec));
-	      emit_insn (gen_addcv64si3_exec (tmphi, tmphi, const0_rtx,
-					      vcc, vcc, undef_v64si, exec));
+	      emit_insn (gen_addvNsi3_vcc_dup (tmplo, mem_base_lo, tmplo,
+					       vcc, NULL, exec));
+	      emit_insn (gen_addcvNsi3 (tmphi, tmphi, const0_rtx,
+				        vcc, vcc, NULL, exec));
 	    }
 	  else
-	    emit_insn (gen_addv64di3_vcc_zext_dup (tmp, mem_base_lo, tmp, vcc));
+	    emit_insn (gen_addvNdi3_vcc_zext_dup (tmp, mem_base_lo, tmp, vcc));
 	}
       else
 	{
-	  tmp = gen_reg_rtx (V64DImode);
-	  if (exec)
-	    emit_insn (gen_addv64di3_vcc_zext_dup2_exec
-		       (tmp, tmplo, mem_base, vcc, gcn_gen_undef (V64DImode),
-			exec));
-	  else
-	    emit_insn (gen_addv64di3_vcc_zext_dup2 (tmp, tmplo, mem_base, vcc));
+	  tmp = gen_reg_rtx (pmode);
+	  emit_insn (gen_addvNdi3_vcc_zext_dup2 (tmp, tmplo, mem_base, vcc,
+						 NULL, exec));
 	}
 
       new_base = tmp;
     }
   else if (AS_ANY_DS_P (as))
     {
-      if (!exec)
-	emit_insn (gen_addv64si3_dup (tmplo, tmplo, mem_base));
-      else
-        emit_insn (gen_addv64si3_dup_exec (tmplo, tmplo, mem_base,
-					   gcn_gen_undef (V64SImode), exec));
+      emit_insn (gen_addvNsi3_dup (tmplo, tmplo, mem_base, NULL, exec));
       new_base = tmplo;
     }
   else
     {
-      mem_base = gen_rtx_VEC_DUPLICATE (V64DImode, mem_base);
-      new_base = gen_rtx_PLUS (V64DImode, mem_base,
-			       gen_rtx_SIGN_EXTEND (V64DImode, tmplo));
+      mem_base = gen_rtx_VEC_DUPLICATE (pmode, mem_base);
+      new_base = gen_rtx_PLUS (pmode, mem_base,
+			       gen_rtx_SIGN_EXTEND (pmode, tmplo));
     }
 
   return gen_rtx_PLUS (GET_MODE (new_base), new_base,
@@ -1929,42 +2314,33 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
    If EXEC is set then _exec patterns will be used, otherwise plain.
 
    Return values.
-     ADDR_SPACE_FLAT   - return V64DImode vector of absolute addresses.
-     ADDR_SPACE_GLOBAL - return V64SImode vector of offsets.  */
+     ADDR_SPACE_FLAT   - return VnDImode vector of absolute addresses.
+     ADDR_SPACE_GLOBAL - return VnSImode vector of offsets.  */
 
 rtx
 gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
 			   bool unsigned_p, rtx exec)
 {
-  rtx tmpsi = gen_reg_rtx (V64SImode);
-  rtx tmpdi = gen_reg_rtx (V64DImode);
-  rtx undefsi = exec ? gcn_gen_undef (V64SImode) : NULL;
-  rtx undefdi = exec ? gcn_gen_undef (V64DImode) : NULL;
+  int vf = GET_MODE_NUNITS (GET_MODE (offsets));
+  rtx tmpsi = gen_reg_rtx (VnMODE (vf, SImode));
+  rtx tmpdi = gen_reg_rtx (VnMODE (vf, DImode));
 
   if (CONST_INT_P (scale)
       && INTVAL (scale) > 0
       && exact_log2 (INTVAL (scale)) >= 0)
-    emit_insn (gen_ashlv64si3 (tmpsi, offsets,
-			       GEN_INT (exact_log2 (INTVAL (scale)))));
+    emit_insn (gen_ashlvNsi3 (tmpsi, offsets,
+			      GEN_INT (exact_log2 (INTVAL (scale))),
+			      NULL, exec));
   else
-    (exec
-     ? emit_insn (gen_mulv64si3_dup_exec (tmpsi, offsets, scale, undefsi,
-					  exec))
-     : emit_insn (gen_mulv64si3_dup (tmpsi, offsets, scale)));
+     emit_insn (gen_mulvNsi3_dup (tmpsi, offsets, scale, NULL, exec));
 
   /* "Global" instructions do not support negative register offsets.  */
   if (as == ADDR_SPACE_FLAT || !unsigned_p)
     {
       if (unsigned_p)
-	(exec
-	 ?  emit_insn (gen_addv64di3_zext_dup2_exec (tmpdi, tmpsi, base,
-						    undefdi, exec))
-	 :  emit_insn (gen_addv64di3_zext_dup2 (tmpdi, tmpsi, base)));
+	 emit_insn (gen_addvNdi3_zext_dup2 (tmpdi, tmpsi, base, NULL, exec));
       else
-	(exec
-	 ?  emit_insn (gen_addv64di3_sext_dup2_exec (tmpdi, tmpsi, base,
-						     undefdi, exec))
-	 :  emit_insn (gen_addv64di3_sext_dup2 (tmpdi, tmpsi, base)));
+	 emit_insn (gen_addvNdi3_sext_dup2 (tmpdi, tmpsi, base, NULL, exec));
       return tmpdi;
     }
   else if (as == ADDR_SPACE_GLOBAL)
@@ -2065,59 +2441,9 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 	      || GET_MODE_CLASS (reload_mode) == MODE_VECTOR_FLOAT)
 	    {
 	      if (in_p)
-		switch (reload_mode)
-		  {
-		  case E_V64SImode:
-		    sri->icode = CODE_FOR_reload_inv64si;
-		    break;
-		  case E_V64SFmode:
-		    sri->icode = CODE_FOR_reload_inv64sf;
-		    break;
-		  case E_V64HImode:
-		    sri->icode = CODE_FOR_reload_inv64hi;
-		    break;
-		  case E_V64HFmode:
-		    sri->icode = CODE_FOR_reload_inv64hf;
-		    break;
-		  case E_V64QImode:
-		    sri->icode = CODE_FOR_reload_inv64qi;
-		    break;
-		  case E_V64DImode:
-		    sri->icode = CODE_FOR_reload_inv64di;
-		    break;
-		  case E_V64DFmode:
-		    sri->icode = CODE_FOR_reload_inv64df;
-		    break;
-		  default:
-		    gcc_unreachable ();
-		  }
+		sri->icode = get_code_for_reload_in (reload_mode);
 	      else
-		switch (reload_mode)
-		  {
-		  case E_V64SImode:
-		    sri->icode = CODE_FOR_reload_outv64si;
-		    break;
-		  case E_V64SFmode:
-		    sri->icode = CODE_FOR_reload_outv64sf;
-		    break;
-		  case E_V64HImode:
-		    sri->icode = CODE_FOR_reload_outv64hi;
-		    break;
-		  case E_V64HFmode:
-		    sri->icode = CODE_FOR_reload_outv64hf;
-		    break;
-		  case E_V64QImode:
-		    sri->icode = CODE_FOR_reload_outv64qi;
-		    break;
-		  case E_V64DImode:
-		    sri->icode = CODE_FOR_reload_outv64di;
-		    break;
-		  case E_V64DFmode:
-		    sri->icode = CODE_FOR_reload_outv64df;
-		    break;
-		  default:
-		    gcc_unreachable ();
-		  }
+		sri->icode = get_code_for_reload_out (reload_mode);
 	      break;
 	    }
 	  /* Fallthrough.  */
@@ -2483,10 +2809,14 @@ gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   return (NUM_PARM_REGS - cum_num) * regsize;
 }
 
-/* A normal function which takes a pointer argument (to a scalar) may be
-   passed a pointer to LDS space (via a high-bits-set aperture), and that only
-   works with FLAT addressing, not GLOBAL.  Force FLAT addressing if the
-   function has an incoming pointer-to-scalar parameter.  */
+/* A normal function which takes a pointer argument may be passed a pointer to
+   LDS space (via a high-bits-set aperture), and that only works with FLAT
+   addressing, not GLOBAL.  Force FLAT addressing if the function has an
+   incoming pointer parameter.  NOTE: This is a heuristic that works in the
+   offloading case, but in general, a function might read global pointer
+   variables, etc. that may refer to LDS space or other special memory areas
+   not supported by GLOBAL instructions, and then this argument check would not
+   suffice.  */
 
 static void
 gcn_detect_incoming_pointer_arg (tree fndecl)
@@ -2496,8 +2826,7 @@ gcn_detect_incoming_pointer_arg (tree fndecl)
   for (tree arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
        arg;
        arg = TREE_CHAIN (arg))
-    if (POINTER_TYPE_P (TREE_VALUE (arg))
-	&& !AGGREGATE_TYPE_P (TREE_TYPE (TREE_VALUE (arg))))
+    if (POINTER_TYPE_P (TREE_VALUE (arg)))
       cfun->machine->use_flat_addressing = true;
 }
 
@@ -3428,6 +3757,9 @@ gcn_valid_cvt_p (machine_mode from, machine_mode to, enum gcn_cvt_t op)
 
   if (VECTOR_MODE_P (from))
     {
+      if (GET_MODE_NUNITS (from) != GET_MODE_NUNITS (to))
+	return false;
+
       from = GET_MODE_INNER (from);
       to = GET_MODE_INNER (to);
     }
@@ -3926,7 +4258,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	rtx mem = gen_rtx_MEM (GET_MODE (target), addrs);
 	/*set_mem_addr_space (mem, ADDR_SPACE_FLAT); */
 	/* FIXME: set attributes.  */
-	emit_insn (gen_mov_with_exec (target, mem, exec));
+	emit_insn (gen_movvNm (target, mem, NULL, exec));
 	return target;
       }
     case GCN_BUILTIN_FLAT_STORE_PTR_INT32:
@@ -3961,20 +4293,18 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	rtx mem = gen_rtx_MEM (vmode, addrs);
 	/*set_mem_addr_space (mem, ADDR_SPACE_FLAT); */
 	/* FIXME: set attributes.  */
-	emit_insn (gen_mov_with_exec (mem, val, exec));
+	emit_insn (gen_movvNm (mem, val, NULL, exec));
 	return target;
       }
     case GCN_BUILTIN_SQRTVF:
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
 					  EXPAND_NORMAL));
-	emit_insn (gen_sqrtv64sf2_exec
-		   (target, arg, gcn_gen_undef (V64SFmode), exec));
+	emit_insn (gen_sqrtv64sf2 (target, arg));
 	return target;
       }
     case GCN_BUILTIN_SQRTF:
@@ -3992,20 +4322,17 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
 					  EXPAND_NORMAL));
-	emit_insn (gen_absv64sf2_exec
-		   (target, arg, gcn_gen_undef (V64SFmode), exec));
+	emit_insn (gen_absv64sf2 (target, arg));
 	return target;
       }
     case GCN_BUILTIN_LDEXPVF:
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg1 = force_reg (V64SFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					   V64SFmode,
@@ -4014,15 +4341,13 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
 					   V64SImode,
 					   EXPAND_NORMAL));
-	emit_insn (gen_ldexpv64sf3_exec
-		   (target, arg1, arg2, gcn_gen_undef (V64SFmode), exec));
+	emit_insn (gen_ldexpv64sf3 (target, arg1, arg2));
 	return target;
       }
     case GCN_BUILTIN_LDEXPV:
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg1 = force_reg (V64DFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					   V64SFmode,
@@ -4031,60 +4356,51 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
 					   V64SImode,
 					   EXPAND_NORMAL));
-	emit_insn (gen_ldexpv64df3_exec
-		   (target, arg1, arg2, gcn_gen_undef (V64DFmode), exec));
+	emit_insn (gen_ldexpv64df3 (target, arg1, arg2));
 	return target;
       }
     case GCN_BUILTIN_FREXPVF_EXP:
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
 					  EXPAND_NORMAL));
-	emit_insn (gen_frexpv64sf_exp2_exec
-		   (target, arg, gcn_gen_undef (V64SImode), exec));
+	emit_insn (gen_frexpv64sf_exp2 (target, arg));
 	return target;
       }
     case GCN_BUILTIN_FREXPVF_MANT:
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
 					  EXPAND_NORMAL));
-	emit_insn (gen_frexpv64sf_mant2_exec
-		   (target, arg, gcn_gen_undef (V64SFmode), exec));
+	emit_insn (gen_frexpv64sf_mant2 (target, arg));
 	return target;
       }
     case GCN_BUILTIN_FREXPV_EXP:
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
 					  EXPAND_NORMAL));
-	emit_insn (gen_frexpv64df_exp2_exec
-		   (target, arg, gcn_gen_undef (V64SImode), exec));
+	emit_insn (gen_frexpv64df_exp2 (target, arg));
 	return target;
       }
     case GCN_BUILTIN_FREXPV_MANT:
       {
 	if (ignore)
 	  return target;
-	rtx exec = gcn_full_exec_reg ();
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
 					  EXPAND_NORMAL));
-	emit_insn (gen_frexpv64df_mant2_exec
-		   (target, arg, gcn_gen_undef (V64DFmode), exec));
+	emit_insn (gen_frexpv64df_mant2 (target, arg));
 	return target;
       }
     case GCN_BUILTIN_OMP_DIM_SIZE:
@@ -4239,10 +4555,11 @@ gcn_vectorize_get_mask_mode (machine_mode)
    Helper function for gcn_vectorize_vec_perm_const.  */
 
 static rtx
-gcn_make_vec_perm_address (unsigned int *perm)
+gcn_make_vec_perm_address (unsigned int *perm, int nelt)
 {
-  rtx x = gen_reg_rtx (V64SImode);
-  emit_move_insn (x, gcn_vec_constant (V64SImode, 0));
+  machine_mode mode = VnMODE (nelt, SImode);
+  rtx x = gen_reg_rtx (mode);
+  emit_move_insn (x, gcn_vec_constant (mode, 0));
 
   /* Permutation addresses use byte addressing.  With each vector lane being
      4 bytes wide, and with 64 lanes in total, only bits 2..7 are significant,
@@ -4258,15 +4575,13 @@ gcn_make_vec_perm_address (unsigned int *perm)
     {
       uint64_t exec_mask = 0;
       uint64_t lane_mask = 1;
-      for (int j = 0; j < 64; j++, lane_mask <<= 1)
-	if ((perm[j] * 4) & bit_mask)
+      for (int j = 0; j < nelt; j++, lane_mask <<= 1)
+	if (((perm[j] % nelt) * 4) & bit_mask)
 	  exec_mask |= lane_mask;
 
       if (exec_mask)
-	emit_insn (gen_addv64si3_exec (x, x,
-				       gcn_vec_constant (V64SImode,
-							 bit_mask),
-				       x, get_exec (exec_mask)));
+	emit_insn (gen_addvNsi3 (x, x, gcn_vec_constant (mode, bit_mask),
+				 x, get_exec (exec_mask)));
     }
 
   return x;
@@ -4336,39 +4651,11 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 	src1_lanes |= lane_bit;
     }
 
-  rtx addr = gcn_make_vec_perm_address (perm);
-  rtx (*ds_bpermute) (rtx, rtx, rtx, rtx);
-
-  switch (vmode)
-    {
-    case E_V64QImode:
-      ds_bpermute = gen_ds_bpermutev64qi;
-      break;
-    case E_V64HImode:
-      ds_bpermute = gen_ds_bpermutev64hi;
-      break;
-    case E_V64SImode:
-      ds_bpermute = gen_ds_bpermutev64si;
-      break;
-    case E_V64HFmode:
-      ds_bpermute = gen_ds_bpermutev64hf;
-      break;
-    case E_V64SFmode:
-      ds_bpermute = gen_ds_bpermutev64sf;
-      break;
-    case E_V64DImode:
-      ds_bpermute = gen_ds_bpermutev64di;
-      break;
-    case E_V64DFmode:
-      ds_bpermute = gen_ds_bpermutev64df;
-      break;
-    default:
-      gcc_assert (false);
-    }
+  rtx addr = gcn_make_vec_perm_address (perm, nelt);
 
   /* Load elements from src0 to dst.  */
-  gcc_assert (~src1_lanes);
-  emit_insn (ds_bpermute (dst, addr, src0, gcn_full_exec_reg ()));
+  gcc_assert ((~src1_lanes) & (0xffffffffffffffffUL > (64-nelt)));
+  emit_insn (gen_ds_bpermutevNm (dst, addr, src0, get_exec (vmode)));
 
   /* Load elements from src1 to dst.  */
   if (src1_lanes)
@@ -4379,8 +4666,8 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
          the two source vectors together.
        */
       rtx tmp = gen_reg_rtx (vmode);
-      emit_insn (ds_bpermute (tmp, addr, src1, gcn_full_exec_reg ()));
-      emit_insn (gen_mov_with_exec (dst, tmp, get_exec (src1_lanes)));
+      emit_insn (gen_ds_bpermutevNm (tmp, addr, src1, get_exec (vmode)));
+      emit_insn (gen_movvNm (dst, tmp, dst, get_exec (src1_lanes)));
     }
 
   return true;
@@ -4396,7 +4683,22 @@ gcn_vector_mode_supported_p (machine_mode mode)
 {
   return (mode == V64QImode || mode == V64HImode
 	  || mode == V64SImode || mode == V64DImode
-	  || mode == V64SFmode || mode == V64DFmode);
+	  || mode == V64SFmode || mode == V64DFmode
+	  || mode == V32QImode || mode == V32HImode
+	  || mode == V32SImode || mode == V32DImode
+	  || mode == V32SFmode || mode == V32DFmode
+	  || mode == V16QImode || mode == V16HImode
+	  || mode == V16SImode || mode == V16DImode
+	  || mode == V16SFmode || mode == V16DFmode
+	  || mode == V8QImode || mode == V8HImode
+	  || mode == V8SImode || mode == V8DImode
+	  || mode == V8SFmode || mode == V8DFmode
+	  || mode == V4QImode || mode == V4HImode
+	  || mode == V4SImode || mode == V4DImode
+	  || mode == V4SFmode || mode == V4DFmode
+	  || mode == V2QImode || mode == V2HImode
+	  || mode == V2SImode || mode == V2DImode
+	  || mode == V2SFmode || mode == V2DFmode);
 }
 
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.
@@ -4425,23 +4727,74 @@ gcn_vectorize_preferred_simd_mode (scalar_mode mode)
     }
 }
 
+/* Implement TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES.
+
+   Try all the vector modes.  */
+
+unsigned int gcn_autovectorize_vector_modes (vector_modes *modes,
+					     bool ARG_UNUSED (all))
+{
+  modes->safe_push (V64QImode);
+  modes->safe_push (V64HImode);
+  modes->safe_push (V64SImode);
+  modes->safe_push (V64SFmode);
+  modes->safe_push (V64DImode);
+  modes->safe_push (V64DFmode);
+
+  modes->safe_push (V32QImode);
+  modes->safe_push (V32HImode);
+  modes->safe_push (V32SImode);
+  modes->safe_push (V32SFmode);
+  modes->safe_push (V32DImode);
+  modes->safe_push (V32DFmode);
+
+  modes->safe_push (V16QImode);
+  modes->safe_push (V16HImode);
+  modes->safe_push (V16SImode);
+  modes->safe_push (V16SFmode);
+  modes->safe_push (V16DImode);
+  modes->safe_push (V16DFmode);
+
+  modes->safe_push (V8QImode);
+  modes->safe_push (V8HImode);
+  modes->safe_push (V8SImode);
+  modes->safe_push (V8SFmode);
+  modes->safe_push (V8DImode);
+  modes->safe_push (V8DFmode);
+
+  modes->safe_push (V4QImode);
+  modes->safe_push (V4HImode);
+  modes->safe_push (V4SImode);
+  modes->safe_push (V4SFmode);
+  modes->safe_push (V4DImode);
+  modes->safe_push (V4DFmode);
+
+  modes->safe_push (V2QImode);
+  modes->safe_push (V2HImode);
+  modes->safe_push (V2SImode);
+  modes->safe_push (V2SFmode);
+  modes->safe_push (V2DImode);
+  modes->safe_push (V2DFmode);
+
+  /* We shouldn't need VECT_COMPARE_COSTS as they should all cost the same.  */
+  return 0;
+}
+
 /* Implement TARGET_VECTORIZE_RELATED_MODE.
 
    All GCN vectors are 64-lane, so this is simpler than other architectures.
    In particular, we do *not* want to match vector bit-size.  */
 
 static opt_machine_mode
-gcn_related_vector_mode (machine_mode ARG_UNUSED (vector_mode),
+gcn_related_vector_mode (machine_mode vector_mode,
 			 scalar_mode element_mode, poly_uint64 nunits)
 {
-  if (known_ne (nunits, 0U) && known_ne (nunits, 64U))
-    return VOIDmode;
+  int n = nunits.to_constant ();
 
-  machine_mode pref_mode = gcn_vectorize_preferred_simd_mode (element_mode);
-  if (!VECTOR_MODE_P (pref_mode))
-    return VOIDmode;
+  if (n == 0)
+    n = GET_MODE_NUNITS (vector_mode);
 
-  return pref_mode;
+  return VnMODE (n, element_mode);
 }
 
 /* Implement TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.
@@ -4565,21 +4918,25 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 
    The vector register SRC of mode MODE is reduced using the operation given
    by UNSPEC, and the scalar result is returned in lane 63 of a vector
-   register.  */
+   register (or lane 31, 15, 7, 3, 1 for partial vectors).  */
 
 rtx
 gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 {
   machine_mode orig_mode = mode;
+  machine_mode scalar_mode = GET_MODE_INNER (mode);
+  int vf = GET_MODE_NUNITS (mode);
   bool use_moves = (((unspec == UNSPEC_SMIN_DPP_SHR
+		      || unspec == UNSPEC_SMIN_DPP_SHR
 		      || unspec == UNSPEC_SMAX_DPP_SHR
 		      || unspec == UNSPEC_UMIN_DPP_SHR
 		      || unspec == UNSPEC_UMAX_DPP_SHR)
-		     && (mode == V64DImode
-			 || mode == V64DFmode))
+		     && (scalar_mode == DImode
+			 || scalar_mode == DFmode))
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
-			&& mode == V64DFmode));
+			&& scalar_mode == DFmode));
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
+		   : unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
 		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
 		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
 		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX
@@ -4589,23 +4946,23 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		       || unspec == UNSPEC_SMAX_DPP_SHR
 		       || unspec == UNSPEC_UMIN_DPP_SHR
 		       || unspec == UNSPEC_UMAX_DPP_SHR)
-		      && (mode == V64QImode
-			  || mode == V64HImode));
+		      && (scalar_mode == QImode
+			  || scalar_mode == HImode));
   bool unsignedp = (unspec == UNSPEC_UMIN_DPP_SHR
 		    || unspec == UNSPEC_UMAX_DPP_SHR);
   bool use_plus_carry = unspec == UNSPEC_PLUS_DPP_SHR
 			&& GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-			&& (TARGET_GCN3 || mode == V64DImode);
+			&& (TARGET_GCN3 || scalar_mode == DImode);
 
   if (use_plus_carry)
     unspec = UNSPEC_PLUS_CARRY_DPP_SHR;
 
   if (use_extends)
     {
-      rtx tmp = gen_reg_rtx (V64SImode);
+      mode = VnMODE (vf, SImode);
+      rtx tmp = gen_reg_rtx (mode);
       convert_move (tmp, src, unsignedp);
       src = tmp;
-      mode = V64SImode;
     }
 
   /* Perform reduction by first performing the reduction operation on every
@@ -4613,7 +4970,8 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
      iteration (thereby effectively reducing every 4 lanes) and so on until
      all lanes are reduced.  */
   rtx in, out = force_reg (mode, src);
-  for (int i = 0, shift = 1; i < 6; i++, shift <<= 1)
+  int iterations = exact_log2 (vf);
+  for (int i = 0, shift = 1; i < iterations; i++, shift <<= 1)
     {
       rtx shift_val = gen_rtx_CONST_INT (VOIDmode, shift);
       in = out;
@@ -4671,11 +5029,9 @@ gcn_vectorization_cost (enum vect_cost_for_stmt ARG_UNUSED (type_of_cost),
 static int
 gcn_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *ARG_UNUSED (node),
 					    struct cgraph_simd_clone *clonei,
-					    tree base_type,
+					    tree ARG_UNUSED (base_type),
 					    int ARG_UNUSED (num))
 {
-  unsigned int elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
-
   if (known_eq (clonei->simdlen, 0U))
     clonei->simdlen = 64;
   else if (maybe_ne (clonei->simdlen, 64U))
@@ -4977,10 +5333,11 @@ gcn_md_reorg (void)
 		      {
 			if (VECTOR_MODE_P (GET_MODE (x)))
 			  {
-			    new_exec = -1;
-			    break;
+			    int vf = GET_MODE_NUNITS (GET_MODE (x));
+			    new_exec = MAX ((uint64_t)new_exec,
+					    0xffffffffffffffffUL >> (64-vf));
 			  }
-			else
+			else if (new_exec == 0)
 			  new_exec = 1;
 		      }
 		  }
@@ -5695,13 +6052,12 @@ static void
 print_reg (FILE *file, rtx x)
 {
   machine_mode mode = GET_MODE (x);
+  if (VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
   if (mode == BImode || mode == QImode || mode == HImode || mode == SImode
-      || mode == HFmode || mode == SFmode
-      || mode == V64SFmode || mode == V64SImode
-      || mode == V64QImode || mode == V64HImode)
+      || mode == HFmode || mode == SFmode)
     fprintf (file, "%s", reg_names[REGNO (x)]);
-  else if (mode == DImode || mode == V64DImode
-	   || mode == DFmode || mode == V64DFmode)
+  else if (mode == DImode || mode == DFmode)
     {
       if (SGPR_REGNO_P (REGNO (x)))
 	fprintf (file, "s[%i:%i]", REGNO (x) - FIRST_SGPR_REG,
@@ -6148,20 +6504,20 @@ print_operand (FILE *file, rtx x, int code)
     case 'o':
       {
 	const char *s = 0;
-	switch (GET_MODE_SIZE (GET_MODE (x)))
+	machine_mode mode = GET_MODE (x);
+	if (VECTOR_MODE_P (mode))
+	  mode = GET_MODE_INNER (mode);
+
+	switch (mode)
 	  {
-	  case 1:
+	  case E_QImode:
 	    s = "_ubyte";
 	    break;
-	  case 2:
+	  case E_HImode:
+	  case E_HFmode:
 	    s = "_ushort";
 	    break;
-	  /* The following are full-vector variants.  */
-	  case 64:
-	    s = "_ubyte";
-	    break;
-	  case 128:
-	    s = "_ushort";
+	  default:
 	    break;
 	  }
 
@@ -6176,42 +6532,30 @@ print_operand (FILE *file, rtx x, int code)
       }
     case 's':
       {
-	const char *s = "";
-	switch (GET_MODE_SIZE (GET_MODE (x)))
+	const char *s;
+	machine_mode mode = GET_MODE (x);
+	if (VECTOR_MODE_P (mode))
+	  mode = GET_MODE_INNER (mode);
+
+	switch (mode)
 	  {
-	  case 1:
+	  case E_QImode:
 	    s = "_byte";
 	    break;
-	  case 2:
+	  case E_HImode:
+	  case E_HFmode:
 	    s = "_short";
 	    break;
-	  case 4:
+	  case E_SImode:
+	  case E_SFmode:
 	    s = "_dword";
 	    break;
-	  case 8:
+	  case E_DImode:
+	  case E_DFmode:
 	    s = "_dwordx2";
 	    break;
-	  case 12:
-	    s = "_dwordx3";
-	    break;
-	  case 16:
+	  case E_TImode:
 	    s = "_dwordx4";
-	    break;
-	  case 32:
-	    s = "_dwordx8";
-	    break;
-	  case 64:
-	    s = VECTOR_MODE_P (GET_MODE (x)) ? "_byte" : "_dwordx16";
-	    break;
-	  /* The following are full-vector variants.  */
-	  case 128:
-	    s = "_short";
-	    break;
-	  case 256:
-	    s = "_dword";
-	    break;
-	  case 512:
-	    s = "_dwordx2";
 	    break;
 	  default:
 	    output_operand_lossage ("invalid operand %%xn code");
@@ -6716,6 +7060,9 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE gcn_asm_trampoline_template
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE gcn_attribute_table
+#undef  TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
+  gcn_autovectorize_vector_modes
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL gcn_builtin_decl
 #undef  TARGET_CAN_CHANGE_MODE_CLASS

@@ -520,7 +520,7 @@ write_one_data (const struct gcov_info *gi_ptr,
 
 #ifdef NEED_L_GCOV
   /* Generate whole program statistics.  */
-  gcov_write_summary (GCOV_TAG_OBJECT_SUMMARY, prg_p);
+  gcov_write_object_summary (prg_p);
 #endif
 
   /* Write execution counts for each function.  */

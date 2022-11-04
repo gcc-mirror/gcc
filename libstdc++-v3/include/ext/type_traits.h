@@ -190,6 +190,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __promote<float>
     { typedef float __type; };
 
+#ifdef __STDCPP_FLOAT16_T__
+  template<>
+    struct __promote<_Float16>
+    { typedef _Float16 __type; };
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+  template<>
+    struct __promote<_Float32>
+    { typedef _Float32 __type; };
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+  template<>
+    struct __promote<_Float64>
+    { typedef _Float64 __type; };
+#endif
+
+#ifdef __STDCPP_FLOAT128_T__
+  template<>
+    struct __promote<_Float128>
+    { typedef _Float128 __type; };
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+  template<>
+    struct __promote<__gnu_cxx::__bfloat16_t>
+    { typedef __gnu_cxx::__bfloat16_t __type; };
+#endif
+
 #if __cpp_fold_expressions
 
   template<typename... _Tp>

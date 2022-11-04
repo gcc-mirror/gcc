@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_TR1_COMPLEX_H
 #define _GLIBCXX_TR1_COMPLEX_H 1
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <tr1/ccomplex>
 
 #endif // _GLIBCXX_TR1_COMPLEX_H

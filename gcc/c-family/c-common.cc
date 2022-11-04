@@ -378,7 +378,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__attribute",	RID_ATTRIBUTE,	0 },
   { "__attribute__",	RID_ATTRIBUTE,	0 },
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
-  { "__bases",          RID_BASES, D_CXXONLY },
   { "__builtin_addressof", RID_ADDRESSOF, D_CXXONLY },
   { "__builtin_bit_cast", RID_BUILTIN_BIT_CAST, D_CXXONLY },
   { "__builtin_call_with_static_chain",
@@ -401,44 +400,12 @@ const struct c_common_resword c_common_reswords[] =
   { "__const__",	RID_CONST,	0 },
   { "__constinit",	RID_CONSTINIT,	D_CXXONLY },
   { "__decltype",       RID_DECLTYPE,   D_CXXONLY },
-  { "__direct_bases",   RID_DIRECT_BASES, D_CXXONLY },
   { "__extension__",	RID_EXTENSION,	0 },
   { "__func__",		RID_C99_FUNCTION_NAME, 0 },
-  { "__has_nothrow_assign", RID_HAS_NOTHROW_ASSIGN, D_CXXONLY },
-  { "__has_nothrow_constructor", RID_HAS_NOTHROW_CONSTRUCTOR, D_CXXONLY },
-  { "__has_nothrow_copy", RID_HAS_NOTHROW_COPY, D_CXXONLY },
-  { "__has_trivial_assign", RID_HAS_TRIVIAL_ASSIGN, D_CXXONLY },
-  { "__has_trivial_constructor", RID_HAS_TRIVIAL_CONSTRUCTOR, D_CXXONLY },
-  { "__has_trivial_copy", RID_HAS_TRIVIAL_COPY, D_CXXONLY },
-  { "__has_trivial_destructor", RID_HAS_TRIVIAL_DESTRUCTOR, D_CXXONLY },
-  { "__has_unique_object_representations", RID_HAS_UNIQUE_OBJ_REPRESENTATIONS,
-					D_CXXONLY },
-  { "__has_virtual_destructor", RID_HAS_VIRTUAL_DESTRUCTOR, D_CXXONLY },
   { "__imag",		RID_IMAGPART,	0 },
   { "__imag__",		RID_IMAGPART,	0 },
   { "__inline",		RID_INLINE,	0 },
   { "__inline__",	RID_INLINE,	0 },
-  { "__is_abstract",	RID_IS_ABSTRACT, D_CXXONLY },
-  { "__is_aggregate",	RID_IS_AGGREGATE, D_CXXONLY },
-  { "__is_base_of",	RID_IS_BASE_OF, D_CXXONLY },
-  { "__is_class",	RID_IS_CLASS,	D_CXXONLY },
-  { "__is_empty",	RID_IS_EMPTY,	D_CXXONLY },
-  { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
-  { "__is_final",	RID_IS_FINAL,	D_CXXONLY },
-  { "__is_layout_compatible", RID_IS_LAYOUT_COMPATIBLE, D_CXXONLY },
-  { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
-  { "__is_pointer_interconvertible_base_of",
-			RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF, D_CXXONLY },
-  { "__is_pod",		RID_IS_POD,	D_CXXONLY },
-  { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
-  { "__is_same",     RID_IS_SAME_AS, D_CXXONLY },
-  { "__is_same_as",     RID_IS_SAME_AS, D_CXXONLY },
-  { "__is_standard_layout", RID_IS_STD_LAYOUT, D_CXXONLY },
-  { "__is_trivial",     RID_IS_TRIVIAL, D_CXXONLY },
-  { "__is_trivially_assignable", RID_IS_TRIVIALLY_ASSIGNABLE, D_CXXONLY },
-  { "__is_trivially_constructible", RID_IS_TRIVIALLY_CONSTRUCTIBLE, D_CXXONLY },
-  { "__is_trivially_copyable", RID_IS_TRIVIALLY_COPYABLE, D_CXXONLY },
-  { "__is_union",	RID_IS_UNION,	D_CXXONLY },
   { "__label__",	RID_LABEL,	0 },
   { "__null",		RID_NULL,	0 },
   { "__real",		RID_REALPART,	0 },
@@ -453,7 +420,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__transaction_cancel", RID_TRANSACTION_CANCEL, 0 },
   { "__typeof",		RID_TYPEOF,	0 },
   { "__typeof__",	RID_TYPEOF,	0 },
-  { "__underlying_type", RID_UNDERLYING_TYPE, D_CXXONLY },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
   { "__GIMPLE",		RID_GIMPLE,	D_CONLY },
@@ -528,7 +494,8 @@ const struct c_common_resword c_common_reswords[] =
   { "typedef",		RID_TYPEDEF,	0 },
   { "typename",		RID_TYPENAME,	D_CXXONLY | D_CXXWARN },
   { "typeid",		RID_TYPEID,	D_CXXONLY | D_CXXWARN },
-  { "typeof",		RID_TYPEOF,	D_ASM | D_EXT },
+  { "typeof",		RID_TYPEOF,	D_EXT11 },
+  { "typeof_unqual",	RID_TYPEOF_UNQUAL,	D_CONLY | D_C2X },
   { "union",		RID_UNION,	0 },
   { "unsigned",		RID_UNSIGNED,	0 },
   { "using",		RID_USING,	D_CXXONLY | D_CXXWARN },
@@ -537,16 +504,13 @@ const struct c_common_resword c_common_reswords[] =
   { "volatile",		RID_VOLATILE,	0 },
   { "wchar_t",		RID_WCHAR,	D_CXXONLY },
   { "while",		RID_WHILE,	0 },
-  { "__is_assignable", RID_IS_ASSIGNABLE, D_CXXONLY },
-  { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
-  { "__is_nothrow_assignable", RID_IS_NOTHROW_ASSIGNABLE, D_CXXONLY },
-  { "__is_nothrow_constructible", RID_IS_NOTHROW_CONSTRUCTIBLE, D_CXXONLY },
-  { "__is_convertible", RID_IS_CONVERTIBLE, D_CXXONLY },
-  { "__is_nothrow_convertible", RID_IS_NOTHROW_CONVERTIBLE, D_CXXONLY },
-  { "__reference_constructs_from_temporary", RID_REF_CONSTRUCTS_FROM_TEMPORARY,
-					D_CXXONLY },
-  { "__reference_converts_from_temporary", RID_REF_CONVERTS_FROM_TEMPORARY,
-					D_CXXONLY },
+
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+  { NAME,		RID_##CODE,	D_CXXONLY },
+#include "cp/cp-trait.def"
+#undef DEFTRAIT
+  /* An alias for __is_same.  */
+  { "__is_same_as",	RID_IS_SAME,	D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },
@@ -2334,6 +2298,10 @@ c_common_type_for_size (unsigned int bits, int unsignedp)
   if (bits <= TYPE_PRECISION (intDI_type_node))
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
 
+  if (bits <= TYPE_PRECISION (widest_integer_literal_type_node))
+    return (unsignedp ? widest_unsigned_literal_type_node
+	    : widest_integer_literal_type_node);
+
   return NULL_TREE;
 }
 
@@ -4096,7 +4064,8 @@ static tree builtin_types[(int) BT_LAST + 1];
 
 /* A helper function for c_common_nodes_and_builtins.  Build function type
    for DEF with return type RET and N arguments.  If VAR is true, then the
-   function should be variadic after those N arguments.
+   function should be variadic after those N arguments, or, if N is zero,
+   unprototyped.
 
    Takes special care not to ICE if any of the types involved are
    error_mark_node, which indicates that said type is not in fact available
@@ -4125,7 +4094,10 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
   if (t == error_mark_node)
     goto egress;
   if (var)
-    t = build_varargs_function_type_array (t, n, args);
+    if (n == 0)
+      t = build_function_type (t, NULL_TREE);
+    else
+      t = build_varargs_function_type_array (t, n, args);
   else
     t = build_function_type_array (t, n, args);
 
@@ -4693,8 +4665,7 @@ c_common_nodes_and_builtins (void)
     uintptr_type_node =
       TREE_TYPE (identifier_global_value (c_get_ident (UINTPTR_TYPE)));
 
-  default_function_type
-    = build_varargs_function_type_list (integer_type_node, NULL_TREE);
+  default_function_type = build_function_type (integer_type_node, NULL_TREE);
   unsigned_ptrdiff_type_node = c_common_unsigned_type (ptrdiff_type_node);
 
   lang_hooks.decls.pushdecl
@@ -6044,12 +6015,12 @@ attribute_fallthrough_p (tree attr)
 {
   if (attr == error_mark_node)
    return false;
-  tree t = lookup_attribute ("fallthrough", attr);
+  tree t = lookup_attribute ("", "fallthrough", attr);
   if (t == NULL_TREE)
     return false;
   /* It is no longer true that "this attribute shall appear at most once in
      each attribute-list", but we still give a warning.  */
-  if (lookup_attribute ("fallthrough", TREE_CHAIN (t)))
+  if (lookup_attribute ("", "fallthrough", TREE_CHAIN (t)))
     warning (OPT_Wattributes, "attribute %<fallthrough%> specified multiple "
 	     "times");
   /* No attribute-argument-clause shall be present.  */
@@ -6060,7 +6031,8 @@ attribute_fallthrough_p (tree attr)
   for (t = attr; t != NULL_TREE; t = TREE_CHAIN (t))
     {
       tree name = get_attribute_name (t);
-      if (!is_attribute_p ("fallthrough", name))
+      if (!is_attribute_p ("fallthrough", name)
+	  || !is_attribute_namespace_p ("", t))
 	{
 	  if (!c_dialect_cxx () && get_attribute_namespace (t) == NULL_TREE)
 	    /* The specifications of standard attributes in C mean

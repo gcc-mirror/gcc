@@ -15,6 +15,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// Transitively includes string related bits.
+// { dg-require-effective-target hosted }
+
 #include <algorithm>
 #include <functional>
 #include <tr1/functional>

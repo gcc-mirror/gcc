@@ -7060,6 +7060,21 @@ Enable/disable the generation of the WIDEKL instructions.
 @cindex @code{target("avxvnni")} function attribute, x86
 Enable/disable the generation of the AVXVNNI instructions.
 
+@item avxifma
+@itemx no-avxifma
+@cindex @code{target("avxifma")} function attribute, x86
+Enable/disable the generation of the AVXIFMA instructions.
+
+@item avxvnniint8
+@itemx no-avxvnniint8
+@cindex @code{target("avxvnniint8")} function attribute, x86
+Enable/disable the generation of the AVXVNNIINT8 instructions.
+
+@item avxneconvert
+@itemx no-avxneconvert
+@cindex @code{target("avxneconvert")} function attribute, x86
+Enable/disable the generation of the AVXNECONVERT instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
@@ -7458,6 +7473,32 @@ struct __attribute__ ((aligned (16))) foo
 This warning can be disabled by @option{-Wno-if-not-aligned}.
 The @code{warn_if_not_aligned} attribute can also be used for types
 (@pxref{Common Type Attributes}.)
+
+@cindex @code{strict_flex_array} variable attribute
+@item strict_flex_array (@var{level})
+The @code{strict_flex_array} attribute should be attached to the trailing
+array field of a structure.  It controls when to treat the trailing array
+field of a structure as a flexible array member for the purposes of accessing
+the elements of such an array.
+@var{level} must be an integer betwen 0 to 3.
+
+@var{level}=0 is the least strict level, all trailing arrays of structures
+are treated as flexible array members. @var{level}=3 is the strictest level,
+only when the trailing array is declared as a flexible array member per C99
+standard onwards (@samp{[]}), it is treated as a flexible array member.
+
+There are two more levels in between 0 and 3, which are provided to support
+older codes that use GCC zero-length array extension (@samp{[0]}) or one-element
+array as flexible array members (@samp{[1]}):
+When @var{level} is 1, the trailing array is treated as a flexible array member
+when it is declared as either @samp{[]}, @samp{[0]}, or @samp{[1]};
+When @var{level} is 2, the trailing array is treated as a flexible array member
+when it is declared as either @samp{[]}, or @samp{[0]}.
+
+This attribute can be used with or without the @option{-fstrict-flex-arrays}.
+When both the attribute and the option present at the same time, the level of
+the strictness for the specific trailing array field is determined by the
+attribute.
 
 @item alloc_size (@var{position})
 @itemx alloc_size (@var{position-1}, @var{position-2})
@@ -7874,7 +7915,7 @@ This attribute works similar to the @code{section} attribute
 but adds additional checking.
 
 @table @asis
-@item @bullet{}@tie{} Ordinary AVR cores with 32 general purpose registers:
+@item @bullet{} Ordinary AVR cores with 32 general purpose registers:
 @code{progmem} affects the location
 of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
@@ -7899,7 +7940,7 @@ normally resides in the data memory (RAM).
 See also the @ref{AVR Named Address Spaces} section for
 an alternate way to locate and access data in flash memory.
 
-@item @bullet{}@tie{} AVR cores with flash memory visible in the RAM address range:
+@item @bullet{} AVR cores with flash memory visible in the RAM address range:
 On such devices, there is no need for attribute @code{progmem} or
 @ref{AVR Named Address Spaces,,@code{__flash}} qualifier at all.
 Just use standard C / C++.  The compiler will generate @code{LD*}
@@ -7912,7 +7953,7 @@ avoiding @code{progmem} and @code{__flash}.  This applies to devices from
 families @code{avrtiny} and @code{avrxmega3}, see @ref{AVR Options} for
 an overview.
 
-@item @bullet{}@tie{}Reduced AVR Tiny cores like ATtiny40:
+@item @bullet{} Reduced AVR Tiny cores like ATtiny40:
 The compiler adds @code{0x4000}
 to the addresses of objects and declarations in @code{progmem} and locates
 the objects in flash memory, namely in section @code{.progmem.data}.
@@ -9187,6 +9228,20 @@ available for functions (@pxref{Function Attributes}), variables
 (@pxref{Variable Attributes}), labels (@pxref{Label Attributes}), enumerators
 (@pxref{Enumerator Attributes}), and for types (@pxref{Type Attributes}).
 
+@table @code
+@item fallthrough
+@cindex @code{fallthrough} statement attribute
+The @code{fallthrough} attribute with a null statement serves as a
+fallthrough statement.  It hints to the compiler that a statement
+that falls through to another case label, or user-defined label
+in a switch statement is intentional and thus the
+@option{-Wimplicit-fallthrough} warning must not trigger.  The
+fallthrough attribute may appear at most once in each attribute
+list, and may not be mixed with other attributes.  It can only
+be used in a switch statement (the compiler will issue an error
+otherwise), after a preceding statement and before a logically
+succeeding case label, or user-defined label.
+
 This example uses the @code{fallthrough} statement attribute to indicate that
 the @option{-Wimplicit-fallthrough} warning should not be emitted:
 
@@ -9201,19 +9256,28 @@ switch (cond)
   @}
 @end smallexample
 
-@table @code
-@item fallthrough
-@cindex @code{fallthrough} statement attribute
-The @code{fallthrough} attribute with a null statement serves as a
-fallthrough statement.  It hints to the compiler that a statement
-that falls through to another case label, or user-defined label
-in a switch statement is intentional and thus the
-@option{-Wimplicit-fallthrough} warning must not trigger.  The
-fallthrough attribute may appear at most once in each attribute
-list, and may not be mixed with other attributes.  It can only
-be used in a switch statement (the compiler will issue an error
-otherwise), after a preceding statement and before a logically
-succeeding case label, or user-defined label.
+@item assume
+@cindex @code{assume} statement attribute
+The @code{assume} attribute with a null statement serves as portable
+assumption.  It should have a single argument, a conditional expression,
+which is not evaluated.  If the argument would evaluate to true
+at the point where it appears, it has no effect, otherwise there
+is undefined behavior.  This is a GNU variant of the ISO C++23
+standard @code{assume} attribute, but it can be used in any version of
+both C and C++.
+
+@smallexample
+int
+foo (int x, int y)
+@{
+  __attribute__((assume(x == 42)));
+  __attribute__((assume(++y == 43)));
+  return x + y;
+@}
+@end smallexample
+
+@code{y} is not actually incremented and the compiler can but does not
+have to optimize it to just @code{return 42 + 42;}.
 
 @end table
 
@@ -15696,6 +15760,83 @@ Load 32-bits from the @code{struct sk_buff} packet data pointed by the register 
 BPF Compile Once-Run Everywhere (CO-RE) support. Instruct GCC to generate CO-RE relocation records for any accesses to aggregate data structures (struct, union, array types) in @var{expr}. This builtin is otherwise transparent, the return value is whatever @var{expr} evaluates to. It is also overloaded: @var{expr} may be of any type (not necessarily a pointer), the return type is the same. Has no effect if @code{-mco-re} is not in effect (either specified or implied).
 @end deftypefn
 
+@deftypefn {Built-in Function} unsigned int __builtin_preserve_field_info (@var{expr}, unsigned int @var{kind})
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin is used to
+extract information to aid in struct/union relocations.  @var{expr} is
+an access to a field of a struct or union. Depending on @var{kind}, different
+information is returned to the program. A CO-RE relocation for the access in
+@var{expr} with kind @var{kind} is recorded if @code{-mco-re} is in effect.
+
+The following values are supported for @var{kind}:
+@table @var
+@item FIELD_BYTE_OFFSET = 0
+The returned value is the offset, in bytes, of the field from the
+beginning of the containing structure. For bitfields, the byte offset
+of the containing word.
+
+@item FIELD_BYTE_SIZE = 1
+The returned value is the size, in bytes, of the field. For bitfields,
+the size in bytes of the containing word.
+
+@item FIELD_EXISTENCE = 2
+The returned value is 1 if the field exists, 0 otherwise. Always 1 at
+compile time.
+
+@item FIELD_SIGNEDNESS = 3
+The returned value is 1 if the field is signed, 0 otherwise.
+
+@item FIELD_LSHIFT_U64 = 4
+@itemx FIELD_RSHIFT_U64 = 5
+The returned value is the number of bits of left- or right-shifting
+respectively needed in order to recover the original value of the field,
+after it has been loaded by a read of FIELD_BYTE_SIZE bytes into an
+unsigned 64-bit value. Primarily useful for reading bitfield values
+from structures which may change between kernel versions.
+
+@end table
+
+Note that the return value is a constant which is known at
+compile-time. If the field has a variable offset then
+FIELD_BYTE_OFFSET, FIELD_LSHIFT_U64 and FIELD_RSHIFT_U64 are not
+supported. Similarly, if the field has a variable size then
+FIELD_BYTE_SIZE, FIELD_LSHIFT_U64 and FIELD_RSHIFT_U64 are not
+supported.
+
+For example, __builtin_preserve_field_info can be used to reliably
+extract bitfield values from a structure which may change between
+kernel versions:
+
+@example
+struct S
+@{
+  short a;
+  int x:7;
+  int y:5;
+@};
+
+int
+read_y (struct S *arg)
+@{
+  unsigned long long val;
+  unsigned int offset = __builtin_preserve_field_info (arg->y, FIELD_BYTE_OFFSET);
+  unsigned int size = __builtin_presrve_field_info (arg->y, FIELD_BYTE_SIZE);
+
+  /* Read size bytes from arg + offset into val.  */
+  bpf_probe_read (&val, size, arg + offset);
+
+  val <<= __builtin_preserve_field_info (arg->y, FIELD_LSHIFT_U64);
+
+  if (__builtin_preserve_field_info (arg->y, FIELD_SIGNEDNESS))
+    val = ((long long) val >> __builtin_preserve_field_info (arg->y, FIELD_RSHIFT_U64));
+  else
+    val >>= __builtin_preserve_field_info (arg->y, FIELD_RSHIFT_U64);
+
+  return val;
+@}
+
+@end example
+@end deftypefn
+
 @node FR-V Built-in Functions
 @subsection FR-V Built-in Functions
 
@@ -21875,6 +22016,9 @@ AMD Family 19h CPU.
 
 @item znver3
 AMD Family 19h Zen version 3.
+
+@item znver4
+AMD Family 19h Zen version 4.
 
 @item x86-64
 Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).

@@ -680,7 +680,7 @@ do_build_copy_constructor (tree fndecl)
       else if (tree_int_cst_equal (TYPE_SIZE (current_class_type),
 				   CLASSTYPE_SIZE (current_class_type)))
 	{
-	  tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
+	  tree t = cp_build_init_expr (current_class_ref, parm);
 	  finish_expr_stmt (t);
 	}
       else
@@ -695,7 +695,7 @@ do_build_copy_constructor (tree fndecl)
 			     current_class_ptr, alias_set);
 	  tree rhs = build2 (MEM_REF, array_type,
 			     TREE_OPERAND (parm, 0), alias_set);
-	  tree t = build2 (INIT_EXPR, void_type_node, lhs, rhs);
+	  tree t = cp_build_init_expr (lhs, rhs);
 	  finish_expr_stmt (t);
 	}
     }
@@ -2233,7 +2233,7 @@ ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
   tree val = build_stub_object (from);
   if (!TYPE_REF_P (from) && TREE_CODE (from) != FUNCTION_TYPE)
     val = CLASS_TYPE_P (from) ? force_rvalue (val, tf_none) : rvalue (val);
-  return ref_conv_binds_directly (to, val, direct_init_p).is_false ();
+  return ref_conv_binds_to_temporary (to, val, direct_init_p).is_true ();
 }
 
 /* Worker for is_{,nothrow_}convertible.  Attempt to perform an implicit
@@ -2246,6 +2246,7 @@ is_convertible_helper (tree from, tree to)
     return integer_one_node;
   cp_unevaluated u;
   tree expr = build_stub_object (from);
+  deferring_access_check_sentinel acs (dk_no_deferred);
   return perform_implicit_conversion (to, expr, tf_none);
 }
 

@@ -4055,6 +4055,7 @@ fixup_reorder_chain (void)
 	  ret_label = PATTERN (ret);
 	  dest = EXIT_BLOCK_PTR_FOR_FN (cfun);
 
+	  e_fall->flags &= ~EDGE_CROSSING;
 	  /* E_FALL->dest might become unreachable as a result of
 	     replacing the jump with a return.  So arrange to remove
 	     unreachable blocks.  */

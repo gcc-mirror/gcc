@@ -1023,22 +1023,11 @@ namespace __gnu_debug
       substr(size_type __pos = 0, size_type __n = _Base::npos) const
       { return basic_string(_Base::substr(__pos, __n)); }
 
-      int
-      compare(const basic_string& __str) const
-      { return _Base::compare(__str); }
+      using _Base::compare;
 
+      _GLIBCXX20_CONSTEXPR
       int
-      compare(size_type __pos1, size_type __n1,
-	      const basic_string& __str) const
-      { return _Base::compare(__pos1, __n1, __str); }
-
-      int
-      compare(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2) const
-      { return _Base::compare(__pos1, __n1, __str, __pos2, __n2); }
-
-      int
-      compare(const _CharT* __s) const
+      compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::compare(__s);
@@ -1046,6 +1035,7 @@ namespace __gnu_debug
 
       //  _GLIBCXX_RESOLVE_LIB_DEFECTS
       //  5. string::compare specification questionable
+      _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos1, size_type __n1, const _CharT* __s) const
       {
@@ -1055,6 +1045,7 @@ namespace __gnu_debug
 
       //  _GLIBCXX_RESOLVE_LIB_DEFECTS
       //  5. string::compare specification questionable
+      _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos1, size_type __n1,const _CharT* __s,
 	      size_type __n2) const

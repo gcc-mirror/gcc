@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/pragmainline.d(8): Error: pragma `inline` one boolean expression expected for `pragma(inline)`, not 3
+fail_compilation/pragmainline.d(8): Error: one boolean expression expected for `pragma(inline)`, not 3
 ---
 */
 

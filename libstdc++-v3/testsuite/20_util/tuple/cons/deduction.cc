@@ -145,6 +145,7 @@ test04()
 void
 test05()
 {
+#if __STDC_HOSTED__
   std::allocator<double> a;
   std::tuple x{std::allocator_arg, a, 1};
   check_type<std::tuple<int>>(x);
@@ -161,4 +162,5 @@ test05()
   check_type<decltype(x)>(x5);
   std::tuple x6{std::allocator_arg, a, std::move(x)};
   check_type<decltype(x)>(x6);
+#endif
 }

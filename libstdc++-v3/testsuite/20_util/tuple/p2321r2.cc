@@ -1,6 +1,8 @@
 // Verify P2321R2 "zip" enhancements to std::tuple.
 // { dg-options "-std=gnu++23" }
 // { dg-do run { target c++23 } }
+// FIXME [!HOSTED]: avoidable std::allocator usage
+// { dg-require-effective-target hosted }
 
 #include <tuple>
 #include <memory>

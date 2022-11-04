@@ -372,13 +372,13 @@ gcov_write_length (gcov_position_t position)
 
 #else /* IN_LIBGCOV */
 
-/* Write a summary structure to the gcov file.  */
+/* Write an object summary structure to the gcov file.  */
 
 GCOV_LINKAGE void
-gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
+gcov_write_object_summary (const struct gcov_summary *summary)
 {
-  gcov_write_unsigned (tag);
-  gcov_write_unsigned (GCOV_TAG_SUMMARY_LENGTH);
+  gcov_write_unsigned (GCOV_TAG_OBJECT_SUMMARY);
+  gcov_write_unsigned (GCOV_TAG_OBJECT_SUMMARY_LENGTH);
   gcov_write_unsigned (summary->runs);
   gcov_write_unsigned (summary->sum_max);
 }

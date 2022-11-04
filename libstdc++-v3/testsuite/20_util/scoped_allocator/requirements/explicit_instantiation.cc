@@ -1,4 +1,6 @@
 // { dg-do compile { target c++11 } }
+// FIXME [!HOSTED]: avoidable std::allocator use
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //

@@ -49,6 +49,7 @@ namespace std {
     CONSTEXPR
     bitset<N> operator^(const bitset<N>&, const bitset<N>&) NOTHROW;
 
+#if __STDC_HOSTED__
   template <class charT, class traits, size_t N>
     basic_istream<charT, traits>&
     operator>>(basic_istream<charT, traits>& is, bitset<N>& x);
@@ -56,4 +57,5 @@ namespace std {
   template <class charT, class traits, size_t N>
     basic_ostream<charT, traits>&
     operator<<(basic_ostream<charT, traits>& os, const bitset<N>& x);
+#endif
 }

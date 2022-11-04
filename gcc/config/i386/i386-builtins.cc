@@ -127,7 +127,6 @@ static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
 tree ix86_float16_type_node = NULL_TREE;
 tree ix86_bf16_type_node = NULL_TREE;
-tree ix86_bf16_ptr_type_node = NULL_TREE;
 
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
@@ -280,10 +279,12 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
       if (((mask2 == 0 || (mask2 & ix86_isa_flags2) != 0)
 	   && (mask == 0 || (mask & ix86_isa_flags) != 0))
 	  || ((mask & OPTION_MASK_ISA_MMX) != 0 && TARGET_MMX_WITH_SSE)
-	  /* "Unified" builtin used by either AVXVNNI intrinsics or AVX512VNNIVL
-	     non-mask intrinsics should be defined whenever avxvnni
-	     or avx512vnni && avx512vl exist.  */
+	  /* "Unified" builtin used by either AVXVNNI/AVXIFMA intrinsics
+	     or AVX512VNNIVL/AVX512IFMAVL non-mask intrinsics should be
+	     defined whenever avxvnni/avxifma or avx512vnni/avxifma &&
+	     avx512vl exist.  */
 	  || (mask2 == OPTION_MASK_ISA2_AVXVNNI)
+	  || (mask2 == OPTION_MASK_ISA2_AVXIFMA)
 	  || (lang_hooks.builtin_function
 	      == lang_hooks.builtin_function_ext_scope))
 	{
@@ -1372,17 +1373,18 @@ ix86_register_float16_builtin_type (void)
 static void
 ix86_register_bf16_builtin_type (void)
 {
-  ix86_bf16_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (ix86_bf16_type_node) = 16;
-  SET_TYPE_MODE (ix86_bf16_type_node, BFmode);
-  layout_type (ix86_bf16_type_node);
+  if (bfloat16_type_node == NULL_TREE)
+    {
+      ix86_bf16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (ix86_bf16_type_node) = 16;
+      SET_TYPE_MODE (ix86_bf16_type_node, BFmode);
+      layout_type (ix86_bf16_type_node);
+    }
+  else
+    ix86_bf16_type_node = bfloat16_type_node;
 
   if (!maybe_get_identifier ("__bf16") && TARGET_SSE2)
-    {
-      lang_hooks.types.register_builtin_type (ix86_bf16_type_node,
-					    "__bf16");
-      ix86_bf16_ptr_type_node = build_pointer_type (ix86_bf16_type_node);
-    }
+    lang_hooks.types.register_builtin_type (ix86_bf16_type_node, "__bf16");
 }
 
 static void

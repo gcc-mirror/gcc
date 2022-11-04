@@ -9,7 +9,6 @@
  */
 module core.sys.windows.rapi;
 version (Windows):
-@system:
 
 /* Comment from MinGW
    NOTE: This strictly does not belong in the Win32 API since it's

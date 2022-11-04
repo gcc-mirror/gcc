@@ -640,6 +640,23 @@
   }
 )
 
+(define_insn "*atomic_load<ALLX:mode>_zext<SD_HSDI:mode>"
+  [(set (match_operand:SD_HSDI 0 "register_operand" "=r")
+	(zero_extend:SD_HSDI
+	  (unspec_volatile:ALLX
+	    [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+	     (match_operand:SI 2 "const_int_operand")]			;; model
+	   UNSPECV_LDA)))]
+  "GET_MODE_SIZE (<SD_HSDI:MODE>mode) > GET_MODE_SIZE (<ALLX:MODE>mode)"
+  {
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
+      return "ldr<ALLX:atomic_sfx>\t%<ALLX:w>0, %1";
+    else
+      return "ldar<ALLX:atomic_sfx>\t%<ALLX:w>0, %1";
+  }
+)
+
 (define_insn "atomic_load<mode>"
   [(set (match_operand:ALLI 0 "register_operand" "=r")
     (unspec_volatile:ALLI

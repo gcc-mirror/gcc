@@ -292,6 +292,6 @@ EXCEPTION_DISPOSITION _GCC_specific_handler (PEXCEPTION_RECORD, void *,
 #define _Unwind_Frames_Extra(frames)
 
 /* Increment frame count.  */
-#define _Unwind_Frames_Increment(context, frames) frames++
+#define _Unwind_Frames_Increment(exc, context, frames) frames++
 
 #endif /* unwind.h */
