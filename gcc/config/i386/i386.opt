@@ -1238,3 +1238,7 @@ CMPCCXADD build-in functions and code generation.
 mamx-fp16
 Target Mask(ISA2_AMX_FP16) Var(ix86_isa_flags2) Save
 Support AMX-FP16 built-in functions and code generation.
+
+mprefetchi
+Target Mask(ISA2_PREFETCHI) Var(ix86_isa_flags2) Save
+Support PREFETCHI built-in functions and code generation.

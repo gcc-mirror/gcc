@@ -7085,6 +7085,11 @@ Enable/disable the generation of the CMPccXADD instructions.
 @cindex @code{target("amx-fp16")} function attribute, x86
 Enable/disable the generation of the AMX-FP16 instructions.
 
+@item prefetchi
+@itemx no-prefetchi
+@cindex @code{target("prefetchi")} function attribute, x86
+Enable/disable the generation of the PREFETCHI instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

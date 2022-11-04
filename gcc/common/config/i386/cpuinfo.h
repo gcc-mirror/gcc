@@ -839,6 +839,8 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_HRESET);
       if (eax & bit_CMPCCXADD)
 	set_feature(FEATURE_CMPCCXADD);
+      if (edx & bit_PREFETCHI)
+	set_feature (FEATURE_PREFETCHI);
       if (avx_usable)
 	{
 	  if (eax & bit_AVXVNNI)
