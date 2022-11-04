@@ -1,3 +1,36 @@
+2022-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/107404
+	* config/i386/i386.md (eliminate reg-reg move by inverting the
+	condition of a cmove #2 peephole2): Check if eliminated move
+	initialized a register, used in the moved instruction.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107121
+	* tree-cfg.cc (verify_gimple_call): Fix a typo in diagnostics,
+	DEFFERED_INIT -> DEFERRED_INIT.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107001
+	* omp-low.cc (lower_omp_taskgroup): Don't add GOMP_RETURN statement
+	at the end.
+	* omp-expand.cc (build_omp_regions_1): Clarify GF_OMP_TARGET_KIND_DATA
+	is not stand-alone directive.  For GIMPLE_OMP_TASKGROUP, also don't
+	update parent.
+	(omp_make_gimple_edges) <case GIMPLE_OMP_TASKGROUP>: Reset
+	cur_region back after new_omp_region.
+
 2022-10-28  Julian Brown  <julian@codesourcery.com>
 
 	Backported from master:

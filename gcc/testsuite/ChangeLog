@@ -1,3 +1,51 @@
+2022-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/107404
+	* g++.target/i386/pr107404.C: New test.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107358
+	* c-c++-common/pr107358.c: New test.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105774
+	* g++.dg/cpp1y/constexpr-105774.C: New test.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107001
+	* c-c++-common/gomp/pr107001.c: New test.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* c-c++-common/gomp/pr106981.c: New test.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106829
+	* g++.dg/gomp/pr106829.C: New test.
+
 2022-10-29  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	Backported from master:

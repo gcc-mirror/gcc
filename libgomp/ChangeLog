@@ -1,3 +1,24 @@
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_create_artificial_team): Fix up handling of invocations
+	from within explicit task.
+	* target.c (GOMP_target_ext): Likewise.
+	* testsuite/libgomp.c/task-7.c: New test.
+	* testsuite/libgomp.c/task-8.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-17.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-18.c: New test.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* testsuite/libgomp.c-c++-common/pr106981.c: New test.
+
 2022-10-28  Julian Brown  <julian@codesourcery.com>
 
 	Backported from master:
