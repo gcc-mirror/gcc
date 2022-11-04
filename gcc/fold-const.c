@@ -3331,9 +3331,6 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		if (compare_address
 		    && (flags & OEP_ADDRESS_OF_SAME_FIELD) == 0)
 		  {
-		    if (TREE_OPERAND (arg0, 2)
-			|| TREE_OPERAND (arg1, 2))
-		      return OP_SAME_WITH_NULL (2);
 		    tree field0 = TREE_OPERAND (arg0, 1);
 		    tree field1 = TREE_OPERAND (arg1, 1);
 
@@ -3844,17 +3841,10 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      if (sflags & OEP_ADDRESS_OF)
 		{
 		  hash_operand (TREE_OPERAND (t, 0), hstate, flags);
-		  if (TREE_OPERAND (t, 2))
-		    hash_operand (TREE_OPERAND (t, 2), hstate,
-				  flags & ~OEP_ADDRESS_OF);
-		  else
-		    {
-		      tree field = TREE_OPERAND (t, 1);
-		      hash_operand (DECL_FIELD_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		      hash_operand (DECL_FIELD_BIT_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		    }
+		  hash_operand (DECL_FIELD_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
+		  hash_operand (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
 		  return;
 		}
 	      break;
