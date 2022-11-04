@@ -3487,7 +3487,7 @@ verify_gimple_call (gcall *stmt)
       if (is_constant_size_arg0 && is_constant_size_lhs)
 	if (maybe_ne (size_from_arg0, size_from_lhs))
 	  {
-	    error ("%<DEFFERED_INIT%> calls should have same "
+	    error ("%<DEFERRED_INIT%> calls should have same "
 		   "constant size for the first argument and LHS");
 	    return true;
 	  }

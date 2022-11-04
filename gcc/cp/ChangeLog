@@ -1,3 +1,22 @@
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105774
+	* constexpr.cc (cxx_eval_increment_expression): For signed types
+	that promote to int, evaluate PLUS_EXPR or MINUS_EXPR in int type.
+
+2022-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106829
+	* semantics.cc (finish_omp_target_clauses): If current_function_decl
+	isn't a nonstatic member function, don't set data.current_object to
+	non-NULL.
+
 2022-10-13  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
