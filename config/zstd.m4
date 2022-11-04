@@ -12,7 +12,7 @@ AC_ARG_WITH(zstd,
   [], [with_zstd=auto])
 
 AS_IF([test "$with_zstd" != no],
-  [PKG_CHECK_MODULES(ZSTD, [libzstd], [
+  [PKG_CHECK_MODULES(ZSTD, [libzstd >= 1.4.0], [
     AC_DEFINE(HAVE_ZSTD, 1, [Define to 1 if zstd is enabled.])
   ], [
     if test "$with_zstd" = yes; then
