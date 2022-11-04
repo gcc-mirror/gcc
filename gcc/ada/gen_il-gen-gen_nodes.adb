@@ -441,6 +441,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Has_Wide_Character, Flag),
         Sm (Has_Wide_Wide_Character, Flag)));
 
+   Cc (N_Interpolated_String_Literal, N_Numeric_Or_String_Literal,
+       (Sy (Expressions, List_Id, Default_No_List)));
+
    Cc (N_Explicit_Dereference, N_Subexpr,
        (Sy (Prefix, Node_Id),
         Sm (Actual_Designated_Subtype, Node_Id),

@@ -1077,8 +1077,20 @@ package body Scng is
 
          String_Start := Scan_Ptr;
 
-         Delimiter := Source (Scan_Ptr);
-         Accumulate_Checksum (Delimiter);
+         --  Continuation of interpolated string literal
+
+         if Inside_Interpolated_String_Literal
+           and then Prev_Token = Tok_Right_Curly_Bracket
+         then
+            Scan_Ptr := Scan_Ptr - 1;
+            Delimiter := '"';
+
+         --  Common case
+
+         else
+            Delimiter := Source (Scan_Ptr);
+            Accumulate_Checksum (Delimiter);
+         end if;
 
          Start_String;
          Wide_Character_Found      := False;
@@ -1094,6 +1106,15 @@ package body Scng is
                Accumulate_Checksum (C);
                Scan_Ptr := Scan_Ptr + 1;
                exit when Source (Scan_Ptr) /= Delimiter;
+
+               --  Unlike normal string literals, doubled delimiter has no
+               --  special significance in interpolated string literals.
+
+               if Inside_Interpolated_String_Literal then
+                  Error_Msg_S
+                    ("double quotations not allowed in interpolated string");
+               end if;
+
                Code := Get_Char_Code (C);
                Accumulate_Checksum (C);
                Scan_Ptr := Scan_Ptr + 1;
@@ -1104,6 +1125,40 @@ package body Scng is
                     ("quote not allowed in percent delimited string");
                   Code := Get_Char_Code (C);
                   Scan_Ptr := Scan_Ptr + 1;
+
+               --  Found interpolated expression
+
+               elsif Inside_Interpolated_String_Literal
+                 and then C = '{'
+               then
+                  Accumulate_Checksum (C);
+                  exit;
+
+               --  Escaped character in interpolated string literal
+
+               elsif Inside_Interpolated_String_Literal
+                 and then C = '\'
+               then
+                  Accumulate_Checksum (C);
+                  Scan_Ptr := Scan_Ptr + 1;
+                  C := Source (Scan_Ptr);
+                  Accumulate_Checksum (C);
+                  Scan_Ptr := Scan_Ptr + 1;
+
+                  case C is
+                     when 'a' => Code := Get_Char_Code (ASCII.BEL);
+                     when 'b' => Code := Get_Char_Code (ASCII.BS);
+                     when 'f' => Code := Get_Char_Code (ASCII.FF);
+                     when 'n' => Code := Get_Char_Code (ASCII.LF);
+                     when 'r' => Code := Get_Char_Code (ASCII.CR);
+                     when 't' => Code := Get_Char_Code (ASCII.HT);
+                     when 'v' => Code := Get_Char_Code (ASCII.VT);
+                     when '0' => Code := Get_Char_Code (ASCII.NUL);
+                     when '\' | '"' | '{' | '}'
+                              => Code := Get_Char_Code (C);
+                     when others =>
+                        Error_Msg_S ("illegal escaped character");
+                  end case;
 
                elsif Start_Of_Wide_Character then
                   Wptr := Scan_Ptr;
@@ -1233,6 +1288,29 @@ package body Scng is
       Prev_Token := Token;
       Prev_Token_Ptr := Token_Ptr;
       Token_Name := Error_Name;
+
+      if Inside_Interpolated_String_Literal
+        and then Prev_Token = Tok_Right_Curly_Bracket
+      then
+         --  Consecutive interpolated expressions
+
+         if Source (Scan_Ptr) = '{' then
+            null;
+
+         --  Ending delimiter placed immediately after interpolated expression
+
+         elsif Source (Scan_Ptr) = '"' then
+            Scan_Ptr := Scan_Ptr + 1;
+            Prev_Token := Tok_String_Literal;
+
+         --  String literal placed after interpolated expression
+
+         else
+            Slit;
+            Post_Scan;
+            return;
+         end if;
+      end if;
 
       --  The following loop runs more than once only if a format effector
       --  (tab, vertical tab, form  feed, line feed, carriage return) is
@@ -1448,12 +1526,20 @@ package body Scng is
                return;
             end if;
 
-         --  Left brace
+         --  Left curly bracket, treated as right paren but proper delimiter
+         --  of interpolated string literals when all extensions are allowed.
 
          when '{' =>
-            Error_Msg_S ("illegal character, replaced by ""(""");
-            Scan_Ptr := Scan_Ptr + 1;
-            Token := Tok_Left_Paren;
+            if All_Extensions_Allowed then
+               Scan_Ptr := Scan_Ptr + 1;
+               Token := Tok_Left_Curly_Bracket;
+
+            else
+               Error_Msg_S ("illegal character, replaced by ""(""");
+               Scan_Ptr := Scan_Ptr + 1;
+               Token := Tok_Left_Paren;
+            end if;
+
             return;
 
          --  Comma
@@ -1863,9 +1949,24 @@ package body Scng is
          --  Right bracket or right brace, treated as right paren but proper
          --  aggregate delimiter in Ada 2022.
 
-         when ']' | '}' =>
+         when ']' =>
             if Ada_Version >= Ada_2022 then
                Token := Tok_Right_Bracket;
+
+            else
+               Error_Msg_S ("illegal character, replaced by "")""");
+               Token := Tok_Right_Paren;
+            end if;
+
+            Scan_Ptr := Scan_Ptr + 1;
+            return;
+
+         --  Right curly bracket, treated as right paren but proper delimiter
+         --  of interpolated string literals when all extensions are allowed.
+
+         when '}' =>
+            if All_Extensions_Allowed then
+               Token := Tok_Right_Curly_Bracket;
 
             else
                Error_Msg_S ("illegal character, replaced by "")""");
@@ -2024,6 +2125,16 @@ package body Scng is
          --  Lower case letters
 
          when 'a' .. 'z' =>
+            if All_Extensions_Allowed
+              and then Source (Scan_Ptr) = 'f'
+              and then Source (Scan_Ptr + 1) = '"'
+            then
+               Scan_Ptr := Scan_Ptr + 1;
+               Accumulate_Checksum (Source (Scan_Ptr));
+               Token := Tok_Left_Interpolated_String;
+               return;
+            end if;
+
             Name_Len := 1;
             Underline_Found := False;
             Name_Buffer (1) := Source (Scan_Ptr);
@@ -2034,6 +2145,17 @@ package body Scng is
          --  Upper case letters
 
          when 'A' .. 'Z' =>
+            if All_Extensions_Allowed
+              and then Source (Scan_Ptr) = 'F'
+              and then Source (Scan_Ptr + 1) = '"'
+            then
+               Error_Msg_S
+                 ("delimiter of interpolated string must be in lowercase");
+               Scan_Ptr := Scan_Ptr + 1;
+               Token := Tok_Left_Interpolated_String;
+               return;
+            end if;
+
             Token_Contains_Uppercase := True;
             Name_Len := 1;
             Underline_Found := False;

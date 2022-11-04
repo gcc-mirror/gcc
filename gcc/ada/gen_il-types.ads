@@ -250,6 +250,7 @@ package Gen_IL.Types is
       N_Expression_With_Actions,
       N_If_Expression,
       N_Indexed_Component,
+      N_Interpolated_String_Literal,
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,

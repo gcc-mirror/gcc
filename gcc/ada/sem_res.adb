@@ -212,6 +212,9 @@ package body Sem_Res is
    procedure Resolve_Generalized_Indexing      (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Indexed_Component         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Integer_Literal           (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Interpolated_String_Literal
+     (N   : Node_Id;
+      Typ : Entity_Id);
    procedure Resolve_Logical_Op                (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Membership_Op             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Null                      (N : Node_Id; Typ : Entity_Id);
@@ -449,9 +452,10 @@ package body Sem_Res is
       Loc  : constant Source_Ptr := Sloc (N);
       Literal_Aspect_Map :
         constant array (N_Numeric_Or_String_Literal) of Aspect_Id :=
-          (N_Integer_Literal => Aspect_Integer_Literal,
-           N_Real_Literal    => Aspect_Real_Literal,
-           N_String_Literal  => Aspect_String_Literal);
+          (N_Integer_Literal             => Aspect_Integer_Literal,
+           N_Interpolated_String_Literal => No_Aspect,
+           N_Real_Literal                => Aspect_Real_Literal,
+           N_String_Literal              => Aspect_String_Literal);
 
       Named_Number_Aspect_Map : constant array (Named_Kind) of Aspect_Id :=
         (E_Named_Integer => Aspect_Integer_Literal,
@@ -3436,6 +3440,9 @@ package body Sem_Res is
 
             when N_String_Literal =>
                Resolve_String_Literal            (N, Ctx_Type);
+
+            when N_Interpolated_String_Literal =>
+               Resolve_Interpolated_String_Literal (N, Ctx_Type);
 
             when N_Target_Name =>
                Resolve_Target_Name               (N, Ctx_Type);
@@ -9671,6 +9678,35 @@ package body Sem_Res is
       Set_Etype (N, Typ);
       Eval_Integer_Literal (N);
    end Resolve_Integer_Literal;
+
+   -----------------------------------------
+   -- Resolve_Interpolated_String_Literal --
+   -----------------------------------------
+
+   procedure Resolve_Interpolated_String_Literal (N : Node_Id; Typ : Entity_Id)
+   is
+      Str_Elem : Node_Id;
+
+   begin
+      Str_Elem := First (Expressions (N));
+      pragma Assert (Nkind (Str_Elem) = N_String_Literal);
+
+      while Present (Str_Elem) loop
+
+         --  Resolve string elements using the context type; for interpolated
+         --  expressions there is no need to check if their type has a suitable
+         --  image function because under Ada 2022 all the types have such
+         --  function available.
+
+         if Etype (Str_Elem) = Any_String then
+            Resolve (Str_Elem, Typ);
+         end if;
+
+         Next (Str_Elem);
+      end loop;
+
+      Set_Etype (N, Typ);
+   end Resolve_Interpolated_String_Literal;
 
    --------------------------------
    -- Resolve_Intrinsic_Operator --

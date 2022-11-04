@@ -84,12 +84,19 @@ package Scans is
       --  Ada 2022 introduces square brackets as delimiters for array and
       --  container aggregates.
 
-      Tok_Raise,           -- RAISE
+      --  The left delimiter token of interpolated strings, and tokens { and }
+      --  of interpolated expressions are currently placed in no category since
+      --  they don't fit well in the existing categories.
+
+      Tok_Left_Interpolated_String, -- f"
+      Tok_Left_Curly_Bracket,       -- {
+      Tok_Raise,                    -- RAISE
+      Tok_Right_Curly_Bracket,      -- }
 
       Tok_Dot,             -- .            Namext
       Tok_Apostrophe,      -- '            Namext
 
-      Tok_Left_Bracket,    -- [            Namest
+      Tok_Left_Bracket,    -- [            Namext
       Tok_Left_Paren,      -- (            Namext, Consk
 
       Tok_Delta,           -- DELTA        Atkwd, Sterm, Consk
@@ -474,6 +481,9 @@ package Scans is
    --  True while parsing the argument of a Depends or Refined_Depends pragma
    --  or aspect. Used to allow/require nonstandard style rules for =>+ with
    --  -gnatyt.
+
+   Inside_Interpolated_String_Literal : Boolean := False;
+   --  True while parsing an interpolated string literal
 
    Inside_If_Expression : Nat := 0;
    --  This is a counter that is set non-zero while scanning out an if

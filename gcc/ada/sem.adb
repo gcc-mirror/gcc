@@ -557,6 +557,9 @@ package body Sem is
          when N_String_Literal =>
             Analyze_String_Literal (N);
 
+         when N_Interpolated_String_Literal =>
+            Analyze_Interpolated_String_Literal (N);
+
          when N_Subprogram_Body =>
             Analyze_Subprogram_Body (N);
 

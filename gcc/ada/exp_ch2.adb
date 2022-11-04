@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Debug;          use Debug;
@@ -34,9 +35,11 @@ with Exp_Smem;       use Exp_Smem;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Namet;          use Namet;
+with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
 with Output;         use Output;
+with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Res;        use Sem_Res;
@@ -47,6 +50,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Snames;         use Snames;
+with Stand;
 with Tbuild;         use Tbuild;
 
 package body Exp_Ch2 is
@@ -710,5 +714,118 @@ package body Exp_Ch2 is
       Reset_Analyzed_Flags (N);
       Analyze_And_Resolve (N, T);
    end Expand_Renaming;
+
+   ------------------------------------------
+   -- Expand_N_Interpolated_String_Literal --
+   ------------------------------------------
+
+   procedure Expand_N_Interpolated_String_Literal (N : Node_Id) is
+
+      function Build_Interpolated_String_Image (N : Node_Id) return Node_Id;
+      --  Build the following Expression_With_Actions node:
+      --     do
+      --        Sink : Buffer;
+      --        [ Set_Trim_Leading_Spaces (Sink); ]
+      --        Type'Put_Image (Sink, X);
+      --        { [ Set_Trim_Leading_Spaces (Sink); ]
+      --          Type'Put_Image (Sink, X); }
+      --        Result : constant String := Get (Sink);
+      --        Destroy (Sink);
+      --     in Result end
+
+      -------------------------------------
+      -- Build_Interpolated_String_Image --
+      -------------------------------------
+
+      function Build_Interpolated_String_Image (N : Node_Id) return Node_Id
+      is
+         Loc           : constant Source_Ptr := Sloc (N);
+         Sink_Entity   : constant Entity_Id  := Make_Temporary (Loc, 'S');
+         Sink_Decl     : constant Node_Id :=
+                           Make_Object_Declaration (Loc,
+                             Defining_Identifier => Sink_Entity,
+                             Object_Definition =>
+                               New_Occurrence_Of (RTE (RE_Buffer_Type), Loc));
+
+         Get_Id        : constant RE_Id :=
+                           (if Etype (N) = Stand.Standard_String then
+                               RE_Get
+                            elsif Etype (N) = Stand.Standard_Wide_String then
+                               RE_Wide_Get
+                            else
+                               RE_Wide_Wide_Get);
+
+         Result_Entity : constant Entity_Id := Make_Temporary (Loc, 'R');
+         Result_Decl   : constant Node_Id :=
+                           Make_Object_Declaration (Loc,
+                             Defining_Identifier => Result_Entity,
+                             Object_Definition =>
+                               New_Occurrence_Of (Etype (N), Loc),
+                             Expression =>
+                               Make_Function_Call (Loc,
+                                 Name => New_Occurrence_Of (RTE (Get_Id), Loc),
+                                 Parameter_Associations => New_List (
+                                   New_Occurrence_Of (Sink_Entity, Loc))));
+
+         Actions  : constant List_Id := New_List;
+         Elem_Typ : Entity_Id;
+         Str_Elem : Node_Id;
+
+      begin
+         pragma Assert (Etype (N) /= Stand.Any_String);
+
+         Append_To (Actions, Sink_Decl);
+
+         Str_Elem := First (Expressions (N));
+         while Present (Str_Elem) loop
+            Elem_Typ := Etype (Str_Elem);
+
+            --  If the type is numeric or has a specified Integer_Literal or
+            --  Real_Literal aspect, then prior to invoking Put_Image, the
+            --  Trim_Leading_Spaces flag is set on the text buffer.
+
+            if Is_Numeric_Type (Underlying_Type (Elem_Typ))
+              or else Has_Aspect (Elem_Typ, Aspect_Integer_Literal)
+              or else Has_Aspect (Elem_Typ, Aspect_Real_Literal)
+            then
+               Append_To (Actions,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   =>
+                     New_Occurrence_Of
+                       (RTE (RE_Set_Trim_Leading_Spaces), Loc),
+                   Parameter_Associations => New_List (
+                     Convert_To (RTE (RE_Root_Buffer_Type),
+                       New_Occurrence_Of (Sink_Entity, Loc)),
+                     New_Occurrence_Of (Stand.Standard_True, Loc))));
+            end if;
+
+            Append_To (Actions,
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Elem_Typ, Loc),
+                Attribute_Name => Name_Put_Image,
+                Expressions    => New_List (
+                  New_Occurrence_Of (Sink_Entity, Loc),
+                  Duplicate_Subexpr (Str_Elem))));
+
+            Next (Str_Elem);
+         end loop;
+
+         Append_To (Actions, Result_Decl);
+
+         return Make_Expression_With_Actions (Loc,
+           Actions    => Actions,
+           Expression => New_Occurrence_Of (Result_Entity, Loc));
+      end Build_Interpolated_String_Image;
+
+      --  Local variables
+
+      Typ : constant Entity_Id := Etype (N);
+
+   --  Start of processing for Expand_N_Interpolated_String_Literal
+
+   begin
+      Rewrite (N, Build_Interpolated_String_Image (N));
+      Analyze_And_Resolve (N, Typ);
+   end Expand_N_Interpolated_String_Literal;
 
 end Exp_Ch2;

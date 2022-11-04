@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Characters.Handling;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.UTF_Encoding.Conversions;
 with Ada.Strings.UTF_Encoding.Strings;
@@ -104,9 +105,15 @@ package body Ada.Strings.Text_Buffers.Unbounded is
             --  forget to add corresponding assignment statement below.
             Dummy : array (1 .. 0) of Buffer_Type :=
               [others =>
-                 (Indentation  => <>, Indent_Pending => <>, UTF_8_Length => <>,
-                  UTF_8_Column => <>, All_7_Bits => <>, All_8_Bits => <>,
-                  List         => <>, Last_Used => <>)];
+                 (Indentation               => <>,
+                  Indent_Pending            => <>,
+                  UTF_8_Length              => <>,
+                  UTF_8_Column              => <>,
+                  All_7_Bits                => <>,
+                  All_8_Bits                => <>,
+                  Trim_Leading_White_Spaces => <>,
+                  List                      => <>,
+                  Last_Used                 => <>)];
          begin
             Buffer.Indentation    := Defaulted.Indentation;
             Buffer.Indent_Pending := Defaulted.Indent_Pending;
@@ -140,28 +147,41 @@ package body Ada.Strings.Text_Buffers.Unbounded is
       procedure Buffer_Type_Implementation (Buffer : in out Buffer_Type) is
       begin
          for Char of Item loop
-            Buffer.All_7_Bits := @ and then Character'Pos (Char) < 128;
 
-            if Buffer.Last_Used = Buffer.List.Current_Chunk.Length then
-               --  Current chunk is full; allocate a new one with doubled size
+            --  The Trim_Leading_Space flag, which can be set prior to calling
+            --  any of the Put operations, which will cause white space
+            --  characters to be discarded by any Put operation until a
+            --  non-white-space character is encountered, at which point
+            --  the flag will be reset.
 
-               declare
-                  Cc     : Chunk renames Buffer.List.Current_Chunk.all;
-                  Max    : constant Positive := Integer'Last / 2;
-                  Length : constant Natural  :=
-                    Integer'Min (Max, 2 * Cc.Length);
-               begin
-                  pragma Assert (Cc.Next = null);
-                  Cc.Next                   := new Chunk (Length => Length);
-                  Buffer.List.Current_Chunk := Cc.Next;
-                  Buffer.Last_Used          := 0;
-               end;
+            if not Buffer.Trim_Leading_White_Spaces
+              or else not Characters.Handling.Is_Space (Char)
+            then
+               Buffer.All_7_Bits := @ and then Character'Pos (Char) < 128;
+               Buffer.Trim_Leading_White_Spaces := False;
+
+               if Buffer.Last_Used = Buffer.List.Current_Chunk.Length then
+                  --  Current chunk is full; allocate a new one with doubled
+                  --  size
+
+                  declare
+                     Cc     : Chunk renames Buffer.List.Current_Chunk.all;
+                     Max    : constant Positive := Integer'Last / 2;
+                     Length : constant Natural  :=
+                                Integer'Min (Max, 2 * Cc.Length);
+                  begin
+                     pragma Assert (Cc.Next = null);
+                     Cc.Next                   := new Chunk (Length => Length);
+                     Buffer.List.Current_Chunk := Cc.Next;
+                     Buffer.Last_Used          := 0;
+                  end;
+               end if;
+
+               Buffer.UTF_8_Length                                := @ + 1;
+               Buffer.UTF_8_Column                                := @ + 1;
+               Buffer.Last_Used                                   := @ + 1;
+               Buffer.List.Current_Chunk.Chars (Buffer.Last_Used) := Char;
             end if;
-
-            Buffer.UTF_8_Length                                := @ + 1;
-            Buffer.UTF_8_Column                                := @ + 1;
-            Buffer.Last_Used                                   := @ + 1;
-            Buffer.List.Current_Chunk.Chars (Buffer.Last_Used) := Char;
          end loop;
       end Buffer_Type_Implementation;
    begin

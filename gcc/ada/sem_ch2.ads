@@ -27,11 +27,12 @@ with Types; use Types;
 
 package Sem_Ch2 is
 
-   procedure Analyze_Character_Literal (N : Node_Id);
-   procedure Analyze_Identifier        (N : Node_Id);
-   procedure Analyze_Integer_Literal   (N : Node_Id);
-   procedure Analyze_Real_Literal      (N : Node_Id);
-   procedure Analyze_String_Literal    (N : Node_Id);
+   procedure Analyze_Character_Literal           (N : Node_Id);
+   procedure Analyze_Identifier                  (N : Node_Id);
+   procedure Analyze_Integer_Literal             (N : Node_Id);
+   procedure Analyze_Interpolated_String_Literal (N : Node_Id);
+   procedure Analyze_Real_Literal                (N : Node_Id);
+   procedure Analyze_String_Literal              (N : Node_Id);
 
 private
    pragma Inline (Analyze_Character_Literal);

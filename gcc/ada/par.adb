@@ -48,6 +48,7 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
+with Stringt;        use Stringt;
 with Style;
 with Stylesw;        use Stylesw;
 with Table;
@@ -652,6 +653,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  if either this is the first occurrence of misuse of this identifier,
       --  or if Force_Msg is True.
 
+      function P_Interpolated_String_Literal return Node_Id;
+
       function P_Pragmas_Opt return List_Id;
       --  This function scans for a sequence of pragmas in other than a
       --  declaration sequence or statement sequence context. All pragmas
@@ -1238,6 +1241,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       procedure T_Range;
       procedure T_Record;
       procedure T_Right_Bracket;
+      procedure T_Right_Curly_Bracket;
       procedure T_Right_Paren;
       procedure T_Semicolon;
       procedure T_Then;

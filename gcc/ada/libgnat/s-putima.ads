@@ -84,10 +84,20 @@ package System.Put_Images with Pure is
      (S : in out Sink'Class; X : Thin_Pointer);
    --  For access-to-protected-subprogram types
 
-   procedure Put_Image_String (S : in out Sink'Class; X : String);
-   procedure Put_Image_Wide_String (S : in out Sink'Class; X : Wide_String);
+   procedure Put_Image_String
+     (S               : in out Sink'Class;
+      X               : String;
+      With_Delimiters : Boolean := True);
+
+   procedure Put_Image_Wide_String
+     (S               : in out Sink'Class;
+      X               : Wide_String;
+      With_Delimiters : Boolean := True);
+
    procedure Put_Image_Wide_Wide_String
-     (S : in out Sink'Class; X : Wide_Wide_String);
+     (S               : in out Sink'Class;
+      X               : Wide_Wide_String;
+      With_Delimiters : Boolean := True);
 
    procedure Array_Before (S : in out Sink'Class);
    procedure Array_Between (S : in out Sink'Class);

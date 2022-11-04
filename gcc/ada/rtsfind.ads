@@ -605,6 +605,7 @@ package Rtsfind is
 
      RE_Root_Buffer_Type,                -- Ada.Strings.Text_Buffers
      RE_Put_UTF_8,                       -- Ada.Strings.Text_Buffers
+     RE_Set_Trim_Leading_Spaces,         -- Ada.Strings.Text_Buffers
      RE_Wide_Wide_Put,                   -- Ada.Strings.Text_Buffers
 
      RE_Buffer_Type,                     -- Ada.Strings.Text_Buffers.Unbounded
@@ -2243,6 +2244,7 @@ package Rtsfind is
 
      RE_Root_Buffer_Type                 => Ada_Strings_Text_Buffers,
      RE_Put_UTF_8                        => Ada_Strings_Text_Buffers,
+     RE_Set_Trim_Leading_Spaces          => Ada_Strings_Text_Buffers,
      RE_Wide_Wide_Put                    => Ada_Strings_Text_Buffers,
 
      RE_Buffer_Type                      => Ada_Strings_Text_Buffers_Unbounded,
