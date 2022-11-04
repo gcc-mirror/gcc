@@ -1,3 +1,10 @@
+2022-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Partial Revert:
+	2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (resolve_omp_clauses):Accept noncontiguous arrays.
+
 2022-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Ensure DT struct-comp with

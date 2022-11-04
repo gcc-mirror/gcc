@@ -1,3 +1,8 @@
+2022-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-13.f90: Remove strides to match
+	mainline (GCC 13) version.
+
 2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
