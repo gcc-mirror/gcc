@@ -961,7 +961,7 @@ get_source_text_between (location_t start, location_t end)
     expand_location_to_spelling_point (end, LOCATION_ASPECT_FINISH);
 
   /* If the locations are in different files or the end comes before the
-     start, abort and return nothing.  */
+     start, give up and return nothing.  */
   if (!expstart.file || !expend.file)
     return NULL;
   if (strcmp (expstart.file, expend.file) != 0)
@@ -971,6 +971,9 @@ get_source_text_between (location_t start, location_t end)
   if (expstart.line == expend.line
       && expstart.column > expend.column)
     return NULL;
+  /* These aren't real column numbers, give up.  */
+  if (expstart.column == 0 || expend.column == 0)
+    return NULL;
 
   /* For a single line we need to trim both edges.  */
   if (expstart.line == expend.line)
@@ -979,10 +982,10 @@ get_source_text_between (location_t start, location_t end)
       if (line.length () < 1)
 	return NULL;
       int s = expstart.column - 1;
-      int l = expend.column - s;
+      int len = expend.column - s;
       if (line.length () < (size_t)expend.column)
 	return NULL;
-      return line.subspan (s, l).xstrdup ();
+      return line.subspan (s, len).xstrdup ();
     }
 
   struct obstack buf_obstack;
@@ -990,30 +993,43 @@ get_source_text_between (location_t start, location_t end)
 
   /* Loop through all lines in the range and append each to buf; may trim
      parts of the start and end lines off depending on column values.  */
-  for (int l = expstart.line; l <= expend.line; ++l)
+  for (int lnum = expstart.line; lnum <= expend.line; ++lnum)
     {
-      char_span line = location_get_source_line (expstart.file, l);
-      if (line.length () < 1 && (l != expstart.line && l != expend.line))
+      char_span line = location_get_source_line (expstart.file, lnum);
+      if (line.length () < 1 && (lnum != expstart.line && lnum != expend.line))
 	continue;
 
       /* For the first line in the range, only start at expstart.column */
-      if (l == expstart.line)
+      if (lnum == expstart.line)
 	{
-	  if (expstart.column == 0)
+	  unsigned off = expstart.column - 1;
+	  if (line.length () < off)
 	    return NULL;
-	  if (line.length () < (size_t)expstart.column - 1)
-	    return NULL;
-	  line = line.subspan (expstart.column - 1,
-			       line.length() - expstart.column + 1);
+	  line = line.subspan (off, line.length() - off);
 	}
       /* For the last line, don't go past expend.column */
-      else if (l == expend.line)
+      else if (lnum == expend.line)
 	{
 	  if (line.length () < (size_t)expend.column)
 	    return NULL;
 	  line = line.subspan (0, expend.column);
 	}
 
+      /* Combine spaces at the beginning of later lines.  */
+      if (lnum > expstart.line)
+	{
+	  unsigned off;
+	  for (off = 0; off < line.length(); ++off)
+	    if (line[off] != ' ' && line[off] != '\t')
+	      break;
+	  if (off > 0)
+	    {
+	      obstack_1grow (&buf_obstack, ' ');
+	      line = line.subspan (off, line.length() - off);
+	    }
+	}
+
+      /* This does not include any trailing newlines.  */
       obstack_grow (&buf_obstack, line.get_buffer (), line.length ());
     }
 
@@ -1021,7 +1037,6 @@ get_source_text_between (location_t start, location_t end)
   obstack_1grow (&buf_obstack, 0);
   const char *buf = (const char *) obstack_finish (&buf_obstack);
 
-  /* TODO should we collapse/trim newlines and runs of spaces?  */
   return xstrdup (buf);
 }
 
