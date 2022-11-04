@@ -949,8 +949,9 @@ location_get_source_line (const char *file_path, int line)
   return char_span (buffer, len);
 }
 
-/* Return a copy of the source text between two locations.  The caller is
-   responsible for freeing the return value.  */
+/* Return a NUL-terminated copy of the source text between two locations, or
+   NULL if the arguments are invalid.  The caller is responsible for freeing
+   the return value.  */
 
 char *
 get_source_text_between (location_t start, location_t end)
