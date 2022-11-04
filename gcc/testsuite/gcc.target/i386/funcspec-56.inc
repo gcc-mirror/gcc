@@ -179,6 +179,7 @@ extern void test_arch_silvermont (void)		__attribute__((__target__("arch=silverm
 extern void test_arch_goldmont (void)		__attribute__((__target__("arch=goldmont")));
 extern void test_arch_goldmont_plus (void)	__attribute__((__target__("arch=goldmont-plus")));
 extern void test_arch_tremont (void)		__attribute__((__target__("arch=tremont")));
+extern void test_arch_sierraforest (void)       __attribute__((__target__("arch=sierraforest")));
 extern void test_arch_knl (void)		__attribute__((__target__("arch=knl")));
 extern void test_arch_knm (void)		__attribute__((__target__("arch=knm")));
 extern void test_arch_skylake (void)		__attribute__((__target__("arch=skylake")));

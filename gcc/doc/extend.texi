@@ -21965,6 +21965,9 @@ Intel Atom Goldmont Plus CPU.
 @item tremont
 Intel Atom Tremont CPU.
 
+@item sierraforest
+Intel Atom Sierra Forest CPU.
+
 @item knl
 Intel Knights Landing CPU.
 
