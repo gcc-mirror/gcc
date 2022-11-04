@@ -6232,6 +6232,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   bool check_list_ctor = false;
   bool check_converting = false;
   unification_kind_t strict;
+  tree ne_fns = NULL_TREE;
 
   if (!fns)
     return;
@@ -6267,6 +6268,32 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
       strict = DEDUCE_CALL;
       ctype = conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE;
+    }
+
+  /* P2468: Check if operator== is a rewrite target with first operand
+     (*args)[0]; for now just do the lookups.  */
+  if ((flags & (LOOKUP_REWRITTEN | LOOKUP_REVERSED))
+      && DECL_OVERLOADED_OPERATOR_IS (fn, EQ_EXPR))
+    {
+      tree ne_name = ovl_op_identifier (false, NE_EXPR);
+      if (DECL_CLASS_SCOPE_P (fn))
+	{
+	  ne_fns = lookup_fnfields (TREE_TYPE ((*args)[0]), ne_name,
+				    1, tf_none);
+	  if (ne_fns == error_mark_node || ne_fns == NULL_TREE)
+	    ne_fns = NULL_TREE;
+	  else
+	    ne_fns = BASELINK_FUNCTIONS (ne_fns);
+	}
+      else
+	{
+	  tree context = decl_namespace_context (fn);
+	  ne_fns = lookup_qualified_name (context, ne_name, LOOK_want::NORMAL,
+					  /*complain*/false);
+	  if (ne_fns == error_mark_node
+	      || !is_overloaded_fn (ne_fns))
+	    ne_fns = NULL_TREE;
+	}
     }
 
   if (first_arg)
@@ -6342,6 +6369,27 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	  if (same_type_p (TREE_VALUE (parmlist),
 			   TREE_VALUE (TREE_CHAIN (parmlist))))
+	    continue;
+	}
+
+      /* When considering reversed operator==, if there's a corresponding
+	 operator!= in the same scope, it's not a rewrite target.  */
+      if (ne_fns)
+	{
+	  bool found = false;
+	  for (lkp_iterator ne (ne_fns); !found && ne; ++ne)
+	    if (0 && !ne.using_p ()
+		&& DECL_NAMESPACE_SCOPE_P (fn)
+		&& DECL_CONTEXT (*ne) != DECL_CONTEXT (fn))
+	      /* ??? This kludge excludes inline namespace members for the H
+		 test in spaceship-eq15.C, but I don't see why we would want
+		 that behavior.  Asked Core 2022-11-04.  Disabling for now.  */;
+	    else if (fns_correspond (fn, *ne))
+	      {
+		found = true;
+		break;
+	      }
+	  if (found)
 	    continue;
 	}
 
@@ -6917,10 +6965,12 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		  gcc_checking_assert (cand->reversed ());
 		  gcc_fallthrough ();
 		case NE_EXPR:
+		  if (result == error_mark_node)
+		    ;
 		  /* If a rewritten operator== candidate is selected by
 		     overload resolution for an operator @, its return type
 		     shall be cv bool.... */
-		  if (TREE_CODE (TREE_TYPE (result)) != BOOLEAN_TYPE)
+		  else if (TREE_CODE (TREE_TYPE (result)) != BOOLEAN_TYPE)
 		    {
 		      if (complain & tf_error)
 			{
@@ -12488,10 +12538,53 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  if (winner && comp != winner)
 	    {
 	      /* Ambiguity between normal and reversed comparison operators
-		 with the same parameter types; prefer the normal one.  */
-	      if ((cand1->reversed () != cand2->reversed ())
+		 with the same parameter types.  P2468 decided not to go with
+		 this approach to resolving the ambiguity, so pedwarn.  */
+	      if ((complain & tf_warning_or_error)
+		  && (cand1->reversed () != cand2->reversed ())
 		  && cand_parms_match (cand1, cand2))
-		return cand1->reversed () ? -1 : 1;
+		{
+		  struct z_candidate *w, *l;
+		  if (cand2->reversed ())
+		    winner = 1, w = cand1, l = cand2;
+		  else
+		    winner = -1, w = cand2, l = cand1;
+		  if (warn)
+		    {
+		      auto_diagnostic_group d;
+		      if (pedwarn (input_location, 0,
+				   "C++20 says that these are ambiguous, "
+				   "even though the second is reversed:"))
+			{
+			  print_z_candidate (input_location,
+					     N_("candidate 1:"), w);
+			  print_z_candidate (input_location,
+					     N_("candidate 2:"), l);
+			  if (w->fn == l->fn
+			      && DECL_NONSTATIC_MEMBER_FUNCTION_P (w->fn)
+			      && (type_memfn_quals (TREE_TYPE (w->fn))
+				  & TYPE_QUAL_CONST) == 0)
+			    {
+			      /* Suggest adding const to
+				 struct A { bool operator==(const A&); }; */
+			      tree parmtype
+				= FUNCTION_FIRST_USER_PARMTYPE (w->fn);
+			      parmtype = TREE_VALUE (parmtype);
+			      if (TYPE_REF_P (parmtype)
+				  && TYPE_READONLY (TREE_TYPE (parmtype))
+				  && (same_type_ignoring_top_level_qualifiers_p
+				      (TREE_TYPE (parmtype),
+				       DECL_CONTEXT (w->fn))))
+				inform (DECL_SOURCE_LOCATION (w->fn),
+					"try making the operator a %<const%> "
+					"member function");
+			    }
+			}
+		    }
+		  else
+		    add_warning (w, l);
+		  return winner;
+		}
 
 	      winner = 0;
 	      goto tweak;
@@ -12880,7 +12973,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 {
   struct z_candidate *champ = candidates, *challenger;
   int fate;
-  int champ_compared_to_predecessor = 0;
+  struct z_candidate *champ_compared_to_predecessor = nullptr;
 
   /* Walk through the list once, comparing each current champ to the next
      candidate, knocking out a candidate or two with each comparison.  */
@@ -12897,12 +12990,12 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 	      champ = challenger->next;
 	      if (champ == 0)
 		return NULL;
-	      champ_compared_to_predecessor = 0;
+	      champ_compared_to_predecessor = nullptr;
 	    }
 	  else
 	    {
+	      champ_compared_to_predecessor = champ;
 	      champ = challenger;
-	      champ_compared_to_predecessor = 1;
 	    }
 
 	  challenger = champ->next;
@@ -12914,7 +13007,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 
   for (challenger = candidates;
        challenger != champ
-	 && !(champ_compared_to_predecessor && challenger->next == champ);
+	 && challenger != champ_compared_to_predecessor;
        challenger = challenger->next)
     {
       fate = joust (champ, challenger, 0, complain);
