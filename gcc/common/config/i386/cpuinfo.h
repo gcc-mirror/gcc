@@ -855,6 +855,11 @@ get_available_features (struct __processor_model *cpu_model,
 	  if (eax & bit_AVX512BF16)
 	    set_feature (FEATURE_AVX512BF16);
 	}
+      if (amx_usable)
+	{
+	  if (eax & bit_AMX_FP16)
+	    set_feature (FEATURE_AMX_FP16);
+	}
     }
 
   /* Get Advanced Features at level 0xd (eax = 0xd, ecx = 1). */

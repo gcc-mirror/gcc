@@ -2508,6 +2508,9 @@ Target supports the execution of @code{amx-int8} instructions.
 @item amx_bf16
 Target supports the execution of @code{amx-bf16} instructions.
 
+@item amx_fp16
+Target supports the execution of @code{amx-fp16} instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 

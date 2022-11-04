@@ -28,6 +28,7 @@
 #define bit_AVXVNNI	(1 << 4)
 #define bit_AVX512BF16	(1 << 5)
 #define bit_CMPCCXADD	(1 << 7)
+#define bit_AMX_FP16	(1 << 21)
 #define bit_HRESET	(1 << 22)
 #define bit_AVXIFMA	(1 << 23)
 

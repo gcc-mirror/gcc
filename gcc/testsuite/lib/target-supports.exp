@@ -10122,6 +10122,17 @@ proc check_effective_target_amx_bf16 { } {
     } "-mamx-bf16" ]
 }
 
+# Return 1 if amx-fp16 instructions can be compiled.
+proc check_effective_target_amx_fp16 { } {
+    return [check_no_compiler_messages amx_fp16 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpfp16ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-fp16" ]
+}
+
 # Return 1 if vpclmulqdq instructions can be compiled.
 proc check_effective_target_vpclmulqdq { } {
     return [check_no_compiler_messages vpclmulqdq object {

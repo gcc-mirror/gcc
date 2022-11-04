@@ -7080,6 +7080,11 @@ Enable/disable the generation of the AVXNECONVERT instructions.
 @cindex @code{target("cmpccxadd")} function attribute, x86
 Enable/disable the generation of the CMPccXADD instructions.
 
+@item amx-fp16
+@itemx no-amx-fp16
+@cindex @code{target("amx-fp16")} function attribute, x86
+Enable/disable the generation of the AMX-FP16 instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
