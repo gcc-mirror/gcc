@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-stringop-overread" } */
 /* { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
@@ -7,10 +7,13 @@ extern void abort (void);
 extern void exit (int);
 extern void *malloc (size_t);
 extern void *calloc (size_t, size_t);
+extern void free (void *);
 extern void *alloca (size_t);
 extern void *memcpy (void *, const void *, size_t);
 extern void *memset (void *, int, size_t);
 extern char *strcpy (char *, const char *);
+extern char *strdup (const char *);
+extern char *strndup (const char *, size_t);
 
 struct A
 {
@@ -544,6 +547,94 @@ test8 (unsigned cond)
 #endif
 }
 
+/* Tests for strdup/strndup.  */
+size_t
+__attribute__ ((noinline))
+test9 (void)
+{
+  const char *ptr = "abcdefghijklmnopqrstuvwxyz";
+  char *res = strndup (ptr, 21);
+  if (__builtin_object_size (res, 1) != 22)
+    abort ();
+
+  free (res);
+
+  res = strndup (ptr, 32);
+  if (__builtin_object_size (res, 1) != 27)
+    abort ();
+
+  free (res);
+
+  res = strdup (ptr);
+  if (__builtin_object_size (res, 1) != 27)
+    abort ();
+
+  free (res);
+
+  char *ptr2 = malloc (64);
+  strcpy (ptr2, ptr);
+
+  res = strndup (ptr2, 21);
+  if (__builtin_object_size (res, 1) != 22)
+    abort ();
+
+  free (res);
+
+  res = strndup (ptr2, 32);
+  if (__builtin_object_size (res, 1) != 33)
+    abort ();
+
+  free (res);
+
+  res = strndup (ptr2, 128);
+  if (__builtin_object_size (res, 1) != 64)
+    abort ();
+
+  free (res);
+
+  res = strdup (ptr2);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (res, 1) != 27)
+#else
+  if (__builtin_object_size (res, 1) != (size_t) -1)
+#endif
+    abort ();
+
+  free (res);
+  free (ptr2);
+
+  ptr = "abcd\0efghijklmnopqrstuvwxyz";
+  res = strdup (ptr);
+  if (__builtin_object_size (res, 1) != 5)
+    abort ();
+  free (res);
+
+  res = strndup (ptr, 24);
+  if (__builtin_object_size (res, 1) != 5)
+    abort ();
+  free (res);
+
+  res = strndup (ptr, 2);
+  if (__builtin_object_size (res, 1) != 3)
+    abort ();
+  free (res);
+
+  res = strdup (&ptr[4]);
+  if (__builtin_object_size (res, 1) != 1)
+    abort ();
+  free (res);
+
+  res = strndup (&ptr[4], 4);
+  if (__builtin_object_size (res, 1) != 1)
+    abort ();
+  free (res);
+
+  res = strndup (&ptr[4], 1);
+  if (__builtin_object_size (res, 1) != 1)
+    abort ();
+  free (res);
+}
+
 int
 main (void)
 {
@@ -557,5 +648,6 @@ main (void)
   test6 ();
   test7 ();
   test8 (1);
+  test9 ();
   exit (0);
 }

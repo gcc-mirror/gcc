@@ -89,6 +89,10 @@ static bitmap computed[OST_END];
 /* Maximum value of offset we consider to be addition.  */
 static unsigned HOST_WIDE_INT offset_limit;
 
+/* Tell the generic SSA updater what kind of update is needed after the pass
+   executes.  */
+static unsigned todo;
+
 /* Return true if VAL represents an initial size for OBJECT_SIZE_TYPE.  */
 
 static inline bool
@@ -787,6 +791,71 @@ alloc_object_size (const gcall *call, int object_size_type)
   return bytes ? bytes : size_unknown (object_size_type);
 }
 
+/* Compute __builtin_object_size for CALL, which is a call to either
+   BUILT_IN_STRDUP or BUILT_IN_STRNDUP; IS_STRNDUP indicates which it is.
+   OBJECT_SIZE_TYPE is the second argument from __builtin_object_size.
+   If unknown, return size_unknown (object_size_type).  */
+
+static tree
+strdup_object_size (const gcall *call, int object_size_type, bool is_strndup)
+{
+  tree src = gimple_call_arg (call, 0);
+  tree sz = size_unknown (object_size_type);
+  tree n = NULL_TREE;
+
+  if (is_strndup)
+    n = fold_build2 (PLUS_EXPR, sizetype, size_one_node,
+		     gimple_call_arg (call, 1));
+  /* For strdup, simply emit strlen (SRC) + 1 and let the optimizer fold it the
+     way it likes.  */
+  else
+    {
+      tree strlen_fn = builtin_decl_implicit (BUILT_IN_STRLEN);
+      if (strlen_fn)
+	{
+	  sz = fold_build2 (PLUS_EXPR, sizetype, size_one_node,
+			    build_call_expr (strlen_fn, 1, src));
+	  todo = TODO_update_ssa_only_virtuals;
+	}
+    }
+
+  /* In all other cases, return the size of SRC since the object size cannot
+     exceed that.  We cannot do this for OST_MINIMUM unless SRC points into a
+     string constant since otherwise the object size could go all the way down
+     to zero.  */
+  if (!size_valid_p (sz, object_size_type)
+       || size_unknown_p (sz, object_size_type))
+    {
+      tree wholesrc = NULL_TREE;
+      if (TREE_CODE (src) == ADDR_EXPR)
+	wholesrc = get_base_address (TREE_OPERAND (src, 0));
+
+      /* If the source points within a string constant, we try to get its
+	 length.  */
+      if (wholesrc && TREE_CODE (wholesrc) == STRING_CST)
+	{
+	  tree len = c_strlen (src, 0);
+	  if (len)
+	    sz = fold_build2 (PLUS_EXPR, sizetype, size_one_node, len);
+	}
+
+      /* For maximum estimate, our next best guess is the object size of the
+	 source.  */
+      if (size_unknown_p (sz, object_size_type)
+	  && !(object_size_type & OST_MINIMUM))
+	compute_builtin_object_size (src, object_size_type, &sz);
+    }
+
+  /* String duplication allocates at least one byte, so we should never fail
+     for OST_MINIMUM.  */
+  if ((!size_valid_p (sz, object_size_type)
+       || size_unknown_p (sz, object_size_type))
+      && (object_size_type & OST_MINIMUM))
+    sz = size_one_node;
+
+  /* Factor in the N.  */
+  return n ? fold_build2 (MIN_EXPR, sizetype, n, sz) : sz;
+}
 
 /* If object size is propagated from one of function's arguments directly
    to its return value, return that argument for GIMPLE_CALL statement CALL.
@@ -1233,12 +1302,19 @@ call_object_size (struct object_size_info *osi, tree ptr, gcall *call)
 {
   int object_size_type = osi->object_size_type;
   unsigned int varno = SSA_NAME_VERSION (ptr);
+  tree bytes = NULL_TREE;
 
   gcc_assert (is_gimple_call (call));
 
   gcc_assert (!object_sizes_unknown_p (object_size_type, varno));
   gcc_assert (osi->pass == 0);
-  tree bytes = alloc_object_size (call, object_size_type);
+
+  bool is_strdup = gimple_call_builtin_p (call, BUILT_IN_STRDUP);
+  bool is_strndup = gimple_call_builtin_p (call, BUILT_IN_STRNDUP);
+  if (is_strdup || is_strndup)
+    bytes = strdup_object_size (call, object_size_type, is_strndup);
+  else
+    bytes = alloc_object_size (call, object_size_type);
 
   if (!size_valid_p (bytes, object_size_type))
     bytes = size_unknown (object_size_type);
@@ -1998,6 +2074,8 @@ dynamic_object_sizes_execute_one (gimple_stmt_iterator *i, gimple *call)
 static unsigned int
 object_sizes_execute (function *fun, bool early)
 {
+  todo = 0;
+
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -2094,7 +2172,7 @@ object_sizes_execute (function *fun, bool early)
     }
 
   fini_object_sizes ();
-  return 0;
+  return todo;
 }
 
 /* Simple pass to optimize all __builtin_object_size () builtins.  */
