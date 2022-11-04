@@ -64,10 +64,8 @@ Boston, MA 02110-1301, USA@*
 
 @c `Top' Node and Master Menu
 
-@ifinfo
 @node Top, Overview, (dir), (dir)
 @top Introduction
-@end ifinfo
 
 @menu
 * Overview::         What is GNU Modula-2.
