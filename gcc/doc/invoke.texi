@@ -738,7 +738,7 @@ Objective-C and Objective-C++ Dialects}.
 -flto-report  -flto-report-wpa  -fmem-report-wpa @gol
 -fmem-report  -fpre-ipa-mem-report  -fpost-ipa-mem-report @gol
 -fopt-info  -fopt-info-@var{options}@r{[}=@var{file}@r{]} @gol
--fprofile-report @gol
+-fmultiflags  -fprofile-report @gol
 -frandom-seed=@var{string}  -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose  -fsel-sched-dump-cfg  -fsel-sched-pipelining-verbose @gol
 -fstats  -fstack-usage  -ftime-report  -ftime-report-details @gol
@@ -19343,6 +19343,34 @@ allocation for the WPA phase only.
 @opindex fpost-ipa-mem-report
 Makes the compiler print some statistics about permanent memory
 allocation before or after interprocedural optimization.
+
+@item -fmultiflags
+@opindex fmultiflags
+This option enables multilib-aware @code{TFLAGS} to be used to build
+target libraries with options different from those the compiler is
+configured to use by default, through the use of specs (@xref{Spec
+Files}) set up by compiler internals, by the target, or by builders at
+configure time.
+
+Like @code{TFLAGS}, this allows the target libraries to be built for
+portable baseline environments, while the compiler defaults to more
+demanding ones.  That's useful because users can easily override the
+defaults the compiler is configured to use to build their own programs,
+if the defaults are not ideal for their target environment, whereas
+rebuilding the runtime libraries is usually not as easy or desirable.
+
+Unlike @code{TFLAGS}, the use of specs enables different flags to be
+selected for different multilibs.  The way to accomplish that is to
+build with @samp{make TFLAGS=-fmultiflags}, after configuring
+@samp{--with-specs=%@{fmultiflags:...@}}.
+
+This option is discarded by the driver once it's done processing driver
+self spec.
+
+It is also useful to check that @code{TFLAGS} are being used to build
+all target libraries, by configuring a non-bootstrap compiler
+@samp{--with-specs='%@{!fmultiflags:%emissing TFLAGS@}'} and building
+the compiler and target libraries.
 
 @item -fprofile-report
 @opindex fprofile-report
