@@ -170,10 +170,6 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    case INTRINSIC_SHUFFLEVECTOR:
 	    case INTRINSIC_CONVERTVECTOR:
 	    case INTRINSIC_BLENDVECTOR:
-	    case INTRINSIC_EQUALMASK:
-	    case INTRINSIC_NOTEQUALMASK:
-	    case INTRINSIC_GREATERMASK:
-	    case INTRINSIC_GREATEREQUALMASK:
 	    case INTRINSIC_VLOAD8:
 	    case INTRINSIC_VLOAD16:
 	    case INTRINSIC_VLOAD32:
@@ -484,29 +480,6 @@ maybe_warn_intrinsic_mismatch (tree function, tree callexp)
 	    return warn_mismatched_argument (callexp, 0,
 					     build_ctype (vector), true);
 	  }
-
-	return false;
-      }
-
-    case INTRINSIC_EQUALMASK:
-    case INTRINSIC_NOTEQUALMASK:
-    case INTRINSIC_GREATERMASK:
-    case INTRINSIC_GREATEREQUALMASK:
-      {
-	/* Expects the signature:
-	   vector(T) equalMask(vector(T), vector(T));
-	   vector(T) notEqualMask(vector(T), vector(T));
-	   vector(T) greaterMask(vector(T), vector(T));
-	   vector(T) greateOrEqualMask(vector(T), vector(T));  */
-	gcc_assert (call_expr_nargs (callexp) == 2);
-
-	tree vec0 = TREE_TYPE (CALL_EXPR_ARG (callexp, 0));
-	tree vec1 = TREE_TYPE (CALL_EXPR_ARG (callexp, 1));
-	if (!VECTOR_TYPE_P (TREE_TYPE (callexp))
-	    || !VECTOR_TYPE_P (vec0)
-	    || !VECTOR_TYPE_P (vec1)
-	    || TYPE_MAIN_VARIANT (vec0) != TYPE_MAIN_VARIANT (vec1))
-	  return warn_mismatched_return_type (callexp, "__vector(T)");
 
 	return false;
       }
@@ -1072,32 +1045,6 @@ expand_volatile_store (tree callexp)
   return modify_expr (result, value);
 }
 
-/* Expand a front-end intrinsic call to a vector comparison intrinsic, which is
-   either a call to equalMask(), notEqualMask(), greaterMask(), or
-   greaterOrEqualMask().  These intrinsics take two arguments, the signature to
-   which can be either:
-
-	vector(T) equalMask(vector(T) vec0, vector(T) vec1);
-	vector(T) notEqualMask(vector(T) vec0, vector(T) vec1);
-	vector(T) greaterMask(vector(T) vec0, vector(T) vec1);
-	vector(T) greaterOrEqualMask(vector(T) vec0, vector(T) vec1);
-
-   This performs an element-wise comparison between two vectors VEC0 and VEC1,
-   returning a vector with signed integral elements.  */
-
-static tree
-expand_intrinsic_vec_cond (tree_code code, tree callexp)
-{
-  tree vec0 = CALL_EXPR_ARG (callexp, 0);
-  tree vec1 = CALL_EXPR_ARG (callexp, 1);
-  tree type = TREE_TYPE (callexp);
-
-  tree cmp = fold_build2_loc (EXPR_LOCATION (callexp), code,
-			      truth_type_for (type), vec0, vec1);
-  return fold_build3_loc (EXPR_LOCATION (callexp), VEC_COND_EXPR, type, cmp,
-			  build_minus_one_cst (type), build_zero_cst (type));
-}
-
 /* Expand a front-end instrinsic call to convertvector().  This takes one
    argument, the signature to which is:
 
@@ -1487,18 +1434,6 @@ maybe_expand_intrinsic (tree callexp)
 
     case INTRINSIC_BLENDVECTOR:
       return expand_intrinsic_vec_blend (callexp);
-
-    case INTRINSIC_EQUALMASK:
-      return expand_intrinsic_vec_cond (EQ_EXPR, callexp);
-
-    case INTRINSIC_NOTEQUALMASK:
-      return expand_intrinsic_vec_cond (NE_EXPR, callexp);
-
-    case INTRINSIC_GREATERMASK:
-      return expand_intrinsic_vec_cond (GT_EXPR, callexp);
-
-    case INTRINSIC_GREATEREQUALMASK:
-      return expand_intrinsic_vec_cond (GE_EXPR, callexp);
 
     default:
       gcc_unreachable ();
