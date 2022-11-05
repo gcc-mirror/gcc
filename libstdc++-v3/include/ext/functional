@@ -394,8 +394,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { _M_initialize(161803398u); }
   };
 
-#pragma GCC diagnostic pop
-
   // Mem_fun adaptor helper functions mem_fun1 and mem_fun1_ref,
   // provided for backward compatibility, they are no longer part of
   // the C++ standard.
@@ -419,6 +417,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline std::const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
     { return std::const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
+
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
