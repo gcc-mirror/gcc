@@ -257,6 +257,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ucr(__first, __last, __seed);
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename _ForwardIterator, typename _Tp>
     _Temporary_buffer<_ForwardIterator, _Tp>::
     _Temporary_buffer(_ForwardIterator __seed, size_type __original_len)
@@ -281,6 +283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
     }
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
