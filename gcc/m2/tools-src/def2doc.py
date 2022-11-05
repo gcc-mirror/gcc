@@ -72,11 +72,9 @@ def displayLibraryClass():
     # a routine to summarize each module.
     global args
     previous = ""
-
     nxt = libraryClassifications[1][1]
     i = 0
     lib = libraryClassifications[i]
-
     while True:
         emitNode(lib[1], nxt, previous, args.up)
         emitSection(lib[1])
@@ -101,7 +99,6 @@ def displayMenu():
     for lib in libraryClassifications:
         output.write("* " + lib[1] + "::" + lib[2] + "\n")
     output.write("@end menu\n")
-
     output.write("\n")
     output.write("@c " + "=" * 60 + "\n")
     output.write("\n")
@@ -114,10 +111,9 @@ def removeInitialComments(file, line):
         line = file.readline()
 
 
-#  removeableField - returns True if a comment field should be removed
-#  from the definition module.
-
 def removeableField(line):
+    # removeableField - returns True if a comment field should be removed
+    # from the definition module.
     field_list = ["Author", "Last edit", "LastEdit", "Last update",
                   "Date", "Title", "Revision"]
     for field in field_list:
@@ -157,7 +153,6 @@ def checkIndex(line):
             procedure = words[2]
         else:
             procedure = words[1]
-
     if (len(line) > 1) and (line[0:2] == "(*"):
         inConst = False
         inType = False
@@ -201,7 +196,6 @@ def checkIndex(line):
                 if (len(word[0]) > 0) and (word[0][0] != "_"):
                     output.write("@findex " + str.rstrip(word[0]))
                     output.write(" (type)\n")
-
     if inConst:
         words = str.split(line, ";")
         for word in words:
@@ -211,7 +205,6 @@ def checkIndex(line):
                     var = str.split(word, "=")
                     if len(var) > 0:
                         output.write("@findex " + var[0] + " (const)\n")
-
     if procedure != "":
         name = str.split(procedure, "(")
         if name[0] != "":
@@ -232,10 +225,8 @@ def parseDefinition(dir, source, build, file, needPage):
         while (str.find(line, "(*") != -1):
             removeInitialComments(f, line)
             line = f.readline()
-
         while (str.find(line, "DEFINITION") == -1):
             line = f.readline()
-
         output.write("@example\n")
         output.write(str.rstrip(line) + "\n")
         line = f.readline()
@@ -350,7 +341,6 @@ def displayModules(up, dir, build, source):
     if checkDirectory(dir, build, source):
         if foundFile(dir, build, source, "README.texi"):
             doCat(findFile(dir, build, source, "README.texi"))
-
         moduleMenu(dir, build, source)
         listOfFiles = []
         if os.path.exists(os.path.join(source, dir)):
