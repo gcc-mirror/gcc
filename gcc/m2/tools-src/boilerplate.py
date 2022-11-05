@@ -45,12 +45,12 @@ CONTRIBUTED_BY = "ontributed by"
 
 
 def printf(fmt, *args):
-    #  printf - keeps C programmers happy :-)
+    # printf - keeps C programmers happy :-)
     print(str(fmt) % args, end=' ')
 
 
 def error(fmt, *args):
-    #  error - issue an error message.
+    # error - issue an error message.
     global errorCount
 
     print(str(fmt) % args, end=' ')
@@ -68,7 +68,7 @@ def basename(f):
 
 
 def analyseComment(text, f):
-    #  analyseComment determine the license from the top comment.
+    # analyseComment determine the license from the top comment.
     start_date, end_date = None, None
     contribution, summary, lic = None, None, None
     if text.find(ISO_COPYRIGHT) > 0:
@@ -158,18 +158,15 @@ def analyseHeaderWithTerminator(f, start, end):
 
 
 def analyseHeader(f, start, end):
-    #  analyseHeader -
+    # analyseHeader -
     if end is None:
         return analyseHeaderWithoutTerminator(f, start)
     else:
         return analyseHeaderWithTerminator(f, start, end)
 
 
-#
-#  addStop - add a full stop to a sentance.
-#
-
 def addStop(sentence):
+    # addStop - add a full stop to a sentance.
     if sentence is None:
         return None
     sentence = sentence.rstrip()
@@ -340,9 +337,9 @@ def rewriteFile(f, magic, start, end, start_date, end_date,
 
 
 def handleHeader(f, magic, start, end):
-    #  handleHeader keep reading lines of file, f, looking for start, end
-    #  sequences and comments inside.  The comments are checked for:
-    #  date, contribution, summary
+    # handleHeader keep reading lines of file, f, looking for start, end
+    # sequences and comments inside.  The comments are checked for:
+    # date, contribution, summary
     global errorCount
 
     errorCount = 0
@@ -396,33 +393,33 @@ def handleHeader(f, magic, start, end):
 
 
 def bashTidy(f):
-    #  bashTidy tidy up dates using '#' comment
+    # bashTidy tidy up dates using '#' comment
     handleHeader(f, "#!/bin/bash", "#", None)
 
 
 def pythonTidy(f):
-    #  pythonTidy tidy up dates using '#' comment
+    # pythonTidy tidy up dates using '#' comment
     handleHeader(f, "#!/usr/bin/env python3", '#', None)
 
 
 def bnfTidy(f):
-    #  bnfTidy tidy up dates using '--' comment
+    # bnfTidy tidy up dates using '--' comment
     handleHeader(f, None, '--', None)
 
 
 def cTidy(f):
-    #  cTidy tidy up dates using '/* */' comments
+    # cTidy tidy up dates using '/* */' comments
     handleHeader(f, None, '/*', '*/')
 
 
 def m2Tidy(f):
-    #  m2Tidy tidy up dates using '(* *)' comments
+    # m2Tidy tidy up dates using '(* *)' comments
     handleHeader(f, None, '(*', '*)')
 
 
 def inTidy(f):
-    #  inTidy tidy up dates using '#' as a comment and check
-    #  the first line for magic number.
+    # inTidy tidy up dates using '#' as a comment and check
+    # the first line for magic number.
     first = open(f).readlines()[0]
     if (len(first) > 0) and (first[:2] == "#!"):
         # magic number found, use this
@@ -432,7 +429,7 @@ def inTidy(f):
 
 
 def doVisit(args, dirname, names):
-    #  doVisit helper function to call func on every extension file.
+    # doVisit helper function to call func on every extension file.
     global outputName
     func, extension = args
     for f in names:
@@ -442,7 +439,7 @@ def doVisit(args, dirname, names):
 
 
 def visitDir(startDir, ext, func):
-    #  visitDir call func for each file in startDir which has ext.
+    # visitDir call func for each file in startDir which has ext.
     global outputName, seenFiles
     for dirName, subdirList, fileList in os.walk(startDir):
         for fname in fileList:
@@ -459,7 +456,7 @@ def visitDir(startDir, ext, func):
 
 
 def findFiles():
-    #  findFiles for each file extension call the appropriate tidy routine.
+    # findFiles for each file extension call the appropriate tidy routine.
     visitDir(args.recursive, '.h.in', cTidy)
     visitDir(args.recursive, '.in', inTidy)
     visitDir(args.recursive, '.sh', inTidy)
@@ -472,11 +469,8 @@ def findFiles():
     visitDir(args.recursive, '.bnf', bnfTidy)
 
 
-#
-#  handleArguments - check the legal arguments.
-#
-
 def handleArguments():
+    # handleArguments create and return the args object.
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--contribution",
                         help="set the contribution string " +
@@ -516,15 +510,15 @@ def handleArguments():
 
 
 def hasExt(name, ext):
-    #  hasExt return True if, name, ends with, ext.
+    # hasExt return True if, name, ends with, ext.
     if len(name) > len(ext):
         return name[-len(ext):] == ext
     return False
 
 
 def singleFile(name):
-    #  singleFile scan the single file for a GPL boilerplate which
-    #  has a GPL, contribution field and a summary heading.
+    # singleFile scan the single file for a GPL boilerplate which
+    # has a GPL, contribution field and a summary heading.
     if hasExt(name, ".def") or hasExt(name, ".mod"):
         m2Tidy(name)
     elif hasExt(name, ".h") or hasExt(name, ".c") or hasExt(name, ".cc"):
@@ -538,7 +532,7 @@ def singleFile(name):
 
 
 def main():
-    #  main - handleArguments and then find source files.
+    # main - handleArguments and then find source files.
     global args, outputName
     args = handleArguments()
     outputName = args.outputfile

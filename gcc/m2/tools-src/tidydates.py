@@ -32,7 +32,7 @@ COPYRIGHT = "Copyright (C)"
 
 
 def visitDir(directory, ext, func):
-    #  visitDir - call func for each file below, dir, matching extension, ext.
+    # visitDir - call func for each file below, dir, matching extension, ext.
     listOfFiles = os.listdir(directory)
     listOfFiles.sort()
     for filename in listOfFiles:
@@ -46,7 +46,7 @@ def visitDir(directory, ext, func):
 
 
 def isYear(year):
-    #  isYear - returns True if, year, is legal.
+    # isYear - returns True if, year, is legal.
     if len(year) == 5:
         year = year[:-1]
     for c in year:
@@ -56,7 +56,7 @@ def isYear(year):
 
 
 def handleCopyright(outfile, lines, n, leader1, leader2):
-    #  handleCopyright look for Copyright in the comment.
+    # handleCopyright look for Copyright in the comment.
     global maxLineLength
     i = lines[n]
     c = i.find(COPYRIGHT)+len(COPYRIGHT)
@@ -77,14 +77,12 @@ def handleCopyright(outfile, lines, n, leader1, leader2):
                 d = []
             else:
                 d = d[1:]
-
             if c > maxLineLength:
                 outfile.write("\n")
                 outfile.write(leader1)
                 outfile.write(leader2)
                 outfile.write(" "*(start-2))
                 c = start
-
             if isYear(e):
                 if (e[-1] == ".") or (e[-1] == ","):
                     punctuation = e[-1]
@@ -113,14 +111,13 @@ def handleCopyright(outfile, lines, n, leader1, leader2):
                 for w in d:
                     outfile.write(" ")
                     outfile.write(w)
-
     outfile.write("\n")
     return outfile, n+1
 
 
 def handleHeader(filename, leader1, leader2):
-    #  handleHeader reads in the header of a file and inserts
-    #  a line break around the Copyright dates.
+    # handleHeader reads in the header of a file and inserts
+    # a line break around the Copyright dates.
     print("------------------------------")
     lines = open(filename, "r").readlines()
     if len(lines) > 20:
@@ -142,22 +139,22 @@ def handleHeader(filename, leader1, leader2):
 
 
 def bashTidy(filename):
-    #  bashTidy - tidy up dates using "#" comment
+    # bashTidy - tidy up dates using "#" comment
     handleHeader(filename, "#", " ")
 
 
 def cTidy(filename):
-    #  cTidy - tidy up dates using "/* */" comments
+    # cTidy - tidy up dates using "/* */" comments
     handleHeader(filename, " ", "*")
 
 
 def m2Tidy(filename):
-    #  m2Tidy - tidy up dates using "(* *)" comments
+    # m2Tidy - tidy up dates using "(* *)" comments
     handleHeader(filename, " ", " ")
 
 
 def main():
-    #  main - for each file extension call the appropriate tidy routine.
+    # main - for each file extension call the appropriate tidy routine.
     visitDir(".", ".in", bashTidy)
     visitDir(".", ".py", bashTidy)
     visitDir(".", ".c", cTidy)

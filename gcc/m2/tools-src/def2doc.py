@@ -67,10 +67,9 @@ def emitSubSection(name):
         output.write("-" * len(name) + "\n")
 
 
-#  displayLibraryClass - displays a node for a library directory and invokes
-#                        a routine to summarize each module.
-
 def displayLibraryClass():
+    # displayLibraryClass displays a node for a library directory and invokes
+    # a routine to summarize each module.
     global args
     previous = ""
 
@@ -96,9 +95,8 @@ def displayLibraryClass():
             nxt = libraryClassifications[i+1][1]
 
 
-#  displayMenu - displays the top level menu for library documentation.
-
 def displayMenu():
+    # displayMenu displays the top level menu for library documentation.
     output.write("@menu\n")
     for lib in libraryClassifications:
         output.write("* " + lib[1] + "::" + lib[2] + "\n")
@@ -109,10 +107,9 @@ def displayMenu():
     output.write("\n")
 
 
-#  removeInitialComments - removes any (* *) at the top
-#                          of the definition module.
-
 def removeInitialComments(file, line):
+    # removeInitialComments removes any (* *) at the top
+    # of the definition module.
     while (str.find(line, "*)") == -1):
         line = file.readline()
 
@@ -135,11 +132,9 @@ def removeableField(line):
     return False
 
 
-#  removeFields - removes Author/Date/Last edit/SYSTEM/Revision
-#                 fields from a comment within the start of a
-#                 definition module.
-
 def removeFields(file, line):
+    # removeFields removes Author/Date/Last edit/SYSTEM/Revision
+    # fields from a comment within the start of a definition module.
     while (str.find(line, "*)") == -1):
         if not removeableField(line):
             output.write(str.replace(str.replace(str.rstrip(line),
@@ -148,9 +143,8 @@ def removeFields(file, line):
     output.write(str.rstrip(line) + "\n")
 
 
-#  checkIndex - create an index entry for a PROCEDURE, TYPE, CONST or VAR.
-
 def checkIndex(line):
+    # checkIndex - create an index entry for a PROCEDURE, TYPE, CONST or VAR.
     global inVar, inType, inConst
 
     words = str.split(line)
@@ -228,11 +222,9 @@ def checkIndex(line):
                 output.write("@findex " + proc + "\n")
 
 
-#  parseDefinition - reads a definition module and creates
-#                    indices for procedures, constants,
-#                    variables and types.
-
 def parseDefinition(dir, source, build, file, needPage):
+    # parseDefinition reads a definition module and creates
+    # indices for procedures, constants, variables and types.
     output.write("\n")
     with open(findFile(dir, build, source, file), "r") as f:
         initState()
@@ -288,9 +280,8 @@ def parseModules(up, dir, build, source, listOfModules):
             nxt = ""
 
 
-#  doCat - displays the contents of file, name, to stdout
-
 def doCat(name):
+    # doCat displays the contents of file, name, to stdout
     with open(name, "r") as file:
         line = file.readline()
         while line:
@@ -298,10 +289,9 @@ def doCat(name):
             line = file.readline()
 
 
-#  moduleMenu - generates a simple menu for all definition modules
-#               in dir
-
 def moduleMenu(dir, build, source):
+    # moduleMenu generates a simple menu for all definition modules
+    # in dir
     output.write("@menu\n")
     listOfFiles = []
     if os.path.exists(os.path.join(source, dir)):
@@ -318,9 +308,8 @@ def moduleMenu(dir, build, source):
     output.write("\n")
 
 
-#  checkDirectory - returns True if dir exists in either build or source.
-
 def checkDirectory(dir, build, source):
+    # checkDirectory - returns True if dir exists in either build or source.
     if os.path.isdir(build) and os.path.exists(os.path.join(build, dir)):
         return True
     elif os.path.isdir(source) and os.path.exists(os.path.join(source, dir)):
@@ -329,10 +318,9 @@ def checkDirectory(dir, build, source):
         return False
 
 
-#  foundFile - return True if file is found in build/dir/file or
-#  source/dir/file.
-
 def foundFile(dir, build, source, file):
+    # foundFile return True if file is found in build/dir/file or
+    # source/dir/file.
     name = os.path.join(os.path.join(build, dir), file)
     if os.path.exists(name):
         return True
@@ -342,10 +330,9 @@ def foundFile(dir, build, source, file):
     return False
 
 
-#  findFile - return the path to file searching in build/dir/file
-#  first then source/dir/file.
-
 def findFile(dir, build, source, file):
+    # findFile return the path to file searching in build/dir/file
+    # first then source/dir/file.
     name1 = os.path.join(os.path.join(build, dir), file)
     if os.path.exists(name1):
         return name1
@@ -357,10 +344,9 @@ def findFile(dir, build, source, file):
     os.sys.exit(1)
 
 
-#  displayModules - walks though the files in dir and parses
-#                   definition modules and includes README.texi
-
 def displayModules(up, dir, build, source):
+    # displayModules walks though the files in dir and parses
+    # definition modules and includes README.texi
     if checkDirectory(dir, build, source):
         if foundFile(dir, build, source, "README.texi"):
             doCat(findFile(dir, build, source, "README.texi"))
