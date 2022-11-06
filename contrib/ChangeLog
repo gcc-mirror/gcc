@@ -3,6 +3,15 @@
 	* gcc-changelog/git_update_version.py: Add
 	e4cba49413ca429dc82f6aa2e88129ecb3fdd943 to ignored commits.
 
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	Remove 'liboffloadmic'.
+	* gcc_update (files_and_dependencies): Remove 'liboffloadmic'
+	files.
+	* update-copyright.py (GCCCmdLine): Remove 'liboffloadmic'
+	comment.
+
 2022-10-20  Jonathan Wakely   <jwakely@redhat.com>
 	    Ulrich Drepper  <drepper@redhat.com>
 

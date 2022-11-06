@@ -55,6 +55,20 @@
 
 2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config.gcc [target *-intelmic-* | *-intelmicemul-*]: Remove.
+	* config/i386/i386-options.cc (ix86_omp_device_kind_arch_isa)
+	[ACCEL_COMPILER]: Remove.
+	* config/i386/intelmic-mkoffload.cc: Remove.
+	* config/i386/intelmic-offload.h: Likewise.
+	* config/i386/t-intelmic: Likewise.
+	* config/i386/t-omp-device: Likewise.
+	* configure.ac [target *-intelmic-* | *-intelmicemul-*]: Remove.
+	* configure: Regenerate.
+	* doc/install.texi (--enable-offload-targets=[...]): Update.
+	* doc/sourcebuild.texi: Remove 'liboffloadmic' documentation.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* Makefile.in (OBJS): Remove 'dbxout.o'.
 	* config/nvptx/nvptx.cc: Don't '#include "dbxout.h"'.
 	* dbxout.cc: Remove.

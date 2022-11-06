@@ -1,3 +1,24 @@
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.h (OFFLOAD_TARGET_TYPE_INTEL_MIC): Remove.
+	* libgomp.texi (OpenMP Context Selectors): Remove Intel MIC
+	documentation.
+	* plugin/configfrag.ac <enable_offload_targets>
+	[*-intelmic-* | *-intelmicemul-*]: Remove.
+	* configure: Regenerate.
+	* testsuite/lib/libgomp.exp (libgomp_init): Remove 'liboffloadmic'
+	handling.
+	(offload_target_to_openacc_device_type)
+	[$offload_target = *-intelmic*]: Remove.
+	(check_effective_target_offload_device_intel_mic)
+	(check_effective_target_offload_device_any_intel_mic): Remove.
+	* testsuite/libgomp.c-c++-common/on_device_arch.h
+	(device_arch_intel_mic, on_device_arch_intel_mic, any_device_arch)
+	(any_device_arch_intel_mic): Remove.
+	* testsuite/libgomp.c-c++-common/target-45.c: Remove
+	'offload_device_any_intel_mic' XFAIL.
+	* testsuite/libgomp.fortran/target10.f90: Likewise.
+
 2022-11-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/target-11.f90: New test.
