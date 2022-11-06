@@ -38,6 +38,9 @@
   UNSPEC_FMAX
   UNSPEC_FMIN
   UNSPEC_FCOPYSIGN
+  UNSPEC_FTINT
+  UNSPEC_FTINTRM
+  UNSPEC_FTINTRP
 
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
@@ -374,6 +377,11 @@
 (define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
 			    (DF "TARGET_DOUBLE_FLOAT")])
 
+;; Iterator for fixed-point modes which can be hold by a hardware
+;; floating-point register.
+(define_mode_iterator ANYFI [(SI "TARGET_HARD_FLOAT")
+			     (DI "TARGET_DOUBLE_FLOAT")])
+
 ;; A mode for which moves involving FPRs may need to be split.
 (define_mode_iterator SPLITF
   [(DF "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
@@ -514,6 +522,19 @@
 ;; The sel mnemonic to use depending on the condition test.
 (define_code_attr sel [(eq "masknez") (ne "maskeqz")])
 (define_code_attr selinv [(eq "maskeqz") (ne "masknez")])
+
+;; Iterator and attributes for floating-point to fixed-point conversion
+;; instructions.
+(define_int_iterator LRINT [UNSPEC_FTINT UNSPEC_FTINTRM UNSPEC_FTINTRP])
+(define_int_attr lrint_pattern [(UNSPEC_FTINT "lrint")
+				(UNSPEC_FTINTRM "lfloor")
+				(UNSPEC_FTINTRP "lceil")])
+(define_int_attr lrint_submenmonic [(UNSPEC_FTINT "")
+				    (UNSPEC_FTINTRM "rm")
+				    (UNSPEC_FTINTRP "rp")])
+(define_int_attr lrint_allow_inexact [(UNSPEC_FTINT "1")
+				      (UNSPEC_FTINTRM "0")
+				      (UNSPEC_FTINTRP "0")])
 
 ;;
 ;;  ....................
@@ -2021,6 +2042,19 @@
   "frint.<fmt>\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "<MODE>")])
+
+;; Convert floating-point numbers to integers
+(define_insn "<lrint_pattern><ANYF:mode><ANYFI:mode>2"
+  [(set (match_operand:ANYFI 0 "register_operand" "=f")
+	(unspec:ANYFI [(match_operand:ANYF 1 "register_operand" "f")]
+		      LRINT))]
+  "TARGET_HARD_FLOAT &&
+   (<lrint_allow_inexact>
+    || flag_fp_int_builtin_inexact
+    || !flag_trapping_math)"
+  "ftint<lrint_submenmonic>.<ANYFI:ifmt>.<ANYF:fmt> %0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "<ANYF:MODE>")])
 
 ;; Load the low word of operand 0 with operand 1.
 (define_insn "load_low<mode>"
