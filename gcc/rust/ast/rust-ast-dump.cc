@@ -1600,7 +1600,14 @@ Dump::visit (ReferenceType &type)
 void
 Dump::visit (ArrayType &type)
 {
+  // Syntax:
+  //    [ Type ; Expression ]
+
+  stream << '[';
   visit (type.get_elem_type ());
+  stream << "; ";
+  visit(type.get_size_expr());
+  stream << ']';
 }
 
 void
