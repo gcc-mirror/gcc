@@ -1580,16 +1580,24 @@ Dump::visit (TraitObjectTypeOneBound &)
 {}
 
 void
-Dump::visit (TupleType &)
-{}
+Dump::visit (TupleType &type)
+{
+  // Syntax:
+  //   ( )
+  //   | ( ( Type , )+ Type? )
+
+  stream << '(';
+  visit_items_joined_by_separator (type.get_elems (), ", ");
+  stream << ')';
+}
 
 void
 Dump::visit (NeverType &)
 {
-    // Syntax:
-    //  !
+  // Syntax:
+  //  !
 
-    stream << '!';
+  stream << '!';
 }
 
 void
