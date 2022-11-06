@@ -1,3 +1,12 @@
+2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/41041
+	* doc/cppopts.texi: Document -fwide-exec-charset defaults
+	correctly.
+
 2022-10-25  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:
