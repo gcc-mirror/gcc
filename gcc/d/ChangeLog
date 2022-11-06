@@ -1,3 +1,18 @@
+2022-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::isVectorOpSupported): Remove cases for
+	comparison operators.
+	* intrinsics.cc (maybe_set_intrinsic): Remove cases for vector
+	comparison intrinsics.
+	(maybe_warn_intrinsic_mismatch): Likewise.
+	(expand_intrinsic_vec_cond): Remove.
+	(maybe_expand_intrinsic): Remove cases for vector comparison
+	intrinsics.
+	* intrinsics.def (INTRINSIC_EQUALMASK): Remove.
+	(INTRINSIC_NOTEQUALMASK): Remove.
+	(INTRINSIC_GREATERMASK): Remove.
+	(INTRINSIC_GREATEREQUALMASK): Remove.
+
 2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-attribs.cc (apply_user_attributes): Update for new front-end

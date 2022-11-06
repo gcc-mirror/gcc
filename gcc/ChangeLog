@@ -1,3 +1,166 @@
+2022-11-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (UNSPEC_FCOPYSIGN): New unspec.
+	(type): Add fcopysign.
+	(copysign<mode>3): New instruction template.
+
+2022-11-06  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* multiple_target.cc (expand_target_clones): Free memory.
+
+2022-11-06  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* cgraph.cc (cgraph_node::make_local): Remove redundant set_section.
+	* multiple_target.cc (create_dispatcher_calls): Likewise.
+
+2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/41041
+	* doc/cppopts.texi: Document -fwide-exec-charset defaults
+	correctly.
+
+2022-11-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (fmultiflags): New.
+	* doc/invoke.texi: Document it.
+	* gcc.cc (driver_self_specs): Discard it.
+	* opts.cc (common_handle_option): Ignore it in the driver.
+
+2022-11-04  Jeff Chapman II  <jchapman@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* input.cc (get_source_text_between): New fn.
+	* input.h (get_source_text_between): Declare.
+
+2022-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107342
+	* range-op.cc (operator_mult::fold_range): New.
+	(operator_div::fold_range): New.
+
+2022-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.cc (operand_compare::operand_equal_p) <COMPONENT_REF>:
+	Do not take into account operand 2.
+	(operand_compare::hash_operand) <COMPONENT_REF>: Likewise.
+
+2022-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.cc (emit_group_store): Do not use subword paradoxical subregs
+
+2022-11-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve2.md: Fix typo in Cryptographic
+	extensions comment.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (OBJS): Remove 'dbxout.o'.
+	* config/nvptx/nvptx.cc: Don't '#include "dbxout.h"'.
+	* dbxout.cc: Remove.
+	* dbxout.h: Likewise.
+	* target-def.h (TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR):
+	Default to 'default_asm_out_constructor',
+	'default_asm_out_destructor'.
+	* targhooks.cc (default_asm_out_constructor)
+	(default_asm_out_destructor): New.
+	* targhooks.h (default_asm_out_constructor)
+	(default_asm_out_destructor): Declare.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (OBJS): Add 'dbxout.o'.
+	* config/nvptx/nvptx.cc: '#include "dbxout.h"'.
+	* dbxout.cc: New.
+	* dbxout.h: Likewise.
+	* target-def.h (TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR):
+	Default to 'default_stabs_asm_out_constructor',
+	'default_stabs_asm_out_destructor'.
+
+2022-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Detect
+	amx-fp16.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AMX_FP16_SET,
+	OPTION_MASK_ISA2_AMX_FP16_UNSET): New macros.
+	(ix86_handle_option): Handle -mamx-fp16.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_FP16.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-fp16.
+	* config.gcc: Add amxfp16intrin.h.
+	* config/i386/cpuid.h (bit_AMX_FP16): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AMX_FP16__.
+	* config/i386/i386-isa.def: Add DEF_PTA for AMX_FP16.
+	* config/i386/i386-options.cc (isa2_opts): Add -mamx-fp16.
+	(ix86_valid_target_attribute_inner_p): Add new ATTR.
+	(ix86_option_override_internal): Handle AMX-FP16.
+	* config/i386/i386.opt: Add -mamx-fp16.
+	* config/i386/immintrin.h: Include amxfp16intrin.h.
+	* doc/extend.texi: Document -mamx-fp16.
+	* doc/invoke.texi: Document amx-fp16.
+	* doc/sourcebuild.texi: Document amx_fp16.
+	* config/i386/amxfp16intrin.h: New file.
+
+2022-11-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu):
+	Add Sierra Forest.
+	* common/config/i386/i386-common.cc
+	(processor_names): Add Sierra Forest.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_types): Add INTEL_SIERRAFOREST.
+	* config.gcc: Add -march=sierraforest.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Handle Sierra Forest.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Ditto.
+	* config/i386/i386-options.cc (m_SIERRAFOREST): New define.
+	(processor_cost_table): Add sierra forest.
+	* config/i386/i386.h (enum processor_type):
+	Add PROCESSOR_SIERRA_FOREST.
+	(PTA_SIERRAFOREST): Ditto.
+	* doc/extend.texi: Add sierra forest.
+	* doc/invoke.texi: Ditto.
+
+2022-11-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect cmpccxadd.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_CMPCCXADD_SET,
+	OPTION_MASK_ISA2_CMPCCXADD_UNSET): New.
+	(ix86_handle_option): Handle -mcmpccxadd.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_CMPCCXADD.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	cmpccxadd.
+	* config.gcc: Add cmpccxaddintrin.h.
+	* config/i386/cpuid.h (bit_CMPCCXADD): New.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE(INT, PINT, INT, INT, INT)
+	and DEF_FUNCTION_TYPE(LONGLONG, PLONGLONG, LONGLONG, LONGLONG, INT).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__CMPCCXADD__.
+	* config/i386/i386-expand.cc (ix86_expand_special_args_builtin):
+	Add new parameter to indicate constant position.
+	Handle INT_FTYPE_PINT_INT_INT_INT
+	and LONGLONG_FTYPE_PLONGLONG_LONGLONG_LONGLONG_INT.
+	* config/i386/i386-isa.def (CMPCCXADD): Add DEF_PTA(CMPCCXADD).
+	* config/i386/i386-options.cc (isa2_opts): Add -mcmpccxadd.
+	(ix86_valid_target_attribute_inner_p): Handle cmpccxadd.
+	* config/i386/i386.opt: Add option -mcmpccxadd.
+	* config/i386/sync.md (cmpccxadd_<mode>): New define insn.
+	* config/i386/x86gprintrin.h: Include cmpccxaddintrin.h.
+	* doc/extend.texi: Document cmpccxadd.
+	* doc/invoke.texi: Document -mcmpccxadd.
+	* doc/sourcebuild.texi: Document target cmpccxadd.
+	* config/i386/cmpccxaddintrin.h: New file.
+
 2022-11-03  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi: -fconcepts no longer implies

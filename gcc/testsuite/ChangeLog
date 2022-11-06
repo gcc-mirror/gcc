@@ -1,3 +1,118 @@
+2022-11-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/fcopysign.c: New test.
+
+2022-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/attr_register2.d: Adjust test.
+
+2022-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wbuiltin_declaration_mismatch2.d: Remove comparision tests.
+	* gdc.dg/simd2a.d: Update comparison tests.
+	* gdc.dg/simd2b.d: Likewise.
+	* gdc.dg/simd2c.d: Likewise.
+	* gdc.dg/simd2d.d: Likewise.
+	* gdc.dg/simd2e.d: Likewise.
+	* gdc.dg/simd2f.d: Likewise.
+	* gdc.dg/simd2g.d: Likewise.
+	* gdc.dg/simd2h.d: Likewise.
+	* gdc.dg/simd2i.d: Likewise.
+	* gdc.dg/simd2j.d: Likewise.
+
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* c-c++-common/raw-string-directive-1.c: New test.
+	* c-c++-common/raw-string-directive-2.c: New test.
+
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/charset1.C: New testcase from C++23 P2314R4.
+
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/named-universal-char-escape-1.c: Add tests for some
+	characters newly added in Unicode 15.0.0.
+
+2022-11-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/mgeneral-regs_3.c: Fix testcase.
+
+2022-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107342
+	* gcc.dg/tree-ssa/vrp122.c: New test.
+	* gcc.dg/tree-ssa/vrp123.c: New test.
+
+2022-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt99.adb: New test.
+	* gnat.dg/opt99_pkg1.ads, gnat.dg/opt99_pkg1.adb: New helper.
+	* gnat.dg/opt99_pkg2.ads: Likewise.
+
+2022-11-04  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/abstract1.ads: Cleanup whitespaces.
+	* gnat.dg/abstract1.adb: Likewise and add -gnatws to silence new
+	warning.
+
+2022-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-fp16.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp: (check_effective_target_amx_fp16):
+	New proc.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/amx-check.h: Add AMX_FP16.
+	* gcc.target/i386/amx-helper.h: New file to support amx-fp16.
+	* gcc.target/i386/amxfp16-asmatt-1.c: New test.
+	* gcc.target/i386/amxfp16-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxfp16-dpfp16ps-2.c: Ditto.
+
+2022-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/bitfield-1.c: Use overridable location.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/cmse-20.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+	* gcc.target/arm/cmse/cmse.exp (cmse_sgstubs): New.
+
+2022-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* g++.dg/modules/bad-mapper-3.C: Update dg-error pattern.
+
+2022-11-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.target/i386/mv16.C: Add sierra forest.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2022-11-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mcmpccxadd.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/avx-1.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-13.c: Add -mcmpccxadd.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/x86gprintrin-1.c: Ditto.
+	* gcc.target/i386/x86gprintrin-2.c: Ditto.
+	* gcc.target/i386/x86gprintrin-3.c: Ditto.
+	* gcc.target/i386/x86gprintrin-4.c: Ditto.
+	* gcc.target/i386/x86gprintrin-5.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_cmpccxadd):
+	New.
+	* gcc.target/i386/cmpccxadd-1.c: New test.
+	* gcc.target/i386/cmpccxadd-2.c: Ditto.
+
 2022-11-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107488

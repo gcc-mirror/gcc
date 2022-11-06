@@ -1,3 +1,9 @@
+2022-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* mapper-client.cc: Use in-process client when networking is
+	disabled.
+
 2022-11-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107488

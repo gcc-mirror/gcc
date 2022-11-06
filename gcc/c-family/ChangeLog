@@ -1,3 +1,8 @@
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* c-ppoutput.cc (adjust_for_newlines): Update comment.
+
 2022-11-03  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.cc (c_common_post_options): -fconcepts no longer implies

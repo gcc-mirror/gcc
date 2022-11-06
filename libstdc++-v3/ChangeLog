@@ -1,3 +1,33 @@
+2022-11-05  Jakob Hasse  <0xjakob@users.noreply.github.com>
+
+	PR libstdc++/105387
+	* libsupc++/pbase_type_info.cc (__do_catch) [!__cpp_rtti]: Add
+	check that the thrown type is actually a pointer.
+	* testsuite/18_support/105387.cc: New test.
+	* testsuite/18_support/105387_memptr.cc: New test.
+
+2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107525
+	* include/experimental/propagate_const (operator element_type*()):
+	Move into base class that can be partially specilized to iompose
+	constraints.
+	(operator const element_type*()): Likewise.
+	* testsuite/experimental/propagate_const/observers/107525.cc: New test.
+
+2022-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107500
+	* libsupc++/eh_globals.cc (eh_globals): Remove immortalizing
+	wrapper.
+	(__cxxabiv1::__cxa_get_globals_fast): Adjust.
+	(__cxxabiv1::__cxa_get_globals): Adjust.
+
+2022-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107511
+	* libsupc++/eh_alloc.cc (_GNU_SOURCE): Define.
+
 2022-11-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ranges_algobase.h (__detail::__copy_or_move):
