@@ -2012,8 +2012,8 @@
   [(set_attr "type" "move")]
 )
 
-;; Convert floating-point numbers to integers
-(define_insn "frint_<fmt>"
+;; Round floating-point numbers to integers
+(define_insn "rint<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
 		      UNSPEC_FRINT))]
