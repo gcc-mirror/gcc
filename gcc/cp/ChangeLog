@@ -1,3 +1,23 @@
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105774
+	* constexpr.c (cxx_eval_increment_expression): For signed types
+	that promote to int, evaluate PLUS_EXPR or MINUS_EXPR in int type.
+
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.c (cp_build_modify_expr): Implement
+	P2327R1 - De-deprecating volatile compound operations.  Don't warn
+	for |=, &= or ^= with volatile lhs.
+	* expr.c (mark_use) <case MODIFY_EXPR>: Adjust warning wording,
+	leave out simple.
+
 2022-10-24  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
