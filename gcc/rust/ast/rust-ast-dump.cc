@@ -1585,7 +1585,12 @@ Dump::visit (TupleType &)
 
 void
 Dump::visit (NeverType &)
-{}
+{
+    // Syntax:
+    //  !
+
+    stream << '!';
+}
 
 void
 Dump::visit (RawPointerType &type)
