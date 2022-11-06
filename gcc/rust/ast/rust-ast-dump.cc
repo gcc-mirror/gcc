@@ -1606,7 +1606,12 @@ Dump::visit (ArrayType &type)
 void
 Dump::visit (SliceType &type)
 {
+  // Syntax:
+  //    [ Type ]
+
+  stream << '[';
   visit (type.get_elem_type ());
+  stream << ']';
 }
 
 void
