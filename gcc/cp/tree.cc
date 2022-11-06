@@ -5010,8 +5010,10 @@ const struct attribute_spec cxx_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+#if SUPPORTS_INIT_PRIORITY
   { "init_priority",  1, 1, true,  false, false, false,
     handle_init_priority_attribute, NULL },
+#endif
   { "abi_tag", 1, -1, false, false, false, true,
     handle_abi_tag_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
@@ -5039,7 +5041,7 @@ const struct attribute_spec std_attribute_table[] =
 
 /* Handle an "init_priority" attribute; arguments as in
    struct attribute_spec.handler.  */
-static tree
+ATTRIBUTE_UNUSED static tree
 handle_init_priority_attribute (tree* node,
 				tree name,
 				tree args,
@@ -5103,18 +5105,10 @@ handle_init_priority_attribute (tree* node,
 	 pri);
     }
 
-  if (SUPPORTS_INIT_PRIORITY)
-    {
-      SET_DECL_INIT_PRIORITY (decl, pri);
-      DECL_HAS_INIT_PRIORITY_P (decl) = 1;
-      return NULL_TREE;
-    }
-  else
-    {
-      error ("%qE attribute is not supported on this platform", name);
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
+  gcc_assert (SUPPORTS_INIT_PRIORITY);
+  SET_DECL_INIT_PRIORITY (decl, pri);
+  DECL_HAS_INIT_PRIORITY_P (decl) = 1;
+  return NULL_TREE;
 }
 
 /* DECL is being redeclared; the old declaration had the abi tags in OLD,
