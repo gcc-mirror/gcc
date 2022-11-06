@@ -46,6 +46,54 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "value-relation.h"
 #include "range-op.h"
+#include "tree-ssa-ccp.h"
+
+// Convert irange bitmasks into a VALUE MASK pair suitable for calling CCP.
+
+static void
+irange_to_masked_value (const irange &r, widest_int &value, widest_int &mask)
+{
+  if (r.singleton_p ())
+    {
+      mask = 0;
+      value = widest_int::from (r.lower_bound (), TYPE_SIGN (r.type ()));
+    }
+  else
+    {
+      mask = widest_int::from (r.get_nonzero_bits (), TYPE_SIGN (r.type ()));
+      value = 0;
+    }
+}
+
+// Update the known bitmasks in R when applying the operation CODE to
+// LH and RH.
+
+static void
+update_known_bitmask (irange &r, tree_code code,
+		      const irange &lh, const irange &rh)
+{
+  if (r.undefined_p () || lh.undefined_p () || rh.undefined_p ())
+    return;
+
+  widest_int value, mask, lh_mask, rh_mask, lh_value, rh_value;
+  tree type = r.type ();
+  signop sign = TYPE_SIGN (type);
+  int prec = TYPE_PRECISION (type);
+  signop lh_sign = TYPE_SIGN (lh.type ());
+  signop rh_sign = TYPE_SIGN (rh.type ());
+  int lh_prec = TYPE_PRECISION (lh.type ());
+  int rh_prec = TYPE_PRECISION (rh.type ());
+
+  irange_to_masked_value (lh, lh_value, lh_mask);
+  irange_to_masked_value (rh, rh_value, rh_mask);
+  bit_value_binop (code, sign, prec, &value, &mask,
+		   lh_sign, lh_prec, lh_value, lh_mask,
+		   rh_sign, rh_prec, rh_value, rh_mask);
+
+  int_range<2> tmp (type);
+  tmp.set_nonzero_bits (value | mask);
+  r.intersect (tmp);
+}
 
 // Return the upper limit for a type.
 
@@ -1775,21 +1823,7 @@ operator_mult::fold_range (irange &r, tree type,
   if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
     return false;
 
-  if (lh.undefined_p ())
-    return true;
-
-  tree t;
-  if (rh.singleton_p (&t))
-    {
-      wide_int w = wi::to_wide (t);
-      int shift = wi::exact_log2 (w);
-      if (shift != -1)
-	{
-	  wide_int nz = lh.get_nonzero_bits ();
-	  nz = wi::lshift (nz, shift);
-	  r.set_nonzero_bits (nz);
-	}
-    }
+  update_known_bitmask (r, MULT_EXPR, lh, rh);
   return true;
 }
 
