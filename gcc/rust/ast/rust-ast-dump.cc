@@ -1588,12 +1588,36 @@ Dump::visit (NeverType &)
 {}
 
 void
-Dump::visit (RawPointerType &)
-{}
+Dump::visit (RawPointerType &type)
+{
+  // Syntax:
+  //    * ( mut | const ) TypeNoBounds
+
+  if (type.get_pointer_type () == RawPointerType::MUT)
+    stream << "*mut ";
+  else /* RawPointerType::CONST */
+    stream << "*const ";
+
+  visit (type.get_type_pointed_to ());
+}
 
 void
 Dump::visit (ReferenceType &type)
 {
+  // Syntax:
+  //    & Lifetime? mut? TypeNoBounds
+
+  stream << '&';
+
+  if (type.has_lifetime ())
+    {
+      visit (type.get_lifetime ());
+      stream << ' ';
+    }
+
+  if (type.get_has_mut ())
+    stream << "mut ";
+
   visit (type.get_type_referenced ());
 }
 
@@ -1606,7 +1630,7 @@ Dump::visit (ArrayType &type)
   stream << '[';
   visit (type.get_elem_type ());
   stream << "; ";
-  visit(type.get_size_expr());
+  visit (type.get_size_expr ());
   stream << ']';
 }
 
