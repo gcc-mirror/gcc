@@ -2,7 +2,7 @@
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O3" } */
 
 #include <stddef.h>
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 size_t test_vsetvl_e8mf8_imm0()
 {

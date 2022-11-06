@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O3" } */
 
-#include <riscv_vector.h> 
+#include "riscv_vector.h" 
 
 void mov1 (int8_t *in, int8_t *out) 
 { 

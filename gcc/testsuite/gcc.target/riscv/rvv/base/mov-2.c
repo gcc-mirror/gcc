@@ -2,7 +2,7 @@
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O3" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 /*
 ** mov2:

@@ -2,7 +2,7 @@
 /* { dg-additional-options "-O3" } */
 /* { dg-skip-if "test intrinsic using rvv" { *-*-* } { "*" } { "-march=rv*v*zfh*" } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 unsigned long vread_csr_vstart(void) {
   return vread_csr(RVV_VSTART);
