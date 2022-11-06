@@ -1661,6 +1661,9 @@ Dump::visit (SliceType &type)
 void
 Dump::visit (InferredType &)
 {
+  // Syntax:
+  //    _
+
   stream << "_";
 }
 
