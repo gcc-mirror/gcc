@@ -1,3 +1,9 @@
+2022-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt99.adb: New test.
+	* gnat.dg/opt99_pkg1.ads, gnat.dg/opt99_pkg1.adb: New helper.
+	* gnat.dg/opt99_pkg2.ads: Likewise.
+
 2022-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
