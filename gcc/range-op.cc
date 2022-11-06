@@ -1995,23 +1995,7 @@ operator_div::fold_range (irange &r, tree type,
   if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
     return false;
 
-  if (lh.undefined_p ())
-    return true;
-
-  tree t;
-  if (code == TRUNC_DIV_EXPR
-      && rh.singleton_p (&t)
-      && !wi::neg_p (lh.lower_bound ()))
-    {
-      wide_int wi = wi::to_wide (t);
-      int shift = wi::exact_log2 (wi);
-      if (shift != -1)
-	{
-	  wide_int nz = lh.get_nonzero_bits ();
-	  nz = wi::rshift (nz, shift, TYPE_SIGN (type));
-	  r.set_nonzero_bits (nz);
-	}
-    }
+  update_known_bitmask (r, code, lh, rh);
   return true;
 }
 
