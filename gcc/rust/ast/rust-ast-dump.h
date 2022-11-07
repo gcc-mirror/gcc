@@ -73,46 +73,63 @@ private:
   Indent indentation;
 
   /**
-   * Format together common items of functions: Parameters, return type, block
+   * Compatibility layer for using the visitor pattern on polymorphic classes
+   * with a unified overload syntax. This allows us to call `visit` both on
+   * types implementing `accept_vis` method and for classes for which the
+   * `visit` method is directly implemented.
    */
-  void format_function_common (std::unique_ptr<Type> &return_type,
-			       std::unique_ptr<BlockExpr> &block);
+  template <typename T> void visit (std::unique_ptr<T> &node);
 
   /**
-   * Format a function's definition parameter
+   * Visit all items in given @collection, placing the separator in between but
+   * not at the end.
+   * Start and end offset allow to visit only a "slice" from the collection.
    */
-  void format_function_param (FunctionParam &param);
+  template <typename T>
+  void visit_items_joined_by_separator (T &collection,
+					const std::string &separator = "",
+					size_t start_offset = 0,
+					size_t end_offset = 0);
 
   /**
-   * Emit an attribute
+   * Visit item placing indentation before and trailing string + end of line
+   * after.
    */
-  void emit_attrib (const Attribute &attrib);
+  template <typename T>
+  void visit_as_line (T &item, const std::string &trailing = "");
 
   /**
-   * Emit an item's visibility
+   * Visit each item in @collection "as line".
+   *
+   * @see visit_as_line
    */
-  void emit_visibility (const Visibility &vis);
+  template <typename T>
+  void visit_items_as_lines (T &collection, const std::string &trailing = "");
 
   /**
-   * Emit an indented string with an optional extra comment
+   * Visit each item in @collection as lines inside a block delimited by braces
+   * with increased indentation. Also includes special handling for empty
+   * collection to print only the delimiters with no new line inside.
    */
-  std::ostream &emit_indented_string (const std::string &value,
-				      const std::string &comment = "");
+  template <typename T>
+  void visit_items_as_block (T &collection, const std::string &line_trailing,
+			     char left_brace = '{', char right_brace = '}');
 
   /**
-   * Emit formatted string for generic parameters
+   * Visit common items of functions: Parameters, return type, block
    */
-  void emit_generic_params (std::vector<std::unique_ptr<GenericParam>> &params);
+  void visit_function_common (std::unique_ptr<Type> &return_type,
+			      std::unique_ptr<BlockExpr> &block);
 
-  /**
-   * Format a single field of a tuple
-   */
-  void format_tuple_field (TupleField &field);
-
-  /**
-   * Format a single field of a struct
-   */
-  void format_struct_field (StructField &field);
+  void visit (FunctionParam &param);
+  void visit (const Attribute &attrib);
+  void visit (const Visibility &vis);
+  void visit (std::vector<std::unique_ptr<GenericParam>> &params);
+  void visit (TupleField &field);
+  void visit (StructField &field);
+  void visit (const SimplePathSegment &segment);
+  void visit (NamedFunctionParam &param);
+  void visit (MacroRule &rule);
 
   // rust-ast.h
   void visit (Token &tok);
