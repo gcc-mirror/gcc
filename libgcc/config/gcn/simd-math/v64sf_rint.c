@@ -29,9 +29,7 @@ DEF_VS_MATH_FUNC (v64sf, rintf, v64sf x)
   v64si ix = (i0 & 0x7fffffff);
   v64si j0 = (ix >> 23) - 0x7f;
   VECTOR_IF (j0 < 23, cond)
-    VECTOR_IF2 (FLT_UWORD_IS_ZERO (ix), cond2, cond)
-      VECTOR_RETURN (x, cond2);
-    VECTOR_ENDIF
+    VECTOR_RETURN (x, cond & FLT_UWORD_IS_ZERO (ix));
     VECTOR_IF2 (j0 < 0, cond2, cond)
       v64si i1 = (i0 & 0x07fffff);
       VECTOR_COND_MOVE (i0, i0 & 0xfff00000, cond2);
@@ -42,22 +40,16 @@ DEF_VS_MATH_FUNC (v64sf, rintf, v64sf x)
       GET_FLOAT_WORD (i0, t, cond2);
       SET_FLOAT_WORD (t, (i0&0x7fffffff)|(sx<<31), cond2);
       VECTOR_RETURN (t, cond2);
-    VECTOR_ELSE (cond2)
+    VECTOR_ELSE2 (cond2, cond)
       v64si i = (0x007fffff) >> j0;
-      VECTOR_IF2 ((i0 & i) == 0, cond3, cond2)	/* x is integral */
-	VECTOR_RETURN (x, cond3);
-      VECTOR_ENDIF
+      VECTOR_RETURN (x, cond2 & ((i0 & i) == 0));       /* x is integral */
       i >>= 1;
-      VECTOR_IF2 ((i0 & i) != 0, cond3, cond2)
-	VECTOR_COND_MOVE (i0, (i0 & (~i)) | ((0x200000) >> j0), cond3);
-      VECTOR_ENDIF
+      VECTOR_COND_MOVE (i0, (i0 & (~i)) | (0x200000 >> j0),
+                        cond2 & ((i0 & i) != 0));
     VECTOR_ENDIF
   VECTOR_ELSE (cond)
-    VECTOR_IF2 (~FLT_UWORD_IS_FINITE (ix), cond2, cond) /* inf or NaN */
-      VECTOR_RETURN (x + x, cond2);
-    VECTOR_ELSE (cond2)	/* x is integral */
-      VECTOR_RETURN (x, cond2);
-    VECTOR_ENDIF
+    VECTOR_RETURN (x + x, cond & ~FLT_UWORD_IS_FINITE (ix));    /* inf or NaN */
+    VECTOR_RETURN (x, cond); /* x is integral */
   VECTOR_ENDIF
 
   SET_FLOAT_WORD (x, i0, NO_COND);

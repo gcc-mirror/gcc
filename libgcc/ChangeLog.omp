@@ -1,3 +1,10 @@
+2022-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/simd-math/v64df_rint.c (rint): Simplified.  Fixed bug in
+	nested VECTOR_IF.  Fixed issue with signed right-shift.
+	* config/gcn/simd-math/v64sf_rint.c (rintf): Simplified.  Fixed bug in
+	nested VECTOR_IF.
+
 2022-11-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Paul-Antoine Arras  <pa@codesourcery.com>
 	    Andrew Jenner  <andrew@codesourcery.com>

@@ -40,7 +40,7 @@ DEF_VD_MATH_FUNC (v64df, rint, v64df x)
       GET_HIGH_WORD (i0, t, cond2);
       SET_HIGH_WORD (t, (i0&0x7fffffff)|(sx<<31), cond2);
       VECTOR_RETURN (t, cond2);
-    VECTOR_ELSE (cond2)
+    VECTOR_ELSE2 (cond2, cond)
       i = (0x000fffff) >> j0;
       VECTOR_RETURN (x, cond2 & (((i0 & i) | i1) == 0));      /* x is integral */
       i >>= 1;
@@ -54,7 +54,7 @@ DEF_VD_MATH_FUNC (v64df, rint, v64df x)
     VECTOR_RETURN (x + x, cond & (j0 == 0x400));
     VECTOR_RETURN (x, cond);
   VECTOR_ELSE (cond)
-    i = (0xffffffff) >> (j0 - 20);
+    i = CAST_VECTOR (v64si, VECTOR_INIT (0xffffffff) >> (j0 - 20));
     VECTOR_RETURN (x, cond & ((i1 & i) == 0));
     i >>= 1;
     VECTOR_COND_MOVE (i1, (i1 & (~i)) | (0x40000000 >> (j0 - 20)), cond & ((i1 & i) != 0));
