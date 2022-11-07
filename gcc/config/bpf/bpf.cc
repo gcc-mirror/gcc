@@ -1222,7 +1222,7 @@ bpf_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       return gen_rtx_REG (ops[0].mode, BPF_R0);
     }
 
-  else if (code == -1)
+  else if (code == -BPF_BUILTIN_PRESERVE_ACCESS_INDEX)
     {
       /* A resolved overloaded __builtin_preserve_access_index.  */
       tree arg = CALL_EXPR_ARG (exp, 0);
@@ -1249,7 +1249,7 @@ bpf_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       return expand_normal (arg);
     }
 
-  else if (code == -2)
+  else if (code == -BPF_BUILTIN_PRESERVE_FIELD_INFO)
     {
       /* A resolved overloaded __builtin_preserve_field_info.  */
       tree src = CALL_EXPR_ARG (exp, 0);
@@ -1444,28 +1444,37 @@ bpf_core_get_index (const tree node)
    __builtin_preserve_access_index.  */
 
 static tree
-bpf_core_newdecl (tree type, bool is_pai)
+bpf_core_newdecl (tree type, enum bpf_builtins which)
 {
   tree rettype;
   char name[80];
   static unsigned long pai_count = 0;
   static unsigned long pfi_count = 0;
 
-  if (is_pai)
+  switch (which)
     {
-      rettype = build_function_type_list (type, type, NULL);
-      int len = snprintf (name, sizeof (name), "%s", "__builtin_pai_");
-      len = snprintf (name + len, sizeof (name) - len, "%lu", pai_count++);
-    }
-  else
-    {
-      rettype = build_function_type_list (unsigned_type_node, type,
-					  unsigned_type_node, NULL);
-      int len = snprintf (name, sizeof (name), "%s", "__builtin_pfi_");
-      len = snprintf (name + len, sizeof (name) - len, "%lu", pfi_count++);
+    case BPF_BUILTIN_PRESERVE_ACCESS_INDEX:
+      {
+	rettype = build_function_type_list (type, type, NULL);
+	int len = snprintf (name, sizeof (name), "%s", "__builtin_pai_");
+	len = snprintf (name + len, sizeof (name) - len, "%lu", pai_count++);
+      }
+      break;
+
+    case BPF_BUILTIN_PRESERVE_FIELD_INFO:
+      {
+	rettype = build_function_type_list (unsigned_type_node, type,
+					    unsigned_type_node, NULL);
+	int len = snprintf (name, sizeof (name), "%s", "__builtin_pfi_");
+	len = snprintf (name + len, sizeof (name) - len, "%lu", pfi_count++);
+      }
+      break;
+
+    default:
+      gcc_unreachable ();
     }
 
-  return add_builtin_function_ext_scope (name, rettype, is_pai ? -1 : -2,
+  return add_builtin_function_ext_scope (name, rettype, -which,
 					 BUILT_IN_MD, NULL, NULL_TREE);
 }
 
@@ -1492,6 +1501,7 @@ bpf_core_is_maybe_aggregate_access (tree expr)
 
 struct core_walk_data {
   location_t loc;
+  enum bpf_builtins which;
   tree arg;
 };
 
@@ -1501,7 +1511,6 @@ static tree
 bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
 {
   struct core_walk_data *dat = (struct core_walk_data *) data;
-  bool is_pai = dat->arg == NULL_TREE;
 
   /* If this is a type, don't do anything. */
   if (TYPE_P (*tp))
@@ -1510,19 +1519,21 @@ bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
       return NULL_TREE;
     }
 
-  /* Build a new function call to a resolved builtin for the desired operation.
-     If this is a preserve_field_info call, pass along the argument to the
-     resolved builtin call. */
-  if (bpf_core_is_maybe_aggregate_access (*tp))
-    {
-      tree newdecl = bpf_core_newdecl (TREE_TYPE (*tp), is_pai);
-      tree newcall;
-      if (is_pai)
-	newcall = build_call_expr_loc (dat->loc, newdecl, 1, *tp);
-      else
-	newcall = build_call_expr_loc (dat->loc, newdecl, 2, *tp, dat->arg);
+  /* Build a new function call to a type-resolved temporary builtin for the
+     desired operation, and pass along args as necessary.  */
+  tree newdecl = bpf_core_newdecl (TREE_TYPE (*tp), dat->which);
 
-      *tp = newcall;
+  if (dat->which == BPF_BUILTIN_PRESERVE_ACCESS_INDEX)
+    {
+      if (bpf_core_is_maybe_aggregate_access (*tp))
+	{
+	  *tp = build_call_expr_loc (dat->loc, newdecl, 1, *tp);
+	  *walk_subtrees = 0;
+	}
+    }
+  else
+    {
+      *tp = build_call_expr_loc (dat->loc, newdecl, 2, *tp, dat->arg);
       *walk_subtrees = 0;
     }
 
@@ -1572,32 +1583,26 @@ bpf_is_valid_preserve_field_info_arg (tree expr)
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN (see gccint manual section
    Target Macros::Misc.).
-   We use this for the __builtin_preserve_access_index builtin for CO-RE
-   support.
+   Used for CO-RE support builtins such as __builtin_preserve_access_index
+   and __builtin_preserve_field_info.
 
    FNDECL is the declaration of the builtin, and ARGLIST is the list of
-   arguments passed to it, and is really a vec<tree,_> *.
-
-   In this case, the 'operation' implemented by the builtin is a no-op;
-   the builtin is just a marker. So, the result is simply the argument.  */
+   arguments passed to it, and is really a vec<tree,_> *.  */
 
 static tree
 bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
 {
-  bool is_pai = DECL_MD_FUNCTION_CODE (fndecl)
-    == BPF_BUILTIN_PRESERVE_ACCESS_INDEX;
-  bool is_pfi = DECL_MD_FUNCTION_CODE (fndecl)
-    == BPF_BUILTIN_PRESERVE_FIELD_INFO;
+  enum bpf_builtins which = (enum bpf_builtins) DECL_MD_FUNCTION_CODE (fndecl);
 
-  if (!is_pai && !is_pfi)
+  if (which < BPF_BUILTIN_PRESERVE_ACCESS_INDEX
+      || which >= BPF_BUILTIN_MAX)
     return NULL_TREE;
 
-  /* We only expect one argument, but it may be an arbitrarily-complicated
-     statement-expression. */
   vec<tree, va_gc> *params = static_cast<vec<tree, va_gc> *> (arglist);
   unsigned n_params = params ? params->length() : 0;
 
-  if ((is_pai && n_params != 1) || (is_pfi && n_params != 2))
+  if (!(which == BPF_BUILTIN_PRESERVE_ACCESS_INDEX && n_params == 1)
+      && n_params != 2)
     {
       error_at (loc, "wrong number of arguments");
       return error_mark_node;
@@ -1605,12 +1610,15 @@ bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
 
   tree param = (*params)[0];
 
-  /* If not generating BPF_CORE information, preserve_access_index does nothing,
-     and simply "resolves to" the argument.  */
-  if (!TARGET_BPF_CORE && is_pai)
+  /* If not generating BPF_CORE information, preserve_access_index does
+     nothing, and simply "resolves to" the argument.  */
+  if (which == BPF_BUILTIN_PRESERVE_ACCESS_INDEX && !TARGET_BPF_CORE)
     return param;
 
-  if (is_pfi && !bpf_is_valid_preserve_field_info_arg (param))
+  /* For __builtin_preserve_field_info, enforce that the parameter is exactly a
+     field access and not a more complex expression.  */
+  else if (which == BPF_BUILTIN_PRESERVE_FIELD_INFO
+	   && !bpf_is_valid_preserve_field_info_arg (param))
     {
       error_at (EXPR_LOC_OR_LOC (param, loc),
 		"argument is not a field access");
@@ -1642,7 +1650,11 @@ bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
 
   struct core_walk_data data;
   data.loc = loc;
-  data.arg = is_pai ? NULL_TREE : (*params)[1];
+  data.which = which;
+  if (which == BPF_BUILTIN_PRESERVE_ACCESS_INDEX)
+    data.arg = NULL_TREE;
+  else
+    data.arg = (*params)[1];
 
   walk_tree (&param, bpf_core_walk, (void *) &data, NULL);
 
