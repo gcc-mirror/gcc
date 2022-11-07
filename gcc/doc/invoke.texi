@@ -16502,9 +16502,10 @@ by this option.
 
 @end table
 
-Note the enabled sanitizer options tend to increase a false-positive rate
-of selected warnings, most notably @option{-Wmaybe-uninitialized}.
-And thus we recommend to disable @option{-Werror}.
+Note that sanitizers tend to increase the rate of false positive
+warnings, most notably those around @option{-Wmaybe-uninitialized}.
+We recommend against combining @option{-Werror} and [the use of]
+sanitizers.
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
