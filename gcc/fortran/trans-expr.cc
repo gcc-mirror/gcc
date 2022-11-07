@@ -11236,10 +11236,10 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
 
   if (expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
     {
-      /* Use the rhs string length and the lhs element size.  */
+      /* Use the rhs string length and the lhs element size. Note that 'size' is
+	 used below for the string-length comparison, only.  */
       size = string_length;
-      tmp = TREE_TYPE (gfc_typenode_for_spec (&expr1->ts));
-      tmp = TYPE_SIZE_UNIT (tmp);
+      tmp = TYPE_SIZE_UNIT (gfc_get_char_type (expr1->ts.kind));
       size_in_bytes = fold_build2_loc (input_location, MULT_EXPR,
 				       TREE_TYPE (tmp), tmp,
 				       fold_convert (TREE_TYPE (tmp), size));
