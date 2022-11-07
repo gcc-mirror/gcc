@@ -835,7 +835,7 @@ public:
 };
 
 /* A function pointer type - can be created via coercion from function items and
- * non- capturing closures. */
+ * non-capturing closures. */
 class BareFunctionType : public TypeNoBounds
 {
   // bool has_for_lifetimes;
@@ -844,7 +844,7 @@ class BareFunctionType : public TypeNoBounds
 
   FunctionQualifiers function_qualifiers;
   std::vector<MaybeNamedParam> params;
-  bool is_variadic;
+  bool _is_variadic;
   std::vector<Attribute> variadic_attrs;
 
   // bool has_return_type;
@@ -860,6 +860,16 @@ public:
   // Whether the function has ForLifetimes.
   bool has_for_lifetimes () const { return !for_lifetimes.empty (); }
 
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+
+  bool is_variadic () const { return _is_variadic; }
+
+  std::vector<Attribute> &get_variadic_attr () { return variadic_attrs; };
+  const std::vector<Attribute> &get_variadic_attr () const
+  {
+    return variadic_attrs;
+  };
+
   BareFunctionType (std::vector<LifetimeParam> lifetime_params,
 		    FunctionQualifiers qualifiers,
 		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
@@ -867,7 +877,7 @@ public:
 		    std::unique_ptr<TypeNoBounds> type, Location locus)
     : for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
-      params (std::move (named_params)), is_variadic (is_variadic),
+      params (std::move (named_params)), _is_variadic (is_variadic),
       variadic_attrs (std::move (variadic_attrs)),
       return_type (std::move (type)), locus (locus)
   {
@@ -879,7 +889,7 @@ public:
   BareFunctionType (BareFunctionType const &other)
     : for_lifetimes (other.for_lifetimes),
       function_qualifiers (other.function_qualifiers), params (other.params),
-      is_variadic (other.is_variadic), variadic_attrs (other.variadic_attrs),
+      _is_variadic (other._is_variadic), variadic_attrs (other.variadic_attrs),
       locus (other.locus)
   {
     // guard to prevent null dereference
@@ -893,7 +903,7 @@ public:
     for_lifetimes = other.for_lifetimes;
     function_qualifiers = other.function_qualifiers;
     params = other.params;
-    is_variadic = other.is_variadic;
+    _is_variadic = other._is_variadic;
     variadic_attrs = other.variadic_attrs;
     locus = other.locus;
 
@@ -930,7 +940,7 @@ public:
     return return_type;
   }
 
-  FunctionQualifiers get_function_qualifiers () { return function_qualifiers; }
+  FunctionQualifiers &get_function_qualifiers () { return function_qualifiers; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

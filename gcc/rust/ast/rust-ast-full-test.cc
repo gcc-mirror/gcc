@@ -3071,7 +3071,7 @@ BareFunctionType::as_string () const
     }
 
   str += "\n Is variadic: ";
-  if (is_variadic)
+  if (_is_variadic)
     str += "true";
   else
     str += "false";

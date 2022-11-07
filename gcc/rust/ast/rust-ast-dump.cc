@@ -250,6 +250,56 @@ Dump::visit (std::vector<LifetimeParam> &for_lifetimes)
 }
 
 void
+Dump::visit (FunctionQualifiers &qualifiers)
+{
+  // Syntax:
+  //    `const`? `async`? `unsafe`? (`extern` Abi?)?
+  //    unsafe? (extern Abi?)?
+
+  switch (qualifiers.get_const_status ())
+    {
+    case NONE:
+      break;
+    case CONST_FN:
+      stream << "const ";
+      break;
+    case ASYNC_FN:
+      stream << "async ";
+      break;
+    }
+
+  if (qualifiers.is_unsafe ())
+    stream << "unsafe ";
+  if (qualifiers.is_extern ())
+    {
+      stream << "extern ";
+      if (qualifiers.has_abi ())
+	stream << "\"" << qualifiers.get_extern_abi () << "\" ";
+    }
+} // namespace AST
+
+void
+Dump::visit (MaybeNamedParam &param)
+{
+  // Syntax:
+  //     OuterAttribute* ( ( IDENTIFIER | _ ) : )? Type
+
+  visit_items_joined_by_separator (param.get_outer_attrs (), " ");
+  switch (param.get_param_kind ())
+    {
+    case MaybeNamedParam::UNNAMED:
+      break;
+    case MaybeNamedParam::IDENTIFIER:
+      stream << " " << param.get_name () << ": ";
+      break;
+    case MaybeNamedParam::WILDCARD:
+      stream << " _: ";
+      break;
+    }
+  visit (param.get_type ());
+}
+
+void
 Dump::visit (Token &tok)
 {
   stream << tok.as_string ();
@@ -1668,8 +1718,48 @@ Dump::visit (InferredType &)
 }
 
 void
-Dump::visit (BareFunctionType &)
-{}
+Dump::visit (BareFunctionType &type)
+{
+  // Syntax:
+  //    ForLifetimes? FunctionTypeQualifiers fn
+  //      ( FunctionParametersMaybeNamedVariadic? ) BareFunctionReturnType?
+  //
+  //    BareFunctionReturnType:
+  //      -> TypeNoBounds
+  //
+  //    FunctionParametersMaybeNamedVariadic :
+  //      MaybeNamedFunctionParameters | MaybeNamedFunctionParametersVariadic
+  //
+  //    MaybeNamedFunctionParameters :
+  //      MaybeNamedParam ( , MaybeNamedParam )* ,?
+  //
+  //    MaybeNamedFunctionParametersVariadic :
+  //      ( MaybeNamedParam , )* MaybeNamedParam , OuterAttribute* ...
+
+  if (type.has_for_lifetimes ())
+    visit (type.get_for_lifetimes ());
+
+  visit (type.get_function_qualifiers ());
+
+  stream << "fn (";
+
+  visit_items_joined_by_separator (type.get_function_params (), ", ");
+
+  if (type.is_variadic ())
+    {
+      stream << ", ";
+      visit_items_joined_by_separator (type.get_variadic_attr (), " ");
+      stream << "...";
+    }
+
+  stream << ')';
+
+  if (type.has_return_type ())
+    {
+      stream << " -> ";
+      visit (type.get_return_type ());
+    }
+}
 
 } // namespace AST
 } // namespace Rust
