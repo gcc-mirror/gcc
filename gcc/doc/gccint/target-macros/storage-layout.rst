@@ -217,10 +217,10 @@ See :ref:`run-time-target`.
 
   If not defined, the default value is ``STACK_BOUNDARY``.
 
-  .. todo:: The default should be @code{PREFERRED_STACK_BOUNDARY}.
+  .. todo:: The default should be ``PREFERRED_STACK_BOUNDARY``.
     But the fix for PR 32893 indicates that we can only guarantee
-    maximum stack alignment on stack up to @code{STACK_BOUNDARY}, not
-    @code{PREFERRED_STACK_BOUNDARY}, if stack alignment isn't supported.
+    maximum stack alignment on stack up to ``STACK_BOUNDARY``, not
+    ``PREFERRED_STACK_BOUNDARY``, if stack alignment isn't supported.
 
 .. c:macro:: MAX_OFILE_ALIGNMENT
 

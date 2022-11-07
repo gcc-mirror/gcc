@@ -1457,10 +1457,6 @@ These :samp:`-m` options are defined for the x86 family of computers.
   cachline bouncing when and works for all atomic logic fetch builtins
   that generates compare and swap loop.
 
-.. option:: -mprefer-remote-atomic
-
-  Prefer use remote atomic insn for atomic operations.
-
 .. option:: -mindirect-branch={choice}
 
   Convert indirect call and jump with :samp:`{choice}`.  The default is
