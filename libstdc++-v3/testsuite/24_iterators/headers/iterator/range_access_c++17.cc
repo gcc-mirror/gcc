@@ -27,8 +27,8 @@ namespace std
   template<class C> constexpr auto end(C& c) -> decltype(c.end());
   template<class C> constexpr auto end(const C& c) -> decltype(c.end());
 
-  template<class T, size_t N> constexpr T* begin(T (&array)[N]);
-  template<class T, size_t N> constexpr T* end(T (&array)[N]);
+  template<class T, size_t N> constexpr T* begin(T (&array)[N]) noexcept;
+  template<class T, size_t N> constexpr T* end(T (&array)[N]) noexcept;
 
   template<class C> constexpr auto cbegin(const C& c) -> decltype(c.begin());
   template<class C> constexpr auto cend(const C& c) -> decltype(c.end());
@@ -40,14 +40,14 @@ namespace std
   template<class C> constexpr auto rend(const C& c) -> decltype(c.rend());
 
   template<class T, size_t N>
-    constexpr reverse_iterator<T*> rbegin(T (&array)[N]);
+    constexpr reverse_iterator<T*> rbegin(T (&array)[N]) noexcept;
   template<class T, size_t N>
-    constexpr reverse_iterator<T*> rend(T (&array)[N]);
+    constexpr reverse_iterator<T*> rend(T (&array)[N]) noexcept;
 
   template<class E>
-    constexpr reverse_iterator<const E*> rbegin(initializer_list<E>);
+    constexpr reverse_iterator<const E*> rbegin(initializer_list<E>) noexcept;
   template<class E>
-    constexpr reverse_iterator<const E*> rend(initializer_list<E>);
+    constexpr reverse_iterator<const E*> rend(initializer_list<E>) noexcept;
 
   template<class C>
     constexpr auto crbegin(const C& c) -> decltype(std::rbegin(c));

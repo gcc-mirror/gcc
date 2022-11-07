@@ -32,7 +32,7 @@ namespace std
   template<class Ptr> struct pointer_traits;
   template<class T> struct pointer_traits<T*>;
 
-  void* align(size_t alignment, size_t size, void*& ptr, size_t& space);
+  void* align(size_t alignment, size_t size, void*& ptr, size_t& space) noexcept;
 
   struct allocator_arg_t;
   extern const allocator_arg_t allocator_arg;

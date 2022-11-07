@@ -28,6 +28,6 @@ namespace std
   template<class C> auto end(C& c) -> decltype(c.end());
   template<class C> auto end(const C& c) -> decltype(c.end());
 
-  template<class T, size_t N> T* begin(T (&array)[N]);
-  template<class T, size_t N> T* end(T (&array)[N]);
+  template<class T, size_t N> T* begin(T (&array)[N]) noexcept;
+  template<class T, size_t N> T* end(T (&array)[N]) noexcept;
 }
