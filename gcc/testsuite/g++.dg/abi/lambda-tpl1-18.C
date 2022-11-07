@@ -23,3 +23,9 @@
 // https://github.com/llvm/llvm-project/issues/58631
 
 // { dg-final { scan-assembler {_ZZ2FnILi1EEvvENKUlTyT_E_clIiEEDaS0_:} } }
+
+// { dg-final { scan-assembler {_ZZ1fvENKUlTyTnT_S_E_clIcLc0EEEDaS_:} } }
+// { dg-final { scan-assembler {_ZZ1fvENKUlTyTnT_S_E_clIiLi0EEEDaS_:} } }
+// { dg-final { scan-assembler {_ZZZ1fvENKUlTyTnT_S_E_clIcLc0EEEDaS_ENKUlTycS_E_clIcEEDacS_:} } }
+// { dg-final { scan-assembler {_ZZZ1fvENKUlTyTnT_S_E_clIiLi0EEEDaS_ENKUlTyiS_E_clIiEEDaiS_:} } }
+// { dg-final { scan-assembler {_ZZ1fvENKUlTyP1UIT_Lj0EEPS_IiLj0EEE_clIcEEDaS2_S4_:} } }
