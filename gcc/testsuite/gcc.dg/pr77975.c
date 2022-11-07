@@ -7,10 +7,11 @@
 unsigned int
 foo (unsigned int *b)
 {
-  unsigned int a = 3;
+  unsigned int a = 8;
   while (a)
     {
-      a >>= 1;
+      a += 5;
+      a &= 44;
       *b += a;
     }
   return a; 
@@ -21,10 +22,11 @@ foo (unsigned int *b)
 unsigned int
 bar (unsigned int *b)
 {
-  unsigned int a = 7;
+  unsigned int a = 3;
   while (a)
     {
-      a >>= 1;
+      a += 5;
+      a &= 44;
       *b += a;
     }
   return a; 
