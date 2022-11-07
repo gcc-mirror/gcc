@@ -128,10 +128,7 @@ This describes the overall framework of an assembly file.
   :end-before: [TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS]
 
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_HAVE_NAMED_SECTIONS]
-  :end-before: [TARGET_HAVE_NAMED_SECTIONS]
-
+.. c:var:: bool TARGET_HAVE_NAMED_SECTIONS
 
   This flag is true if the target supports ``TARGET_ASM_NAMED_SECTION``.
   It must not be modified by command-line option processing.

@@ -54,10 +54,7 @@ region.
   ``INCOMING_RETURN_ADDR_RTX`` and ``OBJECT_FORMAT_ELF``),
   GCC will provide a default definition of 1.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_EXCEPT_UNWIND_INFO]
-  :end-before: [TARGET_EXCEPT_UNWIND_INFO]
-
+.. function:: enum unwind_info_type TARGET_EXCEPT_UNWIND_INFO (struct gcc_options *opts)
 
   This hook defines the mechanism that will be used for exception handling
   by the target.  If the target has ABI specified unwind tables, the hook
@@ -83,10 +80,7 @@ region.
   ``DWARF2_UNWIND_INFO`` depends on command-line options, the target
   must define this hook so that :samp:`{opts}` is used correctly.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_UNWIND_TABLES_DEFAULT]
-  :end-before: [TARGET_UNWIND_TABLES_DEFAULT]
-
+.. c:var:: bool TARGET_UNWIND_TABLES_DEFAULT
 
   This variable should be set to ``true`` if the target ABI requires unwinding
   tables even when exceptions are not used.  It must not be modified by
