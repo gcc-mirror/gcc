@@ -1956,8 +1956,8 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
     restore_costs_from_copies (a);
   ALLOCNO_HARD_REGNO (a) = best_hard_regno;
   ALLOCNO_ASSIGNED_P (a) = true;
-  if (best_hard_regno >= 0)
-    update_costs_from_copies (a, true, ! retry_p);
+  if (best_hard_regno >= 0 && !retry_p)
+    update_costs_from_copies (a, true, true);
   ira_assert (ALLOCNO_CLASS (a) == aclass);
   /* We don't need updated costs anymore.  */
   ira_free_allocno_updated_costs (a);
