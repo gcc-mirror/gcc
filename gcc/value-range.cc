@@ -266,15 +266,16 @@ frange::flush_denormals_to_zero ()
   if (undefined_p () || known_isnan ())
     return;
 
+  machine_mode mode = TYPE_MODE (type ());
   // Flush [x, -DENORMAL] to [x, -0.0].
-  if (real_isdenormal (&m_max) && real_isneg (&m_max))
+  if (real_isdenormal (&m_max, mode) && real_isneg (&m_max))
     {
       m_max = dconst0;
       if (HONOR_SIGNED_ZEROS (m_type))
 	m_max.sign = 1;
     }
   // Flush [+DENORMAL, x] to [+0.0, x].
-  if (real_isdenormal (&m_min) && !real_isneg (&m_min))
+  if (real_isdenormal (&m_min, mode) && !real_isneg (&m_min))
     m_min = dconst0;
 }
 
