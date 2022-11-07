@@ -5370,18 +5370,38 @@ arith_overflowed_p (enum tree_code code, const_tree type,
   return wi::min_precision (wres, sign) > TYPE_PRECISION (type);
 }
 
-/* If IFN_MASK_LOAD/STORE call CALL is unconditional, return a MEM_REF
+/* If IFN_{MASK,LEN}_LOAD/STORE call CALL is unconditional, return a MEM_REF
    for the memory it references, otherwise return null.  VECTYPE is the
-   type of the memory vector.  */
+   type of the memory vector.  MASK_P indicates it's for MASK if true,
+   otherwise it's for LEN.  */
 
 static tree
-gimple_fold_mask_load_store_mem_ref (gcall *call, tree vectype)
+gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
 {
   tree ptr = gimple_call_arg (call, 0);
   tree alias_align = gimple_call_arg (call, 1);
-  tree mask = gimple_call_arg (call, 2);
-  if (!tree_fits_uhwi_p (alias_align) || !integer_all_onesp (mask))
+  if (!tree_fits_uhwi_p (alias_align))
     return NULL_TREE;
+
+  if (mask_p)
+    {
+      tree mask = gimple_call_arg (call, 2);
+      if (!integer_all_onesp (mask))
+	return NULL_TREE;
+    } else {
+      tree basic_len = gimple_call_arg (call, 2);
+      if (!tree_fits_uhwi_p (basic_len))
+	return NULL_TREE;
+      unsigned int nargs = gimple_call_num_args (call);
+      tree bias = gimple_call_arg (call, nargs - 1);
+      gcc_assert (tree_fits_uhwi_p (bias));
+      tree biased_len = int_const_binop (MINUS_EXPR, basic_len, bias);
+      unsigned int len = tree_to_uhwi (biased_len);
+      unsigned int vect_len
+	= GET_MODE_SIZE (TYPE_MODE (vectype)).to_constant ();
+      if (vect_len != len)
+	return NULL_TREE;
+    }
 
   unsigned HOST_WIDE_INT align = tree_to_uhwi (alias_align);
   if (TYPE_ALIGN (vectype) != align)
@@ -5390,16 +5410,18 @@ gimple_fold_mask_load_store_mem_ref (gcall *call, tree vectype)
   return fold_build2 (MEM_REF, vectype, ptr, offset);
 }
 
-/* Try to fold IFN_MASK_LOAD call CALL.  Return true on success.  */
+/* Try to fold IFN_{MASK,LEN}_LOAD call CALL.  Return true on success.
+   MASK_P indicates it's for MASK if true, otherwise it's for LEN.  */
 
 static bool
-gimple_fold_mask_load (gimple_stmt_iterator *gsi, gcall *call)
+gimple_fold_partial_load (gimple_stmt_iterator *gsi, gcall *call, bool mask_p)
 {
   tree lhs = gimple_call_lhs (call);
   if (!lhs)
     return false;
 
-  if (tree rhs = gimple_fold_mask_load_store_mem_ref (call, TREE_TYPE (lhs)))
+  if (tree rhs
+      = gimple_fold_partial_load_store_mem_ref (call, TREE_TYPE (lhs), mask_p))
     {
       gassign *new_stmt = gimple_build_assign (lhs, rhs);
       gimple_set_location (new_stmt, gimple_location (call));
@@ -5410,13 +5432,16 @@ gimple_fold_mask_load (gimple_stmt_iterator *gsi, gcall *call)
   return false;
 }
 
-/* Try to fold IFN_MASK_STORE call CALL.  Return true on success.  */
+/* Try to fold IFN_{MASK,LEN}_STORE call CALL.  Return true on success.
+   MASK_P indicates it's for MASK if true, otherwise it's for LEN.  */
 
 static bool
-gimple_fold_mask_store (gimple_stmt_iterator *gsi, gcall *call)
+gimple_fold_partial_store (gimple_stmt_iterator *gsi, gcall *call,
+			   bool mask_p)
 {
   tree rhs = gimple_call_arg (call, 3);
-  if (tree lhs = gimple_fold_mask_load_store_mem_ref (call, TREE_TYPE (rhs)))
+  if (tree lhs
+      = gimple_fold_partial_load_store_mem_ref (call, TREE_TYPE (rhs), mask_p))
     {
       gassign *new_stmt = gimple_build_assign (lhs, rhs);
       gimple_set_location (new_stmt, gimple_location (call));
@@ -5635,10 +5660,16 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  cplx_result = true;
 	  break;
 	case IFN_MASK_LOAD:
-	  changed |= gimple_fold_mask_load (gsi, stmt);
+	  changed |= gimple_fold_partial_load (gsi, stmt, true);
 	  break;
 	case IFN_MASK_STORE:
-	  changed |= gimple_fold_mask_store (gsi, stmt);
+	  changed |= gimple_fold_partial_store (gsi, stmt, true);
+	  break;
+	case IFN_LEN_LOAD:
+	  changed |= gimple_fold_partial_load (gsi, stmt, false);
+	  break;
+	case IFN_LEN_STORE:
+	  changed |= gimple_fold_partial_store (gsi, stmt, false);
 	  break;
 	default:
 	  break;
