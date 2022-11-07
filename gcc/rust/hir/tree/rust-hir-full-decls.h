@@ -43,7 +43,7 @@ class PathExpr;
 // rust-path.h
 class PathIdentSegment;
 struct GenericArgsBinding;
-struct GenericArgs;
+class GenericArgs;
 class PathExprSegment;
 class PathPattern;
 class PathInExpression;

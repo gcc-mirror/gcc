@@ -1872,7 +1872,8 @@ public:
 
   std::unique_ptr<Expr> &get_receiver () { return receiver; }
 
-  PathExprSegment get_method_name () const { return method_name; };
+  PathExprSegment &get_method_name () { return method_name; };
+  const PathExprSegment &get_method_name () const { return method_name; };
 
   size_t num_params () const { return params.size (); }
 

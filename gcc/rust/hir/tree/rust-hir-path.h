@@ -140,8 +140,7 @@ private:
   Location locus;
 };
 
-// Generic arguments allowed in each path expression segment - inline?
-struct GenericArgs
+class GenericArgs
 {
   std::vector<Lifetime> lifetime_args;
   std::vector<std::unique_ptr<Type> > type_args;
@@ -172,6 +171,7 @@ public:
     : lifetime_args (other.lifetime_args), binding_args (other.binding_args),
       const_args (other.const_args), locus (other.locus)
   {
+    type_args.clear ();
     type_args.reserve (other.type_args.size ());
 
     for (const auto &e : other.type_args)
@@ -188,6 +188,7 @@ public:
     const_args = other.const_args;
     locus = other.locus;
 
+    type_args.clear ();
     type_args.reserve (other.type_args.size ());
     for (const auto &e : other.type_args)
       type_args.push_back (e->clone_type ());
@@ -235,26 +236,44 @@ private:
   Location locus;
 
 public:
-  // Returns true if there are any generic arguments
-  bool has_generic_args () const { return generic_args.has_generic_args (); }
-
-  // Constructor for segment (from IdentSegment and GenericArgs)
   PathExprSegment (Analysis::NodeMapping mappings,
-		   PathIdentSegment segment_name, Location locus = Location (),
-		   GenericArgs generic_args = GenericArgs::create_empty ())
+		   PathIdentSegment segment_name, Location locus,
+		   GenericArgs generic_args)
     : mappings (std::move (mappings)), segment_name (std::move (segment_name)),
       generic_args (std::move (generic_args)), locus (locus)
   {}
+
+  PathExprSegment (PathExprSegment const &other)
+    : mappings (other.mappings), segment_name (other.segment_name),
+      generic_args (other.generic_args), locus (other.locus)
+  {}
+
+  PathExprSegment &operator= (PathExprSegment const &other)
+  {
+    mappings = other.mappings;
+    segment_name = other.segment_name;
+    generic_args = other.generic_args;
+    locus = other.locus;
+
+    return *this;
+  }
+
+  // move constructors
+  PathExprSegment (PathExprSegment &&other) = default;
+  PathExprSegment &operator= (PathExprSegment &&other) = default;
 
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
 
-  PathIdentSegment get_segment () const { return segment_name; }
+  PathIdentSegment &get_segment () { return segment_name; }
+  const PathIdentSegment &get_segment () const { return segment_name; }
 
   GenericArgs &get_generic_args () { return generic_args; }
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
+
+  bool has_generic_args () const { return generic_args.has_generic_args (); }
 };
 
 // HIR node representing a pattern that involves a "path" - abstract base class

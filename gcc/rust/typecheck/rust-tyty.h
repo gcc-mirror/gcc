@@ -699,6 +699,10 @@ public:
     return *this;
   }
 
+  SubstitutionArgumentMappings (SubstitutionArgumentMappings &&other) = default;
+  SubstitutionArgumentMappings &operator= (SubstitutionArgumentMappings &&other)
+    = default;
+
   static SubstitutionArgumentMappings error ()
   {
     return SubstitutionArgumentMappings ({}, Location (), nullptr, false);
