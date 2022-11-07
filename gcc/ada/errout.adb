@@ -3351,6 +3351,17 @@ package body Errout is
                   Warning_Info_Messages := Warning_Info_Messages - 1;
                end if;
 
+               --  When warning about a runtime exception has been escalated
+               --  into error, the starting message has increased the total
+               --  errors counter, so here we decrease this counter.
+
+               if Errors.Table (E).Warn_Runtime_Raise
+                 and then not Errors.Table (E).Msg_Cont
+                 and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
+               then
+                  Total_Errors_Detected := Total_Errors_Detected - 1;
+               end if;
+
                return True;
 
             --  No removal required

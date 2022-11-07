@@ -312,32 +312,33 @@ package body Erroutc is
 
    begin
       w ("Dumping error message, Id = ", Int (Id));
-      w ("  Text     = ", E.Text.all);
-      w ("  Next     = ", Int (E.Next));
-      w ("  Prev     = ", Int (E.Prev));
-      w ("  Sfile    = ", Int (E.Sfile));
+      w ("  Text               = ", E.Text.all);
+      w ("  Next               = ", Int (E.Next));
+      w ("  Prev               = ", Int (E.Prev));
+      w ("  Sfile              = ", Int (E.Sfile));
 
       Write_Str
-        ("  Sptr     = ");
+        ("  Sptr               = ");
       Write_Location (E.Sptr.Ptr);  --  ??? Do not write the full span for now
       Write_Eol;
 
       Write_Str
-        ("  Optr     = ");
+        ("  Optr               = ");
       Write_Location (E.Optr.Ptr);
       Write_Eol;
 
-      w ("  Line     = ", Int (E.Line));
-      w ("  Col      = ", Int (E.Col));
-      w ("  Warn     = ", E.Warn);
-      w ("  Warn_Err = ", E.Warn_Err);
-      w ("  Warn_Chr = '" & E.Warn_Chr & ''');
-      w ("  Style    = ", E.Style);
-      w ("  Serious  = ", E.Serious);
-      w ("  Uncond   = ", E.Uncond);
-      w ("  Msg_Cont = ", E.Msg_Cont);
-      w ("  Deleted  = ", E.Deleted);
-      w ("  Node     = ", Int (E.Node));
+      w ("  Line               = ", Int (E.Line));
+      w ("  Col                = ", Int (E.Col));
+      w ("  Warn               = ", E.Warn);
+      w ("  Warn_Err           = ", E.Warn_Err);
+      w ("  Warn_Runtime_Raise = ", E.Warn_Runtime_Raise);
+      w ("  Warn_Chr           = '" & E.Warn_Chr & ''');
+      w ("  Style              = ", E.Style);
+      w ("  Serious            = ", E.Serious);
+      w ("  Uncond             = ", E.Uncond);
+      w ("  Msg_Cont           = ", E.Msg_Cont);
+      w ("  Deleted            = ", E.Deleted);
+      w ("  Node               = ", Int (E.Node));
 
       Write_Eol;
    end dmsg;
