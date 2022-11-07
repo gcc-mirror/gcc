@@ -829,6 +829,9 @@ namespace __detail
 
 } // namespace __detail
 
+// Shorthand for __detail::__maybe_const_t.
+using __detail::__maybe_const_t;
+
 namespace views::__adaptor
 {
   // True if the range adaptor _Adaptor can be applied with _Args.
@@ -7972,6 +7975,516 @@ namespace views::__adaptor
     };
 
     inline constexpr _Stride stride;
+  }
+
+  namespace __detail
+  {
+    template<bool _Const, typename _First, typename... _Vs>
+      concept __cartesian_product_is_random_access
+	= (random_access_range<__maybe_const_t<_Const, _First>>
+	   && ...
+	   && (random_access_range<__maybe_const_t<_Const, _Vs>>
+	       && sized_range<__maybe_const_t<_Const, _Vs>>));
+
+    template<typename _Range>
+      concept __cartesian_product_common_arg
+	= common_range<_Range> || (sized_range<_Range> && random_access_range<_Range>);
+
+    template<bool _Const, typename _First, typename... _Vs>
+      concept __cartesian_product_is_bidirectional
+	= (bidirectional_range<__maybe_const_t<_Const, _First>>
+	   && ...
+	   && (bidirectional_range<__maybe_const_t<_Const, _Vs>>
+	       && __cartesian_product_common_arg<__maybe_const_t<_Const, _Vs>>));
+
+    template<typename _First, typename... _Vs>
+      concept __cartesian_product_is_common = __cartesian_product_common_arg<_First>;
+
+    template<typename... _Vs>
+      concept __cartesian_product_is_sized = (sized_range<_Vs> && ...);
+
+    template<bool _Const, template<typename> class FirstSent, typename _First, typename... _Vs>
+      concept __cartesian_is_sized_sentinel
+	= (sized_sentinel_for<FirstSent<__maybe_const_t<_Const, _First>>,
+			      iterator_t<__maybe_const_t<_Const, _First>>>
+	   && ...
+	   && (sized_range<__maybe_const_t<_Const, _Vs>>
+	       && sized_sentinel_for<iterator_t<__maybe_const_t<_Const, _Vs>>,
+				     iterator_t<__maybe_const_t<_Const, _Vs>>>));
+
+    template<__cartesian_product_common_arg _Range>
+      constexpr auto
+      __cartesian_common_arg_end(_Range& __r)
+      {
+	if constexpr (common_range<_Range>)
+	  return ranges::end(__r);
+	else
+	  return ranges::begin(__r) + ranges::distance(__r);
+      }
+  } // namespace __detail
+
+  template<input_range _First, forward_range... _Vs>
+    requires (view<_First> && ... && view<_Vs>)
+  class cartesian_product_view : public view_interface<cartesian_product_view<_First, _Vs...>>
+  {
+    tuple<_First, _Vs...> _M_bases;
+
+    template<bool> class _Iterator;
+
+    static auto
+    _S_difference_type()
+    {
+      // TODO: Implement the recommended practice of using the smallest
+      // sufficiently wide type according to the maximum sizes of the
+      // underlying ranges?
+      return common_type_t<ptrdiff_t,
+			   range_difference_t<_First>,
+			   range_difference_t<_Vs>...>{};
+    }
+
+  public:
+    cartesian_product_view() = default;
+
+    constexpr explicit
+    cartesian_product_view(_First __first, _Vs... __rest)
+    : _M_bases(std::move(__first), std::move(__rest)...)
+    { }
+
+    constexpr _Iterator<false>
+    begin() requires (!__detail::__simple_view<_First> || ... || !__detail::__simple_view<_Vs>)
+    { return _Iterator<false>(*this, __detail::__tuple_transform(ranges::begin, _M_bases)); }
+
+    constexpr _Iterator<true>
+    begin() const requires (range<const _First> && ... && range<const _Vs>)
+    { return _Iterator<true>(*this, __detail::__tuple_transform(ranges::begin, _M_bases)); }
+
+    constexpr _Iterator<false>
+    end() requires ((!__detail::__simple_view<_First> || ... || !__detail::__simple_view<_Vs>)
+		    && __detail::__cartesian_product_is_common<_First, _Vs...>)
+    {
+      bool __empty_tail = [this]<size_t... _Is>(index_sequence<_Is...>) {
+	return (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
+      }(make_index_sequence<sizeof...(_Vs)>{});
+
+      auto __it = __detail::__tuple_transform(ranges::begin, _M_bases);
+      if (!__empty_tail)
+	std::get<0>(__it) = __detail::__cartesian_common_arg_end(std::get<0>(_M_bases));
+      return _Iterator<false>{*this, std::move(__it)};
+    }
+
+    constexpr _Iterator<true>
+    end() const requires __detail::__cartesian_product_is_common<const _First, const _Vs...>
+    {
+      bool __empty_tail = [this]<size_t... _Is>(index_sequence<_Is...>) {
+	return (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
+      }(make_index_sequence<sizeof...(_Vs)>{});
+
+      auto __it = __detail::__tuple_transform(ranges::begin, _M_bases);
+      if (!__empty_tail)
+	std::get<0>(__it) = __detail::__cartesian_common_arg_end(std::get<0>(_M_bases));
+      return _Iterator<true>{*this, std::move(__it)};
+    }
+
+    constexpr default_sentinel_t
+    end() const noexcept
+    { return default_sentinel; }
+
+    constexpr auto
+    size() requires __detail::__cartesian_product_is_sized<_First, _Vs...>
+    {
+      using _ST = __detail::__make_unsigned_like_t<decltype(_S_difference_type())>;
+      return [&]<size_t... _Is>(index_sequence<_Is...>) {
+	auto __size = static_cast<_ST>(1);
+#ifdef _GLIBCXX_ASSERTIONS
+	if constexpr (integral<_ST>)
+	  {
+	    bool __overflow
+	      = (__builtin_mul_overflow(__size,
+					static_cast<_ST>(ranges::size(std::get<_Is>(_M_bases))),
+					&__size)
+		 || ...);
+	    __glibcxx_assert(!__overflow);
+	  }
+	else
+#endif
+	  __size = (static_cast<_ST>(ranges::size(std::get<_Is>(_M_bases))) * ...);
+	return __size;
+      }(make_index_sequence<1 + sizeof...(_Vs)>{});
+    }
+
+    constexpr auto
+    size() const requires __detail::__cartesian_product_is_sized<const _First, const _Vs...>
+    {
+      using _ST = __detail::__make_unsigned_like_t<decltype(_S_difference_type())>;
+      return [&]<size_t... _Is>(index_sequence<_Is...>) {
+	auto __size = static_cast<_ST>(1);
+#ifdef _GLIBCXX_ASSERTIONS
+	if constexpr (integral<_ST>)
+	  {
+	    bool __overflow
+	      = (__builtin_mul_overflow(__size,
+					static_cast<_ST>(ranges::size(std::get<_Is>(_M_bases))),
+					&__size)
+		 || ...);
+	    __glibcxx_assert(!__overflow);
+	  }
+	else
+#endif
+	  __size = (static_cast<_ST>(ranges::size(std::get<_Is>(_M_bases))) * ...);
+	return __size;
+      }(make_index_sequence<1 + sizeof...(_Vs)>{});
+    }
+  };
+
+  template<typename... _Vs>
+    cartesian_product_view(_Vs&&...) -> cartesian_product_view<views::all_t<_Vs>...>;
+
+  template<input_range _First, forward_range... _Vs>
+    requires (view<_First> && ... && view<_Vs>)
+  template<bool _Const>
+  class cartesian_product_view<_First, _Vs...>::_Iterator
+  {
+    using _Parent = __maybe_const_t<_Const, cartesian_product_view>;
+    _Parent* _M_parent = nullptr;
+    __detail::__tuple_or_pair_t<iterator_t<__maybe_const_t<_Const, _First>>,
+				iterator_t<__maybe_const_t<_Const, _Vs>>...> _M_current;
+
+    constexpr
+    _Iterator(_Parent& __parent, decltype(_M_current) __current)
+    : _M_parent(std::__addressof(__parent)),
+      _M_current(std::move(__current))
+    { }
+
+    static auto
+    _S_iter_concept()
+    {
+      if constexpr (__detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>)
+	return random_access_iterator_tag{};
+      else if constexpr (__detail::__cartesian_product_is_bidirectional<_Const, _First, _Vs...>)
+	return bidirectional_iterator_tag{};
+      else if constexpr (forward_range<__maybe_const_t<_Const, _First>>)
+	return forward_iterator_tag{};
+      else
+	return input_iterator_tag{};
+    }
+
+    friend cartesian_product_view;
+
+  public:
+    using iterator_category = input_iterator_tag;
+    using iterator_concept = decltype(_S_iter_concept());
+    using value_type
+      = __detail::__tuple_or_pair_t<range_value_t<__maybe_const_t<_Const, _First>>,
+				    range_value_t<__maybe_const_t<_Const, _Vs>>...>;
+    using reference
+      = __detail::__tuple_or_pair_t<range_reference_t<__maybe_const_t<_Const, _First>>,
+				    range_reference_t<__maybe_const_t<_Const, _Vs>>...>;
+    using difference_type = decltype(cartesian_product_view::_S_difference_type());
+
+    _Iterator() requires forward_range<__maybe_const_t<_Const, _First>> = default;
+
+    constexpr
+    _Iterator(_Iterator<!_Const> __i)
+      requires _Const
+	&& (convertible_to<iterator_t<_First>, iterator_t<const _First>>
+	    && ... && convertible_to<iterator_t<_Vs>, iterator_t<const _Vs>>)
+    : _M_parent(std::__addressof(__i._M_parent)),
+      _M_current(std::move(__i._M_current))
+    { }
+
+    constexpr auto
+    operator*() const
+    {
+      auto __f = [](auto& __i) -> decltype(auto) {
+	return *__i;
+      };
+      return __detail::__tuple_transform(__f, _M_current);
+    }
+
+    constexpr _Iterator&
+    operator++()
+    {
+      _M_next();
+      return *this;
+    }
+
+    constexpr void
+    operator++(int)
+    { ++*this; }
+
+    constexpr _Iterator
+    operator++(int) requires forward_range<__maybe_const_t<_Const, _First>>
+    {
+      auto __tmp = *this;
+      ++*this;
+      return __tmp;
+    }
+
+    constexpr _Iterator&
+    operator--()
+      requires __detail::__cartesian_product_is_bidirectional<_Const, _First, _Vs...>
+    {
+      _M_prev();
+      return *this;
+    }
+
+    constexpr _Iterator
+    operator--(int)
+      requires __detail::__cartesian_product_is_bidirectional<_Const, _First, _Vs...>
+    {
+      auto __tmp = *this;
+      --*this;
+      return __tmp;
+    }
+
+    constexpr _Iterator&
+    operator+=(difference_type __x)
+      requires __detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>
+    {
+      _M_advance(__x);
+      return *this;
+    }
+
+    constexpr _Iterator&
+    operator-=(difference_type __x)
+      requires __detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>
+    { return *this += -__x; }
+
+    constexpr reference
+    operator[](difference_type __n) const
+      requires __detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>
+    { return *((*this) + __n); }
+
+    friend constexpr bool
+    operator==(const _Iterator& __x, const _Iterator& __y)
+      requires equality_comparable<iterator_t<__maybe_const_t<_Const, _First>>>
+    { return __x._M_current == __y._M_current; }
+
+    friend constexpr bool
+    operator==(const _Iterator& __x, default_sentinel_t)
+    {
+      return [&]<size_t... _Is>(index_sequence<_Is...>) {
+	return ((std::get<_Is>(__x._M_current)
+		 == ranges::end(std::get<_Is>(__x._M_parent->_M_bases)))
+		|| ...);
+      }(make_index_sequence<1 + sizeof...(_Vs)>{});
+    }
+
+    friend constexpr auto
+    operator<=>(const _Iterator& __x, const _Iterator& __y)
+      requires __detail::__all_random_access<_Const, _First, _Vs...>
+    { return __x._M_current <=> __y._M_current; }
+
+    friend constexpr _Iterator
+    operator+(_Iterator __x, difference_type __y)
+      requires __detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>
+    { return __x += __y; }
+
+    friend constexpr _Iterator
+    operator+(difference_type __x, _Iterator __y)
+      requires __detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>
+    { return __y += __x; }
+
+    friend constexpr _Iterator
+    operator-(_Iterator __x, difference_type __y)
+      requires __detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>
+    { return __x -= __y; }
+
+    friend constexpr difference_type
+    operator-(const _Iterator& __x, const _Iterator& __y)
+      requires __detail::__cartesian_is_sized_sentinel<_Const, iterator_t, _First, _Vs...>
+    { return __x._M_distance_from(__y._M_current); }
+
+    friend constexpr difference_type
+    operator-(const _Iterator& __i, default_sentinel_t)
+      requires __detail::__cartesian_is_sized_sentinel<_Const, sentinel_t, _First, _Vs...>
+    {
+      tuple __end_tuple = [&]<size_t... _Is>(index_sequence<_Is...>) {
+	return tuple{ranges::end(std::get<0>(__i._M_parent->_M_bases)),
+		     ranges::begin(std::get<1 + _Is>(__i._M_parent->_M_bases))...};
+      }(make_index_sequence<sizeof...(_Vs)>{});
+      return __i._M_distance_from(__end_tuple);
+    }
+
+    friend constexpr difference_type
+    operator-(default_sentinel_t, const _Iterator& __i)
+      requires __detail::__cartesian_is_sized_sentinel<_Const, sentinel_t, _First, _Vs...>
+    { return -(__i - default_sentinel); }
+
+    friend constexpr auto
+    iter_move(const _Iterator& __i)
+    { return __detail::__tuple_transform(ranges::iter_move, __i._M_current); }
+
+    friend constexpr void
+    iter_swap(const _Iterator& __l, const _Iterator& __r)
+      requires (indirectly_swappable<iterator_t<__maybe_const_t<_Const, _First>>>
+		&& ...
+		&& indirectly_swappable<iterator_t<__maybe_const_t<_Const, _Vs>>>)
+    {
+      [&]<size_t... _Is>(index_sequence<_Is...>) {
+	(ranges::iter_swap(std::get<_Is>(__l._M_current), std::get<_Is>(__r._M_current)), ...);
+      }(make_index_sequence<1 + sizeof...(_Vs)>{});
+    }
+
+  private:
+    template<size_t _Nm = sizeof...(_Vs)>
+    constexpr void
+    _M_next()
+    {
+      auto& __it = std::get<_Nm>(_M_current);
+      ++__it;
+      if constexpr (_Nm > 0)
+	if (__it == ranges::end(std::get<_Nm>(_M_parent->_M_bases)))
+	  {
+	    __it = ranges::begin(std::get<_Nm>(_M_parent->_M_bases));
+	    _M_next<_Nm - 1>();
+	  }
+    }
+
+    template<size_t _Nm = sizeof...(_Vs)>
+    constexpr void
+    _M_prev()
+    {
+      auto& __it = std::get<_Nm>(_M_current);
+      if (__it == ranges::begin(std::get<_Nm>(_M_parent->_M_bases)))
+	{
+	  __it = __detail::__cartesian_common_arg_end(std::get<_Nm>(_M_parent->_M_bases));
+	  if constexpr (_Nm > 0)
+	    _M_prev<_Nm - 1>();
+	}
+      --__it;
+    }
+
+    template<size_t _Nm = sizeof...(_Vs)>
+    constexpr void
+    _M_advance(difference_type __x)
+      requires __detail::__cartesian_product_is_random_access<_Const, _First, _Vs...>
+    {
+      if (__x == 1)
+	_M_next<_Nm>();
+      else if (__x == -1)
+	_M_prev<_Nm>();
+      else if (__x != 0)
+	{
+	  // Constant time iterator advancement.
+	  auto& __r = std::get<_Nm>(_M_parent->_M_bases);
+	  auto& __it = std::get<_Nm>(_M_current);
+	  if constexpr (_Nm == 0)
+	    {
+#ifdef _GLIBCXX_ASSERTIONS
+	      auto __size = ranges::ssize(__r);
+	      auto __begin = ranges::begin(__r);
+	      auto __offset = __it - __begin;
+	      __glibcxx_assert(__offset + __x >= 0 && __offset + __x <= __size);
+#endif
+	      __it += __x;
+	    }
+	  else
+	    {
+	      auto __size = ranges::ssize(__r);
+	      auto __begin = ranges::begin(__r);
+	      auto __offset = __it - __begin;
+	      __offset += __x;
+	      __x = __offset / __size;
+	      __offset %= __size;
+	      if (__offset < 0)
+		{
+		  __offset = __size + __offset;
+		  --__x;
+		}
+	      __it = __begin + __offset;
+	      _M_advance<_Nm - 1>(__x);
+	    }
+	}
+    }
+
+    template<typename _Tuple>
+    constexpr difference_type
+    _M_distance_from(const _Tuple& __t) const
+    {
+      return [&]<size_t... _Is>(index_sequence<_Is...>) {
+	auto __sum = static_cast<difference_type>(0);
+#ifdef _GLIBCXX_ASSERTIONS
+	if constexpr (integral<difference_type>)
+	  {
+	    bool __overflow
+	      = (__builtin_add_overflow(__sum, _M_scaled_distance<_Is>(__t), &__sum)
+		 || ...);
+	    __glibcxx_assert(!__overflow);
+	  }
+	else
+#endif
+	  __sum = (_M_scaled_distance<_Is>(__t) + ...);
+	return __sum;
+      }(make_index_sequence<1 + sizeof...(_Vs)>{});
+    }
+
+    template<size_t _Nm, typename _Tuple>
+    constexpr difference_type
+    _M_scaled_distance(const _Tuple& __t) const
+    {
+      auto __dist = static_cast<difference_type>(std::get<_Nm>(_M_current)
+						 - std::get<_Nm>(__t));
+#ifdef _GLIBCXX_ASSERTIONS
+      if constexpr (integral<difference_type>)
+	{
+	  bool __overflow = __builtin_mul_overflow(__dist, _M_scaled_size<_Nm+1>(), &__dist);
+	  __glibcxx_assert(!__overflow);
+	}
+      else
+#endif
+	__dist *= _M_scaled_size<_Nm+1>();
+      return __dist;
+    }
+
+    template<size_t _Nm>
+    constexpr difference_type
+    _M_scaled_size() const
+    {
+      if constexpr (_Nm <= sizeof...(_Vs))
+	{
+	  auto __size = static_cast<difference_type>(ranges::size
+						     (std::get<_Nm>(_M_parent->_M_bases)));
+#ifdef _GLIBCXX_ASSERTIONS
+	  if constexpr (integral<difference_type>)
+	    {
+	      bool __overflow = __builtin_mul_overflow(__size, _M_scaled_size<_Nm+1>(), &__size);
+	      __glibcxx_assert(!__overflow);
+	    }
+	  else
+#endif
+	    __size *= _M_scaled_size<_Nm+1>();
+	  return __size;
+	}
+      else
+	return static_cast<difference_type>(1);
+    }
+  };
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename... _Ts>
+	concept __can_cartesian_product_view
+	  = requires { cartesian_product_view<all_t<_Ts>...>(std::declval<_Ts>()...); };
+    }
+
+    struct _CartesianProduct
+    {
+      template<typename... _Ts>
+	requires (sizeof...(_Ts) == 0 || __detail::__can_cartesian_product_view<_Ts...>)
+	constexpr auto
+	operator() [[nodiscard]] (_Ts&&... __ts) const
+	{
+	  if constexpr (sizeof...(_Ts) == 0)
+	    return views::empty<tuple<>>;
+	  else
+	    return cartesian_product_view<all_t<_Ts>...>(std::forward<_Ts>(__ts)...);
+	}
+    };
+
+    inline constexpr _CartesianProduct cartesian_product;
   }
 #endif // C++23
 } // namespace ranges
