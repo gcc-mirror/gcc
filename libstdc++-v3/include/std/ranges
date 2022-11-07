@@ -8486,6 +8486,96 @@ namespace views::__adaptor
 
     inline constexpr _CartesianProduct cartesian_product;
   }
+
+  template<input_range _Vp>
+    requires view<_Vp>
+  class as_rvalue_view : public view_interface<as_rvalue_view<_Vp>>
+  {
+    _Vp _M_base = _Vp();
+
+  public:
+    as_rvalue_view() requires default_initializable<_Vp> = default;
+
+    constexpr explicit
+    as_rvalue_view(_Vp __base)
+    : _M_base(std::move(__base))
+    { }
+
+    constexpr _Vp
+    base() const& requires copy_constructible<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_base); }
+
+    constexpr auto
+    begin() requires (!__detail::__simple_view<_Vp>)
+    { return move_iterator(ranges::begin(_M_base)); }
+
+    constexpr auto
+    begin() const requires range<const _Vp>
+    { return move_iterator(ranges::begin(_M_base)); }
+
+    constexpr auto
+    end() requires (!__detail::__simple_view<_Vp>)
+    {
+      if constexpr (common_range<_Vp>)
+	return move_iterator(ranges::end(_M_base));
+      else
+	return move_sentinel(ranges::end(_M_base));
+    }
+
+    constexpr auto
+    end() const requires range<const _Vp>
+    {
+      if constexpr (common_range<const _Vp>)
+	return move_iterator(ranges::end(_M_base));
+      else
+	return move_sentinel(ranges::end(_M_base));
+    }
+
+    constexpr auto
+    size() requires sized_range<_Vp>
+    { return ranges::size(_M_base); }
+
+    constexpr auto
+    size() const requires sized_range<const _Vp>
+    { return ranges::size(_M_base); }
+  };
+
+  template<typename _Range>
+    as_rvalue_view(_Range&&) -> as_rvalue_view<views::all_t<_Range>>;
+
+  template<typename _Tp>
+    inline constexpr bool enable_borrowed_range<as_rvalue_view<_Tp>>
+      = enable_borrowed_range<_Tp>;
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename _Tp>
+	concept __can_as_rvalue_view = requires { as_rvalue_view(std::declval<_Tp>()); };
+    }
+
+    struct _AsRvalue : __adaptor::_RangeAdaptorClosure
+    {
+      template<viewable_range _Range>
+	requires __detail::__can_as_rvalue_view<_Range>
+	constexpr auto
+	operator() [[nodiscard]] (_Range&& __r) const
+	{
+	  if constexpr (same_as<range_rvalue_reference_t<_Range>,
+				range_reference_t<_Range>>)
+	    return views::all(std::forward<_Range>(__r));
+	  else
+	    return as_rvalue_view(std::forward<_Range>(__r));
+	}
+    };
+
+    inline constexpr _AsRvalue as_rvalue;
+  }
 #endif // C++23
 } // namespace ranges
 
