@@ -1,3 +1,8 @@
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-next-runtime-abi-01.cc (build_next_objc_exception_stuff):
+	Use build_function_type to build type of objc_setjmp_decl.
+
 2022-10-07  Martin Liska  <mliska@suse.cz>
 
 	* objc-gnu-runtime-abi-01.cc (generate_static_references):

@@ -160,7 +160,7 @@ in the following sections.
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @gccoptlist{-ansi  -std=@var{standard}  -aux-info @var{filename} @gol
--fallow-parameterless-variadic-functions  -fno-asm  @gol
+-fno-asm  @gol
 -fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch @gol
 -ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted @gol
 -flax-vector-conversions  -fms-extensions @gol
@@ -700,7 +700,7 @@ Objective-C and Objective-C++ Dialects}.
 -flto-report  -flto-report-wpa  -fmem-report-wpa @gol
 -fmem-report  -fpre-ipa-mem-report  -fpost-ipa-mem-report @gol
 -fopt-info  -fopt-info-@var{options}@r{[}=@var{file}@r{]} @gol
--fprofile-report @gol
+-fmultiflags  -fprofile-report @gol
 -frandom-seed=@var{string}  -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose  -fsel-sched-dump-cfg  -fsel-sched-pipelining-verbose @gol
 -fstats  -fstack-usage  -ftime-report  -ftime-report-details @gol
@@ -1399,7 +1399,8 @@ See RS/6000 and PowerPC Options.
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni@gol
--mavx512fp16 -mavxifma -mavxvnniint8 @gol
+-mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16 @gol
+-mprefetchi -mraoint -mprefer-remote-atomic@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mkl -mwidekl @gol
@@ -2477,14 +2478,6 @@ character).  In the case of function definitions, a K&R-style list of
 arguments followed by their declarations is also provided, inside
 comments, after the declaration.
 
-@item -fallow-parameterless-variadic-functions
-@opindex fallow-parameterless-variadic-functions
-Accept variadic functions without named parameters.
-
-Although it is possible to define such a function, this is not very
-useful as it is not possible to read the arguments.  This is only
-supported for C as this construct is allowed by C++.
-
 @item -fno-asm
 @opindex fno-asm
 @opindex fasm
@@ -3045,14 +3038,14 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @itemx -fconcepts-ts
 @opindex fconcepts
 @opindex fconcepts-ts
-Below @option{-std=c++20}, @option{-fconcepts} enables support for the
-C++ Extensions for Concepts Technical Specification, ISO 19217 (2015).
+Enable support for the C++ Concepts feature for constraining template
+arguments.  With @option{-std=c++20} and above, Concepts are part of
+the language standard, so @option{-fconcepts} defaults to on.
 
-With @option{-std=c++20} and above, Concepts are part of the language
-standard, so @option{-fconcepts} defaults to on.  But the standard
-specification of Concepts differs significantly from the TS, so some
-constructs that were allowed in the TS but didn't make it into the
-standard can still be enabled by @option{-fconcepts-ts}.
+Some constructs that were allowed by the earlier C++ Extensions for
+Concepts Technical Specification, ISO 19217 (2015), but didn't make it
+into the standard, can additionally be enabled by
+@option{-fconcepts-ts}.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
@@ -19314,6 +19307,34 @@ allocation for the WPA phase only.
 Makes the compiler print some statistics about permanent memory
 allocation before or after interprocedural optimization.
 
+@item -fmultiflags
+@opindex fmultiflags
+This option enables multilib-aware @code{TFLAGS} to be used to build
+target libraries with options different from those the compiler is
+configured to use by default, through the use of specs (@xref{Spec
+Files}) set up by compiler internals, by the target, or by builders at
+configure time.
+
+Like @code{TFLAGS}, this allows the target libraries to be built for
+portable baseline environments, while the compiler defaults to more
+demanding ones.  That's useful because users can easily override the
+defaults the compiler is configured to use to build their own programs,
+if the defaults are not ideal for their target environment, whereas
+rebuilding the runtime libraries is usually not as easy or desirable.
+
+Unlike @code{TFLAGS}, the use of specs enables different flags to be
+selected for different multilibs.  The way to accomplish that is to
+build with @samp{make TFLAGS=-fmultiflags}, after configuring
+@samp{--with-specs=%@{fmultiflags:...@}}.
+
+This option is discarded by the driver once it's done processing driver
+self spec.
+
+It is also useful to check that @code{TFLAGS} are being used to build
+all target libraries, by configuring a non-bootstrap compiler
+@samp{--with-specs='%@{!fmultiflags:%emissing TFLAGS@}'} and building
+the compiler and target libraries.
+
 @item -fprofile-report
 @opindex fprofile-report
 Makes the compiler print some statistics about consistency of the
@@ -32009,6 +32030,23 @@ RDSEED, XSAVE, XSAVEC, XSAVES, XSAVEOPT, CLFLUSHOPT, FSGSBASE, PTWRITE, RDPID,
 SGX, CLWB, GFNI-SSE, MOVDIRI, MOVDIR64B, CLDEMOTE and WAITPKG instruction set
 support.
 
+@item sierraforest
+Intel Sierra Forest CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
+PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT and CMPCCXADD instruction set support.
+
+@item grandridge
+Intel Grand Ridge CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
+PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD and RAOINT instruction set
+support.
+
 @item knl
 Intel Knight's Landing CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
@@ -32103,6 +32141,17 @@ F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
 CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD
 PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
 VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ instruction set support.
+
+@item graniterapids
+Intel graniterapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
+RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
+AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
+VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
+MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
+SERIALIZE, TSXLDTRK, UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16,
+AVX512BF16, AMX-FP16 and PREFETCHI instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -32933,6 +32982,21 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mavxvnniint8
 @opindex mavxvnniint8
+@need 200
+@itemx -mavxneconvert
+@opindex mavxneconvert
+@need 200
+@itemx -mcmpccxadd
+@opindex mcmpccxadd
+@need 200
+@itemx -mamx-fp16
+@opindex mamx-fp16
+@need 200
+@itemx -mprefetchi
+@opindex mprefetchi
+@need 200
+@itemx -mraoint
+@opindex mraoint
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -32943,8 +33007,9 @@ XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
 UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512FP16,
-AVXIFMA, AVXVNNIINT8 or CLDEMOTE extended instruction sets. Each has a
-corresponding @option{-mno-} option to disable use of these instructions.
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT or
+CLDEMOTE extended instruction sets. Each has a corresponding @option{-mno-}
+option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -33567,6 +33632,10 @@ Relax cmpxchg loop by emitting an early load and compare before cmpxchg,
 execute pause if load value is not expected. This reduces excessive
 cachline bouncing when and works for all atomic logic fetch builtins
 that generates compare and swap loop.
+
+@item -mprefer-remote-atomic
+@opindex mprefer-remote-atomic
+Prefer use remote atomic insn for atomic operations.
 
 @item -mindirect-branch=@var{choice}
 @opindex mindirect-branch

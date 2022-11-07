@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -813,14 +814,17 @@ region_model::get_gassign_result (const gassign *assign,
 	      if (TREE_CODE (rhs2_cst) == INTEGER_CST)
 		{
 		  if (tree_int_cst_sgn (rhs2_cst) < 0)
-		    ctxt->warn (new shift_count_negative_diagnostic
-				  (assign, rhs2_cst));
+		    ctxt->warn
+		      (make_unique<shift_count_negative_diagnostic>
+			 (assign, rhs2_cst));
 		  else if (compare_tree_int (rhs2_cst,
 					     TYPE_PRECISION (TREE_TYPE (rhs1)))
 			   >= 0)
-		    ctxt->warn (new shift_count_overflow_diagnostic
-				  (assign, TYPE_PRECISION (TREE_TYPE (rhs1)),
-				   rhs2_cst));
+		    ctxt->warn
+		      (make_unique<shift_count_overflow_diagnostic>
+			 (assign,
+			  int (TYPE_PRECISION (TREE_TYPE (rhs1))),
+			  rhs2_cst));
 		}
 	  }
 
@@ -1038,8 +1042,9 @@ region_model::check_for_poison (const svalue *sval,
       const region *src_region = NULL;
       if (pkind == POISON_KIND_UNINIT)
 	src_region = get_region_for_poisoned_expr (expr);
-      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind,
-						     src_region)))
+      if (ctxt->warn (make_unique<poisoned_value_diagnostic> (diag_arg,
+							      pkind,
+							      src_region)))
 	{
 	  /* We only want to report use of a poisoned value at the first
 	     place it gets used; return an unknown value to avoid generating
@@ -1228,7 +1233,7 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  {
 	    /* Handle the builtin "__analyzer_dump_path" by queuing a
 	       diagnostic at this exploded_node.  */
-	    ctxt->warn (new dump_path_diagnostic ());
+	    ctxt->warn (make_unique<dump_path_diagnostic> ());
 	  }
 	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
 					  0))
@@ -1784,16 +1789,18 @@ void region_model::check_symbolic_bounds (const region *base_reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new symbolic_buffer_overread (base_reg, diag_arg,
-						    offset_tree,
-						    num_bytes_tree,
-						    capacity_tree));
+	  ctxt->warn (make_unique<symbolic_buffer_overread> (base_reg,
+							     diag_arg,
+							     offset_tree,
+							     num_bytes_tree,
+							     capacity_tree));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new symbolic_buffer_overflow (base_reg, diag_arg,
-						    offset_tree,
-						    num_bytes_tree,
-						    capacity_tree));
+	  ctxt->warn (make_unique<symbolic_buffer_overflow> (base_reg,
+							     diag_arg,
+							     offset_tree,
+							     num_bytes_tree,
+							     capacity_tree));
 	  break;
 	}
     }
@@ -1884,10 +1891,10 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new buffer_underread (reg, diag_arg, out));
+	  ctxt->warn (make_unique<buffer_underread> (reg, diag_arg, out));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new buffer_underflow (reg, diag_arg, out));
+	  ctxt->warn (make_unique<buffer_underflow> (reg, diag_arg, out));
 	  break;
 	}
     }
@@ -1912,10 +1919,12 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new buffer_overread (reg, diag_arg, out, byte_bound));
+	  ctxt->warn (make_unique<buffer_overread> (reg, diag_arg,
+						    out, byte_bound));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new buffer_overflow (reg, diag_arg, out, byte_bound));
+	  ctxt->warn (make_unique<buffer_overflow> (reg, diag_arg,
+						    out, byte_bound));
 	  break;
 	}
     }
@@ -2315,8 +2324,8 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
-      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
 	{
 	  /* Handle in "on_call_post"; bail now so that fd array
 	     is left untouched so that we can detect use-of-uninit
@@ -2403,8 +2412,8 @@ region_model::on_call_post (const gcall *call,
 	  impl_call_operator_delete (cd);
 	  return;
 	}
-      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
 	{
 	  impl_call_pipe (cd);
 	  return;
@@ -2564,9 +2573,10 @@ check_external_function_for_access_attr (const gcall *call,
 	      m_access (access)
 	    {
 	    }
-	    pending_note *make_note () final override
+	    std::unique_ptr<pending_note> make_note () final override
 	    {
-	      return new reason_attr_access (m_callee_fndecl, m_access);
+	      return make_unique<reason_attr_access>
+		(m_callee_fndecl, m_access);
 	    }
 	  private:
 	    tree m_callee_fndecl;
@@ -3374,7 +3384,8 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		const poisoned_svalue *poisoned_sval
 		  = as_a <const poisoned_svalue *> (ptr_sval);
 		enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind, NULL));
+		ctxt->warn (make_unique<poisoned_value_diagnostic>
+			      (ptr, pkind, NULL));
 	      }
 	  }
       }
@@ -3531,14 +3542,16 @@ region_model::check_for_writable_region (const region* dest_reg,
       {
 	const function_region *func_reg = as_a <const function_region *> (base_reg);
 	tree fndecl = func_reg->get_fndecl ();
-	ctxt->warn (new write_to_const_diagnostic (func_reg, fndecl));
+	ctxt->warn (make_unique<write_to_const_diagnostic>
+		      (func_reg, fndecl));
       }
       break;
     case RK_LABEL:
       {
 	const label_region *label_reg = as_a <const label_region *> (base_reg);
 	tree label = label_reg->get_label ();
-	ctxt->warn (new write_to_const_diagnostic (label_reg, label));
+	ctxt->warn (make_unique<write_to_const_diagnostic>
+		      (label_reg, label));
       }
       break;
     case RK_DECL:
@@ -3551,11 +3564,11 @@ region_model::check_for_writable_region (const region* dest_reg,
 	   "this" param is "T* const").  */
 	if (TREE_READONLY (decl)
 	    && is_global_var (decl))
-	  ctxt->warn (new write_to_const_diagnostic (dest_reg, decl));
+	  ctxt->warn (make_unique<write_to_const_diagnostic> (dest_reg, decl));
       }
       break;
     case RK_STRING:
-      ctxt->warn (new write_to_string_literal_diagnostic (dest_reg));
+      ctxt->warn (make_unique<write_to_string_literal_diagnostic> (dest_reg));
       break;
     }
 }
@@ -4031,8 +4044,8 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	if (TREE_CODE (cst_cap) == INTEGER_CST
 	    && !capacity_compatible_with_type (cst_cap, pointee_size_tree,
 					       is_struct))
-	  ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
-						   cst_cap));
+	  ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg, rhs_reg,
+							     cst_cap));
       }
       break;
     default:
@@ -4043,8 +4056,9 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	    if (!v.get_result ())
 	      {
 		tree expr = get_representative_tree (capacity);
-		ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
-			    expr));
+		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,
+								   rhs_reg,
+								   expr));
 	      }
 	  }
       break;
@@ -5766,7 +5780,7 @@ region_model::check_dynamic_size_for_floats (const svalue *size_in_bytes,
   if (const svalue *float_sval = v.get_svalue_to_report ())
 	{
 	  tree diag_arg = get_representative_tree (float_sval);
-	  ctxt->warn (new float_as_size_arg (diag_arg));
+	  ctxt->warn (make_unique<float_as_size_arg> (diag_arg));
 	}
 }
 
@@ -6389,23 +6403,21 @@ region_model::maybe_complain_about_infoleak (const region *dst_reg,
 {
   /* Check for exposure.  */
   if (contains_uninit_p (copied_sval))
-    ctxt->warn (new exposure_through_uninit_copy (src_reg,
-						  dst_reg,
-						  copied_sval));
+    ctxt->warn (make_unique<exposure_through_uninit_copy> (src_reg,
+							   dst_reg,
+							   copied_sval));
 }
 
 /* class noop_region_model_context : public region_model_context.  */
 
 void
-noop_region_model_context::add_note (pending_note *pn)
+noop_region_model_context::add_note (std::unique_ptr<pending_note>)
 {
-  delete pn;
 }
 
 void
-noop_region_model_context::bifurcate (custom_edge_info *info)
+noop_region_model_context::bifurcate (std::unique_ptr<custom_edge_info>)
 {
-  delete info;
 }
 
 void

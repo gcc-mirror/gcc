@@ -2355,7 +2355,7 @@ package body Sem_Aggr is
                --  duplicate the expression tree to analyze the copy and
                --  perform the required check.
 
-               elsif not Present (Etype (Expression (Assoc))) then
+               elsif No (Etype (Expression (Assoc))) then
                   declare
                      Save_Analysis : constant Boolean := Full_Analysis;
                      Expr          : constant Node_Id :=
@@ -5747,7 +5747,7 @@ package body Sem_Aggr is
             --  Ignore hidden components associated with the position of the
             --  interface tags: these are initialized dynamically.
 
-            if not Present (Related_Type (Component)) then
+            if No (Related_Type (Component)) then
                Error_Msg_NE
                  ("no value supplied for component &!", N, Component);
             end if;

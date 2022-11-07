@@ -3793,7 +3793,7 @@ package body Freeze is
                      --  Set component size if not already set by a component
                      --  size clause.
 
-                     if not Present (Comp_Size_C) then
+                     if No (Comp_Size_C) then
                         Set_Component_Size (Arr, Csiz);
                      end if;
 
@@ -3805,7 +3805,7 @@ package body Freeze is
                      --  explicitly, then generate a warning.
 
                      if Has_Pragma_Pack (Arr)
-                       and then not Present (Comp_Size_C)
+                       and then No (Comp_Size_C)
                        and then (Csiz = 7 or else Csiz = 15 or else Csiz = 31)
                        and then Known_Esize (Base_Type (Ctyp))
                        and then Esize (Base_Type (Ctyp)) = Csiz + 1
@@ -7059,7 +7059,7 @@ package body Freeze is
             --  end of a declarative part.
 
             if Is_Library_Level_Tagged_Type (E)
-              and then not Present (Full_View (E))
+              and then No (Full_View (E))
             then
                Set_Is_Frozen (E, False);
                goto Leave;
@@ -7467,7 +7467,7 @@ package body Freeze is
                      --  If no formal is passed in, then issue an error for a
                      --  missing formal.
 
-                     elsif not Present (Pool_Op_Formal) then
+                     elsif No (Pool_Op_Formal) then
                         Error_Msg_NE
                           ("simple storage pool op missing formal " &
                            Formal_Name & " of type&", Pool_Op, Expected_Type);
@@ -7599,7 +7599,7 @@ package body Freeze is
                            --  and no excess formals are present, then this
                            --  operation has been validated, so record it.
 
-                           if not Present (Formal) and then Is_OK then
+                           if No (Formal) and then Is_OK then
                               Found_Op := Op;
                            end if;
                         end if;
@@ -7611,7 +7611,7 @@ package body Freeze is
                      --  so issue an error if none was found.
 
                      if Op_Name = Name_Allocate
-                       and then not Present (Found_Op)
+                       and then No (Found_Op)
                      then
                         Error_Msg_N ("missing % operation for simple " &
                                      "storage pool type", Pool_Type);

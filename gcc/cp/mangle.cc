@@ -1810,7 +1810,13 @@ write_closure_type_name (const tree type)
 
   write_method_parms (parms, /*method_p=*/1, fn);
   write_char ('E');
-  write_compact_number (LAMBDA_EXPR_DISCRIMINATOR (lambda));
+  if ((LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda)
+       != LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda))
+      && abi_warn_or_compat_version_crosses (18))
+    G.need_abi_warning = true;
+  write_compact_number (abi_version_at_least (18)
+			? LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda)
+			: LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda));
 }
 
 /* Convert NUMBER to ascii using base BASE and generating at least

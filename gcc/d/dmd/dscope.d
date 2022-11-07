@@ -63,17 +63,13 @@ enum SCOPE
     free          = 0x8000,   /// is on free list
 
     fullinst      = 0x10000,  /// fully instantiate templates
-
-    // The following are mutually exclusive
-    printf        = 0x4_0000, /// printf-style function
-    scanf         = 0x8_0000, /// scanf-style function
 }
 
 /// Flags that are carried along with a scope push()
 private enum PersistentFlags =
     SCOPE.contract | SCOPE.debug_ | SCOPE.ctfe | SCOPE.compile | SCOPE.constraint |
     SCOPE.noaccesscheck | SCOPE.ignoresymbolvisibility |
-    SCOPE.printf | SCOPE.scanf | SCOPE.Cfile;
+    SCOPE.Cfile;
 
 struct Scope
 {

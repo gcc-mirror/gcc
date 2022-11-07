@@ -433,7 +433,15 @@ scan_translation_unit_directives_only (cpp_reader *pfile)
     lang_hooks.preprocess_token (pfile, NULL, streamer.filter);
 }
 
-/* Adjust print.src_line for newlines embedded in output.  */
+/* Adjust print.src_line for newlines embedded in output.  For example, if a raw
+   string literal contains newlines, then we need to increment our notion of the
+   current line to keep in sync and avoid outputting a line marker
+   unnecessarily.  If a raw string literal containing newlines is the result of
+   macro expansion, then we have the opposite problem, where the token takes up
+   more lines in the output than it did in the input, and hence a line marker is
+   needed to restore the correct state for subsequent lines.  In this case,
+   incrementing print.src_line still does the job, because it will cause us to
+   emit the line marker the next time a token is streamed.  */
 static void
 account_for_newlines (const unsigned char *str, size_t len)
 {

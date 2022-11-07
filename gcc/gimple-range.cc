@@ -167,7 +167,6 @@ void
 gimple_ranger::range_on_exit (vrange &r, basic_block bb, tree name)
 {
   // on-exit from the exit block?
-  gcc_checking_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
   gcc_checking_assert (gimple_range_ssa_p (name));
 
   unsigned idx;
@@ -481,6 +480,40 @@ gimple_ranger::register_inferred_ranges (gimple *s)
 	}
     }
   m_cache.apply_inferred_ranges (s);
+}
+
+// When a statement S has changed since the result was cached, re-evaluate
+// and update the global cache.
+
+void
+gimple_ranger::update_stmt (gimple *s)
+{
+  tree lhs = gimple_get_lhs (s);
+  if (!lhs || !gimple_range_ssa_p (lhs))
+    return;
+  Value_Range r (TREE_TYPE (lhs));
+  // Only update if it already had a value.
+  if (m_cache.get_global_range (r, lhs))
+    {
+      // Re-calculate a new value using just cache values.
+      Value_Range tmp (TREE_TYPE (lhs));
+      fold_using_range f;
+      fur_depend src (s, &(gori ()), &m_cache);
+      f.fold_stmt (tmp, s, src, lhs);
+
+      // Combine the new value with the old value to check for a change.
+      if (r.intersect (tmp))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      print_generic_expr (dump_file, lhs, TDF_SLIM);
+	      fprintf (dump_file, " : global value re-evaluated to ");
+	      r.dump (dump_file);
+	      fputc ('\n', dump_file);
+	    }
+	  m_cache.set_global_range (lhs, r);
+	}
+    }
 }
 
 // This routine will export whatever global ranges are known to GCC

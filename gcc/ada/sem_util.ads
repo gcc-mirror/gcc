@@ -88,11 +88,6 @@ package Sem_Util is
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
 
-   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id);
-   --  Given a block statement N, generate an internal E_Block label and make
-   --  it the identifier of the block. Id denotes the generated entity. If the
-   --  block already has an identifier, Id returns the entity of its label.
-
    procedure Add_Global_Declaration (N : Node_Id);
    --  These procedures adds a declaration N at the library level, to be
    --  elaborated before any other code in the unit. It is used for example
@@ -677,6 +672,15 @@ package Sem_Util is
 
    function Current_Scope return Entity_Id;
    --  Get entity representing current scope
+
+   procedure Add_Block_Identifier
+       (N : Node_Id;
+        Id : out Entity_Id;
+        Scope : Entity_Id := Current_Scope);
+   --  Given a block statement N, generate an internal E_Block label and make
+   --  it the identifier of the block. Scope denotes the scope in which the
+   --  generated entity Id is created and defaults to the current scope. If the
+   --  block already has an identifier, Id returns the entity of its label.
 
    function Current_Scope_No_Loops return Entity_Id;
    --  Return the current scope ignoring internally generated loops

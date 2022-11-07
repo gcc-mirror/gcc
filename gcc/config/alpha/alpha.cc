@@ -6084,8 +6084,9 @@ alpha_setup_incoming_varargs (cumulative_args_t pcum,
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (pcum);
 
-  /* Skip the current argument.  */
-  targetm.calls.function_arg_advance (pack_cumulative_args (&cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    /* Skip the current argument.  */
+    targetm.calls.function_arg_advance (pack_cumulative_args (&cum), arg);
 
 #if TARGET_ABI_OPEN_VMS
   /* For VMS, we allocate space for all 6 arg registers plus a count.

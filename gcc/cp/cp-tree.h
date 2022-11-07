@@ -1500,9 +1500,13 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_EXTRA_SCOPE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->extra_scope)
 
-/* If EXTRA_SCOPE, this is the number of the lambda within that scope.  */
-#define LAMBDA_EXPR_DISCRIMINATOR(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->discriminator)
+/* Lambdas in the same extra scope might need a discriminating count.
+   For ABI 17, we have single per-scope count, for ABI 18, we have
+   per-scope, per-signature numbering.  */
+#define LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->discriminator_scope)
+#define LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->discriminator_sig)
 
 /* During parsing of the lambda, a vector of capture proxies which need
    to be pushed once we're done processing a nested lambda.  */
@@ -1530,8 +1534,9 @@ struct GTY (()) tree_lambda_expr
   tree regen_info;
   vec<tree, va_gc> *pending_proxies;
   location_t locus;
-  enum cp_lambda_default_capture_mode_type default_capture_mode : 8;
-  short int discriminator;
+  enum cp_lambda_default_capture_mode_type default_capture_mode : 2;
+  unsigned discriminator_scope : 15; // Per-scope discriminator
+  unsigned discriminator_sig : 15; // Per-scope, per-signature discriminator
 };
 
 /* Non-zero if this template specialization has access violations that
@@ -7778,10 +7783,11 @@ extern tree cp_build_vec_convert		(tree, location_t, tree,
 						 tsubst_flags_t);
 extern tree cp_build_bit_cast			(location_t, tree, tree,
 						 tsubst_flags_t);
-extern void start_lambda_scope			(tree);
-extern void record_lambda_scope			(tree);
-extern void record_null_lambda_scope		(tree);
+extern void start_lambda_scope			(tree decl);
 extern void finish_lambda_scope			(void);
+extern void record_lambda_scope			(tree lambda);
+extern void record_lambda_scope_discriminator	(tree lambda);
+extern void record_lambda_scope_sig_discriminator (tree lambda, tree fn);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
 extern bool regenerated_lambda_fn_p		(tree);

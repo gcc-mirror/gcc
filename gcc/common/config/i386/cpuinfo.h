@@ -558,6 +558,27 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_SAPPHIRERAPIDS;
       break;
+    case 0xaf:
+      /* Sierra Forest.  */
+      cpu = "sierraforest";
+      CHECK___builtin_cpu_is ("sierraforest");
+      cpu_model->__cpu_type = INTEL_SIERRAFOREST;
+      break;
+    case 0xad:
+    case 0xae:
+      /* Granite Rapids.  */
+      cpu = "graniterapids";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("graniterapids");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS;
+      break;
+    case 0xb6:
+      /* Grand Ridge.  */
+      cpu = "grandridge";
+      CHECK___builtin_cpu_is ("grandridge");
+      cpu_model->__cpu_type = INTEL_GRANDRIDGE;
+      break;
     case 0x17:
     case 0x1d:
       /* Penryn.  */
@@ -831,6 +852,12 @@ get_available_features (struct __processor_model *cpu_model,
       __cpuid_count (7, 1, eax, ebx, ecx, edx);
       if (eax & bit_HRESET)
 	set_feature (FEATURE_HRESET);
+      if (eax & bit_CMPCCXADD)
+	set_feature(FEATURE_CMPCCXADD);
+      if (edx & bit_PREFETCHI)
+	set_feature (FEATURE_PREFETCHI);
+      if (eax & bit_RAOINT)
+	set_feature (FEATURE_RAOINT);
       if (avx_usable)
 	{
 	  if (eax & bit_AVXVNNI)
@@ -839,11 +866,18 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVXIFMA);
 	  if (edx & bit_AVXVNNIINT8)
 	    set_feature (FEATURE_AVXVNNIINT8);
+	  if (edx & bit_AVXNECONVERT)
+	    set_feature (FEATURE_AVXNECONVERT);
 	}
       if (avx512_usable)
 	{
 	  if (eax & bit_AVX512BF16)
 	    set_feature (FEATURE_AVX512BF16);
+	}
+      if (amx_usable)
+	{
+	  if (eax & bit_AMX_FP16)
+	    set_feature (FEATURE_AMX_FP16);
 	}
     }
 

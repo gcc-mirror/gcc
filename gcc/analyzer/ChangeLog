@@ -1,3 +1,244 @@
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h: Use std::unique_ptr for state machines from plugins.
+	* engine.cc: Likewise.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h: Use std::unique_ptr for known functions.
+	* engine.cc: Likewise.
+	* known-function-manager.cc: Likewise.
+	* known-function-manager.h: Likewise.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* analysis-plan.cc: Define INCLUDE_MEMORY before including
+	system.h.
+	* analyzer-pass.cc: Likewise.
+	* analyzer-selftests.cc: Likewise.
+	* analyzer.cc: Likewise.
+	* analyzer.h: Use std::unique_ptr in bifurcation code.
+	* call-string.cc: Define INCLUDE_MEMORY before including system.h.
+	* complexity.cc: Likewise.
+	* engine.cc: Use std::unique_ptr in bifurcation code.
+	* exploded-graph.h: Likewise.
+	* known-function-manager.cc: Define INCLUDE_MEMORY before
+	including system.h.
+	* region-model-impl-calls.cc: Use std::unique_ptr in bifurcation
+	code.
+	* region-model.cc: Likewise.
+	* region-model.h: Likewise.
+	* supergraph.cc: Define INCLUDE_MEMORY before including system.h.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc: Use std::unique_ptr for checker_event.
+	* checker-path.cc: Likewise.
+	* checker-path.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* varargs.cc: Likewise.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc: Include "make-unique.h".
+	Use std::unique_ptr for feasibility_problems and exploded_path.
+	Delete explicit saved_diagnostic dtor.
+	* diagnostic-manager.h: Likewise.
+	* engine.cc: Likewise.
+	* exploded-graph.h: Likewise.
+	* feasible-graph.cc: Likewise.
+	* feasible-graph.h: Likewise.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (rewind_event::rewind_event): Update for usage of
+	std::unique_ptr on custom_edge_info.
+	* engine.cc (exploded_node::on_longjmp): Likewise.
+	(exploded_edge::exploded_edge): Likewise.
+	(exploded_edge::~exploded_edge): Delete.
+	(exploded_graph::add_function_entry): Update for usage of
+	std::unique_ptr on custom_edge_info.
+	(exploded_graph::add_edge): Likewise.
+	(add_tainted_args_callback): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::process_node): Likewise.
+	* exploded-graph.h (exploded_edge::~exploded_edge): Delete.
+	(exploded_edge::m_custom_info): Use std::unique_ptr.
+	(exploded_edge::add_edge): Likewise.
+	* sm-signal.cc (register_signal_handler::impl_transition): Use
+	make_unique.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (saved_diagnostic::saved_diagnostic): Make
+	stmt_finder const.
+	(saved_diagnostic::~saved_diagnostic): Remove explicit delete of
+	m_stmt_finder.
+	(diagnostic_manager::add_diagnostic): Make stmt_finder const.
+	* diagnostic-manager.h (saved_diagnostic::saved_diagnostic):
+	Likewise.
+	(saved_diagnostic::m_stmt_finder): Convert to std::unique_ptr.
+	(diagnostic_manager::add_diagnostic): Make stmt_finder const.
+	* engine.cc (impl_sm_context::impl_sm_context): Likewise.
+	(impl_sm_context::m_stmt_finder): Likewise.
+	(leak_stmt_finder::clone): Convert return type to std::unique_ptr.
+	* exploded-graph.h (stmt_finder::clone): Likewise.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc: Add define of INCLUDE_MEMORY.
+	* call-summary.cc: Likewise.
+	* checker-path.cc: Likewise.
+	* constraint-manager.cc: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	(saved_diagnostic::saved_diagnostic): Use std::unique_ptr for
+	param d and field m_d.
+	(saved_diagnostic::~saved_diagnostic): Remove explicit delete of m_d.
+	(saved_diagnostic::add_note): Use std::unique_ptr for
+	param pn.
+	(saved_diagnostic::get_pending_diagnostic): Update for conversion
+	of m_sd.m_d to unique_ptr.
+	(diagnostic_manager::add_diagnostic): Use std::unique_ptr for
+	param d.  Remove explicit deletion.
+	(diagnostic_manager::add_note): Use std::unique_ptr for param pn.
+	(diagnostic_manager::emit_saved_diagnostic): Update for conversion
+	of m_sd.m_d to unique_ptr.
+	(null_assignment_sm_context::warn): Use std::unique_ptr for
+	param d.  Remove explicit deletion.
+	* diagnostic-manager.h (saved_diagnostic::saved_diagnostic): Use
+	std::unique_ptr for param d.
+	(saved_diagnostic::add_note): Likewise for param pn.
+	(saved_diagnostic::m_d): Likewise.
+	(diagnostic_manager::add_diagnostic): Use std::unique_ptr for
+	param d.
+	(diagnostic_manager::add_note): Use std::unique_ptr for param pn.
+	* engine.cc: Include "make-unique.h".
+	(impl_region_model_context::warn): Update to use std::unique_ptr
+	for param, removing explicit deletion.
+	(impl_region_model_context::add_note): Likewise.
+	(impl_sm_context::warn): Update to use std::unique_ptr
+	for param.
+	(impl_region_model_context::on_state_leak): Likewise for result of
+	on_leak.
+	(exploded_node::on_longjmp): Use make_unique when creating
+	pending_diagnostic.
+	(exploded_graph::process_node): Likewise.
+	* exploded-graph.h (impl_region_model_context::warn): Update to
+	use std::unique_ptr for param.
+	(impl_region_model_context::add_note): Likewise.
+	* feasible-graph.cc: Add define of INCLUDE_MEMORY.
+	* pending-diagnostic.cc: Likewise.
+	* pending-diagnostic.h: Include analyzer.sm.h"
+	* program-point.cc: Add define of INCLUDE_MEMORY.
+	* program-state.cc: Likewise.
+	* region-model-asm.cc: Likewise.
+	* region-model-impl-calls.cc: Likewise.  Include "make-unique.h".
+	(region_model::impl_call_putenv): Use make_unique when creating
+	pending_diagnostic.
+	* region-model-manager.cc: Add define of INCLUDE_MEMORY.
+	* region-model-reachability.cc: Likewise.
+	* region-model.cc: Likewise.  Include "make-unique.h".
+	(region_model::get_gassign_result): Use make_unique when creating
+	pending_diagnostic.
+	(region_model::check_for_poison): Likewise.
+	(region_model::on_stmt_pre): Likewise.
+	(region_model::check_symbolic_bounds): Likewise.
+	(region_model::check_region_bounds): Likewise.
+	(annotating_ctxt: make_note): Use std::unique_ptr for result.
+	(region_model::deref_rvalue): Use make_unique when creating
+	pending_diagnostic.
+	(region_model::check_for_writable_region): Likewise.
+	(region_model::check_region_size): Likewise.
+	(region_model::check_dynamic_size_for_floats): Likewise.
+	(region_model::maybe_complain_about_infoleak): Likewise.
+	(noop_region_model_context::add_note): Use std::unique_ptr for
+	param.  Remove explicit deletion.
+	* region-model.h: Include "analyzer/pending-diagnostic.h".
+	(region_model_context::warn): Convert param to std::unique_ptr.
+	(region_model_context::add_note): Likewise.
+	(noop_region_model_context::warn): Likewise.
+	(noop_region_model_context::add_note): Likewise.
+	(region_model_context_decorator::warn): Likewise.
+	(region_model_context_decorator::add_note): Likewise.
+	(note_adding_context::warn): Likewise.
+	(note_adding_context::make_note): Likewise for return type.
+	(test_region_model_context::warn): Convert param to
+	std::unique_ptr.
+	* region.cc: Add define of INCLUDE_MEMORY.
+	* sm-fd.cc: Likewise.  Include "make-unique.h".
+	(fd_state_machine::check_for_fd_attrs): Use make_unique when
+	creating pending_diagnostics.
+	(fd_state_machine::on_open): Likewise.
+	(fd_state_machine::on_creat): Likewise.
+	(fd_state_machine::check_for_dup): Likewise.
+	(fd_state_machine::on_close): Likewise.
+	(fd_state_machine::check_for_open_fd): Likewise.
+	(fd_state_machine::on_leak): Likewise, converting return type to
+	std::unique_ptr.
+	* sm-file.cc: Add define of INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(fileptr_state_machine::on_stmt): Use make_unique when creating
+	pending_diagnostic.
+	(fileptr_state_machine::on_leak): Likewise, converting return type
+	to std::unique_ptr.
+	* sm-malloc.cc: Add define of INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(malloc_state_machine::on_stmt): Use make_unique when creating
+	pending_diagnostic.
+	(malloc_state_machine::handle_free_of_non_heap): Likewise.
+	(malloc_state_machine::on_deallocator_call): Likewise.
+	(malloc_state_machine::on_realloc_call): Likewise.
+	(malloc_state_machine::on_leak): Likewise, converting return type
+	to std::unique_ptr.
+	* sm-pattern-test.cc: Add define of INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(pattern_test_state_machine::on_condition): Use make_unique when
+	creating pending_diagnostic.
+	* sm-sensitive.cc: Add define of INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(sensitive_state_machine::warn_for_any_exposure): Use make_unique
+	when creating pending_diagnostic.
+	* sm-signal.cc: Add define of INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(signal_state_machine::on_stmt): Use make_unique when creating
+	pending_diagnostic.
+	* sm-taint.cc: Add define of INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(taint_state_machine::check_for_tainted_size_arg): Use make_unique
+	when creating pending_diagnostic.
+	(taint_state_machine::check_for_tainted_divisor): Likewise.
+	(region_model::check_region_for_taint): Likewise.
+	(region_model::check_dynamic_size_for_taint): Likewise.
+	* sm.cc: Add define of INCLUDE_MEMORY.  Include
+	"analyzer/pending-diagnostic.h".
+	(state_machine::on_leak): Move here from sm.h, changing return
+	type to std::unique_ptr.
+	* sm.h (state_machine::on_leak): Change return type to
+	std::unique_ptr.  Move defn of base impl to sm.cc
+	(sm_context::warn): Convert param d to std_unique_ptr.
+	* state-purge.cc: Add define of INCLUDE_MEMORY.
+	* store.cc: Likewise.
+	* svalue.cc: Likewise.
+	* trimmed-graph.cc: Likewise.
+	* varargs.cc: Likewise.  Include "make-unique.h".
+	(va_list_state_machine::check_for_ended_va_list): Use make_unique
+	when creating pending_diagnostic.
+	(va_list_state_machine::on_leak): Likewise, converting return type
+	to std::unique_ptr.
+	(region_model::impl_call_va_arg): Use make_unique when creating
+	pending_diagnostic.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107486
+	* analyzer.cc (is_pipe_call_p): New.
+	* analyzer.h (is_pipe_call_p): New decl.
+	* region-model.cc (region_model::on_call_pre): Use it.
+	(region_model::on_call_post): Likewise.
+
 2022-10-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* sm-fd.cc (fd_state_machine::on_open): Transition to "unchecked"

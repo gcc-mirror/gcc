@@ -1405,6 +1405,26 @@ default_generate_pic_addr_diff_vec (void)
   return flag_pic;
 }
 
+/* Record an element in the table of global constructors.  SYMBOL is
+   a SYMBOL_REF of the function to be called; PRIORITY is a number
+   between 0 and MAX_INIT_PRIORITY.  */
+
+void
+default_asm_out_constructor (rtx symbol ATTRIBUTE_UNUSED,
+			     int priority ATTRIBUTE_UNUSED)
+{
+  sorry ("global constructors not supported on this target");
+}
+
+/* Likewise for global destructors.  */
+
+void
+default_asm_out_destructor (rtx symbol ATTRIBUTE_UNUSED,
+			    int priority ATTRIBUTE_UNUSED)
+{
+  sorry ("global destructors not supported on this target");
+}
+
 /* By default, do no modification. */
 tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
 					 tree id)

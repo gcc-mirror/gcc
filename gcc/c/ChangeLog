@@ -1,3 +1,106 @@
+2022-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (in_underspecified_init, start_underspecified_init)
+	(finish_underspecified_init): New.
+	(shadow_tag_warned, parser_xref_tag, start_struct, start_enum):
+	Give errors inside initializers of underspecified declarations.
+	(grokdeclarator): Handle (erroneous) case of C2X auto on a
+	parameter.
+	(declspecs_add_type): Handle c2x_auto_p case.
+	(declspecs_add_scspec): Handle auto possibly setting c2x_auto_p in
+	C2X mode.
+	(finish_declspecs): Handle c2x_auto_p.
+	* c-parser.cc (c_parser_declaration_or_fndef): Handle C2X auto.
+	* c-tree.h (C_DECL_UNDERSPECIFIED): New macro.
+	(struct c_declspecs): Add c2x_auto_p.
+	(start_underspecified_init, finish_underspecified_init): New
+	prototypes.
+	* c-typeck.cc (build_external_ref): Give error for underspecified
+	declaration referenced in its initializer.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (grokdeclarator): Pass
+	arg_info->no_named_args_stdarg_p to build_function_type.
+	(grokparms): Check arg_info->no_named_args_stdarg_p before
+	converting () to (void).
+	(build_arg_info): Initialize no_named_args_stdarg_p.
+	(get_parm_info): Set no_named_args_stdarg_p.
+	(start_function): Pass TYPE_NO_NAMED_ARGS_STDARG_P to
+	build_function_type.
+	(store_parm_decls): Count (...) functions as prototyped.
+	* c-parser.cc (c_parser_direct_declarator): Allow '...' after open
+	parenthesis to start parameter list.
+	(c_parser_parms_list_declarator): Always allow '...' with no
+	arguments, call pedwarn_c11 and set no_named_args_stdarg_p.
+	* c-tree.h (struct c_arg_info): Add field no_named_args_stdarg_p.
+	* c-typeck.cc (composite_type): Handle
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+	(function_types_compatible_p): Compare
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+
+2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_all_clauses): Allow optional
+	comma before the first clause.
+	(c_parser_omp_allocate, c_parser_omp_atomic, c_parser_omp_depobj,
+	c_parser_omp_flush, c_parser_omp_scan_loop_body,
+	c_parser_omp_ordered, c_finish_omp_declare_variant,
+	c_parser_omp_declare_target, c_parser_omp_declare_reduction,
+	c_parser_omp_requires, c_parser_omp_error,
+	c_parser_omp_assumption_clauses): Likewise.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* c-convert.cc (c_convert): Handle enums with underlying boolean
+	type like bool.
+	* c-decl.cc (shadow_tag_warned): Allow shadowing declarations for
+	enums with enum type specifier, but give errors for storage class
+	specifiers, qualifiers or alignment specifiers in non-definition
+	declarations of such enums.
+	(grokdeclarator): Give error for non-definition use of type
+	specifier with an enum type specifier.
+	(parser_xref_tag): Add argument has_enum_type_specifier.  Pass it
+	to lookup_tag and use it to set ENUM_FIXED_UNDERLYING_TYPE_P.
+	(xref_tag): Update call to parser_xref_tag.
+	(start_enum): Add argument fixed_underlying_type.  Complete enum
+	type with a fixed underlying type given in the definition.  Give
+	error for defining without a fixed underlying type in the
+	definition if one was given in a prior declaration.  Do not mark
+	enums with fixed underlying type as packed for -fshort-enums.
+	Store the enum type in the_enum.
+	(finish_enum): Do not adjust types of values or check their range
+	for an enum with a fixed underlying type.  Set underlying type of
+	enum and variants.
+	(build_enumerator): Check enumeration constants for enum with
+	fixed underlying type against that type and convert to that type.
+	Increment in the underlying integer type, with handling for bool.
+	(c_simulate_enum_decl): Update call to start_enum.
+	(declspecs_add_type): Set specs->enum_type_specifier_ref_p.
+	* c-objc-common.cc (c_get_alias_set): Use ENUM_UNDERLYING_TYPE
+	rather than recomputing an underlying type based on size.
+	* c-parser.cc (c_parser_declspecs)
+	(c_parser_struct_or_union_specifier, c_parser_typeof_specifier):
+	Set has_enum_type_specifier for type specifiers.
+	(c_parser_enum_specifier): Handle enum type specifiers.
+	(c_parser_struct_or_union_specifier): Update call to
+	parser_xref_tag.
+	(c_parser_omp_atomic): Check for boolean increment or decrement
+	using C_BOOLEAN_TYPE_P.
+	* c-tree.h (C_BOOLEAN_TYPE_P): New.
+	(struct c_typespec): Add has_enum_type_specifier.
+	(struct c_declspecs): Add enum_type_specifier_ref_p.
+	(struct c_enum_contents): Add enum_type.
+	(start_enum, parser_xref_tag): Update prototypes.
+	* c-typeck.cc (composite_type): Allow for enumerated types
+	compatible with bool.
+	(common_type, comptypes_internal, perform_integral_promotions):
+	Use ENUM_UNDERLYING_TYPE.
+	(parser_build_binary_op, build_unary_op, convert_for_assignment)
+	(c_finish_return, c_start_switch, build_binary_op): Check for
+	boolean types using C_BOOLEAN_TYPE_P.
+
 2022-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107358

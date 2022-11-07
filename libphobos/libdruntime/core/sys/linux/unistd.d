@@ -5,7 +5,6 @@ public import core.sys.posix.unistd;
 version (linux):
 extern(C):
 nothrow:
-@system:
 
 // Additional seek constants for sparse file handling
 // from Linux's unistd.h, stdio.h, and linux/fs.h

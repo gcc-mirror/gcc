@@ -29143,7 +29143,8 @@ arm_setup_incoming_varargs (cumulative_args_t pcum_v,
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
     {
       nregs = pcum->aapcs_ncrn;
-      if (nregs & 1)
+      if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+	  && (nregs & 1))
 	{
 	  int res = arm_needs_doubleword_align (arg.mode, arg.type);
 	  if (res < 0 && warn_psabi)

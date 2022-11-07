@@ -1173,7 +1173,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
                 fd = new FuncDeclaration(fd.loc, fd.endloc, fd.ident, fd.storage_class, tf);
                 fd.parent = ti;
-                fd.flags |= FUNCFLAG.inferRetType;
+                fd.inferRetType = true;
 
                 // Shouldn't run semantic on default arguments and return type.
                 foreach (ref param; *tf.parameterList.parameters)
@@ -3901,7 +3901,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                     // https://issues.dlang.org/show_bug.cgi?id=2579
                     // Apply function parameter storage classes to parameter types
                     fparam.type = fparam.type.addStorageClass(fparam.storageClass);
-                    fparam.storageClass &= ~(STC.TYPECTOR | STC.in_);
+                    fparam.storageClass &= ~STC.TYPECTOR;
 
                     // https://issues.dlang.org/show_bug.cgi?id=15243
                     // Resolve parameter type if it's not related with template parameters

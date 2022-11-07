@@ -5662,7 +5662,9 @@ pass all their arguments on the stack.
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data
 structure, containing the values that are obtained after processing the
 named arguments.  The argument @var{arg} describes the last of these named
-arguments.
+arguments.  The argument @var{arg} should not be used if the function type
+satisfies @code{TYPE_NO_NAMED_ARGS_STDARG_P}, since in that case there are
+no named arguments and all arguments are accessed with @code{va_arg}.
 
 The target hook should do two things: first, push onto the stack all the
 argument registers @emph{not} used for the named arguments, and second,
@@ -11642,14 +11644,18 @@ the target operating system.
 @deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
 @c hook-start:TARGET_D_MINFO_SECTION
 Contains the name of the section in which module info references should be
-placed.  This section is expected to be bracketed by two symbols to indicate
-the start and end address of the section, so that the runtime library can
-collect all modules for each loaded shared library and executable.  The
-default value of @code{NULL} disables the use of sections altogether.
+placed.  By default, the compiler puts all module info symbols in the
+@code{"minfo"} section.  Define this macro to override the string if a
+different section name should be used.  This section is expected to be
+bracketed by two symbols @code{TARGET_D_MINFO_SECTION_START} and 
+@code{TARGET_D_MINFO_SECTION_END} to indicate the start and end address of
+the section, so that the runtime library can collect all modules for each
+loaded shared library and executable.  Setting the value to @code{NULL}
+disables the use of sections for storing module info altogether.
 @end deftypevr
 @c hook-end
 
-@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_START_NAME
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION_START
 @c hook-start:TARGET_D_MINFO_START_NAME
 If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
 as the name of the symbol indicating the start address of the module info
@@ -11657,7 +11663,7 @@ section
 @end deftypevr
 @c hook-end
 
-@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_END_NAME
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION_END
 @c hook-start:TARGET_D_MINFO_END_NAME
 If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
 as the name of the symbol indicating the end address of the module info

@@ -1033,13 +1033,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V8BFmode || (MODE) == TImode)
 
 #define VALID_AVX512FP16_REG_MODE(MODE)					\
-  ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode	\
-   || (MODE) == V2HFmode)
+  ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode)
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
    || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
-   || (MODE) == V8BFmode \
+   || (MODE) == V8BFmode || (MODE) == V4BFmode || (MODE) == V2BFmode	\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (MODE) == V2DImode || (MODE) == V2QImode || (MODE) == DFmode	\
    || (MODE) == HFmode || (MODE) == BFmode)
@@ -1057,7 +1056,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE) == V1DImode || (MODE) == DImode				\
    || (MODE) == V2SImode || (MODE) == SImode				\
    || (MODE) == V4HImode || (MODE) == V8QImode				\
-   || (MODE) == V4HFmode)
+   || (MODE) == V4HFmode || (MODE) == V4BFmode)
 
 #define VALID_MASK_REG_MODE(MODE) ((MODE) == HImode || (MODE) == QImode)
 
@@ -1074,7 +1073,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == CSImode || (MODE) == CDImode				\
    || (MODE) == SDmode || (MODE) == DDmode				\
    || (MODE) == HFmode || (MODE) == HCmode || (MODE) == BFmode		\
-   || (MODE) == V2HImode || (MODE) == V2HFmode				\
+   || (MODE) == V2HImode || (MODE) == V2HFmode || (MODE) == V2BFmode	\
    || (MODE) == V1SImode || (MODE) == V4QImode || (MODE) == V2QImode	\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
@@ -2226,6 +2225,8 @@ enum processor_type
   PROCESSOR_GOLDMONT,
   PROCESSOR_GOLDMONT_PLUS,
   PROCESSOR_TREMONT,
+  PROCESSOR_SIERRAFOREST,
+  PROCESSOR_GRANDRIDGE,
   PROCESSOR_KNL,
   PROCESSOR_KNM,
   PROCESSOR_SKYLAKE,
@@ -2239,6 +2240,7 @@ enum processor_type
   PROCESSOR_SAPPHIRERAPIDS,
   PROCESSOR_ALDERLAKE,
   PROCESSOR_ROCKETLAKE,
+  PROCESSOR_GRANITERAPIDS,
   PROCESSOR_INTEL,
   PROCESSOR_LUJIAZUI,
   PROCESSOR_GEODE,
@@ -2346,6 +2348,11 @@ constexpr wide_int_bitmask PTA_ALDERLAKE = PTA_TREMONT | PTA_ADX | PTA_AVX
   | PTA_AVX2 | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_LZCNT
   | PTA_PCONFIG | PTA_PKU | PTA_VAES | PTA_VPCLMULQDQ | PTA_SERIALIZE
   | PTA_HRESET | PTA_KL | PTA_WIDEKL | PTA_AVXVNNI;
+constexpr wide_int_bitmask PTA_SIERRAFOREST = PTA_ALDERLAKE | PTA_AVXIFMA
+  | PTA_AVXVNNIINT8 | PTA_AVXNECONVERT | PTA_CMPCCXADD;
+constexpr wide_int_bitmask PTA_GRANITERAPIDS = PTA_SAPPHIRERAPIDS | PTA_AMX_FP16
+  | PTA_PREFETCHI;
+constexpr wide_int_bitmask PTA_GRANDRIDGE = PTA_SIERRAFOREST | PTA_RAOINT;
 constexpr wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
   | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
 constexpr wide_int_bitmask PTA_ZNVER1 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2

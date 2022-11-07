@@ -8253,12 +8253,6 @@ if test x"$enable_as_accelerator_for" != x; then
 $as_echo "#define ACCEL_COMPILER 1" >>confdefs.h
 
   enable_as_accelerator=yes
-  case "${target}" in
-    *-intelmicemul-*)
-      # In this case we expect offload compiler to be built as native, so we
-      # need to rename the driver to avoid clashes with host's drivers.
-      program_transform_name="s&^&${target}-&" ;;
-  esac
   sedscript="s#${target_noncanonical}#${enable_as_accelerator_for}-accel-${target_noncanonical}#"
   program_transform_name=`echo $program_transform_name | sed $sedscript`
   accel_dir_suffix=/accel/${target_noncanonical}
@@ -8273,10 +8267,6 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
 
   enable_offloading=1
   case "$tgt" in
-    *-intelmic-* | *-intelmicemul-*)
-  	omp_device_property=omp-device-properties-i386
-  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
-  	;;
     amdgcn*)
   	omp_device_property=omp-device-properties-gcn
   	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
@@ -12684,7 +12674,9 @@ objext='.o'
 # With Setjmp/Longjmp based exception handling.
 # Check whether --enable-sjlj-exceptions was given.
 if test "${enable_sjlj_exceptions+set}" = set; then :
-  enableval=$enable_sjlj_exceptions; case $target in
+  enableval=$enable_sjlj_exceptions; force_sjlj_exceptions=yes
+else
+  case $target in
   lm32*-*-*)
      force_sjlj_exceptions=yes
      enableval=yes
@@ -19718,7 +19710,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19721 "configure"
+#line 19713 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19824,7 +19816,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19827 "configure"
+#line 19819 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -31101,15 +31093,25 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking sys/sdt.h in the target C library" >&5
 $as_echo_n "checking sys/sdt.h in the target C library... " >&6; }
-have_sys_sdt_h=no
-if test -f $target_header_dir/sys/sdt.h; then
-  have_sys_sdt_h=yes
+if ${gcc_cv_sys_sdt_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  gcc_cv_sys_sdt_h=no
+  if test -f $target_header_dir/sys/sdt.h; then
+    gcc_cv_sys_sdt_h=yes
+  fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_sys_sdt_h" >&5
+$as_echo "$gcc_cv_sys_sdt_h" >&6; }
+if test x$gcc_cv_sys_sdt_h = xyes; then :
+
 
 $as_echo "#define HAVE_SYS_SDT_H 1" >>confdefs.h
 
+
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_sys_sdt_h" >&5
-$as_echo "$have_sys_sdt_h" >&6; }
 
 # Check if TFmode long double should be used by default or not.
 # Some glibc targets used DFmode long double, but with glibc 2.4

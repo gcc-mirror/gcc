@@ -2253,7 +2253,9 @@ setup_incoming_varargs (cumulative_args_t cum,
 
   /* Skip the last named argument.  */
   next_cum = *get_cumulative_args (cum);
-  rs6000_function_arg_advance_1 (&next_cum, arg.mode, arg.type, arg.named, 0);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    rs6000_function_arg_advance_1 (&next_cum, arg.mode, arg.type, arg.named,
+				   0);
 
   if (DEFAULT_ABI == ABI_V4)
     {
@@ -2327,7 +2329,8 @@ setup_incoming_varargs (cumulative_args_t cum,
       first_reg_offset = next_cum.words;
       save_area = crtl->args.internal_arg_pointer;
 
-      if (targetm.calls.must_pass_in_stack (arg))
+      if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+	  && targetm.calls.must_pass_in_stack (arg))
 	first_reg_offset += rs6000_arg_size (TYPE_MODE (arg.type), arg.type);
     }
 

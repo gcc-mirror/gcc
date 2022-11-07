@@ -57,7 +57,7 @@
 	|| (defined(__powerpc__) && defined(_ARCH_PWR8) \
 	    && defined(__LITTLE_ENDIAN__) && (_CALL_ELF == 2) \
 	    && defined(__FLOAT128__)))
-//# define _GLIBCXX_HAVE_FLOAT128_MATH 1
+# define _GLIBCXX_HAVE_FLOAT128_MATH 1
 #endif
 
 #if __GLIBC_PREREQ(2, 27)

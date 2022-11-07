@@ -877,7 +877,7 @@ proper position among the other output files.  */
 #endif
 
 #ifdef HAVE_AS_DEBUG_PREFIX_MAP
-#define ASM_MAP " %{fdebug-prefix-map=*:--debug-prefix-map %*}"
+#define ASM_MAP " %{ffile-prefix-map=*:--debug-prefix-map %*} %{fdebug-prefix-map=*:--debug-prefix-map %*}"
 #else
 #define ASM_MAP ""
 #endif
@@ -1327,7 +1327,11 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 
 static const char *const driver_self_specs[] = {
   "%{fdump-final-insns:-fdump-final-insns=.} %<fdump-final-insns",
-  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS
+  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS,
+  /* This discards -fmultiflags at the end of self specs processing in the
+     driver, so that it is effectively Ignored, without actually marking it as
+     Ignored, which would get it discarded before self specs could remap it.  */
+  "%<fmultiflags"
 };
 
 #ifndef OPTION_DEFAULT_SPECS

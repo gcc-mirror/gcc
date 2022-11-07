@@ -881,18 +881,40 @@ package body Errout is
    -- Error_Msg_GNAT_Extension --
    ------------------------------
 
-   procedure Error_Msg_GNAT_Extension (Extension : String; Loc : Source_Ptr) is
+   procedure Error_Msg_GNAT_Extension
+     (Extension : String;
+      Loc : Source_Ptr;
+      Is_Core_Extension : Boolean := False)
+   is
    begin
-      if not Extensions_Allowed then
-         Error_Msg (Extension & " is a 'G'N'A'T-specific extension", Loc);
+      if (if Is_Core_Extension
+           then Core_Extensions_Allowed
+           else All_Extensions_Allowed)
+      then
+         return;
+      end if;
 
-         if No (Ada_Version_Pragma) then
-            Error_Msg ("\unit must be compiled with -gnatX "
-                       & "or use pragma Extensions_Allowed (On)", Loc);
+      Error_Msg (Extension & " is a 'G'N'A'T-specific extension", Loc);
+
+      if No (Ada_Version_Pragma) then
+         if Is_Core_Extension then
+            Error_Msg
+              ("\unit must be compiled with -gnatX '[or -gnatX0'] " &
+               "or use pragma Extensions_Allowed (On) '[or All']", Loc);
          else
-            Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
-            Error_Msg ("\incompatible with Ada version set#", Loc);
-            Error_Msg ("\must use pragma Extensions_Allowed (On)", Loc);
+            Error_Msg
+              ("\unit must be compiled with -gnatX0 " &
+               "or use pragma Extensions_Allowed (All)", Loc);
+         end if;
+      else
+         Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
+         Error_Msg ("\incompatible with Ada version set#", Loc);
+         if Is_Core_Extension then
+            Error_Msg
+              ("\must use pragma Extensions_Allowed (On) '[or All']", Loc);
+         else
+            Error_Msg
+              ("\must use pragma Extensions_Allowed (All)", Loc);
          end if;
       end if;
    end Error_Msg_GNAT_Extension;
@@ -3361,23 +3383,13 @@ package body Errout is
             E := Errors.Table (E).Next;
          end loop;
 
+         --  Warnings may have been posted on subexpressions of original tree
+
          if Nkind (N) = N_Raise_Constraint_Error
            and then Is_Rewrite_Substitution (N)
            and then No (Condition (N))
          then
-            --  Warnings may have been posted on subexpressions of the original
-            --  tree. We place the original node back on the tree to remove
-            --  those warnings, whose sloc do not match those of any node in
-            --  the current tree. Given that we are in unreachable code, this
-            --  modification to the tree is harmless.
-
-            if Is_List_Member (N) then
-               Set_Condition (N, Original_Node (N));
-               Check_All_Warnings (Condition (N));
-            else
-               Rewrite (N, Original_Node (N));
-               Check_All_Warnings (N);
-            end if;
+            Check_All_Warnings (Original_Node (N));
          end if;
 
          return OK;

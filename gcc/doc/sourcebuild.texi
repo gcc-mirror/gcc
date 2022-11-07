@@ -116,9 +116,6 @@ The runtime support library for transactional memory.
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
 
-@item liboffloadmic
-A library to allow OpenMP to Intel MIC targets.
-
 @item libphobos
 The D standard and runtime library.  The bulk of this library is mirrored
 from the @uref{https://github.com/@/dlang, master D repositories}.
@@ -2493,6 +2490,9 @@ Target supports the execution of @code{avx512vp2intersect} instructions.
 @item avxifma
 Target supports the execution of @code{avxifma} instructions.
 
+@item avxneconvert
+Target supports the execution of @code{avxneconvert} instructions.
+
 @item avxvnniint8
 Target supports the execution of @code{avxvnniint8} instructions.
 
@@ -2505,8 +2505,14 @@ Target supports the execution of @code{amx-int8} instructions.
 @item amx_bf16
 Target supports the execution of @code{amx-bf16} instructions.
 
+@item amx_fp16
+Target supports the execution of @code{amx-fp16} instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
+
+@item cmpccxadd
+Target supports the execution of @code{cmpccxadd} instructions.
 
 @item coldfire_fpu
 Target uses a ColdFire FPU.
@@ -2525,6 +2531,12 @@ Target does not require strict alignment.
 
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
+
+@item prefetchi
+Target supports the execution of @code{prefetchi} instructions.
+
+@item raoint
+Target supports the execution of @code{raoint} instructions.
 
 @item rdrand
 Target supports x86 @code{rdrand} instruction.

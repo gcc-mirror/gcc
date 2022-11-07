@@ -544,17 +544,19 @@ composite_type (tree t1, tree t2)
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (TYPE_ARG_TYPES (t1) == NULL_TREE)
-	 {
-	    t1 = build_function_type (valtype, TYPE_ARG_TYPES (t2));
+	  {
+	    t1 = build_function_type (valtype, TYPE_ARG_TYPES (t2),
+				      TYPE_NO_NAMED_ARGS_STDARG_P (t2));
 	    t1 = build_type_attribute_variant (t1, attributes);
 	    return qualify_type (t1, t2);
 	 }
 	if (TYPE_ARG_TYPES (t2) == NULL_TREE)
-	 {
-	   t1 = build_function_type (valtype, TYPE_ARG_TYPES (t1));
-	   t1 = build_type_attribute_variant (t1, attributes);
-	   return qualify_type (t1, t2);
-	 }
+	  {
+	    t1 = build_function_type (valtype, TYPE_ARG_TYPES (t1),
+				      TYPE_NO_NAMED_ARGS_STDARG_P (t1));
+	    t1 = build_type_attribute_variant (t1, attributes);
+	    return qualify_type (t1, t2);
+	  }
 
 	/* If both args specify argument types, we must merge the two
 	   lists, argument by argument.  */
@@ -1702,6 +1704,8 @@ function_types_compatible_p (const_tree f1, const_tree f2,
 
   if (args1 == NULL_TREE)
     {
+      if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
+	return 0;
       if (!self_promoting_args_p (args2))
 	return 0;
       /* If one of these types comes from a non-prototype fn definition,
@@ -1715,6 +1719,8 @@ function_types_compatible_p (const_tree f1, const_tree f2,
     }
   if (args2 == NULL_TREE)
     {
+      if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
+	return 0;
       if (!self_promoting_args_p (args1))
 	return 0;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
@@ -2855,6 +2861,9 @@ build_external_ref (location_t loc, tree id, bool fun, tree *type)
     {
       ref = decl;
       *type = TREE_TYPE (ref);
+      if (DECL_P (decl) && C_DECL_UNDERSPECIFIED (decl))
+	error_at (loc, "underspecified %qD referenced in its initializer",
+		  decl);
     }
   else if (fun)
     /* Implicit function declaration.  */

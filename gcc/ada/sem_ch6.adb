@@ -264,7 +264,7 @@ package body Sem_Ch6 is
 
       elsif Warn_On_Redundant_Constructs
         and then not Is_Dispatching_Operation (Subp_Id)
-        and then not Present (Overridden_Operation (Subp_Id))
+        and then No (Overridden_Operation (Subp_Id))
         and then (not Is_Operator_Symbol_Name (Chars (Subp_Id))
                    or else Scop /= Scope (Etype (First_Formal (Subp_Id))))
       then
@@ -4070,7 +4070,7 @@ package body Sem_Ch6 is
             --  an instance that may have manipulated the flag during
             --  expansion. As a result, we add an exception for this case.
 
-            elsif not Present (Overridden_Operation (Spec_Id))
+            elsif No (Overridden_Operation (Spec_Id))
               and then not (Chars (Spec_Id) in Name_Adjust
                                              | Name_Finalize
                                              | Name_Initialize
@@ -6795,7 +6795,7 @@ package body Sem_Ch6 is
                   Error_Msg_Sloc   := Sloc (Op);
 
                   if Comes_From_Source (Op) or else No (Alias (Op)) then
-                     if not Present (Overridden_Operation (Op)) then
+                     if No (Overridden_Operation (Op)) then
                         Error_Msg_N ("\\primitive % defined #", Typ);
                      else
                         Error_Msg_N
@@ -8366,7 +8366,7 @@ package body Sem_Ch6 is
               or else not Is_Overloadable (Subp)
               or else not Is_Primitive (Subp)
               or else not Is_Dispatching_Operation (Subp)
-              or else not Present (Find_Dispatching_Type (Subp))
+              or else No (Find_Dispatching_Type (Subp))
               or else not Is_Interface (Find_Dispatching_Type (Subp))
             then
                null;
@@ -10711,13 +10711,13 @@ package body Sem_Ch6 is
          E : Entity_Id;
 
       begin
-         E := First_Entity (Prim);
+         E := First_Formal (Prim);
          while Present (E) loop
-            if Is_Formal (E) and then Is_Controlling_Formal (E) then
+            if Is_Controlling_Formal (E) then
                return E;
             end if;
 
-            Next_Entity (E);
+            Next_Formal (E);
          end loop;
 
          return Empty;
@@ -11389,7 +11389,7 @@ package body Sem_Ch6 is
                   return False;
                end if;
 
-               if not Present (Partial_View) then
+               if No (Partial_View) then
                   return True;
                end if;
 
@@ -11403,7 +11403,7 @@ package body Sem_Ch6 is
                begin
                   loop
                      H := Homonym (H);
-                     exit when not Present (H) or else Scope (H) /= Scope (S);
+                     exit when No (H) or else Scope (H) /= Scope (S);
 
                      if Nkind (Parent (H)) in
                         N_Private_Extension_Declaration |
@@ -11451,7 +11451,7 @@ package body Sem_Ch6 is
 
                         if ((Present (Partial_View)
                               and then Is_Tagged_Type (Partial_View))
-                          or else (not Present (Partial_View)
+                          or else (No (Partial_View)
                                     and then Is_Tagged_Type (T)))
                           and then T = Base_Type (Etype (S))
                         then
@@ -12947,7 +12947,7 @@ package body Sem_Ch6 is
 
             --  No need to continue if we already notified errors
 
-            if not Present (Formal_Type) then
+            if No (Formal_Type) then
                return;
             end if;
 

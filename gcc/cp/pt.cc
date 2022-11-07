@@ -19866,21 +19866,13 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
-    {
-      /* A lambda in a default argument outside a class gets no
-	 LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
-	 tsubst_default_argument calls start_lambda_scope, so we need to
-	 specifically ignore it here, and use the global scope.  */
-      record_null_lambda_scope (r);
-
-      /* If we're pushed into another scope (PR105652), fix it.  */
-      if (TYPE_NAMESPACE_SCOPE_P (TREE_TYPE (t)))
-	TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type))
-	  = TYPE_CONTEXT (TREE_TYPE (t));
-    }
-  else
+  if (LAMBDA_EXPR_EXTRA_SCOPE (t))
     record_lambda_scope (r);
+  else if (TYPE_NAMESPACE_SCOPE_P (TREE_TYPE (t)))
+    /* If we're pushed into another scope (PR105652), fix it.  */
+    TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type))
+      = TYPE_CONTEXT (TREE_TYPE (t));
+  record_lambda_scope_discriminator (r);
 
   /* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
   determine_visibility (TYPE_NAME (type));
@@ -19911,29 +19903,18 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       fntype = build_memfn_type (fntype, type,
 				 type_memfn_quals (fntype),
 				 type_memfn_rqual (fntype));
-      tree fn, tmpl;
-      if (oldtmpl)
+      tree inst = (oldtmpl
+		   ? tsubst_template_decl (oldtmpl, args, complain, fntype)
+		   : tsubst_function_decl (oldfn, args, complain, fntype));
+      if (inst == error_mark_node)
 	{
-	  tmpl = tsubst_template_decl (oldtmpl, args, complain, fntype);
-	  if (tmpl == error_mark_node)
-	    {
-	      r = error_mark_node;
-	      goto out;
-	    }
-	  fn = DECL_TEMPLATE_RESULT (tmpl);
-	  finish_member_declaration (tmpl);
+	  r = error_mark_node;
+	  goto out;
 	}
-      else
-	{
-	  tmpl = NULL_TREE;
-	  fn = tsubst_function_decl (oldfn, args, complain, fntype);
-	  if (fn == error_mark_node)
-	    {
-	      r = error_mark_node;
-	      goto out;
-	    }
-	  finish_member_declaration (fn);
-	}
+      finish_member_declaration (inst);
+      record_lambda_scope_sig_discriminator (r, inst);
+
+      tree fn = oldtmpl ? DECL_TEMPLATE_RESULT (inst) : inst;
 
       /* Let finish_function set this.  */
       DECL_DECLARED_CONSTEXPR_P (fn) = false;

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -54,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
 #include "analyzer/call-info.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -112,10 +114,10 @@ call_info::add_events_to_path (checker_path *emission_path,
   tree caller_fndecl = src_point.get_fndecl ();
   const int stack_depth = src_point.get_stack_depth ();
 
-  emission_path->add_event (new call_event (get_call_stmt ()->location,
-					    caller_fndecl,
-					    stack_depth,
-					    this));
+  emission_path->add_event (make_unique<call_event> (get_call_stmt ()->location,
+						     caller_fndecl,
+						     stack_depth,
+						     this));
 }
 
 /* Recreate a call_details instance from this call_info.  */

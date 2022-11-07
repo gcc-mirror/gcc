@@ -1472,6 +1472,67 @@ pop_file_scope (void)
   maybe_apply_pending_pragma_weaks ();
 }
 
+/* Whether we are curently inside the initializer for an
+   underspecified object definition (C2x auto or constexpr).  */
+static bool in_underspecified_init;
+
+/* Start an underspecified object definition for NAME at LOC.  This
+   means that NAME is shadowed inside its initializer, so neither the
+   definition being initialized, nor any definition from an outer
+   scope, may be referenced during that initializer.  Return state to
+   be passed to finish_underspecified_init.  */
+unsigned int
+start_underspecified_init (location_t loc, tree name)
+{
+  bool prev = in_underspecified_init;
+  bool ok;
+  tree decl = build_decl (loc, VAR_DECL, name, error_mark_node);
+  C_DECL_UNDERSPECIFIED (decl) = 1;
+  struct c_scope *scope = current_scope;
+  struct c_binding *b = I_SYMBOL_BINDING (name);
+  if (b && B_IN_SCOPE (b, scope))
+    {
+      error_at (loc, "underspecified declaration of %qE, which is already "
+		"declared in this scope", name);
+      ok = false;
+    }
+  else
+    {
+      bind (name, decl, scope, false, false, loc);
+      ok = true;
+    }
+  in_underspecified_init = true;
+  return ok | (prev << 1);
+}
+
+/* Finish an underspecified object definition for NAME, before that
+   name is bound to the real declaration instead of a placeholder.
+   PREV_STATE is the value returned by the call to
+   start_underspecified_init.  */
+void
+finish_underspecified_init (tree name, unsigned int prev_state)
+{
+  if (prev_state & 1)
+    {
+      /* A VAR_DECL was bound to the name to shadow any previous
+	 declarations for the name; remove that binding now.  */
+      struct c_scope *scope = current_scope;
+      struct c_binding *b = I_SYMBOL_BINDING (name);
+      gcc_assert (b);
+      gcc_assert (B_IN_SCOPE (b, scope));
+      gcc_assert (VAR_P (b->decl));
+      gcc_assert (C_DECL_UNDERSPECIFIED (b->decl));
+      I_SYMBOL_BINDING (name) = b->shadowed;
+      /* In erroneous cases there may be other bindings added to this
+	 scope during the initializer.  */
+      struct c_binding **p = &scope->bindings;
+      while (*p != b)
+	p = &((*p)->prev);
+      *p = free_binding_and_advance (*p);
+    }
+  in_underspecified_init = (prev_state & (1u << 1)) >> 1;
+}
+
 /* Adjust the bindings for the start of a statement expression.  */
 
 void
@@ -4764,6 +4825,17 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      warned = 1;
 	    }
 
+	  if (in_underspecified_init)
+	    {
+	      /* This can only occur with extensions such as statement
+		 expressions, but is still appropriate as an error to
+		 avoid types declared in such a context escaping to
+		 the type of an auto variable.  */
+	      error ("%qT declared in underspecified object initializer",
+		     value);
+	      warned = 1;
+	    }
+
 	  if (name == NULL_TREE)
 	    {
 	      if (warned != 1 && code != ENUMERAL_TYPE)
@@ -6458,6 +6530,15 @@ grokdeclarator (const struct c_declarator *declarator,
   enum c_declarator_kind first_non_attr_kind;
   unsigned int alignas_align = 0;
 
+  if (type == NULL_TREE)
+    {
+      /* This can occur for auto on a parameter in C2X mode.  Set a
+	 dummy type here so subsequent code can give diagnostics for
+	 this case.  */
+      gcc_assert (declspecs->c2x_auto_p);
+      gcc_assert (decl_context == PARM);
+      type = declspecs->type = integer_type_node;
+    }
   if (TREE_CODE (type) == ERROR_MARK)
     return error_mark_node;
   if (expr == NULL)
@@ -6683,9 +6764,13 @@ grokdeclarator (const struct c_declarator *declarator,
 	  || storage_class == csc_typedef)
 	storage_class = csc_none;
     }
-  else if (decl_context != NORMAL && (storage_class != csc_none || threadp))
+  else if (decl_context != NORMAL && (storage_class != csc_none
+				      || threadp
+				      || declspecs->c2x_auto_p))
     {
-      if (decl_context == PARM && storage_class == csc_register)
+      if (decl_context == PARM
+	  && storage_class == csc_register
+	  && !declspecs->c2x_auto_p)
 	;
       else
 	{
@@ -7295,7 +7380,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    type_quals = TYPE_UNQUALIFIED;
 
-	    type = build_function_type (type, arg_types);
+	    type = build_function_type (type, arg_types,
+					arg_info->no_named_args_stdarg_p);
 	    declarator = declarator->declarator;
 
 	    /* Set the TYPE_CONTEXTs for each tagged type which is local to
@@ -8060,7 +8146,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       /* In C2X, convert () to (void).  */
       if (flag_isoc2x
 	  && !arg_types
-	  && !arg_info->parms)
+	  && !arg_info->parms
+	  && !arg_info->no_named_args_stdarg_p)
 	arg_types = arg_info->types = void_list_node;
 
       /* If there is a parameter of incomplete type in a definition,
@@ -8130,6 +8217,7 @@ build_arg_info (void)
   ret->others = NULL_TREE;
   ret->pending_sizes = NULL;
   ret->had_vla_unspec = 0;
+  ret->no_named_args_stdarg_p = 0;
   return ret;
 }
 
@@ -8321,6 +8409,7 @@ get_parm_info (bool ellipsis, tree expr)
   arg_info->types = types;
   arg_info->others = others;
   arg_info->pending_sizes = expr;
+  arg_info->no_named_args_stdarg_p = ellipsis && !types;
   return arg_info;
 }
 
@@ -8424,6 +8513,9 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
 
   pushtag (loc, name, ref);
   decl_attributes (&ref, attrs, (int) ATTR_FLAG_TYPE_IN_PLACE);
+  if (in_underspecified_init)
+    error_at (loc, "%qT declared in underspecified object initializer",
+	      ref);
 
   ret.spec = ref;
   return ret;
@@ -8518,6 +8610,9 @@ start_struct (location_t loc, enum tree_code code, tree name,
 		(in_sizeof
 		 ? "sizeof"
 		 : (in_typeof ? "typeof" : "alignof")));
+
+  if (in_underspecified_init)
+    error_at (loc, "%qT defined in underspecified object initializer", ref);
 
   return ref;
 }
@@ -9429,6 +9524,10 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
 		 ? "sizeof"
 		 : (in_typeof ? "typeof" : "alignof")));
 
+  if (in_underspecified_init)
+    error_at (loc, "%qT defined in underspecified object initializer",
+	      enumtype);
+
   return enumtype;
 }
 
@@ -9935,7 +10034,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       /* Make it return void instead.  */
       TREE_TYPE (decl1)
 	= build_function_type (void_type_node,
-			       TYPE_ARG_TYPES (TREE_TYPE (decl1)));
+			       TYPE_ARG_TYPES (TREE_TYPE (decl1)),
+			       TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (decl1)));
     }
 
   if (warn_about_return_type)
@@ -10534,7 +10634,7 @@ store_parm_decls (void)
      empty argument list was converted to (void) in grokparms; in
      older C standard versions, it does not give the function a type
      with a prototype for future calls.  */
-  proto = arg_info->types != 0;
+  proto = arg_info->types != 0 || arg_info->no_named_args_stdarg_p;
 
   if (proto)
     store_parm_decls_newstyle (fndecl, arg_info);
@@ -11255,6 +11355,20 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
     specs->deprecated_p = true;
   if (TREE_UNAVAILABLE (type))
     specs->unavailable_p = true;
+
+  /* As a type specifier is present, "auto" must be used as a storage
+     class specifier, not for type deduction.  */
+  if (specs->c2x_auto_p)
+    {
+      specs->c2x_auto_p = false;
+      if (specs->storage_class != csc_none)
+	error ("multiple storage classes in declaration specifiers");
+      else if (specs->thread_p)
+	error ("%qs used with %<auto%>",
+	       specs->thread_gnu_p ? "__thread" : "_Thread_local");
+      else
+	specs->storage_class = csc_auto;
+    }
 
   /* Handle type specifier keywords.  */
   if (TREE_CODE (type) == IDENTIFIER_NODE
@@ -12174,6 +12288,16 @@ declspecs_add_scspec (location_t loc,
 	}
       break;
     case RID_AUTO:
+      if (flag_isoc2x
+	  && specs->typespec_kind == ctsk_none
+	  && specs->storage_class != csc_typedef)
+	{
+	  /* "auto" potentially used for type deduction.  */
+	  if (specs->c2x_auto_p)
+	    error ("duplicate %qE", scspec);
+	  specs->c2x_auto_p = true;
+	  return specs;
+	}
       n = csc_auto;
       break;
     case RID_EXTERN:
@@ -12193,6 +12317,11 @@ declspecs_add_scspec (location_t loc,
       break;
     case RID_TYPEDEF:
       n = csc_typedef;
+      if (specs->c2x_auto_p)
+	{
+	  error ("%<typedef%> used with %<auto%>");
+	  specs->c2x_auto_p = false;
+	}
       break;
     default:
       gcc_unreachable ();
@@ -12279,7 +12408,7 @@ finish_declspecs (struct c_declspecs *specs)
     {
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p
-		  && !specs->complex_p);
+		  && !specs->complex_p && !specs->c2x_auto_p);
 
       /* Set a dummy type.  */
       if (TREE_CODE (specs->type) == ERROR_MARK)
@@ -12315,6 +12444,18 @@ finish_declspecs (struct c_declspecs *specs)
 		   "ISO C does not support plain %<complex%> meaning "
 		   "%<double complex%>");
 	}
+      else if (specs->c2x_auto_p)
+	{
+	  /* Type to be filled in later, including applying postfix
+	     attributes.  This warning only actually appears for
+	     -Wc11-c2x-compat in C2X mode; in older modes, there may
+	     be a warning or pedwarn for implicit "int" instead, or
+	     other errors for use of auto at file scope.  */
+	  pedwarn_c11 (input_location, OPT_Wpedantic,
+		       "ISO C does not support %<auto%> type deduction "
+		       "before C2X");
+	  return specs;
+	}
       else
 	{
 	  specs->typespec_word = cts_int;
@@ -12331,6 +12472,7 @@ finish_declspecs (struct c_declspecs *specs)
   specs->explicit_signed_p = specs->signed_p;
 
   /* Now compute the actual type.  */
+  gcc_assert (!specs->c2x_auto_p);
   switch (specs->typespec_word)
     {
     case cts_auto_type:

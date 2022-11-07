@@ -7065,6 +7065,31 @@ Enable/disable the generation of the AVXIFMA instructions.
 @cindex @code{target("avxvnniint8")} function attribute, x86
 Enable/disable the generation of the AVXVNNIINT8 instructions.
 
+@item avxneconvert
+@itemx no-avxneconvert
+@cindex @code{target("avxneconvert")} function attribute, x86
+Enable/disable the generation of the AVXNECONVERT instructions.
+
+@item cmpccxadd
+@itemx no-cmpccxadd
+@cindex @code{target("cmpccxadd")} function attribute, x86
+Enable/disable the generation of the CMPccXADD instructions.
+
+@item amx-fp16
+@itemx no-amx-fp16
+@cindex @code{target("amx-fp16")} function attribute, x86
+Enable/disable the generation of the AMX-FP16 instructions.
+
+@item prefetchi
+@itemx no-prefetchi
+@cindex @code{target("prefetchi")} function attribute, x86
+Enable/disable the generation of the PREFETCHI instructions.
+
+@item raoint
+@itemx no-raoint
+@cindex @code{target("raoint")} function attribute, x86
+Enable/disable the generation of the RAOINT instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
@@ -21935,6 +21960,9 @@ Intel Core i7 Alderlake CPU.
 @item rocketlake
 Intel Core i7 Rocketlake CPU.
 
+@item graniterapids
+Intel Core i7 graniterapids CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
@@ -21949,6 +21977,12 @@ Intel Atom Goldmont Plus CPU.
 
 @item tremont
 Intel Atom Tremont CPU.
+
+@item sierraforest
+Intel Atom Sierra Forest CPU.
+
+@item grandridge
+Intel Atom Grand Ridge CPU.
 
 @item knl
 Intel Knights Landing CPU.

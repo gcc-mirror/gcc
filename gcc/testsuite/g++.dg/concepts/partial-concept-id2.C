@@ -1,5 +1,5 @@
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 // Make sure that we check partial concept ids
 // with variable concepts.

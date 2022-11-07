@@ -3888,7 +3888,7 @@ package body Sem_Attr is
 
             elsif (Is_Generic_Type (P_Type)
                     or else Is_Generic_Actual_Type (P_Type))
-              and then Extensions_Allowed
+              and then All_Extensions_Allowed
             then
                return;
             end if;
@@ -6425,7 +6425,7 @@ package body Sem_Attr is
             --  type to the pool object's type.
 
             else
-               if not Present (Get_Rep_Pragma (Etype (Entity (N)),
+               if No (Get_Rep_Pragma (Etype (Entity (N)),
                                                Name_Simple_Storage_Pool_Type))
                then
                   Error_Attr_P

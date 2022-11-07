@@ -11,7 +11,6 @@ version (linux):
 public import core.sys.posix.time;
 
 extern (C):
-@system:
 @nogc:
 nothrow:
 

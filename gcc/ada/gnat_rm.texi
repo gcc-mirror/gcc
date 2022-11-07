@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Oct 04, 2022
+GNAT Reference Manual , Oct 27, 2022
 
 AdaCore
 
@@ -2787,7 +2787,7 @@ that is, they never return an object whose type is a descendant of type T.
 This pragma is now obsolete and, other than generating a warning if warnings
 on obsolescent features are enabled, is completely ignored.
 It is retained for compatibility
-purposes. It used to be required to ensure compoatibility with C++, but
+purposes. It used to be required to ensure compatibility with C++, but
 is no longer required for that purpose because GNAT generates
 the same object layout as the G++ compiler by default.
 
@@ -3608,16 +3608,19 @@ GNAT User’s Guide.
 Syntax:
 
 @example
-pragma Extensions_Allowed (On | Off);
+pragma Extensions_Allowed (On | Off | All);
 @end example
 
-This configuration pragma enables or disables the implementation
-extension mode (the use of Off as a parameter cancels the effect
-of the `-gnatX' command switch).
+This configuration pragma enables (via the “On” or “All” argument) or disables
+(via the “Off” argument) the implementation extension mode; the pragma takes
+precedence over the `-gnatX' and `-gnatX0' command switches.
 
-In extension mode, the latest version of the Ada language is
-implemented (currently Ada 2022), and in addition a number
-of GNAT specific extensions are recognized as follows:
+If an argument of “All” is specified, the latest version of the Ada language
+is implemented (currently Ada 2022) and, in addition, a number
+of GNAT specific extensions are recognized. These extensions are listed
+below. An argument of “On” has the same effect except that only
+some, not all, of the listed extensions are enabled; those extensions
+are identified below.
 
 
 @itemize *
@@ -3636,11 +3639,7 @@ The Ada 202x @code{Static} aspect can be specified on Intrinsic imported
 functions and the compiler will evaluate some of these intrinsic statically,
 in particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
-@item 
-@code{'Reduce} attribute
-
-This attribute part of the Ada 202x language definition is provided for
-now under -gnatX to confirm and potentially refine its usage and syntax.
+An Extensions_Allowed pragma argument of “On” enables this extension.
 
 @item 
 @code{[]} aggregates
@@ -3785,6 +3784,8 @@ define the same set of bindings and the component subtypes for
 for a given identifer must all statically match. Currently, the case
 of a binding for a nondiscrete component is not implemented.
 
+An Extensions_Allowed pragma argument of “On” enables this extension.
+
 @item 
 Fixed lower bounds for array types and subtypes
 
@@ -3833,6 +3834,8 @@ improve the efficiency of indexing operations, since the compiler statically
 knows the lower bound of unconstrained array formals when the formal’s
 subtype has index ranges with static fixed lower bounds.
 
+An Extensions_Allowed pragma argument of “On” enables this extension.
+
 @item 
 Prefixed-view notation for calls to primitive subprograms of untagged types
 
@@ -3850,6 +3853,8 @@ simple name as one of the type’s primitive subprograms, where the
 component is visible at the point of a selected_component using that
 name, preference is given to the component in a selected_component
 (as is currently the case for tagged types with such component names).
+
+An Extensions_Allowed pragma argument of “On” enables this extension.
 
 @item 
 Expression defaults for generic formal functions
@@ -5384,7 +5389,7 @@ decrease or increase in successive iterations of the loop. In its simplest
 form, just one expression is specified, whose value must increase or decrease
 on each iteration of the loop.
 
-In a more complex form, multiple arguments can be given which are intepreted
+In a more complex form, multiple arguments can be given which are interpreted
 in a nesting lexicographic manner. For example:
 
 @example
@@ -6442,7 +6447,7 @@ appear at the start of the declarations in a subprogram body
 Note: This pragma is called @code{Post_Class} rather than
 @code{Post'Class} because the latter would not be strictly
 conforming to the allowed syntax for pragmas. The motivation
-for provinding pragmas equivalent to the aspects is to allow a program
+for providing pragmas equivalent to the aspects is to allow a program
 to be written using the pragmas, and then compiled if necessary
 using an Ada compiler that does not recognize the pragmas or
 aspects, but is prepared to ignore the pragmas. The assertion
@@ -7758,7 +7763,7 @@ replacement of any dots in the unit name by the specified string literal.
 
 Note that Source_File_Name pragmas should not be used if you are using
 project files. The reason for this rule is that the project manager is not
-aware of these pragmas, and so other tools that use the projet file would not
+aware of these pragmas, and so other tools that use the project file would not
 be aware of the intended naming conventions. If you are using project files,
 file naming is controlled by Source_File_Name_Project pragmas, which are
 usually supplied automatically by the project manager. A pragma
@@ -8407,7 +8412,7 @@ pragma Thread_Local_Storage ([Entity =>] LOCAL_NAME);
 This pragma specifies that the specified entity, which must be
 a variable declared in a library-level package, is to be marked as
 “Thread Local Storage” (@code{TLS}). On systems supporting this (which
-include Windows, Solaris, GNU/Linux, and VxWorks 6), this causes each
+include Windows, Solaris, GNU/Linux, and VxWorks), this causes each
 thread (and hence each Ada task) to see a distinct copy of the variable.
 
 The variable must not have default initialization, and if there is
@@ -8817,7 +8822,7 @@ pragma Unsuppress (Duplicated_Tag_Check);
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
 
-Note that in addition to the checks defined in the Ada RM, GNAT recogizes a
+Note that in addition to the checks defined in the Ada RM, GNAT recognizes a
 number of implementation-defined check names. See the description of pragma
 @code{Suppress} for full details.
 
@@ -9109,7 +9114,7 @@ expression (which does not exist in Ada 83).
 Note if the second argument of @code{DETAILS} is a @code{local_NAME} then the
 second form is always understood. If the intention is to use
 the fourth form, then you can write @code{NAME & ""} to force the
-intepretation as a `static_string_EXPRESSION'.
+interpretation as a `static_string_EXPRESSION'.
 
 Note: if the first argument is a valid @code{TOOL_NAME}, it will be interpreted
 that way. The use of the @code{TOOL_NAME} argument is relevant only to users
@@ -9925,7 +9930,7 @@ This aspect is equivalent to @ref{141,,attribute Object_Size}.
 @section Aspect Obsolescent
 
 
-@geindex Obsolsecent
+@geindex Obsolescent
 
 This aspect is equivalent to @ref{ac,,pragma Obsolescent}. Note that the
 evaluation of this aspect happens at the point of occurrence, it is not
@@ -10981,7 +10986,7 @@ this attribute.
 @code{P'Library_Level}, where P is an entity name,
 returns a Boolean value which is True if the entity is declared
 at the library level, and False otherwise. Note that within a
-generic instantition, the name of the generic unit denotes the
+generic instantiation, the name of the generic unit denotes the
 instance, which means that this attribute can be used to test
 if a generic is instantiated at the library level, as shown
 in this example:
@@ -11707,7 +11712,7 @@ an implicit dependency on this unit.
 @geindex System_Allocator_Alignment
 
 @code{Standard'System_Allocator_Alignment} (@code{Standard} is the only
-allowed prefix) provides the observable guaranted to be honored by
+allowed prefix) provides the observable guaranteed to be honored by
 the system allocator (malloc). This is a static value that can be used
 in user storage pools based on malloc either to reject allocation
 with alignment too large or to enable a realignment circuitry if the
@@ -17856,7 +17861,7 @@ a distributed application.
 “The range of type System.RPC.Partition_Id.  See E.5(14).”
 @end itemize
 
-System.RPC.Partion_ID’Last is Integer’Last. See source file @code{s-rpc.ads}.
+System.RPC.Partition_ID’Last is Integer’Last. See source file @code{s-rpc.ads}.
 
 
 @itemize *
@@ -20874,7 +20879,7 @@ This package provides operations on directories.
 @item @code{Ada.Directories.Hierarchical_File_Names} `(A.16.1)'
 
 This package provides additional directory operations handling
-hiearchical file names.
+hierarchical file names.
 
 @item @code{Ada.Directories.Information} `(A.16)'
 
@@ -21340,7 +21345,7 @@ only the tag value.
 This package provides the capability of associating arbitrary
 task-specific data with separate tasks.
 
-@item @code{Ada.Task_Identifification} `(C.7.1)'
+@item @code{Ada.Task_Identification} `(C.7.1)'
 
 This package provides capabilities for task identification.
 

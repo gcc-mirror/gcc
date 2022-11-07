@@ -9,7 +9,6 @@
  */
 module core.sys.windows.winver;
 version (Windows):
-@system:
 import core.sys.windows.w32api;
 import core.sys.windows.winbase;
 import core.sys.windows.sdkddkver;

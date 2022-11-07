@@ -928,7 +928,7 @@ package body Sem_Warn is
          if not Is_Generic_Type (T) then
             null;
 
-         elsif (Nkind (Par)) = N_Private_Extension_Declaration then
+         elsif Nkind (Par) = N_Private_Extension_Declaration then
 
             --  We only indicate the first such variable in the generic.
 
@@ -936,7 +936,7 @@ package body Sem_Warn is
                Set_Uninitialized_Variable (Par, Ent);
             end if;
 
-         elsif (Nkind (Par)) = N_Formal_Type_Declaration
+         elsif Nkind (Par) = N_Formal_Type_Declaration
            and then Nkind (Formal_Type_Definition (Par)) =
                                          N_Formal_Private_Type_Definition
          then
@@ -1151,8 +1151,6 @@ package body Sem_Warn is
 
       E1 := First_Entity (E);
       while Present (E1) loop
-         E1T := Etype (E1);
-
          --  We are only interested in source entities. We also don't issue
          --  warnings within instances, since the proper place for such
          --  warnings is on the template when it is compiled, and we don't
@@ -1161,6 +1159,8 @@ package body Sem_Warn is
          if Comes_From_Source (E1)
            and then Instantiation_Location (Sloc (E1)) = No_Location
          then
+            E1T := Etype (E1);
+
             --  We are interested in variables and out/in-out parameters, but
             --  we exclude protected types, too complicated to worry about.
 
@@ -1221,7 +1221,7 @@ package body Sem_Warn is
                elsif Warn_On_Constant
                  and then Ekind (E1) = E_Variable
                  and then Has_Initial_Value (E1)
-                 and then Never_Set_In_Source_Check_Spec (E1)
+                 and then Never_Set_In_Source (E1)
                  and then not Generic_Package_Spec_Entity (E1)
                then
                   --  A special case, if this variable is volatile and not
@@ -1248,24 +1248,15 @@ package body Sem_Warn is
                   --  Here we give the warning if referenced and no pragma
                   --  Unreferenced or Unmodified is present.
 
-                  else
-                     --  Variable case
-
-                     if Ekind (E1) = E_Variable then
-                        if Referenced_Check_Spec (E1)
-                          and then not Has_Pragma_Unreferenced_Check_Spec (E1)
-                          and then not Has_Pragma_Unmodified_Check_Spec (E1)
-                        then
-                           if not Warnings_Off_E1
-                             and then not Has_Junk_Name (E1)
-                           then
-                              Error_Msg_N -- CODEFIX
-                                ("?k?& is not modified, "
-                                 & "could be declared constant!",
-                                 E1);
-                           end if;
-                        end if;
-                     end if;
+                  elsif Referenced (E1)
+                    and then not Has_Unreferenced (E1)
+                    and then not Has_Unmodified (E1)
+                    and then not Warnings_Off_E1
+                    and then not Has_Junk_Name (E1)
+                  then
+                     Error_Msg_N -- CODEFIX
+                       ("?k?& is not modified, could be declared constant!",
+                        E1);
                   end if;
 
                --  Other cases of a variable or parameter never set in source
@@ -1648,20 +1639,6 @@ package body Sem_Warn is
                                not Is_Package_Or_Generic_Package
                                      (Cunit_Entity (Current_Sem_Unit))))
 
-              --  Exclude instantiations, since there is no reason why every
-              --  entity in an instantiation should be referenced.
-
-              and then Instantiation_Location (Sloc (E1)) = No_Location
-
-              --  Exclude formal parameters from bodies if the corresponding
-              --  spec entity has been referenced in the case where there is
-              --  a separate spec.
-
-              and then not (Is_Formal (E1)
-                             and then Ekind (Scope (E1)) = E_Subprogram_Body
-                             and then Present (Spec_Entity (E1))
-                             and then Referenced (Spec_Entity (E1)))
-
               --  Consider private type referenced if full view is referenced.
               --  If there is not full view, this is a generic type on which
               --  warnings are also useful.
@@ -2001,8 +1978,7 @@ package body Sem_Warn is
                               P := Parent (Nod);
 
                               if Nkind (P) = N_Pragma
-                                and then Pragma_Name (P) =
-                                  Name_Test_Case
+                                and then Pragma_Name (P) = Name_Test_Case
                                 and then Nod = Test_Case_Arg (P, Name_Ensures)
                               then
                                  return True;
@@ -3028,7 +3004,7 @@ package body Sem_Warn is
       --  if we have seen the address of the subprogram being taken, or if the
       --  subprogram is used as a generic actual (in the latter cases the
       --  context may force use of IN OUT, even if the parameter is not
-      --  modified for this particular case.
+      --  modified for this particular case).
 
       -----------------------
       -- No_Warn_On_In_Out --
@@ -4282,7 +4258,7 @@ package body Sem_Warn is
          if Ekind (Form) = E_Out_Parameter
            and then Never_Set_In_Source_Check_Spec (Form)
            and then Is_Scalar_Type (Etype (Form))
-           and then not Present (Unset_Reference (Form))
+           and then No (Unset_Reference (Form))
          then
             --  Here all conditions are met, record possible unset reference
 

@@ -100,6 +100,10 @@ along with GCC; see the file COPYING3.  If not see
 #define C_DECL_COMPOUND_LITERAL_P(DECL) \
   DECL_LANG_FLAG_5 (VAR_DECL_CHECK (DECL))
 
+/* Set on decls used as placeholders for a C2x underspecified object
+   definition.  */
+#define C_DECL_UNDERSPECIFIED(DECL) DECL_LANG_FLAG_7 (DECL)
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */
@@ -430,6 +434,11 @@ struct c_declspecs {
      enum-type-specifier;", but such an empty declaration is valid in
      C2x when "enum identifier;" would not be).  */
   BOOL_BITFIELD enum_type_specifier_ref_p : 1;
+  /* Whether "auto" was specified in C2X (or later) mode and means the
+     type is to be deduced from an initializer, or would mean that if
+     no type specifier appears later in these declaration
+     specifiers.  */
+  BOOL_BITFIELD c2x_auto_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -475,6 +484,8 @@ struct c_arg_info {
   tree pending_sizes;
   /* True when these arguments had [*].  */
   BOOL_BITFIELD had_vla_unspec : 1;
+  /* True when the arguments are a (...) prototype.  */
+  BOOL_BITFIELD no_named_args_stdarg_p : 1;
 };
 
 /* A declarator.  */
@@ -590,6 +601,8 @@ extern bool switch_statement_break_seen_p;
 
 extern bool global_bindings_p (void);
 extern tree pushdecl (tree);
+extern unsigned int start_underspecified_init (location_t, tree);
+extern void finish_underspecified_init (tree, unsigned int);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);

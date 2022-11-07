@@ -1391,12 +1391,21 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Xref_Active := False;
 
-            --  -gnatX (language extensions)
+            --  -gnatX (core language extensions)
 
             when 'X' =>
                Ptr := Ptr + 1;
-               Ada_Version          := Ada_With_Extensions;
-               Ada_Version_Explicit := Ada_With_Extensions;
+
+               if Ptr <= Max and then Switch_Chars (Ptr) = '0' then
+                  --  -gnatX0 (all language extensions)
+
+                  Ptr := Ptr + 1;
+                  Ada_Version := Ada_With_All_Extensions;
+               else
+                  Ada_Version := Ada_With_Core_Extensions;
+               end if;
+
+               Ada_Version_Explicit := Ada_Version;
                Ada_Version_Pragma   := Empty;
 
             --  -gnaty (style checks)

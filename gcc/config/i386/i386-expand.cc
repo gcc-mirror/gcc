@@ -10462,9 +10462,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8DF_FTYPE_V2DF:
     case V8DF_FTYPE_V8DF:
     case V4DI_FTYPE_V4DI:
-    case V16HI_FTYPE_V16SF:
-    case V8HI_FTYPE_V8SF:
-    case V8HI_FTYPE_V4SF:
+    case V16BF_FTYPE_V16SF:
+    case V8BF_FTYPE_V8SF:
+    case V8BF_FTYPE_V4SF:
       nargs = 1;
       break;
     case V4SF_FTYPE_V4SF_VEC_MERGE:
@@ -10592,12 +10592,12 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case USI_FTYPE_USI_USI:
     case UDI_FTYPE_UDI_UDI:
     case V16SI_FTYPE_V8DF_V8DF:
-    case V32HI_FTYPE_V16SF_V16SF:
-    case V16HI_FTYPE_V8SF_V8SF:
-    case V8HI_FTYPE_V4SF_V4SF:
-    case V16HI_FTYPE_V16SF_UHI:
-    case V8HI_FTYPE_V8SF_UQI:
-    case V8HI_FTYPE_V4SF_UQI:
+    case V32BF_FTYPE_V16SF_V16SF:
+    case V16BF_FTYPE_V8SF_V8SF:
+    case V8BF_FTYPE_V4SF_V4SF:
+    case V16BF_FTYPE_V16SF_UHI:
+    case V8BF_FTYPE_V8SF_UQI:
+    case V8BF_FTYPE_V4SF_UQI:
       nargs = 2;
       break;
     case V2DI_FTYPE_V2DI_INT_CONVERT:
@@ -10803,15 +10803,15 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V16HI_V16HI_V16HI:
     case V8SI_FTYPE_V8SI_V8SI_V8SI:
     case V8HI_FTYPE_V8HI_V8HI_V8HI:
-    case V32HI_FTYPE_V16SF_V16SF_USI:
-    case V16HI_FTYPE_V8SF_V8SF_UHI:
-    case V8HI_FTYPE_V4SF_V4SF_UQI:
-    case V16HI_FTYPE_V16SF_V16HI_UHI:
-    case V8HI_FTYPE_V8SF_V8HI_UQI:
-    case V8HI_FTYPE_V4SF_V8HI_UQI:
-    case V16SF_FTYPE_V16SF_V32HI_V32HI:
-    case V8SF_FTYPE_V8SF_V16HI_V16HI:
-    case V4SF_FTYPE_V4SF_V8HI_V8HI:
+    case V32BF_FTYPE_V16SF_V16SF_USI:
+    case V16BF_FTYPE_V8SF_V8SF_UHI:
+    case V8BF_FTYPE_V4SF_V4SF_UQI:
+    case V16BF_FTYPE_V16SF_V16BF_UHI:
+    case V8BF_FTYPE_V8SF_V8BF_UQI:
+    case V8BF_FTYPE_V4SF_V8BF_UQI:
+    case V16SF_FTYPE_V16SF_V32BF_V32BF:
+    case V8SF_FTYPE_V8SF_V16BF_V16BF:
+    case V4SF_FTYPE_V4SF_V8BF_V8BF:
       nargs = 3;
       break;
     case V32QI_FTYPE_V32QI_V32QI_INT:
@@ -10958,9 +10958,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16HI_FTYPE_V32QI_V32QI_V16HI_UHI:
     case V8SI_FTYPE_V16HI_V16HI_V8SI_UQI:
     case V4SI_FTYPE_V8HI_V8HI_V4SI_UQI:
-    case V32HI_FTYPE_V16SF_V16SF_V32HI_USI:
-    case V16HI_FTYPE_V8SF_V8SF_V16HI_UHI:
-    case V8HI_FTYPE_V4SF_V4SF_V8HI_UQI:
+    case V32BF_FTYPE_V16SF_V16SF_V32BF_USI:
+    case V16BF_FTYPE_V8SF_V8SF_V16BF_UHI:
+    case V8BF_FTYPE_V4SF_V4SF_V8BF_UQI:
       nargs = 4;
       break;
     case V2DF_FTYPE_V2DF_V2DF_V2DI_INT:
@@ -10998,9 +10998,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       break;
     case UCHAR_FTYPE_UCHAR_UINT_UINT_PUNSIGNED:
     case UCHAR_FTYPE_UCHAR_ULONGLONG_ULONGLONG_PULONGLONG:
-    case V16SF_FTYPE_V16SF_V32HI_V32HI_UHI:
-    case V8SF_FTYPE_V8SF_V16HI_V16HI_UQI:
-    case V4SF_FTYPE_V4SF_V8HI_V8HI_UQI:
+    case V16SF_FTYPE_V16SF_V32BF_V32BF_UHI:
+    case V8SF_FTYPE_V8SF_V16BF_V16BF_UQI:
+    case V4SF_FTYPE_V4SF_V8BF_V8BF_UQI:
       nargs = 4;
       break;
     case UQI_FTYPE_V8DI_V8DI_INT_UQI:
@@ -11860,8 +11860,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   tree arg;
   rtx pat, op;
   unsigned int i, nargs, arg_adjust, memory;
+  unsigned int constant = 100;
   bool aligned_mem = false;
-  rtx xops[3];
+  rtx xops[4];
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
@@ -11897,6 +11898,14 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V8SF_FTYPE_PCV4SF:
     case V8SF_FTYPE_PCFLOAT:
     case V4SF_FTYPE_PCFLOAT:
+    case V4SF_FTYPE_PCFLOAT16:
+    case V4SF_FTYPE_PCBFLOAT16:
+    case V4SF_FTYPE_PCV8BF:
+    case V4SF_FTYPE_PCV8HF:
+    case V8SF_FTYPE_PCFLOAT16:
+    case V8SF_FTYPE_PCBFLOAT16:
+    case V8SF_FTYPE_PCV16HF:
+    case V8SF_FTYPE_PCV16BF:
     case V4DF_FTYPE_PCV2DF:
     case V4DF_FTYPE_PCDOUBLE:
     case V2DF_FTYPE_PCDOUBLE:
@@ -12144,6 +12153,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
+    case INT_FTYPE_PINT_INT_INT_INT:
+    case LONGLONG_FTYPE_PLONGLONG_LONGLONG_LONGLONG_INT:
+      nargs = 4;
+      klass = load;
+      memory = 0;
+      constant = 3;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -12209,6 +12225,15 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	  if (MEM_ALIGN (op) < align)
 	    set_mem_align (op, align);
 	}
+      else if (i == constant)
+	{
+	  /* This must be the constant.  */
+	  if (!insn_p->operand[nargs].predicate(op, SImode))
+	    {
+	      error ("the fourth argument must be one of enum %qs", "_CMPCCX_ENUM");
+	      return const0_rtx;
+	    }
+	}
       else
 	{
 	  /* This must be register.  */
@@ -12249,6 +12274,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       break;
     case 3:
       pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
+      break;
+    case 4:
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2], xops[3]);
       break;
     default:
       gcc_unreachable ();
@@ -12406,6 +12434,8 @@ ix86_check_builtin_isa_match (unsigned int fcode,
        OPTION_MASK_ISA2_AVXVNNI
      (OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512IFMA) or
        OPTION_MASK_ISA2_AVXIFMA
+     (OPTION_MASK_ISA_AVXNECONVERT | OPTION_MASK_ISA2_AVX512BF16) or
+       OPTION_MASK_ISA2_AVXNECONVERT
      where for each such pair it is sufficient if either of the ISAs is
      enabled, plus if it is ored with other options also those others.
      OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
@@ -12444,6 +12474,17 @@ ix86_check_builtin_isa_match (unsigned int fcode,
     {
       isa |= OPTION_MASK_ISA_AVX512IFMA | OPTION_MASK_ISA_AVX512VL;
       isa2 |= OPTION_MASK_ISA2_AVXIFMA;
+    }
+
+  if ((((bisa & OPTION_MASK_ISA_AVX512VL) != 0
+	 && (bisa2 & OPTION_MASK_ISA2_AVX512BF16) != 0)
+	&& (bisa2 & OPTION_MASK_ISA2_AVXNECONVERT) != 0)
+       && (((isa & OPTION_MASK_ISA_AVX512VL) != 0
+	    && (isa2 & OPTION_MASK_ISA2_AVX512BF16) != 0)
+	   || (isa2 & OPTION_MASK_ISA2_AVXNECONVERT) != 0))
+    {
+      isa |= OPTION_MASK_ISA_AVX512VL;
+      isa2 |= OPTION_MASK_ISA2_AVXNECONVERT | OPTION_MASK_ISA2_AVX512BF16;
     }
 
   if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE
@@ -12992,6 +13033,83 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  }
 
 	return target;
+      }
+
+    case IX86_BUILTIN_PREFETCH:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0); // const void *
+	arg1 = CALL_EXPR_ARG (exp, 1); // const int
+	arg2 = CALL_EXPR_ARG (exp, 2); // const int
+	arg3 = CALL_EXPR_ARG (exp, 3); // const int
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+	op3 = expand_normal (arg3);
+
+	if (!CONST_INT_P (op1) || !CONST_INT_P (op2) || !CONST_INT_P (op3))
+	  {
+	    error ("second, third and fourth argument must be a const");
+	    return const0_rtx;
+	  }
+
+	if (INTVAL (op3) == 1)
+	  {
+	    if (TARGET_64BIT
+		&& local_func_symbolic_operand (op0, GET_MODE (op0)))
+	      emit_insn (gen_prefetchi (op0, op2));
+	    else
+	      {
+		warning (0, "instruction prefetch applies when in 64-bit mode"
+			    " with RIP-relative addressing and"
+			    " option %<-mprefetchi%>;"
+			    " they stay NOPs otherwise");
+		emit_insn (gen_nop ());
+	      }
+	  }
+	else
+	  {
+	    if (!address_operand (op0, VOIDmode))
+	      {
+		op0 = convert_memory_address (Pmode, op0);
+		op0 = copy_addr_to_reg (op0);
+	      }
+	    emit_insn (gen_prefetch (op0, op1, op2));
+	  }
+
+	return 0;
+      }
+
+    case IX86_BUILTIN_PREFETCHI:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0); // const void *
+	arg1 = CALL_EXPR_ARG (exp, 1); // const int
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+
+	if (!CONST_INT_P (op1))
+	  {
+	    error ("second argument must be a const");
+	    return const0_rtx;
+	  }
+
+	/* GOT/PLT_PIC should not be available for instruction prefetch.
+	   It must be real instruction address.  */
+	if (TARGET_64BIT
+	    && local_func_symbolic_operand (op0, GET_MODE (op0)))
+	  emit_insn (gen_prefetchi (op0, op1));
+	else
+	  {
+	    /* Ignore the hint.  */
+	    warning (0, "instruction prefetch applies when in 64-bit mode"
+			" with RIP-relative addressing and"
+			" option %<-mprefetchi%>;"
+			" they stay NOPs otherwise");
+	    emit_insn (gen_nop ());
+	  }
+
+	return 0;
       }
 
     case IX86_BUILTIN_VEC_INIT_V2SI:

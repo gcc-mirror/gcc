@@ -8,7 +8,6 @@
  */
 module core.sys.windows.winerror;
 version (Windows):
-@system:
 
 /* Comments from the Mingw header:
  * WAIT_TIMEOUT is also defined in winbase.h

@@ -3939,7 +3939,9 @@ package body Exp_Ch5 is
    --  Start of processing for Expand_N_Case_Statement
 
    begin
-      if Extensions_Allowed and then not Is_Discrete_Type (Etype (Expr)) then
+      if Core_Extensions_Allowed
+        and then not Is_Discrete_Type (Etype (Expr))
+      then
          Rewrite (N, Expand_General_Case_Statement);
          Analyze (N);
          return;

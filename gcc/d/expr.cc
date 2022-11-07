@@ -1099,6 +1099,7 @@ public:
 	   this assignment should call dtors on old assigned elements.  */
 	if ((!postblit && !destructor)
 	    || (e->op == EXP::construct && e->e2->op == EXP::arrayLiteral)
+	    || (e->op == EXP::construct && e->e2->op == EXP::call)
 	    || (e->op == EXP::construct && !lvalue && postblit)
 	    || (e->op == EXP::blit || e->e1->type->size () == 0))
 	  {
@@ -2703,6 +2704,14 @@ public:
 	  }
 
 	this->result_ = compound_expr (saved_elems, d_convert (type, ctor));
+      }
+    else if (e->onstack)
+      {
+	/* Array literal for a `scope' dynamic array.  */
+	gcc_assert (tb->ty == TY::Tarray);
+	ctor = force_target_expr (ctor);
+	this->result_ = d_array_value (type, size_int (e->elements->length),
+				       build_address (ctor));
       }
     else
       {

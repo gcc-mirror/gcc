@@ -3248,6 +3248,10 @@ common_handle_option (struct gcc_options *opts,
       dc->report_bug = value;
       break;
 
+    case OPT_fmultiflags:
+      gcc_checking_assert (lang_mask == CL_DRIVER);
+      break;
+
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */

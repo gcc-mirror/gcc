@@ -1742,9 +1742,13 @@ cross_product_operator::wi_cross_product (irange &r, tree type,
 
 class operator_mult : public cross_product_operator
 {
+  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
 public:
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh, const irange &rh,
+			   relation_trio = TRIO_VARYING) const final override;
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -1761,6 +1765,32 @@ public:
 			  const irange &op1,
 			  relation_trio) const;
 } op_mult;
+
+bool
+operator_mult::fold_range (irange &r, tree type,
+			   const irange &lh, const irange &rh,
+			   relation_trio trio) const
+{
+  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
+    return false;
+
+  if (lh.undefined_p ())
+    return true;
+
+  tree t;
+  if (rh.singleton_p (&t))
+    {
+      wide_int w = wi::to_wide (t);
+      int shift = wi::exact_log2 (w);
+      if (shift != -1)
+	{
+	  wide_int nz = lh.get_nonzero_bits ();
+	  nz = wi::lshift (nz, shift);
+	  r.set_nonzero_bits (nz);
+	}
+    }
+  return true;
+}
 
 bool
 operator_mult::op1_range (irange &r, tree type,
@@ -1902,9 +1932,38 @@ public:
 		        const wide_int &rh_ub) const;
   virtual bool wi_op_overflows (wide_int &res, tree type,
 				const wide_int &, const wide_int &) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh, const irange &rh,
+			   relation_trio trio) const final override;
 private:
   enum tree_code code;
 };
+
+bool
+operator_div::fold_range (irange &r, tree type,
+			  const irange &lh, const irange &rh,
+			  relation_trio trio) const
+{
+  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
+    return false;
+
+  if (lh.undefined_p ())
+    return true;
+
+  tree t;
+  if (rh.singleton_p (&t))
+    {
+      wide_int wi = wi::to_wide (t);
+      int shift = wi::exact_log2 (wi);
+      if (shift != -1)
+	{
+	  wide_int nz = lh.get_nonzero_bits ();
+	  nz = wi::rshift (nz, shift, TYPE_SIGN (type));
+	  r.set_nonzero_bits (nz);
+	}
+    }
+  return true;
+}
 
 bool
 operator_div::wi_op_overflows (wide_int &res, tree type,

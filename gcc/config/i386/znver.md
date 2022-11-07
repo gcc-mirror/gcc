@@ -23,8 +23,8 @@
 
 ;; AMD znver1, znver2 and znver3 Scheduling
 ;; Modeling automatons for zen decoders, integer execution pipes,
-;; AGU pipes and floating point execution units.
-(define_automaton "znver1, znver1_ieu, znver1_fp, znver1_agu")
+;; SIMD/FP domain, AGU pipes, and dividers.
+(define_automaton "znver1, znver1_ieu, znver1_fp, znver1_agu, znver1_idiv")
 
 ;; Decoders unit has 4 decoders and all of them can decode fast path
 ;; and vector type instructions.
@@ -92,6 +92,9 @@
 (define_reservation "znver2-fvector" "znver1-fp0+znver1-fp1
 				      +znver1-fp2+znver1-fp3
 				      +znver1-agu0+znver1-agu1+znver2-agu2")
+
+;; Dividers
+(define_cpu_unit "znver1-idiv" "znver1_idiv")
 
 ;; Call instruction
 (define_insn_reservation "znver1_call" 1
@@ -176,28 +179,28 @@
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-ieu2*41")
+			 "znver1-double,znver1-idiv*14")
 
 (define_insn_reservation "znver1_idiv_SI" 25
 			 (and (eq_attr "cpu" "znver1,znver2")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "SI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-ieu2*25")
+			 "znver1-double,znver1-idiv*14")
 
 (define_insn_reservation "znver1_idiv_HI" 17
 			 (and (eq_attr "cpu" "znver1,znver2")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "HI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-ieu2*17")
+			 "znver1-double,znver1-idiv*14")
 
 (define_insn_reservation "znver1_idiv_QI" 12
 			 (and (eq_attr "cpu" "znver1,znver2")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "QI")
 					(eq_attr "memory" "none"))))
-			 "znver1-direct,znver1-ieu2*12")
+			 "znver1-direct,znver1-idiv*13")
 
 ;; Mem operands
 (define_insn_reservation "znver1_idiv_mem_DI" 45
@@ -205,84 +208,84 @@
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-load,znver1-ieu2*41")
+			 "znver1-double,znver1-load,znver1-idiv*14")
 
 (define_insn_reservation "znver1_idiv_mem_SI" 29
 			 (and (eq_attr "cpu" "znver1,znver2")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "SI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-load,znver1-ieu2*25")
+			 "znver1-double,znver1-load,znver1-idiv*14")
 
 (define_insn_reservation "znver1_idiv_mem_HI" 21
 			 (and (eq_attr "cpu" "znver1,znver2")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "HI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-load,znver1-ieu2*17")
+			 "znver1-double,znver1-load,znver1-idiv*14")
 
 (define_insn_reservation "znver1_idiv_mem_QI" 16
 			 (and (eq_attr "cpu" "znver1,znver2")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "QI")
 					(eq_attr "memory" "none"))))
-			 "znver1-direct,znver1-load,znver1-ieu2*12")
+			 "znver1-direct,znver1-load,znver1-idiv*13")
 
 (define_insn_reservation "znver3_idiv_DI" 18
 			 (and (eq_attr "cpu" "znver3")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-ieu2*18")
+			 "znver1-double,znver1-idiv*7")
 
 (define_insn_reservation "znver3_idiv_SI" 12
 			 (and (eq_attr "cpu" "znver3")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "SI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-ieu2*12")
+			 "znver1-double,znver1-idiv*6")
 
 (define_insn_reservation "znver3_idiv_HI" 10
 			 (and (eq_attr "cpu" "znver3")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "HI")
 					(eq_attr "memory" "none"))))
-			 "znver1-double,znver1-ieu2*10")
+			 "znver1-double,znver1-idiv*4")
 
 (define_insn_reservation "znver3_idiv_QI" 9
 			 (and (eq_attr "cpu" "znver3")
 			      (and (eq_attr "type" "idiv")
 				   (and (eq_attr "mode" "QI")
 					(eq_attr "memory" "none"))))
-			 "znver1-direct,znver1-ieu2*9")
+			 "znver1-direct,znver1-idiv*4")
 
 (define_insn_reservation "znver3_idiv_mem_DI" 22
                          (and (eq_attr "cpu" "znver3")
                               (and (eq_attr "type" "idiv")
                                    (and (eq_attr "mode" "DI")
                                         (eq_attr "memory" "load"))))
-                         "znver1-double,znver1-load,znver1-ieu2*22")
+                         "znver1-double,znver1-load,znver1-idiv*7")
 
 (define_insn_reservation "znver3_idiv_mem_SI" 16
                          (and (eq_attr "cpu" "znver3")
                               (and (eq_attr "type" "idiv")
                                    (and (eq_attr "mode" "SI")
                                         (eq_attr "memory" "load"))))
-                         "znver1-double,znver1-load,znver1-ieu2*16")
+                         "znver1-double,znver1-load,znver1-idiv*6")
 
 (define_insn_reservation "znver3_idiv_mem_HI" 14
                          (and (eq_attr "cpu" "znver3")
                               (and (eq_attr "type" "idiv")
                                    (and (eq_attr "mode" "HI")
                                         (eq_attr "memory" "load"))))
-                         "znver1-double,znver1-load,znver1-ieu2*10")
+                         "znver1-double,znver1-load,znver1-idiv*4")
 
 (define_insn_reservation "znver3_idiv_mem_QI" 13
                          (and (eq_attr "cpu" "znver3")
                               (and (eq_attr "type" "idiv")
                                    (and (eq_attr "mode" "QI")
                                         (eq_attr "memory" "load"))))
-                         "znver1-direct,znver1-load,znver1-ieu2*9")
+                         "znver1-direct,znver1-load,znver1-idiv*4")
 
 ;; STR ISHIFT which are micro coded.
 ;; Fix me: Latency need to be rechecked.

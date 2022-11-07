@@ -4,10 +4,9 @@
 template <typename T>
 void foo1(T& t) {
   typename T::template C<void> tcv = t;
-  typename T::template C<auto> u = tcv; // { dg-error "" "" { target c++20 } }
+  typename T::template C<auto> u = tcv; // { dg-error "" }
   T::template C<auto>::f (tcv, u); // { dg-error "" }
   (typename T::template D<auto> (t)); // { dg-error "" }
-// { dg-warning "only available" "" { target c++17_down } .-1 }
 }
 
 struct T1 {
@@ -23,7 +22,7 @@ struct T1 {
 template <typename T>
 void foo2(T& t) {
   typename T::template C<void> tcv = t;
-  typename T::template C<auto> u = tcv; // { dg-error "" "" { target c++20 } }
+  typename T::template C<auto> u = tcv; // { dg-error "" }
   T::template C<auto>::f (tcv, u); // { dg-error "" }
   T::template D<auto> (t); // { dg-error "" }
 }

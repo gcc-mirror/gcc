@@ -8183,11 +8183,12 @@ sh_setup_incoming_varargs (cumulative_args_t ca,
   gcc_assert (cfun->stdarg);
   if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl))
     {
-      int named_parm_regs, anon_parm_regs;
+      int named_parm_regs = 0, anon_parm_regs;
 
-      named_parm_regs = (sh_round_reg (*get_cumulative_args (ca), arg.mode)
-			 + CEIL (arg.promoted_size_in_bytes (),
-				 UNITS_PER_WORD));
+      if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+	named_parm_regs = (sh_round_reg (*get_cumulative_args (ca), arg.mode)
+			   + CEIL (arg.promoted_size_in_bytes (),
+				   UNITS_PER_WORD));
       anon_parm_regs = NPARM_REGS (SImode) - named_parm_regs;
       if (anon_parm_regs > 0)
 	*pretend_arg_size = anon_parm_regs * 4;

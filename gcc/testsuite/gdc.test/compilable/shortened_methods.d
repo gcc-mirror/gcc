@@ -1,4 +1,4 @@
-// REQUIRED_ARGS: -preview=shortenedMethods
+// N.B. Shortened methods are no longer under a preview flag
 class A {
     int _x = 34;
     // short syntax works in all contexts

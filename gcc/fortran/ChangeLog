@@ -1,3 +1,15 @@
+2022-11-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (gfc_match_omp_clauses): Permit derived types for
+	the 'to' and 'from' clauses of 'target update'.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Fixes for
+	derived-type changes; fix size for scalars.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* trans-types.cc (gfc_get_function_type): Do not use
+	build_varargs_function_type_vec for unprototyped function.
+
 2022-10-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103413

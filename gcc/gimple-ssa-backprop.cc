@@ -351,10 +351,15 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
       break;
 
     CASE_CFN_COS:
+    CASE_CFN_COS_FN:
     CASE_CFN_COSH:
+    CASE_CFN_COSH_FN:
     CASE_CFN_CCOS:
+    CASE_CFN_CCOS_FN:
     CASE_CFN_CCOSH:
+    CASE_CFN_CCOSH_FN:
     CASE_CFN_HYPOT:
+    CASE_CFN_HYPOT_FN:
       /* The signs of all inputs are ignored.  */
       info->flags.ignore_sign = true;
       break;
@@ -367,6 +372,7 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
       break;
 
     CASE_CFN_POW:
+    CASE_CFN_POW_FN:
       {
 	/* The sign of the first input is ignored as long as the second
 	   input is an even real.  */

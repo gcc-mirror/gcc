@@ -2499,9 +2499,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					      true) == MATCH_YES)
 	    continue;
 	  if ((mask & OMP_CLAUSE_FROM)
-	      && gfc_match_omp_variable_list ("from (",
+	      && (gfc_match_omp_variable_list ("from (",
 					      &c->lists[OMP_LIST_FROM], false,
-					      NULL, &head, true) == MATCH_YES)
+					      NULL, &head, true, true)
+		  == MATCH_YES))
 	    continue;
 	  break;
 	case 'g':
@@ -3436,9 +3437,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		continue;
 	    }
 	  else if ((mask & OMP_CLAUSE_TO)
-	      && gfc_match_omp_variable_list ("to (",
+	      && (gfc_match_omp_variable_list ("to (",
 					      &c->lists[OMP_LIST_TO], false,
-					      NULL, &head, true) == MATCH_YES)
+					      NULL, &head, true, true)
+		  == MATCH_YES))
 	    continue;
 	  break;
 	case 'u':

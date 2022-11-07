@@ -322,36 +322,62 @@ negate_mathfn_p (combined_fn fn)
   switch (fn)
     {
     CASE_CFN_ASIN:
+    CASE_CFN_ASIN_FN:
     CASE_CFN_ASINH:
+    CASE_CFN_ASINH_FN:
     CASE_CFN_ATAN:
+    CASE_CFN_ATAN_FN:
     CASE_CFN_ATANH:
+    CASE_CFN_ATANH_FN:
     CASE_CFN_CASIN:
+    CASE_CFN_CASIN_FN:
     CASE_CFN_CASINH:
+    CASE_CFN_CASINH_FN:
     CASE_CFN_CATAN:
+    CASE_CFN_CATAN_FN:
     CASE_CFN_CATANH:
+    CASE_CFN_CATANH_FN:
     CASE_CFN_CBRT:
+    CASE_CFN_CBRT_FN:
     CASE_CFN_CPROJ:
+    CASE_CFN_CPROJ_FN:
     CASE_CFN_CSIN:
+    CASE_CFN_CSIN_FN:
     CASE_CFN_CSINH:
+    CASE_CFN_CSINH_FN:
     CASE_CFN_CTAN:
+    CASE_CFN_CTAN_FN:
     CASE_CFN_CTANH:
+    CASE_CFN_CTANH_FN:
     CASE_CFN_ERF:
+    CASE_CFN_ERF_FN:
     CASE_CFN_LLROUND:
+    CASE_CFN_LLROUND_FN:
     CASE_CFN_LROUND:
+    CASE_CFN_LROUND_FN:
     CASE_CFN_ROUND:
     CASE_CFN_ROUNDEVEN:
     CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SIN:
+    CASE_CFN_SIN_FN:
     CASE_CFN_SINH:
+    CASE_CFN_SINH_FN:
     CASE_CFN_TAN:
+    CASE_CFN_TAN_FN:
     CASE_CFN_TANH:
+    CASE_CFN_TANH_FN:
     CASE_CFN_TRUNC:
+    CASE_CFN_TRUNC_FN:
       return true;
 
     CASE_CFN_LLRINT:
+    CASE_CFN_LLRINT_FN:
     CASE_CFN_LRINT:
+    CASE_CFN_LRINT_FN:
     CASE_CFN_NEARBYINT:
+    CASE_CFN_NEARBYINT_FN:
     CASE_CFN_RINT:
+    CASE_CFN_RINT_FN:
       return !flag_rounding_math;
 
     default:
@@ -3351,9 +3377,6 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		if (compare_address
 		    && (flags & OEP_ADDRESS_OF_SAME_FIELD) == 0)
 		  {
-		    if (TREE_OPERAND (arg0, 2)
-			|| TREE_OPERAND (arg1, 2))
-		      return OP_SAME_WITH_NULL (2);
 		    tree field0 = TREE_OPERAND (arg0, 1);
 		    tree field1 = TREE_OPERAND (arg1, 1);
 
@@ -3864,17 +3887,10 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      if (sflags & OEP_ADDRESS_OF)
 		{
 		  hash_operand (TREE_OPERAND (t, 0), hstate, flags);
-		  if (TREE_OPERAND (t, 2))
-		    hash_operand (TREE_OPERAND (t, 2), hstate,
-				  flags & ~OEP_ADDRESS_OF);
-		  else
-		    {
-		      tree field = TREE_OPERAND (t, 1);
-		      hash_operand (DECL_FIELD_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		      hash_operand (DECL_FIELD_BIT_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		    }
+		  hash_operand (DECL_FIELD_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
+		  hash_operand (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
 		  return;
 		}
 	      break;
@@ -14288,9 +14304,12 @@ tree_expr_finite_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return tree_expr_finite_p (CALL_EXPR_ARG (x, 0));
 	CASE_CFN_FMAX:
+	CASE_CFN_FMAX_FN:
 	CASE_CFN_FMIN:
+	CASE_CFN_FMIN_FN:
 	  return tree_expr_finite_p (CALL_EXPR_ARG (x, 0))
 		 && tree_expr_finite_p (CALL_EXPR_ARG (x, 1));
 	default:
@@ -14408,9 +14427,12 @@ tree_expr_maybe_signaling_nan_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0));
 	CASE_CFN_FMAX:
+	CASE_CFN_FMAX_FN:
 	CASE_CFN_FMIN:
+	CASE_CFN_FMIN_FN:
 	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0))
 		 || tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 1));
 	default:
@@ -14481,9 +14503,12 @@ tree_expr_maybe_nan_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 0));
 	CASE_CFN_FMAX:
+	CASE_CFN_FMAX_FN:
 	CASE_CFN_FMIN:
+	CASE_CFN_FMIN_FN:
 	  return tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 0))
 		 || tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 1));
 	default:
@@ -14520,6 +14545,7 @@ tree_expr_maybe_real_minus_zero_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return false;
 	default:
 	  break;
@@ -14797,16 +14823,26 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
   switch (fn)
     {
     CASE_CFN_ACOS:
+    CASE_CFN_ACOS_FN:
     CASE_CFN_ACOSH:
+    CASE_CFN_ACOSH_FN:
     CASE_CFN_CABS:
+    CASE_CFN_CABS_FN:
     CASE_CFN_COSH:
+    CASE_CFN_COSH_FN:
     CASE_CFN_ERFC:
+    CASE_CFN_ERFC_FN:
     CASE_CFN_EXP:
+    CASE_CFN_EXP_FN:
     CASE_CFN_EXP10:
     CASE_CFN_EXP2:
+    CASE_CFN_EXP2_FN:
     CASE_CFN_FABS:
+    CASE_CFN_FABS_FN:
     CASE_CFN_FDIM:
+    CASE_CFN_FDIM_FN:
     CASE_CFN_HYPOT:
+    CASE_CFN_HYPOT_FN:
     CASE_CFN_POW10:
     CASE_CFN_FFS:
     CASE_CFN_PARITY:
@@ -14828,17 +14864,25 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
       return RECURSE (arg0);
 
     CASE_CFN_ASINH:
+    CASE_CFN_ASINH_FN:
     CASE_CFN_ATAN:
+    CASE_CFN_ATAN_FN:
     CASE_CFN_ATANH:
+    CASE_CFN_ATANH_FN:
     CASE_CFN_CBRT:
+    CASE_CFN_CBRT_FN:
     CASE_CFN_CEIL:
     CASE_CFN_CEIL_FN:
     CASE_CFN_ERF:
+    CASE_CFN_ERF_FN:
     CASE_CFN_EXPM1:
+    CASE_CFN_EXPM1_FN:
     CASE_CFN_FLOOR:
     CASE_CFN_FLOOR_FN:
     CASE_CFN_FMOD:
+    CASE_CFN_FMOD_FN:
     CASE_CFN_FREXP:
+    CASE_CFN_FREXP_FN:
     CASE_CFN_ICEIL:
     CASE_CFN_IFLOOR:
     CASE_CFN_IRINT:
@@ -14849,10 +14893,15 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_LLCEIL:
     CASE_CFN_LLFLOOR:
     CASE_CFN_LLRINT:
+    CASE_CFN_LLRINT_FN:
     CASE_CFN_LLROUND:
+    CASE_CFN_LLROUND_FN:
     CASE_CFN_LRINT:
+    CASE_CFN_LRINT_FN:
     CASE_CFN_LROUND:
+    CASE_CFN_LROUND_FN:
     CASE_CFN_MODF:
+    CASE_CFN_MODF_FN:
     CASE_CFN_NEARBYINT:
     CASE_CFN_NEARBYINT_FN:
     CASE_CFN_RINT:
@@ -14863,11 +14912,15 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SCALB:
     CASE_CFN_SCALBLN:
+    CASE_CFN_SCALBLN_FN:
     CASE_CFN_SCALBN:
+    CASE_CFN_SCALBN_FN:
     CASE_CFN_SIGNBIT:
     CASE_CFN_SIGNIFICAND:
     CASE_CFN_SINH:
+    CASE_CFN_SINH_FN:
     CASE_CFN_TANH:
+    CASE_CFN_TANH_FN:
     CASE_CFN_TRUNC:
     CASE_CFN_TRUNC_FN:
       /* True if the 1st argument is nonnegative.  */
@@ -14907,6 +14960,7 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
       return RECURSE (arg0);
 
     CASE_CFN_POW:
+    CASE_CFN_POW_FN:
       /* True if the 1st argument is nonnegative or the second
 	 argument is an even integer valued real.  */
       if (TREE_CODE (arg1) == REAL_CST)

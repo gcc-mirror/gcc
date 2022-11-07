@@ -1,3 +1,14 @@
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.def: Remove module 'liboffloadmic'.
+	* Makefile.in: Regenerate.
+	* configure.ac: Remove 'liboffloadmic' handling.
+	* configure: Regenerate.
+
+2022-10-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* MAINTAINERS: Update email address.
+
 2022-10-21  Дилян Палаузов  <dilyan.palauzov@aegee.org>
 
 	* configure.ac: Don't configure readline if --with-system-readline is

@@ -9,7 +9,6 @@
  */
 module core.sys.windows.nb30;
 version (Windows):
-@system:
 
 import core.sys.windows.windef;
 

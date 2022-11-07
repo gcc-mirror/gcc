@@ -9,7 +9,6 @@
  */
 module core.sys.windows.mapi;
 version (Windows):
-@system:
 
 import core.sys.windows.windef;
 

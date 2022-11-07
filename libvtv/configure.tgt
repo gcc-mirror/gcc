@@ -50,6 +50,9 @@ case "${target}" in
 	;;
   x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
 	;;
+  loongarch*-*-linux*)
+	VTV_SUPPORTED=yes
+	;;
   *)
 	;;
 esac

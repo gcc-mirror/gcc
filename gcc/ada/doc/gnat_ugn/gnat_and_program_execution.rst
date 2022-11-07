@@ -2321,7 +2321,7 @@ erroneous, and the compiler would be entitled to assume that
 
 However, in practice, this would cause some existing code that
 seems to work with no optimization to start failing at high
-levels of optimzization.
+levels of optimization.
 
 What the compiler does for such cases is to assume that marking
 a variable as aliased indicates that some "funny business" may
@@ -2728,7 +2728,7 @@ To deal with the portability issue, and with the problem of
 mathematical versus run-time interpretation of the expressions in
 assertions, GNAT provides comprehensive control over the handling
 of intermediate overflow. GNAT can operate in three modes, and
-furthemore, permits separate selection of operating modes for
+furthermore, permits separate selection of operating modes for
 the expressions within assertions (here the term 'assertions'
 is used in the technical sense, which includes preconditions and so forth)
 and for expressions appearing outside assertions.

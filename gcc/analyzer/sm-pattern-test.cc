@@ -21,8 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -139,8 +141,8 @@ pattern_test_state_machine::on_condition (sm_context *sm_ctxt,
 
   if (tree lhs_expr = sm_ctxt->get_diagnostic_tree (lhs))
     {
-      pending_diagnostic *diag = new pattern_match (lhs_expr, op, rhs_cst);
-      sm_ctxt->warn (node, stmt, lhs_expr, diag);
+      sm_ctxt->warn (node, stmt, lhs_expr,
+		     make_unique<pattern_match> (lhs_expr, op, rhs_cst));
     }
 }
 

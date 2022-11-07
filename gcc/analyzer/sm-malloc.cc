@@ -19,8 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -383,7 +385,7 @@ public:
 		     const svalue *rhs) const final override;
 
   bool can_purge_p (state_t s) const final override;
-  pending_diagnostic *on_leak (tree var) const final override;
+  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
   bool reset_when_passed_to_unknown_fn_p (state_t s,
 					  bool is_mutable) const final override;
@@ -1726,9 +1728,8 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 			{
 			  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 			  sm_ctxt->warn (node, stmt, arg,
-					 new possible_null_arg (*this, diag_arg,
-								callee_fndecl,
-								i));
+					 make_unique<possible_null_arg>
+					   (*this, diag_arg, callee_fndecl, i));
 			  const allocation_state *astate
 			    = as_a_allocation_state (state);
 			  sm_ctxt->set_next_state (stmt, arg,
@@ -1738,8 +1739,8 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 			{
 			  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 			  sm_ctxt->warn (node, stmt, arg,
-					 new null_arg (*this, diag_arg,
-						       callee_fndecl, i));
+					 make_unique<null_arg>
+					   (*this, diag_arg, callee_fndecl, i));
 			  sm_ctxt->set_next_state (stmt, arg, m_stop);
 			}
 		    }
@@ -1781,7 +1782,8 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    {
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
-			     new possible_null_deref (*this, diag_arg));
+			     make_unique<possible_null_deref> (*this,
+							       diag_arg));
 	      const allocation_state *astate = as_a_allocation_state (state);
 	      sm_ctxt->set_next_state (stmt, arg, astate->get_nonnull ());
 	    }
@@ -1789,7 +1791,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    {
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
-			     new null_deref (*this, diag_arg));
+			     make_unique<null_deref> (*this, diag_arg));
 	      sm_ctxt->set_next_state (stmt, arg, m_stop);
 	    }
 	  else if (freed_p (state))
@@ -1797,8 +1799,8 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      const allocation_state *astate = as_a_allocation_state (state);
 	      sm_ctxt->warn (node, stmt, arg,
-			     new use_after_free (*this, diag_arg,
-						 astate->m_deallocator));
+			     make_unique<use_after_free>
+			       (*this, diag_arg, astate->m_deallocator));
 	      sm_ctxt->set_next_state (stmt, arg, m_stop);
 	    }
 	}
@@ -1850,8 +1852,8 @@ malloc_state_machine::handle_free_of_non_heap (sm_context *sm_ctxt,
       freed_reg = old_model->deref_rvalue (ptr_sval, arg, NULL);
     }
   sm_ctxt->warn (node, call, arg,
-		 new free_of_non_heap (*this, diag_arg, freed_reg,
-				       d->m_name));
+		 make_unique<free_of_non_heap>
+		   (*this, diag_arg, freed_reg, d->m_name));
   sm_ctxt->set_next_state (call, arg, m_stop);
 }
 
@@ -1879,11 +1881,11 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
 	{
 	  /* Wrong allocator.  */
 	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-	  pending_diagnostic *pd
-	    = new mismatching_deallocation (*this, diag_arg,
-					    astate->m_deallocators,
-					    d);
-	  sm_ctxt->warn (node, call, arg, pd);
+	  sm_ctxt->warn (node, call, arg,
+			 make_unique<mismatching_deallocation>
+			   (*this, diag_arg,
+			    astate->m_deallocators,
+			    d));
 	}
       sm_ctxt->set_next_state (call, arg, d->m_freed);
     }
@@ -1895,7 +1897,7 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
       /* freed -> stop, with warning.  */
       tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
       sm_ctxt->warn (node, call, arg,
-		     new double_free (*this, diag_arg, d->m_name));
+		     make_unique<double_free> (*this, diag_arg, d->m_name));
       sm_ctxt->set_next_state (call, arg, m_stop);
     }
   else if (state == m_non_heap)
@@ -1933,11 +1935,10 @@ malloc_state_machine::on_realloc_call (sm_context *sm_ctxt,
 	{
 	  /* Wrong allocator.  */
 	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-	  pending_diagnostic *pd
-	    = new mismatching_deallocation (*this, diag_arg,
-					    astate->m_deallocators,
-					    d);
-	  sm_ctxt->warn (node, call, arg, pd);
+	  sm_ctxt->warn (node, call, arg,
+			 make_unique<mismatching_deallocation>
+			   (*this, diag_arg,
+			    astate->m_deallocators, d));
 	  sm_ctxt->set_next_state (call, arg, m_stop);
 	  if (path_context *path_ctxt = sm_ctxt->get_path_context ())
 	    path_ctxt->terminate_path ();
@@ -1948,7 +1949,7 @@ malloc_state_machine::on_realloc_call (sm_context *sm_ctxt,
       /* freed -> stop, with warning.  */
       tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
       sm_ctxt->warn (node, call, arg,
-		     new double_free (*this, diag_arg, "free"));
+		     make_unique<double_free> (*this, diag_arg, "free"));
       sm_ctxt->set_next_state (call, arg, m_stop);
       if (path_context *path_ctxt = sm_ctxt->get_path_context ())
 	path_ctxt->terminate_path ();
@@ -2030,10 +2031,10 @@ malloc_state_machine::can_purge_p (state_t s) const
    (for complaining about leaks of pointers in state 'unchecked' and
    'nonnull').  */
 
-pending_diagnostic *
+std::unique_ptr<pending_diagnostic>
 malloc_state_machine::on_leak (tree var) const
 {
-  return new malloc_leak (*this, var);
+  return make_unique<malloc_leak> (*this, var);
 }
 
 /* Implementation of state_machine::reset_when_passed_to_unknown_fn_p vfunc

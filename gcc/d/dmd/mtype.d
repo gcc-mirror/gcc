@@ -2488,6 +2488,16 @@ extern (C++) abstract class Type : ASTNode
         return false;
     }
 
+    /*************************************
+     * Detect if this is an unsafe type because of the presence of `@system` members
+     * Returns:
+     *  true if so
+     */
+    bool hasSystemFields()
+    {
+        return false;
+    }
+
     /***************************************
      * Returns: true if type has any invariants
      */
@@ -3819,6 +3829,16 @@ extern (C++) final class TypeSArray : TypeArray
         }
         else
             return next.hasPointers();
+    }
+
+    override bool hasSystemFields()
+    {
+        return next.hasSystemFields();
+    }
+
+    override bool hasVoidInitPointers()
+    {
+        return next.hasVoidInitPointers();
     }
 
     override bool hasInvariant()
@@ -5532,52 +5552,32 @@ extern (C++) final class TypeStruct : Type
 
     override bool hasPointers()
     {
-        // Probably should cache this information in sym rather than recompute
-        StructDeclaration s = sym;
-
         if (sym.members && !sym.determineFields() && sym.type != Type.terror)
             error(sym.loc, "no size because of forward references");
 
-        foreach (VarDeclaration v; s.fields)
-        {
-            if (v.storage_class & STC.ref_ || v.hasPointers())
-                return true;
-        }
-        return false;
+        sym.determineTypeProperties();
+        return sym.hasPointerField;
     }
 
     override bool hasVoidInitPointers()
     {
-        // Probably should cache this information in sym rather than recompute
-        StructDeclaration s = sym;
-
         sym.size(Loc.initial); // give error for forward references
-        foreach (VarDeclaration v; s.fields)
-        {
-            if (v._init && v._init.isVoidInitializer() && v.type.hasPointers())
-                return true;
-            if (!v._init && v.type.hasVoidInitPointers())
-                return true;
-        }
-        return false;
+        sym.determineTypeProperties();
+        return sym.hasVoidInitPointers;
+    }
+
+    override bool hasSystemFields()
+    {
+        sym.size(Loc.initial); // give error for forward references
+        sym.determineTypeProperties();
+        return sym.hasSystemFields;
     }
 
     override bool hasInvariant()
     {
-        // Probably should cache this information in sym rather than recompute
-        StructDeclaration s = sym;
-
         sym.size(Loc.initial); // give error for forward references
-
-        if (s.hasInvariant())
-            return true;
-
-        foreach (VarDeclaration v; s.fields)
-        {
-            if (v.type.hasInvariant())
-                return true;
-        }
-        return false;
+        sym.determineTypeProperties();
+        return sym.hasInvariant() || sym.hasFieldWithInvariant;
     }
 
     extern (D) MATCH implicitConvToWithoutAliasThis(Type to)
@@ -5855,6 +5855,11 @@ extern (C++) final class TypeEnum : Type
     override bool hasVoidInitPointers()
     {
         return memType().hasVoidInitPointers();
+    }
+
+    override bool hasSystemFields()
+    {
+        return memType().hasSystemFields();
     }
 
     override bool hasInvariant()

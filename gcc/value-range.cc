@@ -661,7 +661,7 @@ frange::contains_p (tree cst) const
     {
       // Make sure the signs are equal for signed zeros.
       if (HONOR_SIGNED_ZEROS (m_type) && real_iszero (rv))
-	return m_min.sign == m_max.sign && m_min.sign == rv->sign;
+	return rv->sign == m_min.sign || rv->sign == m_max.sign;
       return true;
     }
   return false;
@@ -3017,6 +3017,10 @@ irange::intersect_nonzero_bits (const irange &r)
   if (mask_to_wi (m_nonzero_mask, t) != mask_to_wi (r.m_nonzero_mask, t))
     {
       wide_int nz = get_nonzero_bits () & r.get_nonzero_bits ();
+      // If the nonzero bits did not change, return false.
+      if (nz == get_nonzero_bits ())
+	return false;
+
       m_nonzero_mask = wide_int_to_tree (t, nz);
       if (set_range_from_nonzero_bits ())
 	return true;
@@ -3854,6 +3858,14 @@ range_tests_signed_zeros ()
   r0 = frange (neg_zero, neg_zero);
   ASSERT_TRUE (r0.contains_p (neg_zero));
   ASSERT_FALSE (r0.contains_p (zero));
+
+  r0 = frange (neg_zero, zero);
+  ASSERT_TRUE (r0.contains_p (neg_zero));
+  ASSERT_TRUE (r0.contains_p (zero));
+
+  r0 = frange_float ("-3", "5");
+  ASSERT_TRUE (r0.contains_p (neg_zero));
+  ASSERT_TRUE (r0.contains_p (zero));
 
   // The intersection of zeros that differ in sign is a NAN (or
   // undefined if not honoring NANs).

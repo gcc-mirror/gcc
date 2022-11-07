@@ -1875,7 +1875,7 @@
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "*altivec_vrl<VI_char>"
+(define_insn "altivec_vrl<VI_char>"
   [(set (match_operand:VI2 0 "register_operand" "=v")
         (rotate:VI2 (match_operand:VI2 1 "register_operand" "v")
 		    (match_operand:VI2 2 "register_operand" "v")))]

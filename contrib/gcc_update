@@ -162,12 +162,6 @@ libsanitizer/sanitizer_common/Makefile.in: libsanitizer/sanitizer_common/Makefil
 libvtv/aclocal.m4: libvtv/configure.ac libvtv/acinclude.m4
 libvtv/Makefile.in: libvtv/Makefile.am libvtv/aclocal.m4
 libvtv/configure: libvtv/configure.ac libvtv/aclocal.m4
-liboffloadmic/aclocal.m4: liboffloadmic/configure.ac
-liboffloadmic/Makefile.in: liboffloadmic/Makefile.am
-liboffloadmic/configure: liboffloadmic/configure.ac
-liboffloadmic/plugin/aclocal.m4: liboffloadmic/plugin/configure.ac
-liboffloadmic/plugin/Makefile.in: liboffloadmic/plugin/Makefile.am
-liboffloadmic/plugin/configure: liboffloadmic/plugin/configure.ac
 libbacktrace/aclocal.m4: libbacktrace/configure.ac
 libbacktrace/Makefile.in: libbacktrace/Makefile.am libbacktrace/aclocal.m4
 libbacktrace/configure: libbacktrace/configure.ac libbacktrace/aclocal.m4

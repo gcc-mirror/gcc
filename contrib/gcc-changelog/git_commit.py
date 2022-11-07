@@ -67,7 +67,6 @@ default_changelog_locations = {
     'libiberty',
     'libitm',
     'libobjc',
-    'liboffloadmic',
     'libphobos',
     'libquadmath',
     'libsanitizer',

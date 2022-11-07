@@ -109,6 +109,11 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AMX_INT8_SET OPTION_MASK_ISA2_AMX_INT8
 #define OPTION_MASK_ISA2_AMX_BF16_SET OPTION_MASK_ISA2_AMX_BF16
 #define OPTION_MASK_ISA2_AVXVNNIINT8_SET OPTION_MASK_ISA2_AVXVNNIINT8
+#define OPTION_MASK_ISA2_AVXNECONVERT_SET OPTION_MASK_ISA2_AVXNECONVERT
+#define OPTION_MASK_ISA2_CMPCCXADD_SET OPTION_MASK_ISA2_CMPCCXADD
+#define OPTION_MASK_ISA2_AMX_FP16_SET OPTION_MASK_ISA2_AMX_FP16
+#define OPTION_MASK_ISA2_PREFETCHI_SET OPTION_MASK_ISA2_PREFETCHI
+#define OPTION_MASK_ISA2_RAOINT_SET OPTION_MASK_ISA2_RAOINT
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -215,7 +220,8 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA_AVX2 | OPTION_MASK_ISA_AVX512F_UNSET)
 #define OPTION_MASK_ISA2_AVX2_UNSET \
   (OPTION_MASK_ISA2_AVXIFMA_UNSET | OPTION_MASK_ISA2_AVXVNNI_UNSET \
-   | OPTION_MASK_ISA2_AVXVNNIINT8_UNSET | OPTION_MASK_ISA2_AVX512F_UNSET)
+   | OPTION_MASK_ISA2_AVXVNNIINT8_UNSET | OPTION_MASK_ISA2_AVXNECONVERT_UNSET \
+   | OPTION_MASK_ISA2_AVX512F_UNSET)
 #define OPTION_MASK_ISA_AVX512F_UNSET \
   (OPTION_MASK_ISA_AVX512F | OPTION_MASK_ISA_AVX512CD_UNSET \
    | OPTION_MASK_ISA_AVX512PF_UNSET | OPTION_MASK_ISA_AVX512ER_UNSET \
@@ -280,6 +286,11 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA2_KL | OPTION_MASK_ISA2_WIDEKL_UNSET)
 #define OPTION_MASK_ISA2_WIDEKL_UNSET OPTION_MASK_ISA2_WIDEKL
 #define OPTION_MASK_ISA2_AVXVNNIINT8_UNSET OPTION_MASK_ISA2_AVXVNNIINT8
+#define OPTION_MASK_ISA2_AVXNECONVERT_UNSET OPTION_MASK_ISA2_AVXNECONVERT
+#define OPTION_MASK_ISA2_CMPCCXADD_UNSET OPTION_MASK_ISA2_CMPCCXADD
+#define OPTION_MASK_ISA2_AMX_FP16_UNSET OPTION_MASK_ISA2_AMX_FP16
+#define OPTION_MASK_ISA2_PREFETCHI_UNSET OPTION_MASK_ISA2_PREFETCHI
+#define OPTION_MASK_ISA2_RAOINT_UNSET OPTION_MASK_ISA2_RAOINT
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1162,6 +1173,74 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
+    case OPT_mavxneconvert:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVXNECONVERT_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVXNECONVERT_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX2_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVXNECONVERT_UNSET;
+	  opts->x_ix86_isa_flags2_explicit
+	    |= OPTION_MASK_ISA2_AVXNECONVERT_UNSET;
+	}
+      return true;
+
+    case OPT_mcmpccxadd:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CMPCCXADD_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_CMPCCXADD_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_CMPCCXADD_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_CMPCCXADD_UNSET;
+	}
+      return true;
+
+    case OPT_mamx_fp16:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_FP16_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AMX_FP16_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AMX_FP16_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AMX_FP16_UNSET;
+	}
+      return true;
+
+    case OPT_mprefetchi:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_PREFETCHI_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_PREFETCHI_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_PREFETCHI_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_PREFETCHI_UNSET;
+	}
+      return true;
+
+    case OPT_mraoint:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_RAOINT_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_RAOINT_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_RAOINT_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_RAOINT_UNSET;
+	}
+      return true;
+
     case OPT_mfma:
       if (value)
 	{
@@ -1840,6 +1919,8 @@ const char *const processor_names[] =
   "goldmont",
   "goldmont-plus",
   "tremont",
+  "sierraforest",
+  "grandridge",
   "knl",
   "knm",
   "skylake",
@@ -1853,6 +1934,7 @@ const char *const processor_names[] =
   "sapphirerapids",
   "alderlake",
   "rocketlake",
+  "graniterapids",
   "intel",
   "lujiazui",
   "geode",
@@ -1972,6 +2054,8 @@ const pta processor_alias_table[] =
     M_CPU_SUBTYPE (INTEL_COREI7_ALDERLAKE), P_PROC_AVX2},
   {"meteorlake", PROCESSOR_ALDERLAKE, CPU_HASWELL, PTA_ALDERLAKE,
     M_CPU_SUBTYPE (INTEL_COREI7_ALDERLAKE), P_PROC_AVX2},
+  {"graniterapids", PROCESSOR_GRANITERAPIDS, CPU_HASWELL, PTA_GRANITERAPIDS,
+    M_CPU_SUBTYPE (INTEL_COREI7_GRANITERAPIDS), P_PROC_AVX512F},
   {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL,
     M_CPU_TYPE (INTEL_BONNELL), P_PROC_SSSE3},
   {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL,
@@ -1986,6 +2070,10 @@ const pta processor_alias_table[] =
     M_CPU_TYPE (INTEL_GOLDMONT_PLUS), P_PROC_SSE4_2},
   {"tremont", PROCESSOR_TREMONT, CPU_HASWELL, PTA_TREMONT,
     M_CPU_TYPE (INTEL_TREMONT), P_PROC_SSE4_2},
+  {"sierraforest", PROCESSOR_SIERRAFOREST, CPU_HASWELL, PTA_SIERRAFOREST,
+    M_CPU_SUBTYPE (INTEL_SIERRAFOREST), P_PROC_AVX2},
+  {"grandridge", PROCESSOR_GRANDRIDGE, CPU_HASWELL, PTA_GRANDRIDGE,
+    M_CPU_TYPE (INTEL_GRANDRIDGE), P_PROC_AVX2},
   {"knl", PROCESSOR_KNL, CPU_SLM, PTA_KNL,
     M_CPU_TYPE (INTEL_KNL), P_PROC_AVX512F},
   {"knm", PROCESSOR_KNM, CPU_SLM, PTA_KNM,
