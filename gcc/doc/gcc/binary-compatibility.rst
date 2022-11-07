@@ -1,0 +1,151 @@
+..
+  Copyright 1988-2022 Free Software Foundation, Inc.
+  This is part of the GCC manual.
+  For copying conditions, see the copyright.rst file.
+
+.. index:: binary compatibility, ABI, application binary interface
+
+.. _compatibility:
+
+Binary Compatibility
+--------------------
+
+Binary compatibility encompasses several related concepts:
+
+:dfn:`application binary interface (ABI)`
+  The set of runtime conventions followed by all of the tools that deal
+  with binary representations of a program, including compilers, assemblers,
+  linkers, and language runtime support.
+  Some ABIs are formal with a written specification, possibly designed
+  by multiple interested parties.  Others are simply the way things are
+  actually done by a particular set of tools.
+
+:dfn:`ABI conformance`
+  A compiler conforms to an ABI if it generates code that follows all of
+  the specifications enumerated by that ABI.
+  A library conforms to an ABI if it is implemented according to that ABI.
+  An application conforms to an ABI if it is built using tools that conform
+  to that ABI and does not contain source code that specifically changes
+  behavior specified by the ABI.
+
+:dfn:`calling conventions`
+  Calling conventions are a subset of an ABI that specify of how arguments
+  are passed and function results are returned.
+
+:dfn:`interoperability`
+  Different sets of tools are interoperable if they generate files that
+  can be used in the same program.  The set of tools includes compilers,
+  assemblers, linkers, libraries, header files, startup files, and debuggers.
+  Binaries produced by different sets of tools are not interoperable unless
+  they implement the same ABI.  This applies to different versions of the
+  same tools as well as tools from different vendors.
+
+:dfn:`intercallability`
+  Whether a function in a binary built by one set of tools can call a
+  function in a binary built by a different set of tools is a subset
+  of interoperability.
+
+:dfn:`implementation-defined features`
+  Language standards include lists of implementation-defined features whose
+  behavior can vary from one implementation to another.  Some of these
+  features are normally covered by a platform's ABI and others are not.
+  The features that are not covered by an ABI generally affect how a
+  program behaves, but not intercallability.
+
+:dfn:`compatibility`
+  Conformance to the same ABI and the same behavior of implementation-defined
+  features are both relevant for compatibility.
+
+The application binary interface implemented by a C or C++ compiler
+affects code generation and runtime support for:
+
+* size and alignment of data types
+
+* layout of structured types
+
+* calling conventions
+
+* register usage conventions
+
+* interfaces for runtime arithmetic support
+
+* object file formats
+
+In addition, the application binary interface implemented by a C++ compiler
+affects code generation and runtime support for:
+
+* name mangling
+
+* exception handling
+
+* invoking constructors and destructors
+
+* layout, alignment, and padding of classes
+
+* layout and alignment of virtual tables
+
+Some GCC compilation options cause the compiler to generate code that
+does not conform to the platform's default ABI.  Other options cause
+different program behavior for implementation-defined features that are
+not covered by an ABI.  These options are provided for consistency with
+other compilers that do not follow the platform's default ABI or the
+usual behavior of implementation-defined features for the platform.
+Be very careful about using such options.
+
+Most platforms have a well-defined ABI that covers C code, but ABIs
+that cover C++ functionality are not yet common.
+
+Starting with GCC 3.2, GCC binary conventions for C++ are based on a
+written, vendor-neutral C++ ABI that was designed to be specific to
+64-bit Itanium but also includes generic specifications that apply to
+any platform.
+This C++ ABI is also implemented by other compiler vendors on some
+platforms, notably GNU/Linux and BSD systems.
+We have tried hard to provide a stable ABI that will be compatible with
+future GCC releases, but it is possible that we will encounter problems
+that make this difficult.  Such problems could include different
+interpretations of the C++ ABI by different vendors, bugs in the ABI, or
+bugs in the implementation of the ABI in different compilers.
+GCC's :option:`-Wabi` switch warns when G++ generates code that is
+probably not compatible with the C++ ABI.
+
+The C++ library used with a C++ compiler includes the Standard C++
+Library, with functionality defined in the C++ Standard, plus language
+runtime support.  The runtime support is included in a C++ ABI, but there
+is no formal ABI for the Standard C++ Library.  Two implementations
+of that library are interoperable if one follows the de-facto ABI of the
+other and if they are both built with the same compiler, or with compilers
+that conform to the same ABI for C++ compiler and runtime support.
+
+When G++ and another C++ compiler conform to the same C++ ABI, but the
+implementations of the Standard C++ Library that they normally use do not
+follow the same ABI for the Standard C++ Library, object files built with
+those compilers can be used in the same program only if they use the same
+C++ library.  This requires specifying the location of the C++ library
+header files when invoking the compiler whose usual library is not being
+used.  The location of GCC's C++ header files depends on how the GCC
+build was configured, but can be seen by using the G++ :option:`-v` option.
+With default configuration options for G++ 3.3 the compile line for a
+different C++ compiler needs to include
+
+.. code-block:: c++
+
+      -Igcc_install_directory/include/c++/3.3
+
+Similarly, compiling code with G++ that must use a C++ library other
+than the GNU C++ library requires specifying the location of the header
+files for that other library.
+
+The most straightforward way to link a program to use a particular
+C++ library is to use a C++ driver that specifies that C++ library by
+default.  The :command:`g++` driver, for example, tells the linker where
+to find GCC's C++ library (:samp:`libstdc++`) plus the other libraries
+and startup files it needs, in the proper order.
+
+If a program must use a different C++ library and it's not possible
+to do the final link using a C++ driver that uses that library by default,
+it is necessary to tell :command:`g++` the location and name of that
+library.  It might also be necessary to specify different startup files
+and other runtime support libraries, and to suppress the use of GCC's
+support libraries with one or more of the options :option:`-nostdlib`,
+:option:`-nostartfiles`, and :option:`-nodefaultlibs`.

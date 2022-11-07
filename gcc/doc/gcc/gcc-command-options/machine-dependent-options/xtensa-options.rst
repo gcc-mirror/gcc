@@ -1,0 +1,138 @@
+..
+  Copyright 1988-2022 Free Software Foundation, Inc.
+  This is part of the GCC manual.
+  For copying conditions, see the copyright.rst file.
+
+.. program:: Xtensa
+
+.. index:: Xtensa Options
+
+.. _xtensa-options:
+
+Xtensa Options
+^^^^^^^^^^^^^^
+
+These options are supported for Xtensa targets:
+
+.. option:: -mconst16, -mno-const16
+
+  Enable or disable use of ``CONST16`` instructions for loading
+  constant values.  The ``CONST16`` instruction is currently not a
+  standard option from Tensilica.  When enabled, ``CONST16``
+  instructions are always used in place of the standard ``L32R``
+  instructions.  The use of ``CONST16`` is enabled by default only if
+  the ``L32R`` instruction is not available.
+
+.. option:: -mfused-madd, -mno-fused-madd
+
+  Enable or disable use of fused multiply/add and multiply/subtract
+  instructions in the floating-point option.  This has no effect if the
+  floating-point option is not also enabled.  Disabling fused multiply/add
+  and multiply/subtract instructions forces the compiler to use separate
+  instructions for the multiply and add/subtract operations.  This may be
+  desirable in some cases where strict IEEE 754-compliant results are
+  required: the fused multiply add/subtract instructions do not round the
+  intermediate result, thereby producing results with *more* bits of
+  precision than specified by the IEEE standard.  Disabling fused multiply
+  add/subtract instructions also ensures that the program output is not
+  sensitive to the compiler's ability to combine multiply and add/subtract
+  operations.
+
+.. option:: -mserialize-volatile, -mno-serialize-volatile
+
+  When this option is enabled, GCC inserts ``MEMW`` instructions before
+  ``volatile`` memory references to guarantee sequential consistency.
+  The default is :option:`-mserialize-volatile`.  Use
+  :option:`-mno-serialize-volatile` to omit the ``MEMW`` instructions.
+
+.. option:: -mforce-no-pic
+
+  For targets, like GNU/Linux, where all user-mode Xtensa code must be
+  position-independent code (PIC), this option disables PIC for compiling
+  kernel code.
+
+.. option:: -mtext-section-literals, -mno-text-section-literals
+
+  These options control the treatment of literal pools.  The default is
+  :option:`-mno-text-section-literals`, which places literals in a separate
+  section in the output file.  This allows the literal pool to be placed
+  in a data RAM/ROM, and it also allows the linker to combine literal
+  pools from separate object files to remove redundant literals and
+  improve code size.  With :option:`-mtext-section-literals`, the literals
+  are interspersed in the text section in order to keep them as close as
+  possible to their references.  This may be necessary for large assembly
+  files.  Literals for each function are placed right before that function.
+
+.. option:: -mauto-litpools, -mno-auto-litpools
+
+  These options control the treatment of literal pools.  The default is
+  :option:`-mno-auto-litpools`, which places literals in a separate
+  section in the output file unless :option:`-mtext-section-literals` is
+  used.  With :option:`-mauto-litpools` the literals are interspersed in
+  the text section by the assembler.  Compiler does not produce explicit
+  ``.literal`` directives and loads literals into registers with
+  ``MOVI`` instructions instead of ``L32R`` to let the assembler
+  do relaxation and place literals as necessary.  This option allows
+  assembler to create several literal pools per function and assemble
+  very big functions, which may not be possible with
+  :option:`-mtext-section-literals`.
+
+.. option:: -mtarget-align, -mno-target-align
+
+  When this option is enabled, GCC instructs the assembler to
+  automatically align instructions to reduce branch penalties at the
+  expense of some code density.  The assembler attempts to widen density
+  instructions to align branch targets and the instructions following call
+  instructions.  If there are not enough preceding safe density
+  instructions to align a target, no widening is performed.  The
+  default is :option:`-mtarget-align`.  These options do not affect the
+  treatment of auto-aligned instructions like ``LOOP``, which the
+  assembler always aligns, either by widening density instructions or
+  by inserting NOP instructions.
+
+.. option:: -mlongcalls, -mno-longcalls
+
+  When this option is enabled, GCC instructs the assembler to translate
+  direct calls to indirect calls unless it can determine that the target
+  of a direct call is in the range allowed by the call instruction.  This
+  translation typically occurs for calls to functions in other source
+  files.  Specifically, the assembler translates a direct ``CALL``
+  instruction into an ``L32R`` followed by a ``CALLX`` instruction.
+  The default is :option:`-mno-longcalls`.  This option should be used in
+  programs where the call target can potentially be out of range.  This
+  option is implemented in the assembler, not the compiler, so the
+  assembly code generated by GCC still shows direct call
+  instructions---look at the disassembled object code to see the actual
+  instructions.  Note that the assembler uses an indirect call for
+  every cross-file call, not just those that really are out of range.
+
+.. option:: -mabi={name}
+
+  Generate code for the specified ABI.  Permissible values are: :samp:`call0`,
+  :samp:`windowed`.  Default ABI is chosen by the Xtensa core configuration.
+
+.. option:: -mabi=call0
+
+  When this option is enabled function parameters are passed in registers
+  ``a2`` through ``a7``, registers ``a12`` through ``a15`` are
+  caller-saved, and register ``a15`` may be used as a frame pointer.
+  When this version of the ABI is enabled the C preprocessor symbol
+  ``__XTENSA_CALL0_ABI__`` is defined.
+
+.. option:: -mabi=windowed
+
+  When this option is enabled function parameters are passed in registers
+  ``a10`` through ``a15``, and called function rotates register window
+  by 8 registers on entry so that its arguments are found in registers
+  ``a2`` through ``a7``.  Register ``a7`` may be used as a frame
+  pointer.  Register window is rotated 8 registers back upon return.
+  When this version of the ABI is enabled the C preprocessor symbol
+  ``__XTENSA_WINDOWED_ABI__`` is defined.
+
+.. option:: -mextra-l32r-costs={n}
+
+  Specify an extra cost of instruction RAM/ROM access for ``L32R``
+  instructions, in clock cycles.  This affects, when optimizing for speed,
+  whether loading a constant from literal pool using ``L32R`` or
+  synthesizing the constant from a small one with a couple of arithmetic
+  instructions.  The default value is 0.

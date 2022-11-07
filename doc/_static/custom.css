@@ -1,0 +1,11 @@
+.sidebar-brand-text {
+  font-size: 13pt;
+}
+
+.literal {
+  white-space: nowrap !important;
+}
+
+.wy-nav-content {
+  max-width: initial;
+}
