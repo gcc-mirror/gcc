@@ -111,6 +111,7 @@ class char_span
 };
 
 extern char_span location_get_source_line (const char *file_path, int line);
+extern char *get_source_text_between (location_t, location_t);
 
 extern bool location_missing_trailing_newline (const char *file_path);
 
@@ -164,6 +165,10 @@ extern location_t expansion_point_location_if_in_system_header (location_t);
 extern location_t expansion_point_location (location_t);
 
 extern location_t input_location;
+
+extern location_t location_with_discriminator (location_t, int);
+extern bool has_discriminator (location_t);
+extern int get_discriminator_from_loc (location_t);
 
 #define LOCATION_FILE(LOC) ((expand_location (LOC)).file)
 #define LOCATION_LINE(LOC) ((expand_location (LOC)).line)

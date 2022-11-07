@@ -9,7 +9,6 @@
  */
 module core.sys.windows.ntdef;
 version (Windows):
-@system:
 
 import core.sys.windows.basetsd, core.sys.windows.subauth, core.sys.windows.windef, core.sys.windows.winnt;
 

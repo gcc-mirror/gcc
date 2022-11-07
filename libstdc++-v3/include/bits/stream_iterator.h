@@ -32,6 +32,9 @@
 
 #pragma GCC system_header
 
+#include <iosfwd>
+#include <bits/move.h>
+#include <bits/stl_iterator_base_types.h>
 #include <debug/debug.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

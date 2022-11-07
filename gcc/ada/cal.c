@@ -53,9 +53,7 @@
 
 #ifdef __MINGW32__
 #include "mingw32.h"
-#if STD_MINGW
 #include <winsock.h>
-#endif
 #endif
 
 void

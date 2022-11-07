@@ -1,0 +1,198 @@
+/* P2071R2 - Named universal character escapes */
+/* { dg-do run } */
+/* { dg-require-effective-target wchar } */
+/* { dg-options "-std=gnu99 -Wno-c++-compat" { target c } } */
+/* { dg-options "-std=c++23" { target c++ } } */
+
+#ifndef __cplusplus
+#include <wchar.h>
+typedef __CHAR16_TYPE__ char16_t;
+typedef __CHAR32_TYPE__ char32_t;
+#endif
+
+#ifdef __cplusplus
+#if U'\u0000' != U'\N{NULL}' \
+    || U'\u0001' != U'\N{START OF HEADING}' \
+    || U'\u0002' != U'\N{START OF TEXT}' \
+    || U'\u0003' != U'\N{END OF TEXT}' \
+    || U'\u0004' != U'\N{END OF TRANSMISSION}' \
+    || U'\u0005' != U'\N{ENQUIRY}' \
+    || U'\u0006' != U'\N{ACKNOWLEDGE}' \
+    || U'\u0007' != U'\N{ALERT}' \
+    || U'\u0008' != U'\N{BACKSPACE}' \
+    || U'\u0009' != U'\N{CHARACTER TABULATION}' \
+    || U'\u0009' != U'\N{HORIZONTAL TABULATION}' \
+    || U'\u000A' != U'\N{LINE FEED}' \
+    || U'\u000A' != U'\N{NEW LINE}' \
+    || U'\u000A' != U'\N{END OF LINE}' \
+    || U'\u000B' != U'\N{LINE TABULATION}' \
+    || U'\u000B' != U'\N{VERTICAL TABULATION}' \
+    || U'\u000C' != U'\N{FORM FEED}' \
+    || U'\u000D' != U'\N{CARRIAGE RETURN}' \
+    || U'\u000E' != U'\N{SHIFT OUT}' \
+    || U'\u000E' != U'\N{LOCKING-SHIFT ONE}' \
+    || U'\u000F' != U'\N{SHIFT IN}' \
+    || U'\u000F' != U'\N{LOCKING-SHIFT ZERO}' \
+    || U'\u0010' != U'\N{DATA LINK ESCAPE}' \
+    || U'\u0011' != U'\N{DEVICE CONTROL ONE}' \
+    || U'\u0012' != U'\N{DEVICE CONTROL TWO}' \
+    || U'\u0013' != U'\N{DEVICE CONTROL THREE}' \
+    || U'\u0014' != U'\N{DEVICE CONTROL FOUR}' \
+    || U'\u0015' != U'\N{NEGATIVE ACKNOWLEDGE}' \
+    || U'\u0016' != U'\N{SYNCHRONOUS IDLE}' \
+    || U'\u0017' != U'\N{END OF TRANSMISSION BLOCK}' \
+    || U'\u0018' != U'\N{CANCEL}' \
+    || U'\u0019' != U'\N{END OF MEDIUM}' \
+    || U'\u001A' != U'\N{SUBSTITUTE}' \
+    || U'\u001B' != U'\N{ESCAPE}' \
+    || U'\u001C' != U'\N{INFORMATION SEPARATOR FOUR}' \
+    || U'\u001C' != U'\N{FILE SEPARATOR}' \
+    || U'\u001D' != U'\N{INFORMATION SEPARATOR THREE}' \
+    || U'\u001D' != U'\N{GROUP SEPARATOR}' \
+    || U'\u001E' != U'\N{INFORMATION SEPARATOR TWO}' \
+    || U'\u001E' != U'\N{RECORD SEPARATOR}' \
+    || U'\u001F' != U'\N{INFORMATION SEPARATOR ONE}' \
+    || U'\u001F' != U'\N{UNIT SEPARATOR}' \
+    || U'\u007F' != U'\N{DELETE}' \
+    || U'\u0082' != U'\N{BREAK PERMITTED HERE}' \
+    || U'\u0083' != U'\N{NO BREAK HERE}' \
+    || U'\u0084' != U'\N{INDEX}' \
+    || U'\u0085' != U'\N{NEXT LINE}' \
+    || U'\u0086' != U'\N{START OF SELECTED AREA}' \
+    || U'\u0087' != U'\N{END OF SELECTED AREA}' \
+    || U'\u0088' != U'\N{CHARACTER TABULATION SET}' \
+    || U'\u0088' != U'\N{HORIZONTAL TABULATION SET}' \
+    || U'\u0089' != U'\N{CHARACTER TABULATION WITH JUSTIFICATION}' \
+    || U'\u0089' != U'\N{HORIZONTAL TABULATION WITH JUSTIFICATION}' \
+    || U'\u008A' != U'\N{LINE TABULATION SET}' \
+    || U'\u008A' != U'\N{VERTICAL TABULATION SET}' \
+    || U'\u008B' != U'\N{PARTIAL LINE FORWARD}' \
+    || U'\u008B' != U'\N{PARTIAL LINE DOWN}' \
+    || U'\u008C' != U'\N{PARTIAL LINE BACKWARD}' \
+    || U'\u008C' != U'\N{PARTIAL LINE UP}' \
+    || U'\u008D' != U'\N{REVERSE LINE FEED}' \
+    || U'\u008D' != U'\N{REVERSE INDEX}' \
+    || U'\u008E' != U'\N{SINGLE SHIFT TWO}' \
+    || U'\u008E' != U'\N{SINGLE-SHIFT-2}' \
+    || U'\u008F' != U'\N{SINGLE SHIFT THREE}' \
+    || U'\u008F' != U'\N{SINGLE-SHIFT-3}' \
+    || U'\u0090' != U'\N{DEVICE CONTROL STRING}' \
+    || U'\u0091' != U'\N{PRIVATE USE ONE}' \
+    || U'\u0091' != U'\N{PRIVATE USE-1}' \
+    || U'\u0092' != U'\N{PRIVATE USE TWO}' \
+    || U'\u0092' != U'\N{PRIVATE USE-2}' \
+    || U'\u0093' != U'\N{SET TRANSMIT STATE}' \
+    || U'\u0094' != U'\N{CANCEL CHARACTER}' \
+    || U'\u0095' != U'\N{MESSAGE WAITING}' \
+    || U'\u0096' != U'\N{START OF GUARDED AREA}' \
+    || U'\u0096' != U'\N{START OF PROTECTED AREA}' \
+    || U'\u0097' != U'\N{END OF GUARDED AREA}' \
+    || U'\u0097' != U'\N{END OF PROTECTED AREA}' \
+    || U'\u0098' != U'\N{START OF STRING}' \
+    || U'\u009A' != U'\N{SINGLE CHARACTER INTRODUCER}' \
+    || U'\u009B' != U'\N{CONTROL SEQUENCE INTRODUCER}' \
+    || U'\u009C' != U'\N{STRING TERMINATOR}' \
+    || U'\u009D' != U'\N{OPERATING SYSTEM COMMAND}' \
+    || U'\u009E' != U'\N{PRIVACY MESSAGE}' \
+    || U'\u009F' != U'\N{APPLICATION PROGRAM COMMAND}' \
+    || U'\u0020' != U'\N{SPACE}' \
+    || U'\u0030' != U'\N{DIGIT ZERO}' \
+    || U'\u0053' != U'\N{LATIN CAPITAL LETTER S}'
+#error Bad
+#endif
+#endif
+#if U'\U0001F402' != U'\N{OX}' \
+    || U'\U0001FBA9' != U'\N{BOX DRAWINGS LIGHT DIAGONAL UPPER CENTRE TO MIDDLE RIGHT AND MIDDLE LEFT TO LOWER CENTRE}' \
+    || U'\u01FD' != U'\N{LATIN SMALL LETTER AE WITH ACUTE}' \
+    || U'\u2118' != U'\N{WEIERSTRASS ELLIPTIC FUNCTION}' \
+    || U'\u2118' != U'\N{SCRIPT CAPITAL P}' \
+    || U'\uFEFF' != U'\N{BYTE ORDER MARK}' \
+    || U'\uFEFF' != U'\N{ZERO WIDTH NO-BREAK SPACE}' \
+    || U'\u116C' != U'\N{HANGUL JUNGSEONG OE}' \
+    || U'\u1180' != U'\N{HANGUL JUNGSEONG O-E}' \
+    || U'\u0F60' != U'\N{TIBETAN LETTER -A}' \
+    || U'\u0F68' != U'\N{TIBETAN LETTER A}' \
+    || U'\u0F0A' != U'\N{TIBETAN MARK BKA- SHOG YIG MGO}' \
+    || U'\u0FD0' != U'\N{TIBETAN MARK BKA- SHOG GI MGO RGYAN}' \
+    || U'\u0FD0' != U'\N{TIBETAN MARK BSKA- SHOG GI MGO RGYAN}' \
+    || U'\uFE18' != U'\N{PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRAKCET}' \
+    || U'\uFE18' != U'\N{PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRACKET}' \
+    || U'\u0CF3' != U'\N{KANNADA SIGN COMBINING ANUSVARA ABOVE RIGHT}' \
+    || U'\u0ECE' != U'\N{LAO YAMAKKAN}' \
+    || U'\U00010EFE' != U'\N{ARABIC SMALL LOW WORD QASR}' \
+    || U'\U00011241' != U'\N{KHOJKI VOWEL SIGN VOCALIC R}' \
+    || U'\U00011B06' != U'\N{DEVANAGARI SIGN WESTERN FIVE-LIKE BHALE}' \
+    || U'\U00011F0B' != U'\N{KAWI LETTER VOCALIC RR}' \
+    || U'\U0001342F' != U'\N{EGYPTIAN HIEROGLYPH V011D}' \
+    || U'\U00013451' != U'\N{EGYPTIAN HIEROGLYPH MODIFIER DAMAGED AT START AND BOTTOM}' \
+    || U'\U0001B132' != U'\N{HIRAGANA LETTER SMALL KO}' \
+    || U'\U0001B155' != U'\N{KATAKANA LETTER SMALL KO}' \
+    || U'\U0001D2C4' != U'\N{KAKTOVIK NUMERAL FOUR}' \
+    || U'\U0001DF27' != U'\N{LATIN SMALL LETTER N WITH MID-HEIGHT LEFT HOOK}' \
+    || U'\U0001E036' != U'\N{MODIFIER LETTER CYRILLIC SMALL ZHE}' \
+    || U'\U0001E05B' != U'\N{CYRILLIC SUBSCRIPT SMALL LETTER EL}' \
+    || U'\U0001E4E5' != U'\N{NAG MUNDARI LETTER ENN}' \
+    || U'\U0001F6DC' != U'\N{WIRELESS}' \
+    || U'\U0001F77E' != U'\N{QUAOAR}' \
+    || U'\U0001F7D9' != U'\N{NINE POINTED WHITE STAR}' \
+    || U'\U0001FA76' != U'\N{GREY HEART}' \
+    || U'\U0001FA88' != U'\N{FLUTE}' \
+    || U'\U0001FABC' != U'\N{JELLYFISH}' \
+    || U'\uAC00' != U'\N{HANGUL SYLLABLE GA}' \
+    || U'\uAC02' != U'\N{HANGUL SYLLABLE GAGG}' \
+    || U'\uAD8D' != U'\N{HANGUL SYLLABLE GWEONJ}' \
+    || U'\uAE4D' != U'\N{HANGUL SYLLABLE GGAG}' \
+    || U'\uAE4E' != U'\N{HANGUL SYLLABLE GGAGG}' \
+    || U'\uC544' != U'\N{HANGUL SYLLABLE A}' \
+    || U'\uC55F' != U'\N{HANGUL SYLLABLE AH}' \
+    || U'\uC560' != U'\N{HANGUL SYLLABLE AE}' \
+    || U'\uD7A3' != U'\N{HANGUL SYLLABLE HIH}' \
+    || U'\u3400' != U'\N{CJK UNIFIED IDEOGRAPH-3400}' \
+    || U'\u4DBF' != U'\N{CJK UNIFIED IDEOGRAPH-4DBF}' \
+    || U'\u4E00' != U'\N{CJK UNIFIED IDEOGRAPH-4E00}' \
+    || U'\u9FFC' != U'\N{CJK UNIFIED IDEOGRAPH-9FFC}' \
+    || U'\U00020000' != U'\N{CJK UNIFIED IDEOGRAPH-20000}' \
+    || U'\U0002A6DD' != U'\N{CJK UNIFIED IDEOGRAPH-2A6DD}' \
+    || U'\U00020700' != U'\N{CJK UNIFIED IDEOGRAPH-20700}' \
+    || U'\U0002B734' != U'\N{CJK UNIFIED IDEOGRAPH-2B734}' \
+    || U'\U0002B739' != U'\N{CJK UNIFIED IDEOGRAPH-2B739}' \
+    || U'\U0002B740' != U'\N{CJK UNIFIED IDEOGRAPH-2B740}' \
+    || U'\U0002B81D' != U'\N{CJK UNIFIED IDEOGRAPH-2B81D}' \
+    || U'\U0002B820' != U'\N{CJK UNIFIED IDEOGRAPH-2B820}' \
+    || U'\U0002CEA1' != U'\N{CJK UNIFIED IDEOGRAPH-2CEA1}' \
+    || U'\U0002CEB0' != U'\N{CJK UNIFIED IDEOGRAPH-2CEB0}' \
+    || U'\U0002EBE0' != U'\N{CJK UNIFIED IDEOGRAPH-2EBE0}' \
+    || U'\U00030000' != U'\N{CJK UNIFIED IDEOGRAPH-30000}' \
+    || U'\U0003134A' != U'\N{CJK UNIFIED IDEOGRAPH-3134A}' \
+    || U'\U00031350' != U'\N{CJK UNIFIED IDEOGRAPH-31350}' \
+    || U'\U000323AF' != U'\N{CJK UNIFIED IDEOGRAPH-323AF}' \
+    || U'\U00017000' != U'\N{TANGUT IDEOGRAPH-17000}' \
+    || U'\U000187F7' != U'\N{TANGUT IDEOGRAPH-187F7}' \
+    || U'\U00018D00' != U'\N{TANGUT IDEOGRAPH-18D00}' \
+    || U'\U00018D08' != U'\N{TANGUT IDEOGRAPH-18D08}' \
+    || U'\U00018B00' != U'\N{KHITAN SMALL SCRIPT CHARACTER-18B00}' \
+    || U'\U00018CD5' != U'\N{KHITAN SMALL SCRIPT CHARACTER-18CD5}' \
+    || U'\U0001B170' != U'\N{NUSHU CHARACTER-1B170}' \
+    || U'\U0001B2FB' != U'\N{NUSHU CHARACTER-1B2FB}' \
+    || U'\uF900' != U'\N{CJK COMPATIBILITY IDEOGRAPH-F900}' \
+    || U'\uFA6D' != U'\N{CJK COMPATIBILITY IDEOGRAPH-FA6D}' \
+    || U'\uFA70' != U'\N{CJK COMPATIBILITY IDEOGRAPH-FA70}' \
+    || U'\uFAD9' != U'\N{CJK COMPATIBILITY IDEOGRAPH-FAD9}' \
+    || U'\U0002F800' != U'\N{CJK COMPATIBILITY IDEOGRAPH-2F800}' \
+    || U'\U0002FA1D' != U'\N{CJK COMPATIBILITY IDEOGRAPH-2FA1D}'
+#error Bad
+#endif
+
+const char32_t *a = U"\N{HEBREW LETTER KAF}\N{HEBREW LETTER FINAL NUN}";
+const char32_t *b = U"\N{OX}\N{BOX DRAWINGS LIGHT DIAGONAL UPPER CENTRE TO MIDDLE RIGHT AND MIDDLE LEFT TO LOWER CENTRE}";
+
+#define b\N{LATIN SMALL LETTER O WITH ACUTE}x U'\U0001FBA9'
+
+int
+main ()
+{
+  if (a[0] != U'\u05DB' || a[1] != U'\U000005DF' || a[2]
+      || b[0] != U'\U0001F402' || b[1] != b\u{f3}x || b[2])
+    __builtin_abort ();
+  return 0;
+}

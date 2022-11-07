@@ -21,8 +21,9 @@
 
 ;; Register constraints
 
-(define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS : NO_REGS"
-  "A floating-point register (if available).")
+(define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS :
+  (TARGET_ZFINX ? GR_REGS : NO_REGS)"
+  "A floating-point register (if available, reuse GPR as FPR when use zfinx).")
 
 (define_register_constraint "j" "SIBCALL_REGS"
   "@internal")
@@ -54,6 +55,34 @@
   (and (match_code "const_int")
        (match_test "LUI_OPERAND (ival)")))
 
+(define_constraint "Ds3"
+  "@internal
+   1, 2 or 3 immediate"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 1, 3)")))
+
+(define_constraint "DsS"
+  "@internal
+   31 immediate"
+  (and (match_code "const_int")
+       (match_test "ival == 31")))
+
+(define_constraint "DsD"
+  "@internal
+   63 immediate"
+  (and (match_code "const_int")
+       (match_test "ival == 63")))
+
+(define_constraint "DbS"
+  "@internal"
+  (and (match_code "const_int")
+       (match_test "SINGLE_BIT_MASK_OPERAND (ival)")))
+
+(define_constraint "DnS"
+  "@internal"
+  (and (match_code "const_int")
+       (match_test "SINGLE_BIT_MASK_OPERAND (~ival)")))
+
 ;; Floating-point constant +0.0, used for FCVT-based moves when FMV is
 ;; not available in RV32.
 (define_constraint "G"
@@ -80,3 +109,45 @@
    A constant @code{move_operand}."
   (and (match_operand 0 "move_operand")
        (match_test "CONSTANT_P (op)")))
+
+;; Vector constraints.
+
+(define_register_constraint "vr" "TARGET_VECTOR ? V_REGS : NO_REGS"
+  "A vector register (if available).")
+
+(define_register_constraint "vd" "TARGET_VECTOR ? VD_REGS : NO_REGS"
+  "A vector register except mask register (if available).")
+
+(define_register_constraint "vm" "TARGET_VECTOR ? VM_REGS : NO_REGS"
+  "A vector mask register (if available).")
+
+;; This constraint is used to match instruction "csrr %0, vlenb" which is generated in "mov<mode>".
+;; VLENB is a run-time constant which represent the vector register length in bytes.
+;; BYTES_PER_RISCV_VECTOR represent runtime invariant of vector register length in bytes.
+;; We should only allow the poly equal to BYTES_PER_RISCV_VECTOR.
+(define_constraint "vp"
+  "POLY_INT"
+  (and (match_code "const_poly_int")
+       (match_test "known_eq (rtx_to_poly_int64 (op), BYTES_PER_RISCV_VECTOR)")))
+
+(define_constraint "vu"
+  "A undefined vector value."
+  (and (match_code "unspec")
+       (match_test "XINT (op, 1) == UNSPEC_VUNDEF")))
+
+(define_constraint "vi"
+  "A vector 5-bit signed immediate."
+  (and (match_code "const_vector")
+       (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -16, 15)")))
+
+(define_constraint "Wc0"
+  "@internal
+ A constraint that matches a vector of immediate all zeros."
+ (and (match_code "const_vector")
+      (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
+(define_constraint "Wc1"
+  "@internal
+ A constraint that matches a vector of immediate all ones."
+ (and (match_code "const_vector")
+      (match_test "op == CONSTM1_RTX (GET_MODE (op))")))

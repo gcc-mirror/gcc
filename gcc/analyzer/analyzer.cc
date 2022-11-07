@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -27,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "diagnostic.h"
 #include "intl.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 
 #if ENABLE_ANALYZER
@@ -378,6 +378,22 @@ is_longjmp_call_p (const gcall *call)
       return true;
 
   return false;
+}
+
+/* Return true if this is a "pipe" call.  */
+
+bool
+is_pipe_call_p (const_tree fndecl, const char *funcname,
+		const gcall *call, unsigned int num_args)
+{
+  if (!is_named_call_p (fndecl, funcname, call, num_args))
+    return false;
+
+  /* We require a pointer for the initial argument.  */
+  if (!POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, 0))))
+    return false;
+
+  return true;
 }
 
 /* For a CALL that matched is_special_named_call_p or is_named_call_p for

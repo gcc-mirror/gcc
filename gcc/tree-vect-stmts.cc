@@ -9042,7 +9042,8 @@ vectorizable_load (vec_info *vinfo,
 	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "hoisting out of the vectorized loop: %G", stmt);
+			     "hoisting out of the vectorized loop: %G",
+			     (gimple *) stmt);
 	  scalar_dest = copy_ssa_name (scalar_dest);
 	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
 	  edge pe = loop_preheader_edge (loop);
@@ -11175,6 +11176,7 @@ vect_analyze_stmt (vec_info *vinfo,
          break;
 
       case vect_induction_def:
+      case vect_first_order_recurrence:
 	gcc_assert (!bb_vinfo);
 	break;
 
@@ -11233,7 +11235,9 @@ vect_analyze_stmt (vec_info *vinfo,
 	  || vectorizable_comparison (vinfo, stmt_info, NULL, NULL, node,
 				      cost_vec)
 	  || vectorizable_lc_phi (as_a <loop_vec_info> (vinfo),
-				  stmt_info, NULL, node));
+				  stmt_info, NULL, node)
+	  || vectorizable_recurr (as_a <loop_vec_info> (vinfo),
+				   stmt_info, NULL, node, cost_vec));
   else
     {
       if (bb_vinfo)
@@ -11403,6 +11407,12 @@ vect_transform_stmt (vec_info *vinfo,
       gcc_assert (done);
       break;
 
+    case recurr_info_type:
+      done = vectorizable_recurr (as_a <loop_vec_info> (vinfo),
+				  stmt_info, &vec_stmt, slp_node, NULL);
+      gcc_assert (done);
+      break;
+
     case phi_info_type:
       done = vectorizable_phi (vinfo, stmt_info, &vec_stmt, slp_node, NULL);
       gcc_assert (done);
@@ -11485,6 +11495,16 @@ get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
     return NULL_TREE;
 
   unsigned int nbytes = GET_MODE_SIZE (inner_mode);
+
+  /* Interoperability between modes requires one to be a constant multiple
+     of the other, so that the number of vectors required for each operation
+     is a compile-time constant.  */
+  if (prevailing_mode != VOIDmode
+      && !constant_multiple_p (nunits * nbytes,
+			       GET_MODE_SIZE (prevailing_mode))
+      && !constant_multiple_p (GET_MODE_SIZE (prevailing_mode),
+			       nunits * nbytes))
+    return NULL_TREE;
 
   /* For vector types of elements whose mode precision doesn't
      match their types precision we use a element type of mode
@@ -11793,6 +11813,9 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
 	case vect_nested_cycle:
 	  dump_printf (MSG_NOTE, "nested cycle\n");
 	  break;
+	case vect_first_order_recurrence:
+	  dump_printf (MSG_NOTE, "first order recurrence\n");
+	  break;
 	case vect_unknown_def_type:
 	  dump_printf (MSG_NOTE, "unknown\n");
 	  break;
@@ -11841,7 +11864,8 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
       || *dt == vect_induction_def
       || *dt == vect_reduction_def
       || *dt == vect_double_reduction_def
-      || *dt == vect_nested_cycle)
+      || *dt == vect_nested_cycle
+      || *dt == vect_first_order_recurrence)
     {
       *vectype = STMT_VINFO_VECTYPE (def_stmt_info);
       gcc_assert (*vectype != NULL_TREE);

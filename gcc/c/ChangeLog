@@ -1,3 +1,411 @@
+2022-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (in_underspecified_init, start_underspecified_init)
+	(finish_underspecified_init): New.
+	(shadow_tag_warned, parser_xref_tag, start_struct, start_enum):
+	Give errors inside initializers of underspecified declarations.
+	(grokdeclarator): Handle (erroneous) case of C2X auto on a
+	parameter.
+	(declspecs_add_type): Handle c2x_auto_p case.
+	(declspecs_add_scspec): Handle auto possibly setting c2x_auto_p in
+	C2X mode.
+	(finish_declspecs): Handle c2x_auto_p.
+	* c-parser.cc (c_parser_declaration_or_fndef): Handle C2X auto.
+	* c-tree.h (C_DECL_UNDERSPECIFIED): New macro.
+	(struct c_declspecs): Add c2x_auto_p.
+	(start_underspecified_init, finish_underspecified_init): New
+	prototypes.
+	* c-typeck.cc (build_external_ref): Give error for underspecified
+	declaration referenced in its initializer.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (grokdeclarator): Pass
+	arg_info->no_named_args_stdarg_p to build_function_type.
+	(grokparms): Check arg_info->no_named_args_stdarg_p before
+	converting () to (void).
+	(build_arg_info): Initialize no_named_args_stdarg_p.
+	(get_parm_info): Set no_named_args_stdarg_p.
+	(start_function): Pass TYPE_NO_NAMED_ARGS_STDARG_P to
+	build_function_type.
+	(store_parm_decls): Count (...) functions as prototyped.
+	* c-parser.cc (c_parser_direct_declarator): Allow '...' after open
+	parenthesis to start parameter list.
+	(c_parser_parms_list_declarator): Always allow '...' with no
+	arguments, call pedwarn_c11 and set no_named_args_stdarg_p.
+	* c-tree.h (struct c_arg_info): Add field no_named_args_stdarg_p.
+	* c-typeck.cc (composite_type): Handle
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+	(function_types_compatible_p): Compare
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+
+2022-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_all_clauses): Allow optional
+	comma before the first clause.
+	(c_parser_omp_allocate, c_parser_omp_atomic, c_parser_omp_depobj,
+	c_parser_omp_flush, c_parser_omp_scan_loop_body,
+	c_parser_omp_ordered, c_finish_omp_declare_variant,
+	c_parser_omp_declare_target, c_parser_omp_declare_reduction,
+	c_parser_omp_requires, c_parser_omp_error,
+	c_parser_omp_assumption_clauses): Likewise.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* c-convert.cc (c_convert): Handle enums with underlying boolean
+	type like bool.
+	* c-decl.cc (shadow_tag_warned): Allow shadowing declarations for
+	enums with enum type specifier, but give errors for storage class
+	specifiers, qualifiers or alignment specifiers in non-definition
+	declarations of such enums.
+	(grokdeclarator): Give error for non-definition use of type
+	specifier with an enum type specifier.
+	(parser_xref_tag): Add argument has_enum_type_specifier.  Pass it
+	to lookup_tag and use it to set ENUM_FIXED_UNDERLYING_TYPE_P.
+	(xref_tag): Update call to parser_xref_tag.
+	(start_enum): Add argument fixed_underlying_type.  Complete enum
+	type with a fixed underlying type given in the definition.  Give
+	error for defining without a fixed underlying type in the
+	definition if one was given in a prior declaration.  Do not mark
+	enums with fixed underlying type as packed for -fshort-enums.
+	Store the enum type in the_enum.
+	(finish_enum): Do not adjust types of values or check their range
+	for an enum with a fixed underlying type.  Set underlying type of
+	enum and variants.
+	(build_enumerator): Check enumeration constants for enum with
+	fixed underlying type against that type and convert to that type.
+	Increment in the underlying integer type, with handling for bool.
+	(c_simulate_enum_decl): Update call to start_enum.
+	(declspecs_add_type): Set specs->enum_type_specifier_ref_p.
+	* c-objc-common.cc (c_get_alias_set): Use ENUM_UNDERLYING_TYPE
+	rather than recomputing an underlying type based on size.
+	* c-parser.cc (c_parser_declspecs)
+	(c_parser_struct_or_union_specifier, c_parser_typeof_specifier):
+	Set has_enum_type_specifier for type specifiers.
+	(c_parser_enum_specifier): Handle enum type specifiers.
+	(c_parser_struct_or_union_specifier): Update call to
+	parser_xref_tag.
+	(c_parser_omp_atomic): Check for boolean increment or decrement
+	using C_BOOLEAN_TYPE_P.
+	* c-tree.h (C_BOOLEAN_TYPE_P): New.
+	(struct c_typespec): Add has_enum_type_specifier.
+	(struct c_declspecs): Add enum_type_specifier_ref_p.
+	(struct c_enum_contents): Add enum_type.
+	(start_enum, parser_xref_tag): Update prototypes.
+	* c-typeck.cc (composite_type): Allow for enumerated types
+	compatible with bool.
+	(common_type, comptypes_internal, perform_integral_promotions):
+	Use ENUM_UNDERLYING_TYPE.
+	(parser_build_binary_op, build_unary_op, convert_for_assignment)
+	(c_finish_return, c_start_switch, build_binary_op): Check for
+	boolean types using C_BOOLEAN_TYPE_P.
+
+2022-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107358
+	* c-typeck.cc (build_binary_op): Pass operands before excess precision
+	promotions to scalar_to_vector call.
+
+2022-10-24  Arsen Arsenović  <arsen@aarsen.me>
+
+	* c-decl.cc (finish_function): Ignore hosted when deciding
+	whether to implicitly return zero, but check noreturn.
+	* c-objc-common.cc (c_missing_noreturn_ok_p): Loosen the
+	requirements to just MAIN_NAME_P when hosted, or `int main'
+	otherwise.
+
+2022-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR c/107305
+	PR c/107306
+	* gimple-parser.cc (c_parser_parse_gimple_body): Verify
+	the parsed IL and zap the body on error.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/107164
+	* c-decl.cc (shadow_tag_warned): If pedantic, diagnose "enum tag;"
+	with previous declaration visible.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* c-decl.cc (finish_enum): If any enumerators do not fit in int,
+	convert all to the type of the enumeration.  pedwarn if no integer
+	type fits all enumerators and default to
+	widest_integer_literal_type_node in that case.  Otherwise pedwarn
+	for type wider than intmax_t.
+	(build_enumerator): pedwarn for enumerators outside the range of
+	uintmax_t or intmax_t, and otherwise use pedwarn_c11 for
+	enumerators outside the range of int.  On overflow, attempt to
+	find a wider type that can hold the value of the next enumerator.
+	Do not convert value to type determined with
+	c_common_type_for_size.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc (convert_arguments): Don't promote __bf16 to
+	double.
+
+2022-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (build_compound_literal): Add parameter scspecs.
+	Handle storage class specifiers.
+	* c-parser.cc (c_token_starts_compound_literal)
+	(c_parser_compound_literal_scspecs): New.
+	(c_parser_postfix_expression_after_paren_type): Add parameter
+	scspecs.  Call pedwarn_c11 for use of storage class specifiers.
+	Update call to build_compound_literal.
+	(c_parser_cast_expression, c_parser_sizeof_expression)
+	(c_parser_alignof_expression): Handle storage class specifiers for
+	compound literals.  Update calls to
+	c_parser_postfix_expression_after_paren_type.
+	(c_parser_postfix_expression): Update syntax comment.
+	* c-tree.h (build_compound_literal): Update prototype.
+	* c-typeck.cc (c_mark_addressable): Diagnose taking address of
+	register compound literal.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (flexible_array_member_type_p): New function.
+	(one_element_array_type_p): Likewise.
+	(zero_length_array_type_p): Likewise.
+	(add_flexible_array_elts_to_size): Call new utility
+	routine flexible_array_member_type_p.
+	(is_flexible_array_member_p): New function.
+	(finish_struct): Set the new DECL_NOT_FLEXARRAY flag.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parse_init): Add D_EXT11 to mask if flag_no_asm
+	and not C2x.
+	(c_keyword_starts_typename, c_token_starts_declspecs)
+	(c_parser_declspecs, c_parser_objc_selector): Handle
+	RID_TYPEOF_UNQUAL.
+	(c_parser_typeof_specifier): Handle RID_TYPEOF_UNQUAL.
+	Distinguish typeof for C2x from __typeof__ for all standard
+	versions and typeof before C2x.
+	* c-typeck.cc (build_function_call_vec): Use unqualified version
+	of non-void return type.
+	(build_unary_op): Use unqualified type for increment and
+	decrement.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_assumption_clauses): Emit IFN_ASSUME
+	call for holds clause on assume construct.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* c-parser.cc (handle_assume_attribute): New function.
+	(c_parser_declaration_or_fndef): Handle assume attribute.
+	(c_parser_attribute_arguments): Add assume_attr argument,
+	if true, parse first argument as conditional expression.
+	(c_parser_gnu_attribute, c_parser_std_attribute): Adjust
+	c_parser_attribute_arguments callers.
+	(c_parser_statement_after_labels) <case RID_ATTRIBUTE>: Handle
+	assume attribute.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (struct c_omp_declare_target_attr): New type.
+	(current_omp_declare_target_attribute): Change type from
+	int to vec<c_omp_declare_target_attr, va_gc> *.
+	* c-parser.cc (c_parser_translation_unit): Adjust for that change.
+	If last pushed directive was begin declare target, use different
+	wording and simplify format strings for easier translations.
+	(c_parser_omp_clause_device_type): Uncomment
+	check_no_duplicate_clause call.
+	(c_parser_omp_declare_target): Adjust for the
+	current_omp_declare_target_attribute type change, push { -1 }.
+	Use error_at rather than warning_at for declare target with
+	only device_type clauses.
+	(OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK): Define.
+	(c_parser_omp_begin): Add begin declare target support.
+	(c_parser_omp_end): Adjust for the
+	current_omp_declare_target_attribute type change, adjust
+	diagnostics wording and simplify format strings for easier
+	translations.
+	* c-decl.cc (current_omp_declare_target_attribute): Change type from
+	int to vec<c_omp_declare_target_attr, va_gc> *.
+	(c_decl_attributes): Adjust for the
+	current_omp_declare_target_attribute type change.  If device_type
+	was present on begin declare target, add "omp declare target host"
+	and/or "omp declare target nohost" attributes.
+
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (handle_std_noreturn_attribute): New function.
+	(std_attribute_table): Add _Noreturn and noreturn.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (current_omp_begin_assumes): Declare.
+	* c-parser.cc: Include bitmap.h.
+	(c_parser_omp_end_declare_target): Rename to ...
+	(c_parser_omp_end): ... this.  Handle also end assumes.
+	(c_parser_omp_begin, c_parser_omp_assumption_clauses,
+	c_parser_omp_assumes, c_parser_omp_assume): New functions.
+	(c_parser_translation_unit): Also diagnose #pragma omp begin assumes
+	without corresponding #pragma omp end assumes.
+	(c_parser_pragma): Use %s in may only be used at file scope
+	diagnostics to decrease number of translatable messages.  Handle
+	PRAGMA_OMP_BEGIN and PRAGMA_OMP_ASSUMES.  Handle PRAGMA_OMP_END
+	rather than PRAGMA_OMP_END_DECLARE_TARGET and call c_parser_omp_end
+	for it rather than c_parser_omp_end_declare_target.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_ASSUME.
+	* c-decl.cc (current_omp_begin_assumes): Define.
+
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* c-typeck.cc (c_tree_equal): Only strip NON_LVALUE_EXPRs at the
+	start.  For CONSTANT_CLASS_P or CASE_CONVERT: return false if t1 and
+	t2 have different types.
+
+2022-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/106830
+	* c-parser.cc (c_parser_initelt): Initialize m_decimal.
+	(c_parser_cast_expression): Likewise.
+	(c_parser_alignof_expression): Likewise.
+	(c_parser_postfix_expression_after_paren_type): Likewise.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_expression): Likewise.
+	(c_parser_omp_variable_list): Likewise.
+	(c_parser_transaction_expression): Likewise.
+	* c-tree.h (c_expr::set_error): Likewise.
+	* c-typeck.cc (c_expr_sizeof_expr): Likewise.
+	(parser_build_unary_op): Likewise.
+	(parser_build_binary_op): Likewise.
+	(digest_init): Likewise.
+	(pop_init_level): Likewise.
+	* gimple-parser.cc (c_parser_gimple_call_internal): Likewise.
+
+2022-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/106947
+	* c-typeck.cc (maybe_warn_for_null_address): Don't emit stray
+	notes.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.cc (build_void_list_node): Remove.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* c-typeck.cc (c_finish_omp_clauses): Remove whole mapping node group
+	on error.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_static_assert_declaration_no_semi)
+	(c_parser_alignas_specifier, c_parser_alignof_expression): Allow
+	for C2x spellings of keywords.
+	(c_parser_postfix_expression): Handle RID_TRUE and RID_FALSE.
+
+2022-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_doacross_sink): Don't verify val
+	in omp_cur_iteration - 1 has integer_type_node type.
+
+2022-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Handle doacross.
+	(c_parser_omp_clause_depend_sink): Renamed to ...
+	(c_parser_omp_clause_doacross_sink): ... this.  Add depend_p argument.
+	Handle parsing of doacross(sink:omp_cur_iteration-1).  Use
+	OMP_CLAUSE_DOACROSS_SINK_NEGATIVE instead of
+	OMP_CLAUSE_DEPEND_SINK_NEGATIVE, build OMP_CLAUSE_DOACROSS instead
+	of OMP_CLAUSE_DEPEND and set OMP_CLAUSE_DOACROSS_DEPEND flag on it.
+	(c_parser_omp_clause_depend): Use OMP_CLAUSE_DOACROSS_SINK and
+	OMP_CLAUSE_DOACROSS_SOURCE instead of OMP_CLAUSE_DEPEND_SINK and
+	OMP_CLAUSE_DEPEND_SOURCE, build OMP_CLAUSE_DOACROSS for depend(source)
+	and set OMP_CLAUSE_DOACROSS_DEPEND on it.
+	(c_parser_omp_clause_doacross): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_depobj): Use OMP_CLAUSE_DEPEND_INVALID instead of
+	OMP_CLAUSE_DEPEND_SOURCE.
+	(c_parser_omp_for_loop): Don't diagnose here linear clause together
+	with ordered with argument.
+	(c_parser_omp_simd): Don't diagnose ordered clause with argument on
+	for simd.
+	(OMP_ORDERED_DEPEND_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DOACROSS.
+	(c_parser_omp_ordered): Handle also doacross and adjust for it
+	diagnostic wording.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_DOACROSS.
+	Don't handle OMP_CLAUSE_DEPEND_SOURCE and OMP_CLAUSE_DEPEND_SINK.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* c-parser.cc (c_parser_string_literal): Clear ret.m_decimal.
+	(c_parser_expr_no_commas): Likewise.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_binary_expression): Clear m_decimal when popping the
+	stack.
+	(c_parser_unary_expression): Clear ret.m_decimal.
+	(c_parser_has_attribute_expression): Likewise for result.
+	(c_parser_predefined_identifier): Likewise for expr.
+	(c_parser_postfix_expression): Likewise for expr.
+	Set expr.m_decimal when handling a CPP_NUMBER that was a decimal
+	token.
+	* c-tree.h (c_expr::m_decimal): New bitfield.
+	* c-typeck.cc (parser_build_binary_op): Clear result.m_decimal.
+	(parser_build_binary_op): Call check_for_xor_used_as_pow.
+
+2022-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (grokparms): Handle () in a function declaration the
+	same as (void) for C2X.
+
+2022-08-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.cc (c_parser_label): Pass attributes to do_case.
+	* c-typeck.cc (do_case): Add argument ATTRS.  Pass it to
+	c_add_case_label.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc (convert_arguments): Handle BUILT_IN_ISSIGNALING.
+
+2022-08-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.cc (c_convert) <case POINTER_TYPE>: Handle NULLPTR_TYPE.
+	Give a better diagnostic when converting to nullptr_t.
+	* c-decl.cc (c_init_decl_processing): Perform C-specific nullptr
+	initialization.
+	* c-parser.cc (c_parse_init): Maybe OR D_C2X into mask.
+	(c_parser_postfix_expression): Handle RID_NULLPTR.
+	* c-typeck.cc (null_pointer_constant_p): Return true when expr is
+	nullptr_node.
+	(build_unary_op) <case TRUTH_NOT_EXPR>: Handle NULLPTR_TYPE.
+	(build_conditional_expr): Handle the case when the second/third operand
+	is NULLPTR_TYPE and third/second operand is POINTER_TYPE.
+	(convert_for_assignment): Handle converting an expression of type
+	nullptr_t to pointer/bool.
+	(build_binary_op) <case TRUTH_XOR_EXPR>: Handle NULLPTR_TYPE.
+	<case EQ_EXPR>: Handle comparing operands of type nullptr_t.
+
+2022-08-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (start_decl): Do not diagnose initialization of
+	variable-sized objects here.
+	* c-parser.cc (c_parser_braced_init): Add argument DECL.  All
+	callers changed.
+	(c_parser_initializer): Diagnose initialization of variable-sized
+	objects other than with braced initializer.
+	(c_parser_braced_init): Use pedwarn_c11 for empty initializer
+	braces and update diagnostic text.  Diagnose initialization of
+	variable-sized objects with nonempty braces.
+	* c-typeck.cc (digest_init): Update diagnostic for initialization
+	of variable-sized objects.
+	(really_start_incremental_init, set_designator)
+	(process_init_element): Update comments.
+	(pop_init_level): Allow scalar empty initializers.
+
 2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

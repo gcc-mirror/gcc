@@ -1279,7 +1279,8 @@
   "reload_completed && !rtx_equal_p (operands[0], operands[1])"
   [(set (match_dup 0)
 	(if_then_else:SI (ne (reg:CC CSKY_CC_REGNUM) (const_int 0))
-			 (plus:SI (match_dup 0) (match_dup 2))))]
+			 (plus:SI (match_dup 0) (match_dup 2))
+			 (match_dup 0)))]
   {
     emit_insn (gen_movf (copy_rtx (operands[0]),
 			 copy_rtx (operands[1]),
@@ -1305,7 +1306,8 @@
   "reload_completed && !rtx_equal_p (operands[0], operands[1])"
   [(set (match_dup 0)
 	(if_then_else:SI (eq (reg:CC CSKY_CC_REGNUM) (const_int 0))
-			 (plus:SI (match_dup 0) (match_dup 2))))]
+			 (plus:SI (match_dup 0) (match_dup 2))
+			 (match_dup 0)))]
   {
     emit_insn (gen_movt (copy_rtx (operands[0]),
 			 copy_rtx (operands[1]),

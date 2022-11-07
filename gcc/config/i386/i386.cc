@@ -173,7 +173,7 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 32bit mode.  */
 
-int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
+int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 4, 5,
@@ -204,7 +204,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 64bit mode.  */
 
-int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
+int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 1, 2, 3, 4, 5, 6, 7,
@@ -283,7 +283,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 	17 for %st(6) (gcc regno = 14)
 	18 for %st(7) (gcc regno = 15)
 */
-int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
+int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 5, 4,
@@ -2423,6 +2423,7 @@ classify_argument (machine_mode mode, const_tree type,
       classes[1] = X86_64_SSEUP_CLASS;
       return 2;
     case E_HCmode:
+    case E_BCmode:
       classes[0] = X86_64_SSE_CLASS;
       if (!(bit_offset % 64))
 	return 1;
@@ -2506,7 +2507,9 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V2SImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2HFmode:
+    case E_V2BFmode:
     case E_V8QImode:
       classes[0] = X86_64_SSE_CLASS;
       return 1;
@@ -2990,6 +2993,7 @@ pass_in_reg:
     case E_V8QImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -3239,6 +3243,7 @@ pass_in_reg:
     case E_V8QImode:
     case E_V4HImode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SImode:
     case E_V2SFmode:
     case E_V1TImode:
@@ -4558,7 +4563,8 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v,
   /* For varargs, we do not want to skip the dummy va_dcl argument.
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
-  if (stdarg_p (fntype))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      && stdarg_p (fntype))
     ix86_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (cum->call_abi == MS_ABI)
@@ -5186,7 +5192,8 @@ standard_80387_constant_rtx (int idx)
 				       XFmode);
 }
 
-/* Return 1 if X is all bits 0 and 2 if X is all bits 1
+/* Return 1 if X is all bits 0, 2 if X is all bits 1
+   and 3 if X is all bits 1 with zero extend
    in supported SSE/AVX vector mode.  */
 
 int
@@ -5233,6 +5240,10 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
 	  break;
 	}
     }
+
+  if (vector_all_ones_zero_extend_half_operand (x, mode)
+      || vector_all_ones_zero_extend_quarter_operand (x, mode))
+    return 3;
 
   return 0;
 }
@@ -5341,6 +5352,25 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  gcc_unreachable ();
 	}
    }
+  else if (vector_all_ones_zero_extend_half_operand (x, mode))
+    {
+      if (GET_MODE_SIZE (mode) == 64)
+	{
+	  gcc_assert (TARGET_AVX512F);
+	  return "vpcmpeqd \t %t0, %t0, %t0";
+	}
+      else if (GET_MODE_SIZE (mode) == 32)
+	{
+	  gcc_assert (TARGET_AVX);
+	  return "vpcmpeqd \t %x0, %x0, %x0";
+	}
+      gcc_unreachable ();
+    }
+  else if (vector_all_ones_zero_extend_quarter_operand (x, mode))
+    {
+      gcc_assert (TARGET_AVX512F);
+      return "vpcmpeqd \t %x0, %x0, %x0";
+    }
 
   gcc_unreachable ();
 }
@@ -15627,7 +15657,7 @@ ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high)
   if (MEM_P (operands[0]))
     return rtx_equal_p (operands[0], operands[1 + high]);
   if (MEM_P (operands[1]) && MEM_P (operands[2]))
-    return TARGET_SSE3 && rtx_equal_p (operands[1], operands[2]);
+    return false;
   return true;
 }
 
@@ -15785,7 +15815,9 @@ ix86_convert_const_vector_to_integer (rtx op, machine_mode mode)
 	}
       break;
     case E_V2HFmode:
+    case E_V2BFmode:
     case E_V4HFmode:
+    case E_V4BFmode:
     case E_V2SFmode:
       for (int i = 0; i < nunits; ++i)
 	{
@@ -18452,6 +18484,15 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_PBLENDVB256:
+    case IX86_BUILTIN_BLENDVPS256:
+    case IX86_BUILTIN_BLENDVPD256:
+      /* pcmpeqb/d/q is under avx2, w/o avx2, it's veclower
+	 to scalar operations and not combined back.  */
+      if (!TARGET_AVX2)
+	break;
+
+      /* FALLTHRU.  */
     case IX86_BUILTIN_BLENDVPD:
       /* blendvpd is under sse4.1 but pcmpgtq is under sse4.2,
 	 w/o sse4.2, it's veclowered to scalar operations and
@@ -18460,10 +18501,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	break;
       /* FALLTHRU.  */
     case IX86_BUILTIN_PBLENDVB128:
-    case IX86_BUILTIN_PBLENDVB256:
     case IX86_BUILTIN_BLENDVPS:
-    case IX86_BUILTIN_BLENDVPS256:
-    case IX86_BUILTIN_BLENDVPD256:
       gcc_assert (n_args == 3);
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
@@ -22398,7 +22436,7 @@ ix86_libgcc_floating_mode_supported_p (scalar_float_mode mode)
      be defined by the C front-end for AVX512FP16 intrinsics.  We will
      issue an error in ix86_expand_move for HFmode if AVX512FP16 isn't
      enabled.  */
-  return ((mode == HFmode && TARGET_SSE2)
+  return (((mode == HFmode || mode == BFmode) && TARGET_SSE2)
 	  ? true
 	  : default_libgcc_floating_mode_supported_p (mode));
 }
@@ -22695,10 +22733,13 @@ ix86_mangle_type (const_tree type)
       && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
     return NULL;
 
+  if (type == float128_type_node || type == float64x_type_node)
+    return NULL;
+
   switch (TYPE_MODE (type))
     {
     case E_BFmode:
-      return "u6__bf16";
+      return "DF16b";
     case E_HFmode:
       /* _Float16 is "DF16_".
 	 Align with clang's decision in https://reviews.llvm.org/D33719. */
@@ -22712,55 +22753,6 @@ ix86_mangle_type (const_tree type)
     default:
       return NULL;
     }
-}
-
-/* Return the diagnostic message string if conversion from FROMTYPE to
-   TOTYPE is not allowed, NULL otherwise.  */
-
-static const char *
-ix86_invalid_conversion (const_tree fromtype, const_tree totype)
-{
-  if (element_mode (fromtype) != element_mode (totype))
-    {
-      /* Do no allow conversions to/from BFmode scalar types.  */
-      if (TYPE_MODE (fromtype) == BFmode)
-	return N_("invalid conversion from type %<__bf16%>");
-      if (TYPE_MODE (totype) == BFmode)
-	return N_("invalid conversion to type %<__bf16%>");
-    }
-
-  /* Conversion allowed.  */
-  return NULL;
-}
-
-/* Return the diagnostic message string if the unary operation OP is
-   not permitted on TYPE, NULL otherwise.  */
-
-static const char *
-ix86_invalid_unary_op (int op, const_tree type)
-{
-  /* Reject all single-operand operations on BFmode except for &.  */
-  if (element_mode (type) == BFmode && op != ADDR_EXPR)
-    return N_("operation not permitted on type %<__bf16%>");
-
-  /* Operation allowed.  */
-  return NULL;
-}
-
-/* Return the diagnostic message string if the binary operation OP is
-   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
-
-static const char *
-ix86_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
-			   const_tree type2)
-{
-  /* Reject all 2-operand operations on BFmode.  */
-  if (element_mode (type1) == BFmode
-      || element_mode (type2) == BFmode)
-    return N_("operation not permitted on type %<__bf16%>");
-
-  /* Operation allowed.  */
-  return NULL;
 }
 
 static GTY(()) tree ix86_tls_stack_chk_guard_decl;
@@ -23094,7 +23086,7 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
       /* Integer vector instructions execute in FP unit
 	 and can execute 3 additions and one multiplication per cycle.  */
       if ((ix86_tune == PROCESSOR_ZNVER1 || ix86_tune == PROCESSOR_ZNVER2
-	   || ix86_tune == PROCESSOR_ZNVER3)
+	   || ix86_tune == PROCESSOR_ZNVER3 || ix86_tune == PROCESSOR_ZNVER4)
    	  && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
 	return 1;
 
@@ -24819,15 +24811,6 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
-
-#undef TARGET_INVALID_CONVERSION
-#define TARGET_INVALID_CONVERSION ix86_invalid_conversion
-
-#undef TARGET_INVALID_UNARY_OP
-#define TARGET_INVALID_UNARY_OP ix86_invalid_unary_op
-
-#undef TARGET_INVALID_BINARY_OP
-#define TARGET_INVALID_BINARY_OP ix86_invalid_binary_op
 
 #undef TARGET_STACK_PROTECT_GUARD
 #define TARGET_STACK_PROTECT_GUARD ix86_stack_protect_guard

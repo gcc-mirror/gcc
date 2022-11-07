@@ -19,8 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -28,8 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/function-set.h"
 #include "analyzer/analyzer-selftests.h"
-#include "tristate.h"
 #include "selftest.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
@@ -82,7 +81,7 @@ public:
 		     const svalue *rhs) const final override;
 
   bool can_purge_p (state_t s) const final override;
-  pending_diagnostic *on_leak (tree var) const final override;
+  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
   /* State for a FILE * returned from fopen that hasn't been checked for
      NULL.
@@ -407,7 +406,7 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 	      {
 		tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 		sm_ctxt->warn (node, stmt, arg,
-			       new double_fclose (*this, diag_arg));
+			       make_unique<double_fclose> (*this, diag_arg));
 		sm_ctxt->set_next_state (stmt, arg, m_stop);
 	      }
 	    return true;
@@ -474,10 +473,10 @@ fileptr_state_machine::can_purge_p (state_t s) const
    fileptr_state_machine, for complaining about leaks of FILE * in
    state 'unchecked' and 'nonnull'.  */
 
-pending_diagnostic *
+std::unique_ptr<pending_diagnostic>
 fileptr_state_machine::on_leak (tree var) const
 {
-  return new file_leak (*this, var);
+  return make_unique<file_leak> (*this, var);
 }
 
 } // anonymous namespace

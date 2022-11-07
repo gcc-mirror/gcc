@@ -184,15 +184,13 @@ class token_streamer
   bool avoid_paste;
   bool do_line_adjustments;
   bool in_pragma;
-  bool line_marker_emitted;
 
  public:
   token_streamer (cpp_reader *pfile)
     :avoid_paste (false),
     do_line_adjustments (cpp_get_options (pfile)->lang != CLK_ASM
 			 && !flag_no_line_commands),
-    in_pragma (false),
-    line_marker_emitted (false)
+    in_pragma (false)
     {
       gcc_assert (!print.streamer);
       print.streamer = this;
@@ -227,7 +225,14 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
   if (token->type == CPP_EOF)
     return;
 
+  /* Keep track when we move into and out of system locations.  */
+  const bool is_system_token = in_system_header_at (loc);
+  const bool system_state_changed
+    = (is_system_token != print.prev_was_system_token);
+  print.prev_was_system_token = is_system_token;
+
   /* Subtle logic to output a space if and only if necessary.  */
+  bool line_marker_emitted = false;
   if (avoid_paste)
     {
       unsigned src_line = LOCATION_LINE (loc);
@@ -301,19 +306,17 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
       if (do_line_adjustments
 	  && !in_pragma
 	  && !line_marker_emitted
-	  && print.prev_was_system_token != !!in_system_header_at (loc)
+	  && system_state_changed
 	  && !is_location_from_builtin_token (loc))
 	/* The system-ness of this token is different from the one of
 	   the previous token.  Let's emit a line change to mark the
 	   new system-ness before we emit the token.  */
 	{
-	  do_line_change (pfile, token, loc, false);
-	  print.prev_was_system_token = !!in_system_header_at (loc);
+	  line_marker_emitted = do_line_change (pfile, token, loc, false);
 	}
       if (!in_pragma || should_output_pragmas ())
 	{
 	  cpp_output_token (token, print.outf);
-	  line_marker_emitted = false;
 	  print.printed = true;
 	}
     }
@@ -430,7 +433,15 @@ scan_translation_unit_directives_only (cpp_reader *pfile)
     lang_hooks.preprocess_token (pfile, NULL, streamer.filter);
 }
 
-/* Adjust print.src_line for newlines embedded in output.  */
+/* Adjust print.src_line for newlines embedded in output.  For example, if a raw
+   string literal contains newlines, then we need to increment our notion of the
+   current line to keep in sync and avoid outputting a line marker
+   unnecessarily.  If a raw string literal containing newlines is the result of
+   macro expansion, then we have the opposite problem, where the token takes up
+   more lines in the output than it did in the input, and hence a line marker is
+   needed to restore the correct state for subsequent lines.  In this case,
+   incrementing print.src_line still does the job, because it will cause us to
+   emit the line marker the next time a token is streamed.  */
 static void
 account_for_newlines (const unsigned char *str, size_t len)
 {

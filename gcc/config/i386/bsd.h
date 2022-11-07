@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_LONG "\t.long\t"
 #define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
 
-/* This was suggested, but it shouldn't be right for DBX output. -- RMS
+/* This was suggested, but it shouldn't be right for debugger output. -- RMS
    #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) */
 
 
@@ -91,9 +91,3 @@ along with GCC; see the file COPYING3.  If not see
 /* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"
-
-/* Sequent has some changes in the format of DBX symbols.  */
-#define DBX_NO_XREFS 1
-
-/* Don't split DBX symbols into continuations.  */
-#define DBX_CONTIN_LENGTH 0

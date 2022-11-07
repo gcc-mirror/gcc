@@ -172,7 +172,7 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER] =
 /* Arrays that map GCC register numbers to debugger register numbers,
    '-1' means that is INVALID_REGNUM.
    TODO: which rules according to here ?  */
-const int csky_dbx_regno[FIRST_PSEUDO_REGISTER] =
+const int csky_debugger_regno[FIRST_PSEUDO_REGISTER] =
 {
   0,  1,  2,  3,  4,  5,  6,  7,
   8,  9,  10, 11, 12, 13, 14, 15,
@@ -2086,7 +2086,8 @@ csky_setup_incoming_varargs (cumulative_args_t pcum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *pcum;
-  csky_function_arg_advance (local_cum_v, arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    csky_function_arg_advance (local_cum_v, arg);
   regs_to_push = CSKY_NPARM_REGS - local_cum.reg;
   if (regs_to_push)
     *pretend_size  = regs_to_push * UNITS_PER_WORD;
@@ -6342,9 +6343,7 @@ csky_emit_compare_float (enum rtx_code code, rtx op0, rtx op1)
     case GT:
     case LT:
     case LE:
-      if (op1 == CONST0_RTX (mode) && (CSKY_ISA_FEATURE_GET(fpv2_sf)
-				       || CSKY_ISA_FEATURE_GET(fpv2_df)
-				       || CSKY_ISA_FEATURE_GET(fpv2_divd)))
+      if (op1 == CONST0_RTX (mode) && TARGET_SUPPORT_FPV2)
 	op1 = force_reg (mode, op1);
       break;
     case ORDERED:
@@ -7302,7 +7301,7 @@ csky_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
 void
 csky_init_builtins (void)
 {
-  /* Inint fp16.  */
+  /* Init fp16.  */
   static tree csky_floatHF_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (csky_floatHF_type_node) = GET_MODE_PRECISION (HFmode);
   layout_type (csky_floatHF_type_node);
@@ -7315,10 +7314,10 @@ csky_init_builtins (void)
 static const char *
 csky_mangle_type (const_tree type)
 {
-  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-      && DECL_NAME (TYPE_NAME (type))
-      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))), "__fp16"))
-    return "__fp16";
+  if (TREE_CODE (type) == REAL_TYPE
+      && TYPE_PRECISION (type) == 16
+      && TYPE_MAIN_VARIANT (type) != float16_type_node)
+    return "Dh";
 
   /* Use the default mangling.  */
   return NULL;

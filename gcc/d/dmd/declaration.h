@@ -59,7 +59,6 @@ struct AttributeViolation;
     #define STCref                0x40000ULL    /// `ref`
     #define STCscope              0x80000ULL    /// `scope`
 
-    #define STCmaybescope         0x100000ULL    /// parameter might be `scope`
     #define STCscopeinferred      0x200000ULL    /// `scope` has been inferred and should not be part of mangling, `scope` must also be set
     #define STCreturn             0x400000ULL    /// 'return ref' or 'return scope' for function parameters
     #define STCreturnScope        0x800000ULL    /// if `ref return scope` then resolve to `ref` and `return scope`
@@ -140,6 +139,7 @@ public:
     bool isWild() const         { return (storage_class & STCwild) != 0; }
     bool isAuto() const         { return (storage_class & STCauto) != 0; }
     bool isScope() const        { return (storage_class & STCscope) != 0; }
+    bool isReturn() const       { return (storage_class & STCreturn) != 0; }
     bool isSynchronized() const { return (storage_class & STCsynchronized) != 0; }
     bool isParameter() const    { return (storage_class & STCparameter) != 0; }
     bool isDeprecated() const override final { return (storage_class & STCdeprecated) != 0; }
@@ -166,9 +166,9 @@ class TupleDeclaration final : public Declaration
 {
 public:
     Objects *objects;
-    bool isexp;                 // true: expression tuple
-
     TypeTuple *tupletype;       // !=NULL if this is a type tuple
+    bool isexp;                 // true: expression tuple
+    bool building;              // it's growing in AliasAssign semantic
 
     TupleDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
@@ -211,7 +211,7 @@ public:
     Dsymbol *aliassym;
 
     const char *kind() const override;
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     bool overloadInsert(Dsymbol *s) override;
 
     Dsymbol *toAlias() override;
@@ -264,8 +264,8 @@ public:
     bool overlapped(bool v);
     bool overlapUnsafe() const; // if it is an overlapping field and the overlaps are unsafe
     bool overlapUnsafe(bool v);
-    bool doNotInferScope() const; // do not infer 'scope' for this variable
-    bool doNotInferScope(bool v);
+    bool maybeScope() const; // allow inferring 'scope' for this variable
+    bool maybeScope(bool v);
     bool doNotInferReturn() const; // do not infer 'return' for this variable
     bool doNotInferReturn(bool v);
     bool isArgDtorVar() const; // temporary created to handle scope destruction of a function argument
@@ -616,7 +616,54 @@ public:
 
     AttributeViolation* safetyViolation;
 
-    unsigned flags;                     // FUNCFLAGxxxxx
+    // Formerly FUNCFLAGS
+    uint32_t flags;
+    bool purityInprocess() const;
+    bool purityInprocess(bool v);
+    bool safetyInprocess() const;
+    bool safetyInprocess(bool v);
+    bool nothrowInprocess() const;
+    bool nothrowInprocess(bool v);
+    bool nogcInprocess() const;
+    bool nogcInprocess(bool v);
+    bool returnInprocess() const;
+    bool returnInprocess(bool v);
+    bool inlineScanned() const;
+    bool inlineScanned(bool v);
+    bool inferScope() const;
+    bool inferScope(bool v);
+    bool hasCatches() const;
+    bool hasCatches(bool v);
+    bool isCompileTimeOnly() const;
+    bool isCompileTimeOnly(bool v);
+    bool printf() const;
+    bool printf(bool v);
+    bool scanf() const;
+    bool scanf(bool v);
+    bool noreturn() const;
+    bool noreturn(bool v);
+    bool isNRVO() const;
+    bool isNRVO(bool v);
+    bool isNaked() const;
+    bool isNaked(bool v);
+    bool isGenerated() const;
+    bool isGenerated(bool v);
+    bool isIntroducing() const;
+    bool isIntroducing(bool v);
+    bool hasSemantic3Errors() const;
+    bool hasSemantic3Errors(bool v);
+    bool hasNoEH() const;
+    bool hasNoEH(bool v);
+    bool inferRetType() const;
+    bool inferRetType(bool v);
+    bool hasDualContext() const;
+    bool hasDualContext(bool v);
+    bool hasAlwaysInlines() const;
+    bool hasAlwaysInlines(bool v);
+    bool isCrtCtor() const;
+    bool isCrtCtor(bool v);
+    bool isCrtDtor() const;
+    bool isCrtDtor(bool v);
 
     // Data for a function declaration that is needed for the Objective-C
     // integration.
@@ -626,7 +673,7 @@ public:
     FuncDeclaration *syntaxCopy(Dsymbol *) override;
     bool functionSemantic();
     bool functionSemantic3();
-    bool equals(const RootObject *o) const override final;
+    bool equals(const RootObject * const o) const override final;
 
     int overrides(FuncDeclaration *fd);
     int findVtblIndex(Dsymbols *vtbl, int dim);
@@ -656,22 +703,6 @@ public:
 
     bool isNogc();
     bool isNogcBypassingInference();
-    bool isNRVO() const;
-    void isNRVO(bool v);
-    bool isNaked() const;
-    void isNaked(bool v);
-    bool isGenerated() const;
-    void isGenerated(bool v);
-    bool isIntroducing() const;
-    bool hasSemantic3Errors() const;
-    bool hasNoEH() const;
-    bool inferRetType() const;
-    bool hasDualContext() const;
-    bool hasAlwaysInlines() const;
-    bool isCrtCtor() const;
-    void isCrtCtor(bool v);
-    bool isCrtDtor() const;
-    void isCrtDtor(bool v);
 
     virtual bool isNested() const;
     AggregateDeclaration *isThis() override;

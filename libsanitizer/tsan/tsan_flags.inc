@@ -23,10 +23,6 @@ TSAN_FLAG(bool, enable_annotations, true,
 TSAN_FLAG(bool, suppress_equal_stacks, true,
           "Suppress a race report if we've already output another race report "
           "with the same stack.")
-TSAN_FLAG(bool, suppress_equal_addresses, true,
-          "Suppress a race report if we've already output another race report "
-          "on the same address.")
-
 TSAN_FLAG(bool, report_bugs, true,
           "Turns off bug reporting entirely (useful for benchmarking).")
 TSAN_FLAG(bool, report_thread_leaks, true, "Report thread leaks at exit?")
@@ -74,9 +70,9 @@ TSAN_FLAG(int, io_sync, 1,
 TSAN_FLAG(bool, die_after_fork, true,
           "Die after multi-threaded fork if the child creates new threads.")
 TSAN_FLAG(const char *, suppressions, "", "Suppressions file name.")
-TSAN_FLAG(bool, ignore_interceptors_accesses, SANITIZER_MAC ? true : false,
+TSAN_FLAG(bool, ignore_interceptors_accesses, SANITIZER_APPLE ? true : false,
           "Ignore reads and writes from all interceptors.")
-TSAN_FLAG(bool, ignore_noninstrumented_modules, SANITIZER_MAC ? true : false,
+TSAN_FLAG(bool, ignore_noninstrumented_modules, SANITIZER_APPLE ? true : false,
           "Interceptors should only detect races when called from instrumented "
           "modules.")
 TSAN_FLAG(bool, shared_ptr_interceptor, true,

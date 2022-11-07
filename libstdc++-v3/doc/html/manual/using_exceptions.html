@@ -100,7 +100,62 @@ exception neutrality and exception safety.
       The constructors of <code class="classname">thread</code> that take a
       callable function argument swallow all exceptions resulting from
       executing the function argument.
-    </p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.no"></a>Doing without</h3></div></div></div><p>
+    </p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.alloc"></a>Memory allocation</h3></div></div></div><p>
+    When the program throws an exception the runtime will obtain storage for
+    a <code class="code">__cxa_exception</code> header and the thrown object itself.
+    Libstdc++ will try to use <code class="code">malloc</code> to obtain storage,
+    but provides an emergency buffer to be used if malloc fails,
+    as described by the <a class="link" href="https://itanium-cxx-abi.github.io/cxx-abi/abi-eh.html#imp-emergency" target="_top">Itanium
+    exception handling ABI</a>.
+  </p><p>
+    Contrary to the ABI, the libstdc++ emergency buffer is not always 64kB,
+    and does not always allocate 1kB chunks. The buffer is used as a pool for
+    variable-sized allocations, so that it doesn't waste space for smaller
+    exception objects such as <code class="code">std::bad_alloc</code>.
+    The total size of the buffer is scaled appropriately for the target.
+    Specifically it depends on <code class="code">sizeof(void*)</code>, so that a 64-bit
+    system uses a larger pool than a 32-bit system. This is done because for
+    32-bit systems the exception objects (and the exception header) require
+    less space, and core counts and thread counts are typically lower as well.
+  </p><p>
+    By default, libstdc++ will use <code class="code">malloc</code> to allocate the buffer
+    on program startup.
+    <a class="xref" href="configure.html" title="Configure">Configuring</a> libstdc++ with the
+    <code class="code">--enable-libstdcxx-static-eh-pool</code> option will make it
+    use a static buffer instead of using <code class="code">malloc</code>.
+  </p><p>
+    The buffer size is chosen automatically, but can be overridden
+    by configuring with <code class="code">--with-libstdcxx-eh-pool-obj-count=NUM</code>,
+    where <code class="code">NUM</code> is the number of simultaneous allocations that
+    should be supported. The size of the pool will be sufficient for
+    <code class="code">NUM</code> exceptions of <code class="code">6 * sizeof(void*)</code> bytes,
+    plus another <code class="code">NUM</code> exceptions captured in
+    <code class="classname">std::exception_ptr</code> and rethrown using
+    <code class="code">std::rethrow_exception</code>. The buffer size determined by the
+    obj-count value applies whether the buffer is reserved as static storage
+    or is allocated dynamically.
+    Setting obj-count to zero will disable the pool, so that no emergency
+    buffer is present.
+  </p><p>
+    For a dynamic buffer, the default size can also be changed at runtime,
+    per-process, via the <code class="literal">GLIBCXX_TUNABLES</code> environment
+    variable.
+    The <code class="literal">GLIBCXX_TUNABLES</code> environment variable should be
+    a string of colon-separated <span class="emphasis"><em>name=value</em></span> pairs. The
+    following names will be recognized, with the specified semantics:
+  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="code">glibcxx.eh_pool.obj_count</code></span></dt><dd>
+    The number of exception objects to provide space for in the pool.
+    The value must be a non-negative integer and has the same meaning as the
+    <code class="code">--with-libstdcxx-eh-pool-obj-count</code> option for
+    <code class="filename">configure</code>.
+  </dd><dt><span class="term"><code class="code">glibcxx.eh_pool.obj_size</code></span></dt><dd>
+    The expected size of exception objects that the pool might get used for.
+    The value must be a positive integer, and is measured in units of
+    <code class="code">sizeof(void*)</code>. The default value is <code class="literal">6</code>
+    which is large enough to store any exception type thrown by libstdc++.
+    Exceptions larger than this can still be allocated from the pool,
+    but larger exceptions will exhaust the pool more rapidly.
+  </dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.no"></a>Doing without</h3></div></div></div><p>
     C++ is a language that strives to be as efficient as is possible
     in delivering features. As such, considerable care is used by both
     language implementer and designers to make sure unused features
@@ -265,7 +320,7 @@ is called.
   }
   catch(...)
   { this-&gt;_M_setstate(ios_base::badbit); }
-</pre></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="using.exceptions.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.2"></a><p><span class="title"><em>
+</pre></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="using.exceptions.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.2"></a><p><span class="title"><em>
 	<a class="link" href="http://www.opengroup.org/austin/" target="_top">
 	System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
 	</a>
@@ -274,40 +329,44 @@ is called.
     . </span><span class="copyright">Copyright © 2008 
 	The Open Group/The Institute of Electrical and Electronics
 	Engineers, Inc.
-      . </span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.3"></a><p><span class="title"><em>
+      . </span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.3"></a><p><span class="title"><em>
 	<a class="link" href="https://www.boost.org/community/error_handling.html" target="_top">
 	Error and Exception Handling
 	</a>
       </em>. </span><span class="author"><span class="firstname">David</span> <span class="surname">Abrahams </span>. </span><span class="publisher"><span class="publishername">
 	Boost
-      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.4"></a><p><span class="title"><em>
+      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.4"></a><p><span class="title"><em>
 	<a class="link" href="https://www.boost.org/community/exception_safety.html" target="_top">
 	Exception-Safety in Generic Components
 	</a>
       </em>. </span><span class="author"><span class="firstname">David</span> <span class="surname">Abrahams</span>. </span><span class="publisher"><span class="publishername">
 	Boost
-      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.5"></a><p><span class="title"><em>
+      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.5"></a><p><span class="title"><em>
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf" target="_top">
 	Standard Library Exception Policy
 	</a>
       </em>. </span><span class="author"><span class="firstname">Matt</span> <span class="surname">Austern</span>. </span><span class="publisher"><span class="publishername">
 	WG21 N1077
-      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.6"></a><p><span class="title"><em>
+      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.6"></a><p><span class="title"><em>
 	<a class="link" href="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html" target="_top">
 	ia64 c++ abi exception handling
 	</a>
       </em>. </span><span class="author"><span class="firstname">Richard</span> <span class="surname">Henderson</span>. </span><span class="publisher"><span class="publishername">
 	GNU
-      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.7"></a><p><span class="title"><em>
+      . </span></span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.7"></a><p><span class="title"><em>
 	<a class="link" href="https://www.stroustrup.com/3rd_safe.pdf" target="_top">
 	Appendix E: Standard-Library Exception Safety
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.8"></a><p><span class="citetitle"><em class="citetitle">
+      </em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.8"></a><p><span class="citetitle"><em class="citetitle">
       Exceptional C++
     </em>. </span><span class="pagenums">
       Exception-Safety Issues and Techniques
-    . </span><span class="author"><span class="firstname">Herb</span> <span class="surname">Sutter</span>. </span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.9.9"></a><p><span class="title"><em>
+    . </span><span class="author"><span class="firstname">Herb</span> <span class="surname">Sutter</span>. </span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.9"></a><p><span class="title"><em>
 	<a class="link" href="http://gcc.gnu.org/PR25191" target="_top">
       GCC Bug 25191: exception_defines.h #defines try/catch
+	</a>
+      </em>. </span></p></div><div class="biblioentry"><a id="id-1.3.3.4.9.10.10"></a><p><span class="title"><em>
+	<a class="link" href="https://www.gnu.org/software/libc/manual/html_node/Tunables.html" target="_top">
+      Tunables, The GNU C Library
 	</a>
       </em>. </span></p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_concurrency.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="debug.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Concurrency </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Debugging Support</td></tr></table></div></body></html>

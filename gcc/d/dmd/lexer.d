@@ -1197,9 +1197,9 @@ class Lexer
     /*******************************************
      * Parse escape sequence.
      */
-    private uint escapeSequence()
+    private uint escapeSequence(out dchar c2)
     {
-        return Lexer.escapeSequence(token.loc, p, Ccompile);
+        return Lexer.escapeSequence(token.loc, p, Ccompile, c2);
     }
 
     /********
@@ -1211,10 +1211,11 @@ class Lexer
      *  sequence = pointer to string with escape sequence to parse. Updated to
      *             point past the end of the escape sequence
      *  Ccompile = true for compile C11 escape sequences
+     *  c2 = returns second `dchar` of html entity with 2 code units, otherwise stays `dchar.init`
      * Returns:
      *  the escape sequence as a single character
      */
-    private dchar escapeSequence(const ref Loc loc, ref const(char)* sequence, bool Ccompile)
+    private dchar escapeSequence(const ref Loc loc, ref const(char)* sequence, bool Ccompile, out dchar c2)
     {
         const(char)* p = sequence; // cache sequence reference on stack
         scope(exit) sequence = p;
@@ -1326,12 +1327,16 @@ class Lexer
                 switch (*p)
                 {
                 case ';':
-                    c = HtmlNamedEntity(idstart[0 .. p - idstart]);
-                    if (c == ~0)
+                    auto entity = HtmlNamedEntity(idstart[0 .. p - idstart]);
+                    c = entity[0];
+                    if (entity == entity.init)
                     {
                         error(loc, "unnamed character entity &%.*s;", cast(int)(p - idstart), idstart);
                         c = '?';
                     }
+                    if (entity[1] != entity.init[1])
+                        c2 = entity[1];
+
                     p++;
                     break;
                 default:
@@ -1665,6 +1670,7 @@ class Lexer
         while (1)
         {
             dchar c = *p++;
+            dchar c2;
             switch (c)
             {
             case '\\':
@@ -1673,15 +1679,19 @@ class Lexer
                 case '&':
                     if (Ccompile)
                         goto default;
-                    goto case;
 
+                    c = escapeSequence(c2);
+                    stringbuffer.writeUTF8(c);
+                    if (c2 != dchar.init)
+                        stringbuffer.writeUTF8(c2);
+                    continue;
                 case 'u':
                 case 'U':
-                    c = escapeSequence();
+                    c = escapeSequence(c2);
                     stringbuffer.writeUTF8(c);
                     continue;
                 default:
-                    c = escapeSequence();
+                    c = escapeSequence(c2);
                     break;
                 }
                 break;
@@ -1746,22 +1756,26 @@ class Lexer
         //printf("Lexer::charConstant\n");
         p++;
         dchar c = *p++;
+        dchar c2;
         switch (c)
         {
         case '\\':
             switch (*p)
             {
             case 'u':
-                t.unsvalue = escapeSequence();
                 tk = TOK.wcharLiteral;
-                break;
+                goto default;
             case 'U':
             case '&':
-                t.unsvalue = escapeSequence();
                 tk = TOK.dcharLiteral;
-                break;
+                goto default;
             default:
-                t.unsvalue = escapeSequence();
+                t.unsvalue = escapeSequence(c2);
+                if (c2 != c2.init)
+                {
+                    error("html entity requires 2 code units, use a string instead of a character");
+                    t.unsvalue = '?';
+                }
                 break;
             }
             break;
@@ -1978,8 +1992,6 @@ class Lexer
                 break;
             case 'b':
             case 'B':
-                if (Ccompile)
-                    error("binary constants not allowed");
                 ++p;
                 base = 2;
                 break;
@@ -2531,7 +2543,7 @@ class Lexer
         auto sbufptr = cast(const(char)*)stringbuffer[].ptr;
         TOK result;
         bool isOutOfRange = false;
-        t.floatvalue = (isWellformedString ? CTFloat.parse(sbufptr, &isOutOfRange) : CTFloat.zero);
+        t.floatvalue = (isWellformedString ? CTFloat.parse(sbufptr, isOutOfRange) : CTFloat.zero);
         switch (*p)
         {
         case 'F':
@@ -2582,8 +2594,13 @@ class Lexer
         {
             /* C11 6.4.4.2 doesn't actually care if it is not representable if it is not hex
              */
-            const char* suffix = (result == TOK.float32Literal || result == TOK.imaginary32Literal) ? "f" : "";
-            error(scanloc, "number `%s%s` is not representable", sbufptr, suffix);
+            const char* suffix = result == TOK.float32Literal ? "f" : result == TOK.float80Literal ? "L" : "";
+            const char* type = [TOK.float32Literal: "`float`".ptr,
+                                TOK.float64Literal: "`double`".ptr,
+                                TOK.float80Literal: "`real` for the current target".ptr][result];
+            error(scanloc, "number `%s%s` is not representable as a %s", sbufptr, suffix, type);
+            const char* extra = result == TOK.float64Literal ? "`real` literals can be written using the `L` suffix. " : "";
+            errorSupplemental(scanloc, "%shttps://dlang.org/spec/lex.html#floatliteral", extra);
         }
         debug
         {
@@ -3180,8 +3197,9 @@ unittest
     static void test(T)(string sequence, T expected, bool Ccompile = false)
     {
         auto p = cast(const(char)*)sequence.ptr;
+        dchar c2;
         Lexer lexer = new Lexer();
-        assert(expected == lexer.escapeSequence(Loc.initial, p, Ccompile));
+        assert(expected == lexer.escapeSequence(Loc.initial, p, Ccompile, c2));
         assert(p == sequence.ptr + sequence.length);
     }
 
@@ -3248,7 +3266,8 @@ unittest
         expected = expectedError;
         auto p = cast(const(char)*)sequence.ptr;
         Lexer lexer = new Lexer();
-        auto actualReturnValue = lexer.escapeSequence(Loc.initial, p, Ccompile);
+        dchar c2;
+        auto actualReturnValue = lexer.escapeSequence(Loc.initial, p, Ccompile, c2);
         assert(gotError);
         assert(expectedReturnValue == actualReturnValue);
 

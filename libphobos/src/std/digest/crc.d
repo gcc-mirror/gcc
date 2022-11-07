@@ -555,7 +555,7 @@ ubyte[8] crc64ECMAOf(T...)(T data)
 }
 
 /**
- * This is a convenience alias for $(REF digest, std,digest,digest) using the
+ * This is a convenience alias for $(REF digest, std,digest) using the
  * CRC64-ISO implementation.
  *
  * Params:
@@ -611,7 +611,7 @@ alias CRC32Digest = WrapperDigest!CRC32;
  * OOP API CRC64-ECMA implementation.
  * See `std.digest` for differences between template and OOP API.
  *
- * This is an alias for $(D $(REF WrapperDigest, std,digest,digest)!CRC64ECMA),
+ * This is an alias for $(D $(REF WrapperDigest, std,digest)!CRC64ECMA),
  * see there for more information.
  */
 alias CRC64ECMADigest = WrapperDigest!CRC64ECMA;
@@ -620,7 +620,7 @@ alias CRC64ECMADigest = WrapperDigest!CRC64ECMA;
  * OOP API CRC64-ISO implementation.
  * See `std.digest` for differences between template and OOP API.
  *
- * This is an alias for $(D $(REF WrapperDigest, std,digest,digest)!CRC64ISO),
+ * This is an alias for $(D $(REF WrapperDigest, std,digest)!CRC64ISO),
  * see there for more information.
  */
 alias CRC64ISODigest = WrapperDigest!CRC64ISO;
@@ -628,7 +628,7 @@ alias CRC64ISODigest = WrapperDigest!CRC64ISO;
 ///
 @safe unittest
 {
-    //Simple example, hashing a string using Digest.digest helper function
+    //Simple example, hashing a string using CRC32Digest.digest helper function
     auto crc = new CRC32Digest();
     ubyte[] hash = crc.digest("abc");
     //Let's get a hash string

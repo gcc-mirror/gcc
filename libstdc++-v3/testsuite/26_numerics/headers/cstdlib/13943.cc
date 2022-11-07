@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// Math-related cstdlib bits are not freestanding.
+// { dg-require-effective-target hosted }
 
 #include <cstdlib>
 #include <testsuite_hooks.h>

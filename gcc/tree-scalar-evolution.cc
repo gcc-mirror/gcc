@@ -577,6 +577,51 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
   return res;
 }
 
+
+/* Depth first search algorithm.  */
+
+enum t_bool {
+  t_false,
+  t_true,
+  t_dont_know
+};
+
+class scev_dfs
+{
+public:
+  scev_dfs (class loop *loop_, gphi *phi_, tree init_cond_)
+      : loop (loop_), loop_phi_node (phi_), init_cond (init_cond_) {}
+  t_bool get_ev (tree *, tree);
+
+private:
+  t_bool follow_ssa_edge_expr (gimple *, tree, tree *, int);
+  t_bool follow_ssa_edge_binary (gimple *at_stmt,
+				 tree type, tree rhs0, enum tree_code code,
+				 tree rhs1, tree *evolution_of_loop, int limit);
+  t_bool follow_ssa_edge_in_condition_phi_branch (int i,
+						  gphi *condition_phi,
+						  tree *evolution_of_branch,
+						  tree init_cond, int limit);
+  t_bool follow_ssa_edge_in_condition_phi (gphi *condition_phi,
+					   tree *evolution_of_loop, int limit);
+  t_bool follow_ssa_edge_inner_loop_phi (gphi *loop_phi_node,
+					 tree *evolution_of_loop, int limit);
+  tree add_to_evolution (tree chrec_before, enum tree_code code,
+			 tree to_add, gimple *at_stmt);
+  tree add_to_evolution_1 (tree chrec_before, tree to_add, gimple *at_stmt);
+
+  class loop *loop;
+  gphi *loop_phi_node;
+  tree init_cond;
+};
+
+t_bool
+scev_dfs::get_ev (tree *ev_fn, tree arg)
+{
+  *ev_fn = chrec_dont_know;
+  return follow_ssa_edge_expr (loop_phi_node, arg, ev_fn, 0);
+}
+
 /* Helper function for add_to_evolution.  Returns the evolution
    function for an assignment of the form "a = b + c", where "a" and
    "b" are on the strongly connected component.  CHREC_BEFORE is the
@@ -587,12 +632,12 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
    evolution the expression TO_ADD, otherwise construct an evolution
    part for this loop.  */
 
-static tree
-add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
-		    gimple *at_stmt)
+tree
+scev_dfs::add_to_evolution_1 (tree chrec_before, tree to_add, gimple *at_stmt)
 {
   tree type, left, right;
-  class loop *loop = get_loop (cfun, loop_nb), *chloop;
+  unsigned loop_nb = loop->num;
+  class loop *chloop;
 
   switch (TREE_CODE (chrec_before))
     {
@@ -631,7 +676,7 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 	  gcc_assert (flow_loop_nested_p (loop, chloop));
 
 	  /* Search the evolution in LOOP_NB.  */
-	  left = add_to_evolution_1 (loop_nb, CHREC_LEFT (chrec_before),
+	  left = add_to_evolution_1 (CHREC_LEFT (chrec_before),
 				     to_add, at_stmt);
 	  right = CHREC_RIGHT (chrec_before);
 	  right = chrec_convert_rhs (chrec_type (left), right, at_stmt);
@@ -646,6 +691,17 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 
       left = chrec_before;
       right = chrec_convert_rhs (chrec_type (left), to_add, at_stmt);
+      /* When we add the first evolution we need to replace the symbolic
+	 evolution we've put in when the DFS reached the loop PHI node
+	 with the initial value.  There's only a limited cases of
+	 extra operations ontop of that symbol allowed, namely
+	 sign-conversions we can look through.  For other cases we leave
+	 the symbolic initial condition which causes build_polynomial_chrec
+	 to return chrec_dont_know.  See PR42512, PR66375 and PR107176 for
+	 cases we mishandled before.  */
+      STRIP_NOPS (chrec_before);
+      if (chrec_before == gimple_phi_result (loop_phi_node))
+	left = fold_convert (TREE_TYPE (left), init_cond);
       return build_polynomial_chrec (loop_nb, left, right);
     }
 }
@@ -784,9 +840,9 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 
 */
 
-static tree
-add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
-		  tree to_add, gimple *at_stmt)
+tree
+scev_dfs::add_to_evolution (tree chrec_before, enum tree_code code,
+			    tree to_add, gimple *at_stmt)
 {
   tree type = chrec_type (to_add);
   tree res = NULL_TREE;
@@ -803,7 +859,7 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(add_to_evolution \n");
-      fprintf (dump_file, "  (loop_nb = %d)\n", loop_nb);
+      fprintf (dump_file, "  (loop_nb = %d)\n", loop->num);
       fprintf (dump_file, "  (chrec_before = ");
       print_generic_expr (dump_file, chrec_before);
       fprintf (dump_file, ")\n  (to_add = ");
@@ -816,7 +872,7 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
 				  ? build_real (type, dconstm1)
 				  : build_int_cst_type (type, -1));
 
-  res = add_to_evolution_1 (loop_nb, chrec_before, to_add, at_stmt);
+  res = add_to_evolution_1 (chrec_before, to_add, at_stmt);
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
@@ -828,64 +884,14 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
   return res;
 }
 
-
-
-/* This section selects the loops that will be good candidates for the
-   scalar evolution analysis.  For the moment, greedily select all the
-   loop nests we could analyze.  */
-
-/* For a loop with a single exit edge, return the COND_EXPR that
-   guards the exit edge.  If the expression is too difficult to
-   analyze, then give up.  */
-
-gcond *
-get_loop_exit_condition (const class loop *loop)
-{
-  gcond *res = NULL;
-  edge exit_edge = single_exit (loop);
-
-  if (dump_file && (dump_flags & TDF_SCEV))
-    fprintf (dump_file, "(get_loop_exit_condition \n  ");
-
-  if (exit_edge)
-    {
-      gimple *stmt;
-
-      stmt = last_stmt (exit_edge->src);
-      if (gcond *cond_stmt = safe_dyn_cast <gcond *> (stmt))
-	res = cond_stmt;
-    }
-
-  if (dump_file && (dump_flags & TDF_SCEV))
-    {
-      print_gimple_stmt (dump_file, res, 0);
-      fprintf (dump_file, ")\n");
-    }
-
-  return res;
-}
-
-
-/* Depth first search algorithm.  */
-
-enum t_bool {
-  t_false,
-  t_true,
-  t_dont_know
-};
-
-
-static t_bool follow_ssa_edge_expr (class loop *loop, gimple *, tree, gphi *,
-				    tree *, int);
 
 /* Follow the ssa edge into the binary expression RHS0 CODE RHS1.
    Return true if the strongly connected component has been found.  */
 
-static t_bool
-follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
-			tree type, tree rhs0, enum tree_code code, tree rhs1,
-			gphi *halting_phi, tree *evolution_of_loop,
-			int limit)
+t_bool
+scev_dfs::follow_ssa_edge_binary (gimple *at_stmt, tree type, tree rhs0,
+				  enum tree_code code, tree rhs1,
+				  tree *evolution_of_loop, int limit)
 {
   t_bool res = t_false;
   tree evol;
@@ -907,23 +913,18 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 	      limit++;
 
 	      evol = *evolution_of_loop;
-	      evol = add_to_evolution
-		  (loop->num,
-		   chrec_convert (type, evol, at_stmt),
-		   code, rhs1, at_stmt);
-	      res = follow_ssa_edge_expr
-		(loop, at_stmt, rhs0, halting_phi, &evol, limit);
+	      res = follow_ssa_edge_expr (at_stmt, rhs0, &evol, limit);
 	      if (res == t_true)
-		*evolution_of_loop = evol;
+		*evolution_of_loop = add_to_evolution
+		    (chrec_convert (type, evol, at_stmt), code, rhs1, at_stmt);
 	      else if (res == t_false)
 		{
-		  *evolution_of_loop = add_to_evolution
-		      (loop->num,
-		       chrec_convert (type, *evolution_of_loop, at_stmt),
-		       code, rhs0, at_stmt);
 		  res = follow_ssa_edge_expr
-		    (loop, at_stmt, rhs1, halting_phi,
-		     evolution_of_loop, limit);
+		    (at_stmt, rhs1, evolution_of_loop, limit);
+		  if (res == t_true)
+		    *evolution_of_loop = add_to_evolution
+			(chrec_convert (type, *evolution_of_loop, at_stmt),
+			 code, rhs0, at_stmt);
 		}
 	    }
 
@@ -935,13 +936,11 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 	{
 	  /* Match an assignment under the form:
 	     "a = ... + c".  */
-	  *evolution_of_loop = add_to_evolution
-	      (loop->num, chrec_convert (type, *evolution_of_loop,
-					 at_stmt),
-	       code, rhs0, at_stmt);
-	  res = follow_ssa_edge_expr
-	    (loop, at_stmt, rhs1, halting_phi,
-	     evolution_of_loop, limit);
+	  res = follow_ssa_edge_expr (at_stmt, rhs1, evolution_of_loop, limit);
+	  if (res == t_true)
+	    *evolution_of_loop = add_to_evolution
+		(chrec_convert (type, *evolution_of_loop, at_stmt),
+		 code, rhs0, at_stmt);
 	}
 
       else
@@ -989,13 +988,11 @@ backedge_phi_arg_p (gphi *phi, int i)
    true if the strongly connected component has been found following
    this path.  */
 
-static inline t_bool
-follow_ssa_edge_in_condition_phi_branch (int i,
-					 class loop *loop,
-					 gphi *condition_phi,
-					 gphi *halting_phi,
-					 tree *evolution_of_branch,
-					 tree init_cond, int limit)
+t_bool
+scev_dfs::follow_ssa_edge_in_condition_phi_branch (int i,
+						   gphi *condition_phi,
+						   tree *evolution_of_branch,
+						   tree init_cond, int limit)
 {
   tree branch = PHI_ARG_DEF (condition_phi, i);
   *evolution_of_branch = chrec_dont_know;
@@ -1008,7 +1005,7 @@ follow_ssa_edge_in_condition_phi_branch (int i,
   if (TREE_CODE (branch) == SSA_NAME)
     {
       *evolution_of_branch = init_cond;
-      return follow_ssa_edge_expr (loop, condition_phi, branch, halting_phi,
+      return follow_ssa_edge_expr (condition_phi, branch,
 				   evolution_of_branch, limit);
     }
 
@@ -1025,17 +1022,14 @@ follow_ssa_edge_in_condition_phi_branch (int i,
 /* This function merges the branches of a condition-phi-node in a
    loop.  */
 
-static t_bool
-follow_ssa_edge_in_condition_phi (class loop *loop,
-				  gphi *condition_phi,
-				  gphi *halting_phi,
-				  tree *evolution_of_loop, int limit)
+t_bool
+scev_dfs::follow_ssa_edge_in_condition_phi (gphi *condition_phi,
+					    tree *evolution_of_loop, int limit)
 {
   int i, n;
   tree init = *evolution_of_loop;
   tree evolution_of_branch;
-  t_bool res = follow_ssa_edge_in_condition_phi_branch (0, loop, condition_phi,
-							halting_phi,
+  t_bool res = follow_ssa_edge_in_condition_phi_branch (0, condition_phi,
 							&evolution_of_branch,
 							init, limit);
   if (res == t_false || res == t_dont_know)
@@ -1053,8 +1047,7 @@ follow_ssa_edge_in_condition_phi (class loop *loop,
 
       /* Increase the limit by the PHI argument number to avoid exponential
 	 time and memory complexity.  */
-      res = follow_ssa_edge_in_condition_phi_branch (i, loop, condition_phi,
-						     halting_phi,
+      res = follow_ssa_edge_in_condition_phi_branch (i, condition_phi,
 						     &evolution_of_branch,
 						     init, limit + i);
       if (res == t_false || res == t_dont_know)
@@ -1072,11 +1065,9 @@ follow_ssa_edge_in_condition_phi (class loop *loop,
    it follows the edges in the parent loop.  The inner loop is
    considered as a single statement.  */
 
-static t_bool
-follow_ssa_edge_inner_loop_phi (class loop *outer_loop,
-				gphi *loop_phi_node,
-				gphi *halting_phi,
-				tree *evolution_of_loop, int limit)
+t_bool
+scev_dfs::follow_ssa_edge_inner_loop_phi (gphi *loop_phi_node,
+					  tree *evolution_of_loop, int limit)
 {
   class loop *loop = loop_containing_stmt (loop_phi_node);
   tree ev = analyze_scalar_evolution (loop, PHI_RESULT (loop_phi_node));
@@ -1096,9 +1087,8 @@ follow_ssa_edge_inner_loop_phi (class loop *outer_loop,
 	  /* Follow the edges that exit the inner loop.  */
 	  bb = gimple_phi_arg_edge (loop_phi_node, i)->src;
 	  if (!flow_bb_inside_loop_p (loop, bb))
-	    res = follow_ssa_edge_expr (outer_loop, loop_phi_node,
-					arg, halting_phi,
-					evolution_of_loop, limit);
+	    res = follow_ssa_edge_expr (loop_phi_node,
+					arg, evolution_of_loop, limit);
 	  if (res == t_true)
 	    break;
 	}
@@ -1112,18 +1102,17 @@ follow_ssa_edge_inner_loop_phi (class loop *outer_loop,
 
   /* Otherwise, compute the overall effect of the inner loop.  */
   ev = compute_overall_effect_of_inner_loop (loop, ev);
-  return follow_ssa_edge_expr (outer_loop, loop_phi_node, ev, halting_phi,
-			       evolution_of_loop, limit);
+  return follow_ssa_edge_expr (loop_phi_node, ev, evolution_of_loop, limit);
 }
 
 /* Follow the ssa edge into the expression EXPR.
    Return true if the strongly connected component has been found.  */
 
-static t_bool
-follow_ssa_edge_expr (class loop *loop, gimple *at_stmt, tree expr,
-		      gphi *halting_phi, tree *evolution_of_loop,
-		      int limit)
+t_bool
+scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
+				tree *evolution_of_loop, int limit)
 {
+  gphi *halting_phi = loop_phi_node;
   enum tree_code code;
   tree type, rhs0, rhs1 = NULL_TREE;
 
@@ -1161,14 +1150,17 @@ tail_recurse:
 	       record their evolutions.  Finally, merge the collected
 	       information and set the approximation to the main
 	       variable.  */
-	    return follow_ssa_edge_in_condition_phi
-		(loop, phi, halting_phi, evolution_of_loop, limit);
+	    return follow_ssa_edge_in_condition_phi (phi, evolution_of_loop,
+						     limit);
 
 	  /* When the analyzed phi is the halting_phi, the
 	     depth-first search is over: we have found a path from
 	     the halting_phi to itself in the loop.  */
 	  if (phi == halting_phi)
-	    return t_true;
+	    {
+	      *evolution_of_loop = expr;
+	      return t_true;
+	    }
 
 	  /* Otherwise, the evolution of the HALTING_PHI depends
 	     on the evolution of another loop-phi-node, i.e. the
@@ -1179,9 +1171,8 @@ tail_recurse:
 
 	  /* Inner loop.  */
 	  if (flow_loop_nested_p (loop, def_loop))
-	    return follow_ssa_edge_inner_loop_phi
-		(loop, phi, halting_phi, evolution_of_loop,
-		 limit + 1);
+	    return follow_ssa_edge_inner_loop_phi (phi, evolution_of_loop,
+						   limit + 1);
 
 	  /* Outer loop.  */
 	  return t_false;
@@ -1214,6 +1205,8 @@ tail_recurse:
     {
       code = TREE_CODE (expr);
       type = TREE_TYPE (expr);
+      /* Via follow_ssa_edge_inner_loop_phi we arrive here with the
+	 GENERIC scalar evolution of the inner loop.  */
       switch (code)
 	{
 	CASE_CONVERT:
@@ -1224,6 +1217,8 @@ tail_recurse:
 	case MINUS_EXPR:
 	  rhs0 = TREE_OPERAND (expr, 0);
 	  rhs1 = TREE_OPERAND (expr, 1);
+	  STRIP_USELESS_TYPE_CONVERSION (rhs0);
+	  STRIP_USELESS_TYPE_CONVERSION (rhs1);
 	  break;
 	default:
 	  rhs0 = expr;
@@ -1235,7 +1230,7 @@ tail_recurse:
     CASE_CONVERT:
       {
 	/* This assignment is under the form "a_1 = (cast) rhs.  */
-	t_bool res = follow_ssa_edge_expr (loop, at_stmt, rhs0, halting_phi,
+	t_bool res = follow_ssa_edge_expr (at_stmt, rhs0,
 					   evolution_of_loop, limit);
 	*evolution_of_loop = chrec_convert (type, *evolution_of_loop, at_stmt);
 	return res;
@@ -1260,24 +1255,22 @@ tail_recurse:
     case PLUS_EXPR:
     case MINUS_EXPR:
       /* This case is under the form "rhs0 +- rhs1".  */
-      STRIP_USELESS_TYPE_CONVERSION (rhs0);
-      STRIP_USELESS_TYPE_CONVERSION (rhs1);
       if (TREE_CODE (rhs0) == SSA_NAME
 	  && (TREE_CODE (rhs1) != SSA_NAME || code == MINUS_EXPR))
 	{
 	  /* Match an assignment under the form:
-	     "a = b +- ...".
-	     Use tail-recursion for the simple case.  */
-	  *evolution_of_loop = add_to_evolution
-	      (loop->num, chrec_convert (type, *evolution_of_loop,
-					 at_stmt),
-	       code, rhs1, at_stmt);
-	  expr = rhs0;
-	  goto tail_recurse;
+	     "a = b +- ...".  */
+	  t_bool res = follow_ssa_edge_expr (at_stmt, rhs0,
+					     evolution_of_loop, limit);
+	  if (res == t_true)
+	    *evolution_of_loop = add_to_evolution
+		(chrec_convert (type, *evolution_of_loop, at_stmt),
+		 code, rhs1, at_stmt);
+	  return res;
 	}
       /* Else search for the SCC in both rhs0 and rhs1.  */
-      return follow_ssa_edge_binary (loop, at_stmt, type, rhs0, code, rhs1,
-				     halting_phi, evolution_of_loop, limit);
+      return follow_ssa_edge_binary (at_stmt, type, rhs0, code, rhs1,
+				     evolution_of_loop, limit);
 
     case ASSERT_EXPR:
       /* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
@@ -1288,6 +1281,42 @@ tail_recurse:
     default:
       return t_false;
     }
+}
+
+
+/* This section selects the loops that will be good candidates for the
+   scalar evolution analysis.  For the moment, greedily select all the
+   loop nests we could analyze.  */
+
+/* For a loop with a single exit edge, return the COND_EXPR that
+   guards the exit edge.  If the expression is too difficult to
+   analyze, then give up.  */
+
+gcond *
+get_loop_exit_condition (const class loop *loop)
+{
+  gcond *res = NULL;
+  edge exit_edge = single_exit (loop);
+
+  if (dump_file && (dump_flags & TDF_SCEV))
+    fprintf (dump_file, "(get_loop_exit_condition \n  ");
+
+  if (exit_edge)
+    {
+      gimple *stmt;
+
+      stmt = last_stmt (exit_edge->src);
+      if (gcond *cond_stmt = safe_dyn_cast <gcond *> (stmt))
+	res = cond_stmt;
+    }
+
+  if (dump_file && (dump_flags & TDF_SCEV))
+    {
+      print_gimple_stmt (dump_file, res, 0);
+      fprintf (dump_file, ")\n");
+    }
+
+  return res;
 }
 
 
@@ -1379,7 +1408,7 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
   for (i = 0; i < n; i++)
     {
       tree arg = PHI_ARG_DEF (loop_phi_node, i);
-      tree ev_fn;
+      tree ev_fn = chrec_dont_know;
       t_bool res;
 
       /* Select the edges that enter the loop body.  */
@@ -1392,9 +1421,8 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
 	  bool val = false;
 
 	  /* Pass in the initial condition to the follow edge function.  */
-	  ev_fn = init_cond;
-	  res = follow_ssa_edge_expr (loop, loop_phi_node, arg,
-				      loop_phi_node, &ev_fn, 0);
+	  scev_dfs dfs (loop, loop_phi_node, init_cond);
+	  res = dfs.get_ev (&ev_fn, arg);
 
 	  /* If ev_fn has no evolution in the inner loop, and the
 	     init_cond is not equal to ev_fn, then we have an
@@ -1549,7 +1577,6 @@ analyze_initial_condition (gphi *loop_phi_node)
 static tree
 interpret_loop_phi (class loop *loop, gphi *loop_phi_node)
 {
-  tree res;
   class loop *phi_loop = loop_containing_stmt (loop_phi_node);
   tree init_cond;
 
@@ -1557,26 +1584,7 @@ interpret_loop_phi (class loop *loop, gphi *loop_phi_node)
 
   /* Otherwise really interpret the loop phi.  */
   init_cond = analyze_initial_condition (loop_phi_node);
-  res = analyze_evolution_in_loop (loop_phi_node, init_cond);
-
-  /* Verify we maintained the correct initial condition throughout
-     possible conversions in the SSA chain.  */
-  if (res != chrec_dont_know)
-    {
-      tree new_init = res;
-      if (CONVERT_EXPR_P (res)
-	  && TREE_CODE (TREE_OPERAND (res, 0)) == POLYNOMIAL_CHREC)
-	new_init = fold_convert (TREE_TYPE (res),
-				 CHREC_LEFT (TREE_OPERAND (res, 0)));
-      else if (TREE_CODE (res) == POLYNOMIAL_CHREC)
-	new_init = CHREC_LEFT (res);
-      STRIP_USELESS_TYPE_CONVERSION (new_init);
-      if (TREE_CODE (new_init) == POLYNOMIAL_CHREC
-	  || !operand_equal_p (init_cond, new_init, 0))
-	return chrec_dont_know;
-    }
-
-  return res;
+  return analyze_evolution_in_loop (loop_phi_node, init_cond);
 }
 
 /* This function merges the branches of a condition-phi-node,
@@ -3635,6 +3643,64 @@ enum bit_op_kind
   return fold_build2 (code1, type, inv, wide_int_to_tree (type, bits));
 }
 
+/* Match.pd function to match bitop with invariant expression
+  .i.e.
+  tmp_7 = _0 & _1; */
+extern bool gimple_bitop_with_inv_p (tree, tree *, tree (*)(tree));
+
+/* Return the inductive expression of bitop with invariant if possible,
+   otherwise returns DEF.  */
+static tree
+analyze_and_compute_bitop_with_inv_effect (class loop* loop, tree phidef,
+					   tree niter)
+{
+  tree match_op[2],inv;
+  tree type = TREE_TYPE (phidef);
+  gphi* header_phi = NULL;
+  enum tree_code code;
+  /* match thing like op0 (match[0]), op1 (match[1]), phidef (PHIDEF)
+
+    op1 =  PHI <phidef, inv>
+    phidef = op0 & op1
+    if op0 is an invariant, it could change to
+    phidef = op0 & inv.  */
+  gimple *def;
+  def = SSA_NAME_DEF_STMT (phidef);
+  if (!(is_gimple_assign (def)
+      && ((code = gimple_assign_rhs_code (def)), true)
+      && (code == BIT_AND_EXPR || code == BIT_IOR_EXPR
+	  || code == BIT_XOR_EXPR)))
+    return NULL_TREE;
+
+  match_op[0] = gimple_assign_rhs1 (def);
+  match_op[1] = gimple_assign_rhs2 (def);
+
+  if (TREE_CODE (match_op[1]) != SSA_NAME
+      || !expr_invariant_in_loop_p (loop, match_op[0])
+      || !(header_phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (match_op[1])))
+      || gimple_phi_num_args (header_phi) != 2)
+    return NULL_TREE;
+
+  if (PHI_ARG_DEF_FROM_EDGE (header_phi, loop_latch_edge (loop)) != phidef)
+    return NULL_TREE;
+
+  enum tree_code code1
+    = gimple_assign_rhs_code (def);
+
+  if (code1 == BIT_XOR_EXPR)
+    {
+       if (!tree_fits_uhwi_p (niter))
+	return NULL_TREE;
+       unsigned HOST_WIDE_INT niter_num;
+       niter_num = tree_to_uhwi (niter);
+       if (niter_num % 2 != 0)
+	match_op[0] =  build_zero_cst (type);
+    }
+
+  inv = PHI_ARG_DEF_FROM_EDGE (header_phi, loop_preheader_edge (loop));
+  return fold_build2 (code1, type, inv, match_op[0]);
+}
+
 /* Do final value replacement for LOOP, return true if we did anything.  */
 
 bool
@@ -3685,7 +3751,24 @@ final_value_replacement_loop (class loop *loop)
       bool folded_casts;
       def = analyze_scalar_evolution_in_loop (ex_loop, loop, def,
 					      &folded_casts);
-      def = compute_overall_effect_of_inner_loop (ex_loop, def);
+
+      tree bitinv_def, bit_def;
+      unsigned HOST_WIDE_INT niter_num;
+
+      if (def != chrec_dont_know)
+	def = compute_overall_effect_of_inner_loop (ex_loop, def);
+
+      /* Handle bitop with invariant induction expression.
+
+	.i.e
+	for (int i =0 ;i < 32; i++)
+	  tmp &= bit2;
+	if bit2 is an invariant in loop which could simple to
+	tmp &= bit2.  */
+      else if ((bitinv_def
+		= analyze_and_compute_bitop_with_inv_effect (loop,
+							     phidef, niter)))
+	def = bitinv_def;
 
       /* Handle bitwise induction expression.
 
@@ -3697,15 +3780,13 @@ final_value_replacement_loop (class loop *loop)
 	 expressible, but in fact final value of RES can be replaced by
 	 RES & CONSTANT where CONSTANT all ones with bit {0,3,6,9,... ,63}
 	 being cleared, similar for BIT_IOR_EXPR/BIT_XOR_EXPR.  */
-      unsigned HOST_WIDE_INT niter_num;
-      tree bit_def;
-      if (tree_fits_uhwi_p (niter)
-	  && (niter_num = tree_to_uhwi (niter)) != 0
-	  && niter_num < TYPE_PRECISION (TREE_TYPE (phidef))
-	  && (bit_def
-	      = analyze_and_compute_bitwise_induction_effect (loop,
-							      phidef,
-							      niter_num)))
+      else if (tree_fits_uhwi_p (niter)
+	       && (niter_num = tree_to_uhwi (niter)) != 0
+	       && niter_num < TYPE_PRECISION (TREE_TYPE (phidef))
+	       && (bit_def
+		   = analyze_and_compute_bitwise_induction_effect (loop,
+								   phidef,
+								   niter_num)))
 	def = bit_def;
 
       if (!tree_does_not_contain_chrecs (def)

@@ -73,6 +73,9 @@ enum stack_protector_guard {
 #define TARGET_ZICSR    ((riscv_zi_subext & MASK_ZICSR) != 0)
 #define TARGET_ZIFENCEI ((riscv_zi_subext & MASK_ZIFENCEI) != 0)
 
+#define MASK_ZAWRS   (1 << 0)
+#define TARGET_ZAWRS ((riscv_za_subext & MASK_ZAWRS) != 0)
+
 #define MASK_ZBA      (1 << 0)
 #define MASK_ZBB      (1 << 1)
 #define MASK_ZBC      (1 << 2)
@@ -82,6 +85,16 @@ enum stack_protector_guard {
 #define TARGET_ZBB    ((riscv_zb_subext & MASK_ZBB) != 0)
 #define TARGET_ZBC    ((riscv_zb_subext & MASK_ZBC) != 0)
 #define TARGET_ZBS    ((riscv_zb_subext & MASK_ZBS) != 0)
+
+#define MASK_ZFINX      (1 << 0)
+#define MASK_ZDINX      (1 << 1)
+#define MASK_ZHINX      (1 << 2)
+#define MASK_ZHINXMIN   (1 << 3)
+
+#define TARGET_ZFINX    ((riscv_zinx_subext & MASK_ZFINX) != 0)
+#define TARGET_ZDINX    ((riscv_zinx_subext & MASK_ZDINX) != 0)
+#define TARGET_ZHINX    ((riscv_zinx_subext & MASK_ZHINX) != 0)
+#define TARGET_ZHINXMIN ((riscv_zinx_subext & MASK_ZHINXMIN) != 0)
 
 #define MASK_ZBKB     (1 << 0)
 #define MASK_ZBKC     (1 << 1)
@@ -158,6 +171,15 @@ enum stack_protector_guard {
 
 #define TARGET_ZFHMIN ((riscv_zf_subext & MASK_ZFHMIN) != 0)
 #define TARGET_ZFH    ((riscv_zf_subext & MASK_ZFH) != 0)
+
+#define MASK_ZMMUL      (1 << 0)
+#define TARGET_ZMMUL    ((riscv_zm_subext & MASK_ZMMUL) != 0)
+
+#define MASK_SVINVAL (1 << 0)
+#define MASK_SVNAPOT (1 << 1)
+
+#define TARGET_SVINVAL ((riscv_sv_subext & MASK_SVINVAL) != 0)
+#define TARGET_SVNAPOT ((riscv_sv_subext & MASK_SVNAPOT) != 0)
 
 /* Bit of riscv_zvl_flags will set contintuly, N-1 bit will set if N-bit is
    set, e.g. MASK_ZVL64B has set then MASK_ZVL32B is set, so we can use

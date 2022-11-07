@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include <sstream>
+#include <vector>
 
 #define INCLUDE_STRING
 #include "config.h"
@@ -50,6 +51,11 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"d", "f"},
   {"f", "zicsr"},
   {"d", "zicsr"},
+
+  {"zdinx", "zfinx"},
+  {"zfinx", "zicsr"},
+  {"zdinx", "zicsr"},
+
   {"zk", "zkn"},
   {"zk", "zkr"},
   {"zk", "zkt"},
@@ -98,6 +104,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zfh", "zfhmin"},
   {"zfhmin", "f"},
+  
+  {"zhinx", "zhinxmin"},
+  {"zhinxmin", "zfinx"},
 
   {NULL, NULL}
 };
@@ -144,6 +153,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"c", ISA_SPEC_CLASS_20190608, 2, 0},
   {"c", ISA_SPEC_CLASS_2P2,      2, 0},
 
+  {"h",       ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
@@ -152,10 +163,17 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zifencei", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zifencei", ISA_SPEC_CLASS_20190608, 2, 0},
 
+  {"zawrs", ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbs", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zfinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zdinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zhinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zhinxmin", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zbkb",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbkc",  ISA_SPEC_CLASS_NONE, 1, 0},
@@ -199,6 +217,11 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zfh",       ISA_SPEC_CLASS_NONE, 1, 0},
   {"zfhmin",    ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -221,6 +244,14 @@ static const riscv_cpu_info riscv_cpu_tables[] =
     {NULL, NULL, NULL}
 };
 
+static const char *riscv_tunes[] =
+{
+#define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO) \
+    TUNE_NAME,
+#include "../../../config/riscv/riscv-cores.def"
+    NULL
+};
+
 static const char *riscv_supported_std_ext (void);
 
 static riscv_subset_list *current_subset_list = NULL;
@@ -229,6 +260,26 @@ const riscv_subset_list *riscv_current_subset_list ()
 {
   return current_subset_list;
 }
+
+/* struct for recording multi-lib info.  */
+struct riscv_multi_lib_info_t {
+  std::string path;
+  std::string arch_str;
+  std::string abi_str;
+  std::vector<std::string> conds;
+  riscv_subset_list *subset_list;
+
+  static bool parse (struct riscv_multi_lib_info_t *,
+		     const std::string &,
+		     const std::vector<std::string> &);
+};
+
+/* Flag for checking if there is no suitable multi-lib found.  */
+static bool riscv_no_matched_multi_lib;
+
+/* Used for record value of -march and -mabi.  */
+static std::string riscv_current_arch_str;
+static std::string riscv_current_abi_str;
 
 riscv_subset_t::riscv_subset_t ()
   : name (), major_version (0), minor_version (0), next (NULL),
@@ -253,6 +304,42 @@ riscv_subset_list::~riscv_subset_list ()
       delete item;
       item = next;
     }
+}
+
+/* Compute the match score of two arch string, return 0 if incompatible.  */
+int
+riscv_subset_list::match_score (riscv_subset_list *list) const
+{
+  riscv_subset_t *s;
+  int score = 0;
+  bool has_a_ext, list_has_a_ext;
+
+  /* Impossible to match if XLEN is different.  */
+  if (list->m_xlen != this->m_xlen)
+    return 0;
+
+  /* There is different code gen in libstdc++ and libatomic between w/ A-ext
+     and w/o A-ext, and it not work if using soft and hard atomic mechanism
+     at same time, so they are incompatible.  */
+  has_a_ext = this->lookup ("a") != NULL;
+  list_has_a_ext = list->lookup ("a") != NULL;
+
+  if (has_a_ext != list_has_a_ext)
+    return 0;
+
+
+  /* list must be subset of current this list, otherwise it not safe to
+     link.
+     TODO: We might give different weight for each extension, but the rule could
+	   be complicated.
+     TODO: We might consider the version of each extension.  */
+  for (s = list->m_head; s != NULL; s = s->next)
+    if (this->lookup (s->name.c_str ()) != NULL)
+      score++;
+    else
+      return 0;
+
+  return score;
 }
 
 /* Get the rank for single-letter subsets, lower value meaning higher
@@ -294,21 +381,18 @@ multi_letter_subset_rank (const std::string &subset)
   gcc_assert (subset.length () >= 2);
   int high_order = -1;
   int low_order = 0;
-  /* The order between multi-char extensions: s -> h -> z -> x.  */
+  /* The order between multi-char extensions: s -> z -> x.  */
   char multiletter_class = subset[0];
   switch (multiletter_class)
     {
     case 's':
       high_order = 0;
       break;
-    case 'h':
+    case 'z':
       high_order = 1;
       break;
-    case 'z':
-      high_order = 2;
-      break;
     case 'x':
-      high_order = 3;
+      high_order = 2;
       break;
     default:
       gcc_unreachable ();
@@ -604,7 +688,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbkjtpvn";
+  return "mafdqlcbkjtpvnh";
 }
 
 /* Parsing subset version.
@@ -763,7 +847,7 @@ riscv_subset_list::parse_std_ext (const char *p)
     {
       char subset[2] = {0, 0};
 
-      if (*p == 'x' || *p == 's' || *p == 'h' || *p == 'z')
+      if (*p == 'x' || *p == 's' || *p == 'z')
 	break;
 
       if (*p == '_')
@@ -888,7 +972,7 @@ riscv_subset_list::handle_combine_ext ()
 
    Arguments:
      `p`: Current parsing position.
-     `ext_type`: What kind of extensions, 's', 'h', 'z' or 'x'.
+     `ext_type`: What kind of extensions, 's', 'z' or 'x'.
      `ext_type_str`: Full name for kind of extension.  */
 
 const char *
@@ -1030,12 +1114,6 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  /* Parsing hypervisor extension.  */
-  p = subset_list->parse_multiletter_ext (p, "h", "hypervisor extension");
-
-  if (p == NULL)
-    goto fail;
-
   /* Parsing sub-extensions.  */
   p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
 
@@ -1104,10 +1182,17 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
   {"zifencei", &gcc_options::x_riscv_zi_subext, MASK_ZIFENCEI},
 
+  {"zawrs", &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
+
   {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
   {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
   {"zbc",    &gcc_options::x_riscv_zb_subext, MASK_ZBC},
   {"zbs",    &gcc_options::x_riscv_zb_subext, MASK_ZBS},
+
+  {"zfinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZFINX},
+  {"zdinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZDINX},
+  {"zhinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZHINX},
+  {"zhinxmin", &gcc_options::x_riscv_zinx_subext, MASK_ZHINXMIN},
 
   {"zbkb",   &gcc_options::x_riscv_zk_subext, MASK_ZBKB},
   {"zbkc",   &gcc_options::x_riscv_zk_subext, MASK_ZBKC},
@@ -1157,13 +1242,18 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zfhmin",    &gcc_options::x_riscv_zf_subext, MASK_ZFHMIN},
   {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
 
+  {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
+
+  {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
+  {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
+
   {NULL, NULL, 0}
 };
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
    dependent mask bits, in case more than one -march string is passed.  */
 
-static void
+void
 riscv_parse_arch_string (const char *isa,
 			 struct gcc_options *opts,
 			 location_t loc)
@@ -1305,6 +1395,361 @@ riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
   return xasprintf ("-march=%s", arch.c_str());
 }
 
+/* Report error if not found suitable multilib.  */
+const char *
+riscv_multi_lib_check (int argc ATTRIBUTE_UNUSED,
+		       const char **argv ATTRIBUTE_UNUSED)
+{
+  if (riscv_no_matched_multi_lib)
+    fatal_error (
+      input_location,
+      "Cannot find suitable multilib set for %<-march=%s%>/%<-mabi=%s%>",
+      riscv_current_arch_str.c_str (),
+      riscv_current_abi_str.c_str ());
+
+  return "";
+}
+
+/* We only override this in bare-metal toolchain.  */
+#ifdef RISCV_USE_CUSTOMISED_MULTI_LIB
+
+/* Find last switch with the prefix, options are take last one in general,
+   return NULL if not found, and return the option value if found, it could
+   return empty string if the option has no value.  */
+
+static const char *
+find_last_appear_switch (
+  const struct switchstr *switches,
+  int n_switches,
+  const char *prefix)
+{
+  int i;
+  size_t len = strlen (prefix);
+
+  for (i = 0; i < n_switches; ++i)
+    {
+      const struct switchstr *this_switch = &switches[n_switches - i - 1];
+
+      if (this_switch->live_cond & SWITCH_FALSE)
+	continue;
+
+      if (strncmp (this_switch->part1, prefix, len) == 0)
+	return this_switch->part1 + len;
+    }
+
+  return NULL;
+}
+
+/* Utils functions to check STR is start with PREFIX or not.  */
+
+static bool
+prefixed_with (const std::string &str, const char *prefix)
+{
+  return strncmp (prefix, str.c_str (), strlen (prefix)) == 0;
+}
+
+/* Parse the path and cond string into riscv_multi_lib_info_t, return false
+   if parsing failed. */
+
+bool
+riscv_multi_lib_info_t::parse (
+  struct riscv_multi_lib_info_t *multi_lib_info,
+  const std::string &path,
+  const std::vector<std::string> &conds)
+{
+  const char *default_arch_str = STRINGIZING (TARGET_RISCV_DEFAULT_ARCH);
+  const char *default_abi_str = STRINGIZING (TARGET_RISCV_DEFAULT_ABI);
+  multi_lib_info->conds = conds;
+  if (path == ".")
+    {
+      multi_lib_info->arch_str = default_arch_str;
+      multi_lib_info->abi_str = default_abi_str;
+    }
+  else
+    {
+      std::vector<std::string>::const_iterator itr;
+      for (itr = conds.begin (); itr != conds.end (); ++itr)
+	if (prefixed_with (*itr, "march="))
+	  multi_lib_info->arch_str = itr->c_str () + strlen ("march=");
+	else if (prefixed_with (*itr, "mabi="))
+	  multi_lib_info->abi_str = itr->c_str () + strlen ("mabi=");
+
+	/* Skip this multi-lib if this configuration is exactly same as
+	   default multi-lib settings.  */
+      if (multi_lib_info->arch_str == default_arch_str
+	  && multi_lib_info->abi_str == default_abi_str)
+	return false;
+    }
+
+  multi_lib_info->subset_list =
+    riscv_subset_list::parse (multi_lib_info->arch_str.c_str (), input_location);
+
+  return true;
+}
+
+/* Checking ARG is not appeared in SWITCHES if NOT_ARG is set or
+   ARG is appeared if NOT_ARG is not set.  */
+
+static bool
+riscv_check_cond (
+  const struct switchstr *switches,
+  int n_switches,
+  const std::string &arg,
+  bool not_arg)
+{
+  int i;
+  for (i = 0; i < n_switches; ++i)
+    {
+      const struct switchstr *this_switch = &switches[n_switches - i - 1];
+
+      if ((this_switch->live_cond & SWITCH_IGNORE) != 0)
+	continue;
+
+      if (this_switch->live_cond & SWITCH_FALSE)
+	continue;
+
+      /* ARG should not appear if NOT_ARG is set.  */
+      if (arg == this_switch->part1)
+	return not_arg ? false : true;
+    }
+
+  /* Not found ARG? that's ok if NOT_ARG is not set.  */
+  return not_arg ? true : false;
+}
+
+/* Check the other cond is found or not, return -1 if we should reject this
+   multi-lib option set, otherwise return updated MATCH_SCORE.   */
+
+static int
+riscv_check_conds (
+  const struct switchstr *switches,
+  int n_switches,
+  int match_score,
+  const std::vector<std::string> &conds)
+{
+  bool not_arg;
+  bool ok;
+  int ok_count = 0;
+  std::vector<std::string>::const_iterator itr;
+  const char *checking_arg;
+
+  if (match_score == 0)
+    return 0;
+
+  for (itr = conds.begin (); itr != conds.end (); ++itr)
+    {
+      /* We'll check march= and mabi= in ohter place.  */
+      if (prefixed_with (*itr, "march=") || prefixed_with (*itr, "mabi="))
+	continue;
+
+      checking_arg = itr->c_str ();
+      if (checking_arg[0] == '!')
+	{
+	  not_arg = true;
+	  /* Skip '!'. */
+	  checking_arg = checking_arg + 1;
+	}
+      else
+	not_arg = false;
+
+      ok = riscv_check_cond (switches, n_switches, checking_arg, not_arg);
+
+      if (!ok)
+	return -1;
+
+      ok_count++;
+    }
+
+  /* 100 is magic number, it's just used for make sure this multi-lib has
+     higher priority if we found any some option is listed in the option check
+     list. */
+  return match_score + ok_count * 100;
+}
+
+/* Implement TARGET_COMPUTE_MULTILIB.  */
+static const char *
+riscv_compute_multilib (
+  const struct switchstr *switches,
+  int n_switches,
+  const char *multilib_dir,
+  const char *multilib_defaults ATTRIBUTE_UNUSED,
+  const char *multilib_select,
+  const char *multilib_matches ATTRIBUTE_UNUSED,
+  const char *multilib_exclusions ATTRIBUTE_UNUSED,
+  const char *multilib_reuse ATTRIBUTE_UNUSED)
+{
+  const char *p;
+  const char *this_path;
+  size_t this_path_len;
+  bool result;
+  riscv_no_matched_multi_lib = false;
+  riscv_subset_list *subset_list = NULL;
+
+  std::vector<riscv_multi_lib_info_t> multilib_infos;
+  std::vector<std::string> option_conds;
+  std::string option_cond;
+  riscv_multi_lib_info_t multilib_info;
+
+  /* Already found suitable, multi-lib, just use that.  */
+  if (multilib_dir != NULL)
+    return multilib_dir;
+
+  /* Find march.  */
+  riscv_current_arch_str =
+    find_last_appear_switch (switches, n_switches, "march=");
+  /* Find mabi.  */
+  riscv_current_abi_str =
+    find_last_appear_switch (switches, n_switches, "mabi=");
+
+  /* Failed to find -march or -mabi, but it should not happened since we have
+     set both in OPTION_DEFAULT_SPECS.  */
+  if (riscv_current_arch_str.empty () || riscv_current_abi_str.empty ())
+    return multilib_dir;
+
+  subset_list = riscv_subset_list::parse (riscv_current_arch_str.c_str (),
+					  input_location);
+
+  /* Failed to parse -march, fallback to using what gcc use.  */
+  if (subset_list == NULL)
+    return multilib_dir;
+
+  /* Parsing MULTILIB_SELECT, ignore MULTILIB_REUSE here, we have our own rules.
+     TODO: most codes are grab from gcc.c, maybe we should refine that?  */
+  p = multilib_select;
+
+  while (*p != '\0')
+    {
+      /* Ignore newlines.  */
+      if (*p == '\n')
+	{
+	  ++p;
+	  continue;
+	}
+
+      /* Format of each multilib:
+	 <path> <opt1> <opt2> ... <optN>;  */
+      /* Get the path.  */
+      this_path = p;
+      while (*p != ' ')
+	{
+	  if (*p == '\0')
+	    {
+	      fatal_error (input_location, "multilib select %qs %qs is invalid",
+			   multilib_select, multilib_reuse);
+	    }
+	  ++p;
+	}
+
+      this_path_len = p - this_path;
+      multilib_info.path = std::string (this_path, this_path_len);
+
+      option_conds.clear ();
+      /* Pasrse option check list into vector<string>.
+	 e.g. "march=rv64imafd mabi=lp64 !mcmodel=medany" to
+	      ["march=rv64imafd", "mabi=lp64", "!mcmodel=medany"].  */
+      while (*p != ';')
+	{
+	  option_cond = "";
+	  /* Skip space.  */
+	  while (*p == ' ') p++;
+
+	  while (*p && *p != ' ' && *p != ';')
+	      option_cond.push_back (*p++);
+
+	  /* Ignore `!march=` and `!mabi=`, we will handle march and mabi
+	     later. */
+	  if (option_cond.size ()
+	      && !prefixed_with (option_cond, "!march=")
+	      && !prefixed_with (option_cond, "!mabi="))
+	    option_conds.push_back (option_cond);
+	}
+
+      result =
+	riscv_multi_lib_info_t::parse (
+	  &multilib_info,
+	  std::string (this_path, this_path_len),
+	  option_conds);
+
+      if (result)
+	multilib_infos.push_back (multilib_info);
+
+      p++;
+    }
+
+  int match_score = 0;
+  int max_match_score = 0;
+  int best_match_multi_lib = -1;
+  /* Try to decision which set we should used.  */
+  /* We have 3 level decision tree here, ABI, check input arch/ABI must
+     be superset of multi-lib arch, and other rest option checking.  */
+  for (size_t i = 0; i < multilib_infos.size (); ++i)
+    {
+      /* Check ABI is same first.  */
+      if (riscv_current_abi_str != multilib_infos[i].abi_str)
+	continue;
+
+      /* Found a potential compatible multi-lib setting!
+	 Calculate the match score.  */
+      match_score = subset_list->match_score (multilib_infos[i].subset_list);
+
+      /* Checking other cond in the multi-lib setting.  */
+      match_score = riscv_check_conds (switches,
+				       n_switches,
+				       match_score,
+				       multilib_infos[i].conds);
+
+      /* Record highest match score multi-lib setting.  */
+      if (match_score > max_match_score)
+	best_match_multi_lib = i;
+    }
+
+  if (best_match_multi_lib == -1)
+    {
+      riscv_no_matched_multi_lib = true;
+      return multilib_dir;
+    }
+  else
+    return xstrdup (multilib_infos[best_match_multi_lib].path.c_str ());
+}
+
+#undef TARGET_COMPUTE_MULTILIB
+#define TARGET_COMPUTE_MULTILIB riscv_compute_multilib
+#endif
+
+vec<const char *>
+riscv_get_valid_option_values (int option_code,
+			       const char *prefix ATTRIBUTE_UNUSED)
+{
+  vec<const char *> v;
+  v.create (0);
+  opt_code opt = (opt_code) option_code;
+
+  switch (opt)
+    {
+    case OPT_mtune_:
+      {
+	const char **tune = &riscv_tunes[0];
+	for (;*tune; ++tune)
+	  v.safe_push (*tune);
+
+	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+	for (;cpu_info->name; ++cpu_info)
+	  v.safe_push (cpu_info->name);
+      }
+      break;
+    case OPT_mcpu_:
+      {
+	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+	for (;cpu_info->name; ++cpu_info)
+	  v.safe_push (cpu_info->name);
+      }
+      break;
+    default:
+      break;
+    }
+
+  return v;
+}
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options riscv_option_optimization_table[] =
@@ -1319,5 +1764,8 @@ static const struct default_options riscv_option_optimization_table[] =
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION riscv_handle_option
+
+#undef  TARGET_GET_VALID_OPTION_VALUES
+#define TARGET_GET_VALID_OPTION_VALUES riscv_get_valid_option_values
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

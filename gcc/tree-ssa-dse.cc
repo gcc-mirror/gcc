@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -45,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref.h"
 #include "target.h"
 #include "tree-ssa-loop-niter.h"
+#include "cfgloop.h"
+#include "tree-data-ref.h"
 
 /* This file implements dead store elimination.
 
@@ -167,7 +170,7 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 	    {
 	      ao_ref_init_from_ptr_and_size
 		  (write, gimple_call_arg (stmt, 0),
-		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 2))));
+		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 3))));
 	      return true;
 	    }
 	  break;
@@ -937,6 +940,10 @@ contains_phi_arg (gphi *phi, tree arg)
   return false;
 }
 
+/* Hash map of the memory use in a GIMPLE assignment to its
+   data reference.  If NULL data-ref analysis isn't used.  */
+static hash_map<gimple *, data_reference_p> *dse_stmt_to_dr_map;
+
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT that writes to REF, classify it
    according to downstream uses and defs.  Sets *BY_CLOBBER_P to true
@@ -951,6 +958,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
   gimple *temp;
   int cnt = 0;
   auto_bitmap visited;
+  std::unique_ptr<data_reference, void(*)(data_reference_p)>
+    dra (nullptr, free_data_ref);
 
   if (by_clobber_p)
     *by_clobber_p = true;
@@ -969,14 +978,6 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 
       if (gimple_code (temp) == GIMPLE_PHI)
 	{
-	  /* If we visit this PHI by following a backedge then we have to
-	     make sure ref->ref only refers to SSA names that are invariant
-	     with respect to the loop represented by this PHI node.  */
-	  if (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt),
-			      gimple_bb (temp))
-	      && !for_each_index (ref->ref ? &ref->ref : &ref->base,
-				  check_name, gimple_bb (temp)))
-	    return DSE_STORE_LIVE;
 	  defvar = PHI_RESULT (temp);
 	  bitmap_set_bit (visited, SSA_NAME_VERSION (defvar));
 	}
@@ -1010,6 +1011,15 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	      if (!bitmap_bit_p (visited,
 				 SSA_NAME_VERSION (PHI_RESULT (use_stmt))))
 		{
+		  /* If we visit this PHI by following a backedge then we have
+		     to make sure ref->ref only refers to SSA names that are
+		     invariant with respect to the loop represented by this
+		     PHI node.  */
+		  if (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt),
+				      gimple_bb (use_stmt))
+		      && !for_each_index (ref->ref ? &ref->ref : &ref->base,
+					  check_name, gimple_bb (use_stmt)))
+		    return DSE_STORE_LIVE;
 		  defs.safe_push (use_stmt);
 		  if (!first_phi_def)
 		    first_phi_def = as_a <gphi *> (use_stmt);
@@ -1019,6 +1029,28 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  /* If the statement is a use the store is not dead.  */
 	  else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
 	    {
+	      if (dse_stmt_to_dr_map
+		  && ref->ref
+		  && is_gimple_assign (use_stmt))
+		{
+		  if (!dra)
+		    dra.reset (create_data_ref (NULL, NULL, ref->ref, stmt,
+						false, false));
+		  bool existed_p;
+		  data_reference_p &drb
+		    = dse_stmt_to_dr_map->get_or_insert (use_stmt, &existed_p);
+		  if (!existed_p)
+		    drb = create_data_ref (NULL, NULL,
+					   gimple_assign_rhs1 (use_stmt),
+					   use_stmt, false, false);
+		  if (!dr_may_alias_p (dra.get (), drb, NULL))
+		    {
+		      if (gimple_vdef (use_stmt))
+			defs.safe_push (use_stmt);
+		      continue;
+		    }
+		}
+
 	      /* Handle common cases where we can easily build an ao_ref
 		 structure for USE_STMT and in doing so we find that the
 		 references hit non-live bytes and thus can be ignored.
@@ -1535,14 +1567,21 @@ class pass_dse : public gimple_opt_pass
 {
 public:
   pass_dse (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_dse, ctxt)
+    : gimple_opt_pass (pass_data_dse, ctxt), use_dr_analysis_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () final override { return new pass_dse (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
+    {
+      gcc_assert (n == 0);
+      use_dr_analysis_p = param;
+    }
   bool gate (function *) final override { return flag_tree_dse != 0; }
   unsigned int execute (function *) final override;
 
+private:
+  bool use_dr_analysis_p;
 }; // class pass_dse
 
 unsigned int
@@ -1554,6 +1593,8 @@ pass_dse::execute (function *fun)
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_ab_cleanup = BITMAP_ALLOC (NULL);
   auto_sbitmap live_bytes (param_dse_max_object_size);
+  if (flag_expensive_optimizations && use_dr_analysis_p)
+    dse_stmt_to_dr_map = new hash_map<gimple *, data_reference_p>;
 
   renumber_gimple_stmt_uids (fun);
 
@@ -1643,6 +1684,15 @@ pass_dse::execute (function *fun)
 
   if (released_def)
     free_numbers_of_iterations_estimates (fun);
+
+  if (flag_expensive_optimizations && use_dr_analysis_p)
+    {
+      for (auto i = dse_stmt_to_dr_map->begin ();
+	   i != dse_stmt_to_dr_map->end (); ++i)
+	free_data_ref ((*i).second);
+      delete dse_stmt_to_dr_map;
+      dse_stmt_to_dr_map = NULL;
+    }
 
   return todo;
 }

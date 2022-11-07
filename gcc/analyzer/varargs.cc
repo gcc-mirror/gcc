@@ -19,35 +19,26 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
 #include "diagnostic-path.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
-#include "tristate.h"
-#include "selftest.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/program-state.h"
 #include "analyzer/checker-path.h"
-#include "digraph.h"
-#include "ordered-hash-map.h"
-#include "cfg.h"
-#include "gimple-iterator.h"
 #include "analyzer/supergraph.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
-#include "sbitmap.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
 #include "diagnostic-metadata.h"
@@ -143,7 +134,7 @@ namespace ana {
      __builtin_va_start (&ap, [...]);
 
    except for the 2nd param of __builtin_va_copy, where the type
-   is already target-dependent (see the discussion of BT_VALIST_ARG
+   is already target-dependent (see the discussion of get_va_copy_arg
    below).  */
 
 /* Get a tree for diagnostics.
@@ -158,26 +149,32 @@ get_va_list_diag_arg (tree va_list_tree)
   return va_list_tree;
 }
 
-/* Get argument ARG_IDX of type BT_VALIST_ARG (for use by va_copy).
+/* Get argument ARG_IDX of va_copy.
 
    builtin-types.def has:
      DEF_PRIMITIVE_TYPE (BT_VALIST_ARG, va_list_arg_type_node)
 
    and c_common_nodes_and_builtins initializes va_list_arg_type_node
    based on whether TREE_CODE (va_list_type_node) is of ARRAY_TYPE or
-   not, giving either one or zero levels of indirection.  */
+   not, giving either one or zero levels of indirection.
+
+   Alternatively we could be dealing with __builtin_ms_va_copy or
+   __builtin_sysv_va_copy.
+
+   Handle this by looking at the types of the argument in question.  */
 
 static const svalue *
-get_BT_VALIST_ARG (const region_model *model,
-		   region_model_context *ctxt,
-		   const gcall *call,
-		   unsigned arg_idx)
+get_va_copy_arg (const region_model *model,
+		 region_model_context *ctxt,
+		 const gcall *call,
+		 unsigned arg_idx)
 {
   tree arg = gimple_call_arg (call, arg_idx);
   const svalue *arg_sval = model->get_rvalue (arg, ctxt);
   if (const svalue *cast = arg_sval->maybe_undo_cast ())
     arg_sval = cast;
-  if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
+  if (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE)
     {
       /* va_list_arg_type_node is a pointer to a va_list;
 	 return *ARG_SVAL.  */
@@ -217,7 +214,7 @@ public:
   {
     return s != m_started;
   }
-  pending_diagnostic *on_leak (tree var) const final override;
+  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
   /* State for a va_list that the result of a va_start or va_copy.  */
   state_t m_started;
@@ -558,23 +555,23 @@ va_list_state_machine::check_for_ended_va_list (sm_context *sm_ctxt,
 {
   if (sm_ctxt->get_state (call, arg) == m_ended)
     sm_ctxt->warn (node, call, arg,
-		   new va_list_use_after_va_end (*this, arg, NULL_TREE,
-						 usage_fnname));
+		   make_unique<va_list_use_after_va_end>
+		     (*this, arg, NULL_TREE, usage_fnname));
 }
 
-/* Get the svalue with associated va_list_state_machine state for a
-   BT_VALIST_ARG for ARG_IDX of CALL, if SM_CTXT supports this,
+/* Get the svalue with associated va_list_state_machine state for
+   ARG_IDX of CALL to va_copy, if SM_CTXT supports this,
    or NULL otherwise.  */
 
 static const svalue *
-get_stateful_BT_VALIST_ARG (sm_context *sm_ctxt,
-			    const gcall *call,
-			    unsigned arg_idx)
+get_stateful_va_copy_arg (sm_context *sm_ctxt,
+			  const gcall *call,
+			  unsigned arg_idx)
 {
   if (const program_state *new_state = sm_ctxt->get_new_program_state ())
     {
       const region_model *new_model = new_state->m_region_model;
-      const svalue *arg = get_BT_VALIST_ARG (new_model, NULL, call, arg_idx);
+      const svalue *arg = get_va_copy_arg (new_model, NULL, call, arg_idx);
       return arg;
     }
   return NULL;
@@ -587,7 +584,7 @@ va_list_state_machine::on_va_copy (sm_context *sm_ctxt,
 				   const supernode *node,
 				   const gcall *call) const
 {
-  const svalue *src_arg = get_stateful_BT_VALIST_ARG (sm_ctxt, call, 1);
+  const svalue *src_arg = get_stateful_va_copy_arg (sm_ctxt, call, 1);
   if (src_arg)
     check_for_ended_va_list (sm_ctxt, node, call, src_arg, "va_copy");
 
@@ -634,10 +631,10 @@ va_list_state_machine::on_va_end (sm_context *sm_ctxt,
 /* Implementation of state_machine::on_leak vfunc for va_list_state_machine
    (for complaining about leaks of values in state 'started').  */
 
-pending_diagnostic *
+std::unique_ptr<pending_diagnostic>
 va_list_state_machine::on_leak (tree var) const
 {
-  return new va_list_leak (*this, NULL, var);
+  return make_unique<va_list_leak> (*this, NULL, var);
 }
 
 } // anonymous namespace
@@ -697,7 +694,7 @@ region_model::impl_call_va_copy (const call_details &cd)
 {
   const svalue *out_dst_ptr = cd.get_arg_svalue (0);
   const svalue *in_va_list
-    = get_BT_VALIST_ARG (this, cd.get_ctxt (), cd.get_call_stmt (), 1);
+    = get_va_copy_arg (this, cd.get_ctxt (), cd.get_call_stmt (), 1);
   in_va_list = check_for_poison (in_va_list,
 				 get_va_list_diag_arg (cd.get_arg_tree (1)),
 				 cd.get_ctxt ());
@@ -791,13 +788,13 @@ public:
 	  = get_num_variadic_arguments (dst_node->get_function ()->decl,
 					call_stmt);
 	emission_path->add_event
-	  (new va_arg_call_event (eedge,
-				  (last_stmt
-				   ? last_stmt->location
-				   : UNKNOWN_LOCATION),
-				  src_point.get_fndecl (),
-				  src_stack_depth,
-				  num_variadic_arguments));
+	  (make_unique<va_arg_call_event> (eedge,
+					   (last_stmt
+					    ? last_stmt->location
+					    : UNKNOWN_LOCATION),
+					   src_point.get_fndecl (),
+					   src_stack_depth,
+					   num_variadic_arguments));
       }
     else
       pending_diagnostic::add_call_event (eedge, emission_path);
@@ -1005,17 +1002,19 @@ region_model::impl_call_va_arg (const call_details &cd)
 		  else
 		    {
 		      if (ctxt)
-			ctxt->warn (new va_arg_type_mismatch (va_list_tree,
-							      arg_reg,
-							      lhs_type,
-							      arg_type));
+			ctxt->warn (make_unique <va_arg_type_mismatch>
+				      (va_list_tree,
+				       arg_reg,
+				       lhs_type,
+				       arg_type));
 		      saw_problem = true;
 		    }
 		}
 	      else
 		{
 		  if (ctxt)
-		    ctxt->warn (new va_list_exhausted (va_list_tree, arg_reg));
+		    ctxt->warn (make_unique <va_list_exhausted> (va_list_tree,
+								 arg_reg));
 		  saw_problem = true;
 		}
 	    }

@@ -241,9 +241,9 @@ init_reswords (void)
   if (!flag_char8_t)
     mask |= D_CXX_CHAR8_T;
   if (flag_no_asm)
-    mask |= D_ASM | D_EXT;
+    mask |= D_ASM | D_EXT | D_EXT11;
   if (flag_no_gnu_keywords)
-    mask |= D_EXT;
+    mask |= D_EXT | D_EXT11;
 
   /* The Objective-C keywords are all context-dependent.  */
   mask |= D_OBJC;

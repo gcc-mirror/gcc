@@ -53,7 +53,7 @@ public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &lh,
 			   const irange &rh,
-			   relation_kind rel = VREL_VARYING) const;
+			   relation_trio = TRIO_VARYING) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -69,11 +69,11 @@ public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
 
   // The following routines are used to represent relations between the
   // various operations.  If the caller knows where the symbolics are,
@@ -116,27 +116,32 @@ public:
   virtual bool fold_range (frange &r, tree type,
 			   const frange &lh,
 			   const frange &rh,
-			   relation_kind rel = VREL_VARYING) const;
+			   relation_trio = TRIO_VARYING) const;
+  // Unary operations have the range of the LHS as op2.
+  virtual bool fold_range (irange &r, tree type,
+			   const frange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
   virtual bool fold_range (irange &r, tree type,
 			   const frange &lh,
 			   const frange &rh,
-			   relation_kind rel = VREL_VARYING) const;
+			   relation_trio = TRIO_VARYING) const;
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
 			  const frange &op2,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op1_range (frange &r, tree type,
 			  const irange &lhs,
 			  const frange &op2,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (frange &r, tree type,
 			  const frange &lhs,
 			  const frange &op1,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (frange &r, tree type,
 			  const irange &lhs,
 			  const frange &op1,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
 
   virtual relation_kind lhs_op1_relation (const frange &lhs,
 					  const frange &op1,
@@ -155,27 +160,28 @@ public:
 					  const frange &op2,
 					  relation_kind = VREL_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  virtual relation_kind op1_op2_relation (const frange &lhs) const;
 };
 
 class range_op_handler
 {
 public:
+  range_op_handler ();
   range_op_handler (enum tree_code code, tree type);
-  range_op_handler (const gimple *s);
-  operator bool () const;
+  inline operator bool () const { return m_valid; }
 
   bool fold_range (vrange &r, tree type,
 		   const vrange &lh,
 		   const vrange &rh,
-		   relation_kind rel = VREL_VARYING) const;
+		   relation_trio = TRIO_VARYING) const;
   bool op1_range (vrange &r, tree type,
 		  const vrange &lhs,
 		  const vrange &op2,
-		  relation_kind rel = VREL_VARYING) const;
+		  relation_trio = TRIO_VARYING) const;
   bool op2_range (vrange &r, tree type,
 		  const vrange &lhs,
 		  const vrange &op1,
-		  relation_kind rel = VREL_VARYING) const;
+		  relation_trio = TRIO_VARYING) const;
   relation_kind lhs_op1_relation (const vrange &lhs,
 				  const vrange &op1,
 				  const vrange &op2,
@@ -185,9 +191,11 @@ public:
 				  const vrange &op2,
 				  relation_kind = VREL_VARYING) const;
   relation_kind op1_op2_relation (const vrange &lhs) const;
-private:
-  enum tree_code m_code;
-  tree m_type;
+protected:
+  void set_op_handler (enum tree_code code, tree type);
+  bool m_valid;
+  range_operator *m_int;
+  range_operator_float *m_float;
 };
 
 extern bool range_cast (vrange &, tree type);
@@ -232,9 +240,10 @@ empty_range_varying (vrange &r, tree type,
 
 inline bool
 relop_early_resolve (irange &r, tree type, const vrange &op1,
-		     const vrange &op2, relation_kind rel,
+		     const vrange &op2, relation_trio trio,
 		     relation_kind my_rel)
 {
+  relation_kind rel = trio.op1_op2 ();
   // If known relation is a complete subset of this relation, always true.
   if (relation_union (rel, my_rel) == my_rel)
     {

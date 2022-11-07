@@ -1,3 +1,49 @@
+2022-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/simd.d (equalMask): Implement using generics.
+	(notEqualMask): Likewise.
+	(greaterMask): Likewise.
+	(greaterOrEqualMask): Likewise.
+	(notMask): Likewise.
+	(andAndMask): Likewise.
+	(orOrMask): Likewise.
+
+2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e4f8919591.
+	* src/MERGE: Merge upstream phobos 3ad507b51.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-09-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d579c467c1.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Remove
+	rt/arrayassign.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 88aa69b14.
+	* src/Makefile.am (PHOBOS_DSOURCES): Remove std/digest/digest.d,
+	std/xml.d.
+	* src/Makefile.in: Regenerate.
+
+2022-08-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 817610b16d.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/internal/array/arrayassign.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos b578dfad9.
+	* src/Makefile.am (PHOBOS_DSOURCES): Remove
+	std/experimental/typecons.d. Add std/logger package.
+	* src/Makefile.in: Regenerate.
+
 2022-08-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure: Regenerate.

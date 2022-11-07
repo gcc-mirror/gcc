@@ -1629,6 +1629,9 @@ DEFHOOK
 "This hook should set @var{vecsize_mangle}, @var{vecsize_int}, @var{vecsize_float}\n\
 fields in @var{simd_clone} structure pointed by @var{clone_info} argument and also\n\
 @var{simdlen} field if it was previously 0.\n\
+@var{vecsize_mangle} is a marker for the backend only. @var{vecsize_int} and\n\
+@var{vecsize_float} should be left zero on targets where the number of lanes is\n\
+not determined by the bitsize (in which case @var{simdlen} is always used).\n\
 The hook should return 0 if SIMD clones shouldn't be emitted,\n\
 or number of @var{vecsize_mangle} variants that should be emitted.",
 int, (struct cgraph_node *, struct cgraph_simd_clone *, tree, int), NULL)
@@ -4677,7 +4680,9 @@ pass all their arguments on the stack.\n\
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data\n\
 structure, containing the values that are obtained after processing the\n\
 named arguments.  The argument @var{arg} describes the last of these named\n\
-arguments.\n\
+arguments.  The argument @var{arg} should not be used if the function type\n\
+satisfies @code{TYPE_NO_NAMED_ARGS_STDARG_P}, since in that case there are\n\
+no named arguments and all arguments are accessed with @code{va_arg}.\n\
 \n\
 The target hook should do two things: first, push onto the stack all the\n\
 argument registers @emph{not} used for the named arguments, and second,\n\
@@ -6178,7 +6183,7 @@ of the excess precision explicitly added.  For\n\
 @code{EXCESS_PRECISION_TYPE_FLOAT16}, and\n\
 @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the\n\
 explicit excess precision that should be added depending on the\n\
-value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.\n\
+value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{|}16@r{]}}.\n\
 Note that unpredictable explicit excess precision does not make sense,\n\
 so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}\n\
 when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},\n\

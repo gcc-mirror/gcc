@@ -7850,6 +7850,7 @@ package body Exp_Ch3 is
         and then Present (DIC_Procedure (Typ))
         and then not Has_Null_Body (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
+        and then No (Expr)
         and then not Is_Imported (Def_Id)
       then
          declare
@@ -9182,9 +9183,12 @@ package body Exp_Ch3 is
       --  the runtime verification of all invariants that pertain to the type.
       --  This includes invariants on the partial and full view, inherited
       --  class-wide invariants from parent types or interfaces, and invariants
-      --  on array elements or record components.
+      --  on array elements or record components. But skip internal types.
 
-      if Is_Interface (Def_Id) then
+      if Is_Itype (Def_Id) then
+         null;
+
+      elsif Is_Interface (Def_Id) then
 
          --  Interfaces are treated as the partial view of a private type in
          --  order to achieve uniformity with the general case. As a result, an

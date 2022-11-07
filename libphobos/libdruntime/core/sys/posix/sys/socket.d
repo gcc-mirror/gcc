@@ -45,7 +45,6 @@ version (X86_64)  version = X86_Any;
 
 version (Posix):
 extern (C) nothrow @nogc:
-@system:
 
 //
 // Required
@@ -188,10 +187,40 @@ version (linux)
 
     extern (D) inout(ubyte)*   CMSG_DATA( return scope inout(cmsghdr)* cmsg ) pure nothrow @nogc { return cast(ubyte*)( cmsg + 1 ); }
 
-    private inout(cmsghdr)* __cmsg_nxthdr(inout(msghdr)*, inout(cmsghdr)*) pure nothrow @nogc;
-    extern (D)  inout(cmsghdr)* CMSG_NXTHDR(inout(msghdr)* msg, inout(cmsghdr)* cmsg) pure nothrow @nogc
+    version (CRuntime_Musl)
     {
-        return __cmsg_nxthdr(msg, cmsg);
+        extern (D)
+        {
+            private size_t __CMSG_LEN(inout(cmsghdr)* cmsg) pure nothrow @nogc
+            {
+                return (cmsg.cmsg_len + size_t.sizeof -1) & cast(size_t)(~(size_t.sizeof - 1));
+            }
+
+            private inout(cmsghdr)* __CMSG_NEXT(inout(cmsghdr)* cmsg) pure nothrow @nogc
+            {
+                return cmsg + __CMSG_LEN(cmsg);
+            }
+
+            private inout(msghdr)* __MHDR_END(inout(msghdr)* mhdr) pure nothrow @nogc
+            {
+                return cast(inout(msghdr)*)(mhdr.msg_control + mhdr.msg_controllen);
+            }
+
+            inout(cmsghdr)* CMSG_NXTHDR(inout(msghdr)* msg, inout(cmsghdr)* cmsg) pure nothrow @nogc
+            {
+                return cmsg.cmsg_len < cmsghdr.sizeof ||
+                    __CMSG_LEN(cmsg) + cmsghdr.sizeof >= __MHDR_END(msg) - cast(inout(msghdr)*)(cmsg)
+                        ? cast(inout(cmsghdr)*) null : cast(inout(cmsghdr)*) __CMSG_NEXT(cmsg);
+            }
+        }
+    }
+    else
+    {
+        private inout(cmsghdr)* __cmsg_nxthdr(inout(msghdr)*, inout(cmsghdr)*) pure nothrow @nogc;
+        extern (D)  inout(cmsghdr)* CMSG_NXTHDR(inout(msghdr)* msg, inout(cmsghdr)* cmsg) pure nothrow @nogc
+        {
+            return __cmsg_nxthdr(msg, cmsg);
+        }
     }
 
     extern (D) inout(cmsghdr)* CMSG_FIRSTHDR( inout(msghdr)* mhdr ) pure nothrow @nogc

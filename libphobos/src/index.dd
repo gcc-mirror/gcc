@@ -71,10 +71,6 @@ $(BOOKTABLE ,
         $(TD Read/write data in JSON format.)
     )
     $(TR
-        $(TDNW $(MREF std,xml))
-        $(TD Read/write data in XML format.)
-    )
-    $(TR
         $(TDNW $(MREF std,zip))
         $(TD Read/write data in the ZIP archive format.)
     )
@@ -459,6 +455,19 @@ $(BOOKTABLE ,
         $(TDNW $(MREF core,simd))
         $(TD SIMD intrinsics)
     )
+    $(LEADINGROW Logging)
+    $(TR
+        $(TDNW
+            $(MREF std,logger)$(BR)
+            $(MREF std,logger,core)$(BR)
+            $(MREF std,logger,filelogger)$(BR)
+            $(MREF std,logger,multilogger)$(BR)
+            $(MREF std,logger,nulllogger)$(BR)
+        )
+        $(TD
+             Logging.
+        )
+    )
 
 $(COMMENT
     $(LEADINGROW Undocumented modules (intentionally omitted).)
@@ -507,18 +516,6 @@ $(COMMENT
         )
         $(TD
              Deprecated modules.
-        )
-    )
-    $(TR
-        $(TDNW
-            $(MREF std,experimental,logger)$(BR)
-            $(MREF std,experimental,logger,core)$(BR)
-            $(MREF std,experimental,logger,filelogger)$(BR)
-            $(MREF std,experimental,logger,multilogger)$(BR)
-            $(MREF std,experimental,logger,nulllogger)$(BR)
-        )
-        $(TD
-             Experimental modules.
         )
     )
 )

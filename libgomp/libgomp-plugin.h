@@ -49,7 +49,6 @@ enum offload_target_type
   OFFLOAD_TARGET_TYPE_HOST = 2,
   /* OFFLOAD_TARGET_TYPE_HOST_NONSHM = 3 removed.  */
   OFFLOAD_TARGET_TYPE_NVIDIA_PTX = 5,
-  OFFLOAD_TARGET_TYPE_INTEL_MIC = 6,
   OFFLOAD_TARGET_TYPE_HSA = 7,
   OFFLOAD_TARGET_TYPE_GCN = 8
 };
@@ -102,11 +101,11 @@ struct addr_pair
   uintptr_t end;
 };
 
-/* This symbol is to name a target side variable that holds the designated
-   'device number' of the target device. The symbol needs to be available to
-   libgomp code and the offload plugin (which in the latter case must be
-   stringified).  */
-#define GOMP_DEVICE_NUM_VAR __gomp_device_num
+/* This following symbol is used to name the target side variable struct that
+   holds the designated ICVs of the target device. The symbol needs to be
+   available to libgomp code and the offload plugin (which in the latter case
+   must be stringified).  */
+#define GOMP_ADDITIONAL_ICVS __gomp_additional_icvs
 
 /* Miscellaneous functions.  */
 extern void *GOMP_PLUGIN_malloc (size_t) __attribute__ ((malloc));
@@ -121,6 +120,13 @@ extern void GOMP_PLUGIN_error (const char *, ...)
 extern void GOMP_PLUGIN_fatal (const char *, ...)
 	__attribute__ ((noreturn, format (printf, 1, 2)));
 
+extern void GOMP_PLUGIN_target_rev (uint64_t, uint64_t, uint64_t, uint64_t,
+				    uint64_t, int,
+				    void (*) (void *, const void *, size_t,
+					      void *),
+				    void (*) (void *, const void *, size_t,
+					      void *), void *);
+
 /* Prototypes for functions implemented by libgomp plugins.  */
 extern const char *GOMP_OFFLOAD_get_name (void);
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
@@ -130,7 +136,7 @@ extern bool GOMP_OFFLOAD_init_device (int);
 extern bool GOMP_OFFLOAD_fini_device (int);
 extern unsigned GOMP_OFFLOAD_version (void);
 extern int GOMP_OFFLOAD_load_image (int, unsigned, const void *,
-				    struct addr_pair **);
+				    struct addr_pair **, uint64_t **);
 extern bool GOMP_OFFLOAD_unload_image (int, unsigned, const void *);
 extern void *GOMP_OFFLOAD_alloc (int, size_t);
 extern bool GOMP_OFFLOAD_free (int, void *);

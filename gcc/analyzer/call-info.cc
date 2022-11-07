@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -30,11 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "cgraph.h"
 #include "tree-pretty-print.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -56,17 +53,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/diagnostic-manager.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
 #include "analyzer/exploded-graph.h"
 #include "analyzer/call-info.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
 namespace ana {
 
-/* class call_info : public custom_eedge_info_t.  */
+/* class custom_edge_info.  */
+
+bool
+custom_edge_info::update_state (program_state *state,
+				const exploded_edge *eedge,
+				region_model_context *ctxt) const
+{
+  return update_model (state->m_region_model, eedge, ctxt);
+}
+
+/* class call_info : public custom_edge_info.  */
 
 /* Implementation of custom_edge_info::print vfunc for call_info:
    use get_desc to get a label_text, and print it to PP.  */
@@ -109,10 +114,10 @@ call_info::add_events_to_path (checker_path *emission_path,
   tree caller_fndecl = src_point.get_fndecl ();
   const int stack_depth = src_point.get_stack_depth ();
 
-  emission_path->add_event (new call_event (get_call_stmt ()->location,
-					    caller_fndecl,
-					    stack_depth,
-					    this));
+  emission_path->add_event (make_unique<call_event> (get_call_stmt ()->location,
+						     caller_fndecl,
+						     stack_depth,
+						     this));
 }
 
 /* Recreate a call_details instance from this call_info.  */

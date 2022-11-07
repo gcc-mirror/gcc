@@ -64,7 +64,7 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define ("__ARM_ARCH_8A");
 
   builtin_define_with_int_value ("__ARM_ARCH_PROFILE",
-      AARCH64_ISA_V8_R ? 'R' : 'A');
+      AARCH64_ISA_V8R ? 'R' : 'A');
   builtin_define ("__ARM_FEATURE_CLZ");
   builtin_define ("__ARM_FEATURE_IDIV");
   builtin_define ("__ARM_FEATURE_UNALIGNED");
@@ -82,7 +82,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 {
   aarch64_def_or_undef (flag_unsafe_math_optimizations, "__ARM_FP_FAST", pfile);
 
-  builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9 ? 9 : 8);
+  builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9A ? 9 : 8);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
 				 flag_short_enums ? 1 : 4);
@@ -92,7 +92,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_FLOAT, "__ARM_FEATURE_FMA", pfile);
 
-  if (TARGET_FLOAT || TARGET_SIMD)
+  if (TARGET_FLOAT)
     {
       builtin_define_with_int_value ("__ARM_FP", 0x0E);
       builtin_define ("__ARM_FP16_FORMAT_IEEE");
@@ -202,6 +202,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_BF16_SCALAR_ARITHMETIC", pfile);
   aarch64_def_or_undef (TARGET_LS64,
 			"__ARM_FEATURE_LS64", pfile);
+  aarch64_def_or_undef (AARCH64_ISA_RCPC, "__ARM_FEATURE_RCPC", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
@@ -269,19 +270,6 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
      the optab availability predicates get recomputed.  */
   if (pop_target)
     aarch64_save_restore_target_globals (pop_target);
-
-  /* Initialize SIMD builtins if we haven't already.
-     Set current_target_pragma to NULL for the duration so that
-     the builtin initialization code doesn't try to tag the functions
-     being built with the attributes specified by any current pragma, thus
-     going into an infinite recursion.  */
-  if (TARGET_SIMD)
-    {
-      tree saved_current_target_pragma = current_target_pragma;
-      current_target_pragma = NULL;
-      aarch64_init_simd_builtins ();
-      current_target_pragma = saved_current_target_pragma;
-    }
 
   return true;
 }

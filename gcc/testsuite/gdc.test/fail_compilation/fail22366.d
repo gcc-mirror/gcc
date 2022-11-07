@@ -3,7 +3,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail22366.d(13): Error: scope variable `__aaval2` assigned to non-scope `aa[0]`
+fail_compilation/fail22366.d(13): Error: scope variable `x` may not be copied into allocated memory
 ---
 */
 

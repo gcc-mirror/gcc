@@ -97,9 +97,9 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/datetime/interval.d std/datetime/package.d \
 	std/datetime/stopwatch.d std/datetime/systime.d \
 	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
-	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
-	std/digest/murmurhash.d std/digest/package.d std/digest/ripemd.d \
-	std/digest/sha.d std/encoding.d std/exception.d \
+	std/digest/hmac.d std/digest/md.d std/digest/murmurhash.d \
+	std/digest/package.d std/digest/ripemd.d std/digest/sha.d \
+	std/encoding.d std/exception.d \
 	std/experimental/allocator/building_blocks/affix_allocator.d \
 	std/experimental/allocator/building_blocks/aligned_block_list.d \
 	std/experimental/allocator/building_blocks/allocator_list.d \
@@ -127,11 +127,10 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/experimental/logger/core.d std/experimental/logger/filelogger.d \
 	std/experimental/logger/multilogger.d \
 	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
-	std/experimental/typecons.d std/file.d std/format/internal/floats.d \
-	std/format/internal/read.d std/format/internal/write.d \
-	std/format/package.d std/format/read.d std/format/spec.d \
-	std/format/write.d std/functional.d std/getopt.d std/int128.d \
-	std/internal/attributes.d std/internal/cstring.d \
+	std/file.d std/format/internal/floats.d std/format/internal/read.d \
+	std/format/internal/write.d std/format/package.d std/format/read.d \
+	std/format/spec.d std/format/write.d std/functional.d std/getopt.d \
+	std/int128.d std/internal/attributes.d std/internal/cstring.d \
 	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
 	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
 	std/internal/memory.d std/internal/scopebuffer.d \
@@ -139,7 +138,9 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/internal/test/uda.d std/internal/unicode_comp.d \
 	std/internal/unicode_decomp.d std/internal/unicode_grapheme.d \
 	std/internal/unicode_norm.d std/internal/unicode_tables.d \
-	std/internal/windows/advapi32.d std/json.d std/math/algebraic.d \
+	std/internal/windows/advapi32.d std/json.d std/logger/core.d \
+	std/logger/filelogger.d std/logger/multilogger.d \
+	std/logger/nulllogger.d std/logger/package.d std/math/algebraic.d \
 	std/math/constants.d std/math/exponential.d std/math/hardware.d \
 	std/math/operations.d std/math/package.d std/math/remainder.d \
 	std/math/rounding.d std/math/traits.d std/math/trigonometry.d \
@@ -155,6 +156,6 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/stdio.d std/string.d std/sumtype.d std/system.d std/traits.d \
 	std/typecons.d std/typetuple.d std/uni/package.d std/uri.d std/utf.d \
 	std/uuid.d std/variant.d std/windows/charset.d std/windows/registry.d \
-	std/windows/syserror.d std/xml.d std/zip.d std/zlib.d
+	std/windows/syserror.d std/zip.d std/zlib.d
 
 endif

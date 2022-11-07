@@ -1042,8 +1042,7 @@ package body Sem_Ch5 is
                         if Ekind (Comp_Id) = E_Component
                           and then Nkind (Parent (Comp_Id))
                                      = N_Component_Declaration
-                          and then
-                            not Present (Expression (Parent (Comp_Id)))
+                          and then No (Expression (Parent (Comp_Id)))
                         then
                            return True;
                         end if;
@@ -1614,7 +1613,7 @@ package body Sem_Ch5 is
       --  out non-discretes may resolve the ambiguity.
       --  But GNAT extensions allow casing on non-discretes.
 
-      elsif Extensions_Allowed and then Is_Overloaded (Exp) then
+      elsif Core_Extensions_Allowed and then Is_Overloaded (Exp) then
 
          --  It would be nice if we could generate all the right error
          --  messages by calling "Resolve (Exp, Any_Type);" in the
@@ -1632,7 +1631,7 @@ package body Sem_Ch5 is
       --  Check for a GNAT-extension "general" case statement (i.e., one where
       --  the type of the selecting expression is not discrete).
 
-      elsif Extensions_Allowed
+      elsif Core_Extensions_Allowed
          and then not Is_Discrete_Type (Etype (Exp))
       then
          Resolve (Exp, Etype (Exp));
@@ -1670,7 +1669,7 @@ package body Sem_Ch5 is
            ("(Ada 83) case expression cannot be of a generic type", Exp);
          return;
 
-      elsif not Extensions_Allowed
+      elsif not Core_Extensions_Allowed
         and then not Is_Discrete_Type (Exp_Type)
       then
          Error_Msg_N
@@ -2211,7 +2210,7 @@ package body Sem_Ch5 is
 
       procedure Check_Subtype_Definition (Comp_Type : Entity_Id) is
       begin
-         if not Present (Subt) then
+         if No (Subt) then
             return;
          end if;
 
@@ -2231,9 +2230,8 @@ package body Sem_Ch5 is
                   Subt, Comp_Type);
             end if;
 
-         elsif Present (Subt)
-           and then (not Covers (Base_Type (Bas), Comp_Type)
-                      or else not Subtypes_Statically_Match (Bas, Comp_Type))
+         elsif not Covers (Base_Type (Bas), Comp_Type)
+           or else not Subtypes_Statically_Match (Bas, Comp_Type)
          then
             if Is_Array_Type (Typ) then
                Error_Msg_NE
@@ -2330,7 +2328,7 @@ package body Sem_Ch5 is
                   Decl :=
                     Make_Full_Type_Declaration (Loc,
                       Defining_Identifier => S,
-                      Type_Definition  =>
+                      Type_Definition     =>
                         New_Copy_Tree
                           (Access_To_Subprogram_Definition (Subt)));
                end if;
@@ -2430,13 +2428,9 @@ package body Sem_Ch5 is
 
       if not Is_Entity_Name (Iter_Name)
 
-        --  When the context is a quantified expression, the renaming
-        --  declaration is delayed until the expansion phase if we are
-        --  doing expansion.
+        --  Do not perform this expansion in preanalysis
 
-        and then (Nkind (Parent (N)) /= N_Quantified_Expression
-                   or else (Operating_Mode = Check_Semantics
-                            and then not GNATprove_Mode))
+        and then Full_Analysis
 
         --  Do not perform this expansion when expansion is disabled, where the
         --  temporary may hide the transformation of a selected component into
@@ -3365,9 +3359,7 @@ package body Sem_Ch5 is
          declare
             Flist : constant List_Id := Freeze_Entity (Id, N);
          begin
-            if Is_Non_Empty_List (Flist) then
-               Insert_Actions (N, Flist);
-            end if;
+            Insert_Actions (N, Flist);
          end;
       end if;
 

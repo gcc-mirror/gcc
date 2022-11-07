@@ -1300,8 +1300,6 @@ aarch64_get_attributes (unsigned int f, machine_mode mode)
   return aarch64_add_attribute ("leaf", attrs);
 }
 
-static bool aarch64_simd_builtins_initialized_p = false;
-
 /* Due to the architecture not providing lane variant of the lane instructions
    for fcmla we can't use the standard simd builtin expansion code, but we
    still want the majority of the validation that would normally be done.  */
@@ -1551,20 +1549,20 @@ aarch64_scalar_builtin_type_p (aarch64_simd_type t)
 /* Enable AARCH64_FL_* flags EXTRA_FLAGS on top of the base Advanced SIMD
    set.  */
 aarch64_simd_switcher::aarch64_simd_switcher (unsigned int extra_flags)
-  : m_old_isa_flags (aarch64_isa_flags),
+  : m_old_asm_isa_flags (aarch64_asm_isa_flags),
     m_old_general_regs_only (TARGET_GENERAL_REGS_ONLY)
 {
   /* Changing the ISA flags should be enough here.  We shouldn't need to
      pay the compile-time cost of a full target switch.  */
-  aarch64_isa_flags = AARCH64_FL_FP | AARCH64_FL_SIMD | extra_flags;
   global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
+  aarch64_set_asm_isa_flags (AARCH64_FL_FP | AARCH64_FL_SIMD | extra_flags);
 }
 
 aarch64_simd_switcher::~aarch64_simd_switcher ()
 {
   if (m_old_general_regs_only)
     global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
-  aarch64_isa_flags = m_old_isa_flags;
+  aarch64_set_asm_isa_flags (m_old_asm_isa_flags);
 }
 
 /* Implement #pragma GCC aarch64 "arm_neon.h".
@@ -1586,14 +1584,9 @@ handle_arm_neon_h (void)
   aarch64_init_simd_intrinsics ();
 }
 
-void
+static void
 aarch64_init_simd_builtins (void)
 {
-  if (aarch64_simd_builtins_initialized_p)
-    return;
-
-  aarch64_simd_builtins_initialized_p = true;
-
   aarch64_init_simd_builtin_types ();
 
   /* Strong-typing hasn't been implemented for all AdvSIMD builtin intrinsics.

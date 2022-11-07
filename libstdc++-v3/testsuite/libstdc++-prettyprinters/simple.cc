@@ -20,9 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Type printers only recognize the old std::string for now.
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <string>
 #include <deque>
 #include <bitset>
@@ -30,6 +27,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <sstream>
 #include <vector>
 #include <ext/slist>
 
@@ -64,7 +62,7 @@ main()
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
-// { dg-final { regexp-test lst {std::(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
+// { dg-final { regexp-test lst {std::(__cxx11::)?(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
 
   std::list<int>::iterator lstiter0;
 // { dg-final { note-test lstiter0 {non-dereferenceable iterator for std::list} } }
@@ -168,6 +166,20 @@ main()
 
   __gnu_cxx::slist<int>::iterator slliter0;
 // { dg-final { note-test slliter0 {non-dereferenceable iterator for __gnu_cxx::slist} } }
+
+  std::stringstream sstream;
+  sstream << "abc";
+// { dg-final { note-test sstream "\"abc\"" } }
+  std::stringstream ssin("input", std::ios::in);
+// { dg-final { note-test ssin "\"input\"" } }
+  std::istringstream ssin2("input");
+// { dg-final { note-test ssin2 "\"input\"" } }
+  std::ostringstream ssout;
+  ssout << "out";
+// { dg-final { note-test ssout "\"out\"" } }
+  std::stringstream redirected("xxx");
+  static_cast<std::basic_ios<std::stringstream::char_type>&>(redirected).rdbuf(sstream.rdbuf());
+// { dg-final { regexp-test redirected {std::.*stringstream redirected to .*} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT

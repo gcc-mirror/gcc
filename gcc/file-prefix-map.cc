@@ -70,19 +70,29 @@ remap_filename (file_prefix_map *maps, const char *filename)
   file_prefix_map *map;
   char *s;
   const char *name;
+  char *realname;
   size_t name_len;
 
+  if (lbasename (filename) == filename)
+    return filename;
+
+  realname = lrealpath (filename);
+
   for (map = maps; map; map = map->next)
-    if (filename_ncmp (filename, map->old_prefix, map->old_len) == 0)
+    if (filename_ncmp (realname, map->old_prefix, map->old_len) == 0)
       break;
   if (!map)
-    return filename;
-  name = filename + map->old_len;
+    {
+      free (realname);
+      return filename;
+    }
+  name = realname + map->old_len;
   name_len = strlen (name) + 1;
 
   s = (char *) ggc_alloc_atomic (name_len + map->new_len);
   memcpy (s, map->new_prefix, map->new_len);
   memcpy (s + map->new_len, name, name_len);
+  free (realname);
   return s;
 }
 

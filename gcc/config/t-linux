@@ -19,3 +19,7 @@
 linux.o: $(srcdir)/config/linux.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
+
+linux-d.o: $(srcdir)/config/linux-d.cc
+	  $(COMPILE) $<
+	  $(POSTCOMPILE)

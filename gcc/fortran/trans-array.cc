@@ -10378,7 +10378,7 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   /* An allocatable class variable with no reference.  */
   if (sym->ts.type == BT_CLASS
-      && !sym->attr.associate_var
+      && (!sym->attr.associate_var || sym->attr.select_rank_temporary)
       && CLASS_DATA (sym)->attr.allocatable
       && expr->ref
       && ((expr->ref->type == REF_ARRAY && expr->ref->u.ar.type == AR_FULL
@@ -10393,7 +10393,7 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   /* An allocatable variable.  */
   if (sym->attr.allocatable
-      && !sym->attr.associate_var
+      && (!sym->attr.associate_var || sym->attr.select_rank_temporary)
       && expr->ref
       && expr->ref->type == REF_ARRAY
       && expr->ref->u.ar.type == AR_FULL)
@@ -11122,6 +11122,52 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   gfc_add_expr_to_block (&fblock, tmp);
 
   return gfc_finish_block (&fblock);
+}
+
+
+/* Initialize class descriptor's TKR infomation.  */
+
+void
+gfc_trans_class_array (gfc_symbol * sym, gfc_wrapped_block * block)
+{
+  tree type, etype;
+  tree tmp;
+  tree descriptor;
+  stmtblock_t init;
+  locus loc;
+  int rank;
+
+  /* Make sure the frontend gets these right.  */
+  gcc_assert (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
+	      && (CLASS_DATA (sym)->attr.class_pointer
+		  || CLASS_DATA (sym)->attr.allocatable));
+
+  gcc_assert (VAR_P (sym->backend_decl)
+	      || TREE_CODE (sym->backend_decl) == PARM_DECL);
+
+  if (sym->attr.dummy)
+    return;
+
+  descriptor = gfc_class_data_get (sym->backend_decl);
+  type = TREE_TYPE (descriptor);
+
+  if (type == NULL || !GFC_DESCRIPTOR_TYPE_P (type))
+    return;
+
+  gfc_save_backend_locus (&loc);
+  gfc_set_backend_locus (&sym->declared_at);
+  gfc_init_block (&init);
+
+  rank = CLASS_DATA (sym)->as ? (CLASS_DATA (sym)->as->rank) : (0);
+  gcc_assert (rank>=0);
+  tmp = gfc_conv_descriptor_dtype (descriptor);
+  etype = gfc_get_element_type (type);
+  tmp = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp), tmp,
+			 gfc_get_dtype_rank_type (rank, etype));
+  gfc_add_expr_to_block (&init, tmp);
+
+  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
+  gfc_restore_backend_locus (&loc);
 }
 
 

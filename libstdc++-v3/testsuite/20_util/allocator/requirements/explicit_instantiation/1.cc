@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //

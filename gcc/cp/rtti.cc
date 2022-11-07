@@ -787,6 +787,10 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 			       NULL_TREE));
 	      dcast_fn = (build_library_fn_ptr
 			  (fn_name, fn_type, ECF_LEAF | ECF_PURE | ECF_NOTHROW));
+	      /* As with __cxa_atexit in get_atexit_node.  */
+	      DECL_CONTEXT (dcast_fn) = FROB_CONTEXT (current_namespace);
+	      DECL_SOURCE_LOCATION (dcast_fn) = BUILTINS_LOCATION;
+	      dcast_fn = pushdecl (dcast_fn, /*hiding=*/true);
 	      pop_abi_namespace (flags);
 	      dynamic_cast_node = dcast_fn;
 	    }

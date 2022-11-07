@@ -1,4 +1,4 @@
-# Swedish messages for Sc's.
+# Swedish messages for gcc.
 # Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
@@ -26,10 +26,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 12.1.0\n"
+"Project-Id-Version: gcc 12.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-08-17 22:17+0000\n"
-"PO-Revision-Date: 2022-06-09 23:09+0200\n"
+"PO-Revision-Date: 2022-10-02 11:19+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -20975,7 +20975,7 @@ msgstr "argument till Offsetof implicerar indirektion till ett inbäddat fält"
 #: go/gofrontend/expressions.cc:10587 go/gofrontend/expressions.cc:12740
 #: go/gofrontend/expressions.cc:12757 go/gofrontend/expressions.cc:12773
 msgid "not enough arguments"
-msgstr "inte tillräckligt med argument"
+msgstr "för få argument"
 
 #: go/gofrontend/expressions.cc:8439 go/gofrontend/expressions.cc:8475
 #: go/gofrontend/expressions.cc:10270 go/gofrontend/expressions.cc:10388
@@ -21168,7 +21168,7 @@ msgstr "avbildningsindex förväntades på högersidan"
 
 #: go/gofrontend/statements.cc:3198 go/gofrontend/statements.cc:3228
 msgid "not enough arguments to return"
-msgstr "inte tillräckligt med argument att returnera"
+msgstr "för få argument att returnera"
 
 #: go/gofrontend/statements.cc:3206
 msgid "return with value in function with no return type"
@@ -29655,6 +29655,7 @@ msgstr "statisk kedja med funktion som inte använder en"
 msgid "%<__builtin_unreachable%> or %<__builtin_trap%> call with arguments"
 msgstr "%<__builtin_unreachable%> eller %<__builtin_trap%> anropad med argument"
 
+# Misspelling reported as https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107121
 #: tree-cfg.cc:3478
 #, gcc-internal-format
 msgid "%<DEFFERED_INIT%> calls should have same constant size for the first argument and LHS"
@@ -30551,7 +30552,7 @@ msgstr "längden beräknad här"
 #: tree-ssa-strlen.cc:4253
 #, gcc-internal-format
 msgid "%qD of a string of length %wu or more and an array of size %wu evaluates to nonzero"
-msgstr "%qD av strängar med längden %wu eller mer och en vektor av storlek %wu evalueras till nollskilt"
+msgstr "%qD av en sträng med längden %wu eller mer och en vektor av storlek %wu evalueras till nollskilt"
 
 #: tree-ssa-strlen.cc:4255
 #, gcc-internal-format
@@ -32710,7 +32711,7 @@ msgstr "begärd minnesjustering %qE överskrider maximum %u"
 #: c-family/c-common.cc:5679
 #, gcc-internal-format
 msgid "not enough variable arguments to fit a sentinel"
-msgstr "inte tillräckligt med variabla argument för att få plats med en vaktpost"
+msgstr "för få variabla argument för att få plats med en vaktpost"
 
 #: c-family/c-common.cc:5693
 #, gcc-internal-format
@@ -45221,7 +45222,7 @@ msgstr "iterationsdeklaration eller initiering förväntades"
 #: c/c-parser.cc:19440
 #, gcc-internal-format
 msgid "not enough perfectly nested loops"
-msgstr "inte tillräckligt med perfekt nästade slingor"
+msgstr "för få perfekt nästade slingor"
 
 #: c/c-parser.cc:19488 cp/parser.cc:42786
 #, gcc-internal-format
@@ -48940,7 +48941,7 @@ msgstr "(en pekare på medlem kan bara skapas med %<&%E%>)"
 #: cp/class.cc:8694 cp/class.cc:8736
 #, gcc-internal-format
 msgid "not enough type information"
-msgstr "inte tillräcklig typinformation"
+msgstr "för lite typinformation"
 
 #: cp/class.cc:8714
 #, gcc-internal-format
@@ -58202,7 +58203,7 @@ msgstr "iterationsvariabel %qD skall inte vara reduction"
 #: cp/parser.cc:42723
 #, gcc-internal-format
 msgid "not enough for loops to collapse"
-msgstr "inte tillräckligt med for-slingor att kollapsa"
+msgstr "för få for-slingor att kollapsa"
 
 #: cp/parser.cc:45065
 #, gcc-internal-format
@@ -58837,10 +58838,9 @@ msgid "redeclared here as %q#D"
 msgstr "omdeklarerad här som %q#D"
 
 #: cp/pt.cc:6321
-#, fuzzy, gcc-internal-format
-#| msgid "declared here"
+#, gcc-internal-format
 msgid "redeclared here"
-msgstr "deklarerad här"
+msgstr "omdeklarerad här"
 
 #: cp/pt.cc:6332
 #, gcc-internal-format
@@ -62203,10 +62203,9 @@ msgid "toHash() must be declared as extern (D) size_t toHash() const nothrow @sa
 msgstr "toHash() måste deklareras som extern (D) size_t toHash() const nothrow @safe, inte %s"
 
 #: d/typeinfo.cc:1415
-#, fuzzy, gcc-internal-format
-#| msgid "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>"
+#, gcc-internal-format
 msgid "expression %qs requires %<object.TypeInfo%> and cannot be used with %<-fno-rtti%>"
-msgstr "%<object.TypeInfo%> kan inte användas med %<-fno-rtti%>"
+msgstr "uttrycket %qs kräver %<object.TypeInfo%> och kan inte användas med %<-fno-rtti%>"
 
 #: d/typeinfo.cc:1419
 #, gcc-internal-format
@@ -63457,7 +63456,7 @@ msgstr "%qs-argumentet till inbyggd %qs vid %L har en ogiltig permutation av dim
 #: fortran/check.cc:4841
 #, gcc-internal-format, gfc-internal-format
 msgid "Without padding, there are not enough elements in the intrinsic RESHAPE source at %L to match the shape"
-msgstr "Utan utfyllnad finns det inte tillräckligt med element i inbyggda RESHAPE-källan vid %L för att stämma med formen"
+msgstr "Utan utfyllnad finns det för få element i inbyggda RESHAPE-källan vid %L för att stämma med formen"
 
 #: fortran/check.cc:4858 fortran/check.cc:4877
 #, gcc-internal-format
@@ -64500,7 +64499,7 @@ msgstr "Typparameterspecifikationslistan vid %C får inte innehålla både ASSUM
 #: fortran/decl.cc:3833
 #, gcc-internal-format, gfc-internal-format
 msgid "The type parameter spec list at %C does not contain enough parameter expressions"
-msgstr "Typparameterspecifikationslistan vid %C innehåller inte tillräckligt med parameteruttryck"
+msgstr "Typparameterspecifikationslistan vid %C innehåller för få parameteruttryck"
 
 #: fortran/decl.cc:3857
 #, gcc-internal-format
@@ -64853,10 +64852,9 @@ msgid "BIND(C) statement at %C"
 msgstr "BIND(C)-sats vid %C"
 
 #: fortran/decl.cc:6268
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "CLASS variable %qs at %L cannot have the PARAMETER attribute"
+#, gcc-internal-format, gfc-internal-format
 msgid "CLASS entity at %C cannot have the PARAMETER attribute"
-msgstr "CLASS-variabeln %qs vid %L får inte ha attributet PARAMETER"
+msgstr "CLASS-entiteten vid %C får inte ha attributet PARAMETER"
 
 #: fortran/decl.cc:6300
 #, gcc-internal-format, gfc-internal-format
@@ -65142,7 +65140,7 @@ msgstr "ENTRY-sats vid %L med BIND(C) är otillåten i en elementär procedur"
 #: fortran/decl.cc:8060
 #, gcc-internal-format, gfc-internal-format
 msgid "Alternate return dummy argument cannot appear in a SUBROUTINE with the BIND(C) attribute at %L"
-msgstr "Alternativt returattrappgument får inte förekomma i en SUBROUTINE med attributet BIND(C) vid %L"
+msgstr "Alternativt returattrappargument får inte förekomma i en SUBROUTINE med attributet BIND(C) vid %L"
 
 #: fortran/decl.cc:8123 fortran/decl.cc:8130
 #, gcc-internal-format, gfc-internal-format
@@ -70510,6 +70508,7 @@ msgstr "Den implicit deklarerade subrutinen %s används i !$OMP DECLARE REDUCTIO
 msgid "ORDERED clause parameter is less than COLLAPSE at %L"
 msgstr "ORDERED-klausulparameter är mindre än COLLAPSE vid %L"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107122
 #: fortran/openmp.cc:6294
 #, gcc-internal-format, gfc-internal-format
 msgid "ORDER clause must not be used together ORDERED at %L"
@@ -70943,7 +70942,7 @@ msgstr "En skalär inbyggd variabel förväntades vid %L i atomär jämförelse"
 #: fortran/openmp.cc:7885
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected scalar intrinsic expression at %L in atomic comparison"
-msgstr "Ett skalärt inbyggt uttryck förväntades vid %L vid i atomär jämförelse"
+msgstr "Ett skalärt inbyggt uttryck förväntades vid %L i atomär jämförelse"
 
 #: fortran/openmp.cc:7893
 #, gcc-internal-format, gfc-internal-format
@@ -71113,7 +71112,7 @@ msgstr "kollapsade %s-slingor är inte perfekt nästade vid %L"
 #: fortran/openmp.cc:8640 fortran/openmp.cc:8648
 #, gcc-internal-format, gfc-internal-format
 msgid "not enough DO loops for collapsed %s at %L"
-msgstr "inte tillräckligt med DO-slingor för kollapsad %s vid %L"
+msgstr "för få DO-slingor för kollapsad %s vid %L"
 
 #: fortran/openmp.cc:8853 fortran/openmp.cc:8866
 #, gcc-internal-format, gfc-internal-format
@@ -71148,7 +71147,7 @@ msgstr "%s !$ACC LOOP-slingor är inte perfekt nästade vid %L"
 #: fortran/openmp.cc:8935 fortran/openmp.cc:8944
 #, gcc-internal-format, gfc-internal-format
 msgid "not enough DO loops for %s !$ACC LOOP at %L"
-msgstr "inte tillräckligt med DO-slingor för %s !$ACC LOOP vid %L"
+msgstr "för få DO-slingor för %s !$ACC LOOP vid %L"
 
 #: fortran/openmp.cc:8960
 #, gcc-internal-format, gfc-internal-format
@@ -72613,7 +72612,7 @@ msgstr "Gränssnittet stämmer inte för procedurpekarkomponenten %qs i postkons
 #: fortran/resolve.cc:1484
 #, gcc-internal-format
 msgid "Bad array spec of component %qs referenced in structure constructor at %L"
-msgstr "Felaktig vektorcspecifikation av kompnenten %qs refererad i postkonstruerare vid %L"
+msgstr "Felaktig vektorspecifikation av komponenten %qs refererad i postkonstruerare vid %L"
 
 #: fortran/resolve.cc:1497
 #, gcc-internal-format
@@ -75900,7 +75899,7 @@ msgstr "ej konstant initieringsuttryck vid %L"
 #: fortran/trans-decl.cc:761
 #, gcc-internal-format
 msgid "Array %qs at %L is larger than limit set by %<-fmax-stack-var-size=%>, moved from stack to static storage. This makes the procedure unsafe when called recursively, or concurrently from multiple threads. Consider increasing the %<-fmax-stack-var-size=%> limit (or use %<-frecursive%>, which implies unlimited %<-fmax-stack-var-size%>) - or change the code to use an ALLOCATABLE array. If the variable is never accessed concurrently, this warning can be ignored, and the variable could also be declared with the SAVE attribute."
-msgstr "Vektorn %qs vid %L är större än gränsen satt med %<-fmax-stack-var-size=%>, flyttad från stacken till statisk lagring.  Detta gör proceduren osäker när den anropas rekursivt, eller samtidigt från flera trådar.  Överväg att öka gränsen %<-fmax-stack-var-size=%> (eller anvånd %<-frecursive%>, som implicerad obegränsad %<-fmax-stack-var-size=%> – eller ändra koden till att använda en ALLOCATABLE vektor. Om variabeln aldrig används av flera samtidigt kan denna varning ignoreras och variabeln skulle också kunna deklareras med attributet SAVE."
+msgstr "Vektorn %qs vid %L är större än gränsen satt med %<-fmax-stack-var-size=%>, flyttad från stacken till statisk lagring.  Detta gör proceduren osäker när den anropas rekursivt, eller samtidigt från flera trådar.  Överväg att öka gränsen %<-fmax-stack-var-size=%> (eller använd %<-frecursive%>, som implicerad obegränsad %<-fmax-stack-var-size=%> – eller ändra koden till att använda en ALLOCATABLE vektor. Om variabeln aldrig används av flera samtidigt kan denna varning ignoreras och variabeln skulle också kunna deklareras med attributet SAVE."
 
 #: fortran/trans-decl.cc:1790
 #, gcc-internal-format

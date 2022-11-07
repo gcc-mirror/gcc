@@ -22,6 +22,9 @@
 
 #include <ranges>
 #include <functional>
+#if __STDC_HOSTED__
+#include <string>
+#endif
 
 namespace ranges = std::ranges;
 namespace views = std::ranges::views;
@@ -38,9 +41,11 @@ test01()
   static_assert(__adaptor_has_simple_extra_args<decltype(views::take), int>);
   static_assert(__adaptor_has_simple_extra_args<decltype(views::take_while), identity>);
   static_assert(__adaptor_has_simple_extra_args<decltype(views::drop_while), identity>);
-  static_assert(__adaptor_has_simple_extra_args<decltype(views::lazy_split), std::string_view>);
   static_assert(__adaptor_has_simple_extra_args<decltype(views::lazy_split), char>);
+#if __STDC_HOSTED__
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::lazy_split), std::string_view>);
   static_assert(!__adaptor_has_simple_extra_args<decltype(views::lazy_split), std::string>);
+#endif
 
   using views::__adaptor::__closure_has_simple_call_op;
   __closure_has_simple_call_op auto a00 = views::all;
@@ -60,6 +65,7 @@ test01()
   __closure_has_simple_call_op auto b
     = (a00 | a01) | (a02 | a03) | (a04 | a05 | a06) | (a07 | a08 | a09 | a10) | a11;
 
+#if __STDC_HOSTED__
   // Verify views::lazy_split(non_view_range) is an exception.
   extern std::string s;
   auto a12 = views::lazy_split(s);
@@ -72,6 +78,7 @@ test01()
   static_assert(!__closure_has_simple_call_op<decltype(a12a)>);
   static_assert(!__closure_has_simple_call_op<decltype(a12a | a00)>);
   static_assert(!__closure_has_simple_call_op<decltype(a00 | a12a)>);
+#endif
 }
 
 void
@@ -129,6 +136,7 @@ test03()
 void
 test04()
 {
+#if __STDC_HOSTED__
   // Non-trivially-copyable extra arguments make a closure not simple.
   using F = std::function<bool(bool)>;
   static_assert(!std::is_trivially_copyable_v<F>);
@@ -137,6 +145,7 @@ test04()
   static_assert(!__closure_has_simple_call_op<decltype(views::drop_while(std::declval<F>()))>);
   static_assert(!__closure_has_simple_call_op<decltype(views::filter(std::declval<F>()))>);
   static_assert(!__closure_has_simple_call_op<decltype(views::transform(std::declval<F>()))>);
+#endif
 }
 
 // { dg-prune-output "in requirements" }

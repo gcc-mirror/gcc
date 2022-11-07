@@ -5,7 +5,6 @@ public import core.sys.posix.fcntl;
 version (linux):
 extern(C):
 nothrow:
-@system:
 
 // From linux/falloc.h
 /// fallocate(2) params
@@ -42,7 +41,7 @@ These cmd values will set locks that conflict with process-associated
 record  locks, but are "owned" by the open file description, not the
 process. This means that they are inherited across fork() like BSD (flock)
 locks, and they are only released automatically when the last reference to
-the the open file against which they were acquired is put.
+the open file against which they were acquired is put.
 
 */
 enum

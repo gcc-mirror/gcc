@@ -215,11 +215,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	case OPT_gdwarf:
 	case OPT_gdwarf_:
 	case OPT_ggdb:
-	case OPT_gstabs:
-	case OPT_gstabs_:
 	case OPT_gvms:
-	case OPT_gxcoff:
-	case OPT_gxcoff_:
 	  saw_opt_g = true;
 	  break;
 

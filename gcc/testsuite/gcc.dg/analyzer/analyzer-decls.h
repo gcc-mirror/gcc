@@ -47,4 +47,7 @@ extern void __analyzer_dump_state (const char *name, ...);
    truthfulness of the argument.  */
 extern void __analyzer_eval (int);
 
+/* Obtain an "unknown" void *.  */
+extern void *__analyzer_get_unknown_ptr (void);
+
 #endif /* #ifndef ANALYZER_DECLS_H.  */

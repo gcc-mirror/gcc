@@ -184,12 +184,12 @@ enum bpf_builtins
 
   /* Compile Once - Run Everywhere (CO-RE) support.  */
   BPF_BUILTIN_PRESERVE_ACCESS_INDEX,
+  BPF_BUILTIN_PRESERVE_FIELD_INFO,
 
   BPF_BUILTIN_MAX,
 };
 
 static GTY (()) tree bpf_builtins[(int) BPF_BUILTIN_MAX];
-
 
 void bpf_register_coreattr_pass (void);
 
@@ -291,6 +291,7 @@ void
 bpf_target_macros (cpp_reader *pfile)
 {
   builtin_define ("__BPF__");
+  builtin_define ("__bpf__");
 
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__BPF_BIG_ENDIAN__");
@@ -427,7 +428,6 @@ bpf_compute_frame_layout (void)
 void
 bpf_expand_prologue (void)
 {
-  rtx insn;
   HOST_WIDE_INT size;
 
   size = (cfun->machine->local_vars_size
@@ -467,7 +467,7 @@ bpf_expand_prologue (void)
 				       plus_constant (DImode,
 						      hard_frame_pointer_rtx,
 						      fp_offset - 8));
-		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
+		  emit_move_insn (mem, gen_rtx_REG (DImode, regno));
 		  fp_offset -= 8;
 		}
 	    }
@@ -480,15 +480,15 @@ bpf_expand_prologue (void)
      accessor.  */
   if (cfun->calls_alloca)
     {
-      insn = emit_move_insn (stack_pointer_rtx,
-			     hard_frame_pointer_rtx);
+      emit_move_insn (stack_pointer_rtx,
+                      hard_frame_pointer_rtx);
 
       if (size > 0)
 	{
-	  insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
-					 gen_rtx_PLUS (Pmode,
-						       stack_pointer_rtx,
-						       GEN_INT (-size))));
+	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
+                                  gen_rtx_PLUS (Pmode,
+                                                stack_pointer_rtx,
+                                                GEN_INT (-size))));
 	}
     }
 }
@@ -503,7 +503,6 @@ bpf_expand_epilogue (void)
      not restoring callee-saved registers in BPF.  */
   if (TARGET_XBPF)
     {
-      rtx insn;
       int regno;
       int fp_offset = -cfun->machine->local_vars_size;
 
@@ -527,7 +526,7 @@ bpf_expand_epilogue (void)
 				       plus_constant (DImode,
 						      hard_frame_pointer_rtx,
 						      fp_offset - 8));
-		  insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
+		  emit_move_insn (gen_rtx_REG (DImode, regno), mem);
 		  fp_offset -= 8;
 		}
 	    }
@@ -659,12 +658,15 @@ bpf_address_base_p (rtx x, bool strict)
    target machine for a memory operand of mode MODE.  */
 
 static bool
-bpf_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
+bpf_legitimate_address_p (machine_mode mode,
 			  rtx x,
 			  bool strict)
 {
   switch (GET_CODE (x))
     {
+    case CONST_INT:
+      return (mode == FUNCTION_MODE);
+
     case REG:
       return bpf_address_base_p (x, strict);
 
@@ -964,6 +966,9 @@ bpf_init_builtins (void)
   def_builtin ("__builtin_preserve_access_index",
 	       BPF_BUILTIN_PRESERVE_ACCESS_INDEX,
 	       build_function_type_list (ptr_type_node, ptr_type_node, 0));
+  def_builtin ("__builtin_preserve_field_info",
+	       BPF_BUILTIN_PRESERVE_FIELD_INFO,
+	       build_function_type_list (unsigned_type_node, ptr_type_node, unsigned_type_node, 0));
 }
 
 #undef TARGET_INIT_BUILTINS
@@ -972,6 +977,199 @@ bpf_init_builtins (void)
 static tree bpf_core_compute (tree, vec<unsigned int> *);
 static int bpf_core_get_index (const tree);
 static bool is_attr_preserve_access (tree);
+
+/* BPF Compile Once - Run Everywhere (CO-RE) support. Construct a CO-RE
+   relocation record for EXPR of kind KIND to be emitted in the .BTF.ext
+   section. Does nothing if we are not targetting BPF CO-RE, or if the
+   constructed relocation would be a no-op.  */
+
+static void
+maybe_make_core_relo (tree expr, enum btf_core_reloc_kind kind)
+{
+  /* If we are not targetting BPF CO-RE, do not make a relocation. We
+     might not be generating any debug info at all.  */
+  if (!TARGET_BPF_CORE)
+    return;
+
+  auto_vec<unsigned int, 16> accessors;
+  tree container = bpf_core_compute (expr, &accessors);
+
+  /* Any valid use of the builtin must have at least one access. Otherwise,
+     there is nothing to record and nothing to do. This is primarily a
+     guard against optimizations leading to unexpected expressions in the
+     argument of the builtin. For example, if the builtin is used to read
+     a field of a structure which can be statically determined to hold a
+     constant value, the argument to the builtin will be optimized to that
+     constant. This is OK, and means the builtin call is superfluous.
+     e.g.
+     struct S foo;
+     foo.a = 5;
+     int x = __preserve_access_index (foo.a);
+     ... do stuff with x
+     'foo.a' in the builtin argument will be optimized to '5' with -01+.
+     This sequence does not warrant recording a CO-RE relocation.  */
+
+  if (accessors.length () < 1)
+    return;
+  accessors.reverse ();
+
+  rtx_code_label *label = gen_label_rtx ();
+  LABEL_PRESERVE_P (label) = 1;
+  emit_label (label);
+
+  /* Determine what output section this relocation will apply to.
+     If this function is associated with a section, use that. Otherwise,
+     fall back on '.text'.  */
+  const char * section_name;
+  if (current_function_decl && DECL_SECTION_NAME (current_function_decl))
+    section_name = DECL_SECTION_NAME (current_function_decl);
+  else
+    section_name = ".text";
+
+  /* Add the CO-RE relocation information to the BTF container.  */
+  bpf_core_reloc_add (TREE_TYPE (container), section_name, &accessors, label,
+		      kind);
+}
+
+/* Expand a call to __builtin_preserve_field_info by evaluating the requested
+   information about SRC according to KIND, and return a tree holding
+   the result.  */
+
+static tree
+bpf_core_field_info (tree src, enum btf_core_reloc_kind kind)
+{
+  unsigned int result;
+  poly_int64 bitsize, bitpos;
+  tree var_off = NULL_TREE;
+  machine_mode mode;
+  int unsignedp, reversep, volatilep;
+  location_t loc = EXPR_LOCATION (src);
+
+  get_inner_reference (src, &bitsize, &bitpos, &var_off, &mode, &unsignedp,
+		       &reversep, &volatilep);
+
+  /* Note: Use DECL_BIT_FIELD_TYPE rather than DECL_BIT_FIELD here, because it
+     remembers whether the field in question was originally declared as a
+     bitfield, regardless of how it has been optimized.  */
+  bool bitfieldp = (TREE_CODE (src) == COMPONENT_REF
+		    && DECL_BIT_FIELD_TYPE (TREE_OPERAND (src, 1)));
+
+  unsigned int align = TYPE_ALIGN (TREE_TYPE (src));
+  if (TREE_CODE (src) == COMPONENT_REF)
+    {
+      tree field = TREE_OPERAND (src, 1);
+      if (DECL_BIT_FIELD_TYPE (field))
+	align = TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field));
+      else
+	align = TYPE_ALIGN (TREE_TYPE (field));
+    }
+
+  unsigned int start_bitpos = bitpos & ~(align - 1);
+  unsigned int end_bitpos = start_bitpos + align;
+
+  switch (kind)
+    {
+    case BPF_RELO_FIELD_BYTE_OFFSET:
+      {
+	if (var_off != NULL_TREE)
+	  {
+	    error_at (loc, "unsupported variable field offset");
+	    return error_mark_node;
+	  }
+
+	if (bitfieldp)
+	  result = start_bitpos / 8;
+	else
+	  result = bitpos / 8;
+      }
+      break;
+
+    case BPF_RELO_FIELD_BYTE_SIZE:
+      {
+	if (mode == BLKmode && bitsize == -1)
+	  {
+	    error_at (loc, "unsupported variable size field access");
+	    return error_mark_node;
+	  }
+
+	if (bitfieldp)
+	  {
+	    /* To match LLVM behavior, byte size of bitfields is recorded as
+	       the full size of the base type. A 3-bit bitfield of type int is
+	       therefore recorded as having a byte size of 4 bytes. */
+	    result = end_bitpos - start_bitpos;
+	    if (result & (result - 1))
+	      {
+		error_at (loc, "unsupported field expression");
+		return error_mark_node;
+	      }
+	    result = result / 8;
+	  }
+	else
+	  result = bitsize / 8;
+      }
+      break;
+
+    case BPF_RELO_FIELD_EXISTS:
+      /* The field always exists at compile time.  */
+      result = 1;
+      break;
+
+    case BPF_RELO_FIELD_SIGNED:
+      result = !unsignedp;
+      break;
+
+    case BPF_RELO_FIELD_LSHIFT_U64:
+    case BPF_RELO_FIELD_RSHIFT_U64:
+      {
+	if (mode == BLKmode && bitsize == -1)
+	  {
+	    error_at (loc, "unsupported variable size field access");
+	    return error_mark_node;
+	  }
+	if (var_off != NULL_TREE)
+	  {
+	    error_at (loc, "unsupported variable field offset");
+	    return error_mark_node;
+	  }
+
+	if (!bitfieldp)
+	  {
+	    if (bitsize > 64)
+	      {
+		error_at (loc, "field size too large");
+		return error_mark_node;
+	      }
+	    result = 64 - bitsize;
+	    break;
+	  }
+
+	if (end_bitpos - start_bitpos > 64)
+	  {
+	    error_at (loc, "field size too large");
+	    return error_mark_node;
+	  }
+
+	if (kind == BPF_RELO_FIELD_LSHIFT_U64)
+	  {
+	    if (TARGET_BIG_ENDIAN)
+	      result = bitpos + 64 - start_bitpos - align;
+	    else
+	      result = start_bitpos + 64 - bitpos - bitsize;
+	  }
+	else /* RSHIFT_U64 */
+	  result = 64 - bitsize;
+      }
+      break;
+
+    default:
+      error ("invalid second argument to built-in function");
+      return error_mark_node;
+      break;
+    }
+
+  return build_int_cst (unsigned_type_node, result);
+}
 
 /* Expand a call to a BPF-specific built-in function that was set up
    with bpf_init_builtins.  */
@@ -1023,16 +1221,14 @@ bpf_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       /* The result of the load is in R0.  */
       return gen_rtx_REG (ops[0].mode, BPF_R0);
     }
+
   else if (code == -1)
     {
-      /* A resolved overloaded builtin, e.g. __bpf_preserve_access_index_si */
+      /* A resolved overloaded __builtin_preserve_access_index.  */
       tree arg = CALL_EXPR_ARG (exp, 0);
 
       if (arg == NULL_TREE)
 	return NULL_RTX;
-
-      auto_vec<unsigned int, 16> accessors;
-      tree container;
 
       if (TREE_CODE (arg) == SSA_NAME)
 	{
@@ -1047,51 +1243,42 @@ bpf_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       /* Avoid double-recording information if the argument is an access to
 	 a struct/union marked __attribute__((preserve_access_index)). This
 	 Will be handled by the attribute handling pass.  */
-      if (is_attr_preserve_access (arg))
-	return expand_normal (arg);
-
-      container = bpf_core_compute (arg, &accessors);
-
-      /* Any valid use of the builtin must have at least one access. Otherwise,
-	 there is nothing to record and nothing to do. This is primarily a
-	 guard against optimizations leading to unexpected expressions in the
-	 argument of the builtin. For example, if the builtin is used to read
-	 a field of a structure which can be statically determined to hold a
-	 constant value, the argument to the builtin will be optimized to that
-	 constant. This is OK, and means the builtin call is superfluous.
-	 e.g.
-	   struct S foo;
-	   foo.a = 5;
-	   int x = __preserve_access_index (foo.a);
-	   ... do stuff with x
-	 'foo.a' in the builtin argument will be optimized to '5' with -01+.
-	 This sequence does not warrant recording a CO-RE relocation.  */
-
-      if (accessors.length () < 1)
-	return expand_normal (arg);
-
-      accessors.reverse ();
-
-      container = TREE_TYPE (container);
-
-      rtx_code_label *label = gen_label_rtx ();
-      LABEL_PRESERVE_P (label) = 1;
-      emit_label (label);
-
-      /* Determine what output section this relocation will apply to.
-	 If this function is associated with a section, use that. Otherwise,
-	 fall back on '.text'.  */
-      const char * section_name;
-      if (current_function_decl && DECL_SECTION_NAME (current_function_decl))
-	section_name = DECL_SECTION_NAME (current_function_decl);
-      else
-	section_name = ".text";
-
-      /* Add the CO-RE relocation information to the BTF container.  */
-      bpf_core_reloc_add (container, section_name, &accessors, label);
+      if (!is_attr_preserve_access (arg))
+	maybe_make_core_relo (arg, BPF_RELO_FIELD_BYTE_OFFSET);
 
       return expand_normal (arg);
     }
+
+  else if (code == -2)
+    {
+      /* A resolved overloaded __builtin_preserve_field_info.  */
+      tree src = CALL_EXPR_ARG (exp, 0);
+      tree kind_tree = CALL_EXPR_ARG (exp, 1);
+      unsigned HOST_WIDE_INT kind_val;
+      if (tree_fits_uhwi_p (kind_tree))
+	kind_val = tree_to_uhwi (kind_tree);
+      else
+	error ("invalid argument to built-in function");
+
+      enum btf_core_reloc_kind kind = (enum btf_core_reloc_kind) kind_val;
+
+      if (TREE_CODE (src) == SSA_NAME)
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (src);
+	  if (is_gimple_assign (def_stmt))
+	    src = gimple_assign_rhs1 (def_stmt);
+	}
+      if (TREE_CODE (src) == ADDR_EXPR)
+	src = TREE_OPERAND (src, 0);
+
+      tree result = bpf_core_field_info (src, kind);
+
+      if (result != error_mark_node)
+	maybe_make_core_relo (src, kind);
+
+      return expand_normal (result);
+    }
+
   gcc_unreachable ();
 }
 
@@ -1257,41 +1444,64 @@ bpf_core_get_index (const tree node)
    __builtin_preserve_access_index.  */
 
 static tree
-bpf_core_newdecl (tree type)
+bpf_core_newdecl (tree type, bool is_pai)
 {
-  tree rettype = build_function_type_list (type, type, NULL);
+  tree rettype;
   char name[80];
-  int len = snprintf (name, sizeof (name), "%s", "__builtin_pai_");
+  static unsigned long pai_count = 0;
+  static unsigned long pfi_count = 0;
 
-  static unsigned long cnt = 0;
-  len = snprintf (name + len, sizeof (name) - len, "%lu", cnt++);
+  if (is_pai)
+    {
+      rettype = build_function_type_list (type, type, NULL);
+      int len = snprintf (name, sizeof (name), "%s", "__builtin_pai_");
+      len = snprintf (name + len, sizeof (name) - len, "%lu", pai_count++);
+    }
+  else
+    {
+      rettype = build_function_type_list (unsigned_type_node, type,
+					  unsigned_type_node, NULL);
+      int len = snprintf (name, sizeof (name), "%s", "__builtin_pfi_");
+      len = snprintf (name + len, sizeof (name) - len, "%lu", pfi_count++);
+    }
 
-  return add_builtin_function_ext_scope (name, rettype, -1, BUILT_IN_MD, NULL,
-					 NULL_TREE);
+  return add_builtin_function_ext_scope (name, rettype, is_pai ? -1 : -2,
+					 BUILT_IN_MD, NULL, NULL_TREE);
 }
 
 /* Return whether EXPR could access some aggregate data structure that
    BPF CO-RE support needs to know about.  */
 
-static int
+static bool
 bpf_core_is_maybe_aggregate_access (tree expr)
 {
-  enum tree_code code = TREE_CODE (expr);
-  if (code == COMPONENT_REF || code == ARRAY_REF)
-    return 1;
-
-  if (code == ADDR_EXPR)
+  switch (TREE_CODE (expr))
+    {
+    case COMPONENT_REF:
+    case BIT_FIELD_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      return true;
+    case ADDR_EXPR:
+    case NOP_EXPR:
       return bpf_core_is_maybe_aggregate_access (TREE_OPERAND (expr, 0));
-
-  return 0;
+    default:
+      return false;
+    }
 }
+
+struct core_walk_data {
+  location_t loc;
+  tree arg;
+};
 
 /* Callback function used with walk_tree from bpf_resolve_overloaded_builtin.  */
 
 static tree
 bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
 {
-  location_t loc = *((location_t *) data);
+  struct core_walk_data *dat = (struct core_walk_data *) data;
+  bool is_pai = dat->arg == NULL_TREE;
 
   /* If this is a type, don't do anything. */
   if (TYPE_P (*tp))
@@ -1300,10 +1510,18 @@ bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
       return NULL_TREE;
     }
 
+  /* Build a new function call to a resolved builtin for the desired operation.
+     If this is a preserve_field_info call, pass along the argument to the
+     resolved builtin call. */
   if (bpf_core_is_maybe_aggregate_access (*tp))
     {
-      tree newdecl = bpf_core_newdecl (TREE_TYPE (*tp));
-      tree newcall = build_call_expr_loc (loc, newdecl, 1, *tp);
+      tree newdecl = bpf_core_newdecl (TREE_TYPE (*tp), is_pai);
+      tree newcall;
+      if (is_pai)
+	newcall = build_call_expr_loc (dat->loc, newdecl, 1, *tp);
+      else
+	newcall = build_call_expr_loc (dat->loc, newdecl, 2, *tp, dat->arg);
+
       *tp = newcall;
       *walk_subtrees = 0;
     }
@@ -1311,6 +1529,46 @@ bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
+/* Implement target hook small_register_classes_for_mode_p.  */
+
+static bool
+bpf_small_register_classes_for_mode_p (machine_mode mode)
+{
+  if (TARGET_XBPF)
+    return 1;
+  else
+    /* Avoid putting function addresses in registers, as calling these
+       is not supported in eBPF.  */
+    return (mode != FUNCTION_MODE);
+}
+
+#undef TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
+  bpf_small_register_classes_for_mode_p
+
+/* Return whether EXPR is a valid first argument for a call to
+   __builtin_preserve_field_info.  */
+
+static bool
+bpf_is_valid_preserve_field_info_arg (tree expr)
+{
+  switch (TREE_CODE (expr))
+    {
+    case COMPONENT_REF:
+    case BIT_FIELD_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      return true;
+    case NOP_EXPR:
+      return bpf_is_valid_preserve_field_info_arg (TREE_OPERAND (expr, 0));
+    case ADDR_EXPR:
+      /* Do not accept ADDR_EXPRs like &foo.bar, but do accept accesses like
+	 foo.baz where baz is an array.  */
+      return (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == ARRAY_TYPE);
+    default:
+      return false;
+    }
+}
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN (see gccint manual section
    Target Macros::Misc.).
@@ -1326,7 +1584,12 @@ bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
 static tree
 bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
 {
-  if (DECL_MD_FUNCTION_CODE (fndecl) != BPF_BUILTIN_PRESERVE_ACCESS_INDEX)
+  bool is_pai = DECL_MD_FUNCTION_CODE (fndecl)
+    == BPF_BUILTIN_PRESERVE_ACCESS_INDEX;
+  bool is_pfi = DECL_MD_FUNCTION_CODE (fndecl)
+    == BPF_BUILTIN_PRESERVE_FIELD_INFO;
+
+  if (!is_pai && !is_pfi)
     return NULL_TREE;
 
   /* We only expect one argument, but it may be an arbitrarily-complicated
@@ -1334,17 +1597,25 @@ bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
   vec<tree, va_gc> *params = static_cast<vec<tree, va_gc> *> (arglist);
   unsigned n_params = params ? params->length() : 0;
 
-  if (n_params != 1)
+  if ((is_pai && n_params != 1) || (is_pfi && n_params != 2))
     {
-      error_at (loc, "expected exactly 1 argument");
-      return NULL_TREE;
+      error_at (loc, "wrong number of arguments");
+      return error_mark_node;
     }
 
   tree param = (*params)[0];
 
-  /* If not generating BPF_CORE information, the builtin does nothing.  */
-  if (!TARGET_BPF_CORE)
+  /* If not generating BPF_CORE information, preserve_access_index does nothing,
+     and simply "resolves to" the argument.  */
+  if (!TARGET_BPF_CORE && is_pai)
     return param;
+
+  if (is_pfi && !bpf_is_valid_preserve_field_info_arg (param))
+    {
+      error_at (EXPR_LOC_OR_LOC (param, loc),
+		"argument is not a field access");
+      return error_mark_node;
+    }
 
   /* Do remove_c_maybe_const_expr for the arg.
      TODO: WHY do we have to do this here? Why doesn't c-typeck take care
@@ -1369,7 +1640,11 @@ bpf_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
      This ensures that all the relevant information remains within the
      expression trees the builtin finally gets.  */
 
-  walk_tree (&param, bpf_core_walk, (void *) &loc, NULL);
+  struct core_walk_data data;
+  data.loc = loc;
+  data.arg = is_pai ? NULL_TREE : (*params)[1];
+
+  walk_tree (&param, bpf_core_walk, (void *) &data, NULL);
 
   return param;
 }
@@ -1506,7 +1781,8 @@ handle_attr_preserve (function *fn)
 		      emit_label (label);
 
 		      /* Add the CO-RE relocation information to the BTF container.  */
-		      bpf_core_reloc_add (container, section_name, &accessors, label);
+		      bpf_core_reloc_add (container, section_name, &accessors, label,
+					  BPF_RELO_FIELD_BYTE_OFFSET);
 		    }
 		}
 	    }

@@ -18,5 +18,6 @@ test2 (svbool_t pg, svbool_t x, svbool_t y, int *any)
   return svptest_any (pg, res);
 }
 
-/* { dg-final { scan-assembler-times {\tbrkns\t} 2 } } */
-/* { dg-final { scan-assembler-not {\tbrkn\t} } } */
+/* { dg-final { scan-assembler-times {\tbrkn\t} 2 } } */
+/* { dg-final { scan-assembler-times {\tptest\t} 2 } } */
+/* { dg-final { scan-assembler-not {\tbrkns\t} } } */

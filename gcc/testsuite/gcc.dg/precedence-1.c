@@ -135,10 +135,10 @@ f (void)
   ASSERT_BIN (0, !=, 2, &, 1, 1, 1, 0);
   ASSERT_BIN (1, &, 2, ==, 0, 0, 1, 0);
   ASSERT_BIN (1, &, 2, !=, 0, 1, 0, 1);
-  ASSERT_BIN (1, &, 2, ^, 3, 3, 3, 1);
+  ASSERT_BIN (1, &, 0x2, ^, 3, 3, 3, 1);
   ASSERT_BIN (3, ^, 2, &, 1, 3, 1, 3);
   ASSERT_BIN (3, ^, 2, |, 1, 1, 1, 0);
-  ASSERT_BIN (3, |, 2, ^, 1, 3, 2, 3);
+  ASSERT_BIN (3, |, 0x2, ^, 1, 3, 2, 3);
   ASSERT_BIN (2, |, 0, &&, 2, 1, 1, 2);
   ASSERT_BIN (2, &&, 0, |, 2, 1, 2, 1);
   ASSERT_BIN (0, &&, 0, ||, 1, 1, 1, 0);

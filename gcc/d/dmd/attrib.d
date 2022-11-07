@@ -894,48 +894,7 @@ extern (C++) final class PragmaDeclaration : AttribDeclaration
             // then it's evaluated on demand in function semantic
             return createNewScope(sc, sc.stc, sc.linkage, sc.cppmangle, sc.visibility, sc.explicitVisibility, sc.aligndecl, this);
         }
-        if (ident == Id.printf || ident == Id.scanf)
-        {
-            auto sc2 = sc.push();
-
-            if (ident == Id.printf)
-                // Override previous setting, never let both be set
-                sc2.flags = (sc2.flags & ~SCOPE.scanf) | SCOPE.printf;
-            else
-                sc2.flags = (sc2.flags & ~SCOPE.printf) | SCOPE.scanf;
-
-            return sc2;
-        }
         return sc;
-    }
-
-    PINLINE evalPragmaInline(Scope* sc)
-    {
-        if (!args || args.dim == 0)
-            return PINLINE.default_;
-
-        Expression e = (*args)[0];
-        if (!e.type)
-        {
-
-            sc = sc.startCTFE();
-            e = e.expressionSemantic(sc);
-            e = resolveProperties(sc, e);
-            sc = sc.endCTFE();
-            e = e.ctfeInterpret();
-            e = e.toBoolean(sc);
-            if (e.isErrorExp())
-                error("pragma(`inline`, `true` or `false`) expected, not `%s`", (*args)[0].toChars());
-            (*args)[0] = e;
-        }
-
-        const opt = e.toBool();
-        if (opt.isEmpty())
-            return PINLINE.default_;
-        else if (opt.get())
-            return PINLINE.always;
-        else
-            return PINLINE.never;
     }
 
     override const(char)* kind() const
@@ -1431,7 +1390,7 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
         if (auto sc = _scope)
         {
             _scope = null;
-            arrayExpressionSemantic(atts, sc);
+            arrayExpressionSemantic(atts.peekSlice(), sc);
         }
         auto exps = new Expressions();
         if (userAttribDecl && userAttribDecl !is this)
@@ -1554,7 +1513,7 @@ int foreachUda(Dsymbol sym, Scope* sc, int delegate(Expression) dg)
         return 0;
 
     auto udas = sym.userAttribDecl.getAttributes();
-    arrayExpressionSemantic(udas, sc, true);
+    arrayExpressionSemantic(udas.peekSlice(), sc, true);
 
     return udas.each!((uda) {
         if (!uda.isTupleExp())

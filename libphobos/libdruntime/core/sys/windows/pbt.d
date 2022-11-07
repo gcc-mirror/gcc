@@ -9,7 +9,6 @@
  */
 module core.sys.windows.pbt;
 version (Windows):
-@system:
 
 import core.sys.windows.windef;
 

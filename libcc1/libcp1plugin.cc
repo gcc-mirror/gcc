@@ -1655,7 +1655,8 @@ plugin_start_closure_class_type (cc1_plugin::connection *self,
 
   /* Instead of calling record_lambda_scope, do this:  */
   LAMBDA_EXPR_EXTRA_SCOPE (lambda_expr) = extra_scope;
-  LAMBDA_EXPR_DISCRIMINATOR (lambda_expr) = discriminator;
+  LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda_expr) = discriminator;
+  LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda_expr) = discriminator;
 
   tree decl = TYPE_NAME (type);
   determine_visibility (decl);

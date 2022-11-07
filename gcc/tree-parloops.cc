@@ -338,8 +338,8 @@ parloops_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 	      && parloops_valid_reduction_input_p (def_stmt_info))
 	    {
 	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location, "swapping oprnds: %G",
-				 next_stmt);
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "swapping oprnds: %G", (gimple *) next_stmt);
 
 	      swap_ssa_operands (next_stmt,
 				 gimple_assign_rhs1_ptr (next_stmt),
@@ -2484,8 +2484,6 @@ transform_to_exit_first_loop_alt (class loop *loop,
   /* Recalculate dominance info.  */
   free_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-
-  checking_verify_ssa (true, true);
 }
 
 /* Tries to moves the exit condition of LOOP to the beginning of its header
@@ -3133,6 +3131,7 @@ gen_parallel_loop (class loop *loop,
 	 to the exit of the loop.  */
       transform_to_exit_first_loop (loop, reduction_list, nit);
     }
+  update_ssa (TODO_update_ssa_no_phi);
 
   /* Generate initializations for reductions.  */
   if (!reduction_list->is_empty ())
@@ -4217,6 +4216,10 @@ pass_parallelize_loops::execute (function *fun)
 
       checking_verify_loop_structure ();
 
+      /* ???  Intermediate SSA updates with no PHIs might have lost
+	 the virtual operand renaming needed by separate_decls_in_region,
+	 make sure to rename them again.  */
+      mark_virtual_operands_for_renaming (fun);
       update_ssa (TODO_update_ssa);
       if (in_loop_pipeline)
 	rewrite_into_loop_closed_ssa (NULL, 0);

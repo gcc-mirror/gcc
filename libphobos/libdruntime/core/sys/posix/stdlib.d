@@ -31,7 +31,6 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 //
 // Required (defined in core.stdc.stdlib)
@@ -95,44 +94,44 @@ int posix_memalign(void**, size_t, size_t);
 
 version (CRuntime_Glibc)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (FreeBSD)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (NetBSD)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (OpenBSD)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (DragonFlyBSD)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (Solaris)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (Darwin)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (CRuntime_Bionic)
 {
     // Added since Lollipop
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (CRuntime_Musl)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 else version (CRuntime_UClibc)
 {
-    int posix_memalign(void**, size_t, size_t);
+    int posix_memalign(scope void**, size_t, size_t) pure;
 }
 
 //

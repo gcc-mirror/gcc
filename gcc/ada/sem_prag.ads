@@ -156,6 +156,9 @@ package Sem_Prag is
       Pragma_Type_Invariant_Class      => True,
       others                           => False);
 
+   --  Should to following constant arrays be renamed to better suit their
+   --  use as a predicate (e.g. Is_Pragma_*) ???
+
    --  The following table lists all the implementation-defined pragmas that
    --  should apply to the anonymous object produced by the analysis of a
    --  single protected or task type. The table should be synchronized with
@@ -199,6 +202,32 @@ package Sem_Prag is
       Pragma_Unreferenced                  => False,
       Pragma_Warnings                      => False,
       others                               => True);
+
+   --  The following table lists all pragmas which are relevant to the analysis
+   --  of subprogram bodies.
+
+   Pragma_Significant_To_Subprograms : constant array (Pragma_Id) of Boolean :=
+     (Pragma_Contract_Cases    => True,
+      Pragma_Depends           => True,
+      Pragma_Ghost             => True,
+      Pragma_Global            => True,
+      Pragma_Inline            => True,
+      Pragma_Inline_Always     => True,
+      Pragma_Post              => True,
+      Pragma_Post_Class        => True,
+      Pragma_Postcondition     => True,
+      Pragma_Pre               => True,
+      Pragma_Pre_Class         => True,
+      Pragma_Precondition      => True,
+      Pragma_Pure              => True,
+      Pragma_Pure_Function     => True,
+      Pragma_Refined_Depends   => True,
+      Pragma_Refined_Global    => True,
+      Pragma_Refined_Post      => True,
+      Pragma_Refined_State     => True,
+      Pragma_Volatile          => True,
+      Pragma_Volatile_Function => True,
+      others                   => False);
 
    -----------------
    -- Subprograms --

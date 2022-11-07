@@ -1,6 +1,5 @@
 module core.sys.windows.com;
 version (Windows):
-@system:
 
 pragma(lib,"uuid");
 

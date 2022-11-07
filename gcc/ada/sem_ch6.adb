@@ -264,7 +264,7 @@ package body Sem_Ch6 is
 
       elsif Warn_On_Redundant_Constructs
         and then not Is_Dispatching_Operation (Subp_Id)
-        and then not Present (Overridden_Operation (Subp_Id))
+        and then No (Overridden_Operation (Subp_Id))
         and then (not Is_Operator_Symbol_Name (Chars (Subp_Id))
                    or else Scop /= Scope (Etype (First_Formal (Subp_Id))))
       then
@@ -505,7 +505,7 @@ package body Sem_Ch6 is
          --  this because it is not part of the original source.
          --  If this is an ignored Ghost entity, analysis of the generated
          --  body is needed to hide external references (as is done in
-         --  Analyze_Subprogram_Body) after which the the subprogram profile
+         --  Analyze_Subprogram_Body) after which the subprogram profile
          --  can be frozen, which is needed to expand calls to such an ignored
          --  Ghost subprogram.
 
@@ -1911,14 +1911,18 @@ package body Sem_Ch6 is
             Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
          end if;
 
+         --  Process the contract of the subprogram body after analyzing all
+         --  the contract-related pragmas within the declarations.
+
+         Analyze_Pragmas_In_Declarations (Body_Id);
+         Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
+
+         --  Continue on with analyzing the declarations and statements once
+         --  contract expansion is done and we are done expanding contract
+         --  related wrappers.
+
          Analyze_Declarations (Declarations (N));
          Check_Completion;
-
-         --  Process the contract of the subprogram body after all declarations
-         --  have been analyzed. This ensures that any contract-related pragmas
-         --  are available through the N_Contract node of the body.
-
-         Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
 
          Analyze (Handled_Statement_Sequence (N));
          Save_Global_References (Original_Node (N));
@@ -2032,7 +2036,7 @@ package body Sem_Ch6 is
       end loop;
 
       --  Determine whether the null procedure may be a completion of a generic
-      --  suprogram, in which case we use the new null body as the completion
+      --  subprogram, in which case we use the new null body as the completion
       --  and set minimal semantic information on the original declaration,
       --  which is rewritten as a null statement.
 
@@ -2394,7 +2398,7 @@ package body Sem_Ch6 is
                            Class_Wide_Type (Etype (First_Formal (Subp))) = Typ)
                  and then Try_Object_Operation (P)
                then
-                  return;
+                  goto Leave;
 
                else
                   Analyze_Call_And_Resolve;
@@ -2895,7 +2899,6 @@ package body Sem_Ch6 is
       Conformant : Boolean;
       Desig_View : Entity_Id := Empty;
       Exch_Views : Elist_Id  := No_Elist;
-      HSS        : Node_Id;
       Mask_Types : Elist_Id  := No_Elist;
       Prot_Typ   : Entity_Id := Empty;
       Spec_Decl  : Node_Id   := Empty;
@@ -3530,6 +3533,8 @@ package body Sem_Ch6 is
       --------------------------
 
       procedure Check_Missing_Return is
+         HSS : constant Node_Id := Handled_Statement_Sequence (N);
+
          Id          : Entity_Id;
          Missing_Ret : Boolean;
 
@@ -3968,18 +3973,9 @@ package body Sem_Ch6 is
 
                --  Move relevant pragmas to the spec
 
-               elsif Pragma_Name_Unmapped (Decl) in Name_Depends
-                                                  | Name_Ghost
-                                                  | Name_Global
-                                                  | Name_Pre
-                                                  | Name_Precondition
-                                                  | Name_Post
-                                                  | Name_Refined_Depends
-                                                  | Name_Refined_Global
-                                                  | Name_Refined_Post
-                                                  | Name_Inline
-                                                  | Name_Pure_Function
-                                                  | Name_Volatile_Function
+               elsif
+                 Pragma_Significant_To_Subprograms
+                   (Get_Pragma_Id (Decl))
                then
                   Remove (Decl);
                   Insert_After (Insert_Nod, Decl);
@@ -4074,7 +4070,7 @@ package body Sem_Ch6 is
             --  an instance that may have manipulated the flag during
             --  expansion. As a result, we add an exception for this case.
 
-            elsif not Present (Overridden_Operation (Spec_Id))
+            elsif No (Overridden_Operation (Spec_Id))
               and then not (Chars (Spec_Id) in Name_Adjust
                                              | Name_Finalize
                                              | Name_Initialize
@@ -4223,7 +4219,6 @@ package body Sem_Ch6 is
             Analyze_Generic_Subprogram_Body (N, Spec_Id);
 
             if Nkind (N) = N_Subprogram_Body then
-               HSS := Handled_Statement_Sequence (N);
                Check_Missing_Return;
             end if;
 
@@ -5157,9 +5152,27 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      --  Now we can go on to analyze the body
+      --  Ada 2012 (AI05-0151): Incomplete types coming from a limited context
+      --  may now appear in parameter and result profiles. Since the analysis
+      --  of a subprogram body may use the parameter and result profile of the
+      --  spec, swap any limited views with their non-limited counterpart.
 
-      HSS := Handled_Statement_Sequence (N);
+      if Ada_Version >= Ada_2012 and then Present (Spec_Id) then
+         Exch_Views := Exchange_Limited_Views (Spec_Id);
+      end if;
+
+      --  Analyze any aspect specifications that appear on the subprogram body
+
+      if Has_Aspects (N) then
+         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
+      end if;
+
+      --  Process the contract of the subprogram body after analyzing all the
+      --  contract-related pragmas within the declarations.
+
+      Analyze_Pragmas_In_Declarations (Body_Id);
+      Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
+
       Set_Actual_Subtypes (N, Current_Scope);
 
       --  Add a declaration for the Protection object, renaming declarations
@@ -5178,15 +5191,6 @@ package body Sem_Ch6 is
       then
          Install_Private_Data_Declarations
            (Sloc (N), Spec_Id, Prot_Typ, N, Declarations (N));
-      end if;
-
-      --  Ada 2012 (AI05-0151): Incomplete types coming from a limited context
-      --  may now appear in parameter and result profiles. Since the analysis
-      --  of a subprogram body may use the parameter and result profile of the
-      --  spec, swap any limited views with their non-limited counterpart.
-
-      if Ada_Version >= Ada_2012 and then Present (Spec_Id) then
-         Exch_Views := Exchange_Limited_Views (Spec_Id);
       end if;
 
       --  If the return type is an anonymous access type whose designated type
@@ -5223,12 +5227,6 @@ package body Sem_Ch6 is
                Set_Directly_Designated_Type (Etype (Spec_Id), Etyp);
             end if;
          end;
-      end if;
-
-      --  Analyze any aspect specifications that appear on the subprogram body
-
-      if Has_Aspects (N) then
-         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
       end if;
 
       Analyze_Declarations (Declarations (N));
@@ -5269,17 +5267,11 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  A subprogram body freezes its own contract. Analyze the contract
-      --  after the declarations of the body have been processed as pragmas
-      --  are now chained on the contract of the subprogram body.
-
-      Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
-
       --  Check completion, and analyze the statements
 
       Check_Completion;
       Inspect_Deferred_Constant_Completion (Declarations (N));
-      Analyze (HSS);
+      Analyze (Handled_Statement_Sequence (N));
 
       --  Add the generated minimum accessibility objects to the subprogram
       --  body's list of declarations after analysis of the statements and
@@ -5296,7 +5288,8 @@ package body Sem_Ch6 is
 
       --  Deal with end of scope processing for the body
 
-      Process_End_Label (HSS, 't', Current_Scope);
+      Process_End_Label
+        (Handled_Statement_Sequence (N), 't', Current_Scope);
       Update_Use_Clause_Chain;
       End_Scope;
 
@@ -5410,13 +5403,11 @@ package body Sem_Ch6 is
       --  the warning.
 
       declare
-         Stm : Node_Id;
-
+         Stm : Node_Id := First (Statements (Handled_Statement_Sequence (N)));
       begin
          --  Skip call markers installed by the ABE mechanism, labels, and
          --  Push_xxx_Error_Label to find the first real statement.
 
-         Stm := First (Statements (HSS));
          while Nkind (Stm) in N_Call_Marker | N_Label | N_Push_xxx_Label loop
             Next (Stm);
          end loop;
@@ -5513,12 +5504,22 @@ package body Sem_Ch6 is
 
          --  Check references of the subprogram spec when we are dealing with
          --  an expression function due to it having a generated body.
-         --  Otherwise, we simply check the formals of the subprogram body.
 
          if Present (Spec_Id)
            and then Is_Expression_Function (Spec_Id)
          then
             Check_References (Spec_Id);
+
+         --  Skip the check for subprograms generated for protected subprograms
+         --  because it is also done for the protected subprograms themselves.
+
+         elsif Present (Spec_Id)
+           and then Present (Protected_Subprogram (Spec_Id))
+         then
+            null;
+
+         --  Otherwise, we simply check the formals of the subprogram body.
+
          else
             Check_References (Body_Id);
          end if;
@@ -6794,7 +6795,7 @@ package body Sem_Ch6 is
                   Error_Msg_Sloc   := Sloc (Op);
 
                   if Comes_From_Source (Op) or else No (Alias (Op)) then
-                     if not Present (Overridden_Operation (Op)) then
+                     if No (Overridden_Operation (Op)) then
                         Error_Msg_N ("\\primitive % defined #", Typ);
                      else
                         Error_Msg_N
@@ -8365,7 +8366,7 @@ package body Sem_Ch6 is
               or else not Is_Overloadable (Subp)
               or else not Is_Primitive (Subp)
               or else not Is_Dispatching_Operation (Subp)
-              or else not Present (Find_Dispatching_Type (Subp))
+              or else No (Find_Dispatching_Type (Subp))
               or else not Is_Interface (Find_Dispatching_Type (Subp))
             then
                null;
@@ -10710,13 +10711,13 @@ package body Sem_Ch6 is
          E : Entity_Id;
 
       begin
-         E := First_Entity (Prim);
+         E := First_Formal (Prim);
          while Present (E) loop
-            if Is_Formal (E) and then Is_Controlling_Formal (E) then
+            if Is_Controlling_Formal (E) then
                return E;
             end if;
 
-            Next_Entity (E);
+            Next_Formal (E);
          end loop;
 
          return Empty;
@@ -11388,7 +11389,7 @@ package body Sem_Ch6 is
                   return False;
                end if;
 
-               if not Present (Partial_View) then
+               if No (Partial_View) then
                   return True;
                end if;
 
@@ -11402,7 +11403,7 @@ package body Sem_Ch6 is
                begin
                   loop
                      H := Homonym (H);
-                     exit when not Present (H) or else Scope (H) /= Scope (S);
+                     exit when No (H) or else Scope (H) /= Scope (S);
 
                      if Nkind (Parent (H)) in
                         N_Private_Extension_Declaration |
@@ -11450,7 +11451,7 @@ package body Sem_Ch6 is
 
                         if ((Present (Partial_View)
                               and then Is_Tagged_Type (Partial_View))
-                          or else (not Present (Partial_View)
+                          or else (No (Partial_View)
                                     and then Is_Tagged_Type (T)))
                           and then T = Base_Type (Etype (S))
                         then
@@ -12946,7 +12947,7 @@ package body Sem_Ch6 is
 
             --  No need to continue if we already notified errors
 
-            if not Present (Formal_Type) then
+            if No (Formal_Type) then
                return;
             end if;
 

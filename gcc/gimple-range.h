@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "range.h"
 #include "value-query.h"
-#include "range-op.h"
+#include "gimple-range-op.h"
 #include "gimple-range-trace.h"
 #include "gimple-range-edge.h"
 #include "gimple-range-fold.h"
@@ -51,6 +51,7 @@ public:
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   virtual bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   virtual bool range_on_edge (vrange &r, edge e, tree name) override;
+  virtual void update_stmt (gimple *) override;
   void range_on_entry (vrange &r, basic_block bb, tree name);
   void range_on_exit (vrange &r, basic_block bb, tree name);
   void export_global_ranges ();
@@ -79,5 +80,23 @@ protected:
 extern gimple_ranger *enable_ranger (struct function *m,
 				     bool use_imm_uses = true);
 extern void disable_ranger (struct function *);
+
+class assume_query : public range_query
+{
+public:
+  assume_query ();
+  bool assume_range_p (vrange &r, tree name);
+  virtual bool range_of_expr (vrange &r, tree expr, gimple * = NULL);
+  void dump (FILE *f);
+protected:
+  void calculate_stmt (gimple *s, vrange &lhs_range, fur_source &src);
+  void calculate_op (tree op, gimple *s, vrange &lhs, fur_source &src);
+  void calculate_phi (gphi *phi, vrange &lhs_range, fur_source &src);
+  void check_taken_edge (edge e, fur_source &src);
+
+  ssa_global_cache global;
+  gori_compute m_gori;
+};
+
 
 #endif // GCC_GIMPLE_RANGE_H

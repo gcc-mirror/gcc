@@ -42,7 +42,7 @@ std::wostream& operator<<(std::wostream&, const X&) = delete;
 
 struct Y {};
 std::wostream& operator<<(std::wostream& os, const Y&) {return os;}
-std::wostream& operator<<(std::wostream&& os, const Y&) {return os;}
+std::wostream& operator<<(std::wostream&& os, const Y&) {throw 1;} // not used
 
 struct Z{};
 

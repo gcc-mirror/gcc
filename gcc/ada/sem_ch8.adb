@@ -960,7 +960,7 @@ package body Sem_Ch8 is
             Set_Etype (Nam, T);
          end if;
       elsif Present (Subtype_Mark (N))
-        or else not Present (Access_Definition (N))
+        or else No (Access_Definition (N))
       then
          if Present (Subtype_Mark (N)) then
             Find_Type (Subtype_Mark (N));
@@ -4702,7 +4702,7 @@ package body Sem_Ch8 is
       --  want to deal with AST_Handler in ZFP mode.
 
       if not Configurable_Run_Time_Mode
-        and then not Present (Corresponding_Formal_Spec (N))
+        and then No (Corresponding_Formal_Spec (N))
         and then not Is_RTE (Etype (Nam), RE_AST_Handler)
       then
          declare
@@ -7918,7 +7918,7 @@ package body Sem_Ch8 is
 
          if Is_Type (P_Type)
            and then (Has_Components (P_Type)
-                      or else (Extensions_Allowed
+                      or else (Core_Extensions_Allowed
                                 and then not Is_Concurrent_Type (P_Type)))
            and then not Is_Overloadable (P_Name)
            and then not Is_Type (P_Name)
@@ -8173,7 +8173,7 @@ package body Sem_Ch8 is
                        ("prefixed call is only allowed for objects of a "
                         & "tagged type unless -gnatX is used", N);
 
-                     if not Extensions_Allowed
+                     if not Core_Extensions_Allowed
                        and then
                          Try_Object_Operation (N, Allow_Extensions => True)
                      then
@@ -9272,9 +9272,9 @@ package body Sem_Ch8 is
          Scope1 := Scope (Scope1);
          Scope2 := Scope (Scope2);
 
-         if not Present (Scope1) then
+         if No (Scope1) then
             return Clause1;
-         elsif not Present (Scope2) then
+         elsif No (Scope2) then
             return Clause2;
          end if;
       end loop;
@@ -9717,10 +9717,10 @@ package body Sem_Ch8 is
       --  we saved (we use Remove, since this list will not be used again).
 
       loop
-         Elmt := Last_Elmt (List);
+         Elmt := First_Elmt (List);
          exit when Elmt = No_Elmt;
          Set_Is_Immediately_Visible (Node (Elmt));
-         Remove_Last_Elmt (List);
+         Remove_Elmt (List, Elmt);
       end loop;
 
       --  Restore use clauses

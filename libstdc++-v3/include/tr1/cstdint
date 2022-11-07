@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // TR1
+
 #include <bits/c++config.h>
 
 // For 8.22.1/1 (see C99, Notes 219, 220, 222)

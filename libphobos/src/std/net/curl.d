@@ -28,7 +28,7 @@ to your $(B dub.json) file if you are using $(LINK2 http://code.dlang.org, DUB).
 
 Windows x86 note:
 A DMD compatible libcurl static library can be downloaded from the dlang.org
-$(LINK2 http://downloads.dlang.org/other/index.html, download archive page).
+$(LINK2 https://downloads.dlang.org/other/index.html, download archive page).
 
 This module is not available for iOS, tvOS or watchOS.
 
@@ -1973,7 +1973,7 @@ private mixin template Protocol()
     }
 
     /**
-     * The network interface to use in form of the the IP of the interface.
+     * The network interface to use in form of the IP of the interface.
      *
      * Example:
      * ----
@@ -2706,7 +2706,7 @@ struct HTTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----
@@ -3486,7 +3486,7 @@ struct FTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----
@@ -3912,7 +3912,7 @@ struct SMTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----

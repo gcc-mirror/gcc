@@ -152,7 +152,8 @@ static GTY (()) vec<bpf_core_section_ref, va_gc> *bpf_core_sections;
 
 void
 bpf_core_reloc_add (const tree type, const char * section_name,
-		    vec<unsigned int> *accessors, rtx_code_label *label)
+		    vec<unsigned int> *accessors, rtx_code_label *label,
+		    enum btf_core_reloc_kind kind)
 {
   char buf[40];
   unsigned int i, n = 0;
@@ -173,7 +174,7 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 
   bpfcr->bpfcr_type = get_btf_id (ctf_lookup_tree_type (ctfc, type));
   bpfcr->bpfcr_insn_label = label;
-  bpfcr->bpfcr_kind = BPF_RELO_FIELD_BYTE_OFFSET;
+  bpfcr->bpfcr_kind = kind;
 
   /* Add the CO-RE reloc to the appropriate section.  */
   bpf_core_section_ref sec;
@@ -207,7 +208,6 @@ bpf_core_get_sou_member_index (ctf_container_ref ctfc, const tree node)
   if (TREE_CODE (node) == FIELD_DECL)
     {
       const tree container = DECL_CONTEXT (node);
-      const char * name = IDENTIFIER_POINTER (DECL_NAME (node));
 
       /* Lookup the CTF type info for the containing type.  */
       dw_die_ref die = lookup_type_die (container);
@@ -222,16 +222,21 @@ bpf_core_get_sou_member_index (ctf_container_ref ctfc, const tree node)
       if (kind != CTF_K_STRUCT && kind != CTF_K_UNION)
         return -1;
 
+      tree field = TYPE_FIELDS (container);
       int i = 0;
       ctf_dmdef_t * dmd;
       for (dmd = dtd->dtd_u.dtu_members;
            dmd != NULL; dmd = (ctf_dmdef_t *) ctf_dmd_list_next (dmd))
         {
-          if (get_btf_id (dmd->dmd_type) > BTF_MAX_TYPE)
-            continue;
-          if (strcmp (dmd->dmd_name, name) == 0)
-            return i;
-          i++;
+	  bool field_has_btf = get_btf_id (dmd->dmd_type) <= BTF_MAX_TYPE;
+
+	  if (field == node)
+	    return field_has_btf ? i : -1;
+
+	  if (field_has_btf)
+	    i++;
+
+	  field = DECL_CHAIN (field);
         }
     }
   return -1;

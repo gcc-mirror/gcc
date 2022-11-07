@@ -1411,7 +1411,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 {
   tree decl = gimple_call_fndecl (e->call_stmt);
   gcall *new_stmt;
-  gimple_stmt_iterator gsi;
 
   if (e->speculative)
     {
@@ -1572,18 +1571,17 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       && (VOID_TYPE_P (TREE_TYPE (gimple_call_fntype (new_stmt)))
 	  || should_remove_lhs_p (lhs)))
     {
+      gimple_call_set_lhs (new_stmt, NULL_TREE);
+      /* We need to fix up the SSA name to avoid checking errors.  */
       if (TREE_CODE (lhs) == SSA_NAME)
 	{
 	  tree var = create_tmp_reg_fn (DECL_STRUCT_FUNCTION (e->caller->decl),
 					TREE_TYPE (lhs), NULL);
-	  var = get_or_create_ssa_default_def
-		  (DECL_STRUCT_FUNCTION (e->caller->decl), var);
-	  gimple *set_stmt = gimple_build_assign (lhs, var);
-	  gsi = gsi_for_stmt (new_stmt);
-	  gsi_insert_before_without_update (&gsi, set_stmt, GSI_SAME_STMT);
-	  update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), set_stmt);
+	  SET_SSA_NAME_VAR_OR_IDENTIFIER (lhs, var);
+	  SSA_NAME_DEF_STMT (lhs) = gimple_build_nop ();
+	  set_ssa_default_def (DECL_STRUCT_FUNCTION (e->caller->decl),
+			       var, lhs);
 	}
-      gimple_call_set_lhs (new_stmt, NULL_TREE);
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
     }
 
@@ -2492,7 +2490,6 @@ cgraph_node::make_local (cgraph_node *node, void *)
       node->externally_visible = false;
       node->forced_by_abi = false;
       node->local = true;
-      node->set_section (NULL);
       node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
 			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
 			   && !flag_incremental_link);
@@ -3751,7 +3748,9 @@ cgraph_node::verify_node (void)
 	   && (!DECL_EXTERNAL (decl) || inlined_to)
 	   && !flag_wpa)
     {
-      if (this_cfun->cfg)
+      if ((this_cfun->curr_properties & PROP_assumptions_done) != 0)
+	;
+      else if (this_cfun->cfg)
 	{
 	  hash_set<gimple *> stmts;
 

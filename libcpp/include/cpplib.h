@@ -179,7 +179,11 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
   unsigned int len;
-  const unsigned char *text;
+
+  /* TEXT is always null terminated (terminator not included in len); but this
+     GTY markup arranges that PCH streaming works properly even if there is a
+     null byte in the middle of the string.  */
+  const unsigned char * GTY((string_length ("1 + %h.len"))) text;
 };
 
 /* Flags for the cpp_token structure.  */
@@ -190,7 +194,7 @@ struct GTY(()) cpp_string {
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define PREV_FALLTHROUGH (1 << 5) /* On a token preceeded by FALLTHROUGH
 				     comment.  */
-#define BOL		(1 << 6) /* Token at beginning of line.  */
+#define DECIMAL_INT     (1 << 6) /* Decimal integer, set in c-lex.cc.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
@@ -199,6 +203,7 @@ struct GTY(()) cpp_string {
 				    after a # operator.  */
 #define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
 #define PRAGMA_OP	(1 << 11) /* _Pragma token.  */
+#define BOL		(1 << 12) /* Token at beginning of line.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 
@@ -495,6 +500,10 @@ struct cpp_options
      in C11.  */
   unsigned char c11_identifiers;
 
+  /* Nonzero means extended identifiers allow the characters specified
+     by Unicode XID_Start and XID_Continue properties.  */
+  unsigned char xid_identifiers;
+
   /* Nonzero for C++ 2014 Standard binary constants.  */
   unsigned char binary_constants;
 
@@ -524,6 +533,9 @@ struct cpp_options
 
   /* Nonzero for C++23 delimited escape sequences.  */
   unsigned char delimited_escape_seqs;
+
+  /* Nonzero for 'true' and 'false' in #if expressions.  */
+  unsigned char true_false;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
@@ -559,6 +571,17 @@ struct cpp_options
   /* Nonzero if bidirectional control characters checking is on.  See enum
      cpp_bidirectional_level.  */
   unsigned char cpp_warn_bidirectional;
+
+  /* True if libcpp should warn about invalid UTF-8 characters in comments.
+     2 if it should be a pedwarn.  */
+  unsigned char cpp_warn_invalid_utf8;
+
+  /* True if libcpp should warn about invalid forms of delimited or named
+     escape sequences.  */
+  bool cpp_warn_unicode;
+
+  /* True if -finput-charset= option has been used explicitly.  */
+  bool cpp_input_charset_explicit;
 
   /* Dependency generation.  */
   struct
@@ -666,7 +689,9 @@ enum cpp_warning_reason {
   CPP_W_CXX11_COMPAT,
   CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
-  CPP_W_BIDIRECTIONAL
+  CPP_W_BIDIRECTIONAL,
+  CPP_W_INVALID_UTF8,
+  CPP_W_UNICODE
 };
 
 /* Callback for header lookup for HEADER, which is the name of a
@@ -1258,6 +1283,7 @@ struct cpp_num
 #define CPP_N_USERDEF	0x1000000 /* C++11 user-defined literal.  */
 
 #define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
+#define CPP_N_BFLOAT16	0x4000000 /* std::bfloat16_t type.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */

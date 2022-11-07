@@ -18,6 +18,7 @@
 // { dg-options "-faligned-new" }
 // { dg-do run { target { c++11 && { c++17 || std_allocator_new } } } }
 // { dg-require-cstdint "" }
+// { dg-require-effective-target hosted }
 
 #include <memory>
 #include <cstddef>

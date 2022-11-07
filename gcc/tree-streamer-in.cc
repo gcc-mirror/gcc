@@ -261,6 +261,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       else
 	SET_DECL_FIELD_ABI_IGNORED (expr, val);
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
+      DECL_NOT_FLEXARRAY (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
 
   else if (VAR_P (expr))
@@ -397,6 +398,7 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   if (AGGREGATE_TYPE_P (expr))
     TYPE_TYPELESS_STORAGE (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_EMPTY_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_NO_NAMED_ARGS_STDARG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
   SET_TYPE_ALIGN (expr, bp_unpack_var_len_unsigned (bp));
 #ifdef ACCEL_COMPILER
@@ -452,6 +454,11 @@ unpack_ts_omp_clause_value_fields (class data_in *data_in,
     case OMP_CLAUSE_DEPEND:
       OMP_CLAUSE_DEPEND_KIND (expr)
 	= bp_unpack_enum (bp, omp_clause_depend_kind, OMP_CLAUSE_DEPEND_LAST);
+      break;
+    case OMP_CLAUSE_DOACROSS:
+      OMP_CLAUSE_DOACROSS_KIND (expr)
+	= bp_unpack_enum (bp, omp_clause_doacross_kind,
+			  OMP_CLAUSE_DOACROSS_LAST);
       break;
     case OMP_CLAUSE_MAP:
       OMP_CLAUSE_SET_MAP_KIND (expr, bp_unpack_enum (bp, gomp_map_kind,

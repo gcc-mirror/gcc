@@ -230,7 +230,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      constexpr atomic(_Tp __i) noexcept : _M_i(__i) { }
+      constexpr atomic(_Tp __i) noexcept : _M_i(__i)
+      {
+#if __cplusplus >= 201402L && __has_builtin(__builtin_clear_padding)
+	if _GLIBCXX17_CONSTEXPR (__atomic_impl::__maybe_has_padding<_Tp>())
+	  __builtin_clear_padding(std::__addressof(_M_i));
+#endif
+      }
 
       operator _Tp() const noexcept
       { return load(); }
@@ -270,13 +276,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
       {
-	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+	__atomic_store(std::__addressof(_M_i),
+		       __atomic_impl::__clear_padding(__i),
+		       int(__m));
       }
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
       {
-	__atomic_store(std::__addressof(_M_i), std::__addressof(__i), int(__m));
+	__atomic_store(std::__addressof(_M_i),
+		       __atomic_impl::__clear_padding(__i),
+		       int(__m));
       }
 
       _Tp
@@ -302,7 +312,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
-	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
+	__atomic_exchange(std::__addressof(_M_i),
+			  __atomic_impl::__clear_padding(__i),
 			  __ptr, int(__m));
 	return *__ptr;
       }
@@ -313,7 +324,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         alignas(_Tp) unsigned char __buf[sizeof(_Tp)];
 	_Tp* __ptr = reinterpret_cast<_Tp*>(__buf);
-	__atomic_exchange(std::__addressof(_M_i), std::__addressof(__i),
+	__atomic_exchange(std::__addressof(_M_i),
+			  __atomic_impl::__clear_padding(__i),
 			  __ptr, int(__m));
 	return *__ptr;
       }
@@ -322,24 +334,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 true, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, true,
+						 __s, __f);
       }
 
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) volatile noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 true, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, true,
+						 __s, __f);
       }
 
       bool
@@ -358,24 +362,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 false, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, false,
+						 __s, __f);
       }
 
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) volatile noexcept
       {
-	__glibcxx_assert(__is_valid_cmpexch_failure_order(__f));
-
-	return __atomic_compare_exchange(std::__addressof(_M_i),
-					 std::__addressof(__e),
-					 std::__addressof(__i),
-					 false, int(__s), int(__f));
+	return __atomic_impl::__compare_exchange(_M_i, __e, __i, false,
+						 __s, __f);
       }
 
       bool
@@ -390,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
 
-#if __cpp_lib_atomic_wait 
+#if __cpp_lib_atomic_wait
     void
     wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
     {
@@ -407,7 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     notify_all() noexcept
     { std::__atomic_notify_address(&_M_i, true); }
-#endif // __cpp_lib_atomic_wait 
+#endif // __cpp_lib_atomic_wait
 
     };
 #undef _GLIBCXX20_INIT
@@ -1628,6 +1624,91 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __atomic_float<long double>::operator=;
     };
+
+#ifdef __STDCPP_FLOAT16_T__
+  template<>
+    struct atomic<_Float16> : __atomic_float<_Float16>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(_Float16 __fp) noexcept : __atomic_float<_Float16>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<_Float16>::operator=;
+    };
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+  template<>
+    struct atomic<_Float32> : __atomic_float<_Float32>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(_Float32 __fp) noexcept : __atomic_float<_Float32>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<_Float32>::operator=;
+    };
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+  template<>
+    struct atomic<_Float64> : __atomic_float<_Float64>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(_Float64 __fp) noexcept : __atomic_float<_Float64>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<_Float64>::operator=;
+    };
+#endif
+
+#ifdef __STDCPP_FLOAT128_T__
+  template<>
+    struct atomic<_Float128> : __atomic_float<_Float128>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(_Float128 __fp) noexcept : __atomic_float<_Float128>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<_Float128>::operator=;
+    };
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+  template<>
+    struct atomic<__gnu_cxx::__bfloat16_t> : __atomic_float<__gnu_cxx::__bfloat16_t>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(__gnu_cxx::__bfloat16_t __fp) noexcept : __atomic_float<__gnu_cxx::__bfloat16_t>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<__gnu_cxx::__bfloat16_t>::operator=;
+    };
+#endif
 
 #define __cpp_lib_atomic_ref 201806L
 

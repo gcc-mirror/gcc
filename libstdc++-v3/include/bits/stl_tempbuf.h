@@ -56,8 +56,11 @@
 #ifndef _STL_TEMPBUF_H
 #define _STL_TEMPBUF_H 1
 
-#include <bits/stl_algobase.h>
+#include <new>
+#include <bits/exception_defines.h>
 #include <bits/stl_construct.h>
+#include <bits/stl_pair.h>
+#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

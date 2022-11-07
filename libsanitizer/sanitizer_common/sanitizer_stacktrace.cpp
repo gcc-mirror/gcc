@@ -128,7 +128,7 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
 #endif
 #elif defined(__s390__)
     uhwptr pc1 = frame[14];
-#elif defined(__riscv)
+#elif defined(__loongarch__) || defined(__riscv)
     // frame[-1] contains the return address
     uhwptr pc1 = frame[-1];
 #else
@@ -143,7 +143,7 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
       trace_buffer[size++] = (uptr) pc1;
     }
     bottom = (uptr)frame;
-#if defined(__riscv)
+#if defined(__loongarch__) || defined(__riscv)
     // frame[-2] contain fp of the previous frame
     uptr new_bp = (uptr)frame[-2];
 #else

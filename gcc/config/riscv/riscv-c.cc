@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "c-family/c-common.h"
 #include "cpplib.h"
+#include "c-family/c-pragma.h"
+#include "target.h"
+#include "tm_p.h"
 #include "riscv-subset.h"
 
 #define builtin_define(TXT) cpp_define (pfile, TXT)
@@ -58,7 +61,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_HARD_FLOAT)
     builtin_define_with_int_value ("__riscv_flen", UNITS_PER_FP_REG * 8);
 
-  if (TARGET_HARD_FLOAT && TARGET_FDIV)
+  if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && TARGET_FDIV)
     {
       builtin_define ("__riscv_fdiv");
       builtin_define ("__riscv_fsqrt");
@@ -93,11 +96,6 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
       break;
 
     case CM_PIC:
-      /* __riscv_cmodel_pic is deprecated, and will removed in next GCC release.
-	 see https://github.com/riscv/riscv-c-api-doc/pull/11  */
-      builtin_define ("__riscv_cmodel_pic");
-      /* FALLTHROUGH. */
-
     case CM_MEDANY:
       builtin_define ("__riscv_cmodel_medany");
       break;
@@ -154,4 +152,42 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
       sprintf (buf, "__riscv_%s", subset->name.c_str ());
       builtin_define_with_int_value (buf, version_value);
     }
+}
+
+/* Implement "#pragma riscv intrinsic".  */
+
+static void
+riscv_pragma_intrinsic (cpp_reader *)
+{
+  tree x;
+
+  if (pragma_lex (&x) != CPP_STRING)
+    {
+      error ("%<#pragma riscv intrinsic%> requires a string parameter");
+      return;
+    }
+
+  const char *name = TREE_STRING_POINTER (x);
+
+  if (strcmp (name, "vector") == 0)
+    {
+      if (!TARGET_VECTOR)
+	{
+	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' extension "
+		 "enabled",
+		 name);
+	  return;
+	}
+      riscv_vector::handle_pragma_vector ();
+    }
+  else
+    error ("unknown %<#pragma riscv intrinsic%> option %qs", name);
+}
+
+/* Implement REGISTER_TARGET_PRAGMAS.  */
+
+void
+riscv_register_pragmas (void)
+{
+  c_register_pragma ("riscv", "intrinsic", riscv_pragma_intrinsic);
 }

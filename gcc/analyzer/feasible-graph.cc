@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -29,15 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-path.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
-#include "sbitmap.h"
 #include "bitmap.h"
-#include "tristate.h"
-#include "selftest.h"
 #include "ordered-hash-map.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -196,10 +190,10 @@ feasible_graph::add_feasibility_problem (feasible_node *src_fnode,
 /* Make an exploded_path from the origin to FNODE's exploded_node,
    following the edges in the feasible_graph.  */
 
-exploded_path *
+std::unique_ptr<exploded_path>
 feasible_graph::make_epath (feasible_node *fnode) const
 {
-  exploded_path *epath = new exploded_path ();
+  std::unique_ptr<exploded_path> epath (new exploded_path ());
 
   /* FG is actually a tree.  Built the path backwards, by walking
      backwards from FNODE until we reach the origin.  */

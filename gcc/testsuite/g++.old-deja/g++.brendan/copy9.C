@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-additional-options "-fexcess-precision=fast" }
 // GROUPS passed copy-ctors
 #include <iostream>
 

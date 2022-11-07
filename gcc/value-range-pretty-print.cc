@@ -117,6 +117,23 @@ vrange_printer::print_irange_bitmasks (const irange &r) const
   pp_string (pp, buf);
 }
 
+void
+vrange_printer::print_real_value (tree type, const REAL_VALUE_TYPE &r) const
+{
+  char s[100];
+  real_to_decimal_for_mode (s, &r, sizeof (s), 0, 1, TYPE_MODE (type));
+  pp_string (pp, s);
+  if (!DECIMAL_FLOAT_TYPE_P (type)
+      // real_to_hexadecimal prints infinities and NAN as text.  No
+      // need to print them twice.
+      && !real_isinf (&r)
+      && !real_isnan (&r))
+    {
+      real_to_hexadecimal (s, &r, sizeof (s), 0, 1);
+      pp_printf (pp, " (%s)", s);
+    }
+}
+
 // Print an frange.
 
 void
@@ -128,32 +145,43 @@ vrange_printer::visit (const frange &r) const
       pp_string (pp, "UNDEFINED");
       return;
     }
-  dump_generic_node (pp, r.type (), 0, TDF_NONE, false);
+  tree type = r.type ();
+  dump_generic_node (pp, type, 0, TDF_NONE, false);
   pp_string (pp, " ");
   if (r.varying_p ())
     {
       pp_string (pp, "VARYING");
+      print_frange_nan (r);
       return;
     }
-  print_frange_prop ("NAN", r.get_nan ());
-  print_frange_prop ("INF", r.get_inf ());
-  print_frange_prop ("NINF", r.get_ninf ());
+  pp_character (pp, '[');
+  bool has_endpoints = !r.known_isnan ();
+  if (has_endpoints)
+    {
+      print_real_value (type, r.lower_bound ());
+      pp_string (pp, ", ");
+      print_real_value (type, r.upper_bound ());
+    }
+  pp_character (pp, ']');
+  print_frange_nan (r);
 }
 
-// Print the FP properties in an frange.
+// Print the NAN info for an frange.
 
 void
-vrange_printer::print_frange_prop (const char *str, const fp_prop &prop) const
+vrange_printer::print_frange_nan (const frange &r) const
 {
-  if (prop.varying_p ())
-    return;
-
-  if (prop.yes_p ())
-    pp_string (pp, str);
-  else if (prop.no_p ())
+  if (r.maybe_isnan ())
     {
-      pp_character (pp, '!');
-      pp_string (pp, str);
+      if (r.m_pos_nan && r.m_neg_nan)
+	{
+	  pp_string (pp, " +-NAN");
+	  return;
+	}
+      bool nan_sign = r.m_neg_nan;
+      if (nan_sign)
+	pp_string (pp, " -NAN");
+      else
+	pp_string (pp, " +NAN");
     }
-  pp_character (pp, ' ');
 }

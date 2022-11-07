@@ -214,3 +214,13 @@ GCC_12.0.0 {
   __trunctfhf2
   __truncxfhf2
 }
+
+%inherit GCC_13.0.0 GCC_12.0.0
+GCC_13.0.0 {
+  __extendbfsf2
+  __truncdfbf2
+  __truncsfbf2
+  __trunctfbf2
+  __truncxfbf2
+  __trunchfbf2
+}

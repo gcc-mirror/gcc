@@ -20,18 +20,17 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
-#include "function.h"
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
 #include "options.h"
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -184,7 +183,8 @@ sensitive_state_machine::warn_for_any_exposure (sm_context *sm_ctxt,
     {
       tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
       sm_ctxt->warn (node, stmt, arg,
-		     new exposure_through_output_file (*this, diag_arg));
+		     make_unique<exposure_through_output_file> (*this,
+								diag_arg));
     }
 }
 

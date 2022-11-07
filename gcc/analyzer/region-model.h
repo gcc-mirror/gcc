@@ -26,8 +26,12 @@ along with GCC; see the file COPYING3.  If not see
       (Zhongxing Xu, Ted Kremenek, and Jian Zhang)
      http://lcs.ios.ac.cn/~xuzb/canalyze/memmodel.pdf  */
 
+#include "selftest.h"
 #include "analyzer/svalue.h"
 #include "analyzer/region.h"
+#include "analyzer/known-function-manager.h"
+#include "analyzer/region-model-manager.h"
+#include "analyzer/pending-diagnostic.h"
 
 using namespace ana;
 
@@ -229,287 +233,6 @@ public:
   virtual void visit_region (const region *) {}
 };
 
-} // namespace ana
-
-namespace ana {
-
-/* A class responsible for owning and consolidating region and svalue
-   instances.
-   region and svalue instances are immutable as far as clients are
-   concerned, so they are provided as "const" ptrs.  */
-
-class region_model_manager
-{
-public:
-  region_model_manager (logger *logger = NULL);
-  ~region_model_manager ();
-
-  /* call_string consolidation.  */
-  const call_string &get_empty_call_string () const
-  {
-    return m_empty_call_string;
-  }
-
-  /* svalue consolidation.  */
-  const svalue *get_or_create_constant_svalue (tree cst_expr);
-  const svalue *get_or_create_int_cst (tree type, poly_int64);
-  const svalue *get_or_create_unknown_svalue (tree type);
-  const svalue *get_or_create_setjmp_svalue (const setjmp_record &r,
-					     tree type);
-  const svalue *get_or_create_poisoned_svalue (enum poison_kind kind,
-					       tree type);
-  const svalue *get_or_create_initial_value (const region *reg);
-  const svalue *get_ptr_svalue (tree ptr_type, const region *pointee);
-  const svalue *get_or_create_unaryop (tree type, enum tree_code op,
-				       const svalue *arg);
-  const svalue *get_or_create_cast (tree type, const svalue *arg);
-  const svalue *get_or_create_binop (tree type,
-				     enum tree_code op,
-				     const svalue *arg0, const svalue *arg1);
-  const svalue *get_or_create_sub_svalue (tree type,
-					  const svalue *parent_svalue,
-					  const region *subregion);
-  const svalue *get_or_create_repeated_svalue (tree type,
-					       const svalue *outer_size,
-					       const svalue *inner_svalue);
-  const svalue *get_or_create_bits_within (tree type,
-					   const bit_range &bits,
-					   const svalue *inner_svalue);
-  const svalue *get_or_create_unmergeable (const svalue *arg);
-  const svalue *get_or_create_widening_svalue (tree type,
-					       const program_point &point,
-					       const svalue *base_svalue,
-					       const svalue *iter_svalue);
-  const svalue *get_or_create_compound_svalue (tree type,
-					       const binding_map &map);
-  const svalue *get_or_create_conjured_svalue (tree type, const gimple *stmt,
-					       const region *id_reg,
-					       const conjured_purge &p);
-  const svalue *
-  get_or_create_asm_output_svalue (tree type,
-				   const gasm *asm_stmt,
-				   unsigned output_idx,
-				   const vec<const svalue *> &inputs);
-  const svalue *
-  get_or_create_const_fn_result_svalue (tree type,
-					tree fndecl,
-					const vec<const svalue *> &inputs);
-
-  const svalue *maybe_get_char_from_string_cst (tree string_cst,
-						tree byte_offset_cst);
-
-  /* Dynamically-allocated svalue instances.
-     The number of these within the analysis can grow arbitrarily.
-     They are still owned by the manager.  */
-  const svalue *create_unique_svalue (tree type);
-
-  /* region consolidation.  */
-  const stack_region * get_stack_region () const { return &m_stack_region; }
-  const heap_region *get_heap_region () const { return &m_heap_region; }
-  const code_region *get_code_region () const { return &m_code_region; }
-  const globals_region *get_globals_region () const
-  {
-    return &m_globals_region;
-  }
-  const function_region *get_region_for_fndecl (tree fndecl);
-  const label_region *get_region_for_label (tree label);
-  const decl_region *get_region_for_global (tree expr);
-  const region *get_field_region (const region *parent, tree field);
-  const region *get_element_region (const region *parent,
-				    tree element_type,
-				    const svalue *index);
-  const region *get_offset_region (const region *parent,
-				   tree type,
-				   const svalue *byte_offset);
-  const region *get_sized_region (const region *parent,
-				  tree type,
-				  const svalue *byte_size_sval);
-  const region *get_cast_region (const region *original_region,
-				 tree type);
-  const frame_region *get_frame_region (const frame_region *calling_frame,
-					function *fun);
-  const region *get_symbolic_region (const svalue *sval);
-  const string_region *get_region_for_string (tree string_cst);
-  const region *get_bit_range (const region *parent, tree type,
-			       const bit_range &bits);
-  const var_arg_region *get_var_arg_region (const frame_region *parent,
-					    unsigned idx);
-
-  const region *get_unknown_symbolic_region (tree region_type);
-
-  const region *
-  get_region_for_unexpected_tree_code (region_model_context *ctxt,
-				       tree t,
-				       const dump_location_t &loc);
-
-  unsigned alloc_region_id () { return m_next_region_id++; }
-
-  store_manager *get_store_manager () { return &m_store_mgr; }
-  bounded_ranges_manager *get_range_manager () const { return m_range_mgr; }
-
-  /* Dynamically-allocated region instances.
-     The number of these within the analysis can grow arbitrarily.
-     They are still owned by the manager.  */
-  const region *create_region_for_heap_alloc ();
-  const region *create_region_for_alloca (const frame_region *frame);
-
-  void log_stats (logger *logger, bool show_objs) const;
-
-  void begin_checking_feasibility (void) { m_checking_feasibility = true; }
-  void end_checking_feasibility (void) { m_checking_feasibility = false; }
-
-  logger *get_logger () const { return m_logger; }
-
-  void dump_untracked_regions () const;
-
-private:
-  bool too_complex_p (const complexity &c) const;
-  bool reject_if_too_complex (svalue *sval);
-
-  const svalue *maybe_fold_unaryop (tree type, enum tree_code op,
-				    const svalue *arg);
-  const svalue *maybe_fold_binop (tree type, enum tree_code op,
-				  const svalue *arg0, const svalue *arg1);
-  const svalue *maybe_fold_sub_svalue (tree type,
-				       const svalue *parent_svalue,
-				       const region *subregion);
-  const svalue *maybe_fold_repeated_svalue (tree type,
-					    const svalue *outer_size,
-					    const svalue *inner_svalue);
-  const svalue *maybe_fold_bits_within_svalue (tree type,
-					       const bit_range &bits,
-					       const svalue *inner_svalue);
-  const svalue *maybe_undo_optimize_bit_field_compare (tree type,
-						       const compound_svalue *compound_sval,
-						       tree cst, const svalue *arg1);
-  const svalue *maybe_fold_asm_output_svalue (tree type,
-					      const vec<const svalue *> &inputs);
-
-  logger *m_logger;
-
-  const call_string m_empty_call_string;
-
-  unsigned m_next_region_id;
-  root_region m_root_region;
-  stack_region m_stack_region;
-  heap_region m_heap_region;
-
-  /* svalue consolidation.  */
-  typedef hash_map<tree, constant_svalue *> constants_map_t;
-  constants_map_t m_constants_map;
-
-  typedef hash_map<tree, unknown_svalue *> unknowns_map_t;
-  unknowns_map_t m_unknowns_map;
-  const unknown_svalue *m_unknown_NULL;
-
-  typedef hash_map<poisoned_svalue::key_t,
-		   poisoned_svalue *> poisoned_values_map_t;
-  poisoned_values_map_t m_poisoned_values_map;
-
-  typedef hash_map<setjmp_svalue::key_t,
-		   setjmp_svalue *> setjmp_values_map_t;
-  setjmp_values_map_t m_setjmp_values_map;
-
-  typedef hash_map<const region *, initial_svalue *> initial_values_map_t;
-  initial_values_map_t m_initial_values_map;
-
-  typedef hash_map<region_svalue::key_t, region_svalue *> pointer_values_map_t;
-  pointer_values_map_t m_pointer_values_map;
-
-  typedef hash_map<unaryop_svalue::key_t,
-		   unaryop_svalue *> unaryop_values_map_t;
-  unaryop_values_map_t m_unaryop_values_map;
-
-  typedef hash_map<binop_svalue::key_t, binop_svalue *> binop_values_map_t;
-  binop_values_map_t m_binop_values_map;
-
-  typedef hash_map<sub_svalue::key_t, sub_svalue *> sub_values_map_t;
-  sub_values_map_t m_sub_values_map;
-
-  typedef hash_map<repeated_svalue::key_t,
-		   repeated_svalue *> repeated_values_map_t;
-  repeated_values_map_t m_repeated_values_map;
-
-  typedef hash_map<bits_within_svalue::key_t,
-		   bits_within_svalue *> bits_within_values_map_t;
-  bits_within_values_map_t m_bits_within_values_map;
-
-  typedef hash_map<const svalue *,
-		   unmergeable_svalue *> unmergeable_values_map_t;
-  unmergeable_values_map_t m_unmergeable_values_map;
-
-  typedef hash_map<widening_svalue::key_t,
-		   widening_svalue */*,
-		   widening_svalue::key_t::hash_map_traits*/>
-    widening_values_map_t;
-  widening_values_map_t m_widening_values_map;
-
-  typedef hash_map<compound_svalue::key_t,
-		   compound_svalue *> compound_values_map_t;
-  compound_values_map_t m_compound_values_map;
-
-  typedef hash_map<conjured_svalue::key_t,
-		   conjured_svalue *> conjured_values_map_t;
-  conjured_values_map_t m_conjured_values_map;
-
-  typedef hash_map<asm_output_svalue::key_t,
-		   asm_output_svalue *> asm_output_values_map_t;
-  asm_output_values_map_t m_asm_output_values_map;
-
-  typedef hash_map<const_fn_result_svalue::key_t,
-		   const_fn_result_svalue *> const_fn_result_values_map_t;
-  const_fn_result_values_map_t m_const_fn_result_values_map;
-
-  bool m_checking_feasibility;
-
-  /* "Dynamically-allocated" svalue instances.
-     The number of these within the analysis can grow arbitrarily.
-     They are still owned by the manager.  */
-  auto_delete_vec<svalue> m_managed_dynamic_svalues;
-
-  /* Maximum complexity of svalues that weren't rejected.  */
-  complexity m_max_complexity;
-
-  /* region consolidation.  */
-
-  code_region m_code_region;
-  typedef hash_map<tree, function_region *> fndecls_map_t;
-  typedef fndecls_map_t::iterator fndecls_iterator_t;
-  fndecls_map_t m_fndecls_map;
-
-  typedef hash_map<tree, label_region *> labels_map_t;
-  typedef labels_map_t::iterator labels_iterator_t;
-  labels_map_t m_labels_map;
-
-  globals_region m_globals_region;
-  typedef hash_map<tree, decl_region *> globals_map_t;
-  typedef globals_map_t::iterator globals_iterator_t;
-  globals_map_t m_globals_map;
-
-  consolidation_map<field_region> m_field_regions;
-  consolidation_map<element_region> m_element_regions;
-  consolidation_map<offset_region> m_offset_regions;
-  consolidation_map<sized_region> m_sized_regions;
-  consolidation_map<cast_region> m_cast_regions;
-  consolidation_map<frame_region> m_frame_regions;
-  consolidation_map<symbolic_region> m_symbolic_regions;
-
-  typedef hash_map<tree, string_region *> string_map_t;
-  string_map_t m_string_map;
-
-  consolidation_map<bit_range_region> m_bit_range_regions;
-  consolidation_map<var_arg_region> m_var_arg_regions;
-
-  store_manager m_store_mgr;
-
-  bounded_ranges_manager *m_range_mgr;
-
-  /* "Dynamically-allocated" region instances.
-     The number of these within the analysis can grow arbitrarily.
-     They are still owned by the manager.  */
-  auto_delete_vec<region> m_managed_dynamic_regions;
-};
-
 struct append_regions_cb_data;
 
 /* Helper class for handling calls to functions with known behavior.
@@ -521,8 +244,11 @@ public:
   call_details (const gcall *call, region_model *model,
 		region_model_context *ctxt);
 
+  region_model *get_model () const { return m_model; }
   region_model_manager *get_manager () const;
   region_model_context *get_ctxt () const { return m_ctxt; }
+  logger *get_logger () const;
+
   uncertainty_t *get_uncertainty () const;
   tree get_lhs_type () const { return m_lhs_type; }
   const region *get_lhs_region () const { return m_lhs_region; }
@@ -620,6 +346,7 @@ class region_model
   void impl_call_analyzer_dump_escaped (const gcall *call);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
+  void impl_call_analyzer_get_unknown_ptr (const call_details &cd);
   void impl_call_builtin_expect (const call_details &cd);
   void impl_call_calloc (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
@@ -630,6 +357,7 @@ class region_model
   void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
   void impl_call_memset (const call_details &cd);
+  void impl_call_pipe (const call_details &cd);
   void impl_call_putenv (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strchr (const call_details &cd);
@@ -644,6 +372,15 @@ class region_model
   void impl_call_va_copy (const call_details &cd);
   void impl_call_va_arg (const call_details &cd);
   void impl_call_va_end (const call_details &cd);
+
+  const svalue *maybe_get_copy_bounds (const region *src_reg,
+				       const svalue *num_bytes_sval);
+  void update_for_int_cst_return (const call_details &cd,
+				  int retval,
+				  bool unmergeable);
+  void update_for_zero_return (const call_details &cd,
+			       bool unmergeable);
+  void update_for_nonzero_return (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,
 				 region_model_context *ctxt);
@@ -717,6 +454,9 @@ class region_model
 				      const svalue *rhs) const;
   tristate compare_initial_and_pointer (const initial_svalue *init,
 					const region_svalue *ptr) const;
+  tristate symbolic_greater_than (const binop_svalue *a,
+				  const svalue *b) const;
+  tristate structural_equality (const svalue *a, const svalue *b) const;
   tristate eval_condition (tree lhs,
 			   enum tree_code op,
 			   tree rhs,
@@ -793,10 +533,28 @@ class region_model
 
   const svalue *get_capacity (const region *reg) const;
 
+  const svalue *get_string_size (const svalue *sval) const;
+  const svalue *get_string_size (const region *reg) const;
+
+  bool replay_call_summary (call_summary_replay &r,
+			    const region_model &summary);
+
+  void maybe_complain_about_infoleak (const region *dst_reg,
+				      const svalue *copied_sval,
+				      const region *src_reg,
+				      region_model_context *ctxt);
+
+  /* Implemented in sm-fd.cc  */
+  void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);
+
   /* Implemented in sm-malloc.cc  */
   void on_realloc_with_move (const call_details &cd,
 			     const svalue *old_ptr_sval,
 			     const svalue *new_ptr_sval);
+
+  /* Implemented in sm-taint.cc.  */
+  void mark_as_tainted (const svalue *sval,
+			region_model_context *ctxt);
 
  private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -808,6 +566,8 @@ class region_model
   path_var
   get_representative_path_var_1 (const region *reg,
 				 svalue_set *visited) const;
+
+  const known_function *get_known_function (tree fndecl) const;
 
   bool add_constraint (const svalue *lhs,
 		       enum tree_code op,
@@ -823,8 +583,6 @@ class region_model
 				  region_model_context *ctxt);
   void update_for_return_superedge (const return_superedge &return_edge,
 				    region_model_context *ctxt);
-  void update_for_call_summary (const callgraph_superedge &cg_sedge,
-				region_model_context *ctxt);
   bool apply_constraints_for_gcond (const cfg_superedge &edge,
 				    const gcond *cond_stmt,
 				    region_model_context *ctxt,
@@ -871,6 +629,12 @@ class region_model
 			      region_model_context *ctxt) const;
   void check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 			  region_model_context *ctxt) const;
+  void check_symbolic_bounds (const region *base_reg,
+			      const svalue *sym_byte_offset,
+			      const svalue *num_bytes_sval,
+			      const svalue *capacity,
+			      enum access_direction dir,
+			      region_model_context *ctxt) const;
   void check_region_bounds (const region *reg, enum access_direction dir,
 			    region_model_context *ctxt) const;
 
@@ -908,11 +672,11 @@ class region_model_context
  public:
   /* Hook for clients to store pending diagnostics.
      Return true if the diagnostic was stored, or false if it was deleted.  */
-  virtual bool warn (pending_diagnostic *d) = 0;
+  virtual bool warn (std::unique_ptr<pending_diagnostic> d) = 0;
 
-  /* Hook for clients to add a note to the last previously stored pending diagnostic.
-     Takes ownership of the pending_node (or deletes it).  */
-  virtual void add_note (pending_note *pn) = 0;
+  /* Hook for clients to add a note to the last previously stored
+     pending diagnostic.  */
+  virtual void add_note (std::unique_ptr<pending_note> pn) = 0;
 
   /* Hook for clients to be notified when an SVAL that was reachable
      in a previous state is no longer live, so that clients can emit warnings
@@ -965,24 +729,41 @@ class region_model_context
   /* Hook for clients to purge state involving SVAL.  */
   virtual void purge_state_involving (const svalue *sval) = 0;
 
-  /* Hook for clients to split state with a non-standard path.
-     Take ownership of INFO.  */
-  virtual void bifurcate (custom_edge_info *info) = 0;
+  /* Hook for clients to split state with a non-standard path.  */
+  virtual void bifurcate (std::unique_ptr<custom_edge_info> info) = 0;
 
   /* Hook for clients to terminate the standard path.  */
   virtual void terminate_path () = 0;
 
   virtual const extrinsic_state *get_ext_state () const = 0;
 
-  /* Hook for clients to access the "malloc" state machine in
+  /* Hook for clients to access the a specific state machine in
      any underlying program_state.  */
-  virtual bool get_malloc_map (sm_state_map **out_smap,
-			       const state_machine **out_sm,
-			       unsigned *out_sm_idx) = 0;
-  /* Likewise for the "taint" state machine.  */
-  virtual bool get_taint_map (sm_state_map **out_smap,
-			      const state_machine **out_sm,
-			      unsigned *out_sm_idx) = 0;
+  virtual bool get_state_map_by_name (const char *name,
+				      sm_state_map **out_smap,
+				      const state_machine **out_sm,
+				      unsigned *out_sm_idx) = 0;
+
+  /* Precanned ways for clients to access specific state machines.  */
+  bool get_fd_map (sm_state_map **out_smap,
+		   const state_machine **out_sm,
+		   unsigned *out_sm_idx)
+  {
+    return get_state_map_by_name ("file-descriptor", out_smap, out_sm,
+				  out_sm_idx);
+  }
+  bool get_malloc_map (sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx)
+  {
+    return get_state_map_by_name ("malloc", out_smap, out_sm, out_sm_idx);
+  }
+  bool get_taint_map (sm_state_map **out_smap,
+		      const state_machine **out_sm,
+		      unsigned *out_sm_idx)
+  {
+    return get_state_map_by_name ("taint", out_smap, out_sm, out_sm_idx);
+  }
 
   /* Get the current statement, if any.  */
   virtual const gimple *get_stmt () const = 0;
@@ -993,8 +774,8 @@ class region_model_context
 class noop_region_model_context : public region_model_context
 {
 public:
-  bool warn (pending_diagnostic *) override { return false; }
-  void add_note (pending_note *pn) override;
+  bool warn (std::unique_ptr<pending_diagnostic>) override { return false; }
+  void add_note (std::unique_ptr<pending_note>) override;
   void on_svalue_leak (const svalue *) override {}
   void on_liveness_change (const svalue_set &,
 			   const region_model *) override {}
@@ -1024,20 +805,15 @@ public:
 
   void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) override {}
 
-  void bifurcate (custom_edge_info *info) override;
+  void bifurcate (std::unique_ptr<custom_edge_info> info) override;
   void terminate_path () override;
 
   const extrinsic_state *get_ext_state () const override { return NULL; }
 
-  bool get_malloc_map (sm_state_map **,
-		       const state_machine **,
-		       unsigned *) override
-  {
-    return false;
-  }
-  bool get_taint_map (sm_state_map **,
-		      const state_machine **,
-		      unsigned *) override
+  bool get_state_map_by_name (const char *,
+			      sm_state_map **,
+			      const state_machine **,
+			      unsigned *) override
   {
     return false;
   }
@@ -1071,14 +847,14 @@ private:
 class region_model_context_decorator : public region_model_context
 {
  public:
-  bool warn (pending_diagnostic *d) override
+  bool warn (std::unique_ptr<pending_diagnostic> d) override
   {
-    return m_inner->warn (d);
+    return m_inner->warn (std::move (d));
   }
 
-  void add_note (pending_note *pn) override
+  void add_note (std::unique_ptr<pending_note> pn) override
   {
-    m_inner->add_note (pn);
+    m_inner->add_note (std::move (pn));
   }
 
   void on_svalue_leak (const svalue *sval) override
@@ -1141,9 +917,9 @@ class region_model_context_decorator : public region_model_context
     m_inner->purge_state_involving (sval);
   }
 
-  void bifurcate (custom_edge_info *info) override
+  void bifurcate (std::unique_ptr<custom_edge_info> info) override
   {
-    m_inner->bifurcate (info);
+    m_inner->bifurcate (std::move (info));
   }
 
   void terminate_path () override
@@ -1156,18 +932,12 @@ class region_model_context_decorator : public region_model_context
     return m_inner->get_ext_state ();
   }
 
-  bool get_malloc_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) override
+  bool get_state_map_by_name (const char *name,
+			      sm_state_map **out_smap,
+			      const state_machine **out_sm,
+			      unsigned *out_sm_idx) override
   {
-    return m_inner->get_malloc_map (out_smap, out_sm, out_sm_idx);
-  }
-
-  bool get_taint_map (sm_state_map **out_smap,
-		      const state_machine **out_sm,
-		      unsigned *out_sm_idx) override
-  {
-    return m_inner->get_taint_map (out_smap, out_sm, out_sm_idx);
+    return m_inner->get_state_map_by_name (name, out_smap, out_sm, out_sm_idx);
   }
 
   const gimple *get_stmt () const override
@@ -1191,9 +961,9 @@ protected:
 class note_adding_context : public region_model_context_decorator
 {
 public:
-  bool warn (pending_diagnostic *d) override
+  bool warn (std::unique_ptr<pending_diagnostic> d) override
   {
-    if (m_inner->warn (d))
+    if (m_inner->warn (std::move (d)))
       {
 	add_note (make_note ());
 	return true;
@@ -1203,7 +973,7 @@ public:
   }
 
   /* Hook to make the new note.  */
-  virtual pending_note *make_note () = 0;
+  virtual std::unique_ptr<pending_note> make_note () = 0;
 
 protected:
   note_adding_context (region_model_context *inner)
@@ -1242,6 +1012,10 @@ struct model_merger
   }
 
   bool mergeable_svalue_p (const svalue *) const;
+  const function_point &get_function_point () const
+  {
+    return m_point.get_function_point ();
+  }
 
   const region_model *m_model_a;
   const region_model *m_model_b;
@@ -1312,6 +1086,10 @@ public:
   engine (const supergraph *sg = NULL, logger *logger = NULL);
   const supergraph *get_supergraph () { return m_sg; }
   region_model_manager *get_model_manager () { return &m_mgr; }
+  known_function_manager *get_known_function_manager ()
+  {
+    return m_mgr.get_known_function_manager ();
+  }
 
   void log_stats (logger *logger) const;
 
@@ -1338,9 +1116,9 @@ using namespace ::selftest;
 class test_region_model_context : public noop_region_model_context
 {
 public:
-  bool warn (pending_diagnostic *d) final override
+  bool warn (std::unique_ptr<pending_diagnostic> d) final override
   {
-    m_diagnostics.safe_push (d);
+    m_diagnostics.safe_push (d.release ());
     return true;
   }
 

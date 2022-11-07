@@ -1882,6 +1882,16 @@ cgraph_node::expand (void)
   ggc_collect ();
   timevar_pop (TV_REST_OF_COMPILATION);
 
+  if (DECL_STRUCT_FUNCTION (decl)
+      && DECL_STRUCT_FUNCTION (decl)->assume_function)
+    {
+      /* Assume functions aren't expanded into RTL, on the other side
+	 we don't want to release their body.  */
+      if (cfun)
+	pop_cfun ();
+      return;
+    }
+
   /* Make sure that BE didn't give up on compiling.  */
   gcc_assert (TREE_ASM_WRITTEN (decl));
   if (cfun)
@@ -2373,6 +2383,10 @@ symbol_table::compile (void)
 	if (node->inlined_to
 	    || gimple_has_body_p (node->decl))
 	  {
+	    if (DECL_STRUCT_FUNCTION (node->decl)
+		&& (DECL_STRUCT_FUNCTION (node->decl)->curr_properties
+		    & PROP_assumptions_done) != 0)
+	      continue;
 	    error_found = true;
 	    node->debug ();
 	  }

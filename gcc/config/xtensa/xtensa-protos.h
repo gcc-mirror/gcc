@@ -58,6 +58,8 @@ extern char *xtensa_emit_call (int, rtx *);
 extern char *xtensa_emit_sibcall (int, rtx *);
 extern bool xtensa_tls_referenced_p (rtx);
 extern enum rtx_code xtensa_shlrd_which_direction (rtx, rtx);
+extern bool xtensa_split1_finished_p (void);
+extern void xtensa_split_DI_reg_imm (rtx *);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, int);
@@ -71,7 +73,7 @@ extern rtx xtensa_return_addr (int, rtx);
 #endif /* RTX_CODE */
 
 extern void xtensa_setup_frame_addresses (void);
-extern int xtensa_dbx_register_number (int);
+extern int xtensa_debugger_regno (int);
 extern long compute_frame_size (poly_int64);
 extern bool xtensa_use_return_instruction_p (void);
 extern void xtensa_expand_prologue (void);

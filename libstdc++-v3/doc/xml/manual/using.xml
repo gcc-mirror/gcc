@@ -1062,7 +1062,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       #define/#undef).
    </para>
 
-   <para> <acronym>ABI</acronym> means that changing from the default value may
+   <para> <acronym>ABI</acronym>-changing means that changing from the default value may
   mean changing the <acronym>ABI</acronym> of compiled code. In other words,
   these choices control code which has already been compiled (i.e., in a
   binary such as libstdc++.a/.so).  If you explicitly #define or
@@ -1077,7 +1077,8 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     <varlistentry><term><code>_GLIBCXX_USE_DEPRECATED</code></term>
     <listitem>
       <para>
-	Defined by default. Not configurable. ABI-changing. Turning this off
+	Defined to the value <literal>1</literal> by default.
+	Not configurable. ABI-changing. Turning this off
 	removes older ARM-style iostreams code, and other anachronisms
 	from the API.  This macro is dependent on the version of the
 	standard being tracked, and as a result may give different results for
@@ -1142,6 +1143,15 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	the <link linkend="manual.ext.debug_mode">debug mode</link>, makes
 	the debug mode extremely picky by making the use of libstdc++
 	extensions and libstdc++-specific behavior into errors.
+      </para>
+    </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_DEBUG_BACKTRACE</code></term>
+    <listitem>
+      <para>
+	Undefined by default. Considered only if libstdc++ has been configured with
+	<option>--enable-libstdcxx-backtrace=yes</option> and if <code>_GLIBCXX_DEBUG</code>
+	is defined. When defined display backtraces on
+	<link linkend="manual.ext.debug_mode">debug mode</link> assertions.
       </para>
     </listitem></varlistentry>
     <varlistentry><term><code>_GLIBCXX_PARALLEL</code></term>
@@ -1650,6 +1660,7 @@ A quick read of the relevant part of the GCC
       header will remain compatible between different GCC releases.
     </para>
     </section>
+
   </section>
 
   <section xml:id="manual.intro.using.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>

@@ -104,7 +104,8 @@ enum rid
   RID_SIZEOF,
 
   /* C extensions */
-  RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
+  RID_ASM,       RID_TYPEOF,   RID_TYPEOF_UNQUAL, RID_ALIGNOF,  RID_ATTRIBUTE,
+  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
   RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
@@ -163,29 +164,14 @@ enum rid
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
 
   /* C++ extensions */
-  RID_ADDRESSOF,               RID_BASES,
-  RID_BUILTIN_LAUNDER,         RID_DIRECT_BASES,
-  RID_HAS_NOTHROW_ASSIGN,      RID_HAS_NOTHROW_CONSTRUCTOR,
-  RID_HAS_NOTHROW_COPY,        RID_HAS_TRIVIAL_ASSIGN,
-  RID_HAS_TRIVIAL_CONSTRUCTOR, RID_HAS_TRIVIAL_COPY,
-  RID_HAS_TRIVIAL_DESTRUCTOR,  RID_HAS_UNIQUE_OBJ_REPRESENTATIONS,
-  RID_HAS_VIRTUAL_DESTRUCTOR,  RID_BUILTIN_BIT_CAST,
-  RID_IS_ABSTRACT,             RID_IS_AGGREGATE,
-  RID_IS_BASE_OF,              RID_IS_CLASS,
-  RID_IS_EMPTY,                RID_IS_ENUM,
-  RID_IS_FINAL,                RID_IS_LAYOUT_COMPATIBLE,
-  RID_IS_LITERAL_TYPE,
-  RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF,
-  RID_IS_POD,                  RID_IS_POLYMORPHIC,
-  RID_IS_SAME_AS,
-  RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
-  RID_IS_TRIVIALLY_ASSIGNABLE, RID_IS_TRIVIALLY_CONSTRUCTIBLE,
-  RID_IS_TRIVIALLY_COPYABLE,
-  RID_IS_UNION,                RID_UNDERLYING_TYPE,
-  RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
-  RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
-  RID_REF_CONSTRUCTS_FROM_TEMPORARY,
-  RID_REF_CONVERTS_FROM_TEMPORARY,
+  RID_ADDRESSOF,
+  RID_BUILTIN_LAUNDER,
+  RID_BUILTIN_BIT_CAST,
+
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+  RID_##CODE,
+#include "cp/cp-trait.def"
+#undef DEFTRAIT
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -375,6 +361,8 @@ enum c_tree_index
     CTI_DEFAULT_FUNCTION_TYPE,
 
     CTI_NULL,
+    CTI_NULLPTR,
+    CTI_NULLPTR_TYPE,
 
     /* These are not types, but we have to look them up all the time.  */
     CTI_FUNCTION_NAME_DECL,
@@ -409,7 +397,7 @@ struct c_common_resword
 {
   const char *const word;
   ENUM_BITFIELD(rid) const rid : 16;
-  const unsigned int disable   : 16;
+  const unsigned int disable   : 32;
 };
 
 /* Mode used to build pointers (VOIDmode means ptr_mode).  */
@@ -447,19 +435,21 @@ extern machine_mode c_default_pointer_mode;
 #define D_CONLY		0x0001	/* C only (not in C++).  */
 #define D_CXXONLY	0x0002	/* C++ only (not in C).  */
 #define D_C99		0x0004	/* In C, C99 only.  */
-#define D_CXX11         0x0008	/* In C++, C++11 only.  */
-#define D_EXT		0x0010	/* GCC extension.  */
-#define D_EXT89		0x0020	/* GCC extension incorporated in C99.  */
-#define D_ASM		0x0040	/* Disabled by -fno-asm.  */
-#define D_OBJC		0x0080	/* In Objective C and neither C nor C++.  */
-#define D_CXX_OBJC	0x0100	/* In Objective C, and C++, but not C.  */
-#define D_CXXWARN	0x0200	/* In C warn with -Wcxx-compat.  */
-#define D_CXX_CONCEPTS  0x0400	/* In C++, only with concepts.  */
-#define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
-#define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
-#define D_CXX20		0x2000  /* In C++, C++20 only.  */
-#define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines.  */
-#define D_CXX_MODULES	0x8000  /* In C++, only with modules.  */
+#define D_C2X		0x0008	/* In C, C2X only.  */
+#define D_CXX11         0x0010	/* In C++, C++11 only.  */
+#define D_EXT		0x0020	/* GCC extension.  */
+#define D_EXT89		0x0040	/* GCC extension incorporated in C99.  */
+#define D_EXT11		0x0080	/* GCC extension incorporated in C2X.  */
+#define D_ASM		0x0100	/* Disabled by -fno-asm.  */
+#define D_OBJC		0x0200	/* In Objective C and neither C nor C++.  */
+#define D_CXX_OBJC	0x0400	/* In Objective C, and C++, but not C.  */
+#define D_CXXWARN	0x0800	/* In C warn with -Wcxx-compat.  */
+#define D_CXX_CONCEPTS  0x1000	/* In C++, only with concepts.  */
+#define D_TRANSMEM	0x2000	/* C++ transactional memory TS.  */
+#define D_CXX_CHAR8_T	0x4000	/* In C++, only with -fchar8_t.  */
+#define D_CXX20		0x8000  /* In C++, C++20 only.  */
+#define D_CXX_COROUTINES 0x10000  /* In C++, only with coroutines.  */
+#define D_CXX_MODULES	0x20000  /* In C++, only with modules.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
@@ -534,6 +524,9 @@ extern const unsigned int num_c_common_reswords;
 
 /* The node for C++ `__null'.  */
 #define null_node                       c_global_trees[CTI_NULL]
+/* The nodes for `nullptr'.  */
+#define nullptr_node                    c_global_trees[CTI_NULLPTR]
+#define nullptr_type_node               c_global_trees[CTI_NULLPTR_TYPE]
 
 extern GTY(()) tree c_global_trees[CTI_MAX];
 
@@ -847,7 +840,6 @@ extern tree identifier_global_tag (tree);
 extern bool names_builtin_p (const char *);
 extern tree c_linkage_bindings (tree);
 extern void record_builtin_type (enum rid, const char *, tree);
-extern tree build_void_list_node (void);
 extern void start_fname_decls (void);
 extern void finish_fname_decls (void);
 extern const char *fname_as_string (int);
@@ -1009,7 +1001,34 @@ extern void c_parse_final_cleanups (void);
 #define DECL_UNNAMED_BIT_FIELD(NODE) \
   (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
 
-extern tree do_case (location_t, tree, tree);
+/* True iff TYPE is cv decltype(nullptr).  */
+#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
+
+/* Returns the underlying type of the given enumeration type. The
+   underlying type is determined in different ways, depending on the
+   properties of the enum:
+
+     - In C++0x or C2x, the underlying type can be explicitly specified, e.g.,
+
+         enum E1 : char { ... } // underlying type is char
+
+     - In a C++0x scoped enumeration, the underlying type is int
+       unless otherwises specified:
+
+         enum class E2 { ... } // underlying type is int
+
+     - Otherwise, the underlying type is determined based on the
+       values of the enumerators. In this case, the
+       ENUM_UNDERLYING_TYPE will not be set until after the definition
+       of the enumeration is completed by finish_enum.  */
+#define ENUM_UNDERLYING_TYPE(TYPE) \
+  TREE_TYPE (ENUMERAL_TYPE_CHECK (TYPE))
+
+/* Determines whether an ENUMERAL_TYPE has an explicit
+   underlying type.  */
+#define ENUM_FIXED_UNDERLYING_TYPE_P(NODE) (TYPE_LANG_FLAG_5 (NODE))
+
+extern tree do_case (location_t, tree, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
 
@@ -1037,7 +1056,8 @@ extern tree boolean_increment (enum tree_code, tree);
 
 extern int case_compare (splay_tree_key, splay_tree_key);
 
-extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree);
+extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree,
+			      tree = NULL_TREE);
 extern bool c_switch_covers_all_cases_p (splay_tree, tree);
 extern bool c_block_may_fallthru (const_tree);
 
@@ -1276,6 +1296,7 @@ struct c_omp_directive {
   bool simd;
 };
 
+extern const struct c_omp_directive c_omp_directives[];
 extern const struct c_omp_directive *c_omp_categorize_directive (const char *,
 								 const char *,
 								 const char *);
@@ -1474,6 +1495,10 @@ extern bool diagnose_mismatched_attributes (tree, tree);
 extern tree do_warn_duplicated_branches_r (tree *, int *, void *);
 extern void warn_for_multistatement_macros (location_t, location_t,
 					    location_t, enum rid);
+
+extern void check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
+				       location_t operator_loc,
+				       tree rhs_val);
 
 /* In c-attribs.cc.  */
 extern bool attribute_takes_identifier_p (const_tree);

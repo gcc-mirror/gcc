@@ -200,11 +200,7 @@ UINT __gnat_current_ccs_encoding;
 #endif
 
 /* wait.h processing */
-#ifdef __MINGW32__
-# if OLD_MINGW
-#  include <sys/wait.h>
-# endif
-#elif defined (__vxworks) && defined (__RTP__)
+#if defined (__vxworks) && defined (__RTP__)
 # include <wait.h>
 #elif defined (__Lynx__)
 /* ??? We really need wait.h and it includes resource.h on Lynx.  GCC
@@ -214,7 +210,7 @@ UINT __gnat_current_ccs_encoding;
    preventing the inclusion of the GCC header from doing anything.  */
 # define GCC_RESOURCE_H
 # include <sys/wait.h>
-#elif defined (__PikeOS__)
+#elif defined (__PikeOS__) || defined (__MINGW32__)
 /* No wait() or waitpid() calls available.  */
 #else
 /* Default case.  */
@@ -335,11 +331,6 @@ const char *__gnat_library_template = GNAT_LIBRARY_TEMPLATE;
 
 #if defined (__MINGW32__)
 #include "mingw32.h"
-
-#if OLD_MINGW
-#include <sys/param.h>
-#endif
-
 #else
 #include <sys/param.h>
 #endif

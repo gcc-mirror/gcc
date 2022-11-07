@@ -27,6 +27,14 @@
 
 /* Run-time Target.  */
 
+/* Use '--with-arch' for default '-misa'.  */
+#define OPTION_DEFAULT_SPECS \
+  { "arch", "%{!misa=*:-misa=%(VALUE)}" }, \
+
+/* Assembler supports '-v' option; handle similar to
+   '../../gcc.cc:asm_options', 'HAVE_GNU_AS'.  */
+#define ASM_SPEC "%{v}"
+
 #define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
@@ -253,7 +261,7 @@ struct GTY(()) machine_function
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "\t// #NO_APP \n"
 
-#define DBX_REGISTER_NUMBER(N) N
+#define DEBUGGER_REGNO(N) N
 
 #define TEXT_SECTION_ASM_OP ""
 #define DATA_SECTION_ASM_OP ""
@@ -321,6 +329,9 @@ struct GTY(()) machine_function
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)	\
   do						\
     {						\
+      (void) (FILE);				\
+      (void) (LABEL1);				\
+      (void) (LABEL2);				\
       gcc_unreachable ();			\
     }						\
   while (0)

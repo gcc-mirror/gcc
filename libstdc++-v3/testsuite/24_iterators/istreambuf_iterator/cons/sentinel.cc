@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //

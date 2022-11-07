@@ -9,7 +9,6 @@
  */
 module core.sys.windows.security;
 version (Windows):
-@system:
 
 enum : SECURITY_STATUS
 {

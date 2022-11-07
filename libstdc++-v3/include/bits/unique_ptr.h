@@ -36,9 +36,11 @@
 #include <tuple>
 #include <bits/stl_function.h>
 #include <bits/functional_hash.h>
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 # include <compare>
-# include <ostream>
+# if _GLIBCXX_HOSTED
+#  include <ostream>
+# endif
 #endif
 
 #if __cplusplus > 202002L && __cpp_constexpr_dynamic_alloc
@@ -539,14 +541,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __uniq_ptr_data<_Tp, _Dp> _M_t;
 
-      template<typename _Up>
-	using __remove_cv = typename remove_cv<_Up>::type;
-
       // like is_base_of<_Tp, _Up> but false if unqualified types are the same
       template<typename _Up>
 	using __is_derived_Tp
 	  = __and_< is_base_of<_Tp, _Up>,
-		    __not_<is_same<__remove_cv<_Tp>, __remove_cv<_Up>>> >;
+		    __not_<is_same<__remove_cv_t<_Tp>, __remove_cv_t<_Up>>> >;
 
     public:
       using pointer	  = typename __uniq_ptr_impl<_Tp, _Dp>::pointer;
@@ -1031,7 +1030,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __uniq_ptr_hash<unique_ptr<_Tp, _Dp>>
     { };
 
-#if __cplusplus >= 201402L
+#if __cplusplus >= 201402L && _GLIBCXX_HOSTED
 #define __cpp_lib_make_unique 201304L
 
   /// @cond undocumented
@@ -1131,9 +1130,9 @@ namespace __detail
     make_unique_for_overwrite(_Args&&...) = delete;
 #endif // C++20
 
-#endif // C++14
+#endif // C++14 && HOSTED
 
-#if __cplusplus > 201703L && __cpp_concepts
+#if __cplusplus > 201703L && __cpp_concepts && _GLIBCXX_HOSTED
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2948. unique_ptr does not define operator<< for stream output
   /// Stream output operator for unique_ptr
@@ -1148,7 +1147,7 @@ namespace __detail
       __os << __p.get();
       return __os;
     }
-#endif // C++20
+#endif // C++20 && HOSTED
 
   /// @} group pointer_abstractions
 

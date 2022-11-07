@@ -146,6 +146,9 @@
     case CONST_INT:
       return !splittable_const_int_operand (op, mode);
 
+    case CONST_POLY_INT:
+      return known_eq (rtx_to_poly_int64 (op), BYTES_PER_RISCV_VECTOR);
+
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -226,11 +229,11 @@
 ;; Predicates for the ZBS extension.
 (define_predicate "single_bit_mask_operand"
   (and (match_code "const_int")
-       (match_test "pow2p_hwi (INTVAL (op))")))
+       (match_test "SINGLE_BIT_MASK_OPERAND (UINTVAL (op))")))
 
 (define_predicate "not_single_bit_mask_operand"
   (and (match_code "const_int")
-       (match_test "pow2p_hwi (~INTVAL (op))")))
+       (match_test "SINGLE_BIT_MASK_OPERAND (~UINTVAL (op))")))
 
 (define_predicate "const31_operand"
   (and (match_code "const_int")
@@ -244,6 +247,11 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) < 5")))
 
+;; A const_int for sh1add/sh2add/sh3add
+(define_predicate "imm123_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 3)")))
+
 ;; A CONST_INT operand that consists of a single run of consecutive set bits.
 (define_predicate "consecutive_bits_operand"
   (match_code "const_int")
@@ -254,3 +262,26 @@
 
 	return true;
 })
+
+;; Predicates for the V extension.
+(define_special_predicate "vector_length_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (match_operand 0 "const_csr_operand")))
+
+(define_predicate "reg_or_mem_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "memory_operand")))
+
+(define_predicate "vector_move_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_code "const_vector")))
+
+(define_predicate "vector_mask_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
+
+(define_predicate "vector_merge_operand"
+  (ior (match_operand 0 "memory_operand")
+       (ior (match_operand 0 "register_operand")
+	    (match_test "GET_CODE (op) == UNSPEC
+			 && (XINT (op, 1) == UNSPEC_VUNDEF)"))))

@@ -3793,7 +3793,7 @@ package body Freeze is
                      --  Set component size if not already set by a component
                      --  size clause.
 
-                     if not Present (Comp_Size_C) then
+                     if No (Comp_Size_C) then
                         Set_Component_Size (Arr, Csiz);
                      end if;
 
@@ -3805,7 +3805,7 @@ package body Freeze is
                      --  explicitly, then generate a warning.
 
                      if Has_Pragma_Pack (Arr)
-                       and then not Present (Comp_Size_C)
+                       and then No (Comp_Size_C)
                        and then (Csiz = 7 or else Csiz = 15 or else Csiz = 31)
                        and then Known_Esize (Base_Type (Ctyp))
                        and then Esize (Base_Type (Ctyp)) = Csiz + 1
@@ -6248,6 +6248,32 @@ package body Freeze is
         and then Scope (Test_E) /= Current_Scope
         and then Ekind (Test_E) /= E_Constant
       then
+         --  Here we deal with the special case of the expansion of
+         --  postconditions. Previously this was handled by the loop below,
+         --  since these postcondition checks got isolated to a separate,
+         --  internally generated, subprogram. Now, however, the postcondition
+         --  checks get contained within their corresponding subprogram
+         --  directly.
+
+         if not Comes_From_Source (N)
+           and then Nkind (N) = N_Pragma
+           and then From_Aspect_Specification (N)
+           and then Is_Valid_Assertion_Kind (Original_Aspect_Pragma_Name (N))
+
+           --  Now, verify the placement of the pragma is within an expanded
+           --  subprogram which contains postcondition expansion - detected
+           --  through the presence of the "Wrapped_Statements" field.
+
+           and then Present (Enclosing_Subprogram (Current_Scope))
+           and then Present (Wrapped_Statements
+                              (Enclosing_Subprogram (Current_Scope)))
+         then
+            goto Leave;
+         end if;
+
+         --  Otherwise, loop through scopes checking if an enclosing scope
+         --  comes from source or is a generic.
+
          declare
             S : Entity_Id;
 
@@ -6366,9 +6392,7 @@ package body Freeze is
          end;
       end if;
 
-      if Has_Delayed_Aspects (E)
-        or else May_Inherit_Delayed_Rep_Aspects (E)
-      then
+      if Has_Delayed_Aspects (E) then
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
@@ -6799,17 +6823,24 @@ package body Freeze is
             --  A subtype inherits all the type-related representation aspects
             --  from its parents (RM 13.1(8)).
 
+            if May_Inherit_Delayed_Rep_Aspects (E) then
+               Inherit_Delayed_Rep_Aspects (E);
+            end if;
+
             Inherit_Aspects_At_Freeze_Point (E);
 
          --  For a derived type, freeze its parent type first (RM 13.14(15))
 
          elsif Is_Derived_Type (E) then
             Freeze_And_Append (Etype (E), N, Result);
-            Freeze_And_Append (First_Subtype (Etype (E)), N, Result);
 
             --  A derived type inherits each type-related representation aspect
             --  of its parent type that was directly specified before the
             --  declaration of the derived type (RM 13.1(15)).
+
+            if May_Inherit_Delayed_Rep_Aspects (E) then
+               Inherit_Delayed_Rep_Aspects (E);
+            end if;
 
             Inherit_Aspects_At_Freeze_Point (E);
          end if;
@@ -7028,7 +7059,7 @@ package body Freeze is
             --  end of a declarative part.
 
             if Is_Library_Level_Tagged_Type (E)
-              and then not Present (Full_View (E))
+              and then No (Full_View (E))
             then
                Set_Is_Frozen (E, False);
                goto Leave;
@@ -7436,7 +7467,7 @@ package body Freeze is
                      --  If no formal is passed in, then issue an error for a
                      --  missing formal.
 
-                     elsif not Present (Pool_Op_Formal) then
+                     elsif No (Pool_Op_Formal) then
                         Error_Msg_NE
                           ("simple storage pool op missing formal " &
                            Formal_Name & " of type&", Pool_Op, Expected_Type);
@@ -7568,7 +7599,7 @@ package body Freeze is
                            --  and no excess formals are present, then this
                            --  operation has been validated, so record it.
 
-                           if not Present (Formal) and then Is_OK then
+                           if No (Formal) and then Is_OK then
                               Found_Op := Op;
                            end if;
                         end if;
@@ -7580,7 +7611,7 @@ package body Freeze is
                      --  so issue an error if none was found.
 
                      if Op_Name = Name_Allocate
-                       and then not Present (Found_Op)
+                       and then No (Found_Op)
                      then
                         Error_Msg_N ("missing % operation for simple " &
                                      "storage pool type", Pool_Type);
@@ -8325,9 +8356,9 @@ package body Freeze is
             --  If the parent is a subprogram body, the candidate insertion
             --  point is just ahead of it.
 
-            if  Nkind (Parent_P) = N_Subprogram_Body
-                and then Unique_Defining_Entity (Parent_P) =
-                           Freeze_Outside_Subp
+            if Nkind (Parent_P) = N_Subprogram_Body
+              and then Unique_Defining_Entity (Parent_P) =
+                         Freeze_Outside_Subp
             then
                P := Parent_P;
                exit;
@@ -9089,6 +9120,11 @@ package body Freeze is
          Set_Has_Delayed_Aspects (Ftyp, False);
       end if;
 
+      if May_Inherit_Delayed_Rep_Aspects (Ftyp) then
+         Inherit_Delayed_Rep_Aspects (Ftyp);
+         Set_May_Inherit_Delayed_Rep_Aspects (Ftyp, False);
+      end if;
+
       --  Inherit the Small value from the first subtype in any case
 
       if Typ /= Ftyp then
@@ -9653,9 +9689,7 @@ package body Freeze is
       Set_Has_Delayed_Freeze (T);
       L := Freeze_Entity (T, N);
 
-      if Is_Non_Empty_List (L) then
-         Insert_Actions (N, L);
-      end if;
+      Insert_Actions (N, L);
    end Freeze_Itype;
 
    --------------------------

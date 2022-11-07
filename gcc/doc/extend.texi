@@ -1109,7 +1109,7 @@ add, subtract, multiply, divide; unary arithmetic operators;
 relational operators; equality operators; and conversions to and from
 integer and other floating types.  Use a suffix @samp{w} or @samp{W}
 in a literal constant of type @code{__float80} or type
-@code{__ibm128}.  Use a suffix @samp{q} or @samp{Q} for @code{_float128}.
+@code{__ibm128}.  Use a suffix @samp{q} or @samp{Q} for @code{__float128}.
 
 In order to use @code{_Float128}, @code{__float128}, and @code{__ibm128}
 on PowerPC Linux systems, you must use the @option{-mfloat128} option. It is
@@ -2534,7 +2534,6 @@ GCC plugins may provide their own attributes.
 * AVR Function Attributes::
 * Blackfin Function Attributes::
 * BPF Function Attributes::
-* CR16 Function Attributes::
 * C-SKY Function Attributes::
 * Epiphany Function Attributes::
 * H8/300 Function Attributes::
@@ -5088,20 +5087,6 @@ int bpf_probe_read (void *dst, int size, const void *unsafe_ptr)
 @end smallexample
 @end table
 
-@node CR16 Function Attributes
-@subsection CR16 Function Attributes
-
-These function attributes are supported by the CR16 back end:
-
-@table @code
-@item interrupt
-@cindex @code{interrupt} function attribute, CR16
-Use this attribute to indicate
-that the specified function is an interrupt handler.  The compiler generates
-function entry and exit sequences suitable for use in an interrupt handler
-when this attribute is present.
-@end table
-
 @node C-SKY Function Attributes
 @subsection C-SKY Function Attributes
 
@@ -7075,6 +7060,41 @@ Enable/disable the generation of the WIDEKL instructions.
 @cindex @code{target("avxvnni")} function attribute, x86
 Enable/disable the generation of the AVXVNNI instructions.
 
+@item avxifma
+@itemx no-avxifma
+@cindex @code{target("avxifma")} function attribute, x86
+Enable/disable the generation of the AVXIFMA instructions.
+
+@item avxvnniint8
+@itemx no-avxvnniint8
+@cindex @code{target("avxvnniint8")} function attribute, x86
+Enable/disable the generation of the AVXVNNIINT8 instructions.
+
+@item avxneconvert
+@itemx no-avxneconvert
+@cindex @code{target("avxneconvert")} function attribute, x86
+Enable/disable the generation of the AVXNECONVERT instructions.
+
+@item cmpccxadd
+@itemx no-cmpccxadd
+@cindex @code{target("cmpccxadd")} function attribute, x86
+Enable/disable the generation of the CMPccXADD instructions.
+
+@item amx-fp16
+@itemx no-amx-fp16
+@cindex @code{target("amx-fp16")} function attribute, x86
+Enable/disable the generation of the AMX-FP16 instructions.
+
+@item prefetchi
+@itemx no-prefetchi
+@cindex @code{target("prefetchi")} function attribute, x86
+Enable/disable the generation of the PREFETCHI instructions.
+
+@item raoint
+@itemx no-raoint
+@cindex @code{target("raoint")} function attribute, x86
+Enable/disable the generation of the RAOINT instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
@@ -7314,6 +7334,7 @@ attributes.
 * Blackfin Variable Attributes::
 * H8/300 Variable Attributes::
 * IA-64 Variable Attributes::
+* LoongArch Variable Attributes::
 * M32R/D Variable Attributes::
 * MeP Variable Attributes::
 * Microsoft Windows Variable Attributes::
@@ -7472,6 +7493,32 @@ struct __attribute__ ((aligned (16))) foo
 This warning can be disabled by @option{-Wno-if-not-aligned}.
 The @code{warn_if_not_aligned} attribute can also be used for types
 (@pxref{Common Type Attributes}.)
+
+@cindex @code{strict_flex_array} variable attribute
+@item strict_flex_array (@var{level})
+The @code{strict_flex_array} attribute should be attached to the trailing
+array field of a structure.  It controls when to treat the trailing array
+field of a structure as a flexible array member for the purposes of accessing
+the elements of such an array.
+@var{level} must be an integer betwen 0 to 3.
+
+@var{level}=0 is the least strict level, all trailing arrays of structures
+are treated as flexible array members. @var{level}=3 is the strictest level,
+only when the trailing array is declared as a flexible array member per C99
+standard onwards (@samp{[]}), it is treated as a flexible array member.
+
+There are two more levels in between 0 and 3, which are provided to support
+older codes that use GCC zero-length array extension (@samp{[0]}) or one-element
+array as flexible array members (@samp{[1]}):
+When @var{level} is 1, the trailing array is treated as a flexible array member
+when it is declared as either @samp{[]}, @samp{[0]}, or @samp{[1]};
+When @var{level} is 2, the trailing array is treated as a flexible array member
+when it is declared as either @samp{[]}, or @samp{[0]}.
+
+This attribute can be used with or without the @option{-fstrict-flex-arrays}.
+When both the attribute and the option present at the same time, the level of
+the strictness for the specific trailing array field is determined by the
+attribute.
 
 @item alloc_size (@var{position})
 @itemx alloc_size (@var{position-1}, @var{position-2})
@@ -7888,7 +7935,7 @@ This attribute works similar to the @code{section} attribute
 but adds additional checking.
 
 @table @asis
-@item @bullet{}@tie{} Ordinary AVR cores with 32 general purpose registers:
+@item @bullet{} Ordinary AVR cores with 32 general purpose registers:
 @code{progmem} affects the location
 of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
@@ -7913,7 +7960,7 @@ normally resides in the data memory (RAM).
 See also the @ref{AVR Named Address Spaces} section for
 an alternate way to locate and access data in flash memory.
 
-@item @bullet{}@tie{} AVR cores with flash memory visible in the RAM address range:
+@item @bullet{} AVR cores with flash memory visible in the RAM address range:
 On such devices, there is no need for attribute @code{progmem} or
 @ref{AVR Named Address Spaces,,@code{__flash}} qualifier at all.
 Just use standard C / C++.  The compiler will generate @code{LD*}
@@ -7926,7 +7973,7 @@ avoiding @code{progmem} and @code{__flash}.  This applies to devices from
 families @code{avrtiny} and @code{avrxmega3}, see @ref{AVR Options} for
 an overview.
 
-@item @bullet{}@tie{}Reduced AVR Tiny cores like ATtiny40:
+@item @bullet{} Reduced AVR Tiny cores like ATtiny40:
 The compiler adds @code{0x4000}
 to the addresses of objects and declarations in @code{progmem} and locates
 the objects in flash memory, namely in section @code{.progmem.data}.
@@ -8096,6 +8143,22 @@ instruction).  Caveat: such addressing is by definition not position
 independent and hence this attribute must not be used for objects
 defined by shared libraries.
 
+@end table
+
+@node LoongArch Variable Attributes
+@subsection LoongArch Variable Attributes
+
+One attribute is currently defined for the LoongArch.
+
+@table @code
+@item model("@var{name}")
+@cindex @code{model} variable attribute, LoongArch
+Use this attribute on the LoongArch to use a different code model for
+addressing this variable, than the code model specified by the global
+@option{-mcmodel} option.  This attribute is mostly useful if a
+@code{section} attribute and/or a linker script will locate this object
+specially.  Currently the only supported values of @var{name} are
+@code{normal} and @code{extreme}.
 @end table
 
 @node M32R/D Variable Attributes
@@ -9185,6 +9248,20 @@ available for functions (@pxref{Function Attributes}), variables
 (@pxref{Variable Attributes}), labels (@pxref{Label Attributes}), enumerators
 (@pxref{Enumerator Attributes}), and for types (@pxref{Type Attributes}).
 
+@table @code
+@item fallthrough
+@cindex @code{fallthrough} statement attribute
+The @code{fallthrough} attribute with a null statement serves as a
+fallthrough statement.  It hints to the compiler that a statement
+that falls through to another case label, or user-defined label
+in a switch statement is intentional and thus the
+@option{-Wimplicit-fallthrough} warning must not trigger.  The
+fallthrough attribute may appear at most once in each attribute
+list, and may not be mixed with other attributes.  It can only
+be used in a switch statement (the compiler will issue an error
+otherwise), after a preceding statement and before a logically
+succeeding case label, or user-defined label.
+
 This example uses the @code{fallthrough} statement attribute to indicate that
 the @option{-Wimplicit-fallthrough} warning should not be emitted:
 
@@ -9199,19 +9276,28 @@ switch (cond)
   @}
 @end smallexample
 
-@table @code
-@item fallthrough
-@cindex @code{fallthrough} statement attribute
-The @code{fallthrough} attribute with a null statement serves as a
-fallthrough statement.  It hints to the compiler that a statement
-that falls through to another case label, or user-defined label
-in a switch statement is intentional and thus the
-@option{-Wimplicit-fallthrough} warning must not trigger.  The
-fallthrough attribute may appear at most once in each attribute
-list, and may not be mixed with other attributes.  It can only
-be used in a switch statement (the compiler will issue an error
-otherwise), after a preceding statement and before a logically
-succeeding case label, or user-defined label.
+@item assume
+@cindex @code{assume} statement attribute
+The @code{assume} attribute with a null statement serves as portable
+assumption.  It should have a single argument, a conditional expression,
+which is not evaluated.  If the argument would evaluate to true
+at the point where it appears, it has no effect, otherwise there
+is undefined behavior.  This is a GNU variant of the ISO C++23
+standard @code{assume} attribute, but it can be used in any version of
+both C and C++.
+
+@smallexample
+int
+foo (int x, int y)
+@{
+  __attribute__((assume(x == 42)));
+  __attribute__((assume(++y == 43)));
+  return x + y;
+@}
+@end smallexample
+
+@code{y} is not actually incremented and the compiler can but does not
+have to optimize it to just @code{return 42 + 42;}.
 
 @end table
 
@@ -13001,6 +13087,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_isless
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
+@findex __builtin_issignaling
 @findex __builtin_isunordered
 @findex __builtin_object_size
 @findex __builtin_powi
@@ -13556,6 +13643,8 @@ In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
 @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
 @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
+With @code{-ffinite-math-only} option the @code{isinf} and @code{isnan}
+built-in functions will always return 0.
 
 GCC provides built-in versions of the ISO C99 floating-point rounding and
 exceptions handling functions @code{fegetround}, @code{feclearexcept} and
@@ -14487,6 +14576,20 @@ Similar to @code{__builtin_nans}, except the return type is
 @deftypefn {Built-in Function} _Float@var{n}x __builtin_nansf@var{n}x (const char *str)
 Similar to @code{__builtin_nans}, except the return type is
 @code{_Float@var{n}x}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_issignaling (...)
+Return non-zero if the argument is a signaling NaN and zero otherwise.
+Note while the parameter list is an
+ellipsis, this function only accepts exactly one floating-point
+argument.  GCC treats this parameter as type-generic, which means it
+does not do default promotion from float to double.
+This built-in function can work even without the non-default
+@code{-fsignaling-nans} option, although if a signaling NaN is computed,
+stored or passed as argument to some function other than this built-in
+in the current translation unit, it is safer to use @code{-fsignaling-nans}.
+With @code{-ffinite-math-only} option this built-in function will always
+return 0.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_ffs (int x)
@@ -15675,6 +15778,83 @@ Load 32-bits from the @code{struct sk_buff} packet data pointed by the register 
 
 @deftypefn {Built-in Function} void * __builtin_preserve_access_index (@var{expr})
 BPF Compile Once-Run Everywhere (CO-RE) support. Instruct GCC to generate CO-RE relocation records for any accesses to aggregate data structures (struct, union, array types) in @var{expr}. This builtin is otherwise transparent, the return value is whatever @var{expr} evaluates to. It is also overloaded: @var{expr} may be of any type (not necessarily a pointer), the return type is the same. Has no effect if @code{-mco-re} is not in effect (either specified or implied).
+@end deftypefn
+
+@deftypefn {Built-in Function} unsigned int __builtin_preserve_field_info (@var{expr}, unsigned int @var{kind})
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin is used to
+extract information to aid in struct/union relocations.  @var{expr} is
+an access to a field of a struct or union. Depending on @var{kind}, different
+information is returned to the program. A CO-RE relocation for the access in
+@var{expr} with kind @var{kind} is recorded if @code{-mco-re} is in effect.
+
+The following values are supported for @var{kind}:
+@table @var
+@item FIELD_BYTE_OFFSET = 0
+The returned value is the offset, in bytes, of the field from the
+beginning of the containing structure. For bitfields, the byte offset
+of the containing word.
+
+@item FIELD_BYTE_SIZE = 1
+The returned value is the size, in bytes, of the field. For bitfields,
+the size in bytes of the containing word.
+
+@item FIELD_EXISTENCE = 2
+The returned value is 1 if the field exists, 0 otherwise. Always 1 at
+compile time.
+
+@item FIELD_SIGNEDNESS = 3
+The returned value is 1 if the field is signed, 0 otherwise.
+
+@item FIELD_LSHIFT_U64 = 4
+@itemx FIELD_RSHIFT_U64 = 5
+The returned value is the number of bits of left- or right-shifting
+respectively needed in order to recover the original value of the field,
+after it has been loaded by a read of FIELD_BYTE_SIZE bytes into an
+unsigned 64-bit value. Primarily useful for reading bitfield values
+from structures which may change between kernel versions.
+
+@end table
+
+Note that the return value is a constant which is known at
+compile-time. If the field has a variable offset then
+FIELD_BYTE_OFFSET, FIELD_LSHIFT_U64 and FIELD_RSHIFT_U64 are not
+supported. Similarly, if the field has a variable size then
+FIELD_BYTE_SIZE, FIELD_LSHIFT_U64 and FIELD_RSHIFT_U64 are not
+supported.
+
+For example, __builtin_preserve_field_info can be used to reliably
+extract bitfield values from a structure which may change between
+kernel versions:
+
+@example
+struct S
+@{
+  short a;
+  int x:7;
+  int y:5;
+@};
+
+int
+read_y (struct S *arg)
+@{
+  unsigned long long val;
+  unsigned int offset = __builtin_preserve_field_info (arg->y, FIELD_BYTE_OFFSET);
+  unsigned int size = __builtin_presrve_field_info (arg->y, FIELD_BYTE_SIZE);
+
+  /* Read size bytes from arg + offset into val.  */
+  bpf_probe_read (&val, size, arg + offset);
+
+  val <<= __builtin_preserve_field_info (arg->y, FIELD_LSHIFT_U64);
+
+  if (__builtin_preserve_field_info (arg->y, FIELD_SIGNEDNESS))
+    val = ((long long) val >> __builtin_preserve_field_info (arg->y, FIELD_RSHIFT_U64));
+  else
+    val >>= __builtin_preserve_field_info (arg->y, FIELD_RSHIFT_U64);
+
+  return val;
+@}
+
+@end example
 @end deftypefn
 
 @node FR-V Built-in Functions
@@ -21785,6 +21965,9 @@ Intel Core i7 Alderlake CPU.
 @item rocketlake
 Intel Core i7 Rocketlake CPU.
 
+@item graniterapids
+Intel Core i7 graniterapids CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
@@ -21799,6 +21982,12 @@ Intel Atom Goldmont Plus CPU.
 
 @item tremont
 Intel Atom Tremont CPU.
+
+@item sierraforest
+Intel Atom Sierra Forest CPU.
+
+@item grandridge
+Intel Atom Grand Ridge CPU.
 
 @item knl
 Intel Knights Landing CPU.
@@ -21856,6 +22045,9 @@ AMD Family 19h CPU.
 
 @item znver3
 AMD Family 19h Zen version 3.
+
+@item znver4
+AMD Family 19h Zen version 4.
 
 @item x86-64
 Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).
@@ -25155,14 +25347,17 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @item __has_virtual_destructor (type)
 If @code{type} is a class type with a virtual destructor
 ([class.dtor]) then the trait is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
 
 @item __is_abstract (type)
 If @code{type} is an abstract class ([class.abstract]) then the trait
 is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
+
+@item __is_aggregate (type)
+If @code{type} is an aggregate type ([dcl.init.aggr]) the trait is
+@code{true}, else it is @code{false}.
+Requires: If @code{type} is a class type, it shall be a complete type.
 
 @item __is_base_of (base_type, derived_type)
 If @code{base_type} is a base class of @code{derived_type}
@@ -25187,12 +25382,16 @@ any, are bit-fields of length 0, and @code{type} has no virtual
 members, and @code{type} has no virtual base classes, and @code{type}
 has no base classes @code{base_type} for which
 @code{__is_empty (base_type)} is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
 
 @item __is_enum (type)
 If @code{type} is a cv enumeration type ([basic.compound]) the trait is
 @code{true}, else it is @code{false}.
+
+@item __is_final (type)
+If @code{type} is a class or union type marked @code{final}, then the trait
+is @code{true}, else it is @code{false}.
+Requires: If @code{type} is a class type, it shall be a complete type.
 
 @item __is_literal_type (type)
 If @code{type} is a literal type ([basic.types]) the trait is
@@ -25209,20 +25408,19 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @item __is_polymorphic (type)
 If @code{type} is a polymorphic class ([class.virtual]) then the trait
 is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: If @code{type} is a non-union class type, it shall be a complete type.
 
 @item __is_standard_layout (type)
 If @code{type} is a standard-layout type ([basic.types]) the trait is
 @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: @code{type} shall be a complete type, an array of complete types,
+or (possibly cv-qualified) @code{void}.
 
 @item __is_trivial (type)
 If @code{type} is a trivial type ([basic.types]) the trait is
 @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
-@code{void}, or an array of unknown bound.
+Requires: @code{type} shall be a complete type, an array of complete types,
+or (possibly cv-qualified) @code{void}.
 
 @item __is_union (type)
 If @code{type} is a cv union type ([basic.compound]) the trait is

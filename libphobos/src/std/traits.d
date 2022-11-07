@@ -9136,3 +9136,11 @@ package(std) template DeducedParameterType(T)
 {
     static assert(is(DeducedParameterType!(inout(int[])) == inout(int)[]));
 }
+
+private auto dip1000Test(int x) {return *&x;}
+// We don't use isSafe, because betterC client code needs to instantiate
+// core.internal.array.comparison.__cmp in the client side. isSafe uses
+// __cmp of two strings, so using it would instantate that here instead. That
+// won't do because betterC compilations do not link the Phobos binary in.
+package(std) enum dip1000Enabled
+    = is(typeof(&dip1000Test) : int function(int) @safe);

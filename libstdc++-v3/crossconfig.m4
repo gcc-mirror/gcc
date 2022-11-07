@@ -173,15 +173,6 @@ case "${host}" in
     AC_DEFINE(HAVE_STRTOLD)
 
     GCC_CHECK_TLS
-    case "$target" in
-      *-hpux10*)
-	AC_DEFINE(HAVE_ISINF)
-	AC_DEFINE(HAVE_ISINFF)
-	AC_DEFINE(HAVE_ISNANF)
-	AC_DEFINE(HAVE_FINITE)
-	AC_DEFINE(HAVE_FINITEF)
-	;;
-    esac
     ;;
   *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-cygwin* | *-solaris*)
     GLIBCXX_CHECK_COMPILER_FEATURES
@@ -196,6 +187,7 @@ case "${host}" in
     AC_CHECK_FUNCS(timespec_get)
     AC_CHECK_FUNCS(sockatmark)
     AC_CHECK_FUNCS(uselocale)
+    AC_CHECK_FUNCS(secure_getenv)
     AM_ICONV
     ;;
   *-mingw32*)

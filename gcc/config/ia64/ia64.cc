@@ -4421,7 +4421,7 @@ ia64_output_function_prologue (FILE *file)
 
   if (mask && TARGET_GNU_AS)
     fprintf (file, "\t.prologue %d, %d\n", mask,
-	     ia64_dbx_register_number (grsave));
+	     ia64_debugger_regno (grsave));
   else
     fputs ("\t.prologue\n", file);
 
@@ -4473,7 +4473,7 @@ ia64_output_function_epilogue (FILE *)
 }
 
 int
-ia64_dbx_register_number (int regno)
+ia64_debugger_regno (int regno)
 {
   /* In ia64_expand_prologue we quite literally renamed the frame pointer
      from its home at loc79 to something inside the register frame.  We
@@ -4596,8 +4596,9 @@ ia64_setup_incoming_varargs (cumulative_args_t cum,
 {
   CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum);
 
-  /* Skip the current argument.  */
-  ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    /* Skip the current argument.  */
+    ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {
@@ -10104,7 +10105,7 @@ process_cfa_adjust_cfa (FILE *out_file, rtx pat, rtx insn,
 
       if (unwind)
 	fprintf (out_file, "\t.vframe r%d\n",
-		 ia64_dbx_register_number (REGNO (dest)));
+		 ia64_debugger_regno (REGNO (dest)));
     }
   else
     gcc_unreachable ();
@@ -10125,7 +10126,7 @@ process_cfa_register (FILE *out_file, rtx pat, bool unwind)
       /* Saving return address pointer.  */
       if (unwind)
 	fprintf (out_file, "\t.save rp, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       return;
     }
 
@@ -10137,21 +10138,21 @@ process_cfa_register (FILE *out_file, rtx pat, bool unwind)
       gcc_assert (dest_regno == current_frame_info.r[reg_save_pr]);
       if (unwind)
 	fprintf (out_file, "\t.save pr, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       break;
 
     case AR_UNAT_REGNUM:
       gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_unat]);
       if (unwind)
 	fprintf (out_file, "\t.save ar.unat, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       break;
 
     case AR_LC_REGNUM:
       gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_lc]);
       if (unwind)
 	fprintf (out_file, "\t.save ar.lc, r%d\n",
-		 ia64_dbx_register_number (dest_regno));
+		 ia64_debugger_regno (dest_regno));
       break;
 
     default:
@@ -10326,7 +10327,7 @@ ia64_asm_unwind_emit (FILE *out_file, rtx_insn *insn)
 	{
 	  if (unwind)
 	    fprintf (out_file, "\t.save ar.pfs, r%d\n",
-		     ia64_dbx_register_number (dest_regno));
+		     ia64_debugger_regno (dest_regno));
 	}
       else
 	{
@@ -10466,11 +10467,19 @@ ia64_init_builtins (void)
 	= build_pointer_type (build_qualified_type
 			      (char_type_node, TYPE_QUAL_CONST));
 
-      (*lang_hooks.types.register_builtin_type) (float128_type_node,
+      if (float128t_type_node == NULL_TREE)
+	{
+	  float128t_type_node = make_node (REAL_TYPE);
+	  TYPE_PRECISION (float128t_type_node)
+	    = TYPE_PRECISION (float128_type_node);
+	  layout_type (float128t_type_node);
+	  SET_TYPE_MODE (float128t_type_node, TYPE_MODE (float128_type_node));
+	}
+      (*lang_hooks.types.register_builtin_type) (float128t_type_node,
 						 "__float128");
 
       /* TFmode support builtins.  */
-      ftype = build_function_type_list (float128_type_node, NULL_TREE);
+      ftype = build_function_type_list (float128t_type_node, NULL_TREE);
       decl = add_builtin_function ("__builtin_infq", ftype,
 				   IA64_BUILTIN_INFQ, BUILT_IN_MD,
 				   NULL, NULL_TREE);
@@ -10481,7 +10490,7 @@ ia64_init_builtins (void)
 				   NULL, NULL_TREE);
       ia64_builtins[IA64_BUILTIN_HUGE_VALQ] = decl;
 
-      ftype = build_function_type_list (float128_type_node,
+      ftype = build_function_type_list (float128t_type_node,
 					const_string_type,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_nanq", ftype,
@@ -10496,8 +10505,8 @@ ia64_init_builtins (void)
       TREE_READONLY (decl) = 1;
       ia64_builtins[IA64_BUILTIN_NANSQ] = decl;
 
-      ftype = build_function_type_list (float128_type_node,
-					float128_type_node,
+      ftype = build_function_type_list (float128t_type_node,
+					float128t_type_node,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_fabsq", ftype,
 				   IA64_BUILTIN_FABSQ, BUILT_IN_MD,
@@ -10505,9 +10514,9 @@ ia64_init_builtins (void)
       TREE_READONLY (decl) = 1;
       ia64_builtins[IA64_BUILTIN_FABSQ] = decl;
 
-      ftype = build_function_type_list (float128_type_node,
-					float128_type_node,
-					float128_type_node,
+      ftype = build_function_type_list (float128t_type_node,
+					float128t_type_node,
+					float128t_type_node,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_copysignq", ftype,
 				   IA64_BUILTIN_COPYSIGNQ, BUILT_IN_MD,
@@ -11215,6 +11224,9 @@ ia64_mangle_type (const_tree type)
 
   if (TREE_CODE (type) != VOID_TYPE && TREE_CODE (type) != BOOLEAN_TYPE
       && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
+    return NULL;
+
+  if (type == float128_type_node || type == float64x_type_node)
     return NULL;
 
   /* On HP-UX, "long double" is mangled as "e" so __float128 is

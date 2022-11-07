@@ -1654,14 +1654,14 @@ extern bool current_function_interrupt;
   fprintf ((file), "\tmov.l\t@r15+,r%d\n", (v));	\
 }
 
-/* DBX register number for a given compiler register number.  */
+/* Debugger register number for a given compiler register number.  */
 /* GDB has FPUL at 23 and FP0 at 25, so we must add one to all FP registers
    to match gdb.  */
 /* expand_builtin_init_dwarf_reg_sizes uses this to test if a
    register exists, so we should return -1 for invalid register numbers.  */
-#define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)
+#define DEBUGGER_REGNO(REGNO) SH_DEBUGGER_REGNO (REGNO)
 
-#define SH_DBX_REGISTER_NUMBER(REGNO) \
+#define SH_DEBUGGER_REGNO(REGNO) \
   (IN_RANGE ((REGNO), \
 	     (unsigned HOST_WIDE_INT) FIRST_GENERAL_REG, \
 	     FIRST_GENERAL_REG + 15U) \

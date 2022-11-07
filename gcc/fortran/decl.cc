@@ -423,7 +423,8 @@ match_data_constant (gfc_expr **result)
 	 data-pointer-initialization compatible (7.5.4.6) with the initial
 	 data target; the data statement object is initially associated
 	 with the target.  */
-      if ((*result)->symtree->n.sym->attr.save
+      if ((*result)->symtree
+	  && (*result)->symtree->n.sym->attr.save
 	  && (*result)->symtree->n.sym->attr.target)
 	return m;
       gfc_free_expr (*result);

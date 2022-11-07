@@ -194,6 +194,7 @@ enum gf_mask {
     GF_OMP_RETURN_NOWAIT	= 1 << 0,
 
     GF_OMP_SECTION_LAST		= 1 << 0,
+    GF_OMP_ORDERED_STANDALONE   = 1 << 0,
     GF_OMP_ATOMIC_MEMORY_ORDER  = (1 << 6) - 1,
     GF_OMP_ATOMIC_NEED_VALUE	= 1 << 6,
     GF_OMP_ATOMIC_WEAK		= 1 << 7,
@@ -824,6 +825,20 @@ struct GTY((tag("GSS_OMP_ATOMIC_STORE_LAYOUT")))
          stmt->code == GIMPLE_OMP_RETURN.  */
 };
 
+/* Assumptions.  */
+
+struct GTY((tag("GSS_ASSUME")))
+  gimple_statement_assume : public gimple
+{
+  /* [ WORD 1-6 ] : base class */
+
+  /* [ WORD 7 ]  */
+  tree guard;
+
+  /* [ WORD 8 ]  */
+  gimple_seq body;
+};
+
 /* GIMPLE_TRANSACTION.  */
 
 /* Bits to be stored in the GIMPLE_TRANSACTION subcode.  */
@@ -1270,6 +1285,14 @@ is_a_helper <const gswitch *>::test (const gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <gimple_statement_assume *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_ASSUME;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gtransaction *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_TRANSACTION;
@@ -1496,6 +1519,14 @@ is_a_helper <const greturn *>::test (const gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gimple_statement_assume *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_ASSUME;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <const gtransaction *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_TRANSACTION;
@@ -1576,6 +1607,7 @@ gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
 gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree,
 						enum omp_memory_order);
 gomp_atomic_store *gimple_build_omp_atomic_store (tree, enum omp_memory_order);
+gimple *gimple_build_assume (tree, gimple_seq);
 gtransaction *gimple_build_transaction (gimple_seq);
 extern void gimple_seq_add_stmt (gimple_seq *, gimple *);
 extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple *);
@@ -1834,6 +1866,7 @@ gimple_has_substatements (gimple *g)
 {
   switch (gimple_code (g))
     {
+    case GIMPLE_ASSUME:
     case GIMPLE_BIND:
     case GIMPLE_CATCH:
     case GIMPLE_EH_FILTER:
@@ -2312,7 +2345,7 @@ static inline unsigned
 gimple_omp_subcode (const gimple *s)
 {
   gcc_gimple_checking_assert (gimple_code (s) >= GIMPLE_OMP_ATOMIC_LOAD
-			      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
+			      && gimple_code (s) <= GIMPLE_OMP_ORDERED);
   return s->subcode;
 }
 
@@ -2399,6 +2432,27 @@ gimple_omp_section_set_last (gimple *g)
 {
   GIMPLE_CHECK (g, GIMPLE_OMP_SECTION);
   g->subcode |= GF_OMP_SECTION_LAST;
+}
+
+
+/* Return true if OMP ordered construct is stand-alone
+   (G has the GF_OMP_ORDERED_STANDALONE flag set).  */
+
+static inline bool
+gimple_omp_ordered_standalone_p (const gimple *g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_ORDERED);
+  return (gimple_omp_subcode (g) & GF_OMP_ORDERED_STANDALONE) != 0;
+}
+
+
+/* Set the GF_OMP_ORDERED_STANDALONE flag on G.  */
+
+static inline void
+gimple_omp_ordered_standalone (gimple *g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_ORDERED);
+  g->subcode |= GF_OMP_ORDERED_STANDALONE;
 }
 
 
@@ -6496,6 +6550,52 @@ static inline void
 gimple_omp_continue_set_control_use (gomp_continue *cont_stmt, tree use)
 {
   cont_stmt->control_use = use;
+}
+
+/* Return the guard associated with the GIMPLE_ASSUME statement GS.  */
+
+static inline tree
+gimple_assume_guard (const gimple *gs)
+{
+  const gimple_statement_assume *assume_stmt
+    = as_a <const gimple_statement_assume *> (gs);
+  return assume_stmt->guard;
+}
+
+/* Set the guard associated with the GIMPLE_ASSUME statement GS.  */
+
+static inline void
+gimple_assume_set_guard (gimple *gs, tree guard)
+{
+  gimple_statement_assume *assume_stmt = as_a <gimple_statement_assume *> (gs);
+  assume_stmt->guard = guard;
+}
+
+static inline tree *
+gimple_assume_guard_ptr (gimple *gs)
+{
+  gimple_statement_assume *assume_stmt = as_a <gimple_statement_assume *> (gs);
+  return &assume_stmt->guard;
+}
+
+/* Return the address of the GIMPLE sequence contained in the GIMPLE_ASSUME
+   statement GS.  */
+
+static inline gimple_seq *
+gimple_assume_body_ptr (gimple *gs)
+{
+  gimple_statement_assume *assume_stmt = as_a <gimple_statement_assume *> (gs);
+  return &assume_stmt->body;
+}
+
+/* Return the GIMPLE sequence contained in the GIMPLE_ASSUME statement GS.  */
+
+static inline gimple_seq
+gimple_assume_body (const gimple *gs)
+{
+  const gimple_statement_assume *assume_stmt
+    = as_a <const gimple_statement_assume *> (gs);
+  return assume_stmt->body;
 }
 
 /* Return a pointer to the body for the GIMPLE_TRANSACTION statement

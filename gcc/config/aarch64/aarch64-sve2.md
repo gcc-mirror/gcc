@@ -81,7 +81,7 @@
 ;; ---- Histogram processing
 ;; ---- String matching
 ;;
-;; == Crypotographic extensions
+;; == Cryptographic extensions
 ;; ---- Optional AES extensions
 ;; ---- Optional SHA-3 extensions
 ;; ---- Optional SM4 extensions
@@ -2528,7 +2528,7 @@
 )
 
 ;; =========================================================================
-;; == Crypotographic extensions
+;; == Cryptographic extensions
 ;; =========================================================================
 
 ;; -------------------------------------------------------------------------

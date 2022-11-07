@@ -24,6 +24,8 @@ extern bool gcn_constant64_p (rtx);
 extern bool gcn_constant_p (rtx);
 extern rtx gcn_convert_mask_mode (rtx reg);
 extern unsigned int gcn_dwarf_register_number (unsigned int regno);
+extern rtx get_exec (int64_t);
+extern rtx get_exec (machine_mode mode);
 extern char * gcn_expand_dpp_shr_insn (machine_mode, const char *, int, int);
 extern void gcn_expand_epilogue ();
 extern rtx gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets,
@@ -34,8 +36,6 @@ extern rtx gcn_expand_scalar_to_vector_address (machine_mode, rtx, rtx, rtx);
 extern void gcn_expand_vector_init (rtx, rtx);
 extern bool gcn_flat_address_p (rtx, machine_mode);
 extern bool gcn_fp_constant_p (rtx, bool);
-extern rtx gcn_full_exec ();
-extern rtx gcn_full_exec_reg ();
 extern rtx gcn_gen_undef (machine_mode);
 extern bool gcn_global_address_p (rtx);
 extern tree gcn_goacc_adjust_private_decl (location_t, tree var, int level);
@@ -54,6 +54,7 @@ extern int gcn_hard_regno_nregs (int regno, machine_mode mode);
 extern void gcn_hsa_declare_function_name (FILE *file, const char *name,
 					   tree decl);
 extern HOST_WIDE_INT gcn_initial_elimination_offset (int, int);
+extern REAL_VALUE_TYPE gcn_dconst1over2pi (void);
 extern bool gcn_inline_constant64_p (rtx, bool);
 extern bool gcn_inline_constant_p (rtx);
 extern int gcn_inline_fp_constant_p (rtx, bool);
@@ -66,8 +67,6 @@ extern rtx gcn_operand_part (machine_mode, rtx, int);
 extern bool gcn_regno_mode_code_ok_for_base_p (int, machine_mode,
 					       addr_space_t, int, int);
 extern reg_class gcn_regno_reg_class (int regno);
-extern rtx gcn_scalar_exec ();
-extern rtx gcn_scalar_exec_reg ();
 extern bool gcn_scalar_flat_address_p (rtx);
 extern bool gcn_scalar_flat_mem_p (rtx);
 extern bool gcn_sgpr_move_p (rtx, rtx);
@@ -104,9 +103,11 @@ extern gimple_opt_pass *make_pass_omp_gcn (gcc::context *ctxt);
 inline bool
 vgpr_1reg_mode_p (machine_mode mode)
 {
-  return (mode == SImode || mode == SFmode || mode == HImode || mode == QImode
-	  || mode == V64QImode || mode == V64HImode || mode == V64SImode
-	  || mode == V64HFmode || mode == V64SFmode || mode == BImode);
+  if (VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  return (mode == SImode || mode == SFmode || mode == HImode || mode == HFmode
+	  || mode == QImode || mode == BImode);
 }
 
 /* Return true if MODE is valid for 1 SGPR register.  */
@@ -123,8 +124,10 @@ sgpr_1reg_mode_p (machine_mode mode)
 inline bool
 vgpr_2reg_mode_p (machine_mode mode)
 {
-  return (mode == DImode || mode == DFmode
-	  || mode == V64DImode || mode == V64DFmode);
+  if (VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  return (mode == DImode || mode == DFmode);
 }
 
 /* Return true if MODE can be handled directly by VGPR operations.  */
@@ -132,9 +135,7 @@ vgpr_2reg_mode_p (machine_mode mode)
 inline bool
 vgpr_vector_mode_p (machine_mode mode)
 {
-  return (mode == V64QImode || mode == V64HImode
-	  || mode == V64SImode || mode == V64DImode
-	  || mode == V64HFmode || mode == V64SFmode || mode == V64DFmode);
+  return VECTOR_MODE_P (mode);
 }
 
 

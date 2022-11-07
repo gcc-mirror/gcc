@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // concurrency
+
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
@@ -559,6 +561,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static _Setter<_Res, __exception_ptr_tag>
         __setter(exception_ptr& __ex, promise<_Res>* __prom) noexcept
         {
+          __glibcxx_assert(__ex != nullptr); // LWG 2276
           return _Setter<_Res, __exception_ptr_tag>{ __prom, &__ex };
         }
 
@@ -1648,8 +1651,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename... _ArgTypes>
     packaged_task(_Res(*)(_ArgTypes...)) -> packaged_task<_Res(_ArgTypes...)>;
 
-  template<typename _Fun, typename _Signature = typename
-	   __function_guide_helper<decltype(&_Fun::operator())>::type>
+  template<typename _Fun, typename _Signature
+	     = __function_guide_t<_Fun, decltype(&_Fun::operator())>>
     packaged_task(_Fun) -> packaged_task<_Signature>;
 #endif
 

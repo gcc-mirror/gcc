@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -44,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "cfganal.h"
 #include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "ordered-hash-map.h"
 #include "options.h"
@@ -62,7 +62,7 @@ namespace ana {
 /* Get the function of the ultimate alias target being called at EDGE,
    if any.  */
 
-static function *
+function *
 get_ultimate_function_for_cgraph_edge (cgraph_edge *edge)
 {
   cgraph_node *ultimate_node = edge->callee->ultimate_alias_target ();
@@ -74,12 +74,13 @@ get_ultimate_function_for_cgraph_edge (cgraph_edge *edge)
 /* Get the cgraph_edge, but only if there's an underlying function body.  */
 
 cgraph_edge *
-supergraph_call_edge (function *fun, gimple *stmt)
+supergraph_call_edge (function *fun, const gimple *stmt)
 {
-  gcall *call = dyn_cast<gcall *> (stmt);
+  const gcall *call = dyn_cast<const gcall *> (stmt);
   if (!call)
     return NULL;
-  cgraph_edge *edge = cgraph_node::get (fun->decl)->get_edge (stmt);
+  cgraph_edge *edge
+    = cgraph_node::get (fun->decl)->get_edge (const_cast <gimple *> (stmt));
   if (!edge)
     return NULL;
   if (!edge->callee)

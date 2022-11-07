@@ -53,7 +53,7 @@ const char *const debug_type_names[] =
 
 static uint32_t debug_type_masks[] =
 {
-  NO_DEBUG, DBX_DEBUG, DWARF2_DEBUG, XCOFF_DEBUG, VMS_DEBUG,
+  NO_DEBUG, DWARF2_DEBUG, VMS_DEBUG,
   CTF_DEBUG, BTF_DEBUG
 };
 
@@ -1288,8 +1288,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	   "%<-fsanitize=kernel-address%>");
 
   /* Currently live patching is not support for LTO.  */
-  if (opts->x_flag_live_patching && opts->x_flag_lto)
-    sorry ("live patching is not supported with LTO");
+  if (opts->x_flag_live_patching == LIVE_PATCHING_INLINE_ONLY_STATIC && opts->x_flag_lto)
+    sorry ("live patching (with %qs) is not supported with LTO",
+	   "inline-only-static");
 
   /* Currently vtable verification is not supported for LTO */
   if (opts->x_flag_vtable_verify && opts->x_flag_lto)
@@ -1801,7 +1802,7 @@ print_filtered_help (unsigned int include_flags,
 	  help = new_help;
 	}
 
-      if (option->range_max != -1)
+      if (option->range_max != -1 && tab == NULL)
 	{
 	  char b[128];
 	  snprintf (b, sizeof (b), "<%d,%d>", option->range_min,
@@ -3145,20 +3146,8 @@ common_handle_option (struct gcc_options *opts,
       set_debug_level (NO_DEBUG, 2, arg, opts, opts_set, loc);
       break;
 
-    case OPT_gstabs:
-    case OPT_gstabs_:
-      set_debug_level (DBX_DEBUG, code == OPT_gstabs_, arg, opts, opts_set,
-		       loc);
-      break;
-
     case OPT_gvms:
       set_debug_level (VMS_DEBUG, false, arg, opts, opts_set, loc);
-      break;
-
-    case OPT_gxcoff:
-    case OPT_gxcoff_:
-      set_debug_level (XCOFF_DEBUG, code == OPT_gxcoff_, arg, opts, opts_set,
-		       loc);
       break;
 
     case OPT_gz:
@@ -3257,6 +3246,10 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_freport_bug:
       dc->report_bug = value;
+      break;
+
+    case OPT_fmultiflags:
+      gcc_checking_assert (lang_mask == CL_DRIVER);
       break;
 
     default:
@@ -3363,8 +3356,6 @@ set_debug_level (uint32_t dinfo, int extended, const char *arg,
 		 struct gcc_options *opts, struct gcc_options *opts_set,
 		 location_t loc)
 {
-  opts->x_use_gnu_debug_info_extensions = extended;
-
   if (dinfo == NO_DEBUG)
     {
       if (opts->x_write_symbols == NO_DEBUG)
@@ -3378,8 +3369,6 @@ set_debug_level (uint32_t dinfo, int extended, const char *arg,
 		opts->x_write_symbols |= DWARF2_DEBUG;
 	      else
 		opts->x_write_symbols = DWARF2_DEBUG;
-#elif defined DBX_DEBUGGING_INFO
-	      opts->x_write_symbols = DBX_DEBUG;
 #endif
 	    }
 

@@ -30,7 +30,7 @@
 
   select type (cptr)
     type is (integer)
-      if (any (cptr .ne. [1,2,3])) STOP 3! Check the the scalarizer works.
+      if (any (cptr .ne. [1,2,3])) STOP 3! Check the scalarizer works.
       if (cptr(2) .ne. 2) STOP 4! Check ordinary array indexing.
   end select
 
@@ -63,7 +63,7 @@ contains
     addr = loc(arg)
     select type (arg)
       type is (integer)
-        if (any (arg .ne. [1,2,3])) STOP 11! Check the the scalarizer works.
+        if (any (arg .ne. [1,2,3])) STOP 11! Check the scalarizer works.
         if (arg(2) .ne. 2) STOP 12! Check ordinary array indexing.
     end select
   end subroutine

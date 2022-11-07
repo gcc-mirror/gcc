@@ -223,7 +223,16 @@ extern (C++) final class Import : Dsymbol
     override void importAll(Scope* sc)
     {
         if (mod) return; // Already done
-        load(sc);
+
+        /*
+         * https://issues.dlang.org/show_bug.cgi?id=15525
+         *
+         * Loading the import has failed,
+         * most likely because of parsing errors.
+         * Therefore we cannot trust the resulting AST.
+         */
+        if (load(sc)) return;
+
         if (!mod) return; // Failed
 
         if (sc.stc & STC.static_)
@@ -256,11 +265,16 @@ extern (C++) final class Import : Dsymbol
             scopesym.addAccessiblePackage(p, visibility);
             foreach (id; packages[1 .. $]) // [b, c]
             {
-                p = cast(Package) p.symtab.lookup(id);
+                auto sym = p.symtab.lookup(id);
                 // https://issues.dlang.org/show_bug.cgi?id=17991
                 // An import of truly empty file/package can happen
                 // https://issues.dlang.org/show_bug.cgi?id=20151
                 // Package in the path conflicts with a module name
+                if (sym is null)
+                    break;
+                // https://issues.dlang.org/show_bug.cgi?id=23327
+                // Package conflicts with symbol of the same name
+                p = sym.isPackage();
                 if (p is null)
                     break;
                 scopesym.addAccessiblePackage(p, visibility);

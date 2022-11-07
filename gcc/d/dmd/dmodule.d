@@ -98,12 +98,12 @@ private const(char)[] getFilename(Identifier[] packages, Identifier ident) nothr
 {
     const(char)[] filename = ident.toString();
 
-    if (packages.length == 0)
-        return filename;
-
     OutBuffer buf;
     OutBuffer dotmods;
     auto modAliases = &global.params.modFileAliasStrings;
+
+    if (packages.length == 0 && modAliases.length == 0)
+        return filename;
 
     void checkModFileAlias(const(char)[] p)
     {
@@ -308,7 +308,7 @@ extern (C++) class Package : ScopeDsymbol
             packages ~= s.ident;
         reverse(packages);
 
-        if (FileManager.lookForSourceFile(getFilename(packages, ident), global.path ? (*global.path)[] : null))
+        if (Module.find(getFilename(packages, ident)))
             Module.load(Loc.initial, packages, this.ident);
         else
             isPkgMod = PKG.package_;
@@ -325,7 +325,6 @@ extern (C++) final class Module : Package
     extern (C++) __gshared Dsymbols deferred;    // deferred Dsymbol's needing semantic() run on them
     extern (C++) __gshared Dsymbols deferred2;   // deferred Dsymbol's needing semantic2() run on them
     extern (C++) __gshared Dsymbols deferred3;   // deferred Dsymbol's needing semantic3() run on them
-    extern (C++) __gshared uint dprogress;       // progress resolving the deferred list
 
     static void _init()
     {
@@ -493,6 +492,16 @@ extern (C++) final class Module : Package
         return new Module(Loc.initial, filename, ident, doDocComment, doHdrGen);
     }
 
+    static const(char)* find(const(char)* filename)
+    {
+        return find(filename.toDString).ptr;
+    }
+
+    extern (D) static const(char)[] find(const(char)[] filename)
+    {
+        return FileManager.lookForSourceFile(filename, global.path ? (*global.path)[] : null);
+    }
+
     extern (C++) static Module load(const ref Loc loc, Identifiers* packages, Identifier ident)
     {
         return load(loc, packages ? (*packages)[] : null, ident);
@@ -507,7 +516,7 @@ extern (C++) final class Module : Package
         //  foo\bar\baz
         const(char)[] filename = getFilename(packages, ident);
         // Look for the source file
-        if (const result = FileManager.lookForSourceFile(filename, global.path ? (*global.path)[] : null))
+        if (const result = find(filename))
             filename = result; // leaks
 
         auto m = new Module(loc, filename, ident, 0, 0);
@@ -704,232 +713,12 @@ extern (C++) final class Module : Package
     /// ditto
     extern (D) Module parseModule(AST)()
     {
-        enum Endian { little, big}
-        enum SourceEncoding { utf16, utf32}
-
-        /*
-         * Convert a buffer from UTF32 to UTF8
-         * Params:
-         *    Endian = is the buffer big/little endian
-         *    buf = buffer of UTF32 data
-         * Returns:
-         *    input buffer reencoded as UTF8
-         */
-
-        char[] UTF32ToUTF8(Endian endian)(const(char)[] buf)
-        {
-            static if (endian == Endian.little)
-                alias readNext = Port.readlongLE;
-            else
-                alias readNext = Port.readlongBE;
-
-            if (buf.length & 3)
-            {
-                error("odd length of UTF-32 char source %llu", cast(ulong) buf.length);
-                return null;
-            }
-
-            const (uint)[] eBuf = cast(const(uint)[])buf;
-
-            OutBuffer dbuf;
-            dbuf.reserve(eBuf.length);
-
-            foreach (i; 0 .. eBuf.length)
-            {
-                const u = readNext(&eBuf[i]);
-                if (u & ~0x7F)
-                {
-                    if (u > 0x10FFFF)
-                    {
-                        error("UTF-32 value %08x greater than 0x10FFFF", u);
-                        return null;
-                    }
-                    dbuf.writeUTF8(u);
-                }
-                else
-                    dbuf.writeByte(u);
-            }
-            dbuf.writeByte(0); //add null terminator
-            return dbuf.extractSlice();
-        }
-
-        /*
-         * Convert a buffer from UTF16 to UTF8
-         * Params:
-         *    Endian = is the buffer big/little endian
-         *    buf = buffer of UTF16 data
-         * Returns:
-         *    input buffer reencoded as UTF8
-         */
-
-        char[] UTF16ToUTF8(Endian endian)(const(char)[] buf)
-        {
-            static if (endian == Endian.little)
-                alias readNext = Port.readwordLE;
-            else
-                alias readNext = Port.readwordBE;
-
-            if (buf.length & 1)
-            {
-                error("odd length of UTF-16 char source %llu", cast(ulong) buf.length);
-                return null;
-            }
-
-            const (ushort)[] eBuf = cast(const(ushort)[])buf;
-
-            OutBuffer dbuf;
-            dbuf.reserve(eBuf.length);
-
-            //i will be incremented in the loop for high codepoints
-            foreach (ref i; 0 .. eBuf.length)
-            {
-                uint u = readNext(&eBuf[i]);
-                if (u & ~0x7F)
-                {
-                    if (0xD800 <= u && u < 0xDC00)
-                    {
-                        i++;
-                        if (i >= eBuf.length)
-                        {
-                            error("surrogate UTF-16 high value %04x at end of file", u);
-                            return null;
-                        }
-                        const u2 = readNext(&eBuf[i]);
-                        if (u2 < 0xDC00 || 0xE000 <= u2)
-                        {
-                            error("surrogate UTF-16 low value %04x out of range", u2);
-                            return null;
-                        }
-                        u = (u - 0xD7C0) << 10;
-                        u |= (u2 - 0xDC00);
-                    }
-                    else if (u >= 0xDC00 && u <= 0xDFFF)
-                    {
-                        error("unpaired surrogate UTF-16 value %04x", u);
-                        return null;
-                    }
-                    else if (u == 0xFFFE || u == 0xFFFF)
-                    {
-                        error("illegal UTF-16 value %04x", u);
-                        return null;
-                    }
-                    dbuf.writeUTF8(u);
-                }
-                else
-                    dbuf.writeByte(u);
-            }
-            dbuf.writeByte(0); //add a terminating null byte
-            return dbuf.extractSlice();
-        }
-
         const(char)* srcname = srcfile.toChars();
         //printf("Module::parse(srcname = '%s')\n", srcname);
         isPackageFile = isPackageFileName(srcfile);
-        const(char)[] buf = cast(const(char)[]) this.src;
-
-        bool needsReencoding = true;
-        bool hasBOM = true; //assume there's a BOM
-        Endian endian;
-        SourceEncoding sourceEncoding;
-
-        if (buf.length >= 2)
-        {
-            /* Convert all non-UTF-8 formats to UTF-8.
-             * BOM : https://www.unicode.org/faq/utf_bom.html
-             * 00 00 FE FF  UTF-32BE, big-endian
-             * FF FE 00 00  UTF-32LE, little-endian
-             * FE FF        UTF-16BE, big-endian
-             * FF FE        UTF-16LE, little-endian
-             * EF BB BF     UTF-8
-             */
-            if (buf[0] == 0xFF && buf[1] == 0xFE)
-            {
-                endian = Endian.little;
-
-                sourceEncoding = buf.length >= 4 && buf[2] == 0 && buf[3] == 0
-                                 ? SourceEncoding.utf32
-                                 : SourceEncoding.utf16;
-            }
-            else if (buf[0] == 0xFE && buf[1] == 0xFF)
-            {
-                endian = Endian.big;
-                sourceEncoding = SourceEncoding.utf16;
-            }
-            else if (buf.length >= 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 0xFE && buf[3] == 0xFF)
-            {
-                endian = Endian.big;
-                sourceEncoding = SourceEncoding.utf32;
-            }
-            else if (buf.length >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF)
-            {
-                needsReencoding = false;//utf8 with BOM
-            }
-            else
-            {
-                /* There is no BOM. Make use of Arcane Jill's insight that
-                 * the first char of D source must be ASCII to
-                 * figure out the encoding.
-                 */
-                hasBOM = false;
-                if (buf.length >= 4 && buf[1] == 0 && buf[2] == 0 && buf[3] == 0)
-                {
-                    endian = Endian.little;
-                    sourceEncoding = SourceEncoding.utf32;
-                }
-                else if (buf.length >= 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 0)
-                {
-                    endian = Endian.big;
-                    sourceEncoding = SourceEncoding.utf32;
-                }
-                else if (buf.length >= 2 && buf[1] == 0) //try to check for UTF-16
-                {
-                    endian = Endian.little;
-                    sourceEncoding = SourceEncoding.utf16;
-                }
-                else if (buf[0] == 0)
-                {
-                    endian = Endian.big;
-                    sourceEncoding = SourceEncoding.utf16;
-                }
-                else {
-                    // It's UTF-8
-                    needsReencoding = false;
-                    if (buf[0] >= 0x80)
-                    {
-                        error("source file must start with BOM or ASCII character, not \\x%02X", buf[0]);
-                        return null;
-                    }
-                }
-            }
-            //throw away BOM
-            if (hasBOM)
-            {
-                if (!needsReencoding) buf = buf[3..$];// utf-8 already
-                else if (sourceEncoding == SourceEncoding.utf32) buf = buf[4..$];
-                else buf = buf[2..$]; //utf 16
-            }
-        }
-        // Assume the buffer is from memory and has not be read from disk. Assume UTF-8.
-        else if (buf.length >= 1 && (buf[0] == '\0' || buf[0] == 0x1A))
-            needsReencoding = false;
-         //printf("%s, %d, %d, %d\n", srcfile.name.toChars(), needsReencoding, endian == Endian.little, sourceEncoding == SourceEncoding.utf16);
-        if (needsReencoding)
-        {
-            if (sourceEncoding == SourceEncoding.utf16)
-            {
-                buf = endian == Endian.little
-                      ? UTF16ToUTF8!(Endian.little)(buf)
-                      : UTF16ToUTF8!(Endian.big)(buf);
-            }
-            else
-            {
-                buf = endian == Endian.little
-                      ? UTF32ToUTF8!(Endian.little)(buf)
-                      : UTF32ToUTF8!(Endian.big)(buf);
-            }
-            // an error happened on UTF conversion
-            if (buf is null) return null;
-        }
+        const(char)[] buf = processSource(src, this);
+        // an error happened on UTF conversion
+        if (buf is null) return null;
 
         /* If it starts with the string "Ddoc", then it's a documentation
          * source file.
@@ -1300,19 +1089,22 @@ extern (C++) final class Module : Package
     extern (D) static void addDeferredSemantic(Dsymbol s)
     {
         //printf("Module::addDeferredSemantic('%s')\n", s.toChars());
-        deferred.push(s);
+        if (!deferred.contains(s))
+            deferred.push(s);
     }
 
     extern (D) static void addDeferredSemantic2(Dsymbol s)
     {
         //printf("Module::addDeferredSemantic2('%s')\n", s.toChars());
-        deferred2.push(s);
+        if (!deferred2.contains(s))
+            deferred2.push(s);
     }
 
     extern (D) static void addDeferredSemantic3(Dsymbol s)
     {
         //printf("Module::addDeferredSemantic3('%s')\n", s.toChars());
-        deferred3.push(s);
+        if (!deferred.contains(s))
+            deferred3.push(s);
     }
 
     /******************************************
@@ -1320,19 +1112,15 @@ extern (C++) final class Module : Package
      */
     static void runDeferredSemantic()
     {
-        if (dprogress == 0)
-            return;
-
         __gshared int nested;
         if (nested)
             return;
-        //if (deferred.dim) printf("+Module::runDeferredSemantic(), len = %d\n", deferred.dim);
+        //if (deferred.dim) printf("+Module::runDeferredSemantic(), len = %ld\n", deferred.dim);
         nested++;
 
         size_t len;
         do
         {
-            dprogress = 0;
             len = deferred.dim;
             if (!len)
                 break;
@@ -1358,13 +1146,13 @@ extern (C++) final class Module : Package
                 s.dsymbolSemantic(null);
                 //printf("deferred: %s, parent = %s\n", s.toChars(), s.parent.toChars());
             }
-            //printf("\tdeferred.dim = %d, len = %d, dprogress = %d\n", deferred.dim, len, dprogress);
+            //printf("\tdeferred.dim = %ld, len = %ld\n", deferred.dim, len);
             if (todoalloc)
                 free(todoalloc);
         }
-        while (deferred.dim < len || dprogress); // while making progress
+        while (deferred.dim != len); // while making progress
         nested--;
-        //printf("-Module::runDeferredSemantic(), len = %d\n", deferred.dim);
+        //printf("-Module::runDeferredSemantic(), len = %ld\n", deferred.dim);
     }
 
     static void runDeferredSemantic2()
@@ -1534,4 +1322,193 @@ extern (C++) struct ModuleDeclaration
     {
         return this.toChars().toDString;
     }
+}
+
+/**
+ * Process the content of a source file
+ *
+ * Attempts to find which encoding it is using, if it has BOM,
+ * and then normalize the source to UTF-8. If no encoding is required,
+ * a slice of `src` will be returned without extra allocation.
+ *
+ * Params:
+ *  src = Content of the source file to process
+ *  mod = Module matching `src`, used for error handling
+ *
+ * Returns:
+ *   UTF-8 encoded variant of `src`, stripped of any BOM,
+ *   or `null` if an error happened.
+ */
+private const(char)[] processSource (const(ubyte)[] src, Module mod)
+{
+    enum SourceEncoding { utf16, utf32}
+    enum Endian { little, big}
+
+    /*
+     * Convert a buffer from UTF32 to UTF8
+     * Params:
+     *    Endian = is the buffer big/little endian
+     *    buf = buffer of UTF32 data
+     * Returns:
+     *    input buffer reencoded as UTF8
+     */
+
+    char[] UTF32ToUTF8(Endian endian)(const(char)[] buf)
+    {
+        static if (endian == Endian.little)
+            alias readNext = Port.readlongLE;
+        else
+            alias readNext = Port.readlongBE;
+
+        if (buf.length & 3)
+        {
+            mod.error("odd length of UTF-32 char source %llu", cast(ulong) buf.length);
+            return null;
+        }
+
+        const (uint)[] eBuf = cast(const(uint)[])buf;
+
+        OutBuffer dbuf;
+        dbuf.reserve(eBuf.length);
+
+        foreach (i; 0 .. eBuf.length)
+        {
+            const u = readNext(&eBuf[i]);
+            if (u & ~0x7F)
+            {
+                if (u > 0x10FFFF)
+                {
+                    mod.error("UTF-32 value %08x greater than 0x10FFFF", u);
+                    return null;
+                }
+                dbuf.writeUTF8(u);
+            }
+            else
+                dbuf.writeByte(u);
+        }
+        dbuf.writeByte(0); //add null terminator
+        return dbuf.extractSlice();
+    }
+
+    /*
+     * Convert a buffer from UTF16 to UTF8
+     * Params:
+     *    Endian = is the buffer big/little endian
+     *    buf = buffer of UTF16 data
+     * Returns:
+     *    input buffer reencoded as UTF8
+     */
+
+    char[] UTF16ToUTF8(Endian endian)(const(char)[] buf)
+    {
+        static if (endian == Endian.little)
+            alias readNext = Port.readwordLE;
+        else
+            alias readNext = Port.readwordBE;
+
+        if (buf.length & 1)
+        {
+            mod.error("odd length of UTF-16 char source %llu", cast(ulong) buf.length);
+            return null;
+        }
+
+        const (ushort)[] eBuf = cast(const(ushort)[])buf;
+
+        OutBuffer dbuf;
+        dbuf.reserve(eBuf.length);
+
+        //i will be incremented in the loop for high codepoints
+        foreach (ref i; 0 .. eBuf.length)
+        {
+            uint u = readNext(&eBuf[i]);
+            if (u & ~0x7F)
+            {
+                if (0xD800 <= u && u < 0xDC00)
+                {
+                    i++;
+                    if (i >= eBuf.length)
+                    {
+                        mod.error("surrogate UTF-16 high value %04x at end of file", u);
+                        return null;
+                    }
+                    const u2 = readNext(&eBuf[i]);
+                    if (u2 < 0xDC00 || 0xE000 <= u2)
+                    {
+                        mod.error("surrogate UTF-16 low value %04x out of range", u2);
+                        return null;
+                    }
+                    u = (u - 0xD7C0) << 10;
+                    u |= (u2 - 0xDC00);
+                }
+                else if (u >= 0xDC00 && u <= 0xDFFF)
+                {
+                    mod.error("unpaired surrogate UTF-16 value %04x", u);
+                    return null;
+                }
+                else if (u == 0xFFFE || u == 0xFFFF)
+                {
+                    mod.error("illegal UTF-16 value %04x", u);
+                    return null;
+                }
+                dbuf.writeUTF8(u);
+            }
+            else
+                dbuf.writeByte(u);
+        }
+        dbuf.writeByte(0); //add a terminating null byte
+        return dbuf.extractSlice();
+    }
+
+    const(char)[] buf = cast(const(char)[]) src;
+
+    // Assume the buffer is from memory and has not be read from disk. Assume UTF-8.
+    if (buf.length < 2)
+        return buf;
+
+    /* Convert all non-UTF-8 formats to UTF-8.
+     * BOM : https://www.unicode.org/faq/utf_bom.html
+     * 00 00 FE FF  UTF-32BE, big-endian
+     * FF FE 00 00  UTF-32LE, little-endian
+     * FE FF        UTF-16BE, big-endian
+     * FF FE        UTF-16LE, little-endian
+     * EF BB BF     UTF-8
+     */
+    if (buf[0] == 0xFF && buf[1] == 0xFE)
+    {
+        if (buf.length >= 4 && buf[2] == 0 && buf[3] == 0)
+            return UTF32ToUTF8!(Endian.little)(buf[4 .. $]);
+        return UTF16ToUTF8!(Endian.little)(buf[2 .. $]);
+    }
+
+    if (buf[0] == 0xFE && buf[1] == 0xFF)
+        return UTF16ToUTF8!(Endian.big)(buf[2 .. $]);
+
+    if (buf.length >= 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 0xFE && buf[3] == 0xFF)
+        return UTF32ToUTF8!(Endian.big)(buf[4 .. $]);
+
+    if (buf.length >= 3 && buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF)
+        return buf[3 .. $];
+
+    /* There is no BOM. Make use of Arcane Jill's insight that
+     * the first char of D source must be ASCII to
+     * figure out the encoding.
+     */
+    if (buf.length >= 4 && buf[1] == 0 && buf[2] == 0 && buf[3] == 0)
+        return UTF32ToUTF8!(Endian.little)(buf);
+    if (buf.length >= 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 0)
+        return UTF32ToUTF8!(Endian.big)(buf);
+    // try to check for UTF-16
+    if (buf.length >= 2 && buf[1] == 0)
+        return UTF16ToUTF8!(Endian.little)(buf);
+    if (buf[0] == 0)
+        return UTF16ToUTF8!(Endian.big)(buf);
+
+    // It's UTF-8
+    if (buf[0] >= 0x80)
+    {
+        mod.error("source file must start with BOM or ASCII character, not \\x%02X", buf[0]);
+        return null;
+    }
+
+    return buf;
 }

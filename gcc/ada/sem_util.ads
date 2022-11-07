@@ -88,11 +88,6 @@ package Sem_Util is
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
 
-   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id);
-   --  Given a block statement N, generate an internal E_Block label and make
-   --  it the identifier of the block. Id denotes the generated entity. If the
-   --  block already has an identifier, Id returns the entity of its label.
-
    procedure Add_Global_Declaration (N : Node_Id);
    --  These procedures adds a declaration N at the library level, to be
    --  elaborated before any other code in the unit. It is used for example
@@ -677,6 +672,15 @@ package Sem_Util is
 
    function Current_Scope return Entity_Id;
    --  Get entity representing current scope
+
+   procedure Add_Block_Identifier
+       (N : Node_Id;
+        Id : out Entity_Id;
+        Scope : Entity_Id := Current_Scope);
+   --  Given a block statement N, generate an internal E_Block label and make
+   --  it the identifier of the block. Scope denotes the scope in which the
+   --  generated entity Id is created and defaults to the current scope. If the
+   --  block already has an identifier, Id returns the entity of its label.
 
    function Current_Scope_No_Loops return Entity_Id;
    --  Return the current scope ignoring internally generated loops
@@ -2500,7 +2504,9 @@ package Sem_Util is
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
    pragma Inline (Is_User_Defined_Literal);
-   --  Determine whether N is a user-defined literal for Typ
+   --  Determine whether N is a user-defined literal for Typ, including
+   --  the case where N denotes a named number of the appropriate kind
+   --  when Typ has an Integer_Literal or Real_Literal aspect.
 
    function Is_Validation_Variable_Reference (N : Node_Id) return Boolean;
    --  Determine whether N denotes a reference to a variable which captures the
@@ -2560,11 +2566,6 @@ package Sem_Util is
    procedure Iterate_Call_Parameters (Call : Node_Id);
    --  Calls Handle_Parameter for each pair of formal and actual parameters of
    --  a function, procedure, or entry call.
-
-   function Itype_Has_Declaration (Id : Entity_Id) return Boolean;
-   --  Applies to Itypes. True if the Itype is attached to a declaration for
-   --  the type through its Parent field, which may or not be present in the
-   --  tree.
 
    procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False);
    --  This procedure is called to clear all constant indications from all
@@ -2748,7 +2749,6 @@ package Sem_Util is
    --      fields are recreated after the replication takes place.
    --
    --        First_Named_Actual
-   --        First_Real_Statement
    --        Next_Named_Actual
    --
    --      If applicable, the Etype field (if any) is updated to refer to a
@@ -3659,9 +3659,13 @@ package Sem_Util is
       function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean;
       --  Returns True iff Typ specifies aspect Storage_Model_Type
 
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
       function Has_Designated_Storage_Model_Aspect
         (Typ : Entity_Id) return Boolean;
       --  Returns True iff Typ specifies aspect Designated_Storage_Model
+
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
       function Storage_Model_Object (Typ : Entity_Id) return Entity_Id;
       --  Given an access type Typ with aspect Designated_Storage_Model,
@@ -3669,6 +3673,8 @@ package Sem_Util is
       --  The object Entity_Ids returned by this function can be passed
       --  other functions declared in this interface to retrieve operations
       --  associated with Storage_Model_Type aspect of the object's type.
+
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
       function Storage_Model_Type (Obj : Entity_Id) return Entity_Id;
       --  Given an object Obj of a type specifying aspect Storage_Model_Type,
@@ -3719,11 +3725,15 @@ package Sem_Util is
       --  type, returns the procedure specified for the Copy_From choice in
       --  that aspect; returns Empty if the procedure isn't specified.
 
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
       function Storage_Model_Copy_To
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, returns the procedure specified for the Copy_To choice in that
       --  aspect; returns Empty if the procedure isn't specified.
+
+      --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
       function Storage_Model_Storage_Size
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;

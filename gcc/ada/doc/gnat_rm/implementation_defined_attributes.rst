@@ -589,7 +589,7 @@ Attribute Library_Level
 ``P'Library_Level``, where P is an entity name,
 returns a Boolean value which is True if the entity is declared
 at the library level, and False otherwise. Note that within a
-generic instantition, the name of the generic unit denotes the
+generic instantiation, the name of the generic unit denotes the
 instance, which means that this attribute can be used to test
 if a generic is instantiated at the library level, as shown
 in this example:
@@ -605,13 +605,6 @@ in this example:
     ...
   end Gen;
 
-
-Attribute Lock_Free
-===================
-.. index:: Lock_Free
-
-``P'Lock_Free``, where P is a protected object, returns True if a
-pragma ``Lock_Free`` applies to P.
 
 Attribute Loop_Entry
 ====================
@@ -1238,7 +1231,7 @@ Attribute System_Allocator_Alignment
 .. index:: System_Allocator_Alignment
 
 ``Standard'System_Allocator_Alignment`` (``Standard`` is the only
-allowed prefix) provides the observable guaranted to be honored by
+allowed prefix) provides the observable guaranteed to be honored by
 the system allocator (malloc). This is a static value that can be used
 in user storage pools based on malloc either to reject allocation
 with alignment too large or to enable a realignment circuitry if the
@@ -1630,13 +1623,13 @@ Multi-dimensional arrays can be modified, as shown by this example:
 
 which changes element (1,2) to 20 and (3,4) to 30.
 
-Attribute Valid_Image
+Attribute Valid_Value
 =======================
-.. index:: Valid_Image
+.. index:: Valid_Value
 
-The ``'Valid_Image`` attribute is defined for enumeration types other than
+The ``'Valid_Value`` attribute is defined for enumeration types other than
 those in package Standard. This attribute is a function that takes
-a String, and returns Boolean. ``T'Valid_Image (S)`` returns True
+a String, and returns Boolean. ``T'Valid_Value (S)`` returns True
 if and only if ``T'Value (S)`` would not raise Constraint_Error.
 
 Attribute Valid_Scalars

@@ -68,14 +68,29 @@ ix86_issue_rate (void)
     case PROCESSOR_ZNVER1:
     case PROCESSOR_ZNVER2:
     case PROCESSOR_ZNVER3:
+    case PROCESSOR_ZNVER4:
     case PROCESSOR_CORE2:
     case PROCESSOR_NEHALEM:
     case PROCESSOR_SANDYBRIDGE:
     case PROCESSOR_HASWELL:
     case PROCESSOR_TREMONT:
+    case PROCESSOR_SKYLAKE:
+    case PROCESSOR_SKYLAKE_AVX512:
+    case PROCESSOR_CASCADELAKE:
+    case PROCESSOR_CANNONLAKE:
     case PROCESSOR_ALDERLAKE:
     case PROCESSOR_GENERIC:
       return 4;
+
+    case PROCESSOR_ICELAKE_CLIENT:
+    case PROCESSOR_ICELAKE_SERVER:
+    case PROCESSOR_TIGERLAKE:
+    case PROCESSOR_COOPERLAKE:
+    case PROCESSOR_ROCKETLAKE:
+      return 5;
+
+    case PROCESSOR_SAPPHIRERAPIDS:
+      return 6;
 
     default:
       return 1;
@@ -401,6 +416,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
     case PROCESSOR_ZNVER1:
     case PROCESSOR_ZNVER2:
     case PROCESSOR_ZNVER3:
+    case PROCESSOR_ZNVER4:
       /* Stack engine allows to execute push&pop instructions in parall.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))

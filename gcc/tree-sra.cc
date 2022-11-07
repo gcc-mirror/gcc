@@ -260,6 +260,9 @@ struct access
 
   /* Should TREE_NO_WARNING of a replacement be set?  */
   unsigned grp_no_warning : 1;
+
+  /* Result of propagation accross link from LHS to RHS.  */
+  unsigned grp_result_of_prop_from_lhs : 1;
 };
 
 typedef struct access *access_p;
@@ -2532,6 +2535,9 @@ analyze_access_subtree (struct access *root, struct access *parent,
   if (allow_replacements && expr_with_var_bounded_array_refs_p (root->expr))
     allow_replacements = false;
 
+  if (!totally && root->grp_result_of_prop_from_lhs)
+    allow_replacements = false;
+
   for (child = root->first_child; child; child = child->next_sibling)
     {
       hole |= covered_to < child->offset;
@@ -2959,6 +2965,7 @@ propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
 	  struct access *new_acc
 	    = create_artificial_child_access (racc, lchild, norm_offset,
 					      true, false);
+	  new_acc->grp_result_of_prop_from_lhs = 1;
 	  propagate_subaccesses_from_lhs (lchild, new_acc);
 	}
       else

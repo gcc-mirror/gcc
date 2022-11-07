@@ -440,6 +440,7 @@ gimple_build_builtin_unreachable (location_t loc)
       gcc_checking_assert (data == NULL_TREE);
       g = gimple_build_call_internal (IFN_TRAP, 0);
     }
+  gimple_call_set_ctrl_altering (g, true);
   gimple_set_location (g, loc);
   return g;
 }
@@ -1289,6 +1290,18 @@ gimple_build_omp_atomic_store (tree val, enum omp_memory_order mo)
   return p;
 }
 
+/* Build a GIMPLE_ASSUME statement.  */
+
+gimple *
+gimple_build_assume (tree guard, gimple_seq body)
+{
+  gimple_statement_assume *p
+    = as_a <gimple_statement_assume *> (gimple_alloc (GIMPLE_ASSUME, 0));
+  gimple_assume_set_guard (p, guard);
+  *gimple_assume_body_ptr (p) = body;
+  return p;
+}
+
 /* Build a GIMPLE_TRANSACTION statement.  */
 
 gtransaction *
@@ -2133,6 +2146,13 @@ gimple_copy (gimple *stmt)
 	  t = unshare_expr (gimple_omp_masked_clauses (stmt));
 	  gimple_omp_masked_set_clauses (copy, t);
 	  goto copy_omp_body;
+
+	case GIMPLE_ASSUME:
+	  new_seq = gimple_seq_copy (gimple_assume_body (stmt));
+	  *gimple_assume_body_ptr (copy) = new_seq;
+	  gimple_assume_set_guard (copy,
+				   unshare_expr (gimple_assume_guard (stmt)));
+	  break;
 
 	case GIMPLE_TRANSACTION:
 	  new_seq = gimple_seq_copy (gimple_transaction_body (

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -30,8 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "diagnostic-core.h"
 #include "graphviz.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "ordered-hash-map.h"
 #include "options.h"
@@ -41,13 +40,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "bitmap.h"
-#include "tristate.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/constraint-manager.h"
+#include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
 #include "tree-pretty-print.h"
 
@@ -3041,6 +3040,60 @@ constraint_manager::for_each_fact (fact_visitor *visitor) const
 	  visitor->on_ranges (lhs_sval, iter.m_ranges);
 	}
     }
+}
+
+/* Subclass of fact_visitor for use by
+   constraint_manager::replay_call_summary.  */
+
+class replay_fact_visitor : public fact_visitor
+{
+public:
+  replay_fact_visitor (call_summary_replay &r,
+		       constraint_manager *out)
+  : m_r (r), m_out (out), m_feasible (true)
+  {}
+
+  bool feasible_p () const { return m_feasible; }
+
+  void on_fact (const svalue *lhs, enum tree_code code, const svalue *rhs)
+    final override
+  {
+    const svalue *caller_lhs = m_r.convert_svalue_from_summary (lhs);
+    if (!caller_lhs)
+      return;
+    const svalue *caller_rhs = m_r.convert_svalue_from_summary (rhs);
+    if (!caller_rhs)
+      return;
+    if (!m_out->add_constraint (caller_lhs, code, caller_rhs))
+      m_feasible = false;
+  }
+
+  void on_ranges (const svalue *lhs_sval,
+		  const bounded_ranges *ranges) final override
+  {
+    const svalue *caller_lhs = m_r.convert_svalue_from_summary (lhs_sval);
+    if (!caller_lhs)
+      return;
+    if (!m_out->add_bounded_ranges (caller_lhs, ranges))
+      m_feasible = false;
+  }
+
+private:
+  call_summary_replay &m_r;
+  constraint_manager *m_out;
+  bool m_feasible;
+};
+
+/* Attempt to use R to replay the constraints from SUMMARY into this object.
+   Return true if it is feasible.  */
+
+bool
+constraint_manager::replay_call_summary (call_summary_replay &r,
+					 const constraint_manager &summary)
+{
+  replay_fact_visitor v (r, this);
+  summary.for_each_fact (&v);
+  return v.feasible_p ();
 }
 
 /* Assert that this object is valid.  */

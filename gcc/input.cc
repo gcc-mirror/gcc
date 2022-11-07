@@ -949,6 +949,98 @@ location_get_source_line (const char *file_path, int line)
   return char_span (buffer, len);
 }
 
+/* Return a NUL-terminated copy of the source text between two locations, or
+   NULL if the arguments are invalid.  The caller is responsible for freeing
+   the return value.  */
+
+char *
+get_source_text_between (location_t start, location_t end)
+{
+  expanded_location expstart =
+    expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
+  expanded_location expend =
+    expand_location_to_spelling_point (end, LOCATION_ASPECT_FINISH);
+
+  /* If the locations are in different files or the end comes before the
+     start, give up and return nothing.  */
+  if (!expstart.file || !expend.file)
+    return NULL;
+  if (strcmp (expstart.file, expend.file) != 0)
+    return NULL;
+  if (expstart.line > expend.line)
+    return NULL;
+  if (expstart.line == expend.line
+      && expstart.column > expend.column)
+    return NULL;
+  /* These aren't real column numbers, give up.  */
+  if (expstart.column == 0 || expend.column == 0)
+    return NULL;
+
+  /* For a single line we need to trim both edges.  */
+  if (expstart.line == expend.line)
+    {
+      char_span line = location_get_source_line (expstart.file, expstart.line);
+      if (line.length () < 1)
+	return NULL;
+      int s = expstart.column - 1;
+      int len = expend.column - s;
+      if (line.length () < (size_t)expend.column)
+	return NULL;
+      return line.subspan (s, len).xstrdup ();
+    }
+
+  struct obstack buf_obstack;
+  obstack_init (&buf_obstack);
+
+  /* Loop through all lines in the range and append each to buf; may trim
+     parts of the start and end lines off depending on column values.  */
+  for (int lnum = expstart.line; lnum <= expend.line; ++lnum)
+    {
+      char_span line = location_get_source_line (expstart.file, lnum);
+      if (line.length () < 1 && (lnum != expstart.line && lnum != expend.line))
+	continue;
+
+      /* For the first line in the range, only start at expstart.column */
+      if (lnum == expstart.line)
+	{
+	  unsigned off = expstart.column - 1;
+	  if (line.length () < off)
+	    return NULL;
+	  line = line.subspan (off, line.length() - off);
+	}
+      /* For the last line, don't go past expend.column */
+      else if (lnum == expend.line)
+	{
+	  if (line.length () < (size_t)expend.column)
+	    return NULL;
+	  line = line.subspan (0, expend.column);
+	}
+
+      /* Combine spaces at the beginning of later lines.  */
+      if (lnum > expstart.line)
+	{
+	  unsigned off;
+	  for (off = 0; off < line.length(); ++off)
+	    if (line[off] != ' ' && line[off] != '\t')
+	      break;
+	  if (off > 0)
+	    {
+	      obstack_1grow (&buf_obstack, ' ');
+	      line = line.subspan (off, line.length() - off);
+	    }
+	}
+
+      /* This does not include any trailing newlines.  */
+      obstack_grow (&buf_obstack, line.get_buffer (), line.length ());
+    }
+
+  /* NUL-terminate and finish the buf obstack.  */
+  obstack_1grow (&buf_obstack, 0);
+  const char *buf = (const char *) obstack_finish (&buf_obstack);
+
+  return xstrdup (buf);
+}
+
 /* Determine if FILE_PATH missing a trailing newline on its final line.
    Only valid to call once all of the file has been loaded, by
    requesting a line number beyond the end of the file.  */
@@ -1082,7 +1174,8 @@ make_location (location_t caret, location_t start, location_t finish)
   location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
 						   pure_loc,
 						   src_range,
-						   NULL);
+						   NULL,
+						   0);
   return combined_loc;
 }
 
@@ -1092,7 +1185,7 @@ location_t
 make_location (location_t caret, source_range src_range)
 {
   location_t pure_loc = get_pure_location (caret);
-  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL);
+  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL, 0);
 }
 
 /* An expanded_location stores the column in byte units.  This function
@@ -1764,6 +1857,37 @@ get_location_within_string (cpp_reader *pfile,
 			    ranges.get_range (start_idx).m_start,
 			    ranges.get_range (end_idx).m_finish);
   return NULL;
+}
+
+/* Associate the DISCRIMINATOR with LOCUS, and return a new locus. */
+
+location_t
+location_with_discriminator (location_t locus, int discriminator)
+{
+  tree block = LOCATION_BLOCK (locus);
+  source_range src_range = get_range_from_loc (line_table, locus);
+  locus = get_pure_location (locus);
+
+  if (locus == UNKNOWN_LOCATION)
+    return locus;
+
+  return COMBINE_LOCATION_DATA (line_table, locus, src_range, block, discriminator);
+}
+
+/* Return TRUE if LOCUS represents a location with a discriminator.  */
+
+bool
+has_discriminator (location_t locus)
+{
+  return get_discriminator_from_loc (locus) != 0;
+}
+
+/* Return the discriminator for LOCUS.  */
+
+int
+get_discriminator_from_loc (location_t locus)
+{
+  return get_discriminator_from_loc (line_table, locus);
 }
 
 #if CHECKING_P

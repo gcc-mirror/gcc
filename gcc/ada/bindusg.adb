@@ -156,6 +156,11 @@ package body Bindusg is
         ("  -I-       Don't look for sources & library files in default "
          & "directory");
 
+      --  Line for -k switch
+
+      Write_Line
+        ("  -k        Disable checking of elaboration flags");
+
       --  Line for -K switch
 
       Write_Line

@@ -1093,8 +1093,7 @@ for (i = 0; i < n_target_array; i++) {
 	name = var_target_array[i]
 	size = var_target_array_size[i]
 	type = var_target_array_type[i]
-	print "  if (ptr1->" name" != ptr2->" name "";
-	print "      || memcmp (ptr1->" name ", ptr2->" name ", " size " * sizeof(" type ")))"
+	print "  if (memcmp (ptr1->" name ", ptr2->" name ", " size " * sizeof(" type ")))"
 	print "    return false;";
 }
 for (i = 0; i < n_target_val; i++) {
@@ -1292,7 +1291,22 @@ for (i = 0; i < n_opts; i++) {
 		var_opt_val_type[n_opt_val] = otype;
 		var_opt_val[n_opt_val] = "x_" name;
 		var_opt_hash[n_opt_val] = flag_set_p("Optimization", flags[i]);
-		var_opt_init[n_opt_val] = opt_args("Init", flags[i]);
+
+		# If applicable, optimize streaming for the common case that
+		# the current value is unchanged from the 'Init' value:
+		# XOR-encode it so that we stream value zero.
+		# Not handling non-parameters as those really generally don't
+		# have large initializers.
+		# Not handling enums as we don't know if '(enum ...) 10' is
+		# even valid (see synthesized 'if' conditionals below).
+		if (flag_set_p("Param", flags[i]) \
+		    && !(otype ~ "^enum ")) {
+			# Those without 'Init' are zero-initialized and thus
+			# already encoded ideally.
+			init = opt_args("Init", flags[i])
+			var_opt_optimize_init[n_opt_val] = init;
+		}
+
 		n_opt_val++;
 	}
 }
@@ -1370,9 +1384,10 @@ for (i = 0; i < n_opt_val; i++) {
 		} else {
 			sgn = "int";
 		}
-		if (name ~ "^x_param" && !(otype ~ "^enum ") && var_opt_init[i]) {
-			print "  if (" var_opt_init[i] " > (" var_opt_val_type[i] ") 10)";
-			print "    bp_pack_var_len_" sgn " (bp, ptr->" name" ^ " var_opt_init[i] ");";
+		# If applicable, encode the streamed value.
+		if (var_opt_optimize_init[i]) {
+			print "  if (" var_opt_optimize_init[i] " > (" var_opt_val_type[i] ") 10)";
+			print "    bp_pack_var_len_" sgn " (bp, ptr->" name" ^ " var_opt_optimize_init[i] ");";
 			print "  else";
 			print "    bp_pack_var_len_" sgn " (bp, ptr->" name");";
 		} else {
@@ -1406,9 +1421,10 @@ for (i = 0; i < n_opt_val; i++) {
 			sgn = "int";
 		}
 		print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_var_len_" sgn " (bp);";
-		if (name ~ "^x_param" && !(otype ~ "^enum ") && var_opt_init[i]) {
-			print "  if (" var_opt_init[i] " > (" var_opt_val_type[i] ") 10)";
-			print "    ptr->" name" ^= " var_opt_init[i] ";";
+		# If applicable, decode the streamed value.
+		if (var_opt_optimize_init[i]) {
+			print "  if (" var_opt_optimize_init[i] " > (" var_opt_val_type[i] ") 10)";
+			print "    ptr->" name" ^= " var_opt_optimize_init[i] ";";
 		}
 	}
 }

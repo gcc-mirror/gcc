@@ -624,8 +624,7 @@ void test_29a (struct coord p[])
   __analyzer_eval (q[-2].y == 107025); /* { dg-warning "TRUE" } */
 
   q -= 2;
-  __analyzer_eval (q == &p[7]); /* { dg-warning "UNKNOWN" } */
-  // TODO: make this be TRUE
+  __analyzer_eval (q == &p[7]); /* { dg-warning "TRUE" } */
 
   __analyzer_eval (q->x == 107024); /* { dg-warning "TRUE" } */
   __analyzer_eval (q->y == 107025); /* { dg-warning "TRUE" } */

@@ -73,6 +73,15 @@ private extern (C++) final class TemplateParameterSemanticVisitor : Visitor
         result = !(ttp.specType && isError(ttp.specType));
     }
 
+    override void visit(TemplateThisParameter ttp)
+    {
+        import dmd.errors;
+
+        if (!sc.getStructClassScope())
+            error(ttp.loc, "cannot use `this` outside an aggregate type");
+        visit(cast(TemplateTypeParameter)ttp);
+    }
+
     override void visit(TemplateValueParameter tvp)
     {
         tvp.valType = tvp.valType.typeSemantic(tvp.loc, sc);

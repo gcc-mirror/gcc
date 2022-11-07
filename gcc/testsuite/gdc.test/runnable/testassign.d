@@ -230,6 +230,21 @@ void test5()
     static assert(!__traits(compiles, s.err += 1));
 }
 
+void test6()
+{
+    int dtors;
+    struct S6
+    {
+        @disable this(this);
+        ~this() { dtors++; }
+    }
+
+    S6[2] arr;
+    arr = S6();
+
+    assert(dtors == 2);
+}
+
 /***************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=4424
 
@@ -1192,6 +1207,7 @@ int main()
     test3();
     test4();
     test5();
+    test6();
     test4424();
     test6174a();
     test6174b();

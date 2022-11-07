@@ -35,6 +35,9 @@
   ;; Floating point unspecs.
   UNSPEC_FRINT
   UNSPEC_FCLASS
+  UNSPEC_FMAX
+  UNSPEC_FMIN
+  UNSPEC_FCOPYSIGN
 
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
@@ -212,6 +215,7 @@
 ;; fabs		floating point absolute value
 ;; fneg		floating point negation
 ;; fcmp		floating point compare
+;; fcopysign	floating point copysign
 ;; fcvt		floating point convert
 ;; fsqrt	floating point square root
 ;; frsqrt       floating point reciprocal square root
@@ -224,7 +228,7 @@
   "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,
    prefetch,prefetchx,condmove,mgtf,mftg,const,arith,logical,
    shift,slt,signext,clz,trap,imul,idiv,move,
-   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,fneg,fcmp,fcvt,fsqrt,
+   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,fneg,fcmp,fcopysign,fcvt,fsqrt,
    frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
   (cond [(eq_attr "jirl" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
@@ -974,6 +978,24 @@
    (set_attr "mode" "<UNITMODE>")])
 
 ;;
+;;  ....................
+;;
+;;	FLOATING POINT COPYSIGN
+;;
+;;  ....................
+
+(define_insn "copysign<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")
+		      (match_operand:ANYF 2 "register_operand" "f")]
+		     UNSPEC_FCOPYSIGN))]
+  "TARGET_HARD_FLOAT"
+  "fcopysign.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fcopysign")
+   (set_attr "mode" "<UNITMODE>")])
+
+
+;;
 ;;  ...................
 ;;
 ;;  Count leading zeroes.
@@ -1032,8 +1054,9 @@
 
 (define_insn "fmax<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(smax:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		   (match_operand:ANYF 2 "register_operand" "f")))]
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" "f"))
+		      (use (match_operand:ANYF 2 "register_operand" "f"))]
+		     UNSPEC_FMAX))]
   ""
   "fmax.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
@@ -1041,8 +1064,9 @@
 
 (define_insn "fmin<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(smin:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		   (match_operand:ANYF 2 "register_operand" "f")))]
+	(unspec:ANYF [(use (match_operand:ANYF 1 "register_operand" "f"))
+		      (use (match_operand:ANYF 2 "register_operand" "f"))]
+		     UNSPEC_FMIN))]
   ""
   "fmin.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")

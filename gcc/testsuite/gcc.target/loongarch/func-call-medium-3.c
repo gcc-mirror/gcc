@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler "test:.*la\.global\t.*g\n\tjirl" } } */
 /* { dg-final { scan-assembler "test1:.*la\.global\t.*f\n\tjirl" } } */
 /* { dg-final { scan-assembler "test2:.*la\.local\t.*l\n\tjirl" } } */
-/* { dg-final { scan-assembler "test3:.*la\.global\t.*\_\_tls\_get\_addr" } } */
+/* { dg-final { scan-assembler "test3:.*la\.global\t.*\_\_tls\_get\_addr" { target tls_native } } } */
 
 extern void g (void);
 void

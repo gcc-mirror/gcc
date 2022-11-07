@@ -222,10 +222,9 @@ package Einfo is
 --  on the actions triggered by a freeze node, which include the construction
 --  of initialization procedures and dispatch tables.
 
---  b) The presence of a freeze node on an entity is used by the back end to
---  defer elaboration of the entity until its freeze node is seen. In the
---  absence of an explicit freeze node, an entity is frozen (and elaborated)
---  at the point of declaration.
+--  b) The flag is used by the back end to defer elaboration of the entity
+--  until its freeze node is seen. In the absence of an explicit freeze node,
+--  an entity is frozen (and elaborated) at the point of declaration.
 
 --  For object declarations, the flag is set when an address clause for the
 --  object is encountered. Legality checks on the address expression only take
@@ -875,7 +874,7 @@ package Einfo is
 --       are generated (subprograms, package declarations and package
 --       bodies). Defined if there are pending generic body instantiations
 --       for the corresponding entity. If this flag is set, then generation
---       of the subprogram descriptor for the corresponding enities must
+--       of the subprogram descriptor for the corresponding entities must
 --       be delayed, since the insertion of the generic body may add entries
 --       to the list of handlers.
 --
@@ -2571,7 +2570,7 @@ package Einfo is
 
 --    Is_Elaboration_Checks_OK_Id
 --       Defined in elaboration targets (see terminology in Sem_Elab). Set when
---       the target appears in a region which is subject to elabled elaboration
+--       the target appears in a region which is subject to enabled elaboration
 --       checks. Such targets are allowed to generate run-time conditional ABE
 --       checks or guaranteed ABE failures.
 
@@ -3115,7 +3114,7 @@ package Einfo is
 --       Defined in all entities, set in E_Package and E_Generic_Package
 --       entities to which a pragma Preelaborate is applied, and also in
 --       all entities within such packages. Note that the fact that this
---       flag is set does not necesarily mean that no elaboration code is
+--       flag is set does not necessarily mean that no elaboration code is
 --       generated for the package.
 
 --    Is_Primitive
@@ -3229,7 +3228,7 @@ package Einfo is
 --       Defined in all entities, set only for a variable or constant for
 --       which the Renamed_Object field is non-empty and for which the
 --       renaming is handled by the front end, by macro substitution of
---       a copy of the (evaluated) name tree whereever the variable is used.
+--       a copy of the (evaluated) name tree wherever the variable is used.
 
 --    Is_Return_Object
 --       Defined in all object entities. True if the object is the return
@@ -3965,7 +3964,8 @@ package Einfo is
 --       Present in variable entities. Contains all references to the variable
 --       when it is subject to pragma Part_Of. If the variable is a constituent
 --       of a single protected/task type, the references are examined as they
---       must appear only within the type defintion and the corresponding body.
+--       must appear only within the type definition and the corresponding
+--       body.
 
 --    Partial_DIC_Procedure (synthesized)
 --       Defined in type entities. Set for a private type and its full view
@@ -4014,9 +4014,7 @@ package Einfo is
 --       fully initialized when the full view is frozen.
 
 --    Postconditions_Proc
---       Defined in functions, procedures, entries, and entry families. Refers
---       to the entity of the _Postconditions procedure used to check contract
---       assertions on exit from a subprogram.
+--       Obsolete field which can be removed once CodePeer is fixed ???
 
 --    Predicate_Function (synthesized)
 --       Defined in all types. Set for types for which (Has_Predicates is True)
@@ -4061,7 +4059,7 @@ package Einfo is
 
 --    Prev_Entity
 --       Defined in all entities. The entities of a scope are chained, and this
---       field is used as a backward pointer for this entity list - effectivly
+--       field is used as a backward pointer for this entity list - effectively
 --       making the entity chain doubly-linked.
 
 --    Primitive_Operations (synthesized)
@@ -4767,6 +4765,13 @@ package Einfo is
 --       Defined in functions and procedures which have been classified as
 --       Is_Primitive_Wrapper. Set to the entity being wrapper.
 
+--    Wrapped_Statements
+--       Defined in functions, procedures, entries, and entry families. Refers
+--       to the entity of the _Wrapped_Statements procedure which gets
+--       generated as part of the expansion of contracts and postconditions
+--       and contains its enclosing subprogram's original source declarations
+--       and statements.
+
 --    LSP_Subprogram
 --       Defined in subprogram entities. Set on wrappers created to handle
 --       inherited class-wide pre/post conditions that call overridden
@@ -4819,39 +4824,6 @@ package Einfo is
 --    Z : Integer renames Y;   -- renamed object is the identifier Y
 
 --  The front-end does not store explicitly the fact that Z renames X.
-
---------------------------------------
--- Delayed Freezing and Elaboration --
---------------------------------------
-
---  The flag Has_Delayed_Freeze indicates that an entity carries an explicit
---  freeze node, which appears later in the expanded tree.
-
---  a) The flag is used by the front-end to trigger expansion actions
---  which include the generation of that freeze node. Typically this happens at
---  the end of the current compilation unit, or before the first subprogram
---  body is encountered in the current unit. See files freeze and exp_ch13 for
---  details on the actions triggered by a freeze node, which include the
---  construction of initialization procedures and dispatch tables.
-
---  b) The flag is used by the backend to defer elaboration of the entity until
---  its freeze node is seen. In the absence of an explicit freeze node, an
---  entity is frozen (and elaborated) at the point of declaration.
-
---  For object declarations, the flag is set when an address clause for the
---  object is encountered. Legality checks on the address expression only
---  take place at the freeze point of the object.
-
---  Most types have an explicit freeze node, because they cannot be elaborated
---  until all representation and operational items that apply to them have been
---  analyzed. Private types and incomplete types have the flag set as well, as
---  do task and protected types.
-
---  Implicit base types created for type derivations, as well as classwide
---  types created for all tagged types, have the flag set.
-
---  If a subprogram has an access parameter whose designated type is incomplete
---  the subprogram has the flag set.
 
 ------------------
 -- Access Kinds --
@@ -5412,7 +5384,6 @@ package Einfo is
    --    Protected_Body_Subprogram
    --    Barrier_Function
    --    Elaboration_Entity
-   --    Postconditions_Proc
    --    Entry_Parameters_Type
    --    First_Entity
    --    Alias                                (for entry only. Empty)
@@ -5527,7 +5498,6 @@ package Einfo is
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram
    --    Elaboration_Entity                   (not implicit /=)
-   --    Postconditions_Proc                  (non-generic case only)
    --    DT_Position
    --    DTC_Entity
    --    First_Entity
@@ -5891,7 +5861,6 @@ package Einfo is
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram
    --    Elaboration_Entity
-   --    Postconditions_Proc                  (non-generic case only)
    --    DT_Position
    --    DTC_Entity
    --    First_Entity

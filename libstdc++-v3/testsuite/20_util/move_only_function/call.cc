@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do run { target c++23 } }
+// { dg-require-effective-target hosted }
 
 #include <functional>
 #include <utility>
@@ -190,10 +191,21 @@ test04()
   VERIFY( std::move(std::as_const(f5))() == 3 );
 }
 
+struct Incomplete;
+
+void
+test_params()
+{
+  std::move_only_function<void(Incomplete)> f1;
+  std::move_only_function<void(Incomplete&)> f2;
+  std::move_only_function<void(Incomplete&&)> f3;
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  test_params();
 }

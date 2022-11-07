@@ -771,6 +771,23 @@ private struct MapResult(alias fun, Range)
     assert(dd.length == 4);
 }
 
+// Verify fix for: https://issues.dlang.org/show_bug.cgi?id=16034
+@safe unittest
+{
+    struct One
+    {
+        int entry = 1;
+        @disable this(this);
+    }
+
+    One[] ones = [One(), One()];
+
+    import std.algorithm.comparison : equal;
+
+    assert(ones.map!`a.entry + 1`.equal([2, 2]));
+}
+
+
 @safe unittest
 {
     import std.algorithm.comparison : equal;
@@ -1798,7 +1815,7 @@ if (isInputRange!R)
     assert(equal(g3, [ tuple(1, 2u), tuple(2, 2u) ]));
 
     interface I {}
-    class C : I { override size_t toHash() const nothrow @safe { return 0; } }
+    static class C : I { override size_t toHash() const nothrow @safe { return 0; } }
     const C[] a4 = [new const C()];
     auto g4 = a4.group!"a is b";
     assert(g4.front[1] == 1);
@@ -2255,25 +2272,26 @@ if (isForwardRange!Range)
     import std.algorithm.comparison : equal;
 
     size_t popCount = 0;
-    class RefFwdRange
+    static class RefFwdRange
     {
         int[]  impl;
+        size_t* pcount;
 
         @safe nothrow:
 
-        this(int[] data) { impl = data; }
+        this(int[] data, size_t* pcount) { impl = data; this.pcount = pcount; }
         @property bool empty() { return impl.empty; }
         @property auto ref front() { return impl.front; }
         void popFront()
         {
             impl.popFront();
-            popCount++;
+            (*pcount)++;
         }
-        @property auto save() { return new RefFwdRange(impl); }
+        @property auto save() { return new RefFwdRange(impl, pcount); }
     }
     static assert(isForwardRange!RefFwdRange);
 
-    auto testdata = new RefFwdRange([1, 3, 5, 2, 4, 7, 6, 8, 9]);
+    auto testdata = new RefFwdRange([1, 3, 5, 2, 4, 7, 6, 8, 9], &popCount);
     auto groups = testdata.chunkBy!((a,b) => (a % 2) == (b % 2));
     auto outerSave1 = groups.save;
 
@@ -6058,7 +6076,7 @@ if (is(typeof(binaryFun!pred(r.front, s.front)) : bool)
     import std.algorithm.comparison : equal;
 
     // Test by-reference separator
-    class RefSep {
+    static class RefSep {
     @safe:
         string _impl;
         this(string s) { _impl = s; }
@@ -7908,7 +7926,13 @@ if (isRandomAccessRange!Range && hasLength!Range)
         _indices = iota(size_t(r.length)).array;
         _empty = r.length == 0;
     }
-
+    private this(size_t[] indices, size_t[] state, Range r, bool empty_)
+    {
+        _indices = indices;
+        _state = state;
+        _r = r;
+        _empty = empty_;
+    }
     /// Returns: `true` if the range is empty, `false` otherwise.
     @property bool empty() const pure nothrow @safe @nogc
     {
@@ -7949,6 +7973,11 @@ if (isRandomAccessRange!Range && hasLength!Range)
 
         next(2);
     }
+    /// Returns: an independent copy of the permutations range.
+    auto save()
+    {
+        return typeof(this)(_indices.dup, _state.dup, _r.save, _empty);
+    }
 }
 
 ///
@@ -7963,4 +7992,16 @@ if (isRandomAccessRange!Range && hasLength!Range)
          [0, 2, 1],
          [1, 2, 0],
          [2, 1, 0]]));
+}
+
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range : ElementType;
+    import std.array : array;
+    auto p = [1, 2, 3].permutations;
+    auto x = p.save.front;
+    p.popFront;
+    auto y = p.front;
+    assert(x != y);
 }

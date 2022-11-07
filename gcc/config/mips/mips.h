@@ -120,11 +120,9 @@ struct mips_cpu_info {
 #define TARGET_RTP_PIC (TARGET_VXWORKS_RTP && flag_pic)
 
 /* Compact branches must not be used if the user either selects the
-   'never' policy or the 'optimal' policy on a core that lacks
+   'never' policy or the 'optimal' / 'always' policy on a core that lacks
    compact branch instructions.  */
-#define TARGET_CB_NEVER (mips_cb == MIPS_CB_NEVER	\
-			 || (mips_cb == MIPS_CB_OPTIMAL \
-			     && !ISA_HAS_COMPACT_BRANCHES))
+#define TARGET_CB_NEVER (mips_cb == MIPS_CB_NEVER || !ISA_HAS_COMPACT_BRANCHES)
 
 /* Compact branches may be used if the user either selects the
    'always' policy or the 'optimal' policy on a core that supports
@@ -134,10 +132,11 @@ struct mips_cpu_info {
 			     && ISA_HAS_COMPACT_BRANCHES))
 
 /* Compact branches must always be generated if the user selects
-   the 'always' policy or the 'optimal' policy om a core that
-   lacks delay slot branch instructions.  */
-#define TARGET_CB_ALWAYS (mips_cb == MIPS_CB_ALWAYS	\
-			 || (mips_cb == MIPS_CB_OPTIMAL \
+   the 'always' policy on a core support compact branches,
+   or the 'optimal' policy on a core that lacks delay slot branch instructions.  */
+#define TARGET_CB_ALWAYS ((mips_cb == MIPS_CB_ALWAYS	  \
+			     && ISA_HAS_COMPACT_BRANCHES) \
+			 || (mips_cb == MIPS_CB_OPTIMAL   \
 			     && !ISA_HAS_DELAY_SLOTS))
 
 /* Special handling for JRC that exists in microMIPSR3 as well as R6
@@ -677,12 +676,15 @@ struct mips_cpu_info {
 	builtin_define ("__mips_no_lxc1_sxc1");				\
       if (!ISA_HAS_UNFUSED_MADD4 && !ISA_HAS_FUSED_MADD4)		\
 	builtin_define ("__mips_no_madd4");				\
+									\
+      if (TARGET_CB_NEVER)						\
+	builtin_define ("__mips_compact_branches_never");		\
+      else if (TARGET_CB_ALWAYS)					\
+	builtin_define ("__mips_compact_branches_always");		\
+      else 								\
+	builtin_define ("__mips_compact_branches_optimal");		\
     }									\
   while (0)
-
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS mips_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO mips_d_register_target_info
 
 /* Default target_flags if no switches are specified  */
 
@@ -913,7 +915,8 @@ struct mips_cpu_info {
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
   {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" },			\
   {"lxc1-sxc1", "%{!mlxc1-sxc1:%{!mno-lxc1-sxc1:-m%(VALUE)}}" }, \
-  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" } \
+  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" }, \
+  {"compact-branches", "%{!mcompact-branches=*:-mcompact-branches=%(VALUE)}" } \
 
 /* A spec that infers the:
    -mnan=2008 setting from a -mips argument,
@@ -1384,9 +1387,7 @@ struct mips_cpu_info {
 #ifndef SUBTARGET_ASM_DEBUGGING_SPEC
 #define SUBTARGET_ASM_DEBUGGING_SPEC "\
 %{g} %{g0} %{g1} %{g2} %{g3} \
-%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3}"
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3}"
 #endif
 
 /* FP_ASM_SPEC represents the floating-point options that must be passed
@@ -1508,7 +1509,6 @@ FP_ASM_SPEC "\
 #define SUBTARGET_EXTRA_SPECS
 #endif
 
-#define DBX_DEBUGGING_INFO 1		/* generate stabs (OSF/rose) */
 #define DWARF2_DEBUGGING_INFO 1         /* dwarf2 debugging info */
 
 #ifndef PREFERRED_DEBUGGING_TYPE
@@ -1547,14 +1547,6 @@ FP_ASM_SPEC "\
 #ifndef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX	""
 #endif
-
-/* On Sun 4, this limit is 2048.  We use 1500 to be safe,
-   since the length can run past this up to a continuation point.  */
-#undef DBX_CONTIN_LENGTH
-#define DBX_CONTIN_LENGTH 1500
-
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[REGNO]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
 #define DWARF_FRAME_REGNUM(REGNO) mips_dwarf_regno[REGNO]
@@ -1869,7 +1861,6 @@ FP_ASM_SPEC "\
 #define GP_REG_FIRST 0
 #define GP_REG_LAST  31
 #define GP_REG_NUM   (GP_REG_LAST - GP_REG_FIRST + 1)
-#define GP_DBX_FIRST 0
 #define K0_REG_NUM   (GP_REG_FIRST + 26)
 #define K1_REG_NUM   (GP_REG_FIRST + 27)
 #define KERNEL_REG_P(REGNO)	(IN_RANGE (REGNO, K0_REG_NUM, K1_REG_NUM))
@@ -1877,12 +1868,10 @@ FP_ASM_SPEC "\
 #define FP_REG_FIRST 32
 #define FP_REG_LAST  63
 #define FP_REG_NUM   (FP_REG_LAST - FP_REG_FIRST + 1)
-#define FP_DBX_FIRST ((write_symbols == DBX_DEBUG) ? 38 : 32)
 
 #define MD_REG_FIRST 64
 #define MD_REG_LAST  65
 #define MD_REG_NUM   (MD_REG_LAST - MD_REG_FIRST + 1)
-#define MD_DBX_FIRST (FP_DBX_FIRST + FP_REG_NUM)
 
 #define MSA_REG_FIRST FP_REG_FIRST
 #define MSA_REG_LAST  FP_REG_LAST
@@ -3221,7 +3210,6 @@ extern int num_source_filenames;	/* current .file # */
 extern struct mips_asm_switch mips_noreorder;
 extern struct mips_asm_switch mips_nomacro;
 extern struct mips_asm_switch mips_noat;
-extern int mips_dbx_regno[];
 extern int mips_dwarf_regno[];
 extern bool mips_split_p[];
 extern bool mips_split_hi_p[];
@@ -3446,12 +3434,14 @@ struct GTY(())  machine_function {
 
 /* If we are *not* using multilibs and the default ABI is not ABI_32 we
    need to change these from /lib and /usr/lib.  */
+#ifndef ENABLE_MULTIARCH
 #if MIPS_ABI_DEFAULT == ABI_N32
 #define STANDARD_STARTFILE_PREFIX_1 "/lib32/"
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib32/"
 #elif MIPS_ABI_DEFAULT == ABI_64
 #define STANDARD_STARTFILE_PREFIX_1 "/lib64/"
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib64/"
+#endif
 #endif
 
 /* Load store bonding is not supported by micromips and fix_24k.  The

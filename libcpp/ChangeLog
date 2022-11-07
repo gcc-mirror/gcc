@@ -1,3 +1,177 @@
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* lex.cc (get_fresh_line_impl): New function refactoring the code
+	from...
+	(_cpp_get_fresh_line): ...here.
+	(lex_raw_string): Use the new version of get_fresh_line_impl() to
+	support raw strings containing new lines when processing a directive.
+
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeuname2c.cc (struct generated): Update from Unicode 15.0.0
+	table 4-8.
+	* ucnid.h: Regenerated for Unicode 15.0.0.
+	* uname2c.h: Likewise.
+
+2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/cpplib.h (struct cpp_string): Use new "string_length" GTY.
+	* include/symtab.h (struct ht_identifier): Likewise.
+
+2022-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* charset.cc (ucn_valid_in_identifier): Check xid_identifiers not
+	cplusplus to determine whether to use CXX23 and NXX23 flags.
+	* include/cpplib.h (struct cpp_options): Add xid_identifiers.
+	* init.cc (struct lang_flags, lang_defaults): Add xid_identifiers.
+	(cpp_set_lang): Set xid_identifiers.
+	* lex.cc (warn_about_normalization): Add parameter identifier.
+	Only pedwarn about non-NFC for identifiers, not pp-numbers.
+	(_cpp_lex_direct): Update calls to warn_about_normalization.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (CPP_N_BFLOAT16): Define.
+	* expr.cc (interpret_float_suffix): Handle bf16 and BF16 suffixes for
+	C++.
+
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* include/line-map.h: Add discriminator to location_adhoc_data.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): Add external declaration.
+	(get_discriminator_from_loc): Add external declaration.
+	(COMBINE_LOCATION_DATA): Add discriminator parameter.
+	* lex.cc (get_location_for_byte_range_in_cur_line) Pass 0 discriminator
+	in a call to COMBINE_LOCATION_DATA.
+	(warn_about_normalization): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	(_cpp_lex_direct): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	* line-map.cc (location_adhoc_data_hash): Use discriminator compute
+	location_adhoc_data hash.
+	(location_adhoc_data_eq): Use discriminator when comparing
+	location_adhoc_data.
+	(can_be_stored_compactly_p): Check discriminator to determine
+	compact storage.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): New function to get the discriminator
+	from an ad-hoc location.
+	(get_discriminator_from_loc): New function to get the discriminator
+	from a location.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* expr.cc (interpret_float_suffix): Allow {f,F}{16,32,64,128} and
+	{f,F}{32,64,128}x suffixes for C++.
+
+2022-09-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* line-map.cc (location_adhoc_data_update): Remove reliance on
+	undefined behavior.
+	(get_combined_adhoc_loc): Likewise.
+	(rebuild_location_adhoc_htab): Fix issue where the htab was not
+	properly updated.
+
+2022-09-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add true_false.
+	* expr.cc (eval_token): Check true_false not cplusplus to
+	determine whether to handle true and false keywords.
+	* init.cc (struct lang_flags): Add true_false.
+	(lang_defaults): Update.
+	(cpp_set_lang): Set true_false.
+
+2022-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add cpp_warn_unicode member.
+	(enum cpp_warning_reason): Add CPP_W_UNICODE.
+	* init.cc (cpp_create_reader): Initialize cpp_warn_unicode.
+	* charset.cc (_cpp_valid_ucn): In possible identifier contexts, don't
+	handle \u{ or \N{ specially in -std=c* modes except -std=c++2{3,b}.
+	In possible identifier contexts, don't emit an error and punt
+	if \N isn't followed by {, or if \N{} surrounds some lower case
+	letters or _.  In possible identifier contexts when not C++23, don't
+	emit an error but warning about unknown character names and treat as
+	separate tokens.  When treating as separate tokens \u{ or \N{, emit
+	warnings.
+
+2022-09-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.cc (lang_defaults): Disable trigraphs for C2x.
+
+2022-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/90885
+	* include/cpplib.h (BOL): Move macro to 1 << 12 since it is
+	not used by C/C++'s unsigned char token flags.
+	(DECIMAL_INT): New, using 1 << 6, so that it is visible as
+	part of C/C++'s 8 bits of token flags.
+
+2022-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106655
+	* include/cpplib.h (struct cpp_options): Implement C++23
+	P2295R6 - Support for UTF-8 as a portable source file encoding.
+	Add cpp_warn_invalid_utf8 and cpp_input_charset_explicit fields.
+	(enum cpp_warning_reason): Add CPP_W_INVALID_UTF8 enumerator.
+	* init.cc (cpp_create_reader): Initialize cpp_warn_invalid_utf8
+	and cpp_input_charset_explicit.
+	* charset.cc (_cpp_valid_utf8): Adjust function comment.
+	* lex.cc (UCS_LIMIT): Define.
+	(utf8_continuation): New const variable.
+	(utf8_signifier): Move earlier in the file.
+	(_cpp_warn_invalid_utf8, _cpp_handle_multibyte_utf8): New functions.
+	(_cpp_skip_block_comment): Handle -Winvalid-utf8 warning.
+	(skip_line_comment): Likewise.
+	(lex_raw_string, lex_string): Likewise.
+	(_cpp_lex_direct): Likewise.
+
+2022-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/106778
+	* makeuname2c.cc (write_nodes): Reverse order of && operands in
+	assert.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106647
+	* charset.cc (wide_str_to_charconst): Implement P2362R3 - Remove
+	non-encodable wide character literals and multicharacter.  For
+	C++23 use CPP_DL_ERROR instead of CPP_DL_WARNING for
+	"character constant too long for its type" diagnostics on CPP_WCHAR
+	literals.
+
+2022-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106648
+	* charset.cc: Implement C++23 P2071R2 - Named universal character
+	escapes.  Include uname2c.h.
+	(hangul_syllables, hangul_count): New variables.
+	(struct uname2c_data): New type.
+	(_cpp_uname2c, _cpp_uname2c_uax44_lm2): New functions.
+	(_cpp_valid_ucn): Use them.  Handle named universal character escapes.
+	(convert_ucn): Adjust comment.
+	(convert_escape): Call convert_ucn even for \N.
+	(_cpp_interpret_identifier): Handle named universal character escapes.
+	* lex.cc (get_bidi_ucn): Fix up function comment formatting.
+	(get_bidi_named): New function.
+	(forms_identifier_p, lex_string): Handle named universal character
+	escapes.
+	* makeuname2c.cc: New file.  Small parts copied from makeucnid.cc.
+	* uname2c.h: New generated file.
+
+2022-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106646
+	* init.cc: Implement C++23 P2437R1 - Support for #warning.
+	(lang_defaults): Set warning_directive for GNUCXX23 and CXX23.
+	* directives.cc (directive_diagnostics): Use different wording of
+	#warning pedwarn for C++.
+
 2022-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106645

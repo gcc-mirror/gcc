@@ -33,7 +33,9 @@
 --  operations, and also for machine code statements. See GNAT documentation
 --  for full details.
 
-package System.Machine_Code is
+package System.Machine_Code
+  with SPARK_Mode => Off
+is
    pragma No_Elaboration_Code_All;
    pragma Pure;
 

@@ -1803,7 +1803,8 @@ struct vn_walk_cb_data
 		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_,
 		   bool redundant_store_removal_p_)
     : vr (vr_), last_vuse_ptr (last_vuse_ptr_), last_vuse (NULL_TREE),
-      mask (mask_), masked_result (NULL_TREE), vn_walk_kind (vn_walk_kind_),
+      mask (mask_), masked_result (NULL_TREE), same_val (NULL_TREE),
+      vn_walk_kind (vn_walk_kind_),
       tbaa_p (tbaa_p_), redundant_store_removal_p (redundant_store_removal_p_),
       saved_operands (vNULL), first_set (-2), first_base_set (-2),
       known_ranges (NULL)
@@ -1864,6 +1865,7 @@ struct vn_walk_cb_data
   tree last_vuse;
   tree mask;
   tree masked_result;
+  tree same_val;
   vn_lookup_kind vn_walk_kind;
   bool tbaa_p;
   bool redundant_store_removal_p;
@@ -1902,6 +1904,8 @@ vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val)
       masked_result = val;
       return (void *) -1;
     }
+  if (same_val && !operand_equal_p (val, same_val))
+    return (void *) -1;
   vec<vn_reference_op_s> &operands
     = saved_operands.exists () ? saved_operands : vr->operands;
   return vn_reference_lookup_or_insert_for_pieces (last_vuse, set, base_set,
@@ -2675,36 +2679,61 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	 and return the found value.  */
       if (is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
-	  && (ref->ref || data->orig_ref.ref))
+	  && (ref->ref || data->orig_ref.ref)
+	  && !data->mask
+	  && data->partial_defs.is_empty ()
+	  && multiple_p (get_object_alignment
+			   (ref->ref ? ref->ref : data->orig_ref.ref),
+			   ref->size)
+	  && multiple_p (get_object_alignment (lhs), ref->size))
 	{
-	  tree *saved_last_vuse_ptr = data->last_vuse_ptr;
-	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
-	  data->last_vuse_ptr = NULL;
-	  tree saved_vuse = vr->vuse;
-	  hashval_t saved_hashcode = vr->hashcode;
-	  void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt), data);
-	  /* Need to restore vr->vuse and vr->hashcode.  */
-	  vr->vuse = saved_vuse;
-	  vr->hashcode = saved_hashcode;
-	  data->last_vuse_ptr = saved_last_vuse_ptr;
-	  if (res && res != (void *)-1)
+	  tree rhs = gimple_assign_rhs1 (def_stmt);
+	  /* ???  We may not compare to ahead values which might be from
+	     a different loop iteration but only to loop invariants.  Use
+	     CONSTANT_CLASS_P (unvalueized!) as conservative approximation.
+	     The one-hop lookup below doesn't have this issue since there's
+	     a virtual PHI before we ever reach a backedge to cross.
+	     We can skip multiple defs as long as they are from the same
+	     value though.  */
+	  if (data->same_val
+	      && !operand_equal_p (data->same_val, rhs))
+	    ;
+	  else if (CONSTANT_CLASS_P (rhs))
 	    {
-	      vn_reference_t vnresult = (vn_reference_t) res;
-	      tree rhs = gimple_assign_rhs1 (def_stmt);
-	      if (TREE_CODE (rhs) == SSA_NAME)
-		rhs = SSA_VAL (rhs);
-	      if (vnresult->result
-		  && operand_equal_p (vnresult->result, rhs, 0)
-		  /* We have to honor our promise about union type punning
-		     and also support arbitrary overlaps with
-		     -fno-strict-aliasing.  So simply resort to alignment to
-		     rule out overlaps.  Do this check last because it is
-		     quite expensive compared to the hash-lookup above.  */
-		  && multiple_p (get_object_alignment
-				   (ref->ref ? ref->ref : data->orig_ref.ref),
-				 ref->size)
-		  && multiple_p (get_object_alignment (lhs), ref->size))
-		return res;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file,
+			   "Skipping possible redundant definition ");
+		  print_gimple_stmt (dump_file, def_stmt, 0);
+		}
+	      /* Delay the actual compare of the values to the end of the walk
+		 but do not update last_vuse from here.  */
+	      data->last_vuse_ptr = NULL;
+	      data->same_val = rhs;
+	      return NULL;
+	    }
+	  else
+	    {
+	      tree *saved_last_vuse_ptr = data->last_vuse_ptr;
+	      /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
+	      data->last_vuse_ptr = NULL;
+	      tree saved_vuse = vr->vuse;
+	      hashval_t saved_hashcode = vr->hashcode;
+	      void *res = vn_reference_lookup_2 (ref, gimple_vuse (def_stmt),
+						 data);
+	      /* Need to restore vr->vuse and vr->hashcode.  */
+	      vr->vuse = saved_vuse;
+	      vr->hashcode = saved_hashcode;
+	      data->last_vuse_ptr = saved_last_vuse_ptr;
+	      if (res && res != (void *)-1)
+		{
+		  vn_reference_t vnresult = (vn_reference_t) res;
+		  if (TREE_CODE (rhs) == SSA_NAME)
+		    rhs = SSA_VAL (rhs);
+		  if (vnresult->result
+		      && operand_equal_p (vnresult->result, rhs, 0))
+		    return res;
+		}
 	    }
 	}
     }
@@ -3798,6 +3827,14 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
       if (ops_for_ref != shared_lookup_references)
 	ops_for_ref.release ();
       gcc_checking_assert (vr1.operands == shared_lookup_references);
+      if (*vnresult
+	  && data.same_val
+	  && (!(*vnresult)->result
+	      || !operand_equal_p ((*vnresult)->result, data.same_val)))
+	{
+	  *vnresult = NULL;
+	  return NULL_TREE;
+	}
     }
 
   if (*vnresult)
@@ -3913,6 +3950,10 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
       if (wvnresult)
 	{
 	  gcc_assert (mask == NULL_TREE);
+	  if (data.same_val
+	      && (!wvnresult->result
+		  || !operand_equal_p (wvnresult->result, data.same_val)))
+	    return NULL_TREE;
 	  if (vnresult)
 	    *vnresult = wvnresult;
 	  return wvnresult->result;
@@ -4460,28 +4501,39 @@ vn_nary_op_insert_pieces (unsigned int length, enum tree_code code,
   return vn_nary_op_insert_into (vno1, valid_info->nary);
 }
 
+/* Return whether we can track a predicate valid when PRED_E is executed.  */
+
+static bool
+can_track_predicate_on_edge (edge pred_e)
+{
+  /* ???  As we are currently recording a basic-block index in
+     vn_pval.valid_dominated_by_p and using dominance for the
+     validity check we cannot track predicates on all edges.  */
+  if (single_pred_p (pred_e->dest))
+    return true;
+  /* Never record for backedges.  */
+  if (pred_e->flags & EDGE_DFS_BACK)
+    return false;
+  /* When there's more than one predecessor we cannot track
+     predicate validity based on the destination block.  The
+     exception is when all other incoming edges are backedges.  */
+  edge_iterator ei;
+  edge e;
+  int cnt = 0;
+  FOR_EACH_EDGE (e, ei, pred_e->dest->preds)
+    if (! dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+      cnt++;
+  return cnt == 1;
+}
+
 static vn_nary_op_t
 vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
 				     tree type, tree *ops,
 				     tree result, unsigned int value_id,
 				     edge pred_e)
 {
-  /* ???  Currently tracking BBs.  */
-  if (! single_pred_p (pred_e->dest))
-    {
-      /* Never record for backedges.  */
-      if (pred_e->flags & EDGE_DFS_BACK)
-	return NULL;
-      edge_iterator ei;
-      edge e;
-      int cnt = 0;
-      /* Ignore backedges.  */
-      FOR_EACH_EDGE (e, ei, pred_e->dest->preds)
-	if (! dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
-	  cnt++;
-      if (cnt != 1)
-	return NULL;
-    }
+  if (!can_track_predicate_on_edge (pred_e))
+    return NULL;
   if (dump_file && (dump_flags & TDF_DETAILS)
       /* ???  Fix dumping, but currently we only get comparisons.  */
       && TREE_CODE_CLASS (code) == tcc_comparison)
@@ -4877,41 +4929,44 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
     }
 
   /* Iterate to the single executable bb2 successor.  */
-  edge succe = NULL;
-  FOR_EACH_EDGE (e, ei, bb2->succs)
-    if ((e->flags & EDGE_EXECUTABLE)
-	|| (!allow_back && (e->flags & EDGE_DFS_BACK)))
-      {
-	if (succe)
-	  {
-	    succe = NULL;
-	    break;
-	  }
-	succe = e;
-      }
-  if (succe)
+  if (EDGE_COUNT (bb2->succs) > 1)
     {
-      /* Verify the reached block is only reached through succe.
-	 If there is only one edge we can spare us the dominator
-	 check and iterate directly.  */
-      if (EDGE_COUNT (succe->dest->preds) > 1)
-	{
-	  FOR_EACH_EDGE (e, ei, succe->dest->preds)
-	    if (e != succe
-		&& ((e->flags & EDGE_EXECUTABLE)
-		    || (!allow_back && (e->flags & EDGE_DFS_BACK))))
+      edge succe = NULL;
+      FOR_EACH_EDGE (e, ei, bb2->succs)
+	if ((e->flags & EDGE_EXECUTABLE)
+	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
+	  {
+	    if (succe)
 	      {
 		succe = NULL;
 		break;
 	      }
-	}
+	    succe = e;
+	  }
       if (succe)
 	{
-	  bb2 = succe->dest;
+	  /* Verify the reached block is only reached through succe.
+	     If there is only one edge we can spare us the dominator
+	     check and iterate directly.  */
+	  if (EDGE_COUNT (succe->dest->preds) > 1)
+	    {
+	      FOR_EACH_EDGE (e, ei, succe->dest->preds)
+		if (e != succe
+		    && ((e->flags & EDGE_EXECUTABLE)
+			|| (!allow_back && (e->flags & EDGE_DFS_BACK))))
+		  {
+		    succe = NULL;
+		    break;
+		  }
+	    }
+	  if (succe)
+	    {
+	      bb2 = succe->dest;
 
-	  /* Re-do the dominance check with changed bb2.  */
-	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
-	    return true;
+	      /* Re-do the dominance check with changed bb2.  */
+	      if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+		return true;
+	    }
 	}
     }
 
@@ -5663,19 +5718,6 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 
   if (!resultsame)
     {
-      /* Only perform the following when being called from PRE
-	 which embeds tail merging.  */
-      if (default_vn_walk_kind == VN_WALK)
-	{
-	  assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
-	  vn_reference_lookup (assign, vuse, VN_NOWALK, &vnresult, false);
-	  if (vnresult)
-	    {
-	      VN_INFO (vdef)->visited = true;
-	      return set_ssa_val_to (vdef, vnresult->result_vdef);
-	    }
-	}
-
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "No store match\n");
@@ -5700,7 +5742,9 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
       if (default_vn_walk_kind == VN_WALK)
 	{
 	  assign = build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, op);
-	  vn_reference_insert (assign, lhs, vuse, vdef);
+	  vn_reference_lookup (assign, vuse, VN_NOWALK, &vnresult, false);
+	  if (!vnresult)
+	    vn_reference_insert (assign, lhs, vuse, vdef);
 	}
     }
   else
@@ -7287,14 +7331,14 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
   return walker.eliminate_cleanup ();
 }
 
-unsigned
-do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate, vn_lookup_kind kind);
+static unsigned
+do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
+	     bool iterate, bool eliminate, vn_lookup_kind kind);
 
 void
 run_rpo_vn (vn_lookup_kind kind)
 {
-  do_rpo_vn (cfun, NULL, NULL, true, false, kind);
+  do_rpo_vn_1 (cfun, NULL, NULL, true, false, kind);
 
   /* ???  Prune requirement of these.  */
   constant_to_value_id = new hash_table<vn_constant_hasher> (23);
@@ -7992,9 +8036,9 @@ do_unwind (unwind_state *to, rpo_elim &avail)
    executed and iterate.  If ELIMINATE is true then perform
    elimination, otherwise leave that to the caller.  */
 
-unsigned
-do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate, vn_lookup_kind kind)
+static unsigned
+do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
+	     bool iterate, bool eliminate, vn_lookup_kind kind)
 {
   unsigned todo = 0;
   default_vn_walk_kind = kind;
@@ -8412,12 +8456,18 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 /* Region-based entry for RPO VN.  Performs value-numbering and elimination
    on the SEME region specified by ENTRY and EXIT_BBS.  If ENTRY is not
    the only edge into the region at ENTRY->dest PHI nodes in ENTRY->dest
-   are not considered.  */
+   are not considered.
+   If ITERATE is true then treat backedges optimistically as not
+   executed and iterate.  If ELIMINATE is true then perform
+   elimination, otherwise leave that to the caller.
+   KIND specifies the amount of work done for handling memory operations.  */
 
 unsigned
-do_rpo_vn (function *fn, edge entry, bitmap exit_bbs)
+do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
+	   bool iterate, bool eliminate, vn_lookup_kind kind)
 {
-  unsigned todo = do_rpo_vn (fn, entry, exit_bbs, false, true, VN_WALKREWRITE);
+  auto_timevar tv (TV_TREE_RPO_VN);
+  unsigned todo = do_rpo_vn_1 (fn, entry, exit_bbs, iterate, eliminate, kind);
   free_rpo_vn ();
   return todo;
 }
@@ -8473,7 +8523,7 @@ pass_fre::execute (function *fun)
   if (iterate_p)
     loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true, VN_WALKREWRITE);
+  todo = do_rpo_vn_1 (fun, NULL, NULL, iterate_p, true, VN_WALKREWRITE);
   free_rpo_vn ();
 
   if (iterate_p)

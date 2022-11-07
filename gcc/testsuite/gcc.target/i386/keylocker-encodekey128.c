@@ -6,7 +6,6 @@
 /* { dg-final { scan-assembler "(?:movdqu|movups)\[ \\t\]+\[^\\n\]*%xmm0,\[^\\n\\r\]*" } } */
 /* { dg-final { scan-assembler "(?:movdqu|movups)\[ \\t\]+\[^\\n\]*%xmm1,\[^\\n\\r\]*16\[^\\n\\r\]*" } } */
 /* { dg-final { scan-assembler "(?:movdqu|movups)\[ \\t\]+\[^\\n\]*%xmm2,\[^\\n\\r\]*32\[^\\n\\r\]*" } } */
-/* { dg-final { scan-assembler "(?:movdqa|movaps)\[ \\t\]+\[^\\n\]*%xmm\[4-6\],\[^\\n\\r\]*" } } */
 
 #include <immintrin.h>
 

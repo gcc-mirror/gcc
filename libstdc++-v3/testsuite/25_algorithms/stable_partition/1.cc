@@ -17,6 +17,9 @@
 
 // 25.2.12 [lib.alg.partitions] Partitions.
 
+// std::stable_partition is not freestanding.
+// { dg-require-effective-target hosted }
+
 #include <algorithm>
 #include <functional>
 #include <testsuite_new_operators.h>

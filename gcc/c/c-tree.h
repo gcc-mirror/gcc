@@ -100,6 +100,10 @@ along with GCC; see the file COPYING3.  If not see
 #define C_DECL_COMPOUND_LITERAL_P(DECL) \
   DECL_LANG_FLAG_5 (VAR_DECL_CHECK (DECL))
 
+/* Set on decls used as placeholders for a C2x underspecified object
+   definition.  */
+#define C_DECL_UNDERSPECIFIED(DECL) DECL_LANG_FLAG_7 (DECL)
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */
@@ -121,6 +125,14 @@ along with GCC; see the file COPYING3.  If not see
 /* For a SAVE_EXPR, nonzero if the operand of the SAVE_EXPR has already
    been folded.  */
 #define SAVE_EXPR_FOLDED_P(EXP)	TREE_LANG_FLAG_1 (SAVE_EXPR_CHECK (EXP))
+
+/* Whether a type has boolean semantics: either a boolean type or an
+   enumeration type with a boolean type as its underlying type.  */
+#define C_BOOLEAN_TYPE_P(TYPE)						\
+  (TREE_CODE (TYPE) == BOOLEAN_TYPE					\
+   || (TREE_CODE (TYPE) == ENUMERAL_TYPE				\
+       && ENUM_UNDERLYING_TYPE (TYPE) != NULL_TREE			\
+       && TREE_CODE (ENUM_UNDERLYING_TYPE (TYPE)) == BOOLEAN_TYPE))
 
 /* Record parser information about an expression that is irrelevant
    for code generation alongside a tree representing its value.  */
@@ -147,6 +159,9 @@ struct c_expr
      etc), so we stash a copy here.  */
   source_range src_range;
 
+  /* True if this was directly from a decimal constant token.  */
+  bool m_decimal : 1;
+
   /* Access to the first and last locations within the source spelling
      of this expression.  */
   location_t get_start () const { return src_range.m_start; }
@@ -161,12 +176,13 @@ struct c_expr
   }
 
   /* Set the value to error_mark_node whilst ensuring that src_range
-     is initialized.  */
+     and m_decimal are initialized.  */
   void set_error ()
   {
     value = error_mark_node;
     src_range.m_start = UNKNOWN_LOCATION;
     src_range.m_finish = UNKNOWN_LOCATION;
+    m_decimal = 0;
   }
 };
 
@@ -212,6 +228,10 @@ struct c_typespec {
   /* Whether the expression has operands suitable for use in constant
      expressions.  */
   bool expr_const_operands;
+  /* Whether the type specifier includes an enum type specifier (that
+     is, ": specifier-qualifier-list" in a declaration using
+     "enum").  */
+  bool has_enum_type_specifier;
   /* The specifier itself.  */
   tree spec;
   /* An expression to be evaluated before the type specifier, in the
@@ -408,6 +428,17 @@ struct c_declspecs {
   /* Whether any alignment specifier (even with zero alignment) was
      specified.  */
   BOOL_BITFIELD alignas_p : 1;
+  /* Whether an enum type specifier (": specifier-qualifier-list") was
+     specified other than in a definition of that enum (if so, this is
+     invalid unless it is an empty declaration "enum identifier
+     enum-type-specifier;", but such an empty declaration is valid in
+     C2x when "enum identifier;" would not be).  */
+  BOOL_BITFIELD enum_type_specifier_ref_p : 1;
+  /* Whether "auto" was specified in C2X (or later) mode and means the
+     type is to be deduced from an initializer, or would mean that if
+     no type specifier appears later in these declaration
+     specifiers.  */
+  BOOL_BITFIELD c2x_auto_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -453,6 +484,8 @@ struct c_arg_info {
   tree pending_sizes;
   /* True when these arguments had [*].  */
   BOOL_BITFIELD had_vla_unspec : 1;
+  /* True when the arguments are a (...) prototype.  */
+  BOOL_BITFIELD no_named_args_stdarg_p : 1;
 };
 
 /* A declarator.  */
@@ -521,6 +554,9 @@ struct c_enum_contents
      constant value.  */
   tree enum_next_value;
 
+  /* The enumeration type itself.  */
+  tree enum_type;
+
   /* Nonzero means that there was overflow computing enum_next_value.  */
   int enum_overflow;
 };
@@ -565,6 +601,8 @@ extern bool switch_statement_break_seen_p;
 
 extern bool global_bindings_p (void);
 extern tree pushdecl (tree);
+extern unsigned int start_underspecified_init (location_t, tree);
+extern void finish_underspecified_init (tree, unsigned int);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);
@@ -621,7 +659,7 @@ extern void c_warn_unused_attributes (tree);
 extern tree c_warn_type_attributes (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
-extern tree start_enum (location_t, struct c_enum_contents *, tree);
+extern tree start_enum (location_t, struct c_enum_contents *, tree, tree);
 extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree, location_t * = NULL);
@@ -633,7 +671,7 @@ extern void temp_store_parm_decls (tree, tree);
 extern void temp_pop_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree,
-					  bool, tree);
+					  bool, tree, bool);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *, location_t);
 extern struct c_declarator *build_attrs_declarator (tree,
@@ -730,7 +768,7 @@ extern void set_init_label (location_t, tree, location_t, struct obstack *);
 extern void process_init_element (location_t, struct c_expr, bool,
 				  struct obstack *);
 extern tree build_compound_literal (location_t, tree, tree, bool,
-				    unsigned int);
+				    unsigned int, struct c_declspecs *);
 extern void check_compound_literal_type (location_t, struct c_type_name *);
 extern tree c_start_switch (location_t, location_t, tree, bool);
 extern void c_finish_switch (tree, tree);

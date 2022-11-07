@@ -46,28 +46,31 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/stl_function.h>
+#include <bits/stl_function.h> // std::equal_to, std::unary_function etc.
 
 #if __cplusplus >= 201103L
 
-#include <new>
 #include <tuple>
 #include <type_traits>
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
 #include <bits/refwrap.h>	// std::reference_wrapper and _Mem_fn_traits
-#include <bits/std_function.h>	// std::function
-#if __cplusplus > 201402L
-# include <unordered_map>
-# include <vector>
-# include <array>
-# include <bits/stl_algo.h>
+#if _GLIBCXX_HOSTED
+# include <bits/std_function.h>	// std::function
 #endif
-#if __cplusplus > 201703L
-# include <bits/ranges_cmp.h>
+#if __cplusplus >= 201703L
+# if _GLIBCXX_HOSTED
+#  include <unordered_map>
+#  include <vector>
+#  include <array>
+# endif
+# include <bits/stl_algo.h> // std::search
+#endif
+#if __cplusplus >= 202002L
+# include <bits/ranges_cmp.h> // std::identity, ranges::equal_to etc.
 # include <compare>
 #endif
-#if __cplusplus > 202002L
+#if __cplusplus > 202002L && _GLIBCXX_HOSTED
 # include <bits/move_only_function.h>
 #endif
 
@@ -238,7 +241,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief Trait that identifies a bind expression.
-   * 
+   *
    * Determines if the given type `_Tp` is a function object that
    * should be treated as a subexpression when evaluating calls to
    * function objects returned by `std::bind`.
@@ -282,35 +285,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * simplify this with variadic templates, because we're introducing
    * unique names for each.
    */
-    extern const _Placeholder<1> _1;
-    extern const _Placeholder<2> _2;
-    extern const _Placeholder<3> _3;
-    extern const _Placeholder<4> _4;
-    extern const _Placeholder<5> _5;
-    extern const _Placeholder<6> _6;
-    extern const _Placeholder<7> _7;
-    extern const _Placeholder<8> _8;
-    extern const _Placeholder<9> _9;
-    extern const _Placeholder<10> _10;
-    extern const _Placeholder<11> _11;
-    extern const _Placeholder<12> _12;
-    extern const _Placeholder<13> _13;
-    extern const _Placeholder<14> _14;
-    extern const _Placeholder<15> _15;
-    extern const _Placeholder<16> _16;
-    extern const _Placeholder<17> _17;
-    extern const _Placeholder<18> _18;
-    extern const _Placeholder<19> _19;
-    extern const _Placeholder<20> _20;
-    extern const _Placeholder<21> _21;
-    extern const _Placeholder<22> _22;
-    extern const _Placeholder<23> _23;
-    extern const _Placeholder<24> _24;
-    extern const _Placeholder<25> _25;
-    extern const _Placeholder<26> _26;
-    extern const _Placeholder<27> _27;
-    extern const _Placeholder<28> _28;
-    extern const _Placeholder<29> _29;
+#if __cpp_inline_variables
+#  define _GLIBCXX_PLACEHOLDER inline
+#else
+#  define _GLIBCXX_PLACEHOLDER extern
+#endif
+
+    _GLIBCXX_PLACEHOLDER const _Placeholder<1> _1;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<2> _2;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<3> _3;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<4> _4;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<5> _5;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<6> _6;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<7> _7;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<8> _8;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<9> _9;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<10> _10;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<11> _11;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<12> _12;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<13> _13;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<14> _14;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<15> _15;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<16> _16;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<17> _17;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<18> _18;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<19> _19;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<20> _20;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<21> _21;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<22> _22;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<23> _23;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<24> _24;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<25> _25;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<26> _26;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<27> _27;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<28> _28;
+    _GLIBCXX_PLACEHOLDER const _Placeholder<29> _29;
+
+#undef _GLIBCXX_PLACEHOLDER
   }
 
   /**
@@ -461,6 +472,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @endcond
 
+#if __cplusplus == 201703L && _GLIBCXX_USE_DEPRECATED
+# define _GLIBCXX_VOLATILE_BIND
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 2487. bind() should be const-overloaded, not cv-overloaded
+# define _GLIBCXX_DEPR_BIND \
+      [[deprecated("std::bind does not support volatile in C++17")]]
+#elif __cplusplus < 201703L
+# define _GLIBCXX_VOLATILE_BIND
+# define _GLIBCXX_DEPR_BIND
+#endif
+
   /// Type of the function object returned from bind().
   template<typename _Signature>
     class _Bind;
@@ -497,6 +519,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      );
 	}
 
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename _Result, typename... _Args, std::size_t... _Indexes>
 	_Result
@@ -518,6 +541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _Mu<_Bound_args>()(__volget<_Indexes>(_M_bound_args), __args)...
 	      );
 	}
+#endif // volatile
 
       template<typename _BoundArg, typename _CallArgs>
 	using _Mu_type = decltype(
@@ -581,12 +605,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _Bound_indexes());
 	}
 
-#if __cplusplus > 201402L
-# define _GLIBCXX_DEPR_BIND \
-      [[deprecated("std::bind does not support volatile in C++17")]]
-#else
-# define _GLIBCXX_DEPR_BIND
-#endif
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename... _Args,
 	       typename _Result = _Res_type_cv<tuple<_Args...>, add_volatile>>
@@ -610,6 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      std::forward_as_tuple(std::forward<_Args>(__args)...),
 	      _Bound_indexes());
 	}
+#endif // volatile
     };
 
   /// Type of the function object returned from bind<R>().
@@ -645,9 +665,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      (std::get<_Indexes>(_M_bound_args), __args)...);
 	}
 
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_GLIBCXX20_CONSTEXPR
 	_Res
 	__call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) volatile
 	{
@@ -657,7 +677,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Call as const volatile
       template<typename _Res, typename... _Args, std::size_t... _Indexes>
-	_GLIBCXX20_CONSTEXPR
 	_Res
 	__call(tuple<_Args...>&& __args,
 	       _Index_tuple<_Indexes...>) const volatile
@@ -665,6 +684,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::__invoke_r<_Res>(_M_f, _Mu<_Bound_args>()
 		      (__volget<_Indexes>(_M_bound_args), __args)...);
 	}
+#endif // volatile
 
     public:
       typedef _Result result_type;
@@ -706,6 +726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _Bound_indexes());
 	}
 
+#ifdef _GLIBCXX_VOLATILE_BIND
       // Call as volatile
       template<typename... _Args>
 	_GLIBCXX_DEPR_BIND
@@ -727,7 +748,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      std::forward_as_tuple(std::forward<_Args>(__args)...),
 	      _Bound_indexes());
 	}
+#else
+      template<typename... _Args>
+	void operator()(_Args&&...) const volatile = delete;
+#endif // volatile
     };
+
+#undef _GLIBCXX_VOLATILE_BIND
 #undef _GLIBCXX_DEPR_BIND
 
   /**
@@ -1085,7 +1112,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // Searchers
-#define __cpp_lib_boyer_moore_searcher 201603L
 
   template<typename _ForwardIterator1, typename _BinaryPredicate = equal_to<>>
     class default_searcher
@@ -1116,6 +1142,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
     };
+
+#if _GLIBCXX_HOSTED
+#define __cpp_lib_boyer_moore_searcher 201603L
 
   template<typename _Key, typename _Tp, typename _Hash, typename _Pred>
     struct __boyer_moore_map_base
@@ -1359,6 +1388,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return std::make_pair(__last, __last);
     }
+#endif // HOSTED
 
 #endif // C++17
 #endif // C++14

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -31,16 +32,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
-#include "tristate.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/svalue.h"
 #include "analyzer/program-state.h"
+#include "analyzer/pending-diagnostic.h"
 
 #if ENABLE_ANALYZER
 
@@ -121,6 +121,14 @@ state_machine::get_state_by_name (const char *name) const
       return s;
   /* Name not found.  */
   gcc_unreachable ();
+}
+
+/* Base implementation of state_machine::on_leak.  */
+
+std::unique_ptr<pending_diagnostic>
+state_machine::on_leak (tree var ATTRIBUTE_UNUSED) const
+{
+  return NULL;
 }
 
 /* Dump a multiline representation of this state machine to PP.  */

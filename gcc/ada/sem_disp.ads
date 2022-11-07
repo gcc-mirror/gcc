@@ -63,7 +63,7 @@ package Sem_Disp is
    --  the inherited subprogram will have been hidden by the current one at
    --  the point of the type derivation, so it does not appear in the list
    --  of primitive operations of the type, and this procedure inserts the
-   --  overriding subprogram in the the full type's list of primitives by
+   --  overriding subprogram in the full type's list of primitives by
    --  iterating over the list for the parent type. If instead Subp is a new
    --  primitive, then it's simply appended to the primitive list.
 

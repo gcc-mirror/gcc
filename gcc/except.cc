@@ -2175,7 +2175,7 @@ expand_builtin_eh_return_data_regno (tree exp)
 #ifdef DWARF_FRAME_REGNUM
   iwhich = DWARF_FRAME_REGNUM (iwhich);
 #else
-  iwhich = DBX_REGISTER_NUMBER (iwhich);
+  iwhich = DEBUGGER_REGNO (iwhich);
 #endif
 
   return GEN_INT (iwhich);

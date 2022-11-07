@@ -44,6 +44,7 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
 
+with System.Value_U_Spec;
 with System.Val_Util; use System.Val_Util;
 
 generic
@@ -53,317 +54,7 @@ generic
 package System.Value_U is
    pragma Preelaborate;
 
-   type Uns_Option (Overflow : Boolean := False) is record
-      case Overflow is
-         when True =>
-            null;
-         when False =>
-            Value : Uns := 0;
-      end case;
-   end record;
-
-   function Wrap_Option (Value : Uns) return Uns_Option is
-     (Overflow => False, Value => Value)
-   with
-     Ghost;
-
-   function Only_Decimal_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Boolean
-   is
-      (for all J in From .. To => Str (J) in '0' .. '9')
-   with
-     Ghost,
-     Pre => From > To or else (From >= Str'First and then To <= Str'Last);
-   --  Ghost function that returns True if S has only decimal characters
-   --  from index From to index To.
-
-   function Only_Hexa_Ghost (Str : String; From, To : Integer) return Boolean
-   is
-      (for all J in From .. To =>
-          Str (J) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_')
-   with
-     Ghost,
-     Pre => From > To or else (From >= Str'First and then To <= Str'Last);
-   --  Ghost function that returns True if S has only hexadecimal characters
-   --  from index From to index To.
-
-   function Last_Hexa_Ghost (Str : String) return Positive
-   with
-     Ghost,
-     Pre  => Str /= ""
-       and then Str (Str'First) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F',
-     Post => Last_Hexa_Ghost'Result in Str'Range
-       and then (if Last_Hexa_Ghost'Result < Str'Last then
-                   Str (Last_Hexa_Ghost'Result + 1) not in
-                     '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_')
-       and then Only_Hexa_Ghost (Str, Str'First, Last_Hexa_Ghost'Result);
-   --  Ghost function that returns the index of the last character in S that
-   --  is either an hexadecimal digit or an underscore, which necessarily
-   --  exists given the precondition on Str.
-
-   function Is_Based_Format_Ghost (Str : String) return Boolean
-   is
-     (Str /= ""
-        and then Str (Str'First) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F'
-        and then
-        (declare
-           L : constant Positive := Last_Hexa_Ghost (Str);
-         begin
-           Str (L) /= '_'
-             and then (for all J in Str'First .. L =>
-                         (if Str (J) = '_' then Str (J + 1) /= '_'))))
-   with
-     Ghost;
-   --  Ghost function that determines if Str has the correct format for a
-   --  based number, consisting in a sequence of hexadecimal digits possibly
-   --  separated by single underscores. It may be followed by other characters.
-
-   function Hexa_To_Unsigned_Ghost (X : Character) return Uns is
-     (case X is
-         when '0' .. '9' => Character'Pos (X) - Character'Pos ('0'),
-         when 'a' .. 'f' => Character'Pos (X) - Character'Pos ('a') + 10,
-         when 'A' .. 'F' => Character'Pos (X) - Character'Pos ('A') + 10,
-         when others     => raise Program_Error)
-   with
-     Ghost,
-     Pre => X in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
-   --  Ghost function that computes the value corresponding to an hexadecimal
-   --  digit.
-
-   function Scan_Overflows_Ghost
-     (Digit : Uns;
-      Base  : Uns;
-      Acc   : Uns) return Boolean
-   is
-     (Digit >= Base
-      or else Acc > Uns'Last / Base
-      or else Uns'Last - Digit < Base * Acc)
-   with Ghost;
-   --  Ghost function which returns True if Digit + Base * Acc overflows or
-   --  Digit is greater than Base, as this is used by the algorithm for the
-   --  test of overflow.
-
-   function Scan_Based_Number_Ghost
-     (Str      : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0) return Uns_Option
-   with
-     Ghost,
-     Subprogram_Variant => (Increases => From),
-     Pre  => Str'Last /= Positive'Last
-         and then
-           (From > To or else (From >= Str'First and then To <= Str'Last))
-         and then Only_Hexa_Ghost (Str, From, To);
-   --  Ghost function that recursively computes the based number in Str,
-   --  assuming Acc has been scanned already and scanning continues at index
-   --  From.
-
-   function Exponent_Unsigned_Ghost
-     (Value : Uns;
-      Exp   : Natural;
-      Base  : Uns := 10) return Uns_Option
-   with
-     Ghost,
-     Subprogram_Variant => (Decreases => Exp);
-   --  Ghost function that recursively computes Value * Base ** Exp
-
-   function Is_Raw_Unsigned_Format_Ghost (Str : String) return Boolean is
-     (Is_Natural_Format_Ghost (Str)
-      and then
-        (declare
-           Last_Num_Init   : constant Integer := Last_Number_Ghost (Str);
-           Starts_As_Based : constant Boolean :=
-             Last_Num_Init < Str'Last - 1
-             and then Str (Last_Num_Init + 1) in '#' | ':'
-             and then Str (Last_Num_Init + 2) in
-               '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
-           Last_Num_Based  : constant Integer :=
-             (if Starts_As_Based
-              then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. Str'Last))
-              else Last_Num_Init);
-           Is_Based        : constant Boolean :=
-             Starts_As_Based
-             and then Last_Num_Based < Str'Last
-             and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
-           First_Exp       : constant Integer :=
-             (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
-         begin
-           (if Starts_As_Based then
-              Is_Based_Format_Ghost (Str (Last_Num_Init + 2 .. Str'Last))
-              and then Last_Num_Based < Str'Last)
-            and then Is_Opt_Exponent_Format_Ghost
-              (Str (First_Exp .. Str'Last))))
-   with
-     Ghost,
-     Pre  => Str'Last /= Positive'Last,
-     Post => True;
-   --  Ghost function that determines if Str has the correct format for an
-   --  unsigned number without a sign character.
-   --  It is a natural number in base 10, optionally followed by a based
-   --  number surrounded by delimiters # or :, optionally followed by an
-   --  exponent part.
-
-   function Raw_Unsigned_Overflows_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Boolean
-   is
-     (declare
-        Last_Num_Init   : constant Integer :=
-          Last_Number_Ghost (Str (From .. To));
-        Init_Val        : constant Uns_Option :=
-          Scan_Based_Number_Ghost (Str, From, Last_Num_Init);
-        Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
-        Last_Num_Based  : constant Integer :=
-          (if Starts_As_Based
-           then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
-           else Last_Num_Init);
-        Is_Based        : constant Boolean :=
-          Starts_As_Based
-          and then Last_Num_Based < To
-          and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
-        Based_Val       : constant Uns_Option :=
-          (if Starts_As_Based and then not Init_Val.Overflow
-           then Scan_Based_Number_Ghost
-             (Str, Last_Num_Init + 2, Last_Num_Based, Init_Val.Value)
-           else Init_Val);
-        First_Exp       : constant Integer :=
-          (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
-        Expon           : constant Natural :=
-          (if Starts_As_Exponent_Format_Ghost (Str (First_Exp .. To))
-           then Scan_Exponent_Ghost (Str (First_Exp .. To))
-           else 0);
-      begin
-        Init_Val.Overflow
-        or else
-          (Last_Num_Init < To - 1
-           and then Str (Last_Num_Init + 1) in '#' | ':'
-           and then Init_Val.Value not in 2 .. 16)
-        or else
-          (Starts_As_Based
-           and then Based_Val.Overflow)
-        or else
-          (Starts_As_Exponent_Format_Ghost (Str (First_Exp .. To))
-           and then
-             (declare
-                Base  : constant Uns :=
-                  (if Is_Based then Init_Val.Value else 10);
-                Value : constant Uns :=
-                  (if Is_Based then Based_Val.Value else Init_Val.Value);
-              begin
-                Exponent_Unsigned_Ghost
-                  (Value, Expon, Base).Overflow)))
-   with
-     Ghost,
-     Pre  => Str'Last /= Positive'Last
-       and then From in Str'Range
-       and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9',
-     Post => True;
-   --  Ghost function that determines if the computation of the unsigned number
-   --  represented by Str will overflow. The computation overflows if either:
-   --    * The computation of the decimal part overflows,
-   --    * The decimal part is followed by a valid delimiter for a based
-   --      part, and the number corresponding to the base is not a valid base,
-   --    * The computation of the based part overflows, or
-   --    * There is an exponent and the computation of the exponentiation
-   --      overflows.
-
-   function Scan_Raw_Unsigned_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Uns
-   is
-     (declare
-        Last_Num_Init   : constant Integer :=
-          Last_Number_Ghost (Str (From .. To));
-        Init_Val        : constant Uns_Option :=
-          Scan_Based_Number_Ghost (Str, From, Last_Num_Init);
-        Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
-        Last_Num_Based  : constant Integer :=
-          (if Starts_As_Based
-           then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
-           else Last_Num_Init);
-        Is_Based        : constant Boolean :=
-          Starts_As_Based
-          and then Last_Num_Based < To
-          and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
-        Based_Val       : constant Uns_Option :=
-          (if Starts_As_Based and then not Init_Val.Overflow
-           then Scan_Based_Number_Ghost
-             (Str, Last_Num_Init + 2, Last_Num_Based, Init_Val.Value)
-           else Init_Val);
-        First_Exp       : constant Integer :=
-          (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
-        Expon           : constant Natural :=
-          (if Starts_As_Exponent_Format_Ghost (Str (First_Exp .. To))
-           then Scan_Exponent_Ghost (Str (First_Exp .. To))
-           else 0);
-        Base            : constant Uns :=
-          (if Is_Based then Init_Val.Value else 10);
-        Value           : constant Uns :=
-          (if Is_Based then Based_Val.Value else Init_Val.Value);
-      begin
-        Exponent_Unsigned_Ghost (Value, Expon, Base).Value)
-   with
-     Ghost,
-     Pre  => Str'Last /= Positive'Last
-       and then From in Str'Range
-       and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9'
-       and then not Raw_Unsigned_Overflows_Ghost (Str, From, To),
-     Post => True;
-   --  Ghost function that scans an unsigned number without a sign character
-
-   function Raw_Unsigned_Last_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Positive
-   is
-     (declare
-        Last_Num_Init   : constant Integer :=
-          Last_Number_Ghost (Str (From .. To));
-        Starts_As_Based : constant Boolean :=
-          Last_Num_Init < To - 1
-          and then Str (Last_Num_Init + 1) in '#' | ':'
-          and then Str (Last_Num_Init + 2) in
-          '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
-        Last_Num_Based  : constant Integer :=
-          (if Starts_As_Based
-           then Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. To))
-           else Last_Num_Init);
-        Is_Based        : constant Boolean :=
-          Starts_As_Based
-          and then Last_Num_Based < To
-          and then Str (Last_Num_Based + 1) = Str (Last_Num_Init + 1);
-        First_Exp       : constant Integer :=
-          (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1);
-      begin
-        (if not Starts_As_Exponent_Format_Ghost (Str (First_Exp .. To))
-         then First_Exp
-         elsif Str (First_Exp + 1) in '-' | '+' then
-           Last_Number_Ghost (Str (First_Exp + 2 .. To)) + 1
-         else Last_Number_Ghost (Str (First_Exp + 1 .. To)) + 1))
-   with
-     Ghost,
-     Pre  => Str'Last /= Positive'Last
-       and then From in Str'Range
-       and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9',
-     Post => Raw_Unsigned_Last_Ghost'Result in From .. To + 1;
-   --  Ghost function that returns the position of the cursor once an unsigned
-   --  number has been seen.
+   package Spec is new System.Value_U_Spec (Uns);
 
    procedure Scan_Raw_Unsigned
      (Str : String;
@@ -373,10 +64,10 @@ package System.Value_U is
    with Pre => Str'Last /= Positive'Last
      and then Ptr.all in Str'Range
      and then Max in Ptr.all .. Str'Last
-     and then Is_Raw_Unsigned_Format_Ghost (Str (Ptr.all .. Max)),
-     Post => not Raw_Unsigned_Overflows_Ghost (Str, Ptr.all'Old, Max)
-     and Res = Scan_Raw_Unsigned_Ghost (Str, Ptr.all'Old, Max)
-     and Ptr.all = Raw_Unsigned_Last_Ghost (Str, Ptr.all'Old, Max);
+     and then Spec.Is_Raw_Unsigned_Format_Ghost (Str (Ptr.all .. Max)),
+     Post => Spec.Raw_Unsigned_No_Overflow_Ghost (Str, Ptr.all'Old, Max)
+     and Res = Spec.Scan_Raw_Unsigned_Ghost (Str, Ptr.all'Old, Max)
+     and Ptr.all = Spec.Raw_Unsigned_Last_Ghost (Str, Ptr.all'Old, Max);
 
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring
@@ -464,7 +155,7 @@ package System.Value_U is
           Fst_Num   : constant Positive :=
             (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank);
         begin
-          Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Max))),
+          Spec.Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Max))),
      Post =>
        (declare
           Non_Blank : constant Positive :=
@@ -472,9 +163,9 @@ package System.Value_U is
           Fst_Num   : constant Positive :=
             (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank);
         begin
-          not Raw_Unsigned_Overflows_Ghost (Str, Fst_Num, Max)
-          and then Res = Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max)
-          and then Ptr.all = Raw_Unsigned_Last_Ghost (Str, Fst_Num, Max));
+          Spec.Raw_Unsigned_No_Overflow_Ghost (Str, Fst_Num, Max)
+          and then Res = Spec.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max)
+          and then Ptr.all = Spec.Raw_Unsigned_Last_Ghost (Str, Fst_Num, Max));
 
    --  Same as Scan_Raw_Unsigned, except scans optional leading
    --  blanks, and an optional leading plus sign.
@@ -482,157 +173,18 @@ package System.Value_U is
    --  Note: if a minus sign is present, Constraint_Error will be raised.
    --  Note: trailing blanks are not scanned.
 
-   function Slide_To_1 (Str : String) return String
-   with Ghost,
-       Post =>
-         Only_Space_Ghost (Str, Str'First, Str'Last) =
-         (for all J in Str'First .. Str'Last =>
-            Slide_To_1'Result (J - Str'First + 1) = ' ');
-   --  Slides Str so that it starts at 1
-
-   function Slide_If_Necessary (Str : String) return String is
-     (if Str'Last = Positive'Last then Slide_To_1 (Str) else Str)
-   with Ghost,
-       Post =>
-         Only_Space_Ghost (Str, Str'First, Str'Last) =
-         Only_Space_Ghost (Slide_If_Necessary'Result,
-                           Slide_If_Necessary'Result'First,
-                           Slide_If_Necessary'Result'Last);
-   --  If Str'Last = Positive'Last then slides Str so that it starts at 1
-
-   function Is_Unsigned_Ghost (Str : String) return Boolean is
-     (declare
-        Non_Blank : constant Positive := First_Non_Space_Ghost
-          (Str, Str'First, Str'Last);
-        Fst_Num   : constant Positive :=
-          (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank);
-      begin
-        Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last))
-          and then not Raw_Unsigned_Overflows_Ghost (Str, Fst_Num, Str'Last)
-          and then Only_Space_Ghost
-             (Str, Raw_Unsigned_Last_Ghost (Str, Fst_Num, Str'Last), Str'Last))
-   with Ghost,
-       Pre => not Only_Space_Ghost (Str, Str'First, Str'Last)
-       and then Str'Last /= Positive'Last,
-       Post => True;
-   --  Ghost function that determines if Str has the correct format for an
-   --  unsigned number, consisting in some blank characters, an optional
-   --  + sign, a raw unsigned number which does not overflow and then some
-   --  more blank characters.
-
-   function Is_Value_Unsigned_Ghost (Str : String; Val : Uns) return Boolean is
-     (declare
-        Non_Blank : constant Positive := First_Non_Space_Ghost
-          (Str, Str'First, Str'Last);
-        Fst_Num   : constant Positive :=
-          (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank);
-      begin
-        Val = Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Str'Last))
-   with Ghost,
-       Pre => not Only_Space_Ghost (Str, Str'First, Str'Last)
-       and then Str'Last /= Positive'Last
-       and then Is_Unsigned_Ghost (Str),
-       Post => True;
-   --  Ghost function that returns True if Val is the value corresponding to
-   --  the unsigned number represented by Str.
-
    function Value_Unsigned
      (Str : String) return Uns
-   with Pre => not Only_Space_Ghost (Str, Str'First, Str'Last)
-     and then Str'Length /= Positive'Last
-     and then Is_Unsigned_Ghost (Slide_If_Necessary (Str)),
+   with Pre => Str'Length /= Positive'Last
+     and then not Only_Space_Ghost (Str, Str'First, Str'Last)
+     and then Spec.Is_Unsigned_Ghost (Spec.Slide_If_Necessary (Str)),
      Post =>
-         Is_Value_Unsigned_Ghost
-           (Slide_If_Necessary (Str), Value_Unsigned'Result),
+         Spec.Is_Value_Unsigned_Ghost
+           (Spec.Slide_If_Necessary (Str), Value_Unsigned'Result),
      Subprogram_Variant => (Decreases => Str'First);
    --  Used in computing X'Value (Str) where X is a modular integer type whose
    --  modulus does not exceed the range of System.Unsigned_Types.Unsigned. Str
    --  is the string argument of the attribute. Constraint_Error is raised if
    --  the string is malformed, or if the value is out of range.
-
-   procedure Prove_Iter_Scan_Based_Number_Ghost
-     (Str1, Str2 : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0)
-   with
-     Ghost,
-     Subprogram_Variant => (Increases => From),
-     Pre  => Str1'Last /= Positive'Last
-       and then Str2'Last /= Positive'Last
-       and then
-         (From > To or else (From >= Str1'First and then To <= Str1'Last))
-       and then
-         (From > To or else (From >= Str2'First and then To <= Str2'Last))
-       and then Only_Hexa_Ghost (Str1, From, To)
-       and then (for all J in From .. To => Str1 (J) = Str2 (J)),
-     Post =>
-       Scan_Based_Number_Ghost (Str1, From, To, Base, Acc)
-         = Scan_Based_Number_Ghost (Str2, From, To, Base, Acc);
-   --  Ghost lemma used in the proof of 'Image implementation, to prove the
-   --  preservation of Scan_Based_Number_Ghost across an update in the string
-   --  in lower indexes.
-
-   procedure Prove_Scan_Only_Decimal_Ghost
-     (Str : String;
-      Val : Uns)
-   with
-     Ghost,
-     Pre  => Str'Last /= Positive'Last
-       and then Str'Length >= 2
-       and then Str (Str'First) = ' '
-       and then Only_Decimal_Ghost (Str, Str'First + 1, Str'Last)
-       and then Scan_Based_Number_Ghost (Str, Str'First + 1, Str'Last)
-         = Wrap_Option (Val),
-     Post => Is_Unsigned_Ghost (Slide_If_Necessary (Str))
-       and then Value_Unsigned (Str) = Val;
-   --  Ghost lemma used in the proof of 'Image implementation, to prove that
-   --  the result of Value_Unsigned on a decimal string is the same as the
-   --  result of Scan_Based_Number_Ghost.
-
-private
-
-   -----------------------------
-   -- Exponent_Unsigned_Ghost --
-   -----------------------------
-
-   function Exponent_Unsigned_Ghost
-     (Value : Uns;
-      Exp   : Natural;
-      Base  : Uns := 10) return Uns_Option
-   is
-      (if Exp = 0 or Value = 0 then (Overflow => False, Value => Value)
-       elsif Scan_Overflows_Ghost (0, Base, Value) then (Overflow => True)
-       else Exponent_Unsigned_Ghost (Value * Base, Exp - 1, Base));
-
-   -----------------------------
-   -- Scan_Based_Number_Ghost --
-   -----------------------------
-
-   function Scan_Based_Number_Ghost
-     (Str      : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0) return Uns_Option
-   is
-      (if From > To then (Overflow => False, Value => Acc)
-       elsif Str (From) = '_'
-       then Scan_Based_Number_Ghost (Str, From + 1, To, Base, Acc)
-       elsif Scan_Overflows_Ghost
-         (Hexa_To_Unsigned_Ghost (Str (From)), Base, Acc)
-       then (Overflow => True)
-       else Scan_Based_Number_Ghost
-         (Str, From + 1, To, Base,
-          Base * Acc + Hexa_To_Unsigned_Ghost (Str (From))));
-
-   ----------------
-   -- Slide_To_1 --
-   ----------------
-
-   function Slide_To_1 (Str : String) return String is
-      (declare
-         Res : constant String (1 .. Str'Length) := Str;
-       begin
-         Res);
 
 end System.Value_U;

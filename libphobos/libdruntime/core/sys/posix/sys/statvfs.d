@@ -16,7 +16,6 @@ version (Posix):
 extern (C) :
 nothrow:
 @nogc:
-@system:
 
 version (CRuntime_Glibc) {
     static if (__WORDSIZE == 32)

@@ -1,3 +1,30 @@
+2022-10-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt: Better separate 'LTO' vs. 'LTODump'.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-common.cc (compare_tree_sccs_1): Compare
+	TYPE_NO_NAMED_ARGS_STDARG_P.
+
+2022-10-28  Martin Liska  <mliska@suse.cz>
+
+	* lto-dump.cc (dump_list): Remove trailing return.
+	(dump_symbol): Likewise.
+	(dump_body): Filter name based on mangled name.
+	(dump_tool_help): Use GIMPLE wording.
+	(lto_main): Update wording.
+
+2022-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/107418
+	* lto-dump.cc (lto_main): Do not load LTO stream for aliases.
+
+2022-09-15  Richard Biener  <rguenther@suse.de>
+
+	* lto-lang.cc (lto_build_c_type_nodes): Do not initialize
+	void_list_node.
+
 2022-08-22  Martin Liska  <mliska@suse.cz>
 
 	PR lto/106700

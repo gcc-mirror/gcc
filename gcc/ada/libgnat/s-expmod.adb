@@ -106,6 +106,13 @@ is
    -------------------
 
    procedure Lemma_Add_Mod (X, Y : Big_Natural; B : Big_Positive) is
+
+      procedure Lemma_Euclidean_Mod (Q, F, R : Big_Natural) with
+        Pre  => F /= 0,
+        Post => (Q * F + R) mod F = R mod F;
+
+      procedure Lemma_Euclidean_Mod (Q, F, R : Big_Natural) is null;
+
       Left  : constant Big_Natural := (X + Y) mod B;
       Right : constant Big_Natural := ((X mod B) + (Y mod B)) mod B;
       XQuot : constant Big_Natural := X / B;
@@ -119,6 +126,8 @@ is
            (Left = ((XQuot + YQuot) * B + X mod B + Y mod B) mod B);
          pragma Assert (X mod B + Y mod B = AQuot * B + Right);
          pragma Assert (Left = ((XQuot + YQuot + AQuot) * B + Right) mod B);
+         Lemma_Euclidean_Mod (XQuot + YQuot + AQuot, B, Right);
+         pragma Assert (Left = (Right mod B));
          pragma Assert (Left = Right);
       end if;
    end Lemma_Add_Mod;
@@ -259,6 +268,7 @@ is
                pragma Assert (Equal_Modulo
                  ((Big (Result) * Big (Factor)) * Big (Factor) ** (Exp - 1),
                   Big (Left) ** Right));
+               pragma Assert (Big (Factor) >= 0);
                Lemma_Mult_Mod (Big (Result) * Big (Factor),
                                   Big (Factor) ** (Exp - 1),
                                   Big (Modulus));

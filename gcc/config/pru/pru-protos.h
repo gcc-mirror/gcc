@@ -52,6 +52,7 @@ extern const char *pru_output_signed_cbranch (rtx *, bool);
 extern const char *pru_output_signed_cbranch_ubyteop2 (rtx *, bool);
 extern const char *pru_output_signed_cbranch_zeroop2 (rtx *, bool);
 
+extern enum rtx_code pru_noteq_condition (enum rtx_code code);
 extern rtx pru_expand_fp_compare (rtx comparison, machine_mode mode);
 
 extern void pru_emit_doloop (rtx *, int);

@@ -8,7 +8,6 @@
  */
 module core.sys.windows.sqltypes;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 

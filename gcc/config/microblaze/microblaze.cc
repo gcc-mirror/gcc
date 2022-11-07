@@ -193,7 +193,7 @@ struct microblaze_frame_info zero_frame_info;
 char microblaze_print_operand_punct[256];
 
 /* Map GCC register number to debugger register number.  */
-int microblaze_dbx_regno[FIRST_PSEUDO_REGISTER];
+int microblaze_debugger_regno[FIRST_PSEUDO_REGISTER];
 
 /* Map hard register number to register class.  */
 enum reg_class microblaze_regno_to_class[] =
@@ -1103,7 +1103,7 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
   if (GET_CODE (xinsn) == SYMBOL_REF)
     {
-      rtx reg;
+      rtx reg = NULL;
       if (microblaze_tls_symbol_p(xinsn))
         {
           reg = microblaze_legitimize_tls_address (xinsn, NULL_RTX);
@@ -1132,6 +1132,11 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	      pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, pic_ref);
 	      reg = pic_ref;
 	    }
+	}
+      else
+	{
+	  /* This should never happen.  */
+	  gcc_unreachable ();
 	}
       return reg;
     }
@@ -1474,7 +1479,7 @@ microblaze_address_insns (rtx x, machine_mode mode)
 	      case TLS_DTPREL:
 		return 1;
 	      default :
-		abort();
+		gcc_unreachable ();
 	    }
 	default:
 	  break;
@@ -1881,11 +1886,11 @@ microblaze_option_override (void)
      Ignore the special purpose register numbers.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    microblaze_dbx_regno[i] = -1;
+    microblaze_debugger_regno[i] = -1;
 
-  start = GP_DBX_FIRST - GP_REG_FIRST;
+  start = GP_DEBUGGER_FIRST - GP_REG_FIRST;
   for (i = GP_REG_FIRST; i <= GP_REG_LAST; i++)
-    microblaze_dbx_regno[i] = i + start;
+    microblaze_debugger_regno[i] = i + start;
 
   /* Set up array giving whether a given register can hold a given mode.   */
 
@@ -2624,7 +2629,7 @@ print_operand_address (FILE * file, rtx addr)
 		fputs ("@TLSDTPREL", file);
 		break;
 	      default :
-		abort();
+		gcc_unreachable ();
 		break;
 	    }
 	}
@@ -3413,7 +3418,7 @@ microblaze_expand_move (machine_mode mode, rtx operands[])
     }
   if (GET_CODE (op1) == PLUS && GET_CODE (XEXP (op1,1)) == CONST)
     {
-      rtx p0, p1, result, temp;
+      rtx p0, p1 = NULL, result, temp;
 
       p0 = XEXP (XEXP (op1,1), 0);
 
@@ -3422,6 +3427,10 @@ microblaze_expand_move (machine_mode mode, rtx operands[])
 	  p1 = XEXP (p0, 1);
 	  p0 = XEXP (p0, 0);
 	}
+
+      /* This should never happen.  */
+      if (p1 == NULL)
+	gcc_unreachable ();
 
       if (GET_CODE (p0) == UNSPEC && GET_CODE (p1) == CONST_INT
 	  && flag_pic && TARGET_PIC_DATA_TEXT_REL)
@@ -3799,7 +3808,7 @@ get_branch_target (rtx branch)
       if (GET_CODE (call) == SET)
         call = SET_SRC (call);
       if (GET_CODE (call) != CALL)
-        abort ();
+	gcc_unreachable ();
       return XEXP (XEXP (call, 0), 0);
     }
 

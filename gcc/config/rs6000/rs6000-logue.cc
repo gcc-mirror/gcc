@@ -47,10 +47,6 @@
 #include "diagnostic-core.h"
 #include "alias.h"
 #include "rs6000-internal.h"
-#if TARGET_MACHO
-#include "gstab.h"  /* for N_SLINE */
-#include "dbxout.h" /* dbxout_ */
-#endif
 
 static int rs6000_ra_ever_killed (void);
 static void is_altivec_return_reg (rtx, void *);
@@ -4013,11 +4009,43 @@ rs6000_output_function_prologue (FILE *file)
 	  fprintf (file, "\tadd 2,2,12\n");
 	}
 
+      unsigned short patch_area_size = crtl->patch_area_size;
+      unsigned short patch_area_entry = crtl->patch_area_entry;
+      /* Need to emit the patching area.  */
+      if (patch_area_size > 0)
+	{
+	  cfun->machine->global_entry_emitted = true;
+	  /* As ELFv2 ABI shows, the allowable bytes between the global
+	     and local entry points are 0, 4, 8, 16, 32 and 64 when
+	     there is a local entry point.  Considering there are two
+	     non-prefixed instructions for global entry point prologue
+	     (8 bytes), the count for patchable nops before local entry
+	     point would be 2, 6 and 14.  It's possible to support those
+	     other counts of nops by not making a local entry point, but
+	     we don't have clear use cases for them, so leave them
+	     unsupported for now.  */
+	  if (patch_area_entry > 0)
+	    {
+	      if (patch_area_entry != 2
+		  && patch_area_entry != 6
+		  && patch_area_entry != 14)
+		error ("unsupported number of nops before function entry (%u)",
+		       patch_area_entry);
+	      rs6000_print_patchable_function_entry (file, patch_area_entry,
+						     true);
+	      patch_area_size -= patch_area_entry;
+	    }
+	}
+
       fputs ("\t.localentry\t", file);
       assemble_name (file, name);
       fputs (",.-", file);
       assemble_name (file, name);
       fputs ("\n", file);
+      /* Emit the nops after local entry.  */
+      if (patch_area_size > 0)
+	rs6000_print_patchable_function_entry (file, patch_area_size,
+					       patch_area_entry == 0);
     }
 
   else if (rs6000_pcrel_p ())
@@ -4924,7 +4952,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 	 a REG_CFA_DEF_CFA note, but that's OK;  A duplicate is
 	 discarded by dwarf2cfi.cc/dwarf2out.cc, and in any case would
 	 be harmless if emitted.  */
-      if (frame_pointer_needed)
+      if (frame_pointer_needed_indeed)
 	{
 	  insn = get_last_insn ();
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
@@ -5144,10 +5172,6 @@ macho_branch_islands (void)
 	}
       strcpy (tmp_buf, "\n");
       strcat (tmp_buf, label);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, bi->line_number);
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       if (flag_pic)
 	{
 	  strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
@@ -5181,10 +5205,6 @@ macho_branch_islands (void)
 	  strcat (tmp_buf, ")\n\tmtctr r12\n\tbctr");
 	}
       output_asm_insn (tmp_buf, 0);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, bi->line_number);
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       branch_islands->pop ();
     }
 }

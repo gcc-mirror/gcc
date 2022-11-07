@@ -908,21 +908,12 @@ public:
 
 	    if ((postblit || destructor) && e->op != EXP::blit)
 	      {
-		/* Need to call postblit/destructor as part of assignment.
-		   Construction has already been handled by the front-end.  */
-		gcc_assert (e->op != EXP::construct);
-
-		/* So we can call postblits on const/immutable objects.  */
-		Type *tm = etype->unSharedOf ()->mutableOf ();
-		tree ti = build_typeinfo (e, tm);
-
-		/* Generate: _d_arraysetassign (t1.ptr, &t2, t1.length, ti);  */
-		result = build_libcall (LIBCALL_ARRAYSETASSIGN, Type::tvoid, 4,
-					d_array_ptr (t1),
-					build_address (t2),
-					d_array_length (t1), ti);
+		/* This case should have been rewritten to `_d_arraysetassign`
+		   in the semantic phase.  */
+		gcc_unreachable ();
 	      }
-	    else if (integer_zerop (t2))
+
+	    if (integer_zerop (t2))
 	      {
 		tree size = size_mult_expr (d_array_length (t1),
 					    size_int (etype->size ()));
@@ -986,11 +977,9 @@ public:
 	    else if ((postblit || destructor)
 		     && e->op != EXP::blit && e->op != EXP::construct)
 	      {
-		/* Generate: _d_arrayassign(ti, from, to);  */
-		this->result_ = build_libcall (LIBCALL_ARRAYASSIGN, e->type, 3,
-					       build_typeinfo (e, etype),
-					       d_array_convert (e->e2),
-					       d_array_convert (e->e1));
+		/* Assigning to a non-trivially copyable array has already been
+		   handled by the front-end.  */
+		gcc_unreachable ();
 	      }
 	    else
 	      {
@@ -1110,6 +1099,7 @@ public:
 	   this assignment should call dtors on old assigned elements.  */
 	if ((!postblit && !destructor)
 	    || (e->op == EXP::construct && e->e2->op == EXP::arrayLiteral)
+	    || (e->op == EXP::construct && e->e2->op == EXP::call)
 	    || (e->op == EXP::construct && !lvalue && postblit)
 	    || (e->op == EXP::blit || e->e1->type->size () == 0))
 	  {
@@ -1124,27 +1114,7 @@ public:
 	/* All other kinds of lvalue or rvalue static array assignment.
 	   Array construction has already been handled by the front-end.  */
 	gcc_assert (e->op != EXP::construct);
-
-	/* Generate: _d_arrayassign_l()
-		 or: _d_arrayassign_r()  */
-	libcall_fn libcall = (lvalue)
-	  ? LIBCALL_ARRAYASSIGN_L : LIBCALL_ARRAYASSIGN_R;
-	tree elembuf = build_local_temp (build_ctype (etype));
-	Type *arrtype = (e->type->ty == TY::Tsarray)
-	  ? etype->arrayOf () : e->type;
-	tree result = build_libcall (libcall, arrtype, 4,
-				     build_typeinfo (e, etype),
-				     d_array_convert (e->e2),
-				     d_array_convert (e->e1),
-				     build_address (elembuf));
-
-	/* Cast the libcall result back to a static array.  */
-	if (e->type->ty == TY::Tsarray)
-	  result = indirect_ref (build_ctype (e->type),
-				 d_array_ptr (result));
-
-	this->result_ = result;
-	return;
+	gcc_unreachable ();
       }
 
     /* Simple assignment.  */
@@ -2495,6 +2465,20 @@ public:
 	if (e->argprefix)
 	  result = compound_expr (build_expr (e->argprefix), result);
       }
+    else if (tb->ty == TY::Taarray)
+      {
+	/* Allocating memory for a new associative array.  */
+	tree arg = build_typeinfo (e, e->newtype);
+	tree mem = build_libcall (LIBCALL_AANEW, Type::tvoidptr, 1, arg);
+
+	/* Return an associative array pointed to by MEM.  */
+	tree aatype = build_ctype (tb);
+	vec <constructor_elt, va_gc> *ce = NULL;
+	CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
+
+	result = build_nop (build_ctype (e->type),
+			    build_constructor (aatype, ce));
+      }
     else
       gcc_unreachable ();
 
@@ -2720,6 +2704,14 @@ public:
 	  }
 
 	this->result_ = compound_expr (saved_elems, d_convert (type, ctor));
+      }
+    else if (e->onstack)
+      {
+	/* Array literal for a `scope' dynamic array.  */
+	gcc_assert (tb->ty == TY::Tarray);
+	ctor = force_target_expr (ctor);
+	this->result_ = d_array_value (type, size_int (e->elements->length),
+				       build_address (ctor));
       }
     else
       {

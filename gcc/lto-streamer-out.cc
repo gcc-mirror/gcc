@@ -67,6 +67,7 @@ clear_line_info (struct output_block *ob)
      so that the first location with block in a function etc.
      always streams a change_block bit and the first block.  */
   ob->current_block = void_node;
+  ob->current_discr = UINT_MAX;
 }
 
 
@@ -194,6 +195,7 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
   if (loc >= RESERVED_LOCATION_COUNT)
     {
       expanded_location xloc = expand_location (loc);
+      unsigned discr = get_discriminator_from_loc (orig_loc);
 
       if (ob->reset_locus)
 	{
@@ -216,6 +218,7 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
 
       bp_pack_value (bp, ob->current_line != xloc.line, 1);
       bp_pack_value (bp, ob->current_col != xloc.column, 1);
+      bp_pack_value (bp, ob->current_discr != discr, 1);
 
       if (ob->current_file != xloc.file)
 	{
@@ -242,6 +245,10 @@ lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
       if (ob->current_col != xloc.column)
 	bp_pack_var_len_unsigned (bp, xloc.column);
       ob->current_col = xloc.column;
+
+      if (ob->current_discr != discr)
+	bp_pack_var_len_unsigned (bp, discr);
+      ob->current_discr = discr;
     }
   else
     bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT + 1, loc);
@@ -1553,6 +1560,9 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	case OMP_CLAUSE_DEPEND:
 	  val = OMP_CLAUSE_DEPEND_KIND (t);
 	  break;
+	case OMP_CLAUSE_DOACROSS:
+	  val = OMP_CLAUSE_DOACROSS_KIND (t);
+	  break;
 	case OMP_CLAUSE_MAP:
 	  val = OMP_CLAUSE_MAP_KIND (t);
 	  break;
@@ -2268,6 +2278,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->calls_eh_return, 1);
   bp_pack_value (&bp, fn->has_force_vectorize_loops, 1);
   bp_pack_value (&bp, fn->has_simduid_loops, 1);
+  bp_pack_value (&bp, fn->assume_function, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
   bp_pack_value (&bp, fn->last_clique, sizeof (short) * 8);

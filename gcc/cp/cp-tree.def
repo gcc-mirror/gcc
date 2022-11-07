@@ -444,8 +444,11 @@ DEFTREECODE (BIT_CAST_EXPR, "bit_cast_expr", tcc_expression, 1)
 
 /** C++ extensions. */
 
-/* Represents a trait expression during template expansion.  */
+/* Represents a templated trait that yields an expression.  */
 DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
+
+/* Represents a templated trait that yields a type.  */
+DEFTREECODE (TRAIT_TYPE, "trait_type", tcc_type, 0)
 
 /* A lambda expression.  This is a C++0x extension.
    LAMBDA_EXPR_DEFAULT_CAPTURE_MODE is an enum for the default, which may be
@@ -465,10 +468,6 @@ DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
    DECLTYPE_FOR_LAMBDA_CAPTURE is set if we want lambda capture semantics.
    DECLTYPE_FOR_LAMBDA_RETURN is set if we want lambda return deduction.  */
 DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
-
-/* A type designated by `__underlying_type (type)'.
-   UNDERLYING_TYPE_TYPE is the type in question.  */
-DEFTREECODE (UNDERLYING_TYPE, "underlying_type", tcc_type, 0)
 
 /* A type designated by one of the bases type traits.
    BASES_TYPE is the type in question.  */

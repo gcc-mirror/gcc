@@ -1,6 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fno-trapping-math -funsafe-math-optimizations -fdump-tree-recip" } */
 
+/* The recip pass has a threshold of 3 reciprocal operations before it attempts
+   to optimize a sequence.  With a FP enabled ranger, we eliminate one of them
+   earlier, causing the pass to skip this optimization.  */
+/* { dg-additional-options "-fno-thread-jumps -fno-tree-dominator-opts" } */
+
 double F[5] = { 0.0, 0.0 }, e;
 
 /* In this case the optimization is interesting.  */

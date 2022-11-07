@@ -50,6 +50,184 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range-path.h"
 #include "value-pointer-equiv.h"
 #include "gimple-fold.h"
+#include "tree-dfa.h"
+#include "tree-ssa-dce.h"
+
+// This class is utilized by VRP and ranger to remove __builtin_unreachable
+// calls, and reflect any resulting global ranges.
+//
+// maybe_register_block () is called on basic blocks, and if that block
+// matches the pattern of one branch being a builtin_unreachable, register
+// the resulting executable edge in a list.
+//
+// After all blocks have been processed, remove_and_update_globals() will
+// - check all exports from registered blocks
+// - ensure the cache entry of each export is set with the appropriate range
+// - rewrite the conditions to take the executable edge
+// - perform DCE on any feeding instructions to those rewritten conditions
+//
+// Then each of the immediate use chain of each export is walked, and a new
+// global range created by unioning the ranges at all remaining use locations.
+
+class remove_unreachable {
+public:
+  remove_unreachable (gimple_ranger &r) : m_ranger (r) { m_list.create (30); }
+  ~remove_unreachable () { m_list.release (); }
+  void maybe_register_block (basic_block bb);
+  bool remove_and_update_globals (bool final_p);
+  vec<edge> m_list;
+  gimple_ranger &m_ranger;
+};
+
+// Check if block BB has a __builtin_unreachable () call on one arm, and
+// register the executable edge if so.
+
+void
+remove_unreachable::maybe_register_block (basic_block bb)
+{
+  gimple *s = gimple_outgoing_range_stmt_p (bb);
+  if (!s || gimple_code (s) != GIMPLE_COND)
+    return;
+
+  edge e0 = EDGE_SUCC (bb, 0);
+  basic_block bb0 = e0->dest;
+  bool un0 = EDGE_COUNT (bb0->succs) == 0
+	     && gimple_seq_unreachable_p (bb_seq (bb0));
+  edge e1 = EDGE_SUCC (bb, 1);
+  basic_block bb1 = e1->dest;
+  bool un1 = EDGE_COUNT (bb1->succs) == 0
+	     && gimple_seq_unreachable_p (bb_seq (bb1));
+
+  // If the 2 blocks are not different, ignore.
+  if (un0 == un1)
+    return;
+
+  if (un0)
+    m_list.safe_push (e1);
+  else
+    m_list.safe_push (e0);
+}
+
+// Process the edges in the list, change the conditions and removing any
+// dead code feeding those conditions.  Calculate the range of any
+// names that may have been exported from those blocks, and determine if
+// there is any updates to their global ranges..
+// FINAL_P indicates all builtin_unreachable calls should be removed.
+// Return true if any builtin_unreachables/globals eliminated/updated.
+
+bool
+remove_unreachable::remove_and_update_globals (bool final_p)
+{
+  if (m_list.length () == 0)
+    return false;
+
+  bool change = false;
+  tree name;
+  unsigned i;
+  bitmap_iterator bi;
+  auto_bitmap all_exports;
+  for (i = 0; i < m_list.length (); i++)
+    {
+      edge e = m_list[i];
+      gimple *s = gimple_outgoing_range_stmt_p (e->src);
+      gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
+      bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
+      bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
+      // Do not remove __builtin_unreachable if it confers a relation, or
+      // that relation will be lost in subsequent passes.  Unless its the
+      // final pass.
+      if (!final_p && lhs_p && rhs_p)
+	continue;
+      // If this is already a constant condition, don't look either
+      if (!lhs_p && !rhs_p)
+	continue;
+
+      bool dominate_exit_p = true;
+      FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+	{
+	  // Ensure the cache is set for NAME in the succ block.
+	  Value_Range r(TREE_TYPE (name));
+	  Value_Range ex(TREE_TYPE (name));
+	  m_ranger.range_on_entry (r, e->dest, name);
+	  m_ranger.range_on_entry (ex, EXIT_BLOCK_PTR_FOR_FN (cfun), name);
+	  // If the range produced by this __builtin_unreachacble expression
+	  // is not fully reflected in the range at exit, then it does not
+	  // dominate the exit of the funciton.
+	  if (ex.intersect (r))
+	    dominate_exit_p = false;
+	}
+
+      // If the exit is dominated, add to the export list.  Otherwise if this
+      // isn't the final VRP pass, leave the call in the IL.
+      if (dominate_exit_p)
+	bitmap_ior_into (all_exports, m_ranger.gori ().exports (e->src));
+      else if (!final_p)
+	continue;
+
+      change = true;
+      // Rewrite the condition.
+      if (e->flags & EDGE_TRUE_VALUE)
+	gimple_cond_make_true (as_a<gcond *> (s));
+      else
+	gimple_cond_make_false (as_a<gcond *> (s));
+      update_stmt (s);
+    }
+
+  if (bitmap_empty_p (all_exports))
+    return false;
+  // Invoke DCE on all exported names to elimnate dead feeding defs
+  auto_bitmap dce;
+  bitmap_copy (dce, all_exports);
+  // Don't attempt to DCE parameters.
+  EXECUTE_IF_SET_IN_BITMAP (all_exports, 0, i, bi)
+    if (!ssa_name (i) || SSA_NAME_IS_DEFAULT_DEF (ssa_name (i)))
+      bitmap_clear_bit (dce, i);
+  simple_dce_from_worklist (dce);
+
+  // Loop over all uses of each name and find maximal range. This is the
+  // new global range.
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  EXECUTE_IF_SET_IN_BITMAP (all_exports, 0, i, bi)
+    {
+      name = ssa_name (i);
+      if (!name || SSA_NAME_IN_FREE_LIST (name))
+	continue;
+      Value_Range r (TREE_TYPE (name));
+      Value_Range exp_range (TREE_TYPE (name));
+      r.set_undefined ();
+      FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+	{
+	  gimple *use_stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (use_stmt))
+	    continue;
+	  if (!m_ranger.range_of_expr (exp_range, name, use_stmt))
+	    exp_range.set_varying (TREE_TYPE (name));
+	  r.union_ (exp_range);
+	  if (r.varying_p ())
+	    break;
+	}
+      // Include the on-exit range to ensure non-dominated unreachables
+      // don't incorrectly impact the global range.
+      m_ranger.range_on_entry (exp_range, EXIT_BLOCK_PTR_FOR_FN (cfun), name);
+      r.union_ (exp_range);
+      if (r.varying_p () || r.undefined_p ())
+	continue;
+      if (!set_range_info (name, r))
+	continue;
+      change = true;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Global Exported (via unreachable): ");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  gimple_range_global (r, name);
+	  r.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
+    }
+  return change;
+}
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -1069,7 +1247,8 @@ range_fold_binary_expr (value_range *vr,
     vr1.set_varying (expr_type);
   vr0.normalize_addresses ();
   vr1.normalize_addresses ();
-  op.fold_range (*vr, expr_type, vr0, vr1);
+  if (!op.fold_range (*vr, expr_type, vr0, vr1))
+    vr->set_varying (expr_type);
 }
 
 /* Perform a unary operation on a range.  */
@@ -1095,7 +1274,8 @@ range_fold_unary_expr (value_range *vr,
 
   value_range vr0_cst (*vr0);
   vr0_cst.normalize_addresses ();
-  op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type));
+  if (!op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type)))
+    vr->set_varying (expr_type);
 }
 
 /* If the range of values taken by OP can be inferred after STMT executes,
@@ -4257,6 +4437,7 @@ class rvrp_folder : public substitute_and_fold_engine
 public:
 
   rvrp_folder (gimple_ranger *r) : substitute_and_fold_engine (),
+				   m_unreachable (*r),
 				   m_simplifier (r, r->non_executable_edge_flag)
   {
     m_ranger = r;
@@ -4309,6 +4490,8 @@ public:
   void post_fold_bb (basic_block bb) override
   {
     m_pta->leave (bb);
+    if (cfun->after_inlining)
+      m_unreachable.maybe_register_block (bb);
   }
 
   void pre_fold_stmt (gimple *stmt) override
@@ -4325,6 +4508,7 @@ public:
     return ret;
   }
 
+  remove_unreachable m_unreachable;
 private:
   DISABLE_COPY_AND_ASSIGN (rvrp_folder);
   gimple_ranger *m_ranger;
@@ -4336,7 +4520,8 @@ private:
   from anywhere to perform a VRP pass, including from EVRP.  */
 
 unsigned int
-execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p)
+execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
+		    bool final_p)
 {
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
@@ -4347,6 +4532,8 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p)
   gimple_ranger *ranger = enable_ranger (fun, false);
   rvrp_folder folder (ranger);
   folder.substitute_and_fold ();
+  // Remove tagged builtin-unreachable and maybe update globals.
+  folder.m_unreachable.remove_and_update_globals (final_p);
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
 
@@ -4425,11 +4612,11 @@ public:
     {
       // Early VRP pass.
       if (my_pass == 0)
-	return execute_ranger_vrp (fun, /*warn_array_bounds_p=*/false);
+	return execute_ranger_vrp (fun, /*warn_array_bounds_p=*/false, false);
 
       if ((my_pass == 1 && param_vrp1_mode == VRP_MODE_RANGER)
 	  || (my_pass == 2 && param_vrp2_mode == VRP_MODE_RANGER))
-	return execute_ranger_vrp (fun, warn_array_bounds_p);
+	return execute_ranger_vrp (fun, warn_array_bounds_p, my_pass == 2);
       return execute_vrp (fun, warn_array_bounds_p);
     }
 
@@ -4438,6 +4625,68 @@ public:
   bool warn_array_bounds_p;
   int my_pass;
 }; // class pass_vrp
+
+const pass_data pass_data_assumptions =
+{
+  GIMPLE_PASS, /* type */
+  "assumptions", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_ASSUMPTIONS, /* tv_id */
+  PROP_ssa, /* properties_required */
+  PROP_assumptions_done, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_end */
+};
+
+class pass_assumptions : public gimple_opt_pass
+{
+public:
+  pass_assumptions (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_assumptions, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *fun) final override { return fun->assume_function; }
+  unsigned int execute (function *) final override
+    {
+      assume_query query;
+      if (dump_file)
+	fprintf (dump_file, "Assumptions :\n--------------\n");
+
+      for (tree arg = DECL_ARGUMENTS (cfun->decl); arg; arg = DECL_CHAIN (arg))
+	{
+	  tree name = ssa_default_def (cfun, arg);
+	  if (!name || !gimple_range_ssa_p (name))
+	    continue;
+	  tree type = TREE_TYPE (name);
+	  if (!Value_Range::supports_type_p (type))
+	    continue;
+	  Value_Range assume_range (type);
+	  if (query.assume_range_p (assume_range, name))
+	    {
+	      // Set the global range of NAME to anything calculated.
+	      set_range_info (name, assume_range);
+	      if (dump_file)
+		{
+		  print_generic_expr (dump_file, name, TDF_SLIM);
+		  fprintf (dump_file, " -> ");
+		  assume_range.dump (dump_file);
+		  fputc ('\n', dump_file);
+		}
+	    }
+	}
+      if (dump_file)
+	{
+	  fputc ('\n', dump_file);
+	  gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
+	  if (dump_flags & TDF_DETAILS)
+	    query.dump (dump_file);
+	}
+      return TODO_discard_function;
+    }
+
+}; // class pass_assumptions
 
 } // anon namespace
 
@@ -4451,4 +4700,10 @@ gimple_opt_pass *
 make_pass_early_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt, pass_data_early_vrp);
+}
+
+gimple_opt_pass *
+make_pass_assumptions (gcc::context *ctx)
+{
+  return new pass_assumptions (ctx);
 }

@@ -94,6 +94,8 @@ gcc/config/rs6000/rs6000-tables.opt: gcc/config/rs6000/rs6000-cpus.def gcc/confi
 gcc/config/rs6000/fusion.md: gcc/config/rs6000/genfusion.pl
 # And then, language-specific files
 gcc/cp/cfns.h: gcc/cp/cfns.gperf
+gcc/cp/std-name-hint.h: gcc/cp/std-name-hint.gperf
+gcc/cp/std-name-hint.gperf: gcc/cp/cxxapi-data.csv
 # testsuite
 # Without this, _Pragma3.c can have a false negative.
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
@@ -160,12 +162,6 @@ libsanitizer/sanitizer_common/Makefile.in: libsanitizer/sanitizer_common/Makefil
 libvtv/aclocal.m4: libvtv/configure.ac libvtv/acinclude.m4
 libvtv/Makefile.in: libvtv/Makefile.am libvtv/aclocal.m4
 libvtv/configure: libvtv/configure.ac libvtv/aclocal.m4
-liboffloadmic/aclocal.m4: liboffloadmic/configure.ac
-liboffloadmic/Makefile.in: liboffloadmic/Makefile.am
-liboffloadmic/configure: liboffloadmic/configure.ac
-liboffloadmic/plugin/aclocal.m4: liboffloadmic/plugin/configure.ac
-liboffloadmic/plugin/Makefile.in: liboffloadmic/plugin/Makefile.am
-liboffloadmic/plugin/configure: liboffloadmic/plugin/configure.ac
 libbacktrace/aclocal.m4: libbacktrace/configure.ac
 libbacktrace/Makefile.in: libbacktrace/Makefile.am libbacktrace/aclocal.m4
 libbacktrace/configure: libbacktrace/configure.ac libbacktrace/aclocal.m4

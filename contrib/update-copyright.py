@@ -760,7 +760,6 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
-        # liboffloadmic is imported from upstream.
         self.add_dir ('libphobos', LibPhobosFilter())
         self.add_dir ('libquadmath')
         # libsanitizer is imported from upstream.

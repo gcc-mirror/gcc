@@ -3647,6 +3647,12 @@ assign_parms (tree fndecl)
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
+  if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (fndecl)))
+    {
+      struct assign_parm_data_one data = {};
+      assign_parms_setup_varargs (&all, &data, false);
+    }
+
   FOR_EACH_VEC_ELT (fnargs, i, parm)
     {
       struct assign_parm_data_one data;
@@ -4638,14 +4644,6 @@ number_blocks (tree fn)
   int i;
   int n_blocks;
   tree *block_vector;
-
-  /* For XCOFF debugging output, we start numbering the blocks
-     from 1 within each function, rather than keeping a running
-     count.  */
-#if defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == XCOFF_DEBUG)
-    next_block_index = 1;
-#endif
 
   block_vector = get_block_vector (DECL_INITIAL (fn), &n_blocks);
 
@@ -6257,10 +6255,15 @@ thread_prologue_and_epilogue_insns (void)
 	}
     }
 
-  /* Threading the prologue and epilogue changes the artificial refs
-     in the entry and exit blocks.  */
-  epilogue_completed = 1;
-  df_update_entry_exit_and_calls ();
+  /* Threading the prologue and epilogue changes the artificial refs in the
+     entry and exit blocks, and may invalidate DF info for tail calls.  */
+  if (optimize)
+    df_update_entry_exit_and_calls ();
+  else
+    {
+      df_update_entry_block_defs ();
+      df_update_exit_block_uses ();
+    }
 }
 
 /* Reposition the prologue-end and epilogue-begin notes after

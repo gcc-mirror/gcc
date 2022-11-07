@@ -78,6 +78,13 @@ if {[board_info $dest exists output_format]} {
     append link_options " additional_flags=-Wl,-oformat,[board_info $dest output_format]"
 }
 
+
+set devnull "/dev/null"
+if { [info exists ::env(OS)] && [string match "Windows*" $::env(OS)] } {
+    # Windows uses special file named "nul" as a substitute for /dev/null
+    set devnull "nul"
+}
+
 # Avoid possible influence from the make jobserver,
 # otherwise ltrans0.ltrans_args files may be missing.
 if [info exists env(MAKEFLAGS)] {
@@ -353,10 +360,10 @@ outest "$b-21 exe savetmp named2" $mult "-o $b.exe -save-temps" {} {{--1.i --1.s
 
 # Additional files are created when an @file is used
 if !$skip_atsave {
-outest "$b-22 exe savetmp namedb-2" $sing "@/dev/null -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
-outest "$b-23 exe savetmp named2-2" $mult "@/dev/null -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
-outest "$b-24 exe savetmp named2-3" $mult "@/dev/null -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
-outest "$b-25 exe savetmp named2-4" $mult "@/dev/null -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
+outest "$b-22 exe savetmp namedb-2" $sing "@$devnull -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b-23 exe savetmp named2-2" $mult "@$devnull -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b-24 exe savetmp named2-3" $mult "@$devnull -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
+outest "$b-25 exe savetmp named2-4" $mult "@$devnull -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
 }
 
 # Setting the main output to a dir selects it as the default aux&dump
@@ -714,7 +721,7 @@ outest "$b-291 lto mult named-2" $mult "-o $b.exe -O2 -flto -fno-use-linker-plug
 outest "$b-292 lto sing nameddir-2" $sing "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.c.???i.icf --0.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
 outest "$b-293 lto mult nameddir-2" $mult "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
 if !$skip_atsave {
-outest "$b-294 lto sing unnamed-3" $sing "@/dev/null -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage -save-temps $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a--0.o a--0.s a--0.i a.ltrans0.o a.ltrans.out a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.args.0 a.ltrans0.ltrans.s a.wpa.args.0 a.lto_args a.ld1_args a.ltrans_args a.ltrans0.ltrans.args.0 a.ld_args $aout}}
+outest "$b-294 lto sing unnamed-3" $sing "@$devnull -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage -save-temps $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a--0.o a--0.s a--0.i a.ltrans0.o a.ltrans.out a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.args.0 a.ltrans0.ltrans.s a.wpa.args.0 a.lto_args a.ld1_args a.ltrans_args a.ltrans0.ltrans.args.0 a.ld_args $aout}}
 }
 }
 

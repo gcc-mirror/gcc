@@ -19,8 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -38,18 +40,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
 #include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
 #include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
@@ -65,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
 #include "analyzer/program-state.h"
+#include "analyzer/call-summary.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "tree-object-size.h"
@@ -74,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "calls.h"
 #include "is-a.h"
+#include "gcc-rich-location.h"
 
 #if ENABLE_ANALYZER
 
@@ -814,14 +814,17 @@ region_model::get_gassign_result (const gassign *assign,
 	      if (TREE_CODE (rhs2_cst) == INTEGER_CST)
 		{
 		  if (tree_int_cst_sgn (rhs2_cst) < 0)
-		    ctxt->warn (new shift_count_negative_diagnostic
-				  (assign, rhs2_cst));
+		    ctxt->warn
+		      (make_unique<shift_count_negative_diagnostic>
+			 (assign, rhs2_cst));
 		  else if (compare_tree_int (rhs2_cst,
 					     TYPE_PRECISION (TREE_TYPE (rhs1)))
 			   >= 0)
-		    ctxt->warn (new shift_count_overflow_diagnostic
-				  (assign, TYPE_PRECISION (TREE_TYPE (rhs1)),
-				   rhs2_cst));
+		    ctxt->warn
+		      (make_unique<shift_count_overflow_diagnostic>
+			 (assign,
+			  int (TYPE_PRECISION (TREE_TYPE (rhs1))),
+			  rhs2_cst));
 		}
 	  }
 
@@ -1039,8 +1042,9 @@ region_model::check_for_poison (const svalue *sval,
       const region *src_region = NULL;
       if (pkind == POISON_KIND_UNINIT)
 	src_region = get_region_for_poisoned_expr (expr);
-      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind,
-						     src_region)))
+      if (ctxt->warn (make_unique<poisoned_value_diagnostic> (diag_arg,
+							      pkind,
+							      src_region)))
 	{
 	  /* We only want to report use of a poisoned value at the first
 	     place it gets used; return an unknown value to avoid generating
@@ -1229,7 +1233,7 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  {
 	    /* Handle the builtin "__analyzer_dump_path" by queuing a
 	       diagnostic at this exploded_node.  */
-	    ctxt->warn (new dump_path_diagnostic ());
+	    ctxt->warn (make_unique<dump_path_diagnostic> ());
 	  }
 	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
 					  0))
@@ -1253,6 +1257,12 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  {
 	    /* This is handled elsewhere.  */
 	  }
+	else if (is_special_named_call_p (call, "__analyzer_get_unknown_ptr",
+					  0))
+	  {
+	    call_details cd (call, this, ctxt);
+	    impl_call_analyzer_get_unknown_ptr (cd);
+	  }
 	else
 	  *out_unknown_side_effects = on_call_pre (call, ctxt,
 						   out_terminate_path);
@@ -1268,7 +1278,7 @@ region_model::on_stmt_pre (const gimple *stmt,
     }
 }
 
-/* Abstract base class for all out-of-bounds warnings.  */
+/* Abstract base class for all out-of-bounds warnings with concrete values.  */
 
 class out_of_bounds : public pending_diagnostic_subclass<out_of_bounds>
 {
@@ -1591,66 +1601,308 @@ public:
   }
 };
 
-/* May complain when the access on REG is out-of-bounds.  */
+/* Abstract class to complain about out-of-bounds read/writes where
+   the values are symbolic.  */
 
-void region_model::check_region_bounds (const region *reg,
-					enum access_direction dir,
-					region_model_context *ctxt) const
+class symbolic_past_the_end
+  : public pending_diagnostic_subclass<symbolic_past_the_end>
+{
+public:
+  symbolic_past_the_end (const region *reg, tree diag_arg, tree offset,
+			 tree num_bytes, tree capacity)
+  : m_reg (reg), m_diag_arg (diag_arg), m_offset (offset),
+    m_num_bytes (num_bytes), m_capacity (capacity)
+  {}
+
+  const char *get_kind () const final override
+  {
+    return "symbolic_past_the_end";
+  }
+
+  bool operator== (const symbolic_past_the_end &other) const
+  {
+    return m_reg == other.m_reg
+	   && pending_diagnostic::same_tree_p (m_diag_arg, other.m_diag_arg)
+	   && pending_diagnostic::same_tree_p (m_offset, other.m_offset)
+	   && pending_diagnostic::same_tree_p (m_num_bytes, other.m_num_bytes)
+	   && pending_diagnostic::same_tree_p (m_capacity, other.m_capacity);
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_out_of_bounds;
+  }
+
+  void mark_interesting_stuff (interesting_t *interest) final override
+  {
+    interest->add_region_creation (m_reg);
+  }
+
+  label_text
+  describe_region_creation_event (const evdesc::region_creation &ev) final
+  override
+  {
+    if (m_capacity)
+      return ev.formatted_print ("capacity is %qE bytes", m_capacity);
+
+    return label_text ();
+  }
+
+  label_text
+  describe_final_event (const evdesc::final_event &ev) final override
+  {
+    const char *byte_str;
+    if (pending_diagnostic::same_tree_p (m_num_bytes, integer_one_node))
+      byte_str = "byte";
+    else
+      byte_str = "bytes";
+
+    if (m_offset)
+      {
+	if (m_num_bytes && TREE_CODE (m_num_bytes) == INTEGER_CST)
+	  {
+	    if (m_diag_arg)
+	      return ev.formatted_print ("%s of %E %s at offset %qE"
+					 " exceeds %qE", m_dir_str,
+					 m_num_bytes, byte_str,
+					 m_offset, m_diag_arg);
+	    else
+	      return ev.formatted_print ("%s of %E %s at offset %qE"
+					 " exceeds the buffer", m_dir_str,
+					 m_num_bytes, byte_str, m_offset);
+	  }
+	else if (m_num_bytes)
+	  {
+	    if (m_diag_arg)
+	      return ev.formatted_print ("%s of %qE %s at offset %qE"
+					 " exceeds %qE", m_dir_str,
+					 m_num_bytes, byte_str,
+					 m_offset, m_diag_arg);
+	    else
+	      return ev.formatted_print ("%s of %qE %s at offset %qE"
+					 " exceeds the buffer", m_dir_str,
+					 m_num_bytes, byte_str, m_offset);
+	  }
+	else
+	  {
+	    if (m_diag_arg)
+	      return ev.formatted_print ("%s at offset %qE exceeds %qE",
+					 m_dir_str, m_offset, m_diag_arg);
+	    else
+	      return ev.formatted_print ("%s at offset %qE exceeds the"
+					 " buffer", m_dir_str, m_offset);
+	  }
+      }
+    if (m_diag_arg)
+      return ev.formatted_print ("out-of-bounds %s on %qE",
+				 m_dir_str, m_diag_arg);
+    return ev.formatted_print ("out-of-bounds %s", m_dir_str);
+  }
+
+protected:
+  const region *m_reg;
+  tree m_diag_arg;
+  tree m_offset;
+  tree m_num_bytes;
+  tree m_capacity;
+  const char *m_dir_str;
+};
+
+/* Concrete subclass to complain about overflows with symbolic values.  */
+
+class symbolic_buffer_overflow : public symbolic_past_the_end
+{
+public:
+  symbolic_buffer_overflow (const region *reg, tree diag_arg, tree offset,
+			    tree num_bytes, tree capacity)
+  : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
+  {
+    m_dir_str = "write";
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    diagnostic_metadata m;
+    switch (m_reg->get_memory_space ())
+      {
+      default:
+	m.add_cwe (787);
+	return warning_meta (rich_loc, m, get_controlling_option (),
+			     "buffer overflow");
+      case MEMSPACE_STACK:
+	m.add_cwe (121);
+	return warning_meta (rich_loc, m, get_controlling_option (),
+			     "stack-based buffer overflow");
+      case MEMSPACE_HEAP:
+	m.add_cwe (122);
+	return warning_meta (rich_loc, m, get_controlling_option (),
+			     "heap-based buffer overflow");
+      }
+  }
+};
+
+/* Concrete subclass to complain about overreads with symbolic values.  */
+
+class symbolic_buffer_overread : public symbolic_past_the_end
+{
+public:
+  symbolic_buffer_overread (const region *reg, tree diag_arg, tree offset,
+			    tree num_bytes, tree capacity)
+  : symbolic_past_the_end (reg, diag_arg, offset, num_bytes, capacity)
+  {
+    m_dir_str = "read";
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    diagnostic_metadata m;
+    m.add_cwe (126);
+    return warning_meta (rich_loc, m, get_controlling_option (),
+			 "buffer overread");
+  }
+};
+
+/* Check whether an access is past the end of the BASE_REG.  */
+
+void region_model::check_symbolic_bounds (const region *base_reg,
+					  const svalue *sym_byte_offset,
+					  const svalue *num_bytes_sval,
+					  const svalue *capacity,
+					  enum access_direction dir,
+					  region_model_context *ctxt) const
 {
   gcc_assert (ctxt);
 
-  region_offset reg_offset = reg->get_offset ();
-  const region *base_reg = reg_offset.get_base_region ();
+  const svalue *next_byte
+    = m_mgr->get_or_create_binop (num_bytes_sval->get_type (), PLUS_EXPR,
+				  sym_byte_offset, num_bytes_sval);
 
-  /* Bail out on symbolic offsets or symbolic regions.
-     (e.g. because the analyzer did not see previous offsets on the latter,
-     it might think that a negative access is before the buffer).  */
-  if (reg_offset.symbolic_p () || base_reg->symbolic_p ())
-    return;
-  byte_offset_t offset_unsigned
-    = reg_offset.get_bit_offset () >> LOG2_BITS_PER_UNIT;
-  /* The constant offset from a pointer is represented internally as a sizetype
-     but should be interpreted as a signed value here.  The statement below
-     converts the offset to a signed integer with the same precision the
-     sizetype has on the target system.
-
-     For example, this is needed for out-of-bounds-3.c test1 to pass when
-     compiled with a 64-bit gcc build targeting 32-bit systems.  */
-  byte_offset_t offset
-    = offset_unsigned.to_shwi (TYPE_PRECISION (size_type_node));
-
-  /* Find out how many bytes were accessed.  */
-  const svalue *num_bytes_sval = reg->get_byte_size_sval (m_mgr);
-  tree num_bytes_tree = num_bytes_sval->maybe_get_constant ();
-  if (!num_bytes_tree || TREE_CODE (num_bytes_tree) != INTEGER_CST)
-    /* If we do not know how many bytes were read/written,
-       assume that at least one byte was read/written.  */
-    num_bytes_tree = integer_one_node;
-
-  byte_range out (0, 0);
-  /* NUM_BYTES_TREE should always be interpreted as unsigned.  */
-  byte_range read_bytes (offset, wi::to_offset (num_bytes_tree).to_uhwi ());
-  /* If read_bytes has a subset < 0, we do have an underflow.  */
-  if (read_bytes.falls_short_of_p (0, &out))
+  if (eval_condition_without_cm (next_byte, GT_EXPR, capacity).is_true ())
     {
-      tree diag_arg = get_representative_tree (reg->get_base_region ());
+      tree diag_arg = get_representative_tree (base_reg);
+      tree offset_tree = get_representative_tree (sym_byte_offset);
+      tree num_bytes_tree = get_representative_tree (num_bytes_sval);
+      tree capacity_tree = get_representative_tree (capacity);
       switch (dir)
 	{
 	default:
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new buffer_underread (reg, diag_arg, out));
+	  ctxt->warn (make_unique<symbolic_buffer_overread> (base_reg,
+							     diag_arg,
+							     offset_tree,
+							     num_bytes_tree,
+							     capacity_tree));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new buffer_underflow (reg, diag_arg, out));
+	  ctxt->warn (make_unique<symbolic_buffer_overflow> (base_reg,
+							     diag_arg,
+							     offset_tree,
+							     num_bytes_tree,
+							     capacity_tree));
+	  break;
+	}
+    }
+}
+
+static tree
+maybe_get_integer_cst_tree (const svalue *sval)
+{
+  tree cst_tree = sval->maybe_get_constant ();
+  if (cst_tree && TREE_CODE (cst_tree) == INTEGER_CST)
+    return cst_tree;
+
+  return NULL_TREE;
+}
+
+/* May complain when the access on REG is out-of-bounds.  */
+
+void
+region_model::check_region_bounds (const region *reg,
+				   enum access_direction dir,
+				   region_model_context *ctxt) const
+{
+  gcc_assert (ctxt);
+
+  /* Get the offset.  */
+  region_offset reg_offset = reg->get_offset (m_mgr);
+  const region *base_reg = reg_offset.get_base_region ();
+
+  /* Bail out on symbolic regions.
+     (e.g. because the analyzer did not see previous offsets on the latter,
+     it might think that a negative access is before the buffer).  */
+  if (base_reg->symbolic_p ())
+    return;
+
+  /* Find out how many bytes were accessed.  */
+  const svalue *num_bytes_sval = reg->get_byte_size_sval (m_mgr);
+  tree num_bytes_tree = maybe_get_integer_cst_tree (num_bytes_sval);
+  /* Bail out if 0 bytes are accessed.  */
+  if (num_bytes_tree && zerop (num_bytes_tree))
+    return;
+
+  /* Get the capacity of the buffer.  */
+  const svalue *capacity = get_capacity (base_reg);
+  tree cst_capacity_tree = maybe_get_integer_cst_tree (capacity);
+
+  /* The constant offset from a pointer is represented internally as a sizetype
+     but should be interpreted as a signed value here.  The statement below
+     converts the offset from bits to bytes and then to a signed integer with
+     the same precision the sizetype has on the target system.
+
+     For example, this is needed for out-of-bounds-3.c test1 to pass when
+     compiled with a 64-bit gcc build targeting 32-bit systems.  */
+  byte_offset_t offset;
+  if (!reg_offset.symbolic_p ())
+    offset = wi::sext (reg_offset.get_bit_offset () >> LOG2_BITS_PER_UNIT,
+		       TYPE_PRECISION (size_type_node));
+
+  /* If either the offset or the number of bytes accessed are symbolic,
+     we have to reason about symbolic values.  */
+  if (reg_offset.symbolic_p () || !num_bytes_tree)
+    {
+      const svalue* byte_offset_sval;
+      if (!reg_offset.symbolic_p ())
+	{
+	  tree offset_tree = wide_int_to_tree (integer_type_node, offset);
+	  byte_offset_sval
+	    = m_mgr->get_or_create_constant_svalue (offset_tree);
+	}
+      else
+	byte_offset_sval = reg_offset.get_symbolic_byte_offset ();
+      check_symbolic_bounds (base_reg, byte_offset_sval, num_bytes_sval,
+			     capacity, dir, ctxt);
+      return;
+    }
+
+  /* Otherwise continue to check with concrete values.  */
+  byte_range out (0, 0);
+  /* NUM_BYTES_TREE should always be interpreted as unsigned.  */
+  byte_offset_t num_bytes_unsigned = wi::to_offset (num_bytes_tree);
+  byte_range read_bytes (offset, num_bytes_unsigned);
+  /* If read_bytes has a subset < 0, we do have an underflow.  */
+  if (read_bytes.falls_short_of_p (0, &out))
+    {
+      tree diag_arg = get_representative_tree (base_reg);
+      switch (dir)
+	{
+	default:
+	  gcc_unreachable ();
+	  break;
+	case DIR_READ:
+	  ctxt->warn (make_unique<buffer_underread> (reg, diag_arg, out));
+	  break;
+	case DIR_WRITE:
+	  ctxt->warn (make_unique<buffer_underflow> (reg, diag_arg, out));
 	  break;
 	}
     }
 
-  const svalue *capacity = get_capacity (base_reg);
-  tree cst_capacity_tree = capacity->maybe_get_constant ();
-  if (!cst_capacity_tree || TREE_CODE (cst_capacity_tree) != INTEGER_CST)
+  /* For accesses past the end, we do need a concrete capacity.  No need to
+     do a symbolic check here because the inequality check does not reason
+     whether constants are greater than symbolic values.  */
+  if (!cst_capacity_tree)
     return;
 
   byte_range buffer (0, wi::to_offset (cst_capacity_tree));
@@ -1659,7 +1911,7 @@ void region_model::check_region_bounds (const region *reg,
     {
       tree byte_bound = wide_int_to_tree (size_type_node,
 					  buffer.get_next_byte_offset ());
-      tree diag_arg = get_representative_tree (reg->get_base_region ());
+      tree diag_arg = get_representative_tree (base_reg);
 
       switch (dir)
 	{
@@ -1667,10 +1919,12 @@ void region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new buffer_overread (reg, diag_arg, out, byte_bound));
+	  ctxt->warn (make_unique<buffer_overread> (reg, diag_arg,
+						    out, byte_bound));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new buffer_overflow (reg, diag_arg, out, byte_bound));
+	  ctxt->warn (make_unique<buffer_overflow> (reg, diag_arg,
+						    out, byte_bound));
 	  break;
 	}
     }
@@ -1729,6 +1983,123 @@ maybe_get_const_fn_result (const call_details &cd)
 						 cd.get_fndecl_for_call (),
 						 inputs);
   return sval;
+}
+
+/* Update this model for an outcome of a call that returns a specific
+   integer constant.
+   If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
+   the state-merger code from merging success and failure outcomes.  */
+
+void
+region_model::update_for_int_cst_return (const call_details &cd,
+					 int retval,
+					 bool unmergeable)
+{
+  if (!cd.get_lhs_type ())
+    return;
+  const svalue *result
+    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), retval);
+  if (unmergeable)
+    result = m_mgr->get_or_create_unmergeable (result);
+  set_value (cd.get_lhs_region (), result, cd.get_ctxt ());
+}
+
+/* Update this model for an outcome of a call that returns zero.
+   If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
+   the state-merger code from merging success and failure outcomes.  */
+
+void
+region_model::update_for_zero_return (const call_details &cd,
+				      bool unmergeable)
+{
+  update_for_int_cst_return (cd, 0, unmergeable);
+}
+
+/* Update this model for an outcome of a call that returns non-zero.  */
+
+void
+region_model::update_for_nonzero_return (const call_details &cd)
+{
+  if (!cd.get_lhs_type ())
+    return;
+  const svalue *zero
+    = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
+  const svalue *result
+    = get_store_value (cd.get_lhs_region (), cd.get_ctxt ());
+  add_constraint (result, NE_EXPR, zero, cd.get_ctxt ());
+}
+
+/* Subroutine of region_model::maybe_get_copy_bounds.
+   The Linux kernel commonly uses
+     min_t([unsigned] long, VAR, sizeof(T));
+   to set an upper bound on the size of a copy_to_user.
+   Attempt to simplify such sizes by trying to get the upper bound as a
+   constant.
+   Return the simplified svalue if possible, or NULL otherwise.  */
+
+static const svalue *
+maybe_simplify_upper_bound (const svalue *num_bytes_sval,
+			    region_model_manager *mgr)
+{
+  tree type = num_bytes_sval->get_type ();
+  while (const svalue *raw = num_bytes_sval->maybe_undo_cast ())
+    num_bytes_sval = raw;
+  if (const binop_svalue *binop_sval = num_bytes_sval->dyn_cast_binop_svalue ())
+    if (binop_sval->get_op () == MIN_EXPR)
+      if (binop_sval->get_arg1 ()->get_kind () == SK_CONSTANT)
+	{
+	  return mgr->get_or_create_cast (type, binop_sval->get_arg1 ());
+	  /* TODO: we might want to also capture the constraint
+	     when recording the diagnostic, or note that we're using
+	     the upper bound.  */
+	}
+  return NULL;
+}
+
+/* Attempt to get an upper bound for the size of a copy when simulating a
+   copy function.
+
+   NUM_BYTES_SVAL is the symbolic value for the size of the copy.
+   Use it if it's constant, otherwise try to simplify it.  Failing
+   that, use the size of SRC_REG if constant.
+
+   Return a symbolic value for an upper limit on the number of bytes
+   copied, or NULL if no such value could be determined.  */
+
+const svalue *
+region_model::maybe_get_copy_bounds (const region *src_reg,
+				     const svalue *num_bytes_sval)
+{
+  if (num_bytes_sval->maybe_get_constant ())
+    return num_bytes_sval;
+
+  if (const svalue *simplified
+      = maybe_simplify_upper_bound (num_bytes_sval, m_mgr))
+    num_bytes_sval = simplified;
+
+  if (num_bytes_sval->maybe_get_constant ())
+    return num_bytes_sval;
+
+  /* For now, try just guessing the size as the capacity of the
+     base region of the src.
+     This is a hack; we might get too large a value.  */
+  const region *src_base_reg = src_reg->get_base_region ();
+  num_bytes_sval = get_capacity (src_base_reg);
+
+  if (num_bytes_sval->maybe_get_constant ())
+    return num_bytes_sval;
+
+  /* Non-constant: give up. */
+  return NULL;
+}
+
+/* Get any known_function for FNDECL, or NULL if there is none.  */
+
+const known_function *
+region_model::get_known_function (tree fndecl) const
+{
+  known_function_manager *known_fn_mgr = m_mgr->get_known_function_manager ();
+  return known_fn_mgr->get_by_fndecl (fndecl);
 }
 
 /* Update this model for the CALL stmt, using CTXT to report any
@@ -1953,6 +2324,14 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
+	{
+	  /* Handle in "on_call_post"; bail now so that fd array
+	     is left untouched so that we can detect use-of-uninit
+	     for the case where the call fails.  */
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "putenv", call, 1)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
@@ -1986,6 +2365,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
 	{
 	  /* Handle in "on_call_post".  */
+	}
+      else if (const known_function *kf = get_known_function (callee_fndecl))
+	{
+	  kf->impl_call_pre (cd);
+	  return false;
 	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
 	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
@@ -2026,6 +2410,12 @@ region_model::on_call_post (const gcall *call,
 	  || is_named_call_p (callee_fndecl, "operator delete []", call, 1))
 	{
 	  impl_call_operator_delete (cd);
+	  return;
+	}
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
+	{
+	  impl_call_pipe (cd);
 	  return;
 	}
       /* Was this fndecl referenced by
@@ -2183,9 +2573,10 @@ check_external_function_for_access_attr (const gcall *call,
 	      m_access (access)
 	    {
 	    }
-	    pending_note *make_note () final override
+	    std::unique_ptr<pending_note> make_note () final override
 	    {
-	      return new reason_attr_access (m_callee_fndecl, m_access);
+	      return make_unique<reason_attr_access>
+		(m_callee_fndecl, m_access);
 	    }
 	  private:
 	    tree m_callee_fndecl;
@@ -2993,7 +3384,8 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		const poisoned_svalue *poisoned_sval
 		  = as_a <const poisoned_svalue *> (ptr_sval);
 		enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind, NULL));
+		ctxt->warn (make_unique<poisoned_value_diagnostic>
+			      (ptr, pkind, NULL));
 	      }
 	  }
       }
@@ -3150,14 +3542,16 @@ region_model::check_for_writable_region (const region* dest_reg,
       {
 	const function_region *func_reg = as_a <const function_region *> (base_reg);
 	tree fndecl = func_reg->get_fndecl ();
-	ctxt->warn (new write_to_const_diagnostic (func_reg, fndecl));
+	ctxt->warn (make_unique<write_to_const_diagnostic>
+		      (func_reg, fndecl));
       }
       break;
     case RK_LABEL:
       {
 	const label_region *label_reg = as_a <const label_region *> (base_reg);
 	tree label = label_reg->get_label ();
-	ctxt->warn (new write_to_const_diagnostic (label_reg, label));
+	ctxt->warn (make_unique<write_to_const_diagnostic>
+		      (label_reg, label));
       }
       break;
     case RK_DECL:
@@ -3170,11 +3564,11 @@ region_model::check_for_writable_region (const region* dest_reg,
 	   "this" param is "T* const").  */
 	if (TREE_READONLY (decl)
 	    && is_global_var (decl))
-	  ctxt->warn (new write_to_const_diagnostic (dest_reg, decl));
+	  ctxt->warn (make_unique<write_to_const_diagnostic> (dest_reg, decl));
       }
       break;
     case RK_STRING:
-      ctxt->warn (new write_to_string_literal_diagnostic (dest_reg));
+      ctxt->warn (make_unique<write_to_string_literal_diagnostic> (dest_reg));
       break;
     }
 }
@@ -3216,6 +3610,35 @@ region_model::get_capacity (const region *reg) const
     return recorded;
 
   return m_mgr->get_or_create_unknown_svalue (sizetype);
+}
+
+/* Return the string size, including the 0-terminator, if SVAL is a
+   constant_svalue holding a string.  Otherwise, return an unknown_svalue.  */
+
+const svalue *
+region_model::get_string_size (const svalue *sval) const
+{
+  tree cst = sval->maybe_get_constant ();
+  if (!cst || TREE_CODE (cst) != STRING_CST)
+    return m_mgr->get_or_create_unknown_svalue (size_type_node);
+
+  tree out = build_int_cst (size_type_node, TREE_STRING_LENGTH (cst));
+  return m_mgr->get_or_create_constant_svalue (out);
+}
+
+/* Return the string size, including the 0-terminator, if REG is a
+   string_region.  Otherwise, return an unknown_svalue.  */
+
+const svalue *
+region_model::get_string_size (const region *reg) const
+{
+  const string_region *str_reg = dyn_cast <const string_region *> (reg);
+  if (!str_reg)
+    return m_mgr->get_or_create_unknown_svalue (size_type_node);
+
+  tree cst = str_reg->get_string_cst ();
+  tree out = build_int_cst (size_type_node, TREE_STRING_LENGTH (cst));
+  return m_mgr->get_or_create_constant_svalue (out);
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems accessing REG,
@@ -3621,8 +4044,8 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	if (TREE_CODE (cst_cap) == INTEGER_CST
 	    && !capacity_compatible_with_type (cst_cap, pointee_size_tree,
 					       is_struct))
-	  ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
-						   cst_cap));
+	  ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg, rhs_reg,
+							     cst_cap));
       }
       break;
     default:
@@ -3633,8 +4056,9 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	    if (!v.get_result ())
 	      {
 		tree expr = get_representative_tree (capacity);
-		ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
-			    expr));
+		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,
+								   rhs_reg,
+								   expr));
 	      }
 	  }
       break;
@@ -3802,10 +4226,19 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	/* Otherwise, only known through constraints.  */
       }
 
-  /* If we have a pair of constants, compare them.  */
   if (const constant_svalue *cst_lhs = lhs->dyn_cast_constant_svalue ())
-    if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
-      return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
+    {
+      /* If we have a pair of constants, compare them.  */
+      if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
+	return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
+      else
+	{
+	  /* When we have one constant, put it on the RHS.  */
+	  std::swap (lhs, rhs);
+	  op = swap_tree_comparison (op);
+	}
+    }
+  gcc_assert (lhs->get_kind () != SK_CONSTANT);
 
   /* Handle comparison against zero.  */
   if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
@@ -3878,6 +4311,49 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	  return res;
       }
 
+  /* Handle comparisons between two svalues with more than one operand.  */
+	if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
+    {
+      switch (op)
+	{
+	default:
+	  break;
+	case EQ_EXPR:
+	  {
+	    /* TODO: binops can be equal even if they are not structurally
+		     equal in case of commutative operators.  */
+	    tristate res = structural_equality (lhs, rhs);
+	    if (res.is_true ())
+	      return res;
+	  }
+	  break;
+	case LE_EXPR:
+	  {
+	    tristate res = structural_equality (lhs, rhs);
+	    if (res.is_true ())
+	      return res;
+	  }
+	  break;
+	case GE_EXPR:
+	  {
+	    tristate res = structural_equality (lhs, rhs);
+	    if (res.is_true ())
+	      return res;
+	    res = symbolic_greater_than (binop, rhs);
+	    if (res.is_true ())
+	      return res;
+	  }
+	  break;
+	case GT_EXPR:
+	  {
+	    tristate res = symbolic_greater_than (binop, rhs);
+	    if (res.is_true ())
+	      return res;
+	  }
+	  break;
+	}
+    }
+
   return tristate::TS_UNKNOWN;
 }
 
@@ -3897,6 +4373,123 @@ region_model::compare_initial_and_pointer (const initial_svalue *init,
       return tristate::TS_FALSE;
 
   return tristate::TS_UNKNOWN;
+}
+
+/* Return true if SVAL is definitely positive.  */
+
+static bool
+is_positive_svalue (const svalue *sval)
+{
+  if (tree cst = sval->maybe_get_constant ())
+    return !zerop (cst) && get_range_pos_neg (cst) == 1;
+  tree type = sval->get_type ();
+  if (!type)
+    return false;
+  /* Consider a binary operation size_t + int.  The analyzer wraps the int in
+     an unaryop_svalue, converting it to a size_t, but in the dynamic execution
+     the result is smaller than the first operand.  Thus, we have to look if
+     the argument of the unaryop_svalue is also positive.  */
+  if (const unaryop_svalue *un_op = dyn_cast <const unaryop_svalue *> (sval))
+    return CONVERT_EXPR_CODE_P (un_op->get_op ()) && TYPE_UNSIGNED (type)
+	   && is_positive_svalue (un_op->get_arg ());
+  return TYPE_UNSIGNED (type);
+}
+
+/* Return true if A is definitely larger than B.
+
+   Limitation: does not account for integer overflows and does not try to
+	       return false, so it can not be used negated.  */
+
+tristate
+region_model::symbolic_greater_than (const binop_svalue *bin_a,
+				     const svalue *b) const
+{
+  if (bin_a->get_op () == PLUS_EXPR || bin_a->get_op () == MULT_EXPR)
+    {
+      /* Eliminate the right-hand side of both svalues.  */
+      if (const binop_svalue *bin_b = dyn_cast <const binop_svalue *> (b))
+	if (bin_a->get_op () == bin_b->get_op ()
+	    && eval_condition_without_cm (bin_a->get_arg1 (),
+					  GT_EXPR,
+					  bin_b->get_arg1 ()).is_true ()
+	    && eval_condition_without_cm (bin_a->get_arg0 (),
+					  GE_EXPR,
+					  bin_b->get_arg0 ()).is_true ())
+	  return tristate (tristate::TS_TRUE);
+
+      /* Otherwise, try to remove a positive offset or factor from BIN_A.  */
+      if (is_positive_svalue (bin_a->get_arg1 ())
+	  && eval_condition_without_cm (bin_a->get_arg0 (),
+					GE_EXPR, b).is_true ())
+	  return tristate (tristate::TS_TRUE);
+    }
+  return tristate::unknown ();
+}
+
+/* Return true if A and B are equal structurally.
+
+   Structural equality means that A and B are equal if the svalues A and B have
+   the same nodes at the same positions in the tree and the leafs are equal.
+   Equality for conjured_svalues and initial_svalues is determined by comparing
+   the pointers while constants are compared by value.  That behavior is useful
+   to check for binaryop_svlaues that evaluate to the same concrete value but
+   might use one operand with a different type but the same constant value.
+
+   For example,
+     binop_svalue (mult_expr,
+       initial_svalue (‘size_t’, decl_region (..., 'some_var')),
+       constant_svalue (‘size_t’, 4))
+   and
+     binop_svalue (mult_expr,
+       initial_svalue (‘size_t’, decl_region (..., 'some_var'),
+       constant_svalue (‘sizetype’, 4))
+   are structurally equal.  A concrete C code example, where this occurs, can
+   be found in test7 of out-of-bounds-5.c.  */
+
+tristate
+region_model::structural_equality (const svalue *a, const svalue *b) const
+{
+  /* If A and B are referentially equal, they are also structurally equal.  */
+  if (a == b)
+    return tristate (tristate::TS_TRUE);
+
+  switch (a->get_kind ())
+    {
+    default:
+      return tristate::unknown ();
+    /* SK_CONJURED and SK_INITIAL are already handled
+       by the referential equality above.  */
+    case SK_CONSTANT:
+      {
+	tree a_cst = a->maybe_get_constant ();
+	tree b_cst = b->maybe_get_constant ();
+	if (a_cst && b_cst)
+	  return tristate (tree_int_cst_equal (a_cst, b_cst));
+      }
+      return tristate (tristate::TS_FALSE);
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *un_a = as_a <const unaryop_svalue *> (a);
+	if (const unaryop_svalue *un_b = dyn_cast <const unaryop_svalue *> (b))
+	  return tristate (pending_diagnostic::same_tree_p (un_a->get_type (),
+							    un_b->get_type ())
+			   && un_a->get_op () == un_b->get_op ()
+			   && structural_equality (un_a->get_arg (),
+						   un_b->get_arg ()));
+      }
+      return tristate (tristate::TS_FALSE);
+    case SK_BINOP:
+      {
+	const binop_svalue *bin_a = as_a <const binop_svalue *> (a);
+	if (const binop_svalue *bin_b = dyn_cast <const binop_svalue *> (b))
+	  return tristate (bin_a->get_op () == bin_b->get_op ()
+			   && structural_equality (bin_a->get_arg0 (),
+						   bin_b->get_arg0 ())
+			   && structural_equality (bin_a->get_arg1 (),
+						   bin_b->get_arg1 ()));
+      }
+      return tristate (tristate::TS_FALSE);
+    }
 }
 
 /* Handle various constraints of the form:
@@ -4498,11 +5091,8 @@ region_model::maybe_update_for_edge (const superedge &edge,
       break;
 
     case SUPEREDGE_INTRAPROCEDURAL_CALL:
-      {
-	const callgraph_superedge *cg_sedge
-	  = as_a <const callgraph_superedge *> (&edge);
-	update_for_call_summary (*cg_sedge, ctxt);
-      }
+      /* This is a no-op for call summaries; we should already
+	 have handled the effect of the call summary at the call stmt.  */
       break;
     }
 
@@ -4600,25 +5190,34 @@ region_model::update_for_return_superedge (const return_superedge &return_edge,
   update_for_return_gcall (call_stmt, ctxt);
 }
 
-/* Update this region_model with a summary of the effect of calling
-   and returning from CG_SEDGE.
+/* Attempt to to use R to replay SUMMARY into this object.
+   Return true if it is possible.  */
 
-   TODO: Currently this is extremely simplistic: we merely set the
-   return value to "unknown".  A proper implementation would e.g. update
-   sm-state, and presumably be reworked to support multiple outcomes.  */
-
-void
-region_model::update_for_call_summary (const callgraph_superedge &cg_sedge,
-				       region_model_context *ctxt)
+bool
+region_model::replay_call_summary (call_summary_replay &r,
+				   const region_model &summary)
 {
-  /* For now, set any return value to "unknown".  */
-  const gcall *call_stmt = cg_sedge.get_call_stmt ();
-  tree lhs = gimple_call_lhs (call_stmt);
-  if (lhs)
-    mark_region_as_unknown (get_lvalue (lhs, ctxt),
-			    ctxt ? ctxt->get_uncertainty () : NULL);
+  gcc_assert (summary.get_stack_depth () == 1);
 
-  // TODO: actually implement some kind of summary here
+  m_store.replay_call_summary (r, summary.m_store);
+
+  if (!m_constraints->replay_call_summary (r, *summary.m_constraints))
+    return false;
+
+  for (auto kv : summary.m_dynamic_extents)
+    {
+      const region *summary_reg = kv.first;
+      const region *caller_reg = r.convert_region_from_summary (summary_reg);
+      if (!caller_reg)
+	continue;
+      const svalue *summary_sval = kv.second;
+      const svalue *caller_sval = r.convert_svalue_from_summary (summary_sval);
+      if (!caller_sval)
+	continue;
+      m_dynamic_extents.put (caller_reg, caller_sval);
+    }
+
+  return true;
 }
 
 /* Given a true or false edge guarded by conditional statement COND_STMT,
@@ -5181,7 +5780,7 @@ region_model::check_dynamic_size_for_floats (const svalue *size_in_bytes,
   if (const svalue *float_sval = v.get_svalue_to_report ())
 	{
 	  tree diag_arg = get_representative_tree (float_sval);
-	  ctxt->warn (new float_as_size_arg (diag_arg));
+	  ctxt->warn (make_unique<float_as_size_arg> (diag_arg));
 	}
 }
 
@@ -5249,18 +5848,576 @@ region_model::unset_dynamic_extents (const region *reg)
   m_dynamic_extents.remove (reg);
 }
 
+/* Information of the layout of a RECORD_TYPE, capturing it as a vector
+   of items, where each item is either a field or padding.  */
+
+class record_layout
+{
+public:
+  /* An item within a record; either a field, or padding after a field.  */
+  struct item
+  {
+  public:
+    item (const bit_range &br,
+	  tree field,
+	  bool is_padding)
+    : m_bit_range (br),
+      m_field (field),
+      m_is_padding (is_padding)
+    {
+    }
+
+    bit_offset_t get_start_bit_offset () const
+    {
+      return m_bit_range.get_start_bit_offset ();
+    }
+    bit_offset_t get_next_bit_offset () const
+    {
+      return m_bit_range.get_next_bit_offset ();
+    }
+
+    bool contains_p (bit_offset_t offset) const
+    {
+      return m_bit_range.contains_p (offset);
+    }
+
+    void dump_to_pp (pretty_printer *pp) const
+    {
+      if (m_is_padding)
+	pp_printf (pp, "padding after %qD", m_field);
+      else
+	pp_printf (pp, "%qD", m_field);
+      pp_string (pp, ", ");
+      m_bit_range.dump_to_pp (pp);
+    }
+
+    bit_range m_bit_range;
+    tree m_field;
+    bool m_is_padding;
+  };
+
+  record_layout (tree record_type)
+  {
+    gcc_assert (TREE_CODE (record_type) == RECORD_TYPE);
+
+    for (tree iter = TYPE_FIELDS (record_type); iter != NULL_TREE;
+	 iter = DECL_CHAIN (iter))
+      {
+	if (TREE_CODE (iter) == FIELD_DECL)
+	  {
+	    int iter_field_offset = int_bit_position (iter);
+	    bit_size_t size_in_bits;
+	    if (!int_size_in_bits (TREE_TYPE (iter), &size_in_bits))
+	      size_in_bits = 0;
+
+	    maybe_pad_to (iter_field_offset);
+
+	    /* Add field.  */
+	    m_items.safe_push (item (bit_range (iter_field_offset,
+						size_in_bits),
+				     iter, false));
+	  }
+      }
+
+    /* Add any trailing padding.  */
+    bit_size_t size_in_bits;
+    if (int_size_in_bits (record_type, &size_in_bits))
+      maybe_pad_to (size_in_bits);
+  }
+
+  void dump_to_pp (pretty_printer *pp) const
+  {
+    unsigned i;
+    item *it;
+    FOR_EACH_VEC_ELT (m_items, i, it)
+      {
+	it->dump_to_pp (pp);
+	pp_newline (pp);
+      }
+  }
+
+  DEBUG_FUNCTION void dump () const
+  {
+    pretty_printer pp;
+    pp_format_decoder (&pp) = default_tree_printer;
+    pp.buffer->stream = stderr;
+    dump_to_pp (&pp);
+    pp_flush (&pp);
+  }
+
+  const record_layout::item *get_item_at (bit_offset_t offset) const
+  {
+    unsigned i;
+    item *it;
+    FOR_EACH_VEC_ELT (m_items, i, it)
+      if (it->contains_p (offset))
+	return it;
+    return NULL;
+  }
+
+private:
+  /* Subroutine of ctor.  Add padding item to NEXT_OFFSET if necessary.  */
+
+  void maybe_pad_to (bit_offset_t next_offset)
+  {
+    if (m_items.length () > 0)
+      {
+	const item &last_item = m_items[m_items.length () - 1];
+	bit_offset_t offset_after_last_item
+	  = last_item.get_next_bit_offset ();
+	if (next_offset > offset_after_last_item)
+	  {
+	    bit_size_t padding_size
+	      = next_offset - offset_after_last_item;
+	    m_items.safe_push (item (bit_range (offset_after_last_item,
+						padding_size),
+				     last_item.m_field, true));
+	  }
+      }
+  }
+
+  auto_vec<item> m_items;
+};
+
+/* A subclass of pending_diagnostic for complaining about uninitialized data
+   being copied across a trust boundary to an untrusted output
+   (e.g. copy_to_user infoleaks in the Linux kernel).  */
+
+class exposure_through_uninit_copy
+  : public pending_diagnostic_subclass<exposure_through_uninit_copy>
+{
+public:
+  exposure_through_uninit_copy (const region *src_region,
+				const region *dest_region,
+				const svalue *copied_sval)
+  : m_src_region (src_region),
+    m_dest_region (dest_region),
+    m_copied_sval (copied_sval)
+  {
+    gcc_assert (m_copied_sval->get_kind () == SK_POISONED
+		|| m_copied_sval->get_kind () == SK_COMPOUND);
+  }
+
+  const char *get_kind () const final override
+  {
+    return "exposure_through_uninit_copy";
+  }
+
+  bool operator== (const exposure_through_uninit_copy &other) const
+  {
+    return (m_src_region == other.m_src_region
+	    && m_dest_region == other.m_dest_region
+	    && m_copied_sval == other.m_copied_sval);
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_exposure_through_uninit_copy;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    diagnostic_metadata m;
+    /* CWE-200: Exposure of Sensitive Information to an Unauthorized Actor.  */
+    m.add_cwe (200);
+    enum memory_space mem_space = get_src_memory_space ();
+    bool warned;
+    switch (mem_space)
+      {
+      default:
+	warned = warning_meta
+	  (rich_loc, m, get_controlling_option (),
+	   "potential exposure of sensitive information"
+	   " by copying uninitialized data across trust boundary");
+	break;
+      case MEMSPACE_STACK:
+	warned = warning_meta
+	  (rich_loc, m, get_controlling_option (),
+	   "potential exposure of sensitive information"
+	   " by copying uninitialized data from stack across trust boundary");
+	break;
+      case MEMSPACE_HEAP:
+	warned = warning_meta
+	  (rich_loc, m, get_controlling_option (),
+	   "potential exposure of sensitive information"
+	   " by copying uninitialized data from heap across trust boundary");
+	break;
+      }
+    if (warned)
+      {
+	location_t loc = rich_loc->get_loc ();
+	inform_number_of_uninit_bits (loc);
+	complain_about_uninit_ranges (loc);
+
+	if (mem_space == MEMSPACE_STACK)
+	  maybe_emit_fixit_hint ();
+      }
+    return warned;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &) final override
+  {
+    enum memory_space mem_space = get_src_memory_space ();
+    switch (mem_space)
+      {
+      default:
+	return label_text::borrow ("uninitialized data copied here");
+
+      case MEMSPACE_STACK:
+	return label_text::borrow ("uninitialized data copied from stack here");
+
+      case MEMSPACE_HEAP:
+	return label_text::borrow ("uninitialized data copied from heap here");
+      }
+  }
+
+  void mark_interesting_stuff (interesting_t *interest) final override
+  {
+    if (m_src_region)
+      interest->add_region_creation (m_src_region);
+  }
+
+private:
+  enum memory_space get_src_memory_space () const
+  {
+    return m_src_region ? m_src_region->get_memory_space () : MEMSPACE_UNKNOWN;
+  }
+
+  bit_size_t calc_num_uninit_bits () const
+  {
+    switch (m_copied_sval->get_kind ())
+      {
+      default:
+	gcc_unreachable ();
+	break;
+      case SK_POISONED:
+	{
+	  const poisoned_svalue *poisoned_sval
+	    = as_a <const poisoned_svalue *> (m_copied_sval);
+	  gcc_assert (poisoned_sval->get_poison_kind () == POISON_KIND_UNINIT);
+
+	  /* Give up if don't have type information.  */
+	  if (m_copied_sval->get_type () == NULL_TREE)
+	    return 0;
+
+	  bit_size_t size_in_bits;
+	  if (int_size_in_bits (m_copied_sval->get_type (), &size_in_bits))
+	    return size_in_bits;
+
+	  /* Give up if we can't get the size of the type.  */
+	  return 0;
+	}
+	break;
+      case SK_COMPOUND:
+	{
+	  const compound_svalue *compound_sval
+	    = as_a <const compound_svalue *> (m_copied_sval);
+	  bit_size_t result = 0;
+	  /* Find keys for uninit svals.  */
+	  for (auto iter : *compound_sval)
+	    {
+	      const svalue *sval = iter.second;
+	      if (const poisoned_svalue *psval
+		  = sval->dyn_cast_poisoned_svalue ())
+		if (psval->get_poison_kind () == POISON_KIND_UNINIT)
+		  {
+		    const binding_key *key = iter.first;
+		    const concrete_binding *ckey
+		      = key->dyn_cast_concrete_binding ();
+		    gcc_assert (ckey);
+		    result += ckey->get_size_in_bits ();
+		  }
+	    }
+	  return result;
+	}
+      }
+  }
+
+  void inform_number_of_uninit_bits (location_t loc) const
+  {
+    bit_size_t num_uninit_bits = calc_num_uninit_bits ();
+    if (num_uninit_bits <= 0)
+      return;
+    if (num_uninit_bits % BITS_PER_UNIT == 0)
+      {
+	/* Express in bytes.  */
+	byte_size_t num_uninit_bytes = num_uninit_bits / BITS_PER_UNIT;
+	if (num_uninit_bytes == 1)
+	  inform (loc, "1 byte is uninitialized");
+	else
+	  inform (loc,
+		  "%wu bytes are uninitialized", num_uninit_bytes.to_uhwi ());
+      }
+    else
+      {
+	/* Express in bits.  */
+	if (num_uninit_bits == 1)
+	  inform (loc, "1 bit is uninitialized");
+	else
+	  inform (loc,
+		  "%wu bits are uninitialized", num_uninit_bits.to_uhwi ());
+      }
+  }
+
+  void complain_about_uninit_ranges (location_t loc) const
+  {
+    if (const compound_svalue *compound_sval
+	= m_copied_sval->dyn_cast_compound_svalue ())
+      {
+	/* Find keys for uninit svals.  */
+	auto_vec<const concrete_binding *> uninit_keys;
+	for (auto iter : *compound_sval)
+	  {
+	    const svalue *sval = iter.second;
+	    if (const poisoned_svalue *psval
+		= sval->dyn_cast_poisoned_svalue ())
+	      if (psval->get_poison_kind () == POISON_KIND_UNINIT)
+		{
+		  const binding_key *key = iter.first;
+		  const concrete_binding *ckey
+		    = key->dyn_cast_concrete_binding ();
+		  gcc_assert (ckey);
+		  uninit_keys.safe_push (ckey);
+		}
+	  }
+	/* Complain about them in sorted order.  */
+	uninit_keys.qsort (concrete_binding::cmp_ptr_ptr);
+
+	std::unique_ptr<record_layout> layout;
+
+	tree type = m_copied_sval->get_type ();
+	if (type && TREE_CODE (type) == RECORD_TYPE)
+	  {
+	    // (std::make_unique is C++14)
+	    layout = std::unique_ptr<record_layout> (new record_layout (type));
+
+	    if (0)
+	      layout->dump ();
+	  }
+
+	unsigned i;
+	const concrete_binding *ckey;
+	FOR_EACH_VEC_ELT (uninit_keys, i, ckey)
+	  {
+	    bit_offset_t start_bit = ckey->get_start_bit_offset ();
+	    bit_offset_t next_bit = ckey->get_next_bit_offset ();
+	    complain_about_uninit_range (loc, start_bit, next_bit,
+					 layout.get ());
+	  }
+      }
+  }
+
+  void complain_about_uninit_range (location_t loc,
+				    bit_offset_t start_bit,
+				    bit_offset_t next_bit,
+				    const record_layout *layout) const
+  {
+    if (layout)
+      {
+	while (start_bit < next_bit)
+	  {
+	    if (const record_layout::item *item
+		  = layout->get_item_at (start_bit))
+	      {
+		gcc_assert (start_bit >= item->get_start_bit_offset ());
+		gcc_assert (start_bit < item->get_next_bit_offset ());
+		if (item->get_start_bit_offset () == start_bit
+		    && item->get_next_bit_offset () <= next_bit)
+		  complain_about_fully_uninit_item (*item);
+		else
+		  complain_about_partially_uninit_item (*item);
+		start_bit = item->get_next_bit_offset ();
+		continue;
+	      }
+	    else
+	      break;
+	  }
+      }
+
+    if (start_bit >= next_bit)
+      return;
+
+    if (start_bit % 8 == 0 && next_bit % 8 == 0)
+      {
+	/* Express in bytes.  */
+	byte_offset_t start_byte = start_bit / 8;
+	byte_offset_t last_byte = (next_bit / 8) - 1;
+	if (last_byte == start_byte)
+	  inform (loc,
+		  "byte %wu is uninitialized",
+		  start_byte.to_uhwi ());
+	else
+	  inform (loc,
+		  "bytes %wu - %wu are uninitialized",
+		  start_byte.to_uhwi (),
+		  last_byte.to_uhwi ());
+      }
+    else
+      {
+	/* Express in bits.  */
+	bit_offset_t last_bit = next_bit - 1;
+	if (last_bit == start_bit)
+	  inform (loc,
+		  "bit %wu is uninitialized",
+		  start_bit.to_uhwi ());
+	else
+	  inform (loc,
+		  "bits %wu - %wu are uninitialized",
+		  start_bit.to_uhwi (),
+		  last_bit.to_uhwi ());
+      }
+  }
+
+  static void
+  complain_about_fully_uninit_item (const record_layout::item &item)
+  {
+    tree field = item.m_field;
+    bit_size_t num_bits = item.m_bit_range.m_size_in_bits;
+    if (item.m_is_padding)
+      {
+	if (num_bits % 8 == 0)
+	  {
+	    /* Express in bytes.  */
+	    byte_size_t num_bytes = num_bits / BITS_PER_UNIT;
+	    if (num_bytes == 1)
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "padding after field %qD is uninitialized (1 byte)",
+		      field);
+	    else
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "padding after field %qD is uninitialized (%wu bytes)",
+		      field, num_bytes.to_uhwi ());
+	  }
+	else
+	  {
+	    /* Express in bits.  */
+	    if (num_bits == 1)
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "padding after field %qD is uninitialized (1 bit)",
+		      field);
+	    else
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "padding after field %qD is uninitialized (%wu bits)",
+		      field, num_bits.to_uhwi ());
+	  }
+      }
+    else
+      {
+	if (num_bits % 8 == 0)
+	  {
+	    /* Express in bytes.  */
+	    byte_size_t num_bytes = num_bits / BITS_PER_UNIT;
+	    if (num_bytes == 1)
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "field %qD is uninitialized (1 byte)", field);
+	    else
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "field %qD is uninitialized (%wu bytes)",
+		      field, num_bytes.to_uhwi ());
+	  }
+	else
+	  {
+	    /* Express in bits.  */
+	    if (num_bits == 1)
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "field %qD is uninitialized (1 bit)", field);
+	    else
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "field %qD is uninitialized (%wu bits)",
+		      field, num_bits.to_uhwi ());
+	  }
+      }
+  }
+
+  static void
+  complain_about_partially_uninit_item (const record_layout::item &item)
+  {
+    tree field = item.m_field;
+    if (item.m_is_padding)
+      inform (DECL_SOURCE_LOCATION (field),
+	      "padding after field %qD is partially uninitialized",
+	      field);
+    else
+      inform (DECL_SOURCE_LOCATION (field),
+	      "field %qD is partially uninitialized",
+	      field);
+    /* TODO: ideally we'd describe what parts are uninitialized.  */
+  }
+
+  void maybe_emit_fixit_hint () const
+  {
+    if (tree decl = m_src_region->maybe_get_decl ())
+      {
+	gcc_rich_location hint_richloc (DECL_SOURCE_LOCATION (decl));
+	hint_richloc.add_fixit_insert_after (" = {0}");
+	inform (&hint_richloc,
+		"suggest forcing zero-initialization by"
+		" providing a %<{0}%> initializer");
+      }
+  }
+
+private:
+  const region *m_src_region;
+  const region *m_dest_region;
+  const svalue *m_copied_sval;
+};
+
+/* Return true if any part of SVAL is uninitialized.  */
+
+static bool
+contains_uninit_p (const svalue *sval)
+{
+  struct uninit_finder : public visitor
+  {
+  public:
+    uninit_finder () : m_found_uninit (false) {}
+    void visit_poisoned_svalue (const poisoned_svalue *sval)
+    {
+      if (sval->get_poison_kind () == POISON_KIND_UNINIT)
+	m_found_uninit = true;
+    }
+    bool m_found_uninit;
+  };
+
+  uninit_finder v;
+  sval->accept (&v);
+
+  return v.m_found_uninit;
+}
+
+/* Function for use by plugins when simulating writing data through a
+   pointer to an "untrusted" region DST_REG (and thus crossing a security
+   boundary), such as copying data to user space in an OS kernel.
+
+   Check that COPIED_SVAL is fully initialized.  If not, complain about
+   an infoleak to CTXT.
+
+   SRC_REG can be NULL; if non-NULL it is used as a hint in the diagnostic
+   as to where COPIED_SVAL came from.  */
+
+void
+region_model::maybe_complain_about_infoleak (const region *dst_reg,
+					     const svalue *copied_sval,
+					     const region *src_reg,
+					     region_model_context *ctxt)
+{
+  /* Check for exposure.  */
+  if (contains_uninit_p (copied_sval))
+    ctxt->warn (make_unique<exposure_through_uninit_copy> (src_reg,
+							   dst_reg,
+							   copied_sval));
+}
+
 /* class noop_region_model_context : public region_model_context.  */
 
 void
-noop_region_model_context::add_note (pending_note *pn)
+noop_region_model_context::add_note (std::unique_ptr<pending_note>)
 {
-  delete pn;
 }
 
 void
-noop_region_model_context::bifurcate (custom_edge_info *info)
+noop_region_model_context::bifurcate (std::unique_ptr<custom_edge_info>)
 {
-  delete info;
 }
 
 void
@@ -5608,7 +6765,7 @@ test_struct ()
   /* Verify get_offset for "c.x".  */
   {
     const region *c_x_reg = model.get_lvalue (c_x, NULL);
-    region_offset offset = c_x_reg->get_offset ();
+    region_offset offset = c_x_reg->get_offset (&mgr);
     ASSERT_EQ (offset.get_base_region (), model.get_lvalue (c, NULL));
     ASSERT_EQ (offset.get_bit_offset (), 0);
   }
@@ -5616,7 +6773,7 @@ test_struct ()
   /* Verify get_offset for "c.y".  */
   {
     const region *c_y_reg = model.get_lvalue (c_y, NULL);
-    region_offset offset = c_y_reg->get_offset ();
+    region_offset offset = c_y_reg->get_offset (&mgr);
     ASSERT_EQ (offset.get_base_region (), model.get_lvalue (c, NULL));
     ASSERT_EQ (offset.get_bit_offset (), INT_TYPE_SIZE);
   }
@@ -6021,6 +7178,57 @@ test_sub_svalue_folding ()
 						      unknown, c_x_reg);
   ASSERT_EQ (sub->get_kind (), SK_UNKNOWN);
   ASSERT_EQ (sub->get_type (), TREE_TYPE (ct.m_x_field));
+}
+
+/* Get BIT within VAL as a symbolic value within MGR.  */
+
+static const svalue *
+get_bit (region_model_manager *mgr,
+	 bit_offset_t bit,
+	 unsigned HOST_WIDE_INT val)
+{
+  const svalue *inner_svalue
+    = mgr->get_or_create_int_cst (unsigned_type_node, val);
+  return mgr->get_or_create_bits_within (boolean_type_node,
+					 bit_range (bit, 1),
+					 inner_svalue);
+}
+
+/* Verify that bits_within_svalues are folded as expected.  */
+
+static void
+test_bits_within_svalue_folding ()
+{
+  region_model_manager mgr;
+
+  const svalue *zero = mgr.get_or_create_int_cst (boolean_type_node, 0);
+  const svalue *one = mgr.get_or_create_int_cst (boolean_type_node, 1);
+
+  {
+    const unsigned val = 0x0000;
+    for (unsigned bit = 0; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+  }
+
+  {
+    const unsigned val = 0x0001;
+    ASSERT_EQ (get_bit (&mgr, 0, val), one);
+    for (unsigned bit = 1; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+  }
+
+  {
+    const unsigned val = 0x8000;
+    for (unsigned bit = 0; bit < 15; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), zero);
+    ASSERT_EQ (get_bit (&mgr, 15, val), one);
+  }
+
+  {
+    const unsigned val = 0xFFFF;
+    for (unsigned bit = 0; bit < 16; bit++)
+      ASSERT_EQ (get_bit (&mgr, bit, val), one);
+  }
 }
 
 /* Test that region::descendent_of_p works as expected.  */
@@ -6856,7 +8064,7 @@ static void
 test_widening_constraints ()
 {
   region_model_manager mgr;
-  program_point point (program_point::origin (mgr));
+  function_point point (program_point::origin (mgr).get_function_point ());
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_m1 = build_int_cst (integer_type_node, -1);
   tree int_1 = build_int_cst (integer_type_node, 1);
@@ -7111,7 +8319,7 @@ test_var ()
 
   /* Verify get_offset for "i".  */
   {
-    region_offset offset = i_reg->get_offset ();
+    region_offset offset = i_reg->get_offset (&mgr);
     ASSERT_EQ (offset.get_base_region (), i_reg);
     ASSERT_EQ (offset.get_bit_offset (), 0);
   }
@@ -7160,7 +8368,7 @@ test_array_2 ()
   /* Verify get_offset for "arr[0]".  */
   {
     const region *arr_0_reg = model.get_lvalue (arr_0, NULL);
-    region_offset offset = arr_0_reg->get_offset ();
+    region_offset offset = arr_0_reg->get_offset (&mgr);
     ASSERT_EQ (offset.get_base_region (), model.get_lvalue (arr, NULL));
     ASSERT_EQ (offset.get_bit_offset (), 0);
   }
@@ -7168,9 +8376,17 @@ test_array_2 ()
   /* Verify get_offset for "arr[1]".  */
   {
     const region *arr_1_reg = model.get_lvalue (arr_1, NULL);
-    region_offset offset = arr_1_reg->get_offset ();
+    region_offset offset = arr_1_reg->get_offset (&mgr);
     ASSERT_EQ (offset.get_base_region (), model.get_lvalue (arr, NULL));
     ASSERT_EQ (offset.get_bit_offset (), INT_TYPE_SIZE);
+  }
+
+  /* Verify get_offset for "arr[i]".  */
+  {
+    const region *arr_i_reg = model.get_lvalue (arr_i, NULL);
+    region_offset offset = arr_i_reg->get_offset (&mgr);
+    ASSERT_EQ (offset.get_base_region (), model.get_lvalue (arr, NULL));
+    ASSERT_EQ (offset.get_symbolic_byte_offset ()->get_kind (), SK_BINOP);
   }
 
   /* "arr[i] = i;" - this should remove the earlier bindings.  */
@@ -7371,6 +8587,7 @@ analyzer_region_model_cc_tests ()
   test_unaryop_svalue_folding ();
   test_binop_svalue_folding ();
   test_sub_svalue_folding ();
+  test_bits_within_svalue_folding ();
   test_descendent_of_p ();
   test_bit_range_regions ();
   test_assignment ();

@@ -412,6 +412,7 @@ typedef __WINT_TYPE__ wint_t;
 #ifdef _STDDEF_H
 
 /* Offset of member MEMBER in a struct of type TYPE. */
+#undef offsetof		/* in case a system header has defined it. */
 #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
 
 #if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) \
@@ -442,6 +443,18 @@ typedef struct {
   typedef decltype(nullptr) nullptr_t;
 #endif
 #endif /* C++11.  */
+
+#if (defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L)
+#ifndef _GCC_NULLPTR_T
+#define _GCC_NULLPTR_T
+  typedef __typeof__(nullptr) nullptr_t;
+/* ??? This doesn't define __STDC_VERSION_STDDEF_H__ yet.  */
+#endif
+#endif /* C23.  */
+
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define unreachable() (__builtin_unreachable ())
+#endif
 
 #endif /* _STDDEF_H was defined this time */
 

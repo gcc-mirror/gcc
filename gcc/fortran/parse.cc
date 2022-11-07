@@ -885,6 +885,8 @@ decode_omp_directive (void)
   switch (c)
     {
     case 'a':
+      matcho ("assumes", gfc_match_omp_assumes, ST_OMP_ASSUMES);
+      matchs ("assume", gfc_match_omp_assume, ST_OMP_ASSUME);
       matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
       break;
     case 'b':
@@ -913,6 +915,7 @@ decode_omp_directive (void)
       break;
     case 'e':
       matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
+      matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
       matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
       matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
@@ -924,7 +927,7 @@ decode_omp_directive (void)
       matcho ("end distribute", gfc_match_omp_eos_error, ST_OMP_END_DISTRIBUTE);
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
-      matcho ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
+      matchs ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
       matcho ("end masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_MASKED_TASKLOOP_SIMD);
@@ -1023,10 +1026,11 @@ decode_omp_directive (void)
       matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
       break;
     case 'l':
-      matcho ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
+      matchs ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
       break;
     case 'o':
-      if (gfc_match ("ordered depend (") == MATCH_YES)
+      if (gfc_match ("ordered depend (") == MATCH_YES
+	  || gfc_match ("ordered doacross (") == MATCH_YES)
 	{
 	  gfc_current_locus = old_locus;
 	  if (!flag_openmp)
@@ -1069,7 +1073,7 @@ decode_omp_directive (void)
       matcho ("requires", gfc_match_omp_requires, ST_OMP_REQUIRES);
       break;
     case 's':
-      matcho ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
+      matchs ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matcho ("scope", gfc_match_omp_scope, ST_OMP_SCOPE);
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
@@ -1715,6 +1719,7 @@ next_statement (void)
   case ST_OMP_TARGET_SIMD: case ST_OMP_TASKLOOP: case ST_OMP_TASKLOOP_SIMD: \
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
+  case ST_OMP_ASSUME: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -1732,7 +1737,7 @@ next_statement (void)
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
-  case ST_OMP_DECLARE_VARIANT: \
+  case ST_OMP_DECLARE_VARIANT: case ST_OMP_ASSUMES: \
   case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* Block end statements.  Errors associated with interchanging these
@@ -1924,10 +1929,11 @@ gfc_enclosing_unit (gfc_compile_state * result)
 }
 
 
-/* Translate a statement enum to a string.  */
+/* Translate a statement enum to a string.  If strip_sentinel is true,
+   the !$OMP/!$ACC sentinel is excluded.  */
 
 const char *
-gfc_ascii_statement (gfc_statement st)
+gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
 {
   const char *p;
 
@@ -2352,6 +2358,12 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OACC_END_ATOMIC:
       p = "!$ACC END ATOMIC";
       break;
+    case ST_OMP_ASSUME:
+      p = "!$OMP ASSUME";
+      break;
+    case ST_OMP_ASSUMES:
+      p = "!$OMP ASSUMES";
+      break;
     case ST_OMP_ATOMIC:
       p = "!$OMP ATOMIC";
       break;
@@ -2399,6 +2411,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_DO_SIMD:
       p = "!$OMP DO SIMD";
+      break;
+    case ST_OMP_END_ASSUME:
+      p = "!$OMP END ASSUME";
       break;
     case ST_OMP_END_ATOMIC:
       p = "!$OMP END ATOMIC";
@@ -2599,6 +2614,10 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_ORDERED_DEPEND:
       p = "!$OMP ORDERED";
       break;
+    case ST_OMP_NOTHING:
+      /* Note: gfc_match_omp_nothing returns ST_NONE. */
+      p = "!$OMP NOTHING";
+      break;
     case ST_OMP_PARALLEL:
       p = "!$OMP PARALLEL";
       break;
@@ -2750,6 +2769,8 @@ gfc_ascii_statement (gfc_statement st)
       gfc_internal_error ("gfc_ascii_statement(): Bad statement code");
     }
 
+  if (strip_sentinel && p[0] == '!')
+    return p + strlen ("!$OMP ");
   return p;
 }
 
@@ -5517,6 +5538,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 
   switch (omp_st)
     {
+    case ST_OMP_ASSUME:
+      omp_end_st = ST_OMP_END_ASSUME;
+      break;
     case ST_OMP_PARALLEL:
       omp_end_st = ST_OMP_END_PARALLEL;
       break;
@@ -5650,6 +5674,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		  parse_forall_block ();
 		  break;
 
+		case ST_OMP_ASSUME:
 		case ST_OMP_PARALLEL:
 		case ST_OMP_PARALLEL_MASKED:
 		case ST_OMP_PARALLEL_MASTER:
@@ -5709,7 +5734,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	    }
 	  return st;
 	}
-      else if (st != omp_end_st)
+      else if (st != omp_end_st || block_construct)
 	{
 	  unexpected_statement (st);
 	  st = next_statement ();
@@ -5873,6 +5898,7 @@ parse_executable (gfc_statement st)
 	  parse_oacc_structured_block (st);
 	  break;
 
+	case ST_OMP_ASSUME:
 	case ST_OMP_PARALLEL:
 	case ST_OMP_PARALLEL_MASKED:
 	case ST_OMP_PARALLEL_MASTER:

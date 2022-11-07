@@ -586,7 +586,7 @@ if (isInputRange!Range)
     static assert(isMutable!ValueType, "assocArray: value type must be mutable");
 
     ValueType[KeyType] aa;
-    foreach (t; r)
+    foreach (ref t; r)
         aa[t[0]] = t[1];
     return aa;
 }
@@ -2297,7 +2297,7 @@ if (isInputRange!RoR &&
 // https://issues.dlang.org/show_bug.cgi?id=10895
 @safe unittest
 {
-    class A
+    static class A
     {
         string name;
         alias name this;
@@ -4376,8 +4376,8 @@ unittest
             return app[];
     }
 
-    class C {}
-    struct S { const(C) c; }
+    static class C {}
+    static struct S { const(C) c; }
     S[] s = [ S(new C) ];
 
     auto t = fastCopy(s); // Does not compile
@@ -4676,6 +4676,7 @@ nothrow pure @safe @nogc unittest
     assert(a == [0, 1]);
 }
 
+/// ditto
 pragma(inline, true) U[n] staticArray(U, T, size_t n)(auto ref T[n] a)
 if (!is(T == U) && is(T : U))
 {

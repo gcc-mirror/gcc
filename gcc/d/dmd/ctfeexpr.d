@@ -357,15 +357,31 @@ UnionExp copyLiteral(Expression e)
         r.origin = sle.origin;
         return ue;
     }
-    if (e.op == EXP.function_ || e.op == EXP.delegate_ || e.op == EXP.symbolOffset || e.op == EXP.null_ || e.op == EXP.variable || e.op == EXP.dotVariable || e.op == EXP.int64 || e.op == EXP.float64 || e.op == EXP.char_ || e.op == EXP.complex80 || e.op == EXP.void_ || e.op == EXP.vector || e.op == EXP.typeid_)
+
+    switch(e.op)
     {
+    case EXP.function_:
+    case EXP.delegate_:
+    case EXP.symbolOffset:
+    case EXP.null_:
+    case EXP.variable:
+    case EXP.dotVariable:
+    case EXP.int64:
+    case EXP.float64:
+    case EXP.char_:
+    case EXP.complex80:
+    case EXP.void_:
+    case EXP.vector:
+    case EXP.typeid_:
         // Simple value types
         // Keep e1 for DelegateExp and DotVarExp
         emplaceExp!(UnionExp)(&ue, e);
         Expression r = ue.exp();
         r.type = e.type;
         return ue;
+    default: break;
     }
+
     if (auto se = e.isSliceExp())
     {
         if (se.type.toBasetype().ty == Tsarray)

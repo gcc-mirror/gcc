@@ -2198,40 +2198,6 @@ An integer constant with all bits set except exactly one.
 Any SYMBOL_REF.
 @end table
 
-@item CR16 Architecture---@file{config/cr16/cr16.h}
-@table @code
-
-@item b
-Registers from r0 to r14 (registers without stack pointer)
-
-@item t
-Register from r0 to r11 (all 16-bit registers)
-
-@item p
-Register from r12 to r15 (all 32-bit registers)
-
-@item I
-Signed constant that fits in 4 bits
-
-@item J
-Signed constant that fits in 5 bits
-
-@item K
-Signed constant that fits in 6 bits
-
-@item L
-Unsigned constant that fits in 4 bits
-
-@item M
-Signed constant that fits in 32 bits
-
-@item N
-Check for 64 bits wide constants for add/sub instructions
-
-@item G
-Floating point constant that is legal for store immediate
-@end table
-
 @item C-SKY---@file{config/csky/constraints.md}
 @table @code
 
@@ -2316,7 +2282,7 @@ This constraint won't match unless @option{-mprefer-short-insn-regs} is
 in effect.
 
 @item Rsc
-The the register class of registers that can be used to hold a
+The register class of registers that can be used to hold a
 sibcall call address.  I.e., a caller-saved register.
 
 @item Rct
@@ -3300,9 +3266,6 @@ Like @code{b}, if @option{-mpowerpc64} is used; otherwise, @code{NO_REGS}.
 
 @item wB
 Signed 5-bit constant integer that can be loaded into an Altivec register.
-
-@item wD
-Int constant that is the element number of the 64-bit scalar in a vector.
 
 @item wE
 Vector constant that can be loaded with the XXSPLTIB instruction.
@@ -4984,13 +4947,22 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{while_ult@var{m}@var{n}} instruction pattern
 @item @code{while_ult@var{m}@var{n}}
 Set operand 0 to a mask that is true while incrementing operand 1
-gives a value that is less than operand 2.  Operand 0 has mode @var{n}
-and operands 1 and 2 are scalar integers of mode @var{m}.
-The operation is equivalent to:
+gives a value that is less than operand 2, for a vector length up to operand 3.
+Operand 0 has mode @var{n} and operands 1 and 2 are scalar integers of mode
+@var{m}.  Operand 3 should be omitted when @var{n} is a vector mode, and
+a @code{CONST_INT} otherwise.  The operation for vector modes is equivalent to:
 
 @smallexample
 operand0[0] = operand1 < operand2;
 for (i = 1; i < GET_MODE_NUNITS (@var{n}); i++)
+  operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
+@end smallexample
+
+And for non-vector modes the operation is equivalent to:
+
+@smallexample
+operand0[0] = operand1 < operand2;
+for (i = 1; i < operand3; i++)
   operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
 @end smallexample
 
@@ -6183,6 +6155,10 @@ All operands have mode @var{m}, which is a scalar or vector
 floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{issignaling@var{m}2} instruction pattern
+@item @samp{issignaling@var{m}2}
+Set operand 0 to 1 if operand 1 is a signaling NaN and to 0 otherwise.
 
 @cindex @code{cadd90@var{m}3} instruction pattern
 @item @samp{cadd90@var{m}3}

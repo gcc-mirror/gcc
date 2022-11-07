@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
+
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
@@ -87,9 +89,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Sseq>
 	using _If_seed_seq
-	  = typename std::enable_if<std::__detail::__is_seed_seq<
-	    _Sseq, simd_fast_mersenne_twister_engine, result_type>::value
-	    >::type;
+	  = std::__detail::_If_seed_seq_for<_Sseq,
+					    simd_fast_mersenne_twister_engine,
+					    result_type>;
 
     public:
       static constexpr size_t state_size = _M_nstate * (16

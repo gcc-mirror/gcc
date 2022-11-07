@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -38,24 +39,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
 #include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
 #include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
 #include "stor-layout.h"
 
@@ -123,7 +120,7 @@ uncertainty_t::dump (bool simple) const
 const binding_key *
 binding_key::make (store_manager *mgr, const region *r)
 {
-  region_offset offset = r->get_offset ();
+  region_offset offset = r->get_offset (mgr->get_svalue_manager ());
   if (offset.symbolic_p ())
     return mgr->get_symbolic_binding (r);
   else
@@ -380,7 +377,11 @@ bit_range::as_byte_range (byte_range *out) const
 void
 byte_range::dump_to_pp (pretty_printer *pp) const
 {
-  if (m_size_in_bytes == 1)
+  if (m_size_in_bytes == 0)
+    {
+      pp_string (pp, "empty");
+    }
+  else if (m_size_in_bytes == 1)
     {
       pp_string (pp, "byte ");
       pp_wide_int (pp, m_start_byte_offset, SIGNED);
@@ -455,7 +456,9 @@ bool
 byte_range::exceeds_p (const byte_range &other,
 		       byte_range *out_overhanging_byte_range) const
 {
-  if (other.get_last_byte_offset () < get_last_byte_offset ())
+  gcc_assert (!empty_p ());
+
+  if (other.get_next_byte_offset () < get_next_byte_offset ())
     {
       /* THIS definitely exceeds OTHER.  */
       byte_offset_t start = MAX (get_start_byte_offset (),
@@ -477,6 +480,8 @@ bool
 byte_range::falls_short_of_p (byte_offset_t offset,
 			      byte_range *out_fall_short_bytes) const
 {
+  gcc_assert (!empty_p ());
+
   if (get_start_byte_offset () < offset)
     {
       /* THIS falls short of OFFSET.  */
@@ -897,7 +902,7 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
     = get_subregion_within_ctor (parent_reg, min_index, mgr);
   const region *max_element
     = get_subregion_within_ctor (parent_reg, max_index, mgr);
-  region_offset min_offset = min_element->get_offset ();
+  region_offset min_offset = min_element->get_offset (mgr);
   if (min_offset.symbolic_p ())
     return false;
   bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
@@ -955,11 +960,11 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 	  gcc_assert (sval_byte_size != -1);
 	  bit_size_t sval_bit_size = sval_byte_size * BITS_PER_UNIT;
 	  /* Get offset of child relative to base region.  */
-	  region_offset child_base_offset = child_reg->get_offset ();
+	  region_offset child_base_offset = child_reg->get_offset (mgr);
 	  if (child_base_offset.symbolic_p ())
 	    return false;
 	  /* Convert to an offset relative to the parent region.  */
-	  region_offset parent_base_offset = parent_reg->get_offset ();
+	  region_offset parent_base_offset = parent_reg->get_offset (mgr);
 	  gcc_assert (!parent_base_offset.symbolic_p ());
 	  bit_offset_t child_parent_offset
 	    = (child_base_offset.get_bit_offset ()
@@ -1365,7 +1370,8 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 				     const region *reg,
 				     const compound_svalue *compound_sval)
 {
-  region_offset reg_offset = reg->get_offset ();
+  region_offset reg_offset
+    = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
     {
       m_touched = true;
@@ -1614,7 +1620,7 @@ binding_cluster::get_any_binding (store_manager *mgr,
   /* Alternatively, if this is a symbolic read and the cluster has any bindings,
      then we don't know if we're reading those values or not, so the result
      is also "UNKNOWN".  */
-  if (reg->get_offset ().symbolic_p ()
+  if (reg->get_offset (mgr->get_svalue_manager ()).symbolic_p ()
       && m_map.elements () > 0)
     {
       region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
@@ -1643,10 +1649,11 @@ const svalue *
 binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 					     const region *reg) const
 {
-  region_offset cluster_offset = m_base_region->get_offset ();
+  region_offset cluster_offset
+    = m_base_region->get_offset (mgr->get_svalue_manager ());
   if (cluster_offset.symbolic_p ())
     return NULL;
-  region_offset reg_offset = reg->get_offset ();
+  region_offset reg_offset = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
     return NULL;
 
@@ -3117,6 +3124,148 @@ store::loop_replay_fixup (const store *other_store,
 	      this_cluster->bind_key (key, unknown);
 	    }
 	}
+    }
+}
+
+/* Use R to replay the bindings from SUMMARY into this object.  */
+
+void
+store::replay_call_summary (call_summary_replay &r,
+			    const store &summary)
+{
+  if (summary.m_called_unknown_fn)
+    {
+      /* A call to an external function occurred in the summary.
+	 Hence we need to invalidate our knownledge of globals,
+	 escaped regions, etc.  */
+      on_unknown_fncall (r.get_call_stmt (),
+			 r.get_store_manager (),
+			 conjured_purge (r.get_caller_model (),
+					 r.get_ctxt ()));
+    }
+
+  auto_vec<const region *> keys (summary.m_cluster_map.elements ());
+  for (auto kv : summary.m_cluster_map)
+    keys.quick_push (kv.first);
+  keys.qsort (region::cmp_ptr_ptr);
+  for (auto base_reg : keys)
+    replay_call_summary_cluster (r, summary, base_reg);
+}
+
+/* Use R and SUMMARY to replay the bindings in SUMMARY_CLUSTER
+   into this object.  */
+
+void
+store::replay_call_summary_cluster (call_summary_replay &r,
+				    const store &summary,
+				    const region *summary_base_reg)
+{
+  const call_details &cd = r.get_call_details ();
+  region_model_manager *reg_mgr = r.get_manager ();
+  store_manager *mgr = reg_mgr->get_store_manager ();
+  const binding_cluster *summary_cluster
+    = summary.get_cluster (summary_base_reg);
+
+  /* Handle "ESCAPED" and "TOUCHED" flags.  */
+  if (summary_cluster->escaped_p () || summary_cluster->touched_p ())
+    if (const region *caller_reg
+	= r.convert_region_from_summary (summary_base_reg))
+      {
+	const region *caller_base_reg = caller_reg->get_base_region ();
+	if (caller_base_reg->tracked_p ()
+	    && !caller_base_reg->symbolic_for_unknown_ptr_p ())
+	  {
+	    binding_cluster *caller_cluster
+	      = get_or_create_cluster (caller_base_reg);
+	    if (summary_cluster->escaped_p ())
+	      caller_cluster->mark_as_escaped ();
+	    if (summary_cluster->touched_p ())
+	      caller_cluster->m_touched = true;
+	  }
+      }
+
+  switch (summary_base_reg->get_kind ())
+    {
+    /* Top-level regions.  */
+    case RK_FRAME:
+    case RK_GLOBALS:
+    case RK_CODE:
+    case RK_STACK:
+    case RK_HEAP:
+    case RK_ROOT:
+    /* Child regions.  */
+    case RK_FIELD:
+    case RK_ELEMENT:
+    case RK_OFFSET:
+    case RK_SIZED:
+    case RK_CAST:
+    case RK_BIT_RANGE:
+    /* Other regions.  */
+    case RK_VAR_ARG:
+    case RK_UNKNOWN:
+      /* These should never be the base region of a binding cluster.  */
+      gcc_unreachable ();
+      break;
+
+    case RK_FUNCTION:
+    case RK_LABEL:
+    case RK_STRING:
+      /* These can be marked as escaping.  */
+      break;
+
+    case RK_SYMBOLIC:
+      {
+	const symbolic_region *summary_symbolic_reg
+	  = as_a <const symbolic_region *> (summary_base_reg);
+	const svalue *summary_ptr_sval = summary_symbolic_reg->get_pointer ();
+	const svalue *caller_ptr_sval
+	  = r.convert_svalue_from_summary (summary_ptr_sval);
+	if (!caller_ptr_sval)
+	  return;
+	const region *caller_dest_reg
+	  = cd.get_model ()->deref_rvalue (caller_ptr_sval,
+					   NULL_TREE,
+					   cd.get_ctxt ());
+	const svalue *summary_sval
+	  = summary.get_any_binding (mgr, summary_base_reg);
+	if (!summary_sval)
+	  return;
+	const svalue *caller_sval
+	  = r.convert_svalue_from_summary (summary_sval);
+	if (!caller_sval)
+	  caller_sval =
+	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
+	set_value (mgr, caller_dest_reg,
+		   caller_sval, NULL /* uncertainty_t * */);
+      }
+      break;
+
+    case RK_HEAP_ALLOCATED:
+    case RK_DECL:
+      {
+	const region *caller_dest_reg
+	  = r.convert_region_from_summary (summary_base_reg);
+	if (!caller_dest_reg)
+	  return;
+	const svalue *summary_sval
+	  = summary.get_any_binding (mgr, summary_base_reg);
+	if (!summary_sval)
+	  summary_sval = reg_mgr->get_or_create_compound_svalue
+	    (summary_base_reg->get_type (),
+	     summary_cluster->get_map ());
+	const svalue *caller_sval
+	  = r.convert_svalue_from_summary (summary_sval);
+	if (!caller_sval)
+	  caller_sval =
+	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
+	set_value (mgr, caller_dest_reg,
+		   caller_sval, NULL /* uncertainty_t * */);
+      }
+      break;
+
+    case RK_ALLOCA:
+      /* Ignore bindings of alloca regions in the summary.  */
+      break;
     }
 }
 

@@ -2377,9 +2377,12 @@ nds32_setup_incoming_varargs (cumulative_args_t ca,
      for varargs.  */
   total_args_regs
     = NDS32_MAX_GPR_REGS_FOR_ARGS + NDS32_GPR_ARG_FIRST_REGNUM;
-  num_of_used_regs
-    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, arg.mode, arg.type)
-      + NDS32_NEED_N_REGS_FOR_ARG (arg.mode, arg.type);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    num_of_used_regs
+      = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, arg.mode, arg.type)
+        + NDS32_NEED_N_REGS_FOR_ARG (arg.mode, arg.type);
+  else
+    num_of_used_regs = cum->gpr_offset + NDS32_GPR_ARG_FIRST_REGNUM;
 
   remaining_reg_count = total_args_regs - num_of_used_regs;
   *pretend_args_size = remaining_reg_count * UNITS_PER_WORD;
@@ -3889,7 +3892,7 @@ nds32_dwarf_register_span (rtx reg)
 /* Map internal gcc register numbers to DWARF2 register numbers.  */
 
 unsigned int
-nds32_dbx_register_number (unsigned int regno)
+nds32_debugger_regno (unsigned int regno)
 {
   /* The nds32 port in GDB maintains a mapping between dwarf register
      number and displayed register name.  For backward compatibility to
@@ -5808,12 +5811,6 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 /* Controlling Debugging Information Format.  */
 
 /* -- Macros Affecting All Debugging Formats.  */
-
-/* -- Specific Options for DBX Output.  */
-
-/* -- Open-Ended Hooks for DBX Format.  */
-
-/* -- File Names in DBX Format.  */
 
 /* -- Macros for DWARF Output.  */
 

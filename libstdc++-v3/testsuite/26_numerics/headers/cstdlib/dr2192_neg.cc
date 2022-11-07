@@ -17,6 +17,9 @@
 
 // { dg-do compile { target c++11 } }
 
+// Math-related cstdlib bits are not freestanding.
+// { dg-require-effective-target hosted }
+
 // NB: Don't include any other headers in this file.
 // LWG 2192 requires abs to be ill-formed for unsigned arguments.
 #include <cstdlib>

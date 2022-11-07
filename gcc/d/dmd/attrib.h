@@ -154,7 +154,6 @@ public:
 
     PragmaDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
-    PINLINE evalPragmaInline(Scope* sc);
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };

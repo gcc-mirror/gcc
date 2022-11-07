@@ -3362,7 +3362,7 @@ struct TickDuration
         $(D gettimeofday) (the decision is made when $(D TickDuration) is
         compiled), which unfortunately, is not monotonic, but if
         $(D mach_absolute_time) and $(D clock_gettime) aren't available, then
-        $(D gettimeofday) is the the best that there is.
+        $(D gettimeofday) is the best that there is.
 
         $(RED Warning):
             On some systems, the monotonic clock may stop counting when

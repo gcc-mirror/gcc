@@ -1,3 +1,68 @@
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.def: Remove module 'liboffloadmic'.
+	* Makefile.in: Regenerate.
+	* configure.ac: Remove 'liboffloadmic' handling.
+	* configure: Regenerate.
+
+2022-10-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* MAINTAINERS: Update email address.
+
+2022-10-21  Дилян Палаузов  <dilyan.palauzov@aegee.org>
+
+	* configure.ac: Don't configure readline if --with-system-readline is
+	used.
+	* configure: Re-generate.
+
+2022-10-12  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+
+	* libtool.m4 (*vxworks*): When enable_shared, set dynamic_linker
+	and friends for rtp !large. Assume the linker has the required
+	abilities and set lt_cv_deplibs_check_method.
+
+2022-09-30  Olivier Hainque  <hainque@adacore.com>
+
+	* configure.ac (*vxworks*): If enable_shared is not
+	set, set to "no" and add --disable-shared to target and
+	host_configargs.
+	* configure: Regenerate.
+
+2022-09-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* MAINTAINERS: Update my email address and DCO entry.
+
+2022-09-23  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-09-15  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-09-07  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-09-07  Tom de Vries  <tdevries@suse.de>
+
+	* configure.ac: Set extra_host_libiberty_configure_flags and
+	extra_host_zlib_configure_flags in separate case statements.
+	* configure: Regenerate.
+
+2022-09-06  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* MAINTAINERS: Update c-sky port maintainers' emails.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* configure.ac: Delete hpux9 and hpux10.
+
 2022-08-18  Sergei Trofimovich  <siarheit@google.com>
 
 	* Makefile.def: Drop libelf module and gcc-configure dependency

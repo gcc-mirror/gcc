@@ -237,6 +237,11 @@ struct bit_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
+  bool empty_p () const
+  {
+    return m_size_in_bits == 0;
+  }
+
   bit_offset_t get_start_bit_offset () const
   {
     return m_start_bit_offset;
@@ -247,6 +252,7 @@ struct bit_range
   }
   bit_offset_t get_last_bit_offset () const
   {
+    gcc_assert (!empty_p ());
     return get_next_bit_offset () - 1;
   }
 
@@ -297,6 +303,11 @@ struct byte_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
+  bool empty_p () const
+  {
+    return m_size_in_bytes == 0;
+  }
+
   bool contains_p (byte_offset_t offset) const
   {
     return (offset >= get_start_byte_offset ()
@@ -329,6 +340,7 @@ struct byte_range
   }
   byte_offset_t get_last_byte_offset () const
   {
+    gcc_assert (!empty_p ());
     return m_start_byte_offset + m_size_in_bytes - 1;
   }
 
@@ -405,6 +417,14 @@ private:
 };
 
 } // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const ana::concrete_binding *>::test (const ana::binding_key *key)
+{
+  return key->concrete_p ();
+}
 
 template <> struct default_hash_traits<ana::concrete_binding>
 : public member_function_hash_traits<ana::concrete_binding>
@@ -773,6 +793,12 @@ public:
   void canonicalize (store_manager *mgr);
   void loop_replay_fixup (const store *other_store,
 			  region_model_manager *mgr);
+
+  void replay_call_summary (call_summary_replay &r,
+			    const store &summary);
+  void replay_call_summary_cluster (call_summary_replay &r,
+				    const store &summary,
+				    const region *base_reg);
 
 private:
   void remove_overlapping_bindings (store_manager *mgr, const region *reg,

@@ -7,7 +7,7 @@
 /*
 **off_store8_0:
 **	...
-**	vstrb.8	q0, \[r0, #16\]
+**	vstrb.8	q[0-7], \[r0, #16\]
 **	...
 */
 uint8_t *off_store8_0 (uint8_t * a, uint8x16_t v)
@@ -19,7 +19,7 @@ uint8_t *off_store8_0 (uint8_t * a, uint8x16_t v)
 /*
 **off_store8_1:
 **	...
-**	vstrb.16	q0, \[r0, #-1\]
+**	vstrb.16	q[0-7], \[r0, #-1\]
 **	...
 */
 int8_t *off_store8_1 (int8_t * a, int16x8_t v)
@@ -31,7 +31,7 @@ int8_t *off_store8_1 (int8_t * a, int16x8_t v)
 /*
 **off_store8_2:
 **	...
-**	vstrb.32	q0, \[r0, #-127\]
+**	vstrb.32	q[0-7], \[r0, #-127\]
 **	...
 */
 uint8_t *off_store8_2 (uint8_t * a, uint32x4_t v)
@@ -43,7 +43,7 @@ uint8_t *off_store8_2 (uint8_t * a, uint32x4_t v)
 /*
 **off_store8_3:
 **	...
-**	vstrb.8	q0, \[r0, #127\]
+**	vstrb.8	q[0-7], \[r0, #127\]
 **	...
 */
 int8_t *off_store8_3 (int8_t * a, int8x16_t v)
@@ -55,7 +55,7 @@ int8_t *off_store8_3 (int8_t * a, int8x16_t v)
 /*
 **not_off_store8_0:
 **	...
-**	vstrb.8	q0, \[r[0-9]+\]
+**	vstrb.8	q[0-7], \[r[0-7]+\]
 **	...
 */
 uint8_t *not_off_store8_0 (uint8_t * a, uint8x16_t v)
@@ -67,7 +67,7 @@ uint8_t *not_off_store8_0 (uint8_t * a, uint8x16_t v)
 /*
 **off_storefp16_0:
 **	...
-**	vstrh.16	q0, \[r0, #250\]
+**	vstrh.16	q[0-7], \[r0, #250\]
 **	...
 */
 float16_t *off_storefp16_0 (float16_t *a, float16x8_t v)
@@ -79,7 +79,7 @@ float16_t *off_storefp16_0 (float16_t *a, float16x8_t v)
 /*
 **off_store16_0:
 **	...
-**	vstrh.16	q0, \[r0, #4\]
+**	vstrh.16	q[0-7], \[r0, #4\]
 **	...
 */
 int16_t *off_store16_0 (int16_t * a, int16x8_t v)
@@ -91,7 +91,7 @@ int16_t *off_store16_0 (int16_t * a, int16x8_t v)
 /*
 **off_store16_1:
 **	...
-**	vstrh.32	q0, \[r0, #-254\]
+**	vstrh.32	q[0-7], \[r0, #-254\]
 **	...
 */
 int16_t *off_store16_1 (int16_t * a, int32x4_t v)
@@ -103,7 +103,7 @@ int16_t *off_store16_1 (int16_t * a, int32x4_t v)
 /*
 **not_off_store16_0:
 **	...
-**	vstrh.16	q0, \[r[0-9]+\]
+**	vstrh.16	q[0-7], \[r[0-7]+\]
 **	...
 */
 uint8_t *not_off_store16_0 (uint8_t * a, uint16x8_t v)
@@ -115,7 +115,7 @@ uint8_t *not_off_store16_0 (uint8_t * a, uint16x8_t v)
 /*
 **not_off_store16_1:
 **	...
-**	vstrh.32	q0, \[r[0-9]+\]
+**	vstrh.32	q[0-7], \[r[0-7]+\]
 **	...
 */
 int16_t *not_off_store16_1 (int16_t * a, int32x4_t v)
@@ -127,7 +127,7 @@ int16_t *not_off_store16_1 (int16_t * a, int32x4_t v)
 /*
 **off_storefp32_0:
 **	...
-**	vstrw.32	q0, \[r0, #-412\]
+**	vstrw.32	q[0-7], \[r0, #-412\]
 **	...
 */
 float32_t *off_storefp32_0 (float32_t *a, float32x4_t v)
@@ -139,7 +139,7 @@ float32_t *off_storefp32_0 (float32_t *a, float32x4_t v)
 /*
 **off_store32_0:
 **	...
-**	vstrw.32	q0, \[r0, #-4\]
+**	vstrw.32	q[0-7], \[r0, #-4\]
 **	...
 */
 int32_t *off_store32_0 (int32_t * a, int32x4_t v)
@@ -151,7 +151,7 @@ int32_t *off_store32_0 (int32_t * a, int32x4_t v)
 /*
 **off_store32_1:
 **	...
-**	vstrw.32	q0, \[r0, #508\]
+**	vstrw.32	q[0-7], \[r0, #508\]
 **	...
 */
 uint32_t *off_store32_1 (uint32_t * a, uint32x4_t v)
@@ -163,7 +163,7 @@ uint32_t *off_store32_1 (uint32_t * a, uint32x4_t v)
 /*
 **pre_store8_0:
 **	...
-**	vstrb.8	q[0-9]+, \[r0, #-16\]!
+**	vstrb.8	q[0-7], \[r0, #-16\]!
 **	...
 */
 uint8_t* pre_store8_0 (uint8_t * a, uint8x16_t v)
@@ -176,7 +176,7 @@ uint8_t* pre_store8_0 (uint8_t * a, uint8x16_t v)
 /*
 **pre_store8_1:
 **	...
-**	vstrb.16	q[0-9]+, \[r0, #4\]!
+**	vstrb.16	q[0-7], \[r0, #4\]!
 **	...
 */
 int8_t* pre_store8_1 (int8_t * a, int16x8_t v)
@@ -189,7 +189,7 @@ int8_t* pre_store8_1 (int8_t * a, int16x8_t v)
 /*
 **pre_storefp16_0:
 **	...
-**	vstrh.16	q0, \[r0, #8\]!
+**	vstrh.16	q[0-7], \[r0, #8\]!
 **	...
 */
 float16_t *pre_storefp16_0 (float16_t *a, float16x8_t v)
@@ -202,7 +202,7 @@ float16_t *pre_storefp16_0 (float16_t *a, float16x8_t v)
 /*
 **pre_store16_0:
 **	...
-**	vstrh.16	q[0-9]+, \[r0, #254\]!
+**	vstrh.16	q[0-7], \[r0, #254\]!
 **	...
 */
 uint16_t* pre_store16_0 (uint16_t * a, uint16x8_t v)
@@ -215,7 +215,7 @@ uint16_t* pre_store16_0 (uint16_t * a, uint16x8_t v)
 /*
 **pre_store16_1:
 **	...
-**	vstrh.32	q[0-9]+, \[r0, #-52\]!
+**	vstrh.32	q[0-7], \[r0, #-52\]!
 **	...
 */
 int16_t* pre_store16_1 (int16_t * a, int32x4_t v)
@@ -228,7 +228,7 @@ int16_t* pre_store16_1 (int16_t * a, int32x4_t v)
 /*
 **pre_storefp32_0:
 **	...
-**	vstrw.32	q0, \[r0, #-4\]!
+**	vstrw.32	q[0-7], \[r0, #-4\]!
 **	...
 */
 float32_t *pre_storefp32_0 (float32_t *a, float32x4_t v)
@@ -241,7 +241,7 @@ float32_t *pre_storefp32_0 (float32_t *a, float32x4_t v)
 /*
 **pre_store32_0:
 **	...
-**	vstrw.32	q[0-9]+, \[r0, #4\]!
+**	vstrw.32	q[0-7], \[r0, #4\]!
 **	...
 */
 int32_t* pre_store32_0 (int32_t * a, int32x4_t v)
@@ -255,7 +255,7 @@ int32_t* pre_store32_0 (int32_t * a, int32x4_t v)
 /*
 **post_store8_0:
 **	...
-**	vstrb.8	q[0-9]+, \[r0\], #-26
+**	vstrb.8	q[0-7], \[r0\], #-26
 **	...
 */
 int8_t* post_store8_0 (int8_t * a, int8x16_t v)
@@ -268,7 +268,7 @@ int8_t* post_store8_0 (int8_t * a, int8x16_t v)
 /*
 **post_store8_1:
 **	...
-**	vstrb.16	q[0-9]+, \[r0\], #1
+**	vstrb.16	q[0-7], \[r0\], #1
 **	...
 */
 uint8_t* post_store8_1 (uint8_t * a, uint16x8_t v)
@@ -281,7 +281,7 @@ uint8_t* post_store8_1 (uint8_t * a, uint16x8_t v)
 /*
 **post_store8_2:
 **	...
-**	vstrb.8	q[0-9]+, \[r0\], #-26
+**	vstrb.8	q[0-7], \[r0\], #-26
 **	...
 */
 int8_t* post_store8_2 (int8_t * a, int8x16_t v)
@@ -294,7 +294,7 @@ int8_t* post_store8_2 (int8_t * a, int8x16_t v)
 /*
 **post_store8_3:
 **	...
-**	vstrb.16	q[0-9]+, \[r0\], #7
+**	vstrb.16	q[0-7], \[r0\], #7
 **	...
 */
 uint8_t* post_store8_3 (uint8_t * a, uint16x8_t v)
@@ -307,7 +307,7 @@ uint8_t* post_store8_3 (uint8_t * a, uint16x8_t v)
 /*
 **post_storefp16_0:
 **	...
-**	vstrh.16	q[0-9]+, \[r0\], #-16
+**	vstrh.16	q[0-7], \[r0\], #-16
 **	...
 */
 float16_t *post_storefp16_0 (float16_t *a, float16x8_t v)
@@ -320,7 +320,7 @@ float16_t *post_storefp16_0 (float16_t *a, float16x8_t v)
 /*
 **post_store16_0:
 **	...
-**	vstrh.16	q[0-9]+, \[r0\], #126
+**	vstrh.16	q[0-7], \[r0\], #126
 **	...
 */
 int16_t* post_store16_0 (int16_t * a, int16x8_t v)
@@ -333,7 +333,7 @@ int16_t* post_store16_0 (int16_t * a, int16x8_t v)
 /*
 **post_store16_1:
 **	...
-**	vstrh.32	q[0-9]+, \[r0\], #-16
+**	vstrh.32	q[0-7], \[r0\], #-16
 **	...
 */
 uint16_t* post_store16_1 (uint16_t * a, uint32x4_t v)
@@ -346,7 +346,7 @@ uint16_t* post_store16_1 (uint16_t * a, uint32x4_t v)
 /*
 **post_storefp32_0:
 **	...
-**	vstrw.32	q[0-9]+, \[r0\], #-16
+**	vstrw.32	q[0-7], \[r0\], #-16
 **	...
 */
 float32_t* post_storefp32_0 (float32_t * a, float32x4_t v)
@@ -359,7 +359,7 @@ float32_t* post_storefp32_0 (float32_t * a, float32x4_t v)
 /*
 **post_store32_0:
 **	...
-**	vstrw.32	q[0-9]+, \[r0\], #16
+**	vstrw.32	q[0-7], \[r0\], #16
 **	...
 */
 int32_t* post_store32_0 (int32_t * a, int32x4_t v)

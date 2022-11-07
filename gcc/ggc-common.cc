@@ -253,7 +253,8 @@ static vec<void *> reloc_addrs_vec;
 
 int
 gt_pch_note_object (void *obj, void *note_ptr_cookie,
-		    gt_note_pointers note_ptr_fn)
+		    gt_note_pointers note_ptr_fn,
+		    size_t length_override)
 {
   struct ptr_data **slot;
 
@@ -273,7 +274,9 @@ gt_pch_note_object (void *obj, void *note_ptr_cookie,
   (*slot)->obj = obj;
   (*slot)->note_ptr_fn = note_ptr_fn;
   (*slot)->note_ptr_cookie = note_ptr_cookie;
-  if (note_ptr_fn == gt_pch_p_S)
+  if (length_override != (size_t)-1)
+    (*slot)->size = length_override;
+  else if (note_ptr_fn == gt_pch_p_S)
     (*slot)->size = strlen ((const char *)obj) + 1;
   else
     (*slot)->size = ggc_get_size (obj);

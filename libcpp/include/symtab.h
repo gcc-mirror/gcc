@@ -29,7 +29,10 @@ along with this program; see the file COPYING3.  If not see
 typedef struct ht_identifier ht_identifier;
 typedef struct ht_identifier *ht_identifier_ptr;
 struct GTY(()) ht_identifier {
-  const unsigned char *str;
+  /* This GTY markup arranges that the null-terminated identifier would still
+     stream to PCH correctly, if a null byte were to make its way into an
+     identifier somehow.  */
+  const unsigned char * GTY((string_length ("1 + %h.len"))) str;
   unsigned int len;
   unsigned int hash_value;
 };

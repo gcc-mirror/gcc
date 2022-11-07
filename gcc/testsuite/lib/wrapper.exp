@@ -22,7 +22,7 @@
 # the compiler when compiling FILENAME.
 
 proc ${tool}_maybe_build_wrapper { filename args } {
-    global gluefile wrap_flags
+    global gluefile wrap_flags gcc_adjusted_linker_flags
 
     if { [target_info needs_status_wrapper] != "" \
  	 && [target_info needs_status_wrapper] != "0" \
@@ -43,6 +43,11 @@ proc ${tool}_maybe_build_wrapper { filename args } {
 	if { $result != "" } {
 	    set gluefile [lindex $result 0]
 	    set wrap_flags [lindex $result 1]
+
+	    # Reset the cached state of the adjusted flags
+	    if { [info exists gcc_adjusted_linker_flags] } {
+		set gcc_adjusted_linker_flags 0
+	    }
 	}
     }
 }

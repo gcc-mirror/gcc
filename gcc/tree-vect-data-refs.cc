@@ -4016,6 +4016,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (reversep)
     return false;
 
+  /* PR 107346.  Packed structs can have fields at offsets that are not
+     multiples of BITS_PER_UNIT.  Do not use gather/scatters in such cases.  */
+  if (!multiple_p (pbitpos, BITS_PER_UNIT))
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
@@ -4151,6 +4156,7 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	  /* Don't include the conversion if the target is happy with
 	     the current offset type.  */
 	  if (use_ifn_p
+	      && TREE_CODE (off) == SSA_NAME
 	      && !POINTER_TYPE_P (TREE_TYPE (off))
 	      && vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr),
 					   masked_p, vectype, memory_type,
@@ -4301,7 +4307,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
       free_data_ref (dr);
       return opt_result::failure_at (stmt,
 				     "not vectorized:"
-				     " statement is bitfield access %G", stmt);
+				     " statement is an unsupported"
+				     " bitfield access %G", stmt);
     }
 
   if (DR_BASE_ADDRESS (dr)

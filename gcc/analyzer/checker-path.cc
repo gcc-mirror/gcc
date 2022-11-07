@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -28,26 +29,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
-#include "function.h"
 #include "diagnostic-path.h"
 #include "options.h"
 #include "cgraph.h"
-#include "function.h"
 #include "cfg.h"
 #include "digraph.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
 #include "diagnostic-event-id.h"
-#include "shortest-paths.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "sbitmap.h"
 #include "bitmap.h"
-#include "tristate.h"
 #include "ordered-hash-map.h"
-#include "selftest.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
@@ -63,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/exploded-graph.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -288,16 +282,25 @@ statement_event::get_desc (bool) const
 /* class region_creation_event : public checker_event.  */
 
 region_creation_event::region_creation_event (const region *reg,
+					      tree capacity,
+					      enum rce_kind kind,
 					      location_t loc,
 					      tree fndecl,
 					      int depth)
 : checker_event (EK_REGION_CREATION, loc, fndecl, depth),
-  m_reg (reg)
+  m_reg (reg),
+  m_capacity (capacity),
+  m_rce_kind (kind)
 {
+  if (m_rce_kind == RCE_CAPACITY)
+    gcc_assert (capacity);
 }
 
 /* Implementation of diagnostic_event::get_desc vfunc for
-   region_creation_event.  */
+   region_creation_event.
+   There are effectively 3 kinds of region_region_event, to
+   avoid combinatorial explosion by trying to convy the
+   information in a single message.  */
 
 label_text
 region_creation_event::get_desc (bool can_colorize) const
@@ -311,14 +314,50 @@ region_creation_event::get_desc (bool can_colorize) const
 	return custom_desc;
     }
 
-  switch (m_reg->get_memory_space ())
+  switch (m_rce_kind)
     {
     default:
-      return label_text::borrow ("region created here");
-    case MEMSPACE_STACK:
-      return label_text::borrow ("region created on stack here");
-    case MEMSPACE_HEAP:
-      return label_text::borrow ("region created on heap here");
+      gcc_unreachable ();
+
+    case RCE_MEM_SPACE:
+      switch (m_reg->get_memory_space ())
+	{
+	default:
+	  return label_text::borrow ("region created here");
+	case MEMSPACE_STACK:
+	  return label_text::borrow ("region created on stack here");
+	case MEMSPACE_HEAP:
+	  return label_text::borrow ("region created on heap here");
+	}
+      break;
+
+    case RCE_CAPACITY:
+      gcc_assert (m_capacity);
+      if (TREE_CODE (m_capacity) == INTEGER_CST)
+	{
+	  unsigned HOST_WIDE_INT hwi = tree_to_uhwi (m_capacity);
+	  if (hwi == 1)
+	    return make_label_text (can_colorize,
+				    "capacity: %wu byte", hwi);
+	  else
+	    return make_label_text (can_colorize,
+				    "capacity: %wu bytes", hwi);
+	}
+      else
+	return make_label_text (can_colorize,
+				"capacity: %qE bytes", m_capacity);
+
+    case RCE_DEBUG:
+      {
+	pretty_printer pp;
+	pp_format_decoder (&pp) = default_tree_printer;
+	pp_string (&pp, "region creation: ");
+	m_reg->dump_to_pp (&pp, true);
+	if (m_capacity)
+	  pp_printf (&pp, " capacity: %qE", m_capacity);
+	return label_text::take (xstrdup (pp_formatted_text (&pp)));
+      }
+      break;
     }
 }
 
@@ -999,7 +1038,7 @@ rewind_event::rewind_event (const exploded_edge *eedge,
   m_rewind_info (rewind_info),
   m_eedge (eedge)
 {
-  gcc_assert (m_eedge->m_custom_info == m_rewind_info);
+  gcc_assert (m_eedge->m_custom_info.get () == m_rewind_info);
 }
 
 /* class rewind_from_longjmp_event : public rewind_event.  */
@@ -1207,15 +1246,33 @@ checker_path::debug () const
     }
 }
 
-/* Add region_creation_event instance to this path for REG,
-   describing whether REG is on the stack or heap.  */
+/* Add region_creation_event instances to this path for REG,
+   describing whether REG is on the stack or heap and what
+   its capacity is (if known).
+   If DEBUG is true, also create an RCE_DEBUG event.  */
 
 void
-checker_path::add_region_creation_event (const region *reg,
-					 location_t loc,
-					 tree fndecl, int depth)
+checker_path::add_region_creation_events (const region *reg,
+					  const region_model *model,
+					  location_t loc,
+					  tree fndecl, int depth,
+					  bool debug)
 {
-  add_event (new region_creation_event (reg, loc, fndecl, depth));
+  tree capacity = NULL_TREE;
+  if (model)
+    if (const svalue *capacity_sval = model->get_capacity (reg))
+      capacity = model->get_representative_tree (capacity_sval);
+
+  add_event (make_unique<region_creation_event> (reg, capacity, RCE_MEM_SPACE,
+						 loc, fndecl, depth));
+
+  if (capacity)
+    add_event (make_unique<region_creation_event> (reg, capacity, RCE_CAPACITY,
+						   loc, fndecl, depth));
+
+  if (debug)
+    add_event (make_unique<region_creation_event> (reg, capacity, RCE_DEBUG,
+						   loc, fndecl, depth));
 }
 
 /* Add a warning_event to the end of this path.  */
@@ -1225,12 +1282,12 @@ checker_path::add_final_event (const state_machine *sm,
 			       const exploded_node *enode, const gimple *stmt,
 			       tree var, state_machine::state_t state)
 {
-  checker_event *end_of_path
-    = new warning_event (get_stmt_location (stmt, enode->get_function ()),
-			 enode->get_function ()->decl,
-			 enode->get_stack_depth (),
-			 sm, var, state);
-  add_event (end_of_path);
+  add_event
+    (make_unique<warning_event> (get_stmt_location (stmt,
+						    enode->get_function ()),
+				 enode->get_function ()->decl,
+				 enode->get_stack_depth (),
+				 sm, var, state));
 }
 
 void

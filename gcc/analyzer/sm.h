@@ -123,10 +123,8 @@ public:
   virtual bool can_purge_p (state_t s) const = 0;
 
   /* Called when VAR leaks (and !can_purge_p).  */
-  virtual pending_diagnostic *on_leak (tree var ATTRIBUTE_UNUSED) const
-  {
-    return NULL;
-  }
+  virtual std::unique_ptr<pending_diagnostic>
+  on_leak (tree var ATTRIBUTE_UNUSED) const;
 
   /* Return true if S should be reset to "start" for values passed (or reachable
      from) calls to unknown functions.  IS_MUTABLE is true for pointers as
@@ -250,9 +248,11 @@ public:
   /* Called by state_machine in response to pattern matches:
      issue a diagnostic D using NODE and STMT for location information.  */
   virtual void warn (const supernode *node, const gimple *stmt,
-		     tree var, pending_diagnostic *d) = 0;
+		     tree var,
+		     std::unique_ptr<pending_diagnostic> d) = 0;
   virtual void warn (const supernode *node, const gimple *stmt,
-		     const svalue *var, pending_diagnostic *d) = 0;
+		     const svalue *var,
+		     std::unique_ptr<pending_diagnostic> d) = 0;
 
   /* For use when generating trees when creating pending_diagnostics, so that
      rather than e.g.

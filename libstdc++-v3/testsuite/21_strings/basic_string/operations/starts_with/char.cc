@@ -20,7 +20,7 @@
 
 // basic_string begins_with
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void
@@ -31,7 +31,7 @@ test01()
   const char cstr_dir2[] = "worms/";
   const std::string_view sv_dir2("worms/");
 
-  const std::string s_test("slugs/slimy.jpg");
+  const __gnu_test::string s_test("slugs/slimy.jpg");
 
   const auto cstr_in_slugs = s_test.starts_with(cstr_dir);
   VERIFY( cstr_in_slugs );

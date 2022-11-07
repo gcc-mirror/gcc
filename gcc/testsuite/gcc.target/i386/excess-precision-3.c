@@ -6,8 +6,14 @@
 #include <float.h>
 #include <stdarg.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void abort (void);
 extern void exit (int);
+#ifdef __cplusplus
+}
+#endif
 
 volatile float f1 = 1.0f;
 volatile float f2 = 0x1.0p-30f;
@@ -100,6 +106,7 @@ check_double (double d)
     abort ();
 }
 
+#ifndef __cplusplus
 static inline void
 check_float_nonproto (f)
      float f;
@@ -115,6 +122,7 @@ check_double_nonproto (d)
   if (d != dadd2)
     abort ();
 }
+#endif
 
 static void
 check_double_va (int i, ...)
@@ -132,9 +140,11 @@ test_call (void)
   check_float (f1 + f2);
   check_double (d1 + d2 + d3);
   check_double (f1 + f2 + f3);
+#ifndef __cplusplus
   check_float_nonproto (f1 + f2);
   check_double_nonproto (d1 + d2 + d3);
   check_double_nonproto (f1 + f2 + f3);
+#endif
   check_double_va (0, d1 + d2 + d3);
   check_double_va (0, f1 + f2 + f3);
 }

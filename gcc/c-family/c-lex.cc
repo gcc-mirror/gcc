@@ -378,15 +378,22 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		result = 201803;
 	      else if (is_attribute_p ("nodiscard", attr_name))
 		result = 201907;
+	      else if (is_attribute_p ("assume", attr_name))
+		result = 202207;
 	    }
 	  else
 	    {
-	      if (is_attribute_p ("deprecated", attr_name)
-		  || is_attribute_p ("maybe_unused", attr_name)
-		  || is_attribute_p ("fallthrough", attr_name))
+	      if (is_attribute_p ("deprecated", attr_name))
 		result = 201904;
+	      else if (is_attribute_p ("fallthrough", attr_name))
+		result = 201910;
 	      else if (is_attribute_p ("nodiscard", attr_name))
 		result = 202003;
+	      else if (is_attribute_p ("maybe_unused", attr_name))
+		result = 202106;
+	      else if (is_attribute_p ("noreturn", attr_name)
+		       || is_attribute_p ("_Noreturn", attr_name))
+		result = 202202;
 	    }
 	  if (result)
 	    attr_name = NULL_TREE;
@@ -509,7 +516,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	    /* C++ uses '0' to mark virtual functions as pure.
 	       Set PURE_ZERO to pass this information to the C++ parser.  */
 	    if (tok->val.str.len == 1 && *tok->val.str.text == '0')
-	      add_flags = PURE_ZERO;
+	      add_flags = PURE_ZERO | DECIMAL_INT;
+	    else if ((flags & CPP_N_INTEGER) && (flags & CPP_N_DECIMAL))
+	      /* -Wxor-used-as-pow is only active for LHS of ^ expressed
+		 as a decimal integer. */
+	      add_flags = DECIMAL_INT;
 	    *value = interpret_integer (tok, flags, &overflow);
 	    break;
 
@@ -954,6 +965,10 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	  pedwarn (input_location, OPT_Wpedantic, "non-standard suffix on floating constant");
 
 	type = c_common_type_for_mode (mode, 0);
+	/* For Q suffix, prefer float128t_type_node (__float128) type
+	   over float128_type_node (_Float128) type if they are distinct.  */
+	if (type == float128_type_node && float128t_type_node)
+	  type = float128t_type_node;
 	gcc_assert (type);
       }
     else if ((flags & (CPP_N_FLOATN | CPP_N_FLOATNX)) != 0)
@@ -973,8 +988,33 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	    error ("unsupported non-standard suffix on floating constant");
 	    return error_mark_node;
 	  }
+	else if (c_dialect_cxx () && !extended)
+	  {
+	    if (cxx_dialect < cxx23)
+	      pedwarn (input_location, OPT_Wpedantic,
+		       "%<f%d%> or %<F%d%> suffix on floating constant only "
+		       "available with %<-std=c++2b%> or %<-std=gnu++2b%>",
+		       n, n);
+	  }
 	else
-	  pedwarn (input_location, OPT_Wpedantic, "non-standard suffix on floating constant");
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "non-standard suffix on floating constant");
+      }
+    else if ((flags & CPP_N_BFLOAT16) != 0)
+      {
+	type = bfloat16_type_node;
+	if (type == NULL_TREE)
+	  {
+	    error ("unsupported non-standard suffix on floating constant");
+	    return error_mark_node;
+	  }
+	if (!c_dialect_cxx ())
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "non-standard suffix on floating constant");
+	else if (cxx_dialect < cxx23)
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "%<bf16%> or %<BF16%> suffix on floating constant only "
+		   "available with %<-std=c++2b%> or %<-std=gnu++2b%>");
       }
     else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = long_double_type_node;

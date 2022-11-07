@@ -58,9 +58,6 @@ int main () {
 #if !defined(__riscv_cmodel_medany)
 #error "__riscv_cmodel_medany"
 #endif
-#if !defined(__riscv_cmodel_pic)
-#error "__riscv_cmodel_pic"
-#endif
 
   return 0;
 }

@@ -32,6 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 	 | MASK_STACK_PROBE | MASK_ALIGN_DOUBLE \
 	 | MASK_MS_BITFIELD_LAYOUT)
 
+#ifndef TARGET_USING_MCFGTHREAD
+#define TARGET_USING_MCFGTHREAD  0
+#endif
+
 /* See i386/crtdll.h for an alternative definition. _INTEGRAL_MAX_BITS
    is for compatibility with native compiler.  */
 #define EXTRA_OS_CPP_BUILTINS()					\
@@ -50,18 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 	  builtin_define_std ("WIN64");				\
 	  builtin_define ("_WIN64");				\
 	}							\
-    }								\
-  while (0)
-
-#define EXTRA_TARGET_D_OS_VERSIONS()				\
-  do								\
-    {								\
-      builtin_version ("MinGW");				\
-      if (TARGET_64BIT && ix86_abi == MS_ABI)			\
-	builtin_version ("Win64");				\
-      else if (!TARGET_64BIT)					\
-	builtin_version ("Win32");				\
-      builtin_version ("CRuntime_Microsoft");			\
+      if (TARGET_USING_MCFGTHREAD)				\
+	builtin_define ("__USING_MCFGTHREAD__");		\
     }								\
   while (0)
 
@@ -181,11 +175,16 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #define SHARED_LIBGCC_SPEC " -lgcc "
 #endif
+#if TARGET_USING_MCFGTHREAD
+#define MCFGTHREAD_SPEC  " -lmcfgthread -lkernel32 -lntdll "
+#else
+#define MCFGTHREAD_SPEC  ""
+#endif
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC \
   "%{mthreads:-lmingwthrd} -lmingw32 \
    " SHARED_LIBGCC_SPEC " \
-   -lmoldname -lmingwex -lmsvcrt -lkernel32"
+   -lmoldname -lmingwex -lmsvcrt -lkernel32 " MCFGTHREAD_SPEC
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \

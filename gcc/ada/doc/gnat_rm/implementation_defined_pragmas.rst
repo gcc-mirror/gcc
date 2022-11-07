@@ -1389,7 +1389,7 @@ Pragma CPP_Virtual
 This pragma is now obsolete and, other than generating a warning if warnings
 on obsolescent features are enabled, is completely ignored.
 It is retained for compatibility
-purposes. It used to be required to ensure compoatibility with C++, but
+purposes. It used to be required to ensure compatibility with C++, but
 is no longer required for that purpose because GNAT generates
 the same object layout as the G++ compiler by default.
 
@@ -2174,16 +2174,19 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Extensions_Allowed (On | Off);
+  pragma Extensions_Allowed (On | Off | All);
 
 
-This configuration pragma enables or disables the implementation
-extension mode (the use of Off as a parameter cancels the effect
-of the *-gnatX* command switch).
+This configuration pragma enables (via the "On" or "All" argument) or disables
+(via the "Off" argument) the implementation extension mode; the pragma takes
+precedence over the *-gnatX* and *-gnatX0* command switches.
 
-In extension mode, the latest version of the Ada language is
-implemented (currently Ada 2022), and in addition a number
-of GNAT specific extensions are recognized as follows:
+If an argument of "All" is specified, the latest version of the Ada language
+is implemented (currently Ada 2022) and, in addition, a number
+of GNAT specific extensions are recognized. These extensions are listed
+below. An argument of "On" has the same effect except that only
+some, not all, of the listed extensions are enabled; those extensions
+are identified below.
 
 * Constrained attribute for generic objects
 
@@ -2197,10 +2200,7 @@ of GNAT specific extensions are recognized as follows:
   functions and the compiler will evaluate some of these intrinsic statically,
   in particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
 
-* ``'Reduce`` attribute
-
-  This attribute part of the Ada 202x language definition is provided for
-  now under -gnatX to confirm and potentially refine its usage and syntax.
+  An Extensions_Allowed pragma argument of "On" enables this extension.
 
 * ``[]`` aggregates
 
@@ -2262,7 +2262,8 @@ of GNAT specific extensions are recognized as follows:
   will not be executed if the earlier alternative "matches"). All possible
   values of the composite type shall be covered. The composite type of the
   selector shall be an array or record type that is neither limited
-  class-wide.
+  class-wide. Currently, a "when others =>" case choice is required; it is
+  intended that this requirement will be relaxed at some point.
 
   If a subcomponent's subtype does not meet certain restrictions, then
   the only value that can be specified for that subcomponent in a case
@@ -2333,6 +2334,8 @@ of GNAT specific extensions are recognized as follows:
   for a given identifer must all statically match. Currently, the case
   of a binding for a nondiscrete component is not implemented.
 
+  An Extensions_Allowed pragma argument of "On" enables this extension.
+
 * Fixed lower bounds for array types and subtypes
 
   Unconstrained array types and subtypes can be specified with a lower bound
@@ -2377,6 +2380,8 @@ of GNAT specific extensions are recognized as follows:
   knows the lower bound of unconstrained array formals when the formal's
   subtype has index ranges with static fixed lower bounds.
 
+  An Extensions_Allowed pragma argument of "On" enables this extension.
+
 * Prefixed-view notation for calls to primitive subprograms of untagged types
 
   Since Ada 2005, calls to primitive subprograms of a tagged type that
@@ -2393,6 +2398,8 @@ of GNAT specific extensions are recognized as follows:
   component is visible at the point of a selected_component using that
   name, preference is given to the component in a selected_component
   (as is currently the case for tagged types with such component names).
+
+  An Extensions_Allowed pragma argument of "On" enables this extension.
 
 * Expression defaults for generic formal functions
 
@@ -3743,15 +3750,20 @@ In addition, each protected subprogram body must satisfy:
 
 * May reference only one protected component
 * May not reference nonconstant entities outside the protected subprogram
-  scope.
+  scope
 * May not contain address representation items, allocators, or quantified
-  expressions.
-* May not contain delay, goto, loop, or procedure-call statements.
+  expressions
+* May not contain delay, goto, loop, or procedure-call statements
 * May not contain exported and imported entities
 * May not dereferenced access values
 * Function calls and attribute references must be static
 
-
+If the Lock_Free aspect is specified to be True for a protected unit
+and the Ceiling_Locking locking policy is in effect, then the run-time
+actions associated with the Ceiling_Locking locking policy (described in
+Ada RM D.3) are not performed when a protected operation of the protected
+unit is executed.
+  
 Pragma Loop_Invariant
 =====================
 
@@ -3860,7 +3872,7 @@ decrease or increase in successive iterations of the loop. In its simplest
 form, just one expression is specified, whose value must increase or decrease
 on each iteration of the loop.
 
-In a more complex form, multiple arguments can be given which are intepreted
+In a more complex form, multiple arguments can be given which are interpreted
 in a nesting lexicographic manner. For example:
 
 .. code-block:: ada
@@ -4941,7 +4953,7 @@ appear at the start of the declarations in a subprogram body
 Note: This pragma is called ``Post_Class`` rather than
 ``Post'Class`` because the latter would not be strictly
 conforming to the allowed syntax for pragmas. The motivation
-for provinding pragmas equivalent to the aspects is to allow a program
+for providing pragmas equivalent to the aspects is to allow a program
 to be written using the pragmas, and then compiled if necessary
 using an Ada compiler that does not recognize the pragmas or
 aspects, but is prepared to ignore the pragmas. The assertion
@@ -6207,7 +6219,7 @@ replacement of any dots in the unit name by the specified string literal.
 
 Note that Source_File_Name pragmas should not be used if you are using
 project files. The reason for this rule is that the project manager is not
-aware of these pragmas, and so other tools that use the projet file would not
+aware of these pragmas, and so other tools that use the project file would not
 be aware of the intended naming conventions. If you are using project files,
 file naming is controlled by Source_File_Name_Project pragmas, which are
 usually supplied automatically by the project manager. A pragma
@@ -6863,7 +6875,7 @@ Syntax:
 This pragma specifies that the specified entity, which must be
 a variable declared in a library-level package, is to be marked as
 "Thread Local Storage" (``TLS``). On systems supporting this (which
-include Windows, Solaris, GNU/Linux, and VxWorks 6), this causes each
+include Windows, Solaris, GNU/Linux, and VxWorks), this causes each
 thread (and hence each Ada task) to see a distinct copy of the variable.
 
 The variable must not have default initialization, and if there is
@@ -7119,7 +7131,7 @@ be.
 
 For the variable case, warnings are never given for unreferenced variables
 whose name contains one of the substrings
-``DISCARD, DUMMY, IGNORE, JUNK, UNUSED`` in any casing. Such names
+``DISCARD, DUMMY, IGNORE, JUNK, UNUSE, TMP, TEMP`` in any casing. Such names
 are typically to be used in cases where such warnings are expected.
 Thus it is never necessary to use ``pragma Unmodified`` for such
 variables, though it is harmless to do so.
@@ -7281,7 +7293,7 @@ configuration pragma will ensure this test is not suppressed:
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
 
-Note that in addition to the checks defined in the Ada RM, GNAT recogizes a
+Note that in addition to the checks defined in the Ada RM, GNAT recognizes a
 number of implementation-defined check names. See the description of pragma
 ``Suppress`` for full details.
 
@@ -7582,7 +7594,7 @@ expression (which does not exist in Ada 83).
 Note if the second argument of ``DETAILS`` is a ``local_NAME`` then the
 second form is always understood. If the intention is to use
 the fourth form, then you can write ``NAME & ""`` to force the
-intepretation as a *static_string_EXPRESSION*.
+interpretation as a *static_string_EXPRESSION*.
 
 Note: if the first argument is a valid ``TOOL_NAME``, it will be interpreted
 that way. The use of the ``TOOL_NAME`` argument is relevant only to users

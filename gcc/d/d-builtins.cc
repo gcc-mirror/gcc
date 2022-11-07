@@ -505,6 +505,9 @@ d_init_versions (void)
       VersionCondition::addPredefinedGlobalIdent ("D_TypeInfo");
     }
 
+  if (optimize)
+    VersionCondition::addPredefinedGlobalIdent ("D_Optimized");
+
   VersionCondition::addPredefinedGlobalIdent ("all");
 
   /* Emit all target-specific version identifiers.  */
@@ -889,7 +892,6 @@ static GTY(()) tree signed_size_type_node;
 static void
 d_build_c_type_nodes (void)
 {
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node
     = build_pointer_type (build_qualified_type (char_type_node,

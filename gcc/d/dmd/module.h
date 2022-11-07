@@ -37,7 +37,7 @@ public:
 
     const char *kind() const override;
 
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
 
     Package *isPackage() override final { return this; }
 
@@ -58,7 +58,6 @@ public:
     static Dsymbols deferred;   // deferred Dsymbol's needing semantic() run on them
     static Dsymbols deferred2;  // deferred Dsymbol's needing semantic2() run on them
     static Dsymbols deferred3;  // deferred Dsymbol's needing semantic3() run on them
-    static unsigned dprogress;  // progress resolving the deferred list
 
     static void _init();
 
@@ -117,7 +116,7 @@ public:
     size_t namelen;             // length of module name in characters
 
     static Module* create(const char *arg, Identifier *ident, int doDocComment, int doHdrGen);
-
+    static const char *find(const char *filename);
     static Module *load(const Loc &loc, Identifiers *packages, Identifier *ident);
 
     const char *kind() const override;

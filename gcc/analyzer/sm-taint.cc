@@ -21,8 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -30,13 +32,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "gimple-iterator.h"
-#include "tristate.h"
-#include "selftest.h"
 #include "ordered-hash-map.h"
 #include "cgraph.h"
 #include "cfg.h"
@@ -1167,10 +1165,11 @@ taint_state_machine::check_for_tainted_size_arg (sm_context *sm_ctxt,
 	    TREE_STRING_POINTER (access->to_external_string ());
 	  tree diag_size = sm_ctxt->get_diagnostic_tree (size_arg);
 	  sm_ctxt->warn (node, call, size_arg,
-			 new tainted_access_attrib_size (*this, diag_size, b,
-							 callee_fndecl,
-							 access->sizarg,
-							 access_str));
+			 make_unique<tainted_access_attrib_size>
+			   (*this, diag_size, b,
+			    callee_fndecl,
+			    access->sizarg,
+			    access_str));
 	}
     }
 }
@@ -1205,7 +1204,7 @@ taint_state_machine::check_for_tainted_divisor (sm_context *sm_ctxt,
 
       tree diag_divisor = sm_ctxt->get_diagnostic_tree (divisor_expr);
       sm_ctxt->warn (node, assign, divisor_expr,
-		     new tainted_divisor (*this, diag_divisor, b));
+		     make_unique <tainted_divisor> (*this, diag_divisor, b));
       sm_ctxt->set_next_state (assign, divisor_sval, m_stop);
     }
 }
@@ -1268,7 +1267,7 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, index->get_type (), &b))
 	    {
 	      tree arg = get_representative_tree (index);
-	      ctxt->warn (new tainted_array_index (taint_sm, arg, b));
+	      ctxt->warn (make_unique<tainted_array_index> (taint_sm, arg, b));
 	    }
 	  }
 	  break;
@@ -1290,7 +1289,7 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, effective_type, &b))
 	      {
 		tree arg = get_representative_tree (offset);
-		ctxt->warn (new tainted_offset (taint_sm, arg, b));
+		ctxt->warn (make_unique<tainted_offset> (taint_sm, arg, b));
 	      }
 	  }
 	  break;
@@ -1315,7 +1314,7 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, size_sval->get_type (), &b))
 	      {
 		tree arg = get_representative_tree (size_sval);
-		ctxt->warn (new tainted_size (taint_sm, arg, b));
+		ctxt->warn (make_unique<tainted_size> (taint_sm, arg, b));
 	      }
 	  }
 	  break;
@@ -1361,8 +1360,36 @@ region_model::check_dynamic_size_for_taint (enum memory_space mem_space,
   if (taint_sm.get_taint (state, size_in_bytes->get_type (), &b))
     {
       tree arg = get_representative_tree (size_in_bytes);
-      ctxt->warn (new tainted_allocation_size (taint_sm, arg, b, mem_space));
+      ctxt->warn (make_unique<tainted_allocation_size>
+		    (taint_sm, arg, b, mem_space));
     }
+}
+
+/* Mark SVAL as TAINTED.  CTXT must be non-NULL.  */
+
+void
+region_model::mark_as_tainted (const svalue *sval,
+			       region_model_context *ctxt)
+{
+  gcc_assert (sval);
+  gcc_assert (ctxt);
+
+  sm_state_map *smap;
+  const state_machine *sm;
+  unsigned sm_idx;
+  if (!ctxt->get_taint_map (&smap, &sm, &sm_idx))
+    return;
+
+  gcc_assert (smap);
+  gcc_assert (sm);
+
+  const taint_state_machine &taint_sm = (const taint_state_machine &)*sm;
+
+  const extrinsic_state *ext_state = ctxt->get_ext_state ();
+  if (!ext_state)
+    return;
+
+  smap->set_state (this, sval, taint_sm.m_tainted, NULL, *ext_state);
 }
 
 } // namespace ana

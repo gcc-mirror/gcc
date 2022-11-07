@@ -1,0 +1,1 @@
+#define TARGET_USING_MCFGTHREAD  1

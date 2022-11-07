@@ -715,25 +715,10 @@ build_throw (location_t loc, tree exp)
 	     treated as an rvalue for the purposes of overload resolution
 	     to favor move constructors over copy constructors.  */
 	  if (tree moved = treat_lvalue_as_rvalue_p (exp, /*return*/false))
-	    {
-	      if (cxx_dialect < cxx20)
-		{
-		  releasing_vec exp_vec (make_tree_vector_single (moved));
-		  moved = (build_special_member_call
-			   (object, complete_ctor_identifier, &exp_vec,
-			    TREE_TYPE (object), flags|LOOKUP_PREFER_RVALUE,
-			    tf_none));
-		  if (moved != error_mark_node)
-		    {
-		      exp = moved;
-		      converted = true;
-		    }
-		}
-	      else
-		/* In C++20 we just treat the return value as an rvalue that
-		   can bind to lvalue refs.  */
-		exp = moved;
-	    }
+	    /* In C++20 we treat the return value as an rvalue that
+	       can bind to lvalue refs.  In C++23, such an expression is just
+	       an xvalue.  */
+	    exp = moved;
 
 	  /* Call the copy constructor.  */
 	  if (!converted)
@@ -755,7 +740,7 @@ build_throw (location_t loc, tree exp)
 	  tree tmp = decay_conversion (exp, tf_warning_or_error);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
-	  exp = build2 (INIT_EXPR, temp_type, object, tmp);
+	  exp = cp_build_init_expr (object, tmp);
 	}
 
       /* Mark any cleanups from the initialization as MUST_NOT_THROW, since
@@ -1256,8 +1241,8 @@ build_noexcept_spec (tree expr, tsubst_flags_t complain)
       && !instantiation_dependent_expression_p (expr))
     {
       expr = build_converted_constant_bool_expr (expr, complain);
-      expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-      expr = cxx_constant_value (expr);
+      expr = instantiate_non_dependent_expr (expr, complain);
+      expr = cxx_constant_value (expr, complain);
     }
   if (TREE_CODE (expr) == INTEGER_CST)
     {
@@ -1322,9 +1307,12 @@ maybe_splice_retval_cleanup (tree compound_stmt)
 {
   /* If we need a cleanup for the return value, add it in at the same level as
      pushdecl_outermost_localscope.  And also in try blocks.  */
-  bool function_body
+  const bool function_body
     = (current_binding_level->level_chain
-       && current_binding_level->level_chain->kind == sk_function_parms);
+       && current_binding_level->level_chain->kind == sk_function_parms
+      /* When we're processing a default argument, c_f_d may not have been
+	 set.  */
+       && current_function_decl);
 
   if ((function_body || current_binding_level->kind == sk_try)
       && !DECL_CONSTRUCTOR_P (current_function_decl)

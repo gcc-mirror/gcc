@@ -17,7 +17,7 @@ contains
     block
       block
         block
-          !$omp target device(ancestor:1)  ! { dg-message "sorry, unimplemented: 'ancestor' not yet supported" }
+          !$omp target device(ancestor:1)
           !$omp end target
         end block
       end block

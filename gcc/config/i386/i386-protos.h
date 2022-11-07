@@ -109,7 +109,7 @@ extern void ix86_expand_binary_operator (enum rtx_code,
 					 machine_mode, rtx[]);
 extern void ix86_expand_vector_logical_operator (enum rtx_code,
 						 machine_mode, rtx[]);
-extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[]);
+extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[3]);
 extern bool ix86_avoid_lea_for_add (rtx_insn *, rtx[]);
 extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
@@ -140,7 +140,7 @@ extern void ix86_split_fp_absneg_operator (enum rtx_code, machine_mode,
 					   rtx[]);
 extern void ix86_expand_copysign (rtx []);
 extern void ix86_expand_xorsign (rtx []);
-extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[]);
+extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2]);
 extern bool ix86_match_ccmode (rtx, machine_mode);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_setcc (rtx, enum rtx_code, rtx, rtx);
@@ -276,11 +276,6 @@ extern bool ix86_extract_perm_from_pool_constant (int*, rtx);
 /* In i386-c.cc  */
 extern void ix86_target_macros (void);
 extern void ix86_register_pragmas (void);
-
-/* In i386-d.cc  */
-extern void ix86_d_target_versions (void);
-extern void ix86_d_register_target_info (void);
-extern bool ix86_d_has_stdcall_convention (unsigned int *, unsigned int *);
 
 /* In winnt.cc  */
 extern void i386_pe_unique_section (tree, int);

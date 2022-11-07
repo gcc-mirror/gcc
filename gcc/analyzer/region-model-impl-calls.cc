@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -38,18 +39,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
-#include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
@@ -61,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "analyzer/pending-diagnostic.h"
 #include "gimple-pretty-print.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -89,6 +84,17 @@ region_model_manager *
 call_details::get_manager () const
 {
   return m_model->get_manager ();
+}
+
+/* Get any logger associated with this object.  */
+
+logger *
+call_details::get_logger () const
+{
+  if (m_ctxt)
+    return m_ctxt->get_logger ();
+  else
+    return NULL;
 }
 
 /* Get any uncertainty_t associated with the region_model_context.  */
@@ -363,6 +369,16 @@ region_model::impl_call_analyzer_eval (const gcall *call,
   warning_at (call->location, 0, "%s", t.as_string ());
 }
 
+/* Handle the on_call_pre part of "__analyzer_get_unknown_ptr".  */
+
+void
+region_model::impl_call_analyzer_get_unknown_ptr (const call_details &cd)
+{
+  const svalue *ptr_sval
+    = m_mgr->get_or_create_unknown_svalue (cd.get_lhs_type ());
+  cd.maybe_set_lhs (ptr_sval);
+}
+
 /* Handle the on_call_pre part of "__builtin_expect" etc.  */
 
 void
@@ -549,6 +565,76 @@ region_model::impl_call_memset (const call_details &cd)
   fill_region (sized_dest_reg, fill_value_u8);
 }
 
+/* Handle the on_call_post part of "pipe".  */
+
+void
+region_model::impl_call_pipe (const call_details &cd)
+{
+  class failure : public failed_call_info
+  {
+  public:
+    failure (const call_details &cd) : failed_call_info (cd) {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      /* Return -1; everything else is unchanged.  */
+      const call_details cd (get_call_details (model, ctxt));
+      model->update_for_int_cst_return (cd, -1, true);
+      return true;
+    }
+  };
+
+  class success : public success_call_info
+  {
+  public:
+    success (const call_details &cd) : success_call_info (cd) {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+
+      /* Return 0.  */
+      model->update_for_zero_return (cd, true);
+
+      /* Update fd array.  */
+      region_model_manager *mgr = cd.get_manager ();
+      tree arr_tree = cd.get_arg_tree (0);
+      const svalue *arr_sval = cd.get_arg_svalue (0);
+      for (int idx = 0; idx < 2; idx++)
+	{
+	  const region *arr_reg
+	    = model->deref_rvalue (arr_sval, arr_tree, cd.get_ctxt ());
+	  const svalue *idx_sval
+	    = mgr->get_or_create_int_cst (integer_type_node, idx);
+	  const region *element_reg
+	    = mgr->get_element_region (arr_reg, integer_type_node, idx_sval);
+	  conjured_purge p (model, cd.get_ctxt ());
+	  const svalue *fd_sval
+	    = mgr->get_or_create_conjured_svalue (integer_type_node,
+						  cd.get_call_stmt (),
+						  element_reg,
+						  p);
+	  model->set_value (element_reg, fd_sval, cd.get_ctxt ());
+	  model->mark_as_valid_fd (fd_sval, cd.get_ctxt ());
+
+	}
+      return true;
+    }
+  };
+
+  /* Body of region_model::impl_call_pipe.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success> (cd));
+      cd.get_ctxt ()->terminate_path ();
+    }
+}
+
 /* A subclass of pending_diagnostic for complaining about 'putenv'
    called on an auto var.  */
 
@@ -661,7 +747,7 @@ region_model::impl_call_putenv (const call_details &cd)
       break;
     case MEMSPACE_STACK:
       if (ctxt)
-	ctxt->warn (new putenv_of_auto_var (fndecl, reg));
+	ctxt->warn (make_unique<putenv_of_auto_var> (fndecl, reg));
       break;
     }
 }
@@ -850,7 +936,7 @@ region_model::impl_call_realloc (const call_details &cd)
 	  if (old_size_sval)
 	    {
 	      const svalue *copied_size_sval
-		= get_copied_size (old_size_sval, new_size_sval);
+		= get_copied_size (model, old_size_sval, new_size_sval);
 	      const region *copied_old_reg
 		= model->m_mgr->get_sized_region (freed_reg, NULL,
 						  copied_size_sval);
@@ -896,35 +982,22 @@ region_model::impl_call_realloc (const call_details &cd)
 
   private:
     /* Return the lesser of OLD_SIZE_SVAL and NEW_SIZE_SVAL.
-       If either one is symbolic, the symbolic svalue is returned.  */
-    const svalue *get_copied_size (const svalue *old_size_sval,
+       If unknown, OLD_SIZE_SVAL is returned.  */
+    const svalue *get_copied_size (region_model *model,
+				   const svalue *old_size_sval,
 				   const svalue *new_size_sval) const
     {
-      tree old_size_cst = old_size_sval->maybe_get_constant ();
-      tree new_size_cst = new_size_sval->maybe_get_constant ();
-
-      if (old_size_cst && new_size_cst)
+      tristate res
+	= model->eval_condition (old_size_sval, GT_EXPR, new_size_sval);
+      switch (res.get_value ())
 	{
-	  /* Both are constants and comparable.  */
-	  tree cmp = fold_binary (LT_EXPR, boolean_type_node,
-				  old_size_cst, new_size_cst);
-
-	  if (cmp == boolean_true_node)
-	    return old_size_sval;
-	  else
-	    return new_size_sval;
-	}
-      else if (new_size_cst)
-	{
-	  /* OLD_SIZE_SVAL is symbolic, so return that.  */
-	  return old_size_sval;
-	}
-      else
-	{
-	  /* NEW_SIZE_SVAL is symbolic or both are symbolic.
-	     Return NEW_SIZE_SVAL, because implementations of realloc
-	     probably only moves the buffer if the new size is larger.  */
+	case tristate::TS_TRUE:
 	  return new_size_sval;
+	case tristate::TS_FALSE:
+	case tristate::TS_UNKNOWN:
+	  return old_size_sval;
+	default:
+	  gcc_unreachable ();
 	}
     }
   };
@@ -933,9 +1006,9 @@ region_model::impl_call_realloc (const call_details &cd)
 
   if (cd.get_ctxt ())
     {
-      cd.get_ctxt ()->bifurcate (new failure (cd));
-      cd.get_ctxt ()->bifurcate (new success_no_move (cd));
-      cd.get_ctxt ()->bifurcate (new success_with_move (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success_no_move> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success_with_move> (cd));
       cd.get_ctxt ()->terminate_path ();
     }
 }
@@ -1004,7 +1077,7 @@ region_model::impl_call_strchr (const call_details &cd)
 
   /* Bifurcate state, creating a "not found" out-edge.  */
   if (cd.get_ctxt ())
-    cd.get_ctxt ()->bifurcate (new strchr_call_info (cd, false));
+    cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, false));
 
   /* The "unbifurcated" state is the "found" case.  */
   strchr_call_info found (cd, true);
@@ -1019,13 +1092,23 @@ region_model::impl_call_strcpy (const call_details &cd)
   const svalue *dest_sval = cd.get_arg_svalue (0);
   const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
 					 cd.get_ctxt ());
+  const svalue *src_sval = cd.get_arg_svalue (1);
+  const region *src_reg = deref_rvalue (src_sval, cd.get_arg_tree (1),
+					cd.get_ctxt ());
+  const svalue *src_contents_sval = get_store_value (src_reg,
+						     cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_sval);
 
-  check_region_for_write (dest_reg, cd.get_ctxt ());
+  /* Try to get the string size if SRC_REG is a string_region.  */
+  const svalue *copied_bytes_sval = get_string_size (src_reg);
+  /* Otherwise, check if the contents of SRC_REG is a string.  */
+  if (copied_bytes_sval->get_kind () == SK_UNKNOWN)
+    copied_bytes_sval = get_string_size (src_contents_sval);
 
-  /* For now, just mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
+  const region *sized_dest_reg
+    = m_mgr->get_sized_region (dest_reg, NULL_TREE, copied_bytes_sval);
+  set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 
 /* Handle the on_call_pre part of "strlen".  */

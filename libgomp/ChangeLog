@@ -1,3 +1,419 @@
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.h (OFFLOAD_TARGET_TYPE_INTEL_MIC): Remove.
+	* libgomp.texi (OpenMP Context Selectors): Remove Intel MIC
+	documentation.
+	* plugin/configfrag.ac <enable_offload_targets>
+	[*-intelmic-* | *-intelmicemul-*]: Remove.
+	* configure: Regenerate.
+	* testsuite/lib/libgomp.exp (libgomp_init): Remove 'liboffloadmic'
+	handling.
+	(offload_target_to_openacc_device_type)
+	[$offload_target = *-intelmic*]: Remove.
+	(check_effective_target_offload_device_intel_mic)
+	(check_effective_target_offload_device_any_intel_mic): Remove.
+	* testsuite/libgomp.c-c++-common/on_device_arch.h
+	(device_arch_intel_mic, on_device_arch_intel_mic, any_device_arch)
+	(any_device_arch_intel_mic): Remove.
+	* testsuite/libgomp.c-c++-common/target-45.c: Remove
+	'offload_device_any_intel_mic' XFAIL.
+	* testsuite/libgomp.fortran/target10.f90: Likewise.
+
+2022-11-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-11.f90: New test.
+	* testsuite/libgomp.fortran/target-13.f90: New test.
+
+2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/106643
+	PR fortran/96668
+	* oacc-mem.c (goacc_enter_data_internal): Support
+	OpenACC 'declare create' with Fortran allocatable arrays, part II.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
+	Adjust.
+	* testsuite/libgomp.oacc-fortran/pr106643-1.f90: New.
+
+2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/106643
+	* oacc-mem.c (goacc_enter_data_internal): Support
+	OpenACC 'declare create' with Fortran allocatable arrays, part I.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
+	New.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
+	New.
+
+2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-runtime.f90:
+	New.
+
+2022-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
+	New.
+
+2022-11-02  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90: New.
+
+2022-10-28  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-fortran/declare-1.f90: Adjust scan output.
+	* testsuite/libgomp.oacc-fortran/host_data-5.F90: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+
+2022-10-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_open_device): Initialize
+	'ptx_dev->rev_data'.
+
+2022-10-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/icv-device.c (GOMP_DEVICE_NUM_VAR): Remove
+	'static' for this variable.
+	* config/nvptx/libgomp-nvptx.h: New file.
+	* config/nvptx/target.c: Include it.
+	(GOMP_ADDITIONAL_ICVS): Declare extern var.
+	(GOMP_REV_OFFLOAD_VAR): Declare var.
+	(GOMP_target_ext): Handle reverse offload.
+	* libgomp-plugin.h (GOMP_PLUGIN_target_rev): New prototype.
+	* libgomp-plugin.c (GOMP_PLUGIN_target_rev): New, call ...
+	* target.c (gomp_target_rev): ... this new stub function.
+	* libgomp.h (gomp_target_rev): Declare.
+	* libgomp.map (GOMP_PLUGIN_1.4): New; add GOMP_PLUGIN_target_rev.
+	* plugin/cuda-lib.def (cuMemHostAlloc): Add.
+	* plugin/plugin-nvptx.c: Include libgomp-nvptx.h.
+	(struct ptx_device): Add rev_data member.
+	(nvptx_open_device): Remove async_engines query, last used in
+	r10-304-g1f4c5b9b; add unified-address assert check.
+	(GOMP_OFFLOAD_get_num_devices): Claim unified address
+	support.
+	(GOMP_OFFLOAD_load_image): Free rev_fn_table if no
+	offload functions exist. Make offload var available
+	on host and device.
+	(rev_off_dev_to_host_cpy, rev_off_host_to_dev_cpy): New.
+	(GOMP_OFFLOAD_run): Handle reverse offload.
+
+2022-10-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/107195
+	PR target/107344
+	* testsuite/libgomp.oacc-c-c++-common/nvptx-sese-1.c: Restore SESE
+	regions checking.
+
+2022-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_offload_device_gcn):
+	New.
+	* testsuite/libgomp.c-c++-common/on_device_arch.h (device_arch_gcn,
+	on_device_arch_gcn): New.
+	* testsuite/libgomp.c-c++-common/requires-4a.c: New test; copied from
+	requires-4.c but using heap-allocated memory.
+
+2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/105421
+	* testsuite/libgomp.oacc-c-c++-common/private-big-1.c: New.
+
+2022-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/reverse-offload-sm30.c: Fix nvptx-specific
+	'-foffload-options' syntax.
+
+2022-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/task-7.f90: New test.
+	* testsuite/libgomp.fortran/task-8.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-1.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-2.f90: New test.
+	* testsuite/libgomp.fortran/task-in-explicit-3.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-17.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-18.f90: New test.
+
+2022-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Fix up allocator -> allocate directive
+	in deprecation bullet.
+
+2022-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_in_explicit_task): Declare.
+	* omp_lib.h.in (omp_in_explicit_task): Likewise.
+	* omp_lib.f90.in (omp_in_explicit_task): New interface.
+	* libgomp.map (OMP_5.2): New symbol version, export
+	omp_in_explicit_task and omp_in_explicit_task_.
+	* task.c (omp_in_explicit_task): New function.
+	* fortran.c (omp_in_explicit_task): Add ialias_redirect.
+	(omp_in_explicit_task_): New function.
+	* libgomp.texi (OpenMP 5.2): Mark omp_in_explicit_task as implemented.
+	* testsuite/libgomp.c-c++-common/task-in-explicit-1.c: New test.
+	* testsuite/libgomp.c-c++-common/task-in-explicit-2.c: New test.
+	* testsuite/libgomp.c-c++-common/task-in-explicit-3.c: New test.
+
+2022-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_create_artificial_team): Fix up handling of invocations
+	from within explicit task.
+	* target.c (GOMP_target_ext): Likewise.
+	* testsuite/libgomp.c/task-7.c: New test.
+	* testsuite/libgomp.c/task-8.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-17.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-18.c: New test.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-10-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl. Status): Mark 'assume' as 'Y'.
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (Support begin/end declare target syntax in C/C++):
+	Mark as implemented.
+
+2022-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/105318
+	* testsuite/libgomp.fortran/is_device_ptr-2.f90: New test.
+
+2022-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Mark 'assume' as implemented
+	for C/C++. Remove duplicated 'begin declare target' entry.
+
+2022-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/106981
+	* testsuite/libgomp.c-c++-common/pr106981.c: New test.
+
+2022-09-14  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-15.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-16.c: New test.
+	* testsuite/libgomp.oacc-c++/deep-copy-17.C: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-arrayofstruct.c: Move
+	test to here, make "run" test.
+
+2022-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/106906
+	* env.c (get_icv_member_addr): Cast false to void * before assigning
+	it to icv_addr[1], and comment the whole assignment out.
+
+2022-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (gcn): Move misplaced -march=sm_30 remark to ...
+	(nvptx): ... here.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics: nvptx): Document
+	that reverse offload requires >= -march=sm_35.
+	* testsuite/libgomp.c-c++-common/requires-4.c: Build for nvptx
+	with -misa=sm_35.
+	* testsuite/libgomp.c-c++-common/requires-5.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-6.c: Likewise.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1.c: Likewise.
+	* testsuite/libgomp.fortran/reverse-offload-1.f90: Likewise.
+	* testsuite/libgomp.c/reverse-offload-sm30.c: New test.
+
+2022-09-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1 Impl. Status): Add two new minor items.
+	(OpenMP 5.2 Impl. Status): Improve omp/omx/ompx wording.
+
+2022-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/106894
+	* testsuite/libgomp.c-c++-common/icv-6.c: Include string.h.
+	(main): Avoid tests for which corresponding non-_ALL suffixed variable
+	is in the environment, or for OMP_NUM_TEAMS on the device
+	OMP_NUM_TEAMS_DEV_?.
+
+2022-09-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* env.c (initialize_env): Include libiberty environ.h.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Read offload
+	function address table '$offload_func_table' if rev_fn_table
+	is not NULL.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Read
+	.offload_func_table to populate rev_fn_table when requested.
+
+2022-09-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_load_image): Add
+	'uint64_t **rev_fn_table' argument.
+	* oacc-host.c (host_load_image): Likewise.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Likewise;
+	currently unused.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Likewise.
+	* target.c (gomp_load_image_to_device): Update call but pass
+	NULL for now.
+
+2022-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/106894
+	* env.c (initialize_env) <case PARSE_BIND>: Use char ** instead of
+	char * for dest[1] initialization from params[1].  Formatting fixes.
+
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/106670
+	* libgomp.texi (OpenMP 5.2): Add comment to ompx/omx entry.
+
+2022-09-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP-Implementation Specifics): New; add libmemkind
+	section; move OpenMP Context Selectors from ...
+	(Offload-Target Specifics): ... here; add 'AMD Radeo (GCN)' and
+	'nvptx' sections.
+
+2022-09-08  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* config/gcn/icv-device.c (omp_get_default_device): Return device-
+	specific ICV.
+	(omp_get_max_teams): Added for GCN devices.
+	(omp_set_num_teams): Likewise.
+	(ialias): Likewise.
+	* config/nvptx/icv-device.c (omp_get_default_device): Return device-
+	specific ICV.
+	(omp_get_max_teams): Added for NVPTX devices.
+	(omp_set_num_teams): Likewise.
+	(ialias): Likewise.
+	* env.c (struct gomp_icv_list): New struct to store entries of initial
+	ICV values.
+	(struct gomp_offload_icv_list): New struct to store entries of device-
+	specific ICV values that are copied to the device and back.
+	(struct gomp_default_icv_values): New struct to store default values of
+	ICVs according to the OpenMP standard.
+	(parse_schedule): Generalized for different variants of OMP_SCHEDULE.
+	(print_env_var_error): Function that prints an error for invalid values
+	for ICVs.
+	(parse_unsigned_long_1): Removed getenv.  Generalized.
+	(parse_unsigned_long): Likewise.
+	(parse_int_1): Likewise.
+	(parse_int): Likewise.
+	(parse_int_secure): Likewise.
+	(parse_unsigned_long_list): Likewise.
+	(parse_target_offload): Likewise.
+	(parse_bind_var): Likewise.
+	(parse_stacksize): Likewise.
+	(parse_boolean): Likewise.
+	(parse_wait_policy): Likewise.
+	(parse_allocator): Likewise.
+	(omp_display_env): Extended to output different variants of environment
+	variables.
+	(print_schedule): New helper function for omp_display_env which prints
+	the values of run_sched_var.
+	(print_proc_bind): New helper function for omp_display_env which prints
+	the values of proc_bind_var.
+	(enum gomp_parse_type): Collection of types used for parsing environment
+	variables.
+	(ENTRY): Preprocess string lengths of environment variables.
+	(OMP_VAR_CNT): Preprocess table size.
+	(OMP_HOST_VAR_CNT): Likewise.
+	(INT_MAX_STR_LEN): Constant for the maximal number of digits of a device
+	number.
+	(gomp_get_icv_flag): Returns if a flag for a particular ICV is set.
+	(gomp_set_icv_flag): Sets a flag for a particular ICV.
+	(print_device_specific_icvs): New helper function for omp_display_env to
+	print device specific ICV values.
+	(get_device_num): New helper function for parse_device_specific.
+	Extracts the device number from an environment variable name.
+	(get_icv_member_addr): Gets the memory address for a particular member
+	of an ICV struct.
+	(gomp_get_initial_icv_item): Get a list item of gomp_initial_icv_list.
+	(initialize_icvs): New function to initialize a gomp_initial_icvs
+	struct.
+	(add_initial_icv_to_list): Adds an ICV struct to gomp_initial_icv_list.
+	(startswith): Checks if a string starts with a given prefix.
+	(initialize_env): Extended to parse the new syntax of environment
+	variables.
+	* icv-device.c (omp_get_max_teams): Added.
+	(ialias): Likewise.
+	(omp_set_num_teams): Likewise.
+	* icv.c (omp_set_num_teams): Moved to icv-device.c.
+	(omp_get_max_teams): Likewise.
+	(ialias): Likewise.
+	* libgomp-plugin.h (GOMP_DEVICE_NUM_VAR): Removed.
+	(GOMP_ADDITIONAL_ICVS): New target-side struct that
+	holds the designated ICVs of the target device.
+	* libgomp.h (enum gomp_icvs): Collection of ICVs.
+	(enum gomp_device_num): Definition of device numbers for _ALL, _DEV, and
+	no suffix.
+	(enum gomp_env_suffix): Collection of possible suffixes of environment
+	variables.
+	(struct gomp_initial_icvs): Contains all ICVs for which we need to store
+	initial values.
+	(struct gomp_default_icv):New struct to hold ICVs for which we need
+	to store initial values.
+	(struct gomp_icv_list): Definition of a linked list that is used for
+	storing ICVs for the devices and also for _DEV, _ALL, and without
+	suffix.
+	(struct gomp_offload_icvs): New struct to hold ICVs that are copied to
+	a device.
+	(struct gomp_offload_icv_list): Definition of a linked list that holds
+	device-specific ICVs that are copied to devices.
+	(gomp_get_initial_icv_item): Get a list item of gomp_initial_icv_list.
+	(gomp_get_icv_flag): Returns if a flag for a particular ICV is set.
+	* libgomp.texi: Updated.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Extended to read
+	further ICVs from the offload image.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Likewise.
+	* target.c (gomp_get_offload_icv_item): Get a list item of
+	gomp_offload_icv_list.
+	(get_gomp_offload_icvs): New. Returns the ICV values
+	depending on the device num and the variable hierarchy.
+	(gomp_load_image_to_device): Extended to copy further ICVs to a device.
+	* testsuite/libgomp.c-c++-common/icv-5.c: New test.
+	* testsuite/libgomp.c-c++-common/icv-6.c: New test.
+	* testsuite/libgomp.c-c++-common/icv-7.c: New test.
+	* testsuite/libgomp.c-c++-common/icv-8.c: New test.
+	* testsuite/libgomp.c-c++-common/omp-display-env-1.c: New test.
+	* testsuite/libgomp.c-c++-common/omp-display-env-2.c: New test.
+
+2022-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Mention that omp_cur_iteration is now
+	fully supported.
+	* testsuite/libgomp.c/doacross-4.c: New test.
+	* testsuite/libgomp.c/doacross-5.c: New test.
+	* testsuite/libgomp.c/doacross-6.c: New test.
+	* testsuite/libgomp.c/doacross-7.c: New test.
+
+2022-09-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Update doacross/omp_cur_iteration status.
+
+2022-08-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0): Mark 'ancestor' as implemented but
+	refer to 'requires'.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1.c: New test.
+	* testsuite/libgomp.fortran/reverse-offload-1-aux.f90: New test.
+	* testsuite/libgomp.fortran/reverse-offload-1.f90: New test.
+
 2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/106548

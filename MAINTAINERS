@@ -30,7 +30,7 @@ Richard Biener					<rguenther@suse.de>
 Richard Earnshaw				<richard.earnshaw@arm.com>
 Jakub Jelinek					<jakub@redhat.com>
 Richard Kenner					<kenner@nyu.edu>
-Jeff Law					<jlaw@tachyum.com>
+Jeff Law					<jlaw@ventanamicro.com>
 Michael Meissner				<gnu@the-meissners.org>
 Jason Merrill					<jason@redhat.com>
 David S. Miller					<davem@redhat.com>
@@ -60,15 +60,15 @@ arc port		Joern Rennecke		<gnu@amylaar.uk>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
-arm port		Ramana Radhakrishnan	<ramana.radhakrishnan@arm.com>
+arm port		Ramana Radhakrishnan	<ramana.gcc@gmail.com>
 arm port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 avr port		Denis Chertykov		<chertykov@gmail.com>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
 bpf port		Jose E. Marchesi	<jose.marchesi@oracle.com>
 c6x port		Bernd Schmidt		<bernds_cb1@t-online.de>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
-c-sky port		Xianmiao Qu		<xianmiao_qu@c-sky.com>
-c-sky port		Yunhai Shang		<yunhai_shang@c-sky.com>
+c-sky port		Xianmiao Qu		<cooper.qu@linux.alibaba.com>
+c-sky port		Yunhai Shang		<yunhai@linux.alibaba.com>
 epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>
@@ -316,6 +316,7 @@ from other maintainers or reviewers.
 
 Mark G. Adams					<mark.g.adams@sympatico.ca>
 Pedro Alves					<palves@redhat.com>
+Paul-Antoine Arras				<pa@codesourcery.com>
 Raksit Ashok					<raksit@google.com>
 Matt Austern					<austern@google.com>
 David Ayers					<ayers@fsfe.org>
@@ -376,6 +377,7 @@ Andrea Corallo					<andrea.corallo@arm.com>
 Christian Cornelssen				<ccorn@cs.tu-berlin.de>
 Ludovic Courtès					<ludo@gnu.org>
 Lawrence Crowl					<crowl@google.com>
+Lili Cui					<lili.cui@intel.com>
 Ian Dall					<ian@beware.dropbear.id.au>
 David Daney					<david.daney@caviumnetworks.com>
 Robin Dapp					<rdapp@linux.ibm.com>
@@ -641,6 +643,7 @@ YunQiang Su					<yunqiang.su@cipunited.com>
 Robert Suchanek					<rsuchy84@gmail.com>
 Andrew Sutton					<andrew.n.sutton@gmail.com>
 Gabriele Svelto					<gabriele.svelto@st.com>
+Torbjörn Svensson				<torbjorn.svensson@foss.st.com>
 Toma Tabacu					<toma.tabacu@gmail.com>
 Omar Tahir					<omar.tahir@arm.com>
 Sriraman Tallam					<tmsriram@google.com>
@@ -723,6 +726,7 @@ Matthias Kretz					<m.kretz@gsi.de>
 Tim Lange					<mail@tim-lange.me>
 Jeff Law					<jeffreyalaw@gmail.com>
 Jeff Law					<jlaw@tachyum.com>
+Jeff Law					<jlaw@ventanamicro.com>
 Immad Mir					<mir@sourceware.org>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>

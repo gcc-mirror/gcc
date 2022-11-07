@@ -33,9 +33,11 @@
 #include <bits/stl_construct.h>
 #include <bits/memoryfwd.h>
 #if __cplusplus >= 201103L
-# include <bits/allocator.h>
 # include <bits/ptr_traits.h>
 # include <ext/numeric_traits.h>
+# if _GLIBCXX_HOSTED
+#  include <bits/allocator.h>
+# endif
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -72,7 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       using __pocs = typename _Tp::propagate_on_container_swap;
     template<typename _Tp>
-      using __equal = typename _Tp::is_always_equal;
+      using __equal = __type_identity<typename _Tp::is_always_equal>;
   };
 
   template<typename _Alloc, typename _Up>
@@ -207,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * otherwise @c is_empty<Alloc>::type
       */
       using is_always_equal
-	= __detected_or_t<typename is_empty<_Alloc>::type, __equal, _Alloc>;
+	= typename __detected_or_t<is_empty<_Alloc>, __equal, _Alloc>::type;
 
       template<typename _Tp>
 	using rebind_alloc = __alloc_rebind<_Alloc, _Tp>;
@@ -401,6 +403,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       select_on_container_copy_construction(const _Alloc& __rhs)
       { return _S_select(__rhs, 0); }
     };
+
+#if _GLIBCXX_HOSTED
 
 #if __cplusplus > 201703L
 # define __cpp_lib_constexpr_dynamic_alloc 201907L
@@ -660,6 +664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       select_on_container_copy_construction(const allocator_type& __rhs)
       { return __rhs; }
     };
+#endif
 
   /// @cond undocumented
 #if __cplusplus < 201703L
@@ -774,11 +779,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 typename _Alloc::value_type const&>::type
     { };
 
+#if _GLIBCXX_HOSTED
   // std::allocator<_Tp> just requires CopyConstructible
   template<typename _Tp>
     struct __is_copy_insertable<allocator<_Tp>>
     : is_copy_constructible<_Tp>
     { };
+#endif
 
   // true if _Alloc::value_type is MoveInsertable into containers using _Alloc
   // (might be wrong if _Alloc::construct exists but is not constrained,
@@ -788,11 +795,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __is_alloc_insertable_impl<_Alloc, typename _Alloc::value_type>::type
     { };
 
+#if _GLIBCXX_HOSTED
   // std::allocator<_Tp> just requires MoveConstructible
   template<typename _Tp>
     struct __is_move_insertable<allocator<_Tp>>
     : is_move_constructible<_Tp>
     { };
+#endif
 
   // Trait to detect Allocator-like types.
   template<typename _Alloc, typename = void>
@@ -824,6 +833,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  // To implement Option 3 of DR 431.
+  template<typename _Alloc, bool = __is_empty(_Alloc)>
+    struct __alloc_swap
+    { static void _S_do_it(_Alloc&, _Alloc&) _GLIBCXX_NOEXCEPT { } };
+
+  template<typename _Alloc>
+    struct __alloc_swap<_Alloc, false>
+    {
+      static void
+      _S_do_it(_Alloc& __one, _Alloc& __two) _GLIBCXX_NOEXCEPT
+      {
+	// Precondition: swappable allocators.
+	if (__one != __two)
+	  swap(__one, __two);
+      }
+    };
+
+#if __cplusplus >= 201103L
+  template<typename _Tp, bool
+    = __or_<is_copy_constructible<typename _Tp::value_type>,
+            is_nothrow_move_constructible<typename _Tp::value_type>>::value>
+    struct __shrink_to_fit_aux
+    { static bool _S_do_it(_Tp&) noexcept { return false; } };
+
+  template<typename _Tp>
+    struct __shrink_to_fit_aux<_Tp, true>
+    {
+      _GLIBCXX20_CONSTEXPR
+      static bool
+      _S_do_it(_Tp& __c) noexcept
+      {
+#if __cpp_exceptions
+	try
+	  {
+	    _Tp(__make_move_if_noexcept_iterator(__c.begin()),
+		__make_move_if_noexcept_iterator(__c.end()),
+		__c.get_allocator()).swap(__c);
+	    return true;
+	  }
+	catch(...)
+	  { return false; }
+#else
+	return false;
+#endif
+      }
+    };
+#endif
+
   /**
    * Destroy a range of objects using the supplied allocator.  For
    * non-default allocators we do not optimize away invocation of
@@ -845,6 +902,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     }
 
+#if _GLIBCXX_HOSTED
   template<typename _ForwardIterator, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline void
@@ -853,6 +911,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Destroy(__first, __last);
     }
+#endif
   /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION

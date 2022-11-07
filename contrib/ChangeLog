@@ -1,3 +1,62 @@
+2022-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	e4cba49413ca429dc82f6aa2e88129ecb3fdd943 to ignored commits.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	Remove 'liboffloadmic'.
+	* gcc_update (files_and_dependencies): Remove 'liboffloadmic'
+	files.
+	* update-copyright.py (GCCCmdLine): Remove 'liboffloadmic'
+	comment.
+
+2022-10-20  Jonathan Wakely   <jwakely@redhat.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* gcc_update: Add rule for gcc/cp/std-name-hint.gperf.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Remove extra fetch.
+
+2022-10-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Use logging module
+	and provide robust debugging output.
+
+2022-10-05  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Do fetch before a push.
+
+2022-09-20  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Skip egrep: warning: egrep is
+	  obsolescent; using grep -E.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove deprecated ports.
+
+2022-08-30  Ulrich Drepper  <drepper@gmail.com>
+
+	* gcc_update (files_and_dependencies): Add rule for
+	gcc/cp/std-name-hint.h.
+
+2022-08-30  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove the port.
+
+2022-08-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* gen_autofdo_event.py: Port to Python 3, and use grep -E
+	instead of egrep.
+
+2022-08-26  Martin Liska  <mliska@suse.cz>
+
+	* config-list.mk: Remove cr16.
+
 2022-08-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* clang-format: Add further FOR_EACH_ macros.

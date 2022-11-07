@@ -1,3 +1,40 @@
+2022-10-31  Xiongchuan Tan  <xc-tan@outlook.com>
+
+	* configure.tgt: Add riscv support.
+	* config/riscv/asm.h: New file.
+	* config/riscv/sjlj.S: New file.
+	* config/riscv/target.h: New file.
+
+2022-10-13  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/sjlj.S: Add a soft floating point condition to the
+	register recovery part of the code.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
+2022-09-28  Lulu Cheng  <chenglulu@loongson.cn>
+	    Yang Yujie  <yangyujie@loongson.cn>
+
+	* configure.tgt: Add loongarch support.
+	* config/loongarch/asm.h: New file.
+	* config/loongarch/sjlj.S: New file.
+	* config/loongarch/target.h: New file.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-08-31  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libitm.exp: Add load_gcc_lib of scansarif.exp.

@@ -39,7 +39,7 @@ def skip_warning(filename, message):
                  '-Wignored-attributes', '-Wgnu-zero-variadic-macro-arguments',
                  '-Wformat-security', '-Wundefined-internal',
                  '-Wunknown-warning-option', '-Wc++20-extensions',
-                 '-Wbitwise-instead-of-logical'],
+                 '-Wbitwise-instead-of-logical', 'egrep is obsolescent'],
             'insn-modes.cc': ['-Wshift-count-overflow'],
             'insn-emit.cc': ['-Wtautological-compare'],
             'insn-attrtab.cc': ['-Wparentheses-equality'],
@@ -57,8 +57,8 @@ def skip_warning(filename, message):
             'lex.cc': ['-Wc++20-attribute-extensions'],
     }
 
-    for name, ignores in ignores.items():
-        for i in ignores:
+    for name, ignore in ignores.items():
+        for i in ignore:
             if name in filename and i in message:
                 return True
     return False

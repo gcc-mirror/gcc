@@ -78,11 +78,12 @@
   UNSPEC_PLUS_CARRY_DPP_SHR UNSPEC_PLUS_CARRY_IN_DPP_SHR
   UNSPEC_AND_DPP_SHR UNSPEC_IOR_DPP_SHR UNSPEC_XOR_DPP_SHR
   UNSPEC_MOV_DPP_SHR
-  UNSPEC_MOV_FROM_LANE63
   UNSPEC_GATHER
   UNSPEC_SCATTER
   UNSPEC_RCP
-  UNSPEC_FLBIT_INT])
+  UNSPEC_FLBIT_INT
+  UNSPEC_FLOOR UNSPEC_CEIL UNSPEC_SIN UNSPEC_COS UNSPEC_EXP2 UNSPEC_LOG2
+  UNSPEC_LDEXP UNSPEC_FREXP_EXP UNSPEC_FREXP_MANT])
 
 ;; }}}
 ;; {{{ Attributes
@@ -370,6 +371,10 @@
    (ctz "ctz")
    (sign_extend "extend")
    (zero_extend "zero_extend")])
+
+(define_code_attr fexpander
+  [(smin "fmin")
+   (smax "fmax")])
 
 ;; }}}
 ;; {{{ Miscellaneous instructions

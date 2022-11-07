@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef ANALYZER_LOGGING_H
 #define ANALYZER_LOGGING_H
 
+#include "diagnostic-core.h"
+
 namespace ana {
 
 /* A logger encapsulates a logging stream: a way to send

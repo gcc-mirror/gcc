@@ -83,15 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function-abi.h"
 #include "common/common-target.h"
 
-#ifdef XCOFF_DEBUGGING_INFO
-#include "xcoffout.h"		/* Needed for external data declarations.  */
-#endif
-
 #include "dwarf2out.h"
-
-#ifdef DBX_DEBUGGING_INFO
-#include "dbxout.h"
-#endif
 
 /* Most ports don't need to define CC_STATUS_INIT.
    So define a null default for it to save conditionalization later.  */
@@ -126,17 +118,9 @@ static int last_columnnum;
 /* Discriminator written to assembly.  */
 static int last_discriminator;
 
-/* Discriminator to be written to assembly for current instruction.
+/* Compute discriminator to be written to assembly for current instruction.
    Note: actual usage depends on loc_discriminator_kind setting.  */
-static int discriminator;
 static inline int compute_discriminator (location_t loc);
-
-/* Discriminator identifying current basic block among others sharing
-   the same locus.  */
-static int bb_discriminator;
-
-/* Basic block discriminator for previous instruction.  */
-static int last_bb_discriminator;
 
 /* Highest line number in current block.  */
 static int high_block_linenum;
@@ -1696,8 +1680,7 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   last_filename = LOCATION_FILE (prologue_location);
   last_linenum = LOCATION_LINE (prologue_location);
   last_columnnum = LOCATION_COLUMN (prologue_location);
-  last_discriminator = discriminator = 0;
-  last_bb_discriminator = bb_discriminator = 0;
+  last_discriminator = 0;
   force_source_line = false;
 
   high_block_linenum = high_function_linenum = last_linenum;
@@ -2242,7 +2225,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  if (targetm.asm_out.unwind_emit)
 	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
-	  bb_discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
@@ -2324,19 +2306,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
 	      BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn)) = in_cold_section_p;
 	    }
-	  if (write_symbols == DBX_DEBUG)
-	    {
-	      location_t *locus_ptr
-		= block_nonartificial_location (NOTE_BLOCK (insn));
-
-	      if (locus_ptr != NULL)
-		{
-		  override_filename = LOCATION_FILE (*locus_ptr);
-		  override_linenum = LOCATION_LINE (*locus_ptr);
-		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
-		  override_discriminator = compute_discriminator (*locus_ptr);
-		}
-	    }
 	  break;
 
 	case NOTE_INSN_BLOCK_END:
@@ -2358,27 +2327,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		debug_hooks->end_block (high_block_linenum, n);
 	      gcc_assert (BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn))
 			  == in_cold_section_p);
-	    }
-	  if (write_symbols == DBX_DEBUG)
-	    {
-	      tree outer_block = BLOCK_SUPERCONTEXT (NOTE_BLOCK (insn));
-	      location_t *locus_ptr
-		= block_nonartificial_location (outer_block);
-
-	      if (locus_ptr != NULL)
-		{
-		  override_filename = LOCATION_FILE (*locus_ptr);
-		  override_linenum = LOCATION_LINE (*locus_ptr);
-		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
-		  override_discriminator = compute_discriminator (*locus_ptr);
-		}
-	      else
-		{
-		  override_filename = NULL;
-		  override_linenum = 0;
-		  override_columnnum = 0;
-		  override_discriminator = 0;
-		}
 	    }
 	  break;
 
@@ -2981,7 +2929,7 @@ compute_discriminator (location_t loc)
   int discriminator;
 
   if (!decl_to_instance_map)
-    discriminator = bb_discriminator;
+    discriminator = get_discriminator_from_loc (loc);
   else
     {
       tree block = LOCATION_BLOCK (loc);
@@ -3005,6 +2953,13 @@ compute_discriminator (location_t loc)
   return discriminator;
 }
 
+/* Return discriminator of the statement that produced this insn.  */
+int
+insn_discriminator (const rtx_insn *insn)
+{
+  return compute_discriminator (INSN_LOCATION (insn));
+}
+
 /* Return whether a source line note needs to be emitted before INSN.
    Sets IS_STMT to TRUE if the line should be marked as a possible
    breakpoint location.  */
@@ -3014,6 +2969,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
 {
   const char *filename;
   int linenum, columnnum;
+  int discriminator;
 
   if (NOTE_MARKER_P (insn))
     {
@@ -3043,7 +2999,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
-      discriminator = compute_discriminator (INSN_LOCATION (insn));
+      discriminator = insn_discriminator (insn);
     }
   else
     {
@@ -4303,8 +4259,6 @@ rest_of_handle_final (void)
 
   if (! quiet_flag)
     fflush (asm_out_file);
-
-  /* Write DBX symbols if requested.  */
 
   /* Note that for those inline functions where we don't initially
      know for certain that we will be generating an out-of-line copy,

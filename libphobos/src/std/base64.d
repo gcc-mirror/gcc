@@ -922,7 +922,7 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      *  length $(D_PARAM sourceLength).
      */
     @safe
-    pure nothrow size_t decodeLength(in size_t sourceLength)
+    pure @nogc nothrow size_t decodeLength(in size_t sourceLength)
     {
         static if (Padding == NoPadding)
             return (sourceLength / 4) * 3 + (sourceLength % 4 < 2 ? 0 : sourceLength % 4 == 2 ? 1 : 2);
@@ -946,7 +946,7 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
     // Used in decode contracts. Calculates the actual size the decoded
     // result should have, taking into account trailing padding.
     @safe
-    pure nothrow private size_t realDecodeLength(R)(R source)
+    pure @nogc nothrow private size_t realDecodeLength(R)(R source)
     {
         auto expect = decodeLength(source.length);
         static if (Padding != NoPadding)

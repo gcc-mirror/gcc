@@ -452,12 +452,6 @@
 #endif
 
 
-/* Define if your assembler supports the --gstabs option. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_GSTABS_DEBUG_FLAG
-#endif
-
-
 /* Define if your assembler supports the Sun syntax for cmov. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_CMOV_SUN_SYNTAX
@@ -743,12 +737,6 @@
    against hidden symbols. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
-#endif
-
-
-/* Define if your assembler supports .stabs. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_STABS_DIRECTIVE
 #endif
 
 
@@ -1463,6 +1451,12 @@
 #endif
 
 
+/* Define to 1 if you have the `getauxval' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GETAUXVAL
+#endif
+
+
 /* Define to 1 if you have the `getchar_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GETCHAR_UNLOCKED
@@ -1951,6 +1945,12 @@
 #endif
 
 
+/* Define to 1 if you have the <sys/auxv.h> header file. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SYS_AUXV_H
+#endif
+
+
 /* Define to 1 if you have the <sys/file.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SYS_FILE_H
@@ -2321,6 +2321,12 @@
 /* Define to PREFIX/include if cpp should also search that directory. */
 #ifndef USED_FOR_TARGET
 #undef PREFIX_INCLUDE_DIR
+#endif
+
+
+/* Specify if mutliarch is enabled. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_MULTIARCH
 #endif
 
 

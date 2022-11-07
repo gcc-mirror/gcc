@@ -336,7 +336,7 @@ package body Ch13 is
             --  Check for a missing aspect definition. Aspects with optional
             --  definitions are not considered.
 
-            if Token = Tok_Comma or else Token = Tok_Semicolon then
+            if Token in Tok_Comma | Tok_Semicolon then
                if not Opt then
                   Error_Msg_Node_1 := Identifier (Aspect);
                   Error_Msg_AP ("aspect& requires an aspect definition");
@@ -367,7 +367,7 @@ package body Ch13 is
                --  aspect Depends, Global, Refined_Depends, Refined_Global
                --  or Refined_State lacks enclosing parentheses.
 
-               if Token /= Tok_Left_Paren and then Token /= Tok_Null then
+               if Token not in Tok_Left_Paren | Tok_Null then
 
                   --  [Refined_]Depends
 
@@ -571,7 +571,7 @@ package body Ch13 is
                --  Attempt to detect ' or => following a potential aspect
                --  mark.
 
-               if Token = Tok_Apostrophe or else Token = Tok_Arrow then
+               if Token in Tok_Apostrophe | Tok_Arrow then
                   Restore_Scan_State (Scan_State);
                   Error_Msg_AP -- CODEFIX
                     ("|missing "",""");
@@ -603,7 +603,7 @@ package body Ch13 is
 
                   --  Attempt to detect ' or => following potential aspect mark
 
-                  if Token = Tok_Apostrophe or else Token = Tok_Arrow then
+                  if Token in Tok_Apostrophe | Tok_Arrow then
                      Restore_Scan_State (Scan_State);
                      Error_Msg_SC -- CODEFIX
                        ("|"";"" should be "",""");

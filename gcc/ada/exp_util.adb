@@ -1293,7 +1293,8 @@ package body Exp_Util is
                --  Gigi expects a different profile in the Secondary_Stack_Pool
                --  case. There must be no uses of the two missing formals
                --  (i.e., Pool_Param and Alignment_Param) in this case.
-               Formal_Params := New_List (Address_Param, Size_Param);
+               Formal_Params := New_List
+                 (Address_Param, Size_Param, Alignment_Param);
             else
                Formal_Params := New_List (
                  Pool_Param, Address_Param, Size_Param, Alignment_Param);
@@ -1699,7 +1700,7 @@ package body Exp_Util is
          --  type attributes.
 
       begin
-         if not Present (Priv_Typ) and then not Present (Full_Typ) then
+         if No (Priv_Typ) and then No (Full_Typ) then
             return;
          end if;
 
@@ -1786,7 +1787,7 @@ package body Exp_Util is
                --  full type doesn't have its own DIC, but is inherited from
                --  a type with DIC), get the full DIC procedure.
 
-               if not Present (Par_Proc) then
+               if No (Par_Proc) then
                   Par_Proc := DIC_Procedure (Par_Typ);
                end if;
 
@@ -2042,7 +2043,7 @@ package body Exp_Util is
       elsif Is_Underlying_Full_View (Work_Typ) then
          return;
 
-      --  Use the first subtype when dealing with various base types
+      --  Use the first subtype when dealing with implicit base types
 
       elsif Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
@@ -2744,7 +2745,7 @@ package body Exp_Util is
          --  type attributes.
 
       begin
-         if not Present (Priv_Typ) and then not Present (Full_Typ) then
+         if No (Priv_Typ) and then No (Full_Typ) then
             return;
          end if;
 
@@ -3071,7 +3072,7 @@ package body Exp_Util is
          Prag_Typ_Arg  : Node_Id;
 
       begin
-         if not Present (T) then
+         if No (T) then
             return;
          end if;
 
@@ -5187,19 +5188,6 @@ package body Exp_Util is
       end if;
    end Ensure_Defined;
 
-   --------------------
-   -- Entry_Names_OK --
-   --------------------
-
-   function Entry_Names_OK return Boolean is
-   begin
-      return
-        not Restricted_Profile
-          and then not Global_Discard_Names
-          and then not Restriction_Active (No_Implicit_Heap_Allocations)
-          and then not Restriction_Active (No_Local_Allocators);
-   end Entry_Names_OK;
-
    -------------------
    -- Evaluate_Name --
    -------------------
@@ -5732,14 +5720,17 @@ package body Exp_Util is
       then
          if Is_Itype (Exp_Typ)
 
-           --  If Exp_Typ was created for a previous declaration whose nominal
-           --  subtype is unconstrained, and that declaration is aliased,
-           --  we need to generate a new subtype, because otherwise the
-           --  Is_Constr_Subt_For_U_Nominal flag will be set on the wrong
-           --  subtype, causing failure to detect non-statically-matching
-           --  subtypes on 'Access of the previously-declared object.
+           --  When this is for an object declaration, the caller may want to
+           --  set Is_Constr_Subt_For_U_Nominal on the subtype, so we must make
+           --  sure that either the subtype has been built for the expression,
+           --  typically for an aggregate, or the flag is already set on it;
+           --  otherwise it could end up being set on the nominal constrained
+           --  subtype of an object and thus later cause the failure to detect
+           --  non-statically-matching subtypes on 'Access of this object.
 
-           and then not Is_Constr_Subt_For_UN_Aliased (Exp_Typ)
+           and then (Nkind (N) /= N_Object_Declaration
+                      or else Nkind (Original_Node (Exp)) = N_Aggregate
+                      or else Is_Constr_Subt_For_U_Nominal (Exp_Typ))
          then
             --  Within an initialization procedure, a selected component
             --  denotes a component of the enclosing record, and it appears as
@@ -6932,6 +6923,11 @@ package body Exp_Util is
             if Loc < Sloc (CV) then
                return;
 
+            --  In condition of IF statement
+
+            elsif In_Subtree (N => Var, Root => Condition (CV)) then
+               return;
+
             --  After end of IF statement
 
             elsif Loc >= Sloc (CV) + Text_Ptr (UI_To_Int (End_Span (CV))) then
@@ -7018,7 +7014,12 @@ package body Exp_Util is
             if Loc < Sloc (CV) then
                return;
 
-               --  After end of IF statement
+            --  In condition of ELSIF part
+
+            elsif In_Subtree (N => Var, Root => Condition (CV)) then
+               return;
+
+            --  After end of IF statement
 
             elsif Loc >= Sloc (Stm) +
               Text_Ptr (UI_To_Int (End_Span (Stm)))
@@ -7073,6 +7074,11 @@ package body Exp_Util is
                --  Before start of body of loop
 
                if Loc < Sloc (Loop_Stmt) then
+                  return;
+
+               --  In condition of while loop
+
+               elsif In_Subtree (N => Var, Root => Condition (CV)) then
                   return;
 
                --  After end of LOOP statement
@@ -11361,7 +11367,7 @@ package body Exp_Util is
          --  Create a label for the block in case the block needs to manage the
          --  secondary stack. A label allows for flag Uses_Sec_Stack to be set.
 
-         Add_Block_Identifier (Block_Nod, Block_Id);
+         Add_Block_Identifier (Block_Nod, Block_Id, Scop);
 
          --  When wrapping the statements of an iterator loop, check whether
          --  the loop requires secondary stack management and if so, propagate

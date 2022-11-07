@@ -25,6 +25,8 @@ namespace gnu
   using std::atexit;
   using std::exit;
 
+#if __STDC_HOSTED__
   using std::getenv;
   using std::system;
+#endif
 }

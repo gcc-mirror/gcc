@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmsname;
 version (Windows):
-@system:
 
 import core.sys.windows.windef;
 

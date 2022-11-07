@@ -1304,17 +1304,24 @@ package body Exp_Disp is
            and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
          then
             return;
-         end if;
 
-         --  When the type of the operand and the target interface type match,
-         --  it is generally safe to skip generating code to displace the
-         --  pointer to the object to reference the secondary dispatch table
-         --  associated with the target interface type. The exception to this
-         --  general rule is when the underlying object of the type conversion
-         --  is an object built by means of a dispatching constructor (since in
-         --  such case the expansion of the constructor call is a direct call
-         --  to an object primitive, i.e. without thunks, and the expansion of
-         --  the constructor call adds an explicit conversion to the target
+         --  When the target type is an interface type that is an ancestor of
+         --  the operand type, it is generally safe to skip generating code to
+         --  displace the pointer to the object to reference the secondary
+         --  dispatch table of the target interface type. Two scenarios are
+         --  possible here:
+         --    1) The operand type is a regular tagged type
+         --    2) The operand type is an interface type
+         --  In the former case the target interface and the regular tagged
+         --  type share the primary dispatch table of the object; in the latter
+         --  case the operand interface has all the primitives of the ancestor
+         --  interface type (and exactly in the same dispatch table slots).
+         --
+         --  The exception to this general rule is when the underlying object
+         --  is built by means of a dispatching constructor (since in such case
+         --  the expansion of the constructor call is a direct call to an
+         --  object primitive, i.e. without thunks, and the expansion of
+         --  the constructor call adds this explicit conversion to the target
          --  interface type to force the displacement of the pointer to the
          --  object to reference the corresponding secondary dispatch table
          --  (cf. Make_DT and Expand_Dispatching_Constructor_Call)).
@@ -1326,7 +1333,10 @@ package body Exp_Disp is
          --  to the object, because generic dispatching constructors are not
          --  supported.
 
-         if Opnd = Iface_Typ and then not RTE_Available (RE_Displace) then
+         elsif Is_Interface (Iface_Typ)
+           and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
+           and then not RTE_Available (RE_Displace)
+         then
             return;
          end if;
       end;
@@ -4052,8 +4062,7 @@ package body Exp_Disp is
                     and then not Is_Abstract_Subprogram (Prim)
                     and then not Is_Eliminated (Prim)
                     and then not Generate_SCIL
-                    and then not
-                      Present (Prim_Table (UI_To_Int (DT_Position (Prim))))
+                    and then No (Prim_Table (UI_To_Int (DT_Position (Prim))))
                   then
                      if not Build_Thunks then
                         E := Ultimate_Alias (Prim);
@@ -5269,7 +5278,7 @@ package body Exp_Disp is
             E       : Entity_Id;
 
          begin
-            if not Present (Def)
+            if No (Def)
               or else Entity (Name (Def)) /= First_Subtype (Typ)
             then
                New_Node :=
@@ -5872,8 +5881,7 @@ package body Exp_Disp is
                     and then not Is_Abstract_Subprogram (Prim)
                     and then not Is_Eliminated (Prim)
                     and then not Generate_SCIL
-                    and then not Present (Prim_Table
-                                           (UI_To_Int (DT_Position (Prim))))
+                    and then No (Prim_Table (UI_To_Int (DT_Position (Prim))))
                   then
                      E := Ultimate_Alias (Prim);
                      pragma Assert (not Is_Abstract_Subprogram (E));
@@ -6038,7 +6046,7 @@ package body Exp_Disp is
                     --  those are only required to build secondary dispatch
                     --  tables.
 
-                    and then not Present (Interface_Alias (Prim))
+                    and then No (Interface_Alias (Prim))
 
                     --  Skip abstract and eliminated primitives
 
@@ -7496,7 +7504,7 @@ package body Exp_Disp is
 
       --  Primitive associated with a tagged type
 
-      if not Present (Interface_Alias (Prim)) then
+      if No (Interface_Alias (Prim)) then
          Tag_Typ := Scope (DTC_Entity (Prim));
          Pos     := DT_Position (Prim);
          Tag     := First_Tag_Component (Tag_Typ);
@@ -8023,7 +8031,7 @@ package body Exp_Disp is
             --  same dispatch table slot, but if it renames an operation in a
             --  nested package it's a new primitive and will have its own slot.
 
-            elsif not Present (Interface_Alias (Prim))
+            elsif No (Interface_Alias (Prim))
               and then Present (Alias (Prim))
               and then Chars (Prim) = Chars (Alias (Prim))
               and then Nkind (Unit_Declaration_Node (Prim)) /=
@@ -8191,7 +8199,7 @@ package body Exp_Disp is
            and then Present (Alias (Prim))
            and then not Is_Interface
                           (Find_Dispatching_Type (Ultimate_Alias (Prim)))
-           and then not Present (Interface_Alias (Prim))
+           and then No (Interface_Alias (Prim))
            and then Is_Derived_Type (Typ)
            and then In_Private_Part (Current_Scope)
            and then

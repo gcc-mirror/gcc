@@ -422,7 +422,7 @@
 #  error "__cpp_nontype_template_parameter_auto != 201606"
 #endif
 
-// C++20 features
+// C++20 features:
 
 #ifndef __cpp_conditional_explicit
 #  error "__cpp_conditional_explicit"
@@ -459,6 +459,44 @@
 #elif __cpp_aggregate_paren_init != 201902
 #  error "__cpp_aggregate_paren_init != 201902"
 #endif
+
+#ifndef __cpp_char8_t
+#  error "__cpp_char8_t"
+#elif __cpp_char8_t != 202207
+#  error "__cpp_char8_t != 202207"
+#endif
+
+#ifndef __cpp_designated_initializers
+#  error "__cpp_designated_initializers"
+#elif __cpp_designated_initializers != 201707
+#  error "__cpp_designated_initializers != 201707"
+#endif
+
+#ifndef __cpp_constexpr_in_decltype
+#  error "__cpp_constexpr_in_decltype"
+#elif __cpp_constexpr_in_decltype != 201711
+#  error "__cpp_constexpr_in_decltype != 201711"
+#endif
+
+#ifndef __cpp_consteval
+#  error "__cpp_consteval"
+#elif __cpp_consteval != 201811
+#  error "__cpp_consteval != 201811"
+#endif
+
+#ifndef __cpp_concepts
+#  error "__cpp_concepts"
+#elif __cpp_concepts != 202002
+#  error "__cpp_concepts != 202002"
+#endif
+
+#ifndef __cpp_using_enum
+#  error "__cpp_using_enum"
+#elif __cpp_using_enum != 201907
+#  error "__cpp_using_enum != 201907"
+#endif
+
+// C++20 attributes:
 
 #ifdef __has_cpp_attribute
 
@@ -500,40 +538,4 @@
 
 #else
 #  error "__has_cpp_attribute"
-#endif
-
-#ifndef __cpp_char8_t
-#  error "__cpp_char8_t"
-#elif __cpp_char8_t != 201811
-#  error "__cpp_char8_t != 201811"
-#endif
-
-#ifndef __cpp_designated_initializers
-#  error "__cpp_designated_initializers"
-#elif __cpp_designated_initializers != 201707
-#  error "__cpp_designated_initializers != 201707"
-#endif
-
-#ifndef __cpp_constexpr_in_decltype
-#  error "__cpp_constexpr_in_decltype"
-#elif __cpp_constexpr_in_decltype != 201711
-#  error "__cpp_constexpr_in_decltype != 201711"
-#endif
-
-#ifndef __cpp_consteval
-#  error "__cpp_consteval"
-#elif __cpp_consteval != 201811
-#  error "__cpp_consteval != 201811"
-#endif
-
-#ifndef __cpp_concepts
-#  error "__cpp_concepts"
-#elif __cpp_concepts != 202002
-#  error "__cpp_concepts != 202002"
-#endif
-
-#ifndef __cpp_using_enum
-#  error "__cpp_using_enum"
-#elif __cpp_using_enum != 201907
-#  error "__cpp_using_enum != 201907"
 #endif

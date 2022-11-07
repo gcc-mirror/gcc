@@ -1,5 +1,5 @@
 // { dg-do link { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 // Check equivalence of short- and longhand declarations.
 

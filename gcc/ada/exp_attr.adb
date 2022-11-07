@@ -1998,16 +1998,22 @@ package body Exp_Attr is
    --  Start of processing for Expand_N_Attribute_Reference
 
    begin
-      --  Do required validity checking, if enabled. Do not apply check to
-      --  output parameters of an Asm instruction, since the value of this
-      --  is not set till after the attribute has been elaborated, and do
-      --  not apply the check to the arguments of a 'Read or 'Input attribute
-      --  reference since the scalar argument is an OUT scalar.
+      --  Do required validity checking, if enabled.
+      --
+      --  Skip check for output parameters of an Asm instruction (since their
+      --  valuesare not set till after the attribute has been elaborated),
+      --  for the arguments of a 'Read or 'Input attribute reference (since
+      --  the scalar argument is an OUT scalar) and for the arguments of a
+      --  'Has_Same_Storage or 'Overlaps_Storage attribute reference (which not
+      --  considered to be reads of their prefixes and expressions, see Ada RM
+      --  13.3(73.10/3)).
 
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output
         and then Id /= Attribute_Read
         and then Id /= Attribute_Input
+        and then Id /= Attribute_Has_Same_Storage
+        and then Id /= Attribute_Overlaps_Storage
       then
          declare
             Expr : Node_Id;
@@ -2079,7 +2085,8 @@ package body Exp_Attr is
 
       case Id is
 
-      --  Attributes related to Ada 2012 iterators
+      --  Attributes related to Ada 2012 iterators. They are only allowed in
+      --  attribute definition clauses and should never be expanded.
 
       when Attribute_Constant_Indexing
          | Attribute_Default_Iterator
@@ -2088,7 +2095,7 @@ package body Exp_Attr is
          | Attribute_Iterator_Element
          | Attribute_Variable_Indexing
       =>
-         null;
+         raise Program_Error;
 
       --  Internal attributes used to deal with Ada 2012 delayed aspects. These
       --  were already rejected by the parser. Thus they shouldn't appear here.
@@ -4883,7 +4890,6 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Old => Old : declare
-         Typ     : constant Entity_Id := Etype (N);
          CW_Temp : Entity_Id;
          CW_Typ  : Entity_Id;
          Decl    : Node_Id;
@@ -4895,24 +4901,25 @@ package body Exp_Attr is
          use Old_Attr_Util.Indirect_Temps;
       begin
          --  Generating C code we don't need to expand this attribute when
-         --  we are analyzing the internally built nested postconditions
+         --  we are analyzing the internally built nested _Wrapped_Statements
          --  procedure since it will be expanded inline (and later it will
          --  be removed by Expand_N_Subprogram_Body). It this expansion is
          --  performed in such case then the compiler generates unreferenced
          --  extra temporaries.
 
          if Modify_Tree_For_C
-           and then Chars (Current_Scope) = Name_uPostconditions
+           and then Chars (Current_Scope) = Name_uWrapped_Statements
          then
             return;
          end if;
 
-         --  Climb the parent chain looking for subprogram _Postconditions
+         --  Climb the parent chain looking for subprogram _Wrapped_Statements
 
          Subp := N;
          while Present (Subp) loop
             exit when Nkind (Subp) = N_Subprogram_Body
-              and then Chars (Defining_Entity (Subp)) = Name_uPostconditions;
+              and then Chars (Defining_Entity (Subp))
+                         = Name_uWrapped_Statements;
 
             --  If assertions are disabled, no need to create the declaration
             --  that preserves the value. The postcondition pragma in which
@@ -4925,14 +4932,11 @@ package body Exp_Attr is
 
             Subp := Parent (Subp);
          end loop;
+         Subp := Empty;
 
-         --  'Old can only appear in a postcondition, the generated body of
-         --  _Postconditions must be in the tree (or inlined if we are
-         --  generating C code).
-
-         pragma Assert
-           (Present (Subp)
-             or else (Modify_Tree_For_C and then In_Inlined_Body));
+         --  'Old can only appear in the case where local contract-related
+         --  wrapper has been generated with the purpose of wrapping the
+         --  original declarations and statements.
 
          Temp := Make_Temporary (Loc, 'T', Pref);
 
@@ -4952,8 +4956,7 @@ package body Exp_Attr is
          --  No need to push the scope when generating C code since the
          --  _Postcondition procedure has been inlined.
 
-         else pragma Assert (Modify_Tree_For_C);
-            pragma Assert (In_Inlined_Body);
+         else
             null;
          end if;
 
@@ -4963,17 +4966,23 @@ package body Exp_Attr is
          if Present (Subp) then
             Ins_Nod := Subp;
 
-         --  Generating C, the postcondition procedure has been inlined and the
-         --  temporary is added before the first declaration of the enclosing
-         --  subprogram.
+         --  General case where the postcondtion checks occur after the call
+         --  to _Wrapped_Statements.
 
-         else pragma Assert (Modify_Tree_For_C);
+         else
             Ins_Nod := N;
             while Nkind (Ins_Nod) /= N_Subprogram_Body loop
                Ins_Nod := Parent (Ins_Nod);
             end loop;
 
-            Ins_Nod := First (Declarations (Ins_Nod));
+            if Present (Corresponding_Spec (Ins_Nod))
+              and then Present
+                         (Wrapped_Statements (Corresponding_Spec (Ins_Nod)))
+            then
+               Ins_Nod := Last (Declarations (Ins_Nod));
+            else
+               Ins_Nod := First (Declarations (Ins_Nod));
+            end if;
          end if;
 
          if Eligible_For_Conditional_Evaluation (N) then
@@ -4986,9 +4995,9 @@ package body Exp_Attr is
                --  unconditionally) or an evaluation statement (which is
                --  to be executed conditionally).
 
-               -------------------------------
-               --  Append_For_Indirect_Temp --
-               -------------------------------
+               ------------------------------
+               -- Append_For_Indirect_Temp --
+               ------------------------------
 
                procedure Append_For_Indirect_Temp
                  (N : Node_Id; Is_Eval_Stmt : Boolean)
@@ -5008,7 +5017,7 @@ package body Exp_Attr is
                Declare_Indirect_Temporary
                  (Attr_Prefix => Pref, Indirect_Temp => Temp);
 
-               Insert_Before_And_Analyze (
+               Insert_After_And_Analyze (
                  Ins_Nod,
                  Make_If_Statement
                    (Sloc            => Loc,
@@ -5085,7 +5094,17 @@ package body Exp_Attr is
          --  to reflect the new placement of the prefix.
 
          if Validity_Checks_On and then Validity_Check_Operands then
-            Ensure_Valid (Expression (Decl));
+
+            --  Object declaration that captures the attribute prefix might
+            --  be rewritten into object renaming declaration.
+
+            if Nkind (Decl) = N_Object_Declaration then
+               Ensure_Valid (Expression (Decl));
+            else
+               pragma Assert (Nkind (Decl) = N_Object_Renaming_Declaration
+                              and then Is_Rewrite_Substitution (Decl));
+               Ensure_Valid (Name (Decl));
+            end if;
          end if;
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
@@ -5667,33 +5686,35 @@ package body Exp_Attr is
       --  which is illegal, because of the lack of aliasing.
 
       when Attribute_Priority => Priority : declare
-         Call           : Node_Id;
-         Conctyp        : Entity_Id;
-         New_Itype      : Entity_Id;
-         Object_Parm    : Node_Id;
-         Subprg         : Entity_Id;
-         RT_Subprg_Name : Node_Id;
+         Call        : Node_Id;
+         New_Itype   : Entity_Id;
+         Object_Parm : Node_Id;
+         Prottyp     : Entity_Id;
+         RT_Subprg   : RE_Id;
+         Subprg      : Entity_Id;
 
       begin
-         --  Look for the enclosing concurrent type
+         --  Look for the enclosing protected type
 
-         Conctyp := Current_Scope;
-         while not Is_Concurrent_Type (Conctyp) loop
-            Conctyp := Scope (Conctyp);
+         Prottyp := Current_Scope;
+         while not Is_Protected_Type (Prottyp) loop
+            Prottyp := Scope (Prottyp);
          end loop;
 
-         pragma Assert (Is_Protected_Type (Conctyp));
+         pragma Assert (Is_Protected_Type (Prottyp));
 
          --  Generate the actual of the call
 
          Subprg := Current_Scope;
-         while not Present (Protected_Body_Subprogram (Subprg)) loop
+         while not (Is_Subprogram_Or_Entry (Subprg)
+                    and then Present (Protected_Body_Subprogram (Subprg)))
+         loop
             Subprg := Scope (Subprg);
          end loop;
 
          --  Use of 'Priority inside protected entries and barriers (in both
          --  cases the type of the first formal of their expanded subprogram
-         --  is Address)
+         --  is Address).
 
          if Etype (First_Entity (Protected_Body_Subprogram (Subprg))) =
               RTE (RE_Address)
@@ -5708,7 +5729,7 @@ package body Exp_Attr is
             New_Itype := Create_Itype (E_Access_Type, N);
             Set_Etype (New_Itype, New_Itype);
             Set_Directly_Designated_Type (New_Itype,
-              Corresponding_Record_Type (Conctyp));
+              Corresponding_Record_Type (Prottyp));
             Freeze_Itype (New_Itype, N);
 
             --  Generate:
@@ -5743,15 +5764,16 @@ package body Exp_Attr is
 
          --  Select the appropriate run-time subprogram
 
-         if Number_Entries (Conctyp) = 0 then
-            RT_Subprg_Name := New_Occurrence_Of (RTE (RE_Get_Ceiling), Loc);
+         if Has_Entries (Prottyp) then
+            RT_Subprg := RO_PE_Get_Ceiling;
          else
-            RT_Subprg_Name := New_Occurrence_Of (RTE (RO_PE_Get_Ceiling), Loc);
+            RT_Subprg := RE_Get_Ceiling;
          end if;
 
          Call :=
            Make_Function_Call (Loc,
-             Name                   => RT_Subprg_Name,
+             Name                   =>
+               New_Occurrence_Of (RTE (RT_Subprg), Loc),
              Parameter_Associations => New_List (Object_Parm));
 
          Rewrite (N, Call);
@@ -6559,7 +6581,7 @@ package body Exp_Attr is
                --  If Storage_Size wasn't found (can only occur in the simple
                --  storage pool case), then simply use zero for the result.
 
-               if not Present (Alloc_Op) then
+               if No (Alloc_Op) then
                   Rewrite (N, Make_Integer_Literal (Loc, 0));
 
                --  Otherwise, rewrite the allocator as a call to pool type's
@@ -7099,7 +7121,11 @@ package body Exp_Attr is
       --  See separate sections below for the generated code in each case.
 
       when Attribute_Valid => Valid : declare
-         PBtyp : Entity_Id := Base_Type (Ptyp);
+         PBtyp : Entity_Id := Implementation_Base_Type (Validated_View (Ptyp));
+         pragma Assert (Is_Scalar_Type (PBtyp)
+                          or else Serious_Errors_Detected > 0);
+
+         --  The scalar base type, looking through private types
 
          Save_Validity_Checks_On : constant Boolean := Validity_Checks_On;
          --  Save the validity checking mode. We always turn off validity
@@ -7146,21 +7172,27 @@ package body Exp_Attr is
                Temp := Duplicate_Subexpr (Pref);
             end if;
 
-            return
-              Make_In (Loc,
-                Left_Opnd  => Unchecked_Convert_To (PBtyp, Temp),
-                Right_Opnd =>
-                  Make_Range (Loc,
-                    Low_Bound  =>
-                      Unchecked_Convert_To (PBtyp,
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                          Attribute_Name => Name_First)),
-                    High_Bound =>
-                      Unchecked_Convert_To (PBtyp,
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                          Attribute_Name => Name_Last))));
+            declare
+               Val_Typ : constant Entity_Id := Validated_View (Ptyp);
+            begin
+               return
+                 Make_In (Loc,
+                   Left_Opnd  => Unchecked_Convert_To (PBtyp, Temp),
+                   Right_Opnd =>
+                     Make_Range (Loc,
+                       Low_Bound  =>
+                         Unchecked_Convert_To (PBtyp,
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Val_Typ, Loc),
+                             Attribute_Name => Name_First)),
+                       High_Bound =>
+                         Unchecked_Convert_To (PBtyp,
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Val_Typ, Loc),
+                             Attribute_Name => Name_Last))));
+            end;
          end Make_Range_Test;
 
          --  Local variables
@@ -7181,13 +7213,6 @@ package body Exp_Attr is
          --  checks to intefere with the explicit check from the attribute
 
          Validity_Checks_On := False;
-
-         --  Retrieve the base type. Handle the case where the base type is a
-         --  private enumeration type.
-
-         if Is_Private_Type (PBtyp) and then Present (Full_View (PBtyp)) then
-            PBtyp := Full_View (PBtyp);
-         end if;
 
          --  Floating-point case. This case is handled by the Valid attribute
          --  code in the floating-point attribute run-time library.
@@ -7458,7 +7483,7 @@ package body Exp_Attr is
                Uns  : constant Boolean :=
                         Is_Unsigned_Type (Ptyp)
                           or else (Is_Private_Type (Ptyp)
-                                    and then Is_Unsigned_Type (Btyp));
+                                    and then Is_Unsigned_Type (PBtyp));
                Size : Uint;
                P    : Node_Id := Pref;
 
@@ -7943,7 +7968,6 @@ package body Exp_Attr is
          | Attribute_Large
          | Attribute_Last_Valid
          | Attribute_Library_Level
-         | Attribute_Lock_Free
          | Attribute_Machine_Emax
          | Attribute_Machine_Emin
          | Attribute_Machine_Mantissa

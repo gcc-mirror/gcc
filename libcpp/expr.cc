@@ -91,10 +91,10 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   size_t orig_len = len;
   const uchar *orig_s = s;
   size_t flags;
-  size_t f, d, l, w, q, i, fn, fnx, fn_bits;
+  size_t f, d, l, w, q, i, fn, fnx, fn_bits, bf16;
 
   flags = 0;
-  f = d = l = w = q = i = fn = fnx = fn_bits = 0;
+  f = d = l = w = q = i = fn = fnx = fn_bits = bf16 = 0;
 
   /* The following decimal float suffixes, from TR 24732:2009, TS
      18661-2:2015 and C2X, are supported:
@@ -131,7 +131,8 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
      w, W - machine-specific type such as __float80 (GNU extension).
      q, Q - machine-specific type such as __float128 (GNU extension).
      fN, FN - _FloatN (TS 18661-3:2015).
-     fNx, FNx - _FloatNx (TS 18661-3:2015).  */
+     fNx, FNx - _FloatNx (TS 18661-3:2015).
+     bf16, BF16 - std::bfloat16_t (ISO C++23).  */
 
   /* Process decimal float suffixes, which are two letters starting
      with d or D.  Order and case are significant.  */
@@ -215,7 +216,6 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	case 'f': case 'F':
 	  f++;
 	  if (len > 0
-	      && !CPP_OPTION (pfile, cplusplus)
 	      && s[1] >= '1'
 	      && s[1] <= '9'
 	      && fn_bits == 0)
@@ -240,6 +240,19 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 		fn++;
 	    }
 	  break;
+	case 'b': case 'B':
+	  if (len > 2
+	      /* Except for bf16 / BF16 where case is significant.  */
+	      && s[1] == (s[0] == 'b' ? 'f' : 'F')
+	      && s[2] == '1'
+	      && s[3] == '6')
+	    {
+	      bf16++;
+	      len -= 3;
+	      s += 3;
+	      break;
+	    }
+	  return 0;
 	case 'd': case 'D': d++; break;
 	case 'l': case 'L': l++; break;
 	case 'w': case 'W': w++; break;
@@ -258,7 +271,7 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
      of N larger than can be represented in the return value.  The
      caller is responsible for rejecting _FloatN suffixes where
      _FloatN is not supported on the chosen target.  */
-  if (f + d + l + w + q + fn + fnx > 1 || i > 1)
+  if (f + d + l + w + q + fn + fnx + bf16 > 1 || i > 1)
     return 0;
   if (fn_bits > CPP_FLOATN_MAX)
     return 0;
@@ -296,6 +309,7 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	     q ? CPP_N_MD_Q :
 	     fn ? CPP_N_FLOATN | (fn_bits << CPP_FLOATN_SHIFT) :
 	     fnx ? CPP_N_FLOATNX | (fn_bits << CPP_FLOATN_SHIFT) :
+	     bf16 ? CPP_N_BFLOAT16 :
 	     CPP_N_DEFAULT));
 }
 
@@ -1183,7 +1197,7 @@ eval_token (cpp_reader *pfile, const cpp_token *token,
     case CPP_NAME:
       if (token->val.node.node == pfile->spec_nodes.n_defined)
 	return parse_defined (pfile);
-      else if (CPP_OPTION (pfile, cplusplus)
+      else if (CPP_OPTION (pfile, true_false)
 	       && (token->val.node.node == pfile->spec_nodes.n_true
 		   || token->val.node.node == pfile->spec_nodes.n_false))
 	{

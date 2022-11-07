@@ -19,8 +19,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -28,8 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -37,8 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/function-set.h"
 #include "analyzer/analyzer-selftests.h"
-#include "tristate.h"
-#include "selftest.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "analyzer/call-string.h"
@@ -46,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "bitmap.h"
+#include "analyzer/program-state.h"
 
 #if ENABLE_ANALYZER
 
@@ -113,7 +112,7 @@ public:
 		     const svalue *rhs) const final override;
 
   bool can_purge_p (state_t s) const final override;
-  pending_diagnostic *on_leak (tree var) const final override;
+  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
   bool is_unchecked_fd_p (state_t s) const;
   bool is_valid_fd_p (state_t s) const;
@@ -125,6 +124,12 @@ public:
   /* Function for one-to-one correspondence between valid
      and unchecked states.  */
   state_t valid_to_unchecked_state (state_t state) const;
+
+  void mark_as_valid_fd (region_model *model,
+			 sm_state_map *smap,
+			 const svalue *fd_sval,
+			 const extrinsic_state &ext_state) const;
+
   /* State for a constant file descriptor (>= 0) */
   state_t m_constant_fd;
 
@@ -205,15 +210,19 @@ public:
   describe_state_change (const evdesc::state_change &change) override
   {
     if (change.m_old_state == m_sm.get_start_state ()
-	&& m_sm.is_unchecked_fd_p (change.m_new_state))
+	&& (m_sm.is_unchecked_fd_p (change.m_new_state)
+	    || m_sm.is_valid_fd_p (change.m_new_state)))
       {
-	if (change.m_new_state == m_sm.m_unchecked_read_write)
+	if (change.m_new_state == m_sm.m_unchecked_read_write
+	    || change.m_new_state == m_sm.m_valid_read_write)
 	  return change.formatted_print ("opened here as read-write");
 
-	if (change.m_new_state == m_sm.m_unchecked_read_only)
+	if (change.m_new_state == m_sm.m_unchecked_read_only
+	    || change.m_new_state == m_sm.m_valid_read_only)
 	  return change.formatted_print ("opened here as read-only");
 
-	if (change.m_new_state == m_sm.m_unchecked_write_only)
+	if (change.m_new_state == m_sm.m_unchecked_write_only
+	    || change.m_new_state == m_sm.m_valid_write_only)
 	  return change.formatted_print ("opened here as write-only");
       }
 
@@ -752,6 +761,15 @@ fd_state_machine::valid_to_unchecked_state (state_t state) const
   return NULL;
 }
 
+void
+fd_state_machine::mark_as_valid_fd (region_model *model,
+				    sm_state_map *smap,
+				    const svalue *fd_sval,
+				    const extrinsic_state &ext_state) const
+{
+  smap->set_state (model, fd_sval, m_valid_read_write, NULL, ext_state);
+}
+
 bool
 fd_state_machine::on_stmt (sm_context *sm_ctxt, const supernode *node,
 			   const gimple *stmt) const
@@ -768,6 +786,7 @@ fd_state_machine::on_stmt (sm_context *sm_ctxt, const supernode *node,
 	if (is_named_call_p (callee_fndecl, "creat", call, 2))
 	  {
 	    on_creat (sm_ctxt, node, stmt, call);
+	    return true;
 	  } // "creat"
 
 	if (is_named_call_p (callee_fndecl, "close", call, 1))
@@ -868,9 +887,10 @@ fd_state_machine::check_for_fd_attrs (
 	    {
 
 	      sm_ctxt->warn (node, stmt, arg,
-			     new fd_use_after_close (*this, diag_arg,
-						     callee_fndecl, attr_name,
-						     arg_idx));
+			     make_unique<fd_use_after_close>
+			       (*this, diag_arg,
+				callee_fndecl, attr_name,
+				arg_idx));
 	      continue;
 	    }
 
@@ -878,9 +898,10 @@ fd_state_machine::check_for_fd_attrs (
 	    {
 	      if (!is_constant_fd_p (state))
 		sm_ctxt->warn (node, stmt, arg,
-			       new fd_use_without_check (*this, diag_arg,
-							callee_fndecl, attr_name,
-							arg_idx));
+			       make_unique<fd_use_without_check>
+				 (*this, diag_arg,
+				  callee_fndecl, attr_name,
+				  arg_idx));
 	    }
 
 	  switch (fd_attr_access_dir)
@@ -893,8 +914,11 @@ fd_state_machine::check_for_fd_attrs (
 		{
 		  sm_ctxt->warn (
 		      node, stmt, arg,
-		      new fd_access_mode_mismatch (*this, diag_arg, DIRS_WRITE,
-						   callee_fndecl, attr_name, arg_idx));
+		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
+							    DIRS_WRITE,
+							    callee_fndecl,
+							    attr_name,
+							    arg_idx));
 		}
 
 	      break;
@@ -904,8 +928,11 @@ fd_state_machine::check_for_fd_attrs (
 		{
 		  sm_ctxt->warn (
 		      node, stmt, arg,
-		      new fd_access_mode_mismatch (*this, diag_arg, DIRS_READ,
-						   callee_fndecl, attr_name, arg_idx));
+		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
+							    DIRS_READ,
+							    callee_fndecl,
+							    attr_name,
+							    arg_idx));
 		}
 
 	      break;
@@ -923,30 +950,31 @@ fd_state_machine::on_open (sm_context *sm_ctxt, const supernode *node,
   if (lhs)
     {
       tree arg = gimple_call_arg (call, 1);
+      enum access_mode mode = READ_WRITE;
       if (TREE_CODE (arg) == INTEGER_CST)
 	{
 	  int flag = TREE_INT_CST_LOW (arg);
-	  enum access_mode mode = get_access_mode_from_flag (flag);
-
-	  switch (mode)
-	    {
-	    case READ_ONLY:
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
-				      m_unchecked_read_only);
-	      break;
-	    case WRITE_ONLY:
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
-				      m_unchecked_write_only);
-	      break;
-	    default:
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
-				      m_unchecked_read_write);
-	    }
+	  mode = get_access_mode_from_flag (flag);
+	}
+      switch (mode)
+	{
+	case READ_ONLY:
+	  sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				  m_unchecked_read_only);
+	  break;
+	case WRITE_ONLY:
+	  sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				  m_unchecked_write_only);
+	  break;
+	default:
+	  sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				  m_unchecked_read_write);
 	}
     }
   else
     {
-      sm_ctxt->warn (node, stmt, NULL_TREE, new fd_leak (*this, NULL_TREE));
+      sm_ctxt->warn (node, stmt, NULL_TREE,
+		     make_unique<fd_leak> (*this, NULL_TREE));
     }
 }
 
@@ -958,7 +986,8 @@ fd_state_machine::on_creat (sm_context *sm_ctxt, const supernode *node,
   if (lhs)
     sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked_write_only);
   else
-    sm_ctxt->warn (node, stmt, NULL_TREE, new fd_leak (*this, NULL_TREE));
+    sm_ctxt->warn (node, stmt, NULL_TREE,
+		   make_unique<fd_leak> (*this, NULL_TREE));
 }
 
 void
@@ -1004,7 +1033,8 @@ fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
 	{
 	  sm_ctxt->warn (
 	      node, stmt, arg_2,
-	      new fd_use_without_check (*this, diag_arg_2, callee_fndecl));
+	      make_unique<fd_use_without_check> (*this, diag_arg_2,
+						 callee_fndecl));
 	  return;
 	}
       /* dup2 returns value of its second argument on success.But, the
@@ -1042,7 +1072,8 @@ fd_state_machine::on_close (sm_context *sm_ctxt, const supernode *node,
 
   if (is_closed_fd_p (state))
     {
-      sm_ctxt->warn (node, stmt, arg, new fd_double_close (*this, diag_arg));
+      sm_ctxt->warn (node, stmt, arg,
+		     make_unique<fd_double_close> (*this, diag_arg));
       sm_ctxt->set_next_state (stmt, arg, m_stop);
     }
 }
@@ -1074,17 +1105,19 @@ fd_state_machine::check_for_open_fd (
   if (is_closed_fd_p (state))
     {
       sm_ctxt->warn (node, stmt, arg,
-		     new fd_use_after_close (*this, diag_arg, callee_fndecl));
+		     make_unique<fd_use_after_close> (*this, diag_arg,
+						      callee_fndecl));
     }
 
   else
     {
-      if (!(is_valid_fd_p (state) || (state == m_stop)))
+      if (!(is_valid_fd_p (state) || state == m_start || state == m_stop))
 	{
 	  if (!is_constant_fd_p (state))
 	    sm_ctxt->warn (
 		node, stmt, arg,
-		new fd_use_without_check (*this, diag_arg, callee_fndecl));
+		make_unique<fd_use_without_check> (*this, diag_arg,
+						   callee_fndecl));
 	}
       switch (callee_fndecl_dir)
 	{
@@ -1095,7 +1128,7 @@ fd_state_machine::check_for_open_fd (
 	    {
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
-			     new fd_access_mode_mismatch (
+			     make_unique<fd_access_mode_mismatch> (
 				 *this, diag_arg, DIRS_WRITE, callee_fndecl));
 	    }
 
@@ -1106,7 +1139,7 @@ fd_state_machine::check_for_open_fd (
 	    {
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
-			     new fd_access_mode_mismatch (
+			     make_unique<fd_access_mode_mismatch> (
 				 *this, diag_arg, DIRS_READ, callee_fndecl));
 	    }
 	  break;
@@ -1178,10 +1211,10 @@ fd_state_machine::can_purge_p (state_t s) const
     return true;
 }
 
-pending_diagnostic *
+std::unique_ptr<pending_diagnostic>
 fd_state_machine::on_leak (tree var) const
 {
-  return new fd_leak (*this, var);
+  return make_unique<fd_leak> (*this, var);
 }
 } // namespace
 
@@ -1190,6 +1223,33 @@ make_fd_state_machine (logger *logger)
 {
   return new fd_state_machine (logger);
 }
+
+/* Specialcase hook for handling pipe, for use by
+   region_model::impl_call_pipe::success::update_model.  */
+
+void
+region_model::mark_as_valid_fd (const svalue *sval, region_model_context *ctxt)
+{
+  if (!ctxt)
+    return;
+  const extrinsic_state *ext_state = ctxt->get_ext_state ();
+  if (!ext_state)
+    return;
+
+  sm_state_map *smap;
+  const state_machine *sm;
+  unsigned sm_idx;
+  if (!ctxt->get_fd_map (&smap, &sm, &sm_idx))
+    return;
+
+  gcc_assert (smap);
+  gcc_assert (sm);
+
+  const fd_state_machine &fd_sm = (const fd_state_machine &)*sm;
+
+  fd_sm.mark_as_valid_fd (this, smap, sval, *ext_state);
+}
+
 } // namespace ana
 
 #endif // ENABLE_ANALYZER

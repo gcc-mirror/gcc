@@ -19,13 +19,12 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -34,8 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
-#include "selftest.h"
-#include "tristate.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
@@ -50,13 +47,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-state.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
-#include "sbitmap.h"
 #include "analyzer/exploded-graph.h"
 #include "diagnostic-path.h"
 #include "analyzer/checker-path.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -185,12 +179,12 @@ pending_diagnostic::add_call_event (const exploded_edge &eedge,
   const int src_stack_depth = src_point.get_stack_depth ();
   const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
   emission_path->add_event
-    (new call_event (eedge,
-		     (last_stmt
-		      ? last_stmt->location
-		      : UNKNOWN_LOCATION),
-		     src_point.get_fndecl (),
-		     src_stack_depth));
+    (make_unique<call_event> (eedge,
+			      (last_stmt
+			       ? last_stmt->location
+			       : UNKNOWN_LOCATION),
+			      src_point.get_fndecl (),
+			      src_stack_depth));
 }
 
 } // namespace ana

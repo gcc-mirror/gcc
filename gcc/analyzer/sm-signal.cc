@@ -21,8 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -31,15 +33,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "sbitmap.h"
-#include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
 #include "analyzer/call-string.h"
@@ -48,13 +47,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model.h"
 #include "analyzer/program-state.h"
 #include "analyzer/checker-path.h"
-#include "digraph.h"
 #include "cfg.h"
 #include "gimple-iterator.h"
 #include "cgraph.h"
 #include "analyzer/supergraph.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
 #include "analyzer/diagnostic-manager.h"
 #include "shortest-paths.h"
 #include "analyzer/exploded-graph.h"
@@ -238,7 +234,7 @@ public:
     const final override
   {
     emission_path->add_event
-      (new precanned_custom_event
+      (make_unique<precanned_custom_event>
        (UNKNOWN_LOCATION, NULL_TREE, 0,
 	"later on,"
 	" when the signal is delivered to the process"));
@@ -283,7 +279,7 @@ public:
 						       src_enode);
     if (dst_enode)
       eg->add_edge (src_enode, dst_enode, NULL, /*state_change (),*/
-		    new signal_delivery_edge_info_t ());
+		    make_unique<signal_delivery_edge_info_t> ());
   }
 
   const signal_state_machine &m_sm;
@@ -357,8 +353,8 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
 	  if (signal_unsafe_p (callee_fndecl))
 	    if (sm_ctxt->get_global_state () == m_in_signal_handler)
 	      sm_ctxt->warn (node, stmt, NULL_TREE,
-			     new signal_unsafe_call (*this, call,
-						     callee_fndecl));
+			     make_unique<signal_unsafe_call>
+			       (*this, call, callee_fndecl));
     }
 
   return false;

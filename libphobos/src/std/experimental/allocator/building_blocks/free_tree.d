@@ -502,9 +502,9 @@ version (StdUnittest)
 
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
 
-    auto a = FreeTree!(Region!())(Region!()(new ubyte[1024 * 64]));
+    auto a = FreeTree!(BorrowedRegion!())(BorrowedRegion!()(new ubyte[1024 * 64]));
     auto b = a.allocate(42);
     assert(b.length == 42);
     assert((() pure nothrow @safe @nogc => a.expand(b, 22))());

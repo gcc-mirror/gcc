@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target hosted }
 
 // libstdc++/65760
 // c.f. https://gcc.gnu.org/ml/libstdc++/2015-04/msg00116.html

@@ -1886,15 +1886,6 @@ final class CParser(AST) : Parser!AST
             }
             if (s !is null)
             {
-                s = applySpecifier(s, specifier);
-                if (level == LVL.local)
-                {
-                    // Wrap the declaration in `extern (C) { declaration }`
-                    // Necessary for function pointers, but harmless to apply to all.
-                    auto decls = new AST.Dsymbols(1);
-                    (*decls)[0] = s;
-                    s = new AST.LinkDeclaration(s.loc, linkage, decls);
-                }
                 // Saw `asm("name")` in the function, type, or variable definition.
                 // This is equivalent to `pragma(mangle, "name")` in D
                 if (asmName)
@@ -1915,7 +1906,18 @@ final class CParser(AST) : Parser!AST
                     {
                         auto str = asmName.peekString();
                         p.mangleOverride = str;
+//                      p.adFlags |= AST.VarDeclaration.nounderscore;
+                        p.adFlags |= 4; // cannot get above line to compile on Ubuntu
                     }
+                }
+                s = applySpecifier(s, specifier);
+                if (level == LVL.local)
+                {
+                    // Wrap the declaration in `extern (C) { declaration }`
+                    // Necessary for function pointers, but harmless to apply to all.
+                    auto decls = new AST.Dsymbols(1);
+                    (*decls)[0] = s;
+                    s = new AST.LinkDeclaration(s.loc, linkage, decls);
                 }
                 symbols.push(s);
             }
@@ -2603,7 +2605,6 @@ final class CParser(AST) : Parser!AST
     {
         //printf("cparseDeclarator(%d, %p)\n", declarator, t);
         AST.Types constTypes; // all the Types that will need `const` applied to them
-        constTypes.setDim(0);
 
         AST.Type parseDecl(AST.Type t)
         {
@@ -5165,18 +5166,40 @@ final class CParser(AST) : Parser!AST
         if (n.value == TOK.identifier && n.ident == Id.pop)
         {
             scan(&n);
-            while (n.value == TOK.comma)
+            size_t len = this.records.length;
+            if (n.value == TOK.rightParenthesis) // #pragma pack ( pop )
+            {
+                if (len == 0)   // nothing to pop
+                    return closingParen();
+
+                this.records.setDim(len - 1);
+                this.packs.setDim(len - 1);
+                if (len == 1)   // stack is now empty
+                    packalign.setDefault();
+                else
+                    packalign = (*this.packs)[len - 1];
+                return closingParen();
+            }
+            while (n.value == TOK.comma)        // #pragma pack ( pop ,
             {
                 scan(&n);
                 if (n.value == TOK.identifier)
                 {
-                    for (size_t len = this.records.length; len; --len)
+                    /* pragma pack(pop, identifier
+                     * Pop until identifier is found, pop that one too, and set
+                     * alignment to the new top of the stack.
+                     * If identifier is not found, do nothing.
+                     */
+                    for ( ; len; --len)
                     {
                         if ((*this.records)[len - 1] == n.ident)
                         {
-                            packalign = (*this.packs)[len - 1];
                             this.records.setDim(len - 1);
                             this.packs.setDim(len - 1);
+                            if (len > 1)
+                                packalign = (*this.packs)[len - 2];
+                            else
+                                packalign.setDefault(); // stack empty, use default
                             break;
                         }
                     }
@@ -5185,14 +5208,18 @@ final class CParser(AST) : Parser!AST
                 else if (n.value == TOK.int32Literal)
                 {
                     setPackAlign(n);
-                    this.records.push(null);
-                    this.packs.push(packalign);
+                    scan(&n);
+                }
+                else
+                {
+                    error(loc, "identifier or alignment value expected following `#pragma pack(pop,` not `%s`", n.toChars());
                     scan(&n);
                 }
             }
             return closingParen();
         }
         /* # pragma pack ( integer )
+         * Sets alignment to integer
          */
         if (n.value == TOK.int32Literal)
         {
@@ -5201,6 +5228,7 @@ final class CParser(AST) : Parser!AST
             return closingParen();
         }
         /* # pragma pack ( )
+         * Sets alignment to default
          */
         if (n.value == TOK.rightParenthesis)
         {

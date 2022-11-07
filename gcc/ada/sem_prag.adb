@@ -5548,6 +5548,14 @@ package body Sem_Prag is
                then
                   OK := True;
 
+               --  Special case for postconditions wrappers
+
+               elsif Ekind (Scop) in Subprogram_Kind
+                 and then Present (Wrapped_Statements (Scop))
+                 and then Wrapped_Statements (Scop) = Current_Scope
+               then
+                  OK := True;
+
                --  Default case, just check that the pragma occurs in the scope
                --  of the entity denoted by the name.
 
@@ -9430,8 +9438,8 @@ package body Sem_Prag is
 
                   --  If the pragma comes from an aspect specification, there
                   --  must be an Import aspect specified as well. In the rare
-                  --  case where Import is set to False, the suprogram needs to
-                  --  have a local completion.
+                  --  case where Import is set to False, the subprogram needs
+                  --  to have a local completion.
 
                   declare
                      Imp_Aspect : constant Node_Id :=
@@ -15400,12 +15408,12 @@ package body Sem_Prag is
             --  aspect/pragma from parent types (see Build_DIC_Procedure_Body),
             --  though that extra argument isn't documented for the pragma.
 
-            if not Present (Arg2) then
+            if No (Arg2) then
                --  When the pragma has no arguments, create an argument with
                --  the value Empty, so the type name argument can be appended
                --  following it (since it's expected as the second argument).
 
-               if not Present (Arg1) then
+               if No (Arg1) then
                   Set_Pragma_Argument_Associations (N, New_List (
                     Make_Pragma_Argument_Association (Sloc (Typ),
                       Expression => Empty)));
@@ -16587,16 +16595,18 @@ package body Sem_Prag is
          -- Extensions_Allowed --
          ------------------------
 
-         --  pragma Extensions_Allowed (ON | OFF);
+         --  pragma Extensions_Allowed (ON | OFF | ALL);
 
          when Pragma_Extensions_Allowed =>
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
+            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_All);
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_On then
-               Ada_Version := Ada_With_Extensions;
+               Ada_Version := Ada_With_Core_Extensions;
+            elsif Chars (Get_Pragma_Arg (Arg1)) = Name_All then
+               Ada_Version := Ada_With_All_Extensions;
             else
                Ada_Version := Ada_Version_Explicit;
                Ada_Version_Pragma := Empty;
@@ -20139,7 +20149,7 @@ package body Sem_Prag is
                end loop;
 
                --  If entity in not in current scope it may be the enclosing
-               --  suprogram body to which the aspect applies.
+               --  subprogram body to which the aspect applies.
 
                if not Found then
                   if Entity (Id) = Current_Scope
@@ -23168,7 +23178,7 @@ package body Sem_Prag is
          -- SPARK_Mode --
          ----------------
 
-         --  pragma SPARK_Mode [(On | Off)];
+         --  pragma SPARK_Mode [(Auto | On | Off)];
 
          when Pragma_SPARK_Mode => Do_SPARK_Mode : declare
             Mode_Id : SPARK_Mode_Type;
@@ -23654,7 +23664,7 @@ package body Sem_Prag is
             --  Check the legality of the mode (no argument = ON)
 
             if Arg_Count = 1 then
-               Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
+               Check_Arg_Is_One_Of (Arg1, Name_Auto, Name_On, Name_Off);
                Mode := Chars (Get_Pragma_Arg (Arg1));
             else
                Mode := Name_On;
@@ -23705,6 +23715,15 @@ package body Sem_Prag is
             --  the pragma resides to find a potential construct.
 
             else
+               --  An explicit mode of Auto is only allowed as a configuration
+               --  pragma. Escape "pragma" to avoid replacement with "aspect".
+
+               if Mode_Id = None then
+                  Error_Pragma_Arg
+                    ("only configuration 'p'r'a'g'm'a% can have value &",
+                     Arg1);
+               end if;
+
                Stmt := Prev (N);
                while Present (Stmt) loop
 
@@ -25714,6 +25733,13 @@ package body Sem_Prag is
                        ("argument of pragma% must be On/Off or static string "
                         & "expression", Arg1);
 
+                  --  Use of pragma Warnings to set warning switches is
+                  --  ignored in GNATprove mode, as these switches apply to
+                  --  the compiler only.
+
+                  elsif GNATprove_Mode then
+                     null;
+
                   --  One argument string expression case
 
                   else
@@ -26138,12 +26164,9 @@ package body Sem_Prag is
       if Class_Present (N) then
 
          --  Verify that a class-wide condition is legal, i.e. the operation is
-         --  a primitive of a tagged type. Note that a generic subprogram is
-         --  not a primitive operation.
+         --  a primitive of a tagged type.
 
-         Disp_Typ := Find_Dispatching_Type (Spec_Id);
-
-         if No (Disp_Typ) or else Is_Generic_Subprogram (Spec_Id) then
+         if not Is_Dispatching_Operation (Spec_Id) then
             Error_Msg_Name_1 := Original_Aspect_Pragma_Name (N);
 
             if From_Aspect_Specification (N) then
@@ -26162,6 +26185,7 @@ package body Sem_Prag is
          --  Remaining semantic checks require a full tree traversal
 
          else
+            Disp_Typ := Find_Dispatching_Type (Spec_Id);
             Check_Class_Wide_Condition (Expr);
          end if;
 
@@ -31157,23 +31181,26 @@ package body Sem_Prag is
       end if;
    end Get_Base_Subprogram;
 
-   -----------------------
+   -------------------------
    -- Get_SPARK_Mode_Type --
-   -----------------------
+   -------------------------
 
    function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type is
    begin
-      if N = Name_On then
-         return On;
-      elsif N = Name_Off then
-         return Off;
+      case N is
+         when Name_Auto =>
+            return None;
+         when Name_On =>
+            return On;
+         when Name_Off =>
+            return Off;
 
-      --  Any other argument is illegal. Assume that no SPARK mode applies to
-      --  avoid potential cascaded errors.
+         --  Any other argument is illegal. Assume that no SPARK mode applies
+         --  to avoid potential cascaded errors.
 
-      else
-         return None;
-      end if;
+         when others =>
+            return None;
+      end case;
    end Get_SPARK_Mode_Type;
 
    ------------------------------------
@@ -31590,7 +31617,7 @@ package body Sem_Prag is
       Pragma_Refined_Depends                => -1,
       Pragma_Refined_Global                 => -1,
       Pragma_Refined_Post                   => -1,
-      Pragma_Refined_State                  => -1,
+      Pragma_Refined_State                  =>  0,
       Pragma_Relative_Deadline              =>  0,
       Pragma_Remote_Access_Type             => -1,
       Pragma_Remote_Call_Interface          => -1,
@@ -31695,6 +31722,15 @@ package body Sem_Prag is
       P := Parent (N);
 
       if Nkind (P) /= N_Pragma_Argument_Association then
+
+         --  References within pragma Refined_State are not significant. They
+         --  can't be recognized using pragma argument number, because they
+         --  appear inside refinement clauses that rely on aggregate syntax.
+
+         if In_Pragma_Expression (N, Name_Refined_State) then
+            return True;
+         end if;
+
          return False;
 
       else
@@ -32238,10 +32274,10 @@ package body Sem_Prag is
       then
          return;
 
-      --  Do not process internally generated routine _Postconditions
+      --  Do not process internally generated routine _Wrapped_Statements
 
       elsif Ekind (Body_Id) = E_Procedure
-        and then Chars (Body_Id) = Name_uPostconditions
+        and then Chars (Body_Id) = Name_uWrapped_Statements
       then
          return;
       end if;

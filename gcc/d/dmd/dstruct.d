@@ -216,6 +216,11 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         bool hasIdentityEquals;     // true if has identity opEquals
         bool hasNoFields;           // has no fields
         bool hasCopyCtor;           // copy constructor
+        bool hasPointerField;       // members with indirections
+        bool hasVoidInitPointers;   // void-initialized unsafe fields
+        bool hasSystemFields;      // @system members
+        bool hasFieldWithInvariant; // invariants
+        bool computedTypeProperties;// the above 3 fields are computed
         // Even if struct is defined as non-root symbol, some built-in operations
         // (e.g. TypeidExp, NewExp, ArrayLiteralExp, etc) request its TypeInfo.
         // For those, today TypeInfo_Struct is generated in COMDAT.
@@ -223,7 +228,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
     }
 
     import dmd.common.bitfields : generateBitFields;
-    mixin(generateBitFields!(BitFields, ubyte));
+    mixin(generateBitFields!(BitFields, ushort));
 
     extern (D) this(const ref Loc loc, Identifier id, bool inObject)
     {
@@ -391,7 +396,33 @@ extern (C++) class StructDeclaration : AggregateDeclaration
             }
         }
 
+
         argTypes = target.toArgTypes(type);
+    }
+
+    /// Compute cached type properties for `TypeStruct`
+    extern(D) final void determineTypeProperties()
+    {
+        if (computedTypeProperties)
+            return;
+        foreach (vd; fields)
+        {
+            if (vd.storage_class & STC.ref_ || vd.hasPointers())
+                hasPointerField = true;
+
+            if (vd._init && vd._init.isVoidInitializer() && vd.type.hasPointers())
+                hasVoidInitPointers = true;
+
+            if (vd.storage_class & STC.system || vd.type.hasSystemFields())
+                hasSystemFields = true;
+
+            if (!vd._init && vd.type.hasVoidInitPointers())
+                hasVoidInitPointers = true;
+
+            if (vd.type.hasInvariant())
+                hasFieldWithInvariant = true;
+        }
+        computedTypeProperties = true;
     }
 
     /***************************************

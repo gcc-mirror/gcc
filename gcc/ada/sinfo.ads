@@ -82,6 +82,12 @@ package Sinfo is
    --                 for this purpose, so e.g. in X := (if A then B else C);
    --                 Paren_Count for the right side will be 1.
 
+   --   Comes_From_Check_Or_Contract
+   --                 This flag is present in all N_If_Statement nodes and
+   --                 gets set when an N_If_Statement is generated as part of
+   --                 the expansion of a Check, Assert, or contract-related
+   --                 pragma.
+
    --   Comes_From_Source
    --                 This flag is present in all nodes. It is set if the
    --                 node is built by the scanner or parser, and clear if
@@ -434,7 +440,7 @@ package Sinfo is
    --  documents the restriction.
 
    --  Note that most of these restrictions apply only to trees generated when
-   --  code is being generated, since they involved expander actions that
+   --  code is being generated, since they involve expander actions that
    --  destroy the tree.
 
    ----------------
@@ -522,7 +528,7 @@ package Sinfo is
    --  function.
    --
    --  If the mode of a Ghost region is Ignore, any newly created nodes as well
-   --  as source entities are marked as ignored Ghost. In additon, the marking
+   --  as source entities are marked as ignored Ghost. In addition, the marking
    --  process signals all enclosing scopes that an ignored Ghost node resides
    --  within. The compilation unit where the node resides is also added to an
    --  auxiliary table for post processing.
@@ -623,7 +629,7 @@ package Sinfo is
    --  specified by means of an aspect or a pragma.
 
    --  The following entities may be subject to a SPARK mode. Entities marked
-   --  with * may possess two differente SPARK modes.
+   --  with * may possess two different SPARK modes.
 
    --     E_Entry
    --     E_Entry_Family
@@ -709,9 +715,9 @@ package Sinfo is
    --    This flag is set if the node comes directly from an explicit construct
    --    in the source. It is normally on for any nodes built by the scanner or
    --    parser from the source program, with the exception that in a few cases
-   --    the parser adds nodes to normalize the representation (in particular
+   --    the parser adds nodes to normalize the representation (in particular,
    --    a null statement is added to a package body if there is no begin/end
-   --    initialization section.
+   --    initialization section).
    --
    --    Most nodes inserted by the analyzer or expander are not considered
    --    as coming from source, so the flag is off for such nodes. In a few
@@ -891,9 +897,12 @@ package Sinfo is
    --    required for the corresponding reference or modification.
 
    --  At_End_Proc
-   --    This field is present in an N_Handled_Sequence_Of_Statements node.
+   --    This field is present in N_Handled_Sequence_Of_Statements,
+   --    N_Package_Body, N_Subprogram_Body, N_Task_Body, N_Block_Statement,
+   --    and N_Entry_Body.
    --    It contains an identifier reference for the cleanup procedure to be
-   --    called. See description of this node for further details.
+   --    called. See description of N_Handled_Sequence_Of_Statements node
+   --    for further details.
 
    --  Backwards_OK
    --    A flag present in the N_Assignment_Statement node. It is used only
@@ -1307,15 +1316,6 @@ package Sinfo is
    --    named associations). Note: this field points to the explicit actual
    --    parameter itself, not the N_Parameter_Association node (its parent).
 
-   --  First_Real_Statement
-   --    Present in N_Handled_Sequence_Of_Statements node. Normally set to
-   --    Empty. Used only when declarations are moved into the statement part
-   --    of a construct as a result of wrapping an AT END handler that is
-   --    required to cover the declarations. In this case, this field is used
-   --    to remember the location in the statements list of the first real
-   --    statement, i.e. the statement that used to be first in the statement
-   --    list before the declarations were prepended.
-
    --  First_Subtype_Link
    --    Present in N_Freeze_Entity node for an anonymous base type that is
    --    implicitly created by the declaration of a first subtype. It points
@@ -1549,7 +1549,7 @@ package Sinfo is
 
    --  Is_Analyzed_Pragma
    --    Present in N_Pragma nodes. Set for delayed pragmas that require a two
-   --    step analysis. The initial step is peformed by routine Analyze_Pragma
+   --    step analysis. The initial step is performed by routine Analyze_Pragma
    --    and verifies the overall legality of the pragma. The second step takes
    --    place in the various Analyze_xxx_In_Decl_Part routines which perform
    --    full analysis. The flag prevents the reanalysis of a delayed pragma.
@@ -1641,8 +1641,9 @@ package Sinfo is
    --      variable reference marker
    --
    --    Set when the node appears within a context which allows the generation
-   --    of run-time ABE checks. This flag detemines whether the ABE Processing
-   --    phase generates conditional ABE checks and guaranteed ABE failures.
+   --    of run-time ABE checks. This flag determines whether the ABE
+   --    Processing phase generates conditional ABE checks and guaranteed ABE
+   --    failures.
 
    --  Is_Elaboration_Code
    --    Present in assignment statements. Set for an assignment which updates
@@ -4183,11 +4184,15 @@ package Sinfo is
 
       --  ITERATED_COMPONENT_ASSOCIATION ::=
       --    for DEFINING_IDENTIFIER in DISCRETE_CHOICE_LIST => EXPRESSION
+      --    for ITERATOR_SPECIFICATION => EXPRESSION
+
+      --  At most one of (Defining_Identifier, Iterator_Specification)
+      --  is present at a time, in which case the other one is empty.
 
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
       --  Defining_Identifier
-      --  Iterator_Specification (set to Empty if no Iterator_Spec)
+      --  Iterator_Specification
       --  Expression
       --  Discrete_Choices
       --  Loop_Actions
@@ -4207,8 +4212,12 @@ package Sinfo is
       --  Etype
 
       ---------------------------------
-      --  3.4.5 Comtainer_Aggregates --
+      --  3.4.5 Container_Aggregates --
       ---------------------------------
+
+      --  ITERATED_ELEMENT_ASSOCIATION ::=
+      --    for LOOP_PARAMETER_SPECIFICATION[ use KEY_EXPRESSION] => EXPRESSION
+      --  | for ITERATOR_SPECIFICATION[ use KEY_EXPRESSION] => EXPRESSION
 
       --  N_Iterated_Element_Association
       --  Key_Expression
@@ -5159,6 +5168,7 @@ package Sinfo is
       --  Is_Finalization_Wrapper
       --  Is_Initialization_Block
       --  Is_Task_Master
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -------------------------
       -- 5.7  Exit Statement --
@@ -5561,7 +5571,7 @@ package Sinfo is
 
       --  The term "return statement" is defined in 6.5 to mean either a
       --  SIMPLE_RETURN_STATEMENT or an EXTENDED_RETURN_STATEMENT. We avoid
-      --  the use of this term, since it used to mean someting else in earlier
+      --  the use of this term, since it used to mean something else in earlier
       --  versions of Ada.
 
       --  N_Simple_Return_Statement
@@ -5678,6 +5688,7 @@ package Sinfo is
       --  Handled_Statement_Sequence (set to Empty if no HSS present)
       --  Corresponding_Spec
       --  Was_Originally_Stub
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       --  Note: if a source level package does not contain a handled sequence
       --  of statements, then the parser supplies a dummy one with a null
@@ -6156,6 +6167,7 @@ package Sinfo is
       --  Declarations
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -----------------------------------
       -- 9.5.2  Entry Body Formal Part --
@@ -6707,6 +6719,7 @@ package Sinfo is
       --  Corresponding_Spec_Of_Stub
       --  Library_Unit points to the subunit
       --  Corresponding_Body
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -------------------------------
       -- 10.1.3  Package Body Stub --
@@ -6737,6 +6750,7 @@ package Sinfo is
       --  Corresponding_Spec_Of_Stub
       --  Library_Unit points to the subunit
       --  Corresponding_Body
+      --  At_End_Proc (set to Empty if no clean up procedure)
 
       ---------------------------------
       -- 10.1.3  Protected Body Stub --
@@ -6822,6 +6836,11 @@ package Sinfo is
       --  declarations. The big difference is that the cleanup actions occur
       --  on either a normal or an abnormal exit from the statement sequence.
 
+      --  At_End_Proc is also a field of various nodes that can contain
+      --  both Declarations and Handled_Statement_Sequence, such as subprogram
+      --  bodies and block statements. In that case, the At_End_Proc
+      --  protects the Declarations as well as the Handled_Statement_Sequence.
+
       --  Note: the list of Exception_Handlers can contain pragmas as well
       --  as actual handlers. In practice these pragmas can only occur at
       --  the start of the list, since any pragmas occurring later on will
@@ -6848,7 +6867,6 @@ package Sinfo is
       --  End_Label (set to Empty if expander generated)
       --  Exception_Handlers (set to No_List if none present)
       --  At_End_Proc (set to Empty if no clean up procedure)
-      --  First_Real_Statement
 
       --  Note: A Handled_Sequence_Of_Statements can contain both
       --  Exception_Handlers and an At_End_Proc.
@@ -7798,7 +7816,7 @@ package Sinfo is
       --      ABE mechanism, regardless of whether expansion took place.
 
       --    * The call marker captures the target of the related call along
-      --      with other attributes which are either unavailabe or expensive
+      --      with other attributes which are either unavailable or expensive
       --      to recompute once analysis, resolution, and expansion are over.
 
       --    * The call marker aids the ABE Processing phase by signaling the

@@ -74,13 +74,13 @@ extern bool riscv_expand_block_move (rtx, rtx, rtx);
 extern bool riscv_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx riscv_gen_gpr_save_insn (struct riscv_frame_info *);
 extern bool riscv_gpr_save_operation_p (rtx);
+extern void riscv_reinit (void);
+extern poly_uint64 riscv_regmode_natural_size (machine_mode);
+extern bool riscv_v_ext_vector_mode_p (machine_mode);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
-
-/* Routines implemented in riscv-d.cc  */
-extern void riscv_d_target_versions (void);
-extern void riscv_d_register_target_info (void);
+void riscv_register_pragmas (void);
 
 /* Routines implemented in riscv-builtins.cc.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);
@@ -90,6 +90,7 @@ extern void riscv_init_builtins (void);
 
 /* Routines implemented in riscv-common.cc.  */
 extern std::string riscv_arch_str (bool version_p = true);
+extern void riscv_parse_arch_string (const char *, struct gcc_options *, location_t);
 
 extern bool riscv_hard_regno_rename_ok (unsigned, unsigned);
 
@@ -108,5 +109,52 @@ struct riscv_cpu_info {
 };
 
 extern const riscv_cpu_info *riscv_find_cpu (const char *);
+
+/* Routines implemented in riscv-selftests.cc.  */
+#if CHECKING_P
+namespace selftest {
+extern void riscv_run_selftests (void);
+} // namespace selftest
+#endif
+
+namespace riscv_vector {
+/* Routines implemented in riscv-vector-builtins.cc.  */
+extern void init_builtins (void);
+extern const char *mangle_builtin_type (const_tree);
+#ifdef GCC_TARGET_H
+extern bool verify_type_context (location_t, type_context_kind, const_tree, bool);
+#endif
+extern void handle_pragma_vector (void);
+extern tree builtin_decl (unsigned, bool);
+extern rtx expand_builtin (unsigned int, tree, rtx);
+extern bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+extern bool legitimize_move (rtx, rtx, machine_mode);
+enum tail_policy
+{
+  TAIL_UNDISTURBED = 0,
+  TAIL_AGNOSTIC = 1,
+};
+
+enum mask_policy
+{
+  MASK_UNDISTURBED = 0,
+  MASK_AGNOSTIC = 1,
+};
+}
+
+/* We classify builtin types into two classes:
+   1. General builtin class which is defined in riscv_builtins.
+   2. Vector builtin class which is a special builtin architecture
+      that implement intrinsic short into "pragma".  */
+enum riscv_builtin_class
+{
+  RISCV_BUILTIN_GENERAL,
+  RISCV_BUILTIN_VECTOR
+};
+
+const unsigned int RISCV_BUILTIN_SHIFT = 1;
+
+/* Mask that selects the riscv_builtin_class part of a function code.  */
+const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
 
 #endif /* ! GCC_RISCV_PROTOS_H */

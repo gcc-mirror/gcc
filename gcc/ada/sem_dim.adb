@@ -1316,7 +1316,7 @@ package body Sem_Dim is
 
          --  Look at the named components right after the positional components
 
-         if not Present (Next (Comp))
+         if No (Next (Comp))
            and then List_Containing (Comp) = Exps
          then
             Comp := First (Comp_Ass);

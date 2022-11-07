@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-require-effective-target hosted }
 
 #include <cxxabi.h>
 #include <cassert>

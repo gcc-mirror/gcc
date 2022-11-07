@@ -21,6 +21,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_EXPLODED_GRAPH_H
 #define GCC_ANALYZER_EXPLODED_GRAPH_H
 
+#include "alloc-pool.h"
+#include "fibonacci_heap.h"
+#include "supergraph.h"
+#include "sbitmap.h"
+#include "shortest-paths.h"
+#include "analyzer/sm.h"
+#include "analyzer/program-state.h"
+#include "analyzer/diagnostic-manager.h"
+
 namespace ana {
 
 /* Concrete implementation of region_model_context, wiring it up to the
@@ -47,8 +56,8 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  bool warn (pending_diagnostic *d) final override;
-  void add_note (pending_note *pn) final override;
+  bool warn (std::unique_ptr<pending_diagnostic> d) final override;
+  void add_note (std::unique_ptr<pending_note> pn) final override;
   void on_svalue_leak (const svalue *) override;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) final override;
@@ -81,18 +90,16 @@ class impl_region_model_context : public region_model_context
 
   void purge_state_involving (const svalue *sval) final override;
 
-  void bifurcate (custom_edge_info *info) final override;
+  void bifurcate (std::unique_ptr<custom_edge_info> info) final override;
   void terminate_path () final override;
   const extrinsic_state *get_ext_state () const final override
   {
     return &m_ext_state;
   }
-  bool get_malloc_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) final override;
-  bool get_taint_map (sm_state_map **out_smap,
-		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) final override;
+  bool get_state_map_by_name (const char *name,
+			      sm_state_map **out_smap,
+			      const state_machine **out_sm,
+			      unsigned *out_sm_idx) override;
 
   const gimple *get_stmt () const override { return m_stmt; }
 
@@ -258,6 +265,23 @@ class exploded_node : public dnode<eg_traits>
 		     bool unknown_side_effects,
 		     region_model_context *ctxt);
 
+  on_stmt_flags replay_call_summaries (exploded_graph &eg,
+				       const supernode *snode,
+				       const gcall *call_stmt,
+				       program_state *state,
+				       path_context *path_ctxt,
+				       function *called_fn,
+				       per_function_data *called_fn_data,
+				       region_model_context *ctxt);
+  void replay_call_summary (exploded_graph &eg,
+			    const supernode *snode,
+			    const gcall *call_stmt,
+			    program_state *state,
+			    path_context *path_ctxt,
+			    function *called_fn,
+			    call_summary *summary,
+			    region_model_context *ctxt);
+
   bool on_edge (exploded_graph &eg,
 		const superedge *succ,
 		program_point *next_point,
@@ -343,8 +367,7 @@ class exploded_edge : public dedge<eg_traits>
  public:
   exploded_edge (exploded_node *src, exploded_node *dest,
 		 const superedge *sedge,
-		 custom_edge_info *custom_info);
-  ~exploded_edge ();
+		 std::unique_ptr<custom_edge_info> custom_info);
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const final override;
   void dump_dot_label (pretty_printer *pp) const;
@@ -356,10 +379,8 @@ class exploded_edge : public dedge<eg_traits>
 
   /* NULL for most edges; will be non-NULL for special cases
      such as an unwind from a longjmp to a setjmp, or when
-     a signal is delivered to a signal-handler.
-
-     Owned by this class.  */
-  custom_edge_info *m_custom_info;
+     a signal is delivered to a signal-handler.  */
+  std::unique_ptr<custom_edge_info> m_custom_info;
 
 private:
   DISABLE_COPY_AND_ASSIGN (exploded_edge);
@@ -611,13 +632,11 @@ struct per_call_string_data
 struct per_function_data
 {
   per_function_data () {}
+  ~per_function_data ();
 
-  void add_call_summary (exploded_node *node)
-  {
-    m_summaries.safe_push (node);
-  }
+  void add_call_summary (exploded_node *node);
 
-  auto_vec<exploded_node *> m_summaries;
+  auto_vec<call_summary *> m_summaries;
 };
 
 
@@ -779,7 +798,7 @@ public:
 				     exploded_node *enode_for_diag);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
 			   const superedge *sedge,
-			   custom_edge_info *custom = NULL);
+			   std::unique_ptr<custom_edge_info> custom = NULL);
 
   per_program_point_data *
   get_or_create_per_program_point_data (const program_point &);
@@ -904,7 +923,7 @@ public:
   void dump_to_file (const char *filename,
 		     const extrinsic_state &ext_state) const;
 
-  bool feasible_p (logger *logger, feasibility_problem **out,
+  bool feasible_p (logger *logger, std::unique_ptr<feasibility_problem> *out,
 		    engine *eng, const exploded_graph *eg) const;
 
   auto_vec<const exploded_edge *> m_edges;
@@ -969,7 +988,7 @@ class stmt_finder
 {
 public:
   virtual ~stmt_finder () {}
-  virtual stmt_finder *clone () const = 0;
+  virtual std::unique_ptr<stmt_finder> clone () const = 0;
   virtual const gimple *find_stmt (const exploded_path &epath) = 0;
 };
 
