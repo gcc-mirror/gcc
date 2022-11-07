@@ -1953,7 +1953,9 @@ operator_div::fold_range (irange &r, tree type,
     return true;
 
   tree t;
-  if (rh.singleton_p (&t))
+  if (code == TRUNC_DIV_EXPR
+      && rh.singleton_p (&t)
+      && !wi::neg_p (lh.lower_bound ()))
     {
       wide_int wi = wi::to_wide (t);
       int shift = wi::exact_log2 (wi);
