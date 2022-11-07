@@ -591,8 +591,11 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	      /* This is unknown family 0x6 CPU.  */
 	      if (has_feature (FEATURE_AVX))
 		{
+		  /* Assume Grand Ridge.  */
+		  if (has_feature (FEATURE_RAOINT))
+		    cpu = "grandridge";
 		  /* Assume Granite Rapids.  */
-		  if (has_feature (FEATURE_AMX_FP16))
+		  else if (has_feature (FEATURE_AMX_FP16))
 		    cpu = "graniterapids";
 		  /* Assume Sierra Forest.  */
 		  else if (has_feature (FEATURE_AVXVNNIINT8))

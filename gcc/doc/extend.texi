@@ -21986,6 +21986,9 @@ Intel Atom Tremont CPU.
 @item sierraforest
 Intel Atom Sierra Forest CPU.
 
+@item grandridge
+Intel Atom Grand Ridge CPU.
+
 @item knl
 Intel Knights Landing CPU.
 
