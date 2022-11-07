@@ -137,6 +137,8 @@ private:
   void visit (MacroRule &rule);
   void visit (WhereClause &rule);
   void visit (std::vector<LifetimeParam> &for_lifetimes);
+  void visit (FunctionQualifiers &qualifiers);
+  void visit (MaybeNamedParam &param);
 
   // rust-ast.h
   void visit (Token &tok);
