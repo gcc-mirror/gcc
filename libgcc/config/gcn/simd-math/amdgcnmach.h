@@ -177,7 +177,8 @@ do { \
 do { \
   _Static_assert (__builtin_types_compatible_p (typeof (retval), typeof (__ret))); \
   __auto_type __cond = __builtin_convertvector ((cond), typeof (__mask)); \
-  VECTOR_COND_MOVE (__ret, (retval), __cond); \
+  __auto_type __retval = (retval); \
+  VECTOR_COND_MOVE (__ret, __retval, __cond); \
   __mask &= ~__cond; \
 } while (0)
 

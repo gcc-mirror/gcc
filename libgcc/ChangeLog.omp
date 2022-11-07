@@ -1,5 +1,11 @@
 2022-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* config/gcn/simd-math/amdgcnmach.h (VECTOR_RETURN): Store value of
+	return value in a local variable first.
+	* config/gcn/simd-math/v64df_ilogb.c (ilogb): Simplify.
+
+2022-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* config/gcn/simd-math/v64df_rint.c (rint): Simplified.  Fixed bug in
 	nested VECTOR_IF.  Fixed issue with signed right-shift.
 	* config/gcn/simd-math/v64sf_rint.c (rintf): Simplified.  Fixed bug in
