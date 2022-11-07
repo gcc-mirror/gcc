@@ -121,61 +121,15 @@ See :ref:`run-time-target`.
 
   Do not define this macro if it would never modify :samp:`{m}`.
 
-.. function:: enum flt_eval_method TARGET_C_EXCESS_PRECISION (enum excess_precision_type type)
+.. include:: tm.rst.in
+  :start-after: [TARGET_C_EXCESS_PRECISION]
+  :end-before: [TARGET_C_EXCESS_PRECISION]
 
-  .. hook-start:TARGET_C_EXCESS_PRECISION
 
-  Return a value, with the same meaning as the C99 macro
-  ``FLT_EVAL_METHOD`` that describes which excess precision should be
-  applied.  :samp:`{type}` is either ``EXCESS_PRECISION_TYPE_IMPLICIT``,
-  ``EXCESS_PRECISION_TYPE_FAST``,
-  ``EXCESS_PRECISION_TYPE_STANDARD``, or
-  ``EXCESS_PRECISION_TYPE_FLOAT16``.  For
-  ``EXCESS_PRECISION_TYPE_IMPLICIT``, the target should return which
-  precision and range operations will be implictly evaluated in regardless
-  of the excess precision explicitly added.  For
-  ``EXCESS_PRECISION_TYPE_STANDARD``,
-  ``EXCESS_PRECISION_TYPE_FLOAT16``, and
-  ``EXCESS_PRECISION_TYPE_FAST``, the target should return the
-  explicit excess precision that should be added depending on the
-  value set for :option:`-fexcess-precision=[standard|fast|16]`.
-  Note that unpredictable explicit excess precision does not make sense,
-  so a target should never return ``FLT_EVAL_METHOD_UNPREDICTABLE``
-  when :samp:`{type}` is ``EXCESS_PRECISION_TYPE_STANDARD``,
-  ``EXCESS_PRECISION_TYPE_FLOAT16`` or
-  ``EXCESS_PRECISION_TYPE_FAST``.
+.. include:: tm.rst.in
+  :start-after: [TARGET_PROMOTE_FUNCTION_MODE]
+  :end-before: [TARGET_PROMOTE_FUNCTION_MODE]
 
-Return a value, with the same meaning as the C99 macro
-``FLT_EVAL_METHOD`` that describes which excess precision should be
-applied.
-
-.. hook-end
-
-.. function:: machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree type, machine_mode mode, int *punsignedp, const_tree funtype, int for_return)
-
-  .. hook-start:TARGET_PROMOTE_FUNCTION_MODE
-
-  Like ``PROMOTE_MODE``, but it is applied to outgoing function arguments or
-  function return values.  The target hook should return the new mode
-  and possibly change ``*punsignedp`` if the promotion should
-  change signedness.  This function is called only for scalar *or
-  pointer* types.
-
-  :samp:`{for_return}` allows to distinguish the promotion of arguments and
-  return values.  If it is ``1``, a return value is being promoted and
-  ``TARGET_FUNCTION_VALUE`` must perform the same promotions done here.
-  If it is ``2``, the returned mode should be that of the register in
-  which an incoming parameter is copied, or the outgoing result is computed;
-  then the hook should return the same mode as ``promote_mode``, though
-  the signedness may be different.
-
-  :samp:`{type}` can be NULL when promoting function arguments of libcalls.
-
-  The default is to not promote arguments and return values.  You can
-  also define the hook to ``default_promote_function_mode_always_promote``
-  if you would like to apply the same rules given by ``PROMOTE_MODE``.
-
-.. hook-end
 
 .. c:macro:: PARM_BOUNDARY
 
@@ -216,15 +170,10 @@ applied.
   bits.  Note that this is not the biggest alignment that is supported,
   just the biggest alignment that, when violated, may cause a fault.
 
-.. c:var:: HOST_WIDE_INT TARGET_ABSOLUTE_BIGGEST_ALIGNMENT
+.. include:: tm.rst.in
+  :start-after: [TARGET_ABSOLUTE_BIGGEST_ALIGNMENT]
+  :end-before: [TARGET_ABSOLUTE_BIGGEST_ALIGNMENT]
 
-  .. hook-start:TARGET_ABSOLUTE_BIGGEST_ALIGNMENT
-
-  If defined, this target hook specifies the absolute biggest alignment
-  that a type or variable can have on this machine, otherwise,
-  ``BIGGEST_ALIGNMENT`` is used.
-
-.. hook-end
 
 .. c:macro:: MALLOC_ABI_ALIGNMENT
 
@@ -289,25 +238,15 @@ applied.
   On 32-bit ELF the largest supported section alignment in bits is
   :samp:`(0x80000000 * 8)`, but this is not representable on 32-bit hosts.
 
-.. function:: void TARGET_LOWER_LOCAL_DECL_ALIGNMENT (tree decl)
+.. include:: tm.rst.in
+  :start-after: [TARGET_LOWER_LOCAL_DECL_ALIGNMENT]
+  :end-before: [TARGET_LOWER_LOCAL_DECL_ALIGNMENT]
 
-  .. hook-start:TARGET_LOWER_LOCAL_DECL_ALIGNMENT
 
-  Define this hook to lower alignment of local, parm or result
-  decl :samp:`({decl})`.
+.. include:: tm.rst.in
+  :start-after: [TARGET_STATIC_RTX_ALIGNMENT]
+  :end-before: [TARGET_STATIC_RTX_ALIGNMENT]
 
-.. hook-end
-
-.. function:: HOST_WIDE_INT TARGET_STATIC_RTX_ALIGNMENT (machine_mode mode)
-
-  .. hook-start:TARGET_STATIC_RTX_ALIGNMENT
-
-  This hook returns the preferred alignment in bits for a
-  statically-allocated rtx, such as a constant pool entry.  :samp:`{mode}`
-  is the mode of the rtx.  The default implementation returns
-  :samp:`GET_MODE_ALIGNMENT ({mode})`.
-
-.. hook-end
 
 .. c:macro:: DATA_ALIGNMENT (type, basic_align)
 
@@ -333,22 +272,10 @@ applied.
 
   If this macro is not defined, then :samp:`{basic_align}` is used.
 
-.. function:: HOST_WIDE_INT TARGET_CONSTANT_ALIGNMENT (const_tree constant, HOST_WIDE_INT basic_align)
+.. include:: tm.rst.in
+  :start-after: [TARGET_CONSTANT_ALIGNMENT]
+  :end-before: [TARGET_CONSTANT_ALIGNMENT]
 
-  .. hook-start:TARGET_CONSTANT_ALIGNMENT
-
-  This hook returns the alignment in bits of a constant that is being
-  placed in memory.  :samp:`{constant}` is the constant and :samp:`{basic_align}`
-  is the alignment that the object would ordinarily have.
-
-  The default definition just returns :samp:`{basic_align}`.
-
-  The typical use of this hook is to increase alignment for string
-  constants to be word aligned so that ``strcpy`` calls that copy
-  constants can be done inline.  The function
-  ``constant_alignment_word_strings`` provides such a definition.
-
-.. hook-end
 
 .. c:macro:: LOCAL_ALIGNMENT (type, basic_align)
 
@@ -364,17 +291,10 @@ applied.
 
   If the value of this macro has a type, it should be an unsigned type.
 
-.. function:: HOST_WIDE_INT TARGET_VECTOR_ALIGNMENT (const_tree type)
+.. include:: tm.rst.in
+  :start-after: [TARGET_VECTOR_ALIGNMENT]
+  :end-before: [TARGET_VECTOR_ALIGNMENT]
 
-  .. hook-start:TARGET_VECTOR_ALIGNMENT
-
-  This hook can be used to define the alignment for a vector of type
-  :samp:`{type}`, in order to comply with a platform ABI.  The default is to
-  require natural alignment for vector types.  The alignment returned by
-  this hook must be a power-of-two multiple of the default alignment of
-  the vector element type.
-
-.. hook-end
 
 .. c:macro:: STACK_SLOT_ALIGNMENT (type, mode, basic_align)
 
@@ -508,44 +428,20 @@ applied.
   Like ``PCC_BITFIELD_TYPE_MATTERS`` except that its effect is limited
   to aligning a bit-field within the structure.
 
-.. function:: bool TARGET_ALIGN_ANON_BITFIELD (void)
+.. include:: tm.rst.in
+  :start-after: [TARGET_ALIGN_ANON_BITFIELD]
+  :end-before: [TARGET_ALIGN_ANON_BITFIELD]
 
-  .. hook-start:TARGET_ALIGN_ANON_BITFIELD
 
-  When ``PCC_BITFIELD_TYPE_MATTERS`` is true this hook will determine
-  whether unnamed bitfields affect the alignment of the containing
-  structure.  The hook should return true if the structure should inherit
-  the alignment requirements of an unnamed bitfield's type.
+.. include:: tm.rst.in
+  :start-after: [TARGET_NARROW_VOLATILE_BITFIELD]
+  :end-before: [TARGET_NARROW_VOLATILE_BITFIELD]
 
-.. hook-end
 
-.. function:: bool TARGET_NARROW_VOLATILE_BITFIELD (void)
+.. include:: tm.rst.in
+  :start-after: [TARGET_MEMBER_TYPE_FORCES_BLK]
+  :end-before: [TARGET_MEMBER_TYPE_FORCES_BLK]
 
-  .. hook-start:TARGET_NARROW_VOLATILE_BITFIELD
-
-  This target hook should return ``true`` if accesses to volatile bitfields
-  should use the narrowest mode possible.  It should return ``false`` if
-  these accesses should use the bitfield container type.
-
-  The default is ``false``.
-
-.. hook-end
-
-.. function:: bool TARGET_MEMBER_TYPE_FORCES_BLK (const_tree field, machine_mode mode)
-
-  .. hook-start:TARGET_MEMBER_TYPE_FORCES_BLK
-
-  Return true if a structure, union or array containing :samp:`{field}` should
-  be accessed using ``BLKMODE``.
-
-  If :samp:`{field}` is the only field in the structure, :samp:`{mode}` is its
-  mode, otherwise :samp:`{mode}` is VOIDmode.  :samp:`{mode}` is provided in the
-  case where structures of one field would require the structure's mode to
-  retain the field's mode.
-
-  Normally, this is not needed.
-
-.. hook-end
 
 .. c:macro:: ROUND_TYPE_ALIGN (type, computed, specified)
 
@@ -589,141 +485,46 @@ applied.
   You would most commonly define this macro if the ``allocate_stack``
   pattern needs to support both a 32- and a 64-bit mode.
 
-.. function:: scalar_int_mode TARGET_LIBGCC_CMP_RETURN_MODE (void)
+.. include:: tm.rst.in
+  :start-after: [TARGET_LIBGCC_CMP_RETURN_MODE]
+  :end-before: [TARGET_LIBGCC_CMP_RETURN_MODE]
 
-  .. hook-start:TARGET_LIBGCC_CMP_RETURN_MODE
 
-  This target hook should return the mode to be used for the return value
-  of compare instructions expanded to libgcc calls.  If not defined
-  ``word_mode`` is returned which is the right choice for a majority of
-  targets.
+.. include:: tm.rst.in
+  :start-after: [TARGET_LIBGCC_SHIFT_COUNT_MODE]
+  :end-before: [TARGET_LIBGCC_SHIFT_COUNT_MODE]
 
-.. hook-end
 
-.. function:: scalar_int_mode TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
+.. include:: tm.rst.in
+  :start-after: [TARGET_UNWIND_WORD_MODE]
+  :end-before: [TARGET_UNWIND_WORD_MODE]
 
-  .. hook-start:TARGET_LIBGCC_SHIFT_COUNT_MODE
 
-  This target hook should return the mode to be used for the shift count operand
-  of shift instructions expanded to libgcc calls.  If not defined
-  ``word_mode`` is returned which is the right choice for a majority of
-  targets.
+.. include:: tm.rst.in
+  :start-after: [TARGET_MS_BITFIELD_LAYOUT_P]
+  :end-before: [TARGET_MS_BITFIELD_LAYOUT_P]
 
-.. hook-end
 
-.. function:: scalar_int_mode TARGET_UNWIND_WORD_MODE (void)
+.. include:: tm.rst.in
+  :start-after: [TARGET_DECIMAL_FLOAT_SUPPORTED_P]
+  :end-before: [TARGET_DECIMAL_FLOAT_SUPPORTED_P]
 
-  .. hook-start:TARGET_UNWIND_WORD_MODE
 
-  Return machine mode to be used for ``_Unwind_Word`` type.
-  The default is to use ``word_mode``.
+.. include:: tm.rst.in
+  :start-after: [TARGET_FIXED_POINT_SUPPORTED_P]
+  :end-before: [TARGET_FIXED_POINT_SUPPORTED_P]
 
-.. hook-end
 
-.. function:: bool TARGET_MS_BITFIELD_LAYOUT_P (const_tree record_type)
+.. include:: tm.rst.in
+  :start-after: [TARGET_EXPAND_TO_RTL_HOOK]
+  :end-before: [TARGET_EXPAND_TO_RTL_HOOK]
 
-  .. hook-start:TARGET_MS_BITFIELD_LAYOUT_P
 
-  This target hook returns ``true`` if bit-fields in the given
-  :samp:`{record_type}` are to be laid out following the rules of Microsoft
-  Visual C/C++, namely: (i) a bit-field won't share the same storage
-  unit with the previous bit-field if their underlying types have
-  different sizes, and the bit-field will be aligned to the highest
-  alignment of the underlying types of itself and of the previous
-  bit-field; (ii) a zero-sized bit-field will affect the alignment of
-  the whole enclosing structure, even if it is unnamed; except that
-  (iii) a zero-sized bit-field will be disregarded unless it follows
-  another bit-field of nonzero size.  If this hook returns ``true``,
-  other macros that control bit-field layout are ignored.
+.. include:: tm.rst.in
+  :start-after: [TARGET_INSTANTIATE_DECLS]
+  :end-before: [TARGET_INSTANTIATE_DECLS]
 
-  When a bit-field is inserted into a packed record, the whole size
-  of the underlying type is used by one or more same-size adjacent
-  bit-fields (that is, if its long:3, 32 bits is used in the record,
-  and any additional adjacent long bit-fields are packed into the same
-  chunk of 32 bits.  However, if the size changes, a new field of that
-  size is allocated).  In an unpacked record, this is the same as using
-  alignment, but not equivalent when packing.
 
-  If both MS bit-fields and :samp:`__attribute__((packed))` are used,
-  the latter will take precedence.  If :samp:`__attribute__((packed))` is
-  used on a single field when MS bit-fields are in use, it will take
-  precedence for that field, but the alignment of the rest of the structure
-  may affect its placement.
-
-.. hook-end
-
-.. function:: bool TARGET_DECIMAL_FLOAT_SUPPORTED_P (void)
-
-  .. hook-start:TARGET_DECIMAL_FLOAT_SUPPORTED_P
-
-  Returns true if the target supports decimal floating point.
-
-.. hook-end
-
-.. function:: bool TARGET_FIXED_POINT_SUPPORTED_P (void)
-
-  .. hook-start:TARGET_FIXED_POINT_SUPPORTED_P
-
-  Returns true if the target supports fixed-point arithmetic.
-
-.. hook-end
-
-.. function:: void TARGET_EXPAND_TO_RTL_HOOK (void)
-
-  .. hook-start:TARGET_EXPAND_TO_RTL_HOOK
-
-  This hook is called just before expansion into rtl, allowing the target
-  to perform additional initializations or analysis before the expansion.
-  For example, the rs6000 port uses it to allocate a scratch stack slot
-  for use in copying SDmode values between memory and floating point
-  registers whenever the function being expanded has any SDmode
-  usage.
-
-.. hook-end
-
-.. function:: void TARGET_INSTANTIATE_DECLS (void)
-
-  .. hook-start:TARGET_INSTANTIATE_DECLS
-
-  This hook allows the backend to perform additional instantiations on rtl
-  that are not actually in any insns yet, but will be later.
-
-.. hook-end
-
-.. function:: const char * TARGET_MANGLE_TYPE (const_tree type)
-
-  .. hook-start:TARGET_MANGLE_TYPE
-
-  If your target defines any fundamental types, or any types your target
-  uses should be mangled differently from the default, define this hook
-  to return the appropriate encoding for these types as part of a C++
-  mangled name.  The :samp:`{type}` argument is the tree structure representing
-  the type to be mangled.  The hook may be applied to trees which are
-  not target-specific fundamental types; it should return ``NULL``
-  for all such types, as well as arguments it does not recognize.  If the
-  return value is not ``NULL``, it must point to a statically-allocated
-  string constant.
-
-  Target-specific fundamental types might be new fundamental types or
-  qualified versions of ordinary fundamental types.  Encode new
-  fundamental types as :samp:`u {n}{name}`, where :samp:`{name}`
-  is the name used for the type in source code, and :samp:`{n}` is the
-  length of :samp:`{name}` in decimal.  Encode qualified versions of
-  ordinary types as :samp:`U{n}{name}{code}`, where
-  :samp:`{name}` is the name used for the type qualifier in source code,
-  :samp:`{n}` is the length of :samp:`{name}` as above, and :samp:`{code}` is the
-  code used to represent the unqualified version of this type.  (See
-  ``write_builtin_type`` in :samp:`cp/mangle.cc` for the list of
-  codes.)  In both cases the spaces are for clarity; do not include any
-  spaces in your string.
-
-  This hook is applied to types prior to typedef resolution.  If the mangled
-  name for a particular type depends only on that type's main variant, you
-  can perform typedef resolution yourself using ``TYPE_MAIN_VARIANT``
-  before mangling.
-
-  The default version of this hook always returns ``NULL``, which is
-  appropriate for a target that does not define any new fundamental
-  types.
-
-.. hook-end
+.. include:: tm.rst.in
+  :start-after: [TARGET_MANGLE_TYPE]
+  :end-before: [TARGET_MANGLE_TYPE]

@@ -102,31 +102,10 @@ This discusses registers that address the stack frame.
   If the static chain is passed in memory, these macros should not be
   defined; instead, the ``TARGET_STATIC_CHAIN`` hook should be used.
 
-.. function:: rtx TARGET_STATIC_CHAIN (const_tree fndecl_or_type, bool incoming_p)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_STATIC_CHAIN]
+  :end-before: [TARGET_STATIC_CHAIN]
 
-  .. hook-start:TARGET_STATIC_CHAIN
-
-  This hook replaces the use of ``STATIC_CHAIN_REGNUM`` et al for
-  targets that may use different static chain locations for different
-  nested functions.  This may be required if the target has function
-  attributes that affect the calling conventions of the function and
-  those calling conventions use different static chain locations.
-
-  The default version of this hook uses ``STATIC_CHAIN_REGNUM`` et al.
-
-  If the static chain is passed in memory, this hook should be used to
-  provide rtx giving ``mem`` expressions that denote where they are stored.
-  Often the ``mem`` expression as seen by the caller will be at an offset
-  from the stack pointer and the ``mem`` expression as seen by the callee
-  will be at an offset from the frame pointer.
-
-  .. index:: stack_pointer_rtx, frame_pointer_rtx, arg_pointer_rtx
-
-  The variables ``stack_pointer_rtx``, ``frame_pointer_rtx``, and
-  ``arg_pointer_rtx`` will have been initialized and should be used
-  to refer to those items.
-
-.. hook-end
 
 .. c:macro:: DWARF_FRAME_REGISTERS
 

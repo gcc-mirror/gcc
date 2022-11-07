@@ -91,22 +91,10 @@ This describes assembler instruction output.
 
   If this macro is not defined, it is equivalent to a null statement.
 
-.. function:: void TARGET_ASM_FINAL_POSTSCAN_INSN (FILE *file, rtx_insn *insn, rtx *opvec, int noperands)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_FINAL_POSTSCAN_INSN]
+  :end-before: [TARGET_ASM_FINAL_POSTSCAN_INSN]
 
-  .. hook-start:TARGET_ASM_FINAL_POSTSCAN_INSN
-
-  If defined, this target hook is a function which is executed just after the
-  output of assembler code for :samp:`{insn}`, to change the mode of the assembler
-  if necessary.
-
-  Here the argument :samp:`{opvec}` is the vector containing the operands
-  extracted from :samp:`{insn}`, and :samp:`{noperands}` is the number of
-  elements of the vector which contain meaningful data for this insn.
-  The contents of this vector are what was used to convert the insn
-  template into assembler code, so you can change the assembler mode
-  by checking the contents of the vector.
-
-.. hook-end
 
 .. c:macro:: PRINT_OPERAND (stream, x, code)
 

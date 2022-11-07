@@ -31,63 +31,31 @@ code treats them abstractly, as a bit in an ``sbitmap``.  These
 and ``shrink_wrap.components_for_bb`` hooks, and deallocated by the
 generic code.
 
-.. function:: sbitmap TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS (void)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS]
+  :end-before: [TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS]
 
-  .. hook-start:TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
 
-  This hook should return an ``sbitmap`` with the bits set for those
-  components that can be separately shrink-wrapped in the current function.
-  Return ``NULL`` if the current function should not get any separate
-  shrink-wrapping.
-  Don't define this hook if it would always return ``NULL``.
-  If it is defined, the other hooks in this group have to be defined as well.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB]
+  :end-before: [TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB]
 
-.. hook-end
 
-.. function:: sbitmap TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB (basic_block)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS]
+  :end-before: [TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS]
 
-  .. hook-start:TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB
 
-  This hook should return an ``sbitmap`` with the bits set for those
-  components where either the prologue component has to be executed before
-  the ``basic_block``, or the epilogue component after it, or both.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS]
+  :end-before: [TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS]
 
-.. hook-end
 
-.. function:: void TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS (sbitmap components, edge e, sbitmap edge_components, bool is_prologue)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS]
+  :end-before: [TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS]
 
-  .. hook-start:TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS
 
-  This hook should clear the bits in the :samp:`{components}` bitmap for those
-  components in :samp:`{edge_components}` that the target cannot handle on edge
-  :samp:`{e}`, where :samp:`{is_prologue}` says if this is for a prologue or an
-  epilogue instead.
-
-.. hook-end
-
-.. function:: void TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS (sbitmap)
-
-  .. hook-start:TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS
-
-  Emit prologue insns for the components indicated by the parameter.
-
-.. hook-end
-
-.. function:: void TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS (sbitmap)
-
-  .. hook-start:TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS
-
-  Emit epilogue insns for the components indicated by the parameter.
-
-.. hook-end
-
-.. function:: void TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS (sbitmap)
-
-  .. hook-start:TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS
-
-  Mark the components in the parameter as handled, so that the
-  ``prologue`` and ``epilogue`` named patterns know to ignore those
-  components.  The target code should not hang on to the ``sbitmap``, it
-  will be deleted after this call.
-
-.. hook-end
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS]
+  :end-before: [TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS]

@@ -48,14 +48,6 @@ These macros will help you generate code for profiling.
   Define this macro if the code for function profiling should come before
   the function prologue.  Normally, the profiling code comes after.
 
-.. function:: bool TARGET_KEEP_LEAF_WHEN_PROFILED (void)
-
-  .. hook-start:TARGET_KEEP_LEAF_WHEN_PROFILED
-
-  This target hook returns true if the target wants the leaf flag for
-  the current function to stay true even if it calls mcount.  This might
-  make sense for targets using the leaf flag only to determine whether a
-  stack frame needs to be generated or not and for which the call to
-  mcount is generated before the function prologue.
-
-.. hook-end
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_KEEP_LEAF_WHEN_PROFILED]
+  :end-before: [TARGET_KEEP_LEAF_WHEN_PROFILED]

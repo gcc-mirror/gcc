@@ -102,17 +102,6 @@ in the opposite case.
   GCC computed the default from the values of the above macros and you will
   normally not need to override that default.
 
-.. function:: HOST_WIDE_INT TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE (void)
-
-  .. hook-start:TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE
-
-  Some targets have an ABI defined interval for which no probing needs to be done.
-  When a probe does need to be done this same interval is used as the probe distance
-  up when doing stack clash protection for alloca.
-  On such targets this value can be set to override the default probing up interval.
-  Define this variable to return nonzero if such a probe range is required or zero otherwise.
-  Defining this hook also requires your functions which make use of alloca to have at least 8 byes
-  of outgoing arguments.  If this is not the case the stack will be corrupted.
-  You need not define this macro if it would always have the value zero.
-
-.. hook-end
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE]
+  :end-before: [TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE]

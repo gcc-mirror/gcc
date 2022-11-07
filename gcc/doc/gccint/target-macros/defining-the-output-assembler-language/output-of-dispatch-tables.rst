@@ -75,97 +75,41 @@ This concerns dispatch tables.
   If this macro is not defined, nothing special is output at the end of
   the jump-table.
 
-.. function:: void TARGET_ASM_POST_CFI_STARTPROC (FILE *, tree)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_POST_CFI_STARTPROC]
+  :end-before: [TARGET_ASM_POST_CFI_STARTPROC]
 
-  .. hook-start:TARGET_ASM_POST_CFI_STARTPROC
 
-  This target hook is used to emit assembly strings required by the target
-  after the .cfi_startproc directive.  The first argument is the file stream to
-  write the strings to and the second argument is the function's declaration.  The
-  expected use is to add more .cfi_\* directives.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_EMIT_UNWIND_LABEL]
+  :end-before: [TARGET_ASM_EMIT_UNWIND_LABEL]
 
-  The default is to not output any assembly strings.
 
-.. hook-end
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL]
+  :end-before: [TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL]
 
-.. function:: void TARGET_ASM_EMIT_UNWIND_LABEL (FILE *stream, tree decl, int for_eh, int empty)
 
-  .. hook-start:TARGET_ASM_EMIT_UNWIND_LABEL
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_EMIT_EXCEPT_PERSONALITY]
+  :end-before: [TARGET_ASM_EMIT_EXCEPT_PERSONALITY]
 
-  This target hook emits a label at the beginning of each FDE.  It
-  should be defined on targets where FDEs need special labels, and it
-  should write the appropriate label, for the FDE associated with the
-  function declaration :samp:`{decl}`, to the stdio stream :samp:`{stream}`.
-  The third argument, :samp:`{for_eh}`, is a boolean: true if this is for an
-  exception table.  The fourth argument, :samp:`{empty}`, is a boolean:
-  true if this is a placeholder label for an omitted FDE.
 
-  The default is that FDEs are not given nonlocal labels.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_UNWIND_EMIT]
+  :end-before: [TARGET_ASM_UNWIND_EMIT]
 
-.. hook-end
 
-.. function:: void TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL (FILE *stream)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT]
+  :end-before: [TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT]
 
-  .. hook-start:TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL
 
-  This target hook emits a label at the beginning of the exception table.
-  It should be defined on targets where it is desirable for the table
-  to be broken up according to function.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_UNWIND_EMIT_BEFORE_INSN]
+  :end-before: [TARGET_ASM_UNWIND_EMIT_BEFORE_INSN]
 
-  The default is that no label is emitted.
 
-.. hook-end
-
-.. function:: void TARGET_ASM_EMIT_EXCEPT_PERSONALITY (rtx personality)
-
-  .. hook-start:TARGET_ASM_EMIT_EXCEPT_PERSONALITY
-
-  If the target implements ``TARGET_ASM_UNWIND_EMIT``, this hook may be
-  used to emit a directive to install a personality hook into the unwind
-  info.  This hook should not be used if dwarf2 unwind info is used.
-
-.. hook-end
-
-.. function:: void TARGET_ASM_UNWIND_EMIT (FILE *stream, rtx_insn *insn)
-
-  .. hook-start:TARGET_ASM_UNWIND_EMIT
-
-  This target hook emits assembly directives required to unwind the
-  given instruction.  This is only used when ``TARGET_EXCEPT_UNWIND_INFO``
-  returns ``UI_TARGET``.
-
-.. hook-end
-
-.. function:: rtx TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT (rtx origsymbol, bool pubvis)
-
-  .. hook-start:TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT
-
-  If necessary, modify personality and LSDA references to handle indirection.
-  The original symbol is in ``origsymbol`` and if ``pubvis`` is true
-  the symbol is visible outside the TU.
-
-.. hook-end
-
-.. c:var:: bool TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
-
-  .. hook-start:TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
-
-  True if the ``TARGET_ASM_UNWIND_EMIT`` hook should be called before
-  the assembly for :samp:`{insn}` has been emitted, false if the hook should
-  be called afterward.
-
-.. hook-end
-
-.. function:: bool TARGET_ASM_SHOULD_RESTORE_CFA_STATE (void)
-
-  .. hook-start:TARGET_ASM_SHOULD_RESTORE_CFA_STATE
-
-  For DWARF-based unwind frames, two CFI instructions provide for save and
-  restore of register state.  GCC maintains the current frame address (CFA)
-  separately from the register bank but the unwinder in libgcc preserves this
-  state along with the registers (and this is expected by the code that writes
-  the unwind frames).  This hook allows the target to specify that the CFA data
-  is not saved/restored along with the registers by the target unwinder so that
-  suitable additional instructions should be emitted to restore it.
-
-.. hook-end
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_SHOULD_RESTORE_CFA_STATE]
+  :end-before: [TARGET_ASM_SHOULD_RESTORE_CFA_STATE]

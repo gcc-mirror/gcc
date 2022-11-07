@@ -8,63 +8,25 @@
 Output of Data
 ^^^^^^^^^^^^^^
 
-.. c:var:: const char * TARGET_ASM_BYTE_OP
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_BYTE_OP]
+  :end-before: [TARGET_ASM_BYTE_OP]
 
-  .. hook-start:TARGET_ASM_BYTE_OP
 
-  These hooks specify assembly directives for creating certain kinds
-  of integer object.  The ``TARGET_ASM_BYTE_OP`` directive creates a
-  byte-sized object, the ``TARGET_ASM_ALIGNED_HI_OP`` one creates an
-  aligned two-byte object, and so on.  Any of the hooks may be
-  ``NULL``, indicating that no suitable directive is available.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_INTEGER]
+  :end-before: [TARGET_ASM_INTEGER]
 
-  The compiler will print these strings at the start of a new line,
-  followed immediately by the object's initial value.  In most cases,
-  the string should contain a tab, a pseudo-op, and then another tab.
 
-.. hook-end
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_DECL_END]
+  :end-before: [TARGET_ASM_DECL_END]
 
-.. function:: bool TARGET_ASM_INTEGER (rtx x, unsigned int size, int aligned_p)
 
-  .. hook-start:TARGET_ASM_INTEGER
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA]
+  :end-before: [TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA]
 
-  The ``assemble_integer`` function uses this hook to output an
-  integer object.  :samp:`{x}` is the object's value, :samp:`{size}` is its size
-  in bytes and :samp:`{aligned_p}` indicates whether it is aligned.  The
-  function should return ``true`` if it was able to output the
-  object.  If it returns false, ``assemble_integer`` will try to
-  split the object into smaller parts.
-
-  The default implementation of this hook will use the
-  ``TARGET_ASM_BYTE_OP`` family of strings, returning ``false``
-  when the relevant string is ``NULL``.
-
-.. hook-end
-
-.. function:: void TARGET_ASM_DECL_END (void)
-
-  .. hook-start:TARGET_ASM_DECL_END
-
-  Define this hook if the target assembler requires a special marker to
-  terminate an initialized variable declaration.
-
-.. hook-end
-
-.. function:: bool TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA (FILE *file, rtx x)
-
-  .. hook-start:TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
-
-  A target hook to recognize :samp:`{rtx}` patterns that ``output_addr_const``
-  can't deal with, and output assembly code to :samp:`{file}` corresponding to
-  the pattern :samp:`{x}`.  This may be used to allow machine-dependent
-  ``UNSPEC`` s to appear within constants.
-
-  If target hook fails to recognize a pattern, it must return ``false``,
-  so that a standard error message is printed.  If it prints an error message
-  itself, by calling, for example, ``output_operand_lossage``, it may just
-  return ``true``.
-
-.. hook-end
 
 .. c:macro:: ASM_OUTPUT_ASCII (stream, ptr, len)
 
@@ -155,15 +117,10 @@ Output of Data
 
 .. c:var:: const char * TARGET_ASM_OPEN_PAREN
 
-.. c:var:: const char * TARGET_ASM_CLOSE_PAREN
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_OPEN_PAREN]
+  :end-before: [TARGET_ASM_OPEN_PAREN]
 
-  .. hook-start:TARGET_ASM_OPEN_PAREN
-
-  These target hooks are C string constants, describing the syntax in the
-  assembler for grouping arithmetic expressions.  If not overridden, they
-  default to normal parentheses, which is correct for most assemblers.
-
-.. hook-end
 
 These macros are provided by :samp:`real.h` for writing the definitions
 of ``ASM_OUTPUT_DOUBLE`` and the like:

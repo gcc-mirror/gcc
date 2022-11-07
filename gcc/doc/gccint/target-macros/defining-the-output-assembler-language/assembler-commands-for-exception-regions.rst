@@ -54,11 +54,10 @@ region.
   ``INCOMING_RETURN_ADDR_RTX`` and ``OBJECT_FORMAT_ELF``),
   GCC will provide a default definition of 1.
 
-.. function:: enum unwind_info_type TARGET_EXCEPT_UNWIND_INFO (struct gcc_options *opts)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_EXCEPT_UNWIND_INFO]
+  :end-before: [TARGET_EXCEPT_UNWIND_INFO]
 
-  .. hook-start:TARGET_EXCEPT_UNWIND_INFO
-
-  .. hook-end
 
   This hook defines the mechanism that will be used for exception handling
   by the target.  If the target has ABI specified unwind tables, the hook
@@ -84,11 +83,10 @@ region.
   ``DWARF2_UNWIND_INFO`` depends on command-line options, the target
   must define this hook so that :samp:`{opts}` is used correctly.
 
-.. c:var:: bool TARGET_UNWIND_TABLES_DEFAULT
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_UNWIND_TABLES_DEFAULT]
+  :end-before: [TARGET_UNWIND_TABLES_DEFAULT]
 
-  .. hook-start:TARGET_UNWIND_TABLES_DEFAULT
-
-  .. hook-end
 
   This variable should be set to ``true`` if the target ABI requires unwinding
   tables even when exceptions are not used.  It must not be modified by
@@ -117,72 +115,31 @@ region.
   minimum alignment otherwise.  See :ref:`dwarf`.  Only applicable if
   the target supports DWARF 2 frame unwind information.
 
-.. c:var:: bool TARGET_TERMINATE_DW2_EH_FRAME_INFO
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_TERMINATE_DW2_EH_FRAME_INFO]
+  :end-before: [TARGET_TERMINATE_DW2_EH_FRAME_INFO]
 
-  .. hook-start:TARGET_TERMINATE_DW2_EH_FRAME_INFO
 
-  Contains the value true if the target should add a zero word onto the
-  end of a Dwarf-2 frame info section when used for exception handling.
-  Default value is false if ``EH_FRAME_SECTION_NAME`` is defined, and
-  true otherwise.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_DWARF_REGISTER_SPAN]
+  :end-before: [TARGET_DWARF_REGISTER_SPAN]
 
-.. hook-end
 
-.. function:: rtx TARGET_DWARF_REGISTER_SPAN (rtx reg)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_DWARF_FRAME_REG_MODE]
+  :end-before: [TARGET_DWARF_FRAME_REG_MODE]
 
-  .. hook-start:TARGET_DWARF_REGISTER_SPAN
 
-  Given a register, this hook should return a parallel of registers to
-  represent where to find the register pieces.  Define this hook if the
-  register and its mode are represented in Dwarf in non-contiguous
-  locations, or if the register should be represented in more than one
-  register in Dwarf.  Otherwise, this hook should return ``NULL_RTX``.
-  If not defined, the default is to return ``NULL_RTX``.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_INIT_DWARF_REG_SIZES_EXTRA]
+  :end-before: [TARGET_INIT_DWARF_REG_SIZES_EXTRA]
 
-.. hook-end
 
-.. function:: machine_mode TARGET_DWARF_FRAME_REG_MODE (int regno)
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_TTYPE]
+  :end-before: [TARGET_ASM_TTYPE]
 
-  .. hook-start:TARGET_DWARF_FRAME_REG_MODE
 
-  Given a register, this hook should return the mode which the
-  corresponding Dwarf frame register should have.  This is normally
-  used to return a smaller mode than the raw mode to prevent call
-  clobbered parts of a register altering the frame register size
-
-.. hook-end
-
-.. function:: void TARGET_INIT_DWARF_REG_SIZES_EXTRA (tree address)
-
-  .. hook-start:TARGET_INIT_DWARF_REG_SIZES_EXTRA
-
-  If some registers are represented in Dwarf-2 unwind information in
-  multiple pieces, define this hook to fill in information about the
-  sizes of those pieces in the table used by the unwinder at runtime.
-  It will be called by ``expand_builtin_init_dwarf_reg_sizes`` after
-  filling in a single size corresponding to each hard register;
-  :samp:`{address}` is the address of the table.
-
-.. hook-end
-
-.. function:: bool TARGET_ASM_TTYPE (rtx sym)
-
-  .. hook-start:TARGET_ASM_TTYPE
-
-  This hook is used to output a reference from a frame unwinding table to
-  the type_info object identified by :samp:`{sym}`.  It should return ``true``
-  if the reference was output.  Returning ``false`` will cause the
-  reference to be output using the normal Dwarf2 routines.
-
-.. hook-end
-
-.. c:var:: bool TARGET_ARM_EABI_UNWINDER
-
-  .. hook-start:TARGET_ARM_EABI_UNWINDER
-
-  This flag should be set to ``true`` on targets that use an ARM EABI
-  based unwinding library, and ``false`` on other targets.  This effects
-  the format of unwinding tables, and how the unwinder in entered after
-  running a cleanup.  The default is ``false``.
-
-.. hook-end
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ARM_EABI_UNWINDER]
+  :end-before: [TARGET_ARM_EABI_UNWINDER]

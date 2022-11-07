@@ -71,55 +71,25 @@ and termination functions:
   of objects.  If zero, the compiler will issue an error message upon
   encountering an ``init_priority`` attribute.
 
-.. c:var:: bool TARGET_HAVE_CTORS_DTORS
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_HAVE_CTORS_DTORS]
+  :end-before: [TARGET_HAVE_CTORS_DTORS]
 
-  .. hook-start:TARGET_HAVE_CTORS_DTORS
 
-  This value is true if the target supports some 'native' method of
-  collecting constructors and destructors to be run at startup and exit.
-  It is false if we must use :command:`collect2`.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_DTORS_FROM_CXA_ATEXIT]
+  :end-before: [TARGET_DTORS_FROM_CXA_ATEXIT]
 
-.. hook-end
 
-.. c:var:: bool TARGET_DTORS_FROM_CXA_ATEXIT
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_CONSTRUCTOR]
+  :end-before: [TARGET_ASM_CONSTRUCTOR]
 
-  .. hook-start:TARGET_DTORS_FROM_CXA_ATEXIT
 
-  This value is true if the target wants destructors to be queued to be
-  run from __cxa_atexit.  If this is the case then, for each priority level,
-  a new constructor will be entered that registers the destructors for that
-  level with __cxa_atexit (and there will be no destructors emitted).
-  It is false the method implied by ``have_ctors_dtors`` is used.
+.. include:: ../tm.rst.in
+  :start-after: [TARGET_ASM_DESTRUCTOR]
+  :end-before: [TARGET_ASM_DESTRUCTOR]
 
-.. hook-end
-
-.. function:: void TARGET_ASM_CONSTRUCTOR (rtx symbol, int priority)
-
-  .. hook-start:TARGET_ASM_CONSTRUCTOR
-
-  If defined, a function that outputs assembler code to arrange to call
-  the function referenced by :samp:`{symbol}` at initialization time.
-
-  Assume that :samp:`{symbol}` is a ``SYMBOL_REF`` for a function taking
-  no arguments and with no return value.  If the target supports initialization
-  priorities, :samp:`{priority}` is a value between 0 and ``MAX_INIT_PRIORITY`` ;
-  otherwise it must be ``DEFAULT_INIT_PRIORITY``.
-
-  If this macro is not defined by the target, a suitable default will
-  be chosen if (1) the target supports arbitrary section names, (2) the
-  target defines ``CTORS_SECTION_ASM_OP``, or (3) ``USE_COLLECT2``
-  is not defined.
-
-.. hook-end
-
-.. function:: void TARGET_ASM_DESTRUCTOR (rtx symbol, int priority)
-
-  .. hook-start:TARGET_ASM_DESTRUCTOR
-
-  This is like ``TARGET_ASM_CONSTRUCTOR`` but used for termination
-  functions rather than initialization functions.
-
-.. hook-end
 
 If ``TARGET_HAVE_CTORS_DTORS`` is true, the initialization routine
 generated for the generated object file will have static linkage.
