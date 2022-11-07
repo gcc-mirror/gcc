@@ -63,10 +63,11 @@ extern "C" __ieee128 __strtoieee128(const char*, char**);
       && defined(__GLIBC_PREREQ)
 #define USE_STRTOF128_FOR_FROM_CHARS 1
 extern "C" _Float128 __strtof128(const char*, char**)
+  __asm ("strtof128")
 #ifndef _GLIBCXX_HAVE_FLOAT128_MATH
   __attribute__((__weak__))
 #endif
-  __asm ("strtof128");
+  ;
 #endif
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \

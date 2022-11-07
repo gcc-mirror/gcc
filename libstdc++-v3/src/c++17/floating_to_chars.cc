@@ -46,10 +46,11 @@ extern "C" int __sprintfieee128(char*, const char*, ...);
 #elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113 \
       && defined(__GLIBC_PREREQ)
 extern "C" int __strfromf128(char*, size_t, const char*, _Float128)
+  __asm ("strfromf128")
 #ifndef _GLIBCXX_HAVE_FLOAT128_MATH
   __attribute__((__weak__))
 #endif
-  __asm ("strfromf128");
+  ;
 #endif
 
 // This implementation crucially assumes float/double have the
