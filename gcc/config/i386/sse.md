@@ -12203,7 +12203,7 @@
 		     (const_int 6) (const_int 14)])))]
   "TARGET_AVX512F"
   "vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "V8DF")])
 
@@ -12234,7 +12234,7 @@
 		     (const_int 2) (const_int 6)])))]
   "TARGET_AVX && <mask_avx512vl_condition>"
   "vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sselog1")
    (set_attr "prefix" "<mask_prefix>")
    (set_attr "mode" "V4DF")])
 
