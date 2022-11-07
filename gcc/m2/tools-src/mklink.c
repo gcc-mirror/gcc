@@ -264,9 +264,6 @@ ParseFileLinkCommand (void)
   while (PutChar (GetChar ()) != (char)EOF)
     {
       CopyUntilEolInto (name);
-#if defined(XENIX)
-      name[10] = (char)0; /* truncate object file name.  */
-#endif
       if ((strlen (name) > 0) && (name[0] != '#'))
         FindObject (name);
     }
