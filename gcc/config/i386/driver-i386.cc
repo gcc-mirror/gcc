@@ -574,15 +574,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	      /* This is unknown family 0x6 CPU.  */
 	      if (has_feature (FEATURE_AVX))
 		{
+		  /* Assume Tiger Lake */
 		  if (has_feature (FEATURE_AVX512VP2INTERSECT))
-		    {
-		      if (has_feature (FEATURE_TSXLDTRK))
-			/* Assume Sapphire Rapids.  */
-			cpu = "sapphirerapids";
-		      else
-			/* Assume Tiger Lake */
-			cpu = "tigerlake";
-		    }
+		    cpu = "tigerlake";
+		  /* Assume Sapphire Rapids.  */
+		  else if (has_feature (FEATURE_TSXLDTRK))
+		    cpu = "sapphirerapids";
 		  /* Assume Cooper Lake */
 		  else if (has_feature (FEATURE_AVX512BF16))
 		    cpu = "cooperlake";
