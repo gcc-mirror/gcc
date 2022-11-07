@@ -809,6 +809,10 @@ package Sem_Util is
    --  Returns the declaration node enclosing N (including possibly N itself),
    --  if any, or Empty otherwise.
 
+   function Enclosing_Declaration_Or_Statement (N : Node_Id) return Node_Id;
+   --  Return the nearest enclosing declaration or statement that houses
+   --  arbitrary node N.
+
    function Enclosing_Generic_Body (N : Node_Id) return Node_Id;
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  body, if any. If none, then returns Empty.
@@ -1877,12 +1881,13 @@ package Sem_Util is
    function Is_Attribute_Update (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Update
 
-   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
+   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean
+     with Inline;
    --  Determine whether node N denotes a body or a package declaration
 
    function Is_Bounded_String (T : Entity_Id) return Boolean;
    --  True if T is a bounded string type. Used to make sure "=" composes
-   --  properly for bounded string types.
+   --  properly for bounded string types (see 4.5.2(32.1/1)).
 
    function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes a procedure with synchronization

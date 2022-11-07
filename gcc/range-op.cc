@@ -1753,17 +1753,18 @@ public:
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res, tree type,
-				const wide_int &w0, const wide_int &w1) const;
+				const wide_int &w0, const wide_int &w1)
+    const final override;
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
-			  relation_trio) const;
+			  relation_trio) const final override;
   virtual bool op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
-			  relation_trio) const;
+			  relation_trio) const final override;
 } op_mult;
 
 bool
@@ -1929,9 +1930,10 @@ public:
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res, tree type,
-				const wide_int &, const wide_int &) const;
+				const wide_int &, const wide_int &)
+    const final override;
   virtual bool fold_range (irange &r, tree type,
 			   const irange &lh, const irange &rh,
 			   relation_trio trio) const final override;

@@ -16720,9 +16720,9 @@ package body Sem_Ch3 is
                        (Is_Generic_Unit
                           (Scope (Find_Dispatching_Type (Alias_Subp)))
                          or else
-                           Instantiation_Depth
-                             (Sloc (Find_Dispatching_Type (Alias_Subp))) > 0);
-
+                           Instantiation_Location
+                             (Sloc (Find_Dispatching_Type (Alias_Subp)))
+                               /= No_Location);
                      declare
                         Iface_Prim_Loc : constant Source_Ptr :=
                                          Original_Location (Sloc (Alias_Subp));

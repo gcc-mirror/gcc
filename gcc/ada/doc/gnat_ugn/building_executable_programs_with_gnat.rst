@@ -2795,6 +2795,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   * :switch:`-gnatw.q` (questionable layout of record types)
 
+  * :switch:`-gnatw_q` (ignored equality)
+
   * :switch:`-gnatw_r` (out-of-order record representation clauses)
 
   * :switch:`-gnatw.s` (overridden size clause)
@@ -3685,6 +3687,25 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   This switch suppresses warnings for cases where the default layout of
   a record type would very likely cause inefficiencies.
+
+
+.. index:: -gnatw_q  (gcc)
+
+:switch:`-gnatw_q`
+  *Activate warnings for ignored equality operators.*
+
+  This switch activates warnings for a user-defined "=" function that does
+  not compose (i.e. is ignored for a predefined "=" for a composite type
+  containing a component whose type has the user-defined "=" as
+  primitive). Note that the user-defined "=" must be a primitive operator
+  in order to trigger the warning.
+
+  The default is that these warnings are not given.
+
+.. index:: -gnatw_Q  (gcc)
+
+:switch:`-gnatw_Q`
+  *Suppress warnings for ignored equality operators.*
 
 
 .. index:: -gnatwr  (gcc)

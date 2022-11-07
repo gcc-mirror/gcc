@@ -1718,11 +1718,16 @@ package body Freeze is
                end;
             end if;
 
-            New_Prag := New_Copy_Tree (A_Post);
-            Rewrite
-              (Expression (First (Pragma_Argument_Associations (New_Prag))),
-               Class_Post);
-            Append (New_Prag, Decls);
+            --  A_Post can be null here if the postcondition was inlined in the
+            --  called subprogram.
+
+            if Present (A_Post) then
+               New_Prag := New_Copy_Tree (A_Post);
+               Rewrite
+                 (Expression (First (Pragma_Argument_Associations (New_Prag))),
+                  Class_Post);
+               Append (New_Prag, Decls);
+            end if;
          end if;
       end Build_Inherited_Condition_Pragmas;
 

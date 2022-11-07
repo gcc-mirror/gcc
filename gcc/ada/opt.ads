@@ -395,6 +395,10 @@ package Opt is
    --  Set to True (-C switch) to indicate that the compiler will be invoked
    --  with a mapping file (-gnatem compiler switch).
 
+   CUDA_Device_Library_Name : String_Ptr := null;
+   --  GNATBIND
+   --  Non-null only if Enable_CUDA_Expansion is True.
+
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
    --  GNAT, GNATBIND
@@ -549,9 +553,7 @@ package Opt is
 
    Enable_CUDA_Device_Expansion : Boolean := False;
    --  GNATBIND
-   --  Set to True to enable CUDA device (as opposed to host) expansion:
-   --    - Binder generates elaboration/finalization code that can be
-   --      invoked from corresponding binder-generated host-side code.
+   --  Set to True to enable CUDA device (as opposed to host) expansion.
 
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT

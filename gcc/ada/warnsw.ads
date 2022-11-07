@@ -77,6 +77,12 @@ package Warnsw is
    --  Warn when explicit record component clauses leave uncovered holes (gaps)
    --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
 
+   Warn_On_Ignored_Equality : Boolean := False;
+   --  Warn when a user-defined "=" function does not compose (i.e. is ignored
+   --  for a predefined "=" for a composite type containing a component of
+   --  whose type has the user-defined "=" as primitive). Off by default, and
+   --  set by -gnatw_q (but not -gnatwa).
+
    Warn_On_Component_Order : Boolean := False;
    --  Warn when record component clauses are out of order with respect to the
    --  component declarations, or if the memory layout is out of order with
@@ -140,6 +146,7 @@ package Warnsw is
       Warn_On_Questionable_Layout          : Boolean;
       Warn_On_Questionable_Missing_Parens  : Boolean;
       Warn_On_Record_Holes                 : Boolean;
+      Warn_On_Ignored_Equality             : Boolean;
       Warn_On_Component_Order              : Boolean;
       Warn_On_Redundant_Constructs         : Boolean;
       Warn_On_Reverse_Bit_Order            : Boolean;
@@ -156,7 +163,7 @@ package Warnsw is
    end record;
 
    function Save_Warnings return Warning_Record;
-   --  Returns current settingh of warnings
+   --  Returns current settings of warnings
 
    procedure Restore_Warnings (W : Warning_Record);
    --  Restores current settings of warning flags from W

@@ -8271,6 +8271,33 @@ package body Sem_Util is
       return Decl;
    end Enclosing_Declaration;
 
+   ----------------------------------------
+   -- Enclosing_Declaration_Or_Statement --
+   ----------------------------------------
+
+   function Enclosing_Declaration_Or_Statement
+     (N : Node_Id) return Node_Id
+   is
+      Par : Node_Id;
+
+   begin
+      Par := N;
+      while Present (Par) loop
+         if Is_Declaration (Par) or else Is_Statement (Par) then
+            return Par;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return N;
+   end Enclosing_Declaration_Or_Statement;
+
    ----------------------------
    -- Enclosing_Generic_Body --
    ----------------------------
@@ -27885,7 +27912,10 @@ package body Sem_Util is
 
          P := Parent (N);
          while Present (P) loop
-            if         Nkind (P) = N_If_Statement
+            if Is_Body (P) then
+               return True;
+
+            elsif      Nkind (P) = N_If_Statement
               or else  Nkind (P) = N_Case_Statement
               or else (Nkind (P) in N_Short_Circuit
                         and then Desc = Right_Opnd (P))

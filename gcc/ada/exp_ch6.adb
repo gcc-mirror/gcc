@@ -1806,7 +1806,7 @@ package body Exp_Ch6 is
                Expr := New_Occurrence_Of (Temp, Loc);
             end if;
 
-            Rewrite (Actual, New_Occurrence_Of (Temp, Loc));
+            Rewrite (Actual, New_Occurrence_Of (Temp, Sloc (Actual)));
             Analyze (Actual);
 
             --  If the actual is a conversion of a packed reference, it may
@@ -6240,7 +6240,7 @@ package body Exp_Ch6 is
       --  The object may be a component of some other data structure, in which
       --  case this must be handled as an inter-object call.
 
-      if not In_Open_Scopes (Scop)
+      if not Scope_Within_Or_Same (Inner => Current_Scope, Outer => Scop)
         or else Is_Entry_Wrapper (Current_Scope)
         or else not Is_Entity_Name (Name (N))
       then

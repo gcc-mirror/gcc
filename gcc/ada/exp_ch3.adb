@@ -4599,7 +4599,8 @@ package body Exp_Ch3 is
       end if;
 
       --  If not inherited and not user-defined, build body as for a type with
-      --  tagged components.
+      --  components of record type (i.e. a type for which "=" composes when
+      --  used as a component in an outer composite type).
 
       if Build_Eq then
          Decl :=
