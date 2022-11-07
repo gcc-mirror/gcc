@@ -59,6 +59,14 @@
 #endif
 // strtold for __ieee128
 extern "C" __ieee128 __strtoieee128(const char*, char**);
+#elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113 \
+      && defined(__GLIBC_PREREQ)
+#define USE_STRTOF128_FOR_FROM_CHARS 1
+extern "C" _Float128 __strtof128(const char*, char**)
+#ifndef _GLIBCXX_HAVE_FLOAT128_MATH
+  __attribute__((__weak__))
+#endif
+  __asm ("strtof128");
 #endif
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
@@ -618,6 +626,16 @@ namespace
 # ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 	else if constexpr (is_same_v<T, __ieee128>)
 	  tmpval = __strtoieee128(str, &endptr);
+# elif defined(USE_STRTOF128_FOR_FROM_CHARS)
+	else if constexpr (is_same_v<T, _Float128>)
+	  {
+#ifndef _GLIBCXX_HAVE_FLOAT128_MATH
+	    if (&__strtof128 == nullptr)
+	      tmpval = _Float128(std::strtold(str, &endptr);
+	    else
+#endif
+	      tmpval = __strtof128(str, &endptr);
+	  }
 # endif
 #else
 	tmpval = std::strtod(str, &endptr);
@@ -1234,6 +1252,14 @@ __attribute__((alias ("_ZSt10from_charsPKcS0_RdSt12chars_format")));
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 from_chars_result
 from_chars(const char* first, const char* last, __ieee128& value,
+	   chars_format fmt) noexcept
+{
+  // fast_float doesn't support IEEE binary128 format, but we can use strtold.
+  return from_chars_strtod(first, last, value, fmt);
+}
+#elif defined(USE_STRTOF128_FOR_FROM_CHARS)
+from_chars_result
+from_chars(const char* first, const char* last, _Float128& value,
 	   chars_format fmt) noexcept
 {
   // fast_float doesn't support IEEE binary128 format, but we can use strtold.
