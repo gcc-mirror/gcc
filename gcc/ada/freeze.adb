@@ -3188,6 +3188,9 @@ package body Freeze is
                if Has_Task (Typ) then
                   Error_Msg_N
                     ("aspect % applied to task type &", Typ);
+                  Error_Msg_N
+                    ("\replace task components with access-to-task-type "
+                     & "components??", Typ);
                end if;
 
             else
