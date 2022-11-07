@@ -564,6 +564,15 @@ get_intel_cpu (struct __processor_model *cpu_model,
       CHECK___builtin_cpu_is ("sierraforest");
       cpu_model->__cpu_type = INTEL_SIERRAFOREST;
       break;
+    case 0xad:
+    case 0xae:
+      /* Granite Rapids.  */
+      cpu = "graniterapids";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("graniterapids");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS;
+      break;
     case 0x17:
     case 0x1d:
       /* Penryn.  */

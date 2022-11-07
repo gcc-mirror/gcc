@@ -197,6 +197,7 @@ extern void test_arch_cooperlake (void)         __attribute__((__target__("arch=
 extern void test_arch_sapphirerapids (void)	__attribute__((__target__("arch=sapphirerapids")));
 extern void test_arch_alderlake (void)          __attribute__((__target__("arch=alderlake")));
 extern void test_arch_rocketlake (void)         __attribute__((__target__("arch=rocketlake")));
+extern void test_arch_graniterapids (void)	__attribute__((__target__("arch=graniterapids")));
 extern void test_arch_lujiazui (void)			__attribute__((__target__("arch=lujiazui")));
 extern void test_arch_k8 (void)			__attribute__((__target__("arch=k8")));
 extern void test_arch_k8_sse3 (void)		__attribute__((__target__("arch=k8-sse3")));

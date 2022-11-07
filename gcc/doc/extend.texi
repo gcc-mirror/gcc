@@ -21960,6 +21960,9 @@ Intel Core i7 Alderlake CPU.
 @item rocketlake
 Intel Core i7 Rocketlake CPU.
 
+@item graniterapids
+Intel Core i7 graniterapids CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
