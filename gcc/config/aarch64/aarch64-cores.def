@@ -70,6 +70,7 @@ AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH
 
 /* Ampere Computing ('\xC0') cores. */
 AARCH64_CORE("ampere1", ampere1, cortexa57, 8_6A, AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_RNG | AARCH64_FL_SHA3, ampere1, 0xC0, 0xac3, -1)
+AARCH64_CORE("ampere1a", ampere1a, cortexa57, 8_6A, AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_RNG | AARCH64_FL_SHA3 | AARCH64_FL_MEMTAG, ampere1a, 0xC0, 0xac4, -1)
 /* Do not swap around "emag" and "xgene1",
    this order is required to handle variant correctly. */
 AARCH64_CORE("emag",        emag,      xgene1,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, emag, 0x50, 0x000, 3)
