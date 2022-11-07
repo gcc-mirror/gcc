@@ -1242,3 +1242,7 @@ Support AMX-FP16 built-in functions and code generation.
 mprefetchi
 Target Mask(ISA2_PREFETCHI) Var(ix86_isa_flags2) Save
 Support PREFETCHI built-in functions and code generation.
+
+mraoint
+Target Mask(ISA2_RAOINT) Var(ix86_isa_flags2) Save
+Support RAOINT built-in functions and code generation.

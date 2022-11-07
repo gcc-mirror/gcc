@@ -40,6 +40,9 @@
  
   ;; For CMPccXADD support
   UNSPECV_CMPCCXADD
+
+  ;; For RAOINT support
+  UNSPECV_RAOINT
 ])
 
 (define_expand "sse2_lfence"
@@ -784,6 +787,19 @@
 	(match_operand:SWI 2 "register_operand" "0"))]		;; input
   ""
   "%K3xchg{<imodesuffix>}\t{%1, %0|%0, %1}")
+
+(define_code_iterator any_plus_logic [and ior xor plus])
+(define_code_attr plus_logic [(and "and") (ior "or") (xor "xor") (plus "add")])
+
+(define_insn "rao_a<plus_logic><mode>"
+  [(set (match_operand:SWI48 0 "memory_operand" "+m")
+       (unspec_volatile:SWI48
+         [(any_plus_logic:SWI48 (match_dup 0)
+				(match_operand:SWI48 1 "register_operand" "r"))
+          (const_int 0)]      ;; MEMMODEL_RELAXED
+         UNSPECV_RAOINT))]
+  "TARGET_RAOINT"
+  "a<plus_logic>\t{%1, %0|%0, %1}")
 
 (define_insn "atomic_add<mode>"
   [(set (match_operand:SWI 0 "memory_operand" "+m")

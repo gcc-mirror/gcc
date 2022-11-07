@@ -7090,6 +7090,11 @@ Enable/disable the generation of the AMX-FP16 instructions.
 @cindex @code{target("prefetchi")} function attribute, x86
 Enable/disable the generation of the PREFETCHI instructions.
 
+@item raoint
+@itemx no-raoint
+@cindex @code{target("raoint")} function attribute, x86
+Enable/disable the generation of the RAOINT instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

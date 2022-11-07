@@ -25,6 +25,7 @@
 #define _CPUID_H_INCLUDED
 
 /* %eax */
+#define bit_RAOINT	(1 << 3)
 #define bit_AVXVNNI	(1 << 4)
 #define bit_AVX512BF16	(1 << 5)
 #define bit_CMPCCXADD	(1 << 7)

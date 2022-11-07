@@ -113,6 +113,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_CMPCCXADD_SET OPTION_MASK_ISA2_CMPCCXADD
 #define OPTION_MASK_ISA2_AMX_FP16_SET OPTION_MASK_ISA2_AMX_FP16
 #define OPTION_MASK_ISA2_PREFETCHI_SET OPTION_MASK_ISA2_PREFETCHI
+#define OPTION_MASK_ISA2_RAOINT_SET OPTION_MASK_ISA2_RAOINT
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -289,6 +290,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_CMPCCXADD_UNSET OPTION_MASK_ISA2_CMPCCXADD
 #define OPTION_MASK_ISA2_AMX_FP16_UNSET OPTION_MASK_ISA2_AMX_FP16
 #define OPTION_MASK_ISA2_PREFETCHI_UNSET OPTION_MASK_ISA2_PREFETCHI
+#define OPTION_MASK_ISA2_RAOINT_UNSET OPTION_MASK_ISA2_RAOINT
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1223,6 +1225,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_PREFETCHI_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_PREFETCHI_UNSET;
+	}
+      return true;
+
+    case OPT_mraoint:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_RAOINT_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_RAOINT_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_RAOINT_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_RAOINT_UNSET;
 	}
       return true;
 

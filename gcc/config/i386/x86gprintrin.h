@@ -76,6 +76,8 @@
 
 #include <prfchiintrin.h>
 
+#include <raointintrin.h>
+
 #include <rdseedintrin.h>
 
 #include <rtmintrin.h>

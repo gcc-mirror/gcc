@@ -2535,6 +2535,9 @@ The x86-64 target linker supports PIE with copy reloc.
 @item prefetchi
 Target supports the execution of @code{prefetchi} instructions.
 
+@item raoint
+Target supports the execution of @code{raoint} instructions.
+
 @item rdrand
 Target supports x86 @code{rdrand} instruction.
 
