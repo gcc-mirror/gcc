@@ -1,3 +1,7 @@
+2022-11-06  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/special/initpri3.C: New test.
+
 2022-11-06  Xi Ruoyao  <xry111@xry111.site>
 
 	* gcc.target/loongarch/fcopysign.c: New test.

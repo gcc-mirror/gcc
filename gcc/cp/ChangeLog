@@ -1,3 +1,10 @@
+2022-11-06  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.cc (cxx_attribute_table): Include init_priority entry
+	only if SUPPORTS_INIT_PRIORITY.
+	(handle_init_priority_attribute): Add ATTRIBUTE_UNUSED.  Assert
+	SUPPORTS_INIT_PRIORITY is true.
+
 2022-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 	    Yvan ROUX  <yvan.roux@foss.st.com>
 

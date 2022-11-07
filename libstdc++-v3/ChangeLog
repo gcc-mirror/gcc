@@ -1,3 +1,45 @@
+2022-11-06  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/atomic_wait.h (_detail::__platform_wait_alignment):
+	Declare inline.  Remove redundant static specifier.
+	(__detail::__atomic_spin_count_relax): Declare inline.
+	(__detail::__atomic_spin_count): Likewise.
+	* include/bits/regex_automaton.h (__detail::_S_invalid_state_id):
+	Declare inline for C++17.  Declare constexpr.  Remove
+	redundant const and static specifiers.
+	* include/bits/regex_error.h (regex_constants::error_collate):
+	Declare inline for C++17 as per P0607R0.
+	(regex_constants::error_ctype): Likewise.
+	(regex_constants::error_escape): Likewise.
+	(regex_constants::error_backref): Likewise.
+	(regex_constants::error_brack): Likewise.
+	(regex_constants::error_paren): Likewise.
+	(regex_constants::error_brace): Likewise.
+	(regex_constants::error_badbrace): Likewise.
+	(regex_constants::error_range): Likewise.
+	(regex_constants::error_space): Likewise.
+	(regex_constants::error_badrepeat): Likewise.
+	(regex_constants::error_complexity): Likewise.
+	(regex_constants::error_stack): Likewise.
+	* include/ext/concurrence.h (__gnu_cxx::__default_lock_policy):
+	Likewise.  Remove redundant static specifier.
+	* include/pstl/execution_defs.h (execution::seq): Declare inline
+	for C++17 as per P0607R0.
+	(execution::par): Likewise.
+	(execution::par_unseq): Likewise.
+	(execution::unseq): Likewise.
+
+2022-11-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/44952
+	PR libstdc++/39796
+	PR libstdc++/98108
+	* include/std/iostream (__ioinit): No longer define here if
+	the init_priority attribute is usable.
+	* src/c++98/ios_init.cc (__ioinit): Define here instead if
+	init_priority is usable, via ...
+	* src/c++98/ios_base_init.h: ... this new file.
+
 2022-11-05  Jakob Hasse  <0xjakob@users.noreply.github.com>
 
 	PR libstdc++/105387

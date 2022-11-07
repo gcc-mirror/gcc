@@ -1,3 +1,8 @@
+2022-11-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* optabs.cc (can_vec_set_var_idx_p): Use operand[2]
+	mode when checking vec_set_optab.
+
 2022-11-06  Xi Ruoyao  <xry111@xry111.site>
 
 	* config/loongarch/loongarch.md (UNSPEC_FCOPYSIGN): New unspec.
