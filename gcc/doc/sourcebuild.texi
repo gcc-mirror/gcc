@@ -2932,6 +2932,10 @@ Target has limited stack size.  The stack size limit can be obtained using the
 STACK_SIZE macro defined by @ref{stack_size_ao,,@code{dg-add-options} feature
 @code{stack_size}}.
 
+Note that for certain targets, stack size limits are relevant for
+execution only, and therefore considered only if @code{dg-do run} is
+in effect, otherwise unlimited.
+
 @item static
 Target supports @option{-static}.
 

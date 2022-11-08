@@ -649,6 +649,22 @@ proc check_effective_target_trampolines { } {
 # Return 1 if target has limited stack size.
 
 proc check_effective_target_stack_size { } {
+    # For nvptx target, stack size limits are relevant for execution only.
+    if { [istarget nvptx-*-*] } {
+	# Find 'dg-do-what' in an outer frame.
+	set level 1
+	while true {
+	    upvar $level dg-do-what dg-do-what
+	    if [info exists dg-do-what] then break
+	    incr level
+	}
+	verbose "check_effective_target_stack_size: found dg-do-what at level $level" 2
+
+	if { ![string equal [lindex ${dg-do-what} 0] run] } {
+	    return 0
+	}
+    }
+
     if [target_info exists gcc,stack_size] {
 	return 1
     }
