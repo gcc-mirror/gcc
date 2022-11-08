@@ -693,20 +693,31 @@ get_no_error_domain (enum built_in_function fnc)
     {
     /* Trig functions: return [-1, +1]  */
     CASE_FLT_FN (BUILT_IN_ACOS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_ACOS):
     CASE_FLT_FN (BUILT_IN_ASIN):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_ASIN):
       return get_domain (-1, true, true,
                          1, true, true);
     /* Hyperbolic functions.  */
     CASE_FLT_FN (BUILT_IN_ACOSH):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_ACOSH):
       /* acosh: [1, +inf)  */
       return get_domain (1, true, true,
                          1, false, false);
     CASE_FLT_FN (BUILT_IN_ATANH):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_ATANH):
       /* atanh: (-1, +1)  */
       return get_domain (-1, true, false,
                          1, true, false);
+    case BUILT_IN_COSHF16:
+    case BUILT_IN_SINHF16:
+      /* coshf16: (-11, +11)  */
+      return get_domain (-11, true, false,
+			 11, true, false);
     case BUILT_IN_COSHF:
     case BUILT_IN_SINHF:
+    case BUILT_IN_COSHF32:
+    case BUILT_IN_SINHF32:
       /* coshf: (-89, +89)  */
       return get_domain (-89, true, false,
                          89, true, false);
@@ -714,21 +725,39 @@ get_no_error_domain (enum built_in_function fnc)
     case BUILT_IN_SINH:
     case BUILT_IN_COSHL:
     case BUILT_IN_SINHL:
+    case BUILT_IN_COSHF64:
+    case BUILT_IN_SINHF64:
       /* cosh: (-710, +710)  */
       return get_domain (-710, true, false,
                          710, true, false);
+    case BUILT_IN_COSHF128:
+    case BUILT_IN_SINHF128:
+      /* coshf128: (-11357, +11357)  */
+      return get_domain (-11357, true, false,
+			 11357, true, false);
     /* Log functions: (0, +inf)  */
     CASE_FLT_FN (BUILT_IN_LOG):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG):
     CASE_FLT_FN (BUILT_IN_LOG2):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG2):
     CASE_FLT_FN (BUILT_IN_LOG10):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG10):
       return get_domain (0, true, false,
                          0, false, false);
     CASE_FLT_FN (BUILT_IN_LOG1P):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG1P):
       return get_domain (-1, true, false,
                          0, false, false);
     /* Exp functions.  */
+    case BUILT_IN_EXPF16:
+    case BUILT_IN_EXPM1F16:
+      /* expf: (-inf, 11)  */
+      return get_domain (-1, false, false,
+			 11, true, false);
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPM1F:
+    case BUILT_IN_EXPF32:
+    case BUILT_IN_EXPM1F32:
       /* expf: (-inf, 88)  */
       return get_domain (-1, false, false,
                          88, true, false);
@@ -736,18 +765,35 @@ get_no_error_domain (enum built_in_function fnc)
     case BUILT_IN_EXPM1:
     case BUILT_IN_EXPL:
     case BUILT_IN_EXPM1L:
+    case BUILT_IN_EXPF64:
+    case BUILT_IN_EXPM1F64:
       /* exp: (-inf, 709)  */
       return get_domain (-1, false, false,
                          709, true, false);
+    case BUILT_IN_EXPF128:
+    case BUILT_IN_EXPM1F128:
+      /* expf128: (-inf, 11356)  */
+      return get_domain (-1, false, false,
+			 11356, true, false);
+    case BUILT_IN_EXP2F16:
+      /* exp2f16: (-inf, 16)  */
+      return get_domain (-1, false, false,
+			 16, true, false);
     case BUILT_IN_EXP2F:
+    case BUILT_IN_EXP2F32:
       /* exp2f: (-inf, 128)  */
       return get_domain (-1, false, false,
                          128, true, false);
     case BUILT_IN_EXP2:
     case BUILT_IN_EXP2L:
+    case BUILT_IN_EXP2F64:
       /* exp2: (-inf, 1024)  */
       return get_domain (-1, false, false,
                          1024, true, false);
+    case BUILT_IN_EXP2F128:
+      /* exp2f128: (-inf, 16384)  */
+      return get_domain (-1, false, false,
+			 16384, true, false);
     case BUILT_IN_EXP10F:
     case BUILT_IN_POW10F:
       /* exp10f: (-inf, 38)  */
