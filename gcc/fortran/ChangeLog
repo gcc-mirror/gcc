@@ -1,3 +1,12 @@
+2022-11-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107508
+	* trans-array.cc (gfc_alloc_allocatable_for_assignment): Fix
+	string-length check, plug memory leak, and avoid generation of
+	effectively no-op code.
+	* trans-expr.cc (alloc_scalar_allocatable_for_assignment): Extend
+	comment; minor cleanup.
+
 2022-11-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.cc (gfc_match_omp_clauses): Permit derived types for

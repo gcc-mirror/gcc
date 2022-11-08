@@ -1,3 +1,102 @@
+2022-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/55157
+	* gcc.dg/tree-ssa/pr55157.c: New test.
+
+2022-11-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/102566
+	* g++.target/i386/pr102566-7.C
+
+2022-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/lambda-tpl1.h: Add more cases.
+	* g++.dg/abi/lambda-tpl1-17.C: Add checks.
+	* g++.dg/abi/lambda-tpl1-18.C: Likewise.
+	* g++.dg/abi/lambda-tpl1-18vs17.C: Likewise.
+
+2022-11-07  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR tree-optimization/107505
+	* gcc.dg/pr107505.c: New test.
+
+2022-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107541
+	* gcc.dg/tree-ssa/pr107541.c: New test.
+
+2022-11-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107508
+	* gfortran.dg/widechar_11.f90: New test.
+
+2022-11-07  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/sse-22.c: Fix typo in pragma GCC target.
+
+2022-11-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/107412
+	* gcc.target/powerpc/pr107412.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Adjust scan times for
+	folded LEN_LOAD.
+
+2022-11-07  Hu, Lin1  <lin1.hu@intel.com>
+
+	* g++.target/i386/mv16.C: Add grandridge.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2022-11-07  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/raoint-atomic-fetch.c: New test.
+
+2022-11-07  konglin1  <lingling.kong@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mraoint.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mraoint.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add raoint target.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp: Add check_effective_target_raoint.
+	* gcc.target/i386/rao-helper.h: New test.
+	* gcc.target/i386/raoint-1.c: Ditto.
+	* gcc.target/i386/raoint-aadd-2.c: Ditto.
+	* gcc.target/i386/raoint-aand-2.c: Ditto.
+	* gcc.target/i386/raoint-aor-2.c: Ditto.
+	* gcc.target/i386/raoint-axor-2.c: Ditto.
+	* gcc.target/i386/x86gprintrin-1.c: Ditto.
+	* gcc.target/i386/x86gprintrin-2.c: Ditto.
+	* gcc.target/i386/x86gprintrin-3.c: Ditto.
+	* gcc.target/i386/x86gprintrin-4.c: Ditto.
+	* gcc.target/i386/x86gprintrin-5.c: Ditto.
+
+2022-11-07  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.target/i386/mv16.C: Add graniterapids.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2022-11-07  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mprefetchi.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/avx-1.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-13.c: Add -mprefetchi.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/x86gprintrin-1.c: Ditto.
+	* gcc.target/i386/x86gprintrin-2.c: Ditto.
+	* gcc.target/i386/x86gprintrin-3.c: Ditto.
+	* gcc.target/i386/x86gprintrin-4.c: Ditto.
+	* gcc.target/i386/x86gprintrin-5.c: Ditto.
+	* gcc.target/i386/prefetchi-1.c: New test.
+	* gcc.target/i386/prefetchi-2.c: Ditto.
+	* gcc.target/i386/prefetchi-3.c: Ditto.
+	* gcc.target/i386/prefetchi-4.c: Ditto.
+
 2022-11-06  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/special/initpri3.C: New test.
