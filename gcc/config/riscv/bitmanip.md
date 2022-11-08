@@ -39,6 +39,23 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
+; When using strength-reduction, we will reduce a multiplication to a
+; sequence of shifts and adds.  If this is performed with 32-bit types
+; and followed by a division, the lack of w-form sh[123]add will make
+; combination impossible and lead to a slli + addw being generated.
+; Split the sequence with the knowledge that a w-form div will perform
+; implicit sign-extensions.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(sign_extend:DI (div:SI (plus:SI (subreg:SI (ashift:DI (match_operand:DI 1 "register_operand")
+							       (match_operand:QI 2 "imm123_operand")) 0)
+						    (subreg:SI (match_operand:DI 3 "register_operand") 0))
+		(subreg:SI (match_operand:DI 4 "register_operand") 0))))
+   (clobber (match_operand:DI 5 "register_operand"))]
+  "TARGET_64BIT && TARGET_ZBA"
+   [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
+    (set (match_dup 0) (sign_extend:DI (div:SI (subreg:SI (match_dup 5) 0) (subreg:SI (match_dup 4) 0))))])
+
 (define_insn "*shNadduw"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI
