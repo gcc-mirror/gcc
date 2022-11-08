@@ -1013,7 +1013,7 @@ region_model::impl_call_realloc (const call_details &cd)
     }
 }
 
-/* Handle the on_call_pre part of "strchr" and "__builtin_strchr".  */
+/* Handle the on_call_post part of "strchr" and "__builtin_strchr".  */
 
 void
 region_model::impl_call_strchr (const call_details &cd)
@@ -1075,13 +1075,13 @@ region_model::impl_call_strchr (const call_details &cd)
     bool m_found;
   };
 
-  /* Bifurcate state, creating a "not found" out-edge.  */
+  /* Body of region_model::impl_call_strchr.  */
   if (cd.get_ctxt ())
-    cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, false));
-
-  /* The "unbifurcated" state is the "found" case.  */
-  strchr_call_info found (cd, true);
-  found.update_model (this, NULL, cd.get_ctxt ());
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
+    }
 }
 
 /* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */

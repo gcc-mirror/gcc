@@ -2223,7 +2223,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  case BUILT_IN_REALLOC:
 	    return false;
 	  case BUILT_IN_STRCHR:
-	    impl_call_strchr (cd);
+	    /* Handle in "on_call_post".  */
 	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
@@ -2341,7 +2341,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
-	  impl_call_strchr (cd);
+	  /* Handle in "on_call_post".  */
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2418,6 +2418,12 @@ region_model::on_call_post (const gcall *call,
 	  impl_call_pipe (cd);
 	  return;
 	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
+	  return;
+	}
       /* Was this fndecl referenced by
 	 __attribute__((malloc(FOO)))?  */
       if (lookup_attribute ("*dealloc", DECL_ATTRIBUTES (callee_fndecl)))
@@ -2433,6 +2439,10 @@ region_model::on_call_post (const gcall *call,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    impl_call_realloc (cd);
+	    return;
+
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
 	    return;
 
 	  case BUILT_IN_VA_END:
