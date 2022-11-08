@@ -42,6 +42,7 @@
   UNSPEC_FTINTRM
   UNSPEC_FTINTRP
   UNSPEC_FSCALEB
+  UNSPEC_FLOGB
 
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
@@ -217,6 +218,7 @@
 ;; fdiv		floating point divide
 ;; frdiv	floating point reciprocal divide
 ;; fabs		floating point absolute value
+;; flogb	floating point exponent extract
 ;; fneg		floating point negation
 ;; fcmp		floating point compare
 ;; fcopysign	floating point copysign
@@ -233,8 +235,8 @@
   "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,
    prefetch,prefetchx,condmove,mgtf,mftg,const,arith,logical,
    shift,slt,signext,clz,trap,imul,idiv,move,
-   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,fneg,fcmp,fcopysign,fcvt,fscaleb,
-   fsqrt,frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
+   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,flogb,fneg,fcmp,fcopysign,fcvt,
+   fscaleb,fsqrt,frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
   (cond [(eq_attr "jirl" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
 
@@ -1037,6 +1039,35 @@
   "fscaleb.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fscaleb")
    (set_attr "mode" "<UNITMODE>")])
+
+;;
+;;  ....................
+;;
+;;	FLOATING POINT EXPONENT EXTRACT
+;;
+;;  ....................
+
+(define_insn "logb_non_negative<mode>2"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
+		     UNSPEC_FLOGB))]
+  "TARGET_HARD_FLOAT"
+  "flogb.<fmt>\t%0,%1"
+  [(set_attr "type" "flogb")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_expand "logb<mode>2"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(unspec:ANYF [(abs:ANYF (match_operand:ANYF 1 "register_operand"))]
+		     UNSPEC_FLOGB))]
+  "TARGET_HARD_FLOAT"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_abs<mode>2 (tmp, operands[1]));
+  emit_insn (gen_logb_non_negative<mode>2 (operands[0], tmp));
+  DONE;
+})
 
 ;;
 ;;  ...................
