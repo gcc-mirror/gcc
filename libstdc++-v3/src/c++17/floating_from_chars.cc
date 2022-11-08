@@ -632,7 +632,7 @@ namespace
 	  {
 #ifndef _GLIBCXX_HAVE_FLOAT128_MATH
 	    if (&__strtof128 == nullptr)
-	      tmpval = _Float128(std::strtold(str, &endptr);
+	      tmpval = _Float128(std::strtold(str, &endptr));
 	    else
 #endif
 	      tmpval = __strtof128(str, &endptr);
