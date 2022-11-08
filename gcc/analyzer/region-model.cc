@@ -1764,12 +1764,13 @@ public:
 
 /* Check whether an access is past the end of the BASE_REG.  */
 
-void region_model::check_symbolic_bounds (const region *base_reg,
-					  const svalue *sym_byte_offset,
-					  const svalue *num_bytes_sval,
-					  const svalue *capacity,
-					  enum access_direction dir,
-					  region_model_context *ctxt) const
+void
+region_model::check_symbolic_bounds (const region *base_reg,
+				     const svalue *sym_byte_offset,
+				     const svalue *num_bytes_sval,
+				     const svalue *capacity,
+				     enum access_direction dir,
+				     region_model_context *ctxt) const
 {
   gcc_assert (ctxt);
 
@@ -1777,7 +1778,7 @@ void region_model::check_symbolic_bounds (const region *base_reg,
     = m_mgr->get_or_create_binop (num_bytes_sval->get_type (), PLUS_EXPR,
 				  sym_byte_offset, num_bytes_sval);
 
-  if (eval_condition_without_cm (next_byte, GT_EXPR, capacity).is_true ())
+  if (eval_condition (next_byte, GT_EXPR, capacity).is_true ())
     {
       tree diag_arg = get_representative_tree (base_reg);
       tree offset_tree = get_representative_tree (sym_byte_offset);
@@ -4162,42 +4163,16 @@ region_model::eval_condition (const svalue *lhs,
 			       enum tree_code op,
 			       const svalue *rhs) const
 {
-  /* For now, make no attempt to capture constraints on floating-point
-     values.  */
-  if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
-      || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
-    return tristate::unknown ();
-
-  tristate ts = eval_condition_without_cm (lhs, op, rhs);
-  if (ts.is_known ())
-    return ts;
-
-  /* Otherwise, try constraints.  */
-  return m_constraints->eval_condition (lhs, op, rhs);
-}
-
-/* Determine what is known about the condition "LHS_SVAL OP RHS_SVAL" within
-   this model, without resorting to the constraint_manager.
-
-   This is exposed so that impl_region_model_context::on_state_leak can
-   check for equality part-way through region_model::purge_unused_svalues
-   without risking creating new ECs.  */
-
-tristate
-region_model::eval_condition_without_cm (const svalue *lhs,
-					  enum tree_code op,
-					  const svalue *rhs) const
-{
   gcc_assert (lhs);
   gcc_assert (rhs);
 
-  /* See what we know based on the values.  */
-
   /* For now, make no attempt to capture constraints on floating-point
      values.  */
   if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
       || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
     return tristate::unknown ();
+
+  /* See what we know based on the values.  */
 
   /* Unwrap any unmergeable values.  */
   lhs = lhs->unwrap_any_unmergeable ();
@@ -4292,9 +4267,7 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	       shouldn't warn for.  */
 	    if (binop->get_op () == POINTER_PLUS_EXPR)
 	      {
-		tristate lhs_ts
-		  = eval_condition_without_cm (binop->get_arg0 (),
-					       op, rhs);
+		tristate lhs_ts = eval_condition (binop->get_arg0 (), op, rhs);
 		if (lhs_ts.is_known ())
 		  return lhs_ts;
 	      }
@@ -4327,7 +4300,7 @@ region_model::eval_condition_without_cm (const svalue *lhs,
       }
 
   /* Handle comparisons between two svalues with more than one operand.  */
-	if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
+  if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
     {
       switch (op)
 	{
@@ -4369,10 +4342,14 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	}
     }
 
-  return tristate::TS_UNKNOWN;
+  /* Otherwise, try constraints.
+     Cast to const to ensure we don't change the constraint_manager as we
+     do this (e.g. by creating equivalence classes).  */
+  const constraint_manager *constraints = m_constraints;
+  return constraints->eval_condition (lhs, op, rhs);
 }
 
-/* Subroutine of region_model::eval_condition_without_cm, for rejecting
+/* Subroutine of region_model::eval_condition, for rejecting
    equality of INIT_VAL(PARM) with &LOCAL.  */
 
 tristate
@@ -4424,18 +4401,18 @@ region_model::symbolic_greater_than (const binop_svalue *bin_a,
       /* Eliminate the right-hand side of both svalues.  */
       if (const binop_svalue *bin_b = dyn_cast <const binop_svalue *> (b))
 	if (bin_a->get_op () == bin_b->get_op ()
-	    && eval_condition_without_cm (bin_a->get_arg1 (),
-					  GT_EXPR,
-					  bin_b->get_arg1 ()).is_true ()
-	    && eval_condition_without_cm (bin_a->get_arg0 (),
-					  GE_EXPR,
-					  bin_b->get_arg0 ()).is_true ())
+	    && eval_condition (bin_a->get_arg1 (),
+			       GT_EXPR,
+			       bin_b->get_arg1 ()).is_true ()
+	    && eval_condition (bin_a->get_arg0 (),
+			       GE_EXPR,
+			       bin_b->get_arg0 ()).is_true ())
 	  return tristate (tristate::TS_TRUE);
 
       /* Otherwise, try to remove a positive offset or factor from BIN_A.  */
       if (is_positive_svalue (bin_a->get_arg1 ())
-	  && eval_condition_without_cm (bin_a->get_arg0 (),
-					GE_EXPR, b).is_true ())
+	  && eval_condition (bin_a->get_arg0 (),
+			     GE_EXPR, b).is_true ())
 	  return tristate (tristate::TS_TRUE);
     }
   return tristate::unknown ();

@@ -450,9 +450,6 @@ class region_model
   tristate eval_condition (const svalue *lhs,
 			   enum tree_code op,
 			   const svalue *rhs) const;
-  tristate eval_condition_without_cm (const svalue *lhs,
-				      enum tree_code op,
-				      const svalue *rhs) const;
   tristate compare_initial_and_pointer (const initial_svalue *init,
 					const region_svalue *ptr) const;
   tristate symbolic_greater_than (const binop_svalue *a,

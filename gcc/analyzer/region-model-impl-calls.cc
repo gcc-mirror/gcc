@@ -498,7 +498,7 @@ region_model::impl_call_fread (const call_details &cd)
 
    This has to be done here so that the sm-handling can use the fact
    that they point to the same region to establish that they are equal
-   (in region_model::eval_condition_without_cm), and thus transition
+   (in region_model::eval_condition), and thus transition
    all pointers to the region to the "freed" state together, regardless
    of casts.  */
 
