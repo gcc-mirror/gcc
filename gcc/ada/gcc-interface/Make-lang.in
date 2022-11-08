@@ -837,16 +837,13 @@ ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
 $(DESTDIR)$(infodir)/gnat_ugn.info: doc/gnat_ugn/info/texinfo/gnat_ugn.info installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
+	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; fi
 
 $(DESTDIR)$(infodir)/gnat_rm.info: doc/gnat_rm/info/texinfo/gnat_rm.info installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
+	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; fi
 
 $(DESTDIR)$(infodir)/gnat-style.info: doc/gnat-style/info/texinfo/gnat-style.info installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
+	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; fi
 
 ADA_PDFFILES = doc/gnat_ugn/pdf/latex/gnat_ugn.pdf\
 	       doc/gnat_rm/pdf/latex/gnat_rm.pdf \
