@@ -413,6 +413,20 @@ region_model::impl_call_calloc (const call_details &cd)
     }
 }
 
+/* Handle the on_call_pre part of "__errno_location".  */
+
+void
+region_model::impl_call_errno_location (const call_details &cd)
+{
+  if (cd.get_lhs_region ())
+    {
+      const region *errno_reg = m_mgr->get_errno_region ();
+      const svalue *errno_ptr = m_mgr->get_ptr_svalue (cd.get_lhs_type (),
+						       errno_reg);
+      cd.maybe_set_lhs (errno_ptr);
+    }
+}
+
 /* Handle the on_call_pre part of "error" and "error_at_line" from
    GNU's non-standard <error.h>.
    MIN_ARGS identifies the minimum number of expected arguments
