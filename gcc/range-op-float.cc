@@ -1884,6 +1884,29 @@ class foperator_plus : public range_operator_float
 } fop_plus;
 
 
+class foperator_minus : public range_operator_float
+{
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub) const final override
+  {
+    frange_arithmetic (MINUS_EXPR, type, lb, lh_lb, rh_ub, dconstninf);
+    frange_arithmetic (MINUS_EXPR, type, ub, lh_ub, rh_lb, dconstinf);
+
+    // [+INF] - [+INF] = NAN
+    if (real_isinf (&lh_ub, false) && real_isinf (&rh_ub, false))
+      maybe_nan = true;
+    // [-INF] - [-INF] = NAN
+    else if (real_isinf (&lh_lb, true) && real_isinf (&rh_lb, true))
+      maybe_nan = true;
+    else
+      maybe_nan = false;
+  }
+} fop_minus;
+
 // Instantiate a range_op_table for floating point operations.
 static floating_op_table global_floating_table;
 
@@ -1917,6 +1940,7 @@ floating_op_table::floating_op_table ()
   set (ABS_EXPR, fop_abs);
   set (NEGATE_EXPR, fop_negate);
   set (PLUS_EXPR, fop_plus);
+  set (MINUS_EXPR, fop_minus);
 }
 
 // Return a pointer to the range_operator_float instance, if there is
