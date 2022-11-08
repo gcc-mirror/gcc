@@ -117,6 +117,13 @@ public:
 			   const frange &lh,
 			   const frange &rh,
 			   relation_trio = TRIO_VARYING) const;
+  virtual void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan,
+			tree type,
+			const REAL_VALUE_TYPE &lh_lb,
+			const REAL_VALUE_TYPE &lh_ub,
+			const REAL_VALUE_TYPE &rh_lb,
+			const REAL_VALUE_TYPE &rh_ub) const;
   // Unary operations have the range of the LHS as op2.
   virtual bool fold_range (irange &r, tree type,
 			   const frange &lh,

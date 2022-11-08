@@ -49,13 +49,66 @@ along with GCC; see the file COPYING3.  If not see
 // Default definitions for floating point operators.
 
 bool
-range_operator_float::fold_range (frange &r ATTRIBUTE_UNUSED,
-				  tree type ATTRIBUTE_UNUSED,
-				  const frange &lh ATTRIBUTE_UNUSED,
-				  const frange &rh ATTRIBUTE_UNUSED,
+range_operator_float::fold_range (frange &r, tree type,
+				  const frange &op1, const frange &op2,
 				  relation_trio) const
 {
-  return false;
+  if (empty_range_varying (r, type, op1, op2))
+    return true;
+  if (op1.known_isnan () || op2.known_isnan ())
+    {
+      r.set_nan (op1.type ());
+      return true;
+    }
+
+  REAL_VALUE_TYPE lb, ub;
+  bool maybe_nan;
+  rv_fold (lb, ub, maybe_nan, type,
+	   op1.lower_bound (), op1.upper_bound (),
+	   op2.lower_bound (), op2.upper_bound ());
+
+  // Handle possible NANs by saturating to the appropriate INF if only
+  // one end is a NAN.  If both ends are a NAN, just return a NAN.
+  bool lb_nan = real_isnan (&lb);
+  bool ub_nan = real_isnan (&ub);
+  if (lb_nan && ub_nan)
+    {
+      r.set_nan (type);
+      return true;
+    }
+  if (lb_nan)
+    lb = dconstninf;
+  else if (ub_nan)
+    ub = dconstinf;
+
+  r.set (type, lb, ub);
+
+  if (lb_nan || ub_nan || maybe_nan)
+    // Keep the default NAN (with a varying sign) set by the setter.
+    ;
+  else if (!op1.maybe_isnan () && !op2.maybe_isnan ())
+    r.clear_nan ();
+
+  return true;
+}
+
+// For a given operation, fold two sets of ranges into [lb, ub].
+// MAYBE_NAN is set to TRUE if, in addition to any result in LB or
+// UB, the final range has the possiblity of a NAN.
+void
+range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
+			       REAL_VALUE_TYPE &ub,
+			       bool &maybe_nan,
+			       tree type ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &lh_lb ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &lh_ub ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &rh_lb ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &rh_ub ATTRIBUTE_UNUSED)
+  const
+{
+  lb = dconstninf;
+  ub = dconstinf;
+  maybe_nan = true;
 }
 
 bool
@@ -190,19 +243,6 @@ frelop_early_resolve (irange &r, tree type,
   // are free of NANs, or when -ffinite-math-only.
   return (!maybe_isnan (op1, op2)
 	  && relop_early_resolve (r, type, op1, op2, rel, my_rel));
-}
-
-// If either operand is a NAN, set R to NAN and return TRUE.
-
-inline bool
-propagate_nans (frange &r, const frange &op1, const frange &op2)
-{
-  if (op1.known_isnan () || op2.known_isnan ())
-    {
-      r.set_nan (op1.type ());
-      return true;
-    }
-  return false;
 }
 
 // Set VALUE to its next real value, or INF if the operation overflows.
@@ -1822,69 +1862,27 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
 
 class foperator_plus : public range_operator_float
 {
-  using range_operator_float::fold_range;
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub) const final override
+  {
+    frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
+    frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
 
-public:
-  bool fold_range (frange &r, tree type,
-		   const frange &lh,
-		   const frange &rh,
-		   relation_trio = TRIO_VARYING) const final override;
+    // [-INF] + [+INF] = NAN
+    if (real_isinf (&lh_lb, true) && real_isinf (&rh_ub, false))
+      maybe_nan = true;
+    // [+INF] + [-INF] = NAN
+    else if (real_isinf (&lh_ub, false) && real_isinf (&rh_lb, true))
+      maybe_nan = true;
+    else
+      maybe_nan = false;
+  }
 } fop_plus;
 
-bool
-foperator_plus::fold_range (frange &r, tree type,
-			    const frange &op1, const frange &op2,
-			    relation_trio) const
-{
-  if (empty_range_varying (r, type, op1, op2))
-    return true;
-  if (propagate_nans (r, op1, op2))
-    return true;
-
-  REAL_VALUE_TYPE lb, ub;
-  frange_arithmetic (PLUS_EXPR, type, lb,
-		     op1.lower_bound (), op2.lower_bound (), dconstninf);
-  frange_arithmetic (PLUS_EXPR, type, ub,
-		     op1.upper_bound (), op2.upper_bound (), dconstinf);
-
-  // Handle possible NANs by saturating to the appropriate INF if only
-  // one end is a NAN.  If both ends are a NAN, just return a NAN.
-  bool lb_nan = real_isnan (&lb);
-  bool ub_nan = real_isnan (&ub);
-  if (lb_nan && ub_nan)
-    {
-      r.set_nan (type);
-      return true;
-    }
-  if (lb_nan)
-    lb = dconstninf;
-  else if (ub_nan)
-    ub = dconstinf;
-
-  r.set (type, lb, ub);
-
-  // Some combinations can yield a NAN even if no operands have the
-  // possibility of a NAN.
-  bool maybe_nan;
-  // [-INF] + [+INF] = NAN
-  if (real_isinf (&op1.lower_bound (), true)
-      && real_isinf (&op2.upper_bound (), false))
-    maybe_nan = true;
-  // [+INF] + [-INF] = NAN
-  else if (real_isinf (&op1.upper_bound (), false)
-	   && real_isinf (&op2.lower_bound (), true))
-    maybe_nan = true;
-  else
-    maybe_nan = false;
-
-  if (lb_nan || ub_nan || maybe_nan)
-    // Keep the default NAN (with a varying sign) set by the setter.
-    ;
-  else if (!op1.maybe_isnan () && !op2.maybe_isnan ())
-    r.clear_nan ();
-
-  return true;
-}
 
 // Instantiate a range_op_table for floating point operations.
 static floating_op_table global_floating_table;
