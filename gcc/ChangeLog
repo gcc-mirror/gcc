@@ -1,3 +1,10 @@
+2022-11-07  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Move sapphirerapids out of AVX512_VP2INTERSECT.
+	* config/i386/i386.h: Remove AVX512_VP2INTERSECT from PTA_SAPPHIRERAPIDS
+	* doc/invoke.texi: Remove AVX512_VP2INTERSECT from SAPPHIRERAPIDS
+
 2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
