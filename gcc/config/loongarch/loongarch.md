@@ -41,6 +41,7 @@
   UNSPEC_FTINT
   UNSPEC_FTINTRM
   UNSPEC_FTINTRP
+  UNSPEC_FSCALEB
 
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
@@ -220,6 +221,7 @@
 ;; fcmp		floating point compare
 ;; fcopysign	floating point copysign
 ;; fcvt		floating point convert
+;; fscaleb	floating point scale
 ;; fsqrt	floating point square root
 ;; frsqrt       floating point reciprocal square root
 ;; multi	multiword sequence (or user asm statements)
@@ -231,8 +233,8 @@
   "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,
    prefetch,prefetchx,condmove,mgtf,mftg,const,arith,logical,
    shift,slt,signext,clz,trap,imul,idiv,move,
-   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,fneg,fcmp,fcopysign,fcvt,fsqrt,
-   frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
+   fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,fneg,fcmp,fcopysign,fcvt,fscaleb,
+   fsqrt,frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
   (cond [(eq_attr "jirl" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
 
@@ -417,6 +419,10 @@
 ;; This attribute gives the integer mode that has half the size of
 ;; the controlling mode.
 (define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
+
+;; This attribute gives the integer mode that has the same size of a
+;; floating-point mode.
+(define_mode_attr IMODE [(SF "SI") (DF "DI")])
 
 ;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
@@ -1014,7 +1020,23 @@
   "fcopysign.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fcopysign")
    (set_attr "mode" "<UNITMODE>")])
+
+;;
+;;  ....................
+;;
+;;	FLOATING POINT SCALE
+;;
+;;  ....................
 
+(define_insn "ldexp<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF    1 "register_operand" "f")
+		      (match_operand:<IMODE> 2 "register_operand" "f")]
+		     UNSPEC_FSCALEB))]
+  "TARGET_HARD_FLOAT"
+  "fscaleb.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fscaleb")
+   (set_attr "mode" "<UNITMODE>")])
 
 ;;
 ;;  ...................
