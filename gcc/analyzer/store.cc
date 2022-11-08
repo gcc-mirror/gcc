@@ -2036,6 +2036,17 @@ binding_cluster::on_asm (const gasm *stmt,
   m_touched = true;
 }
 
+/* Return true if this cluster has escaped.  */
+
+bool
+binding_cluster::escaped_p () const
+{
+  /* Consider the "errno" region to always have escaped.  */
+  if (m_base_region->get_kind () == RK_ERRNO)
+    return true;
+  return m_escaped;
+}
+
 /* Return true if this binding_cluster has no information
    i.e. if there are no bindings, and it hasn't been marked as having
    escaped, or touched symbolically.  */
@@ -2946,6 +2957,10 @@ store::escaped_p (const region *base_reg) const
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
 
+  /* "errno" can always be modified by external code.  */
+  if (base_reg->get_kind () == RK_ERRNO)
+    return true;
+
   if (binding_cluster **cluster_slot
       = const_cast <cluster_map_t &>(m_cluster_map).get (base_reg))
     return (*cluster_slot)->escaped_p ();
@@ -3192,6 +3207,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
     case RK_CODE:
     case RK_STACK:
     case RK_HEAP:
+    case RK_THREAD_LOCAL:
     case RK_ROOT:
     /* Child regions.  */
     case RK_FIELD:
@@ -3242,6 +3258,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 
     case RK_HEAP_ALLOCATED:
     case RK_DECL:
+    case RK_ERRNO:
       {
 	const region *caller_dest_reg
 	  = r.convert_region_from_summary (summary_base_reg);

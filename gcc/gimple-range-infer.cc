@@ -252,6 +252,17 @@ infer_range_manager::get_nonzero (tree name)
   return *(m_nonzero[v]);
 }
 
+// Return TRUE if there are any range inferences in block BB.
+
+bool
+infer_range_manager::has_range_p (basic_block bb)
+{
+  if (bb->index >= (int)m_on_exit.length ())
+    return false;
+  bitmap b = m_on_exit[bb->index].m_names;
+  return b && !bitmap_empty_p (b);
+}
+
 // Return TRUE if NAME has a range inference in block BB.
 
 bool

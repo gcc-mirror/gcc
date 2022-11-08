@@ -791,28 +791,7 @@
 (define_code_iterator any_plus_logic [and ior xor plus])
 (define_code_attr plus_logic [(and "and") (ior "or") (xor "xor") (plus "add")])
 
-(define_expand "atomic_<plus_logic><mode>"
-  [(match_operand:SWI 0 "memory_operand")
-   (any_plus_logic:SWI (match_dup 0)
-                      (match_operand:SWI 1 "nonmemory_operand"))
-   (match_operand:SI 2 "const_int_operand")]
-  ""
-{
-  if (flag_prefer_remote_atomic
-      && TARGET_RAOINT && operands[2] == const0_rtx
-      && (<MODE>mode == SImode || <MODE>mode == DImode))
-  {
-    if (CONST_INT_P (operands[1]))
-      operands[1] = force_reg (<MODE>mode, operands[1]);
-    emit_insn (maybe_gen_rao_a (<CODE>, <MODE>mode, operands[0], operands[1]));
-  }
-  else
-    emit_insn (gen_atomic_<plus_logic><mode>_1 (operands[0], operands[1],
-						operands[2]));
-  DONE;
-})
-
-(define_insn "@rao_a<plus_logic><mode>"
+(define_insn "rao_a<plus_logic><mode>"
   [(set (match_operand:SWI48 0 "memory_operand" "+m")
        (unspec_volatile:SWI48
          [(any_plus_logic:SWI48 (match_dup 0)
@@ -822,7 +801,7 @@
   "TARGET_RAOINT"
   "a<plus_logic>\t{%1, %0|%0, %1}")
 
-(define_insn "atomic_add<mode>_1"
+(define_insn "atomic_add<mode>"
   [(set (match_operand:SWI 0 "memory_operand" "+m")
 	(unspec_volatile:SWI
 	  [(plus:SWI (match_dup 0)
@@ -876,7 +855,7 @@
   return "lock{%;} %K2sub{<imodesuffix>}\t{%1, %0|%0, %1}";
 })
 
-(define_insn "atomic_<logic><mode>_1"
+(define_insn "atomic_<logic><mode>"
   [(set (match_operand:SWI 0 "memory_operand" "+m")
 	(unspec_volatile:SWI
 	  [(any_logic:SWI (match_dup 0)

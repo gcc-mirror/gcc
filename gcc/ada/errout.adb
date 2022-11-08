@@ -53,6 +53,8 @@ with Stand;          use Stand;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
+with Warnsw; pragma Unreferenced (Warnsw);
+--  Will be referenced when various flags are moved to Warnsw.
 
 package body Errout is
 

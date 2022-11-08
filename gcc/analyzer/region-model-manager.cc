@@ -74,6 +74,8 @@ region_model_manager::region_model_manager (logger *logger)
   m_fndecls_map (), m_labels_map (),
   m_globals_region (alloc_region_id (), &m_root_region),
   m_globals_map (),
+  m_thread_local_region (alloc_region_id (), &m_root_region),
+  m_errno_region (alloc_region_id (), &m_thread_local_region),
   m_store_mgr (this),
   m_range_mgr (new bounded_ranges_manager ()),
   m_known_fn_mgr (logger)

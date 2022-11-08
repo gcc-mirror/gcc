@@ -4501,6 +4501,15 @@ public:
 
   bool fold_stmt (gimple_stmt_iterator *gsi) override
   {
+    gimple *s = gsi_stmt (*gsi);
+    // If this is a block ending condition, and there are inferred ranges,
+    // reparse the block to see if there are any transitive inferred ranges.
+    if (is_a<gcond *> (s))
+      {
+	basic_block bb = gimple_bb (s);
+	if (bb && s == gimple_outgoing_range_stmt_p (bb))
+	  m_ranger->register_transitive_inferred_ranges (bb);
+      }
     bool ret = m_simplifier.simplify (gsi);
     if (!ret)
       ret = m_ranger->fold_stmt (gsi, follow_single_use_edges);

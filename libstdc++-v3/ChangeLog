@@ -1,3 +1,73 @@
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107562
+	* src/c++17/floating_from_chars.cc (__strtof128): Put __asm before
+	__attribute__.
+	* src/c++17/floating_to_chars.cc (__strfromf128): Likewise.
+
+2022-11-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (as_rvalue_view): Define.
+	(enable_borrowed_range<as_rvalue_view>): Define.
+	(views::__detail::__can_as_rvalue_view): Define.
+	(views::_AsRvalue, views::as_rvalue): Define.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: New test.
+
+2022-11-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__maybe_const_t): New alias for
+	__detail::__maybe_const_t.
+	(__detail::__cartesian_product_is_random_access): Define.
+	(__detail::__cartesian_product_common_arg): Define.
+	(__detail::__cartesian_product_is_bidirectional): Define.
+	(__detail::__cartesian_product_is_common): Define.
+	(__detail::__cartesian_product_is_sized): Define.
+	(__detail::__cartesian_is_sized_sentinel): Define.
+	(__detail::__cartesian_common_arg_end): Define.
+	(cartesian_product_view): Define.
+	(cartesian_product_view::_Iterator): Define.
+	(views::__detail::__can_cartesian_product_view): Define.
+	(views::_CartesianProduct, views::cartesian_product): Define.
+	* testsuite/std/ranges/cartesian_product/1.cc: New test.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107468
+	* src/c++17/fast_float/MERGE: Adjust for merge from upstream.
+	* src/c++17/fast_float/LOCAL_PATCHES: Remove commits that were
+	upstreamed.
+	* src/c++17/fast_float/README.md: Merge from fast_float
+	662497742fea7055f0e0ee27e5a7ddc382c2c38e commit.
+	* src/c++17/fast_float/fast_float.h: Likewise.
+	* testsuite/20_util/from_chars/pr107468.cc: New test.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (from_chars, to_chars): Add _Float128
+	overfloads if _GLIBCXX_HAVE_FLOAT128_MATH is defined.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.31): Export
+	_ZSt8to_charsPcS_DF128_, _ZSt8to_charsPcS_DF128_St12chars_format,
+	_ZSt8to_charsPcS_DF128_St12chars_formati and
+	_ZSt10from_charsPKcS0_RDF128_St12chars_format.
+	* src/c++17/floating_from_chars.cc (USE_STRTOF128_FOR_FROM_CHARS):
+	Define if needed.
+	(__strtof128): Declare.
+	(from_chars_impl): Handle _Float128.
+	(from_chars): New _Float128 overload if USE_STRTOF128_FOR_FROM_CHARS
+	is define.
+	* src/c++17/floating_to_chars.cc (__strfromf128): Declare.
+	(FLOAT128_TO_CHARS): Define even when _Float128 is supported and
+	wider than long double.
+	(F128_type): Use _Float128 for that case.
+	(floating_type_traits): Specialize for F128_type rather than
+	__float128.
+	(sprintf_ld): Add length argument.  Handle _Float128.
+	(__floating_to_chars_shortest, __floating_to_chars_precision):
+	Pass length to sprintf_ld.
+	(to_chars): Add _Float128 overloads for the F128_type being
+	_Float128 cases.
+	* testsuite/20_util/to_chars/float128_c++23.cc: New test.
+
 2022-11-06  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/atomic_wait.h (_detail::__platform_wait_alignment):

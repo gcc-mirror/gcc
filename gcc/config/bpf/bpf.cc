@@ -1731,7 +1731,6 @@ handle_attr_preserve (function *fn)
 {
   basic_block bb;
   rtx_insn *insn;
-  rtx_code_label *label;
   FOR_EACH_BB_FN (bb, fn)
     {
       FOR_BB_INSNS (bb, insn)
@@ -1762,28 +1761,7 @@ handle_attr_preserve (function *fn)
 		    }
 
 		  if (is_attr_preserve_access (expr))
-		    {
-		      auto_vec<unsigned int, 16> accessors;
-		      tree container = bpf_core_compute (expr, &accessors);
-		      if (accessors.length () < 1)
-			continue;
-		      accessors.reverse ();
-
-		      container = TREE_TYPE (container);
-		      const char * section_name;
-		      if (DECL_SECTION_NAME (fn->decl))
-			section_name = DECL_SECTION_NAME (fn->decl);
-		      else
-			section_name = ".text";
-
-		      label = gen_label_rtx ();
-		      LABEL_PRESERVE_P (label) = 1;
-		      emit_label (label);
-
-		      /* Add the CO-RE relocation information to the BTF container.  */
-		      bpf_core_reloc_add (container, section_name, &accessors, label,
-					  BPF_RELO_FIELD_BYTE_OFFSET);
-		    }
+		    maybe_make_core_relo (expr, BPF_RELO_FIELD_BYTE_OFFSET);
 		}
 	    }
 	  rtx_insn *seq = get_insns ();

@@ -1,3 +1,222 @@
+2022-11-07  Cedric Landet  <landet@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Mention the needed
+	-no-pie for windows to use gprof.
+	* gnat_ugn.texi: Regenerate.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref.adb (Hash): Tune hash function.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Non_Significant_Pragma_Reference): Detect
+	references with aggregates; only assign local variables Id and C
+	when necessary.
+
+2022-11-07  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb
+	(Component_Equality, Expand_Array_Equality)
+	(Expand_Record_Equality): Use named notation.
+
+2022-11-07  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb
+	(Expand_Array_Equality): Do not test Ltyp = Rtyp here, because
+	that is necessarily true. Move assertion thereof to more general
+	place.
+	(Expand_Composite_Equality): Pass in Outer_Type, for use in
+	warnings. Rename Typ to be Comp_Type, to more clearly distinguish
+	it from Outer_Type. Print warning when appropriate.
+	* exp_ch4.ads: Minor comment fix.
+	* errout.ads: There is no such pragma as Warning_As_Pragma --
+	Warning_As_Error must have been intended. Improve comment for ?x?.
+	* exp_ch3.adb
+	(Build_Untagged_Equality): Update comment to be accurate for more
+	recent versions of Ada.
+	* sem_case.adb
+	(Choice_Analysis): Declare user-defined "=" functions as abstract.
+	* sem_util.ads
+	(Is_Bounded_String): Give RM reference in comment.
+	* warnsw.ads, warnsw.adb
+	(Warn_On_Ignored_Equality): Implement new warning switch -gnatw_q.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document new warning switch.
+	* gnat_ugn.texi: Regenerate.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aux.ads (Is_Body): Annotate with Inline.
+	* sem_util.ads (Is_Body_Or_Package_Declaration): Likewise.
+
+2022-11-07  Bob Duff  <duff@adacore.com>
+
+	* freeze.adb
+	(Build_Inherited_Condition_Pragmas): Do nothing if A_Post is
+	empty.
+
+2022-11-07  Quentin Ochem  <ochem@adacore.com>
+	    Steve Baird  <baird@adacore.com>
+
+	* bindgen.adb: fixed the way the device init and final symbols are
+	computed, re-using the normal way these symbols would be computed
+	with a __device_ prefix. Also fixed the "is null;" procedure on
+	the host side which are not Ada 95, replaced with a procedure
+	raising an exception as it should never be called. Remove the
+	unused function Device_Ada_Final_Link_Name.
+
+2022-11-07  Steve Baird  <baird@adacore.com>
+
+	* opt.ads: Declare new string pointer variable, CUDA_Device_Library_Name.
+	Modify comments for existing Boolean variable Enable_CUDA_Device_Expansion.
+	* switch-b.adb: When "-d_c" switch is encountered, check that the next
+	character is an "'='; use the remaining characters to initialize
+	Opt.CUDA_Device_Library_Name.
+	* bindgen.adb: Remove (for now) most support for host-side invocation of
+	device-side finalization. Make use of the new CUDA_Device_Library_Name
+	in determining the string used to refer (on the host side) to the
+	device-side initialization procedure. Declare the placeholder routine
+	that is named in the CUDA_Execute pragma (and the CUDA_Register_Function
+	call) as an exported null procedure, rather than as an imported procedure.
+	It is not clear whether it is really necessary to specify the link-name
+	for this should-never-be-called subprogram on the host side, but for now it
+	shouldn't hurt to do so.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Expand_Protected_Subprogram_Call): Examine scope
+	tree and not the scope stack.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* mdll.ads (Build_Import_Library): Fix grammar in comment.
+	* mdll.adb (Build_Import_Library): Directly execute code of a
+	nested routine; rename No_Lib_Prefix to Strip_Lib_Prefix.
+
+2022-11-07  Bob Duff  <duff@adacore.com>
+
+	* sem_warn.adb
+	(Check_For_Warnings): Remove unnecessary exception handler.
+	(Warn_On_Known_Condition): Suppress warning when we detect a True
+	or False that has been turned into a more complex expression
+	because True is represented as "nonzero". (Note that the complex
+	expression will subsequently be constant-folded to a Boolean True
+	or False). Also simplify to always print "condition is always ..."
+	instead of special-casing object names. The special case was
+	unhelpful, and indeed wrong when the expression is a literal.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Safe_To_Capture_In_Parameter_Value): Remove.
+	* sem_util.adb (Safe_To_Capture_Value): Stop search at the current
+	body.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_In_Out): Remove No_ prefix; flip return
+	values between True and False; adapt caller.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Add_Call): Just look at Instantiation_Depth.
+	* sem_ch3.adb (Derive_Subprograms): Likewise.
+	* sem_warn.adb (Check_References): Remove redundant filtering with
+	Instantiation_Depth that follows filtering with
+	Instantiation_Location.
+	* sinput.adb (Instantiation_Depth): Reuse Instantiation_Location.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb
+	(No_Warn_On_In_Out): For subprograms we can simply call
+	Warnings_Off.
+	(Output_Non_Modified_In_Out_Warnings): Remove repeated
+	suppression.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Array_Aggregate): Reject boxes in
+	delta array aggregates.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Enclosing_Declaration_Or_Statement): Moved to
+	Sem_Util.
+	* sem_util.ads (Enclosing_Declaration_Or_Statement): Moved from
+	Sem_Res.
+	* sem_util.adb (Enclosing_Declaration_Or_Statement): Likewise.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve): Only call Comes_From_Predefined_Lib_Unit
+	when its result might be needed.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Actuals): Remove redundant parens;
+	refactor an excessive if-statement; remove repeated call to Node.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Establish_Actual_Mapping_For_Inlined_Call): Move
+	comment next to a condition that it describes.
+
+2022-11-07  Steve Baird  <baird@adacore.com>
+
+	* exp_put_image.adb
+	(Image_Should_Call_Put_Image): Correctly handle the case of an
+	inherited Put_Image aspect specification for a scalar type.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/s-interr.adb: Tune whitespace.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/s-interr.adb: Reorder context items and pragmas.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb
+	(Expand_Modular_Addition): Rewrite using Make_XXX calls.
+	(Expand_Modular_Op): Likewise.
+	(Expand_Modular_Subtraction): Likewise.
+	* exp_imgv.adb
+	(Expand_User_Defined_Enumeration_Image): Likewise.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Strict): Rewrite using a
+	newly created operator node.
+	* exp_ch4.adb (Expand_Array_Comparison): Likewise.
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Rewriting actual parameter
+	using its own location and not the location of the subprogram
+	call.
+	* sem_warn.adb (Check_References): Looping with Original_Node is
+	no longer needed.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Is_In_Context_Clause): Rewrite without negations
+	and inequalities.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma [Pragma_Obsolescent]): Reject
+	misplaced pragma.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Output_Obsolescent_Entity_Warnings): Tag warnings
+	about obsolescent functions just like we tag similar warnings for
+	packages and procedures.
+
+2022-11-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Remove useless
+	skipping for attribute Input.
+
 2022-11-04  Justin Squirek  <squirek@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): Skip operand

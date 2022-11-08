@@ -1400,7 +1400,7 @@ See RS/6000 and PowerPC Options.
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni@gol
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16 @gol
--mprefetchi -mraoint -mprefer-remote-atomic@gol
+-mprefetchi -mraoint @gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mkl -mwidekl @gol
@@ -33633,10 +33633,6 @@ Relax cmpxchg loop by emitting an early load and compare before cmpxchg,
 execute pause if load value is not expected. This reduces excessive
 cachline bouncing when and works for all atomic logic fetch builtins
 that generates compare and swap loop.
-
-@item -mprefer-remote-atomic
-@opindex mprefer-remote-atomic
-Prefer use remote atomic insn for atomic operations.
 
 @item -mindirect-branch=@var{choice}
 @opindex mindirect-branch

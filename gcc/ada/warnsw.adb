@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
 with Output;   use Output;
 

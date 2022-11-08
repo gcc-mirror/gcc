@@ -12,4 +12,4 @@ struct A {
 
 A<const int> a;
 A<int> b;
-auto c = (a == b);
+auto c = (a == b); // { dg-error "ambiguous, even though the second is reversed" "" { target c++20 } }

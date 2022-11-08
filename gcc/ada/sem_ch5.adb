@@ -2191,7 +2191,7 @@ package body Sem_Ch5 is
             if Is_Array_Type (Typ)
               or else Is_Reversible_Iterator (Typ)
               or else
-                (Present (Find_Aspect (Typ, Aspect_Iterable))
+                (Has_Aspect (Typ, Aspect_Iterable)
                   and then
                     Present
                       (Get_Iterable_Type_Primitive (Typ, Name_Previous)))

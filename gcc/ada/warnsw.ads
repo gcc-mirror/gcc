@@ -38,6 +38,15 @@ package Warnsw is
    --  here as time goes by. And in fact a really nice idea would be to put
    --  them all in a Warn_Record so that they would be easy to save/restore.
 
+   Warning_Doc_Switch : Boolean := True;
+   --  If this is set True, then the ??/?*?/?$?/?x?/?.x?/?_x? insertion
+   --  sequences in error messages generate appropriate tags for the output
+   --  error messages. If this switch is False, then these sequences are still
+   --  recognized (for the purposes of implementing the pattern matching in
+   --  pragmas Warnings (Off,..) and Warning_As_Error(...) but do not result
+   --  in adding the error message tag. The -gnatw.d switch sets this flag
+   --  True, -gnatw.D sets this flag False.
+
    Warn_On_Anonymous_Allocators : Boolean := False;
    --  Warn when allocators for anonymous access types are present, which,
    --  although not illegal in Ada, may be confusing to users due to how
@@ -71,7 +80,9 @@ package Warnsw is
    --  efficiency reasons and would be improved by reordering the components.
    --  Off by default, modified by use of -gnatw.q/.Q (but not -gnatwa).
 
-   --  WARNING: There is a matching C declaration of this variable in fe.h
+   function Get_Warn_On_Questionable_Layout return Boolean is
+     (Warn_On_Questionable_Layout);
+   --  WARNING: There is a matching C declaration of this function in fe.h
 
    Warn_On_Record_Holes : Boolean := False;
    --  Warn when explicit record component clauses leave uncovered holes (gaps)

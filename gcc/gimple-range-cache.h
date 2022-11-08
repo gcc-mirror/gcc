@@ -87,6 +87,7 @@ public:
 
   void propagate_updated_value (tree name, basic_block bb);
 
+  void register_inferred_value (const vrange &r, tree name, basic_block bb);
   void apply_inferred_ranges (gimple *s);
   gori_compute m_gori;
   infer_range_manager m_exit;

@@ -644,7 +644,7 @@ public:
   void on_asm (const gasm *stmt, store_manager *mgr,
 	       const conjured_purge &p);
 
-  bool escaped_p () const { return m_escaped; }
+  bool escaped_p () const;
   bool touched_p () const { return m_touched; }
 
   bool redundant_p () const;

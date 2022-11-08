@@ -2223,7 +2223,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  case BUILT_IN_REALLOC:
 	    return false;
 	  case BUILT_IN_STRCHR:
-	    impl_call_strchr (cd);
+	    /* Handle in "on_call_post".  */
 	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
@@ -2288,6 +2288,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_realloc (cd);
 	  return false;
 	}
+      else if (is_named_call_p (callee_fndecl, "__errno_location", call, 0))
+	{
+	  impl_call_errno_location (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "error"))
 	{
 	  if (impl_call_error (cd, 3, out_terminate_path))
@@ -2341,7 +2346,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
-	  impl_call_strchr (cd);
+	  /* Handle in "on_call_post".  */
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2418,6 +2423,12 @@ region_model::on_call_post (const gcall *call,
 	  impl_call_pipe (cd);
 	  return;
 	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
+	  return;
+	}
       /* Was this fndecl referenced by
 	 __attribute__((malloc(FOO)))?  */
       if (lookup_attribute ("*dealloc", DECL_ATTRIBUTES (callee_fndecl)))
@@ -2433,6 +2444,10 @@ region_model::on_call_post (const gcall *call,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    impl_call_realloc (cd);
+	    return;
+
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
 	    return;
 
 	  case BUILT_IN_VA_END:
@@ -6406,6 +6421,23 @@ region_model::maybe_complain_about_infoleak (const region *dst_reg,
     ctxt->warn (make_unique<exposure_through_uninit_copy> (src_reg,
 							   dst_reg,
 							   copied_sval));
+}
+
+/* Set errno to a positive symbolic int, as if some error has occurred.  */
+
+void
+region_model::set_errno (const call_details &cd)
+{
+  const region *errno_reg = m_mgr->get_errno_region ();
+  conjured_purge p (this, cd.get_ctxt ());
+  const svalue *new_errno_sval
+    = m_mgr->get_or_create_conjured_svalue (integer_type_node,
+					    cd.get_call_stmt (),
+					    errno_reg, p);
+  const svalue *zero
+    = m_mgr->get_or_create_int_cst (integer_type_node, 0);
+  add_constraint (new_errno_sval, GT_EXPR, zero, cd.get_ctxt ());
+  set_value (errno_reg, new_errno_sval, cd.get_ctxt ());
 }
 
 /* class noop_region_model_context : public region_model_context.  */

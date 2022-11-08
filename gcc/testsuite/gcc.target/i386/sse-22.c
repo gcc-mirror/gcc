@@ -103,7 +103,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,avx512vl,avx512bw,avx512dq,avx512vbmi,avx512vbmi2,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg,avx512bf16,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avx512fp16,avxifma,avxvnniint8,avxneconvert,amx-fp16.raoint")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,avx512vl,avx512bw,avx512dq,avx512vbmi,avx512vbmi2,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,gfni,avx512bitalg,avx512bf16,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avx512fp16,avxifma,avxvnniint8,avxneconvert,amx-fp16,raoint")
 #endif
 
 /* Following intrinsics require immediate arguments.  They

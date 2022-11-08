@@ -2938,7 +2938,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   tests that are known to be True or False at compile time. The default
   is that such warnings are not generated.
   Note that this warning does
-  not get issued for the use of boolean variables or constants whose
+  not get issued for the use of boolean constants whose
   values are known at compile time, since this is a standard technique
   for conditional compilation in Ada, and this would generate too many
   false positive warnings.

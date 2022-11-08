@@ -1823,6 +1823,7 @@ package body Sem_Eval is
          return False;
 
       elsif Op = Error
+        or else Nkind (Op) not in N_Has_Etype
         or else Etype (Op) = Any_Type
         or else Raises_Constraint_Error (Op)
       then

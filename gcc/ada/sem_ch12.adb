@@ -11088,6 +11088,8 @@ package body Sem_Ch12 is
 
          Set_Convention (Defining_Unit_Name (New_Spec), Convention_Intrinsic);
 
+         Copy_Ghost_Aspect (Formal, To => Decl_Node);
+
          --  Eliminate the calls to it when optimization is enabled
 
          Set_Is_Inlined (Defining_Unit_Name (New_Spec));
@@ -17303,13 +17305,11 @@ package body Sem_Ch12 is
 
             else
                declare
-                  Act_Iface_List : Elist_Id;
-                  Iface          : Node_Id;
-                  Iface_Ent      : Entity_Id;
+                  Iface     : Node_Id;
+                  Iface_Ent : Entity_Id;
 
                begin
                   Iface := First (Abstract_Interface_List (Formal));
-                  Collect_Interfaces (Def_Sub, Act_Iface_List);
 
                   while Present (Iface) loop
                      Iface_Ent := Entity (Iface);

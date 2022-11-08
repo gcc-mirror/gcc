@@ -4311,7 +4311,7 @@
   [(set (match_operand:<sseintvecmode> 0 "register_operand")
 	(match_operator:<sseintvecmode> 1 ""
 	  [(match_operand:VI_256 2 "register_operand")
-	   (match_operand:VI_256 3 "nonimmediate_operand")]))]
+	   (match_operand:VI_256 3 "nonimmediate_or_const_vector_operand")]))]
   "TARGET_AVX2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
@@ -4323,7 +4323,7 @@
   [(set (match_operand:<sseintvecmode> 0 "register_operand")
 	(match_operator:<sseintvecmode> 1 ""
 	  [(match_operand:VI124_128 2 "register_operand")
-	   (match_operand:VI124_128 3 "vector_operand")]))]
+	   (match_operand:VI124_128 3 "vector_or_const_vector_operand")]))]
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
@@ -4335,7 +4335,7 @@
   [(set (match_operand:V2DI 0 "register_operand")
 	(match_operator:V2DI 1 ""
 	  [(match_operand:V2DI 2 "register_operand")
-	   (match_operand:V2DI 3 "vector_operand")]))]
+	   (match_operand:V2DI 3 "vector_or_const_vector_operand")]))]
   "TARGET_SSE4_2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
@@ -4397,7 +4397,7 @@
   [(set (match_operand:<sseintvecmode> 0 "register_operand")
 	(match_operator:<sseintvecmode> 1 ""
 	  [(match_operand:VI_256 2 "register_operand")
-	   (match_operand:VI_256 3 "nonimmediate_operand")]))]
+	   (match_operand:VI_256 3 "nonimmediate_or_const_vector_operand")]))]
   "TARGET_AVX2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
@@ -4409,7 +4409,7 @@
   [(set (match_operand:<sseintvecmode> 0 "register_operand")
 	(match_operator:<sseintvecmode> 1 ""
 	  [(match_operand:VI124_128 2 "register_operand")
-	   (match_operand:VI124_128 3 "vector_operand")]))]
+	   (match_operand:VI124_128 3 "vector_or_const_vector_operand")]))]
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
@@ -4421,7 +4421,7 @@
   [(set (match_operand:V2DI 0 "register_operand")
 	(match_operator:V2DI 1 ""
 	  [(match_operand:V2DI 2 "register_operand")
-	   (match_operand:V2DI 3 "vector_operand")]))]
+	   (match_operand:V2DI 3 "vector_or_const_vector_operand")]))]
   "TARGET_SSE4_2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);

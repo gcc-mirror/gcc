@@ -141,24 +141,15 @@ call_info::call_info (const call_details &cd)
   gcc_assert (m_fndecl);
 }
 
-/* class success_call_info : public call_info.  */
-
-/* Implementation of call_info::get_desc vfunc for success_call_info.  */
+/* class succeed_or_fail_call_info : public call_info.  */
 
 label_text
-success_call_info::get_desc (bool can_colorize) const
+succeed_or_fail_call_info::get_desc (bool can_colorize) const
 {
-  return make_label_text (can_colorize, "when %qE succeeds", get_fndecl ());
-}
-
-/* class failed_call_info : public call_info.  */
-
-/* Implementation of call_info::get_desc vfunc for failed_call_info.  */
-
-label_text
-failed_call_info::get_desc (bool can_colorize) const
-{
-  return make_label_text (can_colorize, "when %qE fails", get_fndecl ());
+  if (m_success)
+    return make_label_text (can_colorize, "when %qE succeeds", get_fndecl ());
+  else
+    return make_label_text (can_colorize, "when %qE fails", get_fndecl ());
 }
 
 } // namespace ana

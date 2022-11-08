@@ -567,6 +567,10 @@ begin
                                                   "record types");
    Write_Line ("        .Q*  turn off warnings for questionable layout of " &
                                                   "record types");
+   Write_Line ("        _q   turn on warnings for ignored " &
+                                                  "equality operators");
+   Write_Line ("        _Q*  turn off warnings for ignored " &
+                                                  "equality operators");
    Write_Line ("        r+   turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r+  turn on warnings for object renaming function");

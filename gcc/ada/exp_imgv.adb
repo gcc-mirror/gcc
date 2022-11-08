@@ -1842,6 +1842,15 @@ package body Exp_Imgv is
          return;
       end if;
 
+      --  If Image should be transformed using Put_Image, then do so. See
+      --  Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve (N, Standard_Wide_String, Suppress => All_Checks);
+         return;
+      end if;
+
       Rtyp := Root_Type (Entity (Pref));
 
       Insert_Actions (N, New_List (
@@ -1939,6 +1948,16 @@ package body Exp_Imgv is
       if Is_Object_Image (Pref) then
          Rewrite_Object_Image
            (N, Pref, Name_Wide_Wide_Image, Standard_Wide_Wide_String);
+         return;
+      end if;
+
+      --  If Image should be transformed using Put_Image, then do so. See
+      --  Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve
+           (N, Standard_Wide_Wide_String, Suppress => All_Checks);
          return;
       end if;
 

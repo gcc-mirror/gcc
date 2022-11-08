@@ -62,6 +62,7 @@ public:
   auto_edge_flag non_executable_edge_flag;
   bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
   void register_inferred_ranges (gimple *s);
+  void register_transitive_inferred_ranges (basic_block bb);
 protected:
   bool fold_range_internal (vrange &r, gimple *s, tree name);
   void prefill_name (vrange &r, tree name);

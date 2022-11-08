@@ -91,9 +91,9 @@ package Exp_Put_Image is
    --  T'Image.
 
    function Build_Image_Call (N : Node_Id) return Node_Id;
-   --  N is a call to T'Image, and this translates it into the appropriate code
-   --  to call T'Put_Image into a buffer and then extract the string from the
-   --  buffer.
+   --  N is a call to T'[[Wide_]Wide_]Image, and this translates it into the
+   --  appropriate code to call T'Put_Image into a buffer and then extract the
+   --  [[wide] wide] string from the buffer.
 
    procedure Preload_Root_Buffer_Type (Compilation_Unit : Node_Id);
    --  Call RTE (RE_Root_Buffer_Type) if necessary, to load the packages

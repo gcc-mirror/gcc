@@ -349,6 +349,7 @@ class region_model
   void impl_call_analyzer_get_unknown_ptr (const call_details &cd);
   void impl_call_builtin_expect (const call_details &cd);
   void impl_call_calloc (const call_details &cd);
+  void impl_call_errno_location (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
 			bool *out_terminate_path);
   void impl_call_fgets (const call_details &cd);
@@ -543,6 +544,8 @@ class region_model
 				      const svalue *copied_sval,
 				      const region *src_reg,
 				      region_model_context *ctxt);
+
+  void set_errno (const call_details &cd);
 
   /* Implemented in sm-fd.cc  */
   void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);

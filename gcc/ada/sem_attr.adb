@@ -5996,8 +5996,8 @@ package body Sem_Attr is
                --  Verify that prefix can be iterated upon.
 
                if Is_Array_Type (Typ)
-                 or else Present (Find_Aspect (Typ, Aspect_Default_Iterator))
-                 or else Present (Find_Aspect (Typ, Aspect_Iterable))
+                 or else Has_Aspect (Typ, Aspect_Default_Iterator)
+                 or else Has_Aspect (Typ, Aspect_Iterable)
                then
                   null;
                else
@@ -9203,13 +9203,15 @@ package body Sem_Attr is
       --  Image is a scalar attribute, but is never static, because it is
       --  not a static function (having a non-scalar argument (RM 4.9(22))
       --  However, we can constant-fold the image of an enumeration literal
-      --  if names are available.
+      --  if names are available and default Image implementation has not
+      --  been overridden.
 
       when Attribute_Image =>
          if Is_Entity_Name (E1)
            and then Ekind (Entity (E1)) = E_Enumeration_Literal
            and then not Discard_Names (First_Subtype (Etype (E1)))
            and then not Global_Discard_Names
+           and then not Has_Aspect (Etype (E1), Aspect_Put_Image)
          then
             declare
                Lit : constant Entity_Id := Entity (E1);

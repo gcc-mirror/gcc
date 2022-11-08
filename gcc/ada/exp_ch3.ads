@@ -25,9 +25,10 @@
 
 --  Expand routines for chapter 3 constructs
 
-with Types;  use Types;
-with Elists; use Elists;
-with Uintp;  use Uintp;
+with Types;   use Types;
+with Elists;  use Elists;
+with Exp_Tss; use Exp_Tss;
+with Uintp;   use Uintp;
 
 package Exp_Ch3 is
 
@@ -206,5 +207,14 @@ package Exp_Ch3 is
    --  The spec for the equality function has been created by
    --  Make_Predefined_Primitive_Eq_Spec; see there for description of
    --  the Renamed_Eq parameter.
+
+   function Stream_Operation_OK
+     (Typ       : Entity_Id;
+      Operation : TSS_Name_Type) return Boolean;
+   --  Check whether the named stream operation must be emitted for a given
+   --  type. The rules for inheritance of stream attributes by type extensions
+   --  are enforced by this function. Furthermore, various restrictions prevent
+   --  the generation of these operations, as a useful optimization or for
+   --  certification purposes and to save unnecessary generated code.
 
 end Exp_Ch3;

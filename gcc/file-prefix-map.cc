@@ -73,7 +73,7 @@ remap_filename (file_prefix_map *maps, const char *filename)
   char *realname;
   size_t name_len;
 
-  if (lbasename (filename) == filename)
+  if (!filename || lbasename (filename) == filename)
     return filename;
 
   realname = lrealpath (filename);

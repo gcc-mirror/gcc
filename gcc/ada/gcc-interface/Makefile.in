@@ -333,7 +333,7 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
  s-purexc.o s-htable.o scil_ll.o sem_aux.o sinfo.o sinput.o sinput-c.o \
  snames.o stand.o stringt.o styleg.o stylesw.o system.o validsw.o \
  switch.o switch-m.o table.o targparm.o tempdir.o types.o uintp.o \
- uname.o urealp.o usage.o widechar.o \
+ uname.o urealp.o usage.o widechar.o warnsw.o \
  seinfo.o einfo-entities.o einfo-utils.o sinfo-nodes.o sinfo-utils.o \
  $(EXTRA_GNATMAKE_OBJS)
 

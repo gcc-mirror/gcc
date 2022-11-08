@@ -980,6 +980,72 @@ function_requirements_equivalent_p (tree newfn, tree oldfn)
   return cp_tree_equal (reqs1, reqs2);
 }
 
+/* Two functions of the same name correspond [basic.scope.scope] if
+
+   + both declare functions with the same non-object-parameter-type-list,
+   equivalent ([temp.over.link]) trailing requires-clauses (if any, except as
+   specified in [temp.friend]), and, if both are non-static members, they have
+   corresponding object parameters, or
+
+   + both declare function templates with equivalent
+   non-object-parameter-type-lists, return types (if any), template-heads, and
+   trailing requires-clauses (if any), and, if both are non-static members,
+   they have corresponding object parameters.
+
+   This is a subset of decls_match: it identifies declarations that cannot be
+   overloaded with one another.  This function does not consider DECL_NAME.  */
+
+bool
+fns_correspond (tree newdecl, tree olddecl)
+{
+  if (TREE_CODE (newdecl) != TREE_CODE (olddecl))
+    return false;
+
+  if (TREE_CODE (newdecl) == TEMPLATE_DECL)
+    {
+      if (!template_heads_equivalent_p (newdecl, olddecl))
+	return 0;
+      newdecl = DECL_TEMPLATE_RESULT (newdecl);
+      olddecl = DECL_TEMPLATE_RESULT (olddecl);
+    }
+
+  tree f1 = TREE_TYPE (newdecl);
+  tree f2 = TREE_TYPE (olddecl);
+
+  int rq1 = type_memfn_rqual (f1);
+  int rq2 = type_memfn_rqual (f2);
+
+  /* If only one is a non-static member function, ignore ref-quals.  */
+  if (TREE_CODE (f1) != TREE_CODE (f2))
+    rq1 = rq2;
+  /* Two non-static member functions have corresponding object parameters if:
+     + exactly one is an implicit object member function with no ref-qualifier
+     and the types of their object parameters ([dcl.fct]), after removing
+     top-level references, are the same, or
+     + their object parameters have the same type.  */
+  /* ??? We treat member functions of different classes as corresponding even
+     though that means the object parameters have different types.  */
+  else if ((rq1 == REF_QUAL_NONE) != (rq2 == REF_QUAL_NONE))
+    rq1 = rq2;
+
+  bool types_match = rq1 == rq2;
+
+  if (types_match)
+    {
+      tree p1 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
+      tree p2 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
+      types_match = compparms (p1, p2);
+    }
+
+  /* Two function declarations match if either has a requires-clause
+     then both have a requires-clause and their constraints-expressions
+     are equivalent.  */
+  if (types_match && flag_concepts)
+    types_match = function_requirements_equivalent_p (newdecl, olddecl);
+
+  return types_match;
+}
+
 /* Subroutine of duplicate_decls: return truthvalue of whether
    or not types of these decls match.
 

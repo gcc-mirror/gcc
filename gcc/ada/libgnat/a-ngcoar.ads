@@ -135,7 +135,7 @@ package Ada.Numerics.Generic_Complex_Arrays is
    function Compose_From_Cartesian (Re : Real_Matrix) return Complex_Matrix;
 
    function Compose_From_Cartesian
-     (Re, Im : Real_Matrix) return  Complex_Matrix;
+     (Re, Im : Real_Matrix) return Complex_Matrix;
 
    function Modulus (X : Complex_Matrix) return Real_Matrix;
    function "abs" (Right : Complex_Matrix) return Real_Matrix renames Modulus;
@@ -229,7 +229,7 @@ package Ada.Numerics.Generic_Complex_Arrays is
 
    function "*"
      (Left  : Complex;
-      Right : Complex_Matrix) return  Complex_Matrix;
+      Right : Complex_Matrix) return Complex_Matrix;
 
    function "*"
      (Left  : Complex_Matrix;
