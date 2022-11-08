@@ -34,7 +34,7 @@ void
 test(std::chars_format fmt = std::chars_format{})
 {
   std::float128_t tests[] = {
-//    std::numeric_limits<std::float128_t>::denorm_min(),
+    std::numeric_limits<std::float128_t>::denorm_min(),
     std::numeric_limits<std::float128_t>::min(),
     0.0f128,
     -42.0f128,
