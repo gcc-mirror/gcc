@@ -4383,7 +4383,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	  return target;
 	rtx arg1 = force_reg (V64DFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
-					   V64SFmode,
+					   V64DFmode,
 					   EXPAND_NORMAL));
 	rtx arg2 = force_reg (V64SImode,
 			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
