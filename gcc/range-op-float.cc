@@ -1863,7 +1863,21 @@ foperator_plus::fold_range (frange &r, tree type,
 
   r.set (type, lb, ub);
 
-  if (lb_nan || ub_nan)
+  // Some combinations can yield a NAN even if no operands have the
+  // possibility of a NAN.
+  bool maybe_nan;
+  // [-INF] + [+INF] = NAN
+  if (real_isinf (&op1.lower_bound (), true)
+      && real_isinf (&op2.upper_bound (), false))
+    maybe_nan = true;
+  // [+INF] + [-INF] = NAN
+  else if (real_isinf (&op1.upper_bound (), false)
+	   && real_isinf (&op2.lower_bound (), true))
+    maybe_nan = true;
+  else
+    maybe_nan = false;
+
+  if (lb_nan || ub_nan || maybe_nan)
     // Keep the default NAN (with a varying sign) set by the setter.
     ;
   else if (!op1.maybe_isnan () && !op2.maybe_isnan ())
@@ -1960,6 +1974,16 @@ range_op_float_tests ()
   r1 = frange_float ("-1", "-0");
   r1.update_nan (false);
   ASSERT_EQ (r, r1);
+
+  // [-INF,+INF] + [-INF,+INF] could be a NAN.
+  range_op_handler plus (PLUS_EXPR, float_type_node);
+  r0.set_varying (float_type_node);
+  r1.set_varying (float_type_node);
+  r0.clear_nan ();
+  r1.clear_nan ();
+  plus.fold_range (r, float_type_node, r0, r1);
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r.maybe_isnan ());
 }
 
 } // namespace selftest
