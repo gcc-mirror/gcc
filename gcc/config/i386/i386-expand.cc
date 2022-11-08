@@ -4510,15 +4510,86 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	case GTU:
 	  break;
 
-	case NE:
 	case LE:
 	case LEU:
+	  /* x <= cst can be handled as x < cst + 1 unless there is
+	     wrap around in cst + 1.  */
+	  if (GET_CODE (cop1) == CONST_VECTOR
+	      && GET_MODE_INNER (mode) != TImode)
+	    {
+	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
+	      machine_mode eltmode = GET_MODE_INNER (mode);
+	      for (i = 0; i < n_elts; ++i)
+		{
+		  rtx elt = CONST_VECTOR_ELT (cop1, i);
+		  if (!CONST_INT_P (elt))
+		    break;
+		  if (code == GE)
+		    {
+		      /* For LE punt if some element is signed maximum.  */
+		      if ((INTVAL (elt) & (GET_MODE_MASK (eltmode) >> 1))
+			  == (GET_MODE_MASK (eltmode) >> 1))
+			break;
+		    }
+		  /* For LEU punt if some element is unsigned maximum.  */
+		  else if (elt == constm1_rtx)
+		    break;
+		}
+	      if (i == n_elts)
+		{
+		  rtvec v = rtvec_alloc (n_elts);
+		  for (i = 0; i < n_elts; ++i)
+		    RTVEC_ELT (v, i)
+		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) + 1);
+		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
+		  std::swap (cop0, cop1);
+		  code = code == LE ? GT : GTU;
+		  break;
+		}
+	    }
+	  /* FALLTHRU */
+	case NE:
 	  code = reverse_condition (code);
 	  *negate = true;
 	  break;
 
 	case GE:
 	case GEU:
+	  /* x >= cst can be handled as x > cst - 1 unless there is
+	     wrap around in cst - 1.  */
+	  if (GET_CODE (cop1) == CONST_VECTOR
+	      && GET_MODE_INNER (mode) != TImode)
+	    {
+	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
+	      machine_mode eltmode = GET_MODE_INNER (mode);
+	      for (i = 0; i < n_elts; ++i)
+		{
+		  rtx elt = CONST_VECTOR_ELT (cop1, i);
+		  if (!CONST_INT_P (elt))
+		    break;
+		  if (code == GE)
+		    {
+		      /* For GE punt if some element is signed minimum.  */
+		      if (INTVAL (elt) < 0
+			  && ((INTVAL (elt) & (GET_MODE_MASK (eltmode) >> 1))
+			      == 0))
+			break;
+		    }
+		  /* For GEU punt if some element is zero.  */
+		  else if (elt == const0_rtx)
+		    break;
+		}
+	      if (i == n_elts)
+		{
+		  rtvec v = rtvec_alloc (n_elts);
+		  for (i = 0; i < n_elts; ++i)
+		    RTVEC_ELT (v, i)
+		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) - 1);
+		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
+		  code = code == GE ? GT : GTU;
+		  break;
+		}
+	    }
 	  code = reverse_condition (code);
 	  *negate = true;
 	  /* FALLTHRU */
@@ -4555,6 +4626,11 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      gcc_unreachable ();
 	    }
 	}
+
+      if (GET_CODE (cop0) == CONST_VECTOR)
+	cop0 = force_reg (mode, cop0);
+      else if (GET_CODE (cop1) == CONST_VECTOR)
+	cop1 = force_reg (mode, cop1);
 
       rtx optrue = op_true ? op_true : CONSTM1_RTX (data_mode);
       rtx opfalse = op_false ? op_false : CONST0_RTX (data_mode);
@@ -4752,13 +4828,13 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
   if (*negate)
     std::swap (op_true, op_false);
 
+  if (GET_CODE (cop1) == CONST_VECTOR)
+    cop1 = force_reg (mode, cop1);
+
   /* Allow the comparison to be done in one mode, but the movcc to
      happen in another mode.  */
   if (data_mode == mode)
-    {
-      x = ix86_expand_sse_cmp (dest, code, cop0, cop1,
-			       op_true, op_false);
-    }
+    x = ix86_expand_sse_cmp (dest, code, cop0, cop1, op_true, op_false);
   else
     {
       gcc_assert (GET_MODE_SIZE (data_mode) == GET_MODE_SIZE (mode));
