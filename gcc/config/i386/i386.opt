@@ -1246,7 +1246,3 @@ Support PREFETCHI built-in functions and code generation.
 mraoint
 Target Mask(ISA2_RAOINT) Var(ix86_isa_flags2) Save
 Support RAOINT built-in functions and code generation.
-
-mprefer-remote-atomic
-Target Var(flag_prefer_remote_atomic) Init(0)
-Prefer use remote atomic insn for atomic operations.
