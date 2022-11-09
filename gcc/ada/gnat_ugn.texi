@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 14, 2022
+GNAT User's Guide for Native Platforms , Nov 18, 2022
 
 AdaCore
 
@@ -11305,8 +11305,13 @@ This switch suppresses warnings on hiding declarations.
 
 This switch activates warnings on component clauses in record
 representation clauses that leave holes (gaps) in the record layout.
-If this warning option is active, then record representation clauses
-should specify a contiguous layout, adding unused fill fields if needed.
+If a record representation clause does not specify a location for
+every component of the record type, then the warnings generated (or not
+generated) are unspecified. For example, there may be gaps for which
+either no warning is generated or a warning is generated that
+incorrectly describes the location of the gap. This undesirable situation
+can sometimes be avoided by adding (and specifying the location for) unused
+fill fields.
 @end table
 
 @geindex -gnatw.H (gcc)

@@ -3221,8 +3221,13 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   This switch activates warnings on component clauses in record
   representation clauses that leave holes (gaps) in the record layout.
-  If this warning option is active, then record representation clauses
-  should specify a contiguous layout, adding unused fill fields if needed.
+  If a record representation clause does not specify a location for
+  every component of the record type, then the warnings generated (or not
+  generated) are unspecified. For example, there may be gaps for which
+  either no warning is generated or a warning is generated that
+  incorrectly describes the location of the gap. This undesirable situation
+  can sometimes be avoided by adding (and specifying the location for) unused
+  fill fields.
 
 
 .. index:: -gnatw.H  (gcc)
