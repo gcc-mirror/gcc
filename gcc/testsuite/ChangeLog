@@ -1,3 +1,11 @@
+2022-11-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-10-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107304
+	* gcc.target/i386/pr107304.c: New test.
+
 2022-10-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
