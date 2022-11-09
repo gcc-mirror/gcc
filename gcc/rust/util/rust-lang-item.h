@@ -73,6 +73,9 @@ public:
     MUT_PTR,
     CONST_SLICE_PTR,
 
+    // https://github.com/rust-lang/rust/blob/master/library/core/src/marker.rs
+    PHANTOM_DATA,
+
     // functions
     FN_ONCE,
     FN_ONCE_OUTPUT,
@@ -222,6 +225,10 @@ public:
       {
 	return ItemType::CONST_SLICE_PTR;
       }
+    else if (item.compare ("phantom_data") == 0)
+      {
+  return ItemType::PHANTOM_DATA;
+      }
     else if (item.compare ("fn_once") == 0)
       {
 	return ItemType::FN_ONCE;
@@ -308,6 +315,8 @@ public:
 	return "mut_ptr";
       case CONST_SLICE_PTR:
 	return "const_slice_ptr";
+      case PHANTOM_DATA:
+  return "phantom_data";
       case FN_ONCE:
 	return "fn_once";
       case FN_ONCE_OUTPUT:
