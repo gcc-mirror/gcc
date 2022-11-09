@@ -4051,6 +4051,15 @@ range_tests_floats ()
       ASSERT_TRUE (real_isinf (&r0.lower_bound (), true));
       ASSERT_TRUE (real_isinf (&r0.upper_bound (), true));
     }
+
+  // Test that reading back a global range yields the same result as
+  // what we wrote into it.
+  tree ssa = make_temp_ssa_name (float_type_node, NULL, "blah");
+  r0.set_varying (float_type_node);
+  r0.clear_nan ();
+  set_range_info (ssa, r0);
+  get_global_range_query ()->range_of_expr (r1, ssa);
+  ASSERT_EQ (r0, r1);
 }
 
 // Run floating range tests for various combinations of NAN and INF
