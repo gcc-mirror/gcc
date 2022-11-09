@@ -10,7 +10,6 @@ import tempfile
 from pathlib import Path
 
 GITROOT = '/git/gcc.git'
-BUGURL = 'https://gcc.gnu.org/bugs/'
 
 parser = argparse.ArgumentParser(description='Update web documentation.')
 parser.add_argument('output_folder', help='Output folder')
@@ -53,10 +52,6 @@ with tempfile.TemporaryDirectory() as folder:
     temp = Path('tmp').resolve()
     temp.mkdir()
 
-    # Prepare default env. variables
-    childenv = os.environ.copy()
-    childenv['BUGURL'] = BUGURL
-
     # Build and copy the documentation
     for i, (config_folder, docname) in enumerate(sorted(configs)):
         print(f'=== building {i + 1}/{len(configs)}: {docname} ===')
@@ -65,7 +60,7 @@ with tempfile.TemporaryDirectory() as folder:
         cmd = f'make -C doc html SOURCEDIR={config_folder} BUILDDIR={temp}/{docname}'
         if args.sphinx_build:
             cmd += f' SPHINXBUILD={args.sphinx_build}'
-        subprocess.run(cmd, shell=True, env=childenv, check=True,
+        subprocess.run(cmd, shell=True, check=True,
                        capture_output=not args.verbose)
         os.unlink(f'{temp}/{docname}/html/.buildinfo')
         shutil.copytree(f'{temp}/{docname}/html', f'{output}/{docname}',
@@ -75,7 +70,7 @@ with tempfile.TemporaryDirectory() as folder:
         cmd = f'make -C doc latexpdf SOURCEDIR={config_folder} BUILDDIR={temp}/pdf/{docname}'
         if args.sphinx_build:
             cmd += f' SPHINXBUILD={args.sphinx_build}'
-        subprocess.run(cmd, shell=True, env=childenv, check=True,
+        subprocess.run(cmd, shell=True, check=True,
                        capture_output=not args.verbose)
         shutil.copyfile(f'{temp}/pdf/{docname}/latex/{docname}.pdf',
                         f'{output}/{docname}.pdf')
