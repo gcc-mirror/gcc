@@ -1394,9 +1394,10 @@ foperator_abs::op1_range (frange &r, tree type,
     return true;
   // Then add the negative of each pair:
   // ABS(op1) = [5,20] would yield op1 => [-20,-5][5,20].
-  r.union_ (frange (type,
-		    real_value_negate (&positives.upper_bound ()),
-		    real_value_negate (&positives.lower_bound ())));
+  frange negatives (type, real_value_negate (&positives.upper_bound ()),
+		    real_value_negate (&positives.lower_bound ()));
+  negatives.clear_nan ();
+  r.union_ (negatives);
   return true;
 }
 
