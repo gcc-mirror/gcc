@@ -119,3 +119,6 @@ GCC plugins may provide their own pragmas.
   file will never be read again, no matter what.  It is a less-portable
   alternative to using :samp:`#ifndef` to guard the contents of header files
   against multiple inclusions.
+
+``#pragma region {tokens}...``, ``#pragma endregion {tokens}...``
+  These pragmas are accepted, but have no effect.
