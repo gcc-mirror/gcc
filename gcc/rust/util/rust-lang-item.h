@@ -227,7 +227,7 @@ public:
       }
     else if (item.compare ("phantom_data") == 0)
       {
-  return ItemType::PHANTOM_DATA;
+	return ItemType::PHANTOM_DATA;
       }
     else if (item.compare ("fn_once") == 0)
       {
@@ -316,7 +316,7 @@ public:
       case CONST_SLICE_PTR:
 	return "const_slice_ptr";
       case PHANTOM_DATA:
-  return "phantom_data";
+	return "phantom_data";
       case FN_ONCE:
 	return "fn_once";
       case FN_ONCE_OUTPUT:
