@@ -4923,6 +4923,32 @@ structural_type_p (tree t, bool explain)
   return true;
 }
 
+/* Partially handle the C++11 [[carries_dependency]] attribute.
+   Just emit a different diagnostics when it is used on something the
+   spec doesn't allow vs. where it allows and we just choose to ignore
+   it.  */
+
+static tree
+handle_carries_dependency_attribute (tree *node, tree name,
+				     tree ARG_UNUSED (args),
+				     int ARG_UNUSED (flags),
+				     bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL
+      && TREE_CODE (*node) != PARM_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute can only be applied to "
+	       "functions or parameters", name);
+      *no_add_attrs = true;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
 /* Handle the C++17 [[nodiscard]] attribute, which is similar to the GNU
    warn_unused_result attribute.  */
 
@@ -5036,6 +5062,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_likeliness_attribute, attr_cold_hot_exclusions },
   { "noreturn", 0, 0, true, false, false, false,
     handle_noreturn_attribute, attr_noreturn_exclusions },
+  { "carries_dependency", 0, 0, true, false, false, false,
+    handle_carries_dependency_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
