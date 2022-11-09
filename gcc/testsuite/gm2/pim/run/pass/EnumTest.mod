@@ -45,7 +45,7 @@ CONST
 
 VAR
    e: enumType ;
-   i: INTEGER ;
+   i: CARDINAL ;
    a: arrayType ;
 BEGIN
    res := 0 ;
@@ -63,8 +63,8 @@ BEGIN
    END ;
    i := 1 ;
    FOR e := one TO lastEnum DO
-      Assert(ORD(e)=i, __FILE__, __LINE__, 'enum against a value') ;
-      INC(i)
+      Assert (ORD (e) = i, __FILE__, __LINE__, 'enum against a value') ;
+      INC (i)
    END ;
    exit(res)
 END EnumTest.

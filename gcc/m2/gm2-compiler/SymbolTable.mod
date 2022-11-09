@@ -6232,6 +6232,7 @@ BEGIN
                                   needsLong, needsUnsigned)
       END ;
       s := KillString (s) ;
+(*
       IF needsLong AND needsUnsigned
       THEN
          RETURN LongCard
@@ -6239,6 +6240,7 @@ BEGIN
       THEN
          RETURN LongInt
       END ;
+*)
       RETURN ZType
    END
 END GetConstLitType ;

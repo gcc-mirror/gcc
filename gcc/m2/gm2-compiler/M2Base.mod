@@ -117,7 +117,7 @@ FROM m2decl IMPORT BuildIntegerConstant ;
 
 
 TYPE
-   Compatability = (expression, assignment, parameter) ;
+   Compatability = (expression, assignment, parameter, comparison) ;
    MetaType      = (const, word, byte, address, chr,
                     normint, shortint, longint,
                     normcard, shortcard, longcard,
@@ -141,6 +141,7 @@ TYPE
    CompatibilityArray = ARRAY MetaType, MetaType OF Compatible ;
 
 VAR
+   Comp,
    Expr,
    Ass        : CompatibilityArray ;
    Ord,
@@ -1132,7 +1133,8 @@ BEGIN
 
    expression:  MetaError2('{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} in an expression, hint one of the expressions should be converted', t1, t2) |
    assignment:  MetaError2('{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} during an assignment, hint maybe the expression should be converted', t1, t2) |
-   parameter :  MetaError2('{%1W:} type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} {%2as}}}, hint the actual parameter {%2a} should be converted', t1, t2)
+   parameter :  MetaError2('{%1W:} type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} {%2as}}}, hint the actual parameter {%2a} should be converted', t1, t2) |
+   comparison:  MetaError2('{%1W:} type incompatibility found {%1as:{%2as:between types {%1as} {%2as}}} in a relational expression, hint one of the expressions should be converted', t1, t2)
 
    ELSE
    END
@@ -1149,7 +1151,8 @@ BEGIN
 
    expression:  MetaError2('type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} in an expression, hint one of the expressions should be converted', t1, t2) |
    assignment:  MetaError2('type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} during an assignment, hint maybe the expression should be converted', t1, t2) |
-   parameter :  MetaError2('type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} and {%2as}}}, hint the actual parameter should be converted', t1, t2)
+   parameter :  MetaError2('type incompatibility found when passing a parameter {%1as:{%2as:between formal parameter and actual parameter types {%1as} and {%2as}}}, hint the actual parameter should be converted', t1, t2) |
+   comparison:  MetaError2('type incompatibility found {%1as:{%2as:between types {%1as} and {%2as}}} in a relational expression, hint one of the expressions should be converted', t1, t2)
 
    ELSE
    END
@@ -1165,7 +1168,7 @@ VAR
    s: String ;
    r: Compatible ;
 BEGIN
-   r := IsCompatible(t1, t2, kind) ;
+   r := IsCompatible (t1, t2, kind) ;
    IF (r#first) AND (r#second)
    THEN
       IF (r=warnfirst) OR (r=warnsecond)
@@ -1428,10 +1431,11 @@ BEGIN
 
       expression: RETURN( Expr [mt1, mt2] ) |
       assignment: RETURN( Ass  [mt1, mt2] ) |
-      parameter : RETURN( Ass  [mt1, mt2] )
+      parameter : RETURN( Ass  [mt1, mt2] ) |
+      comparison: RETURN( Comp [mt1, mt2] )
 
       ELSE
-         InternalError ('unexpected Compatibility')
+         InternalError ('unexpected compatibility')
       END
    END
 END IsBaseCompatible ;
@@ -1481,17 +1485,17 @@ END CannotCheckTypeInPass3 ;
 
 PROCEDURE IsCompatible (t1, t2: CARDINAL; kind: Compatability) : Compatible ;
 BEGIN
-   t1 := SkipType(t1) ;
-   t2 := SkipType(t2) ;
+   t1 := SkipType (t1) ;
+   t2 := SkipType (t2) ;
    IF t1 = t2
    THEN
       (* same types are always compatible.  *)
       RETURN first
-   ELSIF IsPassCodeGeneration()
+   ELSIF IsPassCodeGeneration ()
    THEN
-      RETURN( AfterResolved(t1, t2, kind) )
+      RETURN AfterResolved (t1, t2, kind)
    ELSE
-      RETURN( BeforeResolved(t1, t2, kind) )
+      RETURN BeforeResolved (t1, t2, kind)
    END
 END IsCompatible ;
 
@@ -1936,6 +1940,19 @@ BEGIN
           (IsCompatible(t1, t2, parameter)=second)
          )
 END IsParameterCompatible ;
+
+
+(*
+   IsComparisonCompatible - returns TRUE if t1 and t2 are comparison compatible.
+*)
+
+PROCEDURE IsComparisonCompatible (t1, t2: CARDINAL (* ; tokenNo: CARDINAL *) ) : BOOLEAN ;
+BEGIN
+   RETURN(
+          (IsCompatible(t1, t2, comparison)=first) OR
+          (IsCompatible(t1, t2, comparison)=second)
+         )
+END IsComparisonCompatible ;
 
 
 (*
@@ -2454,7 +2471,7 @@ END InitArray ;
 
 PROCEDURE A (y: MetaType; a: ARRAY OF CHAR) ;
 BEGIN
-   InitArray(Ass, y, a)
+   InitArray (Ass, y, a)
 END A ;
 
 
@@ -2464,8 +2481,18 @@ END A ;
 
 PROCEDURE E (y: MetaType; a: ARRAY OF CHAR) ;
 BEGIN
-   InitArray(Expr, y, a)
+   InitArray (Expr, y, a)
 END E ;
+
+
+(*
+   C - initialize the comparision array
+*)
+
+PROCEDURE C (y: MetaType; a: ARRAY OF CHAR) ;
+BEGIN
+   InitArray (Comp, y, a)
+END C ;
 
 
 (*
@@ -2632,6 +2659,80 @@ BEGIN
    E(ctype       , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F') ;
    E(rec         , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . F F') ;
    E(array       , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . F') ;
+
+   (* Comparison compatibility *)
+
+
+   (*
+                                                     1 p w
+
+                    N W B A C I S L C S L P E R S L S O L R Z I I I I C C C C W W W R R R R S S S C S L C C C C C R A
+                    u o y d h n h o a h o t n e h o e p o t t n n n n a a a a o o o e e e e e e e o h o o o o o t e r
+                    l r t d a t o n r o n r u a o n t a c y y t t t t r r r r r r r a a a a t t t m o n m m m m y c r
+                    S d e r r e r g d r g   m l r g   q   p p 8 1 3 6 d d d d d d d l l l l 8 1 3 p r g p p p p p   a
+                    y     e   g t i i t c       t r   u   e e   6 2 4 8 1 3 6 1 3 6 3 6 9 1   6 2 l t C l l l l e   y
+                    m     s   e i n n c a       r e   e                 6 2 4 6 2 4 2 4 6 2       e C o e e e e
+                          s   r n t a a r       e a                                       8       x o m x x x x
+                                t   l r d       a l                                                 m p 3 6 9 1
+                                      d         l                                                   p l 2 4 6 2
+                                                                                                    l e       8
+                                                                                                    e x
+                                                                                                    x
+         ------------------------------------------------------------------------------------------------------------
+   2
+   P
+   W
+   *)
+
+   C(const       , 'T T T T T T T T T T T T T T T T T T F F T T T T T T T T T T T T T T T T F F F F F F F F F F F F F') ;
+   C(word        , '. T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(byte        , '. . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(address     , '. . . T F F F F F F F T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(chr         , '. . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(normint     , '. . . . . T F F F F F F F F F F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(shortint    , '. . . . . . T F F F F F F F F F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(longint     , '. . . . . . . T F F F F F F F F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(normcard    , '. . . . . . . . T F F F F F F F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(shortcard   , '. . . . . . . . . T F F F F F F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(longcard    , '. . . . . . . . . . T F F F F F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(pointer     , '. . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(enum        , '. . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(real        , '. . . . . . . . . . . . . T F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(shortreal   , '. . . . . . . . . . . . . . T F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(longreal    , '. . . . . . . . . . . . . . . T F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(set         , '. . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(opaque      , '. . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(loc         , '. . . . . . . . . . . . . . . . . . F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(rtype       , '. . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F 1 1 1 1 F F F F F F F F F F F F F') ;
+   C(ztype       , '. . . . . . . . . . . . . . . . . . . . T 1 1 1 1 1 1 1 1 1 1 1 F F F F F F F F F F F F F F F F F') ;
+   C(int8        , '. . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(int16       , '. . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(int32       , '. . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(int64       , '. . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(card8       , '. . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(card16      , '. . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(card32      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F F') ;
+   C(card64      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F F F F F') ;
+   C(word16      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . F F F F F F F F F F F F F F F F F F F F') ;
+   C(word32      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . F F F F F F F F F F F F F F F F F F F') ;
+   C(word64      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . F F F F F F F F F F F F F F F F F F') ;
+   C(real32      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F F') ;
+   C(real64      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F F') ;
+   C(real96      , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F F') ;
+   C(real128     , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F F') ;
+   C(set8        , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F F') ;
+   C(set16       , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F F') ;
+   C(set32       , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F F F F F') ;
+   C(complex     , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F F T F F') ;
+   C(shortcomplex, '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F F T F F') ;
+   C(longcomplex , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F F T F F') ;
+   C(complex32   , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F F T F F') ;
+   C(complex64   , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F T F F') ;
+   C(complex96   , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F T F F') ;
+   C(complex128  , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T T F F') ;
+   C(ctype       , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . T F F') ;
+   C(rec         , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . F F') ;
+   C(array       , '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . F') ;
 
 END InitCompatibilityMatrices ;
 

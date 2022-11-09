@@ -33,7 +33,7 @@ IMPLEMENTATION MODULE M2Check ;
 *)
 
 FROM M2System IMPORT IsSystemType, IsGenericSystemType, IsSameSize, IsComplexN ;
-FROM M2Base IMPORT IsParameterCompatible, IsAssignmentCompatible, IsExpressionCompatible, IsBaseType, IsMathType, ZType, CType, RType, IsComplexType ;
+FROM M2Base IMPORT IsParameterCompatible, IsAssignmentCompatible, IsExpressionCompatible, IsComparisonCompatible, IsBaseType, IsMathType, ZType, CType, RType, IsComplexType ;
 FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, KillIndex, HighIndice, LowIndice, IncludeIndiceIntoIndex ;
 FROM M2Error IMPORT Error, InternalError, NewError, ErrorString, ChainError ;
 FROM M2MetaError IMPORT MetaErrorStringT2, MetaErrorStringT3, MetaErrorStringT4, MetaString2, MetaString3, MetaString4 ;
@@ -82,6 +82,8 @@ TYPE
                          procedure,
                          nth       : CARDINAL ;
                          isvar     : BOOLEAN ;
+                         strict    : BOOLEAN ;  (* Comparison expression.  *)
+                         isin      : BOOLEAN ;  (* Expression created by IN?  *)
                          error     : Error ;
                          checkFunc : typeCheckFunction ;
                          visited,
@@ -390,8 +392,21 @@ BEGIN
                    END |
       assignment:  RETURN issueError (IsAssignmentCompatible (left, right),
                                       tinfo, left, right) |
-      expression:  RETURN issueError (IsExpressionCompatible (left, right),
-                                      tinfo, left, right)
+      expression:  IF tinfo^.isin
+                   THEN
+                      IF IsVar (right) OR IsConst (right)
+                      THEN
+                         right := GetSType (right)
+                      END
+                   END ;
+                   IF tinfo^.strict
+                   THEN
+                      RETURN issueError (IsComparisonCompatible (left, right),
+                                         tinfo, left, right)
+                   ELSE
+                      RETURN issueError (IsExpressionCompatible (left, right),
+                                         tinfo, left, right)
+                   END
 
       ELSE
          InternalError ('unexpected kind value')
@@ -1393,6 +1408,8 @@ BEGIN
    tinfo^.resolved := InitIndex (1) ;
    tinfo^.unresolved := InitIndex (1) ;
    include (tinfo^.unresolved, des, expr, unknown) ;
+   tinfo^.strict := FALSE ;
+   tinfo^.isin := FALSE ;
    IF doCheck (tinfo)
    THEN
       deconstruct (tinfo) ;
@@ -1434,6 +1451,8 @@ BEGIN
    tinfo^.visited := InitIndex (1) ;
    tinfo^.resolved := InitIndex (1) ;
    tinfo^.unresolved := InitIndex (1) ;
+   tinfo^.strict := FALSE ;
+   tinfo^.isin := FALSE ;
    include (tinfo^.unresolved, actual, formal, unknown) ;
    IF doCheck (tinfo)
    THEN
@@ -1447,12 +1466,12 @@ END ParameterTypeCompatible ;
 
 
 (*
-   ExpressionTypeCompatible - returns TRUE if the expressions, left and right,
-                              are expression compatible.
+   doExpressionTypeCompatible -
 *)
 
-PROCEDURE ExpressionTypeCompatible (token: CARDINAL; format: ARRAY OF CHAR;
-                                    left, right: CARDINAL) : BOOLEAN ;
+PROCEDURE doExpressionTypeCompatible (token: CARDINAL; format: ARRAY OF CHAR;
+                                      left, right: CARDINAL;
+                                      strict: BOOLEAN) : BOOLEAN ;
 VAR
    tinfo: tInfo ;
 BEGIN
@@ -1472,6 +1491,8 @@ BEGIN
    tinfo^.visited := InitIndex (1) ;
    tinfo^.resolved := InitIndex (1) ;
    tinfo^.unresolved := InitIndex (1) ;
+   tinfo^.strict := strict ;
+   tinfo^.isin := FALSE ;
    include (tinfo^.unresolved, left, right, unknown) ;
    IF doCheck (tinfo)
    THEN
@@ -1481,6 +1502,33 @@ BEGIN
       deconstruct (tinfo) ;
       RETURN FALSE
    END
+END doExpressionTypeCompatible ;
+
+
+(*
+   ExpressionTypeCompatible - returns TRUE if the expressions, left and right,
+                              are expression compatible.
+*)
+
+PROCEDURE ExpressionTypeCompatible (token: CARDINAL; format: ARRAY OF CHAR;
+                                    left, right: CARDINAL;
+                                    strict, isin: BOOLEAN) : BOOLEAN ;
+BEGIN
+   IF (left#NulSym) AND (right#NulSym)
+   THEN
+      IF isin
+      THEN
+         IF IsConst (right) OR IsVar (right)
+         THEN
+            right := GetSType (right)
+         END ;
+         IF IsSet (right)
+         THEN
+            right := GetSType (right)
+         END
+      END
+   END ;
+   RETURN doExpressionTypeCompatible (token, format, left, right, strict)
 END ExpressionTypeCompatible ;
 
 

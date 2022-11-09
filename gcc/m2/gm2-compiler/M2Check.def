@@ -60,7 +60,8 @@ PROCEDURE AssignmentTypeCompatible (token: CARDINAL; format: ARRAY OF CHAR;
 *)
 
 PROCEDURE ExpressionTypeCompatible (token: CARDINAL; format: ARRAY OF CHAR;
-                                    left, right: CARDINAL) : BOOLEAN ;
+                                    left, right: CARDINAL;
+                                    strict, isin: BOOLEAN) : BOOLEAN ;
 
 
 END M2Check.

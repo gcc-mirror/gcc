@@ -22,10 +22,10 @@ FROM libc IMPORT exit ;
 VAR
    l: LONGCARD ;
 BEGIN
-   (* test for assignment of MAX(LONGINT) *)
+   (* test for assignment of MAX (LONGINT).  *)
    l := 9223372036854775807 ;
-   IF l#9223372036854775807
+   IF l # 9223372036854775807
    THEN
-      exit(1)
+      exit (1)
    END
 END TestLong2.

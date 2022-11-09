@@ -323,7 +323,7 @@ BEGIN
       j := pieceHead[p] ;
       i := pieceHead[p-1]+1 ;
       WHILE i<j DO
-         IF pieceList[i]=t
+         IF pieceList[i] = VAL (CARDINAL8, t)
          THEN
             RETURN( TRUE )
          END ;
@@ -882,7 +882,7 @@ VAR
    p: CARDINAL ;
 BEGIN
    FOR p := 1 TO Pieces DO
-      IF b.pieces[c][p]=from
+      IF b.pieces[c][p] = VAL (CARDINAL8, from)
       THEN
          RETURN p
       END
@@ -906,14 +906,14 @@ BEGIN
       RETURN FALSE
    END ;
    genMoves(b, m, col) ;
-   IF from#b.pieces[col][peg]
+   IF VAL (CARDINAL8, from) # b.pieces[col][peg]
    THEN
       RETURN FALSE
    END ;
    i := m.pieceHead[peg-1]+1 ;  (* skip the initial move *)
    j := m.pieceHead[peg] ;
    WHILE i<j DO
-      IF to=m.pieceList[i]
+      IF VAL (CARDINAL8, to) = m.pieceList[i]
       THEN
          RETURN TRUE
       END ;

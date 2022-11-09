@@ -18,7 +18,7 @@ Boston, MA 02110-1301, USA. *)
 
 MODULE align7 ;
 
-FROM SYSTEM IMPORT ADR ;
+FROM SYSTEM IMPORT ADR, ADDRESS ;
 FROM libc IMPORT exit ;
 
 TYPE
@@ -28,7 +28,7 @@ VAR
    x  : CHAR ;
    z  : foo ;
 BEGIN
-   IF ADR(z) MOD 1024=0
+   IF ADR(z) MOD 1024 = ADDRESS(0)
    THEN
       exit(0)
    ELSE

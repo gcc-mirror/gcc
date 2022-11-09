@@ -17,7 +17,8 @@ BEGIN
    io.in2:=198; (* or set in2 to 0 and it works *)
 
    io.out:=io.in;
-   IF io.out#io.in
+   io.in2:=io.in;
+   IF io.in2 # io.in
    THEN
       exit(1)
    END

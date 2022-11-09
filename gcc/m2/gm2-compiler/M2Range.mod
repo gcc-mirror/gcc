@@ -126,12 +126,14 @@ TYPE
                          exprLowestType: CARDINAL ;
                          procedure     : CARDINAL ;
                          paramNo       : CARDINAL ;
-                         isLeftValue   : BOOLEAN ;  (* is des an LValue,
-                                                       only used in pointernil *)
+                         isLeftValue   : BOOLEAN ;   (* is des an LValue,
+                                                        only used in pointernil *)
                          dimension     : CARDINAL ;
                          caseList      : CARDINAL ;
                          tokenNo       : CARDINAL ;
-                         firstmention  : BOOLEAN ; (* error message reported yet? *)
+                         errorReported : BOOLEAN ;  (* error message reported yet? *)
+                         strict        : BOOLEAN ;  (* is it a comparison expression?  *)
+                         isin          : BOOLEAN ;  (* expression created by IN operator?  *)
                       END ;
 
 
@@ -296,7 +298,7 @@ BEGIN
          dimension      := 0 ;
          caseList       := 0 ;
          tokenNo        := 0 ;       (* than pointernil            *)
-         firstmention   := TRUE
+         errorReported  := FALSE
       END ;
       PutIndice(RangeIndex, r, p)
    END ;
@@ -305,40 +307,30 @@ END InitRange ;
 
 
 (*
-   FirstMention - returns whether this is the first time this error has been
-                  reported.
+   reportedError - returns whether this is the first time this error has been
+                   reported.
 *)
 
-PROCEDURE FirstMention (r: CARDINAL) : BOOLEAN ;
+PROCEDURE reportedError (r: CARDINAL) : BOOLEAN ;
 VAR
    p: Range ;
 BEGIN
-   p := GetIndice(RangeIndex, r) ;
-   WITH p^ DO
-      IF firstmention
-      THEN
-         firstmention := FALSE ;
-         RETURN( TRUE )
-      ELSE
-         RETURN( FALSE )
-      END
-   END
-END FirstMention ;
+   p := GetIndice (RangeIndex, r) ;
+   RETURN p^.errorReported
+END reportedError ;
 
 
 (*
-   Mentioned - returns whether this error has been been reported.
+   setReported - assigns errorReported to TRUE.
 *)
 
-PROCEDURE Mentioned (r: CARDINAL) : BOOLEAN ;
+PROCEDURE setReported (r: CARDINAL) ;
 VAR
    p: Range ;
 BEGIN
-   p := GetIndice(RangeIndex, r) ;
-   WITH p^ DO
-      RETURN NOT firstmention
-   END
-END Mentioned ;
+   p := GetIndice (RangeIndex, r) ;
+   p^.errorReported := TRUE
+END setReported ;
 
 
 (*
@@ -356,7 +348,9 @@ BEGIN
       expr           := e ;
       desLowestType  := GetLowestType (d) ;
       exprLowestType := GetLowestType (e) ;
-      tokenNo        := tokno
+      tokenNo        := tokno ;
+      strict         := FALSE ;
+      isin           := FALSE
    END ;
    RETURN p
 END PutRange ;
@@ -393,10 +387,36 @@ BEGIN
       desLowestType  := NulSym ;
       exprLowestType := NulSym ;
       isLeftValue    := FALSE ;
-      tokenNo        := chooseTokenPos (tokpos)
+      tokenNo        := chooseTokenPos (tokpos) ;
+      strict         := FALSE ;
+      isin           := FALSE
    END ;
-   RETURN( p )
+   RETURN p
 END PutRangeNoLow ;
+
+
+(*
+   PutRangeExpr - initializes contents of, p.  It
+                  does not set lowest types as they may be
+                  unknown at this point.
+*)
+
+PROCEDURE PutRangeExpr (tokpos: CARDINAL; p: Range; t: TypeOfRange;
+                        d, e: CARDINAL; strict, isin: BOOLEAN) : Range ;
+BEGIN
+   WITH p^ DO
+      type           := t ;
+      des            := d ;
+      expr           := e ;
+      desLowestType  := NulSym ;
+      exprLowestType := NulSym ;
+      isLeftValue    := FALSE ;
+      tokenNo        := chooseTokenPos (tokpos) ;
+   END ;
+   p^.strict := strict ;
+   p^.isin := isin ;
+   RETURN p
+END PutRangeExpr ;
 
 
 (*
@@ -416,9 +436,11 @@ BEGIN
       desLowestType  := GetLowestType(GetType(d)) ;
       exprLowestType := NulSym ;
       isLeftValue    := isLeft ;
-      tokenNo        := tokpos
+      tokenNo        := tokpos ;
+      strict         := FALSE ;
+      isin           := FALSE
    END ;
-   RETURN( p )
+   RETURN p
 END PutRangePointer ;
 
 
@@ -454,7 +476,9 @@ BEGIN
       desLowestType  := GetLowestType(d) ;
       exprLowestType := NulSym ;
       isLeftValue    := FALSE ;
-      tokenNo        := chooseTokenPos (tokno)
+      tokenNo        := chooseTokenPos (tokno) ;
+      strict         := FALSE ;
+      isin           := FALSE
    END ;
    RETURN( p )
 END PutRangeUnary ;
@@ -479,7 +503,9 @@ BEGIN
       procedure      := proc ;
       paramNo        := i ;
       isLeftValue    := FALSE ;
-      tokenNo        := GetTokenNo ()
+      tokenNo        := GetTokenNo () ;
+      strict         := FALSE ;
+      isin           := FALSE
    END ;
    RETURN p
 END PutRangeParam ;
@@ -503,7 +529,9 @@ BEGIN
       desLowestType  := GetLowestType(d) ;
       exprLowestType := GetLowestType(e) ;
       dimension      := dim ;
-      tokenNo        := GetTokenNo ()
+      tokenNo        := GetTokenNo () ;
+      strict         := FALSE ;
+      isin           := FALSE
    END ;
    RETURN p
 END PutRangeArraySubscript ;
@@ -766,12 +794,12 @@ END InitParameterRangeCheck ;
                               are expression compatible.
 *)
 
-PROCEDURE InitTypesExpressionCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+PROCEDURE InitTypesExpressionCheck (tokno: CARDINAL; d, e: CARDINAL; strict, isin: BOOLEAN) : CARDINAL ;
 VAR
    r: CARDINAL ;
 BEGIN
    r := InitRange() ;
-   Assert (PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typeexpr, d, e) # NIL) ;
+   Assert (PutRangeExpr (tokno, GetIndice (RangeIndex, r), typeexpr, d, e, strict, isin) # NIL) ;
    RETURN r
 END InitTypesExpressionCheck ;
 
@@ -1033,7 +1061,7 @@ BEGIN
    IF TreeOverflow (max)
    THEN
       WriteString ("overflow detected in expr\n"); WriteLn ;
-      debug_tree (StringToChar(Mod2Gcc(expr), type, expr));
+      debug_tree (StringToChar (Mod2Gcc (expr), type, expr));
    END ;
    PushIntegerTree (StringToChar (Mod2Gcc (expr), type, expr)) ;
    PushIntegerTree (min) ;
@@ -1107,22 +1135,22 @@ VAR
    p       : Range ;
    min, max: Tree ;
 BEGIN
-   p := GetIndice(RangeIndex, r) ;
+   p := GetIndice (RangeIndex, r) ;
    WITH p^ DO
-      TryDeclareConstant(tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
-      IF desLowestType#NulSym
+      TryDeclareConstant (tokenno, expr) ;  (* use quad tokenno, rather than the range tokenNo *)
+      IF desLowestType # NulSym
       THEN
-         IF GccKnowsAbout(expr) AND IsConst(expr) AND
-            GetMinMax(tokenno, desLowestType, min, max)
+         IF GccKnowsAbout (expr) AND IsConst (expr) AND
+            GetMinMax (tokenno, desLowestType, min, max)
          THEN
-            IF OutOfRange(tokenno, min, expr, max, desLowestType)
+            IF OutOfRange (tokenno, min, expr, max, desLowestType)
             THEN
-               MetaErrorT2(tokenNo,
-                           'attempting to assign a value {%2Wa} to a designator {%1a} which will exceed the range of type {%1tad}',
-                           des, expr) ;
-               PutQuad(q, ErrorOp, NulSym, NulSym, r)
+               MetaErrorT2 (tokenNo,
+                            'attempting to assign a value {%2Wa} to a designator {%1a} which will exceed the range of type {%1tad}',
+                            des, expr) ;
+               PutQuad (q, ErrorOp, NulSym, NulSym, r)
             ELSE
-               SubQuad(q)
+               SubQuad (q)
             END
          END
       END
@@ -1559,23 +1587,24 @@ BEGIN
       exprType := GetType(expr)
    END ;
 
-   IF IsAssignmentCompatible(GetType(des), exprType)
+   IF IsAssignmentCompatible (GetType(des), exprType)
    THEN
       SubQuad(q)
    ELSE
-      IF FirstMention(r)
+      IF NOT reportedError (r)
       THEN
-         IF IsProcedure(des)
+         IF IsProcedure (des)
          THEN
-            MetaErrorsT2(tokenNo,
-                         'the return type {%1Etad} declared in procedure {%1Da}',
-                         'is incompatible with the returned expression {%2ad}}',
-                         des, expr) ;
+            MetaErrorsT2 (tokenNo,
+                          'the return type {%1Etad} declared in procedure {%1Da}',
+                          'is incompatible with the returned expression {%2ad}}',
+                          des, expr) ;
          ELSE
-            MetaErrorT3(tokenNo,
-                        'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%3ad:of type {%3ad}} are incompatible',
-                        des, expr, exprType)
+            MetaErrorT3 (tokenNo,
+                         'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%3ad:of type {%3ad}} are incompatible',
+                         des, expr, exprType)
          END ;
+         setReported (r) ;
          FlushErrors
       END
    END
@@ -1593,17 +1622,6 @@ BEGIN
                                procedure, formal, actual, paramNo, IsVarParam (procedure, paramNo))
    THEN
       SubQuad(q)
-   ELSE
-      (*
-      IF FirstMention(r)
-      THEN
-         MetaErrorsT4(tokenNo,
-                     '{%3EN} actual parameter {%2ad} is incompatible with the formal parameter {%1ad}',
-                     '{%3EN} parameter in procedure {%4Da}',
-                     formal, actual, paramNo, procedure) ;
-         (* FlushErrors *)
-      END
-      *)
    END
 END FoldTypeParam ;
 
@@ -1612,25 +1630,17 @@ END FoldTypeParam ;
    FoldTypeExpr -
 *)
 
-PROCEDURE FoldTypeExpr (q: CARDINAL; tokenNo: CARDINAL; left, right: CARDINAL; r: CARDINAL) ;
+PROCEDURE FoldTypeExpr (q: CARDINAL; tokenNo: CARDINAL; left, right: CARDINAL; strict, isin: BOOLEAN; r: CARDINAL) ;
 BEGIN
-   IF NOT Mentioned (r)
+   IF (left # NulSym) AND (right # NulSym) AND (NOT reportedError (r))
    THEN
       IF ExpressionTypeCompatible (tokenNo,
                                    'expression of type {%1Etad} is incompatible with type {%2tad}',
-                                   left, right)
-      (* IsExpressionCompatible(GetType(des), GetType(expr)) *)
+                                   left, right, strict, isin)
       THEN
-         SubQuad(q)
-      ELSE
-         IF FirstMention (r)
-         THEN
-            MetaErrorT2 (tokenNo,
-                         'expression of type {%1Etad} is incompatible with type {%2tad}',
-                         left, right)
-         END
+         SubQuad(q) ;
+         setReported (r)
       END
-      (* FlushErrors *)
    END
 END FoldTypeExpr ;
 
@@ -1651,7 +1661,7 @@ BEGIN
    END ;
    IF NOT IsAssignmentCompatible(GetType(des), exprType)
    THEN
-      IF FirstMention(r)
+      IF NOT reportedError (r)
       THEN
          IF IsProcedure(des)
          THEN
@@ -1663,7 +1673,8 @@ BEGIN
             MetaErrorT2(tokenNo,
                         'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%2tad:of type {%2tad}} are incompatible',
                         des, expr)
-         END
+         END ;
+         setReported (r)
       END
       (* FlushErrors *)
    END
@@ -1680,16 +1691,6 @@ BEGIN
                                    '{%4EN} type failure between actual {%3ad} and the formal {%2ad}',
                                    procedure, formal, actual, paramNo, IsVarParam (procedure, paramNo))
    THEN
-      (*
-      IF FirstMention(r)
-      THEN
-         MetaErrorsT4(tokenNo,
-                      '{%3EN} type failure between actual parameter {%2ad} and the formal parameter {%1ad}',
-                      '{%3EN} parameter of procedure {%4Da} {%1a} has a type of {%1ad}',
-                      formal, actual, paramNo, procedure) ;
-         (* FlushErrors *)
-      END
-      *)
    END
 END CodeTypeParam ;
 
@@ -1698,22 +1699,15 @@ END CodeTypeParam ;
    CodeTypeExpr -
 *)
 
-PROCEDURE CodeTypeExpr (tokenNo: CARDINAL; left, right: CARDINAL; r: CARDINAL) ;
+PROCEDURE CodeTypeExpr (tokenNo: CARDINAL; left, right: CARDINAL; strict, isin: BOOLEAN; r: CARDINAL) ;
 BEGIN
-   IF NOT Mentioned (r)
+   IF NOT reportedError (r)
    THEN
-      IF NOT ExpressionTypeCompatible (tokenNo,
-                                       'expression of type {%1Etad} is incompatible with type {%2tad}',
-                                       left, right)
+      IF ExpressionTypeCompatible (tokenNo,
+                                   'expression of type {%1Etad} is incompatible with type {%2tad}',
+                                   left, right, strict, isin)
       THEN
-         (* IF NOT IsExpressionCompatible(GetType(des), GetType(expr))  *)
-         IF FirstMention(r)
-         THEN
-            MetaErrorT2 (tokenNo,
-                         'expression of type {%1Etad} is incompatible with type {%2tad}',
-                         left, right)
-            (* FlushErrors *)
-         END
+         setReported (r)
       END
    END
 END CodeTypeExpr ;
@@ -1740,7 +1734,7 @@ BEGIN
 
          typeassign:  FoldTypeAssign(q, tokenNo, des, expr, r) |
          typeparam:   FoldTypeParam(q, tokenNo, des, expr, procedure, paramNo) |
-         typeexpr:    FoldTypeExpr(q, tokenNo, des, expr, r)
+         typeexpr:    FoldTypeExpr(q, tokenNo, des, expr, strict, isin, r)
 
          ELSE
             InternalError ('not expecting to reach this point')
@@ -1773,7 +1767,7 @@ BEGIN
 
          typeassign:  CodeTypeAssign(tokenNo, des, expr, r) |
          typeparam:   CodeTypeParam(tokenNo, des, expr, procedure, paramNo) |
-         typeexpr:    CodeTypeExpr(tokenNo, des, expr, r)
+         typeexpr:    CodeTypeExpr(tokenNo, des, expr, strict, isin, r)
 
          ELSE
             InternalError ('not expecting to reach this point')

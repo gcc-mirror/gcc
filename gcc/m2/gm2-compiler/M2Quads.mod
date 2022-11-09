@@ -34,6 +34,7 @@ FROM M2Scaffold IMPORT DeclareScaffold, mainFunction, initFunction,
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrors1, MetaErrors2, MetaErrors3,
                         MetaErrorT0, MetaErrorT1, MetaErrorT2,
+                        MetaErrorsT1,
                         MetaErrorStringT0, MetaErrorStringT1,
                         MetaErrorString1, MetaErrorString2,
                         MetaErrorN1, MetaErrorN2,
@@ -10728,7 +10729,7 @@ BEGIN
                    n1, n2)
    ELSE
       (* this checks the types are compatible, not the data contents.  *)
-      BuildRange(InitTypesAssignmentCheck(tokno, currentProc, actualVal))
+      BuildRange (InitTypesAssignmentCheck (tokno, currentProc, actualVal))
    END
 END CheckReturnType ;
 
@@ -12240,19 +12241,9 @@ BEGIN
       ELSE
          OldPos := OperatorPos ;
          OperatorPos := MakeVirtualTok (OperatorPos, leftpos, rightpos) ;
-         (*
          IF checkTypes
          THEN
-            CheckExpressionCompatible (lefttype, righttype) ;
-            IF CannotCheckTypeInPass3 (left) OR CannotCheckTypeInPass3 (right)
-            THEN
-               BuildRange (InitTypesExpressionCheck (OperatorPos, left, right))
-            END
-         END ;
-         *)
-         IF checkTypes
-         THEN
-            BuildRange (InitTypesExpressionCheck (OperatorPos, left, right))
+            BuildRange (InitTypesExpressionCheck (OperatorPos, left, right, FALSE, FALSE))
          END ;
          value := MakeTemporaryFromExpressions (OperatorPos,
                                                 right, left,
@@ -12536,29 +12527,37 @@ END BuildRelOpFromBoolean ;
    CheckVariableOrConstantOrProcedure - checks to make sure sym is a variable, constant or procedure.
 *)
 
-PROCEDURE CheckVariableOrConstantOrProcedure (sym: CARDINAL) ;
+PROCEDURE CheckVariableOrConstantOrProcedure (tokpos: CARDINAL; sym: CARDINAL) ;
 VAR
    type: CARDINAL ;
 BEGIN
    type := GetSType (sym) ;
    IF IsUnknown (sym)
    THEN
-      MetaError1 ('{%1EUad} has not been declared', sym) ;
+      MetaErrorT1 (tokpos, '{%1EUad} has not been declared', sym) ;
       UnknownReported (sym)
+   ELSIF IsPseudoSystemFunction (sym) OR IsPseudoBaseFunction (sym)
+   THEN
+      MetaErrorT1 (tokpos,
+                   '{%1Ead} expected a variable, procedure, constant or expression, not an intrinsic procedure function',
+                   sym)
    ELSIF (NOT IsConst(sym)) AND (NOT IsVar(sym)) AND
          (NOT IsProcedure(sym)) AND
          (NOT IsTemporary(sym)) AND (NOT MustNotCheckBounds)
    THEN
-      MetaErrors1 ('{%1Ead} expected a variable, procedure, constant or expression',
-                   'and it was declared as a {%1Dd}', sym) ;
+      MetaErrorsT1 (tokpos,
+                    '{%1Ead} expected a variable, procedure, constant or expression',
+                    'and it was declared as a {%1Dd}', sym) ;
    ELSIF (type#NulSym) AND IsArray(type)
    THEN
-      MetaErrors1 ('{%1EU} not expecting an array variable as an operand for either comparison or binary operation',
-                  'it was declared as a {%1Dd}', sym)
+      MetaErrorsT1 (tokpos,
+                    '{%1EU} not expecting an array variable as an operand for either comparison or binary operation',
+                    'it was declared as a {%1Dd}', sym)
    ELSIF IsConstString(sym) AND (GetStringLength(sym)>1)
    THEN
-      MetaError1 ('{%1EU} not expecting a string constant as an operand for either comparison or binary operation',
-                  sym)
+      MetaErrorT1 (tokpos,
+                   '{%1EU} not expecting a string constant as an operand for either comparison or binary operation',
+                   sym)
    END
 END CheckVariableOrConstantOrProcedure ;
 
@@ -12613,12 +12612,12 @@ END CheckInCompatible ;
 PROCEDURE BuildRelOp (optokpos: CARDINAL) ;
 VAR
    combinedTok,
-   tokpos1,
-   tokpos2    : CARDINAL ;
-   Op         : Name ;
+   rightpos,
+   leftpos            : CARDINAL ;
+   Op                 : Name ;
    t,
-   t1, t2,
-   e1, e2     : CARDINAL ;
+   rightType, leftType,
+   right, left        : CARDINAL ;
 BEGIN
    IF CompilerDebugging
    THEN
@@ -12640,45 +12639,38 @@ BEGIN
       THEN
          ConvertBooleanToVariable (OperandTtok (3), 3)
       END ;
-      PopTFtok (e1, t1, tokpos1) ;
+      PopTFtok (right, rightType, rightpos) ;
       PopT (Op) ;
-      PopTFtok (e2, t2, tokpos2) ;
+      PopTFtok (left, leftType, leftpos) ;
 
-      CheckVariableOrConstantOrProcedure (e1) ;
-      CheckVariableOrConstantOrProcedure (e2) ;
+      CheckVariableOrConstantOrProcedure (rightpos, right) ;
+      CheckVariableOrConstantOrProcedure (leftpos, left) ;
 
-      IF (Op = EqualTok) OR (Op = HashTok) OR (Op = LessGreaterTok)
+      IF (left#NulSym) AND (right#NulSym)
       THEN
-         CheckAssignmentCompatible (t1, t2)
-      ELSE
-         IF IsConstructor (e1) OR IsConstSet (e1)
-         THEN
-            (* ignore type checking for now *)
-         ELSE
-            t1 := CheckInCompatible (Op, t2, t1) ;
-            CheckExpressionCompatible (t1, t2)
-         END
+         (* BuildRange will check the expression later on once gcc knows about all data types.  *)
+         BuildRange (InitTypesExpressionCheck (optokpos, left, right, TRUE, Op = InTok))
       END ;
 
-      (* must dereference LeftValue operands *)
-      IF GetMode(e1) = LeftValue
+      (* Must dereference LeftValue operands.  *)
+      IF GetMode(right) = LeftValue
       THEN
-         t := MakeTemporary (tokpos1, RightValue) ;
-         PutVar(t, GetSType(e1)) ;
-         CheckPointerThroughNil (tokpos1, e1) ;
-         doIndrX (tokpos1, t, e1) ;
-         e1 := t
+         t := MakeTemporary (rightpos, RightValue) ;
+         PutVar(t, GetSType(right)) ;
+         CheckPointerThroughNil (rightpos, right) ;
+         doIndrX (rightpos, t, right) ;
+         right := t
       END ;
-      IF GetMode(e2) = LeftValue
+      IF GetMode(left) = LeftValue
       THEN
-         t := MakeTemporary (tokpos2, RightValue) ;
-         PutVar (t, GetSType (e2)) ;
-         CheckPointerThroughNil (tokpos2, e2) ;
-         doIndrX (tokpos2, t, e2) ;
-         e2 := t
+         t := MakeTemporary (leftpos, RightValue) ;
+         PutVar (t, GetSType (left)) ;
+         CheckPointerThroughNil (leftpos, left) ;
+         doIndrX (leftpos, t, left) ;
+         left := t
       END ;
-      combinedTok := MakeVirtualTok (optokpos, tokpos2, tokpos1) ;
-      GenQuadO (combinedTok, MakeOp(Op), e2, e1, 0, FALSE) ;      (* True  Exit *)
+      combinedTok := MakeVirtualTok (optokpos, leftpos, rightpos) ;
+      GenQuadO (combinedTok, MakeOp(Op), left, right, 0, FALSE) ;  (* True  Exit *)
       GenQuadO (combinedTok, GotoOp, NulSym, NulSym, 0, FALSE) ;  (* False Exit *)
       PushBool (NextQuad-2, NextQuad-1)
    END
@@ -12704,8 +12696,8 @@ VAR
    t, f: CARDINAL ;
 BEGIN
    CheckBooleanId ;
-   PopBool(t, f) ;
-   PushBool(f, t)
+   PopBool (t, f) ;
+   PushBool (f, t)
 END BuildNot ;
 
 

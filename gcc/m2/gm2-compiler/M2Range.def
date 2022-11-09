@@ -304,7 +304,8 @@ PROCEDURE InitParameterRangeCheck (proc: CARDINAL; i: CARDINAL;
                               are expression compatible.
 *)
 
-PROCEDURE InitTypesExpressionCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+PROCEDURE InitTypesExpressionCheck (tokno: CARDINAL; d, e: CARDINAL;
+                                    strict, isin: BOOLEAN) : CARDINAL ;
 
 
 (*

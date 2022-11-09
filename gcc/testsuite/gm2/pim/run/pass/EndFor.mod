@@ -146,7 +146,7 @@ BEGIN
          (* inc can never cause an underflow given its range *)
       ELSE
          (* des <= MAX(INTEGER) *)
-         IF des=MIN(INTEGER)
+         IF des = CARDINAL (MAX (INTEGER))
          THEN
             printf("increment exceeds range at end of FOR loop\n") ;
             exit (4)

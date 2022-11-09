@@ -71,6 +71,7 @@ EXPORT QUALIFIED Nil,                   (* Base constants          *)
                  IsAssignmentCompatible,
                  IsExpressionCompatible,
                  IsParameterCompatible,
+                 IsComparisonCompatible,
                  IsValidParameter,
                  AssignmentRequiresWarning,
                  IsMathType,
@@ -284,6 +285,15 @@ PROCEDURE IsExpressionCompatible (t1, t2: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE IsParameterCompatible (t1, t2: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsComparisonCompatible - returns TRUE if t1 and t2 are comparison
+                            compatible.  PIM allows INTEGER and ADDRESS within
+                            expressions but we warn against their comparison.
+*)
+
+PROCEDURE IsComparisonCompatible (t1, t2: CARDINAL) : BOOLEAN ;
 
 
 (*

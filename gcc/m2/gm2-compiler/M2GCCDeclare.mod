@@ -1615,20 +1615,19 @@ END DeclareConstructor ;
 
 PROCEDURE TryDeclareConstructor (tokenno: CARDINAL; sym: CARDINAL) ;
 BEGIN
-   IF sym=NulSym
+   IF sym#NulSym
    THEN
-      InternalError ('trying to declare the NulSym')
-   END ;
-   IF IsConstructor(sym) AND (NOT GccKnowsAbout(sym))
-   THEN
-      WalkConstructor(sym, TraverseDependants) ;
-      IF NOT IsElementInSet(ToBeSolvedByQuads, sym)
+      IF IsConstructor(sym) AND (NOT GccKnowsAbout(sym))
       THEN
-         TryEvaluateValue(sym) ;
-         IF IsConstructorDependants(sym, IsFullyDeclared)
+         WalkConstructor(sym, TraverseDependants) ;
+         IF NOT IsElementInSet(ToBeSolvedByQuads, sym)
          THEN
-            PushValue(sym) ;
-            DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
+            TryEvaluateValue(sym) ;
+            IF IsConstructorDependants(sym, IsFullyDeclared)
+            THEN
+               PushValue(sym) ;
+               DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
+            END
          END
       END
    END
@@ -3916,7 +3915,9 @@ BEGIN
       THEN
          printf0(' constant constructor set ') ;
          IncludeType(l, sym)
-      END ;
+      ELSE
+         IncludeType(l, sym)
+      END
    ELSIF IsConstructor(sym)
    THEN
       printf2('sym %d IsConstructor (non constant) (%a)', sym, n) ;

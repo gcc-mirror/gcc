@@ -103,12 +103,12 @@ BEGIN
       Close(StdOut) ;
       exit(1)
    END ;
-   IF DIFADR(a2, a1)#TSIZE(LOC)
+   IF DIFADR(a2, a1) # INTEGER (TSIZE (LOC))
    THEN
       Close(StdOut) ;
       exit(2)
    END ;
-   a1 := MAKEADR(ADDRESS(0)) ;
+   a1 := MAKEADR (ADDRESS (0)) ;
    IF a1#NIL
    THEN
       Close(StdOut) ;

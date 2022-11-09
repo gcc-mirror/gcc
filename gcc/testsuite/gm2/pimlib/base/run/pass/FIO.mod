@@ -992,7 +992,7 @@ VAR
    ch: CHAR ;
 BEGIN
    CheckAccess(f, openedforread, FALSE) ;
-   IF BufferedRead(f, SIZE(ch), ADR(ch))=SIZE(ch)
+   IF BufferedRead(f, SIZE(ch), ADR(ch)) = INTEGER (SIZE(ch))
    THEN
       SetEndOfLine(f, ch) ;
       RETURN( ch )
@@ -1097,7 +1097,7 @@ END UnReadChar ;
 PROCEDURE ReadAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
    CheckAccess(f, openedforread, FALSE) ;
-   IF BufferedRead(f, HIGH(a), ADR(a))=HIGH(a)
+   IF BufferedRead(f, HIGH(a), ADR(a)) = INTEGER (HIGH(a))
    THEN
       SetEndOfLine(f, a[HIGH(a)])
    END
@@ -1344,7 +1344,7 @@ END FlushBuffer ;
 PROCEDURE WriteAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
    CheckAccess(f, openedforwrite, TRUE) ;
-   IF BufferedWrite(f, HIGH(a), ADR(a))=HIGH(a)
+   IF BufferedWrite (f, HIGH(a), ADR(a)) = INTEGER (HIGH(a))
    THEN
    END
 END WriteAny ;
@@ -1357,7 +1357,7 @@ END WriteAny ;
 PROCEDURE WriteChar (f: File; ch: CHAR) ;
 BEGIN
    CheckAccess(f, openedforwrite, TRUE) ;
-   IF BufferedWrite(f, SIZE(ch), ADR(ch))=SIZE(ch)
+   IF BufferedWrite(f, SIZE(ch), ADR(ch)) = INTEGER (SIZE(ch))
    THEN
    END
 END WriteChar ;

@@ -18,14 +18,14 @@ Boston, MA 02110-1301, USA. *)
 
 MODULE align4 ;
 
-FROM SYSTEM IMPORT ADR ;
+FROM SYSTEM IMPORT ADR, ADDRESS ;
 FROM libc IMPORT exit ;
 
 VAR
    x  : CHAR ;
    z  : POINTER TO INTEGER <* bytealignment(1024) *> ;
 BEGIN
-   IF ADR(z) MOD 1024=0
+   IF ADR(z) MOD 1024 = ADDRESS (0)
    THEN
       exit(0)
    ELSE

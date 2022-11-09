@@ -28,7 +28,7 @@ VAR
 
 PROCEDURE assert (b: BOOLEAN; a: ARRAY OF CHAR) ;
 BEGIN
-   INC(test) ;
+   INC (test) ;
    IF NOT b
    THEN
       printf ("failed test %d which was %a\n", ADR(a)) ;
@@ -49,7 +49,7 @@ BEGIN
    THEN
       w := c ;
       i := w ;
-      assert (i=c, "copying data through WORD32")
+      assert (CARDINAL(i) = c, "copying data through WORD32")
    END ;
 
    w := 1 ;

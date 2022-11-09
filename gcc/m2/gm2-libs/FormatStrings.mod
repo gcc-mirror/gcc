@@ -446,7 +446,7 @@ VAR
    prevpos: INTEGER ;
    result : String ;
 BEGIN
-   IF (startpos = Length (fmt)) OR (startpos < 0)
+   IF (startpos = VAL (INTEGER, Length (fmt))) OR (startpos < 0)
    THEN
       RETURN s
    ELSE
