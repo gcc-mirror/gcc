@@ -17218,6 +17218,7 @@ resolve_equivalence (gfc_equiv *eq)
 	    "statement at %L with different type objects";
       if ((object ==2
 	   && last_eq_type == SEQ_MIXED
+	   && last_where
 	   && !gfc_notify_std (GFC_STD_GNU, msg, first_sym->name, last_where))
 	  || (eq_type == SEQ_MIXED
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))
@@ -17227,6 +17228,7 @@ resolve_equivalence (gfc_equiv *eq)
 	    "statement at %L with objects of different type";
       if ((object ==2
 	   && last_eq_type == SEQ_NONDEFAULT
+	   && last_where
 	   && !gfc_notify_std (GFC_STD_GNU, msg, first_sym->name, last_where))
 	  || (eq_type == SEQ_NONDEFAULT
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))
