@@ -1,3 +1,70 @@
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101962
+	* gcc.dg/analyzer/data-model-23.c (test_3): New test.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/24021
+	* gcc.dg/tree-ssa/vrp-float-plus.c: New test.
+
+2022-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107389
+	* gcc.dg/pr107389.c: New testcase.
+
+2022-11-08  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gcc.target/gcn/math-builtins-1.c: New test.
+
+2022-11-08  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR testsuite/107171
+	* gcc.target/powerpc/pr105586.c: Guard against unsupported
+	__int128.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107547
+	* gcc.dg/pr107547.c: New test.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107546
+	* gcc.target/i386/pr107546.c: New test.
+
+2022-11-08  konglin1  <lingling.kong@intel.com>
+
+	Revert:
+	2022-11-08  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/raoint-atomic-fetch.c: New test.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/errno-1.c: New test.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/strchr-1.c (test_literal): Detect writing to a
+	string literal.  Verify that we emit the "when '__builtin_strchr'
+	returns non-NULL" message.
+
+2022-11-08  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-eq15.C: New test.
+	* g++.dg/cpp0x/defaulted3.C: Add const.
+	* g++.dg/cpp2a/bit-cast7.C: Add const.
+	* g++.dg/cpp2a/spaceship-rewrite1.C: Expect error.
+	* g++.dg/cpp2a/spaceship-rewrite5.C: Expect error.
+	* g++.old-deja/g++.jason/byval2.C: Expect error.
+	* g++.old-deja/g++.other/overload13.C: Add const.
+
+2022-11-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr104530.c: New.
+
 2022-11-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/55157

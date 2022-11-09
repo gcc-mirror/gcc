@@ -1,3 +1,156 @@
+2022-11-08  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc (struct core_walk_data): Add field `which'...
+	(bpf_resolve_overloaded_builtin): ... set it here. Use values of enum
+	bpf_builtins for error checks.
+	(bpf_core_walk): Use values of enum bpf_builtins.
+	(bpf_core_newdecl): Likewise.
+	(bpf_expand_builtin): Likewise.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/24021
+	* range-op-float.cc (propagate_nans): New.
+	(frange_nextafter): New.
+	(frange_arithmetic): New.
+	(class foperator_plus): New.
+	(floating_op_table::floating_op_table): Add PLUS_EXPR entry.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* real.cc (real_isdenormal): New.
+	(encode_ieee_single): Call real_isdenormal.
+	(encode_ieee_double): Same.
+	(encode_ieee_extended): Same.
+	(encode_ieee_quad): Same.
+	(encode_ieee_half): Same.
+	(encode_arm_bfloat_half): Same.
+	* real.h (real_isdenormal): Add mode argument.  Rewrite for
+	normalized values.
+	* value-range.cc (frange::flush_denormals_to_zero): Pass mode to
+	real_isdenormal.
+
+2022-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107389
+	* gimple-low.cc (lower_builtin_assume_aligned): New.
+	(lower_stmt): Call it.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_div::fold_range): Call
+	update_known_bitmask.
+	* tree-ssa-ccp.cc (bit_value_binop): Handle divisions by powers of
+	2 as a right shift.
+
+2022-11-08  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand first argument
+	of GCN_BUILTIN_LDEXPV to V64DFmode.
+
+2022-11-08  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (FABSV, FLOORVF, FLOORV): New builtins.
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand GCN_BUILTIN_FABSV,
+	GCN_BUILTIN_FLOORVF and GCN_BUILTIN_FLOORV.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (irange_to_masked_value): New.
+	(update_known_bitmask): New.
+	(operator_mult::fold_range): Call update_known_bitmask.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107547
+	* tree-call-cdce.cc (get_no_error_domain): Handle CASE_FLT_FN_FLOATN_NX
+	of BUILT_IN_{ACOS,ASIN,ACOSH,ATANH,LOG,LOG2,LOG10,LOG1P}.  Handle
+	BUILT_IN_{COSH,SINH,EXP,EXPM1,EXP2}F{16,32,64,128}.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107546
+	* config/i386/predicates.md (vector_or_const_vector_operand): New
+	predicate.
+	* config/i386/sse.md (vec_cmp<mode><sseintvecmodelower>,
+	vec_cmpv2div2di, vec_cmpu<mode><sseintvecmodelower>,
+	vec_cmpuv2div2di): Use nonimmediate_or_const_vector_operand
+	predicate instead of nonimmediate_operand and
+	vector_or_const_vector_operand instead of vector_operand.
+	* config/i386/i386-expand.cc (ix86_expand_int_sse_cmp): For
+	LE/LEU or GE/GEU with CONST_VECTOR cop1 try to transform those
+	into LE/LEU or GT/GTU with larger or smaller by one cop1 if
+	there is no wrap-around.  Force CONST_VECTOR cop0 or cop1 into
+	REG.  Formatting fix.
+
+2022-11-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR rtl-optimization/107482
+	* ira-color.cc (assign_hard_reg): Only call
+	update_costs_from_copies when retry_p is false.
+
+2022-11-08  konglin1  <lingling.kong@intel.com>
+
+	Revert:
+	2022-11-07  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/i386.opt:Add -mprefer-remote-atomic.
+	* config/i386/sync.md (atomic_<plus_logic><mode>):
+	New define_expand.
+	(atomic_add<mode>): Rename to below one.
+	(atomic_add<mode>_1): To this.
+	(atomic_<logic><mode>): Ditto.
+	(atomic_<logic><mode>_1): Ditto.
+	* doc/invoke.texi: Add -mprefer-remote-atomic.
+
+2022-11-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-options.cc (m_CORE_ATOM): New.
+	* config/i386/x86-tune.def
+	(X86_TUNE_SCHEDULE): Initial tune for CORE_ATOM.
+	(X86_TUNE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_DEST_FALSE_DEP_FOR_GLC): Ditto.
+	(X86_TUNE_MEMORY_MISMATCH_STALL): Ditto.
+	(X86_TUNE_USE_LEAVE): Ditto.
+	(X86_TUNE_PUSH_MEMORY): Ditto.
+	(X86_TUNE_USE_INCDEC): Ditto.
+	(X86_TUNE_INTEGER_DFMODE_MOVES): Ditto.
+	(X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB): Ditto.
+	(X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Ditto.
+	(X86_TUNE_USE_SAHF): Ditto.
+	(X86_TUNE_USE_BT): Ditto.
+	(X86_TUNE_AVOID_FALSE_DEP_FOR_BMI): Ditto.
+	(X86_TUNE_ONE_IF_CONV_INSN): Ditto.
+	(X86_TUNE_AVOID_MFENCE): Ditto.
+	(X86_TUNE_USE_SIMODE_FIOP): Ditto.
+	(X86_TUNE_EXT_80387_CONSTANTS): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_TYPELESS_STORES): Ditto.
+	(X86_TUNE_SSE_LOAD0_BY_PXOR): Ditto.
+	(X86_TUNE_AVOID_4BYTE_PREFIXES): Ditto.
+	(X86_TUNE_USE_GATHER_2PARTS): Ditto.
+	(X86_TUNE_USE_GATHER_4PARTS): Ditto.
+	(X86_TUNE_USE_GATHER): Ditto.
+
+2022-11-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104530
+	* gimple-range-cache.cc (ranger_cache::register_inferred_value):
+	New.  Split from:
+	(ranger_cache::apply_inferred_ranges): Move setting cache to
+	separate function.
+	* gimple-range-cache.h (register_inferred_value): New prototype.
+	* gimple-range-infer.cc (infer_range_manager::has_range_p): New.
+	* gimple-range-infer.h (has_range_p): New prototype.
+	* gimple-range.cc (register_transitive_inferred_ranges): New.
+	* gimple-range.h (register_transitive_inferred_ranges): New proto.
+	* tree-vrp.cc (rvrp_folder::fold_stmt): Check for transitive inferred
+	ranges at the end of the block before folding final stmt.
+
 2022-11-07  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.cc (handle_attr_preserve): Use maybe_make_core_relo().

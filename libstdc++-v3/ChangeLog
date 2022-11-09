@@ -1,3 +1,104 @@
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/new_nothrow.cc: Add missing noexcept
+	to operator delete replacements.
+	* testsuite/20_util/any/cons/92156.cc: Disable
+	-Winit-list-lifetime warnings from instantiating invalid
+	specialization of manager function.
+	* testsuite/20_util/any/modifiers/92156.cc: Likewise.
+	* testsuite/20_util/default_delete/void_neg.cc: Prune additional
+	diagnostics.
+	* testsuite/20_util/headers/memory/synopsis.cc: Add missing
+	noexcept.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Prune
+	additional diagnostic.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc: Add
+	missing noexcept to operator delete replacements.
+	* testsuite/21_strings/basic_string/cons/char/103919.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/emplace/92300.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/insert/92300.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Add missing noexcept to synopsis declarations.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Likewise.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (_Temporary_buffer): Disable
+	warnings about get_temporary_buffer being deprecated.
+	* include/ext/functional (mem_fun1, mem_fun1_ref): Disable
+	warnings about mem_fun1_t, const_mem_fun1_t, mem_fun1_ref_t and
+	const_mem_fun1_ref_t being deprecated.
+	* include/std/array (__array_traits<T, 0>): Remove artificial
+	attributes which give warnings about being ignored.
+	* include/std/spanstream (basic_spanbuf::setbuf): Add assertion
+	and adjust to avoid narrowing warning.
+	* libsupc++/exception_ptr.h [!__cpp_rtti && !__cpp_exceptions]
+	(make_exception_ptr): Add missing inline specifier.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits): Add
+	always_inline attribute to all member functions.
+	(__do_alloc_on_copy, __alloc_on_copy, __do_alloc_on_move)
+	(__alloc_on_move, __do_alloc_on_swap, __alloc_on_swap)
+	(_Destroy(FwdIter, FwdIter, allocator<T>&)): : Add
+	always_inline attribute.
+	* include/bits/allocator.h (allocator): Add always_inline
+	attribute to all member functions and equality operators.
+	* include/bits/new_allocator.h (__new_allocator): Likewise.
+	* include/ext/alloc_traits.h (__gnu_cxx::__alloc_traits):
+	Likewise.
+
+2022-11-08  Charles-François Natali  <cf.natali@gmail.com>
+
+	PR libstdc++/63746
+	* include/bits/fstream.tcc (basic_filbuf::xsputn): Remove
+	1024-byte chunking that bypasses the buffer for large writes.
+	* testsuite/27_io/basic_filebuf/sputn/char/63746.cc: New test.
+
+2022-11-08  Will Hawkins  <whh8b@obs.cr>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__str_cat): Add common function
+	that performs single-allocation string concatenation.
+	(operator+): Use __str_cat.
+	* include/bits/basic_string.tcc (operator+): Move to .h and
+	define inline using __str_cat.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/20_util/to_chars/float128_c++23.cc (test): Uncomment
+	denorm_min test.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/authors.xml: Update the blurb listing my doc
+	contributions.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/authors.xml: Remove empty author element.
+	* doc/xml/manual/spine.xml: Likewise.
+	* doc/html/manual/index.html: Regenerate.
+
+2022-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libstdc++/107562
+	* src/c++17/floating_from_chars.cc (from_chars_impl): Fix syntax
+	error.
+
+2022-11-08  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/18_support/comparisons/algorithms/fallback.cc: Adjust
+	asserts.
+
 2022-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/107562

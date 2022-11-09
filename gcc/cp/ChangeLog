@@ -1,3 +1,16 @@
+2022-11-08  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (fns_correspond): Declare.
+	* decl.cc (fns_correspond): New.
+	* call.cc (add_candidates): Look for op!= matching op==.
+	(joust): Complain about non-standard reversed tiebreaker.
+	(tourney): Fix champ_compared_to_predecessor logic.
+	(build_new_op): Don't complain about error_mark_node not having
+	'bool' type.
+	* pt.cc (tsubst_copy_and_build): Don't try to be permissive
+	when seen_error().
+
 2022-11-06  Patrick Palka  <ppalka@redhat.com>
 
 	* tree.cc (cxx_attribute_table): Include init_priority entry

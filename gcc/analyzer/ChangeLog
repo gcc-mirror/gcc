@@ -1,3 +1,69 @@
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101962
+	* region-model-impl-calls.cc: Update comment.
+	* region-model.cc (region_model::check_symbolic_bounds): Fix
+	layout of "void" return.  Replace usage of
+	eval_condition_without_cm with eval_condition.
+	(region_model::eval_condition): Take over body of...
+	(region_model::eval_condition_without_cm): ...this subroutine,
+	dropping the latter.  Eliminating this distinction avoids issues
+	where constraints were not considered when recursing.
+	(region_model::compare_initial_and_pointer): Update comment.
+	(region_model::symbolic_greater_than): Replace usage of
+	eval_condition_without_cm with eval_condition.
+	* region-model.h
+	(region_model::eval_condition_without_cm): Delete decl.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc
+	(region_model::impl_call_errno_location): New.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Initialize
+	m_thread_local_region and m_errno_region.
+	* region-model-manager.h (region_model_manager::get_errno_region):
+	New accessor.
+	(region_model_manager::m_thread_local_region): New.
+	(region_model_manager::m_errno_region): New.
+	* region-model.cc (region_model::on_call_pre): Special-case
+	"__errno_location".
+	(region_model::set_errno): New.
+	* region-model.h (impl_call_errno_location): New decl.
+	(region_model::set_errno): New decl.
+	* region.cc (thread_local_region::dump_to_pp): New.
+	(errno_region::dump_to_pp): New.
+	* region.h (enum memory_space): Add MEMSPACE_THREAD_LOCAL.
+	(enum region_kind): Add RK_THREAD_LOCAL and RK_ERRNO.
+	(class thread_local_region): New.
+	(is_a_helper <const thread_local_region *>::test): New.
+	(class errno_region): New.
+	(is_a_helper <const errno_region *>::test): New.
+	* store.cc (binding_cluster::escaped_p): New.
+	(store::escaped_p): Treat errno as always having escaped.
+	(store::replay_call_summary_cluster): Handle RK_THREAD_LOCAL and
+	RK_ERRNO.
+	* store.h (binding_cluster::escaped_p): Remove definition.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc (success_call_info::get_desc): Delete.
+	(failed_call_info::get_desc): Likewise.
+	(succeed_or_fail_call_info::get_desc): New.
+	* call-info.h (class succeed_or_fail_call_info): New.
+	(class success_call_info): Convert to a subclass of
+	succeed_or_fail_call_info.
+	(class failed_call_info): Likewise.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (region_model::impl_call_strchr):
+	Move to on_call_post.  Handle both outcomes using bifurcation,
+	rather than just the "not found" case.
+	* region-model.cc (region_model::on_call_pre): Move
+	BUILT_IN_STRCHR and "strchr" to...
+	(region_model::on_call_post): ...here.
+
 2022-11-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h: Use std::unique_ptr for state machines from plugins.
