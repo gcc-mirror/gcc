@@ -1356,7 +1356,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   /* This is the diagnostic_path subclass that will be built for
      the diagnostic.  */
-  checker_path emission_path;
+  checker_path emission_path (get_logger ());
 
   /* Populate emission_path with a full description of EPATH.  */
   build_emission_path (pb, *epath, &emission_path);
@@ -1963,6 +1963,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	   events for them.  */
 	if (dst_state.m_region_model)
 	  {
+	    log_scope s (get_logger (), "processing run of stmts");
 	    program_state iter_state (dst_state);
 	    program_point iter_point (dst_point);
 	    while (1)

@@ -118,6 +118,7 @@ public:
   }
 
   void dump (pretty_printer *pp) const;
+  void debug () const;
 
   void set_location (location_t loc) { m_loc = loc; }
 
@@ -607,7 +608,7 @@ private:
 class checker_path : public diagnostic_path
 {
 public:
-  checker_path () : diagnostic_path () {}
+  checker_path (logger *logger) : diagnostic_path (), m_logger (logger) {}
 
   /* Implementation of diagnostic_path vfuncs.  */
 
@@ -631,10 +632,7 @@ public:
 
   void maybe_log (logger *logger, const char *desc) const;
 
-  void add_event (std::unique_ptr<checker_event> event)
-  {
-    m_events.safe_push (event.release ());
-  }
+  void add_event (std::unique_ptr<checker_event> event);
 
   void delete_event (int idx)
   {
@@ -711,6 +709,8 @@ private:
      exploded_node *, so that rewind events can refer to them in their
      descriptions.  */
   hash_map <const exploded_node *, diagnostic_event_id_t> m_setjmp_event_ids;
+
+  logger *m_logger;
 };
 
 } // namespace ana

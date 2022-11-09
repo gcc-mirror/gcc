@@ -204,6 +204,20 @@ checker_event::dump (pretty_printer *pp) const
 	     get_location ());
 }
 
+/* Dump this event to stderr (for debugging/logging purposes).  */
+
+DEBUG_FUNCTION void
+checker_event::debug () const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump (&pp);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
 /* Hook for being notified when this event has its final id EMISSION_ID
    and is about to emitted for PD.
 
@@ -1226,6 +1240,21 @@ checker_path::maybe_log (logger *logger, const char *desc) const
       m_events[i]->dump (logger->get_printer ());
       logger->end_log_line ();
     }
+}
+
+void
+checker_path::add_event (std::unique_ptr<checker_event> event)
+{
+  if (m_logger)
+    {
+      m_logger->start_log_line ();
+      m_logger->log_partial ("added event[%i]: %s ",
+			     m_events.length (),
+			     event_kind_to_string (event.get ()->m_kind));
+      event.get ()->dump (m_logger->get_printer ());
+      m_logger->end_log_line ();
+    }
+  m_events.safe_push (event.release ());
 }
 
 /* Print a multiline form of this path to STDERR.  */
