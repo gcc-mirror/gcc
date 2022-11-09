@@ -279,6 +279,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zicbom",ISA_SPEC_CLASS_NONE, 1, 0},
   {"zicbop",ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zicntr", ISA_SPEC_CLASS_NONE, 2, 0},
+  {"zihpm",  ISA_SPEC_CLASS_NONE, 2, 0},
+
   {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zks",   ISA_SPEC_CLASS_NONE, 1, 0},
