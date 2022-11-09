@@ -1,3 +1,12 @@
+2022-11-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-10-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107304
+	* expr.cc (get_inner_reference): Always use TYPE_MODE for vector
+	field with vector raw mode.
+
 2022-11-07  Cui,Lili  <lili.cui@intel.com>
 
 	* config/i386/driver-i386.cc (host_detect_local_cpu):
