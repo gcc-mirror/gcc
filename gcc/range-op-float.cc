@@ -1862,6 +1862,29 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
 
 class foperator_plus : public range_operator_float
 {
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    range_op_handler minus (MINUS_EXPR, type);
+    if (!minus)
+      return false;
+    return minus.fold_range (r, type, lhs, op2);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    return op1_range (r, type, lhs, op1);
+  }
+private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
 		const REAL_VALUE_TYPE &lh_lb,
@@ -1886,6 +1909,28 @@ class foperator_plus : public range_operator_float
 
 class foperator_minus : public range_operator_float
 {
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return fop_plus.fold_range (r, type, lhs, op2);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return fold_range (r, type, op1, lhs);
+  }
+private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
 		const REAL_VALUE_TYPE &lh_lb,
