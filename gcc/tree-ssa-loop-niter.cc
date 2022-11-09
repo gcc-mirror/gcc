@@ -3716,18 +3716,17 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   struct ilb_data *data = (struct ilb_data *) dta;
   tree ev, init, step;
   tree low, high, type, next;
-  bool sign, upper = true, at_end = false;
+  bool sign, upper = true, has_flexible_size = false;
   class loop *loop = data->loop;
 
   if (TREE_CODE (base) != ARRAY_REF)
     return true;
 
-  /* For arrays at the end of the structure, we are not guaranteed that they
-     do not really extend over their declared size.  However, for arrays of
-     size greater than one, this is unlikely to be intended.  */
-  if (array_at_struct_end_p (base))
+  /* For arrays that might have flexible sizes, it is not guaranteed that they
+     do not really extend over their declared size.  */ 
+  if (array_ref_flexible_size_p (base))
     {
-      at_end = true;
+      has_flexible_size = true;
       upper = false;
     }
 
@@ -3760,9 +3759,9 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   sign = tree_int_cst_sign_bit (step);
   type = TREE_TYPE (step);
 
-  /* The array of length 1 at the end of a structure most likely extends
+  /* The array that might have flexible size most likely extends
      beyond its bounds.  */
-  if (at_end
+  if (has_flexible_size
       && operand_equal_p (low, high, 0))
     return true;
 

@@ -1690,13 +1690,11 @@ get_range_strlen_tree (tree arg, bitmap visited, strlen_range_kind rkind,
 	  /* Handle a MEM_REF into a DECL accessing an array of integers,
 	     being conservative about references to extern structures with
 	     flexible array members that can be initialized to arbitrary
-	     numbers of elements as an extension (static structs are okay).
-	     FIXME: Make this less conservative -- see
-	     component_ref_size in tree.cc.  */
+	     numbers of elements as an extension (static structs are okay).  */
 	  tree ref = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
 	  if ((TREE_CODE (ref) == PARM_DECL || VAR_P (ref))
 	      && (decl_binds_to_current_def_p (ref)
-		  || !array_at_struct_end_p (arg)))
+		  || !array_ref_flexible_size_p (arg)))
 	    {
 	      /* Fail if the offset is out of bounds.  Such accesses
 		 should be diagnosed at some point.  */

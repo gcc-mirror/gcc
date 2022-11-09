@@ -5554,10 +5554,10 @@ extern tree array_ref_up_bound (tree);
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 extern tree array_ref_low_bound (tree);
 
-/* Returns true if REF is an array reference or a component reference
-   to an array at the end of a structure.  If this is the case, the array
-   may be allocated larger than its upper bound implies.  */
-extern bool array_at_struct_end_p (tree);
+/* Returns true if REF is an array reference, a component reference,
+   or a memory reference to an array whose actual size might be larger
+   than its upper bound implies.  */
+extern bool array_ref_flexible_size_p (tree);
 
 /* Return a tree representing the offset, in bytes, of the field referenced
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */

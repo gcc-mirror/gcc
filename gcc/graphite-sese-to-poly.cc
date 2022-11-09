@@ -536,9 +536,9 @@ bounds_are_valid (tree ref, tree low, tree high)
       || !tree_fits_shwi_p (high))
     return false;
 
-  /* 1-element arrays at end of structures may extend over
+  /* An array that has flexible size may extend over
      their declared size.  */
-  if (array_at_struct_end_p (ref)
+  if (array_ref_flexible_size_p (ref)
       && operand_equal_p (low, high, 0))
     return false;
 

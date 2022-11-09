@@ -129,7 +129,7 @@ get_ref_size (tree arg, tree *pref)
 }
 
 /* Return true if REF is (likely) an ARRAY_REF to a trailing array member
-   of a struct.  It refines array_at_struct_end_p by detecting a pointer
+   of a struct.  It refines array_ref_flexible_size_p by detecting a pointer
    to an array and an array parameter declared using the [N] syntax (as
    opposed to a pointer) and returning false.  Set *PREF to the decl or
    expression REF refers to.  */
@@ -167,7 +167,7 @@ trailing_array (tree arg, tree *pref)
 	return false;
     }
 
-  return array_at_struct_end_p (arg);
+  return array_ref_flexible_size_p (arg);
 }
 
 /* Checks one ARRAY_REF in REF, located at LOCUS. Ignores flexible

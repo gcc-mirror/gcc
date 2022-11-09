@@ -763,10 +763,9 @@ idx_within_array_bound (tree ref, tree *idx, void *dta)
   if (TREE_CODE (ref) != ARRAY_REF)
     return false;
 
-  /* For arrays at the end of the structure, we are not guaranteed that they
-     do not really extend over their declared size.  However, for arrays of
-     size greater than one, this is unlikely to be intended.  */
-  if (array_at_struct_end_p (ref))
+  /* For arrays that might have flexible sizes, it is not guaranteed that they
+     do not extend over their declared size.  */
+  if (array_ref_flexible_size_p (ref))
     return false;
 
   ev = analyze_scalar_evolution (loop, *idx);
