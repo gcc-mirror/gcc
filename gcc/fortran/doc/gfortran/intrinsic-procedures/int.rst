@@ -16,7 +16,7 @@
 INT --- Convert to integer type
 *******************************
 
-.. function:: INT(A , KIND))
+.. function:: INT(A, KIND)
 
   Convert to integer type
 
