@@ -13,7 +13,6 @@
 import os
 import time
 import sys
-# sys.path.insert(0, os.path.abspath('.'))
 
 # gccint needs a deeper stack limit
 sys.setrecursionlimit(2000)
@@ -23,7 +22,10 @@ sys.setrecursionlimit(2000)
 # The full version, including alpha/beta/rc tags
 
 folder = os.path.dirname(os.path.realpath(__file__))
+doc_modules = os.path.join(folder, 'modules')
 gcc_srcdir = os.path.join(folder, '..', 'gcc')
+
+sys.path.insert(0, doc_modules)
 
 def read_file(name):
     path = os.path.join(gcc_srcdir, name)
