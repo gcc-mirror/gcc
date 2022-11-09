@@ -451,3 +451,7 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('toplev-new-file.patch')
         assert (email.errors[0].message ==
                 'new file in the top-level folder not mentioned in a ChangeLog')
+
+    def test_space_after_tab(self):
+        email = self.from_patch_glob('0001-Use-Value_Range-when-applying-inferred-ranges.patch')
+        assert (email.errors[0].message == 'extra space after tab')
