@@ -52,7 +52,8 @@ public:
 			   may_be_zero == false), more precisely the number
 			   of executions of the latch of the loop.  */
   widest_int max;	/* The upper bound on the number of iterations of
-			   the loop.  */
+			   the loop.  If niter is constant, then these values
+			   must agree.  */
 
   /* The simplified shape of the exit condition.  This information is used by
      loop unrolling.  If CMP is ERROR_MARK, then the loop cannot be unrolled.
