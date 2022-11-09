@@ -28,9 +28,9 @@ import os
 import sys
 
 
-errorCount = 0
-seenFiles = []
-outputName = None
+error_count = 0
+seen_files = []
+output_name = None
 
 ISO_COPYRIGHT = "Copyright ISO/IEC"
 COPYRIGHT = "Copyright (C)"
@@ -51,14 +51,14 @@ def printf(fmt, *args):
 
 def error(fmt, *args):
     # error - issue an error message.
-    global errorCount
+    global error_count
 
     print(str(fmt) % args, end=' ')
-    errorCount += 1
+    error_count += 1
 
 
-def haltOnError():
-    if errorCount > 0:
+def halt_on_error():
+    if error_count > 0:
         os.sys.exit(1)
 
 
@@ -67,8 +67,8 @@ def basename(f):
     return b[-1]
 
 
-def analyseComment(text, f):
-    # analyseComment determine the license from the top comment.
+def analyse_comment(text, f):
+    # analyse_comment determine the license from the top comment.
     start_date, end_date = None, None
     contribution, summary, lic = None, None, None
     if text.find(ISO_COPYRIGHT) > 0:
@@ -112,7 +112,7 @@ def analyseComment(text, f):
     return start_date, end_date, contribution, summary, lic
 
 
-def analyseHeaderWithoutTerminator(f, start):
+def analyse_header_without_terminator(f, start):
     text = ""
     for count, l in enumerate(open(f).readlines()):
         parts = l.split(start)
@@ -122,11 +122,11 @@ def analyseHeaderWithoutTerminator(f, start):
             text += " "
             text += line
         elif (l.rstrip() != "") and (len(parts[0]) > 0):
-            return analyseComment(text, f), count
+            return analyse_comment(text, f), count
     return [None, None, None, None, None], 0
 
 
-def analyseHeaderWithTerminator(f, start, end):
+def analyse_header_with_terminator(f, start, end):
     inComment = False
     text = ""
     for count, line in enumerate(open(f).readlines()):
@@ -147,26 +147,26 @@ def analyseHeaderWithTerminator(f, start, end):
                 if (pos >= 0) and (len(line) > len(start)):
                     before = line[:pos].strip()
                     if before != "":
-                        return analyseComment(text, f), count
+                        return analyse_comment(text, f), count
                     line = line[pos + len(start):]
                     inComment = True
                 elif (line != "") and (line == end):
                     line = ""
                 else:
-                    return analyseComment(text, f), count
+                    return analyse_comment(text, f), count
     return [None, None, None, None, None], 0
 
 
-def analyseHeader(f, start, end):
-    # analyseHeader -
+def analyse_header(f, start, end):
+    # analyse_header -
     if end is None:
-        return analyseHeaderWithoutTerminator(f, start)
+        return analyse_header_without_terminator(f, start)
     else:
-        return analyseHeaderWithTerminator(f, start, end)
+        return analyse_header_with_terminator(f, start, end)
 
 
-def addStop(sentence):
-    # addStop - add a full stop to a sentance.
+def add_stop(sentence):
+    # add_stop - add a full stop to a sentance.
     if sentence is None:
         return None
     sentence = sentence.rstrip()
@@ -269,7 +269,7 @@ templates["LGPLv2.1"] = LGPLv3
 templates["BSISO"] = BSISO
 
 
-def writeTemplate(fo, magic, start, end, dates, contribution, summary, lic):
+def write_template(fo, magic, start, end, dates, contribution, summary, lic):
     if lic in templates:
         if lic == "BSISO":
             # non gpl but freely distributed for the implementation of a
@@ -279,8 +279,8 @@ def writeTemplate(fo, magic, start, end, dates, contribution, summary, lic):
         else:
             summary = summary.lstrip()
             contribution = contribution.lstrip()
-            summary = addStop(summary)
-            contribution = addStop(contribution)
+            summary = add_stop(summary)
+            contribution = add_stop(contribution)
             if magic is not None:
                 fo.write(magic)
                 fo.write("\n")
@@ -311,40 +311,40 @@ def writeTemplate(fo, magic, start, end, dates, contribution, summary, lic):
     return fo
 
 
-def writeBoilerPlate(fo, magic, start, end,
-                     start_date, end_date, contribution, summary, gpl):
+def write_boiler_plate(fo, magic, start, end,
+                       start_date, end_date, contribution, summary, gpl):
     if start_date == end_date:
         dates = start_date
     else:
         dates = "%s-%s" % (start_date, end_date)
-    return writeTemplate(fo, magic, start, end,
-                         dates, contribution, summary, gpl)
+    return write_template(fo, magic, start, end,
+                          dates, contribution, summary, gpl)
 
 
-def rewriteFile(f, magic, start, end, start_date, end_date,
-                contribution, summary, gpl, lines):
+def rewrite_file(f, magic, start, end, start_date, end_date,
+                 contribution, summary, gpl, lines):
     text = "".join(open(f).readlines()[lines:])
-    if outputName == "-":
+    if output_name == "-":
         fo = sys.stdout
     else:
         fo = open(f, "w")
-    fo = writeBoilerPlate(fo, magic, start, end,
-                          start_date, end_date, contribution, summary, gpl)
+    fo = write_boiler_plate(fo, magic, start, end,
+                            start_date, end_date, contribution, summary, gpl)
     fo.write(text)
     fo.flush()
-    if outputName != "-":
+    if output_name != "-":
         fo.close()
 
 
-def handleHeader(f, magic, start, end):
-    # handleHeader keep reading lines of file, f, looking for start, end
+def handle_header(f, magic, start, end):
+    # handle_header keep reading lines of file, f, looking for start, end
     # sequences and comments inside.  The comments are checked for:
     # date, contribution, summary
-    global errorCount
+    global error_count
 
-    errorCount = 0
+    error_count = 0
     [start_date, end_date,
-     contribution, summary, lic], lines = analyseHeader(f, start, end)
+     contribution, summary, lic], lines = analyse_header(f, start, end)
     if lic is None:
         error("%s:1:no GPL found at the top of the file\n", f)
     else:
@@ -373,7 +373,7 @@ def handleHeader(f, magic, start, end):
                       "GPL at the top of the file\n", f)
             else:
                 summary = args.summary
-    if errorCount == 0:
+    if error_count == 0:
         now = datetime.datetime.now()
         if args.no:
             print(f, "suppressing change as requested: %s-%s %s"
@@ -386,68 +386,68 @@ def handleHeader(f, magic, start, end):
                 lic = "GPLv3x"
             elif args.gpl3:
                 lic = "GPLv3"
-            rewriteFile(f, magic, start, end, start_date,
-                        str(now.year), contribution, summary, lic, lines)
+            rewrite_file(f, magic, start, end, start_date,
+                         str(now.year), contribution, summary, lic, lines)
     else:
         printf("too many errors, no modifications will occur\n")
 
 
-def bashTidy(f):
-    # bashTidy tidy up dates using '#' comment
-    handleHeader(f, "#!/bin/bash", "#", None)
+def bash_tidy(f):
+    # bash_tidy tidy up dates using '#' comment
+    handle_header(f, "#!/bin/bash", "#", None)
 
 
-def pythonTidy(f):
-    # pythonTidy tidy up dates using '#' comment
-    handleHeader(f, "#!/usr/bin/env python3", '#', None)
+def python_tidy(f):
+    # python_tidy tidy up dates using '#' comment
+    handle_header(f, "#!/usr/bin/env python3", '#', None)
 
 
-def bnfTidy(f):
-    # bnfTidy tidy up dates using '--' comment
-    handleHeader(f, None, '--', None)
+def bnf_tidy(f):
+    # bnf_tidy tidy up dates using '--' comment
+    handle_header(f, None, '--', None)
 
 
-def cTidy(f):
-    # cTidy tidy up dates using '/* */' comments
-    handleHeader(f, None, '/*', '*/')
+def c_tidy(f):
+    # c_tidy tidy up dates using '/* */' comments
+    handle_header(f, None, '/*', '*/')
 
 
-def m2Tidy(f):
-    # m2Tidy tidy up dates using '(* *)' comments
-    handleHeader(f, None, '(*', '*)')
+def m2_tidy(f):
+    # m2_tidy tidy up dates using '(* *)' comments
+    handle_header(f, None, '(*', '*)')
 
 
-def inTidy(f):
-    # inTidy tidy up dates using '#' as a comment and check
+def in_tidy(f):
+    # in_tidy tidy up dates using '#' as a comment and check
     # the first line for magic number.
     first = open(f).readlines()[0]
     if (len(first) > 0) and (first[:2] == "#!"):
         # magic number found, use this
-        handleHeader(f, first, "#", None)
+        handle_header(f, first, "#", None)
     else:
-        handleHeader(f, None, "#", None)
+        handle_header(f, None, "#", None)
 
 
-def doVisit(args, dirname, names):
-    # doVisit helper function to call func on every extension file.
-    global outputName
+def do_visit(args, dirname, names):
+    # do_visit helper function to call func on every extension file.
+    global output_name
     func, extension = args
     for f in names:
         if len(f) > len(extension) and f[-len(extension):] == extension:
-            outputName = f
+            output_name = f
             func(os.path.join(dirname, f))
 
 
-def visitDir(startDir, ext, func):
-    # visitDir call func for each file in startDir which has ext.
-    global outputName, seenFiles
+def visit_dir(startDir, ext, func):
+    # visit_dir call func for each file in startDir which has ext.
+    global output_name, seen_files
     for dirName, subdirList, fileList in os.walk(startDir):
         for fname in fileList:
             if (len(fname) > len(ext)) and (fname[-len(ext):] == ext):
                 fullpath = os.path.join(dirName, fname)
-                outputName = fullpath
-                if not (fullpath in seenFiles):
-                    seenFiles += [fullpath]
+                output_name = fullpath
+                if not (fullpath in seen_files):
+                    seen_files += [fullpath]
                     func(fullpath)
             # Remove the first entry in the list of sub-directories
             # if there are any sub-directories present
@@ -455,22 +455,22 @@ def visitDir(startDir, ext, func):
             del subdirList[0]
 
 
-def findFiles():
-    # findFiles for each file extension call the appropriate tidy routine.
-    visitDir(args.recursive, '.h.in', cTidy)
-    visitDir(args.recursive, '.in', inTidy)
-    visitDir(args.recursive, '.sh', inTidy)
-    visitDir(args.recursive, '.py', pythonTidy)
-    visitDir(args.recursive, '.c', cTidy)
-    visitDir(args.recursive, '.h', cTidy)
-    visitDir(args.recursive, '.cc', cTidy)
-    visitDir(args.recursive, '.def', m2Tidy)
-    visitDir(args.recursive, '.mod', m2Tidy)
-    visitDir(args.recursive, '.bnf', bnfTidy)
+def find_files():
+    # find_files for each file extension call the appropriate tidy routine.
+    visit_dir(args.recursive, '.h.in', c_tidy)
+    visit_dir(args.recursive, '.in', in_tidy)
+    visit_dir(args.recursive, '.sh', in_tidy)
+    visit_dir(args.recursive, '.py', python_tidy)
+    visit_dir(args.recursive, '.c', c_tidy)
+    visit_dir(args.recursive, '.h', c_tidy)
+    visit_dir(args.recursive, '.cc', c_tidy)
+    visit_dir(args.recursive, '.def', m2_tidy)
+    visit_dir(args.recursive, '.mod', m2_tidy)
+    visit_dir(args.recursive, '.bnf', bnf_tidy)
 
 
-def handleArguments():
-    # handleArguments create and return the args object.
+def handle_arguments():
+    # handle_arguments create and return the args object.
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--contribution",
                         help="set the contribution string " +
@@ -509,40 +509,40 @@ def handleArguments():
     return args
 
 
-def hasExt(name, ext):
-    # hasExt return True if, name, ends with, ext.
+def has_ext(name, ext):
+    # has_ext return True if, name, ends with, ext.
     if len(name) > len(ext):
         return name[-len(ext):] == ext
     return False
 
 
-def singleFile(name):
-    # singleFile scan the single file for a GPL boilerplate which
+def single_file(name):
+    # single_file scan the single file for a GPL boilerplate which
     # has a GPL, contribution field and a summary heading.
-    if hasExt(name, ".def") or hasExt(name, ".mod"):
-        m2Tidy(name)
-    elif hasExt(name, ".h") or hasExt(name, ".c") or hasExt(name, ".cc"):
-        cTidy(name)
-    elif hasExt(name, ".in"):
-        inTidy(name)
-    elif hasExt(name, ".sh"):
-        inTidy(name)  # uses magic number for actual sh/bash
-    elif hasExt(name, ".py"):
-        pythonTidy(name)
+    if has_ext(name, ".def") or has_ext(name, ".mod"):
+        m2_tidy(name)
+    elif has_ext(name, ".h") or has_ext(name, ".c") or has_ext(name, ".cc"):
+        c_tidy(name)
+    elif has_ext(name, ".in"):
+        in_tidy(name)
+    elif has_ext(name, ".sh"):
+        in_tidy(name)  # uses magic number for actual sh/bash
+    elif has_ext(name, ".py"):
+        python_tidy(name)
 
 
 def main():
-    # main - handleArguments and then find source files.
-    global args, outputName
-    args = handleArguments()
-    outputName = args.outputfile
+    # main - handle_arguments and then find source files.
+    global args, output_name
+    args = handle_arguments()
+    output_name = args.outputfile
     if args.recursive:
-        findFiles()
+        find_files()
     elif args.inputfile is None:
         print("an input file must be specified on the command line")
     else:
-        singleFile(args.inputfile)
-    haltOnError()
+        single_file(args.inputfile)
+    halt_on_error()
 
 
 main()

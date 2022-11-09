@@ -26,281 +26,281 @@ import argparse
 import os
 import sys
 
-BaseLibs = ["gm2-libs", "Base libraries", "Basic M2F compatible libraries"]
+Base_Libs = ['gm2-libs', 'Base libraries', 'Basic M2F compatible libraries']
 
-PIMLogDesc = "PIM and Logitech 3.0 compatible libraries"
-PIMLog = ["gm2-libs-pim", "PIM and Logitech 3.0 Compatible", PIMLogDesc]
-PIMCorDesc = "PIM compatible process support"
-PIMCor = ["gm2-libs-coroutines", "PIM coroutine support", PIMCorDesc]
-ISOLibs = ["gm2-libs-iso", "M2 ISO Libraries", "ISO defined libraries"]
+PIM_Log_Desc = 'PIM and Logitech 3.0 compatible libraries'
+PIM_Log = ['gm2-libs-pim', 'PIM and Logitech 3.0 Compatible', PIM_Log_Desc]
+PIM_Cor_Desc = 'PIM compatible process support'
+PIM_Cor = ['gm2-libs-coroutines', 'PIM coroutine support', PIM_Cor_Desc]
+ISO_Libs = ['gm2-libs-iso', 'M2 ISO Libraries', 'ISO defined libraries']
 
-libraryClassifications = [BaseLibs, PIMLog, PIMCor, ISOLibs]
-
-
-def initState():
-    global inVar, inType, inConst
-    inVar, inType, inConst = False, False, False
+library_classifications = [Base_Libs, PIM_Log, PIM_Cor, ISO_Libs]
 
 
-def emitNode(name, nxt, previous, up):
+def init_state():
+    global in_var, in_type, in_const
+    in_var, in_type, in_const = False, False, False
+
+
+def emit_node(name, nxt, previous, up):
     if args.texinfo:
-        output.write("@node " + name + ", " + nxt + ", ")
-        output.write(previous + ", " + up + "\n")
+        output.write('@node ' + name + ', ' + nxt + ', ')
+        output.write(previous + ', ' + up + '\n')
     elif args.sphinx:
-        output.write("@c @node " + name + ", " + nxt + ", ")
-        output.write(previous + ", " + up + "\n")
+        output.write('@c @node ' + name + ', ' + nxt + ', ')
+        output.write(previous + ', ' + up + '\n')
 
 
-def emitSection(name):
+def emit_section(name):
     if args.texinfo:
-        output.write("@section " + name + "\n")
+        output.write('@section ' + name + '\n')
     elif args.sphinx:
-        output.write(name + "\n")
-        output.write("=" * len(name) + "\n")
+        output.write(name + '\n')
+        output.write('=' * len(name) + '\n')
 
 
-def emitSubSection(name):
+def emit_sub_section(name):
     if args.texinfo:
-        output.write("@subsection " + name + "\n")
+        output.write('@subsection ' + name + '\n')
     elif args.sphinx:
-        output.write(name + "\n")
-        output.write("-" * len(name) + "\n")
+        output.write(name + '\n')
+        output.write('-' * len(name) + '\n')
 
 
-def displayLibraryClass():
-    # displayLibraryClass displays a node for a library directory and invokes
+def display_library_class():
+    # display_library_class displays a node for a library directory and invokes
     # a routine to summarize each module.
     global args
-    previous = ""
-    nxt = libraryClassifications[1][1]
+    previous = ''
+    nxt = library_classifications[1][1]
     i = 0
-    lib = libraryClassifications[i]
+    lib = library_classifications[i]
     while True:
-        emitNode(lib[1], nxt, previous, args.up)
-        emitSection(lib[1])
-        output.write("\n")
-        displayModules(lib[1], lib[0], args.builddir, args.sourcedir)
-        output.write("\n")
-        output.write("@c " + "-" * 60 + "\n")
+        emit_node(lib[1], nxt, previous, args.up)
+        emit_section(lib[1])
+        output.write('\n')
+        display_modules(lib[1], lib[0], args.builddir, args.sourcedir)
+        output.write('\n')
+        output.write('@c ' + '-' * 60 + '\n')
         previous = lib[1]
         i += 1
-        if i == len(libraryClassifications):
+        if i == len(library_classifications):
             break
-        lib = libraryClassifications[i]
-        if i+1 == len(libraryClassifications):
-            nxt = ""
+        lib = library_classifications[i]
+        if i+1 == len(library_classifications):
+            nxt = ''
         else:
-            nxt = libraryClassifications[i+1][1]
+            nxt = library_classifications[i+1][1]
 
 
-def displayMenu():
-    # displayMenu displays the top level menu for library documentation.
-    output.write("@menu\n")
-    for lib in libraryClassifications:
-        output.write("* " + lib[1] + "::" + lib[2] + "\n")
-    output.write("@end menu\n")
-    output.write("\n")
-    output.write("@c " + "=" * 60 + "\n")
-    output.write("\n")
+def display_menu():
+    # display_menu displays the top level menu for library documentation.
+    output.write('@menu\n')
+    for lib in library_classifications:
+        output.write('* ' + lib[1] + '::' + lib[2] + '\n')
+    output.write('@end menu\n')
+    output.write('\n')
+    output.write('@c ' + '=' * 60 + '\n')
+    output.write('\n')
 
 
-def removeInitialComments(file, line):
-    # removeInitialComments removes any (* *) at the top
+def remote_initial_comments(file, line):
+    # remote_initial_comments removes any (* *) at the top
     # of the definition module.
-    while (str.find(line, "*)") == -1):
+    while (line.find('*)') == -1):
         line = file.readline()
 
 
-def removeableField(line):
-    # removeableField - returns True if a comment field should be removed
+def removeable_field(line):
+    # removeable_field - returns True if a comment field should be removed
     # from the definition module.
-    field_list = ["Author", "Last edit", "LastEdit", "Last update",
-                  "Date", "Title", "Revision"]
+    field_list = ['Author', 'Last edit', 'LastEdit', 'Last update',
+                  'Date', 'Title', 'Revision']
     for field in field_list:
-        if (str.find(line, field) != -1) and (str.find(line, ":") != -1):
+        if (line.find(field) != -1) and (line.find(':') != -1):
             return True
-    ignore_list = ["System", "SYSTEM"]
+    ignore_list = ['System', 'SYSTEM']
     for ignore_field in ignore_list:
-        if str.find(line, ignore_field) != -1:
-            if str.find(line, ":") != -1:
-                if str.find(line, "Description:") == -1:
+        if line.find(ignore_field) != -1:
+            if line.find(':') != -1:
+                if line.find('Description:') == -1:
                     return True
     return False
 
 
-def removeFields(file, line):
-    # removeFields removes Author/Date/Last edit/SYSTEM/Revision
+def remove_fields(file, line):
+    # remove_fields removes Author/Date/Last edit/SYSTEM/Revision
     # fields from a comment within the start of a definition module.
-    while (str.find(line, "*)") == -1):
-        if not removeableField(line):
+    while (line.find('*)') == -1):
+        if not removeable_field(line):
             output.write(str.replace(str.replace(str.rstrip(line),
-                                                 "{", "@{"), "}", "@}") + "\n")
+                                                 '{', '@{'), '}', '@}') + '\n')
         line = file.readline()
-    output.write(str.rstrip(line) + "\n")
+    output.write(line.rstrip() + '\n')
 
 
-def checkIndex(line):
-    # checkIndex - create an index entry for a PROCEDURE, TYPE, CONST or VAR.
-    global inVar, inType, inConst
+def check_index(line):
+    # check_index - create an index entry for a PROCEDURE, TYPE, CONST or VAR.
+    global in_var, in_type, in_const
 
-    words = str.split(line)
-    procedure = ""
-    if (len(words) > 1) and (words[0] == "PROCEDURE"):
-        inConst = False
-        inType = False
-        inVar = False
-        if (words[1] == "__BUILTIN__") and (len(words) > 2):
+    words = line.split()
+    procedure = ''
+    if (len(words) > 1) and (words[0] == 'PROCEDURE'):
+        in_const = False
+        in_type = False
+        in_var = False
+        if (words[1] == '__BUILTIN__') and (len(words) > 2):
             procedure = words[2]
         else:
             procedure = words[1]
-    if (len(line) > 1) and (line[0:2] == "(*"):
-        inConst = False
-        inType = False
-        inVar = False
-    elif line == "VAR":
-        inConst = False
-        inVar = True
-        inType = False
+    if (len(line) > 1) and (line[0:2] == '(*'):
+        in_const = False
+        in_type = False
+        in_var = False
+    elif line == 'VAR':
+        in_const = False
+        in_var = True
+        in_type = False
         return
-    elif line == "TYPE":
-        inConst = False
-        inType = True
-        inVar = False
+    elif line == 'TYPE':
+        in_const = False
+        in_type = True
+        in_var = False
         return
-    elif line == "CONST":
-        inConst = True
-        inType = False
-        inVar = False
-    if inVar:
-        words = str.split(line, ",")
+    elif line == 'CONST':
+        in_const = True
+        in_type = False
+        in_var = False
+    if in_var:
+        words = line.split(',')
         for word in words:
-            word = str.lstrip(word)
-            if word != "":
-                if str.find(word, ":") == -1:
-                    output.write("@findex " + word + " (var)\n")
+            word = word.lstrip()
+            if word != '':
+                if word.find(':') == -1:
+                    output.write('@findex ' + word + ' (var)\n')
                 elif len(word) > 0:
-                    var = str.split(word, ":")
+                    var = word.split(':')
                     if len(var) > 0:
-                        output.write("@findex " + var[0] + " (var)\n")
+                        output.write('@findex ' + var[0] + ' (var)\n')
 
-    if inType:
-        words = str.lstrip(line)
-        if str.find(words, "=") != -1:
-            word = str.split(words, "=")
-            if (len(word[0]) > 0) and (word[0][0] != "_"):
-                output.write("@findex " + str.rstrip(word[0]) + " (type)\n")
+    if in_type:
+        words = line.lstrip()
+        if words.find('=') != -1:
+            word = words.split('=')
+            if (len(word[0]) > 0) and (word[0][0] != '_'):
+                output.write('@findex ' + word[0].rstrip() + ' (type)\n')
         else:
-            word = str.split(words)
-            if (len(word) > 1) and (word[1] == ";"):
+            word = words.split()
+            if (len(word) > 1) and (word[1] == ';'):
                 # hidden type
-                if (len(word[0]) > 0) and (word[0][0] != "_"):
-                    output.write("@findex " + str.rstrip(word[0]))
-                    output.write(" (type)\n")
-    if inConst:
-        words = str.split(line, ";")
+                if (len(word[0]) > 0) and (word[0][0] != '_'):
+                    output.write('@findex ' + word[0].rstrip())
+                    output.write(' (type)\n')
+    if in_const:
+        words = line.split(';')
         for word in words:
-            word = str.lstrip(word)
-            if word != "":
-                if str.find(word, "=") != -1:
-                    var = str.split(word, "=")
+            word = word.lstrip()
+            if word != '':
+                if word.find('=') != -1:
+                    var = word.split('=')
                     if len(var) > 0:
-                        output.write("@findex " + var[0] + " (const)\n")
-    if procedure != "":
-        name = str.split(procedure, "(")
-        if name[0] != "":
+                        output.write('@findex ' + var[0] + ' (const)\n')
+    if procedure != '':
+        name = procedure.split('(')
+        if name[0] != '':
             proc = name[0]
-            if proc[-1] == ";":
+            if proc[-1] == ';':
                 proc = proc[:-1]
-            if proc != "":
-                output.write("@findex " + proc + "\n")
+            if proc != '':
+                output.write('@findex ' + proc + '\n')
 
 
-def parseDefinition(dir, source, build, file, needPage):
-    # parseDefinition reads a definition module and creates
+def parse_definition(dir, source, build, file, needPage):
+    # parse_definition reads a definition module and creates
     # indices for procedures, constants, variables and types.
-    output.write("\n")
-    with open(findFile(dir, build, source, file), "r") as f:
-        initState()
+    output.write('\n')
+    with open(find_file(dir, build, source, file), 'r') as f:
+        init_state()
         line = f.readline()
-        while (str.find(line, "(*") != -1):
-            removeInitialComments(f, line)
+        while (line.find('(*') != -1):
+            remote_initial_comments(f, line)
             line = f.readline()
-        while (str.find(line, "DEFINITION") == -1):
+        while (line.find('DEFINITION') == -1):
             line = f.readline()
-        output.write("@example\n")
-        output.write(str.rstrip(line) + "\n")
+        output.write('@example\n')
+        output.write(line.rstrip() + '\n')
         line = f.readline()
-        if len(str.rstrip(line)) == 0:
-            output.write("\n")
+        if len(line.rstrip()) == 0:
+            output.write('\n')
             line = f.readline()
-            if (str.find(line, "(*") != -1):
-                removeFields(f, line)
+            if (line.find('(*') != -1):
+                remove_fields(f, line)
             else:
-                output.write(str.rstrip(line) + "\n")
+                output.write(line.rstrip() + '\n')
         else:
-            output.write(str.rstrip(line) + "\n")
+            output.write(line.rstrip() + '\n')
         line = f.readline()
         while line:
-            line = str.rstrip(line)
-            checkIndex(line)
-            output.write(str.replace(str.replace(line, "{", "@{"), "}", "@}"))
-            output.write("\n")
+            line = line.rstrip()
+            check_index(line)
+            output.write(str.replace(str.replace(line, '{', '@{'), '}', '@}'))
+            output.write('\n')
             line = f.readline()
-        output.write("@end example\n")
+        output.write('@end example\n')
         if needPage:
-            output.write("@page\n")
+            output.write('@page\n')
 
 
-def parseModules(up, dir, build, source, listOfModules):
-    previous = ""
+def parse_modules(up, dir, build, source, list_of_modules):
+    previous = ''
     i = 0
-    if len(listOfModules) > 1:
-        nxt = dir + "/" + listOfModules[1][:-4]
+    if len(list_of_modules) > 1:
+        nxt = dir + '/' + list_of_modules[1][:-4]
     else:
-        nxt = ""
-    while i < len(listOfModules):
-        emitNode(dir + "/" + listOfModules[i][:-4], nxt, previous, up)
-        emitSubSection(dir + "/" + listOfModules[i][:-4])
-        parseDefinition(dir, source, build, listOfModules[i], True)
-        output.write("\n")
-        previous = dir + "/" + listOfModules[i][:-4]
+        nxt = ''
+    while i < len(list_of_modules):
+        emit_node(dir + '/' + list_of_modules[i][:-4], nxt, previous, up)
+        emit_sub_section(dir + '/' + list_of_modules[i][:-4])
+        parse_definition(dir, source, build, list_of_modules[i], True)
+        output.write('\n')
+        previous = dir + '/' + list_of_modules[i][:-4]
         i = i + 1
-        if i+1 < len(listOfModules):
-            nxt = dir + "/" + listOfModules[i+1][:-4]
+        if i+1 < len(list_of_modules):
+            nxt = dir + '/' + list_of_modules[i+1][:-4]
         else:
-            nxt = ""
+            nxt = ''
 
 
-def doCat(name):
-    # doCat displays the contents of file, name, to stdout
-    with open(name, "r") as file:
+def do_cat(name):
+    # do_cat displays the contents of file, name, to stdout
+    with open(name, 'r') as file:
         line = file.readline()
         while line:
-            output.write(str.rstrip(line) + "\n")
+            output.write(line.rstrip() + '\n')
             line = file.readline()
 
 
-def moduleMenu(dir, build, source):
-    # moduleMenu generates a simple menu for all definition modules
+def module_menu(dir, build, source):
+    # module_menu generates a simple menu for all definition modules
     # in dir
-    output.write("@menu\n")
-    listOfFiles = []
+    output.write('@menu\n')
+    list_of_files = []
     if os.path.exists(os.path.join(source, dir)):
-        listOfFiles += os.listdir(os.path.join(source, dir))
+        list_of_files += os.listdir(os.path.join(source, dir))
     if os.path.exists(os.path.join(source, dir)):
-        listOfFiles += os.listdir(os.path.join(build, dir))
-    listOfFiles = list(dict.fromkeys(listOfFiles).keys())
-    listOfFiles.sort()
-    for file in listOfFiles:
-        if foundFile(dir, build, source, file):
-            if (len(file) > 4) and (file[-4:] == ".def"):
-                output.write("* " + dir + "/" + file[:-4] + "::" + file + "\n")
-    output.write("@end menu\n")
-    output.write("\n")
+        list_of_files += os.listdir(os.path.join(build, dir))
+    list_of_files = list(dict.fromkeys(list_of_files).keys())
+    list_of_files.sort()
+    for file in list_of_files:
+        if found_file(dir, build, source, file):
+            if (len(file) > 4) and (file[-4:] == '.def'):
+                output.write('* ' + dir + '/' + file[:-4] + '::' + file + '\n')
+    output.write('@end menu\n')
+    output.write('\n')
 
 
-def checkDirectory(dir, build, source):
-    # checkDirectory - returns True if dir exists in either build or source.
+def check_directory(dir, build, source):
+    # check_directory - returns True if dir exists in either build or source.
     if os.path.isdir(build) and os.path.exists(os.path.join(build, dir)):
         return True
     elif os.path.isdir(source) and os.path.exists(os.path.join(source, dir)):
@@ -309,8 +309,8 @@ def checkDirectory(dir, build, source):
         return False
 
 
-def foundFile(dir, build, source, file):
-    # foundFile return True if file is found in build/dir/file or
+def found_file(dir, build, source, file):
+    # found_file return True if file is found in build/dir/file or
     # source/dir/file.
     name = os.path.join(os.path.join(build, dir), file)
     if os.path.exists(name):
@@ -321,8 +321,8 @@ def foundFile(dir, build, source, file):
     return False
 
 
-def findFile(dir, build, source, file):
-    # findFile return the path to file searching in build/dir/file
+def find_file(dir, build, source, file):
+    # find_file return the path to file searching in build/dir/file
     # first then source/dir/file.
     name1 = os.path.join(os.path.join(build, dir), file)
     if os.path.exists(name1):
@@ -330,90 +330,90 @@ def findFile(dir, build, source, file):
     name2 = os.path.join(os.path.join(source, dir), file)
     if os.path.exists(name2):
         return name2
-    sys.stderr.write("file cannot be found in either " + name1)
-    sys.stderr.write(" or " + name2 + "\n")
+    sys.stderr.write('file cannot be found in either ' + name1)
+    sys.stderr.write(' or ' + name2 + '\n')
     os.sys.exit(1)
 
 
-def displayModules(up, dir, build, source):
-    # displayModules walks though the files in dir and parses
+def display_modules(up, dir, build, source):
+    # display_modules walks though the files in dir and parses
     # definition modules and includes README.texi
-    if checkDirectory(dir, build, source):
-        if foundFile(dir, build, source, "README.texi"):
-            doCat(findFile(dir, build, source, "README.texi"))
-        moduleMenu(dir, build, source)
-        listOfFiles = []
+    if check_directory(dir, build, source):
+        if found_file(dir, build, source, 'README.texi'):
+            do_cat(find_file(dir, build, source, 'README.texi'))
+        module_menu(dir, build, source)
+        list_of_files = []
         if os.path.exists(os.path.join(source, dir)):
-            listOfFiles += os.listdir(os.path.join(source, dir))
+            list_of_files += os.listdir(os.path.join(source, dir))
         if os.path.exists(os.path.join(source, dir)):
-            listOfFiles += os.listdir(os.path.join(build, dir))
-        listOfFiles = list(dict.fromkeys(listOfFiles).keys())
-        listOfFiles.sort()
-        listOfModules = []
-        for file in listOfFiles:
-            if foundFile(dir, build, source, file):
-                if (len(file) > 4) and (file[-4:] == ".def"):
-                    listOfModules += [file]
-        listOfModules.sort()
-        parseModules(up, dir, build, source, listOfModules)
+            list_of_files += os.listdir(os.path.join(build, dir))
+        list_of_files = list(dict.fromkeys(list_of_files).keys())
+        list_of_files.sort()
+        list_of_modules = []
+        for file in list_of_files:
+            if found_file(dir, build, source, file):
+                if (len(file) > 4) and (file[-4:] == '.def'):
+                    list_of_modules += [file]
+        list_of_modules.sort()
+        parse_modules(up, dir, build, source, list_of_modules)
     else:
-        line = "directory " + dir + " not found in either "
-        line += build + " or " + source
-        sys.stderr.write(line + "\n")
+        line = 'directory ' + dir + ' not found in either '
+        line += build + ' or ' + source
+        sys.stderr.write(line + '\n')
 
 
-def displayCopyright():
-    output.write("@c Copyright (C) 2000-2022 Free Software Foundation, Inc.\n")
-    output.write("@c This file is part of GNU Modula-2.\n")
-    output.write("""
+def display_copyright():
+    output.write('@c Copyright (C) 2000-2022 Free Software Foundation, Inc.\n')
+    output.write('@c This file is part of GNU Modula-2.\n')
+    output.write('''
 @c Permission is granted to copy, distribute and/or modify this document
 @c under the terms of the GNU Free Documentation License, Version 1.2 or
 @c any later version published by the Free Software Foundation.
-""")
+''')
 
 
-def collectArgs():
+def collect_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", help="generate progress messages",
-                        action="store_true")
-    parser.add_argument("-b", "--builddir", help="set the build directory",
-                        default=".", action="store")
-    parser.add_argument("-f", "--inputfile", help="set the input file",
-                        default=None, action="store")
-    parser.add_argument("-o", "--outputfile", help="set the output file",
-                        default=None, action="store")
-    parser.add_argument("-s", "--sourcedir", help="set the source directory",
-                        default=".", action="store")
-    parser.add_argument("-t", "--texinfo",
-                        help="generate texinfo documentation",
-                        default=False, action="store_true")
-    parser.add_argument("-u", "--up", help="set the up node",
-                        default="", action="store")
-    parser.add_argument("-x", "--sphinx", help="generate sphinx documentation",
-                        default=False, action="store_true")
+    parser.add_argument('-v', '--verbose', help='generate progress messages',
+                        action='store_true')
+    parser.add_argument('-b', '--builddir', help='set the build directory',
+                        default='.', action='store')
+    parser.add_argument('-f', '--inputfile', help='set the input file',
+                        default=None, action='store')
+    parser.add_argument('-o', '--outputfile', help='set the output file',
+                        default=None, action='store')
+    parser.add_argument('-s', '--sourcedir', help='set the source directory',
+                        default='.', action='store')
+    parser.add_argument('-t', '--texinfo',
+                        help='generate texinfo documentation',
+                        default=False, action='store_true')
+    parser.add_argument('-u', '--up', help='set the up node',
+                        default='', action='store')
+    parser.add_argument('-x', '--sphinx', help='generate sphinx documentation',
+                        default=False, action='store_true')
     args = parser.parse_args()
     return args
 
 
-def handleFile():
+def handle_file():
     if args.inputfile is None:
-        displayCopyright()
-        displayMenu()
-        displayLibraryClass()
+        display_copyright()
+        display_menu()
+        display_library_class()
     else:
-        parseDefinition(".", args.sourcedir, args.builddir,
+        parse_definition('.', args.sourcedir, args.builddir,
                         args.inputfile, False)
 
 
 def main():
     global args, output
-    args = collectArgs()
+    args = collect_args()
     if args.outputfile is None:
         output = sys.stdout
-        handleFile()
+        handle_file()
     else:
-        with open(args.outputfile, "w") as output:
-            handleFile()
+        with open(args.outputfile, 'w') as output:
+            handle_file()
 
 
 main()
