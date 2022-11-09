@@ -1,3 +1,12 @@
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/authors.xml: Remove empty author element.
+	* doc/xml/manual/spine.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2022-09-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/version [!_GLIBCXX_HOSTED]
