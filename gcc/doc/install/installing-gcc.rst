@@ -9,7 +9,7 @@ Installing GCC
 --------------
 
 The latest version of this document is always available at
-`https://gcc.gnu.org/install/ <https://gcc.gnu.org/install/>`_.
+https://gcc.gnu.org/onlinedocs/install/.
 It refers to the current development sources, instructions for
 specific released versions are included with the sources.
 

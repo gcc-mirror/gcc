@@ -62,8 +62,7 @@ GCC supports the following AVR devices and ISAs:
   Set the size (in bits) of the ``double`` or ``long double`` type,
   respectively.  Possible values for :samp:`{bits}` are 32 and 64.
   Whether or not a specific value for :samp:`{bits}` is allowed depends on
-  the ``--with-double=`` and ``--with-long-double=``
-  `configure options <https://gcc.gnu.org/install/configure.html#avr>`_,
+  the :option:`install:--with-double=`` and ``--with-long-double=``,
   and the same applies for the default values of the options.
 
 .. option:: -mgas-isr-prologues

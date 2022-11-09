@@ -10,7 +10,7 @@ Source Tree Structure and Build System
 
 This chapter describes the structure of the GCC source tree, and how
 GCC is built.  The user documentation for building and installing GCC
-is in a separate manual (https://gcc.gnu.org/install/), with
+is in a separate manual (:ref:`install:installing-gcc`), with
 which it is presumed that you are familiar.
 
 .. toctree::
