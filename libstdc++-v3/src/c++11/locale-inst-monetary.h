@@ -32,11 +32,9 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  template const money_put<C>& use_facet<money_put<C> >(const locale&);
-  template const money_get<C>& use_facet<money_get<C> >(const locale&);
-
-  template bool has_facet<money_put<C> >(const locale&);
-  template bool has_facet<money_get<C> >(const locale&);
+// use_facet and has_facet instantiations
+INSTANTIATE_FACET_ACCESSORS(money_put<C>);
+INSTANTIATE_FACET_ACCESSORS(money_get<C>);
 
 _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
   template class money_get<C, istreambuf_iterator<C> >;

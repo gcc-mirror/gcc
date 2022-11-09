@@ -48,6 +48,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
   template bool has_facet<num_get<C> >(const locale&);
   template bool has_facet<money_put<C> >(const locale&);
   template bool has_facet<money_get<C> >(const locale&);
+  template const num_put<C>* __try_use_facet<num_put<C> >(const locale&);
+  template const num_get<C>* __try_use_facet<num_get<C> >(const locale&);
+  template const money_put<C>* __try_use_facet<money_put<C> >(const locale&);
+  template const money_get<C>* __try_use_facet<money_get<C> >(const locale&);
 #undef C
 #ifdef _GLIBCXX_USE_WCHAR_T
 #define C wchar_t
@@ -63,6 +67,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
   template bool has_facet<num_get<C> >(const locale&);
   template bool has_facet<money_put<C> >(const locale&);
   template bool has_facet<money_get<C> >(const locale&);
+  template const num_put<C>* __try_use_facet<num_put<C> >(const locale&);
+  template const num_get<C>* __try_use_facet<num_get<C> >(const locale&);
+  template const money_put<C>* __try_use_facet<money_put<C> >(const locale&);
+  template const money_get<C>* __try_use_facet<money_get<C> >(const locale&);
 #undef C
 #endif
 }

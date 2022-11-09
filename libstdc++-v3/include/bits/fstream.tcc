@@ -86,8 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_codecvt(0), _M_ext_buf(0), _M_ext_buf_size(0), _M_ext_next(0),
     _M_ext_end(0)
     {
-      if (has_facet<__codecvt_type>(this->_M_buf_locale))
-	_M_codecvt = &use_facet<__codecvt_type>(this->_M_buf_locale);
+      _M_codecvt = std::__try_use_facet<__codecvt_type>(this->_M_buf_locale);
     }
 
 #if __cplusplus >= 201103L
@@ -1028,9 +1027,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       bool __testvalid = true;
 
-      const __codecvt_type* _M_codecvt_tmp = 0;
-      if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
-	_M_codecvt_tmp = &use_facet<__codecvt_type>(__loc);
+      const __codecvt_type* const _M_codecvt_tmp
+	= __try_use_facet<__codecvt_type>(__loc);
 
       if (this->is_open())
 	{

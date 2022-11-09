@@ -43,6 +43,17 @@
 # define C_is_char
 #endif
 
+#define INSTANTIATE_USE_FACET(...)			    \
+  template const __VA_ARGS__*				    \
+    __try_use_facet< __VA_ARGS__ >(const locale&) noexcept; \
+  template const __VA_ARGS__&				    \
+    use_facet<__VA_ARGS__>(const locale&)		    \
+
+#define INSTANTIATE_FACET_ACCESSORS(...)		    \
+  INSTANTIATE_USE_FACET(__VA_ARGS__);			    \
+  template bool						    \
+    has_facet<__VA_ARGS__>(const locale&) noexcept
+
 #include "locale-inst-numeric.h"
 #include "locale-inst-monetary.h"
 
@@ -116,92 +127,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class collate_byname<C>;
 _GLIBCXX_END_NAMESPACE_CXX11
 
-  // use_facet
+// use_facet and has_facet instantiations
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template
-    const ctype<C>&
-    use_facet<ctype<C> >(const locale&);
-
-  template
-    const codecvt<C, char, mbstate_t>&
-    use_facet<codecvt<C, char, mbstate_t> >(const locale&);
+INSTANTIATE_FACET_ACCESSORS(ctype<C>);
+INSTANTIATE_FACET_ACCESSORS(codecvt<C, char, mbstate_t>);
 #endif
-
-  template
-    const collate<C>&
-    use_facet<collate<C> >(const locale&);
-
-  template
-    const numpunct<C>&
-    use_facet<numpunct<C> >(const locale&);
-
-  template
-    const moneypunct<C, true>&
-    use_facet<moneypunct<C, true> >(const locale&);
-
-  template
-    const moneypunct<C, false>&
-    use_facet<moneypunct<C, false> >(const locale&);
-
+INSTANTIATE_FACET_ACCESSORS(collate<C>);
+INSTANTIATE_FACET_ACCESSORS(numpunct<C>);
+INSTANTIATE_FACET_ACCESSORS(moneypunct<C, false>);
+// No explicit instantiation of has_facet<moneypunct<C, true>> for some reason.
+INSTANTIATE_USE_FACET      (moneypunct<C, true>);
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template
-    const __timepunct<C>&
-    use_facet<__timepunct<C> >(const locale&);
-
-  template
-    const time_put<C>&
-    use_facet<time_put<C> >(const locale&);
+INSTANTIATE_FACET_ACCESSORS(__timepunct<C>);
+INSTANTIATE_FACET_ACCESSORS(time_put<C>);
 #endif
-
-  template
-    const time_get<C>&
-    use_facet<time_get<C> >(const locale&);
-
-  template
-    const messages<C>&
-    use_facet<messages<C> >(const locale&);
-
-  // has_facet
-#if ! _GLIBCXX_USE_CXX11_ABI
-  template
-    bool
-    has_facet<ctype<C> >(const locale&);
-
-  template
-    bool
-    has_facet<codecvt<C, char, mbstate_t> >(const locale&);
-#endif
-
-  template
-    bool
-    has_facet<collate<C> >(const locale&);
-
-  template
-    bool
-    has_facet<numpunct<C> >(const locale&);
-
-  template
-    bool
-    has_facet<moneypunct<C> >(const locale&);
-
-#if ! _GLIBCXX_USE_CXX11_ABI
-  template
-    bool
-    has_facet<__timepunct<C> >(const locale&);
-
-  template
-    bool
-    has_facet<time_put<C> >(const locale&);
-#endif
-
-  template
-    bool
-    has_facet<time_get<C> >(const locale&);
-
-  template
-    bool
-    has_facet<messages<C> >(const locale&);
-
+INSTANTIATE_FACET_ACCESSORS(time_get<C>);
+INSTANTIATE_FACET_ACCESSORS(messages<C>);
 
 #if ! _GLIBCXX_USE_CXX11_ABI
   // locale functions.

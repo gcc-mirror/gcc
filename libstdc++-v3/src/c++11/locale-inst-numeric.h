@@ -29,11 +29,9 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template const num_get<C>& use_facet<num_get<C> >(const locale&);
-  template const num_put<C>& use_facet<num_put<C> >(const locale&);
-
-  template bool has_facet<num_get<C> >(const locale&);
-  template bool has_facet<num_put<C> >(const locale&);
+// use_facet and has_facet instantiations
+INSTANTIATE_FACET_ACCESSORS(num_get<C>);
+INSTANTIATE_FACET_ACCESSORS(num_put<C>);
 #endif
 
 _GLIBCXX_BEGIN_NAMESPACE_LDBL
