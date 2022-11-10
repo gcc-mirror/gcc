@@ -444,6 +444,12 @@ namespace __detail
       static constexpr type value = (_DecOnly, _S_make_table());
     };
 
+#if ! __cpp_inline_variables
+  template<bool _DecOnly>
+    const typename __from_chars_alnum_to_val_table<_DecOnly>::type
+      __from_chars_alnum_to_val_table<_DecOnly>::value;
+#endif
+
   // If _DecOnly is true: if the character is a decimal digit, then
   // return its corresponding base-10 value, otherwise return a value >= 127.
   // If _DecOnly is false: if the character is an alphanumeric digit, then
