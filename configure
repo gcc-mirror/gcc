@@ -685,6 +685,8 @@ get_gcc_base_ver
 extra_host_zlib_configure_flags
 extra_host_libiberty_configure_flags
 stage1_languages
+PICFLAG
+enable_host_pie
 host_shared
 extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
@@ -828,6 +830,7 @@ enable_lto
 enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
 enable_host_shared
+enable_host_pie
 enable_stage1_languages
 enable_objc_gc
 with_target_bdw_gc
@@ -1554,6 +1557,7 @@ Optional Features:
                           additional flags for configuring and building linker
                           plugins [none]
   --enable-host-shared    build host code as shared libraries
+  --enable-host-pie       build host code as PIE
   --enable-stage1-languages[=all]
                           choose additional languages to build during stage1.
                           Mostly useful for compiler development
@@ -8592,6 +8596,24 @@ else
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
   *) host_shared=no ;;
  esac
+fi
+
+
+
+# Enable --enable-host-pie.
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie;
+fi
+
+
+
+if test x$enable_host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$enable_host_pie = xyes; then
+  PICFLAG=-fPIE
+else
+  PICFLAG=
 fi
 
 
