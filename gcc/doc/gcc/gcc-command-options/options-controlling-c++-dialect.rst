@@ -855,6 +855,16 @@ In addition, these warning options have meanings only for C++ programs:
     const T& foo (const T&) { ... }
     #pragma GCC diagnostic pop
 
+  :option:`-Wdangling-reference` also warns about code like
+
+  .. code-block:: c++
+
+    auto p = std::minmax(1, 2);
+
+  where ``std::minmax`` returns ``std::pair<const int&, const int&>``, and
+  both references dangle after the end of the full expression that contains
+  the call to `std::minmax``.
+
   This warning is enabled by :option:`-Wall`.
 
 .. option:: -Wno-dangling-reference

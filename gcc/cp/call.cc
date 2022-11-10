@@ -13527,6 +13527,34 @@ initialize_reference (tree type, tree expr,
   return expr;
 }
 
+/* Return true if T is std::pair<const T&, const T&>.  */
+
+static bool
+std_pair_ref_ref_p (tree t)
+{
+  /* First, check if we have std::pair.  */
+  if (!NON_UNION_CLASS_TYPE_P (t)
+      || !CLASSTYPE_TEMPLATE_INSTANTIATION (t))
+    return false;
+  tree tdecl = TYPE_NAME (TYPE_MAIN_VARIANT (t));
+  if (!decl_in_std_namespace_p (tdecl))
+    return false;
+  tree name = DECL_NAME (tdecl);
+  if (!name || !id_equal (name, "pair"))
+    return false;
+
+  /* Now see if the template arguments are both const T&.  */
+  tree args = CLASSTYPE_TI_ARGS (t);
+  if (TREE_VEC_LENGTH (args) != 2)
+    return false;
+  for (int i = 0; i < 2; i++)
+    if (!TYPE_REF_OBJ_P (TREE_VEC_ELT (args, i))
+	|| !CP_TYPE_CONST_P (TREE_TYPE (TREE_VEC_ELT (args, i))))
+      return false;
+
+  return true;
+}
+
 /* Helper for maybe_warn_dangling_reference to find a problematic CALL_EXPR
    that initializes the LHS (and at least one of its arguments represents
    a temporary, as outlined in maybe_warn_dangling_reference), or NULL_TREE
@@ -13556,11 +13584,6 @@ do_warn_dangling_reference (tree expr)
 	    || warning_suppressed_p (fndecl, OPT_Wdangling_reference)
 	    || !warning_enabled_at (DECL_SOURCE_LOCATION (fndecl),
 				    OPT_Wdangling_reference)
-	    /* If the function doesn't return a reference, don't warn.  This
-	       can be e.g.
-		 const int& z = std::min({1, 2, 3, 4, 5, 6, 7});
-	       which doesn't dangle: std::min here returns an int.  */
-	    || !TYPE_REF_OBJ_P (TREE_TYPE (TREE_TYPE (fndecl)))
 	    /* Don't emit a false positive for:
 		std::vector<int> v = ...;
 		std::vector<int>::const_iterator it = v.begin();
@@ -13571,6 +13594,20 @@ do_warn_dangling_reference (tree expr)
 	    || (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
 		&& DECL_OVERLOADED_OPERATOR_P (fndecl)
 		&& DECL_OVERLOADED_OPERATOR_IS (fndecl, INDIRECT_REF)))
+	  return NULL_TREE;
+
+	tree rettype = TREE_TYPE (TREE_TYPE (fndecl));
+	/* If the function doesn't return a reference, don't warn.  This
+	   can be e.g.
+	     const int& z = std::min({1, 2, 3, 4, 5, 6, 7});
+	   which doesn't dangle: std::min here returns an int.
+
+	   If the function returns a std::pair<const T&, const T&>, we
+	   warn, to detect e.g.
+	     std::pair<const int&, const int&> v = std::minmax(1, 2);
+	   which also creates a dangling reference, because std::minmax
+	   returns std::pair<const T&, const T&>(b, a).  */
+	if (!(TYPE_REF_OBJ_P (rettype) || std_pair_ref_ref_p (rettype)))
 	  return NULL_TREE;
 
 	/* Here we're looking to see if any of the arguments is a temporary
@@ -13614,6 +13651,8 @@ do_warn_dangling_reference (tree expr)
       return do_warn_dangling_reference (TREE_OPERAND (expr, 2));
     case PAREN_EXPR:
       return do_warn_dangling_reference (TREE_OPERAND (expr, 0));
+    case TARGET_EXPR:
+      return do_warn_dangling_reference (TARGET_EXPR_INITIAL (expr));
     default:
       return NULL_TREE;
     }
@@ -13640,7 +13679,8 @@ maybe_warn_dangling_reference (const_tree decl, tree init)
 {
   if (!warn_dangling_reference)
     return;
-  if (!TYPE_REF_P (TREE_TYPE (decl)))
+  if (!(TYPE_REF_OBJ_P (TREE_TYPE (decl))
+	|| std_pair_ref_ref_p (TREE_TYPE (decl))))
     return;
   /* Don't suppress the diagnostic just because the call comes from
      a system header.  If the DECL is not in a system header, or if
