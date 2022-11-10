@@ -39,7 +39,7 @@ struct X
   X() : val(1) { }
 
   X& operator+=(const X& x) { val += x.val; return *this; }
-  bool operator==(const X& x) { return val == x.val; }
+  bool operator==(const X& x) const { return val == x.val; }
 
   int val;
 };
