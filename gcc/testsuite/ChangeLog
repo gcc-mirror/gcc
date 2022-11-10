@@ -1,3 +1,7 @@
+2022-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/param-6.c: New test.
+
 2022-11-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

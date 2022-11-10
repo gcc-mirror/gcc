@@ -1,3 +1,8 @@
+2022-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* alias.cc (init_alias_analysis): Do not record sets to the hard
+	frame pointer if the frame pointer has not been eliminated.
+
 2022-11-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
