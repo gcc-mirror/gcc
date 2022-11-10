@@ -8708,6 +8708,72 @@ proc check_effective_target_popcount { } {
     } "" ]
 }
 
+# Return 1 if the target supports clz on int.
+
+proc check_effective_target_clz { } {
+    return [check_no_messages_and_pattern clz "!\\(call" rtl-expand {
+        int foo (int b)
+          {
+            return __builtin_clz (b);
+          }
+    } "" ]
+}
+
+# Return 1 if the target supports clz on long.
+
+proc check_effective_target_clzl { } {
+    return [check_no_messages_and_pattern clzl "!\\(call" rtl-expand {
+	int foo (long b)
+	  {
+	    return __builtin_clzl (b);
+	  }
+    } "" ]
+}
+
+# Return 1 if the target supports clz on long long.
+
+proc check_effective_target_clzll { } {
+    return [check_no_messages_and_pattern clzll "!\\(call" rtl-expand {
+        int foo (long long b)
+          {
+            return __builtin_clzll (b);
+          }
+    } "" ]
+}
+
+# Return 1 if the target supports ctz on int.
+
+proc check_effective_target_ctz { } {
+    return [check_no_messages_and_pattern ctz "!\\(call" rtl-expand {
+        int foo (int b)
+          {
+            return __builtin_ctz (b);
+          }
+    } "" ]
+}
+
+# Return 1 if the target supports ctz on long.
+
+proc check_effective_target_ctzl { } {
+    return [check_no_messages_and_pattern ctzl "!\\(call" rtl-expand {
+	int foo (long b)
+	  {
+	    return __builtin_ctzl (b);
+	  }
+    } "" ]
+}
+
+# Return 1 if the target supports ctz on long long.
+
+proc check_effective_target_ctzll { } {
+    return [check_no_messages_and_pattern ctzll "!\\(call" rtl-expand {
+        int foo (long long b)
+          {
+            return __builtin_ctzll (b);
+          }
+    } "" ]
+}
+
 # Return 1 if the target supports atomic operations on "long long"
 # and can execute them.
 #

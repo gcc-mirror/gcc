@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "tree-dfa.h"
+#include "internal-fn.h"
 #include "gimple-range.h"
 
 
@@ -2198,6 +2199,224 @@ number_of_iterations_popcount (loop_p loop, edge exit,
   return true;
 }
 
+/* Return an expression that counts the leading/trailing zeroes of src.
+
+   If define_at_zero is true, then the built expression will be defined to
+   return the precision of src when src == 0 (using either a conditional
+   expression or a suitable internal function).
+   Otherwise, we can elide the conditional expression and let src = 0 invoke
+   undefined behaviour.  */
+
+static tree
+build_cltz_expr (tree src, bool leading, bool define_at_zero)
+{
+  tree fn;
+  internal_fn ifn = leading ? IFN_CLZ : IFN_CTZ;
+  bool use_ifn = false;
+  int prec = TYPE_PRECISION (TREE_TYPE (src));
+  int i_prec = TYPE_PRECISION (integer_type_node);
+  int li_prec = TYPE_PRECISION (long_integer_type_node);
+  int lli_prec = TYPE_PRECISION (long_long_integer_type_node);
+
+  tree utype = unsigned_type_for (TREE_TYPE (src));
+  src = fold_convert (utype, src);
+
+  if (direct_internal_fn_supported_p (ifn, utype, OPTIMIZE_FOR_BOTH))
+    use_ifn = true;
+  else if (prec <= i_prec)
+    fn = leading ? builtin_decl_implicit (BUILT_IN_CLZ)
+		 : builtin_decl_implicit (BUILT_IN_CTZ);
+  else if (prec == li_prec)
+    fn = leading ? builtin_decl_implicit (BUILT_IN_CLZL)
+		 : builtin_decl_implicit (BUILT_IN_CTZL);
+  else if (prec == lli_prec || prec == 2 * lli_prec)
+    fn = leading ? builtin_decl_implicit (BUILT_IN_CLZLL)
+		 : builtin_decl_implicit (BUILT_IN_CTZLL);
+  else
+    return NULL_TREE;
+
+  tree call;
+  if (use_ifn)
+    {
+      call = build_call_expr_internal_loc (UNKNOWN_LOCATION, ifn,
+					   integer_type_node, 1, src);
+      int val;
+      scalar_int_mode mode = SCALAR_INT_TYPE_MODE (utype);
+      int optab_defined_at_zero
+	= leading ? CLZ_DEFINED_VALUE_AT_ZERO (mode, val)
+		  : CTZ_DEFINED_VALUE_AT_ZERO (mode, val);
+      if (define_at_zero && !(optab_defined_at_zero == 2 && val == prec))
+	{
+	  tree is_zero = fold_build2 (NE_EXPR, boolean_type_node, src,
+				      build_zero_cst (TREE_TYPE (src)));
+	  call = fold_build3(COND_EXPR, integer_type_node, is_zero, call,
+			     build_int_cst (integer_type_node, prec));
+	}
+    }
+  else if (prec == 2 * lli_prec)
+    {
+      tree src1 = fold_convert (long_long_unsigned_type_node,
+				fold_build2 (RSHIFT_EXPR, TREE_TYPE (src),
+					     unshare_expr (src),
+					     build_int_cst (integer_type_node,
+							    lli_prec)));
+      tree src2 = fold_convert (long_long_unsigned_type_node, src);
+      /* We count the zeroes in src1, and add the number in src2 when src1
+	 is 0.  */
+      if (!leading)
+	std::swap(src1, src2);
+      tree call1 = build_call_expr (fn, 1, src1);
+      tree call2 = build_call_expr (fn, 1, src2);
+      if (define_at_zero)
+	{
+	  tree is_zero2 = fold_build2 (NE_EXPR, boolean_type_node, src2,
+				       build_zero_cst (TREE_TYPE (src2)));
+	  call2 = fold_build3(COND_EXPR, integer_type_node, is_zero2, call2,
+			      build_int_cst (integer_type_node, lli_prec));
+	}
+      tree is_zero1 = fold_build2 (NE_EXPR, boolean_type_node, src1,
+				   build_zero_cst (TREE_TYPE (src1)));
+      call = fold_build3(COND_EXPR, integer_type_node, is_zero1, call1,
+			 fold_build2 (PLUS_EXPR, integer_type_node, call2,
+				      build_int_cst (integer_type_node,
+						     lli_prec)));
+    }
+  else
+    {
+      if (prec < i_prec)
+	src = fold_convert (unsigned_type_node, src);
+
+      call = build_call_expr (fn, 1, src);
+      if (define_at_zero)
+	{
+	  tree is_zero = fold_build2 (NE_EXPR, boolean_type_node, src,
+				      build_zero_cst (TREE_TYPE (src)));
+	  call = fold_build3(COND_EXPR, integer_type_node, is_zero, call,
+			     build_int_cst (integer_type_node, prec));
+	}
+
+      if (leading && prec < i_prec)
+	call = fold_build2(MINUS_EXPR, integer_type_node, call,
+			   build_int_cst (integer_type_node,
+					  i_prec - prec));
+    }
+
+  return call;
+}
+
+/* See comment below for number_of_iterations_bitcount.
+   For c[lt]z complement, we have:
+
+   modify:
+   iv_2 = iv_1 >> 1 OR iv_1 << 1
+
+   test:
+   if (iv != 0)
+
+   modification count:
+   src precision - c[lt]z (src)
+
+ */
+
+static bool
+number_of_iterations_cltz_complement (loop_p loop, edge exit,
+			       enum tree_code code,
+			       class tree_niter_desc *niter)
+{
+  bool modify_before_test = true;
+  HOST_WIDE_INT max;
+
+  /* Check that condition for staying inside the loop is like
+     if (iv != 0).  */
+  gimple *cond_stmt = last_stmt (exit->src);
+  if (!cond_stmt
+      || gimple_code (cond_stmt) != GIMPLE_COND
+      || code != NE_EXPR
+      || !integer_zerop (gimple_cond_rhs (cond_stmt))
+      || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
+    return false;
+
+  tree iv_2 = gimple_cond_lhs (cond_stmt);
+  gimple *iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
+
+  /* If the test comes before the iv modification, then these will actually be
+     iv_1 and a phi node.  */
+  if (gimple_code (iv_2_stmt) == GIMPLE_PHI
+      && gimple_bb (iv_2_stmt) == loop->header
+      && gimple_phi_num_args (iv_2_stmt) == 2
+      && (TREE_CODE (gimple_phi_arg_def (iv_2_stmt,
+					 loop_latch_edge (loop)->dest_idx))
+	  == SSA_NAME))
+    {
+      /* iv_2 is actually one of the inputs to the phi.  */
+      iv_2 = gimple_phi_arg_def (iv_2_stmt, loop_latch_edge (loop)->dest_idx);
+      iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
+      modify_before_test = false;
+    }
+
+  /* Make sure iv_2_stmt is a logical shift by one stmt:
+     iv_2 = iv_1 {>>|<<} 1  */
+  if (!is_gimple_assign (iv_2_stmt)
+      || (gimple_assign_rhs_code (iv_2_stmt) != LSHIFT_EXPR
+	  && (gimple_assign_rhs_code (iv_2_stmt) != RSHIFT_EXPR
+	      || !TYPE_UNSIGNED (TREE_TYPE (gimple_assign_lhs (iv_2_stmt)))))
+      || !integer_onep (gimple_assign_rhs2 (iv_2_stmt)))
+    return false;
+
+  bool left_shift = (gimple_assign_rhs_code (iv_2_stmt) == LSHIFT_EXPR);
+
+  tree iv_1 = gimple_assign_rhs1 (iv_2_stmt);
+
+  /* Check the recurrence.  */
+  gimple *phi = SSA_NAME_DEF_STMT (iv_1);
+  if (gimple_code (phi) != GIMPLE_PHI
+      || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
+      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
+    return false;
+
+  /* We found a match.  */
+  tree src = gimple_phi_arg_def (phi, loop_preheader_edge (loop)->dest_idx);
+  int src_precision = TYPE_PRECISION (TREE_TYPE (src));
+
+  /* Get the corresponding c[lt]z builtin.  */
+  tree expr = build_cltz_expr (src, !left_shift, true);
+
+  if (!expr)
+    return false;
+
+  expr = fold_build2 (MINUS_EXPR, integer_type_node,
+		      build_int_cst (integer_type_node, src_precision),
+		      expr);
+
+  max = src_precision;
+
+  tree may_be_zero = boolean_false_node;
+
+  if (modify_before_test)
+    {
+      expr = fold_build2 (MINUS_EXPR, integer_type_node, expr,
+			  integer_one_node);
+      max = max - 1;
+      may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node, src,
+				      build_zero_cst (TREE_TYPE (src)));
+    }
+
+  expr = fold_convert (unsigned_type_node, expr);
+
+  niter->assumptions = boolean_true_node;
+  niter->may_be_zero = simplify_using_initial_conditions (loop, may_be_zero);
+  niter->niter = simplify_using_initial_conditions (loop, expr);
+
+  if (TREE_CODE (niter->niter) == INTEGER_CST)
+    niter->max = tree_to_uhwi (niter->niter);
+  else
+    niter->max = max;
+
+  niter->bound = NULL_TREE;
+  niter->cmp = ERROR_MARK;
+  return true;
+}
+
 /* See if LOOP contains a bit counting idiom. The idiom consists of two parts:
    1. A modification to the induction variabler;.
    2. A test to determine whether or not to exit the loop.
@@ -2244,7 +2463,8 @@ number_of_iterations_bitcount (loop_p loop, edge exit,
 			       enum tree_code code,
 			       class tree_niter_desc *niter)
 {
-  return number_of_iterations_popcount (loop, exit, code, niter);
+  return (number_of_iterations_popcount (loop, exit, code, niter)
+	  || number_of_iterations_cltz_complement (loop, exit, code, niter));
 }
 
 /* Substitute NEW_TREE for OLD in EXPR and fold the result.

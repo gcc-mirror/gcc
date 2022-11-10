@@ -3397,12 +3397,21 @@ expression_expensive_p (tree expr, hash_map<tree, uint64_t> &cache,
 	 library call for popcount when backend does not have an instruction
 	 to do so.  We consider this to be expensive and generate
 	 __builtin_popcount only when backend defines it.  */
+      optab optab;
       combined_fn cfn = get_call_combined_fn (expr);
       switch (cfn)
 	{
 	CASE_CFN_POPCOUNT:
+	  optab = popcount_optab;
+	  goto bitcount_call;
+	CASE_CFN_CLZ:
+	  optab = clz_optab;
+	  goto bitcount_call;
+	CASE_CFN_CTZ:
+	  optab = ctz_optab;
+bitcount_call:
 	  /* Check if opcode for popcount is available in the mode required.  */
-	  if (optab_handler (popcount_optab,
+	  if (optab_handler (optab,
 			     TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (expr, 0))))
 	      == CODE_FOR_nothing)
 	    {
@@ -3415,7 +3424,7 @@ expression_expensive_p (tree expr, hash_map<tree, uint64_t> &cache,
 		 instructions.  */
 	      if (is_a <scalar_int_mode> (mode, &int_mode)
 		  && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
-		  && (optab_handler (popcount_optab, word_mode)
+		  && (optab_handler (optab, word_mode)
 		      != CODE_FOR_nothing))
 		  break;
 	      return true;
