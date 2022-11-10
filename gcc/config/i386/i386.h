@@ -1933,9 +1933,6 @@ do {							\
 
 #define SLOW_BYTE_ACCESS 0
 
-/* Nonzero if access to memory by shorts is slow and undesirable.  */
-#define SLOW_SHORT_ACCESS 0
-
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.
 
