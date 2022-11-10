@@ -1790,13 +1790,9 @@ cross_product_operator::wi_cross_product (irange &r, tree type,
 
 class operator_mult : public cross_product_operator
 {
-  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
 public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &lh, const irange &rh,
-			   relation_trio = TRIO_VARYING) const final override;
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -1814,18 +1810,6 @@ public:
 			  const irange &op1,
 			  relation_trio) const final override;
 } op_mult;
-
-bool
-operator_mult::fold_range (irange &r, tree type,
-			   const irange &lh, const irange &rh,
-			   relation_trio trio) const
-{
-  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
-    return false;
-
-  update_known_bitmask (r, MULT_EXPR, lh, rh);
-  return true;
-}
 
 bool
 operator_mult::op1_range (irange &r, tree type,
@@ -1979,22 +1963,7 @@ public:
   virtual bool wi_op_overflows (wide_int &res, tree type,
 				const wide_int &, const wide_int &)
     const final override;
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &lh, const irange &rh,
-			   relation_trio trio) const final override;
 };
-
-bool
-operator_div::fold_range (irange &r, tree type,
-			  const irange &lh, const irange &rh,
-			  relation_trio trio) const
-{
-  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
-    return false;
-
-  update_known_bitmask (r, m_code, lh, rh);
-  return true;
-}
 
 bool
 operator_div::wi_op_overflows (wide_int &res, tree type,
@@ -2834,14 +2803,9 @@ operator_logical_and::op2_range (irange &r, tree type,
 
 class operator_bitwise_and : public range_operator
 {
-  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
 public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &lh,
-			   const irange &rh,
-			   relation_trio rel = TRIO_VARYING) const;
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
@@ -2864,22 +2828,6 @@ private:
 				const irange &lhs,
 				const irange &op2) const;
 } op_bitwise_and;
-
-bool
-operator_bitwise_and::fold_range (irange &r, tree type,
-				  const irange &lh,
-				  const irange &rh,
-				  relation_trio) const
-{
-  if (range_operator::fold_range (r, type, lh, rh))
-    {
-      if (!r.undefined_p () && !lh.undefined_p () && !rh.undefined_p ())
-	r.set_nonzero_bits (wi::bit_and (lh.get_nonzero_bits (),
-					 rh.get_nonzero_bits ()));
-      return true;
-    }
-  return false;
-}
 
 
 // Optimize BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR of signed types
