@@ -3225,15 +3225,15 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 
 	  vec_safe_push (hidden_typelist, type);
 	}
-      /* For noncharacter scalar intrinsic types, VALUE passes the value,
+      /* For scalar intrinsic types, VALUE passes the value,
 	 hence, the optional status cannot be transferred via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */
-      else if (arg
-	       && arg->attr.optional
-	       && arg->attr.value
-	       && !arg->attr.dimension
-	       && arg->ts.type != BT_CLASS
-	       && !gfc_bt_struct (arg->ts.type))
+      if (arg
+	  && arg->attr.optional
+	  && arg->attr.value
+	  && !arg->attr.dimension
+	  && arg->ts.type != BT_CLASS
+	  && !gfc_bt_struct (arg->ts.type))
 	vec_safe_push (typelist, boolean_type_node);
       /* Coarrays which are descriptorless or assumed-shape pass with
 	 -fcoarray=lib the token and the offset as hidden arguments.  */

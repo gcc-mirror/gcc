@@ -27,5 +27,5 @@ contains
   end subroutine s
 end program p
 
-! { dg-final { scan-tree-dump "void s .* c, .* o, logical.* _o, integer.* _c" "original" } }
+! { dg-final { scan-tree-dump "void s .* c, .* o, logical.* \.o, integer.* _c" "original" } }
 ! { dg-final { scan-tree-dump ", integer.*, logical.*, integer.* pp" "original" } }

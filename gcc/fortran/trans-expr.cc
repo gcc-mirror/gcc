@@ -1985,15 +1985,14 @@ gfc_conv_expr_present (gfc_symbol * sym, bool use_saved_desc)
 
   /* Intrinsic scalars with VALUE attribute which are passed by value
      use a hidden argument to denote the present status.  */
-  if (sym->attr.value && sym->ts.type != BT_CHARACTER
-      && sym->ts.type != BT_CLASS && sym->ts.type != BT_DERIVED
-      && !sym->attr.dimension)
+  if (sym->attr.value && !sym->attr.dimension
+      && sym->ts.type != BT_CLASS && !gfc_bt_struct (sym->ts.type))
     {
       char name[GFC_MAX_SYMBOL_LEN + 2];
       tree tree_name;
 
       gcc_assert (TREE_CODE (decl) == PARM_DECL);
-      name[0] = '_';
+      name[0] = '.';
       strcpy (&name[1], sym->name);
       tree_name = get_identifier (name);
 
@@ -6162,11 +6161,21 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		 value, pass "0" and a hidden argument gives the optional
 		 status.  */
 	      if (fsym && fsym->attr.optional && fsym->attr.value
-		  && !fsym->attr.dimension && fsym->ts.type != BT_CHARACTER
-		  && fsym->ts.type != BT_CLASS && fsym->ts.type != BT_DERIVED)
+		  && !fsym->attr.dimension && fsym->ts.type != BT_CLASS
+		  && !gfc_bt_struct (sym->ts.type))
 		{
-		  parmse.expr = fold_convert (gfc_sym_type (fsym),
-					      integer_zero_node);
+		  if (fsym->ts.type == BT_CHARACTER)
+		    {
+		      /* Pass a NULL pointer for an absent CHARACTER arg
+			 and a length of zero.  */
+		      parmse.expr = null_pointer_node;
+		      parmse.string_length
+			= build_int_cst (gfc_charlen_type_node,
+					 0);
+		    }
+		  else
+		    parmse.expr = fold_convert (gfc_sym_type (fsym),
+						integer_zero_node);
 		  vec_safe_push (optionalargs, boolean_false_node);
 		}
 	      else
