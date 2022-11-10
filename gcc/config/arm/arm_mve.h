@@ -35582,6 +35582,9 @@ enum {
 	short: __ARM_mve_type_int_n, \
 	int: __ARM_mve_type_int_n, \
 	long: __ARM_mve_type_int_n, \
+	_Float16: __ARM_mve_type_fp_n, \
+	__fp16: __ARM_mve_type_fp_n, \
+	float: __ARM_mve_type_fp_n, \
 	double: __ARM_mve_type_fp_n, \
 	long long: __ARM_mve_type_int_n, \
 	unsigned char: __ARM_mve_type_int_n, \
