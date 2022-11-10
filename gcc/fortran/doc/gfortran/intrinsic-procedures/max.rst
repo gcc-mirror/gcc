@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _max:
-
 .. index:: MAX
 
 .. index:: MAX0
@@ -18,6 +16,8 @@
 .. index:: DMAX1
 
 .. index:: maximum value
+
+.. _max:
 
 MAX --- Maximum value of an argument list
 *****************************************

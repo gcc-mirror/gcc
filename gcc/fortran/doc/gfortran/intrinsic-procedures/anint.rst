@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _anint:
-
 .. index:: ANINT
 
 .. index:: DNINT
@@ -12,6 +10,8 @@
 .. index:: ceiling
 
 .. index:: rounding, ceiling
+
+.. _anint:
 
 ANINT --- Nearest whole number
 ******************************

@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _tand:
-
 .. index:: TAND
 
 .. index:: DTAND
@@ -12,6 +10,8 @@
 .. index:: trigonometric function, tangent, degrees
 
 .. index:: tangent, degrees
+
+.. _tand:
 
 TAND --- Tangent function, degrees
 **********************************

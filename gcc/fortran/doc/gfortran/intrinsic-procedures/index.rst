@@ -3,13 +3,13 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _index-intrinsic:
-
 .. index:: INDEX
 
 .. index:: substring position
 
 .. index:: string, find substring
+
+.. _index-intrinsic:
 
 INDEX --- Position of a substring within a string
 *************************************************

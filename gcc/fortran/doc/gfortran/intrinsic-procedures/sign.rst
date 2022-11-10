@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _sign:
-
 .. index:: SIGN
 
 .. index:: ISIGN
@@ -12,6 +10,8 @@
 .. index:: DSIGN
 
 .. index:: sign copying
+
+.. _sign:
 
 SIGN --- Sign copying function
 ******************************

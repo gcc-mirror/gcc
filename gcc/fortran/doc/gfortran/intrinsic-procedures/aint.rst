@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _aint:
-
 .. index:: AINT
 
 .. index:: DINT
@@ -12,6 +10,8 @@
 .. index:: floor
 
 .. index:: rounding, floor
+
+.. _aint:
 
 AINT --- Truncate to a whole number
 ***********************************

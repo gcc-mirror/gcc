@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _asinh:
-
 .. index:: ASINH
 
 .. index:: DASINH
@@ -16,6 +14,8 @@
 .. index:: hyperbolic function, sine, inverse
 
 .. index:: sine, hyperbolic, inverse
+
+.. _asinh:
 
 ASINH --- Inverse hyperbolic sine function
 ******************************************

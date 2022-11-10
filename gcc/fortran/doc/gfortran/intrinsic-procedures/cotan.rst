@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _cotan:
-
 .. index:: COTAN
 
 .. index:: DCOTAN
@@ -12,6 +10,8 @@
 .. index:: trigonometric function, cotangent
 
 .. index:: cotangent
+
+.. _cotan:
 
 COTAN --- Cotangent function
 ****************************

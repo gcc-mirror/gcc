@@ -3,13 +3,13 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _conjg:
-
 .. index:: CONJG
 
 .. index:: DCONJG
 
 .. index:: complex conjugate
+
+.. _conjg:
 
 CONJG --- Complex conjugate function
 ************************************

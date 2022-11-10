@@ -3,11 +3,11 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _dprod:
-
 .. index:: DPROD
 
 .. index:: product, double-precision
+
+.. _dprod:
 
 DPROD --- Double product function
 *********************************

@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _log:
-
 .. index:: LOG
 
 .. index:: ALOG
@@ -22,6 +20,8 @@
 .. index:: logarithm function
 
 .. index:: natural logarithm function
+
+.. _log:
 
 LOG --- Natural logarithm function
 **********************************

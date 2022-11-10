@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _acosh:
-
 .. index:: ACOSH
 
 .. index:: DACOSH
@@ -16,6 +14,8 @@
 .. index:: hyperbolic function, cosine, inverse
 
 .. index:: cosine, hyperbolic, inverse
+
+.. _acosh:
 
 ACOSH --- Inverse hyperbolic cosine function
 ********************************************

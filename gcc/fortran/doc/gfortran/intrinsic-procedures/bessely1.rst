@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _bessel_y1:
-
 .. index:: BESSEL_Y1
 
 .. index:: BESY1
@@ -12,6 +10,8 @@
 .. index:: DBESY1
 
 .. index:: Bessel function, second kind
+
+.. _bessel_y1:
 
 BESSEL_Y1 --- Bessel function of the second kind of order 1
 ***********************************************************

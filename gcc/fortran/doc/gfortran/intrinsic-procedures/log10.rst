@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _log10:
-
 .. index:: LOG10
 
 .. index:: ALOG10
@@ -16,6 +14,8 @@
 .. index:: logarithm function with base 10
 
 .. index:: base 10 logarithm function
+
+.. _log10:
 
 LOG10 --- Base 10 logarithm function
 ************************************

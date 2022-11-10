@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _tanh:
-
 .. index:: TANH
 
 .. index:: DTANH
@@ -14,6 +12,8 @@
 .. index:: hyperbolic function, tangent
 
 .. index:: tangent, hyperbolic
+
+.. _tanh:
 
 TANH --- Hyperbolic tangent function
 *************************************

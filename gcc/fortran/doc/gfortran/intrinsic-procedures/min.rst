@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _min:
-
 .. index:: MIN
 
 .. index:: MIN0
@@ -18,6 +16,8 @@
 .. index:: DMIN1
 
 .. index:: minimum value
+
+.. _min:
 
 MIN --- Minimum value of an argument list
 *****************************************

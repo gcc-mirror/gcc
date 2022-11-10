@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _dim:
-
 .. index:: DIM
 
 .. index:: IDIM
@@ -12,6 +10,8 @@
 .. index:: DDIM
 
 .. index:: positive difference
+
+.. _dim:
 
 DIM --- Positive difference
 ***************************

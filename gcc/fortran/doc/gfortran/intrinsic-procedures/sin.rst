@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _sin:
-
 .. index:: SIN
 
 .. index:: DSIN
@@ -18,6 +16,8 @@
 .. index:: trigonometric function, sine
 
 .. index:: sine
+
+.. _sin:
 
 SIN --- Sine function
 **********************

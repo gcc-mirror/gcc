@@ -3,11 +3,11 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _erfc:
-
 .. index:: ERFC
 
 .. index:: error function, complementary
+
+.. _erfc:
 
 ERFC --- Error function
 ************************

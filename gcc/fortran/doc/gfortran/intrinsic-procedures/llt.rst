@@ -3,13 +3,13 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _llt:
-
 .. index:: LLT
 
 .. index:: lexical comparison of strings
 
 .. index:: string, comparison
+
+.. _llt:
 
 LLT --- Lexical less than
 *************************

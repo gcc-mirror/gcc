@@ -3,11 +3,11 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _len:
-
 .. index:: LEN
 
 .. index:: string, length
+
+.. _len:
 
 LEN --- Length of a character entity
 ************************************

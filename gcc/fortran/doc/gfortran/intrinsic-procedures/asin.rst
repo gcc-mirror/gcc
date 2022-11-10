@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _asin:
-
 .. index:: ASIN
 
 .. index:: DASIN
@@ -12,6 +10,8 @@
 .. index:: trigonometric function, sine, inverse
 
 .. index:: sine, inverse
+
+.. _asin:
 
 ASIN --- Arcsine function
 **************************

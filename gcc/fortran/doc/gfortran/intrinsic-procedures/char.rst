@@ -3,11 +3,11 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _char:
-
 .. index:: CHAR
 
 .. index:: conversion, to character
+
+.. _char:
 
 CHAR --- Character conversion function
 **************************************

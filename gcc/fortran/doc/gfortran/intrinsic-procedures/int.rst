@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _int:
-
 .. index:: INT
 
 .. index:: IFIX
@@ -12,6 +10,8 @@
 .. index:: IDINT
 
 .. index:: conversion, to integer
+
+.. _int:
 
 INT --- Convert to integer type
 *******************************

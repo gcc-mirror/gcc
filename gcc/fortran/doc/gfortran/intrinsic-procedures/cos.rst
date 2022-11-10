@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _cos:
-
 .. index:: COS
 
 .. index:: DCOS
@@ -18,6 +16,8 @@
 .. index:: trigonometric function, cosine
 
 .. index:: cosine
+
+.. _cos:
 
 COS --- Cosine function
 ***********************

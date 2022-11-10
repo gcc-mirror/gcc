@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _atand:
-
 .. index:: ATAND
 
 .. index:: DATAND
@@ -12,6 +10,8 @@
 .. index:: trigonometric function, tangent, inverse, degrees
 
 .. index:: tangent, inverse, degrees
+
+.. _atand:
 
 ATAND --- Arctangent function, degrees
 **************************************

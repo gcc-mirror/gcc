@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _ishft:
-
 .. index:: ISHFT
 
 .. index:: BSHFT
@@ -16,6 +14,8 @@
 .. index:: KISHFT
 
 .. index:: bits, shift
+
+.. _ishft:
 
 ISHFT --- Shift bits
 ********************

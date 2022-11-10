@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _ibits:
-
 .. index:: IBITS
 
 .. index:: BBITS
@@ -18,6 +16,8 @@
 .. index:: bits, get
 
 .. index:: bits, extract
+
+.. _ibits:
 
 IBITS --- Bit extraction
 ************************

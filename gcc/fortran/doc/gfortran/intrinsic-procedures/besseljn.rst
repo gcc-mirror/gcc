@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _bessel_jn:
-
 .. index:: BESSEL_JN
 
 .. index:: BESJN
@@ -12,6 +10,8 @@
 .. index:: DBESJN
 
 .. index:: Bessel function, first kind
+
+.. _bessel_jn:
 
 BESSEL_JN --- Bessel function of the first kind
 ***********************************************

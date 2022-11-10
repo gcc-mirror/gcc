@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _mvbits:
-
 .. index:: MVBITS
 
 .. index:: BMVBITS
@@ -16,6 +14,8 @@
 .. index:: KMVBITS
 
 .. index:: bits, move
+
+.. _mvbits:
 
 MVBITS --- Move bits from one integer to another
 ************************************************

@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _cosh:
-
 .. index:: COSH
 
 .. index:: DCOSH
@@ -14,6 +12,8 @@
 .. index:: hyperbolic function, cosine
 
 .. index:: cosine, hyperbolic
+
+.. _cosh:
 
 COSH --- Hyperbolic cosine function
 ***********************************

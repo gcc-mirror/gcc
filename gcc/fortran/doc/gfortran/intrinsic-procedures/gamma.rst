@@ -3,8 +3,6 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
-.. _gamma:
-
 .. index:: GAMMA
 
 .. index:: DGAMMA
@@ -12,6 +10,8 @@
 .. index:: Gamma function
 
 .. index:: Factorial function
+
+.. _gamma:
 
 GAMMA --- Gamma function
 ************************
