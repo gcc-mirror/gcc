@@ -2523,7 +2523,7 @@ private:
 			const irange &outer) const;
   void fold_pair (irange &r, unsigned index, const irange &inner,
 			   const irange &outer) const;
-} op_convert;
+};
 
 // Add a partial equivalence between the LHS and op1 for casts.
 
@@ -3877,7 +3877,7 @@ public:
 					   const irange &op1,
 					   const irange &op2,
 					   relation_kind rel) const;
-} op_identity;
+};
 
 // Determine if there is a relationship between LHS and OP1.
 
@@ -3922,7 +3922,7 @@ public:
 			   const irange &op1,
 			   const irange &op2,
 			   relation_trio rel = TRIO_VARYING) const;
-} op_unknown;
+};
 
 bool
 operator_unknown::fold_range (irange &r, tree type,
@@ -4245,7 +4245,7 @@ public:
   virtual void wi_fold (irange & r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_ptr_min_max;
+};
 
 void
 pointer_min_max_operator::wi_fold (irange &r, tree type,
@@ -4372,7 +4372,16 @@ range_op_table::set (enum tree_code code, range_operator &op)
 {
   gcc_checking_assert (m_range_tree[code] == NULL);
   m_range_tree[code] = &op;
+  gcc_checking_assert (op.m_code == ERROR_MARK || op.m_code == code);
+  op.m_code = code;
 }
+
+// Shared operators that require separate instantiations because they
+// do not share a common tree code.
+static operator_cast op_nop, op_convert;
+static operator_identity op_ssa, op_paren, op_obj_type;
+static operator_unknown op_realpart, op_imagpart;
+static pointer_min_max_operator op_ptr_min, op_ptr_max;
 
 // Instantiate a range op table for integral operations.
 
@@ -4402,7 +4411,7 @@ integral_table::integral_table ()
   set (EXACT_DIV_EXPR, op_exact_div);
   set (LSHIFT_EXPR, op_lshift);
   set (RSHIFT_EXPR, op_rshift);
-  set (NOP_EXPR, op_convert);
+  set (NOP_EXPR, op_nop);
   set (CONVERT_EXPR, op_convert);
   set (TRUTH_AND_EXPR, op_logical_and);
   set (BIT_AND_EXPR, op_bitwise_and);
@@ -4413,11 +4422,11 @@ integral_table::integral_table ()
   set (TRUTH_NOT_EXPR, op_logical_not);
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (INTEGER_CST, op_integer_cst);
-  set (SSA_NAME, op_identity);
-  set (PAREN_EXPR, op_identity);
-  set (OBJ_TYPE_REF, op_identity);
-  set (IMAGPART_EXPR, op_unknown);
-  set (REALPART_EXPR, op_unknown);
+  set (SSA_NAME, op_ssa);
+  set (PAREN_EXPR, op_paren);
+  set (OBJ_TYPE_REF, op_obj_type);
+  set (IMAGPART_EXPR, op_imagpart);
+  set (REALPART_EXPR, op_realpart);
   set (POINTER_DIFF_EXPR, op_pointer_diff);
   set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
@@ -4437,8 +4446,8 @@ pointer_table::pointer_table ()
 {
   set (BIT_AND_EXPR, op_pointer_and);
   set (BIT_IOR_EXPR, op_pointer_or);
-  set (MIN_EXPR, op_ptr_min_max);
-  set (MAX_EXPR, op_ptr_min_max);
+  set (MIN_EXPR, op_ptr_min);
+  set (MAX_EXPR, op_ptr_max);
   set (POINTER_PLUS_EXPR, op_pointer_plus);
 
   set (EQ_EXPR, op_equal);
@@ -4447,10 +4456,10 @@ pointer_table::pointer_table ()
   set (LE_EXPR, op_le);
   set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
-  set (SSA_NAME, op_identity);
+  set (SSA_NAME, op_ssa);
   set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
-  set (NOP_EXPR, op_convert);
+  set (NOP_EXPR, op_nop);
   set (CONVERT_EXPR, op_convert);
 
   set (BIT_NOT_EXPR, op_bitwise_not);
