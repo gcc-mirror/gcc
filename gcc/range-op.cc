@@ -1971,7 +1971,6 @@ operator_mult::wi_fold (irange &r, tree type,
 class operator_div : public cross_product_operator
 {
 public:
-  operator_div (enum tree_code c)  { code = c; }
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -1983,8 +1982,6 @@ public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &lh, const irange &rh,
 			   relation_trio trio) const final override;
-private:
-  enum tree_code code;
 };
 
 bool
@@ -1995,7 +1992,7 @@ operator_div::fold_range (irange &r, tree type,
   if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
     return false;
 
-  update_known_bitmask (r, code, lh, rh);
+  update_known_bitmask (r, m_code, lh, rh);
   return true;
 }
 
@@ -2009,13 +2006,9 @@ operator_div::wi_op_overflows (wide_int &res, tree type,
   wi::overflow_type overflow = wi::OVF_NONE;
   signop sign = TYPE_SIGN (type);
 
-  switch (code)
+  switch (m_code)
     {
     case EXACT_DIV_EXPR:
-      // EXACT_DIV_EXPR is implemented as TRUNC_DIV_EXPR in
-      // operator_exact_divide.  No need to handle it here.
-      gcc_unreachable ();
-      break;
     case TRUNC_DIV_EXPR:
       res = wi::div_trunc (w0, w1, sign, &overflow);
       break;
@@ -2091,17 +2084,11 @@ operator_div::wi_fold (irange &r, tree type,
   gcc_checking_assert (!r.undefined_p ());
 }
 
-operator_div op_trunc_div (TRUNC_DIV_EXPR);
-operator_div op_floor_div (FLOOR_DIV_EXPR);
-operator_div op_round_div (ROUND_DIV_EXPR);
-operator_div op_ceil_div (CEIL_DIV_EXPR);
-
 
 class operator_exact_divide : public operator_div
 {
   using range_operator::op1_range;
 public:
-  operator_exact_divide () : operator_div (TRUNC_DIV_EXPR) { }
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
@@ -4382,6 +4369,10 @@ static operator_cast op_nop, op_convert;
 static operator_identity op_ssa, op_paren, op_obj_type;
 static operator_unknown op_realpart, op_imagpart;
 static pointer_min_max_operator op_ptr_min, op_ptr_max;
+static operator_div op_trunc_div;
+static operator_div op_floor_div;
+static operator_div op_round_div;
+static operator_div op_ceil_div;
 
 // Instantiate a range op table for integral operations.
 
