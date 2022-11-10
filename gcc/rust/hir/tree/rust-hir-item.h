@@ -571,13 +571,15 @@ public:
 private:
   VisType vis_type;
   HIR::SimplePath path;
+  Location locus;
 
   // should this store location info?
 
 public:
   Visibility (VisType vis_type,
-	      HIR::SimplePath path = HIR::SimplePath::create_empty ())
-    : vis_type (vis_type), path (std::move (path))
+	      HIR::SimplePath path = HIR::SimplePath::create_empty (),
+	      Location locus = Location ())
+    : vis_type (vis_type), path (std::move (path)), locus (locus)
   {}
 
   // Returns whether visibility is in an error state.
