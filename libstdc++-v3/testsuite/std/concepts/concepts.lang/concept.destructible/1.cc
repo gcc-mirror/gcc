@@ -29,6 +29,7 @@ static_assert( std::destructible<int&&> );
 static_assert( std::destructible<const int&> );
 static_assert( !std::destructible<int[]> );
 static_assert( std::destructible<int[2]> );
+static_assert( std::destructible<int[2][3]> );
 static_assert( !std::destructible<int()> );
 static_assert( std::destructible<int(*)()> );
 static_assert( std::destructible<int(&)()> );
@@ -47,6 +48,8 @@ struct C
   ~C() noexcept(false) { }
 };
 static_assert( !std::destructible<C> );
+static_assert( std::destructible<C&> );
+static_assert( !std::destructible<C[1]> );
 class D
 {
 public:
@@ -55,3 +58,5 @@ private:
   ~D() { }
 };
 static_assert( !std::destructible<D> );
+static_assert( std::destructible<D&> );
+static_assert( !std::destructible<D[1]> );
