@@ -245,6 +245,7 @@ range_operator::fold_range (irange &r, tree type,
       wi_fold_in_parts (r, type, lh.lower_bound (), lh.upper_bound (),
 			rh.lower_bound (), rh.upper_bound ());
       op1_op2_relation_effect (r, type, lh, rh, rel);
+      update_known_bitmask (r, m_code, lh, rh);
       return true;
     }
 
@@ -262,10 +263,12 @@ range_operator::fold_range (irange &r, tree type,
 	if (r.varying_p ())
 	  {
 	    op1_op2_relation_effect (r, type, lh, rh, rel);
+	    update_known_bitmask (r, m_code, lh, rh);
 	    return true;
 	  }
       }
   op1_op2_relation_effect (r, type, lh, rh, rel);
+  update_known_bitmask (r, m_code, lh, rh);
   return true;
 }
 
@@ -2873,7 +2876,7 @@ operator_bitwise_and::fold_range (irange &r, tree type,
 {
   if (range_operator::fold_range (r, type, lh, rh))
     {
-      if (!lh.undefined_p () && !rh.undefined_p ())
+      if (!r.undefined_p () && !lh.undefined_p () && !rh.undefined_p ())
 	r.set_nonzero_bits (wi::bit_and (lh.get_nonzero_bits (),
 					 rh.get_nonzero_bits ()));
       return true;
