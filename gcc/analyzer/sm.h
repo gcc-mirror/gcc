@@ -117,6 +117,12 @@ public:
   {
   }
 
+  virtual void
+  on_pop_frame (sm_state_map *smap ATTRIBUTE_UNUSED,
+		const frame_region *frame_reg ATTRIBUTE_UNUSED) const
+  {
+  }
+
   /* Return true if it safe to discard the given state (to help
      when simplifying state objects).
      States that need leak detection should return false.  */
@@ -137,6 +143,31 @@ public:
 						  bool is_mutable) const
   {
     return is_mutable;
+  }
+
+  /* Attempt to get a state for the merger of STATE_A and STATE_B,
+     or return NULL if merging shouldn't occur, so that differences
+     between sm-state will lead to separate exploded nodes.
+
+     Most state machines will only merge equal states, but can
+     override maybe_get_merged_states_nonequal to support mergers
+     of certain non-equal states.  */
+  state_t maybe_get_merged_state (state_t state_a,
+				  state_t state_b) const
+  {
+    if (state_a == state_b)
+      return state_a;
+    return maybe_get_merged_states_nonequal (state_a, state_b);
+  }
+
+  /* Base implementation of hook for maybe_get_merged_state on non-equal
+     states.  */
+  virtual state_t
+  maybe_get_merged_states_nonequal (state_t state_a ATTRIBUTE_UNUSED,
+				    state_t state_b ATTRIBUTE_UNUSED) const
+  {
+    /* By default, non-equal sm states should inhibit merger of enodes.  */
+    return NULL;
   }
 
   void validate (state_t s) const;

@@ -58,6 +58,10 @@ Wanalyzer-allocation-size
 Common Var(warn_analyzer_allocation_size) Init(1) Warning
 Warn about code paths in which a pointer to a buffer is assigned to an incompatible type.
 
+Wanalyzer-deref-before-check
+Common Var(warn_analyzer_deref_before_check) Init(1) Warning
+Warn about code paths in which a pointer is checked for NULL after it has already been dereferenced.
+
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning
 Warn about code paths in which a stdio FILE can be closed more than once.

@@ -1739,9 +1739,12 @@ struct null_assignment_sm_context : public sm_context
     state_machine::state_t from = get_state (stmt, var);
     if (from != m_sm.get_start_state ())
       return;
+    if (!is_transition_to_null (to))
+      return;
 
     const svalue *var_new_sval
       = m_new_state->m_region_model->get_rvalue (var, NULL);
+
     const supernode *supernode = m_point->get_supernode ();
     int stack_depth = m_point->get_stack_depth ();
 
@@ -1763,6 +1766,8 @@ struct null_assignment_sm_context : public sm_context
   {
     state_machine::state_t from = get_state (stmt, sval);
     if (from != m_sm.get_start_state ())
+      return;
+    if (!is_transition_to_null (to))
       return;
 
     const supernode *supernode = m_point->get_supernode ();
@@ -1832,6 +1837,13 @@ struct null_assignment_sm_context : public sm_context
   const program_state *get_new_program_state () const final override
   {
     return m_new_state;
+  }
+
+  /* We only care about transitions to the "null" state
+     within sm-malloc.  Special-case this.  */
+  static bool is_transition_to_null (state_machine::state_t s)
+  {
+    return !strcmp (s->get_name (), "null");
   }
 
   const program_state *m_old_state;

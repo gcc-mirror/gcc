@@ -4690,7 +4690,7 @@ tristate
 region_model::eval_condition (tree lhs,
 			      enum tree_code op,
 			      tree rhs,
-			      region_model_context *ctxt)
+			      region_model_context *ctxt) const
 {
   /* For now, make no attempt to model constraints on floating-point
      values.  */
@@ -5415,8 +5415,13 @@ region_model::pop_frame (tree result_lvalue,
 {
   gcc_assert (m_current_frame);
 
-  /* Evaluate the result, within the callee frame.  */
   const frame_region *frame_reg = m_current_frame;
+
+  /* Notify state machines.  */
+  if (ctxt)
+    ctxt->on_pop_frame (frame_reg);
+
+  /* Evaluate the result, within the callee frame.  */
   tree fndecl = m_current_frame->get_function ()->decl;
   tree result = DECL_RESULT (fndecl);
   const svalue *retval = NULL;
