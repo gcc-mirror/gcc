@@ -49,8 +49,9 @@ translate_visibility (const AST::Visibility &vis)
     case AST::Visibility::PUB_CRATE:
     case AST::Visibility::PUB_SUPER:
     case AST::Visibility::PUB_IN_PATH:
-      return Visibility (Visibility::VisType::RESTRICTED,
-			 ASTLoweringSimplePath::translate (vis.get_path ()));
+      return Visibility(Visibility::VisType::RESTRICTED,
+                        ASTLoweringSimplePath::translate(vis.get_path()),
+                        vis.get_locus());
       break;
     }
 

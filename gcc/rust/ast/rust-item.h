@@ -625,14 +625,14 @@ private:
   VisType vis_type;
   // Only assigned if vis_type is IN_PATH
   SimplePath in_path;
+  Location locus;
 
   // should this store location info?
 
 public:
   // Creates a Visibility - TODO make constructor protected or private?
-  Visibility (VisType vis_type, SimplePath in_path)
-    : vis_type (vis_type), in_path (std::move (in_path))
-  {}
+  Visibility(VisType vis_type, SimplePath in_path, Location locus = Location())
+      : vis_type(vis_type), in_path(std::move(in_path)), locus(locus) {}
 
   VisType get_vis_type () const { return vis_type; }
 
@@ -647,6 +647,8 @@ public:
 
   // Returns whether visibility is public or not.
   bool is_public () const { return vis_type != PRIV && !is_error (); }
+
+  Location get_locus() const { return locus; }
 
   // Creates an error visibility.
   static Visibility create_error ()
@@ -671,22 +673,24 @@ public:
   // Creates a public visibility with crate-relative paths
   static Visibility create_crate (Location crate_tok_location)
   {
-    return Visibility (PUB_CRATE,
-		       SimplePath::from_str ("crate", crate_tok_location));
+    return Visibility(PUB_CRATE,
+                      SimplePath::from_str("crate", crate_tok_location),
+                      crate_tok_location);
   }
 
   // Creates a public visibility with self-relative paths
   static Visibility create_self (Location self_tok_location)
   {
-    return Visibility (PUB_SELF,
-		       SimplePath::from_str ("self", self_tok_location));
+    return Visibility(PUB_SELF, SimplePath::from_str("self", self_tok_location),
+                      self_tok_location);
   }
 
   // Creates a public visibility with parent module-relative paths
   static Visibility create_super (Location super_tok_location)
   {
-    return Visibility (PUB_SUPER,
-		       SimplePath::from_str ("super", super_tok_location));
+    return Visibility(PUB_SUPER,
+                      SimplePath::from_str("super", super_tok_location),
+                      super_tok_location);
   }
 
   // Creates a private visibility
@@ -698,7 +702,7 @@ public:
   // Creates a public visibility with a given path or whatever.
   static Visibility create_in_path (SimplePath in_path)
   {
-    return Visibility (PUB_IN_PATH, std::move (in_path));
+    return Visibility(PUB_IN_PATH, std::move(in_path), in_path.get_locus());
   }
 
   std::string as_string () const;
@@ -3836,8 +3840,8 @@ class ExternalItem
 public:
   virtual ~ExternalItem () {}
 
-  /* TODO: spec syntax rules state that "MacroInvocationSemi" can be used as 
-   * ExternalItem, but text body isn't so clear. Adding MacroInvocationSemi 
+  /* TODO: spec syntax rules state that "MacroInvocationSemi" can be used as
+   * ExternalItem, but text body isn't so clear. Adding MacroInvocationSemi
    * support would require a lot of refactoring. */
 
   // Returns whether item has outer attributes.
