@@ -4540,7 +4540,8 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 		  rtvec v = rtvec_alloc (n_elts);
 		  for (i = 0; i < n_elts; ++i)
 		    RTVEC_ELT (v, i)
-		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) + 1);
+		      = gen_int_mode (INTVAL (CONST_VECTOR_ELT (cop1, i)) + 1,
+				      eltmode);
 		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
 		  std::swap (cop0, cop1);
 		  code = code == LE ? GT : GTU;
@@ -4584,7 +4585,8 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 		  rtvec v = rtvec_alloc (n_elts);
 		  for (i = 0; i < n_elts; ++i)
 		    RTVEC_ELT (v, i)
-		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) - 1);
+		      = gen_int_mode (INTVAL (CONST_VECTOR_ELT (cop1, i)) - 1,
+				      eltmode);
 		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
 		  code = code == GE ? GT : GTU;
 		  break;
