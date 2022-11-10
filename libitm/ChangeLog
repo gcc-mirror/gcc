@@ -1,3 +1,89 @@
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add missing HAS_SPHINX_BUILD.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/c-c++-language-constructs-for-tm.rst:
+	  Add trailing newline.
+	* doc/copyright.rst:
+	  Add trailing newline.
+	* doc/enabling-libitm.rst:
+	  Add trailing newline.
+	* doc/gnu-free-documentation-license.rst:
+	  Add trailing newline.
+	* doc/index.rst:
+	  Add trailing newline.
+	* doc/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/internals.rst:
+	  Add trailing newline.
+	* doc/locking-conventions.rst:
+	  Add trailing newline.
+	* doc/nesting-flat-vs-closed.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/function-list.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/future-enhancements-to-the-abi.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/library-design-principles.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/memory-model.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/non-objectives.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/objectives.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/sample-code.rst:
+	  Add trailing newline.
+	* doc/the-libitm-abi/types-and-macros-list.rst:
+	  Add trailing newline.
+	* doc/tm-methods-and-method-groups.rst:
+	  Add trailing newline.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Build info pages conditionally.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support --with-sphinx-build.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* libitm.texi: Removed.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support Sphinx based documentation.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/c-c++-language-constructs-for-tm.rst: New file.
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/enabling-libitm.rst: New file.
+	* doc/gnu-free-documentation-license.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/internals.rst: New file.
+	* doc/locking-conventions.rst: New file.
+	* doc/nesting-flat-vs-closed.rst: New file.
+	* doc/the-libitm-abi.rst: New file.
+	* doc/the-libitm-abi/function-list.rst: New file.
+	* doc/the-libitm-abi/future-enhancements-to-the-abi.rst: New file.
+	* doc/the-libitm-abi/library-design-principles.rst: New file.
+	* doc/the-libitm-abi/memory-model.rst: New file.
+	* doc/the-libitm-abi/non-objectives.rst: New file.
+	* doc/the-libitm-abi/objectives.rst: New file.
+	* doc/the-libitm-abi/sample-code.rst: New file.
+	* doc/the-libitm-abi/types-and-macros-list.rst: New file.
+	* doc/tm-methods-and-method-groups.rst: New file.
+
 2022-10-31  Xiongchuan Tan  <xc-tan@outlook.com>
 
 	* configure.tgt: Add riscv support.

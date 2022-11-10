@@ -1,3 +1,2514 @@
+2022-11-09  Martin Liska  <mliska@suse.cz>
+	    Sinan  <sinan.lin@linux.alibaba.com>
+
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/ssa-operands.rst:
+	Add missing variable name.
+
+2022-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (frange_storage_slot::get_frange): Clear
+	NAN if appropriate.
+	* value-range.cc (range_tests_floats): New test.
+
+2022-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (class foperator_plus): Remove op[12]_range.
+	(class foperator_minus): Same.
+
+2022-11-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gimple-array-bounds.cc (trailing_array): Replace
+	array_at_struct_end_p with new name and update comments.
+	* gimple-fold.cc (get_range_strlen_tree): Likewise.
+	* gimple-ssa-warn-restrict.cc (builtin_memref::builtin_memref):
+	Likewise.
+	* graphite-sese-to-poly.cc (bounds_are_valid): Likewise.
+	* tree-if-conv.cc (idx_within_array_bound): Likewise.
+	* tree-object-size.cc (addr_object_size): Likewise.
+	* tree-ssa-alias.cc (component_ref_to_zero_sized_trailing_array_p):
+	Likewise.
+	(stmt_kills_ref_p): Likewise.
+	* tree-ssa-loop-niter.cc (idx_infer_loop_bounds): Likewise.
+	* tree-ssa-strlen.cc (maybe_set_strlen_range): Likewise.
+	* tree.cc (array_at_struct_end_p): Rename to ...
+	(array_ref_flexible_size_p): ... this.
+	(component_ref_size): Replace array_at_struct_end_p with new name.
+	* tree.h (array_at_struct_end_p): Rename to ...
+	(array_ref_flexible_size_p): ... this.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Use new install URL.
+	* doc/gcc/gcc-command-options/machine-dependent-options/avr-options.rst:
+	Use intersphinx link.
+	* doc/gcc/gcc-command-options/options-to-control-diagnostic-messages-formatting.rst:
+	Use new URL.
+	* doc/gccint/source-tree-structure-and-build-system.rst: Use
+	intersphinx link.
+	* doc/install/host-target-specific-installation-notes-for-gcc.rst: Likewise.
+	* doc/install/installing-gcc.rst: Likewise.
+
+2022-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84646
+	* tree-ssa-threadbackward.cc (back_threader::maybe_register_path):
+	Remove premature cycle rejection.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/cpp/character-sets.rst:
+	  Add trailing newline.
+	* doc/cpp/conditional-syntax.rst:
+	  Add trailing newline.
+	* doc/cpp/conditional-uses.rst:
+	  Add trailing newline.
+	* doc/cpp/conditionals.rst:
+	  Add trailing newline.
+	* doc/cpp/copyright.rst:
+	  Add trailing newline.
+	* doc/cpp/deleted-code.rst:
+	  Add trailing newline.
+	* doc/cpp/diagnostics.rst:
+	  Add trailing newline.
+	* doc/cpp/environment-variables.rst:
+	  Add trailing newline.
+	* doc/cpp/gnu-free-documentation-license.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/alternatives-to-wrapper-ifndef.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/computed-includes.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/include-operation.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/include-syntax.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/once-only-headers.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/search-path.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/system-headers.rst:
+	  Add trailing newline.
+	* doc/cpp/header-files/wrapper-headers.rst:
+	  Add trailing newline.
+	* doc/cpp/implementation-defined-behavior.rst:
+	  Add trailing newline.
+	* doc/cpp/implementation-details.rst:
+	  Add trailing newline.
+	* doc/cpp/implementation-limits.rst:
+	  Add trailing newline.
+	* doc/cpp/index.rst:
+	  Add trailing newline.
+	* doc/cpp/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/cpp/initial-processing.rst:
+	  Add trailing newline.
+	* doc/cpp/invocation.rst:
+	  Add trailing newline.
+	* doc/cpp/line-control.rst:
+	  Add trailing newline.
+	* doc/cpp/macros.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/concatenation.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/directives-within-macro-arguments.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/function-like-macros.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/macro-arguments.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/macro-pitfalls.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/object-like-macros.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/predefined-macros.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/stringizing.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/undefining-and-redefining-macros.rst:
+	  Add trailing newline.
+	* doc/cpp/macros/variadic-macros.rst:
+	  Add trailing newline.
+	* doc/cpp/obsolete-features.rst:
+	  Add trailing newline.
+	* doc/cpp/other-directives.rst:
+	  Add trailing newline.
+	* doc/cpp/overview.rst:
+	  Add trailing newline.
+	* doc/cpp/pragmas.rst:
+	  Add trailing newline.
+	* doc/cpp/preprocessor-output.rst:
+	  Add trailing newline.
+	* doc/cpp/the-preprocessing-language.rst:
+	  Add trailing newline.
+	* doc/cpp/tokenization.rst:
+	  Add trailing newline.
+	* doc/cpp/traditional-lexical-analysis.rst:
+	  Add trailing newline.
+	* doc/cpp/traditional-macros.rst:
+	  Add trailing newline.
+	* doc/cpp/traditional-miscellany.rst:
+	  Add trailing newline.
+	* doc/cpp/traditional-mode.rst:
+	  Add trailing newline.
+	* doc/cpp/traditional-warnings.rst:
+	  Add trailing newline.
+	* doc/cppinternals/copyright.rst:
+	  Add trailing newline.
+	* doc/cppinternals/cppinternals.rst:
+	  Add trailing newline.
+	* doc/cppinternals/cpplib.rst:
+	  Add trailing newline.
+	* doc/cppinternals/files.rst:
+	  Add trailing newline.
+	* doc/cppinternals/index.rst:
+	  Add trailing newline.
+	* doc/cppinternals/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/cppinternals/internal-representation-of-macros.rst:
+	  Add trailing newline.
+	* doc/cppinternals/just-which-line-number-anyway.rst:
+	  Add trailing newline.
+	* doc/cppinternals/lexing-a-line.rst:
+	  Add trailing newline.
+	* doc/cppinternals/lexing-a-token.rst:
+	  Add trailing newline.
+	* doc/cppinternals/looking-for-a-function-like-macros-opening-parenthesis.rst:
+	  Add trailing newline.
+	* doc/cppinternals/macro-expansion-overview.rst:
+	  Add trailing newline.
+	* doc/cppinternals/marking-tokens-ineligible-for-future-expansion.rst:
+	  Add trailing newline.
+	* doc/cppinternals/multiple-include-optimization.rst:
+	  Add trailing newline.
+	* doc/cppinternals/overview.rst:
+	  Add trailing newline.
+	* doc/cppinternals/representation-of-line-numbers.rst:
+	  Add trailing newline.
+	* doc/cppinternals/scanning-the-replacement-list-for-macros-to-expand.rst:
+	  Add trailing newline.
+	* doc/gcc/binary-compatibility.rst:
+	  Add trailing newline.
+	* doc/gcc/c++-implementation-defined-behavior.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/architecture.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/arrays-and-pointers.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/characters.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/declarators.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/environment.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/floating-point.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/hints.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/identifiers.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/integers.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/library-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/locale-specific-behavior.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/preprocessing-directives.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/qualifiers.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/statements.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/structures-unions-enumerations-and-bit-fields.rst:
+	  Add trailing newline.
+	* doc/gcc/c-implementation-defined-behavior/translation.rst:
+	  Add trailing newline.
+	* doc/gcc/conditionally-supported-behavior.rst:
+	  Add trailing newline.
+	* doc/gcc/contributing-to-gcc-development.rst:
+	  Add trailing newline.
+	* doc/gcc/contributors-to-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/copyright.rst:
+	  Add trailing newline.
+	* doc/gcc/exception-handling.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/backwards-compatibility.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/c++-concepts.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/c++-interface-and-implementation-pragmas.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/c++-specific-variable-function-and-type-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/deprecated-features.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/extracting-the-function-pointer-from-a-bound-pointer-to-member-function.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/function-multiversioning.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/restricting-pointer-aliasing.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/type-traits.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/vague-linkage.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/when-is-a-volatile-c++-object-accessed.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c++-language/wheres-the-template.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/128-bit-integers.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/additional-floating-types.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/alternate-keywords.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/an-inline-function-is-as-fast-as-a-macro.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/arithmetic-on-void-and-function-pointers.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/arrays-of-length-zero.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/arrays-of-variable-length.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/attribute-syntax.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/binary-constants-using-the-0b-prefix.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-for-memory-model-aware-atomic-operations.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-to-perform-arithmetic-with-overflow-checking.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/c++-style-comments.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/case-ranges.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/cast-to-a-union-type.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/complex-numbers.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/compound-literals.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/conditionals-with-omitted-operands.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/constructing-function-calls.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/decimal-floating-types.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/aarch64-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/amd-gcn-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arc-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arm-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/avr-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/blackfin-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/bpf-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/c-sky-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/common-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/epiphany-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/h8-300-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/ia-64-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32c-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32r-d-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m68k-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mcore-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mep-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microblaze-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microsoft-windows-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mips-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/msp430-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nds32-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nios-ii-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nvidia-ptx-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/powerpc-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/risc-v-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rl78-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rx-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/s-390-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/sh-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/symbian-os-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/v850-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/visium-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/x86-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/xstormy16-function-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/designated-initializers.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/determining-the-alignment-of-functions-types-or-variables.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/dollar-signs-in-identifier-names.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/double-word-integers.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/enumerator-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/fixed-point-types.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/format-checks-specific-to-particular-target-machines.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/function-names-as-strings.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/getting-the-return-or-frame-address-of-a-function.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/half-precision-floating-point.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/hex-floats.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/how-to-use-inline-assembly-language-in-c-code.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/incomplete-enum-types.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/label-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/labels-as-values.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/legacy-sync-built-in-functions-for-atomic-memory-access.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/locally-declared-labels.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/macros-with-a-variable-number-of-arguments.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/mixed-declarations-labels-and-code.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/named-address-spaces.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/nested-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/non-constant-initializers.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/non-lvalue-arrays-may-have-subscripts.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/nonlocal-gotos.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/object-size-checking-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/other-built-in-functions-provided-by-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/pointer-arguments-in-variadic-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/pointers-to-arrays-with-qualifiers-work-as-expected.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/pragmas-accepted-by-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/prototypes-and-old-style-function-definitions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/referring-to-a-type-with-typeof.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/slightly-looser-rules-for-escaped-newlines.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-types.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-variables.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/statement-attributes.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/statements-and-declarations-in-expressions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/structures-with-no-members.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/support-for-offsetof.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/aarch64-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/alpha-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/altera-nios-ii-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-simd-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-armv8-m-security-extensions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-c-language-extensions-acle.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-floating-point-status-and-control-intrinsics.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-iwmmxt-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/avr-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/basic-powerpc-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/blackfin-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/bpf-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/fr-v-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-dsp-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-loongson-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-paired-single-support.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-simd-architecture-msa-support.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/msp430-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/nds32-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/other-mips-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/picochip-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-altivec-vsx-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-atomic-memory-operation-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-hardware-transactional-memory-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-matrix-multiply-assist-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/pru-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/risc-v-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/rx-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/s-390-system-z-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sh-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sparc-vis-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/ti-c6x-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-control-flow-protection-intrinsics.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-transactional-memory-intrinsics.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/the-character-esc-in-constants.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/thread-local-storage.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/unnamed-structure-and-union-fields.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/using-vector-instructions-through-built-in-functions.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/when-is-a-volatile-object-accessed.rst:
+	  Add trailing newline.
+	* doc/gcc/extensions-to-the-c-language-family/x86-specific-memory-model-extensions-for-transactional-memory.rst:
+	  Add trailing newline.
+	* doc/gcc/funding.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/compiling-c++-programs.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/description.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/environment-variables-affecting-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/gcc-developer-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/aarch64-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/adapteva-epiphany-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/amd-gcn-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/arc-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/arm-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/avr-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/blackfin-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/c-sky-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/c6x-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/cris-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/darwin-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/dec-alpha-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ebpf-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/fr30-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/frv-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ft32-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/gnu-linux-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/h8-300-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/hppa-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ia-64-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ibm-rs-6000-and-powerpc-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/lm32-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/loongarch-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/m32c-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/m32r-d-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/m680x0-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mcore-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mep-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/microblaze-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mips-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mmix-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mn10300-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/moxie-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/msp430-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/nds32-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/nios-ii-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/nvidia-ptx-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/openrisc-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/options-for-system-v.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/pdp-11-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/picochip-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/powerpc-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/pru-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/risc-v-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/rl78-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/rx-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/s-390-and-zseries-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/score-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/sh-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/solaris-2-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/sparc-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/v850-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/vax-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/visium-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/vms-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/vxworks-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/x86-windows-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/xstormy16-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/xtensa-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/machine-dependent-options/zseries-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-controlling-c++-dialect.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-controlling-c-dialect.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-controlling-objective-c-and-objective-c++-dialects.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-controlling-the-kind-of-output.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-controlling-the-preprocessor.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-for-code-generation-conventions.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-for-debugging-your-program.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-for-directory-search.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-for-linking.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-that-control-optimization.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-that-control-static-analysis.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-to-control-diagnostic-messages-formatting.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/options-to-request-or-suppress-warnings.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/passing-options-to-the-assembler.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/program-instrumentation-options.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/specifying-subprocesses-and-the-switches-to-pass-to-them.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc-command-options/using-precompiled-headers.rst:
+	  Add trailing newline.
+	* doc/gcc/gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov-dump.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov-tool.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov/brief-description-of-gcov-data-files.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov/data-file-relocation-to-support-cross-profiling.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov/introduction-to-gcov.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov/invoking-gcov.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov/profiling-and-test-coverage-in-freestanding-environments.rst:
+	  Add trailing newline.
+	* doc/gcc/gcov/using-gcov-with-gcc-optimization.rst:
+	  Add trailing newline.
+	* doc/gcc/general-public-license-3.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-free-documentation-license.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/compatibilityalias.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/constant-string-objects.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/exceptions.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/fast-enumeration.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/garbage-collection.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/gnu-objective-c-runtime-api.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/load-executing-code-before-main.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/messaging-with-the-gnu-objective-c-runtime.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/synchronization.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu-objective-c-features/type-encoding.rst:
+	  Add trailing newline.
+	* doc/gcc/gnu.rst:
+	  Add trailing newline.
+	* doc/gcc/have-you-found-a-bug.rst:
+	  Add trailing newline.
+	* doc/gcc/how-and-where-to-report-bugs.rst:
+	  Add trailing newline.
+	* doc/gcc/how-to-get-help-with-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/index.rst:
+	  Add trailing newline.
+	* doc/gcc/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/actual-bugs-we-havent-fixed-yet.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/certain-changes-we-dont-want-to-make.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/common-misunderstandings-with-gnu-c.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/disappointments-and-misunderstandings.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/fixed-header-files.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/incompatibilities-of-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/interoperation.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/standard-libraries.rst:
+	  Add trailing newline.
+	* doc/gcc/known-causes-of-trouble-with-gcc/warning-messages-and-error-messages.rst:
+	  Add trailing newline.
+	* doc/gcc/language-standards-supported-by-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/language-standards-supported-by-gcc/c++-language.rst:
+	  Add trailing newline.
+	* doc/gcc/language-standards-supported-by-gcc/c-language.rst:
+	  Add trailing newline.
+	* doc/gcc/language-standards-supported-by-gcc/d-language.rst:
+	  Add trailing newline.
+	* doc/gcc/language-standards-supported-by-gcc/go-language.rst:
+	  Add trailing newline.
+	* doc/gcc/language-standards-supported-by-gcc/objective-c-and-objective-c++-languages.rst:
+	  Add trailing newline.
+	* doc/gcc/lto-dump.rst:
+	  Add trailing newline.
+	* doc/gcc/programming-languages-supported-by-gcc.rst:
+	  Add trailing newline.
+	* doc/gcc/reporting-bugs.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/alias-analysis.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/annotations.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/memory-model.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/ssa-operands.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/static-single-assignment.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/data-dependency-analysis.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/iv-analysis-on-rtl.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/loop-closed-ssa-form.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/loop-manipulation.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/loop-querying.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/loop-representation.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/number-of-iterations-analysis.rst:
+	  Add trailing newline.
+	* doc/gccint/analysis-and-representation-of-loops/scalar-evolutions.rst:
+	  Add trailing newline.
+	* doc/gccint/analyzer-internals.rst:
+	  Add trailing newline.
+	* doc/gccint/collect2.rst:
+	  Add trailing newline.
+	* doc/gccint/contributing-to-gcc-development.rst:
+	  Add trailing newline.
+	* doc/gccint/contributors-to-gcc.rst:
+	  Add trailing newline.
+	* doc/gccint/control-flow-graph.rst:
+	  Add trailing newline.
+	* doc/gccint/control-flow-graph/basic-blocks.rst:
+	  Add trailing newline.
+	* doc/gccint/control-flow-graph/edges.rst:
+	  Add trailing newline.
+	* doc/gccint/control-flow-graph/liveness-information.rst:
+	  Add trailing newline.
+	* doc/gccint/control-flow-graph/maintaining-the-cfg.rst:
+	  Add trailing newline.
+	* doc/gccint/control-flow-graph/profile-information.rst:
+	  Add trailing newline.
+	* doc/gccint/copyright.rst:
+	  Add trailing newline.
+	* doc/gccint/debugging-the-analyzer.rst:
+	  Add trailing newline.
+	* doc/gccint/funding.rst:
+	  Add trailing newline.
+	* doc/gccint/gcc-and-portability.rst:
+	  Add trailing newline.
+	* doc/gccint/general-public-license-3.rst:
+	  Add trailing newline.
+	* doc/gccint/generic.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/attributes-in-trees.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/c-and-c++-trees.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/declarations.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/deficiencies.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/expressions.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/functions.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/language-dependent-trees.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/overview.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/statements.rst:
+	  Add trailing newline.
+	* doc/gccint/generic/types.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple-api.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/adding-a-new-gimple-statement-code.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/class-hierarchy-of-gimple-statements.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/exception-handling.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/gimple-instruction-set.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/gimple-sequences.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/manipulating-gimple-statements.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/operands.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/sequence-iterators.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/statement-and-operand-traversals.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/temporaries.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-representation.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleasm.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleassign.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplebind.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplecall.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplecatch.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplecond.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpledebug.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleehfilter.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplegoto.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplelabel.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplenop.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicload.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicstore.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcontinue.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcritical.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompfor.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompmaster.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompordered.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompparallel.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompreturn.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsection.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsections.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsingle.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplephi.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleresx.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplereturn.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleswitch.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpletry.rst:
+	  Add trailing newline.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplewithcleanupexpr.rst:
+	  Add trailing newline.
+	* doc/gccint/gnu-free-documentation-license.rst:
+	  Add trailing newline.
+	* doc/gccint/guidelines-for-diagnostics.rst:
+	  Add trailing newline.
+	* doc/gccint/guidelines-for-options.rst:
+	  Add trailing newline.
+	* doc/gccint/host-common.rst:
+	  Add trailing newline.
+	* doc/gccint/host-configuration.rst:
+	  Add trailing newline.
+	* doc/gccint/host-filesystem.rst:
+	  Add trailing newline.
+	* doc/gccint/host-makefile-fragments.rst:
+	  Add trailing newline.
+	* doc/gccint/host-misc.rst:
+	  Add trailing newline.
+	* doc/gccint/index.rst:
+	  Add trailing newline.
+	* doc/gccint/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/gccint/interfacing-to-gcc-output.rst:
+	  Add trailing newline.
+	* doc/gccint/introduction.rst:
+	  Add trailing newline.
+	* doc/gccint/language-front-ends-in-gcc.rst:
+	  Add trailing newline.
+	* doc/gccint/link-time-optimization.rst:
+	  Add trailing newline.
+	* doc/gccint/link-time-optimization/design-overview.rst:
+	  Add trailing newline.
+	* doc/gccint/link-time-optimization/internal-flags-controlling-lto1.rst:
+	  Add trailing newline.
+	* doc/gccint/link-time-optimization/lto-file-sections.rst:
+	  Add trailing newline.
+	* doc/gccint/link-time-optimization/using-summary-information-in-ipa-passes.rst:
+	  Add trailing newline.
+	* doc/gccint/link-time-optimization/whole-program-assumptions-linker-plugin-and-symbol-visibilities.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/c-statements-for-assembler-output.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/canonicalization-of-instructions.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/conditional-execution.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/constant-definitions.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/defining-how-to-split-instructions.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/defining-jump-instruction-patterns.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/defining-looping-instruction-patterns.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/defining-rtl-sequences-for-code-generation.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/everything-about-instruction-patterns.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/example-of-defineinsn.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/including-patterns-in-machine-descriptions.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/instruction-attributes.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/interdependence-of-patterns.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/iterators.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/machine-specific-peephole-optimizers.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/operand-constraints.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/output-templates-and-operand-substitution.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/overview-of-how-the-machine-description-is-used.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/predicates.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/rtl-template.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/rtl-templates-transformations.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/standard-pattern-names-for-generation.rst:
+	  Add trailing newline.
+	* doc/gccint/machine-descriptions/when-the-order-of-patterns-matters.rst:
+	  Add trailing newline.
+	* doc/gccint/makefile-fragments.rst:
+	  Add trailing newline.
+	* doc/gccint/match-and-simplify.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information/how-to-invoke-the-garbage-collector.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information/marking-roots-for-the-garbage-collector.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information/source-files-containing-type-information.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information/support-for-inheritance.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information/support-for-user-provided-gc-marking-routines.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information/the-inside-of-a-gty.rst:
+	  Add trailing newline.
+	* doc/gccint/memory-management-and-type-information/troubleshooting-the-garbage-collector.rst:
+	  Add trailing newline.
+	* doc/gccint/option-file-format.rst:
+	  Add trailing newline.
+	* doc/gccint/option-properties.rst:
+	  Add trailing newline.
+	* doc/gccint/option-specification-files.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler/gimplification-pass.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler/inter-procedural-optimization-passes.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler/optimization-info.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler/parsing-pass.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler/pass-manager.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler/rtl-passes.rst:
+	  Add trailing newline.
+	* doc/gccint/passes-and-files-of-the-compiler/tree-ssa-passes.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/building-gcc-plugins.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/controlling-which-passes-are-being-run.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/giving-information-about-a-plugin.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/interacting-with-the-gcc-garbage-collector.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/interacting-with-the-pass-manager.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/keeping-track-of-available-passes.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/loading-plugins.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/plugin-api.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/recording-information-about-pass-execution.rst:
+	  Add trailing newline.
+	* doc/gccint/plugins/registering-custom-attributes-or-pragmas.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/access-to-operands.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/access-to-special-operands.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/assembler-instructions-as-expressions.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/bit-fields.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/comparison-operations.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/constant-expression-types.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/conversions.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/declarations.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/embedded-side-effects-on-addresses.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/flags-in-an-rtl-expression.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/insns.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/machine-modes.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/on-the-side-ssa-form-for-rtl.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/reading-rtl.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/registers-and-memory.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/rtl-classes-and-formats.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/rtl-expressions-for-arithmetic.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/rtl-object-types.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/rtl-representation-of-function-call-insns.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/side-effect-expressions.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/structure-sharing-assumptions.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/variable-location-debug-information-in-rtl.rst:
+	  Add trailing newline.
+	* doc/gccint/rtl-representation/vector-operations.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/alignment-of-polyints.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/arithmetic-on-polyints.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/comparisons-involving-polyint.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/computing-bounds-on-polyints.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/consequences-of-using-polyint.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/converting-polyints.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/guidelines-for-using-polyint.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/miscellaneous-polyint-routines.rst:
+	  Add trailing newline.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/overview-of-polyint.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/configure-terms-and-history.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-language-front-end.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-target-back-end.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/build-system-in-the-gcc-directory.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/configuration-in-the-gcc-directory.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/headers-installed-by-gcc.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/library-source-files-and-headers-under-the-gcc-directory.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/makefile-targets.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/subdirectories-of-gcc.rst:
+	  Add trailing newline.
+	* doc/gccint/source-tree-structure-and-build-system/top-level-source-directory.rst:
+	  Add trailing newline.
+	* doc/gccint/standard-header-file-directories.rst:
+	  Add trailing newline.
+	* doc/gccint/static-analyzer.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/controlling-debugging-information-format.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/controlling-the-compilation-driver-gcc.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/cross-compilation-and-floating-point.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-coprocessor-specifics-for-mips-targets.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-data-structures-for-per-function-information.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/assembler-commands-for-alignment.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/how-initialization-functions-are-handled.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/macros-controlling-initialization-routines.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-and-generation-of-labels.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-assembler-instructions.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-data.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-uninitialized-variables.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/implicit-calls-to-library-routines.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/layout-of-source-language-data-types.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/position-independent-code.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/register-usage.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/basic-stack-layout.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/caller-saves-register-allocation.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/exception-handling-support.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-function-arguments-on-the-stack.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/registers-that-address-the-stack-frame.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/support-for-nested-functions.rst:
+	  Add trailing newline.
+	* doc/gccint/target-macros/the-global-targetm-variable.rst:
+	  Add trailing newline.
+	* doc/gccint/target-makefile-fragments.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/ada-language-testsuites.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/c-language-testsuites.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/commands-for-use-in-dg-final.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/features-for-dg-add-options.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/keywords-describing-target-attributes.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/selecting-targets-to-which-a-test-applies.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/syntax-and-descriptions-of-test-directives.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/variants-of-dg-require-support.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/idioms-used-in-testsuite-code.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/support-for-testing-binary-compatibility.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/support-for-testing-gcov.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/support-for-testing-gimple-passes.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/support-for-testing-link-time-optimizations.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/support-for-testing-profile-directed-optimizations.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/support-for-testing-rtl-passes.rst:
+	  Add trailing newline.
+	* doc/gccint/testsuites/support-for-torture-testing-using-multiple-options.rst:
+	  Add trailing newline.
+	* doc/gccint/the-gcc-low-level-runtime-library.rst:
+	  Add trailing newline.
+	* doc/gccint/the-gcc-low-level-runtime-library/language-independent-routines-for-exception-handling.rst:
+	  Add trailing newline.
+	* doc/gccint/the-gcc-low-level-runtime-library/miscellaneous-runtime-library-routines.rst:
+	  Add trailing newline.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-decimal-floating-point-emulation.rst:
+	  Add trailing newline.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-fixed-point-fractional-emulation.rst:
+	  Add trailing newline.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-floating-point-emulation.rst:
+	  Add trailing newline.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-integer-arithmetic.rst:
+	  Add trailing newline.
+	* doc/gccint/the-language.rst:
+	  Add trailing newline.
+	* doc/gccint/user-experience-guidelines.rst:
+	  Add trailing newline.
+	* doc/install/binaries.rst:
+	  Add trailing newline.
+	* doc/install/building.rst:
+	  Add trailing newline.
+	* doc/install/building/building-a-cross-compiler.rst:
+	  Add trailing newline.
+	* doc/install/building/building-a-native-compiler.rst:
+	  Add trailing newline.
+	* doc/install/building/building-in-parallel.rst:
+	  Add trailing newline.
+	* doc/install/building/building-the-ada-compiler.rst:
+	  Add trailing newline.
+	* doc/install/building/building-the-d-compiler.rst:
+	  Add trailing newline.
+	* doc/install/building/building-with-profile-feedback.rst:
+	  Add trailing newline.
+	* doc/install/configuration.rst:
+	  Add trailing newline.
+	* doc/install/copyright.rst:
+	  Add trailing newline.
+	* doc/install/downloading-gcc.rst:
+	  Add trailing newline.
+	* doc/install/final-installation.rst:
+	  Add trailing newline.
+	* doc/install/gnu-free-documentation-license.rst:
+	  Add trailing newline.
+	* doc/install/host-target-specific-installation-notes-for-gcc.rst:
+	  Add trailing newline.
+	* doc/install/how-can-you-run-the-testsuite-on-selected-tests.rst:
+	  Add trailing newline.
+	* doc/install/how-to-interpret-test-results.rst:
+	  Add trailing newline.
+	* doc/install/index.rst:
+	  Add trailing newline.
+	* doc/install/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/install/installing-gcc.rst:
+	  Add trailing newline.
+	* doc/install/passing-options-and-running-multiple-testsuites.rst:
+	  Add trailing newline.
+	* doc/install/prerequisites.rst:
+	  Add trailing newline.
+	* doc/install/submitting-test-results.rst:
+	  Add trailing newline.
+	* doc/install/testing.rst:
+	  Add trailing newline.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* opts.cc (get_option_html_page): Port to sphinx URLs.
+	(get_option_url): Likewise.
+	(test_get_option_html_page): Likewise.
+
+2022-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107569
+	* range-op-float.cc (foperator_abs::op1_range): Clear NaNs
+	from the negatives frange before unioning it into r.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add vpath default for .rst files.
+	* config/avr/avr-devices.cc: For port RST.
+	* config/avr/avr-mcus.def: Update path.
+	* config/avr/gen-avr-mmcu-texi.cc: Moved to...
+	* config/avr/gen-avr-mmcu-rst.cc: ...here.
+	* config/avr/t-avr: Update to rst.
+	* doc/gcc/gcc-command-options/machine-dependent-options/avr-mmcu.rst: Re-generate.
+
+2022-11-09  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add BSWAP.
+
+2022-11-09  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_emit_int_compare):
+	Avoid signed overflow.
+
+2022-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_plus::op1_range): New.
+	(foperator_plus::op2_range): New.
+	(foperator_minus::op1_range): New.
+	(foperator_minus::op2_range): New.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support installation if sphinx-build is missing.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-arguments-in-registers.rst:
+	Port to RST.
+	* doc/gccint/target-macros/storage-layout.rst: Likewise.
+	* doc/gcc/gcc-command-options/machine-dependent-options/x86-options.rst: Sync with master.
+	* doc/gcc/gcc-command-options/option-summary.rst: Likewise.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gccint/target-macros/defining-the-output-assembler-language/assembler-commands-for-exception-regions.rst:
+	Do not include tm.rst.in.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/the-overall-framework-of-an-assembler-file.rst:
+	Likewise.
+	* doc/gccint/target-macros/run-time-target-specification.rst:
+	Likewise.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcc/gcc-command-options/options-controlling-the-kind-of-output.rst:
+	Fix cross manual refs.
+	* doc/gcc/language-standards-supported-by-gcc/references-for-other-languages.rst:
+	Likewise.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support --with-sphinx-build.
+	* configure.ac:
+	* configure: Regenerate.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* target.def: Use proper lexers for target macros.
+	* doc/gccint/target-macros/tm.rst.in: Re-generate.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/analyzer.texi: Removed.
+	* doc/avr-mmcu.texi: Removed.
+	* doc/bugreport.texi: Removed.
+	* doc/cfg.texi: Removed.
+	* doc/collect2.texi: Removed.
+	* doc/compat.texi: Removed.
+	* doc/configfiles.texi: Removed.
+	* doc/configterms.texi: Removed.
+	* doc/contrib.texi: Removed.
+	* doc/contribute.texi: Removed.
+	* doc/cpp.texi: Removed.
+	* doc/cppdiropts.texi: Removed.
+	* doc/cppenv.texi: Removed.
+	* doc/cppinternals.texi: Removed.
+	* doc/cppopts.texi: Removed.
+	* doc/cppwarnopts.texi: Removed.
+	* doc/extend.texi: Removed.
+	* doc/fragments.texi: Removed.
+	* doc/frontends.texi: Removed.
+	* doc/gcc.texi: Removed.
+	* doc/gccint.texi: Removed.
+	* doc/gcov-dump.texi: Removed.
+	* doc/gcov-tool.texi: Removed.
+	* doc/gcov.texi: Removed.
+	* doc/generic.texi: Removed.
+	* doc/gimple.texi: Removed.
+	* doc/gnu.texi: Removed.
+	* doc/gty.texi: Removed.
+	* doc/headerdirs.texi: Removed.
+	* doc/hostconfig.texi: Removed.
+	* doc/implement-c.texi: Removed.
+	* doc/implement-cxx.texi: Removed.
+	* doc/include/fdl.texi: Removed.
+	* doc/include/funding.texi: Removed.
+	* doc/include/gcc-common.texi: Removed.
+	* doc/include/gpl_v3.texi: Removed.
+	* doc/install.texi: Removed.
+	* doc/interface.texi: Removed.
+	* doc/invoke.texi: Removed.
+	* doc/languages.texi: Removed.
+	* doc/libgcc.texi: Removed.
+	* doc/loop.texi: Removed.
+	* doc/lto-dump.texi: Removed.
+	* doc/lto.texi: Removed.
+	* doc/makefile.texi: Removed.
+	* doc/match-and-simplify.texi: Removed.
+	* doc/md.texi: Removed.
+	* doc/objc.texi: Removed.
+	* doc/optinfo.texi: Removed.
+	* doc/options.texi: Removed.
+	* doc/passes.texi: Removed.
+	* doc/plugins.texi: Removed.
+	* doc/poly-int.texi: Removed.
+	* doc/portability.texi: Removed.
+	* doc/rtl.texi: Removed.
+	* doc/service.texi: Removed.
+	* doc/sourcebuild.texi: Removed.
+	* doc/standards.texi: Removed.
+	* doc/tm.texi: Removed.
+	* doc/tree-ssa.texi: Removed.
+	* doc/trouble.texi: Removed.
+	* doc/ux.texi: Removed.
+	* doc/tm.texi.in: Removed.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gccint/target-macros/tm.rst.in: New file.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support Sphinx based documentation.
+	* configure: Regenerate.
+	* configure.ac: Support Sphinx based documentation.
+	* genhooks.cc (struct s_hook): Emit tm.rst.in file.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gccint/target-macros/adding-support-for-named-address-spaces.rst: Use tm.rst.in file.
+	* doc/gccint/target-macros/addressing-modes.rst: Likewise.
+	* doc/gccint/target-macros/adjusting-the-instruction-scheduler.rst: Likewise.
+	* doc/gccint/target-macros/anchored-addresses.rst: Likewise.
+	* doc/gccint/target-macros/c++-abi-parameters.rst: Likewise.
+	* doc/gccint/target-macros/condition-code-status.rst: Likewise.
+	* doc/gccint/target-macros/controlling-debugging-information-format.rst: Likewise.
+	* doc/gccint/target-macros/controlling-the-compilation-driver-gcc.rst: Likewise.
+	* doc/gccint/target-macros/d-abi-parameters.rst: Likewise.
+	* doc/gccint/target-macros/defining-target-specific-uses-of-attribute.rst: Likewise.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/assembler-commands-for-exception-regions.rst:
+	Likewise.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/macros-controlling-initialization-routines.rst:
+	Likewise.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-and-generation-of-labels.rst:
+	Likewise.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-assembler-instructions.rst:
+	Likewise.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-data.rst:
+	Likewise.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-dispatch-tables.rst:
+	Likewise.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/the-overall-framework-of-an-assembler-file.rst:
+	Likewise.
+	* doc/gccint/target-macros/describing-relative-costs-of-operations.rst: Likewise.
+	* doc/gccint/target-macros/dividing-the-output-into-sections-texts-data.rst: Likewise.
+	* doc/gccint/target-macros/emulating-tls.rst: Likewise.
+	* doc/gccint/target-macros/implementing-the-varargs-macros.rst: Likewise.
+	* doc/gccint/target-macros/implicit-calls-to-library-routines.rst: Likewise.
+	* doc/gccint/target-macros/layout-of-source-language-data-types.rst: Likewise.
+	* doc/gccint/target-macros/miscellaneous-parameters.rst: Likewise.
+	* doc/gccint/target-macros/mode-switching-instructions.rst: Likewise.
+	* doc/gccint/target-macros/parameters-for-precompiled-header-validity-checking.rst:
+	Likewise.
+	* doc/gccint/target-macros/register-classes.rst: Likewise.
+	* doc/gccint/target-macros/register-usage.rst: Likewise.
+	* doc/gccint/target-macros/run-time-target-specification.rst: Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/basic-stack-layout.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/eliminating-frame-pointer-and-arg-pointer.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/function-entry-and-exit.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/generating-code-for-profiling.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/how-large-values-are-returned.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/how-scalar-function-values-are-returned.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/miscellaneous-register-hooks.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-arguments-in-registers.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-function-arguments-on-the-stack.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/permitting-tail-calls.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/registers-that-address-the-stack-frame.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/shrink-wrapping-separate-components.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/specifying-how-stack-checking-is-done.rst:
+	Likewise.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/stack-smashing-protection.rst:
+	Likewise.
+	* doc/gccint/target-macros/storage-layout.rst: Likewise.
+	* doc/gccint/target-macros/support-for-nested-functions.rst: Likewise.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* common/common-target.def: Port to RST.
+	* target.def: Port to RST.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/cpp/character-sets.rst: New file.
+	* doc/cpp/conditional-syntax.rst: New file.
+	* doc/cpp/conditional-uses.rst: New file.
+	* doc/cpp/conditionals.rst: New file.
+	* doc/cpp/conf.py: New file.
+	* doc/cpp/copyright.rst: New file.
+	* doc/cpp/deleted-code.rst: New file.
+	* doc/cpp/diagnostics.rst: New file.
+	* doc/cpp/environment-variables.rst: New file.
+	* doc/cpp/gnu-free-documentation-license.rst: New file.
+	* doc/cpp/header-files.rst: New file.
+	* doc/cpp/header-files/alternatives-to-wrapper-ifndef.rst: New file.
+	* doc/cpp/header-files/computed-includes.rst: New file.
+	* doc/cpp/header-files/include-operation.rst: New file.
+	* doc/cpp/header-files/include-syntax.rst: New file.
+	* doc/cpp/header-files/once-only-headers.rst: New file.
+	* doc/cpp/header-files/search-path.rst: New file.
+	* doc/cpp/header-files/system-headers.rst: New file.
+	* doc/cpp/header-files/wrapper-headers.rst: New file.
+	* doc/cpp/implementation-defined-behavior.rst: New file.
+	* doc/cpp/implementation-details.rst: New file.
+	* doc/cpp/implementation-limits.rst: New file.
+	* doc/cpp/index.rst: New file.
+	* doc/cpp/indices-and-tables.rst: New file.
+	* doc/cpp/initial-processing.rst: New file.
+	* doc/cpp/invocation.rst: New file.
+	* doc/cpp/line-control.rst: New file.
+	* doc/cpp/macros.rst: New file.
+	* doc/cpp/macros/concatenation.rst: New file.
+	* doc/cpp/macros/directives-within-macro-arguments.rst: New file.
+	* doc/cpp/macros/function-like-macros.rst: New file.
+	* doc/cpp/macros/macro-arguments.rst: New file.
+	* doc/cpp/macros/macro-pitfalls.rst: New file.
+	* doc/cpp/macros/object-like-macros.rst: New file.
+	* doc/cpp/macros/predefined-macros.rst: New file.
+	* doc/cpp/macros/stringizing.rst: New file.
+	* doc/cpp/macros/undefining-and-redefining-macros.rst: New file.
+	* doc/cpp/macros/variadic-macros.rst: New file.
+	* doc/cpp/obsolete-features.rst: New file.
+	* doc/cpp/other-directives.rst: New file.
+	* doc/cpp/overview.rst: New file.
+	* doc/cpp/pragmas.rst: New file.
+	* doc/cpp/preprocessor-output.rst: New file.
+	* doc/cpp/the-preprocessing-language.rst: New file.
+	* doc/cpp/tokenization.rst: New file.
+	* doc/cpp/traditional-lexical-analysis.rst: New file.
+	* doc/cpp/traditional-macros.rst: New file.
+	* doc/cpp/traditional-miscellany.rst: New file.
+	* doc/cpp/traditional-mode.rst: New file.
+	* doc/cpp/traditional-warnings.rst: New file.
+	* doc/cppinternals/conf.py: New file.
+	* doc/cppinternals/copyright.rst: New file.
+	* doc/cppinternals/cppinternals.rst: New file.
+	* doc/cppinternals/cpplib.rst: New file.
+	* doc/cppinternals/files.rst: New file.
+	* doc/cppinternals/index.rst: New file.
+	* doc/cppinternals/indices-and-tables.rst: New file.
+	* doc/cppinternals/internal-representation-of-macros.rst: New file.
+	* doc/cppinternals/just-which-line-number-anyway.rst: New file.
+	* doc/cppinternals/lexing-a-line.rst: New file.
+	* doc/cppinternals/lexing-a-token.rst: New file.
+	* doc/cppinternals/looking-for-a-function-like-macros-opening-parenthesis.rst: New file.
+	* doc/cppinternals/macro-expansion-overview.rst: New file.
+	* doc/cppinternals/marking-tokens-ineligible-for-future-expansion.rst: New file.
+	* doc/cppinternals/multiple-include-optimization.rst: New file.
+	* doc/cppinternals/overview.rst: New file.
+	* doc/cppinternals/representation-of-line-numbers.rst: New file.
+	* doc/cppinternals/scanning-the-replacement-list-for-macros-to-expand.rst: New file.
+	* doc/gcc/binary-compatibility.rst: New file.
+	* doc/gcc/c++-implementation-defined-behavior.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/architecture.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/arrays-and-pointers.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/characters.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/declarators.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/environment.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/floating-point.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/hints.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/identifiers.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/integers.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/library-functions.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/locale-specific-behavior.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/preprocessing-directives.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/qualifiers.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/statements.rst: New file.
+	* doc/gcc/c-implementation-defined-behavior/structures-unions-enumerations-and-bit-fields.rst:
+	New file.
+	* doc/gcc/c-implementation-defined-behavior/translation.rst: New file.
+	* doc/gcc/conditionally-supported-behavior.rst: New file.
+	* doc/gcc/conf.py: New file.
+	* doc/gcc/contributing-to-gcc-development.rst: New file.
+	* doc/gcc/contributors-to-gcc.rst: New file.
+	* doc/gcc/copyright.rst: New file.
+	* doc/gcc/exception-handling.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/backwards-compatibility.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/c++-concepts.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/c++-interface-and-implementation-pragmas.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c++-language/c++-specific-variable-function-and-type-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c++-language/deprecated-features.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/extracting-the-function-pointer-from-a-bound-pointer-to-member-function.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c++-language/function-multiversioning.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/restricting-pointer-aliasing.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/type-traits.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/vague-linkage.rst: New file.
+	* doc/gcc/extensions-to-the-c++-language/when-is-a-volatile-c++-object-accessed.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c++-language/wheres-the-template.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/128-bit-integers.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/additional-floating-types.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/alternate-keywords.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/an-inline-function-is-as-fast-as-a-macro.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/arithmetic-on-void-and-function-pointers.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/arrays-of-length-zero.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/arrays-of-variable-length.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/attribute-syntax.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/binary-constants-using-the-0b-prefix.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-for-memory-model-aware-atomic-operations.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/built-in-functions-to-perform-arithmetic-with-overflow-checking.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/c++-style-comments.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/case-ranges.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/cast-to-a-union-type.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/complex-numbers.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/compound-literals.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/conditionals-with-omitted-operands.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/constructing-function-calls.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/decimal-floating-types.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/aarch64-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/amd-gcn-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arc-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/arm-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/avr-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/blackfin-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/bpf-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/c-sky-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/common-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/epiphany-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/h8-300-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/ia-64-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32c-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m32r-d-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/m68k-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mcore-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mep-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microblaze-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/microsoft-windows-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/mips-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/msp430-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nds32-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nios-ii-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/nvidia-ptx-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/powerpc-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/risc-v-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rl78-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/rx-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/s-390-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/sh-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/symbian-os-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/v850-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/visium-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/x86-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/declaring-attributes-of-functions/xstormy16-function-attributes.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/designated-initializers.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/determining-the-alignment-of-functions-types-or-variables.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/dollar-signs-in-identifier-names.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/double-word-integers.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/enumerator-attributes.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/fixed-point-types.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/format-checks-specific-to-particular-target-machines.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/function-names-as-strings.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/getting-the-return-or-frame-address-of-a-function.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/half-precision-floating-point.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/hex-floats.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/how-to-use-inline-assembly-language-in-c-code.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/incomplete-enum-types.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/label-attributes.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/labels-as-values.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/legacy-sync-built-in-functions-for-atomic-memory-access.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/locally-declared-labels.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/macros-with-a-variable-number-of-arguments.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/mixed-declarations-labels-and-code.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/named-address-spaces.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/nested-functions.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/non-constant-initializers.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/non-lvalue-arrays-may-have-subscripts.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/nonlocal-gotos.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/object-size-checking-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/other-built-in-functions-provided-by-gcc.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/pointer-arguments-in-variadic-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/pointers-to-arrays-with-qualifiers-work-as-expected.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/pragmas-accepted-by-gcc.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/prototypes-and-old-style-function-definitions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/referring-to-a-type-with-typeof.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/slightly-looser-rules-for-escaped-newlines.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-types.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/specifying-attributes-of-variables.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/statement-attributes.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/statements-and-declarations-in-expressions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/structures-with-no-members.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/support-for-offsetof.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/aarch64-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/alpha-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/altera-nios-ii-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arc-simd-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-armv8-m-security-extensions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-c-language-extensions-acle.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-floating-point-status-and-control-intrinsics.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/arm-iwmmxt-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/avr-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/basic-powerpc-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/blackfin-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/bpf-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/fr-v-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-dsp-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-loongson-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-paired-single-support.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/mips-simd-architecture-msa-support.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/msp430-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/nds32-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/other-mips-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/picochip-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-altivec-vsx-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-atomic-memory-operation-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-hardware-transactional-memory-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/powerpc-matrix-multiply-assist-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/pru-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/risc-v-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/rx-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/s-390-system-z-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sh-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/sparc-vis-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/ti-c6x-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-control-flow-protection-intrinsics.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/target-builtins/x86-transactional-memory-intrinsics.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/the-character-esc-in-constants.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/thread-local-storage.rst: New file.
+	* doc/gcc/extensions-to-the-c-language-family/unnamed-structure-and-union-fields.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/using-vector-instructions-through-built-in-functions.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/when-is-a-volatile-object-accessed.rst:
+	New file.
+	* doc/gcc/extensions-to-the-c-language-family/x86-specific-memory-model-extensions-for-transactional-memory.rst:
+	New file.
+	* doc/gcc/funding.rst: New file.
+	* doc/gcc/gcc-command-options.rst: New file.
+	* doc/gcc/gcc-command-options/c++-modules.rst: New file.
+	* doc/gcc/gcc-command-options/compiling-c++-programs.rst: New file.
+	* doc/gcc/gcc-command-options/description.rst: New file.
+	* doc/gcc/gcc-command-options/environment-variables-affecting-gcc.rst: New file.
+	* doc/gcc/gcc-command-options/gcc-developer-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/aarch64-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/adapteva-epiphany-options.rst:
+	New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/amd-gcn-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/arc-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/arm-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/avr-mmcu.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/avr-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/blackfin-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/c-sky-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/c6x-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/cris-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/darwin-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/dec-alpha-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ebpf-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/fr30-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/frv-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ft32-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/gnu-linux-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/h8-300-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/hppa-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ia-64-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/ibm-rs-6000-and-powerpc-options.rst:
+	New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/lm32-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/loongarch-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/m32c-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/m32r-d-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/m680x0-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mcore-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mep-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/microblaze-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mips-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mmix-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/mn10300-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/moxie-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/msp430-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/nds32-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/nios-ii-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/nvidia-ptx-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/openrisc-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/options-for-system-v.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/pdp-11-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/picochip-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/powerpc-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/pru-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/risc-v-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/rl78-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/rx-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/s-390-and-zseries-options.rst:
+	New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/score-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/sh-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/solaris-2-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/sparc-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/v850-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/vax-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/visium-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/vms-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/vxworks-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/x86-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/x86-windows-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/xstormy16-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/xtensa-options.rst: New file.
+	* doc/gcc/gcc-command-options/machine-dependent-options/zseries-options.rst: New file.
+	* doc/gcc/gcc-command-options/option-summary.rst: New file.
+	* doc/gcc/gcc-command-options/options-controlling-c++-dialect.rst: New file.
+	* doc/gcc/gcc-command-options/options-controlling-c-dialect.rst: New file.
+	* doc/gcc/gcc-command-options/options-controlling-objective-c-and-objective-c++-dialects.rst:
+	New file.
+	* doc/gcc/gcc-command-options/options-controlling-the-kind-of-output.rst: New file.
+	* doc/gcc/gcc-command-options/options-controlling-the-preprocessor.rst: New file.
+	* doc/gcc/gcc-command-options/options-for-code-generation-conventions.rst: New file.
+	* doc/gcc/gcc-command-options/options-for-debugging-your-program.rst: New file.
+	* doc/gcc/gcc-command-options/options-for-directory-search.rst: New file.
+	* doc/gcc/gcc-command-options/options-for-linking.rst: New file.
+	* doc/gcc/gcc-command-options/options-that-control-optimization.rst: New file.
+	* doc/gcc/gcc-command-options/options-that-control-static-analysis.rst: New file.
+	* doc/gcc/gcc-command-options/options-to-control-diagnostic-messages-formatting.rst:
+	New file.
+	* doc/gcc/gcc-command-options/options-to-request-or-suppress-warnings.rst: New file.
+	* doc/gcc/gcc-command-options/passing-options-to-the-assembler.rst: New file.
+	* doc/gcc/gcc-command-options/program-instrumentation-options.rst: New file.
+	* doc/gcc/gcc-command-options/specifying-subprocesses-and-the-switches-to-pass-to-them.rst:
+	New file.
+	* doc/gcc/gcc-command-options/using-precompiled-headers.rst: New file.
+	* doc/gcc/gcc.rst: New file.
+	* doc/gcc/gcov-dump.rst: New file.
+	* doc/gcc/gcov-tool.rst: New file.
+	* doc/gcc/gcov.rst: New file.
+	* doc/gcc/gcov/brief-description-of-gcov-data-files.rst: New file.
+	* doc/gcc/gcov/data-file-relocation-to-support-cross-profiling.rst: New file.
+	* doc/gcc/gcov/introduction-to-gcov.rst: New file.
+	* doc/gcc/gcov/invoking-gcov.rst: New file.
+	* doc/gcc/gcov/profiling-and-test-coverage-in-freestanding-environments.rst: New file.
+	* doc/gcc/gcov/using-gcov-with-gcc-optimization.rst: New file.
+	* doc/gcc/general-public-license-3.rst: New file.
+	* doc/gcc/gnu-free-documentation-license.rst: New file.
+	* doc/gcc/gnu-objective-c-features.rst: New file.
+	* doc/gcc/gnu-objective-c-features/compatibilityalias.rst: New file.
+	* doc/gcc/gnu-objective-c-features/constant-string-objects.rst: New file.
+	* doc/gcc/gnu-objective-c-features/exceptions.rst: New file.
+	* doc/gcc/gnu-objective-c-features/fast-enumeration.rst: New file.
+	* doc/gcc/gnu-objective-c-features/garbage-collection.rst: New file.
+	* doc/gcc/gnu-objective-c-features/gnu-objective-c-runtime-api.rst: New file.
+	* doc/gcc/gnu-objective-c-features/load-executing-code-before-main.rst: New file.
+	* doc/gcc/gnu-objective-c-features/messaging-with-the-gnu-objective-c-runtime.rst: New file.
+	* doc/gcc/gnu-objective-c-features/synchronization.rst: New file.
+	* doc/gcc/gnu-objective-c-features/type-encoding.rst: New file.
+	* doc/gcc/gnu.rst: New file.
+	* doc/gcc/have-you-found-a-bug.rst: New file.
+	* doc/gcc/how-and-where-to-report-bugs.rst: New file.
+	* doc/gcc/how-to-get-help-with-gcc.rst: New file.
+	* doc/gcc/index.rst: New file.
+	* doc/gcc/indices-and-tables.rst: New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc.rst: New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/actual-bugs-we-havent-fixed-yet.rst: New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/certain-changes-we-dont-want-to-make.rst:
+	New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/common-misunderstandings-with-gnu-c.rst:
+	New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/disappointments-and-misunderstandings.rst:
+	New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/fixed-header-files.rst: New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/incompatibilities-of-gcc.rst: New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/interoperation.rst: New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/standard-libraries.rst: New file.
+	* doc/gcc/known-causes-of-trouble-with-gcc/warning-messages-and-error-messages.rst:
+	New file.
+	* doc/gcc/language-standards-supported-by-gcc.rst: New file.
+	* doc/gcc/language-standards-supported-by-gcc/c++-language.rst: New file.
+	* doc/gcc/language-standards-supported-by-gcc/c-language.rst: New file.
+	* doc/gcc/language-standards-supported-by-gcc/d-language.rst: New file.
+	* doc/gcc/language-standards-supported-by-gcc/go-language.rst: New file.
+	* doc/gcc/language-standards-supported-by-gcc/objective-c-and-objective-c++-languages.rst:
+	New file.
+	* doc/gcc/language-standards-supported-by-gcc/references-for-other-languages.rst: New file.
+	* doc/gcc/lto-dump.rst: New file.
+	* doc/gcc/programming-languages-supported-by-gcc.rst: New file.
+	* doc/gcc/reporting-bugs.rst: New file.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples.rst: New file.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/alias-analysis.rst: New file.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/annotations.rst: New file.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/memory-model.rst: New file.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/ssa-operands.rst: New file.
+	* doc/gccint/analysis-and-optimization-of-gimple-tuples/static-single-assignment.rst:
+	New file.
+	* doc/gccint/analysis-and-representation-of-loops.rst: New file.
+	* doc/gccint/analysis-and-representation-of-loops/data-dependency-analysis.rst: New file.
+	* doc/gccint/analysis-and-representation-of-loops/iv-analysis-on-rtl.rst: New file.
+	* doc/gccint/analysis-and-representation-of-loops/loop-closed-ssa-form.rst: New file.
+	* doc/gccint/analysis-and-representation-of-loops/loop-manipulation.rst: New file.
+	* doc/gccint/analysis-and-representation-of-loops/loop-querying.rst: New file.
+	* doc/gccint/analysis-and-representation-of-loops/loop-representation.rst: New file.
+	* doc/gccint/analysis-and-representation-of-loops/number-of-iterations-analysis.rst:
+	New file.
+	* doc/gccint/analysis-and-representation-of-loops/scalar-evolutions.rst: New file.
+	* doc/gccint/analyzer-internals.rst: New file.
+	* doc/gccint/collect2.rst: New file.
+	* doc/gccint/conf.py: New file.
+	* doc/gccint/contributing-to-gcc-development.rst: New file.
+	* doc/gccint/contributors-to-gcc.rst: New file.
+	* doc/gccint/control-flow-graph.rst: New file.
+	* doc/gccint/control-flow-graph/basic-blocks.rst: New file.
+	* doc/gccint/control-flow-graph/edges.rst: New file.
+	* doc/gccint/control-flow-graph/liveness-information.rst: New file.
+	* doc/gccint/control-flow-graph/maintaining-the-cfg.rst: New file.
+	* doc/gccint/control-flow-graph/profile-information.rst: New file.
+	* doc/gccint/copyright.rst: New file.
+	* doc/gccint/debugging-the-analyzer.rst: New file.
+	* doc/gccint/funding.rst: New file.
+	* doc/gccint/gcc-and-portability.rst: New file.
+	* doc/gccint/general-public-license-3.rst: New file.
+	* doc/gccint/generic.rst: New file.
+	* doc/gccint/generic/attributes-in-trees.rst: New file.
+	* doc/gccint/generic/c-and-c++-trees.rst: New file.
+	* doc/gccint/generic/declarations.rst: New file.
+	* doc/gccint/generic/deficiencies.rst: New file.
+	* doc/gccint/generic/expressions.rst: New file.
+	* doc/gccint/generic/functions.rst: New file.
+	* doc/gccint/generic/language-dependent-trees.rst: New file.
+	* doc/gccint/generic/overview.rst: New file.
+	* doc/gccint/generic/statements.rst: New file.
+	* doc/gccint/generic/types.rst: New file.
+	* doc/gccint/gimple-api.rst: New file.
+	* doc/gccint/gimple.rst: New file.
+	* doc/gccint/gimple/adding-a-new-gimple-statement-code.rst: New file.
+	* doc/gccint/gimple/class-hierarchy-of-gimple-statements.rst: New file.
+	* doc/gccint/gimple/exception-handling.rst: New file.
+	* doc/gccint/gimple/gimple-instruction-set.rst: New file.
+	* doc/gccint/gimple/gimple-sequences.rst: New file.
+	* doc/gccint/gimple/manipulating-gimple-statements.rst: New file.
+	* doc/gccint/gimple/operands.rst: New file.
+	* doc/gccint/gimple/sequence-iterators.rst: New file.
+	* doc/gccint/gimple/statement-and-operand-traversals.rst: New file.
+	* doc/gccint/gimple/temporaries.rst: New file.
+	* doc/gccint/gimple/tuple-representation.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleasm.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleassign.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplebind.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplecall.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplecatch.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplecond.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpledebug.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleehfilter.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplegoto.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplelabel.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplenop.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicload.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompatomicstore.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcontinue.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompcritical.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompfor.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompmaster.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompordered.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompparallel.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompreturn.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsection.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsections.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleompsingle.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplephi.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleresx.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplereturn.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpleswitch.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimpletry.rst: New file.
+	* doc/gccint/gimple/tuple-specific-accessors/gimplewithcleanupexpr.rst: New file.
+	* doc/gccint/gnu-free-documentation-license.rst: New file.
+	* doc/gccint/guidelines-for-diagnostics.rst: New file.
+	* doc/gccint/guidelines-for-options.rst: New file.
+	* doc/gccint/host-common.rst: New file.
+	* doc/gccint/host-configuration.rst: New file.
+	* doc/gccint/host-filesystem.rst: New file.
+	* doc/gccint/host-makefile-fragments.rst: New file.
+	* doc/gccint/host-misc.rst: New file.
+	* doc/gccint/index.rst: New file.
+	* doc/gccint/indices-and-tables.rst: New file.
+	* doc/gccint/interfacing-to-gcc-output.rst: New file.
+	* doc/gccint/introduction.rst: New file.
+	* doc/gccint/language-front-ends-in-gcc.rst: New file.
+	* doc/gccint/link-time-optimization.rst: New file.
+	* doc/gccint/link-time-optimization/design-overview.rst: New file.
+	* doc/gccint/link-time-optimization/internal-flags-controlling-lto1.rst: New file.
+	* doc/gccint/link-time-optimization/lto-file-sections.rst: New file.
+	* doc/gccint/link-time-optimization/using-summary-information-in-ipa-passes.rst: New file.
+	* doc/gccint/link-time-optimization/whole-program-assumptions-linker-plugin-and-symbol-visibilities.rst:
+	New file.
+	* doc/gccint/machine-descriptions.rst: New file.
+	* doc/gccint/machine-descriptions/c-statements-for-assembler-output.rst: New file.
+	* doc/gccint/machine-descriptions/canonicalization-of-instructions.rst: New file.
+	* doc/gccint/machine-descriptions/conditional-execution.rst: New file.
+	* doc/gccint/machine-descriptions/constant-definitions.rst: New file.
+	* doc/gccint/machine-descriptions/defining-how-to-split-instructions.rst: New file.
+	* doc/gccint/machine-descriptions/defining-jump-instruction-patterns.rst: New file.
+	* doc/gccint/machine-descriptions/defining-looping-instruction-patterns.rst: New file.
+	* doc/gccint/machine-descriptions/defining-rtl-sequences-for-code-generation.rst: New file.
+	* doc/gccint/machine-descriptions/everything-about-instruction-patterns.rst: New file.
+	* doc/gccint/machine-descriptions/example-of-defineinsn.rst: New file.
+	* doc/gccint/machine-descriptions/including-patterns-in-machine-descriptions.rst: New file.
+	* doc/gccint/machine-descriptions/instruction-attributes.rst: New file.
+	* doc/gccint/machine-descriptions/interdependence-of-patterns.rst: New file.
+	* doc/gccint/machine-descriptions/iterators.rst: New file.
+	* doc/gccint/machine-descriptions/machine-specific-peephole-optimizers.rst: New file.
+	* doc/gccint/machine-descriptions/operand-constraints.rst: New file.
+	* doc/gccint/machine-descriptions/output-templates-and-operand-substitution.rst: New file.
+	* doc/gccint/machine-descriptions/overview-of-how-the-machine-description-is-used.rst:
+	New file.
+	* doc/gccint/machine-descriptions/predicates.rst: New file.
+	* doc/gccint/machine-descriptions/rtl-template.rst: New file.
+	* doc/gccint/machine-descriptions/rtl-templates-transformations.rst: New file.
+	* doc/gccint/machine-descriptions/standard-pattern-names-for-generation.rst: New file.
+	* doc/gccint/machine-descriptions/when-the-order-of-patterns-matters.rst: New file.
+	* doc/gccint/makefile-fragments.rst: New file.
+	* doc/gccint/match-and-simplify.rst: New file.
+	* doc/gccint/memory-management-and-type-information.rst: New file.
+	* doc/gccint/memory-management-and-type-information/how-to-invoke-the-garbage-collector.rst:
+	New file.
+	* doc/gccint/memory-management-and-type-information/marking-roots-for-the-garbage-collector.rst:
+	New file.
+	* doc/gccint/memory-management-and-type-information/source-files-containing-type-information.rst:
+	New file.
+	* doc/gccint/memory-management-and-type-information/support-for-inheritance.rst: New file.
+	* doc/gccint/memory-management-and-type-information/support-for-user-provided-gc-marking-routines.rst:
+	New file.
+	* doc/gccint/memory-management-and-type-information/the-inside-of-a-gty.rst: New file.
+	* doc/gccint/memory-management-and-type-information/troubleshooting-the-garbage-collector.rst:
+	New file.
+	* doc/gccint/option-file-format.rst: New file.
+	* doc/gccint/option-properties.rst: New file.
+	* doc/gccint/option-specification-files.rst: New file.
+	* doc/gccint/passes-and-files-of-the-compiler.rst: New file.
+	* doc/gccint/passes-and-files-of-the-compiler/gimplification-pass.rst: New file.
+	* doc/gccint/passes-and-files-of-the-compiler/inter-procedural-optimization-passes.rst:
+	New file.
+	* doc/gccint/passes-and-files-of-the-compiler/optimization-info.rst: New file.
+	* doc/gccint/passes-and-files-of-the-compiler/parsing-pass.rst: New file.
+	* doc/gccint/passes-and-files-of-the-compiler/pass-manager.rst: New file.
+	* doc/gccint/passes-and-files-of-the-compiler/rtl-passes.rst: New file.
+	* doc/gccint/passes-and-files-of-the-compiler/tree-ssa-passes.rst: New file.
+	* doc/gccint/plugins.rst: New file.
+	* doc/gccint/plugins/building-gcc-plugins.rst: New file.
+	* doc/gccint/plugins/controlling-which-passes-are-being-run.rst: New file.
+	* doc/gccint/plugins/giving-information-about-a-plugin.rst: New file.
+	* doc/gccint/plugins/interacting-with-the-gcc-garbage-collector.rst: New file.
+	* doc/gccint/plugins/interacting-with-the-pass-manager.rst: New file.
+	* doc/gccint/plugins/keeping-track-of-available-passes.rst: New file.
+	* doc/gccint/plugins/loading-plugins.rst: New file.
+	* doc/gccint/plugins/plugin-api.rst: New file.
+	* doc/gccint/plugins/recording-information-about-pass-execution.rst: New file.
+	* doc/gccint/plugins/registering-custom-attributes-or-pragmas.rst: New file.
+	* doc/gccint/rtl-representation.rst: New file.
+	* doc/gccint/rtl-representation/access-to-operands.rst: New file.
+	* doc/gccint/rtl-representation/access-to-special-operands.rst: New file.
+	* doc/gccint/rtl-representation/assembler-instructions-as-expressions.rst: New file.
+	* doc/gccint/rtl-representation/bit-fields.rst: New file.
+	* doc/gccint/rtl-representation/comparison-operations.rst: New file.
+	* doc/gccint/rtl-representation/constant-expression-types.rst: New file.
+	* doc/gccint/rtl-representation/conversions.rst: New file.
+	* doc/gccint/rtl-representation/declarations.rst: New file.
+	* doc/gccint/rtl-representation/embedded-side-effects-on-addresses.rst: New file.
+	* doc/gccint/rtl-representation/flags-in-an-rtl-expression.rst: New file.
+	* doc/gccint/rtl-representation/insns.rst: New file.
+	* doc/gccint/rtl-representation/machine-modes.rst: New file.
+	* doc/gccint/rtl-representation/on-the-side-ssa-form-for-rtl.rst: New file.
+	* doc/gccint/rtl-representation/reading-rtl.rst: New file.
+	* doc/gccint/rtl-representation/registers-and-memory.rst: New file.
+	* doc/gccint/rtl-representation/rtl-classes-and-formats.rst: New file.
+	* doc/gccint/rtl-representation/rtl-expressions-for-arithmetic.rst: New file.
+	* doc/gccint/rtl-representation/rtl-object-types.rst: New file.
+	* doc/gccint/rtl-representation/rtl-representation-of-function-call-insns.rst: New file.
+	* doc/gccint/rtl-representation/side-effect-expressions.rst: New file.
+	* doc/gccint/rtl-representation/structure-sharing-assumptions.rst: New file.
+	* doc/gccint/rtl-representation/variable-location-debug-information-in-rtl.rst: New file.
+	* doc/gccint/rtl-representation/vector-operations.rst: New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants.rst: New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/alignment-of-polyints.rst: New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/arithmetic-on-polyints.rst: New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/comparisons-involving-polyint.rst:
+	New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/computing-bounds-on-polyints.rst:
+	New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/consequences-of-using-polyint.rst:
+	New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/converting-polyints.rst: New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/guidelines-for-using-polyint.rst:
+	New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/miscellaneous-polyint-routines.rst:
+	New file.
+	* doc/gccint/sizes-and-offsets-as-runtime-invariants/overview-of-polyint.rst: New file.
+	* doc/gccint/source-tree-structure-and-build-system.rst: New file.
+	* doc/gccint/source-tree-structure-and-build-system/configure-terms-and-history.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory.rst: New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-language-front-end.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/anatomy-of-a-target-back-end.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/build-system-in-the-gcc-directory.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/building-documentation.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/configuration-in-the-gcc-directory.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/headers-installed-by-gcc.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/library-source-files-and-headers-under-the-gcc-directory.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/makefile-targets.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/the-gcc-subdirectory/subdirectories-of-gcc.rst:
+	New file.
+	* doc/gccint/source-tree-structure-and-build-system/top-level-source-directory.rst:
+	New file.
+	* doc/gccint/standard-header-file-directories.rst: New file.
+	* doc/gccint/static-analyzer.rst: New file.
+	* doc/gccint/target-macros.rst: New file.
+	* doc/gccint/target-macros/adding-support-for-named-address-spaces.rst: New file.
+	* doc/gccint/target-macros/addressing-modes.rst: New file.
+	* doc/gccint/target-macros/adjusting-the-instruction-scheduler.rst: New file.
+	* doc/gccint/target-macros/anchored-addresses.rst: New file.
+	* doc/gccint/target-macros/c++-abi-parameters.rst: New file.
+	* doc/gccint/target-macros/condition-code-status.rst: New file.
+	* doc/gccint/target-macros/controlling-debugging-information-format.rst: New file.
+	* doc/gccint/target-macros/controlling-the-compilation-driver-gcc.rst: New file.
+	* doc/gccint/target-macros/cross-compilation-and-floating-point.rst: New file.
+	* doc/gccint/target-macros/d-abi-parameters.rst: New file.
+	* doc/gccint/target-macros/defining-coprocessor-specifics-for-mips-targets.rst: New file.
+	* doc/gccint/target-macros/defining-data-structures-for-per-function-information.rst:
+	New file.
+	* doc/gccint/target-macros/defining-target-specific-uses-of-attribute.rst: New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language.rst: New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/assembler-commands-for-alignment.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/assembler-commands-for-exception-regions.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/how-initialization-functions-are-handled.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/macros-controlling-initialization-routines.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-and-generation-of-labels.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-assembler-instructions.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-data.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-dispatch-tables.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/output-of-uninitialized-variables.rst:
+	New file.
+	* doc/gccint/target-macros/defining-the-output-assembler-language/the-overall-framework-of-an-assembler-file.rst:
+	New file.
+	* doc/gccint/target-macros/describing-relative-costs-of-operations.rst: New file.
+	* doc/gccint/target-macros/dividing-the-output-into-sections-texts-data.rst: New file.
+	* doc/gccint/target-macros/emulating-tls.rst: New file.
+	* doc/gccint/target-macros/implementing-the-varargs-macros.rst: New file.
+	* doc/gccint/target-macros/implicit-calls-to-library-routines.rst: New file.
+	* doc/gccint/target-macros/layout-of-source-language-data-types.rst: New file.
+	* doc/gccint/target-macros/miscellaneous-parameters.rst: New file.
+	* doc/gccint/target-macros/mode-switching-instructions.rst: New file.
+	* doc/gccint/target-macros/parameters-for-precompiled-header-validity-checking.rst:
+	New file.
+	* doc/gccint/target-macros/position-independent-code.rst: New file.
+	* doc/gccint/target-macros/register-classes.rst: New file.
+	* doc/gccint/target-macros/register-usage.rst: New file.
+	* doc/gccint/target-macros/run-time-target-specification.rst: New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions.rst: New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/basic-stack-layout.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/caller-saves-register-allocation.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/eliminating-frame-pointer-and-arg-pointer.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/exception-handling-support.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/function-entry-and-exit.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/generating-code-for-profiling.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/how-large-values-are-returned.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/how-scalar-function-values-are-returned.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/miscellaneous-register-hooks.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-arguments-in-registers.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/passing-function-arguments-on-the-stack.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/permitting-tail-calls.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/registers-that-address-the-stack-frame.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/shrink-wrapping-separate-components.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/specifying-how-stack-checking-is-done.rst:
+	New file.
+	* doc/gccint/target-macros/stack-layout-and-calling-conventions/stack-smashing-protection.rst:
+	New file.
+	* doc/gccint/target-macros/storage-layout.rst: New file.
+	* doc/gccint/target-macros/support-for-nested-functions.rst: New file.
+	* doc/gccint/target-macros/the-global-targetm-variable.rst: New file.
+	* doc/gccint/target-makefile-fragments.rst: New file.
+	* doc/gccint/testsuites.rst: New test.
+	* doc/gccint/testsuites/ada-language-testsuites.rst: New test.
+	* doc/gccint/testsuites/c-language-testsuites.rst: New test.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests.rst: New test.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/commands-for-use-in-dg-final.rst:
+	New test.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/features-for-dg-add-options.rst:
+	New test.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/keywords-describing-target-attributes.rst:
+	New test.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/selecting-targets-to-which-a-test-applies.rst:
+	New test.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/syntax-and-descriptions-of-test-directives.rst:
+	New test.
+	* doc/gccint/testsuites/directives-used-within-dejagnu-tests/variants-of-dg-require-support.rst:
+	New test.
+	* doc/gccint/testsuites/idioms-used-in-testsuite-code.rst: New test.
+	* doc/gccint/testsuites/support-for-testing-binary-compatibility.rst: New test.
+	* doc/gccint/testsuites/support-for-testing-gcov.rst: New test.
+	* doc/gccint/testsuites/support-for-testing-gimple-passes.rst: New test.
+	* doc/gccint/testsuites/support-for-testing-link-time-optimizations.rst: New test.
+	* doc/gccint/testsuites/support-for-testing-profile-directed-optimizations.rst: New test.
+	* doc/gccint/testsuites/support-for-testing-rtl-passes.rst: New test.
+	* doc/gccint/testsuites/support-for-torture-testing-using-multiple-options.rst: New test.
+	* doc/gccint/the-gcc-low-level-runtime-library.rst: New file.
+	* doc/gccint/the-gcc-low-level-runtime-library/language-independent-routines-for-exception-handling.rst:
+	New file.
+	* doc/gccint/the-gcc-low-level-runtime-library/miscellaneous-runtime-library-routines.rst:
+	New file.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-decimal-floating-point-emulation.rst:
+	New file.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-fixed-point-fractional-emulation.rst:
+	New file.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-floating-point-emulation.rst:
+	New file.
+	* doc/gccint/the-gcc-low-level-runtime-library/routines-for-integer-arithmetic.rst:
+	New file.
+	* doc/gccint/the-language.rst: New file.
+	* doc/gccint/user-experience-guidelines.rst: New file.
+	* doc/install/binaries.rst: New file.
+	* doc/install/building.rst: New file.
+	* doc/install/building/building-a-cross-compiler.rst: New file.
+	* doc/install/building/building-a-native-compiler.rst: New file.
+	* doc/install/building/building-in-parallel.rst: New file.
+	* doc/install/building/building-the-ada-compiler.rst: New file.
+	* doc/install/building/building-the-d-compiler.rst: New file.
+	* doc/install/building/building-with-profile-feedback.rst: New file.
+	* doc/install/conf.py: New file.
+	* doc/install/configuration.rst: New file.
+	* doc/install/copyright.rst: New file.
+	* doc/install/downloading-gcc.rst: New file.
+	* doc/install/final-installation.rst: New file.
+	* doc/install/gnu-free-documentation-license.rst: New file.
+	* doc/install/host-target-specific-installation-notes-for-gcc.rst: New file.
+	* doc/install/how-can-you-run-the-testsuite-on-selected-tests.rst: New test.
+	* doc/install/how-to-interpret-test-results.rst: New file.
+	* doc/install/index.rst: New file.
+	* doc/install/indices-and-tables.rst: New file.
+	* doc/install/installing-gcc.rst: New file.
+	* doc/install/passing-options-and-running-multiple-testsuites.rst: New test.
+	* doc/install/prerequisites.rst: New file.
+	* doc/install/submitting-test-results.rst: New file.
+	* doc/install/testing.rst: New file.
+
+2022-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (class foperator_minus): New.
+	(floating_op_table::floating_op_table): Add MINUS_EXPR entry.
+
+2022-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (range_operator_float::fold_range): Abstract
+	out from foperator_plus.
+	(range_operator_float::rv_fold): New.
+	(foperator_plus::fold_range): Remove.
+	(foperator_plus::rv_fold): New.
+	(propagate_nans): Remove.
+	* range-op.h (class range_operator_float): Add rv_fold.
+
+2022-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_plus::fold_range): Set NAN for
+	addition of different signed infinities.
+	(range_op_float_tests): New test.
+
+2022-11-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/107540
+	* config/i386/sse.md (avx512f_movddup512<mask_name>): Change
+	type from sselog to sselog1.
+	(avx_movddup256<mask_name>): Ditto.
+
 2022-11-08  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.cc (struct core_walk_data): Add field `which'...

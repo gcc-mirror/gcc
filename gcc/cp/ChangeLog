@@ -1,3 +1,27 @@
+2022-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (handle_carries_dependency_attribute): New function.
+	(std_attribute_table): Add carries_dependency attribute.
+	* parser.cc (cp_parser_check_std_attribute): Add carries_dependency
+	attribute.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107363
+	* semantics.cc (finish_call_expr): Suppress OPT_Wpessimizing_move.
+	* typeck.cc (maybe_warn_pessimizing_move): Check warn_redundant_move
+	and warning_suppressed_p.  Adjust a message depending on return_p.
+	(check_return_expr): Don't suppress OPT_Wpessimizing_move here.
+
 2022-11-08  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

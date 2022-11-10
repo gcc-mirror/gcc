@@ -1,3 +1,47 @@
+2022-11-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107559
+	* gfortran.dg/pr107559.f90: New test.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	PR c++/107599
+	* c-c++-common/diagnostic-format-json-2.c: Fix expected URL.
+	* c-c++-common/diagnostic-format-json-3.c: Likewise.
+	* c-c++-common/diagnostic-format-json-4.c: Likewise.
+	* gfortran.dg/diagnostic-format-json-2.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-3.F90: Likewise.
+
+2022-11-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107441
+	* gfortran.dg/coarray/pr107441-caf.f90: New test.
+	* gfortran.dg/optional_absent_6.f90: New test.
+	* gfortran.dg/optional_absent_7.f90: New test.
+
+2022-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/param-6.c: New test.
+
+2022-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp0x/attr-carries_dependency1.C: New test.
+
+2022-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107541
+	* gcc.dg/tree-ssa/pr107541.c (c): Use long long type rather than long.
+	(main): Punt if sizeof short isn't 2, or int 4, or long long 8.
+
+2022-11-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107363
+	* g++.dg/cpp0x/Wredundant-move13.C: New test.
+
+2022-11-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr107540.c: New test.
+
 2022-11-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101962

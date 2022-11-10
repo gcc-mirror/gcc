@@ -1,3 +1,44 @@
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gnat_rm/index.rst: Fix cross manual refs.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/Make-lang.in: Support --with-sphinx-build.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gnat-style.rst: Moved to...
+	* doc/gnat-style/index.rst: ...here.
+	* doc/gnat_rm.rst: Moved to...
+	* doc/gnat_rm/index.rst: ...here.
+	* doc/gnat_ugn.rst: Moved to...
+	* doc/gnat_ugn/index.rst: ...here.
+	* doc/share/latex_elements.py: Moved to...
+	* doc/share/ada_latex_elements.py: ...here.
+	* gcc-interface/Make-lang.in:
+	* doc/Makefile: Removed.
+	* doc/share/conf.py: Removed.
+	* doc/share/gnu_free_documentation_license.rst: Removed.
+	* gnat-style.texi: Removed.
+	* gnat_rm.texi: Removed.
+	* gnat_ugn.texi: Removed.
+	* doc/gnat-style/conf.py: New file.
+	* doc/gnat-style/gnu_free_documentation_license.rst: New file.
+	* doc/gnat_rm/conf.py: New file.
+	* doc/gnat_rm/gnu_free_documentation_license.rst: New file.
+	* doc/gnat_ugn/conf.py: New file.
+	* doc/gnat_ugn/gnu_free_documentation_license.rst: New file.
+	* doc/share/adabaseconf.py: New file.
+	* doc/gnat_rm/security_hardening_features.rst: Add role.
+	* doc/gnat_ugn/platform_specific_information.rst: Remove
+	  duplicate definition of |nbsp|.
+
 2022-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.cc (build_allocator): For unconstrained

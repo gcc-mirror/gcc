@@ -1,3 +1,7 @@
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Port to RST.
+
 2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/55971

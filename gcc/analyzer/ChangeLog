@@ -1,3 +1,19 @@
+2022-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (checker_event::debug): New.
+	(checker_path::add_event): Move here from checker-path.h.  Add
+	logging.
+	* checker-path.h (checker_event::debug): New decl.
+	(checker_path::checker_path): Add logger param.
+	(checker_path::add_event): Move definition from here to
+	checker-path.cc.
+	(checker_path::m_logger): New field.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Pass logger to
+	checker_path ctor.
+	(diagnostic_manager::add_events_for_eedge): Log scope when
+	processing a run of stmts.
+
 2022-11-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101962
