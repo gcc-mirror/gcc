@@ -797,14 +797,17 @@ frange::zero_p () const
 	  && real_iszero (&m_max));
 }
 
+// Set the range to non-negative numbers, that is [+0.0, +INF].
+//
+// The NAN in the resulting range (if HONOR_NANS) has a varying sign
+// as there are no guarantees in IEEE 754 wrt to the sign of a NAN,
+// except for copy, abs, and copysign.  It is the responsibility of
+// the caller to set the NAN's sign if desired.
+
 void
 frange::set_nonnegative (tree type)
 {
   set (type, dconst0, frange_val_max (type));
-
-  // Set +NAN as the only possibility.
-  if (HONOR_NANS (type))
-    update_nan (/*sign=*/false);
 }
 
 // Here we copy between any two irange's.  The ranges can be legacy or
@@ -3923,7 +3926,6 @@ range_tests_signed_zeros ()
     ASSERT_TRUE (r0.undefined_p ());
 
   r0.set_nonnegative (float_type_node);
-  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
   if (HONOR_NANS (float_type_node))
     ASSERT_TRUE (r0.maybe_isnan ());
 }
