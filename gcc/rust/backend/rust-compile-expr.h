@@ -97,14 +97,12 @@ protected:
 			     TyTy::BaseType *receiver, TyTy::FnType *fntype,
 			     tree receiver_ref, Location expr_locus);
 
-  tree get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
-			      TyTy::BaseType *receiver, TyTy::FnType *fntype,
-			      tree receiver_ref, Location expr_locus);
+  tree get_receiver_from_dyn (TyTy::BaseType *receiver, tree receiver_ref,
+			      Location expr_locus);
 
   tree resolve_method_address (TyTy::FnType *fntype, HirId ref,
 			       TyTy::BaseType *receiver,
 			       HIR::PathIdentSegment &segment,
-			       Analysis::NodeMapping expr_mappings,
 			       Location expr_locus);
 
   tree
@@ -135,11 +133,10 @@ protected:
 
   tree type_cast_expression (tree type_to_cast_to, tree expr, Location locus);
 
-  tree array_value_expr (Location expr_locus, const TyTy::ArrayType &array_tyty,
-			 tree array_type, HIR::ArrayElemsValues &elems);
+  tree array_value_expr (Location expr_locus, tree array_type,
+			 HIR::ArrayElemsValues &elems);
 
-  tree array_copied_expr (Location expr_locus,
-			  const TyTy::ArrayType &array_tyty, tree array_type,
+  tree array_copied_expr (Location expr_locus, tree array_type,
 			  HIR::ArrayElemsCopied &elems);
 
 protected:

@@ -102,7 +102,7 @@ ResolveExpr::visit (AST::AssignmentExpr &expr)
   ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
 
   // need to verify the assignee
-  VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
+  VerifyAsignee::go (expr.get_left_expr ().get ());
 }
 
 void
@@ -141,7 +141,7 @@ ResolveExpr::visit (AST::CompoundAssignmentExpr &expr)
   ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
 
   // need to verify the assignee
-  VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
+  VerifyAsignee::go (expr.get_left_expr ().get ());
 }
 
 void
@@ -553,7 +553,7 @@ ResolveExpr::visit (AST::RangeToExpr &expr)
 }
 
 void
-ResolveExpr::visit (AST::RangeFullExpr &expr)
+ResolveExpr::visit (AST::RangeFullExpr &)
 {
   // nothing to do
 }

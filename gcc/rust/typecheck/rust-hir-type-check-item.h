@@ -48,8 +48,8 @@ public:
   void visit (HIR::Trait &trait_block) override;
 
   // nothing to do
-  void visit (HIR::ExternCrate &crate) override {}
-  void visit (HIR::UseDeclaration &use_decl) override {}
+  void visit (HIR::ExternCrate &) override {}
+  void visit (HIR::UseDeclaration &) override {}
 
 protected:
   std::vector<TyTy::SubstitutionParamMapping>

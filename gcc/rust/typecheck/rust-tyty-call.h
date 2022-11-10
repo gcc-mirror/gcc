@@ -60,7 +60,7 @@ public:
   void visit (PlaceholderType &) override { gcc_unreachable (); }
   void visit (ProjectionType &) override { gcc_unreachable (); }
   void visit (DynamicObjectType &) override { gcc_unreachable (); }
-  void visit (ClosureType &type) override { gcc_unreachable (); }
+  void visit (ClosureType &) override { gcc_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;

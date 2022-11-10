@@ -1152,7 +1152,7 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
       rust_debug_loc (expr.get_method_name ().get_generic_args ().get_locus (),
 		      "applying generic arguments to method_call: {%s}",
 		      lookup->debug_str ().c_str ());
-      HIR::GenericArgs &args = expr.get_method_name ().get_generic_args ();
+      HIR::GenericArgs args = expr.get_method_name ().get_generic_args ();
       lookup
 	= SubstMapper::Resolve (lookup, expr.get_method_name ().get_locus (),
 				&args);

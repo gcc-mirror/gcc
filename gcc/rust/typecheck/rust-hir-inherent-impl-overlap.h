@@ -71,20 +71,19 @@ public:
 
     // generate mappings
     pass.mappings->iterate_impl_items (
-      [&] (HirId id, HIR::ImplItem *impl_item, HIR::ImplBlock *impl) -> bool {
+      [&] (HirId, HIR::ImplItem *impl_item, HIR::ImplBlock *impl) -> bool {
 	// ignoring trait-impls might need thought later on
 	if (impl->has_trait_ref ())
 	  return true;
 
-	pass.process_impl_item (id, impl_item, impl);
+	pass.process_impl_item (impl_item, impl);
 	return true;
       });
 
     pass.scan ();
   }
 
-  void process_impl_item (HirId id, HIR::ImplItem *impl_item,
-			  HIR::ImplBlock *impl)
+  void process_impl_item (HIR::ImplItem *impl_item, HIR::ImplBlock *impl)
   {
     // lets make a mapping of impl-item Self type to (impl-item,name):
     // {

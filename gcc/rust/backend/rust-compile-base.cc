@@ -354,7 +354,7 @@ HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
 // it is fine to use ARRAY_REFs for vector subscripts on vector
 // register variables.
 bool
-HIRCompileBase::mark_addressable (tree exp, Location locus)
+HIRCompileBase::mark_addressable (tree exp)
 {
   tree x = exp;
 
@@ -418,7 +418,7 @@ HIRCompileBase::address_expression (tree expr, Location location)
   if (expr == error_mark_node)
     return error_mark_node;
 
-  if (!mark_addressable (expr, location))
+  if (!mark_addressable (expr))
     return error_mark_node;
 
   return build_fold_addr_expr_loc (location.gcc_location (), expr);

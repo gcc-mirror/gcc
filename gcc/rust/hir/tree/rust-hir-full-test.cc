@@ -5256,7 +5256,7 @@ ConstGenericParam::as_string () const
 }
 
 void
-ConstGenericParam::accept_vis (HIRFullVisitor &vis)
+ConstGenericParam::accept_vis (HIRFullVisitor &)
 {}
 
 } // namespace HIR

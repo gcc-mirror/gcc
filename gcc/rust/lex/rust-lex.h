@@ -108,7 +108,7 @@ private:
   std::pair<std::string, int> parse_in_exponent_part ();
   std::pair<PrimitiveCoreType, int> parse_in_type_suffix ();
   std::tuple<char, int, bool> parse_escape (char opening_char);
-  std::tuple<Codepoint, int, bool> parse_utf8_escape (char opening_char);
+  std::tuple<Codepoint, int, bool> parse_utf8_escape ();
   int parse_partial_string_continue ();
   std::pair<long, int> parse_partial_hex_escape ();
   std::pair<Codepoint, int> parse_partial_unicode_escape ();

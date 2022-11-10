@@ -61,7 +61,7 @@ CompileFnParam::visit (HIR::IdentifierPattern &pattern)
 }
 
 void
-CompileFnParam::visit (HIR::WildcardPattern &pattern)
+CompileFnParam::visit (HIR::WildcardPattern &)
 {
   decl_type = ctx->get_backend ()->immutable_type (decl_type);
 

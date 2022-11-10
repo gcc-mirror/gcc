@@ -214,7 +214,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 
       auto address = compute_address_for_trait_item (item, predicate,
 						     probed_bounds_for_receiver,
-						     actual, actual, locus);
+						     actual, locus);
       vtable_ctor_elems.push_back (address);
       vtable_ctor_idx.push_back (i++);
     }
@@ -233,7 +233,7 @@ HIRCompileBase::compute_address_for_trait_item (
   const TyTy::TypeBoundPredicate *predicate,
   std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
     &receiver_bounds,
-  const TyTy::BaseType *receiver, const TyTy::BaseType *root, Location locus)
+  const TyTy::BaseType *root, Location locus)
 {
   // There are two cases here one where its an item which has an implementation
   // within a trait-impl-block. Then there is the case where there is a default
@@ -360,9 +360,11 @@ HIRCompileBase::compute_address_for_trait_item (
 }
 
 bool
-HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
-					 Location lvalue_locus,
-					 Location rvalue_locus)
+HIRCompileBase::verify_array_capacities (
+  tree ltype, tree rtype,
+  // TODO: Reuse `lvalue_locus` when we want to switch to a RichLocation and
+  // point to the
+  Location /* lvalue_locus */, Location rvalue_locus)
 {
   rust_assert (ltype != NULL_TREE);
   rust_assert (rtype != NULL_TREE);

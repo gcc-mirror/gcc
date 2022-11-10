@@ -125,8 +125,7 @@ TraitItemReference::operator= (TraitItemReference const &other)
 }
 
 TyTy::BaseType *
-TraitItemReference::get_type_from_typealias (/*const*/
-					     HIR::TraitItemType &type) const
+TraitItemReference::get_type_from_typealias () const
 {
   TyTy::TyVar var (get_mappings ().get_hirid ());
   return var.get_tyty ();

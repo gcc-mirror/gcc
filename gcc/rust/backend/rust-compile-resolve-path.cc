@@ -33,20 +33,20 @@ void
 ResolvePathRef::visit (HIR::QualifiedPathInExpression &expr)
 {
   resolved = resolve (expr.get_final_segment ().get_segment (),
-		      expr.get_mappings (), expr.get_locus (), true);
+		      expr.get_mappings (), expr.get_locus ());
 }
 
 void
 ResolvePathRef::visit (HIR::PathInExpression &expr)
 {
   resolved = resolve (expr.get_final_segment ().get_segment (),
-		      expr.get_mappings (), expr.get_locus (), false);
+		      expr.get_mappings (), expr.get_locus ());
 }
 
 tree
 ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 			 const Analysis::NodeMapping &mappings,
-			 Location expr_locus, bool is_qualified_path)
+			 Location expr_locus)
 {
   TyTy::BaseType *lookup = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
@@ -157,8 +157,8 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
     }
 
   // let the query system figure it out
-  tree resolved_item = query_compile (ref, lookup, final_segment, mappings,
-				      expr_locus, is_qualified_path);
+  tree resolved_item
+    = query_compile (ref, lookup, final_segment, mappings, expr_locus);
   if (resolved_item != error_mark_node)
     {
       TREE_USED (resolved_item) = 1;
@@ -170,7 +170,7 @@ tree
 HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       const HIR::PathIdentSegment &final_segment,
 			       const Analysis::NodeMapping &mappings,
-			       Location expr_locus, bool is_qualified_path)
+			       Location expr_locus)
 {
   HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (ref);
   HirId parent_block;

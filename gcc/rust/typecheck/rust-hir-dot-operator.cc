@@ -58,7 +58,7 @@ MethodResolver::select (const TyTy::BaseType &receiver)
   // assemble inherent impl items
   std::vector<impl_item_candidate> inherent_impl_fns;
   mappings->iterate_impl_items (
-    [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
+    [&] (HirId, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
       bool is_trait_impl = impl->has_trait_ref ();
       if (is_trait_impl)
 	return true;
@@ -102,7 +102,7 @@ MethodResolver::select (const TyTy::BaseType &receiver)
   };
 
   std::vector<trait_item_candidate> trait_fns;
-  mappings->iterate_impl_blocks ([&] (HirId id,
+  mappings->iterate_impl_blocks ([&] (HirId,
 				      HIR::ImplBlock *impl) mutable -> bool {
     bool is_trait_impl = impl->has_trait_ref ();
     if (!is_trait_impl)

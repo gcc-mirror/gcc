@@ -60,31 +60,31 @@ EarlyNameResolver::resolve_qualified_path_type (AST::QualifiedPathType &path)
 }
 
 void
-EarlyNameResolver::visit (AST::Token &tok)
+EarlyNameResolver::visit (AST::Token &)
 {}
 
 void
-EarlyNameResolver::visit (AST::DelimTokenTree &delim_tok_tree)
+EarlyNameResolver::visit (AST::DelimTokenTree &)
 {}
 
 void
-EarlyNameResolver::visit (AST::AttrInputMetaItemContainer &input)
+EarlyNameResolver::visit (AST::AttrInputMetaItemContainer &)
 {}
 
 void
-EarlyNameResolver::visit (AST::IdentifierExpr &ident_expr)
+EarlyNameResolver::visit (AST::IdentifierExpr &)
 {}
 
 void
-EarlyNameResolver::visit (AST::Lifetime &lifetime)
+EarlyNameResolver::visit (AST::Lifetime &)
 {}
 
 void
-EarlyNameResolver::visit (AST::LifetimeParam &lifetime_param)
+EarlyNameResolver::visit (AST::LifetimeParam &)
 {}
 
 void
-EarlyNameResolver::visit (AST::ConstGenericParam &const_param)
+EarlyNameResolver::visit (AST::ConstGenericParam &)
 {}
 
 // FIXME: ARTHUR: Do we need to perform macro resolution for paths as well?
@@ -98,7 +98,7 @@ EarlyNameResolver::visit (AST::PathInExpression &path)
 }
 
 void
-EarlyNameResolver::visit (AST::TypePathSegment &segment)
+EarlyNameResolver::visit (AST::TypePathSegment &)
 {}
 
 void
@@ -144,19 +144,19 @@ EarlyNameResolver::visit (AST::QualifiedPathInType &path)
 }
 
 void
-EarlyNameResolver::visit (AST::LiteralExpr &expr)
+EarlyNameResolver::visit (AST::LiteralExpr &)
 {}
 
 void
-EarlyNameResolver::visit (AST::AttrInputLiteral &attr_input)
+EarlyNameResolver::visit (AST::AttrInputLiteral &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaItemLitExpr &meta_item)
+EarlyNameResolver::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaItemPathLit &meta_item)
+EarlyNameResolver::visit (AST::MetaItemPathLit &)
 {}
 
 void
@@ -271,11 +271,11 @@ EarlyNameResolver::visit (AST::TupleIndexExpr &expr)
 }
 
 void
-EarlyNameResolver::visit (AST::StructExprStruct &expr)
+EarlyNameResolver::visit (AST::StructExprStruct &)
 {}
 
 void
-EarlyNameResolver::visit (AST::StructExprFieldIdentifier &field)
+EarlyNameResolver::visit (AST::StructExprFieldIdentifier &)
 {}
 
 void
@@ -298,7 +298,7 @@ EarlyNameResolver::visit (AST::StructExprStructFields &expr)
 }
 
 void
-EarlyNameResolver::visit (AST::StructExprStructBase &expr)
+EarlyNameResolver::visit (AST::StructExprStructBase &)
 {}
 
 void
@@ -352,7 +352,7 @@ EarlyNameResolver::visit (AST::ClosureExprInnerTyped &expr)
 }
 
 void
-EarlyNameResolver::visit (AST::ContinueExpr &expr)
+EarlyNameResolver::visit (AST::ContinueExpr &)
 {}
 
 void
@@ -382,7 +382,7 @@ EarlyNameResolver::visit (AST::RangeToExpr &expr)
 }
 
 void
-EarlyNameResolver::visit (AST::RangeFullExpr &expr)
+EarlyNameResolver::visit (AST::RangeFullExpr &)
 {}
 
 void
@@ -539,7 +539,7 @@ EarlyNameResolver::visit (AST::TypeParam &param)
 }
 
 void
-EarlyNameResolver::visit (AST::LifetimeWhereClauseItem &item)
+EarlyNameResolver::visit (AST::LifetimeWhereClauseItem &)
 {}
 
 void
@@ -576,23 +576,23 @@ EarlyNameResolver::visit (AST::Module &module)
 }
 
 void
-EarlyNameResolver::visit (AST::ExternCrate &crate)
+EarlyNameResolver::visit (AST::ExternCrate &)
 {}
 
 void
-EarlyNameResolver::visit (AST::UseTreeGlob &use_tree)
+EarlyNameResolver::visit (AST::UseTreeGlob &)
 {}
 
 void
-EarlyNameResolver::visit (AST::UseTreeList &use_tree)
+EarlyNameResolver::visit (AST::UseTreeList &)
 {}
 
 void
-EarlyNameResolver::visit (AST::UseTreeRebind &use_tree)
+EarlyNameResolver::visit (AST::UseTreeRebind &)
 {}
 
 void
-EarlyNameResolver::visit (AST::UseDeclaration &use_decl)
+EarlyNameResolver::visit (AST::UseDeclaration &)
 {}
 
 void
@@ -632,27 +632,27 @@ EarlyNameResolver::visit (AST::TupleStruct &tuple_struct)
 }
 
 void
-EarlyNameResolver::visit (AST::EnumItem &item)
+EarlyNameResolver::visit (AST::EnumItem &)
 {}
 
 void
-EarlyNameResolver::visit (AST::EnumItemTuple &item)
+EarlyNameResolver::visit (AST::EnumItemTuple &)
 {}
 
 void
-EarlyNameResolver::visit (AST::EnumItemStruct &item)
+EarlyNameResolver::visit (AST::EnumItemStruct &)
 {}
 
 void
-EarlyNameResolver::visit (AST::EnumItemDiscriminant &item)
+EarlyNameResolver::visit (AST::EnumItemDiscriminant &)
 {}
 
 void
-EarlyNameResolver::visit (AST::Enum &enum_item)
+EarlyNameResolver::visit (AST::Enum &)
 {}
 
 void
-EarlyNameResolver::visit (AST::Union &union_item)
+EarlyNameResolver::visit (AST::Union &)
 {}
 
 void
@@ -716,7 +716,7 @@ EarlyNameResolver::visit (AST::TraitItemConst &item)
 }
 
 void
-EarlyNameResolver::visit (AST::TraitItemType &item)
+EarlyNameResolver::visit (AST::TraitItemType &)
 {}
 
 void
@@ -777,15 +777,15 @@ EarlyNameResolver::visit (AST::ExternBlock &block)
 }
 
 void
-EarlyNameResolver::visit (AST::MacroMatchFragment &match)
+EarlyNameResolver::visit (AST::MacroMatchFragment &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MacroMatchRepetition &match)
+EarlyNameResolver::visit (AST::MacroMatchRepetition &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MacroMatcher &matcher)
+EarlyNameResolver::visit (AST::MacroMatcher &)
 {}
 
 void
@@ -853,31 +853,31 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
 // FIXME: ARTHUR: Do we need to resolve these as well here?
 
 void
-EarlyNameResolver::visit (AST::MetaItemPath &meta_item)
+EarlyNameResolver::visit (AST::MetaItemPath &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaItemSeq &meta_item)
+EarlyNameResolver::visit (AST::MetaItemSeq &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaWord &meta_item)
+EarlyNameResolver::visit (AST::MetaWord &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaNameValueStr &meta_item)
+EarlyNameResolver::visit (AST::MetaNameValueStr &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaListPaths &meta_item)
+EarlyNameResolver::visit (AST::MetaListPaths &)
 {}
 
 void
-EarlyNameResolver::visit (AST::MetaListNameValueStr &meta_item)
+EarlyNameResolver::visit (AST::MetaListNameValueStr &)
 {}
 
 void
-EarlyNameResolver::visit (AST::LiteralPattern &pattern)
+EarlyNameResolver::visit (AST::LiteralPattern &)
 {}
 
 void
@@ -888,19 +888,19 @@ EarlyNameResolver::visit (AST::IdentifierPattern &pattern)
 }
 
 void
-EarlyNameResolver::visit (AST::WildcardPattern &pattern)
+EarlyNameResolver::visit (AST::WildcardPattern &)
 {}
 
 void
-EarlyNameResolver::visit (AST::RangePatternBoundLiteral &bound)
+EarlyNameResolver::visit (AST::RangePatternBoundLiteral &)
 {}
 
 void
-EarlyNameResolver::visit (AST::RangePatternBoundPath &bound)
+EarlyNameResolver::visit (AST::RangePatternBoundPath &)
 {}
 
 void
-EarlyNameResolver::visit (AST::RangePatternBoundQualPath &bound)
+EarlyNameResolver::visit (AST::RangePatternBoundQualPath &)
 {}
 
 void
@@ -929,11 +929,11 @@ EarlyNameResolver::visit (AST::StructPatternFieldIdentPat &field)
 }
 
 void
-EarlyNameResolver::visit (AST::StructPatternFieldIdent &field)
+EarlyNameResolver::visit (AST::StructPatternFieldIdent &)
 {}
 
 void
-EarlyNameResolver::visit (AST::StructPattern &pattern)
+EarlyNameResolver::visit (AST::StructPattern &)
 {}
 
 void
@@ -994,7 +994,7 @@ EarlyNameResolver::visit (AST::SlicePattern &pattern)
 }
 
 void
-EarlyNameResolver::visit (AST::EmptyStmt &stmt)
+EarlyNameResolver::visit (AST::EmptyStmt &)
 {}
 
 void
@@ -1022,55 +1022,55 @@ EarlyNameResolver::visit (AST::ExprStmtWithBlock &stmt)
 }
 
 void
-EarlyNameResolver::visit (AST::TraitBound &bound)
+EarlyNameResolver::visit (AST::TraitBound &)
 {}
 
 void
-EarlyNameResolver::visit (AST::ImplTraitType &type)
+EarlyNameResolver::visit (AST::ImplTraitType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::TraitObjectType &type)
+EarlyNameResolver::visit (AST::TraitObjectType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::ParenthesisedType &type)
+EarlyNameResolver::visit (AST::ParenthesisedType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::ImplTraitTypeOneBound &type)
+EarlyNameResolver::visit (AST::ImplTraitTypeOneBound &)
 {}
 
 void
-EarlyNameResolver::visit (AST::TraitObjectTypeOneBound &type)
+EarlyNameResolver::visit (AST::TraitObjectTypeOneBound &)
 {}
 
 void
-EarlyNameResolver::visit (AST::TupleType &type)
+EarlyNameResolver::visit (AST::TupleType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::NeverType &type)
+EarlyNameResolver::visit (AST::NeverType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::RawPointerType &type)
+EarlyNameResolver::visit (AST::RawPointerType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::ReferenceType &type)
+EarlyNameResolver::visit (AST::ReferenceType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::ArrayType &type)
+EarlyNameResolver::visit (AST::ArrayType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::SliceType &type)
+EarlyNameResolver::visit (AST::SliceType &)
 {}
 
 void
-EarlyNameResolver::visit (AST::InferredType &type)
+EarlyNameResolver::visit (AST::InferredType &)
 {}
 
 void

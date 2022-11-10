@@ -399,7 +399,7 @@ TyTyResolveCompile::visit (const TyTy::SliceType &type)
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::BoolType &type)
+TyTyResolveCompile::visit (const TyTy::BoolType &)
 {
   translated
     = ctx->get_backend ()->named_type ("bool",
@@ -503,7 +503,7 @@ TyTyResolveCompile::visit (const TyTy::FloatType &type)
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::USizeType &type)
+TyTyResolveCompile::visit (const TyTy::USizeType &)
 {
   translated = ctx->get_backend ()->named_type (
     "usize",
@@ -513,7 +513,7 @@ TyTyResolveCompile::visit (const TyTy::USizeType &type)
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::ISizeType &type)
+TyTyResolveCompile::visit (const TyTy::ISizeType &)
 {
   translated = ctx->get_backend ()->named_type (
     "isize",
@@ -523,7 +523,7 @@ TyTyResolveCompile::visit (const TyTy::ISizeType &type)
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::CharType &type)
+TyTyResolveCompile::visit (const TyTy::CharType &)
 {
   translated
     = ctx->get_backend ()->named_type ("char",

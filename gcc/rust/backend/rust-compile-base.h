@@ -55,7 +55,7 @@ protected:
     const TyTy::TypeBoundPredicate *predicate,
     std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
       &receiver_bounds,
-    const TyTy::BaseType *receiver, const TyTy::BaseType *root, Location locus);
+    const TyTy::BaseType *root, Location locus);
 
   bool verify_array_capacities (tree ltype, tree rtype, Location ltype_locus,
 				Location rtype_locus);
@@ -63,7 +63,7 @@ protected:
   tree query_compile (HirId ref, TyTy::BaseType *lookup,
 		      const HIR::PathIdentSegment &final_segment,
 		      const Analysis::NodeMapping &mappings,
-		      Location expr_locus, bool is_qualified_path);
+		      Location expr_locus);
 
   tree resolve_adjustements (std::vector<Resolver::Adjustment> &adjustments,
 			     tree expression, Location locus);
@@ -113,7 +113,7 @@ protected:
 
   static tree indirect_expression (tree expr, Location locus);
 
-  static bool mark_addressable (tree, Location);
+  static bool mark_addressable (tree);
 
   static std::vector<Bvariable *>
   compile_locals_for_block (Context *ctx, Resolver::Rib &rib, tree fndecl);

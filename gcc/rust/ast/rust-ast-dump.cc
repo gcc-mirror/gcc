@@ -269,7 +269,7 @@ Dump::visit (DelimTokenTree &delim_tok_tree)
 }
 
 void
-Dump::visit (AttrInputMetaItemContainer &input)
+Dump::visit (AttrInputMetaItemContainer &)
 {}
 
 void
@@ -311,7 +311,7 @@ Dump::visit (LifetimeParam &lifetime_param)
 }
 
 void
-Dump::visit (ConstGenericParam &lifetime_param)
+Dump::visit (ConstGenericParam &)
 {}
 
 // rust-path.h
@@ -322,15 +322,15 @@ Dump::visit (PathInExpression &path)
 }
 
 void
-Dump::visit (TypePathSegment &segment)
+Dump::visit (TypePathSegment &)
 {}
 
 void
-Dump::visit (TypePathSegmentGeneric &segment)
+Dump::visit (TypePathSegmentGeneric &)
 {}
 
 void
-Dump::visit (TypePathSegmentFunction &segment)
+Dump::visit (TypePathSegmentFunction &)
 {}
 
 void
@@ -346,7 +346,7 @@ Dump::visit (QualifiedPathInExpression &path)
 }
 
 void
-Dump::visit (QualifiedPathInType &path)
+Dump::visit (QualifiedPathInType &)
 {}
 
 // rust-expr.h
@@ -357,15 +357,15 @@ Dump::visit (LiteralExpr &expr)
 }
 
 void
-Dump::visit (AttrInputLiteral &attr_input)
+Dump::visit (AttrInputLiteral &)
 {}
 
 void
-Dump::visit (MetaItemLitExpr &meta_item)
+Dump::visit (MetaItemLitExpr &)
 {}
 
 void
-Dump::visit (MetaItemPathLit &meta_item)
+Dump::visit (MetaItemPathLit &)
 {}
 
 void
@@ -623,35 +623,35 @@ Dump::visit (ArrayIndexExpr &expr)
 }
 
 void
-Dump::visit (TupleExpr &expr)
+Dump::visit (TupleExpr &)
 {}
 
 void
-Dump::visit (TupleIndexExpr &expr)
+Dump::visit (TupleIndexExpr &)
 {}
 
 void
-Dump::visit (StructExprStruct &expr)
+Dump::visit (StructExprStruct &)
 {}
 
 void
-Dump::visit (StructExprFieldIdentifier &field)
+Dump::visit (StructExprFieldIdentifier &)
 {}
 
 void
-Dump::visit (StructExprFieldIdentifierValue &field)
+Dump::visit (StructExprFieldIdentifierValue &)
 {}
 
 void
-Dump::visit (StructExprFieldIndexValue &field)
+Dump::visit (StructExprFieldIndexValue &)
 {}
 
 void
-Dump::visit (StructExprStructFields &expr)
+Dump::visit (StructExprStructFields &)
 {}
 
 void
-Dump::visit (StructExprStructBase &expr)
+Dump::visit (StructExprStructBase &)
 {}
 
 void
@@ -669,15 +669,15 @@ Dump::visit (CallExpr &expr)
 }
 
 void
-Dump::visit (MethodCallExpr &expr)
+Dump::visit (MethodCallExpr &)
 {}
 
 void
-Dump::visit (FieldAccessExpr &expr)
+Dump::visit (FieldAccessExpr &)
 {}
 
 void
-Dump::visit (ClosureExprInner &expr)
+Dump::visit (ClosureExprInner &)
 {}
 
 void
@@ -696,15 +696,15 @@ Dump::visit (BlockExpr &expr)
 }
 
 void
-Dump::visit (ClosureExprInnerTyped &expr)
+Dump::visit (ClosureExprInnerTyped &)
 {}
 
 void
-Dump::visit (ContinueExpr &expr)
+Dump::visit (ContinueExpr &)
 {}
 
 void
-Dump::visit (BreakExpr &expr)
+Dump::visit (BreakExpr &)
 {}
 
 void
@@ -730,7 +730,7 @@ Dump::visit (RangeToExpr &expr)
 }
 
 void
-Dump::visit (RangeFullExpr &expr)
+Dump::visit (RangeFullExpr &)
 {
   stream << "..";
 }
@@ -751,27 +751,27 @@ Dump::visit (RangeToInclExpr &expr)
 }
 
 void
-Dump::visit (ReturnExpr &expr)
+Dump::visit (ReturnExpr &)
 {}
 
 void
-Dump::visit (UnsafeBlockExpr &expr)
+Dump::visit (UnsafeBlockExpr &)
 {}
 
 void
-Dump::visit (LoopExpr &expr)
+Dump::visit (LoopExpr &)
 {}
 
 void
-Dump::visit (WhileLoopExpr &expr)
+Dump::visit (WhileLoopExpr &)
 {}
 
 void
-Dump::visit (WhileLetLoopExpr &expr)
+Dump::visit (WhileLetLoopExpr &)
 {}
 
 void
-Dump::visit (ForLoopExpr &expr)
+Dump::visit (ForLoopExpr &)
 {}
 
 void
@@ -807,35 +807,35 @@ Dump::visit (IfExprConseqIf &expr)
 }
 
 void
-Dump::visit (IfExprConseqIfLet &expr)
+Dump::visit (IfExprConseqIfLet &)
 {}
 
 void
-Dump::visit (IfLetExpr &expr)
+Dump::visit (IfLetExpr &)
 {}
 
 void
-Dump::visit (IfLetExprConseqElse &expr)
+Dump::visit (IfLetExprConseqElse &)
 {}
 
 void
-Dump::visit (IfLetExprConseqIf &expr)
+Dump::visit (IfLetExprConseqIf &)
 {}
 
 void
-Dump::visit (IfLetExprConseqIfLet &expr)
+Dump::visit (IfLetExprConseqIfLet &)
 {}
 
 void
-Dump::visit (MatchExpr &expr)
+Dump::visit (MatchExpr &)
 {}
 
 void
-Dump::visit (AwaitExpr &expr)
+Dump::visit (AwaitExpr &)
 {}
 
 void
-Dump::visit (AsyncBlockExpr &expr)
+Dump::visit (AsyncBlockExpr &)
 {}
 
 // rust-item.h
@@ -959,23 +959,23 @@ Dump::visit (Module &module)
 }
 
 void
-Dump::visit (ExternCrate &crate)
+Dump::visit (ExternCrate &)
 {}
 
 void
-Dump::visit (UseTreeGlob &use_tree)
+Dump::visit (UseTreeGlob &)
 {}
 
 void
-Dump::visit (UseTreeList &use_tree)
+Dump::visit (UseTreeList &)
 {}
 
 void
-Dump::visit (UseTreeRebind &use_tree)
+Dump::visit (UseTreeRebind &)
 {}
 
 void
-Dump::visit (UseDeclaration &use_decl)
+Dump::visit (UseDeclaration &)
 {}
 
 void
@@ -1117,11 +1117,11 @@ Dump::visit (Union &union_item)
 }
 
 void
-Dump::visit (ConstantItem &const_item)
+Dump::visit (ConstantItem &)
 {}
 
 void
-Dump::visit (StaticItem &static_item)
+Dump::visit (StaticItem &)
 {}
 
 void
@@ -1259,7 +1259,7 @@ Dump::visit (TraitImpl &impl)
 }
 
 void
-Dump::visit (ExternalStaticItem &item)
+Dump::visit (ExternalStaticItem &)
 {}
 
 void
@@ -1386,36 +1386,36 @@ Dump::visit (MacroRulesDefinition &rules_def)
 }
 
 void
-Dump::visit (MacroInvocation &macro_invoc)
+Dump::visit (MacroInvocation &)
 {}
 
 void
-Dump::visit (MetaItemPath &meta_item)
+Dump::visit (MetaItemPath &)
 {}
 
 void
-Dump::visit (MetaItemSeq &meta_item)
+Dump::visit (MetaItemSeq &)
 {}
 
 void
-Dump::visit (MetaWord &meta_item)
+Dump::visit (MetaWord &)
 {}
 
 void
-Dump::visit (MetaNameValueStr &meta_item)
+Dump::visit (MetaNameValueStr &)
 {}
 
 void
-Dump::visit (MetaListPaths &meta_item)
+Dump::visit (MetaListPaths &)
 {}
 
 void
-Dump::visit (MetaListNameValueStr &meta_item)
+Dump::visit (MetaListNameValueStr &)
 {}
 
 // rust-pattern.h
 void
-Dump::visit (LiteralPattern &pattern)
+Dump::visit (LiteralPattern &)
 {}
 
 void
@@ -1425,88 +1425,88 @@ Dump::visit (IdentifierPattern &pattern)
 }
 
 void
-Dump::visit (WildcardPattern &pattern)
+Dump::visit (WildcardPattern &)
 {}
 
-// void Dump::visit(RangePatternBound& bound){}
+// void Dump::visit(RangePatternBound& ){}
 
 void
-Dump::visit (RangePatternBoundLiteral &bound)
-{}
-
-void
-Dump::visit (RangePatternBoundPath &bound)
+Dump::visit (RangePatternBoundLiteral &)
 {}
 
 void
-Dump::visit (RangePatternBoundQualPath &bound)
+Dump::visit (RangePatternBoundPath &)
 {}
 
 void
-Dump::visit (RangePattern &pattern)
+Dump::visit (RangePatternBoundQualPath &)
 {}
 
 void
-Dump::visit (ReferencePattern &pattern)
-{}
-
-// void Dump::visit(StructPatternField& field){}
-
-void
-Dump::visit (StructPatternFieldTuplePat &field)
+Dump::visit (RangePattern &)
 {}
 
 void
-Dump::visit (StructPatternFieldIdentPat &field)
+Dump::visit (ReferencePattern &)
+{}
+
+// void Dump::visit(StructPatternField& ){}
+
+void
+Dump::visit (StructPatternFieldTuplePat &)
 {}
 
 void
-Dump::visit (StructPatternFieldIdent &field)
+Dump::visit (StructPatternFieldIdentPat &)
 {}
 
 void
-Dump::visit (StructPattern &pattern)
-{}
-
-// void Dump::visit(TupleStructItems& tuple_items){}
-
-void
-Dump::visit (TupleStructItemsNoRange &tuple_items)
+Dump::visit (StructPatternFieldIdent &)
 {}
 
 void
-Dump::visit (TupleStructItemsRange &tuple_items)
+Dump::visit (StructPattern &)
+{}
+
+// void Dump::visit(TupleStructItems& ){}
+
+void
+Dump::visit (TupleStructItemsNoRange &)
 {}
 
 void
-Dump::visit (TupleStructPattern &pattern)
-{}
-
-// void Dump::visit(TuplePatternItems& tuple_items){}
-
-void
-Dump::visit (TuplePatternItemsMultiple &tuple_items)
+Dump::visit (TupleStructItemsRange &)
 {}
 
 void
-Dump::visit (TuplePatternItemsRanged &tuple_items)
+Dump::visit (TupleStructPattern &)
+{}
+
+// void Dump::visit(TuplePatternItems& ){}
+
+void
+Dump::visit (TuplePatternItemsMultiple &)
 {}
 
 void
-Dump::visit (TuplePattern &pattern)
+Dump::visit (TuplePatternItemsRanged &)
 {}
 
 void
-Dump::visit (GroupedPattern &pattern)
+Dump::visit (TuplePattern &)
 {}
 
 void
-Dump::visit (SlicePattern &pattern)
+Dump::visit (GroupedPattern &)
+{}
+
+void
+Dump::visit (SlicePattern &)
 {}
 
 // rust-stmt.h
 void
-Dump::visit (EmptyStmt &stmt)
+Dump::visit (EmptyStmt &)
 {}
 
 void
@@ -1560,35 +1560,35 @@ Dump::visit (TraitBound &bound)
 }
 
 void
-Dump::visit (ImplTraitType &type)
+Dump::visit (ImplTraitType &)
 {}
 
 void
-Dump::visit (TraitObjectType &type)
+Dump::visit (TraitObjectType &)
 {}
 
 void
-Dump::visit (ParenthesisedType &type)
+Dump::visit (ParenthesisedType &)
 {}
 
 void
-Dump::visit (ImplTraitTypeOneBound &type)
+Dump::visit (ImplTraitTypeOneBound &)
 {}
 
 void
-Dump::visit (TraitObjectTypeOneBound &type)
+Dump::visit (TraitObjectTypeOneBound &)
 {}
 
 void
-Dump::visit (TupleType &type)
+Dump::visit (TupleType &)
 {}
 
 void
-Dump::visit (NeverType &type)
+Dump::visit (NeverType &)
 {}
 
 void
-Dump::visit (RawPointerType &type)
+Dump::visit (RawPointerType &)
 {}
 
 void
@@ -1610,13 +1610,13 @@ Dump::visit (SliceType &type)
 }
 
 void
-Dump::visit (InferredType &type)
+Dump::visit (InferredType &)
 {
   stream << "_";
 }
 
 void
-Dump::visit (BareFunctionType &type)
+Dump::visit (BareFunctionType &)
 {}
 
 } // namespace AST
