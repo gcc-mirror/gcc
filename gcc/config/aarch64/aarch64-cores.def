@@ -110,6 +110,7 @@ AARCH64_CORE("cortex-a78c",  cortexa78c, cortexa57, V8_2A,  (F16, RCPC, DOTPROD,
 AARCH64_CORE("cortex-a65",  cortexa65, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd06, -1)
 AARCH64_CORE("cortex-a65ae",  cortexa65ae, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd43, -1)
 AARCH64_CORE("cortex-x1",  cortexx1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE), neoversen1, 0x41, 0xd44, -1)
+AARCH64_CORE("cortex-x1c",  cortexx1c, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE, PAUTH), neoversen1, 0x41, 0xd4c, -1)
 AARCH64_CORE("ares",  ares, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
 AARCH64_CORE("neoverse-n1",  neoversen1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
 AARCH64_CORE("neoverse-e1",  neoversee1, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd4a, -1)
