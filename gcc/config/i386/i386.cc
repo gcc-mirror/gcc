@@ -169,7 +169,12 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
   /* Mask registers.  */
   ALL_MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS,
-  MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS
+  MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS,
+  /* REX2 registers */
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -227,7 +232,10 @@ int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
   /* AVX-512 registers 24-31 */
   75, 76, 77, 78, 79, 80, 81, 82,
   /* Mask registers */
-  118, 119, 120, 121, 122, 123, 124, 125
+  118, 119, 120, 121, 122, 123, 124, 125,
+  /* rex2 extend interger registers */
+  130, 131, 132, 133, 134, 135, 136, 137,
+  138, 139, 140, 141, 142, 143, 144, 145
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -520,6 +528,13 @@ ix86_conditional_register_usage (void)
 	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
 
       accessible_reg_set &= ~reg_class_contents[ALL_MASK_REGS];
+    }
+
+  /* If APX is disabled, disable the registers.  */
+  if (! (TARGET_APX_EGPR && TARGET_64BIT))
+    {
+      for (i = FIRST_REX2_INT_REG; i <= LAST_REX2_INT_REG; i++)
+	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
     }
 }
 
@@ -6188,6 +6203,13 @@ ix86_code_end (void)
 					regno, false);
     }
 
+  for (regno = FIRST_REX2_INT_REG; regno <= LAST_REX2_INT_REG; regno++)
+    {
+      if (TEST_HARD_REG_BIT (indirect_thunks_used, regno))
+	output_indirect_thunk_function (indirect_thunk_prefix_none,
+					regno, false);
+    }
+
   for (regno = FIRST_INT_REG; regno <= LAST_INT_REG; regno++)
     {
       char name[32];
@@ -7199,10 +7221,10 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset, unsigned int *align,
 static void
 ix86_emit_save_regs (void)
 {
-  unsigned int regno;
+  int regno;
   rtx_insn *insn;
 
-  for (regno = FIRST_PSEUDO_REGISTER - 1; regno-- > 0; )
+  for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
     if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
       {
 	insn = emit_insn (gen_push (gen_rtx_REG (word_mode, regno)));
@@ -13046,7 +13068,7 @@ print_reg (rtx x, int code, FILE *file)
 
   /* Irritatingly, AMD extended registers use
      different naming convention: "r%d[bwd]"  */
-  if (REX_INT_REGNO_P (regno))
+  if (REX_INT_REGNO_P (regno) || REX2_INT_REGNO_P (regno))
     {
       gcc_assert (TARGET_64BIT);
       switch (msize)
@@ -16267,7 +16289,7 @@ ix86_output_jmp_thunk_or_indirect (const char *thunk_name, const int regno)
 {
   if (thunk_name != NULL)
     {
-      if (REX_INT_REGNO_P (regno)
+      if ((REX_INT_REGNO_P (regno) || REX2_INT_REGNO_P (regno))
 	  && ix86_indirect_branch_cs_prefix)
 	fprintf (asm_out_file, "\tcs\n");
       fprintf (asm_out_file, "\tjmp\t");
@@ -16319,7 +16341,7 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
     {
       if (thunk_name != NULL)
 	{
-	  if (REX_INT_REGNO_P (regno)
+	  if ((REX_INT_REGNO_P (regno) || REX_INT_REGNO_P (regno))
 	      && ix86_indirect_branch_cs_prefix)
 	    fprintf (asm_out_file, "\tcs\n");
 	  fprintf (asm_out_file, "\tcall\t");
@@ -17076,19 +17098,26 @@ ix86_attr_length_vex_default (rtx_insn *insn, bool has_0f_opcode,
   for (i = recog_data.n_operands - 1; i >= 0; --i)
     if (REG_P (recog_data.operand[i]))
       {
-	/* REX.W bit uses 3 byte VEX prefix.  */
+	/* REX.W bit uses 3 byte VEX prefix.
+	   REX2 with vex use extended EVEX prefix length is 4-byte.  */
 	if (GET_MODE (recog_data.operand[i]) == DImode
 	    && GENERAL_REG_P (recog_data.operand[i]))
 	  return 3 + 1;
 
 	/* REX.B bit requires 3-byte VEX. Right here we don't know which
-	   operand will be encoded using VEX.B, so be conservative.  */
+	   operand will be encoded using VEX.B, so be conservative.
+	   REX2 with vex use extended EVEX prefix length is 4-byte.  */
 	if (REX_INT_REGNO_P (recog_data.operand[i])
+	    || REX2_INT_REGNO_P (recog_data.operand[i])
 	    || REX_SSE_REGNO_P (recog_data.operand[i]))
 	  reg_only = 3 + 1;
       }
     else if (MEM_P (recog_data.operand[i]))
       {
+	/* REX2.X or REX2.B bits use 3 byte VEX prefix.  */
+	if (x86_extended_rex2reg_mentioned_p (recog_data.operand[i]))
+	  return 4;
+
 	/* REX.X or REX.B bits use 3 byte VEX prefix.  */
 	if (x86_extended_reg_mentioned_p (recog_data.operand[i]))
 	  return 3 + 1;
@@ -19524,6 +19553,8 @@ ix86_register_priority (int hard_regno)
     return 1;
   /* New x86-64 int registers result in bigger code size.  Discourage them.  */
   if (REX_INT_REGNO_P (hard_regno))
+    return 2;
+  if (REX2_INT_REGNO_P (hard_regno))
     return 2;
   /* New x86-64 SSE registers result in bigger code size.  Discourage them.  */
   if (REX_SSE_REGNO_P (hard_regno))
@@ -22771,7 +22802,23 @@ x86_extended_reg_mentioned_p (rtx insn)
     {
       const_rtx x = *iter;
       if (REG_P (x)
-	  && (REX_INT_REGNO_P (REGNO (x)) || REX_SSE_REGNO_P (REGNO (x))))
+	  && (REX_INT_REGNO_P (REGNO (x)) || REX_SSE_REGNO_P (REGNO (x))
+	      || REX2_INT_REGNO_P (REGNO (x))))
+	return true;
+    }
+  return false;
+}
+
+/* Return true when INSN mentions register that must be encoded using REX2
+   prefix.  */
+bool
+x86_extended_rex2reg_mentioned_p (rtx insn)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, INSN_P (insn) ? PATTERN (insn) : insn, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x) && REX2_INT_REGNO_P (REGNO (x)))
 	return true;
     }
   return false;
