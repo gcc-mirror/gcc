@@ -49,6 +49,7 @@ pragma Assertion_Policy (Pre            => Ignore,
 
 with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
 with Ada.Strings.Search;
+with Ada.Strings.Text_Buffers;
 
 package Ada.Strings.Superbounded with SPARK_Mode is
    pragma Preelaborate;
@@ -69,7 +70,8 @@ package Ada.Strings.Superbounded with SPARK_Mode is
    with
      Predicate =>
        Current_Length <= Max_Length
-         and then Data (1 .. Current_Length)'Initialized;
+         and then Data (1 .. Current_Length)'Initialized,
+     Put_Image => Put_Image;
 
    --  The subprograms defined for Super_String are similar to those
    --  defined for Bounded_String, except that they have different names, so
@@ -2694,6 +2696,10 @@ package Ada.Strings.Superbounded with SPARK_Mode is
                      Super_Length (Item)
                        - (Item.Max_Length - K) mod Super_Length (Item)))),
      Global         => null;
+
+   procedure Put_Image
+     (S      : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class;
+      Source : Super_String);
 
 private
       --  Pragma Inline declarations
