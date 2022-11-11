@@ -13679,8 +13679,14 @@ maybe_warn_dangling_reference (const_tree decl, tree init)
 {
   if (!warn_dangling_reference)
     return;
-  if (!(TYPE_REF_OBJ_P (TREE_TYPE (decl))
-	|| std_pair_ref_ref_p (TREE_TYPE (decl))))
+  tree type = TREE_TYPE (decl);
+  /* Only warn if what we're initializing has type T&& or const T&, or
+     std::pair<const T&, const T&>.  (A non-const lvalue reference can't
+     bind to a temporary.)  */
+  if (!((TYPE_REF_OBJ_P (type)
+	 && (TYPE_REF_IS_RVALUE (type)
+	     || CP_TYPE_CONST_P (TREE_TYPE (type))))
+	|| std_pair_ref_ref_p (type)))
     return;
   /* Don't suppress the diagnostic just because the call comes from
      a system header.  If the DECL is not in a system header, or if

@@ -34,6 +34,6 @@ T& temporary2(T&& x) { return static_cast<T&>(x); }
 void
 test ()
 {
-  int& r1 = temporary1 (42); // { dg-warning "dangling reference" }
-  int& r2 = temporary2 (42); // { dg-warning "dangling reference" }
+  int& r1 = temporary1 (42);
+  int& r2 = temporary2 (42);
 }
