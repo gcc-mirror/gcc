@@ -1647,6 +1647,7 @@ OBJS = \
 	tree-iterator.o \
 	tree-logical-location.o \
 	tree-loop-distribution.o \
+	symb-execute-all-paths.o \
 	gimple-crc-optimization.o \
 	sym-exec/expression.o \
 	sym-exec/state.o \
