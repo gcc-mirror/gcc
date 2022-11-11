@@ -546,7 +546,7 @@ gimple_ranger::update_stmt (gimple *s)
       // Re-calculate a new value using just cache values.
       Value_Range tmp (TREE_TYPE (lhs));
       fold_using_range f;
-      fur_depend src (s, &(gori ()), &m_cache);
+      fur_stmt src (s, &m_cache);
       f.fold_stmt (tmp, s, src, lhs);
 
       // Combine the new value with the old value to check for a change.
