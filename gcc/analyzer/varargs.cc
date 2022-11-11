@@ -216,7 +216,7 @@ public:
   }
   std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
-  /* State for a va_list that the result of a va_start or va_copy.  */
+  /* State for a va_list that is the result of a va_start or va_copy.  */
   state_t m_started;
 
   /* State for a va_list that has had va_end called on it.  */
