@@ -30,10 +30,8 @@ endif
 
 if ENABLE_BACKTRACE
 backtrace_dir = libbacktrace
-backtrace_supported_h = $(backtrace_dir)/backtrace-supported.h
 else
 backtrace_dir =
-backtrace_supported_h =
 endif
 
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
@@ -370,7 +368,7 @@ libstdc++convenience.la: $(toolexeclib_LTLIBRARIES)
 	if test ! -f .libs/libstdc++.a; then \
 	  cp .libs/libstdc++convenience.a .libs/libstdc++.a; \
 	fi; \
-	echo `date` > stamp-libstdc++convenience;
+	date > stamp-libstdc++convenience;
 
 # Added rules.
 # 1 debug library
@@ -386,50 +384,41 @@ CLEAN_DEBUG =
 endif
 
 # Build a debug variant.
+
 # Take care to fix all possibly-relative paths.
-debugdir = ${glibcxx_builddir}/src/debug
-stamp-debug: Makefile $(foreach dir,$(SUBDIRS),$(dir)/Makefile)
-	if test ! -d ${debugdir} || test ! -f ${debugdir}/Makefile ; then \
-	  mkdir -p ${debugdir}; \
-	  for d in $(SUBDIRS); do mkdir -p  ${debugdir}/$$d; done; \
-	  (cd ${debugdir}; \
-	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
-	      -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
-	      -e 's/srcdir = \.\./srcdir = ..\/../' \
-	      -e 's/VPATH = \.\./VPATH = ..\/../' \
-	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
-	      -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
-	  < ../Makefile > Makefile ; \
-	  for d in . $(SUBDIRS); do \
-	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
-	      -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
-	      -e 's/srcdir = \.\./srcdir = ..\/../' \
-	      -e 's/VPATH = \.\./VPATH = ..\/../' \
-	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
-	      -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
-	  < ../$$d/Makefile > $$d/Makefile ; \
-	  done) ; \
-	fi; \
-	echo `date` > stamp-debug;
+debug/%/Makefile: %/Makefile
+	$(MKDIR_P) $(dir $@)
+	sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
+	    -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
+	    -e 's/srcdir = \.\./srcdir = ..\/../' \
+	    -e 's/VPATH = \.\./VPATH = ..\/../' \
+	    -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
+	    -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
+	  < $< > $@
+
+stamp-debug: $(foreach dir,. $(SUBDIRS),debug/$(dir)/Makefile)
+	mv debug/Makefile debug/Makefile.tmp
+	sed -e 's,all-local: all-once,all-local:,' \
+	    -e 's,install-data-local: install-data-once,install-data-local:,' \
+	    -e '/vpath/!s,src/c,src/debug/c,' \
+	  < debug/Makefile.tmp > debug/Makefile
+	rm -f debug/Makefile.tmp
+	date > stamp-debug;
+
+.SECONDARY: $(foreach dir,. $(SUBDIRS),debug/$(dir)/Makefile)
 
 if ENABLE_BACKTRACE
-${debugdir}/$(backtrace_supported_h): $(backtrace_supported_h) stamp-debug
+backtrace_supported_h = $(backtrace_dir)/backtrace-supported.h
+debug_backtrace_supported_h = debug/$(backtrace_supported_h)
+$(debug_backtrace_supported_h): $(backtrace_supported_h) stamp-debug
 	cp $< $@
-debug_backtrace_supported_h = ${debugdir}/$(backtrace_supported_h)
 else
 debug_backtrace_supported_h =
 endif
 
 build-debug: stamp-debug $(debug_backtrace_supported_h)
-	  (cd ${debugdir}; \
-	  mv Makefile Makefile.tmp; \
-	  sed -e 's,all-local: all-once,all-local:,' \
-	      -e 's,install-data-local: install-data-once,install-data-local:,' \
-	      -e '/vpath/!s,src/c,src/debug/c,' \
-	  < Makefile.tmp > Makefile ; \
-	  rm -f Makefile.tmp ; \
-	  $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
-	  toolexeclibdir=$(glibcxx_toolexeclibdir)/debug all) ;
+	  $(MAKE) -C debug CXXFLAGS='$(DEBUG_FLAGS)' \
+	    toolexeclibdir=$(glibcxx_toolexeclibdir)/debug all
 
 # Install debug library.
 install-debug: build-debug
