@@ -26,6 +26,8 @@
 #define "This file should not be compiled directly, only included"
 #endif
 
+#include "facet_inst_macros.h"
+
 // This header is included multiple times, to instantiate these symbols
 // for char/wchar_t and for both std::string ABIs,
 // and (depending on the target) for two long double formats.

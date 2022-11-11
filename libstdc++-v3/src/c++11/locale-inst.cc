@@ -43,19 +43,9 @@
 # define C_is_char
 #endif
 
-#define INSTANTIATE_USE_FACET(...)			    \
-  template const __VA_ARGS__*				    \
-    __try_use_facet< __VA_ARGS__ >(const locale&) noexcept; \
-  template const __VA_ARGS__&				    \
-    use_facet<__VA_ARGS__>(const locale&)		    \
-
-#define INSTANTIATE_FACET_ACCESSORS(...)		    \
-  INSTANTIATE_USE_FACET(__VA_ARGS__);			    \
-  template bool						    \
-    has_facet<__VA_ARGS__>(const locale&) noexcept
-
 #include "locale-inst-numeric.h"
 #include "locale-inst-monetary.h"
+#include "facet_inst_macros.h"
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

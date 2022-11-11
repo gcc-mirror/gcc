@@ -26,6 +26,8 @@
 #define "This file should not be compiled directly, only included"
 #endif
 
+#include "facet_inst_macros.h"
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 #if ! _GLIBCXX_USE_CXX11_ABI
