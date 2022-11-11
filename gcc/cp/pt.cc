@@ -11284,6 +11284,9 @@ tsubst_friend_function (tree decl, tree args)
 	  not_tmpl = DECL_TEMPLATE_RESULT (new_friend);
 	  new_friend_result_template_info = DECL_TEMPLATE_INFO (not_tmpl);
 	}
+      else if (!constraints_satisfied_p (new_friend))
+	/* Only define a constrained hidden friend when satisfied.  */
+	return error_mark_node;
 
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go
