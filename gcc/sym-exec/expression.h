@@ -7,6 +7,21 @@
 
 #include "stddef.h"
 
+
+enum value_type {
+  SYMBOLIC_BIT,
+  BIT,
+  BIT_XOR_EXPRESSION,
+  BIT_AND_EXPRESSION,
+  BIT_OR_EXPRESSION,
+  BIT_COMPLEMENT_EXPRESSION,
+  SHIFT_RIGHT_EXPRESSION,
+  SHIFT_LEFT_EXPRESSION,
+  ADD_EXPRESSION,
+  SUB_EXPRESSION,
+  BIT_CONDITION
+};
+
 /* Base class for single bit value.  */
 
 class value {
@@ -26,6 +41,7 @@ class value {
 
   /* This will support deep copy of objects' values.  */
   virtual value *copy () const = 0;
+  virtual value_type get_type () const = 0;
   virtual ~value ()
   {};
 };
@@ -41,6 +57,7 @@ class symbolic_bit : public value {
   {};
 
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -59,6 +76,7 @@ class bit : public value {
   unsigned char get_val () const;
   void set_val (unsigned char new_val);
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -70,20 +88,16 @@ class bit_expression : public value {
   value *left = nullptr;
   value *right = nullptr;
 
+  void copy (const bit_expression *expr);
+
  public:
-  bit_expression () : left (nullptr), right (nullptr)
-  {};
-  bit_expression (value *left, value *right);
-
-  bit_expression (const bit_expression &expr);
-
   value *get_left ();
   value *get_right ();
 
   void set_left (value *expr);
   void set_right (value *expr);
-  value *copy () const;
-  virtual ~bit_expression ();
+  value *copy () const = 0;
+  value_type get_type () const = 0;
 };
 
 
@@ -93,11 +107,10 @@ class bit_expression : public value {
 
 class bit_xor_expression : public bit_expression {
  public:
-  bit_xor_expression (value *left, value *right) : bit_expression (left, right)
-  {};
-  bit_xor_expression (const bit_xor_expression &expr) : bit_expression (expr)
-  {};
+  bit_xor_expression (value *left, value *right);
+  bit_xor_expression (const bit_xor_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -107,11 +120,10 @@ class bit_xor_expression : public bit_expression {
 
 class bit_and_expression : public bit_expression {
  public:
-  bit_and_expression (value *left, value *right) : bit_expression (left, right)
-  {};
-  bit_and_expression (const bit_and_expression &expr) : bit_expression (expr)
-  {};
+  bit_and_expression (value *left, value *right);
+  bit_and_expression (const bit_and_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -121,11 +133,10 @@ class bit_and_expression : public bit_expression {
 
 class bit_or_expression : public bit_expression {
  public:
-  bit_or_expression (value *left, value *right) : bit_expression (left, right)
-  {};
-  bit_or_expression (bit_or_expression &expr) : bit_expression (expr)
-  {};
+  bit_or_expression (value *left, value *right);
+  bit_or_expression (const bit_or_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -133,13 +144,10 @@ class bit_or_expression : public bit_expression {
 
 class shift_right_expression : public bit_expression {
  public:
-  shift_right_expression (value *left, value *right) : bit_expression (left,
-								       right)
-  {};
-  shift_right_expression (const shift_right_expression &expr)
-			 : bit_expression (expr)
-  {};
+  shift_right_expression (value *left, value *right);
+  shift_right_expression (const shift_right_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -147,13 +155,10 @@ class shift_right_expression : public bit_expression {
 
 class shift_left_expression : public bit_expression {
  public:
-  shift_left_expression (value *left, value *right) : bit_expression (left,
-								      right)
-  {};
-  shift_left_expression (const shift_left_expression &expr)
-			: bit_expression (expr)
-  {};
+  shift_left_expression (value *left, value *right);
+  shift_left_expression (const shift_left_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -161,11 +166,10 @@ class shift_left_expression : public bit_expression {
 
 class add_expression : public bit_expression {
  public:
-  add_expression (value *left, value *right) : bit_expression (left, right)
-  {};
-  add_expression (const add_expression &expr) : bit_expression (expr)
-  {};
+  add_expression (value *left, value *right);
+  add_expression (const add_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
 
 
@@ -173,11 +177,10 @@ class add_expression : public bit_expression {
 
 class sub_expression : public bit_expression {
  public:
-  sub_expression (value *left, value *right) : bit_expression (left, right)
-  {};
-  sub_expression (const sub_expression &expr) : bit_expression (expr)
-  {};
+  sub_expression (value *left, value *right);
+  sub_expression (const sub_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
 
 /* Bit-level negation expression.  */
@@ -185,10 +188,10 @@ class sub_expression : public bit_expression {
 class bit_complement_expression : public bit_expression {
  public:
   bit_complement_expression (value *right);
-  bit_complement_expression (const bit_complement_expression &expr)
-  			    : bit_expression (expr)
-  {};
+  bit_complement_expression (const bit_complement_expression &expr);
   value *copy () const;
+  value_type get_type () const;
 };
+
 
 #endif /* SYM_EXEC_EXPRESSION_H.  */

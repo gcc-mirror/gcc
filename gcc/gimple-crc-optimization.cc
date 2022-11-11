@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "tree-scalar-evolution.h"
 #include "hwint.h"
-#include "gimple-pretty-print.h"
+#include "gimple-pretty-print.h
 
 class crc_optimization {
  private:

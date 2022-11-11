@@ -4,13 +4,7 @@
 
 #include "stddef.h"
 #include "expression.h"
-
-
-bit_expression::bit_expression (value* left, value* right)
-{
-  this->left = left;
-  this->right = right;
-}
+#include "expression-is-a-helper.h"
 
 
 value *
@@ -62,9 +56,11 @@ bit::set_val (unsigned char new_val)
 }
 
 
-bit_complement_expression::bit_complement_expression (value *right) :
-  bit_expression (nullptr, right)
-{}
+bit_complement_expression::bit_complement_expression (value *right)
+{
+  this->left = nullptr;
+  this->right = right;
+}
 
 
 value*
@@ -81,88 +77,237 @@ bit::copy () const
 }
 
 
-bit_expression::bit_expression (const bit_expression &expr)
+void
+bit_expression::copy (const bit_expression *expr)
 {
-  if (expr.left)
-    {
-      left = expr.left->copy ();
-    }
+  if (expr->left)
+    left = expr->left->copy ();
 
-  if (expr.right)
-    {
-      right = expr.right->copy ();
-    }
-}
-
-
-value *
-bit_expression::copy () const
-{
-  return new bit_expression (*this);
+  if (expr->right)
+    right = expr->right->copy ();
 }
 
 
 value *
 bit_xor_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new bit_xor_expression (*this);
 }
 
 
 value *
 bit_and_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new bit_and_expression (*this);
 }
 
 
 value *
 bit_or_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new bit_or_expression (*this);
 }
 
 
 value *
 shift_right_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new shift_right_expression (*this);
 }
 
 
 value *
 shift_left_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new shift_left_expression (*this);
 }
 
 
 value *
 add_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new add_expression (*this);
 }
 
 
 value *
 sub_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new sub_expression (*this);
 }
 
 
 value *
 bit_complement_expression::copy () const
 {
-  return bit_expression::copy ();
+  return new bit_complement_expression (*this);
 }
 
 
-bit_expression::~bit_expression ()
+bit_complement_expression::bit_complement_expression (
+	const bit_complement_expression& expr)
 {
-  delete left;
-  left = nullptr;
+  bit_expression::copy (&expr);
+}
 
-  delete right;
-  right = nullptr;
+
+bit_xor_expression::bit_xor_expression (value *left, value *right)
+{
+  this->left = left;
+  this->right = right;
+}
+
+
+bit_xor_expression::bit_xor_expression (const bit_xor_expression &expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+bit_and_expression::bit_and_expression (value *left, value *right)
+{
+  this->left = left;
+  this->right = right;
+}
+
+
+bit_and_expression::bit_and_expression (const bit_and_expression& expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+bit_or_expression::bit_or_expression (value *left, value *right)
+{
+  this->left = left;
+  this->right = right;
+}
+
+
+bit_or_expression::bit_or_expression (const bit_or_expression& expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+shift_right_expression::shift_right_expression (value *left, value *right)
+{
+  this->left = left;
+  this->right = right;
+}
+
+
+shift_right_expression::shift_right_expression (
+	const shift_right_expression& expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+shift_left_expression::shift_left_expression (value *left, value *right)
+{
+  this->left = left;
+  this->right = right;
+}
+
+
+shift_left_expression::shift_left_expression (const shift_left_expression& expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+add_expression::add_expression (value *left, value *right)
+{
+  this->left = left;
+  this->right = right;
+}
+
+
+add_expression::add_expression (const add_expression& expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+sub_expression::sub_expression (value *left, value *right)
+{
+  this->left = left;
+  this->right = right;
+}
+
+
+sub_expression::sub_expression (const sub_expression& expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+value_type
+symbolic_bit::get_type () const
+{
+  return value_type::SYMBOLIC_BIT;
+}
+
+
+value_type
+bit::get_type () const
+{
+  return value_type::BIT;
+}
+
+
+value_type
+bit_and_expression::get_type () const
+{
+  return value_type::BIT_AND_EXPRESSION;
+}
+
+
+value_type
+bit_or_expression::get_type () const
+{
+  return value_type::BIT_OR_EXPRESSION;
+}
+
+
+value_type
+bit_xor_expression::get_type () const
+{
+  return value_type::BIT_XOR_EXPRESSION;
+}
+
+
+value_type
+bit_complement_expression::get_type () const
+{
+  return value_type::BIT_COMPLEMENT_EXPRESSION;
+}
+
+
+value_type
+shift_left_expression::get_type () const
+{
+  return value_type::SHIFT_LEFT_EXPRESSION;
+}
+
+
+value_type
+shift_right_expression::get_type () const
+{
+  return value_type::SHIFT_RIGHT_EXPRESSION;
+}
+
+
+value_type
+add_expression::get_type () const
+{
+  return value_type::ADD_EXPRESSION;
+}
+
+
+value_type
+sub_expression::get_type () const
+{
+  return value_type::SUB_EXPRESSION;
 }

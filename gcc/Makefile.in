@@ -1651,6 +1651,7 @@ OBJS = \
 	gimple-crc-optimization.o \
 	sym-exec/expression.o \
 	sym-exec/state.o \
+	sym-exec/condition.o \
 	tree-nested.o \
 	tree-nrv.o \
 	tree-object-size.o \
