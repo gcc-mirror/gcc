@@ -1368,8 +1368,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      We use the final enode from the epath, which might be different from
      the sd.m_enode, as the dedupe code doesn't care about enodes, just
      snodes.  */
-  emission_path.add_final_event (sd.m_sm, epath->get_final_enode (), sd.m_stmt,
-				 sd.m_var, sd.m_state);
+  sd.m_d->add_final_event (sd.m_sm, epath->get_final_enode (), sd.m_stmt,
+			   sd.m_var, sd.m_state, &emission_path);
 
   /* The "final" event might not be final; if the saved_diagnostic has a
      trailing eedge stashed, add any events for it.  This is for use
@@ -1922,11 +1922,8 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
       /* Add function entry events.  */
       if (dst_point.get_supernode ()->entry_p ())
 	{
-	  emission_path->add_event
-	    (make_unique<function_entry_event>
-	     (dst_point.get_supernode ()->get_start_location (),
-	      dst_point.get_fndecl (),
-	      dst_stack_depth));
+	  pb.get_pending_diagnostic ()->add_function_entry_event
+	    (eedge, emission_path);
 	  /* Create region_creation_events for on-stack regions within
 	     this frame.  */
 	  if (interest)

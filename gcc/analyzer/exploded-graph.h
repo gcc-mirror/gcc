@@ -851,6 +851,11 @@ public:
 
   void on_escaped_function (tree fndecl);
 
+  /* In infinite-recursion.cc */
+  void detect_infinite_recursion (exploded_node *enode);
+  exploded_node *find_previous_entry_to (function *top_of_stack_fun,
+					 exploded_node *enode) const;
+
 private:
   void print_bar_charts (pretty_printer *pp) const;
 

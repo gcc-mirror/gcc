@@ -260,7 +260,9 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override;
+  function_entry_event (const program_point &dst_point);
+
+  label_text get_desc (bool can_colorize) const override;
   meaning get_meaning () const override;
 
   bool is_function_entry_p () const final override { return true; }
@@ -659,10 +661,6 @@ public:
 				   location_t loc,
 				   tree fndecl, int depth,
 				   bool debug);
-
-  void add_final_event (const state_machine *sm,
-			const exploded_node *enode, const gimple *stmt,
-			tree var, state_machine::state_t state);
 
   /* After all event-pruning, a hook for notifying each event what
      its ID will be.  The events are notified in order, allowing

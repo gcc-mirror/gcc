@@ -4276,7 +4276,12 @@ exploded_graph::process_node (exploded_node *node)
 	    exploded_node *next = get_or_create_node (next_point, next_state,
 						      node);
 	    if (next)
-	      add_edge (node, next, succ);
+	      {
+		add_edge (node, next, succ);
+
+		/* We might have a function entrypoint.  */
+		detect_infinite_recursion (next);
+	      }
 	  }
 
 	/* Return from the calls which doesn't have a return superedge.

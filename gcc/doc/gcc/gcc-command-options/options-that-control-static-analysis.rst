@@ -32,6 +32,7 @@ Options That Control Static Analysis
   :option:`-Wanalyzer-file-leak` |gol|
   :option:`-Wanalyzer-free-of-non-heap` |gol|
   :option:`-Wanalyzer-imprecise-fp-arithmetic` |gol|
+  :option:`-Wanalyzer-infinite-recursion` |gol|
   :option:`-Wanalyzer-jump-through-null` |gol|
   :option:`-Wanalyzer-malloc-leak` |gol|
   :option:`-Wanalyzer-mismatching-deallocation` |gol|
@@ -307,6 +308,33 @@ Options That Control Static Analysis
 .. option:: -Wanalyzer-imprecise-fp-arithmetic
 
   Default setting; overrides :option:`-Wno-analyzer-imprecise-fp-arithmetic`.
+
+.. option:: -Wno-analyzer-infinite-recursion
+
+  This warning requires :option:`-fanalyzer`, which enables it; use
+  :option:`-Wno-analyzer-infinite-recursion` to disable it.
+
+  This diagnostics warns for paths through the code which appear to
+  lead to infinite recursion.
+
+  Specifically, when the analyzer "sees" a recursive call, it will compare
+  the state of memory at the entry to the new frame with that at the entry
+  to the previous frame of that function on the stack.  The warning is
+  issued if nothing in memory appears to be changing; any changes observed
+  to parameters or globals are assumed to lead to termination of the
+  recursion and thus suppress the warning.
+
+  This diagnostic is likely to miss cases of infinite recursion that
+  are convered to iteration by the optimizer before the analyzer "sees"
+  them.  Hence optimization should be disabled when attempting to trigger
+  this diagnostic.
+
+  Compare with :option:`-Winfinite-recursion`, which provides a similar
+  diagnostic, but is implemented in a different way.
+
+.. option:: -Wanalyzer-infinite-recursion
+
+  Default setting; overrides :option:`-Wno-analyzer-infinite-recursion`.
 
 .. option:: -Wno-analyzer-jump-through-null
 

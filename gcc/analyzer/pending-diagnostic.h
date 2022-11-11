@@ -309,6 +309,14 @@ class pending_diagnostic
 
   /* End of precision-of-wording vfuncs.  */
 
+  /* Vfunc for adding a function_entry_event to a checker_path, so that e.g.
+     the infinite recursion diagnostic can add a custom event subclass
+     that annotates recursively entering a function.  */
+
+  virtual void
+  add_function_entry_event (const exploded_edge &eedge,
+			    checker_path *emission_path);
+
   /* Vfunc for extending/overriding creation of the events for an
      exploded_edge that corresponds to a superedge, allowing for custom
      events to be created that are pertinent to a particular
@@ -329,6 +337,16 @@ class pending_diagnostic
      the variadic arguments.  */
   virtual void add_call_event (const exploded_edge &,
 			       checker_path *);
+
+  /* Vfunc for adding the final warning_event to a checker_path, so that e.g.
+     the infinite recursion diagnostic can have its diagnostic appear at
+     the callsite, but the final event in the path be at the entrypoint
+     of the called function.  */
+  virtual void add_final_event (const state_machine *sm,
+				const exploded_node *enode,
+				const gimple *stmt,
+				tree var, state_machine::state_t state,
+				checker_path *emission_path);
 
   /* Vfunc for determining that this pending_diagnostic supercedes OTHER,
      and that OTHER should therefore not be emitted.

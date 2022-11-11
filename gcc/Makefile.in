@@ -1250,6 +1250,7 @@ ANALYZER_OBJS = \
 	analyzer/engine.o \
 	analyzer/feasible-graph.o \
 	analyzer/function-set.o \
+	analyzer/infinite-recursion.o \
 	analyzer/known-function-manager.o \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \

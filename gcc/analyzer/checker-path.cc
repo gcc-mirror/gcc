@@ -377,6 +377,14 @@ region_creation_event::get_desc (bool can_colorize) const
 
 /* class function_entry_event : public checker_event.  */
 
+function_entry_event::function_entry_event (const program_point &dst_point)
+: checker_event (EK_FUNCTION_ENTRY,
+		 dst_point.get_supernode ()->get_start_location (),
+		 dst_point.get_fndecl (),
+		 dst_point.get_stack_depth ())
+{
+}
+
 /* Implementation of diagnostic_event::get_desc vfunc for
    function_entry_event.
 
@@ -1302,21 +1310,6 @@ checker_path::add_region_creation_events (const region *reg,
   if (debug)
     add_event (make_unique<region_creation_event> (reg, capacity, RCE_DEBUG,
 						   loc, fndecl, depth));
-}
-
-/* Add a warning_event to the end of this path.  */
-
-void
-checker_path::add_final_event (const state_machine *sm,
-			       const exploded_node *enode, const gimple *stmt,
-			       tree var, state_machine::state_t state)
-{
-  add_event
-    (make_unique<warning_event> (get_stmt_location (stmt,
-						    enode->get_function ()),
-				 enode->get_function ()->decl,
-				 enode->get_stack_depth (),
-				 sm, var, state));
 }
 
 void

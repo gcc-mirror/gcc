@@ -804,6 +804,10 @@ warnings, in some cases it may also cause false positives.
   recursion in calls between two or more functions.
   :option:`-Winfinite-recursion` is included in :option:`-Wall`.
 
+  Compare with :option:`-Wanalyzer-infinite-recursion` which provides a
+  similar diagnostic, but is implemented in a different way (as part of
+  :option:`-fanalyzer`).
+
 .. option:: -Wno-infinite-recursion
 
   Default setting; overrides :option:`-Winfinite-recursion`.

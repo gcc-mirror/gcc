@@ -15,5 +15,5 @@ foo(u32 u, __int128 i) {
   u /= (_Complex short)s;
   u32 r = u + c;
   bar(r);
-  foo(0, 0);
+  foo(0, 0); /* { dg-warning "infinite recursion" } */
 }

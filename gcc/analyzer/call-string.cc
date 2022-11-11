@@ -170,6 +170,22 @@ call_string::calc_recursion_depth () const
   return result;
 }
 
+/* Count the number of times FUN appears in the string.  */
+
+int
+call_string::count_occurrences_of_function (function *fun) const
+{
+  int result = 0;
+  for (const call_string::element_t &e : m_elements)
+    {
+      if (e.get_callee_function () == fun)
+	result++;
+      if (e.get_caller_function () == fun)
+	result++;
+    }
+  return result;
+}
+
 /* Comparator for call strings.
    This implements a version of lexicographical order.
    Return negative if A is before B.
