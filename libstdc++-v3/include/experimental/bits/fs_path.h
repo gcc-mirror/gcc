@@ -748,15 +748,48 @@ namespace __detail
   template<>
     struct path::_Cvt<path::value_type>
     {
+      // We need this type to be defined because we don't have `if constexpr`
+      // in C++11 and so path::string<C,T,A>(const A&) needs to be able to
+      // declare a variable of this type and pass it to __str_codecvt_in_all.
+      using __codecvt_utf8_to_wide = _Cvt;
+      // Dummy overload used for unreachable calls in path::string<C,T,A>.
+      template<typename _WStr>
+	friend bool
+	__str_codecvt_in_all(const char*, const char*,
+			     _WStr&, __codecvt_utf8_to_wide&) noexcept
+	{ return true; }
+
       template<typename _Iter>
 	static string_type
 	_S_convert(_Iter __first, _Iter __last)
 	{ return string_type{__first, __last}; }
     };
 
+  // Performs conversions from _CharT to path::string_type.
   template<typename _CharT>
     struct path::_Cvt
     {
+      // FIXME: We currently assume that the native wide encoding for wchar_t
+      // is either UTF-32 or UTF-16 (depending on the width of wchar_t).
+      // See comments in <bits/fs_path.h> for further details.
+      using __codecvt_utf8_to_wchar
+	= typename conditional<sizeof(wchar_t) == sizeof(char32_t),
+			       std::codecvt_utf8<wchar_t>,      // from UTF-32
+			       std::codecvt_utf8_utf16<wchar_t> // from UTF-16
+			      >::type;
+
+      // Converts from char16_t or char32_t using std::codecvt<charNN_t, char>.
+      // Need derived class here because std::codecvt has protected destructor.
+      struct __codecvt_utf8_to_utfNN : std::codecvt<_CharT, char, mbstate_t>
+      { };
+
+      // Convert from native pathname format (assumed to be UTF-8 everywhere)
+      // to the encoding implied by the wide character type _CharT.
+      using __codecvt_utf8_to_wide
+	= typename conditional<is_same<_CharT, wchar_t>::value,
+			       __codecvt_utf8_to_wchar,
+			       __codecvt_utf8_to_utfNN>::type;
+
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
 #ifdef _GLIBCXX_USE_CHAR8_T
       static string_type
@@ -774,8 +807,7 @@ namespace __detail
       static string_type
       _S_wconvert(const char* __f, const char* __l, const char*)
       {
-	using _Cvt = std::codecvt<wchar_t, char, mbstate_t>;
-	const auto& __cvt = std::use_facet<_Cvt>(std::locale{});
+	std::codecvt_utf8_utf16<wchar_t> __cvt;
 	std::wstring __wstr;
 	if (__str_codecvt_in_all(__f, __l, __wstr, __cvt))
 	    return __wstr;
@@ -787,8 +819,7 @@ namespace __detail
       static string_type
       _S_wconvert(const _CharT* __f, const _CharT* __l, const void*)
       {
-	struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
-	{ } __cvt;
+	__codecvt_utf8_to_wide __cvt;
 	std::string __str;
 	if (__str_codecvt_out_all(__f, __l, __str, __cvt))
 	  {
@@ -819,8 +850,7 @@ namespace __detail
 	else
 #endif
 	  {
-	    struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
-	    { } __cvt;
+	    __codecvt_utf8_to_wide __cvt;
 	    std::string __str;
 	    if (__str_codecvt_out_all(__f, __l, __str, __cvt))
 	      return __str;
@@ -990,7 +1020,7 @@ namespace __detail
     inline std::basic_string<_CharT, _Traits, _Allocator>
     path::string(const _Allocator& __a) const
     {
-      if (is_same<_CharT, value_type>::value)
+      if _GLIBCXX_CONSTEXPR (is_same<_CharT, value_type>::value)
 	return { _M_pathname.begin(), _M_pathname.end(), __a };
 
       using _WString = basic_string<_CharT, _Traits, _Allocator>;
@@ -1026,9 +1056,8 @@ namespace __detail
 	      else
 #endif
 	        {
-	          // Convert UTF-8 to wide string.
-	          struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
-		  { } __cvt;
+		  // Convert UTF-8 to char16_t or char32_t string.
+		  typename path::_Cvt<_CharT>::__codecvt_utf8_to_wide __cvt;
 	          const char* __f = __from.data();
 	          const char* __l = __f + __from.size();
 	          if (__str_codecvt_in_all(__f, __l, __to, __cvt))
@@ -1041,14 +1070,14 @@ namespace __detail
 	  if (auto* __p = __dispatch(__u8str, __wstr, is_same<_CharT, char>{}))
 	    return *__p;
 	}
-#else
+#else // ! Windows
 #ifdef _GLIBCXX_USE_CHAR8_T
       if constexpr (is_same<_CharT, char8_t>::value)
           return _WString(__first, __last, __a);
       else
 #endif
         {
-          struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t> { } __cvt;
+	  typename path::_Cvt<_CharT>::__codecvt_utf8_to_wide __cvt;
           _WString __wstr(__a);
           if (__str_codecvt_in_all(__first, __last, __wstr, __cvt))
 	    return __wstr;
