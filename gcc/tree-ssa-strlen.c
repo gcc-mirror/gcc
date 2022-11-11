@@ -4783,7 +4783,7 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 
   /* Compute the number of leading nonzero bytes in the representation
      and update the minimum and maximum.  */
-  unsigned n = prep ? strnlen (prep, nbytes) : nbytes;
+  unsigned HOST_WIDE_INT n = prep ? strnlen (prep, nbytes) : nbytes;
 
   if (n < lenrange[0])
     lenrange[0] = n;
