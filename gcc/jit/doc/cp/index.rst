@@ -33,5 +33,5 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   intro/index.rst
-   topics/index.rst
+   intro/index
+   topics/index

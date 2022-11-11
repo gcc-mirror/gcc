@@ -33,14 +33,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   intro/index.rst
-   topics/index.rst
-   cp/index.rst
-   internals/index.rst
+   intro/index
+   topics/index
+   cp/index
+   internals/index
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
+   indices-and-tables

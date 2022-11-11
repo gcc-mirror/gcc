@@ -21,8 +21,8 @@ Tutorial
 .. toctree::
    :maxdepth: 2
 
-   tutorial01.rst
-   tutorial02.rst
-   tutorial03.rst
-   tutorial04.rst
-   tutorial05.rst
+   tutorial01
+   tutorial02
+   tutorial03
+   tutorial04
+   tutorial05

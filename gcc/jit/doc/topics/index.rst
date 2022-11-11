@@ -21,14 +21,14 @@ Topic Reference
 .. toctree::
    :maxdepth: 2
 
-   contexts.rst
-   objects.rst
-   types.rst
-   expressions.rst
-   functions.rst
-   function-pointers.rst
-   locations.rst
-   compilation.rst
-   compatibility.rst
-   performance.rst
-   asm.rst
+   contexts
+   objects
+   types
+   expressions
+   functions
+   function-pointers
+   locations
+   compilation
+   compatibility
+   performance
+   asm

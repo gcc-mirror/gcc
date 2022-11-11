@@ -21,11 +21,11 @@ Topic Reference
 .. toctree::
    :maxdepth: 2
 
-   contexts.rst
-   objects.rst
-   types.rst
-   expressions.rst
-   functions.rst
-   locations.rst
-   compilation.rst
-   asm.rst
+   contexts
+   objects
+   types
+   expressions
+   functions
+   locations
+   compilation
+   asm
