@@ -2966,6 +2966,10 @@ ftree-loop-distribute-patterns
 Common Var(flag_tree_loop_distribute_patterns) Optimization
 Enable loop distribution for patterns transformed into a library call.
 
+fgimple-crc-optimization
+Common Var(flag_gimple_crc_optimization) Optimization
+Enable crc optimization on trees.
+
 ftree-loop-im
 Common Var(flag_tree_loop_im) Init(1) Optimization
 Enable loop invariant motion on trees.
