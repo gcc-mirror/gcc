@@ -540,6 +540,28 @@ public:
     this->do_label (label);
   }
 
+  /* Generate and set a new continue label for the current unrolled loop.  */
+
+  void push_unrolled_continue_label (UnrolledLoopStatement *s)
+  {
+    this->push_continue_label (s);
+  }
+
+  /* Finish with the continue label for the unrolled loop.  */
+
+  void pop_unrolled_continue_label (UnrolledLoopStatement *s)
+  {
+    Statement *stmt = s->getRelatedLabeled ();
+    d_label_entry *ent = d_function_chain->labels->get (stmt);
+    gcc_assert (ent != NULL && ent->bc_label == true);
+
+    this->pop_continue_label (TREE_VEC_ELT (ent->label, bc_continue));
+
+    /* Remove the continue label from the label htab, as a new one must be
+       inserted at the end of every unrolled loop.  */
+    ent->label = TREE_VEC_ELT (ent->label, bc_break);
+  }
+
   /* Visitor interfaces.  */
 
 
@@ -1076,9 +1098,9 @@ public:
 
 	if (statement != NULL)
 	  {
-	    tree lcontinue = this->push_continue_label (statement);
+	    this->push_unrolled_continue_label (s);
 	    this->build_stmt (statement);
-	    this->pop_continue_label (lcontinue);
+	    this->pop_unrolled_continue_label (s);
 	  }
       }
 
