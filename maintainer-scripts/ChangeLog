@@ -1,3 +1,7 @@
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* crontab: Fix superfluous 'sh' for Python script.
+
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* update_web_docs_git.py: Create sources tarball.

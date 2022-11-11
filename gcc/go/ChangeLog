@@ -1,3 +1,7 @@
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
 2022-11-10  Ian Lance Taylor  <iant@golang.org>
 
 	PR target/107581

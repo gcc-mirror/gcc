@@ -1,3 +1,14 @@
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/baseconf.py: Modernize by using pathlib.
+
+2022-11-10  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/baseconf.py: Inject dirname(__file__)/'modules' to path
+	instead of just ``.''.
+	* doc/gcc_sphinx.py: Moved to...
+	* doc/modules/gcc_sphinx.py: ...here.
+
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* configure.ac: Use new install URL.

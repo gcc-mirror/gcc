@@ -1,3 +1,11 @@
+2022-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/concepts (__detail::__destructible_impl)
+	(__detail::__destructible): New variable templates.
+	(destructible): Use __detail::__destructible.
+	* testsuite/std/concepts/concepts.lang/concept.destructible/1.cc:
+	Add more checks for array and reference types.
+
 2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/new_nothrow.cc: Add missing noexcept

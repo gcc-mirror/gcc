@@ -1,3 +1,80 @@
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/gfortran/intrinsic-procedures/abs.rst: Move label directly before title.
+	* doc/gfortran/intrinsic-procedures/acos.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/acosd.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/acosh.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/aimag.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/aint.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/anint.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/asin.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/asind.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/asinh.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/atan.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/atan2.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/atan2d.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/atand.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/atanh.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/besselj0.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/besselj1.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/besseljn.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/bessely0.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/bessely1.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/besselyn.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/btest.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/char.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/conjg.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/cos.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/cosd.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/cosh.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/cotan.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/cotand.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/dim.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/dprod.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/erf.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/erfc.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/exp.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/gamma.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/iand.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ibclr.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ibits.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ibset.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ichar.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ieor.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/index.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/int.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ior.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ishft.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/ishftc.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/len.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/lge.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/lgt.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/lle.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/llt.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/log.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/log10.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/loggamma.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/max.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/min.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/mod.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/mvbits.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/nint.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/not.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/real.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/sign.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/sin.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/sind.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/sinh.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/sqrt.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/tan.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/tand.rst: Likewise.
+	* doc/gfortran/intrinsic-procedures/tanh.rst: Likewise.
+
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/gfc-internals/conf.py: Add newline at last line.
+	* doc/gfortran/conf.py: Add newline at last line.
+
 2022-11-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107559

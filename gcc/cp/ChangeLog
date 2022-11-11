@@ -1,3 +1,11 @@
+2022-11-10  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (std_pair_ref_ref_p): New.
+	(do_warn_dangling_reference): Also warn when the function returns
+	std::pair<const T&, const T&>.  Recurse into TARGET_EXPR_INITIAL.
+	(maybe_warn_dangling_reference): Don't return early if we're
+	initializing a std_pair_ref_ref_p.
+
 2022-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.cc (handle_carries_dependency_attribute): New function.

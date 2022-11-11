@@ -1,3 +1,52 @@
+2022-11-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99671
+	* analyzer.opt (Wanalyzer-deref-before-check): New warning.
+	* diagnostic-manager.cc
+	(null_assignment_sm_context::set_next_state): Only add state
+	change events for transition to "null" state.
+	(null_assignment_sm_context::is_transition_to_null): New.
+	* engine.cc (impl_region_model_context::on_pop_frame): New.
+	* exploded-graph.h (impl_region_model_context::on_pop_frame): New
+	decl.
+	* program-state.cc (sm_state_map::clear_any_state): New.
+	(sm_state_map::can_merge_with_p): New.
+	(program_state::can_merge_with_p): Replace requirement that
+	sm-states be equal in favor of an attempt to merge them.
+	* program-state.h (sm_state_map::clear_any_state): New decl.
+	(sm_state_map::can_merge_with_p): New decl.
+	* region-model.cc (region_model::eval_condition): Make const.
+	(region_model::pop_frame): Call ctxt->on_pop_frame.
+	* region-model.h (region_model::eval_condition): Make const.
+	(region_model_context::on_pop_frame): New vfunc.
+	(noop_region_model_context::on_pop_frame): New.
+	(region_model_context_decorator::on_pop_frame): New.
+	* sm-malloc.cc (enum resource_state): Add RS_ASSUMED_NON_NULL.
+	(allocation_state::dump_to_pp): Drop "final".
+	(struct assumed_non_null_state): New subclass.
+	(malloc_state_machine::m_assumed_non_null): New.
+	(assumed_non_null_p): New.
+	(class deref_before_check): New.
+	(assumed_non_null_state::dump_to_pp): New.
+	(malloc_state_machine::get_or_create_assumed_non_null_state_for_frame):
+	New.
+	(malloc_state_machine::maybe_assume_non_null): New.
+	(malloc_state_machine::on_stmt): Transition from start state to
+	"assumed-non-null" state for pointers passed to
+	__attribute__((nonnull)) arguments, and for pointers explicitly
+	dereferenced.  Call maybe_complain_about_deref_before_check for
+	pointers explicitly compared against NULL.
+	(malloc_state_machine::maybe_complain_about_deref_before_check):
+	New.
+	(malloc_state_machine::on_deallocator_call): Also transition
+	"assumed-non-null" states to "freed".
+	(malloc_state_machine::on_pop_frame): New.
+	(malloc_state_machine::maybe_get_merged_states_nonequal): New.
+	* sm-malloc.dot: Update for changes to sm-malloc.cc.
+	* sm.h (state_machine::on_pop_frame): New.
+	(state_machine::maybe_get_merged_state): New.
+	(state_machine::maybe_get_merged_states_nonequal): New.
+
 2022-11-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (checker_event::debug): New.

@@ -1,3 +1,76 @@
+2022-11-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99671
+	* tristate.h (tristate::is_unknown): New.
+
+2022-11-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/gcc/gcc-command-options/options-that-control-static-analysis.rst:
+	Add -Wanalyzer-deref-before-check.
+
+2022-11-10  Marek Polacek  <polacek@redhat.com>
+
+	* doc/gcc/gcc-command-options/options-controlling-c++-dialect.rst:
+	Extend the description of -Wdangling-reference.
+
+2022-11-10  Andrew Pinski  <apinski@marvell.com>
+
+	* config/bfin/bfin.h (SLOW_SHORT_ACCESS): Delete.
+	* config/i386/i386.h (SLOW_SHORT_ACCESS): Delete.
+	* system.h: Poison SLOW_SHORT_ACCESS
+
+2022-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set_nonnegative): Remove NAN sign handling.
+	(range_tests_signed_zeros): Adjust test.
+
+2022-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84646
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Improve
+	copy propagation across PHIs.
+
+2022-11-10  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Update
+	sifive-7-series to point to the sifive_7 pipeline description.
+
+2022-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84646
+	* tree-ssa-ccp.cc (set_lattice_value): Make sure we
+	allow a const -> copy transition and avoid using meet
+	in that case.
+
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/cpp/conf.py: Add newline at last line.
+	* doc/cppinternals/conf.py: Add newline at last line.
+	* doc/gcc/conf.py: Add newline at last line.
+	* doc/gccint/conf.py: Add newline at last line.
+	* doc/install/conf.py: Add newline at last line.
+
+2022-11-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-unswitch.cc (init_loop_unswitch_info): First collect
+	candidates and determine the outermost loop to unswitch.
+	(tree_ssa_unswitch_loops): First perform all guard hoisting,
+	then perform unswitching on innermost loop predicates.
+	(find_unswitching_predicates_for_bb): Keep track of the
+	outermost loop to unswitch.
+	(evaluate_bbs): Adjust exit test.
+	(tree_unswitch_single_loop): Dump whether we unswitched an outer
+	loop.
+	(tree_unswitch_loop): Remove assert we unswitch only innermost
+	loops.
+
+2022-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107585
+	PR target/107546
+	* config/i386/i386-expand.cc (ix86_expand_int_sse_cmp): Use
+	gen_int_mode rather than GEN_INT.
+
 2022-11-09  Martin Liska  <mliska@suse.cz>
 	    Sinan  <sinan.lin@linux.alibaba.com>
 

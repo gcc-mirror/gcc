@@ -1,3 +1,33 @@
+2022-11-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/deref-before-check-1.c: New test.
+	* gcc.dg/analyzer/deref-before-check-2.c: New test.
+	* gcc.dg/analyzer/deref-before-check-pr77425.c: New test.
+	* gcc.dg/analyzer/malloc-1.c (test_51): New test.
+
+2022-11-10  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wdangling-reference6.C: New test.
+
+2022-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84646
+	* gcc.dg/tree-ssa/ssa-ccp-42.c: New testcase.
+
+2022-11-10  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/loop-unswitch-18.c: New testcase.
+	* gcc.dg/tree-ssa/loopclosedphi.c: Disable unswitching,
+	adjust expected counts.
+	* gcc.dg/torture/pr71462.c: Add -w to ignore undefined
+	behavior diagnostics after now unswitching outer loops.
+
+2022-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107585
+	PR target/107546
+	* gcc.dg/pr107585.c: New test.
+
 2022-11-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107559
