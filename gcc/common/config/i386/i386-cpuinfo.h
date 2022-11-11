@@ -261,6 +261,7 @@ enum processor_features
   FEATURE_SM3,
   FEATURE_SHA512,
   FEATURE_SM4,
+  FEATURE_APX_F,
   CPU_FEATURE_MAX
 };
 

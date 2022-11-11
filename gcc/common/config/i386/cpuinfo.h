@@ -678,6 +678,7 @@ get_available_features (struct __processor_model *cpu_model,
 #define XSTATE_HI_ZMM			0x80
 #define XSTATE_TILECFG			0x20000
 #define XSTATE_TILEDATA		0x40000
+#define XSTATE_APX_F			0x80000
 
 #define XCR_AVX_ENABLED_MASK \
   (XSTATE_SSE | XSTATE_YMM)
@@ -685,11 +686,13 @@ get_available_features (struct __processor_model *cpu_model,
   (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM)
 #define XCR_AMX_ENABLED_MASK \
   (XSTATE_TILECFG | XSTATE_TILEDATA)
+#define XCR_APX_F_ENABLED_MASK XSTATE_APX_F
 
-  /* Check if AVX and AVX512 are usable.  */
+  /* Check if AVX, AVX512 and APX are usable.  */
   int avx_usable = 0;
   int avx512_usable = 0;
   int amx_usable = 0;
+  int apx_usable = 0;
   /* Check if KL is usable.  */
   int has_kl = 0;
   if ((ecx & bit_OSXSAVE))
@@ -709,6 +712,8 @@ get_available_features (struct __processor_model *cpu_model,
 	}
       amx_usable = ((xcrlow & XCR_AMX_ENABLED_MASK)
 		    == XCR_AMX_ENABLED_MASK);
+      apx_usable = ((xcrlow & XCR_APX_F_ENABLED_MASK)
+		    == XCR_APX_F_ENABLED_MASK);
     }
 
 #define set_feature(f) \
@@ -921,6 +926,11 @@ get_available_features (struct __processor_model *cpu_model,
 		set_feature (FEATURE_AMX_FP16);
 	      if (edx & bit_AMX_COMPLEX)
 		set_feature (FEATURE_AMX_COMPLEX);
+	    }
+	  if (apx_usable)
+	    {
+	      if (edx & bit_APX_F)
+		set_feature (FEATURE_APX_F);
 	    }
 	}
     }

@@ -694,6 +694,7 @@ ix86_function_specific_save (struct cl_target_option *ptr,
   ptr->branch_cost = ix86_branch_cost;
   ptr->tune_defaulted = ix86_tune_defaulted;
   ptr->arch_specified = ix86_arch_specified;
+  ptr->x_ix86_apx_features = opts->x_ix86_apx_features;
   ptr->x_ix86_isa_flags_explicit = opts->x_ix86_isa_flags_explicit;
   ptr->x_ix86_isa_flags2_explicit = opts->x_ix86_isa_flags2_explicit;
   ptr->x_recip_mask_explicit = opts->x_recip_mask_explicit;
@@ -832,6 +833,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
   ix86_prefetch_sse = ptr->prefetch_sse;
   ix86_tune_defaulted = ptr->tune_defaulted;
   ix86_arch_specified = ptr->arch_specified;
+  opts->x_ix86_apx_features = ptr->x_ix86_apx_features;
   opts->x_ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
   opts->x_ix86_isa_flags2_explicit = ptr->x_ix86_isa_flags2_explicit;
   opts->x_recip_mask_explicit = ptr->x_recip_mask_explicit;
@@ -1109,6 +1111,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("sm3", OPT_msm3),
     IX86_ATTR_ISA ("sha512", OPT_msha512),
     IX86_ATTR_ISA ("sm4", OPT_msm4),
+    IX86_ATTR_ISA ("apxf", OPT_mapxf),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -2080,6 +2083,9 @@ ix86_option_override_internal (bool main_args_p,
       opts->x_ix86_stringop_alg = no_stringop;
     }
 
+  if (TARGET_APX_F && !TARGET_64BIT)
+    error ("%<-mapxf%> is not supported for 32-bit code");
+
   if (TARGET_UINTR && !TARGET_64BIT)
     error ("%<-muintr%> not supported for 32-bit code");
 
@@ -2293,6 +2299,14 @@ ix86_option_override_internal (bool main_args_p,
 	      SET_TARGET_POPCNT (opts);
 	  }
 
+	/* Enable apx if apxf or apx_features are not
+	   explicitly set for -march.  */
+	if (TARGET_64BIT_P (opts->x_ix86_isa_flags)
+	     && ((processor_alias_table[i].flags & PTA_APX_F) != 0)
+	     && !TARGET_EXPLICIT_APX_F_P (opts)
+	     && !OPTION_SET_P (ix86_apx_features))
+	  opts->x_ix86_apx_features = apx_all;
+
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
 	  ix86_prefetch_sse = true;
@@ -2443,6 +2457,10 @@ ix86_option_override_internal (bool main_args_p,
 
   /* Arrange to set up i386_stack_locals for all functions.  */
   init_machine_status = ix86_init_machine_status;
+
+  /* Override APX flag here if ISA bit is set.  */
+  if (TARGET_APX_F && !OPTION_SET_P (ix86_apx_features))
+    opts->x_ix86_apx_features = apx_all;
 
   /* Validate -mregparm= value.  */
   if (opts_set->x_ix86_regparm)

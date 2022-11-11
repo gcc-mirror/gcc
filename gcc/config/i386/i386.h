@@ -51,6 +51,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define TARGET_MMX_WITH_SSE	(TARGET_64BIT && TARGET_SSE2)
 
+#define TARGET_APX_EGPR (ix86_apx_features & apx_egpr)
+#define TARGET_APX_PUSH2POP2 (ix86_apx_features & apx_push2pop2)
+#define TARGET_APX_NDD (ix86_apx_features & apx_ndd)
+
 #include "config/vxworks-dummy.h"
 
 #include "config/i386/i386-opts.h"

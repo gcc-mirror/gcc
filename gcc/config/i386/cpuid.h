@@ -149,6 +149,7 @@
 #define bit_AVXNECONVERT	(1 << 5)
 #define bit_AVXVNNIINT16	(1 << 10)
 #define bit_PREFETCHI	(1 << 14)
+#define bit_APX_F	(1 << 21)
 
 /* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)

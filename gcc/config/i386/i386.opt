@@ -1310,3 +1310,28 @@ Enable vectorization for gather instruction.
 mscatter
 Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
 Enable vectorization for scatter instruction.
+
+mapxf
+Target Mask(ISA2_APX_F) Var(ix86_isa_flags2) Save
+Support APX code generation.
+
+mapx-features=
+Target Undocumented Joined Enum(apx_features) EnumSet Var(ix86_apx_features) Init(apx_none) Save
+
+Enum
+Name(apx_features) Type(int)
+
+EnumValue
+Enum(apx_features) String(none) Value(apx_none) Set(1)
+
+EnumValue
+Enum(apx_features) String(egpr) Value(apx_egpr) Set(2)
+
+EnumValue
+Enum(apx_features) String(push2pop2) Value(apx_push2pop2) Set(3)
+
+EnumValue
+Enum(apx_features) String(ndd) Value(apx_ndd) Set(4)
+
+EnumValue
+Enum(apx_features) String(all) Value(apx_all) Set(1)
