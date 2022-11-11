@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_PTHREAD_H
+#define INCLUDE_MUTEX
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -2302,6 +2302,20 @@ block (function *func,
   m_label_expr = NULL;
 }
 
+// This is basically std::lock_guard but it can call the private lock/unlock
+// members of playback::context.
+struct playback::context::scoped_lock
+{
+  scoped_lock (context &ctx) : m_ctx (&ctx) { m_ctx->lock (); }
+  ~scoped_lock () { m_ctx->unlock (); }
+
+  context *m_ctx;
+
+  // Not movable or copyable.
+  scoped_lock (scoped_lock &&) = delete;
+  scoped_lock &operator= (scoped_lock &&) = delete;
+};
+
 /* Compile a playback::context:
 
    - Use the context's options to cconstruct command-line options, and
@@ -2353,15 +2367,12 @@ compile ()
   m_recording_ctxt->get_all_requested_dumps (&requested_dumps);
 
   /* Acquire the JIT mutex and set "this" as the active playback ctxt.  */
-  acquire_mutex ();
+  scoped_lock lock(*this);
 
   auto_string_vec fake_args;
   make_fake_args (&fake_args, ctxt_progname, &requested_dumps);
   if (errors_occurred ())
-    {
-      release_mutex ();
-      return;
-    }
+    return;
 
   /* This runs the compiler.  */
   toplev toplev (get_timer (), /* external_timer */
@@ -2388,10 +2399,7 @@ compile ()
      followup activities use timevars, which are global state.  */
 
   if (errors_occurred ())
-    {
-      release_mutex ();
-      return;
-    }
+    return;
 
   if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE))
     dump_generated_code ();
@@ -2403,8 +2411,6 @@ compile ()
      convert the .s file to the requested output format, and copy it to a
      given file (playback::compile_to_file).  */
   postprocess (ctxt_progname);
-
-  release_mutex ();
 }
 
 /* Implementation of class gcc::jit::playback::compile_to_memory,
@@ -2662,18 +2668,18 @@ playback::compile_to_file::copy_file (const char *src_path,
 /* This mutex guards gcc::jit::recording::context::compile, so that only
    one thread can be accessing the bulk of GCC's state at once.  */
 
-static pthread_mutex_t jit_mutex = PTHREAD_MUTEX_INITIALIZER;
+static std::mutex jit_mutex;
 
 /* Acquire jit_mutex and set "this" as the active playback ctxt.  */
 
 void
-playback::context::acquire_mutex ()
+playback::context::lock ()
 {
   auto_timevar tv (get_timer (), TV_JIT_ACQUIRING_MUTEX);
 
   /* Acquire the big GCC mutex. */
   JIT_LOG_SCOPE (get_logger ());
-  pthread_mutex_lock (&jit_mutex);
+  jit_mutex.lock ();
   gcc_assert (active_playback_ctxt == NULL);
   active_playback_ctxt = this;
 }
@@ -2681,13 +2687,13 @@ playback::context::acquire_mutex ()
 /* Release jit_mutex and clear the active playback ctxt.  */
 
 void
-playback::context::release_mutex ()
+playback::context::unlock ()
 {
   /* Release the big GCC mutex. */
   JIT_LOG_SCOPE (get_logger ());
   gcc_assert (active_playback_ctxt == this);
   active_playback_ctxt = NULL;
-  pthread_mutex_unlock (&jit_mutex);
+  jit_mutex.unlock ();
 }
 
 /* Callback used by gcc::jit::playback::context::make_fake_args when
