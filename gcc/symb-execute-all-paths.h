@@ -37,9 +37,50 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "hwint.h"
 #include "function.h"
+#include "sym-exec/state.h"
 
-void get_function_local_ssa_vars (function *);
+class crc_symb_execution {
 
-void make_symbolic_function_arguments_and_sizes (function *);
+ private:
+  /* A vector of states to keep the state of each executed path.  */
+  vec<State*> states;
+
+/* Assign symbolic values to the arguments of the function
+   and keep in the state.  */
+  static void make_symbolic_func_args_and_sizes (function *, State *);
+
+  /* Add declared ssa variables to the state.  */
+  static void add_function_local_ssa_vars (function *fun, State *initial_state);
+
+  void execute_assign_statement (const gassign *);
+
+  /* Execute gimple statements of the basic block.
+   Keeping values of variables in the state.  */
+  void execute_bb_gimple_statements (basic_block);
+
+  /* Assign values of phi instruction to its result.
+   Keep updated values in the state.  */
+  void execute_bb_phi_statements (basic_block);
+
+  /* Execute all statements of the basic block.
+    Keeping values of variables in the state.  */
+  void execute_bb_statements (basic_block);
+
+/* Traverse function fun's all paths from the first basic block to the last.
+   Each time iterate loops only once.
+   Symbolically execute statements of each path.  */
+  void traverse_function (function *);
+
+ public:
+  void execute_function (function *);
+
+  crc_symb_execution ()
+  {
+    /* Reserve memory for the vector.
+       Actually, if the function is calculating one CRC, there may be 2 states.
+       Just in case allocate more memory.  */
+    states.create (4);
+  }
+};
 
 #endif //GCC_EXECUTE_ALL_PATHS_H

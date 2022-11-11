@@ -27,6 +27,7 @@
 #include "hash-map.h"
 #include "hash-set.h"
 #include "expression.h"
+#include "expression-is-a-helper.h"
 
 /* Stores states of variables' values on bit-level.  */
 
