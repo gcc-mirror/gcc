@@ -381,9 +381,17 @@ build_lt (frange &r, tree type, const frange &val)
 	r.set_undefined ();
       return false;
     }
-  // We only support closed intervals.
+
   REAL_VALUE_TYPE ninf = frange_val_min (type);
-  r.set (type, ninf, val.upper_bound ());
+  REAL_VALUE_TYPE prev = val.upper_bound ();
+  machine_mode mode = TYPE_MODE (type);
+  // Default to the conservatively correct closed ranges for
+  // MODE_COMPOSITE_P, otherwise use nextafter.  Note that for
+  // !HONOR_INFINITIES, nextafter will yield -INF, but frange::set()
+  // will crop the range appropriately.
+  if (!MODE_COMPOSITE_P (mode))
+    frange_nextafter (mode, prev, ninf);
+  r.set (type, ninf, prev);
   return true;
 }
 
@@ -424,9 +432,16 @@ build_gt (frange &r, tree type, const frange &val)
       return false;
     }
 
-  // We only support closed intervals.
   REAL_VALUE_TYPE inf = frange_val_max (type);
-  r.set (type, val.lower_bound (), inf);
+  REAL_VALUE_TYPE next = val.lower_bound ();
+  machine_mode mode = TYPE_MODE (type);
+  // Default to the conservatively correct closed ranges for
+  // MODE_COMPOSITE_P, otherwise use nextafter.  Note that for
+  // !HONOR_INFINITIES, nextafter will yield +INF, but frange::set()
+  // will crop the range appropriately.
+  if (!MODE_COMPOSITE_P (mode))
+    frange_nextafter (mode, next, inf);
+  r.set (type, next, inf);
   return true;
 }
 
