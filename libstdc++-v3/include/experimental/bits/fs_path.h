@@ -792,8 +792,7 @@ namespace __detail
       static string_type
       _S_wconvert(const char* __f, const char* __l, const char*)
       {
-	using _Cvt = std::codecvt_utf8_utf16<wchar_t>;
-	const auto& __cvt = std::use_facet<_Cvt>(std::locale{});
+	std::codecvt_utf8_utf16<wchar_t> __cvt;
 	std::wstring __wstr;
 	if (__str_codecvt_in_all(__f, __l, __wstr, __cvt))
 	    return __wstr;
