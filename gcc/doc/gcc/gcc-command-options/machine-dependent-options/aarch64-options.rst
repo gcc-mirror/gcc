@@ -258,7 +258,8 @@ These options are defined for AArch64 implementations:
   :samp:`cortex-a73.cortex-a35`, :samp:`cortex-a73.cortex-a53`,
   :samp:`cortex-a75.cortex-a55`, :samp:`cortex-a76.cortex-a55`,
   :samp:`cortex-r82`, :samp:`cortex-x1`, :samp:`cortex-x2`,
-  :samp:`cortex-a510`, :samp:`cortex-a710`, :samp:`ampere1`, :samp:`native`.
+  :samp:`cortex-a510`, :samp:`cortex-a710`, :samp:`cortex-a715`, :samp:`ampere1`,
+  :samp:`native`.
 
   The values :samp:`cortex-a57.cortex-a53`, :samp:`cortex-a72.cortex-a53`,
   :samp:`cortex-a73.cortex-a35`, :samp:`cortex-a73.cortex-a53`,
