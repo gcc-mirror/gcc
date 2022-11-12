@@ -2086,6 +2086,183 @@ class foperator_mult : public range_operator_float
   }
 } fop_mult;
 
+class foperator_div : public range_operator_float
+{
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind) const final override
+  {
+    // +-0.0 / +-0.0 or +-INF / +-INF is a known NAN.
+    if ((real_iszero (&lh_lb)
+	 && real_iszero (&lh_ub)
+	 && real_iszero (&rh_lb)
+	 && real_iszero (&rh_ub))
+	|| (real_isinf (&lh_lb)
+	    && real_isinf (&lh_ub, real_isneg (&lh_lb))
+	    && real_isinf (&rh_lb)
+	    && real_isinf (&rh_ub, real_isneg (&rh_lb))))
+      {
+	real_nan (&lb, "", 0, TYPE_MODE (type));
+	ub = lb;
+	maybe_nan = true;
+	return;
+      }
+
+    bool both_maybe_zero = false;
+    bool both_maybe_inf = false;
+    bool must_have_signbit_zero = false;
+    bool must_have_signbit_nonzero = false;
+
+    // If +-0.0 is in both ranges, it is a maybe NAN.
+    if (real_compare (LE_EXPR, &lh_lb, &dconst0)
+	&& real_compare (GE_EXPR, &lh_ub, &dconst0)
+	&& real_compare (LE_EXPR, &rh_lb, &dconst0)
+	&& real_compare (GE_EXPR, &rh_ub, &dconst0))
+      {
+	both_maybe_zero = true;
+	maybe_nan = true;
+      }
+    // If +-INF is in both ranges, it is a maybe NAN.
+    else if ((real_isinf (&lh_lb) || real_isinf (&lh_ub))
+	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
+      {
+	both_maybe_inf = true;
+	maybe_nan = true;
+      }
+    else
+      maybe_nan = false;
+
+    if (real_isneg (&lh_lb) == real_isneg (&lh_ub)
+	&& real_isneg (&rh_lb) == real_isneg (&rh_ub))
+      {
+	if (real_isneg (&lh_lb) == real_isneg (&rh_ub))
+	  must_have_signbit_zero = true;
+	else
+	  must_have_signbit_nonzero = true;
+      }
+
+    // If dividend must be zero, the range is just +-0
+    // (including if the divisor is +-INF).
+    // If divisor must be +-INF, the range is just +-0
+    // (including if the dividend is zero).
+    if ((real_iszero (&lh_lb) && real_iszero (&lh_ub))
+	|| real_isinf (&rh_lb, false)
+	|| real_isinf (&rh_ub, true))
+      {
+	ub = lb = dconst0;
+	// If all the boundary signs are the same, [+0.0, +0.0].
+	if (must_have_signbit_zero)
+	  ;
+	// If divisor and dividend must have different signs,
+	// [-0.0, -0.0].
+	else if (must_have_signbit_nonzero)
+	  ub = lb = real_value_negate (&dconst0);
+	// Otherwise -> [-0.0, +0.0].
+	else
+	  lb = real_value_negate (&dconst0);
+	return;
+      }
+
+    // If divisor must be zero, the range is just +-INF
+    // (including if the dividend is +-INF).
+    // If dividend must be +-INF, the range is just +-INF
+    // (including if the dividend is zero).
+    if ((real_iszero (&rh_lb) && real_iszero (&rh_ub))
+	|| real_isinf (&lh_lb, false)
+	|| real_isinf (&lh_ub, true))
+      {
+	// If all the boundary signs are the same, [+INF, +INF].
+	if (must_have_signbit_zero)
+	  ub = lb = dconstinf;
+	// If divisor and dividend must have different signs,
+	// [-INF, -INF].
+	else if (must_have_signbit_nonzero)
+	  ub = lb = dconstninf;
+	// Otherwise -> [-INF, +INF] (-INF or +INF).
+	else
+	  {
+	    lb = dconstninf;
+	    ub = dconstinf;
+	  }
+	return;
+      }
+
+    // Otherwise if both operands may be zero, divisor could be
+    // nextafter(0.0, +-1.0) and dividend +-0.0
+    // in which case result is going to INF or vice versa and
+    // result +0.0.  So, all we can say for that case is if the
+    // signs of divisor and dividend are always the same we have
+    // [+0.0, +INF], if they are always different we have
+    // [-INF, -0.0].  If they vary, VARING.
+    // If both may be +-INF, divisor could be INF and dividend FLT_MAX,
+    // in which case result is going to INF or vice versa and
+    // result +0.0.  So, all we can say for that case is if the
+    // signs of divisor and dividend are always the same we have
+    // [+0.0, +INF], if they are always different we have
+    // [-INF, -0.0].  If they vary, VARYING.
+    if (both_maybe_zero || both_maybe_inf)
+      {
+	if (must_have_signbit_zero)
+	  {
+	    lb = dconst0;
+	    ub = dconstinf;
+	  }
+	else if (must_have_signbit_nonzero)
+	  {
+	    lb = dconstninf;
+	    ub = real_value_negate (&dconst0);
+	  }
+	else
+	  {
+	    lb = dconstninf;
+	    ub = dconstinf;
+	  }
+	return;
+      }
+
+    REAL_VALUE_TYPE cp[8];
+    // Do a cross-division.  At this point none of the divisions should
+    // produce a NAN.
+    gcc_assert (!maybe_nan);
+    frange_arithmetic (RDIV_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[1], lh_lb, rh_ub, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[2], lh_ub, rh_lb, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[3], lh_ub, rh_ub, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[4], lh_lb, rh_lb, dconstinf);
+    frange_arithmetic (RDIV_EXPR, type, cp[5], lh_lb, rh_ub, dconstinf);
+    frange_arithmetic (RDIV_EXPR, type, cp[6], lh_ub, rh_lb, dconstinf);
+    frange_arithmetic (RDIV_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
+
+    for (int i = 1; i < 4; ++i)
+      {
+	if (real_less (&cp[i], &cp[0])
+	    || (real_iszero (&cp[0]) && real_isnegzero (&cp[i])))
+	  std::swap (cp[i], cp[0]);
+	if (real_less (&cp[4], &cp[i + 4])
+	    || (real_isnegzero (&cp[4]) && real_iszero (&cp[i + 4])))
+	  std::swap (cp[i + 4], cp[4]);
+      }
+    lb = cp[0];
+    ub = cp[4];
+
+    // If divisor may be zero (but is not known to be only zero),
+    // and dividend can't be zero, the range can go up to -INF or +INF
+    // depending on the signs.
+    if (real_compare (LE_EXPR, &rh_lb, &dconst0)
+	&& real_compare (GE_EXPR, &rh_ub, &dconst0))
+      {
+	if (!must_have_signbit_zero)
+	  real_inf (&lb, true);
+	if (!must_have_signbit_nonzero)
+	  real_inf (&ub, false);
+      }
+  }
+} fop_div;
+
 // Instantiate a range_op_table for floating point operations.
 static floating_op_table global_floating_table;
 
@@ -2121,6 +2298,7 @@ floating_op_table::floating_op_table ()
   set (PLUS_EXPR, fop_plus);
   set (MINUS_EXPR, fop_minus);
   set (MULT_EXPR, fop_mult);
+  set (RDIV_EXPR, fop_div);
 }
 
 // Return a pointer to the range_operator_float instance, if there is
