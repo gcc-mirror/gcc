@@ -84,8 +84,9 @@ location_t c_last_sizeof_loc;
    initializer" message within this initializer.  */
 static int found_missing_braces;
 
-static int require_constant_value;
-static int require_constant_elements;
+static bool require_constant_value;
+static bool require_constant_elements;
+static bool require_constexpr_value;
 
 static bool null_pointer_constant_p (const_tree);
 static tree qualify_type (tree, tree);
@@ -109,7 +110,8 @@ static void push_member_name (tree);
 static int spelling_length (void);
 static char *print_spelling (char *);
 static void warning_init (location_t, int, const char *);
-static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
+static tree digest_init (location_t, tree, tree, tree, bool, bool, bool, bool,
+			 bool, bool);
 static void output_init_element (location_t, tree, tree, bool, tree, tree, bool,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
@@ -2133,20 +2135,91 @@ really_atomic_lvalue (tree expr)
   return true;
 }
 
+/* If EXPR is a named constant (C2x) derived from a constexpr variable
+   - that is, a reference to such a variable, or a member extracted by
+   a sequence of structure and union (but not array) member accesses
+   (where union member accesses must access the same member as
+   initialized) - then return the corresponding initializer;
+   otherwise, return NULL_TREE.  */
+
+static tree
+maybe_get_constexpr_init (tree expr)
+{
+  tree decl = NULL_TREE;
+  if (TREE_CODE (expr) == VAR_DECL)
+    decl = expr;
+  else if (TREE_CODE (expr) == COMPOUND_LITERAL_EXPR)
+    decl = COMPOUND_LITERAL_EXPR_DECL (expr);
+  if (decl
+      && C_DECL_DECLARED_CONSTEXPR (decl)
+      && DECL_INITIAL (decl) != NULL_TREE
+      && !error_operand_p (DECL_INITIAL (decl)))
+    return DECL_INITIAL (decl);
+  if (TREE_CODE (expr) != COMPONENT_REF)
+    return NULL_TREE;
+  tree inner = maybe_get_constexpr_init (TREE_OPERAND (expr, 0));
+  if (inner == NULL_TREE)
+    return NULL_TREE;
+  while ((CONVERT_EXPR_P (inner) || TREE_CODE (inner) == NON_LVALUE_EXPR)
+	 && !error_operand_p (inner)
+	 && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
+	     == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (inner, 0)))))
+    inner = TREE_OPERAND (inner, 0);
+  if (TREE_CODE (inner) != CONSTRUCTOR)
+    return NULL_TREE;
+  tree field = TREE_OPERAND (expr, 1);
+  unsigned HOST_WIDE_INT cidx;
+  tree cfield, cvalue;
+  bool have_other_init = false;
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (inner), cidx, cfield, cvalue)
+    {
+      if (cfield == field)
+	return cvalue;
+      have_other_init = true;
+    }
+  if (TREE_CODE (TREE_TYPE (inner)) == UNION_TYPE
+      && (have_other_init || field != TYPE_FIELDS (TREE_TYPE (inner))))
+    return NULL_TREE;
+  /* Return a default initializer.  */
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (expr)))
+    return build_constructor (TREE_TYPE (expr), NULL);
+  return build_zero_cst (TREE_TYPE (expr));
+}
+
 /* Convert expression EXP (location LOC) from lvalue to rvalue,
    including converting functions and arrays to pointers if CONVERT_P.
-   If READ_P, also mark the expression as having been read.  */
+   If READ_P, also mark the expression as having been read.  If
+   FOR_INIT, constexpr expressions of structure and union type should
+   be replaced by the corresponding CONSTRUCTOR; otherwise, only
+   constexpr scalars (including elements of structures and unions) are
+   replaced by their initializers.  */
 
 struct c_expr
 convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
-			  bool convert_p, bool read_p)
+			  bool convert_p, bool read_p, bool for_init)
 {
+  bool force_non_npc = false;
   if (read_p)
     mark_exp_read (exp.value);
   if (convert_p)
     exp = default_function_array_conversion (loc, exp);
   if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
     exp.value = require_complete_type (loc, exp.value);
+  if (for_init || !RECORD_OR_UNION_TYPE_P (TREE_TYPE (exp.value)))
+    {
+      tree init = maybe_get_constexpr_init (exp.value);
+      if (init != NULL_TREE)
+	{
+	  /* A named constant of pointer type or type nullptr_t is not
+	     a null pointer constant even if the initializer is
+	     one.  */
+	  if (TREE_CODE (init) == INTEGER_CST
+	      && !INTEGRAL_TYPE_P (TREE_TYPE (init))
+	      && integer_zerop (init))
+	    force_non_npc = true;
+	  exp.value = init;
+	}
+    }
   if (really_atomic_lvalue (exp.value))
     {
       vec<tree, va_gc> *params;
@@ -2187,6 +2260,8 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
   if (convert_p && !error_operand_p (exp.value)
       && (TREE_CODE (TREE_TYPE (exp.value)) != ARRAY_TYPE))
     exp.value = convert (build_qualified_type (TREE_TYPE (exp.value), TYPE_UNQUALIFIED), exp.value);
+  if (force_non_npc)
+    exp.value = build1 (NOP_EXPR, TREE_TYPE (exp.value), exp.value);
   return exp;
 }
 
@@ -6050,7 +6125,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  if (!maybe_const)
 	    t = c_wrap_maybe_const (t, true);
 	  t = digest_init (loc, type, t,
-			   NULL_TREE, false, true, 0);
+			   NULL_TREE, false, false, false, true, false, false);
 	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
 	  return t;
 	}
@@ -7851,6 +7926,8 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
 {
   tree value, type;
   bool npc = false;
+  bool int_const_expr = false;
+  bool arith_const_expr = false;
 
   /* If variable's type was invalidly declared, just ignore it.  */
 
@@ -7861,9 +7938,19 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
   /* Digest the specified initializer into an expression.  */
 
   if (init)
-    npc = null_pointer_constant_p (init);
-  value = digest_init (init_loc, type, init, origtype, npc,
-      		       true, TREE_STATIC (decl));
+    {
+      npc = null_pointer_constant_p (init);
+      int_const_expr = (TREE_CODE (init) == INTEGER_CST
+			&& !TREE_OVERFLOW (init)
+			&& INTEGRAL_TYPE_P (TREE_TYPE (init)));
+      /* Not fully determined before folding.  */
+      arith_const_expr = true;
+    }
+  bool constexpr_p = (TREE_CODE (decl) == VAR_DECL
+		      && C_DECL_DECLARED_CONSTEXPR (decl));
+  value = digest_init (init_loc, type, init, origtype, npc, int_const_expr,
+		       arith_const_expr, true,
+		       TREE_STATIC (decl) || constexpr_p, constexpr_p);
 
   /* Store the expression if valid; else report error.  */
 
@@ -8033,12 +8120,151 @@ print_spelling (char *buffer)
   return buffer;
 }
 
+/* Check whether INIT, a floating or integer constant, is
+   representable in TYPE, a real floating type with the same radix.
+   Return true if OK, false if not.  */
+static bool
+constexpr_init_fits_real_type (tree type, tree init)
+{
+  gcc_assert (TREE_CODE (type) == REAL_TYPE);
+  gcc_assert (TREE_CODE (init) == INTEGER_CST || TREE_CODE (init) == REAL_CST);
+  if (TREE_CODE (init) == REAL_CST
+      && TYPE_MODE (TREE_TYPE (init)) == TYPE_MODE (type))
+    /* Same mode, no conversion required.  */
+    return true;
+  if (TREE_CODE (init) == INTEGER_CST)
+    {
+      tree converted = build_real_from_int_cst (type, init);
+      bool fail = false;
+      wide_int w = real_to_integer (&TREE_REAL_CST (converted), &fail,
+				    TYPE_PRECISION (TREE_TYPE (init)));
+      return !fail && wi::eq_p (w, wi::to_wide (init));
+    }
+  /* exact_real_truncate is not quite right here, since it doesn't
+     allow even an exact conversion to subnormal values.  */
+  REAL_VALUE_TYPE t;
+  real_convert (&t, TYPE_MODE (type), &TREE_REAL_CST (init));
+  return real_identical (&t, &TREE_REAL_CST (init));
+}
+
+/* Check whether INIT (location LOC) is valid as a 'constexpr'
+   initializer for type TYPE, and give an error if not.  INIT has
+   already been folded and verified to be constant.
+   NULL_POINTER_CONSTANT, INT_CONST_EXPR and ARITH_CONST_EXPR say
+   whether it is a null pointer constant, integer constant expression
+   or arithmetic constant expression, respectively.  If TYPE is not a
+   scalar type, this function does nothing.  */
+
+static void
+check_constexpr_init (location_t loc, tree type, tree init,
+		      bool null_pointer_constant, bool int_const_expr,
+		      bool arith_const_expr)
+{
+  if (POINTER_TYPE_P (type))
+    {
+      /* The initializer must be a null pointer constant.  */
+      if (!null_pointer_constant)
+	error_at (loc, "%<constexpr%> pointer initializer is not a "
+		  "null pointer constant");
+      return;
+    }
+  if (INTEGRAL_TYPE_P (type))
+    {
+      /* The initializer must be an integer constant expression,
+	 representable in the target type.  */
+      if (!int_const_expr)
+	error_at (loc, "%<constexpr%> integer initializer is not an "
+		  "integer constant expression");
+      if (!int_fits_type_p (init, type))
+	error_at (loc, "%<constexpr%> initializer not representable in "
+		  "type of object");
+      return;
+    }
+  /* We don't apply any extra checks to extension types such as vector
+     or fixed-point types.  */
+  if (TREE_CODE (type) != REAL_TYPE && TREE_CODE (type) != COMPLEX_TYPE)
+    return;
+  if (!arith_const_expr)
+    {
+      error_at (loc, "%<constexpr%> initializer is not an arithmetic "
+		"constant expression");
+      return;
+    }
+  /* We don't apply any extra checks to complex integers.  */
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      && TREE_CODE (TREE_TYPE (type)) != REAL_TYPE)
+    return;
+  /* Both the normative text and the relevant footnote are unclear, as
+     of the C2x CD, about what exactly counts as a change of value in
+     floating-point cases.  Here, we consider all conversions between
+     binary and decimal types (even of infinities and NaNs, where
+     quantum exponents are not involved) as involving a change of
+     value, and likewise for conversions between real and complex
+     types (even when the complex constant has imaginary part positive
+     zero), and conversions of signaling NaN to a different machine
+     mode.  But we allow exact conversions of integers to binary or
+     decimal floating types, and exact conversions between different
+     binary types or different decimal types, where "exact" in the
+     decimal case requires the quantum exponent to be preserved.  */
+  if (TREE_CODE (TREE_TYPE (init)) == COMPLEX_TYPE
+      && TREE_CODE (type) == REAL_TYPE)
+    {
+      error_at (loc, "%<constexpr%> initializer for a real type is of "
+		"complex type");
+      return;
+    }
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      && TREE_CODE (TREE_TYPE (init)) != COMPLEX_TYPE)
+    {
+      error_at (loc, "%<constexpr%> initializer for a complex type is of "
+		"real type");
+      return;
+    }
+  if (TREE_CODE (type) == REAL_TYPE
+      && TREE_CODE (TREE_TYPE (init)) == REAL_TYPE)
+    {
+      if (DECIMAL_FLOAT_TYPE_P (type)
+	  && !DECIMAL_FLOAT_TYPE_P (TREE_TYPE (init)))
+	{
+	  error_at (loc, "%<constexpr%> initializer for a decimal "
+		    "floating-point type is of binary type");
+	  return;
+	}
+      else if (DECIMAL_FLOAT_TYPE_P (TREE_TYPE (init))
+	       && !DECIMAL_FLOAT_TYPE_P (type))
+	{
+	  error_at (loc, "%<constexpr%> initializer for a binary "
+		    "floating-point type is of decimal type");
+	  return;
+	}
+    }
+  bool fits;
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      gcc_assert (TREE_CODE (init) == COMPLEX_CST);
+      fits = (constexpr_init_fits_real_type (TREE_TYPE (type),
+					     TREE_REALPART (init))
+	      && constexpr_init_fits_real_type (TREE_TYPE (type),
+						TREE_IMAGPART (init)));
+    }
+  else
+    fits = constexpr_init_fits_real_type (type, init);
+  if (!fits)
+    error_at (loc, "%<constexpr%> initializer not representable in "
+	      "type of object");
+}
+
 /* Digest the parser output INIT as an initializer for type TYPE.
    Return a C expression of type TYPE to represent the initial value.
 
    If ORIGTYPE is not NULL_TREE, it is the original type of INIT.
 
-   NULL_POINTER_CONSTANT is true if INIT is a null pointer constant.
+   NULL_POINTER_CONSTANT is true if INIT is a null pointer constant,
+   INT_CONST_EXPR is true if INIT is an integer constant expression,
+   and ARITH_CONST_EXPR is true if INIT is, or might be, an arithmetic
+   constant expression, false if it has already been determined in the
+   caller that it is not (but folding may have made the value passed here
+   indistinguishable from an arithmetic constant expression).
 
    If INIT is a string constant, STRICT_STRING is true if it is
    unparenthesized or we should not warn here for it being parenthesized.
@@ -8047,12 +8273,14 @@ print_spelling (char *buffer)
    INIT_LOC is the location of the INIT.
 
    REQUIRE_CONSTANT requests an error if non-constant initializers or
-   elements are seen.  */
+   elements are seen.  REQUIRE_CONSTEXPR means the stricter requirements
+   on initializers for 'constexpr' objects apply.  */
 
 static tree
 digest_init (location_t init_loc, tree type, tree init, tree origtype,
-    	     bool null_pointer_constant, bool strict_string,
-	     int require_constant)
+    	     bool null_pointer_constant, bool int_const_expr,
+	     bool arith_const_expr, bool strict_string,
+	     bool require_constant, bool require_constexpr)
 {
   enum tree_code code = TREE_CODE (type);
   tree inside_init = init;
@@ -8075,6 +8303,20 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	}
       inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
     }
+  /* TODO: this may not detect all cases of expressions folding to
+     constants that are not arithmetic constant expressions.  */
+  if (!maybe_const)
+    arith_const_expr = false;
+  else if (!INTEGRAL_TYPE_P (TREE_TYPE (inside_init))
+      && TREE_CODE (TREE_TYPE (inside_init)) != REAL_TYPE
+      && TREE_CODE (TREE_TYPE (inside_init)) != COMPLEX_TYPE)
+    arith_const_expr = false;
+  else if (TREE_CODE (inside_init) != INTEGER_CST
+      && TREE_CODE (inside_init) != REAL_CST
+      && TREE_CODE (inside_init) != COMPLEX_CST)
+    arith_const_expr = false;
+  else if (TREE_OVERFLOW (inside_init))
+    arith_const_expr = false;
 
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
@@ -8131,6 +8373,25 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 			  typ1, typ2);
 	      return error_mark_node;
             }
+
+	  if (require_constexpr
+	      && TYPE_UNSIGNED (typ1) != TYPE_UNSIGNED (typ2))
+	    {
+	      /* Check if all characters of the string can be
+		 represented in the type of the constexpr object being
+		 initialized.  */
+	      unsigned HOST_WIDE_INT len = TREE_STRING_LENGTH (inside_init);
+	      const unsigned char *p =
+		(const unsigned char *) TREE_STRING_POINTER (inside_init);
+	      gcc_assert (CHAR_TYPE_SIZE == 8 && CHAR_BIT == 8);
+	      for (unsigned i = 0; i < len; i++)
+		if (p[i] > 127)
+		  {
+		    error_init (init_loc, "%<constexpr%> initializer not "
+				"representable in type of object");
+		    break;
+		  }
+	    }
 
 	  if (TYPE_DOMAIN (type) != NULL_TREE
 	      && TYPE_SIZE (type) != NULL_TREE
@@ -8294,6 +8555,10 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       else if (require_constant && !maybe_const)
 	pedwarn_init (init_loc, OPT_Wpedantic,
 		      "initializer element is not a constant expression");
+      else if (require_constexpr)
+	check_constexpr_init (init_loc, type, inside_init,
+			      null_pointer_constant, int_const_expr,
+			      arith_const_expr);
 
       /* Added to enable additional -Wsuggest-attribute=format warnings.  */
       if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
@@ -8312,6 +8577,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       || code == POINTER_TYPE || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE
       || code == COMPLEX_TYPE || code == VECTOR_TYPE)
     {
+      tree unconverted_init = inside_init;
       if (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE
 	  && (TREE_CODE (init) == STRING_CST
 	      || TREE_CODE (init) == COMPOUND_LITERAL_EXPR))
@@ -8345,6 +8611,10 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       else if (require_constant && !maybe_const)
 	pedwarn_init (init_loc, OPT_Wpedantic,
 		      "initializer element is not a constant expression");
+      else if (require_constexpr)
+	check_constexpr_init (init_loc, type, unconverted_init,
+			      null_pointer_constant, int_const_expr,
+			      arith_const_expr);
 
       return inside_init;
     }
@@ -8444,9 +8714,6 @@ static int constructor_depth;
    such as (struct foo) {...}.  */
 static tree constructor_decl;
 
-/* Nonzero if this is an initializer for a top-level decl.  */
-static int constructor_top_level;
-
 /* Nonzero if there were any member designators in this initializer.  */
 static int constructor_designated;
 
@@ -8523,9 +8790,9 @@ struct initializer_stack
   struct spelling *spelling;
   struct spelling *spelling_base;
   int spelling_size;
-  char top_level;
   char require_constant_value;
   char require_constant_elements;
+  char require_constexpr_value;
   char designated;
   rich_location *missing_brace_richloc;
 };
@@ -8535,7 +8802,8 @@ static struct initializer_stack *initializer_stack;
 /* Prepare to parse and output the initializer for variable DECL.  */
 
 void
-start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level,
+start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED,
+	    bool init_require_constant, bool init_require_constexpr,
 	    rich_location *richloc)
 {
   const char *locus;
@@ -8544,13 +8812,13 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level,
   p->decl = constructor_decl;
   p->require_constant_value = require_constant_value;
   p->require_constant_elements = require_constant_elements;
+  p->require_constexpr_value = require_constexpr_value;
   p->constructor_stack = constructor_stack;
   p->constructor_range_stack = constructor_range_stack;
   p->elements = constructor_elements;
   p->spelling = spelling;
   p->spelling_base = spelling_base;
   p->spelling_size = spelling_size;
-  p->top_level = constructor_top_level;
   p->next = initializer_stack;
   p->missing_brace_richloc = richloc;
   p->designated = constructor_designated;
@@ -8558,13 +8826,13 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level,
 
   constructor_decl = decl;
   constructor_designated = 0;
-  constructor_top_level = top_level;
 
+  require_constant_value = init_require_constant;
+  require_constexpr_value = init_require_constexpr;
   if (decl != NULL_TREE && decl != error_mark_node)
     {
-      require_constant_value = TREE_STATIC (decl);
       require_constant_elements
-	= ((TREE_STATIC (decl) || (pedantic && !flag_isoc99))
+	= ((init_require_constant || (pedantic && !flag_isoc99))
 	   /* For a scalar, you can always use any value to initialize,
 	      even within braces.  */
 	   && AGGREGATE_TYPE_P (TREE_TYPE (decl)));
@@ -8572,8 +8840,7 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level,
     }
   else
     {
-      require_constant_value = 0;
-      require_constant_elements = 0;
+      require_constant_elements = false;
       locus = _("(anonymous)");
     }
 
@@ -8611,6 +8878,7 @@ finish_init (void)
   constructor_decl = p->decl;
   require_constant_value = p->require_constant_value;
   require_constant_elements = p->require_constant_elements;
+  require_constexpr_value = p->require_constexpr_value;
   constructor_stack = p->constructor_stack;
   constructor_designated = p->designated;
   constructor_range_stack = p->constructor_range_stack;
@@ -8618,7 +8886,6 @@ finish_init (void)
   spelling = p->spelling;
   spelling_base = p->spelling_base;
   spelling_size = p->spelling_size;
-  constructor_top_level = p->top_level;
   initializer_stack = p->next;
   XDELETE (p);
 }
@@ -9096,6 +9363,10 @@ pop_init_level (location_t loc, int implicit,
 	{
 	  if (constructor_erroneous || constructor_type == error_mark_node)
 	    ret.value = error_mark_node;
+	  else if (TREE_CODE (constructor_type) == POINTER_TYPE)
+	    /* Ensure this is a null pointer constant in the case of a
+	       'constexpr' object initialized with {}.  */
+	    ret.value = build_zero_cst (ptr_type_node);
 	  else
 	    ret.value = build_zero_cst (constructor_type);
 	}
@@ -9844,7 +10115,7 @@ output_init_element (location_t loc, tree value, tree origtype,
 {
   tree semantic_type = NULL_TREE;
   bool maybe_const = true;
-  bool npc;
+  bool npc, int_const_expr, arith_const_expr;
 
   if (type == error_mark_node || value == error_mark_node)
     {
@@ -9875,12 +10146,31 @@ output_init_element (location_t loc, tree value, tree origtype,
     }
 
   npc = null_pointer_constant_p (value);
+  int_const_expr = (TREE_CODE (value) == INTEGER_CST
+		    && !TREE_OVERFLOW (value)
+		    && INTEGRAL_TYPE_P (TREE_TYPE (value)));
+  /* Not fully determined before folding.  */
+  arith_const_expr = true;
   if (TREE_CODE (value) == EXCESS_PRECISION_EXPR)
     {
       semantic_type = TREE_TYPE (value);
       value = TREE_OPERAND (value, 0);
     }
   value = c_fully_fold (value, require_constant_value, &maybe_const);
+  /* TODO: this may not detect all cases of expressions folding to
+     constants that are not arithmetic constant expressions.  */
+  if (!maybe_const)
+    arith_const_expr = false;
+  else if (!INTEGRAL_TYPE_P (TREE_TYPE (value))
+      && TREE_CODE (TREE_TYPE (value)) != REAL_TYPE
+      && TREE_CODE (TREE_TYPE (value)) != COMPLEX_TYPE)
+    arith_const_expr = false;
+  else if (TREE_CODE (value) != INTEGER_CST
+      && TREE_CODE (value) != REAL_CST
+      && TREE_CODE (value) != COMPLEX_CST)
+    arith_const_expr = false;
+  else if (TREE_OVERFLOW (value))
+    arith_const_expr = false;
 
   if (value == error_mark_node)
     constructor_erroneous = 1;
@@ -9903,8 +10193,18 @@ output_init_element (location_t loc, tree value, tree origtype,
   tree new_value = value;
   if (semantic_type)
     new_value = build1 (EXCESS_PRECISION_EXPR, semantic_type, value);
-  new_value = digest_init (loc, type, new_value, origtype, npc, strict_string,
-			   require_constant_value);
+  /* In the case of braces around a scalar initializer, the result of
+     this initializer processing goes through digest_init again at the
+     outer level.  In the case of a constexpr initializer for a
+     pointer, avoid converting a null pointer constant to something
+     that is not a null pointer constant to avoid a spurious error
+     from that second processing.  */
+  if (!require_constexpr_value
+      || !npc
+      || TREE_CODE (constructor_type) != POINTER_TYPE)
+    new_value = digest_init (loc, type, new_value, origtype, npc,
+			     int_const_expr, arith_const_expr, strict_string,
+			     require_constant_value, require_constexpr_value);
   if (new_value == error_mark_node)
     {
       constructor_erroneous = 1;
@@ -9929,6 +10229,11 @@ output_init_element (location_t loc, tree value, tree origtype,
 	   && (require_constant_value || require_constant_elements))
     pedwarn_init (loc, OPT_Wpedantic,
 		  "initializer element is not a constant expression");
+  /* digest_init has already carried out the additional checks
+     required for 'constexpr' initializers (using the information
+     passed to it about whether the original initializer was certain
+     kinds of constant expression), so that check does not need to be
+     repeated here.  */
 
   /* Issue -Wc++-compat warnings about initializing a bitfield with
      enum type.  */
