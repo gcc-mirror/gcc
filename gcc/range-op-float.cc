@@ -1861,6 +1861,98 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
   return true;
 }
 
+// True if [lb, ub] is [+-0, +-0].
+static bool
+zero_p (const REAL_VALUE_TYPE &lb, const REAL_VALUE_TYPE &ub)
+{
+  return real_iszero (&lb) && real_iszero (&ub);
+}
+
+// True if +0 or -0 is in [lb, ub] range.
+static bool
+contains_zero_p (const REAL_VALUE_TYPE &lb, const REAL_VALUE_TYPE &ub)
+{
+  return (real_compare (LE_EXPR, &lb, &dconst0)
+	  && real_compare (GE_EXPR, &ub, &dconst0));
+}
+
+// True if [lb, ub] is [-INF, -INF] or [+INF, +INF].
+static bool
+singleton_inf_p (const REAL_VALUE_TYPE &lb, const REAL_VALUE_TYPE &ub)
+{
+  return real_isinf (&lb) && real_isinf (&ub, real_isneg (&lb));
+}
+
+// Return -1 if binary op result must have sign bit set,
+// 1 if binary op result must have sign bit clear,
+// 0 otherwise.
+// Sign bit of binary op result is exclusive or of the
+// operand's sign bits.
+static int
+signbit_known_p (const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
+		 const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub)
+{
+  if (real_isneg (&lh_lb) == real_isneg (&lh_ub)
+      && real_isneg (&rh_lb) == real_isneg (&rh_ub))
+    {
+      if (real_isneg (&lh_lb) == real_isneg (&rh_ub))
+	return 1;
+      else
+	return -1;
+    }
+  return 0;
+}
+
+// Set [lb, ub] to [-0, -0], [-0, +0] or [+0, +0] depending on
+// signbit_known.
+static void
+zero_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
+{
+  ub = lb = dconst0;
+  if (signbit_known <= 0)
+    lb = real_value_negate (&dconst0);
+  if (signbit_known < 0)
+    ub = lb;
+}
+
+// Set [lb, ub] to [-INF, -INF], [-INF, +INF] or [+INF, +INF] depending on
+// signbit_known.
+static void
+inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
+{
+  if (signbit_known > 0)
+    ub = lb = dconstinf;
+  else if (signbit_known < 0)
+    ub = lb = dconstninf;
+  else
+    {
+      lb = dconstninf;
+      ub = dconstinf;
+    }
+}
+
+// Set [lb, ub] to [-INF, -0], [-INF, +INF] or [+0, +INF] depending on
+// signbit_known.
+static void
+zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
+{
+  if (signbit_known > 0)
+    {
+      lb = dconst0;
+      ub = dconstinf;
+    }
+  else if (signbit_known < 0)
+    {
+      lb = dconstninf;
+      ub = real_value_negate (&dconst0);
+    }
+  else
+    {
+      lb = dconstninf;
+      ub = dconstinf;
+    }
+}
+
 class foperator_plus : public range_operator_float
 {
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
@@ -1911,7 +2003,32 @@ class foperator_minus : public range_operator_float
 } fop_minus;
 
 
-class foperator_mult : public range_operator_float
+class foperator_mult_div_base : public range_operator_float
+{
+protected:
+  // Given CP[0] to CP[3] floating point values rounded to -INF,
+  // set LB to the smallest of them (treating -0 as smaller to +0).
+  // Given CP[4] to CP[7] floating point values rounded to +INF,
+  // set UB to the largest of them (treating -0 as smaller to +0).
+  static void find_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			  const REAL_VALUE_TYPE (&cp)[8])
+  {
+    lb = cp[0];
+    ub = cp[4];
+    for (int i = 1; i < 4; ++i)
+      {
+	if (real_less (&cp[i], &lb)
+	    || (real_iszero (&lb) && real_isnegzero (&cp[i])))
+	  lb = cp[i];
+	if (real_less (&ub, &cp[i + 4])
+	    || (real_isnegzero (&ub) && real_iszero (&cp[i + 4])))
+	  ub = cp[i + 4];
+      }
+  }
+};
+
+
+class foperator_mult : public foperator_mult_div_base
 {
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
@@ -1934,14 +2051,8 @@ class foperator_mult : public range_operator_float
     if (!is_square)
       {
 	// [+-0, +-0] * [+INF,+INF] (or [-INF,-INF] or swapped is a known NAN.
-	if ((real_iszero (&lh_lb)
-	     && real_iszero (&lh_ub)
-	     && real_isinf (&rh_lb)
-	     && real_isinf (&rh_ub, real_isneg (&rh_lb)))
-	    || (real_iszero (&rh_lb)
-		&& real_iszero (&rh_ub)
-		&& real_isinf (&lh_lb)
-		&& real_isinf (&lh_ub, real_isneg (&lh_lb))))
+	if ((zero_p (lh_lb, lh_ub) && singleton_inf_p (rh_lb, rh_ub))
+	    || (zero_p (rh_lb, rh_ub) && singleton_inf_p (lh_lb, lh_ub)))
 	  {
 	    real_nan (&lb, "", 0, TYPE_MODE (type));
 	    ub = lb;
@@ -1951,70 +2062,28 @@ class foperator_mult : public range_operator_float
 
 	// Otherwise, if one range includes zero and the other ends with +-INF,
 	// it is a maybe NAN.
-	if ((real_compare (LE_EXPR, &lh_lb, &dconst0)
-	     && real_compare (GE_EXPR, &lh_ub, &dconst0)
+	if ((contains_zero_p (lh_lb, lh_ub)
 	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
-	    || (real_compare (LE_EXPR, &rh_lb, &dconst0)
-		&& real_compare (GE_EXPR, &rh_ub, &dconst0)
+	    || (contains_zero_p (rh_lb, rh_ub)
 		&& (real_isinf (&lh_lb) || real_isinf (&lh_ub))))
 	  {
 	    maybe_nan = true;
 
-	    bool must_have_signbit_zero = false;
-	    bool must_have_signbit_nonzero = false;
-	    if (real_isneg (&lh_lb) == real_isneg (&lh_ub)
-		&& real_isneg (&rh_lb) == real_isneg (&rh_ub))
-	      {
-		if (real_isneg (&lh_lb) == real_isneg (&rh_ub))
-		  must_have_signbit_zero = true;
-		else
-		  must_have_signbit_nonzero = true;
-	      }
+	    int signbit_known = signbit_known_p (lh_lb, lh_ub, rh_lb, rh_ub);
 
 	    // If one of the ranges that includes INF is singleton
 	    // and the other range includes zero, the resulting
 	    // range is INF and NAN, because the 0 * INF boundary
 	    // case will be NAN, but already nextafter (0, 1) * INF
 	    // is INF.
-	    if ((real_isinf (&lh_lb)
-		 && real_isinf (&lh_ub, real_isneg (&lh_lb)))
-		|| (real_isinf (&rh_lb)
-		    && real_isinf (&rh_ub, real_isneg (&rh_lb))))
-	      {
-		// If all the boundary signs are the same, [+INF, +INF].
-		if (must_have_signbit_zero)
-		  ub = lb = dconstinf;
-		// If the two multiplicands have always different sign,
-		// [-INF, -INF].
-		else if (must_have_signbit_nonzero)
-		  ub = lb = dconstninf;
-		// Otherwise -> [-INF, +INF] (-INF or +INF).
-		else
-		  {
-		    lb = dconstninf;
-		    ub = dconstinf;
-		  }
-		return;
-	      }
+	    if (singleton_inf_p (lh_lb, lh_ub)
+		|| singleton_inf_p (rh_lb, rh_ub))
+	      return inf_range (lb, ub, signbit_known);
 
 	    // If one of the multiplicands must be zero, the resulting
 	    // range is +-0 and NAN.
-	    if ((real_iszero (&lh_lb) && real_iszero (&lh_ub))
-		|| (real_iszero (&rh_lb) && real_iszero (&rh_ub)))
-	      {
-		ub = lb = dconst0;
-		// If all the boundary signs are the same, [+0.0, +0.0].
-		if (must_have_signbit_zero)
-		  ;
-		// If divisor and dividend must have different signs,
-		// [-0.0, -0.0].
-		else if (must_have_signbit_nonzero)
-		  ub = lb = real_value_negate (&dconst0);
-		// Otherwise -> [-0.0, +0.0].
-		else
-		  lb = real_value_negate (&dconst0);
-		return;
-	      }
+	    if (zero_p (lh_lb, lh_ub) || zero_p (rh_lb, rh_ub))
+	      return zero_range (lb, ub, signbit_known);
 
 	    // Otherwise one of the multiplicands could be
 	    // [0.0, nextafter (0.0, 1.0)] and the [DBL_MAX, INF]
@@ -2022,27 +2091,13 @@ class foperator_mult : public range_operator_float
 	    // is still 0.0, nextafter (0.0, 1.0) * INF is still INF,
 	    // so if the signs are always the same or always different,
 	    // result is [+0.0, +INF] or [-INF, -0.0], otherwise VARYING.
-	    if (must_have_signbit_zero)
-	      {
-		lb = dconst0;
-		ub = dconstinf;
-	      }
-	    else if (must_have_signbit_nonzero)
-	      {
-		lb = dconstninf;
-		ub = real_value_negate (&dconst0);
-	      }
-	    else
-	      {
-		lb = dconstninf;
-		ub = dconstinf;
-	      }
-	    return;
+	    return zero_to_inf_range (lb, ub, signbit_known);
 	  }
       }
 
     REAL_VALUE_TYPE cp[8];
-    // Do a cross-product.
+    // Do a cross-product.  At this point none of the multiplications
+    // should produce a NAN.
     frange_arithmetic (MULT_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
     frange_arithmetic (MULT_EXPR, type, cp[4], lh_lb, rh_lb, dconstinf);
     if (is_square)
@@ -2052,9 +2107,13 @@ class foperator_mult : public range_operator_float
 	// otherwise min (lh_lb * lh_lb, lh_ub * lh_ub).
 	// -0.0 rather than 0.0 because VREL_EQ doesn't prove that
 	// x and y are bitwise equal, just that they compare equal.
-	if (real_compare (LE_EXPR, &lh_lb, &dconst0)
-	    && real_compare (GE_EXPR, &lh_ub, &dconst0))
-	  cp[1] = real_value_negate (&dconst0);
+	if (contains_zero_p (lh_lb, lh_ub))
+	  {
+	    if (real_isneg (&lh_lb) == real_isneg (&lh_ub))
+	      cp[1] = dconst0;
+	    else
+	      cp[1] = real_value_negate (&dconst0);
+	  }
 	else
 	  cp[1] = cp[0];
 	cp[2] = cp[0];
@@ -2071,22 +2130,12 @@ class foperator_mult : public range_operator_float
     frange_arithmetic (MULT_EXPR, type, cp[3], lh_ub, rh_ub, dconstninf);
     frange_arithmetic (MULT_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
 
-    for (int i = 1; i < 4; ++i)
-      {
-	if (real_less (&cp[i], &cp[0])
-	    || (real_iszero (&cp[0]) && real_isnegzero (&cp[i])))
-	  std::swap (cp[i], cp[0]);
-	if (real_less (&cp[4], &cp[i + 4])
-	    || (real_isnegzero (&cp[4]) && real_iszero (&cp[i + 4])))
-	  std::swap (cp[i + 4], cp[4]);
-      }
-    lb = cp[0];
-    ub = cp[4];
-
+    find_range (lb, ub, cp);
   }
 } fop_mult;
 
-class foperator_div : public range_operator_float
+
+class foperator_div : public foperator_mult_div_base
 {
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
@@ -2097,14 +2146,8 @@ class foperator_div : public range_operator_float
 		relation_kind) const final override
   {
     // +-0.0 / +-0.0 or +-INF / +-INF is a known NAN.
-    if ((real_iszero (&lh_lb)
-	 && real_iszero (&lh_ub)
-	 && real_iszero (&rh_lb)
-	 && real_iszero (&rh_ub))
-	|| (real_isinf (&lh_lb)
-	    && real_isinf (&lh_ub, real_isneg (&lh_lb))
-	    && real_isinf (&rh_lb)
-	    && real_isinf (&rh_ub, real_isneg (&rh_lb))))
+    if ((zero_p (lh_lb, lh_ub) && zero_p (rh_lb, rh_ub))
+	|| (singleton_inf_p (lh_lb, lh_ub) || singleton_inf_p (rh_lb, rh_ub)))
       {
 	real_nan (&lb, "", 0, TYPE_MODE (type));
 	ub = lb;
@@ -2112,84 +2155,31 @@ class foperator_div : public range_operator_float
 	return;
       }
 
-    bool both_maybe_zero = false;
-    bool both_maybe_inf = false;
-    bool must_have_signbit_zero = false;
-    bool must_have_signbit_nonzero = false;
-
     // If +-0.0 is in both ranges, it is a maybe NAN.
-    if (real_compare (LE_EXPR, &lh_lb, &dconst0)
-	&& real_compare (GE_EXPR, &lh_ub, &dconst0)
-	&& real_compare (LE_EXPR, &rh_lb, &dconst0)
-	&& real_compare (GE_EXPR, &rh_ub, &dconst0))
-      {
-	both_maybe_zero = true;
-	maybe_nan = true;
-      }
+    if (contains_zero_p (lh_lb, lh_ub) && contains_zero_p (rh_lb, rh_ub))
+      maybe_nan = true;
     // If +-INF is in both ranges, it is a maybe NAN.
     else if ((real_isinf (&lh_lb) || real_isinf (&lh_ub))
 	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
-      {
-	both_maybe_inf = true;
-	maybe_nan = true;
-      }
+      maybe_nan = true;
     else
       maybe_nan = false;
 
-    if (real_isneg (&lh_lb) == real_isneg (&lh_ub)
-	&& real_isneg (&rh_lb) == real_isneg (&rh_ub))
-      {
-	if (real_isneg (&lh_lb) == real_isneg (&rh_ub))
-	  must_have_signbit_zero = true;
-	else
-	  must_have_signbit_nonzero = true;
-      }
+    int signbit_known = signbit_known_p (lh_lb, lh_ub, rh_lb, rh_ub);
 
     // If dividend must be zero, the range is just +-0
     // (including if the divisor is +-INF).
     // If divisor must be +-INF, the range is just +-0
     // (including if the dividend is zero).
-    if ((real_iszero (&lh_lb) && real_iszero (&lh_ub))
-	|| real_isinf (&rh_lb, false)
-	|| real_isinf (&rh_ub, true))
-      {
-	ub = lb = dconst0;
-	// If all the boundary signs are the same, [+0.0, +0.0].
-	if (must_have_signbit_zero)
-	  ;
-	// If divisor and dividend must have different signs,
-	// [-0.0, -0.0].
-	else if (must_have_signbit_nonzero)
-	  ub = lb = real_value_negate (&dconst0);
-	// Otherwise -> [-0.0, +0.0].
-	else
-	  lb = real_value_negate (&dconst0);
-	return;
-      }
+    if (zero_p (lh_lb, lh_ub) || singleton_inf_p (rh_lb, rh_ub))
+      return zero_range (lb, ub, signbit_known);
 
     // If divisor must be zero, the range is just +-INF
     // (including if the dividend is +-INF).
     // If dividend must be +-INF, the range is just +-INF
     // (including if the dividend is zero).
-    if ((real_iszero (&rh_lb) && real_iszero (&rh_ub))
-	|| real_isinf (&lh_lb, false)
-	|| real_isinf (&lh_ub, true))
-      {
-	// If all the boundary signs are the same, [+INF, +INF].
-	if (must_have_signbit_zero)
-	  ub = lb = dconstinf;
-	// If divisor and dividend must have different signs,
-	// [-INF, -INF].
-	else if (must_have_signbit_nonzero)
-	  ub = lb = dconstninf;
-	// Otherwise -> [-INF, +INF] (-INF or +INF).
-	else
-	  {
-	    lb = dconstninf;
-	    ub = dconstinf;
-	  }
-	return;
-      }
+    if (zero_p (rh_lb, rh_ub) || singleton_inf_p (lh_lb, lh_ub))
+      return inf_range (lb, ub, signbit_known);
 
     // Otherwise if both operands may be zero, divisor could be
     // nextafter(0.0, +-1.0) and dividend +-0.0
@@ -2204,30 +2194,12 @@ class foperator_div : public range_operator_float
     // signs of divisor and dividend are always the same we have
     // [+0.0, +INF], if they are always different we have
     // [-INF, -0.0].  If they vary, VARYING.
-    if (both_maybe_zero || both_maybe_inf)
-      {
-	if (must_have_signbit_zero)
-	  {
-	    lb = dconst0;
-	    ub = dconstinf;
-	  }
-	else if (must_have_signbit_nonzero)
-	  {
-	    lb = dconstninf;
-	    ub = real_value_negate (&dconst0);
-	  }
-	else
-	  {
-	    lb = dconstninf;
-	    ub = dconstinf;
-	  }
-	return;
-      }
+    if (maybe_nan)
+      return zero_to_inf_range (lb, ub, signbit_known);
 
     REAL_VALUE_TYPE cp[8];
     // Do a cross-division.  At this point none of the divisions should
     // produce a NAN.
-    gcc_assert (!maybe_nan);
     frange_arithmetic (RDIV_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
     frange_arithmetic (RDIV_EXPR, type, cp[1], lh_lb, rh_ub, dconstninf);
     frange_arithmetic (RDIV_EXPR, type, cp[2], lh_ub, rh_lb, dconstninf);
@@ -2237,27 +2209,16 @@ class foperator_div : public range_operator_float
     frange_arithmetic (RDIV_EXPR, type, cp[6], lh_ub, rh_lb, dconstinf);
     frange_arithmetic (RDIV_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
 
-    for (int i = 1; i < 4; ++i)
-      {
-	if (real_less (&cp[i], &cp[0])
-	    || (real_iszero (&cp[0]) && real_isnegzero (&cp[i])))
-	  std::swap (cp[i], cp[0]);
-	if (real_less (&cp[4], &cp[i + 4])
-	    || (real_isnegzero (&cp[4]) && real_iszero (&cp[i + 4])))
-	  std::swap (cp[i + 4], cp[4]);
-      }
-    lb = cp[0];
-    ub = cp[4];
+    find_range (lb, ub, cp);
 
     // If divisor may be zero (but is not known to be only zero),
     // and dividend can't be zero, the range can go up to -INF or +INF
     // depending on the signs.
-    if (real_compare (LE_EXPR, &rh_lb, &dconst0)
-	&& real_compare (GE_EXPR, &rh_ub, &dconst0))
+    if (contains_zero_p (rh_lb, rh_ub))
       {
-	if (!must_have_signbit_zero)
+	if (signbit_known <= 0)
 	  real_inf (&lb, true);
-	if (!must_have_signbit_nonzero)
+	if (signbit_known >= 0)
 	  real_inf (&ub, false);
       }
   }
