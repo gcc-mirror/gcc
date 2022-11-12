@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-strlen.h"
 #include "varasm.h"
 #include "internal-fn.h"
+#include "gimple-range.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -9234,6 +9235,15 @@ bool
 gimple_stmt_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
 				 int depth)
 {
+  tree type = gimple_range_type (stmt);
+  if (type && frange::supports_p (type))
+    {
+      frange r;
+      bool sign;
+      if (get_global_range_query ()->range_of_stmt (r, stmt)
+	  && r.signbit_p (sign))
+	return !sign;
+    }
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
