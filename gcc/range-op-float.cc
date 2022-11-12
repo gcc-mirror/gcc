@@ -1861,6 +1861,39 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
   return true;
 }
 
+// Final tweaks for float binary op op1_range/op2_range.
+// Return TRUE if the operation is performed and a valid range is available.
+
+static bool
+float_binary_op_range_finish (bool ret, frange &r, tree type,
+			      const frange &lhs)
+{
+  if (!ret)
+    return false;
+
+  // If we get a known NAN from reverse op, it means either that
+  // the other operand was known NAN (in that case we know nothing),
+  // or the reverse operation introduced a known NAN.
+  // Say for lhs = op1 * op2 if lhs is [-0, +0] and op2 is too,
+  // 0 / 0 is known NAN.  Just punt in that case.
+  // Or if lhs is a known NAN, we also don't know anything.
+  if (r.known_isnan () || lhs.known_isnan ())
+    {
+      r.set_varying (type);
+      return true;
+    }
+
+  // If lhs isn't NAN, then neither operand could be NAN,
+  // even if the reverse operation does introduce a maybe_nan.
+  if (!lhs.maybe_isnan ())
+    r.clear_nan ();
+  // If lhs is a maybe or known NAN, the operand could be
+  // NAN.
+  else
+    r.update_nan ();
+  return true;
+}
+
 // True if [lb, ub] is [+-0, +-0].
 static bool
 zero_p (const REAL_VALUE_TYPE &lb, const REAL_VALUE_TYPE &ub)
@@ -1955,6 +1988,30 @@ zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
 
 class foperator_plus : public range_operator_float
 {
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    range_op_handler minus (MINUS_EXPR, type);
+    if (!minus)
+      return false;
+    return float_binary_op_range_finish (minus.fold_range (r, type, lhs, op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    return op1_range (r, type, lhs, op1);
+  }
+private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
 		const REAL_VALUE_TYPE &lh_lb,
@@ -1980,6 +2037,31 @@ class foperator_plus : public range_operator_float
 
 class foperator_minus : public range_operator_float
 {
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fop_plus.fold_range (r, type, lhs,
+							      op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fold_range (r, type, op1, lhs),
+					 r, type, lhs);
+  }
+private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
 		const REAL_VALUE_TYPE &lh_lb,
@@ -2030,6 +2112,30 @@ protected:
 
 class foperator_mult : public foperator_mult_div_base
 {
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    range_op_handler rdiv (RDIV_EXPR, type);
+    if (!rdiv)
+      return false;
+    return float_binary_op_range_finish (rdiv.fold_range (r, type, lhs, op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    return op1_range (r, type, lhs, op1);
+  }
+private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
 		const REAL_VALUE_TYPE &lh_lb,
@@ -2137,6 +2243,31 @@ class foperator_mult : public foperator_mult_div_base
 
 class foperator_div : public foperator_mult_div_base
 {
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fop_mult.fold_range (r, type, lhs,
+							      op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fold_range (r, type, op1, lhs),
+					 r, type, lhs);
+  }
+private:
   void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
 		tree type,
 		const REAL_VALUE_TYPE &lh_lb,
