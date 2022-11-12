@@ -3928,6 +3928,11 @@ range_tests_signed_zeros ()
   r0.set_nonnegative (float_type_node);
   if (HONOR_NANS (float_type_node))
     ASSERT_TRUE (r0.maybe_isnan ());
+
+  // Numbers containing zero should have an unknown SIGNBIT.
+  r0 = frange_float ("0", "10");
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
 }
 
 static void
@@ -3942,10 +3947,6 @@ range_tests_signbit ()
   ASSERT_TRUE (r0.signbit_p (signbit) && signbit);
   // Positive numbers should have the SIGNBIT clear.
   r0 = frange_float ("1", "10");
-  r0.clear_nan ();
-  ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
-  // Numbers containing zero should have an unknown SIGNBIT.
-  r0 = frange_float ("0", "10");
   r0.clear_nan ();
   ASSERT_TRUE (r0.signbit_p (signbit) && !signbit);
   // Numbers spanning both positive and negative should have an
