@@ -1,3 +1,15 @@
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/indices-and-tables.rst: Rename Indexes to Indices.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/Makefile: Update comment.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/Makefile: Disable -j auto.
+
 2022-11-10  Martin Liska  <mliska@suse.cz>
 
 	* doc/baseconf.py: Modernize by using pathlib.

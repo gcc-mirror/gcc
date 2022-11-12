@@ -1,3 +1,52 @@
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-fd.dot: Fix typo in comment.
+	* sm-file.dot: New file.
+	* varargs.cc: Fix typo in comment.
+	* varargs.dot: New file.
+
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h: Split out checker_event and its subclasses to...
+	* checker-event.h: ...this new header.
+
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* analyzer.opt (Wanalyzer-infinite-recursion): New.
+	* call-string.cc (call_string::count_occurrences_of_function):
+	New.
+	* call-string.h (call_string::count_occurrences_of_function): New
+	decl.
+	* checker-path.cc (function_entry_event::function_entry_event):
+	New ctor.
+	(checker_path::add_final_event): Delete.
+	* checker-path.h (function_entry_event::function_entry_event): New
+	ctor.
+	(function_entry_event::get_desc): Drop "final".
+	(checker_path::add_final_event): Delete.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Create the final
+	event via a new pending_diagnostic::add_final_event vfunc, rather
+	than checker_path::add_final_event.
+	(diagnostic_manager::add_events_for_eedge): Create function entry
+	events via a new pending_diagnostic::add_function_entry_event
+	vfunc.
+	* engine.cc (exploded_graph::process_node): When creating a new
+	PK_BEFORE_SUPERNODE node, call
+	exploded_graph::detect_infinite_recursion on it after adding the
+	in-edge.
+	* exploded-graph.h (exploded_graph::detect_infinite_recursion):
+	New decl.
+	(exploded_graph::find_previous_entry_to): New decl.
+	* infinite-recursion.cc: New file.
+	* pending-diagnostic.cc
+	(pending_diagnostic::add_function_entry_event): New.
+	(pending_diagnostic::add_final_event): New.
+	* pending-diagnostic.h
+	(pending_diagnostic::add_function_entry_event): New vfunc.
+	(pending_diagnostic::add_final_event): New vfunc.
+
 2022-11-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99671

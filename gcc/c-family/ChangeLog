@@ -1,3 +1,9 @@
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/85487
+	* c-pragma.cc (handle_pragma_ignore): New function.
+	(init_pragma): Register region and endregion pragmas.
+
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* c-target.def: Port to RST.

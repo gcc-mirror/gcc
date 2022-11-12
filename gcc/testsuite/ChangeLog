@@ -1,3 +1,79 @@
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* g++.dg/analyzer/infinite-recursion-1.C: New test.
+	* g++.dg/analyzer/infinite-recursion-2.C: New test, copied from
+	g++.dg/warn/Winfinite-recursion-2.C.
+	* g++.dg/analyzer/infinite-recursion-3.C: New test, adapted from
+	g++.dg/warn/Winfinite-recursion-3.C.
+	* gcc.dg/analyzer/infinite-recursion-2.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-3.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-4-limited-buggy.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-4-limited.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-4-unlimited-buggy.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-4-unlimited.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-5.c: New test, adapted from
+	gcc.dg/Winfinite-recursion.c.
+	* gcc.dg/analyzer/infinite-recursion-alloca.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-inlining.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-multiline-1.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-multiline-2.c: New test.
+	* gcc.dg/analyzer/infinite-recursion-variadic.c: New test.
+	* gcc.dg/analyzer/infinite-recursion.c: Add dg-warning directives
+	where infinite recursions occur.
+	* gcc.dg/analyzer/malloc-ipa-12.c: Likewise.
+	* gcc.dg/analyzer/pr105365.c: Likewise.
+	* gcc.dg/analyzer/pr105366.c: Likewise.
+	* gcc.dg/analyzer/pr97029.c: Likewise.
+
+2022-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107523
+	* gcc.dg/pr107523.c: New.
+
+2022-11-11  Richard Biener  <rguenther@suse.de>
+	    Nikita Voronov  <nik_1357@mail.ru>
+
+	PR tree-optimization/107554
+	* gcc.dg/pr107554.c: New testcase.
+
+2022-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107618
+	* gcc.dg/pr107618.c: New testcase.
+
+2022-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84646
+	* g++.dg/tree-ssa/pr106922.C: Continue to scan earlier DCE dump.
+	* gcc.dg/tree-ssa/20030808-1.c: Likewise.
+
+2022-11-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/rvv/base/macro.h: New test.
+	* gcc.target/riscv/rvv/base/spill-1.c: New test.
+	* gcc.target/riscv/rvv/base/spill-10.c: New test.
+	* gcc.target/riscv/rvv/base/spill-11.c: New test.
+	* gcc.target/riscv/rvv/base/spill-12.c: New test.
+	* gcc.target/riscv/rvv/base/spill-2.c: New test.
+	* gcc.target/riscv/rvv/base/spill-3.c: New test.
+	* gcc.target/riscv/rvv/base/spill-4.c: New test.
+	* gcc.target/riscv/rvv/base/spill-5.c: New test.
+	* gcc.target/riscv/rvv/base/spill-6.c: New test.
+	* gcc.target/riscv/rvv/base/spill-7.c: New test.
+	* gcc.target/riscv/rvv/base/spill-8.c: New test.
+	* gcc.target/riscv/rvv/base/spill-9.c: New test.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/85487
+	* c-c++-common/pragma-region.c: New test.
+
+2022-11-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/prefetchi-5.c: New test.
+
 2022-11-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/deref-before-check-1.c: New test.

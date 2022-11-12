@@ -1,3 +1,13 @@
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/cp/index.rst: Remove trailing .rst in toctree.
+	* doc/cp/intro/index.rst: Likewise.
+	* doc/cp/topics/index.rst: Likewise.
+	* doc/index.rst: Likewise.
+	* doc/intro/index.rst: Likewise.
+	* doc/topics/index.rst: Likewise.
+	* doc/indices-and-tables.rst: New file.
+
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in:

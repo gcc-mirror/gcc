@@ -1,3 +1,144 @@
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* doc/gcc/gcc-command-options/options-that-control-static-analysis.rst:
+	Add -Wanalyzer-infinite-recursion.
+	* doc/gcc/gcc-command-options/options-to-request-or-suppress-warnings.rst
+	(-Winfinite-recursion): Mention -Wanalyzer-infinite-recursion.
+
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/infinite-recursion.o.
+
+2022-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107523
+	* gimple-range.cc (gimple_ranger::update_stmt): Use fur_stmt
+	rather than fur_depend.
+
+2022-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.cc (rvrp_folder::rvrp_folder): Init m_last_bb_stmt.
+	(rvrp_folder::pre_fold_bb): Set m_last_bb_stmt.
+	(rvrp_folder::pre_fold_stmt): Check for transitive inferred ranges.
+	(rvrp_folder::fold_stmt): Check in pre_fold_stmt instead.
+
+2022-11-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add Cortex-X1C
+	CPU.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/gcc/gcc-command-options/machine-dependent-options/aarch64-options.rst:
+	Document Cortex-X1C CPU.
+
+2022-11-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add Cortex-A715
+	CPU.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/gcc/gcc-command-options/machine-dependent-options/aarch64-options.rst:
+	Document Cortex-A715 CPU.
+
+2022-11-11  Richard Biener  <rguenther@suse.de>
+	    Nikita Voronov  <nik_1357@mail.ru>
+
+	PR tree-optimization/107554
+	* tree-ssa-strlen.cc (strlen_pass::count_nonzero_bytes):
+	Use unsigned HOST_WIDE_INT type for the strlen.
+
+2022-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105142
+	* gimple-fold.cc (fosa_unwind): New global.
+	(follow_outer_ssa_edges): When the SSA definition to follow
+	is does not dominate fosa_bb, temporarily clear flow-sensitive
+	info.  Make sure to not expand stmts with not defined overflow.
+	(maybe_fold_comparisons_from_match_pd): Set up unwind stack
+	for follow_outer_ssa_edges and unwind flow-sensitive info
+	clearing after matching.
+
+2022-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_mult::fold_range): Remove.
+	(operator_div::fold_range): Remove.
+	(operator_bitwise_and): Remove.
+
+2022-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (update_known_bitmask): Avoid unnecessary intersection.
+
+2022-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (range_operator::fold_range): Call
+	update_known_bitmask.
+	(operator_bitwise_and::fold_range): Avoid setting nonzero bits
+	when range is undefined.
+
+2022-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (class operator_div): Remove tree code.
+	(operator_div::wi_op_overflows): Handle EXACT_DIV_EXPR as
+	TRUNC_DIV_EXPR.
+
+2022-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc: (range_op_table::set): Set m_code.
+	(integral_table::integral_table): Handle shared entries.
+	(pointer_table::pointer_table): Same.
+	* range-op.h (class range_operator): Add m_code.
+
+2022-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107618
+	* tree-ssa-copy.cc (stmt_may_generate_copy): Simulate all
+	assignments with a single SSA use.
+	(copy_prop_visit_assignment): Use gimple_fold_stmt_to_constant_1
+	to perform simple constant folding.
+	(copy_prop::visit_stmt): Visit all assignments.
+
+2022-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84646
+	* tree-ssa-dce.cc (pass_dce::set_pass_param): Add param
+	wheter to run update-address-taken.
+	(pass_dce::execute): Honor it.
+	* passes.def: Exchange last DCE and CD-DCE invocations.
+	Swap pass_tail_calls and the last DCE.
+
+2022-11-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Monk Chiang  <monk.chiang@sifive.com>
+
+	* config/riscv/riscv-v.cc (emit_pred_move): Adjust for scalable register spilling.
+	(legitimize_move): Ditto.
+	* config/riscv/riscv.cc (riscv_v_adjust_scalable_frame): New function.
+	(riscv_first_stack_step): Adjust for scalable register spilling.
+	(riscv_expand_prologue): Ditto.
+	(riscv_expand_epilogue): Ditto.
+	(riscv_dwarf_poly_indeterminate_value): New function.
+	(TARGET_DWARF_POLY_INDETERMINATE_VALUE): New target hook support for register spilling.
+	* config/riscv/riscv.h (RISCV_DWARF_VLENB): New macro.
+	(RISCV_PROLOGUE_TEMP2_REGNUM): Ditto.
+	(RISCV_PROLOGUE_TEMP2): Ditto.
+	* config/riscv/vector-iterators.md: New iterators.
+	* config/riscv/vector.md (*mov<mode>): Fix it for register spilling.
+	(*mov<mode>_whole): New pattern.
+	(*mov<mode>_fract): New pattern.
+	(@pred_mov<mode>): Fix it for register spilling.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/85487
+	* doc/cpp/pragmas.rst (Pragmas): Document region pragmas.
+
+2022-11-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def (BDESC): Add
+	OPTION_MASK_ISA2_PREFETCHI for prefetchi builtin.
+	* config/i386/i386-expand.cc (ix86_expand_builtin):
+	Add ISA check before emit_insn.
+	* config/i386/prfchiintrin.h: Add target for intrin.
+
 2022-11-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99671

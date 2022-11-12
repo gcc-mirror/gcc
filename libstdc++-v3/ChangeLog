@@ -1,3 +1,85 @@
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* include/experimental/bits/fs_path.h (path::_Cvt::_S_wconvert):
+	Construct codecvt directly instead of getting it from the
+	locale.
+
+2022-11-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_M_use_local_data): Set active
+	member to _M_local_buf.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* include/bits/fs_path.h (path::_Codecvt): New class template
+	that selects the kind of code conversion done.
+	(path::_Codecvt<wchar_t>): Select based on sizeof(wchar_t).
+	(_GLIBCXX_CONV_FROM_UTF8): New macro to allow the same code to
+	be used for Windows and POSIX.
+	(path::_S_convert(const EcharT*, const EcharT*)): Simplify by
+	using _Codecvt and _GLIBCXX_CONV_FROM_UTF8 abstractions.
+	(path::_S_str_convert(basic_string_view<value_type>, const A&)):
+	Simplify nested conditions.
+	* include/experimental/bits/fs_path.h (path::_Cvt): Define
+	nested typedef controlling type of code conversion done.
+	(path::_Cvt::_S_wconvert): Use new typedef.
+	(path::string(const A&)): Likewise.
+	* testsuite/27_io/filesystem/path/construct/95048.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/95048.cc: New
+	test.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/swap.cc (MoveOnly::operator==): Add
+	const qualifier.
+	* testsuite/26_numerics/valarray/87641.cc (X::operator==):
+	Likewise.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_alnum_to_val_table::value):
+	[!__cpp_inline_variables]: Add non-inline definition.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/propagate_const/observers/107525.cc:
+	Use type trait instead of C++17 variable template.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103755
+	* config/abi/pre/gnu.ver: Tighten patterns for facets in the
+	base version. Add exports for __try_use_facet.
+	* include/bits/basic_ios.tcc (basic_ios::_M_cache_locale): Use
+	__try_use_facet instead of has_facet and use_facet.
+	* include/bits/fstream.tcc (basic_filebuf::basic_filebuf()):
+	Likewise.
+	(basic_filebuf::imbue): Likewise.
+	* include/bits/locale_classes.h (locale, locale::id)
+	(locale::_Impl): Declare __try_use_facet as a friend.
+	* include/bits/locale_classes.tcc (__try_use_facet): Define new
+	function template with special cases for default facets.
+	(has_facet, use_facet): Call __try_use_facet.
+	* include/bits/locale_facets.tcc (__try_use_facet): Declare
+	explicit instantiations.
+	* include/bits/locale_facets_nonio.tcc (__try_use_facet):
+	Likewise.
+	* src/c++11/locale-inst-monetary.h (INSTANTIATE_FACET_ACCESSORS):
+	Use new macro for facet accessor instantiations.
+	* src/c++11/locale-inst-numeric.h (INSTANTIATE_FACET_ACCESSORS):
+	Likewise.
+	* src/c++11/locale-inst.cc (INSTANTIATE_USE_FACET): Define new
+	macro for instantiating __try_use_facet and use_facet.
+	(INSTANTIATE_FACET_ACCESSORS): Define new macro for also
+	defining has_facet.
+	* src/c++98/compatibility-ldbl.cc (__try_use_facet):
+	Instantiate.
+	* testsuite/22_locale/ctype/is/string/89728_neg.cc: Adjust
+	expected errors.
+
 2022-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/concepts (__detail::__destructible_impl)
