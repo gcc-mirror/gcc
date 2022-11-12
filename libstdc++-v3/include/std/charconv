@@ -892,23 +892,25 @@ namespace __detail
   inline to_chars_result
   to_chars(char* __first, char* __last, _Float128 __value) noexcept
   {
-    __extension__
-    return to_chars(__first, __last, static_cast<__float128>(__value));
+    return __extension__ to_chars(__first, __last,
+				  static_cast<__float128>(__value));
   }
   inline to_chars_result
   to_chars(char* __first, char* __last, _Float128 __value,
 	   chars_format __fmt) noexcept
   {
-    __extension__
-    return to_chars(__first, __last, static_cast<__float128>(__value), __fmt);
+
+    return __extension__ to_chars(__first, __last,
+				  static_cast<__float128>(__value), __fmt);
   }
   inline to_chars_result
   to_chars(char* __first, char* __last, _Float128 __value,
 	   chars_format __fmt, int __precision) noexcept
   {
-    __extension__
-    return to_chars(__first, __last, static_cast<__float128>(__value), __fmt,
-		    __precision);
+
+    return __extension__ to_chars(__first, __last,
+				  static_cast<__float128>(__value), __fmt,
+				  __precision);
   }
 #else
   to_chars_result to_chars(char* __first, char* __last, _Float128 __value)
