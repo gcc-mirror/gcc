@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 bool
 range_operator_float::fold_range (frange &r, tree type,
 				  const frange &op1, const frange &op2,
-				  relation_trio) const
+				  relation_trio trio) const
 {
   if (empty_range_varying (r, type, op1, op2))
     return true;
@@ -65,7 +65,7 @@ range_operator_float::fold_range (frange &r, tree type,
   bool maybe_nan;
   rv_fold (lb, ub, maybe_nan, type,
 	   op1.lower_bound (), op1.upper_bound (),
-	   op2.lower_bound (), op2.upper_bound ());
+	   op2.lower_bound (), op2.upper_bound (), trio.op1_op2 ());
 
   // Handle possible NANs by saturating to the appropriate INF if only
   // one end is a NAN.  If both ends are a NAN, just return a NAN.
@@ -103,8 +103,8 @@ range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
 			       const REAL_VALUE_TYPE &lh_lb ATTRIBUTE_UNUSED,
 			       const REAL_VALUE_TYPE &lh_ub ATTRIBUTE_UNUSED,
 			       const REAL_VALUE_TYPE &rh_lb ATTRIBUTE_UNUSED,
-			       const REAL_VALUE_TYPE &rh_ub ATTRIBUTE_UNUSED)
-  const
+			       const REAL_VALUE_TYPE &rh_ub ATTRIBUTE_UNUSED,
+			       relation_kind) const
 {
   lb = dconstninf;
   ub = dconstinf;
@@ -1868,7 +1868,8 @@ class foperator_plus : public range_operator_float
 		const REAL_VALUE_TYPE &lh_lb,
 		const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb,
-		const REAL_VALUE_TYPE &rh_ub) const final override
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind) const final override
   {
     frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
     frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
@@ -1892,7 +1893,8 @@ class foperator_minus : public range_operator_float
 		const REAL_VALUE_TYPE &lh_lb,
 		const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb,
-		const REAL_VALUE_TYPE &rh_ub) const final override
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind) const final override
   {
     frange_arithmetic (MINUS_EXPR, type, lb, lh_lb, rh_ub, dconstninf);
     frange_arithmetic (MINUS_EXPR, type, ub, lh_ub, rh_lb, dconstinf);
@@ -1907,6 +1909,182 @@ class foperator_minus : public range_operator_float
       maybe_nan = false;
   }
 } fop_minus;
+
+
+class foperator_mult : public range_operator_float
+{
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind kind) const final override
+  {
+    bool is_square
+      = (kind == VREL_EQ
+	 && real_equal (&lh_lb, &rh_lb)
+	 && real_equal (&lh_ub, &rh_ub)
+	 && real_isneg (&lh_lb) == real_isneg (&rh_lb)
+	 && real_isneg (&lh_ub) == real_isneg (&rh_ub));
+
+    maybe_nan = false;
+    // x * x never produces a new NAN and we only multiply the same
+    // values, so the 0 * INF problematic cases never appear there.
+    if (!is_square)
+      {
+	// [+-0, +-0] * [+INF,+INF] (or [-INF,-INF] or swapped is a known NAN.
+	if ((real_iszero (&lh_lb)
+	     && real_iszero (&lh_ub)
+	     && real_isinf (&rh_lb)
+	     && real_isinf (&rh_ub, real_isneg (&rh_lb)))
+	    || (real_iszero (&rh_lb)
+		&& real_iszero (&rh_ub)
+		&& real_isinf (&lh_lb)
+		&& real_isinf (&lh_ub, real_isneg (&lh_lb))))
+	  {
+	    real_nan (&lb, "", 0, TYPE_MODE (type));
+	    ub = lb;
+	    maybe_nan = true;
+	    return;
+	  }
+
+	// Otherwise, if one range includes zero and the other ends with +-INF,
+	// it is a maybe NAN.
+	if ((real_compare (LE_EXPR, &lh_lb, &dconst0)
+	     && real_compare (GE_EXPR, &lh_ub, &dconst0)
+	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
+	    || (real_compare (LE_EXPR, &rh_lb, &dconst0)
+		&& real_compare (GE_EXPR, &rh_ub, &dconst0)
+		&& (real_isinf (&lh_lb) || real_isinf (&lh_ub))))
+	  {
+	    maybe_nan = true;
+
+	    bool must_have_signbit_zero = false;
+	    bool must_have_signbit_nonzero = false;
+	    if (real_isneg (&lh_lb) == real_isneg (&lh_ub)
+		&& real_isneg (&rh_lb) == real_isneg (&rh_ub))
+	      {
+		if (real_isneg (&lh_lb) == real_isneg (&rh_ub))
+		  must_have_signbit_zero = true;
+		else
+		  must_have_signbit_nonzero = true;
+	      }
+
+	    // If one of the ranges that includes INF is singleton
+	    // and the other range includes zero, the resulting
+	    // range is INF and NAN, because the 0 * INF boundary
+	    // case will be NAN, but already nextafter (0, 1) * INF
+	    // is INF.
+	    if ((real_isinf (&lh_lb)
+		 && real_isinf (&lh_ub, real_isneg (&lh_lb)))
+		|| (real_isinf (&rh_lb)
+		    && real_isinf (&rh_ub, real_isneg (&rh_lb))))
+	      {
+		// If all the boundary signs are the same, [+INF, +INF].
+		if (must_have_signbit_zero)
+		  ub = lb = dconstinf;
+		// If the two multiplicands have always different sign,
+		// [-INF, -INF].
+		else if (must_have_signbit_nonzero)
+		  ub = lb = dconstninf;
+		// Otherwise -> [-INF, +INF] (-INF or +INF).
+		else
+		  {
+		    lb = dconstninf;
+		    ub = dconstinf;
+		  }
+		return;
+	      }
+
+	    // If one of the multiplicands must be zero, the resulting
+	    // range is +-0 and NAN.
+	    if ((real_iszero (&lh_lb) && real_iszero (&lh_ub))
+		|| (real_iszero (&rh_lb) && real_iszero (&rh_ub)))
+	      {
+		ub = lb = dconst0;
+		// If all the boundary signs are the same, [+0.0, +0.0].
+		if (must_have_signbit_zero)
+		  ;
+		// If divisor and dividend must have different signs,
+		// [-0.0, -0.0].
+		else if (must_have_signbit_nonzero)
+		  ub = lb = real_value_negate (&dconst0);
+		// Otherwise -> [-0.0, +0.0].
+		else
+		  lb = real_value_negate (&dconst0);
+		return;
+	      }
+
+	    // Otherwise one of the multiplicands could be
+	    // [0.0, nextafter (0.0, 1.0)] and the [DBL_MAX, INF]
+	    // or similarly with different signs.  0.0 * DBL_MAX
+	    // is still 0.0, nextafter (0.0, 1.0) * INF is still INF,
+	    // so if the signs are always the same or always different,
+	    // result is [+0.0, +INF] or [-INF, -0.0], otherwise VARYING.
+	    if (must_have_signbit_zero)
+	      {
+		lb = dconst0;
+		ub = dconstinf;
+	      }
+	    else if (must_have_signbit_nonzero)
+	      {
+		lb = dconstninf;
+		ub = real_value_negate (&dconst0);
+	      }
+	    else
+	      {
+		lb = dconstninf;
+		ub = dconstinf;
+	      }
+	    return;
+	  }
+      }
+
+    REAL_VALUE_TYPE cp[8];
+    // Do a cross-product.
+    frange_arithmetic (MULT_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
+    frange_arithmetic (MULT_EXPR, type, cp[4], lh_lb, rh_lb, dconstinf);
+    if (is_square)
+      {
+	// For x * x we can just do max (lh_lb * lh_lb, lh_ub * lh_ub)
+	// as maximum and -0.0 as minimum if 0.0 is in the range,
+	// otherwise min (lh_lb * lh_lb, lh_ub * lh_ub).
+	// -0.0 rather than 0.0 because VREL_EQ doesn't prove that
+	// x and y are bitwise equal, just that they compare equal.
+	if (real_compare (LE_EXPR, &lh_lb, &dconst0)
+	    && real_compare (GE_EXPR, &lh_ub, &dconst0))
+	  cp[1] = real_value_negate (&dconst0);
+	else
+	  cp[1] = cp[0];
+	cp[2] = cp[0];
+	cp[5] = cp[4];
+	cp[6] = cp[4];
+      }
+    else
+      {
+	frange_arithmetic (MULT_EXPR, type, cp[1], lh_lb, rh_ub, dconstninf);
+	frange_arithmetic (MULT_EXPR, type, cp[5], lh_lb, rh_ub, dconstinf);
+	frange_arithmetic (MULT_EXPR, type, cp[2], lh_ub, rh_lb, dconstninf);
+	frange_arithmetic (MULT_EXPR, type, cp[6], lh_ub, rh_lb, dconstinf);
+      }
+    frange_arithmetic (MULT_EXPR, type, cp[3], lh_ub, rh_ub, dconstninf);
+    frange_arithmetic (MULT_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
+
+    for (int i = 1; i < 4; ++i)
+      {
+	if (real_less (&cp[i], &cp[0])
+	    || (real_iszero (&cp[0]) && real_isnegzero (&cp[i])))
+	  std::swap (cp[i], cp[0]);
+	if (real_less (&cp[4], &cp[i + 4])
+	    || (real_isnegzero (&cp[4]) && real_iszero (&cp[i + 4])))
+	  std::swap (cp[i + 4], cp[4]);
+      }
+    lb = cp[0];
+    ub = cp[4];
+
+  }
+} fop_mult;
 
 // Instantiate a range_op_table for floating point operations.
 static floating_op_table global_floating_table;
@@ -1942,6 +2120,7 @@ floating_op_table::floating_op_table ()
   set (NEGATE_EXPR, fop_negate);
   set (PLUS_EXPR, fop_plus);
   set (MINUS_EXPR, fop_minus);
+  set (MULT_EXPR, fop_mult);
 }
 
 // Return a pointer to the range_operator_float instance, if there is

@@ -128,7 +128,8 @@ public:
 			const REAL_VALUE_TYPE &lh_lb,
 			const REAL_VALUE_TYPE &lh_ub,
 			const REAL_VALUE_TYPE &rh_lb,
-			const REAL_VALUE_TYPE &rh_ub) const;
+			const REAL_VALUE_TYPE &rh_ub,
+			relation_kind) const;
   // Unary operations have the range of the LHS as op2.
   virtual bool fold_range (irange &r, tree type,
 			   const frange &lh,
