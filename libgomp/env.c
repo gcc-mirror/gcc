@@ -283,7 +283,7 @@ parse_unsigned_long_1 (const char *env, const char *val, unsigned long *pvalue,
 static bool
 parse_unsigned_long (const char *env, const char *val, void *const params[])
 {
-  unsigned upper = (unsigned long) params[2];
+  unsigned long upper = (uintptr_t) params[2];
   unsigned long pvalue = 0;
   bool ret = parse_unsigned_long_1 (env, val, &pvalue, (bool) params[1]);
   if (!ret)
