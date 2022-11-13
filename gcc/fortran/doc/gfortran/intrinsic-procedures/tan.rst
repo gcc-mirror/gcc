@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _tan:
+
 .. index:: TAN
 
 .. index:: DTAN
@@ -10,8 +12,6 @@
 .. index:: trigonometric function, tangent
 
 .. index:: tangent
-
-.. _tan:
 
 TAN --- Tangent function
 ************************

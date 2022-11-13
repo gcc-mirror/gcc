@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _btest:
+
 .. index:: BTEST
 
 .. index:: BBTEST
@@ -14,8 +16,6 @@
 .. index:: BKTEST
 
 .. index:: bits, testing
-
-.. _btest:
 
 BTEST --- Bit test function
 ***************************

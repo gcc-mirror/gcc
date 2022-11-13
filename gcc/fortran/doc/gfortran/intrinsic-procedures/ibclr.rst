@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _ibclr:
+
 .. index:: IBCLR
 
 .. index:: BBCLR
@@ -16,8 +18,6 @@
 .. index:: bits, unset
 
 .. index:: bits, clear
-
-.. _ibclr:
 
 IBCLR --- Clear bit
 *******************

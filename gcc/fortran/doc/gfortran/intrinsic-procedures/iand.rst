@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _iand:
+
 .. index:: IAND
 
 .. index:: BIAND
@@ -16,8 +18,6 @@
 .. index:: bitwise logical and
 
 .. index:: logical and, bitwise
-
-.. _iand:
 
 IAND --- Bitwise logical and
 ****************************

@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _ibset:
+
 .. index:: IBSET
 
 .. index:: BBSET
@@ -14,8 +16,6 @@
 .. index:: KIBSET
 
 .. index:: bits, set
-
-.. _ibset:
 
 IBSET --- Set bit
 *****************

@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _acosd:
+
 .. index:: ACOSD
 
 .. index:: DACOSD
@@ -10,8 +12,6 @@
 .. index:: trigonometric function, cosine, inverse, degrees
 
 .. index:: cosine, inverse, degrees
-
-.. _acosd:
 
 ACOSD --- Arccosine function, degrees
 *************************************

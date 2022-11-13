@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _not:
+
 .. index:: NOT
 
 .. index:: BNOT
@@ -18,8 +20,6 @@
 .. index:: bitwise logical not
 
 .. index:: logical not, bitwise
-
-.. _not:
 
 NOT --- Logical negation
 ************************

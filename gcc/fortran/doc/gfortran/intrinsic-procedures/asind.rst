@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _asind:
+
 .. index:: ASIND
 
 .. index:: DASIND
@@ -10,8 +12,6 @@
 .. index:: trigonometric function, sine, inverse, degrees
 
 .. index:: sine, inverse, degrees
-
-.. _asind:
 
 ASIND --- Arcsine function, degrees
 ***********************************

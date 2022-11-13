@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _atan2:
+
 .. index:: ATAN2
 
 .. index:: DATAN2
@@ -10,8 +12,6 @@
 .. index:: trigonometric function, tangent, inverse
 
 .. index:: tangent, inverse
-
-.. _atan2:
 
 ATAN2 --- Arctangent function
 ******************************

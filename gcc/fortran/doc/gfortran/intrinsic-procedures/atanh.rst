@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _atanh:
+
 .. index:: ATANH
 
 .. index:: DATANH
@@ -14,8 +16,6 @@
 .. index:: hyperbolic function, tangent, inverse
 
 .. index:: tangent, hyperbolic, inverse
-
-.. _atanh:
 
 ATANH --- Inverse hyperbolic tangent function
 *********************************************

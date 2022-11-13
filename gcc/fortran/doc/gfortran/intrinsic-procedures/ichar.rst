@@ -3,11 +3,11 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _ichar:
+
 .. index:: ICHAR
 
 .. index:: conversion, to integer
-
-.. _ichar:
 
 ICHAR --- Character-to-integer conversion function
 **************************************************

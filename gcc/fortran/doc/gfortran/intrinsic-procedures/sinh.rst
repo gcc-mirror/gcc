@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _sinh:
+
 .. index:: SINH
 
 .. index:: DSINH
@@ -12,8 +14,6 @@
 .. index:: hyperbolic function, sine
 
 .. index:: sine, hyperbolic
-
-.. _sinh:
 
 SINH --- Hyperbolic sine function
 **********************************

@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _bessel_yn:
+
 .. index:: BESSEL_YN
 
 .. index:: BESYN
@@ -10,8 +12,6 @@
 .. index:: DBESYN
 
 .. index:: Bessel function, second kind
-
-.. _bessel_yn:
 
 BESSEL_YN --- Bessel function of the second kind
 ************************************************

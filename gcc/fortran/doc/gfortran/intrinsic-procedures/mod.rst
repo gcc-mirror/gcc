@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _mod:
+
 .. index:: MOD
 
 .. index:: AMOD
@@ -20,8 +22,6 @@
 .. index:: remainder
 
 .. index:: division, remainder
-
-.. _mod:
 
 MOD --- Remainder function
 **************************

@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _ishftc:
+
 .. index:: ISHFTC
 
 .. index:: BSHFTC
@@ -14,8 +16,6 @@
 .. index:: KISHFTC
 
 .. index:: bits, shift circular
-
-.. _ishftc:
 
 ISHFTC --- Shift bits circularly
 ********************************

@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _ior:
+
 .. index:: IOR
 
 .. index:: BIOR
@@ -16,8 +18,6 @@
 .. index:: bitwise logical or
 
 .. index:: logical or, bitwise
-
-.. _ior:
 
 IOR --- Bitwise logical or
 **************************

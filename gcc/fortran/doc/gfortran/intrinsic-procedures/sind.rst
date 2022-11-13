@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _sind:
+
 .. index:: SIND
 
 .. index:: DSIND
@@ -16,8 +18,6 @@
 .. index:: trigonometric function, sine, degrees
 
 .. index:: sine, degrees
-
-.. _sind:
 
 SIND --- Sine function, degrees
 *******************************

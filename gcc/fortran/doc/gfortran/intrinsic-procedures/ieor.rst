@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _ieor:
+
 .. index:: IEOR
 
 .. index:: BIEOR
@@ -16,8 +18,6 @@
 .. index:: bitwise logical exclusive or
 
 .. index:: logical exclusive or, bitwise
-
-.. _ieor:
 
 IEOR --- Bitwise logical exclusive or
 *************************************

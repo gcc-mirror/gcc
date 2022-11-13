@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _cotand:
+
 .. index:: COTAND
 
 .. index:: DCOTAND
@@ -10,8 +12,6 @@
 .. index:: trigonometric function, cotangent, degrees
 
 .. index:: cotangent, degrees
-
-.. _cotand:
 
 COTAND --- Cotangent function, degrees
 **************************************

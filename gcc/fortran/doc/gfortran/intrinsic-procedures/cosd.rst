@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _cosd:
+
 .. index:: COSD
 
 .. index:: DCOSD
@@ -16,8 +18,6 @@
 .. index:: trigonometric function, cosine, degrees
 
 .. index:: cosine, degrees
-
-.. _cosd:
 
 COSD --- Cosine function, degrees
 *********************************

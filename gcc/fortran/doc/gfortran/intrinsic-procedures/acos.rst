@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _acos:
+
 .. index:: ACOS
 
 .. index:: DACOS
@@ -10,8 +12,6 @@
 .. index:: trigonometric function, cosine, inverse
 
 .. index:: cosine, inverse
-
-.. _acos:
 
 ACOS --- Arccosine function
 ****************************

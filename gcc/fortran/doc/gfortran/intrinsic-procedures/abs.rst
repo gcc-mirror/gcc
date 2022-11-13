@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _abs:
+
 .. index:: ABS
 
 .. index:: CABS
@@ -24,8 +26,6 @@
 .. index:: KIABS
 
 .. index:: absolute value
-
-.. _abs:
 
 ABS --- Absolute value
 **********************

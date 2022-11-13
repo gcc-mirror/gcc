@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _real:
+
 .. index:: REAL
 
 .. index:: REALPART
@@ -22,8 +24,6 @@
 .. index:: conversion, to real
 
 .. index:: complex numbers, real part
-
-.. _real:
 
 REAL --- Convert to real type
 ******************************

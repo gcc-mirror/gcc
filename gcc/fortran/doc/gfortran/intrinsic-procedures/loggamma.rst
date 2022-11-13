@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _log_gamma:
+
 .. index:: LOG_GAMMA
 
 .. index:: LGAMMA
@@ -12,8 +14,6 @@
 .. index:: DLGAMA
 
 .. index:: Gamma function, logarithm of
-
-.. _log_gamma:
 
 LOG_GAMMA --- Logarithm of the Gamma function
 *********************************************

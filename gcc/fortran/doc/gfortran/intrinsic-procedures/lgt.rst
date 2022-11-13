@@ -3,13 +3,13 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _lgt:
+
 .. index:: LGT
 
 .. index:: lexical comparison of strings
 
 .. index:: string, comparison
-
-.. _lgt:
 
 LGT --- Lexical greater than
 ****************************

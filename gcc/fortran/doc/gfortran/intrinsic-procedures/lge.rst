@@ -3,13 +3,13 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _lge:
+
 .. index:: LGE
 
 .. index:: lexical comparison of strings
 
 .. index:: string, comparison
-
-.. _lge:
 
 LGE --- Lexical greater than or equal
 *************************************

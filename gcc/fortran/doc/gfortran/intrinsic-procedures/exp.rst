@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _exp:
+
 .. index:: EXP
 
 .. index:: DEXP
@@ -16,8 +18,6 @@
 .. index:: exponential function
 
 .. index:: logarithm function, inverse
-
-.. _exp:
 
 EXP --- Exponential function
 *****************************

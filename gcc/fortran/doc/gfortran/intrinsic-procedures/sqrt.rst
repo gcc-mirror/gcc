@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _sqrt:
+
 .. index:: SQRT
 
 .. index:: DSQRT
@@ -16,8 +18,6 @@
 .. index:: root
 
 .. index:: square-root
-
-.. _sqrt:
 
 SQRT --- Square-root function
 *****************************

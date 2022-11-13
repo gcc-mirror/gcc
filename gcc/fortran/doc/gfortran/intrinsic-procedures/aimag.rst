@@ -3,6 +3,8 @@
   This is part of the GCC manual.
   For copying conditions, see the copyright.rst file.
 
+.. _aimag:
+
 .. index:: AIMAG
 
 .. index:: DIMAG
@@ -12,8 +14,6 @@
 .. index:: IMAGPART
 
 .. index:: complex numbers, imaginary part
-
-.. _aimag:
 
 AIMAG --- Imaginary part of complex number
 ********************************************
