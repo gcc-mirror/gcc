@@ -233,31 +233,39 @@ jit.rest.encap:
 
 # These targets redirect HTML creation and installation to either
 # jit.sphinx.(install-)html or jit.texinfo.(install-)html.
-jit.html: doc/libgccjit/html/html/index.html
+jit.html: jit.$(doc_build_sys).html
 jit.install-html: jit.$(doc_build_sys).install-html
 
 # For now, use texinfo for pdf, since the sphinx latex toolchain currently
 # fails for me deep inside pdflatex (see notes below)
-jit.pdf: doc/libgccjit/pdf/latex/libgccjit.pdf
+jit.pdf: jit.texinfo.pdf
 jit.install-pdf: jit.texinfo.install-pdf
 
-jit.info: doc/libgccjit/info/texinfo/libgccjit.info
+# Hooks for building docs using texinfo
+JIT_TEXI_FILES = $(srcdir)/jit/docs/_build/texinfo/libgccjit.texi
 
-doc/libgccjit/info/texinfo/libgccjit.info: $(SPHINX_FILES)
-	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/info; \
+jit.info: doc/libgccjit.info
+doc/libgccjit.info: $(JIT_TEXI_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/libgccjit.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
 	else true; fi
 
 jit.install-info: $(DESTDIR)$(infodir)/libgccjit.info
 
-$(DESTDIR)$(infodir)/libgccjit.info: doc/libgccjit/info/texinfo/libgccjit.info installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
+jit.dvi: doc/libgccjit.dvi
+doc/libgccjit.dvi: $(JIT_TEXI_FILES)
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
-doc/libgccjit/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/html
+jit.texinfo.html: $(build_htmldir)/jit/index.html
 
-jit.texinfo.install-html: doc/libgccjit/html/html/index.html
+$(build_htmldir)/jit/index.html: $(srcdir)/jit/docs/_build/texinfo/libgccjit.texi
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/jit -o $(@D) $<
+
+jit.texinfo.install-html: jit.texinfo.html
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
 	@for p in $(build_htmldir)/jit; do \
@@ -274,9 +282,10 @@ jit.texinfo.install-html: doc/libgccjit/html/html/index.html
 	  fi; \
 	done
 
+jit.texinfo.pdf: doc/libgccjit.pdf
 
-doc/libgccjit/pdf/latex/libgccjit.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/pdf
+doc/libgccjit.pdf: $(JIT_TEXI_FILES)
+	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 jit.texinfo.install-pdf: doc/libgccjit.pdf
 	@$(NORMAL_INSTALL)
@@ -333,10 +342,7 @@ jit.srcextra:
 
 jit.tags:
 
-jit.man: doc/libgccjit/man/man/libgccjit.1
-
-doc/libgccjit/man/man/libgccjit.1: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/man
+jit.man:
 
 jit.srcman:
 
@@ -391,13 +397,7 @@ jit.install-common: installdirs jit.install-headers
 endif
 endif
 
-jit.install-man: $(DESTDIR)$(man1dir)/libgccjit$(man1ext)
-
-$(DESTDIR)$(man1dir)/libgccjit$(man1ext): doc/libgccjit/man/man/libgccjit.1 \
-		installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
-	-chmod a-x $@
+jit.install-man:
 
 jit.install-plugin:
 

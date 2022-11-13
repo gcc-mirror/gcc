@@ -104,7 +104,7 @@ an assignment: a value that can be computed somehow, and assigned
 *to* a storage area (such as a variable).  It has a specific
 :c:expr:`gcc_jit_type *`.
 
-Another important class is :c:expr:`gcc_jit_lvalue *`.
+Anothe important class is :c:expr:`gcc_jit_lvalue *`.
 A :c:expr:`gcc_jit_lvalue *`. is something that can of the *left*-hand
 side of an assignment: a storage area (such as a variable).
 
