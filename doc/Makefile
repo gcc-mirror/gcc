@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 
-# Disable parallel reading as it can be very slow on a machine with many CPUs:
+# Disable parallel reading as it can be very slow on a machine with CPUs:
 # https://github.com/sphinx-doc/sphinx/issues/10969
 
 SPHINXOPTS   ?= -q
