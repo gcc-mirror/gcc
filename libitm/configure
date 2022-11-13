@@ -18094,7 +18094,7 @@ $as_echo "$as_me: WARNING:
   *** Info and man pages documentation will not be built." >&2;}
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-  SPHINX_BUILD=
+  SPHINX_BUILD=sphinx-build
   HAS_SPHINX_BUILD=
 fi
 rm -rf $tempdir
