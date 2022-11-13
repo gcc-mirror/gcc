@@ -19,7 +19,6 @@ Options That Control Static Analysis
   Enabling this option effectively enables the following warnings:
 
   :option:`-Wanalyzer-allocation-size` |gol|
-  :option:`-Wanalyzer-deref-before-check` |gol|
   :option:`-Wanalyzer-double-fclose` |gol|
   :option:`-Wanalyzer-double-free` |gol|
   :option:`-Wanalyzer-exposure-through-output-file` |gol|
@@ -88,33 +87,6 @@ Options That Control Static Analysis
 .. option:: -Wanalyzer-allocation-size
 
   Default setting; overrides :option:`-Wno-analyzer-allocation-size`.
-
-.. option:: -Wno-analyzer-deref-before-check
-
-  This warning requires :option:`-fanalyzer`, which enables it; use
-  :option:`-Wno-analyzer-deref-before-check`
-  to disable it.
-
-  This diagnostic warns for paths through the code in which a pointer
-  is checked for ``NULL`` *after* it has already been
-  dereferenced, suggesting that the pointer could have been NULL.
-  Such cases suggest that the check for NULL is either redundant,
-  or that it needs to be moved to before the pointer is dereferenced.
-
-  This diagnostic also considers values passed to a function argument
-  marked with ``__attribute__((nonnull))`` as requiring a non-NULL
-  value, and thus will complain if such values are checked for ``NULL``
-  after returning from such a function call.
-
-  This diagnostic is unlikely to be reported when any level of optimization
-  is enabled, as GCC's optimization logic will typically consider such
-  checks for NULL as being redundant, and optimize them away before the
-  analyzer "sees" them.  Hence optimization should be disabled when
-  attempting to trigger this diagnostic.
-
-.. option:: -Wanalyzer-deref-before-check
-
-  Default setting; overrides :option:`-Wno-analyzer-deref-before-check`.
 
 .. option:: -Wno-analyzer-double-fclose
 
@@ -853,7 +825,6 @@ The following options control the analyzer.
     Currently, :option:`-fanalyzer-checker=taint` disables the
     following warnings from :option:`-fanalyzer` :
 
-    :option:`-Wanalyzer-deref-before-check` |gol|
     :option:`-Wanalyzer-double-fclose` |gol|
     :option:`-Wanalyzer-double-free`  |gol|
     :option:`-Wanalyzer-exposure-through-output-file`  |gol|
