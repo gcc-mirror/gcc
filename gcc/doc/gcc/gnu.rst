@@ -1,1 +1,0 @@
-.. include:: ../../../doc/gnu.rst
