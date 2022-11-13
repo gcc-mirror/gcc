@@ -51,7 +51,6 @@ gcc_REVISION = read_file('REVISION')
 VERSION_PACKAGE = os.getenv('VERSION_PACKAGE')
 BUGURL = os.getenv('BUGURL')
 MONOCHROMATIC = os.getenv('MONOCHROMATIC')
-INCLUDE_TODO = os.getenv('INCLUDE_TODO')
 
 YEAR = time.strftime('%Y')
 
@@ -216,8 +215,6 @@ def set_common(name, module):
     if gcc_DEVPHASE == 'experimental':
         module['todo_include_todos'] = True
         module['tags'].add('development')
-    if INCLUDE_TODO:
-        module['tags'].add('include_todo')
 
     html_theme_options['source_edit_link'] = f'https://gcc.gnu.org/onlinedocs/{name}' \
                                              '/_sources/{filename}.txt'
