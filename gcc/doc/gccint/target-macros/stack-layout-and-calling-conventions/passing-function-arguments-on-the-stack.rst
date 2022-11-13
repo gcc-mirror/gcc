@@ -14,15 +14,33 @@ The macros in this section control how arguments are passed
 on the stack.  See the following section for other macros that
 control passing certain arguments in registers.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_PROMOTE_PROTOTYPES]
-  :end-before: [TARGET_PROMOTE_PROTOTYPES]
+.. function:: bool TARGET_PROMOTE_PROTOTYPES (const_tree fntype)
 
+  .. hook-start:TARGET_PROMOTE_PROTOTYPES
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_PUSH_ARGUMENT]
-  :end-before: [TARGET_PUSH_ARGUMENT]
+  This target hook returns ``true`` if an argument declared in a
+  prototype as an integral type smaller than ``int`` should actually be
+  passed as an ``int``.  In addition to avoiding errors in certain
+  cases of mismatch, it also makes for better code on certain machines.
+  The default is to not promote prototypes.
 
+.. hook-end
+
+.. function:: bool TARGET_PUSH_ARGUMENT (unsigned int npush)
+
+  .. hook-start:TARGET_PUSH_ARGUMENT
+
+  This target hook returns ``true`` if push instructions will be
+  used to pass outgoing arguments.  When the push instruction usage is
+  optional, :samp:`{npush}` is nonzero to indicate the number of bytes to
+  push.  Otherwise, :samp:`{npush}` is zero.  If the target machine does not
+  have a push instruction or push instruction should be avoided,
+  ``false`` should be returned.  That directs GCC to use an alternate
+  strategy: to allocate the entire argument block and then store the
+  arguments into it.  If this target hook may return ``true``,
+  ``PUSH_ROUNDING`` must be defined.
+
+.. hook-end
 
 .. c:macro:: PUSH_ARGS_REVERSED
 
@@ -117,10 +135,47 @@ control passing certain arguments in registers.
   suppresses this behavior and causes the parameter to be passed on the
   stack in its natural location.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_RETURN_POPS_ARGS]
-  :end-before: [TARGET_RETURN_POPS_ARGS]
+.. function:: poly_int64 TARGET_RETURN_POPS_ARGS (tree fundecl, tree funtype, poly_int64 size)
 
+  .. hook-start:TARGET_RETURN_POPS_ARGS
+
+  This target hook returns the number of bytes of its own arguments that
+  a function pops on returning, or 0 if the function pops no arguments
+  and the caller must therefore pop them all after the function returns.
+
+  :samp:`{fundecl}` is a C variable whose value is a tree node that describes
+  the function in question.  Normally it is a node of type
+  ``FUNCTION_DECL`` that describes the declaration of the function.
+  From this you can obtain the ``DECL_ATTRIBUTES`` of the function.
+
+  :samp:`{funtype}` is a C variable whose value is a tree node that
+  describes the function in question.  Normally it is a node of type
+  ``FUNCTION_TYPE`` that describes the data type of the function.
+  From this it is possible to obtain the data types of the value and
+  arguments (if known).
+
+  When a call to a library function is being considered, :samp:`{fundecl}`
+  will contain an identifier node for the library function.  Thus, if
+  you need to distinguish among various library functions, you can do so
+  by their names.  Note that 'library function' in this context means
+  a function used to perform arithmetic, whose name is known specially
+  in the compiler and was not mentioned in the C code being compiled.
+
+  :samp:`{size}` is the number of bytes of arguments passed on the
+  stack.  If a variable number of bytes is passed, it is zero, and
+  argument popping will always be the responsibility of the calling function.
+
+  On the VAX, all functions always pop their arguments, so the definition
+  of this macro is :samp:`{size}`.  On the 68000, using the standard
+  calling convention, no functions pop their arguments, so the value of
+  the macro is always 0 in this case.  But an alternative calling
+  convention is available in which functions that take a fixed number of
+  arguments pop them but other functions (such as ``printf``) pop
+  nothing (the caller pops all).  When this convention is in use,
+  :samp:`{funtype}` is examined to determine whether a function takes a fixed
+  number of arguments.
+
+.. hook-end
 
 .. c:macro:: CALL_POPS_ARGS (cum)
 

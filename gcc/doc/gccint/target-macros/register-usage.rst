@@ -91,34 +91,104 @@ Registers have various characteristics.
 
 .. index:: call-used register, call-clobbered register, call-saved register
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_FNTYPE_ABI]
-  :end-before: [TARGET_FNTYPE_ABI]
+.. function:: const predefined_function_abi & TARGET_FNTYPE_ABI (const_tree type)
 
+  .. hook-start:TARGET_FNTYPE_ABI
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_INSN_CALLEE_ABI]
-  :end-before: [TARGET_INSN_CALLEE_ABI]
+  Return the ABI used by a function with type :samp:`{type}` ; see the
+  definition of ``predefined_function_abi`` for details of the ABI
+  descriptor.  Targets only need to define this hook if they support
+  interoperability between several ABIs in the same translation unit.
 
+.. hook-end
+
+.. function:: const predefined_function_abi & TARGET_INSN_CALLEE_ABI (const rtx_insn *insn)
+
+  .. hook-start:TARGET_INSN_CALLEE_ABI
+
+  This hook returns a description of the ABI used by the target of
+  call instruction :samp:`{insn}` ; see the definition of
+  ``predefined_function_abi`` for details of the ABI descriptor.
+  Only the global function ``insn_callee_abi`` should call this hook
+  directly.
+
+  Targets only need to define this hook if they support
+  interoperability between several ABIs in the same translation unit.
+
+.. hook-end
 
 .. index:: call-used register, call-clobbered register, call-saved register
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_HARD_REGNO_CALL_PART_CLOBBERED]
-  :end-before: [TARGET_HARD_REGNO_CALL_PART_CLOBBERED]
+.. function:: bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (unsigned int abi_id, unsigned int regno, machine_mode mode)
 
+  .. hook-start:TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_GET_MULTILIB_ABI_NAME]
-  :end-before: [TARGET_GET_MULTILIB_ABI_NAME]
+  ABIs usually specify that calls must preserve the full contents
+  of a particular register, or that calls can alter any part of a
+  particular register.  This information is captured by the target macro
+  ``CALL_REALLY_USED_REGISTERS``.  However, some ABIs specify that calls
+  must preserve certain bits of a particular register but can alter others.
+  This hook should return true if this applies to at least one of the
+  registers in :samp:`(reg:{mode}{regno})`, and if as a result the
+  call would alter part of the :samp:`{mode}` value.  For example, if a call
+  preserves the low 32 bits of a 64-bit hard register :samp:`{regno}` but can
+  clobber the upper 32 bits, this hook should return true for a 64-bit mode
+  but false for a 32-bit mode.
 
+  The value of :samp:`{abi_id}` comes from the ``predefined_function_abi``
+  structure that describes the ABI of the call; see the definition of the
+  structure for more details.  If (as is usual) the target uses the same ABI
+  for all functions in a translation unit, :samp:`{abi_id}` is always 0.
+
+  The default implementation returns false, which is correct
+  for targets that don't have partly call-clobbered registers.
+
+.. hook-end
+
+.. function:: const char * TARGET_GET_MULTILIB_ABI_NAME (void)
+
+  .. hook-start:TARGET_GET_MULTILIB_ABI_NAME
+
+  This hook returns name of multilib ABI name.
+
+.. hook-end
 
 .. index:: fixed_regs, call_used_regs, global_regs, reg_names, reg_class_contents
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_CONDITIONAL_REGISTER_USAGE]
-  :end-before: [TARGET_CONDITIONAL_REGISTER_USAGE]
+.. function:: void TARGET_CONDITIONAL_REGISTER_USAGE (void)
 
+  .. hook-start:TARGET_CONDITIONAL_REGISTER_USAGE
+
+  This hook may conditionally modify five variables
+  ``fixed_regs``, ``call_used_regs``, ``global_regs``,
+  ``reg_names``, and ``reg_class_contents``, to take into account
+  any dependence of these register sets on target flags.  The first three
+  of these are of type ``char []`` (interpreted as boolean vectors).
+  ``global_regs`` is a ``const char *[]``, and
+  ``reg_class_contents`` is a ``HARD_REG_SET``.  Before the macro is
+  called, ``fixed_regs``, ``call_used_regs``,
+  ``reg_class_contents``, and ``reg_names`` have been initialized
+  from ``FIXED_REGISTERS``, ``CALL_USED_REGISTERS``,
+  ``REG_CLASS_CONTENTS``, and ``REGISTER_NAMES``, respectively.
+  ``global_regs`` has been cleared, and any :option:`-ffixed-reg`,
+  :option:`-fcall-used-reg` and :option:`-fcall-saved-reg`
+  command options have been applied.
+
+  .. index:: disabling certain registers, controlling register usage
+
+  If the usage of an entire class of registers depends on the target
+  flags, you may indicate this to GCC by using this macro to modify
+  ``fixed_regs`` and ``call_used_regs`` to 1 for each of the
+  registers in the classes which should not be used by GCC.  Also make
+  ``define_register_constraint`` s return ``NO_REGS`` for constraints
+  that shouldn't be used.
+
+  (However, if this class is not included in ``GENERAL_REGS`` and all
+  of the insn patterns whose constraints permit this class are
+  controlled by target switches, then GCC will automatically avoid using
+  these registers when the target switches are opposed to them.)
+
+.. hook-end
 
 .. c:macro:: INCOMING_REGNO (out)
 
@@ -219,10 +289,20 @@ This section discusses the macros that describe which kinds of values
 (specifically, which machine modes) each register can hold, and how many
 consecutive registers are needed for a given mode.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_HARD_REGNO_NREGS]
-  :end-before: [TARGET_HARD_REGNO_NREGS]
+.. function:: unsigned int TARGET_HARD_REGNO_NREGS (unsigned int regno, machine_mode mode)
 
+  .. hook-start:TARGET_HARD_REGNO_NREGS
+
+  This hook returns the number of consecutive hard registers, starting
+  at register number :samp:`{regno}`, required to hold a value of mode
+  :samp:`{mode}`.  This hook must never return zero, even if a register
+  cannot hold the requested mode - indicate that with
+  ``TARGET_HARD_REGNO_MODE_OK`` and/or
+  ``TARGET_CAN_CHANGE_MODE_CLASS`` instead.
+
+  The default definition returns the number of words in :samp:`{mode}`.
+
+.. hook-end
 
 .. c:macro:: HARD_REGNO_NREGS_HAS_PADDING (regno, mode)
 
@@ -260,10 +340,67 @@ consecutive registers are needed for a given mode.
   happens for example on SPARC 64-bit where the natural size of
   floating-point registers is still 32-bit.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_HARD_REGNO_MODE_OK]
-  :end-before: [TARGET_HARD_REGNO_MODE_OK]
+.. function:: bool TARGET_HARD_REGNO_MODE_OK (unsigned int regno, machine_mode mode)
 
+  .. hook-start:TARGET_HARD_REGNO_MODE_OK
+
+  This hook returns true if it is permissible to store a value
+  of mode :samp:`{mode}` in hard register number :samp:`{regno}` (or in several
+  registers starting with that one).  The default definition returns true
+  unconditionally.
+
+  You need not include code to check for the numbers of fixed registers,
+  because the allocation mechanism considers them to be always occupied.
+
+  .. index:: register pairs
+
+  On some machines, double-precision values must be kept in even/odd
+  register pairs.  You can implement that by defining this hook to reject
+  odd register numbers for such modes.
+
+  The minimum requirement for a mode to be OK in a register is that the
+  :samp:`mov{mode}` instruction pattern support moves between the
+  register and other hard register in the same class and that moving a
+  value into the register and back out not alter it.
+
+  Since the same instruction used to move ``word_mode`` will work for
+  all narrower integer modes, it is not necessary on any machine for
+  this hook to distinguish between these modes, provided you define
+  patterns :samp:`movhi`, etc., to take advantage of this.  This is
+  useful because of the interaction between ``TARGET_HARD_REGNO_MODE_OK``
+  and ``TARGET_MODES_TIEABLE_P`` ; it is very desirable for all integer
+  modes to be tieable.
+
+  Many machines have special registers for floating point arithmetic.
+  Often people assume that floating point machine modes are allowed only
+  in floating point registers.  This is not true.  Any registers that
+  can hold integers can safely *hold* a floating point machine
+  mode, whether or not floating arithmetic can be done on it in those
+  registers.  Integer move instructions can be used to move the values.
+
+  On some machines, though, the converse is true: fixed-point machine
+  modes may not go in floating registers.  This is true if the floating
+  registers normalize any value stored in them, because storing a
+  non-floating value there would garble it.  In this case,
+  ``TARGET_HARD_REGNO_MODE_OK`` should reject fixed-point machine modes in
+  floating registers.  But if the floating registers do not automatically
+  normalize, if you can store any bit pattern in one and retrieve it
+  unchanged without a trap, then any machine mode may go in a floating
+  register, so you can define this hook to say so.
+
+  The primary significance of special floating registers is rather that
+  they are the registers acceptable in floating point arithmetic
+  instructions.  However, this is of no concern to
+  ``TARGET_HARD_REGNO_MODE_OK``.  You handle it by writing the proper
+  constraints for those instructions.
+
+  On some machines, the floating registers are especially slow to access,
+  so that it is better to store a value in a stack frame than in such a
+  register if floating point arithmetic is not being done.  As long as the
+  floating registers are not in class ``GENERAL_REGS``, they will not
+  be used unless some pattern's constraint asks for one.
+
+.. hook-end
 
 .. c:macro:: HARD_REGNO_RENAME_OK (from, to)
 
@@ -276,15 +413,40 @@ consecutive registers are needed for a given mode.
 
   The default is always nonzero.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_MODES_TIEABLE_P]
-  :end-before: [TARGET_MODES_TIEABLE_P]
+.. function:: bool TARGET_MODES_TIEABLE_P (machine_mode mode1, machine_mode mode2)
 
+  .. hook-start:TARGET_MODES_TIEABLE_P
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_HARD_REGNO_SCRATCH_OK]
-  :end-before: [TARGET_HARD_REGNO_SCRATCH_OK]
+  This hook returns true if a value of mode :samp:`{mode1}` is accessible
+  in mode :samp:`{mode2}` without copying.
 
+  If ``TARGET_HARD_REGNO_MODE_OK (r, mode1)`` and
+  ``TARGET_HARD_REGNO_MODE_OK (r, mode2)`` are always
+  the same for any :samp:`{r}`, then
+  ``TARGET_MODES_TIEABLE_P (mode1, mode2)``
+  should be true.  If they differ for any :samp:`{r}`, you should define
+  this hook to return false unless some other mechanism ensures the
+  accessibility of the value in a narrower mode.
+
+  You should define this hook to return true in as many cases as
+  possible since doing so will allow GCC to perform better register
+  allocation.  The default definition returns true unconditionally.
+
+.. hook-end
+
+.. function:: bool TARGET_HARD_REGNO_SCRATCH_OK (unsigned int regno)
+
+  .. hook-start:TARGET_HARD_REGNO_SCRATCH_OK
+
+  This target hook should return ``true`` if it is OK to use a hard register
+  :samp:`{regno}` as scratch reg in peephole2.
+
+  One common use of this macro is to prevent using of a register that
+  is not saved by a prologue in an interrupt handler.
+
+  The default version of this hook always returns ``true``.
+
+.. hook-end
 
 .. c:macro:: AVOID_CCMODE_COPIES
 

@@ -103,10 +103,15 @@ Here are macros for DWARF output.
   prologue, or call ``dwarf2out_def_cfa`` and ``dwarf2out_reg_save``
   as appropriate from ``TARGET_ASM_FUNCTION_PROLOGUE`` if you don't.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_DWARF_CALLING_CONVENTION]
-  :end-before: [TARGET_DWARF_CALLING_CONVENTION]
+.. function:: int TARGET_DWARF_CALLING_CONVENTION (const_tree function)
 
+    .. hook-start:TARGET_DWARF_CALLING_CONVENTION
+
+    Define this to enable the dwarf attribute ``DW_AT_calling_convention`` to
+    be emitted for each function.  Instead of an integer return the enum
+    value for the ``DW_CC_`` tag.
+
+.. hook-end
 
 .. function:: int TARGET_DWARF_CALLING_CONVENTION (const_tree function)
 
@@ -122,10 +127,22 @@ Here are macros for DWARF output.
   exceptions are enabled, GCC will output this information not matter
   how you define ``DWARF2_FRAME_INFO``.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_DEBUG_UNWIND_INFO]
-  :end-before: [TARGET_DEBUG_UNWIND_INFO]
+.. function:: enum unwind_info_type TARGET_DEBUG_UNWIND_INFO (void)
 
+  .. hook-start:TARGET_DEBUG_UNWIND_INFO
+
+  This hook defines the mechanism that will be used for describing frame
+  unwind information to the debugger.  Normally the hook will return
+  ``UI_DWARF2`` if DWARF 2 debug information is enabled, and
+  return ``UI_NONE`` otherwise.
+
+  A target may return ``UI_DWARF2`` even when DWARF 2 debug information
+  is disabled in order to always output DWARF 2 frame information.
+
+  A target may return ``UI_TARGET`` if it has ABI specified unwind tables.
+  This will suppress generation of the normal debug frame unwind information.
+
+.. hook-end
 
 .. c:macro:: DWARF2_ASM_LINE_DEBUG_INFO
 
@@ -140,30 +157,63 @@ Here are macros for DWARF output.
   user enables location views, the compiler may have to fallback to
   internal line number tables.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_RESET_LOCATION_VIEW]
-  :end-before: [TARGET_RESET_LOCATION_VIEW]
+.. function:: int TARGET_RESET_LOCATION_VIEW (rtx_insn *)
 
+  .. hook-start:TARGET_RESET_LOCATION_VIEW
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_WANT_DEBUG_PUB_SECTIONS]
-  :end-before: [TARGET_WANT_DEBUG_PUB_SECTIONS]
+  This hook, if defined, enables -ginternal-reset-location-views, and
+  uses its result to override cases in which the estimated min insn
+  length might be nonzero even when a PC advance (i.e., a view reset)
+  cannot be taken for granted.
 
+  If the hook is defined, it must return a positive value to indicate
+  the insn definitely advances the PC, and so the view number can be
+  safely assumed to be reset; a negative value to mean the insn
+  definitely does not advance the PC, and os the view number must not
+  be reset; or zero to decide based on the estimated insn length.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_DELAY_SCHED2]
-  :end-before: [TARGET_DELAY_SCHED2]
+  If insn length is to be regarded as reliable, set the hook to
+  ``hook_int_rtx_insn_0``.
 
+.. hook-end
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_DELAY_VARTRACK]
-  :end-before: [TARGET_DELAY_VARTRACK]
+.. c:var:: bool TARGET_WANT_DEBUG_PUB_SECTIONS
 
+  .. hook-start:TARGET_WANT_DEBUG_PUB_SECTIONS
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_NO_REGISTER_ALLOCATION]
-  :end-before: [TARGET_NO_REGISTER_ALLOCATION]
+  True if the ``.debug_pubtypes`` and ``.debug_pubnames`` sections
+  should be emitted.  These sections are not used on most platforms, and
+  in particular GDB does not use them.
 
+.. hook-end
+
+.. c:var:: bool TARGET_DELAY_SCHED2
+
+  .. hook-start:TARGET_DELAY_SCHED2
+
+  True if sched2 is not to be run at its normal place.
+  This usually means it will be run as part of machine-specific reorg.
+
+.. hook-end
+
+.. c:var:: bool TARGET_DELAY_VARTRACK
+
+  .. hook-start:TARGET_DELAY_VARTRACK
+
+  True if vartrack is not to be run at its normal place.
+  This usually means it will be run as part of machine-specific reorg.
+
+.. hook-end
+
+.. c:var:: bool TARGET_NO_REGISTER_ALLOCATION
+
+  .. hook-start:TARGET_NO_REGISTER_ALLOCATION
+
+  True if register allocation and the passes
+  following it should not be run.  Usually true only for virtual assembler
+  targets.
+
+.. hook-end
 
 .. c:macro:: ASM_OUTPUT_DWARF_DELTA (stream, size, label1, label2)
 
@@ -200,10 +250,14 @@ Here are macros for DWARF output.
   is used on some systems to avoid garbage collecting a DWARF table which
   is referenced by a function.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_OUTPUT_DWARF_DTPREL]
-  :end-before: [TARGET_ASM_OUTPUT_DWARF_DTPREL]
+.. function:: void TARGET_ASM_OUTPUT_DWARF_DTPREL (FILE *file, int size, rtx x)
 
+  .. hook-start:TARGET_ASM_OUTPUT_DWARF_DTPREL
+
+  If defined, this target hook is a function which outputs a DTP-relative
+  reference to the given TLS symbol of the specified size.
+
+.. hook-end
 
 .. _vms-debug:
 

@@ -191,25 +191,65 @@ if the target does not provide them.
 
   This macro is irrelevant if there is no separate readonly data section.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_INIT_SECTIONS]
-  :end-before: [TARGET_ASM_INIT_SECTIONS]
+.. function:: void TARGET_ASM_INIT_SECTIONS (void)
 
+  .. hook-start:TARGET_ASM_INIT_SECTIONS
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_RELOC_RW_MASK]
-  :end-before: [TARGET_ASM_RELOC_RW_MASK]
+  Define this hook if you need to do something special to set up the
+  :samp:`varasm.cc` sections, or if your target has some special sections
+  of its own that you need to create.
 
+  GCC calls this hook after processing the command line, but before writing
+  any assembly code, and before calling any of the section-returning hooks
+  described below.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC]
-  :end-before: [TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC]
+.. hook-end
 
+.. function:: int TARGET_ASM_RELOC_RW_MASK (void)
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_SELECT_SECTION]
-  :end-before: [TARGET_ASM_SELECT_SECTION]
+  .. hook-start:TARGET_ASM_RELOC_RW_MASK
 
+  Return a mask describing how relocations should be treated when
+  selecting sections.  Bit 1 should be set if global relocations
+  should be placed in a read-write section; bit 0 should be set if
+  local relocations should be placed in a read-write section.
+
+  The default version of this function returns 3 when :option:`-fpic`
+  is in effect, and 0 otherwise.  The hook is typically redefined
+  when the target cannot support (some kinds of) dynamic relocations
+  in read-only sections even in executables.
+
+.. hook-end
+
+.. function:: bool TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC (void)
+
+  .. hook-start:TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC
+
+  Return true to generate ADDR_DIF_VEC table
+  or false to generate ADDR_VEC table for jumps in case of -fPIC.
+
+  The default version of this function returns true if flag_pic
+  equals true and false otherwise
+
+.. hook-end
+
+.. function:: section * TARGET_ASM_SELECT_SECTION (tree exp, int reloc, unsigned HOST_WIDE_INT align)
+
+  .. hook-start:TARGET_ASM_SELECT_SECTION
+
+  Return the section into which :samp:`{exp}` should be placed.  You can
+  assume that :samp:`{exp}` is either a ``VAR_DECL`` node or a constant of
+  some sort.  :samp:`{reloc}` indicates whether the initial value of :samp:`{exp}`
+  requires link-time relocations.  Bit 0 is set when variable contains
+  local relocations only, while bit 1 is set for global relocations.
+  :samp:`{align}` is the constant alignment in bits.
+
+  The default version of this function takes care of putting read-only
+  variables in ``readonly_data_section``.
+
+  See also :samp:`{USE_SELECT_SECTION_FOR_FUNCTIONS}`.
+
+.. hook-end
 
 .. c:macro:: USE_SELECT_SECTION_FOR_FUNCTIONS
 
@@ -220,66 +260,186 @@ if the target does not provide them.
   function has been determined to be likely to be called, and nonzero if
   it is unlikely to be called.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_UNIQUE_SECTION]
-  :end-before: [TARGET_ASM_UNIQUE_SECTION]
+.. function:: void TARGET_ASM_UNIQUE_SECTION (tree decl, int reloc)
 
+  .. hook-start:TARGET_ASM_UNIQUE_SECTION
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_FUNCTION_RODATA_SECTION]
-  :end-before: [TARGET_ASM_FUNCTION_RODATA_SECTION]
+  Build up a unique section name, expressed as a ``STRING_CST`` node,
+  and assign it to :samp:`DECL_SECTION_NAME ({decl})`.
+  As with ``TARGET_ASM_SELECT_SECTION``, :samp:`{reloc}` indicates whether
+  the initial value of :samp:`{exp}` requires link-time relocations.
 
+  The default version of this function appends the symbol name to the
+  ELF section name that would normally be used for the symbol.  For
+  example, the function ``foo`` would be placed in ``.text.foo``.
+  Whatever the actual target object format, this is often good enough.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_MERGEABLE_RODATA_PREFIX]
-  :end-before: [TARGET_ASM_MERGEABLE_RODATA_PREFIX]
+.. hook-end
 
+.. function:: section * TARGET_ASM_FUNCTION_RODATA_SECTION (tree decl, bool relocatable)
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_TM_CLONE_TABLE_SECTION]
-  :end-before: [TARGET_ASM_TM_CLONE_TABLE_SECTION]
+  .. hook-start:TARGET_ASM_FUNCTION_RODATA_SECTION
 
+  Return the readonly data or reloc readonly data section associated with
+  :samp:`DECL_SECTION_NAME ({decl})`. :samp:`{relocatable}` selects the latter
+  over the former.
+  The default version of this function selects ``.gnu.linkonce.r.name`` if
+  the function's section is ``.gnu.linkonce.t.name``, ``.rodata.name``
+  or ``.data.rel.ro.name`` if function is in ``.text.name``, and
+  the normal readonly-data or reloc readonly data section otherwise.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_SELECT_RTX_SECTION]
-  :end-before: [TARGET_ASM_SELECT_RTX_SECTION]
+.. hook-end
 
+.. c:var:: const char * TARGET_ASM_MERGEABLE_RODATA_PREFIX
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_MANGLE_DECL_ASSEMBLER_NAME]
-  :end-before: [TARGET_MANGLE_DECL_ASSEMBLER_NAME]
+  .. hook-start:TARGET_ASM_MERGEABLE_RODATA_PREFIX
 
+  Usually, the compiler uses the prefix ``".rodata"`` to construct
+  section names for mergeable constant data.  Define this macro to override
+  the string if a different section name should be used.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ENCODE_SECTION_INFO]
-  :end-before: [TARGET_ENCODE_SECTION_INFO]
+.. hook-end
 
+.. function:: section * TARGET_ASM_TM_CLONE_TABLE_SECTION (void)
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_STRIP_NAME_ENCODING]
-  :end-before: [TARGET_STRIP_NAME_ENCODING]
+  .. hook-start:TARGET_ASM_TM_CLONE_TABLE_SECTION
 
+  Return the section that should be used for transactional memory clone
+  tables.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_IN_SMALL_DATA_P]
-  :end-before: [TARGET_IN_SMALL_DATA_P]
+.. hook-end
 
+.. function:: section * TARGET_ASM_SELECT_RTX_SECTION (machine_mode mode, rtx x, unsigned HOST_WIDE_INT align)
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_HAVE_SRODATA_SECTION]
-  :end-before: [TARGET_HAVE_SRODATA_SECTION]
+  .. hook-start:TARGET_ASM_SELECT_RTX_SECTION
 
+  Return the section into which a constant :samp:`{x}`, of mode :samp:`{mode}`,
+  should be placed.  You can assume that :samp:`{x}` is some kind of
+  constant in RTL.  The argument :samp:`{mode}` is redundant except in the
+  case of a ``const_int`` rtx.  :samp:`{align}` is the constant alignment
+  in bits.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_PROFILE_BEFORE_PROLOGUE]
-  :end-before: [TARGET_PROFILE_BEFORE_PROLOGUE]
+  The default version of this function takes care of putting symbolic
+  constants in ``flag_pic`` mode in ``data_section`` and everything
+  else in ``readonly_data_section``.
 
+.. hook-end
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_BINDS_LOCAL_P]
-  :end-before: [TARGET_BINDS_LOCAL_P]
+.. function:: tree TARGET_MANGLE_DECL_ASSEMBLER_NAME (tree decl, tree id)
 
+  .. hook-start:TARGET_MANGLE_DECL_ASSEMBLER_NAME
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_HAVE_TLS]
-  :end-before: [TARGET_HAVE_TLS]
+  Define this hook if you need to postprocess the assembler name generated
+  by target-independent code.  The :samp:`{id}` provided to this hook will be
+  the computed name (e.g., the macro ``DECL_NAME`` of the :samp:`{decl}` in C,
+  or the mangled name of the :samp:`{decl}` in C++).  The return value of the
+  hook is an ``IDENTIFIER_NODE`` for the appropriate mangled name on
+  your target system.  The default implementation of this hook just
+  returns the :samp:`{id}` provided.
+
+.. hook-end
+
+.. function:: void TARGET_ENCODE_SECTION_INFO (tree decl, rtx rtl, int new_decl_p)
+
+  .. hook-start:TARGET_ENCODE_SECTION_INFO
+
+  Define this hook if references to a symbol or a constant must be
+  treated differently depending on something about the variable or
+  function named by the symbol (such as what section it is in).
+
+  The hook is executed immediately after rtl has been created for
+  :samp:`{decl}`, which may be a variable or function declaration or
+  an entry in the constant pool.  In either case, :samp:`{rtl}` is the
+  rtl in question.  Do *not* use ``DECL_RTL (decl)``
+  in this hook; that field may not have been initialized yet.
+
+  In the case of a constant, it is safe to assume that the rtl is
+  a ``mem`` whose address is a ``symbol_ref``.  Most decls
+  will also have this form, but that is not guaranteed.  Global
+  register variables, for instance, will have a ``reg`` for their
+  rtl.  (Normally the right thing to do with such unusual rtl is
+  leave it alone.)
+
+  The :samp:`{new_decl_p}` argument will be true if this is the first time
+  that ``TARGET_ENCODE_SECTION_INFO`` has been invoked on this decl.  It will
+  be false for subsequent invocations, which will happen for duplicate
+  declarations.  Whether or not anything must be done for the duplicate
+  declaration depends on whether the hook examines ``DECL_ATTRIBUTES``.
+  :samp:`{new_decl_p}` is always true when the hook is called for a constant.
+
+  .. index:: SYMBOL_REF_FLAG, in TARGET_ENCODE_SECTION_INFO
+
+  The usual thing for this hook to do is to record flags in the
+  ``symbol_ref``, using ``SYMBOL_REF_FLAG`` or ``SYMBOL_REF_FLAGS``.
+  Historically, the name string was modified if it was necessary to
+  encode more than one bit of information, but this practice is now
+  discouraged; use ``SYMBOL_REF_FLAGS``.
+
+  The default definition of this hook, ``default_encode_section_info``
+  in :samp:`varasm.cc`, sets a number of commonly-useful bits in
+  ``SYMBOL_REF_FLAGS``.  Check whether the default does what you need
+  before overriding it.
+
+.. hook-end
+
+.. function:: const char * TARGET_STRIP_NAME_ENCODING (const char *name)
+
+  .. hook-start:TARGET_STRIP_NAME_ENCODING
+
+  Decode :samp:`{name}` and return the real name part, sans
+  the characters that ``TARGET_ENCODE_SECTION_INFO``
+  may have added.
+
+.. hook-end
+
+.. function:: bool TARGET_IN_SMALL_DATA_P (const_tree exp)
+
+  .. hook-start:TARGET_IN_SMALL_DATA_P
+
+  Returns true if :samp:`{exp}` should be placed into a 'small data' section.
+  The default version of this hook always returns false.
+
+.. hook-end
+
+.. c:var:: bool TARGET_HAVE_SRODATA_SECTION
+
+  .. hook-start:TARGET_HAVE_SRODATA_SECTION
+
+  Contains the value true if the target places read-only
+  'small data' into a separate section.  The default value is false.
+
+.. hook-end
+
+.. function:: bool TARGET_PROFILE_BEFORE_PROLOGUE (void)
+
+  .. hook-start:TARGET_PROFILE_BEFORE_PROLOGUE
+
+  It returns true if target wants profile code emitted before prologue.
+
+  The default version of this hook use the target macro
+  ``PROFILE_BEFORE_PROLOGUE``.
+
+.. hook-end
+
+.. function:: bool TARGET_BINDS_LOCAL_P (const_tree exp)
+
+  .. hook-start:TARGET_BINDS_LOCAL_P
+
+  Returns true if :samp:`{exp}` names an object for which name resolution
+  rules must resolve to the current 'module' (dynamic shared library
+  or executable image).
+
+  The default version of this hook implements the name resolution rules
+  for ELF, which has a looser model of global name binding than other
+  currently supported object file formats.
+
+.. hook-end
+
+.. c:var:: bool TARGET_HAVE_TLS
+
+  .. hook-start:TARGET_HAVE_TLS
+
+  Contains the value true if the target supports thread-local storage.
+  The default value is false.
+
+.. hook-end

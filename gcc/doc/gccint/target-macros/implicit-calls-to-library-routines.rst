@@ -23,15 +23,32 @@ Here is an explanation of implicit calls to library routines.
 
 .. index:: set_optab_libfunc, init_one_libfunc
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_INIT_LIBFUNCS]
-  :end-before: [TARGET_INIT_LIBFUNCS]
+.. function:: void TARGET_INIT_LIBFUNCS (void)
 
+  .. hook-start:TARGET_INIT_LIBFUNCS
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_LIBFUNC_GNU_PREFIX]
-  :end-before: [TARGET_LIBFUNC_GNU_PREFIX]
+  This hook should declare additional library routines or rename
+  existing ones, using the functions ``set_optab_libfunc`` and
+  ``init_one_libfunc`` defined in :samp:`optabs.cc`.
+  ``init_optabs`` calls this macro after initializing all the normal
+  library routines.
 
+  The default is to do nothing.  Most ports don't need to define this hook.
+
+.. hook-end
+
+.. c:var:: bool TARGET_LIBFUNC_GNU_PREFIX
+
+  .. hook-start:TARGET_LIBFUNC_GNU_PREFIX
+
+  If false (the default), internal library routines start with two
+  underscores.  If set to true, these routines start with ``__gnu_``
+  instead.  E.g., ``__muldi3`` changes to ``__gnu_muldi3``.  This
+  currently only affects functions defined in :samp:`libgcc2.c`.  If this
+  is set to true, the :samp:`tm.h` file must also
+  ``#define LIBGCC2_GNU_PREFIX``.
+
+.. hook-end
 
 .. c:macro:: FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison)
 
@@ -87,15 +104,26 @@ Here is an explanation of implicit calls to library routines.
   ``errno`` may not actually be a variable.)  If you don't define this
   macro, a reasonable default is used.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_LIBC_HAS_FUNCTION]
-  :end-before: [TARGET_LIBC_HAS_FUNCTION]
+.. function:: bool TARGET_LIBC_HAS_FUNCTION (enum function_class fn_class, tree type)
 
+  .. hook-start:TARGET_LIBC_HAS_FUNCTION
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_LIBC_HAS_FAST_FUNCTION]
-  :end-before: [TARGET_LIBC_HAS_FAST_FUNCTION]
+  This hook determines whether a function from a class of functions
+  :samp:`{fn_class}` is present in the target C library.  If :samp:`{type}` is NULL,
+  the caller asks for support for all standard (float, double, long double)
+  types.  If :samp:`{type}` is non-NULL, the caller asks for support for a
+  specific type.
 
+.. hook-end
+
+.. function:: bool TARGET_LIBC_HAS_FAST_FUNCTION (int fcode)
+
+  .. hook-start:TARGET_LIBC_HAS_FAST_FUNCTION
+
+  This hook determines whether a function from a class of functions
+   ``(enum function_class)``:samp:`{fcode}` has a fast implementation.
+
+.. hook-end
 
 .. c:macro:: NEXT_OBJC_RUNTIME
 

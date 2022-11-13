@@ -49,10 +49,28 @@ Define the following hook if your backend either implements ABI-specified
 descriptor support, or can use GCC's generic descriptor implementation
 for nested functions.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_CUSTOM_FUNCTION_DESCRIPTORS]
-  :end-before: [TARGET_CUSTOM_FUNCTION_DESCRIPTORS]
+.. c:var:: int TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 
+  .. hook-start:TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+
+  If the target can use GCC's generic descriptor mechanism for nested
+  functions, define this hook to a power of 2 representing an unused bit
+  in function pointers which can be used to differentiate descriptors at
+  run time.  This value gives the number of bytes by which descriptor
+  pointers are misaligned compared to function pointers.  For example, on
+  targets that require functions to be aligned to a 4-byte boundary, a
+  value of either 1 or 2 is appropriate unless the architecture already
+  reserves the bit for another purpose, such as on ARM.
+
+  Define this hook to 0 if the target implements ABI support for
+  function descriptors in its standard calling sequence, like for example
+  HPPA or IA-64.
+
+  Using descriptors for nested functions
+  eliminates the need for trampolines that reside on the stack and require
+  it to be made executable.
+
+.. hook-end
 
 The following macros tell GCC how to generate code to allocate and
 initialize an executable trampoline.  You can also use this interface
@@ -76,10 +94,21 @@ proper offset from the start of the trampoline.  On a RISC machine, it
 may be necessary to take out pieces of the address and store them
 separately.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_ASM_TRAMPOLINE_TEMPLATE]
-  :end-before: [TARGET_ASM_TRAMPOLINE_TEMPLATE]
+.. function:: void TARGET_ASM_TRAMPOLINE_TEMPLATE (FILE *f)
 
+  .. hook-start:TARGET_ASM_TRAMPOLINE_TEMPLATE
+
+  This hook is called by ``assemble_trampoline_template`` to output,
+  on the stream :samp:`{f}`, assembler code for a block of data that contains
+  the constant parts of a trampoline.  This code should not include a
+  label---the label is taken care of automatically.
+
+  If you do not define this hook, it means no template is needed
+  for the target.  Do not define this hook on systems where the block move
+  code to copy the trampoline into place would be larger than the code
+  to generate it on the spot.
+
+.. hook-end
 
 .. c:macro:: TRAMPOLINE_SECTION
 
@@ -97,20 +126,59 @@ separately.
   If you don't define this macro, the value of ``FUNCTION_ALIGNMENT``
   is used for aligning trampolines.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_TRAMPOLINE_INIT]
-  :end-before: [TARGET_TRAMPOLINE_INIT]
+.. function:: void TARGET_TRAMPOLINE_INIT (rtx m_tramp, tree fndecl, rtx static_chain)
 
+  .. hook-start:TARGET_TRAMPOLINE_INIT
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE]
-  :end-before: [TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE]
+  This hook is called to initialize a trampoline.
+  :samp:`{m_tramp}` is an RTX for the memory block for the trampoline; :samp:`{fndecl}`
+  is the ``FUNCTION_DECL`` for the nested function; :samp:`{static_chain}` is an
+  RTX for the static chain value that should be passed to the function
+  when it is called.
 
+  If the target defines ``TARGET_ASM_TRAMPOLINE_TEMPLATE``, then the
+  first thing this hook should do is emit a block move into :samp:`{m_tramp}`
+  from the memory block returned by ``assemble_trampoline_template``.
+  Note that the block move need only cover the constant parts of the
+  trampoline.  If the target isolates the variable parts of the trampoline
+  to the end, not all ``TRAMPOLINE_SIZE`` bytes need be copied.
 
-.. include:: tm.rst.in
-  :start-after: [TARGET_TRAMPOLINE_ADJUST_ADDRESS]
-  :end-before: [TARGET_TRAMPOLINE_ADJUST_ADDRESS]
+  If the target requires any other actions, such as flushing caches
+  (possibly calling function maybe_emit_call_builtin___clear_cache) or
+  enabling stack execution, these actions should be performed after
+  initializing the trampoline proper.
 
+.. hook-end
+
+.. function:: void TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE (rtx begin, rtx end)
+
+  .. hook-start:TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE
+
+  On targets that do not define a ``clear_cache`` insn expander,
+  but that define the ``CLEAR_CACHE_INSN`` macro,
+  maybe_emit_call_builtin___clear_cache relies on this target hook
+  to clear an address range in the instruction cache.
+
+  The default implementation calls the ``__clear_cache`` builtin,
+  taking the assembler name from the builtin declaration.  Overriding
+  definitions may call alternate functions, with alternate calling
+  conventions, or emit alternate RTX to perform the job.
+
+.. hook-end
+
+.. function:: rtx TARGET_TRAMPOLINE_ADJUST_ADDRESS (rtx addr)
+
+  .. hook-start:TARGET_TRAMPOLINE_ADJUST_ADDRESS
+
+  This hook should perform any machine-specific adjustment in
+  the address of the trampoline.  Its argument contains the address of the
+  memory block that was passed to ``TARGET_TRAMPOLINE_INIT``.  In case
+  the address to be used for a function call should be different from the
+  address at which the template was stored, the different address should
+  be returned; otherwise :samp:`{addr}` should be returned unchanged.
+  If this hook is not defined, :samp:`{addr}` will be used for function calls.
+
+.. hook-end
 
 Implementing trampolines is difficult on many machines because they have
 separate instruction and data caches.  Writing into a stack location

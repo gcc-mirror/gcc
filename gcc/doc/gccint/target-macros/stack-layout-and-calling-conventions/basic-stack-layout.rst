@@ -45,10 +45,17 @@ Here is the basic stack layout.
   Define this macro if successive arguments to a function occupy decreasing
   addresses on the stack.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_STARTING_FRAME_OFFSET]
-  :end-before: [TARGET_STARTING_FRAME_OFFSET]
+.. function:: HOST_WIDE_INT TARGET_STARTING_FRAME_OFFSET (void)
 
+  .. hook-start:TARGET_STARTING_FRAME_OFFSET
+
+  This hook returns the offset from the frame pointer to the first local
+  variable slot to be allocated.  If ``FRAME_GROWS_DOWNWARD``, it is the
+  offset to *end* of the first slot allocated, otherwise it is the
+  offset to *beginning* of the first slot allocated.  The default
+  implementation returns 0.
+
+.. hook-end
 
 .. c:macro:: STACK_ALIGNMENT_NEEDED
 
@@ -115,10 +122,17 @@ Here is the basic stack layout.
   before we can access arbitrary stack frames.  You will seldom need to
   define this macro.  The default is to do nothing.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_BUILTIN_SETJMP_FRAME_VALUE]
-  :end-before: [TARGET_BUILTIN_SETJMP_FRAME_VALUE]
+.. function:: rtx TARGET_BUILTIN_SETJMP_FRAME_VALUE (void)
 
+  .. hook-start:TARGET_BUILTIN_SETJMP_FRAME_VALUE
+
+  This target hook should return an rtx that is used to store
+  the address of the current frame into the built in ``setjmp`` buffer.
+  The default value, ``virtual_stack_vars_rtx``, is correct for most
+  machines.  One reason you may need to define this target hook is if
+  ``hard_frame_pointer_rtx`` is the appropriate value on your machine.
+
+.. hook-end
 
 .. c:macro:: FRAME_ADDR_RTX (frameaddr)
 
@@ -186,15 +200,47 @@ Here is the basic stack layout.
   and advertise when generating dwarf debug information, in absence of
   an explicit :option:`-gdwarf-version` option on the command line.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_DWARF_HANDLE_FRAME_UNSPEC]
-  :end-before: [TARGET_DWARF_HANDLE_FRAME_UNSPEC]
+.. function:: void TARGET_DWARF_HANDLE_FRAME_UNSPEC (const char *label, rtx pattern, int index)
 
+  .. hook-start:TARGET_DWARF_HANDLE_FRAME_UNSPEC
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_DWARF_POLY_INDETERMINATE_VALUE]
-  :end-before: [TARGET_DWARF_POLY_INDETERMINATE_VALUE]
+  This target hook allows the backend to emit frame-related insns that
+  contain UNSPECs or UNSPEC_VOLATILEs.  The DWARF 2 call frame debugging
+  info engine will invoke it on insns of the form
 
+  .. code-block:: c++
+
+    (set (reg) (unspec [...] UNSPEC_INDEX))
+
+  and
+
+  .. code-block:: c++
+
+    (set (reg) (unspec_volatile [...] UNSPECV_INDEX)).
+
+  to let the backend emit the call frame instructions.  :samp:`{label}` is
+  the CFI label attached to the insn, :samp:`{pattern}` is the pattern of
+  the insn and :samp:`{index}` is ``UNSPEC_INDEX`` or ``UNSPECV_INDEX``.
+
+.. hook-end
+
+.. function:: unsigned int TARGET_DWARF_POLY_INDETERMINATE_VALUE (unsigned int i, unsigned int *factor, int *offset)
+
+  .. hook-start:TARGET_DWARF_POLY_INDETERMINATE_VALUE
+
+  Express the value of ``poly_int`` indeterminate :samp:`{i}` as a DWARF
+  expression, with :samp:`{i}` counting from 1.  Return the number of a DWARF
+  register :samp:`{R}` and set :samp:`*{factor}` and :samp:`*{offset}` such
+  that the value of the indeterminate is:
+
+  .. code-block:: c++
+
+    value_of(R) / factor - offset
+
+  A target only needs to define this hook if it sets
+  :samp:`NUM_POLY_INT_COEFFS` to a value greater than 1.
+
+.. hook-end
 
 .. c:macro:: INCOMING_FRAME_SP_OFFSET
 

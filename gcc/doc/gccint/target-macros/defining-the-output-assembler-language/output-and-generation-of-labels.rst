@@ -199,10 +199,23 @@ This is about outputting labels.
   You may wish to use ``ASM_OUTPUT_TYPE_DIRECTIVE`` and/or
   ``ASM_OUTPUT_SIZE_DIRECTIVE`` in the definition of this macro.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_DECLARE_CONSTANT_NAME]
-  :end-before: [TARGET_ASM_DECLARE_CONSTANT_NAME]
+.. function:: void TARGET_ASM_DECLARE_CONSTANT_NAME (FILE *file, const char *name, const_tree expr, HOST_WIDE_INT size)
 
+  .. hook-start:TARGET_ASM_DECLARE_CONSTANT_NAME
+
+  A target hook to output to the stdio stream :samp:`{file}` any text necessary
+  for declaring the name :samp:`{name}` of a constant which is being defined.  This
+  target hook is responsible for outputting the label definition (perhaps using
+  ``assemble_label``).  The argument :samp:`{exp}` is the value of the constant,
+  and :samp:`{size}` is the size of the constant in bytes.  The :samp:`{name}`
+  will be an internal label.
+
+  The default version of this target hook, define the :samp:`{name}` in the
+  usual manner as a label (by means of ``assemble_label``).
+
+  You may wish to use ``ASM_OUTPUT_TYPE_DIRECTIVE`` in this target hook.
+
+.. hook-end
 
 .. c:macro:: ASM_DECLARE_REGISTER_GLOBAL (stream, decl, regno, name)
 
@@ -227,20 +240,41 @@ This is about outputting labels.
   You may wish to use ``ASM_OUTPUT_SIZE_DIRECTIVE`` and/or
   ``ASM_OUTPUT_MEASURED_SIZE`` in the definition of this macro.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_GLOBALIZE_LABEL]
-  :end-before: [TARGET_ASM_GLOBALIZE_LABEL]
+.. function:: void TARGET_ASM_GLOBALIZE_LABEL (FILE *stream, const char *name)
 
+  .. hook-start:TARGET_ASM_GLOBALIZE_LABEL
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_GLOBALIZE_DECL_NAME]
-  :end-before: [TARGET_ASM_GLOBALIZE_DECL_NAME]
+  This target hook is a function to output to the stdio stream
+  :samp:`{stream}` some commands that will make the label :samp:`{name}` global;
+  that is, available for reference from other files.
 
+  The default implementation relies on a proper definition of
+  ``GLOBAL_ASM_OP``.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_ASSEMBLE_UNDEFINED_DECL]
-  :end-before: [TARGET_ASM_ASSEMBLE_UNDEFINED_DECL]
+.. hook-end
 
+.. function:: void TARGET_ASM_GLOBALIZE_DECL_NAME (FILE *stream, tree decl)
+
+  .. hook-start:TARGET_ASM_GLOBALIZE_DECL_NAME
+
+  This target hook is a function to output to the stdio stream
+  :samp:`{stream}` some commands that will make the name associated with :samp:`{decl}`
+  global; that is, available for reference from other files.
+
+  The default implementation uses the TARGET_ASM_GLOBALIZE_LABEL target hook.
+
+.. hook-end
+
+.. function:: void TARGET_ASM_ASSEMBLE_UNDEFINED_DECL (FILE *stream, const char *name, const_tree decl)
+
+  .. hook-start:TARGET_ASM_ASSEMBLE_UNDEFINED_DECL
+
+  This target hook is a function to output to the stdio stream
+  :samp:`{stream}` some commands that will declare the name associated with
+  :samp:`{decl}` which is not defined in the current translation unit.  Most
+  assemblers do not require anything to be output in this case.
+
+.. hook-end
 
 .. c:macro:: ASM_WEAKEN_LABEL (stream, name)
 
@@ -311,10 +345,15 @@ This is about outputting labels.
   setting the ``DECL_ONE_ONLY`` flag is enough to mark a declaration to
   be emitted as one-only.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_ASSEMBLE_VISIBILITY]
-  :end-before: [TARGET_ASM_ASSEMBLE_VISIBILITY]
+.. function:: void TARGET_ASM_ASSEMBLE_VISIBILITY (tree decl, int visibility)
 
+  .. hook-start:TARGET_ASM_ASSEMBLE_VISIBILITY
+
+  This target hook is a function to output to :samp:`{asm_out_file}` some
+  commands that will make the symbol(s) associated with :samp:`{decl}` have
+  hidden, protected or internal visibility as specified by :samp:`{visibility}`.
+
+.. hook-end
 
 .. c:macro:: TARGET_WEAK_NOT_IN_ARCHIVE_TOC
 
@@ -346,15 +385,25 @@ This is about outputting labels.
   This macro need not be defined if it does not need to output anything.
   The GNU assembler and most Unix assemblers don't require anything.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_EXTERNAL_LIBCALL]
-  :end-before: [TARGET_ASM_EXTERNAL_LIBCALL]
+.. function:: void TARGET_ASM_EXTERNAL_LIBCALL (rtx symref)
 
+  .. hook-start:TARGET_ASM_EXTERNAL_LIBCALL
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_MARK_DECL_PRESERVED]
-  :end-before: [TARGET_ASM_MARK_DECL_PRESERVED]
+  This target hook is a function to output to :samp:`{asm_out_file}` an assembler
+  pseudo-op to declare a library function name external.  The name of the
+  library function is given by :samp:`{symref}`, which is a ``symbol_ref``.
 
+.. hook-end
+
+.. function:: void TARGET_ASM_MARK_DECL_PRESERVED (const char *symbol)
+
+  .. hook-start:TARGET_ASM_MARK_DECL_PRESERVED
+
+  This target hook is a function to output to :samp:`{asm_out_file}` an assembler
+  directive to annotate :samp:`{symbol}` as used.  The Darwin target uses the
+  .no_dead_code_strip directive.
+
+.. hook-end
 
 .. c:macro:: ASM_OUTPUT_LABELREF (stream, name)
 
@@ -364,10 +413,17 @@ This is about outputting labels.
   is customary on your operating system, as it is in most Berkeley Unix
   systems.  This macro is used in ``assemble_name``.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_MANGLE_ASSEMBLER_NAME]
-  :end-before: [TARGET_MANGLE_ASSEMBLER_NAME]
+.. function:: tree TARGET_MANGLE_ASSEMBLER_NAME (const char *name)
 
+  .. hook-start:TARGET_MANGLE_ASSEMBLER_NAME
+
+  Given a symbol :samp:`{name}`, perform same mangling as ``varasm.cc`` 's
+  ``assemble_name``, but in memory rather than to a file stream, returning
+  result as an ``IDENTIFIER_NODE``.  Required for correct LTO symtabs.  The
+  default implementation calls the ``TARGET_STRIP_NAME_ENCODING`` hook and
+  then prepends the ``USER_LABEL_PREFIX``, if any.
+
+.. hook-end
 
 .. c:macro:: ASM_OUTPUT_SYMBOL_REF (stream, sym)
 
@@ -387,10 +443,26 @@ This is about outputting labels.
   when it is necessary to output a label differently when its address is
   being taken.
 
-.. include:: ../tm.rst.in
-  :start-after: [TARGET_ASM_INTERNAL_LABEL]
-  :end-before: [TARGET_ASM_INTERNAL_LABEL]
+.. function:: void TARGET_ASM_INTERNAL_LABEL (FILE *stream, const char *prefix, unsigned long labelno)
 
+  .. hook-start:TARGET_ASM_INTERNAL_LABEL
+
+  A function to output to the stdio stream :samp:`{stream}` a label whose
+  name is made from the string :samp:`{prefix}` and the number :samp:`{labelno}`.
+
+  It is absolutely essential that these labels be distinct from the labels
+  used for user-level functions and variables.  Otherwise, certain programs
+  will have name conflicts with internal labels.
+
+  It is desirable to exclude internal labels from the symbol table of the
+  object file.  Most assemblers have a naming convention for labels that
+  should be excluded; on many systems, the letter :samp:`L` at the
+  beginning of a label has this effect.  You should find out what
+  convention your system uses, and follow it.
+
+  The default version of this function utilizes ``ASM_GENERATE_INTERNAL_LABEL``.
+
+.. hook-end
 
 .. c:macro:: ASM_OUTPUT_DEBUG_LABEL (stream, prefix, num)
 
