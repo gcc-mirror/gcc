@@ -37,32 +37,6 @@ def find_configs():
                 yield (Path(root).resolve(), docname)
 
 
-def create_source_tarball(output, configs):
-    pwd = Path('.').resolve()
-    subfolders = {'doc'}
-    explicit_files = {'gcc/BASE-VER', 'gcc/DEV-PHASE', 'gcc/DATESTAMP'}
-
-    for location, _ in configs:
-        location = location.relative_to(pwd)
-        while not location.name == 'doc':
-            location = location.parent
-        subfolders.add(location)
-
-    sources = Path('sources')
-    sources.mkdir()
-
-    # Copy all subfolders and files
-    for subfolder in subfolders:
-        shutil.copytree(subfolder, sources / subfolder)
-
-    for filename in explicit_files:
-        shutil.copy(filename, sources / filename)
-
-    shutil.make_archive(Path(output, 'docs-sources'), 'gztar',
-                        sources)
-    print('sources tarball has been created')
-
-
 with tempfile.TemporaryDirectory() as folder:
     print(f'Using {folder} as temporary directory')
     os.chdir(folder)
@@ -74,9 +48,6 @@ with tempfile.TemporaryDirectory() as folder:
     output = Path(args.output_folder)
     if not output.exists():
         output.mkdir()
-
-    # Create source tarball
-    create_source_tarball(output, configs)
 
     temp = Path('tmp').resolve()
     temp.mkdir()
