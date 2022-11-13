@@ -16,7 +16,7 @@
 ANINT --- Nearest whole number
 ******************************
 
-.. function:: ANINT(A, KIND)
+.. function:: ANINT(A [, KIND])
 
   ``ANINT(A [, KIND])`` rounds its argument to the nearest whole number.
 

@@ -12,7 +12,7 @@
 CHAR --- Character conversion function
 **************************************
 
-.. function:: CHAR(I, KIND)
+.. function:: CHAR(I [, KIND])
 
   ``CHAR(I [, KIND])`` returns the character represented by the integer :samp:`{I}`.
 
