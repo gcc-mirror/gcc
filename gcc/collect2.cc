@@ -2238,8 +2238,12 @@ write_c_file_glob (FILE *stream, const char *name ATTRIBUTE_UNUSED)
     fprintf (stream, "\tdereg_frame,\n");
   fprintf (stream, "\t0\n};\n\n");
 
+# ifdef COLLECT2_MAIN_REFERENCE
+  fprintf (stream, "%s\n\n", COLLECT2_MAIN_REFERENCE);
+# else
   fprintf (stream, "extern entry_pt %s;\n", NAME__MAIN);
   fprintf (stream, "entry_pt *__main_reference = %s;\n\n", NAME__MAIN);
+# endif
 }
 #endif /* ! LD_INIT_SWITCH */
 

@@ -1,5 +1,10 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* collect2.cc (write_c_file_glob): Allow for
+	'COLLECT2_MAIN_REFERENCE' override.
+	* config.gcc <case ${target} in nvptx-*>: Set 'use_collect2=yes'.
+	* config/nvptx/nvptx.h: Adjust.
+
 	* config/nvptx/nvptx.cc (nvptx_assemble_undefined_decl): Notice
 	'__nvptx_stacks', '__nvptx_uni' declarations.
 	(nvptx_file_end): Don't emit duplicate declarations for those.

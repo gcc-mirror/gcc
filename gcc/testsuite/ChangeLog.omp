@@ -1,5 +1,11 @@
 2023-01-20  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gcc.dg/no_profile_instrument_function-attr-1.c: GCC/nvptx is
+	'NO_DOT_IN_LABEL' but not 'NO_DOLLAR_IN_LABEL', so '$' may apper
+	in identifiers.
+	* lib/target-supports.exp
+	(check_effective_target_global_constructor): Enable for nvptx.
+
 	* gcc.target/nvptx/softstack-decl-1.c: Make 'dg-do assemble',
 	adjust.
 	* gcc.target/nvptx/uniform-simt-decl-1.c: Likewise.

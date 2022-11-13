@@ -1535,7 +1535,7 @@ m32c-*-elf*|m32c-*-rtems*)
  	;;
 nvptx-*)
 	tmake_file="$tmake_file nvptx/t-nvptx"
-	extra_parts="crt0.o"
+	extra_parts="crt0.o crtbegin.o crtend.o"
 	;;
 *)
 	echo "*** Configuration ${host} not supported" 1>&2

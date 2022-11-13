@@ -18,7 +18,7 @@ int main ()
   return foo ();
 }
 
-/* { dg-final { scan-tree-dump-times "__gcov0\[._\]main.* = PROF_edge_counter" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "__gcov0\[$._\]main.* = PROF_edge_counter" 1 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "__gcov_indirect_call_profiler_v" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "__gcov_time_profiler_counter = " 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "__gcov_init" 1 "optimized" } } */

@@ -3,7 +3,7 @@ LIB2ADD=$(srcdir)/config/nvptx/reduction.c \
 	$(srcdir)/config/nvptx/atomic.c
 
 LIB2ADDEH=
-LIB2FUNCS_EXCLUDE=__main
+LIB2FUNCS_EXCLUDE=
 
 crt0.o: $(srcdir)/config/nvptx/crt0.c
 	$(crt_compile) -c $<
@@ -12,3 +12,16 @@ crt0.o: $(srcdir)/config/nvptx/crt0.c
 # support it, and it may cause the build to fail, because of alloca usage, for
 # example.
 INHIBIT_LIBC_CFLAGS = -Dinhibit_libc
+
+# Support for global constructors/destructors is implemented via
+# 'collect2' and the following helpers.
+
+LIB2FUNCS_EXCLUDE += __main
+
+CUSTOM_CRTSTUFF = yes
+
+crtbegin.o: $(srcdir)/config/nvptx/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN
+
+crtend.o: $(srcdir)/config/nvptx/crtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_END
