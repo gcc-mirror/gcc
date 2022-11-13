@@ -67,15 +67,20 @@ Here are run-time target specifications.
 Variable extern int target_flagsThis variable is declared in :samp:`options.h`, which is included before
 any target-specific headers.
 
-.. c:var:: int TARGET_DEFAULT_TARGET_FLAGS
+.. include:: tm.rst.in
+  :start-after: [TARGET_DEFAULT_TARGET_FLAGS]
+  :end-before: [TARGET_DEFAULT_TARGET_FLAGS]
+
 
   This variable specifies the initial value of ``target_flags``.
   Its default setting is 0.
 
 .. index:: optional hardware or system features, features, optional, in system conventions
 
+.. include:: tm.rst.in
+  :start-after: [TARGET_HANDLE_OPTION]
+  :end-before: [TARGET_HANDLE_OPTION]
 
-.. function:: bool TARGET_HANDLE_OPTION (struct gcc_options *opts, struct gcc_options *opts_set, const struct cl_decoded_option *decoded, location_t loc)
 
   This hook is called whenever the user specifies one of the
   target-specific options described by the :samp:`.opt` definition files
@@ -89,7 +94,10 @@ any target-specific headers.
   option was passed (``UNKNOWN_LOCATION`` except for options passed
   via attributes).
 
-.. function:: bool TARGET_HANDLE_C_OPTION (size_t code, const char *arg, int value)
+.. include:: tm.rst.in
+  :start-after: [TARGET_HANDLE_C_OPTION]
+  :end-before: [TARGET_HANDLE_C_OPTION]
+
 
   This target hook is called whenever the user specifies one of the
   target-specific C language family options described by the :samp:`.opt`
@@ -141,7 +149,10 @@ any target-specific headers.
   used to alter option flag variables which only exist in those
   frontends.
 
-.. c:var:: const struct default_options * TARGET_OPTION_OPTIMIZATION_TABLE
+.. include:: tm.rst.in
+  :start-after: [TARGET_OPTION_OPTIMIZATION_TABLE]
+  :end-before: [TARGET_OPTION_OPTIMIZATION_TABLE]
+
 
   Some machines may desire to change what optimizations are performed for
   various optimization levels.   This variable, if defined, describes
