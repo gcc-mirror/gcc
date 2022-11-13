@@ -1,0 +1,273 @@
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Fragments
+@chapter Makefile Fragments
+@cindex makefile fragment
+
+When you configure GCC using the @file{configure} script, it will
+construct the file @file{Makefile} from the template file
+@file{Makefile.in}.  When it does this, it can incorporate makefile
+fragments from the @file{config} directory.  These are used to set
+Makefile parameters that are not amenable to being calculated by
+autoconf.  The list of fragments to incorporate is set by
+@file{config.gcc} (and occasionally @file{config.build}
+and @file{config.host}); @xref{System Config}.
+
+Fragments are named either @file{t-@var{target}} or @file{x-@var{host}},
+depending on whether they are relevant to configuring GCC to produce
+code for a particular target, or to configuring GCC to run on a
+particular host.  Here @var{target} and @var{host} are mnemonics
+which usually have some relationship to the canonical system name, but
+no formal connection.
+
+If these files do not exist, it means nothing needs to be added for a
+given target or host.  Most targets need a few @file{t-@var{target}}
+fragments, but needing @file{x-@var{host}} fragments is rare.
+
+@menu
+* Target Fragment:: Writing @file{t-@var{target}} files.
+* Host Fragment::   Writing @file{x-@var{host}} files.
+@end menu
+
+@node Target Fragment
+@section Target Makefile Fragments
+@cindex target makefile fragment
+@cindex @file{t-@var{target}}
+
+Target makefile fragments can set these Makefile variables.
+
+@table @code
+@findex LIBGCC2_CFLAGS
+@item LIBGCC2_CFLAGS
+Compiler flags to use when compiling @file{libgcc2.c}.
+
+@findex LIB2FUNCS_EXTRA
+@item LIB2FUNCS_EXTRA
+A list of source file names to be compiled or assembled and inserted
+into @file{libgcc.a}.
+
+@findex CRTSTUFF_T_CFLAGS
+@item CRTSTUFF_T_CFLAGS
+Special flags used when compiling @file{crtstuff.c}.
+@xref{Initialization}.
+
+@findex CRTSTUFF_T_CFLAGS_S
+@item CRTSTUFF_T_CFLAGS_S
+Special flags used when compiling @file{crtstuff.c} for shared
+linking.  Used if you use @file{crtbeginS.o} and @file{crtendS.o}
+in @code{EXTRA-PARTS}.
+@xref{Initialization}.
+
+@findex MULTILIB_OPTIONS
+@item MULTILIB_OPTIONS
+For some targets, invoking GCC in different ways produces objects
+that cannot be linked together.  For example, for some targets GCC
+produces both big and little endian code.  For these targets, you must
+arrange for multiple versions of @file{libgcc.a} to be compiled, one for
+each set of incompatible options.  When GCC invokes the linker, it
+arranges to link in the right version of @file{libgcc.a}, based on
+the command line options used.
+
+The @code{MULTILIB_OPTIONS} macro lists the set of options for which
+special versions of @file{libgcc.a} must be built.  Write options that
+are mutually incompatible side by side, separated by a slash.  Write
+options that may be used together separated by a space.  The build
+procedure will build all combinations of compatible options.
+
+For example, if you set @code{MULTILIB_OPTIONS} to @samp{m68000/m68020
+msoft-float}, @file{Makefile} will build special versions of
+@file{libgcc.a} using the following sets of options:  @option{-m68000},
+@option{-m68020}, @option{-msoft-float}, @samp{-m68000 -msoft-float}, and
+@samp{-m68020 -msoft-float}.
+
+@findex MULTILIB_DIRNAMES
+@item MULTILIB_DIRNAMES
+If @code{MULTILIB_OPTIONS} is used, this variable specifies the
+directory names that should be used to hold the various libraries.
+Write one element in @code{MULTILIB_DIRNAMES} for each element in
+@code{MULTILIB_OPTIONS}.  If @code{MULTILIB_DIRNAMES} is not used, the
+default value will be @code{MULTILIB_OPTIONS}, with all slashes treated
+as spaces.
+
+@code{MULTILIB_DIRNAMES} describes the multilib directories using GCC
+conventions and is applied to directories that are part of the GCC
+installation.  When multilib-enabled, the compiler will add a
+subdirectory of the form @var{prefix}/@var{multilib} before each
+directory in the search path for libraries and crt files.
+
+For example, if @code{MULTILIB_OPTIONS} is set to @samp{m68000/m68020
+msoft-float}, then the default value of @code{MULTILIB_DIRNAMES} is
+@samp{m68000 m68020 msoft-float}.  You may specify a different value if
+you desire a different set of directory names.
+
+@findex MULTILIB_MATCHES
+@item MULTILIB_MATCHES
+Sometimes the same option may be written in two different ways.  If an
+option is listed in @code{MULTILIB_OPTIONS}, GCC needs to know about
+any synonyms.  In that case, set @code{MULTILIB_MATCHES} to a list of
+items of the form @samp{option=option} to describe all relevant
+synonyms.  For example, @samp{m68000=mc68000 m68020=mc68020}.
+
+@findex MULTILIB_EXCEPTIONS
+@item MULTILIB_EXCEPTIONS
+Sometimes when there are multiple sets of @code{MULTILIB_OPTIONS} being
+specified, there are combinations that should not be built.  In that
+case, set @code{MULTILIB_EXCEPTIONS} to be all of the switch exceptions
+in shell case syntax that should not be built.
+
+For example the ARM processor cannot execute both hardware floating
+point instructions and the reduced size THUMB instructions at the same
+time, so there is no need to build libraries with both of these
+options enabled.  Therefore @code{MULTILIB_EXCEPTIONS} is set to:
+@smallexample
+*mthumb/*mhard-float*
+@end smallexample
+
+@findex MULTILIB_REQUIRED
+@item MULTILIB_REQUIRED
+Sometimes when there are only a few combinations are required, it would
+be a big effort to come up with a @code{MULTILIB_EXCEPTIONS} list to
+cover all undesired ones.  In such a case, just listing all the required
+combinations in @code{MULTILIB_REQUIRED} would be more straightforward.
+
+The way to specify the entries in @code{MULTILIB_REQUIRED} is same with
+the way used for @code{MULTILIB_EXCEPTIONS}, only this time what are
+required will be specified.  Suppose there are multiple sets of
+@code{MULTILIB_OPTIONS} and only two combinations are required, one
+for ARMv7-M and one for ARMv7-R with hard floating-point ABI and FPU, the
+@code{MULTILIB_REQUIRED} can be set to:
+@smallexample
+@code{MULTILIB_REQUIRED} =  mthumb/march=armv7-m
+@code{MULTILIB_REQUIRED} += march=armv7-r/mfloat-abi=hard/mfpu=vfpv3-d16
+@end smallexample
+
+The @code{MULTILIB_REQUIRED} can be used together with
+@code{MULTILIB_EXCEPTIONS}.  The option combinations generated from
+@code{MULTILIB_OPTIONS} will be filtered by @code{MULTILIB_EXCEPTIONS}
+and then by @code{MULTILIB_REQUIRED}.
+
+@findex MULTILIB_REUSE
+@item MULTILIB_REUSE
+Sometimes it is desirable to reuse one existing multilib for different
+sets of options.  Such kind of reuse can minimize the number of multilib
+variants.  And for some targets it is better to reuse an existing multilib
+than to fall back to default multilib when there is no corresponding multilib.
+This can be done by adding reuse rules to @code{MULTILIB_REUSE}.
+
+A reuse rule is comprised of two parts connected by equality sign.  The left
+part is the option set used to build multilib and the right part is the option
+set that will reuse this multilib.  Both parts should only use options
+specified in @code{MULTILIB_OPTIONS} and the equality signs found in options
+name should be replaced with periods.  An explicit period in the rule can be
+escaped by preceding it with a backslash.  The order of options in the left
+part matters and should be same with those specified in
+@code{MULTILIB_REQUIRED} or aligned with the order in @code{MULTILIB_OPTIONS}.
+There is no such limitation for options in the right part as we don't build
+multilib from them.
+
+@code{MULTILIB_REUSE} is different from @code{MULTILIB_MATCHES} in that it
+sets up relations between two option sets rather than two options.  Here is an
+example to demo how we reuse libraries built in Thumb mode for applications built
+in ARM mode:
+@smallexample
+@code{MULTILIB_REUSE} = mthumb/march.armv7-r=marm/march.armv7-r
+@end smallexample
+
+Before the advent of @code{MULTILIB_REUSE}, GCC select multilib by comparing command
+line options with options used to build multilib.  The @code{MULTILIB_REUSE} is
+complementary to that way.  Only when the original comparison matches nothing it will
+work to see if it is OK to reuse some existing multilib.
+
+@findex MULTILIB_EXTRA_OPTS
+@item MULTILIB_EXTRA_OPTS
+Sometimes it is desirable that when building multiple versions of
+@file{libgcc.a} certain options should always be passed on to the
+compiler.  In that case, set @code{MULTILIB_EXTRA_OPTS} to be the list
+of options to be used for all builds.  If you set this, you should
+probably set @code{CRTSTUFF_T_CFLAGS} to a dash followed by it.
+
+@findex MULTILIB_OSDIRNAMES
+@item MULTILIB_OSDIRNAMES
+If @code{MULTILIB_OPTIONS} is used, this variable specifies 
+a list of subdirectory names, that are used to modify the search
+path depending on the chosen multilib.  Unlike @code{MULTILIB_DIRNAMES},
+@code{MULTILIB_OSDIRNAMES} describes the multilib directories using
+operating systems conventions, and is applied to the directories such as
+@code{lib} or those in the @env{LIBRARY_PATH} environment variable.
+The format is either the same as of
+@code{MULTILIB_DIRNAMES}, or a set of mappings.  When it is the same
+as @code{MULTILIB_DIRNAMES}, it describes the multilib directories
+using operating system conventions, rather than GCC conventions.  When it is a set
+of mappings of the form @var{gccdir}=@var{osdir}, the left side gives
+the GCC convention and the right gives the equivalent OS defined
+location.  If the @var{osdir} part begins with a @samp{!},
+GCC will not search in the non-multilib directory and use
+exclusively the multilib directory.  Otherwise, the compiler will
+examine the search path for libraries and crt files twice; the first
+time it will add @var{multilib} to each directory in the search path,
+the second it will not.
+
+For configurations that support both multilib and multiarch,
+@code{MULTILIB_OSDIRNAMES} also encodes the multiarch name, thus
+subsuming @code{MULTIARCH_DIRNAME}.  The multiarch name is appended to
+each directory name, separated by a colon (e.g.@:
+@samp{../lib32:i386-linux-gnu}).
+
+Each multiarch subdirectory will be searched before the corresponding OS
+multilib directory, for example @samp{/lib/i386-linux-gnu} before
+@samp{/lib/../lib32}.  The multiarch name will also be used to modify the
+system header search path, as explained for @code{MULTIARCH_DIRNAME}.
+
+@findex MULTIARCH_DIRNAME
+@item MULTIARCH_DIRNAME
+This variable specifies the multiarch name for configurations that are
+multiarch-enabled but not multilibbed configurations.
+
+The multiarch name is used to augment the search path for libraries, crt
+files and system header files with additional locations.  The compiler
+will add a multiarch subdirectory of the form
+@var{prefix}/@var{multiarch} before each directory in the library and
+crt search path.  It will also add two directories
+@code{LOCAL_INCLUDE_DIR}/@var{multiarch} and
+@code{NATIVE_SYSTEM_HEADER_DIR}/@var{multiarch}) to the system header
+search path, respectively before @code{LOCAL_INCLUDE_DIR} and
+@code{NATIVE_SYSTEM_HEADER_DIR}.
+
+@code{MULTIARCH_DIRNAME} is not used for configurations that support
+both multilib and multiarch.  In that case, multiarch names are encoded
+in @code{MULTILIB_OSDIRNAMES} instead.
+
+More documentation about multiarch can be found at
+@uref{https://wiki.debian.org/Multiarch}.
+
+@findex SPECS
+@item SPECS
+Unfortunately, setting @code{MULTILIB_EXTRA_OPTS} is not enough, since
+it does not affect the build of target libraries, at least not the
+build of the default multilib.  One possible work-around is to use
+@code{DRIVER_SELF_SPECS} to bring options from the @file{specs} file
+as if they had been passed in the compiler driver command line.
+However, you don't want to be adding these options after the toolchain
+is installed, so you can instead tweak the @file{specs} file that will
+be used during the toolchain build, while you still install the
+original, built-in @file{specs}.  The trick is to set @code{SPECS} to
+some other filename (say @file{specs.install}), that will then be
+created out of the built-in specs, and introduce a @file{Makefile}
+rule to generate the @file{specs} file that's going to be used at
+build time out of your @file{specs.install}.
+
+@item T_CFLAGS
+These are extra flags to pass to the C compiler.  They are used both
+when building GCC, and when compiling things with the just-built GCC@.
+This variable is deprecated and should not be used.
+@end table
+
+@node Host Fragment
+@section Host Makefile Fragments
+@cindex host makefile fragment
+@cindex @file{x-@var{host}}
+
+The use of @file{x-@var{host}} fragments is discouraged.  You should only
+use it for makefile dependencies.

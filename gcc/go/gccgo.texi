@@ -1,0 +1,521 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename gccgo.info
+@settitle The GNU Go Compiler
+
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
+@include gcc-common.texi
+
+@c Copyright years for this manual.
+@set copyrights-go 2010-2022
+
+@copying
+@c man begin COPYRIGHT
+Copyright @copyright{} @value{copyrights-go} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, the Front-Cover Texts being (a) (see below), and
+with the Back-Cover Texts being (b) (see below).
+A copy of the license is included in the
+@c man end
+section entitled ``GNU Free Documentation License''.
+@ignore
+@c man begin COPYRIGHT
+man page gfdl(7).
+@c man end
+@end ignore
+
+@c man begin COPYRIGHT
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@c man end
+@end copying
+
+@ifinfo
+@format
+@dircategory Software development
+@direntry
+* Gccgo: (gccgo).           A GCC-based compiler for the Go language
+@end direntry
+@end format
+
+@insertcopying
+@end ifinfo
+
+@titlepage
+@title The GNU Go Compiler
+@versionsubtitle
+@author Ian Lance Taylor
+
+@page
+@vskip 0pt plus 1filll
+Published by the Free Software Foundation @*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@sp 1
+@insertcopying
+@end titlepage
+@contents
+@page
+
+@node Top
+@top Introduction
+
+This manual describes how to use @command{gccgo}, the GNU compiler for
+the Go programming language.  This manual is specifically about
+@command{gccgo}.  For more information about the Go programming
+language in general, including language specifications and standard
+package documentation, see @uref{https://golang.org/}.
+
+@menu
+* Copying::                     The GNU General Public License.
+* GNU Free Documentation License::
+                                How you can share and copy this manual.
+* Invoking gccgo::              How to run gccgo.
+* Import and Export::           Importing and exporting package data.
+* Compiler Directives::         Comments to control compilation.
+* C Interoperability::          Calling C from Go and vice-versa.
+* Index::                       Index.
+@end menu
+
+
+@include gpl_v3.texi
+
+@include fdl.texi
+
+
+@node Invoking gccgo
+@chapter Invoking gccgo
+
+@c man title gccgo A GCC-based compiler for the Go language
+
+@ignore
+@c man begin SYNOPSIS gccgo
+gccgo [@option{-c}|@option{-S}]
+      [@option{-g}] [@option{-pg}] [@option{-O}@var{level}]
+      [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
+      [@option{-o} @var{outfile}] @var{infile}@dots{}
+
+Only the most useful options are listed here; see below for the
+remainder.
+@c man end
+@c man begin SEEALSO
+gpl(7), gfdl(7), fsf-funding(7), gcc(1)
+and the Info entries for @file{gccgo} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION gccgo
+
+The @command{gccgo} command is a frontend to @command{gcc} and
+supports many of the same options.  @xref{Option Summary, , Option
+Summary, gcc, Using the GNU Compiler Collection (GCC)}.  This manual
+only documents the options specific to @command{gccgo}.
+
+The @command{gccgo} command may be used to compile Go source code into
+an object file, link a collection of object files together, or do both
+in sequence.
+
+Go source code is compiled as packages.  A package consists of one or
+more Go source files.  All the files in a single package must be
+compiled together, by passing all the files as arguments to
+@command{gccgo}.  A single invocation of @command{gccgo} may only
+compile a single package.
+
+One Go package may @code{import} a different Go package.  The imported
+package must have already been compiled; @command{gccgo} will read
+the import data directly from the compiled package.  When this package
+is later linked, the compiled form of the package must be included in
+the link command.
+
+Go programs must generally be compiled with debugging information, and
+@option{-g1} is the default as described below.  Stripping a Go
+program will generally cause it to misbehave or fail.
+
+@c man end
+
+@c man begin OPTIONS gccgo
+
+@table @gcctabopt
+@item -I@var{dir}
+@cindex @option{-I}
+Specify a directory to use when searching for an import package at
+compile time.
+
+@item -L@var{dir}
+@cindex @option{-L}
+When linking, specify a library search directory, as with
+@command{gcc}.
+
+@item -fgo-pkgpath=@var{string}
+@cindex @option{-fgo-pkgpath}
+Set the package path to use.  This sets the value returned by the
+PkgPath method of reflect.Type objects.  It is also used for the names
+of globally visible symbols.  The argument to this option should
+normally be the string that will be used to import this package after
+it has been installed; in other words, a pathname within the
+directories specified by the @option{-I} option.
+
+@item -fgo-prefix=@var{string}
+@cindex @option{-fgo-prefix}
+An alternative to @option{-fgo-pkgpath}.  The argument will be
+combined with the package name from the source file to produce the
+package path.  If @option{-fgo-pkgpath} is used, @option{-fgo-prefix}
+will be ignored.
+
+Go permits a single program to include more than one package with the
+same name in the @code{package} clause in the source file, though
+obviously the two packages must be imported using different pathnames.
+In order for this to work with @command{gccgo}, either
+@option{-fgo-pkgpath} or @option{-fgo-prefix} must be specified when
+compiling a package.
+
+Using either @option{-fgo-pkgpath} or @option{-fgo-prefix} disables
+the special treatment of the @code{main} package and permits that
+package to be imported like any other.
+
+@item -fgo-relative-import-path=@var{dir}
+@cindex @option{-fgo-relative-import-path}
+A relative import is an import that starts with @file{./} or
+@file{../}.  If this option is used, @command{gccgo} will use
+@var{dir} as a prefix for the relative import when searching for it.
+
+@item -frequire-return-statement
+@itemx -fno-require-return-statement
+@cindex @option{-frequire-return-statement}
+@cindex @option{-fno-require-return-statement}
+By default @command{gccgo} will warn about functions which have one or
+more return parameters but lack an explicit @code{return} statement.
+This warning may be disabled using
+@option{-fno-require-return-statement}.
+
+@item -fgo-check-divide-zero
+@cindex @option{-fgo-check-divide-zero}
+@cindex @option{-fno-go-check-divide-zero}
+Add explicit checks for division by zero.  In Go a division (or
+modulos) by zero causes a panic.  On Unix systems this is detected in
+the runtime by catching the @code{SIGFPE} signal.  Some processors,
+such as PowerPC, do not generate a SIGFPE on division by zero.  Some
+runtimes do not generate a signal that can be caught.  On those
+systems, this option may be used.  Or the checks may be removed via
+@option{-fno-go-check-divide-zero}.  This option is currently on by
+default, but in the future may be off by default on systems that do
+not require it.
+
+@item -fgo-check-divide-overflow
+@cindex @option{-fgo-check-divide-overflow}
+@cindex @option{-fno-go-check-divide-overflow}
+Add explicit checks for division overflow.  For example, division
+overflow occurs when computing @code{INT_MIN / -1}.  In Go this should
+be wrapped, to produce @code{INT_MIN}.  Some processors, such as x86,
+generate a trap on division overflow.  On those systems, this option
+may be used.  Or the checks may be removed via
+@option{-fno-go-check-divide-overflow}.  This option is currently on
+by default, but in the future may be off by default on systems that do
+not require it.
+
+@item -fno-go-optimize-allocs
+@cindex @option{-fno-go-optimize-allocs}
+Disable escape analysis, which tries to allocate objects on the stack
+rather than the heap.
+
+@item -fgo-debug-escape@var{n}
+@cindex @option{-fgo-debug-escape}
+Output escape analysis debugging information.  Larger values of
+@var{n} generate more information.
+
+@item -fgo-debug-escape-hash=@var{n}
+@cindex @option{-fgo-debug-escape-hash}
+A hash value to debug escape analysis.  @var{n} is a binary string.
+This runs escape analysis only on functions whose names hash to values
+that match the given suffix @var{n}.  This can be used to binary
+search across functions to uncover escape analysis bugs.
+
+@item -fgo-debug-optimization
+@cindex @option{-fgo-debug-optimization}
+@cindex @option{-fno-go-debug-optimization}
+Output optimization diagnostics.
+
+@item -fgo-c-header=@var{file}
+@cindex @option{-fgo-c-header}
+Write top-level named Go struct definitions to @var{file} as C code.
+This is used when compiling the runtime package.
+
+@item -fgo-compiling-runtime
+@cindex @option{-fgo-compiling-runtime}
+Apply special rules for compiling the runtime package.  Implicit
+memory allocation is forbidden.  Some additional compiler directives
+are supported.
+
+@item -fgo-embedcfg=@var{file}
+@cindex @option{-fgo-embedcfg}
+Identify a JSON file used to map patterns used with special
+@code{//go:embed} comments to the files named by the patterns.  The
+JSON file should have two components: @code{Patterns} maps each
+pattern to a list of file names, and @code{Files} maps each file name
+to a full path to the file.  This option is intended for use by the
+@command{go} command to implement @code{//go:embed}.
+
+@item -g
+@cindex @option{-g for gccgo}
+This is the standard @command{gcc} option (@pxref{Debugging Options, ,
+Debugging Options, gcc, Using the GNU Compiler Collection (GCC)}).  It
+is mentioned here because by default @command{gccgo} turns on
+debugging information generation with the equivalent of the standard
+option @option{-g1}.  This is because Go programs require debugging
+information to be available in order to get backtrace information.  An
+explicit @option{-g0} may be used to disable the generation of
+debugging information, in which case certain standard library
+functions, such as @code{runtime.Callers}, will not operate correctly.
+@end table
+
+@c man end
+
+@node Import and Export
+@chapter Import and Export
+
+When @command{gccgo} compiles a package which exports anything, the
+export information will be stored directly in the object file.  When a
+package is imported, @command{gccgo} must be able to find the file.
+
+@cindex @file{.gox}
+When Go code imports the package @file{@var{gopackage}}, @command{gccgo}
+will look for the import data using the following filenames, using the
+first one that it finds.
+
+@table @file
+@item @var{gopackage}.gox
+@item lib@var{gopackage}.so
+@item lib@var{gopackage}.a
+@item @var{gopackage}.o
+@end table
+
+The compiler will search for these files in the directories named by
+any @option{-I} options, in order in which the directories appear on
+the command line.  The compiler will then search several standard
+system directories.  Finally the compiler will search the current
+directory (to search the current directory earlier, use @samp{-I.}).
+
+The compiler will extract the export information directly from the
+compiled object file.  The file @file{@var{gopackage}.gox} will
+typically contain nothing but export data.  This can be generated from
+@file{@var{gopackage}.o} via
+
+@smallexample
+objcopy -j .go_export @var{gopackage}.o @var{gopackage}.gox
+@end smallexample
+
+For example, it may be desirable to extract the export information
+from several different packages into their independent
+@file{@var{gopackage}.gox} files, and then to combine the different
+package object files together into a single shared library or archive.
+
+At link time you must explicitly tell @command{gccgo} which files to
+link together into the executable, as is usual with @command{gcc}.
+This is different from the behavior of other Go compilers.
+
+@node Compiler Directives
+@chapter Compiler Directives
+
+The Go compiler supports a few compiler directives.  A compiler
+directive uses a @code{//} comment at the start of a line.  There must
+be no space between the @code{//} and the name of the directive.
+
+@table @code
+@item //line @var{file}:@var{line}
+The @code{//line} directive specifies that the source line that
+follows should be recorded as having come from the given file path and
+line number.  Successive lines are recorded using increasing line
+numbers, until the next directive.  This directive typically appears
+in machine-generated code, so that compilers and debuggers will show
+lines in the original input to the generator.
+
+@item //extern @var{extern_name}
+The @code{extern} directive sets the externally visible name of the
+next function declaration.  See @ref{Function Names}.
+
+@item //go:compile @var{go_name} @var{extern_name}
+The @code{go:compile} directives sets the externally visible name of a
+function definition or declaration.  See @ref{Function Names}.
+
+@item //go:noescape
+The @code{//go:noescape} directive specifies that the next declaration
+in the file, which must be a func without a body (meaning that it has
+an implementation not written in Go) does not allow any of the
+pointers passed as arguments to escape into the heap or into the
+values returned from the function. This information can be used during
+the compiler's escape analysis of Go code calling the function.
+
+@item //go:nosplit
+The @code{//go:nosplit} directive specifies that the next function
+declared in the file must not include a stack overflow check. This is
+most commonly used by low-level runtime sources invoked at times when
+it is unsafe for the calling goroutine to be preempted.
+
+@item //go:noinline
+The @code{//go:noinline} directive specifies that the next function
+defined in the file may not be inlined.
+
+@end table
+
+@node C Interoperability
+@chapter C Interoperability
+
+When using @command{gccgo} there is limited interoperability with C,
+or with C++ code compiled using @code{extern "C"}.
+
+This information is provided largely for documentation purposes.  For
+ordinary use it is best to build programs with the go tool and then
+use @code{import "C"}, as described at
+@url{https://golang.org/cmd/cgo}.
+
+@menu
+* C Type Interoperability::     How C and Go types match up.
+* Function Names::              How Go functions are named.
+@end menu
+
+@node C Type Interoperability
+@section C Type Interoperability
+
+Basic types map directly: an @code{int} in Go is an @code{int} in C,
+etc.  Go @code{byte} is equivalent to C @code{unsigned char}.
+Pointers in Go are pointers in C.  A Go @code{struct} is the same as C
+@code{struct} with the same field names and types.
+
+@cindex @code{string} in C
+The Go @code{string} type is currently defined as a two-element
+structure:
+
+@smallexample
+struct __go_string @{
+  const unsigned char *__data;
+  int __length;
+@};
+@end smallexample
+
+You can't pass arrays between C and Go.  However, a pointer to an
+array in Go is equivalent to a C pointer to the equivalent of the
+element type.  For example, Go @code{*[10]int} is equivalent to C
+@code{int*}, assuming that the C pointer does point to 10 elements.
+
+@cindex @code{slice} in C
+A slice in Go is a structure.  The current definition is:
+
+@smallexample
+struct __go_slice @{
+  void *__values;
+  int __count;
+  int __capacity;
+@};
+@end smallexample
+
+The type of a Go function with no receiver is equivalent to a C
+function whose parameter types are equivalent.  When a Go function
+returns more than one value, the C function returns a struct.  For
+example, these functions have equivalent types:
+
+@smallexample
+func GoFunction(int) (int, float)
+struct @{ int i; float f; @} CFunction(int)
+@end smallexample
+
+A pointer to a Go function is equivalent to a pointer to a C function
+when the functions have equivalent types.
+
+Go @code{interface}, @code{channel}, and @code{map} types have no
+corresponding C type (@code{interface} is a two-element struct and
+@code{channel} and @code{map} are pointers to structs in C, but the
+structs are deliberately undocumented).  C @code{enum} types
+correspond to some integer type, but precisely which one is difficult
+to predict in general; use a cast.  C @code{union} types have no
+corresponding Go type.  C @code{struct} types containing bitfields
+have no corresponding Go type.  C++ @code{class} types have no
+corresponding Go type.
+
+Memory allocation is completely different between C and Go, as Go uses
+garbage collection.  The exact guidelines in this area are
+undetermined, but it is likely that it will be permitted to pass a
+pointer to allocated memory from C to Go.  The responsibility of
+eventually freeing the pointer will remain with C side, and of course
+if the C side frees the pointer while the Go side still has a copy the
+program will fail.  When passing a pointer from Go to C, the Go
+function must retain a visible copy of it in some Go variable.
+Otherwise the Go garbage collector may delete the pointer while the C
+function is still using it.
+
+@node Function Names
+@section Function Names
+
+@cindex @code{extern}
+@cindex external names
+Go code can call C functions directly using the @code{//extern} or
+@code{//go:linkname} compiler directives.  An @code{//extern}
+directive must be at the beginning of the line and must start with
+@code{//extern}.  This must be followed by a space and then the
+external name of the function.  The function declaration must be on
+the line immediately after the comment.  For example, here is how the
+C function @code{open} can be declared in Go:
+
+@smallexample
+//extern open
+func c_open(name *byte, mode int, perm int) int
+@end smallexample
+
+You can do the same thing using the @code{//go:linkname} compiler
+directive.  The @code{//go:linkname} directive must be at the start of
+the line.  It is followed by whitespace, the name of the Go function,
+more whitespace, and the external name of the function.  Unlike
+@code{//extern}, @code{//go:linkname} does not need to appear
+immediately adjacent to the function definition or declaration.
+
+@smallexample
+//go:linkname c_open open
+func c_open(name *byte, mode int, perm int) int
+@end smallexample
+
+The C function naturally expects a nul terminated string, which in Go
+is equivalent to a pointer to an array (not a slice!) of @code{byte}
+with a terminating zero byte.  So a sample call from Go would look
+like (after importing the @code{os} package):
+
+@smallexample
+var name = [4]byte@{'f', 'o', 'o', 0@};
+i := c_open(&name[0], os.O_RDONLY, 0);
+@end smallexample
+
+Note that this serves as an example only.  To open a file in Go please
+use Go's @code{os.Open} function instead.
+
+The name of Go functions accessed from C is subject to change.  At
+present the name of a Go function that does not have a receiver is
+@code{pkgpath.Functionname}.  The @var{pkgpath} is set by the
+@option{-fgo-pkgpath} option used when the package is compiled; if the
+option is not used, the default is @code{go.@var{packagename}}.  To
+call the function from C you must set the name using the @command{gcc}
+@code{__asm__} extension.
+
+@smallexample
+extern int go_function(int) __asm__ ("mypkgpath.Function");
+@end smallexample
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

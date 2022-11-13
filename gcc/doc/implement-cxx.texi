@@ -1,0 +1,62 @@
+@c Copyright (C) 2009-2022 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node C++ Implementation
+@chapter C++ Implementation-Defined Behavior
+@cindex implementation-defined behavior, C++ language
+
+A conforming implementation of ISO C++ is required to document its
+choice of behavior in each of the areas that are designated
+``implementation defined''.  The following lists all such areas,
+along with the section numbers from the ISO/IEC 14882:1998 and ISO/IEC
+14882:2003 standards.  Some areas are only implementation-defined in
+one version of the standard.
+
+Some choices depend on the externally determined ABI for the platform
+(including standard character encodings) which GCC follows; these are
+listed as ``determined by ABI'' below.  @xref{Compatibility, , Binary
+Compatibility}, and @uref{https://gcc.gnu.org/readings.html}.  Some
+choices are documented in the preprocessor manual.
+@xref{Implementation-defined behavior, , Implementation-defined
+behavior, cpp, The C Preprocessor}.  Some choices are documented in
+the corresponding document for the C language.  @xref{C
+Implementation}.  Some choices are made by the library and operating
+system (or other environment when compiling for a freestanding
+environment); refer to their documentation for details.
+
+@menu
+* Conditionally-supported behavior::
+* Exception handling::
+@end menu
+
+@node Conditionally-supported behavior
+@section Conditionally-Supported Behavior
+
+@cite{Each implementation shall include documentation that identifies
+all conditionally-supported constructs that it does not support (C++0x
+1.4).}
+
+@itemize @bullet
+@item
+@cite{Whether an argument of class type with a non-trivial copy
+constructor or destructor can be passed to ... (C++0x 5.2.2).}
+
+Such argument passing is supported, using the same
+pass-by-invisible-reference approach used for normal function
+arguments of such types.
+
+@end itemize
+
+@node Exception handling
+@section Exception Handling
+
+@itemize @bullet
+@item
+@cite{In the situation where no matching handler is found, it is
+implementation-defined whether or not the stack is unwound before
+std::terminate() is called (C++98 15.5.1).}
+
+The stack is not unwound before std::terminate is called.
+
+@end itemize

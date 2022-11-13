@@ -1,0 +1,968 @@
+\input texinfo  @c -*-texinfo-*-
+@c %**start of header
+@setfilename gfc-internals.info
+@set copyrights-gfortran 2007-2022
+
+@include gcc-common.texi
+
+@synindex tp cp
+
+@settitle GNU Fortran Compiler Internals
+
+@c %**end of header
+
+@c Use with @@smallbook.
+
+@c %** start of document
+
+@c Cause even numbered pages to be printed on the left hand side of
+@c the page and odd numbered pages to be printed on the right hand
+@c side of the page.  Using this, you can print on both sides of a
+@c sheet of paper and have the text on the same part of the sheet.
+
+@c The text on right hand pages is pushed towards the right hand
+@c margin and the text on left hand pages is pushed toward the left
+@c hand margin.
+@c (To provide the reverse effect, set bindingoffset to -0.75in.)
+
+@c @tex
+@c \global\bindingoffset=0.75in
+@c \global\normaloffset =0.75in
+@c @end tex
+
+@copying
+Copyright @copyright{} @value{copyrights-gfortran} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``Funding Free Software'', the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@end copying
+
+@ifinfo
+@dircategory Software development
+@direntry
+* gfortran: (gfortran).                  The GNU Fortran Compiler.
+@end direntry
+This file documents the internals of the GNU Fortran
+compiler, (@command{gfortran}).
+
+Published by the Free Software Foundation
+51 Franklin Street, Fifth Floor
+Boston, MA 02110-1301 USA
+
+@insertcopying
+@end ifinfo
+
+
+@setchapternewpage odd
+@titlepage
+@title GNU Fortran Internals
+@versionsubtitle
+@author The @t{gfortran} team
+@page
+@vskip 0pt plus 1filll
+Published by the Free Software Foundation@*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@c Last printed ??ber, 19??.@*
+@c Printed copies are available for $? each.@*
+@c ISBN ???
+@sp 1
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+
+@page
+
+@c ---------------------------------------------------------------------
+@c TexInfo table of contents.
+@c ---------------------------------------------------------------------
+
+@ifnottex
+@node Top
+@top Introduction
+@cindex Introduction
+
+This manual documents the internals of @command{gfortran}, 
+the GNU Fortran compiler.
+
+@ifset DEVELOPMENT
+@emph{Warning:} This document, and the compiler it describes, are still
+under development.  While efforts are made to keep it up-to-date, it might
+not accurately reflect the status of the most recent GNU Fortran compiler.
+@end ifset
+
+@comment
+@comment  When you add a new menu item, please keep the right hand
+@comment  aligned to the same column.  Do not use tabs.  This provides
+@comment  better formatting.
+@comment
+@menu
+* Introduction::           About this manual.
+* User Interface::         Code that Interacts with the User.
+* Frontend Data Structures::
+                           Data structures used by the frontend
+* Object Orientation::     Internals of Fortran 2003 OOP features.
+* Translating to GENERIC::
+                           Generating the intermediate language for later stages.
+* LibGFortran::            The LibGFortran Runtime Library.
+* GNU Free Documentation License::
+                           How you can copy and share this manual.
+* Index::                  Index of this documentation.
+@end menu
+@end ifnottex
+
+@c ---------------------------------------------------------------------
+@c Introduction
+@c ---------------------------------------------------------------------
+
+@node Introduction
+@chapter Introduction
+
+@c The following duplicates the text on the TexInfo table of contents.
+@iftex
+This manual documents the internals of @command{gfortran}, the GNU Fortran
+compiler.
+
+@ifset DEVELOPMENT
+@emph{Warning:} This document, and the compiler it describes, are still
+under development.  While efforts are made to keep it up-to-date, it
+might not accurately reflect the status of the most recent GNU Fortran
+compiler.
+@end ifset
+@end iftex
+
+At present, this manual is very much a work in progress, containing 
+miscellaneous notes about the internals of the compiler.  It is hoped
+that at some point in the future it will become a reasonably complete
+guide; in the interim, GNU Fortran developers are strongly encouraged to
+contribute to it as a way of keeping notes while working on the 
+compiler.
+
+
+@c ---------------------------------------------------------------------
+@c Code that Interacts with the User
+@c ---------------------------------------------------------------------
+
+@node User Interface
+@chapter Code that Interacts with the User
+
+@menu
+* Command-Line Options::    Command-Line Options.
+* Error Handling::          Error Handling.
+@end menu
+
+
+@c ---------------------------------------------------------------------
+@c Command-Line Options
+@c ---------------------------------------------------------------------
+
+@node Command-Line Options
+@section Command-Line Options
+
+Command-line options for @command{gfortran} involve four interrelated
+pieces within the Fortran compiler code.
+
+The relevant command-line flag is defined in @file{lang.opt}, according
+to the documentation in @ref{Options,, Options, gccint, GNU Compiler
+Collection Internals}.  This is then processed by the overall GCC
+machinery to create the code that enables @command{gfortran} and
+@command{gcc} to recognize the option in the command-line arguments and
+call the relevant handler function.
+
+This generated code calls the @code{gfc_handle_option} code in
+@file{options.cc} with an enumerator variable indicating which option is
+to be processed, and the relevant integer or string values associated
+with that option flag.  Typically, @code{gfc_handle_option} uses these
+arguments to set global flags which record the option states.
+
+The global flags that record the option states are stored in the
+@code{gfc_option_t} struct, which is defined in @file{gfortran.h}.
+Before the options are processed, initial values for these flags are set
+in @code{gfc_init_option} in @file{options.cc}; these become the default
+values for the options.
+
+
+
+@c ---------------------------------------------------------------------
+@c Error Handling
+@c ---------------------------------------------------------------------
+
+@node Error Handling
+@section Error Handling
+
+The GNU Fortran compiler's parser operates by testing each piece of
+source code against a variety of matchers.  In some cases, if these
+matchers do not match the source code, they will store an error message
+in a buffer.  If the parser later finds a matcher that does correctly
+match the source code, then the buffered error is discarded.  However,
+if the parser cannot find a match, then the buffered error message is
+reported to the user.  This enables the compiler to provide more
+meaningful error messages even in the many cases where (erroneous)
+Fortran syntax is ambiguous due to things like the absence of reserved
+keywords.
+
+As an example of how this works, consider the following line:
+@smallexample
+IF = 3
+@end smallexample
+Hypothetically, this may get passed to the matcher for an @code{IF}
+statement.  Since this could plausibly be an erroneous @code{IF}
+statement, the matcher will buffer an error message reporting the
+absence of an expected @samp{(} following an @code{IF}.  Since no
+matchers reported an error-free match, however, the parser will also try
+matching this against a variable assignment.  When @code{IF} is a valid
+variable, this will be parsed as an assignment statement, and the error
+discarded.  However, when @code{IF} is not a valid variable, this
+buffered error message will be reported to the user.
+
+The error handling code is implemented in @file{error.cc}.  Errors are
+normally entered into the buffer with the @code{gfc_error} function.
+Warnings go through a similar buffering process, and are entered into
+the buffer with @code{gfc_warning}.  There is also a special-purpose
+function, @code{gfc_notify_std}, for things which have an error/warning
+status that depends on the currently-selected language standard.
+
+The @code{gfc_error_check} function checks the buffer for errors,
+reports the error message to the user if one exists, clears the buffer,
+and returns a flag to the user indicating whether or not an error
+existed.  To check the state of the buffer without changing its state or
+reporting the errors, the @code{gfc_error_flag_test} function can be
+used.  The @code{gfc_clear_error} function will clear out any errors in
+the buffer, without reporting them.  The @code{gfc_warning_check} and
+@code{gfc_clear_warning} functions provide equivalent functionality for
+the warning buffer.
+
+Only one error and one warning can be in the buffers at a time, and
+buffering another will overwrite the existing one.  In cases where one
+may wish to work on a smaller piece of source code without disturbing an
+existing error state, the @code{gfc_push_error}, @code{gfc_pop_error},
+and @code{gfc_free_error} mechanism exists to implement a stack for the
+error buffer.
+
+For cases where an error or warning should be reported immediately
+rather than buffered, the @code{gfc_error_now} and
+@code{gfc_warning_now} functions can be used.  Normally, the compiler
+will continue attempting to parse the program after an error has
+occurred, but if this is not appropriate, the @code{gfc_fatal_error}
+function should be used instead.  For errors that are always the result
+of a bug somewhere in the compiler, the @code{gfc_internal_error}
+function should be used.
+
+The syntax for the strings used to produce the error/warning message in
+the various error and warning functions is similar to the @code{printf}
+syntax, with @samp{%}-escapes to insert variable values.  The details,
+and the allowable codes, are documented in the @code{error_print}
+function in @file{error.cc}.
+
+@c ---------------------------------------------------------------------
+@c Frontend Data Structures
+@c ---------------------------------------------------------------------
+
+@node Frontend Data Structures
+@chapter Frontend Data Structures
+@cindex data structures
+
+This chapter should describe the details necessary to understand how
+the various @code{gfc_*} data are used and interact.  In general it is
+advisable to read the code in @file{dump-parse-tree.cc} as its routines
+should exhaust all possible valid combinations of content for these
+structures.
+
+@menu
+* gfc_code:: Representation of Executable Statements.
+* gfc_expr:: Representation of Values and Expressions.
+@end menu
+
+
+@c gfc_code
+@c --------
+
+@node gfc_code
+@section @code{gfc_code}
+@cindex statement chaining
+@tindex @code{gfc_code}
+@tindex @code{struct gfc_code}
+
+The executable statements in a program unit are represented by a
+nested chain of @code{gfc_code} structures.  The type of statement is
+identified by the @code{op} member of the structure, the different
+possible values are enumerated in @code{gfc_exec_op}.  A special
+member of this @code{enum} is @code{EXEC_NOP} which is used to
+represent the various @code{END} statements if they carry a label.
+Depending on the type of statement some of the other fields will be
+filled in.  Fields that are generally applicable are the @code{next}
+and @code{here} fields.  The former points to the next statement in
+the current block or is @code{NULL} if the current statement is the
+last in a block, @code{here} points to the statement label of the
+current statement.
+
+If the current statement is one of @code{IF}, @code{DO}, @code{SELECT}
+it starts a block, i.e.@: a nested level in the program.  In order to
+represent this, the @code{block} member is set to point to a
+@code{gfc_code} structure whose @code{next} member starts the chain of
+statements inside the block; this structure's @code{op} member should be set to
+the same value as the parent structure's @code{op} member.  The @code{SELECT}
+and @code{IF} statements may contain various blocks (the chain of @code{ELSE IF}
+and @code{ELSE} blocks or the various @code{CASE}s, respectively).  These chains
+are linked-lists formed by the @code{block} members.
+
+Consider the following example code:
+
+@example
+IF (foo < 20) THEN
+  PRINT *, "Too small"
+  foo = 20
+ELSEIF (foo > 50) THEN
+  PRINT *, "Too large"
+  foo = 50
+ELSE
+  PRINT *, "Good"
+END IF
+@end example
+
+This statement-block will be represented in the internal gfortran tree as
+follows, were the horizontal link-chains are those induced by the @code{next}
+members and vertical links down are those of @code{block}. @samp{==|} and
+@samp{--|} mean @code{NULL} pointers to mark the end of a chain:
+
+@example
+... ==> IF ==> ...
+        |
+        +--> IF foo < 20 ==> PRINT *, "Too small" ==> foo = 20 ==|
+             |
+             +--> IF foo > 50 ==> PRINT *, "Too large" ==> foo = 50 ==|
+                  |
+                  +--> ELSE ==> PRINT *, "Good" ==|
+                       |
+                       +--|
+@end example
+
+
+@subsection IF Blocks
+
+Conditionals are represented by @code{gfc_code} structures with their
+@code{op} member set to @code{EXEC_IF}.  This structure's @code{block}
+member must point to another @code{gfc_code} node that is the header of the
+if-block.  This header's @code{op} member must be set to @code{EXEC_IF}, too,
+its @code{expr} member holds the condition to check for, and its @code{next}
+should point to the code-chain of the statements to execute if the condition is
+true.
+
+If in addition an @code{ELSEIF} or @code{ELSE} block is present, the
+@code{block} member of the if-block-header node points to yet another
+@code{gfc_code} structure that is the header of the elseif- or else-block.  Its
+structure is identical to that of the if-block-header, except that in case of an
+@code{ELSE} block without a new condition the @code{expr} member should be
+@code{NULL}.  This block can itself have its @code{block} member point to the
+next @code{ELSEIF} or @code{ELSE} block if there's a chain of them.
+
+
+@subsection Loops
+
+@code{DO} loops are stored in the tree as @code{gfc_code} nodes with their
+@code{op} set to @code{EXEC_DO} for a @code{DO} loop with iterator variable and
+to @code{EXEC_DO_WHILE} for infinite @code{DO}s and @code{DO WHILE} blocks.
+Their @code{block} member should point to a @code{gfc_code} structure heading
+the code-chain of the loop body; its @code{op} member should be set to
+@code{EXEC_DO} or @code{EXEC_DO_WHILE}, too, respectively.
+
+For @code{DO WHILE} loops, the loop condition is stored on the top
+@code{gfc_code} structure's @code{expr} member; @code{DO} forever loops are
+simply @code{DO WHILE} loops with a constant @code{.TRUE.} loop condition in
+the internal representation.
+
+Similarly, @code{DO} loops with an iterator have instead of the condition their
+@code{ext.iterator} member set to the correct values for the loop iterator
+variable and its range.
+
+
+@subsection @code{SELECT} Statements
+
+A @code{SELECT} block is introduced by a @code{gfc_code} structure with an
+@code{op} member of @code{EXEC_SELECT} and @code{expr} containing the expression
+to evaluate and test.  Its @code{block} member starts a list of @code{gfc_code}
+structures linked together by their @code{block} members that stores the various
+@code{CASE} parts.
+
+Each @code{CASE} node has its @code{op} member set to @code{EXEC_SELECT}, too,
+its @code{next} member points to the code-chain to be executed in the current
+case-block, and @code{extx.case_list} contains the case-values this block
+corresponds to.  The @code{block} member links to the next case in the list.
+
+
+@subsection @code{BLOCK} and @code{ASSOCIATE}
+
+The code related to a @code{BLOCK} statement is stored inside an
+@code{gfc_code} structure (say @var{c})
+with @code{c.op} set to @code{EXEC_BLOCK}.  The
+@code{gfc_namespace} holding the locally defined variables of the
+@code{BLOCK} is stored in @code{c.ext.block.ns}.  The code inside the
+construct is in @code{c.code}.
+
+@code{ASSOCIATE} constructs are based on @code{BLOCK} and thus also have
+the internal storage structure described above (including @code{EXEC_BLOCK}).
+However, for them @code{c.ext.block.assoc} is set additionally and points
+to a linked list of @code{gfc_association_list} structures.  Those
+structures basically store a link of associate-names to target expressions.
+The associate-names themselves are still also added to the @code{BLOCK}'s
+namespace as ordinary symbols, but they have their @code{gfc_symbol}'s
+member @code{assoc} set also pointing to the association-list structure.
+This way associate-names can be distinguished from ordinary variables
+and their target expressions identified.
+
+For association to expressions (as opposed to variables), at the very beginning
+of the @code{BLOCK} construct assignments are automatically generated to
+set the corresponding variables to their target expressions' values, and
+later on the compiler simply disallows using such associate-names in contexts
+that may change the value.
+
+
+@c gfc_expr
+@c --------
+
+@node gfc_expr
+@section @code{gfc_expr}
+@tindex @code{gfc_expr}
+@tindex @code{struct gfc_expr}
+
+Expressions and ``values'', including constants, variable-, array- and
+component-references as well as complex expressions consisting of operators and
+function calls are internally represented as one or a whole tree of
+@code{gfc_expr} objects.  The member @code{expr_type} specifies the overall
+type of an expression (for instance, @code{EXPR_CONSTANT} for constants or
+@code{EXPR_VARIABLE} for variable references).  The members @code{ts} and
+@code{rank} as well as @code{shape}, which can be @code{NULL}, specify
+the type, rank and, if applicable, shape of the whole expression or expression
+tree of which the current structure is the root.  @code{where} is the locus of
+this expression in the source code.
+
+Depending on the flavor of the expression being described by the object
+(that is, the value of its @code{expr_type} member), the corresponding structure
+in the @code{value} union will usually contain additional data describing the
+expression's value in a type-specific manner.  The @code{ref} member is used to
+build chains of (array-, component- and substring-) references if the expression
+in question contains such references, see below for details.
+
+
+@subsection Constants
+
+Scalar constants are represented by @code{gfc_expr} nodes with their
+@code{expr_type} set to @code{EXPR_CONSTANT}.  The constant's value shall
+already be known at compile-time and is stored in the @code{logical},
+@code{integer}, @code{real}, @code{complex} or @code{character} struct inside
+@code{value}, depending on the constant's type specification.
+
+
+@subsection Operators
+
+Operator-expressions are expressions that are the result of the execution of
+some operator on one or two operands.  The expressions have an @code{expr_type}
+of @code{EXPR_OP}.  Their @code{value.op} structure contains additional data.
+
+@code{op1} and optionally @code{op2} if the operator is binary point to the
+two operands, and @code{operator} or @code{uop} describe the operator that
+should be evaluated on these operands, where @code{uop} describes a user-defined
+operator.
+
+
+@subsection Function Calls
+
+If the expression is the return value of a function-call, its @code{expr_type}
+is set to @code{EXPR_FUNCTION}, and @code{symtree} must point to the symtree
+identifying the function to be called.  @code{value.function.actual} holds the
+actual arguments given to the function as a linked list of
+@code{gfc_actual_arglist} nodes.
+
+The other members of @code{value.function} describe the function being called
+in more detail, containing a link to the intrinsic symbol or user-defined
+function symbol if the call is to an intrinsic or external function,
+respectively.  These values are determined during resolution-phase from the
+structure's @code{symtree} member.
+
+A special case of function calls are ``component calls'' to type-bound
+procedures; those have the @code{expr_type} @code{EXPR_COMPCALL} with
+@code{value.compcall} containing the argument list and the procedure called,
+while @code{symtree} and @code{ref} describe the object on which the procedure
+was called in the same way as a @code{EXPR_VARIABLE} expression would.
+@xref{Type-bound Procedures}.
+
+
+@subsection Array- and Structure-Constructors
+
+Array- and structure-constructors (one could probably call them ``array-'' and
+``derived-type constants'') are @code{gfc_expr} structures with their
+@code{expr_type} member set to @code{EXPR_ARRAY} or @code{EXPR_STRUCTURE},
+respectively.  For structure constructors, @code{symtree} points to the
+derived-type symbol for the type being constructed.
+
+The values for initializing each array element or structure component are
+stored as linked-list of @code{gfc_constructor} nodes in the
+@code{value.constructor} member.
+
+
+@subsection Null
+
+@code{NULL} is a special value for pointers; it can be of different base types.
+Such a @code{NULL} value is represented in the internal tree by a
+@code{gfc_expr} node with @code{expr_type} @code{EXPR_NULL}.  If the base type
+of the @code{NULL} expression is known, it is stored in @code{ts} (that's for
+instance the case for default-initializers of @code{ALLOCATABLE} components),
+but this member can also be set to @code{BT_UNKNOWN} if the information is not
+available (for instance, when the expression is a pointer-initializer
+@code{NULL()}).
+
+
+@subsection Variables and Reference Expressions
+
+Variable references are @code{gfc_expr} structures with their @code{expr_type}
+set to @code{EXPR_VARIABLE}; their @code{symtree} should point to the variable
+that is referenced.
+
+For this type of expression, it's also possible to chain array-, component-
+or substring-references to the original expression to get something like
+@samp{struct%component(2:5)}, where @code{component} is either an array or
+a @code{CHARACTER} member of @code{struct} that is of some derived-type.  Such a
+chain of references is achieved by a linked list headed by @code{ref} of the
+@code{gfc_expr} node.  For the example above it would be (@samp{==|} is the
+last @code{NULL} pointer):
+
+@smallexample
+EXPR_VARIABLE(struct) ==> REF_COMPONENT(component) ==> REF_ARRAY(2:5) ==|
+@end smallexample
+
+If @code{component} is a string rather than an array, the last element would be
+a @code{REF_SUBSTRING} reference, of course.  If the variable itself or some
+component referenced is an array and the expression should reference the whole
+array rather than being followed by an array-element or -section reference, a
+@code{REF_ARRAY} reference must be built as the last element in the chain with
+an array-reference type of @code{AR_FULL}. Consider this example code:
+
+@smallexample
+TYPE :: mytype
+  INTEGER :: array(42)
+END TYPE mytype
+
+TYPE(mytype) :: variable
+INTEGER :: local_array(5)
+
+CALL do_something (variable%array, local_array)
+@end smallexample
+
+The @code{gfc_expr} nodes representing the arguments to the @samp{do_something}
+call will have a reference-chain like this:
+
+@smallexample
+EXPR_VARIABLE(variable) ==> REF_COMPONENT(array) ==> REF_ARRAY(FULL) ==|
+EXPR_VARIABLE(local_array) ==> REF_ARRAY(FULL) ==|
+@end smallexample
+
+
+@subsection Constant Substring References
+
+@code{EXPR_SUBSTRING} is a special type of expression that encodes a substring
+reference of a constant string, as in the following code snippet:
+
+@smallexample
+x = "abcde"(1:2)
+@end smallexample
+
+In this case, @code{value.character} contains the full string's data as if it
+was a string constant, but the @code{ref} member is also set and points to a
+substring reference as described in the subsection above.
+
+
+@c ---------------------------------------------------------------------
+@c F2003 OOP
+@c ---------------------------------------------------------------------
+
+@node Object Orientation
+@chapter Internals of Fortran 2003 OOP Features
+
+@menu
+* Type-bound Procedures:: Type-bound procedures.
+* Type-bound Operators::  Type-bound operators.
+@end menu
+
+
+@c Type-bound procedures
+@c ---------------------
+
+@node Type-bound Procedures
+@section Type-bound Procedures
+
+Type-bound procedures are stored in the @code{tb_sym_root} of the namespace
+@code{f2k_derived} associated with the derived-type symbol as @code{gfc_symtree}
+nodes.  The name and symbol of these symtrees corresponds to the binding-name
+of the procedure, i.e. the name that is used to call it from the context of an
+object of the derived-type.
+
+In addition, this type of symtrees stores in @code{n.tb} a struct of type
+@code{gfc_typebound_proc} containing the additional data needed:  The
+binding attributes (like @code{PASS} and @code{NOPASS}, @code{NON_OVERRIDABLE} 
+or the access-specifier), the binding's target(s) and, if the current binding
+overrides or extends an inherited binding of the same name, @code{overridden}
+points to this binding's @code{gfc_typebound_proc} structure.
+
+
+@subsection Specific Bindings
+@c --------------------------
+
+For specific bindings (declared with @code{PROCEDURE}), if they have a
+passed-object argument, the passed-object dummy argument is first saved by its
+name, and later during resolution phase the corresponding argument is looked for
+and its position remembered as @code{pass_arg_num} in @code{gfc_typebound_proc}.
+The binding's target procedure is pointed-to by @code{u.specific}.
+
+@code{DEFERRED} bindings are just like ordinary specific bindings, except
+that their @code{deferred} flag is set of course and that @code{u.specific}
+points to their ``interface'' defining symbol (might be an abstract interface)
+instead of the target procedure.
+
+At the moment, all type-bound procedure calls are statically dispatched and
+transformed into ordinary procedure calls at resolution time; their actual
+argument list is updated to include at the right position the passed-object
+argument, if applicable, and then a simple procedure call to the binding's
+target procedure is built.  To handle dynamic dispatch in the future, this will
+be extended to allow special code generation during the trans-phase to dispatch
+based on the object's dynamic type.
+
+
+@subsection Generic Bindings
+@c -------------------------
+
+Bindings declared as @code{GENERIC} store the specific bindings they target as
+a linked list using nodes of type @code{gfc_tbp_generic} in @code{u.generic}.
+For each specific target, the parser records its symtree and during resolution
+this symtree is bound to the corresponding @code{gfc_typebound_proc} structure
+of the specific target.
+
+Calls to generic bindings are handled entirely in the resolution-phase, where
+for the actual argument list present the matching specific binding is found
+and the call's target procedure (@code{value.compcall.tbp}) is re-pointed to
+the found specific binding and this call is subsequently handled by the logic
+for specific binding calls.
+
+
+@subsection Calls to Type-bound Procedures
+@c ---------------------------------------
+
+Calls to type-bound procedures are stored in the parse-tree as @code{gfc_expr}
+nodes of type @code{EXPR_COMPCALL}.  Their @code{value.compcall.actual} saves
+the actual argument list of the call and @code{value.compcall.tbp} points to the
+@code{gfc_typebound_proc} structure of the binding to be called.  The object
+in whose context the procedure was called is saved by combination of
+@code{symtree} and @code{ref}, as if the expression was of type
+@code{EXPR_VARIABLE}.
+
+For code like this:
+@smallexample
+CALL myobj%procedure (arg1, arg2)
+@end smallexample
+@noindent
+the @code{CALL} is represented in the parse-tree as a @code{gfc_code} node of
+type @code{EXEC_COMPCALL}.  The @code{expr} member of this node holds an
+expression of type @code{EXPR_COMPCALL} of the same structure as mentioned above
+except that its target procedure is of course a @code{SUBROUTINE} and not a
+@code{FUNCTION}.
+
+Expressions that are generated internally (as expansion of a type-bound
+operator call) may also use additional flags and members.
+@code{value.compcall.ignore_pass} signals that even though a @code{PASS}
+attribute may be present the actual argument list should not be updated because
+it already contains the passed-object.
+@code{value.compcall.base_object} overrides, if it is set, the base-object
+(that is normally stored in @code{symtree} and @code{ref} as mentioned above);
+this is needed because type-bound operators can be called on a base-object that
+need not be of type @code{EXPR_VARIABLE} and thus representable in this way.
+Finally, if @code{value.compcall.assign} is set, the call was produced in
+expansion of a type-bound assignment; this means that proper dependency-checking
+needs to be done when relevant.
+
+
+@c Type-bound operators
+@c --------------------
+
+@node Type-bound Operators
+@section Type-bound Operators
+
+Type-bound operators are in fact basically just @code{GENERIC} procedure
+bindings and are represented much in the same way as those (see
+@ref{Type-bound Procedures}).
+
+They come in two flavours:
+User-defined operators (like @code{.MYOPERATOR.})
+are stored in the @code{f2k_derived} namespace's @code{tb_uop_root}
+symtree exactly like ordinary type-bound procedures are stored in
+@code{tb_sym_root}; their symtrees' names are the operator-names (e.g.
+@samp{myoperator} in the example).
+Intrinsic operators on the other hand are stored in the namespace's
+array member @code{tb_op} indexed by the intrinsic operator's enum
+value.  Those need not be packed into @code{gfc_symtree} structures and are
+only @code{gfc_typebound_proc} instances.
+
+When an operator call or assignment is found that cannot be handled in
+another way (i.e. neither matches an intrinsic nor interface operator
+definition) but that contains a derived-type expression, all type-bound
+operators defined on that derived-type are checked for a match with
+the operator call.  If there's indeed a relevant definition, the
+operator call is replaced with an internally generated @code{GENERIC}
+type-bound procedure call to the respective definition and that call is
+further processed.
+
+@c ---------------------------------------------------------------------
+@c - Translating to GENERIC
+@c ---------------------------------------------------------------------
+
+@node Translating to GENERIC
+@chapter Generating the intermediate language for later stages.
+
+This chapter deals with the transformation of gfortran's frontend data
+structures to the intermediate language used by the later stages of
+the compiler, the so-called middle end.
+
+Data structures relating to this are found in the source files
+@file{trans*.h} and @file{trans-*.c}.
+
+@menu
+* Basic Data Structures::       Basic data structures.
+* Converting Expressions::      Converting expressions to tree.
+* Translating Statements::      Translating statements.
+* Accessing Declarations::      Accessing declarations.
+@end menu
+
+@node Basic Data Structures
+@section Basic data structures
+
+Gfortran creates GENERIC as an intermediate language for the
+middle-end. Details about GENERIC can be found in the GCC manual.
+
+The basic data structure of GENERIC is a @code{tree}. Everything in
+GENERIC is a @code{tree}, including types and statements.  Fortunately
+for the gfortran programmer, @code{tree} variables are
+garbage-collected, so doing memory management for them is not
+necessary.
+
+@code{tree} expressions are built using functions such as, for
+example, @code{fold_build2_loc}.  For two tree variables @code{a} and
+@code{b}, both of which have the type @code{gfc_arry_index_type},
+calculation @code{c = a * b} would be done by
+
+@smallexample
+c = fold_build2_loc (input_location, MULT_EXPR,
+                     gfc_array_index_type, a, b);
+@end smallexample
+
+The types have to agree, otherwise internal compiler errors will occur
+at a later stage.  Expressions can be converted to a different type
+using @code{fold_convert}.
+
+Accessing individual members in the @code{tree} structures should not
+be done. Rather, access should be done via macros.
+
+One basic data structure is the @code{stmtblock_t} struct. This is
+used for holding a list of statements, expressed as @code{tree}
+expressions.  If a block is created using @code{gfc_start_block}, it
+has its own scope for variables; if it is created using
+@code{gfc_init_block}, it does not have its own scope.
+
+It is possible to
+@itemize @bullet
+@item Add an expression to the end of a block using
+      @code{gfc_add_expr_to_block}
+@item Add an expression to the beginning of a block using
+      @code{void gfc_prepend_expr_to_block}
+@item Make a block into a single @code{tree} using
+      @code{gfc_finish_block}.  For example, this is needed to put the
+      contents of a block into the @code{if} or @code{else} branch of
+      a @code{COND_EXPR}.
+@end itemize
+
+Variables are also @code{tree} expressions, they can be created using
+@code{gfc_create_var}. Assigning to a variable can be done with
+@code{gfc_add_modify}.
+
+An example: Creating a default integer type variable in the current
+scope with the prefix ``everything'' in the @code{stmt_block}
+@code{block} and assigning the value 42 would be
+
+@smallexample
+tree var, *block;
+/* Initialize block somewhere here.  */
+var = gfc_create_var (integer_type_node, "everything");
+gfc_add_modify (block, var, build_int_cst (integer_type_node, 42));
+@end smallexample
+
+@node Converting Expressions
+@section Converting Expressions to tree
+
+Converting expressions to @code{tree} is done by functions called
+@code{gfc_conv_*}.
+
+The central data structure for a GENERIC expression is the
+@code{gfc_se} structure.  Its @code{expr} member is a @code{tree} that
+holds the value of the expression.  A @code{gfc_se} structure is
+initialized using @code{gfc_init_se}; it needs to be embedded in an
+outer @code{gfc_se}.
+
+Evaluating Fortran expressions often require things to be done before
+and after evaluation of the expression, for example code for the
+allocation of a temporary variable and its subsequent deallocation.
+Therefore, @code{gfc_se} contains the members @code{pre} and
+@code{post}, which point to @code{stmt_block} blocks for code that
+needs to be executed before and after evaluation of the expression.
+
+When using a local @code{gfc_se} to convert some expression, it is
+often necessary to add the generated @code{pre} and @code{post} blocks
+to the @code{pre} or @code{post} blocks of the outer @code{gfc_se}.
+Code like this (lifted from @file{trans-expr.cc}) is fairly common:
+
+@smallexample
+gfc_se cont_se;
+tree cont_var;
+
+/* cont_var = is_contiguous (expr); .  */
+gfc_init_se (&cont_se, parmse);
+gfc_conv_is_contiguous_expr (&cont_se, expr);
+gfc_add_block_to_block (&se->pre, &(&cont_se)->pre);
+gfc_add_modify (&se->pre, cont_var, cont_se.expr);
+gfc_add_block_to_block (&se->pre, &(&cont_se)->post);
+@end smallexample
+
+Conversion functions which need a @code{gfc_se} structure will have a
+corresponding argument.
+
+@code{gfc_se} also contains pointers to a @code{gfc_ss} and a
+@code{gfc_loopinfo} structure.  These are needed by the scalarizer.
+
+@node Translating Statements
+@section Translating statements
+Translating statements to @code{tree} is done by functions called
+@code{gfc_trans_*}.  These functions usually get passed a
+@code{gfc_code} structure, evaluate any expressions and then
+return a @code{tree} structure.
+
+@node Accessing Declarations
+@section Accessing declarations
+
+@code{gfc_symbol}, @code{gfc_charlen} and other front-end structures
+contain a @code{backend_decl} variable, which contains the @code{tree}
+used for accessing that entity in the middle-end.
+
+Accessing declarations is usually done by functions called
+@code{gfc_get*}.
+
+@c ---------------------------------------------------------------------
+@c LibGFortran
+@c ---------------------------------------------------------------------
+
+@node LibGFortran
+@chapter The LibGFortran Runtime Library
+
+@menu
+* Symbol Versioning::    Symbol Versioning.
+@end menu
+
+
+@c ---------------------------------------------------------------------
+@c Symbol Versioning
+@c ---------------------------------------------------------------------
+
+@node Symbol Versioning
+@section Symbol Versioning
+@comment Based on https://gcc.gnu.org/wiki/SymbolVersioning,
+@comment as of 2006-11-05, written by Janne Blomqvist.
+
+In general, this capability exists only on a few platforms, thus there
+is a need for configure magic so that it is used only on those targets
+where it is supported. 
+
+The central concept in symbol versioning is the so-called map file,
+which specifies the version node(s) exported symbols are labeled with.
+Also, the map file is used to hide local symbols. 
+
+Some relevant references:
+@itemize @bullet
+@item
+@uref{https://sourceware.org/binutils/docs/ld/VERSION.html,
+GNU @command{ld} manual}
+
+@item
+@uref{https://www.akkadia.org/drepper/symbol-versioning, ELF Symbol
+Versioning - Ulrich Depper}
+
+@item
+@uref{https://www.akkadia.org/drepper/dsohowto.pdf, How to Write Shared
+Libraries - Ulrich Drepper (see Chapter 3)}
+
+@end itemize
+
+If one adds a new symbol to a library that should be exported, the new
+symbol should be mentioned in the map file and a new version node
+defined, e.g., if one adds a new symbols @code{foo} and @code{bar} to
+libgfortran for the next GCC release, the following should be added to
+the map file: 
+@smallexample
+GFORTRAN_1.1 @{
+    global:
+        foo;
+        bar;
+@} GFORTRAN_1.0;
+@end smallexample
+@noindent
+where @code{GFORTRAN_1.0} is the version node of the current release,
+and @code{GFORTRAN_1.1} is the version node of the next release where
+foo and bar are made available. 
+
+If one wants to change an existing interface, it is possible by using
+some asm trickery (from the @command{ld} manual referenced above): 
+
+@smallexample
+__asm__(".symver original_foo,foo@@");
+__asm__(".symver old_foo,foo@@VERS_1.1");
+__asm__(".symver old_foo1,foo@@VERS_1.2");
+__asm__(".symver new_foo,foo@@VERS_2.0");
+@end smallexample
+
+In this example, @code{foo@@} represents the symbol @code{foo} bound to
+the unspecified base version of the symbol. The source file that
+contains this example would define 4 C functions: @code{original_foo},
+@code{old_foo}, @code{old_foo1}, and @code{new_foo}. 
+
+In this case the map file must contain @code{foo} in @code{VERS_1.1}
+and @code{VERS_1.2} as well as in @code{VERS_2.0}.
+
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+
+@c ---------------------------------------------------------------------
+@c Index
+@c ---------------------------------------------------------------------
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

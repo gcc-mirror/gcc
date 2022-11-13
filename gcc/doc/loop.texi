@@ -1,0 +1,626 @@
+@c Copyright (C) 2006-2022 Free Software Foundation, Inc.
+@c Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@c ---------------------------------------------------------------------
+@c Loop Representation
+@c ---------------------------------------------------------------------
+
+@node Loop Analysis and Representation
+@chapter Analysis and Representation of Loops
+
+GCC provides extensive infrastructure for work with natural loops, i.e.,
+strongly connected components of CFG with only one entry block.  This
+chapter describes representation of loops in GCC, both on GIMPLE and in
+RTL, as well as the interfaces to loop-related analyses (induction
+variable analysis and number of iterations analysis).
+
+@menu
+* Loop representation::         Representation and analysis of loops.
+* Loop querying::               Getting information about loops.
+* Loop manipulation::           Loop manipulation functions.
+* LCSSA::                       Loop-closed SSA form.
+* Scalar evolutions::           Induction variables on GIMPLE.
+* loop-iv::                     Induction variables on RTL.
+* Number of iterations::        Number of iterations analysis.
+* Dependency analysis::         Data dependency analysis.
+@end menu
+
+@node Loop representation
+@section Loop representation
+@cindex Loop representation
+@cindex Loop analysis
+
+This chapter describes the representation of loops in GCC, and functions
+that can be used to build, modify and analyze this representation.  Most
+of the interfaces and data structures are declared in @file{cfgloop.h}.
+Loop structures are analyzed and this information disposed or updated
+at the discretion of individual passes.  Still most of the generic
+CFG manipulation routines are aware of loop structures and try to
+keep them up-to-date.  By this means an increasing part of the
+compilation pipeline is setup to maintain loop structure across
+passes to allow attaching meta information to individual loops
+for consumption by later passes.
+
+In general, a natural loop has one entry block (header) and possibly
+several back edges (latches) leading to the header from the inside of
+the loop.  Loops with several latches may appear if several loops share
+a single header, or if there is a branching in the middle of the loop.
+The representation of loops in GCC however allows only loops with a
+single latch.  During loop analysis, headers of such loops are split and
+forwarder blocks are created in order to disambiguate their structures.
+Heuristic based on profile information and structure of the induction
+variables in the loops is used to determine whether the latches
+correspond to sub-loops or to control flow in a single loop.  This means
+that the analysis sometimes changes the CFG, and if you run it in the
+middle of an optimization pass, you must be able to deal with the new
+blocks.  You may avoid CFG changes by passing
+@code{LOOPS_MAY_HAVE_MULTIPLE_LATCHES} flag to the loop discovery,
+note however that most other loop manipulation functions will not work
+correctly for loops with multiple latch edges (the functions that only
+query membership of blocks to loops and subloop relationships, or
+enumerate and test loop exits, can be expected to work).
+
+Body of the loop is the set of blocks that are dominated by its header,
+and reachable from its latch against the direction of edges in CFG@.  The
+loops are organized in a containment hierarchy (tree) such that all the
+loops immediately contained inside loop L are the children of L in the
+tree.  This tree is represented by the @code{struct loops} structure.
+The root of this tree is a fake loop that contains all blocks in the
+function.  Each of the loops is represented in a @code{struct loop}
+structure.  Each loop is assigned an index (@code{num} field of the
+@code{struct loop} structure), and the pointer to the loop is stored in
+the corresponding field of the @code{larray} vector in the loops
+structure.  The indices do not have to be continuous, there may be
+empty (@code{NULL}) entries in the @code{larray} created by deleting
+loops.  Also, there is no guarantee on the relative order of a loop
+and its subloops in the numbering.  The index of a loop never changes.
+
+The entries of the @code{larray} field should not be accessed directly.
+The function @code{get_loop} returns the loop description for a loop with
+the given index.  @code{number_of_loops} function returns number of loops
+in the function.  To traverse all loops, use a range-based for loop with
+class @code{loops_list} instance. The @code{flags} argument passed to the
+constructor function of class @code{loops_list} is used to determine the
+direction of traversal and the set of loops visited.  Each loop is
+guaranteed to be visited exactly once, regardless of the changes to the
+loop tree, and the loops may be removed during the traversal.  The newly
+created loops are never traversed, if they need to be visited, this must
+be done separately after their creation.
+
+Each basic block contains the reference to the innermost loop it belongs
+to (@code{loop_father}).  For this reason, it is only possible to have
+one @code{struct loops} structure initialized at the same time for each
+CFG@.  The global variable @code{current_loops} contains the
+@code{struct loops} structure.  Many of the loop manipulation functions
+assume that dominance information is up-to-date.
+
+The loops are analyzed through @code{loop_optimizer_init} function.  The
+argument of this function is a set of flags represented in an integer
+bitmask.  These flags specify what other properties of the loop
+structures should be calculated/enforced and preserved later:
+
+@itemize
+@item @code{LOOPS_MAY_HAVE_MULTIPLE_LATCHES}: If this flag is set, no
+changes to CFG will be performed in the loop analysis, in particular,
+loops with multiple latch edges will not be disambiguated.  If a loop
+has multiple latches, its latch block is set to NULL@.  Most of
+the loop manipulation functions will not work for loops in this shape.
+No other flags that require CFG changes can be passed to
+loop_optimizer_init.
+@item @code{LOOPS_HAVE_PREHEADERS}: Forwarder blocks are created in such
+a way that each loop has only one entry edge, and additionally, the
+source block of this entry edge has only one successor.  This creates a
+natural place where the code can be moved out of the loop, and ensures
+that the entry edge of the loop leads from its immediate super-loop.
+@item @code{LOOPS_HAVE_SIMPLE_LATCHES}: Forwarder blocks are created to
+force the latch block of each loop to have only one successor.  This
+ensures that the latch of the loop does not belong to any of its
+sub-loops, and makes manipulation with the loops significantly easier.
+Most of the loop manipulation functions assume that the loops are in
+this shape.  Note that with this flag, the ``normal'' loop without any
+control flow inside and with one exit consists of two basic blocks.
+@item @code{LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS}: Basic blocks and
+edges in the strongly connected components that are not natural loops
+(have more than one entry block) are marked with
+@code{BB_IRREDUCIBLE_LOOP} and @code{EDGE_IRREDUCIBLE_LOOP} flags.  The
+flag is not set for blocks and edges that belong to natural loops that
+are in such an irreducible region (but it is set for the entry and exit
+edges of such a loop, if they lead to/from this region).
+@item @code{LOOPS_HAVE_RECORDED_EXITS}: The lists of exits are recorded
+and updated for each loop.  This makes some functions (e.g.,
+@code{get_loop_exit_edges}) more efficient.  Some functions (e.g.,
+@code{single_exit}) can be used only if the lists of exits are
+recorded.
+@end itemize
+
+These properties may also be computed/enforced later, using functions
+@code{create_preheaders}, @code{force_single_succ_latches},
+@code{mark_irreducible_loops} and @code{record_loop_exits}.
+The properties can be queried using @code{loops_state_satisfies_p}.
+
+The memory occupied by the loops structures should be freed with
+@code{loop_optimizer_finalize} function.  When loop structures are
+setup to be preserved across passes this function reduces the
+information to be kept up-to-date to a minimum (only
+@code{LOOPS_MAY_HAVE_MULTIPLE_LATCHES} set).
+
+The CFG manipulation functions in general do not update loop structures.
+Specialized versions that additionally do so are provided for the most
+common tasks.  On GIMPLE, @code{cleanup_tree_cfg_loop} function can be
+used to cleanup CFG while updating the loops structures if
+@code{current_loops} is set.
+
+At the moment loop structure is preserved from the start of GIMPLE
+loop optimizations until the end of RTL loop optimizations.  During
+this time a loop can be tracked by its @code{struct loop} and number.
+
+@node Loop querying
+@section Loop querying
+@cindex Loop querying
+
+The functions to query the information about loops are declared in
+@file{cfgloop.h}.  Some of the information can be taken directly from
+the structures.  @code{loop_father} field of each basic block contains
+the innermost loop to that the block belongs.  The most useful fields of
+loop structure (that are kept up-to-date at all times) are:
+
+@itemize
+@item @code{header}, @code{latch}: Header and latch basic blocks of the
+loop.
+@item @code{num_nodes}: Number of basic blocks in the loop (including
+the basic blocks of the sub-loops).
+@item @code{outer}, @code{inner}, @code{next}: The super-loop, the first
+sub-loop, and the sibling of the loop in the loops tree.
+@end itemize
+
+There are other fields in the loop structures, many of them used only by
+some of the passes, or not updated during CFG changes; in general, they
+should not be accessed directly.
+
+The most important functions to query loop structures are:
+
+@itemize
+@item @code{loop_depth}: The depth of the loop in the loops tree, i.e., the
+number of super-loops of the loop.
+@item @code{flow_loops_dump}: Dumps the information about loops to a
+file.
+@item @code{verify_loop_structure}: Checks consistency of the loop
+structures.
+@item @code{loop_latch_edge}: Returns the latch edge of a loop.
+@item @code{loop_preheader_edge}: If loops have preheaders, returns
+the preheader edge of a loop.
+@item @code{flow_loop_nested_p}: Tests whether loop is a sub-loop of
+another loop.
+@item @code{flow_bb_inside_loop_p}: Tests whether a basic block belongs
+to a loop (including its sub-loops).
+@item @code{find_common_loop}: Finds the common super-loop of two loops.
+@item @code{superloop_at_depth}: Returns the super-loop of a loop with
+the given depth.
+@item @code{tree_num_loop_insns}, @code{num_loop_insns}: Estimates the
+number of insns in the loop, on GIMPLE and on RTL.
+@item @code{loop_exit_edge_p}: Tests whether edge is an exit from a
+loop.
+@item @code{mark_loop_exit_edges}: Marks all exit edges of all loops
+with @code{EDGE_LOOP_EXIT} flag.
+@item @code{get_loop_body}, @code{get_loop_body_in_dom_order},
+@code{get_loop_body_in_bfs_order}: Enumerates the basic blocks in the
+loop in depth-first search order in reversed CFG, ordered by dominance
+relation, and breath-first search order, respectively.
+@item @code{single_exit}: Returns the single exit edge of the loop, or
+@code{NULL} if the loop has more than one exit.  You can only use this
+function if @code{LOOPS_HAVE_RECORDED_EXITS} is used.
+@item @code{get_loop_exit_edges}: Enumerates the exit edges of a loop.
+@item @code{just_once_each_iteration_p}: Returns true if the basic block
+is executed exactly once during each iteration of a loop (that is, it
+does not belong to a sub-loop, and it dominates the latch of the loop).
+@end itemize
+
+@node Loop manipulation
+@section Loop manipulation
+@cindex Loop manipulation
+
+The loops tree can be manipulated using the following functions:
+
+@itemize
+@item @code{flow_loop_tree_node_add}: Adds a node to the tree.
+@item @code{flow_loop_tree_node_remove}: Removes a node from the tree.
+@item @code{add_bb_to_loop}: Adds a basic block to a loop.
+@item @code{remove_bb_from_loops}: Removes a basic block from loops.
+@end itemize
+
+Most low-level CFG functions update loops automatically.  The following
+functions handle some more complicated cases of CFG manipulations:
+
+@itemize
+@item @code{remove_path}: Removes an edge and all blocks it dominates.
+@item @code{split_loop_exit_edge}: Splits exit edge of the loop,
+ensuring that PHI node arguments remain in the loop (this ensures that
+loop-closed SSA form is preserved).  Only useful on GIMPLE.
+@end itemize
+
+Finally, there are some higher-level loop transformations implemented.
+While some of them are written so that they should work on non-innermost
+loops, they are mostly untested in that case, and at the moment, they
+are only reliable for the innermost loops:
+
+@itemize
+@item @code{create_iv}: Creates a new induction variable.  Only works on
+GIMPLE@.  @code{standard_iv_increment_position} can be used to find a
+suitable place for the iv increment.
+@item @code{duplicate_loop_body_to_header_edge},
+@code{tree_duplicate_loop_body_to_header_edge}: These functions (on RTL and
+on GIMPLE) duplicate the body of the loop prescribed number of times on
+one of the edges entering loop header, thus performing either loop
+unrolling or loop peeling.  @code{can_duplicate_loop_p}
+(@code{can_unroll_loop_p} on GIMPLE) must be true for the duplicated
+loop.
+@item @code{loop_version}: This function creates a copy of a loop, and
+a branch before them that selects one of them depending on the
+prescribed condition.  This is useful for optimizations that need to
+verify some assumptions in runtime (one of the copies of the loop is
+usually left unchanged, while the other one is transformed in some way).
+@item @code{tree_unroll_loop}: Unrolls the loop, including peeling the
+extra iterations to make the number of iterations divisible by unroll
+factor, updating the exit condition, and removing the exits that now
+cannot be taken.  Works only on GIMPLE.
+@end itemize
+
+@node LCSSA
+@section Loop-closed SSA form
+@cindex LCSSA
+@cindex Loop-closed SSA form
+
+Throughout the loop optimizations on tree level, one extra condition is
+enforced on the SSA form:  No SSA name is used outside of the loop in
+that it is defined.  The SSA form satisfying this condition is called
+``loop-closed SSA form'' -- LCSSA@.  To enforce LCSSA, PHI nodes must be
+created at the exits of the loops for the SSA names that are used
+outside of them.  Only the real operands (not virtual SSA names) are
+held in LCSSA, in order to save memory.
+
+There are various benefits of LCSSA:
+
+@itemize
+@item Many optimizations (value range analysis, final value
+replacement) are interested in the values that are defined in the loop
+and used outside of it, i.e., exactly those for that we create new PHI
+nodes.
+@item In induction variable analysis, it is not necessary to specify the
+loop in that the analysis should be performed -- the scalar evolution
+analysis always returns the results with respect to the loop in that the
+SSA name is defined.
+@item It makes updating of SSA form during loop transformations simpler.
+Without LCSSA, operations like loop unrolling may force creation of PHI
+nodes arbitrarily far from the loop, while in LCSSA, the SSA form can be
+updated locally.  However, since we only keep real operands in LCSSA, we
+cannot use this advantage (we could have local updating of real
+operands, but it is not much more efficient than to use generic SSA form
+updating for it as well; the amount of changes to SSA is the same).
+@end itemize
+
+However, it also means LCSSA must be updated.  This is usually
+straightforward, unless you create a new value in loop and use it
+outside, or unless you manipulate loop exit edges (functions are
+provided to make these manipulations simple).
+@code{rewrite_into_loop_closed_ssa} is used to rewrite SSA form to
+LCSSA, and @code{verify_loop_closed_ssa} to check that the invariant of
+LCSSA is preserved.
+
+@node Scalar evolutions
+@section Scalar evolutions
+@cindex Scalar evolutions
+@cindex IV analysis on GIMPLE
+
+Scalar evolutions (SCEV) are used to represent results of induction
+variable analysis on GIMPLE@.  They enable us to represent variables with
+complicated behavior in a simple and consistent way (we only use it to
+express values of polynomial induction variables, but it is possible to
+extend it).  The interfaces to SCEV analysis are declared in
+@file{tree-scalar-evolution.h}.  To use scalar evolutions analysis,
+@code{scev_initialize} must be used.  To stop using SCEV,
+@code{scev_finalize} should be used.  SCEV analysis caches results in
+order to save time and memory.  This cache however is made invalid by
+most of the loop transformations, including removal of code.  If such a
+transformation is performed, @code{scev_reset} must be called to clean
+the caches.
+
+Given an SSA name, its behavior in loops can be analyzed using the
+@code{analyze_scalar_evolution} function.  The returned SCEV however
+does not have to be fully analyzed and it may contain references to
+other SSA names defined in the loop.  To resolve these (potentially
+recursive) references, @code{instantiate_parameters} or
+@code{resolve_mixers} functions must be used.
+@code{instantiate_parameters} is useful when you use the results of SCEV
+only for some analysis, and when you work with whole nest of loops at
+once.  It will try replacing all SSA names by their SCEV in all loops,
+including the super-loops of the current loop, thus providing a complete
+information about the behavior of the variable in the loop nest.
+@code{resolve_mixers} is useful if you work with only one loop at a
+time, and if you possibly need to create code based on the value of the
+induction variable.  It will only resolve the SSA names defined in the
+current loop, leaving the SSA names defined outside unchanged, even if
+their evolution in the outer loops is known.
+
+The SCEV is a normal tree expression, except for the fact that it may
+contain several special tree nodes.  One of them is
+@code{SCEV_NOT_KNOWN}, used for SSA names whose value cannot be
+expressed.  The other one is @code{POLYNOMIAL_CHREC}.  Polynomial chrec
+has three arguments -- base, step and loop (both base and step may
+contain further polynomial chrecs).  Type of the expression and of base
+and step must be the same.  A variable has evolution
+@code{POLYNOMIAL_CHREC(base, step, loop)} if it is (in the specified
+loop) equivalent to @code{x_1} in the following example
+
+@smallexample
+while (@dots{})
+  @{
+    x_1 = phi (base, x_2);
+    x_2 = x_1 + step;
+  @}
+@end smallexample
+
+Note that this includes the language restrictions on the operations.
+For example, if we compile C code and @code{x} has signed type, then the
+overflow in addition would cause undefined behavior, and we may assume
+that this does not happen.  Hence, the value with this SCEV cannot
+overflow (which restricts the number of iterations of such a loop).
+
+In many cases, one wants to restrict the attention just to affine
+induction variables.  In this case, the extra expressive power of SCEV
+is not useful, and may complicate the optimizations.  In this case,
+@code{simple_iv} function may be used to analyze a value -- the result
+is a loop-invariant base and step.
+
+@node loop-iv
+@section IV analysis on RTL
+@cindex IV analysis on RTL
+
+The induction variable on RTL is simple and only allows analysis of
+affine induction variables, and only in one loop at once.  The interface
+is declared in @file{cfgloop.h}.  Before analyzing induction variables
+in a loop L, @code{iv_analysis_loop_init} function must be called on L.
+After the analysis (possibly calling @code{iv_analysis_loop_init} for
+several loops) is finished, @code{iv_analysis_done} should be called.
+The following functions can be used to access the results of the
+analysis:
+
+@itemize
+@item @code{iv_analyze}: Analyzes a single register used in the given
+insn.  If no use of the register in this insn is found, the following
+insns are scanned, so that this function can be called on the insn
+returned by get_condition.
+@item @code{iv_analyze_result}: Analyzes result of the assignment in the
+given insn.
+@item @code{iv_analyze_expr}: Analyzes a more complicated expression.
+All its operands are analyzed by @code{iv_analyze}, and hence they must
+be used in the specified insn or one of the following insns.
+@end itemize
+
+The description of the induction variable is provided in @code{struct
+rtx_iv}.  In order to handle subregs, the representation is a bit
+complicated; if the value of the @code{extend} field is not
+@code{UNKNOWN}, the value of the induction variable in the i-th
+iteration is
+
+@smallexample
+delta + mult * extend_@{extend_mode@} (subreg_@{mode@} (base + i * step)),
+@end smallexample
+
+with the following exception:  if @code{first_special} is true, then the
+value in the first iteration (when @code{i} is zero) is @code{delta +
+mult * base}.  However, if @code{extend} is equal to @code{UNKNOWN},
+then @code{first_special} must be false, @code{delta} 0, @code{mult} 1
+and the value in the i-th iteration is
+
+@smallexample
+subreg_@{mode@} (base + i * step)
+@end smallexample
+
+The function @code{get_iv_value} can be used to perform these
+calculations.
+
+@node Number of iterations
+@section Number of iterations analysis
+@cindex Number of iterations analysis
+
+Both on GIMPLE and on RTL, there are functions available to determine
+the number of iterations of a loop, with a similar interface.  The
+number of iterations of a loop in GCC is defined as the number of
+executions of the loop latch.  In many cases, it is not possible to
+determine the number of iterations unconditionally -- the determined
+number is correct only if some assumptions are satisfied.  The analysis
+tries to verify these conditions using the information contained in the
+program; if it fails, the conditions are returned together with the
+result.  The following information and conditions are provided by the
+analysis:
+
+@itemize
+@item @code{assumptions}: If this condition is false, the rest of
+the information is invalid.
+@item @code{noloop_assumptions} on RTL, @code{may_be_zero} on GIMPLE: If
+this condition is true, the loop exits in the first iteration.
+@item @code{infinite}: If this condition is true, the loop is infinite.
+This condition is only available on RTL@.  On GIMPLE, conditions for
+finiteness of the loop are included in @code{assumptions}.
+@item @code{niter_expr} on RTL, @code{niter} on GIMPLE: The expression
+that gives number of iterations.  The number of iterations is defined as
+the number of executions of the loop latch.
+@end itemize
+
+Both on GIMPLE and on RTL, it necessary for the induction variable
+analysis framework to be initialized (SCEV on GIMPLE, loop-iv on RTL).
+On GIMPLE, the results are stored to @code{struct tree_niter_desc}
+structure.  Number of iterations before the loop is exited through a
+given exit can be determined using @code{number_of_iterations_exit}
+function.  On RTL, the results are returned in @code{struct niter_desc}
+structure.  The corresponding function is named
+@code{check_simple_exit}.  There are also functions that pass through
+all the exits of a loop and try to find one with easy to determine
+number of iterations -- @code{find_loop_niter} on GIMPLE and
+@code{find_simple_exit} on RTL@.  Finally, there are functions that
+provide the same information, but additionally cache it, so that
+repeated calls to number of iterations are not so costly --
+@code{number_of_latch_executions} on GIMPLE and @code{get_simple_loop_desc}
+on RTL.
+
+Note that some of these functions may behave slightly differently than
+others -- some of them return only the expression for the number of
+iterations, and fail if there are some assumptions.  The function
+@code{number_of_latch_executions} works only for single-exit loops.
+The function @code{number_of_cond_exit_executions} can be used to
+determine number of executions of the exit condition of a single-exit
+loop (i.e., the @code{number_of_latch_executions} increased by one).
+
+On GIMPLE, below constraint flags affect semantics of some APIs of number
+of iterations analyzer:
+
+@itemize
+@item @code{LOOP_C_INFINITE}: If this constraint flag is set, the loop
+is known to be infinite.  APIs like @code{number_of_iterations_exit} can
+return false directly without doing any analysis.
+@item @code{LOOP_C_FINITE}: If this constraint flag is set, the loop is
+known to be finite, in other words, loop's number of iterations can be
+computed with @code{assumptions} be true.
+@end itemize
+
+Generally, the constraint flags are set/cleared by consumers which are
+loop optimizers.  It's also the consumers' responsibility to set/clear
+constraints correctly.  Failing to do that might result in hard to track
+down bugs in scev/niter consumers.  One typical use case is vectorizer:
+it drives number of iterations analyzer by setting @code{LOOP_C_FINITE}
+and vectorizes possibly infinite loop by versioning loop with analysis
+result.  In return, constraints set by consumers can also help number of
+iterations analyzer in following optimizers.  For example, @code{niter}
+of a loop versioned under @code{assumptions} is valid unconditionally.
+
+Other constraints may be added in the future, for example, a constraint
+indicating that loops' latch must roll thus @code{may_be_zero} would be
+false unconditionally.
+
+@node Dependency analysis
+@section Data Dependency Analysis
+@cindex Data Dependency Analysis
+
+The code for the data dependence analysis can be found in
+@file{tree-data-ref.cc} and its interface and data structures are
+described in @file{tree-data-ref.h}.  The function that computes the
+data dependences for all the array and pointer references for a given
+loop is @code{compute_data_dependences_for_loop}.  This function is
+currently used by the linear loop transform and the vectorization
+passes.  Before calling this function, one has to allocate two vectors:
+a first vector will contain the set of data references that are
+contained in the analyzed loop body, and the second vector will contain
+the dependence relations between the data references.  Thus if the
+vector of data references is of size @code{n}, the vector containing the
+dependence relations will contain @code{n*n} elements.  However if the
+analyzed loop contains side effects, such as calls that potentially can
+interfere with the data references in the current analyzed loop, the
+analysis stops while scanning the loop body for data references, and
+inserts a single @code{chrec_dont_know} in the dependence relation
+array.
+
+The data references are discovered in a particular order during the
+scanning of the loop body: the loop body is analyzed in execution order,
+and the data references of each statement are pushed at the end of the
+data reference array.  Two data references syntactically occur in the
+program in the same order as in the array of data references.  This
+syntactic order is important in some classical data dependence tests,
+and mapping this order to the elements of this array avoids costly
+queries to the loop body representation.
+
+Three types of data references are currently handled: ARRAY_REF,
+INDIRECT_REF and COMPONENT_REF@. The data structure for the data reference
+is @code{data_reference}, where @code{data_reference_p} is a name of a
+pointer to the data reference structure. The structure contains the
+following elements:
+
+@itemize
+@item @code{base_object_info}: Provides information about the base object
+of the data reference and its access functions. These access functions
+represent the evolution of the data reference in the loop relative to
+its base, in keeping with the classical meaning of the data reference
+access function for the support of arrays. For example, for a reference
+@code{a.b[i][j]}, the base object is @code{a.b} and the access functions,
+one for each array subscript, are:
+@code{@{i_init, + i_step@}_1, @{j_init, +, j_step@}_2}.
+
+@item @code{first_location_in_loop}: Provides information about the first
+location accessed by the data reference in the loop and about the access
+function used to represent evolution relative to this location. This data
+is used to support pointers, and is not used for arrays (for which we
+have base objects). Pointer accesses are represented as a one-dimensional
+access that starts from the first location accessed in the loop. For
+example:
+
+@smallexample
+      for1 i
+         for2 j
+          *((int *)p + i + j) = a[i][j];
+@end smallexample
+
+The access function of the pointer access is @code{@{0, + 4B@}_for2}
+relative to @code{p + i}. The access functions of the array are
+@code{@{i_init, + i_step@}_for1} and @code{@{j_init, +, j_step@}_for2}
+relative to @code{a}.
+
+Usually, the object the pointer refers to is either unknown, or we cannot
+prove that the access is confined to the boundaries of a certain object.
+
+Two data references can be compared only if at least one of these two
+representations has all its fields filled for both data references.
+
+The current strategy for data dependence tests is as follows:
+If both @code{a} and @code{b} are represented as arrays, compare
+@code{a.base_object} and @code{b.base_object};
+if they are equal, apply dependence tests (use access functions based on
+base_objects).
+Else if both @code{a} and @code{b} are represented as pointers, compare
+@code{a.first_location} and @code{b.first_location};
+if they are equal, apply dependence tests (use access functions based on
+first location).
+However, if @code{a} and @code{b} are represented differently, only try
+to prove that the bases are definitely different.
+
+@item Aliasing information.
+@item Alignment information.
+@end itemize
+
+The structure describing the relation between two data references is
+@code{data_dependence_relation} and the shorter name for a pointer to
+such a structure is @code{ddr_p}.  This structure contains:
+
+@itemize
+@item a pointer to each data reference,
+@item a tree node @code{are_dependent} that is set to @code{chrec_known}
+if the analysis has proved that there is no dependence between these two
+data references, @code{chrec_dont_know} if the analysis was not able to
+determine any useful result and potentially there could exist a
+dependence between these data references, and @code{are_dependent} is
+set to @code{NULL_TREE} if there exist a dependence relation between the
+data references, and the description of this dependence relation is
+given in the @code{subscripts}, @code{dir_vects}, and @code{dist_vects}
+arrays,
+@item a boolean that determines whether the dependence relation can be
+represented by a classical distance vector,
+@item an array @code{subscripts} that contains a description of each
+subscript of the data references.  Given two array accesses a
+subscript is the tuple composed of the access functions for a given
+dimension.  For example, given @code{A[f1][f2][f3]} and
+@code{B[g1][g2][g3]}, there are three subscripts: @code{(f1, g1), (f2,
+g2), (f3, g3)}.
+@item two arrays @code{dir_vects} and @code{dist_vects} that contain
+classical representations of the data dependences under the form of
+direction and distance dependence vectors,
+@item an array of loops @code{loop_nest} that contains the loops to
+which the distance and direction vectors refer to.
+@end itemize
+
+Several functions for pretty printing the information extracted by the
+data dependence analysis are available: @code{dump_ddrs} prints with a
+maximum verbosity the details of a data dependence relations array,
+@code{dump_dist_dir_vectors} prints only the classical distance and
+direction vectors for a data dependence relations array, and
+@code{dump_data_references} prints the details of the data references
+contained in a data reference array.
