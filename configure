@@ -10676,6 +10676,7 @@ case " $configdirs " in
     ;;
 esac
 
+
 # Host tools.
 ncn_tool_prefix=
 test -n "$host_alias" && ncn_tool_prefix=$host_alias-

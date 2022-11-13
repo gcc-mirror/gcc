@@ -3526,6 +3526,7 @@ case " $configdirs " in
     ;;
 esac
 
+
 # Host tools.
 NCN_STRICT_CHECK_TOOLS(AR, ar)
 NCN_STRICT_CHECK_TOOLS(AS, as)

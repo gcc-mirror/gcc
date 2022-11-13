@@ -109,23 +109,32 @@ fortran.all.cross: gfortran-cross$(exeext)
 fortran.start.encap: gfortran$(exeext)
 fortran.rest.encap:
 
-fortran.srcinfo: doc/gfortran/info/texinfo/gfortran.info
+fortran.srcinfo: doc/gfortran.info
 	-cp -p $^ $(srcdir)/fortran
 
 fortran.tags: force
 	cd $(srcdir)/fortran; $(ETAGS) -o TAGS.sub *.cc *.h; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
-fortran.info: doc/gfortran/info/texinfo/gfortran.info doc/gfc-internals/info/texinfo/gfc-internals.info
+fortran.info: doc/gfortran.info doc/gfc-internals.info
 
-doc/gfortran/info/texinfo/gfortran.info: $(SPHINX_FILES)
-	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/gfortran/info; \
-	else true; fi
+F95_DVIFILES = doc/gfortran.dvi
 
-F95_HTMLFILES = doc/fortran/html/html/index.html
+fortran.dvi: $(F95_DVIFILES) doc/gfc-internals.dvi
 
-fortran.html: $(F95_HTMLFILES) doc/gfc-internals/html/html/index.html
+fortran.install-dvi: $(F95_DVIFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@list='$(F95_DVIFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
+
+F95_HTMLFILES = $(build_htmldir)/gfortran
+
+fortran.html: $(F95_HTMLFILES)/index.html
 
 fortran.install-html: $(F95_HTMLFILES)
 	@$(NORMAL_INSTALL)
@@ -144,9 +153,9 @@ fortran.install-html: $(F95_HTMLFILES)
 	  fi; \
 	done
 
-F95_PDFFILES = doc/fortran/pdf/latex/gfortran.pdf
+F95_PDFFILES = doc/gfortran.pdf
 
-fortran.pdf: $(F95_PDFFILES) doc/gfc-internals/pdf/latex/gfc-internals.pdf
+fortran.pdf: $(F95_PDFFILES) doc/gfc-internals.pdf
 
 fortran.install-pdf: $(F95_PDFFILES)
 	@$(NORMAL_INSTALL)
@@ -158,10 +167,7 @@ fortran.install-pdf: $(F95_PDFFILES)
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
-F95_MANFILES = doc/gfortran/man/man/gfortran.1
-
-doc/gfortran/man/man/gfortran.1: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/gfortran/man
+F95_MANFILES = doc/gfortran.1
 
 fortran.man: $(F95_MANFILES)
 
@@ -182,23 +188,60 @@ check_gfortran_parallelize = 10000
 # No fortran-specific selftests
 selftest-fortran:
 
-doc/fortran/pdf/latex/gfortran.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/fortran/pdf
+# GFORTRAN documentation.
+GFORTRAN_TEXI = \
+  $(srcdir)/fortran/gfortran.texi \
+  $(srcdir)/fortran/intrinsic.texi \
+  $(srcdir)/fortran/invoke.texi \
+  $(srcdir)/doc/include/fdl.texi \
+  $(srcdir)/doc/include/gpl_v3.texi \
+  $(srcdir)/doc/include/funding.texi \
+  $(srcdir)/doc/include/gcc-common.texi \
+  gcc-vers.texi
 
-doc/fortran/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/fortran/html
-
-# GFORTRAN internals documentation.
-doc/gfc-internals/info/texinfo/gfc-internals.info: $(SPHINX_FILES)
-	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/info; \
+doc/gfortran.info: $(GFORTRAN_TEXI)
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+	  rm -f doc/gfortran.info-*; \
+	  $(MAKEINFO) -I $(srcdir)/doc/include -I $(srcdir)/fortran \
+	    -o $@ $<; \
 	else true; fi
 
-doc/gfc-internals/pdf/latex/gfc-internals.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/pdf
+doc/gfortran.dvi: $(GFORTRAN_TEXI)
+	$(TEXI2DVI) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
 
-doc/gfc-internals/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/html
+doc/gfortran.pdf: $(GFORTRAN_TEXI)
+	$(TEXI2PDF) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
+
+$(build_htmldir)/gfortran/index.html: $(GFORTRAN_TEXI)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/fortran -o $(@D) $<
+
+.INTERMEDIATE: gfortran.pod
+
+gfortran.pod: $(GFORTRAN_TEXI)
+	-$(TEXI2POD) -DBUGURL="$(BUGURL_TEXI)" \
+	  < $(srcdir)/fortran/invoke.texi > $@
+
+# GFORTRAN internals documentation.
+GFC_INTERNALS_TEXI = \
+  $(srcdir)/fortran/gfc-internals.texi \
+  $(srcdir)/doc/include/fdl.texi \
+  $(srcdir)/doc/include/gcc-common.texi \
+  gcc-vers.texi
+
+doc/gfc-internals.info: $(GFC_INTERNALS_TEXI)
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+	  rm -f doc/gfc-internals.info-*; \
+	  $(MAKEINFO) -I $(srcdir)/doc/include -I $(srcdir)/fortran \
+	    -o $@ $<; \
+	else true; fi
+
+doc/gfc-internals.dvi: $(GFC_INTERNALS_TEXI)
+	$(TEXI2DVI) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
+
+doc/gfc-internals.pdf: $(GFC_INTERNALS_TEXI)
+	$(TEXI2PDF) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
 
 # Create or recreate the gfortran private include file directory.
 install-finclude-dir: installdirs
@@ -226,13 +269,9 @@ fortran.install-plugin:
 
 fortran.install-info: $(DESTDIR)$(infodir)/gfortran.info
 
-$(DESTDIR)$(infodir)/gfortran.info: doc/gfortran/info/texinfo/gfortran.info installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
-
 fortran.install-man: $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext)
 
-$(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext): doc/gfortran/man/man/gfortran.1 \
+$(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext): doc/gfortran.1 \
 		installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
@@ -260,6 +299,12 @@ fortran.mostlyclean:
 fortran.clean:
 fortran.distclean:
 	-rm -f fortran/config.status fortran/Makefile
+
+fortran.extraclean:
+fortran.maintainer-clean:
+	-rm -f doc/gfortran.info* fortran/gfortran.*aux
+	-rm -f $(docobjdir)/gfortran.1
+
 #
 # Stage hooks:
 # The toplevel makefile has already created stage?/fortran at this point.

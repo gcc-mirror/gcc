@@ -255,9 +255,46 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libquadmath_la_SOURCES)
-INFO_DEPS = doc/info/texinfo/libquadmath.info
-PDFS = doc/pdf/latex/libquadmath.pdf
-HTMLS = doc/html/html/index.html
+AM_V_DVIPS = $(am__v_DVIPS_@AM_V@)
+am__v_DVIPS_ = $(am__v_DVIPS_@AM_DEFAULT_V@)
+am__v_DVIPS_0 = @echo "  DVIPS   " $@;
+am__v_DVIPS_1 = 
+AM_V_MAKEINFO = $(am__v_MAKEINFO_@AM_V@)
+am__v_MAKEINFO_ = $(am__v_MAKEINFO_@AM_DEFAULT_V@)
+am__v_MAKEINFO_0 = @echo "  MAKEINFO" $@;
+am__v_MAKEINFO_1 = 
+AM_V_INFOHTML = $(am__v_INFOHTML_@AM_V@)
+am__v_INFOHTML_ = $(am__v_INFOHTML_@AM_DEFAULT_V@)
+am__v_INFOHTML_0 = @echo "  INFOHTML" $@;
+am__v_INFOHTML_1 = 
+AM_V_TEXI2DVI = $(am__v_TEXI2DVI_@AM_V@)
+am__v_TEXI2DVI_ = $(am__v_TEXI2DVI_@AM_DEFAULT_V@)
+am__v_TEXI2DVI_0 = @echo "  TEXI2DVI" $@;
+am__v_TEXI2DVI_1 = 
+AM_V_TEXI2PDF = $(am__v_TEXI2PDF_@AM_V@)
+am__v_TEXI2PDF_ = $(am__v_TEXI2PDF_@AM_DEFAULT_V@)
+am__v_TEXI2PDF_0 = @echo "  TEXI2PDF" $@;
+am__v_TEXI2PDF_1 = 
+AM_V_texinfo = $(am__v_texinfo_@AM_V@)
+am__v_texinfo_ = $(am__v_texinfo_@AM_DEFAULT_V@)
+am__v_texinfo_0 = -q
+am__v_texinfo_1 = 
+AM_V_texidevnull = $(am__v_texidevnull_@AM_V@)
+am__v_texidevnull_ = $(am__v_texidevnull_@AM_DEFAULT_V@)
+am__v_texidevnull_0 = > /dev/null
+am__v_texidevnull_1 = 
+INFO_DEPS = libquadmath.info
+am__TEXINFO_TEX_DIR = $(srcdir)/../gcc/doc/include
+DVIS = libquadmath.dvi
+PDFS = libquadmath.pdf
+PSS = libquadmath.ps
+HTMLS = libquadmath.html
+TEXINFOS =
+TEXI2DVI = texi2dvi
+TEXI2PDF = $(TEXI2DVI) --pdf --batch
+MAKEINFOHTML = $(MAKEINFO) --html
+AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
+DVIPS = dvips
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -325,6 +362,7 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
+MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -352,7 +390,6 @@ XCFLAGS = @XCFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
-abs_doc_builddir = @abs_top_builddir@/doc
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -481,6 +518,7 @@ AUTOMAKE_OPTIONS = foreign info-in-builddir
 @BUILD_LIBQUADMATH_TRUE@	"LIBCFLAGS=$(LIBCFLAGS)" \
 @BUILD_LIBQUADMATH_TRUE@	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
 @BUILD_LIBQUADMATH_TRUE@	"MAKE=$(MAKE)" \
+@BUILD_LIBQUADMATH_TRUE@	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
 @BUILD_LIBQUADMATH_TRUE@	"PICFLAG=$(PICFLAG)" \
 @BUILD_LIBQUADMATH_TRUE@	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
 @BUILD_LIBQUADMATH_TRUE@	"SHELL=$(SHELL)" \
@@ -525,6 +563,10 @@ AUTOMAKE_OPTIONS = foreign info-in-builddir
 TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 
 # Defines info, dvi, pdf and html targets
+MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
+@BUILD_LIBQUADMATH_FALSE@info_TEXINFOS = 
+@BUILD_LIBQUADMATH_TRUE@info_TEXINFOS = libquadmath.texi
+libquadmath_TEXINFOS = libquadmath-vers.texi
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -949,11 +991,39 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool config.lt
 
-doc/pdf/latex/libquadmath.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/pdf
+libquadmath.dvi: libquadmath.texi $(libquadmath_TEXINFOS) 
+	$(AM_V_TEXI2DVI)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
+	$(TEXI2DVI) $(AM_V_texinfo) --build-dir=$(@:.dvi=.t2d) -o $@ $(AM_V_texidevnull) \
+	`test -f 'libquadmath.texi' || echo '$(srcdir)/'`libquadmath.texi
 
-doc/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/html
+libquadmath.pdf: libquadmath.texi $(libquadmath_TEXINFOS) 
+	$(AM_V_TEXI2PDF)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
+	$(TEXI2PDF) $(AM_V_texinfo) --build-dir=$(@:.pdf=.t2p) -o $@ $(AM_V_texidevnull) \
+	`test -f 'libquadmath.texi' || echo '$(srcdir)/'`libquadmath.texi
+
+libquadmath.html: libquadmath.texi $(libquadmath_TEXINFOS) 
+	$(AM_V_MAKEINFO)rm -rf $(@:.html=.htp)
+	$(AM_V_at)if $(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
+	 -o $(@:.html=.htp) `test -f 'libquadmath.texi' || echo '$(srcdir)/'`libquadmath.texi; \
+	then \
+	  rm -rf $@ && mv $(@:.html=.htp) $@; \
+	else \
+	  rm -rf $(@:.html=.htp); exit 1; \
+	fi
+.dvi.ps:
+	$(AM_V_DVIPS)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	$(DVIPS) $(AM_V_texinfo) -o $@ $<
+
+uninstall-dvi-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(DVIS)'; test -n "$(dvidir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(dvidir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(dvidir)/$$f"; \
+	done
 
 uninstall-html-am:
 	@$(NORMAL_UNINSTALL)
@@ -1364,16 +1434,22 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	   sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
+@BUILD_LIBQUADMATH_TRUE@stamp-geninsrc: libquadmath.info
+@BUILD_LIBQUADMATH_TRUE@	cp -p $(top_builddir)/libquadmath.info $(srcdir)/libquadmath.info
+@BUILD_LIBQUADMATH_TRUE@	@touch $@
+
+@BUILD_LIBQUADMATH_TRUE@stamp-build-info: libquadmath.texi $(libquadmath_TEXINFOS)
+@BUILD_LIBQUADMATH_TRUE@	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libquadmath.info $(srcdir)/libquadmath.texi
+@BUILD_LIBQUADMATH_TRUE@	@touch $@
+
 all-local: $(ALL_LOCAL_DEPS)
 
-RST_FILES:=$(shell find $(srcdir) -name *.rst)
-SPHINX_CONFIG_FILES:=$(srcdir)/doc/conf.py $(srcdir)/../doc/baseconf.py
-SPHINX_FILES:=$(RST_FILES) $(SPHINX_CONFIG_FILES)
+# Unconditionally override this target, so that automake's definition
+# does not wrongly interfere.
+libquadmath.info: $(STAMP_BUILD_INFO)
 
-export BUGURL=$(REPORT_BUGS_TO)
-
-doc/info/texinfo/libquadmath.info: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info
+libquadmath-vers.texi:
+	echo "@set BUGURL $(REPORT_BUGS_TEXI)" > $@
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

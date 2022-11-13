@@ -236,28 +236,48 @@ d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(d.prev)
 	@$(call LINK_PROGRESS,$(INDEX.d),end)
 
 # Documentation.
-doc/gdc/info/texinfo/gdc.info: $(SPHINX_FILES)
-	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/d/doc BUILDDIR=$(objdir)/doc/gdc/info; \
+
+D_TEXI_FILES = \
+	d/gdc.texi \
+	$(gcc_docdir)/include/fdl.texi \
+	$(gcc_docdir)/include/gpl_v3.texi \
+	$(gcc_docdir)/include/gcc-common.texi \
+	gcc-vers.texi
+
+doc/gdc.info: $(D_TEXI_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/gdc.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
 	else true; fi
+
+doc/gdc.dvi: $(D_TEXI_FILES)
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 doc/gdc.pdf: $(D_TEXI_FILES)
 	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
-doc/gdc/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/d/doc BUILDDIR=$(objdir)/doc/gdc/html
+$(build_htmldir)/d/index.html: $(D_TEXI_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
+		-I $(srcdir)/d -o $(@D) $<
+
+.INTERMEDIATE: gdc.pod
+
+gdc.pod: d/gdc.texi
+	-$(TEXI2POD) -D gdc < $< > $@
+
 # Build hooks.
 
 d.all.cross: gdc-cross$(exeext)
 d.start.encap: gdc$(exeext)
 d.rest.encap:
-d.info: doc/gdc/info/texinfo/gdc.info
-gdc.info: doc/gdc/info/texinfo/gdc.info
-d.pdf: doc/gdc/pdf/latex/gdc.pdf
-gdc.pdf: doc/gdc/pdf/latex/gdc.pdf
-d.html: doc/gdc/html/html/index.html
-gdc.html: doc/gdc/html/html/index.html
-d.srcinfo: doc/gdc/info/texinfo/gdc.info
+d.info: doc/gdc.info
+d.dvi: doc/gdc.dvi
+d.pdf: doc/gdc.pdf
+d.html: $(build_htmldir)/d/index.html
+d.srcinfo: doc/gdc.info
 	-cp -p $^ $(srcdir)/doc
 d.srcextra:
 
@@ -266,12 +286,9 @@ d.tags: force
 	$(ETAGS) -o TAGS.sub *.cc *.h dmd/*.h dmd/root/*.h; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
-d.man: doc/gdc/man/man/gdc.1
-d.srcman: doc/gdc/man/man/gdc.1
+d.man: doc/gdc.1
+d.srcman: doc/gdc.1
 	-cp -p $^ $(srcdir)/doc
-
-doc/gdc/man/man/gdc.1: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/d/doc BUILDDIR=$(objdir)/doc/gdc/man
 
 # 'make check' in gcc/ looks for check-d, as do all toplevel D-related
 # check targets.  However, our DejaGNU framework requires 'check-gdc' as its
@@ -302,13 +319,6 @@ d.install-common: installdirs
 d.install-plugin:
 
 d.install-info: $(DESTDIR)$(infodir)/gdc.info
-
-doc/gdc/pdf/latex/gdc.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/d/doc BUILDDIR=$(objdir)/doc/gdc/pdf
-
-$(DESTDIR)$(infodir)/gdc.info: doc/gdc/info/texinfo/gdc.info installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
 
 d.install-pdf: doc/gdc.pdf
 	@$(NORMAL_INSTALL)
@@ -349,7 +359,7 @@ d.install-html: $(build_htmldir)/d
 
 d.install-man: $(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext)
 
-$(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext): doc/gdc/man/man/gdc.1 installdirs
+$(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext): doc/gdc.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@

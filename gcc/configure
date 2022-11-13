@@ -807,7 +807,6 @@ AR
 NM
 BISON
 FLEX
-SPHINX_BUILD
 GENERATED_MANPAGES
 BUILD_INFO
 MAKEINFO
@@ -8164,7 +8163,7 @@ fi
     REPORT_BUGS_TEXI=
     ;;
   *)
-    REPORT_BUGS_TO="$BUGURL"
+    REPORT_BUGS_TO="<$BUGURL>"
     REPORT_BUGS_TEXI=@uref{`echo "$BUGURL" | sed 's/@/@@/g'`}
     ;;
   esac;
@@ -8803,27 +8802,6 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
   GENERATED_MANPAGES=
-fi
-
-
-# See if sphinx-build has been installed and is modern enough
-# that we can use it.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sphinx-build" >&5
-$as_echo_n "checking for sphinx-build... " >&6; }
-if sphinx-build -j auto -h &>/dev/null ; then
-  SPHINX_BUILD=sphinx-build
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
-  *** sphinx-build is missing or too old.
-  *** Info and man pages documentation will not be built." >&5
-$as_echo "$as_me: WARNING:
-  *** sphinx-build is missing or too old.
-  *** Info and man pages documentation will not be built." >&2;}
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-  SPHINX_BUILD=
 fi
 
 
@@ -19732,7 +19710,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19735 "configure"
+#line 19713 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19838,7 +19816,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19841 "configure"
+#line 19819 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
