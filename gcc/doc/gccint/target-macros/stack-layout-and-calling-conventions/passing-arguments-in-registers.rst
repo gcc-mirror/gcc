@@ -118,7 +118,7 @@ the stack.
   argument :samp:`{libname}` exists for symmetry with
   ``INIT_CUMULATIVE_ARGS``.
 
-  .. could use "this macro" in place of ``INIT_CUMULATIVE_ARGS``, maybe.
+  .. could use "this macro" in place of @code{INIT_CUMULATIVE_ARGS}, maybe.
 
   .. -mew 5feb93   i switched the order of the sentences.  -mew 10feb93
 
