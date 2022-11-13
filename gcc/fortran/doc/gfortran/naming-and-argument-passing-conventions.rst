@@ -142,7 +142,8 @@ is used for dummy arguments; with ``VALUE``, those variables are
 passed by value.
 
 For ``OPTIONAL`` dummy arguments, an absent argument is denoted
-by a NULL pointer, except for scalar dummy arguments of intrinsic type
+by a NULL pointer, except for scalar dummy arguments of type
+``INTEGER``, ``LOGICAL``, ``REAL`` and ``COMPLEX``
 which have the ``VALUE`` attribute.  For those, a hidden Boolean
 argument (``logical(kind=C_bool),value``) is used to indicate
 whether the argument is present.
