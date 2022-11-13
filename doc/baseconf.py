@@ -71,11 +71,13 @@ needs_sphinx = '5.3'
 rst_epilog = '''
 .. |gcc_version| replace:: %s
 .. |needs_sphinx| replace:: %s\n
-.. |bugurl| replace:: %s\n
-.. |package_version| replace:: %s\n
-''' % (gcc_BASEVER, needs_sphinx,
-       BUGURL if BUGURL else 'https://gcc.gnu.org/bugs/',
-       VERSION_PACKAGE if VERSION_PACKAGE else '(GCC)')
+''' % (gcc_BASEVER, needs_sphinx)
+
+if BUGURL:
+    rst_epilog += '.. |bugurl| replace:: %s\n' % BUGURL
+
+if VERSION_PACKAGE:
+    rst_epilog += '.. |package_version| replace:: %s\n' % VERSION_PACKAGE
 
 # -- General configuration ---------------------------------------------------
 
@@ -203,7 +205,6 @@ extlinks = {
 }
 
 extlinks_detect_hardcoded_links = True
-
 
 # Set common settings where we need NAME of the documentation
 def set_common(name, module):
