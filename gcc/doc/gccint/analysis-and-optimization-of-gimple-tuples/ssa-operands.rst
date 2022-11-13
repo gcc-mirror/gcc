@@ -175,7 +175,7 @@ all the operands for a statement:
   void
   print_ops (tree stmt)
   {
-    ssa_op_iter iter;
+    ssa_op_iter;
     tree var;
 
     FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_OPERANDS)
