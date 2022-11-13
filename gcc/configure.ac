@@ -1283,7 +1283,7 @@ else
   *** sphinx-build is missing or too old.
   *** Info and man pages documentation will not be built.])
   AC_MSG_RESULT(no)
-  SPHINX_BUILD=sphinx-build
+  SPHINX_BUILD=
   HAS_SPHINX_BUILD=
 fi
 rm -rf $tempdir
