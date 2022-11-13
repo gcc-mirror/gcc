@@ -11,30 +11,28 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-import sys
 import time
-from pathlib import Path
+import sys
 
-# Build paths and add path to gcc_sphinx.py extension.
-folder = Path(__file__).resolve().parent
-doc_modules = folder / 'modules'
-gcc_srcdir = folder / '..' / 'gcc'
-
-sys.path.insert(0, str(doc_modules))
-
-# gccint needs a deeper stack limit.
+# gccint needs a deeper stack limit
 sys.setrecursionlimit(2000)
 
 # -- Project information -----------------------------------------------------
 
+# The full version, including alpha/beta/rc tags
+
+folder = os.path.dirname(os.path.realpath(__file__))
+doc_modules = os.path.join(folder, 'modules')
+gcc_srcdir = os.path.join(folder, '..', 'gcc')
+
+sys.path.insert(0, doc_modules)
 
 def read_file(name):
-    path = gcc_srcdir / name
-    if path.exists():
+    path = os.path.join(gcc_srcdir, name)
+    if os.path.exists(path):
         return open(path).read().strip()
     else:
         return ''
-
 
 def __get_builder_name():
     if '-b' in sys.argv:
@@ -126,14 +124,14 @@ html_theme_options = {
     'navigation_with_keys': True,
 }
 
-html_logo = str(folder / 'logo.svg')
+html_logo = os.path.join(folder, 'logo.svg')
 
-html_favicon = str(folder / 'favicon.ico')
+html_favicon = os.path.join(folder, 'favicon.ico')
 
 html_last_updated_fmt = ''
 
 html_static_path = [
-    str(folder / '_static')
+    os.path.join(folder, '_static')
 ]
 
 html_css_files = [
@@ -151,7 +149,7 @@ suppress_warnings = [
 # Use xelatex by default
 latex_engine = 'xelatex'
 
-latex_logo = str(folder / 'logo.pdf')
+latex_logo = os.path.join(folder, 'logo.pdf')
 
 latex_elements = {
     'pointsize': '11pt',
@@ -217,4 +215,4 @@ def set_common(name, module):
         module['tags'].add('development')
 
     html_theme_options['source_edit_link'] = f'https://gcc.gnu.org/onlinedocs/{name}' \
-                                             '/_sources/{filename}.txt'
+                                               '/_sources/{filename}.txt'
