@@ -113,13 +113,6 @@ target_objdir := $(toplevel_builddir)/$(target_subdir)
 # Directory where sources are, from where we are.
 VPATH = @srcdir@
 
-# We define a vpath for the sources of the .rst files here because they
-# are split between multiple directories and we would rather use one implicit
-# pattern rule for everything.
-# This vpath could be extended within the Make-lang fragments.
-
-vpath %.rst $(gcc_docdir)
-
 # --------
 # UNSORTED
 # --------
