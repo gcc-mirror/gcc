@@ -1,9 +1,5 @@
 # define some latex elements to be used for PDF output
 
-import os
-
-folder = os.path.dirname(os.path.realpath(__file__))
-
 PAGE_BLANK = r'''
 \makeatletter
 \def\cleartooddpage{%%
@@ -50,7 +46,7 @@ TOC_CMD = r'''
 \makeatother
 '''
 
-with open(os.path.join(folder, 'copyright.tex'), 'r') as fd:
+with open('copyright.tex', 'r') as fd:
     copyright = fd.read()
 
 TOC = r'''
@@ -64,11 +60,6 @@ TOC = r'''
 LATEX_HYPHEN = r'''
 \hyphenpenalty=5000
 \tolerance=1000
-'''
-
-ENCLOSE = r'''
-@definfoenclose strong,*,*
-@definfoenclose emph,','
 '''
 
 

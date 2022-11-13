@@ -39,25 +39,25 @@ GNAT Reference Manual
    :numbered:
    :maxdepth: 3
 
-   about_this_guide
-   implementation_defined_pragmas
-   implementation_defined_aspects
-   implementation_defined_attributes
-   standard_and_implementation_defined_restrictions
-   implementation_advice
-   implementation_defined_characteristics
-   intrinsic_subprograms
-   representation_clauses_and_pragmas
-   standard_library_routines
-   the_implementation_of_standard_i_o
-   the_gnat_library
-   interfacing_to_other_languages
-   specialized_needs_annexes
-   implementation_of_specific_ada_features
-   implementation_of_ada_2012_features
-   security_hardening_features
-   obsolescent_features
-   compatibility_and_porting_guide
+   gnat_rm/about_this_guide
+   gnat_rm/implementation_defined_pragmas
+   gnat_rm/implementation_defined_aspects
+   gnat_rm/implementation_defined_attributes
+   gnat_rm/standard_and_implementation_defined_restrictions
+   gnat_rm/implementation_advice
+   gnat_rm/implementation_defined_characteristics
+   gnat_rm/intrinsic_subprograms
+   gnat_rm/representation_clauses_and_pragmas
+   gnat_rm/standard_library_routines
+   gnat_rm/the_implementation_of_standard_i_o
+   gnat_rm/the_gnat_library
+   gnat_rm/interfacing_to_other_languages
+   gnat_rm/specialized_needs_annexes
+   gnat_rm/implementation_of_specific_ada_features
+   gnat_rm/implementation_of_ada_2012_features
+   gnat_rm/security_hardening_features
+   gnat_rm/obsolescent_features
+   gnat_rm/compatibility_and_porting_guide
 
 .. raw:: latex
 
@@ -66,4 +66,4 @@ GNAT Reference Manual
 .. toctree::
    :maxdepth: 3
 
-   gnu_free_documentation_license
+   share/gnu_free_documentation_license

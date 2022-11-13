@@ -688,4 +688,4 @@ Program Structure and Compilation Issues
   .. index:: krunch.ads file
 
 .. toctree::
-   gnu_free_documentation_license
+   share/gnu_free_documentation_license

@@ -1,5 +1,3 @@
-.. role:: switch(samp)
-
 .. _Security_Hardening_Features:
 
 ***************************
