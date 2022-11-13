@@ -119,8 +119,8 @@ fortran.tags: force
 fortran.info: doc/gfortran/info/texinfo/gfortran.info doc/gfc-internals/info/texinfo/gfc-internals.info
 
 doc/gfortran/info/texinfo/gfortran.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/gfortran/info SPHINXBUILD=$(SPHINX_BUILD); \
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/gfortran/info; \
 	else true; fi
 
 F95_HTMLFILES = doc/fortran/html/html/index.html
@@ -161,7 +161,7 @@ fortran.install-pdf: $(F95_PDFFILES)
 F95_MANFILES = doc/gfortran/man/man/gfortran.1
 
 doc/gfortran/man/man/gfortran.1: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/gfortran/man SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/gfortran/man
 
 fortran.man: $(F95_MANFILES)
 
@@ -183,22 +183,22 @@ check_gfortran_parallelize = 10000
 selftest-fortran:
 
 doc/fortran/pdf/latex/gfortran.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/fortran/pdf SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/fortran/pdf
 
 doc/fortran/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/fortran/html SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/fortran/doc/gfortran BUILDDIR=$(objdir)/doc/fortran/html
 
 # GFORTRAN internals documentation.
 doc/gfc-internals/info/texinfo/gfc-internals.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/info SPHINXBUILD=$(SPHINX_BUILD); \
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/info; \
 	else true; fi
 
 doc/gfc-internals/pdf/latex/gfc-internals.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/pdf SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/pdf
 
 doc/gfc-internals/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/html SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/fortran/doc/gfc-internals BUILDDIR=$(objdir)/doc/gfc-internals/html
 
 # Create or recreate the gfortran private include file directory.
 install-finclude-dir: installdirs

@@ -346,7 +346,6 @@ REPORT_BUGS_TO = @REPORT_BUGS_TO@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
-SPHINX_BUILD = @SPHINX_BUILD@
 STRIP = @STRIP@
 VERSION = @VERSION@
 XCFLAGS = @XCFLAGS@
@@ -951,10 +950,10 @@ distclean-libtool:
 	-rm -f libtool config.lt
 
 doc/pdf/latex/libquadmath.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/pdf SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/pdf
 
 doc/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/html SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/html
 
 uninstall-html-am:
 	@$(NORMAL_UNINSTALL)
@@ -1374,7 +1373,7 @@ SPHINX_FILES:=$(RST_FILES) $(SPHINX_CONFIG_FILES)
 export BUGURL=$(REPORT_BUGS_TO)
 
 doc/info/texinfo/libquadmath.info: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

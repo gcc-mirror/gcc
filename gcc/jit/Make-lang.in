@@ -244,8 +244,8 @@ jit.install-pdf: jit.texinfo.install-pdf
 jit.info: doc/libgccjit/info/texinfo/libgccjit.info
 
 doc/libgccjit/info/texinfo/libgccjit.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/info SPHINXBUILD=$(SPHINX_BUILD); \
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/info; \
 	else true; fi
 
 jit.install-info: $(DESTDIR)$(infodir)/libgccjit.info
@@ -255,7 +255,7 @@ $(DESTDIR)$(infodir)/libgccjit.info: doc/libgccjit/info/texinfo/libgccjit.info i
 	-$(INSTALL_DATA) $< $@
 
 doc/libgccjit/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/html SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/html
 
 jit.texinfo.install-html: doc/libgccjit/html/html/index.html
 	@$(NORMAL_INSTALL)
@@ -276,7 +276,7 @@ jit.texinfo.install-html: doc/libgccjit/html/html/index.html
 
 
 doc/libgccjit/pdf/latex/libgccjit.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/pdf SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/pdf
 
 jit.texinfo.install-pdf: doc/libgccjit.pdf
 	@$(NORMAL_INSTALL)
@@ -295,7 +295,7 @@ SPHINX_BUILD_DIR=jit/sphinx-build
 jit.sphinx.html:
 	$(mkinstalldirs) $(SPHINX_BUILD_DIR)
 	(cd $(srcdir)/jit/docs && \
-	  make html BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) ) SPHINXBUILD=$(SPHINX_BUILD)
+	  make html BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) )
 
 jit_htmldir=$(htmldir)/jit
 
@@ -316,7 +316,7 @@ jit.sphinx.pdf: $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf
 $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf:
 	$(mkinstalldirs) $(SPHINX_BUILD_DIR)
 	(cd $(srcdir)/jit/docs && \
-	  make latexpdf BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) ) SPHINXBUILD=$(SPHINX_BUILD)
+	  make latexpdf BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) )
 
 jit.sphinx.install-pdf: $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf
 	@$(NORMAL_INSTALL)
@@ -336,7 +336,7 @@ jit.tags:
 jit.man: doc/libgccjit/man/man/libgccjit.1
 
 doc/libgccjit/man/man/libgccjit.1: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/man SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/man
 
 jit.srcman:
 

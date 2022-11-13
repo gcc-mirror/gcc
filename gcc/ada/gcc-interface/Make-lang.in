@@ -809,18 +809,18 @@ ada.tags: force
 # Generate documentation.
 
 doc/gnat_ugn/info/texinfo/gnat_ugn.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/info SPHINXBUILD=$(SPHINX_BUILD); \
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/info; \
 	else true; fi
 
 doc/gnat_rm/info/texinfo/gnat_rm.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/info SPHINXBUILD=$(SPHINX_BUILD); \
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/info; \
 	else true; fi
 
 doc/gnat-style/info/texinfo/gnat-style.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/info SPHINXBUILD=$(SPHINX_BUILD); \
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/info; \
 	else true; fi
 
 ADA_INFOFILES = doc/gnat_ugn/info/texinfo/gnat_ugn.info \
@@ -855,13 +855,13 @@ ADA_PDFFILES = doc/gnat_ugn/pdf/latex/gnat_ugn.pdf\
 ada.pdf: $(ADA_PDFFILES)
 
 doc/gnat_ugn/pdf/latex/gnat_ugn.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/pdf SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/pdf
 
 doc/gnat_rm/pdf/latex/gnat_rm.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/pdf SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/pdf
 
 doc/gnat-style/pdf/latex/gnat-style.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/pdf SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/pdf
 
 ada.install-pdf: $(ADA_PDFFILES)
 	@$(NORMAL_INSTALL)
@@ -876,13 +876,13 @@ ada.install-pdf: $(ADA_PDFFILES)
 ada.html: doc/gnat_ugn/html/html/index.html doc/gnat_rm/html/html/index.html doc/gnat-style/html/html/index.html
 
 doc/gnat_ugn/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/html SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/html
 
 doc/gnat_rm/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/html SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/html
 
 doc/gnat-style/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/html SPHINXBUILD=$(SPHINX_BUILD)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/html
 
 ada.install-html:
 
