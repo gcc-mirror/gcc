@@ -687,7 +687,7 @@ honor these options.
             ],
             "message": "this ‘if’ clause does not guard...",
             "option": "-Wmisleading-indentation",
-            "option_url": "https://gcc.gnu.org/onlinedocs/gcc/gcc-command-options/options-to-request-or-suppress-warnings.html#cmdoption-Wmisleading-indentation",
+            "option_url": "https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wmisleading-indentation",
             "children": [
                 {
                     "kind": "note",

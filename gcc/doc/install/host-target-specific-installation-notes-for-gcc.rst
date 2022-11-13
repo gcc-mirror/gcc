@@ -157,7 +157,7 @@ a cross-compiler for CRIS.
 DOS
 ===
 
-Please have a look at the :ref:`binaries page <install:binaries>`.
+Please have a look at the `binaries page <https://gcc.gnu.org/install/binaries.html>`_.
 
 You cannot install GCC by itself on MSDOS; it will not compile under
 any MSDOS compiler except itself.  You need to get the complete
@@ -212,7 +212,7 @@ h8300-hms
 
 Renesas H8/300 series of processors.
 
-Please have a look at the :ref:`binaries page <install:binaries>`.
+Please have a look at the `binaries page <https://gcc.gnu.org/install/binaries.html>`_.
 
 The calling convention and structure layout has changed in release 2.6.
 All code must be recompiled.  The calling convention now passes the
@@ -288,7 +288,7 @@ be used to compile GCC 3.0 and up.
 
 The libffi library haven't been ported to 64-bit HP-UXand doesn't build.
 
-Refer to `binaries page <install:binaries>` for information about obtaining
+Refer to `binaries page <https://gcc.gnu.org/install/binaries.html>`_ for information about obtaining
 precompiled GCC binaries for HP-UX.  Precompiled binaries must be obtained
 to build the Ada language as it cannot be bootstrapped using C.  Ada is
 only available for the 32-bit PA-RISC runtime.

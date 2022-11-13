@@ -2036,7 +2036,7 @@ cstamp-h: config.in config.status
 # config.status does not exist before failing.
 config.status: $(srcdir)/configure $(srcdir)/config.gcc $(LANG_CONFIGUREFRAGS)
 	@if [ ! -f config.status ] ; then \
-	  echo You must configure gcc.  Look at http://gcc.gnu.org/onlinedocs/install/ for details.; \
+	  echo You must configure gcc.  Look at http://gcc.gnu.org/install/ for details.; \
 	  false; \
 	else \
 	  LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status --recheck; \
