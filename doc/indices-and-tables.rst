@@ -5,7 +5,7 @@
 
   :ref:`genindex`
 
-  .. only:: development
+  .. only:: include_todo
 
     TODO
     ----
