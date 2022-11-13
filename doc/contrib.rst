@@ -13,7 +13,7 @@ Contributors to GCC
 The GCC project would like to thank its many contributors.  Without them the
 project would not have been nearly as successful as it has been.  Any omissions
 in this list are accidental.  Feel free to contact
-jlaw@ventanamicro.com or gerald@pfeifer.com if you have been left
+law@redhat.com or gerald@pfeifer.com if you have been left
 out or some of your contributions are not listed.  Please keep this list in
 alphabetical order.
 
