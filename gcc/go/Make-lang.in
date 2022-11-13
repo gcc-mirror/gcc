@@ -155,7 +155,8 @@ go.install-plugin:
 go.install-info: $(DESTDIR)$(infodir)/gccgo.info
 
 $(DESTDIR)$(infodir)/gccgo.info: doc/gccgo/info/texinfo/gccgo.info installdirs
-	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; fi
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
 go.install-pdf: doc/gccgo.pdf
 	@$(NORMAL_INSTALL)
@@ -187,7 +188,9 @@ go.install-html: $(build_htmldir)/go
 go.install-man: $(DESTDIR)$(man1dir)/$(GCCGO_INSTALL_NAME)$(man1ext)
 
 $(DESTDIR)$(man1dir)/$(GCCGO_INSTALL_NAME)$(man1ext): doc/gccgo/man/man/gccgo.1 installdirs
-	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; chmod a-x $@; fi
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 go.uninstall:
 	rm -rf $(DESTDIR)$(bindir)/$(GCCGO_INSTALL_NAME)$(exeext)

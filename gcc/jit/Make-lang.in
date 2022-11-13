@@ -251,7 +251,8 @@ doc/libgccjit/info/texinfo/libgccjit.info: $(SPHINX_FILES)
 jit.install-info: $(DESTDIR)$(infodir)/libgccjit.info
 
 $(DESTDIR)$(infodir)/libgccjit.info: doc/libgccjit/info/texinfo/libgccjit.info installdirs
-	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; fi
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
 doc/libgccjit/html/html/index.html: $(SPHINX_FILES)
 	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/html SPHINXBUILD=$(SPHINX_BUILD)
@@ -392,8 +393,11 @@ endif
 
 jit.install-man: $(DESTDIR)$(man1dir)/libgccjit$(man1ext)
 
-$(DESTDIR)$(man1dir)/libgccjit$(man1ext): doc/libgccjit/man/man/libgccjit.1 installdirs
-	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/libgccjit$(man1ext): doc/libgccjit/man/man/libgccjit.1 \
+		installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 jit.install-plugin:
 

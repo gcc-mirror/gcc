@@ -307,7 +307,8 @@ doc/gdc/pdf/latex/gdc.pdf: $(SPHINX_FILES)
 	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/d/doc BUILDDIR=$(objdir)/doc/gdc/pdf SPHINXBUILD=$(SPHINX_BUILD)
 
 $(DESTDIR)$(infodir)/gdc.info: doc/gdc/info/texinfo/gdc.info installdirs
-	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; fi
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
 d.install-pdf: doc/gdc.pdf
 	@$(NORMAL_INSTALL)
@@ -348,8 +349,10 @@ d.install-html: $(build_htmldir)/d
 
 d.install-man: $(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext)
 
-$(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext): installdirs
-	-if [ -f doc/gcc/man/man/gdc.1 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/gdc.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(D_INSTALL_NAME)$(man1ext): doc/gdc/man/man/gdc.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 d.uninstall:
 	-rm -rf $(DESTDIR)$(bindir)/$(D_INSTALL_NAME)$(exeext)

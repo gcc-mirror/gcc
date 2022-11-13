@@ -3686,32 +3686,42 @@ install-info:: doc installdirs \
 	$(DESTDIR)$(infodir)/gccint.info \
 	lang.install-info
 
-$(DESTDIR)$(infodir)/gcc.info: installdirs
-	-if [ -f doc/gcc/info/texinfo/gcc.info ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/info/texinfo/gcc.info $@; fi
+$(DESTDIR)$(infodir)/gcc.info: doc/gcc/info/texinfo/gcc.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/gccint.info: installdirs
-	-if [ -f doc/gccint/info/texinfo/gccint.info ]; then rm -f $@; $(INSTALL_DATA) doc/gccint/info/texinfo/gccint.info $@; fi
+$(DESTDIR)$(infodir)/gccint.info: doc/gccint/info/texinfo/gccint.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/install.info: installdirs
-	-if [ -f doc/install/info/texinfo/install.info ]; then rm -f $@; $(INSTALL_DATA) doc/install/info/texinfo/install.info $@; fi
+$(DESTDIR)$(infodir)/install.info: doc/install/info/texinfo/install.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/cpp.info: installdirs
-	-if [ -f doc/cpp/info/texinfo/cpp.info ]; then rm -f $@; $(INSTALL_DATA) doc/cpp/info/texinfo/cpp.info $@; fi
+$(DESTDIR)$(infodir)/cpp.info: doc/cpp/info/texinfo/cpp.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/cppinternals.info: installdirs
-	-if [ -f doc/cppinternals/info/texinfo/cppinternals.info ]; then rm -f $@; $(INSTALL_DATA) doc/cppinternals/info/texinfo/cppinternals.info $@; fi
+$(DESTDIR)$(infodir)/cppinternals.info: doc/cppinternals/info/texinfo/cppinternals.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/gcov.info: installdirs
-	-if [ -f doc/gcc/info/texinfo/gcov.info ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/info/texinfo/gcov.info $@; fi
+$(DESTDIR)$(infodir)/gcov.info: doc/gcc/info/texinfo/gcov.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/gcov-tool.info: installdirs
-	-if [ -f doc/gcc/info/texinfo/gcov-tool.info ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/info/texinfo/gcov-tool.info $@; fi
+$(DESTDIR)$(infodir)/gcov-tool.info: doc/gcc/info/texinfo/gcov-tool.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/gcov-dump.info: installdirs
-	-if [ -f doc/gcc/info/texinfo/gcov-dump.info ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/info/texinfo/gcov-dump.info $@; fi
+$(DESTDIR)$(infodir)/gcov-dump.info: doc/gcc/info/texinfo/gcov-dump.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-$(DESTDIR)$(infodir)/lto-dump.info: installdirs
-	-if [ -f doc/gcc/info/texinfo/lto-dump.info ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/info/texinfo/lto-dump.info $@; fi
+$(DESTDIR)$(infodir)/lto-dump.info: doc/gcc/info/texinfo/lto-dump.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+
 
 dvi__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 
@@ -3773,32 +3783,50 @@ $(DESTDIR)$(man7dir)/%$(man7ext): doc/%.7 installdirs
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext):  installdirs
-	-if [ -f doc/gcc/man/man/gcc.1 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/gcc.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext): doc/gcc/man/man/gcc.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext):  installdirs
-	-if [ -f doc/gcc/man/man/cpp.1 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/cpp.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext): doc/cpp/man/man/cpp.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): installdirs
-	-if [ -f doc/gcc/man/man/gcov.1 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/gcov.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): doc/gcc/man/man/gcov.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(GCOV_TOOL_INSTALL_NAME)$(man1ext): installdirs
-	-if [ -f doc/gcc/man/man/gcov-tool.1 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/gcov-tool.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(GCOV_TOOL_INSTALL_NAME)$(man1ext): doc/gcc/man/man/gcov-tool.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(GCOV_DUMP_INSTALL_NAME)$(man1ext): installdirs
-	-if [ -f doc/gcc/man/man/gcov-dump.1 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/gcov-dump.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(GCOV_DUMP_INSTALL_NAME)$(man1ext): doc/gcc/man/man/gcov-dump.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man1dir)/$(LTO_DUMP_INSTALL_NAME)$(man1ext): installdirs
-	-if [ -f doc/gcc/man/man/lto-dump.1 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/lto-dump.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(LTO_DUMP_INSTALL_NAME)$(man1ext): doc/gcc/man/man/lto-dump.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man7dir)/fsf-funding$(man7ext): installdirs
-	-if [ -f doc/gcc/man/man/fsf-funding.7 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/fsf-funding.7 $@; chmod a-x $@; fi
+$(DESTDIR)$(man7dir)/fsf-funding$(man7ext): doc/gcc/man/man/fsf-funding.7 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man7dir)/gfdl$(man7ext): installdirs
-	-if [ -f doc/gcc/man/man/gfdl.7 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/gfdl.7 $@; chmod a-x $@; fi
+$(DESTDIR)$(man7dir)/gfdl$(man7ext): doc/gcc/man/man/gfdl.7 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
-$(DESTDIR)$(man7dir)/gpl$(man7ext): installdirs
-	-if [ -f doc/gcc/man/man/gpl.7 ]; then rm -f $@; $(INSTALL_DATA) doc/gcc/man/man/gpl.7 $@; chmod a-x $@; fi
+$(DESTDIR)$(man7dir)/gpl$(man7ext): doc/gcc/man/man/gpl.7 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 # Install all the header files built in the include subdirectory.
 install-headers: $(INSTALL_HEADERS_DIR)

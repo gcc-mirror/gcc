@@ -285,13 +285,15 @@ c++.install-common: installdirs
 
 # We can't use links because not everyone supports them.  So just copy the
 # manpage.
-doc/g++.1:
-	if [ -f doc/gcc/man/man/gcc.1 ]; then cp doc/gcc/man/man/gcc.1 $@; fi
+doc/g++.1: doc/gcc/man/man/gcc.1
+	cp $< doc/g++.1
 
 c++.install-man: $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext)
 
-$(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext): installdirs
-	-if [ -f doc/g++.1 ]; then rm -f $@; $(INSTALL_DATA) doc/g++.1 $@; chmod a-x $@; fi
+$(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext): doc/g++.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 c++.install-plugin: installdirs
 # We keep the directory structure for files in config and .def files. All
