@@ -1304,10 +1304,7 @@ stamp-geninsrc: doc/info/texinfo/libgomp.info
 	@touch $@
 
 doc/info/texinfo/libgomp.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info SPHINXBUILD=$(SPHINX_BUILD); \
-	else true; fi
-
+	+ make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info SPHINXBUILD=$(SPHINX_BUILD)
 
 # target overrides
 -include $(tmake_file)

@@ -1121,10 +1121,7 @@ stamp-geninsrc: doc/info/texinfo/libitm.info
 	@touch $@
 
 doc/info/texinfo/libitm.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info SPHINXBUILD=$(SPHINX_BUILD); \
-	else true; fi
-
+	+ make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info SPHINXBUILD=$(SPHINX_BUILD)
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the
