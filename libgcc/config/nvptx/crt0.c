@@ -19,6 +19,9 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include <stdlib.h>
+#include "gbl-ctors.h"
+
 int *__exitval_ptr;
 
 extern void __attribute__((noreturn)) exit (int status);
@@ -46,6 +49,9 @@ __main (int *rval_ptr, int argc, void **argv)
   static char stack[131072] __attribute__((aligned(8)));
   __nvptx_stacks[0] = stack + sizeof stack;
   __nvptx_uni[0] = 0;
+
+  __do_global_ctors ();
+  atexit (__do_global_dtors);
 
   exit (main (argc, argv));
 }

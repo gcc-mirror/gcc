@@ -35,7 +35,39 @@
    '../../gcc.cc:asm_options', 'HAVE_GNU_AS'.  */
 #define ASM_SPEC "%{v}"
 
-#define STARTFILE_SPEC "%{mmainkernel:crt0.o%s}"
+#define STARTFILE_SPEC \
+  STARTFILE_SPEC_MMAINKERNEL \
+  " " STARTFILE_SPEC_CDTOR
+
+#define ENDFILE_SPEC \
+  ENDFILE_SPEC_CDTOR
+
+#define STARTFILE_SPEC_MMAINKERNEL "%{mmainkernel:crt0.o%s}"
+
+/* Support for global constructors/destructors is implemented via
+   'collect2' and the following helpers.  */
+
+#define STARTFILE_SPEC_CDTOR "crtbegin.o%s"
+
+#define ENDFILE_SPEC_CDTOR "crtend.o%s"
+
+/* nvptx does its own wrapping of 'main'
+   (see 'libgcc/config/nvptx/crt0.c:__main').  */
+#define HAS_INIT_SECTION
+
+/* For example with old Nvidia Tesla K20c, Driver Version: 361.93.02, the
+   function pointers stored in the '__CTOR_LIST__', '__DTOR_LIST__' arrays
+   evidently evaluate to NULL in JIT compilation.  Avoiding the use of
+   assembler names ('write_list_with_asm') doesn't help, but defining a dummy
+   function next to the arrays apparently does work around this issue...
+
+   The default '__main_reference' synthesized by 'collect2' refers to our
+   'crt0.o' '__main' function with incompatible signature:
+
+       error   : Function '__main' not declared __global__ in all source files
+
+   Address both these issues via 'COLLECT2_MAIN_REFERENCE'.  */
+#define COLLECT2_MAIN_REFERENCE "__attribute__((unused)) static void dummy () {}"
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 
@@ -348,7 +380,6 @@ struct GTY(()) machine_function
 #define MOVE_MAX 8
 #define MOVE_RATIO(SPEED) 4
 #define FUNCTION_MODE QImode
-#define HAS_INIT_SECTION 1
 
 /* The C++ front end insists to link against libstdc++ -- which we don't build.
    Tell it to instead link against the innocuous libgcc.  */

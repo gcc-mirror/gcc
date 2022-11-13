@@ -925,8 +925,7 @@ proc check_effective_target_nonlocal_goto {} {
 # Return 1 if global constructors are supported, 0 otherwise.
 
 proc check_effective_target_global_constructor {} {
-    if { [istarget nvptx-*-*]
-	 || [istarget bpf-*-*] } {
+    if { [istarget bpf-*-*] } {
 	return 0
     }
     return 1

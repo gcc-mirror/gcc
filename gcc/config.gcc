@@ -2805,6 +2805,7 @@ nvptx-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap
 	tmake_file="nvptx/t-nvptx"
+	use_collect2=yes
 	if test x$enable_as_accelerator = xyes; then
 		extra_programs="${extra_programs} mkoffload\$(exeext)"
 		tm_file="${tm_file} nvptx/offload.h"
