@@ -173,7 +173,7 @@ For example, the following invocation verbosely runs the testcase
   (...shows full valgrind report for this test case...)
 
 When running under valgrind, it's best to have configured gcc with
-:option:`install:--enable-valgrind-annotations`, which automatically suppresses
+:option:`--enable-valgrind-annotations`, which automatically suppresses
 various known false positives.
 
 Environment variables

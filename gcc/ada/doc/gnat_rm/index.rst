@@ -1,7 +1,6 @@
-.. _top:
-
 GNAT Reference Manual
 =====================
+
 .. only:: not latex
 
     *GNAT, The GNU Ada Development Environment*
