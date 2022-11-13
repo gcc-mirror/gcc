@@ -1,3 +1,96 @@
+2022-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* dfp.cc (decimal_from_binary): Convert a canonical NaN to a
+	canonical NaN.
+
+2022-11-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (range_tests_signbit): Move to set from here...
+	(range_tests_signed_zeros): ...to here.
+
+2022-11-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (build_lt): Adjust with frange_nextafter
+	instead of default to a closed range.
+	(build_gt): Same.
+
+2022-11-12  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* range-op-float.cc (float_binary_op_range_finish): New function.
+	(foperator_plus::op1_range): New.
+	(foperator_plus::op2_range): New.
+	(foperator_minus::op1_range): New.
+	(foperator_minus::op2_range): New.
+	(foperator_mult::op1_range): New.
+	(foperator_mult::op2_range): New.
+	(foperator_div::op1_range): New.
+	(foperator_div::op2_range): New.
+
+2022-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107569
+	* range-op-float.cc (zero_p, contains_p, singleton_inf_p,
+	signbit_known_p, zero_range, inf_range, zero_to_inf_range): New
+	functions.
+	(foperator_mult_div_base): New class.
+	(foperator_mult, foperator_div): Derive from that and use
+	protected static method from it as well as above new functions
+	to simplify the code.
+
+2022-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107569
+	* range-op-float.cc (foperator_div): New class.
+	(floating_op_table::floating_op_table): Use foperator_div
+	for RDIV_EXPR.
+
+2022-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107569
+	PR tree-optimization/107591
+	* range-op.h (range_operator_float::rv_fold): Add relation_kind
+	argument.
+	* range-op-float.cc (range_operator_float::fold_range): Name
+	last argument trio and pass trio.op1_op2 () as last argument to
+	rv_fold.
+	(range_operator_float::rv_fold): Add relation_kind argument.
+	(foperator_plus::rv_fold, foperator_minus::rv_fold): Likewise.
+	(foperator_mult): New class.
+	(floating_op_table::floating_op_table): Use foperator_mult for
+	MULT_EXPR.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (UNSPEC_FLOGB): New unspec.
+	(type): Add flogb.
+	(logb_non_negative<mode>2): New instruction template.
+	(logb<mode>2): New define_expand.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (UNSPEC_FSCALEB): New unspec.
+	(type): Add fscaleb.
+	(IMODE): New mode attr.
+	(ldexp<mode>3): New instruction template.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (UNSPEC_FTINT): New unspec.
+	(UNSPEC_FTINTRM): Likewise.
+	(UNSPEC_FTINTRP): Likewise.
+	(LRINT): New define_int_iterator.
+	(lrint_pattern): New define_int_attr.
+	(lrint_submenmonic): Likewise.
+	(lrint_allow_inexact): Likewise.
+	(ANYFI): New define_mode_iterator.
+	(lrint<ANYF><ANYFI>): New instruction template.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (frint_<fmt>): Rename to ..
+	(rint<mode>2): .. this.
+
 2022-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106147

@@ -1,3 +1,44 @@
+2022-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107444
+	* gfortran.dg/optional_absent_7.f90: Adjust regex.
+	* gfortran.dg/optional_absent_8.f90: New test.
+
+2022-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-keywords-1.c: Also test constexpr.
+	* gcc.dg/c2x-constexpr-1.c, gcc.dg/c2x-constexpr-2a.c,
+	gcc.dg/c2x-constexpr-2b.c, gcc.dg/c2x-constexpr-3.c,
+	gcc.dg/c2x-constexpr-4.c, gcc.dg/c2x-constexpr-5.c,
+	gcc.dg/c2x-constexpr-6.c, gcc.dg/c2x-constexpr-7.c,
+	gcc.dg/c2x-constexpr-8.c, gcc.dg/c2x-constexpr-9.c,
+	gcc.dg/dfp/c2x-constexpr-dfp-1.c,
+	gcc.dg/dfp/c2x-constexpr-dfp-2.c, gcc.dg/gnu2x-constexpr-1.c,
+	gcc.target/i386/excess-precision-11.c,
+	gcc.target/i386/excess-precision-12.c: New tests.
+
+2022-11-12  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/ieee/inf-4.c: New test.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/flogb.c: New test.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/fscaleb.c: New test.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/ftint.c: New test.
+	* gcc.target/loongarch/ftint-no-inexact.c: New test.
+
+2022-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/frint.c: New test.
+
 2022-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106147

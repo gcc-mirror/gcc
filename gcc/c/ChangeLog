@@ -1,3 +1,57 @@
+2022-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (start_underspecified_init)
+	(finish_underspecified_init): Handle name == NULL_TREE for
+	compound literals.
+	(merge_decls): Merge C_DECL_DECLARED_CONSTEXPR.
+	(shadow_tag_warned): Check for constexpr.
+	(start_decl): Add parameter do_push.
+	(build_compound_literal): Set C_DECL_DECLARED_CONSTEXPR.
+	(grokdeclarator): Handle constexpr.
+	(finish_struct): Set C_TYPE_FIELDS_NON_CONSTEXPR.
+	(declspecs_add_scspec): Handle constexpr.
+	* c-parser.cc (c_token_starts_compound_literal)
+	(c_token_starts_declspecs, c_parser_declaration_or_fndef)
+	(c_parser_declspecs, c_parser_gnu_attribute_any_word)
+	(c_parser_compound_literal_scspecs)
+	(c_parser_postfix_expression_after_paren_type): Handle constexpr.
+	Update calls to start_init.
+	(c_parser_declaration_or_fndef, c_parser_initializer)
+	(c_parser_initval): Pass true for new argument of
+	convert_lvalue_to_rvalue.  Call convert_lvalue_to_rvalue for
+	constexpr compound literals.
+	(c_parser_static_assert_declaration_no_semi)
+	(c_parser_enum_specifier, c_parser_struct_declaration)
+	(c_parser_alignas_specifier, c_parser_initelt, c_parser_label):
+	Call convert_lvalue_to_rvalue on expressions required to be
+	integer constant expressions.
+	(c_parser_omp_declare_reduction): Update call to start_init.
+	* c-tree.h (C_TYPE_FIELDS_NON_CONSTEXPR)
+	(C_DECL_DECLARED_CONSTEXPR): New macros.
+	(struct c_declspecs): Add constexpr_p.
+	(start_decl, convert_lvalue_to_rvalue, start_init): Update
+	prototypes.
+	* c-typeck.cc (require_constant_value, require_constant_elements):
+	Change to bool.
+	(require_constexpr_value, maybe_get_constexpr_init)
+	(constexpr_init_fits_real_type, check_constexpr_init): New.
+	(convert_lvalue_to_rvalue): Add new parameter for_init.  Call
+	maybe_get_constexpr_init.
+	(store_init_value): Update call to digest_init.
+	(digest_init): Add parameters int_const_expr, arith_const_expr and
+	require_constexpr.  Check constexpr initializers.
+	(constructor_top_level): Remove.
+	(struct initializer_stack): Remove top_level.  Add
+	require_constexpr_value.
+	(start_init): Remove parameter top_level.  Add parameters
+	init_require_constant and init_require_constexpr.  Save
+	require_constexpr_value on stack.
+	(pop_init_level): Use a null pointer constant for zero initializer
+	of pointer initialized with {}.
+	(output_init_element): Update call to digest_init.  Avoid passing
+	null pointer constants of pointer type through digest_init a
+	second time when initializing a constexpr object.
+
 2022-11-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (in_underspecified_init, start_underspecified_init)

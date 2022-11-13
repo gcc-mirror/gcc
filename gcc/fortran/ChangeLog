@@ -1,3 +1,18 @@
+2022-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107444
+	* trans-decl.cc (create_function_arglist): Extend presence status
+	to all intrinsic types, and change prefix of internal symbol to '.'.
+	* trans-expr.cc (gfc_conv_expr_present): Align to changes in
+	create_function_arglist.
+	(gfc_conv_procedure_call): Fix generation of procedure arguments for
+	the case of character dummy arguments with optional+value attribute.
+	* trans-types.cc (gfc_get_function_type): Synchronize with changes
+	to create_function_arglist.
+	* doc/gfortran/naming-and-argument-passing-conventions.rst: Clarify
+	the gfortran argument passing conventions with regard to OPTIONAL
+	dummy arguments of intrinsic type.
+
 2022-11-10  Martin Liska  <mliska@suse.cz>
 
 	* doc/gfortran/intrinsic-procedures/abs.rst: Move label directly before title.

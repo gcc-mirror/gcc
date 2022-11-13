@@ -1,3 +1,24 @@
+2022-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107636
+	* include/std/charconv (to_chars): Fix up powerpc64le _Float128
+	overload __extension__ placement.
+
+2022-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am: Simplify debug build targets.
+	* src/Makefile.in: Regenerate.
+
+2022-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103755
+	* src/c++11/locale-inst-monetary.h: Include new header.
+	* src/c++11/locale-inst-numeric.h: Likewise.
+	* src/c++11/locale-inst.cc: Likewise.
+	(INSTANTIATE_USE_FACET, INSTANTIATE_FACET_ACCESSORS): Move
+	macro definitions to ...
+	* src/c++11/facet_inst_macros.h: New file.
+
 2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95048

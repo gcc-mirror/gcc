@@ -1,3 +1,9 @@
+2022-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/107641
+	* env.c (parse_unsigned_long): Cast params[2] to uintptr_t rather than
+	unsigned long.  Change type of upper from unsigned to unsigned long.
+
 2022-11-10  Martin Liska  <mliska@suse.cz>
 
 	* doc/conf.py: Add newline at last line.

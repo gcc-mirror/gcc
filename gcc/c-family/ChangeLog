@@ -1,3 +1,7 @@
+2022-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY.
+
 2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c/85487
