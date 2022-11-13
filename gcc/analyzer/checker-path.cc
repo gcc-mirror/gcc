@@ -1316,7 +1316,7 @@ void
 checker_path::fixup_locations (pending_diagnostic *pd)
 {
   for (checker_event *e : m_events)
-    e->set_location (pd->fixup_location (e->get_location ()));
+    e->set_location (pd->fixup_location (e->get_location (), false));
 }
 
 /* Return true if there is a (start_cfg_edge_event, end_cfg_edge_event) pair

@@ -89,7 +89,8 @@ public:
     return 0;
   }
 
-  location_t fixup_location (location_t loc) const final override
+  location_t fixup_location (location_t loc,
+			     bool) const final override
   {
     /* Ideally we'd check for specific macros here, and only
        resolve certain macros.  */

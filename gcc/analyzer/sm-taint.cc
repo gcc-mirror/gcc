@@ -109,6 +109,10 @@ public:
   state_t combine_states (state_t s0, state_t s1) const;
 
 private:
+  void check_control_flow_arg_for_taint (sm_context *sm_ctxt,
+					 const gimple *stmt,
+					 tree expr) const;
+
   void check_for_tainted_size_arg (sm_context *sm_ctxt,
 				   const supernode *node,
 				   const gcall *call,
@@ -130,6 +134,9 @@ public:
 
   /* Stop state, for a value we don't want to track any more.  */
   state_t m_stop;
+
+  /* Global state, for when the last condition had tainted arguments.  */
+  state_t m_tainted_control_flow;
 };
 
 /* Class for diagnostics relating to taint_state_machine.  */
@@ -149,8 +156,7 @@ public:
 	    && m_has_bounds == other.m_has_bounds);
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    final override
+  label_text describe_state_change (const evdesc::state_change &change) override
   {
     if (change.m_new_state == m_sm.m_tainted)
       {
@@ -761,6 +767,100 @@ private:
   enum memory_space m_mem_space;
 };
 
+/* Concrete taint_diagnostic subclass for reporting attacker-controlled
+   value being used as part of the condition of an assertion.  */
+
+class tainted_assertion : public taint_diagnostic
+{
+public:
+  tainted_assertion (const taint_state_machine &sm, tree arg,
+		     tree assert_failure_fndecl)
+  : taint_diagnostic (sm, arg, BOUNDS_NONE),
+    m_assert_failure_fndecl (assert_failure_fndecl)
+  {
+    gcc_assert (m_assert_failure_fndecl);
+  }
+
+  const char *get_kind () const final override
+  {
+    return "tainted_assertion";
+  }
+
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
+  {
+    if (!taint_diagnostic::subclass_equal_p (base_other))
+      return false;
+    const tainted_assertion &other
+      = (const tainted_assertion &)base_other;
+    return m_assert_failure_fndecl == other.m_assert_failure_fndecl;
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_tainted_assertion;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    diagnostic_metadata m;
+    /* "CWE-617: Reachable Assertion".  */
+    m.add_cwe (617);
+
+    return warning_meta (rich_loc, m, get_controlling_option (),
+			 "use of attacked-controlled value in"
+			 " condition for assertion");
+  }
+
+  location_t fixup_location (location_t loc,
+			     bool primary) const final override
+  {
+    if (primary)
+      /* For the primary location we want to avoid being in e.g. the
+	 <assert.h> system header, since this would suppress the
+	 diagnostic.  */
+      return expansion_point_location_if_in_system_header (loc);
+    else if (in_system_header_at (loc))
+      /* For events, we want to show the implemenation of the assert
+	 macro when we're describing them.  */
+      return linemap_resolve_location (line_table, loc,
+				       LRK_SPELLING_LOCATION,
+				       NULL);
+    else
+      return pending_diagnostic::fixup_location (loc, primary);
+  }
+
+  label_text describe_state_change (const evdesc::state_change &change) override
+  {
+    if (change.m_new_state == m_sm.m_tainted_control_flow)
+      return change.formatted_print
+	("use of attacker-controlled value for control flow");
+    return taint_diagnostic::describe_state_change (change);
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final override
+  {
+    if (mention_noreturn_attribute_p ())
+      return ev.formatted_print
+	("treating %qE as an assertion failure handler"
+	 " due to %<__attribute__((__noreturn__))%>",
+	 m_assert_failure_fndecl);
+    else
+      return ev.formatted_print
+	("treating %qE as an assertion failure handler",
+	 m_assert_failure_fndecl);
+  }
+
+private:
+  bool mention_noreturn_attribute_p () const
+  {
+    if (fndecl_built_in_p (m_assert_failure_fndecl, BUILT_IN_UNREACHABLE))
+      return false;
+    return true;
+  }
+
+  tree m_assert_failure_fndecl;
+};
+
 /* taint_state_machine's ctor.  */
 
 taint_state_machine::taint_state_machine (logger *logger)
@@ -770,6 +870,7 @@ taint_state_machine::taint_state_machine (logger *logger)
   m_has_lb = add_state ("has_lb");
   m_has_ub = add_state ("has_ub");
   m_stop = add_state ("stop");
+  m_tainted_control_flow = add_state ("tainted-control-flow");
 }
 
 state_machine::state_t
@@ -810,6 +911,15 @@ taint_state_machine::alt_get_inherited_state (const sm_state_map &map,
 	  {
 	  default:
 	    break;
+
+	  case EQ_EXPR:
+	  case GE_EXPR:
+	  case LE_EXPR:
+	  case NE_EXPR:
+	  case GT_EXPR:
+	  case LT_EXPR:
+	  case UNORDERED_EXPR:
+	  case ORDERED_EXPR:
 	  case PLUS_EXPR:
 	  case MINUS_EXPR:
 	  case MULT_EXPR:
@@ -823,17 +933,6 @@ taint_state_machine::alt_get_inherited_state (const sm_state_map &map,
 	    }
 	    break;
 
-	  case EQ_EXPR:
-	  case GE_EXPR:
-	  case LE_EXPR:
-	  case NE_EXPR:
-	  case GT_EXPR:
-	  case LT_EXPR:
-	  case UNORDERED_EXPR:
-	  case ORDERED_EXPR:
-	    /* Comparisons are just booleans.  */
-	    return m_start;
-
 	  case BIT_AND_EXPR:
 	  case RSHIFT_EXPR:
 	    return NULL;
@@ -842,6 +941,19 @@ taint_state_machine::alt_get_inherited_state (const sm_state_map &map,
       break;
     }
   return NULL;
+}
+
+/* Return true iff FNDECL should be considered to be an assertion failure
+   handler by -Wanalyzer-tainted-assertion. */
+
+static bool
+is_assertion_failure_handler_p (tree fndecl)
+{
+  // i.e. "noreturn"
+  if (TREE_THIS_VOLATILE (fndecl))
+    return true;
+
+  return false;
 }
 
 /* Implementation of state_machine::on_stmt vfunc for taint_state_machine.  */
@@ -871,6 +983,14 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	/* External function with "access" attribute. */
 	if (sm_ctxt->unknown_side_effects_p ())
 	  check_for_tainted_size_arg (sm_ctxt, node, call, callee_fndecl);
+
+	if (is_assertion_failure_handler_p (callee_fndecl)
+	    && sm_ctxt->get_global_state () == m_tainted_control_flow)
+	  {
+	    sm_ctxt->warn (node, call, NULL_TREE,
+			   make_unique<tainted_assertion> (*this, NULL_TREE,
+							   callee_fndecl));
+	  }
       }
   // TODO: ...etc; many other sources of untrusted data
 
@@ -897,7 +1017,44 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	}
     }
 
+  if (const gcond *cond = dyn_cast <const gcond *> (stmt))
+    {
+      /* Reset the state of "tainted-control-flow" before each
+	 control flow statement, so that only the last one before
+	 an assertion-failure-handler counts.  */
+      sm_ctxt->set_global_state (m_start);
+      check_control_flow_arg_for_taint (sm_ctxt, cond, gimple_cond_lhs (cond));
+      check_control_flow_arg_for_taint (sm_ctxt, cond, gimple_cond_rhs (cond));
+    }
+
+  if (const gswitch *switch_ = dyn_cast <const gswitch *> (stmt))
+    {
+      /* Reset the state of "tainted-control-flow" before each
+	 control flow statement, so that only the last one before
+	 an assertion-failure-handler counts.  */
+      sm_ctxt->set_global_state (m_start);
+      check_control_flow_arg_for_taint (sm_ctxt, switch_,
+					gimple_switch_index (switch_));
+    }
+
   return false;
+}
+
+/* If EXPR is tainted, mark this execution path with the
+   "tainted-control-flow" global state, in case we're about
+   to call an assertion-failure-handler.  */
+
+void
+taint_state_machine::check_control_flow_arg_for_taint (sm_context *sm_ctxt,
+						       const gimple *stmt,
+						       tree expr) const
+{
+  const region_model *old_model = sm_ctxt->get_old_region_model ();
+  const svalue *sval = old_model->get_rvalue (expr, NULL);
+  state_t state = sm_ctxt->get_state (stmt, sval);
+  enum bounds b;
+  if (get_taint (state, TREE_TYPE (expr), &b))
+    sm_ctxt->set_global_state (m_tainted_control_flow);
 }
 
 /* Implementation of state_machine::on_condition vfunc for taint_state_machine.

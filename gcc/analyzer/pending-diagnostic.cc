@@ -153,7 +153,7 @@ fixup_location_in_macro_p (cpp_hashnode *macro)
    Don't unwind inside macros for which fixup_location_in_macro_p is true.  */
 
 location_t
-pending_diagnostic::fixup_location (location_t loc) const
+pending_diagnostic::fixup_location (location_t loc, bool) const
 {
   if (linemap_location_from_macro_expansion_p (line_table, loc))
     {

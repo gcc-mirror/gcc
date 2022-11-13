@@ -933,7 +933,7 @@ get_emission_location (const gimple *stmt, function *fun,
   location_t loc = get_stmt_location (stmt, fun);
 
   /* Allow the pending_diagnostic to fix up the location.  */
-  loc = pd.fixup_location (loc);
+  loc = pd.fixup_location (loc, true);
 
   return loc;
 }

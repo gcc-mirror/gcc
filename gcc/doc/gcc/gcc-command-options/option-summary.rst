@@ -309,6 +309,7 @@ in the following sections.
   :option:`-Wno-analyzer-shift-count-overflow` |gol|
   :option:`-Wno-analyzer-stale-setjmp-buffer` |gol|
   :option:`-Wno-analyzer-tainted-allocation-size` |gol|
+  :option:`-Wno-analyzer-tainted-assertion` |gol|
   :option:`-Wno-analyzer-tainted-array-index` |gol|
   :option:`-Wno-analyzer-tainted-divisor` |gol|
   :option:`-Wno-analyzer-tainted-offset` |gol|
