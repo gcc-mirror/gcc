@@ -1,6 +1,6 @@
 .. only:: html
 
-  Indices and tables
+  Indexes and tables
   ==================
 
   :ref:`genindex`
