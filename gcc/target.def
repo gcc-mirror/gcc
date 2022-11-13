@@ -1552,7 +1552,7 @@ instructions.\n\
 \n\
 Given below example:\n\
 \n\
-.. code-block:: gas\n\
+.. code-block:: c++\n\
 \n\
       ldr r10, [r1, 4]\n\
       add r4, r4, r10\n\
@@ -1569,7 +1569,7 @@ loads are actually next to each other in instruction flow.  That's where\n\
 this scheduling fusion pass works.  This hook calculates priority for each\n\
 instruction based on its fustion type, like:\n\
 \n\
-.. code-block:: gas\n\
+.. code-block:: c++\n\
 \n\
       ldr r10, [r1, 4]  ; fusion_pri=99,  pri=96\n\
       add r4, r4, r10   ; fusion_pri=100, pri=100\n\
@@ -1584,7 +1584,7 @@ Scheduling fusion pass then sorts all ready to issue instructions according\n\
 to the priorities.  As a result, instructions of same fusion type will be\n\
 pushed together in instruction flow, like:\n\
 \n\
-.. code-block:: gas\n\
+.. code-block:: c++\n\
 \n\
       ldr r11, [r1, 0]\n\
       ldr r10, [r1, 4]\n\
@@ -4262,13 +4262,13 @@ DEFHOOK
 contain UNSPECs or UNSPEC_VOLATILEs.  The DWARF 2 call frame debugging\n\
 info engine will invoke it on insns of the form\n\
 \n\
-.. code-block::\n\
+.. code-block:: c++\n\
 \n\
   (set (reg) (unspec [...] UNSPEC_INDEX))\n\
 \n\
 and\n\
 \n\
-.. code-block::\n\
+.. code-block:: c++\n\
 \n\
   (set (reg) (unspec_volatile [...] UNSPECV_INDEX)).\n\
 \n\
@@ -4284,7 +4284,7 @@ expression, with :samp:`{i}` counting from 1.  Return the number of a DWARF\n\
 register :samp:`{R}` and set :samp:`*{factor}` and :samp:`*{offset}` such\n\
 that the value of the indeterminate is:\n\
 \n\
-.. code-block::\n\
+.. code-block:: c++\n\
 \n\
   value_of(R) / factor - offset\n\
 \n\
