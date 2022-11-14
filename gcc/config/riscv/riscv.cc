@@ -360,20 +360,6 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   false,					/* slow_unaligned_access */
 };
 
-/* Costs to use when optimizing for Ventana Micro VT1.  */
-static const struct riscv_tune_param ventana_vt1_tune_info = {
-  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
-  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
-  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
-  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
-  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
-  4,						/* issue_rate */
-  4,						/* branch_cost */
-  5,						/* memory_cost */
-  8,						/* fmv_cost */
-  false,					/* slow_unaligned_access */
-};
-
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 

@@ -38,7 +38,6 @@ RISCV_TUNE("sifive-3-series", generic, rocket_tune_info)
 RISCV_TUNE("sifive-5-series", generic, rocket_tune_info)
 RISCV_TUNE("sifive-7-series", sifive_7, sifive_7_tune_info)
 RISCV_TUNE("thead-c906", generic, thead_c906_tune_info)
-RISCV_TUNE("ventana-vt1", generic, ventana_vt1_tune_info)
 RISCV_TUNE("size", generic, optimize_size_tune_info)
 
 #undef RISCV_TUNE
@@ -73,7 +72,5 @@ RISCV_CORE("sifive-s76",      "rv64imafdc", "sifive-7-series")
 
 RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series")
 RISCV_CORE("sifive-u74",      "rv64imafdc", "sifive-7-series")
-
-RISCV_CORE("ventana-vt1",     "rv64imafdc_zba_zbb_zbc_zbs_zifencei",	"ventana-vt1")
 
 #undef RISCV_CORE

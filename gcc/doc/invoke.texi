@@ -28770,15 +28770,14 @@ by particular CPU name.
 Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
 @samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
 @samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
-@samp{sifive-u54}, @samp{sifive-u74}, and @samp{ventana-vt1}.
+@samp{sifive-u54}, and @samp{sifive-u74}.
 
 @item -mtune=@var{processor-string}
 @opindex mtune
 Optimize the output for the given processor, specified by microarchitecture or
 particular CPU name.  Permissible values for this option are: @samp{rocket},
 @samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
-@samp{thead-c906}, @samp{ventana-vt1}, @samp{size}, and all valid options for
-@option{-mcpu=}.
+@samp{thead-c906}, @samp{size}, and all valid options for @option{-mcpu=}.
 
 When @option{-mtune=} is not specified, use the setting from @option{-mcpu},
 the default is @samp{rocket} if both are not specified.
