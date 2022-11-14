@@ -1490,8 +1490,7 @@ in the following sections.
   :option:`-mgeneral-regs-only`  :option:`-mcall-ms2sysv-xlogues` :option:`-mrelax-cmpxchg-loop` |gol|
   :option:`-mindirect-branch=choice`  :option:`-mfunction-return=choice` |gol|
   :option:`-mindirect-branch-register` :option:`-mharden-sls=choice` |gol|
-  :option:`-mindirect-branch-cs-prefix` :option:`-mneeded` :option:`-mno-direct-extern-access` |gol|
-  :option:`-munroll-only-small-loops`
+  :option:`-mindirect-branch-cs-prefix` :option:`-mneeded` :option:`-mno-direct-extern-access`
 
   *x86 Windows Options*
 

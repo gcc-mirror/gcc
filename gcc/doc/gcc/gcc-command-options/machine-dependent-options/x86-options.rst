@@ -1614,9 +1614,3 @@ on x86-64 processors in 64-bit environments.
 .. option:: -mdirect-extern-access
 
   Default setting; overrides :option:`-mno-direct-extern-access`.
-
-.. option:: -munroll-only-small-loops
-  Controls conservative small loop unrolling. It is default enbaled by
-  O2, and unrolls loop with less than 4 insns by 1 time. Explicit
-  -f[no-]unroll-[all-]loops would disable this flag to avoid any
-  unintended unrolling behavior that user does not want.
