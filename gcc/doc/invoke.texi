@@ -17032,7 +17032,7 @@ routines generate output or allocate memory).
 @xref{Common Function Attributes}.
 
 @item -finstrument-functions-once
-@opindex -finstrument-functions-once
+@opindex finstrument-functions-once
 This is similar to @option{-finstrument-functions}, but the profiling
 functions are called only once per instrumented function, i.e. the first
 profiling function is called after the first entry into the instrumented
@@ -25215,7 +25215,7 @@ These command-line options are defined for LoongArch targets:
 
 @table @gcctabopt
 @item -march=@var{cpu-type}
-@opindex -march
+@opindex march
 Generate instructions for the machine type @var{cpu-type}.  In contrast to
 @option{-mtune=@var{cpu-type}}, which merely tunes the generated code
 for the specified @var{cpu-type}, @option{-march=@var{cpu-type}} allows GCC
@@ -25285,43 +25285,43 @@ registers for parameter passing.  This option may change the target
 ABI.
 
 @item -msingle-float
-@opindex -msingle-float
+@opindex msingle-float
 Force @option{-mfpu=32} and allow the use of 32-bit floating-point
 registers for parameter passing.  This option may change the target
 ABI.
 
 @item -mdouble-float
-@opindex -mdouble-float
+@opindex mdouble-float
 Force @option{-mfpu=64} and allow the use of 32/64-bit floating-point
 registers for parameter passing.  This option may change the target
 ABI.
 
 @item -mbranch-cost=@var{n}
-@opindex -mbranch-cost
+@opindex mbranch-cost
 Set the cost of branches to roughly @var{n} instructions.
 
 @item -mcheck-zero-division
 @itemx -mno-check-zero-divison
-@opindex -mcheck-zero-division
+@opindex mcheck-zero-division
 Trap (do not trap) on integer division by zero.  The default is
 @option{-mcheck-zero-division} for @option{-O0} or @option{-Og}, and
 @option{-mno-check-zero-division} for other optimization levels.
 
 @item -mcond-move-int
 @itemx -mno-cond-move-int
-@opindex -mcond-move-int
+@opindex mcond-move-int
 Conditional moves for integral data in general-purpose registers
 are enabled (disabled).  The default is @option{-mcond-move-int}.
 
 @item -mcond-move-float
 @itemx -mno-cond-move-float
-@opindex -mcond-move-float
+@opindex mcond-move-float
 Conditional moves for floating-point registers are enabled (disabled).
 The default is @option{-mcond-move-float}.
 
 @item -mmemcpy
 @itemx -mno-memcpy
-@opindex -mmemcpy
+@opindex mmemcpy
 Force (do not force) the use of @code{memcpy} for non-trivial block moves.
 The default is @option{-mno-memcpy}, which allows GCC to inline most
 constant-sized copies.  Setting optimization level to @option{-Os} also
@@ -25331,18 +25331,18 @@ the command line.
 
 @item -mstrict-align
 @itemx -mno-strict-align
-@opindex -mstrict-align
+@opindex mstrict-align
 Avoid or allow generating memory accesses that may not be aligned on a natural
 object boundary as described in the architecture specification. The default is
 @option{-mno-strict-align}.
 
 @item -msmall-data-limit=@var{number}
-@opindex -msmall-data-limit
+@opindex msmall-data-limit
 Put global and static data smaller than @var{number} bytes into a special
 section (on some targets).  The default value is 0.
 
 @item -mmax-inline-memcpy-size=@var{n}
-@opindex -mmax-inline-memcpy-size
+@opindex mmax-inline-memcpy-size
 Inline all block moves (such as calls to @code{memcpy} or structure copies)
 less than or equal to @var{n} bytes.  The default value of @var{n} is 1024.
 
