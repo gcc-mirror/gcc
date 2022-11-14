@@ -648,6 +648,23 @@ changequote([,])dnl
 esac])
 LIBGCC_CHECK_AS_LSE
 
+dnl Check if as supports .variant_pcs.
+AC_DEFUN([LIBGCC_CHECK_AS_VARIANT_PCS], [
+case "${target}" in
+aarch64*-*-*)
+  AC_CACHE_CHECK([if as supports .variant_pcs], libgcc_cv_as_variant_pcs, [
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
+      [[asm (".variant_pcs foobar");]])],
+      [libgcc_cv_as_variant_pcs=yes], [libgcc_cv_as_variant_pcs=no])
+  ])
+  if test x$libgcc_cv_as_variant_pcs = xyes; then
+    AC_DEFINE(HAVE_AS_VARIANT_PCS, 1,
+	      [Define to 1 if the assembler supports .variant_pcs.])
+  fi
+  ;;
+esac])
+LIBGCC_CHECK_AS_VARIANT_PCS
+
 dnl Check if as supports RTM instructions.
 AC_CACHE_CHECK(for init priority support, libgcc_cv_init_priority, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
