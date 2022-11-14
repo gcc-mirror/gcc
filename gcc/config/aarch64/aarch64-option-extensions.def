@@ -149,4 +149,6 @@ AARCH64_OPT_EXTENSION("ls64", LS64, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
 
+AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "")
+
 #undef AARCH64_OPT_EXTENSION

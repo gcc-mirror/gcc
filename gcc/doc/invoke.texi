@@ -20249,6 +20249,8 @@ Enable the instructions to accelerate memory operations like @code{memcpy},
 Enable the Flag Manipulation instructions Extension.
 @item pauth
 Enable the Pointer Authentication Extension.
+@item cssc
+Enable the Common Short Sequence Compression instructions.
 
 @end table
 
