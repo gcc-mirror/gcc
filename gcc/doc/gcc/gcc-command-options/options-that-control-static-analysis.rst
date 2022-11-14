@@ -549,66 +549,6 @@ Options That Control Static Analysis
 
   Default setting; overrides :option:`-Wno-analyzer-tainted-allocation-size`.
 
-.. option:: -Wno-analyzer-tainted-assertion
-
-  This warning requires both :option:`-fanalyzer` and
-  :option:`-fanalyzer-checker=taint` to enable it;
-  use :option:`-Wno-analyzer-tainted-assertion` to disable it.
-
-  This diagnostic warns for paths through the code in which a value
-  that could be under an attacker's control is used as part of a
-  condition without being first sanitized, and that condition guards a
-  call to a function marked with attribute :fn-attr:`noreturn`
-  (such as the function ``__builtin_unreachable``).  Such functions
-  typically indicate abnormal termination of the program, such as for
-  assertion failure handlers.  For example:
-
-  .. code-block:: c
-
-    assert (some_tainted_value < SOME_LIMIT);
-
-  In such cases:
-
-  * when assertion-checking is enabled: an attacker could trigger
-    a denial of service by injecting an assertion failure
-
-  * when assertion-checking is disabled, such as by defining ``NDEBUG``,
-    an attacker could inject data that subverts the process, since it
-    presumably violates a precondition that is being assumed by the code.
-
-  Note that when assertion-checking is disabled, the assertions are
-  typically removed by the preprocessor before the analyzer has a chance
-  to "see" them, so this diagnostic can only generate warnings on builds
-  in which assertion-checking is enabled.
-
-  For the purpose of this warning, any function marked with attribute
-  :fn-attr:`noreturn` is considered as a possible assertion failure
-  handler, including ``__builtin_unreachable``.  Note that these functions
-  are sometimes removed by the optimizer before the analyzer "sees" them.
-  Hence optimization should be disabled when attempting to trigger this
-  diagnostic.
-
-  See `CWE-617: Reachable Assertion <https://cwe.mitre.org/data/definitions/617.html>`_.
-
-  The warning can also report problematic constructions such as
-
-  .. code-block:: c
-
-     switch (some_tainted_value) {
-     case 0:
-       /* [...etc; various valid cases omitted...] */
-       break;
-
-     default:
-       __builtin_unreachable (); /* BUG: attacker can trigger this  */
-     }
-
-  despite the above not being an assertion failure, strictly speaking.
-
-.. option:: -Wanalyzer-tainted-assertion
-
-  Default setting; overrides :option:`-Wno-analyzer-tainted-assertion`.
-
 .. option:: -Wno-analyzer-tainted-array-index
 
   This warning requires both :option:`-fanalyzer` and
