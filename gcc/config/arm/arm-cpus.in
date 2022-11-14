@@ -1542,6 +1542,17 @@ begin cpu cortex-x1
  part d44
 end cpu cortex-x1
 
+begin cpu cortex-x1c
+ cname cortexx1c
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d4c
+end cpu cortex-x1c
+
 begin cpu neoverse-n1
  cname neoversen1
  alias !ares
