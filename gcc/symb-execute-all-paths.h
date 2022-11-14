@@ -60,11 +60,11 @@ class crc_symb_execution {
 
   /* Assign values of phi instruction to its result.
    Keep updated values in the state.  */
-  void execute_bb_phi_statements (basic_block);
+  void execute_bb_phi_statements (basic_block, basic_block);
 
   /* Execute all statements of the basic block.
     Keeping values of variables in the state.  */
-  void execute_bb_statements (basic_block);
+  void execute_bb_statements (basic_block, basic_block);
 
 /* Traverse function fun's all paths from the first basic block to the last.
    Each time iterate loops only once.

@@ -53,8 +53,7 @@ crc_symb_execution::make_symbolic_func_args_and_sizes (function *fun,
 	 print that information.  */
       if (TREE_CODE (DECL_SIZE (arg)) == INTEGER_CST && DECL_NAME (arg))
 	{
-	  unsigned HOST_WIDE_INT
-	  size = tree_to_uhwi (DECL_SIZE (arg));
+	  unsigned HOST_WIDE_INT size = tree_to_uhwi (DECL_SIZE (arg));
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "%s : %lu; ",
 		     IDENTIFIER_POINTER (DECL_NAME (arg)), size);
@@ -76,15 +75,10 @@ crc_symb_execution::add_function_local_ssa_vars (function *fun,
     fprintf (dump_file, "\nAdding following ssa name declarations: \n");
   unsigned ix;
   tree name;
-  /* Get ssa names of the function, yet print sizes and names.  */
+  /* Get ssa names of the function.
+     Check type, add to the state with a size length array value.  */
   FOR_EACH_SSA_NAME (ix, name, fun)
       {
-	if (dump_file && (dump_flags & TDF_DETAILS))
-	  {
-	    print_generic_expr (dump_file, name, dump_flags);
-	  }
-	unsigned HOST_WIDE_INT
-	size;
 	if (TREE_CODE (TREE_TYPE (name)) == INTEGER_TYPE)
 	  {
 	    if (TYPE_UNSIGNED (TREE_TYPE (name)))
@@ -92,24 +86,37 @@ crc_symb_execution::add_function_local_ssa_vars (function *fun,
 		// We need this info for symb execution.
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  fprintf (dump_file,
-			   " unsigned,");
+			   "Unsigned, ");
 	      }
-	    size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (name)));
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      fprintf (dump_file, " size is %lu.\n", size);
 	  }
 	else if (TREE_CODE (TREE_TYPE (name)) == POINTER_TYPE)
 	  {
-	    size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (name)));
-
 	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      fprintf (dump_file, " pointer type, size is %lu.\n", size);
+	      fprintf (dump_file, "Pointer type, ");
 	  }
 	else
-	  continue;
+	  {
+	    /* Other type of variables aren't needed for CRC calculation.  */
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      {
+		print_generic_expr (dump_file, name, dump_flags);
+		fprintf (dump_file, ", not interesting type.\n");
+	      }
+	    continue;
+	  }
 
-	/* Add ssa variable with its size to the state.  */
-	initial_state->decl_var (name, size);
+	unsigned HOST_WIDE_INT size
+	= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (name)));
+
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  {
+	    print_generic_expr (dump_file, name, dump_flags);
+	    fprintf (dump_file, " size is %lu.\n", size);
+	  }
+
+	/* Add ssa variable with its size to the state,
+	   assign symbolic value.  */
+	initial_state->make_symbolic (name, size);
       }
 }
 
@@ -120,10 +127,28 @@ crc_symb_execution::execute_assign_statement (const gassign *gs)
   enum tree_code rhs_code = gimple_assign_rhs_code (gs);
   tree lhs = gimple_assign_lhs (gs);
   state *current_state = states.last ();
-  if (gimple_num_ops (gs) == 2 && rhs_code == BIT_NOT_EXPR)
+
+  if (gimple_num_ops (gs) == 2)
     {
       tree op1 = gimple_assign_rhs1 (gs);
-      // current_state->do_complement (op1, lhs);
+      switch (rhs_code)
+	{
+	  case BIT_NOT_EXPR:
+	    current_state->do_complement (op1, lhs);
+	    return;
+	  case MEM_REF:
+	    // do_mem_ref
+	    return;
+	  case NOP_EXPR:
+	    return;
+	  default:
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "Warning, encountered unsupported unary operation "
+		       "with %s code while executing assign statement!\n",
+		       get_tree_code_name (rhs_code));
+	    return;
+	}
     }
   else if (gimple_num_ops (gs) == 3)
     {
@@ -132,43 +157,51 @@ crc_symb_execution::execute_assign_statement (const gassign *gs)
       switch (rhs_code)
 	{
 	  case LSHIFT_EXPR:
-	    // current_state->do_shift_left (op1, op2, lhs);
-	    break;
+	    current_state->do_shift_left (op1, op2, lhs);
+	    return;
 	  case RSHIFT_EXPR:
-	    // current_state->do_shift_right (op1, op2, lhs);
-	    break;
+	    current_state->do_shift_right (op1, op2, lhs);
+	    return;
 	  case BIT_AND_EXPR:
-	    // current_state->do_and (op1, op2, lhs);
-	    break;
+	    current_state->do_and (op1, op2, lhs);
+	    return;
 	  case BIT_IOR_EXPR:
-	   // current_state->do_or (op1, op2, lhs);
-	    break;
+	    current_state->do_or (op1, op2, lhs);
+	    return;
 	  case BIT_XOR_EXPR:
-	   // current_state->do_xor (op1, op2, lhs);
-	    break;
+	    current_state->do_xor (op1, op2, lhs);
+	    return;
 	  case PLUS_EXPR:
-	   // current_state->do_add (op1, op2, lhs);
-	    break;
+	    current_state->do_add (op1, op2, lhs);
+	    return;
 	  case MINUS_EXPR:
-	   // current_state->do_sub (op1, op2, lhs);
-	    break;
+	    current_state->do_sub (op1, op2, lhs);
+	    return;
 	  case MULT_EXPR:
 	    // current_state->do_mul (op1, op2, lhs);
-	    break;
+	    return;
+	  case POINTER_PLUS_EXPR:
+	    // current_state->do_pointer_plus (op1, op2, lhs);
+	    return;
+	  case POINTER_DIFF_EXPR:
+	    // current_state->do_pointer_diff (op1, op2, lhs);
+	    return;
 	  default:
 	    if (dump_file)
 	      fprintf (dump_file,
-		       "Warning, encountered unsupported binary operation, "
-		       "while executing assign statement!\n");
-	  break;
+		       "Warning, encountered unsupported binary operation "
+		       "with %s code while executing assign statement!\n",
+		       get_tree_code_name (rhs_code));
+	    return;
 	}
     }
   else
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "Warning, encountered unsupported ternary operation, "
-		 "while executing assign statement!\n");
+		 "Warning, encountered unsupported operation, "
+		 "with %s code while executing assign statement!\n",
+		 get_tree_code_name (rhs_code));
     }
 }
 
@@ -183,14 +216,14 @@ crc_symb_execution::execute_bb_gimple_statements (basic_block bb)
       gimple *gs = gsi_stmt (bsi);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "Executing following statement:\n");
+	  fprintf (dump_file, "Executing ");
 	  print_gimple_stmt (dump_file, gs, dump_flags);
 	}
       switch (gimple_code (gs))
 	{
 	  case GIMPLE_ASSIGN:
 	    execute_assign_statement (as_a<const gassign *> (gs));
-	  break;
+	    break;
 	  case GIMPLE_COND:
 	    //TODO: Examine condition.  Fork state if needed and keep condition.
 	    break;
@@ -201,7 +234,7 @@ crc_symb_execution::execute_bb_gimple_statements (basic_block bb)
 	      fprintf (dump_file,
 		       "Warning, encountered unsupported statement, "
 		       "while executing gimple statements!\n");
-	  break;
+	    break;
 	}
     }
 }
@@ -209,22 +242,50 @@ crc_symb_execution::execute_bb_gimple_statements (basic_block bb)
 /* Assign values of phi instruction to its result.
    Keep updated values in the state.  */
 void
-crc_symb_execution::execute_bb_phi_statements (basic_block bb)
+crc_symb_execution::execute_bb_phi_statements (basic_block bb,
+					       basic_block prev_exec_bb_index)
 {
+  if (prev_exec_bb_index == nullptr)
+    return;
+
   for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
     {
-      gphi *phi_stmt = gsi.phi ();
-      //TODO: assign value to the result of phi.
+      gphi *phi = gsi.phi ();
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Determining the value "
+			      "for the following phi.\n");
+	  print_gimple_stmt (dump_file, phi, dump_flags);
+	}
+      for (unsigned i = 0; i < gimple_phi_num_args (phi); i++)
+	{
+	  // TODO optimization:
+	  //  Try to get correct arg, without checking all args.
+	  basic_block src = gimple_phi_arg_edge (phi, i)->src;
+	  if (src != nullptr && src == prev_exec_bb_index)
+	    {
+	      tree lhs = gimple_phi_result (phi);
+	      tree rhs = gimple_phi_arg_def (phi, i);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Found phi's value.\n\n");
+		}
+	      state *current_state = states.last ();
+	      current_state->do_assign (rhs, lhs);
+	      return;
+	    }
+	}
     }
 }
 
 /* Execute all statements of BB.
    Keeping values of variables in the state.  */
 void
-crc_symb_execution::execute_bb_statements (basic_block bb)
+crc_symb_execution::execute_bb_statements (basic_block bb,
+					   basic_block prev_exec_bb_index)
 {
-  execute_bb_phi_statements (bb);
+  execute_bb_phi_statements (bb, prev_exec_bb_index);
   execute_bb_gimple_statements (bb);
 }
 
@@ -235,9 +296,9 @@ void
 crc_symb_execution::traverse_function (function *fun)
 {
   /* TODO: Check whether back_edges can be determined by BB index,
-     if so, no need of EDGE_DFS_BACK flag.  */
+       if so, no need of EDGE_DFS_BACK flag.  */
   mark_dfs_back_edges (fun);
-
+  basic_block prev_bb = nullptr;
   /* Allocate stack for back-tracking up CFG.  */
   auto_vec<basic_block, 20> stack (n_basic_blocks_for_fn (fun) + 1);
 
@@ -254,8 +315,8 @@ crc_symb_execution::traverse_function (function *fun)
 	fprintf (dump_file, "\nExecuting BB <%d>\n", bb->index);
 
       /* Symbolically execute statements.  */
-      execute_bb_statements (bb);
-
+      execute_bb_statements (bb, prev_bb);
+      prev_bb = bb;
       /* Add each successor block of the current block to the stack,
        * despite the one connected with back edge.  */
       edge e;
