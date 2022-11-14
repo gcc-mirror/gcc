@@ -83,10 +83,12 @@ range_operator_float::fold_range (frange &r, tree type,
 
   r.set (type, lb, ub);
 
-  if (lb_nan || ub_nan || maybe_nan)
+  if (lb_nan || ub_nan || maybe_nan
+      || op1.maybe_isnan ()
+      || op2.maybe_isnan ())
     // Keep the default NAN (with a varying sign) set by the setter.
     ;
-  else if (!op1.maybe_isnan () && !op2.maybe_isnan ())
+  else
     r.clear_nan ();
 
   return true;
