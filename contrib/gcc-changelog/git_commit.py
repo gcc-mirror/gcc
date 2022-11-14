@@ -615,6 +615,8 @@ class GitCommit:
                 self.errors.append(Error(msg, entry.parentheses_stack[-1]))
 
     def check_line_start(self):
+        # FIXME: temporarily disable
+        return
         for entry in self.changelog_entries:
             for line in entry.lines:
                 if line.startswith('\t '):
