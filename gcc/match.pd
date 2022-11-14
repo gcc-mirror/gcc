@@ -7931,51 +7931,51 @@ and,
    {
      /* Build a vector of integers from the tree mask.  */
      vec_perm_builder builder;
-     if (!tree_to_vec_perm_builder (&builder, @2))
-       return NULL_TREE;
-
-     /* Create a vec_perm_indices for the integer vector.  */
-     poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
-     vec_perm_indices sel (builder, 2, nelts);
    }
-   (if (sel.series_p (0, 2, 0, 2))
+   (if (tree_to_vec_perm_builder (&builder, @2))
     (with
      {
+       /* Create a vec_perm_indices for the integer vector.  */
+       poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
+       vec_perm_indices sel (builder, 2, nelts);
        machine_mode vec_mode = TYPE_MODE (type);
        machine_mode wide_mode;
-       if (!GET_MODE_WIDER_MODE (vec_mode).exists (&wide_mode)
-	   || !VECTOR_MODE_P (wide_mode)
-	   || (GET_MODE_UNIT_BITSIZE (vec_mode) * 2
-		!= GET_MODE_UNIT_BITSIZE (wide_mode)))
-	 return NULL_TREE;
-
-       tree stype = lang_hooks.types.type_for_mode (GET_MODE_INNER (wide_mode),
-						    TYPE_UNSIGNED (type));
-       if (TYPE_MODE (stype) == BLKmode)
-	 return NULL_TREE;
-       tree ntype = build_vector_type_for_mode (stype, wide_mode);
-       if (!VECTOR_TYPE_P (ntype))
-	 return NULL_TREE;
-
-       /* The format has to be a non-extended ieee format.  */
-       const struct real_format *fmt_old = FLOAT_MODE_FORMAT (vec_mode);
-       const struct real_format *fmt_new = FLOAT_MODE_FORMAT (wide_mode);
-       if (fmt_old == NULL || fmt_new == NULL)
-	 return NULL_TREE;
-
-       /* If the target doesn't support v1xx vectors, try using scalar mode xx
-	  instead.  */
-       if (known_eq (GET_MODE_NUNITS (wide_mode), 1)
-	   && !target_supports_op_p (ntype, NEGATE_EXPR, optab_vector))
-	 ntype = stype;
      }
-     (if (fmt_new->signbit_rw
-	     == fmt_old->signbit_rw + GET_MODE_UNIT_BITSIZE (vec_mode)
-	  && fmt_new->signbit_rw == fmt_new->signbit_ro
-	  && targetm.can_change_mode_class (TYPE_MODE (ntype), TYPE_MODE (type), ALL_REGS)
-	  && ((optimize_vectors_before_lowering_p () && VECTOR_TYPE_P (ntype))
-	      || target_supports_op_p (ntype, NEGATE_EXPR, optab_vector)))
-      (plus (view_convert:type (negate (view_convert:ntype @1))) @0)))))))
+     (if (sel.series_p (0, 2, 0, 2)
+          && GET_MODE_WIDER_MODE (vec_mode).exists (&wide_mode)
+	  && VECTOR_MODE_P (wide_mode)
+	  && (GET_MODE_UNIT_BITSIZE (vec_mode) * 2
+	      == GET_MODE_UNIT_BITSIZE (wide_mode)))
+	(with
+	 {
+	   tree stype
+	     = lang_hooks.types.type_for_mode (GET_MODE_INNER (wide_mode),
+					       TYPE_UNSIGNED (type));
+	   tree ntype = build_vector_type_for_mode (stype, wide_mode);
+
+	   /* The format has to be a non-extended ieee format.  */
+	   const struct real_format *fmt_old = FLOAT_MODE_FORMAT (vec_mode);
+	   const struct real_format *fmt_new = FLOAT_MODE_FORMAT (wide_mode);
+	 }
+	 (if (TYPE_MODE (stype) != BLKmode
+	      && VECTOR_TYPE_P (ntype)
+	      && fmt_old != NULL
+	      && fmt_new != NULL)
+	  (with
+	   {
+	     /* If the target doesn't support v1xx vectors, try using
+		scalar mode xx instead.  */
+	    if (known_eq (GET_MODE_NUNITS (wide_mode), 1)
+		&& !target_supports_op_p (ntype, NEGATE_EXPR, optab_vector))
+	      ntype = stype;
+	   }
+	   (if (fmt_new->signbit_rw
+	        == fmt_old->signbit_rw + GET_MODE_UNIT_BITSIZE (vec_mode)
+		&& fmt_new->signbit_rw == fmt_new->signbit_ro
+		&& targetm.can_change_mode_class (TYPE_MODE (ntype), TYPE_MODE (type), ALL_REGS)
+		&& ((optimize_vectors_before_lowering_p () && VECTOR_TYPE_P (ntype))
+		    || target_supports_op_p (ntype, NEGATE_EXPR, optab_vector)))
+	    (plus (view_convert:type (negate (view_convert:ntype @1))) @0)))))))))))
 
 (simplify
  (vec_perm @0 @1 VECTOR_CST@2)
