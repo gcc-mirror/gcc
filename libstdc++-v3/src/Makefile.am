@@ -422,5 +422,5 @@ build-debug: stamp-debug $(debug_backtrace_supported_h)
 
 # Install debug library.
 install-debug: build-debug
-	(cd ${debugdir} && $(MAKE) CXXFLAGS='$(DEBUG_FLAGS)' \
-	toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install) ;
+	$(MAKE) -C debug CXXFLAGS='$(DEBUG_FLAGS)' \
+	  toolexeclibdir=$(glibcxx_toolexeclibdir)/debug install
