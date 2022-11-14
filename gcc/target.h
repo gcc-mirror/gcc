@@ -51,6 +51,7 @@
 #include "insn-codes.h"
 #include "tm.h"
 #include "hard-reg-set.h"
+#include "tree-core.h"
 
 #if CHECKING_P
 

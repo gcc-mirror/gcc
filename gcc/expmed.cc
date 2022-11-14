@@ -4222,8 +4222,8 @@ expand_sdiv_pow2 (scalar_int_mode mode, rtx op0, HOST_WIDE_INT d)
 
 rtx
 expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
-	       rtx op0, rtx op1, rtx target, int unsignedp,
-	       enum optab_methods methods)
+	       tree treeop0, tree treeop1, rtx op0, rtx op1, rtx target,
+	       int unsignedp, enum optab_methods methods)
 {
   machine_mode compute_mode;
   rtx tquotient;
@@ -4374,6 +4374,17 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		 + add_cost (speed, compute_mode));
 
   last_div_const = ! rem_flag && op1_is_constant ? INTVAL (op1) : 0;
+
+  /* Check if the target has specific expansions for the division.  */
+  tree cst;
+  if (treeop0
+      && treeop1
+      && (cst = uniform_integer_cst_p (treeop1))
+      && targetm.vectorize.can_special_div_by_const (code, TREE_TYPE (treeop0),
+						     wi::to_wide (cst),
+						     &target, op0, op1))
+    return target;
+
 
   /* Now convert to the best mode to use.  */
   if (compute_mode != mode)
@@ -4618,8 +4629,8 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			    || (optab_handler (sdivmod_optab, int_mode)
 				!= CODE_FOR_nothing)))
 		      quotient = expand_divmod (0, TRUNC_DIV_EXPR,
-						int_mode, op0,
-						gen_int_mode (abs_d,
+						int_mode, treeop0, treeop1,
+						op0, gen_int_mode (abs_d,
 							      int_mode),
 						NULL_RTX, 0);
 		    else
@@ -4808,8 +4819,8 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 				      size - 1, NULL_RTX, 0);
 		t3 = force_operand (gen_rtx_MINUS (int_mode, t1, nsign),
 				    NULL_RTX);
-		t4 = expand_divmod (0, TRUNC_DIV_EXPR, int_mode, t3, op1,
-				    NULL_RTX, 0);
+		t4 = expand_divmod (0, TRUNC_DIV_EXPR, int_mode, treeop0,
+				    treeop1, t3, op1, NULL_RTX, 0);
 		if (t4)
 		  {
 		    rtx t5;
