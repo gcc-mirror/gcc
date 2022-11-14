@@ -240,9 +240,6 @@ while @option{-fdebug=} enables @code{debug} code that are identified
 by any of the following values:
 
 @table @samp
-@item level
-Sets the debug level to @var{level}, any @code{debug} code <= @var{level}
-is compiled into the program.
 @item ident
 Turns on compilation of any @code{debug} code identified by @var{ident}.
 @end table
@@ -325,6 +322,8 @@ values are supported:
 @table @samp
 @item all
 Turns on all upcoming D language features.
+@item bitfields
+Implements bit-fields in D.
 @item dip1000
 Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1000.md}
 (Scoped pointers).
@@ -353,9 +352,6 @@ rvalues.
 @item inclusiveincontracts
 Implements @code{in} contracts of overridden methods to be a superset of parent
 contract.
-@item intpromote
-Implements C-style integral promotion for unary @code{+}, @code{-} and @code{~}
-expressions.
 @item nosharedaccess
 Turns off and disallows all access to shared memory objects.
 @item rvaluerefparam
@@ -387,13 +383,17 @@ are supported:
 @table @samp
 @item all
 Turns off all revertable D language features.
+@item dip1000
+Reverts @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1000.md}
+(Scoped pointers).
 @item dip25
 Reverts @uref{https://github.com/dlang/DIPs/blob/master/DIPs/archive/DIP25.md}
 (Sealed references).
 @item dtorfields
 Turns off generation for destructing fields of partially constructed objects.
-@item markdown
-Turns off Markdown replacements in Ddoc comments.
+@item intpromote
+Turns off C-style integral promotion for unary @code{+}, @code{-} and @code{~}
+expressions.
 @end table
 
 @item -fno-rtti
@@ -423,9 +423,6 @@ Turns on compilation of conditional @code{version} code into the program
 identified by any of the following values:
 
 @table @samp
-@item level
-Sets the version level to @var{level}, any @code{version} code >= @var{level}
-is compiled into the program.
 @item ident
 Turns on compilation of @code{version} code identified by @var{ident}.
 @end table
@@ -646,8 +643,10 @@ and provides source for debuggers to show when requested.
 
 @node Warnings
 @section Warnings
-@cindex options to control warnings
-@cindex warning messages
+@cindex options, warnings
+@cindex options, errors
+@cindex warnings, suppressing
+@cindex messages, error
 @cindex messages, warning
 @cindex suppressing warnings
 
@@ -678,6 +677,11 @@ whose bound can be larger than @var{n} bytes.
 @option{-Walloca-larger-than} warning and is equivalent to
 @option{-Walloca-larger-than=@var{SIZE_MAX}} or larger.
 
+@item -Wno-builtin-declaration-mismatch
+@cindex @option{-Wno-builtin-declaration-mismatch}
+@cindex @option{-Wbuiltin-declaration-mismatch}
+Warn if a built-in function is declared with an incompatible signature.
+
 @item -Wcast-result
 @cindex @option{-Wcast-result}
 @cindex @option{-Wno-cast-result}
@@ -703,12 +707,6 @@ List all error messages from speculative compiles, such as
 @code{__traits(compiles, ...)}.  This option does not report
 messages as warnings, and these messages therefore never become
 errors when the @option{-Werror} option is also used.
-
-@item -Wtemplates
-@cindex @option{-Wtemplates}
-@cindex @option{-Wno-templates}
-Warn when a template instantiation is encountered.  Some coding
-rules disallow templates, and this may be used to enforce that rule.
 
 @item -Wunknown-pragmas
 @cindex @option{-Wunknown-pragmas}
@@ -764,8 +762,6 @@ List all hidden GC allocations.
 List statistics on template instantiations.
 @item tls
 List all variables going into thread local storage.
-@item vmarkdown
-List instances of Markdown replacements in Ddoc.
 @end table
 
 @end table
