@@ -85,8 +85,8 @@ void foo(int (*a)[3])
 	struct h1b* h1b = malloc(sizeof(struct h1b) + 3 * sizeof(int));
 	struct h3b* h3b = malloc(sizeof(struct h3b));
 //	h0b->j[4] = 1;
-	h1b->j[4] = 1;;	/* { dg-warning "subscript 4 is above array bound" } */
-	h3b->j[4] = 1;;	/* { dg-warning "subscript 4 is above array bound" } */
+	h1b->j[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
+	h3b->j[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 
 	// make sure nothing gets optimized away
 	bar(*a);
