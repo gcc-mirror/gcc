@@ -1979,11 +1979,10 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	     || gimple_assign_rhs_code (ass) == VEC_COND_EXPR)
 	    && gimple_could_trap_p (ass))
 	  {
-	    gassign *cmp
-	      = gimple_build_assign (make_ssa_name (boolean_type_node),
-				     gimple_assign_rhs1 (ass));
+	    tree def = make_ssa_name (TREE_TYPE (gimple_assign_rhs1 (ass)));
+	    gassign *cmp = gimple_build_assign (def, gimple_assign_rhs1 (ass));
 	    gimple_seq_add_stmt (&stmts, cmp);
-	    gimple_assign_set_rhs1 (ass, gimple_assign_lhs (cmp));
+	    gimple_assign_set_rhs1 (ass, def);
 	  }
     }
 
