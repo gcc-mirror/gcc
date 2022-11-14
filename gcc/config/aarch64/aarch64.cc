@@ -24306,6 +24306,40 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   return ret;
 }
 
+/* Implement TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST.  */
+
+bool
+aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
+					       tree vectype, wide_int cst,
+					       rtx *output, rtx in0, rtx in1)
+{
+  if (code != TRUNC_DIV_EXPR
+      || !TYPE_UNSIGNED (vectype))
+    return false;
+
+  unsigned int flags = aarch64_classify_vector_mode (TYPE_MODE (vectype));
+  if ((flags & VEC_ANY_SVE) && !TARGET_SVE2)
+    return false;
+
+  if (in0 == NULL_RTX && in1 == NULL_RTX)
+    {
+      wide_int val = wi::add (cst, 1);
+      int pow = wi::exact_log2 (val);
+      return pow == (int)(element_precision (vectype) / 2);
+    }
+
+  if (!VECTOR_TYPE_P (vectype))
+   return false;
+
+  gcc_assert (output);
+
+  if (!*output)
+    *output = gen_reg_rtx (TYPE_MODE (vectype));
+
+  emit_insn (gen_aarch64_bitmask_udiv3 (TYPE_MODE (vectype), *output, in0, in1));
+  return true;
+}
+
 /* Generate a byte permute mask for a register of mode MODE,
    which has NUNITS units.  */
 
@@ -27795,6 +27829,10 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT aarch64_simd_vector_alignment
+
+#undef TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST
+#define TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST \
+  aarch64_vectorize_can_special_div_by_constant
 
 #undef TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
 #define TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT \
