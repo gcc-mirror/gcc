@@ -1,3 +1,13 @@
+2022-11-13  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/94104
+	* interface.cc (gfc_compare_actual_formal): Improve error message
+	dependent on Fortran standard level.
+
+2021-11-06  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gfortran.h (gfc_check_include): Remove declaration.
+
 2022-11-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107444

@@ -1,3 +1,29 @@
+2022-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106235
+	* analyzer.opt (Wanalyzer-tainted-assertion): New.
+	* checker-path.cc (checker_path::fixup_locations): Pass false to
+	pending_diagnostic::fixup_location.
+	* diagnostic-manager.cc (get_emission_location): Pass true to
+	pending_diagnostic::fixup_location.
+	* pending-diagnostic.cc (pending_diagnostic::fixup_location): Add
+	bool param.
+	* pending-diagnostic.h (pending_diagnostic::fixup_location): Add
+	bool param to decl.
+	* sm-taint.cc (taint_state_machine::m_tainted_control_flow): New.
+	(taint_diagnostic::describe_state_change): Drop "final".
+	(class tainted_assertion): New.
+	(taint_state_machine::taint_state_machine): Initialize
+	m_tainted_control_flow.
+	(taint_state_machine::alt_get_inherited_state): Support
+	comparisons being tainted, based on their arguments.
+	(is_assertion_failure_handler_p): New.
+	(taint_state_machine::on_stmt): Complain about calls to assertion
+	failure handlers guarded by an attacker-controller conditional.
+	Detect attacker-controlled gcond conditionals and gswitch index
+	values.
+	(taint_state_machine::check_control_flow_arg_for_taint): New.
+
 2022-11-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* sm-fd.dot: Fix typo in comment.

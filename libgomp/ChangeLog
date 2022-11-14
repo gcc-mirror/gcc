@@ -1,3 +1,9 @@
+2022-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR other/107620
+	* configure: Regenerate.
+	* configure.ac: Always set sphinx-build.
+
 2022-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/107641

@@ -1,3 +1,44 @@
+2022-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106235
+	* gcc.dg/analyzer/taint-assert-BUG_ON.c: New test.
+	* gcc.dg/analyzer/taint-assert-macro-expansion.c: New test.
+	* gcc.dg/analyzer/taint-assert.c: New test.
+	* gcc.dg/analyzer/taint-assert-system-header.c: New test.
+	* gcc.dg/analyzer/test-assert.h: New header.
+	* gcc.dg/plugin/analyzer_gil_plugin.c
+	(gil_diagnostic::fixup_location): Add bool param.
+
+2022-11-13  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/94104
+	* gfortran.dg/parens_2.f90: Adjust to improved error message.
+	* gfortran.dg/PR94104a.f90: New test.
+	* gfortran.dg/PR94104b.f90: New test.
+
+2022-11-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/guality/guality.exp: Skip on hppa*-*-hpux*.
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+
+2022-11-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbb-srai-andn.c: New test.
+
+2022-11-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zba-shNadd-07.c: New test.
+
+2022-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-float-8.c, gcc.dg/c11-limits-1.c,
+	gcc.dg/c11-stdarg-4.c, gcc.dg/c11-stdatomic-3.c,
+	gcc.dg/c11-stddef-1.c, gcc.dg/c11-stdint-1.c,
+	gcc.dg/c2x-float-13.c, gcc.dg/c2x-limits-1.c,
+	gcc.dg/c2x-stdarg-5.c, gcc.dg/c2x-stdatomic-1.c,
+	gcc.dg/c2x-stddef-1.c, gcc.dg/c2x-stdint-1.c: New tests.
+
 2022-11-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107444

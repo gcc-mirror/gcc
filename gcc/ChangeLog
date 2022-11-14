@@ -1,3 +1,47 @@
+2022-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106235
+	* doc/gcc/gcc-command-options/option-summary.rst: Add
+	-Wno-analyzer-tainted-assertion.
+	* doc/gcc/gcc-command-options/options-that-control-static-analysis.rst:
+	Add -Wno-analyzer-tainted-assertion.
+
+2022-11-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/bitmanip.md: New define_split.
+
+2022-11-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Recognize shNadd,
+	if expressed as a plus and multiplication with a power-of-2.
+	Split costing for MINUS from PLUS.
+
+2022-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR other/107620
+	* configure: Regenerate.
+	* configure.ac: Always set sphinx-build.
+
+2022-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h [__STDC_VERSION__ > 201710L]
+	(__STDC_VERSION_FLOAT_H__): New macro.
+	* ginclude/stdarg.h [__STDC_VERSION__ > 201710L]
+	(__STDC_VERSION_STDARG_H__): New macro.
+	* ginclude/stdatomic.h [__STDC_VERSION__ > 201710L]
+	(__STDC_VERSION_STDATOMIC_H__): New macro.
+	* ginclude/stddef.h [__STDC_VERSION__ > 201710L]
+	(__STDC_VERSION_STDDEF_H__): New macro.
+	* ginclude/stdint-gcc.h [__STDC_VERSION__ > 201710L]
+	(__STDC_VERSION_STDINT_H__): New macro.
+	* glimits.h [__STDC_VERSION__ > 201710L]
+	(__STDC_VERSION_LIMITS_H__): New macro.
+
+2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/install/testing.rst: Remove anachronism about separate
+	source tarballs.
+
 2022-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* dfp.cc (decimal_from_binary): Convert a canonical NaN to a

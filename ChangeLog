@@ -1,3 +1,14 @@
+2022-11-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* doc/contrib.rst: Update Jeff Law's email address.
+
+2022-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR web/107643
+	* doc/baseconf.py: Set include_todo tag if INCLUDE_TODO env
+	is set.
+	* doc/indices-and-tables.rst: Use include_todo tag.
+
 2022-11-11  Martin Liska  <mliska@suse.cz>
 
 	* doc/indices-and-tables.rst: Rename Indexes to Indices.

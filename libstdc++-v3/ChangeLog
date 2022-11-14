@@ -1,3 +1,47 @@
+2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (utc_clock, tai_clock, gps_clock): Define.
+	(clock_time_conversion, clock_cast): Define.
+	(sys_info, local_info): Define structs for timezone information.
+	(nonexistent_local_time, ambiguous_local_time): Define
+	exceptions for invalid times.
+	(time_zone, time_zone_link, leap_second, zoned_traits, tzdb)
+	(tzdb_list): Define classes representing time zones.
+	(get_leap_second_info): Define new function returning leap
+	second offset for a given time point.
+	* testsuite/std/time/clock/gps/1.cc: New test.
+	* testsuite/std/time/clock/tai/1.cc: New test.
+	* testsuite/std/time/clock/utc/1.cc: New test.
+
+2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104166
+	* include/Makefile.am (std_headers): Add <format>.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add <format>.
+	* include/std/format: New file.
+	* python/libstdcxx/v6/printers.py (StdFormatArgsPrinter): New
+	printer for std::format_args.
+	* testsuite/std/format/arguments/args.cc: New test.
+	* testsuite/std/format/error.cc: New test.
+	* testsuite/std/format/formatter.cc: New test.
+	* testsuite/std/format/functions/format.cc: New test.
+	* testsuite/std/format/functions/format_to_n.cc: New test.
+	* testsuite/std/format/functions/size.cc: New test.
+	* testsuite/std/format/functions/vformat_to.cc: New test.
+	* testsuite/std/format/parse_ctx.cc: New test.
+	* testsuite/std/format/string.cc: New test.
+	* testsuite/std/format/string_neg.cc: New test.
+
+2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/charconv.h (__integer_to_chars_is_unsigned):
+	New variable template.
+	(__to_chars_len, __to_chars_10_impl): Use variable template in
+	assertions to allow unsigned __int128 in strict mode.
+	* include/std/charconv (__to_chars, __to_chars_16)
+	(__to_chars_10, __to_chars_8, __to_chars_2): Likewise.
+
 2022-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/107636
