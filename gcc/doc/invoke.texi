@@ -32634,7 +32634,7 @@ comparison is unordered.
 
 @item -m80387
 @itemx -mhard-float
-@opindex 80387
+@opindex m80387
 @opindex mhard-float
 Generate output containing 80387 instructions for floating point.
 
