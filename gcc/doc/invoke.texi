@@ -458,6 +458,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
 -Wno-analyzer-imprecise-fp-arithmetic @gol
+-Wno-analyzer-infinite-recursion @gol
 -Wno-analyzer-jump-through-null @gol
 -Wno-analyzer-malloc-leak @gol
 -Wno-analyzer-mismatching-deallocation @gol
@@ -471,6 +472,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-shift-count-overflow @gol
 -Wno-analyzer-stale-setjmp-buffer @gol
 -Wno-analyzer-tainted-allocation-size @gol
+-Wno-analyzer-tainted-assertion @gol
 -Wno-analyzer-tainted-array-index @gol
 -Wno-analyzer-tainted-divisor @gol
 -Wno-analyzer-tainted-offset @gol
@@ -1461,7 +1463,8 @@ See RS/6000 and PowerPC Options.
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
 -mindirect-branch-register -mharden-sls=@var{choice} @gol
--mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access}
+-mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access @gol
+-munroll-only-small-loops}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -3666,6 +3669,16 @@ by wrapping them in a @code{#pragma}:
 const T& foo (const T&) @{ @dots{} @}
 #pragma GCC diagnostic pop
 @end smallexample
+
+@option{-Wdangling-reference} also warns about code like
+
+@smallexample
+auto p = std::minmax(1, 2);
+@end smallexample
+
+where @code{std::minmax} returns @code{std::pair<const int&, const int&>}, and
+both references dangle after the end of the full expression that contains
+the call to @code{std::minmax}.
 
 This warning is enabled by @option{-Wall}.
 
@@ -6481,6 +6494,10 @@ Warn about infinitely recursive calls.  The warning is effective at all
 optimization levels but requires optimization in order to detect infinite
 recursion in calls between two or more functions.
 @option{-Winfinite-recursion} is included in @option{-Wall}.
+
+Compare with @option{-Wanalyzer-infinite-recursion} which provides a
+similar diagnostic, but is implemented in a different way (as part of
+@option{-fanalyzer}).
 
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
@@ -9892,6 +9909,7 @@ Enabling this option effectively enables the following warnings:
 
 @gccoptlist{ @gol
 -Wanalyzer-allocation-size @gol
+-Wanalyzer-deref-before-check @gol
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
@@ -9904,6 +9922,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-imprecise-fp-arithmetic @gol
+-Wanalyzer-infinite-recursion @gol
 -Wanalyzer-jump-through-null @gol
 -Wanalyzer-malloc-leak @gol
 -Wanalyzer-mismatching-deallocation @gol
@@ -9961,6 +9980,30 @@ a buffer is assigned to point at a buffer with a size that is not a
 multiple of @code{sizeof (*pointer)}.
 
 See @uref{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
+
+@item -Wno-analyzer-deref-before-check
+@opindex Wanalyzer-deref-before-check
+@opindex Wno-analyzer-deref-before-check
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-deref-before-check}
+to disable it.
+
+This diagnostic warns for paths through the code in which a pointer
+is checked for @code{NULL} *after* it has already been
+dereferenced, suggesting that the pointer could have been NULL.
+Such cases suggest that the check for NULL is either redundant,
+or that it needs to be moved to before the pointer is dereferenced.
+
+This diagnostic also considers values passed to a function argument
+marked with @code{__attribute__((nonnull))} as requiring a non-NULL
+value, and thus will complain if such values are checked for @code{NULL}
+after returning from such a function call.
+
+This diagnostic is unlikely to be reported when any level of optimization
+is enabled, as GCC's optimization logic will typically consider such
+checks for NULL as being redundant, and optimize them away before the
+analyzer "sees" them.  Hence optimization should be disabled when
+attempting to trigger this diagnostic.
 
 @item -Wno-analyzer-double-fclose
 @opindex Wanalyzer-double-fclose
@@ -10117,6 +10160,30 @@ This diagnostic warns for paths through the code in which floating-point
 arithmetic is used in locations where precise computation is needed.  This
 diagnostic only warns on use of floating-point operands inside the
 calculation of an allocation size at the moment.
+
+@item -Wno-analyzer-infinite-recursion
+@opindex Wanalyzer-infinite-recursion
+@opindex Wno-analyzer-infinite-recursion
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-infinite-recursion} to disable it.
+
+This diagnostics warns for paths through the code which appear to
+lead to infinite recursion.
+
+Specifically, when the analyzer "sees" a recursive call, it will compare
+the state of memory at the entry to the new frame with that at the entry
+to the previous frame of that function on the stack.  The warning is
+issued if nothing in memory appears to be changing; any changes observed
+to parameters or globals are assumed to lead to termination of the
+recursion and thus suppress the warning.
+
+This diagnostic is likely to miss cases of infinite recursion that
+are convered to iteration by the optimizer before the analyzer "sees"
+them.  Hence optimization should be disabled when attempting to trigger
+this diagnostic.
+
+Compare with @option{-Winfinite-recursion}, which provides a similar
+diagnostic, but is implemented in a different way.
 
 @item -Wno-analyzer-jump-through-null
 @opindex Wanalyzer-jump-through-null
@@ -10291,6 +10358,69 @@ inject an excessively large allocation and potentially cause a denial
 of service attack.
 
 See @uref{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
+
+@item -Wno-analyzer-tainted-assertion
+@opindex Wanalyzer-tainted-assertion
+@opindex Wno-analyzer-tainted-assertion
+
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-assertion} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as part of a
+condition without being first sanitized, and that condition guards a
+call to a function marked with attribute @code{noreturn}
+(such as the function @code{__builtin_unreachable}).  Such functions
+typically indicate abnormal termination of the program, such as for
+assertion failure handlers.  For example:
+
+@smallexample
+assert (some_tainted_value < SOME_LIMIT);
+@end smallexample
+
+In such cases:
+
+@itemize
+@item
+when assertion-checking is enabled: an attacker could trigger
+a denial of service by injecting an assertion failure
+
+@item
+when assertion-checking is disabled, such as by defining @code{NDEBUG},
+an attacker could inject data that subverts the process, since it
+presumably violates a precondition that is being assumed by the code.
+
+@end itemize
+
+Note that when assertion-checking is disabled, the assertions are
+typically removed by the preprocessor before the analyzer has a chance
+to "see" them, so this diagnostic can only generate warnings on builds
+in which assertion-checking is enabled.
+
+For the purpose of this warning, any function marked with attribute
+@code{noreturn} is considered as a possible assertion failure
+handler, including @code{__builtin_unreachable}.  Note that these functions
+are sometimes removed by the optimizer before the analyzer "sees" them.
+Hence optimization should be disabled when attempting to trigger this
+diagnostic.
+
+See @uref{https://cwe.mitre.org/data/definitions/617.html, CWE-617: Reachable Assertion}.
+
+The warning can also report problematic constructions such as
+
+@smallexample
+switch (some_tainted_value) @{
+case 0:
+  /* [...etc; various valid cases omitted...] */
+  break;
+
+default:
+  __builtin_unreachable (); /* BUG: attacker can trigger this  */
+@}
+@end smallexample
+
+despite the above not being an assertion failure, strictly speaking.
 
 @item -Wno-analyzer-tainted-array-index
 @opindex Wanalyzer-tainted-array-index
@@ -10586,6 +10716,7 @@ to enable them.
 following warnings from @option{-fanalyzer}:
 
 @gccoptlist{ @gol
+-Wanalyzer-deref-before-check @gol
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
@@ -19862,8 +19993,9 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
-@samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x2},
-@samp{cortex-a510}, @samp{cortex-a710}, @samp{ampere1}, @samp{native}.
+@samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x1c}, @samp{cortex-x2},
+@samp{cortex-a510}, @samp{cortex-a710}, @samp{cortex-a715}, @samp{ampere1},
+@samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -33838,6 +33970,14 @@ treat access to protected symbols as local symbols.  The default is
 @option{-mno-direct-extern-access} and executable compiled with
 @option{-mdirect-extern-access} may not be binary compatible if
 protected symbols are used in shared libraries and executable.
+
+@item -munroll-only-small-loops
+@opindex munroll-only-small-loops
+@opindex mno-unroll-only-small-loops
+Controls conservative small loop unrolling. It is default enabled by
+O2, and unrolls loop with less than 4 insns by 1 time. Explicit
+-f[no-]unroll-[all-]loops would disable this flag to avoid any
+unintended unrolling behavior that user does not want.
 @end table
 
 @node x86 Windows Options

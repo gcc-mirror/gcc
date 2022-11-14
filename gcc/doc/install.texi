@@ -3102,9 +3102,7 @@ but it can give you confidence in your new GCC installation or point out
 problems before you install and start using your new GCC@.
 
 First, you must have @uref{download.html,,downloaded the testsuites}.
-These are part of the full distribution, but if you downloaded the
-``core'' compiler plus any front ends, you must download the testsuites
-separately.
+These are included in the source tarball.
 
 Second, you must have the testing tools installed.  This includes
 @uref{https://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
