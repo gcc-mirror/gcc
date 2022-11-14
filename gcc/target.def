@@ -1910,7 +1910,7 @@ DEFHOOK
  "This hook is used to test whether the target has a special method of\n\
 division of vectors of type @var{vectype} using the value @var{constant},\n\
 and producing a vector of type @var{vectype}.  The division\n\
-will then not be decomposed by the and kept as a div.\n\
+will then not be decomposed by the vectorizer and kept as a div.\n\
 \n\
 When the hook is being used to test whether the target supports a special\n\
 divide, @var{in0}, @var{in1}, and @var{output} are all null.  When the hook\n\
