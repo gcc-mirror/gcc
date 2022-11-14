@@ -1,3 +1,39 @@
+2022-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* alias.cc (init_alias_analysis): Do not record sets to the hard
+	frame pointer if the frame pointer has not been eliminated.
+
+2022-11-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-10-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/107304
+	* expr.cc (get_inner_reference): Always use TYPE_MODE for vector
+	field with vector raw mode.
+
+2022-11-07  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Move sapphirerapids out of AVX512_VP2INTERSECT.
+	* config/i386/i386.h: Remove AVX512_VP2INTERSECT from PTA_SAPPHIRERAPIDS
+	* doc/invoke.texi: Remove AVX512_VP2INTERSECT from SAPPHIRERAPIDS
+
+2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/41041
+	* doc/cppopts.texi: Document -fwide-exec-charset defaults
+	correctly.
+
+2022-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.cc (operand_compare::operand_equal_p) <COMPONENT_REF>:
+	Do not take into account operand 2.
+	(operand_compare::hash_operand) <COMPONENT_REF>: Likewise.
+
 2022-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

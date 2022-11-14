@@ -7640,8 +7640,7 @@ get_inner_reference (tree exp, poly_int64_pod *pbitsize,
 	  /* For vector fields re-check the target flags, as DECL_MODE
 	     could have been set with different target flags than
 	     the current function has.  */
-	  if (mode == BLKmode
-	      && VECTOR_TYPE_P (TREE_TYPE (field))
+	  if (VECTOR_TYPE_P (TREE_TYPE (field))
 	      && VECTOR_MODE_P (TYPE_MODE_RAW (TREE_TYPE (field))))
 	    mode = TYPE_MODE (TREE_TYPE (field));
 	}
