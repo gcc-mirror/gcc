@@ -1921,7 +1921,7 @@ hash_placeholder_constraint (tree c)
 static tree
 tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
 {
-  tree r = tsubst_expr (t, args, tf_none, info.in_decl, false);
+  tree r = tsubst_expr (t, args, tf_none, info.in_decl);
   if (convert_to_void (r, ICV_STATEMENT, tf_none) != error_mark_node)
     return r;
 
@@ -1932,7 +1932,7 @@ tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
 	{
 	  inform (loc, "the required expression %qE is invalid, because", t);
 	  if (r == error_mark_node)
-	    tsubst_expr (t, args, info.complain, info.in_decl, false);
+	    tsubst_expr (t, args, info.complain, info.in_decl);
 	  else
 	    convert_to_void (r, ICV_STATEMENT, info.complain);
 	}
@@ -1941,7 +1941,7 @@ tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
     }
   else if (info.noisy ())
     {
-      r = tsubst_expr (t, args, info.complain, info.in_decl, false);
+      r = tsubst_expr (t, args, info.complain, info.in_decl);
       convert_to_void (r, ICV_STATEMENT, info.complain);
     }
 
@@ -2706,7 +2706,7 @@ tsubst_constraint (tree t, tree args, tsubst_flags_t complain, tree in_decl)
      constraint-expressions of a declaration.  */
   processing_constraint_expression_sentinel s;
   cp_unevaluated u;
-  tree expr = tsubst_expr (t, args, complain, in_decl, false);
+  tree expr = tsubst_expr (t, args, complain, in_decl);
   return expr;
 }
 
@@ -2954,13 +2954,13 @@ satisfy_atom (tree t, tree args, sat_info info)
 
   /* Apply the parameter mapping (i.e., just substitute).  */
   tree expr = ATOMIC_CONSTR_EXPR (t);
-  tree result = tsubst_expr (expr, args, quiet.complain, quiet.in_decl, false);
+  tree result = tsubst_expr (expr, args, quiet.complain, quiet.in_decl);
   if (result == error_mark_node)
     {
       /* If substitution results in an invalid type or expression, the constraint
 	 is not satisfied. Replay the substitution.  */
       if (info.diagnose_unsatisfaction_p ())
-	tsubst_expr (expr, args, info.complain, info.in_decl, false);
+	tsubst_expr (expr, args, info.complain, info.in_decl);
       return cache.save (inst_cache.save (boolean_false_node));
     }
 
@@ -3587,7 +3587,7 @@ diagnose_trait_expr (tree expr, tree args)
   /* Build a "fake" version of the instantiated trait, so we can
      get the instantiated types from result.  */
   ++processing_template_decl;
-  expr = tsubst_expr (expr, args, tf_none, NULL_TREE, false);
+  expr = tsubst_expr (expr, args, tf_none, NULL_TREE);
   --processing_template_decl;
 
   tree t1 = TRAIT_EXPR_TYPE1 (expr);

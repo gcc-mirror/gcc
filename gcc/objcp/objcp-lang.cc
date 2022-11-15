@@ -54,8 +54,7 @@ objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain,
 			     tree in_decl)
 {
 #define RECURSE(NODE)							\
-  tsubst_copy_and_build (NODE, args, complain, in_decl, 		\
-			 /*integral_constant_expression_p=*/false)
+  tsubst_copy_and_build (NODE, args, complain, in_decl)
 
   /* The following two can only occur in Objective-C++.  */
 

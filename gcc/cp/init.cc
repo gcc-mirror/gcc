@@ -620,10 +620,8 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  start_lambda_scope (member);
 
 	  /* Do deferred instantiation of the NSDMI.  */
-	  init = (tsubst_copy_and_build
-		  (init, DECL_TI_ARGS (member),
-		   complain, member,
-		   /*integral_constant_expression_p=*/false));
+	  init = tsubst_copy_and_build (init, DECL_TI_ARGS (member),
+					complain, member);
 	  init = digest_nsdmi_init (member, init, complain);
 
 	  finish_lambda_scope ();

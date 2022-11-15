@@ -9460,9 +9460,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case STATIC_CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
-      if (cxx_dialect < cxx11
-	  && !dependent_type_p (TREE_TYPE (t))
-	  && !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (t)))
+      if (!cast_valid_in_integral_constant_expression_p (TREE_TYPE (t)))
 	/* In C++98, a conversion to non-integral type can't be part of a
 	   constant expression.  */
 	{
