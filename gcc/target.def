@@ -1634,7 +1634,7 @@ fields in @var{simd_clone} structure pointed by @var{clone_info} argument and al
 not determined by the bitsize (in which case @var{simdlen} is always used).\n\
 The hook should return 0 if SIMD clones shouldn't be emitted,\n\
 or number of @var{vecsize_mangle} variants that should be emitted.",
-int, (struct cgraph_node *, struct cgraph_simd_clone *, tree, int), NULL)
+int, (struct cgraph_node *, struct cgraph_simd_clone *, tree, int, bool), NULL)
 
 DEFHOOK
 (adjust,
