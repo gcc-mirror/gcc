@@ -1635,8 +1635,15 @@ Dump::visit (TraitObjectType &type)
 }
 
 void
-Dump::visit (ParenthesisedType &)
-{}
+Dump::visit (ParenthesisedType &type)
+{
+  // Syntax:
+  //    ( Type )
+
+  stream << "(";
+  visit (type.get_type_in_parens ());
+  stream << ")";
+}
 
 void
 Dump::visit (ImplTraitTypeOneBound &type)
