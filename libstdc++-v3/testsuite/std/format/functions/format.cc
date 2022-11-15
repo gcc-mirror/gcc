@@ -297,17 +297,25 @@ bool format_float()
     return s == "-0. != +0.500 ";
 }
 
+#if __cplusplus > 202002L
+template<typename T>
+concept formattable = std::formattable<T, char>;
+#else
+template<typename T>
+concept formattable = requires (T t, char* p) { std::to_chars(p, p, t); };
+#endif
+
 void
 test_float128()
 {
 #ifdef __SIZEOF_FLOAT128__
-  if constexpr (std::formattable<__float128, char>)
+  if constexpr (formattable<__float128>)
     VERIFY( format_float<__float128>() );
   else
     std::puts("Cannot format __float128 on this target");
 #endif
 #if __FLT128_DIG__
-  if constexpr (std::formattable<_Float128, char>)
+  if constexpr (formattable<_Float128>)
     VERIFY( format_float<_Float128>() );
   else
     std::puts("Cannot format _Float128 on this target");

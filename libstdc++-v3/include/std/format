@@ -2181,11 +2181,14 @@ namespace __format
 } // namespace __format
 /// @endcond
 
+#if __cplusplus > 202002L
   // [format.formattable], concept formattable
   template<typename _Tp, typename _CharT>
     concept formattable
       = __format::__formattable_impl<remove_reference_t<_Tp>, _CharT>;
+#endif
 
+#if __cpp_lib_format_ranges
   /// @cond undocumented
 namespace __format
 {
@@ -2199,6 +2202,7 @@ namespace __format
       = conditional_t<__const_formattable_range<_Rg, _CharT>, const _Rg, _Rg>;
 } // namespace __format
   /// @endcond
+#endif // format_ranges
 
   /// An iterator after the last character written, and the number of
   /// characters that would have been written.
@@ -3485,16 +3489,19 @@ namespace __format
 
 	std::visit_format_arg([this](auto& __arg) {
 	  using _Type = remove_reference_t<decltype(__arg)>;
+	  using _Formatter = typename _Context::template formatter_type<_Type>;
 	  if constexpr (is_same_v<_Type, monostate>)
 	    __format::__invalid_arg_id_in_format_string();
 	  else if constexpr (is_same_v<_Type, handle>)
 	    __arg.format(this->_M_pc, this->_M_fc);
-	  else
+	  else if constexpr (is_default_constructible_v<_Formatter>)
 	    {
-	      typename _Context::template formatter_type<_Type> __f;
+	      _Formatter __f;
 	      this->_M_pc.advance_to(__f.parse(this->_M_pc));
 	      this->_M_fc.advance_to(__f.format(__arg, this->_M_fc));
 	    }
+	  else
+	    static_assert(__format::__formattable_with<_Type, _Context>);
 	}, _M_fc.arg(__id));
       }
     };
