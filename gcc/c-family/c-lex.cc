@@ -380,6 +380,15 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		result = 201907;
 	      else if (is_attribute_p ("assume", attr_name))
 		result = 202207;
+	      else if (is_attribute_p ("init_priority", attr_name))
+		{
+		  /* The (non-standard) init_priority attribute is always
+		     included in the attribute table, but we don't want to
+		     advertise the attribute unless the target actually
+		     supports init priorities.  */
+		  result = SUPPORTS_INIT_PRIORITY ? 1 : 0;
+		  attr_name = NULL_TREE;
+		}
 	    }
 	  else
 	    {
