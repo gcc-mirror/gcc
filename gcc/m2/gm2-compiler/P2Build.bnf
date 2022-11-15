@@ -188,7 +188,7 @@ VAR
    tok  : CARDINAL ;
 BEGIN
    PopTtok (ident, tok) ;
-   IF ident # MakeKey ('noreturn')
+   IF ident # MakeKey ('unused')
    THEN
       MetaErrorT1 (tok, 'attribute {%1k} is not allowed in the parameter formal type section, only unused is allowed', ident)
    END

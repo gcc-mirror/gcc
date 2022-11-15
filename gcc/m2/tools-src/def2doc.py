@@ -139,7 +139,24 @@ def remove_fields(file, line):
     output.write(line.rstrip() + '\n')
 
 
-def check_index(line):
+def emit_index(entry, tag, previous):
+    if args.texinfo:
+        if tag == '':
+            output.write('@findex ' + entry.rstrip() + '\n')
+        else:
+            output.write('@findex ' + entry.rstrip() + ' ' + tag + '\n')
+    elif args.sphinx:
+        if tag == '':
+            output.write('.. index::')
+            output.write(' ' * 3 + entry.rstrip() + '\n')
+        else:
+            output.write('.. index::')
+            output.write(' ' * 3 + 'pair: ' + entry.rstrip() + '; ' + tag + '\n')
+        if previous != '':
+            output.write(previous + '\n')
+
+
+def check_index(line, current):
     # check_index - create an index entry for a PROCEDURE, TYPE, CONST or VAR.
     global in_var, in_type, in_const
 
@@ -177,25 +194,24 @@ def check_index(line):
             word = word.lstrip()
             if word != '':
                 if word.find(':') == -1:
-                    output.write('@findex ' + word + ' (var)\n')
+                    emit_index(word, '(var)', current)
                 elif len(word) > 0:
                     var = word.split(':')
                     if len(var) > 0:
-                        output.write('@findex ' + var[0] + ' (var)\n')
+                        emit_index(var[0], '(var)', current)
 
     if in_type:
         words = line.lstrip()
         if words.find('=') != -1:
             word = words.split('=')
             if (len(word[0]) > 0) and (word[0][0] != '_'):
-                output.write('@findex ' + word[0].rstrip() + ' (type)\n')
+                emit_index(word[0].rstrip(), '(type)', current)
         else:
             word = words.split()
             if (len(word) > 1) and (word[1] == ';'):
                 # hidden type
                 if (len(word[0]) > 0) and (word[0][0] != '_'):
-                    output.write('@findex ' + word[0].rstrip())
-                    output.write(' (type)\n')
+                    emit_index(word[0].rstrip(), '(type)', current)
     if in_const:
         words = line.split(';')
         for word in words:
@@ -204,7 +220,7 @@ def check_index(line):
                 if word.find('=') != -1:
                     var = word.split('=')
                     if len(var) > 0:
-                        output.write('@findex ' + var[0] + ' (const)\n')
+                        emit_index(var[0], '(const)', current)
     if procedure != '':
         name = procedure.split('(')
         if name[0] != '':
@@ -212,10 +228,77 @@ def check_index(line):
             if proc[-1] == ';':
                 proc = proc[:-1]
             if proc != '':
-                output.write('@findex ' + proc + '\n')
+                emit_index(proc, '', current)
 
 
-def parse_definition(dir, source, build, file, needPage):
+def emit_texinfo_content(f, line):
+    output.write(line.rstrip() + '\n')
+    line = f.readline()
+    if len(line.rstrip()) == 0:
+        output.write('\n')
+        line = f.readline()
+        if (line.find('(*') != -1):
+            remove_fields(f, line)
+        else:
+            output.write(line.rstrip() + '\n')
+    else:
+        output.write(line.rstrip() + '\n')
+    line = f.readline()
+    while line:
+        line = line.rstrip()
+        check_index(line, '')
+        output.write(str.replace(str.replace(line, '{', '@{'), '}', '@}'))
+        output.write('\n')
+        line = f.readline()
+    return f
+
+
+def emit_sphinx_content(f, line):
+    output.write('.. code-block:: modula2\n')
+    indent = ' ' * 4
+    output.write(indent + line.rstrip() + '\n')
+    line = f.readline()
+    if len(line.rstrip()) == 0:
+        output.write('\n')
+        line = f.readline()
+        if (line.find('(*') != -1):
+            remove_fields(f, line)
+        else:
+            output.write(indent + line.rstrip() + '\n')
+    else:
+        output.write(indent + line.rstrip() + '\n')
+    line = f.readline()
+    while line:
+        line = line.rstrip()
+        check_index(line, '.. code-block:: modula2')
+        output.write(indent + line + '\n')
+        line = f.readline()
+    return f
+
+
+def emit_example_content(f, line):
+    if args.texinfo:
+        return emit_texinfo_content(f, line)
+    elif args.sphinx:
+        return emit_sphinx_content(f, line)
+
+
+def emit_example_begin():
+    if args.texinfo:
+        output.write('@example\n')
+
+
+def emit_example_end():
+    if args.texinfo:
+        output.write('@end example\n')
+
+
+def emit_page(need_page):
+    if need_page and args.texinfo:
+        output.write('@page\n')
+
+
+def parse_definition(dir, source, build, file, need_page):
     # parse_definition reads a definition module and creates
     # indices for procedures, constants, variables and types.
     output.write('\n')
@@ -227,28 +310,10 @@ def parse_definition(dir, source, build, file, needPage):
             line = f.readline()
         while (line.find('DEFINITION') == -1):
             line = f.readline()
-        output.write('@example\n')
-        output.write(line.rstrip() + '\n')
-        line = f.readline()
-        if len(line.rstrip()) == 0:
-            output.write('\n')
-            line = f.readline()
-            if (line.find('(*') != -1):
-                remove_fields(f, line)
-            else:
-                output.write(line.rstrip() + '\n')
-        else:
-            output.write(line.rstrip() + '\n')
-        line = f.readline()
-        while line:
-            line = line.rstrip()
-            check_index(line)
-            output.write(str.replace(str.replace(line, '{', '@{'), '}', '@}'))
-            output.write('\n')
-            line = f.readline()
-        output.write('@end example\n')
-        if needPage:
-            output.write('@page\n')
+        emit_example_begin()
+        f = emit_example_content(f, line)
+        emit_example_end()
+        emit_page(need_page)
 
 
 def parse_modules(up, dir, build, source, list_of_modules):
@@ -339,8 +404,14 @@ def display_modules(up, dir, build, source):
     # display_modules walks though the files in dir and parses
     # definition modules and includes README.texi
     if check_directory(dir, build, source):
-        if found_file(dir, build, source, 'README.texi'):
-            do_cat(find_file(dir, build, source, 'README.texi'))
+        if args.texinfo:
+            ext = ".texi"
+        elif args.sphinx:
+            ext = ".rst"
+        else:
+            ext = ""
+        if found_file(dir, build, source, 'README' + ext):
+            do_cat(find_file(dir, build, source, 'README' + ext))
         module_menu(dir, build, source)
         list_of_files = []
         if os.path.exists(os.path.join(source, dir)):
@@ -402,7 +473,7 @@ def handle_file():
         display_library_class()
     else:
         parse_definition('.', args.sourcedir, args.builddir,
-                        args.inputfile, False)
+                         args.inputfile, False)
 
 
 def main():

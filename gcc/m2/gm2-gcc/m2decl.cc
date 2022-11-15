@@ -41,35 +41,35 @@ static GTY (()) tree param_type_list;
 static GTY (()) tree param_list = NULL_TREE; /* Ready for the next time we
                                                 call/define a function.  */
 
-/* DeclareM2linkGlobals creates the following code in the application
-   module globals:
-
-   int StaticInitialization = ScaffoldStatic;
-   const char *ForcedModuleInitOrder = RuntimeOverride;  */
-
-void
-m2decl_DeclareM2linkGlobals (location_t location,
-			     int ScaffoldStatic, const char *RuntimeOverride)
+tree
+m2decl_DeclareM2linkStaticInitialization (location_t location,
+					  int ScaffoldStatic)
 {
   m2block_pushGlobalScope ();
-  /* Generate: int StaticInitialization = ScaffoldStatic;  */
-  tree static_init = m2decl_DeclareKnownVariable (location, "StaticInitialization",
+  /* Generate: int M2LINK_StaticInitialization = ScaffoldStatic;  */
+  tree init = m2decl_BuildIntegerConstant (ScaffoldStatic);
+  tree static_init = m2decl_DeclareKnownVariable (location, "M2LINK_StaticInitialization",
 						  integer_type_node,
-						  TRUE, FALSE, FALSE, TRUE, NULL_TREE);
-  DECL_INITIAL (static_init) = m2decl_BuildIntegerConstant (ScaffoldStatic);
+						  TRUE, FALSE, FALSE, TRUE, NULL_TREE, init);
+  m2block_popGlobalScope ();
+  return static_init;
+}
+
+
+tree
+m2decl_DeclareM2linkForcedModuleInitOrder (location_t location,
+					   const char *RuntimeOverride)
+{
+  m2block_pushGlobalScope ();
   /* Generate: const char *ForcedModuleInitOrder = RuntimeOverride;  */
   tree ptr_to_char = build_pointer_type (char_type_node);
   TYPE_READONLY (ptr_to_char) = TRUE;
-  tree forced_order = m2decl_DeclareKnownVariable (location, "ForcedModuleInitOrder",
+  tree init = m2decl_BuildPtrToTypeString (location, RuntimeOverride, ptr_to_char);
+  tree forced_order = m2decl_DeclareKnownVariable (location, "M2LINK_ForcedModuleInitOrder",
 						   ptr_to_char,
-						   TRUE, FALSE, FALSE, TRUE, NULL_TREE);
-  if (RuntimeOverride == NULL || (strlen (RuntimeOverride) == 0))
-    DECL_INITIAL (forced_order) = m2convert_BuildConvert (location, ptr_to_char,
-							  m2decl_BuildIntegerConstant (0),
-							  FALSE);
-  else
-    DECL_INITIAL (forced_order) = build_string_literal (strlen (RuntimeOverride), RuntimeOverride);
+						   TRUE, FALSE, FALSE, TRUE, NULL_TREE, init);
   m2block_popGlobalScope ();
+  return forced_order;
 }
 
 
@@ -78,7 +78,7 @@ m2decl_DeclareM2linkGlobals (location_t location,
 tree
 m2decl_DeclareKnownVariable (location_t location, const char *name, tree type,
                              int exported, int imported, int istemporary,
-                             int isglobal, tree scope)
+                             int isglobal, tree scope, tree initial)
 {
   tree id;
   tree decl;
@@ -111,6 +111,9 @@ m2decl_DeclareKnownVariable (location_t location, const char *name, tree type,
   TREE_READONLY (decl) = 0;
 
   DECL_CONTEXT (decl) = scope;
+
+  if (initial)
+    DECL_INITIAL (decl) = initial;
 
   m2block_pushDecl (decl);
 
@@ -360,6 +363,18 @@ m2decl_BuildStringConstant (const char *string, int length)
   return m2decl_BuildStringConstantType (length, string, type);
   // maybe_wrap_with_location
 }
+
+
+tree
+m2decl_BuildPtrToTypeString (location_t location, const char *string, tree type)
+{
+  if ((string == NULL) || (strlen (string) == 0))
+    return m2convert_BuildConvert (location, type,
+				   m2decl_BuildIntegerConstant (0),
+				   FALSE);
+  return build_string_literal (strlen (string), string);
+}
+
 
 /* BuildIntegerConstant - return a tree containing the integer value.  */
 

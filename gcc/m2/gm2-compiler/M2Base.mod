@@ -2685,8 +2685,8 @@ BEGIN
    *)
 
    C(const       , 'T T T T T T T T T T T T T T T T T T F F T T T T T T T T T T T T T T T T F F F F F F F F F F F F F') ;
-   C(word        , '. T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
-   C(byte        , '. . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(word        , '. T F F F F F F F F F F F F F F F F F F T F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
+   C(byte        , '. . T F F F F F F F F F F F F F F F F F T F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
    C(address     , '. . . T F F F F F F F T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
    C(chr         , '. . . . T F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;
    C(normint     , '. . . . . T F F F F F F F F F F F F F F 2 F F F F F F F F F F F F F F F F F F F F F F F F F F F F') ;

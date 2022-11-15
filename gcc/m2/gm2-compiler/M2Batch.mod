@@ -388,7 +388,8 @@ END ForeachSourceModuleDo ;
 
 
 (*
-   IsSourceSeen - returns TRUE if the source for module, sym, has been seen.
+   IsSourceSeen - returns TRUE if the source for the program module or
+                  implementation module has been seen.
 *)
 
 PROCEDURE IsSourceSeen (sym: CARDINAL) : BOOLEAN ;

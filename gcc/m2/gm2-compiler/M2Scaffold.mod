@@ -27,6 +27,7 @@ FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
                         MakeSubrange, PutSubrange,
                         MakeSubscript, PutSubscript, PutArraySubscript,
                         MakeVar, PutVar, MakeProcedureCtorExtern,
+                        PutMonoName,
                         GetMainModule, GetModuleCtors, MakeDefImp,
                         PutModuleCtorExtern, IsDefinitionForC,
                         ForeachModuleDo, IsDefImp, IsModule,
@@ -49,7 +50,7 @@ FROM FIO IMPORT File, EOF, IsNoError, Close ;
 
 FROM M2Options IMPORT GetUselist, ScaffoldStatic, ScaffoldDynamic, GenModuleList,
                       GetGenModuleFilename, GetUselistFilename, GetUselist, cflag,
-                      SharedFlag ;
+                      SharedFlag, WholeProgram ;
 
 FROM M2Base IMPORT Proc ;
 
@@ -76,6 +77,7 @@ VAR
    ctorModules,
    ctorGlobals   : List ;
    ctorArrayType : CARDINAL ;
+   initialized   : BOOLEAN ;
 
 
 (* The dynamic scaffold takes the form:
@@ -251,14 +253,14 @@ BEGIN
    END ;
    IF sym # GetMainModule ()
    THEN
-      PutModuleCtorExtern (tok, sym)
+      PutModuleCtorExtern (tok, sym, NOT WholeProgram)
    END ;
    RETURN sym
 END LookupModuleSym ;
 
 
 (*
-   addDependentStatement - 
+   addDependentStatement -
 *)
 
 PROCEDURE addDependentStatement (graph: Graph; moduleSym: CARDINAL; list: List) ;
@@ -393,7 +395,7 @@ BEGIN
    THEN
       IF (moduleSym # GetMainModule ()) AND (NOT IsModuleBuiltin (moduleSym))
       THEN
-         PutModuleCtorExtern (ctorTok, moduleSym) ;
+         PutModuleCtorExtern (ctorTok, moduleSym, NOT WholeProgram) ;
          IncludeItemIntoList (uselistModules, moduleSym)
       END
    END
@@ -513,12 +515,13 @@ END CreateCtorList ;
 
 PROCEDURE DeclareModuleExtern (tokenno: CARDINAL) ;
 VAR
+   n1    : Name ;
    init,
    fini,
    dep,
    ctor,
    module: CARDINAL ;
-   n, i : CARDINAL ;
+   n, i  : CARDINAL ;
 BEGIN
    InitList (ctorModules) ;
    i := 1 ;
@@ -527,10 +530,15 @@ BEGIN
       module := GetItemFromList (uselistModules, i) ;
       IF module # GetMainModule ()
       THEN
-         PutModuleCtorExtern (tokenno, module)
+         PutModuleCtorExtern (tokenno, module, NOT WholeProgram)
       END ;
       GetModuleCtors (module, ctor, init, fini, dep) ;
       IncludeItemIntoList (ctorModules, ctor) ;
+      IF Debugging
+      THEN
+         n1 := GetSymName (module) ;
+         printf1 ("%a_ctor added to ctorModules\n", n1)
+      END ;
       INC (i)
    END
 END DeclareModuleExtern ;
@@ -548,7 +556,8 @@ BEGIN
    THEN
       DeclareCtorGlobal (tokenno) ;
       DeclareModuleExtern (tokenno) ;
-      linkFunction := MakeProcedure (tokenno, MakeKey ("_M2_link"))
+      linkFunction := MakeProcedure (tokenno, MakeKey ("_M2_link")) ;
+      PutMonoName (linkFunction, TRUE)
    ELSIF ScaffoldDynamic AND (NOT cflag)
    THEN
       MetaErrorT0 (tokenno,
@@ -556,7 +565,9 @@ BEGIN
    END ;
 
    initFunction := MakeProcedure (tokenno, MakeKey ("_M2_init")) ;
+   PutMonoName (initFunction, TRUE) ;
    finiFunction := MakeProcedure (tokenno, MakeKey ("_M2_fini")) ;
+   PutMonoName (finiFunction, TRUE) ;
    IF SharedFlag
    THEN
       PutCtor (initFunction, TRUE) ;
@@ -566,6 +577,7 @@ BEGIN
       DeclareArgEnvParams (tokenno, finiFunction) ;
 
       mainFunction := MakeProcedure (tokenno, MakeKey ("main")) ;
+      PutMonoName (mainFunction, TRUE) ;
       StartScope (mainFunction) ;
       PutFunction (mainFunction, Integer) ;
       DeclareArgEnvParams (tokenno, mainFunction) ;
@@ -596,11 +608,16 @@ END DeclareArgEnvParams ;
 
 PROCEDURE DeclareScaffold (tokno: CARDINAL) ;
 BEGIN
-   DeclareScaffoldFunctions (tokno)
+   IF NOT initialized
+   THEN
+      initialized := TRUE ;
+      DeclareScaffoldFunctions (tokno)
+   END
 END DeclareScaffold ;
 
 
 BEGIN
+   initialized := FALSE ;
    finiFunction := NulSym ;
    initFunction := NulSym ;
    mainFunction := NulSym ;

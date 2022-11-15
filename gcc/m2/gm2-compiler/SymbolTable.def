@@ -200,6 +200,7 @@ EXPORT QUALIFIED NulSym,
                  PutUnused, IsUnused,
                  PutVariableSSA, IsVariableSSA,
                  PutPublic, IsPublic, PutCtor, IsCtor, PutExtern, IsExtern,
+                 PutMonoName, IsMonoName,
 
                  IsDefImp,
                  IsModule,
@@ -588,6 +589,20 @@ PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; modulename: Name) : CARDIN
 
 
 (*
+   PutMonoName - changes the IsMonoName boolean inside the procedure.
+*)
+
+PROCEDURE PutMonoName (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsMonoName - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsMonoName (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
    PutExtern - changes the extern boolean inside the procedure.
 *)
 
@@ -654,7 +669,7 @@ PROCEDURE MakeModuleCtor (moduleTok, beginTok, finallyTok: CARDINAL;
                          procedures.
 *)
 
-PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL) ;
+PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL; external: BOOLEAN) ;
 
 
 (*

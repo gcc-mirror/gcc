@@ -26,6 +26,8 @@ DEFINITION MODULE FOR "C" c ;
     Description: tiny example of C definition module.
 *)
 
+EXPORT UNQUALIFIED bar ;
+
 PROCEDURE bar (a, b: ARRAY OF CHAR) : BOOLEAN ;
 
 END c.

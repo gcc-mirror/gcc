@@ -91,7 +91,7 @@ FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
 FROM M2Options IMPORT DisplayQuadruples, UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
                       StrictTypeChecking, AutoInit, cflag, ScaffoldMain,
-                      ScaffoldDynamic, ScaffoldStatic, GetRuntimeModuleOverride,
+                      ScaffoldDynamic, ScaffoldStatic,
                       DebugTraceQuad, DebugTraceAPI ;
 
 FROM M2Printf IMPORT printf0, printf1, printf2, printf4 ;
@@ -149,7 +149,8 @@ FROM M2GCCDeclare IMPORT WalkAction,
                          CompletelyResolved,
                          PoisonSymbols, GetTypeMin, GetTypeMax,
                          IsProcedureGccNested, DeclareParameters,
-                         ConstantKnownAndUsed, PrintSym ;
+                         ConstantKnownAndUsed, PrintSym,
+                         DeclareM2linkGlobals ;
 
 FROM M2Range IMPORT CodeRangeCheck, FoldRangeCheck, CodeErrorCheck, GetMinMax ;
 
@@ -206,7 +207,7 @@ FROM m2tree IMPORT Tree, debug_tree ;
 FROM m2linemap IMPORT location_t ;
 
 FROM m2decl IMPORT BuildStringConstant, DeclareKnownConstant, GetBitsPerBitset,
-                   BuildIntegerConstant, DeclareM2linkGlobals,
+                   BuildIntegerConstant,
                    BuildModuleCtor, DeclareModuleCtor ;
 
 FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunctValue,
@@ -1146,6 +1147,7 @@ PROCEDURE CodeFinallyEnd (moduleSym: CARDINAL;
                           CompilingMainModule: BOOLEAN) ;
 VAR
    location  : location_t;
+   tokenpos  : CARDINAL ;
    ctor, init,
    fini, dep : CARDINAL ;
 BEGIN
@@ -1156,7 +1158,8 @@ BEGIN
          EmitLineNote(string(FileName), op1) ;
       *)
 
-      location := TokenToLocation (GetDeclaredMod (moduleSym)) ;
+      tokenpos := GetDeclaredMod (moduleSym) ;
+      location := TokenToLocation (tokenpos) ;
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
       finishFunctionDecl (location, Mod2Gcc (fini)) ;
       BuildEndFunctionCode (location, Mod2Gcc (fini),
@@ -1168,7 +1171,7 @@ BEGIN
             (moduleSym = GetMainModule ())
          THEN
             qprintf0 ("        generating scaffold m2link information\n");
-            DeclareM2linkGlobals (location, VAL (INTEGER, ScaffoldStatic), GetRuntimeModuleOverride ())
+            DeclareM2linkGlobals (tokenpos)
          END
       END
    END

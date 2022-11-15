@@ -606,12 +606,7 @@ BEGIN
    IF CompilingDefinitionModule() AND DoesNotNeedExportList(GetCurrentModule())
    THEN
       (* printf1('exporting identifier %a\n', OperandT(1)) ; *)
-      IF IsDefinitionForC(GetCurrentModule())
-      THEN
-         PutExportUnQualified (OperandTok (1), OperandT(1))
-      ELSE
-         PutExportQualified (OperandTok (1), OperandT(1))
-      END
+      PutExportQualified (OperandTok (1), OperandT(1))
    END
 END CheckExplicitExported ;
 

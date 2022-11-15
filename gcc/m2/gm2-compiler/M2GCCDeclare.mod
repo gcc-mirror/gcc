@@ -32,26 +32,30 @@ IMPLEMENTATION MODULE M2GCCDeclare ;
 
 FROM SYSTEM IMPORT ADDRESS, ADR, WORD ;
 FROM ASCII IMPORT nul ;
+FROM Storage IMPORT ALLOCATE ;
 FROM M2Debug IMPORT Assert ;
 FROM M2Quads IMPORT DisplayQuadRange ;
 
 IMPORT FIO ;
 
 FROM M2Options IMPORT DisplayQuadruples,
-                      GenerateDebugging, GenerateLineDebug, Iso, Optimizing, WholeProgram ;
+                      GenerateDebugging, GenerateLineDebug, Iso, Optimizing, WholeProgram,
+                      ScaffoldStatic, GetRuntimeModuleOverride ;
 
 FROM M2AsmUtil IMPORT GetFullSymName, GetFullScopeAsmName ;
 
+FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
 FROM M2FileName IMPORT CalculateFileName ;
 FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, Mark ;
 FROM FormatStrings IMPORT Sprintf1 ;
-FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo ;
+FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo, BuiltinTokenNo ;
 FROM M2MetaError IMPORT MetaError1, MetaError3 ;
 FROM M2Error IMPORT FlushErrors, InternalError ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
 
 FROM Indexing IMPORT Index, InitIndex, PutIndice, GetIndice, InBounds,
+                     IncludeIndiceIntoIndex, HighIndice,
                      DebugIndex ;
 
 FROM Lists IMPORT List, InitList, IncludeItemIntoList,
@@ -92,7 +96,6 @@ FROM SymbolTable IMPORT NulSym,
                         IsDummy, IsVarAParam, IsProcedureVariable,
                         IsGnuAsm, IsGnuAsmVolatile, IsObject, IsTuple,
                         IsError, IsHiddenType,
-                        IsDefinitionForC, IsHiddenTypeDeclared,
                         IsComponent, IsPublic, IsExtern, IsCtor,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
@@ -151,7 +154,9 @@ FROM m2linemap IMPORT location_t, BuiltinsLocation ;
 FROM m2decl IMPORT BuildIntegerConstant, BuildStringConstant, BuildCStringConstant,
                    BuildStartFunctionDeclaration,
                    BuildParameterDeclaration, BuildEndFunctionDeclaration,
-                   DeclareKnownVariable, GetBitsPerBitset ;
+                   DeclareKnownVariable, GetBitsPerBitset, BuildPtrToTypeString,
+                   DeclareM2linkStaticInitialization,
+                   DeclareM2linkForcedModuleInitOrder ;
 
 FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, BuildStartFunctionType,
                    BuildStartFieldVarient, BuildStartVarient, BuildStartType, BuildStartArrayType,
@@ -200,6 +205,14 @@ CONST
    Progress  = FALSE ;
    EnableSSA = FALSE ;
 
+TYPE
+   M2LinkEntry = POINTER TO RECORD
+                               var    : CARDINAL ;
+                               gcc    : Tree ;
+                               varname,
+                               modname: Name ;
+                            END ;
+
 VAR
    ToBeSolvedByQuads,               (* constants which must be solved *)
                                     (* by processing the quadruples.  *)
@@ -227,6 +240,7 @@ VAR
    EnumerationIndex    : Index ;
    action              : IsAction ;
    enumDeps            : BOOLEAN ;
+   M2LinkIndex         : Index ;    (* Array of M2LinkEntry.          *)
 
 
 PROCEDURE mystop ; BEGIN END mystop ;
@@ -2730,6 +2744,7 @@ BEGIN
       DeclareTypesConstantsProcedures(scope) ; (* will resolved TYPEs and CONSTs on the ToDo  *)
                                                (* lists.                                      *)
       ForeachModuleDo(DeclareProcedure) ;
+      ForeachModuleDo(DeclareModuleInit) ;
       (*
          now that all types have been resolved it is safe to declare
          variables
@@ -2741,7 +2756,8 @@ BEGIN
       ForeachProcedureDo(scope, DeclareProcedure) ;
       ForeachInnerModuleDo(scope, WalkTypesInModule) ;
       ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
-      ForeachInnerModuleDo(scope, StartDeclareScope)
+      ForeachInnerModuleDo(scope, StartDeclareScope) ;
+      DeclareModuleInit(scope)
    ELSE
       DeclareTypesConstantsProcedures(scope) ;
       AssertAllTypesDeclared(scope) ;
@@ -3143,14 +3159,14 @@ END FindOuterModule ;
    DoVariableDeclaration -
 *)
 
-PROCEDURE DoVariableDeclaration (var: CARDINAL; name: ADDRESS;
+PROCEDURE DoVariableDeclaration (var, module: CARDINAL; name: ADDRESS;
                                  isImported, isExported,
                                  isTemporary, isGlobal: BOOLEAN;
                                  scope: Tree) ;
 VAR
-   type    : Tree ;
-   varType : CARDINAL ;
-   location: location_t ;
+   type, initial: Tree ;
+   varType      : CARDINAL ;
+   location     : location_t ;
 BEGIN
    IF IsComponent (var)
    THEN
@@ -3186,13 +3202,91 @@ BEGIN
       type := Mod2Gcc (GetDType (var))
    END ;
    location := TokenToLocation (GetDeclaredMod (var)) ;
+   (* The M2LINK module global variables are a special case and have initializers.  *)
+   initial := DetectM2LinkInitial (location, var, module) ;
    PreAddModGcc (var, DeclareKnownVariable (location,
                                             name, type,
                                             isExported, isImported, isTemporary,
-                                            isGlobal, scope)) ;
+                                            isGlobal, scope, initial)) ;
+   IF initial # NIL
+   THEN
+      (* Remember special case has been created.  *)
+      AddEntryM2Link (var, module, Mod2Gcc (var))
+   END ;
    WatchRemoveList (var, todolist) ;
    WatchIncludeList (var, fullydeclared)
 END DoVariableDeclaration ;
+
+
+(*
+   AddEntryM2Link - remember module_var has been created.
+*)
+
+PROCEDURE AddEntryM2Link (var, module: CARDINAL; gcc: Tree) ;
+VAR
+   entry: M2LinkEntry ;
+BEGIN
+   IF M2LinkIndex = NIL
+   THEN
+      M2LinkIndex := InitIndex (1)
+   END ;
+   NEW (entry) ;
+   entry^.var := var ;
+   entry^.gcc := gcc ;
+   entry^.varname := GetSymName (var) ;
+   entry^.modname := GetSymName (module) ;
+   IncludeIndiceIntoIndex (M2LinkIndex, entry)
+END AddEntryM2Link ;
+
+
+(*
+   GetEntryM2Link - return the gcc tree matching varname modname.
+*)
+
+PROCEDURE GetEntryM2Link (varname, modname: Name) : Tree ;
+VAR
+   entry : M2LinkEntry ;
+   high, i: CARDINAL ;
+BEGIN
+   IF M2LinkIndex # NIL
+   THEN
+      i := 1 ;
+      high := HighIndice (M2LinkIndex) ;
+      WHILE i <= high DO
+         entry := GetIndice (M2LinkIndex, i) ;
+         IF (entry^.varname = varname) AND (entry^.modname = modname)
+         THEN
+            RETURN entry^.gcc
+         END ;
+         INC (i)
+      END
+   END ;
+   RETURN NIL
+END GetEntryM2Link ;
+
+
+(*
+   DeclareM2linkGlobals - will create M2LINK.StaticInitialization
+                          and M2LINK.ForcedModuleInitOrder providing
+                          they have not already been created.
+*)
+
+PROCEDURE DeclareM2linkGlobals (tokenno: CARDINAL) ;
+VAR
+   m2link: Name ;
+BEGIN
+   m2link := MakeKey ('M2LINK') ;
+   IF GetEntryM2Link (MakeKey ('StaticInitialization'), m2link) = NIL
+   THEN
+      Assert (DeclareM2linkStaticInitialization (TokenToLocation (tokenno),
+                                                 VAL (INTEGER, ScaffoldStatic)) # NIL)
+   END ;
+   IF GetEntryM2Link (MakeKey ('ForcedModuleInitOrder'), m2link) = NIL
+   THEN
+      Assert (DeclareM2linkForcedModuleInitOrder (TokenToLocation (tokenno),
+                                                  GetRuntimeModuleOverride ()) # NIL)
+   END ;
+END DeclareM2linkGlobals ;
 
 
 (*
@@ -3204,12 +3298,12 @@ VAR
    s: CARDINAL ;
 BEGIN
    s := GetScope(sym) ;
-   WHILE (s#NulSym) AND (NOT IsDefImp(s)) AND (NOT IsModule(s)) DO
-      IF IsProcedure(s)
+   WHILE (s#NulSym) AND (NOT IsDefImp (s)) AND (NOT IsModule (s)) DO
+      IF IsProcedure (s)
       THEN
          RETURN FALSE
       END ;
-      s := GetScope(s)
+      s := GetScope (s)
    END ;
    RETURN TRUE
 END IsGlobal ;
@@ -3230,7 +3324,7 @@ BEGIN
       decl := FindOuterModule (variable) ;
       Assert (AllDependantsFullyDeclared (GetSType (variable))) ;
       PushBinding (ModSym) ;
-      DoVariableDeclaration (variable,
+      DoVariableDeclaration (variable, decl,
                              KeyToCharStar (GetFullSymName (variable)),
                              (* in Modula-2 we are allowed to import from ourselves, but we do not present this to GCC *)
                              IsEffectivelyImported(ModSym, variable) AND (GetMainModule () # decl),
@@ -3244,29 +3338,51 @@ END DeclareVariable ;
 
 
 (*
+   DetectM2LinkInitial -
+*)
+
+PROCEDURE DetectM2LinkInitial (location: location_t; variable, decl: CARDINAL) : Tree ;
+BEGIN
+   IF (decl # NulSym) AND WholeProgram AND (GetSymName (decl) = MakeKey ('M2LINK'))
+   THEN
+      IF GetSymName (variable) = MakeKey ('StaticInitialization')
+      THEN
+         RETURN BuildIntegerConstant (VAL (INTEGER, ScaffoldStatic))
+      ELSIF GetSymName (variable) = MakeKey ('ForcedModuleInitOrder')
+      THEN
+         RETURN BuildPtrToTypeString (location,
+                                      GetRuntimeModuleOverride (),
+                                      Mod2Gcc (GetSType (variable)))
+      END
+   END ;
+   RETURN NIL
+END DetectM2LinkInitial ;
+
+
+(*
    DeclareVariableWholeProgram - declares a global variable to GCC when using -fm2-whole-program.
 *)
 
-PROCEDURE DeclareVariableWholeProgram (mainModule, var: CARDINAL) ;
+PROCEDURE DeclareVariableWholeProgram (mainModule, variable: CARDINAL) ;
 VAR
    scope: Tree ;
    decl : CARDINAL ;
 BEGIN
-   IF NOT GccKnowsAbout(var)
+   IF NOT GccKnowsAbout (variable)
    THEN
-      scope := FindContext(mainModule) ;
-      decl := FindOuterModule(var) ;
-      Assert(AllDependantsFullyDeclared(GetSType(var))) ;
-      PushBinding(mainModule) ;
-      DoVariableDeclaration(var,
-                            KeyToCharStar(GetFullSymName(var)),
-                            (NOT IsSourceSeen(decl)) AND
-                            IsEffectivelyImported(mainModule, var) AND (GetMainModule()#decl),
-                            IsExported(mainModule, var),
-                            IsTemporary(var),
-                            IsGlobal(var),
-                            scope) ;
-      PopBinding(mainModule)
+      scope := FindContext (mainModule) ;
+      decl := FindOuterModule (variable) ;
+      Assert (AllDependantsFullyDeclared (GetSType (variable))) ;
+      PushBinding (mainModule) ;
+      DoVariableDeclaration (variable, decl,
+                             KeyToCharStar (GetFullSymName (variable)),
+                             (NOT IsSourceSeen (decl)) AND
+                             IsEffectivelyImported (mainModule, variable) AND (GetMainModule () # decl),
+                             IsExported (mainModule, variable),
+                             IsTemporary (variable),
+                             IsGlobal (variable),
+                             scope) ;
+      PopBinding (mainModule)
    END
 END DeclareVariableWholeProgram ;
 
@@ -3327,22 +3443,22 @@ END DeclareImportedVariables ;
 
 
 (*
-   DeclareImportedVariablesWholeProgram - declares all imported variables to GM2.
+   DeclareImportedVariablesWholeProgram - declares all imported variables.
 *)
 
 PROCEDURE DeclareImportedVariablesWholeProgram (sym: WORD) ;
 BEGIN
-   IF IsVar(sym)
+   IF IsVar (sym)
    THEN
-      IF NOT IsSourceSeen(FindOuterModule(sym))
+      IF NOT IsSourceSeen (FindOuterModule (sym))
       THEN
          (* import is necessary, even for -fm2-whole-program as we
             cannot see the source.  *)
-         DeclareVariableWholeProgram(GetMainModule(), sym)
+         DeclareVariableWholeProgram (GetMainModule (), sym)
       END
-   ELSIF IsDefImp(sym)
+   ELSIF IsDefImp (sym)
    THEN
-      ForeachExportedDo(sym, DeclareImportedVariablesWholeProgram)
+      ForeachExportedDo (sym, DeclareImportedVariablesWholeProgram)
    END
 END DeclareImportedVariablesWholeProgram ;
 
@@ -3354,7 +3470,7 @@ END DeclareImportedVariablesWholeProgram ;
 PROCEDURE DeclareLocalVariable (var: CARDINAL) ;
 BEGIN
    Assert (AllDependantsFullyDeclared (var)) ;
-   DoVariableDeclaration (var,
+   DoVariableDeclaration (var, NulSym,
                           KeyToCharStar (GetFullSymName (var)),
                           FALSE,  (* local variables cannot be imported *)
                           FALSE,  (* or exported *)
@@ -3398,7 +3514,7 @@ BEGIN
    Var := GetNth (sym, i) ;
    WHILE Var # NulSym DO
       Assert (AllDependantsFullyDeclared (GetSType (Var))) ;
-      DoVariableDeclaration (Var,
+      DoVariableDeclaration (Var, NulSym,
                              KeyToCharStar (GetFullSymName (Var)),
                              FALSE,   (* inner module variables cannot be imported *)
                              FALSE,   (* or exported (as far as GCC is concerned)  *)
@@ -6171,6 +6287,16 @@ END ConstantKnownAndUsed ;
 
 
 (*
+   InitM2LinkModule -
+*)
+
+PROCEDURE InitM2LinkModule ;
+BEGIN
+   M2LinkIndex := NIL
+END InitM2LinkModule ;
+
+
+(*
    InitDeclarations - initializes default types and the source filename.
 *)
 
@@ -6195,5 +6321,6 @@ BEGIN
    EnumerationIndex := InitIndex(1) ;
    IncludeElementIntoSet(WatchList, 8) ;
    HaveInitDefaultTypes := FALSE ;
-   recursionCaught := FALSE
+   recursionCaught := FALSE ;
+   InitM2LinkModule
 END M2GCCDeclare.

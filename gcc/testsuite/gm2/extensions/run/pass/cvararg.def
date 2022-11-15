@@ -19,6 +19,8 @@ DEFINITION MODULE FOR "C" cvararg ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
+EXPORT UNQUALIFIED func, funcptr, funcptrint ;
+
 PROCEDURE func (c: INTEGER; ...) : INTEGER ;
 PROCEDURE funcptr (c: INTEGER; ...) : INTEGER ;
 PROCEDURE funcptrint (p: ADDRESS; ...) : INTEGER ;

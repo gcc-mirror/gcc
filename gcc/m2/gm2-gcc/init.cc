@@ -105,12 +105,9 @@ EXTERN void exit (int);
 EXTERN void M2Comp_compile (const char *filename);
 EXTERN void RTExceptions_DefaultErrorCatch (void);
 
-int StaticInitialization = 1;
-char *ForcedModuleInitOrder = NULL;
 
-
-/* FrontEndInit - initialise the modules, this is a global
-   initialisation.  This is called once.  */
+/* FrontEndInit initialize the modules.  This is a global
+   initialization and it is called once.  */
 
 void
 init_FrontEndInit (void)
@@ -148,8 +145,8 @@ init_FrontEndInit (void)
   _M2_M2Options_init (0, NULL, NULL);
 }
 
-/* PerCompilationInit - initialise the modules before compiling,
-   filename.  This is to be called every time we compile a new file.  */
+/* PerCompilationInit initialize the modules before compiling,
+   filename.  This is called every time we compile a new file.  */
 
 void
 init_PerCompilationInit (const char *filename)

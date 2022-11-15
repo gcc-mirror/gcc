@@ -32,16 +32,16 @@ error_count = 0
 seen_files = []
 output_name = None
 
-ISO_COPYRIGHT = "Copyright ISO/IEC"
-COPYRIGHT = "Copyright (C)"
-GNU_PUBLIC_LICENSE = "GNU General Public License"
-GNU_LESSER_GENERAL = "GNU Lesser General"
-GCC_RUNTIME_LIB_EXC = "GCC Runtime Library Exception"
-VERSION_2_1 = "version 2.1"
-VERSION_2 = "version 2"
-VERSION_3 = "version 3"
-Licenses = {VERSION_2_1: "v2.1", VERSION_2: "v2", VERSION_3: "v3"}
-CONTRIBUTED_BY = "ontributed by"
+ISO_COPYRIGHT = 'Copyright ISO/IEC'
+COPYRIGHT = 'Copyright (C)'
+GNU_PUBLIC_LICENSE = 'GNU General Public License'
+GNU_LESSER_GENERAL = 'GNU Lesser General'
+GCC_RUNTIME_LIB_EXC = 'GCC Runtime Library Exception'
+VERSION_2_1 = 'version 2.1'
+VERSION_2 = 'version 2'
+VERSION_3 = 'version 3'
+Licenses = {VERSION_2_1: 'v2.1', VERSION_2: 'v2', VERSION_3: 'v3'}
+CONTRIBUTED_BY = 'ontributed by'
 
 
 def printf(fmt, *args):
@@ -63,7 +63,7 @@ def halt_on_error():
 
 
 def basename(f):
-    b = f.split("/")
+    b = f.split('/')
     return b[-1]
 
 
@@ -72,24 +72,24 @@ def analyse_comment(text, f):
     start_date, end_date = None, None
     contribution, summary, lic = None, None, None
     if text.find(ISO_COPYRIGHT) > 0:
-        lic = "BSISO"
+        lic = 'BSISO'
         now = datetime.datetime.now()
         for d in range(1984, now.year+1):
             if text.find(str(d)) > 0:
                 if start_date is None:
                     start_date = str(d)
                 end_date = str(d)
-        return start_date, end_date, "", "", lic
+        return start_date, end_date, '', '', lic
     elif text.find(COPYRIGHT) > 0:
         if text.find(GNU_PUBLIC_LICENSE) > 0:
-            lic = "GPL"
+            lic = 'GPL'
         elif text.find(GNU_LESSER_GENERAL) > 0:
-            lic = "LGPL"
+            lic = 'LGPL'
         for license in Licenses.keys():
             if text.find(license) > 0:
                 lic += Licenses[license]
         if text.find(GCC_RUNTIME_LIB_EXC) > 0:
-            lic += "x"
+            lic += 'x'
         now = datetime.datetime.now()
         for d in range(1984, now.year+1):
             if text.find(str(d)) > 0:
@@ -99,13 +99,13 @@ def analyse_comment(text, f):
         if text.find(CONTRIBUTED_BY) > 0:
             i = text.find(CONTRIBUTED_BY)
             i += len(CONTRIBUTED_BY)
-            j = text.index(". ", i)
+            j = text.index('. ', i)
             contribution = text[i:j]
     if text.find(basename(f)) > 0:
         i = text.find(basename(f))
-        j = text.find(". ", i)
+        j = text.find('. ', i)
         if j < 0:
-            error('summary of the file does not finish with a "."')
+            error('summary of the file does not finish with a '.'')
             summary = text[i:]
         else:
             summary = text[i:j]
@@ -113,27 +113,27 @@ def analyse_comment(text, f):
 
 
 def analyse_header_without_terminator(f, start):
-    text = ""
+    text = ''
     for count, l in enumerate(open(f).readlines()):
         parts = l.split(start)
         if len(parts) > 1:
             line = start.join(parts[1:])
             line = line.strip()
-            text += " "
+            text += ' '
             text += line
-        elif (l.rstrip() != "") and (len(parts[0]) > 0):
+        elif (l.rstrip() != '') and (len(parts[0]) > 0):
             return analyse_comment(text, f), count
     return [None, None, None, None, None], 0
 
 
 def analyse_header_with_terminator(f, start, end):
     inComment = False
-    text = ""
+    text = ''
     for count, line in enumerate(open(f).readlines()):
-        while line != "":
+        while line != '':
             line = line.strip()
             if inComment:
-                text += " "
+                text += ' '
                 pos = line.find(end)
                 if pos >= 0:
                     text += line[:pos]
@@ -141,17 +141,17 @@ def analyse_header_with_terminator(f, start, end):
                     inComment = False
                 else:
                     text += line
-                    line = ""
+                    line = ''
             else:
                 pos = line.find(start)
                 if (pos >= 0) and (len(line) > len(start)):
                     before = line[:pos].strip()
-                    if before != "":
+                    if before != '':
                         return analyse_comment(text, f), count
                     line = line[pos + len(start):]
                     inComment = True
-                elif (line != "") and (line == end):
-                    line = ""
+                elif (line != '') and (line == end):
+                    line = ''
                 else:
                     return analyse_comment(text, f), count
     return [None, None, None, None, None], 0
@@ -170,12 +170,12 @@ def add_stop(sentence):
     if sentence is None:
         return None
     sentence = sentence.rstrip()
-    if (len(sentence) > 0) and (sentence[-1] != "."):
-        return sentence + "."
+    if (len(sentence) > 0) and (sentence[-1] != '.'):
+        return sentence + '.'
     return sentence
 
 
-GPLv3 = """
+GPLv3 = '''
 %s
 
 Copyright (C) %s Free Software Foundation, Inc.
@@ -196,9 +196,9 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.
-"""
+'''
 
-GPLv3x = """
+GPLv3x = '''
 %s
 
 Copyright (C) %s Free Software Foundation, Inc.
@@ -224,9 +224,9 @@ You should have received a copy of the GNU General Public License and
 a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.
-"""
+'''
 
-LGPLv3 = """
+LGPLv3 = '''
 %s
 
 Copyright (C) %s Free Software Foundation, Inc.
@@ -246,9 +246,9 @@ Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with GNU Modula-2.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 
-BSISO = """
+BSISO = '''
 Library module defined by the International Standard
    Information technology - programming languages
    BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
@@ -259,19 +259,19 @@ Library module defined by the International Standard
    It may be freely copied for the purpose of implementation (see page
    707 of the Information technology - Programming languages Part 1:
    Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).
-"""
+'''
 
 templates = {}
-templates["GPLv3"] = GPLv3
-templates["GPLv3x"] = GPLv3x
-templates["LGPLv3"] = LGPLv3
-templates["LGPLv2.1"] = LGPLv3
-templates["BSISO"] = BSISO
+templates['GPLv3'] = GPLv3
+templates['GPLv3x'] = GPLv3x
+templates['LGPLv3'] = LGPLv3
+templates['LGPLv2.1'] = LGPLv3
+templates['BSISO'] = BSISO
 
 
 def write_template(fo, magic, start, end, dates, contribution, summary, lic):
     if lic in templates:
-        if lic == "BSISO":
+        if lic == 'BSISO':
             # non gpl but freely distributed for the implementation of a
             # compiler
             text = templates[lic] % (dates)
@@ -283,30 +283,30 @@ def write_template(fo, magic, start, end, dates, contribution, summary, lic):
             contribution = add_stop(contribution)
             if magic is not None:
                 fo.write(magic)
-                fo.write("\n")
+                fo.write('\n')
             text = templates[lic] % (summary, dates, contribution)
             text = text.rstrip()
         if end is None:
-            text = text.split("\n")
+            text = text.split('\n')
             for line in text:
                 fo.write(start)
-                fo.write(" ")
+                fo.write(' ')
                 fo.write(line)
-                fo.write("\n")
+                fo.write('\n')
         else:
             text = text.lstrip()
             fo.write(start)
-            fo.write(" ")
+            fo.write(' ')
             fo.write(text)
-            fo.write("  ")
+            fo.write('  ')
             fo.write(end)
-            fo.write("\n")
+            fo.write('\n')
         # add a blank comment line for a script for eye candy.
-        if start == "#" and end is None:
+        if start == '#' and end is None:
             fo.write(start)
-            fo.write("\n")
+            fo.write('\n')
     else:
-        error("no template found for: %s\n", lic)
+        error('no template found for: %s\n', lic)
         os.sys.exit(1)
     return fo
 
@@ -316,23 +316,23 @@ def write_boiler_plate(fo, magic, start, end,
     if start_date == end_date:
         dates = start_date
     else:
-        dates = "%s-%s" % (start_date, end_date)
+        dates = '%s-%s' % (start_date, end_date)
     return write_template(fo, magic, start, end,
                           dates, contribution, summary, gpl)
 
 
 def rewrite_file(f, magic, start, end, start_date, end_date,
                  contribution, summary, gpl, lines):
-    text = "".join(open(f).readlines()[lines:])
-    if output_name == "-":
+    text = ''.join(open(f).readlines()[lines:])
+    if output_name == '-':
         fo = sys.stdout
     else:
-        fo = open(f, "w")
+        fo = open(f, 'w')
     fo = write_boiler_plate(fo, magic, start, end,
                             start_date, end_date, contribution, summary, gpl)
     fo.write(text)
     fo.flush()
-    if output_name != "-":
+    if output_name != '-':
         fo.close()
 
 
@@ -346,60 +346,60 @@ def handle_header(f, magic, start, end):
     [start_date, end_date,
      contribution, summary, lic], lines = analyse_header(f, start, end)
     if lic is None:
-        error("%s:1:no GPL found at the top of the file\n", f)
+        error('%s:1:no GPL found at the top of the file\n', f)
     else:
         if args.verbose:
-            printf("copyright: %s\n", lic)
+            printf('copyright: %s\n', lic)
             if (start_date is not None) and (end_date is not None):
                 if start_date == end_date:
-                    printf("dates = %s\n", start_date)
+                    printf('dates = %s\n', start_date)
                 else:
-                    printf("dates = %s-%s\n", start_date, end_date)
+                    printf('dates = %s-%s\n', start_date, end_date)
             if summary is not None:
-                printf("summary: %s\n", summary)
+                printf('summary: %s\n', summary)
             if contribution is not None:
-                printf("contribution: %s\n", contribution)
+                printf('contribution: %s\n', contribution)
         if start_date is None:
-            error("%s:1:no date found in the GPL at the top of the file\n", f)
+            error('%s:1:no date found in the GPL at the top of the file\n', f)
         if args.contribution is None:
-            if contribution == "":
-                error("%s:1:no contribution found in the " +
-                      "GPL at the top of the file\n", f)
+            if contribution == '':
+                error('%s:1:no contribution found in the ' +
+                      'GPL at the top of the file\n', f)
             else:
                 contribution = args.contribution
         if summary is None:
-            if args.summary == "":
-                error("%s:1:no single line summary found in the " +
-                      "GPL at the top of the file\n", f)
+            if args.summary == '':
+                error('%s:1:no single line summary found in the ' +
+                      'GPL at the top of the file\n', f)
             else:
                 summary = args.summary
     if error_count == 0:
         now = datetime.datetime.now()
         if args.no:
-            print(f, "suppressing change as requested: %s-%s %s"
+            print(f, 'suppressing change as requested: %s-%s %s'
                   % (start_date, end_date, lic))
         else:
-            if lic == "BSISO":
+            if lic == 'BSISO':
                 # don't change the BS ISO license!
                 pass
             elif args.extensions:
-                lic = "GPLv3x"
+                lic = 'GPLv3x'
             elif args.gpl3:
-                lic = "GPLv3"
+                lic = 'GPLv3'
             rewrite_file(f, magic, start, end, start_date,
                          str(now.year), contribution, summary, lic, lines)
     else:
-        printf("too many errors, no modifications will occur\n")
+        printf('too many errors, no modifications will occur\n')
 
 
 def bash_tidy(f):
     # bash_tidy tidy up dates using '#' comment
-    handle_header(f, "#!/bin/bash", "#", None)
+    handle_header(f, '#!/bin/bash', '#', None)
 
 
 def python_tidy(f):
     # python_tidy tidy up dates using '#' comment
-    handle_header(f, "#!/usr/bin/env python3", '#', None)
+    handle_header(f, '#!/usr/bin/env python3', '#', None)
 
 
 def bnf_tidy(f):
@@ -421,11 +421,11 @@ def in_tidy(f):
     # in_tidy tidy up dates using '#' as a comment and check
     # the first line for magic number.
     first = open(f).readlines()[0]
-    if (len(first) > 0) and (first[:2] == "#!"):
+    if (len(first) > 0) and (first[:2] == '#!'):
         # magic number found, use this
-        handle_header(f, first, "#", None)
+        handle_header(f, first, '#', None)
     else:
-        handle_header(f, None, "#", None)
+        handle_header(f, None, '#', None)
 
 
 def do_visit(args, dirname, names):
@@ -472,39 +472,39 @@ def find_files():
 def handle_arguments():
     # handle_arguments create and return the args object.
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--contribution",
-                        help="set the contribution string " +
-                        "at the top of the file.",
-                        default="", action="store")
-    parser.add_argument("-d", "--debug", help="turn on internal debugging.",
-                        default=False, action="store_true")
-    parser.add_argument("-f", "--force",
-                        help="force a check to insist that the " +
-                        "contribution, summary and GPL exist.",
-                        default=False, action="store_true")
-    parser.add_argument("-g", "--gplv3", help="change to GPLv3",
-                        default=False, action="store_true")
-    parser.add_argument("-o", "--outputfile", help="set the output file",
-                        default="-", action="store")
-    parser.add_argument("-r", "--recursive",
-                        help="recusively scan directory for known file " +
-                        "extensions (.def, .mod, .c, .h, .py, .in, .sh).",
-                        default=".", action="store")
-    parser.add_argument("-s", "--summary",
-                        help="set the summary line for the file.",
-                        default=None, action="store")
-    parser.add_argument("-u", "--update", help="update all dates.",
-                        default=False, action="store_true")
-    parser.add_argument("-v", "--verbose",
-                        help="display copyright, " +
-                        "date and contribution messages",
-                        action="store_true")
-    parser.add_argument("-x", "--extensions",
-                        help="change to GPLv3 with GCC runtime extensions.",
-                        default=False, action="store_true")
-    parser.add_argument("-N", "--no",
-                        help="do not modify any file.",
-                        action="store_true")
+    parser.add_argument('-c', '--contribution',
+                        help='set the contribution string ' +
+                        'at the top of the file.',
+                        default='', action='store')
+    parser.add_argument('-d', '--debug', help='turn on internal debugging.',
+                        default=False, action='store_true')
+    parser.add_argument('-f', '--force',
+                        help='force a check to insist that the ' +
+                        'contribution, summary and GPL exist.',
+                        default=False, action='store_true')
+    parser.add_argument('-g', '--gplv3', help='change to GPLv3',
+                        default=False, action='store_true')
+    parser.add_argument('-o', '--outputfile', help='set the output file',
+                        default='-', action='store')
+    parser.add_argument('-r', '--recursive',
+                        help='recusively scan directory for known file ' +
+                        'extensions (.def, .mod, .c, .h, .py, .in, .sh).',
+                        default='.', action='store')
+    parser.add_argument('-s', '--summary',
+                        help='set the summary line for the file.',
+                        default=None, action='store')
+    parser.add_argument('-u', '--update', help='update all dates.',
+                        default=False, action='store_true')
+    parser.add_argument('-v', '--verbose',
+                        help='display copyright, ' +
+                        'date and contribution messages',
+                        action='store_true')
+    parser.add_argument('-x', '--extensions',
+                        help='change to GPLv3 with GCC runtime extensions.',
+                        default=False, action='store_true')
+    parser.add_argument('-N', '--no',
+                        help='do not modify any file.',
+                        action='store_true')
     args = parser.parse_args()
     return args
 
@@ -519,15 +519,15 @@ def has_ext(name, ext):
 def single_file(name):
     # single_file scan the single file for a GPL boilerplate which
     # has a GPL, contribution field and a summary heading.
-    if has_ext(name, ".def") or has_ext(name, ".mod"):
+    if has_ext(name, '.def') or has_ext(name, '.mod'):
         m2_tidy(name)
-    elif has_ext(name, ".h") or has_ext(name, ".c") or has_ext(name, ".cc"):
+    elif has_ext(name, '.h') or has_ext(name, '.c') or has_ext(name, '.cc'):
         c_tidy(name)
-    elif has_ext(name, ".in"):
+    elif has_ext(name, '.in'):
         in_tidy(name)
-    elif has_ext(name, ".sh"):
+    elif has_ext(name, '.sh'):
         in_tidy(name)  # uses magic number for actual sh/bash
-    elif has_ext(name, ".py"):
+    elif has_ext(name, '.py'):
         python_tidy(name)
 
 
@@ -539,7 +539,7 @@ def main():
     if args.recursive:
         find_files()
     elif args.inputfile is None:
-        print("an input file must be specified on the command line")
+        print('an input file must be specified on the command line')
     else:
         single_file(args.inputfile)
     halt_on_error()

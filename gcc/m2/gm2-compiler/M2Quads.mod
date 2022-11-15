@@ -116,7 +116,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         IsImportStatement, IsImport, GetImportModule, GetImportDeclared,
                         GetImportStatementList,
                         GetModuleDefImportStatementList, GetModuleModImportStatementList,
-                        IsCtor, IsPublic, IsExtern,
+                        IsCtor, IsPublic, IsExtern, IsMonoName,
 
                         GetUnboundedRecordType,
                         GetUnboundedAddressOffset,
@@ -205,7 +205,8 @@ FROM M2Options IMPORT NilChecking,
                       Pedantic, CompilerDebugging, GenerateDebugging,
                       GenerateLineDebug, Exceptions,
                       Profiling, Coding, Optimizing,
-                      ScaffoldDynamic, ScaffoldStatic, cflag, ScaffoldMain, SharedFlag ;
+                      ScaffoldDynamic, ScaffoldStatic, cflag,
+                      ScaffoldMain, SharedFlag, WholeProgram ;
 
 FROM M2Pass IMPORT IsPassCodeGeneration, IsNoPass ;
 
@@ -257,7 +258,7 @@ IMPORT M2Error ;
 CONST
    DebugStackOn = TRUE ;
    DebugVarients = FALSE ;
-   BreakAtQuad = 391 ;
+   BreakAtQuad = 4423 ;
    DebugTokPos = FALSE ;
 
 TYPE
@@ -2413,6 +2414,47 @@ END BuildM2LinkFunction ;
 
 
 (*
+   BuildTry - build the try statement for main.
+*)
+
+PROCEDURE BuildTry (tokno: CARDINAL) ;
+BEGIN
+   IF Exceptions
+   THEN
+      PushWord (TryStack, NextQuad) ;
+      PushWord (CatchStack, 0) ;
+      GenQuadO (tokno, TryOp, NulSym, NulSym, 0, FALSE)
+   END
+END BuildTry ;
+
+
+(*
+   BuildExcept - build the except block for main.
+*)
+
+PROCEDURE BuildExcept (tokno: CARDINAL) ;
+VAR
+   catchProcedure: CARDINAL ;
+BEGIN
+   IF Exceptions
+   THEN
+      BuildExceptInitial (tokno) ;
+      catchProcedure := GetQualidentImport (tokno,
+                                            MakeKey ('DefaultErrorCatch'),
+                                            MakeKey ('RTExceptions')) ;
+      IF catchProcedure # NulSym
+      THEN
+         PushTtok (catchProcedure, tokno) ;
+         PushT (0) ;
+         BuildProcedureCall (tokno)
+      END ;
+      BuildRTExceptLeave (tokno, TRUE) ;
+      GenQuadO (tokno, CatchEndOp, NulSym, NulSym, NulSym, FALSE)
+   END
+END BuildExcept ;
+
+
+(*
    BuildM2MainFunction - creates the main function with appropriate calls to the scaffold.
 *)
 
@@ -2425,16 +2467,21 @@ BEGIN
          int
          main (int argc, char *argv[], char *envp[])
          {
-            _M2_init (argc, argv, envp);
-            _M2_fini (argc, argv, envp);
-            return 0;
+            try {
+               _M2_init (argc, argv, envp);
+               _M2_fini (argc, argv, envp);
+               return 0;
+            }
+            catch (...) {
+               RTExceptions_DefaultErrorCatch ();
+            }
          }
       *)
       PushT (mainFunction) ;
       BuildProcedureStart ;
       BuildProcedureBegin ;
       StartScope (mainFunction) ;
-
+      BuildTry (tokno) ;
       (* _M2_init (argc, argv, envp);  *)
       PushTtok (initFunction, tokno) ;
       PushTtok (RequestSym (tokno, MakeKey ("argc")), tokno) ;
@@ -2453,6 +2500,7 @@ BEGIN
 
       PushZero (tokno, Integer) ;
       BuildReturn (tokno) ;
+      BuildExcept (tokno) ;
       EndScope ;
       BuildProcedureEnd ;
       PopN (1)
@@ -2652,6 +2700,13 @@ BEGIN
          BuildM2InitFunction (tok, moduleSym) ;  (* Application init.  *)
          BuildM2FiniFunction (tok, moduleSym) ;  (* Application fini.  *)
       END ;
+      BuildM2DepFunction (tok, moduleSym) ;  (* Per module dependency.  *)
+      (* Each module needs a ctor to register the module
+         init/finish/dep with M2RTS.  *)
+      BuildM2CtorFunction (tok, moduleSym)
+   ELSIF WholeProgram
+   THEN
+      DeclareScaffold (tok) ;
       BuildM2DepFunction (tok, moduleSym) ;  (* Per module dependency.  *)
       (* Each module needs a ctor to register the module
          init/finish/dep with M2RTS.  *)
@@ -13046,6 +13101,10 @@ BEGIN
    IF IsExtern (proc)
    THEN
       printf0 (" (extern)")
+   END ;
+   IF IsMonoName (proc)
+   THEN
+      printf0 (" (mononame)")
    END
 END DisplayProcedureAttributes ;
 

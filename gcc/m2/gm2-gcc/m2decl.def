@@ -41,17 +41,19 @@ PROCEDURE BuildModuleCtor (moduleCtor: Tree) ;
 PROCEDURE DeclareModuleCtor (decl: Tree) : Tree ;
 
 
-(*
-   DeclareM2linkGlobals creates the following code in the application
-   module globals:
 
-   int StaticInitialization = ScaffoldStatic;
-   const char *ForcedModuleInitOrder = RuntimeOverride;
+(*
+
 *)
 
-PROCEDURE DeclareM2linkGlobals (location: location_t;
-                                ScaffoldStatic: INTEGER;
-                                RuntimeOverride: ADDRESS) ;
+PROCEDURE DeclareM2linkForcedModuleInitOrder (location: location_t;
+                                              RuntimeOverride: ADDRESS) : Tree ;
+
+
+PROCEDURE DeclareM2linkStaticInitialization (location: location_t;
+                                             ScaffoldStatic: INTEGER) : Tree ;
+
+PROCEDURE BuildPtrToTypeString (location: location_t; string: ADDRESS; type: Tree) : Tree ;
 
 
 (*
@@ -105,7 +107,7 @@ PROCEDURE BuildStringConstantType (length: INTEGER; string: ADDRESS; type: Tree)
 
 PROCEDURE DeclareKnownVariable (location: location_t; name: ADDRESS; type: Tree;
                                 exported, imported, istemporary, isglobal: BOOLEAN;
-                                scope: Tree) : Tree ;
+                                scope, initial: Tree) : Tree ;
 
 
 (*

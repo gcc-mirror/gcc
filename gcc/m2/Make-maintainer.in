@@ -604,6 +604,22 @@ GM2-VERIFY-MODS    = FifoQueue.mod     M2AsmUtil.mod                   M2Optimiz
 GM2-VERIFY-AUTO    = P1Build.mod       P2Build.mod     PCBuild.mod     P3Build.mod     \
                      PHBuild.mod       pg.mod          P0SyntaxCheck.mod
 
+GM2_LIBS_PARANOID = m2/gm2-compiler-paranoid/gm2.a \
+                    m2/gm2-libs-paranoid/libgm2.a                       # build it again using GM2_LIBS
+
+gm2.paranoid: stage3/m2/cc1gm2$(exeext) gm2.verifyparanoid
+
+stage3/m2/cc1gm2$(exeext): stage2/m2/cc1gm2$(exeext) m2/gm2-compiler-paranoid/m2flex.o \
+                            $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID) \
+                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so m2/gm2-libs-boot/M2LINK.o
+	@$(call LINK_PROGRESS,$(INDEX.m2),start)
+	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-paranoid/m2flex.o \
+                            attribs.o \
+                              $(GM2_LIBS_PARANOID) \
+                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o m2/gm2-libs-boot/M2LINK.o \
+                              $(BACKENDLIBS) $(LIBSTDCXX) -lm
+	@$(call LINK_PROGRESS,$(INDEX.m2),end)
+
 
 # gm2.verifyparanoid diffs the output of all three compilers with the compiler source code
 

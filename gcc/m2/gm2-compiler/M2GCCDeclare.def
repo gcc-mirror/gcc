@@ -40,6 +40,7 @@ EXPORT QUALIFIED FoldConstants,
                  InitDeclarations, StartDeclareScope, EndDeclareScope,
                  DeclareModuleVariables, IsProcedureGccNested,
                  DeclareProcedure, PoisonSymbols, DeclareParameters,
+                 DeclareM2linkGlobals,
                  CompletelyResolved, MarkExported, PrintSym,
                  ConstantKnownAndUsed,
                  PutToBeSolvedByQuads,
@@ -142,6 +143,15 @@ PROCEDURE DeclareProcedure (sym: WORD) ;
 *)
 
 PROCEDURE DeclareModuleVariables (sym: CARDINAL) ;
+
+
+(*
+   DeclareM2linkGlobals - will create M2LINK.StaticInitialization
+                          and M2LINK.ForcedModuleInitOrder providing
+                          they have not already been created.
+*)
+
+PROCEDURE DeclareM2linkGlobals (tokenno: CARDINAL) ;
 
 
 (*

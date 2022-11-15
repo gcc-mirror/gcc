@@ -364,6 +364,7 @@ TYPE
                IsExtern      : BOOLEAN ;    (* Make this procedure extern.   *)
                IsPublic      : BOOLEAN ;    (* Make this procedure visible.  *)
                IsCtor        : BOOLEAN ;    (* Is this procedure a ctor?     *)
+               IsMonoName    : BOOLEAN ;    (* Ignores module name prefix.   *)
                Unresolved    : SymbolTree ; (* All symbols currently         *)
                                             (* unresolved in this procedure. *)
                ScopeQuad     : CARDINAL ;   (* Index into quads for scope    *)
@@ -3103,11 +3104,14 @@ BEGIN
    THEN
       (* The ctor procedure must be public.  *)
       ctor.ctor := MakeProcedure (moduleTok, GenName ("_M2_", name, "_ctor")) ;
-      PutCtor (ctor.ctor, pub) ;
+      PutCtor (ctor.ctor, TRUE) ;
+      Assert (pub) ;
       PutPublic (ctor.ctor, pub) ;
       PutExtern (ctor.ctor, NOT pub) ;
+      PutMonoName (ctor.ctor, TRUE) ;
       (* The dep procedure is local to the module.  *)
       ctor.dep := MakeProcedure (moduleTok, GenName ("_M2_", name, "_dep")) ;
+      PutMonoName (ctor.dep, TRUE)
    ELSE
       ctor.ctor := NulSym ;
       ctor.dep := NulSym
@@ -3116,10 +3120,12 @@ BEGIN
    ctor.init := MakeProcedure (beginTok, GenName ("_M2_", name, "_init")) ;
    PutPublic (ctor.init, pub) ;
    PutExtern (ctor.init, NOT pub) ;
+   PutMonoName (ctor.init, NOT inner) ;
    DeclareArgEnvParams (beginTok, ctor.init) ;
    ctor.fini := MakeProcedure (finallyTok, GenName ("_M2_", name, "_fini")) ;
    PutPublic (ctor.fini, pub) ;
    PutExtern (ctor.fini, NOT pub) ;
+   PutMonoName (ctor.fini, NOT inner) ;
    DeclareArgEnvParams (beginTok, ctor.fini)
 END InitCtorFields ;
 
@@ -3667,27 +3673,31 @@ BEGIN
    (* If the ctor does not exist then make it extern/ (~extern) public.  *)
    IF ctor.ctor = NulSym
    THEN
-      ctor.ctor := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_ctor"))
+      ctor.ctor := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_ctor")) ;
+      PutMonoName (ctor.ctor, TRUE)
    END ;
    PutProcedureExternPublic (ctor.ctor, extern, NOT extern) ;
-   PutCtor (ctor.ctor, NOT extern) ;
+   PutCtor (ctor.ctor, TRUE) ;
    (* If the ctor does not exist then make it extern/ (~extern) public.  *)
    IF ctor.dep = NulSym
    THEN
-      ctor.dep := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_dep"))
+      ctor.dep := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_dep")) ;
+      PutMonoName (ctor.dep, TRUE)
    END ;
    PutProcedureExternPublic (ctor.dep, extern, NOT extern) ;
    (* If init/fini do not exist then create them.  *)
    IF ctor.init = NulSym
    THEN
       ctor.init := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_init")) ;
-      DeclareArgEnvParams (tok, ctor.init)
+      DeclareArgEnvParams (tok, ctor.init) ;
+      PutMonoName (ctor.init, NOT IsInnerModule (sym))
    END ;
    PutProcedureExternPublic (ctor.init, extern, NOT extern) ;
    IF ctor.fini = NulSym
    THEN
       ctor.fini := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_fini")) ;
-      DeclareArgEnvParams (tok, ctor.fini)
+      DeclareArgEnvParams (tok, ctor.fini) ;
+      PutMonoName (ctor.fini, NOT IsInnerModule (sym))
    END ;
    PutProcedureExternPublic (ctor.fini, extern, NOT extern)
 END PutCtorExtern ;
@@ -3700,7 +3710,7 @@ END PutCtorExtern ;
                          procedures.
 *)
 
-PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL) ;
+PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL; external: BOOLEAN) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
@@ -3709,8 +3719,8 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      DefImpSym:  PutCtorExtern (tok, sym, DefImp.ctors, TRUE) |
-      ModuleSym:  PutCtorExtern (tok, sym, Module.ctors, TRUE)
+      DefImpSym:  PutCtorExtern (tok, sym, DefImp.ctors, external) |
+      ModuleSym:  PutCtorExtern (tok, sym, Module.ctors, external)
 
       ELSE
          InternalError ('expecting DefImp or Module symbol')
@@ -3765,6 +3775,7 @@ BEGIN
             IsExtern := FALSE ;          (* Make this procedure external. *)
             IsPublic := FALSE ;          (* Make this procedure visible.  *)
             IsCtor := FALSE ;            (* Is this procedure a ctor?     *)
+            IsMonoName := FALSE ;        (* Overrides module name prefix. *)
             Scope := GetCurrentScope() ; (* Scope of procedure.           *)
             InitTree(Unresolved) ;       (* All symbols currently         *)
                                          (* unresolved in this procedure. *)
@@ -3807,6 +3818,48 @@ BEGIN
    END ;
    RETURN Sym
 END MakeProcedure ;
+
+
+(*
+   PutMonoName - changes the IsMonoName boolean inside the procedure.
+*)
+
+PROCEDURE PutMonoName (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym: Procedure.IsMonoName := value
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END PutMonoName ;
+
+
+(*
+   IsMonoName - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsMonoName (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym:  RETURN Procedure.IsMonoName
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END IsMonoName ;
 
 
 (*
@@ -8488,8 +8541,6 @@ END GetFromOuterModule ;
 (*
    IsExportUnQualified - returns true if a symbol, Sym, was defined as
                          being EXPORT UNQUALIFIED.
-                         Sym is expected to be either a procedure or a
-                         variable.
 *)
 
 PROCEDURE IsExportUnQualified (Sym: CARDINAL) : BOOLEAN ;
@@ -8497,7 +8548,6 @@ VAR
    pSym       : PtrToSymbol ;
    OuterModule: CARDINAL ;
 BEGIN
-   Assert(IsVar(Sym) OR IsProcedure(Sym)) ;
    OuterModule := Sym ;
    REPEAT
       OuterModule := GetScope(OuterModule)

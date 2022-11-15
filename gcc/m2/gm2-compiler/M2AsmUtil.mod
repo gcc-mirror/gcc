@@ -40,7 +40,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsModule,
                         IsDefImp,
                         IsExportQualified,
-                        IsExported,
+                        IsExported, IsPublic, IsExtern, IsMonoName,
                         IsDefinitionForC ;
 
 FROM M2Error IMPORT InternalError ;
@@ -55,9 +55,9 @@ PROCEDURE StringToKey (s: String) : Name ;
 VAR
    k: Name ;
 BEGIN
-   k := makekey(string(s)) ;
-   s := KillString(s) ;
-   RETURN( k )
+   k := makekey (string (s)) ;
+   s := KillString (s) ;
+   RETURN k
 END StringToKey ;
 
 
@@ -67,21 +67,27 @@ END StringToKey ;
                          [DefImpModule|Module]_{InnerModule}_{Procedure}_SymbolName
 *)
 
-PROCEDURE GetFullScopeAsmName (Sym: CARDINAL) : Name ;
+PROCEDURE GetFullScopeAsmName (sym: CARDINAL) : Name ;
 VAR
-   Module: String ;
-   Scope : CARDINAL ;
+   leader,
+   module: String ;
+   scope : CARDINAL ;
 BEGIN
-   Scope := GetScope(Sym) ;
+   scope := GetScope (sym) ;
    IF UseUnderscoreForC
    THEN
-      Module := InitString('_')
+      leader := InitString ('_')
    ELSE
-      Module := InitString('')
+      leader := InitString ('')
    END ;
-   Module := ConCat(GetFullScopePrefix(Module, Scope, Sym),
-                    InitStringCharStar(KeyToCharStar(GetSymName(Sym)))) ;
-   RETURN( StringToKey(Module) )
+   IF IsProcedure (sym) AND IsMonoName (sym)
+   THEN
+      RETURN StringToKey (ConCat (leader, InitStringCharStar (KeyToCharStar (GetSymName (sym)))))
+
+   ELSE
+      RETURN StringToKey (ConCat (GetFullScopePrefix (leader, scope, sym),
+                                  InitStringCharStar (KeyToCharStar (GetSymName (sym)))))
+   END
 END GetFullScopeAsmName ;
 
 
@@ -90,14 +96,19 @@ END GetFullScopeAsmName ;
                     may contain the module name).
 *)
 
-PROCEDURE GetFullSymName (Sym: CARDINAL) : Name ;
+PROCEDURE GetFullSymName (sym: CARDINAL) : Name ;
 VAR
-   Module  : String ;
-   Scope   : CARDINAL ;
+   module: String ;
+   scope : CARDINAL ;
 BEGIN
-   Scope := GetScope(Sym) ;
-   Module := GetModulePrefix(InitString(''), Sym, Scope) ;
-   RETURN( StringToKey(ConCat(Module, InitStringCharStar(KeyToCharStar(GetSymName(Sym))))) )
+   IF IsProcedure (sym) AND IsMonoName (sym)
+   THEN
+      RETURN GetSymName (sym)
+   ELSE
+      scope := GetScope (sym) ;
+      module := GetModulePrefix (InitString (''), sym, scope) ;
+      RETURN StringToKey (ConCat (module, InitStringCharStar (KeyToCharStar (GetSymName (sym)))))
+   END
 END GetFullSymName ;
 
 

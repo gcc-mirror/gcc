@@ -27,7 +27,6 @@ GM2_CROSS_NAME = `echo gm2|sed '$(program_transform_cross_name)'`
 
 M2_MAINTAINER = no
 
-CPP_GM2=-fpermissive -DIN_GCC -g
 GM2_1 = ./gm2 -B./stage1/m2 -g -fm2-g
 
 GM2_FOR_TARGET = $(STAGE_CC_WRAPPER) ./gm2 -B./ -B$(build_tooldir)/bin/ -L$(objdir)/../ld $(TFLAGS)
@@ -431,33 +430,18 @@ GM2_LIBS          = m2/gm2-compiler/gm2.a \
 GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
                     m2/gm2-libs-boot/libgm2.a \
                     $(GM2-BOOT-O)
-GM2_LIBS_PARANOID = m2/gm2-compiler-paranoid/gm2.a \
-                    m2/gm2-libs-paranoid/libgm2.a                       # build it again using GM2_LIBS
-
-gm2.paranoid: stage3/m2/cc1gm2$(exeext) gm2.verifyparanoid
 
 cc1gm2$(exeext): stage1/m2/cc1gm2$(exeext) $(m2.prev)
 	cp -p $< $@
 
-stage3/m2/cc1gm2$(exeext): stage2/m2/cc1gm2$(exeext) m2/gm2-compiler-paranoid/m2flex.o \
-                            $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so
-	@$(call LINK_PROGRESS,$(INDEX.m2),start)
-	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-paranoid/m2flex.o \
-                            attribs.o \
-                              $(GM2_LIBS_PARANOID) \
-                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
-                              $(BACKENDLIBS) $(LIBSTDCXX) -lm
-	@$(call LINK_PROGRESS,$(INDEX.m2),end)
-
 stage2/m2/cc1gm2$(exeext): stage1/m2/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(P) \
                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so
+                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so m2/gm2-libs-boot/M2LINK.o
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
 	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler/m2flex.o \
                             attribs.o \
                               $(GM2_LIBS) \
-                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
+                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o m2/gm2-libs-boot/M2LINK.o \
                               $(BACKENDLIBS) $(LIBSTDCXX) -lm
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
 
@@ -1291,11 +1275,11 @@ mcflex.c: $(srcdir)/m2/mc/mc.flex
 
 m2/gm2-libs-boot/%.o: $(srcdir)/m2/gm2-libs-boot/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) -o=m2/gm2-libs-boot/$*.c $(srcdir)/m2/gm2-libs-boot/$*.mod
-	$(COMPILER) -c $(CPP_GM2) $(CFLAGS) $(MCINCLUDES) m2/gm2-libs-boot/$*.c -o $@
+	$(COMPILER) -c -DIN_GCC $(CFLAGS) $(MCINCLUDES) m2/gm2-libs-boot/$*.c -o $@
 
 m2/gm2-libs-boot/%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) -o=m2/gm2-libs-boot/$*.c $(srcdir)/m2/gm2-libs/$*.mod
-	$(COMPILER) -c $(CPP_GM2) $(CFLAGS) -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) m2/gm2-libs-boot/$*.c -o $@
+	$(COMPILER) -c -DIN_GCC $(CFLAGS) -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) m2/gm2-libs-boot/$*.c -o $@
 
 m2/gm2-libs-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 	$(MC) -o=$@ $(srcdir)/m2/gm2-libs/$*.def
@@ -1336,34 +1320,34 @@ m2/gm2-libs-boot/SysExceptions.o: $(srcdir)/m2/gm2-libs-ch/SysExceptions.c \
 
 m2/gm2-libs-boot/SysStorage.o: $(srcdir)/m2/gm2-libs/SysStorage.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) -o=m2/gm2-libs-boot/SysStorage.c $(srcdir)/m2/gm2-libs/SysStorage.mod
-	$(COMPILER) -DIN_GCC -c -fpermissive $(CFLAGS) \
+	$(COMPILER) -DIN_GCC -c $(CFLAGS) \
           -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) \
           m2/gm2-libs-boot/SysStorage.c -o m2/gm2-libs-boot/SysStorage.o
 
 m2/gm2-compiler-boot/M2GCCDeclare.o: $(srcdir)/m2/gm2-compiler/M2GCCDeclare.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) --extended-opaque -o=m2/gm2-compiler-boot/M2GCCDeclare.c $<
-	$(COMPILER) -c -fpermissive $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
             -I. -I$(srcdir)/../include -I$(srcdir) \
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
             -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2GCCDeclare.c -o $@
 
 m2/gm2-compiler-boot/M2Error.o: $(srcdir)/m2/gm2-compiler/M2Error.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) --extended-opaque -o=m2/gm2-compiler-boot/M2Error.c $<
-	$(COMPILER) -c -fpermissive $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
             -I. -I$(srcdir)/../include -I$(srcdir) \
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
             -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2Error.c -o $@
 
 m2/gm2-compiler-boot/%.o: $(srcdir)/m2/gm2-compiler/%.mod $(BUILD-BOOT-H) $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) -o=m2/gm2-compiler-boot/$*.c $(srcdir)/m2/gm2-compiler/$*.mod
-	$(COMPILER) -c -fpermissive $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
             -I. -I$(srcdir)/../include -I$(srcdir) \
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -Im2/gm2-libiberty \
             -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/$*.c -o $@
 
 m2/gm2-compiler-boot/%.o: m2/gm2-compiler-boot/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MC) -o=m2/gm2-compiler-boot/$*.c m2/gm2-compiler-boot/$*.mod
-	$(COMPILER) -c -fpermissive $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
             -I. -I$(srcdir)/../include -I$(srcdir) \
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
             -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/$*.c -o $@
