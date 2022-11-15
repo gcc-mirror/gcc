@@ -42,7 +42,7 @@ int test (void)
 /* { dg-regexp "\"message\": \"this 'if' clause does not guard...\"" } */
 /* { dg-regexp "\"escape-source\": false" } */
 /* { dg-regexp "\"option\": \"-Wmisleading-indentation\"" } */
-/* { dg-regexp "\"option_url\": \"https:\[^\n\r\"\]*#cmdoption-Wmisleading-indentation\"" } */
+/* { dg-regexp "\"option_url\": \"https:\[^\n\r\"\]*#index-Wmisleading-indentation\"" } */
 
 /* { dg-regexp "\"caret\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
