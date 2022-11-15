@@ -624,4 +624,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* __DEC32_MANT_DIG__ */
 
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define __STDC_VERSION_FLOAT_H__	202311L
+#endif
+
 #endif /* _FLOAT_H___ */

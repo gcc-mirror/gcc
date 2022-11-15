@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-fno-tree-scev-cprop -fno-tree-vectorize -g" } */
+/* { dg-additional-options "-mno-unroll-only-small-loops" { target ia32 } } */
+
 
 #include "../nop.h"
 

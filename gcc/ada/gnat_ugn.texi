@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 27, 2022
+GNAT User's Guide for Native Platforms , Nov 14, 2022
 
 AdaCore
 
@@ -10733,6 +10733,9 @@ switch are:
 @code{-gnatw.q} (questionable layout of record types)
 
 @item 
+@code{-gnatw_q} (ignored equality)
+
+@item 
 @code{-gnatw_r} (out-of-order record representation clauses)
 
 @item 
@@ -10922,7 +10925,7 @@ This switch activates warnings for conditional expressions used in
 tests that are known to be True or False at compile time. The default
 is that such warnings are not generated.
 Note that this warning does
-not get issued for the use of boolean variables or constants whose
+not get issued for the use of boolean constants whose
 values are known at compile time, since this is a standard technique
 for conditional compilation in Ada, and this would generate too many
 false positive warnings.
@@ -11946,6 +11949,34 @@ The default is that these warnings are not given.
 
 This switch suppresses warnings for cases where the default layout of
 a record type would very likely cause inefficiencies.
+@end table
+
+@geindex -gnatw_q (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_q}
+
+`Activate warnings for ignored equality operators.'
+
+This switch activates warnings for a user-defined “=” function that does
+not compose (i.e. is ignored for a predefined “=” for a composite type
+containing a component whose type has the user-defined “=” as
+primitive). Note that the user-defined “=” must be a primitive operator
+in order to trigger the warning.
+
+The default is that these warnings are not given.
+@end table
+
+@geindex -gnatw_Q (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_Q}
+
+`Suppress warnings for ignored equality operators.'
 @end table
 
 @geindex -gnatwr (gcc)
@@ -17962,7 +17993,6 @@ instr.ads
 
 
 
-
 @c -- Example: A |withing| unit has a |with| clause, it |withs| a |withed| unit
 
 @node GNAT and Program Execution,Platform-Specific Information,GNAT Utility Programs,Top
@@ -19521,10 +19551,10 @@ It is currently supported on the following platforms
 @itemize *
 
 @item 
-linux x86/x86_64
+Linux x86/x86_64
 
 @item 
-windows x86
+Windows x86/x86_64 (without PIE support)
 @end itemize
 
 In order to profile a program using @code{gprof}, several steps are needed:
@@ -19582,6 +19612,9 @@ $ gnatmake -f -pg -P my_project
 Note that only the objects that were compiled with the @code{-pg} switch will
 be profiled; if you need to profile your whole project, use the @code{-f}
 gnatmake switch to force full recompilation.
+
+Note that on Windows, gprof does not support PIE. The @code{-no-pie} switch
+should be added to the linker flags to disable this feature.
 
 @node Program execution,Running gprof,Compilation for profiling,Profiling an Ada Program with gprof
 @anchor{gnat_ugn/gnat_and_program_execution id23}@anchor{175}@anchor{gnat_ugn/gnat_and_program_execution program-execution}@anchor{176}
@@ -29348,8 +29381,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{cf}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{cf}@w{                              }
 
 @c %**end of body
 @bye

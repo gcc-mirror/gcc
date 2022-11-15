@@ -349,6 +349,7 @@ class region_model
   void impl_call_analyzer_get_unknown_ptr (const call_details &cd);
   void impl_call_builtin_expect (const call_details &cd);
   void impl_call_calloc (const call_details &cd);
+  void impl_call_errno_location (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
 			bool *out_terminate_path);
   void impl_call_fgets (const call_details &cd);
@@ -449,9 +450,6 @@ class region_model
   tristate eval_condition (const svalue *lhs,
 			   enum tree_code op,
 			   const svalue *rhs) const;
-  tristate eval_condition_without_cm (const svalue *lhs,
-				      enum tree_code op,
-				      const svalue *rhs) const;
   tristate compare_initial_and_pointer (const initial_svalue *init,
 					const region_svalue *ptr) const;
   tristate symbolic_greater_than (const binop_svalue *a,
@@ -460,7 +458,7 @@ class region_model
   tristate eval_condition (tree lhs,
 			   enum tree_code op,
 			   tree rhs,
-			   region_model_context *ctxt);
+			   region_model_context *ctxt) const;
   bool add_constraint (tree lhs, enum tree_code op, tree rhs,
 		       region_model_context *ctxt);
   bool add_constraint (tree lhs, enum tree_code op, tree rhs,
@@ -543,6 +541,8 @@ class region_model
 				      const svalue *copied_sval,
 				      const region *src_reg,
 				      region_model_context *ctxt);
+
+  void set_errno (const call_details &cd);
 
   /* Implemented in sm-fd.cc  */
   void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);
@@ -708,6 +708,9 @@ class region_model_context
   virtual void on_bounded_ranges (const svalue &sval,
 				  const bounded_ranges &ranges) = 0;
 
+  /* Hook for clients to be notified when a frame is popped from the stack.  */
+  virtual void on_pop_frame (const frame_region *) = 0;
+
   /* Hooks for clients to be notified when an unknown change happens
      to SVAL (in response to a call to an unknown function).  */
   virtual void on_unknown_change (const svalue *sval, bool is_mutable) = 0;
@@ -789,6 +792,7 @@ public:
 			  const bounded_ranges &) override
   {
   }
+  void on_pop_frame (const frame_region *) override {}
   void on_unknown_change (const svalue *sval ATTRIBUTE_UNUSED,
 			  bool is_mutable ATTRIBUTE_UNUSED) override
   {
@@ -884,6 +888,11 @@ class region_model_context_decorator : public region_model_context
 			  const bounded_ranges &ranges) override
   {
     m_inner->on_bounded_ranges (sval, ranges);
+  }
+
+  void on_pop_frame (const frame_region *frame_reg) override
+  {
+    m_inner->on_pop_frame (frame_reg);
   }
 
   void on_unknown_change (const svalue *sval, bool is_mutable) override

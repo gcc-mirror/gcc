@@ -125,6 +125,10 @@ typedef __gnuc_va_list va_list;
 
 #endif /* not __svr4__ */
 
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define __STDC_VERSION_STDARG_H__	202311L
+#endif
+
 #endif /* _STDARG_H */
 
 #endif /* not _ANSI_STDARG_H_ */

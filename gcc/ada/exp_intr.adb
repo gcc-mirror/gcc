@@ -315,9 +315,12 @@ package body Exp_Intr is
             Error_Msg_N
               ("unsupported dispatching constructor call if the type "
                & "of the built object has task components??", N);
-            Error_Msg_N
-              ("\work around this problem by replacing task components "
-               & "with access-to-task-type components??", N);
+
+            Error_Msg_Sloc := Sloc (Root_Type (Etype (Entity (Name (N)))));
+            Error_Msg_NE
+              ("\work around this by adding ''with no_task_parts'' to "
+               & "the declaration of the root type& defined#???",
+               N, Root_Type (Etype (Entity (Name (N)))));
          end if;
       end if;
 

@@ -105,6 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~allocator() = default;
 
       template<typename _Up>
+	__attribute__((__always_inline__))
 	constexpr
 	allocator(const allocator<_Up>&) noexcept { }
 
@@ -157,9 +158,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3035. std::allocator's constructors should be constexpr
+      __attribute__((__always_inline__))
       _GLIBCXX20_CONSTEXPR
       allocator() _GLIBCXX_NOTHROW { }
 
+      __attribute__((__always_inline__))
       _GLIBCXX20_CONSTEXPR
       allocator(const allocator& __a) _GLIBCXX_NOTHROW
       : __allocator_base<_Tp>(__a) { }
@@ -170,9 +173,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       template<typename _Tp1>
+	__attribute__((__always_inline__))
 	_GLIBCXX20_CONSTEXPR
 	allocator(const allocator<_Tp1>&) _GLIBCXX_NOTHROW { }
 
+      __attribute__((__always_inline__))
 #if __cpp_constexpr_dynamic_alloc
       constexpr
 #endif
@@ -206,12 +211,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif // C++20
 
-      friend _GLIBCXX20_CONSTEXPR bool
+      friend __attribute__((__always_inline__)) _GLIBCXX20_CONSTEXPR
+      bool
       operator==(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return true; }
 
 #if __cpp_impl_three_way_comparison < 201907L
-      friend _GLIBCXX20_CONSTEXPR bool
+      friend __attribute__((__always_inline__)) _GLIBCXX20_CONSTEXPR
+      bool
       operator!=(const allocator&, const allocator&) _GLIBCXX_NOTHROW
       { return false; }
 #endif
@@ -225,6 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @relates std::allocator
    */
   template<typename _T1, typename _T2>
+    __attribute__((__always_inline__))
     inline _GLIBCXX20_CONSTEXPR bool
     operator==(const allocator<_T1>&, const allocator<_T2>&)
     _GLIBCXX_NOTHROW
@@ -232,6 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_impl_three_way_comparison < 201907L
   template<typename _T1, typename _T2>
+    __attribute__((__always_inline__))
     inline _GLIBCXX20_CONSTEXPR bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
     _GLIBCXX_NOTHROW

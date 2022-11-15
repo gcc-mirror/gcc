@@ -921,6 +921,22 @@ impl_region_model_context::on_bounded_ranges (const svalue &sval,
     }
 }
 
+/* Implementation of region_model_context::on_pop_frame vfunc.
+   Notify all state machines about the frame being popped, which
+   could lead to states being discarded.  */
+
+void
+impl_region_model_context::on_pop_frame (const frame_region *frame_reg)
+{
+  int sm_idx;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+    {
+      const state_machine &sm = m_ext_state.get_sm (sm_idx);
+      sm.on_pop_frame (smap, frame_reg);
+    }
+}
+
 /* Implementation of region_model_context::on_phi vfunc.
    Notify all state machines about the phi, which could lead to
    state transitions.  */
@@ -4260,7 +4276,12 @@ exploded_graph::process_node (exploded_node *node)
 	    exploded_node *next = get_or_create_node (next_point, next_state,
 						      node);
 	    if (next)
-	      add_edge (node, next, succ);
+	      {
+		add_edge (node, next, succ);
+
+		/* We might have a function entrypoint.  */
+		detect_infinite_recursion (next);
+	      }
 	  }
 
 	/* Return from the calls which doesn't have a return superedge.

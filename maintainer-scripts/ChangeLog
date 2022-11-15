@@ -1,3 +1,23 @@
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* crontab: Fix superfluous 'sh' for Python script.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* update_web_docs_git.py: Create sources tarball.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* crontab: Use new script for documentation of master branch.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* update_web_docs_git.py: Simplify.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* update_web_docs_git.py: New file.
+
 2022-07-28  Martin Liska  <mliska@suse.cz>
 
 	* update_web_docs_git: Use sphinx-build from a venv so that

@@ -365,6 +365,7 @@ class GitCommit:
             self.check_for_broken_parentheses()
             self.deduce_changelog_locations()
             self.check_file_patterns()
+            self.check_line_start()
             if not self.errors:
                 self.check_mentioned_files()
                 self.check_for_correct_changelog()
@@ -612,6 +613,15 @@ class GitCommit:
             if entry.parentheses_stack:
                 msg = 'bad parentheses wrapping'
                 self.errors.append(Error(msg, entry.parentheses_stack[-1]))
+
+    def check_line_start(self):
+        # FIXME: temporarily disable
+        return
+        for entry in self.changelog_entries:
+            for line in entry.lines:
+                if line.startswith('\t '):
+                    msg = 'extra space after tab'
+                    self.errors.append(Error(msg, line))
 
     def get_file_changelog_location(self, changelog_file):
         for file in self.info.modified_files:

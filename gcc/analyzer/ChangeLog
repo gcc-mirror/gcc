@@ -1,3 +1,209 @@
+2022-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106235
+	* analyzer.opt (Wanalyzer-tainted-assertion): New.
+	* checker-path.cc (checker_path::fixup_locations): Pass false to
+	pending_diagnostic::fixup_location.
+	* diagnostic-manager.cc (get_emission_location): Pass true to
+	pending_diagnostic::fixup_location.
+	* pending-diagnostic.cc (pending_diagnostic::fixup_location): Add
+	bool param.
+	* pending-diagnostic.h (pending_diagnostic::fixup_location): Add
+	bool param to decl.
+	* sm-taint.cc (taint_state_machine::m_tainted_control_flow): New.
+	(taint_diagnostic::describe_state_change): Drop "final".
+	(class tainted_assertion): New.
+	(taint_state_machine::taint_state_machine): Initialize
+	m_tainted_control_flow.
+	(taint_state_machine::alt_get_inherited_state): Support
+	comparisons being tainted, based on their arguments.
+	(is_assertion_failure_handler_p): New.
+	(taint_state_machine::on_stmt): Complain about calls to assertion
+	failure handlers guarded by an attacker-controller conditional.
+	Detect attacker-controlled gcond conditionals and gswitch index
+	values.
+	(taint_state_machine::check_control_flow_arg_for_taint): New.
+
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-fd.dot: Fix typo in comment.
+	* sm-file.dot: New file.
+	* varargs.cc: Fix typo in comment.
+	* varargs.dot: New file.
+
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h: Split out checker_event and its subclasses to...
+	* checker-event.h: ...this new header.
+
+2022-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106147
+	* analyzer.opt (Wanalyzer-infinite-recursion): New.
+	* call-string.cc (call_string::count_occurrences_of_function):
+	New.
+	* call-string.h (call_string::count_occurrences_of_function): New
+	decl.
+	* checker-path.cc (function_entry_event::function_entry_event):
+	New ctor.
+	(checker_path::add_final_event): Delete.
+	* checker-path.h (function_entry_event::function_entry_event): New
+	ctor.
+	(function_entry_event::get_desc): Drop "final".
+	(checker_path::add_final_event): Delete.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Create the final
+	event via a new pending_diagnostic::add_final_event vfunc, rather
+	than checker_path::add_final_event.
+	(diagnostic_manager::add_events_for_eedge): Create function entry
+	events via a new pending_diagnostic::add_function_entry_event
+	vfunc.
+	* engine.cc (exploded_graph::process_node): When creating a new
+	PK_BEFORE_SUPERNODE node, call
+	exploded_graph::detect_infinite_recursion on it after adding the
+	in-edge.
+	* exploded-graph.h (exploded_graph::detect_infinite_recursion):
+	New decl.
+	(exploded_graph::find_previous_entry_to): New decl.
+	* infinite-recursion.cc: New file.
+	* pending-diagnostic.cc
+	(pending_diagnostic::add_function_entry_event): New.
+	(pending_diagnostic::add_final_event): New.
+	* pending-diagnostic.h
+	(pending_diagnostic::add_function_entry_event): New vfunc.
+	(pending_diagnostic::add_final_event): New vfunc.
+
+2022-11-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99671
+	* analyzer.opt (Wanalyzer-deref-before-check): New warning.
+	* diagnostic-manager.cc
+	(null_assignment_sm_context::set_next_state): Only add state
+	change events for transition to "null" state.
+	(null_assignment_sm_context::is_transition_to_null): New.
+	* engine.cc (impl_region_model_context::on_pop_frame): New.
+	* exploded-graph.h (impl_region_model_context::on_pop_frame): New
+	decl.
+	* program-state.cc (sm_state_map::clear_any_state): New.
+	(sm_state_map::can_merge_with_p): New.
+	(program_state::can_merge_with_p): Replace requirement that
+	sm-states be equal in favor of an attempt to merge them.
+	* program-state.h (sm_state_map::clear_any_state): New decl.
+	(sm_state_map::can_merge_with_p): New decl.
+	* region-model.cc (region_model::eval_condition): Make const.
+	(region_model::pop_frame): Call ctxt->on_pop_frame.
+	* region-model.h (region_model::eval_condition): Make const.
+	(region_model_context::on_pop_frame): New vfunc.
+	(noop_region_model_context::on_pop_frame): New.
+	(region_model_context_decorator::on_pop_frame): New.
+	* sm-malloc.cc (enum resource_state): Add RS_ASSUMED_NON_NULL.
+	(allocation_state::dump_to_pp): Drop "final".
+	(struct assumed_non_null_state): New subclass.
+	(malloc_state_machine::m_assumed_non_null): New.
+	(assumed_non_null_p): New.
+	(class deref_before_check): New.
+	(assumed_non_null_state::dump_to_pp): New.
+	(malloc_state_machine::get_or_create_assumed_non_null_state_for_frame):
+	New.
+	(malloc_state_machine::maybe_assume_non_null): New.
+	(malloc_state_machine::on_stmt): Transition from start state to
+	"assumed-non-null" state for pointers passed to
+	__attribute__((nonnull)) arguments, and for pointers explicitly
+	dereferenced.  Call maybe_complain_about_deref_before_check for
+	pointers explicitly compared against NULL.
+	(malloc_state_machine::maybe_complain_about_deref_before_check):
+	New.
+	(malloc_state_machine::on_deallocator_call): Also transition
+	"assumed-non-null" states to "freed".
+	(malloc_state_machine::on_pop_frame): New.
+	(malloc_state_machine::maybe_get_merged_states_nonequal): New.
+	* sm-malloc.dot: Update for changes to sm-malloc.cc.
+	* sm.h (state_machine::on_pop_frame): New.
+	(state_machine::maybe_get_merged_state): New.
+	(state_machine::maybe_get_merged_states_nonequal): New.
+
+2022-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (checker_event::debug): New.
+	(checker_path::add_event): Move here from checker-path.h.  Add
+	logging.
+	* checker-path.h (checker_event::debug): New decl.
+	(checker_path::checker_path): Add logger param.
+	(checker_path::add_event): Move definition from here to
+	checker-path.cc.
+	(checker_path::m_logger): New field.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Pass logger to
+	checker_path ctor.
+	(diagnostic_manager::add_events_for_eedge): Log scope when
+	processing a run of stmts.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101962
+	* region-model-impl-calls.cc: Update comment.
+	* region-model.cc (region_model::check_symbolic_bounds): Fix
+	layout of "void" return.  Replace usage of
+	eval_condition_without_cm with eval_condition.
+	(region_model::eval_condition): Take over body of...
+	(region_model::eval_condition_without_cm): ...this subroutine,
+	dropping the latter.  Eliminating this distinction avoids issues
+	where constraints were not considered when recursing.
+	(region_model::compare_initial_and_pointer): Update comment.
+	(region_model::symbolic_greater_than): Replace usage of
+	eval_condition_without_cm with eval_condition.
+	* region-model.h
+	(region_model::eval_condition_without_cm): Delete decl.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc
+	(region_model::impl_call_errno_location): New.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Initialize
+	m_thread_local_region and m_errno_region.
+	* region-model-manager.h (region_model_manager::get_errno_region):
+	New accessor.
+	(region_model_manager::m_thread_local_region): New.
+	(region_model_manager::m_errno_region): New.
+	* region-model.cc (region_model::on_call_pre): Special-case
+	"__errno_location".
+	(region_model::set_errno): New.
+	* region-model.h (impl_call_errno_location): New decl.
+	(region_model::set_errno): New decl.
+	* region.cc (thread_local_region::dump_to_pp): New.
+	(errno_region::dump_to_pp): New.
+	* region.h (enum memory_space): Add MEMSPACE_THREAD_LOCAL.
+	(enum region_kind): Add RK_THREAD_LOCAL and RK_ERRNO.
+	(class thread_local_region): New.
+	(is_a_helper <const thread_local_region *>::test): New.
+	(class errno_region): New.
+	(is_a_helper <const errno_region *>::test): New.
+	* store.cc (binding_cluster::escaped_p): New.
+	(store::escaped_p): Treat errno as always having escaped.
+	(store::replay_call_summary_cluster): Handle RK_THREAD_LOCAL and
+	RK_ERRNO.
+	* store.h (binding_cluster::escaped_p): Remove definition.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc (success_call_info::get_desc): Delete.
+	(failed_call_info::get_desc): Likewise.
+	(succeed_or_fail_call_info::get_desc): New.
+	* call-info.h (class succeed_or_fail_call_info): New.
+	(class success_call_info): Convert to a subclass of
+	succeed_or_fail_call_info.
+	(class failed_call_info): Likewise.
+
+2022-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (region_model::impl_call_strchr):
+	Move to on_call_post.  Handle both outcomes using bifurcation,
+	rather than just the "not found" case.
+	* region-model.cc (region_model::on_call_pre): Move
+	BUILT_IN_STRCHR and "strchr" to...
+	(region_model::on_call_post): ...here.
+
 2022-11-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h: Use std::unique_ptr for state machines from plugins.

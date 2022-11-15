@@ -62,6 +62,7 @@ public:
   void add_range (tree name, basic_block bb, const vrange &r);
   void add_nonzero (tree name, basic_block bb);
   bool has_range_p (tree name, basic_block bb);
+  bool has_range_p (basic_block bb);
   bool maybe_adjust_range (vrange &r, tree name, basic_block bb);
 private:
   class exit_range_head

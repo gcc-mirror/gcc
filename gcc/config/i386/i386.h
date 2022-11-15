@@ -219,6 +219,11 @@ struct processor_costs {
   const char *const align_jump;		/* Jump alignment.  */
   const char *const align_label;	/* Label alignment.  */
   const char *const align_func;		/* Function alignment.  */
+
+  const unsigned small_unroll_ninsns;	/* Insn count limit for small loop
+					   to be unrolled.  */
+  const unsigned small_unroll_factor;   /* Unroll factor for small loop to
+					   be unrolled.  */
 };
 
 extern const struct processor_costs *ix86_cost;
@@ -1932,9 +1937,6 @@ do {							\
    structure, but to different bytes.  */
 
 #define SLOW_BYTE_ACCESS 0
-
-/* Nonzero if access to memory by shorts is slow and undesirable.  */
-#define SLOW_SHORT_ACCESS 0
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.

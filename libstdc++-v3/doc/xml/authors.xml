@@ -13,17 +13,12 @@
       </address>
     </affiliation>
 
-    <authorblurb>
+    <personblurb>
       <para>
       </para>
-    </authorblurb>
+    </personblurb>
   </author>
 -->
-
-  <author><personname><firstname/><surname/></personname><personblurb>
-      <para>
-      </para>
-    </personblurb></author>
 
   <author><personname><firstname>Paolo</firstname><surname>Carlini</surname></personname><personblurb>
       <para>
@@ -107,7 +102,10 @@
 
   <author><personname><firstname>Jonathan</firstname><surname>Wakely</surname></personname><personblurb>
       <para>
-	shared_ptr, markup editing and styling
+	Allocators, ABI History, API Evolution and Deprecation History,
+	Experimental Library Extensions, Implementation Status,
+	Running the Testsuite, Shared Library Versioning, Using Macros,
+	Using Exceptions, shared_ptr, markup editing and styling.
       </para>
     </personblurb></author>
 

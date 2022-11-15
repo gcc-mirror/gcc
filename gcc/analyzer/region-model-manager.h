@@ -107,6 +107,7 @@ public:
   {
     return &m_globals_region;
   }
+  const errno_region *get_errno_region () const { return &m_errno_region; }
   const function_region *get_region_for_fndecl (tree fndecl);
   const label_region *get_region_for_label (tree label);
   const decl_region *get_region_for_global (tree expr);
@@ -286,6 +287,9 @@ private:
   typedef hash_map<tree, decl_region *> globals_map_t;
   typedef globals_map_t::iterator globals_iterator_t;
   globals_map_t m_globals_map;
+
+  thread_local_region m_thread_local_region;
+  errno_region m_errno_region;
 
   consolidation_map<field_region> m_field_regions;
   consolidation_map<element_region> m_element_regions;

@@ -87,6 +87,9 @@ enum resource_state
   /* The start state.  */
   RS_START,
 
+  /* State for a pointer that's been unconditionally dereferenced.  */
+  RS_ASSUMED_NON_NULL,
+
   /* State for a pointer that's known to be NULL.  */
   RS_NULL,
 
@@ -126,13 +129,32 @@ struct allocation_state : public state_machine::state
     m_deallocator (deallocator)
   {}
 
-  void dump_to_pp (pretty_printer *pp) const final override;
+  void dump_to_pp (pretty_printer *pp) const override;
 
   const allocation_state *get_nonnull () const;
 
   enum resource_state m_rs;
   const deallocator_set *m_deallocators;
   const deallocator *m_deallocator;
+};
+
+/* Custom state subclass, for the "assumed-non-null" state
+   where the assumption happens in a particular frame.  */
+
+struct assumed_non_null_state : public allocation_state
+{
+  assumed_non_null_state (const char *name, unsigned id,
+			  const frame_region *frame)
+  : allocation_state (name, id, RS_ASSUMED_NON_NULL,
+		      NULL, NULL),
+    m_frame (frame)
+  {
+    gcc_assert (m_frame);
+  }
+
+  void dump_to_pp (pretty_printer *pp) const final override;
+
+  const frame_region *m_frame;
 };
 
 /* An enum for choosing which wording to use in various diagnostics
@@ -384,13 +406,24 @@ public:
 		     enum tree_code op,
 		     const svalue *rhs) const final override;
 
+  void on_pop_frame (sm_state_map *smap,
+		     const frame_region *) const final override;
+
   bool can_purge_p (state_t s) const final override;
   std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
 
   bool reset_when_passed_to_unknown_fn_p (state_t s,
 					  bool is_mutable) const final override;
 
+  state_t
+  maybe_get_merged_states_nonequal (state_t state_a,
+				    state_t state_b) const final override;
+
   static bool unaffected_by_call_p (tree fndecl);
+
+  void maybe_assume_non_null (sm_context *sm_ctxt,
+			      tree ptr,
+			      const gimple *stmt) const;
 
   void on_realloc_with_move (region_model *model,
 			     sm_state_map *smap,
@@ -405,6 +438,10 @@ public:
   standard_deallocator m_realloc;
 
   /* States that are independent of api.  */
+
+  /* States for a pointer that's been unconditionally dereferenced
+     in a particular stack frame.  */
+  hash_map<const frame_region *, state_t> m_assumed_non_null;
 
   /* State for a pointer that's known to be NULL.  */
   state_t m_null;
@@ -424,6 +461,16 @@ private:
   maybe_create_custom_deallocator_set (tree allocator_fndecl);
   const deallocator *
   get_or_create_deallocator (tree deallocator_fndecl);
+
+  state_t
+  get_or_create_assumed_non_null_state_for_frame (const frame_region *frame);
+
+  void
+  maybe_complain_about_deref_before_check (sm_context *sm_ctxt,
+					   const supernode *node,
+					   const gimple *stmt,
+					   const assumed_non_null_state *,
+					   tree ptr) const;
 
   void on_allocator_call (sm_context *sm_ctxt,
 			  const gcall *call,
@@ -676,6 +723,14 @@ static bool
 freed_p (state_machine::state_t state)
 {
   return get_rs (state) == RS_FREED;
+}
+
+/* Return true if STATE is a value that has been assumed to be non-NULL.  */
+
+static bool
+assumed_non_null_p (state_machine::state_t state)
+{
+  return get_rs (state) == RS_ASSUMED_NON_NULL;
 }
 
 /* Class for diagnostics relating to malloc_state_machine.  */
@@ -1428,6 +1483,80 @@ private:
   const char *m_funcname;
 };
 
+/* Concrete pending_diagnostic subclass for -Wanalyzer-deref-before-check.  */
+
+class deref_before_check : public malloc_diagnostic
+{
+public:
+  deref_before_check (const malloc_state_machine &sm, tree arg)
+  : malloc_diagnostic (sm, arg)
+  {}
+
+  const char *get_kind () const final override { return "deref_before_check"; }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_deref_before_check;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    if (m_arg)
+      return warning_at (rich_loc, get_controlling_option (),
+			 "check of %qE for NULL after already"
+			 " dereferencing it",
+			 m_arg);
+    else
+      return warning_at (rich_loc, get_controlling_option (),
+			 "check of pointer for NULL after already"
+			 " dereferencing it");
+  }
+
+  label_text describe_state_change (const evdesc::state_change &change)
+    final override
+  {
+    if (change.m_old_state == m_sm.get_start_state ()
+	&& assumed_non_null_p (change.m_new_state))
+      {
+	m_first_deref_event = change.m_event_id;
+	if (m_arg)
+	  return change.formatted_print ("pointer %qE is dereferenced here",
+					 m_arg);
+	else
+	  return label_text::borrow ("pointer is dereferenced here");
+      }
+    return malloc_diagnostic::describe_state_change (change);
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final override
+  {
+    if (m_first_deref_event.known_p ())
+      {
+	if (m_arg)
+	  return ev.formatted_print ("pointer %qE is checked for NULL here but"
+				     " it was already dereferenced at %@",
+				     m_arg, &m_first_deref_event);
+	else
+	  return ev.formatted_print ("pointer is checked for NULL here but"
+				     " it was already dereferenced at %@",
+				     &m_first_deref_event);
+      }
+    else
+      {
+	if (m_arg)
+	  return ev.formatted_print ("pointer %qE is checked for NULL here but"
+				     " it was already dereferenced",
+				     m_arg);
+	else
+	  return ev.formatted_print ("pointer is checked for NULL here but"
+				     " it was already dereferenced");
+      }
+  }
+
+private:
+  diagnostic_event_id_t m_first_deref_event;
+};
+
 /* struct allocation_state : public state_machine::state.  */
 
 /* Implementation of state_machine::state::dump_to_pp vfunc
@@ -1454,6 +1583,17 @@ allocation_state::get_nonnull () const
 {
   gcc_assert (m_deallocators);
   return as_a_allocation_state (m_deallocators->m_nonnull);
+}
+
+/* struct assumed_non_null_state : public allocation_state.  */
+
+void
+assumed_non_null_state::dump_to_pp (pretty_printer *pp) const
+{
+  allocation_state::dump_to_pp (pp);
+  pp_string (pp, " (in ");
+  m_frame->dump_to_pp (pp, true);
+  pp_character (pp, ')');
 }
 
 /* malloc_state_machine's ctor.  */
@@ -1597,6 +1737,22 @@ malloc_state_machine::get_or_create_deallocator (tree deallocator_fndecl)
   return d;
 }
 
+/* Get the "assumed-non-null" state for assumptions made within FRAME,
+   creating it if necessary.  */
+
+state_machine::state_t
+malloc_state_machine::
+get_or_create_assumed_non_null_state_for_frame (const frame_region *frame)
+{
+  if (state_t *slot = m_assumed_non_null.get (frame))
+    return *slot;
+  state_machine::state *new_state
+    = new assumed_non_null_state ("assumed-non-null", alloc_state_id (), frame);
+  add_custom_state (new_state);
+  m_assumed_non_null.put (frame, new_state);
+  return new_state;
+}
+
 /* Try to identify the function declaration either by name or as a known malloc
    builtin.  */
 
@@ -1627,6 +1783,33 @@ known_allocator_p (const_tree fndecl, const gcall *call)
       }
 
   return false;
+}
+
+/* If PTR's nullness is not known, transition it to the "assumed-non-null"
+   state for the current frame.  */
+
+void
+malloc_state_machine::maybe_assume_non_null (sm_context *sm_ctxt,
+					     tree ptr,
+					     const gimple *stmt) const
+{
+  const region_model *old_model = sm_ctxt->get_old_region_model ();
+  if (!old_model)
+    return;
+
+  tree null_ptr_cst = build_int_cst (TREE_TYPE (ptr), 0);
+  tristate known_non_null
+    = old_model->eval_condition (ptr, NE_EXPR, null_ptr_cst, NULL);
+  if (known_non_null.is_unknown ())
+    {
+      /* Cast away const-ness for cache-like operations.  */
+      malloc_state_machine *mut_this
+	= const_cast <malloc_state_machine *> (this);
+      state_t next_state
+	= mut_this->get_or_create_assumed_non_null_state_for_frame
+	(old_model->get_current_frame ());
+      sm_ctxt->set_next_state (stmt, ptr, next_state);
+    }
 }
 
 /* Implementation of state_machine::on_stmt vfunc for malloc_state_machine.  */
@@ -1743,6 +1926,8 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 					   (*this, diag_arg, callee_fndecl, i));
 			  sm_ctxt->set_next_state (stmt, arg, m_stop);
 			}
+		      else if (state == m_start)
+			maybe_assume_non_null (sm_ctxt, arg, stmt);
 		    }
 		}
 	      BITMAP_FREE (nonnull_args);
@@ -1759,6 +1944,36 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    on_deallocator_call (sm_ctxt, node, call, d, dealloc_argno);
 	  }
       }
+
+  /* Look for pointers explicitly being compared against zero
+     that are in state assumed_non_null i.e. we already defererenced
+     them.
+     We have to do this check here, rather than in on_condition
+     because we add a constraint that the pointer is non-null when
+     dereferencing it, and this makes the apply_constraints_for_gcond
+     find known-true and known-false conditions; on_condition is only
+     called when adding new constraints.  */
+  if (const gcond *cond_stmt = dyn_cast <const gcond *> (stmt))
+    {
+      enum tree_code op = gimple_cond_code (cond_stmt);
+      if (op == EQ_EXPR || op == NE_EXPR)
+	{
+	  tree lhs = gimple_cond_lhs (cond_stmt);
+	  tree rhs = gimple_cond_rhs (cond_stmt);
+	  if (any_pointer_p (lhs)
+	      && any_pointer_p (rhs)
+	      && zerop (rhs))
+	    {
+	      state_t state = sm_ctxt->get_state (stmt, lhs);
+	      if (assumed_non_null_p (state))
+		maybe_complain_about_deref_before_check
+		  (sm_ctxt, node,
+		   stmt,
+		   (const assumed_non_null_state *)state,
+		   lhs);
+	    }
+	}
+    }
 
   if (tree lhs = sm_ctxt->is_zero_assignment (stmt))
     if (any_pointer_p (lhs))
@@ -1778,7 +1993,9 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  tree arg = TREE_OPERAND (op, 0);
 
 	  state_t state = sm_ctxt->get_state (stmt, arg);
-	  if (unchecked_p (state))
+	  if (state == m_start)
+	    maybe_assume_non_null (sm_ctxt, arg, stmt);
+	  else if (unchecked_p (state))
 	    {
 	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
@@ -1806,6 +2023,53 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	}
     }
   return false;
+}
+
+/* Given a check against null of PTR in assumed-non-null state STATE,
+   potentially add a deref_before_check warning to SM_CTXT.  */
+
+void
+malloc_state_machine::
+maybe_complain_about_deref_before_check (sm_context *sm_ctxt,
+					 const supernode *node,
+					 const gimple *stmt,
+					 const assumed_non_null_state *state,
+					 tree ptr) const
+{
+  const region_model *model = sm_ctxt->get_old_region_model ();
+  if (!model)
+    return;
+
+  /* Don't complain if the current frame (where the check is occurring) is
+     deeper than the frame in which the "not null" assumption was made.
+     This suppress false positives for cases like:
+
+	void foo (struct s *p)
+	{
+	  int val = s->some_field; // deref here
+	  shared_helper (p);
+	}
+
+     where "shared_helper" has:
+
+	void shared_helper (struct s *p)
+	{
+	  if (!p) // check here
+	    return;
+	  // etc
+	}
+
+     since the check in "shared_helper" is OK.  */
+  const frame_region *checked_in_frame = model->get_current_frame ();
+  const frame_region *assumed_nonnull_in_frame = state->m_frame;
+  if (checked_in_frame->get_index () > assumed_nonnull_in_frame->get_index ())
+    return;
+
+  tree diag_ptr = sm_ctxt->get_diagnostic_tree (ptr);
+  sm_ctxt->warn
+    (node, stmt, ptr,
+     make_unique<deref_before_check> (*this, diag_ptr));
+  sm_ctxt->set_next_state (stmt, ptr, m_stop);
 }
 
 /* Handle a call to an allocator.
@@ -1870,8 +2134,8 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
 
   state_t state = sm_ctxt->get_state (call, arg);
 
-  /* start/unchecked/nonnull -> freed.  */
-  if (state == m_start)
+  /* start/assumed_non_null/unchecked/nonnull -> freed.  */
+  if (state == m_start || assumed_non_null_p (state))
     sm_ctxt->set_next_state (call, arg, d->m_freed);
   else if (unchecked_p (state) || nonnull_p (state))
     {
@@ -2016,6 +2280,31 @@ malloc_state_machine::on_condition (sm_context *sm_ctxt,
     }
 }
 
+/* Implementation of state_machine::on_pop_frame vfunc for malloc_state_machine.
+   Clear any "assumed-non-null" state where the assumption happened in
+   FRAME_REG.  */
+
+void
+malloc_state_machine::on_pop_frame (sm_state_map *smap,
+				    const frame_region *frame_reg) const
+{
+  hash_set<const svalue *> svals_to_clear;
+  for (auto kv : *smap)
+    {
+      const svalue *sval = kv.first;
+      state_t state = kv.second.m_state;
+      if (assumed_non_null_p (state))
+	{
+	  const assumed_non_null_state *assumed_state
+	    = (const assumed_non_null_state *)state;
+	  if (frame_reg == assumed_state->m_frame)
+	    svals_to_clear.add (sval);
+	}
+    }
+  for (auto sval : svals_to_clear)
+    smap->clear_any_state (sval);
+}
+
 /* Implementation of state_machine::can_purge_p vfunc for malloc_state_machine.
    Don't allow purging of pointers in state 'unchecked' or 'nonnull'
    (to avoid false leak reports).  */
@@ -2051,6 +2340,23 @@ malloc_state_machine::reset_when_passed_to_unknown_fn_p (state_t s,
 
   /* Otherwise, pointers passed as non-const can be freed.  */
   return is_mutable;
+}
+
+/* Implementation of state_machine::maybe_get_merged_states_nonequal vfunc
+   for malloc_state_machine.
+
+   Support discarding "assumed-non-null" states when merging with
+   start state.  */
+
+state_machine::state_t
+malloc_state_machine::maybe_get_merged_states_nonequal (state_t state_a,
+							state_t state_b) const
+{
+  if (assumed_non_null_p (state_a) && state_b == m_start)
+    return m_start;
+  if (state_a == m_start && assumed_non_null_p (state_b))
+    return m_start;
+  return NULL;
 }
 
 /* Return true if calls to FNDECL are known to not affect this sm-state.  */

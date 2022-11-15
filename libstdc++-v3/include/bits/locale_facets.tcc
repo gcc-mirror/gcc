@@ -1326,6 +1326,22 @@ _GLIBCXX_END_NAMESPACE_LDBL
   extern template class ctype_byname<char>;
 
   extern template
+    const ctype<char>*
+    __try_use_facet<ctype<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const numpunct<char>*
+    __try_use_facet<numpunct<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const num_put<char>*
+    __try_use_facet<num_put<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const num_get<char>*
+    __try_use_facet<num_get<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
     const ctype<char>&
     use_facet<ctype<char> >(const locale&);
 
@@ -1365,6 +1381,22 @@ _GLIBCXX_END_NAMESPACE_LDBL
   extern template class ctype_byname<wchar_t>;
 
   extern template
+    const ctype<wchar_t>*
+    __try_use_facet<ctype<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const numpunct<wchar_t>*
+    __try_use_facet<numpunct<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const num_put<wchar_t>*
+    __try_use_facet<num_put<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const num_get<wchar_t>*
+    __try_use_facet<num_get<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
     const ctype<wchar_t>&
     use_facet<ctype<wchar_t> >(const locale&);
 
@@ -1380,7 +1412,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
     const num_get<wchar_t>&
     use_facet<num_get<wchar_t> >(const locale&);
 
- extern template
+  extern template
     bool
     has_facet<ctype<wchar_t> >(const locale&);
 

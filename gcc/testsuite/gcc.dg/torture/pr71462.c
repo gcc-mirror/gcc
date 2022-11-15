@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-w" } */
 
 short a;
 long b;

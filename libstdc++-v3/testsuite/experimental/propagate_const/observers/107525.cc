@@ -32,10 +32,10 @@ test_const_conversion()
     operator const int*() const = delete;
   };
 
-  static_assert(!std::is_convertible_v<const X, const int*>,
+  static_assert(!std::is_convertible<const X, const int*>::value,
 		"Cannot convert const X to const int*");
   // So should not be able to convert const propagate_const<X> to const int*.
-  static_assert(!std::is_convertible_v<const propagate_const<X>, const int*>,
+  static_assert(!std::is_convertible<const propagate_const<X>, const int*>::value,
 		"So should not be able to convert const propagate_const<X> to "
 		"const int* (although this is not what LFTSv3 says)");
 }

@@ -209,7 +209,7 @@ package Erroutc is
       --  will be posted. Note that an error placed on an instantiation will
       --  have Sptr pointing to the instantiation point.
 
-      Optr : Source_Ptr;
+      Optr : Source_Span;
       --  Flag location used in the call to post the error. This is the same as
       --  Sptr, except when an error is posted on a particular instantiation of
       --  a generic. In such a case, Sptr will point to the original source

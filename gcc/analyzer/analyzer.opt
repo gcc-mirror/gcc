@@ -58,6 +58,10 @@ Wanalyzer-allocation-size
 Common Var(warn_analyzer_allocation_size) Init(1) Warning
 Warn about code paths in which a pointer to a buffer is assigned to an incompatible type.
 
+Wanalyzer-deref-before-check
+Common Var(warn_analyzer_deref_before_check) Init(1) Warning
+Warn about code paths in which a pointer is checked for NULL after it has already been dereferenced.
+
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning
 Warn about code paths in which a stdio FILE can be closed more than once.
@@ -105,6 +109,10 @@ Warn about code paths in which a non-heap pointer is freed.
 Wanalyzer-imprecise-fp-arithmetic
 Common Var(warn_analyzer_imprecise_fp_arithmetic) Init(1) Warning
 Warn about code paths in which floating-point arithmetic is used in locations where precise computation is needed.
+
+Wanalyzer-infinite-recursion
+Common Var(warn_analyzer_infinite_recursion) Init(1) Warning
+Warn about code paths which appear to lead to infinite recursion.
 
 Wanalyzer-jump-through-null
 Common Var(warn_analyzer_jump_through_null) Init(1) Warning
@@ -165,6 +173,10 @@ Warn about code paths in which an unsanitized value is used as an allocation siz
 Wanalyzer-tainted-array-index
 Common Var(warn_analyzer_tainted_array_index) Init(1) Warning
 Warn about code paths in which an unsanitized value is used as an array index.
+
+Wanalyzer-tainted-assertion
+Common Var(warn_analyzer_tainted_assertion) Init(1) Warning
+Warn about code paths in which an 'assert()' is made involving an unsanitized value.
 
 Wanalyzer-tainted-divisor
 Common Var(warn_analyzer_tainted_divisor) Init(1) Warning

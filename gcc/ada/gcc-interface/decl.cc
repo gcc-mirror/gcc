@@ -8363,7 +8363,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
        && !Debug_Flag_Dot_R);
   const bool w_reorder
     = (Convention (gnat_record_type) == Convention_Ada
-       && Warn_On_Questionable_Layout
+       && Get_Warn_On_Questionable_Layout ()
        && !(No_Reordering (gnat_record_type) && GNAT_Mode));
   tree gnu_zero_list = NULL_TREE;
   tree gnu_self_list = NULL_TREE;

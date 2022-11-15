@@ -518,6 +518,14 @@ sm_state_map::impl_set_state (const svalue *sval,
   return true;
 }
 
+/* Clear any state for SVAL from this state map.  */
+
+void
+sm_state_map::clear_any_state (const svalue *sval)
+{
+  m_map.remove (sval);
+}
+
 /* Set the "global" state within this state map to STATE.  */
 
 void
@@ -717,6 +725,67 @@ sm_state_map::canonicalize_svalue (const svalue *sval,
 	return mgr->get_or_create_constant_svalue (null_pointer_node);
 
   return sval;
+}
+
+/* Attempt to merge this state map with OTHER, writing the result
+   into *OUT.
+   Return true if the merger was possible, false otherwise.
+
+   Normally, only identical state maps can be merged, so that
+   differences between state maps lead to different enodes
+
+   However some state machines may support merging states to
+   allow for discarding of less important states, and thus avoid
+   blow-up of the exploded graph.  */
+
+bool
+sm_state_map::can_merge_with_p (const sm_state_map &other,
+				const state_machine &sm,
+				const extrinsic_state &ext_state,
+				sm_state_map **out) const
+{
+  /* If identical, then they merge trivially, with a copy.  */
+  if (*this == other)
+    {
+      delete *out;
+      *out = clone ();
+      return true;
+    }
+
+  delete *out;
+  *out = new sm_state_map (sm);
+
+  /* Otherwise, attempt to merge element by element. */
+
+  /* Try to merge global state.  */
+  if (state_machine::state_t merged_global_state
+      = sm.maybe_get_merged_state (get_global_state (),
+				   other.get_global_state ()))
+    (*out)->set_global_state (merged_global_state);
+  else
+    return false;
+
+  /* Try to merge state each svalue's state (for the union
+     of svalues represented by each smap).
+     Ignore the origin information.  */
+  hash_set<const svalue *> svals;
+  for (auto kv : *this)
+    svals.add (kv.first);
+  for (auto kv : other)
+    svals.add (kv.first);
+  for (auto sval : svals)
+    {
+      state_machine::state_t this_state = get_state (sval, ext_state);
+      state_machine::state_t other_state = other.get_state (sval, ext_state);
+      if (state_machine::state_t merged_state
+	    = sm.maybe_get_merged_state (this_state, other_state))
+	(*out)->impl_set_state (sval, merged_state, NULL, ext_state);
+      else
+	return false;
+    }
+
+  /* Successfully merged all elements.  */
+  return true;
 }
 
 /* class program_state.  */
@@ -1283,11 +1352,14 @@ program_state::can_merge_with_p (const program_state &other,
   gcc_assert (out);
   gcc_assert (m_region_model);
 
-  /* Early reject if there are sm-differences between the states.  */
+  /* Attempt to merge the sm-states.  */
   int i;
   sm_state_map *smap;
   FOR_EACH_VEC_ELT (out->m_checker_states, i, smap)
-    if (*m_checker_states[i] != *other.m_checker_states[i])
+    if (!m_checker_states[i]->can_merge_with_p (*other.m_checker_states[i],
+						ext_state.get_sm (i),
+						ext_state,
+						&out->m_checker_states[i]))
       return false;
 
   /* Attempt to merge the region_models.  */
@@ -1297,13 +1369,6 @@ program_state::can_merge_with_p (const program_state &other,
 					 &ext_state,
 					 this, &other))
     return false;
-
-  /* Copy m_checker_states to OUT.  */
-  FOR_EACH_VEC_ELT (out->m_checker_states, i, smap)
-    {
-      delete smap;
-      out->m_checker_states[i] = m_checker_states[i]->clone ();
-    }
 
   out->m_region_model->canonicalize ();
 

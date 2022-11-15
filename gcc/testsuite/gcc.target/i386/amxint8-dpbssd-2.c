@@ -1,7 +1,6 @@
 /* { dg-do run { target { ! ia32 } } } */
-/* { dg-require-effective-target amx_tile } */
 /* { dg-require-effective-target amx_int8 } */
-/* { dg-options "-O2 -mamx-tile -mamx-int8" } */
+/* { dg-options "-O2 -mamx-int8" } */
 #include <immintrin.h>
 
 #define AMX_INT8

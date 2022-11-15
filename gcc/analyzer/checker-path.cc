@@ -204,6 +204,20 @@ checker_event::dump (pretty_printer *pp) const
 	     get_location ());
 }
 
+/* Dump this event to stderr (for debugging/logging purposes).  */
+
+DEBUG_FUNCTION void
+checker_event::debug () const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump (&pp);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
 /* Hook for being notified when this event has its final id EMISSION_ID
    and is about to emitted for PD.
 
@@ -362,6 +376,14 @@ region_creation_event::get_desc (bool can_colorize) const
 }
 
 /* class function_entry_event : public checker_event.  */
+
+function_entry_event::function_entry_event (const program_point &dst_point)
+: checker_event (EK_FUNCTION_ENTRY,
+		 dst_point.get_supernode ()->get_start_location (),
+		 dst_point.get_fndecl (),
+		 dst_point.get_stack_depth ())
+{
+}
 
 /* Implementation of diagnostic_event::get_desc vfunc for
    function_entry_event.
@@ -1228,6 +1250,21 @@ checker_path::maybe_log (logger *logger, const char *desc) const
     }
 }
 
+void
+checker_path::add_event (std::unique_ptr<checker_event> event)
+{
+  if (m_logger)
+    {
+      m_logger->start_log_line ();
+      m_logger->log_partial ("added event[%i]: %s ",
+			     m_events.length (),
+			     event_kind_to_string (event.get ()->m_kind));
+      event.get ()->dump (m_logger->get_printer ());
+      m_logger->end_log_line ();
+    }
+  m_events.safe_push (event.release ());
+}
+
 /* Print a multiline form of this path to STDERR.  */
 
 DEBUG_FUNCTION void
@@ -1275,26 +1312,11 @@ checker_path::add_region_creation_events (const region *reg,
 						   loc, fndecl, depth));
 }
 
-/* Add a warning_event to the end of this path.  */
-
-void
-checker_path::add_final_event (const state_machine *sm,
-			       const exploded_node *enode, const gimple *stmt,
-			       tree var, state_machine::state_t state)
-{
-  add_event
-    (make_unique<warning_event> (get_stmt_location (stmt,
-						    enode->get_function ()),
-				 enode->get_function ()->decl,
-				 enode->get_stack_depth (),
-				 sm, var, state));
-}
-
 void
 checker_path::fixup_locations (pending_diagnostic *pd)
 {
   for (checker_event *e : m_events)
-    e->set_location (pd->fixup_location (e->get_location ()));
+    e->set_location (pd->fixup_location (e->get_location (), false));
 }
 
 /* Return true if there is a (start_cfg_edge_event, end_cfg_edge_event) pair

@@ -11284,6 +11284,9 @@ tsubst_friend_function (tree decl, tree args)
 	  not_tmpl = DECL_TEMPLATE_RESULT (new_friend);
 	  new_friend_result_template_info = DECL_TEMPLATE_INFO (not_tmpl);
 	}
+      else if (!constraints_satisfied_p (new_friend))
+	/* Only define a constrained hidden friend when satisfied.  */
+	return error_mark_node;
 
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go
@@ -20937,8 +20940,9 @@ tsubst_copy_and_build (tree t,
 		    /* In a lambda fn, we have to be careful to not
 		       introduce new this captures.  Legacy code can't
 		       be using lambdas anyway, so it's ok to be
-		       stricter.  Be strict with C++20 template-id ADL too.  */
-		    bool strict = in_lambda || template_id_p;
+		       stricter.  Be strict with C++20 template-id ADL too.
+		       And be strict if we're already failing anyway.  */
+		    bool strict = in_lambda || template_id_p || seen_error();
 		    bool diag = true;
 		    if (strict)
 		      error_at (cp_expr_loc_or_input_loc (t),

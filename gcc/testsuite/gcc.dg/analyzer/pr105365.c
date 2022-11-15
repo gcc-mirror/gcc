@@ -13,5 +13,5 @@ foo(_Float32 k) {
   f /= (_Complex char)__builtin_llround(g);
   k /= (cf32)__builtin_copysignf(0, i);
   bar(f + k);
-  foo(0);
+  foo(0); /* { dg-warning "infinite recursion" } */
 }

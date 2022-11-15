@@ -2186,6 +2186,9 @@
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator MAXMIN [smax smin umax umin])
 
+;; Code iterator for min/max ops but without UMAX.
+(define_code_iterator MAXMIN_NOUMAX [smax smin umin])
+
 (define_code_iterator FMAXMIN [smax smin])
 
 ;; Signed and unsigned max operations.

@@ -30,6 +30,7 @@ with Checks;
 with CStand;
 with Debug;          use Debug;
 with Elists;
+with Exp_Ch6;
 with Exp_Dbug;
 with Exp_Unst;
 with Fmap;
@@ -521,6 +522,16 @@ begin
 
    if Debug_Flag_Underscore_VV then
       VAST.Check_Tree (Cunit (Main_Unit));
+   end if;
+
+   --  Validate all the subprogram calls; this work will be done by VAST; in
+   --  the meantime it is done to check extra formals and it can be disabled
+   --  using -gnatd_X (which also disables all the other assertions on extra
+   --  formals). It is invoked using pragma Debug to avoid adding any cost
+   --  when the compiler is built with assertions disabled.
+
+   if not Debug_Flag_Underscore_XX then
+      pragma Debug (Exp_Ch6.Validate_Subprogram_Calls (Cunit (Main_Unit)));
    end if;
 
    --  Dump the source now. Note that we do this as soon as the analysis

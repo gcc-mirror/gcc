@@ -1247,6 +1247,6 @@ mraoint
 Target Mask(ISA2_RAOINT) Var(ix86_isa_flags2) Save
 Support RAOINT built-in functions and code generation.
 
-mprefer-remote-atomic
-Target Var(flag_prefer_remote_atomic) Init(0)
-Prefer use remote atomic insn for atomic operations.
+munroll-only-small-loops
+Target Var(ix86_unroll_only_small_loops) Init(0) Save
+Enable conservative small loop unrolling.

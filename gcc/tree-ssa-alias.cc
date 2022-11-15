@@ -1073,7 +1073,7 @@ component_ref_to_zero_sized_trailing_array_p (tree ref)
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE
 	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))
 	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))))
-	  && array_at_struct_end_p (ref));
+	  && array_ref_flexible_size_p (ref));
 }
 
 /* Worker for aliasing_component_refs_p. Most parameters match parameters of
@@ -3433,10 +3433,10 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	    }
 	  /* Finally check if the lhs has the same address and size as the
 	     base candidate of the access.  Watch out if we have dropped
-	     an array-ref that was at struct end, this means ref->ref may
-	     be outside of the TYPE_SIZE of its base.  */
+	     an array-ref that might have flexible size, this means ref->ref
+	     may be outside of the TYPE_SIZE of its base.  */
 	  if ((! innermost_dropped_array_ref
-	       || ! array_at_struct_end_p (innermost_dropped_array_ref))
+	       || ! array_ref_flexible_size_p (innermost_dropped_array_ref))
 	      && (lhs == base
 		  || (((TYPE_SIZE (TREE_TYPE (lhs))
 			== TYPE_SIZE (TREE_TYPE (base)))

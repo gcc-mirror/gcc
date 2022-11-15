@@ -38,6 +38,7 @@ class tristate {
   const char *as_string () const;
 
   bool is_known () const { return m_value != TS_UNKNOWN; }
+  bool is_unknown () const { return m_value == TS_UNKNOWN; }
   bool is_true () const { return m_value == TS_TRUE; }
   bool is_false () const { return m_value == TS_FALSE; }
 

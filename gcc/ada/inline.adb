@@ -3013,14 +3013,10 @@ package body Inline is
             Temp_Typ := Etype (A);
          end if;
 
-         --  If the actual is a simple name or a literal, no need to
-         --  create a temporary, object can be used directly.
-
-         --  If the actual is a literal and the formal has its address taken,
-         --  we cannot pass the literal itself as an argument, so its value
-         --  must be captured in a temporary. Skip this optimization in
-         --  GNATprove mode, to make sure any check on a type conversion
-         --  will be issued.
+         --  If the actual is a simple name or a literal, no need to create a
+         --  temporary, object can be used directly. Skip this optimization in
+         --  GNATprove mode, to make sure any check on a type conversion will
+         --  be issued.
 
          if (Is_Entity_Name (A)
               and then
@@ -3038,6 +3034,10 @@ package body Inline is
              (Nkind (A) = N_Identifier
                and then Formal_Is_Used_Once (F)
                and then not GNATprove_Mode)
+
+         --  If the actual is a literal and the formal has its address taken,
+         --  we cannot pass the literal itself as an argument, so its value
+         --  must be captured in a temporary.
 
            or else
              (Nkind (A) in
@@ -4723,8 +4723,8 @@ package body Inline is
       --------------------
 
       function Replace_Formal (N : Node_Id) return Traverse_Result is
-         A   : Entity_Id;
-         E   : Entity_Id;
+         A : Entity_Id;
+         E : Entity_Id;
 
       begin
          if Is_Entity_Name (N) and then Present (Entity (N)) then

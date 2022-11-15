@@ -1,3 +1,329 @@
+2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (utc_clock, tai_clock, gps_clock): Define.
+	(clock_time_conversion, clock_cast): Define.
+	(sys_info, local_info): Define structs for timezone information.
+	(nonexistent_local_time, ambiguous_local_time): Define
+	exceptions for invalid times.
+	(time_zone, time_zone_link, leap_second, zoned_traits, tzdb)
+	(tzdb_list): Define classes representing time zones.
+	(get_leap_second_info): Define new function returning leap
+	second offset for a given time point.
+	* testsuite/std/time/clock/gps/1.cc: New test.
+	* testsuite/std/time/clock/tai/1.cc: New test.
+	* testsuite/std/time/clock/utc/1.cc: New test.
+
+2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104166
+	* include/Makefile.am (std_headers): Add <format>.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add <format>.
+	* include/std/format: New file.
+	* python/libstdcxx/v6/printers.py (StdFormatArgsPrinter): New
+	printer for std::format_args.
+	* testsuite/std/format/arguments/args.cc: New test.
+	* testsuite/std/format/error.cc: New test.
+	* testsuite/std/format/formatter.cc: New test.
+	* testsuite/std/format/functions/format.cc: New test.
+	* testsuite/std/format/functions/format_to_n.cc: New test.
+	* testsuite/std/format/functions/size.cc: New test.
+	* testsuite/std/format/functions/vformat_to.cc: New test.
+	* testsuite/std/format/parse_ctx.cc: New test.
+	* testsuite/std/format/string.cc: New test.
+	* testsuite/std/format/string_neg.cc: New test.
+
+2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/charconv.h (__integer_to_chars_is_unsigned):
+	New variable template.
+	(__to_chars_len, __to_chars_10_impl): Use variable template in
+	assertions to allow unsigned __int128 in strict mode.
+	* include/std/charconv (__to_chars, __to_chars_16)
+	(__to_chars_10, __to_chars_8, __to_chars_2): Likewise.
+
+2022-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107636
+	* include/std/charconv (to_chars): Fix up powerpc64le _Float128
+	overload __extension__ placement.
+
+2022-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am: Simplify debug build targets.
+	* src/Makefile.in: Regenerate.
+
+2022-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103755
+	* src/c++11/locale-inst-monetary.h: Include new header.
+	* src/c++11/locale-inst-numeric.h: Likewise.
+	* src/c++11/locale-inst.cc: Likewise.
+	(INSTANTIATE_USE_FACET, INSTANTIATE_FACET_ACCESSORS): Move
+	macro definitions to ...
+	* src/c++11/facet_inst_macros.h: New file.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* include/experimental/bits/fs_path.h (path::_Cvt::_S_wconvert):
+	Construct codecvt directly instead of getting it from the
+	locale.
+
+2022-11-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_M_use_local_data): Set active
+	member to _M_local_buf.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* include/bits/fs_path.h (path::_Codecvt): New class template
+	that selects the kind of code conversion done.
+	(path::_Codecvt<wchar_t>): Select based on sizeof(wchar_t).
+	(_GLIBCXX_CONV_FROM_UTF8): New macro to allow the same code to
+	be used for Windows and POSIX.
+	(path::_S_convert(const EcharT*, const EcharT*)): Simplify by
+	using _Codecvt and _GLIBCXX_CONV_FROM_UTF8 abstractions.
+	(path::_S_str_convert(basic_string_view<value_type>, const A&)):
+	Simplify nested conditions.
+	* include/experimental/bits/fs_path.h (path::_Cvt): Define
+	nested typedef controlling type of code conversion done.
+	(path::_Cvt::_S_wconvert): Use new typedef.
+	(path::string(const A&)): Likewise.
+	* testsuite/27_io/filesystem/path/construct/95048.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/95048.cc: New
+	test.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/swap.cc (MoveOnly::operator==): Add
+	const qualifier.
+	* testsuite/26_numerics/valarray/87641.cc (X::operator==):
+	Likewise.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_alnum_to_val_table::value):
+	[!__cpp_inline_variables]: Add non-inline definition.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/propagate_const/observers/107525.cc:
+	Use type trait instead of C++17 variable template.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103755
+	* config/abi/pre/gnu.ver: Tighten patterns for facets in the
+	base version. Add exports for __try_use_facet.
+	* include/bits/basic_ios.tcc (basic_ios::_M_cache_locale): Use
+	__try_use_facet instead of has_facet and use_facet.
+	* include/bits/fstream.tcc (basic_filebuf::basic_filebuf()):
+	Likewise.
+	(basic_filebuf::imbue): Likewise.
+	* include/bits/locale_classes.h (locale, locale::id)
+	(locale::_Impl): Declare __try_use_facet as a friend.
+	* include/bits/locale_classes.tcc (__try_use_facet): Define new
+	function template with special cases for default facets.
+	(has_facet, use_facet): Call __try_use_facet.
+	* include/bits/locale_facets.tcc (__try_use_facet): Declare
+	explicit instantiations.
+	* include/bits/locale_facets_nonio.tcc (__try_use_facet):
+	Likewise.
+	* src/c++11/locale-inst-monetary.h (INSTANTIATE_FACET_ACCESSORS):
+	Use new macro for facet accessor instantiations.
+	* src/c++11/locale-inst-numeric.h (INSTANTIATE_FACET_ACCESSORS):
+	Likewise.
+	* src/c++11/locale-inst.cc (INSTANTIATE_USE_FACET): Define new
+	macro for instantiating __try_use_facet and use_facet.
+	(INSTANTIATE_FACET_ACCESSORS): Define new macro for also
+	defining has_facet.
+	* src/c++98/compatibility-ldbl.cc (__try_use_facet):
+	Instantiate.
+	* testsuite/22_locale/ctype/is/string/89728_neg.cc: Adjust
+	expected errors.
+
+2022-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/concepts (__detail::__destructible_impl)
+	(__detail::__destructible): New variable templates.
+	(destructible): Use __detail::__destructible.
+	* testsuite/std/concepts/concepts.lang/concept.destructible/1.cc:
+	Add more checks for array and reference types.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/new_nothrow.cc: Add missing noexcept
+	to operator delete replacements.
+	* testsuite/20_util/any/cons/92156.cc: Disable
+	-Winit-list-lifetime warnings from instantiating invalid
+	specialization of manager function.
+	* testsuite/20_util/any/modifiers/92156.cc: Likewise.
+	* testsuite/20_util/default_delete/void_neg.cc: Prune additional
+	diagnostics.
+	* testsuite/20_util/headers/memory/synopsis.cc: Add missing
+	noexcept.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Prune
+	additional diagnostic.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc: Add
+	missing noexcept to operator delete replacements.
+	* testsuite/21_strings/basic_string/cons/char/103919.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/emplace/92300.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/insert/92300.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Add missing noexcept to synopsis declarations.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Likewise.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (_Temporary_buffer): Disable
+	warnings about get_temporary_buffer being deprecated.
+	* include/ext/functional (mem_fun1, mem_fun1_ref): Disable
+	warnings about mem_fun1_t, const_mem_fun1_t, mem_fun1_ref_t and
+	const_mem_fun1_ref_t being deprecated.
+	* include/std/array (__array_traits<T, 0>): Remove artificial
+	attributes which give warnings about being ignored.
+	* include/std/spanstream (basic_spanbuf::setbuf): Add assertion
+	and adjust to avoid narrowing warning.
+	* libsupc++/exception_ptr.h [!__cpp_rtti && !__cpp_exceptions]
+	(make_exception_ptr): Add missing inline specifier.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits): Add
+	always_inline attribute to all member functions.
+	(__do_alloc_on_copy, __alloc_on_copy, __do_alloc_on_move)
+	(__alloc_on_move, __do_alloc_on_swap, __alloc_on_swap)
+	(_Destroy(FwdIter, FwdIter, allocator<T>&)): : Add
+	always_inline attribute.
+	* include/bits/allocator.h (allocator): Add always_inline
+	attribute to all member functions and equality operators.
+	* include/bits/new_allocator.h (__new_allocator): Likewise.
+	* include/ext/alloc_traits.h (__gnu_cxx::__alloc_traits):
+	Likewise.
+
+2022-11-08  Charles-François Natali  <cf.natali@gmail.com>
+
+	PR libstdc++/63746
+	* include/bits/fstream.tcc (basic_filbuf::xsputn): Remove
+	1024-byte chunking that bypasses the buffer for large writes.
+	* testsuite/27_io/basic_filebuf/sputn/char/63746.cc: New test.
+
+2022-11-08  Will Hawkins  <whh8b@obs.cr>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__str_cat): Add common function
+	that performs single-allocation string concatenation.
+	(operator+): Use __str_cat.
+	* include/bits/basic_string.tcc (operator+): Move to .h and
+	define inline using __str_cat.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/20_util/to_chars/float128_c++23.cc (test): Uncomment
+	denorm_min test.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/authors.xml: Update the blurb listing my doc
+	contributions.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/authors.xml: Remove empty author element.
+	* doc/xml/manual/spine.xml: Likewise.
+	* doc/html/manual/index.html: Regenerate.
+
+2022-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libstdc++/107562
+	* src/c++17/floating_from_chars.cc (from_chars_impl): Fix syntax
+	error.
+
+2022-11-08  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/18_support/comparisons/algorithms/fallback.cc: Adjust
+	asserts.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107562
+	* src/c++17/floating_from_chars.cc (__strtof128): Put __asm before
+	__attribute__.
+	* src/c++17/floating_to_chars.cc (__strfromf128): Likewise.
+
+2022-11-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (as_rvalue_view): Define.
+	(enable_borrowed_range<as_rvalue_view>): Define.
+	(views::__detail::__can_as_rvalue_view): Define.
+	(views::_AsRvalue, views::as_rvalue): Define.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: New test.
+
+2022-11-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__maybe_const_t): New alias for
+	__detail::__maybe_const_t.
+	(__detail::__cartesian_product_is_random_access): Define.
+	(__detail::__cartesian_product_common_arg): Define.
+	(__detail::__cartesian_product_is_bidirectional): Define.
+	(__detail::__cartesian_product_is_common): Define.
+	(__detail::__cartesian_product_is_sized): Define.
+	(__detail::__cartesian_is_sized_sentinel): Define.
+	(__detail::__cartesian_common_arg_end): Define.
+	(cartesian_product_view): Define.
+	(cartesian_product_view::_Iterator): Define.
+	(views::__detail::__can_cartesian_product_view): Define.
+	(views::_CartesianProduct, views::cartesian_product): Define.
+	* testsuite/std/ranges/cartesian_product/1.cc: New test.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107468
+	* src/c++17/fast_float/MERGE: Adjust for merge from upstream.
+	* src/c++17/fast_float/LOCAL_PATCHES: Remove commits that were
+	upstreamed.
+	* src/c++17/fast_float/README.md: Merge from fast_float
+	662497742fea7055f0e0ee27e5a7ddc382c2c38e commit.
+	* src/c++17/fast_float/fast_float.h: Likewise.
+	* testsuite/20_util/from_chars/pr107468.cc: New test.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (from_chars, to_chars): Add _Float128
+	overfloads if _GLIBCXX_HAVE_FLOAT128_MATH is defined.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.31): Export
+	_ZSt8to_charsPcS_DF128_, _ZSt8to_charsPcS_DF128_St12chars_format,
+	_ZSt8to_charsPcS_DF128_St12chars_formati and
+	_ZSt10from_charsPKcS0_RDF128_St12chars_format.
+	* src/c++17/floating_from_chars.cc (USE_STRTOF128_FOR_FROM_CHARS):
+	Define if needed.
+	(__strtof128): Declare.
+	(from_chars_impl): Handle _Float128.
+	(from_chars): New _Float128 overload if USE_STRTOF128_FOR_FROM_CHARS
+	is define.
+	* src/c++17/floating_to_chars.cc (__strfromf128): Declare.
+	(FLOAT128_TO_CHARS): Define even when _Float128 is supported and
+	wider than long double.
+	(F128_type): Use _Float128 for that case.
+	(floating_type_traits): Specialize for F128_type rather than
+	__float128.
+	(sprintf_ld): Add length argument.  Handle _Float128.
+	(__floating_to_chars_shortest, __floating_to_chars_precision):
+	Pass length to sprintf_ld.
+	(to_chars): Add _Float128 overloads for the F128_type being
+	_Float128 cases.
+	* testsuite/20_util/to_chars/float128_c++23.cc: New test.
+
 2022-11-06  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/atomic_wait.h (_detail::__platform_wait_alignment):

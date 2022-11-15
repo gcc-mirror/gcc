@@ -458,6 +458,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
 -Wno-analyzer-imprecise-fp-arithmetic @gol
+-Wno-analyzer-infinite-recursion @gol
 -Wno-analyzer-jump-through-null @gol
 -Wno-analyzer-malloc-leak @gol
 -Wno-analyzer-mismatching-deallocation @gol
@@ -471,6 +472,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-shift-count-overflow @gol
 -Wno-analyzer-stale-setjmp-buffer @gol
 -Wno-analyzer-tainted-allocation-size @gol
+-Wno-analyzer-tainted-assertion @gol
 -Wno-analyzer-tainted-array-index @gol
 -Wno-analyzer-tainted-divisor @gol
 -Wno-analyzer-tainted-offset @gol
@@ -1056,13 +1058,6 @@ Objective-C and Objective-C++ Dialects}.
 -mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim @gol
 -mlittle-endian  -mbig-endian  -m210  -m340  -mstack-increment}
 
-@emph{MeP Options}
-@gccoptlist{-mabsdiff  -mall-opts  -maverage  -mbased=@var{n}  -mbitops @gol
--mc=@var{n}  -mclip  -mconfig=@var{name}  -mcop  -mcop32  -mcop64  -mivc2 @gol
--mdc  -mdiv  -meb  -mel  -mio-volatile  -ml  -mleadz  -mm  -mminmax @gol
--mmult  -mno-opts  -mrepeat  -ms  -msatur  -msdram  -msim  -msimnovec  -mtf @gol
--mtiny=@var{n}}
-
 @emph{MicroBlaze Options}
 @gccoptlist{-msoft-float  -mhard-float  -msmall-divides  -mcpu=@var{cpu} @gol
 -mmemcpy  -mxl-soft-mul  -mxl-soft-div  -mxl-barrel-shift @gol
@@ -1438,7 +1433,7 @@ See RS/6000 and PowerPC Options.
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni@gol
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16 @gol
--mprefetchi -mraoint -mprefer-remote-atomic@gol
+-mprefetchi -mraoint @gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mkl -mwidekl @gol
@@ -1461,7 +1456,8 @@ See RS/6000 and PowerPC Options.
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
 -mindirect-branch-register -mharden-sls=@var{choice} @gol
--mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access}
+-mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access @gol
+-munroll-only-small-loops}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -3666,6 +3662,16 @@ by wrapping them in a @code{#pragma}:
 const T& foo (const T&) @{ @dots{} @}
 #pragma GCC diagnostic pop
 @end smallexample
+
+@option{-Wdangling-reference} also warns about code like
+
+@smallexample
+auto p = std::minmax(1, 2);
+@end smallexample
+
+where @code{std::minmax} returns @code{std::pair<const int&, const int&>}, and
+both references dangle after the end of the full expression that contains
+the call to @code{std::minmax}.
 
 This warning is enabled by @option{-Wall}.
 
@@ -6481,6 +6487,10 @@ Warn about infinitely recursive calls.  The warning is effective at all
 optimization levels but requires optimization in order to detect infinite
 recursion in calls between two or more functions.
 @option{-Winfinite-recursion} is included in @option{-Wall}.
+
+Compare with @option{-Wanalyzer-infinite-recursion} which provides a
+similar diagnostic, but is implemented in a different way (as part of
+@option{-fanalyzer}).
 
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
@@ -9892,6 +9902,7 @@ Enabling this option effectively enables the following warnings:
 
 @gccoptlist{ @gol
 -Wanalyzer-allocation-size @gol
+-Wanalyzer-deref-before-check @gol
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
@@ -9904,6 +9915,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-imprecise-fp-arithmetic @gol
+-Wanalyzer-infinite-recursion @gol
 -Wanalyzer-jump-through-null @gol
 -Wanalyzer-malloc-leak @gol
 -Wanalyzer-mismatching-deallocation @gol
@@ -9961,6 +9973,30 @@ a buffer is assigned to point at a buffer with a size that is not a
 multiple of @code{sizeof (*pointer)}.
 
 See @uref{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
+
+@item -Wno-analyzer-deref-before-check
+@opindex Wanalyzer-deref-before-check
+@opindex Wno-analyzer-deref-before-check
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-deref-before-check}
+to disable it.
+
+This diagnostic warns for paths through the code in which a pointer
+is checked for @code{NULL} *after* it has already been
+dereferenced, suggesting that the pointer could have been NULL.
+Such cases suggest that the check for NULL is either redundant,
+or that it needs to be moved to before the pointer is dereferenced.
+
+This diagnostic also considers values passed to a function argument
+marked with @code{__attribute__((nonnull))} as requiring a non-NULL
+value, and thus will complain if such values are checked for @code{NULL}
+after returning from such a function call.
+
+This diagnostic is unlikely to be reported when any level of optimization
+is enabled, as GCC's optimization logic will typically consider such
+checks for NULL as being redundant, and optimize them away before the
+analyzer "sees" them.  Hence optimization should be disabled when
+attempting to trigger this diagnostic.
 
 @item -Wno-analyzer-double-fclose
 @opindex Wanalyzer-double-fclose
@@ -10117,6 +10153,30 @@ This diagnostic warns for paths through the code in which floating-point
 arithmetic is used in locations where precise computation is needed.  This
 diagnostic only warns on use of floating-point operands inside the
 calculation of an allocation size at the moment.
+
+@item -Wno-analyzer-infinite-recursion
+@opindex Wanalyzer-infinite-recursion
+@opindex Wno-analyzer-infinite-recursion
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-infinite-recursion} to disable it.
+
+This diagnostics warns for paths through the code which appear to
+lead to infinite recursion.
+
+Specifically, when the analyzer "sees" a recursive call, it will compare
+the state of memory at the entry to the new frame with that at the entry
+to the previous frame of that function on the stack.  The warning is
+issued if nothing in memory appears to be changing; any changes observed
+to parameters or globals are assumed to lead to termination of the
+recursion and thus suppress the warning.
+
+This diagnostic is likely to miss cases of infinite recursion that
+are convered to iteration by the optimizer before the analyzer "sees"
+them.  Hence optimization should be disabled when attempting to trigger
+this diagnostic.
+
+Compare with @option{-Winfinite-recursion}, which provides a similar
+diagnostic, but is implemented in a different way.
 
 @item -Wno-analyzer-jump-through-null
 @opindex Wanalyzer-jump-through-null
@@ -10291,6 +10351,69 @@ inject an excessively large allocation and potentially cause a denial
 of service attack.
 
 See @uref{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
+
+@item -Wno-analyzer-tainted-assertion
+@opindex Wanalyzer-tainted-assertion
+@opindex Wno-analyzer-tainted-assertion
+
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-assertion} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as part of a
+condition without being first sanitized, and that condition guards a
+call to a function marked with attribute @code{noreturn}
+(such as the function @code{__builtin_unreachable}).  Such functions
+typically indicate abnormal termination of the program, such as for
+assertion failure handlers.  For example:
+
+@smallexample
+assert (some_tainted_value < SOME_LIMIT);
+@end smallexample
+
+In such cases:
+
+@itemize
+@item
+when assertion-checking is enabled: an attacker could trigger
+a denial of service by injecting an assertion failure
+
+@item
+when assertion-checking is disabled, such as by defining @code{NDEBUG},
+an attacker could inject data that subverts the process, since it
+presumably violates a precondition that is being assumed by the code.
+
+@end itemize
+
+Note that when assertion-checking is disabled, the assertions are
+typically removed by the preprocessor before the analyzer has a chance
+to "see" them, so this diagnostic can only generate warnings on builds
+in which assertion-checking is enabled.
+
+For the purpose of this warning, any function marked with attribute
+@code{noreturn} is considered as a possible assertion failure
+handler, including @code{__builtin_unreachable}.  Note that these functions
+are sometimes removed by the optimizer before the analyzer "sees" them.
+Hence optimization should be disabled when attempting to trigger this
+diagnostic.
+
+See @uref{https://cwe.mitre.org/data/definitions/617.html, CWE-617: Reachable Assertion}.
+
+The warning can also report problematic constructions such as
+
+@smallexample
+switch (some_tainted_value) @{
+case 0:
+  /* [...etc; various valid cases omitted...] */
+  break;
+
+default:
+  __builtin_unreachable (); /* BUG: attacker can trigger this  */
+@}
+@end smallexample
+
+despite the above not being an assertion failure, strictly speaking.
 
 @item -Wno-analyzer-tainted-array-index
 @opindex Wanalyzer-tainted-array-index
@@ -10586,6 +10709,7 @@ to enable them.
 following warnings from @option{-fanalyzer}:
 
 @gccoptlist{ @gol
+-Wanalyzer-deref-before-check @gol
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
@@ -16502,9 +16626,10 @@ by this option.
 
 @end table
 
-Note the enabled sanitizer options tend to increase a false-positive rate
-of selected warnings, most notably @option{-Wmaybe-uninitialized}.
-And thus we recommend to disable @option{-Werror}.
+Note that sanitizers tend to increase the rate of false positive
+warnings, most notably those around @option{-Wmaybe-uninitialized}.
+We recommend against combining @option{-Werror} and [the use of]
+sanitizers.
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
@@ -16900,7 +17025,7 @@ routines generate output or allocate memory).
 @xref{Common Function Attributes}.
 
 @item -finstrument-functions-once
-@opindex -finstrument-functions-once
+@opindex finstrument-functions-once
 This is similar to @option{-finstrument-functions}, but the profiling
 functions are called only once per instrumented function, i.e. the first
 profiling function is called after the first entry into the instrumented
@@ -19587,7 +19712,6 @@ platform.
 * M32R/D Options::
 * M680x0 Options::
 * MCore Options::
-* MeP Options::
 * MicroBlaze Options::
 * MIPS Options::
 * MMIX Options::
@@ -19861,8 +19985,9 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
-@samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x2},
-@samp{cortex-a510}, @samp{cortex-a710}, @samp{ampere1}, @samp{native}.
+@samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x1c}, @samp{cortex-x2},
+@samp{cortex-x3}, @samp{cortex-a510}, @samp{cortex-a710}, @samp{cortex-a715},
+@samp{ampere1}, @samp{ampere1a}, and @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -20116,6 +20241,8 @@ Enable the instructions to accelerate memory operations like @code{memcpy},
 Enable the Flag Manipulation instructions Extension.
 @item pauth
 Enable the Pointer Authentication Extension.
+@item cssc
+Enable the Common Short Sequence Compression instructions.
 
 @end table
 
@@ -21753,7 +21880,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52}, @samp{cortex-r52plus},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-x1},
+@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-x1}, @samp{cortex-x1c},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},
@@ -25082,7 +25209,7 @@ These command-line options are defined for LoongArch targets:
 
 @table @gcctabopt
 @item -march=@var{cpu-type}
-@opindex -march
+@opindex march
 Generate instructions for the machine type @var{cpu-type}.  In contrast to
 @option{-mtune=@var{cpu-type}}, which merely tunes the generated code
 for the specified @var{cpu-type}, @option{-march=@var{cpu-type}} allows GCC
@@ -25152,43 +25279,43 @@ registers for parameter passing.  This option may change the target
 ABI.
 
 @item -msingle-float
-@opindex -msingle-float
+@opindex msingle-float
 Force @option{-mfpu=32} and allow the use of 32-bit floating-point
 registers for parameter passing.  This option may change the target
 ABI.
 
 @item -mdouble-float
-@opindex -mdouble-float
+@opindex mdouble-float
 Force @option{-mfpu=64} and allow the use of 32/64-bit floating-point
 registers for parameter passing.  This option may change the target
 ABI.
 
 @item -mbranch-cost=@var{n}
-@opindex -mbranch-cost
+@opindex mbranch-cost
 Set the cost of branches to roughly @var{n} instructions.
 
 @item -mcheck-zero-division
 @itemx -mno-check-zero-divison
-@opindex -mcheck-zero-division
+@opindex mcheck-zero-division
 Trap (do not trap) on integer division by zero.  The default is
 @option{-mcheck-zero-division} for @option{-O0} or @option{-Og}, and
 @option{-mno-check-zero-division} for other optimization levels.
 
 @item -mcond-move-int
 @itemx -mno-cond-move-int
-@opindex -mcond-move-int
+@opindex mcond-move-int
 Conditional moves for integral data in general-purpose registers
 are enabled (disabled).  The default is @option{-mcond-move-int}.
 
 @item -mcond-move-float
 @itemx -mno-cond-move-float
-@opindex -mcond-move-float
+@opindex mcond-move-float
 Conditional moves for floating-point registers are enabled (disabled).
 The default is @option{-mcond-move-float}.
 
 @item -mmemcpy
 @itemx -mno-memcpy
-@opindex -mmemcpy
+@opindex mmemcpy
 Force (do not force) the use of @code{memcpy} for non-trivial block moves.
 The default is @option{-mno-memcpy}, which allows GCC to inline most
 constant-sized copies.  Setting optimization level to @option{-Os} also
@@ -25198,18 +25325,18 @@ the command line.
 
 @item -mstrict-align
 @itemx -mno-strict-align
-@opindex -mstrict-align
+@opindex mstrict-align
 Avoid or allow generating memory accesses that may not be aligned on a natural
 object boundary as described in the architecture specification. The default is
 @option{-mno-strict-align}.
 
 @item -msmall-data-limit=@var{number}
-@opindex -msmall-data-limit
+@opindex msmall-data-limit
 Put global and static data smaller than @var{number} bytes into a special
 section (on some targets).  The default value is 0.
 
 @item -mmax-inline-memcpy-size=@var{n}
-@opindex -mmax-inline-memcpy-size
+@opindex mmax-inline-memcpy-size
 Inline all block moves (such as calls to @code{memcpy} or structure copies)
 less than or equal to @var{n} bytes.  The default value of @var{n} is 1024.
 
@@ -25877,169 +26004,6 @@ values can increase the speed of programs that contain functions
 that need a large amount of stack space, but they can also trigger a
 segmentation fault if the stack is extended too much.  The default
 value is 0x1000.
-
-@end table
-
-@node MeP Options
-@subsection MeP Options
-@cindex MeP options
-
-@table @gcctabopt
-
-@item -mabsdiff
-@opindex mabsdiff
-Enables the @code{abs} instruction, which is the absolute difference
-between two registers.
-
-@item -mall-opts
-@opindex mall-opts
-Enables all the optional instructions---average, multiply, divide, bit
-operations, leading zero, absolute difference, min/max, clip, and
-saturation.
-
-
-@item -maverage
-@opindex maverage
-Enables the @code{ave} instruction, which computes the average of two
-registers.
-
-@item -mbased=@var{n}
-@opindex mbased=
-Variables of size @var{n} bytes or smaller are placed in the
-@code{.based} section by default.  Based variables use the @code{$tp}
-register as a base register, and there is a 128-byte limit to the
-@code{.based} section.
-
-@item -mbitops
-@opindex mbitops
-Enables the bit operation instructions---bit test (@code{btstm}), set
-(@code{bsetm}), clear (@code{bclrm}), invert (@code{bnotm}), and
-test-and-set (@code{tas}).
-
-@item -mc=@var{name}
-@opindex mc=
-Selects which section constant data is placed in.  @var{name} may
-be @samp{tiny}, @samp{near}, or @samp{far}.
-
-@item -mclip
-@opindex mclip
-Enables the @code{clip} instruction.  Note that @option{-mclip} is not
-useful unless you also provide @option{-mminmax}.
-
-@item -mconfig=@var{name}
-@opindex mconfig=
-Selects one of the built-in core configurations.  Each MeP chip has
-one or more modules in it; each module has a core CPU and a variety of
-coprocessors, optional instructions, and peripherals.  The
-@code{MeP-Integrator} tool, not part of GCC, provides these
-configurations through this option; using this option is the same as
-using all the corresponding command-line options.  The default
-configuration is @samp{default}.
-
-@item -mcop
-@opindex mcop
-Enables the coprocessor instructions.  By default, this is a 32-bit
-coprocessor.  Note that the coprocessor is normally enabled via the
-@option{-mconfig=} option.
-
-@item -mcop32
-@opindex mcop32
-Enables the 32-bit coprocessor's instructions.
-
-@item -mcop64
-@opindex mcop64
-Enables the 64-bit coprocessor's instructions.
-
-@item -mivc2
-@opindex mivc2
-Enables IVC2 scheduling.  IVC2 is a 64-bit VLIW coprocessor.
-
-@item -mdc
-@opindex mdc
-Causes constant variables to be placed in the @code{.near} section.
-
-@item -mdiv
-@opindex mdiv
-Enables the @code{div} and @code{divu} instructions.
-
-@item -meb
-@opindex meb
-Generate big-endian code.
-
-@item -mel
-@opindex mel
-Generate little-endian code.
-
-@item -mio-volatile
-@opindex mio-volatile
-Tells the compiler that any variable marked with the @code{io}
-attribute is to be considered volatile.
-
-@item -ml
-@opindex ml
-Causes variables to be assigned to the @code{.far} section by default.
-
-@item -mleadz
-@opindex mleadz
-Enables the @code{leadz} (leading zero) instruction.
-
-@item -mm
-@opindex mm
-Causes variables to be assigned to the @code{.near} section by default.
-
-@item -mminmax
-@opindex mminmax
-Enables the @code{min} and @code{max} instructions.
-
-@item -mmult
-@opindex mmult
-Enables the multiplication and multiply-accumulate instructions.
-
-@item -mno-opts
-@opindex mno-opts
-Disables all the optional instructions enabled by @option{-mall-opts}.
-
-@item -mrepeat
-@opindex mrepeat
-Enables the @code{repeat} and @code{erepeat} instructions, used for
-low-overhead looping.
-
-@item -ms
-@opindex ms
-Causes all variables to default to the @code{.tiny} section.  Note
-that there is a 65536-byte limit to this section.  Accesses to these
-variables use the @code{%gp} base register.
-
-@item -msatur
-@opindex msatur
-Enables the saturation instructions.  Note that the compiler does not
-currently generate these itself, but this option is included for
-compatibility with other tools, like @code{as}.
-
-@item -msdram
-@opindex msdram
-Link the SDRAM-based runtime instead of the default ROM-based runtime.
-
-@item -msim
-@opindex msim
-Link the simulator run-time libraries.
-
-@item -msimnovec
-@opindex msimnovec
-Link the simulator runtime libraries, excluding built-in support
-for reset and exception vectors and tables.
-
-@item -mtf
-@opindex mtf
-Causes all functions to default to the @code{.far} section.  Without
-this option, functions default to the @code{.near} section.
-
-@item -mtiny=@var{n}
-@opindex mtiny=
-Variables that are @var{n} bytes or smaller are allocated to the
-@code{.tiny} section.  These variables use the @code{$gp} base
-register.  The default for this option is 4, but note that there's a
-65536-byte limit to the @code{.tiny} section.
 
 @end table
 
@@ -29504,7 +29468,7 @@ Specify both @option{-mcall-sysv} and @option{-meabi} options.
 Specify both @option{-mcall-sysv} and @option{-mno-eabi} options.
 
 @item -mcall-aixdesc
-@opindex m
+@opindex mcall-aixdesc
 On System V.4 and embedded PowerPC systems compile code for the AIX
 operating system.
 
@@ -29524,7 +29488,7 @@ On System V.4 and embedded PowerPC systems compile code for the
 NetBSD operating system.
 
 @item -mcall-openbsd
-@opindex mcall-netbsd
+@opindex mcall-openbsd
 On System V.4 and embedded PowerPC systems compile code for the
 OpenBSD operating system.
 
@@ -32501,7 +32465,7 @@ comparison is unordered.
 
 @item -m80387
 @itemx -mhard-float
-@opindex 80387
+@opindex m80387
 @opindex mhard-float
 Generate output containing 80387 instructions for floating point.
 
@@ -33675,10 +33639,6 @@ execute pause if load value is not expected. This reduces excessive
 cachline bouncing when and works for all atomic logic fetch builtins
 that generates compare and swap loop.
 
-@item -mprefer-remote-atomic
-@opindex mprefer-remote-atomic
-Prefer use remote atomic insn for atomic operations.
-
 @item -mindirect-branch=@var{choice}
 @opindex mindirect-branch
 Convert indirect call and jump with @var{choice}.  The default is
@@ -33841,6 +33801,14 @@ treat access to protected symbols as local symbols.  The default is
 @option{-mno-direct-extern-access} and executable compiled with
 @option{-mdirect-extern-access} may not be binary compatible if
 protected symbols are used in shared libraries and executable.
+
+@item -munroll-only-small-loops
+@opindex munroll-only-small-loops
+@opindex mno-unroll-only-small-loops
+Controls conservative small loop unrolling. It is default enabled by
+O2, and unrolls loop with less than 4 insns by 1 time. Explicit
+-f[no-]unroll-[all-]loops would disable this flag to avoid any
+unintended unrolling behavior that user does not want.
 @end table
 
 @node x86 Windows Options

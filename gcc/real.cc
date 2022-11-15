@@ -111,6 +111,16 @@ static const REAL_VALUE_TYPE * real_digit (int);
 static void times_pten (REAL_VALUE_TYPE *, int);
 
 static void round_for_format (const struct real_format *, REAL_VALUE_TYPE *);
+
+/* Determine whether a floating-point value X is a denormal.  R is
+   expected to be in denormal form, so this function is only
+   meaningful after a call to round_for_format.  */
+
+static inline bool
+real_isdenormal (const REAL_VALUE_TYPE *r)
+{
+  return r->cl == rvc_normal && (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+}
 
 /* Initialize R with a positive zero.  */
 
@@ -2962,7 +2972,6 @@ encode_ieee_single (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = real_isdenormal (r);
 
   image = sign << 31;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 24)) & 0x7fffff;
@@ -3002,7 +3011,7 @@ encode_ieee_single (const struct real_format *fmt, long *buf,
       /* Recall that IEEE numbers are interpreted as 1.F x 2**exp,
 	 whereas the intermediate representation is 0.F x 2**exp.
 	 Which means we're off by one.  */
-      if (denormal)
+      if (real_isdenormal (r))
 	exp = 0;
       else
       exp = REAL_EXP (r) + 127 - 1;
@@ -3183,7 +3192,6 @@ encode_ieee_double (const struct real_format *fmt, long *buf,
 {
   unsigned long image_lo, image_hi, sig_lo, sig_hi, exp;
   unsigned long sign = r->sign;
-  bool denormal = real_isdenormal (r);
 
   image_hi = sign << 31;
   image_lo = 0;
@@ -3255,7 +3263,7 @@ encode_ieee_double (const struct real_format *fmt, long *buf,
       /* Recall that IEEE numbers are interpreted as 1.F x 2**exp,
 	 whereas the intermediate representation is 0.F x 2**exp.
 	 Which means we're off by one.  */
-      if (denormal)
+      if (real_isdenormal (r))
 	exp = 0;
       else
 	exp = REAL_EXP (r) + 1023 - 1;
@@ -3441,7 +3449,6 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
 		      const REAL_VALUE_TYPE *r)
 {
   unsigned long image_hi, sig_hi, sig_lo;
-  bool denormal = real_isdenormal (r);
 
   image_hi = r->sign << 15;
   sig_hi = sig_lo = 0;
@@ -3523,7 +3530,7 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
 	   this discrepancy has been taken care of by the difference
 	   in fmt->emin in round_for_format.  */
 
-	if (denormal)
+	if (real_isdenormal (r))
 	  exp = 0;
 	else
 	  {
@@ -3972,7 +3979,6 @@ encode_ieee_quad (const struct real_format *fmt, long *buf,
 {
   unsigned long image3, image2, image1, image0, exp;
   unsigned long sign = r->sign;
-  bool denormal = real_isdenormal (r);
   REAL_VALUE_TYPE u;
 
   image3 = sign << 31;
@@ -4048,7 +4054,7 @@ encode_ieee_quad (const struct real_format *fmt, long *buf,
       /* Recall that IEEE numbers are interpreted as 1.F x 2**exp,
 	 whereas the intermediate representation is 0.F x 2**exp.
 	 Which means we're off by one.  */
-      if (denormal)
+      if (real_isdenormal (r))
 	exp = 0;
       else
 	exp = REAL_EXP (r) + 16383 - 1;
@@ -4729,7 +4735,6 @@ encode_ieee_half (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = real_isdenormal (r);
 
   image = sign << 15;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 11)) & 0x3ff;
@@ -4769,7 +4774,7 @@ encode_ieee_half (const struct real_format *fmt, long *buf,
       /* Recall that IEEE numbers are interpreted as 1.F x 2**exp,
 	 whereas the intermediate representation is 0.F x 2**exp.
 	 Which means we're off by one.  */
-      if (denormal)
+      if (real_isdenormal (r))
 	exp = 0;
       else
 	exp = REAL_EXP (r) + 15 - 1;
@@ -4843,7 +4848,6 @@ encode_arm_bfloat_half (const struct real_format *fmt, long *buf,
 {
   unsigned long image, sig, exp;
   unsigned long sign = r->sign;
-  bool denormal = real_isdenormal (r);
 
   image = sign << 15;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 8)) & 0x7f;
@@ -4880,7 +4884,7 @@ encode_arm_bfloat_half (const struct real_format *fmt, long *buf,
       break;
 
     case rvc_normal:
-      if (denormal)
+      if (real_isdenormal (r))
 	exp = 0;
       else
       exp = REAL_EXP (r) + 127 - 1;

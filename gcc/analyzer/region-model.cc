@@ -1764,12 +1764,13 @@ public:
 
 /* Check whether an access is past the end of the BASE_REG.  */
 
-void region_model::check_symbolic_bounds (const region *base_reg,
-					  const svalue *sym_byte_offset,
-					  const svalue *num_bytes_sval,
-					  const svalue *capacity,
-					  enum access_direction dir,
-					  region_model_context *ctxt) const
+void
+region_model::check_symbolic_bounds (const region *base_reg,
+				     const svalue *sym_byte_offset,
+				     const svalue *num_bytes_sval,
+				     const svalue *capacity,
+				     enum access_direction dir,
+				     region_model_context *ctxt) const
 {
   gcc_assert (ctxt);
 
@@ -1777,7 +1778,7 @@ void region_model::check_symbolic_bounds (const region *base_reg,
     = m_mgr->get_or_create_binop (num_bytes_sval->get_type (), PLUS_EXPR,
 				  sym_byte_offset, num_bytes_sval);
 
-  if (eval_condition_without_cm (next_byte, GT_EXPR, capacity).is_true ())
+  if (eval_condition (next_byte, GT_EXPR, capacity).is_true ())
     {
       tree diag_arg = get_representative_tree (base_reg);
       tree offset_tree = get_representative_tree (sym_byte_offset);
@@ -2223,7 +2224,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  case BUILT_IN_REALLOC:
 	    return false;
 	  case BUILT_IN_STRCHR:
-	    impl_call_strchr (cd);
+	    /* Handle in "on_call_post".  */
 	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
@@ -2288,6 +2289,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_realloc (cd);
 	  return false;
 	}
+      else if (is_named_call_p (callee_fndecl, "__errno_location", call, 0))
+	{
+	  impl_call_errno_location (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "error"))
 	{
 	  if (impl_call_error (cd, 3, out_terminate_path))
@@ -2341,7 +2347,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
-	  impl_call_strchr (cd);
+	  /* Handle in "on_call_post".  */
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2418,6 +2424,12 @@ region_model::on_call_post (const gcall *call,
 	  impl_call_pipe (cd);
 	  return;
 	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
+	  return;
+	}
       /* Was this fndecl referenced by
 	 __attribute__((malloc(FOO)))?  */
       if (lookup_attribute ("*dealloc", DECL_ATTRIBUTES (callee_fndecl)))
@@ -2433,6 +2445,10 @@ region_model::on_call_post (const gcall *call,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    impl_call_realloc (cd);
+	    return;
+
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
 	    return;
 
 	  case BUILT_IN_VA_END:
@@ -4147,42 +4163,16 @@ region_model::eval_condition (const svalue *lhs,
 			       enum tree_code op,
 			       const svalue *rhs) const
 {
-  /* For now, make no attempt to capture constraints on floating-point
-     values.  */
-  if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
-      || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
-    return tristate::unknown ();
-
-  tristate ts = eval_condition_without_cm (lhs, op, rhs);
-  if (ts.is_known ())
-    return ts;
-
-  /* Otherwise, try constraints.  */
-  return m_constraints->eval_condition (lhs, op, rhs);
-}
-
-/* Determine what is known about the condition "LHS_SVAL OP RHS_SVAL" within
-   this model, without resorting to the constraint_manager.
-
-   This is exposed so that impl_region_model_context::on_state_leak can
-   check for equality part-way through region_model::purge_unused_svalues
-   without risking creating new ECs.  */
-
-tristate
-region_model::eval_condition_without_cm (const svalue *lhs,
-					  enum tree_code op,
-					  const svalue *rhs) const
-{
   gcc_assert (lhs);
   gcc_assert (rhs);
 
-  /* See what we know based on the values.  */
-
   /* For now, make no attempt to capture constraints on floating-point
      values.  */
   if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
       || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
     return tristate::unknown ();
+
+  /* See what we know based on the values.  */
 
   /* Unwrap any unmergeable values.  */
   lhs = lhs->unwrap_any_unmergeable ();
@@ -4277,9 +4267,7 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	       shouldn't warn for.  */
 	    if (binop->get_op () == POINTER_PLUS_EXPR)
 	      {
-		tristate lhs_ts
-		  = eval_condition_without_cm (binop->get_arg0 (),
-					       op, rhs);
+		tristate lhs_ts = eval_condition (binop->get_arg0 (), op, rhs);
 		if (lhs_ts.is_known ())
 		  return lhs_ts;
 	      }
@@ -4312,7 +4300,7 @@ region_model::eval_condition_without_cm (const svalue *lhs,
       }
 
   /* Handle comparisons between two svalues with more than one operand.  */
-	if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
+  if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
     {
       switch (op)
 	{
@@ -4354,10 +4342,14 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	}
     }
 
-  return tristate::TS_UNKNOWN;
+  /* Otherwise, try constraints.
+     Cast to const to ensure we don't change the constraint_manager as we
+     do this (e.g. by creating equivalence classes).  */
+  const constraint_manager *constraints = m_constraints;
+  return constraints->eval_condition (lhs, op, rhs);
 }
 
-/* Subroutine of region_model::eval_condition_without_cm, for rejecting
+/* Subroutine of region_model::eval_condition, for rejecting
    equality of INIT_VAL(PARM) with &LOCAL.  */
 
 tristate
@@ -4409,18 +4401,18 @@ region_model::symbolic_greater_than (const binop_svalue *bin_a,
       /* Eliminate the right-hand side of both svalues.  */
       if (const binop_svalue *bin_b = dyn_cast <const binop_svalue *> (b))
 	if (bin_a->get_op () == bin_b->get_op ()
-	    && eval_condition_without_cm (bin_a->get_arg1 (),
-					  GT_EXPR,
-					  bin_b->get_arg1 ()).is_true ()
-	    && eval_condition_without_cm (bin_a->get_arg0 (),
-					  GE_EXPR,
-					  bin_b->get_arg0 ()).is_true ())
+	    && eval_condition (bin_a->get_arg1 (),
+			       GT_EXPR,
+			       bin_b->get_arg1 ()).is_true ()
+	    && eval_condition (bin_a->get_arg0 (),
+			       GE_EXPR,
+			       bin_b->get_arg0 ()).is_true ())
 	  return tristate (tristate::TS_TRUE);
 
       /* Otherwise, try to remove a positive offset or factor from BIN_A.  */
       if (is_positive_svalue (bin_a->get_arg1 ())
-	  && eval_condition_without_cm (bin_a->get_arg0 (),
-					GE_EXPR, b).is_true ())
+	  && eval_condition (bin_a->get_arg0 (),
+			     GE_EXPR, b).is_true ())
 	  return tristate (tristate::TS_TRUE);
     }
   return tristate::unknown ();
@@ -4698,7 +4690,7 @@ tristate
 region_model::eval_condition (tree lhs,
 			      enum tree_code op,
 			      tree rhs,
-			      region_model_context *ctxt)
+			      region_model_context *ctxt) const
 {
   /* For now, make no attempt to model constraints on floating-point
      values.  */
@@ -5423,8 +5415,13 @@ region_model::pop_frame (tree result_lvalue,
 {
   gcc_assert (m_current_frame);
 
-  /* Evaluate the result, within the callee frame.  */
   const frame_region *frame_reg = m_current_frame;
+
+  /* Notify state machines.  */
+  if (ctxt)
+    ctxt->on_pop_frame (frame_reg);
+
+  /* Evaluate the result, within the callee frame.  */
   tree fndecl = m_current_frame->get_function ()->decl;
   tree result = DECL_RESULT (fndecl);
   const svalue *retval = NULL;
@@ -6406,6 +6403,23 @@ region_model::maybe_complain_about_infoleak (const region *dst_reg,
     ctxt->warn (make_unique<exposure_through_uninit_copy> (src_reg,
 							   dst_reg,
 							   copied_sval));
+}
+
+/* Set errno to a positive symbolic int, as if some error has occurred.  */
+
+void
+region_model::set_errno (const call_details &cd)
+{
+  const region *errno_reg = m_mgr->get_errno_region ();
+  conjured_purge p (this, cd.get_ctxt ());
+  const svalue *new_errno_sval
+    = m_mgr->get_or_create_conjured_svalue (integer_type_node,
+					    cd.get_call_stmt (),
+					    errno_reg, p);
+  const svalue *zero
+    = m_mgr->get_or_create_int_cst (integer_type_node, 0);
+  add_constraint (new_errno_sval, GT_EXPR, zero, cd.get_ctxt ());
+  set_value (errno_reg, new_errno_sval, cd.get_ctxt ());
 }
 
 /* class noop_region_model_context : public region_model_context.  */

@@ -64,11 +64,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      struct _Type
      {
        // Indexing is undefined.
-       __attribute__((__always_inline__,__artificial__,__noreturn__))
+       __attribute__((__always_inline__,__noreturn__))
        _Tp& operator[](size_t) const noexcept { __builtin_trap(); }
 
        // Conversion to a pointer produces a null pointer.
-       __attribute__((__always_inline__,__artificial__))
+       __attribute__((__always_inline__))
        operator _Tp*() const noexcept { return nullptr; }
      };
 

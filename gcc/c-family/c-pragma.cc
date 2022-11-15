@@ -1403,6 +1403,12 @@ handle_pragma_message (cpp_reader *)
 	    TREE_STRING_POINTER (message));
 }
 
+/* Ignore a no-op pragma that GCC recognizes, but which has no effect.  */
+static void
+handle_pragma_ignore (cpp_reader *)
+{
+}
+
 /* Mark whether the current location is valid for a STDC pragma.  */
 
 static bool valid_location_for_stdc_pragma;
@@ -1869,6 +1875,9 @@ init_pragma (void)
   c_register_pragma ("GCC", "push_options", handle_pragma_push_options);
   c_register_pragma ("GCC", "pop_options", handle_pragma_pop_options);
   c_register_pragma ("GCC", "reset_options", handle_pragma_reset_options);
+
+  c_register_pragma (0, "region", handle_pragma_ignore);
+  c_register_pragma (0, "endregion", handle_pragma_ignore);
 
   c_register_pragma ("STDC", "FLOAT_CONST_DECIMAL64",
 		     handle_pragma_float_const_decimal64);

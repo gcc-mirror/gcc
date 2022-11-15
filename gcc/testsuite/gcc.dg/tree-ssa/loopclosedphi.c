@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-tree-ch -w -fdump-tree-loopdone-details" } */
+/* { dg-options "-O3 -fno-tree-ch -fno-unswitch-loops -w -fdump-tree-loopdone-details" } */
 
 void
 t6 (int qz, int wh)
@@ -18,4 +18,4 @@ t6 (int qz, int wh)
     qz = jl * wh;
 }
 
-/* { dg-final { scan-tree-dump-times "Replacing" 2 "loopdone"} } */
+/* { dg-final { scan-tree-dump-times "Replacing" 3 "loopdone"} } */

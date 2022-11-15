@@ -44,6 +44,7 @@ with Stringt;  use Stringt;
 with Targparm;
 with Uintp;    use Uintp;
 with Widechar; use Widechar;
+with Warnsw;   use Warnsw;
 
 package body Erroutc is
 
@@ -323,7 +324,7 @@ package body Erroutc is
 
       Write_Str
         ("  Optr     = ");
-      Write_Location (E.Optr);
+      Write_Location (E.Optr.Ptr);
       Write_Eol;
 
       w ("  Line     = ", Int (E.Line));

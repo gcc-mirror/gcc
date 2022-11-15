@@ -59,15 +59,6 @@ package Errout is
    Error_Msg_Exception : exception renames Err_Vars.Error_Msg_Exception;
    --  Exception raised if Raise_Exception_On_Error is true
 
-   Warning_Doc_Switch : Boolean renames Err_Vars.Warning_Doc_Switch;
-   --  If this is set True, then the ??/?*?/?$?/?x?/?.x?/?_x? insertion
-   --  sequences in error messages generate appropriate tags for the output
-   --  error messages. If this switch is False, then these sequences are still
-   --  recognized (for the purposes of implementing the pattern matching in
-   --  pragmas Warnings (Off,..) and Warning_As_Pragma(...) but do not result
-   --  in adding the error message tag. The -gnatw.d switch sets this flag
-   --  True, -gnatw.D sets this flag False.
-
    Current_Node : Node_Id := Empty;
    --  Used by Error_Msg as a default Node_Id.
    --  Relevant only when Opt.Include_Subprogram_In_Messages is set.
@@ -314,10 +305,11 @@ package Errout is
    --      continuations, use this in each continuation message.
 
    --    Insertion character ?x? ?.x? ?_x? (warning with switch)
-   --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
+   --      "x" is a (lower-case) warning switch character.
+   --      Like ??, but if the flag Warn_Doc_Switch is True, adds the string
    --      "[-gnatwx]", "[-gnatw.x]", or "[-gnatw_x]", at the end of the
-   --      warning message. x must be lower case. For continuations, use this
-   --      on each continuation message.
+   --      warning message. For continuations, use this on each continuation
+   --      message.
 
    --    Insertion character ?*? (restriction warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string

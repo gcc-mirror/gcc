@@ -49,13 +49,66 @@ along with GCC; see the file COPYING3.  If not see
 // Default definitions for floating point operators.
 
 bool
-range_operator_float::fold_range (frange &r ATTRIBUTE_UNUSED,
-				  tree type ATTRIBUTE_UNUSED,
-				  const frange &lh ATTRIBUTE_UNUSED,
-				  const frange &rh ATTRIBUTE_UNUSED,
-				  relation_trio) const
+range_operator_float::fold_range (frange &r, tree type,
+				  const frange &op1, const frange &op2,
+				  relation_trio trio) const
 {
-  return false;
+  if (empty_range_varying (r, type, op1, op2))
+    return true;
+  if (op1.known_isnan () || op2.known_isnan ())
+    {
+      r.set_nan (op1.type ());
+      return true;
+    }
+
+  REAL_VALUE_TYPE lb, ub;
+  bool maybe_nan;
+  rv_fold (lb, ub, maybe_nan, type,
+	   op1.lower_bound (), op1.upper_bound (),
+	   op2.lower_bound (), op2.upper_bound (), trio.op1_op2 ());
+
+  // Handle possible NANs by saturating to the appropriate INF if only
+  // one end is a NAN.  If both ends are a NAN, just return a NAN.
+  bool lb_nan = real_isnan (&lb);
+  bool ub_nan = real_isnan (&ub);
+  if (lb_nan && ub_nan)
+    {
+      r.set_nan (type);
+      return true;
+    }
+  if (lb_nan)
+    lb = dconstninf;
+  else if (ub_nan)
+    ub = dconstinf;
+
+  r.set (type, lb, ub);
+
+  if (lb_nan || ub_nan || maybe_nan)
+    // Keep the default NAN (with a varying sign) set by the setter.
+    ;
+  else if (!op1.maybe_isnan () && !op2.maybe_isnan ())
+    r.clear_nan ();
+
+  return true;
+}
+
+// For a given operation, fold two sets of ranges into [lb, ub].
+// MAYBE_NAN is set to TRUE if, in addition to any result in LB or
+// UB, the final range has the possiblity of a NAN.
+void
+range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
+			       REAL_VALUE_TYPE &ub,
+			       bool &maybe_nan,
+			       tree type ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &lh_lb ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &lh_ub ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &rh_lb ATTRIBUTE_UNUSED,
+			       const REAL_VALUE_TYPE &rh_ub ATTRIBUTE_UNUSED,
+			       relation_kind) const
+{
+  lb = dconstninf;
+  ub = dconstinf;
+  maybe_nan = true;
 }
 
 bool
@@ -192,6 +245,67 @@ frelop_early_resolve (irange &r, tree type,
 	  && relop_early_resolve (r, type, op1, op2, rel, my_rel));
 }
 
+// Set VALUE to its next real value, or INF if the operation overflows.
+
+inline void
+frange_nextafter (enum machine_mode mode,
+		  REAL_VALUE_TYPE &value,
+		  const REAL_VALUE_TYPE &inf)
+{
+  const real_format *fmt = REAL_MODE_FORMAT (mode);
+  REAL_VALUE_TYPE tmp;
+  real_nextafter (&tmp, fmt, &value, &inf);
+  value = tmp;
+}
+
+// Like real_arithmetic, but round the result to INF if the operation
+// produced inexact results.
+//
+// ?? There is still one problematic case, i387.  With
+// -fexcess-precision=standard we perform most SF/DFmode arithmetic in
+// XFmode (long_double_type_node), so that case is OK.  But without
+// -mfpmath=sse, all the SF/DFmode computations are in XFmode
+// precision (64-bit mantissa) and only occassionally rounded to
+// SF/DFmode (when storing into memory from the 387 stack).  Maybe
+// this is ok as well though it is just occassionally more precise. ??
+
+static void
+frange_arithmetic (enum tree_code code, tree type,
+		   REAL_VALUE_TYPE &result,
+		   const REAL_VALUE_TYPE &op1,
+		   const REAL_VALUE_TYPE &op2,
+		   const REAL_VALUE_TYPE &inf)
+{
+  REAL_VALUE_TYPE value;
+  enum machine_mode mode = TYPE_MODE (type);
+  bool mode_composite = MODE_COMPOSITE_P (mode);
+
+  bool inexact = real_arithmetic (&value, code, &op1, &op2);
+  real_convert (&result, mode, &value);
+
+  // Be extra careful if there may be discrepancies between the
+  // compile and runtime results.
+  if ((mode_composite || (real_isneg (&inf) ? real_less (&result, &value)
+			  : !real_less (&value, &result)))
+      && (inexact || !real_identical (&result, &value)))
+    {
+      if (mode_composite)
+	{
+	  if (real_isdenormal (&result, mode)
+	      || real_iszero (&result))
+	    {
+	      // IBM extended denormals only have DFmode precision.
+	      REAL_VALUE_TYPE tmp;
+	      real_convert (&tmp, DFmode, &value);
+	      frange_nextafter (DFmode, tmp, inf);
+	      real_convert (&result, mode, &tmp);
+	      return;
+	    }
+	}
+      frange_nextafter (mode, result, inf);
+    }
+}
+
 // Crop R to [-INF, MAX] where MAX is the maximum representable number
 // for TYPE.
 
@@ -267,9 +381,17 @@ build_lt (frange &r, tree type, const frange &val)
 	r.set_undefined ();
       return false;
     }
-  // We only support closed intervals.
+
   REAL_VALUE_TYPE ninf = frange_val_min (type);
-  r.set (type, ninf, val.upper_bound ());
+  REAL_VALUE_TYPE prev = val.upper_bound ();
+  machine_mode mode = TYPE_MODE (type);
+  // Default to the conservatively correct closed ranges for
+  // MODE_COMPOSITE_P, otherwise use nextafter.  Note that for
+  // !HONOR_INFINITIES, nextafter will yield -INF, but frange::set()
+  // will crop the range appropriately.
+  if (!MODE_COMPOSITE_P (mode))
+    frange_nextafter (mode, prev, ninf);
+  r.set (type, ninf, prev);
   return true;
 }
 
@@ -310,9 +432,16 @@ build_gt (frange &r, tree type, const frange &val)
       return false;
     }
 
-  // We only support closed intervals.
   REAL_VALUE_TYPE inf = frange_val_max (type);
-  r.set (type, val.lower_bound (), inf);
+  REAL_VALUE_TYPE next = val.lower_bound ();
+  machine_mode mode = TYPE_MODE (type);
+  // Default to the conservatively correct closed ranges for
+  // MODE_COMPOSITE_P, otherwise use nextafter.  Note that for
+  // !HONOR_INFINITIES, nextafter will yield +INF, but frange::set()
+  // will crop the range appropriately.
+  if (!MODE_COMPOSITE_P (mode))
+    frange_nextafter (mode, next, inf);
+  r.set (type, next, inf);
   return true;
 }
 
@@ -1280,9 +1409,10 @@ foperator_abs::op1_range (frange &r, tree type,
     return true;
   // Then add the negative of each pair:
   // ABS(op1) = [5,20] would yield op1 => [-20,-5][5,20].
-  r.union_ (frange (type,
-		    real_value_negate (&positives.upper_bound ()),
-		    real_value_negate (&positives.lower_bound ())));
+  frange negatives (type, real_value_negate (&positives.upper_bound ()),
+		    real_value_negate (&positives.lower_bound ()));
+  negatives.clear_nan ();
+  r.union_ (negatives);
   return true;
 }
 
@@ -1746,6 +1876,500 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
   return true;
 }
 
+// Final tweaks for float binary op op1_range/op2_range.
+// Return TRUE if the operation is performed and a valid range is available.
+
+static bool
+float_binary_op_range_finish (bool ret, frange &r, tree type,
+			      const frange &lhs)
+{
+  if (!ret)
+    return false;
+
+  // If we get a known NAN from reverse op, it means either that
+  // the other operand was known NAN (in that case we know nothing),
+  // or the reverse operation introduced a known NAN.
+  // Say for lhs = op1 * op2 if lhs is [-0, +0] and op2 is too,
+  // 0 / 0 is known NAN.  Just punt in that case.
+  // Or if lhs is a known NAN, we also don't know anything.
+  if (r.known_isnan () || lhs.known_isnan ())
+    {
+      r.set_varying (type);
+      return true;
+    }
+
+  // If lhs isn't NAN, then neither operand could be NAN,
+  // even if the reverse operation does introduce a maybe_nan.
+  if (!lhs.maybe_isnan ())
+    r.clear_nan ();
+  // If lhs is a maybe or known NAN, the operand could be
+  // NAN.
+  else
+    r.update_nan ();
+  return true;
+}
+
+// True if [lb, ub] is [+-0, +-0].
+static bool
+zero_p (const REAL_VALUE_TYPE &lb, const REAL_VALUE_TYPE &ub)
+{
+  return real_iszero (&lb) && real_iszero (&ub);
+}
+
+// True if +0 or -0 is in [lb, ub] range.
+static bool
+contains_zero_p (const REAL_VALUE_TYPE &lb, const REAL_VALUE_TYPE &ub)
+{
+  return (real_compare (LE_EXPR, &lb, &dconst0)
+	  && real_compare (GE_EXPR, &ub, &dconst0));
+}
+
+// True if [lb, ub] is [-INF, -INF] or [+INF, +INF].
+static bool
+singleton_inf_p (const REAL_VALUE_TYPE &lb, const REAL_VALUE_TYPE &ub)
+{
+  return real_isinf (&lb) && real_isinf (&ub, real_isneg (&lb));
+}
+
+// Return -1 if binary op result must have sign bit set,
+// 1 if binary op result must have sign bit clear,
+// 0 otherwise.
+// Sign bit of binary op result is exclusive or of the
+// operand's sign bits.
+static int
+signbit_known_p (const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
+		 const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub)
+{
+  if (real_isneg (&lh_lb) == real_isneg (&lh_ub)
+      && real_isneg (&rh_lb) == real_isneg (&rh_ub))
+    {
+      if (real_isneg (&lh_lb) == real_isneg (&rh_ub))
+	return 1;
+      else
+	return -1;
+    }
+  return 0;
+}
+
+// Set [lb, ub] to [-0, -0], [-0, +0] or [+0, +0] depending on
+// signbit_known.
+static void
+zero_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
+{
+  ub = lb = dconst0;
+  if (signbit_known <= 0)
+    lb = real_value_negate (&dconst0);
+  if (signbit_known < 0)
+    ub = lb;
+}
+
+// Set [lb, ub] to [-INF, -INF], [-INF, +INF] or [+INF, +INF] depending on
+// signbit_known.
+static void
+inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
+{
+  if (signbit_known > 0)
+    ub = lb = dconstinf;
+  else if (signbit_known < 0)
+    ub = lb = dconstninf;
+  else
+    {
+      lb = dconstninf;
+      ub = dconstinf;
+    }
+}
+
+// Set [lb, ub] to [-INF, -0], [-INF, +INF] or [+0, +INF] depending on
+// signbit_known.
+static void
+zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
+{
+  if (signbit_known > 0)
+    {
+      lb = dconst0;
+      ub = dconstinf;
+    }
+  else if (signbit_known < 0)
+    {
+      lb = dconstninf;
+      ub = real_value_negate (&dconst0);
+    }
+  else
+    {
+      lb = dconstninf;
+      ub = dconstinf;
+    }
+}
+
+class foperator_plus : public range_operator_float
+{
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    range_op_handler minus (MINUS_EXPR, type);
+    if (!minus)
+      return false;
+    return float_binary_op_range_finish (minus.fold_range (r, type, lhs, op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    return op1_range (r, type, lhs, op1);
+  }
+private:
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind) const final override
+  {
+    frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
+    frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
+
+    // [-INF] + [+INF] = NAN
+    if (real_isinf (&lh_lb, true) && real_isinf (&rh_ub, false))
+      maybe_nan = true;
+    // [+INF] + [-INF] = NAN
+    else if (real_isinf (&lh_ub, false) && real_isinf (&rh_lb, true))
+      maybe_nan = true;
+    else
+      maybe_nan = false;
+  }
+} fop_plus;
+
+
+class foperator_minus : public range_operator_float
+{
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fop_plus.fold_range (r, type, lhs,
+							      op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fold_range (r, type, op1, lhs),
+					 r, type, lhs);
+  }
+private:
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind) const final override
+  {
+    frange_arithmetic (MINUS_EXPR, type, lb, lh_lb, rh_ub, dconstninf);
+    frange_arithmetic (MINUS_EXPR, type, ub, lh_ub, rh_lb, dconstinf);
+
+    // [+INF] - [+INF] = NAN
+    if (real_isinf (&lh_ub, false) && real_isinf (&rh_ub, false))
+      maybe_nan = true;
+    // [-INF] - [-INF] = NAN
+    else if (real_isinf (&lh_lb, true) && real_isinf (&rh_lb, true))
+      maybe_nan = true;
+    else
+      maybe_nan = false;
+  }
+} fop_minus;
+
+
+class foperator_mult_div_base : public range_operator_float
+{
+protected:
+  // Given CP[0] to CP[3] floating point values rounded to -INF,
+  // set LB to the smallest of them (treating -0 as smaller to +0).
+  // Given CP[4] to CP[7] floating point values rounded to +INF,
+  // set UB to the largest of them (treating -0 as smaller to +0).
+  static void find_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			  const REAL_VALUE_TYPE (&cp)[8])
+  {
+    lb = cp[0];
+    ub = cp[4];
+    for (int i = 1; i < 4; ++i)
+      {
+	if (real_less (&cp[i], &lb)
+	    || (real_iszero (&lb) && real_isnegzero (&cp[i])))
+	  lb = cp[i];
+	if (real_less (&ub, &cp[i + 4])
+	    || (real_isnegzero (&ub) && real_iszero (&cp[i + 4])))
+	  ub = cp[i + 4];
+      }
+  }
+};
+
+
+class foperator_mult : public foperator_mult_div_base
+{
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    range_op_handler rdiv (RDIV_EXPR, type);
+    if (!rdiv)
+      return false;
+    return float_binary_op_range_finish (rdiv.fold_range (r, type, lhs, op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    return op1_range (r, type, lhs, op1);
+  }
+private:
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind kind) const final override
+  {
+    bool is_square
+      = (kind == VREL_EQ
+	 && real_equal (&lh_lb, &rh_lb)
+	 && real_equal (&lh_ub, &rh_ub)
+	 && real_isneg (&lh_lb) == real_isneg (&rh_lb)
+	 && real_isneg (&lh_ub) == real_isneg (&rh_ub));
+
+    maybe_nan = false;
+    // x * x never produces a new NAN and we only multiply the same
+    // values, so the 0 * INF problematic cases never appear there.
+    if (!is_square)
+      {
+	// [+-0, +-0] * [+INF,+INF] (or [-INF,-INF] or swapped is a known NAN.
+	if ((zero_p (lh_lb, lh_ub) && singleton_inf_p (rh_lb, rh_ub))
+	    || (zero_p (rh_lb, rh_ub) && singleton_inf_p (lh_lb, lh_ub)))
+	  {
+	    real_nan (&lb, "", 0, TYPE_MODE (type));
+	    ub = lb;
+	    maybe_nan = true;
+	    return;
+	  }
+
+	// Otherwise, if one range includes zero and the other ends with +-INF,
+	// it is a maybe NAN.
+	if ((contains_zero_p (lh_lb, lh_ub)
+	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
+	    || (contains_zero_p (rh_lb, rh_ub)
+		&& (real_isinf (&lh_lb) || real_isinf (&lh_ub))))
+	  {
+	    maybe_nan = true;
+
+	    int signbit_known = signbit_known_p (lh_lb, lh_ub, rh_lb, rh_ub);
+
+	    // If one of the ranges that includes INF is singleton
+	    // and the other range includes zero, the resulting
+	    // range is INF and NAN, because the 0 * INF boundary
+	    // case will be NAN, but already nextafter (0, 1) * INF
+	    // is INF.
+	    if (singleton_inf_p (lh_lb, lh_ub)
+		|| singleton_inf_p (rh_lb, rh_ub))
+	      return inf_range (lb, ub, signbit_known);
+
+	    // If one of the multiplicands must be zero, the resulting
+	    // range is +-0 and NAN.
+	    if (zero_p (lh_lb, lh_ub) || zero_p (rh_lb, rh_ub))
+	      return zero_range (lb, ub, signbit_known);
+
+	    // Otherwise one of the multiplicands could be
+	    // [0.0, nextafter (0.0, 1.0)] and the [DBL_MAX, INF]
+	    // or similarly with different signs.  0.0 * DBL_MAX
+	    // is still 0.0, nextafter (0.0, 1.0) * INF is still INF,
+	    // so if the signs are always the same or always different,
+	    // result is [+0.0, +INF] or [-INF, -0.0], otherwise VARYING.
+	    return zero_to_inf_range (lb, ub, signbit_known);
+	  }
+      }
+
+    REAL_VALUE_TYPE cp[8];
+    // Do a cross-product.  At this point none of the multiplications
+    // should produce a NAN.
+    frange_arithmetic (MULT_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
+    frange_arithmetic (MULT_EXPR, type, cp[4], lh_lb, rh_lb, dconstinf);
+    if (is_square)
+      {
+	// For x * x we can just do max (lh_lb * lh_lb, lh_ub * lh_ub)
+	// as maximum and -0.0 as minimum if 0.0 is in the range,
+	// otherwise min (lh_lb * lh_lb, lh_ub * lh_ub).
+	// -0.0 rather than 0.0 because VREL_EQ doesn't prove that
+	// x and y are bitwise equal, just that they compare equal.
+	if (contains_zero_p (lh_lb, lh_ub))
+	  {
+	    if (real_isneg (&lh_lb) == real_isneg (&lh_ub))
+	      cp[1] = dconst0;
+	    else
+	      cp[1] = real_value_negate (&dconst0);
+	  }
+	else
+	  cp[1] = cp[0];
+	cp[2] = cp[0];
+	cp[5] = cp[4];
+	cp[6] = cp[4];
+      }
+    else
+      {
+	frange_arithmetic (MULT_EXPR, type, cp[1], lh_lb, rh_ub, dconstninf);
+	frange_arithmetic (MULT_EXPR, type, cp[5], lh_lb, rh_ub, dconstinf);
+	frange_arithmetic (MULT_EXPR, type, cp[2], lh_ub, rh_lb, dconstninf);
+	frange_arithmetic (MULT_EXPR, type, cp[6], lh_ub, rh_lb, dconstinf);
+      }
+    frange_arithmetic (MULT_EXPR, type, cp[3], lh_ub, rh_ub, dconstninf);
+    frange_arithmetic (MULT_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
+
+    find_range (lb, ub, cp);
+  }
+} fop_mult;
+
+
+class foperator_div : public foperator_mult_div_base
+{
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fop_mult.fold_range (r, type, lhs,
+							      op2),
+					 r, type, lhs);
+  }
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_trio = TRIO_VARYING) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+    return float_binary_op_range_finish (fold_range (r, type, op1, lhs),
+					 r, type, lhs);
+  }
+private:
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
+		tree type,
+		const REAL_VALUE_TYPE &lh_lb,
+		const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb,
+		const REAL_VALUE_TYPE &rh_ub,
+		relation_kind) const final override
+  {
+    // +-0.0 / +-0.0 or +-INF / +-INF is a known NAN.
+    if ((zero_p (lh_lb, lh_ub) && zero_p (rh_lb, rh_ub))
+	|| (singleton_inf_p (lh_lb, lh_ub) || singleton_inf_p (rh_lb, rh_ub)))
+      {
+	real_nan (&lb, "", 0, TYPE_MODE (type));
+	ub = lb;
+	maybe_nan = true;
+	return;
+      }
+
+    // If +-0.0 is in both ranges, it is a maybe NAN.
+    if (contains_zero_p (lh_lb, lh_ub) && contains_zero_p (rh_lb, rh_ub))
+      maybe_nan = true;
+    // If +-INF is in both ranges, it is a maybe NAN.
+    else if ((real_isinf (&lh_lb) || real_isinf (&lh_ub))
+	     && (real_isinf (&rh_lb) || real_isinf (&rh_ub)))
+      maybe_nan = true;
+    else
+      maybe_nan = false;
+
+    int signbit_known = signbit_known_p (lh_lb, lh_ub, rh_lb, rh_ub);
+
+    // If dividend must be zero, the range is just +-0
+    // (including if the divisor is +-INF).
+    // If divisor must be +-INF, the range is just +-0
+    // (including if the dividend is zero).
+    if (zero_p (lh_lb, lh_ub) || singleton_inf_p (rh_lb, rh_ub))
+      return zero_range (lb, ub, signbit_known);
+
+    // If divisor must be zero, the range is just +-INF
+    // (including if the dividend is +-INF).
+    // If dividend must be +-INF, the range is just +-INF
+    // (including if the dividend is zero).
+    if (zero_p (rh_lb, rh_ub) || singleton_inf_p (lh_lb, lh_ub))
+      return inf_range (lb, ub, signbit_known);
+
+    // Otherwise if both operands may be zero, divisor could be
+    // nextafter(0.0, +-1.0) and dividend +-0.0
+    // in which case result is going to INF or vice versa and
+    // result +0.0.  So, all we can say for that case is if the
+    // signs of divisor and dividend are always the same we have
+    // [+0.0, +INF], if they are always different we have
+    // [-INF, -0.0].  If they vary, VARING.
+    // If both may be +-INF, divisor could be INF and dividend FLT_MAX,
+    // in which case result is going to INF or vice versa and
+    // result +0.0.  So, all we can say for that case is if the
+    // signs of divisor and dividend are always the same we have
+    // [+0.0, +INF], if they are always different we have
+    // [-INF, -0.0].  If they vary, VARYING.
+    if (maybe_nan)
+      return zero_to_inf_range (lb, ub, signbit_known);
+
+    REAL_VALUE_TYPE cp[8];
+    // Do a cross-division.  At this point none of the divisions should
+    // produce a NAN.
+    frange_arithmetic (RDIV_EXPR, type, cp[0], lh_lb, rh_lb, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[1], lh_lb, rh_ub, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[2], lh_ub, rh_lb, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[3], lh_ub, rh_ub, dconstninf);
+    frange_arithmetic (RDIV_EXPR, type, cp[4], lh_lb, rh_lb, dconstinf);
+    frange_arithmetic (RDIV_EXPR, type, cp[5], lh_lb, rh_ub, dconstinf);
+    frange_arithmetic (RDIV_EXPR, type, cp[6], lh_ub, rh_lb, dconstinf);
+    frange_arithmetic (RDIV_EXPR, type, cp[7], lh_ub, rh_ub, dconstinf);
+
+    find_range (lb, ub, cp);
+
+    // If divisor may be zero (but is not known to be only zero),
+    // and dividend can't be zero, the range can go up to -INF or +INF
+    // depending on the signs.
+    if (contains_zero_p (rh_lb, rh_ub))
+      {
+	if (signbit_known <= 0)
+	  real_inf (&lb, true);
+	if (signbit_known >= 0)
+	  real_inf (&ub, false);
+      }
+  }
+} fop_div;
+
 // Instantiate a range_op_table for floating point operations.
 static floating_op_table global_floating_table;
 
@@ -1778,6 +2402,10 @@ floating_op_table::floating_op_table ()
 
   set (ABS_EXPR, fop_abs);
   set (NEGATE_EXPR, fop_negate);
+  set (PLUS_EXPR, fop_plus);
+  set (MINUS_EXPR, fop_minus);
+  set (MULT_EXPR, fop_mult);
+  set (RDIV_EXPR, fop_div);
 }
 
 // Return a pointer to the range_operator_float instance, if there is
@@ -1833,6 +2461,16 @@ range_op_float_tests ()
   r1 = frange_float ("-1", "-0");
   r1.update_nan (false);
   ASSERT_EQ (r, r1);
+
+  // [-INF,+INF] + [-INF,+INF] could be a NAN.
+  range_op_handler plus (PLUS_EXPR, float_type_node);
+  r0.set_varying (float_type_node);
+  r1.set_varying (float_type_node);
+  r0.clear_nan ();
+  r1.clear_nan ();
+  plus.fold_range (r, float_type_node, r0, r1);
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r.maybe_isnan ());
 }
 
 } // namespace selftest

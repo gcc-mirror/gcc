@@ -933,7 +933,7 @@ get_emission_location (const gimple *stmt, function *fun,
   location_t loc = get_stmt_location (stmt, fun);
 
   /* Allow the pending_diagnostic to fix up the location.  */
-  loc = pd.fixup_location (loc);
+  loc = pd.fixup_location (loc, true);
 
   return loc;
 }
@@ -1356,7 +1356,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   /* This is the diagnostic_path subclass that will be built for
      the diagnostic.  */
-  checker_path emission_path;
+  checker_path emission_path (get_logger ());
 
   /* Populate emission_path with a full description of EPATH.  */
   build_emission_path (pb, *epath, &emission_path);
@@ -1368,8 +1368,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      We use the final enode from the epath, which might be different from
      the sd.m_enode, as the dedupe code doesn't care about enodes, just
      snodes.  */
-  emission_path.add_final_event (sd.m_sm, epath->get_final_enode (), sd.m_stmt,
-				 sd.m_var, sd.m_state);
+  sd.m_d->add_final_event (sd.m_sm, epath->get_final_enode (), sd.m_stmt,
+			   sd.m_var, sd.m_state, &emission_path);
 
   /* The "final" event might not be final; if the saved_diagnostic has a
      trailing eedge stashed, add any events for it.  This is for use
@@ -1739,9 +1739,12 @@ struct null_assignment_sm_context : public sm_context
     state_machine::state_t from = get_state (stmt, var);
     if (from != m_sm.get_start_state ())
       return;
+    if (!is_transition_to_null (to))
+      return;
 
     const svalue *var_new_sval
       = m_new_state->m_region_model->get_rvalue (var, NULL);
+
     const supernode *supernode = m_point->get_supernode ();
     int stack_depth = m_point->get_stack_depth ();
 
@@ -1763,6 +1766,8 @@ struct null_assignment_sm_context : public sm_context
   {
     state_machine::state_t from = get_state (stmt, sval);
     if (from != m_sm.get_start_state ())
+      return;
+    if (!is_transition_to_null (to))
       return;
 
     const supernode *supernode = m_point->get_supernode ();
@@ -1832,6 +1837,13 @@ struct null_assignment_sm_context : public sm_context
   const program_state *get_new_program_state () const final override
   {
     return m_new_state;
+  }
+
+  /* We only care about transitions to the "null" state
+     within sm-malloc.  Special-case this.  */
+  static bool is_transition_to_null (state_machine::state_t s)
+  {
+    return !strcmp (s->get_name (), "null");
   }
 
   const program_state *m_old_state;
@@ -1910,11 +1922,8 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
       /* Add function entry events.  */
       if (dst_point.get_supernode ()->entry_p ())
 	{
-	  emission_path->add_event
-	    (make_unique<function_entry_event>
-	     (dst_point.get_supernode ()->get_start_location (),
-	      dst_point.get_fndecl (),
-	      dst_stack_depth));
+	  pb.get_pending_diagnostic ()->add_function_entry_event
+	    (eedge, emission_path);
 	  /* Create region_creation_events for on-stack regions within
 	     this frame.  */
 	  if (interest)
@@ -1963,6 +1972,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	   events for them.  */
 	if (dst_state.m_region_model)
 	  {
+	    log_scope s (get_logger (), "processing run of stmts");
 	    program_state iter_state (dst_state);
 	    program_point iter_point (dst_point);
 	    while (1)

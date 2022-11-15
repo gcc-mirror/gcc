@@ -145,6 +145,7 @@ public:
 		       state_machine::state_t state,
 		       const svalue *origin,
 		       const extrinsic_state &ext_state);
+  void clear_any_state (const svalue *sval);
 
   void set_global_state (state_machine::state_t state);
   state_machine::state_t get_global_state () const;
@@ -173,6 +174,11 @@ public:
 
   bool replay_call_summary (call_summary_replay &r,
 			    const sm_state_map &summary);
+
+  bool can_merge_with_p (const sm_state_map &other,
+			 const state_machine &sm,
+			 const extrinsic_state &ext_state,
+			 sm_state_map **out) const;
 
 private:
   const state_machine &m_sm;

@@ -6232,6 +6232,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   bool check_list_ctor = false;
   bool check_converting = false;
   unification_kind_t strict;
+  tree ne_fns = NULL_TREE;
 
   if (!fns)
     return;
@@ -6267,6 +6268,32 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
       strict = DEDUCE_CALL;
       ctype = conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE;
+    }
+
+  /* P2468: Check if operator== is a rewrite target with first operand
+     (*args)[0]; for now just do the lookups.  */
+  if ((flags & (LOOKUP_REWRITTEN | LOOKUP_REVERSED))
+      && DECL_OVERLOADED_OPERATOR_IS (fn, EQ_EXPR))
+    {
+      tree ne_name = ovl_op_identifier (false, NE_EXPR);
+      if (DECL_CLASS_SCOPE_P (fn))
+	{
+	  ne_fns = lookup_fnfields (TREE_TYPE ((*args)[0]), ne_name,
+				    1, tf_none);
+	  if (ne_fns == error_mark_node || ne_fns == NULL_TREE)
+	    ne_fns = NULL_TREE;
+	  else
+	    ne_fns = BASELINK_FUNCTIONS (ne_fns);
+	}
+      else
+	{
+	  tree context = decl_namespace_context (fn);
+	  ne_fns = lookup_qualified_name (context, ne_name, LOOK_want::NORMAL,
+					  /*complain*/false);
+	  if (ne_fns == error_mark_node
+	      || !is_overloaded_fn (ne_fns))
+	    ne_fns = NULL_TREE;
+	}
     }
 
   if (first_arg)
@@ -6342,6 +6369,27 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	  if (same_type_p (TREE_VALUE (parmlist),
 			   TREE_VALUE (TREE_CHAIN (parmlist))))
+	    continue;
+	}
+
+      /* When considering reversed operator==, if there's a corresponding
+	 operator!= in the same scope, it's not a rewrite target.  */
+      if (ne_fns)
+	{
+	  bool found = false;
+	  for (lkp_iterator ne (ne_fns); !found && ne; ++ne)
+	    if (0 && !ne.using_p ()
+		&& DECL_NAMESPACE_SCOPE_P (fn)
+		&& DECL_CONTEXT (*ne) != DECL_CONTEXT (fn))
+	      /* ??? This kludge excludes inline namespace members for the H
+		 test in spaceship-eq15.C, but I don't see why we would want
+		 that behavior.  Asked Core 2022-11-04.  Disabling for now.  */;
+	    else if (fns_correspond (fn, *ne))
+	      {
+		found = true;
+		break;
+	      }
+	  if (found)
 	    continue;
 	}
 
@@ -6917,10 +6965,12 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		  gcc_checking_assert (cand->reversed ());
 		  gcc_fallthrough ();
 		case NE_EXPR:
+		  if (result == error_mark_node)
+		    ;
 		  /* If a rewritten operator== candidate is selected by
 		     overload resolution for an operator @, its return type
 		     shall be cv bool.... */
-		  if (TREE_CODE (TREE_TYPE (result)) != BOOLEAN_TYPE)
+		  else if (TREE_CODE (TREE_TYPE (result)) != BOOLEAN_TYPE)
 		    {
 		      if (complain & tf_error)
 			{
@@ -12488,10 +12538,53 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  if (winner && comp != winner)
 	    {
 	      /* Ambiguity between normal and reversed comparison operators
-		 with the same parameter types; prefer the normal one.  */
-	      if ((cand1->reversed () != cand2->reversed ())
+		 with the same parameter types.  P2468 decided not to go with
+		 this approach to resolving the ambiguity, so pedwarn.  */
+	      if ((complain & tf_warning_or_error)
+		  && (cand1->reversed () != cand2->reversed ())
 		  && cand_parms_match (cand1, cand2))
-		return cand1->reversed () ? -1 : 1;
+		{
+		  struct z_candidate *w, *l;
+		  if (cand2->reversed ())
+		    winner = 1, w = cand1, l = cand2;
+		  else
+		    winner = -1, w = cand2, l = cand1;
+		  if (warn)
+		    {
+		      auto_diagnostic_group d;
+		      if (pedwarn (input_location, 0,
+				   "C++20 says that these are ambiguous, "
+				   "even though the second is reversed:"))
+			{
+			  print_z_candidate (input_location,
+					     N_("candidate 1:"), w);
+			  print_z_candidate (input_location,
+					     N_("candidate 2:"), l);
+			  if (w->fn == l->fn
+			      && DECL_NONSTATIC_MEMBER_FUNCTION_P (w->fn)
+			      && (type_memfn_quals (TREE_TYPE (w->fn))
+				  & TYPE_QUAL_CONST) == 0)
+			    {
+			      /* Suggest adding const to
+				 struct A { bool operator==(const A&); }; */
+			      tree parmtype
+				= FUNCTION_FIRST_USER_PARMTYPE (w->fn);
+			      parmtype = TREE_VALUE (parmtype);
+			      if (TYPE_REF_P (parmtype)
+				  && TYPE_READONLY (TREE_TYPE (parmtype))
+				  && (same_type_ignoring_top_level_qualifiers_p
+				      (TREE_TYPE (parmtype),
+				       DECL_CONTEXT (w->fn))))
+				inform (DECL_SOURCE_LOCATION (w->fn),
+					"try making the operator a %<const%> "
+					"member function");
+			    }
+			}
+		    }
+		  else
+		    add_warning (w, l);
+		  return winner;
+		}
 
 	      winner = 0;
 	      goto tweak;
@@ -12880,7 +12973,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 {
   struct z_candidate *champ = candidates, *challenger;
   int fate;
-  int champ_compared_to_predecessor = 0;
+  struct z_candidate *champ_compared_to_predecessor = nullptr;
 
   /* Walk through the list once, comparing each current champ to the next
      candidate, knocking out a candidate or two with each comparison.  */
@@ -12897,12 +12990,12 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 	      champ = challenger->next;
 	      if (champ == 0)
 		return NULL;
-	      champ_compared_to_predecessor = 0;
+	      champ_compared_to_predecessor = nullptr;
 	    }
 	  else
 	    {
+	      champ_compared_to_predecessor = champ;
 	      champ = challenger;
-	      champ_compared_to_predecessor = 1;
 	    }
 
 	  challenger = champ->next;
@@ -12914,7 +13007,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 
   for (challenger = candidates;
        challenger != champ
-	 && !(champ_compared_to_predecessor && challenger->next == champ);
+	 && challenger != champ_compared_to_predecessor;
        challenger = challenger->next)
     {
       fate = joust (champ, challenger, 0, complain);
@@ -13434,6 +13527,34 @@ initialize_reference (tree type, tree expr,
   return expr;
 }
 
+/* Return true if T is std::pair<const T&, const T&>.  */
+
+static bool
+std_pair_ref_ref_p (tree t)
+{
+  /* First, check if we have std::pair.  */
+  if (!NON_UNION_CLASS_TYPE_P (t)
+      || !CLASSTYPE_TEMPLATE_INSTANTIATION (t))
+    return false;
+  tree tdecl = TYPE_NAME (TYPE_MAIN_VARIANT (t));
+  if (!decl_in_std_namespace_p (tdecl))
+    return false;
+  tree name = DECL_NAME (tdecl);
+  if (!name || !id_equal (name, "pair"))
+    return false;
+
+  /* Now see if the template arguments are both const T&.  */
+  tree args = CLASSTYPE_TI_ARGS (t);
+  if (TREE_VEC_LENGTH (args) != 2)
+    return false;
+  for (int i = 0; i < 2; i++)
+    if (!TYPE_REF_OBJ_P (TREE_VEC_ELT (args, i))
+	|| !CP_TYPE_CONST_P (TREE_TYPE (TREE_VEC_ELT (args, i))))
+      return false;
+
+  return true;
+}
+
 /* Helper for maybe_warn_dangling_reference to find a problematic CALL_EXPR
    that initializes the LHS (and at least one of its arguments represents
    a temporary, as outlined in maybe_warn_dangling_reference), or NULL_TREE
@@ -13463,11 +13584,6 @@ do_warn_dangling_reference (tree expr)
 	    || warning_suppressed_p (fndecl, OPT_Wdangling_reference)
 	    || !warning_enabled_at (DECL_SOURCE_LOCATION (fndecl),
 				    OPT_Wdangling_reference)
-	    /* If the function doesn't return a reference, don't warn.  This
-	       can be e.g.
-		 const int& z = std::min({1, 2, 3, 4, 5, 6, 7});
-	       which doesn't dangle: std::min here returns an int.  */
-	    || !TYPE_REF_OBJ_P (TREE_TYPE (TREE_TYPE (fndecl)))
 	    /* Don't emit a false positive for:
 		std::vector<int> v = ...;
 		std::vector<int>::const_iterator it = v.begin();
@@ -13478,6 +13594,20 @@ do_warn_dangling_reference (tree expr)
 	    || (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
 		&& DECL_OVERLOADED_OPERATOR_P (fndecl)
 		&& DECL_OVERLOADED_OPERATOR_IS (fndecl, INDIRECT_REF)))
+	  return NULL_TREE;
+
+	tree rettype = TREE_TYPE (TREE_TYPE (fndecl));
+	/* If the function doesn't return a reference, don't warn.  This
+	   can be e.g.
+	     const int& z = std::min({1, 2, 3, 4, 5, 6, 7});
+	   which doesn't dangle: std::min here returns an int.
+
+	   If the function returns a std::pair<const T&, const T&>, we
+	   warn, to detect e.g.
+	     std::pair<const int&, const int&> v = std::minmax(1, 2);
+	   which also creates a dangling reference, because std::minmax
+	   returns std::pair<const T&, const T&>(b, a).  */
+	if (!(TYPE_REF_OBJ_P (rettype) || std_pair_ref_ref_p (rettype)))
 	  return NULL_TREE;
 
 	/* Here we're looking to see if any of the arguments is a temporary
@@ -13521,6 +13651,8 @@ do_warn_dangling_reference (tree expr)
       return do_warn_dangling_reference (TREE_OPERAND (expr, 2));
     case PAREN_EXPR:
       return do_warn_dangling_reference (TREE_OPERAND (expr, 0));
+    case TARGET_EXPR:
+      return do_warn_dangling_reference (TARGET_EXPR_INITIAL (expr));
     default:
       return NULL_TREE;
     }
@@ -13547,7 +13679,14 @@ maybe_warn_dangling_reference (const_tree decl, tree init)
 {
   if (!warn_dangling_reference)
     return;
-  if (!TYPE_REF_P (TREE_TYPE (decl)))
+  tree type = TREE_TYPE (decl);
+  /* Only warn if what we're initializing has type T&& or const T&, or
+     std::pair<const T&, const T&>.  (A non-const lvalue reference can't
+     bind to a temporary.)  */
+  if (!((TYPE_REF_OBJ_P (type)
+	 && (TYPE_REF_IS_RVALUE (type)
+	     || CP_TYPE_CONST_P (TREE_TYPE (type))))
+	|| std_pair_ref_ref_p (type)))
     return;
   /* Don't suppress the diagnostic just because the call comes from
      a system header.  If the DECL is not in a system header, or if

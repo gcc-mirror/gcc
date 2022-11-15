@@ -7315,22 +7315,16 @@ package body Sem_Prag is
          Parent_Node : Node_Id;
 
       begin
-         if not Is_List_Member (N) then
-            return False;
-
-         else
+         if Is_List_Member (N) then
             Plist := List_Containing (N);
             Parent_Node := Parent (Plist);
 
-            if Parent_Node = Empty
-              or else Nkind (Parent_Node) /= N_Compilation_Unit
-              or else Context_Items (Parent_Node) /= Plist
-            then
-               return False;
-            end if;
+            return Present (Parent_Node)
+              and then Nkind (Parent_Node) = N_Compilation_Unit
+              and then Context_Items (Parent_Node) = Plist;
          end if;
 
-         return True;
+         return False;
       end Is_In_Context_Clause;
 
       ---------------------------------
@@ -20502,10 +20496,16 @@ package body Sem_Prag is
 
             if No (Decl) then
 
-               --  First case: library level compilation unit declaration with
+               --  Case 0: library level compilation unit declaration with
+               --  the pragma preceding the declaration.
+
+               if Nkind (Parent (N)) = N_Compilation_Unit then
+                  Pragma_Misplaced;
+
+               --  Case 1: library level compilation unit declaration with
                --  the pragma immediately following the declaration.
 
-               if Nkind (Parent (N)) = N_Compilation_Unit_Aux then
+               elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
                   Set_Obsolescent
                     (Defining_Entity (Unit (Parent (Parent (N)))));
                   return;
@@ -23424,10 +23424,14 @@ package body Sem_Prag is
                Spec_Id : constant Entity_Id := Unique_Defining_Entity (Decl);
 
             begin
-               --  Ignore pragma when applied to the special body created for
-               --  inlining, recognized by its internal name _Parent.
+               --  Ignore pragma when applied to the special body created
+               --  for inlining, recognized by its internal name _Parent; or
+               --  when applied to the special body created for contracts,
+               --  recognized by its internal name _Wrapped_Statements.
 
-               if Chars (Body_Id) = Name_uParent then
+               if Chars (Body_Id) in Name_uParent
+                                   | Name_uWrapped_Statements
+               then
                   return;
                end if;
 
@@ -26200,6 +26204,20 @@ package body Sem_Prag is
 
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
       Set_Is_Analyzed_Pragma (N);
+
+      --  If the subprogram is frozen then its class-wide pre- and post-
+      --  conditions have been preanalyzed (see Merge_Class_Conditions);
+      --  otherwise they must be preanalyzed now to ensure the correct
+      --  visibility of their referenced entities. This scenario occurs
+      --  when the subprogram is defined in a nested package (since the
+      --  end of the package does not cause freezing).
+
+      if Class_Present (N)
+        and then Is_Dispatching_Operation (Spec_Id)
+        and then not Is_Frozen (Spec_Id)
+      then
+         Preanalyze_Class_Conditions (Spec_Id);
+      end if;
 
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
@@ -31719,43 +31737,45 @@ package body Sem_Prag is
    --  Start of processing for Non_Significant_Pragma_Reference
 
    begin
+      --  Reference might appear either directly as expression of a pragma
+      --  argument association, e.g. pragma Export (...), or within an
+      --  aggregate with component associations, e.g. pragma Refined_State
+      --  ((... => ...)).
+
       P := Parent (N);
-
-      if Nkind (P) /= N_Pragma_Argument_Association then
-
-         --  References within pragma Refined_State are not significant. They
-         --  can't be recognized using pragma argument number, because they
-         --  appear inside refinement clauses that rely on aggregate syntax.
-
-         if In_Pragma_Expression (N, Name_Refined_State) then
-            return True;
-         end if;
-
-         return False;
-
-      else
-         Id := Get_Pragma_Id (Parent (P));
-         C := Sig_Flags (Id);
-         AN := Arg_No;
-
-         if AN = 0 then
-            return False;
-         end if;
-
-         case C is
-            when -1 =>
-               return False;
-
-            when 0 =>
-               return True;
-
-            when 92 .. 99 =>
-               return AN < (C - 90);
-
+      loop
+         case Nkind (P) is
+            when N_Pragma_Argument_Association =>
+               exit;
+            when N_Aggregate | N_Component_Association =>
+               P := Parent (P);
             when others =>
-               return AN /= C;
+               return False;
          end case;
+      end loop;
+
+      AN := Arg_No;
+
+      if AN = 0 then
+         return False;
       end if;
+
+      Id := Get_Pragma_Id (Parent (P));
+      C := Sig_Flags (Id);
+
+      case C is
+         when -1 =>
+            return False;
+
+         when 0 =>
+            return True;
+
+         when 92 .. 99 =>
+            return AN < (C - 90);
+
+         when others =>
+            return AN /= C;
+      end case;
    end Is_Non_Significant_Pragma_Reference;
 
    ------------------------------

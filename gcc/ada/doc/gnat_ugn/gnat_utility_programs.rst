@@ -14,7 +14,6 @@ This chapter describes a number of utility programs:
 
   * :ref:`The_File_Cleanup_Utility_gnatclean`
   * :ref:`The_GNAT_Library_Browser_gnatls`
-  * :ref:`The_Coding_Standard_Verifier_gnatcheck`
   * :ref:`The_GNAT_Pretty_Printer_gnatpp`
   * :ref:`The_Body_Stub_Generator_gnatstub`
   * :ref:`The_Backtrace_Symbolizer_gnatsymbolize`
@@ -463,27 +462,6 @@ building specialized scripts.
       /home/comar/local/adainclude/s-tasoli.ads
       /home/comar/local/adainclude/s-unstyp.ads
       /home/comar/local/adainclude/unchconv.ads
-
-
-.. only:: PRO or GPL
-
-  .. _The_Coding_Standard_Verifier_gnatcheck:
-
-  The Coding Standard Verifier ``gnatcheck``
-  ==========================================
-
-  .. index:: ! gnatcheck
-  .. index:: ASIS
-
-  The ``gnatcheck`` tool is an ASIS-based utility that checks coding standard
-  compliance of Ada source files according to a given set of semantic rules.
-
-  ``gnatcheck`` is a project-aware tool
-  (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
-  the project-related switches). The project file package that can specify
-  ``gnatcheck`` switches is named ``Check``.
-
-  For full details, plese refer to :title:`GNATcheck Reference Manual`.
 
 
 .. only:: PRO or GPL

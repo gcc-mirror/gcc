@@ -118,6 +118,7 @@ struct unswitch_predicate
     if (!false_range.varying_p ()
 	&& !false_range.undefined_p ())
       false_range.invert ();
+    count = e->count ();
     num = predicates->length ();
     predicates->safe_push (this);
   }
@@ -126,7 +127,8 @@ struct unswitch_predicate
   unswitch_predicate (gcond *stmt)
     : switch_p (false)
   {
-    if (EDGE_SUCC (gimple_bb (stmt), 0)->flags & EDGE_TRUE_VALUE)
+    basic_block bb = gimple_bb (stmt);
+    if (EDGE_SUCC (bb, 0)->flags & EDGE_TRUE_VALUE)
       edge_index = 0;
     else
       edge_index = 1;
@@ -134,6 +136,7 @@ struct unswitch_predicate
     tree rhs = gimple_cond_rhs (stmt);
     enum tree_code code = gimple_cond_code (stmt);
     condition = build2 (code, boolean_type_node, lhs, rhs);
+    count = EDGE_SUCC (bb, 0)->count ().max (EDGE_SUCC (bb, 1)->count ());
     if (irange::supports_p (TREE_TYPE (lhs)))
       {
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
@@ -180,6 +183,9 @@ struct unswitch_predicate
   /* Index of the edge the predicate belongs to in the successor vector.  */
   int edge_index;
 
+  /* The profile count of this predicate.  */
+  profile_count count;
+
   /* Whether the predicate was created from a switch statement.  */
   bool switch_p;
 
@@ -206,10 +212,15 @@ static class loop *tree_unswitch_loop (class loop *, edge, tree);
 static bool tree_unswitch_single_loop (class loop *, dump_user_location_t,
 				       predicate_vector &predicate_path,
 				       unsigned loop_size, unsigned &budget,
-				       int ignored_edge_flag, bitmap);
+				       int ignored_edge_flag, bitmap,
+				       unswitch_predicate * = NULL,
+				       basic_block = NULL);
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
-				    vec<unswitch_predicate *> &candidates);
+				    class loop *&outer_loop,
+				    vec<unswitch_predicate *> &candidates,
+				    unswitch_predicate *&hottest,
+				    basic_block &hottest_bb);
 static bool tree_unswitch_outer_loop (class loop *);
 static edge find_loop_guard (class loop *, vec<gimple *>&);
 static bool empty_bb_without_guard_p (class loop *, basic_block,
@@ -239,33 +250,32 @@ set_predicates_for_bb (basic_block bb, vec<unswitch_predicate *> predicates)
 }
 
 /* Initialize LOOP information reused during the unswitching pass.
-   Return total number of instructions in the loop.  */
+   Return total number of instructions in the loop.  Adjusts LOOP to
+   the outermost loop all candidates are invariant in.  */
 
 static unsigned
-init_loop_unswitch_info (class loop *loop)
+init_loop_unswitch_info (class loop *&loop, unswitch_predicate *&hottest,
+			 basic_block &hottest_bb)
 {
   unsigned total_insns = 0;
 
-  /* Calculate instruction count.  */
   basic_block *bbs = get_loop_body (loop);
-  for (unsigned i = 0; i < loop->num_nodes; i++)
-    {
-      unsigned insns = 0;
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	insns += estimate_num_insns (gsi_stmt (gsi), &eni_size_weights);
 
-      bbs[i]->aux = (void *)(uintptr_t)insns;
-      total_insns += insns;
-    }
-
-  /* Find all unswitching candidates.  */
+  /* Unswitch only nests with no sibling loops.  */
+  class loop *outer_loop = loop;
+  while (loop_outer (outer_loop)->num != 0
+	 && !loop_outer (outer_loop)->inner->next)
+    outer_loop = loop_outer (outer_loop);
+  hottest = NULL;
+  hottest_bb = NULL;
+  /* Find all unswitching candidates in the innermost loop.  */
   for (unsigned i = 0; i != loop->num_nodes; i++)
     {
       /* Find a bb to unswitch on.  */
       vec<unswitch_predicate *> candidates;
       candidates.create (1);
-      find_unswitching_predicates_for_bb (bbs[i], loop, candidates);
+      find_unswitching_predicates_for_bb (bbs[i], loop, outer_loop, candidates,
+					  hottest, hottest_bb);
       if (!candidates.is_empty ())
 	set_predicates_for_bb (bbs[i], candidates);
       else
@@ -277,8 +287,34 @@ init_loop_unswitch_info (class loop *loop)
 	}
     }
 
+  if (outer_loop != loop)
+    {
+      free (bbs);
+      bbs = get_loop_body (outer_loop);
+    }
+
+  /* Calculate instruction count.  */
+  for (unsigned i = 0; i < outer_loop->num_nodes; i++)
+    {
+      unsigned insns = 0;
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	insns += estimate_num_insns (gsi_stmt (gsi), &eni_size_weights);
+      /* No predicates to unswitch on in the outer loops.  */
+      if (!flow_bb_inside_loop_p (loop, bbs[i]))
+	{
+	  gimple *last = last_stmt (bbs[i]);
+	  if (last != NULL)
+	    gimple_set_uid (last, 0);
+	}
+
+      bbs[i]->aux = (void *)(uintptr_t)insns;
+      total_insns += insns;
+    }
+
   free (bbs);
 
+  loop = outer_loop;
   return total_insns;
 }
 
@@ -293,68 +329,74 @@ tree_ssa_unswitch_loops (function *fun)
 
   ranger = enable_ranger (fun);
 
-  /* Go through all loops starting from innermost.  */
+  /* Go through all loops starting from innermost, hoisting guards.  */
   for (auto loop : loops_list (fun, LI_FROM_INNERMOST))
     {
-      if (!loop->inner)
-	{
-	  /* Perform initial tests if unswitch is eligible.  */
-	  dump_user_location_t loc = find_loop_location (loop);
-
-	  /* Do not unswitch in cold regions. */
-	  if (optimize_loop_for_size_p (loop))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, loc,
-				 "Not unswitching cold loops\n");
-	      continue;
-	    }
-
-	  /* If the loop is not expected to iterate, there is no need
-	     for unswitching.  */
-	  HOST_WIDE_INT iterations = estimated_loop_iterations_int (loop);
-	  if (iterations < 0)
-	    iterations = likely_max_loop_iterations_int (loop);
-	  if (iterations >= 0 && iterations <= 1)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, loc,
-				 "Not unswitching, loop is not expected"
-				 " to iterate\n");
-	      continue;
-	    }
-
-	  bb_predicates = new vec<vec<unswitch_predicate *>> ();
-	  bb_predicates->safe_push (vec<unswitch_predicate *> ());
-	  unswitch_predicate::predicates = new vec<unswitch_predicate *> ();
-
-	  /* Unswitch innermost loop.  */
-	  unsigned int loop_size = init_loop_unswitch_info (loop);
-	  unsigned int budget = loop_size + param_max_unswitch_insns;
-
-	  predicate_vector predicate_path;
-	  predicate_path.create (8);
-	  auto_bitmap handled;
-	  changed_unswitch
-	    |= tree_unswitch_single_loop (loop, loc, predicate_path,
-					  loop_size, budget,
-					  ignored_edge_flag, handled);
-	  predicate_path.release ();
-
-	  for (auto predlist : bb_predicates)
-	    predlist.release ();
-	  bb_predicates->release ();
-	  delete bb_predicates;
-	  bb_predicates = NULL;
-
-	  for (auto pred : unswitch_predicate::predicates)
-	    delete pred;
-	  unswitch_predicate::predicates->release ();
-	  delete unswitch_predicate::predicates;
-	  unswitch_predicate::predicates = NULL;
-	}
-      else
+      if (loop->inner)
 	changed_hoist |= tree_unswitch_outer_loop (loop);
+    }
+
+  /* Go through innermost loops, unswitching on invariant predicates
+     within those.  */
+  for (auto loop : loops_list (fun, LI_ONLY_INNERMOST))
+    {
+      /* Perform initial tests if unswitch is eligible.  */
+      dump_user_location_t loc = find_loop_location (loop);
+
+      /* Do not unswitch in cold regions. */
+      if (optimize_loop_for_size_p (loop))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc,
+			     "Not unswitching cold loops\n");
+	  continue;
+	}
+
+      /* If the loop is not expected to iterate, there is no need
+	 for unswitching.  */
+      HOST_WIDE_INT iterations = estimated_loop_iterations_int (loop);
+      if (iterations < 0)
+	iterations = likely_max_loop_iterations_int (loop);
+      if (iterations >= 0 && iterations <= 1)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc,
+			     "Not unswitching, loop is not expected"
+			     " to iterate\n");
+	  continue;
+	}
+
+      bb_predicates = new vec<vec<unswitch_predicate *>> ();
+      bb_predicates->safe_push (vec<unswitch_predicate *> ());
+      unswitch_predicate::predicates = new vec<unswitch_predicate *> ();
+
+      /* Unswitch loop.  */
+      unswitch_predicate *hottest;
+      basic_block hottest_bb;
+      unsigned int loop_size = init_loop_unswitch_info (loop, hottest,
+							hottest_bb);
+      unsigned int budget = loop_size + param_max_unswitch_insns;
+
+      predicate_vector predicate_path;
+      predicate_path.create (8);
+      auto_bitmap handled;
+      changed_unswitch |= tree_unswitch_single_loop (loop, loc, predicate_path,
+						     loop_size, budget,
+						     ignored_edge_flag, handled,
+						     hottest, hottest_bb);
+      predicate_path.release ();
+
+      for (auto predlist : bb_predicates)
+	predlist.release ();
+      bb_predicates->release ();
+      delete bb_predicates;
+      bb_predicates = NULL;
+
+      for (auto pred : unswitch_predicate::predicates)
+	delete pred;
+      unswitch_predicate::predicates->release ();
+      delete unswitch_predicate::predicates;
+      unswitch_predicate::predicates = NULL;
     }
 
   disable_ranger (fun);
@@ -445,11 +487,16 @@ is_maybe_undefined (const tree name, gimple *stmt, class loop *loop)
 
 /* Checks whether we can unswitch LOOP on condition at end of BB -- one of its
    basic blocks (for what it means see comments below).
-   All candidates all filled to the provided vector CANDIDATES.  */
+   All candidates all filled to the provided vector CANDIDATES.
+   OUTER_LOOP is updated to the innermost loop all found candidates are
+   invariant in.  */
 
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
-				    vec<unswitch_predicate *> &candidates)
+				    class loop *&outer_loop,
+				    vec<unswitch_predicate *> &candidates,
+				    unswitch_predicate *&hottest,
+				    basic_block &hottest_bb)
 {
   gimple *last, *def;
   tree use;
@@ -486,9 +533,29 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  if (is_maybe_undefined (use, stmt, loop))
 	    return;
 	}
+      /* Narrow OUTER_LOOP.  */
+      if (outer_loop != loop)
+	FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
+	  {
+	    def = SSA_NAME_DEF_STMT (use);
+	    def_bb = gimple_bb (def);
+	    while (outer_loop != loop
+		   && ((def_bb && flow_bb_inside_loop_p (outer_loop, def_bb))
+		       || is_maybe_undefined (use, stmt, outer_loop)))
+	      outer_loop = superloop_at_depth (loop,
+					       loop_depth (outer_loop) + 1);
+	  }
 
       unswitch_predicate *predicate = new unswitch_predicate (stmt);
       candidates.safe_push (predicate);
+      /* If we unswitch on this predicate we isolate both paths, so
+	 pick the highest count for updating of the hottest predicate
+	 to unswitch on first.  */
+      if (!hottest || predicate->count > hottest->count)
+	{
+	  hottest = predicate;
+	  hottest_bb = bb;
+	}
     }
   else if (gswitch *stmt = safe_dyn_cast <gswitch *> (last))
     {
@@ -507,6 +574,12 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	 behavior that the original program might never exercise.  */
       if (is_maybe_undefined (idx, stmt, loop))
 	return;
+      /* Narrow OUTER_LOOP.  */
+      while (outer_loop != loop
+	     && ((def_bb && flow_bb_inside_loop_p (outer_loop, def_bb))
+		 || is_maybe_undefined (idx, stmt, outer_loop)))
+	outer_loop = superloop_at_depth (loop,
+					 loop_depth (outer_loop) + 1);
 
       /* Build compound expression for all outgoing edges of the switch.  */
       auto_vec<tree, 16> preds;
@@ -561,6 +634,11 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 					  edge_index, e,
 					  edge_range[edge_index]);
 	      candidates.safe_push (predicate);
+	      if (!hottest || predicate->count > hottest->count)
+		{
+		  hottest = predicate;
+		  hottest_bb = bb;
+		}
 	    }
 	}
     }
@@ -839,7 +917,7 @@ evaluate_bbs (class loop *loop, predicate_vector *predicate_path,
 	{
 	  basic_block dest = e->dest;
 
-	  if (dest->loop_father == loop
+	  if (flow_bb_inside_loop_p (loop, dest)
 	      && !(dest->flags & reachable_flag)
 	      && !(e->flags & flags)
 	      && !ignored_edges.contains (e))
@@ -888,13 +966,15 @@ evaluate_loop_insns_for_predicate (class loop *loop,
 
 /* Unswitch single LOOP.  PREDICATE_PATH contains so far used predicates
    for unswitching.  BUDGET is number of instruction for which we can increase
-   the loop and is updated when unswitching occurs.  */
+   the loop and is updated when unswitching occurs.  If HOTTEST is not
+   NULL then pick this candidate as the one to unswitch on.  */
 
 static bool
 tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 			   predicate_vector &predicate_path,
 			   unsigned loop_size, unsigned &budget,
-			   int ignored_edge_flag, bitmap handled)
+			   int ignored_edge_flag, bitmap handled,
+			   unswitch_predicate *hottest, basic_block hottest_bb)
 {
   class loop *nloop;
   bool changed = false;
@@ -939,8 +1019,15 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
 	}
       return false;
     };
-  /* Check predicates of reachable blocks.  */
-  evaluate_bbs (loop, NULL, ignored_edge_flag, check_predicates);
+
+  if (hottest)
+    {
+      predicate = hottest;
+      predicate_bb = hottest_bb;
+    }
+  else
+    /* Check predicates of reachable blocks.  */
+    evaluate_bbs (loop, NULL, ignored_edge_flag, check_predicates);
 
   if (predicate != NULL)
     {
@@ -950,7 +1037,8 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			   "unswitching loop %d on %qs with condition: %T\n",
+			   "unswitching %sloop %d on %qs with condition: %T\n",
+			   loop->inner ? "outer " : "",
 			   loop->num, predicate->switch_p ? "switch" : "if",
 			   predicate->condition);
 	  dump_printf_loc (MSG_NOTE, loc,
@@ -1022,7 +1110,6 @@ tree_unswitch_loop (class loop *loop, edge edge_true, tree cond)
   /* Some sanity checking.  */
   gcc_assert (flow_bb_inside_loop_p (loop, edge_true->src));
   gcc_assert (EDGE_COUNT (edge_true->src->succs) >= 2);
-  gcc_assert (loop->inner == NULL);
 
   profile_probability prob_true = edge_true->probability;
   return loop_version (loop, unshare_expr (cond),

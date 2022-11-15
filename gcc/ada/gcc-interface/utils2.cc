@@ -2439,8 +2439,8 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       tree storage_ptr_type = build_pointer_type (storage_type);
       tree lhs, rhs;
 
-      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (storage_type),
-					     init);
+      size = TYPE_SIZE_UNIT (storage_type);
+      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, init);
 
       /* If the size overflows, pass -1 so Storage_Error will be raised.  */
       if (TREE_CODE (size) == INTEGER_CST && !valid_constant_size_p (size))
@@ -2454,8 +2454,10 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 
       /* If there is an initializing expression, then make a constructor for
 	 the entire object including the bounds and copy it into the object.
-	 If there is no initializing expression, just set the bounds.  */
-      if (init)
+	 If there is no initializing expression, just set the bounds.  Note
+	 that, if we have a storage model, we need to copy the initializing
+	 expression separately from the bounds.  */
+      if (init && !pool_is_storage_model)
 	{
 	  vec<constructor_elt, va_gc> *v;
 	  vec_alloc (v, 2);
@@ -2472,11 +2474,28 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 	{
 	  lhs = build_component_ref (storage_deref, TYPE_FIELDS (storage_type),
 				     false);
-	  rhs = build_template (template_type, type, NULL_TREE);
+	  rhs = build_template (template_type, type, init);
 	}
 
       if (pool_is_storage_model)
-	storage_init = build_storage_model_store (gnat_pool, lhs, rhs);
+	{
+	  storage_init = build_storage_model_store (gnat_pool, lhs, rhs);
+	  if (init)
+	    {
+	      start_stmt_group ();
+	      add_stmt (storage_init);
+	      lhs
+		= build_component_ref (storage_deref,
+				       DECL_CHAIN (TYPE_FIELDS (storage_type)),
+				       false);
+	      rhs = init;
+	      size = TYPE_SIZE_UNIT (TREE_TYPE (lhs));
+	      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, init);
+	      tree t = build_storage_model_store (gnat_pool, lhs, rhs, size);
+	      add_stmt (t);
+	      storage_init = end_stmt_group ();
+	    }
+	}
       else
 	storage_init = build_binary_op (INIT_EXPR, NULL_TREE, lhs, rhs);
 
@@ -2520,7 +2539,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       TREE_THIS_NOTRAP (storage_deref) = 1;
       if (pool_is_storage_model)
 	storage_init
-	  = build_storage_model_store (gnat_pool, storage_deref, init);
+	  = build_storage_model_store (gnat_pool, storage_deref, init, size);
       else
 	storage_init
 	  = build_binary_op (INIT_EXPR, NULL_TREE, storage_deref, init);

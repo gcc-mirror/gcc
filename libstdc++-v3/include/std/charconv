@@ -88,6 +88,10 @@ namespace __detail
     using __integer_to_chars_result_type
       = enable_if_t<__or_<__is_signed_integer<_Tp>,
 			  __is_unsigned_integer<_Tp>,
+#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
+			  is_same<_Tp, signed __int128>,
+			  is_same<_Tp, unsigned __int128>,
+#endif
 			  is_same<char, remove_cv_t<_Tp>>>::value,
 		    to_chars_result>;
 
@@ -126,8 +130,7 @@ namespace __detail
     constexpr to_chars_result
     __to_chars(char* __first, char* __last, _Tp __val, int __base) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
 
       to_chars_result __res;
 
@@ -167,8 +170,7 @@ namespace __detail
     constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_16(char* __first, char* __last, _Tp __val) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
 
       to_chars_result __res;
 
@@ -214,8 +216,7 @@ namespace __detail
     constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_10(char* __first, char* __last, _Tp __val) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
 
       to_chars_result __res;
 
@@ -238,8 +239,7 @@ namespace __detail
     constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_8(char* __first, char* __last, _Tp __val) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
 
       to_chars_result __res;
       unsigned __len;
@@ -292,8 +292,7 @@ namespace __detail
     constexpr __integer_to_chars_result_type<_Tp>
     __to_chars_2(char* __first, char* __last, _Tp __val) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
 
       to_chars_result __res;
 
@@ -443,6 +442,12 @@ namespace __detail
       // table ahead of time when it's not needed.
       static constexpr type value = (_DecOnly, _S_make_table());
     };
+
+#if ! __cpp_inline_variables
+  template<bool _DecOnly>
+    const typename __from_chars_alnum_to_val_table<_DecOnly>::type
+      __from_chars_alnum_to_val_table<_DecOnly>::value;
+#endif
 
   // If _DecOnly is true: if the character is a decimal digit, then
   // return its corresponding base-10 value, otherwise return a value >= 127.
@@ -736,6 +741,27 @@ namespace __detail
       __value = __val;
     return __res;
   }
+#elif defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+  __extension__ from_chars_result
+  from_chars(const char* __first, const char* __last, __ieee128& __value,
+	     chars_format __fmt = chars_format::general) noexcept;
+
+  inline from_chars_result
+  from_chars(const char* __first, const char* __last, _Float128& __value,
+	     chars_format __fmt = chars_format::general) noexcept
+  {
+    __extension__ __ieee128 __val;
+    from_chars_result __res = from_chars(__first, __last, __val, __fmt);
+    if (__res.ec == errc{})
+      __value = __val;
+    return __res;
+  }
+#else
+  from_chars_result
+  from_chars(const char* __first, const char* __last, _Float128& __value,
+	     chars_format __fmt = chars_format::general) noexcept;
+#endif
 #endif
 
 #if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32) \
@@ -851,6 +877,48 @@ namespace __detail
     return to_chars(__first, __last, static_cast<long double>(__value), __fmt,
 		    __precision);
   }
+#elif defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+  __extension__ to_chars_result
+  to_chars(char* __first, char* __last, __float128 __value) noexcept;
+  __extension__ to_chars_result
+  to_chars(char* __first, char* __last, __float128 __value,
+	   chars_format __fmt) noexcept;
+  __extension__ to_chars_result
+  to_chars(char* __first, char* __last, __float128 __value,
+	   chars_format __fmt, int __precision) noexcept;
+
+  inline to_chars_result
+  to_chars(char* __first, char* __last, _Float128 __value) noexcept
+  {
+    return __extension__ to_chars(__first, __last,
+				  static_cast<__float128>(__value));
+  }
+  inline to_chars_result
+  to_chars(char* __first, char* __last, _Float128 __value,
+	   chars_format __fmt) noexcept
+  {
+
+    return __extension__ to_chars(__first, __last,
+				  static_cast<__float128>(__value), __fmt);
+  }
+  inline to_chars_result
+  to_chars(char* __first, char* __last, _Float128 __value,
+	   chars_format __fmt, int __precision) noexcept
+  {
+
+    return __extension__ to_chars(__first, __last,
+				  static_cast<__float128>(__value), __fmt,
+				  __precision);
+  }
+#else
+  to_chars_result to_chars(char* __first, char* __last, _Float128 __value)
+    noexcept;
+  to_chars_result to_chars(char* __first, char* __last, _Float128 __value,
+			   chars_format __fmt) noexcept;
+  to_chars_result to_chars(char* __first, char* __last, _Float128 __value,
+			   chars_format __fmt, int __precision) noexcept;
+#endif
 #endif
 
 #if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)

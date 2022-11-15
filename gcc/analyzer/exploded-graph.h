@@ -77,6 +77,8 @@ class impl_region_model_context : public region_model_context
   void on_bounded_ranges (const svalue &sval,
 			  const bounded_ranges &ranges) final override;
 
+  void on_pop_frame (const frame_region *frame_reg) final override;
+
   void on_unknown_change (const svalue *sval, bool is_mutable) final override;
 
   void on_phi (const gphi *phi, tree rhs) final override;
@@ -848,6 +850,11 @@ public:
   }
 
   void on_escaped_function (tree fndecl);
+
+  /* In infinite-recursion.cc */
+  void detect_infinite_recursion (exploded_node *enode);
+  exploded_node *find_previous_entry_to (function *top_of_stack_fun,
+					 exploded_node *enode) const;
 
 private:
   void print_bar_charts (pretty_printer *pp) const;

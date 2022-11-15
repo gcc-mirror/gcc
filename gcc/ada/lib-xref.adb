@@ -1271,10 +1271,10 @@ package body Lib.Xref is
       XE : Xref_Entry renames Xrefs.Table (F);
       type M is mod 2**32;
 
-      H : constant M := M (XE.Key.Ent) + 2 ** 7 * M (abs XE.Key.Loc);
+      H : constant M := 3 * M (XE.Key.Ent) + 5 * M (abs XE.Key.Loc);
       --  It would be more natural to write:
       --
-      --    H : constant M := M'Mod (XE.Key.Ent) + 2**7 * M'Mod (XE.Key.Loc);
+      --    H : constant M := 3 * M'Mod (XE.Key.Ent) + 5 * M'Mod (XE.Key.Loc);
       --
       --  But we can't use M'Mod, because it prevents bootstrapping with older
       --  compilers. Loc can be negative, so we do "abs" before converting.

@@ -482,6 +482,54 @@ gimple_ranger::register_inferred_ranges (gimple *s)
   m_cache.apply_inferred_ranges (s);
 }
 
+// This function will walk the statements in BB to determine if any
+// discovered inferred ranges in the block have any transitive effects,
+// and if so, register those effects in BB.
+
+void
+gimple_ranger::register_transitive_inferred_ranges (basic_block bb)
+{
+  // Return if there are no inferred ranges in BB.
+  infer_range_manager &infer = m_cache.m_exit;
+  if (!infer.has_range_p (bb))
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Checking for transitive inferred ranges in BB %d\n",
+	     bb->index);
+
+  for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);
+       gsi_next (&si))
+    {
+      gimple *s = gsi_stmt (si);
+      tree lhs = gimple_get_lhs (s);
+      // If the LHS alreayd has an inferred effect, leave it be.
+      if (!gimple_range_ssa_p (lhs) || infer.has_range_p (lhs, bb))
+	continue;
+      // Pick up global value.
+      Value_Range g (TREE_TYPE (lhs));
+      range_of_expr (g, lhs);
+
+      // If either dependency has an inferred range, check if recalculating
+      // the LHS is different than the global value. If so, register it as
+      // an inferred range as well.
+      Value_Range r (TREE_TYPE (lhs));
+      r.set_undefined ();
+      tree name1 = gori ().depend1 (lhs);
+      tree name2 = gori ().depend2 (lhs);
+      if ((name1 && infer.has_range_p (name1, bb))
+	  || (name2 && infer.has_range_p (name2, bb)))
+	{
+	  // Check if folding S produces a different result.
+	  if (fold_range (r, s, this) && g != r)
+	    {
+	      infer.add_range (lhs, bb, r);
+	      m_cache.register_inferred_value (r, lhs, bb);
+	    }
+	}
+    }
+}
+
 // When a statement S has changed since the result was cached, re-evaluate
 // and update the global cache.
 
@@ -498,7 +546,7 @@ gimple_ranger::update_stmt (gimple *s)
       // Re-calculate a new value using just cache values.
       Value_Range tmp (TREE_TYPE (lhs));
       fold_using_range f;
-      fur_depend src (s, &(gori ()), &m_cache);
+      fur_stmt src (s, &m_cache);
       f.fold_stmt (tmp, s, src, lhs);
 
       // Combine the new value with the old value to check for a change.

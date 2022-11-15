@@ -152,6 +152,11 @@
        (match_test "aarch64_symbolic_address_p (op)")
        (match_test "aarch64_mov_operand_p (op, GET_MODE (op))")))
 
+(define_constraint "Usm"
+ "A constant that can be used with the S[MIN/MAX] CSSC instructions."
+ (and (match_code "const_int")
+      (match_test "aarch64_sminmax_immediate (op, VOIDmode)")))
+
 ;; const is needed here to support UNSPEC_SALT_ADDR.
 (define_constraint "Usw"
   "@internal
@@ -388,6 +393,11 @@
    FMOV immediate operation."
   (and (match_code "const_double,const_vector")
        (match_test "aarch64_float_const_representable_p (op)")))
+
+(define_constraint "Uum"
+ "A constant that can be used with the U[MIN/MAX] CSSC instructions."
+ (and (match_code "const_int")
+      (match_test "aarch64_uminmax_immediate (op, VOIDmode)")))
 
 (define_constraint "Uvi"
   "A floating point constant which can be used with a\

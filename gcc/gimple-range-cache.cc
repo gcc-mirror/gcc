@@ -1544,8 +1544,27 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   return true;
 }
 
-// This routine is used during a block walk to move the state of non-null for
-// any operands on stmt S to nonnull.
+// This routine will register an inferred value in block BB, and possibly
+// update the on-entry cache if appropriate.
+
+void
+ranger_cache::register_inferred_value (const vrange &ir, tree name,
+				       basic_block bb)
+{
+  Value_Range r (TREE_TYPE (name));
+  if (!m_on_entry.get_bb_range (r, name, bb))
+    exit_range (r, name, bb, RFD_READ_ONLY);
+  if (r.intersect (ir))
+    {
+      m_on_entry.set_bb_range (name, bb, r);
+      // If this range was invariant before, remove invariance.
+      if (!m_gori.has_edge_range_p (name))
+	m_gori.set_range_invariant (name, false);
+    }
+}
+
+// This routine is used during a block walk to adjust any inferred ranges
+// of operands on stmt S.
 
 void
 ranger_cache::apply_inferred_ranges (gimple *s)
@@ -1574,17 +1593,6 @@ ranger_cache::apply_inferred_ranges (gimple *s)
       tree name = infer.name (x);
       m_exit.add_range (name, bb, infer.range (x));
       if (update)
-	{
-	  Value_Range r (TREE_TYPE (name));
-	  if (!m_on_entry.get_bb_range (r, name, bb))
-	    exit_range (r, name, bb, RFD_READ_ONLY);
-	  if (r.intersect (infer.range (x)))
-	    {
-	      m_on_entry.set_bb_range (name, bb, r);
-	      // If this range was invariant before, remove invariance.
-	      if (!m_gori.has_edge_range_p (name))
-		m_gori.set_range_invariant (name, false);
-	    }
-	}
+	register_inferred_value (infer.range (x), name, bb);
     }
 }

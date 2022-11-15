@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
 with Output;   use Output;
 
@@ -80,6 +79,7 @@ package body Warnsw is
       Warn_On_Questionable_Layout          := Setting;
       Warn_On_Questionable_Missing_Parens  := Setting;
       Warn_On_Record_Holes                 := Setting;
+      Warn_On_Ignored_Equality             := Setting;
       Warn_On_Component_Order              := Setting;
       Warn_On_Redundant_Constructs         := Setting;
       Warn_On_Reverse_Bit_Order            := Setting;
@@ -181,6 +181,8 @@ package body Warnsw is
         W.Warn_On_Questionable_Missing_Parens;
       Warn_On_Record_Holes                 :=
         W.Warn_On_Record_Holes;
+      Warn_On_Ignored_Equality              :=
+        W.Warn_On_Ignored_Equality;
       Warn_On_Component_Order              :=
         W.Warn_On_Component_Order;
       Warn_On_Redundant_Constructs         :=
@@ -295,6 +297,8 @@ package body Warnsw is
         Warn_On_Questionable_Missing_Parens;
       W.Warn_On_Record_Holes                 :=
         Warn_On_Record_Holes;
+      W.Warn_On_Ignored_Equality             :=
+        Warn_On_Ignored_Equality;
       W.Warn_On_Component_Order              :=
         Warn_On_Component_Order;
       W.Warn_On_Redundant_Constructs         :=
@@ -515,6 +519,12 @@ package body Warnsw is
 
          when 'P' =>
             Warn_On_Pedantic_Checks := False;
+
+         when 'q' =>
+            Warn_On_Ignored_Equality := True;
+
+         when 'Q' =>
+            Warn_On_Ignored_Equality := False;
 
          when 'r' =>
             Warn_On_Component_Order := True;

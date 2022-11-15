@@ -6137,6 +6137,22 @@ instruction pattern.  There is no need for the hook to handle these two
 implementation approaches itself.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST (enum @var{tree_code}, tree @var{vectype}, wide_int @var{constant}, rtx *@var{output}, rtx @var{in0}, rtx @var{in1})
+This hook is used to test whether the target has a special method of
+division of vectors of type @var{vectype} using the value @var{constant},
+and producing a vector of type @var{vectype}.  The division
+will then not be decomposed by the vectorizer and kept as a div.
+
+When the hook is being used to test whether the target supports a special
+divide, @var{in0}, @var{in1}, and @var{output} are all null.  When the hook
+is being used to emit a division, @var{in0} and @var{in1} are the source
+vectors of type @var{vecttype} and @var{output} is the destination vector of
+type @var{vectype}.
+
+Return true if the operation is possible, emitting instructions for it
+if rtxes are provided and updating @var{output}.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (unsigned @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})
 This hook should return the decl of a function that implements the
 vectorized variant of the function with the @code{combined_fn} code

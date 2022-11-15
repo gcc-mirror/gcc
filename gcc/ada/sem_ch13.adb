@@ -9930,7 +9930,7 @@ package body Sem_Ch13 is
 
             if Opt.List_Inherited_Aspects
               and then not Is_Generic_Actual_Type (Typ)
-              and then Instantiation_Depth (Sloc (Typ)) = 0
+              and then Instantiation_Location (Sloc (Typ)) = No_Location
               and then not Is_Internal_Name (Chars (T))
               and then not Is_Internal_Name (Chars (Typ))
             then

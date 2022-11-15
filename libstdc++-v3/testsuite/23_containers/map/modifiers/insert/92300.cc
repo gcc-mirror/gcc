@@ -12,12 +12,12 @@ void* operator new(std::size_t n)
   return std::malloc(n);
 }
 
-void operator delete(void* p)
+void operator delete(void* p) noexcept
 {
   std::free(p);
 }
 
-void operator delete(void* p, std::size_t)
+void operator delete(void* p, std::size_t) noexcept
 {
   std::free(p);
 }

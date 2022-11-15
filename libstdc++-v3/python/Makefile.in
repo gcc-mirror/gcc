@@ -627,6 +627,7 @@ install-data-local: gdb.py
 	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py ; \
 	if [ -n "$(debug_gdb_py)" ]; then \
 	  sed "/^libdir = /s;'$$;/debug';" gdb.py > debug-gdb.py ; \
+	  $(mkdir_p) $(DESTDIR)$(toolexeclibdir)/debug ; \
 	  $(INSTALL_DATA) debug-gdb.py $(DESTDIR)$(toolexeclibdir)/debug/$$libname-gdb.py ; \
 	fi
 

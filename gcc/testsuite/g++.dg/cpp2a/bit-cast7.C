@@ -16,7 +16,7 @@ struct J
 struct K
 {
   long int a, b : 11, c;
-  constexpr bool operator == (const K &x)
+  constexpr bool operator == (const K &x) const
   {
     return a == x.a && b == x.b && c == x.c;
   }
@@ -29,7 +29,7 @@ struct L
 struct M
 {
   long long int a, b : 11, c;
-  constexpr bool operator == (const M &x)
+  constexpr bool operator == (const M &x) const
   {
     return a == x.a && b == x.b && c == x.c;
   }

@@ -276,6 +276,10 @@ package Contracts is
    --  which are invoked from the caller side; they are also used to build
    --  the dispatch-table wrapper (DTW), if required.
 
+   procedure Preanalyze_Class_Conditions (Spec_Id : Entity_Id);
+   --  Preanalyze class-wide pre-/postconditions of the given subprogram
+   --  specification.
+
    procedure Process_Class_Conditions_At_Freeze_Point (Typ : Entity_Id);
    --  Merge, preanalyze, and check class-wide pre/postconditions of Typ
    --  primitives.

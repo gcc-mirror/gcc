@@ -1,3 +1,112 @@
+2022-11-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* doc/contrib.rst: Update Jeff Law's email address.
+
+2022-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR web/107643
+	* doc/baseconf.py: Set include_todo tag if INCLUDE_TODO env
+	is set.
+	* doc/indices-and-tables.rst: Use include_todo tag.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/indices-and-tables.rst: Rename Indexes to Indices.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/Makefile: Update comment.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* doc/Makefile: Disable -j auto.
+
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/baseconf.py: Modernize by using pathlib.
+
+2022-11-10  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/baseconf.py: Inject dirname(__file__)/'modules' to path
+	instead of just ``.''.
+	* doc/gcc_sphinx.py: Moved to...
+	* doc/modules/gcc_sphinx.py: ...here.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Use new install URL.
+	* configure: Regenerate.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/bsd.rst:
+	  Add trailing newline.
+	* doc/contrib.rst:
+	  Add trailing newline.
+	* doc/contribute.rst:
+	  Add trailing newline.
+	* doc/cppdiropts.rst:
+	  Add trailing newline.
+	* doc/cppenv.rst:
+	  Add trailing newline.
+	* doc/cppopts.rst:
+	  Add trailing newline.
+	* doc/cppwarnopts.rst:
+	  Add trailing newline.
+	* doc/funding.rst:
+	  Add trailing newline.
+	* doc/gnu.rst:
+	  Add trailing newline.
+	* doc/gnu_free_documentation_license.rst:
+	  Add trailing newline.
+	* doc/gpl-3.0.rst:
+	  Add trailing newline.
+	* doc/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/lgpl-2.1.rst:
+	  Add trailing newline.
+	* doc/md.rst:
+	  Add trailing newline.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/baseconf.py: Simplify BUGURL and VERSION_PACKAGE,
+	provide a default.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+	* configure.ac: Support Sphinx based documentation.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/baseconf.py: Port to GCC sources.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/Makefile: New file.
+	* doc/_static/custom.css: New file.
+	* doc/baseconf.py: New file.
+	* doc/bsd.rst: New file.
+	* doc/contrib.rst: New file.
+	* doc/contribute.rst: New file.
+	* doc/cppdiropts.rst: New file.
+	* doc/cppenv.rst: New file.
+	* doc/cppopts.rst: New file.
+	* doc/cppwarnopts.rst: New file.
+	* doc/favicon.ico: New file.
+	* doc/funding.rst: New file.
+	* doc/gcc_sphinx.py: New file.
+	* doc/gnu.rst: New file.
+	* doc/gnu_free_documentation_license.rst: New file.
+	* doc/gpl-3.0.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/lgpl-2.1.rst: New file.
+	* doc/logo.pdf: New file.
+	* doc/logo.svg: New file.
+	* doc/md.rst: New file.
+	* doc/requirements.txt: New file.
+
 2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* Makefile.def: Remove module 'liboffloadmic'.

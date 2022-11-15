@@ -6260,6 +6260,15 @@ vectorizable_operation (vec_info *vinfo,
 	}
       target_support_p = (optab_handler (optab, vec_mode)
 			  != CODE_FOR_nothing);
+      tree cst;
+      if (!target_support_p
+	  && op1
+	  && (cst = uniform_integer_cst_p (op1)))
+	target_support_p
+	  = targetm.vectorize.can_special_div_by_const (code, vectype,
+							wi::to_wide (cst),
+							NULL, NULL_RTX,
+							NULL_RTX);
     }
 
   bool using_emulated_vectors_p = vect_emulated_vector_p (vectype);

@@ -53,6 +53,36 @@
 	(match_operand:V 1 "vector_move_operand"))]
   "TARGET_VECTOR"
 {
+  /* For whole register move, we transform the pattern into the format
+     that excludes the clobber of scratch register.
+
+     We include clobber of a scalar scratch register which is going to be
+     used for emit of vsetvl instruction after reload_completed since we
+     need vsetvl instruction to set VL/VTYPE global status for fractional
+     vector load/store.
+
+     For example:
+       [(set (match_operand:VNx1QI v24)
+	     (match_operand:VNx1QI (mem: a4)))
+	     (clobber (scratch:SI a5))]
+     ====>> vsetvl a5,zero,e8,mf8
+     ====>> vle8.v v24,(a4)
+
+     Philosophy:
+
+       - Clobber a scalar scratch register for each mov<mode>.
+
+       - Classify the machine_mode mode = <MODE>mode into 2 class:
+	 Whole register move and fractional register move.
+
+       - Transform and remove scratch clobber register for whole
+	 register move so that we can avoid occupying the scalar
+	 registers.
+
+       - We can not leave it to TARGET_SECONDARY_RELOAD since it happens
+	 before spilling. The clobber scratch is used by spilling fractional
+	 registers in IRA/LRA so it's too early.  */
+
   if (riscv_vector::legitimize_move (operands[0], operands[1], <VM>mode))
     DONE;
 })
@@ -61,17 +91,47 @@
 ;; Also applicable for all register moves.
 ;; Fractional vector modes load/store are not allowed to match this pattern.
 ;; Mask modes load/store are not allowed to match this pattern.
-(define_insn "*mov<mode>"
-  [(set (match_operand:V 0 "reg_or_mem_operand" "=vr,m,vr")
-	(match_operand:V 1 "reg_or_mem_operand" "m,vr,vr"))]
-  "TARGET_VECTOR && ((register_operand (operands[0], <MODE>mode)
-		      && register_operand (operands[1], <MODE>mode))
-   || known_ge (GET_MODE_SIZE (<MODE>mode), BYTES_PER_RISCV_VECTOR))"
+;; We seperate "*mov<mode>" into "*mov<mode>_whole" and "*mov<mode>_fract" because
+;; we don't want to include fractional load/store in "*mov<mode>" which will
+;; create unexpected patterns in LRA.
+;; For example:
+;; ira rtl:
+;;   (insn 20 19 9 2 (set (reg/v:VNx2QI 97 v1 [ v1 ])
+;;      (reg:VNx2QI 134 [ _1 ])) "rvv.c":9:22 571 {*movvnx2qi_fract}
+;;   (nil))
+;; When the value of pseudo register 134 of the insn above is discovered already
+;; spilled in the memory during LRA.
+;; LRA will reload this pattern into a memory load instruction pattern.
+;; Because VNx2QI is a fractional vector, we want LRA reload this pattern into
+;;  (insn 20 19 9 2 (parallel [
+;;       (set (reg:VNx2QI 98 v2 [orig:134 _1 ] [134])
+;;           (mem/c:VNx2QI (reg:SI 13 a3 [155]) [1 %sfp+[-2, -2] S[2, 2] A8]))
+;;       (clobber (reg:SI 14 a4 [149]))])
+;; So that we could be able to emit vsetvl instruction using clobber sratch a4.
+;; To let LRA generate the expected pattern, we should exclude fractional vector
+;; load/store in "*mov<mode>_whole". Otherwise, it will reload this pattern into:
+;;  (insn 20 19 9 2 (set (reg:VNx2QI 98 v2 [orig:134 _1 ] [134])
+;;           (mem/c:VNx2QI (reg:SI 13 a3 [155]) [1 %sfp+[-2, -2] S[2, 2] A8])))
+;; which is not the pattern we want.
+;; According the facts above, we make "*mov<mode>_whole" includes load/store/move for whole
+;; vector modes according to '-march' and "*mov<mode>_fract" only include fractional vector modes.
+(define_insn "*mov<mode>_whole"
+  [(set (match_operand:V_WHOLE 0 "reg_or_mem_operand" "=vr, m,vr")
+	(match_operand:V_WHOLE 1 "reg_or_mem_operand" "  m,vr,vr"))]
+  "TARGET_VECTOR"
   "@
    vl%m1re<sew>.v\t%0,%1
    vs%m1r.v\t%1,%0
    vmv%m1r.v\t%0,%1"
   [(set_attr "type" "vldr,vstr,vmov")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*mov<mode>_fract"
+  [(set (match_operand:V_FRACT 0 "register_operand" "=vr")
+	(match_operand:V_FRACT 1 "register_operand" " vr"))]
+  "TARGET_VECTOR"
+  "vmv1r.v\t%0,%1"
+  [(set_attr "type" "vmov")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "mov<mode>"
@@ -80,12 +140,12 @@
   "TARGET_VECTOR"
 {
   if (riscv_vector::legitimize_move (operands[0], operands[1], <MODE>mode))
-     DONE;
+    DONE;
 })
 
 (define_insn "*mov<mode>"
   [(set (match_operand:VB 0 "register_operand" "=vr")
-	(match_operand:VB 1 "register_operand" "vr"))]
+	(match_operand:VB 1 "register_operand" " vr"))]
   "TARGET_VECTOR"
   "vmv1r.v\t%0,%1"
   [(set_attr "type" "vmov")
@@ -290,18 +350,18 @@
 ;;                (const_int:QI N)]), -15 <= N < 16.
 ;;    2. (const_vector:VNx1SF repeat [
 ;;                (const_double:SF 0.0 [0x0.0p+0])]).
-(define_insn "@pred_mov<mode>"
+(define_insn_and_split "@pred_mov<mode>"
   [(set (match_operand:V 0 "nonimmediate_operand"        "=vd,  vr,     m,    vr,    vr")
-        (if_then_else:V
-          (unspec:<VM>
-            [(match_operand:<VM> 1 "vector_mask_operand" " vm, Wc1, vmWc1, vmWc1,   Wc1")
-             (match_operand 4 "vector_length_operand"    " rK,  rK,    rK,    rK,    rK")
-             (match_operand 5 "const_int_operand"        "  i,   i,     i,     i,     i")
-             (match_operand 6 "const_int_operand"        "  i,   i,     i,     i,     i")
-             (reg:SI VL_REGNUM)
-             (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-          (match_operand:V 3 "vector_move_operand"       "  m,   m,    vr,    vr, viWc0")
-          (match_operand:V 2 "vector_merge_operand"      "  0,  vu,     0,   vu0,   vu0")))]
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" " vm, Wc1, vmWc1,   Wc1,   Wc1")
+	     (match_operand 4 "vector_length_operand"    " rK,  rK,    rK,    rK,    rK")
+	     (match_operand 5 "const_int_operand"        "  i,   i,     i,     i,     i")
+	     (match_operand 6 "const_int_operand"        "  i,   i,     i,     i,     i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (match_operand:V 3 "vector_move_operand"       "  m,   m,    vr,    vr, viWc0")
+	  (match_operand:V 2 "vector_merge_operand"      "  0,  vu,   vu0,   vu0,   vu0")))]
   "TARGET_VECTOR"
   "@
    vle<sew>.v\t%0,%3%p1
@@ -309,31 +369,41 @@
    vse<sew>.v\t%3,%0%p1
    vmv.v.v\t%0,%3
    vmv.v.i\t%0,v%3"
+  "&& register_operand (operands[0], <MODE>mode)
+   && register_operand (operands[3], <MODE>mode)
+   && satisfies_constraint_vu (operands[2])"
+  [(set (match_dup 0) (match_dup 3))]
+  ""
   [(set_attr "type" "vlde,vlde,vste,vimov,vimov")
    (set_attr "mode" "<MODE>")])
 
 ;; vlm.v/vsm.v/vmclr.m/vmset.m.
 ;; constraint alternative 0 match vlm.v.
-;; constraint alternative 2 match vsm.v.
+;; constraint alternative 1 match vsm.v.
 ;; constraint alternative 3 match vmclr.m.
 ;; constraint alternative 4 match vmset.m.
-(define_insn "@pred_mov<mode>"
-  [(set (match_operand:VB 0 "nonimmediate_operand"       "=vr,   m,  vr,  vr")
-        (if_then_else:VB
-          (unspec:VB
-            [(match_operand:VB 1 "vector_mask_operand"   "Wc1, Wc1, Wc1, Wc1")
-             (match_operand 4 "vector_length_operand"    " rK,  rK,  rK,  rK")
-             (match_operand 5 "const_int_operand"        "  i,   i,   i,   i")
-             (match_operand 6 "const_int_operand"        "  i,   i,   i,   i")
-             (reg:SI VL_REGNUM)
-             (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-          (match_operand:VB 3 "vector_move_operand"      "  m,  vr, Wc0, Wc1")
-          (match_operand:VB 2 "vector_merge_operand"     " vu,   0,  vu,  vu")))]
+(define_insn_and_split "@pred_mov<mode>"
+  [(set (match_operand:VB 0 "nonimmediate_operand"       "=vr,   m,  vr,  vr,  vr")
+	(if_then_else:VB
+	  (unspec:VB
+	    [(match_operand:VB 1 "vector_mask_operand"   "Wc1, Wc1, Wc1, Wc1, Wc1")
+	     (match_operand 4 "vector_length_operand"    " rK,  rK,  rK,  rK,  rK")
+	     (match_operand 5 "const_int_operand"        "  i,   i,   i,   i,   i")
+	     (match_operand 6 "const_int_operand"        "  i,   i,   i,   i,   i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (match_operand:VB 3 "vector_move_operand"      "  m,  vr,  vr, Wc0, Wc1")
+	  (match_operand:VB 2 "vector_merge_operand"     " vu, vu0,  vu,  vu,  vu")))]
   "TARGET_VECTOR"
   "@
    vlm.v\t%0,%3
    vsm.v\t%3,%0
+   #
    vmclr.m\t%0
    vmset.m\t%0"
-  [(set_attr "type" "vldm,vstm,vmalu,vmalu")
+  "&& register_operand (operands[0], <MODE>mode)
+   && register_operand (operands[3], <MODE>mode)"
+  [(set (match_dup 0) (match_dup 3))]
+  ""
+  [(set_attr "type" "vldm,vstm,vimov,vmalu,vmalu")
    (set_attr "mode" "<MODE>")])

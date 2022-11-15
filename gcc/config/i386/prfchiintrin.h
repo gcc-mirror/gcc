@@ -30,6 +30,13 @@
 
 #ifdef __x86_64__
 
+
+#ifndef __PREFETCHI__
+#pragma GCC push_options
+#pragma GCC target("prefetchi")
+#define __DISABLE_PREFETCHI__
+#endif /* __PREFETCHI__ */
+
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _m_prefetchit0 (void* __P)
@@ -44,6 +51,11 @@ _m_prefetchit1 (void* __P)
   __builtin_ia32_prefetchi (__P, 2);
 }
 
-#endif
+#ifdef __DISABLE_PREFETCHI__
+#undef __DISABLE_PREFETCHI__
+#pragma GCC pop_options
+#endif /* __DISABLE_PREFETCHI__ */
+
+#endif /* __x86_64__ */
 
 #endif /* _PRFCHIINTRIN_H_INCLUDED */

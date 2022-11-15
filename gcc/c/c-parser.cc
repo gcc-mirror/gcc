@@ -677,6 +677,7 @@ c_token_starts_compound_literal (c_token *token)
     case CPP_KEYWORD:
       switch (token->keyword)
 	{
+	case RID_CONSTEXPR:
 	case RID_REGISTER:
 	case RID_STATIC:
 	case RID_THREAD:
@@ -795,6 +796,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_ALIGNAS:
 	case RID_ATOMIC:
 	case RID_AUTO_TYPE:
+	case RID_CONSTEXPR:
 	  return true;
 	default:
 	  if (token->keyword >= RID_FIRST_INT_N
@@ -2108,6 +2110,32 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
   bool any_auto_type_p = gnu_auto_type_p || std_auto_type_p;
   gcc_assert (!(gnu_auto_type_p && std_auto_type_p));
   const char *auto_type_keyword = gnu_auto_type_p ? "__auto_type" : "auto";
+  if (specs->constexpr_p)
+    {
+      /* An underspecified declaration may not declare tags or members
+	 or structures or unions; it is undefined behavior to declare
+	 the members of an enumeration.  Where the structure, union or
+	 enumeration type is declared within an initializer, this is
+	 diagnosed elsewhere.  Diagnose here the case of declaring
+	 such a type in the type specifiers of a constexpr
+	 declaration.  */
+      switch (specs->typespec_kind)
+	{
+	case ctsk_tagfirstref:
+	case ctsk_tagfirstref_attrs:
+	  error_at (here, "%qT declared in underspecified object declaration",
+		    specs->type);
+	  break;
+
+	case ctsk_tagdef:
+	  error_at (here, "%qT defined in underspecified object declaration",
+		    specs->type);
+	  break;
+
+	default:
+	  break;
+	}
+    }
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       bool handled_assume = false;
@@ -2257,7 +2285,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       bool dummy = false;
       timevar_id_t tv;
       tree fnbody = NULL_TREE;
-      tree std_auto_name = NULL_TREE;
+      tree underspec_name = NULL_TREE;
       /* Declaring either one or more declarators (in which case we
 	 should diagnose if there were no declaration specifiers) or a
 	 function definition (in which case the diagnostic for
@@ -2296,7 +2324,14 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      c_parser_skip_to_end_of_block_or_statement (parser);
 	      return;
 	    }
-	  std_auto_name = d->u.id.id;
+	  underspec_name = d->u.id.id;
+	}
+      else if (specs->constexpr_p)
+	{
+	  struct c_declarator *d = declarator;
+	  while (d->kind != cdk_id)
+	    d = d->declarator;
+	  underspec_name = d->u.id.id;
 	}
       if (c_parser_next_token_is (parser, CPP_EQ)
 	  || c_parser_next_token_is (parser, CPP_COMMA)
@@ -2343,9 +2378,13 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  rich_location richloc (line_table, init_loc);
 		  unsigned int underspec_state = 0;
 		  if (std_auto_type_p)
-		    underspec_state = start_underspecified_init (init_loc,
-								 std_auto_name);
-		  start_init (NULL_TREE, asm_name, global_bindings_p (), &richloc);
+		    underspec_state =
+		      start_underspecified_init (init_loc, underspec_name);
+		  start_init (NULL_TREE, asm_name,
+			      (global_bindings_p ()
+			       || specs->storage_class == csc_static
+			       || specs->constexpr_p),
+			      specs->constexpr_p, &richloc);
 		  /* A parameter is initialized, which is invalid.  Don't
 		     attempt to instrument the initializer.  */
 		  int flag_sanitize_save = flag_sanitize;
@@ -2364,7 +2403,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  else
 		    init = c_parser_expr_no_commas (parser, NULL);
 		  if (std_auto_type_p)
-		    finish_underspecified_init (std_auto_name, underspec_state);
+		    finish_underspecified_init (underspec_name,
+						underspec_state);
 		  flag_sanitize = flag_sanitize_save;
 		  if (gnu_auto_type_p
 		      && TREE_CODE (init.value) == COMPONENT_REF
@@ -2372,7 +2412,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		    error_at (here,
 			      "%<__auto_type%> used with a bit-field"
 			      " initializer");
-		  init = convert_lvalue_to_rvalue (init_loc, init, true, true);
+		  init = convert_lvalue_to_rvalue (init_loc, init, true, true,
+						   true);
 		  tree init_type = TREE_TYPE (init.value);
 		  bool vm_type = variably_modified_type_p (init_type,
 							   NULL_TREE);
@@ -2417,17 +2458,26 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      else
 		{
 		  /* The declaration of the variable is in effect while
-		     its initializer is parsed.  */
-		  d = start_decl (declarator, specs, true,
-				  chainon (postfix_attrs, all_prefix_attrs));
-		  if (!d)
-		    d = error_mark_node;
-		  if (omp_declare_simd_clauses)
-		    c_finish_omp_declare_simd (parser, d, NULL_TREE,
-					       omp_declare_simd_clauses);
+		     its initializer is parsed, except for a constexpr
+		     variable.  */
 		  init_loc = c_parser_peek_token (parser)->location;
 		  rich_location richloc (line_table, init_loc);
-		  start_init (d, asm_name, global_bindings_p (), &richloc);
+		  unsigned int underspec_state = 0;
+		  if (specs->constexpr_p)
+		    underspec_state =
+		      start_underspecified_init (init_loc, underspec_name);
+		  d = start_decl (declarator, specs, true,
+				  chainon (postfix_attrs,
+					   all_prefix_attrs),
+				  !specs->constexpr_p);
+		  if (!d)
+		    d = error_mark_node;
+		  if (!specs->constexpr_p && omp_declare_simd_clauses)
+		    c_finish_omp_declare_simd (parser, d, NULL_TREE,
+					       omp_declare_simd_clauses);
+		  start_init (d, asm_name,
+			      TREE_STATIC (d) || specs->constexpr_p,
+			      specs->constexpr_p, &richloc);
 		  /* A parameter is initialized, which is invalid.  Don't
 		     attempt to instrument the initializer.  */
 		  int flag_sanitize_save = flag_sanitize;
@@ -2435,6 +2485,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		    flag_sanitize = 0;
 		  init = c_parser_initializer (parser, d);
 		  flag_sanitize = flag_sanitize_save;
+		  if (specs->constexpr_p)
+		    {
+		      finish_underspecified_init (underspec_name,
+						  underspec_state);
+		      d = pushdecl (d);
+		      if (omp_declare_simd_clauses)
+			c_finish_omp_declare_simd (parser, d, NULL_TREE,
+						   omp_declare_simd_clauses);
+		    }
 		  finish_init ();
 		}
 	      if (oacc_routine_data)
@@ -2448,18 +2507,19 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  else
 	    {
-	      if (any_auto_type_p)
+	      if (any_auto_type_p || specs->constexpr_p)
 		{
 		  error_at (here,
 			    "%qs requires an initialized data declaration",
-			    auto_type_keyword);
+			    any_auto_type_p ? auto_type_keyword : "constexpr");
 		  c_parser_skip_to_end_of_block_or_statement (parser);
 		  return;
 		}
 
 	      location_t lastloc = UNKNOWN_LOCATION;
 	      tree attrs = chainon (postfix_attrs, all_prefix_attrs);
-	      tree d = start_decl (declarator, specs, false, attrs, &lastloc);
+	      tree d = start_decl (declarator, specs, false, attrs, true,
+				   &lastloc);
 	      if (d && TREE_CODE (d) == FUNCTION_DECL)
 		{
 		  /* Find the innermost declarator that is neither cdk_id
@@ -2540,11 +2600,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
 	    {
-	      if (any_auto_type_p)
+	      if (any_auto_type_p || specs->constexpr_p)
 		{
 		  error_at (here,
 			    "%qs may only be used with a single declarator",
-			    auto_type_keyword);
+			    any_auto_type_p ? auto_type_keyword : "constexpr");
 		  c_parser_skip_to_end_of_block_or_statement (parser);
 		  return;
 		}
@@ -2577,11 +2637,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      return;
 	    }
 	}
-      else if (any_auto_type_p)
+      else if (any_auto_type_p || specs->constexpr_p)
 	{
 	  error_at (here,
 		    "%qs requires an initialized data declaration",
-		    auto_type_keyword);
+		    any_auto_type_p ? auto_type_keyword : "constexpr");
 	  c_parser_skip_to_end_of_block_or_statement (parser);
 	  return;
 	}
@@ -2789,7 +2849,9 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   if (!parens.require_open (parser))
     return;
   location_t value_tok_loc = c_parser_peek_token (parser)->location;
-  value = c_parser_expr_no_commas (parser, NULL).value;
+  value = convert_lvalue_to_rvalue (value_tok_loc,
+				    c_parser_expr_no_commas (parser, NULL),
+				    true, true).value;
   value_loc = EXPR_LOC_OR_LOC (value, value_tok_loc);
   if (c_parser_next_token_is (parser, CPP_COMMA))
     {
@@ -3092,6 +3154,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_NORETURN:
 	case RID_AUTO:
 	case RID_THREAD:
+	case RID_CONSTEXPR:
 	  if (!scspec_ok)
 	    goto out;
 	  attrs_ok = true;
@@ -3462,7 +3525,10 @@ c_parser_enum_specifier (c_parser *parser)
 	    {
 	      c_parser_consume_token (parser);
 	      value_loc = c_parser_peek_token (parser)->location;
-	      enum_value = c_parser_expr_no_commas (parser, NULL).value;
+	      enum_value = convert_lvalue_to_rvalue (value_loc,
+						     (c_parser_expr_no_commas
+						      (parser, NULL)),
+						     true, true).value;
 	    }
 	  else
 	    enum_value = NULL_TREE;
@@ -3900,7 +3966,11 @@ c_parser_struct_declaration (c_parser *parser)
 	  if (c_parser_next_token_is (parser, CPP_COLON))
 	    {
 	      c_parser_consume_token (parser);
-	      width = c_parser_expr_no_commas (parser, NULL).value;
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      width = convert_lvalue_to_rvalue (loc,
+						(c_parser_expr_no_commas
+						 (parser, NULL)),
+						true, true).value;
 	    }
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 	    postfix_attrs = c_parser_gnu_attributes (parser);
@@ -4069,7 +4139,9 @@ c_parser_alignas_specifier (c_parser * parser)
 					false, true, 1);
     }
   else
-    ret = c_parser_expr_no_commas (parser, NULL).value;
+    ret = convert_lvalue_to_rvalue (loc,
+				    c_parser_expr_no_commas (parser, NULL),
+				    true, true).value;
   parens.skip_until_found_close (parser);
   return ret;
 }
@@ -4817,6 +4889,7 @@ c_parser_gnu_attribute_any_word (c_parser *parser)
 	case RID_TRANSACTION_CANCEL:
 	case RID_ATOMIC:
 	case RID_AUTO_TYPE:
+	case RID_CONSTEXPR:
 	case RID_INT_N_0:
 	case RID_INT_N_1:
 	case RID_INT_N_2:
@@ -5538,8 +5611,10 @@ c_parser_initializer (c_parser *parser, tree decl)
 	  && !warn_init_self)
 	suppress_warning (decl, OPT_Winit_self);
       if (TREE_CODE (ret.value) != STRING_CST
-	  && TREE_CODE (ret.value) != COMPOUND_LITERAL_EXPR)
-	ret = convert_lvalue_to_rvalue (loc, ret, true, true);
+	  && (TREE_CODE (ret.value) != COMPOUND_LITERAL_EXPR
+	      || C_DECL_DECLARED_CONSTEXPR (COMPOUND_LITERAL_EXPR_DECL
+					    (ret.value))))
+	ret = convert_lvalue_to_rvalue (loc, ret, true, true, true);
       return ret;
     }
 }
@@ -5685,6 +5760,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	    }
 	  else
 	    {
+	      struct c_expr first_expr;
 	      tree first, second;
 	      location_t ellipsis_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
 	      location_t array_index_loc = UNKNOWN_LOCATION;
@@ -5728,11 +5804,13 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 		      rec = objc_get_class_reference (id);
 		      goto parse_message_args;
 		    }
-		  first = c_parser_expr_no_commas (parser, NULL).value;
-		  mark_exp_read (first);
+		  array_index_loc = c_parser_peek_token (parser)->location;
+		  first_expr = c_parser_expr_no_commas (parser, NULL);
+		  mark_exp_read (first_expr.value);
 		  if (c_parser_next_token_is (parser, CPP_ELLIPSIS)
 		      || c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		    goto array_desig_after_first;
+		  first = first_expr.value;
 		  /* Expression receiver.  So far only one part
 		     without commas has been parsed; there might be
 		     more of the expression.  */
@@ -5767,14 +5845,21 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 		}
 	      c_parser_consume_token (parser);
 	      array_index_loc = c_parser_peek_token (parser)->location;
-	      first = c_parser_expr_no_commas (parser, NULL).value;
-	      mark_exp_read (first);
+	      first_expr = c_parser_expr_no_commas (parser, NULL);
+	      mark_exp_read (first_expr.value);
 	    array_desig_after_first:
+	      first_expr = convert_lvalue_to_rvalue (array_index_loc,
+						     first_expr,
+						     true, true);
+	      first = first_expr.value;
 	      if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
 		{
 		  ellipsis_loc = c_parser_peek_token (parser)->location;
 		  c_parser_consume_token (parser);
-		  second = c_parser_expr_no_commas (parser, NULL).value;
+		  second = convert_lvalue_to_rvalue (ellipsis_loc,
+						     (c_parser_expr_no_commas
+						      (parser, NULL)),
+						     true, true).value;
 		  mark_exp_read (second);
 		}
 	      else
@@ -5847,8 +5932,10 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
       init = c_parser_expr_no_commas (parser, after);
       if (init.value != NULL_TREE
 	  && TREE_CODE (init.value) != STRING_CST
-	  && TREE_CODE (init.value) != COMPOUND_LITERAL_EXPR)
-	init = convert_lvalue_to_rvalue (loc, init, true, true);
+	  && (TREE_CODE (init.value) != COMPOUND_LITERAL_EXPR
+	      || C_DECL_DECLARED_CONSTEXPR (COMPOUND_LITERAL_EXPR_DECL
+					    (init.value))))
+	init = convert_lvalue_to_rvalue (loc, init, true, true, true);
     }
   process_init_element (loc, init, false, braced_init_obstack);
 }
@@ -6205,7 +6292,9 @@ c_parser_label (c_parser *parser, tree std_attrs)
     {
       tree exp1, exp2;
       c_parser_consume_token (parser);
-      exp1 = c_parser_expr_no_commas (parser, NULL).value;
+      exp1 = convert_lvalue_to_rvalue (loc1,
+				       c_parser_expr_no_commas (parser, NULL),
+				       true, true).value;
       if (c_parser_next_token_is (parser, CPP_COLON))
 	{
 	  c_parser_consume_token (parser);
@@ -6214,7 +6303,10 @@ c_parser_label (c_parser *parser, tree std_attrs)
       else if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
 	{
 	  c_parser_consume_token (parser);
-	  exp2 = c_parser_expr_no_commas (parser, NULL).value;
+	  exp2 = convert_lvalue_to_rvalue (loc1,
+					   c_parser_expr_no_commas (parser,
+								    NULL),
+					   true, true).value;
 	  if (c_parser_require (parser, CPP_COLON, "expected %<:%>"))
 	    label = do_case (loc1, exp1, exp2, std_attrs);
 	}
@@ -8411,6 +8503,7 @@ c_parser_compound_literal_scspecs (c_parser *parser)
     {
       switch (c_parser_peek_token (parser)->keyword)
 	{
+	case RID_CONSTEXPR:
 	case RID_REGISTER:
 	case RID_STATIC:
 	case RID_THREAD:
@@ -10697,17 +10790,71 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   location_t start_loc;
   tree type_expr = NULL_TREE;
   bool type_expr_const = true;
+  bool constexpr_p = scspecs ? scspecs->constexpr_p : false;
+  unsigned int underspec_state = 0;
   check_compound_literal_type (type_loc, type_name);
   rich_location richloc (line_table, type_loc);
-  start_init (NULL_TREE, NULL, 0, &richloc);
-  type = groktypename (type_name, &type_expr, &type_expr_const);
   start_loc = c_parser_peek_token (parser)->location;
+  if (constexpr_p)
+    {
+      underspec_state = start_underspecified_init (start_loc, NULL_TREE);
+      /* A constexpr compound literal is subject to the constraints on
+	 underspecified declarations, which may not declare tags or
+	 members or structures or unions; it is undefined behavior to
+	 declare the members of an enumeration.  Where the structure,
+	 union or enumeration type is declared within the compound
+	 literal initializer, this is diagnosed elsewhere as a result
+	 of the above call to start_underspecified_init.  Diagnose
+	 here the case of declaring such a type in the type specifiers
+	 of the compound literal.  */
+      switch (type_name->specs->typespec_kind)
+	{
+	case ctsk_tagfirstref:
+	case ctsk_tagfirstref_attrs:
+	  error_at (type_loc, "%qT declared in %<constexpr%> compound literal",
+		    type_name->specs->type);
+	  break;
+
+	case ctsk_tagdef:
+	  error_at (type_loc, "%qT defined in %<constexpr%> compound literal",
+		    type_name->specs->type);
+	  break;
+
+	default:
+	  break;
+	}
+    }
+  start_init (NULL_TREE, NULL,
+	      (global_bindings_p ()
+	       || (scspecs && scspecs->storage_class == csc_static)
+	       || constexpr_p), constexpr_p, &richloc);
+  type = groktypename (type_name, &type_expr, &type_expr_const);
   if (type != error_mark_node && C_TYPE_VARIABLE_SIZE (type))
     {
       error_at (type_loc, "compound literal has variable size");
       type = error_mark_node;
     }
+  if (constexpr_p && type != error_mark_node)
+    {
+      tree type_no_array = strip_array_types (type);
+      /* The type of a constexpr object must not be variably modified
+	 (which applies to all compound literals), volatile, atomic or
+	 restrict qualified or have a member with such a qualifier.
+	 const qualification is implicitly added.  */
+      if (TYPE_QUALS (type_no_array)
+	  & (TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC))
+	error_at (type_loc, "invalid qualifiers for %<constexpr%> object");
+      else if (RECORD_OR_UNION_TYPE_P (type_no_array)
+	       && C_TYPE_FIELDS_NON_CONSTEXPR (type_no_array))
+	error_at (type_loc, "invalid qualifiers for field of "
+		  "%<constexpr%> object");
+      type = c_build_qualified_type (type,
+				     (TYPE_QUALS (type_no_array)
+				      | TYPE_QUAL_CONST));
+    }
   init = c_parser_braced_init (parser, type, false, NULL, NULL_TREE);
+  if (constexpr_p)
+    finish_underspecified_init (NULL_TREE, underspec_state);
   finish_init ();
   maybe_warn_string_init (type_loc, type, init);
 
@@ -23194,7 +23341,7 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
 		  tree st = push_stmt_list ();
 		  location_t loc = c_parser_peek_token (parser)->location;
 		  rich_location richloc (line_table, loc);
-		  start_init (omp_priv, NULL_TREE, 0, &richloc);
+		  start_init (omp_priv, NULL_TREE, false, false, &richloc);
 		  struct c_expr init = c_parser_initializer (parser, omp_priv);
 		  finish_init ();
 		  finish_decl (omp_priv, loc, init.value,

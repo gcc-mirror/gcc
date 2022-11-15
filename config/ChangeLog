@@ -1,3 +1,7 @@
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* acx.m4: Do not wrap REPORT_BUGS_TO.
+
 2022-10-19  LIU Hao  <lh_mouse@126.com>
 
 	* gthr.m4 (GCC_AC_THREAD_HEADER): Add new case for `mcf` thread

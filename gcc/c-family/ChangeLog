@@ -1,3 +1,17 @@
+2022-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/85487
+	* c-pragma.cc (handle_pragma_ignore): New function.
+	(init_pragma): Register region and endregion pragmas.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Port to RST.
+
 2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/55971
