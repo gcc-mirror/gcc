@@ -1656,8 +1656,15 @@ Dump::visit (ImplTraitTypeOneBound &type)
 }
 
 void
-Dump::visit (TraitObjectTypeOneBound &)
-{}
+Dump::visit (TraitObjectTypeOneBound &type)
+{
+  // Syntax:
+  //    dyn? TraitBound
+
+  if (type.is_dyn ())
+    stream << "dyn ";
+  visit(type.get_trait_bound());
+}
 
 void
 Dump::visit (TupleType &type)
