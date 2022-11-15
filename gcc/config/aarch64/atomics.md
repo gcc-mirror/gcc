@@ -704,6 +704,28 @@
   }
 )
 
+(define_insn "*aarch64_atomic_load<ALLX:mode>_rcpc_zext"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+    (zero_extend:GPI
+      (unspec_volatile:ALLX
+        [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+         (match_operand:SI 2 "const_int_operand")]			;; model
+       UNSPECV_LDAP)))]
+  "TARGET_RCPC"
+  "ldapr<ALLX:atomic_sfx>\t%<GPI:w>0, %1"
+)
+
+(define_insn "*aarch64_atomic_load<ALLX:mode>_rcpc_sext"
+  [(set (match_operand:GPI  0 "register_operand" "=r")
+    (sign_extend:GPI
+      (unspec_volatile:ALLX
+        [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+         (match_operand:SI 2 "const_int_operand")]			;; model
+       UNSPECV_LDAP)))]
+  "TARGET_RCPC"
+  "ldaprs<ALLX:atomic_sfx>\t%<GPI:w>0, %1"
+)
+
 (define_insn "atomic_store<mode>"
   [(set (match_operand:ALLI 0 "aarch64_rcpc_memory_operand" "=Q,Ust")
     (unspec_volatile:ALLI
