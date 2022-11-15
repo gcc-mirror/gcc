@@ -892,7 +892,19 @@ Dump::visit (AsyncBlockExpr &)
 void
 Dump::visit (TypeParam &param)
 {
+  // Syntax:
+  //    IDENTIFIER( : TypeParamBounds? )? ( = Type )?
+  // TypeParamBounds :
+  //    TypeParamBound ( + TypeParamBound )* +?
+
+  // FIXME this outputs things like "Ambiguous: String" - this comes from
+  // Token::str
   stream << param.get_type_representation ();
+  if (param.has_type_param_bounds ())
+    {
+      stream << ": ";
+      visit_items_joined_by_separator (param.get_type_param_bounds (), " + ");
+    }
   if (param.has_type ())
     {
       stream << " = ";
@@ -1663,7 +1675,7 @@ Dump::visit (TraitObjectTypeOneBound &type)
 
   if (type.is_dyn ())
     stream << "dyn ";
-  visit(type.get_trait_bound());
+  visit (type.get_trait_bound ());
 }
 
 void
