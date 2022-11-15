@@ -1,3 +1,8 @@
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
 2022-11-11  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Check for a space after leading

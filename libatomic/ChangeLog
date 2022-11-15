@@ -1,3 +1,9 @@
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104688
+	* config/x86/init.c (__libat_feat1_init): Don't clear
+	bit_AVX on AMD CPUs.
+
 2022-10-19  LIU Hao  <lh_mouse@126.com>
 
 	* configure.tgt: Add new case for `mcf` thread model

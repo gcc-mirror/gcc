@@ -1,3 +1,95 @@
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/bsd.rst: New file.
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/extensions.rst: New file.
+	* doc/function-variable-and-macro-listing.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/introduction.rst: New file.
+	* doc/lesser-general-public-license-2.1.rst: New file.
+	* doc/overview.rst: New file.
+	* doc/replacement-functions.rst: New file.
+	* doc/supplemental-functions.rst: New file.
+	* doc/using.rst: New file.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* at-file.texi: Removed.
+	* copying-lib.texi: Removed.
+	* functions.texi: Removed.
+	* libiberty.texi: Removed.
+	* obstacks.texi: Removed.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support --with-sphinx-build.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/bsd.rst:
+	  Add trailing newline.
+	* doc/copyright.rst:
+	  Add trailing newline.
+	* doc/extensions.rst:
+	  Add trailing newline.
+	* doc/function-variable-and-macro-listing.rst:
+	  Add trailing newline.
+	* doc/index.rst:
+	  Add trailing newline.
+	* doc/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/introduction.rst:
+	  Add trailing newline.
+	* doc/lesser-general-public-license-2.1.rst:
+	  Add trailing newline.
+	* doc/overview.rst:
+	  Add trailing newline.
+	* doc/replacement-functions.rst:
+	  Add trailing newline.
+	* doc/supplemental-functions.rst:
+	  Add trailing newline.
+	* doc/using.rst:
+	  Add trailing newline.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	PR other/107620
+	* configure: Regenerate.
+	* configure.ac: Always set sphinx-build.
+
 2022-11-13  Martin Liska  <mliska@suse.cz>
 
 	PR other/107620

@@ -1,3 +1,21 @@
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump C++23
+	__cpp_multidimensional_subscript macro value to 202211L.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107638
+	* c-lex.cc (c_common_has_attribute): Return 1 for init_priority
+	iff SUPPORTS_INIT_PRIORITY.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Port to RST.
+
 2022-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY.

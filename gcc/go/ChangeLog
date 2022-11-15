@@ -1,3 +1,89 @@
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/c-interoperability.rst: New file.
+	* doc/c-type-interoperability.rst: New file.
+	* doc/compiler-directives.rst: New file.
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/function-names.rst: New file.
+	* doc/general-public-license-3.rst: New file.
+	* doc/gnu-free-documentation-license.rst: New file.
+	* doc/import-and-export.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/introduction.rst: New file.
+	* doc/invoking-gccgo.rst: New file.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* gccgo.texi: Removed.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support --with-sphinx-build.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+	Support installation if sphinx-build is missing.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/c-interoperability.rst:
+	  Add trailing newline.
+	* doc/c-type-interoperability.rst:
+	  Add trailing newline.
+	* doc/compiler-directives.rst:
+	  Add trailing newline.
+	* doc/copyright.rst:
+	  Add trailing newline.
+	* doc/function-names.rst:
+	  Add trailing newline.
+	* doc/general-public-license-3.rst:
+	  Add trailing newline.
+	* doc/gnu-free-documentation-license.rst:
+	  Add trailing newline.
+	* doc/import-and-export.rst:
+	  Add trailing newline.
+	* doc/index.rst:
+	  Add trailing newline.
+	* doc/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/introduction.rst:
+	  Add trailing newline.
+	* doc/invoking-gccgo.rst:
+	  Add trailing newline.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
 2022-11-10  Martin Liska  <mliska@suse.cz>
 
 	* doc/conf.py: Add newline at last line.

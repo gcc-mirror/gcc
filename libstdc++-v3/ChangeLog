@@ -1,3 +1,14 @@
+2022-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/Makefile.am (install-data-local): Use mkdirs_p for debug
+	libdir.
+	* python/Makefile.in: Regenerate.
+
+2022-11-14  Bernhard Reutner-Fischer  <rep.dot.nop@gmail.com>
+
+	* src/Makefile.am (install-debug): Remove use of $(debugdir).
+	* src/Makefile.in: Regenerate.
+
 2022-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (utc_clock, tai_clock, gps_clock): Define.

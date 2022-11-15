@@ -1,3 +1,56 @@
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (next_common_initial_seqence): Rename to ...
+	(next_common_initial_sequence): ... this.
+	* typeck.cc (next_common_initial_seqence): Rename to ...
+	(next_common_initial_sequence): ... this.
+	(layout_compatible_type_p): Call next_common_initial_sequence
+	rather than next_common_initial_seqence.
+	* semantics.cc (is_corresponding_member_aggr): Likewise.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.cc (grok_op_properties): Implement C++23 P2589R1
+	- static operator[].  Handle operator[] similarly to operator()
+	- allow static member functions, but pedwarn on it for C++20 and
+	older.  Unlike operator(), perform rest of checks on it though for
+	C++20.
+	* call.cc (add_operator_candidates): For operator[] with class
+	typed first parameter, pass that parameter as first_arg and
+	an adjusted arglist without that parameter.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107638
+	* tree.cc (cxx_attribute_table): Don't conditionally exclude
+	the init_priority entry.
+	(handle_init_priority_attribute): Remove ATTRIBUTE_UNUSED.
+	Return error_mark_node if !SUPPORTS_INIT_PRIORITY.
+
+2022-11-15  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (maybe_warn_dangling_reference): Don't warn when initializing
+	a non-const lvalue reference.
+
+2022-11-14  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (tsubst_friend_function): Check satisfaction.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
 2022-11-10  Marek Polacek  <polacek@redhat.com>
 
 	* call.cc (std_pair_ref_ref_p): New.

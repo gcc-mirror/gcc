@@ -1,3 +1,86 @@
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr2392.C: Add testcase for DR 2392.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/subscript9.C: New test.
+	* g++.dg/cpp23/feat-cxx2b.C: Expect a newer
+	__cpp_multidimensional_subscript value.
+	* g++.old-deja/g++.bugs/900210_10.C: Don't expect an error
+	for C++23 or later.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr2604.C: New test.
+
+2022-11-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/98167
+	* gcc.target/i386/pr98167.c: New test.
+
+2022-11-15  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp23/elision4.C: Remove dg-warning.
+	* g++.dg/warn/Wdangling-reference1.C: Turn dg-warning into dg-bogus.
+	* g++.dg/warn/Wdangling-reference7.C: New test.
+
+2022-11-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-friend11.C: New test.
+
+2022-11-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/cssc_1.c: New test.
+	* gcc.target/aarch64/cssc_2.c: New test.
+	* gcc.target/aarch64/cssc_3.c: New test.
+	* gcc.target/aarch64/cssc_4.c: New test.
+	* gcc.target/aarch64/cssc_5.c: New test.
+
+2022-11-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve2/div-by-bitmask_1.c: New test.
+
+2022-11-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/div-by-bitmask.c: New test.
+
+2022-11-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-div-bitmask-1.c: New test.
+	* gcc.dg/vect/vect-div-bitmask-2.c: New test.
+	* gcc.dg/vect/vect-div-bitmask-3.c: New test.
+	* gcc.dg/vect/vect-div-bitmask.h: New file.
+
+2022-11-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/simd/addsub_1.c: New test.
+	* gcc.target/aarch64/sve/addsub_1.c: New test.
+
+2022-11-14  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add tests for Cortex-X1C.
+
+2022-11-14  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/amxbf16-dpbf16ps-2.c: Remove -amx-tile.
+	* gcc.target/i386/amxfp16-dpfp16ps-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbssd-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbsud-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbusd-2.c: Ditto.
+	* gcc.target/i386/amxint8-dpbuud-2.c: Ditto.
+
+2022-11-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/pr107554.c: Restrict to lp64.
+
+2022-11-14  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.dg/guality/loop-1.c: Add additional option
+	-mno-unroll-only-small-loops.
+	* gcc.target/i386/pr86270.c: Add -mno-unroll-only-small-loops.
+	* gcc.target/i386/pr93002.c: Likewise.
+
 2022-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106235

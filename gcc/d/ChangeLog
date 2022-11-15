@@ -1,3 +1,98 @@
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/general-public-license-3.rst: New file.
+	* doc/gnu-free-documentation-license.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/invoking-gdc.rst: New file.
+	* doc/invoking-gdc/code-generation.rst: New file.
+	* doc/invoking-gdc/developer-options.rst: New file.
+	* doc/invoking-gdc/input-and-output-files.rst: New file.
+	* doc/invoking-gdc/options-for-directory-search.rst: New file.
+	* doc/invoking-gdc/options-for-linking.rst: New file.
+	* doc/invoking-gdc/runtime-options.rst: New file.
+	* doc/invoking-gdc/warnings.rst: New file.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* d-target.def: Port to RST.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gdc.texi: Removed.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support --with-sphinx-build.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/copyright.rst:
+	  Add trailing newline.
+	* doc/general-public-license-3.rst:
+	  Add trailing newline.
+	* doc/gnu-free-documentation-license.rst:
+	  Add trailing newline.
+	* doc/index.rst:
+	  Add trailing newline.
+	* doc/indices-and-tables.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc/code-generation.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc/developer-options.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc/input-and-output-files.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc/options-for-directory-search.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc/options-for-linking.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc/runtime-options.rst:
+	  Add trailing newline.
+	* doc/invoking-gdc/warnings.rst:
+	  Add trailing newline.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
 2022-11-10  Martin Liska  <mliska@suse.cz>
 
 	* doc/conf.py: Add newline at last line.

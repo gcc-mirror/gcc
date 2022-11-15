@@ -1,3 +1,144 @@
+2022-11-14  Boris Yakobowski  <yakobowski@adacore.com>
+
+	* sem_case.adb: silence false positive warning emitted by CodePeer
+	on predefined equality for type Choice_Range_Info.
+
+2022-11-14  Bob Duff  <duff@adacore.com>
+
+	* atree.ads: Remove some comments.
+	* err_vars.ads: Likewise.
+	* scans.ads: Likewise.
+	* sinput.ads: Likewise.
+	* checks.ads: Likewise. Also add a "???" comment indicating an
+	obsolete comment that is too difficult to correct at this time.
+	* sem_attr.adb: Minor comment rewrite.
+
+2022-11-14  Javier Miranda  <miranda@adacore.com>
+
+	* exp_intr.adb
+	(Expand_Dispatching_Constructor_Call): Improve warning message.
+	* freeze.adb
+	(Check_No_Parts_Violations): Improve error message.
+
+2022-11-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst: Document optional
+	hardcfr checkpoints.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2022-11-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb
+	(Apply_Type_Conversion_Checks): Apply Root_Type to the type of the
+	prefix of a Pos attribute when checking whether the type is a
+	formal discrete type.
+
+2022-11-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-regpat.adb
+	(Parse): Fix handling of non-capturing parentheses.
+
+2022-11-14  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add special case for the special
+	local subprogram created for contracts.
+
+2022-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Build_Subprogram_Wrappers): Adjust slocs of the
+	copied aspects, just like we do in Build_Class_Wide_Expression for
+	inherited class-wide contracts.
+
+2022-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Replace_Formal): Tune whitespace.
+	* sem_ch12.adb (Check_Overloaded_Formal_Subprogram): Refine type
+	of a formal parameter and local variable; this routine operates on
+	nodes and not entities.
+	* sem_ch12.ads: Tune whitespace.
+
+2022-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): Expand wrappers for
+	GNATprove.
+
+2022-11-14  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/system-qnx-arm.ads: Set Support_Atomic_Primitives to
+	True.
+	* libgnat/system-rtems.ads: Add Support_Atomic_Primitives.
+
+2022-11-14  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Store span for Optr field, and
+	adapt to new type of Optr.
+	(Finalize. Output_JSON_Message, Remove_Warning_Messages): Adapt to
+	new type of Optr.
+	(Output_Messages): Use Optr instead of Sptr to display code
+	snippet closer to error.
+	* erroutc.adb (dmsg): Adapt to new type of Optr.
+	* erroutc.ads (Error_Msg_Object): Make Optr a span like Sptr.
+	* errutil.adb (Error_Msg): Likewise.
+
+2022-11-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Remove gnatcheck
+	reference.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gnat-style.rst: Moved to...
+	* doc/gnat-style/index.rst: ...here.
+	* doc/gnat_rm.rst: Moved to...
+	* doc/gnat_rm/index.rst: ...here.
+	* doc/gnat_ugn.rst: Moved to...
+	* doc/gnat_ugn/index.rst: ...here.
+	* doc/share/latex_elements.py: Moved to...
+	* doc/share/ada_latex_elements.py: ...here.
+	* gcc-interface/Make-lang.in:
+	* doc/Makefile: Removed.
+	* doc/share/conf.py: Removed.
+	* doc/share/gnu_free_documentation_license.rst: Removed.
+	* gnat-style.texi: Removed.
+	* gnat_rm.texi: Removed.
+	* gnat_ugn.texi: Removed.
+	* doc/gnat-style/conf.py: New file.
+	* doc/gnat-style/gnu_free_documentation_license.rst: New file.
+	* doc/gnat_rm/conf.py: New file.
+	* doc/gnat_rm/gnu_free_documentation_license.rst: New file.
+	* doc/gnat_ugn/conf.py: New file.
+	* doc/gnat_ugn/gnu_free_documentation_license.rst: New file.
+	* doc/share/adabaseconf.py: New file.
+	* doc/gnat_rm/security_hardening_features.rst: Add role.
+	* doc/gnat_ugn/platform_specific_information.rst: Remove
+	  duplicate definition of |nbsp|.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/Make-lang.in: Support --with-sphinx-build.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gnat_rm/index.rst: Fix cross manual refs.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/Make-lang.in:
+	Support installation if sphinx-build is missing.
+
 2022-11-09  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/Make-lang.in:
