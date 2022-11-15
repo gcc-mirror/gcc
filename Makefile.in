@@ -66354,6 +66354,16 @@ all-stagetrain-bfd: maybe-all-stagetrain-zlib
 all-stagefeedback-bfd: maybe-all-stagefeedback-zlib
 all-stageautoprofile-bfd: maybe-all-stageautoprofile-zlib
 all-stageautofeedback-bfd: maybe-all-stageautofeedback-zlib
+all-bfd: maybe-all-libsframe
+all-stage1-bfd: maybe-all-stage1-libsframe
+all-stage2-bfd: maybe-all-stage2-libsframe
+all-stage3-bfd: maybe-all-stage3-libsframe
+all-stage4-bfd: maybe-all-stage4-libsframe
+all-stageprofile-bfd: maybe-all-stageprofile-libsframe
+all-stagetrain-bfd: maybe-all-stagetrain-libsframe
+all-stagefeedback-bfd: maybe-all-stagefeedback-libsframe
+all-stageautoprofile-bfd: maybe-all-stageautoprofile-libsframe
+all-stageautofeedback-bfd: maybe-all-stageautofeedback-libsframe
 configure-opcodes: configure-libiberty
 configure-stage1-opcodes: configure-stage1-libiberty
 configure-stage2-opcodes: configure-stage2-libiberty
@@ -66486,6 +66496,7 @@ all-stageautoprofile-binutils: maybe-all-stageautoprofile-libsframe
 all-stageautofeedback-binutils: maybe-all-stageautofeedback-libsframe
 install-binutils: maybe-install-opcodes
 install-strip-binutils: maybe-install-strip-opcodes
+install-bfd: maybe-install-libsframe
 install-libctf: maybe-install-bfd
 install-ld: maybe-install-bfd
 install-ld: maybe-install-libctf
