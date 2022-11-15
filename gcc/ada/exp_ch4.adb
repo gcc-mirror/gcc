@@ -151,14 +151,17 @@ package body Exp_Ch4 is
    --  where we allow comparison of "out of range" values.
 
    function Expand_Composite_Equality
-     (Nod : Node_Id;
-      Typ : Entity_Id;
-      Lhs : Node_Id;
-      Rhs : Node_Id) return Node_Id;
+     (Outer_Type : Entity_Id;
+      Nod        : Node_Id;
+      Comp_Type  : Entity_Id;
+      Lhs        : Node_Id;
+      Rhs        : Node_Id) return Node_Id;
    --  Local recursive function used to expand equality for nested composite
    --  types. Used by Expand_Record/Array_Equality. Nod provides the Sloc value
    --  for generated code. Lhs and Rhs are the left and right sides for the
-   --  comparison, and Typ is the type of the objects to compare.
+   --  comparison, and Comp_Typ is the type of the objects to compare.
+   --  Outer_Type is the composite type containing a component of type
+   --  Comp_Type -- used for printing messages.
 
    procedure Expand_Concatenate (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of a sequence of two or more operands
@@ -1424,33 +1427,52 @@ package body Exp_Ch4 is
             Remove_Side_Effects (Op1, Name_Req => True);
             Remove_Side_Effects (Op2, Name_Req => True);
 
-            Rewrite (Op1,
-              Make_Function_Call (Sloc (Op1),
-                Name => New_Occurrence_Of (RTE (Comp), Loc),
+            declare
+               Comp_Call : constant Node_Id :=
+                 Make_Function_Call (Loc,
+                   Name => New_Occurrence_Of (RTE (Comp), Loc),
 
-                Parameter_Associations => New_List (
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op1),
-                    Attribute_Name => Name_Address),
+                   Parameter_Associations => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op1),
+                       Attribute_Name => Name_Address),
 
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op2),
-                    Attribute_Name => Name_Address),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op2),
+                       Attribute_Name => Name_Address),
 
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op1),
-                    Attribute_Name => Name_Length),
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op1),
+                       Attribute_Name => Name_Length),
 
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Op2),
-                    Attribute_Name => Name_Length))));
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (Op2),
+                       Attribute_Name => Name_Length)));
 
-            Rewrite (Op2,
-              Make_Integer_Literal (Sloc (Op2),
-                Intval => Uint_0));
+               Zero : constant Node_Id :=
+                 Make_Integer_Literal (Loc,
+                   Intval => Uint_0);
 
-            Analyze_And_Resolve (Op1, Standard_Integer);
-            Analyze_And_Resolve (Op2, Standard_Integer);
+               Comp_Op : Node_Id;
+
+            begin
+               case Nkind (N) is
+                  when N_Op_Lt =>
+                     Comp_Op := Make_Op_Lt (Loc, Comp_Call, Zero);
+                  when N_Op_Le =>
+                     Comp_Op := Make_Op_Le (Loc, Comp_Call, Zero);
+                  when N_Op_Gt =>
+                     Comp_Op := Make_Op_Gt (Loc, Comp_Call, Zero);
+                  when N_Op_Ge =>
+                     Comp_Op := Make_Op_Ge (Loc, Comp_Call, Zero);
+                  when others =>
+                     raise Program_Error;
+               end case;
+
+               Rewrite (N, Comp_Op);
+            end;
+
+            Analyze_And_Resolve (N, Standard_Boolean);
             return;
          end if;
       end if;
@@ -1702,7 +1724,9 @@ package body Exp_Ch4 is
              Prefix      => Make_Identifier (Loc, Chars (B)),
              Expressions => Index_List2);
 
-         Test := Expand_Composite_Equality (Nod, Component_Type (Typ), L, R);
+         Test := Expand_Composite_Equality
+           (Outer_Type => Typ, Nod => Nod, Comp_Type => Component_Type (Typ),
+            Lhs => L, Rhs => R);
 
          --  If some (sub)component is an unchecked_union, the whole operation
          --  will raise program error.
@@ -1934,7 +1958,6 @@ package body Exp_Ch4 is
       if Ltyp /= Rtyp then
          Ltyp := Base_Type (Ltyp);
          Rtyp := Base_Type (Rtyp);
-         pragma Assert (Ltyp = Rtyp);
       end if;
 
       --  If the array type is distinct from the type of the arguments, it
@@ -1957,6 +1980,7 @@ package body Exp_Ch4 is
          New_Rhs := Rhs;
       end if;
 
+      pragma Assert (Ltyp = Rtyp);
       First_Idx := First_Index (Ltyp);
 
       --  If optimization is enabled and the array boils down to a couple of
@@ -1964,7 +1988,6 @@ package body Exp_Ch4 is
       --  which should be easier to optimize by the code generator.
 
       if Optimization_Level > 0
-        and then Ltyp = Rtyp
         and then Is_Constrained (Ltyp)
         and then Number_Dimensions (Ltyp) = 1
         and then Compile_Time_Known_Bounds (Ltyp)
@@ -1991,7 +2014,9 @@ package body Exp_Ch4 is
                 Prefix      => New_Copy_Tree (New_Rhs),
                 Expressions => New_List (New_Copy_Tree (Low_B)));
 
-            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R);
+            TestL := Expand_Composite_Equality
+              (Outer_Type => Ltyp, Nod => Nod, Comp_Type => Ctyp,
+               Lhs => L, Rhs => R);
 
             L :=
               Make_Indexed_Component (Loc,
@@ -2003,7 +2028,9 @@ package body Exp_Ch4 is
                 Prefix      => New_Rhs,
                 Expressions => New_List (New_Copy_Tree (High_B)));
 
-            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R);
+            TestH := Expand_Composite_Equality
+              (Outer_Type => Ltyp, Nod => Nod, Comp_Type => Ctyp,
+               Lhs => L, Rhs => R);
 
             return
               Make_And_Then (Loc, Left_Opnd => TestL, Right_Opnd => TestH);
@@ -2416,20 +2443,21 @@ package body Exp_Ch4 is
    --  case because it is not possible to respect normal Ada visibility rules.
 
    function Expand_Composite_Equality
-     (Nod : Node_Id;
-      Typ : Entity_Id;
-      Lhs : Node_Id;
-      Rhs : Node_Id) return Node_Id
+     (Outer_Type : Entity_Id;
+      Nod        : Node_Id;
+      Comp_Type  : Entity_Id;
+      Lhs        : Node_Id;
+      Rhs        : Node_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Nod);
       Full_Type : Entity_Id;
       Eq_Op     : Entity_Id;
 
    begin
-      if Is_Private_Type (Typ) then
-         Full_Type := Underlying_Type (Typ);
+      if Is_Private_Type (Comp_Type) then
+         Full_Type := Underlying_Type (Comp_Type);
       else
-         Full_Type := Typ;
+         Full_Type := Comp_Type;
       end if;
 
       --  If the private type has no completion the context may be the
@@ -2454,7 +2482,7 @@ package body Exp_Ch4 is
       --  Case of tagged record types
 
       if Is_Tagged_Type (Full_Type) then
-         Eq_Op := Find_Primitive_Eq (Typ);
+         Eq_Op := Find_Primitive_Eq (Comp_Type);
          pragma Assert (Present (Eq_Op));
 
          return
@@ -2616,18 +2644,20 @@ package body Exp_Ch4 is
 
          --  Equality composes in Ada 2012 for untagged record types. It also
          --  composes for bounded strings, because they are part of the
-         --  predefined environment. We could make it compose for bounded
-         --  strings by making them tagged, or by making sure all subcomponents
-         --  are set to the same value, even when not used. Instead, we have
-         --  this special case in the compiler, because it's more efficient.
+         --  predefined environment (see 4.5.2(32.1/1)). We could make it
+         --  compose for bounded strings by making them tagged, or by making
+         --  sure all subcomponents are set to the same value, even when not
+         --  used. Instead, we have this special case in the compiler, because
+         --  it's more efficient.
 
-         elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Typ) then
-
+         elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Comp_Type)
+         then
             --  If no TSS has been created for the type, check whether there is
             --  a primitive equality declared for it.
 
             declare
-               Op : constant Node_Id := Build_Eq_Call (Typ, Loc, Lhs, Rhs);
+               Op : constant Node_Id :=
+                 Build_Eq_Call (Comp_Type, Loc, Lhs, Rhs);
 
             begin
                --  Use user-defined primitive if it exists, otherwise use
@@ -2647,6 +2677,33 @@ package body Exp_Ch4 is
       --  Case of non-record types (always use predefined equality)
 
       else
+         --  Print a warning if there is a user-defined "=", because it can be
+         --  surprising that the predefined "=" takes precedence over it.
+
+         --  Suppress the warning if the "user-defined" one is in the
+         --  predefined library, because those are defined to compose
+         --  properly by RM-4.5.2(32.1/1). Intrinsics also compose.
+
+         declare
+            Op : constant Entity_Id := Find_Primitive_Eq (Comp_Type);
+         begin
+            if Warn_On_Ignored_Equality
+              and then Present (Op)
+              and then not In_Predefined_Unit (Base_Type (Comp_Type))
+              and then not Is_Intrinsic_Subprogram (Op)
+            then
+               pragma Assert
+                 (Is_First_Subtype (Outer_Type)
+                   or else Is_Generic_Actual_Type (Outer_Type));
+               Error_Msg_Node_1 := Outer_Type;
+               Error_Msg_Node_2 := Comp_Type;
+               Error_Msg
+                 ("?_q?""="" for type & uses predefined ""="" for }", Loc);
+               Error_Msg_Sloc := Sloc (Op);
+               Error_Msg ("\?_q?""="" # is ignored here", Loc);
+            end if;
+         end;
+
          return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
       end if;
    end Expand_Composite_Equality;
@@ -4135,39 +4192,42 @@ package body Exp_Ch4 is
                Mod_Minus_Right : constant Uint :=
                                    Modulus (Typ) - Intval (Right_Opnd (N));
 
-               Exprs     : constant List_Id := New_List;
-               Cond_Expr : constant Node_Id := New_Op_Node (N_Op_Lt, Loc);
-               Then_Expr : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
-               Else_Expr : constant Node_Id := New_Op_Node (N_Op_Subtract,
-                                                            Loc);
+               Cond_Expr : Node_Id;
+               Then_Expr : Node_Id;
+               Else_Expr : Node_Id;
             begin
                --  To prevent spurious visibility issues, convert all
                --  operands to Standard.Unsigned.
 
-               Set_Left_Opnd (Cond_Expr,
-                 Unchecked_Convert_To (Standard_Unsigned,
-                   New_Copy_Tree (Left_Opnd (N))));
-               Set_Right_Opnd (Cond_Expr,
-                 Make_Integer_Literal (Loc, Mod_Minus_Right));
-               Append_To (Exprs, Cond_Expr);
+               Cond_Expr :=
+                 Make_Op_Lt (Loc,
+                   Left_Opnd  =>
+                     Unchecked_Convert_To (Standard_Unsigned,
+                       New_Copy_Tree (Left_Opnd (N))),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, Mod_Minus_Right));
 
-               Set_Left_Opnd (Then_Expr,
-                 Unchecked_Convert_To (Standard_Unsigned,
-                   New_Copy_Tree (Left_Opnd (N))));
-               Set_Right_Opnd (Then_Expr,
-                 Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
-               Append_To (Exprs, Then_Expr);
+               Then_Expr :=
+                 Make_Op_Add (Loc,
+                   Left_Opnd  =>
+                     Unchecked_Convert_To (Standard_Unsigned,
+                       New_Copy_Tree (Left_Opnd (N))),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
 
-               Set_Left_Opnd (Else_Expr,
-                 Unchecked_Convert_To (Standard_Unsigned,
-                   New_Copy_Tree (Left_Opnd (N))));
-               Set_Right_Opnd (Else_Expr,
-                 Make_Integer_Literal (Loc, Mod_Minus_Right));
-               Append_To (Exprs, Else_Expr);
+               Else_Expr :=
+                 Make_Op_Subtract (Loc,
+                   Left_Opnd  =>
+                     Unchecked_Convert_To (Standard_Unsigned,
+                       New_Copy_Tree (Left_Opnd (N))),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, Mod_Minus_Right));
 
                Rewrite (N,
                  Unchecked_Convert_To (Typ,
-                   Make_If_Expression (Loc, Expressions => Exprs)));
+                   Make_If_Expression (Loc,
+                     Expressions =>
+                       New_List (Cond_Expr, Then_Expr, Else_Expr))));
             end;
          end if;
       end Expand_Modular_Addition;
@@ -4183,7 +4243,7 @@ package body Exp_Ch4 is
          --   backend does not have to deal with nonbinary-modulus ops.
 
          Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
-         Mod_Expr : constant Node_Id := New_Op_Node (N_Op_Mod, Loc);
+         Mod_Expr : Node_Id;
 
          Target_Type : Entity_Id;
       begin
@@ -4278,10 +4338,10 @@ package body Exp_Ch4 is
             Force_Evaluation (Op_Expr, Mode => Strict);
          end if;
 
-         Set_Left_Opnd (Mod_Expr, Op_Expr);
-
-         Set_Right_Opnd (Mod_Expr,
-           Make_Integer_Literal (Loc, Modulus (Typ)));
+         Mod_Expr :=
+           Make_Op_Mod (Loc,
+             Left_Opnd  => Op_Expr,
+             Right_Opnd => Make_Integer_Literal (Loc, Modulus (Typ)));
 
          Rewrite (N,
            Unchecked_Convert_To (Typ, Mod_Expr));
@@ -4312,37 +4372,40 @@ package body Exp_Ch4 is
                Mod_Minus_Right : constant Uint :=
                                    Modulus (Typ) - Intval (Right_Opnd (N));
 
-               Exprs     : constant List_Id := New_List;
-               Cond_Expr : constant Node_Id := New_Op_Node (N_Op_Lt, Loc);
-               Then_Expr : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
-               Else_Expr : constant Node_Id := New_Op_Node (N_Op_Subtract,
-                                                            Loc);
+               Cond_Expr : Node_Id;
+               Then_Expr : Node_Id;
+               Else_Expr : Node_Id;
             begin
-               Set_Left_Opnd (Cond_Expr,
-                 Unchecked_Convert_To (Standard_Unsigned,
-                   New_Copy_Tree (Left_Opnd (N))));
-               Set_Right_Opnd (Cond_Expr,
-                 Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
-               Append_To (Exprs, Cond_Expr);
+               Cond_Expr :=
+                 Make_Op_Lt (Loc,
+                   Left_Opnd  =>
+                     Unchecked_Convert_To (Standard_Unsigned,
+                       New_Copy_Tree (Left_Opnd (N))),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
 
-               Set_Left_Opnd (Then_Expr,
-                 Unchecked_Convert_To (Standard_Unsigned,
-                   New_Copy_Tree (Left_Opnd (N))));
-               Set_Right_Opnd (Then_Expr,
-                 Make_Integer_Literal (Loc, Mod_Minus_Right));
-               Append_To (Exprs, Then_Expr);
+               Then_Expr :=
+                 Make_Op_Add (Loc,
+                   Left_Opnd  =>
+                     Unchecked_Convert_To (Standard_Unsigned,
+                       New_Copy_Tree (Left_Opnd (N))),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, Mod_Minus_Right));
 
-               Set_Left_Opnd (Else_Expr,
-                 Unchecked_Convert_To (Standard_Unsigned,
-                   New_Copy_Tree (Left_Opnd (N))));
-               Set_Right_Opnd (Else_Expr,
-                 Unchecked_Convert_To (Standard_Unsigned,
-                   New_Copy_Tree (Right_Opnd (N))));
-               Append_To (Exprs, Else_Expr);
+               Else_Expr :=
+                 Make_Op_Subtract (Loc,
+                   Left_Opnd  =>
+                     Unchecked_Convert_To (Standard_Unsigned,
+                       New_Copy_Tree (Left_Opnd (N))),
+                   Right_Opnd =>
+                     Unchecked_Convert_To (Standard_Unsigned,
+                       New_Copy_Tree (Right_Opnd (N))));
 
                Rewrite (N,
                  Unchecked_Convert_To (Typ,
-                   Make_If_Expression (Loc, Expressions => Exprs)));
+                   Make_If_Expression (Loc,
+                     Expressions =>
+                       New_List (Cond_Expr, Then_Expr, Else_Expr))));
             end;
          end if;
       end Expand_Modular_Subtraction;
@@ -6733,7 +6796,7 @@ package body Exp_Ch4 is
         --  Skip this for predicated types, where such expressions are a
         --  reasonable way of testing if something meets the predicate.
 
-        and then not Present (Predicate_Function (Ltyp))
+        and then No (Predicate_Function (Ltyp))
       then
          Substitute_Valid_Check;
          return;
@@ -7148,7 +7211,7 @@ package body Exp_Ch4 is
                   if Is_Entity_Name (Lop) then
                      Expr_Entity := Param_Entity (Lop);
 
-                     if not Present (Expr_Entity) then
+                     if No (Expr_Entity) then
                         Expr_Entity := Entity (Lop);
                      end if;
                   end if;
@@ -9819,7 +9882,7 @@ package body Exp_Ch4 is
          --  avoids anomalies when the replacement is done in an instance and
          --  is epsilon more efficient.
 
-         Set_Entity            (N, Standard_Entity (S_Op_Rem));
+         pragma Assert (Entity (N) = Standard_Op_Rem);
          Set_Etype             (N, Typ);
          Set_Do_Division_Check (N, DDC);
          Expand_N_Op_Rem (N);
@@ -13322,15 +13385,16 @@ package body Exp_Ch4 is
             end if;
 
             Check :=
-              Expand_Composite_Equality (Nod, Etype (C),
-               Lhs =>
-                 Make_Selected_Component (Loc,
-                   Prefix        => New_Lhs,
-                   Selector_Name => New_Occurrence_Of (C, Loc)),
-               Rhs =>
-                 Make_Selected_Component (Loc,
-                   Prefix        => New_Rhs,
-                   Selector_Name => New_Occurrence_Of (C, Loc)));
+              Expand_Composite_Equality
+                (Outer_Type => Typ, Nod => Nod, Comp_Type => Etype (C),
+                 Lhs =>
+                   Make_Selected_Component (Loc,
+                     Prefix        => New_Lhs,
+                     Selector_Name => New_Occurrence_Of (C, Loc)),
+                 Rhs =>
+                   Make_Selected_Component (Loc,
+                     Prefix        => New_Rhs,
+                     Selector_Name => New_Occurrence_Of (C, Loc)));
 
             --  If some (sub)component is an unchecked_union, the whole
             --  operation will raise program error.

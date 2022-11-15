@@ -1,3 +1,595 @@
+2022-11-08  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc (struct core_walk_data): Add field `which'...
+	(bpf_resolve_overloaded_builtin): ... set it here. Use values of enum
+	bpf_builtins for error checks.
+	(bpf_core_walk): Use values of enum bpf_builtins.
+	(bpf_core_newdecl): Likewise.
+	(bpf_expand_builtin): Likewise.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/24021
+	* range-op-float.cc (propagate_nans): New.
+	(frange_nextafter): New.
+	(frange_arithmetic): New.
+	(class foperator_plus): New.
+	(floating_op_table::floating_op_table): Add PLUS_EXPR entry.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* real.cc (real_isdenormal): New.
+	(encode_ieee_single): Call real_isdenormal.
+	(encode_ieee_double): Same.
+	(encode_ieee_extended): Same.
+	(encode_ieee_quad): Same.
+	(encode_ieee_half): Same.
+	(encode_arm_bfloat_half): Same.
+	* real.h (real_isdenormal): Add mode argument.  Rewrite for
+	normalized values.
+	* value-range.cc (frange::flush_denormals_to_zero): Pass mode to
+	real_isdenormal.
+
+2022-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107389
+	* gimple-low.cc (lower_builtin_assume_aligned): New.
+	(lower_stmt): Call it.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_div::fold_range): Call
+	update_known_bitmask.
+	* tree-ssa-ccp.cc (bit_value_binop): Handle divisions by powers of
+	2 as a right shift.
+
+2022-11-08  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand first argument
+	of GCN_BUILTIN_LDEXPV to V64DFmode.
+
+2022-11-08  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (FABSV, FLOORVF, FLOORV): New builtins.
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand GCN_BUILTIN_FABSV,
+	GCN_BUILTIN_FLOORVF and GCN_BUILTIN_FLOORV.
+
+2022-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (irange_to_masked_value): New.
+	(update_known_bitmask): New.
+	(operator_mult::fold_range): Call update_known_bitmask.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107547
+	* tree-call-cdce.cc (get_no_error_domain): Handle CASE_FLT_FN_FLOATN_NX
+	of BUILT_IN_{ACOS,ASIN,ACOSH,ATANH,LOG,LOG2,LOG10,LOG1P}.  Handle
+	BUILT_IN_{COSH,SINH,EXP,EXPM1,EXP2}F{16,32,64,128}.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107546
+	* config/i386/predicates.md (vector_or_const_vector_operand): New
+	predicate.
+	* config/i386/sse.md (vec_cmp<mode><sseintvecmodelower>,
+	vec_cmpv2div2di, vec_cmpu<mode><sseintvecmodelower>,
+	vec_cmpuv2div2di): Use nonimmediate_or_const_vector_operand
+	predicate instead of nonimmediate_operand and
+	vector_or_const_vector_operand instead of vector_operand.
+	* config/i386/i386-expand.cc (ix86_expand_int_sse_cmp): For
+	LE/LEU or GE/GEU with CONST_VECTOR cop1 try to transform those
+	into LE/LEU or GT/GTU with larger or smaller by one cop1 if
+	there is no wrap-around.  Force CONST_VECTOR cop0 or cop1 into
+	REG.  Formatting fix.
+
+2022-11-08  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR rtl-optimization/107482
+	* ira-color.cc (assign_hard_reg): Only call
+	update_costs_from_copies when retry_p is false.
+
+2022-11-08  konglin1  <lingling.kong@intel.com>
+
+	Revert:
+	2022-11-07  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/i386.opt:Add -mprefer-remote-atomic.
+	* config/i386/sync.md (atomic_<plus_logic><mode>):
+	New define_expand.
+	(atomic_add<mode>): Rename to below one.
+	(atomic_add<mode>_1): To this.
+	(atomic_<logic><mode>): Ditto.
+	(atomic_<logic><mode>_1): Ditto.
+	* doc/invoke.texi: Add -mprefer-remote-atomic.
+
+2022-11-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-options.cc (m_CORE_ATOM): New.
+	* config/i386/x86-tune.def
+	(X86_TUNE_SCHEDULE): Initial tune for CORE_ATOM.
+	(X86_TUNE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY): Ditto.
+	(X86_TUNE_DEST_FALSE_DEP_FOR_GLC): Ditto.
+	(X86_TUNE_MEMORY_MISMATCH_STALL): Ditto.
+	(X86_TUNE_USE_LEAVE): Ditto.
+	(X86_TUNE_PUSH_MEMORY): Ditto.
+	(X86_TUNE_USE_INCDEC): Ditto.
+	(X86_TUNE_INTEGER_DFMODE_MOVES): Ditto.
+	(X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB): Ditto.
+	(X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Ditto.
+	(X86_TUNE_USE_SAHF): Ditto.
+	(X86_TUNE_USE_BT): Ditto.
+	(X86_TUNE_AVOID_FALSE_DEP_FOR_BMI): Ditto.
+	(X86_TUNE_ONE_IF_CONV_INSN): Ditto.
+	(X86_TUNE_AVOID_MFENCE): Ditto.
+	(X86_TUNE_USE_SIMODE_FIOP): Ditto.
+	(X86_TUNE_EXT_80387_CONSTANTS): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_TYPELESS_STORES): Ditto.
+	(X86_TUNE_SSE_LOAD0_BY_PXOR): Ditto.
+	(X86_TUNE_AVOID_4BYTE_PREFIXES): Ditto.
+	(X86_TUNE_USE_GATHER_2PARTS): Ditto.
+	(X86_TUNE_USE_GATHER_4PARTS): Ditto.
+	(X86_TUNE_USE_GATHER): Ditto.
+
+2022-11-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104530
+	* gimple-range-cache.cc (ranger_cache::register_inferred_value):
+	New.  Split from:
+	(ranger_cache::apply_inferred_ranges): Move setting cache to
+	separate function.
+	* gimple-range-cache.h (register_inferred_value): New prototype.
+	* gimple-range-infer.cc (infer_range_manager::has_range_p): New.
+	* gimple-range-infer.h (has_range_p): New prototype.
+	* gimple-range.cc (register_transitive_inferred_ranges): New.
+	* gimple-range.h (register_transitive_inferred_ranges): New proto.
+	* tree-vrp.cc (rvrp_folder::fold_stmt): Check for transitive inferred
+	ranges at the end of the block before folding final stmt.
+
+2022-11-07  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc (handle_attr_preserve): Use maybe_make_core_relo().
+
+2022-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/55157
+	* range-op.cc (operator_mult::wi_fold): Optimize multiplications
+	by powers of 2.
+
+2022-11-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/102566
+	* tree-ssa-ccp.cc (optimize_atomic_bit_test_and): Also handle
+	if (_5 < 0) and if (_5 >= 0).
+
+2022-11-07  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* file-prefix-map.cc (remap_filename): Handle NULL filenames.
+
+2022-11-07  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR tree-optimization/107505
+	* tree-ssa-sink.cc (statement_sink_location): Additionally
+	reject ECF_RETURNS_TWICE calls.
+
+2022-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107541
+	* range-op.cc (operator_div::fold_range): Restrict power of 2
+	optimization to positive numbers.
+
+2022-11-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-unswitch.cc (unswitch_predicate::count): New.
+	(unswitch_predicate::unswitch_predicate): Initialize count.
+	(init_loop_unswitch_info): First collect candidates and
+	determine the outermost loop to unswitch.
+	(tree_ssa_unswitch_loops): First perform all guard hoisting,
+	then perform unswitching on innermost loop predicates.
+	(find_unswitching_predicates_for_bb): Keep track of the
+	most profitable predicate to unswitch on.
+	(tree_unswitch_single_loop): Unswitch given predicate if
+	not NULL.
+
+2022-11-07  Martin Liska  <mliska@suse.cz>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi: Improve wording.
+
+2022-11-07  Martin Liska  <mliska@suse.cz>
+
+	* range-op.cc: Add final override keywords.
+
+2022-11-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/107412
+	* gimple-fold.cc (gimple_fold_mask_load_store_mem_ref): Rename to ...
+	(gimple_fold_partial_load_store_mem_ref): ... this, add one parameter
+	mask_p indicating it's for mask or length, and add some handlings for
+	IFN LEN_{LOAD,STORE}.
+	(gimple_fold_mask_load): Rename to ...
+	(gimple_fold_partial_load): ... this, add one parameter mask_p.
+	(gimple_fold_mask_store): Rename to ...
+	(gimple_fold_partial_store): ... this, add one parameter mask_p.
+	(gimple_fold_call): Add the handlings for IFN LEN_{LOAD,STORE},
+	and adjust calls on gimple_fold_mask_load_store_mem_ref to
+	gimple_fold_partial_load_store_mem_ref.
+
+2022-11-07  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Grand Ridge.
+	* common/config/i386/i386-common.cc
+	(processor_names): Add grandridge.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h:
+	(enum processor_types): Add INTEL_GRANDRIDGE.
+	* config.gcc: Add -march=grandridge.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Handle grandridge.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Ditto.
+	* config/i386/i386-options.cc (m_GRANDRIDGE): New define.
+	(processor_cost_table): Add grandridge.
+	* config/i386/i386.h (enum processor_type):
+	Add PROCESSOR_GRANDRIDGE.
+	(PTA_GRANDRIDGE): Ditto.
+	* doc/extend.texi: Add grandridge.
+	* doc/invoke.texi: Ditto.
+
+2022-11-07  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/i386.opt:Add -mprefer-remote-atomic.
+	* config/i386/sync.md (atomic_<plus_logic><mode>):
+	New define_expand.
+	(atomic_add<mode>): Rename to below one.
+	(atomic_add<mode>_1): To this.
+	(atomic_<logic><mode>): Ditto.
+	(atomic_<logic><mode>_1): Ditto.
+	* doc/invoke.texi: Add -mprefer-remote-atomic.
+
+2022-11-07  konglin1  <lingling.kong@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect raoint.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_RAOINT_SET,
+	OPTION_MASK_ISA2_RAOINT_UNSET): New.
+	(ix86_handle_option): Handle -mraoint.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_RAOINT.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	raoint.
+	* config.gcc: Add raointintrin.h
+	* config/i386/cpuid.h (bit_RAOINT): New.
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__RAOINT__.
+	* config/i386/i386-isa.def (RAOINT): Add DEF_PTA(RAOINT).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Add -mraoint.
+	* config/i386/sync.md (rao_a<raointop><mode>): New define insn.
+	* config/i386/i386.opt: Add option -mraoint.
+	* config/i386/x86gprintrin.h: Include raointintrin.h.
+	* doc/extend.texi: Document raoint.
+	* doc/invoke.texi: Document -mraoint.
+	* doc/sourcebuild.texi: Document target raoint.
+	* config/i386/raointintrin.h: New file.
+
+2022-11-07  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Granite Rapids.
+	* common/config/i386/i386-common.cc:
+	(processor_names): Add graniterapids.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_subtypes): Add INTEL_GRANTIERAPIDS.
+	* config.gcc: Add -march=graniterapids.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Handle graniterapids.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Ditto.
+	* config/i386/i386-options.cc (m_GRANITERAPIDS): New.
+	(processor_cost_table): Add graniterapids.
+	* config/i386/i386.h (enum processor_type):
+	Add PROCESSOR_GRANITERAPIDS.
+	(PTA_GRANITERAPIDS): Ditto.
+	* doc/extend.texi: Add graniterapids.
+	* doc/invoke.texi: Ditto.
+
+2022-11-07  Haochen Jiang  <haochen.jiang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect PREFETCHI.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_PREFETCHI_SET,
+	OPTION_MASK_ISA2_PREFETCHI_UNSET): New.
+	(ix86_handle_option): Handle -mprefetchi.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_features): Add FEATURE_PREFETCHI.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY
+	for prefetchi.
+	* config.gcc: Add prfchiintrin.h.
+	* config/i386/cpuid.h (bit_PREFETCHI): New.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (VOID, PCVOID, INT)
+	and DEF_FUNCTION_TYPE (VOID, PCVOID, INT, INT, INT).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Define __PREFETCHI__.
+	* config/i386/i386-expand.cc: Handle new builtins.
+	* config/i386/i386-isa.def (PREFETCHI):
+	Add DEF_PTA(PREFETCHI).
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Handle prefetchi.
+	* config/i386/i386.md (prefetchi): New define_insn.
+	* config/i386/i386.opt: Add option -mprefetchi.
+	* config/i386/predicates.md (local_func_symbolic_operand):
+	New predicates.
+	* config/i386/x86gprintrin.h: Include prfchiintrin.h.
+	* config/i386/xmmintrin.h (enum _mm_hint): New enum for
+	prefetchi.
+	(_mm_prefetch): Handle the highest bit of enum.
+	* doc/extend.texi: Document prefetchi.
+	* doc/invoke.texi: Document -mprefetchi.
+	* doc/sourcebuild.texi: Document target prefetchi.
+	* config/i386/prfchiintrin.h: New file.
+
+2022-11-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* optabs.cc (can_vec_set_var_idx_p): Use operand[2]
+	mode when checking vec_set_optab.
+
+2022-11-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (UNSPEC_FCOPYSIGN): New unspec.
+	(type): Add fcopysign.
+	(copysign<mode>3): New instruction template.
+
+2022-11-06  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* multiple_target.cc (expand_target_clones): Free memory.
+
+2022-11-06  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* cgraph.cc (cgraph_node::make_local): Remove redundant set_section.
+	* multiple_target.cc (create_dispatcher_calls): Likewise.
+
+2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/41041
+	* doc/cppopts.texi: Document -fwide-exec-charset defaults
+	correctly.
+
+2022-11-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (fmultiflags): New.
+	* doc/invoke.texi: Document it.
+	* gcc.cc (driver_self_specs): Discard it.
+	* opts.cc (common_handle_option): Ignore it in the driver.
+
+2022-11-04  Jeff Chapman II  <jchapman@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* input.cc (get_source_text_between): New fn.
+	* input.h (get_source_text_between): Declare.
+
+2022-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107342
+	* range-op.cc (operator_mult::fold_range): New.
+	(operator_div::fold_range): New.
+
+2022-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.cc (operand_compare::operand_equal_p) <COMPONENT_REF>:
+	Do not take into account operand 2.
+	(operand_compare::hash_operand) <COMPONENT_REF>: Likewise.
+
+2022-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.cc (emit_group_store): Do not use subword paradoxical subregs
+
+2022-11-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve2.md: Fix typo in Cryptographic
+	extensions comment.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config.gcc [target *-intelmic-* | *-intelmicemul-*]: Remove.
+	* config/i386/i386-options.cc (ix86_omp_device_kind_arch_isa)
+	[ACCEL_COMPILER]: Remove.
+	* config/i386/intelmic-mkoffload.cc: Remove.
+	* config/i386/intelmic-offload.h: Likewise.
+	* config/i386/t-intelmic: Likewise.
+	* config/i386/t-omp-device: Likewise.
+	* configure.ac [target *-intelmic-* | *-intelmicemul-*]: Remove.
+	* configure: Regenerate.
+	* doc/install.texi (--enable-offload-targets=[...]): Update.
+	* doc/sourcebuild.texi: Remove 'liboffloadmic' documentation.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (OBJS): Remove 'dbxout.o'.
+	* config/nvptx/nvptx.cc: Don't '#include "dbxout.h"'.
+	* dbxout.cc: Remove.
+	* dbxout.h: Likewise.
+	* target-def.h (TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR):
+	Default to 'default_asm_out_constructor',
+	'default_asm_out_destructor'.
+	* targhooks.cc (default_asm_out_constructor)
+	(default_asm_out_destructor): New.
+	* targhooks.h (default_asm_out_constructor)
+	(default_asm_out_destructor): Declare.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (OBJS): Add 'dbxout.o'.
+	* config/nvptx/nvptx.cc: '#include "dbxout.h"'.
+	* dbxout.cc: New.
+	* dbxout.h: Likewise.
+	* target-def.h (TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR):
+	Default to 'default_stabs_asm_out_constructor',
+	'default_stabs_asm_out_destructor'.
+
+2022-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Detect
+	amx-fp16.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AMX_FP16_SET,
+	OPTION_MASK_ISA2_AMX_FP16_UNSET): New macros.
+	(ix86_handle_option): Handle -mamx-fp16.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_FP16.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-fp16.
+	* config.gcc: Add amxfp16intrin.h.
+	* config/i386/cpuid.h (bit_AMX_FP16): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AMX_FP16__.
+	* config/i386/i386-isa.def: Add DEF_PTA for AMX_FP16.
+	* config/i386/i386-options.cc (isa2_opts): Add -mamx-fp16.
+	(ix86_valid_target_attribute_inner_p): Add new ATTR.
+	(ix86_option_override_internal): Handle AMX-FP16.
+	* config/i386/i386.opt: Add -mamx-fp16.
+	* config/i386/immintrin.h: Include amxfp16intrin.h.
+	* doc/extend.texi: Document -mamx-fp16.
+	* doc/invoke.texi: Document amx-fp16.
+	* doc/sourcebuild.texi: Document amx_fp16.
+	* config/i386/amxfp16intrin.h: New file.
+
+2022-11-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu):
+	Add Sierra Forest.
+	* common/config/i386/i386-common.cc
+	(processor_names): Add Sierra Forest.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_types): Add INTEL_SIERRAFOREST.
+	* config.gcc: Add -march=sierraforest.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Handle Sierra Forest.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Ditto.
+	* config/i386/i386-options.cc (m_SIERRAFOREST): New define.
+	(processor_cost_table): Add sierra forest.
+	* config/i386/i386.h (enum processor_type):
+	Add PROCESSOR_SIERRA_FOREST.
+	(PTA_SIERRAFOREST): Ditto.
+	* doc/extend.texi: Add sierra forest.
+	* doc/invoke.texi: Ditto.
+
+2022-11-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect cmpccxadd.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_CMPCCXADD_SET,
+	OPTION_MASK_ISA2_CMPCCXADD_UNSET): New.
+	(ix86_handle_option): Handle -mcmpccxadd.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_CMPCCXADD.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	cmpccxadd.
+	* config.gcc: Add cmpccxaddintrin.h.
+	* config/i386/cpuid.h (bit_CMPCCXADD): New.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE(INT, PINT, INT, INT, INT)
+	and DEF_FUNCTION_TYPE(LONGLONG, PLONGLONG, LONGLONG, LONGLONG, INT).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__CMPCCXADD__.
+	* config/i386/i386-expand.cc (ix86_expand_special_args_builtin):
+	Add new parameter to indicate constant position.
+	Handle INT_FTYPE_PINT_INT_INT_INT
+	and LONGLONG_FTYPE_PLONGLONG_LONGLONG_LONGLONG_INT.
+	* config/i386/i386-isa.def (CMPCCXADD): Add DEF_PTA(CMPCCXADD).
+	* config/i386/i386-options.cc (isa2_opts): Add -mcmpccxadd.
+	(ix86_valid_target_attribute_inner_p): Handle cmpccxadd.
+	* config/i386/i386.opt: Add option -mcmpccxadd.
+	* config/i386/sync.md (cmpccxadd_<mode>): New define insn.
+	* config/i386/x86gprintrin.h: Include cmpccxaddintrin.h.
+	* doc/extend.texi: Document cmpccxadd.
+	* doc/invoke.texi: Document -mcmpccxadd.
+	* doc/sourcebuild.texi: Document target cmpccxadd.
+	* config/i386/cmpccxaddintrin.h: New file.
+
+2022-11-03  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: -fconcepts no longer implies
+	-fconcepts-ts before C++20.
+
+2022-11-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (math_unop_insn): New attribute.
+	(<math_unop><mode>2, <math_unop><mode>2<exec>, <math_unop><mode>2,
+	<math_unop><mode>2<exec>, *<math_unop><mode>2_insn,
+	*<math_unop><mode>2<exec>_insn): Use math_unop_insn to generate
+	assembler output.
+
+2022-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::update_stmt): New.
+	* gimple-range.h (gimple_ranger::update_stmt): New prototype.
+	* tree-ssa-operands.cc (update_stmt_operands): Notify range
+	query that stmt has changed.
+	* value-query.h (range_query::update_stmt): New.
+
+2022-11-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* make-unique.h: New file.
+
+2022-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/107404
+	* config/i386/i386.md (eliminate reg-reg move by inverting the
+	condition of a cmove #2 peephole2): Check if eliminated move
+	initialized a register, used in the moved instruction.
+
+2022-11-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/107510
+	* config/gcn/gcn.cc (gcn_expand_reduc_scalar): Remove duplicate
+	UNSPEC_SMIN_DPP_SHR conditionals.
+
+2022-11-02  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc: Add zawrs extension.
+	* config/riscv/riscv-opts.h (MASK_ZAWRS): New.
+	(TARGET_ZAWRS): New.
+	* config/riscv/riscv.opt: New.
+
+2022-11-02  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	PR driver/93371
+	* gcc.cc (ASM_MAP): Honour -ffile-prefix-map.
+
+2022-11-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::contains_p): Fix signed zero handling.
+	(range_tests_signed_zeros): New test.
+
+2022-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* builtins.cc (mathfn_built_in_2): #undef HUGE_VAL, NAN.
+
+2022-11-02  Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/100866
+	* config/rs6000/altivec.md: (*altivec_vrl<VI_char>): Named to...
+	(altivec_vrl<VI_char>): ...this.
+	* config/rs6000/vsx.md (revb_<mode>): Call vspltish and vrlh when
+	target is Power8 and mode is V8HI.
+
 2022-11-01  David Seifert  <soap@gentoo.org>
 
 	* configure.ac: Add AC_CACHE_CHECK(..., gcc_cv_sys_sdt_h).

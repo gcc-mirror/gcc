@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region.h"
 #include "analyzer/known-function-manager.h"
 #include "analyzer/region-model-manager.h"
+#include "analyzer/pending-diagnostic.h"
 
 using namespace ana;
 
@@ -348,6 +349,7 @@ class region_model
   void impl_call_analyzer_get_unknown_ptr (const call_details &cd);
   void impl_call_builtin_expect (const call_details &cd);
   void impl_call_calloc (const call_details &cd);
+  void impl_call_errno_location (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
 			bool *out_terminate_path);
   void impl_call_fgets (const call_details &cd);
@@ -448,9 +450,6 @@ class region_model
   tristate eval_condition (const svalue *lhs,
 			   enum tree_code op,
 			   const svalue *rhs) const;
-  tristate eval_condition_without_cm (const svalue *lhs,
-				      enum tree_code op,
-				      const svalue *rhs) const;
   tristate compare_initial_and_pointer (const initial_svalue *init,
 					const region_svalue *ptr) const;
   tristate symbolic_greater_than (const binop_svalue *a,
@@ -542,6 +541,8 @@ class region_model
 				      const svalue *copied_sval,
 				      const region *src_reg,
 				      region_model_context *ctxt);
+
+  void set_errno (const call_details &cd);
 
   /* Implemented in sm-fd.cc  */
   void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);
@@ -671,11 +672,11 @@ class region_model_context
  public:
   /* Hook for clients to store pending diagnostics.
      Return true if the diagnostic was stored, or false if it was deleted.  */
-  virtual bool warn (pending_diagnostic *d) = 0;
+  virtual bool warn (std::unique_ptr<pending_diagnostic> d) = 0;
 
-  /* Hook for clients to add a note to the last previously stored pending diagnostic.
-     Takes ownership of the pending_node (or deletes it).  */
-  virtual void add_note (pending_note *pn) = 0;
+  /* Hook for clients to add a note to the last previously stored
+     pending diagnostic.  */
+  virtual void add_note (std::unique_ptr<pending_note> pn) = 0;
 
   /* Hook for clients to be notified when an SVAL that was reachable
      in a previous state is no longer live, so that clients can emit warnings
@@ -728,9 +729,8 @@ class region_model_context
   /* Hook for clients to purge state involving SVAL.  */
   virtual void purge_state_involving (const svalue *sval) = 0;
 
-  /* Hook for clients to split state with a non-standard path.
-     Take ownership of INFO.  */
-  virtual void bifurcate (custom_edge_info *info) = 0;
+  /* Hook for clients to split state with a non-standard path.  */
+  virtual void bifurcate (std::unique_ptr<custom_edge_info> info) = 0;
 
   /* Hook for clients to terminate the standard path.  */
   virtual void terminate_path () = 0;
@@ -774,8 +774,8 @@ class region_model_context
 class noop_region_model_context : public region_model_context
 {
 public:
-  bool warn (pending_diagnostic *) override { return false; }
-  void add_note (pending_note *pn) override;
+  bool warn (std::unique_ptr<pending_diagnostic>) override { return false; }
+  void add_note (std::unique_ptr<pending_note>) override;
   void on_svalue_leak (const svalue *) override {}
   void on_liveness_change (const svalue_set &,
 			   const region_model *) override {}
@@ -805,7 +805,7 @@ public:
 
   void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) override {}
 
-  void bifurcate (custom_edge_info *info) override;
+  void bifurcate (std::unique_ptr<custom_edge_info> info) override;
   void terminate_path () override;
 
   const extrinsic_state *get_ext_state () const override { return NULL; }
@@ -847,14 +847,14 @@ private:
 class region_model_context_decorator : public region_model_context
 {
  public:
-  bool warn (pending_diagnostic *d) override
+  bool warn (std::unique_ptr<pending_diagnostic> d) override
   {
-    return m_inner->warn (d);
+    return m_inner->warn (std::move (d));
   }
 
-  void add_note (pending_note *pn) override
+  void add_note (std::unique_ptr<pending_note> pn) override
   {
-    m_inner->add_note (pn);
+    m_inner->add_note (std::move (pn));
   }
 
   void on_svalue_leak (const svalue *sval) override
@@ -917,9 +917,9 @@ class region_model_context_decorator : public region_model_context
     m_inner->purge_state_involving (sval);
   }
 
-  void bifurcate (custom_edge_info *info) override
+  void bifurcate (std::unique_ptr<custom_edge_info> info) override
   {
-    m_inner->bifurcate (info);
+    m_inner->bifurcate (std::move (info));
   }
 
   void terminate_path () override
@@ -961,9 +961,9 @@ protected:
 class note_adding_context : public region_model_context_decorator
 {
 public:
-  bool warn (pending_diagnostic *d) override
+  bool warn (std::unique_ptr<pending_diagnostic> d) override
   {
-    if (m_inner->warn (d))
+    if (m_inner->warn (std::move (d)))
       {
 	add_note (make_note ());
 	return true;
@@ -973,7 +973,7 @@ public:
   }
 
   /* Hook to make the new note.  */
-  virtual pending_note *make_note () = 0;
+  virtual std::unique_ptr<pending_note> make_note () = 0;
 
 protected:
   note_adding_context (region_model_context *inner)
@@ -1116,9 +1116,9 @@ using namespace ::selftest;
 class test_region_model_context : public noop_region_model_context
 {
 public:
-  bool warn (pending_diagnostic *d) final override
+  bool warn (std::unique_ptr<pending_diagnostic> d) final override
   {
-    m_diagnostics.safe_push (d);
+    m_diagnostics.safe_push (d.release ());
     return true;
   }
 

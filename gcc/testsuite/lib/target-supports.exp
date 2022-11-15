@@ -9561,6 +9561,27 @@ proc check_effective_target_avxneconvert { } {
     } "-O0 -mavxneconvert" ]
 }
 
+# Return 1 if cmpccxadd instructions can be compiled.
+proc check_effective_target_cmpccxadd { } {
+    return [check_no_compiler_messages cmpccxadd object {
+	int _cmpccxadd_epi32 (int *__A, int __B, int __C, const int __D)
+        {
+	   return (int)__builtin_ia32_cmpccxadd (__A, __B, __C, 1);
+	}
+    } "-mcmpccxadd" ]
+}
+
+# Return 1 if raoint instructions can be compiled.
+proc check_effective_target_raoint { } {
+    return [check_no_compiler_messages raoint object {
+	void
+	_aadd_si32 (int *__A, int __B)
+	{
+	  return __builtin_ia32_aadd32((int *)__A, __B);
+	}
+    } "-mraoint" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {
@@ -10110,6 +10131,17 @@ proc check_effective_target_amx_bf16 { } {
 	    __asm__ volatile ("tdpbf16ps\t%%tmm1, %%tmm2, %%tmm3" ::);
 	}
     } "-mamx-bf16" ]
+}
+
+# Return 1 if amx-fp16 instructions can be compiled.
+proc check_effective_target_amx_fp16 { } {
+    return [check_no_compiler_messages amx_fp16 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpfp16ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-fp16" ]
 }
 
 # Return 1 if vpclmulqdq instructions can be compiled.

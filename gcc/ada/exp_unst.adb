@@ -2225,7 +2225,7 @@ package body Exp_Unst is
 
             if No (UPJ.Ref)
               or else not Is_Entity_Name (UPJ.Ref)
-              or else not Present (Entity (UPJ.Ref))
+              or else No (Entity (UPJ.Ref))
               or else not Opt.Generate_C_Code
             then
                goto Continue;

@@ -10885,7 +10885,9 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
      and where the std::move does nothing if T does not have a T(const T&&)
      constructor, because the argument is const.  It will not use T(T&&)
      because that would mean losing the const.  */
-  else if (TYPE_REF_P (TREE_TYPE (arg))
+  else if (warn_redundant_move
+	   && !warning_suppressed_p (expr, OPT_Wredundant_move)
+	   && TYPE_REF_P (TREE_TYPE (arg))
 	   && CP_TYPE_CONST_P (TREE_TYPE (TREE_TYPE (arg))))
     {
       tree rtype = TREE_TYPE (TREE_TYPE (arg));
@@ -10901,8 +10903,11 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
 	      return;
 	  }
       auto_diagnostic_group d;
-      if (warning_at (loc, OPT_Wredundant_move,
-		      "redundant move in return statement"))
+      if (return_p
+	  ? warning_at (loc, OPT_Wredundant_move,
+			"redundant move in return statement")
+	  : warning_at (loc, OPT_Wredundant_move,
+			"redundant move in initialization"))
 	inform (loc, "remove %<std::move%> call");
     }
 }
@@ -11126,11 +11131,6 @@ check_return_expr (tree retval, bool *no_warning)
       /* We don't know if this is an lvalue or rvalue use, but
 	 either way we can mark it as read.  */
       mark_exp_read (retval);
-      /* Disable our std::move warnings when we're returning
-	 a dependent expression (c++/89780).  */
-      if (retval && TREE_CODE (retval) == CALL_EXPR)
-	/* This also suppresses -Wredundant-move.  */
-	suppress_warning (retval, OPT_Wpessimizing_move);
       return retval;
     }
 

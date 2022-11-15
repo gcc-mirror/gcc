@@ -84,6 +84,7 @@ static void lower_try_catch (gimple_stmt_iterator *, struct lower_data *);
 static void lower_gimple_return (gimple_stmt_iterator *, struct lower_data *);
 static void lower_builtin_setjmp (gimple_stmt_iterator *);
 static void lower_builtin_posix_memalign (gimple_stmt_iterator *);
+static void lower_builtin_assume_aligned (gimple_stmt_iterator *);
 
 
 /* Lower the body of current_function_decl from High GIMPLE into Low
@@ -768,6 +769,14 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 		lower_builtin_posix_memalign (gsi);
 		return;
 	      }
+	    else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_ASSUME_ALIGNED
+		     && !optimize)
+	      {
+		lower_builtin_assume_aligned (gsi);
+		data->cannot_fallthru = false;
+		gsi_next (gsi);
+		return;
+	      }
 	  }
 
 	if (decl && (flags_from_decl_or_type (decl) & ECF_NORETURN))
@@ -1309,6 +1318,38 @@ lower_builtin_posix_memalign (gimple_stmt_iterator *gsi)
 			      ptr);
   gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
   gsi_insert_after (gsi, gimple_build_label (noalign_label), GSI_NEW_STMT);
+}
+
+/* Lower calls to __builtin_assume_aligned when not optimizing.  */
+
+static void
+lower_builtin_assume_aligned (gimple_stmt_iterator *gsi)
+{
+  gcall *call = as_a <gcall *> (gsi_stmt (*gsi));
+
+  tree lhs = gimple_call_lhs (call);
+  if (!lhs || !POINTER_TYPE_P (TREE_TYPE (lhs)) || TREE_CODE (lhs) != SSA_NAME)
+    return;
+
+  tree align = gimple_call_arg (call, 1);
+  tree misalign = (gimple_call_num_args (call) > 2
+		   ? gimple_call_arg (call, 2) : NULL_TREE);
+  if (!tree_fits_uhwi_p (align)
+      || (misalign && !tree_fits_uhwi_p (misalign)))
+    return;
+
+  unsigned aligni = TREE_INT_CST_LOW (align);
+  unsigned misaligni = misalign ? TREE_INT_CST_LOW (misalign) : 0;
+  if (aligni <= 1
+      || (aligni & (aligni - 1)) != 0
+      || (misaligni & ~(aligni - 1)) != 0)
+    return;
+
+  /* For lowering we simply transfer alignment information to the
+     result and leave the call otherwise unchanged, it will be elided
+     at RTL expansion time.  */
+  ptr_info_def *pi = get_ptr_info (lhs);
+  set_ptr_info_alignment (pi, aligni, misaligni);
 }
 
 

@@ -1,3 +1,23 @@
+2022-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (in_underspecified_init, start_underspecified_init)
+	(finish_underspecified_init): New.
+	(shadow_tag_warned, parser_xref_tag, start_struct, start_enum):
+	Give errors inside initializers of underspecified declarations.
+	(grokdeclarator): Handle (erroneous) case of C2X auto on a
+	parameter.
+	(declspecs_add_type): Handle c2x_auto_p case.
+	(declspecs_add_scspec): Handle auto possibly setting c2x_auto_p in
+	C2X mode.
+	(finish_declspecs): Handle c2x_auto_p.
+	* c-parser.cc (c_parser_declaration_or_fndef): Handle C2X auto.
+	* c-tree.h (C_DECL_UNDERSPECIFIED): New macro.
+	(struct c_declspecs): Add c2x_auto_p.
+	(start_underspecified_init, finish_underspecified_init): New
+	prototypes.
+	* c-typeck.cc (build_external_ref): Give error for underspecified
+	declaration referenced in its initializer.
+
 2022-10-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (grokdeclarator): Pass

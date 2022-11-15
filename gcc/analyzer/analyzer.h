@@ -242,9 +242,9 @@ public:
 class plugin_analyzer_init_iface
 {
 public:
-  virtual void register_state_machine (state_machine *) = 0;
+  virtual void register_state_machine (std::unique_ptr<state_machine>) = 0;
   virtual void register_known_function (const char *name,
-					known_function *) = 0;
+					std::unique_ptr<known_function>) = 0;
   virtual logger *get_logger () const = 0;
 };
 
@@ -300,9 +300,8 @@ class path_context
 public:
   virtual ~path_context () {}
 
-  /* Hook for clients to split state with a non-standard path.
-     Take ownership of INFO.  */
-  virtual void bifurcate (custom_edge_info *info) = 0;
+  /* Hook for clients to split state with a non-standard path.  */
+  virtual void bifurcate (std::unique_ptr<custom_edge_info> info) = 0;
 
   /* Hook for clients to terminate the standard path.  */
   virtual void terminate_path () = 0;
@@ -324,6 +323,8 @@ extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);
+extern bool is_pipe_call_p (const_tree fndecl, const char *funcname,
+			    const gcall *call, unsigned int num_args);
 
 extern const char *get_user_facing_name (const gcall *call);
 

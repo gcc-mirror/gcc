@@ -1668,7 +1668,7 @@ package body Rtsfind is
 
       --  Load unit if unit not previously loaded
 
-      if not Present (U.Entity) then
+      if No (U.Entity) then
          Load_RTU (U_Id, Id => E);
       end if;
 
@@ -1687,7 +1687,7 @@ package body Rtsfind is
             E1 := First_Entity (Pkg_Ent);
             while Present (E1) loop
                if Ename = Chars (E1) then
-                  pragma Assert (not Present (Found_E));
+                  pragma Assert (No (Found_E));
                   Found_E := E1;
                end if;
 

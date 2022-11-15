@@ -4329,6 +4329,39 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	emit_insn (gen_absv64sf2 (target, arg));
 	return target;
       }
+    case GCN_BUILTIN_FABSV:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_absv64df2 (target, arg));
+	return target;
+      }
+    case GCN_BUILTIN_FLOORVF:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64SFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64SFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_floorv64sf2 (target, arg));
+	return target;
+      }
+    case GCN_BUILTIN_FLOORV:
+      {
+	if (ignore)
+	  return target;
+	rtx arg = force_reg (V64DFmode,
+			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+					  V64DFmode,
+					  EXPAND_NORMAL));
+	emit_insn (gen_floorv64df2 (target, arg));
+	return target;
+      }
     case GCN_BUILTIN_LDEXPVF:
       {
 	if (ignore)
@@ -4350,7 +4383,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	  return target;
 	rtx arg1 = force_reg (V64DFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
-					   V64SFmode,
+					   V64DFmode,
 					   EXPAND_NORMAL));
 	rtx arg2 = force_reg (V64SImode,
 			      expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX,
@@ -4927,7 +4960,6 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
   machine_mode scalar_mode = GET_MODE_INNER (mode);
   int vf = GET_MODE_NUNITS (mode);
   bool use_moves = (((unspec == UNSPEC_SMIN_DPP_SHR
-		      || unspec == UNSPEC_SMIN_DPP_SHR
 		      || unspec == UNSPEC_SMAX_DPP_SHR
 		      || unspec == UNSPEC_UMIN_DPP_SHR
 		      || unspec == UNSPEC_UMAX_DPP_SHR)
@@ -4936,7 +4968,6 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
 			&& scalar_mode == DFmode));
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
-		   : unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
 		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
 		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
 		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX

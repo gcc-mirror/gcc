@@ -874,7 +874,7 @@ package Einfo is
 --       are generated (subprograms, package declarations and package
 --       bodies). Defined if there are pending generic body instantiations
 --       for the corresponding entity. If this flag is set, then generation
---       of the subprogram descriptor for the corresponding enities must
+--       of the subprogram descriptor for the corresponding entities must
 --       be delayed, since the insertion of the generic body may add entries
 --       to the list of handlers.
 --
@@ -2570,7 +2570,7 @@ package Einfo is
 
 --    Is_Elaboration_Checks_OK_Id
 --       Defined in elaboration targets (see terminology in Sem_Elab). Set when
---       the target appears in a region which is subject to elabled elaboration
+--       the target appears in a region which is subject to enabled elaboration
 --       checks. Such targets are allowed to generate run-time conditional ABE
 --       checks or guaranteed ABE failures.
 
@@ -3114,7 +3114,7 @@ package Einfo is
 --       Defined in all entities, set in E_Package and E_Generic_Package
 --       entities to which a pragma Preelaborate is applied, and also in
 --       all entities within such packages. Note that the fact that this
---       flag is set does not necesarily mean that no elaboration code is
+--       flag is set does not necessarily mean that no elaboration code is
 --       generated for the package.
 
 --    Is_Primitive
@@ -3228,7 +3228,7 @@ package Einfo is
 --       Defined in all entities, set only for a variable or constant for
 --       which the Renamed_Object field is non-empty and for which the
 --       renaming is handled by the front end, by macro substitution of
---       a copy of the (evaluated) name tree whereever the variable is used.
+--       a copy of the (evaluated) name tree wherever the variable is used.
 
 --    Is_Return_Object
 --       Defined in all object entities. True if the object is the return
@@ -3964,7 +3964,8 @@ package Einfo is
 --       Present in variable entities. Contains all references to the variable
 --       when it is subject to pragma Part_Of. If the variable is a constituent
 --       of a single protected/task type, the references are examined as they
---       must appear only within the type defintion and the corresponding body.
+--       must appear only within the type definition and the corresponding
+--       body.
 
 --    Partial_DIC_Procedure (synthesized)
 --       Defined in type entities. Set for a private type and its full view
@@ -4058,7 +4059,7 @@ package Einfo is
 
 --    Prev_Entity
 --       Defined in all entities. The entities of a scope are chained, and this
---       field is used as a backward pointer for this entity list - effectivly
+--       field is used as a backward pointer for this entity list - effectively
 --       making the entity chain doubly-linked.
 
 --    Primitive_Operations (synthesized)

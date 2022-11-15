@@ -233,39 +233,30 @@ jit.rest.encap:
 
 # These targets redirect HTML creation and installation to either
 # jit.sphinx.(install-)html or jit.texinfo.(install-)html.
-jit.html: jit.$(doc_build_sys).html
+jit.html: doc/libgccjit/html/html/index.html
 jit.install-html: jit.$(doc_build_sys).install-html
 
 # For now, use texinfo for pdf, since the sphinx latex toolchain currently
 # fails for me deep inside pdflatex (see notes below)
-jit.pdf: jit.texinfo.pdf
+jit.pdf: doc/libgccjit/pdf/latex/libgccjit.pdf
 jit.install-pdf: jit.texinfo.install-pdf
 
-# Hooks for building docs using texinfo
-JIT_TEXI_FILES = $(srcdir)/jit/docs/_build/texinfo/libgccjit.texi
+jit.info: doc/libgccjit/info/texinfo/libgccjit.info
 
-jit.info: doc/libgccjit.info
-doc/libgccjit.info: $(JIT_TEXI_FILES)
-	if test "x$(BUILD_INFO)" = xinfo; then \
-	  rm -f doc/libgccjit.info*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
-		-I $(gcc_docdir)/include -o $@ $<; \
+doc/libgccjit/info/texinfo/libgccjit.info: $(SPHINX_FILES)
+	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/info SPHINXBUILD=$(SPHINX_BUILD); \
 	else true; fi
 
 jit.install-info: $(DESTDIR)$(infodir)/libgccjit.info
 
-jit.dvi: doc/libgccjit.dvi
-doc/libgccjit.dvi: $(JIT_TEXI_FILES)
-	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+$(DESTDIR)$(infodir)/libgccjit.info: doc/libgccjit/info/texinfo/libgccjit.info installdirs
+	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; fi
 
-jit.texinfo.html: $(build_htmldir)/jit/index.html
+doc/libgccjit/html/html/index.html: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/html SPHINXBUILD=$(SPHINX_BUILD)
 
-$(build_htmldir)/jit/index.html: $(srcdir)/jit/docs/_build/texinfo/libgccjit.texi
-	$(mkinstalldirs) $(@D)
-	rm -f $(@D)/*
-	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/jit -o $(@D) $<
-
-jit.texinfo.install-html: jit.texinfo.html
+jit.texinfo.install-html: doc/libgccjit/html/html/index.html
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
 	@for p in $(build_htmldir)/jit; do \
@@ -282,10 +273,9 @@ jit.texinfo.install-html: jit.texinfo.html
 	  fi; \
 	done
 
-jit.texinfo.pdf: doc/libgccjit.pdf
 
-doc/libgccjit.pdf: $(JIT_TEXI_FILES)
-	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+doc/libgccjit/pdf/latex/libgccjit.pdf: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/pdf SPHINXBUILD=$(SPHINX_BUILD)
 
 jit.texinfo.install-pdf: doc/libgccjit.pdf
 	@$(NORMAL_INSTALL)
@@ -304,7 +294,7 @@ SPHINX_BUILD_DIR=jit/sphinx-build
 jit.sphinx.html:
 	$(mkinstalldirs) $(SPHINX_BUILD_DIR)
 	(cd $(srcdir)/jit/docs && \
-	  make html BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) )
+	  make html BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) ) SPHINXBUILD=$(SPHINX_BUILD)
 
 jit_htmldir=$(htmldir)/jit
 
@@ -325,7 +315,7 @@ jit.sphinx.pdf: $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf
 $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf:
 	$(mkinstalldirs) $(SPHINX_BUILD_DIR)
 	(cd $(srcdir)/jit/docs && \
-	  make latexpdf BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) )
+	  make latexpdf BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) ) SPHINXBUILD=$(SPHINX_BUILD)
 
 jit.sphinx.install-pdf: $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf
 	@$(NORMAL_INSTALL)
@@ -342,7 +332,10 @@ jit.srcextra:
 
 jit.tags:
 
-jit.man:
+jit.man: doc/libgccjit/man/man/libgccjit.1
+
+doc/libgccjit/man/man/libgccjit.1: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/jit/doc/ BUILDDIR=$(objdir)/doc/libgccjit/man SPHINXBUILD=$(SPHINX_BUILD)
 
 jit.srcman:
 
@@ -397,7 +390,10 @@ jit.install-common: installdirs jit.install-headers
 endif
 endif
 
-jit.install-man:
+jit.install-man: $(DESTDIR)$(man1dir)/libgccjit$(man1ext)
+
+$(DESTDIR)$(man1dir)/libgccjit$(man1ext): doc/libgccjit/man/man/libgccjit.1 installdirs
+	-if [ -f $< ]; then rm -f $@; $(INSTALL_DATA) $< $@; chmod a-x $@; fi
 
 jit.install-plugin:
 

@@ -631,9 +631,9 @@ public:
 
   void maybe_log (logger *logger, const char *desc) const;
 
-  void add_event (checker_event *event)
+  void add_event (std::unique_ptr<checker_event> event)
   {
-    m_events.safe_push (event);
+    m_events.safe_push (event.release ());
   }
 
   void delete_event (int idx)

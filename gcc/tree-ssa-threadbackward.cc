@@ -249,25 +249,16 @@ back_threader::maybe_register_path (back_threader_profitability &profit)
 
   if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
-      if (m_visited_bbs.contains (taken_edge->dest))
+      bool irreducible = false;
+      if (profit.profitable_path_p (m_path, taken_edge, &irreducible)
+	  && debug_counter ()
+	  && m_registry.register_path (m_path, taken_edge))
 	{
-	  // Avoid circular paths by indicating there is nothing to
-	  // see in this direction.
-	  taken_edge = UNREACHABLE_EDGE;
+	  if (irreducible)
+	    vect_free_loop_info_assumptions (m_path[0]->loop_father);
 	}
       else
-	{
-	  bool irreducible = false;
-	  if (profit.profitable_path_p (m_path, taken_edge, &irreducible)
-	      && debug_counter ()
-	      && m_registry.register_path (m_path, taken_edge))
-	    {
-	      if (irreducible)
-		vect_free_loop_info_assumptions (m_path[0]->loop_father);
-	    }
-	  else
-	    taken_edge = NULL;
-	}
+	taken_edge = NULL;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))

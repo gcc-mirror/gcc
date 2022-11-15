@@ -59,15 +59,6 @@ package Errout is
    Error_Msg_Exception : exception renames Err_Vars.Error_Msg_Exception;
    --  Exception raised if Raise_Exception_On_Error is true
 
-   Warning_Doc_Switch : Boolean renames Err_Vars.Warning_Doc_Switch;
-   --  If this is set True, then the ??/?*?/?$?/?x?/?.x?/?_x? insertion
-   --  sequences in error messages generate appropriate tags for the output
-   --  error messages. If this switch is False, then these sequences are still
-   --  recognized (for the purposes of implementing the pattern matching in
-   --  pragmas Warnings (Off,..) and Warning_As_Pragma(...) but do not result
-   --  in adding the error message tag. The -gnatw.d switch sets this flag
-   --  True, -gnatw.D sets this flag False.
-
    Current_Node : Node_Id := Empty;
    --  Used by Error_Msg as a default Node_Id.
    --  Relevant only when Opt.Include_Subprogram_In_Messages is set.
@@ -314,10 +305,11 @@ package Errout is
    --      continuations, use this in each continuation message.
 
    --    Insertion character ?x? ?.x? ?_x? (warning with switch)
-   --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
+   --      "x" is a (lower-case) warning switch character.
+   --      Like ??, but if the flag Warn_Doc_Switch is True, adds the string
    --      "[-gnatwx]", "[-gnatw.x]", or "[-gnatw_x]", at the end of the
-   --      warning message. x must be lower case. For continuations, use this
-   --      on each continuation message.
+   --      warning message. For continuations, use this on each continuation
+   --      message.
 
    --    Insertion character ?*? (restriction warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
@@ -937,11 +929,18 @@ package Errout is
    procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr);
    --  Analogous to Error_Msg_Ada_2012_Feature, for Ada 2022
 
-   procedure Error_Msg_GNAT_Extension (Extension : String; Loc : Source_Ptr);
-   --  If not operating with extensions allowed, posts errors complaining
-   --  that Extension is only supported when the -gnatX switch is enabled
-   --  or pragma Extensions_Allowed (On) is used. Loc indicates the source
-   --  location of the extension construct.
+   procedure Error_Msg_GNAT_Extension
+    (Extension         : String;
+     Loc               : Source_Ptr;
+     Is_Core_Extension : Boolean := False);
+   --  To be called as part of checking a GNAT language extension (either a
+   --  core extension or not, as indicated by the Is_Core_Extension parameter).
+   --  If switch -gnatX0 or pragma Extension_Allowed (All) is in effect, then
+   --  either kind of extension is allowed; if switch -gnatX or pragma
+   --  Extensions_Allowed (On) is in effect, then only core extensions are
+   --  allowed. Otherwise, no extensions are allowed. A disallowed construct
+   --  is flagged as an error. Loc indicates the source location of the
+   --  extension construct.
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message

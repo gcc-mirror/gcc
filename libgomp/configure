@@ -635,6 +635,9 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 get_gcc_base_ver
+HAS_SPHINX_BUILD
+SPHINX_BUILD
+CONFIGURE_SPHINX_BUILD
 OMP_DEPEND_KIND
 OMP_NEST_LOCK_25_KIND
 OMP_LOCK_25_KIND
@@ -826,6 +829,7 @@ enable_linux_futex
 enable_tls
 enable_symvers
 enable_cet
+with_sphinx_build
 with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
@@ -1494,6 +1498,7 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-sphinx-build=    Use sphinx-build from a given path
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
 
@@ -11418,7 +11423,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11421 "configure"
+#line 11426 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11524,7 +11529,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11527 "configure"
+#line 11532 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15200,9 +15205,6 @@ if test x"$enable_offload_targets" != x; then
     tgt=`echo $tgt | sed 's/=.*//'`
     tgt_plugin=
     case $tgt in
-      *-intelmic-* | *-intelmicemul-*)
-	tgt_plugin=intelmic
-	;;
       nvptx*)
 	case "${target}" in
 	  aarch64*-*-* | powerpc64le-*-* | x86_64-*-*)
@@ -16874,6 +16876,53 @@ fi
 
 
 CFLAGS="$save_CFLAGS"
+
+
+# Check whether --with-sphinx-build was given.
+if test "${with_sphinx_build+set}" = set; then :
+  withval=$with_sphinx_build; CONFIGURE_SPHINX_BUILD=$withval
+else
+  CONFIGURE_SPHINX_BUILD=
+
+fi
+
+
+
+# See if sphinx-build has been installed and is modern enough
+# that we can use it.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sphinx-build" >&5
+$as_echo_n "checking for sphinx-build... " >&6; }
+sphinx=sphinx-build
+if test x${CONFIGURE_SPHINX_BUILD} != x ; then
+  sphinx=${CONFIGURE_SPHINX_BUILD}
+fi
+
+tempdir=build.$$
+source=source.$$
+mkdir $source
+grep 'needs_sphinx =' ${srcdir}/../doc/baseconf.py > $source/conf.py
+touch $source/index.rst
+if ${sphinx} $source $tempdir >/dev/null 2>&1; then
+  SPHINX_BUILD=${sphinx}
+  HAS_SPHINX_BUILD=has-sphinx-build
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+  *** sphinx-build is missing or too old.
+  *** Info and man pages documentation will not be built." >&5
+$as_echo "$as_me: WARNING:
+  *** sphinx-build is missing or too old.
+  *** Info and man pages documentation will not be built." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  SPHINX_BUILD=
+  HAS_SPHINX_BUILD=
+fi
+rm -rf $tempdir
+rm -rf $source
+
+
 
 # Determine what GCC version number to use in filesystem paths.
 

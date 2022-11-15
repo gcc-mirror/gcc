@@ -44,6 +44,7 @@ with Stringt;  use Stringt;
 with Targparm;
 with Uintp;    use Uintp;
 with Widechar; use Widechar;
+with Warnsw;   use Warnsw;
 
 package body Erroutc is
 

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -1049,6 +1050,17 @@ root_region::dump_to_pp (pretty_printer *pp, bool simple) const
     pp_string (pp, "root_region()");
 }
 
+/* class thread_local_region : public space_region.  */
+
+void
+thread_local_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    pp_string (pp, "thread_local_region");
+  else
+    pp_string (pp, "thread_local_region()");
+}
+
 /* class symbolic_region : public map_region.  */
 
 /* symbolic_region's ctor.  */
@@ -1808,6 +1820,17 @@ var_arg_region::get_frame_region () const
 {
   gcc_assert (get_parent_region ());
   return as_a <const frame_region *> (get_parent_region ());
+}
+
+/* class errno_region : public region.  */
+
+void
+errno_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    pp_string (pp, "errno_region");
+  else
+    pp_string (pp, "errno_region()");
 }
 
 /* class unknown_region : public region.  */

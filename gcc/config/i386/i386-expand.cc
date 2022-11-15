@@ -4510,15 +4510,86 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	case GTU:
 	  break;
 
-	case NE:
 	case LE:
 	case LEU:
+	  /* x <= cst can be handled as x < cst + 1 unless there is
+	     wrap around in cst + 1.  */
+	  if (GET_CODE (cop1) == CONST_VECTOR
+	      && GET_MODE_INNER (mode) != TImode)
+	    {
+	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
+	      machine_mode eltmode = GET_MODE_INNER (mode);
+	      for (i = 0; i < n_elts; ++i)
+		{
+		  rtx elt = CONST_VECTOR_ELT (cop1, i);
+		  if (!CONST_INT_P (elt))
+		    break;
+		  if (code == GE)
+		    {
+		      /* For LE punt if some element is signed maximum.  */
+		      if ((INTVAL (elt) & (GET_MODE_MASK (eltmode) >> 1))
+			  == (GET_MODE_MASK (eltmode) >> 1))
+			break;
+		    }
+		  /* For LEU punt if some element is unsigned maximum.  */
+		  else if (elt == constm1_rtx)
+		    break;
+		}
+	      if (i == n_elts)
+		{
+		  rtvec v = rtvec_alloc (n_elts);
+		  for (i = 0; i < n_elts; ++i)
+		    RTVEC_ELT (v, i)
+		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) + 1);
+		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
+		  std::swap (cop0, cop1);
+		  code = code == LE ? GT : GTU;
+		  break;
+		}
+	    }
+	  /* FALLTHRU */
+	case NE:
 	  code = reverse_condition (code);
 	  *negate = true;
 	  break;
 
 	case GE:
 	case GEU:
+	  /* x >= cst can be handled as x > cst - 1 unless there is
+	     wrap around in cst - 1.  */
+	  if (GET_CODE (cop1) == CONST_VECTOR
+	      && GET_MODE_INNER (mode) != TImode)
+	    {
+	      unsigned int n_elts = GET_MODE_NUNITS (mode), i;
+	      machine_mode eltmode = GET_MODE_INNER (mode);
+	      for (i = 0; i < n_elts; ++i)
+		{
+		  rtx elt = CONST_VECTOR_ELT (cop1, i);
+		  if (!CONST_INT_P (elt))
+		    break;
+		  if (code == GE)
+		    {
+		      /* For GE punt if some element is signed minimum.  */
+		      if (INTVAL (elt) < 0
+			  && ((INTVAL (elt) & (GET_MODE_MASK (eltmode) >> 1))
+			      == 0))
+			break;
+		    }
+		  /* For GEU punt if some element is zero.  */
+		  else if (elt == const0_rtx)
+		    break;
+		}
+	      if (i == n_elts)
+		{
+		  rtvec v = rtvec_alloc (n_elts);
+		  for (i = 0; i < n_elts; ++i)
+		    RTVEC_ELT (v, i)
+		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) - 1);
+		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
+		  code = code == GE ? GT : GTU;
+		  break;
+		}
+	    }
 	  code = reverse_condition (code);
 	  *negate = true;
 	  /* FALLTHRU */
@@ -4555,6 +4626,11 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      gcc_unreachable ();
 	    }
 	}
+
+      if (GET_CODE (cop0) == CONST_VECTOR)
+	cop0 = force_reg (mode, cop0);
+      else if (GET_CODE (cop1) == CONST_VECTOR)
+	cop1 = force_reg (mode, cop1);
 
       rtx optrue = op_true ? op_true : CONSTM1_RTX (data_mode);
       rtx opfalse = op_false ? op_false : CONST0_RTX (data_mode);
@@ -4752,13 +4828,13 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
   if (*negate)
     std::swap (op_true, op_false);
 
+  if (GET_CODE (cop1) == CONST_VECTOR)
+    cop1 = force_reg (mode, cop1);
+
   /* Allow the comparison to be done in one mode, but the movcc to
      happen in another mode.  */
   if (data_mode == mode)
-    {
-      x = ix86_expand_sse_cmp (dest, code, cop0, cop1,
-			       op_true, op_false);
-    }
+    x = ix86_expand_sse_cmp (dest, code, cop0, cop1, op_true, op_false);
   else
     {
       gcc_assert (GET_MODE_SIZE (data_mode) == GET_MODE_SIZE (mode));
@@ -11860,8 +11936,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   tree arg;
   rtx pat, op;
   unsigned int i, nargs, arg_adjust, memory;
+  unsigned int constant = 100;
   bool aligned_mem = false;
-  rtx xops[3];
+  rtx xops[4];
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
@@ -12152,6 +12229,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
+    case INT_FTYPE_PINT_INT_INT_INT:
+    case LONGLONG_FTYPE_PLONGLONG_LONGLONG_LONGLONG_INT:
+      nargs = 4;
+      klass = load;
+      memory = 0;
+      constant = 3;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -12217,6 +12301,15 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	  if (MEM_ALIGN (op) < align)
 	    set_mem_align (op, align);
 	}
+      else if (i == constant)
+	{
+	  /* This must be the constant.  */
+	  if (!insn_p->operand[nargs].predicate(op, SImode))
+	    {
+	      error ("the fourth argument must be one of enum %qs", "_CMPCCX_ENUM");
+	      return const0_rtx;
+	    }
+	}
       else
 	{
 	  /* This must be register.  */
@@ -12257,6 +12350,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       break;
     case 3:
       pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
+      break;
+    case 4:
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2], xops[3]);
       break;
     default:
       gcc_unreachable ();
@@ -13013,6 +13109,83 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  }
 
 	return target;
+      }
+
+    case IX86_BUILTIN_PREFETCH:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0); // const void *
+	arg1 = CALL_EXPR_ARG (exp, 1); // const int
+	arg2 = CALL_EXPR_ARG (exp, 2); // const int
+	arg3 = CALL_EXPR_ARG (exp, 3); // const int
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+	op3 = expand_normal (arg3);
+
+	if (!CONST_INT_P (op1) || !CONST_INT_P (op2) || !CONST_INT_P (op3))
+	  {
+	    error ("second, third and fourth argument must be a const");
+	    return const0_rtx;
+	  }
+
+	if (INTVAL (op3) == 1)
+	  {
+	    if (TARGET_64BIT
+		&& local_func_symbolic_operand (op0, GET_MODE (op0)))
+	      emit_insn (gen_prefetchi (op0, op2));
+	    else
+	      {
+		warning (0, "instruction prefetch applies when in 64-bit mode"
+			    " with RIP-relative addressing and"
+			    " option %<-mprefetchi%>;"
+			    " they stay NOPs otherwise");
+		emit_insn (gen_nop ());
+	      }
+	  }
+	else
+	  {
+	    if (!address_operand (op0, VOIDmode))
+	      {
+		op0 = convert_memory_address (Pmode, op0);
+		op0 = copy_addr_to_reg (op0);
+	      }
+	    emit_insn (gen_prefetch (op0, op1, op2));
+	  }
+
+	return 0;
+      }
+
+    case IX86_BUILTIN_PREFETCHI:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0); // const void *
+	arg1 = CALL_EXPR_ARG (exp, 1); // const int
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+
+	if (!CONST_INT_P (op1))
+	  {
+	    error ("second argument must be a const");
+	    return const0_rtx;
+	  }
+
+	/* GOT/PLT_PIC should not be available for instruction prefetch.
+	   It must be real instruction address.  */
+	if (TARGET_64BIT
+	    && local_func_symbolic_operand (op0, GET_MODE (op0)))
+	  emit_insn (gen_prefetchi (op0, op1));
+	else
+	  {
+	    /* Ignore the hint.  */
+	    warning (0, "instruction prefetch applies when in 64-bit mode"
+			" with RIP-relative addressing and"
+			" option %<-mprefetchi%>;"
+			" they stay NOPs otherwise");
+	    emit_insn (gen_nop ());
+	  }
+
+	return 0;
       }
 
     case IX86_BUILTIN_VEC_INIT_V2SI:

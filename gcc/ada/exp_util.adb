@@ -1700,7 +1700,7 @@ package body Exp_Util is
          --  type attributes.
 
       begin
-         if not Present (Priv_Typ) and then not Present (Full_Typ) then
+         if No (Priv_Typ) and then No (Full_Typ) then
             return;
          end if;
 
@@ -1787,7 +1787,7 @@ package body Exp_Util is
                --  full type doesn't have its own DIC, but is inherited from
                --  a type with DIC), get the full DIC procedure.
 
-               if not Present (Par_Proc) then
+               if No (Par_Proc) then
                   Par_Proc := DIC_Procedure (Par_Typ);
                end if;
 
@@ -2745,7 +2745,7 @@ package body Exp_Util is
          --  type attributes.
 
       begin
-         if not Present (Priv_Typ) and then not Present (Full_Typ) then
+         if No (Priv_Typ) and then No (Full_Typ) then
             return;
          end if;
 
@@ -3072,7 +3072,7 @@ package body Exp_Util is
          Prag_Typ_Arg  : Node_Id;
 
       begin
-         if not Present (T) then
+         if No (T) then
             return;
          end if;
 
@@ -11367,7 +11367,7 @@ package body Exp_Util is
          --  Create a label for the block in case the block needs to manage the
          --  secondary stack. A label allows for flag Uses_Sec_Stack to be set.
 
-         Add_Block_Identifier (Block_Nod, Block_Id);
+         Add_Block_Identifier (Block_Nod, Block_Id, Scop);
 
          --  When wrapping the statements of an iterator loop, check whether
          --  the loop requires secondary stack management and if so, propagate

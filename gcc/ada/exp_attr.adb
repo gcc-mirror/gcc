@@ -1998,16 +1998,21 @@ package body Exp_Attr is
    --  Start of processing for Expand_N_Attribute_Reference
 
    begin
-      --  Do required validity checking, if enabled. Do not apply check to
-      --  output parameters of an Asm instruction, since the value of this
-      --  is not set till after the attribute has been elaborated, and do
-      --  not apply the check to the arguments of a 'Read or 'Input attribute
-      --  reference since the scalar argument is an OUT scalar.
+      --  Do required validity checking, if enabled.
+      --
+      --  Skip check for output parameters of an Asm instruction (since their
+      --  valuesare not set till after the attribute has been elaborated),
+      --  for the arguments of a 'Read attribute reference (since the
+      --  scalar argument is an OUT scalar) and for the arguments of a
+      --  'Has_Same_Storage or 'Overlaps_Storage attribute reference (which not
+      --  considered to be reads of their prefixes and expressions, see Ada RM
+      --  13.3(73.10/3)).
 
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output
         and then Id /= Attribute_Read
-        and then Id /= Attribute_Input
+        and then Id /= Attribute_Has_Same_Storage
+        and then Id /= Attribute_Overlaps_Storage
       then
          declare
             Expr : Node_Id;
@@ -2311,19 +2316,40 @@ package body Exp_Attr is
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
 
-            --  If prefix is a subprogram that has class-wide preconditions and
-            --  an indirect-call wrapper (ICW) of such subprogram is available
-            --  then replace the prefix by the ICW.
-
             elsif Is_Access_Subprogram_Type (Btyp)
               and then Is_Entity_Name (Pref)
-              and then Present (Class_Preconditions (Entity (Pref)))
-              and then Present (Indirect_Call_Wrapper (Entity (Pref)))
             then
-               Rewrite (Pref,
-                 New_Occurrence_Of
-                   (Indirect_Call_Wrapper (Entity (Pref)), Loc));
-               Analyze_And_Resolve (N, Typ);
+               --  If prefix is a subprogram that has class-wide preconditions
+               --  and an indirect-call wrapper (ICW) of the subprogram is
+               --  available then replace the prefix by the ICW.
+
+               if Present (Class_Preconditions (Entity (Pref)))
+                 and then Present (Indirect_Call_Wrapper (Entity (Pref)))
+               then
+                  Rewrite (Pref,
+                    New_Occurrence_Of
+                      (Indirect_Call_Wrapper (Entity (Pref)), Loc));
+                  Analyze_And_Resolve (N, Typ);
+               end if;
+
+               --  Ensure the availability of the extra formals to check that
+               --  they match.
+
+               if not Is_Frozen (Entity (Pref))
+                 or else From_Limited_With (Etype (Entity (Pref)))
+               then
+                  Create_Extra_Formals (Entity (Pref));
+               end if;
+
+               if not Is_Frozen (Btyp_DDT)
+                 or else From_Limited_With (Etype (Btyp_DDT))
+               then
+                  Create_Extra_Formals (Btyp_DDT);
+               end if;
+
+               pragma Assert
+                 (Extra_Formals_Match_OK
+                   (E => Entity (Pref), Ref_E => Btyp_DDT));
 
             --  If prefix is a type name, this is a reference to the current
             --  instance of the type, within its initialization procedure.
@@ -6575,7 +6601,7 @@ package body Exp_Attr is
                --  If Storage_Size wasn't found (can only occur in the simple
                --  storage pool case), then simply use zero for the result.
 
-               if not Present (Alloc_Op) then
+               if No (Alloc_Op) then
                   Rewrite (N, Make_Integer_Literal (Loc, 0));
 
                --  Otherwise, rewrite the allocator as a call to pool type's

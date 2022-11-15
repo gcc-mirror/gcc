@@ -46,6 +46,54 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "value-relation.h"
 #include "range-op.h"
+#include "tree-ssa-ccp.h"
+
+// Convert irange bitmasks into a VALUE MASK pair suitable for calling CCP.
+
+static void
+irange_to_masked_value (const irange &r, widest_int &value, widest_int &mask)
+{
+  if (r.singleton_p ())
+    {
+      mask = 0;
+      value = widest_int::from (r.lower_bound (), TYPE_SIGN (r.type ()));
+    }
+  else
+    {
+      mask = widest_int::from (r.get_nonzero_bits (), TYPE_SIGN (r.type ()));
+      value = 0;
+    }
+}
+
+// Update the known bitmasks in R when applying the operation CODE to
+// LH and RH.
+
+static void
+update_known_bitmask (irange &r, tree_code code,
+		      const irange &lh, const irange &rh)
+{
+  if (r.undefined_p () || lh.undefined_p () || rh.undefined_p ())
+    return;
+
+  widest_int value, mask, lh_mask, rh_mask, lh_value, rh_value;
+  tree type = r.type ();
+  signop sign = TYPE_SIGN (type);
+  int prec = TYPE_PRECISION (type);
+  signop lh_sign = TYPE_SIGN (lh.type ());
+  signop rh_sign = TYPE_SIGN (rh.type ());
+  int lh_prec = TYPE_PRECISION (lh.type ());
+  int rh_prec = TYPE_PRECISION (rh.type ());
+
+  irange_to_masked_value (lh, lh_value, lh_mask);
+  irange_to_masked_value (rh, rh_value, rh_mask);
+  bit_value_binop (code, sign, prec, &value, &mask,
+		   lh_sign, lh_prec, lh_value, lh_mask,
+		   rh_sign, rh_prec, rh_value, rh_mask);
+
+  int_range<2> tmp (type);
+  tmp.set_nonzero_bits (value | mask);
+  r.intersect (tmp);
+}
 
 // Return the upper limit for a type.
 
@@ -1742,25 +1790,42 @@ cross_product_operator::wi_cross_product (irange &r, tree type,
 
 class operator_mult : public cross_product_operator
 {
+  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
 public:
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh, const irange &rh,
+			   relation_trio = TRIO_VARYING) const final override;
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res, tree type,
-				const wide_int &w0, const wide_int &w1) const;
+				const wide_int &w0, const wide_int &w1)
+    const final override;
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
-			  relation_trio) const;
+			  relation_trio) const final override;
   virtual bool op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
-			  relation_trio) const;
+			  relation_trio) const final override;
 } op_mult;
+
+bool
+operator_mult::fold_range (irange &r, tree type,
+			   const irange &lh, const irange &rh,
+			   relation_trio trio) const
+{
+  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
+    return false;
+
+  update_known_bitmask (r, MULT_EXPR, lh, rh);
+  return true;
+}
 
 bool
 operator_mult::op1_range (irange &r, tree type,
@@ -1880,8 +1945,20 @@ operator_mult::wi_fold (irange &r, tree type,
   // diff = max - min
   prod2 = prod3 - prod0;
   if (wi::geu_p (prod2, sizem1))
-    // The range covers all values.
-    r.set_varying (type);
+    {
+      // Multiplying by X, where X is a power of 2 is [0,0][X,+INF].
+      if (TYPE_UNSIGNED (type) && rh_lb == rh_ub
+	  && wi::exact_log2 (rh_lb) != -1 && prec > 1)
+	{
+	  r.set (type, rh_lb, wi::max_value (prec, sign));
+	  int_range<2> zero;
+	  zero.set_zero (type);
+	  r.union_ (zero);
+	}
+      else
+	// The range covers all values.
+	r.set_varying (type);
+    }
   else
     {
       wide_int new_lb = wide_int::from (prod0, prec, sign);
@@ -1899,12 +1976,28 @@ public:
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res, tree type,
-				const wide_int &, const wide_int &) const;
+				const wide_int &, const wide_int &)
+    const final override;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh, const irange &rh,
+			   relation_trio trio) const final override;
 private:
   enum tree_code code;
 };
+
+bool
+operator_div::fold_range (irange &r, tree type,
+			  const irange &lh, const irange &rh,
+			  relation_trio trio) const
+{
+  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
+    return false;
+
+  update_known_bitmask (r, code, lh, rh);
+  return true;
+}
 
 bool
 operator_div::wi_op_overflows (wide_int &res, tree type,

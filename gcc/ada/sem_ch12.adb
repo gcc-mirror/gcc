@@ -3121,7 +3121,6 @@ package body Sem_Ch12 is
       if Present (Aspect_Specifications (Gen_Decl)) then
          if No (Aspect_Specifications (N)) then
             Set_Aspect_Specifications (N, New_List);
-            Set_Has_Aspects (N);
          end if;
 
          declare
@@ -7024,7 +7023,7 @@ package body Sem_Ch12 is
                Astype := First_Subtype (E);
             end if;
 
-            Set_Size_Info      (E, (Astype));
+            Set_Size_Info      (E, Astype);
             Copy_RM_Size       (To => E, From => Astype);
             Set_First_Rep_Item (E, First_Rep_Item (Astype));
 
@@ -7055,12 +7054,10 @@ package body Sem_Ch12 is
             elsif Present (Associated_Formal_Package (E))
               and then not Is_Generic_Formal (E)
             then
-               if Box_Present (Parent (Associated_Formal_Package (E))) then
-                  Check_Generic_Actuals (Renamed_Entity (E), True);
-
-               else
-                  Check_Generic_Actuals (Renamed_Entity (E), False);
-               end if;
+               Check_Generic_Actuals
+                 (Renamed_Entity (E),
+                  Is_Formal_Box =>
+                    Box_Present (Parent (Associated_Formal_Package (E))));
 
                Set_Is_Hidden (E, False);
             end if;
@@ -11091,6 +11088,8 @@ package body Sem_Ch12 is
 
          Set_Convention (Defining_Unit_Name (New_Spec), Convention_Intrinsic);
 
+         Copy_Ghost_Aspect (Formal, To => Decl_Node);
+
          --  Eliminate the calls to it when optimization is enabled
 
          Set_Is_Inlined (Defining_Unit_Name (New_Spec));
@@ -14086,7 +14085,7 @@ package body Sem_Ch12 is
             --  a full view, then we'll retrieve that.
 
             if Ekind (A_Gen_T) = E_Incomplete_Type
-              and then not Present (Full_View (Act_T))
+              and then No (Full_View (Act_T))
             then
                null;
 
@@ -15458,7 +15457,7 @@ package body Sem_Ch12 is
             end loop;
          end if;
 
-         Exchange_Declarations (Node (M));
+         Exchange_Declarations (Typ);
          Next_Elmt (M);
       end loop;
 
@@ -17306,13 +17305,11 @@ package body Sem_Ch12 is
 
             else
                declare
-                  Act_Iface_List : Elist_Id;
-                  Iface          : Node_Id;
-                  Iface_Ent      : Entity_Id;
+                  Iface     : Node_Id;
+                  Iface_Ent : Entity_Id;
 
                begin
                   Iface := First (Abstract_Interface_List (Formal));
-                  Collect_Interfaces (Def_Sub, Act_Iface_List);
 
                   while Present (Iface) loop
                      Iface_Ent := Entity (Iface);

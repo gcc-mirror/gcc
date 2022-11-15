@@ -500,7 +500,7 @@ package body Layout is
          if Is_Array_Type (E)
            and then Present (First_Index (E))  --  Skip types in error
            and then Number_Dimensions (E) = 1
-           and then not Present (Packed_Array_Impl_Type (E))
+           and then No (Packed_Array_Impl_Type (E))
            and then Has_Pragma_Pack (E)
            and then Is_Constrained (E)
            and then Compile_Time_Known_Bounds (E)

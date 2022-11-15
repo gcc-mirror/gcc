@@ -2180,7 +2180,13 @@ Alphabetical List of All Switches
 .. index:: -gnatX  (gcc)
 
 :switch:`-gnatX`
-  Enable GNAT implementation extensions and latest Ada version.
+  Enable core GNAT implementation extensions and latest Ada version.
+
+
+.. index:: -gnatX0  (gcc)
+
+:switch:`-gnatX0`
+  Enable all GNAT implementation extensions and latest Ada version.
 
 
 .. index:: -gnaty  (gcc)
@@ -2789,6 +2795,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   * :switch:`-gnatw.q` (questionable layout of record types)
 
+  * :switch:`-gnatw_q` (ignored equality)
+
   * :switch:`-gnatw_r` (out-of-order record representation clauses)
 
   * :switch:`-gnatw.s` (overridden size clause)
@@ -2930,7 +2938,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   tests that are known to be True or False at compile time. The default
   is that such warnings are not generated.
   Note that this warning does
-  not get issued for the use of boolean variables or constants whose
+  not get issued for the use of boolean constants whose
   values are known at compile time, since this is a standard technique
   for conditional compilation in Ada, and this would generate too many
   false positive warnings.
@@ -3679,6 +3687,25 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   This switch suppresses warnings for cases where the default layout of
   a record type would very likely cause inefficiencies.
+
+
+.. index:: -gnatw_q  (gcc)
+
+:switch:`-gnatw_q`
+  *Activate warnings for ignored equality operators.*
+
+  This switch activates warnings for a user-defined "=" function that does
+  not compose (i.e. is ignored for a predefined "=" for a composite type
+  containing a component whose type has the user-defined "=" as
+  primitive). Note that the user-defined "=" must be a primitive operator
+  in order to trigger the warning.
+
+  The default is that these warnings are not given.
+
+.. index:: -gnatw_Q  (gcc)
+
+:switch:`-gnatw_Q`
+  *Suppress warnings for ignored equality operators.*
 
 
 .. index:: -gnatwr  (gcc)
@@ -5585,15 +5612,26 @@ indicate Ada 83 compatibility mode.
   language.
 
 
-.. index:: -gnatX  (gcc)
+.. index:: -gnatX0  (gcc)
 .. index:: Ada language extensions
 .. index:: GNAT extensions
 
-:switch:`-gnatX` (Enable GNAT Extensions)
+:switch:`-gnatX0` (Enable GNAT Extensions)
   This switch directs the compiler to implement the latest version of the
   language (currently Ada 2022) and also to enable certain GNAT implementation
   extensions that are not part of any Ada standard. For a full list of these
   extensions, see the GNAT reference manual, ``Pragma Extensions_Allowed``.
+
+.. index:: -gnatX  (gcc)
+.. index:: Ada language extensions
+.. index:: GNAT extensions
+
+:switch:`-gnatX` (Enable core GNAT Extensions)
+  This switch is similar to -gnatX0 except that only some, not all, of the
+  GNAT-defined language extensions are enabled. For a list of the
+  extensions enabled by this switch, see the GNAT reference manual
+  ``Pragma Extensions_Allowed`` and the description of that pragma's
+  "On" (as opposed to "All") argument.
 
 
 .. _Character_Set_Control:
@@ -7386,7 +7424,7 @@ development environments much more flexible.
 Examples of ``gnatbind`` Usage
 ------------------------------
 
-Here are some examples of ``gnatbind`` invovations:
+Here are some examples of ``gnatbind`` invocations:
 
   ::
 

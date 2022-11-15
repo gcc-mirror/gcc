@@ -589,7 +589,7 @@ Attribute Library_Level
 ``P'Library_Level``, where P is an entity name,
 returns a Boolean value which is True if the entity is declared
 at the library level, and False otherwise. Note that within a
-generic instantition, the name of the generic unit denotes the
+generic instantiation, the name of the generic unit denotes the
 instance, which means that this attribute can be used to test
 if a generic is instantiated at the library level, as shown
 in this example:
@@ -1231,7 +1231,7 @@ Attribute System_Allocator_Alignment
 .. index:: System_Allocator_Alignment
 
 ``Standard'System_Allocator_Alignment`` (``Standard`` is the only
-allowed prefix) provides the observable guaranted to be honored by
+allowed prefix) provides the observable guaranteed to be honored by
 the system allocator (malloc). This is a static value that can be used
 in user storage pools based on malloc either to reject allocation
 with alignment too large or to enable a realignment circuitry if the

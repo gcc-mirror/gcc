@@ -1,6 +1,6 @@
 // PR c++/66091
 // { dg-do compile { target c++17_only } }
-// { dg-additional-options "-fconcepts" }
+// { dg-additional-options "-fconcepts-ts" }
 
 template<typename T>
 concept bool C1()

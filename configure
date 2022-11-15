@@ -720,7 +720,6 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
-extra_liboffloadmic_configure_flags
 target_subdir
 host_subdir
 build_subdir
@@ -807,7 +806,6 @@ enable_libada
 enable_libgm2
 enable_libssp
 enable_libstdcxx
-enable_liboffloadmic
 enable_bootstrap
 enable_pgo_build
 with_mpc
@@ -1547,8 +1545,6 @@ Optional Features:
   --enable-libgm2         build libgm2 directory
   --enable-libssp         build libssp directory
   --disable-libstdcxx     do not build libstdc++-v3 directory
-  --enable-liboffloadmic=ARG
-                          build liboffloadmic [ARG={no,host,target}]
   --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-pgo-build[=lto]
                           enable the PGO build
@@ -2831,7 +2827,6 @@ target_libraries="target-libgcc \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
-		target-liboffloadmic \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
@@ -3217,44 +3212,6 @@ if test "${ENABLE_LIBSTDCXX}" = "no" ; then
   noconfigdirs="$noconfigdirs target-libstdc++-v3"
 fi
 
-# If this is accelerator compiler and its target is intelmic we enable
-# target liboffloadmic by default.  If this is compiler with offloading
-# for intelmic we enable host liboffloadmic by default.  Otherwise
-# liboffloadmic is disabled by default.
-# Check whether --enable-liboffloadmic was given.
-if test "${enable_liboffloadmic+set}" = set; then :
-  enableval=$enable_liboffloadmic; case "$enableval" in
-  no | host | target)
-    enable_liboffloadmic=$enableval ;;
-  *)
-    as_fn_error $? "--enable-liboffloadmic=no/host/target" "$LINENO" 5 ;;
-esac
-else
-  if test x"$enable_as_accelerator_for" != x; then
-  case "${target}" in
-    *-intelmic-* | *-intelmicemul-*)
-      enable_liboffloadmic=target
-      extra_liboffloadmic_configure_flags="--enable-liboffloadmic=target"
-      ;;
-    *)
-      enable_liboffloadmic=no
-      ;;
-  esac
-else
-  case "${enable_offload_targets}" in
-    *-intelmic-* | *-intelmicemul-*)
-      enable_liboffloadmic=host
-      extra_liboffloadmic_configure_flags="--enable-liboffloadmic=host"
-      ;;
-    *)
-      enable_liboffloadmic=no
-      ;;
-    esac
-fi
-fi
-
-
-
 # Enable libgomp by default on hosted POSIX systems, and a few others.
 if test x$enable_libgomp = x ; then
     case "${target}" in
@@ -3286,25 +3243,6 @@ $as_echo_n "checking for libatomic support... " >&6; }
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	    noconfigdirs="$noconfigdirs target-libatomic"
-	else
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	fi
-    fi
-fi
-
-# Disable liboffloadmic on unsupported systems.
-if test -d ${srcdir}/liboffloadmic; then
-    if test x$enable_liboffloadmic != xno; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for liboffloadmic support" >&5
-$as_echo_n "checking for liboffloadmic support... " >&6; }
-	if (srcdir=${srcdir}/liboffloadmic; \
-		. ${srcdir}/configure.tgt; \
-		test -n "$UNSUPPORTED")
-	then
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	    noconfigdirs="$noconfigdirs target-liboffloadmic"
 	else
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -9101,7 +9039,7 @@ $as_echo "using paths configured with --with-target-bdw-gc options" >&6; }
   fi
 esac
 
-# Disable libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
+# Disable libitm, libsanitizer, libvtv if we're not building C++
 case ,${enable_languages}, in
   *,c++,*)
     # Disable libitm, libsanitizer if we're not building libstdc++
@@ -9113,7 +9051,7 @@ case ,${enable_languages}, in
     esac
     ;;
   *)
-    noconfigdirs="$noconfigdirs target-liboffloadmic target-libitm target-libsanitizer target-libvtv"
+    noconfigdirs="$noconfigdirs target-libitm target-libsanitizer target-libvtv"
     ;;
 esac
 
@@ -10755,7 +10693,6 @@ case " $configdirs " in
     test $host = $build && RUNTEST='$$s/$(HOST_SUBDIR)/dejagnu/runtest'
     ;;
 esac
-
 
 # Host tools.
 ncn_tool_prefix=

@@ -66,60 +66,60 @@ namespace regex_constants
     };
 
   /** The expression contained an invalid collating element name. */
-  constexpr error_type error_collate(_S_error_collate);
+  _GLIBCXX17_INLINE constexpr error_type error_collate(_S_error_collate);
 
   /** The expression contained an invalid character class name. */
-  constexpr error_type error_ctype(_S_error_ctype);
+  _GLIBCXX17_INLINE constexpr error_type error_ctype(_S_error_ctype);
 
   /**
    * The expression contained an invalid escaped character, or a trailing
    * escape.
    */
-  constexpr error_type error_escape(_S_error_escape);
+  _GLIBCXX17_INLINE constexpr error_type error_escape(_S_error_escape);
 
   /** The expression contained an invalid back reference. */
-  constexpr error_type error_backref(_S_error_backref);
+  _GLIBCXX17_INLINE constexpr error_type error_backref(_S_error_backref);
 
   /** The expression contained mismatched [ and ]. */
-  constexpr error_type error_brack(_S_error_brack);
+  _GLIBCXX17_INLINE constexpr error_type error_brack(_S_error_brack);
 
   /** The expression contained mismatched ( and ). */
-  constexpr error_type error_paren(_S_error_paren);
+  _GLIBCXX17_INLINE constexpr error_type error_paren(_S_error_paren);
 
   /** The expression contained mismatched { and } */
-  constexpr error_type error_brace(_S_error_brace);
+  _GLIBCXX17_INLINE constexpr error_type error_brace(_S_error_brace);
 
   /** The expression contained an invalid range in a {} expression. */
-  constexpr error_type error_badbrace(_S_error_badbrace);
+  _GLIBCXX17_INLINE constexpr error_type error_badbrace(_S_error_badbrace);
 
   /**
    * The expression contained an invalid character range,
    * such as [b-a] in most encodings.
    */
-  constexpr error_type error_range(_S_error_range);
+  _GLIBCXX17_INLINE constexpr error_type error_range(_S_error_range);
 
   /**
    * There was insufficient memory to convert the expression into a
    * finite state machine.
    */
-  constexpr error_type error_space(_S_error_space);
+  _GLIBCXX17_INLINE constexpr error_type error_space(_S_error_space);
 
   /**
    * One of <em>*?+{</em> was not preceded by a valid regular expression.
    */
-  constexpr error_type error_badrepeat(_S_error_badrepeat);
+  _GLIBCXX17_INLINE constexpr error_type error_badrepeat(_S_error_badrepeat);
 
   /**
    * The complexity of an attempted match against a regular expression
    * exceeded a pre-set level.
    */
-  constexpr error_type error_complexity(_S_error_complexity);
+  _GLIBCXX17_INLINE constexpr error_type error_complexity(_S_error_complexity);
 
   /**
    * There was insufficient memory to determine whether the
    * regular expression could match the specified character sequence.
    */
-  constexpr error_type error_stack(_S_error_stack);
+  _GLIBCXX17_INLINE constexpr error_type error_stack(_S_error_stack);
 
   ///@}
 } // namespace regex_constants

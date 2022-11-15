@@ -1252,8 +1252,8 @@ most often, and are therefore the most time-consuming.
 better handle Ada programs and multitasking.
 It is currently supported on the following platforms
 
-* linux x86/x86_64
-* windows x86
+* Linux x86/x86_64
+* Windows x86/x86_64 (without PIE support)
 
 In order to profile a program using ``gprof``, several steps are needed:
 
@@ -1290,6 +1290,10 @@ be specified once when using gnatmake:
 Note that only the objects that were compiled with the ``-pg`` switch will
 be profiled; if you need to profile your whole project, use the ``-f``
 gnatmake switch to force full recompilation.
+
+Note that on Windows, gprof does not support PIE. The ``-no-pie`` switch
+should be added to the linker flags to disable this feature.
+
 
 .. _Program_execution:
 
@@ -2321,7 +2325,7 @@ erroneous, and the compiler would be entitled to assume that
 
 However, in practice, this would cause some existing code that
 seems to work with no optimization to start failing at high
-levels of optimzization.
+levels of optimization.
 
 What the compiler does for such cases is to assume that marking
 a variable as aliased indicates that some "funny business" may
@@ -2728,7 +2732,7 @@ To deal with the portability issue, and with the problem of
 mathematical versus run-time interpretation of the expressions in
 assertions, GNAT provides comprehensive control over the handling
 of intermediate overflow. GNAT can operate in three modes, and
-furthemore, permits separate selection of operating modes for
+furthermore, permits separate selection of operating modes for
 the expressions within assertions (here the term 'assertions'
 is used in the technical sense, which includes preconditions and so forth)
 and for expressions appearing outside assertions.

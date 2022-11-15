@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
+#include "make-unique.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -813,14 +814,17 @@ region_model::get_gassign_result (const gassign *assign,
 	      if (TREE_CODE (rhs2_cst) == INTEGER_CST)
 		{
 		  if (tree_int_cst_sgn (rhs2_cst) < 0)
-		    ctxt->warn (new shift_count_negative_diagnostic
-				  (assign, rhs2_cst));
+		    ctxt->warn
+		      (make_unique<shift_count_negative_diagnostic>
+			 (assign, rhs2_cst));
 		  else if (compare_tree_int (rhs2_cst,
 					     TYPE_PRECISION (TREE_TYPE (rhs1)))
 			   >= 0)
-		    ctxt->warn (new shift_count_overflow_diagnostic
-				  (assign, TYPE_PRECISION (TREE_TYPE (rhs1)),
-				   rhs2_cst));
+		    ctxt->warn
+		      (make_unique<shift_count_overflow_diagnostic>
+			 (assign,
+			  int (TYPE_PRECISION (TREE_TYPE (rhs1))),
+			  rhs2_cst));
 		}
 	  }
 
@@ -1038,8 +1042,9 @@ region_model::check_for_poison (const svalue *sval,
       const region *src_region = NULL;
       if (pkind == POISON_KIND_UNINIT)
 	src_region = get_region_for_poisoned_expr (expr);
-      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind,
-						     src_region)))
+      if (ctxt->warn (make_unique<poisoned_value_diagnostic> (diag_arg,
+							      pkind,
+							      src_region)))
 	{
 	  /* We only want to report use of a poisoned value at the first
 	     place it gets used; return an unknown value to avoid generating
@@ -1228,7 +1233,7 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  {
 	    /* Handle the builtin "__analyzer_dump_path" by queuing a
 	       diagnostic at this exploded_node.  */
-	    ctxt->warn (new dump_path_diagnostic ());
+	    ctxt->warn (make_unique<dump_path_diagnostic> ());
 	  }
 	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
 					  0))
@@ -1759,12 +1764,13 @@ public:
 
 /* Check whether an access is past the end of the BASE_REG.  */
 
-void region_model::check_symbolic_bounds (const region *base_reg,
-					  const svalue *sym_byte_offset,
-					  const svalue *num_bytes_sval,
-					  const svalue *capacity,
-					  enum access_direction dir,
-					  region_model_context *ctxt) const
+void
+region_model::check_symbolic_bounds (const region *base_reg,
+				     const svalue *sym_byte_offset,
+				     const svalue *num_bytes_sval,
+				     const svalue *capacity,
+				     enum access_direction dir,
+				     region_model_context *ctxt) const
 {
   gcc_assert (ctxt);
 
@@ -1772,7 +1778,7 @@ void region_model::check_symbolic_bounds (const region *base_reg,
     = m_mgr->get_or_create_binop (num_bytes_sval->get_type (), PLUS_EXPR,
 				  sym_byte_offset, num_bytes_sval);
 
-  if (eval_condition_without_cm (next_byte, GT_EXPR, capacity).is_true ())
+  if (eval_condition (next_byte, GT_EXPR, capacity).is_true ())
     {
       tree diag_arg = get_representative_tree (base_reg);
       tree offset_tree = get_representative_tree (sym_byte_offset);
@@ -1784,16 +1790,18 @@ void region_model::check_symbolic_bounds (const region *base_reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new symbolic_buffer_overread (base_reg, diag_arg,
-						    offset_tree,
-						    num_bytes_tree,
-						    capacity_tree));
+	  ctxt->warn (make_unique<symbolic_buffer_overread> (base_reg,
+							     diag_arg,
+							     offset_tree,
+							     num_bytes_tree,
+							     capacity_tree));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new symbolic_buffer_overflow (base_reg, diag_arg,
-						    offset_tree,
-						    num_bytes_tree,
-						    capacity_tree));
+	  ctxt->warn (make_unique<symbolic_buffer_overflow> (base_reg,
+							     diag_arg,
+							     offset_tree,
+							     num_bytes_tree,
+							     capacity_tree));
 	  break;
 	}
     }
@@ -1884,10 +1892,10 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new buffer_underread (reg, diag_arg, out));
+	  ctxt->warn (make_unique<buffer_underread> (reg, diag_arg, out));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new buffer_underflow (reg, diag_arg, out));
+	  ctxt->warn (make_unique<buffer_underflow> (reg, diag_arg, out));
 	  break;
 	}
     }
@@ -1912,10 +1920,12 @@ region_model::check_region_bounds (const region *reg,
 	  gcc_unreachable ();
 	  break;
 	case DIR_READ:
-	  ctxt->warn (new buffer_overread (reg, diag_arg, out, byte_bound));
+	  ctxt->warn (make_unique<buffer_overread> (reg, diag_arg,
+						    out, byte_bound));
 	  break;
 	case DIR_WRITE:
-	  ctxt->warn (new buffer_overflow (reg, diag_arg, out, byte_bound));
+	  ctxt->warn (make_unique<buffer_overflow> (reg, diag_arg,
+						    out, byte_bound));
 	  break;
 	}
     }
@@ -2214,7 +2224,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  case BUILT_IN_REALLOC:
 	    return false;
 	  case BUILT_IN_STRCHR:
-	    impl_call_strchr (cd);
+	    /* Handle in "on_call_post".  */
 	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
@@ -2279,6 +2289,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_realloc (cd);
 	  return false;
 	}
+      else if (is_named_call_p (callee_fndecl, "__errno_location", call, 0))
+	{
+	  impl_call_errno_location (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "error"))
 	{
 	  if (impl_call_error (cd, 3, out_terminate_path))
@@ -2315,8 +2330,8 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
-      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
 	{
 	  /* Handle in "on_call_post"; bail now so that fd array
 	     is left untouched so that we can detect use-of-uninit
@@ -2332,7 +2347,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
-	  impl_call_strchr (cd);
+	  /* Handle in "on_call_post".  */
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2403,10 +2418,16 @@ region_model::on_call_post (const gcall *call,
 	  impl_call_operator_delete (cd);
 	  return;
 	}
-      else if (is_named_call_p (callee_fndecl, "pipe", call, 1)
-	       || is_named_call_p (callee_fndecl, "pipe2", call, 2))
+      else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
+	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
 	{
 	  impl_call_pipe (cd);
+	  return;
+	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
 	  return;
 	}
       /* Was this fndecl referenced by
@@ -2424,6 +2445,10 @@ region_model::on_call_post (const gcall *call,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    impl_call_realloc (cd);
+	    return;
+
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
 	    return;
 
 	  case BUILT_IN_VA_END:
@@ -2564,9 +2589,10 @@ check_external_function_for_access_attr (const gcall *call,
 	      m_access (access)
 	    {
 	    }
-	    pending_note *make_note () final override
+	    std::unique_ptr<pending_note> make_note () final override
 	    {
-	      return new reason_attr_access (m_callee_fndecl, m_access);
+	      return make_unique<reason_attr_access>
+		(m_callee_fndecl, m_access);
 	    }
 	  private:
 	    tree m_callee_fndecl;
@@ -3374,7 +3400,8 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		const poisoned_svalue *poisoned_sval
 		  = as_a <const poisoned_svalue *> (ptr_sval);
 		enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind, NULL));
+		ctxt->warn (make_unique<poisoned_value_diagnostic>
+			      (ptr, pkind, NULL));
 	      }
 	  }
       }
@@ -3531,14 +3558,16 @@ region_model::check_for_writable_region (const region* dest_reg,
       {
 	const function_region *func_reg = as_a <const function_region *> (base_reg);
 	tree fndecl = func_reg->get_fndecl ();
-	ctxt->warn (new write_to_const_diagnostic (func_reg, fndecl));
+	ctxt->warn (make_unique<write_to_const_diagnostic>
+		      (func_reg, fndecl));
       }
       break;
     case RK_LABEL:
       {
 	const label_region *label_reg = as_a <const label_region *> (base_reg);
 	tree label = label_reg->get_label ();
-	ctxt->warn (new write_to_const_diagnostic (label_reg, label));
+	ctxt->warn (make_unique<write_to_const_diagnostic>
+		      (label_reg, label));
       }
       break;
     case RK_DECL:
@@ -3551,11 +3580,11 @@ region_model::check_for_writable_region (const region* dest_reg,
 	   "this" param is "T* const").  */
 	if (TREE_READONLY (decl)
 	    && is_global_var (decl))
-	  ctxt->warn (new write_to_const_diagnostic (dest_reg, decl));
+	  ctxt->warn (make_unique<write_to_const_diagnostic> (dest_reg, decl));
       }
       break;
     case RK_STRING:
-      ctxt->warn (new write_to_string_literal_diagnostic (dest_reg));
+      ctxt->warn (make_unique<write_to_string_literal_diagnostic> (dest_reg));
       break;
     }
 }
@@ -4031,8 +4060,8 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	if (TREE_CODE (cst_cap) == INTEGER_CST
 	    && !capacity_compatible_with_type (cst_cap, pointee_size_tree,
 					       is_struct))
-	  ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
-						   cst_cap));
+	  ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg, rhs_reg,
+							     cst_cap));
       }
       break;
     default:
@@ -4043,8 +4072,9 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	    if (!v.get_result ())
 	      {
 		tree expr = get_representative_tree (capacity);
-		ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
-			    expr));
+		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,
+								   rhs_reg,
+								   expr));
 	      }
 	  }
       break;
@@ -4133,42 +4163,16 @@ region_model::eval_condition (const svalue *lhs,
 			       enum tree_code op,
 			       const svalue *rhs) const
 {
-  /* For now, make no attempt to capture constraints on floating-point
-     values.  */
-  if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
-      || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
-    return tristate::unknown ();
-
-  tristate ts = eval_condition_without_cm (lhs, op, rhs);
-  if (ts.is_known ())
-    return ts;
-
-  /* Otherwise, try constraints.  */
-  return m_constraints->eval_condition (lhs, op, rhs);
-}
-
-/* Determine what is known about the condition "LHS_SVAL OP RHS_SVAL" within
-   this model, without resorting to the constraint_manager.
-
-   This is exposed so that impl_region_model_context::on_state_leak can
-   check for equality part-way through region_model::purge_unused_svalues
-   without risking creating new ECs.  */
-
-tristate
-region_model::eval_condition_without_cm (const svalue *lhs,
-					  enum tree_code op,
-					  const svalue *rhs) const
-{
   gcc_assert (lhs);
   gcc_assert (rhs);
 
-  /* See what we know based on the values.  */
-
   /* For now, make no attempt to capture constraints on floating-point
      values.  */
   if ((lhs->get_type () && FLOAT_TYPE_P (lhs->get_type ()))
       || (rhs->get_type () && FLOAT_TYPE_P (rhs->get_type ())))
     return tristate::unknown ();
+
+  /* See what we know based on the values.  */
 
   /* Unwrap any unmergeable values.  */
   lhs = lhs->unwrap_any_unmergeable ();
@@ -4263,9 +4267,7 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	       shouldn't warn for.  */
 	    if (binop->get_op () == POINTER_PLUS_EXPR)
 	      {
-		tristate lhs_ts
-		  = eval_condition_without_cm (binop->get_arg0 (),
-					       op, rhs);
+		tristate lhs_ts = eval_condition (binop->get_arg0 (), op, rhs);
 		if (lhs_ts.is_known ())
 		  return lhs_ts;
 	      }
@@ -4298,7 +4300,7 @@ region_model::eval_condition_without_cm (const svalue *lhs,
       }
 
   /* Handle comparisons between two svalues with more than one operand.  */
-	if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
+  if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
     {
       switch (op)
 	{
@@ -4340,10 +4342,14 @@ region_model::eval_condition_without_cm (const svalue *lhs,
 	}
     }
 
-  return tristate::TS_UNKNOWN;
+  /* Otherwise, try constraints.
+     Cast to const to ensure we don't change the constraint_manager as we
+     do this (e.g. by creating equivalence classes).  */
+  const constraint_manager *constraints = m_constraints;
+  return constraints->eval_condition (lhs, op, rhs);
 }
 
-/* Subroutine of region_model::eval_condition_without_cm, for rejecting
+/* Subroutine of region_model::eval_condition, for rejecting
    equality of INIT_VAL(PARM) with &LOCAL.  */
 
 tristate
@@ -4395,18 +4401,18 @@ region_model::symbolic_greater_than (const binop_svalue *bin_a,
       /* Eliminate the right-hand side of both svalues.  */
       if (const binop_svalue *bin_b = dyn_cast <const binop_svalue *> (b))
 	if (bin_a->get_op () == bin_b->get_op ()
-	    && eval_condition_without_cm (bin_a->get_arg1 (),
-					  GT_EXPR,
-					  bin_b->get_arg1 ()).is_true ()
-	    && eval_condition_without_cm (bin_a->get_arg0 (),
-					  GE_EXPR,
-					  bin_b->get_arg0 ()).is_true ())
+	    && eval_condition (bin_a->get_arg1 (),
+			       GT_EXPR,
+			       bin_b->get_arg1 ()).is_true ()
+	    && eval_condition (bin_a->get_arg0 (),
+			       GE_EXPR,
+			       bin_b->get_arg0 ()).is_true ())
 	  return tristate (tristate::TS_TRUE);
 
       /* Otherwise, try to remove a positive offset or factor from BIN_A.  */
       if (is_positive_svalue (bin_a->get_arg1 ())
-	  && eval_condition_without_cm (bin_a->get_arg0 (),
-					GE_EXPR, b).is_true ())
+	  && eval_condition (bin_a->get_arg0 (),
+			     GE_EXPR, b).is_true ())
 	  return tristate (tristate::TS_TRUE);
     }
   return tristate::unknown ();
@@ -5766,7 +5772,7 @@ region_model::check_dynamic_size_for_floats (const svalue *size_in_bytes,
   if (const svalue *float_sval = v.get_svalue_to_report ())
 	{
 	  tree diag_arg = get_representative_tree (float_sval);
-	  ctxt->warn (new float_as_size_arg (diag_arg));
+	  ctxt->warn (make_unique<float_as_size_arg> (diag_arg));
 	}
 }
 
@@ -6389,23 +6395,38 @@ region_model::maybe_complain_about_infoleak (const region *dst_reg,
 {
   /* Check for exposure.  */
   if (contains_uninit_p (copied_sval))
-    ctxt->warn (new exposure_through_uninit_copy (src_reg,
-						  dst_reg,
-						  copied_sval));
+    ctxt->warn (make_unique<exposure_through_uninit_copy> (src_reg,
+							   dst_reg,
+							   copied_sval));
+}
+
+/* Set errno to a positive symbolic int, as if some error has occurred.  */
+
+void
+region_model::set_errno (const call_details &cd)
+{
+  const region *errno_reg = m_mgr->get_errno_region ();
+  conjured_purge p (this, cd.get_ctxt ());
+  const svalue *new_errno_sval
+    = m_mgr->get_or_create_conjured_svalue (integer_type_node,
+					    cd.get_call_stmt (),
+					    errno_reg, p);
+  const svalue *zero
+    = m_mgr->get_or_create_int_cst (integer_type_node, 0);
+  add_constraint (new_errno_sval, GT_EXPR, zero, cd.get_ctxt ());
+  set_value (errno_reg, new_errno_sval, cd.get_ctxt ());
 }
 
 /* class noop_region_model_context : public region_model_context.  */
 
 void
-noop_region_model_context::add_note (pending_note *pn)
+noop_region_model_context::add_note (std::unique_ptr<pending_note>)
 {
-  delete pn;
 }
 
 void
-noop_region_model_context::bifurcate (custom_edge_info *info)
+noop_region_model_context::bifurcate (std::unique_ptr<custom_edge_info>)
 {
-  delete info;
 }
 
 void

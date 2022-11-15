@@ -1740,6 +1740,70 @@ package body Sem_Ch4 is
          return;
       end if;
 
+      --  The expression must be of a discrete type which must be determinable
+      --  independently of the context in which the expression occurs, but
+      --  using the fact that the expression must be of a discrete type.
+      --  Moreover, the type this expression must not be a character literal
+      --  (which is always ambiguous).
+
+      --  If error already reported by Resolve, nothing more to do
+
+      if Exp_Btype = Any_Discrete or else Exp_Btype = Any_Type then
+         return;
+
+      --  Special case message for character literal
+
+      elsif Exp_Btype = Any_Character then
+         Error_Msg_N
+           ("character literal as case expression is ambiguous", Expr);
+         return;
+      end if;
+
+      --  If the case expression is a formal object of mode in out, then
+      --  treat it as having a nonstatic subtype by forcing use of the base
+      --  type (which has to get passed to Check_Case_Choices below). Also
+      --  use base type when the case expression is parenthesized.
+
+      if Paren_Count (Expr) > 0
+        or else (Is_Entity_Name (Expr)
+                  and then Ekind (Entity (Expr)) = E_Generic_In_Out_Parameter)
+      then
+         Exp_Type := Exp_Btype;
+      end if;
+
+      --  The case expression alternatives cover the range of a static subtype
+      --  subject to aspect Static_Predicate. Do not check the choices when the
+      --  case expression has not been fully analyzed yet because this may lead
+      --  to bogus errors.
+
+      if Is_OK_Static_Subtype (Exp_Type)
+        and then Has_Static_Predicate_Aspect (Exp_Type)
+        and then In_Spec_Expression
+      then
+         null;
+
+      --  Call Analyze_Choices and Check_Choices to do the rest of the work
+
+      else
+         Analyze_Choices (Alternatives (N), Exp_Type);
+         Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
+
+         if Exp_Type = Universal_Integer and then not Others_Present then
+            Error_Msg_N
+              ("case on universal integer requires OTHERS choice", Expr);
+            return;
+         end if;
+      end if;
+
+      --  RM 4.5.7(10/3): If the case_expression is the operand of a type
+      --  conversion, the type of the case_expression is the target type
+      --  of the conversion.
+
+      if Nkind (Parent (N)) = N_Type_Conversion then
+         Set_Etype (N, Etype (Parent (N)));
+         return;
+      end if;
+
       --  Loop through the interpretations of the first expression and check
       --  the other expressions if present.
 
@@ -1761,25 +1825,6 @@ package body Sem_Ch4 is
 
             Get_Next_Interp (I, It);
          end loop;
-      end if;
-
-      --  The expression must be of a discrete type which must be determinable
-      --  independently of the context in which the expression occurs, but
-      --  using the fact that the expression must be of a discrete type.
-      --  Moreover, the type this expression must not be a character literal
-      --  (which is always ambiguous).
-
-      --  If error already reported by Resolve, nothing more to do
-
-      if Exp_Btype = Any_Discrete or else Exp_Btype = Any_Type then
-         return;
-
-      --  Special casee message for character literal
-
-      elsif Exp_Btype = Any_Character then
-         Error_Msg_N
-           ("character literal as case expression is ambiguous", Expr);
-         return;
       end if;
 
       --  If no possible interpretation has been found, the type of the wrong
@@ -1828,43 +1873,6 @@ package body Sem_Ch4 is
                   Second_Expr,
                   Etype (Second_Expr));
             end if;
-         end if;
-
-         return;
-      end if;
-
-      --  If the case expression is a formal object of mode in out, then
-      --  treat it as having a nonstatic subtype by forcing use of the base
-      --  type (which has to get passed to Check_Case_Choices below). Also
-      --  use base type when the case expression is parenthesized.
-
-      if Paren_Count (Expr) > 0
-        or else (Is_Entity_Name (Expr)
-                  and then Ekind (Entity (Expr)) = E_Generic_In_Out_Parameter)
-      then
-         Exp_Type := Exp_Btype;
-      end if;
-
-      --  The case expression alternatives cover the range of a static subtype
-      --  subject to aspect Static_Predicate. Do not check the choices when the
-      --  case expression has not been fully analyzed yet because this may lead
-      --  to bogus errors.
-
-      if Is_OK_Static_Subtype (Exp_Type)
-        and then Has_Static_Predicate_Aspect (Exp_Type)
-        and then In_Spec_Expression
-      then
-         null;
-
-      --  Call Analyze_Choices and Check_Choices to do the rest of the work
-
-      else
-         Analyze_Choices (Alternatives (N), Exp_Type);
-         Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
-
-         if Exp_Type = Universal_Integer and then not Others_Present then
-            Error_Msg_N
-              ("case on universal integer requires OTHERS choice", Expr);
          end if;
       end if;
    end Analyze_Case_Expression;
@@ -2553,6 +2561,15 @@ package body Sem_Ch4 is
 
       if Present (Else_Expr) then
          Analyze_Expression (Else_Expr);
+      end if;
+
+      --  RM 4.5.7(10/3): If the if_expression is the operand of a type
+      --  conversion, the type of the if_expression is the target type
+      --  of the conversion.
+
+      if Nkind (Parent (N)) = N_Type_Conversion then
+         Set_Etype (N, Etype (Parent (N)));
+         return;
       end if;
 
       --  Loop through the interpretations of the THEN expression and check the
@@ -4323,16 +4340,14 @@ package body Sem_Ch4 is
    ----------------------------------
 
    procedure Analyze_Qualified_Expression (N : Node_Id) is
-      Mark : constant Entity_Id := Subtype_Mark (N);
       Expr : constant Node_Id   := Expression (N);
+      Mark : constant Entity_Id := Subtype_Mark (N);
+
       I    : Interp_Index;
       It   : Interp;
       T    : Entity_Id;
 
    begin
-      Analyze_Expression (Expr);
-
-      Set_Etype (N, Any_Type);
       Find_Type (Mark);
       T := Entity (Mark);
 
@@ -4352,6 +4367,8 @@ package body Sem_Ch4 is
       end if;
 
       Set_Etype (N, T);
+
+      Analyze_Expression (Expr);
 
       if T = Any_Type then
          return;
@@ -4389,8 +4406,6 @@ package body Sem_Ch4 is
             end loop;
          end if;
       end if;
-
-      Set_Etype  (N, T);
    end Analyze_Qualified_Expression;
 
    -----------------------------------
@@ -5423,7 +5438,8 @@ package body Sem_Ch4 is
          --  untagged record types.
 
          if Ada_Version >= Ada_2005
-           and then (Is_Tagged_Type (Prefix_Type) or else Extensions_Allowed)
+           and then (Is_Tagged_Type (Prefix_Type)
+                       or else Core_Extensions_Allowed)
            and then not Is_Concurrent_Type (Prefix_Type)
          then
             if Nkind (Parent (N)) = N_Generic_Association
@@ -5499,7 +5515,7 @@ package body Sem_Ch4 is
          --  Extension feature: Also support calls with prefixed views for
          --  untagged private types.
 
-         if Extensions_Allowed then
+         if Core_Extensions_Allowed then
             if Try_Object_Operation (N) then
                return;
             end if;
@@ -5760,7 +5776,7 @@ package body Sem_Ch4 is
       --  Extension feature: Also support calls with prefixed views for
       --  untagged types.
 
-      elsif Extensions_Allowed
+      elsif Core_Extensions_Allowed
         and then Try_Object_Operation (N)
       then
          return;
@@ -5949,9 +5965,9 @@ package body Sem_Ch4 is
       It  : Interp;
 
    begin
+      Set_Etype (N, Any_Type);
       Analyze_Expression (L);
       Analyze_Expression (R);
-      Set_Etype (N, Any_Type);
 
       if not Is_Overloaded (L) then
          if Root_Type (Etype (L)) = Standard_Boolean
@@ -6084,7 +6100,9 @@ package body Sem_Ch4 is
    -----------------------------
 
    procedure Analyze_Type_Conversion (N : Node_Id) is
-      Expr : constant Node_Id := Expression (N);
+      Expr : constant Node_Id   := Expression (N);
+      Mark : constant Entity_Id := Subtype_Mark (N);
+
       Typ  : Entity_Id;
 
    begin
@@ -6101,11 +6119,13 @@ package body Sem_Ch4 is
       --  Otherwise full type analysis is required, as well as some semantic
       --  checks to make sure the argument of the conversion is appropriate.
 
-      Find_Type (Subtype_Mark (N));
-      Typ := Entity (Subtype_Mark (N));
+      Find_Type (Mark);
+      Typ := Entity (Mark);
       Set_Etype (N, Typ);
-      Check_Fully_Declared (Typ, N);
+
       Analyze_Expression (Expr);
+
+      Check_Fully_Declared (Typ, N);
       Validate_Remote_Type_Type_Conversion (N);
 
       --  Only remaining step is validity checks on the argument. These
@@ -6228,10 +6248,12 @@ package body Sem_Ch4 is
    ----------------------------------
 
    procedure Analyze_Unchecked_Expression (N : Node_Id) is
+      Expr : constant Node_Id := Expression (N);
+
    begin
-      Analyze (Expression (N), Suppress => All_Checks);
-      Set_Etype (N, Etype (Expression (N)));
-      Save_Interps (Expression (N), N);
+      Analyze (Expr, Suppress => All_Checks);
+      Set_Etype (N, Etype (Expr));
+      Save_Interps (Expr, N);
    end Analyze_Unchecked_Expression;
 
    ---------------------------------------
@@ -6239,10 +6261,13 @@ package body Sem_Ch4 is
    ---------------------------------------
 
    procedure Analyze_Unchecked_Type_Conversion (N : Node_Id) is
+      Expr : constant Node_Id   := Expression (N);
+      Mark : constant Entity_Id := Subtype_Mark (N);
+
    begin
-      Find_Type (Subtype_Mark (N));
-      Analyze_Expression (Expression (N));
-      Set_Etype (N, Entity (Subtype_Mark (N)));
+      Find_Type (Mark);
+      Set_Etype (N, Entity (Mark));
+      Analyze_Expression (Expr);
    end Analyze_Unchecked_Type_Conversion;
 
    ------------------------------------
@@ -9862,7 +9887,7 @@ package body Sem_Ch4 is
 
          if (not Is_Tagged_Type (Obj_Type)
               and then
-                (not (Extensions_Allowed or Allow_Extensions)
+                (not (Core_Extensions_Allowed or Allow_Extensions)
                   or else not Present (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
@@ -9891,7 +9916,7 @@ package body Sem_Ch4 is
                --  have homographic prefixed-view operations that could result
                --  in an ambiguity, but handling properly may be tricky. ???)
 
-               if (Extensions_Allowed or Allow_Extensions)
+               if (Core_Extensions_Allowed or Allow_Extensions)
                  and then not Prim_Result
                  and then Is_Named_Access_Type (Prev_Obj_Type)
                  and then Present (Direct_Primitive_Operations (Prev_Obj_Type))

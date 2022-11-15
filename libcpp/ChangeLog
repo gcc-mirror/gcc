@@ -1,3 +1,19 @@
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* lex.cc (get_fresh_line_impl): New function refactoring the code
+	from...
+	(_cpp_get_fresh_line): ...here.
+	(lex_raw_string): Use the new version of get_fresh_line_impl() to
+	support raw strings containing new lines when processing a directive.
+
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeuname2c.cc (struct generated): Update from Unicode 15.0.0
+	table 4-8.
+	* ucnid.h: Regenerated for Unicode 15.0.0.
+	* uname2c.h: Likewise.
+
 2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* include/cpplib.h (struct cpp_string): Use new "string_length" GTY.

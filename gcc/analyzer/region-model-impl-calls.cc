@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -54,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "analyzer/pending-diagnostic.h"
 #include "gimple-pretty-print.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -411,6 +413,20 @@ region_model::impl_call_calloc (const call_details &cd)
     }
 }
 
+/* Handle the on_call_pre part of "__errno_location".  */
+
+void
+region_model::impl_call_errno_location (const call_details &cd)
+{
+  if (cd.get_lhs_region ())
+    {
+      const region *errno_reg = m_mgr->get_errno_region ();
+      const svalue *errno_ptr = m_mgr->get_ptr_svalue (cd.get_lhs_type (),
+						       errno_reg);
+      cd.maybe_set_lhs (errno_ptr);
+    }
+}
+
 /* Handle the on_call_pre part of "error" and "error_at_line" from
    GNU's non-standard <error.h>.
    MIN_ARGS identifies the minimum number of expected arguments
@@ -482,7 +498,7 @@ region_model::impl_call_fread (const call_details &cd)
 
    This has to be done here so that the sm-handling can use the fact
    that they point to the same region to establish that they are equal
-   (in region_model::eval_condition_without_cm), and thus transition
+   (in region_model::eval_condition), and thus transition
    all pointers to the region to the "freed" state together, regardless
    of casts.  */
 
@@ -627,8 +643,8 @@ region_model::impl_call_pipe (const call_details &cd)
   /* Body of region_model::impl_call_pipe.  */
   if (cd.get_ctxt ())
     {
-      cd.get_ctxt ()->bifurcate (new failure (cd));
-      cd.get_ctxt ()->bifurcate (new success (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success> (cd));
       cd.get_ctxt ()->terminate_path ();
     }
 }
@@ -745,7 +761,7 @@ region_model::impl_call_putenv (const call_details &cd)
       break;
     case MEMSPACE_STACK:
       if (ctxt)
-	ctxt->warn (new putenv_of_auto_var (fndecl, reg));
+	ctxt->warn (make_unique<putenv_of_auto_var> (fndecl, reg));
       break;
     }
 }
@@ -1004,14 +1020,14 @@ region_model::impl_call_realloc (const call_details &cd)
 
   if (cd.get_ctxt ())
     {
-      cd.get_ctxt ()->bifurcate (new failure (cd));
-      cd.get_ctxt ()->bifurcate (new success_no_move (cd));
-      cd.get_ctxt ()->bifurcate (new success_with_move (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success_no_move> (cd));
+      cd.get_ctxt ()->bifurcate (make_unique<success_with_move> (cd));
       cd.get_ctxt ()->terminate_path ();
     }
 }
 
-/* Handle the on_call_pre part of "strchr" and "__builtin_strchr".  */
+/* Handle the on_call_post part of "strchr" and "__builtin_strchr".  */
 
 void
 region_model::impl_call_strchr (const call_details &cd)
@@ -1073,13 +1089,13 @@ region_model::impl_call_strchr (const call_details &cd)
     bool m_found;
   };
 
-  /* Bifurcate state, creating a "not found" out-edge.  */
+  /* Body of region_model::impl_call_strchr.  */
   if (cd.get_ctxt ())
-    cd.get_ctxt ()->bifurcate (new strchr_call_info (cd, false));
-
-  /* The "unbifurcated" state is the "found" case.  */
-  strchr_call_info found (cd, true);
-  found.update_model (this, NULL, cd.get_ctxt ());
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<strchr_call_info> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
+    }
 }
 
 /* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */

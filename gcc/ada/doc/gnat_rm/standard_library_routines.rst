@@ -157,7 +157,7 @@ the unit is not implemented.
 
 ``Ada.Directories.Hierarchical_File_Names`` *(A.16.1)*
   This package provides additional directory operations handling
-  hiearchical file names.
+  hierarchical file names.
 
 
 ``Ada.Directories.Information`` *(A.16)*
@@ -550,7 +550,7 @@ the unit is not implemented.
   This package provides the capability of associating arbitrary
   task-specific data with separate tasks.
 
-``Ada.Task_Identifification`` *(C.7.1)*
+``Ada.Task_Identification`` *(C.7.1)*
   This package provides capabilities for task identification.
 
 ``Ada.Task_Termination`` *(C.7.3)*

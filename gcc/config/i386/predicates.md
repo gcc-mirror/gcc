@@ -610,6 +610,21 @@
   return false;
 })
 
+(define_predicate "local_func_symbolic_operand"
+  (match_operand 0 "local_symbolic_operand")
+{
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
+    op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) == SYMBOL_REF
+      && !SYMBOL_REF_FUNCTION_P (op))
+    return false;
+
+  return true;
+})
+
 ;; Test for a legitimate @GOTOFF operand.
 ;;
 ;; VxWorks does not impose a fixed gap between segments; the run-time
@@ -1219,6 +1234,13 @@
 (define_predicate "vector_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_memory_operand")))
+
+; Return true when OP is register_operand, vector_memory_operand
+; or const_vector.
+(define_predicate "vector_or_const_vector_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_memory_operand")
+       (match_code "const_vector")))
 
 (define_predicate "bcst_mem_operand"
   (and (match_code "vec_duplicate")

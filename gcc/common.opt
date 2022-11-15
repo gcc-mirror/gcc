@@ -2174,6 +2174,10 @@ fmove-loop-stores
 Common Var(flag_move_loop_stores) Optimization
 Move stores out of loops.
 
+fmultiflags
+Common Driver
+Building block for specs-based multilib-aware TFLAGS.
+
 fdce
 Common Var(flag_dce) Init(1) Optimization
 Use the RTL dead code elimination pass.

@@ -4923,6 +4923,32 @@ structural_type_p (tree t, bool explain)
   return true;
 }
 
+/* Partially handle the C++11 [[carries_dependency]] attribute.
+   Just emit a different diagnostics when it is used on something the
+   spec doesn't allow vs. where it allows and we just choose to ignore
+   it.  */
+
+static tree
+handle_carries_dependency_attribute (tree *node, tree name,
+				     tree ARG_UNUSED (args),
+				     int ARG_UNUSED (flags),
+				     bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL
+      && TREE_CODE (*node) != PARM_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute can only be applied to "
+	       "functions or parameters", name);
+      *no_add_attrs = true;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
 /* Handle the C++17 [[nodiscard]] attribute, which is similar to the GNU
    warn_unused_result attribute.  */
 
@@ -5010,8 +5036,10 @@ const struct attribute_spec cxx_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+#if SUPPORTS_INIT_PRIORITY
   { "init_priority",  1, 1, true,  false, false, false,
     handle_init_priority_attribute, NULL },
+#endif
   { "abi_tag", 1, -1, false, false, false, true,
     handle_abi_tag_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
@@ -5034,12 +5062,14 @@ const struct attribute_spec std_attribute_table[] =
     handle_likeliness_attribute, attr_cold_hot_exclusions },
   { "noreturn", 0, 0, true, false, false, false,
     handle_noreturn_attribute, attr_noreturn_exclusions },
+  { "carries_dependency", 0, 0, true, false, false, false,
+    handle_carries_dependency_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Handle an "init_priority" attribute; arguments as in
    struct attribute_spec.handler.  */
-static tree
+ATTRIBUTE_UNUSED static tree
 handle_init_priority_attribute (tree* node,
 				tree name,
 				tree args,
@@ -5103,18 +5133,10 @@ handle_init_priority_attribute (tree* node,
 	 pri);
     }
 
-  if (SUPPORTS_INIT_PRIORITY)
-    {
-      SET_DECL_INIT_PRIORITY (decl, pri);
-      DECL_HAS_INIT_PRIORITY_P (decl) = 1;
-      return NULL_TREE;
-    }
-  else
-    {
-      error ("%qE attribute is not supported on this platform", name);
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
+  gcc_assert (SUPPORTS_INIT_PRIORITY);
+  SET_DECL_INIT_PRIORITY (decl, pri);
+  DECL_HAS_INIT_PRIORITY_P (decl) = 1;
+  return NULL_TREE;
 }
 
 /* DECL is being redeclared; the old declaration had the abi tags in OLD,

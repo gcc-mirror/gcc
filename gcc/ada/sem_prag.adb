@@ -7315,22 +7315,16 @@ package body Sem_Prag is
          Parent_Node : Node_Id;
 
       begin
-         if not Is_List_Member (N) then
-            return False;
-
-         else
+         if Is_List_Member (N) then
             Plist := List_Containing (N);
             Parent_Node := Parent (Plist);
 
-            if Parent_Node = Empty
-              or else Nkind (Parent_Node) /= N_Compilation_Unit
-              or else Context_Items (Parent_Node) /= Plist
-            then
-               return False;
-            end if;
+            return Present (Parent_Node)
+              and then Nkind (Parent_Node) = N_Compilation_Unit
+              and then Context_Items (Parent_Node) = Plist;
          end if;
 
-         return True;
+         return False;
       end Is_In_Context_Clause;
 
       ---------------------------------
@@ -15408,12 +15402,12 @@ package body Sem_Prag is
             --  aspect/pragma from parent types (see Build_DIC_Procedure_Body),
             --  though that extra argument isn't documented for the pragma.
 
-            if not Present (Arg2) then
+            if No (Arg2) then
                --  When the pragma has no arguments, create an argument with
                --  the value Empty, so the type name argument can be appended
                --  following it (since it's expected as the second argument).
 
-               if not Present (Arg1) then
+               if No (Arg1) then
                   Set_Pragma_Argument_Associations (N, New_List (
                     Make_Pragma_Argument_Association (Sloc (Typ),
                       Expression => Empty)));
@@ -16595,16 +16589,18 @@ package body Sem_Prag is
          -- Extensions_Allowed --
          ------------------------
 
-         --  pragma Extensions_Allowed (ON | OFF);
+         --  pragma Extensions_Allowed (ON | OFF | ALL);
 
          when Pragma_Extensions_Allowed =>
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
+            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_All);
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_On then
-               Ada_Version := Ada_With_Extensions;
+               Ada_Version := Ada_With_Core_Extensions;
+            elsif Chars (Get_Pragma_Arg (Arg1)) = Name_All then
+               Ada_Version := Ada_With_All_Extensions;
             else
                Ada_Version := Ada_Version_Explicit;
                Ada_Version_Pragma := Empty;
@@ -20500,10 +20496,16 @@ package body Sem_Prag is
 
             if No (Decl) then
 
-               --  First case: library level compilation unit declaration with
+               --  Case 0: library level compilation unit declaration with
+               --  the pragma preceding the declaration.
+
+               if Nkind (Parent (N)) = N_Compilation_Unit then
+                  Pragma_Misplaced;
+
+               --  Case 1: library level compilation unit declaration with
                --  the pragma immediately following the declaration.
 
-               if Nkind (Parent (N)) = N_Compilation_Unit_Aux then
+               elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
                   Set_Obsolescent
                     (Defining_Entity (Unit (Parent (Parent (N)))));
                   return;
@@ -26199,6 +26201,20 @@ package body Sem_Prag is
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
       Set_Is_Analyzed_Pragma (N);
 
+      --  If the subprogram is frozen then its class-wide pre- and post-
+      --  conditions have been preanalyzed (see Merge_Class_Conditions);
+      --  otherwise they must be preanalyzed now to ensure the correct
+      --  visibility of their referenced entities. This scenario occurs
+      --  when the subprogram is defined in a nested package (since the
+      --  end of the package does not cause freezing).
+
+      if Class_Present (N)
+        and then Is_Dispatching_Operation (Spec_Id)
+        and then not Is_Frozen (Spec_Id)
+      then
+         Preanalyze_Class_Conditions (Spec_Id);
+      end if;
+
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
 
@@ -31717,43 +31733,45 @@ package body Sem_Prag is
    --  Start of processing for Non_Significant_Pragma_Reference
 
    begin
+      --  Reference might appear either directly as expression of a pragma
+      --  argument association, e.g. pragma Export (...), or within an
+      --  aggregate with component associations, e.g. pragma Refined_State
+      --  ((... => ...)).
+
       P := Parent (N);
-
-      if Nkind (P) /= N_Pragma_Argument_Association then
-
-         --  References within pragma Refined_State are not significant. They
-         --  can't be recognized using pragma argument number, because they
-         --  appear inside refinement clauses that rely on aggregate syntax.
-
-         if In_Pragma_Expression (N, Name_Refined_State) then
-            return True;
-         end if;
-
-         return False;
-
-      else
-         Id := Get_Pragma_Id (Parent (P));
-         C := Sig_Flags (Id);
-         AN := Arg_No;
-
-         if AN = 0 then
-            return False;
-         end if;
-
-         case C is
-            when -1 =>
-               return False;
-
-            when 0 =>
-               return True;
-
-            when 92 .. 99 =>
-               return AN < (C - 90);
-
+      loop
+         case Nkind (P) is
+            when N_Pragma_Argument_Association =>
+               exit;
+            when N_Aggregate | N_Component_Association =>
+               P := Parent (P);
             when others =>
-               return AN /= C;
+               return False;
          end case;
+      end loop;
+
+      AN := Arg_No;
+
+      if AN = 0 then
+         return False;
       end if;
+
+      Id := Get_Pragma_Id (Parent (P));
+      C := Sig_Flags (Id);
+
+      case C is
+         when -1 =>
+            return False;
+
+         when 0 =>
+            return True;
+
+         when 92 .. 99 =>
+            return AN < (C - 90);
+
+         when others =>
+            return AN /= C;
+      end case;
    end Is_Non_Significant_Pragma_Reference;
 
    ------------------------------

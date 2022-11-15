@@ -1,6 +1,6 @@
 // PR c++/67007
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 template <class U>
 concept bool A =

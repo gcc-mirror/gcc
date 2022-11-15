@@ -30,7 +30,7 @@ class known_function_manager : public log_user
 public:
   known_function_manager (logger *logger);
   ~known_function_manager ();
-  void add (const char *name, known_function *kf);
+  void add (const char *name, std::unique_ptr<known_function> kf);
   const known_function *get_by_identifier (tree identifier);
   const known_function *get_by_fndecl (tree fndecl);
 

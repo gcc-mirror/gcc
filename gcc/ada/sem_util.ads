@@ -88,11 +88,6 @@ package Sem_Util is
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
 
-   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id);
-   --  Given a block statement N, generate an internal E_Block label and make
-   --  it the identifier of the block. Id denotes the generated entity. If the
-   --  block already has an identifier, Id returns the entity of its label.
-
    procedure Add_Global_Declaration (N : Node_Id);
    --  These procedures adds a declaration N at the library level, to be
    --  elaborated before any other code in the unit. It is used for example
@@ -678,6 +673,15 @@ package Sem_Util is
    function Current_Scope return Entity_Id;
    --  Get entity representing current scope
 
+   procedure Add_Block_Identifier
+       (N : Node_Id;
+        Id : out Entity_Id;
+        Scope : Entity_Id := Current_Scope);
+   --  Given a block statement N, generate an internal E_Block label and make
+   --  it the identifier of the block. Scope denotes the scope in which the
+   --  generated entity Id is created and defaults to the current scope. If the
+   --  block already has an identifier, Id returns the entity of its label.
+
    function Current_Scope_No_Loops return Entity_Id;
    --  Return the current scope ignoring internally generated loops
 
@@ -804,6 +808,10 @@ package Sem_Util is
    function Enclosing_Declaration (N : Node_Id) return Node_Id;
    --  Returns the declaration node enclosing N (including possibly N itself),
    --  if any, or Empty otherwise.
+
+   function Enclosing_Declaration_Or_Statement (N : Node_Id) return Node_Id;
+   --  Return the nearest enclosing declaration or statement that houses
+   --  arbitrary node N.
 
    function Enclosing_Generic_Body (N : Node_Id) return Node_Id;
    --  Returns the Node_Id associated with the innermost enclosing generic
@@ -1873,12 +1881,13 @@ package Sem_Util is
    function Is_Attribute_Update (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Update
 
-   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
+   function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean
+     with Inline;
    --  Determine whether node N denotes a body or a package declaration
 
    function Is_Bounded_String (T : Entity_Id) return Boolean;
    --  True if T is a bounded string type. Used to make sure "=" composes
-   --  properly for bounded string types.
+   --  properly for bounded string types (see 4.5.2(32.1/1)).
 
    function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes a procedure with synchronization

@@ -2103,7 +2103,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
     }
 
   finish_declspecs (specs);
-  bool auto_type_p = specs->typespec_word == cts_auto_type;
+  bool gnu_auto_type_p = specs->typespec_word == cts_auto_type;
+  bool std_auto_type_p = specs->c2x_auto_p;
+  bool any_auto_type_p = gnu_auto_type_p || std_auto_type_p;
+  gcc_assert (!(gnu_auto_type_p && std_auto_type_p));
+  const char *auto_type_keyword = gnu_auto_type_p ? "__auto_type" : "auto";
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       bool handled_assume = false;
@@ -2114,8 +2118,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  specs->attrs
 	    = handle_assume_attribute (here, specs->attrs, nested);
 	}
-      if (auto_type_p)
-	error_at (here, "%<__auto_type%> in empty declaration");
+      if (any_auto_type_p)
+	error_at (here, "%qs in empty declaration", auto_type_keyword);
       else if (specs->typespec_kind == ctsk_none
 	       && attribute_fallthrough_p (specs->attrs))
 	{
@@ -2159,7 +2163,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       shadow_tag_warned (specs, 1);
       return;
     }
-  else if (c_dialect_objc () && !auto_type_p)
+  else if (c_dialect_objc () && !any_auto_type_p)
     {
       /* Prefix attributes are an error on method decls.  */
       switch (c_parser_peek_token (parser)->type)
@@ -2253,6 +2257,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       bool dummy = false;
       timevar_id_t tv;
       tree fnbody = NULL_TREE;
+      tree std_auto_name = NULL_TREE;
       /* Declaring either one or more declarators (in which case we
 	 should diagnose if there were no declaration specifiers) or a
 	 function definition (in which case the diagnostic for
@@ -2270,13 +2275,28 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  c_parser_skip_to_end_of_block_or_statement (parser);
 	  return;
 	}
-      if (auto_type_p && declarator->kind != cdk_id)
+      if (gnu_auto_type_p && declarator->kind != cdk_id)
 	{
 	  error_at (here,
 		    "%<__auto_type%> requires a plain identifier"
 		    " as declarator");
 	  c_parser_skip_to_end_of_block_or_statement (parser);
 	  return;
+	}
+      if (std_auto_type_p)
+	{
+	  struct c_declarator *d = declarator;
+	  while (d->kind == cdk_attrs)
+	    d = d->declarator;
+	  if (d->kind != cdk_id)
+	    {
+	      error_at (here,
+			"%<auto%> requires a plain identifier, possibly with"
+			" attributes, as declarator");
+	      c_parser_skip_to_end_of_block_or_statement (parser);
+	      return;
+	    }
+	  std_auto_name = d->u.id.id;
 	}
       if (c_parser_next_token_is (parser, CPP_EQ)
 	  || c_parser_next_token_is (parser, CPP_COMMA)
@@ -2317,19 +2337,37 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      struct c_expr init;
 	      location_t init_loc;
 	      c_parser_consume_token (parser);
-	      if (auto_type_p)
+	      if (any_auto_type_p)
 		{
 		  init_loc = c_parser_peek_token (parser)->location;
 		  rich_location richloc (line_table, init_loc);
+		  unsigned int underspec_state = 0;
+		  if (std_auto_type_p)
+		    underspec_state = start_underspecified_init (init_loc,
+								 std_auto_name);
 		  start_init (NULL_TREE, asm_name, global_bindings_p (), &richloc);
 		  /* A parameter is initialized, which is invalid.  Don't
 		     attempt to instrument the initializer.  */
 		  int flag_sanitize_save = flag_sanitize;
 		  if (nested && !empty_ok)
 		    flag_sanitize = 0;
-		  init = c_parser_expr_no_commas (parser, NULL);
+		  if (std_auto_type_p
+		      && c_parser_next_token_is (parser, CPP_OPEN_BRACE))
+		    {
+		      matching_braces braces;
+		      braces.consume_open (parser);
+		      init = c_parser_expr_no_commas (parser, NULL);
+		      if (c_parser_next_token_is (parser, CPP_COMMA))
+			c_parser_consume_token (parser);
+		      braces.skip_until_found_close (parser);
+		    }
+		  else
+		    init = c_parser_expr_no_commas (parser, NULL);
+		  if (std_auto_type_p)
+		    finish_underspecified_init (std_auto_name, underspec_state);
 		  flag_sanitize = flag_sanitize_save;
-		  if (TREE_CODE (init.value) == COMPONENT_REF
+		  if (gnu_auto_type_p
+		      && TREE_CODE (init.value) == COMPONENT_REF
 		      && DECL_C_BIT_FIELD (TREE_OPERAND (init.value, 1)))
 		    error_at (here,
 			      "%<__auto_type%> used with a bit-field"
@@ -2345,6 +2383,16 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  specs->locations[cdw_typedef] = init_loc;
 		  specs->typedef_p = true;
 		  specs->type = init_type;
+		  if (specs->postfix_attrs)
+		    {
+		      /* Postfix [[]] attributes are valid with C2X
+			 auto, although not with __auto_type, and
+			 modify the type given by the initializer.  */
+		      specs->postfix_attrs =
+			c_warn_type_attributes (specs->postfix_attrs);
+		      decl_attributes (&specs->type, specs->postfix_attrs, 0);
+		      specs->postfix_attrs = NULL_TREE;
+		    }
 		  if (vm_type)
 		    {
 		      bool maybe_const = true;
@@ -2400,11 +2448,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  else
 	    {
-	      if (auto_type_p)
+	      if (any_auto_type_p)
 		{
 		  error_at (here,
-			    "%<__auto_type%> requires an initialized "
-			    "data declaration");
+			    "%qs requires an initialized data declaration",
+			    auto_type_keyword);
 		  c_parser_skip_to_end_of_block_or_statement (parser);
 		  return;
 		}
@@ -2492,11 +2540,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
 	    {
-	      if (auto_type_p)
+	      if (any_auto_type_p)
 		{
 		  error_at (here,
-			    "%<__auto_type%> may only be used with"
-			    " a single declarator");
+			    "%qs may only be used with a single declarator",
+			    auto_type_keyword);
 		  c_parser_skip_to_end_of_block_or_statement (parser);
 		  return;
 		}
@@ -2529,10 +2577,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      return;
 	    }
 	}
-      else if (auto_type_p)
+      else if (any_auto_type_p)
 	{
 	  error_at (here,
-		    "%<__auto_type%> requires an initialized data declaration");
+		    "%qs requires an initialized data declaration",
+		    auto_type_keyword);
 	  c_parser_skip_to_end_of_block_or_statement (parser);
 	  return;
 	}

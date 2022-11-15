@@ -51,6 +51,7 @@ public:
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   virtual bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   virtual bool range_on_edge (vrange &r, edge e, tree name) override;
+  virtual void update_stmt (gimple *) override;
   void range_on_entry (vrange &r, basic_block bb, tree name);
   void range_on_exit (vrange &r, basic_block bb, tree name);
   void export_global_ranges ();
@@ -61,6 +62,7 @@ public:
   auto_edge_flag non_executable_edge_flag;
   bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
   void register_inferred_ranges (gimple *s);
+  void register_transitive_inferred_ranges (basic_block bb);
 protected:
   bool fold_range_internal (vrange &r, gimple *s, tree name);
   void prefill_name (vrange &r, tree name);

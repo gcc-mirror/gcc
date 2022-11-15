@@ -202,6 +202,14 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__tremont");
       def_or_undef (parse_in, "__tremont__");
       break;
+    case PROCESSOR_SIERRAFOREST:
+      def_or_undef (parse_in, "__sierraforest");
+      def_or_undef (parse_in, "__sierraforest__");
+      break;
+    case PROCESSOR_GRANDRIDGE:
+      def_or_undef (parse_in, "__grandridge");
+      def_or_undef (parse_in, "__grandridge__");
+      break;
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__knl");
       def_or_undef (parse_in, "__knl__");
@@ -245,6 +253,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_SAPPHIRERAPIDS:
       def_or_undef (parse_in, "__sapphirerapids");
       def_or_undef (parse_in, "__sapphirerapids__");
+      break;
+    case PROCESSOR_GRANITERAPIDS:
+      def_or_undef (parse_in, "__graniterapids");
+      def_or_undef (parse_in, "__graniterapids__");
       break;
     case PROCESSOR_ALDERLAKE:
       def_or_undef (parse_in, "__alderlake");
@@ -384,6 +396,12 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_TREMONT:
       def_or_undef (parse_in, "__tune_tremont__");
       break;
+    case PROCESSOR_SIERRAFOREST:
+      def_or_undef (parse_in, "__tune_sierraforest__");
+      break;
+    case PROCESSOR_GRANDRIDGE:
+      def_or_undef (parse_in, "__tune_grandridge__");
+      break;
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__tune_knl__");
       break;
@@ -425,6 +443,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_ROCKETLAKE:
       def_or_undef (parse_in, "__tune_rocketlake__");
+      break;
+    case PROCESSOR_GRANITERAPIDS:
+      def_or_undef (parse_in, "__tune_graniterapids__");
       break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
@@ -646,6 +667,14 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVXVNNIINT8__");
   if (isa_flag2 & OPTION_MASK_ISA2_AVXNECONVERT)
     def_or_undef (parse_in, "__AVXNECONVERT__");
+  if (isa_flag2 & OPTION_MASK_ISA2_CMPCCXADD)
+    def_or_undef (parse_in, "__CMPCCXADD__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AMX_FP16)
+    def_or_undef (parse_in, "__AMX_FP16__");
+  if (isa_flag2 & OPTION_MASK_ISA2_PREFETCHI)
+    def_or_undef (parse_in, "__PREFETCHI__");
+  if (isa_flag2 & OPTION_MASK_ISA2_RAOINT)
+    def_or_undef (parse_in, "__RAOINT__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

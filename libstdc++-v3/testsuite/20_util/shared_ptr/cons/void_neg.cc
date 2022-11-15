@@ -31,3 +31,5 @@ void test01()
 using std::shared_ptr;
 using std::is_constructible;
 static_assert(!is_constructible<shared_ptr<void>, const void*>::value, "");
+
+// { dg-prune-output "invalid application of 'sizeof' to a void type" }

@@ -1229,3 +1229,20 @@ mavxneconvert
 Target Mask(ISA2_AVXNECONVERT) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
 AVXNECONVERT build-in functions and code generation.
+
+mcmpccxadd
+Target Mask(ISA2_CMPCCXADD) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
+CMPCCXADD build-in functions and code generation.
+
+mamx-fp16
+Target Mask(ISA2_AMX_FP16) Var(ix86_isa_flags2) Save
+Support AMX-FP16 built-in functions and code generation.
+
+mprefetchi
+Target Mask(ISA2_PREFETCHI) Var(ix86_isa_flags2) Save
+Support PREFETCHI built-in functions and code generation.
+
+mraoint
+Target Mask(ISA2_RAOINT) Var(ix86_isa_flags2) Save
+Support RAOINT built-in functions and code generation.

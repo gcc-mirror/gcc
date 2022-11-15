@@ -651,7 +651,7 @@ package body Sem_Util is
             --  been generated when one should have ???
 
             elsif Is_Formal (E)
-              and then not Present (Get_Dynamic_Accessibility (E))
+              and then No (Get_Dynamic_Accessibility (E))
               and then Ekind (Etype (E)) = E_Anonymous_Access_Type
             then
                return Make_Level_Literal (Scope_Depth (Standard_Standard));
@@ -1044,7 +1044,11 @@ package body Sem_Util is
    -- Add_Block_Identifier --
    --------------------------
 
-   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id) is
+   procedure Add_Block_Identifier
+       (N : Node_Id;
+        Id : out Entity_Id;
+        Scope : Entity_Id := Current_Scope)
+   is
       Loc : constant Source_Ptr := Sloc (N);
    begin
       pragma Assert (Nkind (N) = N_Block_Statement);
@@ -1057,7 +1061,7 @@ package body Sem_Util is
       --  Create a new block label and set its attributes
 
       else
-         Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         Id := New_Internal_Entity (E_Block, Scope, Loc, 'B');
          Set_Etype  (Id, Standard_Void_Type);
          Set_Parent (Id, N);
 
@@ -1335,7 +1339,7 @@ package body Sem_Util is
             end if;
 
             return
-              not Present (Etype (Constr)) -- previous error
+              No (Etype (Constr)) -- previous error
                 or else not Is_Discrete_Type (Etype (Constr))
                 or else Is_OK_Static_Expression (Constr);
 
@@ -3195,7 +3199,7 @@ package body Sem_Util is
       Actual : Node_Id;
 
    begin
-      if Extensions_Allowed then
+      if All_Extensions_Allowed then
          Actual := First_Actual (Call);
          while Present (Actual) loop
             if Nkind (Actual) = N_Aggregate then
@@ -4449,7 +4453,7 @@ package body Sem_Util is
             pragma Assert (Present (Ifc_Ancestors (Idx)));
             Ifc := Next (Ifc);
          end loop;
-         pragma Assert (not Present (Ifc));
+         pragma Assert (No (Ifc));
          if Present (Parent_Type) then
             return Parent_Type & Ifc_Ancestors;
          else
@@ -7045,7 +7049,6 @@ package body Sem_Util is
 
          if Present (Asp) then
             Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
-            Set_Has_Aspects (To, True);
          end if;
       end if;
    end Copy_Ghost_Aspect;
@@ -7097,7 +7100,6 @@ package body Sem_Util is
 
          if Present (Asp) then
             Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
-            Set_Has_Aspects (To, True);
          end if;
       end if;
    end Copy_SPARK_Mode_Aspect;
@@ -8268,6 +8270,33 @@ package body Sem_Util is
 
       return Decl;
    end Enclosing_Declaration;
+
+   ----------------------------------------
+   -- Enclosing_Declaration_Or_Statement --
+   ----------------------------------------
+
+   function Enclosing_Declaration_Or_Statement
+     (N : Node_Id) return Node_Id
+   is
+      Par : Node_Id;
+
+   begin
+      Par := N;
+      while Present (Par) loop
+         if Is_Declaration (Par) or else Is_Statement (Par) then
+            return Par;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return N;
+   end Enclosing_Declaration_Or_Statement;
 
    ----------------------------
    -- Enclosing_Generic_Body --
@@ -11573,7 +11602,7 @@ package body Sem_Util is
       --  entry families with no Max_Queue_Length aspect or pragma default to
       --  it.
 
-      if not Present (Prag) then
+      if No (Prag) then
          return Uint_0;
       end if;
 
@@ -13092,7 +13121,7 @@ package body Sem_Util is
          Typ := Corresponding_Record_Type (Typ);
       end if;
 
-      if not Present (Typ)
+      if No (Typ)
         or else not Is_Record_Type (Typ)
         or else not Is_Tagged_Type (Typ)
       then
@@ -13280,7 +13309,7 @@ package body Sem_Util is
 
    begin
       return Nkind (Exp) = N_Aggregate
-        and then Present (Find_Aspect (Etype (Exp), Aspect_Aggregate))
+        and then Has_Aspect (Etype (Exp), Aspect_Aggregate)
         and then not Is_Record_Aggregate;
    end Is_Container_Aggregate;
 
@@ -13675,14 +13704,11 @@ package body Sem_Util is
          Exp : Node_Id;
 
       begin
-         --  Loop through entities of record or protected type
+         --  Loop through components and discriminants of record or protected
+         --  type.
 
-         Ent := E;
+         Ent := First_Component_Or_Discriminant (E);
          while Present (Ent) loop
-
-            --  We are interested only in components and discriminants
-
-            Exp := Empty;
 
             case Ekind (Ent) is
                when E_Component =>
@@ -13694,6 +13720,8 @@ package body Sem_Util is
 
                   if Present (Declaration_Node (Ent)) then
                      Exp := Expression (Declaration_Node (Ent));
+                  else
+                     Exp := Empty;
                   end if;
 
                when E_Discriminant =>
@@ -13706,7 +13734,7 @@ package body Sem_Util is
                   Exp := Discriminant_Default_Value (Ent);
 
                when others =>
-                  goto Check_Next_Entity;
+                  raise Program_Error;
             end case;
 
             --  A component has PI if it has no default expression and the
@@ -13727,8 +13755,7 @@ package body Sem_Util is
                exit;
             end if;
 
-         <<Check_Next_Entity>>
-            Next_Entity (Ent);
+            Next_Component_Or_Discriminant (Ent);
          end loop;
       end Check_Components;
 
@@ -13838,7 +13865,7 @@ package body Sem_Util is
          --  If OK, check extension components (if any)
 
          if Has_PE and then Is_Record_Type (E) then
-            Check_Components (First_Entity (E));
+            Check_Components (E);
          end if;
 
          --  Check specifically for 10.2.1(11.4/2) exception: a controlled type
@@ -13878,7 +13905,7 @@ package body Sem_Util is
 
       elsif Is_Record_Type (E) then
          Has_PE := True;
-         Check_Components (First_Entity (E));
+         Check_Components (E);
 
       --  Protected types must not have entries, and components must meet
       --  same set of rules as for record components.
@@ -13888,8 +13915,7 @@ package body Sem_Util is
             Has_PE := False;
          else
             Has_PE := True;
-            Check_Components (First_Entity (E));
-            Check_Components (First_Private_Entity (E));
+            Check_Components (E);
          end if;
 
       --  Type System.Address always has preelaborable initialization
@@ -14795,8 +14821,15 @@ package body Sem_Util is
       loop
          if No (P) then
             return False;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            return False;
+
          elsif Nkind (P) = N_Pragma and then Pragma_Name (P) = Nam then
             return True;
+
          else
             P := Parent (P);
          end if;
@@ -14872,6 +14905,12 @@ package body Sem_Util is
       loop
          if No (P) then
             return False;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            return False;
+
          elsif Nkind (P) = N_Quantified_Expression then
             return True;
          else
@@ -18301,7 +18340,7 @@ package body Sem_Util is
            Is_Object (Id)
              and then (Is_Independent (Id)
                         or else
-                      Is_Independent (Etype (Id)));
+                       Is_Independent (Etype (Id)));
       end Is_Independent_Object_Entity;
 
       -------------------------------------
@@ -19458,7 +19497,7 @@ package body Sem_Util is
          return True;
       elsif Present (Variant_Part (Component_List (Record_Def))) then
          return False;
-      elsif not Present (Component_List (Record_Def)) then
+      elsif No (Component_List (Record_Def)) then
          return True;
       end if;
 
@@ -21679,18 +21718,16 @@ package body Sem_Util is
       --  type has the appropriate user-defined literal aspect.
 
       return (Nkind (N) in N_Numeric_Or_String_Literal
-        and then Present (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N)))))
+        and then Has_Aspect (Typ, Literal_Aspect_Map (Nkind (N))))
           or else
             (Is_Entity_Name (N)
               and then Present (Entity (N))
               and then
                 ((Ekind (Entity (N)) = E_Named_Integer
-                    and then
-                      Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
+                    and then Has_Aspect (Typ, Aspect_Integer_Literal))
                    or else
                      (Ekind (Entity (N)) = E_Named_Real
-                        and then
-                          Present (Find_Aspect (Typ, Aspect_Real_Literal)))));
+                        and then Has_Aspect (Typ, Aspect_Real_Literal))));
    end Is_User_Defined_Literal;
 
    --------------------------------------
@@ -22287,25 +22324,6 @@ package body Sem_Util is
    procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False) is
       S : Entity_Id;
 
-      procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id);
-      --  Clear current value for entity E and all entities chained to E
-
-      ------------------------------------------
-      -- Kill_Current_Values_For_Entity_Chain --
-      ------------------------------------------
-
-      procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id) is
-         Ent : Entity_Id;
-      begin
-         Ent := E;
-         while Present (Ent) loop
-            Kill_Current_Values (Ent, Last_Assignment_Only);
-            Next_Entity (Ent);
-         end loop;
-      end Kill_Current_Values_For_Entity_Chain;
-
-   --  Start of processing for Kill_Current_Values
-
    begin
       --  Kill all saved checks, a special case of killing saved values
 
@@ -22321,16 +22339,15 @@ package body Sem_Util is
 
          --  Clear current values of all entities in current scope
 
-         Kill_Current_Values_For_Entity_Chain (First_Entity (S));
-
-         --  If scope is a package, also clear current values of all private
-         --  entities in the scope.
-
-         if Is_Package_Or_Generic_Package (S)
-           or else Is_Concurrent_Type (S)
-         then
-            Kill_Current_Values_For_Entity_Chain (First_Private_Entity (S));
-         end if;
+         declare
+            Ent : Entity_Id;
+         begin
+            Ent := First_Entity (S);
+            while Present (Ent) loop
+               Kill_Current_Values (Ent, Last_Assignment_Only);
+               Next_Entity (Ent);
+            end loop;
+         end;
 
          --  If this is a not a subprogram, deal with parents
 
@@ -23293,9 +23310,12 @@ package body Sem_Util is
 
          return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
 
-      --  Remaining cases require Ada 2012 mode
+      --  Remaining cases require Ada 2012 mode, unless they are dispatching
+      --  operations, since they may be overridden by Ada_2012 primitives.
 
-      elsif Ada_Version < Ada_2012 then
+      elsif Ada_Version < Ada_2012
+        and then not Is_Dispatching_Operation (Func_Id)
+      then
          return False;
 
       --  Handle the situation where a result is an anonymous access type
@@ -27893,7 +27913,10 @@ package body Sem_Util is
 
          P := Parent (N);
          while Present (P) loop
-            if         Nkind (P) = N_If_Statement
+            if Is_Body (P) then
+               return True;
+
+            elsif      Nkind (P) = N_If_Statement
               or else  Nkind (P) = N_Case_Statement
               or else (Nkind (P) in N_Short_Circuit
                         and then Desc = Right_Opnd (P))
@@ -31575,7 +31598,7 @@ package body Sem_Util is
                   Next (Range_Or_Expr);
                end loop;
 
-               pragma Assert (not Present (Range_Or_Expr));
+               pragma Assert (No (Range_Or_Expr));
                Check_Consistency (Result);
                return Result;
             end;
@@ -31825,7 +31848,7 @@ package body Sem_Util is
                        and then Is_Non_Empty_List (Alternatives (Par))
                        and then Trailer /= First (Alternatives (Par))
                      then
-                        pragma Assert (not Present (Right_Opnd (Par)));
+                        pragma Assert (No (Right_Opnd (Par)));
                         pragma Assert
                           (Is_List_Member (Trailer)
                            and then List_Containing (Trailer)
@@ -32538,7 +32561,7 @@ package body Sem_Util is
         (Typ : Entity_Id) return Boolean
       is
       begin
-         return Present (Find_Aspect (Typ, Aspect_Designated_Storage_Model));
+         return Has_Aspect (Typ, Aspect_Designated_Storage_Model);
       end Has_Designated_Storage_Model_Aspect;
 
       -----------------------------------
@@ -32548,7 +32571,7 @@ package body Sem_Util is
       function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean
       is
       begin
-         return Present (Find_Aspect (Typ, Aspect_Storage_Model_Type));
+         return Has_Aspect (Typ, Aspect_Storage_Model_Type);
       end Has_Storage_Model_Type_Aspect;
 
       --------------------------

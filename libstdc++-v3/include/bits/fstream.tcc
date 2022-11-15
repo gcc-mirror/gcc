@@ -757,23 +757,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       streamsize __ret = 0;
       // Optimization in the always_noconv() case, to be generalized in the
-      // future: when __n is sufficiently large we write directly instead of
-      // using the buffer.
+      // future: when __n is larger than the available capacity we write
+      // directly instead of using the buffer.
       const bool __testout = (_M_mode & ios_base::out
 			      || _M_mode & ios_base::app);
       if (__check_facet(_M_codecvt).always_noconv()
 	  && __testout && !_M_reading)
 	{
-	  // Measurement would reveal the best choice.
-	  const streamsize __chunk = 1ul << 10;
 	  streamsize __bufavail = this->epptr() - this->pptr();
 
 	  // Don't mistake 'uncommitted' mode buffered with unbuffered.
 	  if (!_M_writing && _M_buf_size > 1)
 	    __bufavail = _M_buf_size - 1;
 
-	  const streamsize __limit = std::min(__chunk, __bufavail);
-	  if (__n >= __limit)
+	  if (__n >= __bufavail)
 	    {
 	      const streamsize __buffill = this->pptr() - this->pbase();
 	      const char* __buf = reinterpret_cast<const char*>(this->pbase());

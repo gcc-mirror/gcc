@@ -4344,11 +4344,16 @@ can_vec_set_var_idx_p (machine_mode vec_mode)
     return false;
 
   machine_mode inner_mode = GET_MODE_INNER (vec_mode);
+
   rtx reg1 = alloca_raw_REG (vec_mode, LAST_VIRTUAL_REGISTER + 1);
   rtx reg2 = alloca_raw_REG (inner_mode, LAST_VIRTUAL_REGISTER + 2);
-  rtx reg3 = alloca_raw_REG (VOIDmode, LAST_VIRTUAL_REGISTER + 3);
 
   enum insn_code icode = optab_handler (vec_set_optab, vec_mode);
+
+  const struct insn_data_d *data = &insn_data[icode];
+  machine_mode idx_mode = data->operand[2].mode;
+
+  rtx reg3 = alloca_raw_REG (idx_mode, LAST_VIRTUAL_REGISTER + 3);
 
   return icode != CODE_FOR_nothing && insn_operand_matches (icode, 0, reg1)
 	 && insn_operand_matches (icode, 1, reg2)

@@ -127,15 +127,19 @@ along with GCC; see the file COPYING3.  If not see
 #define m_SAPPHIRERAPIDS (HOST_WIDE_INT_1U<<PROCESSOR_SAPPHIRERAPIDS)
 #define m_ALDERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_ALDERLAKE)
 #define m_ROCKETLAKE (HOST_WIDE_INT_1U<<PROCESSOR_ROCKETLAKE)
+#define m_GRANITERAPIDS (HOST_WIDE_INT_1U<<PROCESSOR_GRANITERAPIDS)
 #define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
 		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE \
 		       | m_TIGERLAKE | m_COOPERLAKE | m_SAPPHIRERAPIDS \
-		       | m_ROCKETLAKE)
+		       | m_ROCKETLAKE | m_GRANITERAPIDS)
 #define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
 #define m_GOLDMONT_PLUS (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT_PLUS)
 #define m_TREMONT (HOST_WIDE_INT_1U<<PROCESSOR_TREMONT)
+#define m_SIERRAFOREST (HOST_WIDE_INT_1U<<PROCESSOR_SIERRAFOREST)
+#define m_GRANDRIDGE (HOST_WIDE_INT_1U<<PROCESSOR_GRANDRIDGE)
+#define m_CORE_ATOM (m_SIERRAFOREST | m_GRANDRIDGE)
 #define m_INTEL (HOST_WIDE_INT_1U<<PROCESSOR_INTEL)
 
 #define m_LUJIAZUI (HOST_WIDE_INT_1U<<PROCESSOR_LUJIAZUI)
@@ -230,7 +234,11 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mavx512fp16",	OPTION_MASK_ISA2_AVX512FP16 },
   { "-mavxifma",	OPTION_MASK_ISA2_AVXIFMA },
   { "-mavxvnniint8",	OPTION_MASK_ISA2_AVXVNNIINT8 },
-  { "-mavxneconvert",   OPTION_MASK_ISA2_AVXNECONVERT }
+  { "-mavxneconvert",   OPTION_MASK_ISA2_AVXNECONVERT },
+  { "-mcmpccxadd",      OPTION_MASK_ISA2_CMPCCXADD },
+  { "-mamx-fp16",       OPTION_MASK_ISA2_AMX_FP16 },
+  { "-mprefetchi",      OPTION_MASK_ISA2_PREFETCHI },
+  { "-mraoint", 	OPTION_MASK_ISA2_RAOINT }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -311,10 +319,6 @@ ix86_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_kind:
       return strcmp (name, "cpu") == 0;
     case omp_device_arch:
-#ifdef ACCEL_COMPILER
-      if (strcmp (name, "intel_mic") == 0)
-	return 1;
-#endif
       if (strcmp (name, "x86") == 0)
 	return 1;
       if (TARGET_64BIT)
@@ -747,6 +751,8 @@ static const struct processor_costs *processor_cost_table[] =
   &slm_cost,
   &slm_cost,
   &tremont_cost,
+  &alderlake_cost,
+  &alderlake_cost,
   &slm_cost,
   &slm_cost,
   &skylake_cost,
@@ -759,6 +765,7 @@ static const struct processor_costs *processor_cost_table[] =
   &skylake_cost,
   &icelake_cost,
   &alderlake_cost,
+  &icelake_cost,
   &icelake_cost,
   &intel_cost,
   &lujiazui_cost,
@@ -1080,6 +1087,10 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("avxifma", OPT_mavxifma),
     IX86_ATTR_ISA ("avxvnniint8", OPT_mavxvnniint8),
     IX86_ATTR_ISA ("avxneconvert", OPT_mavxneconvert),
+    IX86_ATTR_ISA ("cmpccxadd",   OPT_mcmpccxadd),
+    IX86_ATTR_ISA ("amx-fp16", OPT_mamx_fp16),
+    IX86_ATTR_ISA ("prefetchi",   OPT_mprefetchi),
+    IX86_ATTR_ISA ("raoint", OPT_mraoint),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),

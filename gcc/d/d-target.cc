@@ -323,12 +323,6 @@ Target::isVectorOpSupported (Type *type, EXP op, Type *)
       /* Logical operators must have a result type of bool.  */
       return false;
 
-    case EXP::lessOrEqual:
-    case EXP::lessThan:
-    case EXP::greaterOrEqual:
-    case EXP::greaterThan:
-    case EXP::equal:
-    case EXP::notEqual:
     case EXP::identity:
     case EXP::notIdentity:
       /* Comparison operators must have a result type of bool.  */

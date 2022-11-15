@@ -78,10 +78,10 @@ AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 
 .PHONY: avr-mcus
 
-avr-mcus: $(srcdir)/doc/avr-mmcu.texi ; @true
+avr-mcus: $(srcdir)/doc/gcc/gcc-command-options/machine-dependent-options/avr-mmcu.rst ; @true
 
 # Make sure that native -mmcu= support is in sync with -mmcu= documentation.
-gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.cc \
+gen-avr-mmcu-rst$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-rst.cc \
   $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.cc \
   $(srcdir)/config/avr/avr-arch.h
 	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
@@ -91,7 +91,7 @@ gen-avr-mmcu-specs$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-specs.cc \
   $(srcdir)/config/avr/avr-arch.h $(TM_H)
 	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@ $(INCLUDES)
 
-$(srcdir)/doc/avr-mmcu.texi: gen-avr-mmcu-texi$(build_exeext)
+$(srcdir)/doc/gcc/gcc-command-options/machine-dependent-options/avr-mmcu.rst: gen-avr-mmcu-rst$(build_exeext)
 	$(RUN_GEN) ./$< > $@
 
 s-device-specs: gen-avr-mmcu-specs$(build_exeext)

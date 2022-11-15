@@ -1,3 +1,13 @@
+2022-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/simd.d (equalMask): Implement using generics.
+	(notEqualMask): Likewise.
+	(greaterMask): Likewise.
+	(greaterOrEqualMask): Likewise.
+	(notMask): Likewise.
+	(andAndMask): Likewise.
+	(orOrMask): Likewise.
+
 2022-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime e4f8919591.

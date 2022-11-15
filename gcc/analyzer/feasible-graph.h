@@ -195,7 +195,7 @@ class feasible_graph : public digraph <fg_traits>
 				const exploded_edge *eedge,
 				rejected_constraint *rc);
 
-  exploded_path *make_epath (feasible_node *fnode) const;
+  std::unique_ptr<exploded_path> make_epath (feasible_node *fnode) const;
 
   void dump_feasible_path (const feasible_node &dst_fnode,
 			   const char *filename) const;

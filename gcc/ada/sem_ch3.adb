@@ -1318,7 +1318,8 @@ package body Sem_Ch3 is
 
       Check_Restriction (No_Access_Subprograms, T_Def);
 
-      Create_Extra_Formals (Desig_Type);
+      --  Addition of extra formals must be delayed till the freeze point so
+      --  that we know the convention.
    end Access_Subprogram_Declaration;
 
    ----------------------------
@@ -2668,7 +2669,7 @@ package body Sem_Ch3 is
                   --  Is_Conjunction_Of_Formal_Preelab_Init_Attributes goes to
                   --  Original_Node if needed, hence test for Standard_False.)
 
-                  if not Present (Expr)
+                  if No (Expr)
                     or else (Is_Entity_Name (Expr)
                               and then Entity (Expr) = Standard_True)
                     or else
@@ -3519,7 +3520,7 @@ package body Sem_Ch3 is
       --  Initialize the list of primitive operations to an empty list,
       --  to cover tagged types as well as untagged types. For untagged
       --  types this is used either to analyze the call as legal when
-      --  Extensions_Allowed is True, or to issue a better error message
+      --  Core_Extensions_Allowed is True, or to issue a better error message
       --  otherwise.
 
       Set_Direct_Primitive_Operations (T, New_Elmt_List);
@@ -4721,6 +4722,26 @@ package body Sem_Ch3 is
                   Expand_Sliding_Conversion (E, T);
                end if;
 
+               if In_Spec_Expression and then In_Declare_Expr > 0 then
+                  --  It is too early to be doing expansion-ish things,
+                  --  so exit early. But we have to set Ekind (Id) now so
+                  --  that subsequent uses of this entity are not rejected
+                  --  via the same mechanism that (correctly) rejects
+                  --  "X : Integer := X;".
+
+                  if Constant_Present (N) then
+                     Mutate_Ekind         (Id, E_Constant);
+                     Set_Is_True_Constant (Id);
+                  else
+                     Mutate_Ekind (Id, E_Variable);
+                     if Present (E) then
+                        Set_Has_Initial_Value (Id);
+                     end if;
+                  end if;
+
+                  goto Leave;
+               end if;
+
                Expand_Subtype_From_Expr
                  (N             => N,
                   Unc_Type      => T,
@@ -5730,7 +5751,7 @@ package body Sem_Ch3 is
                   --  operations to an empty list.
 
                   if Is_Tagged_Type (Id)
-                    or else Extensions_Allowed
+                    or else Core_Extensions_Allowed
                   then
                      Set_Direct_Primitive_Operations (Id, New_Elmt_List);
                   end if;
@@ -11050,7 +11071,7 @@ package body Sem_Ch3 is
             --  with the aliased entity (otherwise we generate a duplicated
             --  error message).
 
-           and then not Present (Interface_Alias (Subp))
+           and then No (Interface_Alias (Subp))
          then
             if Present (Alias_Subp) then
 
@@ -11768,11 +11789,9 @@ package body Sem_Ch3 is
          Insert_Before (Typ_Decl, Decl);
          Analyze (Decl);
 
-         --  If an access to subprogram, create the extra formals
-
-         if Present (Acc_Def) then
-            Create_Extra_Formals (Designated_Type (Anon_Access));
-         end if;
+         --  At first sight we could add here the extra formals of an access to
+         --  subprogram; however, it must delayed till the freeze point so that
+         --  we know the convention.
 
          if Nkind (Comp_Def) = N_Component_Definition then
             Rewrite (Comp_Def,
@@ -14541,7 +14560,7 @@ package body Sem_Ch3 is
          --  in various places for an Empty upper bound, and in any case it
          --  accurately characterizes the index's range of values.
 
-         if Nkind (S) = N_Range and then not Present (High_Bound (S)) then
+         if Nkind (S) = N_Range and then No (High_Bound (S)) then
             Is_FLB_Index := True;
             Set_High_Bound (S, Type_High_Bound (T));
          end if;
@@ -16033,12 +16052,12 @@ package body Sem_Ch3 is
          Next_Formal (Formal);
       end loop;
 
-      --  Extra formals are shared between the parent subprogram and the
-      --  derived subprogram (implicit in the above copy of formals), unless
-      --  the parent type is a limited interface type; hence we must inherit
-      --  also the reference to the first extra formal. When the parent type is
-      --  an interface the extra formals will be added when the subprogram is
-      --  frozen (see Freeze.Freeze_Subprogram).
+      --  Extra formals are shared between the parent subprogram and this
+      --  internal entity built by Derive_Subprogram (implicit in the above
+      --  copy of formals), unless the parent type is a limited interface type;
+      --  hence we must inherit also the reference to the first extra formal.
+      --  When the parent type is an interface, the extra formals will be added
+      --  when the tagged type is frozen (see Expand_Freeze_Record_Type).
 
       if not Is_Limited_Interface (Parent_Type) then
          Set_Extra_Formals (New_Subp, Extra_Formals (Parent_Subp));
@@ -16079,7 +16098,7 @@ package body Sem_Ch3 is
       Copy_Strub_Mode (New_Subp, Alias (New_Subp));
 
       --  Derived subprograms of a tagged type must inherit the convention
-      --  of the parent subprogram (a requirement of AI-117). Derived
+      --  of the parent subprogram (a requirement of AI95-117). Derived
       --  subprograms of untagged types simply get convention Ada by default.
 
       --  If the derived type is a tagged generic formal type with unknown
@@ -16497,15 +16516,15 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Alias_Subp   : Entity_Id;
-      Act_List     : Elist_Id;
-      Act_Elmt     : Elmt_Id;
-      Act_Subp     : Entity_Id := Empty;
-      Elmt         : Elmt_Id;
-      Need_Search  : Boolean   := False;
-      New_Subp     : Entity_Id := Empty;
-      Parent_Base  : Entity_Id;
-      Subp         : Entity_Id;
+      Alias_Subp  : Entity_Id;
+      Act_List    : Elist_Id;
+      Act_Elmt    : Elmt_Id;
+      Act_Subp    : Entity_Id := Empty;
+      Elmt        : Elmt_Id;
+      Need_Search : Boolean   := False;
+      New_Subp    : Entity_Id;
+      Parent_Base : Entity_Id;
+      Subp        : Entity_Id;
 
    --  Start of processing for Derive_Subprograms
 
@@ -16720,9 +16739,9 @@ package body Sem_Ch3 is
                        (Is_Generic_Unit
                           (Scope (Find_Dispatching_Type (Alias_Subp)))
                          or else
-                           Instantiation_Depth
-                             (Sloc (Find_Dispatching_Type (Alias_Subp))) > 0);
-
+                           Instantiation_Location
+                             (Sloc (Find_Dispatching_Type (Alias_Subp)))
+                               /= No_Location);
                      declare
                         Iface_Prim_Loc : constant Source_Ptr :=
                                          Original_Location (Sloc (Alias_Subp));
@@ -16784,7 +16803,7 @@ package body Sem_Ch3 is
             --   have such primitives.
 
             if Present (Generic_Actual)
-              and then not Present (Act_Subp)
+              and then No (Act_Subp)
               and then Is_Limited_Interface (Parent_Base)
               and then Is_Predefined_Interface_Primitive (Subp)
             then
@@ -20145,6 +20164,7 @@ package body Sem_Ch3 is
 
       case Nkind (Original_Node (Exp)) is
          when N_Aggregate
+            | N_Delta_Aggregate
             | N_Extension_Aggregate
             | N_Function_Call
             | N_Op

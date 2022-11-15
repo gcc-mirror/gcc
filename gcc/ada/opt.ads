@@ -73,15 +73,16 @@ package Opt is
    --  Ada_xxx) or generate an error (in case of -gnat83/95/xx switches).
 
    type Ada_Version_Type is
-     (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions);
+     (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022,
+      Ada_With_Core_Extensions, Ada_With_All_Extensions);
    pragma Ordered (Ada_Version_Type);
    pragma Convention (C, Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
    --  Think twice before using "="; Ada_Version >= Ada_2012 is more likely
    --  what you want, because it will apply to future versions of the language.
-   --  Note that Ada_With_Extensions should always be last since it should
-   --  always be a superset of the latest Ada version.
+   --  Note that Ada_With_All_Extensions should always be last since it should
+   --  always be a superset of the other Ada versions.
 
    --  WARNING: There is a matching C declaration of this type in fe.h
 
@@ -111,7 +112,7 @@ package Opt is
    --  remains set to Ada_Version_Default). This is used in the rare cases
    --  (notably pragma Obsolescent) where we want the explicit version set.
 
-   Ada_Version_Runtime : Ada_Version_Type := Ada_With_Extensions;
+   Ada_Version_Runtime : Ada_Version_Type := Ada_With_All_Extensions;
    --  GNAT
    --  Ada version used to compile the runtime. Used to set Ada_Version (but
    --  not Ada_Version_Explicit) when compiling predefined or internal units.
@@ -394,6 +395,10 @@ package Opt is
    --  Set to True (-C switch) to indicate that the compiler will be invoked
    --  with a mapping file (-gnatem compiler switch).
 
+   CUDA_Device_Library_Name : String_Ptr := null;
+   --  GNATBIND
+   --  Non-null only if Enable_CUDA_Expansion is True.
+
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
    --  GNAT, GNATBIND
@@ -548,9 +553,7 @@ package Opt is
 
    Enable_CUDA_Device_Expansion : Boolean := False;
    --  GNATBIND
-   --  Set to True to enable CUDA device (as opposed to host) expansion:
-   --    - Binder generates elaboration/finalization code that can be
-   --      invoked from corresponding binder-generated host-side code.
+   --  Set to True to enable CUDA device (as opposed to host) expansion.
 
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
@@ -630,10 +633,15 @@ package Opt is
    --  Set to True to convert nonbinary modular additions into code
    --  that relies on the front-end expansion of operator Mod.
 
-   function Extensions_Allowed return Boolean is
-     (Ada_Version = Ada_With_Extensions);
+   function All_Extensions_Allowed return Boolean is
+     (Ada_Version = Ada_With_All_Extensions);
    --  True if GNAT specific language extensions are allowed. See GNAT RM for
    --  details.
+
+   function Core_Extensions_Allowed return Boolean is
+     (Ada_Version >= Ada_With_Core_Extensions);
+   --  True if some but not all GNAT specific language extensions are allowed.
+   --  See GNAT RM for details.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source

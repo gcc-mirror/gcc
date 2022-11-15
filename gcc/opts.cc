@@ -3248,6 +3248,10 @@ common_handle_option (struct gcc_options *opts,
       dc->report_bug = value;
       break;
 
+    case OPT_fmultiflags:
+      gcc_checking_assert (lang_mask == CL_DRIVER);
+      break;
+
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */
@@ -3604,11 +3608,11 @@ get_option_html_page (int option_index)
 
   /* Analyzer options are on their own page.  */
   if (strstr (cl_opt->opt_text, "analyzer-"))
-    return "gcc/Static-Analyzer-Options.html";
+    return "gcc/gcc-command-options/options-that-control-static-analysis.html";
 
   /* Handle -flto= option.  */
   if (strstr (cl_opt->opt_text, "flto"))
-    return "gcc/Optimize-Options.html";
+    return "gcc/gcc-command-options/options-that-control-optimization.html";
 
 #ifdef CL_Fortran
   if ((cl_opt->flags & CL_Fortran) != 0
@@ -3619,10 +3623,11 @@ get_option_html_page (int option_index)
       && (cl_opt->flags & CL_CXX) == 0
 #endif
      )
-    return "gfortran/Error-and-Warning-Options.html";
+    return ("gfortran/gnu-fortran-command-options/"
+	    "options-to-request-or-suppress-errors-and-warnings.html");
 #endif
 
-  return "gcc/Warning-Options.html";
+  return "gcc/gcc-command-options/options-to-request-or-suppress-warnings.html";
 }
 
 /* Return malloced memory for a URL describing the option OPTION_INDEX
@@ -3641,11 +3646,8 @@ get_option_url (diagnostic_context *, int option_index)
 		      "gcc/Warning-Options.html".  */
 		   get_option_html_page (option_index),
 
-		   /* Expect an anchor of the form "index-Wfoo" e.g.
-		      <a name="index-Wformat"></a>, and thus an id within
-		      the URL of "#index-Wformat".  */
-		   "#index", cl_options[option_index].opt_text,
-		   NULL);
+		   /* Expect an anchor of the form "cmdoption-Wfoo".  */
+		   "#cmdoption", cl_options[option_index].opt_text, NULL);
   else
     return NULL;
 }
@@ -3782,12 +3784,16 @@ namespace selftest {
 static void
 test_get_option_html_page ()
 {
-  ASSERT_STREQ (get_option_html_page (OPT_Wcpp), "gcc/Warning-Options.html");
+  ASSERT_STREQ (get_option_html_page (OPT_Wcpp),
+		"gcc/gcc-command-options/"
+		"options-to-request-or-suppress-warnings.html");
   ASSERT_STREQ (get_option_html_page (OPT_Wanalyzer_double_free),
-	     "gcc/Static-Analyzer-Options.html");
+		"gcc/gcc-command-options/"
+		"options-that-control-static-analysis.html");
 #ifdef CL_Fortran
   ASSERT_STREQ (get_option_html_page (OPT_Wline_truncation),
-		"gfortran/Error-and-Warning-Options.html");
+		"gfortran/gnu-fortran-command-options/"
+		"options-to-request-or-suppress-errors-and-warnings.html");
 #endif
 }
 

@@ -171,6 +171,13 @@ package body Sem_Res is
    --  of the task, it must be replaced with a reference to the discriminant
    --  of the task being called.
 
+   procedure Resolve_Dependent_Expression
+     (N    : Node_Id;
+      Expr : Node_Id;
+      Typ  : Entity_Id);
+   --  Internal procedure to resolve the dependent expression Expr of the
+   --  conditional expression N with type Typ.
+
    procedure Resolve_Op_Concat_Arg
      (N       : Node_Id;
       Arg     : Node_Id;
@@ -291,12 +298,6 @@ package body Sem_Res is
    --  Called after N has been resolved and evaluated, but before range checks
    --  have been applied. This rewrites the conversion into a simpler form.
 
-   function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
-   --  A universal_fixed expression in an universal context is unambiguous if
-   --  there is only one applicable fixed point type. Determining whether there
-   --  is only one requires a search over all visible entities, and happens
-   --  only in very pathological cases (see 6115-006).
-
    function Try_User_Defined_Literal
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
@@ -305,6 +306,12 @@ package body Sem_Res is
    --  literal aspect that can be applied to the literal to resolve the node.
    --  If such aspect exists, replace literal with a call to the
    --  corresponding function and return True, return false otherwise.
+
+   function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
+   --  A universal_fixed expression in an universal context is unambiguous if
+   --  there is only one applicable fixed point type. Determining whether there
+   --  is only one requires a search over all visible entities, and happens
+   --  only in very pathological cases (see 6115-006).
 
    -------------------------
    -- Ambiguous_Character --
@@ -895,10 +902,6 @@ package body Sem_Res is
    ------------------------------
 
    function Check_Infinite_Recursion (Call : Node_Id) return Boolean is
-      function Enclosing_Declaration_Or_Statement (N : Node_Id) return Node_Id;
-      --  Return the nearest enclosing declaration or statement that houses
-      --  arbitrary node N.
-
       function Invoked_With_Different_Arguments (N : Node_Id) return Boolean;
       --  Determine whether call N invokes the related enclosing subprogram
       --  with actuals that differ from the subprogram's formals.
@@ -933,33 +936,6 @@ package body Sem_Res is
       function Within_Conditional_Statement (N : Node_Id) return Boolean;
       --  Determine whether arbitrary node N appears within a conditional
       --  construct.
-
-      ----------------------------------------
-      -- Enclosing_Declaration_Or_Statement --
-      ----------------------------------------
-
-      function Enclosing_Declaration_Or_Statement
-        (N : Node_Id) return Node_Id
-      is
-         Par : Node_Id;
-
-      begin
-         Par := N;
-         while Present (Par) loop
-            if Is_Declaration (Par) or else Is_Statement (Par) then
-               return Par;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return N;
-      end Enclosing_Declaration_Or_Statement;
 
       --------------------------------------
       -- Invoked_With_Different_Arguments --
@@ -2370,8 +2346,6 @@ package body Sem_Res is
            ("prefix must statically denote a non-remote subprogram", N);
       end if;
 
-      From_Lib := Comes_From_Predefined_Lib_Unit (N);
-
       --  If the context is a Remote_Access_To_Subprogram, access attributes
       --  must be resolved with the corresponding fat pointer. There is no need
       --  to check for the attribute name since the return type of an
@@ -2494,6 +2468,15 @@ package body Sem_Res is
          Found := True;
          Expr_Type := Etype (Expression (N));
 
+      --  The resolution of a conditional expression that is the operand of a
+      --  type conversion is determined by the conversion (RM 4.5.7(10/3)).
+
+      elsif Nkind (N) in N_Case_Expression | N_If_Expression
+        and then Nkind (Parent (N)) = N_Type_Conversion
+      then
+         Found := True;
+         Expr_Type := Etype (Parent (N));
+
       --  If not overloaded, then we know the type, and all that needs doing
       --  is to check that this type is compatible with the context.
 
@@ -2505,6 +2488,8 @@ package body Sem_Res is
       --  is compatible with the context (i.e. the type passed to Resolve)
 
       else
+         From_Lib := Comes_From_Predefined_Lib_Unit (N);
+
          --  Loop through possible interpretations
 
          Get_First_Interp (N, I, It);
@@ -7421,7 +7406,8 @@ package body Sem_Res is
             return;
          end if;
 
-         Resolve (Alt_Expr, Typ);
+         Resolve_Dependent_Expression (N, Alt_Expr, Typ);
+
          Check_Unset_Reference (Alt_Expr);
          Alt_Typ := Etype (Alt_Expr);
 
@@ -7701,6 +7687,34 @@ package body Sem_Res is
       Resolve (Expr, Typ);
       Check_Unset_Reference (Expr);
    end Resolve_Declare_Expression;
+
+   -----------------------------------
+   --  Resolve_Dependent_Expression --
+   -----------------------------------
+
+   procedure Resolve_Dependent_Expression
+     (N    : Node_Id;
+      Expr : Node_Id;
+      Typ  : Entity_Id)
+   is
+   begin
+      --  RM 4.5.7(8/3) says that the expected type of dependent expressions is
+      --  that of the conditional expression but RM 4.5.7(10/3) forces the type
+      --  of the conditional expression without changing the expected type (the
+      --  expected type of the operand of a type conversion is any type), so we
+      --  may have a gap between these two types that is bridged by the dynamic
+      --  semantics specified by RM 4.5.7(20/3) with the associated legality
+      --  rule RM 4.5.7(16/3) that will be automatically enforced.
+
+      if Nkind (Parent (N)) = N_Type_Conversion
+        and then Nkind (Expr) /= N_Raise_Expression
+      then
+         Convert_To_And_Rewrite (Typ, Expr);
+         Analyze_And_Resolve (Expr);
+      else
+         Resolve (Expr, Typ);
+      end if;
+   end Resolve_Dependent_Expression;
 
    -----------------------------------------
    -- Resolve_Discrete_Subtype_Indication --
@@ -9338,7 +9352,9 @@ package body Sem_Res is
    ---------------------------
 
    procedure Resolve_If_Expression (N : Node_Id; Typ : Entity_Id) is
-      procedure Apply_Check (Expr : Node_Id);
+      Condition : constant Node_Id := First (Expressions (N));
+
+      procedure Apply_Check (Expr : Node_Id; Result_Type : Entity_Id);
       --  When a dependent expression is of a subtype different from
       --  the context subtype, then insert a qualification to ensure
       --  the generation of a constraint check. This was previously
@@ -9346,21 +9362,11 @@ package body Sem_Res is
       --  that the context in general allows sliding, while a qualified
       --  expression forces equality of bounds.
 
-      Result_Type  : Entity_Id := Typ;
-      --  So in most cases the type of the If_Expression and of its
-      --  dependent expressions is that of the context. However, if
-      --  the expression is the index of an Indexed_Component, we must
-      --  ensure that a proper index check is applied, rather than a
-      --  range check on the index type (which might be discriminant
-      --  dependent). In this case we resolve with the base type of the
-      --  index type, and the index check is generated in the resolution
-      --  of the indexed_component above.
-
       -----------------
       -- Apply_Check --
       -----------------
 
-      procedure Apply_Check (Expr : Node_Id) is
+      procedure Apply_Check (Expr : Node_Id; Result_Type : Entity_Id) is
          Expr_Typ : constant Entity_Id  := Etype (Expr);
          Loc      : constant Source_Ptr := Sloc (Expr);
 
@@ -9388,9 +9394,18 @@ package body Sem_Res is
 
       --  Local variables
 
-      Condition : constant Node_Id := First (Expressions (N));
       Else_Expr : Node_Id;
       Then_Expr : Node_Id;
+
+      Result_Type : Entity_Id;
+      --  So in most cases the type of the if_expression and of its
+      --  dependent expressions is that of the context. However, if
+      --  the expression is the index of an Indexed_Component, we must
+      --  ensure that a proper index check is applied, rather than a
+      --  range check on the index type (which might be discriminant
+      --  dependent). In this case we resolve with the base type of the
+      --  index type, and the index check is generated in the resolution
+      --  of the indexed_component above.
 
    --  Start of processing for Resolve_If_Expression
 
@@ -9406,6 +9421,9 @@ package body Sem_Res is
                     or else Nkind (Parent (Parent (N))) = N_Indexed_Component)
       then
          Result_Type := Base_Type (Typ);
+
+      else
+         Result_Type := Typ;
       end if;
 
       Then_Expr := Next (Condition);
@@ -9414,32 +9432,23 @@ package body Sem_Res is
          return;
       end if;
 
+      Resolve (Condition, Any_Boolean);
+      Check_Unset_Reference (Condition);
+
+      Resolve_Dependent_Expression (N, Then_Expr, Result_Type);
+
+      Check_Unset_Reference (Then_Expr);
+      Apply_Check (Then_Expr, Result_Type);
+
       Else_Expr := Next (Then_Expr);
 
-      Resolve (Condition, Any_Boolean);
-      Resolve (Then_Expr, Result_Type);
-      Check_Unset_Reference (Condition);
-      Check_Unset_Reference (Then_Expr);
-
-      Apply_Check (Then_Expr);
-
       --  If ELSE expression present, just resolve using the determined type
-      --  If type is universal, resolve to any member of the class.
 
       if Present (Else_Expr) then
-         if Typ = Universal_Integer then
-            Resolve (Else_Expr, Any_Integer);
-
-         elsif Typ = Universal_Real then
-            Resolve (Else_Expr, Any_Real);
-
-         else
-            Resolve (Else_Expr, Result_Type);
-         end if;
+         Resolve_Dependent_Expression (N, Else_Expr, Result_Type);
 
          Check_Unset_Reference (Else_Expr);
-
-         Apply_Check (Else_Expr);
+         Apply_Check (Else_Expr, Result_Type);
 
          --  Apply RM 4.5.7 (17/3): whether the expression is statically or
          --  dynamically tagged must be known statically.
@@ -12198,6 +12207,12 @@ package body Sem_Res is
             if not Is_OK_Static_Subtype (Operand_Typ)
               and then Is_OK_Static_Subtype (Target_Typ)
             then
+               null;
+
+            --  Never give a warning if the operand is a conditional expression
+            --  because RM 4.5.7(10/3) forces its type to be the target type.
+
+            elsif Nkind (Orig_N) in N_Case_Expression | N_If_Expression then
                null;
 
             --  Finally, if this type conversion occurs in a context requiring

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
 #include "diagnostic-path.h"
+#include "analyzer/sm.h"
 
 namespace ana {
 

@@ -1,3 +1,293 @@
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/new_nothrow.cc: Add missing noexcept
+	to operator delete replacements.
+	* testsuite/20_util/any/cons/92156.cc: Disable
+	-Winit-list-lifetime warnings from instantiating invalid
+	specialization of manager function.
+	* testsuite/20_util/any/modifiers/92156.cc: Likewise.
+	* testsuite/20_util/default_delete/void_neg.cc: Prune additional
+	diagnostics.
+	* testsuite/20_util/headers/memory/synopsis.cc: Add missing
+	noexcept.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Prune
+	additional diagnostic.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc: Add
+	missing noexcept to operator delete replacements.
+	* testsuite/21_strings/basic_string/cons/char/103919.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/emplace/92300.cc:
+	Likewise.
+	* testsuite/23_containers/map/modifiers/insert/92300.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Add missing noexcept to synopsis declarations.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Likewise.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Likewise.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (_Temporary_buffer): Disable
+	warnings about get_temporary_buffer being deprecated.
+	* include/ext/functional (mem_fun1, mem_fun1_ref): Disable
+	warnings about mem_fun1_t, const_mem_fun1_t, mem_fun1_ref_t and
+	const_mem_fun1_ref_t being deprecated.
+	* include/std/array (__array_traits<T, 0>): Remove artificial
+	attributes which give warnings about being ignored.
+	* include/std/spanstream (basic_spanbuf::setbuf): Add assertion
+	and adjust to avoid narrowing warning.
+	* libsupc++/exception_ptr.h [!__cpp_rtti && !__cpp_exceptions]
+	(make_exception_ptr): Add missing inline specifier.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits): Add
+	always_inline attribute to all member functions.
+	(__do_alloc_on_copy, __alloc_on_copy, __do_alloc_on_move)
+	(__alloc_on_move, __do_alloc_on_swap, __alloc_on_swap)
+	(_Destroy(FwdIter, FwdIter, allocator<T>&)): : Add
+	always_inline attribute.
+	* include/bits/allocator.h (allocator): Add always_inline
+	attribute to all member functions and equality operators.
+	* include/bits/new_allocator.h (__new_allocator): Likewise.
+	* include/ext/alloc_traits.h (__gnu_cxx::__alloc_traits):
+	Likewise.
+
+2022-11-08  Charles-François Natali  <cf.natali@gmail.com>
+
+	PR libstdc++/63746
+	* include/bits/fstream.tcc (basic_filbuf::xsputn): Remove
+	1024-byte chunking that bypasses the buffer for large writes.
+	* testsuite/27_io/basic_filebuf/sputn/char/63746.cc: New test.
+
+2022-11-08  Will Hawkins  <whh8b@obs.cr>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__str_cat): Add common function
+	that performs single-allocation string concatenation.
+	(operator+): Use __str_cat.
+	* include/bits/basic_string.tcc (operator+): Move to .h and
+	define inline using __str_cat.
+
+2022-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/20_util/to_chars/float128_c++23.cc (test): Uncomment
+	denorm_min test.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/authors.xml: Update the blurb listing my doc
+	contributions.
+
+2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/authors.xml: Remove empty author element.
+	* doc/xml/manual/spine.xml: Likewise.
+	* doc/html/manual/index.html: Regenerate.
+
+2022-11-08  Joseph Myers  <joseph@codesourcery.com>
+
+	PR libstdc++/107562
+	* src/c++17/floating_from_chars.cc (from_chars_impl): Fix syntax
+	error.
+
+2022-11-08  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/18_support/comparisons/algorithms/fallback.cc: Adjust
+	asserts.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107562
+	* src/c++17/floating_from_chars.cc (__strtof128): Put __asm before
+	__attribute__.
+	* src/c++17/floating_to_chars.cc (__strfromf128): Likewise.
+
+2022-11-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (as_rvalue_view): Define.
+	(enable_borrowed_range<as_rvalue_view>): Define.
+	(views::__detail::__can_as_rvalue_view): Define.
+	(views::_AsRvalue, views::as_rvalue): Define.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: New test.
+
+2022-11-07  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__maybe_const_t): New alias for
+	__detail::__maybe_const_t.
+	(__detail::__cartesian_product_is_random_access): Define.
+	(__detail::__cartesian_product_common_arg): Define.
+	(__detail::__cartesian_product_is_bidirectional): Define.
+	(__detail::__cartesian_product_is_common): Define.
+	(__detail::__cartesian_product_is_sized): Define.
+	(__detail::__cartesian_is_sized_sentinel): Define.
+	(__detail::__cartesian_common_arg_end): Define.
+	(cartesian_product_view): Define.
+	(cartesian_product_view::_Iterator): Define.
+	(views::__detail::__can_cartesian_product_view): Define.
+	(views::_CartesianProduct, views::cartesian_product): Define.
+	* testsuite/std/ranges/cartesian_product/1.cc: New test.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/107468
+	* src/c++17/fast_float/MERGE: Adjust for merge from upstream.
+	* src/c++17/fast_float/LOCAL_PATCHES: Remove commits that were
+	upstreamed.
+	* src/c++17/fast_float/README.md: Merge from fast_float
+	662497742fea7055f0e0ee27e5a7ddc382c2c38e commit.
+	* src/c++17/fast_float/fast_float.h: Likewise.
+	* testsuite/20_util/from_chars/pr107468.cc: New test.
+
+2022-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (from_chars, to_chars): Add _Float128
+	overfloads if _GLIBCXX_HAVE_FLOAT128_MATH is defined.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.31): Export
+	_ZSt8to_charsPcS_DF128_, _ZSt8to_charsPcS_DF128_St12chars_format,
+	_ZSt8to_charsPcS_DF128_St12chars_formati and
+	_ZSt10from_charsPKcS0_RDF128_St12chars_format.
+	* src/c++17/floating_from_chars.cc (USE_STRTOF128_FOR_FROM_CHARS):
+	Define if needed.
+	(__strtof128): Declare.
+	(from_chars_impl): Handle _Float128.
+	(from_chars): New _Float128 overload if USE_STRTOF128_FOR_FROM_CHARS
+	is define.
+	* src/c++17/floating_to_chars.cc (__strfromf128): Declare.
+	(FLOAT128_TO_CHARS): Define even when _Float128 is supported and
+	wider than long double.
+	(F128_type): Use _Float128 for that case.
+	(floating_type_traits): Specialize for F128_type rather than
+	__float128.
+	(sprintf_ld): Add length argument.  Handle _Float128.
+	(__floating_to_chars_shortest, __floating_to_chars_precision):
+	Pass length to sprintf_ld.
+	(to_chars): Add _Float128 overloads for the F128_type being
+	_Float128 cases.
+	* testsuite/20_util/to_chars/float128_c++23.cc: New test.
+
+2022-11-06  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/atomic_wait.h (_detail::__platform_wait_alignment):
+	Declare inline.  Remove redundant static specifier.
+	(__detail::__atomic_spin_count_relax): Declare inline.
+	(__detail::__atomic_spin_count): Likewise.
+	* include/bits/regex_automaton.h (__detail::_S_invalid_state_id):
+	Declare inline for C++17.  Declare constexpr.  Remove
+	redundant const and static specifiers.
+	* include/bits/regex_error.h (regex_constants::error_collate):
+	Declare inline for C++17 as per P0607R0.
+	(regex_constants::error_ctype): Likewise.
+	(regex_constants::error_escape): Likewise.
+	(regex_constants::error_backref): Likewise.
+	(regex_constants::error_brack): Likewise.
+	(regex_constants::error_paren): Likewise.
+	(regex_constants::error_brace): Likewise.
+	(regex_constants::error_badbrace): Likewise.
+	(regex_constants::error_range): Likewise.
+	(regex_constants::error_space): Likewise.
+	(regex_constants::error_badrepeat): Likewise.
+	(regex_constants::error_complexity): Likewise.
+	(regex_constants::error_stack): Likewise.
+	* include/ext/concurrence.h (__gnu_cxx::__default_lock_policy):
+	Likewise.  Remove redundant static specifier.
+	* include/pstl/execution_defs.h (execution::seq): Declare inline
+	for C++17 as per P0607R0.
+	(execution::par): Likewise.
+	(execution::par_unseq): Likewise.
+	(execution::unseq): Likewise.
+
+2022-11-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/44952
+	PR libstdc++/39796
+	PR libstdc++/98108
+	* include/std/iostream (__ioinit): No longer define here if
+	the init_priority attribute is usable.
+	* src/c++98/ios_init.cc (__ioinit): Define here instead if
+	init_priority is usable, via ...
+	* src/c++98/ios_base_init.h: ... this new file.
+
+2022-11-05  Jakob Hasse  <0xjakob@users.noreply.github.com>
+
+	PR libstdc++/105387
+	* libsupc++/pbase_type_info.cc (__do_catch) [!__cpp_rtti]: Add
+	check that the thrown type is actually a pointer.
+	* testsuite/18_support/105387.cc: New test.
+	* testsuite/18_support/105387_memptr.cc: New test.
+
+2022-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107525
+	* include/experimental/propagate_const (operator element_type*()):
+	Move into base class that can be partially specilized to iompose
+	constraints.
+	(operator const element_type*()): Likewise.
+	* testsuite/experimental/propagate_const/observers/107525.cc: New test.
+
+2022-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107500
+	* libsupc++/eh_globals.cc (eh_globals): Remove immortalizing
+	wrapper.
+	(__cxxabiv1::__cxa_get_globals_fast): Adjust.
+	(__cxxabiv1::__cxa_get_globals): Adjust.
+
+2022-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107511
+	* libsupc++/eh_alloc.cc (_GNU_SOURCE): Define.
+
+2022-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__detail::__copy_or_move):
+	Move output iterator.
+	* testsuite/25_algorithms/copy/constrained.cc: Check copying to
+	move-only output iterator.
+
+2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/eh_globals.cc (constant_init::unused): Remove.
+	* src/c++11/system_error.cc (constant_init::unused): Remove.
+	* src/c++17/memory_resource.cc (constant_init::unused): Remove.
+
+2022-11-02  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (from_chars_impl): In the
+	ERANGE case, distinguish between a denormal result and true
+	underflow by checking if the return value is 0.
+
+2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::_M_invalid): Remove.
+
+2022-11-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__variant::_Multi_array::__untag_result):
+	Use pragma to suppress warning.
+
+2022-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libsupc++/compare (_Strong_order::_Fp_fmt): Add _Bfloat16.
+	(_Strong_order::_Bfloat16): New static data member.
+	(_Strong_order::_S_fp_fmt): Return _Bfloat16 for std::bfloat16_t.
+
+2022-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_hex): Drop const
+	from unbiased_exponent.  Canonicalize denormals such that they have
+	the leading bit set by shifting effective mantissa up and decreasing
+	unbiased_exponent.
+	(__floating_to_chars_shortest): Don't instantiate
+	__floating_to_chars_hex for float16_t either and use float instead.
+	* testsuite/20_util/to_chars/float.cc (float_to_chars_test_cases):
+	Adjust testcases for shortest hex denormals.
+	* testsuite/20_util/to_chars/double.cc (double_to_chars_test_cases):
+	Likewise.
+
 2022-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/charconv (__from_chars_float16_t,

@@ -48,211 +48,76 @@ upstrdup (const char *in)
   return ret;
 }
 
-/* Struct for 'start hooks' which start a sequence of consecutive hooks
-   that are defined in target.def and to be documented in tm.texi.  */
-struct s_hook
-{
-  char *name;
-  int pos;
-};
+/* Emit shared .rst.in file that is used by the corresponding
+   .. include:: tm.rst.in
+     :start-after: [HOOK_NAME]
+     :end-before: [HOOK_NAME]
 
-static hashval_t
-s_hook_hash (const void *p)
-{
-  const struct s_hook *s_hook = (const struct s_hook *)p;
-  return htab_hash_string (s_hook->name);
-}
-
-static int
-s_hook_eq_p (const void *p1, const void *p2)
-{
-  return (strcmp (((const struct s_hook *) p1)->name, 
-		  ((const struct s_hook *) p2)->name) == 0);
-}
-
-/* Read the documentation file with name IN_FNAME, perform substitutions
-   to incorporate information from hook_array, and emit the result on stdout.
-   Hooks defined with DEFHOOK / DEFHOOKPOD are emitted at the place of a
-   matching @hook in the input file; if there is no matching @hook, the
-   hook is emitted after the hook that precedes it in target.def .
-   Usually, the emitted hook documentation starts with the hook
-   signature, followed by the string from the doc field.
-   The documentation is bracketed in @deftypefn / @deftypevr and a matching
-   @end.
-   While emitting the doc field, an @findex entry is added
-   to the affected paragraph.
    If the doc field starts with '*', the leading '*' is stripped, and the doc
    field is otherwise emitted unaltered; no function signature/
    @deftypefn/deftypevr/@end is emitted.
    In particular, a doc field of "*" means not to emit any ocumentation for
    this target.def / hook_array entry at all (there might be documentation
    for this hook in the file named IN_FNAME, though).
-   A doc field of 0 is used to append the hook signature after the previous
-   hook's signture, so that one description can be used for a group of hooks.
-   When the doc field is "", @deftypefn/@deftypevr and the hook signature
-   is emitted, but not the matching @end.  This allows all the free-form
+
+   This allows all the free-form
    documentation to be placed in IN_FNAME, to work around GPL/GFDL
    licensing incompatibility issues.  */
+
 static void
-emit_documentation (const char *in_fname)
+emit_documentation (void)
 {
-  int i, j;
-  char buf[1000];
-  htab_t start_hooks = htab_create (99, s_hook_hash, s_hook_eq_p, (htab_del) 0);
-  FILE *f;
-
-  /* Enter all the start hooks in start_hooks.  */
-  f = fopen (in_fname, "r");
-  if (!f)
-    {
-      perror ("");
-      fatal ("Couldn't open input file");
-    }
-  while (fscanf (f, "%*[^@]"), buf[0] = '\0',
-	 fscanf (f, "@%5[^ \n]", buf) != EOF)
-    {
-      void **p;
-      struct s_hook *shp;
-
-      if (strcmp (buf, "hook") != 0)
-	continue;
-      buf[0] = '\0';
-      fscanf (f, "%999s", buf);
-      shp = XNEW (struct s_hook);
-      shp->name = upstrdup (buf);
-      shp->pos = -1;
-      p = htab_find_slot (start_hooks, shp, INSERT);
-      if (*p != HTAB_EMPTY_ENTRY)
-	fatal ("Duplicate placement for hook %s\n", shp->name);
-      *(struct s_hook **) p = shp;
-    }
-  fclose (f);
   /* For each hook in hook_array, if it is a start hook, store its position.  */
-  for (i = 0; i < (int) (ARRAY_SIZE (hook_array)); i++)
+  for (int i = 0; i < (int) (ARRAY_SIZE (hook_array)); i++)
     {
-      struct s_hook sh, *shp;
-      void *p;
-
-      if (!hook_array[i].doc || strcmp (hook_array[i].doc, "*") == 0)
+      if (hook_array[i].doc == NULL
+	  || strcmp (hook_array[i].doc, "") == 0
+	  || strcmp (hook_array[i].doc, "*") == 0)
 	continue;
-      sh.name = upstrdup (hook_array[i].name);
-      p = htab_find (start_hooks, &sh);
-      if (p)
-	{
-	  shp = (struct s_hook *) p;
-	  if (shp->pos >= 0)
-	    fatal ("Duplicate hook %s\n", sh.name);
-	  shp->pos = i;
-	}
+      const char *hook_name = upstrdup (hook_array[i].name);
+      printf ("[%s]\n", hook_name);
+      /* Print header.  Function-valued hooks have a parameter list,
+	 unlike POD-valued ones.  */
+      const char *deftype = hook_array[i].param ? "function" : "c:var";
+      printf (".. %s:: ", deftype);
+      if (strchr (hook_array[i].type, ' '))
+	printf ("%s", hook_array[i].type);
       else
-	fatal ("No place specified to document hook %s\n", sh.name);
-      free (sh.name);
-    }
-  /* Copy input file to stdout, substituting @hook directives with the
-     corresponding hook documentation sequences.  */
-  f = fopen (in_fname, "r");
-  if (!f)
-    {
-      perror ("");
-      fatal ("Couldn't open input file");
-    }
-  for (;;)
-    {
-      struct s_hook sh, *shp;
-      int c = getc (f);
-      char *name;
-
-      if (c == EOF)
-	break;
-      if (c != '@')
-	{
-	  putchar (c);
-	  continue;
-	}
-      buf[0] = '\0';
-      fscanf (f, "%5[^ \n]", buf);
-      if (strcmp (buf, "hook") != 0)
-	{
-	  printf ("@%s", buf);
-	  continue;
-	}
-      fscanf (f, "%999s", buf);
-      sh.name = name = upstrdup (buf);
-      shp = (struct s_hook *) htab_find (start_hooks, &sh);
-      if (!shp || shp->pos < 0)
-	fatal ("No documentation for hook %s\n", sh.name);
-      i = shp->pos;
-      do
+	printf ("%s", hook_array[i].type);
+      printf (" %s", hook_name);
+      if (hook_array[i].param)
 	{
 	  const char *q, *e;
-	  const char *deftype;
-	  const char *doc, *p_end;
-
-	  /* A leading '*' means to output the documentation string without
-	     further processing.  */
-	  if (*hook_array[i].doc == '*')
-	    printf ("%s", hook_array[i].doc + 1);
-	  else
-	    {
-	      if (i != shp->pos)
-		printf ("\n\n");
-
-	      /* Print header.  Function-valued hooks have a parameter list, 
-		 unlike POD-valued ones.  */
-	      deftype = hook_array[i].param ? "deftypefn" : "deftypevr";
-	      printf ("@%s {%s} ", deftype, hook_array[i].docname);
-	      if (strchr (hook_array[i].type, ' '))
-		printf ("{%s}", hook_array[i].type);
-	      else
-		printf ("%s", hook_array[i].type);
-	      printf (" %s", name);
-	      if (hook_array[i].param)
-		{
-		  /* Print the parameter list, with the parameter names
-		     enclosed in @var{}.  */
-		  printf (" ");
-		  for (q = hook_array[i].param; (e = strpbrk (q, " *,)"));
-		       q = e + 1)
-		    /* Type names like 'int' are followed by a space, sometimes
-		       also by '*'.  'void' should appear only in "(void)".  */
-		    if (*e == ' ' || *e == '*' || *q == '(')
-		      printf ("%.*s", (int) (e - q + 1), q);
-		    else
-		      printf ("@var{%.*s}%c", (int) (e - q), q, *e);
-		}
-	      /* POD-valued hooks sometimes come in groups with common
-		 documentation.*/
-	      for (j = i + 1;
-		   j < (int) (ARRAY_SIZE (hook_array))
-		   && hook_array[j].doc == 0 && hook_array[j].type; j++)
-		{
-		  char *namex = upstrdup (hook_array[j].name);
-
-		  printf ("\n@%sx {%s} {%s} %s",
-			  deftype, hook_array[j].docname,
-			  hook_array[j].type, namex);
-		}
-	      if (hook_array[i].doc[0])
-		{
-		  printf ("\n");
-		  /* Print each documentation paragraph in turn.  */
-		  for (doc = hook_array[i].doc; *doc; doc = p_end)
-		    {
-		      /* Find paragraph end.  */
-		      p_end = strstr (doc, "\n\n");
-		      p_end = (p_end ? p_end + 2 : doc + strlen (doc));
-		      printf ("%.*s", (int) (p_end - doc), doc);
-		    }
-		  printf ("\n@end %s", deftype);
-		}
-	    }
-	  if (++i >= (int) (ARRAY_SIZE (hook_array)) || !hook_array[i].doc)
-	    break;
-	  free (name);
-	  sh.name = name = upstrdup (hook_array[i].name);
+	  /* Print the parameter list, with the parameter names
+	     enclosed in @var{}.  */
+	  printf (" ");
+	  for (q = hook_array[i].param; (e = strpbrk (q, " *,)"));
+	       q = e + 1)
+	    /* Type names like 'int' are followed by a space, sometimes
+	       also by '*'.  'void' should appear only in "(void)".  */
+	    if (*e == ' ' || *e == '*' || *q == '(')
+	      printf ("%.*s", (int) (e - q + 1), q);
+	    else
+	      printf ("%.*s%c", (int) (e - q), q, *e);
 	}
-      while (!htab_find (start_hooks, &sh));
-      free (name);
+
+      printf ("\n");
+      if (hook_array[i].doc[0])
+	{
+	  const char *doc, *p_end;
+	  printf ("\n");
+	  /* Print each documentation paragraph in turn.  */
+	  for (doc = hook_array[i].doc; *doc; doc = p_end)
+	    {
+	      /* Find paragraph end.  */
+	      p_end = strstr (doc, "\n");
+	      p_end = (p_end ? p_end + 1 : doc + strlen (doc));
+	      printf ("  %.*s", (int) (p_end - doc), doc);
+	    }
+	  printf ("\n");
+	}
+
+      printf ("\n[%s]\n\n", hook_name);
     }
 }
 
@@ -313,8 +178,8 @@ main (int argc, char **argv)
 {
   progname = "genhooks";
 
-  if (argc >= 3)
-    emit_documentation (argv[2]);
+  if (argc == 1)
+    emit_documentation ();
   else
     emit_init_macros (argv[1]);
   return 0;

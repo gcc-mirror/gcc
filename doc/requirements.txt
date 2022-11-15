@@ -1,0 +1,3 @@
+Sphinx>=5.3
+furo
+sphinx_copybutton

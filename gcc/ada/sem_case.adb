@@ -192,8 +192,13 @@ package body Sem_Case is
            record
               Low, High : Uint;
            end record;
+         function "=" (X, Y : Discrete_Range_Info) return Boolean is abstract;
+         --  Here (and below), we don't use "=", which is a good thing,
+         --  because it wouldn't work, because the user-defined "=" on
+         --  Uint does not compose according to Ada rules.
 
          type Composite_Range_Info is array (Part_Id) of Discrete_Range_Info;
+         function "=" (X, Y : Composite_Range_Info) return Boolean is abstract;
 
          type Choice_Range_Info (Is_Others : Boolean := False) is
            record
@@ -204,6 +209,7 @@ package body Sem_Case is
                     null;
               end case;
            end record;
+         function "=" (X, Y : Choice_Range_Info) return Boolean is abstract;
 
          type Choices_Range_Info is array (Choice_Id) of Choice_Range_Info;
 
@@ -1611,7 +1617,7 @@ package body Sem_Case is
                   begin
                      while Present (Comp) loop
                         if Chars (First (Choices (Comp))) = Orig_Name then
-                           pragma Assert (not Present (Matching_Comp));
+                           pragma Assert (No (Matching_Comp));
                            Matching_Comp := Comp;
                         end if;
 
@@ -3581,7 +3587,7 @@ package body Sem_Case is
 
             --  Hold on, maybe it isn't a complete mess after all.
 
-            if Extensions_Allowed and then Subtyp /= Any_Type then
+            if Core_Extensions_Allowed and then Subtyp /= Any_Type then
                Check_Composite_Case_Selector;
                Check_Case_Pattern_Choices;
             end if;
@@ -3864,7 +3870,7 @@ package body Sem_Case is
    function Is_Case_Choice_Pattern (Expr : Node_Id) return Boolean is
       E : Node_Id := Expr;
    begin
-      if not Extensions_Allowed then
+      if not Core_Extensions_Allowed then
          return False;
       end if;
 
