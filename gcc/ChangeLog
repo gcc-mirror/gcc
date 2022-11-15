@@ -1,3 +1,9 @@
+2022-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107485
+	* tree-inline.c (remap_gimple_stmt): Use correct type for
+	split out condition of [VEC_]COND_EXPRs.
+
 2022-11-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
