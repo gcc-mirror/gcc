@@ -629,7 +629,7 @@
 	 VADDLVQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddlv.<supf>32 %Q0, %R0, %q1"
+  "vaddlv.<supf>32\t%Q0, %R0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -810,7 +810,7 @@
 	 VADDLVQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vaddlvt.<supf>32 %Q0, %R0, %q1"
+  "vpst\;vaddlvt.<supf>32\t%Q0, %R0, %q1"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -873,7 +873,7 @@
 	 VADDQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "vadd.i%#<V_sz_elem>	%q0, %q1, %2"
+  "vadd.i%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -888,7 +888,7 @@
 	 VADDVAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddva.<supf>%#<V_sz_elem>	%0, %q2"
+  "vaddva.<supf>%#<V_sz_elem>\t%0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1828,7 +1828,7 @@
 	 VADDLVAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vaddlva.<supf>32 %Q0, %R0, %q2"
+  "vaddlva.<supf>32\t%Q0, %R0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1843,7 +1843,7 @@
 	 VADDQ_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vadd.f%#<V_sz_elem>	%q0, %q1, %2"
+  "vadd.f%#<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3712,7 +3712,7 @@
 	 VADDLVAQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vaddlvat.<supf>32 %Q0, %R0, %q2"
+  "vpst\;vaddlvat.<supf>32\t%Q0, %R0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 ;;
@@ -8923,7 +8923,7 @@
 		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vadd.i%#<V_sz_elem>  %q0, %q1, %q2"
+  "vadd.i%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -8937,7 +8937,7 @@
 		    (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vadd.f%#<V_sz_elem> %q0, %q1, %q2"
+  "vadd.f%#<V_sz_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
