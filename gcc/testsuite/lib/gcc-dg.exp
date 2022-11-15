@@ -1429,5 +1429,18 @@ proc scan-symbol-not { args } {
     }
 }
 
+# Transform a tool-name to its canonical-target-name by "transform"
+# (which may return the original name for native targets) but only if
+# testing out-of-tree.  When in-tree, the tool is expected to be found
+# by its original name, typically with some build-directory prefix
+# prepended by the caller.
+proc gcc-transform-out-of-tree { args } {
+    global TESTING_IN_BUILD_TREE
+    if { [info exists TESTING_IN_BUILD_TREE] } {
+	return $args;
+    }
+    return [transform $args]
+}
+
 set additional_prunes ""
 set dg_runtest_extra_prunes ""
