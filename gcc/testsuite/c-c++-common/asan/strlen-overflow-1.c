@@ -21,4 +21,4 @@ int main () {
 
 /* { dg-output "READ of size 2 at 0x\[0-9a-f\]+ thread T0.*(\n|\r\n|\r)" } */
 /* { dg-output "    #1 0x\[0-9a-f\]+ +(in _*main (\[^\n\r]*strlen-overflow-1.c:19|\[^\n\r]*:0)|\[(\]).*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*0x\[0-9a-f\]+ is located 0 bytes to the right of global variable" } */
+/* { dg-output "\[^\n\r]*0x\[0-9a-f\]+ is located 0 bytes after global variable" } */
