@@ -1316,13 +1316,6 @@ See RS/6000 and PowerPC Options.
 -mwarn-framesize  -mwarn-dynamicstack  -mstack-size  -mstack-guard @gol
 -mhotpatch=@var{halfwords},@var{halfwords}}
 
-@emph{Score Options}
-@gccoptlist{-meb  -mel @gol
--mnhwloop @gol
--muls @gol
--mmac @gol
--mscore5  -mscore5u  -mscore7  -mscore7d}
-
 @emph{SH Options}
 @gccoptlist{-m1  -m2  -m2e @gol
 -m2a-nofpu  -m2a-single-only  -m2a-single  -m2a @gol
@@ -19726,7 +19719,6 @@ platform.
 * RS/6000 and PowerPC Options::
 * RX Options::
 * S/390 and zSeries Options::
-* Score Options::
 * SH Options::
 * Solaris 2 Options::
 * SPARC Options::
@@ -30422,50 +30414,6 @@ If both arguments are zero, hotpatching is disabled.
 
 This option can be overridden for individual functions with the
 @code{hotpatch} attribute.
-@end table
-
-@node Score Options
-@subsection Score Options
-@cindex Score Options
-
-These options are defined for Score implementations:
-
-@table @gcctabopt
-@item -meb
-@opindex meb
-Compile code for big-endian mode.  This is the default.
-
-@item -mel
-@opindex mel
-Compile code for little-endian mode.
-
-@item -mnhwloop
-@opindex mnhwloop
-Disable generation of @code{bcnz} instructions.
-
-@item -muls
-@opindex muls
-Enable generation of unaligned load and store instructions.
-
-@item -mmac
-@opindex mmac
-Enable the use of multiply-accumulate instructions. Disabled by default.
-
-@item -mscore5
-@opindex mscore5
-Specify the SCORE5 as the target architecture.
-
-@item -mscore5u
-@opindex mscore5u
-Specify the SCORE5U of the target architecture.
-
-@item -mscore7
-@opindex mscore7
-Specify the SCORE7 as the target architecture. This is the default.
-
-@item -mscore7d
-@opindex mscore7d
-Specify the SCORE7D as the target architecture.
 @end table
 
 @node SH Options
