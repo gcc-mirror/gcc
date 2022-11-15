@@ -1254,11 +1254,14 @@ bpf_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       /* A resolved overloaded __builtin_preserve_field_info.  */
       tree src = CALL_EXPR_ARG (exp, 0);
       tree kind_tree = CALL_EXPR_ARG (exp, 1);
-      unsigned HOST_WIDE_INT kind_val;
+      unsigned HOST_WIDE_INT kind_val = 0;
       if (tree_fits_uhwi_p (kind_tree))
 	kind_val = tree_to_uhwi (kind_tree);
       else
-	error ("invalid argument to built-in function");
+	{
+	  error ("invalid argument to built-in function");
+	  return expand_normal (error_mark_node);
+	}
 
       enum btf_core_reloc_kind kind = (enum btf_core_reloc_kind) kind_val;
 
