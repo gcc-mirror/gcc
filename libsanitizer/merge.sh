@@ -6,7 +6,7 @@
 
 get_upstream() {
   rm -rf upstream
-  git clone https://github.com/llvm/llvm-project.git upstream
+  git clone --depth 1 https://github.com/llvm/llvm-project.git upstream
 }
 
 get_current_rev() {
