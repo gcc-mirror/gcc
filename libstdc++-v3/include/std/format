@@ -1235,13 +1235,13 @@ namespace __format
   using __float128_t = long double;
 # define _GLIBCXX_FORMAT_F128 1
 
-#elif __FLT128_DIG__ && defined(__GLIBC_PREREQ) // see floating_to_chars.cc
+#elif __FLT128_DIG__ && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
 
   // Format 128-bit floating-point types using _Float128.
   using __float128_t = _Float128;
 # define _GLIBCXX_FORMAT_F128 2
 
-# if __cplusplus == 202002L || !defined(_GLIBCXX_HAVE_FLOAT128_MATH)
+# if __cplusplus == 202002L
   // These overloads exist in the library, but are not declared for C++20.
   // Make them available as std::__format::to_chars.
   to_chars_result
