@@ -97,9 +97,6 @@ The GCC runtime library.
 @item libgfortran
 The Fortran runtime library.
 
-@item libgm2
-The Modula-2 runtime library.
-
 @item libgo
 The Go runtime library.  The bulk of this library is mirrored from the
 @uref{https://github.com/@/golang/go, master Go repository}.
@@ -190,12 +187,13 @@ The @file{gcc} directory contains the following subdirectories:
 @item @var{language}
 Subdirectories for various languages.  Directories containing a file
 @file{config-lang.in} are language subdirectories.  The contents of
-the subdirectories @file{c} (for C), @file{cp} (for C++), @file{m2}
-(for Modula-2), @file{objc} (for Objective-C), @file{objcp} (for
-Objective-C++), and @file{lto} (for LTO) are documented in this manual
-(@pxref{Passes, , Passes and Files of the Compiler}); those for other
-languages are not.  @xref{Front End, , Anatomy of a Language Front
-End}, for details of the files in these directories.
+the subdirectories @file{c} (for C), @file{cp} (for C++),
+@file{objc} (for Objective-C), @file{objcp} (for Objective-C++),
+and @file{lto} (for LTO) are documented in this
+manual (@pxref{Passes, , Passes and Files of the Compiler});
+those for other languages are not.  @xref{Front End, ,
+Anatomy of a Language Front End}, for details of the files in these
+directories.
 
 @item common
 Source files shared between the compiler drivers (such as
@@ -2449,7 +2447,7 @@ PowerPC target pre-defines macro _ARCH_PWR9 which means the @code{-mcpu}
 setting is Power9 or later.
 @end table
 
-@subsubsection RISC-V specific attributes
+@subsection RISC-V specific attributes
 
 @table @code
 
@@ -2491,15 +2489,6 @@ Target supports the execution of @code{avx512f} instructions.
 
 @item avx512vp2intersect
 Target supports the execution of @code{avx512vp2intersect} instructions.
-
-@item avxifma
-Target supports the execution of @code{avxifma} instructions.
-
-@item avxneconvert
-Target supports the execution of @code{avxneconvert} instructions.
-
-@item avxvnniint8
-Target supports the execution of @code{avxvnniint8} instructions.
 
 @item amx_tile
 Target supports the execution of @code{amx-tile} instructions.
@@ -2878,9 +2867,6 @@ Vector alignment is reachable for types of 32 bits or less.
 
 @item vector_alignment_reachable_for_64bit
 Vector alignment is reachable for types of 64 bits or less.
-
-@item vma_equals_lma
-Target generates executable with VMA equal to LMA for .data section.
 
 @item wchar_t_char16_t_compatible
 Target supports @code{wchar_t} that is compatible with @code{char16_t}.

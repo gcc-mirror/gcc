@@ -805,10 +805,11 @@ am__leading_dot
 doc_build_sys
 AR
 NM
-PYTHON
-HAVE_PYTHON
 BISON
 FLEX
+HAS_SPHINX_BUILD
+SPHINX_BUILD
+CONFIGURE_SPHINX_BUILD
 GENERATED_MANPAGES
 BUILD_INFO
 MAKEINFO
@@ -983,6 +984,7 @@ with_changes_root_url
 enable_languages
 with_multilib_list
 with_multilib_generator
+with_sphinx_build
 with_zstd
 with_zstd_include
 with_zstd_lib
@@ -1837,6 +1839,7 @@ Optional Packages:
                           SH and x86-64 only)
   --with-multilib-generator
                           Multi-libs configuration string (RISC-V only)
+  --with-sphinx-build=    Use sphinx-build from a given path
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
                           --with-zstd-lib=PATH/lib
@@ -8165,7 +8168,7 @@ fi
     REPORT_BUGS_TEXI=
     ;;
   *)
-    REPORT_BUGS_TO="<$BUGURL>"
+    REPORT_BUGS_TO="$BUGURL"
     REPORT_BUGS_TEXI=@uref{`echo "$BUGURL" | sed 's/@/@@/g'`}
     ;;
   esac;
@@ -8255,12 +8258,6 @@ if test x"$enable_as_accelerator_for" != x; then
 $as_echo "#define ACCEL_COMPILER 1" >>confdefs.h
 
   enable_as_accelerator=yes
-  case "${target}" in
-    *-intelmicemul-*)
-      # In this case we expect offload compiler to be built as native, so we
-      # need to rename the driver to avoid clashes with host's drivers.
-      program_transform_name="s&^&${target}-&" ;;
-  esac
   sedscript="s#${target_noncanonical}#${enable_as_accelerator_for}-accel-${target_noncanonical}#"
   program_transform_name=`echo $program_transform_name | sed $sedscript`
   accel_dir_suffix=/accel/${target_noncanonical}
@@ -8275,10 +8272,6 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
 
   enable_offloading=1
   case "$tgt" in
-    *-intelmic-* | *-intelmicemul-*)
-  	omp_device_property=omp-device-properties-i386
-  	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/i386/t-omp-device"
-  	;;
     amdgcn*)
   	omp_device_property=omp-device-properties-gcn
   	omp_device_property_tmake_file="${omp_device_property_tmake_file} \$(srcdir)/config/gcn/t-omp-device"
@@ -8817,6 +8810,53 @@ $as_echo "no" >&6; }
 fi
 
 
+
+# Check whether --with-sphinx-build was given.
+if test "${with_sphinx_build+set}" = set; then :
+  withval=$with_sphinx_build; CONFIGURE_SPHINX_BUILD=$withval
+else
+  CONFIGURE_SPHINX_BUILD=
+
+fi
+
+
+
+# See if sphinx-build has been installed and is modern enough
+# that we can use it.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sphinx-build" >&5
+$as_echo_n "checking for sphinx-build... " >&6; }
+sphinx=sphinx-build
+if test x${CONFIGURE_SPHINX_BUILD} != x ; then
+  sphinx=${CONFIGURE_SPHINX_BUILD}
+fi
+
+tempdir=build.$$
+source=source.$$
+mkdir $source
+grep 'needs_sphinx =' ${srcdir}/../doc/baseconf.py > $source/conf.py
+touch $source/index.rst
+if ${sphinx} $source $tempdir >/dev/null 2>&1; then
+  SPHINX_BUILD=${sphinx}
+  HAS_SPHINX_BUILD=has-sphinx-build
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+  *** sphinx-build is missing or too old.
+  *** Info and man pages documentation will not be built." >&5
+$as_echo "$as_me: WARNING:
+  *** sphinx-build is missing or too old.
+  *** Info and man pages documentation will not be built." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  SPHINX_BUILD=
+  HAS_SPHINX_BUILD=
+fi
+rm -rf $tempdir
+rm -rf $source
+
+
+
 MISSING="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing"
 
 # How about lex?
@@ -8907,89 +8947,6 @@ fi
   test -n "$BISON" && break
 done
 test -n "$BISON" || BISON="$MISSING bison"
-
-
-# Python3?
-# Extract the first word of "python3", so it can be a program name with args.
-set dummy python3; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_HAVE_PYTHON+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$HAVE_PYTHON"; then
-  ac_cv_prog_HAVE_PYTHON="$HAVE_PYTHON" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_HAVE_PYTHON=""yes""
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_HAVE_PYTHON" && ac_cv_prog_HAVE_PYTHON=""no""
-fi
-fi
-HAVE_PYTHON=$ac_cv_prog_HAVE_PYTHON
-if test -n "$HAVE_PYTHON"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $HAVE_PYTHON" >&5
-$as_echo "$HAVE_PYTHON" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-for ac_prog in python3
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_PYTHON+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$PYTHON"; then
-  ac_cv_prog_PYTHON="$PYTHON" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_PYTHON="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-PYTHON=$ac_cv_prog_PYTHON
-if test -n "$PYTHON"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
-$as_echo "$PYTHON" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$PYTHON" && break
-done
-test -n "$PYTHON" || PYTHON="$MISSING python3"
 
 
 # Binutils are not build modules, unlike bison/flex/makeinfo.  So we
@@ -19805,7 +19762,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19808 "configure"
+#line 19765 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19911,7 +19868,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19914 "configure"
+#line 19871 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -34001,4 +33958,5 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+
 

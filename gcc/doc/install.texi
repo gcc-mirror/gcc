@@ -751,7 +751,7 @@ Here are the possible CPU types:
 
 @quotation
 aarch64, aarch64_be, alpha, alpha64, amdgcn, arc, arceb, arm, armeb, avr, bfin,
-bpf, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
+bpf, cr16, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
 hppa64, i486, i686, ia64, iq2000, lm32, loongarch64, m32c, m32r, m32rle, m68k,
 mcore, microblaze, microblazeel, mips, mips64, mips64el, mips64octeon,
 mips64orion, mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
@@ -1543,25 +1543,6 @@ systems that support conditional traps).
 Division by zero checks use the break instruction.
 @end table
 
-@item --with-compact-branches=@var{policy}
-Specify how the compiler should generate branch instructions.
-This option is only supported on the MIPS target.
-The possibilities for @var{type} are:
-@table @code
-@item optimal
-Cause a delay slot branch to be used if one is available in the
-current ISA and the delay slot is successfully filled. If the delay slot
-is not filled, a compact branch will be chosen if one is available.
-@item never
-Ensures that compact branch instructions will never be generated.
-@item always
-Ensures that a compact branch instruction will be generated if available.
-If a compact branch instruction is not available,
-a delay slot form of the branch will be used instead.
-This option is supported from MIPS Release 6 onwards.
-For pre-R6/microMIPS/MIPS16, this option is just same as never/optimal.
-@end table
-
 @c If you make --with-llsc the default for additional targets,
 @c update the --with-llsc description in the MIPS section below.
 
@@ -1851,19 +1832,18 @@ their runtime libraries should be built.  For a list of valid values for
 @smallexample
 grep ^language= */config-lang.in
 @end smallexample
-Currently, you can use any of the following: @code{all},
-@code{default}, @code{ada}, @code{c}, @code{c++}, @code{d},
-@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{m2},
-@code{objc}, @code{obj-c++}.  Building the Ada compiler has special
-requirements, see below.  If you do not pass this flag, or specify the
-option @code{default}, then the default languages available in the
-@file{gcc} sub-tree will be configured.  Ada, D, Go, Jit,
-Objective-C++ and Modula-2 are not default languages.  LTO is not a
-default language, but is built by default because
-@option{--enable-lto} is enabled by default.  The other languages are
-default languages.  If @code{all} is specified, then all available
-languages are built.  An exception is @code{jit} language, which
-requires @option{--enable-host-shared} to be included with @code{all}.
+Currently, you can use any of the following:
+@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++}, @code{d},
+@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
+Building the Ada compiler has special requirements, see below.
+If you do not pass this flag, or specify the option @code{default}, then the
+default languages available in the @file{gcc} sub-tree will be configured.
+Ada, D, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
+default language, but is built by default because @option{--enable-lto} is
+enabled by default.  The other languages are default languages.  If
+@code{all} is specified, then all available languages are built.  An
+exception is @code{jit} language, which requires
+@option{--enable-host-shared} to be included with @code{all}.
 
 @item --enable-stage1-languages=@var{lang1},@var{lang2},@dots{}
 Specify that a particular subset of compilers and their runtime
@@ -1885,10 +1865,6 @@ Specify that the run-time libraries and tools used by GNAT should not
 be built.  This can be useful for debugging, or for compatibility with
 previous Ada build procedures, when it was required to explicitly
 do a @samp{make -C gcc gnatlib_and_tools}.
-
-@item --disable-libgm2
-Specify that the run-time libraries and tools used by Modula-2 should not
-be built.  This can be useful for debugging.
 
 @item --disable-libsanitizer
 Specify that the run-time libraries for the various sanitizers should
@@ -3150,10 +3126,10 @@ on a simulator as described at @uref{https://gcc.gnu.org/simtest-howto.html}.
 In order to run sets of tests selectively, there are targets
 @samp{make check-gcc} and language specific @samp{make check-c},
 @samp{make check-c++}, @samp{make check-d} @samp{make check-fortran},
-@samp{make check-ada}, @samp{make check-m2}, @samp{make check-objc},
-@samp{make check-obj-c++}, @samp{make check-lto} in the @file{gcc}
-subdirectory of the object directory.  You can also just run
-@samp{make check} in a subdirectory of the object directory.
+@samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
+@samp{make check-lto}
+in the @file{gcc} subdirectory of the object directory.  You can also
+just run @samp{make check} in a subdirectory of the object directory.
 
 
 A more selective way to just run all @command{gcc} execute tests in the
@@ -3499,6 +3475,10 @@ contact their makers.
 AIX:
 @itemize
 @item
+@uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
+for AIX 6 and AIX 7};
+
+@item
 @uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
 AIX 7.1)}.
 @end itemize
@@ -3587,13 +3567,7 @@ information have to.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
-@uref{#amdgcn-x-amdhsa,,amdgcn-*-amdhsa}
-@item
 @uref{#amd64-x-solaris2,,amd64-*-solaris2*}
-@item
-@uref{#arc-x-elf32,,arc-*-elf32}
-@item
-@uref{#arc-linux-uclibc,,arc-linux-uclibc}
 @item
 @uref{#arm-x-eabi,,arm-*-eabi}
 @item
@@ -3601,13 +3575,7 @@ information have to.
 @item
 @uref{#bfin,,Blackfin}
 @item
-@uref{#cris,,cris}
-@item
 @uref{#dos,,DOS}
-@item
-@uref{#epiphany-x-elf,,epiphany-*-elf}
-@item
-@uref{#ft32-x-elf,,ft32-*-elf}
 @item
 @uref{#x-x-freebsd,,*-*-freebsd*}
 @item
@@ -3633,8 +3601,6 @@ information have to.
 @item
 @uref{#iq2000-x-elf,,iq2000-*-elf}
 @item
-@uref{#loongarch,,loongarch}
-@item
 @uref{#lm32-x-elf,,lm32-*-elf}
 @item
 @uref{#lm32-x-uclinux,,lm32-*-uclinux}
@@ -3645,15 +3611,11 @@ information have to.
 @item
 @uref{#m68k-x-x,,m68k-*-*}
 @item
-@uref{#m68k-x-uclinux,,m68k-*-uclinux}
+@uref{#m68k-uclinux,,m68k-uclinux}
 @item
 @uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
-@item
-@uref{#moxie-x-elf,,moxie-*-elf}
-@item
-@uref{#msp430-x-elf,,msp430-*-elf}
 @item
 @uref{#nds32le-x-elf,,nds32le-*-elf}
 @item
@@ -3692,10 +3654,6 @@ information have to.
 @uref{#riscv64-x-elf,,riscv64-*-elf}
 @item
 @uref{#riscv64-x-linux,,riscv64-*-linux}
-@item
-@uref{#rl78-x-elf,,rl78-*-elf}
-@item
-@uref{#rx-x-elf,,rx-*-elf}
 @item
 @uref{#s390-x-linux,,s390-*-linux*}
 @item
@@ -3811,14 +3769,14 @@ This is a synonym for @samp{x86_64-*-solaris2*}.
 @heading amdgcn-*-amdhsa
 AMD GCN GPU target.
 
-Instead of GNU Binutils, you will need to install LLVM 13.0.1, or later, and copy
+Instead of GNU Binutils, you will need to install LLVM 6, or later, and copy
 @file{bin/llvm-mc} to @file{amdgcn-amdhsa/bin/as},
 @file{bin/lld} to @file{amdgcn-amdhsa/bin/ld},
 @file{bin/llvm-nm} to @file{amdgcn-amdhsa/bin/nm}, and
 @file{bin/llvm-ar} to both @file{bin/amdgcn-amdhsa-ar} and
 @file{bin/amdgcn-amdhsa-ranlib}.
 
-Use Newlib (3.2.0, or newer).
+Use Newlib (2019-01-16, or newer).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.github.io,,ROCm Platform}, and use
@@ -3909,6 +3867,29 @@ are available at @uref{https://sourceforge.net/projects/adi-toolchain/}.
 @html
 <hr />
 @end html
+@anchor{cr16}
+@heading CR16
+The CR16 CompactRISC architecture is a 16-bit architecture. This
+architecture is used in embedded applications.
+
+@ifnothtml
+@xref{CR16 Options,, CR16 Options, gcc, Using and Porting the GNU Compiler
+Collection (GCC)},
+@end ifnothtml
+
+@ifhtml
+See ``CR16 Options'' in the main manual for a list of CR16-specific options.
+@end ifhtml
+
+Use @samp{configure --target=cr16-elf --enable-languages=c,c++} to configure
+GCC@ for building a CR16 elf cross-compiler.
+
+Use @samp{configure --target=cr16-uclinux --enable-languages=c,c++} to
+configure GCC@ for building a CR16 uclinux cross-compiler.
+
+@html
+<hr />
+@end html
 @anchor{cris}
 @heading CRIS
 CRIS is a CPU architecture in Axis Communications systems-on-a-chip, for
@@ -3959,7 +3940,8 @@ on FreeBSD 7 or later) and the use of @code{__cxa_atexit} by default
 by GCC 4.5 and above.
 
 We support FreeBSD using the ELF file format with DWARF 2 debugging
-for all CPU architectures.  There are
+for all CPU architectures.  You may use @option{-gstabs} instead of
+@option{-g}, if you really want the old debugging format.  There are
 no known issues with mixing object files and libraries with different
 debugging formats.  Otherwise, this release of GCC should now match
 more of the configuration used in the stock FreeBSD configuration of
@@ -4635,22 +4617,14 @@ Instead of GNU binutils, you will need to install
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 
-You will need newlib 3.1.0 or later.  It can be
+You will need newlib 3.0 git revision
+cd31fbb2aea25f94d7ecedc9db16dfc87ab0c316 or later.  It can be
 automatically built together with GCC@.  For this, add a symbolic link
 to nvptx-newlib's @file{newlib} directory to the directory containing
 the GCC sources.
 
 Use the @option{--disable-sjlj-exceptions} and
 @option{--enable-newlib-io-long-long} options when configuring.
-
-The @option{--with-arch} option may be specified to override the
-default value for the @option{-march} option, and to also build
-corresponding target libraries.
-The default is @option{--with-arch=sm_30}.
-
-For example, if @option{--with-arch=sm_70} is specified,
-@option{-march=sm_30} and @option{-march=sm_70} target libraries are
-built, and code generation defaults to @option{-march=sm_70}.
 
 @html
 <hr />
