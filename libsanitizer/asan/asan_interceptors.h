@@ -81,12 +81,7 @@ void InitializePlatformInterceptors();
 #if ASAN_HAS_EXCEPTIONS && !SANITIZER_WINDOWS && !SANITIZER_SOLARIS && \
     !SANITIZER_NETBSD
 # define ASAN_INTERCEPT___CXA_THROW 1
-# if ! defined(ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION) \
-     || ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
-# else
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 0
-# endif
+# define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
 # if defined(_GLIBCXX_SJLJ_EXCEPTIONS) || (SANITIZER_IOS && defined(__arm__))
 #  define ASAN_INTERCEPT__UNWIND_SJLJ_RAISEEXCEPTION 1
 # else
@@ -119,7 +114,7 @@ void InitializePlatformInterceptors();
 
 #if SANITIZER_LINUX &&                                                \
     (defined(__arm__) || defined(__aarch64__) || defined(__i386__) || \
-     defined(__x86_64__) || SANITIZER_RISCV64)
+     defined(__x86_64__) || SANITIZER_RISCV64 || SANITIZER_LOONGARCH64)
 # define ASAN_INTERCEPT_VFORK 1
 #else
 # define ASAN_INTERCEPT_VFORK 0
