@@ -3996,8 +3996,7 @@ constexpr_fn_retval (const constexpr_ctx *ctx, tree body)
 // return an aggregate constant.  If UNSHARE_P, return an unshared
 // copy of the initializer.
 static tree
-constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p,
-		  bool unshare_p)
+constant_value_1 (tree decl, bool, bool, bool unshare_p)
 {
   while (TREE_CODE (decl) == CONST_DECL)
     {
@@ -6486,8 +6485,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 /* Like maybe_constant_init but first fully instantiate the argument.  */
 
 tree
-fold_non_dependent_init (tree t,
-			 tsubst_flags_t complain /*=tf_warning_or_error*/,
+fold_non_dependent_init (tree t, tsubst_flags_t /*=tf_warning_or_error*/,
 			 bool manifestly_const_eval /*=false*/,
 			 tree object /* = NULL_TREE */)
 {

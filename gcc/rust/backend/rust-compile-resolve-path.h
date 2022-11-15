@@ -61,8 +61,7 @@ public:
   {}
 
   tree resolve (const HIR::PathIdentSegment &final_segment,
-		const Analysis::NodeMapping &mappings, Location locus,
-		bool is_qualified_path);
+		const Analysis::NodeMapping &mappings, Location locus);
 
   tree resolved;
 };

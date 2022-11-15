@@ -62,19 +62,19 @@ public:
   void visit (HIR::NeverType &type) override;
   void visit (HIR::TraitObjectType &type) override;
 
-  void visit (HIR::TypePathSegmentFunction &segment) override
+  void visit (HIR::TypePathSegmentFunction &) override
   { /* TODO */
   }
-  void visit (HIR::TraitBound &bound) override
+  void visit (HIR::TraitBound &) override
   { /* TODO */
   }
-  void visit (HIR::ImplTraitType &type) override
+  void visit (HIR::ImplTraitType &) override
   { /* TODO */
   }
-  void visit (HIR::ParenthesisedType &type) override
+  void visit (HIR::ParenthesisedType &) override
   { /* TODO */
   }
-  void visit (HIR::ImplTraitTypeOneBound &type) override
+  void visit (HIR::ImplTraitTypeOneBound &) override
   { /* TODO */
   }
 

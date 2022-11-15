@@ -462,7 +462,7 @@ TypeCheckType::resolve_segments (
 	  return new TyTy::ErrorType (expr_id);
 	}
 
-      auto &candidate = *candidates.begin ();
+      auto candidate = *candidates.begin ();
       prev_segment = tyseg;
       tyseg = candidate.ty;
 
@@ -635,7 +635,7 @@ TypeCheckType::visit (HIR::InferredType &type)
 }
 
 void
-TypeCheckType::visit (HIR::NeverType &type)
+TypeCheckType::visit (HIR::NeverType &)
 {
   TyTy::BaseType *lookup = nullptr;
   bool ok = context->lookup_builtin ("!", &lookup);
@@ -666,13 +666,13 @@ TypeResolveGenericParam::Resolve (HIR::GenericParam *param)
 }
 
 void
-TypeResolveGenericParam::visit (HIR::LifetimeParam &param)
+TypeResolveGenericParam::visit (HIR::LifetimeParam &)
 {
   // nothing to do
 }
 
 void
-TypeResolveGenericParam::visit (HIR::ConstGenericParam &param)
+TypeResolveGenericParam::visit (HIR::ConstGenericParam &)
 {
   // TODO
 }
@@ -730,7 +730,7 @@ ResolveWhereClauseItem::Resolve (HIR::WhereClauseItem &item)
 }
 
 void
-ResolveWhereClauseItem::visit (HIR::LifetimeWhereClauseItem &item)
+ResolveWhereClauseItem::visit (HIR::LifetimeWhereClauseItem &)
 {}
 
 void

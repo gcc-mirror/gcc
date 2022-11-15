@@ -210,342 +210,342 @@ AttributeChecker::check_attributes (const AST::AttrVec &attributes)
 }
 
 void
-AttributeChecker::visit (AST::Token &tok)
+AttributeChecker::visit (AST::Token &)
 {}
 
 void
-AttributeChecker::visit (AST::DelimTokenTree &delim_tok_tree)
+AttributeChecker::visit (AST::DelimTokenTree &)
 {}
 
 void
-AttributeChecker::visit (AST::AttrInputMetaItemContainer &input)
+AttributeChecker::visit (AST::AttrInputMetaItemContainer &)
 {}
 
 void
-AttributeChecker::visit (AST::IdentifierExpr &ident_expr)
+AttributeChecker::visit (AST::IdentifierExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::Lifetime &lifetime)
+AttributeChecker::visit (AST::Lifetime &)
 {}
 
 void
-AttributeChecker::visit (AST::LifetimeParam &lifetime_param)
+AttributeChecker::visit (AST::LifetimeParam &)
 {}
 
 void
-AttributeChecker::visit (AST::ConstGenericParam &const_param)
+AttributeChecker::visit (AST::ConstGenericParam &)
 {}
 
 // rust-path.h
 void
-AttributeChecker::visit (AST::PathInExpression &path)
+AttributeChecker::visit (AST::PathInExpression &)
 {}
 
 void
-AttributeChecker::visit (AST::TypePathSegment &segment)
+AttributeChecker::visit (AST::TypePathSegment &)
 {}
 
 void
-AttributeChecker::visit (AST::TypePathSegmentGeneric &segment)
+AttributeChecker::visit (AST::TypePathSegmentGeneric &)
 {}
 
 void
-AttributeChecker::visit (AST::TypePathSegmentFunction &segment)
+AttributeChecker::visit (AST::TypePathSegmentFunction &)
 {}
 
 void
-AttributeChecker::visit (AST::TypePath &path)
+AttributeChecker::visit (AST::TypePath &)
 {}
 
 void
-AttributeChecker::visit (AST::QualifiedPathInExpression &path)
+AttributeChecker::visit (AST::QualifiedPathInExpression &)
 {}
 
 void
-AttributeChecker::visit (AST::QualifiedPathInType &path)
+AttributeChecker::visit (AST::QualifiedPathInType &)
 {}
 
 // rust-expr.h
 void
-AttributeChecker::visit (AST::LiteralExpr &expr)
+AttributeChecker::visit (AST::LiteralExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::AttrInputLiteral &attr_input)
+AttributeChecker::visit (AST::AttrInputLiteral &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaItemLitExpr &meta_item)
+AttributeChecker::visit (AST::MetaItemLitExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaItemPathLit &meta_item)
+AttributeChecker::visit (AST::MetaItemPathLit &)
 {}
 
 void
-AttributeChecker::visit (AST::BorrowExpr &expr)
+AttributeChecker::visit (AST::BorrowExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::DereferenceExpr &expr)
+AttributeChecker::visit (AST::DereferenceExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ErrorPropagationExpr &expr)
+AttributeChecker::visit (AST::ErrorPropagationExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::NegationExpr &expr)
+AttributeChecker::visit (AST::NegationExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ArithmeticOrLogicalExpr &expr)
+AttributeChecker::visit (AST::ArithmeticOrLogicalExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ComparisonExpr &expr)
+AttributeChecker::visit (AST::ComparisonExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::LazyBooleanExpr &expr)
+AttributeChecker::visit (AST::LazyBooleanExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::TypeCastExpr &expr)
+AttributeChecker::visit (AST::TypeCastExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::AssignmentExpr &expr)
+AttributeChecker::visit (AST::AssignmentExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::CompoundAssignmentExpr &expr)
+AttributeChecker::visit (AST::CompoundAssignmentExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::GroupedExpr &expr)
+AttributeChecker::visit (AST::GroupedExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ArrayElemsValues &elems)
+AttributeChecker::visit (AST::ArrayElemsValues &)
 {}
 
 void
-AttributeChecker::visit (AST::ArrayElemsCopied &elems)
+AttributeChecker::visit (AST::ArrayElemsCopied &)
 {}
 
 void
-AttributeChecker::visit (AST::ArrayExpr &expr)
+AttributeChecker::visit (AST::ArrayExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ArrayIndexExpr &expr)
+AttributeChecker::visit (AST::ArrayIndexExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::TupleExpr &expr)
+AttributeChecker::visit (AST::TupleExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::TupleIndexExpr &expr)
+AttributeChecker::visit (AST::TupleIndexExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::StructExprStruct &expr)
+AttributeChecker::visit (AST::StructExprStruct &)
 {}
 
 void
-AttributeChecker::visit (AST::StructExprFieldIdentifier &field)
+AttributeChecker::visit (AST::StructExprFieldIdentifier &)
 {}
 
 void
-AttributeChecker::visit (AST::StructExprFieldIdentifierValue &field)
+AttributeChecker::visit (AST::StructExprFieldIdentifierValue &)
 {}
 
 void
-AttributeChecker::visit (AST::StructExprFieldIndexValue &field)
+AttributeChecker::visit (AST::StructExprFieldIndexValue &)
 {}
 
 void
-AttributeChecker::visit (AST::StructExprStructFields &expr)
+AttributeChecker::visit (AST::StructExprStructFields &)
 {}
 
 void
-AttributeChecker::visit (AST::StructExprStructBase &expr)
+AttributeChecker::visit (AST::StructExprStructBase &)
 {}
 
 void
-AttributeChecker::visit (AST::CallExpr &expr)
+AttributeChecker::visit (AST::CallExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::MethodCallExpr &expr)
+AttributeChecker::visit (AST::MethodCallExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::FieldAccessExpr &expr)
+AttributeChecker::visit (AST::FieldAccessExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ClosureExprInner &expr)
+AttributeChecker::visit (AST::ClosureExprInner &)
 {}
 
 void
-AttributeChecker::visit (AST::BlockExpr &expr)
+AttributeChecker::visit (AST::BlockExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ClosureExprInnerTyped &expr)
+AttributeChecker::visit (AST::ClosureExprInnerTyped &)
 {}
 
 void
-AttributeChecker::visit (AST::ContinueExpr &expr)
+AttributeChecker::visit (AST::ContinueExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::BreakExpr &expr)
+AttributeChecker::visit (AST::BreakExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::RangeFromToExpr &expr)
+AttributeChecker::visit (AST::RangeFromToExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::RangeFromExpr &expr)
+AttributeChecker::visit (AST::RangeFromExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::RangeToExpr &expr)
+AttributeChecker::visit (AST::RangeToExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::RangeFullExpr &expr)
+AttributeChecker::visit (AST::RangeFullExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::RangeFromToInclExpr &expr)
+AttributeChecker::visit (AST::RangeFromToInclExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::RangeToInclExpr &expr)
+AttributeChecker::visit (AST::RangeToInclExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ReturnExpr &expr)
+AttributeChecker::visit (AST::ReturnExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::UnsafeBlockExpr &expr)
+AttributeChecker::visit (AST::UnsafeBlockExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::LoopExpr &expr)
+AttributeChecker::visit (AST::LoopExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::WhileLoopExpr &expr)
+AttributeChecker::visit (AST::WhileLoopExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::WhileLetLoopExpr &expr)
+AttributeChecker::visit (AST::WhileLetLoopExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::ForLoopExpr &expr)
+AttributeChecker::visit (AST::ForLoopExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::IfExpr &expr)
+AttributeChecker::visit (AST::IfExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::IfExprConseqElse &expr)
+AttributeChecker::visit (AST::IfExprConseqElse &)
 {}
 
 void
-AttributeChecker::visit (AST::IfExprConseqIf &expr)
+AttributeChecker::visit (AST::IfExprConseqIf &)
 {}
 
 void
-AttributeChecker::visit (AST::IfExprConseqIfLet &expr)
+AttributeChecker::visit (AST::IfExprConseqIfLet &)
 {}
 
 void
-AttributeChecker::visit (AST::IfLetExpr &expr)
+AttributeChecker::visit (AST::IfLetExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::IfLetExprConseqElse &expr)
+AttributeChecker::visit (AST::IfLetExprConseqElse &)
 {}
 
 void
-AttributeChecker::visit (AST::IfLetExprConseqIf &expr)
+AttributeChecker::visit (AST::IfLetExprConseqIf &)
 {}
 
 void
-AttributeChecker::visit (AST::IfLetExprConseqIfLet &expr)
+AttributeChecker::visit (AST::IfLetExprConseqIfLet &)
 {}
 
 void
-AttributeChecker::visit (AST::MatchExpr &expr)
+AttributeChecker::visit (AST::MatchExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::AwaitExpr &expr)
+AttributeChecker::visit (AST::AwaitExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::AsyncBlockExpr &expr)
+AttributeChecker::visit (AST::AsyncBlockExpr &)
 {}
 
 // rust-item.h
 void
-AttributeChecker::visit (AST::TypeParam &param)
+AttributeChecker::visit (AST::TypeParam &)
 {}
 
 void
-AttributeChecker::visit (AST::LifetimeWhereClauseItem &item)
+AttributeChecker::visit (AST::LifetimeWhereClauseItem &)
 {}
 
 void
-AttributeChecker::visit (AST::TypeBoundWhereClauseItem &item)
+AttributeChecker::visit (AST::TypeBoundWhereClauseItem &)
 {}
 
 void
-AttributeChecker::visit (AST::Method &method)
+AttributeChecker::visit (AST::Method &)
 {}
 
 void
-AttributeChecker::visit (AST::Module &module)
+AttributeChecker::visit (AST::Module &)
 {}
 
 void
-AttributeChecker::visit (AST::ExternCrate &crate)
+AttributeChecker::visit (AST::ExternCrate &)
 {}
 
 void
-AttributeChecker::visit (AST::UseTreeGlob &use_tree)
+AttributeChecker::visit (AST::UseTreeGlob &)
 {}
 
 void
-AttributeChecker::visit (AST::UseTreeList &use_tree)
+AttributeChecker::visit (AST::UseTreeList &)
 {}
 
 void
-AttributeChecker::visit (AST::UseTreeRebind &use_tree)
+AttributeChecker::visit (AST::UseTreeRebind &)
 {}
 
 void
-AttributeChecker::visit (AST::UseDeclaration &use_decl)
+AttributeChecker::visit (AST::UseDeclaration &)
 {}
 
 void
-AttributeChecker::visit (AST::Function &function)
+AttributeChecker::visit (AST::Function &)
 {}
 
 void
-AttributeChecker::visit (AST::TypeAlias &type_alias)
+AttributeChecker::visit (AST::TypeAlias &)
 {}
 
 void
@@ -555,287 +555,287 @@ AttributeChecker::visit (AST::StructStruct &struct_item)
 }
 
 void
-AttributeChecker::visit (AST::TupleStruct &tuple_struct)
+AttributeChecker::visit (AST::TupleStruct &)
 {}
 
 void
-AttributeChecker::visit (AST::EnumItem &item)
+AttributeChecker::visit (AST::EnumItem &)
 {}
 
 void
-AttributeChecker::visit (AST::EnumItemTuple &item)
+AttributeChecker::visit (AST::EnumItemTuple &)
 {}
 
 void
-AttributeChecker::visit (AST::EnumItemStruct &item)
+AttributeChecker::visit (AST::EnumItemStruct &)
 {}
 
 void
-AttributeChecker::visit (AST::EnumItemDiscriminant &item)
+AttributeChecker::visit (AST::EnumItemDiscriminant &)
 {}
 
 void
-AttributeChecker::visit (AST::Enum &enum_item)
+AttributeChecker::visit (AST::Enum &)
 {}
 
 void
-AttributeChecker::visit (AST::Union &union_item)
+AttributeChecker::visit (AST::Union &)
 {}
 
 void
-AttributeChecker::visit (AST::ConstantItem &const_item)
+AttributeChecker::visit (AST::ConstantItem &)
 {}
 
 void
-AttributeChecker::visit (AST::StaticItem &static_item)
+AttributeChecker::visit (AST::StaticItem &)
 {}
 
 void
-AttributeChecker::visit (AST::TraitItemFunc &item)
+AttributeChecker::visit (AST::TraitItemFunc &)
 {}
 
 void
-AttributeChecker::visit (AST::TraitItemMethod &item)
+AttributeChecker::visit (AST::TraitItemMethod &)
 {}
 
 void
-AttributeChecker::visit (AST::TraitItemConst &item)
+AttributeChecker::visit (AST::TraitItemConst &)
 {}
 
 void
-AttributeChecker::visit (AST::TraitItemType &item)
+AttributeChecker::visit (AST::TraitItemType &)
 {}
 
 void
-AttributeChecker::visit (AST::Trait &trait)
+AttributeChecker::visit (AST::Trait &)
 {}
 
 void
-AttributeChecker::visit (AST::InherentImpl &impl)
+AttributeChecker::visit (AST::InherentImpl &)
 {}
 
 void
-AttributeChecker::visit (AST::TraitImpl &impl)
+AttributeChecker::visit (AST::TraitImpl &)
 {}
 
 void
-AttributeChecker::visit (AST::ExternalStaticItem &item)
+AttributeChecker::visit (AST::ExternalStaticItem &)
 {}
 
 void
-AttributeChecker::visit (AST::ExternalFunctionItem &item)
+AttributeChecker::visit (AST::ExternalFunctionItem &)
 {}
 
 void
-AttributeChecker::visit (AST::ExternBlock &block)
+AttributeChecker::visit (AST::ExternBlock &)
 {}
 
 // rust-macro.h
 void
-AttributeChecker::visit (AST::MacroMatchFragment &match)
+AttributeChecker::visit (AST::MacroMatchFragment &)
 {}
 
 void
-AttributeChecker::visit (AST::MacroMatchRepetition &match)
+AttributeChecker::visit (AST::MacroMatchRepetition &)
 {}
 
 void
-AttributeChecker::visit (AST::MacroMatcher &matcher)
+AttributeChecker::visit (AST::MacroMatcher &)
 {}
 
 void
-AttributeChecker::visit (AST::MacroRulesDefinition &rules_def)
+AttributeChecker::visit (AST::MacroRulesDefinition &)
 {}
 
 void
-AttributeChecker::visit (AST::MacroInvocation &macro_invoc)
+AttributeChecker::visit (AST::MacroInvocation &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaItemPath &meta_item)
+AttributeChecker::visit (AST::MetaItemPath &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaItemSeq &meta_item)
+AttributeChecker::visit (AST::MetaItemSeq &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaWord &meta_item)
+AttributeChecker::visit (AST::MetaWord &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaNameValueStr &meta_item)
+AttributeChecker::visit (AST::MetaNameValueStr &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaListPaths &meta_item)
+AttributeChecker::visit (AST::MetaListPaths &)
 {}
 
 void
-AttributeChecker::visit (AST::MetaListNameValueStr &meta_item)
+AttributeChecker::visit (AST::MetaListNameValueStr &)
 {}
 
 // rust-pattern.h
 void
-AttributeChecker::visit (AST::LiteralPattern &pattern)
+AttributeChecker::visit (AST::LiteralPattern &)
 {}
 
 void
-AttributeChecker::visit (AST::IdentifierPattern &pattern)
+AttributeChecker::visit (AST::IdentifierPattern &)
 {}
 
 void
-AttributeChecker::visit (AST::WildcardPattern &pattern)
+AttributeChecker::visit (AST::WildcardPattern &)
 {}
 
-// void AttributeChecker::visit(RangePatternBound& bound){}
+// void AttributeChecker::visit(RangePatternBound& ){}
 
 void
-AttributeChecker::visit (AST::RangePatternBoundLiteral &bound)
-{}
-
-void
-AttributeChecker::visit (AST::RangePatternBoundPath &bound)
+AttributeChecker::visit (AST::RangePatternBoundLiteral &)
 {}
 
 void
-AttributeChecker::visit (AST::RangePatternBoundQualPath &bound)
+AttributeChecker::visit (AST::RangePatternBoundPath &)
 {}
 
 void
-AttributeChecker::visit (AST::RangePattern &pattern)
+AttributeChecker::visit (AST::RangePatternBoundQualPath &)
 {}
 
 void
-AttributeChecker::visit (AST::ReferencePattern &pattern)
-{}
-
-// void AttributeChecker::visit(StructPatternField& field){}
-
-void
-AttributeChecker::visit (AST::StructPatternFieldTuplePat &field)
+AttributeChecker::visit (AST::RangePattern &)
 {}
 
 void
-AttributeChecker::visit (AST::StructPatternFieldIdentPat &field)
+AttributeChecker::visit (AST::ReferencePattern &)
+{}
+
+// void AttributeChecker::visit(StructPatternField& ){}
+
+void
+AttributeChecker::visit (AST::StructPatternFieldTuplePat &)
 {}
 
 void
-AttributeChecker::visit (AST::StructPatternFieldIdent &field)
+AttributeChecker::visit (AST::StructPatternFieldIdentPat &)
 {}
 
 void
-AttributeChecker::visit (AST::StructPattern &pattern)
-{}
-
-// void AttributeChecker::visit(TupleStructItems& tuple_items){}
-
-void
-AttributeChecker::visit (AST::TupleStructItemsNoRange &tuple_items)
+AttributeChecker::visit (AST::StructPatternFieldIdent &)
 {}
 
 void
-AttributeChecker::visit (AST::TupleStructItemsRange &tuple_items)
+AttributeChecker::visit (AST::StructPattern &)
+{}
+
+// void AttributeChecker::visit(TupleStructItems& ){}
+
+void
+AttributeChecker::visit (AST::TupleStructItemsNoRange &)
 {}
 
 void
-AttributeChecker::visit (AST::TupleStructPattern &pattern)
-{}
-
-// void AttributeChecker::visit(TuplePatternItems& tuple_items){}
-
-void
-AttributeChecker::visit (AST::TuplePatternItemsMultiple &tuple_items)
+AttributeChecker::visit (AST::TupleStructItemsRange &)
 {}
 
 void
-AttributeChecker::visit (AST::TuplePatternItemsRanged &tuple_items)
+AttributeChecker::visit (AST::TupleStructPattern &)
+{}
+
+// void AttributeChecker::visit(TuplePatternItems& ){}
+
+void
+AttributeChecker::visit (AST::TuplePatternItemsMultiple &)
 {}
 
 void
-AttributeChecker::visit (AST::TuplePattern &pattern)
+AttributeChecker::visit (AST::TuplePatternItemsRanged &)
 {}
 
 void
-AttributeChecker::visit (AST::GroupedPattern &pattern)
+AttributeChecker::visit (AST::TuplePattern &)
 {}
 
 void
-AttributeChecker::visit (AST::SlicePattern &pattern)
+AttributeChecker::visit (AST::GroupedPattern &)
+{}
+
+void
+AttributeChecker::visit (AST::SlicePattern &)
 {}
 
 // rust-stmt.h
 void
-AttributeChecker::visit (AST::EmptyStmt &stmt)
+AttributeChecker::visit (AST::EmptyStmt &)
 {}
 
 void
-AttributeChecker::visit (AST::LetStmt &stmt)
+AttributeChecker::visit (AST::LetStmt &)
 {}
 
 void
-AttributeChecker::visit (AST::ExprStmtWithoutBlock &stmt)
+AttributeChecker::visit (AST::ExprStmtWithoutBlock &)
 {}
 
 void
-AttributeChecker::visit (AST::ExprStmtWithBlock &stmt)
+AttributeChecker::visit (AST::ExprStmtWithBlock &)
 {}
 
 // rust-type.h
 void
-AttributeChecker::visit (AST::TraitBound &bound)
+AttributeChecker::visit (AST::TraitBound &)
 {}
 
 void
-AttributeChecker::visit (AST::ImplTraitType &type)
+AttributeChecker::visit (AST::ImplTraitType &)
 {}
 
 void
-AttributeChecker::visit (AST::TraitObjectType &type)
+AttributeChecker::visit (AST::TraitObjectType &)
 {}
 
 void
-AttributeChecker::visit (AST::ParenthesisedType &type)
+AttributeChecker::visit (AST::ParenthesisedType &)
 {}
 
 void
-AttributeChecker::visit (AST::ImplTraitTypeOneBound &type)
+AttributeChecker::visit (AST::ImplTraitTypeOneBound &)
 {}
 
 void
-AttributeChecker::visit (AST::TraitObjectTypeOneBound &type)
+AttributeChecker::visit (AST::TraitObjectTypeOneBound &)
 {}
 
 void
-AttributeChecker::visit (AST::TupleType &type)
+AttributeChecker::visit (AST::TupleType &)
 {}
 
 void
-AttributeChecker::visit (AST::NeverType &type)
+AttributeChecker::visit (AST::NeverType &)
 {}
 
 void
-AttributeChecker::visit (AST::RawPointerType &type)
+AttributeChecker::visit (AST::RawPointerType &)
 {}
 
 void
-AttributeChecker::visit (AST::ReferenceType &type)
+AttributeChecker::visit (AST::ReferenceType &)
 {}
 
 void
-AttributeChecker::visit (AST::ArrayType &type)
+AttributeChecker::visit (AST::ArrayType &)
 {}
 
 void
-AttributeChecker::visit (AST::SliceType &type)
+AttributeChecker::visit (AST::SliceType &)
 {}
 
 void
-AttributeChecker::visit (AST::InferredType &type)
+AttributeChecker::visit (AST::InferredType &)
 {}
 
 void
-AttributeChecker::visit (AST::BareFunctionType &type)
+AttributeChecker::visit (AST::BareFunctionType &)
 {}
 
 } // namespace Analysis

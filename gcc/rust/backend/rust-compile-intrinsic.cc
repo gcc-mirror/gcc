@@ -151,7 +151,7 @@ unchecked_op_handler (tree_code op)
 }
 
 inline tree
-sorry_handler (Context *ctx, TyTy::FnType *fntype)
+sorry_handler (Context *, TyTy::FnType *fntype)
 {
   rust_sorry_at (fntype->get_locus (), "intrinsic %qs is not yet implemented",
 		 fntype->get_identifier ().c_str ());

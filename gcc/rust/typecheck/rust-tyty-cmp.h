@@ -381,7 +381,7 @@ public:
       }
   }
 
-  virtual void visit (const PlaceholderType &type) override
+  virtual void visit (const PlaceholderType &) override
   {
     // it is ok for types to can eq to a placeholder
     ok = true;
@@ -436,7 +436,7 @@ public:
   }
 
 protected:
-  BaseCmp (const BaseType *base, bool emit_errors)
+  BaseCmp (const BaseType *, bool emit_errors)
     : mappings (Analysis::Mappings::get ()),
       context (Resolver::TypeCheckContext::get ()), ok (false),
       emit_error_flag (emit_errors)
@@ -986,7 +986,7 @@ public:
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (const BoolType &type) override { ok = true; }
+  void visit (const BoolType &) override { ok = true; }
 
   void visit (const InferType &type) override
   {
@@ -1207,7 +1207,7 @@ public:
     ok = type.get_infer_kind () != InferType::InferTypeKind::FLOAT;
   }
 
-  void visit (const USizeType &type) override { ok = true; }
+  void visit (const USizeType &) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1228,7 +1228,7 @@ public:
     ok = type.get_infer_kind () != InferType::InferTypeKind::FLOAT;
   }
 
-  void visit (const ISizeType &type) override { ok = true; }
+  void visit (const ISizeType &) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1249,7 +1249,7 @@ public:
     ok = type.get_infer_kind () == InferType::InferTypeKind::GENERAL;
   }
 
-  void visit (const CharType &type) override { ok = true; }
+  void visit (const CharType &) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1447,7 +1447,7 @@ public:
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (const StrType &type) override { ok = true; }
+  void visit (const StrType &) override { ok = true; }
 
   void visit (const InferType &type) override
   {
@@ -1474,7 +1474,7 @@ public:
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (const NeverType &type) override { ok = true; }
+  void visit (const NeverType &) override { ok = true; }
 
   void visit (const InferType &type) override
   {

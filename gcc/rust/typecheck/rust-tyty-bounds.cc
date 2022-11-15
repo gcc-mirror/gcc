@@ -29,7 +29,7 @@ TypeBoundsProbe::scan ()
   std::vector<std::pair<HIR::TypePath *, HIR::ImplBlock *>>
     possible_trait_paths;
   mappings->iterate_impl_blocks (
-    [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
+    [&] (HirId, HIR::ImplBlock *impl) mutable -> bool {
       // we are filtering for trait-impl-blocks
       if (!impl->has_trait_ref ())
 	return true;

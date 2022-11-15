@@ -23,7 +23,7 @@ namespace Rust {
 namespace Resolver {
 
 void
-PathProbeType::process_impl_item_candidate (HirId id, HIR::ImplItem *item,
+PathProbeType::process_impl_item_candidate (HirId, HIR::ImplItem *item,
 					    HIR::ImplBlock *impl)
 {
   current_impl = impl;

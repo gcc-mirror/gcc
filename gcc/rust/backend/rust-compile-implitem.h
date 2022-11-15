@@ -72,7 +72,7 @@ public:
   void visit (HIR::TraitItemConst &constant) override;
   void visit (HIR::TraitItemFunc &func) override;
 
-  void visit (HIR::TraitItemType &typ) override {}
+  void visit (HIR::TraitItemType &) override {}
 
 private:
   CompileTraitItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)

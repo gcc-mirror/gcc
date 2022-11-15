@@ -337,7 +337,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  return;
 	}
 
-      auto &candidate = *candidates.begin ();
+      auto candidate = *candidates.begin ();
       prev_segment = tyseg;
       tyseg = candidate.ty;
 

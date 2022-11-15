@@ -50,14 +50,11 @@ public:
 
   // FIXME
   // this seems like it should not be part of this visitor
-  void visit (HIR::TypePathSegmentFunction &segment) override
-  {
-    gcc_unreachable ();
-  }
+  void visit (HIR::TypePathSegmentFunction &) override { gcc_unreachable (); }
 
   // nothing to do for these
-  void visit (HIR::ExternCrate &crate) override {}
-  void visit (HIR::UseDeclaration &use_decl) override {}
+  void visit (HIR::ExternCrate &) override {}
+  void visit (HIR::UseDeclaration &) override {}
 
   // nothing to do for these as they are taken care of by the
   // hir-type-check-enumitem.h
