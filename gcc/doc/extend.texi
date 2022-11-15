@@ -14647,7 +14647,6 @@ instructions, but allow the compiler to schedule those calls.
 * Other MIPS Built-in Functions::
 * MSP430 Built-in Functions::
 * NDS32 Built-in Functions::
-* picoChip Built-in Functions::
 * Basic PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * PowerPC Hardware Transactional Memory Built-in Functions::
@@ -17773,42 +17772,6 @@ Enable global interrupt.
 @deftypefn {Built-in Function} void __builtin_nds32_setgie_dis (void)
 Disable global interrupt.
 @end deftypefn
-
-@node picoChip Built-in Functions
-@subsection picoChip Built-in Functions
-
-GCC provides an interface to selected machine instructions from the
-picoChip instruction set.
-
-@table @code
-@item int __builtin_sbc (int @var{value})
-Sign bit count.  Return the number of consecutive bits in @var{value}
-that have the same value as the sign bit.  The result is the number of
-leading sign bits minus one, giving the number of redundant sign bits in
-@var{value}.
-
-@item int __builtin_byteswap (int @var{value})
-Byte swap.  Return the result of swapping the upper and lower bytes of
-@var{value}.
-
-@item int __builtin_brev (int @var{value})
-Bit reversal.  Return the result of reversing the bits in
-@var{value}.  Bit 15 is swapped with bit 0, bit 14 is swapped with bit 1,
-and so on.
-
-@item int __builtin_adds (int @var{x}, int @var{y})
-Saturating addition.  Return the result of adding @var{x} and @var{y},
-storing the value 32767 if the result overflows.
-
-@item int __builtin_subs (int @var{x}, int @var{y})
-Saturating subtraction.  Return the result of subtracting @var{y} from
-@var{x}, storing the value @minus{}32768 if the result overflows.
-
-@item void __builtin_halt (void)
-Halt.  The processor stops execution.  This built-in is useful for
-implementing assertions.
-
-@end table
 
 @node Basic PowerPC Built-in Functions
 @subsection Basic PowerPC Built-in Functions
