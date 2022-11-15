@@ -3773,7 +3773,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
 {
   tree ohi = CALL_EXPR_ARG (call, 0);
   tree hi = tsubst_copy_and_build (ohi, args, complain, in_decl,
-				   false/*fn*/, true/*int_cst*/);
+				   true/*int_cst*/);
 
   if (instantiation_dependent_expression_p (hi))
     {
@@ -6361,7 +6361,6 @@ instantiate_non_dependent_expr_internal (tree expr, tsubst_flags_t complain)
 				/*args=*/NULL_TREE,
 				complain,
 				/*in_decl=*/NULL_TREE,
-				/*function_p=*/false,
 				/*integral_constant_expression_p=*/true);
 }
 
@@ -14213,7 +14212,6 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
     {
       tree spec = lookup_explicit_specifier (t);
       spec = tsubst_copy_and_build (spec, args, complain, in_decl,
-				    /*function_p=*/false,
 				    /*i_c_e_p=*/true);
       spec = build_explicit_specifier (spec, complain);
       if (spec == error_mark_node)
@@ -15279,7 +15277,7 @@ tsubst_arg_types (tree arg_types,
       || (in_decl && TREE_CODE (in_decl) == FUNCTION_DECL
 	  && DECL_LOCAL_DECL_P (in_decl)))
     default_arg = tsubst_copy_and_build (default_arg, args, complain, in_decl,
-					 false/*fn*/, false/*constexpr*/);
+					 false/*constexpr*/);
 
   tree remaining_arg_types = tsubst_arg_types (TREE_CHAIN (arg_types),
 					       args, end, complain, in_decl);
@@ -15461,7 +15459,7 @@ tsubst_exception_specification (tree fntype,
 	      expr = DEFERRED_NOEXCEPT_PATTERN (expr);
 	    }
 	  new_specs = tsubst_copy_and_build
-	    (expr, args, complain, in_decl, /*function_p=*/false,
+	    (expr, args, complain, in_decl,
 	     /*integral_constant_expression_p=*/true);
 	}
       new_specs = build_noexcept_spec (new_specs, complain);
@@ -16386,7 +16384,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	type = tsubst_copy_and_build (DECLTYPE_TYPE_EXPR (t), args,
 				      complain|tf_decltype, in_decl,
-				      /*function_p*/false,
 				      /*integral_constant_expression*/false);
 
 	--cp_unevaluated_operand;
@@ -18052,7 +18049,6 @@ tsubst_copy_asm_operands (tree t, tree args, tsubst_flags_t complain,
 
   if (TREE_CODE (t) != TREE_LIST)
     return tsubst_copy_and_build (t, args, complain, in_decl,
-				  /*function_p=*/false,
 				  /*integral_constant_expression_p=*/false);
 
   if (t == void_list_node)
@@ -19639,7 +19635,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       gcc_assert (!STATEMENT_CODE_P (TREE_CODE (t)));
 
       RETURN (tsubst_copy_and_build (t, args, complain, in_decl,
-				    /*function_p=*/false,
 				    integral_constant_expression_p));
     }
 
@@ -19732,7 +19727,6 @@ tsubst_non_call_postfix_expression (tree t, tree args,
 			     /*done=*/false, /*address_p=*/false);
   else
     t = tsubst_copy_and_build (t, args, complain, in_decl,
-			       /*function_p=*/false,
 			       /*integral_constant_expression_p=*/false);
 
   return t;
@@ -19805,7 +19799,7 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	init = tsubst_pack_expansion (init, args, complain, in_decl);
       else
 	init = tsubst_copy_and_build (init, args, complain, in_decl,
-				      /*fn*/false, /*constexpr*/false);
+				      /*constexpr*/false);
 
       if (init == error_mark_node)
 	return error_mark_node;
@@ -20073,7 +20067,6 @@ tsubst_copy_and_build_call_args (tree t, tree args, tsubst_flags_t complain,
       if (!PACK_EXPANSION_P (arg))
 	vec_safe_push (call_args,
 		       tsubst_copy_and_build (arg, args, complain, in_decl,
-					      /*function_p=*/false,
 					      integral_constant_expression_p));
       else
 	{
@@ -20100,21 +20093,18 @@ tsubst_copy_and_build_call_args (tree t, tree args, tsubst_flags_t complain,
 }
 
 /* Like tsubst but deals with expressions and performs semantic
-   analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)" or
-   "F<TARGS> (ARGS)".  */
+   analysis.  */
 
 tree
 tsubst_copy_and_build (tree t,
 		       tree args,
 		       tsubst_flags_t complain,
 		       tree in_decl,
-		       bool function_p,
 		       bool integral_constant_expression_p)
 {
 #define RETURN(EXP) do { retval = (EXP); goto out; } while(0)
 #define RECUR(NODE)						\
   tsubst_copy_and_build (NODE, args, complain, in_decl, 	\
-			 /*function_p=*/false,			\
 			 integral_constant_expression_p)
 
   tree retval, op1;
@@ -20171,7 +20161,7 @@ tsubst_copy_and_build (tree t,
 				     input_location);
 	if (error_msg)
 	  error (error_msg);
-	if (!function_p && identifier_p (decl))
+	if (identifier_p (decl))
 	  {
 	    if (complain & tf_error)
 	      unqualified_name_lookup_error (decl);
@@ -20185,7 +20175,6 @@ tsubst_copy_and_build (tree t,
 	tree object;
 	tree templ = tsubst_copy_and_build (TREE_OPERAND (t, 0), args,
 					    complain, in_decl,
-					    function_p,
 					    integral_constant_expression_p);
 	tree targs = TREE_OPERAND (t, 1);
 
@@ -20568,7 +20557,6 @@ tsubst_copy_and_build (tree t,
 	      op1 = tsubst (op1, args, complain, in_decl);
 	    else
 	      op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
-					   /*function_p=*/false,
 					   /*integral_constant_expression_p=*/
 					   false);
 	    --cp_unevaluated_operand;
@@ -20608,7 +20596,6 @@ tsubst_copy_and_build (tree t,
 	++cp_unevaluated_operand;
 	++c_inhibit_evaluation_warnings;
 	op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
-				     /*function_p=*/false,
 				     /*integral_constant_expression_p=*/false);
 	--cp_unevaluated_operand;
 	--c_inhibit_evaluation_warnings;
@@ -20621,7 +20608,6 @@ tsubst_copy_and_build (tree t,
       ++c_inhibit_evaluation_warnings;
       ++cp_noexcept_operand;
       op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
-				   /*function_p=*/false,
 				   /*integral_constant_expression_p=*/false);
       --cp_unevaluated_operand;
       --c_inhibit_evaluation_warnings;
@@ -20732,7 +20718,6 @@ tsubst_copy_and_build (tree t,
       {
 	tree op0 = tsubst_copy_and_build (TREE_OPERAND (t, 0), args,
 					  complain & ~tf_decltype, in_decl,
-					  /*function_p=*/false,
 					  integral_constant_expression_p);
 	RETURN (build_x_compound_expr (EXPR_LOCATION (t),
 				       op0,
@@ -20778,12 +20763,10 @@ tsubst_copy_and_build (tree t,
 	       would incorrectly perform unqualified lookup again.
 
 	       Note that we can also have an IDENTIFIER_NODE if the earlier
-	       unqualified lookup found a member function; in that case
-	       koenig_p will be false and we do want to do the lookup
-	       again to find the instantiated member function.
-
-	       FIXME but doing that causes c++/15272, so we need to stop
-	       using IDENTIFIER_NODE in that situation.  */
+	       unqualified lookup found a dependent local extern declaration
+	       (as per finish_call_expr); in that case koenig_p will be false
+	       and we do want to do the lookup again to find the substituted
+	       declaration.  */
 	    qualified_p = false;
 
 	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
@@ -20818,7 +20801,6 @@ tsubst_copy_and_build (tree t,
 	      subcomplain |= tf_conv;
 	    function = tsubst_copy_and_build (function, args, subcomplain,
 					      in_decl,
-					      !qualified_p,
 					      integral_constant_expression_p);
 
 	    if (BASELINK_P (function))
@@ -20922,7 +20904,7 @@ tsubst_copy_and_build (tree t,
 		   the unqualified lookup again if we aren't in SFINAE
 		   context.  */
 		tree unq = (tsubst_copy_and_build
-			    (function, args, complain, in_decl, true,
+			    (function, args, complain, in_decl,
 			     integral_constant_expression_p));
 		if (unq == error_mark_node)
 		  RETURN (error_mark_node);
@@ -21473,7 +21455,7 @@ tsubst_copy_and_build (tree t,
       {
 	tree object_ptr
 	  = tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain,
-				   in_decl, /*function_p=*/false,
+				   in_decl,
 				   /*integral_constant_expression_p=*/false);
 	RETURN (finish_offsetof (object_ptr,
 				 RECUR (TREE_OPERAND (t, 0)),
@@ -21575,8 +21557,7 @@ tsubst_copy_and_build (tree t,
       /* Handle Objective-C++ constructs, if appropriate.  */
       {
 	tree subst
-	  = objcp_tsubst_copy_and_build (t, args, complain,
-					 in_decl, /*function_p=*/false);
+	  = objcp_tsubst_copy_and_build (t, args, complain, in_decl);
 	if (subst)
 	  RETURN (subst);
       }
@@ -26393,7 +26374,6 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  noex = tsubst_copy_and_build (DEFERRED_NOEXCEPT_PATTERN (noex),
 					DEFERRED_NOEXCEPT_ARGS (noex),
 					tf_warning_or_error, fn,
-					/*function_p=*/false,
 					/*i_c_e_p=*/true);
 
 	  /* Build up the noexcept-specification.  */

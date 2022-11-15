@@ -622,7 +622,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  /* Do deferred instantiation of the NSDMI.  */
 	  init = (tsubst_copy_and_build
 		  (init, DECL_TI_ARGS (member),
-		   complain, member, /*function_p=*/false,
+		   complain, member,
 		   /*integral_constant_expression_p=*/false));
 	  init = digest_nsdmi_init (member, init, complain);
 

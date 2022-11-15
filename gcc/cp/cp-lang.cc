@@ -116,8 +116,7 @@ tree
 objcp_tsubst_copy_and_build (tree /*t*/,
 			     tree /*args*/,
 			     tsubst_flags_t /*complain*/,
-			     tree /*in_decl*/,
-			     bool /*function_p*/)
+			     tree /*in_decl*/)
 {
   return NULL_TREE;
 }
