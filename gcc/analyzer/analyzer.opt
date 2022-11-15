@@ -90,6 +90,14 @@ Wanalyzer-fd-leak
 Common Var(warn_analyzer_fd_leak) Init(1) Warning
 Warn about code paths in which a file descriptor is not closed.
 
+Wanalyzer-fd-phase-mismatch
+Common Var(warn_analyzer_fd_phase_mismatch) Init(1) Warning
+Warn about code paths in which an operation is attempted in the wrong phase of a file descriptor's lifetime.
+
+Wanalyzer-fd-type-mismatch
+Common Var(warn_analyzer_fd_type_mismatch) Init(1) Warning
+Warn about code paths in which an operation is attempted on the wrong type of file descriptor.
+
 Wanalyzer-fd-use-after-close
 Common Var(warn_analyzer_fd_use_after_close) Init(1) Warning
 Warn about code paths in which a read or write is performed on a closed file descriptor.

@@ -72,6 +72,8 @@ on_finish_translation_unit (const translation_unit &tu)
   maybe_stash_named_constant (tu, "O_ACCMODE");
   maybe_stash_named_constant (tu, "O_RDONLY");
   maybe_stash_named_constant (tu, "O_WRONLY");
+  maybe_stash_named_constant (tu, "SOCK_STREAM");
+  maybe_stash_named_constant (tu, "SOCK_DGRAM");
 }
 
 /* Lookup NAME in the named constants stashed when the frontend TU finished.

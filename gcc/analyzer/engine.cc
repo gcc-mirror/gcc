@@ -206,25 +206,6 @@ impl_region_model_context::terminate_path ()
     return m_path_ctxt->terminate_path ();
 }
 
-bool
-impl_region_model_context::get_state_map_by_name (const char *name,
-						  sm_state_map **out_smap,
-						  const state_machine **out_sm,
-						  unsigned *out_sm_idx)
-{
-  if (!m_new_state)
-    return false;
-
-  unsigned sm_idx;
-  if (!m_ext_state.get_sm_idx_by_name (name, &sm_idx))
-    return false;
-
-  *out_smap = m_new_state->m_checker_states[sm_idx];
-  *out_sm = &m_ext_state.get_sm (sm_idx);
-  *out_sm_idx = sm_idx;
-  return true;
-}
-
 /* struct setjmp_record.  */
 
 int
@@ -526,6 +507,47 @@ public:
   /* Are we handling an external function with unknown side effects?  */
   bool m_unknown_side_effects;
 };
+
+bool
+impl_region_model_context::
+get_state_map_by_name (const char *name,
+		       sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx,
+		       std::unique_ptr<sm_context> *out_sm_context)
+{
+  if (!m_new_state)
+    return false;
+
+  unsigned sm_idx;
+  if (!m_ext_state.get_sm_idx_by_name (name, &sm_idx))
+    return false;
+
+  const state_machine *sm = &m_ext_state.get_sm (sm_idx);
+  sm_state_map *new_smap = m_new_state->m_checker_states[sm_idx];
+
+  *out_smap = new_smap;
+  *out_sm = sm;
+  if (out_sm_idx)
+    *out_sm_idx = sm_idx;
+  if (out_sm_context)
+    {
+      const sm_state_map *old_smap = m_old_state->m_checker_states[sm_idx];
+      *out_sm_context
+	= make_unique<impl_sm_context> (*m_eg,
+					sm_idx,
+					*sm,
+					m_enode_for_diag,
+					m_old_state,
+					m_new_state,
+					old_smap,
+					new_smap,
+					m_path_ctxt,
+					m_stmt_finder,
+					false);
+    }
+  return true;
+}
 
 /* Subclass of stmt_finder for finding the best stmt to report the leak at,
    given the emission path.  */

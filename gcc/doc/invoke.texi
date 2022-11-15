@@ -453,6 +453,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-fd-access-mode-mismatch @gol
 -Wno-analyzer-fd-double-close @gol
 -Wno-analyzer-fd-leak @gol
+-Wno-analyzer-fd-phase-mismatch @gol
+-Wno-analyzer-fd-type-mismatch @gol
 -Wno-analyzer-fd-use-after-close @gol
 -Wno-analyzer-fd-use-without-check @gol
 -Wno-analyzer-file-leak @gol
@@ -9899,6 +9901,8 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-fd-access-mode-mismatch @gol
 -Wanalyzer-fd-double-close @gol
 -Wanalyzer-fd-leak @gol
+-Wanalyzer-fd-phase-mismatch @gol
+-Wanalyzer-fd-type-mismatch @gol
 -Wanalyzer-fd-use-after-close @gol
 -Wanalyzer-fd-use-without-check @gol
 -Wanalyzer-file-leak @gol
@@ -10076,6 +10080,33 @@ This diagnostic warns for paths through code in which an
 open file descriptor is leaked.
 
 See @uref{https://cwe.mitre.org/data/definitions/775.html, CWE-775: Missing Release of File Descriptor or Handle after Effective Lifetime}.
+
+@item -Wno-analyzer-fd-phase-mismatch
+@opindex Wanalyzer-fd-phase-mismatch
+@opindex Wno-analyzer-fd-phase-mismatch
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-fd-phase-mismatch}
+to disable it.
+
+This diagnostic warns for paths through code in which an operation is
+attempted in the wrong phase of a file descriptor's lifetime.
+For example, it will warn on attempts to call @code{accept} on a stream
+socket that has not yet had @code{listen} successfully called on it.
+
+See @uref{https://cwe.mitre.org/data/definitions/666.html, CWE-666: Operation on Resource in Wrong Phase of Lifetime}.
+
+@item -Wno-analyzer-fd-type-mismatch
+@opindex Wanalyzer-fd-type-mismatch
+@opindex Wno-analyzer-fd-type-mismatch
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-fd-type-mismatch}
+to disable it.
+
+This diagnostic warns for paths through code in which an
+operation is attempted on the wrong type of file descriptor.
+For example, it will warn on attempts to use socket operations
+on a file descriptor obtained via @code{open}, or when attempting
+to use a stream socket operation on a datagram socket.
 
 @item -Wno-analyzer-fd-use-after-close
 @opindex Wanalyzer-fd-use-after-close
@@ -10616,6 +10647,7 @@ of the following functions for working with file descriptors:
 @item @code{pipe}, and @code{pipe2}
 @item @code{read}
 @item @code{write}
+@item @code{socket}, @code{bind}, @code{listen}, @code{accept}, and @code{connect}
 @end itemize
 
 of the following functions for working with @code{<stdio.h>} streams:

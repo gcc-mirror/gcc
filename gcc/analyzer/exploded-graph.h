@@ -98,10 +98,12 @@ class impl_region_model_context : public region_model_context
   {
     return &m_ext_state;
   }
-  bool get_state_map_by_name (const char *name,
-			      sm_state_map **out_smap,
-			      const state_machine **out_sm,
-			      unsigned *out_sm_idx) override;
+  bool
+  get_state_map_by_name (const char *name,
+			 sm_state_map **out_smap,
+			 const state_machine **out_sm,
+			 unsigned *out_sm_idx,
+			 std::unique_ptr<sm_context> *out_sm_context) override;
 
   const gimple *get_stmt () const override { return m_stmt; }
 

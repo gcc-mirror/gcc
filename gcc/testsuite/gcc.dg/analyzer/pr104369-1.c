@@ -1,5 +1,5 @@
-/* { dg-additional-options "--param analyzer-max-enodes-per-program-point=10" } */
-// TODO: remove need for this option
+/* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-fd-leak" } */
+// TODO: remove need for these options
 
 typedef __SIZE_TYPE__ size_t;
 #define NULL ((void *)0)

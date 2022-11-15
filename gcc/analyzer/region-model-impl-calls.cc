@@ -407,6 +407,66 @@ region_model::impl_call_analyzer_get_unknown_ptr (const call_details &cd)
   cd.maybe_set_lhs (ptr_sval);
 }
 
+/* Handle the on_call_post part of "accept".  */
+
+void
+region_model::impl_call_accept (const call_details &cd)
+{
+  class outcome_of_accept : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_accept (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_accept (cd, m_success);
+    }
+  };
+
+  /* Body of region_model::impl_call_accept.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
+    }
+}
+
+/* Handle the on_call_post part of "bind".  */
+
+void
+region_model::impl_call_bind (const call_details &cd)
+{
+  class outcome_of_bind : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_bind (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_bind (cd, m_success);
+    }
+  };
+
+  /* Body of region_model::impl_call_bind.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
+    }
+}
+
 /* Handle the on_call_pre part of "__builtin_expect" etc.  */
 
 void
@@ -438,6 +498,36 @@ region_model::impl_call_calloc (const call_details &cd)
       const svalue *ptr_sval
 	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       cd.maybe_set_lhs (ptr_sval);
+    }
+}
+
+/* Handle the on_call_post part of "connect".  */
+
+void
+region_model::impl_call_connect (const call_details &cd)
+{
+  class outcome_of_connect : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_connect (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_connect (cd, m_success);
+    }
+  };
+
+  /* Body of region_model::impl_call_connect.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
     }
 }
 
@@ -540,6 +630,36 @@ region_model::impl_call_free (const call_details &cd)
 	 poisoning pointers.  */
       unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
       m_dynamic_extents.remove (freed_reg);
+    }
+}
+
+/* Handle the on_call_post part of "listen".  */
+
+void
+region_model::impl_call_listen (const call_details &cd)
+{
+  class outcome_of_listen : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_listen (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_listen (cd, m_success);
+    }
+  };
+
+  /* Body of region_model::impl_call_listen.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, true));
+      cd.get_ctxt ()->terminate_path ();
     }
 }
 
@@ -1051,6 +1171,36 @@ region_model::impl_call_realloc (const call_details &cd)
       cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
       cd.get_ctxt ()->bifurcate (make_unique<success_no_move> (cd));
       cd.get_ctxt ()->bifurcate (make_unique<success_with_move> (cd));
+      cd.get_ctxt ()->terminate_path ();
+    }
+}
+
+/* Handle the on_call_post part of "socket".  */
+
+void
+region_model::impl_call_socket (const call_details &cd)
+{
+  class outcome_of_socket : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_socket (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_socket (cd, m_success);
+    }
+  };
+
+  /* Body of region_model::impl_call_socket.  */
+  if (cd.get_ctxt ())
+    {
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, false));
+      cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, true));
       cd.get_ctxt ()->terminate_path ();
     }
 }
