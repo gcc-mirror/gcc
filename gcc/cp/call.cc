@@ -6589,12 +6589,36 @@ add_operator_candidates (z_candidate **candidates,
       if (fns == error_mark_node)
 	return error_mark_node;
       if (fns)
-	add_candidates (BASELINK_FUNCTIONS (fns),
-			NULL_TREE, arglist, NULL_TREE,
-			NULL_TREE, false,
-			BASELINK_BINFO (fns),
-			BASELINK_ACCESS_BINFO (fns),
-			flags, candidates, complain);
+	{
+	  if (code == ARRAY_REF)
+	    {
+	      vec<tree,va_gc> *restlist = make_tree_vector ();
+	      for (unsigned i = 1; i < nargs; ++i)
+		vec_safe_push (restlist, (*arglist)[i]);
+	      z_candidate *save_cand = *candidates;
+	      add_candidates (BASELINK_FUNCTIONS (fns),
+			      (*arglist)[0], restlist, NULL_TREE,
+			      NULL_TREE, false,
+			      BASELINK_BINFO (fns),
+			      BASELINK_ACCESS_BINFO (fns),
+			      flags, candidates, complain);
+	      /* Release the vec if we didn't add a candidate that uses it.  */
+	      for (z_candidate *c = *candidates; c != save_cand; c = c->next)
+		if (c->args == restlist)
+		  {
+		    restlist = NULL;
+		    break;
+		  }
+	      release_tree_vector (restlist);
+	    }
+	  else
+	    add_candidates (BASELINK_FUNCTIONS (fns),
+			    NULL_TREE, arglist, NULL_TREE,
+			    NULL_TREE, false,
+			    BASELINK_BINFO (fns),
+			    BASELINK_ACCESS_BINFO (fns),
+			    flags, candidates, complain);
+	}
     }
   /* Per [over.match.oper]3.2, if no operand has a class type, then
      only non-member functions that have type T1 or reference to

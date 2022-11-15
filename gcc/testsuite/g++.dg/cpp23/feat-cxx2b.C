@@ -556,8 +556,8 @@
 
 #ifndef __cpp_multidimensional_subscript
 #  error "__cpp_multidimensional_subscript"
-#elif __cpp_multidimensional_subscript != 202110
-#  error "__cpp_multidimensional_subscript != 202110"
+#elif __cpp_multidimensional_subscript != 202211
+#  error "__cpp_multidimensional_subscript != 202211"
 #endif
 
 #ifndef __cpp_named_character_escapes
