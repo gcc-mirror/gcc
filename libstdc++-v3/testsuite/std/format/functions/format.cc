@@ -5,6 +5,7 @@
 #include <string>
 #include <limits>
 #include <cstdint>
+#include <cstdio>
 #include <testsuite_hooks.h>
 
 void
@@ -289,12 +290,27 @@ test_p1652r1() // printf corner cases in std::format
   VERIFY( s == "3.31" );
 }
 
+template<typename T>
+bool format_float()
+{
+    auto s = std::format("{:#} != {:<+7.3f}", (T)-0.0, (T)0.5);
+    return s == "-0. != +0.500 ";
+}
+
 void
 test_float128()
 {
 #ifdef __SIZEOF_FLOAT128__
-  auto s = std::format("{:#} != {:<+7.3f}", (__float128)-0.0, (__float128)0.5);
-  VERIFY( s == "-0. != +0.500 " );
+  if constexpr (std::formattable<__float128, char>)
+    VERIFY( format_float<__float128>() );
+  else
+    std::puts("Cannot format __float128 on this target");
+#endif
+#if __FLT128_DIG__
+  if constexpr (std::formattable<_Float128, char>)
+    VERIFY( format_float<_Float128>() );
+  else
+    std::puts("Cannot format _Float128 on this target");
 #endif
 }
 

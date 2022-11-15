@@ -1213,40 +1213,35 @@ namespace __format
       _Spec<_CharT> _M_spec{};
     };
 
+  // Decide how 128-bit floating-point types should be formatted (or not).
+  // When supported, the typedef __format::__float128_t is the type that
+  // format arguments should be converted to for storage in basic_format_arg.
+  // Define the macro _GLIBCXX_FORMAT_F128 to say they're supported.
+  // _GLIBCXX_FORMAT_F128=1 means __float128, _Float128 etc. will be formatted
+  // by converting them to long double (or __ieee128 for powerpc64le).
+  // _GLIBCXX_FORMAT_F128=2 means basic_format_arg needs to enable explicit
+  // support for _Float128, rather than formatting it as another type.
+#undef _GLIBCXX_FORMAT_F128
+
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-# define _GLIBCXX_FORMAT_F128 1
+
+  // Format 128-bit floating-point types using __ieee128.
   using __float128_t = __ieee128;
-#elif defined _GLIBCXX_LDOUBLE_IS_IEEE_BINARY128
 # define _GLIBCXX_FORMAT_F128 1
+
+#elif defined _GLIBCXX_LDOUBLE_IS_IEEE_BINARY128
+
+  // Format 128-bit floating-point types using long double.
   using __float128_t = long double;
-#elif __FLT128_DIG__
-# define _GLIBCXX_FORMAT_F128 2
+# define _GLIBCXX_FORMAT_F128 1
+
+#elif __FLT128_DIG__ && defined(__GLIBC_PREREQ) // see floating_to_chars.cc
+
+  // Format 128-bit floating-point types using _Float128.
   using __float128_t = _Float128;
-#else
-# undef _GLIBCXX_FORMAT_F128
-#endif
+# define _GLIBCXX_FORMAT_F128 2
 
-#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-  template<typename _Tp>
-    concept __extended_floating_point = __is_same(_Tp, _Float128)
-					  || __is_same(_Tp, __ibm128)
-					  || __is_same(_Tp, __ieee128);
-#elif _GLIBCXX_FORMAT_F128
-  template<typename _Tp>
-    concept __extended_floating_point = __is_same(_Tp, __float128_t);
-#else
-  template<typename _Tp>
-    concept __extended_floating_point = false;
-#endif
-
-  template<typename _Tp>
-    concept __floating_point = std::floating_point<_Tp>
-				 || __extended_floating_point<_Tp>;
-
-  using std::to_chars;
-
-#if _GLIBCXX_FORMAT_F128 == 2 \
-  && (__cplusplus == 202002L || !defined(_GLIBCXX_HAVE_FLOAT128_MATH))
+# if __cplusplus == 202002L || !defined(_GLIBCXX_HAVE_FLOAT128_MATH)
   // These overloads exist in the library, but are not declared for C++20.
   // Make them available as std::__format::to_chars.
   to_chars_result
@@ -1260,7 +1255,15 @@ namespace __format
   to_chars_result
   to_chars(char*, char*, _Float128, chars_format, int) noexcept
     __asm("_ZSt8to_charsPcS_DF128_St12chars_formati");
+# endif
 #endif
+
+  using std::to_chars;
+
+  // We can format a floating-point type iff it is usable with to_chars.
+  template<typename _Tp>
+    concept __formattable_float = requires (_Tp __t, char* __p)
+    { __format::to_chars(__p, __p, __t, chars_format::scientific, 6); };
 
   template<__char _CharT>
     struct __formatter_fp
@@ -1984,7 +1987,7 @@ namespace __format
 #endif
 
   /// Format a floating-point value.
-  template<__format::__floating_point _Tp, __format::__char _CharT>
+  template<__format::__formattable_float _Tp, __format::__char _CharT>
     struct formatter<_Tp, _CharT>
     {
       formatter() = default;
@@ -2607,7 +2610,7 @@ namespace __format
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 	__ieee128 _M_f128;
 	__ibm128  _M_ibm128;
-#elif _GLIBCXX_FORMAT_F128
+#elif _GLIBCXX_FORMAT_F128 == 2
 	__float128_t _M_f128;
 #endif
       };
@@ -2663,7 +2666,7 @@ namespace __format
 	  else if constexpr (is_same_v<_Tp, unsigned __int128>)
 	    return __u._M_u128;
 #endif
-#if _GLIBCXX_FORMAT_F128
+#if _GLIBCXX_FORMAT_F128 == 2
 	  else if constexpr (is_same_v<_Tp, __float128_t>)
 	    return __u._M_f128;
 #endif
@@ -2843,13 +2846,15 @@ namespace __format
 	    return type_identity<_Float64>();
 # endif
 #endif
-#ifdef __FLT128_DIG__
+#if _GLIBCXX_FORMAT_F128
+# if __FLT128_DIG__
 	  else if constexpr (is_same_v<_Td, _Float128>)
 	    return type_identity<__format::__float128_t>();
-#endif
-#if _GLIBCXX_USE_FLOAT128
+# endif
+# if __SIZEOF_FLOAT128__
 	  else if constexpr (is_same_v<_Td, __float128>)
 	    return type_identity<__format::__float128_t>();
+# endif
 #endif
 	  else if constexpr (__is_specialization_of<_Td, basic_string_view>)
 	    return type_identity<basic_string_view<_CharT>>();
@@ -2926,7 +2931,7 @@ namespace __format
 	  else if constexpr (is_same_v<_Tp, _Float64>)
 	    return _Arg_f64;
 #endif
-#if _GLIBCXX_FORMAT_F128
+#if _GLIBCXX_FORMAT_F128 == 2
 	  else if constexpr (is_same_v<_Tp, __format::__float128_t>)
 	    return _Arg_f128;
 #endif
@@ -3015,7 +3020,7 @@ namespace __format
 #endif
 	      // TODO _Arg_f16 etc.
 
-#if _GLIBCXX_FORMAT_F128
+#if _GLIBCXX_FORMAT_F128 == 2
 	    case _Arg_f128:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_f128);
 #endif
