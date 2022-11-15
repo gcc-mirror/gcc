@@ -1610,8 +1610,16 @@ Dump::visit (TraitBound &bound)
 }
 
 void
-Dump::visit (ImplTraitType &)
-{}
+Dump::visit (ImplTraitType &type)
+{
+  // Syntax:
+  //    impl TypeParamBounds
+  // TypeParamBounds :
+  //    TypeParamBound ( + TypeParamBound )* +?
+
+  stream << "impl ";
+  visit_items_joined_by_separator(type.get_type_param_bounds (), " + ");
+}
 
 void
 Dump::visit (TraitObjectType &)
