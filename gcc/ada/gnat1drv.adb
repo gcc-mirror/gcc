@@ -562,9 +562,10 @@ procedure Gnat1drv is
          --    - suspicious contracts, which are useful for SPARK code
 
          Reset_Style_Check_Options;
-         Restore_Warnings (W => (Elab_Warnings               => True,
-                                 Warn_On_Suspicious_Contract => True,
-                                 others                      => False));
+         Restore_Warnings
+           ((Warnings_Package.Elab_Warnings => True,
+             Warnings_Package.Warn_On_Suspicious_Contract => True,
+             others => False));
 
          --  Suppress the generation of name tables for enumerations, which are
          --  not needed for formal verification, and fall outside the SPARK

@@ -41,6 +41,7 @@ with Sinput;         use Sinput;
 with Stand;          use Stand;
 with Targparm;       use Targparm;
 with Uname;          use Uname;
+with Warnsw;         use Warnsw;
 
 package body Restrict is
 

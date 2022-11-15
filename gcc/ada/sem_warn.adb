@@ -51,6 +51,7 @@ with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 package body Sem_Warn is
 
@@ -2706,7 +2707,7 @@ package body Sem_Warn is
    begin
       --  Immediate return if no semantics or warning flag not set
 
-      if not Opt.Check_Withs or else Operating_Mode = Check_Syntax then
+      if not Check_Withs or else Operating_Mode = Check_Syntax then
          return;
       end if;
 

@@ -9943,7 +9943,7 @@ package body Sem_Ch13 is
             --  generally suppress the message in instantiations, and also
             --  if it involves internal names.
 
-            if Opt.List_Inherited_Aspects
+            if List_Inherited_Aspects
               and then not Is_Generic_Actual_Type (Typ)
               and then Instantiation_Location (Sloc (Typ)) = No_Location
               and then not Is_Internal_Name (Chars (T))

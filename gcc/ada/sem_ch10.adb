@@ -74,6 +74,7 @@ with Style;          use Style;
 with Stylesw;        use Stylesw;
 with Tbuild;         use Tbuild;
 with Uname;          use Uname;
+with Warnsw;         use Warnsw;
 
 package body Sem_Ch10 is
 

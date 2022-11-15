@@ -64,6 +64,7 @@ with Table;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Uname;          use Uname;
+with Warnsw;         use Warnsw;
 
 with GNAT;                 use GNAT;
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;

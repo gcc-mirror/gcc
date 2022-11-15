@@ -61,6 +61,7 @@ with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
+with Warnsw;         use Warnsw;
 
 package body Sem_Eval is
 

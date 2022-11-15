@@ -94,7 +94,7 @@ package Inline is
       --  This means we have to capture this information from the current scope
       --  at the point of instantiation.
 
-      Warnings : Warning_Record;
+      Warnings : Warnings_State;
       --  Capture values of warning flags
    end record;
 

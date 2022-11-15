@@ -53,8 +53,7 @@ with Stand;          use Stand;
 with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
-with Warnsw; pragma Unreferenced (Warnsw);
---  Will be referenced when various flags are moved to Warnsw.
+with Warnsw; pragma Unreferenced (Warnsw); -- disable spurious warning
 
 package body Errout is
 
@@ -989,14 +988,14 @@ package body Errout is
          --  after fixing the error, the use clause no longer looks like it was
          --  unused.
 
-         Check_Unreferenced := False;
-         Check_Unreferenced_Formals := False;
+         Warnsw.Check_Unreferenced := False;
+         Warnsw.Check_Unreferenced_Formals := False;
       end Handle_Serious_Error;
 
    --  Start of processing for Error_Msg_Internal
 
    begin
-      --  Detect common mistake of prefixing or suffing the message with a
+      --  Detect common mistake of prefixing or suffixing the message with a
       --  space character.
 
       pragma Assert (Msg (Msg'First) /= ' ' and then Msg (Msg'Last) /= ' ');

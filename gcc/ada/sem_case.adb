@@ -48,6 +48,7 @@ with Stringt;        use Stringt;
 with Table;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 with Ada.Unchecked_Deallocation;
 

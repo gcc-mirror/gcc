@@ -72,6 +72,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Style;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 with GNAT.HTable;
 

@@ -69,6 +69,7 @@ with SCIL_LL;
 with Tbuild;         use Tbuild;
 with Types;          use Types;
 with VAST;
+with Warnsw;         use Warnsw;
 
 procedure Frontend is
 begin

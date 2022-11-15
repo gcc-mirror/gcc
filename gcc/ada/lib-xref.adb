@@ -47,6 +47,7 @@ with Snames;         use Snames;
 with Stringt;        use Stringt;
 with Stand;          use Stand;
 with Table;          use Table;
+with Warnsw;         use Warnsw;
 
 with GNAT.Heap_Sort_G;
 with GNAT.HTable;
