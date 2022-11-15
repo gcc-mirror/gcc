@@ -988,6 +988,7 @@
     UNSPECV_LX			; Represent a load-exclusive.
     UNSPECV_SX			; Represent a store-exclusive.
     UNSPECV_LDA			; Represent an atomic load or load-acquire.
+    UNSPECV_LDAP		; Represent an atomic acquire load with RCpc semantics.
     UNSPECV_STL			; Represent an atomic store or store-release.
     UNSPECV_ATOMIC_CMPSW	; Represent an atomic compare swap.
     UNSPECV_ATOMIC_EXCHG	; Represent an atomic exchange.
