@@ -29639,7 +29639,7 @@ Specify both @option{-mcall-sysv} and @option{-meabi} options.
 Specify both @option{-mcall-sysv} and @option{-mno-eabi} options.
 
 @item -mcall-aixdesc
-@opindex m
+@opindex mcall-aixdesc
 On System V.4 and embedded PowerPC systems compile code for the AIX
 operating system.
 
@@ -29659,7 +29659,7 @@ On System V.4 and embedded PowerPC systems compile code for the
 NetBSD operating system.
 
 @item -mcall-openbsd
-@opindex mcall-netbsd
+@opindex mcall-openbsd
 On System V.4 and embedded PowerPC systems compile code for the
 OpenBSD operating system.
 
