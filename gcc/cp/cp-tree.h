@@ -7982,7 +7982,7 @@ extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 extern bool similar_type_p			(tree, tree);
-extern bool next_common_initial_seqence		(tree &, tree &);
+extern bool next_common_initial_sequence	(tree &, tree &);
 extern bool layout_compatible_type_p		(tree, tree);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
