@@ -6650,8 +6650,8 @@ package body Exp_Ch6 is
                           and then Needs_Finalization (Exp_Typ))
          then
             declare
-               Loc        : constant Source_Ptr := Sloc (N);
-               Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
+               Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
                Alloc_Node : Node_Id;
                Temp       : Entity_Id;
 
@@ -6753,8 +6753,8 @@ package body Exp_Ch6 is
                           and then Needs_Finalization (Exp_Typ))
          then
             declare
-               Loc        : constant Source_Ptr := Sloc (N);
-               Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
+               Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
                Alloc_Node : Node_Id;
                Temp       : Entity_Id;
 

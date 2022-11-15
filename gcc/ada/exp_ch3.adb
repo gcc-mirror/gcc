@@ -7758,7 +7758,7 @@ package body Exp_Ch3 is
             if Validity_Checks_On
               and then Comes_From_Source (N)
               and then Validity_Check_Copies
-              and then not Is_Generic_Type (Etype (Def_Id))
+              and then not Is_Generic_Type (Typ)
             then
                Ensure_Valid (Expr);
                if Safe_To_Capture_Value (N, Def_Id) then
@@ -7876,7 +7876,7 @@ package body Exp_Ch3 is
       end if;
 
       if Nkind (Obj_Def) = N_Access_Definition
-        and then not Is_Local_Anonymous_Access (Etype (Def_Id))
+        and then not Is_Local_Anonymous_Access (Typ)
       then
          --  An Ada 2012 stand-alone object of an anonymous access type
 
@@ -7988,16 +7988,17 @@ package body Exp_Ch3 is
 
       --    if BIPalloc = 1 then
       --       Rxx := BIPaccess;
+      --       Rxx.all := <expression>;
       --    elsif BIPalloc = 2 then
-      --       Rxx := new <expression-type>[storage_pool =
+      --       Rxx := new <expression-type>'(<expression>)[storage_pool =
       --         system__secondary_stack__ss_pool][procedure_to_call =
       --         system__secondary_stack__ss_allocate];
       --    elsif BIPalloc = 3 then
-      --       Rxx := new <expression-type>
+      --       Rxx := new <expression-type>'(<expression>)
       --    elsif BIPalloc = 4 then
       --       Pxx : system__storage_pools__root_storage_pool renames
       --         BIPstoragepool.all;
-      --       Rxx := new <expression-type>[storage_pool =
+      --       Rxx := new <expression-type>'(<expression>)[storage_pool =
       --         Pxx][procedure_to_call =
       --         system__storage_pools__allocate_any];
       --    else
@@ -8005,15 +8006,12 @@ package body Exp_Ch3 is
       --    end if;
 
       --    Result : T renames Rxx.all;
-      --    Result := <expression>;
 
       --  in the unconstrained case.
 
       if Is_Build_In_Place_Return_Object (Def_Id) then
          declare
-            Func_Id     : constant Entity_Id :=
-              Return_Applies_To (Scope (Def_Id));
-            Ret_Obj_Typ : constant Entity_Id := Etype (Def_Id);
+            Func_Id : constant Entity_Id := Return_Applies_To (Scope (Def_Id));
 
             Init_Stmt       : Node_Id;
             Obj_Acc_Formal  : Entity_Id;
@@ -8043,9 +8041,9 @@ package body Exp_Ch3 is
             if Present (Expr_Q)
               and then not Is_Delayed_Aggregate (Expr_Q)
               and then not No_Initialization (N)
-              and then not Is_Interface (Etype (Def_Id))
+              and then not Is_Interface (Typ)
             then
-               if Is_Class_Wide_Type (Etype (Def_Id))
+               if Is_Class_Wide_Type (Typ)
                  and then not Is_Class_Wide_Type (Etype (Expr_Q))
                then
                   Init_Stmt :=
@@ -8054,7 +8052,7 @@ package body Exp_Ch3 is
                       Expression =>
                         Make_Type_Conversion (Loc,
                           Subtype_Mark =>
-                            New_Occurrence_Of (Etype (Def_Id), Loc),
+                            New_Occurrence_Of (Typ, Loc),
                           Expression   => New_Copy_Tree (Expr_Q)));
 
                else
@@ -8087,12 +8085,12 @@ package body Exp_Ch3 is
             if Needs_BIP_Alloc_Form (Func_Id) then
                declare
                   Desig_Typ : constant Entity_Id :=
-                    (if Ekind (Ret_Obj_Typ) = E_Array_Subtype
-                     then Etype (Func_Id) else Ret_Obj_Typ);
+                    (if Ekind (Typ) = E_Array_Subtype
+                     then Etype (Func_Id) else Typ);
                   --  Ensure that the we use a fat pointer when allocating
                   --  an unconstrained array on the heap. In this case the
-                  --  result object type is a constrained array type even
-                  --  though the function type is unconstrained.
+                  --  result object's type is a constrained array type even
+                  --  though the function's type is unconstrained.
                   Obj_Alloc_Formal : constant Entity_Id :=
                     Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
                   Pool_Id          : constant Entity_Id :=
@@ -8135,7 +8133,7 @@ package body Exp_Ch3 is
                         --  use the type of the expression, which must be an
                         --  aggregate of a definite type.
 
-                        if Is_Class_Wide_Type (Ret_Obj_Typ) then
+                        if Is_Class_Wide_Type (Typ) then
                            Alloc :=
                              Make_Allocator (Loc,
                                Expression =>
@@ -8145,7 +8143,7 @@ package body Exp_Ch3 is
                            Alloc :=
                              Make_Allocator (Loc,
                                Expression =>
-                                 New_Occurrence_Of (Ret_Obj_Typ, Loc));
+                                 New_Occurrence_Of (Typ, Loc));
                         end if;
 
                         --  If the object requires default initialization then
@@ -8165,33 +8163,33 @@ package body Exp_Ch3 is
                      return Alloc;
                   end Make_Allocator_For_BIP_Return;
 
-                  Alloc_Obj_Id   : Entity_Id;
+                  Acc_Typ        : Entity_Id;
                   Alloc_Obj_Decl : Node_Id;
-                  Alloc_Stmt      : Node_Id;
+                  Alloc_Obj_Id   : Entity_Id;
+                  Alloc_Stmt     : Node_Id;
                   Guard_Except   : Node_Id;
                   Heap_Allocator : Node_Id;
-                  Pool_Decl      : Node_Id;
                   Pool_Allocator : Node_Id;
-                  Ptr_Type_Decl  : Node_Id;
-                  Ref_Type       : Entity_Id;
+                  Pool_Decl      : Node_Id;
+                  Ptr_Typ_Decl   : Node_Id;
                   SS_Allocator   : Node_Id;
 
                begin
                   --  Create an access type designating the function's
                   --  result subtype.
 
-                  Ref_Type := Make_Temporary (Loc, 'A');
+                  Acc_Typ := Make_Temporary (Loc, 'A');
 
-                  Ptr_Type_Decl :=
+                  Ptr_Typ_Decl :=
                     Make_Full_Type_Declaration (Loc,
-                      Defining_Identifier => Ref_Type,
+                      Defining_Identifier => Acc_Typ,
                       Type_Definition     =>
                         Make_Access_To_Object_Definition (Loc,
                           All_Present        => True,
                           Subtype_Indication =>
                             New_Occurrence_Of (Desig_Typ, Loc)));
 
-                  Insert_Action (N, Ptr_Type_Decl);
+                  Insert_Action (N, Ptr_Typ_Decl, Suppress => All_Checks);
 
                   --  Create an access object that will be initialized to an
                   --  access value denoting the return object, either coming
@@ -8199,15 +8197,14 @@ package body Exp_Ch3 is
                   --  or from the result of an allocator.
 
                   Alloc_Obj_Id := Make_Temporary (Loc, 'R');
-                  Set_Etype (Alloc_Obj_Id, Ref_Type);
 
                   Alloc_Obj_Decl :=
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Alloc_Obj_Id,
                       Object_Definition   =>
-                        New_Occurrence_Of (Ref_Type, Loc));
+                        New_Occurrence_Of (Acc_Typ, Loc));
 
-                  Insert_Action (N, Alloc_Obj_Decl);
+                  Insert_Action (N, Alloc_Obj_Decl, Suppress => All_Checks);
 
                   --  First create the Heap_Allocator
 
@@ -8320,7 +8317,7 @@ package body Exp_Ch3 is
                   --  to-unconstrained to access-to-constrained), but the
                   --  the unchecked conversion will presumably fail to work
                   --  right in just such cases. It's not clear at all how to
-                  --  handle this. ???
+                  --  handle this.
 
                   Alloc_Stmt :=
                     Make_If_Statement (Loc,
@@ -8339,7 +8336,7 @@ package body Exp_Ch3 is
                             New_Occurrence_Of (Alloc_Obj_Id, Loc),
                           Expression =>
                             Unchecked_Convert_To
-                              (Ref_Type,
+                              (Acc_Typ,
                                New_Occurrence_Of (Obj_Acc_Formal, Loc)))),
 
                       Elsif_Parts => New_List (
@@ -8372,12 +8369,12 @@ package body Exp_Ch3 is
                           Then_Statements => New_List (
                             Build_Heap_Or_Pool_Allocator
                               (Temp_Id    => Alloc_Obj_Id,
-                               Temp_Typ   => Ref_Type,
+                               Temp_Typ   => Acc_Typ,
                                Func_Id    => Func_Id,
                                Ret_Typ    => Desig_Typ,
                                Alloc_Expr => Heap_Allocator))),
 
-                        --  ???If all is well, we can put the following
+                        --  ??? If all is well, we can put the following
                         --  'elsif' in the 'else', but this is a useful
                         --  self-check in case caller and callee don't agree
                         --  on whether BIPAlloc and so on should be passed.
@@ -8396,7 +8393,7 @@ package body Exp_Ch3 is
                             Pool_Decl,
                             Build_Heap_Or_Pool_Allocator
                               (Temp_Id    => Alloc_Obj_Id,
-                               Temp_Typ   => Ref_Type,
+                               Temp_Typ   => Acc_Typ,
                                Func_Id    => Func_Id,
                                Ret_Typ    => Desig_Typ,
                                Alloc_Expr => Pool_Allocator)))),
@@ -8437,33 +8434,33 @@ package body Exp_Ch3 is
                   Obj_Acc_Formal := Alloc_Obj_Id;
                end;
 
-            --  When the function's subtype is unconstrained and a run-time
-            --  test is not needed, we nevertheless need to build the return
-            --  using the function's result subtype.
+            --  When the function's type is unconstrained and a run-time test
+            --  is not needed, we nevertheless need to build the return using
+            --  the return object's type.
 
             elsif not Is_Constrained (Underlying_Type (Etype (Func_Id))) then
                declare
-                  Alloc_Obj_Id   : Entity_Id;
+                  Acc_Typ        : Entity_Id;
                   Alloc_Obj_Decl : Node_Id;
-                  Ptr_Type_Decl  : Node_Id;
-                  Ref_Type       : Entity_Id;
+                  Alloc_Obj_Id   : Entity_Id;
+                  Ptr_Typ_Decl   : Node_Id;
 
                begin
                   --  Create an access type designating the function's
                   --  result subtype.
 
-                  Ref_Type := Make_Temporary (Loc, 'A');
+                  Acc_Typ := Make_Temporary (Loc, 'A');
 
-                  Ptr_Type_Decl :=
+                  Ptr_Typ_Decl :=
                     Make_Full_Type_Declaration (Loc,
-                      Defining_Identifier => Ref_Type,
+                      Defining_Identifier => Acc_Typ,
                       Type_Definition     =>
                         Make_Access_To_Object_Definition (Loc,
                           All_Present        => True,
                           Subtype_Indication =>
-                            New_Occurrence_Of (Ret_Obj_Typ, Loc)));
+                            New_Occurrence_Of (Typ, Loc)));
 
-                  Insert_Action (N, Ptr_Type_Decl);
+                  Insert_Action (N, Ptr_Typ_Decl, Suppress => All_Checks);
 
                   --  Create an access object initialized to the conversion
                   --  of the implicit access value passed in by the caller.
@@ -8477,11 +8474,10 @@ package body Exp_Ch3 is
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Alloc_Obj_Id,
                       Object_Definition   =>
-                        New_Occurrence_Of (Ref_Type, Loc),
+                        New_Occurrence_Of (Acc_Typ, Loc),
                       Expression =>
                         Unchecked_Convert_To
-                          (Ref_Type,
-                           New_Occurrence_Of (Obj_Acc_Formal, Loc)));
+                          (Acc_Typ, New_Occurrence_Of (Obj_Acc_Formal, Loc)));
 
                   Insert_Action (N, Alloc_Obj_Decl, Suppress => All_Checks);
 
