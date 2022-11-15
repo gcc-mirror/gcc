@@ -524,6 +524,23 @@ With a non-zero argument
 
 it will also dump all of the states within the ``processed'' nodes.
 
+The builtin @code{__analyzer_dump_named_constant} will emit a warning
+during analysis describing what is known about the value of a given
+named constant, for parts of the analyzer that interact with target
+headers.
+
+For example:
+
+@smallexample
+__analyzer_dump_named_constant ("O_RDONLY");
+@end smallexample
+
+might emit the warning:
+
+@smallexample
+warning: named constant 'O_RDONLY' has value '1'
+@end smallexample
+
 @smallexample
    __analyzer_dump_region_model ();
 @end smallexample

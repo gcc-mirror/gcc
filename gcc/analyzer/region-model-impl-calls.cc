@@ -352,6 +352,34 @@ region_model::impl_call_analyzer_dump_escaped (const gcall *call)
 	      pp_formatted_text (&pp));
 }
 
+/* Handle a call to "__analyzer_dump_named_constant".
+
+   Look up the given name, and emit a warning describing the
+   state of the corresponding stashed value.
+
+   This is for use when debugging, and for DejaGnu tests.  */
+
+void
+region_model::
+impl_call_analyzer_dump_named_constant (const gcall *call,
+					region_model_context *ctxt)
+{
+  call_details cd (call, this, ctxt);
+  const char *name = cd.get_arg_string_literal (0);
+  if (!name)
+    {
+      error_at (call->location, "cannot determine name");
+      return;
+    }
+  tree value = get_stashed_constant_by_name (name);
+  if (value)
+    warning_at (call->location, 0, "named constant %qs has value %qE",
+		name, value);
+  else
+    warning_at (call->location, 0, "named constant %qs has unknown value",
+		name);
+}
+
 /* Handle a call to "__analyzer_eval" by evaluating the input
    and dumping as a dummy warning, so that test cases can use
    dg-warning to validate the result (and so unexpected warnings will

@@ -6010,6 +6010,7 @@ impl_run_checkers (logger *logger)
       logger->log ("BITS_BIG_ENDIAN: %i", BITS_BIG_ENDIAN ? 1 : 0);
       logger->log ("BYTES_BIG_ENDIAN: %i", BYTES_BIG_ENDIAN ? 1 : 0);
       logger->log ("WORDS_BIG_ENDIAN: %i", WORDS_BIG_ENDIAN ? 1 : 0);
+      log_stashed_constants (logger);
     }
 
   /* If using LTO, ensure that the cgraph nodes have function bodies.  */

@@ -1249,6 +1249,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
 ANALYZER_OBJS = \
 	analyzer/analysis-plan.o \
 	analyzer/analyzer.o \
+	analyzer/analyzer-language.o \
 	analyzer/analyzer-logging.o \
 	analyzer/analyzer-pass.o \
 	analyzer/analyzer-selftests.o \
@@ -2742,6 +2743,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/internal-fn.h \
   $(srcdir)/calls.cc \
   $(srcdir)/omp-general.h \
+  $(srcdir)/analyzer/analyzer-language.cc \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,

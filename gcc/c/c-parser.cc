@@ -72,6 +72,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "c-family/known-headers.h"
 #include "bitmap.h"
+#include "analyzer/analyzer-language.h"
+#include "toplev.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1664,6 +1666,86 @@ static bool c_parser_objc_diagnose_bad_element_prefix
   (c_parser *, struct c_declspecs *);
 static location_t c_parser_parse_rtl_body (c_parser *, char *);
 
+#if ENABLE_ANALYZER
+
+namespace ana {
+
+/* Concrete implementation of ana::translation_unit for the C frontend.  */
+
+class c_translation_unit : public translation_unit
+{
+public:
+  /* Implementation of translation_unit::lookup_constant_by_id for use by the
+     analyzer to look up named constants in the user's source code.  */
+  tree lookup_constant_by_id (tree id) const final override
+  {
+    /* Consider decls.  */
+    if (tree decl = lookup_name (id))
+      if (TREE_CODE (decl) == CONST_DECL)
+	if (tree value = DECL_INITIAL (decl))
+	  if (TREE_CODE (value) == INTEGER_CST)
+	    return value;
+
+    /* Consider macros.  */
+    cpp_hashnode *hashnode = C_CPP_HASHNODE (id);
+    if (cpp_macro_p (hashnode))
+      if (tree value = consider_macro (hashnode->value.macro))
+	return value;
+
+    return NULL_TREE;
+  }
+
+private:
+  /* Attempt to get an INTEGER_CST from MACRO.
+     Only handle the simplest cases: where MACRO's definition is a single
+     token containing a number, by lexing the number again.
+     This will handle e.g.
+       #define NAME 42
+     and other bases but not negative numbers, parentheses or e.g.
+       #define NAME 1 << 7
+     as doing so would require a parser.  */
+  tree consider_macro (cpp_macro *macro) const
+  {
+    if (macro->paramc > 0)
+      return NULL_TREE;
+    if (macro->kind != cmk_macro)
+      return NULL_TREE;
+    if (macro->count != 1)
+      return NULL_TREE;
+    const cpp_token &tok = macro->exp.tokens[0];
+    if (tok.type != CPP_NUMBER)
+      return NULL_TREE;
+
+    cpp_reader *old_parse_in = parse_in;
+    parse_in = cpp_create_reader (CLK_GNUC89, ident_hash, line_table);
+
+    pretty_printer pp;
+    pp_string (&pp, (const char *) tok.val.str.text);
+    pp_newline (&pp);
+    cpp_push_buffer (parse_in,
+		     (const unsigned char *) pp_formatted_text (&pp),
+		     strlen (pp_formatted_text (&pp)),
+		     0);
+
+    tree value;
+    location_t loc;
+    unsigned char cpp_flags;
+    c_lex_with_flags (&value, &loc, &cpp_flags, 0);
+
+    cpp_destroy (parse_in);
+    parse_in = old_parse_in;
+
+    if (value && TREE_CODE (value) == INTEGER_CST)
+      return value;
+
+    return NULL_TREE;
+  }
+};
+
+} // namespace ana
+
+#endif /* #if ENABLE_ANALYZER */
+
 /* Parse a translation unit (C90 6.7, C99 6.9, C11 6.9).
 
    translation-unit:
@@ -1724,6 +1806,14 @@ c_parser_translation_unit (c_parser *parser)
 	       "#pragma omp begin assumes", "#pragma omp end assumes");
       current_omp_begin_assumes = 0;
     }
+
+#if ENABLE_ANALYZER
+  if (flag_analyzer)
+    {
+      ana::c_translation_unit tu;
+      ana::on_finish_translation_unit (tu);
+    }
+#endif
 }
 
 /* Parse an external declaration (C90 6.7, C99 6.9, C11 6.9).

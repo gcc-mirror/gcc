@@ -344,6 +344,8 @@ class region_model
   void impl_call_analyzer_dump_capacity (const gcall *call,
 					 region_model_context *ctxt);
   void impl_call_analyzer_dump_escaped (const gcall *call);
+  void impl_call_analyzer_dump_named_constant (const gcall *call,
+					       region_model_context *ctxt);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
   void impl_call_analyzer_get_unknown_ptr (const call_details &cd);

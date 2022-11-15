@@ -159,6 +159,11 @@ public:
   /* State for a file descriptor that we do not want to track anymore . */
   state_t m_stop;
 
+  /* Stashed constant values from the frontend.  These could be NULL.  */
+  tree m_O_ACCMODE;
+  tree m_O_RDONLY;
+  tree m_O_WRONLY;
+
 private:
   void on_open (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
 		const gcall *call) const;
@@ -686,7 +691,10 @@ fd_state_machine::fd_state_machine (logger *logger)
       m_valid_write_only (add_state ("fd-valid-write-only")),
       m_invalid (add_state ("fd-invalid")),
       m_closed (add_state ("fd-closed")),
-      m_stop (add_state ("fd-stop"))
+      m_stop (add_state ("fd-stop")),
+      m_O_ACCMODE (get_stashed_constant_by_name ("O_ACCMODE")),
+      m_O_RDONLY (get_stashed_constant_by_name ("O_RDONLY")),
+      m_O_WRONLY (get_stashed_constant_by_name ("O_WRONLY"))
 {
 }
 
@@ -709,16 +717,18 @@ fd_state_machine::is_valid_fd_p (state_t s) const
 enum access_mode
 fd_state_machine::get_access_mode_from_flag (int flag) const
 {
-  /* FIXME: this code assumes the access modes on the host and
-     target are the same, which in practice might not be the case.  */
+  if (m_O_ACCMODE && TREE_CODE (m_O_ACCMODE) == INTEGER_CST)
+    {
+      const unsigned HOST_WIDE_INT mask_val = TREE_INT_CST_LOW (m_O_ACCMODE);
+      const unsigned HOST_WIDE_INT masked_flag = flag & mask_val;
 
-  if ((flag & O_ACCMODE) == O_RDONLY)
-    {
-      return READ_ONLY;
-    }
-  else if ((flag & O_ACCMODE) == O_WRONLY)
-    {
-      return WRITE_ONLY;
+      if (m_O_RDONLY && TREE_CODE (m_O_RDONLY) == INTEGER_CST)
+	if (masked_flag == TREE_INT_CST_LOW (m_O_RDONLY))
+	  return READ_ONLY;
+
+      if (m_O_WRONLY && TREE_CODE (m_O_WRONLY) == INTEGER_CST)
+	if (masked_flag == TREE_INT_CST_LOW (m_O_WRONLY))
+	  return WRITE_ONLY;
     }
   return READ_WRITE;
 }

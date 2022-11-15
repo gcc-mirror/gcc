@@ -1229,6 +1229,10 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  impl_call_analyzer_dump_capacity (call, ctxt);
 	else if (is_special_named_call_p (call, "__analyzer_dump_escaped", 0))
 	  impl_call_analyzer_dump_escaped (call);
+	else if (is_special_named_call_p (call,
+					  "__analyzer_dump_named_constant",
+					  1))
+	  impl_call_analyzer_dump_named_constant (call, ctxt);
 	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
 	  {
 	    /* Handle the builtin "__analyzer_dump_path" by queuing a

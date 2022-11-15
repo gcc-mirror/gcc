@@ -3,9 +3,16 @@ void close(int fd);
 int write (int fd, void *buf, int nbytes);
 int read (int fd, void *buf, int nbytes);
 
-#define O_RDONLY 0
-#define O_WRONLY 1
-#define O_RDWR 2
+/* Example of these flags as an enum, and with
+   non-standard values for them.  */
+
+enum {
+      O_RDONLY  = 0x10,
+      O_WRONLY  = 0x20,
+      O_RDWR    = 0x40,
+
+      O_ACCMODE = 0xf0
+};
 
 void f (int fd) __attribute__((fd_arg(1))); /* { dg-message "argument 1 of 'f' must be an open file descriptor, due to '__attribute__\\(\\(fd_arg\\(1\\)\\)\\)'" } */
 
