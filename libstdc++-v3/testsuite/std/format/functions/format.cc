@@ -233,7 +233,7 @@ test_wchar()
 void
 test_minmax()
 {
-  auto check = []<typename T>(T) {
+  auto check = []<typename T, typename U = std::make_unsigned_t<T>>(T, U = 0) {
     const int digits = std::numeric_limits<T>::digits;
     const std::string zeros(digits, '0');
     const std::string ones(digits, '1');
@@ -241,7 +241,6 @@ test_minmax()
     VERIFY( s == "-1" + zeros );
     s = std::format("{:b}" , std::numeric_limits<T>::max());
     VERIFY( s == ones );
-    using U = std::make_unsigned_t<T>;
     s = std::format("{:0{}b}" , std::numeric_limits<U>::min(), digits + 1);
     VERIFY( s == '0' + zeros );
     s = std::format("{:b}" , std::numeric_limits<U>::max());
@@ -252,7 +251,9 @@ test_minmax()
   check(std::int32_t(0));
   check(std::int64_t(0));
 #ifdef __SIZEOF_INT128__
-  check(__int128(0));
+  // std::make_unsigned_t<__int128> is invalid for strict -std=c++20 mode,
+  // so pass a second argument of the unsigned type.
+  check(__int128(0), (unsigned __int128)(0));
 #endif
 }
 
