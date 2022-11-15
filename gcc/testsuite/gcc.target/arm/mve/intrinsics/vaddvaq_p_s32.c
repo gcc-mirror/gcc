@@ -1,21 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+/*
+**foo:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vaddvat.s32	(?:ip|fp|r[0-9]+), q[0-9]+(?:	@.*|)
+**	...
+*/
 int32_t
 foo (int32_t a, int32x4_t b, mve_pred16_t p)
 {
   return vaddvaq_p_s32 (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vaddvat.s32"  }  } */
 
+/*
+**foo1:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vaddvat.s32	(?:ip|fp|r[0-9]+), q[0-9]+(?:	@.*|)
+**	...
+*/
 int32_t
 foo1 (int32_t a, int32x4_t b, mve_pred16_t p)
 {
   return vaddvaq_p (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vaddvat.s32"  }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
