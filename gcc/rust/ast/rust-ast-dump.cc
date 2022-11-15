@@ -1618,12 +1618,21 @@ Dump::visit (ImplTraitType &type)
   //    TypeParamBound ( + TypeParamBound )* +?
 
   stream << "impl ";
-  visit_items_joined_by_separator(type.get_type_param_bounds (), " + ");
+  visit_items_joined_by_separator (type.get_type_param_bounds (), " + ");
 }
 
 void
-Dump::visit (TraitObjectType &)
-{}
+Dump::visit (TraitObjectType &type)
+{
+  // Syntax:
+  //   dyn? TypeParamBounds
+  // TypeParamBounds :
+  //   TypeParamBound ( + TypeParamBound )* +?
+
+  if (type.is_dyn ())
+    stream << "dyn ";
+  visit_items_joined_by_separator (type.get_type_param_bounds (), " + ");
+}
 
 void
 Dump::visit (ParenthesisedType &)
@@ -1636,7 +1645,7 @@ Dump::visit (ImplTraitTypeOneBound &type)
   //    impl TraitBound
 
   stream << "impl ";
-  visit (type.get_trait_bound());
+  visit (type.get_trait_bound ());
 }
 
 void
