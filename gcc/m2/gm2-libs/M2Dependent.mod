@@ -461,14 +461,17 @@ END ResolveDependencies ;
 
 PROCEDURE DisplayModuleInfo (state: DependencyState; name: ARRAY OF CHAR) ;
 VAR
-   mptr: ModuleChain ;
+   mptr : ModuleChain ;
+   count: CARDINAL ;
 BEGIN
    IF Modules[state] # NIL
    THEN
       printf ("%s modules\n", ADR (name)) ;
       mptr := Modules[state] ;
+      count := 0 ;
       REPEAT
-         printf ("  %s", mptr^.name) ;
+         printf ("  %d  %s", count, mptr^.name) ;
+         INC (count) ;
          IF mptr^.dependency.appl
          THEN
             printf (" application")
@@ -575,6 +578,36 @@ END ForceDependencies ;
 
 
 (*
+   CheckApplication - check to see that the application is the last entry in the list.
+                      This might happen if the application only imports FOR C modules.
+*)
+
+PROCEDURE CheckApplication ;
+VAR
+   mptr,
+   appl: ModuleChain ;
+BEGIN
+   mptr := Modules[ordered] ;
+   IF mptr # NIL
+   THEN
+      appl := NIL ;
+      REPEAT
+         IF mptr^.dependency.appl
+         THEN
+            appl := mptr
+         ELSE
+            mptr := mptr^.next
+         END
+      UNTIL (appl # NIL) OR (mptr=Modules[ordered]) ;
+      IF appl # NIL
+      THEN
+         Modules[ordered] := appl^.next
+      END
+   END
+END CheckApplication ;
+
+
+(*
    ConstructModules - resolve dependencies and then call each
                       module constructor in turn.
 *)
@@ -599,6 +632,9 @@ BEGIN
    DumpModuleData (PostTrace) ;
    ForceDependencies ;
    traceprintf (ForceTrace, "After user forcing ordering\n");
+   DumpModuleData (ForceTrace) ;
+   CheckApplication ;
+   traceprintf (ForceTrace, "After runtime forces application to the end\n");
    DumpModuleData (ForceTrace) ;
    IF Modules[ordered] = NIL
    THEN
