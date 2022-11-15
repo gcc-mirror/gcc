@@ -1197,7 +1197,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{PRU Options}
 @gccoptlist{-mmcu=@var{mcu}  -minrt  -mno-relax  -mloop @gol
--mabi=@var{variant} @gol}
+-mabi=@var{variant}}
 
 @emph{RISC-V Options}
 @gccoptlist{-mbranch-cost=@var{N-instruction} @gol
@@ -1220,8 +1220,8 @@ See RS/6000 and PowerPC Options.
 -malign-data=@var{type} @gol
 -mbig-endian  -mlittle-endian @gol
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset}}
--mcsr-check -mno-csr-check @gol
+-mstack-protector-guard-offset=@var{offset} @gol
+-mcsr-check -mno-csr-check}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
