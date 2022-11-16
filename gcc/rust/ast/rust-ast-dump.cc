@@ -1077,8 +1077,12 @@ Dump::visit (Method &method)
   visit (method.get_visibility ());
   stream << "fn " << method.get_method_name () << '(';
 
-  stream << method.get_self_param ().as_string () << ", ";
-  visit_items_joined_by_separator (method.get_function_params (), ", ");
+  stream << method.get_self_param ().as_string ();
+  if (!method.get_function_params ().empty ())
+    {
+      stream << ", ";
+      visit_items_joined_by_separator (method.get_function_params (), ", ");
+    }
 
   stream << ") ";
 
@@ -1343,9 +1347,13 @@ Dump::visit (TraitItemMethod &item)
   // emit_visibility (method.get_visibility ());
   stream << "fn " << method.get_identifier () << '(';
 
-  stream << method.get_self_param ().as_string () << ", ";
+  stream << method.get_self_param ().as_string ();
 
-  visit_items_joined_by_separator (method.get_function_params (), ", ");
+  if (!method.get_function_params ().empty ())
+    {
+      stream << ", ";
+      visit_items_joined_by_separator (method.get_function_params (), ", ");
+    }
 
   stream << ") ";
 
