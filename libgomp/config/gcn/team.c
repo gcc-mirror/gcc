@@ -60,7 +60,7 @@ gomp_gcn_enter_kernel (void)
       /* Initialize the team arena for optimized memory allocation.
          The arena has been allocated on the host side, and the address
          passed in via the kernargs.  Each team takes a small slice of it.  */
-      register void **kernargs asm("s8");
+      void **kernargs = (void**) __builtin_gcn_kernarg_ptr ();
       void *team_arena = (kernargs[4] + TEAM_ARENA_SIZE*teamid);
       void * __lds *arena_start = (void * __lds *)TEAM_ARENA_START;
       void * __lds *arena_free = (void * __lds *)TEAM_ARENA_FREE;
