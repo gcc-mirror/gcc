@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-dump.h"
-#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace AST {
