@@ -1068,145 +1068,149 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // functions
   using ::acosh;
   using ::acoshf;
-  using ::acoshl;
 
   using ::asinh;
   using ::asinhf;
-  using ::asinhl;
 
   using ::atanh;
   using ::atanhf;
-  using ::atanhl;
 
   using ::cbrt;
   using ::cbrtf;
-  using ::cbrtl;
 
   using ::copysign;
   using ::copysignf;
-  using ::copysignl;
 
   using ::erf;
   using ::erff;
-  using ::erfl;
 
   using ::erfc;
   using ::erfcf;
-  using ::erfcl;
 
   using ::exp2;
   using ::exp2f;
-  using ::exp2l;
 
   using ::expm1;
   using ::expm1f;
-  using ::expm1l;
 
   using ::fdim;
   using ::fdimf;
-  using ::fdiml;
 
   using ::fma;
   using ::fmaf;
-  using ::fmal;
 
   using ::fmax;
   using ::fmaxf;
-  using ::fmaxl;
 
   using ::fmin;
   using ::fminf;
-  using ::fminl;
 
   using ::hypot;
   using ::hypotf;
-  using ::hypotl;
 
   using ::ilogb;
   using ::ilogbf;
-  using ::ilogbl;
 
   using ::lgamma;
   using ::lgammaf;
-  using ::lgammal;
 
 #ifndef _GLIBCXX_NO_C99_ROUNDING_FUNCS
   using ::llrint;
   using ::llrintf;
-  using ::llrintl;
 
   using ::llround;
   using ::llroundf;
-  using ::llroundl;
 #endif
 
   using ::log1p;
   using ::log1pf;
-  using ::log1pl;
 
   using ::log2;
   using ::log2f;
-  using ::log2l;
 
   using ::logb;
   using ::logbf;
-  using ::logbl;
 
   using ::lrint;
   using ::lrintf;
-  using ::lrintl;
 
   using ::lround;
   using ::lroundf;
-  using ::lroundl;
 
   using ::nan;
   using ::nanf;
-  using ::nanl;
 
   using ::nearbyint;
   using ::nearbyintf;
-  using ::nearbyintl;
 
   using ::nextafter;
   using ::nextafterf;
-  using ::nextafterl;
-
-  using ::nexttoward;
-  using ::nexttowardf;
-  using ::nexttowardl;
 
   using ::remainder;
   using ::remainderf;
-  using ::remainderl;
 
   using ::remquo;
   using ::remquof;
-  using ::remquol;
 
   using ::rint;
   using ::rintf;
-  using ::rintl;
 
   using ::round;
   using ::roundf;
-  using ::roundl;
 
   using ::scalbln;
   using ::scalblnf;
-  using ::scalblnl;
 
   using ::scalbn;
   using ::scalbnf;
-  using ::scalbnl;
 
   using ::tgamma;
   using ::tgammaf;
-  using ::tgammal;
 
   using ::trunc;
   using ::truncf;
+
+#ifdef _GLIBCXX_USE_C99_MATH_LONG_DOUBLE_FUNCS
+  using ::acoshl;
+  using ::asinhl;
+  using ::atanhl;
+  using ::cbrtl;
+  using ::copysignl;
+  using ::erfl;
+  using ::erfcl;
+  using ::exp2l;
+  using ::expm1l;
+  using ::fdiml;
+  using ::fmal;
+  using ::fmaxl;
+  using ::fminl;
+  using ::hypotl;
+  using ::ilogbl;
+  using ::lgammal;
+#ifndef _GLIBCXX_NO_C99_ROUNDING_FUNCS
+  using ::llrintl;
+  using ::llroundl;
+#endif
+  using ::log1pl;
+  using ::log2l;
+  using ::logbl;
+  using ::lrintl;
+  using ::lroundl;
+  using ::nanl;
+  using ::nearbyintl;
+  using ::nextafterl;
+  using ::nexttoward;
+  using ::nexttowardf;
+  using ::nexttowardl;
+  using ::remainderl;
+  using ::remquol;
+  using ::rintl;
+  using ::roundl;
+  using ::scalblnl;
+  using ::scalbnl;
+  using ::tgammal;
   using ::truncl;
+#endif
 
   /// Additional overloads.
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
