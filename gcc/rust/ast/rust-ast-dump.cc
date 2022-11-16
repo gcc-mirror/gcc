@@ -372,21 +372,134 @@ Dump::visit (PathInExpression &path)
 }
 
 void
-Dump::visit (TypePathSegment &)
-{}
+Dump::visit (TypePathSegment &segment)
+{
+  // Syntax:
+  //    PathIdentSegment
+
+  stream << segment.get_ident_segment ().as_string ();
+}
 
 void
-Dump::visit (TypePathSegmentGeneric &)
-{}
+Dump::visit (TypePathSegmentGeneric &segment)
+{
+  // Syntax:
+  //    PathIdentSegment `::`? (GenericArgs)?
+  // GenericArgs :
+  //    `<` `>`
+  //    | `<` ( GenericArg `,` )* GenericArg `,`? `>`
+
+  stream << segment.get_ident_segment ().as_string ();
+
+  if (segment.get_separating_scope_resolution ())
+    stream << "::";
+
+  stream << "<";
+
+  {
+    // Here we join 3 lists (each possibly empty) with a separator.
+
+    auto &lifetime_args = segment.get_generic_args ().get_lifetime_args ();
+    auto &generic_args = segment.get_generic_args ().get_generic_args ();
+    auto &binding_args = segment.get_generic_args ().get_binding_args ();
+
+    visit_items_joined_by_separator (lifetime_args, ", ");
+    if (!lifetime_args.empty ()
+	&& (!generic_args.empty () || !binding_args.empty ()))
+      {
+	// Insert separator if some items have been already emitted and some
+	// more are to be emitted from any of the following collections.
+	stream << ", ";
+      }
+    visit_items_joined_by_separator (generic_args, ", ");
+    if (!generic_args.empty () && !binding_args.empty ())
+      {
+	// Insert separator if some item vas emitted from the previous
+	// collection and more are to be emitted from the last.
+	stream << ", ";
+      }
+    visit_items_joined_by_separator (binding_args, ", ");
+  }
+
+  stream << ">";
+}
 
 void
-Dump::visit (TypePathSegmentFunction &)
-{}
+Dump::visit (GenericArgsBinding &binding)
+{
+  // Syntax:
+  //    IDENTIFIER `=` Type
+
+  stream << binding.get_identifier () << " << ";
+  visit (binding.get_type ());
+}
+
+void
+Dump::visit (GenericArg &arg)
+{
+  // `GenericArg` implements `accept_vis` but it is not useful for this case as
+  // it ignores unresolved cases (`Kind::Either`).
+
+  switch (arg.get_kind ())
+    {
+    case GenericArg::Kind::Const:
+      visit (arg.get_expression ());
+      break;
+    case GenericArg::Kind::Type:
+      visit (arg.get_type ());
+      break;
+    case GenericArg::Kind::Either:
+      stream << arg.get_path ();
+      break;
+    case GenericArg::Kind::Error:
+      gcc_unreachable ();
+    }
+} // namespace AST
+
+void
+Dump::visit (TypePathSegmentFunction &segment)
+{
+  // Syntax:
+  //   PathIdentSegment `::`? (TypePathFn)?
+
+  stream << segment.get_ident_segment ().as_string ();
+
+  if (segment.get_separating_scope_resolution ())
+    stream << "::";
+
+  if (!segment.is_ident_only ())
+    visit (segment.get_type_path_function ());
+}
+
+void
+Dump::visit (TypePathFunction &type_path_fn)
+{
+  // Syntax:
+  //   `(` TypePathFnInputs? `)` (`->` Type)?
+  // TypePathFnInputs :
+  //   Type (`,` Type)* `,`?
+
+  stream << '(';
+  if (type_path_fn.has_inputs ())
+    visit_items_joined_by_separator (type_path_fn.get_params (), ", ");
+  stream << ')';
+
+  if (type_path_fn.has_return_type ())
+    {
+      stream << "->";
+      visit (type_path_fn.get_return_type ());
+    }
+}
 
 void
 Dump::visit (TypePath &path)
 {
-  stream << path.as_string ();
+  // Syntax:
+  //    `::`? TypePathSegment (`::` TypePathSegment)*
+
+  if (path.has_opening_scope_resolution_op ())
+    stream << "::";
+  visit_items_joined_by_separator (path.get_segments (), "::");
 }
 
 void
@@ -897,8 +1010,6 @@ Dump::visit (TypeParam &param)
   // TypeParamBounds :
   //    TypeParamBound ( + TypeParamBound )* +?
 
-  // FIXME this outputs things like "Ambiguous: String" - this comes from
-  // Token::str
   stream << param.get_type_representation ();
   if (param.has_type_param_bounds ())
     {
