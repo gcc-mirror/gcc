@@ -22,6 +22,7 @@
 #include "rust-linemap.h"
 #include "rust-buffered-queue.h"
 #include "rust-token.h"
+#include "rust-optional.h"
 
 namespace Rust {
 // Simple wrapper for FILE* that simplifies destruction.
@@ -139,7 +140,9 @@ private:
 
 public:
   // Construct lexer with input file and filename provided
-  Lexer (const char *filename, RAIIFile input, Linemap *linemap);
+  Lexer (const char *filename, RAIIFile input, Linemap *linemap,
+	 Optional<std::ofstream &> dump_lex_opt
+	 = Optional<std::ofstream &>::none ());
 
   // Lex the contents of a string instead of a file
   Lexer (const std::string &input);
@@ -161,9 +164,12 @@ public:
   const_TokenPtr peek_token () { return peek_token (0); }
 
   // Advances current token to n + 1 tokens ahead of current position.
-  void skip_token (int n) { token_queue.skip (n); }
+  void skip_token (int n);
   // Skips the current token.
   void skip_token () { skip_token (0); }
+
+  // Dumps and advances by n + 1 tokens.
+  void dump_and_skip (int n);
 
   // Replaces the current token with a specified token.
   void replace_current_token (TokenPtr replacement);
@@ -196,6 +202,8 @@ private:
   /* Max column number that can be quickly allocated - higher may require
    * allocating new linemap */
   static const int max_column_hint = 80;
+
+  Optional<std::ofstream &> dump_lex_out;
 
   // Input source wrapper thing.
   class InputSource

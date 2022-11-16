@@ -118,13 +118,15 @@ is_non_decimal_int_literal_separator (char character)
 
 Lexer::Lexer (const std::string &input)
   : input (RAIIFile::create_error ()), current_line (1), current_column (1),
-    line_map (nullptr), raw_input_source (new BufferInputSource (input, 0)),
+    line_map (nullptr), dump_lex_out (Optional<std::ofstream &>::none ()),
+    raw_input_source (new BufferInputSource (input, 0)),
     input_queue{*raw_input_source}, token_queue (TokenSource (this))
 {}
 
-Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap)
+Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap,
+	      Optional<std::ofstream &> dump_lex_opt)
   : input (std::move (file_input)), current_line (1), current_column (1),
-    line_map (linemap),
+    line_map (linemap), dump_lex_out (dump_lex_opt),
     raw_input_source (new FileInputSource (input.get_raw ())),
     input_queue{*raw_input_source}, token_queue (TokenSource (this))
 {
@@ -184,6 +186,45 @@ void
 Lexer::skip_input ()
 {
   skip_input (0);
+}
+
+void
+Lexer::skip_token (int n)
+{
+  // dump tokens if dump-lex option is enabled
+  if (dump_lex_out.is_some ())
+    dump_and_skip (n);
+  else
+    token_queue.skip (n);
+}
+
+void
+Lexer::dump_and_skip (int n)
+{
+  std::ofstream &out = dump_lex_out.get ();
+  bool found_eof = false;
+  const_TokenPtr tok;
+  for (int i = 0; i < n + 1; i++)
+    {
+      if (!found_eof)
+	{
+	  tok = peek_token ();
+	  found_eof |= tok->get_id () == Rust::END_OF_FILE;
+
+	  Location loc = tok->get_locus ();
+
+	  out << "<id=";
+	  out << tok->token_id_to_str ();
+	  out << (tok->has_str () ? (std::string (", text=") + tok->get_str ()
+				     + std::string (", typehint=")
+				     + std::string (tok->get_type_hint_str ()))
+				  : "")
+	      << " ";
+	  out << get_line_map ()->to_string (loc) << " ";
+	}
+
+      token_queue.skip (0);
+    }
 }
 
 void
