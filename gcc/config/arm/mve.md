@@ -4163,7 +4163,7 @@
 	 VMLALDAVAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vmlaldava.<supf>%#<V_sz_elem> %Q0, %R0, %q2, %q3"
+  "vmlaldava.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -4179,7 +4179,7 @@
 	 VMLALDAVAXQ_S))
   ]
   "TARGET_HAVE_MVE"
-  "vmlaldavax.s%#<V_sz_elem> %Q0, %R0, %q2, %q3"
+  "vmlaldavax.s%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -6126,7 +6126,7 @@
 	 VMLALDAVAXQ_P))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vmlaldavaxt.<supf>%#<V_sz_elem> %Q0, %R0, %q2, %q3"
+  "vpst\;vmlaldavaxt.<supf>%#<V_sz_elem>\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
