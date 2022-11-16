@@ -3273,9 +3273,11 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       if (a->expr->ts.type == BT_CHARACTER
 	  && a->expr->ts.u.cl && a->expr->ts.u.cl->length
 	  && a->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && a->expr->ts.u.cl->length->ts.type == BT_INTEGER
 	  && f->sym->ts.type == BT_CHARACTER && f->sym->ts.u.cl
 	  && f->sym->ts.u.cl->length
 	  && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && f->sym->ts.u.cl->length->ts.type == BT_INTEGER
 	  && (f->sym->attr.pointer || f->sym->attr.allocatable
 	      || (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
 	  && (mpz_cmp (a->expr->ts.u.cl->length->value.integer,
