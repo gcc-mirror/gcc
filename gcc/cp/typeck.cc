@@ -9513,19 +9513,6 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 			 && MAYBE_CLASS_TYPE_P (TREE_TYPE (lhstype)))
 			|| MAYBE_CLASS_TYPE_P (lhstype)));
 
-	  /* An expression of the form E1 op= E2.  [expr.ass] says:
-	     "Such expressions are deprecated if E1 has volatile-qualified
-	     type and op is not one of the bitwise operators |, &, ^."
-	     We warn here rather than in cp_genericize_r because
-	     for compound assignments we are supposed to warn even if the
-	     assignment is a discarded-value expression.  */
-	  if (modifycode != BIT_AND_EXPR
-	      && modifycode != BIT_IOR_EXPR
-	      && modifycode != BIT_XOR_EXPR
-	      && (TREE_THIS_VOLATILE (lhs) || CP_TYPE_VOLATILE_P (lhstype)))
-	    warning_at (loc, OPT_Wvolatile,
-			"compound assignment with %<volatile%>-qualified left "
-			"operand is deprecated");
 	  /* Preevaluate the RHS to make sure its evaluation is complete
 	     before the lvalue-to-rvalue conversion of the LHS:
 

@@ -75,17 +75,17 @@ fn2 ()
   decltype(i = vi = 42) x3 = i;
 
   // Compound assignments.
-  vi += i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  vi -= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  vi %= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  vi += i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
+  vi -= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
+  vi %= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
   vi ^= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
   vi |= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
   vi &= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
-  vi /= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  vi /= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
   vi = vi += 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
   vi += vi = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
   i *= vi;
-  decltype(vi -= 42) x2 = vi; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  decltype(vi -= 42) x2 = vi; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
 
   // Structured bindings.
   int a[] = { 10, 5 };
@@ -108,12 +108,12 @@ fn3 ()
   volatile U u;
   u.c = 42;
   i = u.c = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  u.c += 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  u.c += 42; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
 
   volatile T t;
   t.a = 3;
   j = t.a = 3; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  t.a += 3; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  t.a += 3; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
 
   volatile int *src = &i;
   *src; // No assignment, don't warn.
@@ -136,7 +136,7 @@ void raccoon ()
   volatile T t, u;
   t = 42;
   u = t = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  t += 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  t += 42; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
   t &= 42; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
 }
 
