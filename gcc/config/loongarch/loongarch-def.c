@@ -62,11 +62,13 @@ loongarch_cpu_cache[N_TUNE_TYPES] = {
       .l1d_line_size = 64,
       .l1d_size = 64,
       .l2d_size = 256,
+      .simultaneous_prefetches = 4,
   },
   [CPU_LA464] = {
       .l1d_line_size = 64,
       .l1d_size = 64,
       .l2d_size = 256,
+      .simultaneous_prefetches = 4,
   },
 };
 

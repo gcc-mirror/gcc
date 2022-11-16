@@ -3282,6 +3282,20 @@
 ;;  ....................
 ;;
 
+(define_insn "prefetch"
+  [(prefetch (match_operand 0 "address_operand" "ZD")
+	     (match_operand 1 "const_int_operand" "n")
+	     (match_operand 2 "const_int_operand" "n"))]
+  ""
+{
+  switch (INTVAL (operands[1]))
+  {
+    case 0: return "preld\t0,%a0";
+    case 1: return "preld\t8,%a0";
+    default: gcc_unreachable ();
+  }
+})
+
 (define_insn "nop"
   [(const_int 0)]
   ""

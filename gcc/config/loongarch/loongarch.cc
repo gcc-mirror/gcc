@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -6099,6 +6100,33 @@ loongarch_option_override_internal (struct gcc_options *opts)
      default.  */
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
+
+  /* Set up parameters to be used in prefetching algorithm.  */
+  int simultaneous_prefetches
+    = loongarch_cpu_cache[LARCH_ACTUAL_TUNE].simultaneous_prefetches;
+
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_simultaneous_prefetches,
+		       simultaneous_prefetches);
+
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_l1_cache_line_size,
+		       loongarch_cpu_cache[LARCH_ACTUAL_TUNE].l1d_line_size);
+
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_l1_cache_size,
+		       loongarch_cpu_cache[LARCH_ACTUAL_TUNE].l1d_size);
+
+  SET_OPTION_IF_UNSET (opts, &global_options_set,
+		       param_l2_cache_size,
+		       loongarch_cpu_cache[LARCH_ACTUAL_TUNE].l2d_size);
+
+
+  /* Enable sw prefetching at -O3 and higher.  */
+  if (opts->x_flag_prefetch_loop_arrays < 0
+      && (opts->x_optimize >= 3 || opts->x_flag_profile_use)
+      && !opts->x_optimize_size)
+    opts->x_flag_prefetch_loop_arrays = 1;
 
   if (TARGET_DIRECT_EXTERN_ACCESS && flag_shlib)
     error ("%qs cannot be used for compiling a shared library",
