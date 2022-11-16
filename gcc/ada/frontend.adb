@@ -531,7 +531,7 @@ begin
    --  formals). It is invoked using pragma Debug to avoid adding any cost
    --  when the compiler is built with assertions disabled.
 
-   if not Debug_Flag_Underscore_XX then
+   if not Debug_Flag_Underscore_XX and then not CodePeer_Mode then
       pragma Debug (Exp_Ch6.Validate_Subprogram_Calls (Cunit (Main_Unit)));
    end if;
 
