@@ -2538,7 +2538,7 @@
 	 VRMLALDAVHQ))
   ]
   "TARGET_HAVE_MVE"
-  "vrmlaldavh.<supf>32 %Q0, %R0, %q1, %q2"
+  "vrmlaldavh.<supf>32\t%Q0, %R0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2644,7 +2644,7 @@
 	 VRMLALDAVHAQ))
   ]
   "TARGET_HAVE_MVE"
-  "vrmlaldavha.<supf>32 %Q0, %R0, %q2, %q3"
+  "vrmlaldavha.<supf>32\t%Q0, %R0, %q2, %q3"
   [(set_attr "type" "mve_move")
 ])
 
