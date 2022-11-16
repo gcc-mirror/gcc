@@ -166,7 +166,12 @@ def is_member_of_namespace(typ, *namespaces):
     return False
 
 def is_specialization_of(x, template_name):
-    "Test if a type is a given template instantiation."
+    """
+    Test whether a type is a specialization of the named class template.
+    The type can be specified as a string or a gdb.Type object.
+    The template should be the name of a class template as a string,
+    without any 'std' qualification.
+    """
     global _versioned_namespace
     if type(x) is gdb.Type:
         x = x.tag
@@ -2071,19 +2076,22 @@ class FilteringTypePrinter(object):
     Args:
         template (str): The class template to recognize.
         name (str): The typedef-name that will be used instead.
-        targ1 (str): The first template argument.
-            If arg1 is provided (not None), match only template specializations
-            with this type as the first template argument,
-            e.g. if template='basic_string<targ1'
+        targ1 (str, optional): The first template argument. Defaults to None.
 
     Checks if a specialization of the class template 'template' is the same type
     as the typedef 'name', and prints it as 'name' instead.
 
     e.g. if an instantiation of std::basic_istream<C, T> is the same type as
     std::istream then print it as std::istream.
+
+    If targ1 is provided (not None), match only template specializations with
+    this type as the first template argument, e.g. if template='basic_string'
+    and targ1='char' then only match 'basic_string<char,...>' and not
+    'basic_string<wchar_t,...>'. This rejects non-matching specializations
+    more quickly, without needing to do GDB type lookups.
     """
 
-    def __init__(self, template, name, targ1):
+    def __init__(self, template, name, targ1 = None):
         self.template = template
         self.name = name
         self.targ1 = targ1
