@@ -5017,6 +5017,33 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
    return ret;
 }
 
+/* Evaluate side-effects from OBJ before evaluating call
+   to FN in RESULT expression.
+   This is for expressions of the form `obj->fn(...)'
+   where `fn' turns out to be a static member function and
+   `obj' needs to be evaluated.  `fn' could be also static operator[]
+   or static operator(), in which cases the source expression
+   would be `obj[...]' or `obj(...)'.  */
+
+static tree
+keep_unused_object_arg (tree result, tree obj, tree fn)
+{
+  if (result == NULL_TREE
+      || result == error_mark_node
+      || TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+      || !TREE_SIDE_EFFECTS (obj))
+    return result;
+
+  /* But avoid the implicit lvalue-rvalue conversion when `obj' is
+     volatile.  */
+  tree a = obj;
+  if (TREE_THIS_VOLATILE (a))
+    a = build_this (a);
+  if (TREE_SIDE_EFFECTS (a))
+    return build2 (COMPOUND_EXPR, TREE_TYPE (result), a, result);
+  return result;
+}
+
 /* Build a new call to operator().  This may change ARGS.  */
 
 tree
@@ -5137,7 +5164,13 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
       else if (TREE_CODE (cand->fn) == FUNCTION_DECL
 	       && DECL_OVERLOADED_OPERATOR_P (cand->fn)
 	       && DECL_OVERLOADED_OPERATOR_IS (cand->fn, CALL_EXPR))
-	result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	{
+	  result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	  /* In an expression of the form `a()' where cand->fn
+	     which is operator() turns out to be a static member function,
+	     `a' is none-the-less evaluated.  */
+	  result = keep_unused_object_arg (result, obj, cand->fn);
+	}
       else
 	{
 	  if (TREE_CODE (cand->fn) == FUNCTION_DECL)
@@ -7046,6 +7079,12 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		  gcc_unreachable ();
 		}
 	    }
+
+	  /* In an expression of the form `a[]' where cand->fn
+	     which is operator[] turns out to be a static member function,
+	     `a' is none-the-less evaluated.  */
+	  if (code == ARRAY_REF)
+	    result = keep_unused_object_arg (result, arg1, cand->fn);
 	}
       else
 	{
@@ -7302,6 +7341,11 @@ build_op_subscript (const op_location_t &loc, tree obj,
 	      /* Specify evaluation order as per P0145R2.  */
 	      CALL_EXPR_ORDERED_ARGS (call) = op_is_ordered (ARRAY_REF) == 1;
 	    }
+
+	  /* In an expression of the form `a[]' where cand->fn
+	     which is operator[] turns out to be a static member function,
+	     `a' is none-the-less evaluated.  */
+	  result = keep_unused_object_arg (result, obj, cand->fn);
 	}
       else
 	gcc_unreachable ();
@@ -11494,21 +11538,11 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	      /* In an expression of the form `a->f()' where `f' turns
 		 out to be a static member function, `a' is
 		 none-the-less evaluated.  */
-	      if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
-		  && !is_dummy_object (instance)
-		  && TREE_SIDE_EFFECTS (instance))
-		{
-		  /* But avoid the implicit lvalue-rvalue conversion when 'a'
-		     is volatile.  */
-		  tree a = instance;
-		  if (TREE_THIS_VOLATILE (a))
-		    a = build_this (a);
-		  if (TREE_SIDE_EFFECTS (a))
-		    call = build2 (COMPOUND_EXPR, TREE_TYPE (call), a, call);
-		}
-	      else if (call != error_mark_node
-		       && DECL_DESTRUCTOR_P (cand->fn)
-		       && !VOID_TYPE_P (TREE_TYPE (call)))
+	      if (!is_dummy_object (instance))
+		call = keep_unused_object_arg (call, instance, fn);
+	      if (call != error_mark_node
+		  && DECL_DESTRUCTOR_P (cand->fn)
+		  && !VOID_TYPE_P (TREE_TYPE (call)))
 		/* An explicit call of the form "x->~X()" has type
 		   "void".  However, on platforms where destructors
 		   return "this" (i.e., those where

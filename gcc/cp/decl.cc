@@ -15404,6 +15404,10 @@ grok_op_properties (tree decl, bool complain)
 	    pedwarn (loc, OPT_Wc__23_extensions, "%qD may be a static member "
 		     "function only with %<-std=c++23%> or %<-std=gnu++23%>",
 		     decl);
+	  if (operator_code == ARRAY_REF)
+	    /* static operator[] should have exactly one argument
+	       for C++20 and earlier, so that it isn't multidimensional.  */
+	    op_flags = OVL_OP_FLAG_UNARY;
 	}
       else if (DECL_STATIC_FUNCTION_P (decl))
 	{
