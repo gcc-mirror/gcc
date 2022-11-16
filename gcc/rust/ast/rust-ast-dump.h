@@ -139,6 +139,9 @@ private:
   void visit (std::vector<LifetimeParam> &for_lifetimes);
   void visit (FunctionQualifiers &qualifiers);
   void visit (MaybeNamedParam &param);
+  void visit (TypePathFunction &type_path_fn);
+  void visit (GenericArgsBinding &binding);
+  void visit (GenericArg &arg);
 
   // rust-ast.h
   void visit (Token &tok);
