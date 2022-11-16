@@ -8497,6 +8497,8 @@ c_common_init_ts (void)
   MARK_TS_EXP (FOR_STMT);
   MARK_TS_EXP (SWITCH_STMT);
   MARK_TS_EXP (WHILE_STMT);
+
+  MARK_TS_DECL_COMMON (CONCEPT_DECL);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE

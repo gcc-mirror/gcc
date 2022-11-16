@@ -28928,7 +28928,7 @@ placeholder_type_constraint_dependent_p (tree t)
    the TEMPLATE_DECL. */
 
 tree
-finish_concept_definition (cp_expr id, tree init)
+finish_concept_definition (cp_expr id, tree init, tree attrs)
 {
   gcc_assert (identifier_p (id));
   gcc_assert (processing_template_decl);
@@ -28961,6 +28961,9 @@ finish_concept_definition (cp_expr id, tree init)
   tree decl = build_lang_decl_loc (loc, CONCEPT_DECL, *id, boolean_type_node);
   DECL_CONTEXT (decl) = current_scope ();
   DECL_INITIAL (decl) = init;
+
+  if (attrs)
+    cplus_decl_attributes (&decl, attrs, 0);
 
   set_originating_module (decl, false);
 

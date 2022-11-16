@@ -29672,6 +29672,8 @@ cp_parser_concept_definition (cp_parser *parser)
       return NULL_TREE;
     }
 
+  tree attrs = cp_parser_attributes_opt (parser);
+
   if (!cp_parser_require (parser, CPP_EQ, RT_EQ))
     {
       cp_parser_skip_to_end_of_statement (parser);
@@ -29688,7 +29690,7 @@ cp_parser_concept_definition (cp_parser *parser)
      but continue as if it were.  */
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
-  return finish_concept_definition (id, init);
+  return finish_concept_definition (id, init, attrs);
 }
 
 // -------------------------------------------------------------------------- //

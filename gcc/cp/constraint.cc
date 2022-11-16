@@ -1396,6 +1396,8 @@ build_standard_check (tree tmpl, tree args, tsubst_flags_t complain)
 {
   gcc_assert (standard_concept_p (tmpl));
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
+  if (TREE_DEPRECATED (DECL_TEMPLATE_RESULT (tmpl)))
+    warn_deprecated_use (DECL_TEMPLATE_RESULT (tmpl), NULL_TREE);
   tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
   args = coerce_template_parms (parms, args, tmpl, complain);
   if (args == error_mark_node)

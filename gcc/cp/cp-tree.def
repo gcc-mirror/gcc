@@ -495,11 +495,6 @@ DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
 
 /* Extensions for Concepts. */
 
-/* Concept definition. This is not entirely different than a VAR_DECL
-   except that a) it must be a template, and b) doesn't have the wide
-   range of value and linkage options available to variables.  */
-DEFTREECODE (CONCEPT_DECL, "concept_decl", tcc_declaration, 0)
-
 /* Used to represent information associated with constrained declarations. */
 DEFTREECODE (CONSTRAINT_INFO, "constraint_info", tcc_exceptional, 0)
 
