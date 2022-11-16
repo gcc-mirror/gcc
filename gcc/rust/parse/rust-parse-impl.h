@@ -2137,12 +2137,13 @@ Parser<ManagedTokenSource>::parse_visibility ()
       return AST::Visibility::create_private ();
     }
 
+  auto vis_loc = lexer.peek_token ()->get_locus ();
   lexer.skip_token ();
 
   // create simple pub visibility if no parentheses
   if (lexer.peek_token ()->get_id () != LEFT_PAREN)
     {
-      return AST::Visibility::create_public ();
+      return AST::Visibility::create_public (vis_loc);
       // or whatever
     }
 
@@ -2158,19 +2159,19 @@ Parser<ManagedTokenSource>::parse_visibility ()
 
       skip_token (RIGHT_PAREN);
 
-      return AST::Visibility::create_crate (path_loc);
+      return AST::Visibility::create_crate (path_loc, vis_loc);
     case SELF:
       lexer.skip_token ();
 
       skip_token (RIGHT_PAREN);
 
-      return AST::Visibility::create_self (path_loc);
+      return AST::Visibility::create_self (path_loc, vis_loc);
     case SUPER:
       lexer.skip_token ();
 
       skip_token (RIGHT_PAREN);
 
-      return AST::Visibility::create_super (path_loc);
+      return AST::Visibility::create_super (path_loc, vis_loc);
       case IN: {
 	lexer.skip_token ();
 
@@ -2188,7 +2189,7 @@ Parser<ManagedTokenSource>::parse_visibility ()
 
 	skip_token (RIGHT_PAREN);
 
-	return AST::Visibility::create_in_path (std::move (path));
+	return AST::Visibility::create_in_path (std::move (path), vis_loc);
       }
     default:
       add_error (Error (t->get_locus (), "unexpected token %qs in visibility",
