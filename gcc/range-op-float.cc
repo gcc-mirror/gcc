@@ -1891,8 +1891,9 @@ float_binary_op_range_finish (bool ret, frange &r, tree type,
   // or the reverse operation introduced a known NAN.
   // Say for lhs = op1 * op2 if lhs is [-0, +0] and op2 is too,
   // 0 / 0 is known NAN.  Just punt in that case.
+  // If NANs aren't honored, we get for 0 / 0 UNDEFINED, so punt as well.
   // Or if lhs is a known NAN, we also don't know anything.
-  if (r.known_isnan () || lhs.known_isnan ())
+  if (r.known_isnan () || lhs.known_isnan () || r.undefined_p ())
     {
       r.set_varying (type);
       return true;
