@@ -2578,7 +2578,7 @@ namespace __format
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
     _Arg_next_value_,
     _Arg_f128 = _Arg_ldbl,
-    _Arg_ibm128 = _Args_next_value_,
+    _Arg_ibm128 = _Arg_next_value_,
 #else
     _Arg_f128,
 #endif
@@ -2916,9 +2916,9 @@ namespace __format
 #else
 	  // Don't use _Arg_ldbl for this target, it's ambiguous.
 	  else if constexpr (is_same_v<_Tp, __ibm128>)
-	    return _Arg_ibm128
+	    return _Arg_ibm128;
 	  else if constexpr (is_same_v<_Tp, __ieee128>)
-	    return _Arg_f128
+	    return _Arg_f128;
 #endif
 	  else if constexpr (is_same_v<_Tp, const _CharT*>)
 	    return _Arg_str;
