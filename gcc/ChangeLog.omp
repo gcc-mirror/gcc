@@ -1,3 +1,11 @@
+2022-11-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/mkoffload.cc (process): Recognize '$nohost$...'
+	besides tailing '$nohost' as being for reverse offload.
+
 2022-11-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/gcn.cc (gcn_expand_builtin_1): Expand first argument
