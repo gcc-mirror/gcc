@@ -1911,13 +1911,17 @@ maybe_register_def (def_operand_p def_p, gimple *stmt,
 	{
 	  if (gimple_clobber_p (stmt) && is_gimple_reg (sym))
 	    {
-	      gcc_checking_assert (VAR_P (sym));
+	      tree defvar;
+	      if (VAR_P (sym))
+		defvar = sym;
+	      else
+		defvar = create_tmp_reg (TREE_TYPE (sym));
 	      /* Replace clobber stmts with a default def. This new use of a
 		 default definition may make it look like SSA_NAMEs have
 		 conflicting lifetimes, so we need special code to let them
 		 coalesce properly.  */
 	      to_delete = true;
-	      def = get_or_create_ssa_default_def (cfun, sym);
+	      def = get_or_create_ssa_default_def (cfun, defvar);
 	    }
 	  else
 	    {
