@@ -2747,9 +2747,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if constexpr (is_same_v<_Duration, seconds>)
 	  {
-	    // TODO move this function into the library and get leaps from tzdb.
-	    vector<seconds::rep> __leaps
-	    {
+	    const seconds::rep __leaps[] {
 		78796800, // 1 Jul 1972
 		94694400, // 1 Jan 1973
 	       126230400, // 1 Jan 1974
@@ -2778,12 +2776,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      1435708800, // 1 Jul 2015
 	      1483228800, // 1 Jan 2017
 	    };
+	    // The list above is known to be valid until 2023-06-28 00:00:00 UTC
+	    const seconds::rep __expires = 1687910400;
+	    const seconds::rep __s = __ut.time_since_epoch().count();
 
-	    auto __s = __ut.time_since_epoch().count();
-	    auto __pos = std::upper_bound(__leaps.begin(), __leaps.end(), __s);
+	    const seconds::rep* __first = std::begin(__leaps);
+	    const seconds::rep* __last = std::end(__leaps);
+
+	    if (__s > __expires)
+	      {
+		// TODO: use updated leap_seconds from tzdb
+#if 0
+		auto __db = get_tzdb_list().begin();
+		__first = __db->leap_seconds.data();
+		__last = __first + __db->leap_seconds.size();
+#endif
+	      }
+
+	    // Don't bother searching the list if we're after the last one.
+	    if (__s > __last[-1])
+	      return { false, seconds(__last - __first) };
+
+	    auto __pos = std::upper_bound(__first, __last, __s);
 	    return {
-	      __pos != __leaps.begin() && __pos[-1] == __s,
-	      seconds{__pos - __leaps.begin()}
+	      __pos != begin(__leaps) && __pos[-1] == __s,
+	      seconds{__pos - __first}
 	    };
 	  }
 	else
