@@ -3162,7 +3162,11 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
 	      && (def == lhs
 		  || (known_eq (bit_field_size (use_rhs), def_eltsize)
 		      && constant_multiple_p (bit_field_offset (use_rhs),
-					      def_eltsize))))
+					      def_eltsize)
+		      /* We can simulate the VEC_UNPACK_{HI,LO}_EXPR
+			 via a NOP_EXPR only for integral types.
+			 ???  Support VEC_UNPACK_FLOAT_{HI,LO}_EXPR.  */
+		      && INTEGRAL_TYPE_P (TREE_TYPE (use_rhs)))))
 	    {
 	      bf_stmts.safe_push (use_stmt);
 	      continue;
