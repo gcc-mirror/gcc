@@ -6546,7 +6546,7 @@ make_pass_leaf_regs (gcc::context *ctxt)
 }
 
 static unsigned int
-rest_of_handle_thread_prologue_and_epilogue (void)
+rest_of_handle_thread_prologue_and_epilogue (function *fun)
 {
   /* prepare_shrink_wrap is sensitive to the block structure of the control
      flow graph, so clean it up first.  */
@@ -6562,6 +6562,13 @@ rest_of_handle_thread_prologue_and_epilogue (void)
   /* Some non-cold blocks may now be only reachable from cold blocks.
      Fix that up.  */
   fixup_partitions ();
+
+  /* After prologue and epilogue generation, the judgement on whether
+     one memory access onto stack frame may trap or not could change,
+     since we get more exact stack information by now.  So try to
+     remove any EH edges here, see PR90259.  */
+  if (fun->can_throw_non_call_exceptions)
+    purge_all_dead_edges ();
 
   /* Shrink-wrapping can result in unreachable edges in the epilogue,
      see PR57320.  */
@@ -6631,9 +6638,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  unsigned int execute (function *) final override
+  unsigned int execute (function * fun) final override
     {
-      return rest_of_handle_thread_prologue_and_epilogue ();
+      return rest_of_handle_thread_prologue_and_epilogue (fun);
     }
 
 }; // class pass_thread_prologue_and_epilogue
