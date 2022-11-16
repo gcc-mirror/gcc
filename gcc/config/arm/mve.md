@@ -672,7 +672,7 @@
 	 VSUBQ_N_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vsub.f<V_sz_elem>  %q0, %q1, %2"
+  "vsub.f<V_sz_elem>\t%q0, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
