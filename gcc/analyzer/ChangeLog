@@ -1,3 +1,108 @@
+2022-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106140
+	* analyzer-language.cc (on_finish_translation_unit): Stash named
+	constants "SOCK_STREAM" and "SOCK_DGRAM".
+	* analyzer.opt (Wanalyzer-fd-phase-mismatch): New.
+	(Wanalyzer-fd-type-mismatch): New.
+	* engine.cc (impl_region_model_context::get_state_map_by_name):
+	Add "out_sm_context" param.  Allow out_sm_idx to be NULL.
+	* exploded-graph.h
+	(impl_region_model_context::get_state_map_by_name):
+	Add "out_sm_context" param.
+	* region-model-impl-calls.cc (region_model::impl_call_accept): New.
+	(region_model::impl_call_bind): New.
+	(region_model::impl_call_connect): New.
+	(region_model::impl_call_listen): New.
+	(region_model::impl_call_socket): New.
+	* region-model.cc (region_model::on_call_pre): Special-case
+	"bind".
+	(region_model::on_call_post): Special-case "accept", "bind",
+	"connect", "listen", and "socket".
+	* region-model.h (region_model::impl_call_accept): New decl.
+	(region_model::impl_call_bind): New decl.
+	(region_model::impl_call_connect): New decl.
+	(region_model::impl_call_listen): New decl.
+	(region_model::impl_call_socket): New decl.
+	(region_model::on_socket): New decl.
+	(region_model::on_bind): New decl.
+	(region_model::on_listen): New decl.
+	(region_model::on_accept): New decl.
+	(region_model::on_connect): New decl.
+	(region_model::add_constraint): Make public.
+	(region_model::check_for_poison): Make public.
+	(region_model_context::get_state_map_by_name): Add out_sm_context param.
+	(region_model_context::get_fd_map): Likewise.
+	(region_model_context::get_malloc_map): Likewise.
+	(region_model_context::get_taint_map): Likewise.
+	(noop_region_model_context::get_state_map_by_name): Likewise.
+	(region_model_context_decorator::get_state_map_by_name): Likewise.
+	* sm-fd.cc: Include "analyzer/supergraph.h" and
+	"analyzer/analyzer-language.h".
+	(enum expected_phase): New enum.
+	(fd_state_machine::m_new_datagram_socket): New.
+	(fd_state_machine::m_new_stream_socket): New.
+	(fd_state_machine::m_new_unknown_socket): New.
+	(fd_state_machine::m_bound_datagram_socket): New.
+	(fd_state_machine::m_bound_stream_socket): New.
+	(fd_state_machine::m_bound_unknown_socket): New.
+	(fd_state_machine::m_listening_stream_socket): New.
+	(fd_state_machine::m_m_connected_stream_socket): New.
+	(fd_state_machine::m_SOCK_STREAM): New.
+	(fd_state_machine::m_SOCK_DGRAM): New.
+	(fd_diagnostic::describe_state_change): Handle socket states.
+	(fd_diagnostic::get_meaning_for_state_change): Likewise.
+	(class fd_phase_mismatch): New.
+	(enum expected_type): New enum.
+	(class fd_type_mismatch): New.
+	(fd_state_machine::fd_state_machine): Initialize new states and
+	stashed named constants.
+	(fd_state_machine::is_socket_fd_p): New.
+	(fd_state_machine::is_datagram_socket_fd_p): New.
+	(fd_state_machine::is_stream_socket_fd_p): New.
+	(fd_state_machine::on_close): Handle the socket states.
+	(fd_state_machine::check_for_open_fd): Complain about fncalls on
+	sockets in the wrong phase.  Support socket FDs.
+	(add_constraint_ge_zero): New.
+	(fd_state_machine::get_state_for_socket_type): New.
+	(fd_state_machine::on_socket): New.
+	(fd_state_machine::check_for_socket_fd): New.
+	(fd_state_machine::check_for_new_socket_fd): New.
+	(fd_state_machine::on_bind): New.
+	(fd_state_machine::on_listen): New.
+	(fd_state_machine::on_accept): New.
+	(fd_state_machine::on_connect): New.
+	(fd_state_machine::can_purge_p): Don't purge socket values.
+	(get_fd_state): New.
+	(region_model::mark_as_valid_fd): Use get_fd_state.
+	(region_model::on_socket): New.
+	(region_model::on_bind): New.
+	(region_model::on_listen): New.
+	(region_model::on_accept): New.
+	(region_model::on_connect): New.
+	* sm-fd.dot: Update to reflect sm-fd.cc changes.
+
+2022-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106302
+	* analyzer-language.cc: New file.
+	* analyzer-language.h: New file.
+	* analyzer.h (get_stashed_constant_by_name): New decl.
+	(log_stashed_constants): New decl.
+	* engine.cc (impl_run_checkers): Call log_stashed_constants.
+	* region-model-impl-calls.cc
+	(region_model::impl_call_analyzer_dump_named_constant): New.
+	* region-model.cc (region_model::on_stmt_pre): Handle
+	__analyzer_dump_named_constant.
+	* region-model.h
+	(region_model::impl_call_analyzer_dump_named_constant): New decl.
+	* sm-fd.cc (fd_state_machine::m_O_ACCMODE): New.
+	(fd_state_machine::m_O_RDONLY): New.
+	(fd_state_machine::m_O_WRONLY): New.
+	(fd_state_machine::fd_state_machine): Initialize the new fields.
+	(fd_state_machine::get_access_mode_from_flag): Use the new fields,
+	rather than using the host values.
+
 2022-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106235

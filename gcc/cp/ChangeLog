@@ -1,3 +1,88 @@
+2022-11-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107492
+	* decl.cc (grokdeclarator): Only emit a -Wignored-qualifiers warning
+	when funcdecl_p.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1)
+	<case *_CAST_EXPR>: Use
+	cast_valid_in_integral_constant_expression_p instead of
+	open coding it.
+	* constraint.cc (tsubst_valid_expression_requirement): Adjust
+	calls to tsubst_copy_and_build and tsubst_expr.
+	(tsubst_constraint): Likewise.
+	(satisfy_atom): Likewise.
+	(diagnose_trait_expr): Likewise.
+	* cp-tree.h (tsubst_copy_and_build): Remove i_c_e_p parameter.
+	(tsubst_expr): Likewise.
+	* init.cc (get_nsdmi): Adjust calls to tsubst_copy_and_build
+	and tsubst_expr.
+	* pt.cc (expand_integer_pack): Likewise.
+	(instantiate_non_dependent_expr_internal): Likewise.
+	(tsubst_friend_function): Likewise.
+	(tsubst_attribute): Likewise.
+	(instantiate_class_template): Likewise.
+	(tsubst_template_arg): Likewise.
+	(gen_elem_of_pack_expansion_instantiation): Likewise.
+	(tsubst_fold_expr_init): Likewise.
+	(tsubst_pack_expansion): Likewise.
+	(tsubst_default_argument): Likewise.
+	(tsubst_function_decl): Likewise.
+	(tsubst_decl): Likewise.
+	(tsubst_arg_types): Likewise.
+	(tsubst_exception_specification): Likewise.
+	(tsubst): Likewise.
+	(tsubst_init): Likewise.
+	(tsubst_copy): Likewise.
+	(tsubst_omp_clause_decl): Likewise.
+	(tsubst_omp_clauses): Likewise.
+	(tsubst_copy_asm_operands): Likewise.
+	(tsubst_omp_for_iterator): Likewise.
+	(tsubst_expr): Likewise.  Remove i_c_e_p parameter.
+	(tsubst_omp_udr): Likewise.
+	(tsubst_non_call_postfix_expression): Likewise.  Remove i_c_e_p parameter.
+	(tsubst_lambda_expr): Likewise.
+	(tsubst_copy_and_build_call_args): Likewise.
+	(tsubst_copy_and_build): Likewise.  Remove i_c_e_p parameter.
+	<case IDENTIFIER_NODE>: Adjust call to finish_id_expression
+	following removal of i_c_e_p.
+	<case *_CAST_EXPR>: Remove C++98-specific cast validity check
+	guarded by i_c_e_p.
+	(maybe_instantiate_noexcept): Adjust calls to
+	tsubst_copy_and_build and tsubst_expr.
+	(instantiate_body): Likewise.
+	(instantiate_decl): Likewise.
+	(tsubst_initializer_list): Likewise.
+	(tsubst_enum): Likewise.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-lang.cc (objcp_tsubst_copy_and_build): Remove
+	function_p parameter.
+	* cp-objcp-common.h (objcp_tsubst_copy_and_build):
+	Likewise.
+	* cp-tree.h (tsubst_copy_and_build): Likewise.
+	* init.cc (get_nsdmi): Adjust calls to tsubst_copy_and_build.
+	* pt.cc (expand_integer_pack): Likewise.
+	(instantiate_non_dependent_expr_internal): Likewise.
+	(tsubst_function_decl): Likewise.
+	(tsubst_arg_types): Likewise.
+	(tsubst_exception_specification): Likewise.
+	(tsubst): Likewise.
+	(tsubst_copy_asm_operands): Likewise.
+	(tsubst_expr): Likewise.
+	(tsubst_non_call_postfix_expression): Likewise.
+	(tsubst_lambda_expr): Likewise.
+	(tsubst_copy_and_build_call_args): Likewise.
+	(tsubst_copy_and_build): Remove function_p parameter
+	and adjust function comment.  Adjust recursive calls.
+	<case CALL_EXPR>: Update outdated comment about when
+	we can see an IDENTIFIER_NODE callee with koenig_p=false.
+	(maybe_instantiate_noexcept): Adjust calls to
+	tsubst_copy_and_build.
+
 2022-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (next_common_initial_seqence): Rename to ...

@@ -1,3 +1,15 @@
+2022-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (struct d_print_info): Rename is_lambda_arg to
+	lambda_tpl_parms.  Augment semantics.
+	(d_make_comp): Add checks for new components.
+	(d_template_parm, d_template_head): New.
+	(d_lambda): Add templated lambda support.
+	(d_print_init): Adjust.
+	(d_print_lambda_parm_name): New.
+	(d_print_comp_inner): Support templated lambdas,
+	* testsuite/demangle-expected: Add testcases.
+
 2022-11-14  Martin Liska  <mliska@suse.cz>
 
 	Revert:

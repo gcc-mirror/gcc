@@ -1,3 +1,8 @@
+2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-opts.cc (c_finish_options): Use special_fname_builtin () rather
+	than a hard-coded string.
+
 2022-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.cc (c_cpp_builtins): Bump C++23

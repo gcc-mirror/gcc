@@ -1,3 +1,10 @@
+2022-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106302
+	* c-parser.cc: Include "analyzer/analyzer-language.h" and "toplev.h".
+	(class ana::c_translation_unit): New.
+	(c_parser_translation_unit): Call ana::on_finish_translation_unit.
+
 2022-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (start_underspecified_init)

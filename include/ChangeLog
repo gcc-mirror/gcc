@@ -1,3 +1,12 @@
+2022-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_TEMPLATE_HEAD,
+	DEMANGLE_COMPONENT_TEMPLATE_TYPE_PARM,
+	DEMANGLE_COMPONENT_TEMPLATE_NON_TYPE_PARM,
+	DEMANGLE_COMPONENT_TEMPLATE_TEMPLATE_PARM,
+	DEMANGLE_COMPONENT_TEMPLATE_PACK_PARM.
+
 2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gomp-constants.h (GOMP_DEVICE_INTEL_MIC): Comment out.

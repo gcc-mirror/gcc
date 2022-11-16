@@ -1,3 +1,33 @@
+2022-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/format/functions/format.cc: Do not use
+	std::make_unsigned_t<__int128>.
+
+2022-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (formattable): Only define for C++23/
+	* testsuite/std/format/formatter.cc: Moved to...
+	* testsuite/std/format/formatter/requirements.cc: ...here.
+	* testsuite/std/format/formatter/concept.cc: New test.
+	* testsuite/std/format/functions/format.cc: Replace use of
+	std::formattable in C++20.
+
+2022-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107693
+	* include/std/format (_GLIBCXX_FORMAT_F128): Define to 2 when
+	basic_format_arg needs to use its _M_f128 member.
+	(__extended_floating_point, __floating_point): Replace with ...
+	(__formattable_floating_point): New concept.
+	* testsuite/std/format/functions/format.cc: Check whether
+	__float128 is supported. Also test _Float128.
+
+2022-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Document use of
+	Markdown for Doxygen comments. Tweak formatting.
+	* doc/html/manual/documentation_hacking.html: Regenerate.
+
 2022-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/Makefile.am (install-data-local): Use mkdirs_p for debug

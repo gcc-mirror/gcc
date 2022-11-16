@@ -1,3 +1,11 @@
+2022-11-15  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update local patches.
+
+2022-11-15  Martin Liska  <mliska@suse.cz>
+
+	* merge.sh: Use git clone --depth 1.
+
 2022-10-19  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

@@ -1,3 +1,14 @@
+2022-11-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* Makefile.in: Regenerated with automake 1.15.1.
+	* Makefile.am: Add atomic_16.S for AArch64.
+	* configure.tgt: Disable outline atomics in AArch64 build.
+	* config/linux/aarch64/atomic_16.S: New file - implementation of
+	ifuncs for 16-byte atomics.
+	* config/linux/aarch64/host-config.h: Enable ifuncs, use LSE
+	(HWCAP_ATOMICS) for 1-8-byte atomics and LSE2 (HWCAP_USCAT) for
+	16-byte atomics.
+
 2022-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/104688

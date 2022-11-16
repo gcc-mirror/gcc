@@ -1,3 +1,90 @@
+2022-11-15  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/riscv-builtins.cc (struct riscv_builtin_description):
+	add the pause machine-dependent builtin with no result and no
+	arguments; mark it as always present (pause is a true hint
+	that encodes into a fence-insn, if not supported with the new
+	pause semantics).
+	* config/riscv/riscv-ftypes.def: Add type for void -> void.
+	* config/riscv/riscv.md (riscv_pause): Add risc_pause and
+	UNSPECV_PAUSE
+	* doc/extend.texi: Document __builtin_riscv_pause.
+	* optabs.cc (maybe_gen_insn): Allow nops == 0 (void -> void).
+
+2022-11-15  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_expand_builtin): Avoid use of uninitialized
+	variable in error case.
+
+2022-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106140
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-Wanalyzer-fd-phase-mismatch and -Wanalyzer-fd-type-mismatch.  Add
+	"socket", "bind", "listen", "accept", and "connect" to the list of
+	functions known to the analyzer.
+
+2022-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106302
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/analyzer-language.o.
+	(GTFILES): Add analyzer/analyzer-language.cc.
+	* doc/analyzer.texi: Document __analyzer_dump_named_constant.
+
+2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* json.h (class string): Add M_LEN member to store the length of
+	the data.  Add constructor taking an explicit length.
+	* json.cc (string::string):  Implement the new constructor.
+	(string::print): Support printing strings that are not
+	null-terminated.  Escape embdedded null bytes on output.
+	(test_writing_strings): Test the new null-byte-related features of
+	json::string.
+
+2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* diagnostic.cc (diagnostic_get_location_text): Use
+	special_fname_builtin () rather than a hardcoded string (which was
+	also incorrectly left untranslated previously.)
+	* input.cc (special_fname_builtin): New function.
+	(expand_location_1): Use special_fname_builtin () rather than a
+	hard-coded string.
+	(test_builtins): Likewise.
+	* input.h (special_fname_builtin): Declare.
+
+2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* tree-diagnostic.cc (maybe_unwind_expanded_macro_loc): Handle ad-hoc
+	location in return value of linemap_resolve_location().
+
+2022-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Pragmas): Use @item and @itemx for region
+	pragmas.
+
+2022-11-15  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* ira-color.cc (assign_hard_reg): Remove duplicate `memset' over
+	`full_costs'.
+
+2022-11-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/atomics.md
+	(*aarch64_atomic_load<ALLX:mode>_rcpc_zext): New pattern.
+	(*aarch64_atomic_load<ALLX:mode>_rcpc_sext): New pattern.
+
+2022-11-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_ISA_RCPC): New Macro.
+	(TARGET_RCPC): New Macro.
+	* config/aarch64/atomics.md (atomic_load<mode>): Change into an expand.
+	(aarch64_atomic_load<mode>_rcpc): New define_insn for ldapr.
+	(aarch64_atomic_load<mode>): Rename of old define_insn for ldar.
+	* config/aarch64/iterators.md (UNSPEC_LDAP): New unspec enum value.
+	* doc/invoke.texi (rcpc): Ammend documentation to mention the effects
+	on code generation.
+
 2022-11-15  Hongyu Wang  <hongyu.wang@intel.com>
 
 	PR target/98167
