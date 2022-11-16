@@ -6482,9 +6482,10 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	 then elide the temporary by forwarding the return object to Func:
 
+	   result_type *Rnn = (result_type *) <retval>;
 	   *<retval> = Func (); [return slot optimization]
 	   [...]
-	   return <retval>;
+	   return Rnn;
 
 	 That's necessary if the result type needs finalization because the
 	 temporary would never be adjusted as Expand_Simple_Function_Return
@@ -6496,8 +6497,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	  && current_function_decl
 	  && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl)))
 	{
-	  gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, true);
-	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+	  gnat_to_gnu_entity (gnat_temp,
+			      DECL_RESULT (current_function_decl),
+			      true);
+	  gnu_result
+	    = build_unary_op (INDIRECT_REF, NULL_TREE,
+			      DECL_RESULT (current_function_decl));
 	  gnu_result
 	    = Call_to_gnu (Prefix (Expression (gnat_node)),
 			   &gnu_result_type, gnu_result,
