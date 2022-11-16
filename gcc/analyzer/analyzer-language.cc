@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-language.h"
 #include "analyzer/analyzer-logging.h"
+#include "diagnostic.h"
 
 /* Map from identifier to INTEGER_CST.  */
 static GTY (()) hash_map <tree, tree> *analyzer_stashed_constants;
@@ -39,8 +40,12 @@ namespace ana {
    If found, stash its value within analyzer_stashed_constants.  */
 
 static void
-maybe_stash_named_constant (const translation_unit &tu, const char *name)
+maybe_stash_named_constant (logger *logger,
+			    const translation_unit &tu,
+			    const char *name)
 {
+  LOG_FUNC_1 (logger, "name: %qs", name);
+
   if (!analyzer_stashed_constants)
     analyzer_stashed_constants = hash_map<tree, tree>::create_ggc ();
 
@@ -49,7 +54,30 @@ maybe_stash_named_constant (const translation_unit &tu, const char *name)
     {
       gcc_assert (TREE_CODE (t) == INTEGER_CST);
       analyzer_stashed_constants->put (id, t);
+      if (logger)
+	logger->log ("%qs: %qE", name, t);
     }
+  else
+    {
+      if (logger)
+	logger->log ("%qs: not found", name);
+    }
+}
+
+/* Call into TU to try to find values for the names we care about.
+   If found, stash their values within analyzer_stashed_constants.  */
+
+static void
+stash_named_constants (logger *logger, const translation_unit &tu)
+{
+  LOG_SCOPE (logger);
+
+  /* Stash named constants for use by sm-fd.cc  */
+  maybe_stash_named_constant (logger, tu, "O_ACCMODE");
+  maybe_stash_named_constant (logger, tu, "O_RDONLY");
+  maybe_stash_named_constant (logger, tu, "O_WRONLY");
+  maybe_stash_named_constant (logger, tu, "SOCK_STREAM");
+  maybe_stash_named_constant (logger, tu, "SOCK_DGRAM");
 }
 
 /* Hook for frontend to call into analyzer when TU finishes.
@@ -68,12 +96,12 @@ on_finish_translation_unit (const translation_unit &tu)
   if (!flag_analyzer)
     return;
 
-  /* Stash named constants for use by sm-fd.cc  */
-  maybe_stash_named_constant (tu, "O_ACCMODE");
-  maybe_stash_named_constant (tu, "O_RDONLY");
-  maybe_stash_named_constant (tu, "O_WRONLY");
-  maybe_stash_named_constant (tu, "SOCK_STREAM");
-  maybe_stash_named_constant (tu, "SOCK_DGRAM");
+  FILE *logfile = get_or_create_any_logfile ();
+  log_user the_logger (NULL);
+  if (logfile)
+    the_logger.set_logger (new logger (logfile, 0, 0,
+				       *global_dc->printer));
+  stash_named_constants (the_logger.get_logger (), tu);
 }
 
 /* Lookup NAME in the named constants stashed when the frontend TU finished.

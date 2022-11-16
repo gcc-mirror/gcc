@@ -6144,6 +6144,34 @@ impl_run_checkers (logger *logger)
   delete purge_map;
 }
 
+/* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */
+static FILE *dump_fout = NULL;
+
+/* Track if we're responsible for closing dump_fout.  */
+static bool owns_dump_fout = false;
+
+/* If dumping is enabled, attempt to create dump_fout if it hasn't already
+   been opened.  Return it.  */
+
+FILE *
+get_or_create_any_logfile ()
+{
+  if (!dump_fout)
+    {
+      if (flag_dump_analyzer_stderr)
+	dump_fout = stderr;
+      else if (flag_dump_analyzer)
+	{
+	  char *dump_filename = concat (dump_base_name, ".analyzer.txt", NULL);
+	  dump_fout = fopen (dump_filename, "w");
+	  free (dump_filename);
+	  if (dump_fout)
+	    owns_dump_fout = true;
+	}
+     }
+  return dump_fout;
+}
+
 /* External entrypoint to the analysis "engine".
    Set up any dumps, then call impl_run_checkers.  */
 
@@ -6153,23 +6181,9 @@ run_checkers ()
   /* Save input_location.  */
   location_t saved_input_location = input_location;
 
-  /* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */
-  FILE *dump_fout = NULL;
-  /* Track if we're responsible for closing dump_fout.  */
-  bool owns_dump_fout = false;
-  if (flag_dump_analyzer_stderr)
-    dump_fout = stderr;
-  else if (flag_dump_analyzer)
-    {
-      char *dump_filename = concat (dump_base_name, ".analyzer.txt", NULL);
-      dump_fout = fopen (dump_filename, "w");
-      free (dump_filename);
-      if (dump_fout)
-	owns_dump_fout = true;
-    }
-
   {
     log_user the_logger (NULL);
+    get_or_create_any_logfile ();
     if (dump_fout)
       the_logger.set_logger (new logger (dump_fout, 0, 0,
 					 *global_dc->printer));
@@ -6182,7 +6196,11 @@ run_checkers ()
   }
 
   if (owns_dump_fout)
-    fclose (dump_fout);
+    {
+      fclose (dump_fout);
+      owns_dump_fout = false;
+      dump_fout = NULL;
+    }
 
   /* Restore input_location.  Subsequent passes may assume that input_location
      is some arbitrary value *not* in the block tree, which might be violated
