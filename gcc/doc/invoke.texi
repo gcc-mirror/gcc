@@ -33561,10 +33561,11 @@ registers.
 
 @item -mrelax-cmpxchg-loop
 @opindex mrelax-cmpxchg-loop
-Relax cmpxchg loop by emitting an early load and compare before cmpxchg,
-execute pause if load value is not expected. This reduces excessive
-cachline bouncing when and works for all atomic logic fetch builtins
-that generates compare and swap loop.
+When emitting a compare-and-swap loop for @ref{__sync Builtins}
+and @ref{__atomic Builtins} lacking a native instruction, optimize
+for the highly contended case by issuing an atomic load before the
+@code{CMPXCHG} instruction, and using the @code{PAUSE} instruction
+to save CPU power when restarting the loop.
 
 @item -mindirect-branch=@var{choice}
 @opindex mindirect-branch
