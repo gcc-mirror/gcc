@@ -662,7 +662,10 @@ package body Exp_Ch6 is
 
       --  Create the actual which is a pointer to the current activation chain
 
-      if No (Chain) then
+      if Restriction_Active (No_Task_Hierarchy) then
+         Chain_Actual := Make_Null (Loc);
+
+      elsif No (Chain) then
          Chain_Actual :=
            Make_Attribute_Reference (Loc,
              Prefix         => Make_Identifier (Loc, Name_uChain),

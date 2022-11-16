@@ -107,7 +107,7 @@ package System.Rident is
       No_Dispatching_Calls,                      -- GNAT
       No_Dynamic_Accessibility_Checks,           -- GNAT
       No_Dynamic_Attachment,                     -- Ada 2012 (RM E.7(10/3))
-      No_Dynamic_CPU_Assignment,                 -- Ada 202x (RM D.7(10/3))
+      No_Dynamic_CPU_Assignment,                 -- Ada 2022 (RM D.7(10/3))
       No_Dynamic_Priorities,                     -- (RM D.9(9))
       No_Enumeration_Maps,                       -- GNAT
       No_Entry_Calls_In_Elaboration_Code,        -- GNAT
@@ -152,8 +152,9 @@ package System.Rident is
       No_Task_Attributes_Package,                -- GNAT
       No_Task_At_Interrupt_Priority,             -- GNAT
       No_Task_Hierarchy,                         -- (RM D.7(3), H.4(3))
+      No_Task_Hierarchy_Implicit,                -- GNAT
       No_Task_Termination,                       -- Ada 2005 (D.7(15.1/2))
-      No_Tasks_Unassigned_To_CPU,                -- Ada 202x (D.7(10.10/4))
+      No_Tasks_Unassigned_To_CPU,                -- Ada 2022 (D.7(10.10/4))
       No_Tasking,                                -- GNAT
       No_Terminate_Alternatives,                 -- (RM D.7(6))
       No_Unchecked_Access,                       -- (RM H.4(18))

@@ -897,7 +897,10 @@ package body Restrict is
          declare
             S : constant String := Restriction_Id'Image (J);
          begin
-            if S = Name_Buffer (1 .. Name_Len) then
+            if S = Name_Buffer (1 .. Name_Len)
+              --  users cannot name the N_T_H_Implicit restriction
+              and then J /= No_Task_Hierarchy_Implicit
+            then
                return J;
             end if;
          end;
@@ -1104,7 +1107,12 @@ package body Restrict is
 
    function Restriction_Active (R : All_Restrictions) return Boolean is
    begin
-      return Restrictions.Set (R) and then not Restriction_Warnings (R);
+      if Restrictions.Set (R) and then not Restriction_Warnings (R) then
+         return True;
+      else
+         return R = No_Task_Hierarchy
+           and then Restriction_Active (No_Task_Hierarchy_Implicit);
+      end if;
    end Restriction_Active;
 
    --------------------------------
