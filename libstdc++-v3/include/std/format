@@ -52,6 +52,10 @@
 #include <bits/utility.h>      // tuple_size_v
 #include <ext/numeric_traits.h> // __int_traits
 
+#if !__has_builtin(__builtin_toupper)
+# include <cctype>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1027,7 +1031,11 @@ namespace __format
 	      __res = to_chars(__start, __end, __u, 16);
 	      if (_M_spec._M_type == _Pres_X)
 		for (auto __p = __start; __p != __res.ptr; ++__p)
+#if __has_builtin(__builtin_toupper)
 		  *__p = __builtin_toupper(*__p);
+#else
+		  *__p = std::toupper(*__p);
+#endif
 	      break;
 	    default:
 	      __builtin_unreachable();
@@ -2718,7 +2726,7 @@ namespace __format
     public:
       class handle : public __format::_Arg_value<_Context>::_HandleBase
       {
-	using _Base = __format::_Arg_value<_Context>::_HandleBase;
+	using _Base = typename __format::_Arg_value<_Context>::_HandleBase;
 
 	// Format as const if possible, to reduce instantiations.
 	template<typename _Tp>

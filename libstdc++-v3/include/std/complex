@@ -1840,7 +1840,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef _Tp value_type;
-      typedef std::__complex_type<_Tp>::type _ComplexT;
+      typedef typename std::__complex_type<_Tp>::type _ComplexT;
 
       constexpr complex(_ComplexT __z) : _M_value(__z) { }
 
