@@ -2249,7 +2249,7 @@ region_model::mark_as_valid_fd (const svalue *sval, region_model_context *ctxt)
 }
 
 /* Specialcase hook for handling "socket", for use by
-   region_model::impl_call_socket::outcome_of_socket::update_model.  */
+   known_function_socket::outcome_of_socket::update_model.  */
 
 bool
 region_model::on_socket (const call_details &cd, bool successful)
@@ -2267,7 +2267,7 @@ region_model::on_socket (const call_details &cd, bool successful)
 }
 
 /* Specialcase hook for handling "bind", for use by
-   region_model::impl_call_bind::outcome_of_bind::update_model.  */
+   known_function_bind::outcome_of_bind::update_model.  */
 
 bool
 region_model::on_bind (const call_details &cd, bool successful)
@@ -2285,7 +2285,7 @@ region_model::on_bind (const call_details &cd, bool successful)
 }
 
 /* Specialcase hook for handling "listen", for use by
-   region_model::impl_call_listen::outcome_of_listen::update_model.  */
+   known_function_listen::outcome_of_listen::update_model.  */
 
 bool
 region_model::on_listen (const call_details &cd, bool successful)
@@ -2303,7 +2303,7 @@ region_model::on_listen (const call_details &cd, bool successful)
 }
 
 /* Specialcase hook for handling "accept", for use by
-   region_model::impl_call_accept::outcome_of_accept::update_model.  */
+   known_function_accept::outcome_of_accept::update_model.  */
 
 bool
 region_model::on_accept (const call_details &cd, bool successful)
@@ -2321,7 +2321,7 @@ region_model::on_accept (const call_details &cd, bool successful)
 }
 
 /* Specialcase hook for handling "connect", for use by
-   region_model::impl_call_connect::outcome_of_connect::update_model.  */
+   known_function_connect::outcome_of_connect::update_model.  */
 
 bool
 region_model::on_connect (const call_details &cd, bool successful)

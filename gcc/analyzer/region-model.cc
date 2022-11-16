@@ -2293,11 +2293,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_realloc (cd);
 	  return false;
 	}
-      else if (is_named_call_p (callee_fndecl, "bind", call, 3))
-	{
-	  /* Handle in "on_call_post".  */
-	  return false;
-	}
       else if (is_named_call_p (callee_fndecl, "__errno_location", call, 0))
 	{
 	  impl_call_errno_location (cd);
@@ -2383,8 +2378,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	}
       else if (const known_function *kf = get_known_function (callee_fndecl))
 	{
-	  kf->impl_call_pre (cd);
-	  return false;
+	  if (kf->matches_call_types_p (cd))
+	    {
+	      kf->impl_call_pre (cd);
+	      return false;
+	    }
 	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
 	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
@@ -2427,35 +2425,10 @@ region_model::on_call_post (const gcall *call,
 	  impl_call_operator_delete (cd);
 	  return;
 	}
-      else if (is_named_call_p (callee_fndecl, "accept", call, 3))
-	{
-	  impl_call_accept (cd);
-	  return;
-	}
-      else if (is_named_call_p (callee_fndecl, "bind", call, 3))
-	{
-	  impl_call_bind (cd);
-	  return;
-	}
-      else if (is_named_call_p (callee_fndecl, "connect", call, 3))
-	{
-	  impl_call_connect (cd);
-	  return;
-	}
-      else if (is_named_call_p (callee_fndecl, "listen", call, 2))
-	{
-	  impl_call_listen (cd);
-	  return;
-	}
       else if (is_pipe_call_p (callee_fndecl, "pipe", call, 1)
 	       || is_pipe_call_p (callee_fndecl, "pipe2", call, 2))
 	{
 	  impl_call_pipe (cd);
-	  return;
-	}
-      else if (is_named_call_p (callee_fndecl, "socket", call, 3))
-	{
-	  impl_call_socket (cd);
 	  return;
 	}
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
@@ -2463,6 +2436,14 @@ region_model::on_call_post (const gcall *call,
 	{
 	  impl_call_strchr (cd);
 	  return;
+	}
+      else if (const known_function *kf = get_known_function (callee_fndecl))
+	{
+	  if (kf->matches_call_types_p (cd))
+	    {
+	      kf->impl_call_post (cd);
+	      return;
+	    }
 	}
       /* Was this fndecl referenced by
 	 __attribute__((malloc(FOO)))?  */
