@@ -1,4 +1,4 @@
-// { dg-do link { target c++11 } }
+// { dg-do run { target c++11 } }
 // { dg-require-static-libstdcxx }
 // { dg-options "-static-libstdc++" }
 

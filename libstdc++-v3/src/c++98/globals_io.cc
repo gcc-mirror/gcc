@@ -69,6 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   fake_wostream wclog;
 #endif
 
+#include "ios_base_init.h"
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
