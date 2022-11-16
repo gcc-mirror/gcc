@@ -194,6 +194,7 @@ private:
 public:
   Optional (const Optional &other) = default;
   Optional (Optional &&other) = default;
+  Optional &operator= (Optional &&other) = default;
 
   static Optional<T &> some (T &value)
   {

@@ -671,8 +671,6 @@ public:
   // Main entry point for parser.
   std::unique_ptr<AST::Crate> parse_crate ();
 
-  // Dumps all lexer output.
-  void debug_dump_lex_output (std::ostream &out);
   void debug_dump_ast_output (AST::Crate &crate, std::ostream &out);
 
   // Returns whether any parsing errors have occurred.
