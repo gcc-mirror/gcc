@@ -1833,6 +1833,8 @@ next_common_initial_sequence (tree &memb1, tree &memb2)
   if ((!lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb1)))
       != !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb2)))
     return false;
+  if (DECL_ALIGN (memb1) != DECL_ALIGN (memb2))
+    return false;
   if (!tree_int_cst_equal (bit_position (memb1), bit_position (memb2)))
     return false;
   return true;
@@ -1854,15 +1856,13 @@ layout_compatible_type_p (tree type1, tree type2)
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
 
   if (TREE_CODE (type1) == ENUMERAL_TYPE)
-    return (TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
-	    && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
+    return (tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
 	    && same_type_p (finish_underlying_type (type1),
 			    finish_underlying_type (type2)));
 
   if (CLASS_TYPE_P (type1)
       && std_layout_type_p (type1)
       && std_layout_type_p (type2)
-      && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
       && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2)))
     {
       tree field1 = TYPE_FIELDS (type1);
