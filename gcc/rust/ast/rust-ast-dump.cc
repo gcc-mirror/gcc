@@ -848,7 +848,7 @@ Dump::visit (BlockExpr &expr)
   stream << "{\n";
   indentation.increment ();
 
-  visit_items_as_lines (expr.get_statements (), "; /* stmt */");
+  visit_items_as_lines (expr.get_statements (), ";");
 
   if (expr.has_tail_expr ())
     visit_as_line (expr.get_tail_expr (), " /* tail expr */\n");
@@ -1205,7 +1205,6 @@ Dump::visit (TypeAlias &type_alias)
     visit (type_alias.get_where_clause ());
   stream << " = ";
   visit (type_alias.get_type_aliased ());
-  stream << ";\n";
 }
 
 void
