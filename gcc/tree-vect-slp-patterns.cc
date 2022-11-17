@@ -1035,8 +1035,11 @@ complex_mul_pattern::matches (complex_operation_t op,
   auto_vec<slp_tree> left_op, right_op;
   slp_tree add0 = NULL;
 
-  /* Check if we may be a multiply add.  */
+  /* Check if we may be a multiply add.  It's only valid to form FMAs
+     with -ffp-contract=fast.  */
   if (!mul0
+      && (flag_fp_contract_mode == FP_CONTRACT_FAST
+	  || !FLOAT_TYPE_P (SLP_TREE_VECTYPE (l0node[0])))
       && vect_match_expression_p (l0node[0], PLUS_EXPR))
     {
       auto vals = SLP_TREE_CHILDREN (l0node[0]);
@@ -1501,9 +1504,13 @@ addsub_pattern::recognize (slp_tree_to_load_perm_map_t *,
     }
 
   /* Now we have either { -, +, -, + ... } (!l0add_p) or { +, -, +, - ... }
-     (l0add_p), see whether we have FMA variants.  */
-  if (!l0add_p
-      && vect_match_expression_p (SLP_TREE_CHILDREN (l0node)[0], MULT_EXPR))
+     (l0add_p), see whether we have FMA variants.  We can only form FMAs
+     if allowed via -ffp-contract=fast.  */
+  if (flag_fp_contract_mode != FP_CONTRACT_FAST
+      && FLOAT_TYPE_P (SLP_TREE_VECTYPE (l0node)))
+    ;
+  else if (!l0add_p
+	   && vect_match_expression_p (SLP_TREE_CHILDREN (l0node)[0], MULT_EXPR))
     {
       /* (c * d) -+ a */
       if (vect_pattern_validate_optab (IFN_VEC_FMADDSUB, node))
