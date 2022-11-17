@@ -48,21 +48,21 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 typedef struct SymbolKey_PerformOperation_p SymbolKey_PerformOperation;
 
 #   define MaxNoOfElements 5
-typedef struct list_r list;
+typedef struct Lists_list_r Lists_list;
 
-typedef struct _T1_a _T1;
+typedef struct Lists__T1_a Lists__T1;
 
-typedef list *Lists_List;
+typedef Lists_list *Lists_List;
 
 typedef void (*SymbolKey_PerformOperation_t) (unsigned int);
 struct SymbolKey_PerformOperation_p { SymbolKey_PerformOperation_t proc; };
 
-struct _T1_a { unsigned int array[MaxNoOfElements-1+1]; };
-struct list_r {
-                unsigned int NoOfElements;
-                _T1 Elements;
-                Lists_List Next;
-              };
+struct Lists__T1_a { unsigned int array[MaxNoOfElements-1+1]; };
+struct Lists_list_r {
+                      unsigned int NoOfElements;
+                      Lists__T1 Elements;
+                      Lists_List Next;
+                    };
 
 
 /*
@@ -153,7 +153,7 @@ static void RemoveItem (Lists_List p, Lists_List l, unsigned int i)
   if ((l->NoOfElements == 0) && (p != NULL))
     {
       p->Next = l->Next;
-      Storage_DEALLOCATE ((void **) &l, sizeof (list));
+      Storage_DEALLOCATE ((void **) &l, sizeof (Lists_list));
     }
 }
 
@@ -164,7 +164,7 @@ static void RemoveItem (Lists_List p, Lists_List l, unsigned int i)
 
 extern "C" void Lists_InitList (Lists_List *l)
 {
-  Storage_ALLOCATE ((void **) &(*l), sizeof (list));
+  Storage_ALLOCATE ((void **) &(*l), sizeof (Lists_list));
   (*l)->NoOfElements = 0;
   (*l)->Next = NULL;
 }
@@ -182,7 +182,7 @@ extern "C" void Lists_KillList (Lists_List *l)
         {
           Lists_KillList (&(*l)->Next);
         }
-      Storage_DEALLOCATE ((void **) &(*l), sizeof (list));
+      Storage_DEALLOCATE ((void **) &(*l), sizeof (Lists_list));
     }
 }
 
@@ -418,10 +418,10 @@ extern "C" Lists_List Lists_DuplicateList (Lists_List l)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_Lists_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Lists_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Lists_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Lists_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

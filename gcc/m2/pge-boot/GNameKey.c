@@ -60,22 +60,22 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   define NameKey_NulName 0
 typedef unsigned int NameKey_Name;
 
-typedef struct Node_r Node;
+typedef struct NameKey_Node_r NameKey_Node;
 
-typedef char *PtrToChar;
+typedef char *NameKey_PtrToChar;
 
-typedef Node *NameNode;
+typedef NameKey_Node *NameKey_NameNode;
 
-typedef enum {less, equal, greater} Comparison;
+typedef enum {NameKey_less, NameKey_equal, NameKey_greater} NameKey_Comparison;
 
-struct Node_r {
-                PtrToChar Data;
-                NameKey_Name Key;
-                NameNode Left;
-                NameNode Right;
-              };
+struct NameKey_Node_r {
+                        NameKey_PtrToChar Data;
+                        NameKey_Name Key;
+                        NameKey_NameNode Left;
+                        NameKey_NameNode Right;
+                      };
 
-static NameNode BinaryTree;
+static NameKey_NameNode BinaryTree;
 static Indexing_Index KeyIndex;
 static unsigned int LastIndice;
 
@@ -149,13 +149,13 @@ extern "C" char NameKey_CharKey (NameKey_Name key, unsigned int i);
                If a name is found then the string, n, is deallocated.
 */
 
-static NameKey_Name DoMakeKey (PtrToChar n, unsigned int higha);
+static NameKey_Name DoMakeKey (NameKey_PtrToChar n, unsigned int higha);
 
 /*
    Compare - return the result of Names[i] with Names[j]
 */
 
-static Comparison Compare (PtrToChar pi, NameKey_Name j);
+static NameKey_Comparison Compare (NameKey_PtrToChar pi, NameKey_Name j);
 
 /*
    FindNodeAndParentInTree - search BinaryTree for a name.
@@ -164,7 +164,7 @@ static Comparison Compare (PtrToChar pi, NameKey_Name j);
                              A comparison is returned to assist adding entries into this tree.
 */
 
-static Comparison FindNodeAndParentInTree (PtrToChar n, NameNode *child, NameNode *father);
+static NameKey_Comparison FindNodeAndParentInTree (NameKey_PtrToChar n, NameKey_NameNode *child, NameKey_NameNode *father);
 
 
 /*
@@ -172,25 +172,25 @@ static Comparison FindNodeAndParentInTree (PtrToChar n, NameNode *child, NameNod
                If a name is found then the string, n, is deallocated.
 */
 
-static NameKey_Name DoMakeKey (PtrToChar n, unsigned int higha)
+static NameKey_Name DoMakeKey (NameKey_PtrToChar n, unsigned int higha)
 {
-  Comparison result;
-  NameNode father;
-  NameNode child;
+  NameKey_Comparison result;
+  NameKey_NameNode father;
+  NameKey_NameNode child;
   NameKey_Name k;
 
   result = FindNodeAndParentInTree (n, &child, &father);
   if (child == NULL)
     {
-      if (result == less)
+      if (result == NameKey_less)
         {
-          Storage_ALLOCATE ((void **) &child, sizeof (Node));
+          Storage_ALLOCATE ((void **) &child, sizeof (NameKey_Node));
           father->Left = child;
         }
-      else if (result == greater)
+      else if (result == NameKey_greater)
         {
           /* avoid dangling else.  */
-          Storage_ALLOCATE ((void **) &child, sizeof (Node));
+          Storage_ALLOCATE ((void **) &child, sizeof (NameKey_Node));
           father->Right = child;
         }
       child->Right = NULL;
@@ -216,25 +216,25 @@ static NameKey_Name DoMakeKey (PtrToChar n, unsigned int higha)
    Compare - return the result of Names[i] with Names[j]
 */
 
-static Comparison Compare (PtrToChar pi, NameKey_Name j)
+static NameKey_Comparison Compare (NameKey_PtrToChar pi, NameKey_Name j)
 {
-  PtrToChar pj;
+  NameKey_PtrToChar pj;
   char c1;
   char c2;
 
-  pj = static_cast<PtrToChar> (NameKey_KeyToCharStar (j));
+  pj = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (j));
   c1 = (*pi);
   c2 = (*pj);
   while ((c1 != ASCII_nul) || (c2 != ASCII_nul))
     {
       if (c1 < c2)
         {
-          return less;
+          return NameKey_less;
         }
       else if (c1 > c2)
         {
           /* avoid dangling else.  */
-          return greater;
+          return NameKey_greater;
         }
       else
         {
@@ -245,7 +245,7 @@ static Comparison Compare (PtrToChar pi, NameKey_Name j)
           c2 = (*pj);
         }
     }
-  return equal;
+  return NameKey_equal;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -258,33 +258,33 @@ static Comparison Compare (PtrToChar pi, NameKey_Name j)
                              A comparison is returned to assist adding entries into this tree.
 */
 
-static Comparison FindNodeAndParentInTree (PtrToChar n, NameNode *child, NameNode *father)
+static NameKey_Comparison FindNodeAndParentInTree (NameKey_PtrToChar n, NameKey_NameNode *child, NameKey_NameNode *father)
 {
-  Comparison result;
+  NameKey_Comparison result;
 
   /* firstly set up the initial values of child and father, using sentinal node  */
   (*father) = BinaryTree;
   (*child) = BinaryTree->Left;
   if ((*child) == NULL)
     {
-      return less;
+      return NameKey_less;
     }
   else
     {
       do {
         result = Compare (n, (*child)->Key);
-        if (result == less)
+        if (result == NameKey_less)
           {
             (*father) = (*child);
             (*child) = (*child)->Left;
           }
-        else if (result == greater)
+        else if (result == NameKey_greater)
           {
             /* avoid dangling else.  */
             (*father) = (*child);
             (*child) = (*child)->Right;
           }
-      } while (! (((*child) == NULL) || (result == equal)));
+      } while (! (((*child) == NULL) || (result == NameKey_equal)));
       return result;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -301,8 +301,8 @@ static Comparison FindNodeAndParentInTree (PtrToChar n, NameNode *child, NameNod
 
 extern "C" NameKey_Name NameKey_MakeKey (const char *a_, unsigned int _a_high)
 {
-  PtrToChar n;
-  PtrToChar p;
+  NameKey_PtrToChar n;
+  NameKey_PtrToChar p;
   unsigned int i;
   unsigned int higha;
   char a[_a_high+1];
@@ -330,7 +330,7 @@ extern "C" NameKey_Name NameKey_MakeKey (const char *a_, unsigned int _a_high)
       (*p) = ASCII_nul;
       return DoMakeKey (n, higha);
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -345,9 +345,9 @@ extern "C" NameKey_Name NameKey_MakeKey (const char *a_, unsigned int _a_high)
 
 extern "C" NameKey_Name NameKey_makekey (void * a)
 {
-  PtrToChar n;
-  PtrToChar p;
-  PtrToChar pa;
+  NameKey_PtrToChar n;
+  NameKey_PtrToChar p;
+  NameKey_PtrToChar pa;
   unsigned int i;
   unsigned int higha;
 
@@ -367,7 +367,7 @@ extern "C" NameKey_Name NameKey_makekey (void * a)
       else
         {
           n = p;
-          pa = static_cast<PtrToChar> (a);
+          pa = static_cast<NameKey_PtrToChar> (a);
           i = 0;
           while (i < higha)
             {
@@ -380,7 +380,7 @@ extern "C" NameKey_Name NameKey_makekey (void * a)
           return DoMakeKey (n, higha);
         }
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -391,11 +391,11 @@ extern "C" NameKey_Name NameKey_makekey (void * a)
 
 extern "C" void NameKey_GetKey (NameKey_Name key, char *a, unsigned int _a_high)
 {
-  PtrToChar p;
+  NameKey_PtrToChar p;
   unsigned int i;
   unsigned int higha;
 
-  p = static_cast<PtrToChar> (NameKey_KeyToCharStar (key));
+  p = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (key));
   i = 0;
   higha = _a_high;
   while (((p != NULL) && (i <= higha)) && ((*p) != ASCII_nul))
@@ -418,9 +418,9 @@ extern "C" void NameKey_GetKey (NameKey_Name key, char *a, unsigned int _a_high)
 extern "C" unsigned int NameKey_LengthKey (NameKey_Name Key)
 {
   unsigned int i;
-  PtrToChar p;
+  NameKey_PtrToChar p;
 
-  p = static_cast<PtrToChar> (NameKey_KeyToCharStar (Key));
+  p = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (Key));
   i = 0;
   while ((*p) != ASCII_nul)
     {
@@ -441,8 +441,8 @@ extern "C" unsigned int NameKey_LengthKey (NameKey_Name Key)
 
 extern "C" unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high)
 {
-  NameNode child;
-  PtrToChar p;
+  NameKey_NameNode child;
+  NameKey_PtrToChar p;
   unsigned int i;
   unsigned int higha;
   char a[_a_high+1];
@@ -457,7 +457,7 @@ extern "C" unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high)
       do {
         i = 0;
         higha = _a_high;
-        p = static_cast<PtrToChar> (NameKey_KeyToCharStar (child->Key));
+        p = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (child->Key));
         while ((i <= higha) && (a[i] != ASCII_nul))
           {
             if (a[i] < (*p))
@@ -504,9 +504,9 @@ extern "C" unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high)
 
 extern "C" void NameKey_WriteKey (NameKey_Name key)
 {
-  PtrToChar s;
+  NameKey_PtrToChar s;
 
-  s = static_cast<PtrToChar> (NameKey_KeyToCharStar (key));
+  s = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (key));
   while ((s != NULL) && ((*s) != ASCII_nul))
     {
       StdIO_Write ((*s));
@@ -523,8 +523,8 @@ extern "C" void NameKey_WriteKey (NameKey_Name key)
 
 extern "C" unsigned int NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_Name key2)
 {
-  PtrToChar pi;
-  PtrToChar pj;
+  NameKey_PtrToChar pi;
+  NameKey_PtrToChar pj;
   char c1;
   char c2;
 
@@ -534,8 +534,8 @@ extern "C" unsigned int NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_
     }
   else
     {
-      pi = static_cast<PtrToChar> (NameKey_KeyToCharStar (key1));
-      pj = static_cast<PtrToChar> (NameKey_KeyToCharStar (key2));
+      pi = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (key1));
+      pj = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (key2));
       c1 = (*pi);
       c2 = (*pj);
       while ((c1 != ASCII_nul) && (c2 != ASCII_nul))
@@ -585,28 +585,28 @@ extern "C" void * NameKey_KeyToCharStar (NameKey_Name key)
 
 extern "C" char NameKey_CharKey (NameKey_Name key, unsigned int i)
 {
-  PtrToChar p;
+  NameKey_PtrToChar p;
 
   if (i >= (NameKey_LengthKey (key)))
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  p = static_cast<PtrToChar> (NameKey_KeyToCharStar (key));
+  p = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (key));
   p += i;
   return (*p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_NameKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_NameKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   LastIndice = 0;
   KeyIndex = Indexing_InitIndex (1);
-  Storage_ALLOCATE ((void **) &BinaryTree, sizeof (Node));
+  Storage_ALLOCATE ((void **) &BinaryTree, sizeof (NameKey_Node));
   BinaryTree->Left = NULL;
 }
 
-extern "C" void _M2_NameKey_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_NameKey_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

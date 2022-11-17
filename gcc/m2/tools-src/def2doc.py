@@ -36,10 +36,46 @@ ISO_Libs = ['gm2-libs-iso', 'M2 ISO Libraries', 'ISO defined libraries']
 
 library_classifications = [Base_Libs, PIM_Log, PIM_Cor, ISO_Libs]
 
+# state_states
+state_none, state_var, state_type, state_const = range(4)
+# block states
+block_none, block_code, block_text, block_index = range(4)
+
+
+class state:
+    def __init__(self):
+        self._state_state = state_none
+        self._block = block_none
+    def get_state (self):
+        return self._state_state
+    def set_state (self, value):
+        self._state_state = value
+    def is_const(self):
+        return self._state_state == state_const
+    def is_type(self):
+        return self._state_state == state_type
+    def is_var(self):
+        return self._state_state == state_var
+    def get_block(self):
+        return self._block
+    def _change_block(self, new_block):
+        if self._block != new_block:
+            self._block = new_block
+            self._emit_block_desc()
+    def _emit_block_desc(self):
+        if self._block == block_code:
+            output.write('.. code-block:: modula2\n')
+        elif self._block == block_index:
+            output.write('.. index::\n')
+    def to_code(self):
+        self._change_block(block_code)
+    def to_index(self):
+        self._change_block(block_index)
+
 
 def init_state():
-    global in_var, in_type, in_const
-    in_var, in_type, in_const = False, False, False
+    global state_obj
+    state_obj = state()
 
 
 def emit_node(name, nxt, previous, up):
@@ -139,7 +175,8 @@ def remove_fields(file, line):
     output.write(line.rstrip() + '\n')
 
 
-def emit_index(entry, tag, previous):
+def emit_index(entry, tag):
+    global state_obj
     if args.texinfo:
         if tag == '':
             output.write('@findex ' + entry.rstrip() + '\n')
@@ -147,72 +184,59 @@ def emit_index(entry, tag, previous):
             output.write('@findex ' + entry.rstrip() + ' ' + tag + '\n')
     elif args.sphinx:
         if tag == '':
-            output.write('.. index::')
+            state_obj.to_index()
             output.write(' ' * 3 + entry.rstrip() + '\n')
         else:
-            output.write('.. index::')
+            state_obj.to_index()
             output.write(' ' * 3 + 'pair: ' + entry.rstrip() + '; ' + tag + '\n')
-        if previous != '':
-            output.write(previous + '\n')
 
 
-def check_index(line, current):
+def check_index(line):
     # check_index - create an index entry for a PROCEDURE, TYPE, CONST or VAR.
-    global in_var, in_type, in_const
+    global state_obj
 
     words = line.split()
     procedure = ''
     if (len(words) > 1) and (words[0] == 'PROCEDURE'):
-        in_const = False
-        in_type = False
-        in_var = False
+        state_obj.set_state(state_none)
         if (words[1] == '__BUILTIN__') and (len(words) > 2):
             procedure = words[2]
         else:
             procedure = words[1]
     if (len(line) > 1) and (line[0:2] == '(*'):
-        in_const = False
-        in_type = False
-        in_var = False
+        state_obj.set_state(state_none)
     elif line == 'VAR':
-        in_const = False
-        in_var = True
-        in_type = False
+        state_obj.set_state(state_var)
         return
     elif line == 'TYPE':
-        in_const = False
-        in_type = True
-        in_var = False
+        state_obj.set_state(state_type)
         return
     elif line == 'CONST':
-        in_const = True
-        in_type = False
-        in_var = False
-    if in_var:
+        state_obj.set_state(state_const)
+    if state_obj.is_var():
         words = line.split(',')
         for word in words:
             word = word.lstrip()
             if word != '':
                 if word.find(':') == -1:
-                    emit_index(word, '(var)', current)
+                    emit_index(word, '(var)')
                 elif len(word) > 0:
                     var = word.split(':')
                     if len(var) > 0:
-                        emit_index(var[0], '(var)', current)
-
-    if in_type:
+                        emit_index(var[0], '(var)')
+    if state_obj.is_type():
         words = line.lstrip()
         if words.find('=') != -1:
             word = words.split('=')
             if (len(word[0]) > 0) and (word[0][0] != '_'):
-                emit_index(word[0].rstrip(), '(type)', current)
+                emit_index(word[0].rstrip(), '(type)')
         else:
             word = words.split()
             if (len(word) > 1) and (word[1] == ';'):
                 # hidden type
                 if (len(word[0]) > 0) and (word[0][0] != '_'):
-                    emit_index(word[0].rstrip(), '(type)', current)
-    if in_const:
+                    emit_index(word[0].rstrip(), '(type)')
+    if state_obj.is_const():
         words = line.split(';')
         for word in words:
             word = word.lstrip()
@@ -220,7 +244,7 @@ def check_index(line, current):
                 if word.find('=') != -1:
                     var = word.split('=')
                     if len(var) > 0:
-                        emit_index(var[0], '(const)', current)
+                        emit_index(var[0], '(const)')
     if procedure != '':
         name = procedure.split('(')
         if name[0] != '':
@@ -228,10 +252,12 @@ def check_index(line, current):
             if proc[-1] == ';':
                 proc = proc[:-1]
             if proc != '':
-                emit_index(proc, '', current)
+                emit_index(proc, '')
 
 
 def emit_texinfo_content(f, line):
+    global state_obj
+    state_obj.to_code()
     output.write(line.rstrip() + '\n')
     line = f.readline()
     if len(line.rstrip()) == 0:
@@ -246,7 +272,8 @@ def emit_texinfo_content(f, line):
     line = f.readline()
     while line:
         line = line.rstrip()
-        check_index(line, '')
+        check_index(line)
+        state_obj.to_code()
         output.write(str.replace(str.replace(line, '{', '@{'), '}', '@}'))
         output.write('\n')
         line = f.readline()
@@ -254,7 +281,8 @@ def emit_texinfo_content(f, line):
 
 
 def emit_sphinx_content(f, line):
-    output.write('.. code-block:: modula2\n')
+    global state_obj
+    state_obj.to_code()
     indent = ' ' * 4
     output.write(indent + line.rstrip() + '\n')
     line = f.readline()
@@ -270,7 +298,8 @@ def emit_sphinx_content(f, line):
     line = f.readline()
     while line:
         line = line.rstrip()
-        check_index(line, '.. code-block:: modula2')
+        check_index(line)
+        state_obj.to_code()
         output.write(indent + line + '\n')
         line = f.readline()
     return f

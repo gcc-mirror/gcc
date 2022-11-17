@@ -351,6 +351,7 @@ pge-verify: force
 # Remove pge build files.
 
 pge-clean: force
+	$(RM) -f m2/gm2-pg-boot/* m2/gm2-ppg-boot/* m2/gm2-pge-boot/*
 
 
 # The rest of the Make-lang.in handles the bootstrap tool (maintained

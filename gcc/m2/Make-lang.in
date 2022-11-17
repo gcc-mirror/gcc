@@ -39,6 +39,14 @@ TEXISRC = $(objdir)/m2/images/gnu.eps \
           m2/SYSTEM-iso.texi \
           m2/Builtins.texi
 
+RSTSRC = $(objdir)/m2/images/gnu.eps \
+          $(srcdir)/doc/gm2.texi \
+          m2/gm2-libs.rst \
+          m2/gm2-ebnf.rst \
+          m2/SYSTEM-pim.rst \
+          m2/SYSTEM-iso.rst \
+          m2/Builtins.rst
+
 # Define the names for selecting modula-2 in LANGUAGES.
 m2 modula-2 modula2: gm2$(exeext) xgcc$(exeext) cc1gm2$(exeext) \
                  $(GCC_PASSES) $(GCC_PARTS)
@@ -94,9 +102,30 @@ m2.all.cross: gm2-cross$(exeext) plugin/m2rte$(exeext).so
 m2.start.encap: gm2$(exeext) plugin/m2rte$(exeext).so
 m2.rest.encap:
 
-m2.info: doc/m2.info
+# Documentation.
 
-m2.man: doc/m2.1
+doc/m2/info/texinfo/gm2.info: $(SPHINX_FILES)
+	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
+          make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/m2/doc/ BUILDDIR=$(objdir)/doc/gm2/info SPHINXBUILD=$(SPHINX_BUILD); \
+	else true; fi
+
+doc/m2/pdf/latex/gm2.pdf: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/m2/doc/ BUILDDIR=$(objdir)/doc/gm2/pdf SPHINXBUILD=$(SPHINX_BUILD)
+
+doc/m2/html/html/index.html: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/m2/doc/ BUILDDIR=$(objdir)/doc/gm2/html SPHINXBUILD=$(SPHINX_BUILD)
+
+m2.man: doc/m2/man/man/gm2.1
+
+m2.srcman: doc/m2/man/man/gm2.1
+	-cp -p $^ $(srcdir)/doc
+
+doc/m2/man/man/gm2.1: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/m2/doc BUILDDIR=$(objdir)/doc/m2/man SPHINXBUILD=$(SPHINX_BUILD)
+
+# m2.info: doc/m2.info
+
+# m2.man: doc/m2.1
 
 m2.install-man: $(DESTDIR)$(man1dir)/$(GM2_INSTALL_NAME)$(man1ext)
 
@@ -113,6 +142,8 @@ m2.ps: m2.dvi
 
 m2.pdf: m2.ps
 	gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=$@ $<
+
+m2.doc: $(RSTSRC)
 
 .INTERMEDIATE: gm2.pod
 
@@ -134,11 +165,13 @@ $(objdir)/m2/images/gnu.eps: $(srcdir)/m2/images/gnupng
            pngtopnm $< | pnmtops -noturn > $@ ; \
         fi
 
+# gm2-libs.texi
+
 m2/gm2-libs.texi: gm2-libs.texi-check; @true
 
 ifeq ($(HAVE_PYTHON),yes)
 gm2-libs.texi-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
-                     $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def m2/gm2-ebnf.texi
+                     $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.texi
 	$(STAMP) gm2-libs.texi-check
 else
@@ -147,11 +180,38 @@ gm2-libs.texi-check:
 	touch $(objdir)/m2/gm2-libs.texi
 endif
 
+# gm2-libs.rst
+
+m2/gm2-libs.rst: gm2-libs.rst-check; @true
+
+ifeq ($(HAVE_PYTHON),yes)
+gm2-libs.rst-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
+                     $(objdir)/m2/gm2-libs-coroutines/SYSTEM.def
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.rst
+	$(STAMP) gm2-libs.rst-check
+else
+gm2-libs.rst-check:
+	echo "not building gm2-libs.rst as python3 has not been found"
+	touch $(objdir)/m2/gm2-libs.rst
+endif
+
+# gm2-ebnf.texi
+
 m2/gm2-ebnf.texi: gm2-ebnf.texi-check; @true
 
 gm2-ebnf.texi-check: $(PGE) $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf
-	$(PGE) -c -p -t -f $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf > m2/gm2-ebnf.texi
+	$(PGE) -c -p -t -f $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf -o m2/gm2-ebnf.texi
 	$(STAMP) gm2-ebnf.texi-check
+
+# gm2-ebnf.rst
+
+m2/gm2-ebnf.rst: gm2-ebnf.rst-check; @true
+
+gm2-ebnf.rst-check: $(PGE) $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf
+	$(PGE) -c -p -t -f $(srcdir)/m2/gm2-compiler/P0SyntaxCheck.bnf -o m2/gm2-ebnf.rst
+	$(STAMP) gm2-ebnf.rst-check
+
+# SYSTEM-pim.texi
 
 m2/SYSTEM-pim.texi: SYSTEM-pim-texi-check; @true
 
@@ -165,6 +225,22 @@ SYSTEM-pim-texi-check: $(objdir)/m2/gm2-libs/SYSTEM.def
 	touch $(objdir)/m2/SYSTEM-pim.texi
 endif
 
+# SYSTEM-pim.rst
+
+m2/SYSTEM-pim.rst: SYSTEM-pim-rst-check; @true
+
+ifeq ($(HAVE_PYTHON),yes)
+SYSTEM-pim-rst-check: $(objdir)/m2/gm2-libs/SYSTEM.def
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs/SYSTEM.def -o $(objdir)/m2/SYSTEM-pim.rst
+	$(STAMP) SYSTEM-pim-rst-check
+else
+SYSTEM-pim-rst-check: $(objdir)/m2/gm2-libs/SYSTEM.def
+	echo "not building SYSTEM-pim.rst as python3 has not been found"
+	touch $(objdir)/m2/SYSTEM-pim.rst
+endif
+
+# SYSTEM-pim.texi
+
 m2/SYSTEM-iso.texi:  SYSTEM-iso.texi-check; @true
 
 ifeq ($(HAVE_PYTHON),yes)
@@ -177,6 +253,22 @@ SYSTEM-iso.texi-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
 	touch $(objdir)/m2/SYSTEM-iso.texi
 endif
 
+# SYSTEM-pim.rst
+
+m2/SYSTEM-iso.rst:  SYSTEM-iso.rst-check; @true
+
+ifeq ($(HAVE_PYTHON),yes)
+SYSTEM-iso.rst-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs-iso/SYSTEM.def -o $(objdir)/m2/SYSTEM-iso.rst
+	$(STAMP) SYSTEM-iso.rst-check
+else
+SYSTEM-iso.rst-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
+	echo "not building SYSTEM-iso.rst as python3 has not been found"
+	touch $(objdir)/m2/SYSTEM-iso.rst
+endif
+
+# m2/Builtins.texi
+
 m2/Builtins.texi:  Builtins.texi-check; @true
 
 ifeq ($(HAVE_PYTHON),yes)
@@ -187,6 +279,20 @@ else
 Builtins.texi-check:  m2/gm2-libs/Builtins.def
 	echo "not building SYSTEM-iso.texi as python3 has not been found"
 	touch $(objdir)/m2/Builtins.texi
+endif
+
+# m2/Builtins.rst
+
+m2/Builtins.rst:  Builtins.rst-check; @true
+
+ifeq ($(HAVE_PYTHON),yes)
+Builtins.rst-check:  m2/gm2-libs/Builtins.def
+	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(objdir)/m2/Builtins.rst
+	$(STAMP) Builtins.rst-check
+else
+Builtins.rst-check:  m2/gm2-libs/Builtins.def
+	echo "not building SYSTEM-iso.rst as python3 has not been found"
+	touch $(objdir)/m2/Builtins.rst
 endif
 
 $(objdir)/m2/gm2-compiler-boot:

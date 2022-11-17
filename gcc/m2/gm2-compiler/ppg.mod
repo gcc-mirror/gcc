@@ -168,6 +168,7 @@ VAR
    PrettyPrint,
    EmitCode,
    Texinfo,
+   Sphinx,
    FreeDocLicense,
    Debugging,
    WasNoError         : BOOLEAN ;
@@ -2410,6 +2411,9 @@ BEGIN
       IF Texinfo
       THEN
          Output.WriteString('@example') ; NewLine(0)
+      ELSIF Sphinx
+      THEN
+         Output.WriteString('.. code-block:: ebnf') ; NewLine(0)
       END ;
       Output.WriteKey(GetDefinitionName(p)) ;
       Output.WriteString(' := ') ;
@@ -2427,6 +2431,10 @@ BEGIN
       THEN
          Output.WriteString('@findex ') ; Output.WriteKey(GetDefinitionName(p)) ; Output.WriteString(' (ebnf)') ; NewLine(0) ;
          Output.WriteString('@end example') ; NewLine(0)
+      ELSIF Sphinx
+      THEN
+         Output.WriteString('.. index::') ; NewLine(0) ;
+         Output.WriteString('  pair: ') ; Output.WriteKey(GetDefinitionName(p)) ; Output.WriteString('; (ebnf)') ; NewLine(0)
       END ;
       NewLine(0)
    END
@@ -5341,7 +5349,7 @@ END PostProcessRules ;
 
 PROCEDURE DisplayHelp ;
 BEGIN
-   WriteString('Usage: ppg [-l] [-c] [-d] [-e] [-k] [-t] [-k] [-p] [-t] [-f] [-o outputfile] filename') ; WriteLn ;
+   WriteString('Usage: ppg [-l] [-c] [-d] [-e] [-k] [-t] [-k] [-p] [-x] [-f] [-o outputfile] filename') ; WriteLn ;
    WriteString('   -l             suppress file and line source information') ; WriteLn ;
    WriteString('   -c             do not generate any Modula-2 code within the parser rules') ; WriteLn ;
    WriteString('   -h or --help   generate this help message') ; WriteLn ;
@@ -5350,6 +5358,7 @@ BEGIN
    WriteString('   -d             generate internal debugging information') ; WriteLn ;
    WriteString('   -p             only display the ebnf rules') ; WriteLn ;
    WriteString('   -t             generate texinfo formating for pretty printing (-p)') ; WriteLn ;
+   WriteString('   -x             generate sphinx formating for pretty printing (-p)') ; WriteLn ;
    WriteString('   -f             generate GNU Free Documentation header before pretty printing in texinfo') ; WriteLn ;
    WriteString('   -o             write output to filename') ; WriteLn ;
    exit (0)
@@ -5398,6 +5407,9 @@ BEGIN
          ELSIF StrEqual(ArgName, '-t')
          THEN
             Texinfo := TRUE
+         ELSIF StrEqual(ArgName, '-x')
+         THEN
+            Sphinx := TRUE
          ELSIF StrEqual(ArgName, '-f')
          THEN
             FreeDocLicense := TRUE
@@ -5440,6 +5452,7 @@ PROCEDURE Init ;
 BEGIN
    WasNoError        := TRUE ;
    Texinfo           := FALSE ;
+   Sphinx            := FALSE ;
    FreeDocLicense    := FALSE ;
    EmitCode          := TRUE ;
    LargestValue      := 0 ;

@@ -264,10 +264,10 @@ extern "C" void Output_WriteLn (void)
 
 extern "C" void Output_WriteCard (unsigned int card, unsigned int fieldlength)
 {
-  typedef struct _T1_a _T1;
+  typedef struct WriteCard__T1_a WriteCard__T1;
 
-  struct _T1_a { char array[20+1]; };
-  _T1 s;
+  struct WriteCard__T1_a { char array[20+1]; };
+  WriteCard__T1 s;
 
   NumberIO_CardToStr (card, fieldlength, (char *) &s.array[0], 20);
   Output_WriteString ((const char *) &s.array[0], 20);
@@ -303,13 +303,13 @@ extern "C" DynamicStrings_String Output_EndBuffer (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_Output_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Output_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   stdout_ = TRUE;
   buffer = static_cast<DynamicStrings_String> (NULL);
   outputFile = FIO_StdOut;
 }
 
-extern "C" void _M2_Output_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Output_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

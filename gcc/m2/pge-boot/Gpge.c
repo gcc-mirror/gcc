@@ -70,144 +70,144 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   define BaseRightLimit 75
 #   define BaseRightMargin 50
 #   define BaseNewLine 3
-typedef struct termdesc_r termdesc;
+typedef struct pge_termdesc_r pge_termdesc;
 
-typedef termdesc *TermDesc;
+typedef pge_termdesc *pge_TermDesc;
 
-typedef struct DoProcedure_p DoProcedure;
+typedef struct pge_DoProcedure_p pge_DoProcedure;
 
-typedef unsigned int SetOfStop;
+typedef unsigned int pge_SetOfStop;
 
-typedef struct _T1_r _T1;
+typedef struct pge__T1_r pge__T1;
 
-typedef _T1 *IdentDesc;
+typedef pge__T1 *pge_IdentDesc;
 
-typedef struct _T2_r _T2;
+typedef struct pge__T2_r pge__T2;
 
-typedef _T2 *ProductionDesc;
+typedef pge__T2 *pge_ProductionDesc;
 
-typedef struct _T3_r _T3;
+typedef struct pge__T3_r pge__T3;
 
-typedef _T3 *StatementDesc;
+typedef pge__T3 *pge_StatementDesc;
 
-typedef struct _T4_r _T4;
+typedef struct pge__T4_r pge__T4;
 
-typedef _T4 *ExpressionDesc;
+typedef pge__T4 *pge_ExpressionDesc;
 
-typedef struct _T5_r _T5;
+typedef struct pge__T5_r pge__T5;
 
-typedef struct _T6_r _T6;
+typedef struct pge__T6_r pge__T6;
 
-typedef _T6 *FollowDesc;
+typedef pge__T6 *pge_FollowDesc;
 
-typedef struct _T7_r _T7;
+typedef struct pge__T7_r pge__T7;
 
-typedef _T7 *SetDesc;
+typedef pge__T7 *pge_SetDesc;
 
-typedef struct _T8_r _T8;
+typedef struct pge__T8_r pge__T8;
 
-typedef _T8 *CodeDesc;
+typedef pge__T8 *pge_CodeDesc;
 
-typedef struct _T9_r _T9;
+typedef struct pge__T9_r pge__T9;
 
-typedef _T9 *CodeHunk;
+typedef pge__T9 *pge_CodeHunk;
 
-typedef struct _T10_a _T10;
+typedef struct pge__T10_a pge__T10;
 
-typedef struct _T11_a _T11;
+typedef struct pge__T11_a pge__T11;
 
-typedef enum {idel, tokel, litel} ElementType;
+typedef enum {pge_idel, pge_tokel, pge_litel} pge_ElementType;
 
-typedef enum {m2none, m2if, m2elsif, m2while} m2condition;
+typedef enum {pge_m2none, pge_m2if, pge_m2elsif, pge_m2while} pge_m2condition;
 
-typedef enum {unknown, true_, false_} TraverseResult;
+typedef enum {pge_unknown, pge_true, pge_false} pge_TraverseResult;
 
-typedef enum {id, lit, sub, opt, mult, m2} FactorType;
+typedef enum {pge_id, pge_lit, pge_sub, pge_opt, pge_mult, pge_m2} pge_FactorType;
 
-typedef _T5 *FactorDesc;
+typedef pge__T5 *pge_FactorDesc;
 
-struct termdesc_r {
-                    FactorDesc factor;
-                    TermDesc next;
-                    FollowDesc followinfo;
-                    unsigned int line;
-                  };
+struct pge_termdesc_r {
+                        pge_FactorDesc factor;
+                        pge_TermDesc next;
+                        pge_FollowDesc followinfo;
+                        unsigned int line;
+                      };
 
-typedef void (*DoProcedure_t) (ProductionDesc);
-struct DoProcedure_p { DoProcedure_t proc; };
+typedef void (*pge_DoProcedure_t) (pge_ProductionDesc);
+struct pge_DoProcedure_p { pge_DoProcedure_t proc; };
 
-struct _T1_r {
-               ProductionDesc definition;
-               NameKey_Name name;
-               unsigned int line;
-             };
+struct pge__T1_r {
+                   pge_ProductionDesc definition;
+                   NameKey_Name name;
+                   unsigned int line;
+                 };
 
-struct _T2_r {
-               ProductionDesc next;
-               StatementDesc statement;
-               SetDesc first;
-               unsigned int firstsolved;
-               FollowDesc followinfo;
-               unsigned int line;
-               NameKey_Name description;
-             };
+struct pge__T2_r {
+                   pge_ProductionDesc next;
+                   pge_StatementDesc statement;
+                   pge_SetDesc first;
+                   unsigned int firstsolved;
+                   pge_FollowDesc followinfo;
+                   unsigned int line;
+                   NameKey_Name description;
+                 };
 
-struct _T3_r {
-               IdentDesc ident;
-               ExpressionDesc expr;
-               FollowDesc followinfo;
-               unsigned int line;
-             };
+struct pge__T3_r {
+                   pge_IdentDesc ident;
+                   pge_ExpressionDesc expr;
+                   pge_FollowDesc followinfo;
+                   unsigned int line;
+                 };
 
-struct _T4_r {
-               TermDesc term;
-               FollowDesc followinfo;
-               unsigned int line;
-             };
+struct pge__T4_r {
+                   pge_TermDesc term;
+                   pge_FollowDesc followinfo;
+                   unsigned int line;
+                 };
 
-struct _T5_r {
-               FollowDesc followinfo;
-               FactorDesc next;
-               unsigned int line;
-               FactorDesc pushed;
-               FactorType type;  /* case tag */
-               union {
-                       IdentDesc ident;
-                       NameKey_Name string;
-                       ExpressionDesc expr;
-                       CodeDesc code;
-                     };
-             };
+struct pge__T5_r {
+                   pge_FollowDesc followinfo;
+                   pge_FactorDesc next;
+                   unsigned int line;
+                   pge_FactorDesc pushed;
+                   pge_FactorType type;  /* case tag */
+                   union {
+                           pge_IdentDesc ident;
+                           NameKey_Name string;
+                           pge_ExpressionDesc expr;
+                           pge_CodeDesc code;
+                         };
+                 };
 
-struct _T6_r {
-               unsigned int calcfollow;
-               SetDesc follow;
-               TraverseResult reachend;
-               TraverseResult epsilon;
-               unsigned int line;
-             };
+struct pge__T6_r {
+                   unsigned int calcfollow;
+                   pge_SetDesc follow;
+                   pge_TraverseResult reachend;
+                   pge_TraverseResult epsilon;
+                   unsigned int line;
+                 };
 
-struct _T7_r {
-               SetDesc next;
-               ElementType type;  /* case tag */
-               union {
-                       IdentDesc ident;
-                       NameKey_Name string;
-                     };
-             };
+struct pge__T7_r {
+                   pge_SetDesc next;
+                   pge_ElementType type;  /* case tag */
+                   union {
+                           pge_IdentDesc ident;
+                           NameKey_Name string;
+                         };
+                 };
 
-struct _T8_r {
-               CodeHunk code;
-               unsigned int indent;
-               unsigned int line;
-             };
+struct pge__T8_r {
+                   pge_CodeHunk code;
+                   unsigned int indent;
+                   unsigned int line;
+                 };
 
-struct _T10_a { char array[MaxCodeHunkLength+1]; };
-struct _T11_a { char array[MaxFileName+1]; };
-struct _T9_r {
-               _T10 codetext;
-               CodeHunk next;
-             };
+struct pge__T10_a { char array[MaxCodeHunkLength+1]; };
+struct pge__T11_a { char array[MaxFileName+1]; };
+struct pge__T9_r {
+                   pge__T10 codetext;
+                   pge_CodeHunk next;
+                 };
 
 static unsigned int LastLineNo;
 static unsigned int Finished;
@@ -216,24 +216,25 @@ static unsigned int KeywordFormatting;
 static unsigned int PrettyPrint;
 static unsigned int EmitCode;
 static unsigned int Texinfo;
+static unsigned int Sphinx;
 static unsigned int FreeDocLicense;
 static unsigned int Debugging;
 static unsigned int WasNoError;
 static unsigned int LinePrologue;
 static unsigned int LineEpilogue;
 static unsigned int LineDeclaration;
-static CodeHunk CodePrologue;
-static CodeHunk CodeEpilogue;
-static CodeHunk CodeDeclaration;
-static ProductionDesc CurrentProduction;
-static ProductionDesc TailProduction;
-static ProductionDesc HeadProduction;
-static ExpressionDesc CurrentExpression;
-static TermDesc CurrentTerm;
-static FactorDesc CurrentFactor;
-static IdentDesc CurrentIdent;
-static StatementDesc CurrentStatement;
-static SetDesc CurrentSetDesc;
+static pge_CodeHunk CodePrologue;
+static pge_CodeHunk CodeEpilogue;
+static pge_CodeHunk CodeDeclaration;
+static pge_ProductionDesc CurrentProduction;
+static pge_ProductionDesc TailProduction;
+static pge_ProductionDesc HeadProduction;
+static pge_ExpressionDesc CurrentExpression;
+static pge_TermDesc CurrentTerm;
+static pge_FactorDesc CurrentFactor;
+static pge_IdentDesc CurrentIdent;
+static pge_StatementDesc CurrentStatement;
+static pge_SetDesc CurrentSetDesc;
 static SymbolKey_SymbolTree ReverseValues;
 static SymbolKey_SymbolTree Values;
 static SymbolKey_SymbolTree ReverseAliases;
@@ -245,8 +246,8 @@ static NameKey_Name SymIsProc;
 static NameKey_Name TokenTypeProc;
 static NameKey_Name ErrorProcArray;
 static NameKey_Name ErrorProcString;
-static _T11 ArgName;
-static _T11 FileName;
+static pge__T11 ArgName;
+static pge__T11 FileName;
 static unsigned int OnLineStart;
 static unsigned int BeginningOfLine;
 static unsigned int Indent;
@@ -260,7 +261,7 @@ static unsigned int ParametersUsed;
    DescribeStop - issues a message explaining what tokens were expected
 */
 
-static DynamicStrings_String DescribeStop (SetOfStop stopset);
+static DynamicStrings_String DescribeStop (pge_SetOfStop stopset);
 
 /*
    DescribeError - issues a message explaining what tokens were expected
@@ -291,92 +292,92 @@ static void WarnError1 (const char *a_, unsigned int _a_high, unsigned int n);
    PrettyFollow -
 */
 
-static void PrettyFollow (const char *start_, unsigned int _start_high, const char *end_, unsigned int _end_high, FollowDesc f);
+static void PrettyFollow (const char *start_, unsigned int _start_high, const char *end_, unsigned int _end_high, pge_FollowDesc f);
 
 /*
    NewFollow - creates a new follow descriptor and returns the data structure.
 */
 
-static FollowDesc NewFollow (void);
+static pge_FollowDesc NewFollow (void);
 
 /*
    AssignEpsilon - assigns the epsilon value and sets the epsilon to value,
                    providing condition is TRUE.
 */
 
-static void AssignEpsilon (unsigned int condition, FollowDesc f, TraverseResult value);
+static void AssignEpsilon (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetEpsilon - returns the value of epsilon
 */
 
-static TraverseResult GetEpsilon (FollowDesc f);
+static pge_TraverseResult GetEpsilon (pge_FollowDesc f);
 
 /*
    AssignReachEnd - assigns the reachend value providing that, condition, is TRUE.
 */
 
-static void AssignReachEnd (unsigned int condition, FollowDesc f, TraverseResult value);
+static void AssignReachEnd (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetReachEnd - returns the value of reachend
 */
 
-static TraverseResult GetReachEnd (FollowDesc f);
+static pge_TraverseResult GetReachEnd (pge_FollowDesc f);
 
 /*
    AssignFollow - assigns the follow set and sets the calcfollow to TRUE.
 */
 
-static void AssignFollow (FollowDesc f, SetDesc s);
+static void AssignFollow (pge_FollowDesc f, pge_SetDesc s);
 
 /*
    GetFollow - returns the follow set.
 */
 
-static SetDesc GetFollow (FollowDesc f);
+static pge_SetDesc GetFollow (pge_FollowDesc f);
 
 /*
    NewProduction - creates a new production and returns the data structure.
 */
 
-static ProductionDesc NewProduction (void);
+static pge_ProductionDesc NewProduction (void);
 
 /*
    NewFactor -
 */
 
-static FactorDesc NewFactor (void);
+static pge_FactorDesc NewFactor (void);
 
 /*
    NewTerm - returns a new term.
 */
 
-static TermDesc NewTerm (void);
+static pge_TermDesc NewTerm (void);
 
 /*
    NewExpression - returns a new expression.
 */
 
-static ExpressionDesc NewExpression (void);
+static pge_ExpressionDesc NewExpression (void);
 
 /*
    NewStatement - returns a new statement.
 */
 
-static StatementDesc NewStatement (void);
+static pge_StatementDesc NewStatement (void);
 
 /*
    NewSetDesc - creates a new set description and returns the data structure.
 */
 
-static SetDesc NewSetDesc (void);
+static pge_SetDesc NewSetDesc (void);
 
 /*
    NewCodeDesc - creates a new code descriptor and initializes all fields to zero.
 */
 
-static CodeDesc NewCodeDesc (void);
+static pge_CodeDesc NewCodeDesc (void);
 
 /*
    CodeFragmentPrologue - consumes code text up to a "%" after a newline.
@@ -400,13 +401,13 @@ static void CodeFragmentDeclaration (void);
    GetCodeFragment - collects the code fragment up until ^ %
 */
 
-static void GetCodeFragment (CodeHunk *h);
+static void GetCodeFragment (pge_CodeHunk *h);
 
 /*
    WriteCodeHunkList - writes the CodeHunk list in the correct order.
 */
 
-static void WriteCodeHunkList (CodeHunk l);
+static void WriteCodeHunkList (pge_CodeHunk l);
 
 /*
    WriteIndent - writes, n, spaces.
@@ -432,19 +433,19 @@ static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned in
                              but it removes up to indent spaces if they exist.
 */
 
-static void WriteCodeHunkListIndent (CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
 
 /*
    Add - adds a character to a code hunk and creates another code hunk if necessary.
 */
 
-static CodeHunk Add (CodeHunk *p, char ch, unsigned int *i);
+static pge_CodeHunk Add (pge_CodeHunk *p, char ch, unsigned int *i);
 
 /*
    ConsHunk - combine two possible code hunks.
 */
 
-static void ConsHunk (CodeHunk *p, CodeHunk q);
+static void ConsHunk (pge_CodeHunk *p, pge_CodeHunk q);
 
 /*
    GetName - returns the next symbol which is checked for a legal name.
@@ -457,49 +458,49 @@ static NameKey_Name GetName (void);
                  a stop symbol.
 */
 
-static void SyntaxError (SetOfStop stop);
+static void SyntaxError (pge_SetOfStop stop);
 
 /*
    SyntaxCheck -
 */
 
-static void SyntaxCheck (SetOfStop stop);
+static void SyntaxCheck (pge_SetOfStop stop);
 
 /*
    Expect -
 */
 
-static void Expect (bnflex_TokenType t, SetOfStop stop);
+static void Expect (bnflex_TokenType t, pge_SetOfStop stop);
 
 /*
    Ident - error checking varient of Ident
 */
 
-static void Ident (SetOfStop stop);
+static void Ident (pge_SetOfStop stop);
 
 /*
    Modula2Code - error checking varient of Modula2Code
 */
 
-static void Modula2Code (SetOfStop stop);
+static void Modula2Code (pge_SetOfStop stop);
 
 /*
    StartModName    := % ModuleName := GetName() ;  ignore begintok  CodeFragmentPrologue % =:
 */
 
-static void StartModName (SetOfStop stop);
+static void StartModName (pge_SetOfStop stop);
 
 /*
    EndModName    :=
 */
 
-static void EndModName (SetOfStop stop);
+static void EndModName (pge_SetOfStop stop);
 
 /*
    DoDeclaration := % CodeFragmentDeclaration % =:
 */
 
-static void DoDeclaration (SetOfStop stop);
+static void DoDeclaration (pge_SetOfStop stop);
 
 /*
    CollectLiteral := 
@@ -512,7 +513,7 @@ static void DoDeclaration (SetOfStop stop);
    cannot reachend
 */
 
-static void CollectLiteral (SetOfStop stopset);
+static void CollectLiteral (pge_SetOfStop stopset);
 
 /*
    CollectTok := 
@@ -537,7 +538,7 @@ static void CollectLiteral (SetOfStop stopset);
    cannot reachend
 */
 
-static void CollectTok (SetOfStop stopset);
+static void CollectTok (pge_SetOfStop stopset);
 
 /*
    DefineToken := 
@@ -554,7 +555,7 @@ static void CollectTok (SetOfStop stopset);
    cannot reachend
 */
 
-static void DefineToken (SetOfStop stopset);
+static void DefineToken (pge_SetOfStop stopset);
 
 /*
    Rules := '%' 'rules' { Defs  } ExtBNF 
@@ -564,7 +565,7 @@ static void DefineToken (SetOfStop stopset);
    cannot reachend
 */
 
-static void Rules (SetOfStop stopset);
+static void Rules (pge_SetOfStop stopset);
 
 /*
    Special := Ident 
@@ -596,7 +597,7 @@ static void Rules (SetOfStop stopset);
    cannot reachend
 */
 
-static void Special (SetOfStop stopset);
+static void Special (pge_SetOfStop stopset);
 
 /*
    Factor := '%' Modula2Code '%'  | 
@@ -639,7 +640,7 @@ static void Special (SetOfStop stopset);
    cannot reachend
 */
 
-static void Factor (SetOfStop stopset);
+static void Factor (pge_SetOfStop stopset);
 
 /*
    Statement := 
@@ -680,7 +681,7 @@ static void Factor (SetOfStop stopset);
    cannot reachend
 */
 
-static void Statement (SetOfStop stopset);
+static void Statement (pge_SetOfStop stopset);
 
 /*
    Defs := 'special' Special  | 'token' Token  | 
@@ -693,7 +694,7 @@ static void Statement (SetOfStop stopset);
    cannot reachend
 */
 
-static void Defs (SetOfStop stopset);
+static void Defs (pge_SetOfStop stopset);
 
 /*
    ExtBNF := 'BNF' { Production  } 'FNB' 
@@ -703,7 +704,7 @@ static void Defs (SetOfStop stopset);
    cannot reachend
 */
 
-static void ExtBNF (SetOfStop stopset);
+static void ExtBNF (pge_SetOfStop stopset);
 
 /*
    Main := Header Decls Footer Rules 
@@ -713,7 +714,7 @@ static void ExtBNF (SetOfStop stopset);
    cannot reachend
 */
 
-static void Main (SetOfStop stopset);
+static void Main (pge_SetOfStop stopset);
 
 /*
    Header := '%' 'module' StartModName 
@@ -723,7 +724,7 @@ static void Main (SetOfStop stopset);
    cannot reachend
 */
 
-static void Header (SetOfStop stopset);
+static void Header (pge_SetOfStop stopset);
 
 /*
    Decls := '%' 'declaration' DoDeclaration 
@@ -733,7 +734,7 @@ static void Header (SetOfStop stopset);
    cannot reachend
 */
 
-static void Decls (SetOfStop stopset);
+static void Decls (pge_SetOfStop stopset);
 
 /*
    Footer := '%' 'module' EndModName 
@@ -743,7 +744,7 @@ static void Decls (SetOfStop stopset);
    cannot reachend
 */
 
-static void Footer (SetOfStop stopset);
+static void Footer (pge_SetOfStop stopset);
 
 /*
    First := 'first' '{' { LitOrTokenOrIdent 
@@ -759,7 +760,7 @@ static void Footer (SetOfStop stopset);
    cannot reachend
 */
 
-static void First (SetOfStop stopset);
+static void First (pge_SetOfStop stopset);
 
 /*
    Follow := 'follow' '{' { LitOrTokenOrIdent 
@@ -775,7 +776,7 @@ static void First (SetOfStop stopset);
    cannot reachend
 */
 
-static void Follow (SetOfStop stopset);
+static void Follow (pge_SetOfStop stopset);
 
 /*
    LitOrTokenOrIdent := Literal 
@@ -800,7 +801,7 @@ static void Follow (SetOfStop stopset);
    cannot reachend
 */
 
-static void LitOrTokenOrIdent (SetOfStop stopset);
+static void LitOrTokenOrIdent (pge_SetOfStop stopset);
 
 /*
    Literal := '"' CollectLiteral '"'  | 
@@ -811,7 +812,7 @@ static void LitOrTokenOrIdent (SetOfStop stopset);
    cannot reachend
 */
 
-static void Literal (SetOfStop stopset);
+static void Literal (pge_SetOfStop stopset);
 
 /*
    Token := Literal DefineToken 
@@ -821,7 +822,7 @@ static void Literal (SetOfStop stopset);
    cannot reachend
 */
 
-static void Token (SetOfStop stopset);
+static void Token (pge_SetOfStop stopset);
 
 /*
    ErrorProcedures := Literal 
@@ -835,7 +836,7 @@ static void Token (SetOfStop stopset);
    cannot reachend
 */
 
-static void ErrorProcedures (SetOfStop stopset);
+static void ErrorProcedures (pge_SetOfStop stopset);
 
 /*
    TokenProcedure := Literal 
@@ -847,7 +848,7 @@ static void ErrorProcedures (SetOfStop stopset);
    cannot reachend
 */
 
-static void TokenProcedure (SetOfStop stopset);
+static void TokenProcedure (pge_SetOfStop stopset);
 
 /*
    SymProcedure := Literal 
@@ -859,7 +860,7 @@ static void TokenProcedure (SetOfStop stopset);
    cannot reachend
 */
 
-static void SymProcedure (SetOfStop stopset);
+static void SymProcedure (pge_SetOfStop stopset);
 
 /*
    Production := Statement 
@@ -869,7 +870,7 @@ static void SymProcedure (SetOfStop stopset);
    cannot reachend
 */
 
-static void Production (SetOfStop stopset);
+static void Production (pge_SetOfStop stopset);
 
 /*
    Expression := 
@@ -894,7 +895,7 @@ static void Production (SetOfStop stopset);
    cannot reachend
 */
 
-static void Expression (SetOfStop stopset);
+static void Expression (pge_SetOfStop stopset);
 
 /*
    Term := 
@@ -919,75 +920,75 @@ static void Expression (SetOfStop stopset);
    cannot reachend
 */
 
-static void Term (SetOfStop stopset);
+static void Term (pge_SetOfStop stopset);
 
 /*
    GetDefinitionName - returns the name of the rule inside, p.
 */
 
-static NameKey_Name GetDefinitionName (ProductionDesc p);
+static NameKey_Name GetDefinitionName (pge_ProductionDesc p);
 
 /*
    FindDefinition - searches and returns the rule which defines, n.
 */
 
-static ProductionDesc FindDefinition (NameKey_Name n);
+static pge_ProductionDesc FindDefinition (NameKey_Name n);
 
 /*
    BackPatchIdent - found an ident, i, we must look for the corresponding rule and
                     set the definition accordingly.
 */
 
-static void BackPatchIdent (IdentDesc i);
+static void BackPatchIdent (pge_IdentDesc i);
 
 /*
    BackPatchFactor - runs through the factor looking for an ident
 */
 
-static void BackPatchFactor (FactorDesc f);
+static void BackPatchFactor (pge_FactorDesc f);
 
 /*
    BackPatchTerm - runs through all terms to find idents.
 */
 
-static void BackPatchTerm (TermDesc t);
+static void BackPatchTerm (pge_TermDesc t);
 
 /*
    BackPatchExpression - runs through the term to find any idents.
 */
 
-static void BackPatchExpression (ExpressionDesc e);
+static void BackPatchExpression (pge_ExpressionDesc e);
 
 /*
    BackPatchSet -
 */
 
-static void BackPatchSet (SetDesc s);
+static void BackPatchSet (pge_SetDesc s);
 
 /*
    BackPatchIdentToDefinitions - search through all the rules and add a link from any ident
                                  to the definition.
 */
 
-static void BackPatchIdentToDefinitions (ProductionDesc d);
+static void BackPatchIdentToDefinitions (pge_ProductionDesc d);
 
 /*
    CalculateFirstAndFollow -
 */
 
-static void CalculateFirstAndFollow (ProductionDesc p);
+static void CalculateFirstAndFollow (pge_ProductionDesc p);
 
 /*
    ForeachRuleDo -
 */
 
-static void ForeachRuleDo (DoProcedure p);
+static void ForeachRuleDo (pge_DoProcedure p);
 
 /*
    WhileNotCompleteDo -
 */
 
-static void WhileNotCompleteDo (DoProcedure p);
+static void WhileNotCompleteDo (pge_DoProcedure p);
 
 /*
    NewLine - generate a newline and indent.
@@ -1017,7 +1018,7 @@ static void KeyWord (NameKey_Name n);
    PrettyPara -
 */
 
-static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_, unsigned int _c2_high, ExpressionDesc e, unsigned int Left);
+static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_, unsigned int _c2_high, pge_ExpressionDesc e, unsigned int Left);
 
 /*
    WriteKeyTexinfo -
@@ -1029,55 +1030,55 @@ static void WriteKeyTexinfo (NameKey_Name s);
    PrettyCommentFactor -
 */
 
-static void PrettyCommentFactor (FactorDesc f, unsigned int Left);
+static void PrettyCommentFactor (pge_FactorDesc f, unsigned int Left);
 
 /*
    PeepTerm - returns the length of characters in term.
 */
 
-static unsigned int PeepTerm (TermDesc t);
+static unsigned int PeepTerm (pge_TermDesc t);
 
 /*
    PeepExpression - returns the length of the expression.
 */
 
-static unsigned int PeepExpression (ExpressionDesc e);
+static unsigned int PeepExpression (pge_ExpressionDesc e);
 
 /*
    PeepFactor - returns the length of character in the factor
 */
 
-static unsigned int PeepFactor (FactorDesc f);
+static unsigned int PeepFactor (pge_FactorDesc f);
 
 /*
    PrettyCommentTerm -
 */
 
-static void PrettyCommentTerm (TermDesc t, unsigned int Left);
+static void PrettyCommentTerm (pge_TermDesc t, unsigned int Left);
 
 /*
    PrettyCommentExpression -
 */
 
-static void PrettyCommentExpression (ExpressionDesc e, unsigned int Left);
+static void PrettyCommentExpression (pge_ExpressionDesc e, unsigned int Left);
 
 /*
    PrettyCommentStatement -
 */
 
-static void PrettyCommentStatement (StatementDesc s, unsigned int Left);
+static void PrettyCommentStatement (pge_StatementDesc s, unsigned int Left);
 
 /*
    PrettyCommentProduction - generates the comment for rule, p.
 */
 
-static void PrettyCommentProduction (ProductionDesc p);
+static void PrettyCommentProduction (pge_ProductionDesc p);
 
 /*
    PrettyPrintProduction - pretty prints the ebnf rule, p.
 */
 
-static void PrettyPrintProduction (ProductionDesc p);
+static void PrettyPrintProduction (pge_ProductionDesc p);
 
 /*
    EmitFileLineTag - emits a line and file tag using the C preprocessor syntax.
@@ -1089,91 +1090,91 @@ static void EmitFileLineTag (unsigned int line);
    EmitRule - generates a comment and code for rule, p.
 */
 
-static void EmitRule (ProductionDesc p);
+static void EmitRule (pge_ProductionDesc p);
 
 /*
    CodeCondition -
 */
 
-static void CodeCondition (m2condition m);
+static void CodeCondition (pge_m2condition m);
 
 /*
    CodeThenDo - codes a "THEN" or "DO" depending upon, m.
 */
 
-static void CodeThenDo (m2condition m);
+static void CodeThenDo (pge_m2condition m);
 
 /*
    CodeElseEnd - builds an ELSE END statement using string, end.
 */
 
-static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, FactorDesc f, unsigned int inopt);
+static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
 
 /*
    CodeEnd - codes a "END" depending upon, m.
 */
 
-static void CodeEnd (m2condition m, TermDesc t, unsigned int consumed, FactorDesc f, unsigned int inopt);
+static void CodeEnd (pge_m2condition m, pge_TermDesc t, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
 
 /*
    EmitNonVarCode - writes out, code, providing it is not a variable declaration.
 */
 
-static void EmitNonVarCode (CodeDesc code, unsigned int curpos, unsigned int left);
+static void EmitNonVarCode (pge_CodeDesc code, unsigned int curpos, unsigned int left);
 
 /*
    ChainOn -
 */
 
-static FactorDesc ChainOn (FactorDesc codeStack, FactorDesc f);
+static pge_FactorDesc ChainOn (pge_FactorDesc codeStack, pge_FactorDesc f);
 
 /*
    FlushCode -
 */
 
-static void FlushCode (FactorDesc *codeStack);
+static void FlushCode (pge_FactorDesc *codeStack);
 
 /*
    CodeFactor -
 */
 
-static void CodeFactor (FactorDesc f, TermDesc t, m2condition l, m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack);
+static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
 
 /*
    CodeTerm -
 */
 
-static void CodeTerm (TermDesc t, m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack);
+static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
 
 /*
    CodeExpression -
 */
 
-static void CodeExpression (ExpressionDesc e, m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack);
+static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
 
 /*
    CodeStatement -
 */
 
-static void CodeStatement (StatementDesc s, m2condition m);
+static void CodeStatement (pge_StatementDesc s, pge_m2condition m);
 
 /*
    CodeProduction - only encode grammer rules which are not special.
 */
 
-static void CodeProduction (ProductionDesc p);
+static void CodeProduction (pge_ProductionDesc p);
 
 /*
    RecoverCondition -
 */
 
-static void RecoverCondition (m2condition m);
+static void RecoverCondition (pge_m2condition m);
 
 /*
    ConditionIndent - returns the number of spaces indentation created via, m.
 */
 
-static unsigned int ConditionIndent (m2condition m);
+static unsigned int ConditionIndent (pge_m2condition m);
 
 /*
    WriteGetTokenType - writes out the method of determining the token type.
@@ -1185,7 +1186,7 @@ static void WriteGetTokenType (void);
    NumberOfElements - returns the number of elements in set, to, which lie between low..high
 */
 
-static unsigned int NumberOfElements (SetDesc to, unsigned int low, unsigned int high);
+static unsigned int NumberOfElements (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    WriteElement - writes the literal name for element, e.
@@ -1197,26 +1198,26 @@ static void WriteElement (unsigned int e);
    EmitIsInSet - writes out the equivalent of GetTokenType() IN { toset }
 */
 
-static void EmitIsInSet (SetDesc to, NameKey_Name low, NameKey_Name high);
+static void EmitIsInSet (pge_SetDesc to, NameKey_Name low, NameKey_Name high);
 
 /*
    EmitIsInSubSet - writes out a test to see whether GetTokenype() is in { subset }
 */
 
-static void EmitIsInSubSet (SetDesc to, unsigned int low, unsigned int high);
+static void EmitIsInSubSet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitIsInFirst -
 */
 
-static void EmitIsInFirst (SetDesc to, m2condition m);
-static void FlushRecoverCode (FactorDesc *codeStack);
+static void EmitIsInFirst (pge_SetDesc to, pge_m2condition m);
+static void FlushRecoverCode (pge_FactorDesc *codeStack);
 
 /*
    RecoverFactor -
 */
 
-static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack);
+static void RecoverFactor (pge_FactorDesc f, pge_m2condition m, pge_FactorDesc codeStack);
 
 /*
    OptExpSeen - returns TRUE if we can see an optional expression in the factor.
@@ -1225,31 +1226,31 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack);
                 and FALSE in the first.
 */
 
-static unsigned int OptExpSeen (FactorDesc f);
+static unsigned int OptExpSeen (pge_FactorDesc f);
 
 /*
    RecoverTerm -
 */
 
-static void RecoverTerm (TermDesc t, m2condition new_, m2condition old);
+static void RecoverTerm (pge_TermDesc t, pge_m2condition new_, pge_m2condition old);
 
 /*
    RecoverExpression -
 */
 
-static void RecoverExpression (ExpressionDesc e, m2condition new_, m2condition old);
+static void RecoverExpression (pge_ExpressionDesc e, pge_m2condition new_, pge_m2condition old);
 
 /*
    RecoverStatement -
 */
 
-static void RecoverStatement (StatementDesc s, m2condition m);
+static void RecoverStatement (pge_StatementDesc s, pge_m2condition m);
 
 /*
    EmitFirstFactor - generate a list of all first tokens between the range: low..high.
 */
 
-static void EmitFirstFactor (FactorDesc f, unsigned int low, unsigned int high);
+static void EmitFirstFactor (pge_FactorDesc f, unsigned int low, unsigned int high);
 
 /*
    EmitUsed -
@@ -1274,33 +1275,33 @@ static unsigned int IsBetween (NameKey_Name string, unsigned int low, unsigned i
    IsEmptySet - returns TRUE if no elements exist in set, to, with values, low..high.
 */
 
-static unsigned int IsEmptySet (SetDesc to, unsigned int low, unsigned int high);
+static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitSet - emits the tokens in the set, to, which have values low..high
 */
 
-static void EmitSet (SetDesc to, unsigned int low, unsigned int high);
+static void EmitSet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitSetName - emits the tokens in the set, to, which have values low..high, using
                  their names.
 */
 
-static void EmitSetName (SetDesc to, unsigned int low, unsigned int high);
+static void EmitSetName (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitStopParametersAndSet - generates the stop parameters together with a set
                               inclusion of all the symbols in set, to.
 */
 
-static void EmitStopParametersAndSet (SetDesc to);
+static void EmitStopParametersAndSet (pge_SetDesc to);
 
 /*
    EmitSetAsParameters - generates the first symbols as parameters to a set function.
 */
 
-static void EmitSetAsParameters (SetDesc to);
+static void EmitSetAsParameters (pge_SetDesc to);
 
 /*
    EmitStopParametersAndFollow - generates the stop parameters together with a set
@@ -1308,20 +1309,20 @@ static void EmitSetAsParameters (SetDesc to);
                                  sentances.
 */
 
-static void EmitStopParametersAndFollow (FactorDesc f, m2condition m);
+static void EmitStopParametersAndFollow (pge_FactorDesc f, pge_m2condition m);
 
 /*
    EmitFirstAsParameters -
 */
 
-static void EmitFirstAsParameters (FactorDesc f);
+static void EmitFirstAsParameters (pge_FactorDesc f);
 
 /*
    RecoverProduction - only encode grammer rules which are not special.
                        Generate error recovery code.
 */
 
-static void RecoverProduction (ProductionDesc p);
+static void RecoverProduction (pge_ProductionDesc p);
 
 /*
    IsWhite - returns TRUE if, ch, is a space or a tab.
@@ -1333,208 +1334,208 @@ static unsigned int IsWhite (char ch);
    FindStr - returns TRUE if, str, was seen inside the code hunk
 */
 
-static unsigned int FindStr (CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
+static unsigned int FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
 
 /*
    WriteUpto -
 */
 
-static void WriteUpto (CodeHunk code, CodeHunk upto, unsigned int limit);
+static void WriteUpto (pge_CodeHunk code, pge_CodeHunk upto, unsigned int limit);
 
 /*
    CheckForVar - checks for any local variables which need to be emitted during
                  this production.
 */
 
-static void CheckForVar (CodeHunk code);
+static void CheckForVar (pge_CodeHunk code);
 
 /*
    VarFactor -
 */
 
-static void VarFactor (FactorDesc f);
+static void VarFactor (pge_FactorDesc f);
 
 /*
    VarTerm -
 */
 
-static void VarTerm (TermDesc t);
+static void VarTerm (pge_TermDesc t);
 
 /*
    VarExpression -
 */
 
-static void VarExpression (ExpressionDesc e);
+static void VarExpression (pge_ExpressionDesc e);
 
 /*
    VarStatement -
 */
 
-static void VarStatement (StatementDesc s);
+static void VarStatement (pge_StatementDesc s);
 
 /*
    VarProduction - writes out all variable declarations.
 */
 
-static void VarProduction (ProductionDesc p);
+static void VarProduction (pge_ProductionDesc p);
 
 /*
    In - returns TRUE if token, s, is already in the set, to.
 */
 
-static unsigned int In (SetDesc to, NameKey_Name s);
+static unsigned int In (pge_SetDesc to, NameKey_Name s);
 
 /*
    IntersectionIsNil - given two set lists, s1, s2, return TRUE if the
                        s1 * s2 = {}
 */
 
-static unsigned int IntersectionIsNil (SetDesc s1, SetDesc s2);
+static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2);
 
 /*
    AddSet - adds a first symbol to a production.
 */
 
-static void AddSet (SetDesc *to, NameKey_Name s);
+static void AddSet (pge_SetDesc *to, NameKey_Name s);
 
 /*
    OrSet -
 */
 
-static void OrSet (SetDesc *to, SetDesc from);
+static void OrSet (pge_SetDesc *to, pge_SetDesc from);
 
 /*
    CalcFirstFactor -
 */
 
-static void CalcFirstFactor (FactorDesc f, ProductionDesc from, SetDesc *to);
+static void CalcFirstFactor (pge_FactorDesc f, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstTerm -
 */
 
-static void CalcFirstTerm (TermDesc t, ProductionDesc from, SetDesc *to);
+static void CalcFirstTerm (pge_TermDesc t, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstExpression -
 */
 
-static void CalcFirstExpression (ExpressionDesc e, ProductionDesc from, SetDesc *to);
+static void CalcFirstExpression (pge_ExpressionDesc e, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstStatement -
 */
 
-static void CalcFirstStatement (StatementDesc s, ProductionDesc from, SetDesc *to);
+static void CalcFirstStatement (pge_StatementDesc s, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstProduction - calculates all of the first symbols for the grammer
 */
 
-static void CalcFirstProduction (ProductionDesc p, ProductionDesc from, SetDesc *to);
-static void WorkOutFollowFactor (FactorDesc f, SetDesc *followset, SetDesc after);
+static void CalcFirstProduction (pge_ProductionDesc p, pge_ProductionDesc from, pge_SetDesc *to);
+static void WorkOutFollowFactor (pge_FactorDesc f, pge_SetDesc *followset, pge_SetDesc after);
 
 /*
    WorkOutFollowTerm -
 */
 
-static void WorkOutFollowTerm (TermDesc t, SetDesc *followset, SetDesc after);
+static void WorkOutFollowTerm (pge_TermDesc t, pge_SetDesc *followset, pge_SetDesc after);
 
 /*
    WorkOutFollowExpression -
 */
 
-static void WorkOutFollowExpression (ExpressionDesc e, SetDesc *followset, SetDesc after);
+static void WorkOutFollowExpression (pge_ExpressionDesc e, pge_SetDesc *followset, pge_SetDesc after);
 
 /*
    CollectFollow - collects the follow set from, f, into, to.
 */
 
-static void CollectFollow (SetDesc *to, FollowDesc f);
+static void CollectFollow (pge_SetDesc *to, pge_FollowDesc f);
 
 /*
    CalcFollowFactor -
 */
 
-static void CalcFollowFactor (FactorDesc f, SetDesc after);
+static void CalcFollowFactor (pge_FactorDesc f, pge_SetDesc after);
 
 /*
    CalcFollowTerm -
 */
 
-static void CalcFollowTerm (TermDesc t, SetDesc after);
+static void CalcFollowTerm (pge_TermDesc t, pge_SetDesc after);
 
 /*
    CalcFollowExpression -
 */
 
-static void CalcFollowExpression (ExpressionDesc e, SetDesc after);
+static void CalcFollowExpression (pge_ExpressionDesc e, pge_SetDesc after);
 
 /*
    CalcFollowStatement - given a bnf statement generate the follow set.
 */
 
-static void CalcFollowStatement (StatementDesc s);
+static void CalcFollowStatement (pge_StatementDesc s);
 
 /*
    CalcFollowProduction -
 */
 
-static void CalcFollowProduction (ProductionDesc p);
+static void CalcFollowProduction (pge_ProductionDesc p);
 
 /*
    CalcEpsilonFactor -
 */
 
-static void CalcEpsilonFactor (FactorDesc f);
+static void CalcEpsilonFactor (pge_FactorDesc f);
 
 /*
    CalcEpsilonTerm -
 */
 
-static void CalcEpsilonTerm (TermDesc t);
+static void CalcEpsilonTerm (pge_TermDesc t);
 
 /*
    CalcEpsilonExpression -
 */
 
-static void CalcEpsilonExpression (ExpressionDesc e);
+static void CalcEpsilonExpression (pge_ExpressionDesc e);
 
 /*
    CalcEpsilonStatement - given a bnf statement generate the follow set.
 */
 
-static void CalcEpsilonStatement (StatementDesc s);
+static void CalcEpsilonStatement (pge_StatementDesc s);
 
 /*
    CalcEpsilonProduction -
 */
 
-static void CalcEpsilonProduction (ProductionDesc p);
+static void CalcEpsilonProduction (pge_ProductionDesc p);
 
 /*
    CalcReachEndFactor -
 */
 
-static TraverseResult CalcReachEndFactor (FactorDesc f);
+static pge_TraverseResult CalcReachEndFactor (pge_FactorDesc f);
 
 /*
    CalcReachEndTerm -
 */
 
-static TraverseResult CalcReachEndTerm (TermDesc t);
+static pge_TraverseResult CalcReachEndTerm (pge_TermDesc t);
 
 /*
    CalcReachEndExpression -
 */
 
-static void CalcReachEndExpression (ExpressionDesc e);
+static void CalcReachEndExpression (pge_ExpressionDesc e);
 
 /*
    CalcReachEndStatement -
 */
 
-static void CalcReachEndStatement (StatementDesc s);
+static void CalcReachEndStatement (pge_StatementDesc s);
 
 /*
    CalcReachEndStatement -
@@ -1546,37 +1547,37 @@ static void stop (void);
    CalcReachEndProduction -
 */
 
-static void CalcReachEndProduction (ProductionDesc p);
+static void CalcReachEndProduction (pge_ProductionDesc p);
 
 /*
    EmptyFactor -
 */
 
-static unsigned int EmptyFactor (FactorDesc f);
+static unsigned int EmptyFactor (pge_FactorDesc f);
 
 /*
    EmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int EmptyTerm (TermDesc t);
+static unsigned int EmptyTerm (pge_TermDesc t);
 
 /*
    EmptyExpression -
 */
 
-static unsigned int EmptyExpression (ExpressionDesc e);
+static unsigned int EmptyExpression (pge_ExpressionDesc e);
 
 /*
    EmptyStatement - returns TRUE if statement, s, is empty.
 */
 
-static unsigned int EmptyStatement (StatementDesc s);
+static unsigned int EmptyStatement (pge_StatementDesc s);
 
 /*
    EmptyProduction - returns if production, p, maybe empty.
 */
 
-static unsigned int EmptyProduction (ProductionDesc p);
+static unsigned int EmptyProduction (pge_ProductionDesc p);
 
 /*
    EmitFDLNotice -
@@ -1636,91 +1637,91 @@ static void EmitSupport (void);
    DisposeSetDesc - dispose of the set list, s.
 */
 
-static void DisposeSetDesc (SetDesc *s);
+static void DisposeSetDesc (pge_SetDesc *s);
 
 /*
    OptionalFactor -
 */
 
-static unsigned int OptionalFactor (FactorDesc f);
+static unsigned int OptionalFactor (pge_FactorDesc f);
 
 /*
    OptionalTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int OptionalTerm (TermDesc t);
+static unsigned int OptionalTerm (pge_TermDesc t);
 
 /*
    OptionalExpression -
 */
 
-static unsigned int OptionalExpression (ExpressionDesc e);
+static unsigned int OptionalExpression (pge_ExpressionDesc e);
 
 /*
    OptionalStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int OptionalStatement (StatementDesc s);
+static unsigned int OptionalStatement (pge_StatementDesc s);
 
 /*
    OptionalProduction -
 */
 
-static unsigned int OptionalProduction (ProductionDesc p);
+static unsigned int OptionalProduction (pge_ProductionDesc p);
 
 /*
    CheckFirstFollow -
 */
 
-static unsigned int CheckFirstFollow (FactorDesc f, FactorDesc after);
+static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after);
 
 /*
    ConstrainedEmptyFactor -
 */
 
-static unsigned int ConstrainedEmptyFactor (FactorDesc f);
+static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f);
 
 /*
    ConstrainedEmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int ConstrainedEmptyTerm (TermDesc t);
+static unsigned int ConstrainedEmptyTerm (pge_TermDesc t);
 
 /*
    ConstrainedEmptyExpression -
 */
 
-static unsigned int ConstrainedEmptyExpression (ExpressionDesc e);
+static unsigned int ConstrainedEmptyExpression (pge_ExpressionDesc e);
 
 /*
    ConstrainedEmptyStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int ConstrainedEmptyStatement (StatementDesc s);
+static unsigned int ConstrainedEmptyStatement (pge_StatementDesc s);
 
 /*
    ConstrainedEmptyProduction - returns TRUE if a problem exists with, p.
 */
 
-static unsigned int ConstrainedEmptyProduction (ProductionDesc p);
+static unsigned int ConstrainedEmptyProduction (pge_ProductionDesc p);
 
 /*
    TestForLALR1 -
 */
 
-static void TestForLALR1 (ProductionDesc p);
+static void TestForLALR1 (pge_ProductionDesc p);
 
 /*
    DoEpsilon - runs the epsilon interrelated rules
 */
 
-static void DoEpsilon (ProductionDesc p);
+static void DoEpsilon (pge_ProductionDesc p);
 
 /*
    CheckComplete - checks that production, p, is complete.
 */
 
-static void CheckComplete (ProductionDesc p);
+static void CheckComplete (pge_ProductionDesc p);
 
 /*
    PostProcessRules - backpatch the ident to rule definitions and emit comments and code.
@@ -1750,7 +1751,7 @@ static void Init (void);
    DescribeStop - issues a message explaining what tokens were expected
 */
 
-static DynamicStrings_String DescribeStop (SetOfStop stopset);
+static DynamicStrings_String DescribeStop (pge_SetOfStop stopset);
 
 /*
    DescribeError - issues a message explaining what tokens were expected
@@ -1781,92 +1782,92 @@ static void WarnError1 (const char *a_, unsigned int _a_high, unsigned int n);
    PrettyFollow -
 */
 
-static void PrettyFollow (const char *start_, unsigned int _start_high, const char *end_, unsigned int _end_high, FollowDesc f);
+static void PrettyFollow (const char *start_, unsigned int _start_high, const char *end_, unsigned int _end_high, pge_FollowDesc f);
 
 /*
    NewFollow - creates a new follow descriptor and returns the data structure.
 */
 
-static FollowDesc NewFollow (void);
+static pge_FollowDesc NewFollow (void);
 
 /*
    AssignEpsilon - assigns the epsilon value and sets the epsilon to value,
                    providing condition is TRUE.
 */
 
-static void AssignEpsilon (unsigned int condition, FollowDesc f, TraverseResult value);
+static void AssignEpsilon (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetEpsilon - returns the value of epsilon
 */
 
-static TraverseResult GetEpsilon (FollowDesc f);
+static pge_TraverseResult GetEpsilon (pge_FollowDesc f);
 
 /*
    AssignReachEnd - assigns the reachend value providing that, condition, is TRUE.
 */
 
-static void AssignReachEnd (unsigned int condition, FollowDesc f, TraverseResult value);
+static void AssignReachEnd (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value);
 
 /*
    GetReachEnd - returns the value of reachend
 */
 
-static TraverseResult GetReachEnd (FollowDesc f);
+static pge_TraverseResult GetReachEnd (pge_FollowDesc f);
 
 /*
    AssignFollow - assigns the follow set and sets the calcfollow to TRUE.
 */
 
-static void AssignFollow (FollowDesc f, SetDesc s);
+static void AssignFollow (pge_FollowDesc f, pge_SetDesc s);
 
 /*
    GetFollow - returns the follow set.
 */
 
-static SetDesc GetFollow (FollowDesc f);
+static pge_SetDesc GetFollow (pge_FollowDesc f);
 
 /*
    NewProduction - creates a new production and returns the data structure.
 */
 
-static ProductionDesc NewProduction (void);
+static pge_ProductionDesc NewProduction (void);
 
 /*
    NewFactor -
 */
 
-static FactorDesc NewFactor (void);
+static pge_FactorDesc NewFactor (void);
 
 /*
    NewTerm - returns a new term.
 */
 
-static TermDesc NewTerm (void);
+static pge_TermDesc NewTerm (void);
 
 /*
    NewExpression - returns a new expression.
 */
 
-static ExpressionDesc NewExpression (void);
+static pge_ExpressionDesc NewExpression (void);
 
 /*
    NewStatement - returns a new statement.
 */
 
-static StatementDesc NewStatement (void);
+static pge_StatementDesc NewStatement (void);
 
 /*
    NewSetDesc - creates a new set description and returns the data structure.
 */
 
-static SetDesc NewSetDesc (void);
+static pge_SetDesc NewSetDesc (void);
 
 /*
    NewCodeDesc - creates a new code descriptor and initializes all fields to zero.
 */
 
-static CodeDesc NewCodeDesc (void);
+static pge_CodeDesc NewCodeDesc (void);
 
 /*
    CodeFragmentPrologue - consumes code text up to a "%" after a newline.
@@ -1890,13 +1891,13 @@ static void CodeFragmentDeclaration (void);
    GetCodeFragment - collects the code fragment up until ^ %
 */
 
-static void GetCodeFragment (CodeHunk *h);
+static void GetCodeFragment (pge_CodeHunk *h);
 
 /*
    WriteCodeHunkList - writes the CodeHunk list in the correct order.
 */
 
-static void WriteCodeHunkList (CodeHunk l);
+static void WriteCodeHunkList (pge_CodeHunk l);
 
 /*
    WriteIndent - writes, n, spaces.
@@ -1922,19 +1923,19 @@ static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned in
                              but it removes up to indent spaces if they exist.
 */
 
-static void WriteCodeHunkListIndent (CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
+static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext);
 
 /*
    Add - adds a character to a code hunk and creates another code hunk if necessary.
 */
 
-static CodeHunk Add (CodeHunk *p, char ch, unsigned int *i);
+static pge_CodeHunk Add (pge_CodeHunk *p, char ch, unsigned int *i);
 
 /*
    ConsHunk - combine two possible code hunks.
 */
 
-static void ConsHunk (CodeHunk *p, CodeHunk q);
+static void ConsHunk (pge_CodeHunk *p, pge_CodeHunk q);
 
 /*
    GetName - returns the next symbol which is checked for a legal name.
@@ -1947,49 +1948,49 @@ static NameKey_Name GetName (void);
                  a stop symbol.
 */
 
-static void SyntaxError (SetOfStop stop);
+static void SyntaxError (pge_SetOfStop stop);
 
 /*
    SyntaxCheck -
 */
 
-static void SyntaxCheck (SetOfStop stop);
+static void SyntaxCheck (pge_SetOfStop stop);
 
 /*
    Expect -
 */
 
-static void Expect (bnflex_TokenType t, SetOfStop stop);
+static void Expect (bnflex_TokenType t, pge_SetOfStop stop);
 
 /*
    Ident - error checking varient of Ident
 */
 
-static void Ident (SetOfStop stop);
+static void Ident (pge_SetOfStop stop);
 
 /*
    Modula2Code - error checking varient of Modula2Code
 */
 
-static void Modula2Code (SetOfStop stop);
+static void Modula2Code (pge_SetOfStop stop);
 
 /*
    StartModName    := % ModuleName := GetName() ;  ignore begintok  CodeFragmentPrologue % =:
 */
 
-static void StartModName (SetOfStop stop);
+static void StartModName (pge_SetOfStop stop);
 
 /*
    EndModName    :=
 */
 
-static void EndModName (SetOfStop stop);
+static void EndModName (pge_SetOfStop stop);
 
 /*
    DoDeclaration := % CodeFragmentDeclaration % =:
 */
 
-static void DoDeclaration (SetOfStop stop);
+static void DoDeclaration (pge_SetOfStop stop);
 
 /*
    CollectLiteral := 
@@ -2002,7 +2003,7 @@ static void DoDeclaration (SetOfStop stop);
    cannot reachend
 */
 
-static void CollectLiteral (SetOfStop stopset);
+static void CollectLiteral (pge_SetOfStop stopset);
 
 /*
    CollectTok := 
@@ -2027,7 +2028,7 @@ static void CollectLiteral (SetOfStop stopset);
    cannot reachend
 */
 
-static void CollectTok (SetOfStop stopset);
+static void CollectTok (pge_SetOfStop stopset);
 
 /*
    DefineToken := 
@@ -2044,7 +2045,7 @@ static void CollectTok (SetOfStop stopset);
    cannot reachend
 */
 
-static void DefineToken (SetOfStop stopset);
+static void DefineToken (pge_SetOfStop stopset);
 
 /*
    Rules := '%' 'rules' { Defs  } ExtBNF 
@@ -2054,7 +2055,7 @@ static void DefineToken (SetOfStop stopset);
    cannot reachend
 */
 
-static void Rules (SetOfStop stopset);
+static void Rules (pge_SetOfStop stopset);
 
 /*
    Special := Ident 
@@ -2086,7 +2087,7 @@ static void Rules (SetOfStop stopset);
    cannot reachend
 */
 
-static void Special (SetOfStop stopset);
+static void Special (pge_SetOfStop stopset);
 
 /*
    Factor := '%' Modula2Code '%'  | 
@@ -2129,7 +2130,7 @@ static void Special (SetOfStop stopset);
    cannot reachend
 */
 
-static void Factor (SetOfStop stopset);
+static void Factor (pge_SetOfStop stopset);
 
 /*
    Statement := 
@@ -2170,7 +2171,7 @@ static void Factor (SetOfStop stopset);
    cannot reachend
 */
 
-static void Statement (SetOfStop stopset);
+static void Statement (pge_SetOfStop stopset);
 
 /*
    Defs := 'special' Special  | 'token' Token  | 
@@ -2183,7 +2184,7 @@ static void Statement (SetOfStop stopset);
    cannot reachend
 */
 
-static void Defs (SetOfStop stopset);
+static void Defs (pge_SetOfStop stopset);
 
 /*
    ExtBNF := 'BNF' { Production  } 'FNB' 
@@ -2193,7 +2194,7 @@ static void Defs (SetOfStop stopset);
    cannot reachend
 */
 
-static void ExtBNF (SetOfStop stopset);
+static void ExtBNF (pge_SetOfStop stopset);
 
 /*
    Main := Header Decls Footer Rules 
@@ -2203,7 +2204,7 @@ static void ExtBNF (SetOfStop stopset);
    cannot reachend
 */
 
-static void Main (SetOfStop stopset);
+static void Main (pge_SetOfStop stopset);
 
 /*
    Header := '%' 'module' StartModName 
@@ -2213,7 +2214,7 @@ static void Main (SetOfStop stopset);
    cannot reachend
 */
 
-static void Header (SetOfStop stopset);
+static void Header (pge_SetOfStop stopset);
 
 /*
    Decls := '%' 'declaration' DoDeclaration 
@@ -2223,7 +2224,7 @@ static void Header (SetOfStop stopset);
    cannot reachend
 */
 
-static void Decls (SetOfStop stopset);
+static void Decls (pge_SetOfStop stopset);
 
 /*
    Footer := '%' 'module' EndModName 
@@ -2233,7 +2234,7 @@ static void Decls (SetOfStop stopset);
    cannot reachend
 */
 
-static void Footer (SetOfStop stopset);
+static void Footer (pge_SetOfStop stopset);
 
 /*
    First := 'first' '{' { LitOrTokenOrIdent 
@@ -2249,7 +2250,7 @@ static void Footer (SetOfStop stopset);
    cannot reachend
 */
 
-static void First (SetOfStop stopset);
+static void First (pge_SetOfStop stopset);
 
 /*
    Follow := 'follow' '{' { LitOrTokenOrIdent 
@@ -2265,7 +2266,7 @@ static void First (SetOfStop stopset);
    cannot reachend
 */
 
-static void Follow (SetOfStop stopset);
+static void Follow (pge_SetOfStop stopset);
 
 /*
    LitOrTokenOrIdent := Literal 
@@ -2290,7 +2291,7 @@ static void Follow (SetOfStop stopset);
    cannot reachend
 */
 
-static void LitOrTokenOrIdent (SetOfStop stopset);
+static void LitOrTokenOrIdent (pge_SetOfStop stopset);
 
 /*
    Literal := '"' CollectLiteral '"'  | 
@@ -2301,7 +2302,7 @@ static void LitOrTokenOrIdent (SetOfStop stopset);
    cannot reachend
 */
 
-static void Literal (SetOfStop stopset);
+static void Literal (pge_SetOfStop stopset);
 
 /*
    Token := Literal DefineToken 
@@ -2311,7 +2312,7 @@ static void Literal (SetOfStop stopset);
    cannot reachend
 */
 
-static void Token (SetOfStop stopset);
+static void Token (pge_SetOfStop stopset);
 
 /*
    ErrorProcedures := Literal 
@@ -2325,7 +2326,7 @@ static void Token (SetOfStop stopset);
    cannot reachend
 */
 
-static void ErrorProcedures (SetOfStop stopset);
+static void ErrorProcedures (pge_SetOfStop stopset);
 
 /*
    TokenProcedure := Literal 
@@ -2337,7 +2338,7 @@ static void ErrorProcedures (SetOfStop stopset);
    cannot reachend
 */
 
-static void TokenProcedure (SetOfStop stopset);
+static void TokenProcedure (pge_SetOfStop stopset);
 
 /*
    SymProcedure := Literal 
@@ -2349,7 +2350,7 @@ static void TokenProcedure (SetOfStop stopset);
    cannot reachend
 */
 
-static void SymProcedure (SetOfStop stopset);
+static void SymProcedure (pge_SetOfStop stopset);
 
 /*
    Production := Statement 
@@ -2359,7 +2360,7 @@ static void SymProcedure (SetOfStop stopset);
    cannot reachend
 */
 
-static void Production (SetOfStop stopset);
+static void Production (pge_SetOfStop stopset);
 
 /*
    Expression := 
@@ -2384,7 +2385,7 @@ static void Production (SetOfStop stopset);
    cannot reachend
 */
 
-static void Expression (SetOfStop stopset);
+static void Expression (pge_SetOfStop stopset);
 
 /*
    Term := 
@@ -2409,75 +2410,75 @@ static void Expression (SetOfStop stopset);
    cannot reachend
 */
 
-static void Term (SetOfStop stopset);
+static void Term (pge_SetOfStop stopset);
 
 /*
    GetDefinitionName - returns the name of the rule inside, p.
 */
 
-static NameKey_Name GetDefinitionName (ProductionDesc p);
+static NameKey_Name GetDefinitionName (pge_ProductionDesc p);
 
 /*
    FindDefinition - searches and returns the rule which defines, n.
 */
 
-static ProductionDesc FindDefinition (NameKey_Name n);
+static pge_ProductionDesc FindDefinition (NameKey_Name n);
 
 /*
    BackPatchIdent - found an ident, i, we must look for the corresponding rule and
                     set the definition accordingly.
 */
 
-static void BackPatchIdent (IdentDesc i);
+static void BackPatchIdent (pge_IdentDesc i);
 
 /*
    BackPatchFactor - runs through the factor looking for an ident
 */
 
-static void BackPatchFactor (FactorDesc f);
+static void BackPatchFactor (pge_FactorDesc f);
 
 /*
    BackPatchTerm - runs through all terms to find idents.
 */
 
-static void BackPatchTerm (TermDesc t);
+static void BackPatchTerm (pge_TermDesc t);
 
 /*
    BackPatchExpression - runs through the term to find any idents.
 */
 
-static void BackPatchExpression (ExpressionDesc e);
+static void BackPatchExpression (pge_ExpressionDesc e);
 
 /*
    BackPatchSet -
 */
 
-static void BackPatchSet (SetDesc s);
+static void BackPatchSet (pge_SetDesc s);
 
 /*
    BackPatchIdentToDefinitions - search through all the rules and add a link from any ident
                                  to the definition.
 */
 
-static void BackPatchIdentToDefinitions (ProductionDesc d);
+static void BackPatchIdentToDefinitions (pge_ProductionDesc d);
 
 /*
    CalculateFirstAndFollow -
 */
 
-static void CalculateFirstAndFollow (ProductionDesc p);
+static void CalculateFirstAndFollow (pge_ProductionDesc p);
 
 /*
    ForeachRuleDo -
 */
 
-static void ForeachRuleDo (DoProcedure p);
+static void ForeachRuleDo (pge_DoProcedure p);
 
 /*
    WhileNotCompleteDo -
 */
 
-static void WhileNotCompleteDo (DoProcedure p);
+static void WhileNotCompleteDo (pge_DoProcedure p);
 
 /*
    NewLine - generate a newline and indent.
@@ -2507,7 +2508,7 @@ static void KeyWord (NameKey_Name n);
    PrettyPara -
 */
 
-static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_, unsigned int _c2_high, ExpressionDesc e, unsigned int Left);
+static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_, unsigned int _c2_high, pge_ExpressionDesc e, unsigned int Left);
 
 /*
    WriteKeyTexinfo -
@@ -2519,55 +2520,55 @@ static void WriteKeyTexinfo (NameKey_Name s);
    PrettyCommentFactor -
 */
 
-static void PrettyCommentFactor (FactorDesc f, unsigned int Left);
+static void PrettyCommentFactor (pge_FactorDesc f, unsigned int Left);
 
 /*
    PeepTerm - returns the length of characters in term.
 */
 
-static unsigned int PeepTerm (TermDesc t);
+static unsigned int PeepTerm (pge_TermDesc t);
 
 /*
    PeepExpression - returns the length of the expression.
 */
 
-static unsigned int PeepExpression (ExpressionDesc e);
+static unsigned int PeepExpression (pge_ExpressionDesc e);
 
 /*
    PeepFactor - returns the length of character in the factor
 */
 
-static unsigned int PeepFactor (FactorDesc f);
+static unsigned int PeepFactor (pge_FactorDesc f);
 
 /*
    PrettyCommentTerm -
 */
 
-static void PrettyCommentTerm (TermDesc t, unsigned int Left);
+static void PrettyCommentTerm (pge_TermDesc t, unsigned int Left);
 
 /*
    PrettyCommentExpression -
 */
 
-static void PrettyCommentExpression (ExpressionDesc e, unsigned int Left);
+static void PrettyCommentExpression (pge_ExpressionDesc e, unsigned int Left);
 
 /*
    PrettyCommentStatement -
 */
 
-static void PrettyCommentStatement (StatementDesc s, unsigned int Left);
+static void PrettyCommentStatement (pge_StatementDesc s, unsigned int Left);
 
 /*
    PrettyCommentProduction - generates the comment for rule, p.
 */
 
-static void PrettyCommentProduction (ProductionDesc p);
+static void PrettyCommentProduction (pge_ProductionDesc p);
 
 /*
    PrettyPrintProduction - pretty prints the ebnf rule, p.
 */
 
-static void PrettyPrintProduction (ProductionDesc p);
+static void PrettyPrintProduction (pge_ProductionDesc p);
 
 /*
    EmitFileLineTag - emits a line and file tag using the C preprocessor syntax.
@@ -2579,91 +2580,91 @@ static void EmitFileLineTag (unsigned int line);
    EmitRule - generates a comment and code for rule, p.
 */
 
-static void EmitRule (ProductionDesc p);
+static void EmitRule (pge_ProductionDesc p);
 
 /*
    CodeCondition -
 */
 
-static void CodeCondition (m2condition m);
+static void CodeCondition (pge_m2condition m);
 
 /*
    CodeThenDo - codes a "THEN" or "DO" depending upon, m.
 */
 
-static void CodeThenDo (m2condition m);
+static void CodeThenDo (pge_m2condition m);
 
 /*
    CodeElseEnd - builds an ELSE END statement using string, end.
 */
 
-static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, FactorDesc f, unsigned int inopt);
+static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
 
 /*
    CodeEnd - codes a "END" depending upon, m.
 */
 
-static void CodeEnd (m2condition m, TermDesc t, unsigned int consumed, FactorDesc f, unsigned int inopt);
+static void CodeEnd (pge_m2condition m, pge_TermDesc t, unsigned int consumed, pge_FactorDesc f, unsigned int inopt);
 
 /*
    EmitNonVarCode - writes out, code, providing it is not a variable declaration.
 */
 
-static void EmitNonVarCode (CodeDesc code, unsigned int curpos, unsigned int left);
+static void EmitNonVarCode (pge_CodeDesc code, unsigned int curpos, unsigned int left);
 
 /*
    ChainOn -
 */
 
-static FactorDesc ChainOn (FactorDesc codeStack, FactorDesc f);
+static pge_FactorDesc ChainOn (pge_FactorDesc codeStack, pge_FactorDesc f);
 
 /*
    FlushCode -
 */
 
-static void FlushCode (FactorDesc *codeStack);
+static void FlushCode (pge_FactorDesc *codeStack);
 
 /*
    CodeFactor -
 */
 
-static void CodeFactor (FactorDesc f, TermDesc t, m2condition l, m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack);
+static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
 
 /*
    CodeTerm -
 */
 
-static void CodeTerm (TermDesc t, m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack);
+static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
 
 /*
    CodeExpression -
 */
 
-static void CodeExpression (ExpressionDesc e, m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack);
+static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack);
 
 /*
    CodeStatement -
 */
 
-static void CodeStatement (StatementDesc s, m2condition m);
+static void CodeStatement (pge_StatementDesc s, pge_m2condition m);
 
 /*
    CodeProduction - only encode grammer rules which are not special.
 */
 
-static void CodeProduction (ProductionDesc p);
+static void CodeProduction (pge_ProductionDesc p);
 
 /*
    RecoverCondition -
 */
 
-static void RecoverCondition (m2condition m);
+static void RecoverCondition (pge_m2condition m);
 
 /*
    ConditionIndent - returns the number of spaces indentation created via, m.
 */
 
-static unsigned int ConditionIndent (m2condition m);
+static unsigned int ConditionIndent (pge_m2condition m);
 
 /*
    WriteGetTokenType - writes out the method of determining the token type.
@@ -2675,7 +2676,7 @@ static void WriteGetTokenType (void);
    NumberOfElements - returns the number of elements in set, to, which lie between low..high
 */
 
-static unsigned int NumberOfElements (SetDesc to, unsigned int low, unsigned int high);
+static unsigned int NumberOfElements (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    WriteElement - writes the literal name for element, e.
@@ -2687,26 +2688,26 @@ static void WriteElement (unsigned int e);
    EmitIsInSet - writes out the equivalent of GetTokenType() IN { toset }
 */
 
-static void EmitIsInSet (SetDesc to, NameKey_Name low, NameKey_Name high);
+static void EmitIsInSet (pge_SetDesc to, NameKey_Name low, NameKey_Name high);
 
 /*
    EmitIsInSubSet - writes out a test to see whether GetTokenype() is in { subset }
 */
 
-static void EmitIsInSubSet (SetDesc to, unsigned int low, unsigned int high);
+static void EmitIsInSubSet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitIsInFirst -
 */
 
-static void EmitIsInFirst (SetDesc to, m2condition m);
-static void FlushRecoverCode (FactorDesc *codeStack);
+static void EmitIsInFirst (pge_SetDesc to, pge_m2condition m);
+static void FlushRecoverCode (pge_FactorDesc *codeStack);
 
 /*
    RecoverFactor -
 */
 
-static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack);
+static void RecoverFactor (pge_FactorDesc f, pge_m2condition m, pge_FactorDesc codeStack);
 
 /*
    OptExpSeen - returns TRUE if we can see an optional expression in the factor.
@@ -2715,31 +2716,31 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack);
                 and FALSE in the first.
 */
 
-static unsigned int OptExpSeen (FactorDesc f);
+static unsigned int OptExpSeen (pge_FactorDesc f);
 
 /*
    RecoverTerm -
 */
 
-static void RecoverTerm (TermDesc t, m2condition new_, m2condition old);
+static void RecoverTerm (pge_TermDesc t, pge_m2condition new_, pge_m2condition old);
 
 /*
    RecoverExpression -
 */
 
-static void RecoverExpression (ExpressionDesc e, m2condition new_, m2condition old);
+static void RecoverExpression (pge_ExpressionDesc e, pge_m2condition new_, pge_m2condition old);
 
 /*
    RecoverStatement -
 */
 
-static void RecoverStatement (StatementDesc s, m2condition m);
+static void RecoverStatement (pge_StatementDesc s, pge_m2condition m);
 
 /*
    EmitFirstFactor - generate a list of all first tokens between the range: low..high.
 */
 
-static void EmitFirstFactor (FactorDesc f, unsigned int low, unsigned int high);
+static void EmitFirstFactor (pge_FactorDesc f, unsigned int low, unsigned int high);
 
 /*
    EmitUsed -
@@ -2764,33 +2765,33 @@ static unsigned int IsBetween (NameKey_Name string, unsigned int low, unsigned i
    IsEmptySet - returns TRUE if no elements exist in set, to, with values, low..high.
 */
 
-static unsigned int IsEmptySet (SetDesc to, unsigned int low, unsigned int high);
+static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitSet - emits the tokens in the set, to, which have values low..high
 */
 
-static void EmitSet (SetDesc to, unsigned int low, unsigned int high);
+static void EmitSet (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitSetName - emits the tokens in the set, to, which have values low..high, using
                  their names.
 */
 
-static void EmitSetName (SetDesc to, unsigned int low, unsigned int high);
+static void EmitSetName (pge_SetDesc to, unsigned int low, unsigned int high);
 
 /*
    EmitStopParametersAndSet - generates the stop parameters together with a set
                               inclusion of all the symbols in set, to.
 */
 
-static void EmitStopParametersAndSet (SetDesc to);
+static void EmitStopParametersAndSet (pge_SetDesc to);
 
 /*
    EmitSetAsParameters - generates the first symbols as parameters to a set function.
 */
 
-static void EmitSetAsParameters (SetDesc to);
+static void EmitSetAsParameters (pge_SetDesc to);
 
 /*
    EmitStopParametersAndFollow - generates the stop parameters together with a set
@@ -2798,20 +2799,20 @@ static void EmitSetAsParameters (SetDesc to);
                                  sentances.
 */
 
-static void EmitStopParametersAndFollow (FactorDesc f, m2condition m);
+static void EmitStopParametersAndFollow (pge_FactorDesc f, pge_m2condition m);
 
 /*
    EmitFirstAsParameters -
 */
 
-static void EmitFirstAsParameters (FactorDesc f);
+static void EmitFirstAsParameters (pge_FactorDesc f);
 
 /*
    RecoverProduction - only encode grammer rules which are not special.
                        Generate error recovery code.
 */
 
-static void RecoverProduction (ProductionDesc p);
+static void RecoverProduction (pge_ProductionDesc p);
 
 /*
    IsWhite - returns TRUE if, ch, is a space or a tab.
@@ -2823,208 +2824,208 @@ static unsigned int IsWhite (char ch);
    FindStr - returns TRUE if, str, was seen inside the code hunk
 */
 
-static unsigned int FindStr (CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
+static unsigned int FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high);
 
 /*
    WriteUpto -
 */
 
-static void WriteUpto (CodeHunk code, CodeHunk upto, unsigned int limit);
+static void WriteUpto (pge_CodeHunk code, pge_CodeHunk upto, unsigned int limit);
 
 /*
    CheckForVar - checks for any local variables which need to be emitted during
                  this production.
 */
 
-static void CheckForVar (CodeHunk code);
+static void CheckForVar (pge_CodeHunk code);
 
 /*
    VarFactor -
 */
 
-static void VarFactor (FactorDesc f);
+static void VarFactor (pge_FactorDesc f);
 
 /*
    VarTerm -
 */
 
-static void VarTerm (TermDesc t);
+static void VarTerm (pge_TermDesc t);
 
 /*
    VarExpression -
 */
 
-static void VarExpression (ExpressionDesc e);
+static void VarExpression (pge_ExpressionDesc e);
 
 /*
    VarStatement -
 */
 
-static void VarStatement (StatementDesc s);
+static void VarStatement (pge_StatementDesc s);
 
 /*
    VarProduction - writes out all variable declarations.
 */
 
-static void VarProduction (ProductionDesc p);
+static void VarProduction (pge_ProductionDesc p);
 
 /*
    In - returns TRUE if token, s, is already in the set, to.
 */
 
-static unsigned int In (SetDesc to, NameKey_Name s);
+static unsigned int In (pge_SetDesc to, NameKey_Name s);
 
 /*
    IntersectionIsNil - given two set lists, s1, s2, return TRUE if the
                        s1 * s2 = {}
 */
 
-static unsigned int IntersectionIsNil (SetDesc s1, SetDesc s2);
+static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2);
 
 /*
    AddSet - adds a first symbol to a production.
 */
 
-static void AddSet (SetDesc *to, NameKey_Name s);
+static void AddSet (pge_SetDesc *to, NameKey_Name s);
 
 /*
    OrSet -
 */
 
-static void OrSet (SetDesc *to, SetDesc from);
+static void OrSet (pge_SetDesc *to, pge_SetDesc from);
 
 /*
    CalcFirstFactor -
 */
 
-static void CalcFirstFactor (FactorDesc f, ProductionDesc from, SetDesc *to);
+static void CalcFirstFactor (pge_FactorDesc f, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstTerm -
 */
 
-static void CalcFirstTerm (TermDesc t, ProductionDesc from, SetDesc *to);
+static void CalcFirstTerm (pge_TermDesc t, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstExpression -
 */
 
-static void CalcFirstExpression (ExpressionDesc e, ProductionDesc from, SetDesc *to);
+static void CalcFirstExpression (pge_ExpressionDesc e, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstStatement -
 */
 
-static void CalcFirstStatement (StatementDesc s, ProductionDesc from, SetDesc *to);
+static void CalcFirstStatement (pge_StatementDesc s, pge_ProductionDesc from, pge_SetDesc *to);
 
 /*
    CalcFirstProduction - calculates all of the first symbols for the grammer
 */
 
-static void CalcFirstProduction (ProductionDesc p, ProductionDesc from, SetDesc *to);
-static void WorkOutFollowFactor (FactorDesc f, SetDesc *followset, SetDesc after);
+static void CalcFirstProduction (pge_ProductionDesc p, pge_ProductionDesc from, pge_SetDesc *to);
+static void WorkOutFollowFactor (pge_FactorDesc f, pge_SetDesc *followset, pge_SetDesc after);
 
 /*
    WorkOutFollowTerm -
 */
 
-static void WorkOutFollowTerm (TermDesc t, SetDesc *followset, SetDesc after);
+static void WorkOutFollowTerm (pge_TermDesc t, pge_SetDesc *followset, pge_SetDesc after);
 
 /*
    WorkOutFollowExpression -
 */
 
-static void WorkOutFollowExpression (ExpressionDesc e, SetDesc *followset, SetDesc after);
+static void WorkOutFollowExpression (pge_ExpressionDesc e, pge_SetDesc *followset, pge_SetDesc after);
 
 /*
    CollectFollow - collects the follow set from, f, into, to.
 */
 
-static void CollectFollow (SetDesc *to, FollowDesc f);
+static void CollectFollow (pge_SetDesc *to, pge_FollowDesc f);
 
 /*
    CalcFollowFactor -
 */
 
-static void CalcFollowFactor (FactorDesc f, SetDesc after);
+static void CalcFollowFactor (pge_FactorDesc f, pge_SetDesc after);
 
 /*
    CalcFollowTerm -
 */
 
-static void CalcFollowTerm (TermDesc t, SetDesc after);
+static void CalcFollowTerm (pge_TermDesc t, pge_SetDesc after);
 
 /*
    CalcFollowExpression -
 */
 
-static void CalcFollowExpression (ExpressionDesc e, SetDesc after);
+static void CalcFollowExpression (pge_ExpressionDesc e, pge_SetDesc after);
 
 /*
    CalcFollowStatement - given a bnf statement generate the follow set.
 */
 
-static void CalcFollowStatement (StatementDesc s);
+static void CalcFollowStatement (pge_StatementDesc s);
 
 /*
    CalcFollowProduction -
 */
 
-static void CalcFollowProduction (ProductionDesc p);
+static void CalcFollowProduction (pge_ProductionDesc p);
 
 /*
    CalcEpsilonFactor -
 */
 
-static void CalcEpsilonFactor (FactorDesc f);
+static void CalcEpsilonFactor (pge_FactorDesc f);
 
 /*
    CalcEpsilonTerm -
 */
 
-static void CalcEpsilonTerm (TermDesc t);
+static void CalcEpsilonTerm (pge_TermDesc t);
 
 /*
    CalcEpsilonExpression -
 */
 
-static void CalcEpsilonExpression (ExpressionDesc e);
+static void CalcEpsilonExpression (pge_ExpressionDesc e);
 
 /*
    CalcEpsilonStatement - given a bnf statement generate the follow set.
 */
 
-static void CalcEpsilonStatement (StatementDesc s);
+static void CalcEpsilonStatement (pge_StatementDesc s);
 
 /*
    CalcEpsilonProduction -
 */
 
-static void CalcEpsilonProduction (ProductionDesc p);
+static void CalcEpsilonProduction (pge_ProductionDesc p);
 
 /*
    CalcReachEndFactor -
 */
 
-static TraverseResult CalcReachEndFactor (FactorDesc f);
+static pge_TraverseResult CalcReachEndFactor (pge_FactorDesc f);
 
 /*
    CalcReachEndTerm -
 */
 
-static TraverseResult CalcReachEndTerm (TermDesc t);
+static pge_TraverseResult CalcReachEndTerm (pge_TermDesc t);
 
 /*
    CalcReachEndExpression -
 */
 
-static void CalcReachEndExpression (ExpressionDesc e);
+static void CalcReachEndExpression (pge_ExpressionDesc e);
 
 /*
    CalcReachEndStatement -
 */
 
-static void CalcReachEndStatement (StatementDesc s);
+static void CalcReachEndStatement (pge_StatementDesc s);
 
 /*
    CalcReachEndStatement -
@@ -3036,37 +3037,37 @@ static void stop (void);
    CalcReachEndProduction -
 */
 
-static void CalcReachEndProduction (ProductionDesc p);
+static void CalcReachEndProduction (pge_ProductionDesc p);
 
 /*
    EmptyFactor -
 */
 
-static unsigned int EmptyFactor (FactorDesc f);
+static unsigned int EmptyFactor (pge_FactorDesc f);
 
 /*
    EmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int EmptyTerm (TermDesc t);
+static unsigned int EmptyTerm (pge_TermDesc t);
 
 /*
    EmptyExpression -
 */
 
-static unsigned int EmptyExpression (ExpressionDesc e);
+static unsigned int EmptyExpression (pge_ExpressionDesc e);
 
 /*
    EmptyStatement - returns TRUE if statement, s, is empty.
 */
 
-static unsigned int EmptyStatement (StatementDesc s);
+static unsigned int EmptyStatement (pge_StatementDesc s);
 
 /*
    EmptyProduction - returns if production, p, maybe empty.
 */
 
-static unsigned int EmptyProduction (ProductionDesc p);
+static unsigned int EmptyProduction (pge_ProductionDesc p);
 
 /*
    EmitFDLNotice -
@@ -3126,91 +3127,91 @@ static void EmitSupport (void);
    DisposeSetDesc - dispose of the set list, s.
 */
 
-static void DisposeSetDesc (SetDesc *s);
+static void DisposeSetDesc (pge_SetDesc *s);
 
 /*
    OptionalFactor -
 */
 
-static unsigned int OptionalFactor (FactorDesc f);
+static unsigned int OptionalFactor (pge_FactorDesc f);
 
 /*
    OptionalTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int OptionalTerm (TermDesc t);
+static unsigned int OptionalTerm (pge_TermDesc t);
 
 /*
    OptionalExpression -
 */
 
-static unsigned int OptionalExpression (ExpressionDesc e);
+static unsigned int OptionalExpression (pge_ExpressionDesc e);
 
 /*
    OptionalStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int OptionalStatement (StatementDesc s);
+static unsigned int OptionalStatement (pge_StatementDesc s);
 
 /*
    OptionalProduction -
 */
 
-static unsigned int OptionalProduction (ProductionDesc p);
+static unsigned int OptionalProduction (pge_ProductionDesc p);
 
 /*
    CheckFirstFollow -
 */
 
-static unsigned int CheckFirstFollow (FactorDesc f, FactorDesc after);
+static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after);
 
 /*
    ConstrainedEmptyFactor -
 */
 
-static unsigned int ConstrainedEmptyFactor (FactorDesc f);
+static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f);
 
 /*
    ConstrainedEmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int ConstrainedEmptyTerm (TermDesc t);
+static unsigned int ConstrainedEmptyTerm (pge_TermDesc t);
 
 /*
    ConstrainedEmptyExpression -
 */
 
-static unsigned int ConstrainedEmptyExpression (ExpressionDesc e);
+static unsigned int ConstrainedEmptyExpression (pge_ExpressionDesc e);
 
 /*
    ConstrainedEmptyStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int ConstrainedEmptyStatement (StatementDesc s);
+static unsigned int ConstrainedEmptyStatement (pge_StatementDesc s);
 
 /*
    ConstrainedEmptyProduction - returns TRUE if a problem exists with, p.
 */
 
-static unsigned int ConstrainedEmptyProduction (ProductionDesc p);
+static unsigned int ConstrainedEmptyProduction (pge_ProductionDesc p);
 
 /*
    TestForLALR1 -
 */
 
-static void TestForLALR1 (ProductionDesc p);
+static void TestForLALR1 (pge_ProductionDesc p);
 
 /*
    DoEpsilon - runs the epsilon interrelated rules
 */
 
-static void DoEpsilon (ProductionDesc p);
+static void DoEpsilon (pge_ProductionDesc p);
 
 /*
    CheckComplete - checks that production, p, is complete.
 */
 
-static void CheckComplete (ProductionDesc p);
+static void CheckComplete (pge_ProductionDesc p);
 
 /*
    PostProcessRules - backpatch the ident to rule definitions and emit comments and code.
@@ -3241,7 +3242,7 @@ static void Init (void);
    DescribeStop - issues a message explaining what tokens were expected
 */
 
-static DynamicStrings_String DescribeStop (SetOfStop stopset)
+static DynamicStrings_String DescribeStop (pge_SetOfStop stopset)
 {
   unsigned int n;
   DynamicStrings_String str;
@@ -3600,14 +3601,14 @@ static void AddEntry (SymbolKey_SymbolTree *t, NameKey_Name def, NameKey_Name va
 
 static void Format1 (const char *src_, unsigned int _src_high, unsigned int n, char *dest, unsigned int _dest_high)
 {
-  typedef struct _T12_a _T12;
+  typedef struct Format1__T12_a Format1__T12;
 
-  struct _T12_a { char array[MaxString+1]; };
+  struct Format1__T12_a { char array[MaxString+1]; };
   unsigned int HighSrc;
   unsigned int HighDest;
   unsigned int i;
   unsigned int j;
-  _T12 str;
+  Format1__T12 str;
   char src[_src_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -3671,10 +3672,10 @@ static void Format1 (const char *src_, unsigned int _src_high, unsigned int n, c
 
 static void WarnError1 (const char *a_, unsigned int _a_high, unsigned int n)
 {
-  typedef struct _T13_a _T13;
+  typedef struct WarnError1__T13_a WarnError1__T13;
 
-  struct _T13_a { char array[MaxString+1]; };
-  _T13 line;
+  struct WarnError1__T13_a { char array[MaxString+1]; };
+  WarnError1__T13 line;
   char a[_a_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -3689,7 +3690,7 @@ static void WarnError1 (const char *a_, unsigned int _a_high, unsigned int n)
    PrettyFollow -
 */
 
-static void PrettyFollow (const char *start_, unsigned int _start_high, const char *end_, unsigned int _end_high, FollowDesc f)
+static void PrettyFollow (const char *start_, unsigned int _start_high, const char *end_, unsigned int _end_high, pge_FollowDesc f)
 {
   char start[_start_high+1];
   char end[_end_high+1];
@@ -3710,15 +3711,15 @@ static void PrettyFollow (const char *start_, unsigned int _start_high, const ch
             }
           switch (f->reachend)
             {
-              case true_:
+              case pge_true:
                 Output_WriteString ((const char *) " [E]", 4);
                 break;
 
-              case false_:
+              case pge_false:
                 Output_WriteString ((const char *) " [C]", 4);
                 break;
 
-              case unknown:
+              case pge_unknown:
                 Output_WriteString ((const char *) " [U]", 4);
                 break;
 
@@ -3728,14 +3729,14 @@ static void PrettyFollow (const char *start_, unsigned int _start_high, const ch
             }
           switch (f->epsilon)
             {
-              case true_:
+              case pge_true:
                 Output_WriteString ((const char *) " [e]", 4);
                 break;
 
-              case false_:
+              case pge_false:
                 break;
 
-              case unknown:
+              case pge_unknown:
                 Output_WriteString ((const char *) " [u]", 4);
                 break;
 
@@ -3753,14 +3754,14 @@ static void PrettyFollow (const char *start_, unsigned int _start_high, const ch
    NewFollow - creates a new follow descriptor and returns the data structure.
 */
 
-static FollowDesc NewFollow (void)
+static pge_FollowDesc NewFollow (void)
 {
-  FollowDesc f;
+  pge_FollowDesc f;
 
-  Storage_ALLOCATE ((void **) &f, sizeof (_T6));
+  Storage_ALLOCATE ((void **) &f, sizeof (pge__T6));
   f->follow = NULL;
-  f->reachend = unknown;
-  f->epsilon = unknown;
+  f->reachend = pge_unknown;
+  f->epsilon = pge_unknown;
   return f;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -3772,9 +3773,9 @@ static FollowDesc NewFollow (void)
                    providing condition is TRUE.
 */
 
-static void AssignEpsilon (unsigned int condition, FollowDesc f, TraverseResult value)
+static void AssignEpsilon (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value)
 {
-  if ((condition && (value != unknown)) && (f->epsilon == unknown))
+  if ((condition && (value != pge_unknown)) && (f->epsilon == pge_unknown))
     {
       f->epsilon = value;
       Finished = FALSE;
@@ -3786,11 +3787,11 @@ static void AssignEpsilon (unsigned int condition, FollowDesc f, TraverseResult 
    GetEpsilon - returns the value of epsilon
 */
 
-static TraverseResult GetEpsilon (FollowDesc f)
+static pge_TraverseResult GetEpsilon (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 595, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 596, (const char *) "m2/gm2-auto/pge.mod", 19);
     }
   else
     {
@@ -3805,11 +3806,11 @@ static TraverseResult GetEpsilon (FollowDesc f)
    AssignReachEnd - assigns the reachend value providing that, condition, is TRUE.
 */
 
-static void AssignReachEnd (unsigned int condition, FollowDesc f, TraverseResult value)
+static void AssignReachEnd (unsigned int condition, pge_FollowDesc f, pge_TraverseResult value)
 {
   if (condition)
     {
-      if ((f->reachend == unknown) && (value != unknown))
+      if ((f->reachend == pge_unknown) && (value != pge_unknown))
         {
           f->reachend = value;
           Finished = FALSE;
@@ -3822,11 +3823,11 @@ static void AssignReachEnd (unsigned int condition, FollowDesc f, TraverseResult
    GetReachEnd - returns the value of reachend
 */
 
-static TraverseResult GetReachEnd (FollowDesc f)
+static pge_TraverseResult GetReachEnd (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 629, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 630, (const char *) "m2/gm2-auto/pge.mod", 19);
     }
   else
     {
@@ -3841,11 +3842,11 @@ static TraverseResult GetReachEnd (FollowDesc f)
    AssignFollow - assigns the follow set and sets the calcfollow to TRUE.
 */
 
-static void AssignFollow (FollowDesc f, SetDesc s)
+static void AssignFollow (pge_FollowDesc f, pge_SetDesc s)
 {
   if (f->calcfollow)
     {
-      Debug_Halt ((const char *) "why are we reassigning this follow set?", 39, 645, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why are we reassigning this follow set?", 39, 646, (const char *) "m2/gm2-auto/pge.mod", 19);
     }
   f->follow = s;
   f->calcfollow = TRUE;
@@ -3856,11 +3857,11 @@ static void AssignFollow (FollowDesc f, SetDesc s)
    GetFollow - returns the follow set.
 */
 
-static SetDesc GetFollow (FollowDesc f)
+static pge_SetDesc GetFollow (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 661, (const char *) "m2/gm2-auto/pge.mod", 19);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, 662, (const char *) "m2/gm2-auto/pge.mod", 19);
     }
   else
     {
@@ -3870,7 +3871,7 @@ static SetDesc GetFollow (FollowDesc f)
         }
       else
         {
-          Debug_Halt ((const char *) "not calculated the follow set yet..", 35, 668, (const char *) "m2/gm2-auto/pge.mod", 19);
+          Debug_Halt ((const char *) "not calculated the follow set yet..", 35, 669, (const char *) "m2/gm2-auto/pge.mod", 19);
         }
     }
   ReturnException ("m2/gm2-auto/pge.mod", 1, 7);
@@ -3882,11 +3883,11 @@ static SetDesc GetFollow (FollowDesc f)
    NewProduction - creates a new production and returns the data structure.
 */
 
-static ProductionDesc NewProduction (void)
+static pge_ProductionDesc NewProduction (void)
 {
-  ProductionDesc p;
+  pge_ProductionDesc p;
 
-  Storage_ALLOCATE ((void **) &p, sizeof (_T2));
+  Storage_ALLOCATE ((void **) &p, sizeof (pge__T2));
   if (TailProduction != NULL)
     {
       TailProduction->next = p;
@@ -3913,11 +3914,11 @@ static ProductionDesc NewProduction (void)
    NewFactor -
 */
 
-static FactorDesc NewFactor (void)
+static pge_FactorDesc NewFactor (void)
 {
-  FactorDesc f;
+  pge_FactorDesc f;
 
-  Storage_ALLOCATE ((void **) &f, sizeof (_T5));
+  Storage_ALLOCATE ((void **) &f, sizeof (pge__T5));
   f->next = NULL;
   f->followinfo = NewFollow ();
   f->line = PushBackInput_GetCurrentLine ();
@@ -3931,11 +3932,11 @@ static FactorDesc NewFactor (void)
    NewTerm - returns a new term.
 */
 
-static TermDesc NewTerm (void)
+static pge_TermDesc NewTerm (void)
 {
-  TermDesc t;
+  pge_TermDesc t;
 
-  Storage_ALLOCATE ((void **) &t, sizeof (termdesc));
+  Storage_ALLOCATE ((void **) &t, sizeof (pge_termdesc));
   t->factor = NULL;
   t->followinfo = NewFollow ();
   t->next = NULL;
@@ -3950,11 +3951,11 @@ static TermDesc NewTerm (void)
    NewExpression - returns a new expression.
 */
 
-static ExpressionDesc NewExpression (void)
+static pge_ExpressionDesc NewExpression (void)
 {
-  ExpressionDesc e;
+  pge_ExpressionDesc e;
 
-  Storage_ALLOCATE ((void **) &e, sizeof (_T4));
+  Storage_ALLOCATE ((void **) &e, sizeof (pge__T4));
   e->term = NULL;
   e->followinfo = NewFollow ();
   e->line = PushBackInput_GetCurrentLine ();
@@ -3968,11 +3969,11 @@ static ExpressionDesc NewExpression (void)
    NewStatement - returns a new statement.
 */
 
-static StatementDesc NewStatement (void)
+static pge_StatementDesc NewStatement (void)
 {
-  StatementDesc s;
+  pge_StatementDesc s;
 
-  Storage_ALLOCATE ((void **) &s, sizeof (_T3));
+  Storage_ALLOCATE ((void **) &s, sizeof (pge__T3));
   s->ident = NULL;
   s->expr = NULL;
   s->followinfo = NewFollow ();
@@ -3987,11 +3988,11 @@ static StatementDesc NewStatement (void)
    NewSetDesc - creates a new set description and returns the data structure.
 */
 
-static SetDesc NewSetDesc (void)
+static pge_SetDesc NewSetDesc (void)
 {
-  SetDesc s;
+  pge_SetDesc s;
 
-  Storage_ALLOCATE ((void **) &s, sizeof (_T7));
+  Storage_ALLOCATE ((void **) &s, sizeof (pge__T7));
   s->next = NULL;
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -4003,11 +4004,11 @@ static SetDesc NewSetDesc (void)
    NewCodeDesc - creates a new code descriptor and initializes all fields to zero.
 */
 
-static CodeDesc NewCodeDesc (void)
+static pge_CodeDesc NewCodeDesc (void)
 {
-  CodeDesc c;
+  pge_CodeDesc c;
 
-  Storage_ALLOCATE ((void **) &c, sizeof (_T8));
+  Storage_ALLOCATE ((void **) &c, sizeof (pge__T8));
   c->code = NULL;
   c->indent = 0;
   c->line = PushBackInput_GetCurrentLine ();
@@ -4054,7 +4055,7 @@ static void CodeFragmentDeclaration (void)
    GetCodeFragment - collects the code fragment up until ^ %
 */
 
-static void GetCodeFragment (CodeHunk *h)
+static void GetCodeFragment (pge_CodeHunk *h)
 {
   unsigned int i;
   char ch;
@@ -4104,7 +4105,7 @@ static void GetCodeFragment (CodeHunk *h)
    WriteCodeHunkList - writes the CodeHunk list in the correct order.
 */
 
-static void WriteCodeHunkList (CodeHunk l)
+static void WriteCodeHunkList (pge_CodeHunk l)
 {
   if (l != NULL)
     {
@@ -4200,7 +4201,7 @@ static void WriteStringIndent (const char *a_, unsigned int _a_high, unsigned in
                              but it removes up to indent spaces if they exist.
 */
 
-static void WriteCodeHunkListIndent (CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext)
+static void WriteCodeHunkListIndent (pge_CodeHunk l, unsigned int indent, unsigned int *curpos, unsigned int left, unsigned int *seentext)
 {
   if (l != NULL)
     {
@@ -4215,13 +4216,13 @@ static void WriteCodeHunkListIndent (CodeHunk l, unsigned int indent, unsigned i
    Add - adds a character to a code hunk and creates another code hunk if necessary.
 */
 
-static CodeHunk Add (CodeHunk *p, char ch, unsigned int *i)
+static pge_CodeHunk Add (pge_CodeHunk *p, char ch, unsigned int *i)
 {
-  CodeHunk q;
+  pge_CodeHunk q;
 
   if (((*p) == NULL) || ((*i) > MaxCodeHunkLength))
     {
-      Storage_ALLOCATE ((void **) &q, sizeof (_T9));
+      Storage_ALLOCATE ((void **) &q, sizeof (pge__T9));
       q->next = (*p);
       q->codetext.array[0] = ch;
       (*i) = 1;
@@ -4242,9 +4243,9 @@ static CodeHunk Add (CodeHunk *p, char ch, unsigned int *i)
    ConsHunk - combine two possible code hunks.
 */
 
-static void ConsHunk (CodeHunk *p, CodeHunk q)
+static void ConsHunk (pge_CodeHunk *p, pge_CodeHunk q)
 {
-  CodeHunk r;
+  pge_CodeHunk r;
 
   if ((*p) != NULL)
     {
@@ -4289,7 +4290,7 @@ static NameKey_Name GetName (void)
                  a stop symbol.
 */
 
-static void SyntaxError (SetOfStop stop)
+static void SyntaxError (pge_SetOfStop stop)
 {
   DescribeError ();
   if (Debugging)
@@ -4314,7 +4315,7 @@ static void SyntaxError (SetOfStop stop)
    SyntaxCheck -
 */
 
-static void SyntaxCheck (SetOfStop stop)
+static void SyntaxCheck (pge_SetOfStop stop)
 {
   if (! ((((1 << (bnflex_GetCurrentTokenType ()-bnflex_identtok)) & (stop)) != 0)))
     {
@@ -4327,7 +4328,7 @@ static void SyntaxCheck (SetOfStop stop)
    Expect -
 */
 
-static void Expect (bnflex_TokenType t, SetOfStop stop)
+static void Expect (bnflex_TokenType t, pge_SetOfStop stop)
 {
   if ((bnflex_GetCurrentTokenType ()) == t)
     {
@@ -4345,11 +4346,11 @@ static void Expect (bnflex_TokenType t, SetOfStop stop)
    Ident - error checking varient of Ident
 */
 
-static void Ident (SetOfStop stop)
+static void Ident (pge_SetOfStop stop)
 {
   if ((bnflex_GetCurrentTokenType ()) == bnflex_identtok)
     {
-      Storage_ALLOCATE ((void **) &CurrentIdent, sizeof (_T1));
+      Storage_ALLOCATE ((void **) &CurrentIdent, sizeof (pge__T1));
       CurrentIdent->definition = NULL;
       CurrentIdent->name = GetName ();
       CurrentIdent->line = PushBackInput_GetCurrentLine ();
@@ -4361,9 +4362,9 @@ static void Ident (SetOfStop stop)
    Modula2Code - error checking varient of Modula2Code
 */
 
-static void Modula2Code (SetOfStop stop)
+static void Modula2Code (pge_SetOfStop stop)
 {
-  CodeHunk p;
+  pge_CodeHunk p;
   unsigned int i;
   unsigned int quote;
   unsigned int line;
@@ -4408,7 +4409,7 @@ static void Modula2Code (SetOfStop stop)
         }
     }
   p = Add (&p, ASCII_nul, &i);
-  CurrentFactor->type = m2;
+  CurrentFactor->type = pge_m2;
   CurrentFactor->code = NewCodeDesc ();
   CurrentFactor->code->code = p;
   CurrentFactor->code->indent = position;
@@ -4426,7 +4427,7 @@ static void Modula2Code (SetOfStop stop)
    StartModName    := % ModuleName := GetName() ;  ignore begintok  CodeFragmentPrologue % =:
 */
 
-static void StartModName (SetOfStop stop)
+static void StartModName (pge_SetOfStop stop)
 {
   ModuleName = GetName ();
   CodeFragmentPrologue ();
@@ -4437,7 +4438,7 @@ static void StartModName (SetOfStop stop)
    EndModName    :=
 */
 
-static void EndModName (SetOfStop stop)
+static void EndModName (pge_SetOfStop stop)
 {
   if (ModuleName != (GetName ()))
     {
@@ -4452,7 +4453,7 @@ static void EndModName (SetOfStop stop)
    DoDeclaration := % CodeFragmentDeclaration % =:
 */
 
-static void DoDeclaration (SetOfStop stop)
+static void DoDeclaration (pge_SetOfStop stop)
 {
   if (ModuleName != (GetName ()))
     {
@@ -4474,7 +4475,7 @@ static void DoDeclaration (SetOfStop stop)
    cannot reachend
 */
 
-static void CollectLiteral (SetOfStop stopset)
+static void CollectLiteral (pge_SetOfStop stopset)
 {
   LastLiteral = bnflex_GetCurrentToken ();  /*   */
   bnflex_AdvanceToken ();
@@ -4504,10 +4505,10 @@ static void CollectLiteral (SetOfStop stopset)
    cannot reachend
 */
 
-static void CollectTok (SetOfStop stopset)
+static void CollectTok (pge_SetOfStop stopset)
 {
   CurrentSetDesc = NewSetDesc ();  /*   */
-  CurrentSetDesc->type = tokel;
+  CurrentSetDesc->type = pge_tokel;
   CurrentSetDesc->string = bnflex_GetCurrentToken ();
   if (! (SymbolKey_ContainsSymKey (Values, bnflex_GetCurrentToken ())))
     {
@@ -4536,7 +4537,7 @@ static void CollectTok (SetOfStop stopset)
    cannot reachend
 */
 
-static void DefineToken (SetOfStop stopset)
+static void DefineToken (pge_SetOfStop stopset)
 {
   AddEntry (&Aliases, LastLiteral, bnflex_GetCurrentToken ());  /*   */
   AddEntry (&ReverseAliases, bnflex_GetCurrentToken (), LastLiteral);
@@ -4555,13 +4556,13 @@ static void DefineToken (SetOfStop stopset)
    cannot reachend
 */
 
-static void Rules (SetOfStop stopset)
+static void Rules (pge_SetOfStop stopset)
 {
-  Expect (bnflex_codetok, stopset|(SetOfStop) ((1 << (bnflex_rulestok-bnflex_identtok))));
-  Expect (bnflex_rulestok, stopset|(SetOfStop) ((1 << (bnflex_symfunctok-bnflex_identtok)) | (1 << (bnflex_tfunctok-bnflex_identtok)) | (1 << (bnflex_errortok-bnflex_identtok)) | (1 << (bnflex_tokentok-bnflex_identtok)) | (1 << (bnflex_specialtok-bnflex_identtok)) | (1 << (bnflex_BNFtok-bnflex_identtok))));
+  Expect (bnflex_codetok, stopset|(pge_SetOfStop) ((1 << (bnflex_rulestok-bnflex_identtok))));
+  Expect (bnflex_rulestok, stopset|(pge_SetOfStop) ((1 << (bnflex_symfunctok-bnflex_identtok)) | (1 << (bnflex_tfunctok-bnflex_identtok)) | (1 << (bnflex_errortok-bnflex_identtok)) | (1 << (bnflex_tokentok-bnflex_identtok)) | (1 << (bnflex_specialtok-bnflex_identtok)) | (1 << (bnflex_BNFtok-bnflex_identtok))));
   while ((((1 << (bnflex_GetCurrentTokenType ())) & ((unsigned int) ((1 << (bnflex_specialtok)) | (1 << (bnflex_tokentok)) | (1 << (bnflex_errortok)) | (1 << (bnflex_tfunctok)) | (1 << (bnflex_symfunctok))))) != 0))
     {
-      Defs (stopset|(SetOfStop) ((1 << (bnflex_BNFtok-bnflex_identtok)) | (1 << (bnflex_specialtok-bnflex_identtok)) | (1 << (bnflex_tokentok-bnflex_identtok)) | (1 << (bnflex_errortok-bnflex_identtok)) | (1 << (bnflex_tfunctok-bnflex_identtok)) | (1 << (bnflex_symfunctok-bnflex_identtok))));
+      Defs (stopset|(pge_SetOfStop) ((1 << (bnflex_BNFtok-bnflex_identtok)) | (1 << (bnflex_specialtok-bnflex_identtok)) | (1 << (bnflex_tokentok-bnflex_identtok)) | (1 << (bnflex_errortok-bnflex_identtok)) | (1 << (bnflex_tfunctok-bnflex_identtok)) | (1 << (bnflex_symfunctok-bnflex_identtok))));
     }
    /* while  */
   ExtBNF (stopset);
@@ -4598,31 +4599,31 @@ static void Rules (SetOfStop stopset)
    cannot reachend
 */
 
-static void Special (SetOfStop stopset)
+static void Special (pge_SetOfStop stopset)
 {
-  ProductionDesc p;
+  pge_ProductionDesc p;
 
-  Ident (stopset|(SetOfStop) ((1 << (bnflex_firsttok-bnflex_identtok))));
+  Ident (stopset|(pge_SetOfStop) ((1 << (bnflex_firsttok-bnflex_identtok))));
   p = NewProduction ();
   p->statement = NewStatement ();
   p->statement->followinfo->calcfollow = TRUE;
-  p->statement->followinfo->epsilon = false_;
-  p->statement->followinfo->reachend = false_;
+  p->statement->followinfo->epsilon = pge_false;
+  p->statement->followinfo->reachend = pge_false;
   p->statement->ident = CurrentIdent;
   p->statement->expr = NULL;
   p->firstsolved = TRUE;
   p->followinfo->calcfollow = TRUE;
-  p->followinfo->epsilon = false_;
-  p->followinfo->reachend = false_;
-  First (stopset|(SetOfStop) ((1 << (bnflex_followtok-bnflex_identtok))));
-  Follow (stopset|(SetOfStop) ((1 << (bnflex_epsilontok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
+  p->followinfo->epsilon = pge_false;
+  p->followinfo->reachend = pge_false;
+  First (stopset|(pge_SetOfStop) ((1 << (bnflex_followtok-bnflex_identtok))));
+  Follow (stopset|(pge_SetOfStop) ((1 << (bnflex_epsilontok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
   if ((bnflex_GetCurrentTokenType ()) == bnflex_epsilontok)
     {
-      Expect (bnflex_epsilontok, stopset|(SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
-      p->statement->followinfo->epsilon = true_;  /* these are not used - but they are displayed when debugging  */
-      p->statement->followinfo->reachend = true_;  /* these are not used - but they are displayed when debugging  */
-      p->followinfo->epsilon = true_;
-      p->followinfo->reachend = true_;
+      Expect (bnflex_epsilontok, stopset|(pge_SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      p->statement->followinfo->epsilon = pge_true;  /* these are not used - but they are displayed when debugging  */
+      p->statement->followinfo->reachend = pge_true;  /* these are not used - but they are displayed when debugging  */
+      p->followinfo->epsilon = pge_true;
+      p->followinfo->reachend = pge_true;
     }
   if ((((1 << (bnflex_GetCurrentTokenType ())) & ((unsigned int) ((1 << (bnflex_dquotetok)) | (1 << (bnflex_squotetok))))) != 0))
     {
@@ -4673,26 +4674,26 @@ static void Special (SetOfStop stopset)
    cannot reachend
 */
 
-static void Factor (SetOfStop stopset)
+static void Factor (pge_SetOfStop stopset)
 {
   if ((bnflex_GetCurrentTokenType ()) == bnflex_codetok)
     {
       Expect (bnflex_codetok, stopset);
-      Modula2Code (stopset|(SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
+      Modula2Code (stopset|(pge_SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
       Expect (bnflex_codetok, stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_identtok)
     {
       /* avoid dangling else.  */
       Ident (stopset);
-      CurrentFactor->type = id;
+      CurrentFactor->type = pge_id;
       CurrentFactor->ident = CurrentIdent;
     }
   else if ((((1 << (bnflex_GetCurrentTokenType ())) & ((unsigned int) ((1 << (bnflex_dquotetok)) | (1 << (bnflex_squotetok))))) != 0))
     {
       /* avoid dangling else.  */
       Literal (stopset);
-      CurrentFactor->type = lit;
+      CurrentFactor->type = pge_lit;
       CurrentFactor->string = LastLiteral;
       if ((SymbolKey_GetSymKey (Aliases, LastLiteral)) == NameKey_NulName)
         {
@@ -4702,31 +4703,31 @@ static void Factor (SetOfStop stopset)
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_lcparatok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_lcparatok, stopset|(SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
-      CurrentFactor->type = mult;
+      Expect (bnflex_lcparatok, stopset|(pge_SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      CurrentFactor->type = pge_mult;
       CurrentFactor->expr = NewExpression ();
       CurrentExpression = CurrentFactor->expr;
-      Expression (stopset|(SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok))));
+      Expression (stopset|(pge_SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok))));
       Expect (bnflex_rcparatok, stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_lsparatok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_lsparatok, stopset|(SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
-      CurrentFactor->type = opt;
+      Expect (bnflex_lsparatok, stopset|(pge_SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      CurrentFactor->type = pge_opt;
       CurrentFactor->expr = NewExpression ();
       CurrentExpression = CurrentFactor->expr;
-      Expression (stopset|(SetOfStop) ((1 << (bnflex_rsparatok-bnflex_identtok))));
+      Expression (stopset|(pge_SetOfStop) ((1 << (bnflex_rsparatok-bnflex_identtok))));
       Expect (bnflex_rsparatok, stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_lparatok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_lparatok, stopset|(SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
-      CurrentFactor->type = sub;
+      Expect (bnflex_lparatok, stopset|(pge_SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      CurrentFactor->type = pge_sub;
       CurrentFactor->expr = NewExpression ();
       CurrentExpression = CurrentFactor->expr;
-      Expression (stopset|(SetOfStop) ((1 << (bnflex_rparatok-bnflex_identtok))));
+      Expression (stopset|(pge_SetOfStop) ((1 << (bnflex_rparatok-bnflex_identtok))));
       Expect (bnflex_rparatok, stopset);
     }
   else
@@ -4776,14 +4777,14 @@ static void Factor (SetOfStop stopset)
    cannot reachend
 */
 
-static void Statement (SetOfStop stopset)
+static void Statement (pge_SetOfStop stopset)
 {
-  IdentDesc i;
-  ProductionDesc p;
-  ExpressionDesc e;
-  StatementDesc s;
+  pge_IdentDesc i;
+  pge_ProductionDesc p;
+  pge_ExpressionDesc e;
+  pge_StatementDesc s;
 
-  Ident (stopset|(SetOfStop) ((1 << (bnflex_lbecomestok-bnflex_identtok))));
+  Ident (stopset|(pge_SetOfStop) ((1 << (bnflex_lbecomestok-bnflex_identtok))));
   p = FindDefinition (CurrentIdent->name);
   if (p == NULL)
     {
@@ -4797,13 +4798,13 @@ static void Statement (SetOfStop stopset)
         }
     }
   i = CurrentIdent;
-  Expect (bnflex_lbecomestok, stopset|(SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+  Expect (bnflex_lbecomestok, stopset|(pge_SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
   e = NewExpression ();
   CurrentExpression = e;
   s = NewStatement ();
   s->ident = i;
   s->expr = e;
-  Expression (stopset|(SetOfStop) ((1 << (bnflex_rbecomestok-bnflex_identtok))));
+  Expression (stopset|(pge_SetOfStop) ((1 << (bnflex_rbecomestok-bnflex_identtok))));
   p->statement = s;
   Expect (bnflex_rbecomestok, stopset);
 }
@@ -4820,35 +4821,35 @@ static void Statement (SetOfStop stopset)
    cannot reachend
 */
 
-static void Defs (SetOfStop stopset)
+static void Defs (pge_SetOfStop stopset)
 {
   if ((bnflex_GetCurrentTokenType ()) == bnflex_specialtok)
     {
-      Expect (bnflex_specialtok, stopset|(SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
+      Expect (bnflex_specialtok, stopset|(pge_SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
       Special (stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_tokentok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_tokentok, stopset|(SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      Expect (bnflex_tokentok, stopset|(pge_SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
       Token (stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_errortok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_errortok, stopset|(SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      Expect (bnflex_errortok, stopset|(pge_SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
       ErrorProcedures (stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_tfunctok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_tfunctok, stopset|(SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      Expect (bnflex_tfunctok, stopset|(pge_SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
       TokenProcedure (stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_symfunctok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_symfunctok, stopset|(SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+      Expect (bnflex_symfunctok, stopset|(pge_SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
       SymProcedure (stopset);
     }
   else
@@ -4867,12 +4868,12 @@ static void Defs (SetOfStop stopset)
    cannot reachend
 */
 
-static void ExtBNF (SetOfStop stopset)
+static void ExtBNF (pge_SetOfStop stopset)
 {
-  Expect (bnflex_BNFtok, stopset|(SetOfStop) ((1 << (bnflex_FNBtok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok))));
+  Expect (bnflex_BNFtok, stopset|(pge_SetOfStop) ((1 << (bnflex_FNBtok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok))));
   while ((bnflex_GetCurrentTokenType ()) == bnflex_identtok)
     {
-      Production (stopset|(SetOfStop) ((1 << (bnflex_FNBtok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok))));
+      Production (stopset|(pge_SetOfStop) ((1 << (bnflex_FNBtok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok))));
     }
    /* while  */
   Expect (bnflex_FNBtok, stopset);
@@ -4887,11 +4888,11 @@ static void ExtBNF (SetOfStop stopset)
    cannot reachend
 */
 
-static void Main (SetOfStop stopset)
+static void Main (pge_SetOfStop stopset)
 {
-  Header (stopset|(SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
-  Decls (stopset|(SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
-  Footer (stopset|(SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
+  Header (stopset|(pge_SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
+  Decls (stopset|(pge_SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
+  Footer (stopset|(pge_SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok))));
   Rules (stopset);
 }
 
@@ -4904,10 +4905,10 @@ static void Main (SetOfStop stopset)
    cannot reachend
 */
 
-static void Header (SetOfStop stopset)
+static void Header (pge_SetOfStop stopset)
 {
-  Expect (bnflex_codetok, stopset|(SetOfStop) ((1 << (bnflex_moduletok-bnflex_identtok))));
-  Expect (bnflex_moduletok, stopset|(SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
+  Expect (bnflex_codetok, stopset|(pge_SetOfStop) ((1 << (bnflex_moduletok-bnflex_identtok))));
+  Expect (bnflex_moduletok, stopset|(pge_SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
   StartModName (stopset);
 }
 
@@ -4920,10 +4921,10 @@ static void Header (SetOfStop stopset)
    cannot reachend
 */
 
-static void Decls (SetOfStop stopset)
+static void Decls (pge_SetOfStop stopset)
 {
-  Expect (bnflex_codetok, stopset|(SetOfStop) ((1 << (bnflex_declarationtok-bnflex_identtok))));
-  Expect (bnflex_declarationtok, stopset|(SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
+  Expect (bnflex_codetok, stopset|(pge_SetOfStop) ((1 << (bnflex_declarationtok-bnflex_identtok))));
+  Expect (bnflex_declarationtok, stopset|(pge_SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
   DoDeclaration (stopset);
 }
 
@@ -4936,10 +4937,10 @@ static void Decls (SetOfStop stopset)
    cannot reachend
 */
 
-static void Footer (SetOfStop stopset)
+static void Footer (pge_SetOfStop stopset)
 {
-  Expect (bnflex_codetok, stopset|(SetOfStop) ((1 << (bnflex_moduletok-bnflex_identtok))));
-  Expect (bnflex_moduletok, stopset|(SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
+  Expect (bnflex_codetok, stopset|(pge_SetOfStop) ((1 << (bnflex_moduletok-bnflex_identtok))));
+  Expect (bnflex_moduletok, stopset|(pge_SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
   EndModName (stopset);
 }
 
@@ -4958,13 +4959,13 @@ static void Footer (SetOfStop stopset)
    cannot reachend
 */
 
-static void First (SetOfStop stopset)
+static void First (pge_SetOfStop stopset)
 {
-  Expect (bnflex_firsttok, stopset|(SetOfStop) ((1 << (bnflex_lcparatok-bnflex_identtok))));
-  Expect (bnflex_lcparatok, stopset|(SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+  Expect (bnflex_firsttok, stopset|(pge_SetOfStop) ((1 << (bnflex_lcparatok-bnflex_identtok))));
+  Expect (bnflex_lcparatok, stopset|(pge_SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
   while ((((1 << (bnflex_GetCurrentTokenType ())) & ((unsigned int) ((1 << (bnflex_lesstok)) | (1 << (bnflex_identtok)) | (1 << (bnflex_squotetok)) | (1 << (bnflex_dquotetok))))) != 0))
     {
-      LitOrTokenOrIdent (stopset|(SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
+      LitOrTokenOrIdent (stopset|(pge_SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
       CurrentSetDesc->next = TailProduction->first;
       TailProduction->first = CurrentSetDesc;
     }
@@ -4987,13 +4988,13 @@ static void First (SetOfStop stopset)
    cannot reachend
 */
 
-static void Follow (SetOfStop stopset)
+static void Follow (pge_SetOfStop stopset)
 {
-  Expect (bnflex_followtok, stopset|(SetOfStop) ((1 << (bnflex_lcparatok-bnflex_identtok))));
-  Expect (bnflex_lcparatok, stopset|(SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+  Expect (bnflex_followtok, stopset|(pge_SetOfStop) ((1 << (bnflex_lcparatok-bnflex_identtok))));
+  Expect (bnflex_lcparatok, stopset|(pge_SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
   while ((((1 << (bnflex_GetCurrentTokenType ())) & ((unsigned int) ((1 << (bnflex_lesstok)) | (1 << (bnflex_identtok)) | (1 << (bnflex_squotetok)) | (1 << (bnflex_dquotetok))))) != 0))
     {
-      LitOrTokenOrIdent (stopset|(SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
+      LitOrTokenOrIdent (stopset|(pge_SetOfStop) ((1 << (bnflex_rcparatok-bnflex_identtok)) | (1 << (bnflex_lesstok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
       CurrentSetDesc->next = TailProduction->followinfo->follow;
       TailProduction->followinfo->follow = CurrentSetDesc;
     }
@@ -5025,20 +5026,20 @@ static void Follow (SetOfStop stopset)
    cannot reachend
 */
 
-static void LitOrTokenOrIdent (SetOfStop stopset)
+static void LitOrTokenOrIdent (pge_SetOfStop stopset)
 {
   if ((((1 << (bnflex_GetCurrentTokenType ())) & ((unsigned int) ((1 << (bnflex_dquotetok)) | (1 << (bnflex_squotetok))))) != 0))
     {
       Literal (stopset);
       CurrentSetDesc = NewSetDesc ();
-      CurrentSetDesc->type = litel;
+      CurrentSetDesc->type = pge_litel;
       CurrentSetDesc->string = LastLiteral;
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_lesstok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_lesstok, stopset|(SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
-      CollectTok (stopset|(SetOfStop) ((1 << (bnflex_gretok-bnflex_identtok))));
+      Expect (bnflex_lesstok, stopset|(pge_SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
+      CollectTok (stopset|(pge_SetOfStop) ((1 << (bnflex_gretok-bnflex_identtok))));
       Expect (bnflex_gretok, stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_identtok)
@@ -5046,7 +5047,7 @@ static void LitOrTokenOrIdent (SetOfStop stopset)
       /* avoid dangling else.  */
       Ident (stopset);
       CurrentSetDesc = NewSetDesc ();
-      CurrentSetDesc->type = idel;
+      CurrentSetDesc->type = pge_idel;
       CurrentSetDesc->ident = CurrentIdent;
     }
   else
@@ -5066,19 +5067,19 @@ static void LitOrTokenOrIdent (SetOfStop stopset)
    cannot reachend
 */
 
-static void Literal (SetOfStop stopset)
+static void Literal (pge_SetOfStop stopset)
 {
   if ((bnflex_GetCurrentTokenType ()) == bnflex_dquotetok)
     {
-      Expect (bnflex_dquotetok, stopset|(SetOfStop) ((1 << (bnflex_literaltok-bnflex_identtok))));
-      CollectLiteral (stopset|(SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok))));
+      Expect (bnflex_dquotetok, stopset|(pge_SetOfStop) ((1 << (bnflex_literaltok-bnflex_identtok))));
+      CollectLiteral (stopset|(pge_SetOfStop) ((1 << (bnflex_dquotetok-bnflex_identtok))));
       Expect (bnflex_dquotetok, stopset);
     }
   else if ((bnflex_GetCurrentTokenType ()) == bnflex_squotetok)
     {
       /* avoid dangling else.  */
-      Expect (bnflex_squotetok, stopset|(SetOfStop) ((1 << (bnflex_literaltok-bnflex_identtok))));
-      CollectLiteral (stopset|(SetOfStop) ((1 << (bnflex_squotetok-bnflex_identtok))));
+      Expect (bnflex_squotetok, stopset|(pge_SetOfStop) ((1 << (bnflex_literaltok-bnflex_identtok))));
+      CollectLiteral (stopset|(pge_SetOfStop) ((1 << (bnflex_squotetok-bnflex_identtok))));
       Expect (bnflex_squotetok, stopset);
     }
   else
@@ -5097,9 +5098,9 @@ static void Literal (SetOfStop stopset)
    cannot reachend
 */
 
-static void Token (SetOfStop stopset)
+static void Token (pge_SetOfStop stopset)
 {
-  Literal (stopset|(SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
+  Literal (stopset|(pge_SetOfStop) ((1 << (bnflex_identtok-bnflex_identtok))));
   DefineToken (stopset);
 }
 
@@ -5116,9 +5117,9 @@ static void Token (SetOfStop stopset)
    cannot reachend
 */
 
-static void ErrorProcedures (SetOfStop stopset)
+static void ErrorProcedures (pge_SetOfStop stopset)
 {
-  Literal (stopset|(SetOfStop) ((1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
+  Literal (stopset|(pge_SetOfStop) ((1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
   ErrorProcArray = LastLiteral;
   Literal (stopset);
   ErrorProcString = LastLiteral;
@@ -5135,7 +5136,7 @@ static void ErrorProcedures (SetOfStop stopset)
    cannot reachend
 */
 
-static void TokenProcedure (SetOfStop stopset)
+static void TokenProcedure (pge_SetOfStop stopset)
 {
   Literal (stopset);
   TokenTypeProc = LastLiteral;
@@ -5152,7 +5153,7 @@ static void TokenProcedure (SetOfStop stopset)
    cannot reachend
 */
 
-static void SymProcedure (SetOfStop stopset)
+static void SymProcedure (pge_SetOfStop stopset)
 {
   Literal (stopset);
   SymIsProc = LastLiteral;
@@ -5167,7 +5168,7 @@ static void SymProcedure (SetOfStop stopset)
    cannot reachend
 */
 
-static void Production (SetOfStop stopset)
+static void Production (pge_SetOfStop stopset)
 {
   Statement (stopset);
 }
@@ -5196,23 +5197,23 @@ static void Production (SetOfStop stopset)
    cannot reachend
 */
 
-static void Expression (SetOfStop stopset)
+static void Expression (pge_SetOfStop stopset)
 {
-  TermDesc t1;
-  TermDesc t2;
-  ExpressionDesc e;
+  pge_TermDesc t1;
+  pge_TermDesc t2;
+  pge_ExpressionDesc e;
 
   e = CurrentExpression;
   t1 = NewTerm ();
   CurrentTerm = t1;
-  Term (stopset|(SetOfStop) ((1 << (bnflex_bartok-bnflex_identtok))));
+  Term (stopset|(pge_SetOfStop) ((1 << (bnflex_bartok-bnflex_identtok))));
   e->term = t1;
   while ((bnflex_GetCurrentTokenType ()) == bnflex_bartok)
     {
-      Expect (bnflex_bartok, stopset|(SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
+      Expect (bnflex_bartok, stopset|(pge_SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
       t2 = NewTerm ();
       CurrentTerm = t2;
-      Term (stopset|(SetOfStop) ((1 << (bnflex_bartok-bnflex_identtok))));
+      Term (stopset|(pge_SetOfStop) ((1 << (bnflex_bartok-bnflex_identtok))));
       t1->next = t2;
       t1 = t2;
     }
@@ -5243,22 +5244,22 @@ static void Expression (SetOfStop stopset)
    cannot reachend
 */
 
-static void Term (SetOfStop stopset)
+static void Term (pge_SetOfStop stopset)
 {
-  TermDesc t1;
-  FactorDesc f1;
-  FactorDesc f2;
+  pge_TermDesc t1;
+  pge_FactorDesc f1;
+  pge_FactorDesc f2;
 
   CurrentFactor = NewFactor ();
   f1 = CurrentFactor;
   t1 = CurrentTerm;
-  Factor (stopset|(SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
+  Factor (stopset|(pge_SetOfStop) ((1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok))));
   t1->factor = f1;
   f2 = NewFactor ();
   CurrentFactor = f2;
   while ((((1 << (bnflex_GetCurrentTokenType ())) & ((unsigned int) ((1 << (bnflex_codetok)) | (1 << (bnflex_identtok)) | (1 << (bnflex_lcparatok)) | (1 << (bnflex_lsparatok)) | (1 << (bnflex_lparatok)) | (1 << (bnflex_squotetok)) | (1 << (bnflex_dquotetok))))) != 0))
     {
-      Factor (stopset|(SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
+      Factor (stopset|(pge_SetOfStop) ((1 << (bnflex_codetok-bnflex_identtok)) | (1 << (bnflex_identtok-bnflex_identtok)) | (1 << (bnflex_lcparatok-bnflex_identtok)) | (1 << (bnflex_lsparatok-bnflex_identtok)) | (1 << (bnflex_lparatok-bnflex_identtok)) | (1 << (bnflex_squotetok-bnflex_identtok)) | (1 << (bnflex_dquotetok-bnflex_identtok))));
       f1->next = f2;
       f1 = f2;
       f2 = NewFactor ();
@@ -5272,7 +5273,7 @@ static void Term (SetOfStop stopset)
    GetDefinitionName - returns the name of the rule inside, p.
 */
 
-static NameKey_Name GetDefinitionName (ProductionDesc p)
+static NameKey_Name GetDefinitionName (pge_ProductionDesc p)
 {
   if (p != NULL)
     {
@@ -5291,10 +5292,10 @@ static NameKey_Name GetDefinitionName (ProductionDesc p)
    FindDefinition - searches and returns the rule which defines, n.
 */
 
-static ProductionDesc FindDefinition (NameKey_Name n)
+static pge_ProductionDesc FindDefinition (NameKey_Name n)
 {
-  ProductionDesc p;
-  ProductionDesc f;
+  pge_ProductionDesc p;
+  pge_ProductionDesc f;
 
   p = HeadProduction;
   f = NULL;
@@ -5327,7 +5328,7 @@ static ProductionDesc FindDefinition (NameKey_Name n)
                     set the definition accordingly.
 */
 
-static void BackPatchIdent (IdentDesc i)
+static void BackPatchIdent (pge_IdentDesc i)
 {
   if (i != NULL)
     {
@@ -5345,19 +5346,19 @@ static void BackPatchIdent (IdentDesc i)
    BackPatchFactor - runs through the factor looking for an ident
 */
 
-static void BackPatchFactor (FactorDesc f)
+static void BackPatchFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             BackPatchIdent (f->ident);
             break;
 
-          case sub:
-          case opt:
-          case mult:
+          case pge_sub:
+          case pge_opt:
+          case pge_mult:
             BackPatchExpression (f->expr);
             break;
 
@@ -5374,7 +5375,7 @@ static void BackPatchFactor (FactorDesc f)
    BackPatchTerm - runs through all terms to find idents.
 */
 
-static void BackPatchTerm (TermDesc t)
+static void BackPatchTerm (pge_TermDesc t)
 {
   while (t != NULL)
     {
@@ -5388,7 +5389,7 @@ static void BackPatchTerm (TermDesc t)
    BackPatchExpression - runs through the term to find any idents.
 */
 
-static void BackPatchExpression (ExpressionDesc e)
+static void BackPatchExpression (pge_ExpressionDesc e)
 {
   if (e != NULL)
     {
@@ -5401,13 +5402,13 @@ static void BackPatchExpression (ExpressionDesc e)
    BackPatchSet -
 */
 
-static void BackPatchSet (SetDesc s)
+static void BackPatchSet (pge_SetDesc s)
 {
   while (s != NULL)
     {
       switch (s->type)
         {
-          case idel:
+          case pge_idel:
             BackPatchIdent (s->ident);
             break;
 
@@ -5425,7 +5426,7 @@ static void BackPatchSet (SetDesc s)
                                  to the definition.
 */
 
-static void BackPatchIdentToDefinitions (ProductionDesc d)
+static void BackPatchIdentToDefinitions (pge_ProductionDesc d)
 {
   if ((d != NULL) && (d->statement != NULL))
     {
@@ -5438,7 +5439,7 @@ static void BackPatchIdentToDefinitions (ProductionDesc d)
    CalculateFirstAndFollow -
 */
 
-static void CalculateFirstAndFollow (ProductionDesc p)
+static void CalculateFirstAndFollow (pge_ProductionDesc p)
 {
   if (Debugging)
     {
@@ -5465,7 +5466,7 @@ static void CalculateFirstAndFollow (ProductionDesc p)
    ForeachRuleDo -
 */
 
-static void ForeachRuleDo (DoProcedure p)
+static void ForeachRuleDo (pge_DoProcedure p)
 {
   CurrentProduction = HeadProduction;
   while (CurrentProduction != NULL)
@@ -5480,7 +5481,7 @@ static void ForeachRuleDo (DoProcedure p)
    WhileNotCompleteDo -
 */
 
-static void WhileNotCompleteDo (DoProcedure p)
+static void WhileNotCompleteDo (pge_DoProcedure p)
 {
   do {
     Finished = TRUE;
@@ -5573,7 +5574,7 @@ static void KeyWord (NameKey_Name n)
    PrettyPara -
 */
 
-static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_, unsigned int _c2_high, ExpressionDesc e, unsigned int Left)
+static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_, unsigned int _c2_high, pge_ExpressionDesc e, unsigned int Left)
 {
   char c1[_c1_high+1];
   char c2[_c2_high+1];
@@ -5629,7 +5630,7 @@ static void WriteKeyTexinfo (NameKey_Name s)
    PrettyCommentFactor -
 */
 
-static void PrettyCommentFactor (FactorDesc f, unsigned int Left)
+static void PrettyCommentFactor (pge_FactorDesc f, unsigned int Left)
 {
   unsigned int curpos;
   unsigned int seentext;
@@ -5639,13 +5640,13 @@ static void PrettyCommentFactor (FactorDesc f, unsigned int Left)
       CheckNewLine (Left);
       switch (f->type)
         {
-          case id:
+          case pge_id:
             Output_WriteKey (f->ident->name);
             Output_WriteString ((const char *) " ", 1);
             Indent += (NameKey_LengthKey (f->ident->name))+1;
             break;
 
-          case lit:
+          case pge_lit:
             if ((NameKey_MakeKey ((const char *) "'", 1)) == f->string)
               {
                 Output_Write ('"');
@@ -5661,15 +5662,15 @@ static void PrettyCommentFactor (FactorDesc f, unsigned int Left)
             Indent += (NameKey_LengthKey (f->string))+3;
             break;
 
-          case sub:
+          case pge_sub:
             PrettyPara ((const char *) "( ", 2, (const char *) " ) ", 3, f->expr, Left);
             break;
 
-          case opt:
+          case pge_opt:
             PrettyPara ((const char *) "[ ", 2, (const char *) " ] ", 3, f->expr, Left);
             break;
 
-          case mult:
+          case pge_mult:
             if (Texinfo)
               {
                 PrettyPara ((const char *) "@{ ", 3, (const char *) " @} ", 4, f->expr, Left);
@@ -5680,7 +5681,7 @@ static void PrettyCommentFactor (FactorDesc f, unsigned int Left)
               }
             break;
 
-          case m2:
+          case pge_m2:
             if (EmitCode)
               {
                 NewLine (Left);
@@ -5707,7 +5708,7 @@ static void PrettyCommentFactor (FactorDesc f, unsigned int Left)
    PeepTerm - returns the length of characters in term.
 */
 
-static unsigned int PeepTerm (TermDesc t)
+static unsigned int PeepTerm (pge_TermDesc t)
 {
   unsigned int l;
 
@@ -5731,7 +5732,7 @@ static unsigned int PeepTerm (TermDesc t)
    PeepExpression - returns the length of the expression.
 */
 
-static unsigned int PeepExpression (ExpressionDesc e)
+static unsigned int PeepExpression (pge_ExpressionDesc e)
 {
   if (e == NULL)
     {
@@ -5750,7 +5751,7 @@ static unsigned int PeepExpression (ExpressionDesc e)
    PeepFactor - returns the length of character in the factor
 */
 
-static unsigned int PeepFactor (FactorDesc f)
+static unsigned int PeepFactor (pge_FactorDesc f)
 {
   unsigned int l;
 
@@ -5759,21 +5760,21 @@ static unsigned int PeepFactor (FactorDesc f)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             l += (NameKey_LengthKey (f->ident->name))+1;
             break;
 
-          case lit:
+          case pge_lit:
             l += (NameKey_LengthKey (f->string))+3;
             break;
 
-          case opt:
-          case mult:
-          case sub:
+          case pge_opt:
+          case pge_mult:
+          case pge_sub:
             l += PeepExpression (f->expr);
             break;
 
-          case m2:
+          case pge_m2:
             break;
 
 
@@ -5792,7 +5793,7 @@ static unsigned int PeepFactor (FactorDesc f)
    PrettyCommentTerm -
 */
 
-static void PrettyCommentTerm (TermDesc t, unsigned int Left)
+static void PrettyCommentTerm (pge_TermDesc t, unsigned int Left)
 {
   while (t != NULL)
     {
@@ -5817,7 +5818,7 @@ static void PrettyCommentTerm (TermDesc t, unsigned int Left)
    PrettyCommentExpression -
 */
 
-static void PrettyCommentExpression (ExpressionDesc e, unsigned int Left)
+static void PrettyCommentExpression (pge_ExpressionDesc e, unsigned int Left)
 {
   if (e != NULL)
     {
@@ -5831,7 +5832,7 @@ static void PrettyCommentExpression (ExpressionDesc e, unsigned int Left)
    PrettyCommentStatement -
 */
 
-static void PrettyCommentStatement (StatementDesc s, unsigned int Left)
+static void PrettyCommentStatement (pge_StatementDesc s, unsigned int Left)
 {
   if (s != NULL)
     {
@@ -5845,9 +5846,9 @@ static void PrettyCommentStatement (StatementDesc s, unsigned int Left)
    PrettyCommentProduction - generates the comment for rule, p.
 */
 
-static void PrettyCommentProduction (ProductionDesc p)
+static void PrettyCommentProduction (pge_ProductionDesc p)
 {
-  SetDesc to;
+  pge_SetDesc to;
 
   if (p != NULL)
     {
@@ -5870,15 +5871,15 @@ static void PrettyCommentProduction (ProductionDesc p)
           NewLine (3);
           switch (GetReachEnd (p->followinfo))
             {
-              case true_:
+              case pge_true:
                 Output_WriteString ((const char *) "reachend", 8);
                 break;
 
-              case false_:
+              case pge_false:
                 Output_WriteString ((const char *) "cannot reachend", 15);
                 break;
 
-              case unknown:
+              case pge_unknown:
                 Output_WriteString ((const char *) "unknown...", 10);
                 break;
 
@@ -5898,9 +5899,9 @@ static void PrettyCommentProduction (ProductionDesc p)
    PrettyPrintProduction - pretty prints the ebnf rule, p.
 */
 
-static void PrettyPrintProduction (ProductionDesc p)
+static void PrettyPrintProduction (pge_ProductionDesc p)
 {
-  SetDesc to;
+  pge_SetDesc to;
 
   if (p != NULL)
     {
@@ -5909,6 +5910,12 @@ static void PrettyPrintProduction (ProductionDesc p)
       if (Texinfo)
         {
           Output_WriteString ((const char *) "@example", 8);
+          NewLine (0);
+        }
+      else if (Sphinx)
+        {
+          /* avoid dangling else.  */
+          Output_WriteString ((const char *) ".. code-block:: ebnf", 20);
           NewLine (0);
         }
       Output_WriteKey (GetDefinitionName (p));
@@ -5930,6 +5937,16 @@ static void PrettyPrintProduction (ProductionDesc p)
           Output_WriteString ((const char *) " (ebnf)", 7);
           NewLine (0);
           Output_WriteString ((const char *) "@end example", 12);
+          NewLine (0);
+        }
+      else if (Sphinx)
+        {
+          /* avoid dangling else.  */
+          Output_WriteString ((const char *) ".. index::", 10);
+          NewLine (0);
+          Output_WriteString ((const char *) "  pair: ", 8);
+          Output_WriteKey (GetDefinitionName (p));
+          Output_WriteString ((const char *) "; (ebnf)", 8);
           NewLine (0);
         }
       NewLine (0);
@@ -5965,7 +5982,7 @@ static void EmitFileLineTag (unsigned int line)
    EmitRule - generates a comment and code for rule, p.
 */
 
-static void EmitRule (ProductionDesc p)
+static void EmitRule (pge_ProductionDesc p)
 {
   if (PrettyPrint)
     {
@@ -5990,26 +6007,26 @@ static void EmitRule (ProductionDesc p)
    CodeCondition -
 */
 
-static void CodeCondition (m2condition m)
+static void CodeCondition (pge_m2condition m)
 {
   switch (m)
     {
-      case m2if:
-      case m2none:
+      case pge_m2if:
+      case pge_m2none:
         IndentString ((const char *) "IF ", 3);
         break;
 
-      case m2elsif:
+      case pge_m2elsif:
         IndentString ((const char *) "ELSIF ", 6);
         break;
 
-      case m2while:
+      case pge_m2while:
         IndentString ((const char *) "WHILE ", 6);
         break;
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2672, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2680, (const char *) "m2/gm2-auto/pge.mod", 19);
         break;
     }
 }
@@ -6019,13 +6036,13 @@ static void CodeCondition (m2condition m)
    CodeThenDo - codes a "THEN" or "DO" depending upon, m.
 */
 
-static void CodeThenDo (m2condition m)
+static void CodeThenDo (pge_m2condition m)
 {
   switch (m)
     {
-      case m2if:
-      case m2none:
-      case m2elsif:
+      case pge_m2if:
+      case pge_m2none:
+      case pge_m2elsif:
         if (LastLineNo == 0)
           {
             Output_WriteLn ();
@@ -6034,14 +6051,14 @@ static void CodeThenDo (m2condition m)
         Output_WriteLn ();
         break;
 
-      case m2while:
+      case pge_m2while:
         Output_WriteString ((const char *) " DO", 3);
         Output_WriteLn ();
         break;
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2697, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2705, (const char *) "m2/gm2-auto/pge.mod", 19);
         break;
     }
   OnLineStart = TRUE;
@@ -6052,7 +6069,7 @@ static void CodeThenDo (m2condition m)
    CodeElseEnd - builds an ELSE END statement using string, end.
 */
 
-static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, FactorDesc f, unsigned int inopt)
+static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int consumed, pge_FactorDesc f, unsigned int inopt)
 {
   char end[_end_high+1];
 
@@ -6074,14 +6091,14 @@ static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int 
           Output_Write ('(');
           switch (f->type)
             {
-              case id:
+              case pge_id:
                 Output_Write ('\'');
                 Output_WriteKey (f->ident->name);
                 Output_WriteString ((const char *) " - expected", 11);
                 Output_WriteString ((const char *) "') ;", 4);
                 break;
 
-              case lit:
+              case pge_lit:
                 if ((NameKey_MakeKey ((const char *) "'", 1)) == f->string)
                   {
                     Output_Write ('"');
@@ -6128,41 +6145,41 @@ static void CodeElseEnd (const char *end_, unsigned int _end_high, unsigned int 
    CodeEnd - codes a "END" depending upon, m.
 */
 
-static void CodeEnd (m2condition m, TermDesc t, unsigned int consumed, FactorDesc f, unsigned int inopt)
+static void CodeEnd (pge_m2condition m, pge_TermDesc t, unsigned int consumed, pge_FactorDesc f, unsigned int inopt)
 {
   Indent -= 3;
   Output_WriteLn ();
   OnLineStart = TRUE;
   switch (m)
     {
-      case m2none:
+      case pge_m2none:
         if (t == NULL)
           {
             CodeElseEnd ((const char *) "END ;", 5, consumed, f, inopt);
           }
         break;
 
-      case m2if:
+      case pge_m2if:
         if (t == NULL)
           {
             CodeElseEnd ((const char *) "END ;  (* if *)", 15, consumed, f, inopt);
           }
         break;
 
-      case m2elsif:
+      case pge_m2elsif:
         if (t == NULL)
           {
             CodeElseEnd ((const char *) "END ;  (* elsif *)", 18, consumed, f, inopt);
           }
         break;
 
-      case m2while:
+      case pge_m2while:
         IndentString ((const char *) "END ;  (* while *)", 18);
         break;
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2780, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, 2788, (const char *) "m2/gm2-auto/pge.mod", 19);
         break;
     }
   OnLineStart = FALSE;
@@ -6173,10 +6190,10 @@ static void CodeEnd (m2condition m, TermDesc t, unsigned int consumed, FactorDes
    EmitNonVarCode - writes out, code, providing it is not a variable declaration.
 */
 
-static void EmitNonVarCode (CodeDesc code, unsigned int curpos, unsigned int left)
+static void EmitNonVarCode (pge_CodeDesc code, unsigned int curpos, unsigned int left)
 {
   unsigned int i;
-  CodeHunk t;
+  pge_CodeHunk t;
   unsigned int seentext;
 
   t = code->code;
@@ -6198,9 +6215,9 @@ static void EmitNonVarCode (CodeDesc code, unsigned int curpos, unsigned int lef
    ChainOn -
 */
 
-static FactorDesc ChainOn (FactorDesc codeStack, FactorDesc f)
+static pge_FactorDesc ChainOn (pge_FactorDesc codeStack, pge_FactorDesc f)
 {
-  FactorDesc s;
+  pge_FactorDesc s;
 
   f->pushed = NULL;
   if (codeStack == NULL)
@@ -6226,7 +6243,7 @@ static FactorDesc ChainOn (FactorDesc codeStack, FactorDesc f)
    FlushCode -
 */
 
-static void FlushCode (FactorDesc *codeStack)
+static void FlushCode (pge_FactorDesc *codeStack)
 {
   if ((*codeStack) != NULL)
     {
@@ -6257,7 +6274,7 @@ static void FlushCode (FactorDesc *codeStack)
    CodeFactor -
 */
 
-static void CodeFactor (FactorDesc f, TermDesc t, m2condition l, m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack)
+static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge_m2condition n, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack)
 {
   if (f == NULL)
     {
@@ -6274,18 +6291,18 @@ static void CodeFactor (FactorDesc f, TermDesc t, m2condition l, m2condition n, 
       EmitFileLineTag (f->line);
       switch (f->type)
         {
-          case id:
+          case pge_id:
             FlushCode (&codeStack);
             CodeCondition (n);
             Output_WriteKey (f->ident->name);
             Output_WriteString ((const char *) "()", 2);
             CodeThenDo (n);
             Indent += 3;
-            CodeFactor (f->next, NULL, n, m2none, inopt, inwhile, TRUE, NULL);
+            CodeFactor (f->next, NULL, n, pge_m2none, inopt, inwhile, TRUE, NULL);
             CodeEnd (n, t, consumed, f, inopt);
             break;
 
-          case lit:
+          case pge_lit:
             FlushCode (&codeStack);
             CodeCondition (n);
             Output_WriteKey (SymIsProc);
@@ -6294,42 +6311,42 @@ static void CodeFactor (FactorDesc f, TermDesc t, m2condition l, m2condition n, 
             Output_Write (')');
             CodeThenDo (n);
             Indent += 3;
-            CodeFactor (f->next, NULL, n, m2none, inopt, inwhile, TRUE, NULL);
+            CodeFactor (f->next, NULL, n, pge_m2none, inopt, inwhile, TRUE, NULL);
             CodeEnd (n, t, consumed, f, inopt);
             break;
 
-          case sub:
+          case pge_sub:
             FlushCode (&codeStack);
-            CodeExpression (f->expr, m2none, inopt, inwhile, consumed, NULL);
+            CodeExpression (f->expr, pge_m2none, inopt, inwhile, consumed, NULL);
             if (f->next != NULL)
               {
                 /* 
                     *  the test above makes sure that we don't emit a RETURN( TRUE )
                     *  after a subexpression. Remember sub expressions are not conditional
   */
-                CodeFactor (f->next, t, n, m2none, inopt, inwhile, TRUE, NULL);
+                CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, TRUE, NULL);
               }
             break;
 
-          case opt:
+          case pge_opt:
             FlushCode (&codeStack);
-            CodeExpression (f->expr, m2if, TRUE, inwhile, FALSE, NULL);
-            CodeFactor (f->next, t, n, m2none, inopt, inwhile, consumed, NULL);
+            CodeExpression (f->expr, pge_m2if, TRUE, inwhile, FALSE, NULL);
+            CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, consumed, NULL);
             break;
 
-          case mult:
+          case pge_mult:
             FlushCode (&codeStack);
-            CodeExpression (f->expr, m2while, FALSE, TRUE, consumed, NULL);
-            CodeFactor (f->next, t, n, m2none, inopt, inwhile, consumed, NULL);
+            CodeExpression (f->expr, pge_m2while, FALSE, TRUE, consumed, NULL);
+            CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, consumed, NULL);
             break;
 
-          case m2:
+          case pge_m2:
             codeStack = ChainOn (codeStack, f);
             if (consumed || (f->next == NULL))
               {
                 FlushCode (&codeStack);
               }
-            CodeFactor (f->next, t, n, m2none, inopt, inwhile, consumed, codeStack);
+            CodeFactor (f->next, t, n, pge_m2none, inopt, inwhile, consumed, codeStack);
             break;
 
 
@@ -6344,22 +6361,22 @@ static void CodeFactor (FactorDesc f, TermDesc t, m2condition l, m2condition n, 
    CodeTerm -
 */
 
-static void CodeTerm (TermDesc t, m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack)
+static void CodeTerm (pge_TermDesc t, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack)
 {
-  m2condition l;
+  pge_m2condition l;
 
   l = m;
   while (t != NULL)
     {
       EmitFileLineTag (t->line);
-      if ((t->factor->type == m2) && (m == m2elsif))
+      if ((t->factor->type == pge_m2) && (m == pge_m2elsif))
         {
-          m = m2if;
+          m = pge_m2if;
           IndentString ((const char *) "ELSE", 4);
           Output_WriteLn ();
           OnLineStart = TRUE;
           Indent += 3;
-          CodeFactor (t->factor, t->next, m2none, m2none, inopt, inwhile, consumed, codeStack);
+          CodeFactor (t->factor, t->next, pge_m2none, pge_m2none, inopt, inwhile, consumed, codeStack);
           Indent -= 3;
           IndentString ((const char *) "END ;", 5);
           Output_WriteLn ();
@@ -6367,12 +6384,12 @@ static void CodeTerm (TermDesc t, m2condition m, unsigned int inopt, unsigned in
         }
       else
         {
-          CodeFactor (t->factor, t->next, m2none, m, inopt, inwhile, consumed, codeStack);
+          CodeFactor (t->factor, t->next, pge_m2none, m, inopt, inwhile, consumed, codeStack);
         }
       l = m;
       if (t->next != NULL)
         {
-          m = m2elsif;
+          m = pge_m2elsif;
         }
       t = t->next;
     }
@@ -6383,7 +6400,7 @@ static void CodeTerm (TermDesc t, m2condition m, unsigned int inopt, unsigned in
    CodeExpression -
 */
 
-static void CodeExpression (ExpressionDesc e, m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, FactorDesc codeStack)
+static void CodeExpression (pge_ExpressionDesc e, pge_m2condition m, unsigned int inopt, unsigned int inwhile, unsigned int consumed, pge_FactorDesc codeStack)
 {
   if (e != NULL)
     {
@@ -6397,7 +6414,7 @@ static void CodeExpression (ExpressionDesc e, m2condition m, unsigned int inopt,
    CodeStatement -
 */
 
-static void CodeStatement (StatementDesc s, m2condition m)
+static void CodeStatement (pge_StatementDesc s, pge_m2condition m)
 {
   if (s != NULL)
     {
@@ -6411,7 +6428,7 @@ static void CodeStatement (StatementDesc s, m2condition m)
    CodeProduction - only encode grammer rules which are not special.
 */
 
-static void CodeProduction (ProductionDesc p)
+static void CodeProduction (pge_ProductionDesc p)
 {
   if ((p != NULL) && (! p->firstsolved || ((p->statement != NULL) && (p->statement->expr != NULL))))
     {
@@ -6431,7 +6448,7 @@ static void CodeProduction (ProductionDesc p)
       OnLineStart = FALSE;
       EmitFileLineTag (p->line);
       Indent = 3;
-      CodeStatement (p->statement, m2none);
+      CodeStatement (p->statement, pge_m2none);
       Output_WriteLn ();
       Indent = 0;
       IndentString ((const char *) "END ", 4);
@@ -6448,29 +6465,29 @@ static void CodeProduction (ProductionDesc p)
    RecoverCondition -
 */
 
-static void RecoverCondition (m2condition m)
+static void RecoverCondition (pge_m2condition m)
 {
   switch (m)
     {
-      case m2if:
+      case pge_m2if:
         IndentString ((const char *) "IF ", 3);
         break;
 
-      case m2none:
+      case pge_m2none:
         IndentString ((const char *) "IF ", 3);
         break;
 
-      case m2elsif:
+      case pge_m2elsif:
         IndentString ((const char *) "ELSIF ", 6);
         break;
 
-      case m2while:
+      case pge_m2while:
         IndentString ((const char *) "WHILE ", 6);
         break;
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 3037, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, 3045, (const char *) "m2/gm2-auto/pge.mod", 19);
         break;
     }
 }
@@ -6480,29 +6497,29 @@ static void RecoverCondition (m2condition m)
    ConditionIndent - returns the number of spaces indentation created via, m.
 */
 
-static unsigned int ConditionIndent (m2condition m)
+static unsigned int ConditionIndent (pge_m2condition m)
 {
   switch (m)
     {
-      case m2if:
+      case pge_m2if:
         return 3;
         break;
 
-      case m2none:
+      case pge_m2none:
         return 3;
         break;
 
-      case m2elsif:
+      case pge_m2elsif:
         return 6;
         break;
 
-      case m2while:
+      case pge_m2while:
         return 6;
         break;
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, 3056, (const char *) "m2/gm2-auto/pge.mod", 19);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, 3064, (const char *) "m2/gm2-auto/pge.mod", 19);
         break;
     }
   ReturnException ("m2/gm2-auto/pge.mod", 1, 7);
@@ -6524,7 +6541,7 @@ static void WriteGetTokenType (void)
    NumberOfElements - returns the number of elements in set, to, which lie between low..high
 */
 
-static unsigned int NumberOfElements (SetDesc to, unsigned int low, unsigned int high)
+static unsigned int NumberOfElements (pge_SetDesc to, unsigned int low, unsigned int high)
 {
   unsigned int n;
 
@@ -6533,21 +6550,21 @@ static unsigned int NumberOfElements (SetDesc to, unsigned int low, unsigned int
     {
       switch (to->type)
         {
-          case tokel:
+          case pge_tokel:
             if ((high == 0) || (IsBetween (to->string, low, high)))
               {
                 n += 1;
               }
             break;
 
-          case litel:
+          case pge_litel:
             if ((high == 0) || (IsBetween (SymbolKey_GetSymKey (Aliases, to->string), low, high)))
               {
                 n += 1;
               }
             break;
 
-          case idel:
+          case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
             WasNoError = FALSE;
             break;
@@ -6580,7 +6597,7 @@ static void WriteElement (unsigned int e)
    EmitIsInSet - writes out the equivalent of GetTokenType() IN { toset }
 */
 
-static void EmitIsInSet (SetDesc to, NameKey_Name low, NameKey_Name high)
+static void EmitIsInSet (pge_SetDesc to, NameKey_Name low, NameKey_Name high)
 {
   if ((NumberOfElements (to, low, high)) == 1)
     {
@@ -6607,7 +6624,7 @@ static void EmitIsInSet (SetDesc to, NameKey_Name low, NameKey_Name high)
    EmitIsInSubSet - writes out a test to see whether GetTokenype() is in { subset }
 */
 
-static void EmitIsInSubSet (SetDesc to, unsigned int low, unsigned int high)
+static void EmitIsInSubSet (pge_SetDesc to, unsigned int low, unsigned int high)
 {
   if ((NumberOfElements (to, low, high)) == 1)
     {
@@ -6661,7 +6678,7 @@ static void EmitIsInSubSet (SetDesc to, unsigned int low, unsigned int high)
    EmitIsInFirst -
 */
 
-static void EmitIsInFirst (SetDesc to, m2condition m)
+static void EmitIsInFirst (pge_SetDesc to, pge_m2condition m)
 {
   unsigned int i;
   unsigned int first;
@@ -6705,7 +6722,7 @@ static void EmitIsInFirst (SetDesc to, m2condition m)
     }
 }
 
-static void FlushRecoverCode (FactorDesc *codeStack)
+static void FlushRecoverCode (pge_FactorDesc *codeStack)
 {
   /* 
    FlushCode -
@@ -6725,9 +6742,9 @@ static void FlushRecoverCode (FactorDesc *codeStack)
    RecoverFactor -
 */
 
-static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
+static void RecoverFactor (pge_FactorDesc f, pge_m2condition m, pge_FactorDesc codeStack)
 {
-  SetDesc to;
+  pge_SetDesc to;
 
   if (f == NULL)
     {}  /* empty.  */
@@ -6736,10 +6753,10 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
       EmitFileLineTag (f->line);
       switch (f->type)
         {
-          case id:
+          case pge_id:
             to = NULL;
             CalcFirstFactor (f, NULL, &to);
-            if ((to != NULL) && (m != m2none))
+            if ((to != NULL) && (m != pge_m2none))
               {
                 RecoverCondition (m);
                 EmitIsInFirst (to, m);
@@ -6753,15 +6770,15 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
             EmitStopParametersAndFollow (f, m);
             Output_WriteString ((const char *) ") ;", 3);
             Output_WriteLn ();
-            RecoverFactor (f->next, m2none, codeStack);
-            if ((to != NULL) && (m != m2none))
+            RecoverFactor (f->next, pge_m2none, codeStack);
+            if ((to != NULL) && (m != pge_m2none))
               {
                 Indent -= 3;
               }
             break;
 
-          case lit:
-            if (m == m2none)
+          case pge_lit:
+            if (m == pge_m2none)
               {
                 FlushRecoverCode (&codeStack);
                 IndentString ((const char *) "Expect(", 7);
@@ -6770,7 +6787,7 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
                 EmitStopParametersAndFollow (f, m);
                 Output_WriteString ((const char *) ") ;", 3);
                 Output_WriteLn ();
-                RecoverFactor (f->next, m2none, codeStack);
+                RecoverFactor (f->next, pge_m2none, codeStack);
               }
             else
               {
@@ -6787,18 +6804,18 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
                 Output_WriteString ((const char *) ") ;", 3);
                 Output_WriteLn ();
                 FlushRecoverCode (&codeStack);
-                RecoverFactor (f->next, m2none, codeStack);
+                RecoverFactor (f->next, pge_m2none, codeStack);
                 Indent -= 3;
               }
             break;
 
-          case sub:
+          case pge_sub:
             FlushRecoverCode (&codeStack);
-            RecoverExpression (f->expr, m2none, m);
-            RecoverFactor (f->next, m2none, codeStack);
+            RecoverExpression (f->expr, pge_m2none, m);
+            RecoverFactor (f->next, pge_m2none, codeStack);
             break;
 
-          case opt:
+          case pge_opt:
             FlushRecoverCode (&codeStack);
             if (OptExpSeen (f))
               {
@@ -6811,7 +6828,7 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
                 IndentString ((const char *) "(* seen optional [ | ] expression *)", 36);
                 Output_WriteLn ();
                 stop ();
-                RecoverExpression (f->expr, m2none, m2if);
+                RecoverExpression (f->expr, pge_m2none, pge_m2if);
                 IndentString ((const char *) "(* end of optional [ | ] expression *)", 38);
                 Output_WriteLn ();
                 Indent -= 3;
@@ -6820,14 +6837,14 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
               }
             else
               {
-                RecoverExpression (f->expr, m2if, m);
+                RecoverExpression (f->expr, pge_m2if, m);
               }
-            RecoverFactor (f->next, m2none, codeStack);
+            RecoverFactor (f->next, pge_m2none, codeStack);
             break;
 
-          case mult:
+          case pge_mult:
             FlushRecoverCode (&codeStack);
-            if (((OptExpSeen (f)) || (m == m2if)) || (m == m2elsif))
+            if (((OptExpSeen (f)) || (m == pge_m2if)) || (m == pge_m2elsif))
               {
                 /* avoid dangling else.  */
                 to = NULL;
@@ -6838,18 +6855,18 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
                 Indent += 3;
                 IndentString ((const char *) "(* seen optional { | } expression *)", 36);
                 Output_WriteLn ();
-                RecoverCondition (m2while);
-                EmitIsInFirst (to, m2while);
-                CodeThenDo (m2while);
+                RecoverCondition (pge_m2while);
+                EmitIsInFirst (to, pge_m2while);
+                CodeThenDo (pge_m2while);
                 Indent += 3;
-                RecoverExpression (f->expr, m2none, m2while);
+                RecoverExpression (f->expr, pge_m2none, pge_m2while);
                 IndentString ((const char *) "(* end of optional { | } expression *)", 38);
                 Output_WriteLn ();
                 Indent -= 3;
                 IndentString ((const char *) "END ;", 5);
                 Output_WriteLn ();
                 Indent -= 3;
-                if (m == m2none)
+                if (m == pge_m2none)
                   {
                     IndentString ((const char *) "END ;", 5);
                     Output_WriteLn ();
@@ -6858,12 +6875,12 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
               }
             else
               {
-                RecoverExpression (f->expr, m2while, m);
+                RecoverExpression (f->expr, pge_m2while, m);
               }
-            RecoverFactor (f->next, m2none, codeStack);
+            RecoverFactor (f->next, pge_m2none, codeStack);
             break;
 
-          case m2:
+          case pge_m2:
             codeStack = ChainOn (codeStack, f);
             if (f->next == NULL)
               {
@@ -6890,7 +6907,7 @@ static void RecoverFactor (FactorDesc f, m2condition m, FactorDesc codeStack)
                 and FALSE in the first.
 */
 
-static unsigned int OptExpSeen (FactorDesc f)
+static unsigned int OptExpSeen (pge_FactorDesc f)
 {
   if (f == NULL)
     {
@@ -6900,21 +6917,21 @@ static unsigned int OptExpSeen (FactorDesc f)
     {
       switch (f->type)
         {
-          case id:
-          case lit:
+          case pge_id:
+          case pge_lit:
             return FALSE;
             break;
 
-          case sub:
+          case pge_sub:
             return FALSE;  /* is this correct?  */
             break;
 
-          case opt:
-          case mult:
+          case pge_opt:
+          case pge_mult:
             return ((f->expr != NULL) && (f->expr->term != NULL)) && (f->expr->term->next != NULL);  /* is this correct?  */
             break;
 
-          case m2:
+          case pge_m2:
             return TRUE;
             break;
 
@@ -6934,31 +6951,31 @@ static unsigned int OptExpSeen (FactorDesc f)
    RecoverTerm -
 */
 
-static void RecoverTerm (TermDesc t, m2condition new_, m2condition old)
+static void RecoverTerm (pge_TermDesc t, pge_m2condition new_, pge_m2condition old)
 {
   unsigned int LastWasM2Only;
   unsigned int alternative;
-  SetDesc to;
+  pge_SetDesc to;
 
-  LastWasM2Only = (t->factor->type == m2) && (t->factor->next == NULL);  /* does the factor only contain inline code?  */
+  LastWasM2Only = (t->factor->type == pge_m2) && (t->factor->next == NULL);  /* does the factor only contain inline code?  */
   to = NULL;
   CalcFirstTerm (t, NULL, &to);
   alternative = FALSE;
   if (t->next != NULL)
     {
-      new_ = m2if;
+      new_ = pge_m2if;
     }
   while (t != NULL)
     {
       EmitFileLineTag (t->line);
-      LastWasM2Only = (t->factor->type == m2) && (t->factor->next == NULL);
-      if ((t->factor->type == m2) && (new_ == m2elsif))
+      LastWasM2Only = (t->factor->type == pge_m2) && (t->factor->next == NULL);
+      if ((t->factor->type == pge_m2) && (new_ == pge_m2elsif))
         {
-          new_ = m2if;
+          new_ = pge_m2if;
           IndentString ((const char *) "ELSE", 4);
           Output_WriteLn ();
           Indent += 3;
-          RecoverFactor (t->factor, m2none, NULL);
+          RecoverFactor (t->factor, pge_m2none, NULL);
           alternative = FALSE;
         }
       else
@@ -6967,14 +6984,14 @@ static void RecoverTerm (TermDesc t, m2condition new_, m2condition old)
         }
       if (t->next != NULL)
         {
-          new_ = m2elsif;
+          new_ = pge_m2elsif;
           alternative = TRUE;
         }
       t = t->next;
     }
-  if ((new_ == m2if) || (new_ == m2elsif))
+  if ((new_ == pge_m2if) || (new_ == pge_m2elsif))
     {
-      if (alternative && (old != m2while))
+      if (alternative && (old != pge_m2while))
         {
           IndentString ((const char *) "ELSE", 4);
           Output_WriteLn ();
@@ -6995,7 +7012,7 @@ static void RecoverTerm (TermDesc t, m2condition new_, m2condition old)
       IndentString ((const char *) "END ;", 5);
       Output_WriteLn ();
     }
-  else if (new_ == m2while)
+  else if (new_ == pge_m2while)
     {
       /* avoid dangling else.  */
       IndentString ((const char *) "END (* while *) ;", 17);
@@ -7013,7 +7030,7 @@ static void RecoverTerm (TermDesc t, m2condition new_, m2condition old)
    RecoverExpression -
 */
 
-static void RecoverExpression (ExpressionDesc e, m2condition new_, m2condition old)
+static void RecoverExpression (pge_ExpressionDesc e, pge_m2condition new_, pge_m2condition old)
 {
   if (e != NULL)
     {
@@ -7027,12 +7044,12 @@ static void RecoverExpression (ExpressionDesc e, m2condition new_, m2condition o
    RecoverStatement -
 */
 
-static void RecoverStatement (StatementDesc s, m2condition m)
+static void RecoverStatement (pge_StatementDesc s, pge_m2condition m)
 {
   if (s != NULL)
     {
       EmitFileLineTag (s->line);
-      RecoverExpression (s->expr, m, m2none);
+      RecoverExpression (s->expr, m, pge_m2none);
     }
 }
 
@@ -7041,7 +7058,7 @@ static void RecoverStatement (StatementDesc s, m2condition m)
    EmitFirstFactor - generate a list of all first tokens between the range: low..high.
 */
 
-static void EmitFirstFactor (FactorDesc f, unsigned int low, unsigned int high)
+static void EmitFirstFactor (pge_FactorDesc f, unsigned int low, unsigned int high)
 {
 }
 
@@ -7131,27 +7148,27 @@ static unsigned int IsBetween (NameKey_Name string, unsigned int low, unsigned i
    IsEmptySet - returns TRUE if no elements exist in set, to, with values, low..high.
 */
 
-static unsigned int IsEmptySet (SetDesc to, unsigned int low, unsigned int high)
+static unsigned int IsEmptySet (pge_SetDesc to, unsigned int low, unsigned int high)
 {
   while (to != NULL)
     {
       switch (to->type)
         {
-          case tokel:
+          case pge_tokel:
             if (IsBetween (to->string, low, high))
               {
                 return FALSE;
               }
             break;
 
-          case litel:
+          case pge_litel:
             if (IsBetween (SymbolKey_GetSymKey (Aliases, to->string), low, high))
               {
                 return FALSE;
               }
             break;
 
-          case idel:
+          case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
             WasNoError = FALSE;
             break;
@@ -7174,7 +7191,7 @@ static unsigned int IsEmptySet (SetDesc to, unsigned int low, unsigned int high)
    EmitSet - emits the tokens in the set, to, which have values low..high
 */
 
-static void EmitSet (SetDesc to, unsigned int low, unsigned int high)
+static void EmitSet (pge_SetDesc to, unsigned int low, unsigned int high)
 {
   unsigned int first;
 
@@ -7183,7 +7200,7 @@ static void EmitSet (SetDesc to, unsigned int low, unsigned int high)
     {
       switch (to->type)
         {
-          case tokel:
+          case pge_tokel:
             if ((high == 0) || (IsBetween (to->string, low, high)))
               {
                 if (! first)
@@ -7195,7 +7212,7 @@ static void EmitSet (SetDesc to, unsigned int low, unsigned int high)
               }
             break;
 
-          case litel:
+          case pge_litel:
             if ((high == 0) || (IsBetween (SymbolKey_GetSymKey (Aliases, to->string), low, high)))
               {
                 if (! first)
@@ -7207,7 +7224,7 @@ static void EmitSet (SetDesc to, unsigned int low, unsigned int high)
               }
             break;
 
-          case idel:
+          case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
             WasNoError = FALSE;
             break;
@@ -7228,13 +7245,13 @@ static void EmitSet (SetDesc to, unsigned int low, unsigned int high)
                  their names.
 */
 
-static void EmitSetName (SetDesc to, unsigned int low, unsigned int high)
+static void EmitSetName (pge_SetDesc to, unsigned int low, unsigned int high)
 {
   while (to != NULL)
     {
       switch (to->type)
         {
-          case tokel:
+          case pge_tokel:
             if ((high == 0) || (IsBetween (to->string, low, high)))
               {
                 /* avoid gcc warning by using compound statement even if not strictly necessary.  */
@@ -7249,14 +7266,14 @@ static void EmitSetName (SetDesc to, unsigned int low, unsigned int high)
               }
             break;
 
-          case litel:
+          case pge_litel:
             if ((high == 0) || (IsBetween (SymbolKey_GetSymKey (Aliases, to->string), low, high)))
               {
                 Output_WriteKey (to->string);
               }
             break;
 
-          case idel:
+          case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
             WasNoError = FALSE;
             break;
@@ -7281,7 +7298,7 @@ static void EmitSetName (SetDesc to, unsigned int low, unsigned int high)
                               inclusion of all the symbols in set, to.
 */
 
-static void EmitStopParametersAndSet (SetDesc to)
+static void EmitStopParametersAndSet (pge_SetDesc to)
 {
   unsigned int i;
 
@@ -7327,7 +7344,7 @@ static void EmitStopParametersAndSet (SetDesc to)
    EmitSetAsParameters - generates the first symbols as parameters to a set function.
 */
 
-static void EmitSetAsParameters (SetDesc to)
+static void EmitSetAsParameters (pge_SetDesc to)
 {
   unsigned int i;
 
@@ -7359,9 +7376,9 @@ static void EmitSetAsParameters (SetDesc to)
                                  sentances.
 */
 
-static void EmitStopParametersAndFollow (FactorDesc f, m2condition m)
+static void EmitStopParametersAndFollow (pge_FactorDesc f, pge_m2condition m)
 {
-  SetDesc to;
+  pge_SetDesc to;
 
   to = NULL;
   /* 
@@ -7389,9 +7406,9 @@ static void EmitStopParametersAndFollow (FactorDesc f, m2condition m)
    EmitFirstAsParameters -
 */
 
-static void EmitFirstAsParameters (FactorDesc f)
+static void EmitFirstAsParameters (pge_FactorDesc f)
 {
-  SetDesc to;
+  pge_SetDesc to;
 
   to = NULL;
   CalcFirstFactor (f, NULL, &to);
@@ -7404,7 +7421,7 @@ static void EmitFirstAsParameters (FactorDesc f)
                        Generate error recovery code.
 */
 
-static void RecoverProduction (ProductionDesc p)
+static void RecoverProduction (pge_ProductionDesc p)
 {
   DynamicStrings_String s;
 
@@ -7431,7 +7448,7 @@ static void RecoverProduction (ProductionDesc p)
       OnLineStart = FALSE;
       EmitFileLineTag (p->line);
       Indent = 3;
-      RecoverStatement (p->statement, m2none);
+      RecoverStatement (p->statement, pge_m2none);
       Indent = 0;
       IndentString ((const char *) "END ", 4);
       Output_WriteKey (GetDefinitionName (p));
@@ -7462,11 +7479,11 @@ static unsigned int IsWhite (char ch)
    FindStr - returns TRUE if, str, was seen inside the code hunk
 */
 
-static unsigned int FindStr (CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high)
+static unsigned int FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsigned int _str_high)
 {
   unsigned int j;
   unsigned int k;
-  CodeHunk t;
+  pge_CodeHunk t;
   char str[_str_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -7527,7 +7544,7 @@ static unsigned int FindStr (CodeHunk *code, unsigned int *i, const char *str_, 
    WriteUpto -
 */
 
-static void WriteUpto (CodeHunk code, CodeHunk upto, unsigned int limit)
+static void WriteUpto (pge_CodeHunk code, pge_CodeHunk upto, unsigned int limit)
 {
   if (code != upto)
     {
@@ -7550,10 +7567,10 @@ static void WriteUpto (CodeHunk code, CodeHunk upto, unsigned int limit)
                  this production.
 */
 
-static void CheckForVar (CodeHunk code)
+static void CheckForVar (pge_CodeHunk code)
 {
   unsigned int i;
-  CodeHunk t;
+  pge_CodeHunk t;
 
   t = code;
   if ((FindStr (&t, &i, (const char *) "VAR", 3)) && EmitCode)
@@ -7576,25 +7593,25 @@ static void CheckForVar (CodeHunk code)
    VarFactor -
 */
 
-static void VarFactor (FactorDesc f)
+static void VarFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             break;
 
-          case lit:
+          case pge_lit:
             break;
 
-          case sub:
-          case opt:
-          case mult:
+          case pge_sub:
+          case pge_opt:
+          case pge_mult:
             VarExpression (f->expr);
             break;
 
-          case m2:
+          case pge_m2:
             CheckForVar (f->code->code);
             break;
 
@@ -7611,7 +7628,7 @@ static void VarFactor (FactorDesc f)
    VarTerm -
 */
 
-static void VarTerm (TermDesc t)
+static void VarTerm (pge_TermDesc t)
 {
   while (t != NULL)
     {
@@ -7625,7 +7642,7 @@ static void VarTerm (TermDesc t)
    VarExpression -
 */
 
-static void VarExpression (ExpressionDesc e)
+static void VarExpression (pge_ExpressionDesc e)
 {
   if (e != NULL)
     {
@@ -7638,7 +7655,7 @@ static void VarExpression (ExpressionDesc e)
    VarStatement -
 */
 
-static void VarStatement (StatementDesc s)
+static void VarStatement (pge_StatementDesc s)
 {
   if (s != NULL)
     {
@@ -7651,7 +7668,7 @@ static void VarStatement (StatementDesc s)
    VarProduction - writes out all variable declarations.
 */
 
-static void VarProduction (ProductionDesc p)
+static void VarProduction (pge_ProductionDesc p)
 {
   EmittedVar = FALSE;
   if (p != NULL)
@@ -7665,21 +7682,21 @@ static void VarProduction (ProductionDesc p)
    In - returns TRUE if token, s, is already in the set, to.
 */
 
-static unsigned int In (SetDesc to, NameKey_Name s)
+static unsigned int In (pge_SetDesc to, NameKey_Name s)
 {
   while (to != NULL)
     {
       switch (to->type)
         {
-          case idel:
+          case pge_idel:
             if (s == to->ident->name)
               {
                 return TRUE;
               }
             break;
 
-          case tokel:
-          case litel:
+          case pge_tokel:
+          case pge_litel:
             if (s == to->string)
               {
                 return TRUE;
@@ -7705,21 +7722,21 @@ static unsigned int In (SetDesc to, NameKey_Name s)
                        s1 * s2 = {}
 */
 
-static unsigned int IntersectionIsNil (SetDesc s1, SetDesc s2)
+static unsigned int IntersectionIsNil (pge_SetDesc s1, pge_SetDesc s2)
 {
   while (s1 != NULL)
     {
       switch (s1->type)
         {
-          case idel:
+          case pge_idel:
             if (In (s2, s1->ident->name))
               {
                 return FALSE;
               }
             break;
 
-          case tokel:
-          case litel:
+          case pge_tokel:
+          case pge_litel:
             if (In (s2, s1->string))
               {
                 return FALSE;
@@ -7744,14 +7761,14 @@ static unsigned int IntersectionIsNil (SetDesc s1, SetDesc s2)
    AddSet - adds a first symbol to a production.
 */
 
-static void AddSet (SetDesc *to, NameKey_Name s)
+static void AddSet (pge_SetDesc *to, NameKey_Name s)
 {
-  SetDesc d;
+  pge_SetDesc d;
 
   if (! (In ((*to), s)))
     {
       d = NewSetDesc ();
-      d->type = tokel;
+      d->type = pge_tokel;
       d->string = s;
       d->next = (*to);
       (*to) = d;
@@ -7764,28 +7781,28 @@ static void AddSet (SetDesc *to, NameKey_Name s)
    OrSet -
 */
 
-static void OrSet (SetDesc *to, SetDesc from)
+static void OrSet (pge_SetDesc *to, pge_SetDesc from)
 {
   while (from != NULL)
     {
       switch (from->type)
         {
-          case tokel:
+          case pge_tokel:
             AddSet (to, from->string);
             break;
 
-          case litel:
+          case pge_litel:
             AddSet (to, SymbolKey_GetSymKey (Aliases, from->string));
             break;
 
-          case idel:
+          case pge_idel:
             PushBackInput_WarnError ((const char *) "not expecting ident in first symbol list", 40);
             WasNoError = FALSE;
             break;
 
 
           default:
-            Debug_Halt ((const char *) "unknown element in enumeration type", 35, 4114, (const char *) "m2/gm2-auto/pge.mod", 19);
+            Debug_Halt ((const char *) "unknown element in enumeration type", 35, 4122, (const char *) "m2/gm2-auto/pge.mod", 19);
             break;
         }
       from = from->next;
@@ -7797,13 +7814,13 @@ static void OrSet (SetDesc *to, SetDesc from)
    CalcFirstFactor -
 */
 
-static void CalcFirstFactor (FactorDesc f, ProductionDesc from, SetDesc *to)
+static void CalcFirstFactor (pge_FactorDesc f, pge_ProductionDesc from, pge_SetDesc *to)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             if (f->ident->definition == NULL)
               {
                 WarnError1 ((const char *) "no rule found for an 'ident' called '%s'", 40, f->ident->name);
@@ -7811,13 +7828,13 @@ static void CalcFirstFactor (FactorDesc f, ProductionDesc from, SetDesc *to)
                 __builtin_unreachable ();
               }
             OrSet (to, f->ident->definition->first);
-            if ((GetReachEnd (f->ident->definition->followinfo)) == false_)
+            if ((GetReachEnd (f->ident->definition->followinfo)) == pge_false)
               {
                 return ;
               }
             break;
 
-          case lit:
+          case pge_lit:
             if ((SymbolKey_GetSymKey (Aliases, f->string)) == SymbolKey_NulKey)
               {
                 WarnError1 ((const char *) "unknown token for '%s'", 22, f->string);
@@ -7830,13 +7847,13 @@ static void CalcFirstFactor (FactorDesc f, ProductionDesc from, SetDesc *to)
             return ;
             break;
 
-          case sub:
-          case opt:
-          case mult:
+          case pge_sub:
+          case pge_opt:
+          case pge_mult:
             CalcFirstExpression (f->expr, from, to);
             break;
 
-          case m2:
+          case pge_m2:
             break;
 
 
@@ -7852,7 +7869,7 @@ static void CalcFirstFactor (FactorDesc f, ProductionDesc from, SetDesc *to)
    CalcFirstTerm -
 */
 
-static void CalcFirstTerm (TermDesc t, ProductionDesc from, SetDesc *to)
+static void CalcFirstTerm (pge_TermDesc t, pge_ProductionDesc from, pge_SetDesc *to)
 {
   while (t != NULL)
     {
@@ -7866,7 +7883,7 @@ static void CalcFirstTerm (TermDesc t, ProductionDesc from, SetDesc *to)
    CalcFirstExpression -
 */
 
-static void CalcFirstExpression (ExpressionDesc e, ProductionDesc from, SetDesc *to)
+static void CalcFirstExpression (pge_ExpressionDesc e, pge_ProductionDesc from, pge_SetDesc *to)
 {
   if (e != NULL)
     {
@@ -7879,7 +7896,7 @@ static void CalcFirstExpression (ExpressionDesc e, ProductionDesc from, SetDesc 
    CalcFirstStatement -
 */
 
-static void CalcFirstStatement (StatementDesc s, ProductionDesc from, SetDesc *to)
+static void CalcFirstStatement (pge_StatementDesc s, pge_ProductionDesc from, pge_SetDesc *to)
 {
   if (s != NULL)
     {
@@ -7892,9 +7909,9 @@ static void CalcFirstStatement (StatementDesc s, ProductionDesc from, SetDesc *t
    CalcFirstProduction - calculates all of the first symbols for the grammer
 */
 
-static void CalcFirstProduction (ProductionDesc p, ProductionDesc from, SetDesc *to)
+static void CalcFirstProduction (pge_ProductionDesc p, pge_ProductionDesc from, pge_SetDesc *to)
 {
-  SetDesc s;
+  pge_SetDesc s;
 
   if (p != NULL)
     {
@@ -7906,12 +7923,12 @@ static void CalcFirstProduction (ProductionDesc p, ProductionDesc from, SetDesc 
             {
               switch (s->type)
                 {
-                  case idel:
+                  case pge_idel:
                     CalcFirstProduction (s->ident->definition, from, to);
                     break;
 
-                  case tokel:
-                  case litel:
+                  case pge_tokel:
+                  case pge_litel:
                     AddSet (to, s->string);
                     break;
 
@@ -7929,21 +7946,21 @@ static void CalcFirstProduction (ProductionDesc p, ProductionDesc from, SetDesc 
     }
 }
 
-static void WorkOutFollowFactor (FactorDesc f, SetDesc *followset, SetDesc after)
+static void WorkOutFollowFactor (pge_FactorDesc f, pge_SetDesc *followset, pge_SetDesc after)
 {
-  TraverseResult foundepsilon;
-  TraverseResult canreachend;
+  pge_TraverseResult foundepsilon;
+  pge_TraverseResult canreachend;
 
   /* 
    WorkOutFollow -
   */
-  foundepsilon = true_;
-  canreachend = true_;
-  while ((f != NULL) && (foundepsilon == true_))
+  foundepsilon = pge_true;
+  canreachend = pge_true;
+  while ((f != NULL) && (foundepsilon == pge_true))
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             if (f->ident->definition == NULL)
               {
                 WarnError1 ((const char *) "no rule found for an 'ident' called '%s'", 40, f->ident->name);
@@ -7953,30 +7970,30 @@ static void WorkOutFollowFactor (FactorDesc f, SetDesc *followset, SetDesc after
             OrSet (followset, f->ident->definition->first);
             break;
 
-          case lit:
+          case pge_lit:
             AddSet (followset, SymbolKey_GetSymKey (Aliases, f->string));
             break;
 
-          case sub:
+          case pge_sub:
             WorkOutFollowExpression (f->expr, followset, NULL);
             break;
 
-          case opt:
+          case pge_opt:
             WorkOutFollowExpression (f->expr, followset, NULL);
             break;
 
-          case mult:
+          case pge_mult:
             WorkOutFollowExpression (f->expr, followset, NULL);
             break;
 
-          case m2:
+          case pge_m2:
             break;
 
 
           default:
             break;
         }
-      if ((GetEpsilon (f->followinfo)) == unknown)
+      if ((GetEpsilon (f->followinfo)) == pge_unknown)
         {
           PushBackInput_WarnError ((const char *) "internal error: epsilon unknown", 31);
           PrettyCommentFactor (f, 3);
@@ -7986,7 +8003,7 @@ static void WorkOutFollowFactor (FactorDesc f, SetDesc *followset, SetDesc after
       canreachend = GetReachEnd (f->followinfo);  /* only goes from FALSE -> TRUE  */
       f = f->next;  /* only goes from FALSE -> TRUE  */
     }
-  if (canreachend == true_)
+  if (canreachend == pge_true)
     {
       OrSet (followset, after);
     }
@@ -7997,7 +8014,7 @@ static void WorkOutFollowFactor (FactorDesc f, SetDesc *followset, SetDesc after
    WorkOutFollowTerm -
 */
 
-static void WorkOutFollowTerm (TermDesc t, SetDesc *followset, SetDesc after)
+static void WorkOutFollowTerm (pge_TermDesc t, pge_SetDesc *followset, pge_SetDesc after)
 {
   if (t != NULL)
     {
@@ -8014,7 +8031,7 @@ static void WorkOutFollowTerm (TermDesc t, SetDesc *followset, SetDesc after)
    WorkOutFollowExpression -
 */
 
-static void WorkOutFollowExpression (ExpressionDesc e, SetDesc *followset, SetDesc after)
+static void WorkOutFollowExpression (pge_ExpressionDesc e, pge_SetDesc *followset, pge_SetDesc after)
 {
   if (e != NULL)
     {
@@ -8027,7 +8044,7 @@ static void WorkOutFollowExpression (ExpressionDesc e, SetDesc *followset, SetDe
    CollectFollow - collects the follow set from, f, into, to.
 */
 
-static void CollectFollow (SetDesc *to, FollowDesc f)
+static void CollectFollow (pge_SetDesc *to, pge_FollowDesc f)
 {
   OrSet (to, f->follow);
 }
@@ -8037,24 +8054,24 @@ static void CollectFollow (SetDesc *to, FollowDesc f)
    CalcFollowFactor -
 */
 
-static void CalcFollowFactor (FactorDesc f, SetDesc after)
+static void CalcFollowFactor (pge_FactorDesc f, pge_SetDesc after)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             WorkOutFollowFactor (f->next, &f->followinfo->follow, after);
             break;
 
-          case lit:
+          case pge_lit:
             WorkOutFollowFactor (f->next, &f->followinfo->follow, after);
             break;
 
-          case opt:
-          case sub:
+          case pge_opt:
+          case pge_sub:
             CalcFirstFactor (f->next, NULL, &f->followinfo->follow);
-            if ((f->next == NULL) || ((GetReachEnd (f->next->followinfo)) == true_))
+            if ((f->next == NULL) || ((GetReachEnd (f->next->followinfo)) == pge_true))
               {
                 OrSet (&f->followinfo->follow, after);
                 CalcFollowExpression (f->expr, f->followinfo->follow);
@@ -8065,7 +8082,7 @@ static void CalcFollowFactor (FactorDesc f, SetDesc after)
               }
             break;
 
-          case mult:
+          case pge_mult:
             CalcFirstFactor (f, NULL, &f->followinfo->follow);
             /* include first as we may repeat this sentance  */
             if (Debugging)
@@ -8075,7 +8092,7 @@ static void CalcFollowFactor (FactorDesc f, SetDesc after)
                 EmitSet (f->followinfo->follow, static_cast<unsigned int> (0), static_cast<unsigned int> (0));
                 StrIO_WriteLn ();
               }
-            if ((f->next == NULL) || ((GetReachEnd (f->next->followinfo)) == true_))
+            if ((f->next == NULL) || ((GetReachEnd (f->next->followinfo)) == pge_true))
               {
                 OrSet (&f->followinfo->follow, after);
                 CalcFollowExpression (f->expr, f->followinfo->follow);
@@ -8099,7 +8116,7 @@ static void CalcFollowFactor (FactorDesc f, SetDesc after)
    CalcFollowTerm -
 */
 
-static void CalcFollowTerm (TermDesc t, SetDesc after)
+static void CalcFollowTerm (pge_TermDesc t, pge_SetDesc after)
 {
   if (t != NULL)
     {
@@ -8116,7 +8133,7 @@ static void CalcFollowTerm (TermDesc t, SetDesc after)
    CalcFollowExpression -
 */
 
-static void CalcFollowExpression (ExpressionDesc e, SetDesc after)
+static void CalcFollowExpression (pge_ExpressionDesc e, pge_SetDesc after)
 {
   if (e != NULL)
     {
@@ -8129,7 +8146,7 @@ static void CalcFollowExpression (ExpressionDesc e, SetDesc after)
    CalcFollowStatement - given a bnf statement generate the follow set.
 */
 
-static void CalcFollowStatement (StatementDesc s)
+static void CalcFollowStatement (pge_StatementDesc s)
 {
   if (s != NULL)
     {
@@ -8142,7 +8159,7 @@ static void CalcFollowStatement (StatementDesc s)
    CalcFollowProduction -
 */
 
-static void CalcFollowProduction (ProductionDesc p)
+static void CalcFollowProduction (pge_ProductionDesc p)
 {
   if (p != NULL)
     {
@@ -8155,33 +8172,33 @@ static void CalcFollowProduction (ProductionDesc p)
    CalcEpsilonFactor -
 */
 
-static void CalcEpsilonFactor (FactorDesc f)
+static void CalcEpsilonFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
-            AssignEpsilon ((GetEpsilon (f->ident->definition->followinfo)) != unknown, f->followinfo, GetEpsilon (f->ident->definition->followinfo));
+          case pge_id:
+            AssignEpsilon ((GetEpsilon (f->ident->definition->followinfo)) != pge_unknown, f->followinfo, GetEpsilon (f->ident->definition->followinfo));
             break;
 
-          case lit:
-            AssignEpsilon (TRUE, f->followinfo, false_);
+          case pge_lit:
+            AssignEpsilon (TRUE, f->followinfo, pge_false);
             break;
 
-          case sub:
+          case pge_sub:
             CalcEpsilonExpression (f->expr);
-            AssignEpsilon ((GetEpsilon (f->expr->followinfo)) != unknown, f->followinfo, GetEpsilon (f->expr->followinfo));
+            AssignEpsilon ((GetEpsilon (f->expr->followinfo)) != pge_unknown, f->followinfo, GetEpsilon (f->expr->followinfo));
             break;
 
-          case m2:
-            AssignEpsilon (TRUE, f->followinfo, true_);
+          case pge_m2:
+            AssignEpsilon (TRUE, f->followinfo, pge_true);
             break;
 
-          case opt:
-          case mult:
+          case pge_opt:
+          case pge_mult:
             CalcEpsilonExpression (f->expr);
-            AssignEpsilon (TRUE, f->followinfo, true_);
+            AssignEpsilon (TRUE, f->followinfo, pge_true);
             break;
 
 
@@ -8197,7 +8214,7 @@ static void CalcEpsilonFactor (FactorDesc f)
    CalcEpsilonTerm -
 */
 
-static void CalcEpsilonTerm (TermDesc t)
+static void CalcEpsilonTerm (pge_TermDesc t)
 {
   if (t != NULL)
     {
@@ -8207,15 +8224,15 @@ static void CalcEpsilonTerm (TermDesc t)
             {
               switch (GetReachEnd (t->factor->followinfo))
                 {
-                  case true_:
-                    AssignEpsilon (TRUE, t->followinfo, true_);
+                  case pge_true:
+                    AssignEpsilon (TRUE, t->followinfo, pge_true);
                     break;
 
-                  case false_:
-                    AssignEpsilon (TRUE, t->followinfo, false_);
+                  case pge_false:
+                    AssignEpsilon (TRUE, t->followinfo, pge_false);
                     break;
 
-                  case unknown:
+                  case pge_unknown:
                     break;
 
 
@@ -8234,37 +8251,37 @@ static void CalcEpsilonTerm (TermDesc t)
    CalcEpsilonExpression -
 */
 
-static void CalcEpsilonExpression (ExpressionDesc e)
+static void CalcEpsilonExpression (pge_ExpressionDesc e)
 {
-  TermDesc t;
-  TraverseResult result;
+  pge_TermDesc t;
+  pge_TraverseResult result;
 
   if (e != NULL)
     {
       CalcEpsilonTerm (e->term);
-      if ((GetEpsilon (e->followinfo)) == unknown)
+      if ((GetEpsilon (e->followinfo)) == pge_unknown)
         {
-          result = unknown;
+          result = pge_unknown;
           t = e->term;
           while (t != NULL)
             {
-              if ((GetEpsilon (t->followinfo)) != unknown)
+              if ((GetEpsilon (t->followinfo)) != pge_unknown)
                 {
                   stop ();
                 }
               switch (GetEpsilon (t->followinfo))
                 {
-                  case unknown:
+                  case pge_unknown:
                     break;
 
-                  case true_:
-                    result = true_;
+                  case pge_true:
+                    result = pge_true;
                     break;
 
-                  case false_:
-                    if (result != true_)
+                  case pge_false:
+                    if (result != pge_true)
                       {
-                        result = false_;
+                        result = pge_false;
                       }
                     break;
 
@@ -8274,7 +8291,7 @@ static void CalcEpsilonExpression (ExpressionDesc e)
                 }
               t = t->next;
             }
-          AssignEpsilon (result != unknown, e->followinfo, result);
+          AssignEpsilon (result != pge_unknown, e->followinfo, result);
         }
     }
 }
@@ -8284,13 +8301,13 @@ static void CalcEpsilonExpression (ExpressionDesc e)
    CalcEpsilonStatement - given a bnf statement generate the follow set.
 */
 
-static void CalcEpsilonStatement (StatementDesc s)
+static void CalcEpsilonStatement (pge_StatementDesc s)
 {
   if (s != NULL)
     {
       if (s->expr != NULL)
         {
-          AssignEpsilon ((GetEpsilon (s->expr->followinfo)) != unknown, s->followinfo, GetEpsilon (s->expr->followinfo));
+          AssignEpsilon ((GetEpsilon (s->expr->followinfo)) != pge_unknown, s->followinfo, GetEpsilon (s->expr->followinfo));
         }
       CalcEpsilonExpression (s->expr);
     }
@@ -8301,7 +8318,7 @@ static void CalcEpsilonStatement (StatementDesc s)
    CalcEpsilonProduction -
 */
 
-static void CalcEpsilonProduction (ProductionDesc p)
+static void CalcEpsilonProduction (pge_ProductionDesc p)
 {
   if (p != NULL)
     {
@@ -8317,7 +8334,7 @@ static void CalcEpsilonProduction (ProductionDesc p)
           StrIO_WriteString ((const char *) "  calculating epsilon", 21);
           StrIO_WriteLn ();
         }
-      AssignEpsilon ((GetEpsilon (p->statement->followinfo)) != unknown, p->followinfo, GetEpsilon (p->statement->followinfo));
+      AssignEpsilon ((GetEpsilon (p->statement->followinfo)) != pge_unknown, p->followinfo, GetEpsilon (p->statement->followinfo));
       CalcEpsilonStatement (p->statement);
     }
 }
@@ -8327,14 +8344,14 @@ static void CalcEpsilonProduction (ProductionDesc p)
    CalcReachEndFactor -
 */
 
-static TraverseResult CalcReachEndFactor (FactorDesc f)
+static pge_TraverseResult CalcReachEndFactor (pge_FactorDesc f)
 {
-  TraverseResult canreachend;
-  TraverseResult result;
+  pge_TraverseResult canreachend;
+  pge_TraverseResult result;
 
   if (f == NULL)
     {
-      return true_;  /* we have reached the end of this factor list  */
+      return pge_true;  /* we have reached the end of this factor list  */
     }
   else
     {
@@ -8342,26 +8359,26 @@ static TraverseResult CalcReachEndFactor (FactorDesc f)
       result = CalcReachEndFactor (f->next);
       switch (f->type)
         {
-          case id:
+          case pge_id:
             if (f->ident->definition == NULL)
               {
                 WarnError1 ((const char *) "definition for %s is absent (assuming epsilon is false for this production)", 75, f->ident->name);
-                result = false_;
+                result = pge_false;
               }
-            else if (result != false_)
+            else if (result != pge_false)
               {
                 /* avoid dangling else.  */
                 switch (GetReachEnd (f->ident->definition->followinfo))
                   {
-                    case false_:
-                      result = false_;
+                    case pge_false:
+                      result = pge_false;
                       break;
 
-                    case true_:
+                    case pge_true:
                       break;
 
-                    case unknown:
-                      result = unknown;
+                    case pge_unknown:
+                      result = pge_unknown;
                       break;
 
 
@@ -8371,20 +8388,20 @@ static TraverseResult CalcReachEndFactor (FactorDesc f)
               }
             break;
 
-          case lit:
-            result = false_;
+          case pge_lit:
+            result = pge_false;
             break;
 
-          case sub:
+          case pge_sub:
             CalcReachEndExpression (f->expr);
-            if ((f->expr != NULL) && (result == true_))
+            if ((f->expr != NULL) && (result == pge_true))
               {
                 result = GetReachEnd (f->expr->followinfo);
               }
             break;
 
-          case mult:
-          case opt:
+          case pge_mult:
+          case pge_opt:
             if (f->expr != NULL)
               {
                 /* not interested in the result as expression is optional  */
@@ -8392,14 +8409,14 @@ static TraverseResult CalcReachEndFactor (FactorDesc f)
               }
             break;
 
-          case m2:
+          case pge_m2:
             break;
 
 
           default:
             break;
         }
-      AssignReachEnd (result != unknown, f->followinfo, result);
+      AssignReachEnd (result != pge_unknown, f->followinfo, result);
       return result;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -8411,31 +8428,31 @@ static TraverseResult CalcReachEndFactor (FactorDesc f)
    CalcReachEndTerm -
 */
 
-static TraverseResult CalcReachEndTerm (TermDesc t)
+static pge_TraverseResult CalcReachEndTerm (pge_TermDesc t)
 {
-  TraverseResult canreachend;
-  TraverseResult result;
+  pge_TraverseResult canreachend;
+  pge_TraverseResult result;
 
   if (t != NULL)
     {
-      canreachend = false_;
+      canreachend = pge_false;
       while (t != NULL)
         {
           result = CalcReachEndFactor (t->factor);
-          AssignReachEnd (result != unknown, t->followinfo, result);
+          AssignReachEnd (result != pge_unknown, t->followinfo, result);
           switch (result)
             {
-              case true_:
-                canreachend = true_;
+              case pge_true:
+                canreachend = pge_true;
                 break;
 
-              case false_:
+              case pge_false:
                 break;
 
-              case unknown:
-                if (canreachend == false_)
+              case pge_unknown:
+                if (canreachend == pge_false)
                   {
-                    canreachend = unknown;
+                    canreachend = pge_unknown;
                   }
                 break;
 
@@ -8456,9 +8473,9 @@ static TraverseResult CalcReachEndTerm (TermDesc t)
    CalcReachEndExpression -
 */
 
-static void CalcReachEndExpression (ExpressionDesc e)
+static void CalcReachEndExpression (pge_ExpressionDesc e)
 {
-  TraverseResult result;
+  pge_TraverseResult result;
 
   if (e == NULL)
     {}  /* empty.  */
@@ -8466,7 +8483,7 @@ static void CalcReachEndExpression (ExpressionDesc e)
     {
       /* no expression, thus reached the end of this sentance  */
       result = CalcReachEndTerm (e->term);
-      AssignReachEnd (result != unknown, e->followinfo, result);
+      AssignReachEnd (result != pge_unknown, e->followinfo, result);
     }
 }
 
@@ -8475,14 +8492,14 @@ static void CalcReachEndExpression (ExpressionDesc e)
    CalcReachEndStatement -
 */
 
-static void CalcReachEndStatement (StatementDesc s)
+static void CalcReachEndStatement (pge_StatementDesc s)
 {
   if (s != NULL)
     {
       if (s->expr != NULL)
         {
           CalcReachEndExpression (s->expr);
-          AssignReachEnd ((GetReachEnd (s->expr->followinfo)) != unknown, s->followinfo, GetReachEnd (s->expr->followinfo));
+          AssignReachEnd ((GetReachEnd (s->expr->followinfo)) != pge_unknown, s->followinfo, GetReachEnd (s->expr->followinfo));
         }
     }
 }
@@ -8501,19 +8518,19 @@ static void stop (void)
    CalcReachEndProduction -
 */
 
-static void CalcReachEndProduction (ProductionDesc p)
+static void CalcReachEndProduction (pge_ProductionDesc p)
 {
   if (p != NULL)
     {
       CalcReachEndStatement (p->statement);
-      if ((GetReachEnd (p->followinfo)) != unknown)
+      if ((GetReachEnd (p->followinfo)) != pge_unknown)
         {
           if (Debugging)
             {
               StrIO_WriteString ((const char *) "already calculated reach end for: ", 34);
               NameKey_WriteKey (p->statement->ident->name);
               StrIO_WriteString ((const char *) " its value is ", 14);
-              if ((GetReachEnd (p->followinfo)) == true_)
+              if ((GetReachEnd (p->followinfo)) == pge_true)
                 {
                   StrIO_WriteString ((const char *) "reachable", 9);
                 }
@@ -8524,7 +8541,7 @@ static void CalcReachEndProduction (ProductionDesc p)
               StrIO_WriteLn ();
             }
         }
-      AssignReachEnd ((GetReachEnd (p->statement->followinfo)) != unknown, p->followinfo, GetReachEnd (p->statement->followinfo));
+      AssignReachEnd ((GetReachEnd (p->statement->followinfo)) != pge_unknown, p->followinfo, GetReachEnd (p->statement->followinfo));
     }
 }
 
@@ -8533,36 +8550,36 @@ static void CalcReachEndProduction (ProductionDesc p)
    EmptyFactor -
 */
 
-static unsigned int EmptyFactor (FactorDesc f)
+static unsigned int EmptyFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             if (! (EmptyProduction (f->ident->definition)))
               {
                 return FALSE;
               }
             break;
 
-          case lit:
+          case pge_lit:
             return FALSE;
             break;
 
-          case sub:
+          case pge_sub:
             if (! (EmptyExpression (f->expr)))
               {
                 return FALSE;
               }
             break;
 
-          case opt:
-          case mult:
+          case pge_opt:
+          case pge_mult:
             return TRUE;
             break;
 
-          case m2:
+          case pge_m2:
             break;
 
 
@@ -8581,7 +8598,7 @@ static unsigned int EmptyFactor (FactorDesc f)
    EmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int EmptyTerm (TermDesc t)
+static unsigned int EmptyTerm (pge_TermDesc t)
 {
   while (t != NULL)
     {
@@ -8604,7 +8621,7 @@ static unsigned int EmptyTerm (TermDesc t)
    EmptyExpression -
 */
 
-static unsigned int EmptyExpression (ExpressionDesc e)
+static unsigned int EmptyExpression (pge_ExpressionDesc e)
 {
   if (e == NULL)
     {
@@ -8623,7 +8640,7 @@ static unsigned int EmptyExpression (ExpressionDesc e)
    EmptyStatement - returns TRUE if statement, s, is empty.
 */
 
-static unsigned int EmptyStatement (StatementDesc s)
+static unsigned int EmptyStatement (pge_StatementDesc s)
 {
   if (s == NULL)
     {
@@ -8642,7 +8659,7 @@ static unsigned int EmptyStatement (StatementDesc s)
    EmptyProduction - returns if production, p, maybe empty.
 */
 
-static unsigned int EmptyProduction (ProductionDesc p)
+static unsigned int EmptyProduction (pge_ProductionDesc p)
 {
   if (p == NULL)
     {
@@ -8695,7 +8712,7 @@ static void EmitRules (void)
     {
       EmitFDLNotice ();
     }
-  ForeachRuleDo ((DoProcedure) {(DoProcedure_t) EmitRule});
+  ForeachRuleDo ((pge_DoProcedure) {(pge_DoProcedure_t) EmitRule});
 }
 
 
@@ -9093,17 +9110,17 @@ static void EmitSupport (void)
    DisposeSetDesc - dispose of the set list, s.
 */
 
-static void DisposeSetDesc (SetDesc *s)
+static void DisposeSetDesc (pge_SetDesc *s)
 {
-  SetDesc h;
-  SetDesc n;
+  pge_SetDesc h;
+  pge_SetDesc n;
 
   if ((*s) != NULL)
     {
       h = (*s);
       n = (*s)->next;
       do {
-        Storage_DEALLOCATE ((void **) &h, sizeof (_T7));
+        Storage_DEALLOCATE ((void **) &h, sizeof (pge__T7));
         h = n;
         if (n != NULL)
           {
@@ -9119,28 +9136,28 @@ static void DisposeSetDesc (SetDesc *s)
    OptionalFactor -
 */
 
-static unsigned int OptionalFactor (FactorDesc f)
+static unsigned int OptionalFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             break;
 
-          case lit:
+          case pge_lit:
             break;
 
-          case sub:
-          case opt:
-          case mult:
+          case pge_sub:
+          case pge_opt:
+          case pge_mult:
             if (OptionalExpression (f->expr))
               {
                 return TRUE;
               }
             break;
 
-          case m2:
+          case pge_m2:
             break;
 
 
@@ -9159,12 +9176,12 @@ static unsigned int OptionalFactor (FactorDesc f)
    OptionalTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int OptionalTerm (TermDesc t)
+static unsigned int OptionalTerm (pge_TermDesc t)
 {
-  TermDesc u;
-  TermDesc v;
-  SetDesc tov;
-  SetDesc tou;
+  pge_TermDesc u;
+  pge_TermDesc v;
+  pge_SetDesc tov;
+  pge_SetDesc tou;
 
   u = t;
   while (u != NULL)
@@ -9214,7 +9231,7 @@ static unsigned int OptionalTerm (TermDesc t)
    OptionalExpression -
 */
 
-static unsigned int OptionalExpression (ExpressionDesc e)
+static unsigned int OptionalExpression (pge_ExpressionDesc e)
 {
   if (e == NULL)
     {
@@ -9233,7 +9250,7 @@ static unsigned int OptionalExpression (ExpressionDesc e)
    OptionalStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int OptionalStatement (StatementDesc s)
+static unsigned int OptionalStatement (pge_StatementDesc s)
 {
   if (s == NULL)
     {
@@ -9252,7 +9269,7 @@ static unsigned int OptionalStatement (StatementDesc s)
    OptionalProduction -
 */
 
-static unsigned int OptionalProduction (ProductionDesc p)
+static unsigned int OptionalProduction (pge_ProductionDesc p)
 {
   if (p == NULL)
     {
@@ -9271,10 +9288,10 @@ static unsigned int OptionalProduction (ProductionDesc p)
    CheckFirstFollow -
 */
 
-static unsigned int CheckFirstFollow (FactorDesc f, FactorDesc after)
+static unsigned int CheckFirstFollow (pge_FactorDesc f, pge_FactorDesc after)
 {
-  SetDesc first;
-  SetDesc follow;
+  pge_SetDesc first;
+  pge_SetDesc follow;
 
   first = NULL;
   CalcFirstFactor (f, NULL, &first);
@@ -9309,35 +9326,35 @@ static unsigned int CheckFirstFollow (FactorDesc f, FactorDesc after)
    ConstrainedEmptyFactor -
 */
 
-static unsigned int ConstrainedEmptyFactor (FactorDesc f)
+static unsigned int ConstrainedEmptyFactor (pge_FactorDesc f)
 {
   while (f != NULL)
     {
       switch (f->type)
         {
-          case id:
+          case pge_id:
             break;
 
-          case lit:
+          case pge_lit:
             break;
 
-          case sub:
-          case opt:
-          case mult:
+          case pge_sub:
+          case pge_opt:
+          case pge_mult:
             if (ConstrainedEmptyExpression (f->expr))
               {
                 return TRUE;
               }
             break;
 
-          case m2:
+          case pge_m2:
             break;
 
 
           default:
             break;
         }
-      if (((f->type != m2) && (EmptyFactor (f))) && (CheckFirstFollow (f, f->next)))
+      if (((f->type != pge_m2) && (EmptyFactor (f))) && (CheckFirstFollow (f, f->next)))
         {
           return TRUE;
         }
@@ -9353,10 +9370,10 @@ static unsigned int ConstrainedEmptyFactor (FactorDesc f)
    ConstrainedEmptyTerm - returns TRUE if the term maybe empty.
 */
 
-static unsigned int ConstrainedEmptyTerm (TermDesc t)
+static unsigned int ConstrainedEmptyTerm (pge_TermDesc t)
 {
-  SetDesc first;
-  SetDesc follow;
+  pge_SetDesc first;
+  pge_SetDesc follow;
 
   while (t != NULL)
     {
@@ -9364,7 +9381,7 @@ static unsigned int ConstrainedEmptyTerm (TermDesc t)
         {
           return TRUE;
         }
-      else if (((t->factor->type != m2) && (EmptyFactor (t->factor))) && (CheckFirstFollow (t->factor, t->factor->next)))
+      else if (((t->factor->type != pge_m2) && (EmptyFactor (t->factor))) && (CheckFirstFollow (t->factor, t->factor->next)))
         {
           /* avoid dangling else.  */
           return TRUE;
@@ -9381,7 +9398,7 @@ static unsigned int ConstrainedEmptyTerm (TermDesc t)
    ConstrainedEmptyExpression -
 */
 
-static unsigned int ConstrainedEmptyExpression (ExpressionDesc e)
+static unsigned int ConstrainedEmptyExpression (pge_ExpressionDesc e)
 {
   if (e == NULL)
     {
@@ -9400,7 +9417,7 @@ static unsigned int ConstrainedEmptyExpression (ExpressionDesc e)
    ConstrainedEmptyStatement - returns FALSE if statement, s, does not have a optional ambiguity.
 */
 
-static unsigned int ConstrainedEmptyStatement (StatementDesc s)
+static unsigned int ConstrainedEmptyStatement (pge_StatementDesc s)
 {
   if (s == NULL)
     {
@@ -9419,7 +9436,7 @@ static unsigned int ConstrainedEmptyStatement (StatementDesc s)
    ConstrainedEmptyProduction - returns TRUE if a problem exists with, p.
 */
 
-static unsigned int ConstrainedEmptyProduction (ProductionDesc p)
+static unsigned int ConstrainedEmptyProduction (pge_ProductionDesc p)
 {
   if (p == NULL)
     {
@@ -9438,7 +9455,7 @@ static unsigned int ConstrainedEmptyProduction (ProductionDesc p)
    TestForLALR1 -
 */
 
-static void TestForLALR1 (ProductionDesc p)
+static void TestForLALR1 (pge_ProductionDesc p)
 {
   if (OptionalProduction (p))
     {
@@ -9453,7 +9470,7 @@ static void TestForLALR1 (ProductionDesc p)
    DoEpsilon - runs the epsilon interrelated rules
 */
 
-static void DoEpsilon (ProductionDesc p)
+static void DoEpsilon (pge_ProductionDesc p)
 {
   CalcEpsilonProduction (p);
   CalcReachEndProduction (p);
@@ -9464,9 +9481,9 @@ static void DoEpsilon (ProductionDesc p)
    CheckComplete - checks that production, p, is complete.
 */
 
-static void CheckComplete (ProductionDesc p)
+static void CheckComplete (pge_ProductionDesc p)
 {
-  if ((GetReachEnd (p->followinfo)) == unknown)
+  if ((GetReachEnd (p->followinfo)) == pge_unknown)
     {
       PrettyCommentProduction (p);
       WarnError1 ((const char *) "cannot determine epsilon, probably a left recursive rule in %s and associated rules (hint rewrite using ebnf and eliminate left recursion)", 138, p->statement->ident->name);
@@ -9481,34 +9498,34 @@ static void CheckComplete (ProductionDesc p)
 
 static void PostProcessRules (void)
 {
-  ForeachRuleDo ((DoProcedure) {(DoProcedure_t) BackPatchIdentToDefinitions});
+  ForeachRuleDo ((pge_DoProcedure) {(pge_DoProcedure_t) BackPatchIdentToDefinitions});
   if (! WasNoError)
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  WhileNotCompleteDo ((DoProcedure) {(DoProcedure_t) DoEpsilon});
+  WhileNotCompleteDo ((pge_DoProcedure) {(pge_DoProcedure_t) DoEpsilon});
   if (! WasNoError)
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ForeachRuleDo ((DoProcedure) {(DoProcedure_t) CheckComplete});
+  ForeachRuleDo ((pge_DoProcedure) {(pge_DoProcedure_t) CheckComplete});
   if (! WasNoError)
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  WhileNotCompleteDo ((DoProcedure) {(DoProcedure_t) CalculateFirstAndFollow});
+  WhileNotCompleteDo ((pge_DoProcedure) {(pge_DoProcedure_t) CalculateFirstAndFollow});
   if (! WasNoError)
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ForeachRuleDo ((DoProcedure) {(DoProcedure_t) TestForLALR1});
+  ForeachRuleDo ((pge_DoProcedure) {(pge_DoProcedure_t) TestForLALR1});
   if (! WasNoError)
     {
-      ForeachRuleDo ((DoProcedure) {(DoProcedure_t) PrettyCommentProduction});
+      ForeachRuleDo ((pge_DoProcedure) {(pge_DoProcedure_t) PrettyCommentProduction});
     }
 }
 
@@ -9519,7 +9536,7 @@ static void PostProcessRules (void)
 
 static void DisplayHelp (void)
 {
-  StrIO_WriteString ((const char *) "Usage: pge [-l] [-c] [-d] [-e] [-k] [-t] [-k] [-p] [-t] [-f] [-o outputfile] filename", 85);
+  StrIO_WriteString ((const char *) "Usage: pge [-l] [-c] [-d] [-e] [-k] [-t] [-k] [-p] [-x] [-f] [-o outputfile] filename", 85);
   StrIO_WriteLn ();
   StrIO_WriteString ((const char *) "   -l             suppress file and line source information", 59);
   StrIO_WriteLn ();
@@ -9536,6 +9553,8 @@ static void DisplayHelp (void)
   StrIO_WriteString ((const char *) "   -p             only display the ebnf rules", 45);
   StrIO_WriteLn ();
   StrIO_WriteString ((const char *) "   -t             generate texinfo formating for pretty printing (-p)", 69);
+  StrIO_WriteLn ();
+  StrIO_WriteString ((const char *) "   -x             generate sphinx formating for pretty printing (-p)", 68);
   StrIO_WriteLn ();
   StrIO_WriteString ((const char *) "   -f             generate GNU Free Documentation header before pretty printing in texinfo", 90);
   StrIO_WriteLn ();
@@ -9605,6 +9624,11 @@ static void ParseArgs (void)
               /* avoid dangling else.  */
               Texinfo = TRUE;
             }
+          else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-x", 2))
+            {
+              /* avoid dangling else.  */
+              Sphinx = TRUE;
+            }
           else if (StrLib_StrEqual ((const char *) &ArgName.array[0], MaxFileName, (const char *) "-f", 2))
             {
               /* avoid dangling else.  */
@@ -9659,6 +9683,7 @@ static void Init (void)
 {
   WasNoError = TRUE;
   Texinfo = FALSE;
+  Sphinx = FALSE;
   FreeDocLicense = FALSE;
   EmitCode = TRUE;
   LargestValue = 0;
@@ -9678,7 +9703,7 @@ static void Init (void)
   SymIsProc = NameKey_MakeKey ((const char *) "SymIs", 5);
   OnLineStart = TRUE;
   ParseArgs ();
-  Main (static_cast<SetOfStop> ((unsigned int) ((1 << (bnflex_eoftok)))));  /* this line will be manipulated by sed in buildpg  */
+  Main (static_cast<pge_SetOfStop> ((unsigned int) ((1 << (bnflex_eoftok)))));  /* this line will be manipulated by sed in buildpg  */
   if (WasNoError)  /* this line will be manipulated by sed in buildpg  */
     {
       PostProcessRules ();
@@ -9718,11 +9743,11 @@ static void Init (void)
   Output_Close ();
 }
 
-extern "C" void _M2_pge_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_pge_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_pge_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_pge_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

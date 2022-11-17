@@ -43,9 +43,9 @@ typedef struct StdIO_ProcWrite_p StdIO_ProcWrite;
 typedef struct StdIO_ProcRead_p StdIO_ProcRead;
 
 #   define MaxStack 40
-typedef struct _T1_a _T1;
+typedef struct StdIO__T1_a StdIO__T1;
 
-typedef struct _T2_a _T2;
+typedef struct StdIO__T2_a StdIO__T2;
 
 typedef void (*StdIO_ProcWrite_t) (char);
 struct StdIO_ProcWrite_p { StdIO_ProcWrite_t proc; };
@@ -53,11 +53,11 @@ struct StdIO_ProcWrite_p { StdIO_ProcWrite_t proc; };
 typedef void (*StdIO_ProcRead_t) (char *);
 struct StdIO_ProcRead_p { StdIO_ProcRead_t proc; };
 
-struct _T1_a { StdIO_ProcWrite array[MaxStack+1]; };
-struct _T2_a { StdIO_ProcRead array[MaxStack+1]; };
-static _T1 StackW;
+struct StdIO__T1_a { StdIO_ProcWrite array[MaxStack+1]; };
+struct StdIO__T2_a { StdIO_ProcRead array[MaxStack+1]; };
+static StdIO__T1 StackW;
 static unsigned int StackWPtr;
-static _T2 StackR;
+static StdIO__T2 StackR;
 static unsigned int StackRPtr;
 
 /*
@@ -191,7 +191,7 @@ extern "C" StdIO_ProcWrite StdIO_GetCurrentOutput (void)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StdIO.def", 25, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/StdIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -250,11 +250,11 @@ extern "C" StdIO_ProcRead StdIO_GetCurrentInput (void)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StdIO.def", 25, 1);
+  ReturnException ("../../gcc-git-devel-modula2/gcc/m2/gm2-libs/StdIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   StackWPtr = 0;
   StackRPtr = 0;
@@ -262,6 +262,6 @@ extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc, __attribute__(
   StdIO_PushInput ((StdIO_ProcRead) {(StdIO_ProcRead_t) IO_Read});
 }
 
-extern "C" void _M2_StdIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StdIO_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

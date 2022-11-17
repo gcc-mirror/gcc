@@ -57,14 +57,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #   define MaxPushBackStack 8192
 #   define MaxFileName 4096
-typedef struct _T2_a _T2;
+typedef struct PushBackInput__T2_a PushBackInput__T2;
 
-typedef struct _T3_a _T3;
+typedef struct PushBackInput__T3_a PushBackInput__T3;
 
-struct _T2_a { char array[MaxFileName+1]; };
-struct _T3_a { char array[MaxPushBackStack+1]; };
-static _T2 FileName;
-static _T3 CharStack;
+struct PushBackInput__T2_a { char array[MaxFileName+1]; };
+struct PushBackInput__T3_a { char array[MaxPushBackStack+1]; };
+static PushBackInput__T2 FileName;
+static PushBackInput__T3 CharStack;
 static unsigned int ExitStatus;
 static unsigned int Column;
 static unsigned int StackPtr;
@@ -275,7 +275,7 @@ extern "C" char PushBackInput_PutCh (char ch)
     }
   else
     {
-      Debug_Halt ((const char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
+      Debug_Halt ((const char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (const char *) "../../gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 61);
     }
   return ch;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -301,7 +301,7 @@ extern "C" void PushBackInput_PutString (const char *a_, unsigned int _a_high)
       l -= 1;
       if ((PushBackInput_PutCh (a[l])) != a[l])
         {
-          Debug_Halt ((const char *) "assert failed", 13, 132, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
+          Debug_Halt ((const char *) "assert failed", 13, 132, (const char *) "../../gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 61);
         }
     }
 }
@@ -322,7 +322,7 @@ extern "C" void PushBackInput_PutStr (DynamicStrings_String s)
       i -= 1;
       if ((PushBackInput_PutCh (DynamicStrings_char (s, static_cast<int> (i)))) != (DynamicStrings_char (s, static_cast<int> (i))))
         {
-          Debug_Halt ((const char *) "assert failed", 13, 113, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
+          Debug_Halt ((const char *) "assert failed", 13, 113, (const char *) "../../gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 61);
         }
     }
 }
@@ -385,11 +385,11 @@ extern "C" void PushBackInput_WarnError (const char *a_, unsigned int _a_high)
 
 extern "C" void PushBackInput_WarnString (DynamicStrings_String s)
 {
-  typedef char *_T1;
+  typedef char *WarnString__T1;
 
-  _T1 p;
+  WarnString__T1 p;
 
-  p = static_cast<_T1> (DynamicStrings_string (s));
+  p = static_cast<WarnString__T1> (DynamicStrings_string (s));
   StrIO_WriteString ((const char *) &FileName.array[0], MaxFileName);
   StdIO_Write (':');
   NumberIO_WriteCard (LineNo, 0);
@@ -478,12 +478,12 @@ extern "C" unsigned int PushBackInput_GetCurrentLine (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   PushBackInput_SetDebug (FALSE);
   Init ();
 }
 
-extern "C" void _M2_PushBackInput_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_PushBackInput_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

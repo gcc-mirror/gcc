@@ -90,10 +90,10 @@ static void WriteLn (void)
 
 extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high)
 {
-  typedef struct _T1_a _T1;
+  typedef struct Halt__T1_a Halt__T1;
 
-  struct _T1_a { char array[MaxNoOfDigits+1]; };
-  _T1 No;
+  struct Halt__T1_a { char array[MaxNoOfDigits+1]; };
+  Halt__T1 No;
   char Message[_Message_high+1];
   char Module[_Module_high+1];
 
@@ -159,10 +159,10 @@ extern "C" void Debug_DebugString (const char *a_, unsigned int _a_high)
     }
 }
 
-extern "C" void _M2_Debug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Debug_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Debug_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Debug_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

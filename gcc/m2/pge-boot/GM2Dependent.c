@@ -60,38 +60,38 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef struct M2Dependent_ArgCVEnvP_p M2Dependent_ArgCVEnvP;
 
-typedef struct DependencyList_r DependencyList;
+typedef struct M2Dependent_DependencyList_r M2Dependent_DependencyList;
 
-typedef struct _T2_r _T2;
+typedef struct M2Dependent__T2_r M2Dependent__T2;
 
-typedef _T2 *ModuleChain;
+typedef M2Dependent__T2 *M2Dependent_ModuleChain;
 
-typedef struct _T3_a _T3;
+typedef struct M2Dependent__T3_a M2Dependent__T3;
 
-typedef enum {unregistered, unordered, started, ordered, user} DependencyState;
+typedef enum {M2Dependent_unregistered, M2Dependent_unordered, M2Dependent_started, M2Dependent_ordered, M2Dependent_user} M2Dependent_DependencyState;
 
 typedef void (*M2Dependent_ArgCVEnvP_t) (int, void *, void *);
 struct M2Dependent_ArgCVEnvP_p { M2Dependent_ArgCVEnvP_t proc; };
 
-struct DependencyList_r {
-                          PROC proc;
-                          unsigned int forced;
-                          unsigned int forc;
-                          unsigned int appl;
-                          DependencyState state;
-                        };
+struct M2Dependent_DependencyList_r {
+                                      PROC proc;
+                                      unsigned int forced;
+                                      unsigned int forc;
+                                      unsigned int appl;
+                                      M2Dependent_DependencyState state;
+                                    };
 
-struct _T3_a { ModuleChain array[user-unregistered+1]; };
-struct _T2_r {
-               void *name;
-               M2Dependent_ArgCVEnvP init;
-               M2Dependent_ArgCVEnvP fini;
-               DependencyList dependency;
-               ModuleChain prev;
-               ModuleChain next;
-             };
+struct M2Dependent__T3_a { M2Dependent_ModuleChain array[M2Dependent_user-M2Dependent_unregistered+1]; };
+struct M2Dependent__T2_r {
+                           void *name;
+                           M2Dependent_ArgCVEnvP init;
+                           M2Dependent_ArgCVEnvP fini;
+                           M2Dependent_DependencyList dependency;
+                           M2Dependent_ModuleChain prev;
+                           M2Dependent_ModuleChain next;
+                         };
 
-static _T3 Modules;
+static M2Dependent__T3 Modules;
 static unsigned int Initialized;
 static unsigned int ModuleTrace;
 static unsigned int DependencyTrace;
@@ -134,39 +134,39 @@ extern "C" void M2Dependent_RequestDependant (void * modulename, void * dependan
                   ModuleChain.
 */
 
-static ModuleChain CreateModule (void * name, M2Dependent_ArgCVEnvP init, M2Dependent_ArgCVEnvP fini, PROC dependencies);
+static M2Dependent_ModuleChain CreateModule (void * name, M2Dependent_ArgCVEnvP init, M2Dependent_ArgCVEnvP fini, PROC dependencies);
 
 /*
    AppendModule - append chain to end of the list.
 */
 
-static void AppendModule (ModuleChain *head, ModuleChain chain);
+static void AppendModule (M2Dependent_ModuleChain *head, M2Dependent_ModuleChain chain);
 
 /*
    RemoveModule - remove chain from double linked list head.
 */
 
-static void RemoveModule (ModuleChain *head, ModuleChain chain);
+static void RemoveModule (M2Dependent_ModuleChain *head, M2Dependent_ModuleChain chain);
 
 /*
    onChain - returns TRUE if mptr is on the Modules[state] list.
 */
 
-static unsigned int onChain (DependencyState state, ModuleChain mptr);
+static unsigned int onChain (M2Dependent_DependencyState state, M2Dependent_ModuleChain mptr);
 
 /*
    LookupModuleN - lookup module from the state list.  The string is limited
                    to nchar.
 */
 
-static ModuleChain LookupModuleN (DependencyState state, void * name, unsigned int nchar);
+static M2Dependent_ModuleChain LookupModuleN (M2Dependent_DependencyState state, void * name, unsigned int nchar);
 
 /*
    LookupModule - lookup and return the ModuleChain pointer containing
                   module name from a particular list.
 */
 
-static ModuleChain LookupModule (DependencyState state, void * name);
+static M2Dependent_ModuleChain LookupModule (M2Dependent_DependencyState state, void * name);
 
 /*
    toCString - replace any character sequence 
@@ -212,13 +212,13 @@ static void traceprintf2 (unsigned int flag, const char *str_, unsigned int _str
             It updates the mptr state appropriately.
 */
 
-static void moveTo (DependencyState newstate, ModuleChain mptr);
+static void moveTo (M2Dependent_DependencyState newstate, M2Dependent_ModuleChain mptr);
 
 /*
    ResolveDependant -
 */
 
-static void ResolveDependant (ModuleChain mptr, void * currentmodule);
+static void ResolveDependant (M2Dependent_ModuleChain mptr, void * currentmodule);
 
 /*
    PerformRequestDependant - the current modulename has a dependancy upon
@@ -239,7 +239,7 @@ static void ResolveDependencies (void * currentmodule);
    DisplayModuleInfo - displays all module in the state.
 */
 
-static void DisplayModuleInfo (DependencyState state, const char *name_, unsigned int _name_high);
+static void DisplayModuleInfo (M2Dependent_DependencyState state, const char *name_, unsigned int _name_high);
 
 /*
    DumpModuleData -
@@ -254,7 +254,7 @@ static void DumpModuleData (unsigned int flag);
                               src := NIL.
 */
 
-static void combine (DependencyState src, DependencyState dest);
+static void combine (M2Dependent_DependencyState src, M2Dependent_DependencyState dest);
 
 /*
    ForceDependencies - if the user has specified a forced order then we override
@@ -262,6 +262,13 @@ static void combine (DependencyState src, DependencyState dest);
 */
 
 static void ForceDependencies (void);
+
+/*
+   CheckApplication - check to see that the application is the last entry in the list.
+                      This might happen if the application only imports FOR C modules.
+*/
+
+static void CheckApplication (void);
 
 /*
    equal - return TRUE if C string cstr is equal to str.
@@ -310,16 +317,16 @@ static void CheckInitialized (void);
                   ModuleChain.
 */
 
-static ModuleChain CreateModule (void * name, M2Dependent_ArgCVEnvP init, M2Dependent_ArgCVEnvP fini, PROC dependencies)
+static M2Dependent_ModuleChain CreateModule (void * name, M2Dependent_ArgCVEnvP init, M2Dependent_ArgCVEnvP fini, PROC dependencies)
 {
-  ModuleChain mptr;
+  M2Dependent_ModuleChain mptr;
 
-  Storage_ALLOCATE ((void **) &mptr, sizeof (_T2));
+  Storage_ALLOCATE ((void **) &mptr, sizeof (M2Dependent__T2));
   mptr->name = name;
   mptr->init = init;
   mptr->fini = fini;
   mptr->dependency.proc = dependencies;
-  mptr->dependency.state = unregistered;
+  mptr->dependency.state = M2Dependent_unregistered;
   mptr->prev = NULL;
   mptr->next = NULL;
   return mptr;
@@ -332,7 +339,7 @@ static ModuleChain CreateModule (void * name, M2Dependent_ArgCVEnvP init, M2Depe
    AppendModule - append chain to end of the list.
 */
 
-static void AppendModule (ModuleChain *head, ModuleChain chain)
+static void AppendModule (M2Dependent_ModuleChain *head, M2Dependent_ModuleChain chain)
 {
   if ((*head) == NULL)
     {
@@ -354,7 +361,7 @@ static void AppendModule (ModuleChain *head, ModuleChain chain)
    RemoveModule - remove chain from double linked list head.
 */
 
-static void RemoveModule (ModuleChain *head, ModuleChain chain)
+static void RemoveModule (M2Dependent_ModuleChain *head, M2Dependent_ModuleChain chain)
 {
   if ((chain->next == (*head)) && (chain == (*head)))
     {
@@ -376,20 +383,20 @@ static void RemoveModule (ModuleChain *head, ModuleChain chain)
    onChain - returns TRUE if mptr is on the Modules[state] list.
 */
 
-static unsigned int onChain (DependencyState state, ModuleChain mptr)
+static unsigned int onChain (M2Dependent_DependencyState state, M2Dependent_ModuleChain mptr)
 {
-  ModuleChain ptr;
+  M2Dependent_ModuleChain ptr;
 
-  if (Modules.array[state-unregistered] != NULL)
+  if (Modules.array[state-M2Dependent_unregistered] != NULL)
     {
-      ptr = Modules.array[state-unregistered];
+      ptr = Modules.array[state-M2Dependent_unregistered];
       do {
         if (ptr == mptr)
           {
             return TRUE;
           }
         ptr = ptr->next;
-      } while (! (ptr == Modules.array[state-unregistered]));
+      } while (! (ptr == Modules.array[state-M2Dependent_unregistered]));
     }
   return FALSE;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -402,20 +409,20 @@ static unsigned int onChain (DependencyState state, ModuleChain mptr)
                    to nchar.
 */
 
-static ModuleChain LookupModuleN (DependencyState state, void * name, unsigned int nchar)
+static M2Dependent_ModuleChain LookupModuleN (M2Dependent_DependencyState state, void * name, unsigned int nchar)
 {
-  ModuleChain ptr;
+  M2Dependent_ModuleChain ptr;
 
-  if (Modules.array[state-unregistered] != NULL)
+  if (Modules.array[state-M2Dependent_unregistered] != NULL)
     {
-      ptr = Modules.array[state-unregistered];
+      ptr = Modules.array[state-M2Dependent_unregistered];
       do {
         if ((strncmp (reinterpret_cast<M2LINK_PtrToChar> (ptr->name), reinterpret_cast<M2LINK_PtrToChar> (name), nchar)) == 0)
           {
             return ptr;
           }
         ptr = ptr->next;
-      } while (! (ptr == Modules.array[state-unregistered]));
+      } while (! (ptr == Modules.array[state-M2Dependent_unregistered]));
     }
   return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -428,7 +435,7 @@ static ModuleChain LookupModuleN (DependencyState state, void * name, unsigned i
                   module name from a particular list.
 */
 
-static ModuleChain LookupModule (DependencyState state, void * name)
+static M2Dependent_ModuleChain LookupModule (M2Dependent_DependencyState state, void * name)
 {
   return LookupModuleN (state, name, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2LINK_PtrToChar> (name))));
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -606,14 +613,14 @@ static void traceprintf2 (unsigned int flag, const char *str_, unsigned int _str
             It updates the mptr state appropriately.
 */
 
-static void moveTo (DependencyState newstate, ModuleChain mptr)
+static void moveTo (M2Dependent_DependencyState newstate, M2Dependent_ModuleChain mptr)
 {
   if (onChain (mptr->dependency.state, mptr))
     {
-      RemoveModule (&Modules.array[mptr->dependency.state-unregistered], mptr);
+      RemoveModule (&Modules.array[mptr->dependency.state-M2Dependent_unregistered], mptr);
     }
   mptr->dependency.state = newstate;
-  AppendModule (&Modules.array[mptr->dependency.state-unregistered], mptr);
+  AppendModule (&Modules.array[mptr->dependency.state-M2Dependent_unregistered], mptr);
 }
 
 
@@ -621,7 +628,7 @@ static void moveTo (DependencyState newstate, ModuleChain mptr)
    ResolveDependant -
 */
 
-static void ResolveDependant (ModuleChain mptr, void * currentmodule)
+static void ResolveDependant (M2Dependent_ModuleChain mptr, void * currentmodule)
 {
   if (mptr == NULL)
     {
@@ -629,17 +636,17 @@ static void ResolveDependant (ModuleChain mptr, void * currentmodule)
     }
   else
     {
-      if (onChain (started, mptr))
+      if (onChain (M2Dependent_started, mptr))
         {
           traceprintf (DependencyTrace, (const char *) "   processing...\\n", 18);
         }
       else
         {
-          moveTo (started, mptr);
+          moveTo (M2Dependent_started, mptr);
           traceprintf2 (DependencyTrace, (const char *) "   starting: %s\\n", 17, currentmodule);
           (*mptr->dependency.proc.proc) ();  /* Invoke and process the dependency graph.  */
           traceprintf2 (DependencyTrace, (const char *) "   finished: %s\\n", 17, currentmodule);  /* Invoke and process the dependency graph.  */
-          moveTo (ordered, mptr);
+          moveTo (M2Dependent_ordered, mptr);
         }
     }
 }
@@ -654,32 +661,32 @@ static void ResolveDependant (ModuleChain mptr, void * currentmodule)
 
 static void PerformRequestDependant (void * modulename, void * dependantmodule)
 {
-  ModuleChain mptr;
+  M2Dependent_ModuleChain mptr;
 
   traceprintf2 (DependencyTrace, (const char *) "  module %s", 11, modulename);
   if (dependantmodule == NULL)
     {
       /* avoid dangling else.  */
       traceprintf2 (DependencyTrace, (const char *) " has finished its import graph\\n", 32, modulename);
-      mptr = LookupModule (unordered, modulename);
+      mptr = LookupModule (M2Dependent_unordered, modulename);
       if (mptr != NULL)
         {
           traceprintf2 (DependencyTrace, (const char *) "  module %s is now ordered\\n", 28, modulename);
-          moveTo (ordered, mptr);
+          moveTo (M2Dependent_ordered, mptr);
         }
     }
   else
     {
       traceprintf2 (DependencyTrace, (const char *) " imports from %s\\n", 18, dependantmodule);
-      mptr = LookupModule (ordered, dependantmodule);
+      mptr = LookupModule (M2Dependent_ordered, dependantmodule);
       if (mptr == NULL)
         {
           traceprintf2 (DependencyTrace, (const char *) "  module %s is not ordered\\n", 28, dependantmodule);
-          mptr = LookupModule (unordered, dependantmodule);
+          mptr = LookupModule (M2Dependent_unordered, dependantmodule);
           if (mptr == NULL)
             {
               traceprintf2 (DependencyTrace, (const char *) "  module %s is not unordered\\n", 30, dependantmodule);
-              mptr = LookupModule (started, dependantmodule);
+              mptr = LookupModule (M2Dependent_started, dependantmodule);
               if (mptr == NULL)
                 {
                   traceprintf2 (DependencyTrace, (const char *) "  module %s has not started\\n", 29, dependantmodule);
@@ -712,14 +719,14 @@ static void PerformRequestDependant (void * modulename, void * dependantmodule)
 
 static void ResolveDependencies (void * currentmodule)
 {
-  ModuleChain mptr;
+  M2Dependent_ModuleChain mptr;
 
-  mptr = LookupModule (unordered, currentmodule);
+  mptr = LookupModule (M2Dependent_unordered, currentmodule);
   while (mptr != NULL)
     {
       traceprintf2 (DependencyTrace, (const char *) "   attempting to resolve the dependants for %s\\n", 48, currentmodule);
       ResolveDependant (mptr, currentmodule);
-      mptr = Modules.array[unordered-unregistered];
+      mptr = Modules.array[M2Dependent_unordered-M2Dependent_unregistered];
     }
 }
 
@@ -728,20 +735,23 @@ static void ResolveDependencies (void * currentmodule)
    DisplayModuleInfo - displays all module in the state.
 */
 
-static void DisplayModuleInfo (DependencyState state, const char *name_, unsigned int _name_high)
+static void DisplayModuleInfo (M2Dependent_DependencyState state, const char *name_, unsigned int _name_high)
 {
-  ModuleChain mptr;
+  M2Dependent_ModuleChain mptr;
+  unsigned int count;
   char name[_name_high+1];
 
   /* make a local copy of each unbounded array.  */
   memcpy (name, name_, _name_high+1);
 
-  if (Modules.array[state-unregistered] != NULL)
+  if (Modules.array[state-M2Dependent_unregistered] != NULL)
     {
       libc_printf ((const char *) "%s modules\\n", 12, &name);
-      mptr = Modules.array[state-unregistered];
+      mptr = Modules.array[state-M2Dependent_unregistered];
+      count = 0;
       do {
-        libc_printf ((const char *) "  %s", 4, mptr->name);
+        libc_printf ((const char *) "  %d  %s", 8, count, mptr->name);
+        count += 1;
         if (mptr->dependency.appl)
           {
             libc_printf ((const char *) " application", 12);
@@ -756,7 +766,7 @@ static void DisplayModuleInfo (DependencyState state, const char *name_, unsigne
           }
         libc_printf ((const char *) "\\n", 2);
         mptr = mptr->next;
-      } while (! (mptr == Modules.array[state-unregistered]));
+      } while (! (mptr == Modules.array[state-M2Dependent_unregistered]));
     }
 }
 
@@ -767,14 +777,14 @@ static void DisplayModuleInfo (DependencyState state, const char *name_, unsigne
 
 static void DumpModuleData (unsigned int flag)
 {
-  ModuleChain mptr;
+  M2Dependent_ModuleChain mptr;
 
   if (flag)
     {
-      DisplayModuleInfo (unregistered, (const char *) "unregistered", 12);
-      DisplayModuleInfo (unordered, (const char *) "unordered", 9);
-      DisplayModuleInfo (started, (const char *) "started", 7);
-      DisplayModuleInfo (ordered, (const char *) "ordered", 7);
+      DisplayModuleInfo (M2Dependent_unregistered, (const char *) "unregistered", 12);
+      DisplayModuleInfo (M2Dependent_unordered, (const char *) "unordered", 9);
+      DisplayModuleInfo (M2Dependent_started, (const char *) "started", 7);
+      DisplayModuleInfo (M2Dependent_ordered, (const char *) "ordered", 7);
     }
 }
 
@@ -786,15 +796,15 @@ static void DumpModuleData (unsigned int flag)
                               src := NIL.
 */
 
-static void combine (DependencyState src, DependencyState dest)
+static void combine (M2Dependent_DependencyState src, M2Dependent_DependencyState dest)
 {
-  ModuleChain last;
+  M2Dependent_ModuleChain last;
 
-  while (Modules.array[src-unregistered] != NULL)
+  while (Modules.array[src-M2Dependent_unregistered] != NULL)
     {
-      last = Modules.array[src-unregistered]->prev;
-      moveTo (ordered, last);
-      Modules.array[dest-unregistered] = last;  /* New item is at the head.  */
+      last = Modules.array[src-M2Dependent_unregistered]->prev;
+      moveTo (M2Dependent_ordered, last);
+      Modules.array[dest-M2Dependent_unregistered] = last;  /* New item is at the head.  */
     }
 }
 
@@ -806,8 +816,8 @@ static void combine (DependencyState src, DependencyState dest)
 
 static void ForceDependencies (void)
 {
-  ModuleChain mptr;
-  ModuleChain userChain;
+  M2Dependent_ModuleChain mptr;
+  M2Dependent_ModuleChain userChain;
   unsigned int count;
   M2LINK_PtrToChar pc;
   M2LINK_PtrToChar start;
@@ -822,11 +832,11 @@ static void ForceDependencies (void)
         {
           if ((*pc) == ',')
             {
-              mptr = LookupModuleN (ordered, reinterpret_cast<void *> (start), count);
+              mptr = LookupModuleN (M2Dependent_ordered, reinterpret_cast<void *> (start), count);
               if (mptr != NULL)
                 {
                   mptr->dependency.forced = TRUE;
-                  moveTo (user, mptr);
+                  moveTo (M2Dependent_user, mptr);
                 }
               pc += 1;
               start = pc;
@@ -840,14 +850,46 @@ static void ForceDependencies (void)
         }
       if (start != pc)
         {
-          mptr = LookupModuleN (ordered, reinterpret_cast<void *> (start), count);
+          mptr = LookupModuleN (M2Dependent_ordered, reinterpret_cast<void *> (start), count);
           if (mptr != NULL)
             {
               mptr->dependency.forced = TRUE;
-              moveTo (user, mptr);
+              moveTo (M2Dependent_user, mptr);
             }
         }
-      combine (user, ordered);
+      combine (M2Dependent_user, M2Dependent_ordered);
+    }
+}
+
+
+/*
+   CheckApplication - check to see that the application is the last entry in the list.
+                      This might happen if the application only imports FOR C modules.
+*/
+
+static void CheckApplication (void)
+{
+  M2Dependent_ModuleChain mptr;
+  M2Dependent_ModuleChain appl;
+
+  mptr = Modules.array[M2Dependent_ordered-M2Dependent_unregistered];
+  if (mptr != NULL)
+    {
+      appl = NULL;
+      do {
+        if (mptr->dependency.appl)
+          {
+            appl = mptr;
+          }
+        else
+          {
+            mptr = mptr->next;
+          }
+      } while (! ((appl != NULL) || (mptr == Modules.array[M2Dependent_ordered-M2Dependent_unregistered])));
+      if (appl != NULL)
+        {
+          Modules.array[M2Dependent_ordered-M2Dependent_unregistered] = appl->next;
+        }
     }
 }
 
@@ -889,16 +931,16 @@ static unsigned int equal (void * cstr, const char *str_, unsigned int _str_high
 
 static void SetupDebugFlags (void)
 {
-  typedef char *_T1;
+  typedef char *SetupDebugFlags__T1;
 
-  _T1 pc;
+  SetupDebugFlags__T1 pc;
 
   ModuleTrace = FALSE;
   DependencyTrace = FALSE;
   PostTrace = FALSE;
   PreTrace = FALSE;
   ForceTrace = FALSE;
-  pc = static_cast<_T1> (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("GCC_M2LINK_RTFLAG"))));
+  pc = static_cast<SetupDebugFlags__T1> (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("GCC_M2LINK_RTFLAG"))));
   while ((pc != NULL) && ((*pc) != ASCII_nul))
     {
       if (equal (reinterpret_cast<void *> (pc), (const char *) "all", 3))
@@ -955,12 +997,12 @@ static void SetupDebugFlags (void)
 
 static void Init (void)
 {
-  DependencyState state;
+  M2Dependent_DependencyState state;
 
   SetupDebugFlags ();
-  for (state=unregistered; state<=user; state= static_cast<DependencyState>(static_cast<int>(state+1)))
+  for (state=M2Dependent_unregistered; state<=M2Dependent_user; state= static_cast<M2Dependent_DependencyState>(static_cast<int>(state+1)))
     {
-      Modules.array[state-unregistered] = NULL;
+      Modules.array[state-M2Dependent_unregistered] = NULL;
     }
 }
 
@@ -989,12 +1031,12 @@ static void CheckInitialized (void)
 
 extern "C" void M2Dependent_ConstructModules (void * applicationmodule, int argc, void * argv, void * envp)
 {
-  ModuleChain mptr;
+  M2Dependent_ModuleChain mptr;
   M2Dependent_ArgCVEnvP nulp;
 
   CheckInitialized ();
   traceprintf2 (ModuleTrace, (const char *) "application module: %s\\n", 24, applicationmodule);
-  mptr = LookupModule (unordered, applicationmodule);
+  mptr = LookupModule (M2Dependent_unordered, applicationmodule);
   if (mptr != NULL)
     {
       mptr->dependency.appl = TRUE;
@@ -1007,7 +1049,10 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, int argc
   ForceDependencies ();
   traceprintf (ForceTrace, (const char *) "After user forcing ordering\\n", 29);
   DumpModuleData (ForceTrace);
-  if (Modules.array[ordered-unregistered] == NULL)
+  CheckApplication ();
+  traceprintf (ForceTrace, (const char *) "After runtime forces application to the end\\n", 45);
+  DumpModuleData (ForceTrace);
+  if (Modules.array[M2Dependent_ordered-M2Dependent_unregistered] == NULL)
     {
       traceprintf2 (ModuleTrace, (const char *) "  module: %s has not registered itself using a global constructor\\n", 67, applicationmodule);
       traceprintf2 (ModuleTrace, (const char *) "  hint try compile and linking using: gm2 %s.mod\\n", 50, applicationmodule);
@@ -1015,7 +1060,7 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, int argc
     }
   else
     {
-      mptr = Modules.array[ordered-unregistered];
+      mptr = Modules.array[M2Dependent_ordered-M2Dependent_unregistered];
       do {
         if (mptr->dependency.forc)
           {
@@ -1034,7 +1079,7 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, int argc
           }
         (*mptr->init.proc) (argc, argv, envp);
         mptr = mptr->next;
-      } while (! (mptr == Modules.array[ordered-unregistered]));
+      } while (! (mptr == Modules.array[M2Dependent_ordered-M2Dependent_unregistered]));
     }
 }
 
@@ -1046,10 +1091,10 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, int argc
 
 extern "C" void M2Dependent_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp)
 {
-  ModuleChain mptr;
+  M2Dependent_ModuleChain mptr;
 
   traceprintf2 (ModuleTrace, (const char *) "application module finishing: %s\\n", 34, applicationmodule);
-  if (Modules.array[ordered-unregistered] == NULL)
+  if (Modules.array[M2Dependent_ordered-M2Dependent_unregistered] == NULL)
     {
       traceprintf (ModuleTrace, (const char *) "  no ordered modules found during finishing\\n", 45);
     }
@@ -1058,7 +1103,7 @@ extern "C" void M2Dependent_DeconstructModules (void * applicationmodule, int ar
       traceprintf (ModuleTrace, (const char *) "ExecuteTerminationProcedures\\n", 30);
       M2RTS_ExecuteTerminationProcedures ();
       traceprintf (ModuleTrace, (const char *) "terminating modules in sequence\\n", 33);
-      mptr = Modules.array[ordered-unregistered]->prev;
+      mptr = Modules.array[M2Dependent_ordered-M2Dependent_unregistered]->prev;
       do {
         if (mptr->dependency.forc)
           {
@@ -1070,7 +1115,7 @@ extern "C" void M2Dependent_DeconstructModules (void * applicationmodule, int ar
           }
         (*mptr->fini.proc) (argc, argv, envp);
         mptr = mptr->prev;
-      } while (! (mptr == Modules.array[ordered-unregistered]->prev));
+      } while (! (mptr == Modules.array[M2Dependent_ordered-M2Dependent_unregistered]->prev));
     }
 }
 
@@ -1087,7 +1132,7 @@ extern "C" void M2Dependent_RegisterModule (void * name, M2Dependent_ArgCVEnvP i
   if (! M2LINK_StaticInitialization)
     {
       traceprintf2 (ModuleTrace, (const char *) "module: %s registering\\n", 24, name);
-      moveTo (unordered, CreateModule (name, init, fini, dependencies));
+      moveTo (M2Dependent_unordered, CreateModule (name, init, fini, dependencies));
     }
 }
 
@@ -1107,11 +1152,11 @@ extern "C" void M2Dependent_RequestDependant (void * modulename, void * dependan
     }
 }
 
-extern "C" void _M2_M2Dependent_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2Dependent_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   CheckInitialized ();
 }
 
-extern "C" void _M2_M2Dependent_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2Dependent_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

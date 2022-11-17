@@ -251,10 +251,10 @@ static void WriteToken (void)
 
 static void Init (void)
 {
-  typedef struct _T1_a _T1;
+  typedef struct Init__T1_a Init__T1;
 
-  struct _T1_a { char array[1+1]; };
-  _T1 a;
+  struct Init__T1_a { char array[1+1]; };
+  Init__T1 a;
 
   SymbolKey_InitTree (&ReservedWords);
   Debugging = FALSE;
@@ -456,10 +456,10 @@ extern "C" void bnflex_SkipUntilEoln (void)
 
 extern "C" void bnflex_AdvanceToken (void)
 {
-  typedef struct _T2_a _T2;
+  typedef struct AdvanceToken__T2_a AdvanceToken__T2;
 
-  struct _T2_a { char array[MaxNameLength+1]; };
-  _T2 a;
+  struct AdvanceToken__T2_a { char array[MaxNameLength+1]; };
+  AdvanceToken__T2 a;
   unsigned int i;
 
   i = 0;
@@ -573,10 +573,10 @@ extern "C" unsigned int bnflex_IsReserved (NameKey_Name name)
 
 extern "C" void bnflex_PushBackToken (NameKey_Name t)
 {
-  typedef struct _T3_a _T3;
+  typedef struct PushBackToken__T3_a PushBackToken__T3;
 
-  struct _T3_a { char array[MaxNameLength+1]; };
-  _T3 a;
+  struct PushBackToken__T3_a { char array[MaxNameLength+1]; };
+  PushBackToken__T3 a;
 
   NameKey_GetKey (t, (char *) &a.array[0], MaxNameLength);
   PushBackInput_PutString ((const char *) &a.array[0], MaxNameLength);
@@ -592,11 +592,11 @@ extern "C" void bnflex_SetDebugging (unsigned int flag)
   Debugging = flag;
 }
 
-extern "C" void _M2_bnflex_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_bnflex_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_bnflex_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_bnflex_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

@@ -64,30 +64,30 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 
-typedef struct ProcedureList_r ProcedureList;
+typedef struct M2RTS_ProcedureList_r M2RTS_ProcedureList;
 
-typedef char *PtrToChar;
+typedef char *M2RTS_PtrToChar;
 
-typedef struct _T1_r _T1;
+typedef struct M2RTS__T1_r M2RTS__T1;
 
-typedef _T1 *ProcedureChain;
+typedef M2RTS__T1 *M2RTS_ProcedureChain;
 
 typedef void (*M2RTS_ArgCVEnvP_t) (int, void *, void *);
 struct M2RTS_ArgCVEnvP_p { M2RTS_ArgCVEnvP_t proc; };
 
-struct ProcedureList_r {
-                         ProcedureChain head;
-                         ProcedureChain tail;
-                       };
+struct M2RTS_ProcedureList_r {
+                               M2RTS_ProcedureChain head;
+                               M2RTS_ProcedureChain tail;
+                             };
 
-struct _T1_r {
-               PROC p;
-               ProcedureChain prev;
-               ProcedureChain next;
-             };
+struct M2RTS__T1_r {
+                     PROC p;
+                     M2RTS_ProcedureChain prev;
+                     M2RTS_ProcedureChain next;
+                   };
 
-static ProcedureList InitialProc;
-static ProcedureList TerminateProc;
+static M2RTS_ProcedureList InitialProc;
+static M2RTS_ProcedureList TerminateProc;
 static int ExitValue;
 static unsigned int isHalting;
 static unsigned int CallExit;
@@ -233,14 +233,14 @@ extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned 
                     procedures in the chain.
 */
 
-static void ExecuteReverse (ProcedureChain procptr);
+static void ExecuteReverse (M2RTS_ProcedureChain procptr);
 
 /*
    AppendProc - append proc to the end of the procedure list
                 defined by proclist.
 */
 
-static unsigned int AppendProc (ProcedureList *proclist, PROC proc);
+static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc);
 
 /*
    ErrorString - writes a string to stderr.
@@ -252,7 +252,7 @@ static void ErrorString (const char *a_, unsigned int _a_high);
    InitProcList - initialize the head and tail pointers to NIL.
 */
 
-static void InitProcList (ProcedureList *p);
+static void InitProcList (M2RTS_ProcedureList *p);
 
 /*
    Init - initialize the initial, terminate procedure lists and booleans.
@@ -276,7 +276,7 @@ static void CheckInitialized (void);
                     procedures in the chain.
 */
 
-static void ExecuteReverse (ProcedureChain procptr)
+static void ExecuteReverse (M2RTS_ProcedureChain procptr)
 {
   while (procptr != NULL)
     {
@@ -291,11 +291,11 @@ static void ExecuteReverse (ProcedureChain procptr)
                 defined by proclist.
 */
 
-static unsigned int AppendProc (ProcedureList *proclist, PROC proc)
+static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
 {
-  ProcedureChain pdes;
+  M2RTS_ProcedureChain pdes;
 
-  Storage_ALLOCATE ((void **) &pdes, sizeof (_T1));
+  Storage_ALLOCATE ((void **) &pdes, sizeof (M2RTS__T1));
   pdes->p = proc;
   pdes->prev = (*proclist).tail;
   pdes->next = NULL;
@@ -330,7 +330,7 @@ static void ErrorString (const char *a_, unsigned int _a_high)
    InitProcList - initialize the head and tail pointers to NIL.
 */
 
-static void InitProcList (ProcedureList *p)
+static void InitProcList (M2RTS_ProcedureList *p)
 {
   (*p).head = NULL;
   (*p).tail = NULL;
@@ -556,10 +556,10 @@ extern "C" void M2RTS_ExitOnHalt (int e)
 
 extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high)
 {
-  typedef struct _T2_a _T2;
+  typedef struct ErrorMessage__T2_a ErrorMessage__T2;
 
-  struct _T2_a { char array[10+1]; };
-  _T2 LineNo;
+  struct ErrorMessage__T2_a { char array[10+1]; };
+  ErrorMessage__T2 LineNo;
   char message[_message_high+1];
   char file[_file_high+1];
   char function[_function_high+1];
@@ -737,11 +737,11 @@ extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned 
   RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), filename, line, column, scope, message);
 }
 
-extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   CheckInitialized ();
 }
 
-extern "C" void _M2_M2RTS_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2RTS_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }

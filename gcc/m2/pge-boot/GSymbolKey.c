@@ -51,9 +51,9 @@ typedef struct SymbolKey_IsSymbol_p SymbolKey_IsSymbol;
 
 typedef struct SymbolKey_PerformOperation_p SymbolKey_PerformOperation;
 
-typedef struct Node_r Node;
+typedef struct SymbolKey_Node_r SymbolKey_Node;
 
-typedef Node *SymbolKey_SymbolTree;
+typedef SymbolKey_Node *SymbolKey_SymbolTree;
 
 typedef unsigned int (*SymbolKey_IsSymbol_t) (unsigned int);
 struct SymbolKey_IsSymbol_p { SymbolKey_IsSymbol_t proc; };
@@ -61,12 +61,12 @@ struct SymbolKey_IsSymbol_p { SymbolKey_IsSymbol_t proc; };
 typedef void (*SymbolKey_PerformOperation_t) (unsigned int);
 struct SymbolKey_PerformOperation_p { SymbolKey_PerformOperation_t proc; };
 
-struct Node_r {
-                NameKey_Name KeyName;
-                unsigned int KeySym;
-                SymbolKey_SymbolTree Left;
-                SymbolKey_SymbolTree Right;
-              };
+struct SymbolKey_Node_r {
+                          NameKey_Name KeyName;
+                          unsigned int KeySym;
+                          SymbolKey_SymbolTree Left;
+                          SymbolKey_SymbolTree Right;
+                        };
 
 extern "C" void SymbolKey_InitTree (SymbolKey_SymbolTree *t);
 extern "C" void SymbolKey_KillTree (SymbolKey_SymbolTree *t);
@@ -183,7 +183,7 @@ static void FindNodeParentInTree (SymbolKey_SymbolTree t, NameKey_Name n, Symbol
   (*parent) = t;
   if (t == NULL)
     {
-      Debug_Halt ((const char *) "parameter t should never be NIL", 31, 240, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-compiler/SymbolKey.mod", 85);
+      Debug_Halt ((const char *) "parameter t should never be NIL", 31, 240, (const char *) "../../gcc-git-devel-modula2/gcc/m2/gm2-compiler/SymbolKey.mod", 61);
     }
   Assertion_Assert (t->Right == NULL);
   (*child) = t->Left;
@@ -284,7 +284,7 @@ static void SearchConditional (SymbolKey_SymbolTree t, SymbolKey_IsSymbol condit
 
 extern "C" void SymbolKey_InitTree (SymbolKey_SymbolTree *t)
 {
-  Storage_ALLOCATE ((void **) &(*t), sizeof (Node));  /* The value entity  */
+  Storage_ALLOCATE ((void **) &(*t), sizeof (SymbolKey_Node));  /* The value entity  */
   (*t)->Left = NULL;
   (*t)->Right = NULL;
 }
@@ -323,7 +323,7 @@ END Kill ;
     {
       SymbolKey_KillTree (&(*t)->Left);
       SymbolKey_KillTree (&(*t)->Right);
-      Storage_DEALLOCATE ((void **) &(*t), sizeof (Node));
+      Storage_DEALLOCATE ((void **) &(*t), sizeof (SymbolKey_Node));
       (*t) = NULL;
     }
 }
@@ -368,20 +368,20 @@ extern "C" void SymbolKey_PutSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
       if (father == t)
         {
           /* empty tree, add it to the left branch of t  */
-          Storage_ALLOCATE ((void **) &child, sizeof (Node));
+          Storage_ALLOCATE ((void **) &child, sizeof (SymbolKey_Node));
           father->Left = child;
         }
       else
         {
           if (NameKey < father->KeyName)
             {
-              Storage_ALLOCATE ((void **) &child, sizeof (Node));
+              Storage_ALLOCATE ((void **) &child, sizeof (SymbolKey_Node));
               father->Left = child;
             }
           else if (NameKey > father->KeyName)
             {
               /* avoid dangling else.  */
-              Storage_ALLOCATE ((void **) &child, sizeof (Node));
+              Storage_ALLOCATE ((void **) &child, sizeof (SymbolKey_Node));
               father->Right = child;
             }
         }
@@ -392,7 +392,7 @@ extern "C" void SymbolKey_PutSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
     }
   else
     {
-      Debug_Halt ((const char *) "symbol already stored", 21, 156, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-compiler/SymbolKey.mod", 85);
+      Debug_Halt ((const char *) "symbol already stored", 21, 156, (const char *) "../../gcc-git-devel-modula2/gcc/m2/gm2-compiler/SymbolKey.mod", 61);
     }
 }
 
@@ -433,7 +433,7 @@ extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
               /* (as in a single linked list) to child^.Right  */
               father->Right = child->Right;
             }
-          Storage_DEALLOCATE ((void **) &child, sizeof (Node));
+          Storage_DEALLOCATE ((void **) &child, sizeof (SymbolKey_Node));
         }
       else
         {
@@ -454,12 +454,12 @@ extern "C" void SymbolKey_DelSymKey (SymbolKey_SymbolTree t, NameKey_Name NameKe
               /* (as in a single linked list) to child^.Left.  */
               father->Left = child->Left;
             }
-          Storage_DEALLOCATE ((void **) &child, sizeof (Node));
+          Storage_DEALLOCATE ((void **) &child, sizeof (SymbolKey_Node));
         }
     }
   else
     {
-      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, 223, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-compiler/SymbolKey.mod", 85);
+      Debug_Halt ((const char *) "trying to delete a symbol that is not in the tree - the compiler never expects this to occur", 92, 223, (const char *) "../../gcc-git-devel-modula2/gcc/m2/gm2-compiler/SymbolKey.mod", 61);
     }
 }
 
@@ -547,10 +547,10 @@ extern "C" void SymbolKey_ForeachNodeConditionDo (SymbolKey_SymbolTree t, Symbol
     }
 }
 
-extern "C" void _M2_SymbolKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SymbolKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_SymbolKey_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SymbolKey_finish (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
 }
