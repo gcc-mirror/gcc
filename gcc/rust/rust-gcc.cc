@@ -1028,7 +1028,7 @@ Gcc_backend::integer_constant_expression (tree t, mpz_t val)
   if (t == error_mark_node)
     return error_mark_node;
 
-  tree ret = double_int_to_tree (t, mpz_get_double_int (t, val, true));
+  tree ret = wide_int_to_tree (t, wi::from_mpz (t, val, true));
   return ret;
 }
 
