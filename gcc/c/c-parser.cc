@@ -1717,7 +1717,7 @@ private:
       return NULL_TREE;
 
     cpp_reader *old_parse_in = parse_in;
-    parse_in = cpp_create_reader (CLK_GNUC89, ident_hash, line_table);
+    parse_in = cpp_create_reader (CLK_GNUC89, NULL, line_table);
 
     pretty_printer pp;
     pp_string (&pp, (const char *) tok.val.str.text);
