@@ -7940,12 +7940,15 @@ and,
        vec_perm_indices sel (builder, 2, nelts);
        machine_mode vec_mode = TYPE_MODE (type);
        machine_mode wide_mode;
+       scalar_mode wide_elt_mode;
+       poly_uint64 wide_nunits;
+       scalar_mode inner_mode = GET_MODE_INNER (vec_mode);
      }
      (if (sel.series_p (0, 2, 0, 2)
-          && GET_MODE_WIDER_MODE (vec_mode).exists (&wide_mode)
-	  && VECTOR_MODE_P (wide_mode)
-	  && (GET_MODE_UNIT_BITSIZE (vec_mode) * 2
-	      == GET_MODE_UNIT_BITSIZE (wide_mode)))
+	  && GET_MODE_2XWIDER_MODE (inner_mode).exists (&wide_elt_mode)
+	  && multiple_p (GET_MODE_NUNITS (vec_mode), 2, &wide_nunits)
+	  && related_vector_mode (vec_mode, wide_elt_mode,
+				  wide_nunits).exists (&wide_mode))
 	(with
 	 {
 	   tree stype
