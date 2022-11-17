@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-dump.h"
-#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace AST {
@@ -250,6 +249,56 @@ Dump::visit (std::vector<LifetimeParam> &for_lifetimes)
 }
 
 void
+Dump::visit (FunctionQualifiers &qualifiers)
+{
+  // Syntax:
+  //    `const`? `async`? `unsafe`? (`extern` Abi?)?
+  //    unsafe? (extern Abi?)?
+
+  switch (qualifiers.get_const_status ())
+    {
+    case NONE:
+      break;
+    case CONST_FN:
+      stream << "const ";
+      break;
+    case ASYNC_FN:
+      stream << "async ";
+      break;
+    }
+
+  if (qualifiers.is_unsafe ())
+    stream << "unsafe ";
+  if (qualifiers.is_extern ())
+    {
+      stream << "extern ";
+      if (qualifiers.has_abi ())
+	stream << "\"" << qualifiers.get_extern_abi () << "\" ";
+    }
+} // namespace AST
+
+void
+Dump::visit (MaybeNamedParam &param)
+{
+  // Syntax:
+  //     OuterAttribute* ( ( IDENTIFIER | _ ) : )? Type
+
+  visit_items_joined_by_separator (param.get_outer_attrs (), " ");
+  switch (param.get_param_kind ())
+    {
+    case MaybeNamedParam::UNNAMED:
+      break;
+    case MaybeNamedParam::IDENTIFIER:
+      stream << " " << param.get_name () << ": ";
+      break;
+    case MaybeNamedParam::WILDCARD:
+      stream << " _: ";
+      break;
+    }
+  visit (param.get_type ());
+}
+
+void
 Dump::visit (Token &tok)
 {
   stream << tok.as_string ();
@@ -322,21 +371,134 @@ Dump::visit (PathInExpression &path)
 }
 
 void
-Dump::visit (TypePathSegment &)
-{}
+Dump::visit (TypePathSegment &segment)
+{
+  // Syntax:
+  //    PathIdentSegment
+
+  stream << segment.get_ident_segment ().as_string ();
+}
 
 void
-Dump::visit (TypePathSegmentGeneric &)
-{}
+Dump::visit (TypePathSegmentGeneric &segment)
+{
+  // Syntax:
+  //    PathIdentSegment `::`? (GenericArgs)?
+  // GenericArgs :
+  //    `<` `>`
+  //    | `<` ( GenericArg `,` )* GenericArg `,`? `>`
+
+  stream << segment.get_ident_segment ().as_string ();
+
+  if (segment.get_separating_scope_resolution ())
+    stream << "::";
+
+  stream << "<";
+
+  {
+    // Here we join 3 lists (each possibly empty) with a separator.
+
+    auto &lifetime_args = segment.get_generic_args ().get_lifetime_args ();
+    auto &generic_args = segment.get_generic_args ().get_generic_args ();
+    auto &binding_args = segment.get_generic_args ().get_binding_args ();
+
+    visit_items_joined_by_separator (lifetime_args, ", ");
+    if (!lifetime_args.empty ()
+	&& (!generic_args.empty () || !binding_args.empty ()))
+      {
+	// Insert separator if some items have been already emitted and some
+	// more are to be emitted from any of the following collections.
+	stream << ", ";
+      }
+    visit_items_joined_by_separator (generic_args, ", ");
+    if (!generic_args.empty () && !binding_args.empty ())
+      {
+	// Insert separator if some item vas emitted from the previous
+	// collection and more are to be emitted from the last.
+	stream << ", ";
+      }
+    visit_items_joined_by_separator (binding_args, ", ");
+  }
+
+  stream << ">";
+}
 
 void
-Dump::visit (TypePathSegmentFunction &)
-{}
+Dump::visit (GenericArgsBinding &binding)
+{
+  // Syntax:
+  //    IDENTIFIER `=` Type
+
+  stream << binding.get_identifier () << " << ";
+  visit (binding.get_type ());
+}
+
+void
+Dump::visit (GenericArg &arg)
+{
+  // `GenericArg` implements `accept_vis` but it is not useful for this case as
+  // it ignores unresolved cases (`Kind::Either`).
+
+  switch (arg.get_kind ())
+    {
+    case GenericArg::Kind::Const:
+      visit (arg.get_expression ());
+      break;
+    case GenericArg::Kind::Type:
+      visit (arg.get_type ());
+      break;
+    case GenericArg::Kind::Either:
+      stream << arg.get_path ();
+      break;
+    case GenericArg::Kind::Error:
+      gcc_unreachable ();
+    }
+} // namespace AST
+
+void
+Dump::visit (TypePathSegmentFunction &segment)
+{
+  // Syntax:
+  //   PathIdentSegment `::`? (TypePathFn)?
+
+  stream << segment.get_ident_segment ().as_string ();
+
+  if (segment.get_separating_scope_resolution ())
+    stream << "::";
+
+  if (!segment.is_ident_only ())
+    visit (segment.get_type_path_function ());
+}
+
+void
+Dump::visit (TypePathFunction &type_path_fn)
+{
+  // Syntax:
+  //   `(` TypePathFnInputs? `)` (`->` Type)?
+  // TypePathFnInputs :
+  //   Type (`,` Type)* `,`?
+
+  stream << '(';
+  if (type_path_fn.has_inputs ())
+    visit_items_joined_by_separator (type_path_fn.get_params (), ", ");
+  stream << ')';
+
+  if (type_path_fn.has_return_type ())
+    {
+      stream << "->";
+      visit (type_path_fn.get_return_type ());
+    }
+}
 
 void
 Dump::visit (TypePath &path)
 {
-  stream << path.as_string ();
+  // Syntax:
+  //    `::`? TypePathSegment (`::` TypePathSegment)*
+
+  if (path.has_opening_scope_resolution_op ())
+    stream << "::";
+  visit_items_joined_by_separator (path.get_segments (), "::");
 }
 
 void
@@ -686,7 +848,7 @@ Dump::visit (BlockExpr &expr)
   stream << "{\n";
   indentation.increment ();
 
-  visit_items_as_lines (expr.get_statements (), "; /* stmt */");
+  visit_items_as_lines (expr.get_statements (), ";");
 
   if (expr.has_tail_expr ())
     visit_as_line (expr.get_tail_expr (), " /* tail expr */\n");
@@ -842,7 +1004,17 @@ Dump::visit (AsyncBlockExpr &)
 void
 Dump::visit (TypeParam &param)
 {
+  // Syntax:
+  //    IDENTIFIER( : TypeParamBounds? )? ( = Type )?
+  // TypeParamBounds :
+  //    TypeParamBound ( + TypeParamBound )* +?
+
   stream << param.get_type_representation ();
+  if (param.has_type_param_bounds ())
+    {
+      stream << ": ";
+      visit_items_joined_by_separator (param.get_type_param_bounds (), " + ");
+    }
   if (param.has_type ())
     {
       stream << " = ";
@@ -905,8 +1077,12 @@ Dump::visit (Method &method)
   visit (method.get_visibility ());
   stream << "fn " << method.get_method_name () << '(';
 
-  stream << method.get_self_param ().as_string () << ", ";
-  visit_items_joined_by_separator (method.get_function_params (), ", ");
+  stream << method.get_self_param ().as_string ();
+  if (!method.get_function_params ().empty ())
+    {
+      stream << ", ";
+      visit_items_joined_by_separator (method.get_function_params (), ", ");
+    }
 
   stream << ") ";
 
@@ -1033,7 +1209,6 @@ Dump::visit (TypeAlias &type_alias)
     visit (type_alias.get_where_clause ());
   stream << " = ";
   visit (type_alias.get_type_aliased ());
-  stream << ";\n";
 }
 
 void
@@ -1172,9 +1347,13 @@ Dump::visit (TraitItemMethod &item)
   // emit_visibility (method.get_visibility ());
   stream << "fn " << method.get_identifier () << '(';
 
-  stream << method.get_self_param ().as_string () << ", ";
+  stream << method.get_self_param ().as_string ();
 
-  visit_items_joined_by_separator (method.get_function_params (), ", ");
+  if (!method.get_function_params ().empty ())
+    {
+      stream << ", ";
+      visit_items_joined_by_separator (method.get_function_params (), ", ");
+    }
 
   stream << ") ";
 
@@ -1560,64 +1739,193 @@ Dump::visit (TraitBound &bound)
 }
 
 void
-Dump::visit (ImplTraitType &)
-{}
+Dump::visit (ImplTraitType &type)
+{
+  // Syntax:
+  //    impl TypeParamBounds
+  // TypeParamBounds :
+  //    TypeParamBound ( + TypeParamBound )* +?
+
+  stream << "impl ";
+  visit_items_joined_by_separator (type.get_type_param_bounds (), " + ");
+}
 
 void
-Dump::visit (TraitObjectType &)
-{}
+Dump::visit (TraitObjectType &type)
+{
+  // Syntax:
+  //   dyn? TypeParamBounds
+  // TypeParamBounds :
+  //   TypeParamBound ( + TypeParamBound )* +?
+
+  if (type.is_dyn ())
+    stream << "dyn ";
+  visit_items_joined_by_separator (type.get_type_param_bounds (), " + ");
+}
 
 void
-Dump::visit (ParenthesisedType &)
-{}
+Dump::visit (ParenthesisedType &type)
+{
+  // Syntax:
+  //    ( Type )
+
+  stream << "(";
+  visit (type.get_type_in_parens ());
+  stream << ")";
+}
 
 void
-Dump::visit (ImplTraitTypeOneBound &)
-{}
+Dump::visit (ImplTraitTypeOneBound &type)
+{
+  // Syntax:
+  //    impl TraitBound
+
+  stream << "impl ";
+  visit (type.get_trait_bound ());
+}
 
 void
-Dump::visit (TraitObjectTypeOneBound &)
-{}
+Dump::visit (TraitObjectTypeOneBound &type)
+{
+  // Syntax:
+  //    dyn? TraitBound
+
+  if (type.is_dyn ())
+    stream << "dyn ";
+  visit (type.get_trait_bound ());
+}
 
 void
-Dump::visit (TupleType &)
-{}
+Dump::visit (TupleType &type)
+{
+  // Syntax:
+  //   ( )
+  //   | ( ( Type , )+ Type? )
+
+  stream << '(';
+  visit_items_joined_by_separator (type.get_elems (), ", ");
+  stream << ')';
+}
 
 void
 Dump::visit (NeverType &)
-{}
+{
+  // Syntax:
+  //  !
+
+  stream << '!';
+}
 
 void
-Dump::visit (RawPointerType &)
-{}
+Dump::visit (RawPointerType &type)
+{
+  // Syntax:
+  //    * ( mut | const ) TypeNoBounds
+
+  if (type.get_pointer_type () == RawPointerType::MUT)
+    stream << "*mut ";
+  else /* RawPointerType::CONST */
+    stream << "*const ";
+
+  visit (type.get_type_pointed_to ());
+}
 
 void
 Dump::visit (ReferenceType &type)
 {
+  // Syntax:
+  //    & Lifetime? mut? TypeNoBounds
+
+  stream << '&';
+
+  if (type.has_lifetime ())
+    {
+      visit (type.get_lifetime ());
+      stream << ' ';
+    }
+
+  if (type.get_has_mut ())
+    stream << "mut ";
+
   visit (type.get_type_referenced ());
 }
 
 void
 Dump::visit (ArrayType &type)
 {
+  // Syntax:
+  //    [ Type ; Expression ]
+
+  stream << '[';
   visit (type.get_elem_type ());
+  stream << "; ";
+  visit (type.get_size_expr ());
+  stream << ']';
 }
 
 void
 Dump::visit (SliceType &type)
 {
+  // Syntax:
+  //    [ Type ]
+
+  stream << '[';
   visit (type.get_elem_type ());
+  stream << ']';
 }
 
 void
 Dump::visit (InferredType &)
 {
+  // Syntax:
+  //    _
+
   stream << "_";
 }
 
 void
-Dump::visit (BareFunctionType &)
-{}
+Dump::visit (BareFunctionType &type)
+{
+  // Syntax:
+  //    ForLifetimes? FunctionTypeQualifiers fn
+  //      ( FunctionParametersMaybeNamedVariadic? ) BareFunctionReturnType?
+  //
+  //    BareFunctionReturnType:
+  //      -> TypeNoBounds
+  //
+  //    FunctionParametersMaybeNamedVariadic :
+  //      MaybeNamedFunctionParameters | MaybeNamedFunctionParametersVariadic
+  //
+  //    MaybeNamedFunctionParameters :
+  //      MaybeNamedParam ( , MaybeNamedParam )* ,?
+  //
+  //    MaybeNamedFunctionParametersVariadic :
+  //      ( MaybeNamedParam , )* MaybeNamedParam , OuterAttribute* ...
+
+  if (type.has_for_lifetimes ())
+    visit (type.get_for_lifetimes ());
+
+  visit (type.get_function_qualifiers ());
+
+  stream << "fn (";
+
+  visit_items_joined_by_separator (type.get_function_params (), ", ");
+
+  if (type.is_variadic ())
+    {
+      stream << ", ";
+      visit_items_joined_by_separator (type.get_variadic_attr (), " ");
+      stream << "...";
+    }
+
+  stream << ')';
+
+  if (type.has_return_type ())
+    {
+      stream << " -> ";
+      visit (type.get_return_type ());
+    }
+}
 
 } // namespace AST
 } // namespace Rust
