@@ -3976,6 +3976,14 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      return false;
 	    }
 
+	  if (a->expr && a->expr->expr_type == EXPR_NULL)
+	    {
+	      gfc_error ("Passing intrinsic NULL as actual argument at %L "
+			 "requires an explicit interface", &a->expr->where);
+	      a->expr->error = 1;
+	      return false;
+	    }
+
 	  /* TS 29113, C407b.  */
 	  if (a->expr && a->expr->expr_type == EXPR_VARIABLE
 	      && symbol_rank (a->expr->symtree->n.sym) == -1)
