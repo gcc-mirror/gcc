@@ -8288,6 +8288,8 @@ and,
 	   if (sel.encoding ().encoded_full_vector_p ())
 	     {
 	       auto_sbitmap seen (nelts);
+	       bitmap_clear (seen);
+
 	       unsigned HOST_WIDE_INT count = 0, i;
 
 	       for (i = 0; i < nelts; i++)
