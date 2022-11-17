@@ -355,13 +355,13 @@ convert (tree type, tree expr)
     case BOOLEAN_TYPE:
       return fold_convert (type, expr);
     case INTEGER_TYPE:
-      return fold (convert_to_integer (type, expr));
+      return convert_to_integer (type, expr);
     case POINTER_TYPE:
-      return fold (convert_to_pointer (type, expr));
+      return convert_to_pointer (type, expr);
     case REAL_TYPE:
-      return fold (convert_to_real (type, expr));
+      return convert_to_real (type, expr);
     case COMPLEX_TYPE:
-      return fold (convert_to_complex (type, expr));
+      return convert_to_complex (type, expr);
     default:
       break;
     }
