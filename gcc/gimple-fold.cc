@@ -5392,7 +5392,7 @@ gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
 	return NULL_TREE;
       unsigned int nargs = gimple_call_num_args (call);
       tree bias = gimple_call_arg (call, nargs - 1);
-      gcc_assert (tree_fits_uhwi_p (bias));
+      gcc_assert (tree_fits_shwi_p (bias));
       tree biased_len = int_const_binop (MINUS_EXPR, basic_len, bias);
       unsigned int len = tree_to_uhwi (biased_len);
       unsigned int vect_len
