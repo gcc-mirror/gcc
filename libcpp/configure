@@ -7835,6 +7835,62 @@ case x$enable_languages in
 esac
 
 
+ac_fn_c_check_header_mongrel "$LINENO" "valgrind.h" "ac_cv_header_valgrind_h" "$ac_includes_default"
+if test "x$ac_cv_header_valgrind_h" = xyes; then :
+  have_valgrind_h=yes
+else
+  have_valgrind_h=no
+fi
+
+
+
+# It is certainly possible that there's valgrind but no valgrind.h.
+# GCC relies on making annotations so we must have both.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <valgrind/memcheck.h>" >&5
+$as_echo_n "checking for VALGRIND_DISCARD in <valgrind/memcheck.h>... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <valgrind/memcheck.h>
+#ifndef VALGRIND_DISCARD
+#error VALGRIND_DISCARD not defined
+#endif
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  gcc_cv_header_valgrind_memcheck_h=yes
+else
+  gcc_cv_header_valgrind_memcheck_h=no
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_valgrind_memcheck_h" >&5
+$as_echo "$gcc_cv_header_valgrind_memcheck_h" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <memcheck.h>" >&5
+$as_echo_n "checking for VALGRIND_DISCARD in <memcheck.h>... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <memcheck.h>
+#ifndef VALGRIND_DISCARD
+#error VALGRIND_DISCARD not defined
+#endif
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  gcc_cv_header_memcheck_h=yes
+else
+  gcc_cv_header_memcheck_h=no
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_memcheck_h" >&5
+$as_echo "$gcc_cv_header_memcheck_h" >&6; }
+if test $gcc_cv_header_valgrind_memcheck_h = yes; then
+
+$as_echo "#define HAVE_VALGRIND_MEMCHECK_H 1" >>confdefs.h
+
+fi
+if test $gcc_cv_header_memcheck_h = yes; then
+
+$as_echo "#define HAVE_MEMCHECK_H 1" >>confdefs.h
+
+fi
+
 # Check whether --enable-valgrind-annotations was given.
 if test "${enable_valgrind_annotations+set}" = set; then :
   enableval=$enable_valgrind_annotations;
@@ -7847,6 +7903,7 @@ if test x$enable_valgrind_annotations != xno \
   if (test $have_valgrind_h = no \
       && test $gcc_cv_header_memcheck_h = no \
       && test $gcc_cv_header_valgrind_memcheck_h = no); then
+    as_fn_error $? "*** valgrind annotations requested, but" "$LINENO" 5
     as_fn_error $? "*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h" "$LINENO" 5
   fi
 
