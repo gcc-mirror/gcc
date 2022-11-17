@@ -104,17 +104,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Obtain a pointer to an object
        *  @param  __r  A reference to an object of type `element_type`
-       *  @return `pointer::pointer_to(__e)`
-       *  @pre `pointer::pointer_to(__e)` is a valid expression.
+       *  @return `pointer::pointer_to(__r)`
+       *  @pre `pointer::pointer_to(__r)` is a valid expression.
       */
       static pointer
-      pointer_to(element_type& __e)
+      pointer_to(element_type& __r)
 #if __cpp_lib_concepts
       requires requires {
-	{ pointer::pointer_to(__e) } -> convertible_to<pointer>;
+	{ pointer::pointer_to(__r) } -> convertible_to<pointer>;
       }
 #endif
-      { return pointer::pointer_to(__e); }
+      { return pointer::pointer_to(__r); }
     };
 
   // Do not define pointer_traits<P>::pointer_to if element type is void.
