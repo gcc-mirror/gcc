@@ -1407,7 +1407,7 @@ foperator_abs::op1_range (frange &r, tree type,
       neg_nan.set_nan (type, true);
       r.union_ (neg_nan);
     }
-  if (r.known_isnan ())
+  if (r.known_isnan () || r.undefined_p ())
     return true;
   // Then add the negative of each pair:
   // ABS(op1) = [5,20] would yield op1 => [-20,-5][5,20].
