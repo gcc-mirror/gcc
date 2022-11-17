@@ -226,7 +226,7 @@
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      return !splittable_const_int_operand (op, mode);
+      return true;
 
     case CONST:
     case SYMBOL_REF:
