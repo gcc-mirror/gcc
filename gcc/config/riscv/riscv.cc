@@ -5204,25 +5204,29 @@ riscv_expand_epilogue (int style)
 	  step1 -= scalable_frame;
 	}
 
-      /* Get an rtx for STEP1 that we can add to BASE.  */
-      rtx adjust = GEN_INT (step1.to_constant ());
-      if (!SMALL_OPERAND (step1.to_constant ()))
+      /* Get an rtx for STEP1 that we can add to BASE.
+	 Skip if adjust equal to zero.  */
+      if (step1.to_constant () != 0)
 	{
-	  riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), adjust);
-	  adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	  rtx adjust = GEN_INT (step1.to_constant ());
+	  if (!SMALL_OPERAND (step1.to_constant ()))
+	    {
+	      riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), adjust);
+	      adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	    }
+
+	  insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+					   stack_pointer_rtx,
+					   adjust));
+	  rtx dwarf = NULL_RTX;
+	  rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					     GEN_INT (step2));
+
+	  dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  REG_NOTES (insn) = dwarf;
 	}
-
-      insn = emit_insn (
-	       gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, adjust));
-
-      rtx dwarf = NULL_RTX;
-      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					 GEN_INT (step2));
-
-      dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
-      RTX_FRAME_RELATED_P (insn) = 1;
-
-      REG_NOTES (insn) = dwarf;
     }
   else if (frame_pointer_needed)
     {
