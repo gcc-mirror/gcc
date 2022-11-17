@@ -399,6 +399,7 @@ GNAT_ADA_OBJS =	\
  ada/sem_ch12.o	\
  ada/sem_ch13.o	\
  ada/sem_ch2.o	\
+ ada/accessibility.o	\
  ada/sem_ch3.o	\
  ada/sem_ch4.o	\
  ada/sem_ch5.o	\

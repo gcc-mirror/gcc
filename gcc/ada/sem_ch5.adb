@@ -2523,6 +2523,7 @@ package body Sem_Ch5 is
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                 Name                =>
                   New_Copy_Tree (Iter_Name, New_Sloc => Loc));
+            Set_Comes_From_Iterator (Decl);
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));

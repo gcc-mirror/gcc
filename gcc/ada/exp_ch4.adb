@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -33,7 +34,6 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Aggr;       use Exp_Aggr;
-with Exp_Atag;       use Exp_Atag;
 with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
@@ -560,219 +560,6 @@ package body Exp_Ch4 is
       PtrT   : constant Entity_Id  := Etype (N);
       DesigT : constant Entity_Id  := Designated_Type (PtrT);
 
-      procedure Apply_Accessibility_Check
-        (Ref            : Node_Id;
-         Built_In_Place : Boolean := False);
-      --  Ada 2005 (AI-344): For an allocator with a class-wide designated
-      --  type, generate an accessibility check to verify that the level of the
-      --  type of the created object is not deeper than the level of the access
-      --  type. If the type of the qualified expression is class-wide, then
-      --  always generate the check (except in the case where it is known to be
-      --  unnecessary, see comment below). Otherwise, only generate the check
-      --  if the level of the qualified expression type is statically deeper
-      --  than the access type.
-      --
-      --  Although the static accessibility will generally have been performed
-      --  as a legality check, it won't have been done in cases where the
-      --  allocator appears in generic body, so a run-time check is needed in
-      --  general. One special case is when the access type is declared in the
-      --  same scope as the class-wide allocator, in which case the check can
-      --  never fail, so it need not be generated.
-      --
-      --  As an open issue, there seem to be cases where the static level
-      --  associated with the class-wide object's underlying type is not
-      --  sufficient to perform the proper accessibility check, such as for
-      --  allocators in nested subprograms or accept statements initialized by
-      --  class-wide formals when the actual originates outside at a deeper
-      --  static level. The nested subprogram case might require passing
-      --  accessibility levels along with class-wide parameters, and the task
-      --  case seems to be an actual gap in the language rules that needs to
-      --  be fixed by the ARG. ???
-
-      -------------------------------
-      -- Apply_Accessibility_Check --
-      -------------------------------
-
-      procedure Apply_Accessibility_Check
-        (Ref            : Node_Id;
-         Built_In_Place : Boolean := False)
-      is
-         Pool_Id   : constant Entity_Id := Associated_Storage_Pool (PtrT);
-         Cond      : Node_Id;
-         Fin_Call  : Node_Id;
-         Free_Stmt : Node_Id;
-         Obj_Ref   : Node_Id;
-         Stmts     : List_Id;
-
-      begin
-         if Ada_Version >= Ada_2005
-           and then Is_Class_Wide_Type (DesigT)
-           and then Tagged_Type_Expansion
-           and then not Scope_Suppress.Suppress (Accessibility_Check)
-           and then not No_Dynamic_Accessibility_Checks_Enabled (Ref)
-           and then
-             (Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT)
-               or else
-                 (Is_Class_Wide_Type (Etype (Exp))
-                   and then Scope (PtrT) /= Current_Scope))
-         then
-            --  If the allocator was built in place, Ref is already a reference
-            --  to the access object initialized to the result of the allocator
-            --  (see Exp_Ch6.Make_Build_In_Place_Call_In_Allocator). We call
-            --  Remove_Side_Effects for cases where the build-in-place call may
-            --  still be the prefix of the reference (to avoid generating
-            --  duplicate calls). Otherwise, it is the entity associated with
-            --  the object containing the address of the allocated object.
-
-            if Built_In_Place then
-               Remove_Side_Effects (Ref);
-               Obj_Ref := New_Copy_Tree (Ref);
-            else
-               Obj_Ref := New_Occurrence_Of (Ref, Loc);
-            end if;
-
-            --  For access to interface types we must generate code to displace
-            --  the pointer to the base of the object since the subsequent code
-            --  references components located in the TSD of the object (which
-            --  is associated with the primary dispatch table --see a-tags.ads)
-            --  and also generates code invoking Free, which requires also a
-            --  reference to the base of the unallocated object.
-
-            if Is_Interface (DesigT) and then Tagged_Type_Expansion then
-               Obj_Ref :=
-                 Unchecked_Convert_To (Etype (Obj_Ref),
-                   Make_Function_Call (Loc,
-                     Name                   =>
-                       New_Occurrence_Of (RTE (RE_Base_Address), Loc),
-                     Parameter_Associations => New_List (
-                       Unchecked_Convert_To (RTE (RE_Address),
-                         New_Copy_Tree (Obj_Ref)))));
-            end if;
-
-            --  Step 1: Create the object clean up code
-
-            Stmts := New_List;
-
-            --  Deallocate the object if the accessibility check fails. This
-            --  is done only on targets or profiles that support deallocation.
-
-            --    Free (Obj_Ref);
-
-            if RTE_Available (RE_Free) then
-               Free_Stmt := Make_Free_Statement (Loc, New_Copy_Tree (Obj_Ref));
-               Set_Storage_Pool (Free_Stmt, Pool_Id);
-
-               Append_To (Stmts, Free_Stmt);
-
-            --  The target or profile cannot deallocate objects
-
-            else
-               Free_Stmt := Empty;
-            end if;
-
-            --  Finalize the object if applicable. Generate:
-
-            --    [Deep_]Finalize (Obj_Ref.all);
-
-            if Needs_Finalization (DesigT)
-              and then not No_Heap_Finalization (PtrT)
-            then
-               Fin_Call :=
-                 Make_Final_Call
-                   (Obj_Ref =>
-                      Make_Explicit_Dereference (Loc, New_Copy (Obj_Ref)),
-                    Typ     => DesigT);
-
-               --  Guard against a missing [Deep_]Finalize when the designated
-               --  type was not properly frozen.
-
-               if No (Fin_Call) then
-                  Fin_Call := Make_Null_Statement (Loc);
-               end if;
-
-               --  When the target or profile supports deallocation, wrap the
-               --  finalization call in a block to ensure proper deallocation
-               --  even if finalization fails. Generate:
-
-               --    begin
-               --       <Fin_Call>
-               --    exception
-               --       when others =>
-               --          <Free_Stmt>
-               --          raise;
-               --    end;
-
-               if Present (Free_Stmt) then
-                  Fin_Call :=
-                    Make_Block_Statement (Loc,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements => New_List (Fin_Call),
-
-                        Exception_Handlers => New_List (
-                          Make_Exception_Handler (Loc,
-                            Exception_Choices => New_List (
-                              Make_Others_Choice (Loc)),
-                            Statements        => New_List (
-                              New_Copy_Tree (Free_Stmt),
-                              Make_Raise_Statement (Loc))))));
-               end if;
-
-               Prepend_To (Stmts, Fin_Call);
-            end if;
-
-            --  Signal the accessibility failure through a Program_Error
-
-            Append_To (Stmts,
-              Make_Raise_Program_Error (Loc,
-                Reason => PE_Accessibility_Check_Failed));
-
-            --  Step 2: Create the accessibility comparison
-
-            --  Generate:
-            --    Ref'Tag
-
-            Obj_Ref :=
-              Make_Attribute_Reference (Loc,
-                Prefix         => Obj_Ref,
-                Attribute_Name => Name_Tag);
-
-            --  For tagged types, determine the accessibility level by looking
-            --  at the type specific data of the dispatch table. Generate:
-
-            --    Type_Specific_Data (Address (Ref'Tag)).Access_Level
-
-            if Tagged_Type_Expansion then
-               Cond := Build_Get_Access_Level (Loc, Obj_Ref);
-
-            --  Use a runtime call to determine the accessibility level when
-            --  compiling on virtual machine targets. Generate:
-
-            --    Get_Access_Level (Ref'Tag)
-
-            else
-               Cond :=
-                 Make_Function_Call (Loc,
-                   Name                   =>
-                     New_Occurrence_Of (RTE (RE_Get_Access_Level), Loc),
-                   Parameter_Associations => New_List (Obj_Ref));
-            end if;
-
-            Cond :=
-              Make_Op_Gt (Loc,
-                Left_Opnd  => Cond,
-                Right_Opnd => Accessibility_Level (N, Dynamic_Level));
-
-            --  Due to the complexity and side effects of the check, utilize an
-            --  if statement instead of the regular Program_Error circuitry.
-
-            Insert_Action (N,
-              Make_Implicit_If_Statement (N,
-                Condition       => Cond,
-                Then_Statements => Stmts));
-         end if;
-      end Apply_Accessibility_Check;
-
       --  Local variables
 
       Indic         : constant Node_Id   := Subtype_Mark (Expression (N));
@@ -884,7 +671,8 @@ package body Exp_Ch4 is
 
          if Is_Build_In_Place_Function_Call (Exp) then
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
-            Apply_Accessibility_Check (N, Built_In_Place => True);
+            Apply_Accessibility_Check_For_Allocator
+              (N, Exp, N, Built_In_Place => True);
             return;
 
          --  Ada 2005 (AI-318-02): Specialization of the previous case for
@@ -896,7 +684,8 @@ package body Exp_Ch4 is
 
          elsif Present (Unqual_BIP_Iface_Function_Call (Exp)) then
             Make_Build_In_Place_Iface_Call_In_Allocator (N, Exp);
-            Apply_Accessibility_Check (N, Built_In_Place => True);
+            Apply_Accessibility_Check_For_Allocator
+              (N, Exp, N, Built_In_Place => True);
             return;
          end if;
 
@@ -1191,7 +980,7 @@ package body Exp_Ch4 is
          --  Note: the accessibility check must be inserted after the call to
          --  [Deep_]Adjust to ensure proper completion of the assignment.
 
-         Apply_Accessibility_Check (Temp);
+         Apply_Accessibility_Check_For_Allocator (N, Exp, Temp);
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);

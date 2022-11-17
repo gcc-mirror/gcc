@@ -953,6 +953,11 @@ package Sinfo is
    --    Present in N_Simple_Return_Statement nodes. True if this node was
    --    constructed as part of the N_Extended_Return_Statement expansion.
 
+   --  Comes_From_Iterator
+   --    Present in N_Object_Renaming_Declaration nodes. True if this node was
+   --    was constructed as part of the expansion of an iterator
+   --    specification.
+
    --  Compile_Time_Known_Aggregate
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
    --    evaluated at compile time without raising constraint error. Such

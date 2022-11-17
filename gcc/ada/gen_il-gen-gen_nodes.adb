@@ -906,6 +906,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Subtype_Mark, Node_Id, Default_Empty),
         Sy (Access_Definition, Node_Id, Default_Empty),
         Sy (Name, Node_Id, Default_Empty),
+        Sm (Comes_From_Iterator, Flag),
         Sm (Corresponding_Generic_Association, Node_Id)));
 
    Cc (N_Package_Renaming_Declaration, N_Renaming_Declaration,

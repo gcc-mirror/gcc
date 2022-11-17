@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;    use Accessibility;
 with Aspects;          use Aspects;
 with Atree;            use Atree;
 with Checks;           use Checks;

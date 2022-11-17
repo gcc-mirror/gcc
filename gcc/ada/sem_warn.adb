@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Atree;          use Atree;
 with Debug;          use Debug;
 with Einfo;          use Einfo;

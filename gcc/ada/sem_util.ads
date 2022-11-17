@@ -44,40 +44,6 @@ package Sem_Util is
    --  including the cases where there can't be any because e.g. the type is
    --  not tagged.
 
-   type Accessibility_Level_Kind is
-     (Dynamic_Level,
-      Object_Decl_Level,
-      Zero_On_Dynamic_Level);
-   --  Accessibility_Level_Kind is an enumerated type which captures the
-   --  different modes in which an accessibility level could be obtained for
-   --  a given expression.
-
-   --  When in the context of the function Accessibility_Level,
-   --  Accessibility_Level_Kind signals what type of accessibility level to
-   --  obtain. For example, when Level is Dynamic_Level, a defining identifier
-   --  associated with a SAOOAAT may be returned or an N_Integer_Literal node.
-   --  When the level is Object_Decl_Level, an N_Integer_Literal node is
-   --  returned containing the level of the declaration of the object if
-   --  relevant (be it a SAOOAAT or otherwise). Finally, Zero_On_Dynamic_Level
-   --  returns library level for all cases where the accessibility level is
-   --  dynamic (used to bypass static accessibility checks in dynamic cases).
-
-   function Accessibility_Level
-     (Expr              : Node_Id;
-      Level             : Accessibility_Level_Kind;
-      In_Return_Context : Boolean := False;
-      Allow_Alt_Model   : Boolean := True) return Node_Id;
-   --  Centralized accessibility level calculation routine for finding the
-   --  accessibility level of a given expression Expr.
-
-   --  In_Return_Context forces the Accessibility_Level calculations to be
-   --  carried out "as if" Expr existed in a return value. This is useful for
-   --  calculating the accessibility levels for discriminant associations
-   --  and return aggregates.
-
-   --  The Allow_Alt_Model parameter allows the alternative level calculation
-   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
-
    function Acquire_Warning_Match_String (Str_Lit : Node_Id) return String;
    --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to get
    --  the given string argument, adding leading and trailing asterisks if they
@@ -696,22 +662,6 @@ package Sem_Util is
    --  as Needs_Finalization except with pragma Restrictions (No_Finalization),
    --  in which case we know that class-wide objects do not need finalization.
 
-   function Deepest_Type_Access_Level
-     (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean := True) return Uint;
-
-   --  Same as Type_Access_Level, except that if the type is the type of an Ada
-   --  2012 stand-alone object of an anonymous access type, then return the
-   --  static accessibility level of the object. In that case, the dynamic
-   --  accessibility level of the object may take on values in a range. The low
-   --  bound of that range is returned by Type_Access_Level; this function
-   --  yields the high bound of that range. Also differs from Type_Access_Level
-   --  in the case of a descendant of a generic formal type (returns Int'Last
-   --  instead of 0).
-
-   --  The Allow_Alt_Model parameter allows the alternative level calculation
-   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
-
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
    --  declaration has a specification, the entity is obtained from the
@@ -785,10 +735,6 @@ package Sem_Util is
    --  warning by mentioning discriminants explicitly. This was created for
    --  private components of protected objects, but is generally useful when
    --  restriction No_Implicit_Heap_Allocation is active.
-
-   function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id;
-   --  Same as Einfo.Extra_Accessibility except thtat object renames
-   --  are looked through.
 
    function Effective_Reads_Enabled (Id : Entity_Id) return Boolean;
    --  Id should be the entity of a state abstraction, an object, or a type.
@@ -1146,10 +1092,6 @@ package Sem_Util is
    --  discriminants. Otherwise all components of the parent must be included
    --  in the subtype for semantic analysis.
 
-   function Get_Dynamic_Accessibility (E : Entity_Id) return Entity_Id;
-   --  Obtain the accessibility level for a given entity formal taking into
-   --  account both extra and minimum accessibility.
-
    function Get_Actual_Subtype (N : Node_Id) return Entity_Id;
    --  Given a node for an expression, obtain the actual subtype of the
    --  expression. In the case of a parameter where the formal is an
@@ -1393,18 +1335,6 @@ package Sem_Util is
    --  don't look inside packed array types. If Recurse is False, just
    --  go down one level (so it's no longer the "fullest" view).
 
-   function Has_Access_Values (T : Entity_Id) return Boolean;
-   --  Returns true if the underlying type of T is an access type, or has a
-   --  component (at any recursive level) that is an access type. This is a
-   --  conservative predicate, if it is not known whether or not T contains
-   --  access values (happens for generic formals in some cases), then False is
-   --  returned.  Note that tagged types return False. Even though the tag is
-   --  implemented as an access type internally, this function tests only for
-   --  access types known to the programmer. See also Has_Tagged_Component.
-
-   function Has_Anonymous_Access_Discriminant (Typ : Entity_Id) return Boolean;
-   --  Returns True if Typ has one or more anonymous access discriminants
-
    type Alignment_Result is (Known_Compatible, Unknown, Known_Incompatible);
    --  Result of Has_Compatible_Alignment test, description found below. Note
    --  that the values are arranged in increasing order of problematicness.
@@ -1544,20 +1474,6 @@ package Sem_Util is
    --  Return True if the loop has no side effect and can therefore be
    --  marked for removal. Return False if N is not a N_Loop_Statement.
 
-   subtype Static_Accessibility_Level_Kind
-     is Accessibility_Level_Kind range Object_Decl_Level
-                                         .. Zero_On_Dynamic_Level;
-   --  Restrict the reange of Accessibility_Level_Kind to be non-dynamic for
-   --  use in the static version of Accessibility_Level below.
-
-   function Static_Accessibility_Level
-     (Expr              : Node_Id;
-      Level             : Static_Accessibility_Level_Kind;
-      In_Return_Context : Boolean := False) return Uint;
-   --  Overloaded version of Accessibility_Level which returns a universal
-   --  integer for use in compile-time checking. Note: Level is restricted to
-   --  be non-dynamic.
-
    function Is_Newly_Constructed
      (Exp : Node_Id; Context_Requires_NC : Boolean) return Boolean;
    --  Indicates whether a given expression is "newly constructed" (RM 4.4).
@@ -1643,11 +1559,6 @@ package Sem_Util is
    --  Returns True if Typ is a composite type (array or record) that is either
    --  a tagged type or has a subcomponent that is tagged. Returns False for a
    --  noncomposite type, or if no tagged subcomponents are present.
-
-   function Has_Unconstrained_Access_Discriminants
-     (Subtyp : Entity_Id) return Boolean;
-   --  Returns True if the given subtype is unconstrained and has one or more
-   --  access discriminants.
 
    function Has_Undefined_Reference (Expr : Node_Id) return Boolean;
    --  Given arbitrary expression Expr, determine whether it contains at
@@ -1821,10 +1732,6 @@ package Sem_Util is
    --  Obtain the invalid value for scalar type Scal_Typ as either specified by
    --  pragma Initialize_Scalars or by the binder. Return an expression created
    --  at source location Loc, which denotes the invalid value.
-
-   function Is_Anonymous_Access_Actual (N : Node_Id) return Boolean;
-   --  Determine if N is used as an actual for a call whose corresponding
-   --  formal is of an anonymous access type.
 
    function Is_Access_Subprogram_Wrapper (E : Entity_Id) return Boolean;
    --  True if E is the constructed wrapper for an access_to_subprogram
@@ -2400,21 +2307,6 @@ package Sem_Util is
    --  Determine whether arbitrary entity Id denotes the anonymous object
    --  created for a single task type.
 
-   function Is_Special_Aliased_Formal_Access
-     (Exp               : Node_Id;
-      In_Return_Context : Boolean := False) return Boolean;
-   --  Determines whether a dynamic check must be generated for explicitly
-   --  aliased formals within a function Scop for the expression Exp.
-
-   --  In_Return_Context forces Is_Special_Aliased_Formal_Access to assume
-   --  that Exp is within a return value which is useful for checking
-   --  expressions within discriminant associations of return objects.
-
-   --  More specially, Is_Special_Aliased_Formal_Access checks that Exp is a
-   --  'Access attribute reference within a return statement where the ultimate
-   --  prefix is an aliased formal of Scop and that Scop returns an anonymous
-   --  access type. See RM 3.10.2 for more details.
-
    function Is_Specific_Tagged_Type (Typ : Entity_Id) return Boolean;
    --  Determine whether an arbitrary [private] type is specifically tagged
 
@@ -2691,12 +2583,6 @@ package Sem_Util is
    --  which is a controlling formal. Used in Ada 2005 mode to solve the
    --  syntactic ambiguity that results from an indexing of a function call
    --  that returns an array, so that Obj.F (X, Y) may mean F (Ob) (X, Y).
-
-   function Needs_Result_Accessibility_Level
-     (Func_Id : Entity_Id) return Boolean;
-   --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
-   --  parameter to identify the accessibility level of the function result
-   --  "determined by the point of call".
 
    function Needs_Secondary_Stack (Id : Entity_Id) return Boolean;
    --  Return true if functions whose result type is Id must return on the
@@ -3340,9 +3226,6 @@ package Sem_Util is
    --  Determine whether node N is a loop statement subject to at least one
    --  'Loop_Entry attribute.
 
-   function Subprogram_Access_Level (Subp : Entity_Id) return Uint;
-   --  Return the accessibility level of the view denoted by Subp
-
    function Support_Atomic_Primitives (Typ : Entity_Id) return Boolean;
    --  Return True if Typ supports the GCC built-in atomic operations (i.e. if
    --  Typ is properly sized and aligned).
@@ -3372,19 +3255,6 @@ package Sem_Util is
    --  This is the same as Traverse_More_Func except that no result is
    --  returned, i.e. Traverse_More_Func is called and the result is simply
    --  discarded.
-
-   function Type_Access_Level
-     (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean   := True;
-      Assoc_Ent       : Entity_Id := Empty) return Uint;
-   --  Return the accessibility level of Typ
-
-   --  The Allow_Alt_Model parameter allows the alternative level calculation
-   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
-
-   --  Assoc_Ent allows for the optional specification of the entity associated
-   --  with Typ. This gets utilized mostly for anonymous access type
-   --  processing, where context matters in interpreting Typ's level.
 
    function Type_Without_Stream_Operation
      (T  : Entity_Id;

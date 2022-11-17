@@ -98,6 +98,7 @@ package Gen_IL.Fields is
       Cleanup_Actions,
       Comes_From_Check_Or_Contract,
       Comes_From_Extended_Return_Statement,
+      Comes_From_Iterator,
       Compile_Time_Known_Aggregate,
       Component_Associations,
       Component_Clauses,

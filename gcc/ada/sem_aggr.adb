@@ -3242,7 +3242,7 @@ package body Sem_Aggr is
             end loop;
          end;
 
-      else
+      elsif Present (Assign_Indexed_Subp) then
          --  Indexed Aggregate. Positional or indexed component
          --  can be present, but not both. Choices must be static
          --  values or ranges with static bounds.
