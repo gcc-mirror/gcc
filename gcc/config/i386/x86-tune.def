@@ -536,12 +536,12 @@ DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_CORE_AVX512)
 /* X86_TUNE_AVX256_MOVE_BY_PIECES: Optimize move_by_pieces with 256-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX256_MOVE_BY_PIECES, "avx256_move_by_pieces",
-	  m_CORE_AVX512)
+	  m_ALDERLAKE | m_CORE_AVX2)
 
 /* X86_TUNE_AVX256_STORE_BY_PIECES: Optimize store_by_pieces with 256-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX256_STORE_BY_PIECES, "avx256_store_by_pieces",
-	  m_CORE_AVX512)
+	  m_ALDERLAKE | m_CORE_AVX2)
 
 /* X86_TUNE_AVX512_MOVE_BY_PIECES: Optimize move_by_pieces with 512-bit
    AVX instructions.  */
