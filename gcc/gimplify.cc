@@ -3272,6 +3272,8 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
 			fallback | fb_lvalue);
   ret = MIN (ret, tret);
+  if (ret == GS_ERROR)
+    return GS_ERROR;
 
   /* Step 2a: if we have component references we do not support on
      registers then make sure the base isn't a register.  Of course
@@ -3708,6 +3710,9 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
      gimplify_expr to use an internal post queue.  */
   ret = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
 		       is_gimple_call_addr, fb_rvalue);
+
+  if (ret == GS_ERROR)
+    return GS_ERROR;
 
   nargs = call_expr_nargs (*expr_p);
 
