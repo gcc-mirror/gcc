@@ -285,6 +285,8 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
 	     avx512vl exist.  */
 	  || (mask2 == OPTION_MASK_ISA2_AVXVNNI)
 	  || (mask2 == OPTION_MASK_ISA2_AVXIFMA)
+	  || (mask2 == (OPTION_MASK_ISA2_AVXNECONVERT
+			| OPTION_MASK_ISA2_AVX512BF16))
 	  || (lang_hooks.builtin_function
 	      == lang_hooks.builtin_function_ext_scope))
 	{
