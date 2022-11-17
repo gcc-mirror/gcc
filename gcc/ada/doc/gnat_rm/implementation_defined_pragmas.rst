@@ -1438,20 +1438,6 @@ This pragma applies only to protected types and specifies the floor
 deadline inherited by a task when the task enters a protected object.
 It is effective only when the EDF scheduling policy is used.
 
-.. _Pragma-Default_Initial_Condition:
-
-Pragma Default_Initial_Condition
-================================
-
-Syntax:
-
-.. code-block:: ada
-
-  pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
-
-For the semantics of this pragma, see the entry for aspect
-``Default_Initial_Condition`` in the SPARK 2014 Reference Manual, section 7.3.3.
-
 Pragma Debug
 ============
 
@@ -1494,6 +1480,20 @@ Syntax:
 This pragma is equivalent to a corresponding ``Check_Policy`` pragma
 with a first argument of ``Debug``. It is retained for historical
 compatibility reasons.
+
+.. _Pragma-Default_Initial_Condition:
+
+Pragma Default_Initial_Condition
+================================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect
+``Default_Initial_Condition`` in the SPARK 2014 Reference Manual, section 7.3.3.
 
 Pragma Default_Scalar_Storage_Order
 ===================================
@@ -4640,6 +4640,22 @@ even though
 RM 8.3 (15) stipulates that an overridden operation is not visible within the
 declaration of the overriding operation.
 
+.. _Pragma-Part_Of:
+
+Pragma Part_Of
+==============
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Part_Of (ABSTRACT_STATE);
+
+  ABSTRACT_STATE ::= NAME
+
+For the semantics of this pragma, see the entry for aspect ``Part_Of`` in the
+SPARK 2014 Reference Manual, section 7.2.6.
+
 Pragma Partition_Elaboration_Policy
 ===================================
 
@@ -4656,22 +4672,6 @@ Syntax:
 This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
-
-.. _Pragma-Part_Of:
-
-Pragma Part_Of
-==============
-
-Syntax:
-
-.. code-block:: ada
-
-  pragma Part_Of (ABSTRACT_STATE);
-
-  ABSTRACT_STATE ::= NAME
-
-For the semantics of this pragma, see the entry for aspect ``Part_Of`` in the
-SPARK 2014 Reference Manual, section 7.2.6.
 
 Pragma Passive
 ==============
@@ -7297,29 +7297,6 @@ Note that in addition to the checks defined in the Ada RM, GNAT recognizes a
 number of implementation-defined check names. See the description of pragma
 ``Suppress`` for full details.
 
-Pragma Use_VADS_Size
-====================
-.. index:: Size, VADS compatibility
-
-.. index:: Rational profile
-
-
-Syntax:
-
-
-.. code-block:: ada
-
-  pragma Use_VADS_Size;
-
-
-This is a configuration pragma.  In a unit to which it applies, any use
-of the 'Size attribute is automatically interpreted as a use of the
-'VADS_Size attribute.  Note that this may result in incorrect semantic
-processing of valid Ada 95 or Ada 2005 programs.  This is intended to aid in
-the handling of existing code which depends on the interpretation of Size
-as implemented in the VADS compiler.  See description of the VADS_Size
-attribute for further details.
-
 .. _Pragma-Unused:
 
 Pragma Unused
@@ -7353,6 +7330,29 @@ variables whose name contains one of the substrings
 are typically to be used in cases where such warnings are expected.
 Thus it is never necessary to use ``pragma Unused`` for such
 variables, though it is harmless to do so.
+
+Pragma Use_VADS_Size
+====================
+.. index:: Size, VADS compatibility
+
+.. index:: Rational profile
+
+
+Syntax:
+
+
+.. code-block:: ada
+
+  pragma Use_VADS_Size;
+
+
+This is a configuration pragma.  In a unit to which it applies, any use
+of the 'Size attribute is automatically interpreted as a use of the
+'VADS_Size attribute.  Note that this may result in incorrect semantic
+processing of valid Ada 95 or Ada 2005 programs.  This is intended to aid in
+the handling of existing code which depends on the interpretation of Size
+as implemented in the VADS compiler.  See description of the VADS_Size
+attribute for further details.
 
 Pragma Validity_Checks
 ======================

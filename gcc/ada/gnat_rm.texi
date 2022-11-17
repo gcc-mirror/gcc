@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 14, 2022
+GNAT Reference Manual , Nov 18, 2022
 
 AdaCore
 
@@ -135,9 +135,9 @@ Implementation Defined Pragmas
 * Pragma CPP_Vtable:: 
 * Pragma CPU:: 
 * Pragma Deadline_Floor:: 
-* Pragma Default_Initial_Condition:: 
 * Pragma Debug:: 
 * Pragma Debug_Policy:: 
+* Pragma Default_Initial_Condition:: 
 * Pragma Default_Scalar_Storage_Order:: 
 * Pragma Default_Storage_Pool:: 
 * Pragma Depends:: 
@@ -215,8 +215,8 @@ Implementation Defined Pragmas
 * Pragma Ordered:: 
 * Pragma Overflow_Mode:: 
 * Pragma Overriding_Renamings:: 
-* Pragma Partition_Elaboration_Policy:: 
 * Pragma Part_Of:: 
+* Pragma Partition_Elaboration_Policy:: 
 * Pragma Passive:: 
 * Pragma Persistent_BSS:: 
 * Pragma Post:: 
@@ -284,8 +284,8 @@ Implementation Defined Pragmas
 * Pragma Unreferenced_Objects:: 
 * Pragma Unreserve_All_Interrupts:: 
 * Pragma Unsuppress:: 
-* Pragma Use_VADS_Size:: 
 * Pragma Unused:: 
+* Pragma Use_VADS_Size:: 
 * Pragma Validity_Checks:: 
 * Pragma Volatile:: 
 * Pragma Volatile_Full_Access:: 
@@ -1220,9 +1220,9 @@ consideration, the use of these pragmas should be minimized.
 * Pragma CPP_Vtable:: 
 * Pragma CPU:: 
 * Pragma Deadline_Floor:: 
-* Pragma Default_Initial_Condition:: 
 * Pragma Debug:: 
 * Pragma Debug_Policy:: 
+* Pragma Default_Initial_Condition:: 
 * Pragma Default_Scalar_Storage_Order:: 
 * Pragma Default_Storage_Pool:: 
 * Pragma Depends:: 
@@ -1300,8 +1300,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ordered:: 
 * Pragma Overflow_Mode:: 
 * Pragma Overriding_Renamings:: 
-* Pragma Partition_Elaboration_Policy:: 
 * Pragma Part_Of:: 
+* Pragma Partition_Elaboration_Policy:: 
 * Pragma Passive:: 
 * Pragma Persistent_BSS:: 
 * Pragma Post:: 
@@ -1369,8 +1369,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Unreferenced_Objects:: 
 * Pragma Unreserve_All_Interrupts:: 
 * Pragma Unsuppress:: 
-* Pragma Use_VADS_Size:: 
 * Pragma Unused:: 
+* Pragma Use_VADS_Size:: 
 * Pragma Validity_Checks:: 
 * Pragma Volatile:: 
 * Pragma Volatile_Full_Access:: 
@@ -2823,7 +2823,7 @@ This pragma is standard in Ada 2012, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
-@node Pragma Deadline_Floor,Pragma Default_Initial_Condition,Pragma CPU,Implementation Defined Pragmas
+@node Pragma Deadline_Floor,Pragma Debug,Pragma CPU,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-deadline-floor}@anchor{4c}
 @section Pragma Deadline_Floor
 
@@ -2838,22 +2838,8 @@ This pragma applies only to protected types and specifies the floor
 deadline inherited by a task when the task enters a protected object.
 It is effective only when the EDF scheduling policy is used.
 
-@node Pragma Default_Initial_Condition,Pragma Debug,Pragma Deadline_Floor,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id8}@anchor{4d}@anchor{gnat_rm/implementation_defined_pragmas pragma-default-initial-condition}@anchor{4e}
-@section Pragma Default_Initial_Condition
-
-
-Syntax:
-
-@example
-pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
-@end example
-
-For the semantics of this pragma, see the entry for aspect
-@code{Default_Initial_Condition} in the SPARK 2014 Reference Manual, section 7.3.3.
-
-@node Pragma Debug,Pragma Debug_Policy,Pragma Default_Initial_Condition,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-debug}@anchor{4f}
+@node Pragma Debug,Pragma Debug_Policy,Pragma Deadline_Floor,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas pragma-debug}@anchor{4d}
 @section Pragma Debug
 
 
@@ -2880,8 +2866,8 @@ pragmas can be enabled either by use of the command line switch `-gnata'
 or by use of the pragma @code{Check_Policy} with a first argument of
 @code{Debug}.
 
-@node Pragma Debug_Policy,Pragma Default_Scalar_Storage_Order,Pragma Debug,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-debug-policy}@anchor{50}
+@node Pragma Debug_Policy,Pragma Default_Initial_Condition,Pragma Debug,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas pragma-debug-policy}@anchor{4e}
 @section Pragma Debug_Policy
 
 
@@ -2895,7 +2881,21 @@ This pragma is equivalent to a corresponding @code{Check_Policy} pragma
 with a first argument of @code{Debug}. It is retained for historical
 compatibility reasons.
 
-@node Pragma Default_Scalar_Storage_Order,Pragma Default_Storage_Pool,Pragma Debug_Policy,Implementation Defined Pragmas
+@node Pragma Default_Initial_Condition,Pragma Default_Scalar_Storage_Order,Pragma Debug_Policy,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas id8}@anchor{4f}@anchor{gnat_rm/implementation_defined_pragmas pragma-default-initial-condition}@anchor{50}
+@section Pragma Default_Initial_Condition
+
+
+Syntax:
+
+@example
+pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
+@end example
+
+For the semantics of this pragma, see the entry for aspect
+@code{Default_Initial_Condition} in the SPARK 2014 Reference Manual, section 7.3.3.
+
+@node Pragma Default_Scalar_Storage_Order,Pragma Default_Storage_Pool,Pragma Default_Initial_Condition,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-default-scalar-storage-order}@anchor{51}
 @section Pragma Default_Scalar_Storage_Order
 
@@ -6106,7 +6106,7 @@ overflow checking, but does not affect the overflow mode.
 The pragma @code{Unsuppress (Overflow_Check)} unsuppresses (enables)
 overflow checking, but does not affect the overflow mode.
 
-@node Pragma Overriding_Renamings,Pragma Partition_Elaboration_Policy,Pragma Overflow_Mode,Implementation Defined Pragmas
+@node Pragma Overriding_Renamings,Pragma Part_Of,Pragma Overflow_Mode,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-overriding-renamings}@anchor{b0}
 @section Pragma Overriding_Renamings
 
@@ -6141,8 +6141,24 @@ even though
 RM 8.3 (15) stipulates that an overridden operation is not visible within the
 declaration of the overriding operation.
 
-@node Pragma Partition_Elaboration_Policy,Pragma Part_Of,Pragma Overriding_Renamings,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-partition-elaboration-policy}@anchor{b1}
+@node Pragma Part_Of,Pragma Partition_Elaboration_Policy,Pragma Overriding_Renamings,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas id28}@anchor{b1}@anchor{gnat_rm/implementation_defined_pragmas pragma-part-of}@anchor{b2}
+@section Pragma Part_Of
+
+
+Syntax:
+
+@example
+pragma Part_Of (ABSTRACT_STATE);
+
+ABSTRACT_STATE ::= NAME
+@end example
+
+For the semantics of this pragma, see the entry for aspect @code{Part_Of} in the
+SPARK 2014 Reference Manual, section 7.2.6.
+
+@node Pragma Partition_Elaboration_Policy,Pragma Passive,Pragma Part_Of,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas pragma-partition-elaboration-policy}@anchor{b3}
 @section Pragma Partition_Elaboration_Policy
 
 
@@ -6158,23 +6174,7 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
-@node Pragma Part_Of,Pragma Passive,Pragma Partition_Elaboration_Policy,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id28}@anchor{b2}@anchor{gnat_rm/implementation_defined_pragmas pragma-part-of}@anchor{b3}
-@section Pragma Part_Of
-
-
-Syntax:
-
-@example
-pragma Part_Of (ABSTRACT_STATE);
-
-ABSTRACT_STATE ::= NAME
-@end example
-
-For the semantics of this pragma, see the entry for aspect @code{Part_Of} in the
-SPARK 2014 Reference Manual, section 7.2.6.
-
-@node Pragma Passive,Pragma Persistent_BSS,Pragma Part_Of,Implementation Defined Pragmas
+@node Pragma Passive,Pragma Persistent_BSS,Pragma Partition_Elaboration_Policy,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-passive}@anchor{b4}
 @section Pragma Passive
 
@@ -8790,7 +8790,7 @@ For a more general facility for controlling what interrupts can be
 handled, see pragma @code{Interrupt_State}, which subsumes the functionality
 of the @code{Unreserve_All_Interrupts} pragma.
 
-@node Pragma Unsuppress,Pragma Use_VADS_Size,Pragma Unreserve_All_Interrupts,Implementation Defined Pragmas
+@node Pragma Unsuppress,Pragma Unused,Pragma Unreserve_All_Interrupts,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-unsuppress}@anchor{10e}
 @section Pragma Unsuppress
 
@@ -8826,32 +8826,8 @@ Note that in addition to the checks defined in the Ada RM, GNAT recognizes a
 number of implementation-defined check names. See the description of pragma
 @code{Suppress} for full details.
 
-@node Pragma Use_VADS_Size,Pragma Unused,Pragma Unsuppress,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas pragma-use-vads-size}@anchor{10f}
-@section Pragma Use_VADS_Size
-
-
-@geindex Size
-@geindex VADS compatibility
-
-@geindex Rational profile
-
-Syntax:
-
-@example
-pragma Use_VADS_Size;
-@end example
-
-This is a configuration pragma.  In a unit to which it applies, any use
-of the ‘Size attribute is automatically interpreted as a use of the
-‘VADS_Size attribute.  Note that this may result in incorrect semantic
-processing of valid Ada 95 or Ada 2005 programs.  This is intended to aid in
-the handling of existing code which depends on the interpretation of Size
-as implemented in the VADS compiler.  See description of the VADS_Size
-attribute for further details.
-
-@node Pragma Unused,Pragma Validity_Checks,Pragma Use_VADS_Size,Implementation Defined Pragmas
-@anchor{gnat_rm/implementation_defined_pragmas id52}@anchor{110}@anchor{gnat_rm/implementation_defined_pragmas pragma-unused}@anchor{111}
+@node Pragma Unused,Pragma Use_VADS_Size,Pragma Unsuppress,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas id52}@anchor{10f}@anchor{gnat_rm/implementation_defined_pragmas pragma-unused}@anchor{110}
 @section Pragma Unused
 
 
@@ -8884,7 +8860,31 @@ are typically to be used in cases where such warnings are expected.
 Thus it is never necessary to use @code{pragma Unused} for such
 variables, though it is harmless to do so.
 
-@node Pragma Validity_Checks,Pragma Volatile,Pragma Unused,Implementation Defined Pragmas
+@node Pragma Use_VADS_Size,Pragma Validity_Checks,Pragma Unused,Implementation Defined Pragmas
+@anchor{gnat_rm/implementation_defined_pragmas pragma-use-vads-size}@anchor{111}
+@section Pragma Use_VADS_Size
+
+
+@geindex Size
+@geindex VADS compatibility
+
+@geindex Rational profile
+
+Syntax:
+
+@example
+pragma Use_VADS_Size;
+@end example
+
+This is a configuration pragma.  In a unit to which it applies, any use
+of the ‘Size attribute is automatically interpreted as a use of the
+‘VADS_Size attribute.  Note that this may result in incorrect semantic
+processing of valid Ada 95 or Ada 2005 programs.  This is intended to aid in
+the handling of existing code which depends on the interpretation of Size
+as implemented in the VADS compiler.  See description of the VADS_Size
+attribute for further details.
+
+@node Pragma Validity_Checks,Pragma Volatile,Pragma Use_VADS_Size,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-validity-checks}@anchor{112}
 @section Pragma Validity_Checks
 
@@ -9536,7 +9536,7 @@ This aspect is equivalent to @ref{54,,pragma Depends}.
 
 @geindex Default_Initial_Condition
 
-This aspect is equivalent to @ref{4e,,pragma Default_Initial_Condition}.
+This aspect is equivalent to @ref{50,,pragma Default_Initial_Condition}.
 
 @node Aspect Dimension,Aspect Dimension_System,Aspect Default_Initial_Condition,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-dimension}@anchor{129}
@@ -9943,7 +9943,7 @@ delayed until the freeze point.
 
 @geindex Part_Of
 
-This aspect is equivalent to @ref{b3,,pragma Part_Of}.
+This aspect is equivalent to @ref{b2,,pragma Part_Of}.
 
 @node Aspect Persistent_BSS,Aspect Predicate,Aspect Part_Of,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-persistent-bss}@anchor{144}
