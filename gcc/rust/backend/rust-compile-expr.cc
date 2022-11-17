@@ -2278,13 +2278,13 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
     }
   else if (TREE_CODE (type_to_cast_to) == INTEGER_TYPE)
     {
-      tree cast = fold (convert_to_integer (type_to_cast_to, expr_tree));
+      tree cast = convert_to_integer (type_to_cast_to, expr_tree);
       // FIXME check for TREE_OVERFLOW?
       return cast;
     }
   else if (TREE_CODE (type_to_cast_to) == REAL_TYPE)
     {
-      tree cast = fold (convert_to_real (type_to_cast_to, expr_tree));
+      tree cast = convert_to_real (type_to_cast_to, expr_tree);
       // FIXME
       // We might need to check that the tree is MAX val and thusly saturate it
       // to inf. we can get the bounds and check the value if its >= or <= to
@@ -2295,12 +2295,12 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
     }
   else if (TREE_CODE (type_to_cast_to) == COMPLEX_TYPE)
     {
-      return fold (convert_to_complex (type_to_cast_to, expr_tree));
+      return convert_to_complex (type_to_cast_to, expr_tree);
     }
   else if (TREE_CODE (type_to_cast_to) == POINTER_TYPE
 	   && TREE_CODE (TREE_TYPE (expr_tree)) == INTEGER_TYPE)
     {
-      return fold (convert_to_pointer (type_to_cast_to, expr_tree));
+      return convert_to_pointer (type_to_cast_to, expr_tree);
     }
   else if (TREE_CODE (type_to_cast_to) == RECORD_TYPE
 	   || TREE_CODE (type_to_cast_to) == ARRAY_TYPE)
