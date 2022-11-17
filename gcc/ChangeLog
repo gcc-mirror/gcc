@@ -1,3 +1,29 @@
+2022-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-11-14  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add ampere1a.
+	* config/aarch64/aarch64-cost-tables.h: Add ampere1a_extra_costs.
+	* config/aarch64/aarch64-fusion-pairs.def (AARCH64_FUSION_PAIR):
+	Define a new fusion pair for A+B+1/A-B-1 (i.e., add/subtract two
+	registers and then +1/-1).
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.cc (aarch_macro_fusion_pair_p): Implement
+	idiom-matcher for the new fusion pair.
+	* doc/invoke.texi: Add ampere1a.
+
+2022-11-16  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2022-10-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/107206
+	* tree-sra.cc (struct access): New field grp_result_of_prop_from_lhs.
+	(analyze_access_subtree): Do not create replacements for accesses with
+	this flag when not toally scalarizing.
+	(propagate_subaccesses_from_lhs): Set the new flag.
+
 2022-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* alias.cc (init_alias_analysis): Do not record sets to the hard
