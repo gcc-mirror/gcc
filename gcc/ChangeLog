@@ -1,3 +1,121 @@
+2022-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106649
+	* doc/invoke.texi: Document -Winvalid-constexpr.
+
+2022-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/bitmanip.md: Add split covering
+	"(a & (1 << BIT_NO)) ? 0 : 1".
+
+2022-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/bitmanip.md (*bext<mode>): Add an additional
+	pattern that allows the 3rd argument to zero_extract to be
+	an Xmode register operand.
+
+2022-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107686
+	* tree-ssa-forwprop.cc (optimize_vector_load): Restrict
+	VEC_UNPACK support to integral typed bitfield refs.
+
+2022-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/107679
+	* tree-into-ssa.cc (maybe_register_def): Use new temporary if
+	we require an uninitialized value for a parameter decl.
+
+2022-11-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/107676
+	* doc/invoke.texi (-mrelax-cmpxchg-loop): Reword description.
+
+2022-11-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/87832
+	* config/i386/znver.md: (znver1_fp_op_mul): Correct cycles in
+	the reservation.
+	(znver1_fp_op_mul_load): Ditto.
+	(znver1_mmx_mul): Ditto.
+	(znver1_mmx_load): Ditto.
+	(znver1_ssemul_ss_ps): Ditto.
+	(znver1_ssemul_ss_ps_load): Ditto.
+	(znver1_ssemul_avx256_ps): Ditto.
+	(znver1_ssemul_avx256_ps_load): Ditto.
+	(znver1_ssemul_sd_pd): Ditto.
+	(znver1_ssemul_sd_pd_load): Ditto.
+	(znver2_ssemul_sd_pd): Ditto.
+	(znver2_ssemul_sd_pd_load): Ditto.
+	(znver1_ssemul_avx256_pd): Ditto.
+	(znver1_ssemul_avx256_pd_load): Ditto.
+	(znver1_sseimul): Ditto.
+	(znver1_sseimul_avx256): Ditto.
+	(znver1_sseimul_load): Ditto.
+	(znver1_sseimul_avx256_load): Ditto.
+	(znver1_sseimul_di): Ditto.
+	(znver1_sseimul_load_di): Ditto.
+
+2022-11-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/87832
+	* config/i386/znver.md (znver1_fdiv): New automaton.
+	(znver1-fdiv): New unit.
+	(znver1_fp_op_div): Correct unit and cycles in the reservation.
+	(znver1_fp_op_div_load): Ditto.
+	(znver1_fp_op_idiv_load): Ditto.
+	(znver2_fp_op_idiv_load): Ditto.
+	(znver1_ssediv_ss_ps): Ditto.
+	(znver1_ssediv_ss_ps_load): Ditto.
+	(znver1_ssediv_sd_pd): Ditto.
+	(znver1_ssediv_sd_pd_load): Ditto.
+	(znver1_ssediv_avx256_ps): Ditto.
+	(znver1_ssediv_avx256_ps_load): Ditto.
+	(znver1_ssediv_avx256_pd): Ditto.
+	(znver1_ssediv_avx256_pd_load): Ditto.
+
+2022-11-16  Tobias Burnus  <tobias@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (KERNARG_PTR): Add.
+	* config/gcn/gcn.cc (gcn_init_builtin_types): Change siptr_type_node,
+	sfptr_type_node and voidptr_type_node from FLAT to ADDR_SPACE_DEFAULT.
+	(gcn_expand_builtin_1): Handle GCN_BUILTIN_KERNARG_PTR.
+	(gcn_oacc_dim_size): Return in ADDR_SPACE_FLAT.
+
+2022-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/checker-event.o.
+
+2022-11-16  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/107645
+	* config/m68k/predicates.md (symbolic_operand): Return false
+	when UNSPEC is under the CONST node.
+
+2022-11-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* doc/invoke.texi: Fix PRU/RISC-V option list formatting.
+
+2022-11-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/mkoffload.cc (process): Recognize '$nohost$...'
+	besides tailing '$nohost' as being for reverse offload.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107668
+	* range-op-float.cc (float_binary_op_range_finish): Set VARYING
+	also when r is UNDEFINED.
+
+2022-11-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/90259
+	* function.cc (rest_of_handle_thread_prologue_and_epilogue): Add
+	parameter fun, and call function purge_all_dead_edges.
+	(pass_thread_prologue_and_epilogue::execute): Name unamed parameter
+	as fun, and use it for rest_of_handle_thread_prologue_and_epilogue.
+
 2022-11-15  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* config/riscv/riscv-builtins.cc (struct riscv_builtin_description):

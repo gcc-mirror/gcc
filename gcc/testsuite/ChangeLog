@@ -1,3 +1,150 @@
+2022-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/named-constants-via-command-line.c: New test.
+	* gcc.dg/analyzer/named-constants-via-macros-3.c: New test.
+	* gcc.dg/analyzer/named-constants-via-macros-4.c: New test.
+	* gcc.dg/analyzer/named-constants-via-macros-empty.c: New test.
+	* gcc.dg/analyzer/named-constants-via-macros-gc.c: New test.
+	* gcc.dg/analyzer/named-constants-via-macros-traditional.c: New test.
+	* gcc.dg/analyzer/named-constants-via-macros-undef.c: New test.
+
+2022-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107711
+	* gcc.dg/analyzer/fdump-analyzer-1.c: New test.
+
+2022-11-16  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107707
+	* gfortran.dg/pr107707.f90: New test.
+
+2022-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106649
+	* g++.dg/cpp0x/constexpr-ctor2.C: Expect an error in c++20_down only.
+	* g++.dg/cpp0x/constexpr-default-ctor.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-friend.C: Likewise.
+	* g++.dg/cpp0x/constexpr-generated1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice5.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice6.C: Likewise.
+	* g++.dg/cpp0x/constexpr-memfn1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-neg2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-non-const-arg.C: Likewise.
+	* g++.dg/cpp0x/constexpr-reinterpret1.C: Likewise.
+	* g++.dg/cpp0x/pr65327.C: Likewise.
+	* g++.dg/cpp1y/constexpr-105050.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89285-2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89285.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89785-2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-neg1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-nsdmi7b.C: Likewise.
+	* g++.dg/cpp1y/constexpr-throw.C: Likewise.
+	* g++.dg/cpp23/constexpr-nonlit3.C: Remove dg-error.
+	* g++.dg/cpp23/constexpr-nonlit6.C: Call the test functions.
+	* g++.dg/cpp23/feat-cxx2b.C: Adjust the expected value of
+	__cpp_constexpr.
+	* g++.dg/cpp2a/consteval3.C: Remove dg-error.
+	* g++.dg/cpp2a/constexpr-new7.C: Expect an error in c++20_down only.
+	* g++.dg/cpp2a/constexpr-try5.C: Remove dg-error.
+	* g++.dg/cpp2a/spaceship-constexpr1.C: Expect an error in c++20_down
+	only.
+	* g++.dg/cpp2a/spaceship-eq3.C: Likewise.
+	* g++.dg/diagnostic/constexpr1.C: Remove dg-error.
+	* g++.dg/gomp/pr79664.C: Use -Winvalid-constexpr -pedantic-errors.
+	* g++.dg/ubsan/vptr-4.C: Likewise.
+	* g++.dg/cpp23/constexpr-nonlit10.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit11.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit12.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit13.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit14.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit15.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit16.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit8.C: New test.
+	* g++.dg/cpp23/constexpr-nonlit9.C: New test.
+
+2022-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107681
+	* gfortran.dg/pr107681.f90: New test.
+
+2022-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107680
+	* gfortran.dg/pr107680.f90: New test.
+
+2022-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbs-bext.c: Add testcases.
+	* gcc.target/riscv/zbs-bexti.c: Add testcases.
+
+2022-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zbs-bext.c: Add testcases.
+	* gcc.target/riscv/zbs-bexti.c: Add testcases.
+
+2022-11-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/gcc-dg.exp (gcc-transform-out-of-tree): New proc.
+	* g++.dg/gcov/gcov.exp, gcc.misc-tests/gcov.exp: Call
+	gcc-transform-out-of-tree instead of transform.
+
+2022-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107686
+	* gcc.dg/pr107686.c: New testcase.
+
+2022-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/107679
+	* gfortran.dg/pr107679.f90: New testcase.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/is-layout-compatible3.C: Expect enums with different
+	alignas to be layout compatible, while classes with different
+	alignas on members layout incompatible.
+	* g++.dg/DRs/dr2583.C: New test.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107624
+	* g++.dg/cpp23/static-operator-call4.C: New test.
+	* g++.dg/cpp23/subscript10.C: New test.
+	* g++.dg/cpp23/subscript11.C: New test.
+
+2022-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_kernel_plugin.c
+	(copy_across_boundary_fn::matches_call_types_p): New.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c
+	(known_function_returns_42::matches_call_types_p): New.
+	(known_function_attempt_to_copy::matches_call_types_p): New.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/volatile1.C (fn2, fn3, racoon): Adjust expected
+	diagnostics.
+	* g++.dg/cpp2a/volatile3.C (fn2, fn3, racoon): Likewise.
+	* g++.dg/cpp2a/volatile5.C (f): Likewise.
+	* g++.dg/ext/vector25.C (foo): Don't expect a warning.
+	* g++.dg/cpp1y/new1.C (test_unused): Likewise.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/concepts-dr2428.C: New test.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/107668
+	* gcc.dg/ubsan/pr107668.c: New test.
+
+2022-11-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/90259
+	* g++.target/powerpc/pr90259.C: New.
+
 2022-11-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107492

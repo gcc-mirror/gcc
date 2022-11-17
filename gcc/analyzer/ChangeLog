@@ -1,3 +1,58 @@
+2022-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107711
+	* analyzer-language.cc: Include "diagnostic.h".
+	(maybe_stash_named_constant): Add logger param and use it to log
+	the name being looked up, and the result.
+	(stash_named_constants): New, splitting out from...
+	(on_finish_translation_unit): ...this function.  Call
+	get_or_create_logfile and use the result to create a logger
+	instance, passing it to stash_named_constants.
+	* analyzer.h (get_or_create_any_logfile): New decl.
+	* engine.cc (dump_fout, owns_dump_fout): New globals, split out
+	from run_checkers.
+	(get_or_create_any_logfile): New function, split out from...
+	(run_checkers): ...here, so that the logfile can be opened by
+	on_finish_translation_unit.  Clear the globals when closing the
+	dump file.
+
+2022-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (known_function::matches_call_types_p): New vfunc.
+	(known_function::impl_call_pre): Provide base implementation.
+	(known_function::impl_call_post): New vfunc.
+	(register_known_functions): New.
+	* engine.cc (impl_run_checkers): Call register_known_functions.
+	* region-model-impl-calls.cc (region_model::impl_call_accept):
+	Convert to...
+	(class known_function_accept): ...this.
+	(region_model::impl_call_bind): Convert to...
+	(class known_function_bind): ...this.
+	(region_model::impl_call_connect): Convert to...
+	(class known_function_connect): ...this.
+	(region_model::impl_call_listen): Convert to...
+	(class known_function_listen): ...this.
+	(region_model::impl_call_socket): Convert to...
+	(class known_function_socket): ...this.
+	(register_known_functions): New.
+	* region-model.cc (region_model::on_call_pre): Remove special
+	case for "bind" in favor of the known_function-handling dispatch.
+	Add call to known_function::matches_call_types_p to latter.
+	(region_model::on_call_post): Remove special cases for "accept",
+	"bind", "connect", "listen", and "socket" in favor of dispatch
+	to known_function::impl_call_post.
+	* region-model.h (region_model::impl_call_accept): Delete decl.
+	(region_model::impl_call_bind): Delete decl.
+	(region_model::impl_call_connect): Delete decl.
+	(region_model::impl_call_listen): Delete decl.
+	(region_model::impl_call_socket): Delete decl.
+	* sm-fd.cc: Update comments.
+
+2022-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.cc: New file, split out from...
+	* checker-path.cc: ...this file.
+
 2022-11-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106140

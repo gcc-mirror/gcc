@@ -1,3 +1,20 @@
+2022-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106649
+	* c-cppbuiltin.cc (c_cpp_builtins): Update value of __cpp_constexpr for
+	C++23.
+	* c-opts.cc (c_common_post_options): Set warn_invalid_constexpr
+	depending on cxx_dialect.
+	* c.opt (Winvalid-constexpr): New option.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.def (CONCEPT_DECL): New tree, moved here from
+	cp-tree.def.
+	* c-common.cc (c_common_init_ts): Handle CONCEPT_DECL.
+	* c-attribs.cc (handle_deprecated_attribute): Allow deprecated
+	attribute on CONCEPT_DECL.
+
 2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* c-opts.cc (c_finish_options): Use special_fname_builtin () rather

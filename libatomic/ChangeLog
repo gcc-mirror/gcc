@@ -1,3 +1,7 @@
+2022-11-16  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Re-generate.
+
 2022-11-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* Makefile.in: Regenerated with automake 1.15.1.

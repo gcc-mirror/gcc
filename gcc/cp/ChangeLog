@@ -1,3 +1,66 @@
+2022-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106649
+	* constexpr.cc (constexpr_error): New function.
+	(is_valid_constexpr_fn): Use constexpr_error.
+	(maybe_save_constexpr_fundef): Call
+	require_potential_rvalue_constant_expression_fncheck rather than
+	require_potential_rvalue_constant_expression.  Register the
+	function if -Wno-invalid-constexpr was specified.
+	(explain_invalid_constexpr_fn): Don't return early if a function marked
+	'constexpr' that isn't actually a constant expression was called.
+	(non_const_var_error): Add a bool parameter.  Use constexpr_error.
+	(inline_asm_in_constexpr_error): Likewise.
+	(cxx_eval_constant_expression): Adjust calls to non_const_var_error
+	and inline_asm_in_constexpr_error.
+	(potential_constant_expression_1): Add a bool parameter.  Use
+	constexpr_error.
+	(require_potential_rvalue_constant_expression_fncheck): New function.
+	* cp-tree.h (require_potential_rvalue_constant_expression_fncheck):
+	Declare.
+	* method.cc (struct comp_info): Call
+	require_potential_rvalue_constant_expression_fncheck rather than
+	require_potential_rvalue_constant_expression.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc (next_common_initial_sequence): Return false members have
+	different DECL_ALIGN.
+	(layout_compatible_type_p): Don't test TYPE_ALIGN of ENUMERAL_TYPE
+	or CLASS_TYPE_P.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107624
+	* call.cc (keep_unused_object_arg): New function.
+	(build_op_call): Use it.
+	(build_op_subscript): Likewise.
+	(build_new_op): Similarly for ARRAY_REF.
+	(build_new_method_call): Use it.
+	* decl.cc (grok_op_properties): For C++20 and earlier, if operator[]
+	is static member function, require exactly one parameter rather than
+	exactly two parameters.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc (cp_build_modify_expr): Implement CWG 2654
+	- Un-deprecation of compound volatile assignments.  Remove
+	-Wvolatile warning about compound volatile assignments.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.def (CONCEPT_DECL): Move to c-common.def.
+	* cp-objcp-common.cc (cp_common_init_ts): Don't handle CONCEPT_DECL
+	here.
+	* cp-tree.h (finish_concept_definition): Add ATTRS parameter.
+	* parser.cc (cp_parser_concept_definition): Parse attributes in
+	between identifier and =.  Adjust finish_concept_definition
+	caller.
+	* pt.cc (finish_concept_definition): Add ATTRS parameter.  Call
+	cplus_decl_attributes.
+	* constraint.cc (build_standard_check): If CONCEPT_DECL is
+	TREE_DEPRECATED, emit -Wdeprecated-declaration warnings.
+
 2022-11-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107492

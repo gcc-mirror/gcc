@@ -1,3 +1,81 @@
+2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107720
+	* include/std/format (__format::_Arg_t): Fix typo in enumerator
+	name.
+	(_Arg_value::_S_get): Fix missing semi-colons.
+
+2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (get_leap_second_info): Optimize.
+
+2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107712
+	* include/std/format (__format::__formatter_int::format): Use
+	std::toupper when __builtin_toupper isn't available.
+	(basic_format_arg::handle): Add 'typename'.
+	* include/std/complex (complex<T>): Add 'typename'.
+
+2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format [__FLT128_DIG__] (_GLIBCXX_FORMAT_F128):
+	Only support formatting _Float128 when glibc provides the
+	functionality needed for accurate std::to_chars.
+
+2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/utc/1.cc: Check handling across leap
+	second insertion.
+
+2022-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/107701
+	* include/std/iostream (__ioinit): Adjust comment.
+	* src/c++98/globals_io.cc: Include "io_base_init.h" here
+	instead of ...
+	* src/c++98/ios_init.cc: ... here.
+	* src/c++98/ios_base_init.h (__ioinit): More comments.
+	* testsuite/17_intro/static.cc: dg-do run instead of just link.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107649
+	* include/std/complex (__complex_abs, __complex_arg, __complex_cos,
+	__complex_cosh, __complex_exp, __complex_log, __complex_sin,
+	__complex_sinh, __complex_sqrt, __complex_tan, __complex_tanh,
+	__complex_pow): Move __complex__ _Float{16,32,64,128} and
+	__complex__ decltype(0.0bf16) overloads earlier in the file.
+	(complex): Fix up requires on the partial specialization for extended
+	float types.
+	(__complex_acos, __complex_asin, __complex_atan, __complex_acosh,
+	__complex_asinh, __complex_atanh): Move
+	__complex__ _Float{16,32,64,128} and __complex__ decltype(0.0bf16)
+	overloads earlier in the file.
+
+2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Make
+	expansion of std::string in manager name more robust.
+
+2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (is_specialization_of): Fix
+	incorrect terminology in docstring and describe arguments.
+	(FilteringTypePrinter): Add default argument for new parameter,
+	enhance docstring.
+
+2022-11-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (FilteringTypePrinter): Rename 'match' field
+	'template'. Add self.targ1 to specify the first template parameter of the instantiation
+	to match.
+	(add_one_type_printer): Add targ1 optional parameter, default to None.
+	Use gdb.types.get_basic_type to compare the type to recognize and the type
+	returned from the typedef lookup.
+	(register_type_printers): Adapt calls to add_one_type_printers.
+
 2022-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/format/functions/format.cc: Do not use

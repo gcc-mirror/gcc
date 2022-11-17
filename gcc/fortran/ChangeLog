@@ -1,3 +1,21 @@
+2022-11-16  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107707
+	* interface.cc (gfc_compare_actual_formal): Check that we actually
+	have integer values before asking gmp_* to use them.
+
+2022-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107681
+	* resolve.cc (resolve_fl_var_and_proc): Prevent NULL pointer
+	dereference with reference to bad CLASS variable.
+
+2022-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107680
+	* arith.cc (arith_power): Check that operands are properly converted
+	before attempting to simplify.
+
 2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* cpp.cc (gfc_cpp_init): Use special_fname_builtin () rather than a
