@@ -2090,6 +2090,9 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   if (VOID_TYPE_P (type))
     return 0;
 
+  if (error_operand_p (fntype))
+    return 0;
+
   /* If a record should be passed the same as its first (and only) member
      don't pass it as an aggregate.  */
   if (TREE_CODE (type) == RECORD_TYPE && TYPE_TRANSPARENT_AGGR (type))
