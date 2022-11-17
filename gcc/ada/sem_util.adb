@@ -23634,7 +23634,7 @@ package body Sem_Util is
       --  Unconstrained array type
 
       else
-         pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
+         pragma Assert (Is_Array_Type (Typ) and then not Is_Constrained (Typ));
          return True;
       end if;
    end Needs_Secondary_Stack;
