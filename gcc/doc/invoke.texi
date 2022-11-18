@@ -2201,7 +2201,8 @@ any references to them in the result of the compilation as if the
 files resided in directory @file{@var{new}} instead.  Specifying this
 option is equivalent to specifying all the individual
 @option{-f*-prefix-map} options.  This can be used to make reproducible
-builds that are location independent.  See also
+builds that are location independent.  Directories referenced by
+directives are not affected by these options. See also
 @option{-fmacro-prefix-map}, @option{-fdebug-prefix-map} and
 @option{-fprofile-prefix-map}.
 
