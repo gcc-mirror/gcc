@@ -1,3 +1,15 @@
+2022-11-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-16  Tobias Burnus  <tobias@codesourcery.com>
+		    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-builtins.def (KERNARG_PTR): Add.
+	* config/gcn/gcn.cc (gcn_init_builtin_types): Change siptr_type_node,
+	sfptr_type_node and voidptr_type_node from FLAT to ADDR_SPACE_DEFAULT.
+	(gcn_expand_builtin_1): Handle GCN_BUILTIN_KERNARG_PTR.
+	(gcn_oacc_dim_size): Return in ADDR_SPACE_FLAT.
+
 2022-11-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

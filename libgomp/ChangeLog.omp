@@ -1,3 +1,12 @@
+2022-11-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-11-16  Tobias Burnus  <tobias@codesourcery.com>
+		    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Use
+	__builtin_gcn_kernarg_ptr instead of asm ("s8").
+
 2022-11-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

@@ -158,6 +158,10 @@ DEF_BUILTIN (ACC_SINGLE_COPY_END, -1, "single_copy_end", B_INSN,
 DEF_BUILTIN (ACC_BARRIER, -1, "acc_barrier", B_INSN, _A1 (GCN_BTI_VOID),
 	     gcn_expand_builtin_1)
 
+/* Kernel inputs.  */
+
+DEF_BUILTIN (KERNARG_PTR, -1, "kernarg_ptr", B_INSN, _A1 (GCN_BTI_VOIDPTR),
+	     gcn_expand_builtin_1)
 
 #undef _A1
 #undef _A2
