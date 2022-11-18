@@ -336,6 +336,10 @@ enum class aarch64_feature : unsigned char {
 /* RCPC loads from Armv8.3-a.  */
 #define TARGET_RCPC (AARCH64_ISA_RCPC)
 
+/* The RCPC2 extensions from Armv8.4-a that allow immediate offsets to LDAPR
+   and sign-extending versions.*/
+#define TARGET_RCPC2 (AARCH64_ISA_RCPC8_4)
+
 /* Apply the workaround for Cortex-A53 erratum 835769.  */
 #define TARGET_FIX_ERR_A53_835769	\
   ((aarch64_fix_a53_err835769 == 2)	\

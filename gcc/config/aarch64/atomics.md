@@ -712,7 +712,7 @@
          (match_operand:SI 2 "const_int_operand")]			;; model
        UNSPECV_LDAP)))]
   "TARGET_RCPC && (<GPI:sizen> > <ALLX:sizen>)"
-  "ldapr<ALLX:atomic_sfx>\t%<GPI:w>0, %1"
+  "ldapr<ALLX:atomic_sfx>\t%w0, %1"
 )
 
 (define_insn "*aarch64_atomic_load<ALLX:mode>_rcpc_sext"
@@ -722,8 +722,8 @@
         [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
          (match_operand:SI 2 "const_int_operand")]			;; model
        UNSPECV_LDAP)))]
-  "TARGET_RCPC && (<GPI:sizen> > <ALLX:sizen>)"
-  "ldaprs<ALLX:atomic_sfx>\t%<GPI:w>0, %1"
+  "TARGET_RCPC2 && (<GPI:sizen> > <ALLX:sizen>)"
+  "ldapurs<ALLX:size>\t%<ALLX:w_sx>0, %1"
 )
 
 (define_insn "atomic_store<mode>"

@@ -3,7 +3,7 @@
 /* { dg-final { check-function-bodies "**" "" "" } } */
 #include <stdatomic.h>
 
-#pragma GCC target "+rcpc"
+#pragma GCC target "arch=armv8.4-a"
 
 atomic_ullong u64;
 atomic_llong s64;
@@ -22,72 +22,45 @@ test_##name (void)						\
 }
 
 /*
-**test_u8_u64:
-**...
-**	ldaprb	x0, \[x[0-9]+\]
-**	ret
-*/
-
-TEST(u8_u64, u8, unsigned long long)
-
-/*
 **test_s8_s64:
 **...
-**	ldaprsb	x0, \[x[0-9]+\]
+**	ldapursb	w0, \[x[0-9]+\]
 **	ret
 */
 
 TEST(s8_s64, s8, long long)
 
 /*
-**test_u16_u64:
-**...
-**	ldaprh	x0, \[x[0-9]+\]
-**	ret
-*/
-
-TEST(u16_u64, u16, unsigned long long)
-
-/*
 **test_s16_s64:
 **...
-**	ldaprsh	x0, \[x[0-9]+\]
+**	ldapursh	w0, \[x[0-9]+\]
 **	ret
 */
 
 TEST(s16_s64, s16, long long)
 
 /*
-**test_u8_u32:
+**test_s32_s64:
 **...
-**	ldaprb	w0, \[x[0-9]+\]
+**	ldapursw	x0, \[x[0-9]+\]
 **	ret
 */
 
-TEST(u8_u32, u8, unsigned)
+TEST(s32_s64, s32, long long)
 
 /*
 **test_s8_s32:
 **...
-**	ldaprsb	w0, \[x[0-9]+\]
+**	ldapursb	w0, \[x[0-9]+\]
 **	ret
 */
 
 TEST(s8_s32, s8, int)
 
 /*
-**test_u16_u32:
-**...
-**	ldaprh	w0, \[x[0-9]+\]
-**	ret
-*/
-
-TEST(u16_u32, u16, unsigned)
-
-/*
 **test_s16_s32:
 **...
-**	ldaprsh	w0, \[x[0-9]+\]
+**	ldapursh	w0, \[x[0-9]+\]
 **	ret
 */
 
