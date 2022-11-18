@@ -27,7 +27,7 @@
 
 /* Run-time Target.  */
 
-#define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
+#define STARTFILE_SPEC "%{mmainkernel:crt0.o%s}"
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 
