@@ -1,3 +1,6 @@
+/* { dg-additional-options "-Wno-analyzer-fd-leak" } */
+// TODO: remove need for this option
+
 typedef __SIZE_TYPE__ size_t;
 #define NULL ((void *)0)
 #define POLLIN 0x001

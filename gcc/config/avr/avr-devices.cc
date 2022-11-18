@@ -64,54 +64,54 @@ avr_arch_types[] =
 };
 
 const avr_arch_info_t
-avr_rst[] =
+avr_texinfo[] =
 {
   { ARCH_AVR1,
     "This ISA is implemented by the minimal AVR core and supported "
     "for assembler only." },
   { ARCH_AVR2,
-    "\"Classic\" devices with up to 8 |nbsp| KiB of program memory." },
+    "``Classic'' devices with up to 8@tie{}KiB of program memory." },
   { ARCH_AVR25,
-    "\"Classic\" devices with up to 8 |nbsp| KiB of program memory and with "
-    "the ``MOVW`` instruction." },
+    "``Classic'' devices with up to 8@tie{}KiB of program memory and with "
+    "the @code{MOVW} instruction." },
   { ARCH_AVR3,
-    "\"Classic\" devices with 16 |nbsp| KiB up to 64 |nbsp| KiB of "
+    "``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of "
     "program memory." },
   { ARCH_AVR31,
-    "\"Classic\" devices with 128 |nbsp| KiB of program memory." },
+    "``Classic'' devices with 128@tie{}KiB of program memory." },
   { ARCH_AVR35,
-    "\"Classic\" devices with 16 |nbsp| KiB up to 64 |nbsp| KiB of "
-    "program memory and with the ``MOVW`` instruction." },
+    "``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of "
+    "program memory and with the @code{MOVW} instruction." },
   { ARCH_AVR4,
-    "\"Enhanced\" devices with up to 8 |nbsp| KiB of program memory." },
+    "``Enhanced'' devices with up to 8@tie{}KiB of program memory." },
   { ARCH_AVR5,
-    "\"Enhanced\" devices with 16 |nbsp| KiB up to 64 |nbsp| KiB of "
+    "``Enhanced'' devices with 16@tie{}KiB up to 64@tie{}KiB of "
     "program memory." },
   { ARCH_AVR51,
-    "\"Enhanced\" devices with 128 |nbsp| KiB of program memory." },
+    "``Enhanced'' devices with 128@tie{}KiB of program memory." },
   { ARCH_AVR6,
-    "\"Enhanced\" devices with 3-byte PC, i.e.: with more than 128 |nbsp| KiB "
+    "``Enhanced'' devices with 3-byte PC, i.e.@: with more than 128@tie{}KiB "
     "of program memory." },
   { ARCH_AVRTINY,
-    "\"TINY\" Tiny core devices with 512 |nbsp| B up to 4 |nbsp| KiB of "
+    "``TINY'' Tiny core devices with 512@tie{}B up to 4@tie{}KiB of "
     "program memory." },
   { ARCH_AVRXMEGA2,
-    "\"XMEGA\" devices with more than 8 |nbsp| KiB and up to 64 |nbsp| KiB "
+    "``XMEGA'' devices with more than 8@tie{}KiB and up to 64@tie{}KiB "
     "of program memory." },
   { ARCH_AVRXMEGA3,
-    "\"XMEGA\" devices with up to 64 |nbsp| KiB of combined program memory "
+    "``XMEGA'' devices with up to 64@tie{}KiB of combined program memory "
     "and RAM, and with program memory visible in the RAM address space." },
   { ARCH_AVRXMEGA4,
-    "\"XMEGA\" devices with more than 64 |nbsp| KiB and up to 128 |nbsp| KiB "
+    "``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB "
     "of program memory." },
   { ARCH_AVRXMEGA5,
-    "\"XMEGA\" devices with more than 64 |nbsp| KiB and up to 128 |nbsp| KiB "
-    "of program memory and more than 64 |nbsp| KiB of RAM." },
+    "``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB "
+    "of program memory and more than 64@tie{}KiB of RAM." },
   { ARCH_AVRXMEGA6,
-    "\"XMEGA\" devices with more than 128 |nbsp| KiB of program memory." },
+    "``XMEGA'' devices with more than 128@tie{}KiB of program memory." },
   { ARCH_AVRXMEGA7,
-    "\"XMEGA\" devices with more than 128 |nbsp| KiB of program memory "
-    "and more than 64 |nbsp| KiB of RAM." }
+    "``XMEGA'' devices with more than 128@tie{}KiB of program memory "
+    "and more than 64@tie{}KiB of RAM." }
 };
 
 const avr_mcu_t

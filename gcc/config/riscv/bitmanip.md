@@ -128,6 +128,19 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
+;; '(a >= 0) ? b : 0' is emitted branchless (from if-conversion).  Without a
+;; bit of extra help for combine (i.e., the below split), we end up emitting
+;; not/srai/and instead of combining the not into an andn.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(and:DI (neg:DI (ge:DI (match_operand:DI 1 "register_operand")
+			       (const_int 0)))
+		(match_operand:DI 2 "register_operand")))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_ZBB"
+  [(set (match_dup 3) (ashiftrt:DI (match_dup 1) (const_int 63)))
+   (set (match_dup 0) (and:DI (not:DI (match_dup 3)) (match_dup 2)))])
+
 (define_insn "*xor_not<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
         (not:X (xor:X (match_operand:X 1 "register_operand" "r")
@@ -242,6 +255,14 @@
   "rolw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; orc.b (or-combine) is added as an unspec for the benefit of the support
+;; for optimized string functions (such as strcmp).
+(define_insn "orcb<mode>2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(unspec:X [(match_operand:X 1 "register_operand" "r")] UNSPEC_ORC_B))]
+  "TARGET_ZBB"
+  "orc.b\t%0,%1")
+
 (define_insn "bswap<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
         (bswap:X (match_operand:X 1 "register_operand" "r")))]
@@ -346,6 +367,44 @@
   "bclri\t%0,%1,%T2"
   [(set_attr "type" "bitmanip")])
 
+;; In case we have "val & ~IMM" where ~IMM has 2 bits set.
+(define_insn_and_split "*bclri<mode>_nottwobits"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X (match_operand:X 1 "register_operand" "r")
+	       (match_operand:X 2 "const_nottwobits_operand" "i")))]
+  "TARGET_ZBS && !paradoxical_subreg_p (operands[1])"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (and:X (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (and:X (match_dup 0) (match_dup 4)))]
+{
+	unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
+	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+
+	operands[3] = GEN_INT (~bits | topbit);
+	operands[4] = GEN_INT (~topbit);
+})
+
+;; In case of a paradoxical subreg, the sign bit and the high bits are
+;; not allowed to be changed
+(define_insn_and_split "*bclridisi_nottwobits"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (match_operand:DI 1 "register_operand" "r")
+		(match_operand:DI 2 "const_nottwobits_operand" "i")))]
+  "TARGET_64BIT && TARGET_ZBS
+   && clz_hwi (~UINTVAL (operands[2])) > 33"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (and:DI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (and:DI (match_dup 0) (match_dup 4)))]
+{
+	unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
+	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+
+	operands[3] = GEN_INT (~bits | topbit);
+	operands[4] = GEN_INT (~topbit);
+})
+
 (define_insn "*binv<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(xor:X (ashift:X (const_int 1)
@@ -373,6 +432,18 @@
   "bext\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; When performing `(a & (1UL << bitno)) ? 0 : -1` the combiner
+;; usually has the `bitno` typed as X-mode (i.e. no further
+;; zero-extension is performed around the bitno).
+(define_insn "*bext<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(zero_extract:X (match_operand:X 1 "register_operand" "r")
+			(const_int 1)
+			(match_operand:X 2 "register_operand" "r")))]
+  "TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
 (define_insn "*bexti"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(zero_extract:X (match_operand:X 1 "register_operand" "r")
@@ -381,3 +452,31 @@
   "TARGET_ZBS && UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
   "bexti\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
+
+;; Split for "(a & (1 << BIT_NO)) ? 0 : 1":
+;; We avoid reassociating "(~(a >> BIT_NO)) & 1" into "((~a) >> BIT_NO) & 1",
+;; so we don't have to use a temporary.  Instead we extract the bit and then
+;; invert bit 0 ("a ^ 1") only.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (not:X (lshiftrt:X (match_operand:X 1 "register_operand")
+				  (subreg:QI (match_operand:X 2 "register_operand") 0)))
+	       (const_int 1)))]
+  "TARGET_ZBS"
+  [(set (match_dup 0) (zero_extract:X (match_dup 1)
+				      (const_int 1)
+				      (match_dup 2)))
+   (set (match_dup 0) (xor:X (match_dup 0) (const_int 1)))])
+
+;; We can create a polarity-reversed mask (i.e. bit N -> { set = 0, clear = -1 })
+;; using a bext(i) followed by an addi instruction.
+;; This splits the canonical representation of "(a & (1 << BIT_NO)) ? 0 : -1".
+(define_split
+  [(set (match_operand:GPR 0 "register_operand")
+       (neg:GPR (eq:GPR (zero_extract:GPR (match_operand:GPR 1 "register_operand")
+                                          (const_int 1)
+                                          (match_operand 2))
+                        (const_int 0))))]
+  "TARGET_ZBS"
+  [(set (match_dup 0) (zero_extract:GPR (match_dup 1) (const_int 1) (match_dup 2)))
+   (set (match_dup 0) (plus:GPR (match_dup 0) (const_int -1)))])

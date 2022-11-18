@@ -206,25 +206,6 @@ impl_region_model_context::terminate_path ()
     return m_path_ctxt->terminate_path ();
 }
 
-bool
-impl_region_model_context::get_state_map_by_name (const char *name,
-						  sm_state_map **out_smap,
-						  const state_machine **out_sm,
-						  unsigned *out_sm_idx)
-{
-  if (!m_new_state)
-    return false;
-
-  unsigned sm_idx;
-  if (!m_ext_state.get_sm_idx_by_name (name, &sm_idx))
-    return false;
-
-  *out_smap = m_new_state->m_checker_states[sm_idx];
-  *out_sm = &m_ext_state.get_sm (sm_idx);
-  *out_sm_idx = sm_idx;
-  return true;
-}
-
 /* struct setjmp_record.  */
 
 int
@@ -526,6 +507,47 @@ public:
   /* Are we handling an external function with unknown side effects?  */
   bool m_unknown_side_effects;
 };
+
+bool
+impl_region_model_context::
+get_state_map_by_name (const char *name,
+		       sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx,
+		       std::unique_ptr<sm_context> *out_sm_context)
+{
+  if (!m_new_state)
+    return false;
+
+  unsigned sm_idx;
+  if (!m_ext_state.get_sm_idx_by_name (name, &sm_idx))
+    return false;
+
+  const state_machine *sm = &m_ext_state.get_sm (sm_idx);
+  sm_state_map *new_smap = m_new_state->m_checker_states[sm_idx];
+
+  *out_smap = new_smap;
+  *out_sm = sm;
+  if (out_sm_idx)
+    *out_sm_idx = sm_idx;
+  if (out_sm_context)
+    {
+      const sm_state_map *old_smap = m_old_state->m_checker_states[sm_idx];
+      *out_sm_context
+	= make_unique<impl_sm_context> (*m_eg,
+					sm_idx,
+					*sm,
+					m_enode_for_diag,
+					m_old_state,
+					m_new_state,
+					old_smap,
+					new_smap,
+					m_path_ctxt,
+					m_stmt_finder,
+					false);
+    }
+  return true;
+}
 
 /* Subclass of stmt_finder for finding the best stmt to report the leak at,
    given the emission path.  */
@@ -918,6 +940,22 @@ impl_region_model_context::on_bounded_ranges (const svalue &sval,
 			     ? m_enode_for_diag->get_supernode ()
 			     : NULL),
 			    m_stmt, sval, ranges);
+    }
+}
+
+/* Implementation of region_model_context::on_pop_frame vfunc.
+   Notify all state machines about the frame being popped, which
+   could lead to states being discarded.  */
+
+void
+impl_region_model_context::on_pop_frame (const frame_region *frame_reg)
+{
+  int sm_idx;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+    {
+      const state_machine &sm = m_ext_state.get_sm (sm_idx);
+      sm.on_pop_frame (smap, frame_reg);
     }
 }
 
@@ -4260,7 +4298,12 @@ exploded_graph::process_node (exploded_node *node)
 	    exploded_node *next = get_or_create_node (next_point, next_state,
 						      node);
 	    if (next)
-	      add_edge (node, next, succ);
+	      {
+		add_edge (node, next, succ);
+
+		/* We might have a function entrypoint.  */
+		detect_infinite_recursion (next);
+	      }
 	  }
 
 	/* Return from the calls which doesn't have a return superedge.
@@ -5989,6 +6032,7 @@ impl_run_checkers (logger *logger)
       logger->log ("BITS_BIG_ENDIAN: %i", BITS_BIG_ENDIAN ? 1 : 0);
       logger->log ("BYTES_BIG_ENDIAN: %i", BYTES_BIG_ENDIAN ? 1 : 0);
       logger->log ("WORDS_BIG_ENDIAN: %i", WORDS_BIG_ENDIAN ? 1 : 0);
+      log_stashed_constants (logger);
     }
 
   /* If using LTO, ensure that the cgraph nodes have function bodies.  */
@@ -6028,6 +6072,8 @@ impl_run_checkers (logger *logger)
 
   auto_delete_vec <state_machine> checkers;
   make_checkers (checkers, logger);
+
+  register_known_functions (*eng.get_known_function_manager ());
 
   plugin_analyzer_init_impl data (&checkers,
 				  eng.get_known_function_manager (),
@@ -6098,6 +6144,34 @@ impl_run_checkers (logger *logger)
   delete purge_map;
 }
 
+/* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */
+static FILE *dump_fout = NULL;
+
+/* Track if we're responsible for closing dump_fout.  */
+static bool owns_dump_fout = false;
+
+/* If dumping is enabled, attempt to create dump_fout if it hasn't already
+   been opened.  Return it.  */
+
+FILE *
+get_or_create_any_logfile ()
+{
+  if (!dump_fout)
+    {
+      if (flag_dump_analyzer_stderr)
+	dump_fout = stderr;
+      else if (flag_dump_analyzer)
+	{
+	  char *dump_filename = concat (dump_base_name, ".analyzer.txt", NULL);
+	  dump_fout = fopen (dump_filename, "w");
+	  free (dump_filename);
+	  if (dump_fout)
+	    owns_dump_fout = true;
+	}
+     }
+  return dump_fout;
+}
+
 /* External entrypoint to the analysis "engine".
    Set up any dumps, then call impl_run_checkers.  */
 
@@ -6107,23 +6181,9 @@ run_checkers ()
   /* Save input_location.  */
   location_t saved_input_location = input_location;
 
-  /* Handle -fdump-analyzer and -fdump-analyzer-stderr.  */
-  FILE *dump_fout = NULL;
-  /* Track if we're responsible for closing dump_fout.  */
-  bool owns_dump_fout = false;
-  if (flag_dump_analyzer_stderr)
-    dump_fout = stderr;
-  else if (flag_dump_analyzer)
-    {
-      char *dump_filename = concat (dump_base_name, ".analyzer.txt", NULL);
-      dump_fout = fopen (dump_filename, "w");
-      free (dump_filename);
-      if (dump_fout)
-	owns_dump_fout = true;
-    }
-
   {
     log_user the_logger (NULL);
+    get_or_create_any_logfile ();
     if (dump_fout)
       the_logger.set_logger (new logger (dump_fout, 0, 0,
 					 *global_dc->printer));
@@ -6136,7 +6196,11 @@ run_checkers ()
   }
 
   if (owns_dump_fout)
-    fclose (dump_fout);
+    {
+      fclose (dump_fout);
+      owns_dump_fout = false;
+      dump_fout = NULL;
+    }
 
   /* Restore input_location.  Subsequent passes may assume that input_location
      is some arbitrary value *not* in the block tree, which might be violated

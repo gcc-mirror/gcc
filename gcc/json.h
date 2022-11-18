@@ -156,16 +156,19 @@ class integer_number : public value
 class string : public value
 {
  public:
-  string (const char *utf8);
+  explicit string (const char *utf8);
+  string (const char *utf8, size_t len);
   ~string () { free (m_utf8); }
 
   enum kind get_kind () const final override { return JSON_STRING; }
   void print (pretty_printer *pp) const final override;
 
   const char *get_string () const { return m_utf8; }
+  size_t get_length () const { return m_len; }
 
  private:
   char *m_utf8;
+  size_t m_len;
 };
 
 /* Subclass of value for the three JSON literals "true", "false",

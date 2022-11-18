@@ -1692,6 +1692,38 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
   extern template class messages_byname<char>;
 
   extern template
+    const moneypunct<char, true>*
+    __try_use_facet<moneypunct<char, true> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const moneypunct<char, false>*
+    __try_use_facet<moneypunct<char, false> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const money_put<char>*
+    __try_use_facet<money_put<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const money_get<char>*
+    __try_use_facet<money_get<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const __timepunct<char>*
+    __try_use_facet<__timepunct<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const time_put<char>*
+    __try_use_facet<time_put<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const time_get<char>*
+    __try_use_facet<time_get<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const messages<char>*
+    __try_use_facet<messages<char> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
     const moneypunct<char, true>&
     use_facet<moneypunct<char, true> >(const locale&);
 
@@ -1765,6 +1797,38 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
   extern template class time_get_byname<wchar_t>;
   extern template class messages<wchar_t>;
   extern template class messages_byname<wchar_t>;
+
+  extern template
+    const moneypunct<wchar_t, true>*
+    __try_use_facet<moneypunct<wchar_t, true> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const moneypunct<wchar_t, false>*
+    __try_use_facet<moneypunct<wchar_t, false> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const money_put<wchar_t>*
+    __try_use_facet<money_put<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const money_get<wchar_t>*
+    __try_use_facet<money_get<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const __timepunct<wchar_t>*
+    __try_use_facet<__timepunct<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const time_put<wchar_t>*
+    __try_use_facet<time_put<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const time_get<wchar_t>*
+    __try_use_facet<time_get<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
+
+  extern template
+    const messages<wchar_t>*
+    __try_use_facet<messages<wchar_t> >(const locale&) _GLIBCXX_NOTHROW;
 
   extern template
     const moneypunct<wchar_t, true>&

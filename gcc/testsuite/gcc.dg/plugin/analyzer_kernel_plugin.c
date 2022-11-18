@@ -58,6 +58,11 @@ class copy_across_boundary_fn : public known_function
   virtual bool untrusted_source_p () const = 0;
   virtual bool untrusted_destination_p () const = 0;
 
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 3;
+  }
+
   void impl_call_pre (const call_details &cd) const final override
   {
     region_model_manager *mgr = cd.get_manager ();

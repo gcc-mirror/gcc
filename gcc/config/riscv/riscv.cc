@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
+#include "backend.h"
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"
@@ -51,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "bitmap.h"
 #include "df.h"
+#include "function-abi.h"
 #include "diagnostic.h"
 #include "builtins.h"
 #include "predict.h"
@@ -154,6 +156,11 @@ struct GTY(())  machine_function {
 
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
+
+  /* The components already handled by separate shrink-wrapping, which should
+     not be considered by the prologue and epilogue.  */
+  bool reg_is_wrapped_separately[FIRST_PSEUDO_REGISTER];
+
 };
 
 /* Information about a single argument.  */
@@ -1940,6 +1947,37 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
     }
 }
 
+/* Adjust scalable frame of vector for prologue && epilogue. */
+
+static void
+riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
+{
+  rtx tmp = RISCV_PROLOGUE_TEMP (Pmode);
+  rtx adjust_size = RISCV_PROLOGUE_TEMP2 (Pmode);
+  rtx insn, dwarf, adjust_frame_rtx;
+
+  riscv_legitimize_poly_move (Pmode, adjust_size, tmp,
+			      gen_int_mode (offset, Pmode));
+
+  if (epilogue)
+    insn = gen_add3_insn (target, target, adjust_size);
+  else
+    insn = gen_sub3_insn (target, target, adjust_size);
+
+  insn = emit_insn (insn);
+
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  adjust_frame_rtx
+    = gen_rtx_SET (target,
+		   plus_constant (Pmode, target, epilogue ? offset : -offset));
+
+  dwarf = alloc_reg_note (REG_FRAME_RELATED_EXPR, copy_rtx (adjust_frame_rtx),
+			  NULL_RTX);
+
+  REG_NOTES (insn) = dwarf;
+}
+
 /* If (set DEST SRC) is not a valid move instruction, emit an equivalent
    sequence that is valid.  */
 
@@ -2428,6 +2466,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case MINUS:
+      if (float_mode_p)
+	*total = tune_param->fp_add[mode == DFmode];
+      else
+	*total = riscv_binary_cost (x, 1, 4);
+      return false;
+
     case PLUS:
       /* add.uw pattern for zba.  */
       if (TARGET_ZBA
@@ -2447,6 +2491,19 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  && REG_P (XEXP (XEXP (x, 0), 0))
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 1)), 1, 3))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* Before strength-reduction, the shNadd can be expressed as the addition
+	 of a multiplication with a power-of-two.  If this case is not handled,
+	 the strength-reduction in expmed.c will calculate an inflated cost. */
+      if (TARGET_ZBA
+	  && mode == word_mode
+	  && GET_CODE (XEXP (x, 0)) == MULT
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	  && IN_RANGE (pow2p_hwi (INTVAL (XEXP (XEXP (x, 0), 1))), 1, 3))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;
@@ -4756,7 +4813,7 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
   for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
-	bool handle_reg = TRUE;
+	bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
 
 	/* If this is a normal return in a function that calls the eh_return
 	   builtin, then do not restore the eh return data registers as that
@@ -4787,9 +4844,11 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
   for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
       {
+	bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
 	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
 
-	riscv_save_restore_reg (mode, regno, offset, fn);
+	if (handle_reg)
+	  riscv_save_restore_reg (mode, regno, offset, fn);
 	offset -= GET_MODE_SIZE (mode).to_constant ();
       }
 }
@@ -4832,21 +4891,29 @@ riscv_restore_reg (rtx reg, rtx mem)
 static HOST_WIDE_INT
 riscv_first_stack_step (struct riscv_frame_info *frame)
 {
-  if (SMALL_OPERAND (frame->total_size.to_constant()))
-    return frame->total_size.to_constant();
+  HOST_WIDE_INT frame_total_constant_size;
+  if (!frame->total_size.is_constant ())
+    frame_total_constant_size
+      = riscv_stack_align (frame->total_size.coeffs[0])
+	- riscv_stack_align (frame->total_size.coeffs[1]);
+  else
+    frame_total_constant_size = frame->total_size.to_constant ();
+
+  if (SMALL_OPERAND (frame_total_constant_size))
+    return frame_total_constant_size;
 
   HOST_WIDE_INT min_first_step =
     RISCV_STACK_ALIGN ((frame->total_size - frame->fp_sp_offset).to_constant());
   HOST_WIDE_INT max_first_step = IMM_REACH / 2 - PREFERRED_STACK_BOUNDARY / 8;
-  HOST_WIDE_INT min_second_step = frame->total_size.to_constant() - max_first_step;
+  HOST_WIDE_INT min_second_step = frame_total_constant_size - max_first_step;
   gcc_assert (min_first_step <= max_first_step);
 
   /* As an optimization, use the least-significant bits of the total frame
      size, so that the second adjustment step is just LUI + ADD.  */
   if (!SMALL_OPERAND (min_second_step)
-      && frame->total_size.to_constant() % IMM_REACH < IMM_REACH / 2
-      && frame->total_size.to_constant() % IMM_REACH >= min_first_step)
-    return frame->total_size.to_constant() % IMM_REACH;
+      && frame_total_constant_size % IMM_REACH < IMM_REACH / 2
+      && frame_total_constant_size % IMM_REACH >= min_first_step)
+    return frame_total_constant_size % IMM_REACH;
 
   if (TARGET_RVC)
     {
@@ -4919,12 +4986,12 @@ void
 riscv_expand_prologue (void)
 {
   struct riscv_frame_info *frame = &cfun->machine->frame;
-  HOST_WIDE_INT size = frame->total_size.to_constant ();
+  poly_int64 size = frame->total_size;
   unsigned mask = frame->mask;
   rtx insn;
 
   if (flag_stack_usage_info)
-    current_function_static_stack_size = size;
+    current_function_static_stack_size = constant_lower_bound (size);
 
   if (cfun->machine->naked_p)
     return;
@@ -4946,7 +5013,9 @@ riscv_expand_prologue (void)
   /* Save the registers.  */
   if ((frame->mask | frame->fmask) != 0)
     {
-      HOST_WIDE_INT step1 = MIN (size, riscv_first_stack_step (frame));
+      HOST_WIDE_INT step1 = riscv_first_stack_step (frame);
+      if (size.is_constant ())
+	step1 = MIN (size.to_constant(), step1);
 
       insn = gen_add3_insn (stack_pointer_rtx,
 			    stack_pointer_rtx,
@@ -4969,23 +5038,40 @@ riscv_expand_prologue (void)
     }
 
   /* Allocate the rest of the frame.  */
-  if (size > 0)
+  if (known_gt (size, 0))
     {
-      if (SMALL_OPERAND (-size))
+      /* Two step adjustment:
+	 1.scalable frame. 2.constant frame.  */
+      poly_int64 scalable_frame (0, 0);
+      if (!size.is_constant ())
+	{
+	  /* First for scalable frame.  */
+	  poly_int64 scalable_frame = size;
+	  scalable_frame.coeffs[0] = size.coeffs[1];
+	  riscv_v_adjust_scalable_frame (stack_pointer_rtx, scalable_frame, false);
+	  size -= scalable_frame;
+	}
+
+      /* Second step for constant frame.  */
+      HOST_WIDE_INT constant_frame = size.to_constant ();
+      if (constant_frame == 0)
+	return;
+
+      if (SMALL_OPERAND (-constant_frame))
 	{
 	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
-				GEN_INT (-size));
+				GEN_INT (-constant_frame));
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	}
       else
 	{
-	  riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), GEN_INT (-size));
+	  riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), GEN_INT (-constant_frame));
 	  emit_insn (gen_add3_insn (stack_pointer_rtx,
 				    stack_pointer_rtx,
 				    RISCV_PROLOGUE_TEMP (Pmode)));
 
 	  /* Describe the effect of the previous instructions.  */
-	  insn = plus_constant (Pmode, stack_pointer_rtx, -size);
+	  insn = plus_constant (Pmode, stack_pointer_rtx, -constant_frame);
 	  insn = gen_rtx_SET (stack_pointer_rtx, insn);
 	  riscv_set_frame_expr (insn);
 	}
@@ -5028,7 +5114,7 @@ riscv_expand_epilogue (int style)
      Start off by assuming that no registers need to be restored.  */
   struct riscv_frame_info *frame = &cfun->machine->frame;
   unsigned mask = frame->mask;
-  HOST_WIDE_INT step1 = frame->total_size.to_constant ();
+  poly_int64 step1 = frame->total_size;
   HOST_WIDE_INT step2 = 0;
   bool use_restore_libcall = ((style == NORMAL_RETURN)
 			      && riscv_use_save_libcall (frame));
@@ -5064,11 +5150,27 @@ riscv_expand_epilogue (int style)
       riscv_emit_stack_tie ();
       need_barrier_p = false;
 
-      rtx adjust = GEN_INT (-frame->hard_frame_pointer_offset.to_constant ());
-      if (!SMALL_OPERAND (INTVAL (adjust)))
+      poly_int64 adjust_offset = -frame->hard_frame_pointer_offset;
+      rtx adjust = NULL_RTX;
+
+      if (!adjust_offset.is_constant ())
 	{
-	  riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), adjust);
-	  adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	  rtx tmp1 = RISCV_PROLOGUE_TEMP (Pmode);
+	  rtx tmp2 = RISCV_PROLOGUE_TEMP2 (Pmode);
+	  riscv_legitimize_poly_move (Pmode, tmp1, tmp2,
+				      gen_int_mode (adjust_offset, Pmode));
+	  adjust = tmp1;
+	}
+      else
+	{
+	  if (!SMALL_OPERAND (adjust_offset.to_constant ()))
+	    {
+	      riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode),
+			       GEN_INT (adjust_offset.to_constant ()));
+	      adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	    }
+	  else
+	    adjust = GEN_INT (adjust_offset.to_constant ());
 	}
 
       insn = emit_insn (
@@ -5078,7 +5180,7 @@ riscv_expand_epilogue (int style)
       rtx dwarf = NULL_RTX;
       rtx cfa_adjust_value = gen_rtx_PLUS (
 			       Pmode, hard_frame_pointer_rtx,
-			       GEN_INT (-frame->hard_frame_pointer_offset.to_constant ()));
+			       gen_int_mode (-frame->hard_frame_pointer_offset, Pmode));
       rtx cfa_adjust_rtx = gen_rtx_SET (stack_pointer_rtx, cfa_adjust_value);
       dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, cfa_adjust_rtx, dwarf);
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -5101,25 +5203,39 @@ riscv_expand_epilogue (int style)
       riscv_emit_stack_tie ();
       need_barrier_p = false;
 
-      /* Get an rtx for STEP1 that we can add to BASE.  */
-      rtx adjust = GEN_INT (step1);
-      if (!SMALL_OPERAND (step1))
+      /* Restore the scalable frame which is assigned in prologue.  */
+      if (!step1.is_constant ())
 	{
-	  riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), adjust);
-	  adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	  poly_int64 scalable_frame = step1;
+	  scalable_frame.coeffs[0] = step1.coeffs[1];
+	  riscv_v_adjust_scalable_frame (stack_pointer_rtx, scalable_frame,
+					 true);
+	  step1 -= scalable_frame;
 	}
 
-      insn = emit_insn (
-	       gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, adjust));
+      /* Get an rtx for STEP1 that we can add to BASE.
+	 Skip if adjust equal to zero.  */
+      if (step1.to_constant () != 0)
+	{
+	  rtx adjust = GEN_INT (step1.to_constant ());
+	  if (!SMALL_OPERAND (step1.to_constant ()))
+	    {
+	      riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), adjust);
+	      adjust = RISCV_PROLOGUE_TEMP (Pmode);
+	    }
 
-      rtx dwarf = NULL_RTX;
-      rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					 GEN_INT (step2));
+	  insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+					   stack_pointer_rtx,
+					   adjust));
+	  rtx dwarf = NULL_RTX;
+	  rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					     GEN_INT (step2));
 
-      dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
-      RTX_FRAME_RELATED_P (insn) = 1;
+	  dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
+	  RTX_FRAME_RELATED_P (insn) = 1;
 
-      REG_NOTES (insn) = dwarf;
+	  REG_NOTES (insn) = dwarf;
+	}
     }
   else if (frame_pointer_needed)
     {
@@ -5212,6 +5328,162 @@ riscv_epilogue_uses (unsigned int regno)
     }
 
   return false;
+}
+
+/* Implement TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS.  */
+
+static sbitmap
+riscv_get_separate_components (void)
+{
+  HOST_WIDE_INT offset;
+  sbitmap components = sbitmap_alloc (FIRST_PSEUDO_REGISTER);
+  bitmap_clear (components);
+
+  if (riscv_use_save_libcall (&cfun->machine->frame)
+      || cfun->machine->interrupt_handler_p)
+    return components;
+
+  offset = cfun->machine->frame.gp_sp_offset.to_constant ();
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
+      {
+	/* We can only wrap registers that have small operand offsets.
+	   For large offsets a pseudo register might be needed which
+	   cannot be created during the shrink wrapping pass.  */
+	if (SMALL_OPERAND (offset))
+	  bitmap_set_bit (components, regno);
+
+	offset -= UNITS_PER_WORD;
+      }
+
+  offset = cfun->machine->frame.fp_sp_offset.to_constant ();
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
+      {
+	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
+
+	/* We can only wrap registers that have small operand offsets.
+	   For large offsets a pseudo register might be needed which
+	   cannot be created during the shrink wrapping pass.  */
+	if (SMALL_OPERAND (offset))
+	  bitmap_set_bit (components, regno);
+
+	offset -= GET_MODE_SIZE (mode).to_constant ();
+      }
+
+  /* Don't mess with the hard frame pointer.  */
+  if (frame_pointer_needed)
+    bitmap_clear_bit (components, HARD_FRAME_POINTER_REGNUM);
+
+  bitmap_clear_bit (components, RETURN_ADDR_REGNUM);
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB.  */
+
+static sbitmap
+riscv_components_for_bb (basic_block bb)
+{
+  bitmap in = DF_LIVE_IN (bb);
+  bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
+  bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
+
+  sbitmap components = sbitmap_alloc (FIRST_PSEUDO_REGISTER);
+  bitmap_clear (components);
+
+  function_abi_aggregator callee_abis;
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    if (CALL_P (insn))
+      callee_abis.note_callee_abi (insn_callee_abi (insn));
+  HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
+
+  /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (!fixed_regs[regno]
+       && !crtl->abi->clobbers_full_reg_p (regno)
+       && (TEST_HARD_REG_BIT (extra_caller_saves, regno)
+	   || bitmap_bit_p (in, regno)
+	   || bitmap_bit_p (gen, regno)
+	   || bitmap_bit_p (kill, regno)))
+      bitmap_set_bit (components, regno);
+
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (!fixed_regs[regno]
+       && !crtl->abi->clobbers_full_reg_p (regno)
+       && (TEST_HARD_REG_BIT (extra_caller_saves, regno)
+	   || bitmap_bit_p (in, regno)
+	   || bitmap_bit_p (gen, regno)
+	   || bitmap_bit_p (kill, regno)))
+      bitmap_set_bit (components, regno);
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS.  */
+
+static void
+riscv_disqualify_components (sbitmap, edge, sbitmap, bool)
+{
+  /* Nothing to do for riscv.  */
+}
+
+static void
+riscv_process_components (sbitmap components, bool prologue_p)
+{
+  HOST_WIDE_INT offset;
+  riscv_save_restore_fn fn = prologue_p? riscv_save_reg : riscv_restore_reg;
+
+  offset = cfun->machine->frame.gp_sp_offset.to_constant ();
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
+      {
+	if (bitmap_bit_p (components, regno))
+	  riscv_save_restore_reg (word_mode, regno, offset, fn);
+
+	offset -= UNITS_PER_WORD;
+      }
+
+  offset = cfun->machine->frame.fp_sp_offset.to_constant ();
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
+      {
+	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
+
+	if (bitmap_bit_p (components, regno))
+	  riscv_save_restore_reg (mode, regno, offset, fn);
+
+	offset -= GET_MODE_SIZE (mode).to_constant ();
+      }
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS.  */
+
+static void
+riscv_emit_prologue_components (sbitmap components)
+{
+  riscv_process_components (components, true);
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS.  */
+
+static void
+riscv_emit_epilogue_components (sbitmap components)
+{
+  riscv_process_components (components, false);
+}
+
+static void
+riscv_set_handled_components (sbitmap components)
+{
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (bitmap_bit_p (components, regno))
+      cfun->machine->reg_is_wrapped_separately[regno] = true;
+
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (bitmap_bit_p (components, regno))
+      cfun->machine->reg_is_wrapped_separately[regno] = true;
 }
 
 /* Return nonzero if this function is known to have a null epilogue.
@@ -6484,6 +6756,22 @@ riscv_regmode_natural_size (machine_mode mode)
   return UNITS_PER_WORD;
 }
 
+/* Implement the TARGET_DWARF_POLY_INDETERMINATE_VALUE hook.  */
+
+static unsigned int
+riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
+				      int *offset)
+{
+  /* Polynomial invariant 1 == (VLENB / riscv_bytes_per_vector_chunk) - 1.
+     1. TARGET_MIN_VLEN == 32, olynomial invariant 1 == (VLENB / 4) - 1.
+     2. TARGET_MIN_VLEN > 32, olynomial invariant 1 == (VLENB / 8) - 1.
+  */
+  gcc_assert (i == 1);
+  *factor = riscv_bytes_per_vector_chunk;
+  *offset = 1;
+  return RISCV_DWARF_VLENB;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -6560,6 +6848,30 @@ riscv_regmode_natural_size (machine_mode mode)
 #define TARGET_FUNCTION_ARG_ADVANCE riscv_function_arg_advance
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY riscv_function_arg_boundary
+
+#undef TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
+#define TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS \
+  riscv_get_separate_components
+
+#undef TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB
+#define TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB \
+  riscv_components_for_bb
+
+#undef TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS
+#define TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS \
+  riscv_disqualify_components
+
+#undef TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS \
+  riscv_emit_prologue_components
+
+#undef TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS \
+  riscv_emit_epilogue_components
+
+#undef TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS
+#define TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS \
+  riscv_set_handled_components
 
 /* The generic ELF target does not always have TLS support.  */
 #ifdef HAVE_AS_TLS
@@ -6704,6 +7016,9 @@ riscv_regmode_natural_size (machine_mode mode)
 
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT riscv_vector_alignment
+
+#undef TARGET_DWARF_POLY_INDETERMINATE_VALUE
+#define TARGET_DWARF_POLY_INDETERMINATE_VALUE riscv_dwarf_poly_indeterminate_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

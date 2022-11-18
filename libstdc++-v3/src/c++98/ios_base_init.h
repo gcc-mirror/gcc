@@ -7,6 +7,7 @@
 // sufficiently early (so that it happens before any other global
 // constructor when statically linking with libstdc++.a), instead of
 // doing so in (each TU that includes) <iostream>.
+// This needs to be done in the same TU that defines the stream objects.
 #if __has_attribute(init_priority)
 static ios_base::Init __ioinit __attribute__((init_priority(90)));
 #endif

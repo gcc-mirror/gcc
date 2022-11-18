@@ -633,7 +633,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 			v = NULL_TREE;
 			break;
 		      }
-		    is_flexible_array_mem_ref = array_at_struct_end_p (v);
+		    is_flexible_array_mem_ref = array_ref_flexible_size_p (v);
 		    while (v != pt_var && TREE_CODE (v) == COMPONENT_REF)
 		      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
 			  != UNION_TYPE

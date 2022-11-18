@@ -362,4 +362,8 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 
 #endif
 
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define __STDC_VERSION_STDINT_H__	202311L
+#endif
+
 #endif /* _GCC_STDINT_H */

@@ -1215,7 +1215,7 @@ package body Errout is
           Next                => No_Error_Msg,
           Prev                => No_Error_Msg,
           Sptr                => Span,
-          Optr                => Optr,
+          Optr                => Opan,
           Insertion_Sloc      => (if Has_Insertion_Line then Error_Msg_Sloc
                                   else No_Location),
           Sfile               => Get_Source_File_Index (Sptr),
@@ -1284,7 +1284,7 @@ package body Errout is
                        or else
                           (Sptr = Errors.Table (Last_Error_Msg).Sptr.Ptr
                              and then
-                               Optr > Errors.Table (Last_Error_Msg).Optr))
+                               Optr > Errors.Table (Last_Error_Msg).Optr.Ptr))
          then
             Prev_Msg := Last_Error_Msg;
             Next_Msg := No_Error_Msg;
@@ -1302,7 +1302,8 @@ package body Errout is
                then
                   exit when Sptr < Errors.Table (Next_Msg).Sptr.Ptr
                     or else (Sptr = Errors.Table (Next_Msg).Sptr.Ptr
-                              and then Optr < Errors.Table (Next_Msg).Optr);
+                              and then
+                             Optr < Errors.Table (Next_Msg).Optr.Ptr);
                end if;
 
                Prev_Msg := Next_Msg;
@@ -1681,8 +1682,8 @@ package body Errout is
                    (Warning_Specifically_Suppressed (CE.Sptr.Ptr, CE.Text, Tag)
                                                                 /= No_String
                       or else
-                    Warning_Specifically_Suppressed (CE.Optr, CE.Text, Tag) /=
-                                                                   No_String)
+                    Warning_Specifically_Suppressed (CE.Optr.Ptr, CE.Text, Tag)
+                                                                /= No_String)
             then
                Delete_Warning (Cur);
 
@@ -2232,9 +2233,9 @@ package body Errout is
       Write_Str (",""locations"":[");
       Write_JSON_Span (Errors.Table (E));
 
-      if Errors.Table (E).Optr /= Errors.Table (E).Sptr.Ptr then
+      if Errors.Table (E).Optr.Ptr /= Errors.Table (E).Sptr.Ptr then
          Write_Str (",{""caret"":");
-         Write_JSON_Location (Errors.Table (E).Optr);
+         Write_JSON_Location (Errors.Table (E).Optr.Ptr);
          Write_Str ("}");
       end if;
 
@@ -2954,7 +2955,7 @@ package body Errout is
                            else SGR_Error);
                      begin
                         Write_Source_Code_Lines
-                          (Errors.Table (E).Sptr, SGR_Span);
+                          (Errors.Table (E).Optr, SGR_Span);
                      end;
                   end if;
                end if;
@@ -3329,7 +3330,7 @@ package body Errout is
 
                --  Don't remove if location does not match
 
-               and then Errors.Table (E).Optr = Loc
+               and then Errors.Table (E).Optr.Ptr = Loc
 
                --  Don't remove if not warning/info message. Note that we do
                --  not remove style messages here. They are warning messages

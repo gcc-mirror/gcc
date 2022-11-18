@@ -12967,6 +12967,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	  && sym->ts.u.derived
 	  && !sym->attr.select_type_temporary
 	  && !UNLIMITED_POLY (sym)
+	  && CLASS_DATA (sym)->ts.u.derived
 	  && !gfc_type_is_extensible (CLASS_DATA (sym)->ts.u.derived))
 	{
 	  gfc_error ("Type %qs of CLASS variable %qs at %L is not extensible",
@@ -17218,6 +17219,7 @@ resolve_equivalence (gfc_equiv *eq)
 	    "statement at %L with different type objects";
       if ((object ==2
 	   && last_eq_type == SEQ_MIXED
+	   && last_where
 	   && !gfc_notify_std (GFC_STD_GNU, msg, first_sym->name, last_where))
 	  || (eq_type == SEQ_MIXED
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))
@@ -17227,6 +17229,7 @@ resolve_equivalence (gfc_equiv *eq)
 	    "statement at %L with objects of different type";
       if ((object ==2
 	   && last_eq_type == SEQ_NONDEFAULT
+	   && last_where
 	   && !gfc_notify_std (GFC_STD_GNU, msg, first_sym->name, last_where))
 	  || (eq_type == SEQ_NONDEFAULT
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))

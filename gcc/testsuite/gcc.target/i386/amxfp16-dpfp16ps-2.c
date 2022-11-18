@@ -1,8 +1,7 @@
 /* { dg-do run { target { ! ia32 } } } */
-/* { dg-require-effective-target amx_tile } */
 /* { dg-require-effective-target amx_fp16 } */
 /* { dg-require-effective-target avx512fp16 } */
-/* { dg-options "-O2 -mamx-tile -mamx-fp16 -mavx512fp16" } */
+/* { dg-options "-O2 -mamx-fp16 -mavx512fp16" } */
 #define AMX_FP16
 #define DO_TEST test_amx_fp16_dpfp16ps
 void test_amx_fp16_dpfp16ps ();

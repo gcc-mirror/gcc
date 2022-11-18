@@ -11,7 +11,7 @@ foo (int x)
     case 2:
       break;
     }
-  throw 42;	// { dg-error "is not a constant expression" }
+  throw 42;	// { dg-error "is not a constant expression" "" { target c++20_down } }
   return 0;
 }
 
@@ -29,7 +29,7 @@ bar (int x)
 	    continue;
 	  break;
 	}
-      throw -42;	// { dg-error "is not a constant expression" }
+      throw -42;	// { dg-error "is not a constant expression" "" { target c++20_down } }
     }
   while (0);
   return x;

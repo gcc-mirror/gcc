@@ -17,14 +17,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "complete" "" { target *-*-* } 0 }
-// { dg-error "invalid 'static_cast'" "" { target { ! rtti }  } 0 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 0 }
+// { dg-error "invalid 'static_cast'" "" { target c++98_only } 0 }
 
 #include <locale>
 
 template <class Char, int I>
 struct trait: std::char_traits<Char> {};
 
+// Generates unique types so we get distinct diagnostics for each line.
 template <class Char, int I>
 std::basic_string<Char, trait<Char, I> > make_str()
 {

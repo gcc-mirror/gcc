@@ -65,7 +65,7 @@ void
 test_unused() {
   volatile double d = 0.0;
   double *p = new double ();
-  d += 1.0; // { dg-warning "deprecated" "" { target c++2a } }
+  d += 1.0;
   delete p;
 }
 

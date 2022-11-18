@@ -13,6 +13,6 @@ constexpr X X::g(X x) { return x; }
 struct Y
 {
   Y() { }
-  constexpr Y f(Y y) { return y; }  // { dg-error "constexpr" "" { target { ! implicit_constexpr } } }
-  static constexpr Y g(Y y) { return y; } // { dg-error "constexpr" "" { target { ! implicit_constexpr } } }
+  constexpr Y f(Y y) { return y; }  // { dg-error "constexpr" "" { target { { ! implicit_constexpr } && c++20_down } } }
+  static constexpr Y g(Y y) { return y; } // { dg-error "constexpr" "" { target { { ! implicit_constexpr } && c++20_down } } }
 };

@@ -1,0 +1,1362 @@
+@c Copyright (C) 1996-2022 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@ignore
+@c man begin COPYRIGHT
+Copyright @copyright{} 1996-2022 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Funding
+Free Software'', the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the gfdl(7) man page.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@c man end
+@c Set file name and title for the man page.
+@setfilename gcov
+@settitle coverage testing tool
+@end ignore
+
+@node Gcov
+@chapter @command{gcov}---a Test Coverage Program
+
+@command{gcov} is a tool you can use in conjunction with GCC to
+test code coverage in your programs.
+
+@menu
+* Gcov Intro::                  Introduction to gcov.
+* Invoking Gcov::               How to use gcov.
+* Gcov and Optimization::       Using gcov with GCC optimization.
+* Gcov Data Files::             The files used by gcov.
+* Cross-profiling::             Data file relocation.
+* Freestanding Environments::   How to use profiling and test
+                                coverage in freestanding environments.
+@end menu
+
+@node Gcov Intro
+@section Introduction to @command{gcov}
+@c man begin DESCRIPTION
+
+@command{gcov} is a test coverage program.  Use it in concert with GCC
+to analyze your programs to help create more efficient, faster running
+code and to discover untested parts of your program.  You can use
+@command{gcov} as a profiling tool to help discover where your
+optimization efforts will best affect your code.  You can also use
+@command{gcov} along with the other profiling tool, @command{gprof}, to
+assess which parts of your code use the greatest amount of computing
+time.
+
+Profiling tools help you analyze your code's performance.  Using a
+profiler such as @command{gcov} or @command{gprof}, you can find out some
+basic performance statistics, such as:
+
+@itemize @bullet
+@item
+how often each line of code executes
+
+@item
+what lines of code are actually executed
+
+@item
+how much computing time each section of code uses
+@end itemize
+
+Once you know these things about how your code works when compiled, you
+can look at each module to see which modules should be optimized.
+@command{gcov} helps you determine where to work on optimization.
+
+Software developers also use coverage testing in concert with
+testsuites, to make sure software is actually good enough for a release.
+Testsuites can verify that a program works as expected; a coverage
+program tests to see how much of the program is exercised by the
+testsuite.  Developers can then determine what kinds of test cases need
+to be added to the testsuites to create both better testing and a better
+final product.
+
+You should compile your code without optimization if you plan to use
+@command{gcov} because the optimization, by combining some lines of code
+into one function, may not give you as much information as you need to
+look for `hot spots' where the code is using a great deal of computer
+time.  Likewise, because @command{gcov} accumulates statistics by line (at
+the lowest resolution), it works best with a programming style that
+places only one statement on each line.  If you use complicated macros
+that expand to loops or to other control structures, the statistics are
+less helpful---they only report on the line where the macro call
+appears.  If your complex macros behave like functions, you can replace
+them with inline functions to solve this problem.
+
+@command{gcov} creates a logfile called @file{@var{sourcefile}.gcov} which
+indicates how many times each line of a source file @file{@var{sourcefile}.c}
+has executed.  You can use these logfiles along with @command{gprof} to aid
+in fine-tuning the performance of your programs.  @command{gprof} gives
+timing information you can use along with the information you get from
+@command{gcov}.
+
+@command{gcov} works only on code compiled with GCC@.  It is not
+compatible with any other profiling or test coverage mechanism.
+
+@c man end
+
+@node Invoking Gcov
+@section Invoking @command{gcov}
+
+@smallexample
+gcov @r{[}@var{options}@r{]} @var{files}
+@end smallexample
+
+@command{gcov} accepts the following options:
+
+@ignore
+@c man begin SYNOPSIS
+gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
+     [@option{-a}|@option{--all-blocks}]
+     [@option{-b}|@option{--branch-probabilities}]
+     [@option{-c}|@option{--branch-counts}]
+     [@option{-d}|@option{--display-progress}]
+     [@option{-f}|@option{--function-summaries}]
+     [@option{-j}|@option{--json-format}]
+     [@option{-H}|@option{--human-readable}]
+     [@option{-k}|@option{--use-colors}]
+     [@option{-l}|@option{--long-file-names}]
+     [@option{-m}|@option{--demangled-names}]
+     [@option{-n}|@option{--no-output}]
+     [@option{-o}|@option{--object-directory} @var{directory|file}]
+     [@option{-p}|@option{--preserve-paths}]
+     [@option{-q}|@option{--use-hotness-colors}]
+     [@option{-r}|@option{--relative-only}]
+     [@option{-s}|@option{--source-prefix} @var{directory}]
+     [@option{-t}|@option{--stdout}]
+     [@option{-u}|@option{--unconditional-branches}]
+     [@option{-x}|@option{--hash-filenames}]
+     @var{files}
+@c man end
+@c man begin SEEALSO
+gpl(7), gfdl(7), fsf-funding(7), gcc(1) and the Info entry for @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin OPTIONS
+@table @gcctabopt
+
+@item -a
+@itemx --all-blocks
+Write individual execution counts for every basic block.  Normally gcov
+outputs execution counts only for the main blocks of a line.  With this
+option you can determine if blocks within a single line are not being
+executed.
+
+@item -b
+@itemx --branch-probabilities
+Write branch frequencies to the output file, and write branch summary
+info to the standard output.  This option allows you to see how often
+each branch in your program was taken.  Unconditional branches will not
+be shown, unless the @option{-u} option is given.
+
+@item -c
+@itemx --branch-counts
+Write branch frequencies as the number of branches taken, rather than
+the percentage of branches taken.
+
+@item -d
+@itemx --display-progress
+Display the progress on the standard output.
+
+@item -f
+@itemx --function-summaries
+Output summaries for each function in addition to the file level summary.
+
+@item -h
+@itemx --help
+Display help about using @command{gcov} (on the standard output), and
+exit without doing any further processing.
+
+@item -j
+@itemx --json-format
+Output gcov file in an easy-to-parse JSON intermediate format
+which does not require source code for generation.  The JSON
+file is compressed with gzip compression algorithm
+and the files have @file{.gcov.json.gz} extension.
+
+Structure of the JSON is following:
+
+@smallexample
+@{
+  "current_working_directory": "foo/bar",
+  "data_file": "a.out",
+  "format_version": "1",
+  "gcc_version": "11.1.1 20210510"
+  "files": ["$file"]
+@}
+@end smallexample
+
+Fields of the root element have following semantics:
+
+@itemize @bullet
+@item
+@var{current_working_directory}: working directory where
+a compilation unit was compiled
+
+@item
+@var{data_file}: name of the data file (GCDA)
+
+@item
+@var{format_version}: semantic version of the format
+
+@item
+@var{gcc_version}: version of the GCC compiler
+@end itemize
+
+Each @var{file} has the following form:
+
+@smallexample
+@{
+  "file": "a.c",
+  "functions": ["$function"],
+  "lines": ["$line"]
+@}
+@end smallexample
+
+Fields of the @var{file} element have following semantics:
+
+@itemize @bullet
+@item
+@var{file_name}: name of the source file
+@end itemize
+
+Each @var{function} has the following form:
+
+@smallexample
+@{
+  "blocks": 2,
+  "blocks_executed": 2,
+  "demangled_name": "foo",
+  "end_column": 1,
+  "end_line": 4,
+  "execution_count": 1,
+  "name": "foo",
+  "start_column": 5,
+  "start_line": 1
+@}
+@end smallexample
+
+Fields of the @var{function} element have following semantics:
+
+@itemize @bullet
+@item
+@var{blocks}: number of blocks that are in the function
+
+@item
+@var{blocks_executed}: number of executed blocks of the function
+
+@item
+@var{demangled_name}: demangled name of the function
+
+@item
+@var{end_column}: column in the source file where the function ends
+
+@item
+@var{end_line}: line in the source file where the function ends
+
+@item
+@var{execution_count}: number of executions of the function
+
+@item
+@var{name}: name of the function
+
+@item
+@var{start_column}: column in the source file where the function begins
+
+@item
+@var{start_line}: line in the source file where the function begins
+@end itemize
+
+Note that line numbers and column numbers number from 1.  In the current
+implementation, @var{start_line} and @var{start_column} do not include
+any template parameters and the leading return type but that
+this is likely to be fixed in the future.
+
+Each @var{line} has the following form:
+
+@smallexample
+@{
+  "branches": ["$branch"],
+  "count": 2,
+  "line_number": 15,
+  "unexecuted_block": false,
+  "function_name": "foo",
+@}
+@end smallexample
+
+Branches are present only with @var{-b} option.
+Fields of the @var{line} element have following semantics:
+
+@itemize @bullet
+@item
+@var{count}: number of executions of the line
+
+@item
+@var{line_number}: line number
+
+@item
+@var{unexecuted_block}: flag whether the line contains an unexecuted block
+(not all statements on the line are executed)
+
+@item
+@var{function_name}: a name of a function this @var{line} belongs to
+(for a line with an inlined statements can be not set)
+@end itemize
+
+Each @var{branch} has the following form:
+
+@smallexample
+@{
+  "count": 11,
+  "fallthrough": true,
+  "throw": false
+@}
+@end smallexample
+
+Fields of the @var{branch} element have following semantics:
+
+@itemize @bullet
+@item
+@var{count}: number of executions of the branch
+
+@item
+@var{fallthrough}: true when the branch is a fall through branch
+
+@item
+@var{throw}: true when the branch is an exceptional branch
+@end itemize
+
+@item -H
+@itemx --human-readable
+Write counts in human readable format (like 24.6k).
+
+@item -k
+@itemx --use-colors
+
+Use colors for lines of code that have zero coverage.  We use red color for
+non-exceptional lines and cyan for exceptional.  Same colors are used for
+basic blocks with @option{-a} option.
+
+@item -l
+@itemx --long-file-names
+Create long file names for included source files.  For example, if the
+header file @file{x.h} contains code, and was included in the file
+@file{a.c}, then running @command{gcov} on the file @file{a.c} will
+produce an output file called @file{a.c##x.h.gcov} instead of
+@file{x.h.gcov}.  This can be useful if @file{x.h} is included in
+multiple source files and you want to see the individual
+contributions.  If you use the @samp{-p} option, both the including
+and included file names will be complete path names.
+
+@item -m
+@itemx --demangled-names
+Display demangled function names in output. The default is to show
+mangled function names.
+
+@item -n
+@itemx --no-output
+Do not create the @command{gcov} output file.
+
+@item -o @var{directory|file}
+@itemx --object-directory @var{directory}
+@itemx --object-file @var{file}
+Specify either the directory containing the gcov data files, or the
+object path name.  The @file{.gcno}, and
+@file{.gcda} data files are searched for using this option.  If a directory
+is specified, the data files are in that directory and named after the
+input file name, without its extension.  If a file is specified here,
+the data files are named after that file, without its extension.
+
+@item -p
+@itemx --preserve-paths
+Preserve complete path information in the names of generated
+@file{.gcov} files.  Without this option, just the filename component is
+used.  With this option, all directories are used, with @samp{/} characters
+translated to @samp{#} characters, @file{.} directory components
+removed and unremoveable @file{..}
+components renamed to @samp{^}.  This is useful if sourcefiles are in several
+different directories.
+
+@item -q
+@itemx --use-hotness-colors
+
+Emit perf-like colored output for hot lines.  Legend of the color scale
+is printed at the very beginning of the output file.
+
+@item -r
+@itemx --relative-only
+Only output information about source files with a relative pathname
+(after source prefix elision).  Absolute paths are usually system
+header files and coverage of any inline functions therein is normally
+uninteresting.
+
+@item -s @var{directory}
+@itemx --source-prefix @var{directory}
+A prefix for source file names to remove when generating the output
+coverage files.  This option is useful when building in a separate
+directory, and the pathname to the source directory is not wanted when
+determining the output file names.  Note that this prefix detection is
+applied before determining whether the source file is absolute.
+
+@item -t
+@itemx --stdout
+Output to standard output instead of output files.
+
+@item -u
+@itemx --unconditional-branches
+When branch probabilities are given, include those of unconditional branches.
+Unconditional branches are normally not interesting.
+
+@item -v
+@itemx --version
+Display the @command{gcov} version number (on the standard output),
+and exit without doing any further processing.
+
+@item -w
+@itemx --verbose
+Print verbose informations related to basic blocks and arcs.
+
+@item -x
+@itemx --hash-filenames
+When using @var{--preserve-paths},
+gcov uses the full pathname of the source files to create
+an output filename.  This can lead to long filenames that can overflow
+filesystem limits.  This option creates names of the form
+@file{@var{source-file}##@var{md5}.gcov},
+where the @var{source-file} component is the final filename part and
+the @var{md5} component is calculated from the full mangled name that
+would have been used otherwise.  The option is an alternative
+to the @var{--preserve-paths} on systems which have a filesystem limit.
+
+@end table
+
+@command{gcov} should be run with the current directory the same as that
+when you invoked the compiler.  Otherwise it will not be able to locate
+the source files.  @command{gcov} produces files called
+@file{@var{mangledname}.gcov} in the current directory.  These contain
+the coverage information of the source file they correspond to.
+One @file{.gcov} file is produced for each source (or header) file
+containing code,
+which was compiled to produce the data files.  The @var{mangledname} part
+of the output file name is usually simply the source file name, but can
+be something more complicated if the @samp{-l} or @samp{-p} options are
+given.  Refer to those options for details.
+
+If you invoke @command{gcov} with multiple input files, the
+contributions from each input file are summed.  Typically you would
+invoke it with the same list of files as the final link of your executable.
+
+The @file{.gcov} files contain the @samp{:} separated fields along with
+program source code.  The format is
+
+@smallexample
+@var{execution_count}:@var{line_number}:@var{source line text}
+@end smallexample
+
+Additional block information may succeed each line, when requested by
+command line option.  The @var{execution_count} is @samp{-} for lines
+containing no code.  Unexecuted lines are marked @samp{#####} or
+@samp{=====}, depending on whether they are reachable by
+non-exceptional paths or only exceptional paths such as C++ exception
+handlers, respectively. Given the @samp{-a} option, unexecuted blocks are
+marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
+is reachable via non-exceptional or exceptional paths.
+Executed basic blocks having a statement with zero @var{execution_count}
+end with @samp{*} character and are colored with magenta color with
+the @option{-k} option.  This functionality is not supported in Ada.
+
+Note that GCC can completely remove the bodies of functions that are
+not needed -- for instance if they are inlined everywhere.  Such functions
+are marked with @samp{-}, which can be confusing.
+Use the @option{-fkeep-inline-functions} and @option{-fkeep-static-functions}
+options to retain these functions and
+allow gcov to properly show their @var{execution_count}.
+
+Some lines of information at the start have @var{line_number} of zero.
+These preamble lines are of the form
+
+@smallexample
+-:0:@var{tag}:@var{value}
+@end smallexample
+
+The ordering and number of these preamble lines will be augmented as
+@command{gcov} development progresses --- do not rely on them remaining
+unchanged.  Use @var{tag} to locate a particular preamble line.
+
+The additional block information is of the form
+
+@smallexample
+@var{tag} @var{information}
+@end smallexample
+
+The @var{information} is human readable, but designed to be simple
+enough for machine parsing too.
+
+When printing percentages, 0% and 100% are only printed when the values
+are @emph{exactly} 0% and 100% respectively.  Other values which would
+conventionally be rounded to 0% or 100% are instead printed as the
+nearest non-boundary value.
+
+When using @command{gcov}, you must first compile your program
+with a special GCC option @samp{--coverage}.
+This tells the compiler to generate additional information needed by
+gcov (basically a flow graph of the program) and also includes
+additional code in the object files for generating the extra profiling
+information needed by gcov.  These additional files are placed in the
+directory where the object file is located.
+
+Running the program will cause profile output to be generated.  For each
+source file compiled with @option{-fprofile-arcs}, an accompanying
+@file{.gcda} file will be placed in the object file directory.
+
+Running @command{gcov} with your program's source file names as arguments
+will now produce a listing of the code along with frequency of execution
+for each line.  For example, if your program is called @file{tmp.cpp}, this
+is what you see when you use the basic @command{gcov} facility:
+
+@smallexample
+$ g++ --coverage tmp.cpp -c
+$ g++ --coverage tmp.o
+$ a.out
+$ gcov tmp.cpp -m
+File 'tmp.cpp'
+Lines executed:92.86% of 14
+Creating 'tmp.cpp.gcov'
+@end smallexample
+
+The file @file{tmp.cpp.gcov} contains output from @command{gcov}.
+Here is a sample:
+
+@smallexample
+        -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:
+        -:    3:template<class T>
+        -:    4:class Foo
+        -:    5:@{
+        -:    6:  public:
+       1*:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<char>::Foo():
+    #####:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<int>::Foo():
+        1:    7:  Foo(): b (1000) @{@}
+------------------
+       2*:    8:  void inc () @{ b++; @}
+------------------
+Foo<char>::inc():
+    #####:    8:  void inc () @{ b++; @}
+------------------
+Foo<int>::inc():
+        2:    8:  void inc () @{ b++; @}
+------------------
+        -:    9:
+        -:   10:  private:
+        -:   11:  int b;
+        -:   12:@};
+        -:   13:
+        -:   14:template class Foo<int>;
+        -:   15:template class Foo<char>;
+        -:   16:
+        -:   17:int
+        1:   18:main (void)
+        -:   19:@{
+        -:   20:  int i, total;
+        1:   21:  Foo<int> counter;
+        -:   22:
+        1:   23:  counter.inc();
+        1:   24:  counter.inc();
+        1:   25:  total = 0;
+        -:   26:
+       11:   27:  for (i = 0; i < 10; i++)
+       10:   28:    total += i;
+        -:   29:
+       1*:   30:  int v = total > 100 ? 1 : 2;
+        -:   31:
+        1:   32:  if (total != 45)
+    #####:   33:    printf ("Failure\n");
+        -:   34:  else
+        1:   35:    printf ("Success\n");
+        1:   36:  return 0;
+        -:   37:@}
+@end smallexample
+
+Note that line 7 is shown in the report multiple times.  First occurrence
+presents total number of execution of the line and the next two belong
+to instances of class Foo constructors.  As you can also see, line 30 contains
+some unexecuted basic blocks and thus execution count has asterisk symbol.
+
+When you use the @option{-a} option, you will get individual block
+counts, and the output looks like this:
+
+@smallexample
+        -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:
+        -:    3:template<class T>
+        -:    4:class Foo
+        -:    5:@{
+        -:    6:  public:
+       1*:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<char>::Foo():
+    #####:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<int>::Foo():
+        1:    7:  Foo(): b (1000) @{@}
+------------------
+       2*:    8:  void inc () @{ b++; @}
+------------------
+Foo<char>::inc():
+    #####:    8:  void inc () @{ b++; @}
+------------------
+Foo<int>::inc():
+        2:    8:  void inc () @{ b++; @}
+------------------
+        -:    9:
+        -:   10:  private:
+        -:   11:  int b;
+        -:   12:@};
+        -:   13:
+        -:   14:template class Foo<int>;
+        -:   15:template class Foo<char>;
+        -:   16:
+        -:   17:int
+        1:   18:main (void)
+        -:   19:@{
+        -:   20:  int i, total;
+        1:   21:  Foo<int> counter;
+        1:   21-block  0
+        -:   22:
+        1:   23:  counter.inc();
+        1:   23-block  0
+        1:   24:  counter.inc();
+        1:   24-block  0
+        1:   25:  total = 0;
+        -:   26:
+       11:   27:  for (i = 0; i < 10; i++)
+        1:   27-block  0
+       11:   27-block  1
+       10:   28:    total += i;
+       10:   28-block  0
+        -:   29:
+       1*:   30:  int v = total > 100 ? 1 : 2;
+        1:   30-block  0
+    %%%%%:   30-block  1
+        1:   30-block  2
+        -:   31:
+        1:   32:  if (total != 45)
+        1:   32-block  0
+    #####:   33:    printf ("Failure\n");
+    %%%%%:   33-block  0
+        -:   34:  else
+        1:   35:    printf ("Success\n");
+        1:   35-block  0
+        1:   36:  return 0;
+        1:   36-block  0
+        -:   37:@}
+@end smallexample
+
+In this mode, each basic block is only shown on one line -- the last
+line of the block.  A multi-line block will only contribute to the
+execution count of that last line, and other lines will not be shown
+to contain code, unless previous blocks end on those lines.
+The total execution count of a line is shown and subsequent lines show
+the execution counts for individual blocks that end on that line.  After each
+block, the branch and call counts of the block will be shown, if the
+@option{-b} option is given.
+
+Because of the way GCC instruments calls, a call count can be shown
+after a line with no individual blocks.
+As you can see, line 33 contains a basic block that was not executed.
+
+@need 450
+When you use the @option{-b} option, your output looks like this:
+
+@smallexample
+        -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:
+        -:    3:template<class T>
+        -:    4:class Foo
+        -:    5:@{
+        -:    6:  public:
+       1*:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<char>::Foo():
+function Foo<char>::Foo() called 0 returned 0% blocks executed 0%
+    #####:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<int>::Foo():
+function Foo<int>::Foo() called 1 returned 100% blocks executed 100%
+        1:    7:  Foo(): b (1000) @{@}
+------------------
+       2*:    8:  void inc () @{ b++; @}
+------------------
+Foo<char>::inc():
+function Foo<char>::inc() called 0 returned 0% blocks executed 0%
+    #####:    8:  void inc () @{ b++; @}
+------------------
+Foo<int>::inc():
+function Foo<int>::inc() called 2 returned 100% blocks executed 100%
+        2:    8:  void inc () @{ b++; @}
+------------------
+        -:    9:
+        -:   10:  private:
+        -:   11:  int b;
+        -:   12:@};
+        -:   13:
+        -:   14:template class Foo<int>;
+        -:   15:template class Foo<char>;
+        -:   16:
+        -:   17:int
+function main called 1 returned 100% blocks executed 81%
+        1:   18:main (void)
+        -:   19:@{
+        -:   20:  int i, total;
+        1:   21:  Foo<int> counter;
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        -:   22:
+        1:   23:  counter.inc();
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        1:   24:  counter.inc();
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        1:   25:  total = 0;
+        -:   26:
+       11:   27:  for (i = 0; i < 10; i++)
+branch  0 taken 91% (fallthrough)
+branch  1 taken 9%
+       10:   28:    total += i;
+        -:   29:
+       1*:   30:  int v = total > 100 ? 1 : 2;
+branch  0 taken 0% (fallthrough)
+branch  1 taken 100%
+        -:   31:
+        1:   32:  if (total != 45)
+branch  0 taken 0% (fallthrough)
+branch  1 taken 100%
+    #####:   33:    printf ("Failure\n");
+call    0 never executed
+branch  1 never executed
+branch  2 never executed
+        -:   34:  else
+        1:   35:    printf ("Success\n");
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        1:   36:  return 0;
+        -:   37:@}
+@end smallexample
+
+For each function, a line is printed showing how many times the function
+is called, how many times it returns and what percentage of the
+function's blocks were executed.
+
+For each basic block, a line is printed after the last line of the basic
+block describing the branch or call that ends the basic block.  There can
+be multiple branches and calls listed for a single source line if there
+are multiple basic blocks that end on that line.  In this case, the
+branches and calls are each given a number.  There is no simple way to map
+these branches and calls back to source constructs.  In general, though,
+the lowest numbered branch or call will correspond to the leftmost construct
+on the source line.
+
+For a branch, if it was executed at least once, then a percentage
+indicating the number of times the branch was taken divided by the
+number of times the branch was executed will be printed.  Otherwise, the
+message ``never executed'' is printed.
+
+For a call, if it was executed at least once, then a percentage
+indicating the number of times the call returned divided by the number
+of times the call was executed will be printed.  This will usually be
+100%, but may be less for functions that call @code{exit} or @code{longjmp},
+and thus may not return every time they are called.
+
+The execution counts are cumulative.  If the example program were
+executed again without removing the @file{.gcda} file, the count for the
+number of times each line in the source was executed would be added to
+the results of the previous run(s).  This is potentially useful in
+several ways.  For example, it could be used to accumulate data over a
+number of program runs as part of a test verification suite, or to
+provide more accurate long-term information over a large number of
+program runs.
+
+The data in the @file{.gcda} files is saved immediately before the program
+exits.  For each source file compiled with @option{-fprofile-arcs}, the
+profiling code first attempts to read in an existing @file{.gcda} file; if
+the file doesn't match the executable (differing number of basic block
+counts) it will ignore the contents of the file.  It then adds in the
+new execution counts and finally writes the data to the file.
+
+@node Gcov and Optimization
+@section Using @command{gcov} with GCC Optimization
+
+If you plan to use @command{gcov} to help optimize your code, you must
+first compile your program with a special GCC option
+@samp{--coverage}.  Aside from that, you can use any
+other GCC options; but if you want to prove that every single line
+in your program was executed, you should not compile with optimization
+at the same time.  On some machines the optimizer can eliminate some
+simple code lines by combining them with other lines.  For example, code
+like this:
+
+@smallexample
+if (a != b)
+  c = 1;
+else
+  c = 0;
+@end smallexample
+
+@noindent
+can be compiled into one instruction on some machines.  In this case,
+there is no way for @command{gcov} to calculate separate execution counts
+for each line because there isn't separate code for each line.  Hence
+the @command{gcov} output looks like this if you compiled the program with
+optimization:
+
+@smallexample
+      100:   12:if (a != b)
+      100:   13:  c = 1;
+      100:   14:else
+      100:   15:  c = 0;
+@end smallexample
+
+The output shows that this block of code, combined by optimization,
+executed 100 times.  In one sense this result is correct, because there
+was only one instruction representing all four of these lines.  However,
+the output does not indicate how many times the result was 0 and how
+many times the result was 1.
+
+Inlineable functions can create unexpected line counts.  Line counts are
+shown for the source code of the inlineable function, but what is shown
+depends on where the function is inlined, or if it is not inlined at all.
+
+If the function is not inlined, the compiler must emit an out of line
+copy of the function, in any object file that needs it.  If
+@file{fileA.o} and @file{fileB.o} both contain out of line bodies of a
+particular inlineable function, they will also both contain coverage
+counts for that function.  When @file{fileA.o} and @file{fileB.o} are
+linked together, the linker will, on many systems, select one of those
+out of line bodies for all calls to that function, and remove or ignore
+the other.  Unfortunately, it will not remove the coverage counters for
+the unused function body.  Hence when instrumented, all but one use of
+that function will show zero counts.
+
+If the function is inlined in several places, the block structure in
+each location might not be the same.  For instance, a condition might
+now be calculable at compile time in some instances.  Because the
+coverage of all the uses of the inline function will be shown for the
+same source lines, the line counts themselves might seem inconsistent.
+
+Long-running applications can use the @code{__gcov_reset} and @code{__gcov_dump}
+facilities to restrict profile collection to the program region of
+interest. Calling @code{__gcov_reset(void)} will clear all run-time profile
+counters to zero, and calling @code{__gcov_dump(void)} will cause the profile
+information collected at that point to be dumped to @file{.gcda} output files.
+Instrumented applications use a static destructor with priority 99
+to invoke the @code{__gcov_dump} function. Thus @code{__gcov_dump}
+is executed after all user defined static destructors,
+as well as handlers registered with @code{atexit}.
+
+If an executable loads a dynamic shared object via dlopen functionality,
+@option{-Wl,--dynamic-list-data} is needed to dump all profile data.
+
+Profiling run-time library reports various errors related to profile
+manipulation and profile saving.  Errors are printed into standard error output
+or @samp{GCOV_ERROR_FILE} file, if environment variable is used.
+In order to terminate immediately after an errors occurs
+set @samp{GCOV_EXIT_AT_ERROR} environment variable.
+That can help users to find profile clashing which leads
+to a misleading profile.
+
+@c man end
+
+@node Gcov Data Files
+@section Brief Description of @command{gcov} Data Files
+
+@command{gcov} uses two files for profiling.  The names of these files
+are derived from the original @emph{object} file by substituting the
+file suffix with either @file{.gcno}, or @file{.gcda}.  The files
+contain coverage and profile data stored in a platform-independent format.
+The @file{.gcno} files are placed in the same directory as the object
+file.  By default, the @file{.gcda} files are also stored in the same
+directory as the object file, but the GCC @option{-fprofile-dir} option
+may be used to store the @file{.gcda} files in a separate directory.
+
+The @file{.gcno} notes file is generated when the source file is compiled
+with the GCC @option{-ftest-coverage} option.  It contains information to
+reconstruct the basic block graphs and assign source line numbers to
+blocks.
+
+The @file{.gcda} count data file is generated when a program containing
+object files built with the GCC @option{-fprofile-arcs} option is executed.
+A separate @file{.gcda} file is created for each object file compiled with
+this option.  It contains arc transition counts, value profile counts, and
+some summary information.
+
+It is not recommended to access the coverage files directly.
+Consumers should use the intermediate format that is provided
+by @command{gcov} tool via @option{--json-format} option.
+
+@node Cross-profiling
+@section Data File Relocation to Support Cross-Profiling
+
+Running the program will cause profile output to be generated.  For each
+source file compiled with @option{-fprofile-arcs}, an accompanying @file{.gcda}
+file will be placed in the object file directory. That implicitly requires
+running the program on the same system as it was built or having the same
+absolute directory structure on the target system. The program will try
+to create the needed directory structure, if it is not already present.
+
+To support cross-profiling, a program compiled with @option{-fprofile-arcs}
+can relocate the data files based on two environment variables:
+
+@itemize @bullet
+@item
+GCOV_PREFIX contains the prefix to add to the absolute paths
+in the object file. Prefix can be absolute, or relative.  The
+default is no prefix.
+
+@item
+GCOV_PREFIX_STRIP indicates the how many initial directory names to strip off
+the hardwired absolute paths. Default value is 0.
+
+@emph{Note:} If GCOV_PREFIX_STRIP is set without GCOV_PREFIX is undefined,
+ then a relative path is made out of the hardwired absolute paths.
+@end itemize
+
+For example, if the object file @file{/user/build/foo.o} was built with
+@option{-fprofile-arcs}, the final executable will try to create the data file
+@file{/user/build/foo.gcda} when running on the target system.  This will
+fail if the corresponding directory does not exist and it is unable to create
+it.  This can be overcome by, for example, setting the environment as
+@samp{GCOV_PREFIX=/target/run} and @samp{GCOV_PREFIX_STRIP=1}.  Such a
+setting will name the data file @file{/target/run/build/foo.gcda}.
+
+You must move the data files to the expected directory tree in order to
+use them for profile directed optimizations (@option{-fprofile-use}), or to
+use the @command{gcov} tool.
+
+@node Freestanding Environments
+@section Profiling and Test Coverage in Freestanding Environments
+
+In case your application runs in a hosted environment such as GNU/Linux, then
+this section is likely not relevant to you.  This section is intended for
+application developers targeting freestanding environments (for example
+embedded systems) with limited resources.  In particular, systems or test cases
+which do not support constructors/destructors or the C library file I/O.  In
+this section, the @dfn{target system} runs your application instrumented for
+profiling or test coverage.  You develop and analyze your application on the
+@dfn{host system}.  We now provide an overview how profiling and test coverage
+can be obtained in this scenario followed by a tutorial which can be exercised
+on the host system.  Finally, some system initialization caveats are listed.
+
+@subsection Overview
+
+For an application instrumented for profiling or test coverage, the compiler
+generates some global data structures which are updated by instrumentation code
+while the application runs.  These data structures are called the @dfn{gcov
+information}.  Normally, when the application exits, the gcov information is
+stored to @file{.gcda} files.  There is one file per translation unit
+instrumented for profiling or test coverage.  The function
+@code{__gcov_exit()}, which stores the gcov information to a file, is called by
+a global destructor function for each translation unit instrumented for
+profiling or test coverage.  It runs at process exit.  In a global constructor
+function, the @code{__gcov_init()} function is called to register the gcov
+information of a translation unit in a global list.  In some situations, this
+procedure does not work.  Firstly, if you want to profile the global
+constructor or exit processing of an operating system, the compiler generated
+functions may conflict with the test objectives.  Secondly, you may want to
+test early parts of the system initialization or abnormal program behaviour
+which do not allow a global constructor or exit processing.  Thirdly, you need
+a filesystem to store the files.
+
+The @option{-fprofile-info-section} GCC option enables you to use profiling and
+test coverage in freestanding environments.  This option disables the use of
+global constructors and destructors for the gcov information.  Instead, a
+pointer to the gcov information is stored in a special linker input section for
+each translation unit which is compiled with this option.  By default, the
+section name is @code{.gcov_info}.  The gcov information is statically
+initialized.  The pointers to the gcov information from all translation units
+of an executable can be collected by the linker in a contiguous memory block.
+For the GNU linker, the below linker script output section definition can be
+used to achieve this:
+
+@smallexample
+  .gcov_info      :
+  @{
+    PROVIDE (__gcov_info_start = .);
+    KEEP (*(.gcov_info))
+    PROVIDE (__gcov_info_end = .);
+  @}
+@end smallexample
+
+The linker will provide two global symbols, @code{__gcov_info_start} and
+@code{__gcov_info_end}, which define the start and end of the array of pointers
+to gcov information blocks, respectively.  The @code{KEEP ()} directive is
+required to prevent a garbage collection of the pointers.  They are not
+directly referenced by anything in the executable.  The section may be placed
+in a read-only memory area.
+
+In order to transfer the profiling and test coverage data from the target to
+the host system, the application has to provide a function to produce a
+reliable in order byte stream from the target to the host.  The byte stream may
+be compressed and encoded using error detection and correction codes to meet
+application-specific requirements.  The GCC provided @file{libgcov} target
+library provides two functions, @code{__gcov_info_to_gcda()} and
+@code{__gcov_filename_to_gcfn()}, to generate a byte stream from a gcov
+information bock.  The functions are declared in @code{#include <gcov.h>}.  The
+byte stream can be deserialized by the @command{merge-stream} subcommand of the
+@command{gcov-tool} to create or update @file{.gcda} files in the host
+filesystem for the instrumented application.
+
+@subsection Tutorial
+
+This tutorial should be exercised on the host system.  We will build a program
+instrumented for test coverage.  The program runs an application and dumps the
+gcov information to @file{stderr} encoded as a printable character stream.  The
+application simply decodes such character streams from @file{stdin} and writes
+the decoded character stream to @file{stdout} (warning: this is binary data).
+The decoded character stream is consumed by the @command{merge-stream}
+subcommand of the @command{gcov-tool} to create or update the @file{.gcda}
+files.
+
+To get started, create an empty directory.  Change into the new directory.
+Then you will create the following three files in this directory
+
+@enumerate
+@item
+@file{app.h} - a header file included by @file{app.c} and @file{main.c},
+
+@item
+@file{app.c} - a source file which contains an example application, and
+
+@item
+@file{main.c} - a source file which contains the program main function and code
+to dump the gcov information.
+@end enumerate
+
+Firstly, create the header file @file{app.h} with the following content:
+
+@smallexample
+static const unsigned char a = 'a';
+
+static inline unsigned char *
+encode (unsigned char c, unsigned char buf[2])
+@{
+  buf[0] = c % 16 + a;
+  buf[1] = (c / 16) % 16 + a;
+  return buf;
+@}
+
+extern void application (void);
+@end smallexample
+
+Secondly, create the source file @file{app.c} with the following content:
+
+@smallexample
+#include "app.h"
+
+#include <stdio.h>
+
+/* The application reads a character stream encoded by encode() from stdin,
+   decodes it, and writes the decoded characters to stdout.  Characters other
+   than the 16 characters 'a' to 'p' are ignored.  */
+
+static int can_decode (unsigned char c)
+@{
+  return (unsigned char)(c - a) < 16;
+@}
+
+void
+application (void)
+@{
+  int first = 1;
+  int i;
+  unsigned char c;
+
+  while ((i = fgetc (stdin)) != EOF)
+    @{
+      unsigned char x = (unsigned char)i;
+
+      if (can_decode (x))
+        @{
+          if (first)
+            c = x - a;
+          else
+            fputc (c + 16 * (x - a), stdout);
+          first = !first;
+        @}
+      else
+        first = 1;
+    @}
+@}
+@end smallexample
+
+Thirdly, create the source file @file{main.c} with the following content:
+
+@smallexample
+#include "app.h"
+
+#include <gcov.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/* The start and end symbols are provided by the linker script.  We use the
+   array notation to avoid issues with a potential small-data area.  */
+
+extern const struct gcov_info *const __gcov_info_start[];
+extern const struct gcov_info *const __gcov_info_end[];
+
+/* This function shall produce a reliable in order byte stream to transfer the
+   gcov information from the target to the host system.  */
+
+static void
+dump (const void *d, unsigned n, void *arg)
+@{
+  (void)arg;
+  const unsigned char *c = d;
+  unsigned char buf[2];
+
+  for (unsigned i = 0; i < n; ++i)
+    fwrite (encode (c[i], buf), sizeof (buf), 1, stderr);
+@}
+
+/* The filename is serialized to a gcfn data stream by the
+   __gcov_filename_to_gcfn() function.  The gcfn data is used by the
+   "merge-stream" subcommand of the "gcov-tool" to figure out the filename
+   associated with the gcov information. */
+
+static void
+filename (const char *f, void *arg)
+@{
+  __gcov_filename_to_gcfn (f, dump, arg);
+@}
+
+/* The __gcov_info_to_gcda() function may have to allocate memory under
+   certain conditions.  Simply try it out if it is needed for your application
+   or not.  */
+
+static void *
+allocate (unsigned length, void *arg)
+@{
+  (void)arg;
+  return malloc (length);
+@}
+
+/* Dump the gcov information of all translation units.  */
+
+static void
+dump_gcov_info (void)
+@{
+  const struct gcov_info *const *info = __gcov_info_start;
+  const struct gcov_info *const *end = __gcov_info_end;
+
+  /* Obfuscate variable to prevent compiler optimizations.  */
+  __asm__ ("" : "+r" (info));
+
+  while (info != end)
+  @{
+    void *arg = NULL;
+    __gcov_info_to_gcda (*info, filename, dump, allocate, arg);
+    fputc ('\n', stderr);
+    ++info;
+  @}
+@}
+
+/* The main() function just runs the application and then dumps the gcov
+   information to stderr.  */
+
+int
+main (void)
+@{
+  application ();
+  dump_gcov_info ();
+  return 0;
+@}
+@end smallexample
+
+If we compile @file{app.c} with test coverage and no extra profiling options,
+then a global constructor (@code{_sub_I_00100_0} here, it may have a different
+name in your environment) and destructor (@code{_sub_D_00100_1}) is used to
+register and dump the gcov information, respectively.  We also see undefined
+references to @code{__gcov_init} and @code{__gcov_exit}:
+
+@smallexample
+$ gcc --coverage -c app.c
+$ nm app.o
+0000000000000000 r a
+0000000000000030 T application
+0000000000000000 t can_decode
+                 U fgetc
+                 U fputc
+0000000000000000 b __gcov0.application
+0000000000000038 b __gcov0.can_decode
+0000000000000000 d __gcov_.application
+00000000000000c0 d __gcov_.can_decode
+                 U __gcov_exit
+                 U __gcov_init
+                 U __gcov_merge_add
+                 U stdin
+                 U stdout
+0000000000000161 t _sub_D_00100_1
+0000000000000151 t _sub_I_00100_0
+@end smallexample
+
+Compile @file{app.c} and @file{main.c} with test coverage and
+@option{-fprofile-info-section}.  Now, a read-only pointer size object is
+present in the @code{.gcov_info} section and there are no undefined references
+to @code{__gcov_init} and @code{__gcov_exit}:
+
+@smallexample
+$ gcc --coverage -fprofile-info-section -c main.c
+$ gcc --coverage -fprofile-info-section -c app.c
+$ objdump -h app.o
+
+app.o:     file format elf64-x86-64
+
+Sections:
+Idx Name          Size      VMA               LMA               File off  Algn
+  0 .text         00000151  0000000000000000  0000000000000000  00000040  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000100  0000000000000000  0000000000000000  000001a0  2**5
+                  CONTENTS, ALLOC, LOAD, RELOC, DATA
+  2 .bss          00000040  0000000000000000  0000000000000000  000002a0  2**5
+                  ALLOC
+  3 .rodata       0000003c  0000000000000000  0000000000000000  000002a0  2**3
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  4 .gcov_info    00000008  0000000000000000  0000000000000000  000002e0  2**3
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, DATA
+  5 .comment      0000004e  0000000000000000  0000000000000000  000002e8  2**0
+                  CONTENTS, READONLY
+  6 .note.GNU-stack 00000000  0000000000000000  0000000000000000  00000336  2**0
+                  CONTENTS, READONLY
+  7 .eh_frame     00000058  0000000000000000  0000000000000000  00000338  2**3
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, DATA
+@end smallexample
+
+We have to customize the program link procedure so that all the
+@code{.gcov_info} linker input sections are placed in a contiguous memory block
+with a begin and end symbol.  Firstly, get the default linker script using the
+following commands (we assume a GNU linker):
+
+@smallexample
+$ ld --verbose | sed '1,/^===/d' | sed '/^===/d' > linkcmds
+@end smallexample
+
+Secondly, open the file @file{linkcmds} with a text editor and place the linker
+output section definition from the overview after the @code{.rodata} section
+definition.  Link the program executable using the customized linker script:
+
+@smallexample
+$ gcc --coverage main.o app.o -T linkcmds -Wl,-Map,app.map
+@end smallexample
+
+In the linker map file @file{app.map}, we see that the linker placed the
+read-only pointer size objects of our objects files @file{main.o} and
+@file{app.o} into a contiguous memory block and provided the symbols
+@code{__gcov_info_start} and @code{__gcov_info_end}:
+
+@smallexample
+$ grep -C 1 "\.gcov_info" app.map
+
+.gcov_info      0x0000000000403ac0       0x10
+                0x0000000000403ac0                PROVIDE (__gcov_info_start = .)
+ *(.gcov_info)
+ .gcov_info     0x0000000000403ac0        0x8 main.o
+ .gcov_info     0x0000000000403ac8        0x8 app.o
+                0x0000000000403ad0                PROVIDE (__gcov_info_end = .)
+@end smallexample
+
+Make sure no @file{.gcda} files are present.  Run the program with nothing to
+decode and dump @file{stderr} to the file @file{gcda-0.txt} (first run).  Run
+the program to decode @file{gcda-0.txt} and send it to the @command{gcov-tool}
+using the @command{merge-stream} subcommand to create the @file{.gcda} files
+(second run).  Run @command{gcov} to produce a report for @file{app.c}.  We see
+that the first run with nothing to decode results in a partially covered
+application:
+
+@smallexample
+$ rm -f app.gcda main.gcda
+$ echo "" | ./a.out 2>gcda-0.txt
+$ ./a.out <gcda-0.txt 2>gcda-1.txt | gcov-tool merge-stream
+$ gcov -bc app.c
+File 'app.c'
+Lines executed:69.23% of 13
+Branches executed:66.67% of 6
+Taken at least once:50.00% of 6
+Calls executed:66.67% of 3
+Creating 'app.c.gcov'
+
+Lines executed:69.23% of 13
+@end smallexample
+
+Run the program to decode @file{gcda-1.txt} and send it to the
+@command{gcov-tool} using the @command{merge-stream} subcommand to update the
+@file{.gcda} files.  Run @command{gcov} to produce a report for @file{app.c}.
+Since the second run decoded the gcov information of the first run, we have now
+a fully covered application:
+
+@smallexample
+$ ./a.out <gcda-1.txt 2>gcda-2.txt | gcov-tool merge-stream
+$ gcov -bc app.c
+File 'app.c'
+Lines executed:100.00% of 13
+Branches executed:100.00% of 6
+Taken at least once:100.00% of 6
+Calls executed:100.00% of 3
+Creating 'app.c.gcov'
+
+Lines executed:100.00% of 13
+@end smallexample
+
+@subsection System Initialization Caveats
+
+The gcov information of a translation unit consists of several global data
+structures.  For example, the instrumented code may update program flow graph
+edge counters in a zero-initialized data structure.  It is safe to run
+instrumented code before the zero-initialized data is cleared to zero.  The
+coverage information obtained before the zero-initialized data is cleared to
+zero is unusable.  Dumping the gcov information using
+@code{__gcov_info_to_gcda()} before the zero-initialized data is cleared to
+zero or the initialized data is loaded, is undefined behaviour.  Clearing the
+zero-initialized data to zero through a function instrumented for profiling or
+test coverage is undefined behaviour, since it may produce inconsistent program
+flow graph edge counters for example.

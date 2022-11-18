@@ -1138,7 +1138,7 @@ package body Sem_Attr is
                   --  pointer can be used to modify the variable, and we might
                   --  not detect this, leading to some junk warnings.
 
-                  --  We only do this for source references, since otherwise
+                  --  We do this only for source references, since otherwise
                   --  we can suppress warnings, e.g. from the unrestricted
                   --  access generated for validity checks in -gnatVa mode.
 

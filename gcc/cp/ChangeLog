@@ -1,3 +1,236 @@
+2022-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106649
+	* constexpr.cc (constexpr_error): New function.
+	(is_valid_constexpr_fn): Use constexpr_error.
+	(maybe_save_constexpr_fundef): Call
+	require_potential_rvalue_constant_expression_fncheck rather than
+	require_potential_rvalue_constant_expression.  Register the
+	function if -Wno-invalid-constexpr was specified.
+	(explain_invalid_constexpr_fn): Don't return early if a function marked
+	'constexpr' that isn't actually a constant expression was called.
+	(non_const_var_error): Add a bool parameter.  Use constexpr_error.
+	(inline_asm_in_constexpr_error): Likewise.
+	(cxx_eval_constant_expression): Adjust calls to non_const_var_error
+	and inline_asm_in_constexpr_error.
+	(potential_constant_expression_1): Add a bool parameter.  Use
+	constexpr_error.
+	(require_potential_rvalue_constant_expression_fncheck): New function.
+	* cp-tree.h (require_potential_rvalue_constant_expression_fncheck):
+	Declare.
+	* method.cc (struct comp_info): Call
+	require_potential_rvalue_constant_expression_fncheck rather than
+	require_potential_rvalue_constant_expression.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc (next_common_initial_sequence): Return false members have
+	different DECL_ALIGN.
+	(layout_compatible_type_p): Don't test TYPE_ALIGN of ENUMERAL_TYPE
+	or CLASS_TYPE_P.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107624
+	* call.cc (keep_unused_object_arg): New function.
+	(build_op_call): Use it.
+	(build_op_subscript): Likewise.
+	(build_new_op): Similarly for ARRAY_REF.
+	(build_new_method_call): Use it.
+	* decl.cc (grok_op_properties): For C++20 and earlier, if operator[]
+	is static member function, require exactly one parameter rather than
+	exactly two parameters.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc (cp_build_modify_expr): Implement CWG 2654
+	- Un-deprecation of compound volatile assignments.  Remove
+	-Wvolatile warning about compound volatile assignments.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.def (CONCEPT_DECL): Move to c-common.def.
+	* cp-objcp-common.cc (cp_common_init_ts): Don't handle CONCEPT_DECL
+	here.
+	* cp-tree.h (finish_concept_definition): Add ATTRS parameter.
+	* parser.cc (cp_parser_concept_definition): Parse attributes in
+	between identifier and =.  Adjust finish_concept_definition
+	caller.
+	* pt.cc (finish_concept_definition): Add ATTRS parameter.  Call
+	cplus_decl_attributes.
+	* constraint.cc (build_standard_check): If CONCEPT_DECL is
+	TREE_DEPRECATED, emit -Wdeprecated-declaration warnings.
+
+2022-11-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107492
+	* decl.cc (grokdeclarator): Only emit a -Wignored-qualifiers warning
+	when funcdecl_p.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	* constexpr.cc (potential_constant_expression_1)
+	<case *_CAST_EXPR>: Use
+	cast_valid_in_integral_constant_expression_p instead of
+	open coding it.
+	* constraint.cc (tsubst_valid_expression_requirement): Adjust
+	calls to tsubst_copy_and_build and tsubst_expr.
+	(tsubst_constraint): Likewise.
+	(satisfy_atom): Likewise.
+	(diagnose_trait_expr): Likewise.
+	* cp-tree.h (tsubst_copy_and_build): Remove i_c_e_p parameter.
+	(tsubst_expr): Likewise.
+	* init.cc (get_nsdmi): Adjust calls to tsubst_copy_and_build
+	and tsubst_expr.
+	* pt.cc (expand_integer_pack): Likewise.
+	(instantiate_non_dependent_expr_internal): Likewise.
+	(tsubst_friend_function): Likewise.
+	(tsubst_attribute): Likewise.
+	(instantiate_class_template): Likewise.
+	(tsubst_template_arg): Likewise.
+	(gen_elem_of_pack_expansion_instantiation): Likewise.
+	(tsubst_fold_expr_init): Likewise.
+	(tsubst_pack_expansion): Likewise.
+	(tsubst_default_argument): Likewise.
+	(tsubst_function_decl): Likewise.
+	(tsubst_decl): Likewise.
+	(tsubst_arg_types): Likewise.
+	(tsubst_exception_specification): Likewise.
+	(tsubst): Likewise.
+	(tsubst_init): Likewise.
+	(tsubst_copy): Likewise.
+	(tsubst_omp_clause_decl): Likewise.
+	(tsubst_omp_clauses): Likewise.
+	(tsubst_copy_asm_operands): Likewise.
+	(tsubst_omp_for_iterator): Likewise.
+	(tsubst_expr): Likewise.  Remove i_c_e_p parameter.
+	(tsubst_omp_udr): Likewise.
+	(tsubst_non_call_postfix_expression): Likewise.  Remove i_c_e_p parameter.
+	(tsubst_lambda_expr): Likewise.
+	(tsubst_copy_and_build_call_args): Likewise.
+	(tsubst_copy_and_build): Likewise.  Remove i_c_e_p parameter.
+	<case IDENTIFIER_NODE>: Adjust call to finish_id_expression
+	following removal of i_c_e_p.
+	<case *_CAST_EXPR>: Remove C++98-specific cast validity check
+	guarded by i_c_e_p.
+	(maybe_instantiate_noexcept): Adjust calls to
+	tsubst_copy_and_build and tsubst_expr.
+	(instantiate_body): Likewise.
+	(instantiate_decl): Likewise.
+	(tsubst_initializer_list): Likewise.
+	(tsubst_enum): Likewise.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-lang.cc (objcp_tsubst_copy_and_build): Remove
+	function_p parameter.
+	* cp-objcp-common.h (objcp_tsubst_copy_and_build):
+	Likewise.
+	* cp-tree.h (tsubst_copy_and_build): Likewise.
+	* init.cc (get_nsdmi): Adjust calls to tsubst_copy_and_build.
+	* pt.cc (expand_integer_pack): Likewise.
+	(instantiate_non_dependent_expr_internal): Likewise.
+	(tsubst_function_decl): Likewise.
+	(tsubst_arg_types): Likewise.
+	(tsubst_exception_specification): Likewise.
+	(tsubst): Likewise.
+	(tsubst_copy_asm_operands): Likewise.
+	(tsubst_expr): Likewise.
+	(tsubst_non_call_postfix_expression): Likewise.
+	(tsubst_lambda_expr): Likewise.
+	(tsubst_copy_and_build_call_args): Likewise.
+	(tsubst_copy_and_build): Remove function_p parameter
+	and adjust function comment.  Adjust recursive calls.
+	<case CALL_EXPR>: Update outdated comment about when
+	we can see an IDENTIFIER_NODE callee with koenig_p=false.
+	(maybe_instantiate_noexcept): Adjust calls to
+	tsubst_copy_and_build.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (next_common_initial_seqence): Rename to ...
+	(next_common_initial_sequence): ... this.
+	* typeck.cc (next_common_initial_seqence): Rename to ...
+	(next_common_initial_sequence): ... this.
+	(layout_compatible_type_p): Call next_common_initial_sequence
+	rather than next_common_initial_seqence.
+	* semantics.cc (is_corresponding_member_aggr): Likewise.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.cc (grok_op_properties): Implement C++23 P2589R1
+	- static operator[].  Handle operator[] similarly to operator()
+	- allow static member functions, but pedwarn on it for C++20 and
+	older.  Unlike operator(), perform rest of checks on it though for
+	C++20.
+	* call.cc (add_operator_candidates): For operator[] with class
+	typed first parameter, pass that parameter as first_arg and
+	an adjusted arglist without that parameter.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107638
+	* tree.cc (cxx_attribute_table): Don't conditionally exclude
+	the init_priority entry.
+	(handle_init_priority_attribute): Remove ATTRIBUTE_UNUSED.
+	Return error_mark_node if !SUPPORTS_INIT_PRIORITY.
+
+2022-11-15  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (maybe_warn_dangling_reference): Don't warn when initializing
+	a non-const lvalue reference.
+
+2022-11-14  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (tsubst_friend_function): Check satisfaction.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-10  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (std_pair_ref_ref_p): New.
+	(do_warn_dangling_reference): Also warn when the function returns
+	std::pair<const T&, const T&>.  Recurse into TARGET_EXPR_INITIAL.
+	(maybe_warn_dangling_reference): Don't return early if we're
+	initializing a std_pair_ref_ref_p.
+
+2022-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (handle_carries_dependency_attribute): New function.
+	(std_attribute_table): Add carries_dependency attribute.
+	* parser.cc (cp_parser_check_std_attribute): Add carries_dependency
+	attribute.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in:
+	Support installation if sphinx-build is missing.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Support Sphinx based documentation.
+
+2022-11-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107363
+	* semantics.cc (finish_call_expr): Suppress OPT_Wpessimizing_move.
+	* typeck.cc (maybe_warn_pessimizing_move): Check warn_redundant_move
+	and warning_suppressed_p.  Adjust a message depending on return_p.
+	(check_return_expr): Don't suppress OPT_Wpessimizing_move here.
+
 2022-11-08  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -352,6 +352,34 @@ region_model::impl_call_analyzer_dump_escaped (const gcall *call)
 	      pp_formatted_text (&pp));
 }
 
+/* Handle a call to "__analyzer_dump_named_constant".
+
+   Look up the given name, and emit a warning describing the
+   state of the corresponding stashed value.
+
+   This is for use when debugging, and for DejaGnu tests.  */
+
+void
+region_model::
+impl_call_analyzer_dump_named_constant (const gcall *call,
+					region_model_context *ctxt)
+{
+  call_details cd (call, this, ctxt);
+  const char *name = cd.get_arg_string_literal (0);
+  if (!name)
+    {
+      error_at (call->location, "cannot determine name");
+      return;
+    }
+  tree value = get_stashed_constant_by_name (name);
+  if (value)
+    warning_at (call->location, 0, "named constant %qs has value %qE",
+		name, value);
+  else
+    warning_at (call->location, 0, "named constant %qs has unknown value",
+		name);
+}
+
 /* Handle a call to "__analyzer_eval" by evaluating the input
    and dumping as a dummy warning, so that test cases can use
    dg-warning to validate the result (and so unexpected warnings will
@@ -378,6 +406,81 @@ region_model::impl_call_analyzer_get_unknown_ptr (const call_details &cd)
     = m_mgr->get_or_create_unknown_svalue (cd.get_lhs_type ());
   cd.maybe_set_lhs (ptr_sval);
 }
+
+/* Handle calls to "accept".
+   See e.g. https://man7.org/linux/man-pages/man3/accept.3p.html  */
+
+class known_function_accept : public known_function
+{
+  class outcome_of_accept : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_accept (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_accept (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 3;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
+
+/* Handle calls to "bind".
+   See e.g. https://man7.org/linux/man-pages/man3/bind.3p.html  */
+
+class known_function_bind : public known_function
+{
+public:
+  class outcome_of_bind : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_bind (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_bind (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 3;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
 
 /* Handle the on_call_pre part of "__builtin_expect" etc.  */
 
@@ -412,6 +515,45 @@ region_model::impl_call_calloc (const call_details &cd)
       cd.maybe_set_lhs (ptr_sval);
     }
 }
+
+/* Handle calls to "connect".
+   See e.g. https://man7.org/linux/man-pages/man3/connect.3p.html  */
+
+class known_function_connect : public known_function
+{
+public:
+  class outcome_of_connect : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_connect (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_connect (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 3
+	    && POINTER_TYPE_P (cd.get_arg_type (1)));
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
 
 /* Handle the on_call_pre part of "__errno_location".  */
 
@@ -514,6 +656,43 @@ region_model::impl_call_free (const call_details &cd)
       m_dynamic_extents.remove (freed_reg);
     }
 }
+
+/* Handle calls to "listen".
+   See e.g. https://man7.org/linux/man-pages/man3/listen.3p.html  */
+
+class known_function_listen : public known_function
+{
+  class outcome_of_listen : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_listen (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_listen (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 2;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
 
 /* Handle the on_call_pre part of "malloc".  */
 
@@ -1027,6 +1206,44 @@ region_model::impl_call_realloc (const call_details &cd)
     }
 }
 
+/* Handle calls to "socket".
+   See e.g. https://man7.org/linux/man-pages/man3/socket.3p.html  */
+
+class known_function_socket : public known_function
+{
+public:
+  class outcome_of_socket : public succeed_or_fail_call_info
+  {
+  public:
+    outcome_of_socket (const call_details &cd, bool success)
+    : succeed_or_fail_call_info (cd, success)
+    {}
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const final override
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      return cd.get_model ()->on_socket (cd, m_success);
+    }
+  };
+
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return cd.num_args () == 3;
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    if (cd.get_ctxt ())
+      {
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, false));
+	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, true));
+	cd.get_ctxt ()->terminate_path ();
+      }
+  }
+};
+
 /* Handle the on_call_post part of "strchr" and "__builtin_strchr".  */
 
 void
@@ -1159,6 +1376,19 @@ void
 region_model::impl_deallocation_call (const call_details &cd)
 {
   impl_call_free (cd);
+}
+
+/* Add instances to MGR of known functions supported by the core of the
+   analyzer (as opposed to plugins).  */
+
+void
+register_known_functions (known_function_manager &mgr)
+{
+  mgr.add ("accept", make_unique<known_function_accept> ());
+  mgr.add ("bind", make_unique<known_function_bind> ());
+  mgr.add ("connect", make_unique<known_function_connect> ());
+  mgr.add ("listen", make_unique<known_function_listen> ());
+  mgr.add ("socket", make_unique<known_function_socket> ());
 }
 
 } // namespace ana

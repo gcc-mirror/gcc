@@ -21,7 +21,7 @@ bar()
   A a = foo();
   a.p->n = 5;
   return a;
-} // { dg-error "non-.constexpr." }
+} // { dg-error "non-.constexpr." "" { target c++20_down } }
 
 constexpr int
 baz()

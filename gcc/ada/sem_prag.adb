@@ -23424,10 +23424,14 @@ package body Sem_Prag is
                Spec_Id : constant Entity_Id := Unique_Defining_Entity (Decl);
 
             begin
-               --  Ignore pragma when applied to the special body created for
-               --  inlining, recognized by its internal name _Parent.
+               --  Ignore pragma when applied to the special body created
+               --  for inlining, recognized by its internal name _Parent; or
+               --  when applied to the special body created for contracts,
+               --  recognized by its internal name _Wrapped_Statements.
 
-               if Chars (Body_Id) = Name_uParent then
+               if Chars (Body_Id) in Name_uParent
+                                   | Name_uWrapped_Statements
+               then
                   return;
                end if;
 

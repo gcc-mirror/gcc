@@ -1,0 +1,1060 @@
+@node poly_int
+@chapter Sizes and offsets as runtime invariants
+@cindex polynomial integers
+@findex poly_int
+
+GCC allows the size of a hardware register to be a runtime invariant
+rather than a compile-time constant.  This in turn means that various
+sizes and offsets must also be runtime invariants rather than
+compile-time constants, such as:
+
+@itemize @bullet
+@item
+the size of a general @code{machine_mode} (@pxref{Machine Modes});
+
+@item
+the size of a spill slot;
+
+@item
+the offset of something within a stack frame;
+
+@item
+the number of elements in a vector;
+
+@item
+the size and offset of a @code{mem} rtx (@pxref{Regs and Memory}); and
+
+@item
+the byte offset in a @code{subreg} rtx (@pxref{Regs and Memory}).
+@end itemize
+
+The motivating example is the Arm SVE ISA, whose vector registers can be
+any multiple of 128 bits between 128 and 2048 inclusive.  The compiler
+normally produces code that works for all SVE register sizes, with the
+actual size only being known at runtime.
+
+GCC's main representation of such runtime invariants is the
+@code{poly_int} class.  This chapter describes what @code{poly_int}
+does, lists the available operations, and gives some general
+usage guidelines.
+
+@menu
+* Overview of @code{poly_int}::
+* Consequences of using @code{poly_int}::
+* Comparisons involving @code{poly_int}::
+* Arithmetic on @code{poly_int}s::
+* Alignment of @code{poly_int}s::
+* Computing bounds on @code{poly_int}s::
+* Converting @code{poly_int}s::
+* Miscellaneous @code{poly_int} routines::
+* Guidelines for using @code{poly_int}::
+@end menu
+
+@node Overview of @code{poly_int}
+@section Overview of @code{poly_int}
+
+@cindex @code{poly_int}, runtime value
+We define indeterminates @var{x1}, @dots{}, @var{xn} whose values are
+only known at runtime and use polynomials of the form:
+
+@smallexample
+@var{c0} + @var{c1} * @var{x1} + @dots{} + @var{cn} * @var{xn}
+@end smallexample
+
+to represent a size or offset whose value might depend on some
+of these indeterminates.  The coefficients @var{c0}, @dots{}, @var{cn}
+are always known at compile time, with the @var{c0} term being the
+``constant'' part that does not depend on any runtime value.
+
+GCC uses the @code{poly_int} class to represent these coefficients.
+The class has two template parameters: the first specifies the number of
+coefficients (@var{n} + 1) and the second specifies the type of the
+coefficients.  For example, @samp{poly_int<2, unsigned short>} represents
+a polynomial with two coefficients (and thus one indeterminate), with each
+coefficient having type @code{unsigned short}.  When @var{n} is 0,
+the class degenerates to a single compile-time constant @var{c0}.
+
+@cindex @code{poly_int}, template parameters
+@findex NUM_POLY_INT_COEFFS
+The number of coefficients needed for compilation is a fixed
+property of each target and is specified by the configuration macro
+@code{NUM_POLY_INT_COEFFS}.  The default value is 1, since most targets
+do not have such runtime invariants.  Targets that need a different
+value should @code{#define} the macro in their @file{@var{cpu}-modes.def}
+file.  @xref{Back End}.
+
+@cindex @code{poly_int}, invariant range
+@code{poly_int} makes the simplifying requirement that each indeterminate
+must be a nonnegative integer.  An indeterminate value of 0 should usually
+represent the minimum possible runtime value, with @var{c0} specifying
+the value in that case.
+
+For example, when targetting the Arm SVE ISA, the single indeterminate
+represents the number of 128-bit blocks in a vector @emph{beyond the minimum
+length of 128 bits}.  Thus the number of 64-bit doublewords in a vector
+is 2 + 2 * @var{x1}.  If an aggregate has a single SVE vector and 16
+additional bytes, its total size is 32 + 16 * @var{x1} bytes.
+
+The header file @file{poly-int-types.h} provides typedefs for the
+most common forms of @code{poly_int}, all having
+@code{NUM_POLY_INT_COEFFS} coefficients:
+
+@cindex @code{poly_int}, main typedefs
+@table @code
+@item poly_uint16
+a @samp{poly_int} with @code{unsigned short} coefficients.
+
+@item poly_int64
+a @samp{poly_int} with @code{HOST_WIDE_INT} coefficients.
+
+@item poly_uint64
+a @samp{poly_int} with @code{unsigned HOST_WIDE_INT} coefficients.
+
+@item poly_offset_int
+a @samp{poly_int} with @code{offset_int} coefficients.
+
+@item poly_wide_int
+a @samp{poly_int} with @code{wide_int} coefficients.
+
+@item poly_widest_int
+a @samp{poly_int} with @code{widest_int} coefficients.
+@end table
+
+Since the main purpose of @code{poly_int} is to represent sizes and
+offsets, the last two typedefs are only rarely used.
+
+@node Consequences of using @code{poly_int}
+@section Consequences of using @code{poly_int}
+
+The two main consequences of using polynomial sizes and offsets are that:
+
+@itemize
+@item
+there is no total ordering between the values at compile time, and
+
+@item
+some operations might yield results that cannot be expressed as a
+@code{poly_int}.
+@end itemize
+
+For example, if @var{x} is a runtime invariant, we cannot tell at
+compile time whether:
+
+@smallexample
+3 + 4@var{x} <= 1 + 5@var{x}
+@end smallexample
+
+since the condition is false when @var{x} <= 1 and true when @var{x} >= 2.
+
+Similarly, @code{poly_int} cannot represent the result of:
+
+@smallexample
+(3 + 4@var{x}) * (1 + 5@var{x})
+@end smallexample
+
+since it cannot (and in practice does not need to) store powers greater
+than one.  It also cannot represent the result of:
+
+@smallexample
+(3 + 4@var{x}) / (1 + 5@var{x})
+@end smallexample
+
+The following sections describe how we deal with these restrictions.
+
+@cindex @code{poly_int}, use in target-independent code
+As described earlier, a @code{poly_int<1, @var{T}>} has no indeterminates
+and so degenerates to a compile-time constant of type @var{T}.  It would
+be possible in that case to do all normal arithmetic on the @var{T},
+and to compare the @var{T} using the normal C++ operators.  We deliberately
+prevent target-independent code from doing this, since the compiler needs
+to support other @code{poly_int<@var{n}, @var{T}>} as well, regardless of
+the current target's @code{NUM_POLY_INT_COEFFS}.
+
+@cindex @code{poly_int}, use in target-specific code
+However, it would be very artificial to force target-specific code
+to follow these restrictions if the target has no runtime indeterminates.
+There is therefore an implicit conversion from @code{poly_int<1, @var{T}>}
+to @var{T} when compiling target-specific translation units.
+
+@node Comparisons involving @code{poly_int}
+@section Comparisons involving @code{poly_int}
+
+In general we need to compare sizes and offsets in two situations:
+those in which the values need to be ordered, and those in which
+the values can be unordered.  More loosely, the distinction is often
+between values that have a definite link (usually because they refer to the
+same underlying register or memory location) and values that have
+no definite link.  An example of the former is the relationship between
+the inner and outer sizes of a subreg, where we must know at compile time
+whether the subreg is paradoxical, partial, or complete.  An example of
+the latter is alias analysis: we might want to check whether two
+arbitrary memory references overlap.
+
+Referring back to the examples in the previous section, it makes sense
+to ask whether a memory reference of size @samp{3 + 4@var{x}} overlaps
+one of size @samp{1 + 5@var{x}}, but it does not make sense to have a
+subreg in which the outer mode has @samp{3 + 4@var{x}} bytes and the
+inner mode has @samp{1 + 5@var{x}} bytes (or vice versa).  Such subregs
+are always invalid and should trigger an internal compiler error
+if formed.
+
+The underlying operators are the same in both cases, but the distinction
+affects how they are used.
+
+@menu
+* Comparison functions for @code{poly_int}::
+* Properties of the @code{poly_int} comparisons::
+* Comparing potentially-unordered @code{poly_int}s::
+* Comparing ordered @code{poly_int}s::
+* Checking for a @code{poly_int} marker value::
+* Range checks on @code{poly_int}s::
+* Sorting @code{poly_int}s::
+@end menu
+
+@node Comparison functions for @code{poly_int}
+@subsection Comparison functions for @code{poly_int}
+
+@code{poly_int} provides the following routines for checking whether
+a particular condition ``may be'' (might be) true:
+
+@example
+maybe_lt maybe_le maybe_eq maybe_ge maybe_gt
+                  maybe_ne
+@end example
+
+The functions have their natural meaning:
+
+@table @samp
+@item maybe_lt(@var{a}, @var{b})
+Return true if @var{a} might be less than @var{b}.
+
+@item maybe_le(@var{a}, @var{b})
+Return true if @var{a} might be less than or equal to @var{b}.
+
+@item maybe_eq(@var{a}, @var{b})
+Return true if @var{a} might be equal to @var{b}.
+
+@item maybe_ne(@var{a}, @var{b})
+Return true if @var{a} might not be equal to @var{b}.
+
+@item maybe_ge(@var{a}, @var{b})
+Return true if @var{a} might be greater than or equal to @var{b}.
+
+@item maybe_gt(@var{a}, @var{b})
+Return true if @var{a} might be greater than @var{b}.
+@end table
+
+For readability, @code{poly_int} also provides ``known'' inverses of these
+functions:
+
+@example
+known_lt (@var{a}, @var{b}) == !maybe_ge (@var{a}, @var{b})
+known_le (@var{a}, @var{b}) == !maybe_gt (@var{a}, @var{b})
+known_eq (@var{a}, @var{b}) == !maybe_ne (@var{a}, @var{b})
+known_ge (@var{a}, @var{b}) == !maybe_lt (@var{a}, @var{b})
+known_gt (@var{a}, @var{b}) == !maybe_le (@var{a}, @var{b})
+known_ne (@var{a}, @var{b}) == !maybe_eq (@var{a}, @var{b})
+@end example
+
+@node Properties of the @code{poly_int} comparisons
+@subsection Properties of the @code{poly_int} comparisons
+
+All ``maybe'' relations except @code{maybe_ne} are transitive, so for example:
+
+@smallexample
+maybe_lt (@var{a}, @var{b}) && maybe_lt (@var{b}, @var{c}) implies maybe_lt (@var{a}, @var{c})
+@end smallexample
+
+for all @var{a}, @var{b} and @var{c}.  @code{maybe_lt}, @code{maybe_gt}
+and @code{maybe_ne} are irreflexive, so for example:
+
+@smallexample
+!maybe_lt (@var{a}, @var{a})
+@end smallexample
+
+is true for all @var{a}.  @code{maybe_le}, @code{maybe_eq} and @code{maybe_ge}
+are reflexive, so for example:
+
+@smallexample
+maybe_le (@var{a}, @var{a})
+@end smallexample
+
+is true for all @var{a}.  @code{maybe_eq} and @code{maybe_ne} are symmetric, so:
+
+@smallexample
+maybe_eq (@var{a}, @var{b}) == maybe_eq (@var{b}, @var{a})
+maybe_ne (@var{a}, @var{b}) == maybe_ne (@var{b}, @var{a})
+@end smallexample
+
+for all @var{a} and @var{b}.  In addition:
+
+@smallexample
+maybe_le (@var{a}, @var{b}) == maybe_lt (@var{a}, @var{b}) || maybe_eq (@var{a}, @var{b})
+maybe_ge (@var{a}, @var{b}) == maybe_gt (@var{a}, @var{b}) || maybe_eq (@var{a}, @var{b})
+maybe_lt (@var{a}, @var{b}) == maybe_gt (@var{b}, @var{a})
+maybe_le (@var{a}, @var{b}) == maybe_ge (@var{b}, @var{a})
+@end smallexample
+
+However:
+
+@smallexample
+maybe_le (@var{a}, @var{b}) && maybe_le (@var{b}, @var{a}) does not imply !maybe_ne (@var{a}, @var{b}) [== known_eq (@var{a}, @var{b})]
+maybe_ge (@var{a}, @var{b}) && maybe_ge (@var{b}, @var{a}) does not imply !maybe_ne (@var{a}, @var{b}) [== known_eq (@var{a}, @var{b})]
+@end smallexample
+
+One example is again @samp{@var{a} == 3 + 4@var{x}}
+and @samp{@var{b} == 1 + 5@var{x}}, where @samp{maybe_le (@var{a}, @var{b})},
+@samp{maybe_ge (@var{a}, @var{b})} and @samp{maybe_ne (@var{a}, @var{b})}
+all hold.  @code{maybe_le} and @code{maybe_ge} are therefore not antisymetric
+and do not form a partial order.
+
+From the above, it follows that:
+
+@itemize @bullet
+@item
+All ``known'' relations except @code{known_ne} are transitive.
+
+@item
+@code{known_lt}, @code{known_ne} and @code{known_gt} are irreflexive.
+
+@item
+@code{known_le}, @code{known_eq} and @code{known_ge} are reflexive.
+@end itemize
+
+Also:
+
+@smallexample
+known_lt (@var{a}, @var{b}) == known_gt (@var{b}, @var{a})
+known_le (@var{a}, @var{b}) == known_ge (@var{b}, @var{a})
+known_lt (@var{a}, @var{b}) implies !known_lt (@var{b}, @var{a})  [asymmetry]
+known_gt (@var{a}, @var{b}) implies !known_gt (@var{b}, @var{a})
+known_le (@var{a}, @var{b}) && known_le (@var{b}, @var{a}) == known_eq (@var{a}, @var{b}) [== !maybe_ne (@var{a}, @var{b})]
+known_ge (@var{a}, @var{b}) && known_ge (@var{b}, @var{a}) == known_eq (@var{a}, @var{b}) [== !maybe_ne (@var{a}, @var{b})]
+@end smallexample
+
+@code{known_le} and @code{known_ge} are therefore antisymmetric and are
+partial orders.  However:
+
+@smallexample
+known_le (@var{a}, @var{b}) does not imply known_lt (@var{a}, @var{b}) || known_eq (@var{a}, @var{b})
+known_ge (@var{a}, @var{b}) does not imply known_gt (@var{a}, @var{b}) || known_eq (@var{a}, @var{b})
+@end smallexample
+
+For example, @samp{known_le (4, 4 + 4@var{x})} holds because the runtime
+indeterminate @var{x} is a nonnegative integer, but neither
+@code{known_lt (4, 4 + 4@var{x})} nor @code{known_eq (4, 4 + 4@var{x})} hold.
+
+@node Comparing potentially-unordered @code{poly_int}s
+@subsection Comparing potentially-unordered @code{poly_int}s
+
+In cases where there is no definite link between two @code{poly_int}s,
+we can usually make a conservatively-correct assumption.  For example,
+the conservative assumption for alias analysis is that two references
+@emph{might} alias.
+
+One way of checking whether [@var{begin1}, @var{end1}) might overlap
+[@var{begin2}, @var{end2}) using the @code{poly_int} comparisons is:
+
+@smallexample
+maybe_gt (@var{end1}, @var{begin2}) && maybe_gt (@var{end2}, @var{begin1})
+@end smallexample
+
+and another (equivalent) way is:
+
+@smallexample
+!(known_le (@var{end1}, @var{begin2}) || known_le (@var{end2}, @var{begin1}))
+@end smallexample
+
+However, in this particular example, it is better to use the range helper
+functions instead.  @xref{Range checks on @code{poly_int}s}.
+
+@node Comparing ordered @code{poly_int}s
+@subsection Comparing ordered @code{poly_int}s
+
+In cases where there is a definite link between two @code{poly_int}s,
+such as the outer and inner sizes of subregs, we usually require the sizes
+to be ordered by the @code{known_le} partial order.  @code{poly_int} provides
+the following utility functions for ordered values:
+
+@table @samp
+@item ordered_p (@var{a}, @var{b})
+Return true if @var{a} and @var{b} are ordered by the @code{known_le}
+partial order.
+
+@item ordered_min (@var{a}, @var{b})
+Assert that @var{a} and @var{b} are ordered by @code{known_le} and return the
+minimum of the two.  When using this function, please add a comment explaining
+why the values are known to be ordered.
+
+@item ordered_max (@var{a}, @var{b})
+Assert that @var{a} and @var{b} are ordered by @code{known_le} and return the
+maximum of the two.  When using this function, please add a comment explaining
+why the values are known to be ordered.
+@end table
+
+For example, if a subreg has an outer mode of size @var{outer} and an
+inner mode of size @var{inner}:
+
+@itemize @bullet
+@item
+the subreg is complete if known_eq (@var{inner}, @var{outer})
+
+@item
+otherwise, the subreg is paradoxical if known_le (@var{inner}, @var{outer})
+
+@item
+otherwise, the subreg is partial if known_le (@var{outer}, @var{inner})
+
+@item
+otherwise, the subreg is ill-formed
+@end itemize
+
+Thus the subreg is only valid if
+@samp{ordered_p (@var{outer}, @var{inner})} is true.  If this condition
+is already known to be true then:
+
+@itemize @bullet
+@item
+the subreg is complete if known_eq (@var{inner}, @var{outer})
+
+@item
+the subreg is paradoxical if maybe_lt (@var{inner}, @var{outer})
+
+@item
+the subreg is partial if maybe_lt (@var{outer}, @var{inner})
+@end itemize
+
+with the three conditions being mutually exclusive.
+
+Code that checks whether a subreg is valid would therefore generally
+check whether @code{ordered_p} holds (in addition to whatever other
+checks are required for subreg validity).  Code that is dealing
+with existing subregs can assert that @code{ordered_p} holds
+and use either of the classifications above.
+
+@node Checking for a @code{poly_int} marker value
+@subsection Checking for a @code{poly_int} marker value
+
+It is sometimes useful to have a special ``marker value'' that is not
+meant to be taken literally.  For example, some code uses a size
+of -1 to represent an unknown size, rather than having to carry around
+a separate boolean to say whether the size is known.
+
+The best way of checking whether something is a marker value is
+@code{known_eq}.  Conversely the best way of checking whether something
+is @emph{not} a marker value is @code{maybe_ne}.
+
+Thus in the size example just mentioned, @samp{known_eq (size, -1)} would
+check for an unknown size and @samp{maybe_ne (size, -1)} would check for a
+known size.
+
+@node Range checks on @code{poly_int}s
+@subsection Range checks on @code{poly_int}s
+
+As well as the core comparisons
+(@pxref{Comparison functions for @code{poly_int}}), @code{poly_int} provides
+utilities for various kinds of range check.  In each case the range
+is represented by a start position and a size rather than a start
+position and an end position; this is because the former is used
+much more often than the latter in GCC@.  Also, the sizes can be
+-1 (or all ones for unsigned sizes) to indicate a range with a known
+start position but an unknown size.  All other sizes must be nonnegative.
+A range of size 0 does not contain anything or overlap anything.
+
+@table @samp
+@item known_size_p (@var{size})
+Return true if @var{size} represents a known range size, false if it
+is -1 or all ones (for signed and unsigned types respectively).
+
+@item ranges_maybe_overlap_p (@var{pos1}, @var{size1}, @var{pos2}, @var{size2})
+Return true if the range described by @var{pos1} and @var{size1} @emph{might}
+overlap the range described by @var{pos2} and @var{size2} (in other words,
+return true if we cannot prove that the ranges are disjoint).
+
+@item ranges_known_overlap_p (@var{pos1}, @var{size1}, @var{pos2}, @var{size2})
+Return true if the range described by @var{pos1} and @var{size1} is known to
+overlap the range described by @var{pos2} and @var{size2}.
+
+@item known_subrange_p (@var{pos1}, @var{size1}, @var{pos2}, @var{size2})
+Return true if the range described by @var{pos1} and @var{size1} is known to
+be contained in the range described by @var{pos2} and @var{size2}.
+
+@item maybe_in_range_p (@var{value}, @var{pos}, @var{size})
+Return true if @var{value} @emph{might} be in the range described by
+@var{pos} and @var{size} (in other words, return true if we cannot
+prove that @var{value} is outside that range).
+
+@item known_in_range_p (@var{value}, @var{pos}, @var{size})
+Return true if @var{value} is known to be in the range described
+by @var{pos} and @var{size}.
+
+@item endpoint_representable_p (@var{pos}, @var{size})
+Return true if the range described by @var{pos} and @var{size} is
+open-ended or if the endpoint (@var{pos} + @var{size}) is representable
+in the same type as @var{pos} and @var{size}.  The function returns false
+if adding @var{size} to @var{pos} makes conceptual sense but could overflow.
+@end table
+
+There is also a @code{poly_int} version of the @code{IN_RANGE_P} macro:
+
+@table @samp
+@item coeffs_in_range_p (@var{x}, @var{lower}, @var{upper})
+Return true if every coefficient of @var{x} is in the inclusive range
+[@var{lower}, @var{upper}].  This function can be useful when testing
+whether an operation would cause the values of coefficients to
+overflow.
+
+Note that the function does not indicate whether @var{x} itself is in the
+given range.  @var{x} can be either a constant or a @code{poly_int}.
+@end table
+
+@node Sorting @code{poly_int}s
+@subsection Sorting @code{poly_int}s
+
+@code{poly_int} provides the following routine for sorting:
+
+@table @samp
+@item compare_sizes_for_sort (@var{a}, @var{b})
+Compare @var{a} and @var{b} in reverse lexicographical order (that is,
+compare the highest-indexed coefficients first).  This can be useful when
+sorting data structures, since it has the effect of separating constant
+and non-constant values.  If all values are nonnegative, the constant
+values come first.
+
+Note that the values do not necessarily end up in numerical order.
+For example, @samp{1 + 1@var{x}} would come after @samp{100} in the sort order,
+but may well be less than @samp{100} at run time.
+@end table
+
+@node Arithmetic on @code{poly_int}s
+@section Arithmetic on @code{poly_int}s
+
+Addition, subtraction, negation and bit inversion all work normally for
+@code{poly_int}s.  Multiplication by a constant multiplier and left
+shifting by a constant shift amount also work normally.  General
+multiplication of two @code{poly_int}s is not supported and is not
+useful in practice.
+
+Other operations are only conditionally supported: the operation
+might succeed or might fail, depending on the inputs.
+
+This section describes both types of operation.
+
+@menu
+* Using @code{poly_int} with C++ arithmetic operators::
+* @code{wi} arithmetic on @code{poly_int}s::
+* Division of @code{poly_int}s::
+* Other @code{poly_int} arithmetic::
+@end menu
+
+@node Using @code{poly_int} with C++ arithmetic operators
+@subsection Using @code{poly_int} with C++ arithmetic operators
+
+The following C++ expressions are supported, where @var{p1} and @var{p2}
+are @code{poly_int}s and where @var{c1} and @var{c2} are scalars:
+
+@smallexample
+-@var{p1}
+~@var{p1}
+
+@var{p1} + @var{p2}
+@var{p1} + @var{c2}
+@var{c1} + @var{p2}
+
+@var{p1} - @var{p2}
+@var{p1} - @var{c2}
+@var{c1} - @var{p2}
+
+@var{c1} * @var{p2}
+@var{p1} * @var{c2}
+
+@var{p1} << @var{c2}
+
+@var{p1} += @var{p2}
+@var{p1} += @var{c2}
+
+@var{p1} -= @var{p2}
+@var{p1} -= @var{c2}
+
+@var{p1} *= @var{c2}
+@var{p1} <<= @var{c2}
+@end smallexample
+
+These arithmetic operations handle integer ranks in a similar way
+to C++.  The main difference is that every coefficient narrower than
+@code{HOST_WIDE_INT} promotes to @code{HOST_WIDE_INT}, whereas in
+C++ everything narrower than @code{int} promotes to @code{int}.
+For example:
+
+@smallexample
+poly_uint16     + int          -> poly_int64
+unsigned int    + poly_uint16  -> poly_int64
+poly_int64      + int          -> poly_int64
+poly_int32      + poly_uint64  -> poly_uint64
+uint64          + poly_int64   -> poly_uint64
+poly_offset_int + int32        -> poly_offset_int
+offset_int      + poly_uint16  -> poly_offset_int
+@end smallexample
+
+In the first two examples, both coefficients are narrower than
+@code{HOST_WIDE_INT}, so the result has coefficients of type
+@code{HOST_WIDE_INT}.  In the other examples, the coefficient
+with the highest rank ``wins''.
+
+If one of the operands is @code{wide_int} or @code{poly_wide_int},
+the rules are the same as for @code{wide_int} arithmetic.
+
+@node @code{wi} arithmetic on @code{poly_int}s
+@subsection @code{wi} arithmetic on @code{poly_int}s
+
+As well as the C++ operators, @code{poly_int} supports the following
+@code{wi} routines:
+
+@smallexample
+wi::neg (@var{p1}, &@var{overflow})
+
+wi::add (@var{p1}, @var{p2})
+wi::add (@var{p1}, @var{c2})
+wi::add (@var{c1}, @var{p1})
+wi::add (@var{p1}, @var{p2}, @var{sign}, &@var{overflow})
+
+wi::sub (@var{p1}, @var{p2})
+wi::sub (@var{p1}, @var{c2})
+wi::sub (@var{c1}, @var{p1})
+wi::sub (@var{p1}, @var{p2}, @var{sign}, &@var{overflow})
+
+wi::mul (@var{p1}, @var{c2})
+wi::mul (@var{c1}, @var{p1})
+wi::mul (@var{p1}, @var{c2}, @var{sign}, &@var{overflow})
+
+wi::lshift (@var{p1}, @var{c2})
+@end smallexample
+
+These routines just check whether overflow occurs on any individual
+coefficient; it is not possible to know at compile time whether the
+final runtime value would overflow.
+
+@node Division of @code{poly_int}s
+@subsection Division of @code{poly_int}s
+
+Division of @code{poly_int}s is possible for certain inputs.  The functions
+for division return true if the operation is possible and in most cases
+return the results by pointer.  The routines are:
+
+@table @samp
+@item multiple_p (@var{a}, @var{b})
+@itemx multiple_p (@var{a}, @var{b}, &@var{quotient})
+Return true if @var{a} is an exact multiple of @var{b}, storing the result
+in @var{quotient} if so.  There are overloads for various combinations
+of polynomial and constant @var{a}, @var{b} and @var{quotient}.
+
+@item constant_multiple_p (@var{a}, @var{b})
+@itemx constant_multiple_p (@var{a}, @var{b}, &@var{quotient})
+Like @code{multiple_p}, but also test whether the multiple is a
+compile-time constant.
+
+@item can_div_trunc_p (@var{a}, @var{b}, &@var{quotient})
+@itemx can_div_trunc_p (@var{a}, @var{b}, &@var{quotient}, &@var{remainder})
+Return true if we can calculate @samp{trunc (@var{a} / @var{b})} at compile
+time, storing the result in @var{quotient} and @var{remainder} if so.
+
+@item can_div_away_from_zero_p (@var{a}, @var{b}, &@var{quotient})
+Return true if we can calculate @samp{@var{a} / @var{b}} at compile time,
+rounding away from zero.  Store the result in @var{quotient} if so.
+
+Note that this is true if and only if @code{can_div_trunc_p} is true.
+The only difference is in the rounding of the result.
+@end table
+
+There is also an asserting form of division:
+
+@table @samp
+@item exact_div (@var{a}, @var{b})
+Assert that @var{a} is a multiple of @var{b} and return
+@samp{@var{a} / @var{b}}.  The result is a @code{poly_int} if @var{a}
+is a @code{poly_int}.
+@end table
+
+@node Other @code{poly_int} arithmetic
+@subsection Other @code{poly_int} arithmetic
+
+There are tentative routines for other operations besides division:
+
+@table @samp
+@item can_ior_p (@var{a}, @var{b}, &@var{result})
+Return true if we can calculate @samp{@var{a} | @var{b}} at compile time,
+storing the result in @var{result} if so.
+@end table
+
+Also, ANDs with a value @samp{(1 << @var{y}) - 1} or its inverse can be
+treated as alignment operations.  @xref{Alignment of @code{poly_int}s}.
+
+In addition, the following miscellaneous routines are available:
+
+@table @samp
+@item coeff_gcd (@var{a})
+Return the greatest common divisor of all nonzero coefficients in
+@var{a}, or zero if @var{a} is known to be zero.
+
+@item common_multiple (@var{a}, @var{b})
+Return a value that is a multiple of both @var{a} and @var{b}, where
+one value is a @code{poly_int} and the other is a scalar.  The result
+will be the least common multiple for some indeterminate values but
+not necessarily for all.
+
+@item force_common_multiple (@var{a}, @var{b})
+Return a value that is a multiple of both @code{poly_int} @var{a} and
+@code{poly_int} @var{b}, asserting that such a value exists.  The
+result will be the least common multiple for some indeterminate values
+but not necessarily for all.
+
+When using this routine, please add a comment explaining why the
+assertion is known to hold.
+@end table
+
+Please add any other operations that you find to be useful.
+
+@node Alignment of @code{poly_int}s
+@section Alignment of @code{poly_int}s
+
+@code{poly_int} provides various routines for aligning values and for querying
+misalignments.  In each case the alignment must be a power of 2.
+
+@table @samp
+@item can_align_p (@var{value}, @var{align})
+Return true if we can align @var{value} up or down to the nearest multiple
+of @var{align} at compile time.  The answer is the same for both directions.
+
+@item can_align_down (@var{value}, @var{align}, &@var{aligned})
+Return true if @code{can_align_p}; if so, set @var{aligned} to the greatest
+aligned value that is less than or equal to @var{value}.
+
+@item can_align_up (@var{value}, @var{align}, &@var{aligned})
+Return true if @code{can_align_p}; if so, set @var{aligned} to the lowest
+aligned value that is greater than or equal to @var{value}.
+
+@item known_equal_after_align_down (@var{a}, @var{b}, @var{align})
+Return true if we can align @var{a} and @var{b} down to the nearest
+@var{align} boundary at compile time and if the two results are equal.
+
+@item known_equal_after_align_up (@var{a}, @var{b}, @var{align})
+Return true if we can align @var{a} and @var{b} up to the nearest
+@var{align} boundary at compile time and if the two results are equal.
+
+@item aligned_lower_bound (@var{value}, @var{align})
+Return a result that is no greater than @var{value} and that is aligned
+to @var{align}.  The result will the closest aligned value for some
+indeterminate values but not necessarily for all.
+
+For example, suppose we are allocating an object of @var{size} bytes
+in a downward-growing stack whose current limit is given by @var{limit}.
+If the object requires @var{align} bytes of alignment, the new stack
+limit is given by:
+
+@smallexample
+aligned_lower_bound (@var{limit} - @var{size}, @var{align})
+@end smallexample
+
+@item aligned_upper_bound (@var{value}, @var{align})
+Likewise return a result that is no less than @var{value} and that is
+aligned to @var{align}.  This is the routine that would be used for
+upward-growing stacks in the scenario just described.
+
+@item known_misalignment (@var{value}, @var{align}, &@var{misalign})
+Return true if we can calculate the misalignment of @var{value}
+with respect to @var{align} at compile time, storing the result in
+@var{misalign} if so.
+
+@item known_alignment (@var{value})
+Return the minimum alignment that @var{value} is known to have
+(in other words, the largest alignment that can be guaranteed
+whatever the values of the indeterminates turn out to be).
+Return 0 if @var{value} is known to be 0.
+
+@item force_align_down (@var{value}, @var{align})
+Assert that @var{value} can be aligned down to @var{align} at compile
+time and return the result.  When using this routine, please add a
+comment explaining why the assertion is known to hold.
+
+@item force_align_up (@var{value}, @var{align})
+Likewise, but aligning up.
+
+@item force_align_down_and_div (@var{value}, @var{align})
+Divide the result of @code{force_align_down} by @var{align}.  Again,
+please add a comment explaining why the assertion in @code{force_align_down}
+is known to hold.
+
+@item force_align_up_and_div (@var{value}, @var{align})
+Likewise for @code{force_align_up}.
+
+@item force_get_misalignment (@var{value}, @var{align})
+Assert that we can calculate the misalignment of @var{value} with
+respect to @var{align} at compile time and return the misalignment.
+When using this function, please add a comment explaining why
+the assertion is known to hold.
+@end table
+
+@node Computing bounds on @code{poly_int}s
+@section Computing bounds on @code{poly_int}s
+
+@code{poly_int} also provides routines for calculating lower and upper bounds:
+
+@table @samp
+@item constant_lower_bound (@var{a})
+Assert that @var{a} is nonnegative and return the smallest value it can have.
+
+@item constant_lower_bound_with_limit (@var{a}, @var{b})
+Return the least value @var{a} can have, given that the context in
+which @var{a} appears guarantees that the answer is no less than @var{b}.
+In other words, the caller is asserting that @var{a} is greater than or
+equal to @var{b} even if @samp{known_ge (@var{a}, @var{b})} doesn't hold.
+
+@item constant_upper_bound_with_limit (@var{a}, @var{b})
+Return the greatest value @var{a} can have, given that the context in
+which @var{a} appears guarantees that the answer is no greater than @var{b}.
+In other words, the caller is asserting that @var{a} is less than or equal
+to @var{b} even if @samp{known_le (@var{a}, @var{b})} doesn't hold.
+
+@item lower_bound (@var{a}, @var{b})
+Return a value that is always less than or equal to both @var{a} and @var{b}.
+It will be the greatest such value for some indeterminate values
+but necessarily for all.
+
+@item upper_bound (@var{a}, @var{b})
+Return a value that is always greater than or equal to both @var{a} and
+@var{b}.  It will be the least such value for some indeterminate values
+but necessarily for all.
+@end table
+
+@node Converting @code{poly_int}s
+@section Converting @code{poly_int}s
+
+A @code{poly_int<@var{n}, @var{T}>} can be constructed from up to
+@var{n} individual @var{T} coefficients, with the remaining coefficients
+being implicitly zero.  In particular, this means that every
+@code{poly_int<@var{n}, @var{T}>} can be constructed from a single
+scalar @var{T}, or something compatible with @var{T}.
+
+Also, a @code{poly_int<@var{n}, @var{T}>} can be constructed from
+a @code{poly_int<@var{n}, @var{U}>} if @var{T} can be constructed
+from @var{U}.
+
+The following functions provide other forms of conversion,
+or test whether such a conversion would succeed.
+
+@table @samp
+@item @var{value}.is_constant ()
+Return true if @code{poly_int} @var{value} is a compile-time constant.
+
+@item @var{value}.is_constant (&@var{c1})
+Return true if @code{poly_int} @var{value} is a compile-time constant,
+storing it in @var{c1} if so.  @var{c1} must be able to hold all
+constant values of @var{value} without loss of precision.
+
+@item @var{value}.to_constant ()
+Assert that @var{value} is a compile-time constant and return its value.
+When using this function, please add a comment explaining why the
+condition is known to hold (for example, because an earlier phase
+of analysis rejected non-constants).
+
+@item @var{value}.to_shwi (&@var{p2})
+Return true if @samp{poly_int<@var{N}, @var{T}>} @var{value} can be
+represented without loss of precision as a
+@samp{poly_int<@var{N}, @code{HOST_WIDE_INT}>}, storing it in that
+form in @var{p2} if so.
+
+@item @var{value}.to_uhwi (&@var{p2})
+Return true if @samp{poly_int<@var{N}, @var{T}>} @var{value} can be
+represented without loss of precision as a
+@samp{poly_int<@var{N}, @code{unsigned HOST_WIDE_INT}>}, storing it in that
+form in @var{p2} if so.
+
+@item @var{value}.force_shwi ()
+Forcibly convert each coefficient of @samp{poly_int<@var{N}, @var{T}>}
+@var{value} to @code{HOST_WIDE_INT}, truncating any that are out of range.
+Return the result as a @samp{poly_int<@var{N}, @code{HOST_WIDE_INT}>}.
+
+@item @var{value}.force_uhwi ()
+Forcibly convert each coefficient of @samp{poly_int<@var{N}, @var{T}>}
+@var{value} to @code{unsigned HOST_WIDE_INT}, truncating any that are
+out of range.  Return the result as a
+@samp{poly_int<@var{N}, @code{unsigned HOST_WIDE_INT}>}.
+
+@item wi::shwi (@var{value}, @var{precision})
+Return a @code{poly_int} with the same value as @var{value}, but with
+the coefficients converted from @code{HOST_WIDE_INT} to @code{wide_int}.
+@var{precision} specifies the precision of the @code{wide_int} cofficients;
+if this is wider than a @code{HOST_WIDE_INT}, the coefficients of
+@var{value} will be sign-extended to fit.
+
+@item wi::uhwi (@var{value}, @var{precision})
+Like @code{wi::shwi}, except that @var{value} has coefficients of
+type @code{unsigned HOST_WIDE_INT}.  If @var{precision} is wider than
+a @code{HOST_WIDE_INT}, the coefficients of @var{value} will be
+zero-extended to fit.
+
+@item wi::sext (@var{value}, @var{precision})
+Return a @code{poly_int} of the same type as @var{value}, sign-extending
+every coefficient from the low @var{precision} bits.  This in effect
+applies @code{wi::sext} to each coefficient individually.
+
+@item wi::zext (@var{value}, @var{precision})
+Like @code{wi::sext}, but for zero extension.
+
+@item poly_wide_int::from (@var{value}, @var{precision}, @var{sign})
+Convert @var{value} to a @code{poly_wide_int} in which each coefficient
+has @var{precision} bits.  Extend the coefficients according to
+@var{sign} if the coefficients have fewer bits.
+
+@item poly_offset_int::from (@var{value}, @var{sign})
+Convert @var{value} to a @code{poly_offset_int}, extending its coefficients
+according to @var{sign} if they have fewer bits than @code{offset_int}.
+
+@item poly_widest_int::from (@var{value}, @var{sign})
+Convert @var{value} to a @code{poly_widest_int}, extending its coefficients
+according to @var{sign} if they have fewer bits than @code{widest_int}.
+@end table
+
+@node Miscellaneous @code{poly_int} routines
+@section Miscellaneous @code{poly_int} routines
+
+@table @samp
+@item print_dec (@var{value}, @var{file}, @var{sign})
+@itemx print_dec (@var{value}, @var{file})
+Print @var{value} to @var{file} as a decimal value, interpreting
+the coefficients according to @var{sign}.  The final argument is
+optional if @var{value} has an inherent sign; for example,
+@code{poly_int64} values print as signed by default and
+@code{poly_uint64} values print as unsigned by default.
+
+This is a simply a @code{poly_int} version of a wide-int routine.
+@end table
+
+@node Guidelines for using @code{poly_int}
+@section Guidelines for using @code{poly_int}
+
+One of the main design goals of @code{poly_int} was to make it easy
+to write target-independent code that handles variable-sized registers
+even when the current target has fixed-sized registers.  There are two
+aspects to this:
+
+@itemize
+@item
+The set of @code{poly_int} operations should be complete enough that
+the question in most cases becomes ``Can we do this operation on these
+particular @code{poly_int} values?  If not, bail out'' rather than
+``Are these @code{poly_int} values constant?  If so, do the operation,
+otherwise bail out''.
+
+@item
+If target-independent code compiles and runs correctly on a target
+with one value of @code{NUM_POLY_INT_COEFFS}, and if the code does not
+use asserting functions like @code{to_constant}, it is reasonable to
+assume that the code also works on targets with other values of
+@code{NUM_POLY_INT_COEFFS}.  There is no need to check this during
+everyday development.
+@end itemize
+
+So the general principle is: if target-independent code is dealing
+with a @code{poly_int} value, it is better to operate on it as a
+@code{poly_int} if at all possible, choosing conservatively-correct
+behavior if a particular operation fails.  For example, the following
+code handles an index @code{pos} into a sequence of vectors that each
+have @code{nunits} elements:
+
+@smallexample
+/* Calculate which vector contains the result, and which lane of
+   that vector we need.  */
+if (!can_div_trunc_p (pos, nunits, &vec_entry, &vec_index))
+  @{
+    if (dump_enabled_p ())
+      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                       "Cannot determine which vector holds the"
+                       " final result.\n");
+    return false;
+  @}
+@end smallexample
+
+However, there are some contexts in which operating on a
+@code{poly_int} is not possible or does not make sense.  One example
+is when handling static initializers, since no current target supports
+the concept of a variable-length static initializer.  In these
+situations, a reasonable fallback is:
+
+@smallexample
+if (@var{poly_value}.is_constant (&@var{const_value}))
+  @{
+    @dots{}
+    /* Operate on @var{const_value}.  */
+    @dots{}
+  @}
+else
+  @{
+    @dots{}
+    /* Conservatively correct fallback.  */
+    @dots{}
+  @}
+@end smallexample
+
+@code{poly_int} also provides some asserting functions like
+@code{to_constant}.  Please only use these functions if there is a
+good theoretical reason to believe that the assertion cannot fire.
+For example, if some work is divided into an analysis phase and an
+implementation phase, the analysis phase might reject inputs that are
+not @code{is_constant}, in which case the implementation phase can
+reasonably use @code{to_constant} on the remaining inputs.  The assertions
+should not be used to discover whether a condition ever occurs ``in the
+field''; in other words, they should not be used to restrict code to
+constants at first, with the intention of only implementing a
+@code{poly_int} version if a user hits the assertion.
+
+If a particular asserting function like @code{to_constant} is needed
+more than once for the same reason, it is probably worth adding a
+helper function or macro for that situation, so that the justification
+only needs to be given once.  For example:
+
+@smallexample
+/* Return the size of an element in a vector of size SIZE, given that
+   the vector has NELTS elements.  The return value is in the same units
+   as SIZE (either bits or bytes).
+
+   to_constant () is safe in this situation because vector elements are
+   always constant-sized scalars.  */
+#define vector_element_size(SIZE, NELTS) \
+  (exact_div (SIZE, NELTS).to_constant ())
+@end smallexample
+
+Target-specific code in @file{config/@var{cpu}} only needs to handle
+non-constant @code{poly_int}s if @code{NUM_POLY_INT_COEFFS} is greater
+than one.  For other targets, @code{poly_int} degenerates to a compile-time
+constant and is often interchangable with a normal scalar integer.
+There are two main exceptions:
+
+@itemize
+@item
+Sometimes an explicit cast to an integer type might be needed, such as to
+resolve ambiguities in a @code{?:} expression, or when passing values
+through @code{...} to things like print functions.
+
+@item
+Target macros are included in target-independent code and so do not
+have access to the implicit conversion to a scalar integer.
+If this becomes a problem for a particular target macro, the
+possible solutions, in order of preference, are:
+
+@itemize
+@item
+Convert the target macro to a target hook (for all targets).
+
+@item
+Put the target's implementation of the target macro in its
+@file{@var{cpu}.c} file and call it from the target macro in the
+@file{@var{cpu}.h} file.
+
+@item
+Add @code{to_constant ()} calls where necessary.  The previous option
+is preferable because it will help with any future conversion of the
+macro to a hook.
+@end itemize
+@end itemize
+

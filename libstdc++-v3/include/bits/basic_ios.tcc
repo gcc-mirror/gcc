@@ -156,20 +156,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     basic_ios<_CharT, _Traits>::_M_cache_locale(const locale& __loc)
     {
-      if (__builtin_expect(has_facet<__ctype_type>(__loc), true))
-	_M_ctype = std::__addressof(use_facet<__ctype_type>(__loc));
-      else
-	_M_ctype = 0;
-
-      if (__builtin_expect(has_facet<__num_put_type>(__loc), true))
-	_M_num_put = std::__addressof(use_facet<__num_put_type>(__loc));
-      else
-	_M_num_put = 0;
-
-      if (__builtin_expect(has_facet<__num_get_type>(__loc), true))
-	_M_num_get = std::__addressof(use_facet<__num_get_type>(__loc));
-      else
-	_M_num_get = 0;
+      _M_ctype = std::__try_use_facet<__ctype_type>(__loc);
+      _M_num_put = std::__try_use_facet<__num_put_type>(__loc);
+      _M_num_get = std::__try_use_facet<__num_get_type>(__loc);
     }
 
   // Inhibit implicit instantiations for required instantiations,

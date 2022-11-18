@@ -3571,3 +3571,42 @@ index 00000000000..d6459e00543
 +xxx
 -- 
 2.34.1
+
+=== 0001-Use-Value_Range-when-applying-inferred-ranges.patch ===
+From 69a233610f6b27cd4283561569d8ce0f35044dc4 Mon Sep 17 00:00:00 2001
+From: Andrew MacLeod <amacleod@redhat.com>
+Date: Wed, 19 Oct 2022 09:21:22 -0400
+Subject: [PATCH] Use Value_Range when applying inferred ranges.
+
+Applying an inferred range is using int_range_ma as the
+temporary rather than the general purpose Value_Range.  This causes it
+to trap if we have a non-integral inferred range.
+
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Use
+	  Value_Range not int_range_max.
+---
+ gcc/gimple-range-cache.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/gimple-range-cache.cc b/gcc/gimple-range-cache.cc
+index 0b9aa3639c5..f279371948a 100644
+--- a/gcc/gimple-range-cache.cc
++++ b/gcc/gimple-range-cache.cc
+@@ -1546,7 +1546,6 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
+ void
+ ranger_cache::apply_inferred_ranges (gimple *s)
+ {
+-  int_range_max r;
+   bool update = true;
+ 
+   basic_block bb = gimple_bb (s);
+@@ -1572,6 +1571,7 @@ ranger_cache::apply_inferred_ranges (gimple *s)
+       m_exit.add_range (name, bb, infer.range (x));
+       if (update)
+ 	{
++	  Value_Range r (TREE_TYPE (name));
+ 	  if (!m_on_entry.get_bb_range (r, name, bb))
+ 	    exit_range (r, name, bb, RFD_READ_ONLY);
+ 	  if (r.intersect (infer.range (x)))
+-- 
+2.38.0

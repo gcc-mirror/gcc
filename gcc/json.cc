@@ -190,6 +190,15 @@ string::string (const char *utf8)
 {
   gcc_assert (utf8);
   m_utf8 = xstrdup (utf8);
+  m_len = strlen (utf8);
+}
+
+string::string (const char *utf8, size_t len)
+{
+  gcc_assert (utf8);
+  m_utf8 = XNEWVEC (char, len);
+  m_len = len;
+  memcpy (m_utf8, utf8, len);
 }
 
 /* Implementation of json::value::print for json::string.  */
@@ -198,9 +207,9 @@ void
 string::print (pretty_printer *pp) const
 {
   pp_character (pp, '"');
-  for (const char *ptr = m_utf8; *ptr; ptr++)
+  for (size_t i = 0; i != m_len; ++i)
     {
-      char ch = *ptr;
+      char ch = m_utf8[i];
       switch (ch)
 	{
 	case '"':
@@ -224,7 +233,9 @@ string::print (pretty_printer *pp) const
 	case '\t':
 	  pp_string (pp, "\\t");
 	  break;
-
+	case '\0':
+	  pp_string (pp, "\\0");
+	  break;
 	default:
 	  pp_character (pp, ch);
 	}
@@ -341,6 +352,12 @@ test_writing_strings ()
 
   string contains_quotes ("before \"quoted\" after");
   assert_print_eq (contains_quotes, "\"before \\\"quoted\\\" after\"");
+
+  const char data[] = {'a', 'b', 'c', 'd', '\0', 'e', 'f'};
+  string not_terminated (data, 3);
+  assert_print_eq (not_terminated, "\"abc\"");
+  string embedded_null (data, sizeof data);
+  assert_print_eq (embedded_null, "\"abcd\\0ef\"");
 }
 
 /* Verify that JSON literals are written correctly.  */

@@ -4058,15 +4058,15 @@ gcn_init_builtin_types (void)
 					  (integer_type_node) */
 					, 64);
   tree tmp = build_distinct_type_copy (intSI_type_node);
-  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_FLAT;
+  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_DEFAULT;
   siptr_type_node = build_pointer_type (tmp);
 
   tmp = build_distinct_type_copy (float_type_node);
-  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_FLAT;
+  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_DEFAULT;
   sfptr_type_node = build_pointer_type (tmp);
 
   tmp = build_distinct_type_copy (void_type_node);
-  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_FLAT;
+  TYPE_ADDR_SPACE (tmp) = ADDR_SPACE_DEFAULT;
   voidptr_type_node = build_pointer_type (tmp);
 
   tmp = build_distinct_type_copy (void_type_node);
@@ -4492,6 +4492,20 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
     case GCN_BUILTIN_ACC_BARRIER:
       emit_insn (gen_gcn_wavefront_barrier ());
       return target;
+
+    case GCN_BUILTIN_KERNARG_PTR:
+      {
+	rtx ptr;
+	if (cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG] >= 0)
+	   ptr = gen_rtx_REG (DImode,
+			      cfun->machine->args.reg[KERNARG_SEGMENT_PTR_ARG]);
+	else
+	  {
+	    ptr = gen_reg_rtx (DImode);
+	    emit_move_insn (ptr, const0_rtx);
+	  }
+	return ptr;
+      }
 
     default:
       gcc_unreachable ();
@@ -5700,7 +5714,9 @@ gcn_oacc_dim_size (int dim)
 					cfun->machine->args.
 					reg[DISPATCH_PTR_ARG]),
 			   GEN_INT (offset[dim]));
-  return gen_rtx_MEM (SImode, addr);
+  rtx mem = gen_rtx_MEM (SImode, addr);
+  set_mem_addr_space (mem, ADDR_SPACE_SCALAR_FLAT);
+  return mem;
 }
 
 /* Helper function for oacc_dim_pos instruction.

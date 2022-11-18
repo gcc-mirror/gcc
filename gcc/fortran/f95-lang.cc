@@ -259,7 +259,7 @@ gfc_init (void)
   if (!gfc_cpp_enabled ())
     {
       linemap_add (line_table, LC_ENTER, false, gfc_source_file, 1);
-      linemap_add (line_table, LC_RENAME, false, "<built-in>", 0);
+      linemap_add (line_table, LC_RENAME, false, special_fname_builtin (), 0);
     }
   else
     gfc_cpp_init_0 ();

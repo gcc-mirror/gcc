@@ -1,0 +1,392 @@
+\input texinfo @c -*-texinfo-*-
+
+@c %**start of header
+@setfilename libquadmath.info
+@settitle GCC libquadmath
+@c %**end of header
+
+@copying
+Copyright @copyright{} 2010-2022 Free Software Foundation, Inc.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with the Front-Cover Texts being ``A GNU Manual,''
+and with the Back-Cover Texts as in (a) below.  A copy of the
+license is included in the section entitled ``GNU Free Documentation
+License.''
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.
+@end quotation
+@end copying
+
+@ifinfo
+@dircategory GNU Libraries
+@direntry
+* libquadmath: (libquadmath).                  GCC Quad-Precision Math Library
+@end direntry
+
+This manual documents the GCC Quad-Precision Math Library API.
+
+Published by the Free Software Foundation
+51 Franklin Street, Fifth Floor
+Boston, MA 02110-1301 USA
+
+@insertcopying
+@end ifinfo
+
+
+@setchapternewpage odd
+
+@titlepage
+@title The GCC Quad-Precision Math Library
+@page
+@vskip 0pt plus 1filll
+@comment For the @value{version-GCC} Version*
+@sp 1
+Published by the Free Software Foundation @*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@sp 1
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+@page
+
+
+@node Top
+@top Introduction
+@cindex Introduction
+
+This manual documents the usage of libquadmath, the GCC Quad-Precision
+Math Library Application Programming Interface (API).
+
+
+@comment
+@comment  When you add a new menu item, please keep the right hand
+@comment  aligned to the same column.  Do not use tabs.  This provides
+@comment  better formatting.
+@comment
+@menu
+* Typedef and constants::      Defined data types and constants
+* Math Library Routines::      The Libquadmath math runtime application
+                               programming interface.
+* I/O Library Routines::       The Libquadmath I/O runtime application
+                               programming interface.
+* GNU Free Documentation License::
+                               How you can copy and share this manual.
+* Reporting Bugs::             How to report bugs in GCC Libquadmath.
+@c * Index::                      Index of this documentation.
+@end menu
+
+
+@c ---------------------------------------------------------------------
+@c Defined macros
+@c ---------------------------------------------------------------------
+
+@node Typedef and constants
+@chapter Typedef and constants
+
+The following data type has been defined via @code{typedef}.
+
+@table @asis
+@item @code{__complex128}: @code{__float128}-based complex number
+@end table
+
+The following macros are defined, which give the numeric limits of the
+@code{__float128} data type.
+
+@table @asis
+@item @code{FLT128_MAX}: largest finite number
+@item @code{FLT128_MIN}: smallest positive number with full precision
+@item @code{FLT128_EPSILON}: difference between 1 and the next larger
+                             representable number
+@item @code{FLT128_DENORM_MIN}: smallest positive denormalized number
+@item @code{FLT128_MANT_DIG}: number of digits in the mantissa (bit precision)
+@item @code{FLT128_MIN_EXP}: maximal negative exponent
+@item @code{FLT128_MAX_EXP}: maximal positive exponent
+@item @code{FLT128_DIG}: number of decimal digits in the mantissa
+@item @code{FLT128_MIN_10_EXP}: maximal negative decimal exponent
+@item @code{FLT128_MAX_10_EXP}: maximal positive decimal exponent
+@end table
+
+The following mathematical constants of type @code{__float128} are defined.
+
+@table @asis
+@item @code{M_Eq}: the constant e (Euler's number)
+@item @code{M_LOG2Eq}: binary logarithm of 2
+@item @code{M_LOG10Eq}: common, decimal logarithm of 2
+@item @code{M_LN2q}: natural logarithm of 2
+@item @code{M_LN10q}: natural logarithm of 10
+@item @code{M_PIq}: pi
+@item @code{M_PI_2q}: pi divided by two
+@item @code{M_PI_4q}: pi divided by four
+@item @code{M_1_PIq}: one over pi
+@item @code{M_2_PIq}: one over two pi
+@item @code{M_2_SQRTPIq}: two over square root of pi
+@item @code{M_SQRT2q}: square root of 2
+@item @code{M_SQRT1_2q}: one over square root of 2
+@end table
+
+
+@c ---------------------------------------------------------------------
+@c Math routines
+@c ---------------------------------------------------------------------
+
+@node Math Library Routines
+@chapter Math Library Routines
+
+The following mathematical functions are available:
+
+@table @asis
+@item @code{acosq}: arc cosine function
+@item @code{acoshq}: inverse hyperbolic cosine function
+@item @code{asinq}: arc sine function
+@item @code{asinhq}: inverse hyperbolic sine function
+@item @code{atanq}: arc tangent function
+@item @code{atanhq}: inverse hyperbolic tangent function
+@item @code{atan2q}: arc tangent function
+@item @code{cbrtq}: cube root function
+@item @code{ceilq}: ceiling value function
+@item @code{copysignq}: copy sign of a number
+@item @code{coshq}: hyperbolic cosine function
+@item @code{cosq}: cosine function
+@item @code{erfq}: error function
+@item @code{erfcq}: complementary error function
+@item @code{exp2q}: base 2 exponential function
+@item @code{expq}: exponential function
+@item @code{expm1q}: exponential minus 1 function
+@need 800
+@item @code{fabsq}: absolute value function
+@item @code{fdimq}: positive difference function
+@item @code{finiteq}: check finiteness of value
+@item @code{floorq}: floor value function
+@item @code{fmaq}: fused multiply and add
+@item @code{fmaxq}: determine maximum of two values
+@item @code{fminq}: determine minimum of two values
+@item @code{fmodq}: remainder value function
+@item @code{frexpq}: extract mantissa and exponent
+@item @code{hypotq}: Eucledian distance function
+@item @code{ilogbq}: get exponent of the value
+@item @code{isinfq}: check for infinity
+@item @code{isnanq}: check for not a number
+@item @code{issignalingq}: check for signaling not a number
+@item @code{j0q}: Bessel function of the first kind, first order
+@item @code{j1q}: Bessel function of the first kind, second order
+@item @code{jnq}: Bessel function of the first kind, @var{n}-th order
+@item @code{ldexpq}: load exponent of the value
+@item @code{lgammaq}: logarithmic gamma function
+@item @code{llrintq}: round to nearest integer value
+@item @code{llroundq}: round to nearest integer value away from zero
+@item @code{logbq}: get exponent of the value
+@item @code{logq}: natural logarithm function
+@item @code{log10q}: base 10 logarithm function
+@item @code{log1pq}: compute natural logarithm of the value plus one
+@item @code{log2q}: base 2 logarithm function
+@need 800
+@item @code{lrintq}: round to nearest integer value
+@item @code{lroundq}: round to nearest integer value away from zero
+@item @code{modfq}: decompose the floating-point number
+@item @code{nanq}: return quiet NaN
+@item @code{nearbyintq}: round to nearest integer
+@item @code{nextafterq}: next representable floating-point number
+@item @code{powq}: power function
+@item @code{remainderq}: remainder function
+@item @code{remquoq}: remainder and part of quotient
+@item @code{rintq}: round-to-nearest integral value
+@item @code{roundq}: round-to-nearest integral value, return @code{__float128}
+@item @code{scalblnq}: compute exponent using @code{FLT_RADIX}
+@item @code{scalbnq}: compute exponent using @code{FLT_RADIX}
+@item @code{signbitq}: return sign bit
+@item @code{sincosq}: calculate sine and cosine simultaneously
+@item @code{sinhq}: hyperbolic sine function
+@item @code{sinq}: sine function
+@item @code{sqrtq}: square root function
+@item @code{tanq}: tangent function
+@item @code{tanhq}: hyperbolic tangent function
+@need 800
+@item @code{tgammaq}: true gamma function
+@item @code{truncq}: round to integer, towards zero
+@item @code{y0q}: Bessel function of the second kind, first order
+@item @code{y1q}: Bessel function of the second kind, second order
+@item @code{ynq}: Bessel function of the second kind, @var{n}-th order
+@item @code{cabsq} complex absolute value function
+@item @code{cargq}: calculate the argument
+@item @code{cimagq} imaginary part of complex number
+@item @code{crealq}: real part of complex number
+@item @code{cacoshq}: complex arc hyperbolic cosine function
+@item @code{cacosq}: complex arc cosine function
+@item @code{casinhq}: complex arc hyperbolic sine function
+@item @code{casinq}: complex arc sine function
+@item @code{catanhq}: complex arc hyperbolic tangent function
+@item @code{catanq}: complex arc tangent function
+@item @code{ccosq} complex cosine function:
+@item @code{ccoshq}: complex hyperbolic cosine function
+@item @code{cexpq}: complex exponential function
+@need 800
+@item @code{cexpiq}: computes the exponential function of ``i'' times a
+                     real value
+@item @code{clogq}: complex natural logarithm
+@item @code{clog10q}: complex base 10 logarithm
+@item @code{conjq}: complex conjugate function
+@item @code{cpowq}: complex power function
+@item @code{cprojq}: project into Riemann Sphere
+@item @code{csinq}: complex sine function
+@item @code{csinhq}: complex hyperbolic sine function
+@item @code{csqrtq}: complex square root
+@item @code{ctanq}: complex tangent function
+@item @code{ctanhq}: complex hyperbolic tangent function
+@end table
+
+
+@c ---------------------------------------------------------------------
+@c I/O routines
+@c ---------------------------------------------------------------------
+
+@node I/O Library Routines
+@chapter I/O Library Routines
+
+@menu
+* @code{strtoflt128}:          strtoflt128,          Convert from string
+* @code{quadmath_snprintf}:    quadmath_snprintf,    Convert to string
+@end menu
+
+
+@node strtoflt128
+@section @code{strtoflt128} --- Convert from string
+
+The function @code{strtoflt128} converts a string into a
+@code{__float128} number.
+
+@table @asis
+@item Syntax
+@code{__float128 strtoflt128 (const char *s, char **sp)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{s}  @tab input string
+@item @var{sp} @tab the address of the next character in the string
+@end multitable
+
+The argument @var{sp} contains, if not @code{NULL}, the address of the
+next character following the parts of the string, which have been read.
+
+@item Example
+@smallexample
+#include <quadmath.h>
+
+int main ()
+@{
+  __float128 r;
+
+  r = strtoflt128 ("1.2345678", NULL);
+
+  return 0;
+@}
+@end smallexample
+@end table
+
+
+@node quadmath_snprintf
+@section @code{quadmath_snprintf} --- Convert to string
+
+The function @code{quadmath_snprintf} converts a @code{__float128} floating-point
+number into a string.  It is a specialized alternative to @code{snprintf}, where
+the format string is restricted to a single conversion specifier with @code{Q}
+modifier and conversion specifier @code{e}, @code{E}, @code{f}, @code{F}, @code{g},
+@code{G}, @code{a} or @code{A}, with no extra characters before or after the
+conversion specifier.  The @code{%m$} or @code{*m$} style must not be used in
+the format.
+
+@table @asis
+@item Syntax
+@code{int quadmath_snprintf (char *s, size_t size, const char *format, ...)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{s}    @tab output string
+@item @var{size} @tab byte size of the string, including trailing NUL
+@item @var{format} @tab conversion specifier string
+@end multitable
+
+@item Note
+On some targets when supported by the C library hooks are installed
+for @code{printf} family of functions, so that @code{printf ("%Qe", 1.2Q);}
+etc.@: works too.
+
+@item Example
+@smallexample
+#include <quadmath.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+int main ()
+@{
+  __float128 r;
+  int prec = 20;
+  int width = 46;
+  char buf[128];
+
+  r = 2.0q;
+  r = sqrtq (r);
+  int n = quadmath_snprintf (buf, sizeof buf, "%+-#*.20Qe", width, r);
+  if ((size_t) n < sizeof buf)
+    printf ("%s\n", buf);
+    /* Prints: +1.41421356237309504880e+00 */
+  quadmath_snprintf (buf, sizeof buf, "%Qa", r);
+  if ((size_t) n < sizeof buf)
+    printf ("%s\n", buf);
+    /* Prints: 0x1.6a09e667f3bcc908b2fb1366ea96p+0 */
+  n = quadmath_snprintf (NULL, 0, "%+-#46.*Qe", prec, r);
+  if (n > -1)
+    @{
+      char *str = malloc (n + 1);
+      if (str)
+        @{
+          quadmath_snprintf (str, n + 1, "%+-#46.*Qe", prec, r);
+          printf ("%s\n", str);
+          /* Prints: +1.41421356237309504880e+00 */
+        @}
+      free (str);
+    @}
+  return 0;
+@}
+@end smallexample
+
+@end table
+
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+@c ---------------------------------------------------------------------
+@c Reporting Bugs
+@c ---------------------------------------------------------------------
+
+@c For BUGURL
+@include libquadmath-vers.texi
+
+@node Reporting Bugs
+@chapter Reporting Bugs
+
+Bugs in the GCC Quad-Precision Math Library implementation should be
+reported via @value{BUGURL}.
+
+
+@c ---------------------------------------------------------------------
+@c Index
+@c ---------------------------------------------------------------------
+
+@c @node Index
+@c @unnumbered Index
+@c 
+@c @printindex cp
+
+@bye

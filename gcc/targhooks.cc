@@ -1840,6 +1840,14 @@ default_have_conditional_execution (void)
   return HAVE_conditional_execution;
 }
 
+/* Default that no division by constant operations are special.  */
+bool
+default_can_special_div_by_const (enum tree_code, tree, wide_int, rtx *, rtx,
+				  rtx)
+{
+  return false;
+}
+
 /* By default we assume that c99 functions are present at the runtime,
    but sincos is not.  */
 bool

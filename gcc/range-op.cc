@@ -89,10 +89,7 @@ update_known_bitmask (irange &r, tree_code code,
   bit_value_binop (code, sign, prec, &value, &mask,
 		   lh_sign, lh_prec, lh_value, lh_mask,
 		   rh_sign, rh_prec, rh_value, rh_mask);
-
-  int_range<2> tmp (type);
-  tmp.set_nonzero_bits (value | mask);
-  r.intersect (tmp);
+  r.set_nonzero_bits (value | mask);
 }
 
 // Return the upper limit for a type.
@@ -245,6 +242,7 @@ range_operator::fold_range (irange &r, tree type,
       wi_fold_in_parts (r, type, lh.lower_bound (), lh.upper_bound (),
 			rh.lower_bound (), rh.upper_bound ());
       op1_op2_relation_effect (r, type, lh, rh, rel);
+      update_known_bitmask (r, m_code, lh, rh);
       return true;
     }
 
@@ -262,10 +260,12 @@ range_operator::fold_range (irange &r, tree type,
 	if (r.varying_p ())
 	  {
 	    op1_op2_relation_effect (r, type, lh, rh, rel);
+	    update_known_bitmask (r, m_code, lh, rh);
 	    return true;
 	  }
       }
   op1_op2_relation_effect (r, type, lh, rh, rel);
+  update_known_bitmask (r, m_code, lh, rh);
   return true;
 }
 
@@ -1790,13 +1790,9 @@ cross_product_operator::wi_cross_product (irange &r, tree type,
 
 class operator_mult : public cross_product_operator
 {
-  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
 public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &lh, const irange &rh,
-			   relation_trio = TRIO_VARYING) const final override;
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -1814,18 +1810,6 @@ public:
 			  const irange &op1,
 			  relation_trio) const final override;
 } op_mult;
-
-bool
-operator_mult::fold_range (irange &r, tree type,
-			   const irange &lh, const irange &rh,
-			   relation_trio trio) const
-{
-  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
-    return false;
-
-  update_known_bitmask (r, MULT_EXPR, lh, rh);
-  return true;
-}
 
 bool
 operator_mult::op1_range (irange &r, tree type,
@@ -1971,7 +1955,6 @@ operator_mult::wi_fold (irange &r, tree type,
 class operator_div : public cross_product_operator
 {
 public:
-  operator_div (enum tree_code c)  { code = c; }
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -1980,24 +1963,7 @@ public:
   virtual bool wi_op_overflows (wide_int &res, tree type,
 				const wide_int &, const wide_int &)
     const final override;
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &lh, const irange &rh,
-			   relation_trio trio) const final override;
-private:
-  enum tree_code code;
 };
-
-bool
-operator_div::fold_range (irange &r, tree type,
-			  const irange &lh, const irange &rh,
-			  relation_trio trio) const
-{
-  if (!cross_product_operator::fold_range (r, type, lh, rh, trio))
-    return false;
-
-  update_known_bitmask (r, code, lh, rh);
-  return true;
-}
 
 bool
 operator_div::wi_op_overflows (wide_int &res, tree type,
@@ -2009,13 +1975,9 @@ operator_div::wi_op_overflows (wide_int &res, tree type,
   wi::overflow_type overflow = wi::OVF_NONE;
   signop sign = TYPE_SIGN (type);
 
-  switch (code)
+  switch (m_code)
     {
     case EXACT_DIV_EXPR:
-      // EXACT_DIV_EXPR is implemented as TRUNC_DIV_EXPR in
-      // operator_exact_divide.  No need to handle it here.
-      gcc_unreachable ();
-      break;
     case TRUNC_DIV_EXPR:
       res = wi::div_trunc (w0, w1, sign, &overflow);
       break;
@@ -2091,17 +2053,11 @@ operator_div::wi_fold (irange &r, tree type,
   gcc_checking_assert (!r.undefined_p ());
 }
 
-operator_div op_trunc_div (TRUNC_DIV_EXPR);
-operator_div op_floor_div (FLOOR_DIV_EXPR);
-operator_div op_round_div (ROUND_DIV_EXPR);
-operator_div op_ceil_div (CEIL_DIV_EXPR);
-
 
 class operator_exact_divide : public operator_div
 {
   using range_operator::op1_range;
 public:
-  operator_exact_divide () : operator_div (TRUNC_DIV_EXPR) { }
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
@@ -2523,7 +2479,7 @@ private:
 			const irange &outer) const;
   void fold_pair (irange &r, unsigned index, const irange &inner,
 			   const irange &outer) const;
-} op_convert;
+};
 
 // Add a partial equivalence between the LHS and op1 for casts.
 
@@ -2847,14 +2803,9 @@ operator_logical_and::op2_range (irange &r, tree type,
 
 class operator_bitwise_and : public range_operator
 {
-  using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
 public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &lh,
-			   const irange &rh,
-			   relation_trio rel = TRIO_VARYING) const;
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
@@ -2877,22 +2828,6 @@ private:
 				const irange &lhs,
 				const irange &op2) const;
 } op_bitwise_and;
-
-bool
-operator_bitwise_and::fold_range (irange &r, tree type,
-				  const irange &lh,
-				  const irange &rh,
-				  relation_trio) const
-{
-  if (range_operator::fold_range (r, type, lh, rh))
-    {
-      if (!lh.undefined_p () && !rh.undefined_p ())
-	r.set_nonzero_bits (wi::bit_and (lh.get_nonzero_bits (),
-					 rh.get_nonzero_bits ()));
-      return true;
-    }
-  return false;
-}
 
 
 // Optimize BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR of signed types
@@ -3877,7 +3812,7 @@ public:
 					   const irange &op1,
 					   const irange &op2,
 					   relation_kind rel) const;
-} op_identity;
+};
 
 // Determine if there is a relationship between LHS and OP1.
 
@@ -3922,7 +3857,7 @@ public:
 			   const irange &op1,
 			   const irange &op2,
 			   relation_trio rel = TRIO_VARYING) const;
-} op_unknown;
+};
 
 bool
 operator_unknown::fold_range (irange &r, tree type,
@@ -4245,7 +4180,7 @@ public:
   virtual void wi_fold (irange & r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_ptr_min_max;
+};
 
 void
 pointer_min_max_operator::wi_fold (irange &r, tree type,
@@ -4372,7 +4307,20 @@ range_op_table::set (enum tree_code code, range_operator &op)
 {
   gcc_checking_assert (m_range_tree[code] == NULL);
   m_range_tree[code] = &op;
+  gcc_checking_assert (op.m_code == ERROR_MARK || op.m_code == code);
+  op.m_code = code;
 }
+
+// Shared operators that require separate instantiations because they
+// do not share a common tree code.
+static operator_cast op_nop, op_convert;
+static operator_identity op_ssa, op_paren, op_obj_type;
+static operator_unknown op_realpart, op_imagpart;
+static pointer_min_max_operator op_ptr_min, op_ptr_max;
+static operator_div op_trunc_div;
+static operator_div op_floor_div;
+static operator_div op_round_div;
+static operator_div op_ceil_div;
 
 // Instantiate a range op table for integral operations.
 
@@ -4402,7 +4350,7 @@ integral_table::integral_table ()
   set (EXACT_DIV_EXPR, op_exact_div);
   set (LSHIFT_EXPR, op_lshift);
   set (RSHIFT_EXPR, op_rshift);
-  set (NOP_EXPR, op_convert);
+  set (NOP_EXPR, op_nop);
   set (CONVERT_EXPR, op_convert);
   set (TRUTH_AND_EXPR, op_logical_and);
   set (BIT_AND_EXPR, op_bitwise_and);
@@ -4413,11 +4361,11 @@ integral_table::integral_table ()
   set (TRUTH_NOT_EXPR, op_logical_not);
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (INTEGER_CST, op_integer_cst);
-  set (SSA_NAME, op_identity);
-  set (PAREN_EXPR, op_identity);
-  set (OBJ_TYPE_REF, op_identity);
-  set (IMAGPART_EXPR, op_unknown);
-  set (REALPART_EXPR, op_unknown);
+  set (SSA_NAME, op_ssa);
+  set (PAREN_EXPR, op_paren);
+  set (OBJ_TYPE_REF, op_obj_type);
+  set (IMAGPART_EXPR, op_imagpart);
+  set (REALPART_EXPR, op_realpart);
   set (POINTER_DIFF_EXPR, op_pointer_diff);
   set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
@@ -4437,8 +4385,8 @@ pointer_table::pointer_table ()
 {
   set (BIT_AND_EXPR, op_pointer_and);
   set (BIT_IOR_EXPR, op_pointer_or);
-  set (MIN_EXPR, op_ptr_min_max);
-  set (MAX_EXPR, op_ptr_min_max);
+  set (MIN_EXPR, op_ptr_min);
+  set (MAX_EXPR, op_ptr_max);
   set (POINTER_PLUS_EXPR, op_pointer_plus);
 
   set (EQ_EXPR, op_equal);
@@ -4447,10 +4395,10 @@ pointer_table::pointer_table ()
   set (LE_EXPR, op_le);
   set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
-  set (SSA_NAME, op_identity);
+  set (SSA_NAME, op_ssa);
   set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
-  set (NOP_EXPR, op_convert);
+  set (NOP_EXPR, op_nop);
   set (CONVERT_EXPR, op_convert);
 
   set (BIT_NOT_EXPR, op_bitwise_not);

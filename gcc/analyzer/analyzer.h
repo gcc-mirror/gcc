@@ -228,14 +228,24 @@ extern location_t get_stmt_location (const gimple *stmt, function *fun);
 extern bool compat_types_p (tree src_type, tree dst_type);
 
 /* Abstract base class for simulating the behavior of known functions,
-   supplied by plugins.  */
+   supplied by the core of the analyzer, or by plugins.  */
 
 class known_function
 {
 public:
   virtual ~known_function () {}
-  virtual void impl_call_pre (const call_details &cd) const = 0;
+  virtual bool matches_call_types_p (const call_details &cd) const = 0;
+  virtual void impl_call_pre (const call_details &) const
+  {
+    return;
+  }
+  virtual void impl_call_post (const call_details &) const
+  {
+    return;
+  }
 };
+
+extern void register_known_functions (known_function_manager &mgr);
 
 /* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
 
@@ -310,6 +320,11 @@ public:
      terminated.  */
   virtual bool terminate_path_p () const = 0;
 };
+
+extern tree get_stashed_constant_by_name (const char *name);
+extern void log_stashed_constants (logger *logger);
+
+extern FILE *get_or_create_any_logfile ();
 
 } // namespace ana
 

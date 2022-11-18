@@ -105,6 +105,8 @@ public:
     return m_elements[m_elements.length () - 1];
   }
 
+  int count_occurrences_of_function (function *) const;
+
   void validate () const;
 
 private:

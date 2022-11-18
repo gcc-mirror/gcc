@@ -276,13 +276,20 @@ frange_storage_slot::get_frange (frange &r, tree type) const
       return;
     }
 
-  // Use the constructor because it will canonicalize the range.
+  // We use the constructor to create the new range instead of writing
+  // out the bits into the frange directly, because the global range
+  // being read may be being inlined into a function with different
+  // restrictions as when it was originally written.  We want to make
+  // sure the resulting range is canonicalized correctly for the new
+  // consumer.
   r = frange (type, m_min, m_max, m_kind);
 
   // The constructor will set the NAN bits for HONOR_NANS, but we must
   // make sure to set the NAN sign if known.
   if (HONOR_NANS (type) && (m_pos_nan ^ m_neg_nan) == 1)
     r.update_nan (m_neg_nan);
+  else if (!m_pos_nan && !m_neg_nan)
+    r.clear_nan ();
 }
 
 bool

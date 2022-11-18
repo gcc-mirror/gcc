@@ -3577,15 +3577,26 @@
   [(set_attr "type" "alu_ext")]
 )
 
+(define_insn "*aarch64_abs<mode>2_cssc_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(abs:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  "TARGET_CSSC"
+  "abs\\t%<w>0, %<w>1"
+  [(set_attr "type" "alu_sreg")]
+)
+
 (define_expand "abs<mode>2"
-  [(match_operand:GPI 0 "register_operand")
-   (match_operand:GPI 1 "register_operand")]
+  [(set (match_operand:GPI 0 "register_operand")
+	(abs:GPI (match_operand:GPI 1 "register_operand")))]
   ""
   {
-    rtx ccreg = aarch64_gen_compare_reg (LT, operands[1], const0_rtx);
-    rtx x = gen_rtx_LT (VOIDmode, ccreg, const0_rtx);
-    emit_insn (gen_csneg3<mode>_insn (operands[0], x, operands[1], operands[1]));
-    DONE;
+    if (!TARGET_CSSC)
+      {
+	rtx ccreg = aarch64_gen_compare_reg (LT, operands[1], const0_rtx);
+	rtx x = gen_rtx_LT (VOIDmode, ccreg, const0_rtx);
+	emit_insn (gen_csneg3<mode>_insn (operands[0], x, operands[1], operands[1]));
+	DONE;
+      }
   }
 )
 
@@ -4379,6 +4390,17 @@
   [(set_attr "type" "csel")]
 )
 
+(define_insn "aarch64_umax<mode>3_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r,r")
+        (umax:GPI (match_operand:GPI 1 "register_operand" "r,r")
+		(match_operand:GPI 2 "aarch64_uminmax_operand" "r,Uum")))]
+  "TARGET_CSSC"
+  "@
+   umax\\t%<w>0, %<w>1, %<w>2
+   umax\\t%<w>0, %<w>1, %2"
+  [(set_attr "type" "alu_sreg,alu_imm")]
+)
+
 ;; If X can be loaded by a single CNT[BHWD] instruction,
 ;;
 ;;    A = UMAX (B, X)
@@ -4409,11 +4431,23 @@
   [(set (match_operand:GPI 0 "register_operand")
 	(umax:GPI (match_operand:GPI 1 "")
 		  (match_operand:GPI 2 "")))]
-  "TARGET_SVE"
+  "TARGET_SVE || TARGET_CSSC"
   {
     if (aarch64_sve_cnt_immediate (operands[1], <MODE>mode))
       std::swap (operands[1], operands[2]);
-    else if (!aarch64_sve_cnt_immediate (operands[2], <MODE>mode))
+    else if (!aarch64_sve_cnt_immediate (operands[2], <MODE>mode)
+	     && TARGET_CSSC)
+      {
+	if (aarch64_uminmax_immediate (operands[1], <MODE>mode))
+	  std::swap (operands[1], operands[2]);
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+	if (!aarch64_uminmax_operand (operands[2], <MODE>mode))
+	  operands[2] = force_reg (<MODE>mode, operands[2]);
+	emit_insn (gen_aarch64_umax<mode>3_insn (operands[0], operands[1],
+						 operands[2]));
+	DONE;
+      }
+    else
       FAIL;
     rtx temp = gen_reg_rtx (<MODE>mode);
     operands[1] = force_reg (<MODE>mode, operands[1]);
@@ -4963,35 +4997,47 @@
   }
 )
 
-;; Pop count be done via the "CNT" instruction in AdvSIMD.
-;;
+(define_insn "*aarch64_popcount<mode>2_cssc_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (popcount:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  "TARGET_CSSC"
+  "cnt\\t%<w>0, %<w>1"
+  [(set_attr "type" "clz")]
+)
+
+;; The CSSC instructions can do popcount in the GP registers directly through
+;; CNT.  If it is not available then we can use CNT on the Advanced SIMD side
+;; through:
 ;; MOV	v.1d, x0
 ;; CNT	v1.8b, v.8b
 ;; ADDV b2, v1.8b
 ;; MOV	w0, v2.b[0]
 
 (define_expand "popcount<mode>2"
-  [(match_operand:GPI 0 "register_operand")
-   (match_operand:GPI 1 "register_operand")]
-  "TARGET_SIMD"
+  [(set (match_operand:GPI 0 "register_operand")
+	(popcount:GPI (match_operand:GPI 1 "register_operand")))]
+  "TARGET_CSSC || TARGET_SIMD"
 {
-  rtx v = gen_reg_rtx (V8QImode);
-  rtx v1 = gen_reg_rtx (V8QImode);
-  rtx in = operands[1];
-  rtx out = operands[0];
-  if(<MODE>mode == SImode)
+  if (!TARGET_CSSC)
     {
-      rtx tmp;
-      tmp = gen_reg_rtx (DImode);
-      /* If we have SImode, zero extend to DImode, pop count does
-         not change if we have extra zeros. */
-      emit_insn (gen_zero_extendsidi2 (tmp, in));
-      in = tmp;
+      rtx v = gen_reg_rtx (V8QImode);
+      rtx v1 = gen_reg_rtx (V8QImode);
+      rtx in = operands[1];
+      rtx out = operands[0];
+      if(<MODE>mode == SImode)
+	{
+	  rtx tmp;
+	  tmp = gen_reg_rtx (DImode);
+	  /* If we have SImode, zero extend to DImode, pop count does
+	     not change if we have extra zeros. */
+	  emit_insn (gen_zero_extendsidi2 (tmp, in));
+	  in = tmp;
+	}
+      emit_move_insn (v, gen_lowpart (V8QImode, in));
+      emit_insn (gen_popcountv8qi2 (v1, v));
+      emit_insn (gen_aarch64_zero_extend<mode>_reduc_plus_v8qi (out, v1));
+      DONE;
     }
-  emit_move_insn (v, gen_lowpart (V8QImode, in));
-  emit_insn (gen_popcountv8qi2 (v1, v));
-  emit_insn (gen_aarch64_zero_extend<mode>_reduc_plus_v8qi (out, v1));
-  DONE;
 })
 
 (define_insn "clrsb<mode>2"
@@ -5013,14 +5059,14 @@
 ;; Split after reload into RBIT + CLZ.  Since RBIT is represented as an UNSPEC
 ;; it is unlikely to fold with any other operation, so keep this as a CTZ
 ;; expression and split after reload to enable scheduling them apart if
-;; needed.
+;; needed.  For TARGET_CSSC we have a single CTZ instruction that can do this.
 
 (define_insn_and_split "ctz<mode>2"
  [(set (match_operand:GPI           0 "register_operand" "=r")
        (ctz:GPI (match_operand:GPI  1 "register_operand" "r")))]
   ""
-  "#"
-  "reload_completed"
+  { return TARGET_CSSC ? "ctz\\t%<w>0, %<w>1" : "#"; }
+  "reload_completed && !TARGET_CSSC"
   [(const_int 0)]
   "
   emit_insn (gen_aarch64_rbit (<MODE>mode, operands[0], operands[1]));
@@ -6657,6 +6703,17 @@
   "TARGET_FLOAT"
   "fabs\\t%<s>0, %<s>1"
   [(set_attr "type" "ffarith<stype>")]
+)
+
+(define_insn "<optab><mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=r,r")
+        (MAXMIN_NOUMAX:GPI (match_operand:GPI 1 "register_operand" "r,r")
+		(match_operand:GPI 2 "aarch64_<su>minmax_operand" "r,U<su>m")))]
+  "TARGET_CSSC"
+  "@
+   <optab>\\t%<w>0, %<w>1, %<w>2
+   <optab>\\t%<w>0, %<w>1, %2"
+  [(set_attr "type" "alu_sreg,alu_imm")]
 )
 
 ;; Given that smax/smin do not specify the result when either input is NaN,

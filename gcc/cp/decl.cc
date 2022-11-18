@@ -13038,7 +13038,11 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    if (type_quals != TYPE_UNQUALIFIED)
 	      {
-		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
+		/* It's wrong, for instance, to issue a -Wignored-qualifiers
+		   warning for
+		    static_assert(!is_same_v<void(*)(), const void(*)()>);
+		    because there the qualifier matters.  */
+		if (funcdecl_p && (SCALAR_TYPE_P (type) || VOID_TYPE_P (type)))
 		  warning_at (typespec_loc, OPT_Wignored_qualifiers, "type "
 			      "qualifiers ignored on function return type");
 		/* [dcl.fct] "A volatile-qualified return type is
@@ -15377,7 +15381,15 @@ grok_op_properties (tree decl, bool complain)
      an enumeration, or a reference to an enumeration.  13.4.0.6 */
   if (! methodp || DECL_STATIC_FUNCTION_P (decl))
     {
-      if (operator_code == CALL_EXPR)
+      if (operator_code == TYPE_EXPR
+	  || operator_code == COMPONENT_REF
+	  || operator_code == NOP_EXPR)
+	{
+	  error_at (loc, "%qD must be a non-static member function", decl);
+	  return false;
+	}
+
+      if (operator_code == CALL_EXPR || operator_code == ARRAY_REF)
 	{
 	  if (! DECL_STATIC_FUNCTION_P (decl))
 	    {
@@ -15386,52 +15398,45 @@ grok_op_properties (tree decl, bool complain)
 	    }
 	  if (cxx_dialect < cxx23
 	      /* For lambdas we diagnose static lambda specifier elsewhere.  */
-	      && ! LAMBDA_FUNCTION_P (decl)
+	      && (operator_code == ARRAY_REF || ! LAMBDA_FUNCTION_P (decl))
 	      /* For instantiations, we have diagnosed this already.  */
 	      && ! DECL_USE_TEMPLATE (decl))
 	    pedwarn (loc, OPT_Wc__23_extensions, "%qD may be a static member "
-	      "function only with %<-std=c++23%> or %<-std=gnu++23%>", decl);
-	  /* There are no further restrictions on the arguments to an
-	     overloaded "operator ()".  */
-	  return true;
+		     "function only with %<-std=c++23%> or %<-std=gnu++23%>",
+		     decl);
+	  if (operator_code == ARRAY_REF)
+	    /* static operator[] should have exactly one argument
+	       for C++20 and earlier, so that it isn't multidimensional.  */
+	    op_flags = OVL_OP_FLAG_UNARY;
 	}
-      if (operator_code == TYPE_EXPR
-	  || operator_code == COMPONENT_REF
-	  || operator_code == ARRAY_REF
-	  || operator_code == NOP_EXPR)
-	{
-	  error_at (loc, "%qD must be a non-static member function", decl);
-	  return false;
-	}
-
-      if (DECL_STATIC_FUNCTION_P (decl))
+      else if (DECL_STATIC_FUNCTION_P (decl))
 	{
 	  error_at (loc, "%qD must be either a non-static member "
 		    "function or a non-member function", decl);
 	  return false;
 	}
-
-      for (tree arg = argtypes; ; arg = TREE_CHAIN (arg))
-	{
-	  if (!arg || arg == void_list_node)
-	    {
-	      if (complain)
-		error_at(loc, "%qD must have an argument of class or "
-			 "enumerated type", decl);
-	      return false;
-	    }
+      else
+	for (tree arg = argtypes; ; arg = TREE_CHAIN (arg))
+	  {
+	    if (!arg || arg == void_list_node)
+	      {
+		if (complain)
+		  error_at (loc, "%qD must have an argument of class or "
+			    "enumerated type", decl);
+		return false;
+	      }
       
-	  tree type = non_reference (TREE_VALUE (arg));
-	  if (type == error_mark_node)
-	    return false;
-	  
-	  /* MAYBE_CLASS_TYPE_P, rather than CLASS_TYPE_P, is used
-	     because these checks are performed even on template
-	     functions.  */
-	  if (MAYBE_CLASS_TYPE_P (type)
-	      || TREE_CODE (type) == ENUMERAL_TYPE)
-	    break;
-	}
+	    tree type = non_reference (TREE_VALUE (arg));
+	    if (type == error_mark_node)
+	      return false;
+
+	    /* MAYBE_CLASS_TYPE_P, rather than CLASS_TYPE_P, is used
+	       because these checks are performed even on template
+	       functions.  */
+	    if (MAYBE_CLASS_TYPE_P (type)
+		|| TREE_CODE (type) == ENUMERAL_TYPE)
+	      break;
+	  }
     }
 
   if (operator_code == CALL_EXPR)

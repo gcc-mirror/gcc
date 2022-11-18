@@ -988,6 +988,7 @@
     UNSPECV_LX			; Represent a load-exclusive.
     UNSPECV_SX			; Represent a store-exclusive.
     UNSPECV_LDA			; Represent an atomic load or load-acquire.
+    UNSPECV_LDAP		; Represent an atomic acquire load with RCpc semantics.
     UNSPECV_STL			; Represent an atomic store or store-release.
     UNSPECV_ATOMIC_CMPSW	; Represent an atomic compare swap.
     UNSPECV_ATOMIC_EXCHG	; Represent an atomic exchange.
@@ -2185,6 +2186,9 @@
 
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator MAXMIN [smax smin umax umin])
+
+;; Code iterator for min/max ops but without UMAX.
+(define_code_iterator MAXMIN_NOUMAX [smax smin umin])
 
 (define_code_iterator FMAXMIN [smax smin])
 

@@ -7,18 +7,18 @@ constexpr void f1() {
 
 constexpr void f2() {
   if (true)
-    throw;	// { dg-error "not a constant expression" }
+    throw;	// { dg-error "not a constant expression" "" { target c++20_down } }
 }
 
 constexpr void f3() {
   if (false)
     ;
   else
-    throw;	// { dg-error "not a constant expression" }
+    throw;	// { dg-error "not a constant expression" "" { target c++20_down } }
 }
 
 constexpr void f4() {
-  throw;	// { dg-error "not a constant expression" }
+  throw;	// { dg-error "not a constant expression" "" { target c++20_down } }
 }
 
 constexpr int fun(int n) {

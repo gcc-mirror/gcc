@@ -4723,8 +4723,8 @@ package body Inline is
       --------------------
 
       function Replace_Formal (N : Node_Id) return Traverse_Result is
-         A   : Entity_Id;
-         E   : Entity_Id;
+         A : Entity_Id;
+         E : Entity_Id;
 
       begin
          if Is_Entity_Name (N) and then Present (Entity (N)) then

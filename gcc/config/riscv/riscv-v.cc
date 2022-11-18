@@ -106,28 +106,25 @@ const_vec_all_same_in_range_p (rtx x, HOST_WIDE_INT minval,
 
 /* Emit an RVV unmask && vl mov from SRC to DEST.  */
 static void
-emit_pred_move (rtx dest, rtx src, rtx vl, machine_mode mask_mode)
+emit_pred_move (rtx dest, rtx src, machine_mode mask_mode)
 {
   insn_expander<7> e;
-
   machine_mode mode = GET_MODE (dest);
-  if (register_operand (src, mode) && register_operand (dest, mode))
-    {
-      emit_move_insn (dest, src);
-      return;
-    }
+  rtx vl = gen_reg_rtx (Pmode);
+  unsigned int sew = GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+		       ? 8
+		       : GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+
+  emit_insn (gen_vsetvl_no_side_effects (
+    Pmode, vl, gen_rtx_REG (Pmode, 0), gen_int_mode (sew, Pmode),
+    gen_int_mode ((unsigned int) mode, Pmode), const1_rtx, const1_rtx));
 
   e.add_output_operand (dest, mode);
   e.add_all_one_mask_operand (mask_mode);
-  /* For load operation, we create undef operand.
-     For store operation, we make it depend on the dest memory to
-     avoid potential bugs.  */
-  if (MEM_P (src))
-    e.add_vundef_operand (mode);
-  else
-    e.add_input_operand (dest, mode);
+  e.add_vundef_operand (mode);
 
   e.add_input_operand (src, mode);
+
   e.add_input_operand (vl, Pmode);
 
   e.add_policy_operand (TAIL_AGNOSTIC, MASK_AGNOSTIC);
@@ -143,37 +140,25 @@ bool
 legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
 {
   machine_mode mode = GET_MODE (dest);
-  /* For whole registers load/store or register-register move,
-     we don't need to specially handle them, just let them go
-     through "*mov<mode>" and then use the codegen directly.  */
-  if ((known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
-       && (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL))
-      || (register_operand (src, mode) && register_operand (dest, mode)))
+  if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
+      && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     {
       /* Need to force register if mem <- !reg.  */
       if (MEM_P (dest) && !REG_P (src))
 	src = force_reg (mode, src);
+
       return false;
     }
-
-  rtx vlmax = gen_reg_rtx (Pmode);
-  unsigned int sew = GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
-		       ? 8
-		       : GET_MODE_BITSIZE (GET_MODE_INNER (mode));
-  emit_insn (gen_vsetvl_no_side_effects (
-    Pmode, vlmax, gen_rtx_REG (Pmode, 0), gen_int_mode (sew, Pmode),
-    gen_int_mode ((unsigned int) mode, Pmode), const1_rtx, const1_rtx));
-
   if (!register_operand (src, mode) && !register_operand (dest, mode))
     {
       rtx tmp = gen_reg_rtx (mode);
       if (MEM_P (src))
-	emit_pred_move (tmp, src, vlmax, mask_mode);
+	emit_pred_move (tmp, src, mask_mode);
       else
 	emit_move_insn (tmp, src);
       src = tmp;
     }
-  emit_pred_move (dest, src, vlmax, mask_mode);
+  emit_pred_move (dest, src, mask_mode);
   return true;
 }
 

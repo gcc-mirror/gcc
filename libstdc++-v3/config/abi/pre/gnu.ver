@@ -133,17 +133,18 @@ GLIBCXX_3.4 {
 #     std::logic_error::~l*;
 #     std::[m-r]*;
 #     std::[m]*;
-      std::messages[^_]*;
+#     std::messages[^_]*;
 #     std::messages_byname*;
-      std::money_*;
-      std::moneypunct[^_]*;
+#     std::money_*;
+      std::money_base*;
+#     std::moneypunct[^_]*;
 #     std::moneypunct_byname*;
 #     std::n[^u]*;
       std::n[^aueo]*;
       std::nothrow;
       std::nu[^m]*;
-      std::num[^ep]*;
-      std::numpunct[^_]*;
+      std::num[^_ep]*;
+#     std::numpunct[^_]*;
 #     std::numpunct_byname*;
       std::ostrstream*;
 #     std::out_of_range::o*;
@@ -597,27 +598,48 @@ GLIBCXX_3.4 {
     _ZNSt12ctype_bynameI[cw]ED*;
 
     # std::num_get
+    _ZNSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[CD][012]*;
+    _ZNSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
     _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[2-9]*;
     _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE14_M_extract_intI*;
-    _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE16_M_extract_floatI*;
+    _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE16_M_extract_float*;
 
     # std::num_put
+    _ZNSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[CD][012]*;
+    _ZNSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
     _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[2-9]*;
     _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1[234]*;
     _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE15_M_insert_floatI*;
+
+    # std::numpunct
+    _ZNSt8numpunctI[cw]E[CD][012]*;
+    _ZNSt8numpunctI[cw]E2idE;
+    _ZNSt8numpunctI[cw]E[2]*;
+    _ZNKSt8numpunctI[cw]E[189]*;
 
     # std::numpunct_byname
     _ZNSt15numpunct_bynameI[cw]EC[12]EPKc[jmy];
     _ZNSt15numpunct_bynameI[cw]ED*;
 
     # std::money_get
+    _ZNSt9money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[CD][012]*;
+    _ZNSt9money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
     _ZNKSt9money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[2-9]*;
     _ZNKSt9money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE10_M_extractILb[01]EEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRSs;
 
     # std::money_put
+    _ZNSt9money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[CD][012]*;
+    _ZNSt9money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
     _ZNKSt9money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[1-8]*;
     _ZNKSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE9_M_insertILb[01]EEES3_S3_RSt8ios_basecRKSs;
     _ZNKSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE9_M_insertILb[01]EEES3_S3_RSt8ios_basewRKSbIwS2_SaIwEE;
+
+    # std::moneypunct
+    _ZNSt10moneypunctI[cw]Lb[01]EE[CD][012]*;
+    _ZNSt10moneypunctI[cw]Lb[01]EE2idE;
+    _ZNSt10moneypunctI[cw]Lb[01]EE24*;
+    _ZNSt10moneypunctI[cw]Lb[01]EE4intlE;
+    _ZNKSt10moneypunctI[cw]Lb[01]EE[18]*;
 
     # std::moneypunct_byname
     _ZNSt17moneypunct_bynameI[cw]Lb[01]EEC[12]EPKc[jmy];
@@ -656,6 +678,11 @@ GLIBCXX_3.4 {
     _ZNSt14numeric_limitsI[p-z]E1[0-7]mi*;
     _ZNSt14numeric_limitsI[a-m]E1[0-7]max_e*;
     _ZNSt14numeric_limitsI[p-z]E1[0-7]max_e*;
+
+    # std::messages
+    _ZNSt8messagesI[cw]E[CD][012]*;
+    _ZNSt8messagesI[cw]E2idE;
+    _ZNKSt8messagesI[cw]E[1-8]*;
 
     # std::messages_byname
     _ZNSt15messages_bynameI[cw]EC[12]EPKc[jmy];
@@ -2446,6 +2473,7 @@ GLIBCXX_3.4.30 {
 
 GLIBCXX_3.4.31 {
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE15_M_replace_cold*;
+
     _ZSt20__to_chars_float16_tPcS_fSt12chars_format;
     _ZSt21__to_chars_bfloat16_tPcS_fSt12chars_format;
     _ZSt22__from_chars_float16_tPKcS0_RfSt12chars_format;
@@ -2454,6 +2482,9 @@ GLIBCXX_3.4.31 {
     _ZSt8to_charsPcS_DF128_St12chars_format;
     _ZSt8to_charsPcS_DF128_St12chars_formati;
     _ZSt10from_charsPKcS0_RDF128_St12chars_format;
+
+    _ZSt15__try_use_facet*;
+
 } GLIBCXX_3.4.30;
 
 # Symbols in the support library (libsupc++) have their own tag.

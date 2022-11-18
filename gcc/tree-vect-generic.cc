@@ -1237,6 +1237,17 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 	  tree rhs2 = gimple_assign_rhs2 (assign);
 	  tree ret;
 
+	  /* Check if the target was going to handle it through the special
+	     division callback hook.  */
+	  tree cst = uniform_integer_cst_p (rhs2);
+	  if (cst &&
+	      targetm.vectorize.can_special_div_by_const (code, type,
+							  wi::to_wide (cst),
+							  NULL,
+							  NULL_RTX, NULL_RTX))
+	    return NULL_TREE;
+
+
 	  if (!optimize
 	      || !VECTOR_INTEGER_TYPE_P (type)
 	      || TREE_CODE (rhs2) != VECTOR_CST

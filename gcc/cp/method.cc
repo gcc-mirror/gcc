@@ -1332,7 +1332,7 @@ struct comp_info
 	&& !potential_rvalue_constant_expression (expr))
       {
 	if (was_constexp)
-	  require_potential_rvalue_constant_expression (expr);
+	  require_potential_rvalue_constant_expression_fncheck (expr);
 	else
 	  constexp = false;
       }
@@ -2670,13 +2670,17 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
      requirements of a constexpr constructor (7.1.5), the
      implicitly-defined default constructor is constexpr.
 
+     C++20:
      The implicitly-defined copy/move assignment operator is constexpr if
       - X is a literal type, and
       - the assignment operator selected to copy/move each direct base class
 	subobject is a constexpr function, and
       - for each non-static data member of X that is of class type (or array
 	thereof), the assignment operator selected to copy/move that
-	member is a constexpr function.  */
+	member is a constexpr function.
+
+      C++23:
+      The implicitly-defined copy/move assignment operator is constexpr.  */
   if (constexpr_p)
     *constexpr_p = (SFK_CTOR_P (sfk)
 		    || (SFK_ASSIGN_P (sfk) && cxx_dialect >= cxx14)

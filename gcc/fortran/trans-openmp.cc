@@ -123,7 +123,7 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
       char name[GFC_MAX_SYMBOL_LEN + 2];
       tree tree_name;
 
-      name[0] = '_';
+      name[0] = '.';
       strcpy (&name[1], IDENTIFIER_POINTER (DECL_NAME (decl)));
       tree_name = get_identifier (name);
 

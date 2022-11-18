@@ -8,6 +8,7 @@ void close(int fd);
 int write (int fd, void *buf, int nbytes);
 int read (int fd, void *buf, int nbytes);
 
+#define O_ACCMODE 0xf
 #define O_RDONLY 0
 #define O_WRONLY 1
 #define O_RDWR 2

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Keep this in-sync with sm-dot.cc  */
+/* Keep this in-sync with sm-fd.cc  */
 
 digraph "fd" {
 
@@ -46,6 +46,29 @@ digraph "fd" {
   /* State for a file descriptor that has been closed.  */
   closed;
 
+  /* States for FDs relating to socket APIs.  */
+
+  /* Result of successful "socket" with SOCK_DGRAM.  */
+  new_datagram_socket;
+  /* Result of successful "socket" with SOCK_STREAM.  */
+  new_stream_socket;
+  /* Result of successful "socket" with unknown type.  */
+  new_unknown_socket;
+
+  /* The above after a successful call to "bind".  */
+  bound_datagram_socket;
+  bound_stream_socket;
+  bound_unknown_socket;
+
+  /* A bound socket after a successful call to "listen" (stream or unknown).  */
+  listening_stream_socket;
+
+  /* (i) the new FD as a result of a succesful call to "accept" on a
+      listening socket (via a passive open), or
+     (ii) an active socket after a successful call to "connect"
+     (via an active open).  */
+  connected_stream_socket;
+
   /* State for a file descriptor that we do not want to track anymore . */
   stop;
 
@@ -68,6 +91,14 @@ digraph "fd" {
   valid_read_only -> closed [label="on 'close(X);'"];
   valid_write_only -> closed [label="on 'close(X);'"];
   constant_fd -> closed [label="on 'close(X);'"];
+  new_datagram_socket -> closed [label="on 'close(X);'"];
+  new_stream_socket -> closed [label="on 'close(X);'"];
+  new_unknown_socket -> closed [label="on 'close(X);'"];
+  bound_datagram_socket -> closed [label="on 'close(X);'"];
+  bound_stream_socket -> closed [label="on 'close(X);'"];
+  bound_unknown_socket -> closed [label="on 'close(X);'"];
+  listening_stream_socket -> closed [label="on 'close(X);'"];
+  connected_stream_socket -> closed [label="on 'close(X);'"];
   closed -> stop [label="on 'close(X);':\nWarn('double close')"];
 
   /* On "read".  */
@@ -91,6 +122,31 @@ digraph "fd" {
   /* On "pipe".  */
   start -> valid_read_write [label="when 'pipe()' succeeds"];
 
+  /* On "socket".  */
+  start -> new_datagram_socket [label="when 'socket(..., SOCK_DGRAM, ...)' succeeds"];
+  start -> new_stream_socket [label="when 'socket(..., SOCK_STREAM, ...)' succeeds"];
+  start -> new_unknown_socket [label="when 'socket(..., ..., ...)' succeeds"];
+
+  /* On "bind".  */
+  start -> bound_unknown_socket [label="when 'bind(X, ...)' succeeds"];
+  new_stream_socket -> bound_stream_socket [label="when 'bind(X, ...)' succeeds"];
+  new_datagram_socket -> bound_datagram_socket [label="when 'bind(X, ...)' succeeds"];
+  new_unknown_socket -> bound_unknown_socket [label="when 'bind(X, ...)' succeeds"];
+
+  /* On "listen".  */
+  start -> listening_stream_socket [label="when 'listen(X, ...)' succeeds"];
+  bound_stream_socket -> listening_stream_socket [label="when 'listen(X, ...)' succeeds"];
+  bound_unknown_socket -> listening_stream_socket [label="when 'listen(X, ...)' succeeds"];
+
+  /* On "accept".  */
+  start -> connected_stream_socket [label="when 'accept(OTHER, ...)' succeeds on a listening_stream_socket"];
+
+  /* On "connect".  */
+  new_stream_socket -> connected_stream_socket [label="when 'connect(X, ...)' succeeds"];
+  new_datagram_socket -> new_datagram_socket [label="when 'connect(X, ...)' succeeds"];
+  new_unknown_socket -> stop [label="when 'connect(X, ...)' succeeds"];
+  start -> stop [label="when 'connect(X, ...)' succeeds"];
+
   /* on_condition.  */
   unchecked_read_write -> valid_read_write [label="on 'X >= 0'"];
   unchecked_read_only -> valid_read_only [label="on 'X >= 0'"];
@@ -106,4 +162,12 @@ digraph "fd" {
   valid_read_write -> stop [label="on leak:\nWarn('leak')"];
   valid_read_only -> stop [label="on leak:\nWarn('leak')"];
   valid_write_only -> stop [label="on leak:\nWarn('leak')"];
+  new_datagram_socket -> stop [label="on leak:\nWarn('leak')"];
+  new_stream_socket -> stop [label="on leak:\nWarn('leak')"];
+  new_unknown_socket -> stop [label="on leak:\nWarn('leak')"];
+  bound_datagram_socket -> stop [label="on leak:\nWarn('leak')"];
+  bound_stream_socket -> stop [label="on leak:\nWarn('leak')"];
+  bound_unknown_socket -> stop [label="on leak:\nWarn('leak')"];
+  listening_stream_socket -> stop [label="on leak:\nWarn('leak')"];
+  connected_stream_socket -> stop [label="on leak:\nWarn('leak')"];
 }

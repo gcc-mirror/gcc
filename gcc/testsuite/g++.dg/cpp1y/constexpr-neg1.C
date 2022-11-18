@@ -3,7 +3,7 @@
 struct A { A(); };
 
 constexpr int f(int i) {
-  static int j = i;		// { dg-error "static" }
+  static int j = i;		// { dg-error "static" "" { target c++20_down } }
   thread_local int l = i;	// { dg-error "thread_local" "" { target c++20_down } }
   goto foo;			// { dg-error "goto" "" { target c++20_down } }
  foo:

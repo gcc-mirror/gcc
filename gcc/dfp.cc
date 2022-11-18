@@ -364,6 +364,12 @@ decimal_from_binary (REAL_VALUE_TYPE *to, const REAL_VALUE_TYPE *from)
   /* We convert to string, then to decNumber then to decimal128.  */
   real_to_decimal (string, from, sizeof (string), 0, 1);
   decimal_real_from_string (to, string);
+  /* When a canonical NaN is originally created, it is not marked as
+     decimal.  Ensure the result of converting to another decimal type
+     (which passes through this function) is also marked as
+     canonical.  */
+  if (from->cl == rvc_nan && from->canonical)
+    to->canonical = 1;
 }
 
 /* Helper function to real.cc:do_compare() to handle decimal internal

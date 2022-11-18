@@ -440,7 +440,7 @@ const struct c_common_resword c_common_reswords[] =
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
   { "const",		RID_CONST,	0 },
   { "consteval",	RID_CONSTEVAL,	D_CXXONLY | D_CXX20 | D_CXXWARN },
-  { "constexpr",	RID_CONSTEXPR,	D_CXXONLY | D_CXX11 | D_CXXWARN },
+  { "constexpr",	RID_CONSTEXPR,	D_C2X | D_CXX11 | D_CXXWARN },
   { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
@@ -8497,6 +8497,8 @@ c_common_init_ts (void)
   MARK_TS_EXP (FOR_STMT);
   MARK_TS_EXP (SWITCH_STMT);
   MARK_TS_EXP (WHILE_STMT);
+
+  MARK_TS_DECL_COMMON (CONCEPT_DECL);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE

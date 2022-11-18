@@ -344,6 +344,8 @@ class region_model
   void impl_call_analyzer_dump_capacity (const gcall *call,
 					 region_model_context *ctxt);
   void impl_call_analyzer_dump_escaped (const gcall *call);
+  void impl_call_analyzer_dump_named_constant (const gcall *call,
+					       region_model_context *ctxt);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
   void impl_call_analyzer_get_unknown_ptr (const call_details &cd);
@@ -458,7 +460,7 @@ class region_model
   tristate eval_condition (tree lhs,
 			   enum tree_code op,
 			   tree rhs,
-			   region_model_context *ctxt);
+			   region_model_context *ctxt) const;
   bool add_constraint (tree lhs, enum tree_code op, tree rhs,
 		       region_model_context *ctxt);
   bool add_constraint (tree lhs, enum tree_code op, tree rhs,
@@ -546,6 +548,11 @@ class region_model
 
   /* Implemented in sm-fd.cc  */
   void mark_as_valid_fd (const svalue *sval, region_model_context *ctxt);
+  bool on_socket (const call_details &cd, bool successful);
+  bool on_bind (const call_details &cd, bool successful);
+  bool on_listen (const call_details &cd, bool successful);
+  bool on_accept (const call_details &cd, bool successful);
+  bool on_connect (const call_details &cd, bool successful);
 
   /* Implemented in sm-malloc.cc  */
   void on_realloc_with_move (const call_details &cd,
@@ -556,7 +563,16 @@ class region_model
   void mark_as_tainted (const svalue *sval,
 			region_model_context *ctxt);
 
- private:
+  bool add_constraint (const svalue *lhs,
+		       enum tree_code op,
+		       const svalue *rhs,
+		       region_model_context *ctxt);
+
+  const svalue *check_for_poison (const svalue *sval,
+				  tree expr,
+				  region_model_context *ctxt) const;
+
+private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
 
@@ -569,10 +585,6 @@ class region_model
 
   const known_function *get_known_function (tree fndecl) const;
 
-  bool add_constraint (const svalue *lhs,
-		       enum tree_code op,
-		       const svalue *rhs,
-		       region_model_context *ctxt);
   bool add_constraints_from_binop (const svalue *outer_lhs,
 				   enum tree_code outer_op,
 				   const svalue *outer_rhs,
@@ -603,9 +615,6 @@ class region_model
   bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;
 
-  const svalue *check_for_poison (const svalue *sval,
-				  tree expr,
-				  region_model_context *ctxt) const;
   const region * get_region_for_poisoned_expr (tree expr) const;
 
   void check_dynamic_size_for_taint (enum memory_space mem_space,
@@ -708,6 +717,9 @@ class region_model_context
   virtual void on_bounded_ranges (const svalue &sval,
 				  const bounded_ranges &ranges) = 0;
 
+  /* Hook for clients to be notified when a frame is popped from the stack.  */
+  virtual void on_pop_frame (const frame_region *) = 0;
+
   /* Hooks for clients to be notified when an unknown change happens
      to SVAL (in response to a call to an unknown function).  */
   virtual void on_unknown_change (const svalue *sval, bool is_mutable) = 0;
@@ -739,30 +751,33 @@ class region_model_context
 
   /* Hook for clients to access the a specific state machine in
      any underlying program_state.  */
-  virtual bool get_state_map_by_name (const char *name,
-				      sm_state_map **out_smap,
-				      const state_machine **out_sm,
-				      unsigned *out_sm_idx) = 0;
+  virtual bool
+  get_state_map_by_name (const char *name,
+			 sm_state_map **out_smap,
+			 const state_machine **out_sm,
+			 unsigned *out_sm_idx,
+			 std::unique_ptr<sm_context> *out_sm_context) = 0;
 
   /* Precanned ways for clients to access specific state machines.  */
   bool get_fd_map (sm_state_map **out_smap,
 		   const state_machine **out_sm,
-		   unsigned *out_sm_idx)
+		   unsigned *out_sm_idx,
+		   std::unique_ptr<sm_context> *out_sm_context)
   {
     return get_state_map_by_name ("file-descriptor", out_smap, out_sm,
-				  out_sm_idx);
+				  out_sm_idx, out_sm_context);
   }
   bool get_malloc_map (sm_state_map **out_smap,
 		       const state_machine **out_sm,
 		       unsigned *out_sm_idx)
   {
-    return get_state_map_by_name ("malloc", out_smap, out_sm, out_sm_idx);
+    return get_state_map_by_name ("malloc", out_smap, out_sm, out_sm_idx, NULL);
   }
   bool get_taint_map (sm_state_map **out_smap,
 		      const state_machine **out_sm,
 		      unsigned *out_sm_idx)
   {
-    return get_state_map_by_name ("taint", out_smap, out_sm, out_sm_idx);
+    return get_state_map_by_name ("taint", out_smap, out_sm, out_sm_idx, NULL);
   }
 
   /* Get the current statement, if any.  */
@@ -789,6 +804,7 @@ public:
 			  const bounded_ranges &) override
   {
   }
+  void on_pop_frame (const frame_region *) override {}
   void on_unknown_change (const svalue *sval ATTRIBUTE_UNUSED,
 			  bool is_mutable ATTRIBUTE_UNUSED) override
   {
@@ -813,7 +829,8 @@ public:
   bool get_state_map_by_name (const char *,
 			      sm_state_map **,
 			      const state_machine **,
-			      unsigned *) override
+			      unsigned *,
+			      std::unique_ptr<sm_context> *) override
   {
     return false;
   }
@@ -886,6 +903,11 @@ class region_model_context_decorator : public region_model_context
     m_inner->on_bounded_ranges (sval, ranges);
   }
 
+  void on_pop_frame (const frame_region *frame_reg) override
+  {
+    m_inner->on_pop_frame (frame_reg);
+  }
+
   void on_unknown_change (const svalue *sval, bool is_mutable) override
   {
     m_inner->on_unknown_change (sval, is_mutable);
@@ -935,9 +957,12 @@ class region_model_context_decorator : public region_model_context
   bool get_state_map_by_name (const char *name,
 			      sm_state_map **out_smap,
 			      const state_machine **out_sm,
-			      unsigned *out_sm_idx) override
+			      unsigned *out_sm_idx,
+			      std::unique_ptr<sm_context> *out_sm_context)
+    override
   {
-    return m_inner->get_state_map_by_name (name, out_smap, out_sm, out_sm_idx);
+    return m_inner->get_state_map_by_name (name, out_smap, out_sm, out_sm_idx,
+					   out_sm_context);
   }
 
   const gimple *get_stmt () const override

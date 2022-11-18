@@ -209,6 +209,8 @@ extern void default_addr_space_diagnose_usage (addr_space_t, location_t);
 extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
+extern bool default_can_special_div_by_const (enum tree_code, tree, wide_int,
+					      rtx *, rtx, rtx);
 
 extern bool default_libc_has_function (enum function_class, tree);
 extern bool default_libc_has_fast_function (int fcode);

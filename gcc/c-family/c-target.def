@@ -48,26 +48,26 @@ and between C, C++ and their respective Objective-C dialects.\n\
 A string object might, for example, embed encoding and length information.\n\
 These objects are considered opaque to the compiler and handled as references.\n\
 An ideal implementation makes the composition of the string object\n\
-match that of the Objective-C ``NSString`` (``NXString`` for GNUStep),\n\
+match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep),\n\
 allowing efficient interworking between C-only and Objective-C code.\n\
 If a target implements string objects then this hook should return a\n\
-reference to such an object constructed from the normal 'C' string\n\
-representation provided in :samp:`{string}`.\n\
+reference to such an object constructed from the normal `C' string\n\
+representation provided in @var{string}.\n\
 At present, the hook is used by Objective-C only, to obtain a\n\
-common-format string object when the target provides one.",
+ common-format string object when the target provides one.",
  tree, (tree string),
  NULL)
 
 DEFHOOK
 (objc_declare_unresolved_class_reference,
- "Declare that Objective C class :samp:`{classname}` is referenced\n\
+ "Declare that Objective C class @var{classname} is referenced\n\
 by the current TU.",
  void, (const char *classname),
  NULL)
 
 DEFHOOK
 (objc_declare_class_definition,
- "Declare that Objective C class :samp:`{classname}` is defined\n\
+ "Declare that Objective C class @var{classname} is defined\n\
 by the current TU.",
  void, (const char *classname),
  NULL)
@@ -75,16 +75,16 @@ by the current TU.",
 DEFHOOK
 (string_object_ref_type_p,
  "If a target implements string objects then this hook should return\n\
-``true`` if :samp:`{stringref}` is a valid reference to such an object.",
+@code{true} if @var{stringref} is a valid reference to such an object.",
  bool, (const_tree stringref),
  hook_bool_const_tree_false)
 
 DEFHOOK
 (check_string_object_format_arg,
  "If a target implements string objects then this hook should\n\
-provide a facility to check the function arguments in :samp:`{args_list}`\n\
-against the format specifiers in :samp:`{format_arg}` where the type of\n\
-:samp:`{format_arg}` is one recognized as a valid string reference type.",
+provide a facility to check the function arguments in @var{args_list}\n\
+against the format specifiers in @var{format_arg} where the type of\n\
+@var{format_arg} is one recognized as a valid string reference type.",
  void, (tree format_arg, tree args_list),
  NULL)
 
@@ -92,9 +92,9 @@ DEFHOOK
 (c_preinclude,
  "Define this hook to return the name of a header file to be included at\n\
 the start of all compilations, as if it had been included with\n\
-``#include <file>``.  If this hook returns ``NULL``, or is\n\
+@code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is\n\
 not defined, or the header is not found, or if the user specifies\n\
-:option:`-ffreestanding` or :option:`-nostdinc`, no header is included.\n\
+@option{-ffreestanding} or @option{-nostdinc}, no header is included.\n\
 \n\
 This hook can be used together with a header provided by the system C\n\
 library to implement ISO C requirements for certain macros to be\n\

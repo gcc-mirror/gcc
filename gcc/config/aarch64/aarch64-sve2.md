@@ -71,6 +71,7 @@
 ;; ---- [INT] Reciprocal approximation
 ;; ---- [INT<-FP] Base-2 logarithm
 ;; ---- [INT] Polynomial multiplication
+;; ---- [INT] Misc optab implementations
 ;;
 ;; == Permutation
 ;; ---- [INT,FP] General permutes
@@ -2311,6 +2312,46 @@
   "TARGET_SVE2"
   "<sve_int_op>\t%0.<Vewtype>, %1.<Vetype>, %2.<Vetype>"
 )
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Misc optab implementations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - aarch64_bitmask_udiv
+;; -------------------------------------------------------------------------
+
+;; div optimizations using narrowings
+;; we can do the division e.g. shorts by 255 faster by calculating it as
+;; (x + ((x + 257) >> 8)) >> 8 assuming the operation is done in
+;; double the precision of x.
+;;
+;; See aarch64-simd.md for bigger explanation.
+(define_expand "@aarch64_bitmask_udiv<mode>3"
+  [(match_operand:SVE_FULL_HSDI 0 "register_operand")
+   (match_operand:SVE_FULL_HSDI 1 "register_operand")
+   (match_operand:SVE_FULL_HSDI 2 "immediate_operand")]
+  "TARGET_SVE2"
+{
+  unsigned HOST_WIDE_INT size
+    = (1ULL << GET_MODE_UNIT_BITSIZE (<VNARROW>mode)) - 1;
+  rtx elt = unwrap_const_vec_duplicate (operands[2]);
+  if (!CONST_INT_P (elt) || UINTVAL (elt) != size)
+    FAIL;
+
+  rtx addend = gen_reg_rtx (<MODE>mode);
+  rtx tmp1 = gen_reg_rtx (<VNARROW>mode);
+  rtx tmp2 = gen_reg_rtx (<VNARROW>mode);
+  rtx val = aarch64_simd_gen_const_vector_dup (<VNARROW>mode, 1);
+  emit_move_insn (addend, lowpart_subreg (<MODE>mode, val, <VNARROW>mode));
+  emit_insn (gen_aarch64_sve (UNSPEC_ADDHNB, <MODE>mode, tmp1, operands[1],
+			      addend));
+  emit_insn (gen_aarch64_sve (UNSPEC_ADDHNB, <MODE>mode, tmp2, operands[1],
+			      lowpart_subreg (<MODE>mode, tmp1,
+					      <VNARROW>mode)));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, tmp2, <VNARROW>mode));
+  DONE;
+})
 
 ;; =========================================================================
 ;; == Permutation

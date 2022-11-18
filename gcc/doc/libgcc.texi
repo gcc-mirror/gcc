@@ -1,0 +1,2304 @@
+@c Copyright (C) 2003-2022 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+@c Contributed by Aldy Hernandez <aldy@quesejoda.com>
+
+@node Libgcc
+@chapter The GCC low-level runtime library
+
+GCC provides a low-level runtime library, @file{libgcc.a} or
+@file{libgcc_s.so.1} on some platforms.  GCC generates calls to
+routines in this library automatically, whenever it needs to perform
+some operation that is too complicated to emit inline code for.
+
+Most of the routines in @code{libgcc} handle arithmetic operations
+that the target processor cannot perform directly.  This includes
+integer multiply and divide on some machines, and all floating-point
+and fixed-point operations on other machines.  @code{libgcc} also includes
+routines for exception handling, and a handful of miscellaneous operations.
+
+Some of these routines can be defined in mostly machine-independent C@.
+Others must be hand-written in assembly language for each processor
+that needs them.
+
+GCC will also generate calls to C library routines, such as
+@code{memcpy} and @code{memset}, in some cases.  The set of routines
+that GCC may possibly use is documented in @ref{Other
+Builtins,,,gcc, Using the GNU Compiler Collection (GCC)}.
+
+These routines take arguments and return values of a specific machine
+mode, not a specific C type.  @xref{Machine Modes}, for an explanation
+of this concept.  For illustrative purposes, in this chapter the
+floating point type @code{float} is assumed to correspond to @code{SFmode};
+@code{double} to @code{DFmode}; and @code{@w{long double}} to both
+@code{TFmode} and @code{XFmode}.  Similarly, the integer types @code{int}
+and @code{@w{unsigned int}} correspond to @code{SImode}; @code{long} and
+@code{@w{unsigned long}} to @code{DImode}; and @code{@w{long long}} and
+@code{@w{unsigned long long}} to @code{TImode}.
+
+@menu
+* Integer library routines::
+* Soft float library routines::
+* Decimal float library routines::
+* Fixed-point fractional library routines::
+* Exception handling routines::
+* Miscellaneous routines::
+@end menu
+
+@node Integer library routines
+@section Routines for integer arithmetic
+
+The integer arithmetic routines are used on platforms that don't provide
+hardware support for arithmetic operations on some modes.
+
+@subsection Arithmetic functions
+
+@deftypefn {Runtime Function} int __ashlsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __ashldi3 (long @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long} __ashlti3 (long long @var{a}, int @var{b})
+These functions return the result of shifting @var{a} left by @var{b} bits.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __ashrsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __ashrdi3 (long @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long} __ashrti3 (long long @var{a}, int @var{b})
+These functions return the result of arithmetically shifting @var{a} right
+by @var{b} bits.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __divsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __divdi3 (long @var{a}, long @var{b})
+@deftypefnx {Runtime Function} {long long} __divti3 (long long @var{a}, long long @var{b})
+These functions return the quotient of the signed division of @var{a} and
+@var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __lshrsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __lshrdi3 (long @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long} __lshrti3 (long long @var{a}, int @var{b})
+These functions return the result of logically shifting @var{a} right by
+@var{b} bits.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __modsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __moddi3 (long @var{a}, long @var{b})
+@deftypefnx {Runtime Function} {long long} __modti3 (long long @var{a}, long long @var{b})
+These functions return the remainder of the signed division of @var{a}
+and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __mulsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __muldi3 (long @var{a}, long @var{b})
+@deftypefnx {Runtime Function} {long long} __multi3 (long long @var{a}, long long @var{b})
+These functions return the product of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} long __negdi2 (long @var{a})
+@deftypefnx {Runtime Function} {long long} __negti2 (long long @var{a})
+These functions return the negation of @var{a}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned int} __udivsi3 (unsigned int @var{a}, unsigned int @var{b})
+@deftypefnx {Runtime Function} {unsigned long} __udivdi3 (unsigned long @var{a}, unsigned long @var{b})
+@deftypefnx {Runtime Function} {unsigned long long} __udivti3 (unsigned long long @var{a}, unsigned long long @var{b})
+These functions return the quotient of the unsigned division of @var{a}
+and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned long} __udivmoddi4 (unsigned long @var{a}, unsigned long @var{b}, unsigned long *@var{c})
+@deftypefnx {Runtime Function} {unsigned long long} __udivmodti4 (unsigned long long @var{a}, unsigned long long @var{b}, unsigned long long *@var{c})
+These functions calculate both the quotient and remainder of the unsigned
+division of @var{a} and @var{b}.  The return value is the quotient, and
+the remainder is placed in variable pointed to by @var{c}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned int} __umodsi3 (unsigned int @var{a}, unsigned int @var{b})
+@deftypefnx {Runtime Function} {unsigned long} __umoddi3 (unsigned long @var{a}, unsigned long @var{b})
+@deftypefnx {Runtime Function} {unsigned long long} __umodti3 (unsigned long long @var{a}, unsigned long long @var{b})
+These functions return the remainder of the unsigned division of @var{a}
+and @var{b}.
+@end deftypefn
+
+@subsection Comparison functions
+
+The following functions implement integral comparisons.  These functions
+implement a low-level compare, upon which the higher level comparison
+operators (such as less than and greater than or equal to) can be
+constructed.  The returned values lie in the range zero to two, to allow
+the high-level operators to be implemented by testing the returned
+result using either signed or unsigned comparison.
+
+@deftypefn {Runtime Function} int __cmpdi2 (long @var{a}, long @var{b})
+@deftypefnx {Runtime Function} int __cmpti2 (long long @var{a}, long long @var{b})
+These functions perform a signed comparison of @var{a} and @var{b}.  If
+@var{a} is less than @var{b}, they return 0; if @var{a} is greater than
+@var{b}, they return 2; and if @var{a} and @var{b} are equal they return 1.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __ucmpdi2 (unsigned long @var{a}, unsigned long @var{b})
+@deftypefnx {Runtime Function} int __ucmpti2 (unsigned long long @var{a}, unsigned long long @var{b})
+These functions perform an unsigned comparison of @var{a} and @var{b}.
+If @var{a} is less than @var{b}, they return 0; if @var{a} is greater than
+@var{b}, they return 2; and if @var{a} and @var{b} are equal they return 1.
+@end deftypefn
+
+@subsection Trapping arithmetic functions
+
+The following functions implement trapping arithmetic.  These functions
+call the libc function @code{abort} upon signed arithmetic overflow.
+
+@deftypefn {Runtime Function} int __absvsi2 (int @var{a})
+@deftypefnx {Runtime Function} long __absvdi2 (long @var{a})
+These functions return the absolute value of @var{a}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __addvsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __addvdi3 (long @var{a}, long @var{b})
+These functions return the sum of @var{a} and @var{b}; that is
+@code{@var{a} + @var{b}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __mulvsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __mulvdi3 (long @var{a}, long @var{b})
+The functions return the product of @var{a} and @var{b}; that is
+@code{@var{a} * @var{b}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __negvsi2 (int @var{a})
+@deftypefnx {Runtime Function} long __negvdi2 (long @var{a})
+These functions return the negation of @var{a}; that is @code{-@var{a}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __subvsi3 (int @var{a}, int @var{b})
+@deftypefnx {Runtime Function} long __subvdi3 (long @var{a}, long @var{b})
+These functions return the difference between @var{b} and @var{a};
+that is @code{@var{a} - @var{b}}.
+@end deftypefn
+
+@subsection Bit operations
+
+@deftypefn {Runtime Function} int __clzsi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __clzdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __clzti2 (unsigned long long @var{a})
+These functions return the number of leading 0-bits in @var{a}, starting
+at the most significant bit position.  If @var{a} is zero, the result is
+undefined.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __ctzsi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __ctzdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __ctzti2 (unsigned long long @var{a})
+These functions return the number of trailing 0-bits in @var{a}, starting
+at the least significant bit position.  If @var{a} is zero, the result is
+undefined.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __ffsdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __ffsti2 (unsigned long long @var{a})
+These functions return the index of the least significant 1-bit in @var{a},
+or the value zero if @var{a} is zero.  The least significant bit is index
+one.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __paritysi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __paritydi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __parityti2 (unsigned long long @var{a})
+These functions return the value zero if the number of bits set in
+@var{a} is even, and the value one otherwise.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __popcountsi2 (unsigned int @var{a})
+@deftypefnx {Runtime Function} int __popcountdi2 (unsigned long @var{a})
+@deftypefnx {Runtime Function} int __popcountti2 (unsigned long long @var{a})
+These functions return the number of bits set in @var{a}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int32_t __bswapsi2 (int32_t @var{a})
+@deftypefnx {Runtime Function} int64_t __bswapdi2 (int64_t @var{a})
+These functions return the @var{a} byteswapped.
+@end deftypefn
+
+@node Soft float library routines
+@section Routines for floating point emulation
+@cindex soft float library
+@cindex arithmetic library
+@cindex math library
+@opindex msoft-float
+
+The software floating point library is used on machines which do not
+have hardware support for floating point.  It is also used whenever
+@option{-msoft-float} is used to disable generation of floating point
+instructions.  (Not all targets support this switch.)
+
+For compatibility with other compilers, the floating point emulation
+routines can be renamed with the @code{DECLARE_LIBRARY_RENAMES} macro
+(@pxref{Library Calls}).  In this section, the default names are used.
+
+Presently the library does not support @code{XFmode}, which is used
+for @code{long double} on some architectures.
+
+@subsection Arithmetic functions
+
+@deftypefn {Runtime Function} float __addsf3 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} double __adddf3 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} {long double} __addtf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __addxf3 (long double @var{a}, long double @var{b})
+These functions return the sum of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __subsf3 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} double __subdf3 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} {long double} __subtf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __subxf3 (long double @var{a}, long double @var{b})
+These functions return the difference between @var{b} and @var{a};
+that is, @w{@math{@var{a} - @var{b}}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __mulsf3 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} double __muldf3 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} {long double} __multf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __mulxf3 (long double @var{a}, long double @var{b})
+These functions return the product of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __divsf3 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} double __divdf3 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} {long double} __divtf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __divxf3 (long double @var{a}, long double @var{b})
+These functions return the quotient of @var{a} and @var{b}; that is,
+@w{@math{@var{a} / @var{b}}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __negsf2 (float @var{a})
+@deftypefnx {Runtime Function} double __negdf2 (double @var{a})
+@deftypefnx {Runtime Function} {long double} __negtf2 (long double @var{a})
+@deftypefnx {Runtime Function} {long double} __negxf2 (long double @var{a})
+These functions return the negation of @var{a}.  They simply flip the
+sign bit, so they can produce negative zero and negative NaN@.
+@end deftypefn
+
+@subsection Conversion functions
+
+@deftypefn {Runtime Function} double __extendsfdf2 (float @var{a})
+@deftypefnx {Runtime Function} {long double} __extendsftf2 (float @var{a})
+@deftypefnx {Runtime Function} {long double} __extendsfxf2 (float @var{a})
+@deftypefnx {Runtime Function} {long double} __extenddftf2 (double @var{a})
+@deftypefnx {Runtime Function} {long double} __extenddfxf2 (double @var{a})
+These functions extend @var{a} to the wider mode of their return
+type.
+@end deftypefn
+
+@deftypefn {Runtime Function} double __truncxfdf2 (long double @var{a})
+@deftypefnx {Runtime Function} double __trunctfdf2 (long double @var{a})
+@deftypefnx {Runtime Function} float __truncxfsf2 (long double @var{a})
+@deftypefnx {Runtime Function} float __trunctfsf2 (long double @var{a})
+@deftypefnx {Runtime Function} float __truncdfsf2 (double @var{a})
+These functions truncate @var{a} to the narrower mode of their return
+type, rounding toward zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __fixsfsi (float @var{a})
+@deftypefnx {Runtime Function} int __fixdfsi (double @var{a})
+@deftypefnx {Runtime Function} int __fixtfsi (long double @var{a})
+@deftypefnx {Runtime Function} int __fixxfsi (long double @var{a})
+These functions convert @var{a} to a signed integer, rounding toward zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} long __fixsfdi (float @var{a})
+@deftypefnx {Runtime Function} long __fixdfdi (double @var{a})
+@deftypefnx {Runtime Function} long __fixtfdi (long double @var{a})
+@deftypefnx {Runtime Function} long __fixxfdi (long double @var{a})
+These functions convert @var{a} to a signed long, rounding toward zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} {long long} __fixsfti (float @var{a})
+@deftypefnx {Runtime Function} {long long} __fixdfti (double @var{a})
+@deftypefnx {Runtime Function} {long long} __fixtfti (long double @var{a})
+@deftypefnx {Runtime Function} {long long} __fixxfti (long double @var{a})
+These functions convert @var{a} to a signed long long, rounding toward zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned int} __fixunssfsi (float @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fixunsdfsi (double @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fixunstfsi (long double @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fixunsxfsi (long double @var{a})
+These functions convert @var{a} to an unsigned integer, rounding
+toward zero.  Negative values all become zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned long} __fixunssfdi (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fixunsdfdi (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fixunstfdi (long double @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fixunsxfdi (long double @var{a})
+These functions convert @var{a} to an unsigned long, rounding
+toward zero.  Negative values all become zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned long long} __fixunssfti (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fixunsdfti (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fixunstfti (long double @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fixunsxfti (long double @var{a})
+These functions convert @var{a} to an unsigned long long, rounding
+toward zero.  Negative values all become zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatsisf (int @var{i})
+@deftypefnx {Runtime Function} double __floatsidf (int @var{i})
+@deftypefnx {Runtime Function} {long double} __floatsitf (int @var{i})
+@deftypefnx {Runtime Function} {long double} __floatsixf (int @var{i})
+These functions convert @var{i}, a signed integer, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatdisf (long @var{i})
+@deftypefnx {Runtime Function} double __floatdidf (long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatditf (long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatdixf (long @var{i})
+These functions convert @var{i}, a signed long, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floattisf (long long @var{i})
+@deftypefnx {Runtime Function} double __floattidf (long long @var{i})
+@deftypefnx {Runtime Function} {long double} __floattitf (long long @var{i})
+@deftypefnx {Runtime Function} {long double} __floattixf (long long @var{i})
+These functions convert @var{i}, a signed long long, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatunsisf (unsigned int @var{i})
+@deftypefnx {Runtime Function} double __floatunsidf (unsigned int @var{i})
+@deftypefnx {Runtime Function} {long double} __floatunsitf (unsigned int @var{i})
+@deftypefnx {Runtime Function} {long double} __floatunsixf (unsigned int @var{i})
+These functions convert @var{i}, an unsigned integer, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatundisf (unsigned long @var{i})
+@deftypefnx {Runtime Function} double __floatundidf (unsigned long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatunditf (unsigned long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatundixf (unsigned long @var{i})
+These functions convert @var{i}, an unsigned long, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatuntisf (unsigned long long @var{i})
+@deftypefnx {Runtime Function} double __floatuntidf (unsigned long long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatuntitf (unsigned long long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatuntixf (unsigned long long @var{i})
+These functions convert @var{i}, an unsigned long long, to floating point.
+@end deftypefn
+
+@subsection Comparison functions
+
+There are two sets of basic comparison functions.
+
+@deftypefn {Runtime Function} int __cmpsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __cmpdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __cmptf2 (long double @var{a}, long double @var{b})
+These functions calculate @math{a <=> b}.  That is, if @var{a} is less
+than @var{b}, they return @minus{}1; if @var{a} is greater than @var{b}, they
+return 1; and if @var{a} and @var{b} are equal they return 0.  If
+either argument is NaN they return 1, but you should not rely on this;
+if NaN is a possibility, use one of the higher-level comparison
+functions.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __unordsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __unorddf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __unordtf2 (long double @var{a}, long double @var{b})
+These functions return a nonzero value if either argument is NaN, otherwise 0.
+@end deftypefn
+
+There is also a complete group of higher level functions which
+correspond directly to comparison operators.  They implement the ISO C
+semantics for floating-point comparisons, taking NaN into account.
+Pay careful attention to the return values defined for each set.
+Under the hood, all of these routines are implemented as
+
+@smallexample
+  if (__unord@var{X}f2 (a, b))
+    return @var{E};
+  return __cmp@var{X}f2 (a, b);
+@end smallexample
+
+@noindent
+where @var{E} is a constant chosen to give the proper behavior for
+NaN@.  Thus, the meaning of the return value is different for each set.
+Do not rely on this implementation; only the semantics documented
+below are guaranteed.
+
+@deftypefn {Runtime Function} int __eqsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __eqdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __eqtf2 (long double @var{a}, long double @var{b})
+These functions return zero if neither argument is NaN, and @var{a} and
+@var{b} are equal.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __nesf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __nedf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __netf2 (long double @var{a}, long double @var{b})
+These functions return a nonzero value if either argument is NaN, or
+if @var{a} and @var{b} are unequal.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __gesf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __gedf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __getf2 (long double @var{a}, long double @var{b})
+These functions return a value greater than or equal to zero if
+neither argument is NaN, and @var{a} is greater than or equal to
+@var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __ltsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __ltdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __lttf2 (long double @var{a}, long double @var{b})
+These functions return a value less than zero if neither argument is
+NaN, and @var{a} is strictly less than @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __lesf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __ledf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __letf2 (long double @var{a}, long double @var{b})
+These functions return a value less than or equal to zero if neither
+argument is NaN, and @var{a} is less than or equal to @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __gtsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} int __gtdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} int __gttf2 (long double @var{a}, long double @var{b})
+These functions return a value greater than zero if neither argument
+is NaN, and @var{a} is strictly greater than @var{b}.
+@end deftypefn
+
+@subsection Other floating-point functions
+
+@deftypefn {Runtime Function} float __powisf2 (float @var{a}, int @var{b})
+@deftypefnx {Runtime Function} double __powidf2 (double @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long double} __powitf2 (long double @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long double} __powixf2 (long double @var{a}, int @var{b})
+These functions convert raise @var{a} to the power @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {complex float} __mulsc3 (float @var{a}, float @var{b}, float @var{c}, float @var{d})
+@deftypefnx {Runtime Function} {complex double} __muldc3 (double @var{a}, double @var{b}, double @var{c}, double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __multc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __mulxc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+These functions return the product of @math{@var{a} + i@var{b}} and
+@math{@var{c} + i@var{d}}, following the rules of C99 Annex G@.
+@end deftypefn
+
+@deftypefn {Runtime Function} {complex float} __divsc3 (float @var{a}, float @var{b}, float @var{c}, float @var{d})
+@deftypefnx {Runtime Function} {complex double} __divdc3 (double @var{a}, double @var{b}, double @var{c}, double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __divtc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __divxc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+These functions return the quotient of @math{@var{a} + i@var{b}} and
+@math{@var{c} + i@var{d}} (i.e., @math{(@var{a} + i@var{b}) / (@var{c}
++ i@var{d})}), following the rules of C99 Annex G@.
+@end deftypefn
+
+@node Decimal float library routines
+@section Routines for decimal floating point emulation
+@cindex decimal float library
+@cindex IEEE 754-2008
+
+The software decimal floating point library implements IEEE 754-2008
+decimal floating point arithmetic and is only activated on selected
+targets.
+
+The software decimal floating point library supports either DPD
+(Densely Packed Decimal) or BID (Binary Integer Decimal) encoding
+as selected at configure time.
+
+
+@subsection Arithmetic functions
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_addsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_addsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_adddd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_adddd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_addtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_addtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the sum of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_subsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_subsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_subdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_subdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_subtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_subtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the difference between @var{b} and @var{a};
+that is, @w{@math{@var{a} - @var{b}}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_mulsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_mulsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_muldd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_muldd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_multd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_multd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the product of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_divsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_divsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_divdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_divdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_divtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_divtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the quotient of @var{a} and @var{b}; that is,
+@w{@math{@var{a} / @var{b}}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_negsd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_negsd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_negdd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_negdd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_negtd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_negtd2 (_Decimal128 @var{a})
+These functions return the negation of @var{a}.  They simply flip the
+sign bit, so they can produce negative zero and negative NaN@.
+@end deftypefn
+
+@subsection Conversion functions
+
+@deftypefn {Runtime Function} _Decimal64 __dpd_extendsddd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_extendsddd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendsdtd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendsdtd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendddtd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendddtd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_truncddsd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_truncddsd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_trunctdsd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_trunctdsd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_trunctddd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_trunctddd2 (_Decimal128 @var{a})
+These functions convert the value @var{a} from one decimal floating type
+to another.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal64 __dpd_extendsfdd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_extendsfdd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendsftd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendsftd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extenddftd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extenddftd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendxftd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendxftd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_truncdfsd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_truncdfsd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_truncxfsd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_truncxfsd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_trunctfsd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_trunctfsd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_truncxfdd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_truncxfdd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_trunctfdd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_trunctfdd ({long double} @var{a})
+These functions convert the value of @var{a} from a binary floating type
+to a decimal floating type of a different size.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __dpd_truncddsf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} float __bid_truncddsf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} float __dpd_trunctdsf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} float __bid_trunctdsf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} double __dpd_extendsddf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} double __bid_extendsddf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} double __dpd_trunctddf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} double __bid_trunctddf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendsdxf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendsdxf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendddxf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendddxf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_trunctdxf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_trunctdxf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendsdtf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendsdtf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendddtf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendddtf (_Decimal64 @var{a})
+These functions convert the value of @var{a} from a decimal floating type
+to a binary floating type of a different size.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_extendsfsd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_extendsfsd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_extenddfdd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_extenddfdd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendtftd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendtftd ({long double} @var{a})
+@deftypefnx {Runtime Function} float __dpd_truncsdsf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} float __bid_truncsdsf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} double __dpd_truncdddf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} double __bid_truncdddf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_trunctdtf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_trunctdtf (_Decimal128 @var{a})
+These functions convert the value of @var{a} between decimal and
+binary floating types of the same size.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __dpd_fixsdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} int __bid_fixsdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} int __dpd_fixddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} int __bid_fixddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} int __dpd_fixtdsi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} int __bid_fixtdsi (_Decimal128 @var{a})
+These functions convert @var{a} to a signed integer.
+@end deftypefn
+
+@deftypefn {Runtime Function} long __dpd_fixsddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} long __bid_fixsddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} long __dpd_fixdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} long __bid_fixdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} long __dpd_fixtddi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} long __bid_fixtddi (_Decimal128 @var{a})
+These functions convert @var{a} to a signed long.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned int} __dpd_fixunssdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __bid_fixunssdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __dpd_fixunsddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __bid_fixunsddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __dpd_fixunstdsi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __bid_fixunstdsi (_Decimal128 @var{a})
+These functions convert @var{a} to an unsigned integer.  Negative values all become zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned long} __dpd_fixunssddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __bid_fixunssddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __dpd_fixunsdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __bid_fixunsdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __dpd_fixunstddi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __bid_fixunstddi (_Decimal128 @var{a})
+These functions convert @var{a} to an unsigned long.  Negative values
+all become zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatsisd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatsisd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatsidd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatsidd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatsitd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatsitd (int @var{i})
+These functions convert @var{i}, a signed integer, to decimal floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatdisd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatdisd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatdidd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatdidd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatditd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatditd (long @var{i})
+These functions convert @var{i}, a signed long, to decimal floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatunssisd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatunssisd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatunssidd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatunssidd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatunssitd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatunssitd (unsigned int @var{i})
+These functions convert @var{i}, an unsigned integer, to decimal floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatunsdisd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatunsdisd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatunsdidd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatunsdidd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatunsditd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatunsditd (unsigned long @var{i})
+These functions convert @var{i}, an unsigned long, to decimal floating point.
+@end deftypefn
+
+@subsection Comparison functions
+
+@deftypefn {Runtime Function} int __dpd_unordsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_unordsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_unorddd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_unorddd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_unordtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_unordtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a nonzero value if either argument is NaN, otherwise 0.
+@end deftypefn
+
+There is also a complete group of higher level functions which
+correspond directly to comparison operators.  They implement the ISO C
+semantics for floating-point comparisons, taking NaN into account.
+Pay careful attention to the return values defined for each set.
+Under the hood, all of these routines are implemented as
+
+@smallexample
+  if (__bid_unord@var{X}d2 (a, b))
+    return @var{E};
+  return __bid_cmp@var{X}d2 (a, b);
+@end smallexample
+
+@noindent
+where @var{E} is a constant chosen to give the proper behavior for
+NaN@.  Thus, the meaning of the return value is different for each set.
+Do not rely on this implementation; only the semantics documented
+below are guaranteed.
+
+@deftypefn {Runtime Function} int __dpd_eqsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_eqsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_eqdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_eqdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_eqtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_eqtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return zero if neither argument is NaN, and @var{a} and
+@var{b} are equal.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __dpd_nesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_nesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_nedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_nedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_netd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_netd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a nonzero value if either argument is NaN, or
+if @var{a} and @var{b} are unequal.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __dpd_gesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_gesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_gedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_gedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_getd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_getd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value greater than or equal to zero if
+neither argument is NaN, and @var{a} is greater than or equal to
+@var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __dpd_ltsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_ltsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_ltdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_ltdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_lttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_lttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value less than zero if neither argument is
+NaN, and @var{a} is strictly less than @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __dpd_lesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_lesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_ledd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_ledd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_letd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_letd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value less than or equal to zero if neither
+argument is NaN, and @var{a} is less than or equal to @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __dpd_gtsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_gtsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_gtdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_gtdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_gttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_gttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value greater than zero if neither argument
+is NaN, and @var{a} is strictly greater than @var{b}.
+@end deftypefn
+
+@node Fixed-point fractional library routines
+@section Routines for fixed-point fractional emulation
+@cindex fixed-point fractional library
+@cindex fractional types
+@cindex Embedded C
+
+The software fixed-point library implements fixed-point fractional
+arithmetic, and is only activated on selected targets.
+
+For ease of comprehension @code{fract} is an alias for the
+@code{_Fract} type, @code{accum} an alias for @code{_Accum}, and
+@code{sat} an alias for @code{_Sat}.
+
+For illustrative purposes, in this section the fixed-point fractional type
+@code{@w{short fract}} is assumed to correspond to machine mode @code{QQmode};
+@code{@w{unsigned short fract}} to @code{UQQmode};
+@code{fract} to @code{HQmode};
+@code{@w{unsigned fract}} to @code{UHQmode};
+@code{@w{long fract}} to @code{SQmode};
+@code{@w{unsigned long fract}} to @code{USQmode};
+@code{@w{long long fract}} to @code{DQmode};
+and @code{@w{unsigned long long fract}} to @code{UDQmode}.
+Similarly the fixed-point accumulator type
+@code{@w{short accum}} corresponds to @code{HAmode};
+@code{@w{unsigned short accum}} to @code{UHAmode};
+@code{accum} to @code{SAmode};
+@code{@w{unsigned accum}} to @code{USAmode};
+@code{@w{long accum}} to @code{DAmode};
+@code{@w{unsigned long accum}} to @code{UDAmode};
+@code{@w{long long accum}} to @code{TAmode};
+and @code{@w{unsigned long long accum}} to @code{UTAmode}.
+
+@subsection Arithmetic functions
+
+@deftypefn {Runtime Function} {short fract} __addqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __addhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __addsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __adddq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short fract} __adduqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __adduhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __addusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __addudq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __addha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __addsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __addda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __addta3 (long long accum @var{a}, long long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __adduha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __addusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __adduda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __adduta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the sum of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __ssaddqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __ssaddhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __ssaddsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __ssadddq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __ssaddha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __ssaddsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __ssaddda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __ssaddta3 (long long accum @var{a}, long long accum @var{b})
+These functions return the sum of @var{a} and @var{b} with signed saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __usadduqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __usadduhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __usaddusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __usaddudq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __usadduha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __usaddusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __usadduda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __usadduta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the sum of @var{a} and @var{b} with unsigned saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __subqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __subhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __subsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __subdq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short fract} __subuqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __subuhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __subusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __subudq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __subha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __subsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __subda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __subta3 (long long accum @var{a}, long long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __subuha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __subusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __subuda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __subuta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the difference of @var{a} and @var{b};
+that is, @code{@var{a} - @var{b}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __sssubqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __sssubhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __sssubsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __sssubdq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __sssubha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __sssubsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __sssubda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __sssubta3 (long long accum @var{a}, long long accum @var{b})
+These functions return the difference of @var{a} and @var{b} with signed
+saturation;  that is, @code{@var{a} - @var{b}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __ussubuqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __ussubuhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __ussubusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __ussubudq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __ussubuha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __ussubusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __ussubuda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __ussubuta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the difference of @var{a} and @var{b} with unsigned
+saturation;  that is, @code{@var{a} - @var{b}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __mulqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __mulhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __mulsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __muldq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short fract} __muluqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __muluhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __mulusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __muludq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __mulha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __mulsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __mulda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __multa3 (long long accum @var{a}, long long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __muluha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __mulusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __muluda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __muluta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the product of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __ssmulqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __ssmulhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __ssmulsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __ssmuldq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __ssmulha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __ssmulsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __ssmulda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __ssmulta3 (long long accum @var{a}, long long accum @var{b})
+These functions return the product of @var{a} and @var{b} with signed
+saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __usmuluqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __usmuluhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __usmulusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __usmuludq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __usmuluha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __usmulusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __usmuluda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __usmuluta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the product of @var{a} and @var{b} with unsigned
+saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __divqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __divhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __divsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __divdq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __divha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __divsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __divda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __divta3 (long long accum @var{a}, long long accum @var{b})
+These functions return the quotient of the signed division of @var{a}
+and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __udivuqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __udivuhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __udivusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __udivudq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __udivuha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __udivusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __udivuda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __udivuta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the quotient of the unsigned division of @var{a}
+and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __ssdivqq3 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {fract} __ssdivhq3 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {long fract} __ssdivsq3 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {long long fract} __ssdivdq3 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {short accum} __ssdivha3 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {accum} __ssdivsa3 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {long accum} __ssdivda3 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {long long accum} __ssdivta3 (long long accum @var{a}, long long accum @var{b})
+These functions return the quotient of the signed division of @var{a}
+and @var{b} with signed saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __usdivuqq3 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __usdivuhq3 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __usdivusq3 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __usdivudq3 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __usdivuha3 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __usdivusa3 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __usdivuda3 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __usdivuta3 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions return the quotient of the unsigned division of @var{a}
+and @var{b} with unsigned saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __negqq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {fract} __neghq2 (fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __negsq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __negdq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __neguqq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __neguhq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __negusq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __negudq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __negha2 (short accum @var{a})
+@deftypefnx {Runtime Function} {accum} __negsa2 (accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __negda2 (long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __negta2 (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __neguha2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __negusa2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __neguda2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __neguta2 (unsigned long long accum @var{a})
+These functions return the negation of @var{a}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __ssnegqq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {fract} __ssneghq2 (fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __ssnegsq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __ssnegdq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __ssnegha2 (short accum @var{a})
+@deftypefnx {Runtime Function} {accum} __ssnegsa2 (accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __ssnegda2 (long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __ssnegta2 (long long accum @var{a})
+These functions return the negation of @var{a} with signed saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __usneguqq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __usneguhq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __usnegusq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __usnegudq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __usneguha2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __usnegusa2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __usneguda2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __usneguta2 (unsigned long long accum @var{a})
+These functions return the negation of @var{a} with unsigned saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __ashlqq3 (short fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {fract} __ashlhq3 (fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long fract} __ashlsq3 (long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long fract} __ashldq3 (long long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned short fract} __ashluqq3 (unsigned short fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __ashluhq3 (unsigned fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __ashlusq3 (unsigned long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __ashludq3 (unsigned long long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {short accum} __ashlha3 (short accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {accum} __ashlsa3 (accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long accum} __ashlda3 (long accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long accum} __ashlta3 (long long accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __ashluha3 (unsigned short accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __ashlusa3 (unsigned accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __ashluda3 (unsigned long accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __ashluta3 (unsigned long long accum @var{a}, int @var{b})
+These functions return the result of shifting @var{a} left by @var{b} bits.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __ashrqq3 (short fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {fract} __ashrhq3 (fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long fract} __ashrsq3 (long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long fract} __ashrdq3 (long long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {short accum} __ashrha3 (short accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {accum} __ashrsa3 (accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long accum} __ashrda3 (long accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long accum} __ashrta3 (long long accum @var{a}, int @var{b})
+These functions return the result of arithmetically shifting @var{a} right
+by @var{b} bits.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __lshruqq3 (unsigned short fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __lshruhq3 (unsigned fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __lshrusq3 (unsigned long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __lshrudq3 (unsigned long long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __lshruha3 (unsigned short accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __lshrusa3 (unsigned accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __lshruda3 (unsigned long accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __lshruta3 (unsigned long long accum @var{a}, int @var{b})
+These functions return the result of logically shifting @var{a} right
+by @var{b} bits.
+@end deftypefn
+
+@deftypefn {Runtime Function} {fract} __ssashlhq3 (fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long fract} __ssashlsq3 (long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long fract} __ssashldq3 (long long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {short accum} __ssashlha3 (short accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {accum} __ssashlsa3 (accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long accum} __ssashlda3 (long accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long long accum} __ssashlta3 (long long accum @var{a}, int @var{b})
+These functions return the result of shifting @var{a} left by @var{b} bits
+with signed saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned short fract} __usashluqq3 (unsigned short fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned fract} __usashluhq3 (unsigned fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long fract} __usashlusq3 (unsigned long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long long fract} __usashludq3 (unsigned long long fract @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned short accum} __usashluha3 (unsigned short accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned accum} __usashlusa3 (unsigned accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long accum} __usashluda3 (unsigned long accum @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {unsigned long long accum} __usashluta3 (unsigned long long accum @var{a}, int @var{b})
+These functions return the result of shifting @var{a} left by @var{b} bits
+with unsigned saturation.
+@end deftypefn
+
+@subsection Comparison functions
+
+The following functions implement fixed-point comparisons.  These functions
+implement a low-level compare, upon which the higher level comparison
+operators (such as less than and greater than or equal to) can be
+constructed.  The returned values lie in the range zero to two, to allow
+the high-level operators to be implemented by testing the returned
+result using either signed or unsigned comparison.
+
+@deftypefn {Runtime Function} {int} __cmpqq2 (short fract @var{a}, short fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmphq2 (fract @var{a}, fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmpsq2 (long fract @var{a}, long fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmpdq2 (long long fract @var{a}, long long fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmpuqq2 (unsigned short fract @var{a}, unsigned short fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmpuhq2 (unsigned fract @var{a}, unsigned fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmpusq2 (unsigned long fract @var{a}, unsigned long fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmpudq2 (unsigned long long fract @var{a}, unsigned long long fract @var{b})
+@deftypefnx {Runtime Function} {int} __cmpha2 (short accum @var{a}, short accum @var{b})
+@deftypefnx {Runtime Function} {int} __cmpsa2 (accum @var{a}, accum @var{b})
+@deftypefnx {Runtime Function} {int} __cmpda2 (long accum @var{a}, long accum @var{b})
+@deftypefnx {Runtime Function} {int} __cmpta2 (long long accum @var{a}, long long accum @var{b})
+@deftypefnx {Runtime Function} {int} __cmpuha2 (unsigned short accum @var{a}, unsigned short accum @var{b})
+@deftypefnx {Runtime Function} {int} __cmpusa2 (unsigned accum @var{a}, unsigned accum @var{b})
+@deftypefnx {Runtime Function} {int} __cmpuda2 (unsigned long accum @var{a}, unsigned long accum @var{b})
+@deftypefnx {Runtime Function} {int} __cmputa2 (unsigned long long accum @var{a}, unsigned long long accum @var{b})
+These functions perform a signed or unsigned comparison of @var{a} and
+@var{b} (depending on the selected machine mode).  If @var{a} is less
+than @var{b}, they return 0; if @var{a} is greater than @var{b}, they
+return 2; and if @var{a} and @var{b} are equal they return 1.
+@end deftypefn
+
+@subsection Conversion functions
+
+@deftypefn {Runtime Function} {fract} __fractqqhq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractqqsq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractqqdq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractqqha (short fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fractqqsa (short fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractqqda (short fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractqqta (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractqquqq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractqquhq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractqqusq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractqqudq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractqquha (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractqqusa (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractqquda (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractqquta (short fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractqqqi (short fract @var{a})
+@deftypefnx {Runtime Function} {short} __fractqqhi (short fract @var{a})
+@deftypefnx {Runtime Function} {int} __fractqqsi (short fract @var{a})
+@deftypefnx {Runtime Function} {long} __fractqqdi (short fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fractqqti (short fract @var{a})
+@deftypefnx {Runtime Function} {float} __fractqqsf (short fract @var{a})
+@deftypefnx {Runtime Function} {double} __fractqqdf (short fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fracthqqq2 (fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __fracthqsq2 (fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fracthqdq2 (fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fracthqha (fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fracthqsa (fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fracthqda (fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fracthqta (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fracthquqq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fracthquhq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fracthqusq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fracthqudq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fracthquha (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fracthqusa (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fracthquda (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fracthquta (fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fracthqqi (fract @var{a})
+@deftypefnx {Runtime Function} {short} __fracthqhi (fract @var{a})
+@deftypefnx {Runtime Function} {int} __fracthqsi (fract @var{a})
+@deftypefnx {Runtime Function} {long} __fracthqdi (fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fracthqti (fract @var{a})
+@deftypefnx {Runtime Function} {float} __fracthqsf (fract @var{a})
+@deftypefnx {Runtime Function} {double} __fracthqdf (fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractsqqq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __fractsqhq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractsqdq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractsqha (long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fractsqsa (long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractsqda (long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractsqta (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractsquqq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractsquhq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractsqusq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractsqudq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractsquha (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractsqusa (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractsquda (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractsquta (long fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractsqqi (long fract @var{a})
+@deftypefnx {Runtime Function} {short} __fractsqhi (long fract @var{a})
+@deftypefnx {Runtime Function} {int} __fractsqsi (long fract @var{a})
+@deftypefnx {Runtime Function} {long} __fractsqdi (long fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fractsqti (long fract @var{a})
+@deftypefnx {Runtime Function} {float} __fractsqsf (long fract @var{a})
+@deftypefnx {Runtime Function} {double} __fractsqdf (long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractdqqq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __fractdqhq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractdqsq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractdqha (long long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fractdqsa (long long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractdqda (long long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractdqta (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractdquqq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractdquhq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractdqusq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractdqudq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractdquha (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractdqusa (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractdquda (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractdquta (long long fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractdqqi (long long fract @var{a})
+@deftypefnx {Runtime Function} {short} __fractdqhi (long long fract @var{a})
+@deftypefnx {Runtime Function} {int} __fractdqsi (long long fract @var{a})
+@deftypefnx {Runtime Function} {long} __fractdqdi (long long fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fractdqti (long long fract @var{a})
+@deftypefnx {Runtime Function} {float} __fractdqsf (long long fract @var{a})
+@deftypefnx {Runtime Function} {double} __fractdqdf (long long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fracthaqq (short accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fracthahq (short accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fracthasq (short accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fracthadq (short accum @var{a})
+@deftypefnx {Runtime Function} {accum} __fracthasa2 (short accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __fracthada2 (short accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fracthata2 (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fracthauqq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fracthauhq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fracthausq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fracthaudq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fracthauha (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fracthausa (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fracthauda (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fracthauta (short accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fracthaqi (short accum @var{a})
+@deftypefnx {Runtime Function} {short} __fracthahi (short accum @var{a})
+@deftypefnx {Runtime Function} {int} __fracthasi (short accum @var{a})
+@deftypefnx {Runtime Function} {long} __fracthadi (short accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fracthati (short accum @var{a})
+@deftypefnx {Runtime Function} {float} __fracthasf (short accum @var{a})
+@deftypefnx {Runtime Function} {double} __fracthadf (short accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractsaqq (accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fractsahq (accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractsasq (accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractsadq (accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractsaha2 (accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractsada2 (accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractsata2 (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractsauqq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractsauhq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractsausq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractsaudq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractsauha (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractsausa (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractsauda (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractsauta (accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractsaqi (accum @var{a})
+@deftypefnx {Runtime Function} {short} __fractsahi (accum @var{a})
+@deftypefnx {Runtime Function} {int} __fractsasi (accum @var{a})
+@deftypefnx {Runtime Function} {long} __fractsadi (accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fractsati (accum @var{a})
+@deftypefnx {Runtime Function} {float} __fractsasf (accum @var{a})
+@deftypefnx {Runtime Function} {double} __fractsadf (accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractdaqq (long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fractdahq (long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractdasq (long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractdadq (long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractdaha2 (long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __fractdasa2 (long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractdata2 (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractdauqq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractdauhq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractdausq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractdaudq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractdauha (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractdausa (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractdauda (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractdauta (long accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractdaqi (long accum @var{a})
+@deftypefnx {Runtime Function} {short} __fractdahi (long accum @var{a})
+@deftypefnx {Runtime Function} {int} __fractdasi (long accum @var{a})
+@deftypefnx {Runtime Function} {long} __fractdadi (long accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fractdati (long accum @var{a})
+@deftypefnx {Runtime Function} {float} __fractdasf (long accum @var{a})
+@deftypefnx {Runtime Function} {double} __fractdadf (long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fracttaqq (long long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fracttahq (long long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fracttasq (long long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fracttadq (long long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __fracttaha2 (long long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __fracttasa2 (long long accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __fracttada2 (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fracttauqq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fracttauhq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fracttausq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fracttaudq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fracttauha (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fracttausa (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fracttauda (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fracttauta (long long accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fracttaqi (long long accum @var{a})
+@deftypefnx {Runtime Function} {short} __fracttahi (long long accum @var{a})
+@deftypefnx {Runtime Function} {int} __fracttasi (long long accum @var{a})
+@deftypefnx {Runtime Function} {long} __fracttadi (long long accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fracttati (long long accum @var{a})
+@deftypefnx {Runtime Function} {float} __fracttasf (long long accum @var{a})
+@deftypefnx {Runtime Function} {double} __fracttadf (long long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractuqqqq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {fract} __fractuqqhq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractuqqsq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractuqqdq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractuqqha (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fractuqqsa (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractuqqda (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractuqqta (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractuqquhq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractuqqusq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractuqqudq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractuqquha (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractuqqusa (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractuqquda (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractuqquta (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractuqqqi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {short} __fractuqqhi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {int} __fractuqqsi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long} __fractuqqdi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fractuqqti (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {float} __fractuqqsf (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {double} __fractuqqdf (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractuhqqq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {fract} __fractuhqhq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractuhqsq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractuhqdq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractuhqha (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fractuhqsa (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractuhqda (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractuhqta (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractuhquqq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractuhqusq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractuhqudq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractuhquha (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractuhqusa (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractuhquda (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractuhquta (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractuhqqi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {short} __fractuhqhi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {int} __fractuhqsi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long} __fractuhqdi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fractuhqti (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {float} __fractuhqsf (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {double} __fractuhqdf (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractusqqq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __fractusqhq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractusqsq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractusqdq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractusqha (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fractusqsa (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractusqda (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractusqta (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractusquqq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractusquhq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractusqudq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractusquha (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractusqusa (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractusquda (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractusquta (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractusqqi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {short} __fractusqhi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {int} __fractusqsi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long} __fractusqdi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fractusqti (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {float} __fractusqsf (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {double} __fractusqdf (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractudqqq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __fractudqhq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractudqsq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractudqdq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractudqha (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __fractudqsa (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractudqda (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractudqta (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractudquqq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractudquhq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractudqusq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractudquha (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractudqusa (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractudquda (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractudquta (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractudqqi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {short} __fractudqhi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {int} __fractudqsi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long} __fractudqdi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long long} __fractudqti (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {float} __fractudqsf (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {double} __fractudqdf (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractuhaqq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fractuhahq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractuhasq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractuhadq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractuhaha (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {accum} __fractuhasa (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractuhada (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractuhata (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractuhauqq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractuhauhq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractuhausq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractuhaudq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractuhausa2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractuhauda2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractuhauta2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractuhaqi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {short} __fractuhahi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {int} __fractuhasi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long} __fractuhadi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fractuhati (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {float} __fractuhasf (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {double} __fractuhadf (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractusaqq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fractusahq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractusasq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractusadq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractusaha (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {accum} __fractusasa (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractusada (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractusata (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractusauqq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractusauhq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractusausq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractusaudq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractusauha2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractusauda2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractusauta2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractusaqi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {short} __fractusahi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {int} __fractusasi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long} __fractusadi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fractusati (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {float} __fractusasf (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {double} __fractusadf (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractudaqq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fractudahq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractudasq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractudadq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractudaha (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __fractudasa (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractudada (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractudata (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractudauqq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractudauhq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractudausq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractudaudq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractudauha2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractudausa2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractudauta2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractudaqi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {short} __fractudahi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {int} __fractudasi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long} __fractudadi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fractudati (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {float} __fractudasf (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {double} __fractudadf (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractutaqq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __fractutahq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractutasq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractutadq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractutaha (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __fractutasa (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractutada (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractutata (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractutauqq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractutauhq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractutausq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractutaudq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractutauha2 (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractutausa2 (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractutauda2 (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {signed char} __fractutaqi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {short} __fractutahi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {int} __fractutasi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long} __fractutadi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long long} __fractutati (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {float} __fractutasf (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {double} __fractutadf (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractqiqq (signed char @var{a})
+@deftypefnx {Runtime Function} {fract} __fractqihq (signed char @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractqisq (signed char @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractqidq (signed char @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractqiha (signed char @var{a})
+@deftypefnx {Runtime Function} {accum} __fractqisa (signed char @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractqida (signed char @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractqita (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractqiuqq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractqiuhq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractqiusq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractqiudq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractqiuha (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractqiusa (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractqiuda (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractqiuta (signed char @var{a})
+@deftypefnx {Runtime Function} {short fract} __fracthiqq (short @var{a})
+@deftypefnx {Runtime Function} {fract} __fracthihq (short @var{a})
+@deftypefnx {Runtime Function} {long fract} __fracthisq (short @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fracthidq (short @var{a})
+@deftypefnx {Runtime Function} {short accum} __fracthiha (short @var{a})
+@deftypefnx {Runtime Function} {accum} __fracthisa (short @var{a})
+@deftypefnx {Runtime Function} {long accum} __fracthida (short @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fracthita (short @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fracthiuqq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fracthiuhq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fracthiusq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fracthiudq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fracthiuha (short @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fracthiusa (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fracthiuda (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fracthiuta (short @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractsiqq (int @var{a})
+@deftypefnx {Runtime Function} {fract} __fractsihq (int @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractsisq (int @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractsidq (int @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractsiha (int @var{a})
+@deftypefnx {Runtime Function} {accum} __fractsisa (int @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractsida (int @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractsita (int @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractsiuqq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractsiuhq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractsiusq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractsiudq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractsiuha (int @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractsiusa (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractsiuda (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractsiuta (int @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractdiqq (long @var{a})
+@deftypefnx {Runtime Function} {fract} __fractdihq (long @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractdisq (long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractdidq (long @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractdiha (long @var{a})
+@deftypefnx {Runtime Function} {accum} __fractdisa (long @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractdida (long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractdita (long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractdiuqq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractdiuhq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractdiusq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractdiudq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractdiuha (long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractdiusa (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractdiuda (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractdiuta (long @var{a})
+@deftypefnx {Runtime Function} {short fract} __fracttiqq (long long @var{a})
+@deftypefnx {Runtime Function} {fract} __fracttihq (long long @var{a})
+@deftypefnx {Runtime Function} {long fract} __fracttisq (long long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fracttidq (long long @var{a})
+@deftypefnx {Runtime Function} {short accum} __fracttiha (long long @var{a})
+@deftypefnx {Runtime Function} {accum} __fracttisa (long long @var{a})
+@deftypefnx {Runtime Function} {long accum} __fracttida (long long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fracttita (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fracttiuqq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fracttiuhq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fracttiusq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fracttiudq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fracttiuha (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fracttiusa (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fracttiuda (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fracttiuta (long long @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractsfqq (float @var{a})
+@deftypefnx {Runtime Function} {fract} __fractsfhq (float @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractsfsq (float @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractsfdq (float @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractsfha (float @var{a})
+@deftypefnx {Runtime Function} {accum} __fractsfsa (float @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractsfda (float @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractsfta (float @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractsfuqq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractsfuhq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractsfusq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractsfudq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractsfuha (float @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractsfusa (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractsfuda (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractsfuta (float @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractdfqq (double @var{a})
+@deftypefnx {Runtime Function} {fract} __fractdfhq (double @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractdfsq (double @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractdfdq (double @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractdfha (double @var{a})
+@deftypefnx {Runtime Function} {accum} __fractdfsa (double @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractdfda (double @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractdfta (double @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractdfuqq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractdfuhq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractdfusq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractdfudq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractdfuha (double @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractdfusa (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractdfuda (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractdfuta (double @var{a})
+These functions convert from fractional and signed non-fractionals to
+fractionals and signed non-fractionals, without saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {fract} __satfractqqhq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractqqsq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractqqdq2 (short fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractqqha (short fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractqqsa (short fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractqqda (short fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractqqta (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractqquqq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractqquhq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractqqusq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractqqudq (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractqquha (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractqqusa (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractqquda (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractqquta (short fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfracthqqq2 (fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfracthqsq2 (fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfracthqdq2 (fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfracthqha (fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfracthqsa (fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfracthqda (fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfracthqta (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfracthquqq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfracthquhq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfracthqusq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfracthqudq (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfracthquha (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfracthqusa (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfracthquda (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfracthquta (fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractsqqq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractsqhq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractsqdq2 (long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractsqha (long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractsqsa (long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractsqda (long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractsqta (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractsquqq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractsquhq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractsqusq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractsqudq (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractsquha (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractsqusa (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractsquda (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractsquta (long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractdqqq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractdqhq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractdqsq2 (long long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractdqha (long long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractdqsa (long long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractdqda (long long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractdqta (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractdquqq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractdquhq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractdqusq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractdqudq (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractdquha (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractdqusa (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractdquda (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractdquta (long long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfracthaqq (short accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfracthahq (short accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfracthasq (short accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfracthadq (short accum @var{a})
+@deftypefnx {Runtime Function} {accum} __satfracthasa2 (short accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfracthada2 (short accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfracthata2 (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfracthauqq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfracthauhq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfracthausq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfracthaudq (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfracthauha (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfracthausa (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfracthauda (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfracthauta (short accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractsaqq (accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractsahq (accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractsasq (accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractsadq (accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractsaha2 (accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractsada2 (accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractsata2 (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractsauqq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractsauhq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractsausq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractsaudq (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractsauha (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractsausa (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractsauda (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractsauta (accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractdaqq (long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractdahq (long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractdasq (long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractdadq (long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractdaha2 (long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractdasa2 (long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractdata2 (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractdauqq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractdauhq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractdausq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractdaudq (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractdauha (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractdausa (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractdauda (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractdauta (long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfracttaqq (long long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfracttahq (long long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfracttasq (long long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfracttadq (long long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfracttaha2 (long long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __satfracttasa2 (long long accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfracttada2 (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfracttauqq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfracttauhq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfracttausq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfracttaudq (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfracttauha (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfracttausa (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfracttauda (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfracttauta (long long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractuqqqq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractuqqhq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractuqqsq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractuqqdq (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractuqqha (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractuqqsa (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractuqqda (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractuqqta (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractuqquhq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractuqqusq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractuqqudq2 (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractuqquha (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractuqqusa (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractuqquda (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractuqquta (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractuhqqq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractuhqhq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractuhqsq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractuhqdq (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractuhqha (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractuhqsa (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractuhqda (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractuhqta (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractuhquqq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractuhqusq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractuhqudq2 (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractuhquha (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractuhqusa (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractuhquda (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractuhquta (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractusqqq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractusqhq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractusqsq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractusqdq (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractusqha (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractusqsa (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractusqda (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractusqta (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractusquqq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractusquhq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractusqudq2 (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractusquha (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractusqusa (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractusquda (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractusquta (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractudqqq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractudqhq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractudqsq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractudqdq (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractudqha (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractudqsa (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractudqda (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractudqta (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractudquqq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractudquhq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractudqusq2 (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractudquha (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractudqusa (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractudquda (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractudquta (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractuhaqq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractuhahq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractuhasq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractuhadq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractuhaha (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractuhasa (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractuhada (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractuhata (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractuhauqq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractuhauhq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractuhausq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractuhaudq (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractuhausa2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractuhauda2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractuhauta2 (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractusaqq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractusahq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractusasq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractusadq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractusaha (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractusasa (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractusada (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractusata (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractusauqq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractusauhq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractusausq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractusaudq (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractusauha2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractusauda2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractusauta2 (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractudaqq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractudahq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractudasq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractudadq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractudaha (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractudasa (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractudada (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractudata (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractudauqq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractudauhq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractudausq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractudaudq (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractudauha2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractudausa2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractudauta2 (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractutaqq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractutahq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractutasq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractutadq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractutaha (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractutasa (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractutada (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractutata (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractutauqq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractutauhq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractutausq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractutaudq (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractutauha2 (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractutausa2 (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractutauda2 (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractqiqq (signed char @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractqihq (signed char @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractqisq (signed char @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractqidq (signed char @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractqiha (signed char @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractqisa (signed char @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractqida (signed char @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractqita (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractqiuqq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractqiuhq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractqiusq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractqiudq (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractqiuha (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractqiusa (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractqiuda (signed char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractqiuta (signed char @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfracthiqq (short @var{a})
+@deftypefnx {Runtime Function} {fract} __satfracthihq (short @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfracthisq (short @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfracthidq (short @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfracthiha (short @var{a})
+@deftypefnx {Runtime Function} {accum} __satfracthisa (short @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfracthida (short @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfracthita (short @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfracthiuqq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfracthiuhq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfracthiusq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfracthiudq (short @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfracthiuha (short @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfracthiusa (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfracthiuda (short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfracthiuta (short @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractsiqq (int @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractsihq (int @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractsisq (int @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractsidq (int @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractsiha (int @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractsisa (int @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractsida (int @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractsita (int @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractsiuqq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractsiuhq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractsiusq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractsiudq (int @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractsiuha (int @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractsiusa (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractsiuda (int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractsiuta (int @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractdiqq (long @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractdihq (long @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractdisq (long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractdidq (long @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractdiha (long @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractdisa (long @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractdida (long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractdita (long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractdiuqq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractdiuhq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractdiusq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractdiudq (long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractdiuha (long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractdiusa (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractdiuda (long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractdiuta (long @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfracttiqq (long long @var{a})
+@deftypefnx {Runtime Function} {fract} __satfracttihq (long long @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfracttisq (long long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfracttidq (long long @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfracttiha (long long @var{a})
+@deftypefnx {Runtime Function} {accum} __satfracttisa (long long @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfracttida (long long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfracttita (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfracttiuqq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfracttiuhq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfracttiusq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfracttiudq (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfracttiuha (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfracttiusa (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfracttiuda (long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfracttiuta (long long @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractsfqq (float @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractsfhq (float @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractsfsq (float @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractsfdq (float @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractsfha (float @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractsfsa (float @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractsfda (float @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractsfta (float @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractsfuqq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractsfuhq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractsfusq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractsfudq (float @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractsfuha (float @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractsfusa (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractsfuda (float @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractsfuta (float @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractdfqq (double @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractdfhq (double @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractdfsq (double @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractdfdq (double @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractdfha (double @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractdfsa (double @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractdfda (double @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractdfta (double @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractdfuqq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractdfuhq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractdfusq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractdfudq (double @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractdfuha (double @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractdfusa (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractdfuda (double @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractdfuta (double @var{a})
+The functions convert from fractional and signed non-fractionals to
+fractionals, with saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned char} __fractunsqqqi (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsqqhi (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsqqsi (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsqqdi (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsqqti (short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunshqqi (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunshqhi (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunshqsi (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunshqdi (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunshqti (fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunssqqi (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunssqhi (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunssqsi (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunssqdi (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunssqti (long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsdqqi (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsdqhi (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsdqsi (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsdqdi (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsdqti (long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunshaqi (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunshahi (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunshasi (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunshadi (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunshati (short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunssaqi (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunssahi (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunssasi (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunssadi (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunssati (accum @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsdaqi (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsdahi (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsdasi (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsdadi (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsdati (long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunstaqi (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunstahi (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunstasi (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunstadi (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunstati (long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsuqqqi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsuqqhi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsuqqsi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsuqqdi (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsuqqti (unsigned short fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsuhqqi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsuhqhi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsuhqsi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsuhqdi (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsuhqti (unsigned fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsusqqi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsusqhi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsusqsi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsusqdi (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsusqti (unsigned long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsudqqi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsudqhi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsudqsi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsudqdi (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsudqti (unsigned long long fract @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsuhaqi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsuhahi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsuhasi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsuhadi (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsuhati (unsigned short accum @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsusaqi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsusahi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsusasi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsusadi (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsusati (unsigned accum @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsudaqi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsudahi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsudasi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsudadi (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsudati (unsigned long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned char} __fractunsutaqi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned short} __fractunsutahi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fractunsutasi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fractunsutadi (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {unsigned long long} __fractunsutati (unsigned long long accum @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractunsqiqq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {fract} __fractunsqihq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractunsqisq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractunsqidq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractunsqiha (unsigned char @var{a})
+@deftypefnx {Runtime Function} {accum} __fractunsqisa (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractunsqida (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractunsqita (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractunsqiuqq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractunsqiuhq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractunsqiusq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractunsqiudq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractunsqiuha (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractunsqiusa (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractunsqiuda (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractunsqiuta (unsigned char @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractunshiqq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {fract} __fractunshihq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractunshisq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractunshidq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractunshiha (unsigned short @var{a})
+@deftypefnx {Runtime Function} {accum} __fractunshisa (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractunshida (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractunshita (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractunshiuqq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractunshiuhq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractunshiusq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractunshiudq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractunshiuha (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractunshiusa (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractunshiuda (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractunshiuta (unsigned short @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractunssiqq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {fract} __fractunssihq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractunssisq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractunssidq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractunssiha (unsigned int @var{a})
+@deftypefnx {Runtime Function} {accum} __fractunssisa (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractunssida (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractunssita (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractunssiuqq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractunssiuhq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractunssiusq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractunssiudq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractunssiuha (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractunssiusa (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractunssiuda (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractunssiuta (unsigned int @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractunsdiqq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {fract} __fractunsdihq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractunsdisq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractunsdidq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractunsdiha (unsigned long @var{a})
+@deftypefnx {Runtime Function} {accum} __fractunsdisa (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractunsdida (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractunsdita (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractunsdiuqq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractunsdiuhq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractunsdiusq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractunsdiudq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractunsdiuha (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractunsdiusa (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractunsdiuda (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractunsdiuta (unsigned long @var{a})
+@deftypefnx {Runtime Function} {short fract} __fractunstiqq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {fract} __fractunstihq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long fract} __fractunstisq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __fractunstidq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {short accum} __fractunstiha (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {accum} __fractunstisa (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long accum} __fractunstida (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __fractunstita (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __fractunstiuqq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __fractunstiuhq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __fractunstiusq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __fractunstiudq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __fractunstiuha (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __fractunstiusa (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __fractunstiuda (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __fractunstiuta (unsigned long long @var{a})
+These functions convert from fractionals to unsigned non-fractionals;
+and from unsigned non-fractionals to fractionals, without saturation.
+@end deftypefn
+
+@deftypefn {Runtime Function} {short fract} __satfractunsqiqq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractunsqihq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractunsqisq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractunsqidq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractunsqiha (unsigned char @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractunsqisa (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractunsqida (unsigned char @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractunsqita (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractunsqiuqq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractunsqiuhq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractunsqiusq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractunsqiudq (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractunsqiuha (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractunsqiusa (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractunsqiuda (unsigned char @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractunsqiuta (unsigned char @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractunshiqq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractunshihq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractunshisq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractunshidq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractunshiha (unsigned short @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractunshisa (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractunshida (unsigned short @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractunshita (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractunshiuqq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractunshiuhq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractunshiusq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractunshiudq (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractunshiuha (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractunshiusa (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractunshiuda (unsigned short @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractunshiuta (unsigned short @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractunssiqq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractunssihq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractunssisq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractunssidq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractunssiha (unsigned int @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractunssisa (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractunssida (unsigned int @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractunssita (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractunssiuqq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractunssiuhq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractunssiusq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractunssiudq (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractunssiuha (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractunssiusa (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractunssiuda (unsigned int @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractunssiuta (unsigned int @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractunsdiqq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractunsdihq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractunsdisq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractunsdidq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractunsdiha (unsigned long @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractunsdisa (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractunsdida (unsigned long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractunsdita (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractunsdiuqq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractunsdiuhq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractunsdiusq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractunsdiudq (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractunsdiuha (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractunsdiusa (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractunsdiuda (unsigned long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractunsdiuta (unsigned long @var{a})
+@deftypefnx {Runtime Function} {short fract} __satfractunstiqq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {fract} __satfractunstihq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long fract} __satfractunstisq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long long fract} __satfractunstidq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {short accum} __satfractunstiha (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {accum} __satfractunstisa (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long accum} __satfractunstida (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {long long accum} __satfractunstita (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short fract} __satfractunstiuqq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned fract} __satfractunstiuhq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long fract} __satfractunstiusq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long fract} __satfractunstiudq (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned short accum} __satfractunstiuha (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned accum} __satfractunstiusa (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long accum} __satfractunstiuda (unsigned long long @var{a})
+@deftypefnx {Runtime Function} {unsigned long long accum} __satfractunstiuta (unsigned long long @var{a})
+These functions convert from unsigned non-fractionals to fractionals,
+with saturation.
+@end deftypefn
+
+@node Exception handling routines
+@section Language-independent routines for exception handling
+
+document me!
+
+@smallexample
+  _Unwind_DeleteException
+  _Unwind_Find_FDE
+  _Unwind_ForcedUnwind
+  _Unwind_GetGR
+  _Unwind_GetIP
+  _Unwind_GetLanguageSpecificData
+  _Unwind_GetRegionStart
+  _Unwind_GetTextRelBase
+  _Unwind_GetDataRelBase
+  _Unwind_RaiseException
+  _Unwind_Resume
+  _Unwind_SetGR
+  _Unwind_SetIP
+  _Unwind_FindEnclosingFunction
+  _Unwind_SjLj_Register
+  _Unwind_SjLj_Unregister
+  _Unwind_SjLj_RaiseException
+  _Unwind_SjLj_ForcedUnwind
+  _Unwind_SjLj_Resume
+  __deregister_frame
+  __deregister_frame_info
+  __deregister_frame_info_bases
+  __register_frame
+  __register_frame_info
+  __register_frame_info_bases
+  __register_frame_info_table
+  __register_frame_info_table_bases
+  __register_frame_table
+@end smallexample
+
+@node Miscellaneous routines
+@section Miscellaneous runtime library routines
+
+@subsection Cache control functions
+@deftypefn {Runtime Function} void __clear_cache (char *@var{beg}, char *@var{end})
+This function clears the instruction cache between @var{beg} and @var{end}.
+@end deftypefn
+
+@subsection Split stack functions and variables
+@deftypefn {Runtime Function} {void *} __splitstack_find (void *@var{segment_arg}, @
+void *@var{sp}, size_t @var{len}, void **@var{next_segment}, @
+void **@var{next_sp}, void **@var{initial_sp})
+When using @option{-fsplit-stack}, this call may be used to iterate
+over the stack segments.  It may be called like this:
+@smallexample
+  void *next_segment = NULL;
+  void *next_sp = NULL;
+  void *initial_sp = NULL;
+  void *stack;
+  size_t stack_size;
+  while ((stack = __splitstack_find (next_segment, next_sp,
+                                     &stack_size, &next_segment,
+                                     &next_sp, &initial_sp))
+         != NULL)
+    @{
+      /* Stack segment starts at stack and is
+         stack_size bytes long.  */
+    @}
+@end smallexample
+
+There is no way to iterate over the stack segments of a different
+thread.  However, what is permitted is for one thread to call this
+with the @var{segment_arg} and @var{sp} arguments NULL, to pass
+@var{next_segment}, @var{next_sp}, and @var{initial_sp} to a different
+thread, and then to suspend one way or another.  A different thread
+may run the subsequent @code{__splitstack_find} iterations.  Of
+course, this will only work if the first thread is suspended while the
+second thread is calling @code{__splitstack_find}.  If not, the second
+thread could be looking at the stack while it is changing, and
+anything could happen.
+@end deftypefn
+
+@defvar __morestack_segments
+@defvarx __morestack_current_segment
+@defvarx __morestack_initial_sp
+Internal variables used by the @option{-fsplit-stack} implementation.
+@end defvar

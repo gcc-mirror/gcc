@@ -19,7 +19,7 @@ static char global_string[] = "global";
 static size_t global_string_length = 6;
 
 // Input to a test is a zero-terminated string str with given length
-// Accesses to the bytes to the left and to the right of str
+// Accesses to the bytes to the left and after str
 // are presumed to produce OOB errors
 void StrLenOOBTestTemplate(char *str, size_t length, bool is_global) {
   // Normal strlen calls
@@ -30,7 +30,7 @@ void StrLenOOBTestTemplate(char *str, size_t length, bool is_global) {
   }
   // Arg of strlen is not malloced, OOB access
   if (!is_global) {
-    // We don't insert RedZones to the left of global variables
+    // We don't insert RedZones before global variables
     EXPECT_DEATH(Ident(strlen(str - 1)), LeftOOBReadMessage(1));
     EXPECT_DEATH(Ident(strlen(str - 5)), LeftOOBReadMessage(5));
   }

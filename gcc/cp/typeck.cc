@@ -1779,7 +1779,7 @@ similar_type_p (tree type1, tree type2)
    the common initial sequence.  */
 
 bool
-next_common_initial_seqence (tree &memb1, tree &memb2)
+next_common_initial_sequence (tree &memb1, tree &memb2)
 {
   while (memb1)
     {
@@ -1833,6 +1833,8 @@ next_common_initial_seqence (tree &memb1, tree &memb2)
   if ((!lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb1)))
       != !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb2)))
     return false;
+  if (DECL_ALIGN (memb1) != DECL_ALIGN (memb2))
+    return false;
   if (!tree_int_cst_equal (bit_position (memb1), bit_position (memb2)))
     return false;
   return true;
@@ -1854,15 +1856,13 @@ layout_compatible_type_p (tree type1, tree type2)
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
 
   if (TREE_CODE (type1) == ENUMERAL_TYPE)
-    return (TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
-	    && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
+    return (tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
 	    && same_type_p (finish_underlying_type (type1),
 			    finish_underlying_type (type2)));
 
   if (CLASS_TYPE_P (type1)
       && std_layout_type_p (type1)
       && std_layout_type_p (type2)
-      && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
       && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2)))
     {
       tree field1 = TYPE_FIELDS (type1);
@@ -1871,7 +1871,7 @@ layout_compatible_type_p (tree type1, tree type2)
 	{
 	  while (1)
 	    {
-	      if (!next_common_initial_seqence (field1, field2))
+	      if (!next_common_initial_sequence (field1, field2))
 		return false;
 	      if (field1 == NULL_TREE)
 		return true;
@@ -9513,19 +9513,6 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 			 && MAYBE_CLASS_TYPE_P (TREE_TYPE (lhstype)))
 			|| MAYBE_CLASS_TYPE_P (lhstype)));
 
-	  /* An expression of the form E1 op= E2.  [expr.ass] says:
-	     "Such expressions are deprecated if E1 has volatile-qualified
-	     type and op is not one of the bitwise operators |, &, ^."
-	     We warn here rather than in cp_genericize_r because
-	     for compound assignments we are supposed to warn even if the
-	     assignment is a discarded-value expression.  */
-	  if (modifycode != BIT_AND_EXPR
-	      && modifycode != BIT_IOR_EXPR
-	      && modifycode != BIT_XOR_EXPR
-	      && (TREE_THIS_VOLATILE (lhs) || CP_TYPE_VOLATILE_P (lhstype)))
-	    warning_at (loc, OPT_Wvolatile,
-			"compound assignment with %<volatile%>-qualified left "
-			"operand is deprecated");
 	  /* Preevaluate the RHS to make sure its evaluation is complete
 	     before the lvalue-to-rvalue conversion of the LHS:
 

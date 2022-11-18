@@ -9,7 +9,7 @@
 // keywords: operator[], static function members
 
 struct struct0 {
-  static int operator[] ();		/* { dg-error "" } */
+  static int operator[] ();		/* { dg-error "" "" { target c++20_down } } */
 };
 
 int main () { return 0; }

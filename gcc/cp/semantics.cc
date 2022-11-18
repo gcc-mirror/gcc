@@ -11665,7 +11665,7 @@ is_corresponding_member_aggr (location_t loc, tree basetype1, tree membertype1,
   tree ret = boolean_false_node;
   while (1)
     {
-      bool r = next_common_initial_seqence (field1, field2);
+      bool r = next_common_initial_sequence (field1, field2);
       if (field1 == NULL_TREE || field2 == NULL_TREE)
 	break;
       if (r

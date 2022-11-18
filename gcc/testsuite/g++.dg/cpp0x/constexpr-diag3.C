@@ -37,7 +37,7 @@ struct base		       // { dg-message "no .constexpr. constructor" "" { target { !
 
 struct derived : public base	// { dg-message "base class" "" { target { ! implicit_constexpr } } }
 {
-  constexpr derived(): base() { } // { dg-error "non-.constexpr. function" "" { target { ! implicit_constexpr } } }
+  constexpr derived(): base() { } // { dg-error "non-.constexpr. function" "" { target { { ! implicit_constexpr } && c++20_down } } }
 };
 
 constexpr derived obj;		// { dg-error "not literal" "" { target { ! implicit_constexpr } } }

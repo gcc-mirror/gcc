@@ -5,5 +5,5 @@ struct vj {
 void
 setjmp (struct vj pl)
 {
-  setjmp (pl);
+  setjmp (pl); /* { dg-warning "infinite recursion" } */
 }

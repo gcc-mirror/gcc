@@ -13,7 +13,7 @@ void *operator new (std::size_t) noexcept;
 constexpr bool
 foo ()
 {
-  auto p = static_cast<int *> (::operator new (sizeof (int)));	// { dg-error "call to non-'constexpr' function" }
+  auto p = static_cast<int *> (::operator new (sizeof (int)));	// { dg-error "call to non-'constexpr' function" "" { target c++20_down } }
   *p = 1;
   ::operator delete (p);
   return false;
@@ -24,7 +24,7 @@ struct S { constexpr S () : s (0) {} int s; };
 constexpr bool
 bar ()
 {
-  auto p = static_cast<S *> (::operator new (sizeof (S)));	// { dg-error "call to non-'constexpr' function" }
+  auto p = static_cast<S *> (::operator new (sizeof (S)));	// { dg-error "call to non-'constexpr' function" "" { target c++20_down } }
   auto q = new (p) S ();
   q->s++;
   q->~S ();

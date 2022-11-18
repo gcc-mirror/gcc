@@ -1,0 +1,562 @@
+@c Copyright (C) 2009-2022 Free Software Foundation, Inc.
+@c Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Plugins
+@chapter Plugins
+@cindex Plugins
+
+GCC plugins are loadable modules that provide extra features to the
+compiler.  Like GCC itself they can be distributed in source and
+binary forms.
+
+GCC plugins provide developers with a rich subset of
+the GCC API to allow them to extend GCC as they see fit.
+Whether it is writing an additional optimization pass,
+transforming code, or analyzing information, plugins
+can be quite useful.
+
+@menu
+* Plugins loading::      How can we load plugins.
+* Plugin API::           The APIs for plugins.
+* Plugins pass::         How a plugin interact with the pass manager.
+* Plugins GC::           How a plugin Interact with GCC Garbage Collector.
+* Plugins description::  Giving information about a plugin itself.
+* Plugins attr::         Registering custom attributes or pragmas.
+* Plugins recording::    Recording information about pass execution.
+* Plugins gate::         Controlling which passes are being run.
+* Plugins tracking::     Keeping track of available passes.
+* Plugins building::     How can we build a plugin.
+@end menu
+
+@node Plugins loading
+@section Loading Plugins
+
+Plugins are supported on platforms that support @option{-ldl
+-rdynamic} as well as Windows/MinGW. They are loaded by the compiler
+using @code{dlopen} or equivalent and invoked at pre-determined
+locations in the compilation process.
+
+Plugins are loaded with
+
+@option{-fplugin=/path/to/@var{name}.@var{ext}} @option{-fplugin-arg-@var{name}-@var{key1}[=@var{value1}]}
+
+Where @var{name} is the plugin name and @var{ext} is the platform-specific
+dynamic library extension. It should be @code{dll} on Windows/MinGW,
+@code{dylib} on Darwin/Mac OS X, and @code{so} on all other platforms.
+The plugin arguments are parsed by GCC and passed to respective
+plugins as key-value pairs. Multiple plugins can be invoked by
+specifying multiple @option{-fplugin} arguments.
+
+A plugin can be simply given by its short name (no dots or
+slashes). When simply passing @option{-fplugin=@var{name}}, the plugin is
+loaded from the @file{plugin} directory, so @option{-fplugin=@var{name}} is
+the same as @option{-fplugin=`gcc -print-file-name=plugin`/@var{name}.@var{ext}},
+using backquote shell syntax to query the @file{plugin} directory.
+
+@node Plugin API
+@section Plugin API
+
+Plugins are activated by the compiler at specific events as defined in
+@file{gcc-plugin.h}.  For each event of interest, the plugin should
+call @code{register_callback} specifying the name of the event and
+address of the callback function that will handle that event.
+
+The header @file{gcc-plugin.h} must be the first gcc header to be included.
+
+@subsection Plugin license check
+
+Every plugin should define the global symbol @code{plugin_is_GPL_compatible}
+to assert that it has been licensed under a GPL-compatible license.
+If this symbol does not exist, the compiler will emit a fatal error
+and exit with the error message:
+
+@smallexample
+fatal error: plugin @var{name} is not licensed under a GPL-compatible license
+@var{name}: undefined symbol: plugin_is_GPL_compatible
+compilation terminated
+@end smallexample
+
+The declared type of the symbol should be int, to match a forward declaration
+in @file{gcc-plugin.h} that suppresses C++ mangling.  It does not need to be in
+any allocated section, though.  The compiler merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
+
+@smallexample
+int plugin_is_GPL_compatible;
+@end smallexample
+
+@subsection Plugin initialization
+
+Every plugin should export a function called @code{plugin_init} that
+is called right after the plugin is loaded. This function is
+responsible for registering all the callbacks required by the plugin
+and do any other required initialization.
+
+This function is called from @code{compile_file} right before invoking
+the parser.  The arguments to @code{plugin_init} are:
+
+@itemize @bullet
+@item @code{plugin_info}: Plugin invocation information.
+@item @code{version}: GCC version.
+@end itemize
+
+The @code{plugin_info} struct is defined as follows:
+
+@smallexample
+struct plugin_name_args
+@{
+  char *base_name;              /* Short name of the plugin
+                                   (filename without .so suffix). */
+  const char *full_name;        /* Path to the plugin as specified with
+                                   -fplugin=. */
+  int argc;                     /* Number of arguments specified with
+                                   -fplugin-arg-.... */
+  struct plugin_argument *argv; /* Array of ARGC key-value pairs. */
+  const char *version;          /* Version string provided by plugin. */
+  const char *help;             /* Help string provided by plugin. */
+@}
+@end smallexample
+
+If initialization fails, @code{plugin_init} must return a non-zero
+value.  Otherwise, it should return 0.
+
+The version of the GCC compiler loading the plugin is described by the
+following structure:
+
+@smallexample
+struct plugin_gcc_version
+@{
+  const char *basever;
+  const char *datestamp;
+  const char *devphase;
+  const char *revision;
+  const char *configuration_arguments;
+@};
+@end smallexample
+
+The function @code{plugin_default_version_check} takes two pointers to
+such structure and compare them field by field. It can be used by the
+plugin's @code{plugin_init} function.
+
+The version of GCC used to compile the plugin can be found in the symbol
+@code{gcc_version} defined in the header @file{plugin-version.h}. The
+recommended version check to perform looks like
+
+@smallexample
+#include "plugin-version.h"
+...
+
+int
+plugin_init (struct plugin_name_args *plugin_info,
+             struct plugin_gcc_version *version)
+@{
+  if (!plugin_default_version_check (version, &gcc_version))
+    return 1;
+
+@}
+@end smallexample
+
+but you can also check the individual fields if you want a less strict check.
+
+@subsection Plugin callbacks
+
+Callback functions have the following prototype:
+
+@smallexample
+/* The prototype for a plugin callback function.
+     gcc_data  - event-specific data provided by GCC
+     user_data - plugin-specific data provided by the plug-in.  */
+typedef void (*plugin_callback_func)(void *gcc_data, void *user_data);
+@end smallexample
+
+Callbacks can be invoked at the following pre-determined events:
+
+
+@smallexample
+enum plugin_event
+@{
+  PLUGIN_START_PARSE_FUNCTION,  /* Called before parsing the body of a function. */
+  PLUGIN_FINISH_PARSE_FUNCTION, /* After finishing parsing a function. */
+  PLUGIN_PASS_MANAGER_SETUP,    /* To hook into pass manager.  */
+  PLUGIN_FINISH_TYPE,           /* After finishing parsing a type.  */
+  PLUGIN_FINISH_DECL,           /* After finishing parsing a declaration. */
+  PLUGIN_FINISH_UNIT,           /* Useful for summary processing.  */
+  PLUGIN_PRE_GENERICIZE,        /* Allows to see low level AST in C and C++ frontends.  */
+  PLUGIN_FINISH,                /* Called before GCC exits.  */
+  PLUGIN_INFO,                  /* Information about the plugin. */
+  PLUGIN_GGC_START,             /* Called at start of GCC Garbage Collection. */
+  PLUGIN_GGC_MARKING,           /* Extend the GGC marking. */
+  PLUGIN_GGC_END,               /* Called at end of GGC. */
+  PLUGIN_REGISTER_GGC_ROOTS,    /* Register an extra GGC root table. */
+  PLUGIN_ATTRIBUTES,            /* Called during attribute registration */
+  PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
+  PLUGIN_PRAGMAS,               /* Called during pragma registration. */
+  /* Called before first pass from all_passes.  */
+  PLUGIN_ALL_PASSES_START,
+  /* Called after last pass from all_passes.  */
+  PLUGIN_ALL_PASSES_END,
+  /* Called before first ipa pass.  */
+  PLUGIN_ALL_IPA_PASSES_START,
+  /* Called after last ipa pass.  */
+  PLUGIN_ALL_IPA_PASSES_END,
+  /* Allows to override pass gate decision for current_pass.  */
+  PLUGIN_OVERRIDE_GATE,
+  /* Called before executing a pass.  */
+  PLUGIN_PASS_EXECUTION,
+  /* Called before executing subpasses of a GIMPLE_PASS in
+     execute_ipa_pass_list.  */
+  PLUGIN_EARLY_GIMPLE_PASSES_START,
+  /* Called after executing subpasses of a GIMPLE_PASS in
+     execute_ipa_pass_list.  */
+  PLUGIN_EARLY_GIMPLE_PASSES_END,
+  /* Called when a pass is first instantiated.  */
+  PLUGIN_NEW_PASS,
+/* Called when a file is #include-d or given via the #line directive.
+   This could happen many times.  The event data is the included file path,
+   as a const char* pointer.  */
+  PLUGIN_INCLUDE_FILE,
+
+  /* Called when -fanalyzer starts. The event data is an
+     ana::plugin_analyzer_init_iface *.  */
+  PLUGIN_ANALYZER_INIT,
+
+  PLUGIN_EVENT_FIRST_DYNAMIC    /* Dummy event used for indexing callback
+                                   array.  */
+@};
+@end smallexample
+
+In addition, plugins can also look up the enumerator of a named event,
+and / or generate new events dynamically, by calling the function
+@code{get_named_event_id}.
+
+To register a callback, the plugin calls @code{register_callback} with
+the arguments:
+
+@itemize
+@item @code{char *name}: Plugin name.
+@item @code{int event}: The event code.
+@item @code{plugin_callback_func callback}: The function that handles @code{event}.
+@item @code{void *user_data}: Pointer to plugin-specific data.
+@end itemize
+
+For the @i{PLUGIN_PASS_MANAGER_SETUP}, @i{PLUGIN_INFO}, and
+@i{PLUGIN_REGISTER_GGC_ROOTS} pseudo-events the @code{callback} should be null,
+and the @code{user_data} is specific.
+
+When the @i{PLUGIN_PRAGMAS} event is triggered (with a null pointer as
+data from GCC), plugins may register their own pragmas.  Notice that
+pragmas are not available from @file{lto1}, so plugins used with
+@code{-flto} option to GCC during link-time optimization cannot use
+pragmas and do not even see functions like @code{c_register_pragma} or
+@code{pragma_lex}.
+
+The @i{PLUGIN_INCLUDE_FILE} event, with a @code{const char*} file path as
+GCC data, is triggered for processing of @code{#include} or
+@code{#line} directives.
+
+The @i{PLUGIN_FINISH} event is the last time that plugins can call GCC
+functions, notably emit diagnostics with @code{warning}, @code{error}
+etc.
+
+
+@node Plugins pass
+@section Interacting with the pass manager
+
+There needs to be a way to add/reorder/remove passes dynamically. This
+is useful for both analysis plugins (plugging in after a certain pass
+such as CFG or an IPA pass) and optimization plugins.
+
+Basic support for inserting new passes or replacing existing passes is
+provided. A plugin registers a new pass with GCC by calling
+@code{register_callback} with the @code{PLUGIN_PASS_MANAGER_SETUP}
+event and a pointer to a @code{struct register_pass_info} object defined as follows
+
+@smallexample
+enum pass_positioning_ops
+@{
+  PASS_POS_INSERT_AFTER,  // Insert after the reference pass.
+  PASS_POS_INSERT_BEFORE, // Insert before the reference pass.
+  PASS_POS_REPLACE        // Replace the reference pass.
+@};
+
+struct register_pass_info
+@{
+  struct opt_pass *pass;            /* New pass provided by the plugin.  */
+  const char *reference_pass_name;  /* Name of the reference pass for hooking
+                                       up the new pass.  */
+  int ref_pass_instance_number;     /* Insert the pass at the specified
+                                       instance number of the reference pass.  */
+                                    /* Do it for every instance if it is 0.  */
+  enum pass_positioning_ops pos_op; /* how to insert the new pass.  */
+@};
+
+
+/* Sample plugin code that registers a new pass.  */
+int
+plugin_init (struct plugin_name_args *plugin_info,
+             struct plugin_gcc_version *version)
+@{
+  struct register_pass_info pass_info;
+
+  ...
+
+  /* Code to fill in the pass_info object with new pass information.  */
+
+  ...
+
+  /* Register the new pass.  */
+  register_callback (plugin_info->base_name, PLUGIN_PASS_MANAGER_SETUP, NULL, &pass_info);
+
+  ...
+@}
+@end smallexample
+
+
+@node Plugins GC
+@section Interacting with the GCC Garbage Collector
+
+Some plugins may want to be informed when GGC (the GCC Garbage
+Collector) is running. They can register callbacks for the
+@code{PLUGIN_GGC_START} and @code{PLUGIN_GGC_END} events (for which
+the callback is called with a null @code{gcc_data}) to be notified of
+the start or end of the GCC garbage collection.
+
+Some plugins may need to have GGC mark additional data. This can be
+done by registering a callback (called with a null @code{gcc_data})
+for the @code{PLUGIN_GGC_MARKING} event. Such callbacks can call the
+@code{ggc_set_mark} routine, preferably through the @code{ggc_mark} macro
+(and conversely, these routines should usually not be used in plugins
+outside of the @code{PLUGIN_GGC_MARKING} event).  Plugins that wish to hold
+weak references to gc data may also use this event to drop weak references when
+the object is about to be collected.  The @code{ggc_marked_p} function can be
+used to tell if an object is marked, or is about to  be collected.  The
+@code{gt_clear_cache} overloads which some types define may also be of use in
+managing weak references.
+
+Some plugins may need to add extra GGC root tables, e.g.@: to handle their own
+@code{GTY}-ed data. This can be done with the @code{PLUGIN_REGISTER_GGC_ROOTS}
+pseudo-event with a null callback and the extra root table (of type @code{struct
+ggc_root_tab*}) as @code{user_data}.  Running the
+ @code{gengtype -p @var{source-dir} @var{file-list} @var{plugin*.c} ...}
+utility generates these extra root tables.
+
+You should understand the details of memory management inside GCC
+before using @code{PLUGIN_GGC_MARKING} or @code{PLUGIN_REGISTER_GGC_ROOTS}.
+
+
+@node Plugins description
+@section Giving information about a plugin
+
+A plugin should give some information to the user about itself. This
+uses the following structure:
+
+@smallexample
+struct plugin_info
+@{
+  const char *version;
+  const char *help;
+@};
+@end smallexample
+
+Such a structure is passed as the @code{user_data} by the plugin's
+init routine using @code{register_callback} with the
+@code{PLUGIN_INFO} pseudo-event and a null callback.
+
+@node Plugins attr
+@section Registering custom attributes or pragmas
+
+For analysis (or other) purposes it is useful to be able to add custom
+attributes or pragmas.
+
+The @code{PLUGIN_ATTRIBUTES} callback is called during attribute
+registration. Use the @code{register_attribute} function to register
+custom attributes.
+
+@smallexample
+/* Attribute handler callback */
+static tree
+handle_user_attribute (tree *node, tree name, tree args,
+                       int flags, bool *no_add_attrs)
+@{
+  return NULL_TREE;
+@}
+
+/* Attribute definition */
+static struct attribute_spec user_attr =
+  @{ "user", 1, 1, false,  false, false, false, handle_user_attribute, NULL @};
+
+/* Plugin callback called during attribute registration.
+Registered with register_callback (plugin_name, PLUGIN_ATTRIBUTES, register_attributes, NULL)
+*/
+static void
+register_attributes (void *event_data, void *data)
+@{
+  warning (0, G_("Callback to register attributes"));
+  register_attribute (&user_attr);
+@}
+
+@end smallexample
+
+
+The @i{PLUGIN_PRAGMAS} callback is called once during pragmas
+registration. Use the @code{c_register_pragma},
+@code{c_register_pragma_with_data},
+@code{c_register_pragma_with_expansion},
+@code{c_register_pragma_with_expansion_and_data} functions to register
+custom pragmas and their handlers (which often want to call
+@code{pragma_lex}) from @file{c-family/c-pragma.h}.
+
+@smallexample
+/* Plugin callback called during pragmas registration. Registered with
+     register_callback (plugin_name, PLUGIN_PRAGMAS,
+                        register_my_pragma, NULL);
+*/
+static void
+register_my_pragma (void *event_data, void *data)
+@{
+  warning (0, G_("Callback to register pragmas"));
+  c_register_pragma ("GCCPLUGIN", "sayhello", handle_pragma_sayhello);
+@}
+@end smallexample
+
+It is suggested to pass @code{"GCCPLUGIN"} (or a short name identifying
+your plugin) as the ``space'' argument of your pragma.
+
+Pragmas registered with @code{c_register_pragma_with_expansion} or
+@code{c_register_pragma_with_expansion_and_data} support
+preprocessor expansions. For example:
+
+@smallexample
+#define NUMBER 10
+#pragma GCCPLUGIN foothreshold (NUMBER)
+@end smallexample
+
+@node Plugins recording
+@section Recording information about pass execution
+
+The event PLUGIN_PASS_EXECUTION passes the pointer to the executed pass
+(the same as current_pass) as @code{gcc_data} to the callback.  You can also
+inspect cfun to find out about which function this pass is executed for.
+Note that this event will only be invoked if the gate check (if
+applicable, modified by PLUGIN_OVERRIDE_GATE) succeeds.
+You can use other hooks, like @code{PLUGIN_ALL_PASSES_START},
+@code{PLUGIN_ALL_PASSES_END}, @code{PLUGIN_ALL_IPA_PASSES_START},
+@code{PLUGIN_ALL_IPA_PASSES_END}, @code{PLUGIN_EARLY_GIMPLE_PASSES_START},
+and/or @code{PLUGIN_EARLY_GIMPLE_PASSES_END} to manipulate global state
+in your plugin(s) in order to get context for the pass execution.
+
+
+@node Plugins gate
+@section Controlling which passes are being run
+
+After the original gate function for a pass is called, its result
+- the gate status - is stored as an integer.
+Then the event @code{PLUGIN_OVERRIDE_GATE} is invoked, with a pointer
+to the gate status in the @code{gcc_data} parameter to the callback function.
+A nonzero value of the gate status means that the pass is to be executed.
+You can both read and write the gate status via the passed pointer.
+
+
+@node Plugins tracking
+@section Keeping track of available passes
+
+When your plugin is loaded, you can inspect the various
+pass lists to determine what passes are available.  However, other
+plugins might add new passes.  Also, future changes to GCC might cause
+generic passes to be added after plugin loading.
+When a pass is first added to one of the pass lists, the event
+@code{PLUGIN_NEW_PASS} is invoked, with the callback parameter
+@code{gcc_data} pointing to the new pass.
+
+
+@node Plugins building
+@section Building GCC plugins
+
+If plugins are enabled, GCC installs the headers needed to build a
+plugin (somewhere in the installation tree, e.g.@: under
+@file{/usr/local}).  In particular a @file{plugin/include} directory
+is installed, containing all the header files needed to build plugins.
+
+On most systems, you can query this @code{plugin} directory by
+invoking @command{gcc -print-file-name=plugin} (replace if needed
+@command{gcc} with the appropriate program path).
+
+Inside plugins, this @code{plugin} directory name can be queried by
+calling @code{default_plugin_dir_name ()}.
+
+Plugins may know, when they are compiled, the GCC version for which
+@file{plugin-version.h} is provided.  The constant macros
+@code{GCCPLUGIN_VERSION_MAJOR}, @code{GCCPLUGIN_VERSION_MINOR},
+@code{GCCPLUGIN_VERSION_PATCHLEVEL}, @code{GCCPLUGIN_VERSION} are
+integer numbers, so a plugin could ensure it is built for GCC 4.7 with 
+@smallexample
+#if GCCPLUGIN_VERSION != 4007
+#error this GCC plugin is for GCC 4.7
+#endif
+@end smallexample
+
+The following GNU Makefile excerpt shows how to build a simple plugin:
+
+@smallexample
+HOST_GCC=g++
+TARGET_GCC=gcc
+PLUGIN_SOURCE_FILES= plugin1.c plugin2.cc
+GCCPLUGINS_DIR:= $(shell $(TARGET_GCC) -print-file-name=plugin)
+CXXFLAGS+= -I$(GCCPLUGINS_DIR)/include -fPIC -fno-rtti -O2
+
+plugin.so: $(PLUGIN_SOURCE_FILES)
+   $(HOST_GCC) -shared $(CXXFLAGS) $^ -o $@@
+@end smallexample
+
+A single source file plugin may be built with @code{g++ -I`gcc
+-print-file-name=plugin`/include -fPIC -shared -fno-rtti -O2 plugin.cc -o
+plugin.so}, using backquote shell syntax to query the @file{plugin}
+directory.
+
+Plugin support on Windows/MinGW has a number of limitations and
+additional requirements. When building a plugin on Windows we have to
+link an import library for the corresponding backend executable, for
+example, @file{cc1.exe}, @file{cc1plus.exe}, etc., in order to gain
+access to the symbols provided by GCC. This means that on Windows a
+plugin is language-specific, for example, for C, C++, etc. If you wish
+to use your plugin with multiple languages, then you will need to
+build multiple plugin libraries and either instruct your users on how
+to load the correct version or provide a compiler wrapper that does
+this automatically.
+
+Additionally, on Windows the plugin library has to export the
+@code{plugin_is_GPL_compatible} and @code{plugin_init} symbols. If you
+do not wish to modify the source code of your plugin, then you can use
+the @option{-Wl,--export-all-symbols} option or provide a suitable DEF
+file. Alternatively, you can export just these two symbols by decorating
+them with @code{__declspec(dllexport)}, for example:
+
+@smallexample
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
+int plugin_is_GPL_compatible;
+
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
+int plugin_init (plugin_name_args *, plugin_gcc_version *)
+@end smallexample
+
+The import libraries are installed into the @code{plugin} directory
+and their names are derived by appending the @code{.a} extension to
+the backend executable names, for example, @file{cc1.exe.a},
+@file{cc1plus.exe.a}, etc. The following command line shows how to
+build the single source file plugin on Windows to be used with the C++
+compiler:
+
+@smallexample
+g++ -I`gcc -print-file-name=plugin`/include -shared -Wl,--export-all-symbols \
+-o plugin.dll plugin.cc `gcc -print-file-name=plugin`/cc1plus.exe.a
+@end smallexample
+
+When a plugin needs to use @command{gengtype}, be sure that both
+@file{gengtype} and @file{gtype.state} have the same version as the
+GCC for which the plugin is built.

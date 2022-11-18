@@ -12727,8 +12727,8 @@ array_ref_up_bound (tree exp)
   return NULL_TREE;
 }
 
-/* Returns true if REF is an array reference, component reference,
-   or memory reference to an array whose actual size might be larger
+/* Returns true if REF is an array reference, a component reference,
+   or a memory reference to an array whose actual size might be larger
    than its upper bound implies, there are multiple cases:
    A. a ref to a flexible array member at the end of a structure;
    B. a ref to an array with a different type against the original decl;
@@ -12743,10 +12743,10 @@ array_ref_up_bound (tree exp)
    int test (uint8_t *p, uint32_t t[1][1], int n) {
    for (int i = 0; i < 4; i++, p++)
      t[i][0] = ...;
+*/
 
-   FIXME, the name of this routine need to be changed to be more accurate.  */
 bool
-array_at_struct_end_p (tree ref)
+array_ref_flexible_size_p (tree ref)
 {
   /* the TYPE for this array referece.  */
   tree atype = NULL_TREE;
@@ -12879,6 +12879,7 @@ array_at_struct_end_p (tree ref)
   return afield_decl ? !DECL_NOT_FLEXARRAY (afield_decl) : true;
 }
 
+
 /* Return a tree representing the offset, in bytes, of the field referenced
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
 
@@ -12974,7 +12975,7 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 	return (tree_int_cst_equal (memsize, TYPE_SIZE_UNIT (memtype))
 		? memsize : NULL_TREE);
 
-      bool trailing = array_at_struct_end_p (ref);
+      bool trailing = array_ref_flexible_size_p (ref);
       bool zero_length = integer_zerop (memsize);
       if (!trailing && !zero_length)
 	/* MEMBER is either an interior array or is an array with

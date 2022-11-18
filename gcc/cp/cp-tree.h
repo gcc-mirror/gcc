@@ -7383,10 +7383,8 @@ extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, int, tree, tree,
 						 tsubst_flags_t);
 extern tree tsubst (tree, tree, tsubst_flags_t, tree);
-extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t,
-						 tree, bool = false, bool = false);
-extern tree tsubst_expr                         (tree, tree, tsubst_flags_t,
-                                                 tree, bool);
+extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t, tree);
+extern tree tsubst_expr                         (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_pack_expansion		(tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_argument_pack		(tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_template_args		(tree, tree, tsubst_flags_t, tree);
@@ -7982,7 +7980,7 @@ extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 extern bool similar_type_p			(tree, tree);
-extern bool next_common_initial_seqence		(tree &, tree &);
+extern bool next_common_initial_sequence	(tree &, tree &);
 extern bool layout_compatible_type_p		(tree, tree);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
@@ -8324,7 +8322,7 @@ struct diagnosing_failed_constraint
 extern cp_expr finish_constraint_or_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_and_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_primary_expr	(cp_expr);
-extern tree finish_concept_definition		(cp_expr, tree);
+extern tree finish_concept_definition		(cp_expr, tree, tree);
 extern tree combine_constraint_expressions      (tree, tree);
 extern tree append_constraint			(tree, tree);
 extern tree get_constraints                     (const_tree);
@@ -8452,6 +8450,7 @@ extern bool require_potential_constant_expression (tree);
 extern bool require_constant_expression (tree);
 extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
+extern bool require_potential_rvalue_constant_expression_fncheck (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE,
 						 tsubst_flags_t = tf_error);
 inline tree cxx_constant_value (tree t, tsubst_flags_t complain)

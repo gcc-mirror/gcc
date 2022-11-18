@@ -75,8 +75,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   extern wostream wclog;
 #endif
 
-#include "ios_base_init.h"
-
   ios_base::Init::Init()
   {
     if (__gnu_cxx::__exchange_and_add_dispatch(&_S_refcount, 1) == 0)

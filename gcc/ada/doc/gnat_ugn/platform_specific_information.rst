@@ -1,5 +1,11 @@
 .. role:: switch(samp)
 
+.. -- Non-breaking space in running text
+   -- E.g. Ada |nbsp| 95
+
+.. |nbsp| unicode:: 0xA0
+   :trim:
+
 .. _Platform_Specific_Information:
 
 *****************************

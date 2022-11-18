@@ -1147,7 +1147,7 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
-	  : !strcmp (s.file, N_("<built-in>"))
+	  : !strcmp (s.file, special_fname_builtin ())
 	  ? build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce)
 	  : context->show_column
 	  ? build_message_string ("%s%s:%d:%d:%s", locus_cs, s.file, s.line,
@@ -1167,7 +1167,7 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
-	  : !strcmp (s.file, N_("<built-in>"))
+	  : !strcmp (s.file, special_fname_builtin ())
 	  ? build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce)
 	  : context->show_column
 	  ? build_message_string ("%s%s:%d:%d-%d:%s", locus_cs, s.file, s.line,

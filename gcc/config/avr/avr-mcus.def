@@ -23,7 +23,7 @@
 
    This will regenerate / update the following source files:
 
-   -  $(srcdir)/doc/avr-mmcu.rst
+   -  $(srcdir)/doc/avr-mmcu.texi
 
    After that, rebuild everything and check-in the new sources to the repo.
    The device list below should be kept in sync with AVR-LibC.

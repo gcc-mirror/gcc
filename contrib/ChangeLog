@@ -1,3 +1,20 @@
+2022-11-15  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Revert temporary rule
+	relaxation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Check for a space after leading
+	tab.
+	* gcc-changelog/test_email.py: Likewise.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2022-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_update_version.py: Add

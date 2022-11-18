@@ -4540,7 +4540,8 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 		  rtvec v = rtvec_alloc (n_elts);
 		  for (i = 0; i < n_elts; ++i)
 		    RTVEC_ELT (v, i)
-		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) + 1);
+		      = gen_int_mode (INTVAL (CONST_VECTOR_ELT (cop1, i)) + 1,
+				      eltmode);
 		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
 		  std::swap (cop0, cop1);
 		  code = code == LE ? GT : GTU;
@@ -4584,7 +4585,8 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 		  rtvec v = rtvec_alloc (n_elts);
 		  for (i = 0; i < n_elts; ++i)
 		    RTVEC_ELT (v, i)
-		      = GEN_INT (INTVAL (CONST_VECTOR_ELT (cop1, i)) - 1);
+		      = gen_int_mode (INTVAL (CONST_VECTOR_ELT (cop1, i)) - 1,
+				      eltmode);
 		  cop1 = gen_rtx_CONST_VECTOR (mode, v);
 		  code = code == GE ? GT : GTU;
 		  break;
@@ -13131,7 +13133,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
 	if (INTVAL (op3) == 1)
 	  {
-	    if (TARGET_64BIT
+	    if (TARGET_64BIT && TARGET_PREFETCHI
 		&& local_func_symbolic_operand (op0, GET_MODE (op0)))
 	      emit_insn (gen_prefetchi (op0, op2));
 	    else
@@ -13150,7 +13152,14 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 		op0 = convert_memory_address (Pmode, op0);
 		op0 = copy_addr_to_reg (op0);
 	      }
-	    emit_insn (gen_prefetch (op0, op1, op2));
+
+	    if (TARGET_3DNOW || TARGET_PREFETCH_SSE
+		|| TARGET_PRFCHW || TARGET_PREFETCHWT1)
+	      emit_insn (gen_prefetch (op0, op1, op2));
+	    else if (!MEM_P (op0) && side_effects_p (op0))
+	      /* Don't do anything with direct references to volatile memory,
+		 but generate code to handle other side effects.  */
+	      emit_insn (op0);
 	  }
 
 	return 0;

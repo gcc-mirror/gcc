@@ -74,7 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // For construction of filebuffers for cout, cin, cerr, clog et. al.
   // When the init_priority attribute is usable, we do this initialization
-  // in the compiled library instead (src/c++98/ios_init.cc).
+  // in the compiled library instead (src/c++98/globals_io.cc).
 #if !__has_attribute(__init_priority__)
   static ios_base::Init __ioinit;
 #endif

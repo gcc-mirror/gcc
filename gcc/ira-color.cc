@@ -1961,7 +1961,6 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
   aclass = ALLOCNO_CLASS (a);
   class_size = ira_class_hard_regs_num[aclass];
   best_hard_regno = -1;
-  memset (full_costs, 0, sizeof (int) * class_size);
   mem_cost = 0;
   memset (costs, 0, sizeof (int) * class_size);
   memset (full_costs, 0, sizeof (int) * class_size);
