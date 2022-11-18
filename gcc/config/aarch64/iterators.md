@@ -1012,10 +1012,6 @@
 ;; 32-bit version and "%x0" in the 64-bit version.
 (define_mode_attr w [(QI "w") (HI "w") (SI "w") (DI "x") (SF "s") (DF "d")])
 
-;; Similar to w above, but used for sign-extending loads where we want to
-;; use %x0 for SImode.
-(define_mode_attr w_sx [(QI "w") (HI "w") (SI "x")])
-
 ;; The size of access, in bytes.
 (define_mode_attr ldst_sz [(SI "4") (DI "8")])
 ;; Likewise for load/store pair.

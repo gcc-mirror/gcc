@@ -24,7 +24,7 @@ test_##name (void)						\
 /*
 **test_s8_s64:
 **...
-**	ldapursb	w0, \[x[0-9]+\]
+**	ldapursb	x0, \[x[0-9]+\]
 **	ret
 */
 
@@ -33,7 +33,7 @@ TEST(s8_s64, s8, long long)
 /*
 **test_s16_s64:
 **...
-**	ldapursh	w0, \[x[0-9]+\]
+**	ldapursh	x0, \[x[0-9]+\]
 **	ret
 */
 
