@@ -291,7 +291,7 @@ namespace __format
 	}
       else
 	{
-	  constexpr size_t __n = 32;
+	  constexpr int __n = 32;
 	  char __buf[__n]{};
 	  for (int __i = 0; __i < __n && __first != __last; ++__i)
 	    __buf[__i] = __first[__i];
@@ -1544,7 +1544,7 @@ namespace __format
 
 	      if (size_t __extras = int(__d == __p) + __z)
 		{
-		  if (__dynbuf.empty() && __extras <= (__end - __res.ptr))
+		  if (__dynbuf.empty() && __extras <= size_t(__end - __res.ptr))
 		    {
 		      // Move exponent to make space for extra chars.
 		      __builtin_memmove(__start + __p + __extras,
@@ -2357,7 +2357,7 @@ namespace __format
       _M_write(_CharT __c)
       {
 	*_M_next++ = __c;
-	if (_M_next - _M_span.begin() == _M_span.size()) [[unlikely]]
+	if (_M_next - _M_span.begin() == std::ssize(_M_span)) [[unlikely]]
 	  _M_overflow();
       }
 
@@ -2469,7 +2469,7 @@ namespace __format
 	auto __used = this->_M_used();
 	if (_M_max < 0) // No maximum.
 	  _M_out = ranges::copy(__used, std::move(_M_out)).out;
-	else if (_M_count < _M_max)
+	else if (_M_count < size_t(_M_max))
 	  {
 	    auto __max = _M_max - _M_count;
 	    span<_CharT> __first;
