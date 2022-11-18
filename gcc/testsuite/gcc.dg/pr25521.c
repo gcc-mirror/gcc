@@ -7,4 +7,4 @@
 const volatile int foo = 30;
 
 
-/* { dg-final { scan-assembler "\\.rodata" } } */
+/* { dg-final { scan-assembler "\\.s\?rodata" } } */
