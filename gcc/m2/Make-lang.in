@@ -102,30 +102,10 @@ m2.all.cross: gm2-cross$(exeext) plugin/m2rte$(exeext).so
 m2.start.encap: gm2$(exeext) plugin/m2rte$(exeext).so
 m2.rest.encap:
 
-# Documentation.
 
-doc/m2/info/texinfo/gm2.info: $(SPHINX_FILES)
-	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
-          make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/m2/doc/ BUILDDIR=$(objdir)/doc/gm2/info SPHINXBUILD=$(SPHINX_BUILD); \
-	else true; fi
+m2.info: doc/m2.info
 
-doc/m2/pdf/latex/gm2.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/m2/doc/ BUILDDIR=$(objdir)/doc/gm2/pdf SPHINXBUILD=$(SPHINX_BUILD)
-
-doc/m2/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/m2/doc/ BUILDDIR=$(objdir)/doc/gm2/html SPHINXBUILD=$(SPHINX_BUILD)
-
-m2.man: doc/m2/man/man/gm2.1
-
-m2.srcman: doc/m2/man/man/gm2.1
-	-cp -p $^ $(srcdir)/doc
-
-doc/m2/man/man/gm2.1: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/m2/doc BUILDDIR=$(objdir)/doc/m2/man SPHINXBUILD=$(SPHINX_BUILD)
-
-# m2.info: doc/m2.info
-
-# m2.man: doc/m2.1
+m2.man: doc/m2.1
 
 m2.install-man: $(DESTDIR)$(man1dir)/$(GM2_INSTALL_NAME)$(man1ext)
 
@@ -142,8 +122,6 @@ m2.ps: m2.dvi
 
 m2.pdf: m2.ps
 	gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=$@ $<
-
-m2.doc: $(RSTSRC)
 
 .INTERMEDIATE: gm2.pod
 
@@ -164,6 +142,8 @@ $(objdir)/m2/images/gnu.eps: $(srcdir)/m2/images/gnupng
         else \
            pngtopnm $< | pnmtops -noturn > $@ ; \
         fi
+
+.INTERMEDIATE: gm2.pod
 
 # gm2-libs.texi
 
