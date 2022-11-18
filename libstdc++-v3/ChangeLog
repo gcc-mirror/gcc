@@ -1,3 +1,42 @@
+2022-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h (move_only_function::__param_t):
+	Use __is_scalar instead of is_trivially_copyable.
+	* testsuite/20_util/move_only_function/call.cc: Check parameters
+	involving incomplete types.
+
+2022-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* include/bits/fs_path.h (path::_Codecvt): New class template
+	that selects the kind of code conversion done.
+	(path::_Codecvt<wchar_t>): Select based on sizeof(wchar_t).
+	(_GLIBCXX_CONV_FROM_UTF8): New macro to allow the same code to
+	be used for Windows and POSIX.
+	(path::_S_convert(const EcharT*, const EcharT*)): Simplify by
+	using _Codecvt and _GLIBCXX_CONV_FROM_UTF8 abstractions.
+	(path::_S_str_convert(basic_string_view<value_type>, const A&)):
+	Simplify nested conditions.
+	* include/experimental/bits/fs_path.h (path::_Cvt): Define
+	nested typedef controlling type of code conversion done.
+	(path::_Cvt::_S_wconvert): Use new typedef.
+	(path::string(const A&)): Likewise.
+	* testsuite/27_io/filesystem/path/construct/95048.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/95048.cc: New
+	test.
+
+2022-11-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2022-11-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_M_use_local_data): Set active
+	member to _M_local_buf.
+
 2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
