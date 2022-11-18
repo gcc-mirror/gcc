@@ -63,6 +63,22 @@ bit_complement_expression::bit_complement_expression (value *right)
 }
 
 
+bit_complement_expression::bit_complement_expression (
+	const bit_complement_expression& expr)
+{
+  bit_expression::copy (&expr);
+}
+
+
+bit_expression::~bit_expression ()
+{
+  delete left;
+  left = nullptr;
+  delete right;
+  right = nullptr;
+}
+
+
 value*
 symbolic_bit::copy () const
 {
@@ -141,13 +157,6 @@ value *
 bit_complement_expression::copy () const
 {
   return new bit_complement_expression (*this);
-}
-
-
-bit_complement_expression::bit_complement_expression (
-	const bit_complement_expression& expr)
-{
-  bit_expression::copy (&expr);
 }
 
 

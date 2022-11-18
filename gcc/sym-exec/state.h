@@ -29,14 +29,43 @@
 #include "expression.h"
 #include "expression-is-a-helper.h"
 
+
 /* Stores states of variables' values on bit-level.  */
 
-class State {
+class state {
+ typedef void (state::*binary_func) (vec<value*> * arg1_bits,
+				     vec<value*> * arg2_bits, tree dest);
+
  private:
   /* Here is stored values of bit of each variable.  */
   hash_map<tree, vec < value * >> var_states;
 
   hash_set<bit_expression *> conditions;
+
+  vec<value*> create_bits_for_const (tree var, size_t size) const;
+
+  void free_bits (vec<value*> * bits) const;
+
+  void check_args_compatibility (tree arg1, tree arg2, tree dest);
+
+  void do_binary_operation (tree arg1, tree arg2, tree dest,
+			    binary_func bin_func);
+
+  void do_and (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+
+  void do_or (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+
+  void do_xor (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+
+  void do_shift_right (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
+		       tree dest);
+
+  void do_shift_left (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
+		      tree dest);
+
+  void do_add (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
+
+  void do_sub (vec<value*> * arg1_bits, vec<value*> * arg2_bits, tree dest);
 
   /* Performs AND operation for 2 symbolic_bit operands.  */
   value *and_sym_bits (const value * var1, const value * var2) const;
@@ -71,6 +100,18 @@ class State {
   /* Performs XOR operation for a symbolic_bit and const_bit operands.  */
   value *xor_var_const (const value * var, const bit * const_bit) const;
 
+  /* shift_right operation.  Case: var2 is a sym_bit.  */
+  void shift_right_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
+			     tree dest);
+
+  /* shift_left operation.  Case: var2 is a sym_bit.  */
+  void shift_left_sym_bits (vec<value*> * arg1_bits, vec<value*> * arg2_bits,
+			    tree dest);
+
+  /* Shifts value_vector right by shift_value bits.  */
+  vec <value *> shift_right_by_const (const vec <value *> * value_vector,
+				      size_t shift_value);
+
   /* Return node which has a const bit child.  Traversal is done based
      on safe branching.  */
   bit_expression* get_parent_with_const_child (value* root) const;
@@ -83,8 +124,28 @@ class State {
   bool is_declared (tree var);
 
  public:
+   state ();
+
+  ~state ();
+
   /* Adds an empty state for the given variable.  */
   bool decl_var (tree name, unsigned size);
+
+  state (const state& s);
+
+  bool add_var_state (tree var, vec<value*> * state);
+
+  void clear_states ();
+
+  void clear_conditions ();
+
+  bool add_condition (bit_expression* cond);
+
+  bool bulk_add_conditions (const hash_set<bit_expression*>& conds);
+
+  vec<value*> * get_bits (tree var);
+
+  const hash_set<bit_expression *>& get_conditions ();
 
   /* Adds a variable with unknown value to state.  Such variables are
      represented as sequence of symbolic bits.  */
@@ -102,6 +163,8 @@ class State {
   /* Does bit-level OR operation for given variables.  */
   void do_or (tree arg1, tree arg2, tree dest);
 
+  void do_assign (tree arg, tree dest);
+
   /* Shifts value_vector left by shift_value bits.  */
   vec <value *> shift_left_by_const (const vec <value *> * value_vector,
 				     size_t shift_value);
@@ -112,18 +175,8 @@ class State {
   /* Returns the value of the number represented as a bit vector.  */
   size_t get_value (vec <value *> *  bit_vector);
 
-  /* shift_left operation.  Case: var2 is a sym_bit.  */
-  void shift_left_sym_bits (tree var1, tree var2, tree dest);
-
   /* Does shift_left operation for given variables.  */
   void do_shift_left (tree arg1, tree arg2, tree dest);
-
-  /* Shifts value_vector right by shift_value bits.  */
-  vec <value *> shift_right_by_const (const vec <value *> * value_vector,
-				      size_t shift_value);
-
-  /* shift_right operation.  Case: var2 is a sym_bit.  */
-  void shift_right_sym_bits (tree var1, tree var2, tree dest);
 
   /* Does shift_right operation for given variables.  */
   void do_shift_right (tree arg1, tree arg2, tree dest);

@@ -94,6 +94,8 @@ class bit_expression : public value {
   value *get_left ();
   value *get_right ();
 
+  ~bit_expression ();
+
   void set_left (value *expr);
   void set_right (value *expr);
   value *copy () const = 0;

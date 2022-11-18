@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
    (Not complete).  */
 void
 crc_symb_execution::make_symbolic_func_args_and_sizes (function *fun,
-						       State *initial_state)
+						       state *initial_state)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Making symbolic function's following arguments:\n");
@@ -70,7 +70,7 @@ crc_symb_execution::make_symbolic_func_args_and_sizes (function *fun,
 /* Add declared ssa variables to the state.  */
 void
 crc_symb_execution::add_function_local_ssa_vars (function *fun,
-						 State *initial_state)
+						 state *initial_state)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nAdding following ssa name declarations: \n");
@@ -119,7 +119,7 @@ crc_symb_execution::execute_assign_statement (const gassign *gs)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (gs);
   tree lhs = gimple_assign_lhs (gs);
-  State *current_state = states.last ();
+  state *current_state = states.last ();
   if (gimple_num_ops (gs) == 2 && rhs_code == BIT_NOT_EXPR)
     {
       tree op1 = gimple_assign_rhs1 (gs);
@@ -272,8 +272,8 @@ crc_symb_execution::execute_function (function *fun)
     fprintf (dump_file, "\nExecuting CRC-like function.\n");
 
   /* Create initial state and push into the vector of states.  */
-  states.quick_push (new State);
-  State *initial_state = states.last ();
+  states.quick_push (new state);
+  state *initial_state = states.last ();
 
   make_symbolic_func_args_and_sizes (fun, initial_state);
 

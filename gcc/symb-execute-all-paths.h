@@ -43,14 +43,14 @@ class crc_symb_execution {
 
  private:
   /* A vector of states to keep the state of each executed path.  */
-  vec<State*> states;
+  vec<state*> states;
 
 /* Assign symbolic values to the arguments of the function
    and keep in the state.  */
-  static void make_symbolic_func_args_and_sizes (function *, State *);
+  static void make_symbolic_func_args_and_sizes (function *, state *);
 
   /* Add declared ssa variables to the state.  */
-  static void add_function_local_ssa_vars (function *fun, State *initial_state);
+  static void add_function_local_ssa_vars (function *fun, state *initial_state);
 
   void execute_assign_statement (const gassign *);
 
